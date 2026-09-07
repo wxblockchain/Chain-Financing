@@ -1,0 +1,3433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chain Financing · 账户与登录 可交互原型 (WS-302)</title>
+<style>
+/* ==========================================================================
+   tokens.css — Chain Financing 账户与登录原型
+   基线取自竞品 harbour-credit-admin-console.html 的浅色体系（本轮返工要求）。
+   全站单一浅色体系，无深色底；资产端与管理端的差异只体现在密度、圆角与品牌标识，
+   不体现为明暗两套。组件层不得出现字面色值，一律引用本文件的具名 token。
+   ========================================================================== */
+:root{
+  /* —— 字体 —— */
+  --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"SF Mono","JetBrains Mono","Roboto Mono",ui-monospace,Menlo,Consolas,monospace;
+
+  /* —— 面与描边（竞品口径）—— */
+  --bg:#F6F7FA;
+  --bg-elev:#FFFFFF;
+  --card:#FFFFFF;
+  --card-2:#F9FAFC;
+  --card-hover:#F3F5F9;
+  --border:#E6E9F0;
+  --border-strong:#D5DAE4;
+  --border-dash:#EDF0F5;
+
+  /* —— 文字 —— */
+  --text:#101828;
+  --muted:#5A6474;
+  --faint:#8B94A6;
+
+  /* —— 主色与语义色（竞品口径）—— */
+  --accent:#2557E8;
+  --accent-strong:#1E46C4;
+  --accent-soft:rgba(37,87,232,.08);
+  --accent-border:rgba(37,87,232,.28);
+  --ok:#087443;
+  --ok-bg:#ECFDF3;
+  --ok-border:#ABEFC6;
+  --warn:#B54708;
+  --warn-bg:#FFFAEB;
+  --warn-border:#FEDF89;
+  --danger:#D92D20;
+  --danger-bg:#FEF3F2;
+  --danger-border:#FECDCA;
+  --gray-bg:#F2F4F7;
+  --gray-fg:#475467;
+  --gray-border:#E4E7EC;
+  --violet:#5925DC;
+  --violet-bg:#F4F3FF;
+  --violet-border:#D9D6FE;
+  --pos:#0B8A76;
+  --pos-soft:rgba(11,138,118,.09);
+
+  /* —— 链上数据（地址 / 哈希）—— */
+  --hash-text:#3D5FD0;
+  --hash-bg:rgba(37,87,232,.06);
+  --hash-border:rgba(37,87,232,.2);
+
+  /* —— 阴影 · 圆角 · 轨道 —— */
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+  --shadow-lg:0 12px 28px rgba(16,24,40,.12);
+  --overlay:rgba(16,24,40,.42);
+  --track:#EEF0F5;
+  --radius:12px;
+  --radius-sm:9px;
+  --radius-xs:7px;
+  --radius-pill:999px;
+
+  /* —— 字号阶梯 —— */
+  --fs-10:10px; --fs-11:11px; --fs-12:12px; --fs-13:13px;
+  --fs-14:14px; --fs-16:16px; --fs-19:19px; --fs-24:24px; --fs-28:28px;
+
+  /* —— 间距 —— */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+  --sp-6:24px; --sp-7:32px; --sp-8:40px;
+
+  /* —— 缓动 —— */
+  --ease-out:cubic-bezier(.22,.61,.36,1);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);
+  --dur-fast:120ms; --dur-base:200ms; --dur-slow:320ms;
+
+  /* —— 控件尺寸（默认 = 管理端工作台密度）—— */
+  --ctrl-h:36px;
+  --ctrl-h-sm:28px;
+  --field-gap:13px;
+  --card-pad:16px;
+}
+
+/* 资产端：面向终端用户，控件更大、留白更松，但配色与管理端完全同一套 */
+[data-end="asset"]{
+  --ctrl-h:42px;
+  --ctrl-h-sm:32px;
+  --field-gap:16px;
+  --card-pad:20px;
+}
+
+/* ==========================================================================
+   components.css — 产品组件层（竞品视觉语言：浅底 + 白卡 + 蓝主色 + 12px 圆角）
+   本文件没有任何“评审脚手架”样式：侧边导航与顶栏就是产品界面本身。
+   唯一与产品界面刻意区分的是 .prd-* （给前端开发看的 PRD 面板，紫色系）。
+   ========================================================================== */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--text);
+  font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none;padding:0;font-family:var(--sans)}
+a{color:var(--accent);text-decoration:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}
+.faint{color:var(--faint)}
+.small{font-size:var(--fs-12)}
+.tiny{font-size:var(--fs-11);color:var(--faint);line-height:1.5}
+.nw{white-space:nowrap}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ============================== 应用外壳 ================================= */
+.app{display:grid;grid-template-columns:238px 1fr;min-height:100vh}
+.app[hidden]{display:none}
+.sidebar{background:var(--bg-elev);border-right:1px solid var(--border);display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 15px;border-bottom:1px solid var(--border)}
+.brand-mark{width:34px;height:34px;border-radius:var(--radius-sm);flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-strong));display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:13px;color:#fff;box-shadow:0 2px 10px rgba(37,87,232,.3);
+  font-family:var(--mono)}
+.brand-name{font-weight:700;font-size:14.5px;letter-spacing:.2px}
+.brand-sub{font-size:var(--fs-10);color:var(--faint);letter-spacing:.08em;text-transform:uppercase;
+  margin-top:1px;font-weight:620}
+.nav{padding:13px 10px;flex:1;overflow-y:auto}
+.nav-label{font-size:var(--fs-10);font-weight:650;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);padding:10px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:8px 10px;
+  border-radius:var(--radius-sm);color:var(--muted);font-weight:560;font-size:13px;border:1px solid transparent;
+  margin-bottom:2px;transition:background var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out)}
+.nav-item:hover{background:var(--card-hover);color:var(--text)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-border)}
+.nav-ico{width:17px;text-align:center;font-size:13px;flex:none;font-family:var(--mono)}
+.nav-tag{margin-left:auto;font-family:var(--mono);font-size:var(--fs-10);color:var(--faint)}
+.nav-item.active .nav-tag{color:var(--accent)}
+.side-foot{border-top:1px solid var(--border);padding:12px 14px;font-size:11.5px}
+.op-row{display:flex;align-items:center;gap:9px}
+.op-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--accent));
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex:none}
+.op-name{font-weight:620;color:var(--text);word-break:break-all;line-height:1.35}
+.op-role{color:var(--faint);font-size:10.5px}
+.side-chip{margin-top:9px;display:flex;align-items:center;gap:7px;background:var(--card-2);
+  border:1px solid var(--border);border-radius:var(--radius-xs);padding:6px 9px;font-family:var(--mono);
+  font-size:10.5px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--pos);flex:none}
+.dot.warn{background:var(--warn)}
+
+.main{display:flex;flex-direction:column;min-width:0}
+.topbar{display:flex;align-items:center;gap:14px;padding:13px 26px;border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.92);position:sticky;top:0;z-index:40}
+.crumb{font-size:var(--fs-12);color:var(--faint);min-width:0}
+.crumb b{color:var(--text);font-weight:640;font-size:13.5px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.tchip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--bg-elev);
+  border-radius:var(--radius-pill);padding:5px 11px;font-size:11.5px;color:var(--muted);white-space:nowrap}
+.tchip.is-btn:hover{background:var(--card-hover);color:var(--text)}
+.tchip.on{background:var(--accent-soft);border-color:var(--accent-border);color:var(--accent)}
+.content{padding:22px 26px 60px;max-width:1500px;width:100%;margin:0 auto}
+
+/* 语言切换器 C-04 */
+.lang{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-pill);overflow:hidden;
+  font-size:var(--fs-11);background:var(--bg-elev)}
+.lang button{padding:5px 10px;color:var(--faint)}
+.lang button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:620}
+
+/* ============================== 居中卡片版式 ============================= */
+/* 未登录页与管理端首登重置页：没有侧边导航，但与控制台共用同一套设计系统 */
+.focus{min-height:100vh;display:flex;flex-direction:column;background:var(--bg)}
+.focus[hidden]{display:none}
+.focus-top{display:flex;align-items:center;gap:12px;padding:16px 26px;border-bottom:1px solid var(--border);
+  background:var(--bg-elev)}
+.focus-body{flex:1;display:flex;justify-content:center;align-items:flex-start;padding:48px 24px 40px}
+.focus-col{width:100%;max-width:470px}
+.focus-col.is-wide{max-width:560px}
+.focus-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 26px;
+  border-top:1px solid var(--border);font-size:11.5px;color:var(--faint);background:var(--bg-elev);flex-wrap:wrap}
+
+/* ============================== 通用组件 ================================= */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.card-h h3{font-size:13px;font-weight:640;margin:0}
+.card-sub{color:var(--faint);font-size:var(--fs-11);font-weight:400}
+.card-r{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card-b{padding:var(--card-pad)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.split{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:16px;align-items:start}
+
+.page-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.page-title{font-size:var(--fs-19);font-weight:700;letter-spacing:-.01em;margin:0}
+.page-desc{color:var(--muted);font-size:12.5px;margin:3px 0 0;max-width:760px}
+.page-actions{margin-left:auto;display:flex;gap:8px;flex:none;align-items:center;flex-wrap:wrap}
+
+.h2{font-size:var(--fs-16);font-weight:660;margin:0}
+.h3{font-size:13px;font-weight:640;margin:0}
+.lead{color:var(--muted);font-size:12.5px;margin:6px 0 0;line-height:1.6}
+
+.btn{display:inline-flex;align-items:center;gap:7px;justify-content:center;border-radius:var(--radius-sm);
+  border:1px solid var(--border-strong);background:var(--bg-elev);color:var(--text);height:var(--ctrl-h);
+  padding:0 14px;font-size:12.5px;font-weight:620;white-space:nowrap;
+  transition:background var(--dur-fast) var(--ease-out),filter var(--dur-fast) var(--ease-out)}
+.btn:hover:not(:disabled){background:var(--card-hover)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-strong));border-color:transparent;
+  color:#fff;box-shadow:0 2px 12px rgba(37,87,232,.28)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08);background:linear-gradient(135deg,var(--accent),var(--accent-strong))}
+.btn.danger{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--accent)}
+.btn.ghost:hover:not(:disabled){background:var(--accent-soft)}
+.btn.sm{height:var(--ctrl-h-sm);padding:0 11px;font-size:var(--fs-11);border-radius:var(--radius-xs)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.quiet{opacity:.5}                       /* 视觉置灰但仍可点：点击后给出原因 */
+.btn-link{color:var(--accent);font-size:12.5px;font-weight:600;border-bottom:1px solid transparent;padding-bottom:1px}
+.btn-link:hover{border-bottom-color:var(--accent)}
+.btnbar{display:flex;gap:10px;margin-top:18px}
+.btnbar.even>*{flex:1}
+
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:var(--radius-pill);font-size:11.5px;
+  font-weight:620;padding:2.5px 9px;white-space:nowrap;border:1px solid transparent}
+.pill.blue{background:#EEF2FF;color:#3538CD;border-color:#C7D2FE}
+.pill.green{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-border)}
+.pill.amber{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-border)}
+.pill.red{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-border)}
+.pill.gray{background:var(--gray-bg);color:var(--gray-fg);border-color:var(--gray-border)}
+.pill.violet{background:var(--violet-bg);color:var(--violet);border-color:var(--violet-border)}
+.pill.dash{background:var(--card-2);color:var(--faint);border:1px dashed var(--border-strong)}
+
+.note{display:flex;gap:9px;align-items:flex-start;background:var(--accent-soft);border:1px solid var(--accent-border);
+  border-radius:var(--radius-sm);padding:10px 13px;font-size:11.5px;color:var(--accent-strong);line-height:1.55}
+.note b{display:block;margin-bottom:2px}
+.note p{margin:2px 0 0}
+.note .ico{flex:none;font-weight:700}
+.note.amber{background:var(--warn-bg);border-color:var(--warn-border);color:#8A5D10}
+.note.green{background:var(--ok-bg);border-color:var(--ok-border);color:var(--ok)}
+.note.red{background:var(--danger-bg);border-color:var(--danger-border);color:#B42318}
+
+/* 表单 */
+.field{margin-bottom:var(--field-gap)}
+.field label{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:11.5px;
+  font-weight:620;color:var(--muted);margin-bottom:5px}
+.field label .opt{font-weight:500;color:var(--faint);font-size:var(--fs-10);border:1px solid var(--border);
+  border-radius:var(--radius-pill);padding:1px 7px}
+.inp{width:100%;background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:8px;color:var(--text);
+  height:var(--ctrl-h);padding:0 11px;font-size:12.5px;outline:none;transition:border-color var(--dur-fast) var(--ease-out)}
+.inp::placeholder{color:var(--faint)}
+.inp:hover:not(:disabled){border-color:var(--faint)}
+.inp:focus{border-color:var(--accent)}
+.inp:disabled{background:var(--card-2);opacity:.7;cursor:not-allowed}
+.inp.err{border-color:var(--danger)}
+.inp.mono{font-family:var(--mono);letter-spacing:.14em}
+select.inp{padding:0 8px}
+.inp-row{display:flex;gap:8px}
+.inp-row .inp{flex:1;min-width:0}
+.inp-affix{position:relative}
+.inp-affix .inp{padding-right:56px}
+.affix{position:absolute;right:6px;top:50%;transform:translateY(-50%);height:calc(var(--ctrl-h) - 12px);
+  padding:0 8px;border-radius:var(--radius-xs);color:var(--muted);font-size:var(--fs-11);font-weight:620}
+.affix:hover{color:var(--accent);background:var(--accent-soft)}
+.hint{font-size:10.5px;color:var(--faint);margin:4px 0 0;line-height:1.45}
+.err-msg{font-size:11px;color:var(--danger);margin:5px 0 0;line-height:1.45;display:flex;gap:5px}
+.check{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.5;color:var(--muted);margin-bottom:10px}
+.check input{margin:2px 0 0;width:15px;height:15px;accent-color:var(--accent);flex:none}
+.check.shake{animation:shake var(--dur-slow) var(--ease-in-out)}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(5px)}
+  60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+
+.rules{margin:9px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.rules li{display:flex;gap:7px;align-items:center;font-size:11px;color:var(--faint)}
+.rules li[data-ok="1"]{color:var(--ok)}
+.rules .box{width:14px;height:14px;border-radius:var(--radius-xs);border:1px solid currentColor;display:grid;
+  place-items:center;font-size:8px;flex:none}
+
+/* 步骤 */
+.steps{display:flex;align-items:center;gap:9px;margin-bottom:16px;font-size:11.5px;color:var(--faint);flex-wrap:wrap}
+.steps .s{display:flex;align-items:center;gap:7px}
+.steps .n{width:21px;height:21px;border-radius:50%;border:1px solid var(--border-strong);display:grid;
+  place-items:center;font-size:var(--fs-10);font-family:var(--mono)}
+.steps .s[data-on="1"]{color:var(--text);font-weight:620}
+.steps .s[data-on="1"] .n{background:var(--accent);border-color:var(--accent);color:#fff}
+.steps .s[data-done="1"] .n{border-color:var(--ok);color:var(--ok)}
+.steps .bar{flex:1;min-width:16px;height:1px;background:var(--border)}
+
+/* Tabs（登录方式） */
+.seg-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.seg-tab{flex:1;min-width:0;padding:9px 6px;font-size:12px;font-weight:620;color:var(--faint);
+  border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;text-align:center;line-height:1.3}
+.seg-tab:hover:not(:disabled){color:var(--muted)}
+.seg-tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.seg-tab:disabled{opacity:.45;cursor:not-allowed}
+.seg-tab .lk{font-size:var(--fs-10);color:var(--danger);font-weight:600}
+
+/* 表格 */
+.tablewrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:660px}
+table.tbl thead th{text-align:left;font-size:10.5px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--faint);padding:9px 12px;border-bottom:1px solid var(--border);background:var(--card-2);white-space:nowrap}
+table.tbl tbody td{padding:10px 12px;border-bottom:1px solid #F0F2F6;vertical-align:middle}
+table.tbl tbody tr:last-child td{border-bottom:none}
+table.tbl tbody tr:hover td{background:#FAFBFD}
+.c-email{font-family:var(--mono);font-size:var(--fs-11);overflow-wrap:anywhere;width:20%}
+.c-time{white-space:nowrap;font-family:var(--mono);font-size:10.5px;line-height:1.45;width:100px}
+.c-time .t2{color:var(--faint)}
+.c-status{min-width:150px}
+.col-act{width:96px;text-align:right}
+td.col-act{vertical-align:top}
+.col-act .actlink{display:block;width:100%;text-align:right;margin-bottom:2px}
+.actlink{font-size:var(--fs-11);color:var(--accent);padding:2px 5px;border-radius:5px;font-weight:600;line-height:1.5}
+.actlink:hover{background:var(--accent-soft)}
+.actlink.danger{color:var(--danger)}
+.actlink.danger:hover{background:var(--danger-bg)}
+.actlink.off{color:var(--faint);cursor:not-allowed}
+.tbl-empty{padding:52px 20px;text-align:center;color:var(--faint)}
+.tbl-empty b{display:block;color:var(--muted);font-size:13px;margin-bottom:5px;font-weight:640}
+.skel{height:11px;border-radius:5px;background:var(--track);position:relative;overflow:hidden}
+.skel::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,#fff,transparent);animation:sweep 1.2s var(--ease-in-out) infinite}
+@keyframes sweep{100%{transform:translateX(100%)}}
+
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.toolbar .inp{width:230px;height:var(--ctrl-h-sm)}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-xs);overflow:hidden;background:var(--bg-elev)}
+.seg button{padding:0 10px;height:var(--ctrl-h-sm);font-size:var(--fs-11);color:var(--muted);
+  border-right:1px solid var(--border);font-weight:600}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+
+/* 设置行 */
+.rows{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.row{display:flex;align-items:flex-start;gap:16px;padding:16px;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:0}
+.row-main{flex:1;min-width:0}
+.row-k{font-size:11.5px;color:var(--muted);font-weight:620;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.row-v{font-size:13px;overflow-wrap:anywhere}
+.row-act{flex:none}
+
+/* C-07 地址 / 哈希 */
+.hash{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--hash-text);
+  background:var(--hash-bg);border:1px solid var(--hash-border);border-radius:var(--radius-xs);padding:3px 8px;max-width:100%}
+.hash .val{overflow-wrap:anywhere}
+.hash .ico{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;color:var(--accent);
+  font-size:var(--fs-11);flex:none}
+.hash .ico:hover{background:var(--accent-soft)}
+
+/* C-08 常驻补全提示条 */
+.cbar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--warn-bg);
+  border:1px solid var(--warn-border);border-radius:var(--radius-sm);font-size:12px;color:#8A5D10;margin-bottom:16px}
+.cbar .ic{width:20px;height:20px;border-radius:50%;background:var(--warn);color:#fff;display:grid;place-items:center;
+  font-size:var(--fs-11);font-weight:700;flex:none}
+.cbar p{margin:0;flex:1;line-height:1.5}
+.cbar-mini{position:fixed;left:258px;bottom:20px;z-index:60;display:inline-flex;align-items:center;gap:8px;
+  background:var(--warn-bg);border:1px solid var(--warn-border);color:#8A5D10;border-radius:var(--radius-pill);
+  padding:7px 13px;font-size:11.5px;font-weight:620;box-shadow:var(--shadow)}
+
+/* 统计卡（落地页） */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:15px 18px}
+.stat .lbl{font-size:var(--fs-11);font-weight:640;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:6px}
+.stat .val{font-family:var(--mono);font-size:15px;font-weight:640;overflow-wrap:anywhere}
+
+/* 引导卡 */
+.guide{display:flex;gap:14px;padding:16px;border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--card);box-shadow:var(--shadow);margin-bottom:12px}
+.guide.pri{border-color:var(--accent-border);background:linear-gradient(180deg,var(--accent-soft),transparent)}
+.guide .n{width:24px;height:24px;border-radius:50%;border:1px solid var(--border-strong);display:grid;place-items:center;
+  font-size:var(--fs-11);font-family:var(--mono);color:var(--muted);flex:none}
+.guide.pri .n{background:var(--accent);border-color:var(--accent);color:#fff}
+.guide .bd{flex:1;min-width:0}
+.guide .bd p{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.55}
+
+/* ============================== 弹层与抽屉 =============================== */
+.mask{position:fixed;inset:0;background:var(--overlay);display:grid;place-items:center;padding:24px;z-index:200;
+  animation:fade var(--dur-base) var(--ease-out)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{width:100%;max-width:430px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow-lg);animation:rise var(--dur-base) var(--ease-out);max-height:100%;display:flex;flex-direction:column}
+.modal.wide{max-width:560px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.modal-h{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.modal-h b{flex:1;font-size:13.5px;font-weight:660}
+.modal-x{width:26px;height:26px;border-radius:var(--radius-xs);color:var(--faint);display:grid;place-items:center;flex:none}
+.modal-x:hover{color:var(--text);background:var(--card-hover)}
+.modal-b{padding:16px;overflow:auto}
+.modal-f{display:flex;gap:9px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--border);
+  background:var(--card-2);border-radius:0 0 var(--radius) var(--radius)}
+
+.drawer{position:fixed;top:0;right:0;bottom:0;width:440px;max-width:100vw;background:var(--bg-elev);
+  border-left:1px solid var(--border);box-shadow:var(--shadow-lg);z-index:210;display:flex;flex-direction:column;
+  animation:slide var(--dur-base) var(--ease-out)}
+@keyframes slide{from{transform:translateX(16px);opacity:.4}to{transform:translateX(0);opacity:1}}
+.drawer-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.drawer-h b{flex:1;font-size:13.5px;font-weight:660}
+.drawer-b{flex:1;overflow:auto;padding:16px}
+.drawer-scrim{position:fixed;inset:0;background:rgba(16,24,40,.18);z-index:205}
+
+/* ---- PRD 面板：给前端开发看的规格，紫色系，与产品界面明确区分 ---- */
+.prd .drawer-h{background:var(--violet-bg);border-bottom-color:var(--violet-border)}
+.prd .drawer-h b{color:var(--violet)}
+.prd .drawer-b{background:var(--card-2)}
+.prd-src{font-size:10.5px;color:var(--faint);font-family:var(--mono);margin-bottom:14px;line-height:1.5;
+  border-left:2px solid var(--violet-border);padding-left:9px}
+.prd-sec{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);margin-bottom:10px;overflow:hidden}
+.prd-sec>summary{list-style:none;cursor:pointer;padding:10px 13px;font-size:12px;font-weight:640;color:var(--text);
+  display:flex;align-items:center;gap:8px;background:var(--card)}
+.prd-sec>summary::-webkit-details-marker{display:none}
+.prd-sec>summary:hover{background:var(--card-hover)}
+.prd-sec>summary .cnt{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)}
+.prd-sec>summary .caret{color:var(--violet);font-size:10px;transition:transform var(--dur-fast) var(--ease-out)}
+.prd-sec[open]>summary .caret{transform:rotate(90deg)}
+.prd-sec .bd{padding:0 13px 12px;border-top:1px solid var(--border-dash)}
+.prd-item{padding:9px 0;border-bottom:1px dashed var(--border-dash);font-size:11.5px;line-height:1.6}
+.prd-item:last-child{border-bottom:none}
+.prd-item .k{font-family:var(--mono);font-size:10.5px;color:var(--violet);font-weight:640;margin-bottom:2px;
+  display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.prd-item .k .meta{color:var(--faint);font-weight:400}
+.prd-item .v{color:var(--muted)}
+.prd-item .v b{color:var(--text);font-weight:620}
+.prd-item .v code,.prd-ac code.mono{font-size:10.5px;background:var(--gray-bg);border:1px solid var(--gray-border);
+  border-radius:4px;padding:0 4px;color:var(--gray-fg)}
+.prd-ac span b{color:var(--text);font-weight:620}
+.prd-copy{display:grid;grid-template-columns:1fr;gap:3px;padding:8px 0;border-bottom:1px dashed var(--border-dash);font-size:11.5px}
+.prd-copy:last-child{border-bottom:none}
+.prd-copy .sc{font-size:10.5px;color:var(--faint);font-family:var(--mono)}
+.prd-copy .en{color:var(--text)}
+.prd-copy .zh{color:var(--muted)}
+.prd-ac{display:flex;gap:9px;padding:7px 0;border-bottom:1px dashed var(--border-dash);font-size:11.5px;line-height:1.55}
+.prd-ac:last-child{border-bottom:none}
+.prd-ac code{font-family:var(--mono);font-size:10.5px;color:var(--violet);background:var(--violet-bg);
+  border:1px solid var(--violet-border);border-radius:5px;padding:1px 5px;flex:none;height:fit-content}
+.prd-foot{font-size:10.5px;color:var(--faint);line-height:1.6;margin-top:14px;border-top:1px solid var(--border);padding-top:10px}
+
+/* ---- 原型控制抽屉（端切换 / 页面直达 / 演示分支）---- */
+.pp-sec{font-size:var(--fs-10);font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);
+  margin:16px 0 7px}
+.pp-sec:first-child{margin-top:0}
+.pp-grid{display:flex;flex-wrap:wrap;gap:6px}
+.pp-item{display:flex;gap:8px;align-items:flex-start;font-size:11.5px;color:var(--muted);padding:5px 0;line-height:1.45}
+.pp-item input{margin:2px 0 0;accent-color:var(--accent);flex:none}
+.pp-link{display:flex;gap:9px;align-items:baseline;width:100%;text-align:left;padding:6px 9px;border-radius:var(--radius-xs);
+  font-size:12px;color:var(--muted)}
+.pp-link:hover{background:var(--card-hover);color:var(--text)}
+.pp-link[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:620}
+.pp-link code{font-family:var(--mono);font-size:10px;color:var(--faint);flex:none;width:44px}
+.pp-link[aria-current="true"] code{color:var(--accent)}
+.pp-note{font-size:10.5px;color:var(--faint);line-height:1.6;background:var(--card-2);border:1px solid var(--border);
+  border-radius:var(--radius-xs);padding:9px 11px;margin-bottom:4px}
+
+/* ============================== C-01 滑块 ================================ */
+.cap-canvas{position:relative;width:328px;margin:0 auto;border-radius:var(--radius-sm);overflow:hidden;
+  border:1px solid var(--border);background:var(--card-2)}
+.cap-canvas canvas{display:block;width:328px;height:180px}
+.cap-piece{position:absolute;top:0;left:0;will-change:transform}
+.cap-track{margin:14px auto 0;width:328px;height:42px;border-radius:var(--radius-pill);background:var(--card-2);
+  border:1px solid var(--border-strong);position:relative;display:flex;align-items:center;user-select:none;touch-action:none}
+.cap-track.ok{border-color:var(--ok-border);background:var(--ok-bg)}
+.cap-track.bad{border-color:var(--danger-border);background:var(--danger-bg)}
+.cap-track.cool{opacity:.6}
+.cap-track .tip{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--fs-11);color:var(--faint);
+  pointer-events:none}
+.cap-fill{position:absolute;left:0;top:0;bottom:0;border-radius:var(--radius-pill);background:var(--accent-soft)}
+.cap-knob{position:absolute;left:0;top:0;height:40px;width:48px;border-radius:var(--radius-pill);background:var(--bg-elev);
+  border:1px solid var(--border-strong);display:grid;place-items:center;cursor:grab;color:var(--accent);
+  font-family:var(--mono);font-size:13px;box-shadow:var(--shadow)}
+.cap-knob:active{cursor:grabbing}
+.cap-knob.shake{animation:shake var(--dur-slow) var(--ease-in-out)}
+.cap-knob[aria-disabled="true"]{cursor:not-allowed;opacity:.6}
+.cap-msg{margin-top:10px;min-height:17px;font-size:var(--fs-11);line-height:1.5;text-align:center;color:var(--faint)}
+.cap-msg.bad{color:var(--danger)}
+.cap-msg.ok{color:var(--ok)}
+
+/* ============================== C-06 钱包 ================================ */
+.wallets{display:flex;flex-direction:column;gap:8px}
+.wallet{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--bg-elev);text-align:left;width:100%;
+  transition:border-color var(--dur-fast) var(--ease-out)}
+.wallet:hover{border-color:var(--accent);background:var(--accent-soft)}
+.wallet .av{width:30px;height:30px;border-radius:8px;background:var(--card-2);border:1px solid var(--border);
+  display:grid;place-items:center;font-family:var(--mono);font-size:var(--fs-11);color:var(--muted);flex:none}
+.wallet b{display:block;font-size:12.5px;font-weight:620}
+.wallet span{display:block;font-size:var(--fs-10);color:var(--faint)}
+.sigmsg{font-family:var(--mono);font-size:11.5px;line-height:1.7;background:var(--card-2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:12px;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);
+  max-height:150px;overflow:auto}
+.spinner{width:15px;height:15px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--accent);
+  animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ============================== C-05 Toast =============================== */
+.toasts{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;
+  gap:8px;width:min(520px,calc(100% - 32px))}
+.toast{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:var(--radius-sm);
+  background:var(--bg-elev);border:1px solid var(--border-strong);box-shadow:var(--shadow-lg);font-size:12px;
+  line-height:1.5;animation:drop var(--dur-base) var(--ease-out)}
+@keyframes drop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.toast.danger{border-color:var(--danger-border);background:var(--danger-bg)}
+.toast.success{border-color:var(--ok-border);background:var(--ok-bg)}
+.toast .tx{flex:1}
+.toast .tx b{display:block;font-weight:640;margin-bottom:2px;color:var(--text)}
+.toast .tx span{color:var(--muted);font-size:var(--fs-11)}
+.toast .cl{color:var(--faint);width:20px;height:20px;border-radius:5px;display:grid;place-items:center;flex:none}
+.toast .cl:hover{color:var(--text)}
+
+/* 建号确认 */
+.created{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 16px}
+.created .ring{width:68px;height:68px;border-radius:50%;border:1px solid var(--ok-border);background:var(--ok-bg);
+  display:grid;place-items:center;color:var(--ok);font-size:28px;animation:pop var(--dur-slow) var(--ease-out)}
+@keyframes pop{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
+.created h1{font-size:var(--fs-24);font-weight:700;margin:18px 0 0;letter-spacing:-.01em}
+.created .idbox{margin-top:18px;display:inline-flex;flex-direction:column;gap:3px;align-items:center;
+  border:1px dashed var(--border-strong);border-radius:var(--radius-sm);padding:10px 18px;background:var(--card-2)}
+.created .idbox span{font-size:var(--fs-10);color:var(--faint);letter-spacing:.08em;text-transform:uppercase}
+.created .idbox b{font-family:var(--mono);font-size:15px;font-weight:640}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    transition-duration:.001ms !important}
+}
+@media (max-width:1100px){
+  .app{grid-template-columns:200px 1fr}
+  .cbar-mini{left:220px}
+  .split{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<!-- 未登录 / 首登重置：居中卡片版式，无侧边导航 -->
+<div class="focus" id="focus" hidden></div>
+
+<!-- 已登录：产品自己的控制台（侧边导航 + 顶栏 + 内容区） -->
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">CF</div>
+      <div>
+        <div class="brand-name">Chain Financing</div>
+        <div class="brand-sub" id="brandSub"></div>
+      </div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot" id="sideFoot"></div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb" id="crumb"></div>
+      <div class="topbar-right" id="topRight"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div id="layers"></div>
+<script>
+/* ==========================================================================
+   i18n.js — 中英文案表。英文为默认语言（PRD 13.1）。
+   文案逐条取自 PRD v4 第 8.5 / 12.1.4 / 12.2.5 / 12.3.5 节，未擅自改写。
+   v4 变更：删除营销订阅勾选（N-04），登录页协议区只保留用户协议一项。
+   ========================================================================== */
+var DICT = {
+  en: {
+    /* 通用与导航 8.5.1 */
+    signInTitle:"Sign in",
+    signInSub:"New here? Just sign in with an email code or your wallet — we'll create your account automatically.",
+    tabCode:"Email verification code", tabPwd:"Email and password", tabWallet:"Sign in with wallet",
+    sendCode:"Send code", resendCode:"Resend code", resendIn:"Resend in {n}s",
+    submitSignIn:"Sign in", forgotPwd:"Forgot password?", cantEmail:"Can't access your email?",
+    pwdTabHint:"No password? Sign in with an email code →",
+    connectWallet:"Connect wallet", disconnect:"Disconnect", signMessage:"Sign message",
+    later:"Later", signOut:"Sign out", save:"Save", cancel:"Cancel", copyAddress:"Copy address",
+    viewExplorer:"View on explorer", completeNow:"Complete now", notSet:"Not set", optional:"Optional",
+    back:"Back", contin:"Continue", confirm:"Confirm", close:"Close", change:"Change", add:"Add",
+    labelEmail:"Email address", labelCode:"Verification code", labelPwd:"Password",
+    labelNewPwd:"New password", labelConfirmPwd:"Confirm new password", labelCurrentPwd:"Current password",
+    labelWorkEmail:"Work email", labelNewEmail:"New email address", labelName:"Full name",
+    show:"Show", hide:"Hide",
+
+    /* 校验与错误 8.5.2 */
+    eEmailReq:"Email is required.",
+    eEmailFmt:"Enter a valid email address.",
+    eCodeReq:"Enter the 6-digit code.",
+    eCodeBad:"Invalid or expired code.",
+    eCodeTooMany:"Too many attempts. Please request a new code.",
+    ePwdReq:"Password is required.",
+    ePwdLogin:"Incorrect email or password. If you haven't set a password, sign in with an email verification code instead.",
+    ePwdLoginAdmin:"Incorrect email or password.",
+    ePwdLen:"Password must be 8–20 characters.",
+    ePwdCplx:"Password must contain at least one letter and one number.",
+    ePwdBoth:"Password must be 8–20 characters and contain at least one letter and one number.",
+    ePwdSpace:"Password cannot contain spaces.",
+    ePwdMatch:"Passwords do not match.",
+    ePwdSameCurrent:"Your new password must be different from your current password.",
+    ePwdSameInitial:"Your new password must be different from the initial password.",
+    eTerms:"Please read and agree to the Terms of Service and Privacy Policy.",
+    eAdminNotice:"Please confirm you have read the Admin Security Notice.",
+    eEmailTaken:"This email is already linked to another account.",
+    eWalletTaken:"This wallet is already linked to another account.",
+    eWalletUnlinked:"This wallet is not linked to any account.",
+    eWalletUnlinkedHint:"To create an account, sign in with your wallet on the sign-in page.",
+    eNoWallet:"No wallet detected. Install a supported wallet to continue.",
+    eNetwork:"Please switch your wallet to a supported EVM network.",
+    eSigRejected:"Signature request was rejected in your wallet.",
+    eSigExpired:"The signature request expired. Please try again.",
+    eSigFailed:"Signature verification failed.",
+    eWalletSvc:"Wallet service is unavailable. Please retry or sign in with your email.",
+    eDisabled:"This account has been disabled. Contact support for help.",
+    eInitExpired:"Your initial password has expired. Contact an administrator to have it regenerated.",
+    eLastAdmin:"This is the only available administrator. Create or activate another administrator before disabling this one.",
+    eSelfAction:"You cannot perform this action on your own account.",
+    eNet:"Network error. Please try again.",
+
+    /* 建号 / 引导 / 补全 8.5.3 */
+    created:"Welcome! Your account has been created.",
+    codeSent:"Code sent. Check your inbox and spam folder.",
+    guideTitle:"Finish setting up your account",
+    guideWallet:"Link an EVM wallet. You'll need both an email and a wallet to start identity verification.",
+    guideEmail:"Add an email address. You'll need both an email and a wallet to start identity verification, and we'll use it for security notifications.",
+    guidePwd:"Set a login password (optional)",
+    guidePwdSub:"You can always sign in with an email code or your wallet.",
+    keepBoth:"Keep both your email and wallet accessible — if you lose both, your account cannot be recovered.",
+    barWallet:"Link a wallet to be ready for identity verification.",
+    barEmail:"Add an email to be ready for identity verification and to receive security notifications.",
+    gateWallet:"Link your wallet to continue",
+    gateEmail:"Add your email to continue",
+    gateBody:"Identity verification requires both an email address and a wallet address.",
+    allSet:"All set. You're ready to start identity verification.",
+    fpNewUser:"No account yet? Just sign in with an email code — we'll create one for you.",
+
+    /* 成功与状态 8.5.4 */
+    okPwdReset:"Password reset. Please sign in with your new password.",
+    okPwdUpdated:"Password updated. Please sign in again.",
+    okPwdSet:"Password set. Please sign in again.",
+    okEmailAdded:"Email added. Please sign in with your email.",
+    okEmailUpdated:"Email updated. Please sign in with your new email.",
+    okWalletLinked:"Wallet linked. Please sign in again.",
+    okWalletUpdated:"Wallet updated. Please sign in again.",
+    okRecovered:"Your email has been updated. Please sign in with your new email.",
+    addrCopied:"Address copied",
+    adminFirstTitle:"Set a new password to continue",
+    adminFirstSub:"For security, you must replace the initial password before using the console.",
+    adminCreated:"Account created. Copy the initial password now — it will not be shown again.",
+    initExpiresOn:"This initial password expires on {t}.",
+    savedIt:"I have saved it",
+
+    /* 会话失效 12.1.4 */
+    sPwdChanged:"Your password was changed. Please sign in again.",
+    sPwdReset:"Your password was reset. Please sign in again.",
+    sEmailChanged:"Your email address was changed. Please sign in with your new email.",
+    sWalletChanged:"Your wallet address was changed. Please sign in again.",
+    sOtherDevice:"You signed out on another device. Please sign in again.",
+    sExpired:"Your session has expired. Please sign in again.",
+    sByAdmin:"Your session was ended by an administrator. Please sign in again.",
+    sDisabled:"This account has been disabled. Contact support for help.",
+    sAllDevices:"For your security, all devices have been signed out.",
+    sWasntYou:"Wasn't you? Reset your password.",
+    sUnsaved:"Any unsaved changes on this page were not kept.",
+    sExpiring:"Your session will expire in 5 minutes. Save your work.",
+    sInactivity:"You were signed out due to inactivity.",
+    staySignedIn:"Stay signed in",
+
+    /* 锁定 12.2.5 */
+    lockPwdLeft:"Incorrect email or password. {n} attempts remaining before your account is locked.",
+    lockSigLeft:"Signature verification failed. {n} attempts remaining before your account is locked.",
+    lockJust:"Too many failed attempts. Your account is locked for {m} minutes.",
+    lockAgain:"Your account is locked. Try again in {m}m {s}s.",
+    lockHelpUser:"You can unlock now by resetting your password, or sign in with an email code.",
+    lockHelpAdmin:"You can unlock now by resetting your password, or ask another administrator to unlock your account.",
+    unlocked:"Your account has been unlocked.",
+    lockTitle:"Account locked",
+    lockedTab:"Locked",
+
+    /* 滑块与限频 12.3 */
+    capTitle:"Security check",
+    capSlide:"Slide to complete the puzzle",
+    capVerified:"Verified",
+    capFail:"Verification failed. Please try again.",
+    capTrouble:"Having trouble? Tap the refresh icon for a new puzzle.",
+    capCool:"Too many attempts. Try again in {n}s.",
+    capLoadFail:"Failed to load. Tap to retry.",
+    capHelp:"Need help? Contact support",
+    capRefresh:"New puzzle",
+    rlEmailQuota:"You've requested too many codes. Please try again in {t}.",
+    rlIp:"Too many requests from your network. Please try again later.",
+    rlDevice:"Too many requests from this device. Please try again later.",
+    rlGeneric:"Too many requests. Please try again in {t}.",
+
+    /* 协议 7.3 */
+    terms:"I have read and agree to the <a href=\"#\" data-doc=\"tos\">Terms of Service</a> and <a href=\"#\" data-doc=\"pp\">Privacy Policy</a>.",
+    reconsentTitle:"Updated Terms of Service",
+    reconsentBody:"We have updated the Terms of Service and Privacy Policy. Please review and accept them to continue using your account.",
+    reconsentAgree:"Agree and continue",
+    reconsentScroll:"Scroll to the end of the document to continue.",
+
+    /* 钱包 C-06 */
+    walletPick:"Choose a wallet",
+    walletPickSub:"Wallet list is provided by the wallet SDK. Demonstration entries only.",
+    walletConnecting:"Connecting…",
+    walletConnected:"Connected",
+    walletSignTitle:"Sign message",
+    walletSignNote:"This only signs a message. It does not send a transaction, move any assets, or grant any approval.",
+    walletSigning:"Waiting for your wallet…",
+    walletVerifying:"Verifying signature…",
+    walletChain:"Network",
+    walletPurpose:"Purpose",
+    purposeSignIn:"Sign in",
+    purposeRecovery:"Account recovery",
+    purposeReauth:"Re-authenticate",
+    purposeLink:"Link wallet",
+    purposeUnlink:"Unlink wallet",
+
+    /* 忘记密码 / 恢复 */
+    fpTitle:"Reset your password",
+    fpSub:"Enter your email address and we'll send you a verification code.",
+    fpStep1:"Verify email", fpStep2:"New password",
+    fpSentAny:"If this email can receive codes, a verification code has been sent.",
+    rcTitle:"Recover your account",
+    rcSub:"Lost access to your email? Prove ownership of the wallet linked to your account, then set a new email address.",
+    rcStep1:"Wallet signature", rcStep2:"New email",
+    rcNewEmailTitle:"Set a new email address",
+
+    /* 账户设置 */
+    setSecurity:"Security", setPrefs:"Preferences", setAccount:"Account",
+    secTitle:"Account security", prefTitle:"Preferences",
+    rowEmail:"Email address", rowPwd:"Login password", rowWallet:"Wallet address",
+    reauthTitle:"Confirm it's you", reauthSub:"Choose one way to verify before changing your security settings.",
+    reauthPwd:"Enter your current password", reauthWallet:"Sign a message with your wallet", reauthCode:"Send a code to your email",
+    reauthOk:"Verified. You won't be asked again for 10 minutes.",
+    chgEmailTitle:"Change your email address", addEmailTitle:"Add an email address",
+    chgEmailOld:"Verify your current email", chgEmailNew:"Verify your new email",
+    chgPwdTitle:"Change your password", setPwdTitle:"Set a login password",
+    chgWalletTitle:"Change your wallet address", addWalletTitle:"Link a wallet",
+    chgWalletOld:"Sign with your current wallet", chgWalletNew:"Sign with your new wallet",
+    walletUnavailable:"Current wallet unavailable? Use password + email code instead",
+    prefLang:"Language", prefTz:"Time zone",
+    prefLangSub:"The interface is in English by default. Your choice is remembered on this device and on your account.",
+    prefTzSub:"All times are shown in this time zone with an explicit offset.",
+    sampleTime:"Example: {t}",
+    disconnectNote:"Disconnecting only ends the wallet connection in this browser. It does not unlink the wallet from your account.",
+
+    /* 落地页（演示承载） */
+    landTitle:"Overview",
+    landSub:"Demonstration page. It exists only to host the persistent completion bar (C-08) and the identity-verification gate (C-09).",
+    startKyc:"Start identity verification",
+    landDemoData:"Demonstration data",
+
+    /* 管理端 */
+    adminConsole:"Console",
+    admLogin:"Sign in", admNavAccounts:"Accounts", admNavSecurity:"My password",
+    admAccountsTitle:"Account management",
+    admCreate:"Create account",
+    admColEmail:"Work email", admColName:"Name", admColStatus:"Status", admColCreated:"Created", admColLast:"Last sign-in", admColAct:"Actions",
+    admActDisable:"Disable", admActRestore:"Restore", admActUnlock:"Unlock", admActRegen:"Regenerate initial password", admActRegenShort:"Regenerate", admActDelete:"Delete",
+    stActive:"Active",
+    stPending:"Pending first sign-in · Initial password expires on {t}",
+    stPendingS:"Pending first sign-in",
+    stPendingD:"Initial password expires on {t}",
+    stLockedS:"Locked",
+    stLockedD:"unlocks in {t}",
+    stPendingExpired:"Initial password expired — regenerate to continue",
+    stLocked:"Locked · unlocks in {t}",
+    stDisabled:"Disabled",
+    admLastTip:"The last available administrator cannot be disabled or deleted.",
+    admExpiredNote:"Accounts whose initial password has expired don't count as available administrators.",
+    admNoticeAck:"I have read the Admin Security Notice.",
+    admInitialPwd:"Initial password",
+    admDeliverOffline:"Deliver this password to the account holder through an offline channel. The system does not send any email.",
+    admConfirmDisable:"Disable this account?",
+    admConfirmDisableBody:"{email} will no longer be able to sign in, and any active session ends immediately.",
+    admSearch:"Search work email or name",
+    admFilterAll:"All", admFilterActive:"Active", admFilterPending:"Pending", admFilterLocked:"Locked", admFilterDisabled:"Disabled",
+    admUnlockTitle:"Unlock this account?",
+    admUnlockBody:"The failed-attempt counter for {email} will be reset and the account can sign in again.",
+    admAuditNote:"Every action here is recorded in the audit log.",
+
+    /* 列表状态 */
+    stLoading:"Loading…",
+    stEmptyTitle:"No accounts yet",
+    stEmptyBody:"Create the first console account to get started.",
+    stNoResultTitle:"No matching accounts",
+    stNoResultBody:"Try a different search term or clear the filters.",
+    stFailTitle:"Couldn't load accounts",
+    stFailBody:"The request failed. Check your connection and try again.",
+    stRetry:"Retry",
+    stNoPermTitle:"You don't have access to this page",
+    stNoPermBody:"Finish resetting your password before using the console.",
+    stSubmitting:"Submitting…",
+    stSubmitFailTitle:"Submission failed",
+    stSubmitFailBody:"The server rejected the request. Nothing was changed.",
+    stWaiting:"Waiting for the server…",
+
+    /* 演示提示 */
+    demoOnly:"Demonstration data",
+    navOverview:"Overview", navGuide:"Setup guide", navSecurity:"Security", navPrefs:"Preferences",
+    navChangeEmail:"Email", navChangePwd:"Password", navChangeWallet:"Wallet",
+    grpAccount:"Account", grpCredentials:"Credential changes", grpConsole:"Console",
+    endAsset:"Asset portal", endAdmin:"Admin console",
+    prdPanel:"PRD", prdOpen:"Open the PRD notes for this page",
+    protoPanel:"Prototype", signedInAs:"Signed in as",
+    accStatus:"Account status", stIncomplete:"Incomplete", stActiveAcc:"Active"
+  },
+
+  zh: {
+    signInTitle:"登录",
+    signInSub:"第一次来？直接用邮箱验证码或钱包登录，系统会自动为你创建账户。",
+    tabCode:"邮箱验证码", tabPwd:"邮箱密码", tabWallet:"钱包登录",
+    sendCode:"发送验证码", resendCode:"重新发送", resendIn:"{n} 秒后重发",
+    submitSignIn:"登录", forgotPwd:"忘记密码？", cantEmail:"无法访问邮箱？",
+    pwdTabHint:"没有密码？改用邮箱验证码登录 →",
+    connectWallet:"连接钱包", disconnect:"断开连接", signMessage:"签署消息",
+    later:"稍后", signOut:"退出登录", save:"保存", cancel:"取消", copyAddress:"复制地址",
+    viewExplorer:"在区块浏览器中查看", completeNow:"立即补全", notSet:"未设置", optional:"可选",
+    back:"返回", contin:"继续", confirm:"确认", close:"关闭", change:"修改", add:"绑定",
+    labelEmail:"邮箱地址", labelCode:"验证码", labelPwd:"密码",
+    labelNewPwd:"新密码", labelConfirmPwd:"确认新密码", labelCurrentPwd:"当前密码",
+    labelWorkEmail:"工作邮箱", labelNewEmail:"新邮箱地址", labelName:"姓名",
+    show:"显示", hide:"隐藏",
+
+    eEmailReq:"请输入邮箱。",
+    eEmailFmt:"请输入有效的邮箱地址。",
+    eCodeReq:"请输入 6 位验证码。",
+    eCodeBad:"验证码不正确或已过期。",
+    eCodeTooMany:"尝试次数过多，请重新获取验证码。",
+    ePwdReq:"请输入密码。",
+    ePwdLogin:"邮箱或密码不正确。如果你尚未设置密码，请改用邮箱验证码登录。",
+    ePwdLoginAdmin:"邮箱或密码不正确。",
+    ePwdLen:"密码长度需为 8–20 个字符。",
+    ePwdCplx:"密码需至少包含 1 个英文字母和 1 个数字。",
+    ePwdBoth:"密码需为 8–20 个字符，且至少包含 1 个英文字母和 1 个数字。",
+    ePwdSpace:"密码不能包含空格。",
+    ePwdMatch:"两次输入的密码不一致。",
+    ePwdSameCurrent:"新密码不能与原密码相同。",
+    ePwdSameInitial:"新密码不能与初始密码相同。",
+    eTerms:"请阅读并同意《服务条款》和《隐私政策》。",
+    eAdminNotice:"请确认已阅读《管理端安全须知》。",
+    eEmailTaken:"该邮箱已绑定其他账户。",
+    eWalletTaken:"该钱包地址已绑定其他账户。",
+    eWalletUnlinked:"该钱包尚未绑定任何账户。",
+    eWalletUnlinkedHint:"如需创建账户，请在登录页使用钱包登录。",
+    eNoWallet:"未检测到可用钱包，请先安装受支持的钱包。",
+    eNetwork:"请将钱包切换到受支持的 EVM 网络。",
+    eSigRejected:"你在钱包中拒绝了签名请求。",
+    eSigExpired:"签名请求已过期，请重试。",
+    eSigFailed:"签名验证失败。",
+    eWalletSvc:"钱包服务暂不可用，请重试或改用邮箱登录。",
+    eDisabled:"该账户已被停用，请联系客服。",
+    eInitExpired:"初始密码已过期，请联系管理员重新生成。",
+    eLastAdmin:"这是系统中唯一可用的管理员。请先创建或启用另一个管理员，再停用此账号。",
+    eSelfAction:"不能对自己的账号执行该操作。",
+    eNet:"网络异常，请重试。",
+
+    created:"欢迎！你的账户已创建。",
+    codeSent:"验证码已发送，请查看收件箱和垃圾邮件。",
+    guideTitle:"完善你的账户",
+    guideWallet:"绑定 EVM 钱包。发起个人认证时需要同时具备邮箱与钱包。",
+    guideEmail:"绑定邮箱。发起个人认证时需要同时具备邮箱与钱包，我们也会用它发送安全通知。",
+    guidePwd:"设置登录密码（可选）",
+    guidePwdSub:"你随时可以用邮箱验证码或钱包登录。",
+    keepBoth:"请同时保管好邮箱与钱包，两者都丢失将无法找回账户。",
+    barWallet:"绑定钱包后即可发起个人认证。",
+    barEmail:"绑定邮箱后即可发起个人认证，并接收安全通知。",
+    gateWallet:"绑定钱包后继续",
+    gateEmail:"绑定邮箱后继续",
+    gateBody:"发起个人认证需要同时具备邮箱与钱包地址。",
+    allSet:"已完成，你现在可以发起个人认证了。",
+    fpNewUser:"还没有账户？直接用邮箱验证码登录即可，系统会自动为你创建。",
+
+    okPwdReset:"密码已重置，请使用新密码登录。",
+    okPwdUpdated:"密码修改成功，请重新登录。",
+    okPwdSet:"密码设置成功，请重新登录。",
+    okEmailAdded:"邮箱绑定成功，请使用邮箱登录。",
+    okEmailUpdated:"邮箱修改成功，请使用新邮箱登录。",
+    okWalletLinked:"钱包绑定成功，请重新登录。",
+    okWalletUpdated:"钱包地址修改成功，请重新登录。",
+    okRecovered:"邮箱已更新，请使用新邮箱登录。",
+    addrCopied:"地址已复制",
+    adminFirstTitle:"请设置新密码后继续",
+    adminFirstSub:"出于安全考虑，请先替换初始密码后再使用管理端。",
+    adminCreated:"账号创建成功，请立即复制初始密码，离开本页后将无法再次查看。",
+    initExpiresOn:"该初始密码的有效期至 {t}。",
+    savedIt:"我已记录",
+
+    sPwdChanged:"你的密码已被修改，请重新登录。",
+    sPwdReset:"你的密码已被重置，请重新登录。",
+    sEmailChanged:"你的邮箱已被修改，请使用新邮箱登录。",
+    sWalletChanged:"你的钱包地址已被修改，请重新登录。",
+    sOtherDevice:"你已在其他设备退出登录，请重新登录。",
+    sExpired:"登录状态已过期，请重新登录。",
+    sByAdmin:"你的登录状态已被管理员终止，请重新登录。",
+    sDisabled:"该账户已被停用，请联系客服。",
+    sAllDevices:"出于安全考虑，所有设备均已退出登录。",
+    sWasntYou:"不是你操作的？请重置密码。",
+    sUnsaved:"当前页面未保存的内容不会被保留。",
+    sExpiring:"登录状态将在 5 分钟后过期，请及时保存。",
+    sInactivity:"因长时间未操作，已自动退出登录。",
+    staySignedIn:"继续保持登录",
+
+    lockPwdLeft:"邮箱或密码不正确，还可尝试 {n} 次，超出后账户将被锁定。",
+    lockSigLeft:"签名验证失败，还可尝试 {n} 次，超出后账户将被锁定。",
+    lockJust:"失败次数过多，账户已锁定 {m} 分钟。",
+    lockAgain:"账户已锁定，请在 {m} 分 {s} 秒后重试。",
+    lockHelpUser:"你可以通过重置密码立即解锁，也可以使用邮箱验证码登录。",
+    lockHelpAdmin:"你可以通过重置密码立即解锁，也可以请其他管理员为你解除锁定。",
+    unlocked:"你的账户已解除锁定。",
+    lockTitle:"账户已锁定",
+    lockedTab:"已锁定",
+
+    capTitle:"安全校验",
+    capSlide:"拖动滑块完成拼图",
+    capVerified:"验证通过",
+    capFail:"验证失败，请重试。",
+    capTrouble:"遇到困难？点击右上角刷新换一张。",
+    capCool:"尝试次数过多，请在 {n} 秒后重试。",
+    capLoadFail:"加载失败，点击重试。",
+    capHelp:"需要帮助？联系客服",
+    capRefresh:"换一张",
+    rlEmailQuota:"验证码请求过于频繁，请在 {t} 后重试。",
+    rlIp:"当前网络请求过于频繁，请稍后重试。",
+    rlDevice:"当前设备请求过于频繁，请稍后重试。",
+    rlGeneric:"请求过于频繁，请在 {t} 后重试。",
+
+    terms:"我已阅读并同意<a href=\"#\" data-doc=\"tos\">《服务条款》</a>和<a href=\"#\" data-doc=\"pp\">《隐私政策》</a>。",
+    reconsentTitle:"服务条款已更新",
+    reconsentBody:"我们更新了《服务条款》与《隐私政策》，请阅读并同意后继续使用账户。",
+    reconsentAgree:"同意并继续",
+    reconsentScroll:"请将正文滚动到底部后继续。",
+
+    walletPick:"选择钱包",
+    walletPickSub:"钱包清单由钱包 SDK 提供，此处为演示占位。",
+    walletConnecting:"连接中…",
+    walletConnected:"已连接",
+    walletSignTitle:"签署消息",
+    walletSignNote:"仅签名一条消息，不会发起交易、不会转移资产、不涉及任何授权。",
+    walletSigning:"等待钱包确认…",
+    walletVerifying:"正在验签…",
+    walletChain:"网络",
+    walletPurpose:"用途",
+    purposeSignIn:"登录",
+    purposeRecovery:"账户恢复",
+    purposeReauth:"身份再确认",
+    purposeLink:"绑定钱包",
+    purposeUnlink:"解绑钱包",
+
+    fpTitle:"重置密码",
+    fpSub:"输入你的邮箱地址，我们会向它发送验证码。",
+    fpStep1:"验证邮箱", fpStep2:"设置新密码",
+    fpSentAny:"若该邮箱可以接收验证码，验证码已发送。",
+    rcTitle:"找回账户",
+    rcSub:"无法访问邮箱？先用账户绑定的钱包完成签名，再设置新的邮箱地址。",
+    rcStep1:"钱包签名", rcStep2:"新邮箱",
+    rcNewEmailTitle:"设置新的邮箱地址",
+
+    setSecurity:"安全", setPrefs:"偏好", setAccount:"账户",
+    secTitle:"账户安全", prefTitle:"偏好设置",
+    rowEmail:"邮箱地址", rowPwd:"登录密码", rowWallet:"钱包地址",
+    reauthTitle:"确认是你本人", reauthSub:"修改安全设置前，请任选一种方式完成验证。",
+    reauthPwd:"输入当前密码", reauthWallet:"用钱包签名", reauthCode:"向邮箱发送验证码",
+    reauthOk:"验证通过，10 分钟内不再重复要求。",
+    chgEmailTitle:"修改邮箱地址", addEmailTitle:"绑定邮箱",
+    chgEmailOld:"验证当前邮箱", chgEmailNew:"验证新邮箱",
+    chgPwdTitle:"修改密码", setPwdTitle:"设置登录密码",
+    chgWalletTitle:"修改钱包地址", addWalletTitle:"绑定钱包",
+    chgWalletOld:"用当前钱包签名", chgWalletNew:"用新钱包签名",
+    walletUnavailable:"当前钱包不可用？改用「当前密码 + 邮箱验证码」",
+    prefLang:"语言", prefTz:"时区",
+    prefLangSub:"界面默认英文。你的选择会被记录在本设备与账户偏好中。",
+    prefTzSub:"界面上的所有时间都按该时区展示，并带时区标注。",
+    sampleTime:"示例：{t}",
+    disconnectNote:"断开连接只会结束本浏览器中的钱包连接，不会解除账户与该钱包的绑定关系。",
+
+    landTitle:"总览",
+    landSub:"演示承载页，仅用于展示常驻补全提示条（C-08）与发起个人认证的凭据卡点（C-09）。",
+    startKyc:"发起个人认证",
+    landDemoData:"演示数据",
+
+    adminConsole:"管理端",
+    admLogin:"登录", admNavAccounts:"账户管理", admNavSecurity:"修改密码",
+    admAccountsTitle:"账户管理",
+    admCreate:"创建账号",
+    admColEmail:"工作邮箱", admColName:"姓名", admColStatus:"状态", admColCreated:"创建时间", admColLast:"最近登录", admColAct:"操作",
+    admActDisable:"停用", admActRestore:"恢复", admActUnlock:"解除锁定", admActRegen:"重新生成初始密码", admActRegenShort:"重新生成", admActDelete:"删除",
+    stActive:"正常",
+    stPending:"待首次登录 · 初始密码有效期至 {t}",
+    stPendingS:"待首次登录",
+    stPendingD:"初始密码有效期至 {t}",
+    stLockedS:"已锁定",
+    stLockedD:"{t} 后解除",
+    stPendingExpired:"初始密码已过期，需重新生成",
+    stLocked:"已锁定 · {t} 后解除",
+    stDisabled:"已停用",
+    admLastTip:"不能停用或删除最后一个可用的管理员。",
+    admExpiredNote:"初始密码已过期的账号不计入可用管理员数量。",
+    admNoticeAck:"我已阅读《管理端安全须知》。",
+    admInitialPwd:"初始密码",
+    admDeliverOffline:"请通过线下渠道把该密码交付给账号持有人。系统不会发送任何邮件。",
+    admConfirmDisable:"确认停用该账号？",
+    admConfirmDisableBody:"停用后 {email} 将无法登录，其已有会话立即失效。",
+    admSearch:"搜索工作邮箱或姓名",
+    admFilterAll:"全部", admFilterActive:"正常", admFilterPending:"待首登", admFilterLocked:"锁定中", admFilterDisabled:"已停用",
+    admUnlockTitle:"确认解除锁定？",
+    admUnlockBody:"{email} 的失败计数将被清零，账号可以重新登录。",
+    admAuditNote:"此处的每一次操作都会写入审计留痕。",
+
+    stLoading:"加载中…",
+    stEmptyTitle:"还没有任何账号",
+    stEmptyBody:"创建第一个管理端账号后即可开始。",
+    stNoResultTitle:"没有匹配的账号",
+    stNoResultBody:"换一个关键词，或清除筛选条件。",
+    stFailTitle:"账号列表加载失败",
+    stFailBody:"请求失败，请检查网络后重试。",
+    stRetry:"重试",
+    stNoPermTitle:"你没有访问该页面的权限",
+    stNoPermBody:"请先完成密码重置，再使用管理端。",
+    stSubmitting:"提交中…",
+    stSubmitFailTitle:"提交失败",
+    stSubmitFailBody:"服务端拒绝了本次请求，未做任何变更。",
+    stWaiting:"等待服务端返回…",
+
+    demoOnly:"演示数据",
+    navOverview:"总览", navGuide:"建号引导", navSecurity:"账户安全", navPrefs:"偏好设置",
+    navChangeEmail:"邮箱", navChangePwd:"密码", navChangeWallet:"钱包地址",
+    grpAccount:"账户", grpCredentials:"凭据变更", grpConsole:"管理端",
+    endAsset:"资产端", endAdmin:"管理端",
+    prdPanel:"PRD", prdOpen:"查看本页的 PRD 摘录",
+    protoPanel:"原型", signedInAs:"当前登录",
+    accStatus:"账户状态", stIncomplete:"凭据未齐", stActiveAcc:"正常"
+  }
+};
+
+/* ==========================================================================
+   45-prd.js — 每个页面的 PRD 摘录（面向前端开发）
+   规则：只放该页用得到的部分，不做全量 PRD 阅读器。
+   五类：fields 字段与校验 · rules 业务规则 · states 状态与异常 · copy 中英文案 · ac 验收标准
+   全部取自 chain-financing-account-auth-prd.md **v4**，未改写原文口径。
+   ========================================================================== */
+var PRD = {
+
+/* ------------------------------- 资产端 · 未登录 ------------------------------ */
+"P-A01":{
+ title:"P-A01 登录页（资产端唯一入口）",
+ src:"PRD v4 · 5.1 页面清单 / 7.1 自动建号 / 7.2 资产端登录 / 7.3 协议交互 / 8.1 字段 / 8.5 文案 / 12.2 锁定 / 12.3 滑块与限频 / 18.1·18.4",
+ fields:[
+  ["email","string · 视场景必填","RFC 5322 基本格式；长度 ≤ 254；前后空格自动去除；大小写不敏感（存储小写）。前端失焦校验一次、提交再校验一次；不做 MX / 可达性探测。"],
+  ["code","string · 必填","6 位纯数字；仅接受数字输入；粘贴时自动去除空格与连字符。有效期 10 分钟，单码最多 5 次错误尝试后作废。"],
+  ["password","string · 视场景必填","8–20 字符，至少 1 个英文字母 + 1 个数字；中间不接受空格。支持显示/隐藏切换与浏览器密码管理器自动填充。"],
+  ["wallet_address","string · 由 SDK 回传","EVM 地址 `0x` + 40 位十六进制；**界面上不提供手工输入框**；服务端存小写，展示按 EIP-55 校验和渲染。"],
+  ["agree_terms","bool · 必填","必须为 true 才可提交；默认不勾选。**全站仅本页出现这一处勾选**。"]
+ ],
+ rules:[
+  ["F-01","邮箱验证码登录：验证码校验通过 **且** 该邮箱未绑定任何账户 → 自动创建账户并登录，邮箱标记为已验证，`created_via = email_code`，账户状态 `incomplete`。"],
+  ["F-02","钱包签名登录：验签通过 **且** 该地址未绑定任何账户 → 自动创建账户并登录，`created_via = wallet_signature`。不允许仅输入地址登录，必须完成签名。"],
+  ["F-03","**邮箱密码登录不建号**。邮箱不存在 / 邮箱存在但从未设密码 / 密码错误——三种情形返回**完全相同**的提示，响应时间也不可区分。"],
+  ["7.2.2-5","密码 Tab 下常驻一行静态引导（与是否失败无关，不泄漏任何信息），点击切到验证码 Tab 并把已填邮箱带过去。**禁止**用「该账户尚未设置密码」这类动态提示。"],
+  ["F-09","协议勾选行位于提交按钮上方；未勾选时提交按钮置灰，**点击置灰按钮**要在复选框下方显示红色提示并使复选框抖动一次。协议链接在新窗口/弹层打开，不打断表单填写状态。"],
+  ["N-04","**登录页不提供营销邮件订阅勾选**（v4 删除）；协议区只保留用户协议一项，账户对象上也不存储订阅状态。"],
+  ["F-19","所有「Send code」点击后**先弹 C-01 滑块**，通过才发码，按钮转 60 秒倒计时。滑块未通过则不发码，因而也无法建号。"],
+  ["12.2.2","IP 层风控：同一 IP 1 小时内累计失败 20 次后，该 IP 的后续**登录提交**需先过滑块（复用 C-01），文案不解释触发原因；本期不做 IP 封禁。"],
+  ["7.2.5","登录后处理顺序：建号 → 账户停用判定 → 锁定判定 → 协议是否强制重新同意 → 本次是否新建号决定去引导页还是落地页。凭据是否补全**不再**作为进入落地页的拦截条件。"],
+  ["12.2.3","密码校验失败与签名校验失败**共用同一个计数器**，相加满 5 次即锁定 30 分钟。"]
+ ],
+ states:[
+  ["验证码错误 / 过期","提示「验证码不正确或已过期」，计入单码失败次数，**不建号**；过期时恢复发送按钮可点。"],
+  ["单码失败超 5 次","作废该码，提示「尝试次数过多，请重新获取验证码」。验证码输错**不**触发账户锁定。"],
+  ["邮箱未绑定账户（验证码路径）","**不是异常**——自动建号并登录，进入 P-A10 引导页。"],
+  ["密码登录失败","统一提示；仅「账户存在且有密码」这一种情形计入失败计数，但计数与否不得体现在响应上。"],
+  ["失败第 1、2 次","只提示凭据错误，不透露剩余次数。"],
+  ["失败第 3、4 次","凭据错误 + 剩余次数提示。"],
+  ["失败第 5 次","账户锁定 30 分钟（见 P-A07）。"],
+  ["滑块单次失败","滑轨变红 + 滑块抖动 + 拼图滑回起点 + 自动换新图，弹窗不关闭。"],
+  ["滑块连续 5 次失败","弹窗进入 60 秒冷却，滑块禁用并展示倒计时。"],
+  ["发码限频超限","邮箱 60s 间隔用按钮倒计时表达；小时/日额度、IP、设备维度用输入框下方错误提示表达。"],
+  ["未检测到钱包 / 拒绝连接 / 拒绝签名 / 网络不支持 / SDK 失败","分别给出对应提示；用户拒绝连接时回到初始态不弹错误框；拒绝签名与签名过期**不**计入失败计数。"],
+  ["验签失败","登录失败计数 +1，不建号。"],
+  ["签名时钱包切换账户","检测到地址不一致，中止当前操作并提示切回。"],
+  ["账户已停用","不建立会话，展示停用提示与客服入口。"],
+  ["协议需强制重新同意","建立会话后、进落地页/引导页之前，由 C-03 弹窗拦截。"]
+ ],
+ copy:[
+  ["登录页标题","Sign in","登录"],
+  ["登录页副标题","New here? Just sign in with an email code or your wallet — we'll create your account automatically.","第一次来？直接用邮箱验证码或钱包登录，系统会自动为你创建账户。"],
+  ["方式 - 验证码 / 密码 / 钱包","Email verification code / Email and password / Sign in with wallet","邮箱验证码 / 邮箱密码 / 钱包登录"],
+  ["发送验证码 / 倒计时","Send code / Resend in {n}s","发送验证码 / {n} 秒后重发"],
+  ["密码 Tab 常驻引导","No password? Sign in with an email code →","没有密码？改用邮箱验证码登录 →"],
+  ["密码登录失败（统一）","Incorrect email or password. If you haven't set a password, sign in with an email verification code instead.","邮箱或密码不正确。如果你尚未设置密码，请改用邮箱验证码登录。"],
+  ["协议勾选","I have read and agree to the Terms of Service and Privacy Policy.","我已阅读并同意《服务条款》和《隐私政策》。"],
+  ["协议未勾选","Please read and agree to the Terms of Service and Privacy Policy.","请阅读并同意《服务条款》和《隐私政策》。"],
+  ["验证码已发送","Code sent. Check your inbox and spam folder.","验证码已发送，请查看收件箱和垃圾邮件。"],
+  ["剩余次数（密码）","Incorrect email or password. {n} attempts remaining before your account is locked.","邮箱或密码不正确，还可尝试 {n} 次，超出后账户将被锁定。"],
+  ["剩余次数（签名）","Signature verification failed. {n} attempts remaining before your account is locked.","签名验证失败，还可尝试 {n} 次，超出后账户将被锁定。"],
+  ["入口","Forgot password? / Can't access your email?","忘记密码？/ 无法访问邮箱？"]
+ ],
+ ac:[
+  ["AC-01","资产端**不存在**注册页、注册按钮与「去注册」跳转；登录页是唯一入口"],
+  ["AC-03","用未绑定任何账户的邮箱走验证码登录，校验通过后自动创建账户并登录成功"],
+  ["AC-05","用未绑定任何账户的钱包地址走签名登录，验签通过后自动创建账户并登录成功"],
+  ["AC-10","**邮箱密码登录不建号**：用未绑定任何账户的邮箱 + 任意密码提交，不创建账户"],
+  ["AC-39","三种方式登录后进入的是同一个账户，数据完全一致"],
+  ["AC-41","密码登录的三种失败情形返回完全相同的提示，文案与响应时间均不可区分"],
+  ["AC-43","密码 Tab 下常驻静态引导，点击切换 Tab 并带上已填邮箱"],
+  ["AC-44","界面上**不存在**「该账户尚未设置登录密码」这类会暴露邮箱是否已注册的动态提示"],
+  ["AC-45","仅输入钱包地址（不签名）无法登录"],
+  ["AC-48","登录成功后按「建号 → 停用 → 锁定 → 协议重新同意 → 是否新建号决定去向」的顺序处理"],
+  ["AC-51","协议勾选在全站只出现一处（登录页）"],
+  ["AC-96","第 3 次失败起提示剩余次数；前 2 次不提示"],
+  ["AC-101","同一 IP 1 小时内累计失败 20 次后，该 IP 后续登录提交需先过滑块"],
+  ["AC-105","12.3.1 列出的 9 个入口，点击发送验证码时全部先弹出滑块弹窗，无一例外"],
+  ["AC-109","关闭滑块弹窗后不发码，表单已填内容不丢失"]
+ ]
+},
+
+"P-A07":{
+ title:"P-A07 账户锁定态（登录页内的状态态）",
+ src:"PRD v4 · 5.1 / 12.2.4 锁定时长与入口表现 / 12.2.5 提示时机 / 18.8",
+ fields:[
+  ["剩余锁定时间","只读 · 实时倒计时","按客户端本地秒数渲染，**起点以服务端返回的剩余秒数为准**；归零后表单自动恢复可用。"]
+ ],
+ rules:[
+  ["12.2.4","锁定时长 **30 分钟**，到期自动解除；本期不做递增锁定。"],
+  ["12.2.4","锁定期间各入口表现：邮箱密码登录 ❌ 锁死（不再校验、不再计数）· 钱包签名登录 ❌ 锁死（连签名请求都不下发）· **邮箱验证码登录 ✅ 不锁死** · 忘记密码 ✅ 不锁死（提前解锁通道）· 账户恢复 ❌ 锁死（依赖签名，与被锁凭据同源）· 管理端登录 ❌ 锁死。"],
+  ["12.2.4","**锁定不影响自动建号**：未绑定任何账户的邮箱或钱包走验证码/签名路径仍可正常建号——它不属于任何被锁账户。"],
+  ["12.2.1","清零条件：任一方式登录成功 / 锁定到期 / 成功重置密码 / 成功完成账户恢复 / 管理员手工解锁。"],
+  ["12.2.6","进入锁定时向绑定邮箱发送安全通知（无邮箱则跳过），内含时间、地区摘要、解锁方式与「不是你？立即重置密码」入口。"]
+ ],
+ states:[
+  ["刚触发锁定","展示「失败次数过多，账户已锁定 30 分钟」。"],
+  ["锁定期间再次尝试","展示实时倒计时「账户已锁定，请在 {m} 分 {s} 秒后重试」。"],
+  ["倒计时归零","自动解除，失败计数清零，表单恢复可用。"]
+ ],
+ copy:[
+  ["刚触发锁定","Too many failed attempts. Your account is locked for {m} minutes.","失败次数过多，账户已锁定 {m} 分钟。"],
+  ["锁定期间再次尝试","Your account is locked. Try again in {m}m {s}s.","账户已锁定，请在 {m} 分 {s} 秒后重试。"],
+  ["解锁引导（资产端）","You can unlock now by resetting your password, or sign in with an email code.","你可以通过重置密码立即解锁，也可以使用邮箱验证码登录。"],
+  ["解锁成功","Your account has been unlocked.","你的账户已解除锁定。"]
+ ],
+ ac:[
+  ["AC-86","邮箱密码登录连续错误 5 次后账户进入锁定"],
+  ["AC-88","密码失败 3 次 + 签名失败 2 次共用计数，同样触发锁定"],
+  ["AC-89","用不存在的邮箱反复尝试密码登录，**不会**锁定任何账户"],
+  ["AC-92","锁定期间密码登录与钱包签名登录均被拒绝，且不再增加计数"],
+  ["AC-93","锁定期间邮箱验证码登录与忘记密码仍可用，成功后立即解除锁定"],
+  ["AC-95","账户锁定不影响自动建号"],
+  ["AC-98","锁定提示中的剩余时间实时倒计时，归零后表单自动恢复可用"],
+  ["AC-99","用户在钱包中主动拒绝签名不计入失败计数"],
+  ["AC-100","邮箱验证码输错不触发账户锁定"]
+ ]
+},
+
+"P-A03":{
+ title:"P-A03 忘记密码 · 提交邮箱",
+ src:"PRD v4 · 7.4 M4 忘记密码 / 8.1 / 8.5 / 12.3 / 18.10",
+ fields:[
+  ["email","string · 必填","RFC 5322 基本格式；≤ 254；去空格；存储小写。"],
+  ["code","string · 必填","6 位纯数字；10 分钟有效；单码最多 5 次错误尝试。"]
+ ],
+ rules:[
+  ["F-11","**本入口不建号**。输入未绑定任何账户的邮箱时，前端表现与已绑定时完全一致（提示已发送），在验证码校验阶段统一返回失败——防枚举在本路径依然有效。"],
+  ["7.4","页面上提供一条**静态**引导帮助误入此页的新用户（对所有人一致，不泄漏信息）。"],
+  ["F-19","「Send code」同样先过滑块再过限频，无豁免。"],
+  ["12.3.4","限频三维度同时生效：同邮箱 60s 间隔 / 1h 5 次 / 24h 10 次；同 IP 1h 20 次 / 24h 100 次；同设备 1h 10 次 / 24h 30 次。各用途**共享同一份邮箱维度额度**。"]
+ ],
+ states:[
+  ["验证码错误 / 过期","「验证码不正确或已过期」；过期时恢复发送按钮可点。"],
+  ["单码验证失败超限","「尝试次数过多，请重新获取验证码」并作废该码。"],
+  ["邮箱未绑定账户","表现与已绑定一致，校验阶段统一失败，不建号。"],
+  ["账户只有钱包、无邮箱","用户不会走到这里；若强行输入他人邮箱则按防枚举统一失败处理。"]
+ ],
+ copy:[
+  ["新用户引导（静态）","No account yet? Just sign in with an email code — we'll create one for you.","还没有账户？直接用邮箱验证码登录即可，系统会自动为你创建。"],
+  ["验证码错误/过期","Invalid or expired code.","验证码不正确或已过期。"],
+  ["单码超限","Too many attempts. Please request a new code.","尝试次数过多，请重新获取验证码。"],
+  ["邮箱额度超限","You've requested too many codes. Please try again in {t}.","验证码请求过于频繁，请在 {t} 后重试。"]
+ ],
+ ac:[
+  ["AC-11","忘记密码流程输入未绑定邮箱，不创建账户"],
+  ["AC-128","忘记密码页输入未绑定邮箱时，表现与已绑定一致，校验阶段统一失败"],
+  ["AC-129","忘记密码页展示静态引导「还没有账户？直接用邮箱验证码登录即可」"],
+  ["AC-117","同一邮箱在 60 秒内第二次请求验证码被拒绝，按钮显示倒计时"],
+  ["AC-125","超限提示不区分该邮箱是否已有账户"]
+ ]
+},
+
+"P-A04":{
+ title:"P-A04 忘记密码 · 设置新密码",
+ src:"PRD v4 · 7.4 / 8.4 密码规则 / 8.4.1 前端提示 / 8.4.2 比对 / 12.1 会话失效 / 18.5·18.10",
+ fields:[
+  ["password","string · 必填","**8–20 字符**，至少 1 个英文字母 + 1 个数字；符号自由；前后空格自动去除，中间不接受空格；不禁用粘贴。"],
+  ["password_confirm","string · 必填","必须与 password 完全一致。"]
+ ],
+ rules:[
+  ["8.4.1","密码框下方展示**两条**实时校验清单（长度 / 复杂度），满足即打勾。**不展示弱/中/强分档**；用户开始输入后才展示清单。"],
+  ["8.4.2","「与原密码相同」的比对在**服务端**完成并于提交后返回，前端不做预判（前端不持有原密码）。"],
+  ["7.4","若账户此前未设置过密码，本流程等同于「设置密码」，无原密码可比对，跳过比对校验。"],
+  ["F-17","成功 → **该账户全部会话失效**（含当前设备）→ 跳登录页。"],
+  ["7.4","重置成功后清零登录失败计数并解除锁定（忘记密码是锁定的提前解锁通道之一）。"],
+  ["12.5","成功后向该邮箱发送安全通知邮件。"]
+ ],
+ states:[
+  ["长度或复杂度不符","前端实时清单标红，提交按钮置灰。"],
+  ["两次密码不一致","「两次输入的密码不一致。」"],
+  ["新密码与原密码相同","服务端返回并展示对应文案，**保留已填内容**。"],
+  ["提交成功","跳登录页并展示成功提示 + 「所有设备均已退出登录」。"]
+ ],
+ copy:[
+  ["长度不符","Password must be 8–20 characters.","密码长度需为 8–20 个字符。"],
+  ["复杂度不符","Password must contain at least one letter and one number.","密码需至少包含 1 个英文字母和 1 个数字。"],
+  ["两次不一致","Passwords do not match.","两次输入的密码不一致。"],
+  ["与原密码相同","Your new password must be different from your current password.","新密码不能与原密码相同。"],
+  ["重置成功","Password reset. Please sign in with your new password.","密码已重置，请使用新密码登录。"],
+  ["会话失效说明","For your security, all devices have been signed out.","出于安全考虑，所有设备均已退出登录。"]
+ ],
+ ac:[
+  ["AC-52","密码少于 8 或多于 20 字符时被拒绝"],
+  ["AC-53","纯数字密码因缺少字母被拒绝；纯字母密码因缺少数字被拒绝"],
+  ["AC-56","密码输入框下方展示「长度」「复杂度」两条实时校验清单；不展示弱/中/强分档"],
+  ["AC-58","资产端忘记密码重置时，新密码与原密码相同被拒绝"],
+  ["AC-62","比对全部在服务端完成，前端不持有也不返回任何可反推原密码的信息"],
+  ["AC-67","忘记密码重置成功后，所有设备会话失效"],
+  ["AC-127","忘记密码全流程可完成，成功后所有会话失效并跳登录页"],
+  ["AC-130","从未设过密码的账户走忘记密码流程，等同于设置密码"]
+ ]
+},
+
+"P-A05":{
+ title:"P-A05 账户恢复 · 钱包签名",
+ src:"PRD v4 · 7.7 M7 账户恢复 / 7.2.3 钱包能力要求 / 12.4 签名消息 / 18.10",
+ fields:[
+  ["wallet_address","由 SDK 回传","不提供手工输入；服务端验签，地址须与连接地址一致。"],
+  ["signature","由钱包回传","一次性签名消息，用途声明为 `Account recovery`；nonce 有效期 5 分钟，验签成功或失败后立即失效。"]
+ ],
+ rules:[
+  ["F-12","面向「丢失邮箱访问权、但仍持有钱包」的用户。验签通过**且该地址已绑定账户** → 进入 P-A06。"],
+  ["7.7","**本入口不自动建号**。地址未绑定任何账户时明确报错并给出一行引导——恢复是明确的找回意图，不能被悄悄转成建号。"],
+  ["12.4","签名消息必须包含：域名、账户地址、链 ID、nonce、签发时间、有效期、用途声明；文案用 `Sign message`，明确说明**不会发起交易、不会转移资产、不涉及授权**。"],
+  ["7.2.3","连接钱包 / 消息签名 / 切换网络是三件不同的事，界面表达不得混淆；断开连接只影响前端连接态，不解绑账户绑定关系，需在文案中说明。"],
+  ["12.2.4","该入口在账户锁定期间被锁死（依赖签名校验，与被锁凭据同源）。"]
+ ],
+ states:[
+  ["地址未绑定账户","明确报错 + 引导去登录页用钱包登录建号，**不建号**。"],
+  ["未检测到钱包","「未检测到可用钱包，请先安装受支持的钱包。」"],
+  ["用户拒绝连接","回到初始态，不弹错误框。"],
+  ["用户拒绝签名","「你在钱包中拒绝了签名请求。」不计入失败计数。"],
+  ["网络不受支持","提示切换回受支持的 EVM 网络，SDK 支持时提供一键切换。"],
+  ["验签失败","计入登录失败计数，该入口同样受锁定约束。"],
+  ["SDK 加载失败","「钱包服务暂不可用，请重试或改用邮箱登录。」"]
+ ],
+ copy:[
+  ["钱包未绑定","This wallet is not linked to any account.","该钱包尚未绑定任何账户。"],
+  ["未绑定引导","To create an account, sign in with your wallet on the sign-in page.","如需创建账户，请在登录页使用钱包登录。"],
+  ["签名声明","This only signs a message. It does not send a transaction, move any assets, or grant any approval.","仅签名一条消息，不会发起交易、不会转移资产、不涉及任何授权。"],
+  ["验签失败","Signature verification failed.","签名验证失败。"],
+  ["断开连接说明","Disconnecting only ends the wallet connection in this browser. It does not unlink the wallet from your account.","断开连接只会结束本浏览器中的钱包连接，不会解除账户与该钱包的绑定关系。"]
+ ],
+ ac:[
+  ["AC-12","账户恢复入口用未绑定地址签名，不创建账户，明确提示未绑定并引导去登录页"],
+  ["AC-94","锁定期间账户恢复入口被锁死"],
+  ["AC-131","丢失邮箱的用户通过钱包签名可完成账户恢复并绑定新邮箱"],
+  ["AC-46","钱包签名过程中用户在钱包内切换账户，系统检测到地址不一致并中止流程"]
+ ]
+},
+
+"P-A06":{
+ title:"P-A06 账户恢复 · 绑定新邮箱",
+ src:"PRD v4 · 7.7 / 12.1 会话失效 / 12.5 安全通知 / 18.10",
+ fields:[
+  ["email（新）","string · 必填","格式同 8.1；**不得为平台上任何其他账户已绑定的邮箱**。"],
+  ["code","string · 必填","6 位纯数字，发送前同样过滑块与限频（12.3.1 第 8 项入口）。"]
+ ],
+ rules:[
+  ["F-12","验签通过即可修改邮箱，本期不加人工复核。"],
+  ["7.7","成功 → 账户邮箱替换 → **全部会话失效** → 提示并跳登录页。"],
+  ["12.5","向旧邮箱与新邮箱各发一封安全通知，旧邮箱通知内含「不是本人操作」的申诉入口。"],
+  ["7.7","恢复成功后清零失败计数并解除锁定；只记录 `recovery_at` 时间戳，不定义恢复后的业务冻结规则。"],
+  ["7.7","**邮箱与钱包同时丢失时本期无恢复通道**，需在引导页与账户设置中明确告知用户保管好两项凭据。"]
+ ],
+ states:[
+  ["新邮箱已被占用","「该邮箱已绑定其他账户。」保留在当前页。"],
+  ["验证码错误 / 过期","「验证码不正确或已过期。」"],
+  ["提交成功","跳登录页，提示用新邮箱登录。"]
+ ],
+ copy:[
+  ["邮箱已被占用","This email is already linked to another account.","该邮箱已绑定其他账户。"],
+  ["恢复成功","Your email has been updated. Please sign in with your new email.","邮箱已更新，请使用新邮箱登录。"]
+ ],
+ ac:[
+  ["AC-131","丢失邮箱的用户通过钱包签名可完成账户恢复并绑定新邮箱"],
+  ["AC-132","账户恢复成功后向旧邮箱与新邮箱各发安全通知，并写入 `recovery_at`"],
+  ["AC-79","会话失效后，未消费的登录验证码、签名 nonce 与滑块票据均不能再使用"]
+ ]
+},
+
+"CREATED":{
+ title:"建号确认（首次登录即建号的感知点）",
+ src:"PRD v4 · 7.1.3 建号写入 / 7.1.4 引导页 / 8.5.3 / 18.1·18.2",
+ fields:[
+  ["account_id","不可变主键","账户主键；邮箱与钱包地址均为可换绑的登录标识，换绑后 `account_id` 不变，历史记录不断裂。"],
+  ["created_via","enum","`email_code` / `wallet_signature`，用于引导页分流与统计。"]
+ ],
+ rules:[
+  ["7.1.3","建号与登录在**同一次提交**内完成，用户感知上只有「登录成功」这一个动作，不需要二次确认。"],
+  ["7.1.3","协议同意记录与账户在同一次提交内一并写入，保证不存在没有同意记录的账户。"],
+  ["7.1.4","建号确认必须**显著**，不能只做一闪而过的 Toast——这是用户唯一能感知到「我刚开了户」的地方。"],
+  ["12.5","**自动建号本身不发欢迎邮件**：会与「验证码邮件不区分是否首次」的口径冲突，反而泄漏该邮箱此前是否已有账户。"]
+ ],
+ states:[
+  ["建号成功","账户状态 `incomplete`（邮箱与钱包未同时具备），随后进入 P-A10 引导页。"]
+ ],
+ copy:[
+  ["建号确认","Welcome! Your account has been created.","欢迎！你的账户已创建。"]
+ ],
+ ac:[
+  ["AC-06","建号时随账户一并写入协议同意记录，不存在没有同意记录的账户"],
+  ["AC-07","建号时写入 `created_via`，可用于分流与统计"],
+  ["AC-08","邮箱建号的账户 `wallet_address` 为空、无密码；钱包建号的账户 `email` 为空、无密码"],
+  ["AC-09","建号后账户状态为 `incomplete`"],
+  ["AC-15","建号成功后不发送任何欢迎/注册邮件"],
+  ["AC-17","引导页顶部显著展示建号确认文案"]
+ ]
+},
+
+/* ------------------------------- 资产端 · 已登录 ------------------------------ */
+"P-A10":{
+ title:"P-A10 建号后引导页",
+ src:"PRD v4 · 7.1.4 引导页 / 7.5 凭据完备性 / 8.5.3 / 12.1.1 会话失效例外 / 18.2",
+ fields:[
+  ["email / wallet_address","视建号路径","邮箱建号 → 引导绑钱包（连接 + 签名）；钱包建号 → 引导绑邮箱（输入邮箱 → 滑块 → 验证码）。"],
+  ["password","可选","文案必须带「可选 / Optional」二字，并说明可随时用验证码或钱包登录。"]
+ ],
+ rules:[
+  ["F-04","**仅在本次登录新建了账户时展示一次**；老用户登录不进此页。中断后不再强制进入，改由 C-08 常驻提示条与账户设置补全。"],
+  ["7.1.4","主引导按建号路径分流，两种内容不串。"],
+  ["7.1.4","底部「Later / 稍后」跳过按钮与主操作**等权重**呈现，不置灰、不藏在角落。"],
+  ["7.1.4","展示双凭据保管提示：两者都丢失将无法找回账户。"],
+  ["7.5.3","跳过后**不进入任何全局受限态**：可正常浏览、进入账户设置、使用不依赖认证的功能。唯一硬卡点是「发起个人认证」。"],
+  ["12.1.1 例外","**补齐凭据（从无到有的首次绑定）不触发会话失效**；只有变更已有凭据才触发。由服务端据字段是否由空变非空判定，前端不可决定。"]
+ ],
+ states:[
+  ["补全时邮箱/地址已被他人绑定","明确报错并保留在当前页，账户状态不变。"],
+  ["补全过程中断（关页面）","引导页只展示一次；后续通过 C-08 与账户设置补全。"],
+  ["点「Later」","正常进入落地页，不做任何封锁，展示常驻提示条。"],
+  ["补齐成功","账户状态由 `incomplete` 转 `active`，常驻提示条消失。"]
+ ],
+ copy:[
+  ["引导页标题","Finish setting up your account","完善你的账户"],
+  ["引导 - 绑钱包","Link an EVM wallet. You'll need both an email and a wallet to start identity verification.","绑定 EVM 钱包。发起个人认证时需要同时具备邮箱与钱包。"],
+  ["引导 - 绑邮箱","Add an email address. You'll need both an email and a wallet to start identity verification, and we'll use it for security notifications.","绑定邮箱。发起个人认证时需要同时具备邮箱与钱包，我们也会用它发送安全通知。"],
+  ["设密码（可选）","Set a login password (optional)","设置登录密码（可选）"],
+  ["设密码说明","You can always sign in with an email code or your wallet.","你随时可以用邮箱验证码或钱包登录。"],
+  ["双凭据保管","Keep both your email and wallet accessible — if you lose both, your account cannot be recovered.","请同时保管好邮箱与钱包，两者都丢失将无法找回账户。"],
+  ["跳过","Later","稍后"]
+ ],
+ ac:[
+  ["AC-16","仅在本次登录新建了账户时展示引导页；老用户登录不进此页"],
+  ["AC-18","邮箱建号 → 引导绑钱包；钱包建号 → 引导绑邮箱，两种内容不串"],
+  ["AC-19","「设置登录密码」明确标注为可选，并说明可用验证码或钱包登录"],
+  ["AC-20","引导页展示双凭据保管提示"],
+  ["AC-21","「Later」按钮与主操作等权重呈现，不置灰、不隐藏"],
+  ["AC-22","点「Later」后正常进入落地页，不进入任何全局受限态"],
+  ["AC-23","引导页只展示一次；再次登录不再强制进入"],
+  ["AC-71","**首次绑定**邮箱（从无到有）**不触发**会话失效"],
+  ["AC-72","**首次绑定**钱包（从无到有）**不触发**会话失效"]
+ ]
+},
+
+"LAND":{
+ title:"落地页（演示承载页 · C-08 与 C-09 的挂载位）",
+ src:"PRD v4 · 7.5.2 认证前置校验 / 7.5.3 受限态收敛 / 11.1 权限 / 18.2·18.3",
+ fields:[
+  ["account_status","enum · 只读","`incomplete`（邮箱与钱包未同时具备）/ `active`（两项均已绑定）/ `locked` / `disabled`。**密码不参与状态判定**。"]
+ ],
+ rules:[
+  ["F-07","凭据未齐时全局展示常驻补全提示条（C-08）：可折叠为一个小图标，但**不可永久关闭**（下次进入仍展示），直到凭据补齐为止；带「立即补全」按钮跳到账户设置对应项。"],
+  ["F-08","**唯一的凭据硬卡点**：点击「发起个人认证」时校验 `email` 与 `wallet_address` 是否同时非空，密码不参与判定。未通过时**不跳走**，在当前页弹出 C-09 就地补齐弹层。"],
+  ["7.5.2","两项都缺时在同一弹层内分两步依次完成，带步骤指示（1/2、2/2）；补齐成功后弹层自动关闭并**原地继续**发起认证。"],
+  ["7.5.2","弹层可关闭（用户可以决定现在不做认证），关闭后回到原页面，不改变任何状态。**服务端必须同样校验**，前端弹层不是唯一防线。"],
+  ["7.5.3 边界","各业务模块的功能放行**以认证状态为准，不以本模块的凭据完备状态为准**；业务模块不应自行读取 `account_status == incomplete` 做拦截。"]
+ ],
+ states:[
+  ["凭据不齐","展示 C-08；可折叠为小图标；不封锁任何功能。"],
+  ["点击发起个人认证 · 缺凭据","弹出 C-09，不跳走。"],
+  ["关闭 C-09","回到原页面，状态不变，不触发任何封锁。"],
+  ["凭据齐备","C-08 消失，点击发起个人认证直接放行（进入 WS-303）。"]
+ ],
+ copy:[
+  ["提示条 - 缺钱包","Link a wallet to be ready for identity verification.","绑定钱包后即可发起个人认证。"],
+  ["提示条 - 缺邮箱","Add an email to be ready for identity verification and to receive security notifications.","绑定邮箱后即可发起个人认证，并接收安全通知。"],
+  ["弹层 - 缺钱包 / 缺邮箱","Link your wallet to continue / Add your email to continue","绑定钱包后继续 / 绑定邮箱后继续"],
+  ["弹层说明","Identity verification requires both an email address and a wallet address.","发起个人认证需要同时具备邮箱与钱包地址。"],
+  ["补全成功","All set. You're ready to start identity verification.","已完成，你现在可以发起个人认证了。"],
+  ["立即补全","Complete now","立即补全"]
+ ],
+ ac:[
+  ["AC-24","凭据未齐时全局展示常驻补全提示条，可折叠为小图标，但下次进入仍展示"],
+  ["AC-25","提示条文案按缺失项正确分支"],
+  ["AC-26","提示条「立即补全」按钮可跳到账户设置对应项"],
+  ["AC-31","邮箱与钱包均具备时，点击「发起个人认证」直接放行"],
+  ["AC-32","缺钱包时弹出就地补齐弹层，**不跳走当前页面**"],
+  ["AC-34","两项都缺时，弹层内分两步依次完成并带步骤指示"],
+  ["AC-35","补齐成功后弹层自动关闭并原地继续发起认证"],
+  ["AC-36","用户关闭弹层后回到原页面，账户与页面状态均不变"],
+  ["AC-37","绕过前端直接调用接口，服务端同样校验并拒绝"],
+  ["AC-38","密码是否设置不影响该前置校验的结果"],
+  ["AC-49","凭据不齐的老用户登录后直接进落地页"]
+ ]
+},
+
+"P-A11":{
+ title:"P-A11 账户设置 · 安全",
+ src:"PRD v4 · 7.5.4 补设密码 / 7.6 账户变更 / 13.5 地址展示 / 13.6 区块浏览器 / 18.2",
+ fields:[
+  ["email","只读展示 + 变更入口","已绑定时展示完整邮箱；未绑定时展示「未设置」并提供「绑定」。"],
+  ["password","只读展示 + 变更入口","从未设过密码时展示 `Not set / 未设置` + 「设置密码」按钮，**不带任何警示色或感叹号图标**——它是可选项，不是缺陷。"],
+  ["wallet_address","只读展示 + 变更入口","按 EIP-55 校验和渲染；缩略为**前 6 位 + … + 后 4 位**；等宽字体；提供复制与区块浏览器跳转。"]
+ ],
+ rules:[
+  ["7.6","三项变更统一遵循「先再认证、再验证新标识、成功后全局会话失效」的骨架，统一入口就是本页。"],
+  ["F-06","密码是可选凭据，任何流程都不因未设密码而阻塞；账户设置中可随时补设。"],
+  ["13.5","地址存储小写、唯一性判断基于小写；展示按 EIP-55；完整地址允许任意字符处换行，不溢出容器。"],
+  ["13.6","跳转入口在复制按钮右侧，新标签页打开（`target=\"_blank\"` + `rel=\"noopener noreferrer\"`）；链 ID 缺失 / 映射表无对应 / 映射表未加载成功时**不展示跳转入口**，只保留复制，不展示置灰按钮或死链接。"]
+ ],
+ states:[
+  ["缺一项凭据","页内提示补全（与 C-08 同一口径）。"],
+  ["地址复制","Toast「地址已复制」。"],
+  ["无对应区块浏览器","隐藏跳转入口，只保留复制。"]
+ ],
+ copy:[
+  ["未设置 / 可选","Not set / Optional","未设置 / 可选"],
+  ["复制地址 / 区块浏览器","Copy address / View on explorer","复制地址 / 在区块浏览器中查看"],
+  ["地址已复制","Address copied","地址已复制"]
+ ],
+ ac:[
+  ["AC-28","只有邮箱 + 钱包、从未设密码的账户状态为 `active`"],
+  ["AC-29","账户设置中未设密码项展示为「Not set / 未设置」，不带警示色或感叹号"],
+  ["AC-30","文档与界面中不存在任何「密码必须补全」的要求"],
+  ["AC-185","地址按 EIP-55 渲染，缩略为前 6 后 4，可复制完整地址，hover 展示全量"],
+  ["AC-187","地址与哈希展示处提供区块浏览器跳转图标按钮，tooltip 文案正确"]
+ ]
+},
+
+"P-A12":{
+ title:"P-A12 修改 / 绑定邮箱",
+ src:"PRD v4 · 7.6.1 再认证 / 7.6.2 修改邮箱 / 12.1 会话失效 / 12.3.1 入口 5·6·7 / 18.10",
+ fields:[
+  ["再认证因子","三选一","有密码 → 输入当前密码；有钱包 → 钱包签名（用途 `Re-authenticate`）；有邮箱 → 旧邮箱验证码（发送前同样过滑块与限频）。"],
+  ["email（新）","string · 必填","格式同 8.1；不得为其他账户已绑定的邮箱。"],
+  ["code","string · 必填","旧邮箱与新邮箱各一次验证码，**两次都要先过滑块**。"]
+ ],
+ rules:[
+  ["7.6.1","页面同时展示该账户可用的**全部**因子，用户自选；只有一种可用因子时直接进入该因子，不展示选择列表。再认证通过后 10 分钟内不重复要求。"],
+  ["7.6.1","再认证失败计入登录失败计数（与登录共用同一计数器）。"],
+  ["F-13","流程：再认证 → 旧邮箱验证（旧邮箱可用时）→ 新邮箱验证 → 提交。旧邮箱不可用时用户应走 M7 账户恢复，本流程不提供跳过。"],
+  ["7.6.2","成功 → 邮箱替换 → **全部会话失效** → 跳登录页并提示用新邮箱登录（登录页邮箱输入框自动填入新邮箱）。"],
+  ["7.6.2","若账户原本无邮箱（钱包建号且未补），本流程即「绑定邮箱」，**跳过第 2 步**，标题与按钮文案变为 `Add email / 绑定邮箱`；绑定成功后若两项凭据齐备，账户状态转 `active`。"],
+  ["12.1.1 例外","首次绑定（从空到非空）**不触发**会话失效。"],
+  ["12.5","向旧邮箱与新邮箱各发安全通知。"]
+ ],
+ states:[
+  ["再认证失败","计入失败计数；连续 5 次触发账户锁定。"],
+  ["新邮箱已被占用","「该邮箱已绑定其他账户。」"],
+  ["验证码错误/过期 / 单码超限","同 8.5.2 统一文案。"],
+  ["提交成功（修改）","全部会话失效 → 跳登录页。"],
+  ["提交成功（首次绑定）","不失效会话，留在原页面继续。"]
+ ],
+ copy:[
+  ["标题（修改 / 绑定）","Change your email address / Add an email address","修改邮箱地址 / 绑定邮箱"],
+  ["再认证","Confirm it's you","确认是你本人"],
+  ["再认证通过","Verified. You won't be asked again for 10 minutes.","验证通过，10 分钟内不再重复要求。"],
+  ["邮箱修改成功","Email updated. Please sign in with your new email.","邮箱修改成功，请使用新邮箱登录。"],
+  ["邮箱绑定成功","Email added. Please sign in with your email.","邮箱绑定成功，请使用邮箱登录。"]
+ ],
+ ac:[
+  ["AC-133","修改邮箱需再认证 + 旧邮箱验证 + 新邮箱验证"],
+  ["AC-134","原本无邮箱的账户走该流程时为「绑定邮箱」，跳过旧邮箱验证步骤"],
+  ["AC-137","只有一种可用再认证因子时，直接进入该因子，不展示选择列表"],
+  ["AC-138","再认证成功后 10 分钟内不重复要求"],
+  ["AC-69","**修改**邮箱成功后，所有设备会话失效，提示用新邮箱登录"],
+  ["AC-71","**首次绑定**邮箱不触发会话失效"]
+ ]
+},
+
+"P-A13":{
+ title:"P-A13 修改 / 设置密码",
+ src:"PRD v4 · 7.6.1 再认证 / 7.6.3 修改密码 / 8.4 密码规则 / 12.1 / 18.5",
+ fields:[
+  ["再认证因子","三选一","当前密码 / 钱包签名 / 邮箱验证码，任选其一。"],
+  ["password","string · 必填","8–20 字符，至少 1 字母 1 数字；不含空格。"],
+  ["password_confirm","string · 必填","必须与 password 完全一致。"]
+ ],
+ rules:[
+  ["F-14","流程：再认证 → 输入新密码 + 确认 → 按 8.4 校验全部规则（含与原密码比对）→ 提交。"],
+  ["F-16","新密码不得与原密码相同；比对由服务端对哈希执行密码校验运算完成，前端不参与。"],
+  ["7.6.3","账户原本无密码时，本流程即「设置密码」，标题与按钮文案变为 `Set password / 设置登录密码`，此时无原密码可比对。"],
+  ["F-17","提交成功 → **全部会话失效** → 跳登录页并提示用新密码登录。"],
+  ["12.5","向绑定邮箱发安全通知（无邮箱时跳过）。"]
+ ],
+ states:[
+  ["长度/复杂度不符","实时清单标红，提交按钮置灰。"],
+  ["两次不一致","「两次输入的密码不一致。」"],
+  ["与原密码相同","服务端返回，保留已填内容。"],
+  ["提交成功","全部会话失效 → 跳登录页。"]
+ ],
+ copy:[
+  ["标题（修改 / 设置）","Change your password / Set a login password","修改密码 / 设置登录密码"],
+  ["密码修改成功","Password updated. Please sign in again.","密码修改成功，请重新登录。"],
+  ["密码设置成功","Password set. Please sign in again.","密码设置成功，请重新登录。"],
+  ["与原密码相同","Your new password must be different from your current password.","新密码不能与原密码相同。"]
+ ],
+ ac:[
+  ["AC-57","资产端修改密码时，新密码与原密码相同被服务端拒绝"],
+  ["AC-61","从未设过密码的资产端账户首次设密码时，不因缺少原密码而报错"],
+  ["AC-66","修改密码成功后，操作设备与其他设备的会话均失效"],
+  ["AC-64","中英两种语言下，全部密码相关错误文案均正确展示"]
+ ]
+},
+
+"P-A14":{
+ title:"P-A14 修改 / 绑定钱包地址",
+ src:"PRD v4 · 7.6.1 / 7.6.4 修改钱包 / 7.2.3 钱包能力 / 12.1 / 18.10",
+ fields:[
+  ["再认证因子","三选一","当前密码 / 钱包签名 / 邮箱验证码。"],
+  ["旧钱包签名","可用时必填","用途声明为 `Unlink wallet`。旧钱包不可用时，改为「当前密码 + 邮箱验证码」双因子替代。"],
+  ["新钱包签名","必填","用途声明为 `Link wallet`；地址由 SDK 回传并验签。"]
+ ],
+ rules:[
+  ["F-15","流程：再认证 → 旧钱包签名（可用时）→ 连接新钱包并签名 → 验签 → 提交。"],
+  ["7.6.4","成功 → 地址替换 → **全部会话失效** → 跳登录页。变更记录不可覆盖，保留全部历史地址与变更时间。"],
+  ["7.6.4","若账户原本无钱包（邮箱建号且未补），本流程即「绑定钱包」，跳过旧钱包签名步骤，文案变为 `Link wallet / 绑定钱包`。"],
+  ["12.5","向绑定邮箱发安全通知，通知中同时展示旧地址与新地址（均按缩略格式）。"],
+  ["12.1.1 例外","首次绑定不触发会话失效。"]
+ ],
+ states:[
+  ["旧钱包不可用","切换为「当前密码 + 邮箱验证码」双因子替代路径。"],
+  ["新地址已被占用","「该钱包地址已绑定其他账户。」"],
+  ["拒绝签名 / 验签失败 / 网络不支持","按 7.2.3 异常表分别提示；验签失败计入失败计数。"],
+  ["提交成功（修改）","全部会话失效 → 跳登录页。"]
+ ],
+ copy:[
+  ["标题（修改 / 绑定）","Change your wallet address / Link a wallet","修改钱包地址 / 绑定钱包"],
+  ["钱包已被占用","This wallet is already linked to another account.","该钱包地址已绑定其他账户。"],
+  ["钱包修改成功","Wallet updated. Please sign in again.","钱包地址修改成功，请重新登录。"],
+  ["钱包绑定成功","Wallet linked. Please sign in again.","钱包绑定成功，请重新登录。"]
+ ],
+ ac:[
+  ["AC-135","修改钱包需再认证 + 旧钱包签名（可用时）+ 新钱包签名"],
+  ["AC-136","原本无钱包的账户走该流程时为「绑定钱包」，跳过旧钱包签名步骤"],
+  ["AC-70","**修改**钱包地址成功后，所有设备会话失效"],
+  ["AC-72","**首次绑定**钱包不触发会话失效"]
+ ]
+},
+
+"P-A15":{
+ title:"P-A15 账户设置 · 偏好（语言与时区）",
+ src:"PRD v4 · 13.1 语言支持 / 13.2 即时生效 / 13.3 判定与持久化 / 13.4 时区 / 18.13",
+ fields:[
+  ["locale","enum · 必填","`en` / `zh-CN`，**默认 `en`**；使用 BCP 47 语言码，不用「中文/英文」这类地区式表述。"],
+  ["timezone","string · 必填","IANA 时区标识；默认按浏览器推断，推断失败兜底 `UTC`。"]
+ ],
+ rules:[
+  ["13.1","**默认英文**；切换器以目标语言的自称展示（`English` / `简体中文`），不使用国旗图标；未登录时在登录页页脚与右上角，已登录时在顶部导航右侧。"],
+  ["13.3","判定优先级三级：① 本浏览器手动切换过的偏好 → ② 已登录账户的语言偏好 → ③ 英文默认。**本期不读取 `navigator.language`**；框架预留扩展位，后续在 ② 与 ③ 之间插入一级即可。"],
+  ["13.3.2","双态持久化：未登录写浏览器本地存储；已登录同时写本地与账户偏好。冲突时以**较晚的一次显式设置**为准并回写另一侧。退出登录后保留本地语言偏好，不重置为英文。"],
+  ["13.2","切换后当前页面**不刷新**即完成全部文案替换（导航、标签、占位符、按钮、校验错误、密码规则清单、提示条、Toast、弹窗内文案、空状态、日期与数字格式）；已展示的错误提示与倒计时同步换语言；**已填表单内容不丢失**。"],
+  ["13.4","**时区按浏览器推断**（与语言口径不同，有意为之）；所有时间以 UTC 存储，展示一律带时区标注，不出现裸时间；两种语言统一 24 小时制。"]
+ ],
+ states:[
+  ["切换语言","当前页即时重渲染，≤ 300ms，不出现整页白屏。"],
+  ["账户偏好保存失败","不阻断界面，下次进入时静默重试。"]
+ ],
+ copy:[
+  ["日期（en / zh）","Sep 7, 2026 · Sep 7, 2026, 14:30 (UTC+8)","2026-09-07 · 2026-09-07 14:30 (UTC+8)"],
+  ["切换器","English / 简体中文","English / 简体中文"]
+ ],
+ ac:[
+  ["AC-172","浏览器语言为中文时，首次访问界面为**英文**"],
+  ["AC-174","系统**不读取** `navigator.language` 参与语言判定"],
+  ["AC-176","切换语言后当前页面不刷新即完成全部文案替换"],
+  ["AC-177","切换语言后已填写的表单内容不丢失"],
+  ["AC-181","退出登录后本地语言偏好保留，不重置为英文"],
+  ["AC-182","**时区仍按浏览器推断**，建号时写入账户"],
+  ["AC-183","界面上所有时间点均带时区标注，无裸时间"],
+  ["AC-184","中英文的日期格式分别符合 13.4 定义，均为 24 小时制"]
+ ]
+},
+
+/* --------------------------------- 管理端 ---------------------------------- */
+"P-M01":{
+ title:"P-M01 管理端登录页",
+ src:"PRD v4 · 7.8.2 登录 / 8.1 字段 / 12.2 锁定 / 18.11",
+ fields:[
+  ["work_email","string · 必填","**即管理端登录账号**，全局唯一；格式同 8.1。"],
+  ["password","string · 必填","仅密码一种方式；支持显示/隐藏切换。"]
+ ],
+ rules:[
+  ["F-22","登录字段只有工作邮箱 + 密码。管理端**不提供**验证码登录、钱包登录、第三方登录与**自动建号**。"],
+  ["3.1-17","**登录页无用户协议勾选行**，管理端登录不以同意用户协议为前置条件；全程也没有强制重新同意弹窗。"],
+  ["7.8.2","不提供「记住我」，不提供注册入口。"],
+  ["7.8.1","**不提供**「创建第一个账号」的自举入口与任何绕过登录的初始化页面；未登录状态下除登录页与忘记密码页外无任何可达页面。"],
+  ["7.8.2","失败提示统一为「邮箱或密码不正确」（防枚举，不区分账号是否存在）；失败计数与锁定规则与资产端一致（5 次锁定 30 分钟）。"],
+  ["7.8.3","账号 `must_reset_password = true` 时，登录成功后**立即**跳 P-M02，前端路由守卫拦截所有其他管理端路由，服务端对所有管理端业务接口做同样拦截。"]
+ ],
+ states:[
+  ["密码错误 1–2 次","仅提示「邮箱或密码不正确」。"],
+  ["密码错误 3–4 次","追加剩余次数提示。"],
+  ["密码错误 5 次","账户锁定 30 分钟，可走管理端忘记密码或请其他管理员手工解锁。"],
+  ["初始密码已过期","不建立会话，提示联系管理员重新生成。"],
+  ["账号已停用","不可登录，已有会话立即失效。"]
+ ],
+ copy:[
+  ["管理端登录失败","Incorrect email or password.","邮箱或密码不正确。"],
+  ["初始密码已过期","Your initial password has expired. Contact an administrator to have it regenerated.","初始密码已过期，请联系管理员重新生成。"],
+  ["解锁引导（管理端）","You can unlock now by resetting your password, or ask another administrator to unlock your account.","你可以通过重置密码立即解锁，也可以请其他管理员为你解除锁定。"]
+ ],
+ ac:[
+  ["AC-140","管理端登录页使用**工作邮箱**作为登录账号字段"],
+  ["AC-141","管理端登录页**无用户协议勾选行**、无注册入口、无「记住我」"],
+  ["AC-142","管理端全流程无强制重新同意协议弹窗"],
+  ["AC-143","管理端不提供验证码登录与钱包登录入口"],
+  ["AC-144","管理端不存在任何「创建第一个账号」的自举入口或初始化页面"],
+  ["AC-148","初始密码有效期 7 天；过期后登录被拒绝"],
+  ["AC-151","新账号首次登录后立即跳转强制重置密码页"],
+  ["AC-13","管理端登录不存在任何自动建号行为"]
+ ]
+},
+
+"P-M02":{
+ title:"P-M02 首登强制重置密码",
+ src:"PRD v4 · 7.8.3 首登强制重置 / 8.1 / 8.4.2 比对 / 12.1 / 18.11",
+ fields:[
+  ["当前（初始）密码","string · 必填","线下交付的初始密码。"],
+  ["新密码 / 确认新密码","string · 必填","8–20 字符，至少 1 字母 1 数字；**不得与初始密码相同**。"],
+  ["ack_admin_notice","bool · 必填","「我已阅读《管理端安全须知》」必须勾选才可提交。**不是用户协议同意**，不产生任何协议同意记录，不受 WS-301 的版本与重新同意规则约束。"]
+ ],
+ rules:[
+  ["F-23","判定条件：`must_reset_password = true`。未完成重置时前端路由守卫拦截所有其他管理端路由，任何跳转均重定向回本页；**服务端对所有管理端业务接口做同样拦截，前端拦截不可作为唯一防线**。"],
+  ["7.8.3","本页只保留「退出登录」和「语言切换」两个逃生出口，无侧边栏、无顶部导航。"],
+  ["8.4.2","管理端账号在创建或重新生成初始密码时另单独留存一份**初始密码哈希**，账号存续期间不删除；该哈希仅用于本项比对，**不可用于登录校验**。"],
+  ["7.8.3","重置成功 → `must_reset_password = false`，状态置 `active` → **全部会话失效** → 跳回登录页。"]
+ ],
+ states:[
+  ["未勾选安全须知","「请确认已阅读《管理端安全须知》。」不可提交。"],
+  ["新密码与初始密码相同","只展示「不能与初始密码相同」一条（首登时原密码即初始密码，两条命中时合并为这一条）。"],
+  ["尝试跳转其他页面","一律重定向回本页。"],
+  ["重置成功","全部会话失效，跳回登录页用新密码登录。"]
+ ],
+ copy:[
+  ["标题","Set a new password to continue","请设置新密码后继续"],
+  ["说明","For security, you must replace the initial password before using the console.","出于安全考虑，请先替换初始密码后再使用管理端。"],
+  ["安全须知确认","I have read the Admin Security Notice.","我已阅读《管理端安全须知》。"],
+  ["未确认","Please confirm you have read the Admin Security Notice.","请确认已阅读《管理端安全须知》。"],
+  ["与初始密码相同","Your new password must be different from the initial password.","新密码不能与初始密码相同。"]
+ ],
+ ac:[
+  ["AC-151","新账号首次登录后立即跳转强制重置密码页"],
+  ["AC-152","未完成重置时，手工输入任何管理端 URL 均被重定向回重置页"],
+  ["AC-153","未完成重置时，直接调用管理端业务接口被服务端拒绝（不依赖前端拦截）"],
+  ["AC-154","「管理端安全须知阅读确认」必须勾选才能提交，且界面明确它不是用户协议同意"],
+  ["AC-155","重置成功后所有会话失效，需用新密码重新登录"],
+  ["AC-59","新密码与初始密码相同被拒绝，只展示「不能与初始密码相同」一条"],
+  ["AC-68","管理端首登强制重置成功后，所有会话失效并跳回登录页"]
+ ]
+},
+
+"P-M03":{
+ title:"P-M03 管理端忘记密码 · 提交工作邮箱",
+ src:"PRD v4 · 7.8.4 管理端忘记密码 / 12.3 滑块与限频 / 18.9·18.11",
+ fields:[
+  ["work_email","string · 必填","验证码**仍发送至工作邮箱**——线下交付只针对初始密码，不影响找回流程。"],
+  ["code","string · 必填","6 位纯数字；发送前先过滑块（12.3.1 第 9 项入口）与限频。"]
+ ],
+ rules:[
+  ["F-24","**不透露该邮箱是否为有效管理端账号**，统一提示「若该邮箱为管理端账号，验证码已发送」。"],
+  ["12.4","管理端登录与管理端忘记密码同属账户枚举防护的四处之一，不得因账号是否存在而返回可区分的响应（含文案与响应时间）。"]
+ ],
+ states:[
+  ["邮箱不是有效管理端账号","表现与有效账号一致，校验阶段统一失败。"],
+  ["滑块未通过","不发码。"],
+  ["限频超限","按 12.3.5 的维度文案提示。"]
+ ],
+ copy:[
+  ["发送提示","If this email belongs to an admin account, a verification code has been sent.","若该邮箱为管理端账号，验证码已发送。"]
+ ],
+ ac:[
+  ["AC-156","管理端忘记密码的验证码仍发送至工作邮箱，且不透露该邮箱是否为有效账号"],
+  ["AC-105","9 个发码入口全部先弹滑块，无一例外"]
+ ]
+},
+
+"P-M04":{
+ title:"P-M04 管理端忘记密码 · 设置新密码",
+ src:"PRD v4 · 7.8.4 / 8.4 / 8.4.2 / 12.1 / 18.5",
+ fields:[
+  ["新密码 / 确认新密码","string · 必填","8–20 字符，至少 1 字母 1 数字；**不得与原密码相同，也不得与初始密码相同**。"]
+ ],
+ rules:[
+  ["F-16","管理端的新密码需同时通过与原密码、与初始密码两项比对，任一命中即拒绝。"],
+  ["7.8.4","成功 → 全部会话失效 → 跳登录页；向工作邮箱发安全通知。"]
+ ],
+ states:[
+  ["与原密码相同 / 与初始密码相同","分别展示对应文案；同时命中时展示「不能与初始密码相同」。"],
+  ["提交成功","全部会话失效，跳登录页。"]
+ ],
+ copy:[
+  ["与原密码相同","Your new password must be different from your current password.","新密码不能与原密码相同。"],
+  ["与初始密码相同","Your new password must be different from the initial password.","新密码不能与初始密码相同。"],
+  ["重置成功","Password reset. Please sign in with your new password.","密码已重置，请使用新密码登录。"]
+ ],
+ ac:[
+  ["AC-60","管理端修改密码与忘记密码重置时，新密码与原密码或初始密码任一相同均被拒绝"],
+  ["AC-63","系统生成的管理端初始密码本身满足 8–20 字符且含字母与数字"]
+ ]
+},
+
+"P-M05":{
+ title:"P-M05 管理端账户设置 · 修改密码",
+ src:"PRD v4 · 8.4 / 8.4.2 / 12.1.1 / 18.5·18.6",
+ fields:[
+  ["当前密码 / 新密码 / 确认新密码","string · 必填","新密码 8–20 字符、至少 1 字母 1 数字，且不得与原密码或初始密码相同。"]
+ ],
+ rules:[
+  ["F-14 / F-16","规则与资产端一致，额外增加与初始密码的比对。"],
+  ["F-17","成功后**全部会话失效**（含当前设备），需用新密码重新登录。"],
+  ["12.5","向工作邮箱发安全通知。"]
+ ],
+ states:[
+  ["与原密码/初始密码相同","服务端返回并展示对应文案，保留已填内容。"],
+  ["提交成功","全部会话失效 → 跳登录页。"]
+ ],
+ copy:[
+  ["密码修改成功","Password updated. Please sign in again.","密码修改成功，请重新登录。"]
+ ],
+ ac:[
+  ["AC-60","新密码与原密码或初始密码任一相同均被拒绝"],
+  ["AC-66","修改密码成功后，操作设备与其他设备的会话均失效"]
+ ]
+},
+
+"P-M06":{
+ title:"P-M06 管理端账户管理",
+ src:"PRD v4 · 7.8.1 账号来源与初始密码 / 7.9 账户管理 / 7.9.1 最后一个管理员保护 / 10.2 状态机 / 11.2 权限 / 18.11·18.12",
+ fields:[
+  ["work_email","string · 必填","创建账号时填写，即该账号的登录账号，全局唯一。"],
+  ["姓名","string · 必填","创建账号时填写。"],
+  ["初始密码","系统生成 · 只读","满足 8.4 规则；**仅在创建成功页明文展示一次**，提供复制与「我已记录」确认；离开该页面后不可再次查看，系统只保留其不可逆哈希；有效期 7 天。"]
+ ],
+ rules:[
+  ["F-25","初始密码通过**线下渠道**交付。**系统不通过邮件、站内信或任何在线渠道下发初始密码**，账号创建过程不触发任何邮件。忘记记录或超期时，任一管理员执行「重新生成初始密码」，账号状态回到 `pending_reset`。"],
+  ["7.9","本期管理端只有「管理员」一种角色，**所有管理员权限完全等同**，均可创建账号、重新生成初始密码、停用/恢复/删除账号、手工解除锁定；**每一次操作都留痕**，以留痕替代权限分级。"],
+  ["F-26","**最后一个可用管理员保护**：系统任何时刻至少保留 1 个可用管理员。计入「可用」的状态：`active` ✅ · `pending_reset` 且初始密码**未过期** ✅ · `locked` ✅（30 分钟临时态）；**不计入**：`pending_reset` 且初始密码**已过期** ❌ · `disabled` ❌。"],
+  ["7.9.1","**服务端在提交停用/删除时强制校验，这是唯一有效的防线**；校验与操作必须原子执行，避免两个管理员同时停用对方时双双通过。前端置灰只是体验优化，不能作为唯一防线。"],
+  ["7.9.2","「不能停用自己」与「不能停用最后一个可用管理员」是两条独立约束，两条并存。同时命中时**优先展示「最后一个可用管理员」的提示**，因为它更根本且其解法同时解决另一条。"],
+  ["7.9","停用、删除、解除锁定均需**二次确认弹窗**，弹窗中展示目标账户标识与操作后果。"],
+  ["F-27","手工解除锁定适用于资产端账户与管理端账号，解除后清零失败计数。"]
+ ],
+ states:[
+  ["已创建 · 初始密码未过期 · 未首登","`Pending first sign-in · Initial password expires on {日期时间 + 时区}`"],
+  ["已创建 · 初始密码已过期 · 未首登","`Initial password expired — regenerate to continue`，并高亮「重新生成初始密码」操作"],
+  ["已完成首登重置","`Active / 正常`"],
+  ["锁定中","`Locked · unlocks in {剩余时间}`，并提供「解除锁定」操作"],
+  ["已停用","`Disabled / 已停用`"],
+  ["列表必达状态","加载中 · 空数据 · 筛选无结果 · 加载失败可重试 · 无权限 · 异步等待 · 提交中 · 提交失败"],
+  ["对自己执行停用/删除/重生成","按钮置灰并给出说明，服务端同样拒绝。"]
+ ],
+ copy:[
+  ["创建成功","Account created. Copy the initial password now — it will not be shown again.","账号创建成功，请立即复制初始密码，离开本页后将无法再次查看。"],
+  ["初始密码有效期","This initial password expires on {t}.","该初始密码的有效期至 {t}。"],
+  ["我已记录","I have saved it","我已记录"],
+  ["最后一个管理员（服务端拒绝）","This is the only available administrator. Create or activate another administrator before disabling this one.","这是系统中唯一可用的管理员。请先创建或启用另一个管理员，再停用此账号。"],
+  ["按钮置灰 tooltip","The last available administrator cannot be disabled or deleted.","不能停用或删除最后一个可用的管理员。"],
+  ["过期不计入说明","Accounts whose initial password has expired don't count as available administrators.","初始密码已过期的账号不计入可用管理员数量。"],
+  ["不能对自己执行","You cannot perform this action on your own account.","不能对自己的账号执行该操作。"]
+ ],
+ ac:[
+  ["AC-146","初始密码仅在创建成功页展示一次，离开后无法再次查看"],
+  ["AC-147","创建管理端账号的过程不触发任何邮件"],
+  ["AC-149","任一管理员可对他人执行「重新生成初始密码」，账号状态回到 `pending_reset`"],
+  ["AC-150","P-M06 列表按 7.8.1 的状态表达展示五种状态"],
+  ["AC-158","所有管理员均可创建账号、重新生成初始密码、停用/恢复/删除账号、解除锁定"],
+  ["AC-159","管理员不能停用/删除自己、不能重新生成自己的初始密码，对应操作置灰并有说明"],
+  ["AC-160","仅剩 1 个 `active` 管理员时，停用该账号被**服务端**拒绝并提示"],
+  ["AC-162","前端置灰但关闭前端校验后服务端仍拒绝"],
+  ["AC-164","`pending_reset` 且初始密码未过期的账号计入可用数量"],
+  ["AC-165","`pending_reset` 且初始密码已过期的账号**不计入**"],
+  ["AC-166","`locked` 账号计入可用数量"],
+  ["AC-168","两个管理员同时互相停用对方时，校验与操作原子执行"],
+  ["AC-169","两条约束同时命中时优先展示「最后一个可用管理员」的提示"],
+  ["AC-171","触发该约束的尝试写入审计日志"]
+ ]
+}
+};
+
+/* 组件级 PRD（在组件被触发时可从当前页面板查看，故并入各页；此处仅登记归属） */
+var PRD_COMP = [
+ ["C-01","滑块人机校验弹窗","12.3.2 交互 / 12.3.3 服务端校验 12 条 / 18.9","所有发码入口前置，自研，不接三方"],
+ ["C-02","协议勾选行","7.3.1 / 8.5.1 / AC-51","仅资产端登录页，全站唯一一处"],
+ ["C-03","强制重新同意弹窗","7.3.3 / AC-50","仅资产端；不可点遮罩或 ESC 关闭；拒绝则退出登录"],
+ ["C-04","语言切换器","13.1 / 13.2 / 13.3","默认英文；不读浏览器语言；切换即时生效并双态持久化"],
+ ["C-05","会话失效 Toast","12.1.3 / 12.1.4","停留 5 秒可手动关闭；按失效原因分文案；跳登录页并回跳原页面"],
+ ["C-06","钱包连接与签名面板","7.2.3 / 12.4","连接 / 签名 / 切换网络是三件事；签名声明不涉及交易与授权"],
+ ["C-07","地址 / 哈希展示","13.5 / 13.6","地址前 6 后 4，哈希前 10 后 8；复制 + 区块浏览器跳转 + 降级"],
+ ["C-08","常驻补全提示条","7.5.3 / AC-24","可折叠、不可永久关闭"],
+ ["C-09","凭据补齐弹层","7.5.2 / 9.3 / AC-32~AC-36","就地补齐，补完原地继续，不跳走"]
+];
+
+/* ==========================================================================
+   app.js — 状态机 + 路由 + 渲染 + 交互
+   形态：产品自己的控制台（侧边导航 + 顶栏 + 内容区）；未登录页为居中卡片版式。
+   没有评审脚手架：端切换、页面直达与演示分支都收进顶栏「原型」抽屉。
+   每页顶栏另有「PRD」入口，打开该页的 PRD 摘录（数据见 45-prd.js）。
+   数据全部为演示数据，不含任何真实企业、金额或账户。
+   ========================================================================== */
+(function(){
+"use strict";
+
+/* ----------------------------- 演示数据（标注） ----------------------------- */
+var DEMO_ADDR_BOUND   = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
+var DEMO_ADDR_NEW     = "0x8Ba1f109551bD432803012645Ac136ddd64DBA72";
+var DEMO_EMAIL_PWD    = "ada@demo-mail.test";      /* 已建号且已设密码，密码 Demo1234 */
+var DEMO_EMAIL_NOPWD  = "lin@demo-mail.test";      /* 已建号但从未设密码 */
+var DEMO_PASSWORD     = "Demo1234";
+var DEMO_ME           = "ops.lead@demo-console.test";
+var EXPLORERS         = { 1:"https://etherscan.io" };
+
+function adminSeed(){
+  return [
+    {email:"ops.lead@demo-console.test",   name:"Demo Admin A", st:"active",         created:"2026-06-02T02:10:00Z", last:"2026-09-07T01:22:00Z"},
+    {email:"risk.review@demo-console.test",name:"Demo Admin B", st:"pending",         created:"2026-09-05T08:40:00Z", last:null, expires:"2026-09-12T08:40:00Z"},
+    {email:"settle.ops@demo-console.test", name:"Demo Admin C", st:"locked",          created:"2026-07-18T03:05:00Z", last:"2026-09-06T09:31:00Z", lockLeft:734},
+    {email:"audit.view@demo-console.test", name:"Demo Admin D", st:"pendingExpired",  created:"2026-08-20T06:00:00Z", last:null, expires:"2026-08-27T06:00:00Z"},
+    {email:"former.ops@demo-console.test", name:"Demo Admin E", st:"disabled",        created:"2026-05-11T07:45:00Z", last:"2026-08-30T10:02:00Z"}
+  ];
+}
+/* 演示：系统中只剩 1 个可用管理员 */
+function lastAdminSeed(){ var a=adminSeed(); return [a[0], a[3], a[4]]; }
+
+/* --------------------------------- 状态 ---------------------------------- */
+var S;
+function initState(){
+  S = {
+    lang:"en",                 /* PRD 13.1：默认英文，不读 navigator.language */
+    end:"asset",
+    page:"P-A01",
+    tz:"Asia/Shanghai",
+    acct:null,
+    justCreated:false,
+    login:{tab:"code", agree:false},
+    form:{}, err:{},
+    fail:0, lockUntil:0,
+    cool:{}, codeTries:0,
+    cap:null, capFails:0, capCoolUntil:0,
+    modal:null, drawer:null, toasts:[],
+    flow:null, wallet:null,
+    barFolded:false,
+    admin:{ session:false, mustReset:false, list:adminSeed(), listState:"default",
+            q:"", filter:"all", fail:0, lockUntil:0 },
+    flags:{ capFail:false, capLoadFail:false, knownEmail:false, quota:false, quotaKind:"email",
+            reconsent:false, disabled:false, sigFail:false, sigReject:false,
+            noWallet:false, wrongNet:false, sdkFail:false, walletNew:false, ipRisk:false,
+            lastAdmin:false, serverReject:false, noExplorer:false, expiring:false },
+    seed:1
+  };
+}
+initState();
+
+/* -------------------------------- 工具函数 -------------------------------- */
+function t(k,v){
+  var d=DICT[S.lang]||DICT.en, s=d[k];
+  if(s===undefined) s=DICT.en[k];
+  if(s===undefined) return "";
+  if(v) for(var p in v) s=s.split("{"+p+"}").join(v[p]);
+  return s;
+}
+function esc(x){ return String(x==null?"":x).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function q(sel,root){ return (root||document).querySelector(sel); }
+function qa(sel,root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+function now(){ return Date.now(); }
+function later(ms,fn){ setTimeout(fn,ms); }
+function isEmail(x){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(x||"").trim()); }
+function shortAddr(a){ return a ? a.slice(0,6)+"…"+a.slice(-4) : ""; }
+function shortHash(h){ return h ? h.slice(0,10)+"…"+h.slice(-8) : ""; }
+function mm(s){ return Math.floor(s/60); }
+function ss(s){ var x=s%60; return x<10?"0"+x:""+x; }
+function pwdOkLen(p){ return p && p.length>=8 && p.length<=20; }
+function pwdOkCplx(p){ return /[A-Za-z]/.test(p||"") && /[0-9]/.test(p||""); }
+function readableMinutes(n){ return S.lang==="en" ? (n+" minutes") : (n+" 分钟"); }
+
+/* 时间：PRD 13.4，一律带时区标注 */
+function fmtParts(iso,withSec){
+  var d=iso?new Date(iso):new Date();
+  var off=S.tz==="UTC"?0:(S.tz==="America/New_York"?-4:(S.tz==="Europe/London"?1:8));
+  var x=new Date(d.getTime()+off*3600000);
+  var Y=x.getUTCFullYear(),M=x.getUTCMonth(),D=x.getUTCDate(),
+      h=("0"+x.getUTCHours()).slice(-2),mi=("0"+x.getUTCMinutes()).slice(-2),se=("0"+x.getUTCSeconds()).slice(-2);
+  var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return { d:S.lang==="en"?(MON[M]+" "+D+", "+Y):(Y+"-"+("0"+(M+1)).slice(-2)+"-"+("0"+D).slice(-2)),
+           t:h+":"+mi+(withSec?":"+se:"")+" (UTC"+(off>=0?"+":"")+off+")" };
+}
+function fmtTime(iso,withSec){ var p=fmtParts(iso,withSec); return p.d+(S.lang==="en"?", ":" ")+p.t; }
+function fmtCell(iso){ if(!iso) return "—"; var p=fmtParts(iso);
+  return '<span class="nw">'+p.d+'</span><br><span class="nw t2">'+p.t+'</span>'; }
+function mulberry32(a){ return function(){ a|=0;a=a+0x6D2B79F5|0; var t2=Math.imul(a^a>>>15,1|a);
+  t2=t2+Math.imul(t2^t2>>>7,61|t2)^t2; return ((t2^t2>>>14)>>>0)/4294967296; }; }
+
+/* --------------------------------- 路由表 -------------------------------- */
+/* focus = 居中卡片版式（未登录 / 首登重置 / 建号确认）；app = 控制台版式 */
+var ROUTES = {
+  "P-A01":{end:"asset", layout:"focus", name:["Sign in","登录页"]},
+  "P-A07":{end:"asset", layout:"focus", name:["Account locked","账户锁定态"], alias:"P-A01"},
+  "P-A03":{end:"asset", layout:"focus", name:["Forgot password · email","忘记密码 · 提交邮箱"]},
+  "P-A04":{end:"asset", layout:"focus", name:["Forgot password · new password","忘记密码 · 设置新密码"]},
+  "P-A05":{end:"asset", layout:"focus", name:["Recover account · signature","账户恢复 · 钱包签名"]},
+  "P-A06":{end:"asset", layout:"focus", name:["Recover account · new email","账户恢复 · 绑定新邮箱"]},
+  "CREATED":{end:"asset", layout:"focus", name:["Account created","建号确认"]},
+  "P-A10":{end:"asset", layout:"app", nav:"navGuide", grp:"grpAccount", ico:"◆", name:["Setup guide","建号后引导页"]},
+  "LAND":{end:"asset", layout:"app", nav:"navOverview", grp:"grpAccount", ico:"▤", name:["Overview","落地页"]},
+  "P-A11":{end:"asset", layout:"app", nav:"navSecurity", grp:"grpAccount", ico:"⛨", name:["Security","账户设置 · 安全"]},
+  "P-A15":{end:"asset", layout:"app", nav:"navPrefs", grp:"grpAccount", ico:"⚙", name:["Preferences","账户设置 · 偏好"]},
+  "P-A12":{end:"asset", layout:"app", nav:"navChangeEmail", grp:"grpCredentials", ico:"@", name:["Email","修改 / 绑定邮箱"]},
+  "P-A13":{end:"asset", layout:"app", nav:"navChangePwd", grp:"grpCredentials", ico:"•", name:["Password","修改 / 设置密码"]},
+  "P-A14":{end:"asset", layout:"app", nav:"navChangeWallet", grp:"grpCredentials", ico:"0x", name:["Wallet","修改 / 绑定钱包"]},
+  "P-M01":{end:"admin", layout:"focus", name:["Sign in","管理端登录页"]},
+  "P-M02":{end:"admin", layout:"focus", name:["First sign-in reset","首登强制重置密码"]},
+  "P-M03":{end:"admin", layout:"focus", name:["Forgot password · work email","忘记密码 · 提交工作邮箱"]},
+  "P-M04":{end:"admin", layout:"focus", name:["Forgot password · new password","忘记密码 · 设置新密码"]},
+  "P-M06":{end:"admin", layout:"app", nav:"admNavAccounts", grp:"grpConsole", ico:"▤", name:["Accounts","账户管理"]},
+  "P-M05":{end:"admin", layout:"app", nav:"admNavSecurity", grp:"grpConsole", ico:"•", name:["My password","修改密码"]}
+};
+function route(){ return ROUTES[S.page]||ROUTES["P-A01"]; }
+function pageName(id){ var r=ROUTES[id]; return r ? r.name[S.lang==="en"?0:1] : id; }
+function prdKey(){ return (route().alias && !PRD[S.page]) ? route().alias : S.page; }
+
+/* ------------------------------ Toast (C-05) ------------------------------ */
+var toastId=0;
+function toast(kind,title,body,link){
+  var id=++toastId;
+  if(S.toasts.length>=3) S.toasts.shift();
+  S.toasts.push({id:id,kind:kind,title:title,body:body||"",link:link||""});
+  render();
+  later(5000,function(){ S.toasts=S.toasts.filter(function(x){return x.id!==id;}); render(); });
+}
+
+/* --------------------------- 会话失效（PRD 12.1） -------------------------- */
+function endSession(reasonKey,prefill,silent){
+  S.acct=null; S.justCreated=false; S.flow=null; S.wallet=null; S.modal=null;
+  S.login={tab:"code",agree:false}; S.form={}; S.err={};
+  if(prefill) S.form.loginEmail=prefill;
+  S.end="asset"; S.page="P-A01"; render();
+  if(silent) return;
+  toast("danger", t(reasonKey), reasonKey==="sOtherDevice"?"":t("sUnsaved"),
+        reasonKey==="sOtherDevice"?t("sWasntYou"):"");
+}
+function endAdminSession(reasonKey){
+  S.admin.session=false; S.admin.mustReset=false; S.modal=null; S.form={}; S.err={};
+  S.end="admin"; S.page="P-M01"; render(); toast("danger", t(reasonKey), t("sUnsaved"));
+}
+
+/* ------------------------------ 滑块 C-01 -------------------------------- */
+var CAP_W=328, CAP_H=180, CAP_PS=46;
+function piecePath(c,x,y,s){
+  var r=6,k=s*0.22;
+  c.beginPath(); c.moveTo(x+r,y); c.lineTo(x+s*0.42,y);
+  c.arc(x+s*0.5,y,k,Math.PI,0,true);
+  c.lineTo(x+s-r,y); c.quadraticCurveTo(x+s,y,x+s,y+r);
+  c.lineTo(x+s,y+s*0.38); c.arc(x+s,y+s*0.5,k,-Math.PI/2,Math.PI/2,false);
+  c.lineTo(x+s,y+s-r); c.quadraticCurveTo(x+s,y+s,x+s-r,y+s);
+  c.lineTo(x+r,y+s); c.quadraticCurveTo(x,y+s,x,y+s-r);
+  c.lineTo(x,y+r); c.quadraticCurveTo(x,y,x+r,y); c.closePath();
+}
+function paintScene(c,W,H,rnd){
+  var hue=Math.floor(rnd()*360);
+  var g=c.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,"hsl("+hue+",58%,74%)");
+  g.addColorStop(1,"hsl("+((hue+52)%360)+",52%,58%)");
+  c.fillStyle=g; c.fillRect(0,0,W,H);
+  var i,x,y,w,hh;
+  for(i=0;i<9;i++){
+    c.globalAlpha=0.12+rnd()*0.2;
+    c.fillStyle="hsl("+((hue+i*26)%360)+",62%,"+(52+rnd()*32)+"%)";
+    x=rnd()*W; y=rnd()*H; w=24+rnd()*140; hh=10+rnd()*90;
+    c.beginPath(); c.roundRect?c.roundRect(x,y,w,hh,10):c.rect(x,y,w,hh); c.fill();
+  }
+  for(i=0;i<5;i++){
+    c.globalAlpha=0.2+rnd()*0.2;
+    c.strokeStyle="hsl("+((hue+i*47)%360)+",68%,35%)"; c.lineWidth=1+rnd()*2;
+    c.beginPath(); c.moveTo(rnd()*W,rnd()*H); c.lineTo(rnd()*W,rnd()*H); c.lineTo(rnd()*W,rnd()*H); c.stroke();
+  }
+  c.globalAlpha=1;
+}
+/* reset=true 归零滑块（新挑战 / 失败换图）；否则保留位移，避免后台重渲染打断拖拽 */
+function drawCaptcha(reset){
+  var bg=q("#capBg"), pc=q("#capPiece"); if(!bg||!pc||!S.cap) return;
+  var rnd=mulberry32(S.cap.seed);
+  var off=document.createElement("canvas"); off.width=CAP_W; off.height=CAP_H;
+  paintScene(off.getContext("2d"),CAP_W,CAP_H,rnd);
+  var tx=Math.floor(96+rnd()*(CAP_W-96-CAP_PS-14));
+  var ty=Math.floor(18+rnd()*(CAP_H-18-CAP_PS-18));
+  S.cap.answer=tx; S.cap.ty=ty;
+  bg.width=CAP_W; bg.height=CAP_H; pc.width=CAP_W; pc.height=CAP_H;
+  var b=bg.getContext("2d"); b.clearRect(0,0,CAP_W,CAP_H); b.drawImage(off,0,0);
+  b.save(); piecePath(b,tx,ty,CAP_PS); b.fillStyle="rgba(16,24,40,.55)"; b.fill();
+  b.strokeStyle="rgba(255,255,255,.75)"; b.lineWidth=1.5; b.stroke(); b.restore();
+  var p=pc.getContext("2d"); p.clearRect(0,0,CAP_W,CAP_H);
+  p.save(); piecePath(p,0,ty,CAP_PS); p.clip(); p.drawImage(off,-tx,0); p.restore();
+  p.save(); piecePath(p,0,ty,CAP_PS); p.strokeStyle="rgba(255,255,255,.9)"; p.lineWidth=1.5; p.stroke(); p.restore();
+  setCapDrag(reset?0:(S.cap.d||0));
+}
+function setCapDrag(d){
+  S.cap.d=d;
+  var pc=q("#capPiece"), kb=q("#capKnob"), fl=q("#capFill");
+  if(pc) pc.style.transform="translateX("+d+"px)";
+  if(kb) kb.style.transform="translateX("+d+"px)";
+  if(fl) fl.style.width=(d+48)+"px";
+}
+function openCaptcha(purposeKey,onPass){
+  S.cap={seed:(S.seed=(S.seed*7919+13)%100000), d:0, answer:0, ty:0, state:"idle",
+         msg:"", msgKind:"tip", purpose:purposeKey, onPass:onPass};
+  S.modal={type:"captcha"}; render(); drawCaptcha(true);
+}
+function capVerify(){
+  if(S.cap.state!=="idle") return;
+  S.cap.state="checking"; renderCapMsg();
+  later(420,function(){
+    var pass=Math.abs(S.cap.d-S.cap.answer)<=6 && !S.flags.capFail;
+    if(pass){
+      S.capFails=0; S.cap.state="ok"; S.cap.msg=t("capVerified"); S.cap.msgKind="ok";
+      var tr=q("#capTrack"); if(tr) tr.classList.add("ok");
+      renderCapMsg();
+      later(400,function(){ var cb=S.cap.onPass; S.modal=null; S.cap=null; render(); if(cb) cb(); });
+    } else {
+      S.capFails++; S.cap.state="idle";
+      S.cap.msg = S.capFails>=5 ? "" : (S.capFails>=3 ? t("capTrouble") : t("capFail"));
+      S.cap.msgKind = S.capFails>=3 ? "tip" : "bad";
+      var tk=q("#capTrack"), kn=q("#capKnob");
+      if(tk){ tk.classList.add("bad"); later(400,function(){ tk.classList.remove("bad"); }); }
+      if(kn){ kn.classList.add("shake"); later(340,function(){ kn.classList.remove("shake"); }); }
+      if(S.capFails>=5) S.capCoolUntil=now()+60000;
+      later(360,function(){
+        if(!S.cap) return;
+        S.cap.seed=(S.seed=(S.seed*7919+13)%100000);
+        drawCaptcha(true); renderCapMsg(); render();
+      });
+    }
+  });
+}
+function renderCapMsg(){
+  var m=q("#capMsg"); if(!m||!S.cap) return;
+  /* 冷却期内固定展示倒计时文案，避免刚进入冷却的那一秒消息区空白 */
+  if(S.capCoolUntil>now()){
+    m.textContent=t("capCool",{n:Math.max(0,Math.ceil((S.capCoolUntil-now())/1000))});
+    m.className="cap-msg bad"; return;
+  }
+  m.textContent = S.cap.state==="checking" ? "…" : S.cap.msg;
+  m.className = "cap-msg "+S.cap.msgKind;
+}
+
+/* --------------------------- 发码：滑块 + 限频 ---------------------------- */
+function pressSendCode(key,purposeKey){
+  if((S.cool[key]||0)>0) return;
+  openCaptcha(purposeKey,function(){
+    if(S.flags.quota){
+      var k=S.flags.quotaKind;
+      S.err[key+"Code"] = k==="ip"?t("rlIp") : k==="device"?t("rlDevice") : t("rlEmailQuota",{t:readableMinutes(42)});
+      render(); return;
+    }
+    S.cool[key]=60; S.err[key+"Code"]=""; render(); toast("success",t("codeSent"));
+  });
+}
+
+/* ------------------------------- 计时器 ---------------------------------- */
+setInterval(function(){
+  var dirty=false,k;
+  for(k in S.cool){ if(S.cool[k]>0){ S.cool[k]--; dirty=true; } }
+  qa("[data-tick]").forEach(function(n){
+    var sp=n.getAttribute("data-tick").split(":");
+    if(sp[0]==="cool"){
+      var left=S.cool[sp[1]]||0;
+      n.textContent = left>0 ? t("resendIn",{n:left}) : (n.getAttribute("data-sent")==="1"?t("resendCode"):t("sendCode"));
+      if(left<=0) n.removeAttribute("disabled"); else n.setAttribute("disabled","");
+    } else if(sp[0]==="lock"){
+      var l=Math.max(0,Math.ceil((S.lockUntil-now())/1000));
+      n.textContent=t("lockAgain",{m:mm(l),s:ss(l)});
+      if(l<=0){ S.fail=0; render(); }
+    } else if(sp[0]==="alock"){
+      var la=Math.max(0,Math.ceil((S.admin.lockUntil-now())/1000));
+      n.textContent=t("lockAgain",{m:mm(la),s:ss(la)});
+      if(la<=0){ S.admin.fail=0; render(); }
+    } else if(sp[0]==="capcool"){
+      var c=Math.max(0,Math.ceil((S.capCoolUntil-now())/1000));
+      n.textContent=t("capCool",{n:c});
+      if(c<=0) render();
+    } else if(sp[0]==="mlock"){
+      var row=S.admin.list[+sp[1]];
+      if(row&&row.lockLeft>0){ row.lockLeft--; n.textContent=t("stLockedD",{t:mm(row.lockLeft)+"m "+ss(row.lockLeft)+"s"}); }
+    }
+  });
+  if(dirty && !qa('[data-tick^="cool"]').length) render();
+},1000);
+
+/* ============================== 通用片段 ================================= */
+function langSwitcher(){
+  return '<div class="lang" role="group" aria-label="Language">'
+   + '<button type="button" data-act="lang" data-v="en" aria-pressed="'+(S.lang==="en")+'">English</button>'
+   + '<button type="button" data-act="lang" data-v="zh" aria-pressed="'+(S.lang==="zh")+'">简体中文</button></div>';
+}
+function prdBtn(cls){
+  return '<button class="'+(cls||"btn sm")+'" type="button" data-act="openPrd" title="'+t("prdOpen")+'">'
+   + '<span class="mono" style="font-size:10px">PRD</span></button>';
+}
+function protoBtn(cls){
+  return '<button class="'+(cls||"btn sm")+'" type="button" data-act="openProto">'+t("protoPanel")+'</button>';
+}
+function field(id,labelKey,o){
+  o=o||{};
+  var v=esc(S.form[id]||""), err=S.err[id];
+  return '<div class="field">'
+   + '<label for="f_'+id+'"><span>'+t(labelKey)+'</span>'+(o.optional?'<span class="opt">'+t("optional")+'</span>':'')+'</label>'
+   + (o.affix
+      ? '<div class="inp-affix"><input class="inp'+(err?" err":"")+'" id="f_'+id+'" data-f="'+id+'" type="'
+        +(S.form["_show_"+id]?"text":"password")+'" value="'+v+'" '+(o.disabled?"disabled":"")+' autocomplete="'+(o.ac||"off")+'">'
+        +'<button type="button" class="affix" data-act="toggleShow" data-k="'+id+'">'+(S.form["_show_"+id]?t("hide"):t("show"))+'</button></div>'
+      : '<input class="inp'+(err?" err":"")+(o.mono?" mono":"")+'" id="f_'+id+'" data-f="'+id+'" type="'+(o.type||"text")
+        +'" value="'+v+'" placeholder="'+esc(o.ph||"")+'" '+(o.disabled?"disabled":"")
+        +(o.maxlength?' maxlength="'+o.maxlength+'"':'')+' autocomplete="'+(o.ac||"off")+'">')
+   + (err?'<p class="err-msg" role="alert"><span>!</span><span>'+esc(err)+'</span></p>':'')
+   + (o.hint?'<p class="hint">'+o.hint+'</p>':'')
+   + '</div>';
+}
+function codeField(key,o){
+  o=o||{};
+  var left=S.cool[key]||0, err=S.err[key+"Code"];
+  var label = left>0 ? t("resendIn",{n:left}) : (S.form["_sent_"+key]?t("resendCode"):t("sendCode"));
+  return '<div class="field">'
+   + '<label for="f_'+key+'code"><span>'+t("labelCode")+'</span></label>'
+   + '<div class="inp-row">'
+   + '<input class="inp mono'+(err?" err":"")+'" id="f_'+key+'code" data-f="'+key+'code" inputmode="numeric" maxlength="6" value="'+esc(S.form[key+"code"]||"")+'" placeholder="000000">'
+   + '<button type="button" class="btn" data-act="sendcode" data-k="'+key+'" data-p="'+(o.purpose||"purposeSignIn")+'" data-tick="cool:'+key+'" data-sent="'+(S.form["_sent_"+key]?1:0)+'" '+(left>0?"disabled":"")+'>'+label+'</button>'
+   + '</div>'
+   + (err?'<p class="err-msg" role="alert"><span>!</span><span>'+esc(err)+'</span></p>':'')
+   + '<p class="hint">'+t("capHelpNote")+'</p></div>';
+}
+function pwdRules(key){
+  var p=S.form[key]||""; if(!p) return "";
+  var a=pwdOkLen(p), b=pwdOkCplx(p);
+  return '<ul class="rules" aria-live="polite">'
+   + '<li data-ok="'+(a?1:0)+'"><span class="box">'+(a?"✓":"")+'</span>'+(S.lang==="en"?"8–20 characters":"8–20 个字符")+'</li>'
+   + '<li data-ok="'+(b?1:0)+'"><span class="box">'+(b?"✓":"")+'</span>'+(S.lang==="en"?"At least one letter and one number":"至少 1 个英文字母和 1 个数字")+'</li></ul>';
+}
+function addrView(addr,o){
+  o=o||{};
+  var canExp=!S.flags.noExplorer && EXPLORERS[1];
+  return '<span class="hash"><span class="val">'+esc(o.full?addr:shortAddr(addr))+'</span>'
+   + '<button class="ico" type="button" data-act="copyaddr" data-v="'+esc(addr)+'" aria-label="'+t("copyAddress")+'" title="'+t("copyAddress")+'">⧉</button>'
+   + (canExp?'<a class="ico" href="'+EXPLORERS[1]+'/address/'+esc(addr)+'" target="_blank" rel="noopener noreferrer" aria-label="'+t("viewExplorer")+'" title="'+t("viewExplorer")+'">↗</a>':'')
+   + '</span>';
+}
+function steps(names,cur){
+  return '<div class="steps">'+names.map(function(n,i){
+    return '<div class="s" data-on="'+(i===cur?1:0)+'" data-done="'+(i<cur?1:0)+'"><span class="n">'+(i<cur?"✓":i+1)+'</span><span>'+n+'</span></div>'
+      + (i<names.length-1?'<span class="bar"></span>':'');
+  }).join("")+'</div>';
+}
+function pageHead(title,desc,actions){
+  return '<div class="page-head"><div><h1 class="page-title">'+title+'</h1>'
+   + (desc?'<p class="page-desc">'+desc+'</p>':'')+'</div>'
+   + '<div class="page-actions">'+(actions||"")+'</div></div>';
+}
+
+/* ============================ 居中卡片版式页面 ============================ */
+function focusShell(body,opts){
+  opts=opts||{};
+  var end=route().end;
+  return '<div class="focus-top">'
+   + '<div class="brand" style="border:0;padding:0;gap:10px"><div class="brand-mark">CF</div>'
+   + '<div><div class="brand-name">Chain Financing</div>'
+   + '<div class="brand-sub">'+(end==="admin"?t("adminConsole"):t("endAsset"))+'</div></div></div>'
+   + '<div style="flex:1"></div>'
+   + (opts.signOut?'<button class="btn sm" data-act="'+opts.signOut+'">'+t("signOut")+'</button>':'')
+   + prdBtn("btn sm") + langSwitcher()
+   + '</div>'
+   + '<div class="focus-body"><div class="focus-col'+(opts.wide?" is-wide":"")+'">'+body+'</div></div>'
+   + '<div class="focus-foot"><span>© Chain Financing · '+t("demoOnly")+'</span>'
+   + '<span style="display:flex;gap:10px;align-items:center">'+protoBtn("btn sm")+langSwitcher()+'</span></div>';
+}
+function focusCard(title,sub,body){
+  return '<h1 class="page-title" style="font-size:24px">'+title+'</h1>'
+   + (sub?'<p class="page-desc" style="margin-top:6px">'+sub+'</p>':'')
+   + '<div class="card" style="margin-top:20px"><div class="card-b">'+body+'</div></div>';
+}
+function backLink(target){
+  return '<div style="text-align:center;margin-top:16px"><button class="btn-link" type="button" data-act="go" data-v="'+target+'">'+t("back")+'</button></div>';
+}
+
+/* ---------------------------- P-A01 登录页 -------------------------------- */
+function pageLogin(){
+  var locked=S.lockUntil>now();
+  if(locked && S.login.tab!=="code") S.login.tab="code";
+  var tab=S.login.tab, body="";
+
+  body += '<div class="seg-tabs" role="tablist">'
+    + segTab("code","tabCode",false) + segTab("pwd","tabPwd",locked) + segTab("wallet","tabWallet",locked) + '</div>';
+
+  if(S.err.loginTop)
+    body += '<div class="note red" role="alert" style="margin-bottom:16px"><span class="ico">!</span><div>'+esc(S.err.loginTop)+'</div></div>';
+
+  if(locked){
+    var left=Math.max(0,Math.ceil((S.lockUntil-now())/1000));
+    body += '<div class="note red" role="alert" style="margin-bottom:16px"><span class="ico">!</span><div>'
+      + '<b>'+t("lockTitle")+'</b><p data-tick="lock">'+t("lockAgain",{m:mm(left),s:ss(left)})+'</p>'
+      + '<p>'+t("lockHelpUser")+'</p></div></div>';
+  }
+
+  if(tab==="code"){
+    body += field("loginEmail","labelEmail",{type:"email",ph:"you@company.com",ac:"email"})
+         +  codeField("login",{purpose:"purposeSignIn"});
+  } else if(tab==="pwd"){
+    body += field("loginEmail","labelEmail",{type:"email",ph:"you@company.com",ac:"email"})
+         +  field("loginPwd","labelPwd",{affix:true,ac:"current-password"})
+         +  '<p class="hint" style="margin:-6px 0 14px"><button class="btn-link" type="button" data-act="toCodeTab">'+t("pwdTabHint")+'</button></p>';
+  } else {
+    body += '<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
+         +  '<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeSignIn">'+t("connectWallet")+'</button>';
+  }
+
+  /* C-02 协议勾选行：全站唯一一处；v4 已删除营销订阅勾选 */
+  body += '<div class="check'+(S.err._shake?" shake":"")+'"><input type="checkbox" id="agree" data-f="agree" '+(S.login.agree?"checked":"")+'>'
+       +  '<label for="agree">'+t("terms")+'</label></div>'
+       +  (S.err.agree?'<p class="err-msg" role="alert" style="margin:-4px 0 8px"><span>!</span><span>'+esc(S.err.agree)+'</span></p>':'');
+
+  if(tab!=="wallet")
+    body += '<button class="btn primary block'+(S.login.agree?"":" quiet")+'" type="button" data-act="loginSubmit" style="margin-top:14px">'+t("submitSignIn")+'</button>';
+
+  body += '<div style="display:flex;gap:18px;justify-content:center;margin-top:18px;flex-wrap:wrap">'
+       +  '<button class="btn-link" type="button" data-act="go" data-v="P-A03">'+t("forgotPwd")+'</button>'
+       +  '<button class="btn-link" type="button" data-act="go" data-v="P-A05">'+t("cantEmail")+'</button></div>';
+
+  return focusShell(focusCard(t("signInTitle"),t("signInSub"),body));
+}
+function segTab(id,key,locked){
+  var on=S.login.tab===id;
+  return '<button class="seg-tab" role="tab" type="button" data-act="tab" data-v="'+id+'" aria-selected="'+on+'" '+(locked?"disabled":"")+'>'
+   + '<span>'+t(key)+'</span>'+(locked?'<span class="lk">'+t("lockedTab")+'</span>':'')+'</button>';
+}
+
+/* ------------------------------ 建号确认 ---------------------------------- */
+function pageCreated(){
+  return focusShell(
+    '<div class="card"><div class="card-b"><div class="created">'
+    + '<div class="ring">✓</div>'
+    + '<h1>'+t("created")+'</h1>'
+    + '<p class="lead" style="text-align:center">'+t("guideTitle")+'</p>'
+    + '<div class="idbox"><span>Account ID · '+t("demoOnly")+'</span><b>ACC-2026-0007-DEMO</b></div>'
+    + '<button class="btn primary block" type="button" data-act="go" data-v="P-A10" style="margin-top:22px;max-width:300px">'+t("contin")+'</button>'
+    + '</div></div></div>');
+}
+
+/* --------------------------- 忘记密码 / 账户恢复 --------------------------- */
+function pageForgot1(){
+  return focusShell(focusCard(t("fpTitle"),t("fpSub"),
+    steps([t("fpStep1"),t("fpStep2")],0)
+    + field("fpEmail","labelEmail",{type:"email",ph:"you@company.com"})
+    + codeField("fp",{purpose:"purposeSignIn"})
+    + '<button class="btn primary block" type="button" data-act="fpNext">'+t("contin")+'</button>'
+    + '<p class="hint" style="margin-top:14px">'+t("fpNewUser")+'</p>'
+    + backLink("P-A01")));
+}
+function pageForgot2(){
+  return focusShell(focusCard(t("fpStep2"),"",
+    steps([t("fpStep1"),t("fpStep2")],1)
+    + field("fpPwd","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("fpPwd")
+    + '<div style="height:14px"></div>'
+    + field("fpPwd2","labelConfirmPwd",{affix:true,ac:"new-password"})
+    + '<button class="btn primary block" type="button" data-act="fpSubmit" style="margin-top:16px">'+t("save")+'</button>'
+    + backLink("P-A01")));
+}
+function pageRecover1(){
+  return focusShell(focusCard(t("rcTitle"),t("rcSub"),
+    steps([t("rcStep1"),t("rcStep2")],0)
+    + '<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
+    + (S.err.rcWallet?'<div class="note red" role="alert" style="margin-bottom:14px"><span class="ico">!</span><div><b>'+t("eWalletUnlinked")+'</b><p>'+t("eWalletUnlinkedHint")+'</p></div></div>':'')
+    + '<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeRecovery">'+t("connectWallet")+'</button>'
+    + backLink("P-A01")));
+}
+function pageRecover2(){
+  return focusShell(focusCard(t("rcNewEmailTitle"),"",
+    steps([t("rcStep1"),t("rcStep2")],1)
+    + '<div class="note green" style="margin-bottom:14px"><span class="ico">✓</span><div>'+t("walletConnected")+' · '+shortAddr(DEMO_ADDR_BOUND)+'</div></div>'
+    + field("rcEmail","labelNewEmail",{type:"email"})
+    + codeField("rc",{purpose:"purposeRecovery"})
+    + '<button class="btn primary block" type="button" data-act="rcSubmit">'+t("save")+'</button>'
+    + backLink("P-A01")));
+}
+
+/* ------------------------------ 管理端未登录 ------------------------------ */
+function pageAdminLogin(){
+  var locked=S.admin.lockUntil>now();
+  var left=Math.max(0,Math.ceil((S.admin.lockUntil-now())/1000));
+  return focusShell(focusCard(t("admLogin"),"",
+    (locked?'<div class="note red" role="alert" style="margin-bottom:14px"><span class="ico">!</span><div><b>'+t("lockTitle")+'</b>'
+      +'<p data-tick="alock">'+t("lockAgain",{m:mm(left),s:ss(left)})+'</p><p>'+t("lockHelpAdmin")+'</p></div></div>':"")
+    + field("admEmail","labelWorkEmail",{type:"email",ph:"name@demo-console.test",disabled:locked})
+    + field("admPwd","labelPwd",{affix:true,ac:"current-password",disabled:locked})
+    + '<button class="btn primary block" type="button" data-act="adminLogin" '+(locked?"disabled":"")+'>'+t("admLogin")+'</button>'
+    + '<div style="text-align:center;margin-top:16px"><button class="btn-link" type="button" data-act="go" data-v="P-M03">'+t("forgotPwd")+'</button></div>'));
+}
+function pageAdminFirstReset(){
+  return focusShell(focusCard(t("adminFirstTitle"),t("adminFirstSub"),
+    field("mrOld","labelCurrentPwd",{affix:true})
+    + field("mrNew","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("mrNew")
+    + '<div style="height:14px"></div>'
+    + field("mrNew2","labelConfirmPwd",{affix:true,ac:"new-password"})
+    + '<div class="check" style="margin-top:16px"><input type="checkbox" id="ack" data-f="ack" '+(S.form.ack?"checked":"")+'>'
+    + '<label for="ack">'+t("admNoticeAck")+'</label></div>'
+    + (S.err.ack?'<p class="err-msg" role="alert"><span>!</span><span>'+esc(S.err.ack)+'</span></p>':'')
+    + '<button class="btn primary block" type="button" data-act="adminResetSubmit" style="margin-top:10px">'+t("save")+'</button>'
+    + '<p class="hint" style="margin-top:14px;text-align:center">'
+    + (S.lang==="en"?"No other page is reachable until this is done.":"未完成重置前，其他管理端页面均不可达。")+'</p>')
+  ,{signOut:"adminSignout"});
+}
+function pageAdminForgot1(){
+  return focusShell(focusCard(t("fpTitle"),t("fpSub"),
+    steps([t("fpStep1"),t("fpStep2")],0)
+    + field("mfEmail","labelWorkEmail",{type:"email"})
+    + codeField("mf",{purpose:"purposeSignIn"})
+    + (S.form._sent_mf?'<div class="note" style="margin:6px 0 14px"><span class="ico">i</span><div>'
+       +(S.lang==="en"?"If this email belongs to an admin account, a verification code has been sent.":"若该邮箱为管理端账号，验证码已发送。")+'</div></div>':"")
+    + '<button class="btn primary block" type="button" data-act="mfNext">'+t("contin")+'</button>'
+    + backLink("P-M01")));
+}
+function pageAdminForgot2(){
+  return focusShell(focusCard(t("fpStep2"),"",
+    steps([t("fpStep1"),t("fpStep2")],1)
+    + field("mfPwd","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("mfPwd")
+    + '<div style="height:14px"></div>'
+    + field("mfPwd2","labelConfirmPwd",{affix:true,ac:"new-password"})
+    + '<button class="btn primary block" type="button" data-act="mfSubmit" style="margin-top:16px">'+t("save")+'</button>'
+    + backLink("P-M01")));
+}
+
+/* ============================== 控制台内容 =============================== */
+function pageGuide(){
+  var viaWallet=S.acct&&S.acct.createdVia==="wallet";
+  var pri = viaWallet
+    ? {title:t("addEmailTitle"), body:t("guideEmail"), act:"guideAddEmail", cta:t("add")+" "+(S.lang==="en"?"email":"邮箱")}
+    : {title:t("addWalletTitle"), body:t("guideWallet"), act:"guideLinkWallet", cta:t("connectWallet")};
+  return pageHead(t("guideTitle"),"",prdBtn())
+   + '<div class="note green" role="status" style="margin-bottom:18px"><span class="ico">✓</span><div><b>'+t("created")+'</b>'
+   + '<p>'+(viaWallet?shortAddr(S.acct.wallet):esc(S.acct?S.acct.email:""))+'</p></div></div>'
+   + '<div style="max-width:640px">'
+   + '<div class="guide pri"><span class="n">1</span><div class="bd"><b class="h3">'+pri.title+'</b>'
+   + '<p>'+pri.body+'</p><button class="btn primary" type="button" data-act="'+pri.act+'" style="margin-top:12px">'+pri.cta+'</button></div></div>'
+   + '<div class="guide"><span class="n">2</span><div class="bd"><b class="h3">'+t("guidePwd")+'</b>'
+   + '<p>'+t("guidePwdSub")+'</p><button class="btn" type="button" data-act="guideSetPwd" style="margin-top:12px">'+t("setPwdTitle")+'</button></div></div>'
+   + '<div class="note" style="margin-top:16px"><span class="ico">i</span><div>'+t("keepBoth")+'</div></div>'
+   + '<div class="btnbar even"><button class="btn" type="button" data-act="go" data-v="LAND">'+t("later")+'</button></div>'
+   + '</div>';
+}
+function pageLanding(){
+  var a=S.acct||{}, missing=!a.email?"email":(!a.wallet?"wallet":null);
+  var out="";
+  if(S.flags.expiring)
+    out += '<div class="note" role="status" style="margin-bottom:14px"><span class="ico">⏱</span><div>'+t("sExpiring")+'</div></div>';
+  if(missing && !S.barFolded){
+    out += '<div class="cbar" role="status"><span class="ic">!</span><p>'+(missing==="email"?t("barEmail"):t("barWallet"))+'</p>'
+        +  '<button class="btn sm primary" type="button" data-act="go" data-v="P-A11">'+t("completeNow")+'</button>'
+        +  '<button class="btn sm" type="button" data-act="foldbar">'+(S.lang==="en"?"Collapse":"折叠")+'</button></div>';
+  }
+  out += pageHead(t("landTitle"),t("landSub"),
+      '<button class="btn primary" type="button" data-act="startKyc">'+t("startKyc")+'</button>'+prdBtn())
+   + '<div class="stat-row">'
+   + stat(t("rowEmail"), a.email?esc(a.email):'<span class="faint">'+t("notSet")+'</span>')
+   + stat(t("rowWallet"), a.wallet?addrView(a.wallet):'<span class="faint">'+t("notSet")+'</span>')
+   + stat(t("rowPwd"), a.hasPwd?(S.lang==="en"?"Set":"已设置"):'<span class="faint">'+t("notSet")+'</span>')
+   + stat(t("accStatus"), a.email&&a.wallet?'<span class="pill green">'+t("stActiveAcc")+'</span>':'<span class="pill amber">'+t("stIncomplete")+'</span>')
+   + '</div>'
+   + '<div class="note" style="margin-top:18px"><span class="ico">i</span><div><b>'+(S.lang==="en"?"Scope boundary":"边界声明")+'</b>'
+   + '<p>'+(S.lang==="en"
+      ? "Business modules gate on identity-verification status, not on this module's credential-completeness status. Skipping the guide never puts the account into a globally restricted state."
+      : "各业务模块的功能放行以认证状态为准，不以本模块的凭据完备状态为准；跳过引导不进入任何全局受限态。")+'</p></div></div>'
+   + '<p class="tiny" style="margin-top:14px"><span class="pill dash">'+t("landDemoData")+'</span></p>';
+  if(missing && S.barFolded)
+    out += '<button class="cbar-mini" type="button" data-act="foldbar">! '+t("completeNow")+'</button>';
+  return out;
+}
+function stat(k,v){ return '<div class="stat"><div class="lbl">'+k+'</div><div class="val">'+v+'</div></div>'; }
+
+function pageSecurity(){
+  var a=S.acct||{};
+  var miss=!a.email?t("barEmail"):(!a.wallet?t("barWallet"):"");
+  return pageHead(t("secTitle"),"",prdBtn())
+   + (miss?'<div class="cbar"><span class="ic">!</span><p>'+miss+'</p></div>':"")
+   + '<div class="rows" style="max-width:760px">'
+   + srow(t("rowEmail"), a.email?esc(a.email):'<span class="faint">'+t("notSet")+'</span>', a.email?t("change"):t("add"), "P-A12")
+   + srow(t("rowPwd"), a.hasPwd?"••••••••":'<span class="faint">'+t("notSet")+'</span>', a.hasPwd?t("change"):t("setPwdTitle"), "P-A13", a.hasPwd?"":t("optional"))
+   + srow(t("rowWallet"), a.wallet?addrView(a.wallet):'<span class="faint">'+t("notSet")+'</span>', a.wallet?t("change"):t("add"), "P-A14")
+   + '</div>'
+   + (a.wallet?'<p class="tiny" style="margin-top:12px;max-width:760px">'+t("disconnectNote")+'</p>':"");
+}
+function srow(k,v,cta,target,tag){
+  return '<div class="row"><div class="row-main"><div class="row-k">'+k
+   + (tag?'<span class="pill gray">'+tag+'</span>':'')+'</div><div class="row-v">'+v+'</div></div>'
+   + '<div class="row-act"><button class="btn sm" type="button" data-act="startFlow" data-v="'+target+'">'+cta+'</button></div></div>';
+}
+
+function pageFlow(){
+  var f=S.flow, a=S.acct||{};
+  var titles={ "P-A12":a.email?t("chgEmailTitle"):t("addEmailTitle"),
+               "P-A13":a.hasPwd?t("chgPwdTitle"):t("setPwdTitle"),
+               "P-A14":a.wallet?t("chgWalletTitle"):t("addWalletTitle") };
+  var names={ "P-A12":a.email?[t("reauthTitle"),t("chgEmailOld"),t("chgEmailNew")]:[t("reauthTitle"),t("chgEmailNew")],
+              "P-A13":[t("reauthTitle"),t("chgPwdTitle")],
+              "P-A14":a.wallet?[t("reauthTitle"),t("chgWalletOld"),t("chgWalletNew")]:[t("reauthTitle"),t("chgWalletNew")] };
+  var body="";
+  if(f.step===0) body=reauthBlock();
+  else if(f.id==="P-A12"){
+    if(a.email && f.step===1){
+      body='<p class="lead" style="margin:0 0 14px">'+esc(a.email)+'</p>'
+        + codeField("oldEmail",{purpose:"purposeReauth"})
+        + '<button class="btn primary block" type="button" data-act="flowNext">'+t("contin")+'</button>';
+    } else {
+      body=field("newEmail","labelNewEmail",{type:"email"}) + codeField("newEmail",{purpose:"purposeSignIn"})
+        + '<button class="btn primary block" type="button" data-act="flowSubmit">'+t("save")+'</button>';
+    }
+  } else if(f.id==="P-A13"){
+    body=(a.hasPwd?"":'<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("guidePwdSub")+'</div></div>')
+      + field("np","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("np")
+      + '<div style="height:14px"></div>'
+      + field("np2","labelConfirmPwd",{affix:true,ac:"new-password"})
+      + '<button class="btn primary block" type="button" data-act="flowSubmit" style="margin-top:16px">'+t("save")+'</button>';
+  } else {
+    if(a.wallet && f.step===1){
+      body='<p class="lead" style="margin:0 0 14px">'+shortAddr(a.wallet)+'</p>'
+        + '<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
+        + '<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeUnlink">'+t("signMessage")+'</button>'
+        + '<p class="hint" style="margin-top:12px"><button class="btn-link" type="button" data-act="flowAltFactor">'+t("walletUnavailable")+'</button></p>';
+    } else {
+      body='<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
+        + '<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeLink">'+t("connectWallet")+'</button>';
+    }
+  }
+  return pageHead(titles[f.id],"",prdBtn())
+   + '<div class="card" style="max-width:520px"><div class="card-b">'
+   + steps(names[f.id],f.step) + body
+   + '<div style="text-align:center;margin-top:16px"><button class="btn-link" type="button" data-act="go" data-v="P-A11">'+t("cancel")+'</button></div>'
+   + '</div></div>';
+}
+function reauthBlock(){
+  var a=S.acct||{}, f=S.flow, factors=[];
+  if(a.hasPwd) factors.push({k:"pwd",label:t("reauthPwd")});
+  if(a.wallet) factors.push({k:"wallet",label:t("reauthWallet")});
+  if(a.email)  factors.push({k:"code",label:t("reauthCode")});
+  if(factors.length===1 && !f.factor) f.factor=factors[0].k;
+  var head='<p class="lead" style="margin:0 0 16px">'+t("reauthSub")+'</p>';
+  if(!f.factor){
+    return head+'<div class="wallets">'+factors.map(function(x){
+      return '<button class="wallet" type="button" data-act="pickFactor" data-v="'+x.k+'"><span class="av">'
+        +(x.k==="pwd"?"••":x.k==="wallet"?"0x":"@")+'</span><span><b>'+x.label+'</b></span></button>';
+    }).join("")+'</div>';
+  }
+  if(f.factor==="pwd")
+    return head+field("reauthPwd","labelCurrentPwd",{affix:true,ac:"current-password"})
+      +'<button class="btn primary block" type="button" data-act="reauthSubmit">'+t("contin")+'</button>'+factorSwitch(factors);
+  if(f.factor==="code")
+    return head+'<p class="lead" style="margin:-8px 0 14px">'+esc(a.email)+'</p>'
+      +codeField("reauth",{purpose:"purposeReauth"})
+      +'<button class="btn primary block" type="button" data-act="reauthSubmit">'+t("contin")+'</button>'+factorSwitch(factors);
+  return head+'<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
+    +'<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeReauth">'+t("signMessage")+'</button>'+factorSwitch(factors);
+}
+function factorSwitch(factors){
+  if(factors.length<2) return "";
+  return '<div style="text-align:center;margin-top:14px"><button class="btn-link" type="button" data-act="pickFactor" data-v="">'
+    +(S.lang==="en"?"Use another method":"换一种验证方式")+'</button></div>';
+}
+
+function pagePrefs(){
+  var zones=["Asia/Shanghai","UTC","Europe/London","America/New_York"];
+  return pageHead(t("prefTitle"),"",prdBtn())
+   + '<div class="rows" style="max-width:760px">'
+   + '<div class="row"><div class="row-main"><div class="row-k">'+t("prefLang")+'</div><div class="row-v">'+langSwitcher()+'</div>'
+   + '<p class="tiny" style="margin-top:9px">'+t("prefLangSub")+'</p></div></div>'
+   + '<div class="row"><div class="row-main"><div class="row-k">'+t("prefTz")+'</div><div class="row-v">'
+   + '<select class="inp" data-f="tz" style="max-width:280px">'
+   + zones.map(function(z){return '<option value="'+z+'" '+(S.tz===z?"selected":"")+'>'+z+'</option>';}).join("")
+   + '</select></div><p class="tiny" style="margin-top:9px">'+t("prefTzSub")+'</p>'
+   + '<p class="tiny mono" style="margin-top:5px">'+t("sampleTime",{t:fmtTime(null,true)})+'</p></div></div>'
+   + '</div>';
+}
+
+function pageAdminChangePwd(){
+  return pageHead(t("admNavSecurity"),"",prdBtn())
+   + '<div class="card" style="max-width:520px"><div class="card-b">'
+   + field("apOld","labelCurrentPwd",{affix:true})
+   + field("apNew","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("apNew")
+   + '<div style="height:12px"></div>'
+   + field("apNew2","labelConfirmPwd",{affix:true,ac:"new-password"})
+   + '<button class="btn primary" type="button" data-act="apSubmit" style="margin-top:14px">'+t("save")+'</button>'
+   + '</div></div>';
+}
+
+/* ----------------------------- P-M06 账户管理 ----------------------------- */
+function availableAdmins(list){
+  return list.filter(function(r){return r.st==="active"||r.st==="pending"||r.st==="locked";}).length;
+}
+function pageAdminAccounts(){
+  var st=S.admin.listState, list=S.admin.list;
+  var qy=(S.admin.q||"").toLowerCase();
+  var shown=list.filter(function(r){
+    var okQ=!qy||r.email.toLowerCase().indexOf(qy)>=0||r.name.toLowerCase().indexOf(qy)>=0;
+    var okF=S.admin.filter==="all"||(S.admin.filter==="pending"?(r.st==="pending"||r.st==="pendingExpired"):r.st===S.admin.filter);
+    return okQ&&okF;
+  });
+  var avail=availableAdmins(list);
+
+  var toolbar='<div class="toolbar">'
+    + '<input class="inp" data-f="admQ" value="'+esc(S.admin.q)+'" placeholder="'+t("admSearch")+'">'
+    + '<div class="seg">'+["all","active","pending","locked","disabled"].map(function(k){
+        return '<button type="button" data-act="admFilter" data-v="'+k+'" aria-pressed="'+(S.admin.filter===k)+'">'
+          + t("admFilter"+k.charAt(0).toUpperCase()+k.slice(1))+'</button>';}).join("")+'</div>'
+    + '<div style="flex:1"></div>'
+    + '<span class="pill dash" title="'+(S.lang==="en"?"Prototype control":"原型控制")+'">'
+    + (S.lang==="en"?"Prototype · list state":"原型 · 列表状态")+'</span>'
+    + '<div class="seg">'
+    + [["default","默认","Default"],["loading","加载中","Loading"],["empty","空数据","Empty"],["noresult","筛选无结果","No result"],
+       ["failed","加载失败","Failed"],["noperm","无权限","No access"],["submitting","提交中","Submitting"],["submitfail","提交失败","Submit failed"]]
+       .map(function(p){ return '<button type="button" data-act="admState" data-v="'+p[0]+'" aria-pressed="'+(st===p[0])+'">'
+         +(S.lang==="en"?p[2]:p[1])+'</button>'; }).join("")
+    + '</div></div>';
+
+  var inner;
+  if(st==="loading"){
+    inner='<div class="tablewrap"><table class="tbl"><thead>'+admHead()+'</thead><tbody>'
+      + [0,1,2,3].map(function(){ return '<tr>'+[0,1,2,3,4,5].map(function(){return '<td><div class="skel"></div></td>';}).join("")+'</tr>'; }).join("")
+      + '</tbody></table><p class="tiny" style="padding:11px 12px" role="status">'+t("stLoading")+'</p></div>';
+  } else if(st==="empty"){
+    inner='<div class="tablewrap"><table class="tbl"><thead>'+admHead()+'</thead></table>'
+      + '<div class="tbl-empty"><b>'+t("stEmptyTitle")+'</b><span>'+t("stEmptyBody")+'</span>'
+      + '<div style="margin-top:14px"><button class="btn primary sm" type="button" data-act="admCreateOpen">'+t("admCreate")+'</button></div></div></div>';
+  } else if(st==="noresult"||(st==="default"&&shown.length===0)){
+    inner='<div class="tablewrap"><table class="tbl"><thead>'+admHead()+'</thead></table>'
+      + '<div class="tbl-empty"><b>'+t("stNoResultTitle")+'</b><span>'+t("stNoResultBody")+'</span></div></div>';
+  } else if(st==="failed"){
+    inner='<div class="tablewrap"><div class="tbl-empty"><b>'+t("stFailTitle")+'</b><span>'+t("stFailBody")+'</span>'
+      + '<div style="margin-top:14px"><button class="btn sm" type="button" data-act="admRetry">'+t("stRetry")+'</button></div></div></div>';
+  } else if(st==="noperm"){
+    inner='<div class="tablewrap"><div class="tbl-empty"><b>'+t("stNoPermTitle")+'</b><span>'+t("stNoPermBody")+'</span></div></div>';
+  } else {
+    inner='<div class="tablewrap"><table class="tbl"><thead>'+admHead()+'</thead><tbody>'
+      + shown.map(function(r){ return admRow(r,list.indexOf(r),avail); }).join("")
+      + '</tbody></table></div><p class="tiny" style="margin-top:10px">'+t("admAuditNote")+' · '+t("admExpiredNote")+'</p>';
+  }
+  return pageHead(t("admAccountsTitle"),
+      t("demoOnly")+" · "+(S.lang==="en"?("Available administrators: "+avail):("可用管理员："+avail)),
+      '<button class="btn primary" type="button" data-act="admCreateOpen">'+t("admCreate")+'</button>'+prdBtn())
+   + toolbar + inner;
+}
+function admHead(){
+  return '<tr><th>'+t("admColEmail")+'</th><th>'+t("admColName")+'</th><th>'+t("admColStatus")+'</th><th>'+t("admColCreated")+'</th><th>'+t("admColLast")+'</th><th class="col-act">'+t("admColAct")+'</th></tr>';
+}
+function admRow(r,idx,avail){
+  var isMe=r.email===DEMO_ME, statusHtml;
+  if(r.st==="active") statusHtml=stCell("green",t("stActive"),"");
+  else if(r.st==="pending") statusHtml=stCell("amber",t("stPendingS"),t("stPendingD",{t:fmtTime(r.expires)}));
+  else if(r.st==="pendingExpired") statusHtml=stCell("red",t("stPendingS"),t("stPendingExpired"));
+  else if(r.st==="locked") statusHtml=stCell("red",t("stLockedS"),'<span data-tick="mlock:'+idx+'">'+t("stLockedD",{t:mm(r.lockLeft||0)+"m "+ss(r.lockLeft||0)+"s"})+'</span>');
+  else statusHtml=stCell("gray",t("stDisabled"),"");
+
+  var counts=(r.st==="active"||r.st==="pending"||r.st==="locked");
+  var lastGuard=counts && avail<=1;
+  /* 两条约束同时命中时优先展示「最后一个可用管理员」（PRD 7.9.2 / AC-169） */
+  var block = lastGuard ? t("admLastTip") : (isMe ? t("eSelfAction") : "");
+  var acts=[];
+  /* 操作列用短动词，完整操作名（如「重新生成初始密码」）挂在 title 上，避免列宽被文案撑爆 */
+  if(r.st==="disabled") acts.push(actBtn(t("admActRestore"),"admRestore",idx,"",false));
+  else {
+    acts.push(actBtn(t("admActDisable"),"admDisable",idx,block,true));
+    acts.push(actBtn(t("admActDelete"),"admDisable",idx,block,true));
+  }
+  if(r.st==="locked") acts.push(actBtn(t("admActUnlock"),"admUnlock",idx,"",false));
+  if(r.st==="pending"||r.st==="pendingExpired")
+    acts.push(actBtn(t("admActRegenShort"),"admRegen",idx,isMe?t("eSelfAction"):"",false,t("admActRegen")));
+
+  return '<tr><td class="c-email">'+esc(r.email)+(isMe?' <span class="pill gray">'+(S.lang==="en"?"You":"我")+'</span>':'')+'</td>'
+   + '<td class="nw">'+esc(r.name)+'</td><td class="c-status">'+statusHtml+'</td>'
+   + '<td class="c-time">'+fmtCell(r.created)+'</td><td class="c-time">'+fmtCell(r.last)+'</td>'
+   + '<td class="col-act">'+acts.join("")+'</td></tr>';
+}
+function stCell(cls,label,detail){
+  return '<span class="pill '+cls+'">'+label+'</span>'+(detail?'<div class="tiny" style="margin-top:3px">'+detail+'</div>':'');
+}
+/* 被拦住的操作置灰但仍可点：点击后给出可读原因，而不是静默无反应 */
+function actBtn(label,act,idx,block,danger,title){
+  if(block) return '<button class="actlink off" type="button" data-act="admBlocked" data-m="'+esc(block)+'" title="'+esc(block)+'">'+label+'</button>';
+  return '<button class="actlink'+(danger?" danger":"")+'" type="button" data-act="'+act+'" data-i="'+idx+'"'
+    + (title?' title="'+esc(title)+'"':'')+'>'+label+'</button>';
+}
+
+/* ================================ 弹层 =================================== */
+function renderModal(){
+  var m=S.modal; if(!m) return "";
+  if(m.type==="captcha") return modalCaptcha();
+  if(m.type==="wallet") return modalWallet();
+  if(m.type==="reconsent") return modalReconsent();
+  if(m.type==="gate") return modalGate();
+  if(m.type==="admCreate") return modalAdmCreate();
+  if(m.type==="admCreated") return modalAdmCreated();
+  if(m.type==="admConfirm") return modalAdmConfirm();
+  if(m.type==="admExtend") return modalAdmExtend();
+  if(m.type==="doc") return modalDoc();
+  return "";
+}
+function modalCaptcha(){
+  var cooling=S.capCoolUntil>now(), left=Math.max(0,Math.ceil((S.capCoolUntil-now())/1000));
+  if(S.flags.capLoadFail){
+    return '<div class="mask" data-act="capClose"><div class="modal" role="dialog" aria-modal="true" aria-label="'+t("capTitle")+'">'
+     + '<div class="modal-h"><b>'+t("capTitle")+'</b><button class="modal-x" type="button" data-act="capClose" aria-label="'+t("close")+'">✕</button></div>'
+     + '<div class="modal-b"><div class="note red" role="alert"><span class="ico">!</span><div>'+t("capLoadFail")+'</div></div>'
+     + '<button class="btn block" type="button" data-act="capReload" style="margin-top:14px">'+t("stRetry")+'</button>'
+     + '<p class="tiny" style="margin-top:12px;text-align:center">'+t("capHelp")+'</p></div></div></div>';
+  }
+  return '<div class="mask" data-act="capClose"><div class="modal" role="dialog" aria-modal="true" aria-label="'+t("capTitle")+'">'
+   + '<div class="modal-h"><b>'+t("capTitle")+'</b>'
+   + '<button class="modal-x" type="button" data-act="capRefresh" aria-label="'+t("capRefresh")+'" title="'+t("capRefresh")+'">⟳</button>'
+   + '<button class="modal-x" type="button" data-act="capClose" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b">'
+   + '<div class="cap-canvas"><canvas id="capBg" width="328" height="180"></canvas>'
+   + '<canvas id="capPiece" class="cap-piece" width="328" height="180"></canvas></div>'
+   + '<div class="cap-track'+(cooling?" cool":"")+'" id="capTrack"><div class="cap-fill" id="capFill"></div>'
+   + '<span class="tip">'+(cooling?"":t("capSlide"))+'</span>'
+   + '<div class="cap-knob" id="capKnob" tabindex="0" role="slider" aria-label="'+t("capSlide")+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" '
+   + (cooling?'aria-disabled="true"':'')+'>›</div></div>'
+   + '<p class="cap-msg" id="capMsg" role="status" '+(cooling?'data-tick="capcool"':'')+'>'+(cooling?t("capCool",{n:left}):"")+'</p>'
+   + '<p class="tiny" style="margin-top:10px;text-align:center">'+t("capHelp")+'</p>'
+   + '</div></div></div>';
+}
+function modalWallet(){
+  var w=S.wallet||{}, body="";
+  if(w.stage==="pick"){
+    body='<p class="lead" style="margin:0 0 14px">'+t("walletPickSub")+'</p><div class="wallets">'
+      + ["Demo Wallet A","Demo Wallet B","Demo Wallet C"].map(function(n,i){
+          return '<button class="wallet" type="button" data-act="walletPick" data-i="'+i+'"><span class="av">W'+(i+1)+'</span>'
+            +'<span><b>'+n+'</b><span>'+t("demoOnly")+'</span></span></button>';}).join("")+'</div>';
+  } else if(w.stage==="connecting"){
+    body='<div style="display:flex;gap:12px;align-items:center;padding:18px 0"><span class="spinner"></span><span>'+t("walletConnecting")+'</span></div>';
+  } else if(w.stage==="error"){
+    body='<div class="note red" role="alert"><span class="ico">!</span><div><b>'+esc(w.err)+'</b>'+(w.errSub?'<p>'+esc(w.errSub)+'</p>':'')+'</div></div>';
+  } else {
+    var msg="Chain Financing (demo.chain-financing.test)\n\nAddress: "+w.addr+"\nChain ID: 1\nNonce: 8f31c0a4d27b\n"
+      + "Issued at: "+fmtTime(null,true)+"\nExpires in: 5 minutes\nPurpose: "+t(w.purpose)+"\n\n"+t("walletSignNote");
+    body='<div class="note green" style="margin-bottom:12px"><span class="ico">✓</span><div>'+t("walletConnected")
+      + ' · <span class="mono">'+shortAddr(w.addr)+'</span></div></div>'
+      + '<div class="sigmsg">'+esc(msg)+'</div>'
+      /* 「只签消息、不发交易」不能藏在可滚动区域里，单独常驻一条 */
+      + '<div class="note" style="margin-top:12px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
+      + (w.stage==="signing"?'<div style="display:flex;gap:10px;align-items:center;margin-top:12px"><span class="spinner"></span><span class="tiny">'+t("walletSigning")+'</span></div>':"")
+      + (w.stage==="verifying"?'<div style="display:flex;gap:10px;align-items:center;margin-top:12px"><span class="spinner"></span><span class="tiny">'+t("walletVerifying")+'</span></div>':"");
+  }
+  var foot = w.stage==="sign"
+    ? '<button class="btn" type="button" data-act="walletClose">'+t("cancel")+'</button><button class="btn primary" type="button" data-act="walletSign">'+t("signMessage")+'</button>'
+    : (w.stage==="error"
+      ? '<button class="btn" type="button" data-act="walletClose">'+t("close")+'</button><button class="btn primary" type="button" data-act="walletRetry">'+t("stRetry")+'</button>'
+      : '<button class="btn" type="button" data-act="walletClose">'+t("cancel")+'</button>');
+  return '<div class="mask" data-act="walletClose"><div class="modal" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+(w.stage==="pick"?t("walletPick"):t("walletSignTitle"))+'</b>'
+   + '<button class="modal-x" type="button" data-act="walletClose" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b">'+body+'</div><div class="modal-f">'+foot+'</div></div></div>';
+}
+function modalReconsent(){
+  var scrolled=S.modal.scrolled;
+  return '<div class="mask"><div class="modal wide" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+t("reconsentTitle")+'</b></div>'
+   + '<div class="modal-b"><p class="lead" style="margin:0 0 12px">'+t("reconsentBody")+'</p>'
+   + '<div class="sigmsg" id="tosBox" style="max-height:210px;white-space:normal;font-family:var(--sans);font-size:12px">'
+   + '<b>Terms of Service · v3.2 · '+t("demoOnly")+'</b><br><br>'
+   + new Array(9).join('<p style="margin:0 0 10px">'+(S.lang==="en"
+      ? "Placeholder clause. The Terms of Service text, its version, effective time and re-consent rules are owned by WS-301; this prototype only demonstrates the front-end consent interaction."
+      : "占位条款。协议正文、版本号、生效时间与强制重新同意的判定规则归 WS-301 定义，本原型只演示前台同意交互。")+'</p>')
+   + '</div>'+(scrolled?"":'<p class="hint">'+t("reconsentScroll")+'</p>')+'</div>'
+   + '<div class="modal-f"><button class="btn" type="button" data-act="reconsentOut">'+t("signOut")+'</button>'
+   + '<button class="btn primary'+(scrolled?"":" quiet")+'" type="button" data-act="reconsentAgree">'+t("reconsentAgree")+'</button></div></div></div>';
+}
+function modalGate(){
+  var g=S.modal, a=S.acct||{};
+  var need=!a.email?"email":(!a.wallet?"wallet":null);
+  var remain=(!a.email?1:0)+(!a.wallet?1:0);
+  if(!need){
+    return '<div class="mask" data-act="gateClose"><div class="modal" role="dialog" aria-modal="true">'
+     + '<div class="modal-h"><b>'+t("allSet")+'</b><button class="modal-x" type="button" data-act="gateClose" aria-label="'+t("close")+'">✕</button></div>'
+     + '<div class="modal-b"><div class="note green"><span class="ico">✓</span><div>'+t("allSet")+'</div></div></div>'
+     + '<div class="modal-f"><button class="btn primary" type="button" data-act="gateContinue">'+t("startKyc")+'</button></div></div></div>';
+  }
+  var body='<p class="lead" style="margin:0 0 14px">'+t("gateBody")+'</p>'
+    + (g.total>1?'<p class="tiny" style="margin-bottom:10px">'+(g.total-remain+1)+" / "+g.total+'</p>':"");
+  if(need==="email"){
+    body+=field("gateEmail","labelEmail",{type:"email"}) + codeField("gate",{purpose:"purposeSignIn"})
+      + '<button class="btn primary block" type="button" data-act="gateEmailSubmit">'+t("save")+'</button>';
+  } else {
+    body+='<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
+      + '<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeLink">'+t("connectWallet")+'</button>';
+  }
+  return '<div class="mask" data-act="gateClose"><div class="modal" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+(need==="email"?t("gateEmail"):t("gateWallet"))+'</b>'
+   + '<button class="modal-x" type="button" data-act="gateClose" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b">'+body+'</div></div></div>';
+}
+function modalAdmCreate(){
+  var sub=S.admin.listState==="submitting", fail=S.admin.listState==="submitfail";
+  return '<div class="mask" data-act="admClose"><div class="modal" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+t("admCreate")+'</b><button class="modal-x" type="button" data-act="admClose" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b">'
+   + (fail?'<div class="note red" role="alert" style="margin-bottom:12px"><span class="ico">!</span><div><b>'+t("stSubmitFailTitle")+'</b><p>'+t("stSubmitFailBody")+'</p></div></div>':'')
+   + field("acEmail","labelWorkEmail",{type:"email",ph:"name@demo-console.test"})
+   + field("acName","labelName")
+   + '<div class="note amber"><span class="ico">!</span><div>'+t("admDeliverOffline")+'</div></div>'
+   + '</div><div class="modal-f"><button class="btn" type="button" data-act="admClose">'+t("cancel")+'</button>'
+   + '<button class="btn primary" type="button" data-act="admCreateSubmit" '+(sub?"disabled":"")+'>'
+   + (sub?'<span class="spinner"></span>'+t("stSubmitting"):t("admCreate"))+'</button></div></div></div>';
+}
+function modalAdmCreated(){
+  return '<div class="mask"><div class="modal" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+t("adminCreated")+'</b></div>'
+   + '<div class="modal-b"><div class="row-k">'+t("admInitialPwd")+'</div>'
+   + '<div class="hash" style="width:100%;justify-content:space-between;font-size:15px"><span class="val">'+esc(S.modal.pwd)+'</span>'
+   + '<button class="ico" type="button" data-act="copyaddr" data-v="'+esc(S.modal.pwd)+'" aria-label="'+t("copyAddress")+'">⧉</button></div>'
+   + '<p class="hint">'+t("initExpiresOn",{t:fmtTime(S.modal.expires)})+'</p>'
+   + '<div class="note amber" style="margin-top:12px"><span class="ico">!</span><div>'+t("admDeliverOffline")+'</div></div>'
+   + '</div><div class="modal-f"><button class="btn primary" type="button" data-act="admCreatedDone">'+t("savedIt")+'</button></div></div></div>';
+}
+function modalAdmConfirm(){
+  var m=S.modal;
+  return '<div class="mask" data-act="admClose"><div class="modal" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+m.title+'</b><button class="modal-x" type="button" data-act="admClose" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b">'
+   + (m.error?'<div class="note red" role="alert" style="margin-bottom:12px"><span class="ico">!</span><div>'+esc(m.error)+'</div></div>':'')
+   + '<p class="lead" style="margin:0">'+m.body+'</p></div>'
+   + '<div class="modal-f"><button class="btn" type="button" data-act="admClose">'+t("cancel")+'</button>'
+   + '<button class="btn '+(m.danger?"danger":"primary")+'" type="button" data-act="'+m.confirmAct+'" data-i="'+m.idx+'" '+(m.busy?"disabled":"")+'>'
+   + (m.busy?'<span class="spinner"></span>'+t("stWaiting"):t("confirm"))+'</button></div></div></div>';
+}
+function modalAdmExtend(){
+  return '<div class="mask"><div class="modal" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+t("sExpiring")+'</b></div>'
+   + '<div class="modal-b"><p class="lead" style="margin:0">'+t("sInactivity")+'</p></div>'
+   + '<div class="modal-f"><button class="btn" type="button" data-act="adminSignout">'+t("signOut")+'</button>'
+   + '<button class="btn primary" type="button" data-act="admClose">'+t("staySignedIn")+'</button></div></div></div>';
+}
+function modalDoc(){
+  return '<div class="mask" data-act="docClose"><div class="modal wide" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+(S.modal.doc==="tos"?"Terms of Service":"Privacy Policy")+' · '+t("demoOnly")+'</b>'
+   + '<button class="modal-x" type="button" data-act="docClose" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b"><p class="lead" style="margin:0">'+(S.lang==="en"
+      ? "Document body, version and effective time are owned by WS-301. Opening it does not reset the sign-in form."
+      : "协议正文、版本与生效时间归 WS-301 定义。打开它不会打断登录表单的填写状态。")+'</p></div></div></div>';
+}
+
+/* ================================ 抽屉 =================================== */
+function renderDrawer(){
+  if(!S.drawer) return "";
+  return '<div class="drawer-scrim" data-act="closeDrawer"></div>'
+   + (S.drawer==="prd" ? drawerPrd() : drawerProto());
+}
+/* PRD 摘录里的 **强调** 与 `代码` 渲染为 HTML；先转义，避免注入 */
+function md(x){
+  return esc(x).replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>")
+               .replace(/`([^`]+)`/g,'<code class="mono">$1</code>');
+}
+function drawerPrd(){
+  var d=PRD[prdKey()];
+  if(!d) return '<aside class="drawer prd"><div class="drawer-h"><b>PRD</b>'
+    + '<button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">✕</button></div>'
+    + '<div class="drawer-b"><p class="tiny">本页无独立 PRD 摘录。</p></div></aside>';
+  function sec(label,items,count,open){
+    if(!items||!count) return "";
+    return '<details class="prd-sec"'+(open?" open":"")+'><summary><span class="caret">▸</span>'+label
+      +'<span class="cnt">'+count+'</span></summary><div class="bd">'+items+'</div></details>';
+  }
+  var fields=(d.fields||[]).map(function(x){
+    return '<div class="prd-item"><div class="k">'+esc(x[0])+'<span class="meta">'+esc(x[1])+'</span></div><div class="v">'+md(x[2])+'</div></div>';
+  }).join("");
+  var rules=(d.rules||[]).map(function(x){
+    return '<div class="prd-item"><div class="k">'+esc(x[0])+'</div><div class="v">'+md(x[1])+'</div></div>';
+  }).join("");
+  var states=(d.states||[]).map(function(x){
+    return '<div class="prd-item"><div class="k">'+esc(x[0])+'</div><div class="v">'+md(x[1])+'</div></div>';
+  }).join("");
+  var copy=(d.copy||[]).map(function(x){
+    return '<div class="prd-copy"><span class="sc">'+esc(x[0])+'</span><span class="en">EN&nbsp;&nbsp;'+esc(x[1])+'</span>'
+      + '<span class="zh">中文&nbsp;&nbsp;'+esc(x[2])+'</span></div>';
+  }).join("");
+  var ac=(d.ac||[]).map(function(x){
+    return '<div class="prd-ac"><code>'+esc(x[0])+'</code><span>'+md(x[1])+'</span></div>';
+  }).join("");
+  return '<aside class="drawer prd" role="complementary" aria-label="PRD">'
+   + '<div class="drawer-h"><b>PRD · '+esc(d.title)+'</b>'
+   + '<button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="drawer-b">'
+   + '<div class="prd-src">'+esc(d.src)+'</div>'
+   + sec("① 字段与校验规则",fields,(d.fields||[]).length,true)
+   + sec("② 关键业务规则",rules,(d.rules||[]).length,true)
+   + sec("③ 状态与异常分支",states,(d.states||[]).length,false)
+   + sec("④ 中英双语文案",copy,(d.copy||[]).length,false)
+   + sec("⑤ 验收标准",ac,(d.ac||[]).length,false)
+   + '<div class="prd-foot">本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD。完整口径以 '
+   + 'chain-financing-account-auth-prd.md (v4) 为准。面板固定中文，是给前端开发看的规格说明，不属于产品界面。</div>'
+   + '</div></aside>';
+}
+function drawerProto(){
+  var f=S.flags;
+  function ck(k,label){ return '<label class="pp-item"><input type="checkbox" data-flag="'+k+'" '+(f[k]?"checked":"")+'><span>'+label+'</span></label>'; }
+  var groups=[["资产端 · 未登录",["P-A01","P-A07","P-A03","P-A04","P-A05","P-A06"]],
+              ["资产端 · 已登录",["P-A10","LAND","P-A11","P-A12","P-A13","P-A14","P-A15"]],
+              ["管理端",["P-M01","P-M02","P-M03","P-M04","P-M05","P-M06"]]];
+  var pages=groups.map(function(g){
+    return '<div class="pp-sec">'+g[0]+'</div>'
+      + g[1].map(function(id){
+          return '<button class="pp-link" type="button" data-act="go" data-v="'+id+'" aria-current="'+(S.page===id)+'">'
+            + '<code>'+id+'</code><span>'+pageName(id)+'</span></button>';}).join("");
+  }).join("");
+  return '<aside class="drawer" role="complementary" aria-label="Prototype controls">'
+   + '<div class="drawer-h"><b>'+t("protoPanel")+'</b>'
+   + '<button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="drawer-b">'
+   + '<div class="pp-note">原型内部控制：切换端、直达页面、打开演示分支。它不是产品功能，正式实现时整块移除。<br>'
+   + '演示口径：<b>'+DEMO_EMAIL_PWD+'</b>（密码 <b>'+DEMO_PASSWORD+'</b>）与 <b>'+DEMO_EMAIL_NOPWD+'</b>（无密码）为已建号账户；其余邮箱视为首次登录 → 自动建号。验证码任意 6 位数字通过，000000 视为无效码。</div>'
+   + '<div class="pp-sec">端</div><div class="pp-grid">'
+   + '<button class="btn sm'+(S.end==="asset"?" primary":"")+'" type="button" data-act="switchEnd" data-v="asset">'+t("endAsset")+'</button>'
+   + '<button class="btn sm'+(S.end==="admin"?" primary":"")+'" type="button" data-act="switchEnd" data-v="admin">'+t("endAdmin")+'</button>'
+   + '<button class="btn sm" type="button" data-act="resetProto">重置状态</button></div>'
+   + pages
+   + '<div class="pp-sec">账户与登录</div>'
+   + ck("knownEmail","把当前输入的邮箱当作已建号账户")
+   + ck("reconsent","登录后触发 C-03 强制重新同意")
+   + ck("disabled","该账户已被停用")
+   + '<div class="pp-sec">滑块与限频</div>'
+   + ck("capFail","滑块下一次校验必定失败")
+   + ck("capLoadFail","滑块资源加载失败")
+   + ck("ipRisk","IP 层风控命中：登录提交前强制滑块")
+   + ck("quota","发码超限（滑块通过后仍被限频拒绝）")
+   + '<div class="pp-grid" style="margin-top:6px">'
+   + ["email","ip","device"].map(function(k){
+       return '<button class="btn sm" type="button" data-act="quotaKind" data-qk="'+k+'" aria-pressed="'+(f.quotaKind===k)+'">'
+         +({email:"邮箱额度",ip:"IP 维度",device:"设备维度"})[k]+'</button>';}).join("")+'</div>'
+   + '<div class="pp-sec">钱包（C-06）</div>'
+   + ck("walletNew","钱包返回未绑定地址（走建号）")
+   + ck("sigReject","用户在钱包中拒绝签名")
+   + ck("sigFail","验签失败（计入失败计数）")
+   + ck("noWallet","未检测到可用钱包")
+   + ck("wrongNet","网络不受支持")
+   + ck("sdkFail","钱包 SDK 加载失败")
+   + '<div class="pp-sec">锁定与会话</div>'
+   + '<div class="pp-grid">'
+   + '<button class="btn sm" type="button" data-act="demoFail">+1 次失败（当前 '+S.fail+'）</button>'
+   + '<button class="btn sm" type="button" data-act="demoLock">进入锁定态</button>'
+   + '<button class="btn sm" type="button" data-act="demoUnlock">解除锁定</button></div>'
+   + '<div class="pp-grid" style="margin-top:6px">'
+   + [["sPwdChanged","改密踢出"],["sEmailChanged","改邮箱踢出"],["sWalletChanged","改钱包踢出"],
+      ["sOtherDevice","他设备退出"],["sExpired","会话过期"],["sByAdmin","管理员终止"]].map(function(p){
+       return '<button class="btn sm" type="button" data-act="demoKick" data-v="'+p[0]+'">'+p[1]+'</button>';}).join("")+'</div>'
+   + ck("expiring","落地页展示会话即将过期提示条")
+   + '<div class="pp-sec">管理端</div>'
+   + ck("lastAdmin","只剩一个可用管理员")
+   + ck("serverReject","服务端拒绝（并发停用场景）")
+   + '<div class="pp-grid"><button class="btn sm" type="button" data-act="demoMustReset">下次登录触发首登重置</button>'
+   + '<button class="btn sm" type="button" data-act="demoAdmExtend">到期续期弹窗</button></div>'
+   + '<div class="pp-sec">地址展示</div>'
+   + ck("noExplorer","链 ID 无对应区块浏览器（降级）")
+   + '</div></aside>';
+}
+
+/* ================================ 渲染 =================================== */
+function renderContent(){
+  switch(S.page){
+    case "P-A10": return pageGuide();
+    case "LAND":  return pageLanding();
+    case "P-A11": return pageSecurity();
+    case "P-A12": case "P-A13": case "P-A14": return pageFlow();
+    case "P-A15": return pagePrefs();
+    case "P-M05": return pageAdminChangePwd();
+    case "P-M06": return pageAdminAccounts();
+  }
+  return "";
+}
+function renderFocus(){
+  switch(S.page){
+    case "P-A01": case "P-A07": return pageLogin();
+    case "CREATED": return pageCreated();
+    case "P-A03": return pageForgot1();
+    case "P-A04": return pageForgot2();
+    case "P-A05": return pageRecover1();
+    case "P-A06": return pageRecover2();
+    case "P-M01": return pageAdminLogin();
+    case "P-M02": return pageAdminFirstReset();
+    case "P-M03": return pageAdminForgot1();
+    case "P-M04": return pageAdminForgot2();
+  }
+  return "";
+}
+function renderNav(){
+  var end=S.end, html="", lastGrp=null;
+  Object.keys(ROUTES).forEach(function(id){
+    var r=ROUTES[id];
+    if(r.layout!=="app" || r.end!==end) return;
+    if(r.grp!==lastGrp){ html+='<div class="nav-label">'+t(r.grp)+'</div>'; lastGrp=r.grp; }
+    html+='<button class="nav-item'+(S.page===id?" active":"")+'" type="button" data-act="go" data-v="'+id+'">'
+      + '<span class="nav-ico">'+r.ico+'</span><span>'+t(r.nav)+'</span><span class="nav-tag">'+id+'</span></button>';
+  });
+  return html;
+}
+function renderSideFoot(){
+  if(S.end==="admin"){
+    return '<div class="op-row"><div class="op-avatar">AD</div><div><div class="op-name">'+esc(DEMO_ME)+'</div>'
+     + '<div class="op-role">Administrator · '+t("demoOnly")+'</div></div></div>'
+     + '<button class="btn sm" style="margin-top:9px;width:100%" data-act="adminSignout">'+t("signOut")+'</button>';
+  }
+  var a=S.acct||{};
+  var idLine = a.email ? esc(a.email) : (a.wallet ? shortAddr(a.wallet) : "—");
+  return '<div class="op-row"><div class="op-avatar">CF</div><div><div class="op-name">'+idLine+'</div>'
+   + '<div class="op-role">'+t("signedInAs")+' · '+t("demoOnly")+'</div></div></div>'
+   + '<div class="side-chip"><span class="dot'+(a.email&&a.wallet?"":" warn")+'"></span>'
+   + t("accStatus")+" · "+(a.email&&a.wallet?t("stActiveAcc"):t("stIncomplete"))+'</div>'
+   + '<button class="btn sm" style="margin-top:9px;width:100%" data-act="signout">'+t("signOut")+'</button>';
+}
+function renderTopRight(){
+  return '<span class="tchip">'+t("demoOnly")+'</span>'
+   + '<button class="tchip is-btn'+(S.drawer==="proto"?" on":"")+'" type="button" data-act="openProto">'+t("protoPanel")+'</button>'
+   + langSwitcher();
+}
+function render(){
+  var focusKey=document.activeElement&&document.activeElement.getAttribute
+               ? document.activeElement.getAttribute("data-f") : null;
+  var selStart=document.activeElement&&document.activeElement.selectionStart;
+  var r=route();
+  S.end=r.end;
+  document.documentElement.setAttribute("data-end",r.end);
+
+  var isFocus = r.layout==="focus";
+  q("#focus").hidden = !isFocus;
+  q("#app").hidden = isFocus;
+  if(isFocus){
+    q("#focus").innerHTML = renderFocus();
+    q("#nav").innerHTML=""; q("#sideFoot").innerHTML=""; q("#topRight").innerHTML=""; q("#content").innerHTML="";
+  } else {
+    q("#focus").innerHTML="";
+    q("#brandSub").textContent = S.end==="admin" ? t("adminConsole") : t("endAsset");
+    q("#nav").innerHTML = renderNav();
+    q("#sideFoot").innerHTML = renderSideFoot();
+    q("#crumb").innerHTML = '<span>'+(S.end==="admin"?t("adminConsole"):t("endAsset"))
+      + ' / </span><b>'+esc(pageName(S.page))+'</b> <span class="mono faint" style="font-size:10px">'+S.page+'</span>';
+    q("#topRight").innerHTML = renderTopRight();
+    q("#content").innerHTML = renderContent();
+  }
+  q("#layers").innerHTML = renderToasts() + renderModal() + renderDrawer();
+
+  if(focusKey){
+    var n=q('[data-f="'+focusKey+'"]');
+    if(n){ n.focus(); try{ if(selStart!=null&&n.setSelectionRange) n.setSelectionRange(selStart,selStart); }catch(e){} }
+  }
+  if(S.modal&&S.modal.type==="captcha"){ drawCaptcha(false); renderCapMsg(); }
+}
+function renderToasts(){
+  if(!S.toasts.length) return "";
+  return '<div class="toasts" role="region" aria-live="polite">'+S.toasts.map(function(x){
+    return '<div class="toast '+x.kind+'"><span class="ico">'+(x.kind==="danger"?"!":"✓")+'</span>'
+      + '<div class="tx"><b>'+esc(x.title)+'</b>'+(x.body?'<span>'+esc(x.body)+'</span>':'')
+      + (x.link?'<div style="margin-top:3px"><a href="#" data-act="go" data-v="P-A03">'+esc(x.link)+'</a></div>':'')+'</div>'
+      + '<button class="cl" type="button" data-act="toastClose" data-i="'+x.id+'" aria-label="'+t("close")+'">✕</button></div>';
+  }).join("")+'</div>';
+}
+
+/* ================================ 交互 =================================== */
+function loginAccount(via,email,wallet,created){
+  S.acct={email:email||null, wallet:wallet||null, hasPwd:(email===DEMO_EMAIL_PWD), createdVia:via,
+          status:(email&&wallet)?"active":"incomplete"};
+  S.justCreated=!!created; S.fail=0; S.lockUntil=0;
+  postLogin();
+}
+function postLogin(){
+  if(S.flags.disabled){ S.err.loginTop=t("eDisabled"); S.acct=null; S.page="P-A01"; render(); return; }
+  if(S.flags.reconsent){ S.modal={type:"reconsent",scrolled:false}; render(); return; }
+  S.page = S.justCreated ? "CREATED" : "LAND";
+  S.modal=null; render();
+}
+function countFail(kind){
+  S.fail++;
+  if(S.fail>=5){ S.lockUntil=now()+30*60*1000; S.err.loginPwd=t("lockJust",{m:30}); S.login.tab="code"; }
+  else if(S.fail>=3) S.err[kind==="sig"?"loginEmail":"loginPwd"]=kind==="sig"?t("lockSigLeft",{n:5-S.fail}):t("lockPwdLeft",{n:5-S.fail});
+  else S.err[kind==="sig"?"loginEmail":"loginPwd"]=kind==="sig"?t("eSigFailed"):t("ePwdLogin");
+  render();
+}
+function walletOpen(purpose,after){
+  if(S.flags.sdkFail){ S.wallet={stage:"error",err:t("eWalletSvc"),purpose:purpose,after:after}; S.modal={type:"wallet"}; render(); return; }
+  if(S.flags.noWallet){ S.wallet={stage:"error",err:t("eNoWallet"),purpose:purpose,after:after}; S.modal={type:"wallet"}; render(); return; }
+  S.wallet={stage:"pick",purpose:purpose,after:after}; S.modal={type:"wallet"}; render();
+}
+function walletConnect(){
+  S.wallet.stage="connecting"; render();
+  later(700,function(){
+    if(S.flags.wrongNet){ S.wallet.stage="error"; S.wallet.err=t("eNetwork"); render(); return; }
+    S.wallet.addr = S.flags.walletNew ? DEMO_ADDR_NEW : DEMO_ADDR_BOUND;
+    S.wallet.stage="sign"; render();
+  });
+}
+function walletSign(){
+  S.wallet.stage="signing"; render();
+  later(800,function(){
+    if(S.flags.sigReject){ S.wallet.stage="error"; S.wallet.err=t("eSigRejected"); render(); return; }
+    S.wallet.stage="verifying"; render();
+    later(700,function(){
+      if(S.flags.sigFail){
+        S.wallet.stage="error"; S.wallet.err=t("eSigFailed");
+        S.wallet.errSub = S.fail>=2 ? t("lockSigLeft",{n:Math.max(0,4-S.fail)}) : "";
+        S.fail++;
+        if(S.fail>=5){ S.lockUntil=now()+30*60*1000; S.modal=null; S.wallet=null; S.login.tab="code";
+          S.page="P-A01"; S.err.loginPwd=t("lockJust",{m:30}); render(); return; }
+        render(); return;
+      }
+      var cb=S.wallet.after, addr=S.wallet.addr;
+      S.modal=null; S.wallet=null; render();
+      if(cb) cb(addr);
+    });
+  });
+}
+function finishFlow(kind){
+  var a=S.acct;
+  if(kind==="email"){
+    var had=!!a.email, ne=(S.form.newEmail||S.form.gateEmail||"new@demo-mail.test");
+    a.email=ne;
+    if(had){ endSession("sEmailChanged",ne,true); toast("success",t("okEmailUpdated"),t("sAllDevices")); }
+    else afterFirstBind(t("okEmailAdded"));
+  } else if(kind==="pwd"){
+    var hadP=a.hasPwd, em=a.email; a.hasPwd=true;
+    endSession("sPwdChanged",em,true);
+    toast("success",hadP?t("okPwdUpdated"):t("okPwdSet"),t("sAllDevices"));
+  } else {
+    var hadW=!!a.wallet, em2=a.email; a.wallet=DEMO_ADDR_NEW;
+    if(hadW){ endSession("sWalletChanged",em2,true); toast("success",t("okWalletUpdated"),t("sAllDevices")); }
+    else afterFirstBind(t("okWalletLinked"));
+  }
+}
+/* PRD 12.1.1 例外：首次绑定（从无到有）不触发会话失效 */
+function afterFirstBind(msg){
+  S.acct.status=(S.acct.email&&S.acct.wallet)?"active":"incomplete";
+  S.flow=null; S.form={}; S.err={}; S.page="P-A11"; render();
+  toast("success",msg,S.acct.status==="active"?t("allSet"):"");
+}
+function validPwdPair(a,b){
+  var p=S.form[a]||"", p2=S.form[b]||"";
+  S.err={};
+  if(/\s/.test(p)){ S.err[a]=t("ePwdSpace"); render(); return false; }
+  var okL=pwdOkLen(p), okC=pwdOkCplx(p);
+  if(!okL&&!okC){ S.err[a]=t("ePwdBoth"); render(); return false; }
+  if(!okL){ S.err[a]=t("ePwdLen"); render(); return false; }
+  if(!okC){ S.err[a]=t("ePwdCplx"); render(); return false; }
+  if(p!==p2){ S.err[b]=t("ePwdMatch"); render(); return false; }
+  if(p===DEMO_PASSWORD){ S.err[a]=t("ePwdSameCurrent"); render(); return false; }  /* 服务端比对结果（演示） */
+  return true;
+}
+function doLogin(){
+  S.err={};
+  /* IP 层风控命中后，登录提交同样先过滑块（PRD 12.2.2），文案不解释触发原因 */
+  if(S.flags.ipRisk && !S.ipRiskPassed){
+    openCaptcha("purposeSignIn",function(){ S.ipRiskPassed=true; doLogin(); });
+    return;
+  }
+  S.ipRiskPassed=false;
+  if(!S.login.agree){
+    S.err.agree=t("eTerms"); S.err._shake=true; render();
+    later(400,function(){ S.err._shake=false; render(); }); return;
+  }
+  var email=(S.form.loginEmail||"").trim();
+  if(S.login.tab==="code"){
+    if(!isEmail(email)){ S.err.loginEmail=t("eEmailFmt"); render(); return; }
+    var code=S.form.logincode||"";
+    if(!/^\d{6}$/.test(code)){ S.err.loginCode=t("eCodeReq"); render(); return; }
+    if(code==="000000"){
+      S.codeTries++;
+      if(S.codeTries>=5){ S.codeTries=0; S.form["_sent_login"]=false; S.form.logincode="";
+        S.err.loginCode=t("eCodeTooMany"); render(); return; }
+      S.err.loginCode=t("eCodeBad"); render(); return;
+    }
+    S.codeTries=0;
+    var known=S.flags.knownEmail||email===DEMO_EMAIL_PWD||email===DEMO_EMAIL_NOPWD;
+    if(known) loginAccount("email_code",email,(email===DEMO_EMAIL_PWD?DEMO_ADDR_BOUND:null),false);
+    else loginAccount("email_code",email,null,true);       /* 首次登录即建号 */
+    return;
+  }
+  if(S.login.tab==="pwd"){
+    if(!isEmail(email)){ S.err.loginEmail=t("eEmailFmt"); render(); return; }
+    if(!S.form.loginPwd){ S.err.loginPwd=t("ePwdReq"); render(); return; }
+    if(email===DEMO_EMAIL_PWD && S.form.loginPwd===DEMO_PASSWORD){
+      loginAccount("email_code",email,DEMO_ADDR_BOUND,false); return;
+    }
+    countFail("pwd"); return;    /* 三种失败情形返回完全一致的提示 */
+  }
+}
+function handleWalletEntry(purpose){
+  if(S.page==="P-A05"){
+    walletOpen("purposeRecovery",function(addr){
+      if(addr===DEMO_ADDR_NEW){ S.err.rcWallet=true; render(); return; }   /* 恢复入口不建号 */
+      S.err={}; S.page="P-A06"; render();
+    });
+    return;
+  }
+  if(S.page==="P-A01"){
+    if(!S.login.agree){ S.err.agree=t("eTerms"); S.err._shake=true; render();
+      later(400,function(){ S.err._shake=false; render(); }); return; }
+    walletOpen("purposeSignIn",function(addr){
+      if(addr===DEMO_ADDR_NEW) loginAccount("wallet",null,addr,true);      /* 未绑定地址 → 建号 */
+      else loginAccount("wallet",DEMO_EMAIL_PWD,addr,false);
+    });
+    return;
+  }
+  if(S.modal&&S.modal.type==="gate"){
+    walletOpen("purposeLink",function(addr){
+      S.acct.wallet=addr; S.acct.status=(S.acct.email&&S.acct.wallet)?"active":"incomplete"; render();
+    });
+    return;
+  }
+  if(S.flow){
+    var f=S.flow;
+    if(f.step===0){ walletOpen("purposeReauth",function(){ f.step=1; S.err={}; render(); toast("success",t("reauthOk")); }); return; }
+    if(f.id==="P-A14"&&f.step===1){ walletOpen("purposeUnlink",function(){ f.step=2; render(); }); return; }
+    if(f.id==="P-A14"){ walletOpen("purposeLink",function(){ finishFlow("wallet"); }); return; }
+  }
+  walletOpen(purpose||"purposeSignIn",function(){ render(); });
+}
+function startFlow(id){
+  if(!S.acct) S.acct={email:DEMO_EMAIL_PWD,wallet:null,hasPwd:true,createdVia:"email_code",status:"incomplete"};
+  S.flow={id:id,step:0,factor:null}; S.form={}; S.err={}; S.page=id; render();
+}
+function doAdminLogin(){
+  S.err={};
+  if(!isEmail(S.form.admEmail)){ S.err.admEmail=t("eEmailFmt"); render(); return; }
+  if(!S.form.admPwd){ S.err.admPwd=t("ePwdReq"); render(); return; }
+  if(S.form.admPwd!==DEMO_PASSWORD){
+    S.admin.fail++;
+    if(S.admin.fail>=5){ S.admin.lockUntil=now()+30*60*1000; S.err.admPwd=t("lockJust",{m:30}); }
+    else if(S.admin.fail>=3) S.err.admPwd=t("lockPwdLeft",{n:5-S.admin.fail});
+    else S.err.admPwd=t("ePwdLoginAdmin");
+    render(); return;
+  }
+  S.admin.session=true; S.form={}; S.err={};
+  S.page = S.admin.mustReset ? "P-M02" : "P-M06";
+  render();
+}
+function admCreateSubmit(){
+  if(!isEmail(S.form.acEmail)){ S.err.acEmail=t("eEmailFmt"); render(); return; }
+  if(!S.form.acName){ S.err.acName=t("eEmailReq"); render(); return; }
+  S.admin.listState="submitting"; render();
+  later(900,function(){
+    if(S.flags.serverReject){ S.admin.listState="submitfail"; render(); return; }
+    var exp=new Date(Date.now()+7*86400000).toISOString();
+    S.admin.list.push({email:S.form.acEmail,name:S.form.acName,st:"pending",
+                       created:new Date().toISOString(),last:null,expires:exp});
+    S.admin.listState="default";
+    S.modal={type:"admCreated",pwd:"Dq7m2xR4vT",expires:exp};   /* 演示用初始密码 */
+    render();
+  });
+}
+function admConfirm(idx,kind){
+  var r=S.admin.list[idx]; if(!r) return;
+  if(kind==="disable")
+    S.modal={type:"admConfirm",idx:idx,title:t("admConfirmDisable"),body:t("admConfirmDisableBody",{email:r.email}),
+             confirmAct:"admDoDisable",danger:true};
+  else
+    S.modal={type:"admConfirm",idx:idx,title:t("admUnlockTitle"),body:t("admUnlockBody",{email:r.email}),confirmAct:"admDoUnlock"};
+  render();
+}
+function admDo(idx,kind){
+  var r=S.admin.list[idx]; if(!r) return;
+  if(kind==="disable"){
+    S.modal.busy=true; render();
+    later(700,function(){
+      /* 服务端是唯一防线：即便前端未置灰，服务端也会拒绝（PRD 7.9.1 / AC-162） */
+      var after=S.admin.list.filter(function(x,j){ return j!==idx&&(x.st==="active"||x.st==="pending"||x.st==="locked"); }).length;
+      if(S.flags.serverReject||after===0){ S.modal.busy=false; S.modal.error=t("eLastAdmin"); render(); return; }
+      r.st="disabled"; S.modal=null; render(); toast("success",t("stDisabled")+" · "+r.email);
+    });
+    return;
+  }
+  if(kind==="unlock"){
+    S.modal.busy=true; render();
+    later(600,function(){ r.st="active"; r.lockLeft=0; S.modal=null; render(); toast("success",t("unlocked")); });
+    return;
+  }
+  if(kind==="restore"){ r.st="active"; render(); toast("success",t("stActive")+" · "+r.email); return; }
+  if(kind==="regen"){
+    var exp=new Date(Date.now()+7*86400000).toISOString();
+    r.st="pending"; r.expires=exp; S.modal={type:"admCreated",pwd:"Kf9t3nQ8wZ",expires:exp}; render();
+  }
+}
+function switchEnd(end){
+  S.end=end; S.drawer=null; S.modal=null; S.err={}; S.form={};
+  if(end==="admin") S.page = S.admin.session ? "P-M06" : "P-M01";
+  else S.page = S.acct ? "LAND" : "P-A01";
+  render();
+}
+
+/* -------------------------- 事件：点击（委托） --------------------------- */
+document.addEventListener("click",function(e){
+  var node=e.target.closest("[data-act]"); if(!node) return;
+  var act=node.getAttribute("data-act"), v=node.getAttribute("data-v"), i=node.getAttribute("data-i");
+  if(node.classList.contains("mask")&&e.target!==node) return;   /* 点遮罩才关闭 */
+  if(node.tagName==="A"&&node.getAttribute("href")&&node.getAttribute("href")!=="#") return;
+  e.preventDefault();
+
+  switch(act){
+    case "lang": S.lang=v; render(); break;
+    case "openPrd": S.drawer = S.drawer==="prd"?null:"prd"; render(); break;
+    case "openProto": S.drawer = S.drawer==="proto"?null:"proto"; render(); break;
+    case "closeDrawer": S.drawer=null; render(); break;
+    case "switchEnd": switchEnd(v); break;
+    case "resetProto": var lg=S.lang; initState(); S.lang=lg; render(); break;
+
+    case "go":
+      S.err={}; S.modal=null; S.wallet=null; S.cap=null; S.drawer=null;
+      if(v==="P-A07"){ S.lockUntil=now()+30*60*1000; S.fail=5; S.page="P-A01"; S.login.tab="code"; render(); break; }
+      if(["P-A10","LAND","P-A11","P-A15"].indexOf(v)>=0 && !S.acct)
+        S.acct={email:DEMO_EMAIL_PWD,wallet:null,hasPwd:true,createdVia:"email_code",status:"incomplete"};
+      if(["P-A12","P-A13","P-A14"].indexOf(v)>=0){ startFlow(v); break; }
+      if(["P-M06","P-M05"].indexOf(v)>=0) S.admin.session=true;
+      if(v==="P-M02") S.admin.mustReset=true;
+      S.page=v; S.flow=null; render(); break;
+
+    case "tab": S.login.tab=v; S.err={}; render(); break;
+    case "toCodeTab": S.login.tab="code"; S.err={}; render(); break;
+    case "toggleShow": S.form["_show_"+node.getAttribute("data-k")]=!S.form["_show_"+node.getAttribute("data-k")]; render(); break;
+    case "toastClose": S.toasts=S.toasts.filter(function(x){return x.id!=i;}); render(); break;
+    case "foldbar": S.barFolded=!S.barFolded; render(); break;
+    case "signout": endSession("sOtherDevice",S.acct?S.acct.email:""); break;
+
+    case "sendcode":
+      var k=node.getAttribute("data-k"); S.form["_sent_"+k]=true;
+      pressSendCode(k,node.getAttribute("data-p")); break;
+
+    case "capClose": S.modal=null; S.cap=null; render(); break;
+    case "capReload": S.flags.capLoadFail=false; render(); drawCaptcha(true); break;
+    case "capRefresh":
+      if(S.capCoolUntil>now()) break;
+      S.cap.seed=(S.seed=(S.seed*7919+13)%100000); S.cap.msg=""; drawCaptcha(true); renderCapMsg(); break;
+
+    case "loginSubmit": doLogin(); break;
+    case "walletConnect": handleWalletEntry(node.getAttribute("data-p")); break;
+    case "walletPick": walletConnect(); break;
+    case "walletSign": walletSign(); break;
+    case "walletRetry": S.wallet.stage="pick"; S.wallet.err=""; render(); break;
+    case "walletClose": S.modal=null; S.wallet=null; render(); break;
+
+    case "reconsentAgree":
+      if(!S.modal.scrolled) break;
+      S.modal=null; S.page=S.justCreated?"CREATED":"LAND"; render(); break;
+    case "reconsentOut": S.acct=null; S.modal=null; S.page="P-A01"; render(); break;
+
+    case "fpNext":
+      if(!isEmail(S.form.fpEmail)){ S.err.fpEmail=t("eEmailFmt"); render(); break; }
+      if(!/^\d{6}$/.test(S.form.fpcode||"")){ S.err.fpCode=t("eCodeReq"); render(); break; }
+      if(S.form.fpcode==="000000"){ S.err.fpCode=t("eCodeBad"); render(); break; }
+      S.err={}; S.page="P-A04"; render(); break;
+    case "fpSubmit":
+      if(!validPwdPair("fpPwd","fpPwd2")) break;
+      S.page="P-A01"; S.form={}; S.err={}; S.fail=0; S.lockUntil=0; render();
+      toast("success",t("okPwdReset"),t("sAllDevices")); break;
+
+    case "rcSubmit":
+      if(!isEmail(S.form.rcEmail)){ S.err.rcEmail=t("eEmailFmt"); render(); break; }
+      if(!/^\d{6}$/.test(S.form.rccode||"")){ S.err.rcCode=t("eCodeReq"); render(); break; }
+      S.page="P-A01"; S.form={}; S.err={}; S.fail=0; S.lockUntil=0; render();
+      toast("success",t("okRecovered"),t("sAllDevices")); break;
+
+    case "guideLinkWallet": walletOpen("purposeLink",function(addr){ S.acct.wallet=addr; afterFirstBind(t("okWalletLinked")); }); break;
+    case "guideAddEmail": startFlow("P-A12"); break;
+    case "guideSetPwd": startFlow("P-A13"); break;
+
+    case "startFlow": startFlow(v); break;
+    case "pickFactor": S.flow.factor=v||null; S.err={}; render(); break;
+    case "reauthSubmit":
+      if(S.flow.factor==="pwd"){
+        if((S.form.reauthPwd||"")!==DEMO_PASSWORD){ S.err.reauthPwd=t("ePwdLogin"); countFail("pwd"); break; }
+      } else if(S.flow.factor==="code"){
+        if(!/^\d{6}$/.test(S.form.reauthcode||"")){ S.err.reauthCode=t("eCodeReq"); render(); break; }
+      }
+      S.flow.step=1; S.err={}; render(); toast("success",t("reauthOk")); break;
+    case "flowNext": S.flow.step=2; S.err={}; render(); break;
+    case "flowAltFactor": S.flow.factor="pwdcode"; S.flow.step=2; render(); break;
+    case "flowSubmit":
+      if(S.flow.id==="P-A12"){
+        if(!isEmail(S.form.newEmail)){ S.err.newEmail=t("eEmailFmt"); render(); break; }
+        if(!/^\d{6}$/.test(S.form.newEmailcode||"")){ S.err.newEmailCode=t("eCodeReq"); render(); break; }
+        finishFlow("email");
+      } else if(S.flow.id==="P-A13"){
+        if(!validPwdPair("np","np2")) break;
+        finishFlow("pwd");
+      }
+      break;
+
+    case "startKyc":
+      var a2=S.acct||{}; S.modal={type:"gate",total:((!a2.email?1:0)+(!a2.wallet?1:0))||1}; render(); break;
+    case "gateClose": S.modal=null; render(); break;
+    case "gateContinue": S.modal=null; render(); toast("success",t("allSet"),"WS-303"); break;
+    case "gateEmailSubmit":
+      if(!isEmail(S.form.gateEmail)){ S.err.gateEmail=t("eEmailFmt"); render(); break; }
+      if(!/^\d{6}$/.test(S.form.gatecode||"")){ S.err.gateCode=t("eCodeReq"); render(); break; }
+      S.acct.email=S.form.gateEmail; S.acct.status=(S.acct.email&&S.acct.wallet)?"active":"incomplete";
+      S.err={}; render(); break;
+
+    case "copyaddr":
+      try{ navigator.clipboard&&navigator.clipboard.writeText(v); }catch(err){}
+      toast("success",t("addrCopied")); break;
+    case "docClose": S.modal=null; render(); break;
+
+    case "adminLogin": doAdminLogin(); break;
+    case "adminSignout": endAdminSession("sOtherDevice"); break;
+    case "adminResetSubmit":
+      if(!S.form.ack){ S.err.ack=t("eAdminNotice"); render(); break; }
+      if(!validPwdPair("mrNew","mrNew2")) break;
+      if((S.form.mrNew||"")===(S.form.mrOld||"")){ S.err.mrNew=t("ePwdSameInitial"); render(); break; }
+      S.admin.mustReset=false; S.admin.session=false; S.page="P-M01"; S.form={}; S.err={}; render();
+      toast("success",t("okPwdReset"),t("sAllDevices")); break;
+    case "mfNext":
+      if(!isEmail(S.form.mfEmail)){ S.err.mfEmail=t("eEmailFmt"); render(); break; }
+      if(!/^\d{6}$/.test(S.form.mfcode||"")){ S.err.mfCode=t("eCodeReq"); render(); break; }
+      S.page="P-M04"; S.err={}; render(); break;
+    case "mfSubmit":
+      if(!validPwdPair("mfPwd","mfPwd2")) break;
+      S.page="P-M01"; S.form={}; S.err={}; S.admin.fail=0; S.admin.lockUntil=0; render();
+      toast("success",t("okPwdReset"),t("sAllDevices")); break;
+    case "apSubmit":
+      if(!validPwdPair("apNew","apNew2")) break;
+      if((S.form.apNew||"")===(S.form.apOld||"")){ S.err.apNew=t("ePwdSameCurrent"); render(); break; }
+      endAdminSession("sPwdChanged"); toast("success",t("okPwdUpdated"),t("sAllDevices")); break;
+    case "admState": S.admin.listState=v; if(v==="submitting"||v==="submitfail") S.modal={type:"admCreate"}; render(); break;
+    case "admFilter": S.admin.filter=v; render(); break;
+    case "admRetry": S.admin.listState="loading"; render(); later(900,function(){ S.admin.listState="default"; render(); }); break;
+    case "admCreateOpen": S.admin.listState="default"; S.modal={type:"admCreate"}; S.form.acEmail=""; S.form.acName=""; render(); break;
+    case "admClose": S.modal=null; S.admin.listState="default"; render(); break;
+    case "admCreateSubmit": admCreateSubmit(); break;
+    case "admCreatedDone": S.modal=null; render(); break;
+    case "admDisable": admConfirm(+i,"disable"); break;
+    case "admRestore": admDo(+i,"restore"); break;
+    case "admUnlock": admConfirm(+i,"unlock"); break;
+    case "admRegen": admDo(+i,"regen"); break;
+    case "admDoDisable": admDo(+i,"disable"); break;
+    case "admDoUnlock": admDo(+i,"unlock"); break;
+    case "admBlocked": toast("danger",node.getAttribute("data-m")); break;
+
+    case "quotaKind": S.flags.quotaKind=node.getAttribute("data-qk"); render(); break;
+    case "demoFail": countFail("pwd"); break;
+    case "demoLock": S.fail=5; S.lockUntil=now()+30*60*1000; S.login.tab="code"; S.page="P-A01"; S.drawer=null; render(); break;
+    case "demoUnlock": S.fail=0; S.lockUntil=0; render(); toast("success",t("unlocked")); break;
+    case "demoKick": S.drawer=null; endSession(v,S.acct?S.acct.email:""); break;
+    case "demoMustReset": S.admin.mustReset=true; S.admin.session=false; S.page="P-M01"; S.drawer=null; render(); break;
+    case "demoAdmExtend": S.admin.session=true; S.page="P-M06"; S.drawer=null; S.modal={type:"admExtend"}; render(); break;
+  }
+});
+
+/* 协议链接：弹层打开，不打断表单 */
+document.addEventListener("click",function(e){
+  var a=e.target.closest("a[data-doc]"); if(!a) return;
+  e.preventDefault(); S.modal={type:"doc",doc:a.getAttribute("data-doc")}; render();
+});
+/* C-03 正文滚动到底才可同意 */
+document.addEventListener("scroll",function(e){
+  var box=e.target;
+  if(box&&box.id==="tosBox"&&S.modal&&S.modal.type==="reconsent"&&!S.modal.scrolled){
+    if(box.scrollTop+box.clientHeight>=box.scrollHeight-6){ S.modal.scrolled=true; render(); }
+  }
+},true);
+
+/* ------------------------------ 输入事件 --------------------------------- */
+document.addEventListener("input",function(e){
+  var n=e.target.closest("[data-f]"); if(!n) return;
+  var k=n.getAttribute("data-f");
+  if(n.type==="checkbox"){
+    if(k==="agree"){ S.login.agree=n.checked; S.err.agree=""; S.err._shake=false; render(); return; }
+    S.form[k]=n.checked; render(); return;
+  }
+  if(k==="tz"){ S.tz=n.value; render(); return; }
+  if(k==="admQ"){ S.admin.q=n.value; render(); return; }
+  S.form[k]=n.value;
+  if(/^(fpPwd|np|mrNew|mfPwd|apNew)$/.test(k)) render();
+});
+document.addEventListener("change",function(e){
+  var n=e.target.closest("[data-flag]");
+  if(n){
+    var fk=n.getAttribute("data-flag");
+    S.flags[fk]=n.checked;
+    if(fk==="lastAdmin") S.admin.list = n.checked ? lastAdminSeed() : adminSeed();
+    render(); return;
+  }
+  var s=e.target.closest('select[data-f]');
+  if(s&&s.getAttribute("data-f")==="tz"){ S.tz=s.value; render(); }
+});
+
+/* 滑块拖拽与键盘 */
+var dragging=false, dragStart=0, dragBase=0;
+document.addEventListener("pointerdown",function(e){
+  var kn=e.target.closest("#capKnob"); if(!kn||!S.cap) return;
+  if(S.capCoolUntil>now()) return;
+  dragging=true; dragStart=e.clientX; dragBase=S.cap.d;
+  kn.setPointerCapture&&kn.setPointerCapture(e.pointerId);
+});
+document.addEventListener("pointermove",function(e){
+  if(!dragging||!S.cap) return;
+  setCapDrag(Math.max(0,Math.min(CAP_W-48,dragBase+(e.clientX-dragStart))));
+});
+document.addEventListener("pointerup",function(){ if(!dragging) return; dragging=false; if(S.cap) capVerify(); });
+document.addEventListener("keydown",function(e){
+  if(!S.cap||!document.activeElement||document.activeElement.id!=="capKnob") return;
+  if(S.capCoolUntil>now()) return;
+  if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
+    e.preventDefault();
+    var step=e.shiftKey?10:2;
+    setCapDrag(Math.max(0,Math.min(CAP_W-48,S.cap.d+(e.key==="ArrowRight"?step:-step))));
+  } else if(e.key==="Enter"){ e.preventDefault(); capVerify(); }
+});
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Escape") return;
+  if(S.drawer){ S.drawer=null; render(); return; }
+  if(S.modal&&S.modal.type!=="reconsent"){ S.modal=null; S.cap=null; S.wallet=null; render(); }
+});
+
+/* -------------------------------- 初始化 --------------------------------- */
+DICT.en.capHelpNote="A security check appears before any code is sent.";
+DICT.zh.capHelpNote="点击发送验证码后会先弹出滑块人机校验。";
+render();
+})();
+</script>
+</body>
+</html>
