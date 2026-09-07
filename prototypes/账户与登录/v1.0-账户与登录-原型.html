@@ -113,10 +113,8 @@ a{color:var(--accent);text-decoration:none;cursor:pointer}
 .mono{font-family:var(--mono)}
 .muted{color:var(--muted)}
 .faint{color:var(--faint)}
-.small{font-size:var(--fs-12)}
 .tiny{font-size:var(--fs-11);color:var(--faint);line-height:1.5}
 .nw{white-space:nowrap}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ============================== 应用外壳 ================================= */
 .app{display:grid;grid-template-columns:238px 1fr;min-height:100vh}
@@ -180,26 +178,18 @@ a{color:var(--accent);text-decoration:none;cursor:pointer}
   background:var(--bg-elev)}
 .focus-body{flex:1;display:flex;justify-content:center;align-items:flex-start;padding:48px 24px 40px}
 .focus-col{width:100%;max-width:470px}
-.focus-col.is-wide{max-width:560px}
 .focus-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 26px;
   border-top:1px solid var(--border);font-size:11.5px;color:var(--faint);background:var(--bg-elev);flex-wrap:wrap}
 
 /* ============================== 通用组件 ================================= */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-.card-h{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.card-h h3{font-size:13px;font-weight:640;margin:0}
-.card-sub{color:var(--faint);font-size:var(--fs-11);font-weight:400}
-.card-r{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .card-b{padding:var(--card-pad)}
-.stack{display:flex;flex-direction:column;gap:16px}
-.split{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:16px;align-items:start}
 
 .page-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px;flex-wrap:wrap}
 .page-title{font-size:var(--fs-19);font-weight:700;letter-spacing:-.01em;margin:0}
 .page-desc{color:var(--muted);font-size:12.5px;margin:3px 0 0;max-width:760px}
 .page-actions{margin-left:auto;display:flex;gap:8px;flex:none;align-items:center;flex-wrap:wrap}
 
-.h2{font-size:var(--fs-16);font-weight:660;margin:0}
 .h3{font-size:13px;font-weight:640;margin:0}
 .lead{color:var(--muted);font-size:12.5px;margin:6px 0 0;line-height:1.6}
 
@@ -212,8 +202,6 @@ a{color:var(--accent);text-decoration:none;cursor:pointer}
   color:#fff;box-shadow:0 2px 12px rgba(37,87,232,.28)}
 .btn.primary:hover:not(:disabled){filter:brightness(1.08);background:linear-gradient(135deg,var(--accent),var(--accent-strong))}
 .btn.danger{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
-.btn.ghost{background:transparent;border-color:transparent;color:var(--accent)}
-.btn.ghost:hover:not(:disabled){background:var(--accent-soft)}
 .btn.sm{height:var(--ctrl-h-sm);padding:0 11px;font-size:var(--fs-11);border-radius:var(--radius-xs)}
 .btn.block{width:100%}
 .btn:disabled{opacity:.45;cursor:not-allowed}
@@ -225,12 +213,10 @@ a{color:var(--accent);text-decoration:none;cursor:pointer}
 
 .pill{display:inline-flex;align-items:center;gap:5px;border-radius:var(--radius-pill);font-size:11.5px;
   font-weight:620;padding:2.5px 9px;white-space:nowrap;border:1px solid transparent}
-.pill.blue{background:#EEF2FF;color:#3538CD;border-color:#C7D2FE}
 .pill.green{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-border)}
 .pill.amber{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-border)}
 .pill.red{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-border)}
 .pill.gray{background:var(--gray-bg);color:var(--gray-fg);border-color:var(--gray-border)}
-.pill.violet{background:var(--violet-bg);color:var(--violet);border-color:var(--violet-border)}
 .pill.dash{background:var(--card-2);color:var(--faint);border:1px dashed var(--border-strong)}
 
 .note{display:flex;gap:9px;align-items:flex-start;background:var(--accent-soft);border:1px solid var(--accent-border);
@@ -333,6 +319,10 @@ td.col-act{vertical-align:top}
   border-right:1px solid var(--border);font-weight:600}
 .seg button:last-child{border-right:0}
 .seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+
+/* 页面级状态切换器（原型控制，替代原来的演示分支开关面板） */
+.statebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.statebar .seg{flex-wrap:wrap}
 
 /* 设置行 */
 .rows{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
@@ -442,9 +432,6 @@ td.col-act{vertical-align:top}
 .pp-sec{font-size:var(--fs-10);font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);
   margin:16px 0 7px}
 .pp-sec:first-child{margin-top:0}
-.pp-grid{display:flex;flex-wrap:wrap;gap:6px}
-.pp-item{display:flex;gap:8px;align-items:flex-start;font-size:11.5px;color:var(--muted);padding:5px 0;line-height:1.45}
-.pp-item input{margin:2px 0 0;accent-color:var(--accent);flex:none}
 .pp-link{display:flex;gap:9px;align-items:baseline;width:100%;text-align:left;padding:6px 9px;border-radius:var(--radius-xs);
   font-size:12px;color:var(--muted)}
 .pp-link:hover{background:var(--card-hover);color:var(--text)}
@@ -495,12 +482,12 @@ td.col-act{vertical-align:top}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ============================== C-05 Toast =============================== */
-.toasts{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;
-  gap:8px;width:min(520px,calc(100% - 32px))}
+.toasts{position:fixed;right:24px;bottom:24px;z-index:300;display:flex;flex-direction:column;gap:8px;
+  width:min(440px,calc(100% - 32px))}
 .toast{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:var(--radius-sm);
   background:var(--bg-elev);border:1px solid var(--border-strong);box-shadow:var(--shadow-lg);font-size:12px;
   line-height:1.5;animation:drop var(--dur-base) var(--ease-out)}
-@keyframes drop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes drop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .toast.danger{border-color:var(--danger-border);background:var(--danger-bg)}
 .toast.success{border-color:var(--ok-border);background:var(--ok-bg)}
 .toast .tx{flex:1}
@@ -527,8 +514,7 @@ td.col-act{vertical-align:top}
 @media (max-width:1100px){
   .app{grid-template-columns:200px 1fr}
   .cbar-mini{left:220px}
-  .split{grid-template-columns:1fr}
-}
+  }
 </style>
 </head>
 <body>
@@ -583,38 +569,28 @@ var DICT = {
     show:"Show", hide:"Hide",
 
     /* 校验与错误 8.5.2 */
-    eEmailReq:"Email is required.",
     eEmailFmt:"Enter a valid email address.",
     eCodeReq:"Enter the 6-digit code.",
     eCodeBad:"Invalid or expired code.",
     eCodeTooMany:"Too many attempts. Please request a new code.",
     ePwdReq:"Password is required.",
     ePwdLogin:"Incorrect email or password. If you haven't set a password, sign in with an email verification code instead.",
-    ePwdLoginAdmin:"Incorrect email or password.",
-    ePwdLen:"Password must be 8–20 characters.",
-    ePwdCplx:"Password must contain at least one letter and one number.",
-    ePwdBoth:"Password must be 8–20 characters and contain at least one letter and one number.",
-    ePwdSpace:"Password cannot contain spaces.",
     ePwdMatch:"Passwords do not match.",
     ePwdSameCurrent:"Your new password must be different from your current password.",
     ePwdSameInitial:"Your new password must be different from the initial password.",
     eTerms:"Please read and agree to the Terms of Service and Privacy Policy.",
     eAdminNotice:"Please confirm you have read the Admin Security Notice.",
     eEmailTaken:"This email is already linked to another account.",
-    eWalletTaken:"This wallet is already linked to another account.",
     eWalletUnlinked:"This wallet is not linked to any account.",
     eWalletUnlinkedHint:"To create an account, sign in with your wallet on the sign-in page.",
     eNoWallet:"No wallet detected. Install a supported wallet to continue.",
     eNetwork:"Please switch your wallet to a supported EVM network.",
     eSigRejected:"Signature request was rejected in your wallet.",
-    eSigExpired:"The signature request expired. Please try again.",
     eSigFailed:"Signature verification failed.",
-    eWalletSvc:"Wallet service is unavailable. Please retry or sign in with your email.",
     eDisabled:"This account has been disabled. Contact support for help.",
     eInitExpired:"Your initial password has expired. Contact an administrator to have it regenerated.",
     eLastAdmin:"This is the only available administrator. Create or activate another administrator before disabling this one.",
     eSelfAction:"You cannot perform this action on your own account.",
-    eNet:"Network error. Please try again.",
 
     /* 建号 / 引导 / 补全 8.5.3 */
     created:"Welcome! Your account has been created.",
@@ -651,28 +627,16 @@ var DICT = {
 
     /* 会话失效 12.1.4 */
     sPwdChanged:"Your password was changed. Please sign in again.",
-    sPwdReset:"Your password was reset. Please sign in again.",
-    sEmailChanged:"Your email address was changed. Please sign in with your new email.",
-    sWalletChanged:"Your wallet address was changed. Please sign in again.",
-    sOtherDevice:"You signed out on another device. Please sign in again.",
-    sExpired:"Your session has expired. Please sign in again.",
-    sByAdmin:"Your session was ended by an administrator. Please sign in again.",
-    sDisabled:"This account has been disabled. Contact support for help.",
     sAllDevices:"For your security, all devices have been signed out.",
     sWasntYou:"Wasn't you? Reset your password.",
     sUnsaved:"Any unsaved changes on this page were not kept.",
     sExpiring:"Your session will expire in 5 minutes. Save your work.",
-    sInactivity:"You were signed out due to inactivity.",
-    staySignedIn:"Stay signed in",
 
     /* 锁定 12.2.5 */
     lockPwdLeft:"Incorrect email or password. {n} attempts remaining before your account is locked.",
-    lockSigLeft:"Signature verification failed. {n} attempts remaining before your account is locked.",
-    lockJust:"Too many failed attempts. Your account is locked for {m} minutes.",
     lockAgain:"Your account is locked. Try again in {m}m {s}s.",
     lockHelpUser:"You can unlock now by resetting your password, or sign in with an email code.",
     lockHelpAdmin:"You can unlock now by resetting your password, or ask another administrator to unlock your account.",
-    unlocked:"Your account has been unlocked.",
     lockTitle:"Account locked",
     lockedTab:"Locked",
 
@@ -687,9 +651,6 @@ var DICT = {
     capHelp:"Need help? Contact support",
     capRefresh:"New puzzle",
     rlEmailQuota:"You've requested too many codes. Please try again in {t}.",
-    rlIp:"Too many requests from your network. Please try again later.",
-    rlDevice:"Too many requests from this device. Please try again later.",
-    rlGeneric:"Too many requests. Please try again in {t}.",
 
     /* 协议 7.3 */
     terms:"I have read and agree to the <a href=\"#\" data-doc=\"tos\">Terms of Service</a> and <a href=\"#\" data-doc=\"pp\">Privacy Policy</a>.",
@@ -701,14 +662,9 @@ var DICT = {
     /* 钱包 C-06 */
     walletPick:"Choose a wallet",
     walletPickSub:"Wallet list is provided by the wallet SDK. Demonstration entries only.",
-    walletConnecting:"Connecting…",
     walletConnected:"Connected",
     walletSignTitle:"Sign message",
     walletSignNote:"This only signs a message. It does not send a transaction, move any assets, or grant any approval.",
-    walletSigning:"Waiting for your wallet…",
-    walletVerifying:"Verifying signature…",
-    walletChain:"Network",
-    walletPurpose:"Purpose",
     purposeSignIn:"Sign in",
     purposeRecovery:"Account recovery",
     purposeReauth:"Re-authenticate",
@@ -719,14 +675,12 @@ var DICT = {
     fpTitle:"Reset your password",
     fpSub:"Enter your email address and we'll send you a verification code.",
     fpStep1:"Verify email", fpStep2:"New password",
-    fpSentAny:"If this email can receive codes, a verification code has been sent.",
     rcTitle:"Recover your account",
     rcSub:"Lost access to your email? Prove ownership of the wallet linked to your account, then set a new email address.",
     rcStep1:"Wallet signature", rcStep2:"New email",
     rcNewEmailTitle:"Set a new email address",
 
-    /* 账户设置 */
-    setSecurity:"Security", setPrefs:"Preferences", setAccount:"Account",
+    /* 账户设置 */ setPrefs:"Preferences", setAccount:"Account",
     secTitle:"Account security", prefTitle:"Preferences",
     rowEmail:"Email address", rowPwd:"Login password", rowWallet:"Wallet address",
     reauthTitle:"Confirm it's you", reauthSub:"Choose one way to verify before changing your security settings.",
@@ -758,13 +712,11 @@ var DICT = {
     admColEmail:"Work email", admColName:"Name", admColStatus:"Status", admColCreated:"Created", admColLast:"Last sign-in", admColAct:"Actions",
     admActDisable:"Disable", admActRestore:"Restore", admActUnlock:"Unlock", admActRegen:"Regenerate initial password", admActRegenShort:"Regenerate", admActDelete:"Delete",
     stActive:"Active",
-    stPending:"Pending first sign-in · Initial password expires on {t}",
     stPendingS:"Pending first sign-in",
     stPendingD:"Initial password expires on {t}",
     stLockedS:"Locked",
     stLockedD:"unlocks in {t}",
     stPendingExpired:"Initial password expired — regenerate to continue",
-    stLocked:"Locked · unlocks in {t}",
     stDisabled:"Disabled",
     admLastTip:"The last available administrator cannot be disabled or deleted.",
     admExpiredNote:"Accounts whose initial password has expired don't count as available administrators.",
@@ -793,16 +745,13 @@ var DICT = {
     stSubmitting:"Submitting…",
     stSubmitFailTitle:"Submission failed",
     stSubmitFailBody:"The server rejected the request. Nothing was changed.",
-    stWaiting:"Waiting for the server…",
 
     /* 演示提示 */
     demoOnly:"Demonstration data",
     navOverview:"Overview", navGuide:"Setup guide", navSecurity:"Security", navPrefs:"Preferences",
     navChangeEmail:"Email", navChangePwd:"Password", navChangeWallet:"Wallet",
     grpAccount:"Account", grpCredentials:"Credential changes", grpConsole:"Console",
-    endAsset:"Asset portal", endAdmin:"Admin console",
-    prdPanel:"PRD", prdOpen:"Open the PRD notes for this page",
-    protoPanel:"Prototype", signedInAs:"Signed in as",
+    endAsset:"Asset portal", endAdmin:"Admin console", prdOpen:"Open the PRD notes for this page", signedInAs:"Signed in as",
     accStatus:"Account status", stIncomplete:"Incomplete", stActiveAcc:"Active"
   },
 
@@ -822,38 +771,28 @@ var DICT = {
     labelWorkEmail:"工作邮箱", labelNewEmail:"新邮箱地址", labelName:"姓名",
     show:"显示", hide:"隐藏",
 
-    eEmailReq:"请输入邮箱。",
     eEmailFmt:"请输入有效的邮箱地址。",
     eCodeReq:"请输入 6 位验证码。",
     eCodeBad:"验证码不正确或已过期。",
     eCodeTooMany:"尝试次数过多，请重新获取验证码。",
     ePwdReq:"请输入密码。",
     ePwdLogin:"邮箱或密码不正确。如果你尚未设置密码，请改用邮箱验证码登录。",
-    ePwdLoginAdmin:"邮箱或密码不正确。",
-    ePwdLen:"密码长度需为 8–20 个字符。",
-    ePwdCplx:"密码需至少包含 1 个英文字母和 1 个数字。",
-    ePwdBoth:"密码需为 8–20 个字符，且至少包含 1 个英文字母和 1 个数字。",
-    ePwdSpace:"密码不能包含空格。",
     ePwdMatch:"两次输入的密码不一致。",
     ePwdSameCurrent:"新密码不能与原密码相同。",
     ePwdSameInitial:"新密码不能与初始密码相同。",
     eTerms:"请阅读并同意《服务条款》和《隐私政策》。",
     eAdminNotice:"请确认已阅读《管理端安全须知》。",
     eEmailTaken:"该邮箱已绑定其他账户。",
-    eWalletTaken:"该钱包地址已绑定其他账户。",
     eWalletUnlinked:"该钱包尚未绑定任何账户。",
     eWalletUnlinkedHint:"如需创建账户，请在登录页使用钱包登录。",
     eNoWallet:"未检测到可用钱包，请先安装受支持的钱包。",
     eNetwork:"请将钱包切换到受支持的 EVM 网络。",
     eSigRejected:"你在钱包中拒绝了签名请求。",
-    eSigExpired:"签名请求已过期，请重试。",
     eSigFailed:"签名验证失败。",
-    eWalletSvc:"钱包服务暂不可用，请重试或改用邮箱登录。",
     eDisabled:"该账户已被停用，请联系客服。",
     eInitExpired:"初始密码已过期，请联系管理员重新生成。",
     eLastAdmin:"这是系统中唯一可用的管理员。请先创建或启用另一个管理员，再停用此账号。",
     eSelfAction:"不能对自己的账号执行该操作。",
-    eNet:"网络异常，请重试。",
 
     created:"欢迎！你的账户已创建。",
     codeSent:"验证码已发送，请查看收件箱和垃圾邮件。",
@@ -887,27 +826,15 @@ var DICT = {
     savedIt:"我已记录",
 
     sPwdChanged:"你的密码已被修改，请重新登录。",
-    sPwdReset:"你的密码已被重置，请重新登录。",
-    sEmailChanged:"你的邮箱已被修改，请使用新邮箱登录。",
-    sWalletChanged:"你的钱包地址已被修改，请重新登录。",
-    sOtherDevice:"你已在其他设备退出登录，请重新登录。",
-    sExpired:"登录状态已过期，请重新登录。",
-    sByAdmin:"你的登录状态已被管理员终止，请重新登录。",
-    sDisabled:"该账户已被停用，请联系客服。",
     sAllDevices:"出于安全考虑，所有设备均已退出登录。",
     sWasntYou:"不是你操作的？请重置密码。",
     sUnsaved:"当前页面未保存的内容不会被保留。",
     sExpiring:"登录状态将在 5 分钟后过期，请及时保存。",
-    sInactivity:"因长时间未操作，已自动退出登录。",
-    staySignedIn:"继续保持登录",
 
     lockPwdLeft:"邮箱或密码不正确，还可尝试 {n} 次，超出后账户将被锁定。",
-    lockSigLeft:"签名验证失败，还可尝试 {n} 次，超出后账户将被锁定。",
-    lockJust:"失败次数过多，账户已锁定 {m} 分钟。",
     lockAgain:"账户已锁定，请在 {m} 分 {s} 秒后重试。",
     lockHelpUser:"你可以通过重置密码立即解锁，也可以使用邮箱验证码登录。",
     lockHelpAdmin:"你可以通过重置密码立即解锁，也可以请其他管理员为你解除锁定。",
-    unlocked:"你的账户已解除锁定。",
     lockTitle:"账户已锁定",
     lockedTab:"已锁定",
 
@@ -921,9 +848,6 @@ var DICT = {
     capHelp:"需要帮助？联系客服",
     capRefresh:"换一张",
     rlEmailQuota:"验证码请求过于频繁，请在 {t} 后重试。",
-    rlIp:"当前网络请求过于频繁，请稍后重试。",
-    rlDevice:"当前设备请求过于频繁，请稍后重试。",
-    rlGeneric:"请求过于频繁，请在 {t} 后重试。",
 
     terms:"我已阅读并同意<a href=\"#\" data-doc=\"tos\">《服务条款》</a>和<a href=\"#\" data-doc=\"pp\">《隐私政策》</a>。",
     reconsentTitle:"服务条款已更新",
@@ -933,14 +857,9 @@ var DICT = {
 
     walletPick:"选择钱包",
     walletPickSub:"钱包清单由钱包 SDK 提供，此处为演示占位。",
-    walletConnecting:"连接中…",
     walletConnected:"已连接",
     walletSignTitle:"签署消息",
     walletSignNote:"仅签名一条消息，不会发起交易、不会转移资产、不涉及任何授权。",
-    walletSigning:"等待钱包确认…",
-    walletVerifying:"正在验签…",
-    walletChain:"网络",
-    walletPurpose:"用途",
     purposeSignIn:"登录",
     purposeRecovery:"账户恢复",
     purposeReauth:"身份再确认",
@@ -950,13 +869,11 @@ var DICT = {
     fpTitle:"重置密码",
     fpSub:"输入你的邮箱地址，我们会向它发送验证码。",
     fpStep1:"验证邮箱", fpStep2:"设置新密码",
-    fpSentAny:"若该邮箱可以接收验证码，验证码已发送。",
     rcTitle:"找回账户",
     rcSub:"无法访问邮箱？先用账户绑定的钱包完成签名，再设置新的邮箱地址。",
     rcStep1:"钱包签名", rcStep2:"新邮箱",
     rcNewEmailTitle:"设置新的邮箱地址",
-
-    setSecurity:"安全", setPrefs:"偏好", setAccount:"账户",
+ setPrefs:"偏好", setAccount:"账户",
     secTitle:"账户安全", prefTitle:"偏好设置",
     rowEmail:"邮箱地址", rowPwd:"登录密码", rowWallet:"钱包地址",
     reauthTitle:"确认是你本人", reauthSub:"修改安全设置前，请任选一种方式完成验证。",
@@ -986,13 +903,11 @@ var DICT = {
     admColEmail:"工作邮箱", admColName:"姓名", admColStatus:"状态", admColCreated:"创建时间", admColLast:"最近登录", admColAct:"操作",
     admActDisable:"停用", admActRestore:"恢复", admActUnlock:"解除锁定", admActRegen:"重新生成初始密码", admActRegenShort:"重新生成", admActDelete:"删除",
     stActive:"正常",
-    stPending:"待首次登录 · 初始密码有效期至 {t}",
     stPendingS:"待首次登录",
     stPendingD:"初始密码有效期至 {t}",
     stLockedS:"已锁定",
     stLockedD:"{t} 后解除",
     stPendingExpired:"初始密码已过期，需重新生成",
-    stLocked:"已锁定 · {t} 后解除",
     stDisabled:"已停用",
     admLastTip:"不能停用或删除最后一个可用的管理员。",
     admExpiredNote:"初始密码已过期的账号不计入可用管理员数量。",
@@ -1020,15 +935,12 @@ var DICT = {
     stSubmitting:"提交中…",
     stSubmitFailTitle:"提交失败",
     stSubmitFailBody:"服务端拒绝了本次请求，未做任何变更。",
-    stWaiting:"等待服务端返回…",
 
     demoOnly:"演示数据",
     navOverview:"总览", navGuide:"建号引导", navSecurity:"账户安全", navPrefs:"偏好设置",
     navChangeEmail:"邮箱", navChangePwd:"密码", navChangeWallet:"钱包地址",
     grpAccount:"账户", grpCredentials:"凭据变更", grpConsole:"管理端",
-    endAsset:"资产端", endAdmin:"管理端",
-    prdPanel:"PRD", prdOpen:"查看本页的 PRD 摘录",
-    protoPanel:"原型", signedInAs:"当前登录",
+    endAsset:"资产端", endAdmin:"管理端", prdOpen:"查看本页的 PRD 摘录", signedInAs:"当前登录",
     accStatus:"账户状态", stIncomplete:"凭据未齐", stActiveAcc:"正常"
   }
 };
@@ -1807,62 +1719,37 @@ var PRD_COMP = [
 ];
 
 /* ==========================================================================
-   app.js — 状态机 + 路由 + 渲染 + 交互
-   形态：产品自己的控制台（侧边导航 + 顶栏 + 内容区）；未登录页为居中卡片版式。
-   没有评审脚手架：端切换、页面直达与演示分支都收进顶栏「原型」抽屉。
-   每页顶栏另有「PRD」入口，打开该页的 PRD 摘录（数据见 45-prd.js）。
+   app.js — UI 页面 + 交互（减重版）
+   定位：让前端看清每个页面长什么样、每种状态长什么样、点哪里去哪里。
+   保留：页面跳转 · Tab 切换 · 弹窗抽屉开合 · 表单输入与校验反馈 · 语言切换 · 每页 PRD 面板。
+   不做：滑块拖拽轨迹校验、倒计时与限频状态机、失败计数器、锁定倒计时等行为仿真。
+        这些关键状态改为「页面级状态切换器」直接切到该样子，实际行为由前端按 PRD 实现。
    数据全部为演示数据，不含任何真实企业、金额或账户。
    ========================================================================== */
 (function(){
 "use strict";
 
 /* ----------------------------- 演示数据（标注） ----------------------------- */
-var DEMO_ADDR_BOUND   = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
-var DEMO_ADDR_NEW     = "0x8Ba1f109551bD432803012645Ac136ddd64DBA72";
-var DEMO_EMAIL_PWD    = "ada@demo-mail.test";      /* 已建号且已设密码，密码 Demo1234 */
-var DEMO_EMAIL_NOPWD  = "lin@demo-mail.test";      /* 已建号但从未设密码 */
-var DEMO_PASSWORD     = "Demo1234";
-var DEMO_ME           = "ops.lead@demo-console.test";
-var EXPLORERS         = { 1:"https://etherscan.io" };
+var ADDR     = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
+var MAIL     = "ada@demo-mail.test";
+var ME       = "ops.lead@demo-console.test";
+var EXPLORER = "https://etherscan.io";
 
-function adminSeed(){
-  return [
-    {email:"ops.lead@demo-console.test",   name:"Demo Admin A", st:"active",         created:"2026-06-02T02:10:00Z", last:"2026-09-07T01:22:00Z"},
-    {email:"risk.review@demo-console.test",name:"Demo Admin B", st:"pending",         created:"2026-09-05T08:40:00Z", last:null, expires:"2026-09-12T08:40:00Z"},
-    {email:"settle.ops@demo-console.test", name:"Demo Admin C", st:"locked",          created:"2026-07-18T03:05:00Z", last:"2026-09-06T09:31:00Z", lockLeft:734},
-    {email:"audit.view@demo-console.test", name:"Demo Admin D", st:"pendingExpired",  created:"2026-08-20T06:00:00Z", last:null, expires:"2026-08-27T06:00:00Z"},
-    {email:"former.ops@demo-console.test", name:"Demo Admin E", st:"disabled",        created:"2026-05-11T07:45:00Z", last:"2026-08-30T10:02:00Z"}
-  ];
-}
-/* 演示：系统中只剩 1 个可用管理员 */
-function lastAdminSeed(){ var a=adminSeed(); return [a[0], a[3], a[4]]; }
+var ADMINS = [
+  {email:"ops.lead@demo-console.test",   name:"Demo Admin A", st:"active",         created:"2026-06-02T02:10:00Z", last:"2026-09-07T01:22:00Z"},
+  {email:"risk.review@demo-console.test",name:"Demo Admin B", st:"pending",        created:"2026-09-05T08:40:00Z", last:null, expires:"2026-09-12T08:40:00Z"},
+  {email:"settle.ops@demo-console.test", name:"Demo Admin C", st:"locked",         created:"2026-07-18T03:05:00Z", last:"2026-09-06T09:31:00Z"},
+  {email:"audit.view@demo-console.test", name:"Demo Admin D", st:"pendingExpired", created:"2026-08-20T06:00:00Z", last:null, expires:"2026-08-27T06:00:00Z"},
+  {email:"former.ops@demo-console.test", name:"Demo Admin E", st:"disabled",       created:"2026-05-11T07:45:00Z", last:"2026-08-30T10:02:00Z"}
+];
 
 /* --------------------------------- 状态 ---------------------------------- */
 var S;
 function initState(){
-  S = {
-    lang:"en",                 /* PRD 13.1：默认英文，不读 navigator.language */
-    end:"asset",
-    page:"P-A01",
-    tz:"Asia/Shanghai",
-    acct:null,
-    justCreated:false,
-    login:{tab:"code", agree:false},
-    form:{}, err:{},
-    fail:0, lockUntil:0,
-    cool:{}, codeTries:0,
-    cap:null, capFails:0, capCoolUntil:0,
-    modal:null, drawer:null, toasts:[],
-    flow:null, wallet:null,
-    barFolded:false,
-    admin:{ session:false, mustReset:false, list:adminSeed(), listState:"default",
-            q:"", filter:"all", fail:0, lockUntil:0 },
-    flags:{ capFail:false, capLoadFail:false, knownEmail:false, quota:false, quotaKind:"email",
-            reconsent:false, disabled:false, sigFail:false, sigReject:false,
-            noWallet:false, wrongNet:false, sdkFail:false, walletNew:false, ipRisk:false,
-            lastAdmin:false, serverReject:false, noExplorer:false, expiring:false },
-    seed:1
-  };
+  S = { lang:"en",        /* PRD 13.1：默认英文，不读 navigator.language */
+        end:"asset", page:"P-A01", st:"default", tz:"Asia/Shanghai",
+        loginTab:"code", agree:false, form:{}, err:{},
+        flow:null, modal:null, drawer:null, toast:null };
 }
 initState();
 
@@ -1876,48 +1763,38 @@ function t(k,v){
 }
 function esc(x){ return String(x==null?"":x).replace(/[&<>"']/g,function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
-function q(sel,root){ return (root||document).querySelector(sel); }
-function qa(sel,root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
-function now(){ return Date.now(); }
-function later(ms,fn){ setTimeout(fn,ms); }
+function q(sel){ return document.querySelector(sel); }
 function isEmail(x){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(x||"").trim()); }
-function shortAddr(a){ return a ? a.slice(0,6)+"…"+a.slice(-4) : ""; }
-function shortHash(h){ return h ? h.slice(0,10)+"…"+h.slice(-8) : ""; }
-function mm(s){ return Math.floor(s/60); }
-function ss(s){ var x=s%60; return x<10?"0"+x:""+x; }
-function pwdOkLen(p){ return p && p.length>=8 && p.length<=20; }
-function pwdOkCplx(p){ return /[A-Za-z]/.test(p||"") && /[0-9]/.test(p||""); }
-function readableMinutes(n){ return S.lang==="en" ? (n+" minutes") : (n+" 分钟"); }
+function shortAddr(a){ return a?a.slice(0,6)+"…"+a.slice(-4):""; }
+function pwdLen(p){ return p&&p.length>=8&&p.length<=20; }
+function pwdCplx(p){ return /[A-Za-z]/.test(p||"")&&/[0-9]/.test(p||""); }
+function L(en,zh){ return S.lang==="en"?en:zh; }
 
 /* 时间：PRD 13.4，一律带时区标注 */
-function fmtParts(iso,withSec){
+function fmtParts(iso,sec){
   var d=iso?new Date(iso):new Date();
   var off=S.tz==="UTC"?0:(S.tz==="America/New_York"?-4:(S.tz==="Europe/London"?1:8));
   var x=new Date(d.getTime()+off*3600000);
-  var Y=x.getUTCFullYear(),M=x.getUTCMonth(),D=x.getUTCDate(),
-      h=("0"+x.getUTCHours()).slice(-2),mi=("0"+x.getUTCMinutes()).slice(-2),se=("0"+x.getUTCSeconds()).slice(-2);
-  var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return { d:S.lang==="en"?(MON[M]+" "+D+", "+Y):(Y+"-"+("0"+(M+1)).slice(-2)+"-"+("0"+D).slice(-2)),
-           t:h+":"+mi+(withSec?":"+se:"")+" (UTC"+(off>=0?"+":"")+off+")" };
+  var M=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var Y=x.getUTCFullYear(), m=x.getUTCMonth(), D=x.getUTCDate(),
+      h=("0"+x.getUTCHours()).slice(-2), mi=("0"+x.getUTCMinutes()).slice(-2), s2=("0"+x.getUTCSeconds()).slice(-2);
+  return { d:S.lang==="en"?(M[m]+" "+D+", "+Y):(Y+"-"+("0"+(m+1)).slice(-2)+"-"+("0"+D).slice(-2)),
+           t:h+":"+mi+(sec?":"+s2:"")+" (UTC"+(off>=0?"+":"")+off+")" };
 }
-function fmtTime(iso,withSec){ var p=fmtParts(iso,withSec); return p.d+(S.lang==="en"?", ":" ")+p.t; }
+function fmtTime(iso,sec){ var p=fmtParts(iso,sec); return p.d+(S.lang==="en"?", ":" ")+p.t; }
 function fmtCell(iso){ if(!iso) return "—"; var p=fmtParts(iso);
   return '<span class="nw">'+p.d+'</span><br><span class="nw t2">'+p.t+'</span>'; }
-function mulberry32(a){ return function(){ a|=0;a=a+0x6D2B79F5|0; var t2=Math.imul(a^a>>>15,1|a);
-  t2=t2+Math.imul(t2^t2>>>7,61|t2)^t2; return ((t2^t2>>>14)>>>0)/4294967296; }; }
 
 /* --------------------------------- 路由表 -------------------------------- */
-/* focus = 居中卡片版式（未登录 / 首登重置 / 建号确认）；app = 控制台版式 */
 var ROUTES = {
   "P-A01":{end:"asset", layout:"focus", name:["Sign in","登录页"]},
-  "P-A07":{end:"asset", layout:"focus", name:["Account locked","账户锁定态"], alias:"P-A01"},
   "P-A03":{end:"asset", layout:"focus", name:["Forgot password · email","忘记密码 · 提交邮箱"]},
   "P-A04":{end:"asset", layout:"focus", name:["Forgot password · new password","忘记密码 · 设置新密码"]},
   "P-A05":{end:"asset", layout:"focus", name:["Recover account · signature","账户恢复 · 钱包签名"]},
   "P-A06":{end:"asset", layout:"focus", name:["Recover account · new email","账户恢复 · 绑定新邮箱"]},
   "CREATED":{end:"asset", layout:"focus", name:["Account created","建号确认"]},
   "P-A10":{end:"asset", layout:"app", nav:"navGuide", grp:"grpAccount", ico:"◆", name:["Setup guide","建号后引导页"]},
-  "LAND":{end:"asset", layout:"app", nav:"navOverview", grp:"grpAccount", ico:"▤", name:["Overview","落地页"]},
+  "LAND": {end:"asset", layout:"app", nav:"navOverview", grp:"grpAccount", ico:"▤", name:["Overview","落地页"]},
   "P-A11":{end:"asset", layout:"app", nav:"navSecurity", grp:"grpAccount", ico:"⛨", name:["Security","账户设置 · 安全"]},
   "P-A15":{end:"asset", layout:"app", nav:"navPrefs", grp:"grpAccount", ico:"⚙", name:["Preferences","账户设置 · 偏好"]},
   "P-A12":{end:"asset", layout:"app", nav:"navChangeEmail", grp:"grpCredentials", ico:"@", name:["Email","修改 / 绑定邮箱"]},
@@ -1930,176 +1807,56 @@ var ROUTES = {
   "P-M06":{end:"admin", layout:"app", nav:"admNavAccounts", grp:"grpConsole", ico:"▤", name:["Accounts","账户管理"]},
   "P-M05":{end:"admin", layout:"app", nav:"admNavSecurity", grp:"grpConsole", ico:"•", name:["My password","修改密码"]}
 };
+/* P-A07 锁定态按 PRD 5.1 实现为登录页内的状态 */
+var PAGE_DIR = [
+  ["资产端 · 未登录",[["P-A01",""],["P-A01","locked"],["P-A03",""],["P-A04",""],["P-A05",""],["P-A06",""]]],
+  ["资产端 · 已登录",[["CREATED",""],["P-A10",""],["LAND",""],["P-A11",""],["P-A12",""],["P-A13",""],["P-A14",""],["P-A15",""]]],
+  ["管理端",[["P-M01",""],["P-M02",""],["P-M03",""],["P-M04",""],["P-M05",""],["P-M06",""]]]
+];
+
+/* 每页可直接切换查看的状态（替代原来的演示分支开关面板） */
+var STATES = {
+  "P-A01":[["default","Default","默认"],["sent","Code sent","已发码"],["attempts","3rd failure","第 3 次失败"],
+           ["locked","Locked (P-A07)","锁定态 P-A07"],["disabled","Account disabled","账户已停用"],
+           ["quota","Rate limited","发码超限"],["kicked","Session ended (C-05)","会话失效 Toast C-05"]],
+  "P-A03":[["default","Default","默认"],["sent","Code sent","已发码"],["badcode","Invalid code","验证码错误"],
+           ["toomany","Code voided","单码超限"],["quota","Rate limited","发码超限"]],
+  "P-A04":[["default","Default","默认"],["mismatch","Passwords differ","两次不一致"],["same","Same as current","与原密码相同"]],
+  "P-A05":[["default","Default","默认"],["unlinked","Wallet not linked","地址未绑定"]],
+  "P-A06":[["default","Default","默认"],["taken","Email taken","邮箱已被占用"]],
+  "P-A10":[["email","Created via email","验证码建号"],["wallet","Created via wallet","钱包建号"]],
+  "LAND": [["nowallet","Missing wallet","缺钱包"],["noemail","Missing email","缺邮箱"],["complete","Complete","凭据齐备"],
+           ["folded","Bar collapsed","提示条折叠"],["expiring","Session expiring","会话即将过期"]],
+  "P-A11":[["nowallet","Missing wallet","缺钱包"],["nopwd","No password set","未设密码"],["complete","Complete","凭据齐备"]],
+  "P-A12":[["default","Change email","修改邮箱"],["add","Add email (none yet)","绑定邮箱（原本无邮箱）"]],
+  "P-A13":[["default","Change password","修改密码"],["add","Set password (none yet)","设置密码（原本无密码）"]],
+  "P-A14":[["default","Change wallet","修改钱包"],["add","Link wallet (none yet)","绑定钱包（原本无钱包）"]],
+  "P-M01":[["default","Default","默认"],["attempts","3rd failure","第 3 次失败"],["locked","Locked","锁定态"],
+           ["expired","Initial password expired","初始密码已过期"]],
+  "P-M02":[["default","Default","默认"],["noack","Notice unchecked","未勾选安全须知"],["same","Same as initial","与初始密码相同"]],
+  "P-M03":[["default","Default","默认"],["sent","Code sent","已发码"]],
+  "P-M04":[["default","Default","默认"],["same","Same as initial","与初始密码相同"]],
+  "P-M06":[["default","Default","默认"],["loading","Loading","加载中"],["empty","Empty","空数据"],
+           ["noresult","No result","筛选无结果"],["failed","Load failed","加载失败"],["noperm","No access","无权限"],
+           ["submitting","Submitting","提交中"],["submitfail","Submit failed","提交失败"],
+           ["lastadmin","Only one admin left","只剩一个可用管理员"]]
+};
 function route(){ return ROUTES[S.page]||ROUTES["P-A01"]; }
-function pageName(id){ var r=ROUTES[id]; return r ? r.name[S.lang==="en"?0:1] : id; }
-function prdKey(){ return (route().alias && !PRD[S.page]) ? route().alias : S.page; }
-
-/* ------------------------------ Toast (C-05) ------------------------------ */
-var toastId=0;
-function toast(kind,title,body,link){
-  var id=++toastId;
-  if(S.toasts.length>=3) S.toasts.shift();
-  S.toasts.push({id:id,kind:kind,title:title,body:body||"",link:link||""});
+function pageName(id){ var r=ROUTES[id]; return r?r.name[S.lang==="en"?0:1]:id; }
+function prdKey(){ return (S.page==="P-A01"&&S.st==="locked")?"P-A07":S.page; }
+function defaultState(p){ var l=STATES[p]; return l?l[0][0]:"default"; }
+function go(page,st){
+  S.page=page; S.st=st||defaultState(page); S.err={}; S.modal=null; S.drawer=null; S.toast=null;
+  S.flow=(page==="P-A12"||page==="P-A13"||page==="P-A14")?{id:page,step:0,factor:null}:null;
   render();
-  later(5000,function(){ S.toasts=S.toasts.filter(function(x){return x.id!==id;}); render(); });
 }
-
-/* --------------------------- 会话失效（PRD 12.1） -------------------------- */
-function endSession(reasonKey,prefill,silent){
-  S.acct=null; S.justCreated=false; S.flow=null; S.wallet=null; S.modal=null;
-  S.login={tab:"code",agree:false}; S.form={}; S.err={};
-  if(prefill) S.form.loginEmail=prefill;
-  S.end="asset"; S.page="P-A01"; render();
-  if(silent) return;
-  toast("danger", t(reasonKey), reasonKey==="sOtherDevice"?"":t("sUnsaved"),
-        reasonKey==="sOtherDevice"?t("sWasntYou"):"");
+function setState(k){
+  S.st=k; S.err={};
+  S.toast = (k==="kicked") ? {kind:"danger", title:t("sPwdChanged"), body:t("sUnsaved")} : null;
+  if(S.flow) S.flow={id:S.flow.id,step:0,factor:null};
+  render();
 }
-function endAdminSession(reasonKey){
-  S.admin.session=false; S.admin.mustReset=false; S.modal=null; S.form={}; S.err={};
-  S.end="admin"; S.page="P-M01"; render(); toast("danger", t(reasonKey), t("sUnsaved"));
-}
-
-/* ------------------------------ 滑块 C-01 -------------------------------- */
-var CAP_W=328, CAP_H=180, CAP_PS=46;
-function piecePath(c,x,y,s){
-  var r=6,k=s*0.22;
-  c.beginPath(); c.moveTo(x+r,y); c.lineTo(x+s*0.42,y);
-  c.arc(x+s*0.5,y,k,Math.PI,0,true);
-  c.lineTo(x+s-r,y); c.quadraticCurveTo(x+s,y,x+s,y+r);
-  c.lineTo(x+s,y+s*0.38); c.arc(x+s,y+s*0.5,k,-Math.PI/2,Math.PI/2,false);
-  c.lineTo(x+s,y+s-r); c.quadraticCurveTo(x+s,y+s,x+s-r,y+s);
-  c.lineTo(x+r,y+s); c.quadraticCurveTo(x,y+s,x,y+s-r);
-  c.lineTo(x,y+r); c.quadraticCurveTo(x,y,x+r,y); c.closePath();
-}
-function paintScene(c,W,H,rnd){
-  var hue=Math.floor(rnd()*360);
-  var g=c.createLinearGradient(0,0,W,H);
-  g.addColorStop(0,"hsl("+hue+",58%,74%)");
-  g.addColorStop(1,"hsl("+((hue+52)%360)+",52%,58%)");
-  c.fillStyle=g; c.fillRect(0,0,W,H);
-  var i,x,y,w,hh;
-  for(i=0;i<9;i++){
-    c.globalAlpha=0.12+rnd()*0.2;
-    c.fillStyle="hsl("+((hue+i*26)%360)+",62%,"+(52+rnd()*32)+"%)";
-    x=rnd()*W; y=rnd()*H; w=24+rnd()*140; hh=10+rnd()*90;
-    c.beginPath(); c.roundRect?c.roundRect(x,y,w,hh,10):c.rect(x,y,w,hh); c.fill();
-  }
-  for(i=0;i<5;i++){
-    c.globalAlpha=0.2+rnd()*0.2;
-    c.strokeStyle="hsl("+((hue+i*47)%360)+",68%,35%)"; c.lineWidth=1+rnd()*2;
-    c.beginPath(); c.moveTo(rnd()*W,rnd()*H); c.lineTo(rnd()*W,rnd()*H); c.lineTo(rnd()*W,rnd()*H); c.stroke();
-  }
-  c.globalAlpha=1;
-}
-/* reset=true 归零滑块（新挑战 / 失败换图）；否则保留位移，避免后台重渲染打断拖拽 */
-function drawCaptcha(reset){
-  var bg=q("#capBg"), pc=q("#capPiece"); if(!bg||!pc||!S.cap) return;
-  var rnd=mulberry32(S.cap.seed);
-  var off=document.createElement("canvas"); off.width=CAP_W; off.height=CAP_H;
-  paintScene(off.getContext("2d"),CAP_W,CAP_H,rnd);
-  var tx=Math.floor(96+rnd()*(CAP_W-96-CAP_PS-14));
-  var ty=Math.floor(18+rnd()*(CAP_H-18-CAP_PS-18));
-  S.cap.answer=tx; S.cap.ty=ty;
-  bg.width=CAP_W; bg.height=CAP_H; pc.width=CAP_W; pc.height=CAP_H;
-  var b=bg.getContext("2d"); b.clearRect(0,0,CAP_W,CAP_H); b.drawImage(off,0,0);
-  b.save(); piecePath(b,tx,ty,CAP_PS); b.fillStyle="rgba(16,24,40,.55)"; b.fill();
-  b.strokeStyle="rgba(255,255,255,.75)"; b.lineWidth=1.5; b.stroke(); b.restore();
-  var p=pc.getContext("2d"); p.clearRect(0,0,CAP_W,CAP_H);
-  p.save(); piecePath(p,0,ty,CAP_PS); p.clip(); p.drawImage(off,-tx,0); p.restore();
-  p.save(); piecePath(p,0,ty,CAP_PS); p.strokeStyle="rgba(255,255,255,.9)"; p.lineWidth=1.5; p.stroke(); p.restore();
-  setCapDrag(reset?0:(S.cap.d||0));
-}
-function setCapDrag(d){
-  S.cap.d=d;
-  var pc=q("#capPiece"), kb=q("#capKnob"), fl=q("#capFill");
-  if(pc) pc.style.transform="translateX("+d+"px)";
-  if(kb) kb.style.transform="translateX("+d+"px)";
-  if(fl) fl.style.width=(d+48)+"px";
-}
-function openCaptcha(purposeKey,onPass){
-  S.cap={seed:(S.seed=(S.seed*7919+13)%100000), d:0, answer:0, ty:0, state:"idle",
-         msg:"", msgKind:"tip", purpose:purposeKey, onPass:onPass};
-  S.modal={type:"captcha"}; render(); drawCaptcha(true);
-}
-function capVerify(){
-  if(S.cap.state!=="idle") return;
-  S.cap.state="checking"; renderCapMsg();
-  later(420,function(){
-    var pass=Math.abs(S.cap.d-S.cap.answer)<=6 && !S.flags.capFail;
-    if(pass){
-      S.capFails=0; S.cap.state="ok"; S.cap.msg=t("capVerified"); S.cap.msgKind="ok";
-      var tr=q("#capTrack"); if(tr) tr.classList.add("ok");
-      renderCapMsg();
-      later(400,function(){ var cb=S.cap.onPass; S.modal=null; S.cap=null; render(); if(cb) cb(); });
-    } else {
-      S.capFails++; S.cap.state="idle";
-      S.cap.msg = S.capFails>=5 ? "" : (S.capFails>=3 ? t("capTrouble") : t("capFail"));
-      S.cap.msgKind = S.capFails>=3 ? "tip" : "bad";
-      var tk=q("#capTrack"), kn=q("#capKnob");
-      if(tk){ tk.classList.add("bad"); later(400,function(){ tk.classList.remove("bad"); }); }
-      if(kn){ kn.classList.add("shake"); later(340,function(){ kn.classList.remove("shake"); }); }
-      if(S.capFails>=5) S.capCoolUntil=now()+60000;
-      later(360,function(){
-        if(!S.cap) return;
-        S.cap.seed=(S.seed=(S.seed*7919+13)%100000);
-        drawCaptcha(true); renderCapMsg(); render();
-      });
-    }
-  });
-}
-function renderCapMsg(){
-  var m=q("#capMsg"); if(!m||!S.cap) return;
-  /* 冷却期内固定展示倒计时文案，避免刚进入冷却的那一秒消息区空白 */
-  if(S.capCoolUntil>now()){
-    m.textContent=t("capCool",{n:Math.max(0,Math.ceil((S.capCoolUntil-now())/1000))});
-    m.className="cap-msg bad"; return;
-  }
-  m.textContent = S.cap.state==="checking" ? "…" : S.cap.msg;
-  m.className = "cap-msg "+S.cap.msgKind;
-}
-
-/* --------------------------- 发码：滑块 + 限频 ---------------------------- */
-function pressSendCode(key,purposeKey){
-  if((S.cool[key]||0)>0) return;
-  openCaptcha(purposeKey,function(){
-    if(S.flags.quota){
-      var k=S.flags.quotaKind;
-      S.err[key+"Code"] = k==="ip"?t("rlIp") : k==="device"?t("rlDevice") : t("rlEmailQuota",{t:readableMinutes(42)});
-      render(); return;
-    }
-    S.cool[key]=60; S.err[key+"Code"]=""; render(); toast("success",t("codeSent"));
-  });
-}
-
-/* ------------------------------- 计时器 ---------------------------------- */
-setInterval(function(){
-  var dirty=false,k;
-  for(k in S.cool){ if(S.cool[k]>0){ S.cool[k]--; dirty=true; } }
-  qa("[data-tick]").forEach(function(n){
-    var sp=n.getAttribute("data-tick").split(":");
-    if(sp[0]==="cool"){
-      var left=S.cool[sp[1]]||0;
-      n.textContent = left>0 ? t("resendIn",{n:left}) : (n.getAttribute("data-sent")==="1"?t("resendCode"):t("sendCode"));
-      if(left<=0) n.removeAttribute("disabled"); else n.setAttribute("disabled","");
-    } else if(sp[0]==="lock"){
-      var l=Math.max(0,Math.ceil((S.lockUntil-now())/1000));
-      n.textContent=t("lockAgain",{m:mm(l),s:ss(l)});
-      if(l<=0){ S.fail=0; render(); }
-    } else if(sp[0]==="alock"){
-      var la=Math.max(0,Math.ceil((S.admin.lockUntil-now())/1000));
-      n.textContent=t("lockAgain",{m:mm(la),s:ss(la)});
-      if(la<=0){ S.admin.fail=0; render(); }
-    } else if(sp[0]==="capcool"){
-      var c=Math.max(0,Math.ceil((S.capCoolUntil-now())/1000));
-      n.textContent=t("capCool",{n:c});
-      if(c<=0) render();
-    } else if(sp[0]==="mlock"){
-      var row=S.admin.list[+sp[1]];
-      if(row&&row.lockLeft>0){ row.lockLeft--; n.textContent=t("stLockedD",{t:mm(row.lockLeft)+"m "+ss(row.lockLeft)+"s"}); }
-    }
-  });
-  if(dirty && !qa('[data-tick^="cool"]').length) render();
-},1000);
+function toast(kind,title,body){ S.toast={kind:kind,title:title,body:body||""}; render(); }
 
 /* ============================== 通用片段 ================================= */
 function langSwitcher(){
@@ -2107,13 +1864,20 @@ function langSwitcher(){
    + '<button type="button" data-act="lang" data-v="en" aria-pressed="'+(S.lang==="en")+'">English</button>'
    + '<button type="button" data-act="lang" data-v="zh" aria-pressed="'+(S.lang==="zh")+'">简体中文</button></div>';
 }
-function prdBtn(cls){
-  return '<button class="'+(cls||"btn sm")+'" type="button" data-act="openPrd" title="'+t("prdOpen")+'">'
-   + '<span class="mono" style="font-size:10px">PRD</span></button>';
+function prdBtn(){ return '<button class="btn sm" type="button" data-act="openPrd" title="'+t("prdOpen")+'">'
+   + '<span class="mono" style="font-size:10px">PRD</span></button>'; }
+function pagesBtn(){ return '<button class="btn sm" type="button" data-act="openPages">'+t("pagesPanel")+'</button>'; }
+
+/* 页面级状态切换器：替代原演示分支开关面板 */
+function stateBar(list,act,cur,style){
+  if(!list||!list.length) return "";
+  return '<div class="statebar"'+(style?' style="'+style+'"':'')+'><span class="pill dash">'+L("Prototype · state","原型 · 状态")+'</span>'
+   + '<div class="seg">'+list.map(function(x){
+       return '<button type="button" data-act="'+act+'" data-v="'+x[0]+'" aria-pressed="'+(cur===x[0])+'">'+L(x[1],x[2])+'</button>';
+     }).join("")+'</div></div>';
 }
-function protoBtn(cls){
-  return '<button class="'+(cls||"btn sm")+'" type="button" data-act="openProto">'+t("protoPanel")+'</button>';
-}
+function pageStates(){ return stateBar(STATES[S.page],"st",S.st); }
+
 function field(id,labelKey,o){
   o=o||{};
   var v=esc(S.form[id]||""), err=S.err[id];
@@ -2121,42 +1885,39 @@ function field(id,labelKey,o){
    + '<label for="f_'+id+'"><span>'+t(labelKey)+'</span>'+(o.optional?'<span class="opt">'+t("optional")+'</span>':'')+'</label>'
    + (o.affix
       ? '<div class="inp-affix"><input class="inp'+(err?" err":"")+'" id="f_'+id+'" data-f="'+id+'" type="'
-        +(S.form["_show_"+id]?"text":"password")+'" value="'+v+'" '+(o.disabled?"disabled":"")+' autocomplete="'+(o.ac||"off")+'">'
-        +'<button type="button" class="affix" data-act="toggleShow" data-k="'+id+'">'+(S.form["_show_"+id]?t("hide"):t("show"))+'</button></div>'
-      : '<input class="inp'+(err?" err":"")+(o.mono?" mono":"")+'" id="f_'+id+'" data-f="'+id+'" type="'+(o.type||"text")
-        +'" value="'+v+'" placeholder="'+esc(o.ph||"")+'" '+(o.disabled?"disabled":"")
-        +(o.maxlength?' maxlength="'+o.maxlength+'"':'')+' autocomplete="'+(o.ac||"off")+'">')
+        +(S.form["_show_"+id]?"text":"password")+'" value="'+v+'" autocomplete="'+(o.ac||"off")+'">'
+        +'<button type="button" class="affix" data-act="show" data-k="'+id+'">'+(S.form["_show_"+id]?t("hide"):t("show"))+'</button></div>'
+      : '<input class="inp'+(err?" err":"")+'" id="f_'+id+'" data-f="'+id+'" type="'+(o.type||"text")
+        +'" value="'+v+'" placeholder="'+esc(o.ph||"")+'" '+(o.disabled?"disabled":"")+' autocomplete="'+(o.ac||"off")+'">')
    + (err?'<p class="err-msg" role="alert"><span>!</span><span>'+esc(err)+'</span></p>':'')
-   + (o.hint?'<p class="hint">'+o.hint+'</p>':'')
    + '</div>';
 }
+/* 发码行：点击弹出 C-01；「已发码」是可切换的展示状态，不做真实倒计时 */
 function codeField(key,o){
   o=o||{};
-  var left=S.cool[key]||0, err=S.err[key+"Code"];
-  var label = left>0 ? t("resendIn",{n:left}) : (S.form["_sent_"+key]?t("resendCode"):t("sendCode"));
+  var err=S.err[key+"Code"]||o.error;
   return '<div class="field">'
    + '<label for="f_'+key+'code"><span>'+t("labelCode")+'</span></label>'
    + '<div class="inp-row">'
-   + '<input class="inp mono'+(err?" err":"")+'" id="f_'+key+'code" data-f="'+key+'code" inputmode="numeric" maxlength="6" value="'+esc(S.form[key+"code"]||"")+'" placeholder="000000">'
-   + '<button type="button" class="btn" data-act="sendcode" data-k="'+key+'" data-p="'+(o.purpose||"purposeSignIn")+'" data-tick="cool:'+key+'" data-sent="'+(S.form["_sent_"+key]?1:0)+'" '+(left>0?"disabled":"")+'>'+label+'</button>'
-   + '</div>'
+   + '<input class="inp mono'+(err?" err":"")+'" id="f_'+key+'code" data-f="'+key+'code" inputmode="numeric" maxlength="6" value="'
+   + esc(S.form[key+"code"]||"")+'" placeholder="000000">'
+   + '<button type="button" class="btn" data-act="captcha" '+(o.sent?"disabled":"")+'>'
+   + (o.sent?t("resendIn",{n:60}):t("sendCode"))+'</button></div>'
    + (err?'<p class="err-msg" role="alert"><span>!</span><span>'+esc(err)+'</span></p>':'')
    + '<p class="hint">'+t("capHelpNote")+'</p></div>';
 }
 function pwdRules(key){
   var p=S.form[key]||""; if(!p) return "";
-  var a=pwdOkLen(p), b=pwdOkCplx(p);
+  var a=pwdLen(p), b=pwdCplx(p);
   return '<ul class="rules" aria-live="polite">'
-   + '<li data-ok="'+(a?1:0)+'"><span class="box">'+(a?"✓":"")+'</span>'+(S.lang==="en"?"8–20 characters":"8–20 个字符")+'</li>'
-   + '<li data-ok="'+(b?1:0)+'"><span class="box">'+(b?"✓":"")+'</span>'+(S.lang==="en"?"At least one letter and one number":"至少 1 个英文字母和 1 个数字")+'</li></ul>';
+   + '<li data-ok="'+(a?1:0)+'"><span class="box">'+(a?"✓":"")+'</span>'+L("8–20 characters","8–20 个字符")+'</li>'
+   + '<li data-ok="'+(b?1:0)+'"><span class="box">'+(b?"✓":"")+'</span>'+L("At least one letter and one number","至少 1 个英文字母和 1 个数字")+'</li></ul>';
 }
-function addrView(addr,o){
-  o=o||{};
-  var canExp=!S.flags.noExplorer && EXPLORERS[1];
-  return '<span class="hash"><span class="val">'+esc(o.full?addr:shortAddr(addr))+'</span>'
-   + '<button class="ico" type="button" data-act="copyaddr" data-v="'+esc(addr)+'" aria-label="'+t("copyAddress")+'" title="'+t("copyAddress")+'">⧉</button>'
-   + (canExp?'<a class="ico" href="'+EXPLORERS[1]+'/address/'+esc(addr)+'" target="_blank" rel="noopener noreferrer" aria-label="'+t("viewExplorer")+'" title="'+t("viewExplorer")+'">↗</a>':'')
-   + '</span>';
+function addrView(a){
+  return '<span class="hash"><span class="val">'+esc(shortAddr(a))+'</span>'
+   + '<button class="ico" type="button" data-act="copy" aria-label="'+t("copyAddress")+'" title="'+t("copyAddress")+'">⧉</button>'
+   + '<a class="ico" href="'+EXPLORER+'/address/'+esc(a)+'" target="_blank" rel="noopener noreferrer" aria-label="'
+   + t("viewExplorer")+'" title="'+t("viewExplorer")+'">↗</a></span>';
 }
 function steps(names,cur){
   return '<div class="steps">'+names.map(function(n,i){
@@ -2164,98 +1925,85 @@ function steps(names,cur){
       + (i<names.length-1?'<span class="bar"></span>':'');
   }).join("")+'</div>';
 }
+function note(kind,body,title){
+  return '<div class="note'+(kind?" "+kind:"")+'"'+(kind==="red"?' role="alert"':'')+'><span class="ico">'
+   + (kind==="red"||kind==="amber"?"!":kind==="green"?"✓":"i")+'</span><div>'
+   + (title?'<b>'+title+'</b>':'')+body+'</div></div>';
+}
+function gap(h){ return '<div style="height:'+(h||14)+'px"></div>'; }
 function pageHead(title,desc,actions){
   return '<div class="page-head"><div><h1 class="page-title">'+title+'</h1>'
    + (desc?'<p class="page-desc">'+desc+'</p>':'')+'</div>'
-   + '<div class="page-actions">'+(actions||"")+'</div></div>';
+   + '<div class="page-actions">'+(actions||"")+'</div></div>' + pageStates();
 }
 
 /* ============================ 居中卡片版式页面 ============================ */
-function focusShell(body,opts){
-  opts=opts||{};
-  var end=route().end;
+function focusShell(body,signOut){
   return '<div class="focus-top">'
    + '<div class="brand" style="border:0;padding:0;gap:10px"><div class="brand-mark">CF</div>'
    + '<div><div class="brand-name">Chain Financing</div>'
-   + '<div class="brand-sub">'+(end==="admin"?t("adminConsole"):t("endAsset"))+'</div></div></div>'
+   + '<div class="brand-sub">'+(route().end==="admin"?t("adminConsole"):t("endAsset"))+'</div></div></div>'
    + '<div style="flex:1"></div>'
-   + (opts.signOut?'<button class="btn sm" data-act="'+opts.signOut+'">'+t("signOut")+'</button>':'')
-   + prdBtn("btn sm") + langSwitcher()
-   + '</div>'
-   + '<div class="focus-body"><div class="focus-col'+(opts.wide?" is-wide":"")+'">'+body+'</div></div>'
-   + '<div class="focus-foot"><span>© Chain Financing · '+t("demoOnly")+'</span>'
-   + '<span style="display:flex;gap:10px;align-items:center">'+protoBtn("btn sm")+langSwitcher()+'</span></div>';
+   + (signOut?'<button class="btn sm" data-act="go" data-v="P-M01">'+t("signOut")+'</button>':'')
+   + pagesBtn() + prdBtn() + langSwitcher() + '</div>'
+   + '<div class="focus-body"><div class="focus-col">'+pageStates()+body+'</div></div>'
+   + '<div class="focus-foot"><span>© Chain Financing · '+t("demoOnly")+'</span>'+langSwitcher()+'</div>';
 }
 function focusCard(title,sub,body){
   return '<h1 class="page-title" style="font-size:24px">'+title+'</h1>'
    + (sub?'<p class="page-desc" style="margin-top:6px">'+sub+'</p>':'')
-   + '<div class="card" style="margin-top:20px"><div class="card-b">'+body+'</div></div>';
+   + '<div class="card" style="margin-top:18px"><div class="card-b">'+body+'</div></div>';
 }
 function backLink(target){
-  return '<div style="text-align:center;margin-top:16px"><button class="btn-link" type="button" data-act="go" data-v="'+target+'">'+t("back")+'</button></div>';
+  return '<div style="text-align:center;margin-top:16px"><button class="btn-link" type="button" data-act="go" data-v="'
+   + target+'">'+t("back")+'</button></div>';
 }
 
 /* ---------------------------- P-A01 登录页 -------------------------------- */
 function pageLogin(){
-  var locked=S.lockUntil>now();
-  if(locked && S.login.tab!=="code") S.login.tab="code";
-  var tab=S.login.tab, body="";
-
+  var locked=S.st==="locked", tab=locked?"code":S.loginTab, body="";
   body += '<div class="seg-tabs" role="tablist">'
-    + segTab("code","tabCode",false) + segTab("pwd","tabPwd",locked) + segTab("wallet","tabWallet",locked) + '</div>';
-
-  if(S.err.loginTop)
-    body += '<div class="note red" role="alert" style="margin-bottom:16px"><span class="ico">!</span><div>'+esc(S.err.loginTop)+'</div></div>';
-
-  if(locked){
-    var left=Math.max(0,Math.ceil((S.lockUntil-now())/1000));
-    body += '<div class="note red" role="alert" style="margin-bottom:16px"><span class="ico">!</span><div>'
-      + '<b>'+t("lockTitle")+'</b><p data-tick="lock">'+t("lockAgain",{m:mm(left),s:ss(left)})+'</p>'
-      + '<p>'+t("lockHelpUser")+'</p></div></div>';
-  }
+    + segTab("code","tabCode",false,tab) + segTab("pwd","tabPwd",locked,tab) + segTab("wallet","tabWallet",locked,tab) + '</div>';
+  if(S.st==="disabled") body += note("red",t("eDisabled")) + gap();
+  if(locked) body += note("red",'<p>'+t("lockAgain",{m:29,s:"47"})+'</p><p>'+t("lockHelpUser")+'</p>',t("lockTitle")) + gap();
 
   if(tab==="code"){
     body += field("loginEmail","labelEmail",{type:"email",ph:"you@company.com",ac:"email"})
-         +  codeField("login",{purpose:"purposeSignIn"});
+         +  codeField("login",{sent:S.st==="sent",
+              error:S.st==="quota"?t("rlEmailQuota",{t:L("42 minutes","42 分钟")}):""});
   } else if(tab==="pwd"){
     body += field("loginEmail","labelEmail",{type:"email",ph:"you@company.com",ac:"email"})
          +  field("loginPwd","labelPwd",{affix:true,ac:"current-password"})
-         +  '<p class="hint" style="margin:-6px 0 14px"><button class="btn-link" type="button" data-act="toCodeTab">'+t("pwdTabHint")+'</button></p>';
+         +  (S.st==="attempts"?'<p class="err-msg" role="alert" style="margin:-8px 0 12px"><span>!</span><span>'+t("lockPwdLeft",{n:2})+'</span></p>':"")
+         +  '<p class="hint" style="margin:-6px 0 14px"><button class="btn-link" type="button" data-act="tab" data-v="code">'+t("pwdTabHint")+'</button></p>';
   } else {
-    body += '<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
-         +  '<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeSignIn">'+t("connectWallet")+'</button>';
+    body += note("",t("walletSignNote")) + gap()
+         +  '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeSignIn">'+t("connectWallet")+'</button>';
   }
-
-  /* C-02 协议勾选行：全站唯一一处；v4 已删除营销订阅勾选 */
-  body += '<div class="check'+(S.err._shake?" shake":"")+'"><input type="checkbox" id="agree" data-f="agree" '+(S.login.agree?"checked":"")+'>'
+  /* C-02 协议勾选行：全站唯一一处（v4 已删除营销订阅勾选） */
+  body += '<div class="check'+(S.err._shake?" shake":"")+'"><input type="checkbox" id="agree" data-f="agree" '+(S.agree?"checked":"")+'>'
        +  '<label for="agree">'+t("terms")+'</label></div>'
        +  (S.err.agree?'<p class="err-msg" role="alert" style="margin:-4px 0 8px"><span>!</span><span>'+esc(S.err.agree)+'</span></p>':'');
-
   if(tab!=="wallet")
-    body += '<button class="btn primary block'+(S.login.agree?"":" quiet")+'" type="button" data-act="loginSubmit" style="margin-top:14px">'+t("submitSignIn")+'</button>';
-
+    body += '<button class="btn primary block'+(S.agree?"":" quiet")+'" type="button" data-act="login" style="margin-top:14px">'+t("submitSignIn")+'</button>';
   body += '<div style="display:flex;gap:18px;justify-content:center;margin-top:18px;flex-wrap:wrap">'
        +  '<button class="btn-link" type="button" data-act="go" data-v="P-A03">'+t("forgotPwd")+'</button>'
        +  '<button class="btn-link" type="button" data-act="go" data-v="P-A05">'+t("cantEmail")+'</button></div>';
-
   return focusShell(focusCard(t("signInTitle"),t("signInSub"),body));
 }
-function segTab(id,key,locked){
-  var on=S.login.tab===id;
-  return '<button class="seg-tab" role="tab" type="button" data-act="tab" data-v="'+id+'" aria-selected="'+on+'" '+(locked?"disabled":"")+'>'
-   + '<span>'+t(key)+'</span>'+(locked?'<span class="lk">'+t("lockedTab")+'</span>':'')+'</button>';
+function segTab(id,key,locked,cur){
+  return '<button class="seg-tab" role="tab" type="button" data-act="tab" data-v="'+id+'" aria-selected="'+(cur===id)+'" '
+   + (locked?"disabled":"")+'><span>'+t(key)+'</span>'+(locked?'<span class="lk">'+t("lockedTab")+'</span>':'')+'</button>';
 }
 
 /* ------------------------------ 建号确认 ---------------------------------- */
 function pageCreated(){
-  return focusShell(
-    '<div class="card"><div class="card-b"><div class="created">'
-    + '<div class="ring">✓</div>'
-    + '<h1>'+t("created")+'</h1>'
-    + '<p class="lead" style="text-align:center">'+t("guideTitle")+'</p>'
-    + '<div class="idbox"><span>Account ID · '+t("demoOnly")+'</span><b>ACC-2026-0007-DEMO</b></div>'
-    + '<button class="btn primary block" type="button" data-act="go" data-v="P-A10" style="margin-top:22px;max-width:300px">'+t("contin")+'</button>'
-    + '</div></div></div>');
+  return focusShell('<div class="card"><div class="card-b"><div class="created">'
+   + '<div class="ring">✓</div><h1>'+t("created")+'</h1>'
+   + '<p class="lead" style="text-align:center">'+t("guideTitle")+'</p>'
+   + '<div class="idbox"><span>Account ID · '+t("demoOnly")+'</span><b>ACC-2026-0007-DEMO</b></div>'
+   + '<button class="btn primary block" type="button" data-act="go" data-v="P-A10" style="margin-top:20px;max-width:300px">'+t("contin")+'</button>'
+   + '</div></div></div>');
 }
 
 /* --------------------------- 忘记密码 / 账户恢复 --------------------------- */
@@ -2263,329 +2011,279 @@ function pageForgot1(){
   return focusShell(focusCard(t("fpTitle"),t("fpSub"),
     steps([t("fpStep1"),t("fpStep2")],0)
     + field("fpEmail","labelEmail",{type:"email",ph:"you@company.com"})
-    + codeField("fp",{purpose:"purposeSignIn"})
-    + '<button class="btn primary block" type="button" data-act="fpNext">'+t("contin")+'</button>'
-    + '<p class="hint" style="margin-top:14px">'+t("fpNewUser")+'</p>'
-    + backLink("P-A01")));
+    + codeField("fp",{sent:S.st==="sent",
+        error:S.st==="badcode"?t("eCodeBad"):S.st==="toomany"?t("eCodeTooMany")
+             :(S.st==="quota"?t("rlEmailQuota",{t:L("42 minutes","42 分钟")}):"")})
+    + '<button class="btn primary block" type="button" data-act="go" data-v="P-A04">'+t("contin")+'</button>'
+    + '<p class="hint" style="margin-top:14px">'+t("fpNewUser")+'</p>' + backLink("P-A01")));
 }
 function pageForgot2(){
+  if(S.st==="mismatch") S.err.fpPwd2=t("ePwdMatch");
+  if(S.st==="same") S.err.fpPwd=t("ePwdSameCurrent");
   return focusShell(focusCard(t("fpStep2"),"",
     steps([t("fpStep1"),t("fpStep2")],1)
-    + field("fpPwd","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("fpPwd")
-    + '<div style="height:14px"></div>'
+    + field("fpPwd","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("fpPwd") + gap()
     + field("fpPwd2","labelConfirmPwd",{affix:true,ac:"new-password"})
-    + '<button class="btn primary block" type="button" data-act="fpSubmit" style="margin-top:16px">'+t("save")+'</button>'
+    + '<button class="btn primary block" type="button" data-act="done" data-v="okPwdReset" style="margin-top:16px">'+t("save")+'</button>'
     + backLink("P-A01")));
 }
 function pageRecover1(){
   return focusShell(focusCard(t("rcTitle"),t("rcSub"),
     steps([t("rcStep1"),t("rcStep2")],0)
-    + '<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
-    + (S.err.rcWallet?'<div class="note red" role="alert" style="margin-bottom:14px"><span class="ico">!</span><div><b>'+t("eWalletUnlinked")+'</b><p>'+t("eWalletUnlinkedHint")+'</p></div></div>':'')
-    + '<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeRecovery">'+t("connectWallet")+'</button>'
+    + note("",t("walletSignNote")) + gap()
+    + (S.st==="unlinked"?note("red",'<p>'+t("eWalletUnlinkedHint")+'</p>',t("eWalletUnlinked"))+gap():"")
+    + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeRecovery">'+t("connectWallet")+'</button>'
     + backLink("P-A01")));
 }
 function pageRecover2(){
+  if(S.st==="taken") S.err.rcEmail=t("eEmailTaken");
   return focusShell(focusCard(t("rcNewEmailTitle"),"",
     steps([t("rcStep1"),t("rcStep2")],1)
-    + '<div class="note green" style="margin-bottom:14px"><span class="ico">✓</span><div>'+t("walletConnected")+' · '+shortAddr(DEMO_ADDR_BOUND)+'</div></div>'
-    + field("rcEmail","labelNewEmail",{type:"email"})
-    + codeField("rc",{purpose:"purposeRecovery"})
-    + '<button class="btn primary block" type="button" data-act="rcSubmit">'+t("save")+'</button>'
+    + note("green",t("walletConnected")+' · '+shortAddr(ADDR)) + gap()
+    + field("rcEmail","labelNewEmail",{type:"email"}) + codeField("rc",{})
+    + '<button class="btn primary block" type="button" data-act="done" data-v="okRecovered">'+t("save")+'</button>'
     + backLink("P-A01")));
 }
 
 /* ------------------------------ 管理端未登录 ------------------------------ */
 function pageAdminLogin(){
-  var locked=S.admin.lockUntil>now();
-  var left=Math.max(0,Math.ceil((S.admin.lockUntil-now())/1000));
+  var locked=S.st==="locked";
   return focusShell(focusCard(t("admLogin"),"",
-    (locked?'<div class="note red" role="alert" style="margin-bottom:14px"><span class="ico">!</span><div><b>'+t("lockTitle")+'</b>'
-      +'<p data-tick="alock">'+t("lockAgain",{m:mm(left),s:ss(left)})+'</p><p>'+t("lockHelpAdmin")+'</p></div></div>':"")
+    (locked?note("red",'<p>'+t("lockAgain",{m:29,s:"47"})+'</p><p>'+t("lockHelpAdmin")+'</p>',t("lockTitle"))+gap():"")
+    + (S.st==="expired"?note("red",t("eInitExpired"))+gap():"")
     + field("admEmail","labelWorkEmail",{type:"email",ph:"name@demo-console.test",disabled:locked})
-    + field("admPwd","labelPwd",{affix:true,ac:"current-password",disabled:locked})
-    + '<button class="btn primary block" type="button" data-act="adminLogin" '+(locked?"disabled":"")+'>'+t("admLogin")+'</button>'
+    + field("admPwd","labelPwd",{affix:true,ac:"current-password"})
+    + (S.st==="attempts"?'<p class="err-msg" role="alert" style="margin:-8px 0 12px"><span>!</span><span>'+t("lockPwdLeft",{n:2})+'</span></p>':"")
+    + '<button class="btn primary block" type="button" data-act="go" data-v="P-M06" '+(locked?"disabled":"")+'>'+t("admLogin")+'</button>'
     + '<div style="text-align:center;margin-top:16px"><button class="btn-link" type="button" data-act="go" data-v="P-M03">'+t("forgotPwd")+'</button></div>'));
 }
 function pageAdminFirstReset(){
+  if(S.st==="noack") S.err.ack=t("eAdminNotice");
+  if(S.st==="same") S.err.mrNew=t("ePwdSameInitial");
   return focusShell(focusCard(t("adminFirstTitle"),t("adminFirstSub"),
     field("mrOld","labelCurrentPwd",{affix:true})
-    + field("mrNew","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("mrNew")
-    + '<div style="height:14px"></div>'
+    + field("mrNew","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("mrNew") + gap()
     + field("mrNew2","labelConfirmPwd",{affix:true,ac:"new-password"})
-    + '<div class="check" style="margin-top:16px"><input type="checkbox" id="ack" data-f="ack" '+(S.form.ack?"checked":"")+'>'
+    + '<div class="check" style="margin-top:14px"><input type="checkbox" id="ack" data-f="ack" '+(S.form.ack?"checked":"")+'>'
     + '<label for="ack">'+t("admNoticeAck")+'</label></div>'
     + (S.err.ack?'<p class="err-msg" role="alert"><span>!</span><span>'+esc(S.err.ack)+'</span></p>':'')
-    + '<button class="btn primary block" type="button" data-act="adminResetSubmit" style="margin-top:10px">'+t("save")+'</button>'
+    + '<button class="btn primary block" type="button" data-act="done" data-v="okPwdReset" style="margin-top:10px">'+t("save")+'</button>'
     + '<p class="hint" style="margin-top:14px;text-align:center">'
-    + (S.lang==="en"?"No other page is reachable until this is done.":"未完成重置前，其他管理端页面均不可达。")+'</p>')
-  ,{signOut:"adminSignout"});
+    + L("No other page is reachable until this is done.","未完成重置前，其他管理端页面均不可达。")+'</p>'), true);
 }
 function pageAdminForgot1(){
   return focusShell(focusCard(t("fpTitle"),t("fpSub"),
     steps([t("fpStep1"),t("fpStep2")],0)
     + field("mfEmail","labelWorkEmail",{type:"email"})
-    + codeField("mf",{purpose:"purposeSignIn"})
-    + (S.form._sent_mf?'<div class="note" style="margin:6px 0 14px"><span class="ico">i</span><div>'
-       +(S.lang==="en"?"If this email belongs to an admin account, a verification code has been sent.":"若该邮箱为管理端账号，验证码已发送。")+'</div></div>':"")
-    + '<button class="btn primary block" type="button" data-act="mfNext">'+t("contin")+'</button>'
+    + codeField("mf",{sent:S.st==="sent"})
+    + (S.st==="sent"?note("",L("If this email belongs to an admin account, a verification code has been sent.",
+        "若该邮箱为管理端账号，验证码已发送。"))+gap():"")
+    + '<button class="btn primary block" type="button" data-act="go" data-v="P-M04">'+t("contin")+'</button>'
     + backLink("P-M01")));
 }
 function pageAdminForgot2(){
+  if(S.st==="same") S.err.mfPwd=t("ePwdSameInitial");
   return focusShell(focusCard(t("fpStep2"),"",
     steps([t("fpStep1"),t("fpStep2")],1)
-    + field("mfPwd","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("mfPwd")
-    + '<div style="height:14px"></div>'
+    + field("mfPwd","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("mfPwd") + gap()
     + field("mfPwd2","labelConfirmPwd",{affix:true,ac:"new-password"})
-    + '<button class="btn primary block" type="button" data-act="mfSubmit" style="margin-top:16px">'+t("save")+'</button>'
+    + '<button class="btn primary block" type="button" data-act="done" data-v="okPwdReset" style="margin-top:16px">'+t("save")+'</button>'
     + backLink("P-M01")));
 }
 
 /* ============================== 控制台内容 =============================== */
 function pageGuide(){
-  var viaWallet=S.acct&&S.acct.createdVia==="wallet";
+  var viaWallet=S.st==="wallet";
   var pri = viaWallet
-    ? {title:t("addEmailTitle"), body:t("guideEmail"), act:"guideAddEmail", cta:t("add")+" "+(S.lang==="en"?"email":"邮箱")}
-    : {title:t("addWalletTitle"), body:t("guideWallet"), act:"guideLinkWallet", cta:t("connectWallet")};
+    ? {title:t("addEmailTitle"), body:t("guideEmail"), cta:t("add")+" "+L("email","邮箱"), go:"P-A12"}
+    : {title:t("addWalletTitle"), body:t("guideWallet"), cta:t("connectWallet"), go:"P-A14"};
   return pageHead(t("guideTitle"),"",prdBtn())
-   + '<div class="note green" role="status" style="margin-bottom:18px"><span class="ico">✓</span><div><b>'+t("created")+'</b>'
-   + '<p>'+(viaWallet?shortAddr(S.acct.wallet):esc(S.acct?S.acct.email:""))+'</p></div></div>'
-   + '<div style="max-width:640px">'
-   + '<div class="guide pri"><span class="n">1</span><div class="bd"><b class="h3">'+pri.title+'</b>'
-   + '<p>'+pri.body+'</p><button class="btn primary" type="button" data-act="'+pri.act+'" style="margin-top:12px">'+pri.cta+'</button></div></div>'
-   + '<div class="guide"><span class="n">2</span><div class="bd"><b class="h3">'+t("guidePwd")+'</b>'
-   + '<p>'+t("guidePwdSub")+'</p><button class="btn" type="button" data-act="guideSetPwd" style="margin-top:12px">'+t("setPwdTitle")+'</button></div></div>'
-   + '<div class="note" style="margin-top:16px"><span class="ico">i</span><div>'+t("keepBoth")+'</div></div>'
-   + '<div class="btnbar even"><button class="btn" type="button" data-act="go" data-v="LAND">'+t("later")+'</button></div>'
-   + '</div>';
+   + note("green",'<p>'+(viaWallet?shortAddr(ADDR):MAIL)+'</p>',t("created"))
+   + '<div style="max-width:640px;margin-top:16px">'
+   + '<div class="guide pri"><span class="n">1</span><div class="bd"><b class="h3">'+pri.title+'</b><p>'+pri.body+'</p>'
+   + '<button class="btn primary" type="button" data-act="go" data-v="'+pri.go+'" style="margin-top:12px">'+pri.cta+'</button></div></div>'
+   + '<div class="guide"><span class="n">2</span><div class="bd"><b class="h3">'+t("guidePwd")+'</b><p>'+t("guidePwdSub")+'</p>'
+   + '<button class="btn" type="button" data-act="go" data-v="P-A13" style="margin-top:12px">'+t("setPwdTitle")+'</button></div></div>'
+   + '<div style="margin-top:14px">'+note("",t("keepBoth"))+'</div>'
+   + '<div class="btnbar even"><button class="btn" type="button" data-act="go" data-v="LAND">'+t("later")+'</button></div></div>';
 }
 function pageLanding(){
-  var a=S.acct||{}, missing=!a.email?"email":(!a.wallet?"wallet":null);
-  var out="";
-  if(S.flags.expiring)
-    out += '<div class="note" role="status" style="margin-bottom:14px"><span class="ico">⏱</span><div>'+t("sExpiring")+'</div></div>';
-  if(missing && !S.barFolded){
-    out += '<div class="cbar" role="status"><span class="ic">!</span><p>'+(missing==="email"?t("barEmail"):t("barWallet"))+'</p>'
+  var st=S.st, miss = st==="noemail"?"email":(st==="complete"?null:"wallet"), out="";
+  if(st==="expiring") out += note("",t("sExpiring")) + gap();
+  if(miss && st!=="folded")
+    out += '<div class="cbar" role="status"><span class="ic">!</span><p>'+(miss==="email"?t("barEmail"):t("barWallet"))+'</p>'
         +  '<button class="btn sm primary" type="button" data-act="go" data-v="P-A11">'+t("completeNow")+'</button>'
-        +  '<button class="btn sm" type="button" data-act="foldbar">'+(S.lang==="en"?"Collapse":"折叠")+'</button></div>';
-  }
+        +  '<button class="btn sm" type="button" data-act="st" data-v="folded">'+L("Collapse","折叠")+'</button></div>';
   out += pageHead(t("landTitle"),t("landSub"),
-      '<button class="btn primary" type="button" data-act="startKyc">'+t("startKyc")+'</button>'+prdBtn())
+      '<button class="btn primary" type="button" data-act="kyc">'+t("startKyc")+'</button>'+prdBtn())
    + '<div class="stat-row">'
-   + stat(t("rowEmail"), a.email?esc(a.email):'<span class="faint">'+t("notSet")+'</span>')
-   + stat(t("rowWallet"), a.wallet?addrView(a.wallet):'<span class="faint">'+t("notSet")+'</span>')
-   + stat(t("rowPwd"), a.hasPwd?(S.lang==="en"?"Set":"已设置"):'<span class="faint">'+t("notSet")+'</span>')
-   + stat(t("accStatus"), a.email&&a.wallet?'<span class="pill green">'+t("stActiveAcc")+'</span>':'<span class="pill amber">'+t("stIncomplete")+'</span>')
-   + '</div>'
-   + '<div class="note" style="margin-top:18px"><span class="ico">i</span><div><b>'+(S.lang==="en"?"Scope boundary":"边界声明")+'</b>'
-   + '<p>'+(S.lang==="en"
-      ? "Business modules gate on identity-verification status, not on this module's credential-completeness status. Skipping the guide never puts the account into a globally restricted state."
-      : "各业务模块的功能放行以认证状态为准，不以本模块的凭据完备状态为准；跳过引导不进入任何全局受限态。")+'</p></div></div>'
+   + stat(t("rowEmail"), miss==="email"?'<span class="faint">'+t("notSet")+'</span>':MAIL)
+   + stat(t("rowWallet"), miss==="wallet"?'<span class="faint">'+t("notSet")+'</span>':addrView(ADDR))
+   + stat(t("rowPwd"), '<span class="faint">'+t("notSet")+'</span>')
+   + stat(t("accStatus"), miss?'<span class="pill amber">'+t("stIncomplete")+'</span>':'<span class="pill green">'+t("stActiveAcc")+'</span>')
+   + '</div><div style="margin-top:16px">'
+   + note("",'<p>'+L("Business modules gate on identity-verification status, not on this module's credential-completeness status. Skipping the guide never puts the account into a globally restricted state.",
+       "各业务模块的功能放行以认证状态为准，不以本模块的凭据完备状态为准；跳过引导不进入任何全局受限态。")+'</p>',
+       L("Scope boundary","边界声明"))+'</div>'
    + '<p class="tiny" style="margin-top:14px"><span class="pill dash">'+t("landDemoData")+'</span></p>';
-  if(missing && S.barFolded)
-    out += '<button class="cbar-mini" type="button" data-act="foldbar">! '+t("completeNow")+'</button>';
+  if(miss && st==="folded")
+    out += '<button class="cbar-mini" type="button" data-act="st" data-v="nowallet">! '+t("completeNow")+'</button>';
   return out;
 }
 function stat(k,v){ return '<div class="stat"><div class="lbl">'+k+'</div><div class="val">'+v+'</div></div>'; }
 
 function pageSecurity(){
-  var a=S.acct||{};
-  var miss=!a.email?t("barEmail"):(!a.wallet?t("barWallet"):"");
+  var hasWallet=S.st!=="nowallet", hasPwd=S.st==="complete";
   return pageHead(t("secTitle"),"",prdBtn())
-   + (miss?'<div class="cbar"><span class="ic">!</span><p>'+miss+'</p></div>':"")
+   + (hasWallet?"":'<div class="cbar"><span class="ic">!</span><p>'+t("barWallet")+'</p></div>')
    + '<div class="rows" style="max-width:760px">'
-   + srow(t("rowEmail"), a.email?esc(a.email):'<span class="faint">'+t("notSet")+'</span>', a.email?t("change"):t("add"), "P-A12")
-   + srow(t("rowPwd"), a.hasPwd?"••••••••":'<span class="faint">'+t("notSet")+'</span>', a.hasPwd?t("change"):t("setPwdTitle"), "P-A13", a.hasPwd?"":t("optional"))
-   + srow(t("rowWallet"), a.wallet?addrView(a.wallet):'<span class="faint">'+t("notSet")+'</span>', a.wallet?t("change"):t("add"), "P-A14")
+   + srow(t("rowEmail"), MAIL, t("change"), "P-A12")
+   + srow(t("rowPwd"), hasPwd?"••••••••":'<span class="faint">'+t("notSet")+'</span>',
+          hasPwd?t("change"):t("setPwdTitle"), "P-A13", hasPwd?"":t("optional"))
+   + srow(t("rowWallet"), hasWallet?addrView(ADDR):'<span class="faint">'+t("notSet")+'</span>',
+          hasWallet?t("change"):t("add"), "P-A14")
    + '</div>'
-   + (a.wallet?'<p class="tiny" style="margin-top:12px;max-width:760px">'+t("disconnectNote")+'</p>':"");
+   + (hasWallet?'<p class="tiny" style="margin-top:12px;max-width:760px">'+t("disconnectNote")+'</p>':"");
 }
 function srow(k,v,cta,target,tag){
   return '<div class="row"><div class="row-main"><div class="row-k">'+k
    + (tag?'<span class="pill gray">'+tag+'</span>':'')+'</div><div class="row-v">'+v+'</div></div>'
-   + '<div class="row-act"><button class="btn sm" type="button" data-act="startFlow" data-v="'+target+'">'+cta+'</button></div></div>';
+   + '<div class="row-act"><button class="btn sm" type="button" data-act="go" data-v="'+target+'">'+cta+'</button></div></div>';
 }
 
+/* P-A12 / P-A13 / P-A14 变更流程：步骤可点，校验反馈保留 */
 function pageFlow(){
-  var f=S.flow, a=S.acct||{};
-  var titles={ "P-A12":a.email?t("chgEmailTitle"):t("addEmailTitle"),
-               "P-A13":a.hasPwd?t("chgPwdTitle"):t("setPwdTitle"),
-               "P-A14":a.wallet?t("chgWalletTitle"):t("addWalletTitle") };
-  var names={ "P-A12":a.email?[t("reauthTitle"),t("chgEmailOld"),t("chgEmailNew")]:[t("reauthTitle"),t("chgEmailNew")],
-              "P-A13":[t("reauthTitle"),t("chgPwdTitle")],
-              "P-A14":a.wallet?[t("reauthTitle"),t("chgWalletOld"),t("chgWalletNew")]:[t("reauthTitle"),t("chgWalletNew")] };
-  var body="";
-  if(f.step===0) body=reauthBlock();
-  else if(f.id==="P-A12"){
-    if(a.email && f.step===1){
-      body='<p class="lead" style="margin:0 0 14px">'+esc(a.email)+'</p>'
-        + codeField("oldEmail",{purpose:"purposeReauth"})
-        + '<button class="btn primary block" type="button" data-act="flowNext">'+t("contin")+'</button>';
-    } else {
-      body=field("newEmail","labelNewEmail",{type:"email"}) + codeField("newEmail",{purpose:"purposeSignIn"})
-        + '<button class="btn primary block" type="button" data-act="flowSubmit">'+t("save")+'</button>';
-    }
-  } else if(f.id==="P-A13"){
-    body=(a.hasPwd?"":'<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("guidePwdSub")+'</div></div>')
-      + field("np","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("np")
-      + '<div style="height:14px"></div>'
+  var f=S.flow||{id:S.page,step:0}, add=S.st==="add";
+  var conf={
+    "P-A12":{title:add?t("addEmailTitle"):t("chgEmailTitle"),
+             steps:add?[t("reauthTitle"),t("chgEmailNew")]:[t("reauthTitle"),t("chgEmailOld"),t("chgEmailNew")]},
+    "P-A13":{title:add?t("setPwdTitle"):t("chgPwdTitle"), steps:[t("reauthTitle"),add?t("setPwdTitle"):t("chgPwdTitle")]},
+    "P-A14":{title:add?t("addWalletTitle"):t("chgWalletTitle"),
+             steps:add?[t("reauthTitle"),t("chgWalletNew")]:[t("reauthTitle"),t("chgWalletOld"),t("chgWalletNew")]}
+  }[f.id];
+  var body;
+  if(f.step===0) body=reauth(f);
+  else if(f.id==="P-A12")
+    body = (!add&&f.step===1)
+      ? '<p class="lead" style="margin:0 0 14px">'+MAIL+'</p>'+codeField("oldEmail",{})
+        + '<button class="btn primary block" type="button" data-act="step" data-v="2">'+t("contin")+'</button>'
+      : field("newEmail","labelNewEmail",{type:"email"})+codeField("newEmail",{})
+        + '<button class="btn primary block" type="button" data-act="done" data-v="'+(add?"okEmailAdded":"okEmailUpdated")+'">'+t("save")+'</button>';
+  else if(f.id==="P-A13")
+    body = (add?note("",t("guidePwdSub"))+gap():"")
+      + field("np","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("np") + gap()
       + field("np2","labelConfirmPwd",{affix:true,ac:"new-password"})
-      + '<button class="btn primary block" type="button" data-act="flowSubmit" style="margin-top:16px">'+t("save")+'</button>';
-  } else {
-    if(a.wallet && f.step===1){
-      body='<p class="lead" style="margin:0 0 14px">'+shortAddr(a.wallet)+'</p>'
-        + '<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
-        + '<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeUnlink">'+t("signMessage")+'</button>'
-        + '<p class="hint" style="margin-top:12px"><button class="btn-link" type="button" data-act="flowAltFactor">'+t("walletUnavailable")+'</button></p>';
-    } else {
-      body='<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
-        + '<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeLink">'+t("connectWallet")+'</button>';
-    }
-  }
-  return pageHead(titles[f.id],"",prdBtn())
+      + '<button class="btn primary block" type="button" data-act="done" data-v="'+(add?"okPwdSet":"okPwdUpdated")+'" style="margin-top:16px">'+t("save")+'</button>';
+  else
+    body = (!add&&f.step===1)
+      ? '<p class="lead" style="margin:0 0 14px">'+shortAddr(ADDR)+'</p>'+note("",t("walletSignNote"))+gap()
+        + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeUnlink">'+t("signMessage")+'</button>'
+        + '<p class="hint" style="margin-top:12px"><button class="btn-link" type="button" data-act="step" data-v="2">'+t("walletUnavailable")+'</button></p>'
+      : note("",t("walletSignNote"))+gap()
+        + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeLink">'+t("connectWallet")+'</button>';
+  return pageHead(conf.title,"",prdBtn())
    + '<div class="card" style="max-width:520px"><div class="card-b">'
-   + steps(names[f.id],f.step) + body
+   + steps(conf.steps,f.step) + body
    + '<div style="text-align:center;margin-top:16px"><button class="btn-link" type="button" data-act="go" data-v="P-A11">'+t("cancel")+'</button></div>'
    + '</div></div>';
 }
-function reauthBlock(){
-  var a=S.acct||{}, f=S.flow, factors=[];
-  if(a.hasPwd) factors.push({k:"pwd",label:t("reauthPwd")});
-  if(a.wallet) factors.push({k:"wallet",label:t("reauthWallet")});
-  if(a.email)  factors.push({k:"code",label:t("reauthCode")});
-  if(factors.length===1 && !f.factor) f.factor=factors[0].k;
+function reauth(f){
   var head='<p class="lead" style="margin:0 0 16px">'+t("reauthSub")+'</p>';
-  if(!f.factor){
-    return head+'<div class="wallets">'+factors.map(function(x){
-      return '<button class="wallet" type="button" data-act="pickFactor" data-v="'+x.k+'"><span class="av">'
-        +(x.k==="pwd"?"••":x.k==="wallet"?"0x":"@")+'</span><span><b>'+x.label+'</b></span></button>';
-    }).join("")+'</div>';
-  }
+  if(!f.factor)
+    return head+'<div class="wallets">'+[["pwd",t("reauthPwd"),"••"],["wallet",t("reauthWallet"),"0x"],["code",t("reauthCode"),"@"]]
+      .map(function(x){ return '<button class="wallet" type="button" data-act="factor" data-v="'+x[0]+'"><span class="av">'+x[2]+'</span>'
+        + '<span><b>'+x[1]+'</b></span></button>'; }).join("")+'</div>';
+  var sw='<div style="text-align:center;margin-top:14px"><button class="btn-link" type="button" data-act="factor" data-v="">'
+    + L("Use another method","换一种验证方式")+'</button></div>';
   if(f.factor==="pwd")
     return head+field("reauthPwd","labelCurrentPwd",{affix:true,ac:"current-password"})
-      +'<button class="btn primary block" type="button" data-act="reauthSubmit">'+t("contin")+'</button>'+factorSwitch(factors);
+      + '<button class="btn primary block" type="button" data-act="step" data-v="1">'+t("contin")+'</button>'+sw;
   if(f.factor==="code")
-    return head+'<p class="lead" style="margin:-8px 0 14px">'+esc(a.email)+'</p>'
-      +codeField("reauth",{purpose:"purposeReauth"})
-      +'<button class="btn primary block" type="button" data-act="reauthSubmit">'+t("contin")+'</button>'+factorSwitch(factors);
-  return head+'<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
-    +'<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeReauth">'+t("signMessage")+'</button>'+factorSwitch(factors);
+    return head+'<p class="lead" style="margin:-8px 0 14px">'+MAIL+'</p>'+codeField("reauth",{})
+      + '<button class="btn primary block" type="button" data-act="step" data-v="1">'+t("contin")+'</button>'+sw;
+  return head+note("",t("walletSignNote"))+gap()
+    + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeReauth">'+t("signMessage")+'</button>'+sw;
 }
-function factorSwitch(factors){
-  if(factors.length<2) return "";
-  return '<div style="text-align:center;margin-top:14px"><button class="btn-link" type="button" data-act="pickFactor" data-v="">'
-    +(S.lang==="en"?"Use another method":"换一种验证方式")+'</button></div>';
-}
-
 function pagePrefs(){
-  var zones=["Asia/Shanghai","UTC","Europe/London","America/New_York"];
   return pageHead(t("prefTitle"),"",prdBtn())
    + '<div class="rows" style="max-width:760px">'
    + '<div class="row"><div class="row-main"><div class="row-k">'+t("prefLang")+'</div><div class="row-v">'+langSwitcher()+'</div>'
    + '<p class="tiny" style="margin-top:9px">'+t("prefLangSub")+'</p></div></div>'
    + '<div class="row"><div class="row-main"><div class="row-k">'+t("prefTz")+'</div><div class="row-v">'
    + '<select class="inp" data-f="tz" style="max-width:280px">'
-   + zones.map(function(z){return '<option value="'+z+'" '+(S.tz===z?"selected":"")+'>'+z+'</option>';}).join("")
+   + ["Asia/Shanghai","UTC","Europe/London","America/New_York"].map(function(z){
+       return '<option value="'+z+'" '+(S.tz===z?"selected":"")+'>'+z+'</option>';}).join("")
    + '</select></div><p class="tiny" style="margin-top:9px">'+t("prefTzSub")+'</p>'
-   + '<p class="tiny mono" style="margin-top:5px">'+t("sampleTime",{t:fmtTime(null,true)})+'</p></div></div>'
-   + '</div>';
+   + '<p class="tiny mono" style="margin-top:5px">'+t("sampleTime",{t:fmtTime(null,true)})+'</p></div></div></div>';
 }
-
 function pageAdminChangePwd(){
   return pageHead(t("admNavSecurity"),"",prdBtn())
    + '<div class="card" style="max-width:520px"><div class="card-b">'
    + field("apOld","labelCurrentPwd",{affix:true})
-   + field("apNew","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("apNew")
-   + '<div style="height:12px"></div>'
+   + field("apNew","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("apNew") + gap(12)
    + field("apNew2","labelConfirmPwd",{affix:true,ac:"new-password"})
-   + '<button class="btn primary" type="button" data-act="apSubmit" style="margin-top:14px">'+t("save")+'</button>'
+   + '<button class="btn primary" type="button" data-act="done" data-v="okPwdUpdated" style="margin-top:14px">'+t("save")+'</button>'
    + '</div></div>';
 }
 
 /* ----------------------------- P-M06 账户管理 ----------------------------- */
-function availableAdmins(list){
-  return list.filter(function(r){return r.st==="active"||r.st==="pending"||r.st==="locked";}).length;
-}
 function pageAdminAccounts(){
-  var st=S.admin.listState, list=S.admin.list;
-  var qy=(S.admin.q||"").toLowerCase();
-  var shown=list.filter(function(r){
-    var okQ=!qy||r.email.toLowerCase().indexOf(qy)>=0||r.name.toLowerCase().indexOf(qy)>=0;
-    var okF=S.admin.filter==="all"||(S.admin.filter==="pending"?(r.st==="pending"||r.st==="pendingExpired"):r.st===S.admin.filter);
-    return okQ&&okF;
-  });
-  var avail=availableAdmins(list);
-
+  var st=S.st, list = st==="lastadmin" ? [ADMINS[0],ADMINS[3],ADMINS[4]] : ADMINS;
+  var avail = list.filter(function(r){return r.st==="active"||r.st==="pending"||r.st==="locked";}).length;
+  var head='<tr><th>'+t("admColEmail")+'</th><th>'+t("admColName")+'</th><th>'+t("admColStatus")+'</th><th>'
+   + t("admColCreated")+'</th><th>'+t("admColLast")+'</th><th class="col-act">'+t("admColAct")+'</th></tr>';
   var toolbar='<div class="toolbar">'
-    + '<input class="inp" data-f="admQ" value="'+esc(S.admin.q)+'" placeholder="'+t("admSearch")+'">'
-    + '<div class="seg">'+["all","active","pending","locked","disabled"].map(function(k){
-        return '<button type="button" data-act="admFilter" data-v="'+k+'" aria-pressed="'+(S.admin.filter===k)+'">'
+    + '<input class="inp" data-f="admQ" value="'+esc(S.form.admQ||"")+'" placeholder="'+t("admSearch")+'">'
+    + '<div class="seg">'+["all","active","pending","locked","disabled"].map(function(k,i){
+        return '<button type="button" data-act="noop" aria-pressed="'+(i===0)+'">'
           + t("admFilter"+k.charAt(0).toUpperCase()+k.slice(1))+'</button>';}).join("")+'</div>'
-    + '<div style="flex:1"></div>'
-    + '<span class="pill dash" title="'+(S.lang==="en"?"Prototype control":"原型控制")+'">'
-    + (S.lang==="en"?"Prototype · list state":"原型 · 列表状态")+'</span>'
-    + '<div class="seg">'
-    + [["default","默认","Default"],["loading","加载中","Loading"],["empty","空数据","Empty"],["noresult","筛选无结果","No result"],
-       ["failed","加载失败","Failed"],["noperm","无权限","No access"],["submitting","提交中","Submitting"],["submitfail","提交失败","Submit failed"]]
-       .map(function(p){ return '<button type="button" data-act="admState" data-v="'+p[0]+'" aria-pressed="'+(st===p[0])+'">'
-         +(S.lang==="en"?p[2]:p[1])+'</button>'; }).join("")
-    + '</div></div>';
-
+    + '</div>';
   var inner;
-  if(st==="loading"){
-    inner='<div class="tablewrap"><table class="tbl"><thead>'+admHead()+'</thead><tbody>'
-      + [0,1,2,3].map(function(){ return '<tr>'+[0,1,2,3,4,5].map(function(){return '<td><div class="skel"></div></td>';}).join("")+'</tr>'; }).join("")
+  if(st==="loading")
+    inner='<div class="tablewrap"><table class="tbl"><thead>'+head+'</thead><tbody>'
+      + "0123".split("").map(function(){ return '<tr>'+"012345".split("").map(function(){
+          return '<td><div class="skel"></div></td>';}).join("")+'</tr>'; }).join("")
       + '</tbody></table><p class="tiny" style="padding:11px 12px" role="status">'+t("stLoading")+'</p></div>';
-  } else if(st==="empty"){
-    inner='<div class="tablewrap"><table class="tbl"><thead>'+admHead()+'</thead></table>'
+  else if(st==="empty")
+    inner='<div class="tablewrap"><table class="tbl"><thead>'+head+'</thead></table>'
       + '<div class="tbl-empty"><b>'+t("stEmptyTitle")+'</b><span>'+t("stEmptyBody")+'</span>'
-      + '<div style="margin-top:14px"><button class="btn primary sm" type="button" data-act="admCreateOpen">'+t("admCreate")+'</button></div></div></div>';
-  } else if(st==="noresult"||(st==="default"&&shown.length===0)){
-    inner='<div class="tablewrap"><table class="tbl"><thead>'+admHead()+'</thead></table>'
+      + '<div style="margin-top:14px"><button class="btn primary sm" type="button" data-act="admCreate">'+t("admCreate")+'</button></div></div></div>';
+  else if(st==="noresult")
+    inner='<div class="tablewrap"><table class="tbl"><thead>'+head+'</thead></table>'
       + '<div class="tbl-empty"><b>'+t("stNoResultTitle")+'</b><span>'+t("stNoResultBody")+'</span></div></div>';
-  } else if(st==="failed"){
+  else if(st==="failed")
     inner='<div class="tablewrap"><div class="tbl-empty"><b>'+t("stFailTitle")+'</b><span>'+t("stFailBody")+'</span>'
-      + '<div style="margin-top:14px"><button class="btn sm" type="button" data-act="admRetry">'+t("stRetry")+'</button></div></div></div>';
-  } else if(st==="noperm"){
+      + '<div style="margin-top:14px"><button class="btn sm" type="button" data-act="st" data-v="default">'+t("stRetry")+'</button></div></div></div>';
+  else if(st==="noperm")
     inner='<div class="tablewrap"><div class="tbl-empty"><b>'+t("stNoPermTitle")+'</b><span>'+t("stNoPermBody")+'</span></div></div>';
-  } else {
-    inner='<div class="tablewrap"><table class="tbl"><thead>'+admHead()+'</thead><tbody>'
-      + shown.map(function(r){ return admRow(r,list.indexOf(r),avail); }).join("")
+  else
+    inner='<div class="tablewrap"><table class="tbl"><thead>'+head+'</thead><tbody>'
+      + list.map(function(r){ return admRow(r,avail); }).join("")
       + '</tbody></table></div><p class="tiny" style="margin-top:10px">'+t("admAuditNote")+' · '+t("admExpiredNote")+'</p>';
-  }
-  return pageHead(t("admAccountsTitle"),
-      t("demoOnly")+" · "+(S.lang==="en"?("Available administrators: "+avail):("可用管理员："+avail)),
-      '<button class="btn primary" type="button" data-act="admCreateOpen">'+t("admCreate")+'</button>'+prdBtn())
+  if((st==="submitting"||st==="submitfail") && !S.modal)
+    S.modal={type:"admCreate",busy:st==="submitting",fail:st==="submitfail"};
+  return pageHead(t("admAccountsTitle"), t("demoOnly")+" · "+L("Available administrators: ","可用管理员：")+avail,
+      '<button class="btn primary" type="button" data-act="admCreate">'+t("admCreate")+'</button>'+prdBtn())
    + toolbar + inner;
 }
-function admHead(){
-  return '<tr><th>'+t("admColEmail")+'</th><th>'+t("admColName")+'</th><th>'+t("admColStatus")+'</th><th>'+t("admColCreated")+'</th><th>'+t("admColLast")+'</th><th class="col-act">'+t("admColAct")+'</th></tr>';
-}
-function admRow(r,idx,avail){
-  var isMe=r.email===DEMO_ME, statusHtml;
-  if(r.st==="active") statusHtml=stCell("green",t("stActive"),"");
-  else if(r.st==="pending") statusHtml=stCell("amber",t("stPendingS"),t("stPendingD",{t:fmtTime(r.expires)}));
-  else if(r.st==="pendingExpired") statusHtml=stCell("red",t("stPendingS"),t("stPendingExpired"));
-  else if(r.st==="locked") statusHtml=stCell("red",t("stLockedS"),'<span data-tick="mlock:'+idx+'">'+t("stLockedD",{t:mm(r.lockLeft||0)+"m "+ss(r.lockLeft||0)+"s"})+'</span>');
-  else statusHtml=stCell("gray",t("stDisabled"),"");
-
+function admRow(r,avail){
+  var isMe=r.email===ME, s;
+  if(r.st==="active") s=stCell("green",t("stActive"),"");
+  else if(r.st==="pending") s=stCell("amber",t("stPendingS"),t("stPendingD",{t:fmtTime(r.expires)}));
+  else if(r.st==="pendingExpired") s=stCell("red",t("stPendingS"),t("stPendingExpired"));
+  else if(r.st==="locked") s=stCell("red",t("stLockedS"),t("stLockedD",{t:"12m 14s"}));
+  else s=stCell("gray",t("stDisabled"),"");
   var counts=(r.st==="active"||r.st==="pending"||r.st==="locked");
-  var lastGuard=counts && avail<=1;
   /* 两条约束同时命中时优先展示「最后一个可用管理员」（PRD 7.9.2 / AC-169） */
-  var block = lastGuard ? t("admLastTip") : (isMe ? t("eSelfAction") : "");
+  var block=(counts&&avail<=1)?t("admLastTip"):(isMe?t("eSelfAction"):"");
   var acts=[];
-  /* 操作列用短动词，完整操作名（如「重新生成初始密码」）挂在 title 上，避免列宽被文案撑爆 */
-  if(r.st==="disabled") acts.push(actBtn(t("admActRestore"),"admRestore",idx,"",false));
-  else {
-    acts.push(actBtn(t("admActDisable"),"admDisable",idx,block,true));
-    acts.push(actBtn(t("admActDelete"),"admDisable",idx,block,true));
-  }
-  if(r.st==="locked") acts.push(actBtn(t("admActUnlock"),"admUnlock",idx,"",false));
+  if(r.st==="disabled") acts.push(act(t("admActRestore"),"",false,"noop"));
+  else { acts.push(act(t("admActDisable"),block,true,"admConfirm")); acts.push(act(t("admActDelete"),block,true,"admConfirm")); }
+  if(r.st==="locked") acts.push(act(t("admActUnlock"),"",false,"admUnlock"));
   if(r.st==="pending"||r.st==="pendingExpired")
-    acts.push(actBtn(t("admActRegenShort"),"admRegen",idx,isMe?t("eSelfAction"):"",false,t("admActRegen")));
-
-  return '<tr><td class="c-email">'+esc(r.email)+(isMe?' <span class="pill gray">'+(S.lang==="en"?"You":"我")+'</span>':'')+'</td>'
-   + '<td class="nw">'+esc(r.name)+'</td><td class="c-status">'+statusHtml+'</td>'
+    acts.push(act(t("admActRegenShort"),isMe?t("eSelfAction"):"",false,"admPwd",t("admActRegen")));
+  return '<tr><td class="c-email">'+esc(r.email)+(isMe?' <span class="pill gray">'+L("You","我")+'</span>':'')+'</td>'
+   + '<td class="nw">'+esc(r.name)+'</td><td class="c-status">'+s+'</td>'
    + '<td class="c-time">'+fmtCell(r.created)+'</td><td class="c-time">'+fmtCell(r.last)+'</td>'
    + '<td class="col-act">'+acts.join("")+'</td></tr>';
 }
@@ -2593,839 +2291,421 @@ function stCell(cls,label,detail){
   return '<span class="pill '+cls+'">'+label+'</span>'+(detail?'<div class="tiny" style="margin-top:3px">'+detail+'</div>':'');
 }
 /* 被拦住的操作置灰但仍可点：点击后给出可读原因，而不是静默无反应 */
-function actBtn(label,act,idx,block,danger,title){
-  if(block) return '<button class="actlink off" type="button" data-act="admBlocked" data-m="'+esc(block)+'" title="'+esc(block)+'">'+label+'</button>';
-  return '<button class="actlink'+(danger?" danger":"")+'" type="button" data-act="'+act+'" data-i="'+idx+'"'
-    + (title?' title="'+esc(title)+'"':'')+'>'+label+'</button>';
+function act(label,block,danger,action,title){
+  if(block) return '<button class="actlink off" type="button" data-act="blocked" data-m="'+esc(block)+'" title="'+esc(block)+'">'+label+'</button>';
+  return '<button class="actlink'+(danger?" danger":"")+'" type="button" data-act="'+action+'"'
+   + (title?' title="'+esc(title)+'"':'')+'>'+label+'</button>';
 }
 
 /* ================================ 弹层 =================================== */
 function renderModal(){
   var m=S.modal; if(!m) return "";
-  if(m.type==="captcha") return modalCaptcha();
-  if(m.type==="wallet") return modalWallet();
-  if(m.type==="reconsent") return modalReconsent();
-  if(m.type==="gate") return modalGate();
-  if(m.type==="admCreate") return modalAdmCreate();
-  if(m.type==="admCreated") return modalAdmCreated();
-  if(m.type==="admConfirm") return modalAdmConfirm();
-  if(m.type==="admExtend") return modalAdmExtend();
-  if(m.type==="doc") return modalDoc();
-  return "";
+  return { captcha:modalCaptcha, wallet:modalWallet, reconsent:modalReconsent, gate:modalGate,
+           admCreate:modalAdmCreate, admPwd:modalAdmPwd, admConfirm:modalAdmConfirm, doc:modalDoc }[m.type]();
 }
+/* C-01 滑块弹窗：视觉完整、能开能关、可切「默认 / 通过 / 失败 / 冷却」四种样子。
+   拖拽轨迹与落点容差校验属于前端实现范围（PRD 12.3.2 / 12.3.3），原型不做仿真。 */
 function modalCaptcha(){
-  var cooling=S.capCoolUntil>now(), left=Math.max(0,Math.ceil((S.capCoolUntil-now())/1000));
-  if(S.flags.capLoadFail){
-    return '<div class="mask" data-act="capClose"><div class="modal" role="dialog" aria-modal="true" aria-label="'+t("capTitle")+'">'
-     + '<div class="modal-h"><b>'+t("capTitle")+'</b><button class="modal-x" type="button" data-act="capClose" aria-label="'+t("close")+'">✕</button></div>'
-     + '<div class="modal-b"><div class="note red" role="alert"><span class="ico">!</span><div>'+t("capLoadFail")+'</div></div>'
-     + '<button class="btn block" type="button" data-act="capReload" style="margin-top:14px">'+t("stRetry")+'</button>'
-     + '<p class="tiny" style="margin-top:12px;text-align:center">'+t("capHelp")+'</p></div></div></div>';
-  }
-  return '<div class="mask" data-act="capClose"><div class="modal" role="dialog" aria-modal="true" aria-label="'+t("capTitle")+'">'
+  var v=S.modal.view||"idle", x=(v==="ok"?133:0);
+  var msg = v==="ok"?["ok",t("capVerified")] : v==="fail"?["bad",t("capFail")]
+          : v==="trouble"?["bad",t("capTrouble")] : v==="cool"?["bad",t("capCool",{n:47})]
+          : v==="load"?["bad",t("capLoadFail")] : ["",t("capSlide")];
+  return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true" aria-label="'+t("capTitle")+'">'
    + '<div class="modal-h"><b>'+t("capTitle")+'</b>'
-   + '<button class="modal-x" type="button" data-act="capRefresh" aria-label="'+t("capRefresh")+'" title="'+t("capRefresh")+'">⟳</button>'
-   + '<button class="modal-x" type="button" data-act="capClose" aria-label="'+t("close")+'">✕</button></div>'
+   + '<button class="modal-x" type="button" data-act="capView" data-v="idle" title="'+t("capRefresh")+'" aria-label="'+t("capRefresh")+'">⟳</button>'
+   + '<button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
    + '<div class="modal-b">'
    + '<div class="cap-canvas"><canvas id="capBg" width="328" height="180"></canvas>'
-   + '<canvas id="capPiece" class="cap-piece" width="328" height="180"></canvas></div>'
-   + '<div class="cap-track'+(cooling?" cool":"")+'" id="capTrack"><div class="cap-fill" id="capFill"></div>'
-   + '<span class="tip">'+(cooling?"":t("capSlide"))+'</span>'
-   + '<div class="cap-knob" id="capKnob" tabindex="0" role="slider" aria-label="'+t("capSlide")+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" '
-   + (cooling?'aria-disabled="true"':'')+'>›</div></div>'
-   + '<p class="cap-msg" id="capMsg" role="status" '+(cooling?'data-tick="capcool"':'')+'>'+(cooling?t("capCool",{n:left}):"")+'</p>'
-   + '<p class="tiny" style="margin-top:10px;text-align:center">'+t("capHelp")+'</p>'
-   + '</div></div></div>';
+   + '<canvas id="capPiece" class="cap-piece" width="328" height="180" style="transform:translateX('+x+'px)"></canvas></div>'
+   + '<div class="cap-track'+(v==="ok"?" ok":(v==="fail"||v==="cool")?" bad":"")+(v==="cool"?" cool":"")+'">'
+   + '<div class="cap-fill" style="width:'+(x+48)+'px"></div>'
+   + '<span class="tip">'+(v==="idle"?t("capSlide"):"")+'</span>'
+   + '<div class="cap-knob" style="transform:translateX('+x+'px)" role="img" aria-label="'+t("capSlide")+'">›</div></div>'
+   + '<p class="cap-msg '+msg[0]+'" role="status">'+msg[1]+'</p>'
+   + '<p class="tiny" style="margin-top:8px;text-align:center">'+t("capHelp")+'</p>'
+   + stateBar([["idle","Default","默认"],["ok","Verified","通过"],["fail","Failed","失败"],
+               ["trouble","3 failures","连续 3 次失败"],["cool","Cooldown","冷却"],["load","Load failed","加载失败"]],
+              "capView", v, "margin:12px 0 0")
+   + '</div><div class="modal-f"><button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
+   + '<button class="btn primary" type="button" data-act="capPass">'+t("contin")+'</button></div></div></div>';
 }
+/* C-06 钱包面板：连接 → 待签消息 → 结果，六种样子可直接切换 */
 function modalWallet(){
-  var w=S.wallet||{}, body="";
-  if(w.stage==="pick"){
+  var w=S.modal, v=w.view||"pick", body;
+  if(v==="pick")
     body='<p class="lead" style="margin:0 0 14px">'+t("walletPickSub")+'</p><div class="wallets">'
       + ["Demo Wallet A","Demo Wallet B","Demo Wallet C"].map(function(n,i){
-          return '<button class="wallet" type="button" data-act="walletPick" data-i="'+i+'"><span class="av">W'+(i+1)+'</span>'
-            +'<span><b>'+n+'</b><span>'+t("demoOnly")+'</span></span></button>';}).join("")+'</div>';
-  } else if(w.stage==="connecting"){
-    body='<div style="display:flex;gap:12px;align-items:center;padding:18px 0"><span class="spinner"></span><span>'+t("walletConnecting")+'</span></div>';
-  } else if(w.stage==="error"){
-    body='<div class="note red" role="alert"><span class="ico">!</span><div><b>'+esc(w.err)+'</b>'+(w.errSub?'<p>'+esc(w.errSub)+'</p>':'')+'</div></div>';
-  } else {
-    var msg="Chain Financing (demo.chain-financing.test)\n\nAddress: "+w.addr+"\nChain ID: 1\nNonce: 8f31c0a4d27b\n"
-      + "Issued at: "+fmtTime(null,true)+"\nExpires in: 5 minutes\nPurpose: "+t(w.purpose)+"\n\n"+t("walletSignNote");
-    body='<div class="note green" style="margin-bottom:12px"><span class="ico">✓</span><div>'+t("walletConnected")
-      + ' · <span class="mono">'+shortAddr(w.addr)+'</span></div></div>'
-      + '<div class="sigmsg">'+esc(msg)+'</div>'
-      /* 「只签消息、不发交易」不能藏在可滚动区域里，单独常驻一条 */
-      + '<div class="note" style="margin-top:12px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
-      + (w.stage==="signing"?'<div style="display:flex;gap:10px;align-items:center;margin-top:12px"><span class="spinner"></span><span class="tiny">'+t("walletSigning")+'</span></div>':"")
-      + (w.stage==="verifying"?'<div style="display:flex;gap:10px;align-items:center;margin-top:12px"><span class="spinner"></span><span class="tiny">'+t("walletVerifying")+'</span></div>':"");
+          return '<button class="wallet" type="button" data-act="wView" data-v="sign"><span class="av">W'+(i+1)+'</span>'
+            + '<span><b>'+n+'</b><span>'+t("demoOnly")+'</span></span></button>';}).join("")+'</div>';
+  else if(v==="nowallet") body=note("red",t("eNoWallet"));
+  else if(v==="network")  body=note("red",t("eNetwork"));
+  else if(v==="rejected") body=note("red",t("eSigRejected"));
+  else if(v==="failed")   body=note("red",t("eSigFailed"));
+  else {
+    var msg="Chain Financing (demo.chain-financing.test)\n\nAddress: "+ADDR+"\nChain ID: 1\nNonce: 8f31c0a4d27b\n"
+      + "Issued at: "+fmtTime(null,true)+"\nExpires in: 5 minutes\nPurpose: "+t(w.purpose||"purposeSignIn")+"\n\n"+t("walletSignNote");
+    body=note("green",t("walletConnected")+' · <span class="mono">'+shortAddr(ADDR)+'</span>')
+      + gap(12) + '<div class="sigmsg">'+esc(msg)+'</div>'
+      /* 「只签消息、不发交易」不放在可滚动区域里，单独常驻一条 */
+      + '<div style="margin-top:12px">'+note("",t("walletSignNote"))+'</div>';
   }
-  var foot = w.stage==="sign"
-    ? '<button class="btn" type="button" data-act="walletClose">'+t("cancel")+'</button><button class="btn primary" type="button" data-act="walletSign">'+t("signMessage")+'</button>'
-    : (w.stage==="error"
-      ? '<button class="btn" type="button" data-act="walletClose">'+t("close")+'</button><button class="btn primary" type="button" data-act="walletRetry">'+t("stRetry")+'</button>'
-      : '<button class="btn" type="button" data-act="walletClose">'+t("cancel")+'</button>');
-  return '<div class="mask" data-act="walletClose"><div class="modal" role="dialog" aria-modal="true">'
-   + '<div class="modal-h"><b>'+(w.stage==="pick"?t("walletPick"):t("walletSignTitle"))+'</b>'
-   + '<button class="modal-x" type="button" data-act="walletClose" aria-label="'+t("close")+'">✕</button></div>'
-   + '<div class="modal-b">'+body+'</div><div class="modal-f">'+foot+'</div></div></div>';
+  return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+(v==="pick"?t("walletPick"):t("walletSignTitle"))+'</b>'
+   + '<button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b">'+body
+   + stateBar([["pick","Wallets","选择钱包"],["sign","Sign","待签名"],["rejected","Rejected","拒签"],
+               ["failed","Verify failed","验签失败"],["nowallet","No wallet","无钱包"],["network","Wrong network","网络不支持"]],
+              "wView", v, "margin:14px 0 0")
+   + '</div><div class="modal-f"><button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
+   + (v==="sign"?'<button class="btn primary" type="button" data-act="wSign">'+t("signMessage")+'</button>':'')
+   + '</div></div></div>';
 }
 function modalReconsent(){
-  var scrolled=S.modal.scrolled;
   return '<div class="mask"><div class="modal wide" role="dialog" aria-modal="true">'
    + '<div class="modal-h"><b>'+t("reconsentTitle")+'</b></div>'
    + '<div class="modal-b"><p class="lead" style="margin:0 0 12px">'+t("reconsentBody")+'</p>'
-   + '<div class="sigmsg" id="tosBox" style="max-height:210px;white-space:normal;font-family:var(--sans);font-size:12px">'
+   + '<div class="sigmsg" style="max-height:190px;white-space:normal;font-family:var(--sans);font-size:12px">'
    + '<b>Terms of Service · v3.2 · '+t("demoOnly")+'</b><br><br>'
-   + new Array(9).join('<p style="margin:0 0 10px">'+(S.lang==="en"
-      ? "Placeholder clause. The Terms of Service text, its version, effective time and re-consent rules are owned by WS-301; this prototype only demonstrates the front-end consent interaction."
-      : "占位条款。协议正文、版本号、生效时间与强制重新同意的判定规则归 WS-301 定义，本原型只演示前台同意交互。")+'</p>')
-   + '</div>'+(scrolled?"":'<p class="hint">'+t("reconsentScroll")+'</p>')+'</div>'
-   + '<div class="modal-f"><button class="btn" type="button" data-act="reconsentOut">'+t("signOut")+'</button>'
-   + '<button class="btn primary'+(scrolled?"":" quiet")+'" type="button" data-act="reconsentAgree">'+t("reconsentAgree")+'</button></div></div></div>';
+   + new Array(7).join('<p style="margin:0 0 10px">'+L("Placeholder clause. The Terms of Service text, its version, effective time and re-consent rules are owned by WS-301; this prototype only demonstrates the front-end consent interaction.",
+      "占位条款。协议正文、版本号、生效时间与强制重新同意的判定规则归 WS-301 定义，本原型只演示前台同意交互。")+'</p>')
+   + '</div><p class="hint">'+t("reconsentScroll")+'</p></div>'
+   + '<div class="modal-f"><button class="btn" type="button" data-act="go" data-v="P-A01">'+t("signOut")+'</button>'
+   + '<button class="btn primary" type="button" data-act="close">'+t("reconsentAgree")+'</button></div></div></div>';
 }
+/* C-09 凭据补齐弹层 */
 function modalGate(){
-  var g=S.modal, a=S.acct||{};
-  var need=!a.email?"email":(!a.wallet?"wallet":null);
-  var remain=(!a.email?1:0)+(!a.wallet?1:0);
-  if(!need){
-    return '<div class="mask" data-act="gateClose"><div class="modal" role="dialog" aria-modal="true">'
-     + '<div class="modal-h"><b>'+t("allSet")+'</b><button class="modal-x" type="button" data-act="gateClose" aria-label="'+t("close")+'">✕</button></div>'
-     + '<div class="modal-b"><div class="note green"><span class="ico">✓</span><div>'+t("allSet")+'</div></div></div>'
-     + '<div class="modal-f"><button class="btn primary" type="button" data-act="gateContinue">'+t("startKyc")+'</button></div></div></div>';
-  }
-  var body='<p class="lead" style="margin:0 0 14px">'+t("gateBody")+'</p>'
-    + (g.total>1?'<p class="tiny" style="margin-bottom:10px">'+(g.total-remain+1)+" / "+g.total+'</p>':"");
-  if(need==="email"){
-    body+=field("gateEmail","labelEmail",{type:"email"}) + codeField("gate",{purpose:"purposeSignIn"})
-      + '<button class="btn primary block" type="button" data-act="gateEmailSubmit">'+t("save")+'</button>';
-  } else {
-    body+='<div class="note" style="margin-bottom:14px"><span class="ico">i</span><div>'+t("walletSignNote")+'</div></div>'
-      + '<button class="btn primary block" type="button" data-act="walletConnect" data-p="purposeLink">'+t("connectWallet")+'</button>';
-  }
-  return '<div class="mask" data-act="gateClose"><div class="modal" role="dialog" aria-modal="true">'
+  var need=S.modal.need;
+  if(!need)
+    return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
+     + '<div class="modal-h"><b>'+t("allSet")+'</b><button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
+     + '<div class="modal-b">'+note("green",t("allSet"))
+     + stateBar([["wallet","Missing wallet","缺钱包"],["email","Missing email","缺邮箱"],["","All set","已齐备"]],
+                "gateView", need, "margin:14px 0 0")
+     + '</div><div class="modal-f"><button class="btn primary" type="button" data-act="close">'+t("startKyc")+'</button></div></div></div>';
+  var body='<p class="lead" style="margin:0 0 14px">'+t("gateBody")+'</p><p class="tiny" style="margin-bottom:10px">1 / 2</p>'
+   + (need==="email"
+      ? field("gateEmail","labelEmail",{type:"email"})+codeField("gate",{})
+        + '<button class="btn primary block" type="button" data-act="close">'+t("save")+'</button>'
+      : note("",t("walletSignNote"))+gap()
+        + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeLink">'+t("connectWallet")+'</button>');
+  return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
    + '<div class="modal-h"><b>'+(need==="email"?t("gateEmail"):t("gateWallet"))+'</b>'
-   + '<button class="modal-x" type="button" data-act="gateClose" aria-label="'+t("close")+'">✕</button></div>'
-   + '<div class="modal-b">'+body+'</div></div></div>';
+   + '<button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b">'+body
+   + stateBar([["wallet","Missing wallet","缺钱包"],["email","Missing email","缺邮箱"],["","All set","已齐备"]],
+              "gateView", need, "margin:14px 0 0")
+   + '</div></div></div>';
 }
 function modalAdmCreate(){
-  var sub=S.admin.listState==="submitting", fail=S.admin.listState==="submitfail";
-  return '<div class="mask" data-act="admClose"><div class="modal" role="dialog" aria-modal="true">'
-   + '<div class="modal-h"><b>'+t("admCreate")+'</b><button class="modal-x" type="button" data-act="admClose" aria-label="'+t("close")+'">✕</button></div>'
+  var m=S.modal;
+  return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+t("admCreate")+'</b><button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
    + '<div class="modal-b">'
-   + (fail?'<div class="note red" role="alert" style="margin-bottom:12px"><span class="ico">!</span><div><b>'+t("stSubmitFailTitle")+'</b><p>'+t("stSubmitFailBody")+'</p></div></div>':'')
+   + (m.fail?note("red",'<p>'+t("stSubmitFailBody")+'</p>',t("stSubmitFailTitle"))+gap(12):"")
    + field("acEmail","labelWorkEmail",{type:"email",ph:"name@demo-console.test"})
-   + field("acName","labelName")
-   + '<div class="note amber"><span class="ico">!</span><div>'+t("admDeliverOffline")+'</div></div>'
-   + '</div><div class="modal-f"><button class="btn" type="button" data-act="admClose">'+t("cancel")+'</button>'
-   + '<button class="btn primary" type="button" data-act="admCreateSubmit" '+(sub?"disabled":"")+'>'
-   + (sub?'<span class="spinner"></span>'+t("stSubmitting"):t("admCreate"))+'</button></div></div></div>';
+   + field("acName","labelName") + note("amber",t("admDeliverOffline"))
+   + '</div><div class="modal-f"><button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
+   + '<button class="btn primary" type="button" data-act="admPwd" '+(m.busy?"disabled":"")+'>'
+   + (m.busy?'<span class="spinner"></span>'+t("stSubmitting"):t("admCreate"))+'</button></div></div></div>';
 }
-function modalAdmCreated(){
+function modalAdmPwd(){
   return '<div class="mask"><div class="modal" role="dialog" aria-modal="true">'
    + '<div class="modal-h"><b>'+t("adminCreated")+'</b></div>'
    + '<div class="modal-b"><div class="row-k">'+t("admInitialPwd")+'</div>'
-   + '<div class="hash" style="width:100%;justify-content:space-between;font-size:15px"><span class="val">'+esc(S.modal.pwd)+'</span>'
-   + '<button class="ico" type="button" data-act="copyaddr" data-v="'+esc(S.modal.pwd)+'" aria-label="'+t("copyAddress")+'">⧉</button></div>'
-   + '<p class="hint">'+t("initExpiresOn",{t:fmtTime(S.modal.expires)})+'</p>'
-   + '<div class="note amber" style="margin-top:12px"><span class="ico">!</span><div>'+t("admDeliverOffline")+'</div></div>'
-   + '</div><div class="modal-f"><button class="btn primary" type="button" data-act="admCreatedDone">'+t("savedIt")+'</button></div></div></div>';
+   + '<div class="hash" style="width:100%;justify-content:space-between;font-size:15px"><span class="val">Dq7m2xR4vT</span>'
+   + '<button class="ico" type="button" data-act="copy" aria-label="'+t("copyAddress")+'">⧉</button></div>'
+   + '<p class="hint">'+t("initExpiresOn",{t:fmtTime("2026-09-14T08:00:00Z")})+'</p>'
+   + '<div style="margin-top:12px">'+note("amber",t("admDeliverOffline"))+'</div>'
+   + '</div><div class="modal-f"><button class="btn primary" type="button" data-act="close">'+t("savedIt")+'</button></div></div></div>';
 }
 function modalAdmConfirm(){
-  var m=S.modal;
-  return '<div class="mask" data-act="admClose"><div class="modal" role="dialog" aria-modal="true">'
-   + '<div class="modal-h"><b>'+m.title+'</b><button class="modal-x" type="button" data-act="admClose" aria-label="'+t("close")+'">✕</button></div>'
-   + '<div class="modal-b">'
-   + (m.error?'<div class="note red" role="alert" style="margin-bottom:12px"><span class="ico">!</span><div>'+esc(m.error)+'</div></div>':'')
-   + '<p class="lead" style="margin:0">'+m.body+'</p></div>'
-   + '<div class="modal-f"><button class="btn" type="button" data-act="admClose">'+t("cancel")+'</button>'
-   + '<button class="btn '+(m.danger?"danger":"primary")+'" type="button" data-act="'+m.confirmAct+'" data-i="'+m.idx+'" '+(m.busy?"disabled":"")+'>'
-   + (m.busy?'<span class="spinner"></span>'+t("stWaiting"):t("confirm"))+'</button></div></div></div>';
-}
-function modalAdmExtend(){
-  return '<div class="mask"><div class="modal" role="dialog" aria-modal="true">'
-   + '<div class="modal-h"><b>'+t("sExpiring")+'</b></div>'
-   + '<div class="modal-b"><p class="lead" style="margin:0">'+t("sInactivity")+'</p></div>'
-   + '<div class="modal-f"><button class="btn" type="button" data-act="adminSignout">'+t("signOut")+'</button>'
-   + '<button class="btn primary" type="button" data-act="admClose">'+t("staySignedIn")+'</button></div></div></div>';
+  var u=S.modal.unlock, mail="settle.ops@demo-console.test";
+  return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+(u?t("admUnlockTitle"):t("admConfirmDisable"))+'</b>'
+   + '<button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b">'+(S.modal.err?note("red",t("eLastAdmin"))+gap(12):"")
+   + '<p class="lead" style="margin:0">'
+   + (u?t("admUnlockBody",{email:mail}):t("admConfirmDisableBody",{email:"risk.review@demo-console.test"}))+'</p></div>'
+   + '<div class="modal-f"><button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
+   + '<button class="btn '+(u?"primary":"danger")+'" type="button" data-act="'+(u?"close":"admReject")+'">'+t("confirm")+'</button></div></div></div>';
 }
 function modalDoc(){
-  return '<div class="mask" data-act="docClose"><div class="modal wide" role="dialog" aria-modal="true">'
+  return '<div class="mask" data-act="close"><div class="modal wide" role="dialog" aria-modal="true">'
    + '<div class="modal-h"><b>'+(S.modal.doc==="tos"?"Terms of Service":"Privacy Policy")+' · '+t("demoOnly")+'</b>'
-   + '<button class="modal-x" type="button" data-act="docClose" aria-label="'+t("close")+'">✕</button></div>'
-   + '<div class="modal-b"><p class="lead" style="margin:0">'+(S.lang==="en"
-      ? "Document body, version and effective time are owned by WS-301. Opening it does not reset the sign-in form."
-      : "协议正文、版本与生效时间归 WS-301 定义。打开它不会打断登录表单的填写状态。")+'</p></div></div></div>';
+   + '<button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b"><p class="lead" style="margin:0">'
+   + L("Document body, version and effective time are owned by WS-301. Opening it does not reset the sign-in form.",
+       "协议正文、版本与生效时间归 WS-301 定义。打开它不会打断登录表单的填写状态。")+'</p></div></div></div>';
 }
 
 /* ================================ 抽屉 =================================== */
 function renderDrawer(){
   if(!S.drawer) return "";
   return '<div class="drawer-scrim" data-act="closeDrawer"></div>'
-   + (S.drawer==="prd" ? drawerPrd() : drawerProto());
+   + (S.drawer==="prd"?drawerPrd():drawerPages());
 }
 /* PRD 摘录里的 **强调** 与 `代码` 渲染为 HTML；先转义，避免注入 */
 function md(x){
-  return esc(x).replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>")
-               .replace(/`([^`]+)`/g,'<code class="mono">$1</code>');
+  return esc(x).replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>").replace(/`([^`]+)`/g,'<code class="mono">$1</code>');
 }
 function drawerPrd(){
   var d=PRD[prdKey()];
   if(!d) return '<aside class="drawer prd"><div class="drawer-h"><b>PRD</b>'
-    + '<button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">✕</button></div>'
-    + '<div class="drawer-b"><p class="tiny">本页无独立 PRD 摘录。</p></div></aside>';
-  function sec(label,items,count,open){
-    if(!items||!count) return "";
+   + '<button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="drawer-b"><p class="tiny">本页无独立 PRD 摘录。</p></div></aside>';
+  function sec(label,items,n,open){
+    if(!n) return "";
     return '<details class="prd-sec"'+(open?" open":"")+'><summary><span class="caret">▸</span>'+label
-      +'<span class="cnt">'+count+'</span></summary><div class="bd">'+items+'</div></details>';
+     + '<span class="cnt">'+n+'</span></summary><div class="bd">'+items+'</div></details>';
   }
-  var fields=(d.fields||[]).map(function(x){
-    return '<div class="prd-item"><div class="k">'+esc(x[0])+'<span class="meta">'+esc(x[1])+'</span></div><div class="v">'+md(x[2])+'</div></div>';
-  }).join("");
-  var rules=(d.rules||[]).map(function(x){
-    return '<div class="prd-item"><div class="k">'+esc(x[0])+'</div><div class="v">'+md(x[1])+'</div></div>';
-  }).join("");
-  var states=(d.states||[]).map(function(x){
-    return '<div class="prd-item"><div class="k">'+esc(x[0])+'</div><div class="v">'+md(x[1])+'</div></div>';
-  }).join("");
-  var copy=(d.copy||[]).map(function(x){
+  function rows(arr,meta){
+    return (arr||[]).map(function(x){
+      return '<div class="prd-item"><div class="k">'+esc(x[0])+(meta?'<span class="meta">'+esc(x[1])+'</span>':'')
+       + '</div><div class="v">'+md(meta?x[2]:x[1])+'</div></div>';}).join("");
+  }
+  var c=(d.copy||[]).map(function(x){
     return '<div class="prd-copy"><span class="sc">'+esc(x[0])+'</span><span class="en">EN&nbsp;&nbsp;'+esc(x[1])+'</span>'
-      + '<span class="zh">中文&nbsp;&nbsp;'+esc(x[2])+'</span></div>';
-  }).join("");
-  var ac=(d.ac||[]).map(function(x){
-    return '<div class="prd-ac"><code>'+esc(x[0])+'</code><span>'+md(x[1])+'</span></div>';
-  }).join("");
+     + '<span class="zh">中文&nbsp;&nbsp;'+esc(x[2])+'</span></div>';}).join("");
+  var a=(d.ac||[]).map(function(x){
+    return '<div class="prd-ac"><code>'+esc(x[0])+'</code><span>'+md(x[1])+'</span></div>';}).join("");
   return '<aside class="drawer prd" role="complementary" aria-label="PRD">'
    + '<div class="drawer-h"><b>PRD · '+esc(d.title)+'</b>'
    + '<button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">✕</button></div>'
-   + '<div class="drawer-b">'
-   + '<div class="prd-src">'+esc(d.src)+'</div>'
-   + sec("① 字段与校验规则",fields,(d.fields||[]).length,true)
-   + sec("② 关键业务规则",rules,(d.rules||[]).length,true)
-   + sec("③ 状态与异常分支",states,(d.states||[]).length,false)
-   + sec("④ 中英双语文案",copy,(d.copy||[]).length,false)
-   + sec("⑤ 验收标准",ac,(d.ac||[]).length,false)
+   + '<div class="drawer-b"><div class="prd-src">'+esc(d.src)+'</div>'
+   + sec("① 字段与校验规则",rows(d.fields,true),(d.fields||[]).length,true)
+   + sec("② 关键业务规则",rows(d.rules),(d.rules||[]).length,true)
+   + sec("③ 状态与异常分支",rows(d.states),(d.states||[]).length,false)
+   + sec("④ 中英双语文案",c,(d.copy||[]).length,false)
+   + sec("⑤ 验收标准",a,(d.ac||[]).length,false)
    + '<div class="prd-foot">本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD。完整口径以 '
-   + 'chain-financing-account-auth-prd.md (v4) 为准。面板固定中文，是给前端开发看的规格说明，不属于产品界面。</div>'
+   + 'prd/v1.0-账户与登录-PRD.md（v4）为准。面板固定中文，是给前端开发看的规格说明，不属于产品界面。</div>'
    + '</div></aside>';
 }
-function drawerProto(){
-  var f=S.flags;
-  function ck(k,label){ return '<label class="pp-item"><input type="checkbox" data-flag="'+k+'" '+(f[k]?"checked":"")+'><span>'+label+'</span></label>'; }
-  var groups=[["资产端 · 未登录",["P-A01","P-A07","P-A03","P-A04","P-A05","P-A06"]],
-              ["资产端 · 已登录",["P-A10","LAND","P-A11","P-A12","P-A13","P-A14","P-A15"]],
-              ["管理端",["P-M01","P-M02","P-M03","P-M04","P-M05","P-M06"]]];
-  var pages=groups.map(function(g){
-    return '<div class="pp-sec">'+g[0]+'</div>'
-      + g[1].map(function(id){
-          return '<button class="pp-link" type="button" data-act="go" data-v="'+id+'" aria-current="'+(S.page===id)+'">'
-            + '<code>'+id+'</code><span>'+pageName(id)+'</span></button>';}).join("");
-  }).join("");
-  return '<aside class="drawer" role="complementary" aria-label="Prototype controls">'
-   + '<div class="drawer-h"><b>'+t("protoPanel")+'</b>'
+function drawerPages(){
+  return '<aside class="drawer" role="complementary" aria-label="Pages">'
+   + '<div class="drawer-h"><b>'+t("pagesPanel")+'</b>'
    + '<button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">✕</button></div>'
-   + '<div class="drawer-b">'
-   + '<div class="pp-note">原型内部控制：切换端、直达页面、打开演示分支。它不是产品功能，正式实现时整块移除。<br>'
-   + '演示口径：<b>'+DEMO_EMAIL_PWD+'</b>（密码 <b>'+DEMO_PASSWORD+'</b>）与 <b>'+DEMO_EMAIL_NOPWD+'</b>（无密码）为已建号账户；其余邮箱视为首次登录 → 自动建号。验证码任意 6 位数字通过，000000 视为无效码。</div>'
-   + '<div class="pp-sec">端</div><div class="pp-grid">'
-   + '<button class="btn sm'+(S.end==="asset"?" primary":"")+'" type="button" data-act="switchEnd" data-v="asset">'+t("endAsset")+'</button>'
-   + '<button class="btn sm'+(S.end==="admin"?" primary":"")+'" type="button" data-act="switchEnd" data-v="admin">'+t("endAdmin")+'</button>'
-   + '<button class="btn sm" type="button" data-act="resetProto">重置状态</button></div>'
-   + pages
-   + '<div class="pp-sec">账户与登录</div>'
-   + ck("knownEmail","把当前输入的邮箱当作已建号账户")
-   + ck("reconsent","登录后触发 C-03 强制重新同意")
-   + ck("disabled","该账户已被停用")
-   + '<div class="pp-sec">滑块与限频</div>'
-   + ck("capFail","滑块下一次校验必定失败")
-   + ck("capLoadFail","滑块资源加载失败")
-   + ck("ipRisk","IP 层风控命中：登录提交前强制滑块")
-   + ck("quota","发码超限（滑块通过后仍被限频拒绝）")
-   + '<div class="pp-grid" style="margin-top:6px">'
-   + ["email","ip","device"].map(function(k){
-       return '<button class="btn sm" type="button" data-act="quotaKind" data-qk="'+k+'" aria-pressed="'+(f.quotaKind===k)+'">'
-         +({email:"邮箱额度",ip:"IP 维度",device:"设备维度"})[k]+'</button>';}).join("")+'</div>'
-   + '<div class="pp-sec">钱包（C-06）</div>'
-   + ck("walletNew","钱包返回未绑定地址（走建号）")
-   + ck("sigReject","用户在钱包中拒绝签名")
-   + ck("sigFail","验签失败（计入失败计数）")
-   + ck("noWallet","未检测到可用钱包")
-   + ck("wrongNet","网络不受支持")
-   + ck("sdkFail","钱包 SDK 加载失败")
-   + '<div class="pp-sec">锁定与会话</div>'
-   + '<div class="pp-grid">'
-   + '<button class="btn sm" type="button" data-act="demoFail">+1 次失败（当前 '+S.fail+'）</button>'
-   + '<button class="btn sm" type="button" data-act="demoLock">进入锁定态</button>'
-   + '<button class="btn sm" type="button" data-act="demoUnlock">解除锁定</button></div>'
-   + '<div class="pp-grid" style="margin-top:6px">'
-   + [["sPwdChanged","改密踢出"],["sEmailChanged","改邮箱踢出"],["sWalletChanged","改钱包踢出"],
-      ["sOtherDevice","他设备退出"],["sExpired","会话过期"],["sByAdmin","管理员终止"]].map(function(p){
-       return '<button class="btn sm" type="button" data-act="demoKick" data-v="'+p[0]+'">'+p[1]+'</button>';}).join("")+'</div>'
-   + ck("expiring","落地页展示会话即将过期提示条")
-   + '<div class="pp-sec">管理端</div>'
-   + ck("lastAdmin","只剩一个可用管理员")
-   + ck("serverReject","服务端拒绝（并发停用场景）")
-   + '<div class="pp-grid"><button class="btn sm" type="button" data-act="demoMustReset">下次登录触发首登重置</button>'
-   + '<button class="btn sm" type="button" data-act="demoAdmExtend">到期续期弹窗</button></div>'
-   + '<div class="pp-sec">地址展示</div>'
-   + ck("noExplorer","链 ID 无对应区块浏览器（降级）")
+   + '<div class="drawer-b"><div class="pp-note">'
+   + L("Page directory. Unauthenticated pages have no sidebar, so they are reachable from here. Per-page states are switched on the page itself.",
+       "页面目录。未登录页天然没有侧边导航，从这里进入；每个页面的状态用页面上的状态切换器切换。")+'</div>'
+   + PAGE_DIR.map(function(g){
+       return '<div class="pp-sec">'+g[0]+'</div>'+g[1].map(function(p){
+         var id=p[0], st=p[1];
+         return '<button class="pp-link" type="button" data-act="go" data-v="'+id+'" data-st="'+st+'" aria-current="'
+          + (S.page===id&&(!st||S.st===st))+'"><code>'+(st==="locked"?"P-A07":id)+'</code><span>'
+          + pageName(id)+(st==="locked"?" · "+L("locked","锁定态"):"")+'</span></button>';}).join("");
+     }).join("")
    + '</div></aside>';
 }
 
 /* ================================ 渲染 =================================== */
 function renderContent(){
-  switch(S.page){
-    case "P-A10": return pageGuide();
-    case "LAND":  return pageLanding();
-    case "P-A11": return pageSecurity();
-    case "P-A12": case "P-A13": case "P-A14": return pageFlow();
-    case "P-A15": return pagePrefs();
-    case "P-M05": return pageAdminChangePwd();
-    case "P-M06": return pageAdminAccounts();
-  }
-  return "";
+  return ({ "P-A10":pageGuide, "LAND":pageLanding, "P-A11":pageSecurity, "P-A12":pageFlow, "P-A13":pageFlow,
+            "P-A14":pageFlow, "P-A15":pagePrefs, "P-M05":pageAdminChangePwd, "P-M06":pageAdminAccounts }[S.page]||function(){return "";})();
 }
 function renderFocus(){
-  switch(S.page){
-    case "P-A01": case "P-A07": return pageLogin();
-    case "CREATED": return pageCreated();
-    case "P-A03": return pageForgot1();
-    case "P-A04": return pageForgot2();
-    case "P-A05": return pageRecover1();
-    case "P-A06": return pageRecover2();
-    case "P-M01": return pageAdminLogin();
-    case "P-M02": return pageAdminFirstReset();
-    case "P-M03": return pageAdminForgot1();
-    case "P-M04": return pageAdminForgot2();
-  }
-  return "";
+  return ({ "P-A01":pageLogin, "CREATED":pageCreated, "P-A03":pageForgot1, "P-A04":pageForgot2,
+            "P-A05":pageRecover1, "P-A06":pageRecover2, "P-M01":pageAdminLogin, "P-M02":pageAdminFirstReset,
+            "P-M03":pageAdminForgot1, "P-M04":pageAdminForgot2 }[S.page]||function(){return "";})();
 }
 function renderNav(){
-  var end=S.end, html="", lastGrp=null;
+  var html="", grp=null;
   Object.keys(ROUTES).forEach(function(id){
     var r=ROUTES[id];
-    if(r.layout!=="app" || r.end!==end) return;
-    if(r.grp!==lastGrp){ html+='<div class="nav-label">'+t(r.grp)+'</div>'; lastGrp=r.grp; }
+    if(r.layout!=="app"||r.end!==S.end) return;
+    if(r.grp!==grp){ html+='<div class="nav-label">'+t(r.grp)+'</div>'; grp=r.grp; }
     html+='<button class="nav-item'+(S.page===id?" active":"")+'" type="button" data-act="go" data-v="'+id+'">'
-      + '<span class="nav-ico">'+r.ico+'</span><span>'+t(r.nav)+'</span><span class="nav-tag">'+id+'</span></button>';
+     + '<span class="nav-ico">'+r.ico+'</span><span>'+t(r.nav)+'</span><span class="nav-tag">'+id+'</span></button>';
   });
   return html;
 }
 function renderSideFoot(){
-  if(S.end==="admin"){
-    return '<div class="op-row"><div class="op-avatar">AD</div><div><div class="op-name">'+esc(DEMO_ME)+'</div>'
+  if(S.end==="admin")
+    return '<div class="op-row"><div class="op-avatar">AD</div><div><div class="op-name">'+ME+'</div>'
      + '<div class="op-role">Administrator · '+t("demoOnly")+'</div></div></div>'
-     + '<button class="btn sm" style="margin-top:9px;width:100%" data-act="adminSignout">'+t("signOut")+'</button>';
-  }
-  var a=S.acct||{};
-  var idLine = a.email ? esc(a.email) : (a.wallet ? shortAddr(a.wallet) : "—");
-  return '<div class="op-row"><div class="op-avatar">CF</div><div><div class="op-name">'+idLine+'</div>'
+     + '<button class="btn sm" style="margin-top:9px;width:100%" data-act="go" data-v="P-M01">'+t("signOut")+'</button>';
+  var complete=(S.page==="LAND"||S.page==="P-A11")&&S.st==="complete";
+  return '<div class="op-row"><div class="op-avatar">CF</div><div><div class="op-name">'+MAIL+'</div>'
    + '<div class="op-role">'+t("signedInAs")+' · '+t("demoOnly")+'</div></div></div>'
-   + '<div class="side-chip"><span class="dot'+(a.email&&a.wallet?"":" warn")+'"></span>'
-   + t("accStatus")+" · "+(a.email&&a.wallet?t("stActiveAcc"):t("stIncomplete"))+'</div>'
-   + '<button class="btn sm" style="margin-top:9px;width:100%" data-act="signout">'+t("signOut")+'</button>';
-}
-function renderTopRight(){
-  return '<span class="tchip">'+t("demoOnly")+'</span>'
-   + '<button class="tchip is-btn'+(S.drawer==="proto"?" on":"")+'" type="button" data-act="openProto">'+t("protoPanel")+'</button>'
-   + langSwitcher();
+   + '<div class="side-chip"><span class="dot'+(complete?"":" warn")+'"></span>'
+   + t("accStatus")+" · "+(complete?t("stActiveAcc"):t("stIncomplete"))+'</div>'
+   + '<button class="btn sm" style="margin-top:9px;width:100%" data-act="go" data-v="P-A01">'+t("signOut")+'</button>';
 }
 function render(){
-  var focusKey=document.activeElement&&document.activeElement.getAttribute
-               ? document.activeElement.getAttribute("data-f") : null;
-  var selStart=document.activeElement&&document.activeElement.selectionStart;
-  var r=route();
-  S.end=r.end;
+  var fk=document.activeElement&&document.activeElement.getAttribute
+         ? document.activeElement.getAttribute("data-f"):null;
+  var sel=document.activeElement&&document.activeElement.selectionStart;
+  var r=route(); S.end=r.end;
   document.documentElement.setAttribute("data-end",r.end);
-
-  var isFocus = r.layout==="focus";
-  q("#focus").hidden = !isFocus;
-  q("#app").hidden = isFocus;
+  var isFocus=r.layout==="focus";
+  q("#focus").hidden=!isFocus; q("#app").hidden=isFocus;
   if(isFocus){
-    q("#focus").innerHTML = renderFocus();
+    q("#focus").innerHTML=renderFocus();
     q("#nav").innerHTML=""; q("#sideFoot").innerHTML=""; q("#topRight").innerHTML=""; q("#content").innerHTML="";
   } else {
     q("#focus").innerHTML="";
-    q("#brandSub").textContent = S.end==="admin" ? t("adminConsole") : t("endAsset");
-    q("#nav").innerHTML = renderNav();
-    q("#sideFoot").innerHTML = renderSideFoot();
-    q("#crumb").innerHTML = '<span>'+(S.end==="admin"?t("adminConsole"):t("endAsset"))
-      + ' / </span><b>'+esc(pageName(S.page))+'</b> <span class="mono faint" style="font-size:10px">'+S.page+'</span>';
-    q("#topRight").innerHTML = renderTopRight();
-    q("#content").innerHTML = renderContent();
+    q("#brandSub").textContent = S.end==="admin"?t("adminConsole"):t("endAsset");
+    q("#nav").innerHTML=renderNav();
+    q("#sideFoot").innerHTML=renderSideFoot();
+    q("#crumb").innerHTML='<span>'+(S.end==="admin"?t("adminConsole"):t("endAsset"))+' / </span><b>'
+     + esc(pageName(S.page))+'</b> <span class="mono faint" style="font-size:10px">'+S.page+'</span>';
+    q("#topRight").innerHTML='<span class="tchip">'+t("demoOnly")+'</span>'
+     + '<button class="tchip is-btn'+(S.drawer==="pages"?" on":"")+'" type="button" data-act="openPages">'+t("pagesPanel")+'</button>'
+     + langSwitcher();
+    q("#content").innerHTML=renderContent();
   }
-  q("#layers").innerHTML = renderToasts() + renderModal() + renderDrawer();
-
-  if(focusKey){
-    var n=q('[data-f="'+focusKey+'"]');
-    if(n){ n.focus(); try{ if(selStart!=null&&n.setSelectionRange) n.setSelectionRange(selStart,selStart); }catch(e){} }
-  }
-  if(S.modal&&S.modal.type==="captcha"){ drawCaptcha(false); renderCapMsg(); }
+  q("#layers").innerHTML=renderToast()+renderModal()+renderDrawer();
+  if(S.modal&&S.modal.type==="captcha") drawCaptcha();
+  if(fk){ var n=q('[data-f="'+fk+'"]');
+    if(n){ n.focus(); try{ if(sel!=null&&n.setSelectionRange) n.setSelectionRange(sel,sel); }catch(e){} } }
 }
-function renderToasts(){
-  if(!S.toasts.length) return "";
-  return '<div class="toasts" role="region" aria-live="polite">'+S.toasts.map(function(x){
-    return '<div class="toast '+x.kind+'"><span class="ico">'+(x.kind==="danger"?"!":"✓")+'</span>'
-      + '<div class="tx"><b>'+esc(x.title)+'</b>'+(x.body?'<span>'+esc(x.body)+'</span>':'')
-      + (x.link?'<div style="margin-top:3px"><a href="#" data-act="go" data-v="P-A03">'+esc(x.link)+'</a></div>':'')+'</div>'
-      + '<button class="cl" type="button" data-act="toastClose" data-i="'+x.id+'" aria-label="'+t("close")+'">✕</button></div>';
-  }).join("")+'</div>';
+function renderToast(){
+  if(!S.toast) return "";
+  var x=S.toast;
+  return '<div class="toasts" role="region" aria-live="polite"><div class="toast '+x.kind+'">'
+   + '<span class="ico">'+(x.kind==="danger"?"!":"✓")+'</span><div class="tx"><b>'+esc(x.title)+'</b>'
+   + (x.body?'<span>'+esc(x.body)+'</span>':'')+'</div>'
+   + '<button class="cl" type="button" data-act="toastClose" aria-label="'+t("close")+'">✕</button></div></div>';
+}
+/* 滑块背景图：运行时生成，不引用任何外部图片 */
+function drawCaptcha(){
+  var bg=q("#capBg"), pc=q("#capPiece"); if(!bg||!pc) return;
+  var W=328,H=180,PS=46,tx=133,ty=58,i,x,y,w,h,seed=7;
+  function rnd(){ seed=(seed*9301+49297)%233280; return seed/233280; }
+  var off=document.createElement("canvas"); off.width=W; off.height=H;
+  var o=off.getContext("2d"), hue=212, g=o.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,"hsl("+hue+",58%,74%)"); g.addColorStop(1,"hsl("+((hue+52)%360)+",52%,58%)");
+  o.fillStyle=g; o.fillRect(0,0,W,H);
+  for(i=0;i<9;i++){
+    o.globalAlpha=0.12+rnd()*0.2; o.fillStyle="hsl("+((hue+i*26)%360)+",62%,"+(52+rnd()*32)+"%)";
+    x=rnd()*W; y=rnd()*H; w=24+rnd()*140; h=10+rnd()*90;
+    o.beginPath(); o.roundRect?o.roundRect(x,y,w,h,10):o.rect(x,y,w,h); o.fill();
+  }
+  o.globalAlpha=1;
+  function path(c,px,py){
+    var rr=6,k=PS*0.22;
+    c.beginPath(); c.moveTo(px+rr,py); c.lineTo(px+PS*0.42,py);
+    c.arc(px+PS*0.5,py,k,Math.PI,0,true);
+    c.lineTo(px+PS-rr,py); c.quadraticCurveTo(px+PS,py,px+PS,py+rr);
+    c.lineTo(px+PS,py+PS*0.38); c.arc(px+PS,py+PS*0.5,k,-Math.PI/2,Math.PI/2,false);
+    c.lineTo(px+PS,py+PS-rr); c.quadraticCurveTo(px+PS,py+PS,px+PS-rr,py+PS);
+    c.lineTo(px+rr,py+PS); c.quadraticCurveTo(px,py+PS,px,py+PS-rr);
+    c.lineTo(px,py+rr); c.quadraticCurveTo(px,py,px+rr,py); c.closePath();
+  }
+  var b=bg.getContext("2d"); b.clearRect(0,0,W,H); b.drawImage(off,0,0);
+  b.save(); path(b,tx,ty); b.fillStyle="rgba(16,24,40,.55)"; b.fill();
+  b.strokeStyle="rgba(255,255,255,.75)"; b.lineWidth=1.5; b.stroke(); b.restore();
+  var p=pc.getContext("2d"); p.clearRect(0,0,W,H);
+  p.save(); path(p,0,ty); p.clip(); p.drawImage(off,-tx,0); p.restore();
+  p.save(); path(p,0,ty); p.strokeStyle="rgba(255,255,255,.9)"; p.lineWidth=1.5; p.stroke(); p.restore();
 }
 
 /* ================================ 交互 =================================== */
-function loginAccount(via,email,wallet,created){
-  S.acct={email:email||null, wallet:wallet||null, hasPwd:(email===DEMO_EMAIL_PWD), createdVia:via,
-          status:(email&&wallet)?"active":"incomplete"};
-  S.justCreated=!!created; S.fail=0; S.lockUntil=0;
-  postLogin();
-}
-function postLogin(){
-  if(S.flags.disabled){ S.err.loginTop=t("eDisabled"); S.acct=null; S.page="P-A01"; render(); return; }
-  if(S.flags.reconsent){ S.modal={type:"reconsent",scrolled:false}; render(); return; }
-  S.page = S.justCreated ? "CREATED" : "LAND";
-  S.modal=null; render();
-}
-function countFail(kind){
-  S.fail++;
-  if(S.fail>=5){ S.lockUntil=now()+30*60*1000; S.err.loginPwd=t("lockJust",{m:30}); S.login.tab="code"; }
-  else if(S.fail>=3) S.err[kind==="sig"?"loginEmail":"loginPwd"]=kind==="sig"?t("lockSigLeft",{n:5-S.fail}):t("lockPwdLeft",{n:5-S.fail});
-  else S.err[kind==="sig"?"loginEmail":"loginPwd"]=kind==="sig"?t("eSigFailed"):t("ePwdLogin");
-  render();
-}
-function walletOpen(purpose,after){
-  if(S.flags.sdkFail){ S.wallet={stage:"error",err:t("eWalletSvc"),purpose:purpose,after:after}; S.modal={type:"wallet"}; render(); return; }
-  if(S.flags.noWallet){ S.wallet={stage:"error",err:t("eNoWallet"),purpose:purpose,after:after}; S.modal={type:"wallet"}; render(); return; }
-  S.wallet={stage:"pick",purpose:purpose,after:after}; S.modal={type:"wallet"}; render();
-}
-function walletConnect(){
-  S.wallet.stage="connecting"; render();
-  later(700,function(){
-    if(S.flags.wrongNet){ S.wallet.stage="error"; S.wallet.err=t("eNetwork"); render(); return; }
-    S.wallet.addr = S.flags.walletNew ? DEMO_ADDR_NEW : DEMO_ADDR_BOUND;
-    S.wallet.stage="sign"; render();
-  });
-}
-function walletSign(){
-  S.wallet.stage="signing"; render();
-  later(800,function(){
-    if(S.flags.sigReject){ S.wallet.stage="error"; S.wallet.err=t("eSigRejected"); render(); return; }
-    S.wallet.stage="verifying"; render();
-    later(700,function(){
-      if(S.flags.sigFail){
-        S.wallet.stage="error"; S.wallet.err=t("eSigFailed");
-        S.wallet.errSub = S.fail>=2 ? t("lockSigLeft",{n:Math.max(0,4-S.fail)}) : "";
-        S.fail++;
-        if(S.fail>=5){ S.lockUntil=now()+30*60*1000; S.modal=null; S.wallet=null; S.login.tab="code";
-          S.page="P-A01"; S.err.loginPwd=t("lockJust",{m:30}); render(); return; }
-        render(); return;
-      }
-      var cb=S.wallet.after, addr=S.wallet.addr;
-      S.modal=null; S.wallet=null; render();
-      if(cb) cb(addr);
-    });
-  });
-}
-function finishFlow(kind){
-  var a=S.acct;
-  if(kind==="email"){
-    var had=!!a.email, ne=(S.form.newEmail||S.form.gateEmail||"new@demo-mail.test");
-    a.email=ne;
-    if(had){ endSession("sEmailChanged",ne,true); toast("success",t("okEmailUpdated"),t("sAllDevices")); }
-    else afterFirstBind(t("okEmailAdded"));
-  } else if(kind==="pwd"){
-    var hadP=a.hasPwd, em=a.email; a.hasPwd=true;
-    endSession("sPwdChanged",em,true);
-    toast("success",hadP?t("okPwdUpdated"):t("okPwdSet"),t("sAllDevices"));
-  } else {
-    var hadW=!!a.wallet, em2=a.email; a.wallet=DEMO_ADDR_NEW;
-    if(hadW){ endSession("sWalletChanged",em2,true); toast("success",t("okWalletUpdated"),t("sAllDevices")); }
-    else afterFirstBind(t("okWalletLinked"));
-  }
-}
-/* PRD 12.1.1 例外：首次绑定（从无到有）不触发会话失效 */
-function afterFirstBind(msg){
-  S.acct.status=(S.acct.email&&S.acct.wallet)?"active":"incomplete";
-  S.flow=null; S.form={}; S.err={}; S.page="P-A11"; render();
-  toast("success",msg,S.acct.status==="active"?t("allSet"):"");
-}
-function validPwdPair(a,b){
-  var p=S.form[a]||"", p2=S.form[b]||"";
-  S.err={};
-  if(/\s/.test(p)){ S.err[a]=t("ePwdSpace"); render(); return false; }
-  var okL=pwdOkLen(p), okC=pwdOkCplx(p);
-  if(!okL&&!okC){ S.err[a]=t("ePwdBoth"); render(); return false; }
-  if(!okL){ S.err[a]=t("ePwdLen"); render(); return false; }
-  if(!okC){ S.err[a]=t("ePwdCplx"); render(); return false; }
-  if(p!==p2){ S.err[b]=t("ePwdMatch"); render(); return false; }
-  if(p===DEMO_PASSWORD){ S.err[a]=t("ePwdSameCurrent"); render(); return false; }  /* 服务端比对结果（演示） */
-  return true;
-}
-function doLogin(){
-  S.err={};
-  /* IP 层风控命中后，登录提交同样先过滑块（PRD 12.2.2），文案不解释触发原因 */
-  if(S.flags.ipRisk && !S.ipRiskPassed){
-    openCaptcha("purposeSignIn",function(){ S.ipRiskPassed=true; doLogin(); });
-    return;
-  }
-  S.ipRiskPassed=false;
-  if(!S.login.agree){
-    S.err.agree=t("eTerms"); S.err._shake=true; render();
-    later(400,function(){ S.err._shake=false; render(); }); return;
-  }
-  var email=(S.form.loginEmail||"").trim();
-  if(S.login.tab==="code"){
-    if(!isEmail(email)){ S.err.loginEmail=t("eEmailFmt"); render(); return; }
-    var code=S.form.logincode||"";
-    if(!/^\d{6}$/.test(code)){ S.err.loginCode=t("eCodeReq"); render(); return; }
-    if(code==="000000"){
-      S.codeTries++;
-      if(S.codeTries>=5){ S.codeTries=0; S.form["_sent_login"]=false; S.form.logincode="";
-        S.err.loginCode=t("eCodeTooMany"); render(); return; }
-      S.err.loginCode=t("eCodeBad"); render(); return;
-    }
-    S.codeTries=0;
-    var known=S.flags.knownEmail||email===DEMO_EMAIL_PWD||email===DEMO_EMAIL_NOPWD;
-    if(known) loginAccount("email_code",email,(email===DEMO_EMAIL_PWD?DEMO_ADDR_BOUND:null),false);
-    else loginAccount("email_code",email,null,true);       /* 首次登录即建号 */
-    return;
-  }
-  if(S.login.tab==="pwd"){
-    if(!isEmail(email)){ S.err.loginEmail=t("eEmailFmt"); render(); return; }
-    if(!S.form.loginPwd){ S.err.loginPwd=t("ePwdReq"); render(); return; }
-    if(email===DEMO_EMAIL_PWD && S.form.loginPwd===DEMO_PASSWORD){
-      loginAccount("email_code",email,DEMO_ADDR_BOUND,false); return;
-    }
-    countFail("pwd"); return;    /* 三种失败情形返回完全一致的提示 */
-  }
-}
-function handleWalletEntry(purpose){
-  if(S.page==="P-A05"){
-    walletOpen("purposeRecovery",function(addr){
-      if(addr===DEMO_ADDR_NEW){ S.err.rcWallet=true; render(); return; }   /* 恢复入口不建号 */
-      S.err={}; S.page="P-A06"; render();
-    });
-    return;
-  }
-  if(S.page==="P-A01"){
-    if(!S.login.agree){ S.err.agree=t("eTerms"); S.err._shake=true; render();
-      later(400,function(){ S.err._shake=false; render(); }); return; }
-    walletOpen("purposeSignIn",function(addr){
-      if(addr===DEMO_ADDR_NEW) loginAccount("wallet",null,addr,true);      /* 未绑定地址 → 建号 */
-      else loginAccount("wallet",DEMO_EMAIL_PWD,addr,false);
-    });
-    return;
-  }
-  if(S.modal&&S.modal.type==="gate"){
-    walletOpen("purposeLink",function(addr){
-      S.acct.wallet=addr; S.acct.status=(S.acct.email&&S.acct.wallet)?"active":"incomplete"; render();
-    });
-    return;
-  }
-  if(S.flow){
-    var f=S.flow;
-    if(f.step===0){ walletOpen("purposeReauth",function(){ f.step=1; S.err={}; render(); toast("success",t("reauthOk")); }); return; }
-    if(f.id==="P-A14"&&f.step===1){ walletOpen("purposeUnlink",function(){ f.step=2; render(); }); return; }
-    if(f.id==="P-A14"){ walletOpen("purposeLink",function(){ finishFlow("wallet"); }); return; }
-  }
-  walletOpen(purpose||"purposeSignIn",function(){ render(); });
-}
-function startFlow(id){
-  if(!S.acct) S.acct={email:DEMO_EMAIL_PWD,wallet:null,hasPwd:true,createdVia:"email_code",status:"incomplete"};
-  S.flow={id:id,step:0,factor:null}; S.form={}; S.err={}; S.page=id; render();
-}
-function doAdminLogin(){
-  S.err={};
-  if(!isEmail(S.form.admEmail)){ S.err.admEmail=t("eEmailFmt"); render(); return; }
-  if(!S.form.admPwd){ S.err.admPwd=t("ePwdReq"); render(); return; }
-  if(S.form.admPwd!==DEMO_PASSWORD){
-    S.admin.fail++;
-    if(S.admin.fail>=5){ S.admin.lockUntil=now()+30*60*1000; S.err.admPwd=t("lockJust",{m:30}); }
-    else if(S.admin.fail>=3) S.err.admPwd=t("lockPwdLeft",{n:5-S.admin.fail});
-    else S.err.admPwd=t("ePwdLoginAdmin");
-    render(); return;
-  }
-  S.admin.session=true; S.form={}; S.err={};
-  S.page = S.admin.mustReset ? "P-M02" : "P-M06";
-  render();
-}
-function admCreateSubmit(){
-  if(!isEmail(S.form.acEmail)){ S.err.acEmail=t("eEmailFmt"); render(); return; }
-  if(!S.form.acName){ S.err.acName=t("eEmailReq"); render(); return; }
-  S.admin.listState="submitting"; render();
-  later(900,function(){
-    if(S.flags.serverReject){ S.admin.listState="submitfail"; render(); return; }
-    var exp=new Date(Date.now()+7*86400000).toISOString();
-    S.admin.list.push({email:S.form.acEmail,name:S.form.acName,st:"pending",
-                       created:new Date().toISOString(),last:null,expires:exp});
-    S.admin.listState="default";
-    S.modal={type:"admCreated",pwd:"Dq7m2xR4vT",expires:exp};   /* 演示用初始密码 */
-    render();
-  });
-}
-function admConfirm(idx,kind){
-  var r=S.admin.list[idx]; if(!r) return;
-  if(kind==="disable")
-    S.modal={type:"admConfirm",idx:idx,title:t("admConfirmDisable"),body:t("admConfirmDisableBody",{email:r.email}),
-             confirmAct:"admDoDisable",danger:true};
-  else
-    S.modal={type:"admConfirm",idx:idx,title:t("admUnlockTitle"),body:t("admUnlockBody",{email:r.email}),confirmAct:"admDoUnlock"};
-  render();
-}
-function admDo(idx,kind){
-  var r=S.admin.list[idx]; if(!r) return;
-  if(kind==="disable"){
-    S.modal.busy=true; render();
-    later(700,function(){
-      /* 服务端是唯一防线：即便前端未置灰，服务端也会拒绝（PRD 7.9.1 / AC-162） */
-      var after=S.admin.list.filter(function(x,j){ return j!==idx&&(x.st==="active"||x.st==="pending"||x.st==="locked"); }).length;
-      if(S.flags.serverReject||after===0){ S.modal.busy=false; S.modal.error=t("eLastAdmin"); render(); return; }
-      r.st="disabled"; S.modal=null; render(); toast("success",t("stDisabled")+" · "+r.email);
-    });
-    return;
-  }
-  if(kind==="unlock"){
-    S.modal.busy=true; render();
-    later(600,function(){ r.st="active"; r.lockLeft=0; S.modal=null; render(); toast("success",t("unlocked")); });
-    return;
-  }
-  if(kind==="restore"){ r.st="active"; render(); toast("success",t("stActive")+" · "+r.email); return; }
-  if(kind==="regen"){
-    var exp=new Date(Date.now()+7*86400000).toISOString();
-    r.st="pending"; r.expires=exp; S.modal={type:"admCreated",pwd:"Kf9t3nQ8wZ",expires:exp}; render();
-  }
-}
-function switchEnd(end){
-  S.end=end; S.drawer=null; S.modal=null; S.err={}; S.form={};
-  if(end==="admin") S.page = S.admin.session ? "P-M06" : "P-M01";
-  else S.page = S.acct ? "LAND" : "P-A01";
-  render();
-}
-
-/* -------------------------- 事件：点击（委托） --------------------------- */
 document.addEventListener("click",function(e){
-  var node=e.target.closest("[data-act]"); if(!node) return;
-  var act=node.getAttribute("data-act"), v=node.getAttribute("data-v"), i=node.getAttribute("data-i");
-  if(node.classList.contains("mask")&&e.target!==node) return;   /* 点遮罩才关闭 */
-  if(node.tagName==="A"&&node.getAttribute("href")&&node.getAttribute("href")!=="#") return;
+  var n=e.target.closest("[data-act]"); if(!n) return;
+  var a=n.getAttribute("data-act"), v=n.getAttribute("data-v");
+  if(n.classList.contains("mask")&&e.target!==n) return;   /* 点遮罩才关闭 */
+  if(n.tagName==="A"&&n.getAttribute("href")&&n.getAttribute("href")!=="#") return;
   e.preventDefault();
-
-  switch(act){
+  switch(a){
     case "lang": S.lang=v; render(); break;
-    case "openPrd": S.drawer = S.drawer==="prd"?null:"prd"; render(); break;
-    case "openProto": S.drawer = S.drawer==="proto"?null:"proto"; render(); break;
+    case "go": go(v,n.getAttribute("data-st")||""); break;
+    case "st": setState(v); break;
+    case "tab": S.loginTab=v; S.err={}; render(); break;
+    case "show": S.form["_show_"+n.getAttribute("data-k")]=!S.form["_show_"+n.getAttribute("data-k")]; render(); break;
+    case "openPrd": S.drawer=S.drawer==="prd"?null:"prd"; render(); break;
+    case "openPages": S.drawer=S.drawer==="pages"?null:"pages"; render(); break;
     case "closeDrawer": S.drawer=null; render(); break;
-    case "switchEnd": switchEnd(v); break;
-    case "resetProto": var lg=S.lang; initState(); S.lang=lg; render(); break;
-
-    case "go":
-      S.err={}; S.modal=null; S.wallet=null; S.cap=null; S.drawer=null;
-      if(v==="P-A07"){ S.lockUntil=now()+30*60*1000; S.fail=5; S.page="P-A01"; S.login.tab="code"; render(); break; }
-      if(["P-A10","LAND","P-A11","P-A15"].indexOf(v)>=0 && !S.acct)
-        S.acct={email:DEMO_EMAIL_PWD,wallet:null,hasPwd:true,createdVia:"email_code",status:"incomplete"};
-      if(["P-A12","P-A13","P-A14"].indexOf(v)>=0){ startFlow(v); break; }
-      if(["P-M06","P-M05"].indexOf(v)>=0) S.admin.session=true;
-      if(v==="P-M02") S.admin.mustReset=true;
-      S.page=v; S.flow=null; render(); break;
-
-    case "tab": S.login.tab=v; S.err={}; render(); break;
-    case "toCodeTab": S.login.tab="code"; S.err={}; render(); break;
-    case "toggleShow": S.form["_show_"+node.getAttribute("data-k")]=!S.form["_show_"+node.getAttribute("data-k")]; render(); break;
-    case "toastClose": S.toasts=S.toasts.filter(function(x){return x.id!=i;}); render(); break;
-    case "foldbar": S.barFolded=!S.barFolded; render(); break;
-    case "signout": endSession("sOtherDevice",S.acct?S.acct.email:""); break;
-
-    case "sendcode":
-      var k=node.getAttribute("data-k"); S.form["_sent_"+k]=true;
-      pressSendCode(k,node.getAttribute("data-p")); break;
-
-    case "capClose": S.modal=null; S.cap=null; render(); break;
-    case "capReload": S.flags.capLoadFail=false; render(); drawCaptcha(true); break;
-    case "capRefresh":
-      if(S.capCoolUntil>now()) break;
-      S.cap.seed=(S.seed=(S.seed*7919+13)%100000); S.cap.msg=""; drawCaptcha(true); renderCapMsg(); break;
-
-    case "loginSubmit": doLogin(); break;
-    case "walletConnect": handleWalletEntry(node.getAttribute("data-p")); break;
-    case "walletPick": walletConnect(); break;
-    case "walletSign": walletSign(); break;
-    case "walletRetry": S.wallet.stage="pick"; S.wallet.err=""; render(); break;
-    case "walletClose": S.modal=null; S.wallet=null; render(); break;
-
-    case "reconsentAgree":
-      if(!S.modal.scrolled) break;
-      S.modal=null; S.page=S.justCreated?"CREATED":"LAND"; render(); break;
-    case "reconsentOut": S.acct=null; S.modal=null; S.page="P-A01"; render(); break;
-
-    case "fpNext":
-      if(!isEmail(S.form.fpEmail)){ S.err.fpEmail=t("eEmailFmt"); render(); break; }
-      if(!/^\d{6}$/.test(S.form.fpcode||"")){ S.err.fpCode=t("eCodeReq"); render(); break; }
-      if(S.form.fpcode==="000000"){ S.err.fpCode=t("eCodeBad"); render(); break; }
-      S.err={}; S.page="P-A04"; render(); break;
-    case "fpSubmit":
-      if(!validPwdPair("fpPwd","fpPwd2")) break;
-      S.page="P-A01"; S.form={}; S.err={}; S.fail=0; S.lockUntil=0; render();
-      toast("success",t("okPwdReset"),t("sAllDevices")); break;
-
-    case "rcSubmit":
-      if(!isEmail(S.form.rcEmail)){ S.err.rcEmail=t("eEmailFmt"); render(); break; }
-      if(!/^\d{6}$/.test(S.form.rccode||"")){ S.err.rcCode=t("eCodeReq"); render(); break; }
-      S.page="P-A01"; S.form={}; S.err={}; S.fail=0; S.lockUntil=0; render();
-      toast("success",t("okRecovered"),t("sAllDevices")); break;
-
-    case "guideLinkWallet": walletOpen("purposeLink",function(addr){ S.acct.wallet=addr; afterFirstBind(t("okWalletLinked")); }); break;
-    case "guideAddEmail": startFlow("P-A12"); break;
-    case "guideSetPwd": startFlow("P-A13"); break;
-
-    case "startFlow": startFlow(v); break;
-    case "pickFactor": S.flow.factor=v||null; S.err={}; render(); break;
-    case "reauthSubmit":
-      if(S.flow.factor==="pwd"){
-        if((S.form.reauthPwd||"")!==DEMO_PASSWORD){ S.err.reauthPwd=t("ePwdLogin"); countFail("pwd"); break; }
-      } else if(S.flow.factor==="code"){
-        if(!/^\d{6}$/.test(S.form.reauthcode||"")){ S.err.reauthCode=t("eCodeReq"); render(); break; }
-      }
-      S.flow.step=1; S.err={}; render(); toast("success",t("reauthOk")); break;
-    case "flowNext": S.flow.step=2; S.err={}; render(); break;
-    case "flowAltFactor": S.flow.factor="pwdcode"; S.flow.step=2; render(); break;
-    case "flowSubmit":
-      if(S.flow.id==="P-A12"){
-        if(!isEmail(S.form.newEmail)){ S.err.newEmail=t("eEmailFmt"); render(); break; }
-        if(!/^\d{6}$/.test(S.form.newEmailcode||"")){ S.err.newEmailCode=t("eCodeReq"); render(); break; }
-        finishFlow("email");
-      } else if(S.flow.id==="P-A13"){
-        if(!validPwdPair("np","np2")) break;
-        finishFlow("pwd");
-      }
-      break;
-
-    case "startKyc":
-      var a2=S.acct||{}; S.modal={type:"gate",total:((!a2.email?1:0)+(!a2.wallet?1:0))||1}; render(); break;
-    case "gateClose": S.modal=null; render(); break;
-    case "gateContinue": S.modal=null; render(); toast("success",t("allSet"),"WS-303"); break;
-    case "gateEmailSubmit":
-      if(!isEmail(S.form.gateEmail)){ S.err.gateEmail=t("eEmailFmt"); render(); break; }
-      if(!/^\d{6}$/.test(S.form.gatecode||"")){ S.err.gateCode=t("eCodeReq"); render(); break; }
-      S.acct.email=S.form.gateEmail; S.acct.status=(S.acct.email&&S.acct.wallet)?"active":"incomplete";
-      S.err={}; render(); break;
-
-    case "copyaddr":
-      try{ navigator.clipboard&&navigator.clipboard.writeText(v); }catch(err){}
-      toast("success",t("addrCopied")); break;
-    case "docClose": S.modal=null; render(); break;
-
-    case "adminLogin": doAdminLogin(); break;
-    case "adminSignout": endAdminSession("sOtherDevice"); break;
-    case "adminResetSubmit":
-      if(!S.form.ack){ S.err.ack=t("eAdminNotice"); render(); break; }
-      if(!validPwdPair("mrNew","mrNew2")) break;
-      if((S.form.mrNew||"")===(S.form.mrOld||"")){ S.err.mrNew=t("ePwdSameInitial"); render(); break; }
-      S.admin.mustReset=false; S.admin.session=false; S.page="P-M01"; S.form={}; S.err={}; render();
-      toast("success",t("okPwdReset"),t("sAllDevices")); break;
-    case "mfNext":
-      if(!isEmail(S.form.mfEmail)){ S.err.mfEmail=t("eEmailFmt"); render(); break; }
-      if(!/^\d{6}$/.test(S.form.mfcode||"")){ S.err.mfCode=t("eCodeReq"); render(); break; }
-      S.page="P-M04"; S.err={}; render(); break;
-    case "mfSubmit":
-      if(!validPwdPair("mfPwd","mfPwd2")) break;
-      S.page="P-M01"; S.form={}; S.err={}; S.admin.fail=0; S.admin.lockUntil=0; render();
-      toast("success",t("okPwdReset"),t("sAllDevices")); break;
-    case "apSubmit":
-      if(!validPwdPair("apNew","apNew2")) break;
-      if((S.form.apNew||"")===(S.form.apOld||"")){ S.err.apNew=t("ePwdSameCurrent"); render(); break; }
-      endAdminSession("sPwdChanged"); toast("success",t("okPwdUpdated"),t("sAllDevices")); break;
-    case "admState": S.admin.listState=v; if(v==="submitting"||v==="submitfail") S.modal={type:"admCreate"}; render(); break;
-    case "admFilter": S.admin.filter=v; render(); break;
-    case "admRetry": S.admin.listState="loading"; render(); later(900,function(){ S.admin.listState="default"; render(); }); break;
-    case "admCreateOpen": S.admin.listState="default"; S.modal={type:"admCreate"}; S.form.acEmail=""; S.form.acName=""; render(); break;
-    case "admClose": S.modal=null; S.admin.listState="default"; render(); break;
-    case "admCreateSubmit": admCreateSubmit(); break;
-    case "admCreatedDone": S.modal=null; render(); break;
-    case "admDisable": admConfirm(+i,"disable"); break;
-    case "admRestore": admDo(+i,"restore"); break;
-    case "admUnlock": admConfirm(+i,"unlock"); break;
-    case "admRegen": admDo(+i,"regen"); break;
-    case "admDoDisable": admDo(+i,"disable"); break;
-    case "admDoUnlock": admDo(+i,"unlock"); break;
-    case "admBlocked": toast("danger",node.getAttribute("data-m")); break;
-
-    case "quotaKind": S.flags.quotaKind=node.getAttribute("data-qk"); render(); break;
-    case "demoFail": countFail("pwd"); break;
-    case "demoLock": S.fail=5; S.lockUntil=now()+30*60*1000; S.login.tab="code"; S.page="P-A01"; S.drawer=null; render(); break;
-    case "demoUnlock": S.fail=0; S.lockUntil=0; render(); toast("success",t("unlocked")); break;
-    case "demoKick": S.drawer=null; endSession(v,S.acct?S.acct.email:""); break;
-    case "demoMustReset": S.admin.mustReset=true; S.admin.session=false; S.page="P-M01"; S.drawer=null; render(); break;
-    case "demoAdmExtend": S.admin.session=true; S.page="P-M06"; S.drawer=null; S.modal={type:"admExtend"}; render(); break;
+    case "close": S.modal=null; if(S.st==="submitting"||S.st==="submitfail") S.st="default"; render(); break;
+    case "toastClose": S.toast=null; render(); break;
+    case "noop": break;
+    case "captcha": S.modal={type:"captcha",view:"idle"}; render(); break;
+    case "capView": S.modal.view=v; render(); break;
+    case "capPass": S.modal=null; markSent(); break;
+    case "wallet": S.modal={type:"wallet",view:"pick",purpose:n.getAttribute("data-p")}; render(); break;
+    case "wView": S.modal.view=v; render(); break;
+    case "wSign": walletSigned(); break;
+    case "login": doLogin(); break;
+    case "step": if(S.flow){ S.flow.step=+v; S.err={}; render(); } break;
+    case "factor": if(S.flow){ S.flow.factor=v||null; S.err={}; render(); } break;
+    case "done": submitDone(v); break;
+    case "kyc": S.modal={type:"gate",need:(S.st==="noemail"?"email":(S.st==="complete"?"":"wallet"))}; render(); break;
+    case "gateView": S.modal.need=v; render(); break;
+    case "admCreate": S.modal={type:"admCreate"}; render(); break;
+    case "admPwd": S.modal={type:"admPwd"}; render(); break;
+    case "admConfirm": S.modal={type:"admConfirm"}; render(); break;
+    case "admUnlock": S.modal={type:"admConfirm",unlock:true}; render(); break;
+    /* 服务端才是唯一防线：即便前端未置灰，服务端也会拒绝（PRD 7.9.1 / AC-162） */
+    case "admReject": S.modal={type:"admConfirm",err:true}; render(); break;
+    case "blocked": toast("danger",n.getAttribute("data-m")); break;
+    case "copy": toast("success",t("addrCopied")); break;
   }
 });
-
 /* 协议链接：弹层打开，不打断表单 */
 document.addEventListener("click",function(e){
   var a=e.target.closest("a[data-doc]"); if(!a) return;
   e.preventDefault(); S.modal={type:"doc",doc:a.getAttribute("data-doc")}; render();
 });
-/* C-03 正文滚动到底才可同意 */
-document.addEventListener("scroll",function(e){
-  var box=e.target;
-  if(box&&box.id==="tosBox"&&S.modal&&S.modal.type==="reconsent"&&!S.modal.scrolled){
-    if(box.scrollTop+box.clientHeight>=box.scrollHeight-6){ S.modal.scrolled=true; render(); }
-  }
-},true);
-
-/* ------------------------------ 输入事件 --------------------------------- */
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Escape") return;
+  if(S.drawer){ S.drawer=null; render(); return; }
+  if(S.modal&&S.modal.type!=="reconsent"){ S.modal=null; render(); }
+});
 document.addEventListener("input",function(e){
   var n=e.target.closest("[data-f]"); if(!n) return;
   var k=n.getAttribute("data-f");
   if(n.type==="checkbox"){
-    if(k==="agree"){ S.login.agree=n.checked; S.err.agree=""; S.err._shake=false; render(); return; }
-    S.form[k]=n.checked; render(); return;
-  }
-  if(k==="tz"){ S.tz=n.value; render(); return; }
-  if(k==="admQ"){ S.admin.q=n.value; render(); return; }
-  S.form[k]=n.value;
-  if(/^(fpPwd|np|mrNew|mfPwd|apNew)$/.test(k)) render();
-});
-document.addEventListener("change",function(e){
-  var n=e.target.closest("[data-flag]");
-  if(n){
-    var fk=n.getAttribute("data-flag");
-    S.flags[fk]=n.checked;
-    if(fk==="lastAdmin") S.admin.list = n.checked ? lastAdminSeed() : adminSeed();
+    if(k==="agree"){ S.agree=n.checked; S.err.agree=""; S.err._shake=false; } else S.form[k]=n.checked;
     render(); return;
   }
+  if(k==="tz"){ S.tz=n.value; render(); return; }
+  S.form[k]=n.value;
+  if(/^(fpPwd|np|mrNew|mfPwd|apNew)$/.test(k)) render();    /* 密码规则清单实时反馈 */
+});
+document.addEventListener("change",function(e){
   var s=e.target.closest('select[data-f]');
   if(s&&s.getAttribute("data-f")==="tz"){ S.tz=s.value; render(); }
 });
 
-/* 滑块拖拽与键盘 */
-var dragging=false, dragStart=0, dragBase=0;
-document.addEventListener("pointerdown",function(e){
-  var kn=e.target.closest("#capKnob"); if(!kn||!S.cap) return;
-  if(S.capCoolUntil>now()) return;
-  dragging=true; dragStart=e.clientX; dragBase=S.cap.d;
-  kn.setPointerCapture&&kn.setPointerCapture(e.pointerId);
-});
-document.addEventListener("pointermove",function(e){
-  if(!dragging||!S.cap) return;
-  setCapDrag(Math.max(0,Math.min(CAP_W-48,dragBase+(e.clientX-dragStart))));
-});
-document.addEventListener("pointerup",function(){ if(!dragging) return; dragging=false; if(S.cap) capVerify(); });
-document.addEventListener("keydown",function(e){
-  if(!S.cap||!document.activeElement||document.activeElement.id!=="capKnob") return;
-  if(S.capCoolUntil>now()) return;
-  if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
-    e.preventDefault();
-    var step=e.shiftKey?10:2;
-    setCapDrag(Math.max(0,Math.min(CAP_W-48,S.cap.d+(e.key==="ArrowRight"?step:-step))));
-  } else if(e.key==="Enter"){ e.preventDefault(); capVerify(); }
-});
-document.addEventListener("keydown",function(e){
-  if(e.key!=="Escape") return;
-  if(S.drawer){ S.drawer=null; render(); return; }
-  if(S.modal&&S.modal.type!=="reconsent"){ S.modal=null; S.cap=null; S.wallet=null; render(); }
-});
+/* ------------------------------ 具体动作 --------------------------------- */
+function markSent(){
+  if(S.page==="P-A01"||S.page==="P-A03"||S.page==="P-M03") S.st="sent";
+  render(); toast("success",t("codeSent"));
+}
+function walletSigned(){
+  S.modal=null;
+  if(S.page==="P-A05"){ go("P-A06"); return; }
+  if(S.page==="P-A01"){ go("CREATED"); return; }
+  if(S.flow){
+    if(S.flow.step===1 && S.st!=="add"){ S.flow.step=2; render(); return; }
+    submitDone(S.flow.id==="P-A14"?(S.st==="add"?"okWalletLinked":"okWalletUpdated"):"okEmailUpdated");
+    return;
+  }
+  render();
+}
+function doLogin(){
+  S.err={};
+  if(!S.agree){ S.err.agree=t("eTerms"); S.err._shake=true; render(); return; }
+  var email=(S.form.loginEmail||"").trim();
+  if(!isEmail(email)){ S.err.loginEmail=t("eEmailFmt"); render(); return; }
+  if(S.loginTab==="code"){
+    if(!/^\d{6}$/.test(S.form.logincode||"")){ S.err.loginCode=t("eCodeReq"); render(); return; }
+    go("CREATED"); return;                    /* 首次登录即建号 */
+  }
+  if(!S.form.loginPwd){ S.err.loginPwd=t("ePwdReq"); render(); return; }
+  S.err.loginPwd=t("ePwdLogin"); render();    /* 三种失败情形返回完全一致的提示 */
+}
+/* 提交成功 → 跳登录页 + 成功提示与会话失效说明（会话失效的实际行为由前端实现） */
+function submitDone(key){
+  var admin=S.end==="admin";
+  go(admin?"P-M01":"P-A01");
+  toast("success",t(key),t("sAllDevices"));
+}
 
 /* -------------------------------- 初始化 --------------------------------- */
 DICT.en.capHelpNote="A security check appears before any code is sent.";
 DICT.zh.capHelpNote="点击发送验证码后会先弹出滑块人机校验。";
+DICT.en.pagesPanel="Pages"; DICT.zh.pagesPanel="页面";
 render();
 })();
 </script>
