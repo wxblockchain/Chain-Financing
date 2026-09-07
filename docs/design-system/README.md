@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | [管理端组件规范](harbour-credit-admin-components.md) | 内部管理端 | 用于紧凑的侧栏、表格、筛选和反馈布局 |
 | [面客端组件规范](harbour-credit-portal-components.md) | 公开门户及自助内容层 | 用于宽内容容器、轻量导航和自助内容布局 |
+| [现有页面继承参考](harbour-credit-page-prototype-reference.md) | 两端后续页面 | 先选择已生成页面的 shell 与 archetype，再在内容区做增量调整 |
 
 ## 输入与边界
 
@@ -17,6 +18,14 @@
 | 面客端 | `harbour-credit-portal-prototype.html` | WS-289 最新附件 `01a06b63-b52d-7a02-997d-5e8e876c19b0` |
 
 同名历史附件不构成基线。两份文档共享 token 名称与基础控件状态，但不共享 shell：管理端不借用面客端的公开展示布局，面客端不借用管理端的高密度侧栏或操作表格模式。
+
+## 后续页面的使用顺序
+
+两份 HTML 是已经生成的现有页面，后续页面必须在其基础上调整，不重新起一套视觉语言：
+
+1. 阅读[现有页面继承参考](harbour-credit-page-prototype-reference.md)，声明本页继承的端别、shell、archetype 与增量；
+2. 再按对应的管理端或面客端组件规范组合控件与状态；
+3. 只替换真实页面所需内容，保留已有 shell、token、密度、状态表面和响应式规则。
 
 ## 共享 token 基础
 
