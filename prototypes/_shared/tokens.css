@@ -1,0 +1,83 @@
+/* ==========================================================================
+   tokens.css — Chain Financing 原型设计 token（唯一来源）
+   本文件是全站 token 的唯一定义处。docs/design-system/ 只做语义说明与约束，
+   不复述具体数值；新增或修改 token 一律先改本文件，再回写文档。
+   组件层与模块层不得出现字面色值、字号或时长，一律引用这里的具名 token。
+   ========================================================================== */
+:root{
+  /* —— 字体 —— */
+  --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"SF Mono","JetBrains Mono","Roboto Mono",ui-monospace,Menlo,Consolas,monospace;
+
+  /* —— 面与描边（竞品口径）—— */
+  --bg:#F6F7FA;
+  --bg-elev:#FFFFFF;
+  --card:#FFFFFF;
+  --card-2:#F9FAFC;
+  --card-hover:#F3F5F9;
+  --border:#E6E9F0;
+  --border-strong:#D5DAE4;
+  --border-dash:#EDF0F5;
+
+  /* —— 文字 —— */
+  --text:#101828;
+  --muted:#5A6474;
+  --faint:#8B94A6;
+
+  /* —— 主色与语义色（竞品口径）—— */
+  --accent:#2557E8;
+  --accent-strong:#1E46C4;
+  --accent-soft:rgba(37,87,232,.08);
+  --accent-border:rgba(37,87,232,.28);
+  --ok:#087443;
+  --ok-bg:#ECFDF3;
+  --ok-border:#ABEFC6;
+  --warn:#B54708;
+  --warn-bg:#FFFAEB;
+  --warn-border:#FEDF89;
+  --danger:#D92D20;
+  --danger-bg:#FEF3F2;
+  --danger-border:#FECDCA;
+  --gray-bg:#F2F4F7;
+  --gray-fg:#475467;
+  --gray-border:#E4E7EC;
+  --violet:#5925DC;
+  --violet-bg:#F4F3FF;
+  --violet-border:#D9D6FE;
+  --pos:#0B8A76;
+  --pos-soft:rgba(11,138,118,.09);
+
+  /* —— 链上数据（地址 / 哈希）—— */
+  --hash-text:#3D5FD0;
+  --hash-bg:rgba(37,87,232,.06);
+  --hash-border:rgba(37,87,232,.2);
+
+  /* —— 阴影 · 圆角 · 轨道 —— */
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+  --shadow-lg:0 12px 28px rgba(16,24,40,.12);
+  --overlay:rgba(16,24,40,.42);
+  --track:#EEF0F5;
+  --radius:12px;
+  --radius-sm:9px;
+  --radius-xs:7px;
+  --radius-pill:999px;
+
+  /* —— 字号阶梯 —— */
+  --fs-10:10px; --fs-11:11px; --fs-12:12px; --fs-13:13px;
+  --fs-14:14px; --fs-16:16px; --fs-19:19px; --fs-24:24px; --fs-28:28px;
+
+  /* —— 间距 —— */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+  --sp-6:24px; --sp-7:32px; --sp-8:40px;
+
+  /* —— 缓动 —— */
+  --ease-out:cubic-bezier(.22,.61,.36,1);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);
+  --dur-fast:120ms; --dur-base:200ms; --dur-slow:320ms;
+
+  /* —— 控件尺寸（默认 = 管理端工作台密度）—— */
+  --ctrl-h:36px;
+  --ctrl-h-sm:28px;
+  --field-gap:13px;
+  --card-pad:16px;
+}

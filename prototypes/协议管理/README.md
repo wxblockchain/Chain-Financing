@@ -6,7 +6,7 @@
 | 所属端 · 模块 | 资产管理端 Web · 协议管理 |
 | 交付物 | `v1.0-协议管理-原型.html`（单文件，双击打开，无任何网络依赖：无 CDN、无远程字体、无远程图片） |
 | PRD 基线 | **修订版** `v1.0-协议管理-PRD.md`（附件 id `01a07ed2-…`，2026-09-08 02:21）。01:36 那版未被采用 |
-| 视觉基线 | 仓库内 `prototypes/账户与登录/v1.0-账户与登录-原型.html`（WS-302 交付物） |
+| 视觉基线 | `prototypes/_shared/`（tokens.css + base.css），语义与约束见 `docs/design-system/` |
 | artifact class | **existing-system adaptation**（在 302 管理端壳层上新增一个模块，不另立设计语言） |
 | surface class | `console` |
 | 原型定位 | UI 页面 + 交互 + 版本状态机。看清每个页面长什么样、每种状态长什么样、每条规则点下去会发生什么 |

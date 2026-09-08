@@ -2,22 +2,24 @@
 
 ## 1. 范围与视觉口径
 
-本规范面向内部管理端的组件布局。来源为 WS-291 指定 HTML 附件 `01a06b74-acb5-7ae7-bc59-2852ab617835`。它只记录紧凑信息密度下的组件视觉与状态，**不包含**任何页面功能、业务流程、角色权限、菜单条目或领域字段。
+本规范面向管理端的组件语义与禁止用法。实现以 `prototypes/_shared/base.css` 为准，token 以 `prototypes/_shared/tokens.css` 为准；本文不复述数值。
+
+现有实现：`prototypes/协议管理/v1.0-协议管理-原型.html`（管理端画布、列表 / 详情 / 编辑）。
 
 管理端的核心特征是：浅色应用底、固定侧栏、紧凑顶栏、白色卡片、清晰表格边界、蓝色主操作、青绿正向状态以及对结构化值的等宽排版。
 
 ## 2. Token 与排版
 
-沿用 [共享 token](README.md#共享-token-基础)。管理端的额外规则如下：
+沿用 [token 总览](README.md#token-总览)。管理端的额外规则如下：
 
 | 项目 | 规则 |
 | --- | --- |
-| 基础正文字号 | 13–13.5px，行高约 1.5 |
+| 基础正文字号 | 由 `body` 统一承担，行高约 1.5 |
 | 页面标题 | 20–24px、600–650 字重；说明 12–12.5px |
 | 表头 | 10–10.5px、650 字重、全大写/字距 `.06em` 的视觉口径；中文实现不强制大写 |
-| 统计值 | 22px、等宽字体、640 字重、轻微负字距 |
+| 统计值 | `--mono`、640 字重、轻微负字距；字号取 `--fs-*` 阶梯，管理端摘要用 `.vsum`，资产端概览用 `.stat` |
 | 结构化短值 | 10.5–12px 等宽字体；不可承载长段正文 |
-| 卡片 | 白色、1px `border`、12px radius、轻 `shadow` |
+| 卡片 | `--card` 底、1px `--border`、`--radius`、`--shadow` |
 
 ## 3. Shell layout
 
@@ -36,12 +38,13 @@
 
 | 组件 | anatomy / sizes | variants 与状态 | 禁止用法 |
 | --- | --- | --- | --- |
-| Button | 图标（可选）+ 单行标签；常规高约 36–40px；圆角 9px | default、primary（蓝色渐变）、ghost、danger；loading 用行内 spinner，disabled 降低不透明度并解释原因 | 两个并列 primary；可换行按钮文案 |
-| Icon button | 36–40px 可达区；可见图标 + `aria-label` | default / hover / focus-visible / disabled | 无文字替代和无 accessible name 的纯图标 |
-| Input / Select | label 在上、控件高约 38–40px、1px 固定边框、8px radius、右侧预留状态槽 | hover 用表面轻变；focus 用 2px outline；error 替换 helper 文本；loading 不冻结编辑 | 用 placeholder 当 label；状态切换改变 border 宽度 |
-| Tag / Badge | 色点（可选）+ 文本，胶囊圆角，10.5–11.5px | neutral / accent / positive / warning / danger；颜色以文字和图形辅助 | 用 badge 表示唯一关键信息而无文本 |
+| Button | 图标（可选）+ 单行标签；高取 `--ctrl-h`，小号取 `--ctrl-h-sm`；圆角 `--radius-sm` | default、primary（蓝色渐变）、ghost、danger；loading 用行内 spinner，disabled 降低不透明度并解释原因 | 两个并列 primary；可换行按钮文案 |
+| Icon button | `--ctrl-h` 可达区；可见图标 + `aria-label` | default / hover / focus-visible / disabled | 无文字替代和无 accessible name 的纯图标 |
+| Input / Select | label 在上、控件高取 `--ctrl-h`、1px 固定 `--border-strong`、8px radius、右侧预留状态槽 | hover 用表面轻变；focus 用 2px outline；error 替换 helper 文本；loading 不冻结编辑 | 用 placeholder 当 label；状态切换改变 border 宽度 |
+| Tag / Badge | 色点（可选）+ 文本，`--radius-pill` | neutral / accent / `--pos` / `--warn` / `--danger`；颜色以文字和图形辅助 | 用 badge 表示唯一关键信息而无文本 |
 | Tooltip | 触发图标 15–16px；深色浮层、10px radius、11.5px 文本 | hover 与键盘 focus 都可打开；靠近边缘时翻转 | 作为唯一说明或只支持 hover |
-| Link | `accent` 文本，可配小图标 | default / hover / focus-visible | 伪装为普通文字、点击范围过小 |
+| Link | `--accent` 文本，可配小图标 | default / hover / focus-visible | 伪装为普通文字、点击范围过小 |
+| Tab | `.tabs` + `.tab`；等宽并列时父级加 `.tabs.even` | `aria-selected` 表达当前项，选中态用下边线 + `--accent`；`.tab .cnt` 放计数，`.tab .lk` 放次级提示 | 另起别名类；用颜色而不用下边线表达选中 |
 
 ## 5. 数据与业务通用组件
 
@@ -49,23 +52,23 @@
 
 | 组件 | 布局与 variants | 组合规则 |
 | --- | --- | --- |
-| Statistic card | 15–18px 内边距；上方小型 label、中部大等宽值、底部辅助文本 | 3–4 列桌面栅格；窄屏变为 1 列 |
-| Filter bar | `surface-subtle` 背景、10px 内边距、1px 下边线；输入与操作保持同高 | 位于表格卡片内部、表头下方；不可承载业务条件定义 |
+| Statistic card | 内边距取 `--sp-*`；上方小型 label、中部大等宽值、底部辅助文本 | 3–4 列桌面栅格；窄屏变为 1 列 |
+| Filter bar | `--card-2` 背景、1px 下边线；输入与操作保持同高 | 位于表格卡片内部、表头下方；不可承载业务条件定义 |
 | Table | 表头浅底、行 48px 左右、cell 12px 内边距、最后一列固定为操作区 | 1280px 下操作列必须保持可达；长值截断前提供完整值机制 |
 | Cell | 主文本 620 字重，辅助文本 10.5px `faint`；数值右对齐并用等宽字体 | 一格只建立一层主/辅层级 |
 | Chart frame | 卡片内标题、辅助说明、图形区、图例/轴区；网格线低对比 | 没有数据时展示 skeleton 或空态，不画伪业务曲线 |
-| Timeline | 7–8px 色点 + 垂直节奏 + 标题/辅助文本 | 每项的时间或次序采用等宽小字；不承载流程规则 |
-| Step indicator | 圆形索引或线性进度、标题与短说明 | 只表达视觉进度形态，不定义审批或业务步骤 |
-| Code / hash token | 等宽短文本、`accent-soft` 背景、1px `accent-border`、7px radius | 仅用于短结构化字符串；长值换行/省略须保留可访问完整内容 |
+| Timeline | 小色点 + 垂直节奏 + 标题/辅助文本（`.tl`） | 每项的时间或次序采用等宽小字；不承载流程规则 |
+| Step indicator | 圆形索引 `.steps .n` + 连接线 `.steps .ln`、标题与短说明 | 只表达视觉进度形态，不定义审批或业务步骤；连接线不得复用进度条的 `.bar` |
+| Code / hash token | 等宽短文本、`--hash-bg` 背景、1px `--hash-border`、`--radius-xs` | 仅用于短结构化字符串；长值换行/省略须保留可访问完整内容 |
 | Empty state | 轻量图标、单行原因、一个修复性入口（可选） | 使用通用占位说明，不写业务原因 |
 
 ## 6. 反馈组件
 
 | 组件 | 布局 | 行为与状态 |
 | --- | --- | --- |
-| Modal | 居中、最大宽度约 400–420px、14–16px radius、`shadow-lg`；标题/内容/操作三区 | Escape、backdrop、显式关闭均可退出；焦点受限在浮层内 |
+| Modal | 居中、最大宽度 430px（宽变体另计）、`--radius`、`--shadow-lg`；标题/内容/操作三区 | Escape、backdrop、显式关闭均可退出；焦点受限在浮层内 |
 | Drawer | 右侧详情面板，顶部标题、可滚动内容、固定或清晰的操作区 | 只在需要保留列表上下文时使用 |
-| Toast | 右下角、深色表面、10px radius、短文案 | 成功/失败提供文本与图标；不承载长说明 |
+| Toast | **顶部居中**、浅色 `--bg-elev` 表面、`--radius-sm`、短文案；最多同时 3 条，成功/信息 3 秒、失败 5 秒，同标题去重（账户与登录 PRD 8.7.1） | 成功/失败提供文本与图标；不承载长说明 |
 | Inline alert | 左侧强调线或图标、浅色语义背景、9px radius | 信息、提示、错误、成功各自使用语义色与文本 |
 | Loading | 表格/卡片优先 skeleton；控件内用 spinner | 保持原布局，避免整体跳动 |
 | Permission / disabled surface | 降低强调、说明可用条件或替代路径 | 不可只用灰色和禁用 cursor |
