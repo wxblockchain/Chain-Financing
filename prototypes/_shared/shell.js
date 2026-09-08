@@ -22,6 +22,11 @@
      modals        { type: fn } 弹窗表
      drawers       { name: fn } 抽屉表（prd 由 shell 提供，不要覆盖）
      account()     顶栏账户菜单的身份信息 { avatar, ident, ok, okText, badText }
+     notify()      通知铃铛 C-20 / 快捷面板 C-21 的数据源。实现它的模块拿到带计数的角标与
+                   快捷面板；不实现的模块仍有铃铛，但不渲染角标（不替模块编造未读数）。
+                   返回 { unread:Number, phase:"loading"|"ready"|"error", items:[msgItem 结构] }
+     notifyOpen(id) 面板内点击某条消息时由 shell 回调，模块自己决定路由到哪一页
+     notifyRetry()  面板失败态点「重试」时由 shell 回调
      topExtra()    顶栏在 PRD 按钮之前追加的自定义按钮
      topbarPrd     置 false 表示 app 版式顶栏不放 PRD 按钮（模块在别处自己放）
      crumbParts()  面包屑当前级之前的可点击层级 [[文案, pageId], ...]
@@ -64,7 +69,7 @@
        +'<path d="M1.7 10S4.7 4.6 10 4.6 18.3 10 18.3 10 15.3 15.4 10 15.4 1.7 10 1.7 10Z"/><circle cx="10" cy="10" r="2.6"/></svg>',
     eyeOff:'<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6">'
        +'<path d="M8 5c.6-.2 1.3-.3 2-.3 5.3 0 8.3 5.3 8.3 5.3a15 15 0 0 1-2.6 3.2M4.6 6.2A15 15 0 0 0 1.7 10S4.7 15.4 10 15.4c1.2 0 2.2-.3 3.2-.7"/><path d="M3 3l14 14"/></svg>',
-    bell:'<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6">'
+    bell:'<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5">'
        +'<path d="M10 2.8a4.6 4.6 0 0 0-4.6 4.6c0 3.5-1.2 4.6-1.2 4.6h11.6s-1.2-1.1-1.2-4.6A4.6 4.6 0 0 0 10 2.8Z"/>'
        +'<path d="M8.6 15a1.6 1.6 0 0 0 2.8 0"/></svg>',
     lock:'<svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5">'
@@ -83,8 +88,11 @@
           ownedTitle:"Owned by another module",
           ownedBody:"This page is delivered by the {m} prototype. This module does not re-implement it.",
           goThere:"Open the {m} prototype",
-          msgCenter:"Message center", bellTitle:"Notifications",
+          msgCenter:"Notifications", bellTitle:"Notifications",
           bellUnread:"Notifications · unread", bellRead:"Notifications",
+          notifAria:"Notifications, {n} unread", notifAriaNone:"Notifications, no unread",
+          notifViewAll:"View all", notifEmpty:"No notifications yet", notifFail:"Failed to load.",
+          retry:"Retry", markRead:"Mark as read", expired:"Expired", loading:"Loading",
           extTitle:"Owned by another requirement",
           extBody:"This page belongs to the {m} module ({r}). This prototype only provides the entry point — the bell and the account menu item — and does not implement the page itself.",
           extNote:"Bell behaviour (quick panel, unread badge, read semantics) and the message list are defined by {r}." },
@@ -98,18 +106,15 @@
           goThere:"打开「{m}」原型",
           msgCenter:"消息中心", bellTitle:"通知",
           bellUnread:"通知 · 有未读", bellRead:"通知",
+          notifAria:"通知，{n} 条未读", notifAriaNone:"通知，无未读",
+          notifViewAll:"查看全部", notifEmpty:"暂无消息", notifFail:"加载失败。",
+          retry:"重试", markRead:"标为已读", expired:"已过期", loading:"加载中",
           extTitle:"本页归其他需求",
           extBody:"本页归「{m}」模块（{r}），本原型只负责入口位置与承载——顶栏铃铛与账号下拉里的「消息中心」——页面本身不在本模块实现。",
           extNote:"铃铛的形态与行为（快捷面板、未读角标、已读语义）以及消息列表均由 {r} 定义。" }
   };
   CF.PRD = {};
   CF.STATES = {};
-  /* 铃铛未读角标：只做「有 / 无」两种样子，不实现计数逻辑（形态与行为归 WS-304） */
-  (function (ids) {
-    ids.forEach(function (id) {
-      CF.STATES[id] = [["unread", "Unread badge", "有未读角标"], ["read", "No badge", "无未读角标"]];
-    });
-  })(["P-A18", "P-M20"]);
 
   var M = null;                                   /* 当前模块 */
   var S = null;                                   /* 全局状态 */
@@ -158,6 +163,19 @@
     var x = new Date(new Date(iso).getTime() + tzOff() * 3600000);
     return x.getUTCFullYear() + "-" + ("0" + (x.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + x.getUTCDate()).slice(-2);
   }
+  /* 列表时间：24 小时内相对时间，超过则绝对时间（WS-302 13.4 / WS-304 12.4）。
+     nowIso 由模块传入，保证演示数据的时间口径稳定可复现。 */
+  function fmtRel(iso, nowIso) {
+    if (!iso) return "—";
+    var now = nowIso ? Date.parse(nowIso) : Date.now();
+    var d = now - Date.parse(iso);
+    if (d < 0) d = 0;
+    if (d >= 86400000) return fmtTime(iso);
+    var mi = Math.floor(d / 60000), h = Math.floor(d / 3600000);
+    if (mi < 1) return S.lang === "en" ? "Just now" : "刚刚";
+    if (mi < 60) return S.lang === "en" ? (mi + (mi === 1 ? " min ago" : " mins ago")) : (mi + " 分钟前");
+    return S.lang === "en" ? (h + (h === 1 ? " hour ago" : " hours ago")) : (h + " 小时前");
+  }
   function isoToLocalInput(iso) {
     if (!iso) return "";
     var x = new Date(new Date(iso).getTime() + tzOff() * 3600000);
@@ -192,6 +210,87 @@
     return '<div class="page-head"><div><h1 class="page-title">' + title + "</h1>"
       + (desc ? '<p class="page-desc">' + desc + "</p>" : "") + "</div>"
       + '<div class="page-actions">' + (actions || "") + "</div></div>" + pageStates();
+  }
+
+  /* --------------------- 消息列表项 C-22（列表与快捷面板共用） --------------- */
+  /* 进度节点四态 → pill 变体。四态是封闭枚举（WS-304 7.8.2），标签始终带文本，
+     不以颜色为唯一提示。两处渲染共用这张表，避免两端各造一套颜色语义。 */
+  CF.NODE_PILL = { in_progress:"gray", action_required:"amber", succeeded:"green", failed:"red" };
+
+  /* m: { id, catLabel, title, summary, timeText, timeTitle, unread, expired,
+          node:{ text, status, label } }
+     o: { act, compact, markable, markAct, current } */
+  function msgItem(m, o) {
+    o = o || {};
+    var cls = "msg" + (m.unread ? " unread" : " read") + (m.expired ? " expired" : "")
+            + (o.compact ? " compact" : "") + (o.current ? " current" : "");
+    var np = m.node ? (CF.NODE_PILL[m.node.status] || "gray") : "";
+    var body =
+      '<span class="ud"' + (m.unread ? "" : ' aria-hidden="true"') + '></span>'
+      + '<span class="msg-bd">'
+      + '<span class="msg-top">'
+      + (m.catLabel ? '<span class="tag">' + esc(m.catLabel) + "</span>" : "")
+      + '<span class="msg-ti">' + esc(m.title) + "</span>"
+      + (m.expired ? '<span class="pill dash">' + t("expired") + "</span>" : "")
+      + "</span>"
+      + (m.node ? '<span class="msg-node"><span class="nt">' + esc(m.node.text) + "</span>"
+                  + '<span class="pill ' + np + '">' + esc(m.node.label) + "</span></span>" : "")
+      + (m.summary ? '<span class="msg-sum">' + esc(m.summary) + "</span>" : "")
+      + "</span>";
+    return '<li class="' + cls + '">'
+      + '<button class="msg-hit" type="button" data-act="' + (o.act || "notifyGo") + '" data-v="' + esc(m.id) + '">'
+      + body + "</button>"
+      + '<span class="msg-side">'
+      + '<span class="msg-tm mono"' + (m.timeTitle ? ' title="' + esc(m.timeTitle) + '"' : "") + ">"
+      + esc(m.timeText) + "</span>"
+      + (o.markable && m.unread
+          ? '<button class="actlink" type="button" data-act="' + (o.markAct || "markRead")
+            + '" data-v="' + esc(m.id) + '">' + t("markRead") + "</button>"
+          : "")
+      + "</span></li>";
+  }
+
+  /* ------------------- 通知铃铛 C-20 与快捷面板 C-21 ---------------------- */
+  /* 带计数角标与快捷面板的完整形态，只在模块实现了 notify() 时渲染；
+     其余模块由 bellBtn() 渲染成不带角标的入口，见下。 */
+  function notifyBell() {
+    var d = M.notify() || {}, n = d.unread || 0, open = S.menu === "bell";
+    var cap = (CF.NOTIFY_CAP || 99);
+    var label = n > 0 ? t("notifAria", { n: n > cap ? cap + "+" : n }) : t("notifAriaNone");
+    return '<div class="dd">'
+      /* data-f 让 Esc 关闭面板、重渲染后焦点回到铃铛本身 */
+      + '<button class="bell" type="button" data-f="bell" data-act="menu" data-v="bell" aria-expanded="' + open + '"'
+      + ' aria-label="' + esc(label) + '" title="' + esc(t("msgCenter")) + '">' + CF.ICO.bell
+      /* 无未读时不渲染角标，也不展示 0 */
+      + (n > 0 ? '<span class="bdg" aria-hidden="true">' + (n > cap ? cap + "+" : n) + "</span>" : "")
+      + "</button>"
+      /* 角标数值变化由 polite 活动区播报，不抢占焦点（WS-304 7.1.1） */
+      + '<span class="sr-only" aria-live="polite">' + esc(label) + "</span>"
+      + (open ? notifyPanel(d) : "") + "</div>";
+  }
+  function notifyPanel(d) {
+    var body;
+    if (d.phase === "loading") {
+      body = '<div role="status" aria-live="polite" aria-label="' + t("loading") + '">'
+        + '<div class="skel-row"><div class="skel m"></div><div class="skel s"></div></div>'
+        + '<div class="skel-row"><div class="skel"></div><div class="skel s"></div></div>'
+        + '<div class="skel-row"><div class="skel m"></div><div class="skel s"></div></div></div>';
+    } else if (d.phase === "error") {
+      body = '<div class="panel-msg" role="alert"><p>' + t("notifFail") + "</p>"
+        + '<button class="btn sm" type="button" data-act="notifyRetry">' + t("retry") + "</button></div>";
+    } else if (!(d.items || []).length) {
+      body = '<div class="panel-msg"><span class="panel-ico">' + CF.ICO.bell + "</span><p>" + t("notifEmpty") + "</p></div>";
+    } else {
+      body = '<ul class="msgs">' + d.items.map(function (m) {
+        return msgItem(m, { act: "notifyGo", compact: true });
+      }).join("") + "</ul>";
+    }
+    return '<div class="dd-list panel" role="dialog" aria-label="' + esc(t("msgCenter")) + '">'
+      + '<div class="panel-h"><b>' + t("msgCenter") + "</b>"
+      + '<button class="modal-x" type="button" data-act="menu" data-v="bell" aria-label="' + t("close") + '">✕</button></div>'
+      + '<div class="panel-b">' + body + "</div>"
+      + '<div class="panel-f"><button class="btn sm block" type="button" data-act="notifyAll">'
+      + t("notifViewAll") + "</button></div></div>";
   }
 
   /* ------------------------------- Toast --------------------------------- */
@@ -231,10 +330,15 @@
   function msgPage() { return (CF.MSG_PAGE || {})[S.end] || null; }
   function bellBtn() {
     var id = msgPage(); if (!id) return "";
-    var unread = S.unread !== false;
-    return '<button class="dd-btn bell' + (unread ? " has-unread" : "") + '" type="button" data-act="go" data-v="'
-      + id + '" aria-label="' + t(unread ? "bellUnread" : "bellRead") + '" title="' + t("bellTitle") + '">'
-      + CF.ICO.bell + (unread ? '<span class="bell-dot" aria-hidden="true"></span>' : "") + "</button>";
+    if (M.notify) return notifyBell(id);
+    /* 没有数据源的模块：保留铃铛的位置与形态，但**不渲染角标**——
+       公共层不替模块编造未读数。点它按跨文件规则直接落到消息通知原型。 */
+    var href = crossHref(id);
+    var body = CF.ICO.bell;
+    if (href) return '<a class="bell" href="' + esc(href) + '" aria-label="' + t("bellRead")
+      + '" title="' + t("bellTitle") + '">' + body + "</a>";
+    return '<button class="bell" type="button" data-act="go" data-v="' + id + '" aria-label="'
+      + t("bellRead") + '" title="' + t("bellTitle") + '">' + body + "</button>";
   }
   function accountMenu() {
     if (!M.account) return "";
@@ -244,14 +348,21 @@
       + (open ? '<div class="dd-list wide" role="menu">'
         + '<div class="dd-head"><b>' + esc(a.ident) + "</b>"
         + '<span class="pill ' + (a.ok ? "green" : "amber") + '">' + (a.ok ? a.okText : a.badText) + "</span></div>"
-        + (msgPage() ? '<button type="button" role="menuitem" data-act="go" data-v="' + msgPage() + '">'
-            + t("msgCenter") + "</button>" : "")
+        + notifyMenuItem()
         + (crossHref(a.settings)
             ? '<a role="menuitem" href="' + esc(crossHref(a.settings)) + '">' + t("accountSettings") + "</a>"
             : '<button type="button" role="menuitem" data-act="go" data-v="' + a.settings + '">' + t("accountSettings") + "</button>")
         + '<button type="button" role="menuitem" data-act="' + (a.signOutPage ? "go" : "signout") + '"'
         + (a.signOutPage ? ' data-v="' + a.signOutPage + '"' : "") + ">" + t("signOut") + "</button>"
         + "</div>" : "") + "</div>";
+  }
+  function notifyMenuItem() {
+    var id = msgPage();
+    if (!id || !CF.PAGES[id]) return "";
+    var href = crossHref(id);
+    return href
+      ? '<a role="menuitem" href="' + esc(href) + '">' + t("msgCenter") + "</a>"
+      : '<button type="button" role="menuitem" data-act="go" data-v="' + id + '">' + t("msgCenter") + "</button>";
   }
   function prdKey() { return M.prdKey ? M.prdKey() : S.page; }
   function prdBtn() {
@@ -469,7 +580,10 @@
     document.addEventListener("click", function (e) {
       var n = e.target.closest("[data-act]");
       /* 点击空白关闭下拉 */
-      if (!n) { if (S.menu) { S.menu = null; render(); } return; }
+      if (!n) {
+        if (S.menu && !e.target.closest(".dd-list")) { S.menu = null; render(); }
+        return;
+      }
       var a = n.getAttribute("data-act"), v = n.getAttribute("data-v");
 
       if (M.onAct && M.onAct(n, a, v, e) === true) return;
@@ -478,6 +592,14 @@
       if (a === "st") { setState(v); return; }
       if (a === "lang") { S.lang = v; S.menu = null; render(); return; }
       if (a === "menu") { S.menu = S.menu === v ? null : v; render(); return; }
+      /* 铃铛面板内的三个动作由公共层统一处理，模块只提供数据与落点 */
+      if (a === "notifyGo") { S.menu = null; if (M.notifyOpen) M.notifyOpen(v); else render(); return; }
+      if (a === "notifyRetry") { if (M.notifyRetry) M.notifyRetry(); else render(); return; }
+      if (a === "notifyAll") {
+        var np = msgPage();
+        S.menu = null; if (np) go(np); else render();
+        return;
+      }
       if (a === "openPrd") { S.drawer = "prd"; S.menu = null; render(); return; }
       if (a === "closeDrawer") { S.drawer = null; render(); return; }
       if (a === "closeModal") { S.modal = null; render(); return; }
@@ -500,6 +622,9 @@
 
     window.addEventListener("hashchange", function () {
       if (location.hash === lastHash) return;
+      /* 记下这次是从 URL 进来的，否则「列表 →（手改 URL / 深链）详情 → 后退」会因为
+         lastHash 停在列表地址而把后退整个吃掉，页面卡在详情上。 */
+      lastHash = location.hash;
       if (readURL()) render();
     });
   }
@@ -534,6 +659,7 @@
   CF.fmtTime = fmtTime; CF.fmtNow = fmtNow; CF.fmtDate = fmtDate;
   CF.isoToLocalInput = isoToLocalInput; CF.localInputToIso = localInputToIso; CF.tzOff = tzOff;
   CF.note = note; CF.pageHead = pageHead; CF.stateBar = stateBar; CF.pageStates = pageStates;
+  CF.fmtRel = fmtRel; CF.msgItem = msgItem;
   CF.toast = toast; CF.go = go; CF.setState = setState; CF.render = render;
   CF.syncURL = syncURL; CF.defaultState = defaultState; CF.drawerPrd = drawerPrd;
   CF.langSwitcher = langSwitcher; CF.accountMenu = accountMenu; CF.prdBtn = prdBtn;

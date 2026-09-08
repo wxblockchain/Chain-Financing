@@ -28,9 +28,11 @@
                crumb: ["User center", "用户中心"], name: ["User center", "用户中心"] },
     "P-A11": { end: "asset", layout: "app", crumb: ["Account settings", "账户设置"], name: ["Account settings", "账户设置单页"] },
 
-    /* 消息中心：页面本身归 WS-304《消息通知》，本仓库暂无对应原型文件。
-       这里登记只为让铃铛 C-20 与账号下拉的「消息中心」有确定的跳转目标。 */
-    "P-A18": { end: "asset", layout: "app", crumb: ["Message center", "消息中心"], name: ["Message center", "消息中心"] },
+    /* 消息通知（WS-304）。按其 PRD 5.1「不新增左侧菜单项」，这几页不进 CF.NAV，
+       入口是顶栏铃铛 C-20 与账号下拉的「消息中心」。文案取自 WS-304 12.3。 */
+    "P-A18": { end: "asset", layout: "app", crumb: ["Notifications", "消息中心"],
+               name: ["Notifications", "消息中心"] },
+    "P-A19": { end: "asset", layout: "app", name: ["Notification details", "消息详情"] },
 
     /* ------------------------------ 管理端 ------------------------------ */
     "P-M01": { end: "admin", layout: "focus", name: ["Sign in", "管理端登录页"] },
@@ -43,7 +45,9 @@
     "P-M05": { end: "admin", layout: "app", nav: "P-M05", navKey: "navAccount", icoKey: "gear",
                crumb: ["Account settings", "账户设置"], name: ["Account settings", "管理端账户设置"] },
 
-    "P-M20": { end: "admin", layout: "app", crumb: ["Message center", "消息中心"], name: ["Message center", "消息中心"] },
+    "P-M20": { end: "admin", layout: "app", crumb: ["Notifications", "消息中心"],
+               name: ["Notifications", "管理端消息中心"] },
+    "P-M21": { end: "admin", layout: "app", name: ["Notification details", "管理端消息详情"] },
 
     /* 协议管理（WS-301）。页面编号已按其 PRD 3.3 从 P-M10/P-M11/P-M13 整体迁到模块前缀式
        P-AG-01/02/03：原段位与 WS-303 管理端审核页重号（X-01），P-M1x 全段已交还平台。 */
@@ -65,7 +69,8 @@
      shell 会用这里的信息直接跳到对方文件的对应页面，而不是停在占位页。 */
   CF.MODULES = {
     agreements: { dir: "协议管理", file: "v1.0-协议管理-原型.html", name: ["Agreements", "协议管理"] },
-    account:    { dir: "账户与登录", file: "v1.0-账户与登录-原型.html", name: ["Account & sign-in", "账户与登录"] }
+    account:    { dir: "账户与登录", file: "v1.0-账户与登录-原型.html", name: ["Account & sign-in", "账户与登录"] },
+    notify:     { dir: "消息通知", file: "v1.0-消息通知-原型.html", name: ["Notifications", "消息通知"] }
   };
 
   /* 页面 → 所属模块。跨文件跳转和指向页文案都读这张表。 */
@@ -74,15 +79,15 @@
     "P-M01": "account", "P-M02": "account", "P-M03": "account", "P-M04": "account",
     "P-M05": "account",
     "P-A01": "account", "P-A03": "account", "P-A04": "account", "P-A10": "account",
-    "P-A11": "account", "P-A16": "account", "P-A17": "account"
+    "P-A11": "account", "P-A16": "account", "P-A17": "account",
+    "P-A18": "notify", "P-A19": "notify", "P-M20": "notify", "P-M21": "notify"
   };
 
   /* 页面 → 外部需求。这些页面不属于本仓库的任何原型文件，只在此登记归属，
-     由 shell 渲染成标注归属的入口占位页。 */
-  CF.EXTERNAL = {
-    "P-A18": { req: "WS-304", name: ["Notifications", "消息通知"] },
-    "P-M20": { req: "WS-304", name: ["Notifications", "消息通知"] }
-  };
+     由 shell 渲染成标注归属的入口占位页。
+     WS-304 的消息中心原本登记在这里，其原型（prototypes/消息通知/）落库后已移出，
+     改为正常的跨文件跳转；机制保留给下一个「入口先行、页面后到」的需求。 */
+  CF.EXTERNAL = {};
 
   /* 每个端的消息中心页面 ID。铃铛 C-20 与账号下拉的「消息中心」都读这张表。 */
   CF.MSG_PAGE = { asset: "P-A18", admin: "P-M20" };
@@ -92,7 +97,11 @@
   CF.ENTRY = {
     "P-AG-01": "#/agreements",
     "P-AG-02": "#/agreements",
-    "P-AG-03": "#/agreements"
+    "P-AG-03": "#/agreements",
+    "P-A18": "#/messages",
+    "P-A19": "#/messages",
+    "P-M20": "#/admin/messages",
+    "P-M21": "#/admin/messages"
   };
 
 })(window.CF = window.CF || {});

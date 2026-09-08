@@ -86,11 +86,6 @@ a{color:var(--accent);text-decoration:none;cursor:pointer}
 .dd-btn svg{flex:none}
 .dd-btn .av{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--accent));
   color:#fff;display:grid;place-items:center;font-size:9px;font-weight:700;flex:none}
-/* C-20 通知铃铛：图标按钮 + 未读角标（只做有 / 无两种样子，不做计数） */
-.dd-btn.bell{padding:0;width:var(--ctrl-h-sm);justify-content:center;position:relative}
-.dd-btn.bell.has-unread{color:var(--accent);border-color:var(--accent-border)}
-.bell-dot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;
-  background:var(--danger);border:1.5px solid var(--bg-elev)}
 .dd-btn .nm{max-width:170px;overflow:hidden;text-overflow:ellipsis}
 .dd-list{position:absolute;right:0;top:calc(100% + 6px);min-width:168px;background:var(--bg-elev);
   border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);padding:5px;z-index:60;
@@ -536,3 +531,72 @@ table.tbl tbody tr.rowlink{cursor:pointer}
 .demobar b{font-weight:660}
 .demobar .right{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 .rowacts{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+
+/* ============================== 仅读屏可见 ==================================== */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);
+  white-space:nowrap;border:0}
+
+/* ============================== 通知铃铛 C-20 与快捷面板 C-21 ============ */
+.bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);border-radius:50%;border:1px solid var(--border);
+  background:var(--bg-elev);color:var(--muted);
+  transition:background var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out)}
+.bell:hover{background:var(--card-hover);color:var(--text)}
+.bell[aria-expanded="true"]{background:var(--accent-soft);border-color:var(--accent-border);color:var(--accent)}
+/* 角标：1 位数为圆形，2 位及以上自然撑成胶囊，数字不裁切 */
+.bell .bdg{position:absolute;top:-3px;right:-4px;min-width:16px;height:16px;padding:0 4px;
+  border-radius:var(--radius-pill);background:var(--danger);color:var(--bg-elev);font-family:var(--mono);
+  font-size:var(--fs-10);font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--bg-elev);font-variant-numeric:tabular-nums}
+.dd-list.panel{width:392px;max-width:calc(100vw - 32px);padding:0;overflow:hidden}
+.panel-h{display:flex;align-items:center;gap:8px;padding:10px 8px 10px 13px;border-bottom:1px solid var(--border)}
+.panel-h b{flex:1;font-size:12.5px;font-weight:660}
+.panel-b{max-height:392px;overflow:auto}
+.panel-f{border-top:1px solid var(--border);padding:8px;background:var(--card-2)}
+.panel-msg{display:flex;flex-direction:column;align-items:center;gap:10px;padding:32px 18px;
+  text-align:center;color:var(--faint);font-size:12px}
+.panel-msg p{margin:0}
+.panel-ico{width:34px;height:34px;border-radius:50%;background:var(--card-2);border:1px solid var(--border);
+  display:grid;place-items:center;color:var(--faint)}
+/* 面板内的按钮要挣脱 .dd-list button 的菜单项版式，回到各自组件本来的形态 */
+.panel-h .modal-x{width:26px;height:26px;padding:0;display:grid;place-items:center;flex:none;
+  border-radius:var(--radius-xs);color:var(--faint);font-size:12px}
+.panel-f .btn{display:inline-flex;padding:0 14px;border-radius:var(--radius-xs);color:var(--text);
+  font-size:var(--fs-11)}
+.panel-msg .btn{display:inline-flex;width:auto;padding:0 11px;border-radius:var(--radius-xs);color:var(--text);
+  font-size:var(--fs-11)}
+
+/* ============================== 消息列表项 C-22（通用型 / 进度型） ======== */
+.msgs{list-style:none;margin:0;padding:0}
+.msg{display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid var(--border);background:var(--card)}
+.msg:last-child{border-bottom:0}
+.msg:hover{background:var(--card-2)}
+.msg.current{background:var(--accent-soft)}
+.msg .msg-hit{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0;width:auto;text-align:left;
+  padding:14px 4px 14px 16px;border-radius:0;background:none;color:var(--text);font-size:12.5px}
+.msg .msg-hit:hover{background:none;color:var(--text)}
+.msg .ud{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;margin-top:6px}
+.msg.read .ud{background:transparent}
+.msg .msg-bd{flex:1;min-width:0;display:block}
+.msg .msg-top{display:flex;align-items:center;gap:8px;min-width:0}
+.msg .msg-ti{font-weight:640;color:var(--text);flex:0 1 auto;min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.msg.read .msg-ti{font-weight:500;color:var(--muted)}
+.msg .msg-node{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:12px;color:var(--muted);
+  min-width:0;flex-wrap:wrap}
+.msg .msg-node .nt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 快捷面板宽度有限：节点名截断，状态标签始终完整可读，不折行 */
+.msg.compact .msg-node{flex-wrap:nowrap}
+.msg .msg-sum{display:block;margin-top:4px;font-size:12px;color:var(--muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;line-height:1.5}
+.msg.expired .msg-ti,.msg.expired .msg-sum,.msg.expired .msg-node{color:var(--faint)}
+.msg .msg-side{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:none;padding:14px 14px 14px 0;
+  min-width:96px}
+.msg .msg-tm{font-size:10.5px;color:var(--faint);white-space:nowrap;line-height:1.5}
+/* 行内「标为已读」：精确指针下悬浮出现，键盘 focus 与触控设备下常驻 */
+.msg .msg-side .actlink{opacity:0;transition:opacity var(--dur-fast) var(--ease-out)}
+.msg:hover .msg-side .actlink,.msg .msg-side .actlink:focus-visible{opacity:1}
+@media (hover:none){.msg .msg-side .actlink{opacity:1}}
+.msg.compact .msg-hit{padding:12px 4px 12px 13px}
+.msg.compact .msg-side{padding:12px 13px 12px 0;min-width:0}
+.msg.compact .msg-sum{font-size:11.5px}
