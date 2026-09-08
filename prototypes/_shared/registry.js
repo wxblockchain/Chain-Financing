@@ -28,6 +28,10 @@
                crumb: ["User center", "用户中心"], name: ["User center", "用户中心"] },
     "P-A11": { end: "asset", layout: "app", crumb: ["Account settings", "账户设置"], name: ["Account settings", "账户设置单页"] },
 
+    /* 消息中心：页面本身归 WS-304《消息通知》，本仓库暂无对应原型文件。
+       这里登记只为让铃铛 C-20 与账号下拉的「消息中心」有确定的跳转目标。 */
+    "P-A18": { end: "asset", layout: "app", crumb: ["Message center", "消息中心"], name: ["Message center", "消息中心"] },
+
     /* ------------------------------ 管理端 ------------------------------ */
     "P-M01": { end: "admin", layout: "focus", name: ["Sign in", "管理端登录页"] },
     "P-M02": { end: "admin", layout: "focus", name: ["First sign-in reset", "首登强制重置密码"] },
@@ -38,6 +42,8 @@
        历史上协议管理原型曾用 P-M09 指代同一页，已统一到 P-M05，P-M09 作废不再使用。 */
     "P-M05": { end: "admin", layout: "app", nav: "P-M05", navKey: "navAccount", icoKey: "gear",
                crumb: ["Account settings", "账户设置"], name: ["Account settings", "管理端账户设置"] },
+
+    "P-M20": { end: "admin", layout: "app", crumb: ["Message center", "消息中心"], name: ["Message center", "消息中心"] },
 
     "P-M10": { end: "admin", layout: "app", nav: "P-M10", navKey: "navAgreements", icoKey: "doc",
                crumb: ["Agreements", "协议管理"], name: ["Agreements", "协议列表"] },
@@ -68,6 +74,16 @@
     "P-A01": "account", "P-A03": "account", "P-A04": "account", "P-A10": "account",
     "P-A11": "account", "P-A16": "account", "P-A17": "account"
   };
+
+  /* 页面 → 外部需求。这些页面不属于本仓库的任何原型文件，只在此登记归属，
+     由 shell 渲染成标注归属的入口占位页。 */
+  CF.EXTERNAL = {
+    "P-A18": { req: "WS-304", name: ["Notifications", "消息通知"] },
+    "P-M20": { req: "WS-304", name: ["Notifications", "消息通知"] }
+  };
+
+  /* 每个端的消息中心页面 ID。铃铛 C-20 与账号下拉的「消息中心」都读这张表。 */
+  CF.MSG_PAGE = { asset: "P-A18", admin: "P-M20" };
 
   /* 跨文件深链的 hash。模块自定义了 URL 方案时在这里登记对应入口，
      没登记的用默认 #/<小写 page id>。 */

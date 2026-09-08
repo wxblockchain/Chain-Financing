@@ -64,6 +64,9 @@
        +'<path d="M1.7 10S4.7 4.6 10 4.6 18.3 10 18.3 10 15.3 15.4 10 15.4 1.7 10 1.7 10Z"/><circle cx="10" cy="10" r="2.6"/></svg>',
     eyeOff:'<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6">'
        +'<path d="M8 5c.6-.2 1.3-.3 2-.3 5.3 0 8.3 5.3 8.3 5.3a15 15 0 0 1-2.6 3.2M4.6 6.2A15 15 0 0 0 1.7 10S4.7 15.4 10 15.4c1.2 0 2.2-.3 3.2-.7"/><path d="M3 3l14 14"/></svg>',
+    bell:'<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6">'
+       +'<path d="M10 2.8a4.6 4.6 0 0 0-4.6 4.6c0 3.5-1.2 4.6-1.2 4.6h11.6s-1.2-1.1-1.2-4.6A4.6 4.6 0 0 0 10 2.8Z"/>'
+       +'<path d="M8.6 15a1.6 1.6 0 0 0 2.8 0"/></svg>',
     lock:'<svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5">'
        +'<rect x="4" y="8.5" width="12" height="8" rx="2"/><path d="M6.8 8.5V6.4a3.2 3.2 0 0 1 6.4 0v2.1"/></svg>'
   };
@@ -79,7 +82,12 @@
           accountSettings:"Account settings",
           ownedTitle:"Owned by another module",
           ownedBody:"This page is delivered by the {m} prototype. This module does not re-implement it.",
-          goThere:"Open the {m} prototype" },
+          goThere:"Open the {m} prototype",
+          msgCenter:"Message center", bellTitle:"Notifications",
+          bellUnread:"Notifications · unread", bellRead:"Notifications",
+          extTitle:"Owned by another requirement",
+          extBody:"This page belongs to the {m} module ({r}). This prototype only provides the entry point — the bell and the account menu item — and does not implement the page itself.",
+          extNote:"Bell behaviour (quick panel, unread badge, read semantics) and the message list are defined by {r}." },
     zh: { stateSwitch:"原型 · 状态", prdOpen:"PRD 摘录", close:"关闭",
           adminConsole:"管理端", grpMenu:"菜单",
           navAgreements:"协议管理", navAccount:"账户设置",
@@ -87,10 +95,21 @@
           accountSettings:"账户设置",
           ownedTitle:"本页归其他模块",
           ownedBody:"本页由「{m}」原型交付，本模块不重复实现该页面。",
-          goThere:"打开「{m}」原型" }
+          goThere:"打开「{m}」原型",
+          msgCenter:"消息中心", bellTitle:"通知",
+          bellUnread:"通知 · 有未读", bellRead:"通知",
+          extTitle:"本页归其他需求",
+          extBody:"本页归「{m}」模块（{r}），本原型只负责入口位置与承载——顶栏铃铛与账号下拉里的「消息中心」——页面本身不在本模块实现。",
+          extNote:"铃铛的形态与行为（快捷面板、未读角标、已读语义）以及消息列表均由 {r} 定义。" }
   };
   CF.PRD = {};
   CF.STATES = {};
+  /* 铃铛未读角标：只做「有 / 无」两种样子，不实现计数逻辑（形态与行为归 WS-304） */
+  (function (ids) {
+    ids.forEach(function (id) {
+      CF.STATES[id] = [["unread", "Unread badge", "有未读角标"], ["read", "No badge", "无未读角标"]];
+    });
+  })(["P-A18", "P-M20"]);
 
   var M = null;                                   /* 当前模块 */
   var S = null;                                   /* 全局状态 */
@@ -207,6 +226,16 @@
         + '<button type="button" role="menuitem" data-act="lang" data-v="zh" aria-current="' + (S.lang === "zh") + '">简体中文</button>'
         + "</div>" : "") + "</div>";
   }
+  /* C-20 通知铃铛：顶栏内、语言切换器左侧，双端通用。
+     只表现「有未读 / 无未读」两种样子；点击进入消息中心（页面归 WS-304）。 */
+  function msgPage() { return (CF.MSG_PAGE || {})[S.end] || null; }
+  function bellBtn() {
+    var id = msgPage(); if (!id) return "";
+    var unread = S.unread !== false;
+    return '<button class="dd-btn bell' + (unread ? " has-unread" : "") + '" type="button" data-act="go" data-v="'
+      + id + '" aria-label="' + t(unread ? "bellUnread" : "bellRead") + '" title="' + t("bellTitle") + '">'
+      + CF.ICO.bell + (unread ? '<span class="bell-dot" aria-hidden="true"></span>' : "") + "</button>";
+  }
   function accountMenu() {
     if (!M.account) return "";
     var a = M.account(), open = S.menu === "acc";
@@ -215,6 +244,8 @@
       + (open ? '<div class="dd-list wide" role="menu">'
         + '<div class="dd-head"><b>' + esc(a.ident) + "</b>"
         + '<span class="pill ' + (a.ok ? "green" : "amber") + '">' + (a.ok ? a.okText : a.badText) + "</span></div>"
+        + (msgPage() ? '<button type="button" role="menuitem" data-act="go" data-v="' + msgPage() + '">'
+            + t("msgCenter") + "</button>" : "")
         + (crossHref(a.settings)
             ? '<a role="menuitem" href="' + esc(crossHref(a.settings)) + '">' + t("accountSettings") + "</a>"
             : '<button type="button" role="menuitem" data-act="go" data-v="' + a.settings + '">' + t("accountSettings") + "</button>")
@@ -273,6 +304,16 @@
   /* 直接用 URL 落到不属于本文件的页面时的兜底页：说明归属，并给出跳转入口。
      正常从侧栏点击不会走到这里——那条路径是直接跨文件跳转的。 */
   function ownedElsewhere(id) {
+    var ext = (CF.EXTERNAL || {})[id];
+    if (ext) {
+      var r0 = CF.PAGES[id] || {};
+      var mn = ext.name[S.lang === "en" ? 0 : 1];
+      return pageHead(r0.name ? r0.name[S.lang === "en" ? 0 : 1] : id, "", "")
+        + '<div class="card"><div class="card-b shell">' + CF.ICO.info
+        + "<p><b>" + t("extTitle") + "</b><br>" + t("extBody", { m: mn, r: ext.req }) + "</p>"
+        + '<p class="tiny">' + t("extNote", { r: ext.req }) + "</p>"
+        + '<span class="pill dash">' + esc(ext.req) + " · " + esc(id) + "</span></div></div>";
+    }
     var mod = CF.MODULES[CF.OWNER[id]];
     var label = mod ? mod.name[S.lang === "en" ? 0 : 1] : "";
     var r = CF.PAGES[id] || {};
@@ -342,9 +383,15 @@
     if (M.onSetState) M.onSetState(k);
     render(); syncURL();
   }
-  function buildHash() {
-    if (M.hash && M.hash.build) return M.hash.build();
+  function defaultHash() {
     return "#/" + S.page.toLowerCase() + (S.st && S.st !== defaultState(S.page) ? "?st=" + S.st : "");
+  }
+  function buildHash() {
+    /* 外部需求的占位页不进模块自定义 URL 方案：模块不认识这些 ID，
+       让它们统一走默认 #/<page-id>，深链与刷新才不会掉回模块首页。 */
+    if ((CF.EXTERNAL || {})[S.page]) return defaultHash();
+    if (M.hash && M.hash.build) return M.hash.build();
+    return defaultHash();
   }
   function syncURL() {
     var h = buildHash();
@@ -353,7 +400,8 @@
     try { history.pushState(null, "", h); } catch (e) { location.hash = h; }
   }
   function readURL() {
-    if (M.hash && M.hash.read) return M.hash.read();
+    var h0 = (location.hash || "").replace(/^#\/?/, "").split("?")[0].toUpperCase();
+    if (!(CF.EXTERNAL || {})[h0] && M.hash && M.hash.read) return M.hash.read();
     var h = location.hash || ""; if (!h) return false;
     var parts = h.replace(/^#\/?/, "").split("?"), id = (parts[0] || "").toUpperCase(), qs = {};
     (parts[1] || "").split("&").forEach(function (kv) {
@@ -373,6 +421,16 @@
 
     var r = CF.PAGES[S.page] || { end: M.end || "admin", layout: "app" };
     S.end = r.end;
+
+    /* 外部占位页（消息中心）的状态归一化与铃铛角标联动。
+       放在 render 里而不是 setState 里：模块可以有自己的 go / setState，
+       但两者最终都会调 render，这样在任何模块里表现都一致。 */
+    var ext = (CF.EXTERNAL || {})[S.page];
+    if (ext) {
+      var sts = (CF.STATES[S.page] || []).map(function (x) { return x[0]; });
+      if (sts.indexOf(S.st) < 0) S.st = sts[0];
+      S.unread = (S.st === "unread");
+    }
     document.documentElement.setAttribute("data-end", r.end);
 
     var isFocus = r.layout === "focus";
@@ -390,7 +448,7 @@
       q("#nav").innerHTML = renderNav();
       q("#crumb").innerHTML = renderCrumb();
       q("#topRight").innerHTML = (M.topExtra ? M.topExtra() : "")
-        + (M.topbarPrd === false ? "" : prdBtn()) + langSwitcher() + accountMenu();
+        + (M.topbarPrd === false ? "" : prdBtn()) + bellBtn() + langSwitcher() + accountMenu();
       var owns = M.owns || [];
       q("#content").innerHTML = owns.indexOf(S.page) < 0 ? ownedElsewhere(S.page) : M.content();
     }
@@ -459,7 +517,8 @@
 
   CF.boot = function () {
     S = { lang: "en", tz: "Asia/Shanghai", end: M.end || "admin",
-          page: M.home, st: "default", menu: null, modal: null, drawer: null, toasts: [] };
+          page: M.home, st: "default", menu: null, modal: null, drawer: null, toasts: [],
+          unread: true };
     var extra = M.state ? M.state() : {};
     for (var k in extra) S[k] = extra[k];
     S.st = defaultState(S.page);

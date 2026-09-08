@@ -86,6 +86,11 @@ a{color:var(--accent);text-decoration:none;cursor:pointer}
 .dd-btn svg{flex:none}
 .dd-btn .av{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--accent));
   color:#fff;display:grid;place-items:center;font-size:9px;font-weight:700;flex:none}
+/* C-20 通知铃铛：图标按钮 + 未读角标（只做有 / 无两种样子，不做计数） */
+.dd-btn.bell{padding:0;width:var(--ctrl-h-sm);justify-content:center;position:relative}
+.dd-btn.bell.has-unread{color:var(--accent);border-color:var(--accent-border)}
+.bell-dot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;
+  background:var(--danger);border:1.5px solid var(--bg-elev)}
 .dd-btn .nm{max-width:170px;overflow:hidden;text-overflow:ellipsis}
 .dd-list{position:absolute;right:0;top:calc(100% + 6px);min-width:168px;background:var(--bg-elev);
   border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);padding:5px;z-index:60;
