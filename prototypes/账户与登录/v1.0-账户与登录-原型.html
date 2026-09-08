@@ -612,7 +612,7 @@ var DICT = {
     labelWorkEmail:"Work email", labelNewEmail:"New email address", labelWallet:"Wallet address",
     labelName:"Full name", labelStatus:"Account status",
     showPwd:"Show password", hidePwd:"Hide password",
-    endAsset:"Asset portal", adminConsole:"Console", signedInAs:"Signed in as",
+    adminConsole:"Console", signedInAs:"Signed in as",
     stIncomplete:"Incomplete", stActiveAcc:"Active", demoOnly:"Demonstration data",
     pagesPanel:"Pages", prdOpen:"Open the PRD notes for this page",
 
@@ -768,7 +768,7 @@ var DICT = {
     labelWorkEmail:"工作邮箱", labelNewEmail:"新邮箱地址", labelWallet:"钱包地址",
     labelName:"姓名", labelStatus:"账户状态",
     showPwd:"显示密码", hidePwd:"隐藏密码",
-    endAsset:"资产端", adminConsole:"管理端", signedInAs:"当前登录",
+    adminConsole:"管理端", signedInAs:"当前登录",
     stIncomplete:"凭据未齐", stActiveAcc:"正常", demoOnly:"演示数据",
     pagesPanel:"页面", prdOpen:"查看本页的 PRD 摘录",
 
@@ -1419,8 +1419,8 @@ var ROUTES = {
   "P-M05":{end:"admin", layout:"app", crumb:["Account settings","账户设置"], name:["Account settings","管理端账户设置"]}
 };
 var PAGE_DIR = [
-  ["资产端 · 未登录",[["P-A01",""],["P-A01","locked1"],["P-A03",""],["P-A04",""]]],
-  ["资产端 · 已登录",[["P-A10",""],["P-A17",""],["P-A16",""],["P-A11",""]]],
+  ["未登录",[["P-A01",""],["P-A01","locked1"],["P-A03",""],["P-A04",""]]],
+  ["已登录",[["P-A10",""],["P-A17",""],["P-A16",""],["P-A11",""]]],
   ["管理端",[["P-M01",""],["P-M02",""],["P-M03",""],["P-M04",""],["P-M05",""]]]
 ];
 /* 每页可直接切换查看的状态（替代行为仿真） */
@@ -1574,7 +1574,7 @@ function focusShell(body,signOut){
   return '<div class="focus-top">'
    + '<div class="brand" style="border:0;padding:0;gap:10px"><div class="brand-mark">CF</div>'
    + '<div><div class="brand-name">Chain Financing</div>'
-   + '<div class="brand-sub">'+(route().end==="admin"?t("adminConsole"):t("endAsset"))+'</div></div></div>'
+   + (route().end==="admin"?'<div class="brand-sub">'+t("adminConsole")+'</div>':'')+'</div></div>'
    + '<div style="flex:1"></div>'
    + (signOut?'<button class="btn sm" data-act="go" data-v="P-M01">'+t("signOut")+'</button>':'')
    + pagesBtn() + prdBtn() + langSwitcher() + '</div>'
@@ -2095,7 +2095,7 @@ function render(){
     q("#nav").innerHTML=""; q("#topRight").innerHTML=""; q("#content").innerHTML=""; q("#crumb").innerHTML="";
   } else {
     q("#focus").innerHTML="";
-    q("#brandSub").textContent = S.end==="admin"?t("adminConsole"):t("endAsset");
+    q("#brandSub").textContent = S.end==="admin"?t("adminConsole"):"";
     q("#nav").innerHTML=renderNav();
     q("#crumb").innerHTML=renderCrumb();
     q("#topRight").innerHTML=pagesBtn()+langSwitcher()+accountMenu();
