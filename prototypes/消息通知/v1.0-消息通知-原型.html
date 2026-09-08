@@ -278,11 +278,15 @@ function seed(){
   var d = [];
   function m(o){ d.push(o); return o; }
   /* ------------------------------ 资产端 ------------------------------ */
+  /* 事件来源严格按 cly-V1.0.0 现状：WS-302 站内信只剩 E-03 / E-05 / E-10 三类
+     （8e18350、46e1d59 精简后），WS-303 提供认证与合规、业务办理进度两类。
+     被明确判定「不产出站内信」的事件（建号成功、凭据补齐、登录成功 / 失败、
+     偏好变更、其他设备退出）在本演示数据里一条都没有。 */
   m({ id:"m-a01", end:"asset", cat:"security", page:"P-A11", at:ago(2), read:false,
       dedupe:"account.password.changed:2026-09-08",
-      t:{en:"Sign-in password changed", zh:"登录密码已修改"},
-      b:{en:"Your sign-in password was changed on Sep 8, 2026, 07:30 (UTC+8). All other devices were signed out.\nIf this wasn't you, reset your password immediately.",
-         zh:"你的登录密码已于 2026-09-08 07:30 (UTC+8) 修改，其他设备均已退出登录。\n如果这不是你本人的操作，请立即重置密码。"} });
+      t:{en:"Your password was changed", zh:"登录密码已修改"},
+      b:{en:"Your password was changed on Sep 8, 2026, 07:30 (UTC+8) from Chrome on macOS. All devices were signed out.",
+         zh:"你的密码已于 2026-09-08 07:30 (UTC+8) 在 macOS 上的 Chrome 修改，所有设备均已退出登录。"} });
   m({ id:"m-a02", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(5), read:false,
       prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260905-014",
              node:{en:"Document review", zh:"材料复核"}, st:"in_progress", i:2, n:4 },
@@ -301,9 +305,9 @@ function seed(){
       b:{en:"Your company verification has been approved. Full platform features are now available.",
          zh:"你的企业认证已通过审核，平台完整功能已开放。"} });
   m({ id:"m-a05", end:"asset", cat:"security", page:"P-A11", at:ago(54), read:true,
-      t:{en:"Email address updated", zh:"邮箱已更换"},
-      b:{en:"Your sign-in email was changed to the address receiving this message.",
-         zh:"你的登录邮箱已更换为收到本消息的邮箱。"} });
+      t:{en:"Email address updated", zh:"账户邮箱已更新"},
+      b:{en:"This address became your account email on Sep 5, 2026, 21:30 (UTC+8). Sign in with the new address from now on.",
+         zh:"该邮箱已于 2026-09-05 21:30 (UTC+8) 成为你的账户邮箱，之后请用新邮箱登录。"} });
   m({ id:"m-a06", end:"asset", cat:"business_progress", biz:"idv.verification.rejected", at:ago(72), read:false,
       prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260901-007",
              node:{en:"Document review", zh:"材料复核"}, st:"failed", i:2, n:4 },
@@ -321,33 +325,42 @@ function seed(){
       t:{en:"Re-confirm your business scope", zh:"请复核你的经营范围"},
       b:{en:"We asked you to re-confirm your registered business scope before Sep 5, 2026. The window has closed; nothing further is required.",
          zh:"我们曾请你在 2026-09-05 前复核登记的经营范围。该时限已过，你无需再处理。"} });
-  m({ id:"m-a09", end:"asset", cat:"security", biz:"loan.disbursement.completed", at:ago(101), read:false,
-      t:{en:"Sign-in from a new device", zh:"新设备登录"},
-      b:{en:"A sign-in from a new device was recorded. If this wasn't you, change your password.",
-         zh:"检测到一次新设备登录。如果这不是你本人的操作，请修改密码。"} });
-  m({ id:"m-a10", end:"asset", cat:"account", page:"P-A17", at:ago(120), read:true,
-      t:{en:"Credentials completed", zh:"凭据补齐完成"},
-      b:{en:"Your email and wallet are both linked. Your account is now fully set up.",
-         zh:"你的邮箱与钱包均已绑定，账户建号流程已完成。"} });
+  /* 映射缺失演示：服务端已开始发这个业务类型，本客户端版本还没登记它 */
+  m({ id:"m-a09", end:"asset", cat:"compliance", biz:"idv.verification.recheck", at:ago(101), read:false,
+      t:{en:"Verification recheck started", zh:"认证复核已启动"},
+      b:{en:"A periodic recheck of your verification has started. No action is needed from you.",
+         zh:"我们已对你的认证发起例行复核，你无需做任何处理。"} });
+  m({ id:"m-a10", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(120), read:true,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260901-007",
+             node:{en:"Document review", zh:"材料复核"}, st:"in_progress", i:2, n:4 },
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"Your documents entered review.", zh:"你的材料已进入复核。"} });
   m({ id:"m-a11", end:"asset", cat:"security", page:"P-A11", at:ago(126), read:true,
       t:{en:"Wallet linked", zh:"钱包已绑定"},
-      b:{en:"A wallet address was linked to your account.", zh:"已有一个钱包地址绑定到你的账户。"} });
+      b:{en:"The wallet address 0x8f2c…4b71 was linked to your account on Sep 2, 2026, 23:30 (UTC+8). "
+          + "Your wallet address can't be changed after linking — keep this wallet accessible.",
+         zh:"钱包地址 0x8f2c…4b71 已于 2026-09-02 23:30 (UTC+8) 绑定到你的账户。"
+          + "钱包地址绑定后不可修改，请妥善保管该钱包。"} });
   m({ id:"m-a12", end:"asset", cat:"security", page:"P-A11", at:ago(130), read:true,
-      t:{en:"Sign-in password set", zh:"登录密码已设置"},
-      b:{en:"Your sign-in password was set for the first time.", zh:"你已首次设置登录密码。"} });
+      t:{en:"Your password was set", zh:"登录密码已设置"},
+      b:{en:"Your password was set on Sep 2, 2026, 19:30 (UTC+8) from Chrome on macOS. All devices were signed out.",
+         zh:"你的密码已于 2026-09-02 19:30 (UTC+8) 在 macOS 上的 Chrome 设置，所有设备均已退出登录。"} });
+  /* 未登记分类演示：分类标签回落「其他」，消息照常展示 */
   m({ id:"m-a13", end:"asset", cat:"promo_beta", at:ago(140), read:false,
       t:{en:"You're in the early-access group", zh:"你已加入早期体验组"},
       b:{en:"This message carries a category this client version doesn't know. It still shows, tagged as Other.",
          zh:"这条消息带的分类当前客户端未登记，仍然正常展示，分类标签回落为「其他」。"} });
-  m({ id:"m-a14", end:"asset", cat:"account", at:ago(150), read:true, degraded:true,
+  /* 文案模板缺失演示：降级为「标题 + 时间」最小形态 */
+  m({ id:"m-a14", end:"asset", cat:"security", at:ago(150), read:true, degraded:true,
       t:null, b:null });
-  m({ id:"m-a15", end:"asset", cat:"security", page:"P-A11", at:ago(160), read:true,
-      t:{en:"Email linked", zh:"邮箱已绑定"},
-      b:{en:"An email address was linked to your account.", zh:"已有一个邮箱绑定到你的账户。"} });
-  m({ id:"m-a16", end:"asset", cat:"account", page:"P-A11", at:ago(168), read:true,
-      t:{en:"Account created", zh:"账户已创建"},
-      b:{en:"Your account was created automatically after your first sign-in.",
-         zh:"你的账户已在首次登录后自动创建。"} });
+  m({ id:"m-a15", end:"asset", cat:"compliance", page:"P-A17", at:ago(160), read:true,
+      t:{en:"Verification materials received", zh:"认证材料已收到"},
+      b:{en:"We received your verification materials and will start the review shortly.",
+         zh:"我们已收到你的认证材料，稍后开始审核。"} });
+  m({ id:"m-a16", end:"asset", cat:"security", page:"P-A11", at:ago(168), read:true,
+      t:{en:"Your password was reset", zh:"登录密码已重置"},
+      b:{en:"Your password was reset on Sep 1, 2026, 09:30 (UTC+8) through the email flow. All devices were signed out.",
+         zh:"你的密码已于 2026-09-01 09:30 (UTC+8) 通过邮箱流程重置，所有设备均已退出登录。"} });
   m({ id:"m-a17", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(180), read:true,
       prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260830-002",
              node:{en:"Closed", zh:"已关闭"}, st:"succeeded", i:4, n:4 },
@@ -355,33 +368,41 @@ function seed(){
       t:{en:"Identity verification", zh:"实名认证"},
       b:{en:"This application was closed after the company context changed.",
          zh:"企业上下文变更后，该笔申请已关闭。"} });
-  m({ id:"m-a18", end:"asset", cat:"security", page:"P-A11", at:ago(196), read:true,
-      t:{en:"Sign-in password reset", zh:"登录密码已重置"},
-      b:{en:"Your password was reset through the email flow.", zh:"你已通过邮箱流程重置登录密码。"} });
-  m({ id:"m-a19", end:"asset", cat:"compliance", at:ago(210), read:true,
-      t:{en:"Verification materials received", zh:"认证材料已收到"},
-      b:{en:"We received your verification materials.", zh:"我们已收到你的认证材料。"} });
-  m({ id:"m-a20", end:"asset", cat:"account", page:"P-A11", at:ago(226), read:true,
-      t:{en:"Time zone preference updated", zh:"时区偏好已更新"},
-      b:{en:"Your display time zone is now UTC+8.", zh:"你的展示时区已改为 UTC+8。"} });
-  m({ id:"m-a21", end:"asset", cat:"security", page:"P-A11", at:ago(240), read:true,
-      t:{en:"Two devices signed out", zh:"两台设备已退出"},
-      b:{en:"Sessions on two devices were ended after a credential change.",
-         zh:"凭据变更后，两台设备上的会话已结束。"} });
+  m({ id:"m-a18", end:"asset", cat:"compliance", page:"P-A17", at:ago(196), read:true,
+      t:{en:"A duplicate application was blocked", zh:"重复申请已被拦截"},
+      b:{en:"Another application for the same company was blocked because this one is still open.",
+         zh:"同一企业的另一笔申请已被拦截，因为当前这笔仍在进行中。"} });
+  m({ id:"m-a19", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(210), read:true,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260830-002",
+             node:{en:"Document review", zh:"材料复核"}, st:"succeeded", i:2, n:4 },
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"Document review passed.", zh:"材料复核已通过。"} });
+  m({ id:"m-a20", end:"asset", cat:"security", page:"P-A11", at:ago(226), read:true,
+      t:{en:"Email address updated", zh:"账户邮箱已更新"},
+      b:{en:"This address became your account email on Aug 29, 2026, 23:30 (UTC+8).",
+         zh:"该邮箱已于 2026-08-29 23:30 (UTC+8) 成为你的账户邮箱。"} });
+  m({ id:"m-a21", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(240), read:true,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260830-002",
+             node:{en:"Submitted", zh:"已提交"}, st:"succeeded", i:1, n:4 },
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"Your application was submitted and queued for review.",
+         zh:"你的申请已提交，正在排队等待审核。"} });
   m({ id:"m-a22", end:"asset", cat:"compliance", page:"P-A17", at:ago(262), read:true,
       t:{en:"Verification reminder", zh:"认证提醒"},
       b:{en:"Complete identity verification to unlock financing features.",
          zh:"完成实名认证后即可使用融资相关功能。"} });
-  m({ id:"m-a23", end:"asset", cat:"account", at:ago(286), read:true,
-      t:{en:"Profile details updated", zh:"资料已更新"},
-      b:{en:"Your contact details were updated.", zh:"你的联系资料已更新。"} });
-  m({ id:"m-a24", end:"asset", cat:"security", page:"P-A11", at:ago(310), read:true,
-      t:{en:"Sign-in from a new location", zh:"异地登录"},
-      b:{en:"A sign-in from a new location was recorded.", zh:"检测到一次异地登录。"} });
-  m({ id:"m-a25", end:"asset", cat:"account", at:ago(340), read:true,
-      t:{en:"Welcome to Chain Financing", zh:"欢迎使用 Chain Financing"},
-      b:{en:"Your account is ready. This is the oldest message in this demo set.",
-         zh:"你的账户已就绪。这是本演示数据里最早的一条消息。"} });
+  m({ id:"m-a23", end:"asset", cat:"security", page:"P-A11", at:ago(286), read:true,
+      t:{en:"Your password was changed", zh:"登录密码已修改"},
+      b:{en:"Your password was changed on Aug 27, 2026, 11:30 (UTC+8) from Safari on iOS. All devices were signed out.",
+         zh:"你的密码已于 2026-08-27 11:30 (UTC+8) 在 iOS 上的 Safari 修改，所有设备均已退出登录。"} });
+  m({ id:"m-a24", end:"asset", cat:"compliance", page:"P-A17", at:ago(310), read:true,
+      t:{en:"Verification materials received", zh:"认证材料已收到"},
+      b:{en:"We received the materials for your first application.",
+         zh:"我们已收到你首次申请的材料。"} });
+  m({ id:"m-a25", end:"asset", cat:"security", page:"P-A11", at:ago(340), read:true,
+      t:{en:"Wallet linked", zh:"钱包已绑定"},
+      b:{en:"The wallet address 0x3ab9…07de was linked to your account. This is the oldest message in this demo set.",
+         zh:"钱包地址 0x3ab9…07de 已绑定到你的账户。这是本演示数据里最早的一条消息。"} });
 
   /* ------------------------------ 管理端 ------------------------------ */
   m({ id:"m-m01", end:"admin", cat:"review_todo", biz:"review.idv_case.assigned", at:ago(1), read:false,
@@ -927,8 +948,11 @@ function onAct(n, a, v, e){
     S.data.unshift({ id:"m-new-" + S.data.length, end:S.end,
       cat:S.end === "admin" ? "review_todo" : "security",
       page:S.end === "admin" ? "P-M05" : "P-A11", at:new Date().toISOString(), read:false,
-      t:{ en:"Sign-in from a new device", zh:"新设备登录" },
-      b:{ en:"A sign-in from a new device was just recorded.", zh:"刚刚检测到一次新设备登录。" } });
+      t:{ en:S.end === "admin" ? "New verification case to review" : "Your password was changed",
+          zh:S.end === "admin" ? "新的认证审核待办" : "登录密码已修改" },
+      b:{ en:S.end === "admin" ? "A new case is waiting for first review."
+                               : "Your password was just changed. All devices were signed out.",
+          zh:S.end === "admin" ? "有一条新的审核单待初审。" : "你的密码刚刚被修改，所有设备均已退出登录。" } });
     render(); toast("info", t("dmNewToast")); return true;
   }
   if (a === "dmDedupe") {                            /* 9.1.3：命中去重键 → 合并、更新时间、恢复未读 */
