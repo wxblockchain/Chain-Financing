@@ -10,6 +10,10 @@
 /* ==========================================================================
    本模块专有样式。token、壳层与全部通用组件都在 ../_shared/ 里，不在这里重复。
    ========================================================================== */
+/* ---- 协议管理专有：定时生效失败的行内提示（E-10）---- */
+/* 与 .cell-note 是两个类：一个是「将要生效」的预告，一个是「没能生效」的故障。 */
+.cell-fail{font-size:10.5px;color:var(--danger);font-weight:620;line-height:1.5;margin-top:3px;white-space:normal}
+
 /* ---- 协议管理专有：当前生效版本的行状态 ---- */
 table.tbl tbody tr.is-active-ver td{background:var(--accent-soft)}
 table.tbl tbody tr.is-active-ver:hover td{background:var(--accent-soft)}
@@ -35,7 +39,7 @@ table.tbl.wide tbody tr.is-active-ver:hover td.col-act{background:var(--accent-s
       <div style="flex:1"></div>
       <div class="topbar-right" id="topRight"></div>
     </div>
-    <!-- C-10 面包屑：顶部导航栏下方，通栏左对齐 -->
+    <!-- 面包屑（WS-302 C-10）：顶部导航栏下方，通栏左对齐 -->
     <div class="crumbbar" id="crumb"></div>
     <div class="content" id="content"></div>
   </div>
@@ -125,6 +129,7 @@ var DICT = {
     noPermissionSub:"Sign in with an admin account that has console access.",
     loading:"Loading",
     nextVersion:"Next version {v} takes effect {time}",
+    activationFailed:"{v} failed to activate — publish it again",
     activeSummary:"Active version", noActive:"No active version yet",
     uploadHint:"Click to select a file, or drag it here",
     uploadSingle:"Single file. Format and size are validated against this agreement's definition.",
@@ -224,6 +229,7 @@ var DICT = {
     noPermissionSub:"请使用具备管理端访问权限的管理员账号登录。",
     loading:"加载中",
     nextVersion:"下一版本 {v} 将于 {time} 生效",
+    activationFailed:"{v} 生效失败，需重新发布",
     activeSummary:"当前生效版本", noActive:"暂无生效版本",
     uploadHint:"点击选择文件，或拖拽到此处",
     uploadSingle:"单文件上传。格式与大小按该协议的定义校验。",
@@ -262,13 +268,13 @@ var DICT = {
    prd.js — 每页的 PRD 摘录（面向前端开发，紫色面板，不属于产品界面）
    四类：fields 字段与校验 · rules 关键业务规则 · states 状态与异常分支 · copy 中英文案
    全部取自 WS-301 定稿 PRD `v1.0-协议管理-PRD.md`（2026-09-08 02:21 修订版）：
-   编号体系 F-40～50 / P-M10～14 / C-10～11 / E-01～14 / AC-AG-01～70。
+   编号体系 F-40～50 / P-AG-01～04 / C-30～31 / E-01～14 / AC-AG-01～79。
    面板固定中文，只摘录本页用得到的条目，不是全量 PRD。
    ========================================================================== */
 var PRD = {
 
-"P-M10":{
- title:"P-M10 协议列表",
+"P-AG-01":{
+ title:"P-AG-01 协议列表",
  src:"PRD · 5.1 菜单结构 / 6.1 页面框架 / 7.2 协议列表 / 7.1.3 使用环节 / 10.3 异常总表 / 16.1 验收",
  fields:[
   ["agreement_key","string · 只读","协议唯一标识，资产端读取协议的锚点；一经上线不得变更。列表中作为协议名称下方的等宽辅助文本。"],
@@ -300,9 +306,9 @@ var PRD = {
   ["筛选无结果","No agreements match your filters.","没有符合条件的协议。"]
  ]},
 
-"P-M11":{
- title:"P-M11 协议详情（基本信息 / 版本历史 / 操作记录）",
- src:"PRD · 6.2 页面框架 / 7.4 版本历史与回溯 / 7.5 操作留痕 / 8.2 版本对象 / 10.1 状态机 / 16.2 · 16.6 · 16.7 验收",
+"P-AG-02":{
+ title:"P-AG-02 协议详情（基本信息 / 版本历史 / 操作记录）",
+ src:"PRD · 6.2 页面框架 / 7.4 版本历史与回溯 / 7.5 操作留痕 / 8.2 版本对象 / 10.1 状态机 / 12.3 站内信触发口径 / 16.2 · 16.6 · 16.7 · 16.10 验收",
  fields:[
   ["基本信息区全部字段","只读","标识 / 类型 / 名称 / 说明 / 使用环节 / 允许的文件格式 / 文件大小上限 / 上线状态，全部来自代码定义（AC-AG-15）。**格式与大小取该协议的定义值，不是全局常量**（AC-AG-16）。"],
   ["content_hash","string · 发布时冻结","等宽展示 + 复制。与 `version_id` 一并构成同意记录锚定的内容凭据（9.3）。"],
@@ -316,13 +322,16 @@ var PRD = {
   ["F-47 / 7.4.3","**版本回溯不是把老版本改回生效**，而是复制其文件生成版本号更大的新草稿，记录 `source_version_id`，变更说明预填「回溯至 v{n} 的内容」（AC-AG-48）。"],
   ["7.4.4","版本归档**只在新版本生效时由系统自动执行**，界面不提供对当前生效版本的手动归档入口（AC-AG-50）。协议下线由代码 `enabled=false` 控制，管理端无停用入口。"],
   ["F-48 / 7.5","操作记录覆盖全部版本写动作（含系统自动生效与归档），以 **Timeline** 呈现，**只增不改**，无编辑与删除入口（AC-AG-51～54）。系统动作操作人记为「系统 / System」。"],
-  ["7.5.2","变更摘要是人类可读的一句话；替换文件类记录须包含旧文件名与新文件名（AC-AG-55）。记录字段含时间（带时区）、操作人姓名与邮箱、协议与版本号、动作、摘要、来源 IP。"]
+  ["7.5.2","变更摘要是人类可读的一句话；替换文件类记录须包含旧文件名与新文件名（AC-AG-55）。记录字段含时间（带时区）、操作人姓名与邮箱、协议与版本号、动作、摘要、来源 IP。"],
+  ["12.3.1 站内信","本模块是**触发方**，投递与展示归 WS-304。四个事件里**只发三条**：`activated`（**仅定时生效场景**，立即生效不发）、`activation_failed`（必发）、`scheduled_cancelled`；`published` **不发**（AC-AG-71/72）。三条均为 `end=admin` · `recipient_scope=admin_all` · `category=ops_alert`（AC-AG-73）。**收件箱 UI 归 WS-304，不在本原型内**——顶栏铃铛与「消息中心」由公共层渲染成归属 WS-304 的入口。"],
+  ["12.3.4 跳转目标","站内信点进来的落点就是**本页**：`biz_ref = { resource_type:\"agreement.version\", resource_id:<version_id>, extra:{ tab:\"versions\" } }`，路由模板 `/agreements/{resource_id}?tab={extra.tab}`，落在**版本历史 tab**（AC-AG-74）。需要预检：待生效版本可能已被撤销或替换，状态已流转时返回 `state_changed`；版本数据不会被删除，因此不会有 `resource_deleted`（AC-AG-76）。**原型的 URL 方案已是这个形状**（`#/agreements/<agreement_key>?tab=versions`），但 PRD 的 `resource_id` 取的是 `version_id`，前端接入时需按版本反查其所属协议。"],
+  ["12.3.5 边界","本模块**不产出任何面向资产端的站内信**，包括「协议需重新同意」（AC-AG-78）；也**不产出任何邮件**（AC-AG-79）。这条明确关闭了 WS-302 3.2 指向本模块的那个空挂载点。"]
  ],
  states:[
   ["无版本（未发布）","版本历史与操作记录为空态，右上角按钮为「新建版本」。"],
   ["存在草稿","右上角按钮为「继续编辑草稿」，不生成第二个草稿。"],
   ["存在待生效版本","版本历史中该行状态为「待生效」，操作列提供「撤销待生效」；撤销后回到草稿并保留文件（AC-AG-43）。"],
-  ["E-10 定时生效失败","保持原生效版本不变，不出现无生效版本的中间态；详情页对该待生效版本展示 inline alert「生效失败，请重新发布。」（AC-AG-44）。"],
+  ["E-10 定时生效失败","保持原生效版本不变，不出现无生效版本的中间态；详情页对该待生效版本展示 inline alert「生效失败，请重新发布。」（AC-AG-44）。**列表页同步**：该协议「生效时间」列的辅助文本从「下一版本将于 X 生效」换成「v{n} 生效失败，需重新发布」——生效失败后那个时间点已经过去，继续预告是错的信息。状态列仍只有 7.2.3 的四个取值，不新增第五种。另按 12.3.1，本事件**必发**一条管理端站内信。"],
   ["E-13 协议已下线","页面可正常打开，历史版本与操作记录可查；顶部 inline alert「该协议已下线，暂不可维护内容。」，隐藏「新建版本」按钮（AC-AG-20）。"],
   ["加载中 / 加载失败","tab 内容区替换为 skeleton 或可重试的失败面，页头保持可见。"]
  ],
@@ -334,8 +343,8 @@ var PRD = {
   ["不支持预览","This format cannot be previewed online. Please download it.","该格式不支持在线预览，请下载查看。"]
  ]},
 
-"P-M13":{
- title:"P-M13 版本编辑页 + C-10 发布确认",
+"P-AG-03":{
+ title:"P-AG-03 版本编辑页 + C-30 发布确认",
  src:"PRD · 6.3 · 6.4 页面框架 / 7.3 版本内容与发布 / 8.4 字段总表 / 10.3 异常总表 / 16.3～16.5 验收",
  fields:[
   ["协议文件","file · 仅草稿可改 · 必填（发布时）","单文件，支持点击选择与拖拽。**按该协议的 `allowed_file_types` 与 `max_file_size` 校验，不使用全局值**；上传区下方以 helper 文本原样展示这两个值（AC-AG-22）。服务端按同一份定义值再校验一次，含扩展名与文件头双重比对（AC-AG-26）。"],
@@ -343,15 +352,15 @@ var PRD = {
   ["生效方式 `effective_mode`","enum · 必填","`immediate` 立即生效 / `scheduled` 定时生效；默认 `immediate`。"],
   ["生效时间 `effective_at`","datetime · 定时生效时必填","分钟粒度；**必须晚于当前时间至少 5 分钟**（E-08 / AC-AG-41）；按管理员时区输入与展示，存储 UTC，控件旁必须带时区标注（AC-AG-42）。"],
   ["变更说明 `change_note`","text · 必填","≤ 500 字符；说明本次改了什么，列在版本历史里（E-07）。"],
-  ["需重新同意 `require_reconsent`","bool · 选填","**本期仅存储并随读取接口透出，不产生任何前台行为**；控件旁 helper 注明触发规则将在后续需求中定义。"]
+  ["需重新同意 `require_reconsent`","bool · 选填","**本期仅存储并随读取接口透出，不产生任何前台行为**；控件旁 helper 注明触发规则将在后续需求中定义。12.3.5 进一步明确：勾选它**不会**产出任何面向资产端的「协议需重新同意」站内信（AC-AG-78）。"]
  ],
  rules:[
   ["F-43 / 7.3.3","本期**不提供在线富文本录入**，协议内容只有「上传文件」这一条路径（AC-AG-21）。版本内**不存在语种维度**：无语言 tab、无 locale 字段、无中英两份内容（AC-AG-27）。"],
   ["F-44 / 7.3.1","草稿阶段文件可反复替换，覆盖后旧文件不保留、不产生版本记录（AC-AG-30）。上传失败保留表单其余内容并可重试（E-04 / AC-AG-28）。"],
   ["保存草稿","不做必填校验（文件与变更说明均可暂缺），停留在本页并 Toast 提示。"],
-  ["发布","先做完整校验（文件已上传且通过格式与大小校验、变更说明非空、定时生效时间合法），通过后进入 C-10 发布确认。"],
+  ["发布","先做完整校验（文件已上传且通过格式与大小校验、变更说明非空、定时生效时间合法），通过后进入 C-30 发布确认。"],
   ["F-45 / 7.3.4","立即生效：发布瞬间新版本→已生效、原生效版本→已归档；定时生效：发布后新版本→待生效，到点系统自动切换。同一协议任一时刻**至多一个已生效**、**至多一个待生效**（AC-AG-36 / AC-AG-38）。"],
-  ["E-06 待生效冲突","已有待生效版本时再次发布，C-10 内以 inline alert 展示该版本号与生效时间，**主按钮文案变为「撤销并发布」**；确认后系统先把原待生效版本退回草稿并保留其文件，再发布新版本，**两条动作各记一条操作记录**（AC-AG-39 / AC-AG-40）。若此时已存在草稿，覆盖前需二次确认。"],
+  ["E-06 待生效冲突","已有待生效版本时再次发布，C-30 内以 inline alert 展示该版本号与生效时间，**主按钮文案变为「撤销并发布」**；确认后系统先把原待生效版本退回草稿并保留其文件，再发布新版本，**两条动作各记一条操作记录**（AC-AG-39 / AC-AG-40）。若此时已存在草稿，覆盖前需二次确认。"],
   ["7.3.4 内容冻结","版本进入待生效后文件即冻结，不可替换；需要改动只能撤销回草稿。发布时生成 `content_hash` 并冻结（AC-AG-45）。"],
   ["12.4","版本编辑页离开前若有未保存改动，弹出确认（AC-AG-69）。"]
  ],
@@ -591,12 +600,12 @@ function nowMs(){ return Date.parse(NOW); }
 
 /* ------------------------------- 路由与页面 ------------------------------- */
 var STATES = {
-  "P-M10":[["default","Default","默认"],["loading","Loading","加载中"],["empty","No agreements","空数据"],
+  "P-AG-01":[["default","Default","默认"],["loading","Loading","加载中"],["empty","No agreements","空数据"],
            ["nomatch","No filter match","筛选无结果"],["error","Load failed","加载失败可重试"],
            ["noperm","No permission","无权限"]],
-  "P-M11":[["default","Default","默认"],["loading","Loading","加载中"],["error","Load failed","加载失败可重试"],
+  "P-AG-02":[["default","Default","默认"],["loading","Loading","加载中"],["error","Load failed","加载失败可重试"],
            ["actfail","E-10 activation failed","E-10 生效失败"]],
-  "P-M13":[["default","Default","默认"],["uploading","Uploading","上传中"],["euploadv","E-04 upload failed","E-04 上传失败"],
+  "P-AG-03":[["default","Default","默认"],["uploading","Uploading","上传中"],["euploadv","E-04 upload failed","E-04 上传失败"],
            ["efmt","E-01 wrong format","E-01 格式不符"],["esize","E-02 too large","E-02 超出大小"],
            ["emagic","E-03 header check failed","E-03 文件头校验失败"],
            ["submitting","Publishing","提交中"],["esubmit","Submit failed","提交失败"],
@@ -644,9 +653,9 @@ function buildHash(){
   var h="#/agreements", p=[];
   if(S.page==="P-M05") return "#/account";
   if(S.agKey) h+="/"+S.agKey;
-  if(S.page==="P-M13") h+="/versions/"+(S.editor?S.editor.no:"new");
-  else if(S.page==="P-M11"&&S.tab!=="overview") p.push("tab="+S.tab);
-  if(S.page==="P-M10"){
+  if(S.page==="P-AG-03") h+="/versions/"+(S.editor?S.editor.no:"new");
+  else if(S.page==="P-AG-02"&&S.tab!=="overview") p.push("tab="+S.tab);
+  if(S.page==="P-AG-01"){
     var f=S.applied;
     if(f.kw) p.push("kw="+encodeURIComponent(f.kw));
     if(f.type.length) p.push("type="+f.type.join(","));
@@ -673,12 +682,12 @@ function readURL(){
     if(seg[2]==="versions"){
       var a=cur(), d=verOf(a,"draft");
       if(d){ openEditor(a,d,true); return true; }
-      S.page="P-M11"; S.tab="versions"; return true;
+      S.page="P-AG-02"; S.tab="versions"; return true;
     }
-    S.page="P-M11"; S.tab=(qs.tab==="versions"||qs.tab==="log")?qs.tab:"overview";
+    S.page="P-AG-02"; S.tab=(qs.tab==="versions"||qs.tab==="log")?qs.tab:"overview";
     S.st="default"; return true;
   }
-  S.page="P-M10"; S.agKey=null; S.st="default";
+  S.page="P-AG-01"; S.agKey=null; S.st="default";
   var f={kw:qs.kw||"", type:qs.type?qs.type.split(","):[], scen:qs.scen?qs.scen.split(","):[],
          status:qs.status?qs.status.split(","):[], from:qs.from||"", to:qs.to||""};
   S.f=f; S.applied={kw:f.kw,type:f.type.slice(),scen:f.scen.slice(),status:f.status.slice(),from:f.from,to:f.to};
@@ -691,18 +700,23 @@ function readURL(){
 /* -------------------------------- 导航动作 -------------------------------- */
 function go(page,opt){
   opt=opt||{};
-  if(S.editor&&S.editor.dirty&&page!=="P-M13"){
+  if(S.editor&&S.editor.dirty&&page!=="P-AG-03"){
     S.modal={type:"unsaved", to:page, opt:opt}; render(); return;
   }
   S.page=page; S.st=opt.st||"default"; S.modal=null; S.drawer=null; S.menu=null; S.more=null;
-  if(page!=="P-M13") S.editor=null;
+  /* E-10 是挂在协议上的数据，不是页面临时状态：进详情时让状态切换器与数据对齐 */
+  if(page==="P-AG-02"){
+    var _a=ag(opt.key!==undefined?opt.key:S.agKey);
+    if(_a&&_a.actFail&&!opt.st) S.st="actfail";
+  }
+  if(page!=="P-AG-03") S.editor=null;
   if(opt.key!==undefined) S.agKey=opt.key;
   if(opt.tab) S.tab=opt.tab;
   render(); syncURL(); window.scrollTo(0,0);
 }
 function setState(k){ S.st=k; S.menu=null; render(); }
 
-/* ------------------------------ Toast（C-12） ----------------------------- */
+/* --------------------------- Toast（WS-302 C-12） ------------------------- */
 
 /* ============================== 通用片段 ================================= */
 function pill(kind,text){ return '<span class="pill '+kind+'">'+text+'</span>'; }
@@ -743,7 +757,7 @@ function skelRows(n,cols){
   return '<div role="status" aria-live="polite" aria-label="'+t("loading")+'">'+out+'</div>';
 }
 
-/* ============================== P-M10 协议列表 ============================= */
+/* ============================== P-AG-01 协议列表 ============================= */
 function filtered(){
   var f=S.applied, list=S.data.filter(function(a){
     if(f.kw){
@@ -830,7 +844,9 @@ function listRow(a){
    + '<td>'+scenTags(a.scen,a.key)+'</td>'
    + '<td class="mono">'+(act?esc(act.no):'<span class="faint">—</span>')+'</td>'
    + '<td class="c-time">'+(act?esc(fmtTime(act.effAt)):'<span class="faint">—</span>')
-   + (sch?'<div class="cell-note">'+esc(t("nextVersion",{v:sch.no,time:fmtTime(sch.effAt)}))+'</div>':'')+'</td>'
+   + (sch?(a.actFail
+        ? '<div class="cell-fail">'+esc(t("activationFailed",{v:sch.no}))+'</div>'
+        : '<div class="cell-note">'+esc(t("nextVersion",{v:sch.no,time:fmtTime(sch.effAt)}))+'</div>'):'')+'</td>'
    + '<td class="num">'+pubCount(a)+'</td>'
    + '<td>'+statusPill(st)+'</td>'
    + '<td class="c-time">'+(l?esc(opName(l.by))+'<div class="t2">'+esc(fmtTime(l.at))+'</div>'
@@ -896,9 +912,9 @@ function pager(n,pages,pg){
    + L("Next page","下一页")+'">›</button></div></div>';
 }
 
-/* ============================== P-M11 协议详情 ============================= */
+/* ============================== P-AG-02 协议详情 ============================= */
 function pageDetail(){
-  var a=cur(); if(!a){ go("P-M10"); return ""; }
+  var a=cur(); if(!a){ go("P-AG-01"); return ""; }
   var draft=verOf(a,"draft"), sch=verOf(a,"scheduled");
   var actions="";
   if(a.enabled)
@@ -913,11 +929,11 @@ function pageDetail(){
 
   var alerts="";
   if(!a.enabled) alerts+=note("amber",t("hOffline"),"","status")+gap();
-  if(S.st==="actfail"&&sch)
+  if(a.actFail&&sch)
     alerts+=note("red",t("eActivateFailed")+" "
       + L("The current active version is unchanged.","当前生效版本保持不变。"),
       "E-10 · "+esc(sch.no),"alert")+gap();
-  if(sch&&S.st!=="actfail")
+  if(sch&&!a.actFail)
     alerts+=note("amber",esc(t("nextVersion",{v:sch.no,time:fmtTime(sch.effAt)})),"","status")+gap();
 
   var tabs='<div class="tabs" role="tablist">'
@@ -936,7 +952,7 @@ function pageDetail(){
   else body = S.tab==="overview"?tabOverview(a):(S.tab==="versions"?tabVersions(a):tabLog(a));
 
   /* 原型控制（模拟到点生效）只出现在演示数据条里，不混进产品告警 */
-  var sim = sch&&S.st!=="actfail"
+  var sim = sch&&!a.actFail
     ? '<button class="btn sm" type="button" data-act="simAct" title="'+t("simActivateHint")+'">'
       + t("simActivate")+'</button>' : "";
   return head+demoBar(sim)+alerts+tabs+'<div role="tabpanel">'+body+'</div>';
@@ -1059,18 +1075,18 @@ function tabLog(a){
      }).join("")+'</ul></div></div>';
 }
 
-/* ============================ P-M13 版本编辑页 ============================= */
+/* ============================ P-AG-03 版本编辑页 ============================= */
 function openEditor(a,v,silent){
   S.editor={key:a.key, no:v.no, file:v.file?{name:v.file.name,size:v.file.size,ext:v.file.ext}:null,
             mode:v.mode||"immediate", effAt:v.effAt||null, note:L(v.note.en,v.note.zh),
             noteEn:v.note.en, noteZh:v.note.zh, rec:!!v.rec, src:v.src||null,
             dirty:false, err:{}, origFile:v.file?v.file.name:null};
-  S.page="P-M13"; S.agKey=a.key; S.st="default"; S.modal=null; S.drawer=null;
+  S.page="P-AG-03"; S.agKey=a.key; S.st="default"; S.modal=null; S.drawer=null;
   if(!silent){ render(); syncURL(); window.scrollTo(0,0); }
 }
 function ed(){ return S.editor; }
 function pageEditor(){
-  var a=cur(), e=ed(); if(!a||!e){ go("P-M10"); return ""; }
+  var a=cur(), e=ed(); if(!a||!e){ go("P-AG-01"); return ""; }
   var busy=S.st==="submitting"||S.st==="uploading";
   var head='<div class="page-head"><div><h1 class="page-title">'
    + (e.src?L("New version from ","以历史版本新建 ")+'<span class="mono">'+esc(e.no)+'</span>'
@@ -1191,7 +1207,7 @@ function shell(title,body,foot,wide){
 function kv(k,v){ return '<div style="display:flex;gap:14px;padding:7px 0;border-bottom:1px dashed var(--border-dash)">'
    + '<span class="tiny" style="width:96px;flex:none">'+k+'</span><span style="font-size:12.5px;flex:1;'
    + 'overflow-wrap:anywhere">'+v+'</span></div>'; }
-/* C-10 发布确认（含 E-06「撤销并发布」分支） */
+/* C-30 发布确认（含 E-06「撤销并发布」分支） */
 function modalPublish(){
   var a=cur(), e=ed(), sch=verOf(a,"scheduled");
   var conflict=!!sch;
@@ -1223,7 +1239,7 @@ function modalCancelSch(){
     '<button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
     + '<button class="btn danger" type="button" data-act="doCancelSch">'+t("bCancelScheduled")+'</button>');
 }
-/* C-11 二次确认：退回的待生效版本会覆盖已有草稿（E-06 后半段） */
+/* C-31 二次确认：退回的待生效版本会覆盖已有草稿（E-06 后半段） */
 function modalOverwrite(){
   var a=cur(), d=verOf(a,"draft"), sch=verOf(a,"scheduled");
   return shell(t("overwriteDraftTitle"),
@@ -1243,7 +1259,7 @@ function modalScen(){
 }
 
 /* ================================ 抽屉 =================================== */
-/* P-M14 版本详情预览（抽屉） */
+/* P-AG-04 版本详情预览（抽屉） */
 function drawerVersion(){
   var a=cur(), v=verNo(a,S.ver); if(!v) return "";
   var canPreview=v.file&&["PDF","HTML","TXT","PNG","JPG"].indexOf(v.file.ext)>=0;
@@ -1281,7 +1297,7 @@ function drawerVersion(){
 
 /* ================================ 渲染 =================================== */
 function renderContent(){
-  return ({ "P-M10":pageList, "P-M11":pageDetail, "P-M13":pageEditor }[S.page]
+  return ({ "P-AG-01":pageList, "P-AG-02":pageDetail, "P-AG-03":pageEditor }[S.page]
           ||function(){return "";})();
 }
 
@@ -1378,7 +1394,7 @@ function doPublish(){
       addLog(a,"publish",v.no,"Published "+v.no+", scheduled for "+fmtTime(v.effAt)+".",
              "发布 "+v.no+"，定时生效于 "+fmtTime(v.effAt)+"。");
     }
-    S.editor=null; S.st="default"; S.page="P-M11"; S.tab="versions";
+    S.editor=null; S.st="default"; S.page="P-AG-02"; S.tab="versions";
     render(); syncURL(); toast("success",t("okPublished"));
   },520);
 }
@@ -1406,7 +1422,7 @@ function discardDraft(){
   var a=cur(), d=verOf(a,"draft"); if(!d) return;
   a.versions=a.versions.filter(function(v){return v!==d;});
   addLog(a,"discard",d.no,"Discarded draft "+d.no+".","丢弃草稿 "+d.no+"。");
-  S.modal=null; S.editor=null; S.page="P-M11"; S.tab="versions"; render(); syncURL();
+  S.modal=null; S.editor=null; S.page="P-AG-02"; S.tab="versions"; render(); syncURL();
   toast("success",L("Draft discarded.","草稿已丢弃。"));
 }
 function cancelScheduled(force){
@@ -1429,6 +1445,8 @@ function cancelScheduled(force){
 function onAct(n,a,v,e){
   if(n.classList.contains("mask")&&e.target!==n) return true;
   if(a==="msel") return true;                             /* 复选框走 change */
+  /* E-10 由状态切换器写进协议数据，好让列表与详情看到同一件事；shell 继续处理 st */
+  if(a==="st"&&S.page==="P-AG-02"&&cur()) cur().actFail=(v==="actfail");
   if(MINE.indexOf(a)<0) return false;
   e.preventDefault();
   if(S.menu) S.menu=null;
@@ -1437,7 +1455,7 @@ function onAct(n,a,v,e){
     case "crumb": go(v,{key:n.getAttribute("data-k")||S.agKey}); break;
     case "st": setState(v); break;
     case "tab": S.tab=v; render(); syncURL(); break;
-    case "open": go("P-M11",{key:v,tab:"overview"}); break;
+    case "open": go("P-AG-02",{key:v,tab:"overview"}); break;
     case "more": S.more=v||null; render(); break;
     case "moreNote": S.more=(S.more==="note:"+v?null:"note:"+v); render(); break;
     case "sort":
@@ -1499,7 +1517,7 @@ function onAct(n,a,v,e){
 document.addEventListener("keydown",function(e){
   if(e.key==="Enter"||e.key===" "){
     var r=e.target.closest&&e.target.closest("tr.rowlink");
-    if(r&&e.target===r){ e.preventDefault(); go("P-M11",{key:r.getAttribute("data-v"),tab:"overview"}); }
+    if(r&&e.target===r){ e.preventDefault(); go("P-AG-02",{key:r.getAttribute("data-v"),tab:"overview"}); }
   }
 });
 document.addEventListener("input",function(e){
@@ -1534,8 +1552,8 @@ window.addEventListener("beforeunload",function(e){
 CF.define({
   id:"agreements",
   end:"admin",
-  home:"P-M10",
-  owns:["P-M10","P-M11","P-M13"],
+  home:"P-AG-01",
+  owns:["P-AG-01","P-AG-02","P-AG-03"],
   dict:DICT,
   prd:PRD,
   states:STATES,
@@ -1555,22 +1573,22 @@ CF.define({
     return { avatar:"AD", ident:OPS.a.mail, ok:true, okText:t("stActiveAcc"), settings:"P-M05" };
   },
   crumbParts:function(){
-    if(S.page!=="P-M11"&&S.page!=="P-M13") return [];
-    var parts=[[t("agTitle"),"P-M10",""]];
-    if(S.page==="P-M13"){ var a=cur(); parts.push([nm(a),"P-M11",a.key]); }
+    if(S.page!=="P-AG-02"&&S.page!=="P-AG-03") return [];
+    var parts=[[t("agTitle"),"P-AG-01",""]];
+    if(S.page==="P-AG-03"){ var a=cur(); parts.push([nm(a),"P-AG-02",a.key]); }
     return parts;
   },
   crumbCur:function(){
-    if(S.page==="P-M10") return t("agTitle");
-    if(S.page==="P-M11") return nm(cur());
-    if(S.page==="P-M13") return t("newVersion")+" "+(ed()?ed().no:"");
+    if(S.page==="P-AG-01") return t("agTitle");
+    if(S.page==="P-AG-02") return nm(cur());
+    if(S.page==="P-AG-03") return t("newVersion")+" "+(ed()?ed().no:"");
     return null;
   },
   hash:{ build:buildHash, read:readURL },
   prdFoot:function(){
     return '本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD。完整口径以 '
-     + '<code class="mono">v1.0-协议管理-PRD.md</code>（2026-09-08 02:21 修订版）为准；'
-     + '编号体系 F-40～50 / P-M10～14 / C-10～11 / E-01～14 / AC-AG-01～70。'
+     + '<code class="mono">v1.0-协议管理-PRD.md</code>（仓库 <code class="mono">prd/</code> 定稿版）为准；'
+     + '编号体系 F-40～50 / P-AG-01～04 / C-30～31 / E-01～14 / AC-AG-01～79。'
      + '面板固定中文，是给前端开发看的规格说明，不属于产品界面。';
   },
   onAct:onAct

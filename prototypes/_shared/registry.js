@@ -45,16 +45,18 @@
 
     "P-M20": { end: "admin", layout: "app", crumb: ["Message center", "消息中心"], name: ["Message center", "消息中心"] },
 
-    "P-M10": { end: "admin", layout: "app", nav: "P-M10", navKey: "navAgreements", icoKey: "doc",
+    /* 协议管理（WS-301）。页面编号已按其 PRD 3.3 从 P-M10/P-M11/P-M13 整体迁到模块前缀式
+       P-AG-01/02/03：原段位与 WS-303 管理端审核页重号（X-01），P-M1x 全段已交还平台。 */
+    "P-AG-01": { end: "admin", layout: "app", nav: "P-AG-01", navKey: "navAgreements", icoKey: "doc",
                crumb: ["Agreements", "协议管理"], name: ["Agreements", "协议列表"] },
-    "P-M11": { end: "admin", layout: "app", nav: "P-M10", name: ["Agreement details", "协议详情"] },
-    "P-M13": { end: "admin", layout: "app", nav: "P-M10", name: ["Version details", "版本编辑页"] }
+    "P-AG-02": { end: "admin", layout: "app", nav: "P-AG-01", name: ["Agreement details", "协议详情"] },
+    "P-AG-03": { end: "admin", layout: "app", nav: "P-AG-01", name: ["Version details", "版本编辑页"] }
   };
 
   /* 侧栏一级菜单顺序。两个模块渲染出的菜单完全一致，只有高亮项不同；
      指向本模块未实现页面的菜单项由 shell 统一渲染为「归属指向页」。 */
   CF.NAV = {
-    admin: ["P-M10", "P-M05"],
+    admin: ["P-AG-01", "P-M05"],
     asset: ["P-A16", "P-A17"]
   };
 
@@ -68,7 +70,7 @@
 
   /* 页面 → 所属模块。跨文件跳转和指向页文案都读这张表。 */
   CF.OWNER = {
-    "P-M10": "agreements", "P-M11": "agreements", "P-M13": "agreements",
+    "P-AG-01": "agreements", "P-AG-02": "agreements", "P-AG-03": "agreements",
     "P-M01": "account", "P-M02": "account", "P-M03": "account", "P-M04": "account",
     "P-M05": "account",
     "P-A01": "account", "P-A03": "account", "P-A04": "account", "P-A10": "account",
@@ -88,9 +90,9 @@
   /* 跨文件深链的 hash。模块自定义了 URL 方案时在这里登记对应入口，
      没登记的用默认 #/<小写 page id>。 */
   CF.ENTRY = {
-    "P-M10": "#/agreements",
-    "P-M11": "#/agreements",
-    "P-M13": "#/agreements"
+    "P-AG-01": "#/agreements",
+    "P-AG-02": "#/agreements",
+    "P-AG-03": "#/agreements"
   };
 
 })(window.CF = window.CF || {});
