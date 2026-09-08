@@ -28,6 +28,11 @@
                crumb: ["User center", "用户中心"], name: ["User center", "用户中心"] },
     "P-A11": { end: "asset", layout: "app", crumb: ["Account settings", "账户设置"], name: ["Account settings", "账户设置单页"] },
 
+    /* 实名认证与审核（WS-303）。认证填写与详情均挂在用户中心菜单下。 */
+    "P-K01": { end: "asset", layout: "app", nav: "P-A17", name: ["Verification form", "认证填写"] },
+    "P-K02": { end: "asset", layout: "app", nav: "P-A17", name: ["Submission received", "提交结果"] },
+    "P-K03": { end: "asset", layout: "app", nav: "P-A17", name: ["Verification details", "认证详情"] },
+
     /* 消息通知（WS-304）。按其 PRD 5.1「不新增左侧菜单项」，这几页不进 CF.NAV，
        入口是顶栏铃铛 C-20 与账号下拉的「消息中心」。文案取自 WS-304 12.3。 */
     "P-A18": { end: "asset", layout: "app", crumb: ["Notifications", "消息中心"],
@@ -49,6 +54,16 @@
                name: ["Notifications", "管理端消息中心"] },
     "P-M21": { end: "admin", layout: "app", name: ["Notification details", "管理端消息详情"] },
 
+    /* 实名认证与审核（WS-303）。个人、企业审核是两个独立一级菜单。 */
+    "P-M30": { end: "admin", layout: "app", nav: "P-M30", navKey: "navIdentityReviews", ico: "人",
+               crumb: ["Identity reviews", "个人认证审核"], name: ["Identity reviews", "个人认证审核列表"] },
+    "P-M31": { end: "admin", layout: "app", nav: "P-M30",
+               crumb: ["Identity review", "个人认证审核"], name: ["Identity review details", "个人认证审核详情"] },
+    "P-M32": { end: "admin", layout: "app", nav: "P-M32", navKey: "navBusinessReviews", ico: "企",
+               crumb: ["Business reviews", "企业认证审核"], name: ["Business reviews", "企业认证审核列表"] },
+    "P-M33": { end: "admin", layout: "app", nav: "P-M32",
+               crumb: ["Business review", "企业认证审核"], name: ["Business review details", "企业认证审核详情"] },
+
     /* 协议管理（WS-301）。页面编号已按其 PRD 3.3 从 P-M10/P-M11/P-M13 整体迁到模块前缀式
        P-AG-01/02/03：原段位与 WS-303 管理端审核页重号（X-01），P-M1x 全段已交还平台。 */
     "P-AG-01": { end: "admin", layout: "app", nav: "P-AG-01", navKey: "navAgreements", icoKey: "doc",
@@ -60,7 +75,7 @@
   /* 侧栏一级菜单顺序。两个模块渲染出的菜单完全一致，只有高亮项不同；
      指向本模块未实现页面的菜单项由 shell 统一渲染为「归属指向页」。 */
   CF.NAV = {
-    admin: ["P-AG-01", "P-M05"],
+    admin: ["P-AG-01", "P-M30", "P-M32", "P-M05"],
     asset: ["P-A16", "P-A17"]
   };
 
@@ -70,6 +85,7 @@
   CF.MODULES = {
     agreements: { dir: "协议管理", file: "v1.0-协议管理-原型.html", name: ["Agreements", "协议管理"] },
     account:    { dir: "账户与登录", file: "v1.0-账户与登录-原型.html", name: ["Account & sign-in", "账户与登录"] },
+    kyc:        { dir: "实名认证与审核", file: "v1.0-实名认证与审核-原型.html", name: ["Verification", "实名认证与审核"] },
     notify:     { dir: "消息通知", file: "v1.0-消息通知-原型.html", name: ["Notifications", "消息通知"] }
   };
 
@@ -79,7 +95,9 @@
     "P-M01": "account", "P-M02": "account", "P-M03": "account", "P-M04": "account",
     "P-M05": "account",
     "P-A01": "account", "P-A03": "account", "P-A04": "account", "P-A10": "account",
-    "P-A11": "account", "P-A16": "account", "P-A17": "account",
+    "P-A11": "account", "P-A16": "account",
+    "P-A17": "kyc", "P-K01": "kyc", "P-K02": "kyc", "P-K03": "kyc",
+    "P-M30": "kyc", "P-M31": "kyc", "P-M32": "kyc", "P-M33": "kyc",
     "P-A18": "notify", "P-A19": "notify", "P-M20": "notify", "P-M21": "notify"
   };
 
@@ -101,7 +119,15 @@
     "P-A18": "#/messages",
     "P-A19": "#/messages",
     "P-M20": "#/admin/messages",
-    "P-M21": "#/admin/messages"
+    "P-M21": "#/admin/messages",
+    "P-A17": "#/p-a17",
+    "P-K01": "#/p-k01",
+    "P-K02": "#/p-k02",
+    "P-K03": "#/p-k03",
+    "P-M30": "#/p-m30",
+    "P-M31": "#/p-m31",
+    "P-M32": "#/p-m32",
+    "P-M33": "#/p-m33"
   };
 
 })(window.CF = window.CF || {});

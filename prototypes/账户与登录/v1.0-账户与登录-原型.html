@@ -10,20 +10,12 @@
 /* ==========================================================================
    本模块专有样式。token、壳层与全部通用组件都在 ../_shared/ 里，不在这里重复。
    ========================================================================== */
-/* ---- 账户与登录专有：滑块校验 / 钱包 / 建号引导 / 建号完成 / 锁定态 / 补全提示条 ---- */
+/* ---- 账户与登录专有：滑块校验 / 钱包 / 建号引导 / 建号完成 / 锁定态 ---- */
 .locked{display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 8px 6px}
 .lock-ring{width:56px;height:56px;border-radius:50%;background:var(--danger-bg);border:1px solid var(--danger-border);
   color:var(--danger);display:grid;place-items:center}
 .lock-time{font-size:34px;font-weight:660;letter-spacing:-.02em;margin:10px 0 6px;font-variant-numeric:tabular-nums}
 .entries{display:flex;flex-wrap:wrap;gap:8px 18px;margin:-4px 0 14px}
-.cbar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--warn-bg);
-  border:1px solid var(--warn-border);border-radius:var(--radius-sm);font-size:12px;color:#8A5D10;margin-bottom:16px}
-.cbar .ic{width:20px;height:20px;border-radius:50%;background:var(--warn);color:#fff;display:grid;place-items:center;
-  font-size:var(--fs-11);font-weight:700;flex:none}
-.cbar p{margin:0;flex:1;line-height:1.5}
-.cbar-mini{position:fixed;left:258px;bottom:20px;z-index:60;display:inline-flex;align-items:center;gap:8px;
-  background:var(--warn-bg);border:1px solid var(--warn-border);color:#8A5D10;border-radius:var(--radius-pill);
-  padding:7px 13px;font-size:11.5px;font-weight:620;box-shadow:var(--shadow)}
 .guide{display:flex;gap:14px;padding:16px;border:1px solid var(--border);border-radius:var(--radius);
   background:var(--card);box-shadow:var(--shadow);margin-bottom:12px}
 .guide.pri{border-color:var(--accent-border);background:linear-gradient(180deg,var(--accent-soft),transparent)}
@@ -73,9 +65,6 @@
   border:1px dashed var(--border-strong);border-radius:var(--radius-sm);padding:10px 18px;background:var(--card-2)}
 .created .idbox span{font-size:var(--fs-10);color:var(--faint);letter-spacing:.08em;text-transform:uppercase}
 .created .idbox b{font-family:var(--mono);font-size:15px;font-weight:640}
-@media (max-width:1100px){
-  .cbar-mini{left:220px}
-}
 </style>
 </head>
 <body>
@@ -126,10 +115,11 @@ var DICT = {
     linkWallet:"Link external wallet", disconnect:"Disconnect", signMessage:"Sign message",
     later:"Later", signOut:"Sign out", save:"Save", cancel:"Cancel", confirm:"Confirm", close:"Close",
     back:"Back", contin:"Continue", change:"Change", link:"Link", set:"Set",
-    copyAddress:"Copy address", viewExplorer:"View on explorer", completeNow:"Complete now",
+    copyAddress:"Copy address", viewExplorer:"View on explorer",
     notLinked:"Not linked", isSet:"Set", notSet:"Not set", optional:"Optional",
     accountSettings:"Account settings", tabAccount:"Account", tabPrefs:"Preferences",
-    navOverview:"Overview", navUserCenter:"User center", grpMenu:"Menu",
+    navOverview:"Overview", navUserCenter:"User center", navIdentityReviews:"Identity reviews",
+    navBusinessReviews:"Business reviews", grpMenu:"Menu",
     labelEmail:"Email address", labelCode:"Verification code", labelPwd:"Password",
     labelNewPwd:"New password", labelConfirmPwd:"Confirm new password", labelCurrentPwd:"Current password",
     labelWorkEmail:"Work email", labelNewEmail:"New email address", labelWallet:"Wallet address",
@@ -184,13 +174,6 @@ var DICT = {
     keepBoth:"Keep both your email and wallet accessible. Neither can be replaced if you lose access to it.",
     emailNote:"Changing your email requires verifying the current one. Keep it accessible.",
     walletNote:"Your wallet address can't be changed after it's linked. Keep this wallet accessible.",
-    barWallet:"Link a wallet to be ready for identity verification.",
-    barEmail:"Add an email to be ready for identity verification and to receive security notifications.",
-    gateWallet:"Link your wallet to continue",
-    gateEmail:"Add your email to continue",
-    gateBody:"Identity verification requires both an email address and a wallet address.",
-    allSet:"All set. You're ready to start identity verification.",
-    startKyc:"Start identity verification",
 
     /* —— 成功与状态 8.5.4 —— */
     okPwdReset:"Password reset. Please sign in with your new password.",
@@ -268,8 +251,6 @@ var DICT = {
     /* —— 落地页 —— */
     overviewTitle:"Overview",
     overviewShell:"This page is a shell for this release. Its content belongs to a later requirement.",
-    ucTitle:"User center",
-    ucShell:"Identity and company verification live here. The content belongs to WS-303; this prototype only provides the landing target and the credential gate.",
     demoNote:"Demonstration data"
   },
 
@@ -282,10 +263,11 @@ var DICT = {
     linkWallet:"链接外部钱包", disconnect:"断开连接", signMessage:"签署消息",
     later:"稍后", signOut:"退出登录", save:"保存", cancel:"取消", confirm:"确认", close:"关闭",
     back:"返回", contin:"继续", change:"修改", link:"绑定", set:"设置",
-    copyAddress:"复制地址", viewExplorer:"在区块浏览器中查看", completeNow:"立即补全",
+    copyAddress:"复制地址", viewExplorer:"在区块浏览器中查看",
     notLinked:"未绑定", isSet:"已设置", notSet:"未设置", optional:"可选",
     accountSettings:"账户设置", tabAccount:"账号信息", tabPrefs:"偏好信息",
-    navOverview:"总览", navUserCenter:"用户中心", grpMenu:"菜单",
+    navOverview:"总览", navUserCenter:"用户中心", navIdentityReviews:"个人认证审核",
+    navBusinessReviews:"企业认证审核", grpMenu:"菜单",
     labelEmail:"邮箱地址", labelCode:"验证码", labelPwd:"密码",
     labelNewPwd:"新密码", labelConfirmPwd:"确认新密码", labelCurrentPwd:"当前密码",
     labelWorkEmail:"工作邮箱", labelNewEmail:"新邮箱地址", labelWallet:"钱包地址",
@@ -337,13 +319,6 @@ var DICT = {
     keepBoth:"请妥善保管你的邮箱与钱包，任何一项一旦无法访问都将无法更换。",
     emailNote:"更换邮箱需要验证当前邮箱，请妥善保管。",
     walletNote:"钱包地址绑定后不可修改，请妥善保管该钱包。",
-    barWallet:"绑定钱包后即可发起个人认证。",
-    barEmail:"绑定邮箱后即可发起个人认证，并接收安全通知。",
-    gateWallet:"绑定钱包后继续",
-    gateEmail:"绑定邮箱后继续",
-    gateBody:"发起个人认证需要同时具备邮箱与钱包地址。",
-    allSet:"已完成，你现在可以发起个人认证了。",
-    startKyc:"发起个人认证",
 
     okPwdReset:"密码已重置，请使用新密码登录。",
     okPwdSet:"密码设置成功，请重新登录。",
@@ -412,8 +387,6 @@ var DICT = {
 
     overviewTitle:"总览",
     overviewShell:"本页本期只出壳子，页面内容归后续需求。",
-    ucTitle:"用户中心",
-    ucShell:"个人认证与企业认证在这里承载。内容归 WS-303，本原型只提供落地目标与凭据卡点。",
     demoNote:"演示数据"
   }
 };
@@ -618,32 +591,6 @@ var PRD = {
  ],
  copy:[
   ["左侧菜单","Overview / User center","总览 / 用户中心"]
- ]
-},
-
-"P-A17":{
- title:"P-A17 用户中心（承载认证，内容归 WS-303）",
- src:"主文档 5.1 · 01-模块详情 7.4.3 落地规则、7.5.2 认证前置校验、7.5.3 受限态收敛",
- fields:[
-  ["account_status","enum · 只读","`incomplete`（邮箱与钱包未同时具备）/ `active` / `locked` / `disabled`。**密码不参与状态判定**。"]
- ],
- rules:[
-  ["7.4.3","认证未完成时的**默认落地页**；认证状态取不到时也默认落到这里（保守选择）。页面内容（个人认证、企业认证）归 WS-303，本模块只定义它作为落地目标与凭据卡点位置。"],
-  ["F-11","凭据未齐时全局展示常驻补全提示条（C-08）：可折叠为小图标，但**不可永久关闭**，直到凭据补齐；带「立即补全」按钮，点击进入 P-A11 对应区块。"],
-  ["F-12","**唯一的凭据硬卡点**：点「发起个人认证」时校验 `email` 与 `wallet_address` 是否同时非空（密码不参与）。未通过**不跳走**，就地弹出 C-09；两项都缺时同一弹层内分两步完成并带 1/2、2/2 指示；补齐后弹层关闭并**原地继续**。"],
-  ["7.5.3 边界","各业务模块的功能放行**以认证状态为准，不以本模块的凭据完备状态为准**；业务模块不应自行读取 `account_status == incomplete` 做拦截。"],
-  ["7.5.2","**服务端必须同样校验**，前端弹层不是唯一防线。"]
- ],
- states:[
-  ["凭据不齐","展示 C-08；可折叠；不封锁任何功能。"],
-  ["点击发起个人认证 · 缺凭据","弹出 C-09，不跳走。"],
-  ["关闭 C-09","回到原页面，状态不变，不触发任何封锁。"],
-  ["凭据齐备","C-08 消失，点击直接放行进入认证流程（WS-303）。"]
- ],
- copy:[
-  ["提示条 - 缺钱包 / 缺邮箱","Link a wallet to be ready for identity verification. / Add an email to be ready for identity verification and to receive security notifications.","绑定钱包后即可发起个人认证。/ 绑定邮箱后即可发起个人认证，并接收安全通知。"],
-  ["弹层标题","Link your wallet to continue / Add your email to continue","绑定钱包后继续 / 绑定邮箱后继续"],
-  ["弹层说明 / 补全成功","Identity verification requires both an email address and a wallet address. / All set. You're ready to start identity verification.","发起个人认证需要同时具备邮箱与钱包地址。/ 已完成，你现在可以发起个人认证了。"]
  ]
 },
 
@@ -878,7 +825,7 @@ function route(){ return CF.route(); }
 
 /* 本模块自行处理的动作；其余一律交回 shell */
 var MINE=["tab","show","anchor","openPages","close","captcha","capView","capPass",
-          "wallet","wView","wToast","wSign","walletLink","login","later","kyc","gateView",
+          "wallet","wView","wToast","wSign","walletLink","login","later",
           "emailDlg","pwdDlg","mStep","mFactor","done","copy"];
 
 var S;                                     /* 由 CF.boot 注入，见文件末尾 onBoot */
@@ -907,7 +854,7 @@ function pwdCplx(p){ return /[A-Za-z]/.test(p||"")&&/[0-9]/.test(p||""); }
 /* --------------------------------- 路由表 -------------------------------- */
 var PAGE_DIR = [
   ["未登录",[["P-A01",""],["P-A01","locked1"],["P-A03",""],["P-A04",""]]],
-  ["已登录",[["P-A10",""],["P-A17",""],["P-A16",""],["P-A11",""]]],
+  ["已登录",[["P-A10",""],["P-A16",""],["P-A11",""]]],
   ["管理端",[["P-M01",""],["P-M02",""],["P-M03",""],["P-M04",""],["P-M05",""]]]
 ];
 /* 每页可直接切换查看的状态（替代行为仿真） */
@@ -922,8 +869,6 @@ var STATES = {
            ["mismatch","Passwords differ","两次不一致"],["same","Same as current","与原密码相同"]],
   "P-A10":[["email","Created via email","验证码建号"],["wallet","Created via wallet","钱包建号"]],
   "P-A16":[["default","Shell","本期壳子"]],
-  "P-A17":[["nowallet","Missing wallet","缺钱包"],["noemail","Missing email","缺邮箱"],["complete","Complete","凭据齐备"],
-           ["folded","Bar collapsed","提示条折叠"],["sub","Sub page (breadcrumb)","二级页（面包屑）"]],
   "P-A11":[["nowallet","Wallet not linked","钱包未绑定"],["nopwd","No password set","未设密码"],["complete","Complete","凭据齐备"]],
   "P-M01":[["default","Default","默认"],["attempts","3rd failure","第 3 次失败"],["locked1","Locked · tier 1","锁定 · 第 1 档"],
            ["expired","Initial password expired","初始密码已过期"]],
@@ -1176,22 +1121,6 @@ function pageOverview(){
    + '<p>'+t("overviewShell")+'</p><span class="pill dash">'+L("Out of scope for this release","本期不做")+'</span>'
    + '</div></div>';
 }
-function pageUserCenter(){
-  var st=S.st, miss = st==="noemail"?"email":(st==="complete"||st==="sub"?null:"wallet"), out="";
-  if(miss && st!=="folded")
-    out += '<div class="cbar" role="status"><span class="ic">!</span><p>'+(miss==="email"?t("barEmail"):t("barWallet"))+'</p>'
-        +  '<button class="btn sm primary" type="button" data-act="go" data-v="P-A11">'+t("completeNow")+'</button>'
-        +  '<button class="btn sm" type="button" data-act="st" data-v="folded">'+L("Collapse","折叠")+'</button></div>';
-  out += pageHead(st==="sub"?L("Identity verification","个人认证"):t("ucTitle"),t("ucShell"),
-      '<button class="btn primary" type="button" data-act="kyc">'+t("startKyc")+'</button>'+prdBtn())
-   + '<div class="card"><div class="card-b shell">'+ICO.info
-   + '<p>'+L("Identity and company verification are implemented in WS-303.","个人认证与企业认证由 WS-303 实现。")+'</p>'
-   + '<span class="pill dash">WS-303</span></div></div>';
-  if(miss && st==="folded")
-    out += '<button class="cbar-mini" type="button" data-act="st" data-v="nowallet">! '+t("completeNow")+'</button>';
-  return out;
-}
-
 /* ---------------------- P-A11 账户设置单页（tab 锚点） --------------------- */
 function pageAccount(){
   var st=S.st, hasWallet=st!=="nowallet", hasPwd=st==="complete";
@@ -1335,28 +1264,6 @@ function modalReconsent(){
    + '<div class="modal-f"><button class="btn" type="button" data-act="go" data-v="P-A01">'+t("signOut")+'</button>'
    + '<button class="btn primary" type="button" data-act="close">'+t("reconsentAgree")+'</button></div></div></div>';
 }
-/* C-09 凭据补齐弹层 */
-function modalGate(){
-  var need=S.modal.need;
-  var sw=stateBar([["wallet","Missing wallet","缺钱包"],["email","Missing email","缺邮箱"],["","All set","已齐备"]],
-                  "gateView", need, "margin:14px 0 0");
-  if(!need)
-    return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
-     + '<div class="modal-h"><b>'+t("allSet")+'</b><button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
-     + '<div class="modal-b">'+note("green",t("allSet"))+sw+'</div>'
-     + '<div class="modal-f"><button class="btn primary" type="button" data-act="close">'+t("startKyc")+'</button></div></div></div>';
-  return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
-   + '<div class="modal-h"><b>'+(need==="email"?t("gateEmail"):t("gateWallet"))+'</b>'
-   + '<button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
-   + '<div class="modal-b"><p class="lead" style="margin:0 0 14px">'+t("gateBody")+'</p>'
-   + '<p class="tiny" style="margin-bottom:10px">1 / 2</p>'
-   + (need==="email"
-      ? field("gateEmail","labelEmail",{type:"email"})+codeField("gate",{})
-        + '<button class="btn primary block" type="button" data-act="close">'+t("save")+'</button>'
-      : field("gateAddr","labelWallet",{ph:"0x…",mono:true})+note("",t("walletSignNote"))+gap()
-        + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeLink">'+t("linkWallet")+'</button>')
-   + sw + '</div></div></div>';
-}
 /* P-A12 修改 / 绑定邮箱（弹窗）：再认证 → 旧邮箱 → 新邮箱 */
 function modalEmail(){
   var f=S.modal, add=f.add, step=f.step||0;
@@ -1434,7 +1341,7 @@ function drawerPages(){
 
 /* ================================ 渲染 =================================== */
 function renderContent(){
-  return ({ "P-A10":pageGuide, "P-A16":pageOverview, "P-A17":pageUserCenter,
+  return ({ "P-A10":pageGuide, "P-A16":pageOverview,
             "P-A11":pageAccount, "P-M05":pageAdminAccount }[S.page]||function(){return "";})();
 }
 function renderFocus(){
@@ -1513,9 +1420,6 @@ function onAct(n,a,v,e){
 
     case "login": doLogin(); break;
     case "later": go("P-A17"); toast("info",L("Landed by verification status.","已按认证状态落地。")); break;
-    case "kyc": S.modal={type:"gate",need:(S.st==="noemail"?"email":(S.st==="complete"?"":"wallet"))}; render(); break;
-    case "gateView": S.modal.need=v; render(); break;
-
     case "emailDlg": S.modal={type:"email",step:0,factor:null,add:(S.page==="P-A10"&&S.st==="wallet")}; render(); break;
     case "pwdDlg": S.modal={type:"pwd",step:0,factor:null,set:(S.page!=="P-M05"&&S.st!=="complete")}; render(); break;
     case "mStep": S.modal.step=+v; S.err={}; render(); break;
@@ -1583,7 +1487,7 @@ CF.define({
   id:"account",
   end:"asset",
   home:"P-A01",
-  owns:["P-A01","P-A03","P-A04","P-A10","P-A11","P-A16","P-A17",
+  owns:["P-A01","P-A03","P-A04","P-A10","P-A11","P-A16",
         "P-M01","P-M02","P-M03","P-M04","P-M05"],
   dict:DICT,
   prd:PRD,
@@ -1594,7 +1498,7 @@ CF.define({
   },
   content:renderContent,
   focus:renderFocus,
-  modals:{ captcha:modalCaptcha, wallet:modalWallet, reconsent:modalReconsent, gate:modalGate,
+  modals:{ captcha:modalCaptcha, wallet:modalWallet, reconsent:modalReconsent,
            email:modalEmail, pwd:modalPwd, doc:modalDoc },
   drawers:{ pages:drawerPages },
   modalLocked:function(m){ return m.type==="reconsent"; },   /* 强制重新同意不可 Esc 关闭 */
@@ -1604,16 +1508,10 @@ CF.define({
   account:function(){
     var admin=S.end==="admin";
     var ident=admin?ME:(S.page==="P-A11"&&S.st==="noemail"?shortAddr(ADDR):MAIL);
-    var complete=(S.page==="P-A11"||S.page==="P-A17")&&S.st==="complete";
+    var complete=S.page==="P-A11"&&S.st==="complete";
     return { avatar:admin?"AD":"CF", ident:ident, ok:admin||complete,
              okText:t("stActiveAcc"), badText:t("stIncomplete"),
              settings:admin?"P-M05":"P-A11", signOutPage:admin?"P-M01":"P-A01" };
-  },
-  crumbParts:function(){
-    return (S.page==="P-A17"&&S.st==="sub") ? [[t("navUserCenter"),"P-A17",""]] : [];
-  },
-  crumbCur:function(){
-    return (S.page==="P-A17"&&S.st==="sub") ? L("Identity verification","个人认证") : null;
   },
   prdFoot:function(){
     return '本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD，按用户要求**不展示验收标准**。'
