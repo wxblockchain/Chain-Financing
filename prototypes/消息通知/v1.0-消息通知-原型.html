@@ -21,7 +21,6 @@
 .dbody{font-size:13px;line-height:1.75;color:var(--text);white-space:pre-line;overflow-wrap:anywhere;margin:0}
 .dfoot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:20px;padding-top:16px;
   border-top:1px solid var(--border-dash)}
-.dnote{font-size:11px;color:var(--faint);line-height:1.55;margin:10px 0 0}
 /* ---- 进度区块（详情页，C-22 进度型的详情形态）---- */
 .prog{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);
   padding:13px 15px;margin-bottom:16px}
@@ -96,9 +95,7 @@ var DICT = {
     invChanged:"This has already been handled — no action is needed.",
     invChangedSt:"This has already been handled. Current status: {status}.",
     invNoPerm:"You no longer have access to this record.",
-    mapMissing:"This notification has no available action in the current version.",
     ctaOff:"This action is no longer available.", checking:"Checking…",
-    preFailed:"The availability check timed out (N-N05, 3s). The action stays enabled and the target page decides.",
     /* 进度 */
     nodePrefix:"Current step: {node}", stepOf:"Step {i} of {n}", bizNo:"Reference: {biz_no}",
     ns_in_progress:"In progress", ns_action_required:"Action required",
@@ -144,9 +141,7 @@ var DICT = {
     invChanged:"该业务状态已变更，无需再处理。",
     invChangedSt:"该业务状态已变更，当前状态：{status}。",
     invNoPerm:"你当前无权访问该记录。",
-    mapMissing:"当前版本暂不支持该消息的跳转操作。",
     ctaOff:"该操作已不可用。", checking:"校验中…",
-    preFailed:"跳转预检超时（N-N05，3 秒），按放行处理：按钮保持可用，由目标页自行判断。",
     nodePrefix:"当前节点：{node}", stepOf:"第 {i}/{n} 步", bizNo:"业务编号：{biz_no}",
     ns_in_progress:"处理中", ns_action_required:"待你处理",
     ns_succeeded:"已完成", ns_failed:"未通过",
@@ -188,7 +183,8 @@ var PRD = {
       ["首屏加载","5 行骨架屏，高度与列表项一致，避免加载完跳动"],
       ["首次空态 / 筛选空态","文案与操作各不相同（7.3.5）"],
       ["首屏失败","内容区错误态 + 重试；**加载更多失败时已加载内容不清空**（AC-N18）"],
-      ["部分渲染失败","单条文案 key 缺失时降级为「标题 + 时间」最小形态，不影响其他行（9.5.4）"],
+      ["部分渲染失败","单条文案 key 缺失时降级为「标题 + 时间」最小形态，不影响其他行（9.5.4）；"
+       + "详情页正文留空，**界面上不解释原因**，也绝不展示文案键名"],
       ["全部已读失败","Toast 报错，列表与角标**不做任何变更**（AC-N29）"]
     ],
     copy:[
@@ -208,10 +204,14 @@ var PRD = {
       ["F-N12","详情为整页独立路由，支持深链与刷新，不用抽屉或弹窗（7.4.1、AC-N19）"],
       ["F-N10","详情内容**渲染成功之后**才标记已读；加载失败不标记（7.4.3、AC-N20）"],
       ["F-N14","预检在**进入详情时执行一次**，失效状态提前体现在按钮上；列表页不预检（7.6.2、AC-N37）"],
-      ["7.6.3","映射缺失：**不渲染**跳转按钮 + 次要说明文案 + 上报日志，不跳 404、不跳首页（AC-N32）"],
+      ["7.6.3","映射缺失：**不渲染**跳转按钮 + 上报日志，不跳 404、不跳首页（AC-N32）。"
+       + "**用户 2026-09-08 裁定：界面上不再展示「当前版本暂不支持跳转」这句说明文案**——"
+       + "没有跳转的消息一律只留「返回列表」。原 7.6.3 的说明文案要求作废，PRD 需同步"],
       ["7.7","四类失效各有独立文案；后三类**按钮禁用而非隐藏**；四类均完整展示标题、正文、时间（AC-N34、AC-N35）"],
-      ["7.6.4","无跳转是**合法状态**：不渲染按钮，且**不展示**「暂不支持跳转」之类的说明（AC-N76）"],
-      ["N-N05","预检超时 3 秒；预检接口本身失败**放行跳转**（AC-N36）"]
+      ["7.6.4 / 本轮裁定","**没有跳转按钮的消息，界面上一律不给任何说明**：无跳转（形态 3）、"
+       + "映射缺失、已过期三种情形的详情页都只保留「返回列表」（AC-N76 + 用户 2026-09-08 裁定）"],
+      ["N-N05","预检超时 3 秒；预检接口本身失败**放行跳转**——按钮保持可用，界面上**不作任何解释**"
+       + "（AC-N36）。演示消息：管理端「认证审核单重开」"]
     ],
     states:[
       ["加载中 / 加载失败","失败时展示错误态与重试，且**不标记已读**（10.3 第 4 条）"],
@@ -223,7 +223,7 @@ var PRD = {
       ["resource_deleted","The related record is no longer available.","相关记录已不存在。"],
       ["state_changed","This has already been handled — no action is needed.","该业务状态已变更，无需再处理。"],
       ["no_permission","You no longer have access to this record.","你当前无权访问该记录。"],
-      ["映射缺失","This notification has no available action in the current version.","当前版本暂不支持该消息的跳转操作。"]
+      ["映射缺失","（界面上不展示任何说明文案）","（界面上不展示任何说明文案）"]
     ]},
   "P-M20":{ title:"P-M20 消息中心（管理端）", src:PRDSRC,
     fields:[
@@ -779,11 +779,11 @@ function invalidNote(m){
 function ctaBlock(m){
   var reg = m.biz ? BIZ[m.biz] : null;
   var label = t(reg ? reg.cta : "ctaDefault");
-  /* 形态 3：无跳转是合法状态——不渲染按钮，也不加任何说明文案（7.6.4） */
+  /* 没有跳转的消息一律只留「返回列表」，不加任何说明文案——用户 2026-09-08 裁定，
+     覆盖 PRD 7.6.3「映射缺失展示说明文案」这一条；7.6.4 的无跳转形态本来就不给文案。
+     映射缺失仍然按 AC-N33 上报一次「未知业务类型」事件，只是界面上不出现。 */
   if (S.pre === "none") return "";
-  /* 映射缺失：不渲染按钮 + 次要说明文案 + 上报日志（7.6.3） */
-  if (S.pre === "missing")
-    return '<p class="dnote">' + esc(t("mapMissing")) + "</p>";
+  if (S.pre === "missing") return "";
   /* 已过期：不渲染跳转按钮（7.7 第 1 类） */
   if (S.pre === "expired") return "";
   if (S.pre === "pending")
@@ -852,13 +852,10 @@ function pageDetail(){
         : "")
     + invalidNote(m)
     + (invalidNote(m) ? gap(14) : "")
+    /* 文案模板缺失时降级为「标题 + 时间」：正文留空，**不加解释文案**——
+       「这条消息的模板在当前客户端缺失」是给前端看的，不该出现在用户界面上，
+       规格说明留在 PRD 面板与 README 里。 */
     + '<p class="dbody">' + esc(m.degraded ? "" : nm(m.b)) + "</p>"
-    + (m.degraded
-        ? '<p class="dnote">' + L("The copy template for this message is missing in this client version, "
-            + "so it falls back to title and time only. Message keys are never shown to the user.",
-            "该消息的文案模板在当前客户端缺失，降级为「标题 + 时间」的最小形态。任何情况下都不展示文案键名。") + "</p>"
-        : "")
-    + (S.pre === "ok" && S.preFailed ? '<p class="dnote">' + esc(t("preFailed")) + "</p>" : "")
     + '<div class="dfoot">' + ctaBlock(m)
     + '<button class="btn" type="button" data-act="back">' + t("backList") + "</button></div>"
     + "</div></div>";
