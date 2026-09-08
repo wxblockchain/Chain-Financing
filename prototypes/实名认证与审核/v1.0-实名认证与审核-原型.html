@@ -43,13 +43,19 @@
 .gatebar{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3);background:var(--warn-bg);
   border:1px solid var(--warn-border);border-radius:var(--radius-sm);color:var(--warn);margin-bottom:var(--sp-4)}
 .gatebar p{margin:0;flex:1;font-size:var(--fs-12)}
-.access-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
-.access{border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-4);background:var(--card)}
-.access b{display:block;margin-bottom:var(--sp-1)}.access p{margin:0;color:var(--muted);font-size:var(--fs-11)}
 .form-layout{display:grid;grid-template-columns:minmax(0,1fr) 286px;gap:var(--sp-4);align-items:start}
 .sticky-rail{position:sticky;top:118px}.save-state{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-11);color:var(--ok)}
 .step-actions{display:flex;align-items:center;gap:var(--sp-2);justify-content:flex-end;padding-top:var(--sp-4);border-top:1px solid var(--border)}
 .step-actions .save-state{margin-right:auto}.upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)}
+.form-action-list{display:flex;flex-direction:column;gap:var(--sp-2)}.form-action-list .btn{width:100%}
+.form-action-list .save-state{justify-content:center;margin-top:var(--sp-2);padding-top:var(--sp-3);border-top:1px solid var(--border)}
+.rail-progress{display:flex;flex-direction:column;gap:0;margin:0;padding:0;list-style:none}
+.rail-step{position:relative;display:grid;grid-template-columns:26px minmax(0,1fr);gap:var(--sp-2);align-items:center;padding:0 0 var(--sp-4)}
+.rail-step:last-child{padding-bottom:0}.rail-step:not(:last-child)::after{content:"";position:absolute;left:12px;top:28px;bottom:2px;width:1px;background:var(--border)}
+.rail-step .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--border-strong);background:var(--card);color:var(--muted);font:650 var(--fs-11)/1 var(--mono)}
+.rail-step[data-on="1"] .n{border-color:var(--accent);background:var(--accent);color:var(--accent-contrast)}
+.rail-step[data-done="1"] .n{border-color:var(--ok-border);background:var(--ok-bg);color:var(--ok)}
+.rail-step b{display:block;font-size:var(--fs-12)}.rail-step b+span{display:block;margin-top:2px;color:var(--faint);font-size:var(--fs-10)}
 .upload-slot{min-width:0}.upload-slot>label{font-size:var(--fs-11);font-weight:620;color:var(--muted);display:block;margin-bottom:var(--sp-2)}
 .problem{border-color:var(--danger-border)!important;background:var(--danger-bg)!important}.changed{border-color:var(--accent-border)!important}
 .flag{font-size:var(--fs-10);font-weight:650;border-radius:var(--radius-pill);padding:2px 7px;white-space:nowrap}
@@ -85,7 +91,7 @@
 .issue-option{display:flex;gap:var(--sp-2);align-items:flex-start;border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-2) var(--sp-3);font-size:var(--fs-11)}
 .issue-option input{margin-top:2px;accent-color:var(--accent)}
 @media (max-width:1180px){.form-layout,.review-cols{grid-template-columns:1fr}.sticky-rail{position:static}.review-cols{grid-template-columns:1fr}.viewer-stage{min-height:270px}.decisionbar{position:sticky;top:auto;bottom:0;flex-direction:row;align-items:center}.decisionbar .decision-title{border:0;padding:0;margin-right:auto}.decisionbar .hint{display:none}.decisionbar .btn{width:auto}}
-@media (max-width:860px){.track-grid,.access-grid,.upload-grid,.issue-grid,.viewer-stage,.credential-core{grid-template-columns:1fr}}
+@media (max-width:860px){.track-grid,.upload-grid,.issue-grid,.viewer-stage,.credential-core{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.doc-sheet{transition:none}}
 </style>
 </head>
@@ -216,9 +222,9 @@ function pill(st,extra){
  var x={not_submitted:["gray",t("notSubmitted")],draft:["gray",t("draft")],under_review:["amber",t("underReview")],approved:["green",t("approved")],rejected:["red",t("rejected")]}[st]||["gray",st];
  return '<span class="pill '+x[0]+'">'+x[1]+(extra?" · "+extra:"")+'</span>';
 }
-function steps(n){
+function progressRail(n){
  var xs=[[1,t("personalInfo")],[2,t("businessInfo")],[3,t("reviewSubmit")]];
- return '<div class="steps">'+xs.map(function(x,i){return '<div class="s" data-on="'+(x[0]===n?1:0)+'" data-done="'+(x[0]<n?1:0)+'"><span class="n">'+(x[0]<n?"✓":x[0])+'</span>'+x[1]+'</div>'+(i<2?'<span class="ln"></span>':'');}).join("")+'</div>';
+ return '<ol class="rail-progress">'+xs.map(function(x){return '<li class="rail-step" data-on="'+(x[0]===n?1:0)+'" data-done="'+(x[0]<n?1:0)+'"><span class="n">'+(x[0]<n?"✓":x[0])+'</span><span><b>'+x[1]+'</b><span>'+L("Step ","步骤 ")+x[0]+" / 3"+'</span></span></li>';}).join("")+'</ol>';
 }
 function skeleton(n){var x="";for(var i=0;i<(n||5);i++)x+='<div class="skel-row"><div class="skel m"></div><div class="skel"></div><div class="skel s"></div></div>';return '<div class="card" role="status" aria-label="'+t("loading")+'">'+x+'</div>';}
 function emptyBox(kind){
@@ -274,12 +280,7 @@ function pageUserCenter(){
  var startAct=(st==="nowallet"||st==="noemail")?'gateMode':'open', val=(st==="nowallet"?"wallet":st==="noemail"?"email":target);
  var cardAct=(st==="nowallet"||st==="noemail")?"gateMode":"open", cardVal=(st==="nowallet"?"wallet":st==="noemail"?"email":((p==="not_submitted"||p==="draft")?"P-K01":"P-K03"));
  return demoBar()+extra+pageHead(t("verifyTitle"),t("verifyDesc"),'<button class="btn primary" type="button" data-act="'+startAct+'" data-v="'+val+'">'+action+'</button>'+prdBtn())
-  +'<div class="credential-stack">'+credentialCard("p",p,{act:cardAct,value:cardVal,ver:pv})+credentialCard("b",b,{act:cardAct,value:cardVal,ver:bv,extra:p==="rejected"?t("cascaded"):""})+'</div>'
-  +'<div class="review-box"><div class="hd"><b>'+L("Access while verification is incomplete","认证未完成时可达范围")+'</b></div><div class="bd"><div class="access-grid">'
-  +'<div class="access"><b>'+L("Available","可用")+'</b><p>'+L("Sign in, account settings, agreements and support","登录、账户设置、协议与客服")+'</p></div>'
-  +'<div class="access"><b>'+L("Read only","只读")+'</b><p>'+L("Submitted verification details and review decisions","已提交的认证内容与审核结论")+'</p></div>'
-  +'<div class="access"><b>'+L("Locked until verified","认证后开放")+'</b><p>'+L("Asset, credit, contract and settlement features","资产、额度、合同与结算业务")+'</p></div>'
-  +'</div></div></div>';
+  +'<div class="credential-stack">'+credentialCard("p",p,{act:cardAct,value:cardVal,ver:pv})+credentialCard("b",b,{act:cardAct,value:cardVal,ver:bv,extra:p==="rejected"?t("cascaded"):""})+'</div>';
 }
 
 function personalForm(){
@@ -319,12 +320,11 @@ function pageForm(){
  if(S.st==="loading")return demoBar()+pageHead(t("verifyTitle"),"",prdBtn())+skeleton(8);
  var n=(S.st==="business"||S.st==="configfail")?2:(S.st==="review"||S.st==="unique"||S.st==="limited"||S.st==="update")?3:1;
  var body=n===1?personalForm():n===2?businessForm():reviewForm();
- return demoBar()+pageHead(t("verifyTitle"),L("One continuous submission creates two independent review tasks.","一次连续填写，同时创建个人与企业两个独立审核任务。"),prdBtn())+steps(n)+'<div class="form-layout"><main>'+body
-  +'<div class="step-actions"><span class="save-state">'+ICO.ok+' '+t("saved")+' · '+L("just now","刚刚")+'</span>'
-  +(n>1?'<button class="btn" type="button" data-act="step" data-v="'+(n===3?"business":"personal")+'">'+t("previous")+'</button>':'')
-  +'<button class="btn" type="button" data-act="saveDraft">'+t("saveDraft")+'</button>'
-  +(n<3?'<button class="btn primary" type="button" data-act="step" data-v="'+(n===1?"business":"review")+'">'+t("next")+'</button>':'<button class="btn primary" type="button" data-act="submitOpen" '+(S.st==="limited"?'disabled aria-disabled="true"':'')+'>'+t("submit")+'</button>')+'</div></main>'
-  +'<aside class="sticky-rail"><div class="review-box"><div class="hd"><b>'+L("Progress & rules","进度与规则")+'</b></div><div class="bd"><ul class="reason-list"><li>'+L("Changes save on blur, upload and step change.","失焦、上传成功与切换步骤都会保存。")+'</li><li>'+L("Your original document and registration number formatting is preserved.","证件号与注册号的原始输入格式会被保留。")+'</li><li>'+L("Submission is limited to 5 times per rolling 24 hours.","同一账号滚动 24 小时最多提交 5 次。")+'</li></ul></div></div></aside></div>';
+ var primary=n<3?'<button class="btn primary" type="button" data-act="step" data-v="'+(n===1?"business":"review")+'">'+t("next")+'</button>':'<button class="btn primary" type="button" data-act="submitOpen" '+(S.st==="limited"?'disabled aria-disabled="true"':'')+'>'+t("submit")+'</button>';
+ var secondary='<button class="btn" type="button" data-act="saveDraft">'+t("saveDraft")+'</button>'+(n>1?'<button class="btn" type="button" data-act="step" data-v="'+(n===3?"business":"personal")+'">'+t("previous")+'</button>':'');
+ return demoBar()+pageHead(t("verifyTitle"),L("One continuous submission creates two independent review tasks.","一次连续填写，同时创建个人与企业两个独立审核任务。"),prdBtn())+'<div class="form-layout"><main>'+body+'</main>'
+  +'<aside class="sticky-rail"><div class="review-box"><div class="hd"><b>'+L("Actions","操作")+'</b></div><div class="bd"><div class="form-action-list">'+primary+secondary+'<span class="save-state">'+ICO.ok+' '+t("saved")+' · '+L("just now","刚刚")+'</span></div></div></div>'
+  +'<div class="review-box"><div class="hd"><b>'+L("Progress","进度")+'</b></div><div class="bd">'+progressRail(n)+'</div></div></aside></div>';
 }
 
 function pageResult(){
