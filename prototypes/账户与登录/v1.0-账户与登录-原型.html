@@ -1057,16 +1057,16 @@ function pageLogin(){
     body += field("loginAddr","labelWallet",{ph:"0x…",mono:true,
               note:L("The address you enter only selects which account to sign in to. Your wallet signature is what proves ownership.",
                      "手填地址只用于指定登录哪个账户；真正的身份证明是钱包签名。")})
-         +  note("",t("walletSignNote")) + gap()
-         +  '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeSignIn">'+t("linkWallet")+'</button>';
+         +  note("",t("walletSignNote")) + gap();
   }
 
-  /* C-02 协议勾选行：全站唯一一处 */
+  /* C-02 协议勾选行：全站唯一一处。F-13——三个 Tab 一致，勾选行始终在提交按钮上方 */
   body += '<div class="check'+(S.err._shake?" shake":"")+'"><input type="checkbox" id="agree" data-f="agree" '+(S.agree?"checked":"")+'>'
        +  '<label for="agree">'+t("terms")+'</label></div>'
        +  (S.err.agree?'<p class="err-msg" role="alert" style="margin:-4px 0 8px"><span>!</span><span>'+esc(S.err.agree)+'</span></p>':'');
-  if(tab!=="wallet")
-    body += '<button class="btn primary block'+(S.agree?"":" quiet")+'" type="button" data-act="login" style="margin-top:14px">'+t("submitSignIn")+'</button>';
+  body += tab==="wallet"
+    ? '<button class="btn primary block'+(S.agree?"":" quiet")+'" type="button" data-act="wallet" data-p="purposeSignIn" style="margin-top:14px">'+t("linkWallet")+'</button>'
+    : '<button class="btn primary block'+(S.agree?"":" quiet")+'" type="button" data-act="login" style="margin-top:14px">'+t("submitSignIn")+'</button>';
   return focusShell(focusCard(t("signInTitle"),"",body));
 }
 function segTab(id,key,cur){
@@ -1502,7 +1502,10 @@ function onAct(n,a,v,e){
     case "capView": S.modal.view=v; render(); break;
     case "capPass": S.modal=null; markSent(); break;
 
-    case "wallet": S.modal={type:"wallet",view:"pick",purpose:n.getAttribute("data-p")}; render(); break;
+    /* 登录页的钱包按钮同样受协议勾选约束（F-13）；账户设置里的绑定入口不涉及勾选 */
+    case "wallet":
+      if(S.page==="P-A01" && !S.agree){ S.err={agree:t("eTerms"),_shake:true}; render(); break; }
+      S.modal={type:"wallet",view:"pick",purpose:n.getAttribute("data-p")}; render(); break;
     case "wView": S.modal.view=v; render(); break;
     case "wToast": toast(v==="tLinked"||v==="tNetworkOk"?"success":v==="tSignPrompt"?"info":"danger",t(v)); break;
     case "wSign": walletSigned(); break;
