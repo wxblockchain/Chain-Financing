@@ -25,6 +25,21 @@
 .track-title b{font-size:var(--fs-14)}.track-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2);
   margin-top:var(--sp-4);padding-top:var(--sp-3);border-top:1px dashed var(--border-dash)}
 .track-meta span{display:block;font-size:var(--fs-10);color:var(--faint)}.track-meta b{display:block;margin-top:2px;font-size:var(--fs-12)}
+.credential-stack{display:flex;flex-direction:column;gap:var(--sp-4);margin-bottom:var(--sp-4)}
+.credential-card{position:relative;width:100%;text-align:left;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:0;overflow:hidden;cursor:pointer;color:var(--text)}
+.credential-card::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--sp-1);background:var(--track)}
+.credential-card[data-k="green"]::before{background:var(--ok)}.credential-card[data-k="amber"]::before{background:var(--warn)}
+.credential-card[data-k="red"]::before{background:var(--danger)}.credential-card:hover{background:var(--card-hover);border-color:var(--border-strong)}
+.credential-card[data-empty="true"]{background:var(--card-2);border-style:dashed;box-shadow:none;color:var(--muted)}
+.credential-card[data-empty="true"]::before{background:var(--track)}
+.credential-head{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border)}
+.credential-head .track-ico{width:36px;height:36px}.credential-head .title{font-size:var(--fs-14);font-weight:660}
+.credential-head .status{margin-left:auto}.credential-core{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4);padding:var(--sp-5)}
+.credential-core span{display:block;font-size:var(--fs-10);color:var(--faint);margin-bottom:var(--sp-1)}
+.credential-core b{display:block;font-size:var(--fs-12);font-weight:620;overflow-wrap:anywhere}
+.credential-empty{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);padding:var(--sp-5);font-size:var(--fs-12)}
+.credential-go{color:var(--accent);font-weight:650;white-space:nowrap}
 .gatebar{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3);background:var(--warn-bg);
   border:1px solid var(--warn-border);border-radius:var(--radius-sm);color:var(--warn);margin-bottom:var(--sp-4)}
 .gatebar p{margin:0;flex:1;font-size:var(--fs-12)}
@@ -43,7 +58,8 @@
 .review-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:var(--sp-4)}
 .review-box>.hd{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border)}
 .review-box>.hd b{font-size:var(--fs-14)}.review-box>.hd .right{margin-left:auto}.review-box>.bd{padding:var(--sp-5)}
-.review-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,.92fr);gap:var(--sp-4);align-items:start}
+.review-cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:var(--sp-4);align-items:start}
+.review-main{min-width:0}.review-main>.viewer{margin-bottom:var(--sp-4)}
 .viewer{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);overflow:hidden}
 .viewer-tools{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2);border-bottom:1px solid var(--border);background:var(--card-2);flex-wrap:wrap}
 .viewer-tools .lbl{font-weight:650;font-size:var(--fs-11);margin-right:auto}.viewer-stage{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2);padding:var(--sp-3);min-height:310px;background:var(--card-2)}
@@ -54,11 +70,11 @@
   transition:transform var(--dur-base) var(--ease-out)}
 .doc-sheet i{height:6px;border-radius:var(--radius-pill);background:var(--track)}.doc-sheet i:first-child{height:42px;background:var(--accent-soft)}
 .review-stack{display:flex;flex-direction:column;gap:var(--sp-4)}
-.checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
-.checkline{display:flex;gap:var(--sp-2);align-items:flex-start;padding:var(--sp-2);border:1px solid var(--border);border-radius:var(--radius-xs);
-  color:var(--muted);font-size:var(--fs-11);background:var(--card-2)}
-.checkline span:first-child{color:var(--accent);font-weight:700}.decisionbar{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:var(--sp-2);
-  padding:var(--sp-3) var(--sp-4);background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:5}
+.decisionbar{position:sticky;top:88px;display:flex;flex-direction:column;gap:var(--sp-2);padding:var(--sp-4);
+  background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:5}
+.decisionbar .decision-title{display:flex;align-items:center;gap:var(--sp-2);padding-bottom:var(--sp-3);border-bottom:1px solid var(--border)}
+.decisionbar .decision-title b{font-size:var(--fs-14)}.decisionbar .decision-title .pill{margin-left:auto}
+.decisionbar .hint{margin:var(--sp-1) 0 var(--sp-2)}.decisionbar .btn{width:100%}
 .status-hero{display:grid;place-items:center;text-align:center;padding:var(--sp-8) var(--sp-5)}
 .status-ring{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;background:var(--ok-bg);border:1px solid var(--ok-border);color:var(--ok);font-size:var(--fs-28)}
 .status-hero h2{margin:var(--sp-4) 0 var(--sp-1);font-size:var(--fs-19)}.status-hero p{margin:0;color:var(--muted);max-width:620px}
@@ -68,8 +84,8 @@
 .issue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
 .issue-option{display:flex;gap:var(--sp-2);align-items:flex-start;border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-2) var(--sp-3);font-size:var(--fs-11)}
 .issue-option input{margin-top:2px;accent-color:var(--accent)}
-@media (max-width:1180px){.form-layout,.review-cols{grid-template-columns:1fr}.sticky-rail{position:static}.review-cols{grid-template-columns:1fr}.viewer-stage{min-height:270px}}
-@media (max-width:860px){.track-grid,.access-grid,.upload-grid,.checklist,.issue-grid,.viewer-stage{grid-template-columns:1fr}}
+@media (max-width:1180px){.form-layout,.review-cols{grid-template-columns:1fr}.sticky-rail{position:static}.review-cols{grid-template-columns:1fr}.viewer-stage{min-height:270px}.decisionbar{position:sticky;top:auto;bottom:0;flex-direction:row;align-items:center}.decisionbar .decision-title{border:0;padding:0;margin-right:auto}.decisionbar .hint{display:none}.decisionbar .btn{width:auto}}
+@media (max-width:860px){.track-grid,.access-grid,.upload-grid,.issue-grid,.viewer-stage,.credential-core{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.doc-sheet{transition:none}}
 </style>
 </head>
@@ -90,7 +106,7 @@ var S;
 var DEMO_NOW="2026-09-08T10:36:00+08:00";
 var DEMO_ID="KYC-20260908-000123", DEMO_BIZ="KYB-20260908-000123";
 var DICT={
- en:{navIdentityReviews:"Identity reviews",navBusinessReviews:"Business reviews",signOut:"Sign out",demoOnly:"Demonstration data",
+ en:{navIdentityReviews:"Identity reviews",navBusinessReviews:"Business reviews",signOut:"Sign out",demoOnly:"Demonstration data",pagesPanel:"Pages",
   userCenter:"User center",verifyTitle:"Identity verification",verifyDesc:"Complete identity and business verification to access business features.",
   identity:"Identity verification",business:"Business verification",start:"Start verification",resume:"Continue",view:"View submission",resubmit:"Resubmit",update:"Update details",
   notSubmitted:"Not submitted",draft:"Draft saved",underReview:"Under review",approved:"Approved",rejected:"Rejected",verified:"Verified",cascaded:"Cascaded",
@@ -101,7 +117,7 @@ var DICT={
   applicantRole:"Relationship to company",authorizedPerson:"Authorized person",legalRep:"Legal representative",director:"Director",authorizedSignatory:"Authorized signatory",
   upload:"Upload",replace:"Replace",remove:"Remove",preview:"Preview",retry:"Retry",uploaded:"Uploaded",uploading:"Uploading",failed:"Failed",
   reviewTitle:"Review the information",submit:"Submit",submissionReceived:"Submission received",submissionBody:"Your identity and business review tasks were created.",
-  details:"Verification details",issues:"Items to update",reviewChecklist:"Review checklist",reviewHistory:"Review history",related:"Related verification",
+  details:"Verification details",issues:"Items to update",reviewHistory:"Review history",related:"Related verification",reviewActions:"Review actions",
   approve:"Approve",reject:"Reject",copy:"Copy",download:"Download original",downloadAll:"Download all documents",zoomIn:"Zoom in",zoomOut:"Zoom out",rotate:"Rotate 90°",fullscreen:"Full screen",
   filters:"Filters",search:"Search",reset:"Reset",status:"Status",version:"Version",submittedAt:"Submitted at",decisionBy:"Decision by",action:"Action",
   applicationNo:"Application no.",account:"Account",country:"Country / region",template:"Template",uniqueKey:"Company unique key",empty:"No applications to review.",noResults:"No applications match these filters.",
@@ -111,7 +127,7 @@ var DICT={
   readOnly:"Submitted information is read-only while a review is in progress.",limit:"You have reached the submission limit (5 submissions per 24 hours). You can submit again after Sep 9, 2026, 09:10 (UTC+8).",
   duplicate:"This company is already registered on the platform. If you believe this is an error, contact support.",concurrent:"This application has already been reviewed by Demo Admin B. Refresh to see the latest status.",
   cascade:"Personal verification was rejected. This business application will be rejected automatically.",previewFail:"The document preview failed to load.",saved:"Draft saved",submitted:"Decision saved",required:"Required"},
- zh:{navIdentityReviews:"个人认证审核",navBusinessReviews:"企业认证审核",signOut:"退出登录",demoOnly:"演示数据",
+ zh:{navIdentityReviews:"个人认证审核",navBusinessReviews:"企业认证审核",signOut:"退出登录",demoOnly:"演示数据",pagesPanel:"页面",
   userCenter:"用户中心",verifyTitle:"实名认证",verifyDesc:"完成个人认证与企业认证后即可使用业务功能。",
   identity:"个人认证",business:"企业认证",start:"开始认证",resume:"继续填写",view:"查看提交内容",resubmit:"重新提交",update:"更新认证资料",
   notSubmitted:"未提交",draft:"草稿已保存",underReview:"审核中",approved:"已通过",rejected:"已驳回",verified:"已认证",cascaded:"级联",
@@ -122,7 +138,7 @@ var DICT={
   applicantRole:"与企业的关系",authorizedPerson:"被授权人",legalRep:"法定代表人",director:"董事",authorizedSignatory:"授权签署人",
   upload:"上传",replace:"替换",remove:"删除",preview:"预览",retry:"重试",uploaded:"已上传",uploading:"上传中",failed:"失败",
   reviewTitle:"核对认证信息",submit:"提交",submissionReceived:"提交成功",submissionBody:"个人认证与企业认证两个审核任务已创建。",
-  details:"认证详情",issues:"需修改的问题项",reviewChecklist:"审核要点",reviewHistory:"审核记录",related:"关联认证",
+  details:"认证详情",issues:"需修改的问题项",reviewHistory:"审核记录",related:"关联认证",reviewActions:"审核操作",
   approve:"通过",reject:"驳回",copy:"复制",download:"下载原件",downloadAll:"下载全部材料",zoomIn:"放大",zoomOut:"缩小",rotate:"旋转 90°",fullscreen:"全屏",
   filters:"筛选",search:"搜索",reset:"重置",status:"状态",version:"版本",submittedAt:"提交时间",decisionBy:"结论人",action:"操作",
   applicationNo:"申请编号",account:"账号",country:"国家 / 地区",template:"模板",uniqueKey:"企业唯一标识",empty:"暂无待审核的申请。",noResults:"没有符合当前筛选条件的申请。",
@@ -139,9 +155,9 @@ var PRD={
  "P-K02":{title:"P-K02 提交结果",src:"03-流程与状态机.md 10.1",rules:[["DK-33","不展示审核时长、排队位次或倒计时。"]]},
  "P-K03":{title:"P-K03 认证详情",src:"03-流程与状态机.md 7.5 · F-K17～F-K19",rules:[["F-K17","四态状态机；重新提交是动作，不是第五状态。"],["F-K18","驳回原因在顶部汇总并在字段旁就地回显。"],["F-K19","驳回后与已通过后都可重提。"]]},
  "P-M30":{title:"P-M30 个人认证审核列表",src:"04-管理端审核.md 7.6.1 · F-K20",rules:[["F-K20","默认提交时间升序；默认状态=审核中；20 条/页；列表不展示证件号码。"]]},
- "P-M31":{title:"P-M31 个人认证审核详情",src:"04-管理端审核.md 7.6 · 13.1 · F-K22～F-K31",rules:[["F-K22","证件号码明文完整展示，无掩码、无二次动作。"],["F-K23～F-K31","查看器、清单、结论、关联、版本、并发与留痕。"]]},
+ "P-M31":{title:"P-M31 个人认证审核详情",src:"04-管理端审核.md 7.6 · 13.1 · F-K22～F-K31",rules:[["F-K22","证件号码明文完整展示，无掩码、无二次动作。"],["F-K23 / F-K25～F-K31","查看器、结论、关联、版本、并发与留痕；F-K24 审核要点按本轮用户反馈不在页面展示。"]]},
  "P-M32":{title:"P-M32 企业认证审核列表",src:"04-管理端审核.md 7.7.1 · F-K21",rules:[["F-K21","企业名模糊 / 注册号精确搜索；级联驳回可筛选。"]]},
- "P-M33":{title:"P-M33 企业认证审核详情",src:"04-管理端审核.md 7.7 · F-K23～F-K31",rules:[["F-K26","个人驳回时企业一律驳回，企业通过按钮禁用。"],["F-K29","通过前二次查重与并发保护。"]]}
+ "P-M33":{title:"P-M33 企业认证审核详情",src:"04-管理端审核.md 7.7 · F-K23～F-K31",rules:[["F-K24","按本轮用户反馈不在页面展示审核要点。"],["F-K26","个人驳回时企业一律驳回，企业通过按钮禁用。"],["F-K29","通过前二次查重与并发保护。"]]}
 };
 var STATES={
  "P-A17":[["unsubmitted","Not submitted","未提交"],["draft","Draft","有草稿"],["reviewing","Under review","审核中"],["rejected","Rejected","任一驳回"],["approved","Verified","双通过"],["nowallet","Missing wallet","缺钱包"],["noemail","Missing email","缺邮箱"]],
@@ -154,8 +170,12 @@ var STATES={
  "P-M33":[["default","Default","默认"],["loading","Loading","加载中"],["previewfail","Preview failed","预览失败"],["cascadeWait","Cascade · in review","级联 · 企业审核中"],["cascadeApproved","Cascade · approved","级联 · 企业原已通过"],["cascadeRejected","Cascade · rejected","级联 · 企业原已驳回"],["waiting","Submitting","提交中"],["concurrent","Concurrent decision","并发冲突"],["duplicate","Duplicate key","二次查重失败"]]
 };
 
-var MINE=["st","open","step","saveDraft","idType","region","confirmSwitch","close","gateMode","gateNext","gateDone","upload","uploadRetry",
+var MINE=["st","open","openPages","step","saveDraft","idType","region","confirmSwitch","close","gateMode","gateNext","gateDone","upload","uploadRetry",
  "preview","removeFile","submitOpen","submitConfirm","backCenter","copy","viewer","rejectOpen","issue","decision","decisionCommit","refresh","filter","reset","related"];
+var PAGE_DIR=[
+ ["Asset / 资产端",[["P-A17",""],["P-K01",""],["P-K02",""],["P-K03",""]]],
+ ["Admin / 管理端",[["P-M30",""],["P-M31",""],["P-M32",""],["P-M33",""]]]
+];
 var REGIONS=[
  ["CN","China (Mainland)","中国（大陆）","T1"],["HK","Hong Kong SAR, China","中国香港特别行政区","T2"],
  ["US","United States","美国","T3"],["KY","Cayman Islands","开曼群岛","T4"],["NG","Nigeria","尼日利亚","T5"],
@@ -233,16 +253,28 @@ function trackCard(type,st,ver,time,extra){
  return '<article class="track" data-k="'+k+'"><div class="track-top"><span class="track-ico">'+(isP?"ID":"CO")+'</span><div class="track-body"><div class="track-title"><b>'+title+'</b>'+pill(st,extra)+'</div><p class="lead">'+(isP?L("Identity and document verification","自然人身份与证件审核"):L("Company registration and authorization verification","企业登记与授权关系审核"))+'</p></div></div>'
   +'<div class="track-meta"><div><span>'+t("version")+'</span><b class="mono">'+(ver||"—")+'</b></div><div><span>'+t("submittedAt")+'</span><b class="mono">'+(time||"—")+'</b></div></div></article>';
 }
+function credentialCard(type,st,opt){
+ opt=opt||{};var isP=type==="p",empty=st==="not_submitted",k=st==="approved"?"green":st==="rejected"?"red":st==="under_review"?"amber":"blue";
+ var title=isP?t("personalInfo"):t("businessInfo"),core=isP
+  ?[[t("fullName"),"林安 / AN LIN"],[t("documentType"),t("idCard")],[t("nationality"),"China · CN"],[t("version"),opt.ver||"v1"]]
+  :[[t("companyName"),"Harbour Demo Holdings Limited"],[t("registrationRegion"),"Hong Kong SAR, China · HK"],["CR No.","3012345"],[t("version"),opt.ver||"v1"]];
+ var action=empty?t("start"):(st==="draft"?t("resume"):t("view"));
+ return '<button class="credential-card" type="button" data-k="'+k+'" data-empty="'+empty+'" data-act="'+(opt.act||"open")+'" data-v="'+esc(opt.value||"P-K03")+'" aria-label="'+esc(title+" · "+action)+'">'
+  +'<span class="credential-head"><span class="track-ico">'+(isP?"ID":"CO")+'</span><span class="title">'+title+'</span><span class="status">'+pill(st,opt.extra||"")+'</span></span>'
+  +(empty?'<span class="credential-empty"><span>'+L("No verification information has been submitted.","尚未提交认证资料，整张卡片保持未认证状态。")+'</span><span class="credential-go">'+action+' →</span></span>'
+   :'<span class="credential-core">'+core.map(function(x){return '<span><span>'+x[0]+'</span><b'+((x[0]===t("version")||x[0]==="CR No.")?' class="mono"':'')+'>'+esc(x[1])+'</b></span>';}).join("")+'</span><span class="credential-empty"><span>'+(st==="draft"?L("Saved core information · continue the draft","已保存核心信息 · 继续填写草稿"):L("Submitted core information · open the complete details","已展示提交的核心信息 · 点击整卡查看详情"))+'</span><span class="credential-go">'+action+' →</span></span>')+'</button>';
+}
 function pageUserCenter(){
- var st=S.st, action=t("start"), act="open", target="P-K01", p="not_submitted",b="not_submitted", pv="—",bv="—",tm="—",extra="";
+ var st=S.st, action=t("start"), target="P-K01", p="not_submitted",b="not_submitted", pv="—",bv="—",extra="";
  if(st==="draft"){p=b="draft";action=t("resume");}
- if(st==="reviewing"){p=b="under_review";pv=bv="v1";tm="Sep 8, 2026 · 10:02 (UTC+8)";action=t("view");target="P-K03";}
- if(st==="rejected"){p="rejected";b="rejected";pv=bv="v1";tm="Sep 8, 2026 · 10:02 (UTC+8)";action=t("resubmit");target="P-K01";extra=note("red",L("2 identity items require changes. Business verification was rejected by cascade.","个人认证有 2 项需修改，企业认证已级联驳回。"));}
- if(st==="approved"){p=b="approved";pv=bv="v2";tm="Sep 8, 2026 · 10:02 (UTC+8)";action=t("update");target="P-K01";extra=note("green",L("Both verifications are approved. Business features are available.","个人与企业认证均已通过，业务功能已放行。"));}
+ if(st==="reviewing"){p=b="under_review";pv=bv="v1";action=t("view");target="P-K03";}
+ if(st==="rejected"){p="rejected";b="rejected";pv=bv="v1";action=t("resubmit");target="P-K01";extra=note("red",L("2 identity items require changes. Business verification was rejected by cascade.","个人认证有 2 项需修改，企业认证已级联驳回。"));}
+ if(st==="approved"){p=b="approved";pv=bv="v2";action=t("update");target="P-K01";extra=note("green",L("Both verifications are approved. Business features are available.","个人与企业认证均已通过，业务功能已放行。"));}
  if(st==="nowallet"||st==="noemail") extra='<div class="gatebar" role="status">'+ICO.warn+'<p>'+(st==="nowallet"?L("Link a wallet to be ready for identity verification.","绑定钱包后即可发起个人认证。"):L("Add an email to continue and receive security notifications.","绑定邮箱后即可发起个人认证并接收安全通知。"))+'</p><button class="btn sm primary" type="button" data-act="gateMode" data-v="'+(st==="nowallet"?"wallet":"email")+'">'+t("completeNow")+'</button></div>';
  var startAct=(st==="nowallet"||st==="noemail")?'gateMode':'open', val=(st==="nowallet"?"wallet":st==="noemail"?"email":target);
+ var cardAct=(st==="nowallet"||st==="noemail")?"gateMode":"open", cardVal=(st==="nowallet"?"wallet":st==="noemail"?"email":((p==="not_submitted"||p==="draft")?"P-K01":"P-K03"));
  return demoBar()+extra+pageHead(t("verifyTitle"),t("verifyDesc"),'<button class="btn primary" type="button" data-act="'+startAct+'" data-v="'+val+'">'+action+'</button>'+prdBtn())
-  +'<div class="track-grid">'+trackCard("p",p,pv,tm)+trackCard("b",b,bv,tm,p==="rejected"?t("cascaded"):"")+'</div>'
+  +'<div class="credential-stack">'+credentialCard("p",p,{act:cardAct,value:cardVal,ver:pv})+credentialCard("b",b,{act:cardAct,value:cardVal,ver:bv,extra:p==="rejected"?t("cascaded"):""})+'</div>'
   +'<div class="review-box"><div class="hd"><b>'+L("Access while verification is incomplete","认证未完成时可达范围")+'</b></div><div class="bd"><div class="access-grid">'
   +'<div class="access"><b>'+L("Available","可用")+'</b><p>'+L("Sign in, account settings, agreements and support","登录、账户设置、协议与客服")+'</p></div>'
   +'<div class="access"><b>'+L("Read only","只读")+'</b><p>'+L("Submitted verification details and review decisions","已提交的认证内容与审核结论")+'</p></div>'
@@ -311,9 +343,8 @@ function pageDetails(){
  var top=rej?note("red",'<ul class="reason-list"><li>R-P01 · '+L("Document number mismatch","证件号码与影像不一致")+'</li><li>R-P08 · '+L("Portrait image is unclear","身份证人像面不清晰")+'</li></ul><p>'+L("Reviewer note: Upload a clear portrait-side image.","审核说明：请重新上传清晰的人像面。")+'</p>',L("Identity rejected · 2 items","个人认证已驳回 · 2 项需修改")):app?note("green",L("Both identity and business verification are approved.","个人认证与企业认证均已通过。")):upd?note("amber",t("currentValid")):note("",t("readOnly"));
  var ps=rej?"rejected":app?"approved":mixed?"approved":"under_review",bs=rej?"rejected":app?"approved":"under_review";
  return demoBar()+top+pageHead(t("details"),L("Submission batch ","提交批次 ")+DEMO_ID,(rej?'<button class="btn primary" data-act="open" data-v="P-K01" data-st="resubmit">'+t("resubmit")+'</button>':app?'<button class="btn primary" data-act="open" data-v="P-K01" data-st="update">'+t("update")+'</button>':'<button class="btn" disabled>'+t("underReview")+'</button>')+prdBtn())
-  +'<div class="track-grid">'+trackCard("p",ps,"v2",fmtTime(DEMO_NOW))+trackCard("b",bs,"v2",fmtTime(DEMO_NOW),rej?t("cascaded"):"")+'</div>'
-  +'<div class="review-box"><div class="hd"><b>'+t("personalInfo")+'</b><span class="right pill dash">'+L("Read only","只读")+'</span></div><div class="bd">'+readOnlyPersonal(rej)+'</div></div>'
-  +'<div class="review-box"><div class="hd"><b>'+t("businessInfo")+'</b><span class="right template-tag">T2 · HK</span></div><div class="bd"><dl class="dl"><div><dt>'+t("registrationRegion")+'</dt><dd>Hong Kong SAR, China · HK</dd></div><div><dt>'+t("companyName")+'</dt><dd>Harbour Demo Holdings Limited</dd></div><div><dt>CR No.</dt><dd class="mono">3012345</dd></div><div><dt>'+t("uniqueKey")+'</dt><dd class="mono">HK:3012345</dd></div></dl></div></div>';
+  +'<div class="review-box"><div class="hd"><b>'+t("personalInfo")+'</b><span class="right">'+pill(ps)+'</span></div><div class="bd">'+readOnlyPersonal(rej)+'</div></div>'
+  +'<div class="review-box"><div class="hd"><b>'+t("businessInfo")+'</b><span class="right">'+pill(bs,rej?t("cascaded"):"")+'</span></div><div class="bd"><dl class="dl"><div><dt>'+t("template")+'</dt><dd><span class="template-tag">T2 · HK</span></dd></div><div><dt>'+t("registrationRegion")+'</dt><dd>Hong Kong SAR, China · HK</dd></div><div><dt>'+t("companyName")+'</dt><dd>Harbour Demo Holdings Limited</dd></div><div><dt>CR No.</dt><dd class="mono">3012345</dd></div><div><dt>'+t("uniqueKey")+'</dt><dd class="mono">HK:3012345</dd></div></dl></div></div>';
 }
 
 var PERSONAL_ROWS=[
@@ -353,11 +384,6 @@ function viewer(type){
   +'<button class="btn sm" data-act="viewer" data-v="out">−</button><button class="btn sm" data-act="viewer" data-v="in">＋</button><button class="btn sm" data-act="viewer" data-v="rot">↻</button><button class="btn sm" data-act="viewer" data-v="full">'+t("fullscreen")+'</button><button class="btn sm" data-act="viewer" data-v="download">'+ICO.dl+' '+t("download")+'</button></div>'
   +'<div class="viewer-stage">'+docs.map(function(d){return '<div class="doc-shot"><div class="doc-sheet" style="--zoom:'+S.zoom+';--rot:'+S.rot+'deg"><i></i><i></i><i></i><i></i><i></i><i></i></div><span>'+d+' · '+t("demoOnly")+'</span></div>';}).join("")+'</div></div>';
 }
-function checklist(type){
- var items=type==="p"?[["R-P01",L("Document number matches image","证件号码与影像一致")],["R-P02",L("Name matches image","姓名与影像一致")],["R-P04",L("Nationality and document agree","国籍与证件相符")],["R-P08",L("Images are clear and unaltered","影像清晰且无涂改")]]:
- [["R-E01",L("Company name matches CI","企业名称与注册证明一致")],["R-E02",L("CR number matches CI","CR 编号与 CI 一致")],["R-E05",L("Authorized person is the applicant","被授权人与提交人一致")],["R-E09",L("Jurisdiction matches documents","注册地与材料签发地一致")]];
- return '<div class="checklist">'+items.map(function(x){return '<div class="checkline"><span>□</span><div><b>'+x[0]+'</b><br>'+x[1]+'</div></div>';}).join("")+'</div><p class="hint">'+L("This checklist is guidance; checking every item is not required.","审核要点只作提示，不强制逐项勾选。")+'</p>';
-}
 function timeline(type){
  return '<ul class="tl"><li><span class="pt"></span><div class="tm">Sep 8, 2026 10:20 (UTC+8)</div><div class="ac">'+L("Details viewed","查看审核详情")+'</div><div class="op">Demo Admin A · '+(type==="p"?DEMO_ID:DEMO_BIZ)+'</div></li>'
   +'<li><span class="pt"></span><div class="tm">Sep 8, 2026 10:02 (UTC+8)</div><div class="ac">'+L("Resubmitted","重新提交")+' <span class="pill gray">v2</span></div><div class="sm">ada@demo-mail.test</div></li>'
@@ -370,12 +396,12 @@ function adminDetail(type){
  var alert=S.st==="concurrent"?note("red",t("concurrent"),"","alert"):S.st==="duplicate"?note("red",L("Another approved company already uses HK:3012345. Reject this application as a duplicate.","已存在相同唯一标识且已通过的企业 HK:3012345，请按重复注册驳回。"),"","alert"):cascade?note("red",cascadeMessage,"","alert"):note("",L("Resubmission v2. Previous decision: rejected on Sep 6, 2026, 14:22 (UTC+8).","第 2 次提交。上一版结论：2026-09-06 14:22 (UTC+8) 驳回。"));
  var info=isP?readOnlyPersonal(false,true):'<dl class="dl"><div><dt>'+t("template")+'</dt><dd><span class="template-tag">T2 · HK</span></dd></div><div><dt>'+t("registrationRegion")+'</dt><dd>Hong Kong SAR, China · HK</dd></div><div><dt>'+t("companyName")+'</dt><dd>Harbour Demo Holdings Limited</dd></div><div><dt>CR No.</dt><dd class="mono">3012345</dd></div><div><dt>BR No.</dt><dd class="mono">88123456</dd></div><div><dt>'+t("authorizedPerson")+'</dt><dd>林安 / AN LIN · <span class="mono">11010119900101123X</span></dd></div><div><dt>'+t("uniqueKey")+'</dt><dd class="mono">HK:3012345</dd></div><div><dt>'+t("version")+'</dt><dd class="mono">v2</dd></div></dl>';
  var wait=S.st==="waiting";
- return demoBar()+alert+pageHead(title,(isP?DEMO_ID:DEMO_BIZ)+' · v2',prdBtn())+'<div class="review-cols"><div class="review-stack">'
+ var actions='<aside class="decisionbar" aria-label="'+t("reviewActions")+'"><div class="decision-title"><b>'+t("reviewActions")+'</b>'+pill("under_review")+'</div><p class="hint">'+L("The action area remains visible while reviewing the information, documents and history.","审核信息、材料和记录时，操作区始终保持可见。")+'</p><button class="btn danger" data-act="rejectOpen" data-v="'+type+'" '+(wait?'disabled':'')+'>'+t("reject")+'</button><button class="btn primary" data-act="decision" data-v="approve" '+((cascade||wait)?'disabled aria-disabled="true"':'')+'>'+(wait?'<span class="spinner"></span>':'')+t("approve")+'</button></aside>';
+ return demoBar()+alert+pageHead(title,(isP?DEMO_ID:DEMO_BIZ)+' · v2',prdBtn())+'<div class="review-cols"><main class="review-main"><div class="review-stack">'
   +'<div class="review-box"><div class="hd"><b>'+L("Application information","申请信息")+'</b><span class="right pill amber">'+t("underReview")+'</span></div><div class="bd">'+info+'</div></div>'
-  +'<div class="review-box"><div class="hd"><b>'+t("related")+'</b></div><div class="bd">'+(isP?trackCard("b","under_review","v2",fmtTime(DEMO_NOW)):trackCard("p",cascade?"rejected":"under_review","v2",fmtTime(DEMO_NOW)))+'<button class="btn-link" data-act="related" data-v="'+(isP?"P-M33":"P-M31")+'">'+t("view")+' →</button></div></div></div>'+viewer(type)+'</div>'
-  +'<div class="review-box" style="margin-top:var(--sp-4)"><div class="hd"><b>'+t("reviewChecklist")+'</b></div><div class="bd">'+checklist(type)+'</div></div>'
+  +'<div class="review-box"><div class="hd"><b>'+t("related")+'</b></div><div class="bd">'+(isP?trackCard("b","under_review","v2",fmtTime(DEMO_NOW)):trackCard("p",cascade?"rejected":"under_review","v2",fmtTime(DEMO_NOW)))+'<button class="btn-link" data-act="related" data-v="'+(isP?"P-M33":"P-M31")+'">'+t("view")+' →</button></div></div></div>'+viewer(type)
   +'<div class="review-box"><div class="hd"><b>'+t("reviewHistory")+'</b><span class="right">'+L("Append-only","只增不改不删")+'</span></div><div class="bd">'+timeline(type)+'</div></div>'
-  +'<div class="decisionbar"><button class="btn danger" data-act="rejectOpen" data-v="'+type+'" '+(wait?'disabled':'')+'>'+t("reject")+'</button><button class="btn primary" data-act="decision" data-v="approve" '+((cascade||wait)?'disabled aria-disabled="true"':'')+'>'+(wait?'<span class="spinner"></span>':'')+t("approve")+'</button></div>';
+  +'</main>'+actions+'</div>';
 }
 
 function modalGate(){
@@ -398,6 +424,11 @@ function modalReject(){
 function modalApprove(){
  return '<div class="mask"><div class="modal" role="dialog" aria-modal="true"><div class="modal-h"><b>'+L("Confirm approval","确认通过")+'</b><button class="modal-x" data-act="close">✕</button></div><div class="modal-b">'+note("amber",L("This decision takes effect immediately and is appended to the audit history.","审核结论将立即生效，并追加到不可修改的审核历史。"))+'<dl class="dl"><div><dt>'+t("applicationNo")+'</dt><dd class="mono">'+(S.page==="P-M31"?DEMO_ID:DEMO_BIZ)+'</dd></div><div><dt>'+t("status")+'</dt><dd>'+t("approved")+'</dd></div></dl></div><div class="modal-f"><button class="btn" data-act="close">'+t("cancel")+'</button><button class="btn primary" data-act="decisionCommit" data-v="approve">'+t("confirm")+'</button></div></div></div>';
 }
+function pagesBtn(){return '<button class="btn sm" type="button" data-act="openPages">'+t("pagesPanel")+'</button>';}
+function drawerPages(){
+ return '<aside class="drawer" role="complementary" aria-label="'+t("pagesPanel")+'"><div class="drawer-h"><b>'+t("pagesPanel")+'</b><button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">✕</button></div><div class="drawer-b"><div class="pp-note">'+L("Page directory for the asset and admin verification flows. Each page keeps its own state switcher.","实名认证资产端与管理端页面目录；每页状态仍由页面内的状态切换器控制。")+'</div>'
+  +PAGE_DIR.map(function(g){return '<div class="pp-sec">'+g[0]+'</div>'+g[1].map(function(p){return '<button class="pp-link" type="button" data-act="open" data-v="'+p[0]+'" aria-current="'+(S.page===p[0])+'"><code>'+p[0]+'</code><span>'+CF.pageName(p[0])+'</span></button>';}).join("");}).join("")+'</div></aside>';
+}
 
 function renderContent(){
  return ({"P-A17":pageUserCenter,"P-K01":pageForm,"P-K02":pageResult,"P-K03":pageDetails,"P-M30":function(){return pageList("p");},"P-M31":function(){return adminDetail("p");},"P-M32":function(){return pageList("b");},"P-M33":function(){return adminDetail("b");}}[S.page]||function(){return "";})();
@@ -407,6 +438,7 @@ function onAct(n,a,v,e){
  switch(a){
   case "st":CF.setState(v);break;
   case "open":go(v);if(n.getAttribute("data-st")){S.st=n.getAttribute("data-st");render();}break;
+  case "openPages":S.drawer=S.drawer==="pages"?null:"pages";render();break;
   case "backCenter":go("P-A17");break;
   case "step":S.st=v;render();toast("success",t("saved"));break;
   case "saveDraft":toast("success",t("saved"),L("Saved across steps in this demonstration.","本演示已跨步骤保存。"));break;
@@ -455,6 +487,7 @@ CF.define({
  state:function(){return {form:{idType:"id_card",name:"林安",nameEn:"AN LIN",nationality:"CN",idNumber:"11010119900101123X",region:"CN",role:"legal"},upload:{idFront:"ready",idBack:"ready"},pendingRegion:null,issues:[],query:"",zoom:1,rot:0};},
  content:renderContent,
  modals:{gate:modalGate,switch:modalSwitch,submit:modalSubmit,reject:modalReject,approve:modalApprove,preview:previewModal},
+ drawers:{pages:drawerPages},topExtra:pagesBtn,topbarPrd:false,
  account:accountInfo,
  crumbParts:function(){if(S.page==="P-A17"||S.page==="P-M30"||S.page==="P-M32")return [];if(S.end==="asset")return [[t("userCenter"),"P-A17",""]];return [[S.page==="P-M31"?t("navIdentityReviews"):t("navBusinessReviews"),S.page==="P-M31"?"P-M30":"P-M32",""]];},
  prdFoot:function(){return 'PRD baseline: <b>commit 77c3020</b> · prd/v1.0-实名认证与审核/ 主文档 + 7 分册。界面演示数据均为虚构；本面板仅摘录页面直接相关规则。';},

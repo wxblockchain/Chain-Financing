@@ -82,7 +82,8 @@
   CF.DICT = {
     en: { stateSwitch:"Prototype · state", prdOpen:"PRD excerpt", close:"Close",
           adminConsole:"Console", grpMenu:"Menu",
-          navAgreements:"Agreements", navAccount:"Account settings",
+          navAgreements:"Agreements", navUserManagement:"User management",
+          navIdentityReviews:"Identity reviews", navBusinessReviews:"Business reviews", navAccount:"Account settings",
           navOverview:"Overview", navUserCenter:"User center",
           accountSettings:"Account settings",
           ownedTitle:"Owned by another module",
@@ -98,7 +99,8 @@
           extNote:"Bell behaviour (quick panel, unread badge, read semantics) and the message list are defined by {r}." },
     zh: { stateSwitch:"原型 · 状态", prdOpen:"PRD 摘录", close:"关闭",
           adminConsole:"管理端", grpMenu:"菜单",
-          navAgreements:"协议管理", navAccount:"账户设置",
+          navAgreements:"协议管理", navUserManagement:"用户管理",
+          navIdentityReviews:"个人认证审核", navBusinessReviews:"企业认证审核", navAccount:"账户设置",
           navOverview:"总览", navUserCenter:"用户中心",
           accountSettings:"账户设置",
           ownedTitle:"本页归其他模块",
@@ -385,18 +387,27 @@
     var ids = CF.NAV[end] || [];
     var cur = CF.PAGES[S.page] || {};
     var head = '<div class="nav-label">' + t(end === "admin" ? "adminConsole" : "grpMenu") + "</div>";
-    return head + ids.map(function (id) {
+    function item(id, sub) {
       var r = CF.PAGES[id] || {};
       var on = cur.nav === id;
       var ico = r.icoKey ? CF.ICO[r.icoKey] : (r.ico || "");
-      var body = '<span class="nav-ico">' + ico + "</span><span>" + t(r.navKey) + "</span>";
+      var body = (sub ? "" : '<span class="nav-ico">' + ico + "</span>") + "<span>" + t(r.navKey) + "</span>";
       var href = crossHref(id);
       /* 跨文件用真链接，点一下直接到对方原型的对应页面，不停在占位页 */
       if (href) {
-        return '<a class="nav-item" href="' + esc(href) + '">' + body + "</a>";
+        return '<a class="nav-item' + (sub ? " nav-subitem" : "") + '" href="' + esc(href) + '">' + body + "</a>";
       }
-      return '<button class="nav-item' + (on ? " active" : "") + '" type="button" data-act="go" data-v="' + id + '"'
+      return '<button class="nav-item' + (sub ? " nav-subitem" : "") + (on ? " active" : "") + '" type="button" data-act="go" data-v="' + id + '"'
         + (on ? ' aria-current="page"' : "") + ">" + body + "</button>";
+    }
+    return head + ids.map(function (entry) {
+      if (typeof entry === "string") return item(entry, false);
+      var children = entry.children || [], on = children.indexOf(cur.nav) >= 0;
+      var ico = entry.icoKey ? CF.ICO[entry.icoKey] : (entry.ico || "");
+      return '<div class="nav-group' + (on ? " active" : "") + '"><div class="nav-parent">'
+        + '<span class="nav-ico">' + ico + "</span><span>" + t(entry.navKey) + "</span>"
+        + '<span class="nav-caret" aria-hidden="true">' + CF.ICO.caret + "</span></div>"
+        + '<div class="nav-children">' + children.map(function (id) { return item(id, true); }).join("") + "</div></div>";
     }).join("");
   }
   function renderCrumb() {

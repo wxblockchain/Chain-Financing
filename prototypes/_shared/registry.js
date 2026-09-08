@@ -54,7 +54,7 @@
                name: ["Notifications", "管理端消息中心"] },
     "P-M21": { end: "admin", layout: "app", name: ["Notification details", "管理端消息详情"] },
 
-    /* 实名认证与审核（WS-303）。个人、企业审核是两个独立一级菜单。 */
+    /* 实名认证与审核（WS-303）。个人、企业审核是「用户管理」下的两个二级菜单。 */
     "P-M30": { end: "admin", layout: "app", nav: "P-M30", navKey: "navIdentityReviews", ico: "人",
                crumb: ["Identity reviews", "个人认证审核"], name: ["Identity reviews", "个人认证审核列表"] },
     "P-M31": { end: "admin", layout: "app", nav: "P-M30",
@@ -72,10 +72,11 @@
     "P-AG-03": { end: "admin", layout: "app", nav: "P-AG-01", name: ["Version details", "版本编辑页"] }
   };
 
-  /* 侧栏一级菜单顺序。两个模块渲染出的菜单完全一致，只有高亮项不同；
-     指向本模块未实现页面的菜单项由 shell 统一渲染为「归属指向页」。 */
+  /* 侧栏菜单顺序。字符串是一级页面；对象是静态展开的一级分组及其二级页面。
+     各模块渲染出的菜单完全一致，只有高亮项不同；指向本模块未实现页面的菜单项
+     由 shell 统一渲染为跨文件链接。 */
   CF.NAV = {
-    admin: ["P-AG-01", "P-M30", "P-M32", "P-M05"],
+    admin: ["P-AG-01", { navKey: "navUserManagement", ico: "用", children: ["P-M30", "P-M32"] }, "P-M05"],
     asset: ["P-A16", "P-A17"]
   };
 
