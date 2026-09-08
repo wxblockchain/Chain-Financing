@@ -155,8 +155,13 @@ a{color:var(--accent);text-decoration:none;cursor:pointer}
 .main{display:flex;flex-direction:column;min-width:0}
 .topbar{display:flex;align-items:center;gap:14px;padding:13px 26px;border-bottom:1px solid var(--border);
   background:rgba(255,255,255,.92);position:sticky;top:0;z-index:40}
-.crumb{font-size:var(--fs-12);color:var(--faint);min-width:0}
-.crumb b{color:var(--text);font-weight:640;font-size:13.5px}
+/* C-10 面包屑：顶部导航栏下方，通栏左对齐 */
+.crumbbar{padding:10px 26px;border-bottom:1px solid var(--border);background:var(--bg-elev);
+  font-size:var(--fs-12);color:var(--faint);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.crumbbar .sep{color:var(--border-strong)}
+.crumb-link{color:var(--muted);font-size:var(--fs-12);font-weight:600}
+.crumb-link:hover{color:var(--accent);text-decoration:underline}
+.crumb-cur{color:var(--text);font-weight:640;font-size:13px}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .tchip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--bg-elev);
   border-radius:var(--radius-pill);padding:5px 11px;font-size:11.5px;color:var(--muted);white-space:nowrap}
@@ -164,11 +169,28 @@ a{color:var(--accent);text-decoration:none;cursor:pointer}
 .tchip.on{background:var(--accent-soft);border-color:var(--accent-border);color:var(--accent)}
 .content{padding:22px 26px 60px;max-width:1500px;width:100%;margin:0 auto}
 
-/* 语言切换器 C-04 */
-.lang{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-pill);overflow:hidden;
-  font-size:var(--fs-11);background:var(--bg-elev)}
-.lang button{padding:5px 10px;color:var(--faint)}
-.lang button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:620}
+/* C-04 语言切换器（下拉） · C-11 右上角账号下拉 */
+.dd{position:relative}
+.dd-btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--bg-elev);
+  border-radius:var(--radius-pill);padding:0 11px;height:var(--ctrl-h-sm);font-size:11.5px;color:var(--muted);
+  font-weight:600;white-space:nowrap}
+.dd-btn:hover{background:var(--card-hover);color:var(--text)}
+.dd-btn[aria-expanded="true"]{background:var(--accent-soft);border-color:var(--accent-border);color:var(--accent)}
+.dd-btn svg{flex:none}
+.dd-btn .av{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--accent));
+  color:#fff;display:grid;place-items:center;font-size:9px;font-weight:700;flex:none}
+.dd-btn .nm{max-width:170px;overflow:hidden;text-overflow:ellipsis}
+.dd-list{position:absolute;right:0;top:calc(100% + 6px);min-width:168px;background:var(--bg-elev);
+  border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);padding:5px;z-index:60;
+  animation:rise var(--dur-fast) var(--ease-out)}
+.dd-list.wide{min-width:242px}
+.dd-list button{display:block;width:100%;text-align:left;padding:8px 10px;border-radius:var(--radius-xs);
+  font-size:12.5px;color:var(--muted)}
+.dd-list button:hover{background:var(--card-hover);color:var(--text)}
+.dd-list button[aria-current="true"]{color:var(--accent);font-weight:620;background:var(--accent-soft)}
+.dd-head{padding:9px 10px 10px;border-bottom:1px solid var(--border);margin-bottom:4px;display:flex;
+  flex-direction:column;gap:6px;align-items:flex-start}
+.dd-head b{font-size:12.5px;font-weight:640;word-break:break-all}
 
 /* ============================== 居中卡片版式 ============================= */
 /* 未登录页与管理端首登重置页：没有侧边导航，但与控制台共用同一套设计系统 */
@@ -320,6 +342,28 @@ td.col-act{vertical-align:top}
 .seg button:last-child{border-right:0}
 .seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
 
+/* 锁定态（全通道锁死，页面只展示剩余等待时间） */
+.locked{display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 8px 6px}
+.lock-ring{width:56px;height:56px;border-radius:50%;background:var(--danger-bg);border:1px solid var(--danger-border);
+  color:var(--danger);display:grid;place-items:center}
+.lock-time{font-size:34px;font-weight:660;letter-spacing:-.02em;margin:10px 0 6px;font-variant-numeric:tabular-nums}
+
+/* 登录页密码 Tab 下的三条静态入口 */
+.entries{display:flex;flex-wrap:wrap;gap:8px 18px;margin:-4px 0 14px}
+
+/* 账户设置单页：tab 锚点 + 区块标题 */
+.anchors{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.anchor{padding:9px 14px;font-size:12.5px;font-weight:620;color:var(--faint);border-bottom:2px solid transparent;
+  margin-bottom:-1px}
+.anchor:hover{color:var(--accent);border-bottom-color:var(--accent-border)}
+.sec-title{font-size:var(--fs-14);font-weight:660;margin:0 0 12px;scroll-margin-top:110px}
+section[id]{scroll-margin-top:110px}
+
+/* 本期壳子页 */
+.shell{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:40px 20px;
+  color:var(--faint)}
+.shell p{margin:0;max-width:520px;font-size:12.5px;line-height:1.6}
+
 /* 页面级状态切换器（原型控制，替代原来的演示分支开关面板） */
 .statebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 16px}
 .statebar .seg{flex-wrap:wrap}
@@ -414,18 +458,12 @@ td.col-act{vertical-align:top}
 .prd-item .k .meta{color:var(--faint);font-weight:400}
 .prd-item .v{color:var(--muted)}
 .prd-item .v b{color:var(--text);font-weight:620}
-.prd-item .v code,.prd-ac code.mono{font-size:10.5px;background:var(--gray-bg);border:1px solid var(--gray-border);
-  border-radius:4px;padding:0 4px;color:var(--gray-fg)}
-.prd-ac span b{color:var(--text);font-weight:620}
+.prd-item .v code{font-size:10.5px;background:var(--gray-bg);border:1px solid var(--gray-border);border-radius:4px;padding:0 4px;color:var(--gray-fg)}
 .prd-copy{display:grid;grid-template-columns:1fr;gap:3px;padding:8px 0;border-bottom:1px dashed var(--border-dash);font-size:11.5px}
 .prd-copy:last-child{border-bottom:none}
 .prd-copy .sc{font-size:10.5px;color:var(--faint);font-family:var(--mono)}
 .prd-copy .en{color:var(--text)}
 .prd-copy .zh{color:var(--muted)}
-.prd-ac{display:flex;gap:9px;padding:7px 0;border-bottom:1px dashed var(--border-dash);font-size:11.5px;line-height:1.55}
-.prd-ac:last-child{border-bottom:none}
-.prd-ac code{font-family:var(--mono);font-size:10.5px;color:var(--violet);background:var(--violet-bg);
-  border:1px solid var(--violet-border);border-radius:5px;padding:1px 5px;flex:none;height:fit-content}
 .prd-foot{font-size:10.5px;color:var(--faint);line-height:1.6;margin-top:14px;border-top:1px solid var(--border);padding-top:10px}
 
 /* ---- 原型控制抽屉（端切换 / 页面直达 / 演示分支）---- */
@@ -482,12 +520,14 @@ td.col-act{vertical-align:top}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ============================== C-05 Toast =============================== */
-.toasts{position:fixed;right:24px;bottom:24px;z-index:300;display:flex;flex-direction:column;gap:8px;
-  width:min(440px,calc(100% - 32px))}
+/* C-12 Toast：顶部居中，全站唯一轻提示载体 */
+.toasts{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;
+  gap:8px;width:min(460px,calc(100% - 32px));pointer-events:none}
+.toasts .toast{pointer-events:auto}
 .toast{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:var(--radius-sm);
   background:var(--bg-elev);border:1px solid var(--border-strong);box-shadow:var(--shadow-lg);font-size:12px;
   line-height:1.5;animation:drop var(--dur-base) var(--ease-out)}
-@keyframes drop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes drop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .toast.danger{border-color:var(--danger-border);background:var(--danger-bg)}
 .toast.success{border-color:var(--ok-border);background:var(--ok-bg)}
 .toast .tx{flex:1}
@@ -521,7 +561,7 @@ td.col-act{vertical-align:top}
 <!-- 未登录 / 首登重置：居中卡片版式，无侧边导航 -->
 <div class="focus" id="focus" hidden></div>
 
-<!-- 已登录：产品自己的控制台（侧边导航 + 顶栏 + 内容区） -->
+<!-- 已登录：产品自己的控制台（侧边导航 + 顶栏 + 面包屑 + 内容区） -->
 <div class="app" id="app" hidden>
   <aside class="sidebar">
     <div class="brand">
@@ -532,13 +572,14 @@ td.col-act{vertical-align:top}
       </div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="sideFoot"></div>
   </aside>
   <div class="main">
     <div class="topbar">
-      <div class="crumb" id="crumb"></div>
+      <div style="flex:1"></div>
       <div class="topbar-right" id="topRight"></div>
     </div>
+    <!-- C-10 面包屑：顶部导航栏下方，通栏左对齐 -->
+    <div class="crumbbar" id="crumb"></div>
     <div class="content" id="content"></div>
   </div>
 </div>
@@ -547,52 +588,69 @@ td.col-act{vertical-align:top}
 <script>
 /* ==========================================================================
    i18n.js — 中英文案表。英文为默认语言（PRD 13.1）。
-   文案逐条取自 PRD v4 第 8.5 / 12.1.4 / 12.2.5 / 12.3.5 节，未擅自改写。
-   v4 变更：删除营销订阅勾选（N-04），登录页协议区只保留用户协议一项。
+   文案逐条取自定稿 PRD 第 8.5 / 7.2.3 / 12.1.4 / 12.2.5 / 12.3.5 节，未擅自改写。
+   定稿变更：删除账户恢复与管理端账户管理相关文案；钱包改「链接外部钱包」并全部走 Toast；
+            锁定改阶梯且全通道锁死；新增「没有密码？设置密码」入口与账户设置单页相关文案。
    ========================================================================== */
 var DICT = {
   en: {
-    /* 通用与导航 8.5.1 */
+    /* —— 通用与导航 8.5.1 —— */
     signInTitle:"Sign in",
-    signInSub:"New here? Just sign in with an email code or your wallet — we'll create your account automatically.",
-    tabCode:"Email verification code", tabPwd:"Email and password", tabWallet:"Sign in with wallet",
+    tabCode:"Email verification code", tabPwd:"Email and password", tabWallet:"Link external wallet",
     sendCode:"Send code", resendCode:"Resend code", resendIn:"Resend in {n}s",
-    submitSignIn:"Sign in", forgotPwd:"Forgot password?", cantEmail:"Can't access your email?",
-    pwdTabHint:"No password? Sign in with an email code →",
-    connectWallet:"Connect wallet", disconnect:"Disconnect", signMessage:"Sign message",
-    later:"Later", signOut:"Sign out", save:"Save", cancel:"Cancel", copyAddress:"Copy address",
-    viewExplorer:"View on explorer", completeNow:"Complete now", notSet:"Not set", optional:"Optional",
-    back:"Back", contin:"Continue", confirm:"Confirm", close:"Close", change:"Change", add:"Add",
+    submitSignIn:"Sign in", forgotPwd:"Forgot password?", noPwdEntry:"No password? Set one",
+    useCodeEntry:"Sign in with an email code →",
+    linkWallet:"Link external wallet", disconnect:"Disconnect", signMessage:"Sign message",
+    later:"Later", signOut:"Sign out", save:"Save", cancel:"Cancel", confirm:"Confirm", close:"Close",
+    back:"Back", contin:"Continue", change:"Change", link:"Link", set:"Set",
+    copyAddress:"Copy address", viewExplorer:"View on explorer", completeNow:"Complete now",
+    notLinked:"Not linked", isSet:"Set", notSet:"Not set", optional:"Optional",
+    accountSettings:"Account settings", tabAccount:"Account", tabPrefs:"Preferences",
+    navOverview:"Overview", navUserCenter:"User center", grpMenu:"Menu",
     labelEmail:"Email address", labelCode:"Verification code", labelPwd:"Password",
     labelNewPwd:"New password", labelConfirmPwd:"Confirm new password", labelCurrentPwd:"Current password",
-    labelWorkEmail:"Work email", labelNewEmail:"New email address", labelName:"Full name",
-    show:"Show", hide:"Hide",
+    labelWorkEmail:"Work email", labelNewEmail:"New email address", labelWallet:"Wallet address",
+    labelName:"Full name", labelStatus:"Account status",
+    showPwd:"Show password", hidePwd:"Hide password",
+    endAsset:"Asset portal", adminConsole:"Console", signedInAs:"Signed in as",
+    stIncomplete:"Incomplete", stActiveAcc:"Active", demoOnly:"Demonstration data",
+    pagesPanel:"Pages", prdOpen:"Open the PRD notes for this page",
 
-    /* 校验与错误 8.5.2 */
+    /* —— 表单校验与错误 8.5.2 —— */
+    eEmailReq:"Email is required.",
     eEmailFmt:"Enter a valid email address.",
     eCodeReq:"Enter the 6-digit code.",
     eCodeBad:"Invalid or expired code.",
     eCodeTooMany:"Too many attempts. Please request a new code.",
     ePwdReq:"Password is required.",
     ePwdLogin:"Incorrect email or password. If you haven't set a password, sign in with an email verification code instead.",
+    ePwdLoginAdmin:"Incorrect email or password.",
     ePwdMatch:"Passwords do not match.",
     ePwdSameCurrent:"Your new password must be different from your current password.",
     ePwdSameInitial:"Your new password must be different from the initial password.",
+    eWalletReq:"Enter your wallet address.",
+    eWalletFmt:"Enter a valid EVM wallet address (0x followed by 40 hexadecimal characters).",
+    eWalletChecksum:"This address has an invalid checksum. Check it carefully before continuing.",
     eTerms:"Please read and agree to the Terms of Service and Privacy Policy.",
-    eAdminNotice:"Please confirm you have read the Admin Security Notice.",
     eEmailTaken:"This email is already linked to another account.",
-    eWalletUnlinked:"This wallet is not linked to any account.",
-    eWalletUnlinkedHint:"To create an account, sign in with your wallet on the sign-in page.",
-    eNoWallet:"No wallet detected. Install a supported wallet to continue.",
-    eNetwork:"Please switch your wallet to a supported EVM network.",
-    eSigRejected:"Signature request was rejected in your wallet.",
-    eSigFailed:"Signature verification failed.",
     eDisabled:"This account has been disabled. Contact support for help.",
-    eInitExpired:"Your initial password has expired. Contact an administrator to have it regenerated.",
-    eLastAdmin:"This is the only available administrator. Create or activate another administrator before disabling this one.",
-    eSelfAction:"You cannot perform this action on your own account.",
+    eInitExpired:"Your initial password has expired. Contact technical support to have it reissued.",
 
-    /* 建号 / 引导 / 补全 8.5.3 */
+    /* —— 钱包 Toast 文案 7.2.3（全部状态走 Toast）—— */
+    tNoWallet:"No wallet detected. Install a supported wallet to continue.",
+    tLinked:"Wallet linked.",
+    tConnRejected:"Connection request was rejected in your wallet.",
+    tSignPrompt:"Check your wallet to sign the message.",
+    tSignRejected:"Signature request was rejected in your wallet.",
+    tSignExpired:"The signature request expired. Please try again.",
+    tVerifyFailed:"Signature verification failed.",
+    tAddrMismatch:"The signed address doesn't match the address you entered. Check the account selected in your wallet.",
+    tAccountChanged:"The account in your wallet changed. Link the wallet again.",
+    tNetworkBad:"Switch your wallet to a supported EVM network.",
+    tNetworkOk:"Network switched.",
+    tSdkFail:"Wallet service is unavailable. Please retry or sign in with your email.",
+
+    /* —— 建号、引导与凭据保管 8.5.3 —— */
     created:"Welcome! Your account has been created.",
     codeSent:"Code sent. Check your inbox and spam folder.",
     guideTitle:"Finish setting up your account",
@@ -600,47 +658,44 @@ var DICT = {
     guideEmail:"Add an email address. You'll need both an email and a wallet to start identity verification, and we'll use it for security notifications.",
     guidePwd:"Set a login password (optional)",
     guidePwdSub:"You can always sign in with an email code or your wallet.",
-    keepBoth:"Keep both your email and wallet accessible — if you lose both, your account cannot be recovered.",
+    keepBoth:"Keep both your email and wallet accessible. Neither can be replaced if you lose access to it.",
+    emailNote:"Changing your email requires verifying the current one. Keep it accessible.",
+    walletNote:"Your wallet address can't be changed after it's linked. Keep this wallet accessible.",
     barWallet:"Link a wallet to be ready for identity verification.",
     barEmail:"Add an email to be ready for identity verification and to receive security notifications.",
     gateWallet:"Link your wallet to continue",
     gateEmail:"Add your email to continue",
     gateBody:"Identity verification requires both an email address and a wallet address.",
     allSet:"All set. You're ready to start identity verification.",
-    fpNewUser:"No account yet? Just sign in with an email code — we'll create one for you.",
+    startKyc:"Start identity verification",
 
-    /* 成功与状态 8.5.4 */
+    /* —— 成功与状态 8.5.4 —— */
     okPwdReset:"Password reset. Please sign in with your new password.",
-    okPwdUpdated:"Password updated. Please sign in again.",
     okPwdSet:"Password set. Please sign in again.",
-    okEmailAdded:"Email added. Please sign in with your email.",
+    okPwdUpdated:"Password updated. Please sign in again.",
+    okEmailAdded:"Email added.",
     okEmailUpdated:"Email updated. Please sign in with your new email.",
-    okWalletLinked:"Wallet linked. Please sign in again.",
-    okWalletUpdated:"Wallet updated. Please sign in again.",
-    okRecovered:"Your email has been updated. Please sign in with your new email.",
+    okPrefsSaved:"Preferences saved.",
     addrCopied:"Address copied",
     adminFirstTitle:"Set a new password to continue",
     adminFirstSub:"For security, you must replace the initial password before using the console.",
-    adminCreated:"Account created. Copy the initial password now — it will not be shown again.",
-    initExpiresOn:"This initial password expires on {t}.",
-    savedIt:"I have saved it",
 
-    /* 会话失效 12.1.4 */
+    /* —— 会话失效 12.1.4 —— */
     sPwdChanged:"Your password was changed. Please sign in again.",
     sAllDevices:"For your security, all devices have been signed out.",
-    sWasntYou:"Wasn't you? Reset your password.",
     sUnsaved:"Any unsaved changes on this page were not kept.",
     sExpiring:"Your session will expire in 5 minutes. Save your work.",
 
-    /* 锁定 12.2.5 */
+    /* —— 锁定 12.2.5（阶梯 · 全通道锁死）—— */
     lockPwdLeft:"Incorrect email or password. {n} attempts remaining before your account is locked.",
-    lockAgain:"Your account is locked. Try again in {m}m {s}s.",
-    lockHelpUser:"You can unlock now by resetting your password, or sign in with an email code.",
-    lockHelpAdmin:"You can unlock now by resetting your password, or ask another administrator to unlock your account.",
+    lockSigLeft:"Signature verification failed. {n} attempts remaining before your account is locked.",
+    lockTier1:"Too many failed attempts. Your account is locked for {m} minutes. If it happens again, the lock will last longer.",
+    lockTier2:"Too many failed attempts. Your account is locked for {m} minutes.",
+    lockDuring:"Your account is locked. All sign-in methods are unavailable until the lock expires. Try again in {m}m {s}s.",
+    lockWait:"Please wait for the lock to expire.",
     lockTitle:"Account locked",
-    lockedTab:"Locked",
 
-    /* 滑块与限频 12.3 */
+    /* —— 滑块与限频 12.3 —— */
     capTitle:"Security check",
     capSlide:"Slide to complete the puzzle",
     capVerified:"Verified",
@@ -652,147 +707,102 @@ var DICT = {
     capRefresh:"New puzzle",
     rlEmailQuota:"You've requested too many codes. Please try again in {t}.",
 
-    /* 协议 7.3 */
+    /* —— 协议 7.3 —— */
     terms:"I have read and agree to the <a href=\"#\" data-doc=\"tos\">Terms of Service</a> and <a href=\"#\" data-doc=\"pp\">Privacy Policy</a>.",
     reconsentTitle:"Updated Terms of Service",
     reconsentBody:"We have updated the Terms of Service and Privacy Policy. Please review and accept them to continue using your account.",
     reconsentAgree:"Agree and continue",
     reconsentScroll:"Scroll to the end of the document to continue.",
 
-    /* 钱包 C-06 */
+    /* —— 钱包面板 C-06 —— */
     walletPick:"Choose a wallet",
     walletPickSub:"Wallet list is provided by the wallet SDK. Demonstration entries only.",
-    walletConnected:"Connected",
     walletSignTitle:"Sign message",
     walletSignNote:"This only signs a message. It does not send a transaction, move any assets, or grant any approval.",
-    purposeSignIn:"Sign in",
-    purposeRecovery:"Account recovery",
-    purposeReauth:"Re-authenticate",
-    purposeLink:"Link wallet",
-    purposeUnlink:"Unlink wallet",
+    disconnectNote:"Disconnecting only ends the wallet connection in this browser. It does not unlink the wallet from your account.",
+    purposeSignIn:"Sign in", purposeReauth:"Re-authenticate", purposeLink:"Link wallet",
 
-    /* 忘记密码 / 恢复 */
-    fpTitle:"Reset your password",
-    fpSub:"Enter your email address and we'll send you a verification code.",
-    fpStep1:"Verify email", fpStep2:"New password",
-    rcTitle:"Recover your account",
-    rcSub:"Lost access to your email? Prove ownership of the wallet linked to your account, then set a new email address.",
-    rcStep1:"Wallet signature", rcStep2:"New email",
-    rcNewEmailTitle:"Set a new email address",
+    /* —— 设置 / 重置密码（同一套流程，两个入口）9.3 —— */
+    pwdFlowTitle:"Set or reset your password",
+    pwdFlowSub:"Enter your email address and we'll send you a verification code.",
+    pwdStep1:"Verify email", pwdStep2:"Password",
+    titleSetPwd:"Set password", titleResetPwd:"Reset password",
+    adminCodeSent:"If this email belongs to an admin account, a verification code has been sent.",
 
-    /* 账户设置 */ setPrefs:"Preferences", setAccount:"Account",
-    secTitle:"Account security", prefTitle:"Preferences",
-    rowEmail:"Email address", rowPwd:"Login password", rowWallet:"Wallet address",
-    reauthTitle:"Confirm it's you", reauthSub:"Choose one way to verify before changing your security settings.",
-    reauthPwd:"Enter your current password", reauthWallet:"Sign a message with your wallet", reauthCode:"Send a code to your email",
-    reauthOk:"Verified. You won't be asked again for 10 minutes.",
+    /* —— 账户设置 / 再认证 —— */
+    reauthTitle:"Confirm it's you",
+    reauthSub:"Choose one way to verify before changing your security settings.",
+    reauthPwd:"Enter your current password", reauthWallet:"Sign a message with your wallet",
+    reauthCode:"Send a code to your email",
     chgEmailTitle:"Change your email address", addEmailTitle:"Add an email address",
     chgEmailOld:"Verify your current email", chgEmailNew:"Verify your new email",
     chgPwdTitle:"Change your password", setPwdTitle:"Set a login password",
-    chgWalletTitle:"Change your wallet address", addWalletTitle:"Link a wallet",
-    chgWalletOld:"Sign with your current wallet", chgWalletNew:"Sign with your new wallet",
-    walletUnavailable:"Current wallet unavailable? Use password + email code instead",
-    prefLang:"Language", prefTz:"Time zone",
+    prefLang:"Interface language", prefTz:"Time zone",
     prefLangSub:"The interface is in English by default. Your choice is remembered on this device and on your account.",
     prefTzSub:"All times are shown in this time zone with an explicit offset.",
     sampleTime:"Example: {t}",
-    disconnectNote:"Disconnecting only ends the wallet connection in this browser. It does not unlink the wallet from your account.",
 
-    /* 落地页（演示承载） */
-    landTitle:"Overview",
-    landSub:"Demonstration page. It exists only to host the persistent completion bar (C-08) and the identity-verification gate (C-09).",
-    startKyc:"Start identity verification",
-    landDemoData:"Demonstration data",
-
-    /* 管理端 */
-    adminConsole:"Console",
-    admLogin:"Sign in", admNavAccounts:"Accounts", admNavSecurity:"My password",
-    admAccountsTitle:"Account management",
-    admCreate:"Create account",
-    admColEmail:"Work email", admColName:"Name", admColStatus:"Status", admColCreated:"Created", admColLast:"Last sign-in", admColAct:"Actions",
-    admActDisable:"Disable", admActRestore:"Restore", admActUnlock:"Unlock", admActRegen:"Regenerate initial password", admActRegenShort:"Regenerate", admActDelete:"Delete",
-    stActive:"Active",
-    stPendingS:"Pending first sign-in",
-    stPendingD:"Initial password expires on {t}",
-    stLockedS:"Locked",
-    stLockedD:"unlocks in {t}",
-    stPendingExpired:"Initial password expired — regenerate to continue",
-    stDisabled:"Disabled",
-    admLastTip:"The last available administrator cannot be disabled or deleted.",
-    admExpiredNote:"Accounts whose initial password has expired don't count as available administrators.",
-    admNoticeAck:"I have read the Admin Security Notice.",
-    admInitialPwd:"Initial password",
-    admDeliverOffline:"Deliver this password to the account holder through an offline channel. The system does not send any email.",
-    admConfirmDisable:"Disable this account?",
-    admConfirmDisableBody:"{email} will no longer be able to sign in, and any active session ends immediately.",
-    admSearch:"Search work email or name",
-    admFilterAll:"All", admFilterActive:"Active", admFilterPending:"Pending", admFilterLocked:"Locked", admFilterDisabled:"Disabled",
-    admUnlockTitle:"Unlock this account?",
-    admUnlockBody:"The failed-attempt counter for {email} will be reset and the account can sign in again.",
-    admAuditNote:"Every action here is recorded in the audit log.",
-
-    /* 列表状态 */
-    stLoading:"Loading…",
-    stEmptyTitle:"No accounts yet",
-    stEmptyBody:"Create the first console account to get started.",
-    stNoResultTitle:"No matching accounts",
-    stNoResultBody:"Try a different search term or clear the filters.",
-    stFailTitle:"Couldn't load accounts",
-    stFailBody:"The request failed. Check your connection and try again.",
-    stRetry:"Retry",
-    stNoPermTitle:"You don't have access to this page",
-    stNoPermBody:"Finish resetting your password before using the console.",
-    stSubmitting:"Submitting…",
-    stSubmitFailTitle:"Submission failed",
-    stSubmitFailBody:"The server rejected the request. Nothing was changed.",
-
-    /* 演示提示 */
-    demoOnly:"Demonstration data",
-    navOverview:"Overview", navGuide:"Setup guide", navSecurity:"Security", navPrefs:"Preferences",
-    navChangeEmail:"Email", navChangePwd:"Password", navChangeWallet:"Wallet",
-    grpAccount:"Account", grpCredentials:"Credential changes", grpConsole:"Console",
-    endAsset:"Asset portal", endAdmin:"Admin console", prdOpen:"Open the PRD notes for this page", signedInAs:"Signed in as",
-    accStatus:"Account status", stIncomplete:"Incomplete", stActiveAcc:"Active"
+    /* —— 落地页 —— */
+    overviewTitle:"Overview",
+    overviewShell:"This page is a shell for this release. Its content belongs to a later requirement.",
+    ucTitle:"User center",
+    ucShell:"Identity and company verification live here. The content belongs to WS-303; this prototype only provides the landing target and the credential gate.",
+    demoNote:"Demonstration data"
   },
 
   zh: {
     signInTitle:"登录",
-    signInSub:"第一次来？直接用邮箱验证码或钱包登录，系统会自动为你创建账户。",
-    tabCode:"邮箱验证码", tabPwd:"邮箱密码", tabWallet:"钱包登录",
+    tabCode:"邮箱验证码", tabPwd:"邮箱密码", tabWallet:"链接外部钱包",
     sendCode:"发送验证码", resendCode:"重新发送", resendIn:"{n} 秒后重发",
-    submitSignIn:"登录", forgotPwd:"忘记密码？", cantEmail:"无法访问邮箱？",
-    pwdTabHint:"没有密码？改用邮箱验证码登录 →",
-    connectWallet:"连接钱包", disconnect:"断开连接", signMessage:"签署消息",
-    later:"稍后", signOut:"退出登录", save:"保存", cancel:"取消", copyAddress:"复制地址",
-    viewExplorer:"在区块浏览器中查看", completeNow:"立即补全", notSet:"未设置", optional:"可选",
-    back:"返回", contin:"继续", confirm:"确认", close:"关闭", change:"修改", add:"绑定",
+    submitSignIn:"登录", forgotPwd:"忘记密码？", noPwdEntry:"没有密码？设置密码",
+    useCodeEntry:"改用邮箱验证码登录 →",
+    linkWallet:"链接外部钱包", disconnect:"断开连接", signMessage:"签署消息",
+    later:"稍后", signOut:"退出登录", save:"保存", cancel:"取消", confirm:"确认", close:"关闭",
+    back:"返回", contin:"继续", change:"修改", link:"绑定", set:"设置",
+    copyAddress:"复制地址", viewExplorer:"在区块浏览器中查看", completeNow:"立即补全",
+    notLinked:"未绑定", isSet:"已设置", notSet:"未设置", optional:"可选",
+    accountSettings:"账户设置", tabAccount:"账号信息", tabPrefs:"偏好信息",
+    navOverview:"总览", navUserCenter:"用户中心", grpMenu:"菜单",
     labelEmail:"邮箱地址", labelCode:"验证码", labelPwd:"密码",
     labelNewPwd:"新密码", labelConfirmPwd:"确认新密码", labelCurrentPwd:"当前密码",
-    labelWorkEmail:"工作邮箱", labelNewEmail:"新邮箱地址", labelName:"姓名",
-    show:"显示", hide:"隐藏",
+    labelWorkEmail:"工作邮箱", labelNewEmail:"新邮箱地址", labelWallet:"钱包地址",
+    labelName:"姓名", labelStatus:"账户状态",
+    showPwd:"显示密码", hidePwd:"隐藏密码",
+    endAsset:"资产端", adminConsole:"管理端", signedInAs:"当前登录",
+    stIncomplete:"凭据未齐", stActiveAcc:"正常", demoOnly:"演示数据",
+    pagesPanel:"页面", prdOpen:"查看本页的 PRD 摘录",
 
+    eEmailReq:"请输入邮箱。",
     eEmailFmt:"请输入有效的邮箱地址。",
     eCodeReq:"请输入 6 位验证码。",
     eCodeBad:"验证码不正确或已过期。",
     eCodeTooMany:"尝试次数过多，请重新获取验证码。",
     ePwdReq:"请输入密码。",
     ePwdLogin:"邮箱或密码不正确。如果你尚未设置密码，请改用邮箱验证码登录。",
+    ePwdLoginAdmin:"邮箱或密码不正确。",
     ePwdMatch:"两次输入的密码不一致。",
     ePwdSameCurrent:"新密码不能与原密码相同。",
     ePwdSameInitial:"新密码不能与初始密码相同。",
+    eWalletReq:"请输入钱包地址。",
+    eWalletFmt:"请输入有效的 EVM 钱包地址（0x 开头，后跟 40 位十六进制字符）。",
+    eWalletChecksum:"该地址的校验和不正确，请仔细核对后再继续。",
     eTerms:"请阅读并同意《服务条款》和《隐私政策》。",
-    eAdminNotice:"请确认已阅读《管理端安全须知》。",
     eEmailTaken:"该邮箱已绑定其他账户。",
-    eWalletUnlinked:"该钱包尚未绑定任何账户。",
-    eWalletUnlinkedHint:"如需创建账户，请在登录页使用钱包登录。",
-    eNoWallet:"未检测到可用钱包，请先安装受支持的钱包。",
-    eNetwork:"请将钱包切换到受支持的 EVM 网络。",
-    eSigRejected:"你在钱包中拒绝了签名请求。",
-    eSigFailed:"签名验证失败。",
     eDisabled:"该账户已被停用，请联系客服。",
-    eInitExpired:"初始密码已过期，请联系管理员重新生成。",
-    eLastAdmin:"这是系统中唯一可用的管理员。请先创建或启用另一个管理员，再停用此账号。",
-    eSelfAction:"不能对自己的账号执行该操作。",
+    eInitExpired:"初始密码已过期，请联系技术人员重新发放。",
+
+    tNoWallet:"未检测到可用钱包，请先安装受支持的钱包。",
+    tLinked:"钱包已链接。",
+    tConnRejected:"你在钱包中拒绝了链接请求。",
+    tSignPrompt:"请在钱包中确认签名。",
+    tSignRejected:"你在钱包中拒绝了签名请求。",
+    tSignExpired:"签名请求已过期，请重试。",
+    tVerifyFailed:"签名验证失败。",
+    tAddrMismatch:"签名地址与你填写的地址不一致，请检查钱包中选择的账户。",
+    tAccountChanged:"钱包中的账户已切换，请重新链接。",
+    tNetworkBad:"请将钱包切换到受支持的 EVM 网络。",
+    tNetworkOk:"网络已切换。",
+    tSdkFail:"钱包服务暂不可用，请重试或改用邮箱登录。",
 
     created:"欢迎！你的账户已创建。",
     codeSent:"验证码已发送，请查看收件箱和垃圾邮件。",
@@ -801,42 +811,39 @@ var DICT = {
     guideEmail:"绑定邮箱。发起个人认证时需要同时具备邮箱与钱包，我们也会用它发送安全通知。",
     guidePwd:"设置登录密码（可选）",
     guidePwdSub:"你随时可以用邮箱验证码或钱包登录。",
-    keepBoth:"请同时保管好邮箱与钱包，两者都丢失将无法找回账户。",
+    keepBoth:"请妥善保管你的邮箱与钱包，任何一项一旦无法访问都将无法更换。",
+    emailNote:"更换邮箱需要验证当前邮箱，请妥善保管。",
+    walletNote:"钱包地址绑定后不可修改，请妥善保管该钱包。",
     barWallet:"绑定钱包后即可发起个人认证。",
     barEmail:"绑定邮箱后即可发起个人认证，并接收安全通知。",
     gateWallet:"绑定钱包后继续",
     gateEmail:"绑定邮箱后继续",
     gateBody:"发起个人认证需要同时具备邮箱与钱包地址。",
     allSet:"已完成，你现在可以发起个人认证了。",
-    fpNewUser:"还没有账户？直接用邮箱验证码登录即可，系统会自动为你创建。",
+    startKyc:"发起个人认证",
 
     okPwdReset:"密码已重置，请使用新密码登录。",
-    okPwdUpdated:"密码修改成功，请重新登录。",
     okPwdSet:"密码设置成功，请重新登录。",
-    okEmailAdded:"邮箱绑定成功，请使用邮箱登录。",
+    okPwdUpdated:"密码修改成功，请重新登录。",
+    okEmailAdded:"邮箱绑定成功。",
     okEmailUpdated:"邮箱修改成功，请使用新邮箱登录。",
-    okWalletLinked:"钱包绑定成功，请重新登录。",
-    okWalletUpdated:"钱包地址修改成功，请重新登录。",
-    okRecovered:"邮箱已更新，请使用新邮箱登录。",
+    okPrefsSaved:"偏好设置已保存。",
     addrCopied:"地址已复制",
     adminFirstTitle:"请设置新密码后继续",
     adminFirstSub:"出于安全考虑，请先替换初始密码后再使用管理端。",
-    adminCreated:"账号创建成功，请立即复制初始密码，离开本页后将无法再次查看。",
-    initExpiresOn:"该初始密码的有效期至 {t}。",
-    savedIt:"我已记录",
 
     sPwdChanged:"你的密码已被修改，请重新登录。",
     sAllDevices:"出于安全考虑，所有设备均已退出登录。",
-    sWasntYou:"不是你操作的？请重置密码。",
     sUnsaved:"当前页面未保存的内容不会被保留。",
     sExpiring:"登录状态将在 5 分钟后过期，请及时保存。",
 
     lockPwdLeft:"邮箱或密码不正确，还可尝试 {n} 次，超出后账户将被锁定。",
-    lockAgain:"账户已锁定，请在 {m} 分 {s} 秒后重试。",
-    lockHelpUser:"你可以通过重置密码立即解锁，也可以使用邮箱验证码登录。",
-    lockHelpAdmin:"你可以通过重置密码立即解锁，也可以请其他管理员为你解除锁定。",
+    lockSigLeft:"签名验证失败，还可尝试 {n} 次，超出后账户将被锁定。",
+    lockTier1:"失败次数过多，账户已锁定 {m} 分钟。若再次触发，锁定时间会更长。",
+    lockTier2:"失败次数过多，账户已锁定 {m} 分钟。",
+    lockDuring:"账户已锁定，所有登录方式在锁定解除前均不可用，请在 {m} 分 {s} 秒后重试。",
+    lockWait:"请等待锁定自动解除。",
     lockTitle:"账户已锁定",
-    lockedTab:"已锁定",
 
     capTitle:"安全校验",
     capSlide:"拖动滑块完成拼图",
@@ -857,874 +864,475 @@ var DICT = {
 
     walletPick:"选择钱包",
     walletPickSub:"钱包清单由钱包 SDK 提供，此处为演示占位。",
-    walletConnected:"已连接",
     walletSignTitle:"签署消息",
     walletSignNote:"仅签名一条消息，不会发起交易、不会转移资产、不涉及任何授权。",
-    purposeSignIn:"登录",
-    purposeRecovery:"账户恢复",
-    purposeReauth:"身份再确认",
-    purposeLink:"绑定钱包",
-    purposeUnlink:"解绑钱包",
+    disconnectNote:"断开连接只会结束本浏览器中的钱包连接，不会解除账户与该钱包的绑定关系。",
+    purposeSignIn:"登录", purposeReauth:"身份再确认", purposeLink:"绑定钱包",
 
-    fpTitle:"重置密码",
-    fpSub:"输入你的邮箱地址，我们会向它发送验证码。",
-    fpStep1:"验证邮箱", fpStep2:"设置新密码",
-    rcTitle:"找回账户",
-    rcSub:"无法访问邮箱？先用账户绑定的钱包完成签名，再设置新的邮箱地址。",
-    rcStep1:"钱包签名", rcStep2:"新邮箱",
-    rcNewEmailTitle:"设置新的邮箱地址",
- setPrefs:"偏好", setAccount:"账户",
-    secTitle:"账户安全", prefTitle:"偏好设置",
-    rowEmail:"邮箱地址", rowPwd:"登录密码", rowWallet:"钱包地址",
-    reauthTitle:"确认是你本人", reauthSub:"修改安全设置前，请任选一种方式完成验证。",
-    reauthPwd:"输入当前密码", reauthWallet:"用钱包签名", reauthCode:"向邮箱发送验证码",
-    reauthOk:"验证通过，10 分钟内不再重复要求。",
+    pwdFlowTitle:"设置或重置密码",
+    pwdFlowSub:"输入你的邮箱地址，我们会向它发送验证码。",
+    pwdStep1:"验证邮箱", pwdStep2:"设置密码",
+    titleSetPwd:"设置密码", titleResetPwd:"重置密码",
+    adminCodeSent:"若该邮箱为管理端账号，验证码已发送。",
+
+    reauthTitle:"确认是你本人",
+    reauthSub:"修改安全设置前，请任选一种方式完成验证。",
+    reauthPwd:"输入当前密码", reauthWallet:"用钱包签名",
+    reauthCode:"向邮箱发送验证码",
     chgEmailTitle:"修改邮箱地址", addEmailTitle:"绑定邮箱",
     chgEmailOld:"验证当前邮箱", chgEmailNew:"验证新邮箱",
     chgPwdTitle:"修改密码", setPwdTitle:"设置登录密码",
-    chgWalletTitle:"修改钱包地址", addWalletTitle:"绑定钱包",
-    chgWalletOld:"用当前钱包签名", chgWalletNew:"用新钱包签名",
-    walletUnavailable:"当前钱包不可用？改用「当前密码 + 邮箱验证码」",
-    prefLang:"语言", prefTz:"时区",
+    prefLang:"界面语言", prefTz:"时区",
     prefLangSub:"界面默认英文。你的选择会被记录在本设备与账户偏好中。",
     prefTzSub:"界面上的所有时间都按该时区展示，并带时区标注。",
     sampleTime:"示例：{t}",
-    disconnectNote:"断开连接只会结束本浏览器中的钱包连接，不会解除账户与该钱包的绑定关系。",
 
-    landTitle:"总览",
-    landSub:"演示承载页，仅用于展示常驻补全提示条（C-08）与发起个人认证的凭据卡点（C-09）。",
-    startKyc:"发起个人认证",
-    landDemoData:"演示数据",
-
-    adminConsole:"管理端",
-    admLogin:"登录", admNavAccounts:"账户管理", admNavSecurity:"修改密码",
-    admAccountsTitle:"账户管理",
-    admCreate:"创建账号",
-    admColEmail:"工作邮箱", admColName:"姓名", admColStatus:"状态", admColCreated:"创建时间", admColLast:"最近登录", admColAct:"操作",
-    admActDisable:"停用", admActRestore:"恢复", admActUnlock:"解除锁定", admActRegen:"重新生成初始密码", admActRegenShort:"重新生成", admActDelete:"删除",
-    stActive:"正常",
-    stPendingS:"待首次登录",
-    stPendingD:"初始密码有效期至 {t}",
-    stLockedS:"已锁定",
-    stLockedD:"{t} 后解除",
-    stPendingExpired:"初始密码已过期，需重新生成",
-    stDisabled:"已停用",
-    admLastTip:"不能停用或删除最后一个可用的管理员。",
-    admExpiredNote:"初始密码已过期的账号不计入可用管理员数量。",
-    admNoticeAck:"我已阅读《管理端安全须知》。",
-    admInitialPwd:"初始密码",
-    admDeliverOffline:"请通过线下渠道把该密码交付给账号持有人。系统不会发送任何邮件。",
-    admConfirmDisable:"确认停用该账号？",
-    admConfirmDisableBody:"停用后 {email} 将无法登录，其已有会话立即失效。",
-    admSearch:"搜索工作邮箱或姓名",
-    admFilterAll:"全部", admFilterActive:"正常", admFilterPending:"待首登", admFilterLocked:"锁定中", admFilterDisabled:"已停用",
-    admUnlockTitle:"确认解除锁定？",
-    admUnlockBody:"{email} 的失败计数将被清零，账号可以重新登录。",
-    admAuditNote:"此处的每一次操作都会写入审计留痕。",
-
-    stLoading:"加载中…",
-    stEmptyTitle:"还没有任何账号",
-    stEmptyBody:"创建第一个管理端账号后即可开始。",
-    stNoResultTitle:"没有匹配的账号",
-    stNoResultBody:"换一个关键词，或清除筛选条件。",
-    stFailTitle:"账号列表加载失败",
-    stFailBody:"请求失败，请检查网络后重试。",
-    stRetry:"重试",
-    stNoPermTitle:"你没有访问该页面的权限",
-    stNoPermBody:"请先完成密码重置，再使用管理端。",
-    stSubmitting:"提交中…",
-    stSubmitFailTitle:"提交失败",
-    stSubmitFailBody:"服务端拒绝了本次请求，未做任何变更。",
-
-    demoOnly:"演示数据",
-    navOverview:"总览", navGuide:"建号引导", navSecurity:"账户安全", navPrefs:"偏好设置",
-    navChangeEmail:"邮箱", navChangePwd:"密码", navChangeWallet:"钱包地址",
-    grpAccount:"账户", grpCredentials:"凭据变更", grpConsole:"管理端",
-    endAsset:"资产端", endAdmin:"管理端", prdOpen:"查看本页的 PRD 摘录", signedInAs:"当前登录",
-    accStatus:"账户状态", stIncomplete:"凭据未齐", stActiveAcc:"正常"
+    overviewTitle:"总览",
+    overviewShell:"本页本期只出壳子，页面内容归后续需求。",
+    ucTitle:"用户中心",
+    ucShell:"个人认证与企业认证在这里承载。内容归 WS-303，本原型只提供落地目标与凭据卡点。",
+    demoNote:"演示数据"
   }
 };
 
 /* ==========================================================================
-   45-prd.js — 每个页面的 PRD 摘录（面向前端开发）
-   规则：只放该页用得到的部分，不做全量 PRD 阅读器。
-   五类：fields 字段与校验 · rules 业务规则 · states 状态与异常 · copy 中英文案 · ac 验收标准
-   全部取自 chain-financing-account-auth-prd.md **v4**，未改写原文口径。
+   45-prd.js — 每页的 PRD 摘录（面向前端开发）
+   四类：fields 字段与校验 · rules 关键业务规则 · states 状态与异常分支 · copy 中英文案
+   （按用户要求，不展示验收标准一节。）
+   全部取自**定稿 PRD**（prd/v1.0-账户与登录-PRD.md）：编号体系为 F-01～36 / N-01～21 / D-01～31。
    ========================================================================== */
 var PRD = {
 
-/* ------------------------------- 资产端 · 未登录 ------------------------------ */
+/* ------------------------------ 资产端 · 未登录 ----------------------------- */
 "P-A01":{
  title:"P-A01 登录页（资产端唯一入口）",
- src:"PRD v4 · 5.1 页面清单 / 7.1 自动建号 / 7.2 资产端登录 / 7.3 协议交互 / 8.1 字段 / 8.5 文案 / 12.2 锁定 / 12.3 滑块与限频 / 18.1·18.4",
+ src:"定稿 PRD · 5.1 页面清单 / 7.1 自动建号 / 7.2 资产端登录 / 7.3 协议交互 / 8.1 字段 / 8.5 文案 / 12.2 锁定 / 12.3 滑块与限频",
  fields:[
-  ["email","string · 视场景必填","RFC 5322 基本格式；长度 ≤ 254；前后空格自动去除；大小写不敏感（存储小写）。前端失焦校验一次、提交再校验一次；不做 MX / 可达性探测。"],
-  ["code","string · 必填","6 位纯数字；仅接受数字输入；粘贴时自动去除空格与连字符。有效期 10 分钟，单码最多 5 次错误尝试后作废。"],
-  ["password","string · 视场景必填","8–20 字符，至少 1 个英文字母 + 1 个数字；中间不接受空格。支持显示/隐藏切换与浏览器密码管理器自动填充。"],
-  ["wallet_address","string · 由 SDK 回传","EVM 地址 `0x` + 40 位十六进制；**界面上不提供手工输入框**；服务端存小写，展示按 EIP-55 校验和渲染。"],
-  ["agree_terms","bool · 必填","必须为 true 才可提交；默认不勾选。**全站仅本页出现这一处勾选**。"]
+  ["email","string · 视场景必填","RFC 5322 基本格式；≤ 254；前后空格自动去除；大小写不敏感（存储小写）。失焦校验一次、提交再校验一次；不做 MX 探测。"],
+  ["code","string · 必填","6 位纯数字；仅接受数字输入；粘贴自动去除空格与连字符。有效期 10 分钟（N-11），单码最多 5 次错误尝试（N-12）。"],
+  ["password","string · 视场景必填","8–20 字符，至少 1 个英文字母 + 1 个数字（N-20）；中间不接受空格。右侧**眼睛图标**切换显示/隐藏（D-26），图标需有 `aria-label`。"],
+  ["wallet_address","string · 必填 · **用户手工填写**","`0x` + 40 位十六进制，字符集仅 `0-9a-fA-F`；前后空格自动去除。带校验和时按 EIP-55 校验，**不通过时提示但不阻断**（允许全小写地址）。"],
+  ["agree_terms","bool · 必填","必须为 true 才可提交；默认不勾选。**全站仅本页出现这一处勾选**，且协议区没有任何其他可选勾选项。"]
  ],
  rules:[
-  ["F-01","邮箱验证码登录：验证码校验通过 **且** 该邮箱未绑定任何账户 → 自动创建账户并登录，邮箱标记为已验证，`created_via = email_code`，账户状态 `incomplete`。"],
-  ["F-02","钱包签名登录：验签通过 **且** 该地址未绑定任何账户 → 自动创建账户并登录，`created_via = wallet_signature`。不允许仅输入地址登录，必须完成签名。"],
-  ["F-03","**邮箱密码登录不建号**。邮箱不存在 / 邮箱存在但从未设密码 / 密码错误——三种情形返回**完全相同**的提示，响应时间也不可区分。"],
-  ["7.2.2-5","密码 Tab 下常驻一行静态引导（与是否失败无关，不泄漏任何信息），点击切到验证码 Tab 并把已填邮箱带过去。**禁止**用「该账户尚未设置密码」这类动态提示。"],
-  ["F-09","协议勾选行位于提交按钮上方；未勾选时提交按钮置灰，**点击置灰按钮**要在复选框下方显示红色提示并使复选框抖动一次。协议链接在新窗口/弹层打开，不打断表单填写状态。"],
-  ["N-04","**登录页不提供营销邮件订阅勾选**（v4 删除）；协议区只保留用户协议一项，账户对象上也不存储订阅状态。"],
-  ["F-19","所有「Send code」点击后**先弹 C-01 滑块**，通过才发码，按钮转 60 秒倒计时。滑块未通过则不发码，因而也无法建号。"],
-  ["12.2.2","IP 层风控：同一 IP 1 小时内累计失败 20 次后，该 IP 的后续**登录提交**需先过滑块（复用 C-01），文案不解释触发原因；本期不做 IP 封禁。"],
-  ["7.2.5","登录后处理顺序：建号 → 账户停用判定 → 锁定判定 → 协议是否强制重新同意 → 本次是否新建号决定去引导页还是落地页。凭据是否补全**不再**作为进入落地页的拦截条件。"],
-  ["12.2.3","密码校验失败与签名校验失败**共用同一个计数器**，相加满 5 次即锁定 30 分钟。"]
+  ["F-01","邮箱验证码登录：验证码通过 **且** 该邮箱未绑定任何账户 → 自动建号并登录，邮箱标记已验证，`created_via = email_code`，账户状态 `incomplete`。"],
+  ["F-02 / F-06","**链接外部钱包**：先手填地址 → 连接钱包 → 签名 → 服务端验签，并校验**签名恢复地址与手填地址一致**（大小写不敏感严格比对）。不一致直接拒绝，不建号不登录。手填地址只是「账户选择器」，不具身份证明效力；身份证明始终是签名（D-05）。"],
+  ["F-03","**邮箱密码登录不建号**。邮箱不存在 / 已绑定但从未设密码 / 密码错误——三种情形返回**完全相同**的提示，响应时间也不可区分（D-17）。"],
+  ["7.2.2-5","密码 Tab 下常驻**三条静态入口**：「忘记密码？」→ P-A03；「没有密码？设置密码」→ P-A03（同一套流程，D-08）；「改用邮箱验证码登录 →」切 Tab 并带上已填邮箱。三条都是静态文案，不泄漏账户是否存在。"],
+  ["F-13","协议勾选行位于提交按钮上方；未勾选时提交按钮置灰，**点击置灰按钮**需在复选框下方显示红色提示并让复选框抖动一次；协议链接在新窗口/弹层打开，不打断表单。"],
+  ["F-24 / F-25","所有「发送验证码」点击后**先弹 C-01 滑块**，通过才发码，按钮转 60 秒倒计时（N-07）。限频三维度：邮箱 60s / 1h 5 次 / 24h 10 次（N-08），IP（N-09），设备（N-10）。"],
+  ["F-36 / D-25","**钱包的全部状态提示一律走顶部居中 Toast**（连接、签名、拒签、验签失败、地址不一致、切账户、切网络、SDK 失败），钱包面板内不使用内嵌文案或页内提示条。"],
+  ["12.2.2","IP 层风控：同一 IP 1 小时内累计失败 20 次（N-06）后，该 IP 的后续登录提交需先过滑块；本期不做 IP 封禁（D-14）。"],
+  ["7.2.5","登录后处理顺序：建号 → 停用判定 → **锁定判定** → 协议是否强制重新同意 → 是否新建号决定去引导页还是按落地规则跳转。"],
+  ["12.2.4 · D-17","**锁定判定必须在凭据校验通过之后**。若在输入邮箱阶段就提示锁定，等于告诉调用者该邮箱确实注册过，会重新打开枚举通道。"]
  ],
  states:[
-  ["验证码错误 / 过期","提示「验证码不正确或已过期」，计入单码失败次数，**不建号**；过期时恢复发送按钮可点。"],
-  ["单码失败超 5 次","作废该码，提示「尝试次数过多，请重新获取验证码」。验证码输错**不**触发账户锁定。"],
-  ["邮箱未绑定账户（验证码路径）","**不是异常**——自动建号并登录，进入 P-A10 引导页。"],
-  ["密码登录失败","统一提示；仅「账户存在且有密码」这一种情形计入失败计数，但计数与否不得体现在响应上。"],
+  ["验证码错误 / 过期 / 单码超限","Toast 提示，不建号；单码错误 5 次后作废该码，需重新获取。"],
+  ["邮箱未绑定账户（验证码路径）","**不是异常**——自动建号并登录，直接进入 P-A10 引导页。"],
+  ["密码登录失败","统一提示；仅「账户存在且有密码」计入失败计数，但计数与否不体现在响应上。"],
   ["失败第 1、2 次","只提示凭据错误，不透露剩余次数。"],
-  ["失败第 3、4 次","凭据错误 + 剩余次数提示。"],
-  ["失败第 5 次","账户锁定 30 分钟（见 P-A07）。"],
-  ["滑块单次失败","滑轨变红 + 滑块抖动 + 拼图滑回起点 + 自动换新图，弹窗不关闭。"],
-  ["滑块连续 5 次失败","弹窗进入 60 秒冷却，滑块禁用并展示倒计时。"],
-  ["发码限频超限","邮箱 60s 间隔用按钮倒计时表达；小时/日额度、IP、设备维度用输入框下方错误提示表达。"],
-  ["未检测到钱包 / 拒绝连接 / 拒绝签名 / 网络不支持 / SDK 失败","分别给出对应提示；用户拒绝连接时回到初始态不弹错误框；拒绝签名与签名过期**不**计入失败计数。"],
-  ["验签失败","登录失败计数 +1，不建号。"],
-  ["签名时钱包切换账户","检测到地址不一致，中止当前操作并提示切回。"],
-  ["账户已停用","不建立会话，展示停用提示与客服入口。"],
-  ["协议需强制重新同意","建立会话后、进落地页/引导页之前，由 C-03 弹窗拦截。"]
+  ["失败第 3、4 次","凭据错误 + 剩余次数提示（N-05）。"],
+  ["失败第 5 次","账户锁定，时长按阶梯（见 P-A07）。"],
+  ["钱包地址格式不合法","前端拦截，输入框下方报错，不计入失败计数。"],
+  ["钱包地址校验和异常","提示但**不阻断**，用户可核对后继续。"],
+  ["签名恢复地址 ≠ 手填地址","**直接拒绝**，Toast 提示，不建号不登录，**计入失败计数**。"],
+  ["拒绝连接 / 拒绝签名 / 签名过期 / 未检测到钱包 / SDK 失败","Toast 提示，**不计入失败计数**。"],
+  ["钱包内切换了账户","感知并 Toast 提示，中止当前操作。"],
+  ["地址未绑定账户","**不是异常**——自动建号并登录。"],
+  ["账户已停用","Toast 提示，不建立会话。"],
+  ["协议需强制重新同意","建立会话后、进引导页或落地页之前，由 C-03 弹窗拦截。"]
  ],
  copy:[
   ["登录页标题","Sign in","登录"],
-  ["登录页副标题","New here? Just sign in with an email code or your wallet — we'll create your account automatically.","第一次来？直接用邮箱验证码或钱包登录，系统会自动为你创建账户。"],
-  ["方式 - 验证码 / 密码 / 钱包","Email verification code / Email and password / Sign in with wallet","邮箱验证码 / 邮箱密码 / 钱包登录"],
+  ["三种方式","Email verification code / Email and password / Link external wallet","邮箱验证码 / 邮箱密码 / 链接外部钱包"],
   ["发送验证码 / 倒计时","Send code / Resend in {n}s","发送验证码 / {n} 秒后重发"],
-  ["密码 Tab 常驻引导","No password? Sign in with an email code →","没有密码？改用邮箱验证码登录 →"],
+  ["密码 Tab 三入口","Forgot password? / No password? Set one / Sign in with an email code →","忘记密码？ / 没有密码？设置密码 / 改用邮箱验证码登录 →"],
   ["密码登录失败（统一）","Incorrect email or password. If you haven't set a password, sign in with an email verification code instead.","邮箱或密码不正确。如果你尚未设置密码，请改用邮箱验证码登录。"],
-  ["协议勾选","I have read and agree to the Terms of Service and Privacy Policy.","我已阅读并同意《服务条款》和《隐私政策》。"],
-  ["协议未勾选","Please read and agree to the Terms of Service and Privacy Policy.","请阅读并同意《服务条款》和《隐私政策》。"],
-  ["验证码已发送","Code sent. Check your inbox and spam folder.","验证码已发送，请查看收件箱和垃圾邮件。"],
-  ["剩余次数（密码）","Incorrect email or password. {n} attempts remaining before your account is locked.","邮箱或密码不正确，还可尝试 {n} 次，超出后账户将被锁定。"],
-  ["剩余次数（签名）","Signature verification failed. {n} attempts remaining before your account is locked.","签名验证失败，还可尝试 {n} 次，超出后账户将被锁定。"],
-  ["入口","Forgot password? / Can't access your email?","忘记密码？/ 无法访问邮箱？"]
- ],
- ac:[
-  ["AC-01","资产端**不存在**注册页、注册按钮与「去注册」跳转；登录页是唯一入口"],
-  ["AC-03","用未绑定任何账户的邮箱走验证码登录，校验通过后自动创建账户并登录成功"],
-  ["AC-05","用未绑定任何账户的钱包地址走签名登录，验签通过后自动创建账户并登录成功"],
-  ["AC-10","**邮箱密码登录不建号**：用未绑定任何账户的邮箱 + 任意密码提交，不创建账户"],
-  ["AC-39","三种方式登录后进入的是同一个账户，数据完全一致"],
-  ["AC-41","密码登录的三种失败情形返回完全相同的提示，文案与响应时间均不可区分"],
-  ["AC-43","密码 Tab 下常驻静态引导，点击切换 Tab 并带上已填邮箱"],
-  ["AC-44","界面上**不存在**「该账户尚未设置登录密码」这类会暴露邮箱是否已注册的动态提示"],
-  ["AC-45","仅输入钱包地址（不签名）无法登录"],
-  ["AC-48","登录成功后按「建号 → 停用 → 锁定 → 协议重新同意 → 是否新建号决定去向」的顺序处理"],
-  ["AC-51","协议勾选在全站只出现一处（登录页）"],
-  ["AC-96","第 3 次失败起提示剩余次数；前 2 次不提示"],
-  ["AC-101","同一 IP 1 小时内累计失败 20 次后，该 IP 后续登录提交需先过滑块"],
-  ["AC-105","12.3.1 列出的 9 个入口，点击发送验证码时全部先弹出滑块弹窗，无一例外"],
-  ["AC-109","关闭滑块弹窗后不发码，表单已填内容不丢失"]
+  ["钱包地址 label / placeholder","Wallet address / 0x…","钱包地址 / 0x…"],
+  ["地址必填 / 格式错误","Enter your wallet address. / Enter a valid EVM wallet address (0x followed by 40 hexadecimal characters).","请输入钱包地址。/ 请输入有效的 EVM 钱包地址（0x 开头，后跟 40 位十六进制字符）。"],
+  ["校验和异常（不阻断）","This address has an invalid checksum. Check it carefully before continuing.","该地址的校验和不正确，请仔细核对后再继续。"],
+  ["地址不一致（Toast）","The signed address doesn't match the address you entered. Check the account selected in your wallet.","签名地址与你填写的地址不一致，请检查钱包中选择的账户。"],
+  ["协议勾选 / 未勾选","I have read and agree to the Terms of Service and Privacy Policy. / Please read and agree to the Terms of Service and Privacy Policy.","我已阅读并同意《服务条款》和《隐私政策》。/ 请阅读并同意《服务条款》和《隐私政策》。"],
+  ["剩余次数（密码 / 签名）","Incorrect email or password. {n} attempts remaining… / Signature verification failed. {n} attempts remaining…","邮箱或密码不正确，还可尝试 {n} 次…… / 签名验证失败，还可尝试 {n} 次……"],
+  ["验证码已发送","Code sent. Check your inbox and spam folder.","验证码已发送，请查看收件箱和垃圾邮件。"]
  ]
 },
 
 "P-A07":{
- title:"P-A07 账户锁定态（登录页内的状态态）",
- src:"PRD v4 · 5.1 / 12.2.4 锁定时长与入口表现 / 12.2.5 提示时机 / 18.8",
+ title:"P-A07 账户锁定态（登录页内的状态）",
+ src:"定稿 PRD · 5.1 / 10.6 锁定档位 / 12.2.4 阶梯锁定 / 12.2.5 提示 / 12.2.6 通知与留痕",
  fields:[
-  ["剩余锁定时间","只读 · 实时倒计时","按客户端本地秒数渲染，**起点以服务端返回的剩余秒数为准**；归零后表单自动恢复可用。"]
+  ["剩余等待时间","只读 · 实时倒计时","展示**本次锁定**的剩余时间，归零后自动恢复表单可用，无需刷新页面。起点以服务端返回的剩余秒数为准。"]
  ],
  rules:[
-  ["12.2.4","锁定时长 **30 分钟**，到期自动解除；本期不做递增锁定。"],
-  ["12.2.4","锁定期间各入口表现：邮箱密码登录 ❌ 锁死（不再校验、不再计数）· 钱包签名登录 ❌ 锁死（连签名请求都不下发）· **邮箱验证码登录 ✅ 不锁死** · 忘记密码 ✅ 不锁死（提前解锁通道）· 账户恢复 ❌ 锁死（依赖签名，与被锁凭据同源）· 管理端登录 ❌ 锁死。"],
-  ["12.2.4","**锁定不影响自动建号**：未绑定任何账户的邮箱或钱包走验证码/签名路径仍可正常建号——它不属于任何被锁账户。"],
-  ["12.2.1","清零条件：任一方式登录成功 / 锁定到期 / 成功重置密码 / 成功完成账户恢复 / 管理员手工解锁。"],
-  ["12.2.6","进入锁定时向绑定邮箱发送安全通知（无邮箱则跳过），内含时间、地区摘要、解锁方式与「不是你？立即重置密码」入口。"]
+  ["F-23 / D-12","**阶梯锁定**：第 1 档首次锁定 **10 分钟**（N-01）；第 2 档再次锁定 **30 分钟**（N-02）；第 3 次及以后仍为 30 分钟，不再上升。"],
+  ["12.2.4","**归零规则**：距上一次锁定**被触发**满 24 小时（N-03）且期间未再触发，则退回第 1 档。归零判定的起算点是上次触发时刻（不是解除时刻）；判定只发生在新的锁定被触发那一刻，锁定期间档位不变。"],
+  ["D-11","**锁定范围 = 全通道锁死**：邮箱密码登录、邮箱验证码登录、钱包签名登录、设置/重置密码流程、管理端登录与忘记密码——锁定期间**全部不可用**。"],
+  ["12.2.4","**没有任何提前解除方式**：一旦锁定，在本次到期前没有自助或人工解除途径，界面上也不得出现任何解锁入口或「可改用其他方式登录」的表达。第 1 档只锁 10 分钟正是为了让首次误锁代价尽量小。"],
+  ["12.2.1","计数：密码失败与签名失败**共用同一计数器**（D-13），累计 5 次（N-04）触发锁定。清零条件只有两个——任一方式登录成功、本次锁定到期自动解除。"],
+  ["12.2.4","**防枚举约束**：锁定期间用户**仍会收到验证码邮件**，输入正确验证码后才被告知账户锁定。不得为省一次发信而把锁定判定提前到发码阶段。"],
+  ["12.2.6","进入锁定时向绑定邮箱发安全通知，内含锁定时间、地区/IP 摘要、**本次预计自动解除时间**；通知文案**不得**引导「立即重置密码解锁」——锁定期间重置同样不可用。"]
  ],
  states:[
-  ["刚触发锁定","展示「失败次数过多，账户已锁定 30 分钟」。"],
-  ["锁定期间再次尝试","展示实时倒计时「账户已锁定，请在 {m} 分 {s} 秒后重试」。"],
+  ["第 1 档刚触发","提示锁定 10 分钟，并附「若再次触发，锁定时间会更长」。"],
+  ["第 2 档刚触发","提示锁定 30 分钟，**不附加**上面那句（已达上限）。"],
+  ["锁定期间任何入口再次尝试","统一提示「所有登录方式在锁定解除前均不可用」+ 本次剩余时间实时倒计时。"],
   ["倒计时归零","自动解除，失败计数清零，表单恢复可用。"]
  ],
  copy:[
-  ["刚触发锁定","Too many failed attempts. Your account is locked for {m} minutes.","失败次数过多，账户已锁定 {m} 分钟。"],
-  ["锁定期间再次尝试","Your account is locked. Try again in {m}m {s}s.","账户已锁定，请在 {m} 分 {s} 秒后重试。"],
-  ["解锁引导（资产端）","You can unlock now by resetting your password, or sign in with an email code.","你可以通过重置密码立即解锁，也可以使用邮箱验证码登录。"],
-  ["解锁成功","Your account has been unlocked.","你的账户已解除锁定。"]
- ],
- ac:[
-  ["AC-86","邮箱密码登录连续错误 5 次后账户进入锁定"],
-  ["AC-88","密码失败 3 次 + 签名失败 2 次共用计数，同样触发锁定"],
-  ["AC-89","用不存在的邮箱反复尝试密码登录，**不会**锁定任何账户"],
-  ["AC-92","锁定期间密码登录与钱包签名登录均被拒绝，且不再增加计数"],
-  ["AC-93","锁定期间邮箱验证码登录与忘记密码仍可用，成功后立即解除锁定"],
-  ["AC-95","账户锁定不影响自动建号"],
-  ["AC-98","锁定提示中的剩余时间实时倒计时，归零后表单自动恢复可用"],
-  ["AC-99","用户在钱包中主动拒绝签名不计入失败计数"],
-  ["AC-100","邮箱验证码输错不触发账户锁定"]
+  ["首次锁定（第 1 档）","Too many failed attempts. Your account is locked for {m} minutes. If it happens again, the lock will last longer.","失败次数过多，账户已锁定 {m} 分钟。若再次触发，锁定时间会更长。"],
+  ["再次锁定（第 2 档）","Too many failed attempts. Your account is locked for {m} minutes.","失败次数过多，账户已锁定 {m} 分钟。"],
+  ["锁定期间再次尝试","Your account is locked. All sign-in methods are unavailable until the lock expires. Try again in {m}m {s}s.","账户已锁定，所有登录方式在锁定解除前均不可用，请在 {m} 分 {s} 秒后重试。"],
+  ["锁定期间的说明","Please wait for the lock to expire.","请等待锁定自动解除。"]
  ]
 },
 
 "P-A03":{
- title:"P-A03 忘记密码 · 提交邮箱",
- src:"PRD v4 · 7.4 M4 忘记密码 / 8.1 / 8.5 / 12.3 / 18.10",
+ title:"P-A03 设置 / 重置密码 · 提交邮箱",
+ src:"定稿 PRD · 5.1 / 7.2.2 入口 / 9.3 流程复用 / 12.3 滑块与限频",
  fields:[
-  ["email","string · 必填","RFC 5322 基本格式；≤ 254；去空格；存储小写。"],
-  ["code","string · 必填","6 位纯数字；10 分钟有效；单码最多 5 次错误尝试。"]
+  ["email","string · 必填","格式同 8.1。"],
+  ["code","string · 必填","6 位纯数字；发送前先过滑块（C-01）与三维度限频。"]
  ],
  rules:[
-  ["F-11","**本入口不建号**。输入未绑定任何账户的邮箱时，前端表现与已绑定时完全一致（提示已发送），在验证码校验阶段统一返回失败——防枚举在本路径依然有效。"],
-  ["7.4","页面上提供一条**静态**引导帮助误入此页的新用户（对所有人一致，不泄漏信息）。"],
-  ["F-19","「Send code」同样先过滑块再过限频，无豁免。"],
-  ["12.3.4","限频三维度同时生效：同邮箱 60s 间隔 / 1h 5 次 / 24h 10 次；同 IP 1h 20 次 / 24h 100 次；同设备 1h 10 次 / 24h 30 次。各用途**共享同一份邮箱维度额度**。"]
+  ["F-08 / D-08","**「忘记密码」与「没有密码？设置密码」两个入口复用同一套流程**：同一组页面（P-A03 / P-A04）、同一个验证码用途、同一套服务端接口。两个入口只是登录页上的两个不同文案链接。"],
+  ["9.3 关键约束","**页面标题在发码阶段必须是中性文案** `Set or reset your password / 设置或重置密码`，不得根据该邮箱是否已注册、是否已设密码而变化。两个入口的差异**只能在验证码校验通过之后**才体现（防枚举，D-17）。"],
+  ["9.3","**本入口不建号**。输入未绑定任何账户的邮箱时，前端表现与已绑定完全一致，在验证码校验阶段统一失败。"],
+  ["12.2.4","**账户锁定期间本流程不可用**；锁定判定发生在验证码校验通过之后，此时提示锁定与本次剩余时间，流程终止。"]
  ],
  states:[
-  ["验证码错误 / 过期","「验证码不正确或已过期」；过期时恢复发送按钮可点。"],
-  ["单码验证失败超限","「尝试次数过多，请重新获取验证码」并作废该码。"],
-  ["邮箱未绑定账户","表现与已绑定一致，校验阶段统一失败，不建号。"],
-  ["账户只有钱包、无邮箱","用户不会走到这里；若强行输入他人邮箱则按防枚举统一失败处理。"]
+  ["验证码错误 / 过期","Toast 提示，不透露账户是否存在。"],
+  ["单码验证失败超限","作废该码，提示重新获取。"],
+  ["邮箱未绑定账户","表现与已绑定一致，校验阶段统一失败。"],
+  ["限频超限","邮箱 60s 用按钮倒计时表达；小时/日额度、IP、设备维度用输入框下方错误提示表达。"],
+  ["账户处于锁定","验证码通过后提示锁定与本次剩余时间，流程终止。"]
  ],
  copy:[
-  ["新用户引导（静态）","No account yet? Just sign in with an email code — we'll create one for you.","还没有账户？直接用邮箱验证码登录即可，系统会自动为你创建。"],
+  ["中性标题 / 副标题","Set or reset your password / Enter your email address and we'll send you a verification code.","设置或重置密码 / 输入你的邮箱地址，我们会向它发送验证码。"],
   ["验证码错误/过期","Invalid or expired code.","验证码不正确或已过期。"],
   ["单码超限","Too many attempts. Please request a new code.","尝试次数过多，请重新获取验证码。"],
   ["邮箱额度超限","You've requested too many codes. Please try again in {t}.","验证码请求过于频繁，请在 {t} 后重试。"]
- ],
- ac:[
-  ["AC-11","忘记密码流程输入未绑定邮箱，不创建账户"],
-  ["AC-128","忘记密码页输入未绑定邮箱时，表现与已绑定一致，校验阶段统一失败"],
-  ["AC-129","忘记密码页展示静态引导「还没有账户？直接用邮箱验证码登录即可」"],
-  ["AC-117","同一邮箱在 60 秒内第二次请求验证码被拒绝，按钮显示倒计时"],
-  ["AC-125","超限提示不区分该邮箱是否已有账户"]
  ]
 },
 
 "P-A04":{
- title:"P-A04 忘记密码 · 设置新密码",
- src:"PRD v4 · 7.4 / 8.4 密码规则 / 8.4.1 前端提示 / 8.4.2 比对 / 12.1 会话失效 / 18.5·18.10",
+ title:"P-A04 设置 / 重置密码 · 设置密码",
+ src:"定稿 PRD · 8.4 密码规则 / 8.4.1 实时清单 / 8.4.2 比对 / 9.3 / 12.1 会话失效",
  fields:[
-  ["password","string · 必填","**8–20 字符**，至少 1 个英文字母 + 1 个数字；符号自由；前后空格自动去除，中间不接受空格；不禁用粘贴。"],
+  ["password","string · 必填","**8–20 字符**，至少 1 个英文字母 + 1 个数字（N-20）；符号自由；前后空格自动去除，中间不接受空格；不禁用粘贴；右侧眼睛图标。"],
   ["password_confirm","string · 必填","必须与 password 完全一致。"]
  ],
  rules:[
-  ["8.4.1","密码框下方展示**两条**实时校验清单（长度 / 复杂度），满足即打勾。**不展示弱/中/强分档**；用户开始输入后才展示清单。"],
-  ["8.4.2","「与原密码相同」的比对在**服务端**完成并于提交后返回，前端不做预判（前端不持有原密码）。"],
-  ["7.4","若账户此前未设置过密码，本流程等同于「设置密码」，无原密码可比对，跳过比对校验。"],
-  ["F-17","成功 → **该账户全部会话失效**（含当前设备）→ 跳登录页。"],
-  ["7.4","重置成功后清零登录失败计数并解除锁定（忘记密码是锁定的提前解锁通道之一）。"],
-  ["12.5","成功后向该邮箱发送安全通知邮件。"]
+  ["8.4.1","密码框下方展示**两条**实时校验清单（长度 / 复杂度），满足即打勾；**不展示弱/中/强分档**；用户开始输入后才展示。"],
+  ["9.3 差异点","验证码校验通过后才分流：账户**已有密码** → 标题「重置密码」，且校验新密码不得与原密码相同；账户**无密码** → 标题「设置密码」，跳过原密码比对。成功提示同样按此分流。"],
+  ["8.4.2 / F-10","与原密码的比对在**服务端**完成并于提交后返回，前端不做预判（前端不持有原密码）。"],
+  ["F-22 / D-15","成功 → **该账户全部会话失效**（含当前设备，D-16）→ 跳登录页。"]
  ],
  states:[
-  ["长度或复杂度不符","前端实时清单标红，提交按钮置灰。"],
+  ["长度或复杂度不符","实时清单标红，提交按钮置灰。"],
   ["两次密码不一致","「两次输入的密码不一致。」"],
   ["新密码与原密码相同","服务端返回并展示对应文案，**保留已填内容**。"],
   ["提交成功","跳登录页并展示成功提示 + 「所有设备均已退出登录」。"]
  ],
  copy:[
-  ["长度不符","Password must be 8–20 characters.","密码长度需为 8–20 个字符。"],
-  ["复杂度不符","Password must contain at least one letter and one number.","密码需至少包含 1 个英文字母和 1 个数字。"],
-  ["两次不一致","Passwords do not match.","两次输入的密码不一致。"],
-  ["与原密码相同","Your new password must be different from your current password.","新密码不能与原密码相同。"],
-  ["重置成功","Password reset. Please sign in with your new password.","密码已重置，请使用新密码登录。"],
-  ["会话失效说明","For your security, all devices have been signed out.","出于安全考虑，所有设备均已退出登录。"]
- ],
- ac:[
-  ["AC-52","密码少于 8 或多于 20 字符时被拒绝"],
-  ["AC-53","纯数字密码因缺少字母被拒绝；纯字母密码因缺少数字被拒绝"],
-  ["AC-56","密码输入框下方展示「长度」「复杂度」两条实时校验清单；不展示弱/中/强分档"],
-  ["AC-58","资产端忘记密码重置时，新密码与原密码相同被拒绝"],
-  ["AC-62","比对全部在服务端完成，前端不持有也不返回任何可反推原密码的信息"],
-  ["AC-67","忘记密码重置成功后，所有设备会话失效"],
-  ["AC-127","忘记密码全流程可完成，成功后所有会话失效并跳登录页"],
-  ["AC-130","从未设过密码的账户走忘记密码流程，等同于设置密码"]
+  ["标题（两种）","Reset password / Set password","重置密码 / 设置密码"],
+  ["规则清单","8–20 characters / At least one letter and one number","8–20 个字符 / 至少 1 个英文字母和 1 个数字"],
+  ["两次不一致 / 与原密码相同","Passwords do not match. / Your new password must be different from your current password.","两次输入的密码不一致。/ 新密码不能与原密码相同。"],
+  ["成功（两种）","Password reset. Please sign in with your new password. / Password set. Please sign in again.","密码已重置，请使用新密码登录。/ 密码设置成功，请重新登录。"]
  ]
 },
 
-"P-A05":{
- title:"P-A05 账户恢复 · 钱包签名",
- src:"PRD v4 · 7.7 M7 账户恢复 / 7.2.3 钱包能力要求 / 12.4 签名消息 / 18.10",
- fields:[
-  ["wallet_address","由 SDK 回传","不提供手工输入；服务端验签，地址须与连接地址一致。"],
-  ["signature","由钱包回传","一次性签名消息，用途声明为 `Account recovery`；nonce 有效期 5 分钟，验签成功或失败后立即失效。"]
- ],
- rules:[
-  ["F-12","面向「丢失邮箱访问权、但仍持有钱包」的用户。验签通过**且该地址已绑定账户** → 进入 P-A06。"],
-  ["7.7","**本入口不自动建号**。地址未绑定任何账户时明确报错并给出一行引导——恢复是明确的找回意图，不能被悄悄转成建号。"],
-  ["12.4","签名消息必须包含：域名、账户地址、链 ID、nonce、签发时间、有效期、用途声明；文案用 `Sign message`，明确说明**不会发起交易、不会转移资产、不涉及授权**。"],
-  ["7.2.3","连接钱包 / 消息签名 / 切换网络是三件不同的事，界面表达不得混淆；断开连接只影响前端连接态，不解绑账户绑定关系，需在文案中说明。"],
-  ["12.2.4","该入口在账户锁定期间被锁死（依赖签名校验，与被锁凭据同源）。"]
- ],
- states:[
-  ["地址未绑定账户","明确报错 + 引导去登录页用钱包登录建号，**不建号**。"],
-  ["未检测到钱包","「未检测到可用钱包，请先安装受支持的钱包。」"],
-  ["用户拒绝连接","回到初始态，不弹错误框。"],
-  ["用户拒绝签名","「你在钱包中拒绝了签名请求。」不计入失败计数。"],
-  ["网络不受支持","提示切换回受支持的 EVM 网络，SDK 支持时提供一键切换。"],
-  ["验签失败","计入登录失败计数，该入口同样受锁定约束。"],
-  ["SDK 加载失败","「钱包服务暂不可用，请重试或改用邮箱登录。」"]
- ],
- copy:[
-  ["钱包未绑定","This wallet is not linked to any account.","该钱包尚未绑定任何账户。"],
-  ["未绑定引导","To create an account, sign in with your wallet on the sign-in page.","如需创建账户，请在登录页使用钱包登录。"],
-  ["签名声明","This only signs a message. It does not send a transaction, move any assets, or grant any approval.","仅签名一条消息，不会发起交易、不会转移资产、不涉及任何授权。"],
-  ["验签失败","Signature verification failed.","签名验证失败。"],
-  ["断开连接说明","Disconnecting only ends the wallet connection in this browser. It does not unlink the wallet from your account.","断开连接只会结束本浏览器中的钱包连接，不会解除账户与该钱包的绑定关系。"]
- ],
- ac:[
-  ["AC-12","账户恢复入口用未绑定地址签名，不创建账户，明确提示未绑定并引导去登录页"],
-  ["AC-94","锁定期间账户恢复入口被锁死"],
-  ["AC-131","丢失邮箱的用户通过钱包签名可完成账户恢复并绑定新邮箱"],
-  ["AC-46","钱包签名过程中用户在钱包内切换账户，系统检测到地址不一致并中止流程"]
- ]
-},
-
-"P-A06":{
- title:"P-A06 账户恢复 · 绑定新邮箱",
- src:"PRD v4 · 7.7 / 12.1 会话失效 / 12.5 安全通知 / 18.10",
- fields:[
-  ["email（新）","string · 必填","格式同 8.1；**不得为平台上任何其他账户已绑定的邮箱**。"],
-  ["code","string · 必填","6 位纯数字，发送前同样过滑块与限频（12.3.1 第 8 项入口）。"]
- ],
- rules:[
-  ["F-12","验签通过即可修改邮箱，本期不加人工复核。"],
-  ["7.7","成功 → 账户邮箱替换 → **全部会话失效** → 提示并跳登录页。"],
-  ["12.5","向旧邮箱与新邮箱各发一封安全通知，旧邮箱通知内含「不是本人操作」的申诉入口。"],
-  ["7.7","恢复成功后清零失败计数并解除锁定；只记录 `recovery_at` 时间戳，不定义恢复后的业务冻结规则。"],
-  ["7.7","**邮箱与钱包同时丢失时本期无恢复通道**，需在引导页与账户设置中明确告知用户保管好两项凭据。"]
- ],
- states:[
-  ["新邮箱已被占用","「该邮箱已绑定其他账户。」保留在当前页。"],
-  ["验证码错误 / 过期","「验证码不正确或已过期。」"],
-  ["提交成功","跳登录页，提示用新邮箱登录。"]
- ],
- copy:[
-  ["邮箱已被占用","This email is already linked to another account.","该邮箱已绑定其他账户。"],
-  ["恢复成功","Your email has been updated. Please sign in with your new email.","邮箱已更新，请使用新邮箱登录。"]
- ],
- ac:[
-  ["AC-131","丢失邮箱的用户通过钱包签名可完成账户恢复并绑定新邮箱"],
-  ["AC-132","账户恢复成功后向旧邮箱与新邮箱各发安全通知，并写入 `recovery_at`"],
-  ["AC-79","会话失效后，未消费的登录验证码、签名 nonce 与滑块票据均不能再使用"]
- ]
-},
-
-"CREATED":{
- title:"建号确认（首次登录即建号的感知点）",
- src:"PRD v4 · 7.1.3 建号写入 / 7.1.4 引导页 / 8.5.3 / 18.1·18.2",
- fields:[
-  ["account_id","不可变主键","账户主键；邮箱与钱包地址均为可换绑的登录标识，换绑后 `account_id` 不变，历史记录不断裂。"],
-  ["created_via","enum","`email_code` / `wallet_signature`，用于引导页分流与统计。"]
- ],
- rules:[
-  ["7.1.3","建号与登录在**同一次提交**内完成，用户感知上只有「登录成功」这一个动作，不需要二次确认。"],
-  ["7.1.3","协议同意记录与账户在同一次提交内一并写入，保证不存在没有同意记录的账户。"],
-  ["7.1.4","建号确认必须**显著**，不能只做一闪而过的 Toast——这是用户唯一能感知到「我刚开了户」的地方。"],
-  ["12.5","**自动建号本身不发欢迎邮件**：会与「验证码邮件不区分是否首次」的口径冲突，反而泄漏该邮箱此前是否已有账户。"]
- ],
- states:[
-  ["建号成功","账户状态 `incomplete`（邮箱与钱包未同时具备），随后进入 P-A10 引导页。"]
- ],
- copy:[
-  ["建号确认","Welcome! Your account has been created.","欢迎！你的账户已创建。"]
- ],
- ac:[
-  ["AC-06","建号时随账户一并写入协议同意记录，不存在没有同意记录的账户"],
-  ["AC-07","建号时写入 `created_via`，可用于分流与统计"],
-  ["AC-08","邮箱建号的账户 `wallet_address` 为空、无密码；钱包建号的账户 `email` 为空、无密码"],
-  ["AC-09","建号后账户状态为 `incomplete`"],
-  ["AC-15","建号成功后不发送任何欢迎/注册邮件"],
-  ["AC-17","引导页顶部显著展示建号确认文案"]
- ]
-},
-
-/* ------------------------------- 资产端 · 已登录 ------------------------------ */
+/* ------------------------------ 资产端 · 已登录 ----------------------------- */
 "P-A10":{
  title:"P-A10 建号后引导页",
- src:"PRD v4 · 7.1.4 引导页 / 7.5 凭据完备性 / 8.5.3 / 12.1.1 会话失效例外 / 18.2",
+ src:"定稿 PRD · 5.1 / 7.4.1 引导页 / 7.4.2 稍后 / 7.4.3 落地规则 / 7.5.4 凭据不可更换 / 12.1.1 例外",
  fields:[
-  ["email / wallet_address","视建号路径","邮箱建号 → 引导绑钱包（连接 + 签名）；钱包建号 → 引导绑邮箱（输入邮箱 → 滑块 → 验证码）。"],
-  ["password","可选","文案必须带「可选 / Optional」二字，并说明可随时用验证码或钱包登录。"]
+  ["建号所用凭据","只读","顶部确认区块下方展示本次建号所用的邮箱地址或钱包地址缩略，让用户当场核对是不是自己预期的那个。"],
+  ["password","可选","文案必须带「可选 / Optional」，并说明可随时用验证码或钱包登录。"]
  ],
  rules:[
-  ["F-04","**仅在本次登录新建了账户时展示一次**；老用户登录不进此页。中断后不再强制进入，改由 C-08 常驻提示条与账户设置补全。"],
-  ["7.1.4","主引导按建号路径分流，两种内容不串。"],
-  ["7.1.4","底部「Later / 稍后」跳过按钮与主操作**等权重**呈现，不置灰、不藏在角落。"],
-  ["7.1.4","展示双凭据保管提示：两者都丢失将无法找回账户。"],
-  ["7.5.3","跳过后**不进入任何全局受限态**：可正常浏览、进入账户设置、使用不依赖认证的功能。唯一硬卡点是「发起个人认证」。"],
-  ["12.1.1 例外","**补齐凭据（从无到有的首次绑定）不触发会话失效**；只有变更已有凭据才触发。由服务端据字段是否由空变非空判定，前端不可决定。"]
+  ["F-04","**不设独立的建号确认页**——建号确认是本页顶部的一个区块，必须显著。引导页仅在本次登录新建了账户时展示一次，老用户不进此页。"],
+  ["7.4.1","主引导按建号路径分流：邮箱建号 → 引导绑钱包；钱包建号 → 引导绑邮箱。两种内容不串。"],
+  ["7.4.1 第 4 条","**凭据保管须知不可省略、不可弱化**：两项凭据一旦失去访问权都无法更换（依据见 7.5.4）。不得改写成「建议保管」。"],
+  ["7.4.2","点「Later / 稍后」→ **整页收回**，不停留在引导页的任何残留态，随后按落地规则跳转。按钮与主操作等权重，不置灰不隐藏。"],
+  ["F-07 / D-04","**落地规则**：个人或企业认证未完成 → P-A17 用户中心；企业认证已通过 → P-A16 总览页；认证状态接口异常取不到时**默认落到用户中心**。"],
+  ["12.1.1 例外 / D-15","**首次绑定凭据（从无到有）不触发会话失效**，用户留在原处继续；只有变更已有凭据才触发。由服务端据字段是否由空变非空判定。"]
  ],
  states:[
-  ["补全时邮箱/地址已被他人绑定","明确报错并保留在当前页，账户状态不变。"],
-  ["补全过程中断（关页面）","引导页只展示一次；后续通过 C-08 与账户设置补全。"],
-  ["点「Later」","正常进入落地页，不做任何封锁，展示常驻提示条。"],
+  ["补全时邮箱/地址已被占用","明确报错并保留在当前页，账户状态不变。"],
+  ["补全过程中断（关页面）","引导页只展示一次；后续通过 C-08 常驻提示条与账户设置补全。"],
+  ["点「稍后」","整页收回并按落地规则跳转，不做任何封锁。"],
   ["补齐成功","账户状态由 `incomplete` 转 `active`，常驻提示条消失。"]
  ],
  copy:[
+  ["建号确认","Welcome! Your account has been created.","欢迎！你的账户已创建。"],
   ["引导页标题","Finish setting up your account","完善你的账户"],
   ["引导 - 绑钱包","Link an EVM wallet. You'll need both an email and a wallet to start identity verification.","绑定 EVM 钱包。发起个人认证时需要同时具备邮箱与钱包。"],
   ["引导 - 绑邮箱","Add an email address. You'll need both an email and a wallet to start identity verification, and we'll use it for security notifications.","绑定邮箱。发起个人认证时需要同时具备邮箱与钱包，我们也会用它发送安全通知。"],
-  ["设密码（可选）","Set a login password (optional)","设置登录密码（可选）"],
-  ["设密码说明","You can always sign in with an email code or your wallet.","你随时可以用邮箱验证码或钱包登录。"],
-  ["双凭据保管","Keep both your email and wallet accessible — if you lose both, your account cannot be recovered.","请同时保管好邮箱与钱包，两者都丢失将无法找回账户。"],
+  ["设密码（可选）","Set a login password (optional) / You can always sign in with an email code or your wallet.","设置登录密码（可选）/ 你随时可以用邮箱验证码或钱包登录。"],
+  ["凭据保管须知","Keep both your email and wallet accessible. Neither can be replaced if you lose access to it.","请妥善保管你的邮箱与钱包，任何一项一旦无法访问都将无法更换。"],
   ["跳过","Later","稍后"]
- ],
- ac:[
-  ["AC-16","仅在本次登录新建了账户时展示引导页；老用户登录不进此页"],
-  ["AC-18","邮箱建号 → 引导绑钱包；钱包建号 → 引导绑邮箱，两种内容不串"],
-  ["AC-19","「设置登录密码」明确标注为可选，并说明可用验证码或钱包登录"],
-  ["AC-20","引导页展示双凭据保管提示"],
-  ["AC-21","「Later」按钮与主操作等权重呈现，不置灰、不隐藏"],
-  ["AC-22","点「Later」后正常进入落地页，不进入任何全局受限态"],
-  ["AC-23","引导页只展示一次；再次登录不再强制进入"],
-  ["AC-71","**首次绑定**邮箱（从无到有）**不触发**会话失效"],
-  ["AC-72","**首次绑定**钱包（从无到有）**不触发**会话失效"]
  ]
 },
 
-"LAND":{
- title:"落地页（演示承载页 · C-08 与 C-09 的挂载位）",
- src:"PRD v4 · 7.5.2 认证前置校验 / 7.5.3 受限态收敛 / 11.1 权限 / 18.2·18.3",
+"P-A16":{
+ title:"P-A16 总览页（本期壳子）",
+ src:"定稿 PRD · 5.1 / 5.3 已登录信息架构 / 7.4.3 落地规则",
  fields:[
-  ["account_status","enum · 只读","`incomplete`（邮箱与钱包未同时具备）/ `active`（两项均已绑定）/ `locked` / `disabled`。**密码不参与状态判定**。"]
+  ["—","—","本页本期无字段。"]
  ],
  rules:[
-  ["F-07","凭据未齐时全局展示常驻补全提示条（C-08）：可折叠为一个小图标，但**不可永久关闭**（下次进入仍展示），直到凭据补齐为止；带「立即补全」按钮跳到账户设置对应项。"],
-  ["F-08","**唯一的凭据硬卡点**：点击「发起个人认证」时校验 `email` 与 `wallet_address` 是否同时非空，密码不参与判定。未通过时**不跳走**，在当前页弹出 C-09 就地补齐弹层。"],
-  ["7.5.2","两项都缺时在同一弹层内分两步依次完成，带步骤指示（1/2、2/2）；补齐成功后弹层自动关闭并**原地继续**发起认证。"],
-  ["7.5.2","弹层可关闭（用户可以决定现在不做认证），关闭后回到原页面，不改变任何状态。**服务端必须同样校验**，前端弹层不是唯一防线。"],
-  ["7.5.3 边界","各业务模块的功能放行**以认证状态为准，不以本模块的凭据完备状态为准**；业务模块不应自行读取 `account_status == incomplete` 做拦截。"]
+  ["5.1 / 7.4.3","**本期只出壳子**：作为左侧菜单项与「企业认证已通过」时的落地目标存在，页面内容归后续需求。"],
+  ["F-21 / D-10","左侧菜单只保留「总览」与「用户中心」两项业务导航，**不承载任何账户维护入口**。"],
+  ["F-20","面包屑（C-10）位于顶部导航栏**下方**，非当前级可点击返回；单层页面也展示该级名称，保证各页顶部结构一致。"]
  ],
  states:[
-  ["凭据不齐","展示 C-08；可折叠为小图标；不封锁任何功能。"],
-  ["点击发起个人认证 · 缺凭据","弹出 C-09，不跳走。"],
-  ["关闭 C-09","回到原页面，状态不变，不触发任何封锁。"],
-  ["凭据齐备","C-08 消失，点击发起个人认证直接放行（进入 WS-303）。"]
+  ["本期","页面存在、内容留空并标注本期不做。"]
  ],
  copy:[
-  ["提示条 - 缺钱包","Link a wallet to be ready for identity verification.","绑定钱包后即可发起个人认证。"],
-  ["提示条 - 缺邮箱","Add an email to be ready for identity verification and to receive security notifications.","绑定邮箱后即可发起个人认证，并接收安全通知。"],
-  ["弹层 - 缺钱包 / 缺邮箱","Link your wallet to continue / Add your email to continue","绑定钱包后继续 / 绑定邮箱后继续"],
-  ["弹层说明","Identity verification requires both an email address and a wallet address.","发起个人认证需要同时具备邮箱与钱包地址。"],
-  ["补全成功","All set. You're ready to start identity verification.","已完成，你现在可以发起个人认证了。"],
-  ["立即补全","Complete now","立即补全"]
+  ["左侧菜单","Overview / User center","总览 / 用户中心"]
+ ]
+},
+
+"P-A17":{
+ title:"P-A17 用户中心（承载认证，内容归 WS-303）",
+ src:"定稿 PRD · 5.1 / 7.4.3 落地规则 / 7.5.2 认证前置校验 / 7.5.3 受限态收敛",
+ fields:[
+  ["account_status","enum · 只读","`incomplete`（邮箱与钱包未同时具备）/ `active` / `locked` / `disabled`。**密码不参与状态判定**。"]
  ],
- ac:[
-  ["AC-24","凭据未齐时全局展示常驻补全提示条，可折叠为小图标，但下次进入仍展示"],
-  ["AC-25","提示条文案按缺失项正确分支"],
-  ["AC-26","提示条「立即补全」按钮可跳到账户设置对应项"],
-  ["AC-31","邮箱与钱包均具备时，点击「发起个人认证」直接放行"],
-  ["AC-32","缺钱包时弹出就地补齐弹层，**不跳走当前页面**"],
-  ["AC-34","两项都缺时，弹层内分两步依次完成并带步骤指示"],
-  ["AC-35","补齐成功后弹层自动关闭并原地继续发起认证"],
-  ["AC-36","用户关闭弹层后回到原页面，账户与页面状态均不变"],
-  ["AC-37","绕过前端直接调用接口，服务端同样校验并拒绝"],
-  ["AC-38","密码是否设置不影响该前置校验的结果"],
-  ["AC-49","凭据不齐的老用户登录后直接进落地页"]
+ rules:[
+  ["7.4.3","认证未完成时的**默认落地页**；认证状态取不到时也默认落到这里（保守选择）。页面内容（个人认证、企业认证）归 WS-303，本模块只定义它作为落地目标与凭据卡点位置。"],
+  ["F-11","凭据未齐时全局展示常驻补全提示条（C-08）：可折叠为小图标，但**不可永久关闭**，直到凭据补齐；带「立即补全」按钮，点击进入 P-A11 对应区块。"],
+  ["F-12","**唯一的凭据硬卡点**：点「发起个人认证」时校验 `email` 与 `wallet_address` 是否同时非空（密码不参与）。未通过**不跳走**，就地弹出 C-09；两项都缺时同一弹层内分两步完成并带 1/2、2/2 指示；补齐后弹层关闭并**原地继续**。"],
+  ["7.5.3 边界","各业务模块的功能放行**以认证状态为准，不以本模块的凭据完备状态为准**；业务模块不应自行读取 `account_status == incomplete` 做拦截。"],
+  ["7.5.2","**服务端必须同样校验**，前端弹层不是唯一防线。"]
+ ],
+ states:[
+  ["凭据不齐","展示 C-08；可折叠；不封锁任何功能。"],
+  ["点击发起个人认证 · 缺凭据","弹出 C-09，不跳走。"],
+  ["关闭 C-09","回到原页面，状态不变，不触发任何封锁。"],
+  ["凭据齐备","C-08 消失，点击直接放行进入认证流程（WS-303）。"]
+ ],
+ copy:[
+  ["提示条 - 缺钱包 / 缺邮箱","Link a wallet to be ready for identity verification. / Add an email to be ready for identity verification and to receive security notifications.","绑定钱包后即可发起个人认证。/ 绑定邮箱后即可发起个人认证，并接收安全通知。"],
+  ["弹层标题","Link your wallet to continue / Add your email to continue","绑定钱包后继续 / 绑定邮箱后继续"],
+  ["弹层说明 / 补全成功","Identity verification requires both an email address and a wallet address. / All set. You're ready to start identity verification.","发起个人认证需要同时具备邮箱与钱包地址。/ 已完成，你现在可以发起个人认证了。"]
  ]
 },
 
 "P-A11":{
- title:"P-A11 账户设置 · 安全",
- src:"PRD v4 · 7.5.4 补设密码 / 7.6 账户变更 / 13.5 地址展示 / 13.6 区块浏览器 / 18.2",
+ title:"P-A11 账户设置（单页 + tab 锚点）",
+ src:"定稿 PRD · 5.1 / 5.3 信息架构 / 7.6 账户设置 / 7.5.4 凭据不可更换 / 13.3 语言 / 13.4 时区",
  fields:[
-  ["email","只读展示 + 变更入口","已绑定时展示完整邮箱；未绑定时展示「未设置」并提供「绑定」。"],
-  ["password","只读展示 + 变更入口","从未设过密码时展示 `Not set / 未设置` + 「设置密码」按钮，**不带任何警示色或感叹号图标**——它是可选项，不是缺陷。"],
-  ["wallet_address","只读展示 + 变更入口","按 EIP-55 校验和渲染；缩略为**前 6 位 + … + 后 4 位**；等宽字体；提供复制与区块浏览器跳转。"]
+  ["邮箱","只读展示 + 弹窗修改","已绑定时展示当前邮箱，下方一行说明「更换邮箱需要验证当前邮箱」；未绑定时展示 `Not linked / 未绑定`。"],
+  ["登录密码","只读展示 + 弹窗设置","`Set / 已设置` 或 `Not set / 未设置`，**不带任何警示色或感叹号图标**——它是可选项，不是缺陷。"],
+  ["钱包地址","**只读**","已绑定时展示缩略地址（前 6 后 4）+ 复制 + 区块浏览器跳转，**无「修改」「解绑」「更换」任何按钮**；未绑定时展示未绑定与「链接外部钱包」按钮。"],
+  ["账户状态","只读","`凭据未齐` / `正常` 等状态标签。"],
+  ["locale","enum · 必填","`en` / `zh-CN`，**默认 en**；下拉选择，即时生效并持久化。"],
+  ["timezone","string · 必填","IANA 时区；下拉选择，保存后全站时间展示随之变化。"]
  ],
  rules:[
-  ["7.6","三项变更统一遵循「先再认证、再验证新标识、成功后全局会话失效」的骨架，统一入口就是本页。"],
-  ["F-06","密码是可选凭据，任何流程都不因未设密码而阻塞；账户设置中可随时补设。"],
-  ["13.5","地址存储小写、唯一性判断基于小写；展示按 EIP-55；完整地址允许任意字符处换行，不溢出容器。"],
-  ["13.6","跳转入口在复制按钮右侧，新标签页打开（`target=\"_blank\"` + `rel=\"noopener noreferrer\"`）；链 ID 缺失 / 映射表无对应 / 映射表未加载成功时**不展示跳转入口**，只保留复制，不展示置灰按钮或死链接。"]
+  ["F-15 / D-09","**单页 + 顶部 tab 锚点**：点 tab 后**整页平滑滚动**到对应区块，不切换路由、不重新加载；页面同时渲染两个区块的全部内容，tab 只控制滚动位置。"],
+  ["F-16 / D-10","**进入方式只有右上角账号下拉（C-11）→「账户设置」**；左侧菜单不提供入口。"],
+  ["F-19 / D-06","**钱包地址绑定后不可修改**，只读展示并配一行说明；服务端必须拒绝任何修改钱包地址的请求，不能只靠前端隐藏入口。"],
+  ["7.5.4","邮箱与钱包**一旦失去访问权都无法更换**，须在本页对应条目下方明确告知（另一处在引导页）。这是产品事实的准确表达，不是建议。"],
+  ["13.3","语言判定三级：本浏览器手动偏好 > 已登录账户偏好 > 英文默认；**本期不读 `navigator.language`**。双态持久化，冲突时以较晚的一次显式设置为准并回写另一侧。"],
+  ["13.4","**时区按浏览器推断**（与语言口径不同，有意为之）；所有时间以 UTC 存储，展示一律带时区标注，两种语言统一 24 小时制。"]
  ],
  states:[
-  ["缺一项凭据","页内提示补全（与 C-08 同一口径）。"],
+  ["缺一项凭据","页内展示补全提示（与 C-08 同一口径）。"],
   ["地址复制","Toast「地址已复制」。"],
-  ["无对应区块浏览器","隐藏跳转入口，只保留复制。"]
+  ["无对应区块浏览器","隐藏跳转入口，只保留复制（13.6 降级）。"],
+  ["偏好保存","Toast「偏好设置已保存」；账户偏好保存失败时不阻断界面，下次进入静默重试。"]
  ],
  copy:[
-  ["未设置 / 可选","Not set / Optional","未设置 / 可选"],
-  ["复制地址 / 区块浏览器","Copy address / View on explorer","复制地址 / 在区块浏览器中查看"],
-  ["地址已复制","Address copied","地址已复制"]
- ],
- ac:[
-  ["AC-28","只有邮箱 + 钱包、从未设密码的账户状态为 `active`"],
-  ["AC-29","账户设置中未设密码项展示为「Not set / 未设置」，不带警示色或感叹号"],
-  ["AC-30","文档与界面中不存在任何「密码必须补全」的要求"],
-  ["AC-185","地址按 EIP-55 渲染，缩略为前 6 后 4，可复制完整地址，hover 展示全量"],
-  ["AC-187","地址与哈希展示处提供区块浏览器跳转图标按钮，tooltip 文案正确"]
+  ["tab","Account / Preferences","账号信息 / 偏好信息"],
+  ["邮箱条目说明","Changing your email requires verifying the current one. Keep it accessible.","更换邮箱需要验证当前邮箱，请妥善保管。"],
+  ["钱包只读说明","Your wallet address can't be changed after it's linked. Keep this wallet accessible.","钱包地址绑定后不可修改，请妥善保管该钱包。"],
+  ["未绑定 / 已设置 / 未设置","Not linked / Set / Not set","未绑定 / 已设置 / 未设置"],
+  ["偏好保存成功","Preferences saved.","偏好设置已保存。"]
  ]
 },
 
 "P-A12":{
- title:"P-A12 修改 / 绑定邮箱",
- src:"PRD v4 · 7.6.1 再认证 / 7.6.2 修改邮箱 / 12.1 会话失效 / 12.3.1 入口 5·6·7 / 18.10",
+ title:"P-A12 修改 / 绑定邮箱（弹窗）",
+ src:"定稿 PRD · 5.1 / 7.6.2 再认证 / 7.6.3 修改邮箱 / 12.1 会话失效 / 12.3.1 发码入口",
  fields:[
-  ["再认证因子","三选一","有密码 → 输入当前密码；有钱包 → 钱包签名（用途 `Re-authenticate`）；有邮箱 → 旧邮箱验证码（发送前同样过滑块与限频）。"],
+  ["再认证因子","三选一","有密码 → 当前密码；有钱包 → 钱包签名（用途 `Re-authenticate`）；有邮箱 → 邮箱验证码（发送前同样过滑块与限频）。"],
   ["email（新）","string · 必填","格式同 8.1；不得为其他账户已绑定的邮箱。"],
   ["code","string · 必填","旧邮箱与新邮箱各一次验证码，**两次都要先过滑块**。"]
  ],
  rules:[
-  ["7.6.1","页面同时展示该账户可用的**全部**因子，用户自选；只有一种可用因子时直接进入该因子，不展示选择列表。再认证通过后 10 分钟内不重复要求。"],
-  ["7.6.1","再认证失败计入登录失败计数（与登录共用同一计数器）。"],
-  ["F-13","流程：再认证 → 旧邮箱验证（旧邮箱可用时）→ 新邮箱验证 → 提交。旧邮箱不可用时用户应走 M7 账户恢复，本流程不提供跳过。"],
-  ["7.6.2","成功 → 邮箱替换 → **全部会话失效** → 跳登录页并提示用新邮箱登录（登录页邮箱输入框自动填入新邮箱）。"],
-  ["7.6.2","若账户原本无邮箱（钱包建号且未补），本流程即「绑定邮箱」，**跳过第 2 步**，标题与按钮文案变为 `Add email / 绑定邮箱`；绑定成功后若两项凭据齐备，账户状态转 `active`。"],
-  ["12.1.1 例外","首次绑定（从空到非空）**不触发**会话失效。"],
-  ["12.5","向旧邮箱与新邮箱各发安全通知。"]
+  ["F-17 / D-09","**在弹窗内分步完成**，不跳页；弹窗不产生面包屑层级，关闭后仍在 P-A11。"],
+  ["7.6.2","弹窗内展示该账户可用的全部再认证因子，用户自选；只有一种可用因子时直接进入该因子。通过后 10 分钟内不重复要求（N-16）。再认证失败计入登录失败计数。"],
+  ["D-07 / 7.6.3","**验证旧邮箱这一步不可跳过**——这意味着失去旧邮箱访问权的用户无法完成本流程（依据见 7.5.4）。"],
+  ["7.6.3","成功 → 邮箱替换 → **全部会话失效** → 关闭弹窗并跳登录页，提示用新邮箱登录；向旧邮箱与新邮箱各发安全通知。"],
+  ["12.1.1 例外","账户原本无邮箱时本流程即「绑定邮箱」，跳过旧邮箱验证，标题变为 `Add email / 绑定邮箱`，且**首次绑定不触发会话失效**。"]
  ],
  states:[
-  ["再认证失败","计入失败计数；连续 5 次触发账户锁定。"],
+  ["再认证失败","计入登录失败计数；累计 5 次触发阶梯锁定。"],
   ["新邮箱已被占用","「该邮箱已绑定其他账户。」"],
-  ["验证码错误/过期 / 单码超限","同 8.5.2 统一文案。"],
   ["提交成功（修改）","全部会话失效 → 跳登录页。"],
   ["提交成功（首次绑定）","不失效会话，留在原页面继续。"]
  ],
  copy:[
-  ["标题（修改 / 绑定）","Change your email address / Add an email address","修改邮箱地址 / 绑定邮箱"],
-  ["再认证","Confirm it's you","确认是你本人"],
-  ["再认证通过","Verified. You won't be asked again for 10 minutes.","验证通过，10 分钟内不再重复要求。"],
-  ["邮箱修改成功","Email updated. Please sign in with your new email.","邮箱修改成功，请使用新邮箱登录。"],
-  ["邮箱绑定成功","Email added. Please sign in with your email.","邮箱绑定成功，请使用邮箱登录。"]
- ],
- ac:[
-  ["AC-133","修改邮箱需再认证 + 旧邮箱验证 + 新邮箱验证"],
-  ["AC-134","原本无邮箱的账户走该流程时为「绑定邮箱」，跳过旧邮箱验证步骤"],
-  ["AC-137","只有一种可用再认证因子时，直接进入该因子，不展示选择列表"],
-  ["AC-138","再认证成功后 10 分钟内不重复要求"],
-  ["AC-69","**修改**邮箱成功后，所有设备会话失效，提示用新邮箱登录"],
-  ["AC-71","**首次绑定**邮箱不触发会话失效"]
+  ["标题（两种）","Change your email address / Add an email address","修改邮箱地址 / 绑定邮箱"],
+  ["步骤","Confirm it's you / Verify your current email / Verify your new email","确认是你本人 / 验证当前邮箱 / 验证新邮箱"],
+  ["成功（两种）","Email updated. Please sign in with your new email. / Email added.","邮箱修改成功，请使用新邮箱登录。/ 邮箱绑定成功。"]
  ]
 },
 
 "P-A13":{
- title:"P-A13 修改 / 设置密码",
- src:"PRD v4 · 7.6.1 再认证 / 7.6.3 修改密码 / 8.4 密码规则 / 12.1 / 18.5",
+ title:"P-A13 修改 / 设置密码（弹窗）",
+ src:"定稿 PRD · 5.1 / 7.6.2 再认证 / 7.6.4 修改密码 / 8.4 密码规则 / 12.1 会话失效",
  fields:[
-  ["再认证因子","三选一","当前密码 / 钱包签名 / 邮箱验证码，任选其一。"],
-  ["password","string · 必填","8–20 字符，至少 1 字母 1 数字；不含空格。"],
-  ["password_confirm","string · 必填","必须与 password 完全一致。"]
+  ["再认证因子","三选一","当前密码 / 钱包签名 / 邮箱验证码。"],
+  ["password / password_confirm","string · 必填","8–20 字符，至少 1 字母 1 数字；密码框带**眼睛图标**；展示实时复杂度提示清单。"]
  ],
  rules:[
-  ["F-14","流程：再认证 → 输入新密码 + 确认 → 按 8.4 校验全部规则（含与原密码比对）→ 提交。"],
-  ["F-16","新密码不得与原密码相同；比对由服务端对哈希执行密码校验运算完成，前端不参与。"],
-  ["7.6.3","账户原本无密码时，本流程即「设置密码」，标题与按钮文案变为 `Set password / 设置登录密码`，此时无原密码可比对。"],
-  ["F-17","提交成功 → **全部会话失效** → 跳登录页并提示用新密码登录。"],
-  ["12.5","向绑定邮箱发安全通知（无邮箱时跳过）。"]
+  ["F-18 / D-09","**在弹窗内完成**：再认证 → 设置新密码；弹窗不产生面包屑层级。"],
+  ["F-10","新密码不得与原密码相同；比对由服务端对哈希执行密码校验运算完成，前端不参与。"],
+  ["7.6.4","账户原本无密码时本流程即「设置密码」，标题变为 `Set password / 设置登录密码`，此时无原密码可比对。"],
+  ["F-22","提交成功 → **全部会话失效** → 关闭弹窗并跳登录页；向绑定邮箱发安全通知（无邮箱时跳过）。"]
  ],
  states:[
   ["长度/复杂度不符","实时清单标红，提交按钮置灰。"],
-  ["两次不一致","「两次输入的密码不一致。」"],
-  ["与原密码相同","服务端返回，保留已填内容。"],
+  ["两次不一致 / 与原密码相同","分别提示；与原密码相同由服务端返回，保留已填内容。"],
   ["提交成功","全部会话失效 → 跳登录页。"]
  ],
  copy:[
-  ["标题（修改 / 设置）","Change your password / Set a login password","修改密码 / 设置登录密码"],
-  ["密码修改成功","Password updated. Please sign in again.","密码修改成功，请重新登录。"],
-  ["密码设置成功","Password set. Please sign in again.","密码设置成功，请重新登录。"],
-  ["与原密码相同","Your new password must be different from your current password.","新密码不能与原密码相同。"]
- ],
- ac:[
-  ["AC-57","资产端修改密码时，新密码与原密码相同被服务端拒绝"],
-  ["AC-61","从未设过密码的资产端账户首次设密码时，不因缺少原密码而报错"],
-  ["AC-66","修改密码成功后，操作设备与其他设备的会话均失效"],
-  ["AC-64","中英两种语言下，全部密码相关错误文案均正确展示"]
- ]
-},
-
-"P-A14":{
- title:"P-A14 修改 / 绑定钱包地址",
- src:"PRD v4 · 7.6.1 / 7.6.4 修改钱包 / 7.2.3 钱包能力 / 12.1 / 18.10",
- fields:[
-  ["再认证因子","三选一","当前密码 / 钱包签名 / 邮箱验证码。"],
-  ["旧钱包签名","可用时必填","用途声明为 `Unlink wallet`。旧钱包不可用时，改为「当前密码 + 邮箱验证码」双因子替代。"],
-  ["新钱包签名","必填","用途声明为 `Link wallet`；地址由 SDK 回传并验签。"]
- ],
- rules:[
-  ["F-15","流程：再认证 → 旧钱包签名（可用时）→ 连接新钱包并签名 → 验签 → 提交。"],
-  ["7.6.4","成功 → 地址替换 → **全部会话失效** → 跳登录页。变更记录不可覆盖，保留全部历史地址与变更时间。"],
-  ["7.6.4","若账户原本无钱包（邮箱建号且未补），本流程即「绑定钱包」，跳过旧钱包签名步骤，文案变为 `Link wallet / 绑定钱包`。"],
-  ["12.5","向绑定邮箱发安全通知，通知中同时展示旧地址与新地址（均按缩略格式）。"],
-  ["12.1.1 例外","首次绑定不触发会话失效。"]
- ],
- states:[
-  ["旧钱包不可用","切换为「当前密码 + 邮箱验证码」双因子替代路径。"],
-  ["新地址已被占用","「该钱包地址已绑定其他账户。」"],
-  ["拒绝签名 / 验签失败 / 网络不支持","按 7.2.3 异常表分别提示；验签失败计入失败计数。"],
-  ["提交成功（修改）","全部会话失效 → 跳登录页。"]
- ],
- copy:[
-  ["标题（修改 / 绑定）","Change your wallet address / Link a wallet","修改钱包地址 / 绑定钱包"],
-  ["钱包已被占用","This wallet is already linked to another account.","该钱包地址已绑定其他账户。"],
-  ["钱包修改成功","Wallet updated. Please sign in again.","钱包地址修改成功，请重新登录。"],
-  ["钱包绑定成功","Wallet linked. Please sign in again.","钱包绑定成功，请重新登录。"]
- ],
- ac:[
-  ["AC-135","修改钱包需再认证 + 旧钱包签名（可用时）+ 新钱包签名"],
-  ["AC-136","原本无钱包的账户走该流程时为「绑定钱包」，跳过旧钱包签名步骤"],
-  ["AC-70","**修改**钱包地址成功后，所有设备会话失效"],
-  ["AC-72","**首次绑定**钱包不触发会话失效"]
- ]
-},
-
-"P-A15":{
- title:"P-A15 账户设置 · 偏好（语言与时区）",
- src:"PRD v4 · 13.1 语言支持 / 13.2 即时生效 / 13.3 判定与持久化 / 13.4 时区 / 18.13",
- fields:[
-  ["locale","enum · 必填","`en` / `zh-CN`，**默认 `en`**；使用 BCP 47 语言码，不用「中文/英文」这类地区式表述。"],
-  ["timezone","string · 必填","IANA 时区标识；默认按浏览器推断，推断失败兜底 `UTC`。"]
- ],
- rules:[
-  ["13.1","**默认英文**；切换器以目标语言的自称展示（`English` / `简体中文`），不使用国旗图标；未登录时在登录页页脚与右上角，已登录时在顶部导航右侧。"],
-  ["13.3","判定优先级三级：① 本浏览器手动切换过的偏好 → ② 已登录账户的语言偏好 → ③ 英文默认。**本期不读取 `navigator.language`**；框架预留扩展位，后续在 ② 与 ③ 之间插入一级即可。"],
-  ["13.3.2","双态持久化：未登录写浏览器本地存储；已登录同时写本地与账户偏好。冲突时以**较晚的一次显式设置**为准并回写另一侧。退出登录后保留本地语言偏好，不重置为英文。"],
-  ["13.2","切换后当前页面**不刷新**即完成全部文案替换（导航、标签、占位符、按钮、校验错误、密码规则清单、提示条、Toast、弹窗内文案、空状态、日期与数字格式）；已展示的错误提示与倒计时同步换语言；**已填表单内容不丢失**。"],
-  ["13.4","**时区按浏览器推断**（与语言口径不同，有意为之）；所有时间以 UTC 存储，展示一律带时区标注，不出现裸时间；两种语言统一 24 小时制。"]
- ],
- states:[
-  ["切换语言","当前页即时重渲染，≤ 300ms，不出现整页白屏。"],
-  ["账户偏好保存失败","不阻断界面，下次进入时静默重试。"]
- ],
- copy:[
-  ["日期（en / zh）","Sep 7, 2026 · Sep 7, 2026, 14:30 (UTC+8)","2026-09-07 · 2026-09-07 14:30 (UTC+8)"],
-  ["切换器","English / 简体中文","English / 简体中文"]
- ],
- ac:[
-  ["AC-172","浏览器语言为中文时，首次访问界面为**英文**"],
-  ["AC-174","系统**不读取** `navigator.language` 参与语言判定"],
-  ["AC-176","切换语言后当前页面不刷新即完成全部文案替换"],
-  ["AC-177","切换语言后已填写的表单内容不丢失"],
-  ["AC-181","退出登录后本地语言偏好保留，不重置为英文"],
-  ["AC-182","**时区仍按浏览器推断**，建号时写入账户"],
-  ["AC-183","界面上所有时间点均带时区标注，无裸时间"],
-  ["AC-184","中英文的日期格式分别符合 13.4 定义，均为 24 小时制"]
+  ["标题（两种）","Change your password / Set a login password","修改密码 / 设置登录密码"],
+  ["成功（两种）","Password updated. Please sign in again. / Password set. Please sign in again.","密码修改成功，请重新登录。/ 密码设置成功，请重新登录。"]
  ]
 },
 
 /* --------------------------------- 管理端 ---------------------------------- */
 "P-M01":{
  title:"P-M01 管理端登录页",
- src:"PRD v4 · 7.8.2 登录 / 8.1 字段 / 12.2 锁定 / 18.11",
+ src:"定稿 PRD · 5.1 / 7.7.1 账号来源 / 7.7.2 登录 / 7.7.3 首登重置 / 12.2 锁定",
  fields:[
   ["work_email","string · 必填","**即管理端登录账号**，全局唯一；格式同 8.1。"],
-  ["password","string · 必填","仅密码一种方式；支持显示/隐藏切换。"]
+  ["password","string · 必填","仅密码一种方式；右侧眼睛图标切换显示/隐藏。"]
  ],
  rules:[
-  ["F-22","登录字段只有工作邮箱 + 密码。管理端**不提供**验证码登录、钱包登录、第三方登录与**自动建号**。"],
-  ["3.1-17","**登录页无用户协议勾选行**，管理端登录不以同意用户协议为前置条件；全程也没有强制重新同意弹窗。"],
-  ["7.8.2","不提供「记住我」，不提供注册入口。"],
-  ["7.8.1","**不提供**「创建第一个账号」的自举入口与任何绕过登录的初始化页面；未登录状态下除登录页与忘记密码页外无任何可达页面。"],
-  ["7.8.2","失败提示统一为「邮箱或密码不正确」（防枚举，不区分账号是否存在）；失败计数与锁定规则与资产端一致（5 次锁定 30 分钟）。"],
-  ["7.8.3","账号 `must_reset_password = true` 时，登录成功后**立即**跳 P-M02，前端路由守卫拦截所有其他管理端路由，服务端对所有管理端业务接口做同样拦截。"]
+  ["F-27 / D-22","登录字段只有工作邮箱 + 密码。管理端**不提供**验证码登录、钱包登录、第三方登录与自动建号；**登录页无用户协议勾选行**、无「记住我」；全程没有强制重新同意弹窗。"],
+  ["D-20 / 7.7.1","管理端账号**由技术直接提供**（部署脚本 / 数据初始化写入），应用层**不提供任何增删改入口**；初始密码线下交付，有效期 7 天（N-19）。未登录状态下除登录页与忘记密码页外无任何可达页面。"],
+  ["D-21","**本期管理端只有四块页面**：登录、首登强制重置密码、忘记密码两步、账户设置。**账户管理归后期其他 issue**，本期不做。"],
+  ["7.7.2","失败提示统一为「邮箱或密码不正确」（防枚举）；失败计数与阶梯锁定规则与资产端一致。"],
+  ["F-28 / 7.7.3","`must_reset_password = true` 时登录成功后**立即**跳 P-M02；前端路由守卫拦截所有其他管理端路由，**服务端对所有管理端业务接口做同样拦截**。"]
  ],
  states:[
   ["密码错误 1–2 次","仅提示「邮箱或密码不正确」。"],
   ["密码错误 3–4 次","追加剩余次数提示。"],
-  ["密码错误 5 次","账户锁定 30 分钟，可走管理端忘记密码或请其他管理员手工解锁。"],
-  ["初始密码已过期","不建立会话，提示联系管理员重新生成。"],
-  ["账号已停用","不可登录，已有会话立即失效。"]
+  ["密码错误 5 次","账户锁定（阶梯 10/30 分钟），**锁定期间登录与忘记密码均不可用**。"],
+  ["初始密码已过期","不建立会话，提示联系技术人员重新发放。"]
  ],
  copy:[
   ["管理端登录失败","Incorrect email or password.","邮箱或密码不正确。"],
-  ["初始密码已过期","Your initial password has expired. Contact an administrator to have it regenerated.","初始密码已过期，请联系管理员重新生成。"],
-  ["解锁引导（管理端）","You can unlock now by resetting your password, or ask another administrator to unlock your account.","你可以通过重置密码立即解锁，也可以请其他管理员为你解除锁定。"]
- ],
- ac:[
-  ["AC-140","管理端登录页使用**工作邮箱**作为登录账号字段"],
-  ["AC-141","管理端登录页**无用户协议勾选行**、无注册入口、无「记住我」"],
-  ["AC-142","管理端全流程无强制重新同意协议弹窗"],
-  ["AC-143","管理端不提供验证码登录与钱包登录入口"],
-  ["AC-144","管理端不存在任何「创建第一个账号」的自举入口或初始化页面"],
-  ["AC-148","初始密码有效期 7 天；过期后登录被拒绝"],
-  ["AC-151","新账号首次登录后立即跳转强制重置密码页"],
-  ["AC-13","管理端登录不存在任何自动建号行为"]
+  ["初始密码已过期","Your initial password has expired. Contact technical support to have it reissued.","初始密码已过期，请联系技术人员重新发放。"]
  ]
 },
 
 "P-M02":{
  title:"P-M02 首登强制重置密码",
- src:"PRD v4 · 7.8.3 首登强制重置 / 8.1 / 8.4.2 比对 / 12.1 / 18.11",
+ src:"定稿 PRD · 5.1 / 7.7.3 首登强制重置 / 8.4.2 比对 / 12.1 会话失效",
  fields:[
   ["当前（初始）密码","string · 必填","线下交付的初始密码。"],
-  ["新密码 / 确认新密码","string · 必填","8–20 字符，至少 1 字母 1 数字；**不得与初始密码相同**。"],
-  ["ack_admin_notice","bool · 必填","「我已阅读《管理端安全须知》」必须勾选才可提交。**不是用户协议同意**，不产生任何协议同意记录，不受 WS-301 的版本与重新同意规则约束。"]
+  ["新密码 / 确认新密码","string · 必填","8–20 字符，至少 1 字母 1 数字；**不得与初始密码相同**；带实时规则清单与眼睛图标。"]
  ],
  rules:[
-  ["F-23","判定条件：`must_reset_password = true`。未完成重置时前端路由守卫拦截所有其他管理端路由，任何跳转均重定向回本页；**服务端对所有管理端业务接口做同样拦截，前端拦截不可作为唯一防线**。"],
-  ["7.8.3","本页只保留「退出登录」和「语言切换」两个逃生出口，无侧边栏、无顶部导航。"],
-  ["8.4.2","管理端账号在创建或重新生成初始密码时另单独留存一份**初始密码哈希**，账号存续期间不删除；该哈希仅用于本项比对，**不可用于登录校验**。"],
-  ["7.8.3","重置成功 → `must_reset_password = false`，状态置 `active` → **全部会话失效** → 跳回登录页。"]
+  ["F-28 / D-22","**页面上无任何勾选项**（定稿版已删除「管理端安全须知阅读确认」）。"],
+  ["7.7.3","未完成重置时任何跳转均重定向回本页；本页只保留「退出登录」和语言切换两个逃生出口，无侧边栏、无导航。"],
+  ["8.4.2","管理端账号另单独留存一份**初始密码哈希**，账号存续期间不删除；该哈希仅用于本项比对，**不可用于登录校验**。"],
+  ["7.7.3","重置成功 → `must_reset_password = false`，状态置 `active` → **全部会话失效** → 跳回登录页。"]
  ],
  states:[
-  ["未勾选安全须知","「请确认已阅读《管理端安全须知》。」不可提交。"],
-  ["新密码与初始密码相同","只展示「不能与初始密码相同」一条（首登时原密码即初始密码，两条命中时合并为这一条）。"],
-  ["尝试跳转其他页面","一律重定向回本页。"],
+  ["新密码与初始密码相同","展示「不能与初始密码相同」。"],
+  ["尝试跳转其他页面","一律重定向回本页（前端守卫 + 服务端拦截双重）。"],
   ["重置成功","全部会话失效，跳回登录页用新密码登录。"]
  ],
  copy:[
-  ["标题","Set a new password to continue","请设置新密码后继续"],
-  ["说明","For security, you must replace the initial password before using the console.","出于安全考虑，请先替换初始密码后再使用管理端。"],
-  ["安全须知确认","I have read the Admin Security Notice.","我已阅读《管理端安全须知》。"],
-  ["未确认","Please confirm you have read the Admin Security Notice.","请确认已阅读《管理端安全须知》。"],
+  ["标题 / 说明","Set a new password to continue / For security, you must replace the initial password before using the console.","请设置新密码后继续 / 出于安全考虑，请先替换初始密码后再使用管理端。"],
   ["与初始密码相同","Your new password must be different from the initial password.","新密码不能与初始密码相同。"]
- ],
- ac:[
-  ["AC-151","新账号首次登录后立即跳转强制重置密码页"],
-  ["AC-152","未完成重置时，手工输入任何管理端 URL 均被重定向回重置页"],
-  ["AC-153","未完成重置时，直接调用管理端业务接口被服务端拒绝（不依赖前端拦截）"],
-  ["AC-154","「管理端安全须知阅读确认」必须勾选才能提交，且界面明确它不是用户协议同意"],
-  ["AC-155","重置成功后所有会话失效，需用新密码重新登录"],
-  ["AC-59","新密码与初始密码相同被拒绝，只展示「不能与初始密码相同」一条"],
-  ["AC-68","管理端首登强制重置成功后，所有会话失效并跳回登录页"]
  ]
 },
 
 "P-M03":{
  title:"P-M03 管理端忘记密码 · 提交工作邮箱",
- src:"PRD v4 · 7.8.4 管理端忘记密码 / 12.3 滑块与限频 / 18.9·18.11",
+ src:"定稿 PRD · 7.7.4 管理端忘记密码 / 12.2.4 锁定 / 12.3 滑块与限频",
  fields:[
   ["work_email","string · 必填","验证码**仍发送至工作邮箱**——线下交付只针对初始密码，不影响找回流程。"],
-  ["code","string · 必填","6 位纯数字；发送前先过滑块（12.3.1 第 9 项入口）与限频。"]
+  ["code","string · 必填","6 位纯数字；发送前先过滑块与限频。"]
  ],
  rules:[
-  ["F-24","**不透露该邮箱是否为有效管理端账号**，统一提示「若该邮箱为管理端账号，验证码已发送」。"],
-  ["12.4","管理端登录与管理端忘记密码同属账户枚举防护的四处之一，不得因账号是否存在而返回可区分的响应（含文案与响应时间）。"]
+  ["F-29","**不透露该邮箱是否为有效管理端账号**，统一提示「若该邮箱为管理端账号，验证码已发送」。"],
+  ["D-17","管理端登录与管理端忘记密码同属账户枚举防护范围，不得因账号是否存在而返回可区分的响应。"],
+  ["D-11","**账户锁定期间本流程同样不可用**。"]
  ],
  states:[
   ["邮箱不是有效管理端账号","表现与有效账号一致，校验阶段统一失败。"],
-  ["滑块未通过","不发码。"],
-  ["限频超限","按 12.3.5 的维度文案提示。"]
+  ["滑块未通过 / 限频超限","不发码，按对应维度提示。"],
+  ["账户处于锁定","验证码通过后提示锁定与剩余时间，流程终止。"]
  ],
  copy:[
   ["发送提示","If this email belongs to an admin account, a verification code has been sent.","若该邮箱为管理端账号，验证码已发送。"]
- ],
- ac:[
-  ["AC-156","管理端忘记密码的验证码仍发送至工作邮箱，且不透露该邮箱是否为有效账号"],
-  ["AC-105","9 个发码入口全部先弹滑块，无一例外"]
  ]
 },
 
 "P-M04":{
  title:"P-M04 管理端忘记密码 · 设置新密码",
- src:"PRD v4 · 7.8.4 / 8.4 / 8.4.2 / 12.1 / 18.5",
+ src:"定稿 PRD · 7.7.4 / 8.4 密码规则 / 8.4.2 比对 / 12.1 会话失效",
  fields:[
   ["新密码 / 确认新密码","string · 必填","8–20 字符，至少 1 字母 1 数字；**不得与原密码相同，也不得与初始密码相同**。"]
  ],
  rules:[
-  ["F-16","管理端的新密码需同时通过与原密码、与初始密码两项比对，任一命中即拒绝。"],
-  ["7.8.4","成功 → 全部会话失效 → 跳登录页；向工作邮箱发安全通知。"]
+  ["F-10","管理端的新密码需同时通过与原密码、与初始密码两项比对，任一命中即拒绝。"],
+  ["7.7.4","成功 → 全部会话失效 → 跳登录页；向工作邮箱发安全通知。"]
  ],
  states:[
-  ["与原密码相同 / 与初始密码相同","分别展示对应文案；同时命中时展示「不能与初始密码相同」。"],
+  ["与原密码 / 初始密码相同","分别展示对应文案。"],
   ["提交成功","全部会话失效，跳登录页。"]
  ],
  copy:[
-  ["与原密码相同","Your new password must be different from your current password.","新密码不能与原密码相同。"],
   ["与初始密码相同","Your new password must be different from the initial password.","新密码不能与初始密码相同。"],
   ["重置成功","Password reset. Please sign in with your new password.","密码已重置，请使用新密码登录。"]
- ],
- ac:[
-  ["AC-60","管理端修改密码与忘记密码重置时，新密码与原密码或初始密码任一相同均被拒绝"],
-  ["AC-63","系统生成的管理端初始密码本身满足 8–20 字符且含字母与数字"]
  ]
 },
 
 "P-M05":{
- title:"P-M05 管理端账户设置 · 修改密码",
- src:"PRD v4 · 8.4 / 8.4.2 / 12.1.1 / 18.5·18.6",
+ title:"P-M05 管理端账户设置（单页 + tab 锚点）",
+ src:"定稿 PRD · 5.1 / 7.7.5 管理端账户设置 / 8.4 密码规则 / 13.3 语言 / 13.4 时区",
  fields:[
-  ["当前密码 / 新密码 / 确认新密码","string · 必填","新密码 8–20 字符、至少 1 字母 1 数字，且不得与原密码或初始密码相同。"]
+  ["工作邮箱","只读","登录账号，不可自助修改。"],
+  ["姓名","只读","—"],
+  ["登录密码","弹窗修改","弹窗内完成再认证（当前密码）+ 设置新密码，规则同 8.4；不得与原密码或初始密码相同。"],
+  ["账号状态","只读","—"],
+  ["界面语言 / 时区","下拉选择","语言即时生效并持久化；时区保存后全站时间展示随之变化。"]
  ],
  rules:[
-  ["F-14 / F-16","规则与资产端一致，额外增加与初始密码的比对。"],
-  ["F-17","成功后**全部会话失效**（含当前设备），需用新密码重新登录。"],
-  ["12.5","向工作邮箱发安全通知。"]
+  ["F-30 / D-10","**进入方式：右上角账号下拉 →「账户设置」**，与资产端结构一致；单页 + tab 锚点滚动。"],
+  ["D-21","原「管理端修改密码」独立页并入本页，以弹窗形式完成。"],
+  ["F-22","密码修改成功 → 全部会话失效 → 跳登录页。"]
  ],
  states:[
   ["与原密码/初始密码相同","服务端返回并展示对应文案，保留已填内容。"],
   ["提交成功","全部会话失效 → 跳登录页。"]
  ],
  copy:[
+  ["tab","Account / Preferences","账号信息 / 偏好信息"],
   ["密码修改成功","Password updated. Please sign in again.","密码修改成功，请重新登录。"]
- ],
- ac:[
-  ["AC-60","新密码与原密码或初始密码任一相同均被拒绝"],
-  ["AC-66","修改密码成功后，操作设备与其他设备的会话均失效"]
- ]
-},
-
-"P-M06":{
- title:"P-M06 管理端账户管理",
- src:"PRD v4 · 7.8.1 账号来源与初始密码 / 7.9 账户管理 / 7.9.1 最后一个管理员保护 / 10.2 状态机 / 11.2 权限 / 18.11·18.12",
- fields:[
-  ["work_email","string · 必填","创建账号时填写，即该账号的登录账号，全局唯一。"],
-  ["姓名","string · 必填","创建账号时填写。"],
-  ["初始密码","系统生成 · 只读","满足 8.4 规则；**仅在创建成功页明文展示一次**，提供复制与「我已记录」确认；离开该页面后不可再次查看，系统只保留其不可逆哈希；有效期 7 天。"]
- ],
- rules:[
-  ["F-25","初始密码通过**线下渠道**交付。**系统不通过邮件、站内信或任何在线渠道下发初始密码**，账号创建过程不触发任何邮件。忘记记录或超期时，任一管理员执行「重新生成初始密码」，账号状态回到 `pending_reset`。"],
-  ["7.9","本期管理端只有「管理员」一种角色，**所有管理员权限完全等同**，均可创建账号、重新生成初始密码、停用/恢复/删除账号、手工解除锁定；**每一次操作都留痕**，以留痕替代权限分级。"],
-  ["F-26","**最后一个可用管理员保护**：系统任何时刻至少保留 1 个可用管理员。计入「可用」的状态：`active` ✅ · `pending_reset` 且初始密码**未过期** ✅ · `locked` ✅（30 分钟临时态）；**不计入**：`pending_reset` 且初始密码**已过期** ❌ · `disabled` ❌。"],
-  ["7.9.1","**服务端在提交停用/删除时强制校验，这是唯一有效的防线**；校验与操作必须原子执行，避免两个管理员同时停用对方时双双通过。前端置灰只是体验优化，不能作为唯一防线。"],
-  ["7.9.2","「不能停用自己」与「不能停用最后一个可用管理员」是两条独立约束，两条并存。同时命中时**优先展示「最后一个可用管理员」的提示**，因为它更根本且其解法同时解决另一条。"],
-  ["7.9","停用、删除、解除锁定均需**二次确认弹窗**，弹窗中展示目标账户标识与操作后果。"],
-  ["F-27","手工解除锁定适用于资产端账户与管理端账号，解除后清零失败计数。"]
- ],
- states:[
-  ["已创建 · 初始密码未过期 · 未首登","`Pending first sign-in · Initial password expires on {日期时间 + 时区}`"],
-  ["已创建 · 初始密码已过期 · 未首登","`Initial password expired — regenerate to continue`，并高亮「重新生成初始密码」操作"],
-  ["已完成首登重置","`Active / 正常`"],
-  ["锁定中","`Locked · unlocks in {剩余时间}`，并提供「解除锁定」操作"],
-  ["已停用","`Disabled / 已停用`"],
-  ["列表必达状态","加载中 · 空数据 · 筛选无结果 · 加载失败可重试 · 无权限 · 异步等待 · 提交中 · 提交失败"],
-  ["对自己执行停用/删除/重生成","按钮置灰并给出说明，服务端同样拒绝。"]
- ],
- copy:[
-  ["创建成功","Account created. Copy the initial password now — it will not be shown again.","账号创建成功，请立即复制初始密码，离开本页后将无法再次查看。"],
-  ["初始密码有效期","This initial password expires on {t}.","该初始密码的有效期至 {t}。"],
-  ["我已记录","I have saved it","我已记录"],
-  ["最后一个管理员（服务端拒绝）","This is the only available administrator. Create or activate another administrator before disabling this one.","这是系统中唯一可用的管理员。请先创建或启用另一个管理员，再停用此账号。"],
-  ["按钮置灰 tooltip","The last available administrator cannot be disabled or deleted.","不能停用或删除最后一个可用的管理员。"],
-  ["过期不计入说明","Accounts whose initial password has expired don't count as available administrators.","初始密码已过期的账号不计入可用管理员数量。"],
-  ["不能对自己执行","You cannot perform this action on your own account.","不能对自己的账号执行该操作。"]
- ],
- ac:[
-  ["AC-146","初始密码仅在创建成功页展示一次，离开后无法再次查看"],
-  ["AC-147","创建管理端账号的过程不触发任何邮件"],
-  ["AC-149","任一管理员可对他人执行「重新生成初始密码」，账号状态回到 `pending_reset`"],
-  ["AC-150","P-M06 列表按 7.8.1 的状态表达展示五种状态"],
-  ["AC-158","所有管理员均可创建账号、重新生成初始密码、停用/恢复/删除账号、解除锁定"],
-  ["AC-159","管理员不能停用/删除自己、不能重新生成自己的初始密码，对应操作置灰并有说明"],
-  ["AC-160","仅剩 1 个 `active` 管理员时，停用该账号被**服务端**拒绝并提示"],
-  ["AC-162","前端置灰但关闭前端校验后服务端仍拒绝"],
-  ["AC-164","`pending_reset` 且初始密码未过期的账号计入可用数量"],
-  ["AC-165","`pending_reset` 且初始密码已过期的账号**不计入**"],
-  ["AC-166","`locked` 账号计入可用数量"],
-  ["AC-168","两个管理员同时互相停用对方时，校验与操作原子执行"],
-  ["AC-169","两条约束同时命中时优先展示「最后一个可用管理员」的提示"],
-  ["AC-171","触发该约束的尝试写入审计日志"]
  ]
 }
 };
 
-/* 组件级 PRD（在组件被触发时可从当前页面板查看，故并入各页；此处仅登记归属） */
-var PRD_COMP = [
- ["C-01","滑块人机校验弹窗","12.3.2 交互 / 12.3.3 服务端校验 12 条 / 18.9","所有发码入口前置，自研，不接三方"],
- ["C-02","协议勾选行","7.3.1 / 8.5.1 / AC-51","仅资产端登录页，全站唯一一处"],
- ["C-03","强制重新同意弹窗","7.3.3 / AC-50","仅资产端；不可点遮罩或 ESC 关闭；拒绝则退出登录"],
- ["C-04","语言切换器","13.1 / 13.2 / 13.3","默认英文；不读浏览器语言；切换即时生效并双态持久化"],
- ["C-05","会话失效 Toast","12.1.3 / 12.1.4","停留 5 秒可手动关闭；按失效原因分文案；跳登录页并回跳原页面"],
- ["C-06","钱包连接与签名面板","7.2.3 / 12.4","连接 / 签名 / 切换网络是三件事；签名声明不涉及交易与授权"],
- ["C-07","地址 / 哈希展示","13.5 / 13.6","地址前 6 后 4，哈希前 10 后 8；复制 + 区块浏览器跳转 + 降级"],
- ["C-08","常驻补全提示条","7.5.3 / AC-24","可折叠、不可永久关闭"],
- ["C-09","凭据补齐弹层","7.5.2 / 9.3 / AC-32~AC-36","就地补齐，补完原地继续，不跳走"]
-];
-
 /* ==========================================================================
-   app.js — UI 页面 + 交互（减重版）
-   定位：让前端看清每个页面长什么样、每种状态长什么样、点哪里去哪里。
-   保留：页面跳转 · Tab 切换 · 弹窗抽屉开合 · 表单输入与校验反馈 · 语言切换 · 每页 PRD 面板。
-   不做：滑块拖拽轨迹校验、倒计时与限频状态机、失败计数器、锁定倒计时等行为仿真。
-        这些关键状态改为「页面级状态切换器」直接切到该样子，实际行为由前端按 PRD 实现。
-   数据全部为演示数据，不含任何真实企业、金额或账户。
+   app.js — UI 页面 + 交互（按定稿 PRD 返工）
+   定位不变：看清每个页面长什么样、每种状态长什么样、点哪里去哪里；
+            具体行为逻辑（滑块校验、限频、计数、阶梯锁定、会话失效）由前端按 PRD 实现。
+   定稿变更：删除账户恢复 / 修改钱包 / 管理端账户管理 / 建号确认页；
+            钱包改「链接外部钱包」（手填地址 + 全部状态走 Toast）；锁定改阶梯且全通道锁死；
+            左侧菜单只留总览与用户中心；账号信息移到右上角下拉；账户设置合并单页 + tab 锚点；
+            邮箱/密码改弹窗；钱包地址只读；面包屑移到顶栏下方；语言切换器改下拉；Toast 顶部居中。
    ========================================================================== */
 (function(){
 "use strict";
@@ -1733,23 +1341,15 @@ var PRD_COMP = [
 var ADDR     = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
 var MAIL     = "ada@demo-mail.test";
 var ME       = "ops.lead@demo-console.test";
+var ME_NAME  = "Demo Admin A";
 var EXPLORER = "https://etherscan.io";
-
-var ADMINS = [
-  {email:"ops.lead@demo-console.test",   name:"Demo Admin A", st:"active",         created:"2026-06-02T02:10:00Z", last:"2026-09-07T01:22:00Z"},
-  {email:"risk.review@demo-console.test",name:"Demo Admin B", st:"pending",        created:"2026-09-05T08:40:00Z", last:null, expires:"2026-09-12T08:40:00Z"},
-  {email:"settle.ops@demo-console.test", name:"Demo Admin C", st:"locked",         created:"2026-07-18T03:05:00Z", last:"2026-09-06T09:31:00Z"},
-  {email:"audit.view@demo-console.test", name:"Demo Admin D", st:"pendingExpired", created:"2026-08-20T06:00:00Z", last:null, expires:"2026-08-27T06:00:00Z"},
-  {email:"former.ops@demo-console.test", name:"Demo Admin E", st:"disabled",       created:"2026-05-11T07:45:00Z", last:"2026-08-30T10:02:00Z"}
-];
 
 /* --------------------------------- 状态 ---------------------------------- */
 var S;
 function initState(){
-  S = { lang:"en",        /* PRD 13.1：默认英文，不读 navigator.language */
-        end:"asset", page:"P-A01", st:"default", tz:"Asia/Shanghai",
+  S = { lang:"en", end:"asset", page:"P-A01", st:"default", tz:"Asia/Shanghai",
         loginTab:"code", agree:false, form:{}, err:{},
-        flow:null, modal:null, drawer:null, toast:null };
+        flow:null, modal:null, drawer:null, menu:null, toasts:[] };
 }
 initState();
 
@@ -1765,112 +1365,142 @@ function esc(x){ return String(x==null?"":x).replace(/[&<>"']/g,function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function q(sel){ return document.querySelector(sel); }
 function isEmail(x){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(x||"").trim()); }
+function isAddr(x){ return /^0x[0-9a-fA-F]{40}$/.test(String(x||"").trim()); }
 function shortAddr(a){ return a?a.slice(0,6)+"…"+a.slice(-4):""; }
 function pwdLen(p){ return p&&p.length>=8&&p.length<=20; }
 function pwdCplx(p){ return /[A-Za-z]/.test(p||"")&&/[0-9]/.test(p||""); }
 function L(en,zh){ return S.lang==="en"?en:zh; }
 
 /* 时间：PRD 13.4，一律带时区标注 */
-function fmtParts(iso,sec){
+function fmtTime(iso,sec){
   var d=iso?new Date(iso):new Date();
   var off=S.tz==="UTC"?0:(S.tz==="America/New_York"?-4:(S.tz==="Europe/London"?1:8));
   var x=new Date(d.getTime()+off*3600000);
   var M=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var Y=x.getUTCFullYear(), m=x.getUTCMonth(), D=x.getUTCDate(),
       h=("0"+x.getUTCHours()).slice(-2), mi=("0"+x.getUTCMinutes()).slice(-2), s2=("0"+x.getUTCSeconds()).slice(-2);
-  return { d:S.lang==="en"?(M[m]+" "+D+", "+Y):(Y+"-"+("0"+(m+1)).slice(-2)+"-"+("0"+D).slice(-2)),
-           t:h+":"+mi+(sec?":"+s2:"")+" (UTC"+(off>=0?"+":"")+off+")" };
+  var date=S.lang==="en"?(M[m]+" "+D+", "+Y):(Y+"-"+("0"+(m+1)).slice(-2)+"-"+("0"+D).slice(-2));
+  return date+(S.lang==="en"?", ":" ")+h+":"+mi+(sec?":"+s2:"")+" (UTC"+(off>=0?"+":"")+off+")";
 }
-function fmtTime(iso,sec){ var p=fmtParts(iso,sec); return p.d+(S.lang==="en"?", ":" ")+p.t; }
-function fmtCell(iso){ if(!iso) return "—"; var p=fmtParts(iso);
-  return '<span class="nw">'+p.d+'</span><br><span class="nw t2">'+p.t+'</span>'; }
+
+/* --------------------------------- 图标 ---------------------------------- */
+var ICO = {
+  eye:'<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6">'
+     +'<path d="M1.7 10S4.7 4.6 10 4.6 18.3 10 18.3 10 15.3 15.4 10 15.4 1.7 10 1.7 10Z"/><circle cx="10" cy="10" r="2.6"/></svg>',
+  eyeOff:'<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6">'
+     +'<path d="M8 5c.6-.2 1.3-.3 2-.3 5.3 0 8.3 5.3 8.3 5.3a15 15 0 0 1-2.6 3.2M4.6 6.2A15 15 0 0 0 1.7 10S4.7 15.4 10 15.4c1.2 0 2.2-.3 3.2-.7"/><path d="M3 3l14 14"/></svg>',
+  globe:'<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5">'
+     +'<circle cx="10" cy="10" r="7.3"/><path d="M2.7 10h14.6M10 2.7c1.9 2 2.9 4.6 2.9 7.3s-1 5.3-2.9 7.3c-1.9-2-2.9-4.6-2.9-7.3s1-5.3 2.9-7.3Z"/></svg>',
+  caret:'<svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5.5 8l4.5 4.5L14.5 8"/></svg>',
+  copy:'<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5">'
+     +'<rect x="7" y="7" width="9.5" height="9.5" rx="2"/><path d="M13 4.5H5.5A2 2 0 0 0 3.5 6.5V14"/></svg>',
+  ext:'<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5">'
+     +'<path d="M11 3.5h5.5V9M16.5 3.5 9 11"/><path d="M15 12v3.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 3 15.5v-9A1.5 1.5 0 0 1 4.5 5H8"/></svg>',
+  ok:'<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>',
+  warn:'<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 6v5M10 14h.01"/><circle cx="10" cy="10" r="7.3"/></svg>',
+  info:'<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 9v5M10 6h.01"/><circle cx="10" cy="10" r="7.3"/></svg>',
+  lock:'<svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5">'
+     +'<rect x="4" y="8.5" width="12" height="8" rx="2"/><path d="M6.8 8.5V6.4a3.2 3.2 0 0 1 6.4 0v2.1"/></svg>'
+};
 
 /* --------------------------------- 路由表 -------------------------------- */
 var ROUTES = {
   "P-A01":{end:"asset", layout:"focus", name:["Sign in","登录页"]},
-  "P-A03":{end:"asset", layout:"focus", name:["Forgot password · email","忘记密码 · 提交邮箱"]},
-  "P-A04":{end:"asset", layout:"focus", name:["Forgot password · new password","忘记密码 · 设置新密码"]},
-  "P-A05":{end:"asset", layout:"focus", name:["Recover account · signature","账户恢复 · 钱包签名"]},
-  "P-A06":{end:"asset", layout:"focus", name:["Recover account · new email","账户恢复 · 绑定新邮箱"]},
-  "CREATED":{end:"asset", layout:"focus", name:["Account created","建号确认"]},
-  "P-A10":{end:"asset", layout:"app", nav:"navGuide", grp:"grpAccount", ico:"◆", name:["Setup guide","建号后引导页"]},
-  "LAND": {end:"asset", layout:"app", nav:"navOverview", grp:"grpAccount", ico:"▤", name:["Overview","落地页"]},
-  "P-A11":{end:"asset", layout:"app", nav:"navSecurity", grp:"grpAccount", ico:"⛨", name:["Security","账户设置 · 安全"]},
-  "P-A15":{end:"asset", layout:"app", nav:"navPrefs", grp:"grpAccount", ico:"⚙", name:["Preferences","账户设置 · 偏好"]},
-  "P-A12":{end:"asset", layout:"app", nav:"navChangeEmail", grp:"grpCredentials", ico:"@", name:["Email","修改 / 绑定邮箱"]},
-  "P-A13":{end:"asset", layout:"app", nav:"navChangePwd", grp:"grpCredentials", ico:"•", name:["Password","修改 / 设置密码"]},
-  "P-A14":{end:"asset", layout:"app", nav:"navChangeWallet", grp:"grpCredentials", ico:"0x", name:["Wallet","修改 / 绑定钱包"]},
+  "P-A03":{end:"asset", layout:"focus", name:["Set or reset password · email","设置/重置密码 · 提交邮箱"]},
+  "P-A04":{end:"asset", layout:"focus", name:["Set or reset password · password","设置/重置密码 · 设置密码"]},
+  "P-A10":{end:"asset", layout:"app", crumb:["Setup guide","建号引导"], name:["Setup guide","建号后引导页"]},
+  "P-A16":{end:"asset", layout:"app", nav:"navOverview", ico:"▤", crumb:["Overview","总览"], name:["Overview","总览页"]},
+  "P-A17":{end:"asset", layout:"app", nav:"navUserCenter", ico:"◎", crumb:["User center","用户中心"], name:["User center","用户中心"]},
+  "P-A11":{end:"asset", layout:"app", crumb:["Account settings","账户设置"], name:["Account settings","账户设置单页"]},
   "P-M01":{end:"admin", layout:"focus", name:["Sign in","管理端登录页"]},
   "P-M02":{end:"admin", layout:"focus", name:["First sign-in reset","首登强制重置密码"]},
   "P-M03":{end:"admin", layout:"focus", name:["Forgot password · work email","忘记密码 · 提交工作邮箱"]},
   "P-M04":{end:"admin", layout:"focus", name:["Forgot password · new password","忘记密码 · 设置新密码"]},
-  "P-M06":{end:"admin", layout:"app", nav:"admNavAccounts", grp:"grpConsole", ico:"▤", name:["Accounts","账户管理"]},
-  "P-M05":{end:"admin", layout:"app", nav:"admNavSecurity", grp:"grpConsole", ico:"•", name:["My password","修改密码"]}
+  "P-M05":{end:"admin", layout:"app", crumb:["Account settings","账户设置"], name:["Account settings","管理端账户设置"]}
 };
-/* P-A07 锁定态按 PRD 5.1 实现为登录页内的状态 */
 var PAGE_DIR = [
-  ["资产端 · 未登录",[["P-A01",""],["P-A01","locked"],["P-A03",""],["P-A04",""],["P-A05",""],["P-A06",""]]],
-  ["资产端 · 已登录",[["CREATED",""],["P-A10",""],["LAND",""],["P-A11",""],["P-A12",""],["P-A13",""],["P-A14",""],["P-A15",""]]],
-  ["管理端",[["P-M01",""],["P-M02",""],["P-M03",""],["P-M04",""],["P-M05",""],["P-M06",""]]]
+  ["资产端 · 未登录",[["P-A01",""],["P-A01","locked1"],["P-A03",""],["P-A04",""]]],
+  ["资产端 · 已登录",[["P-A10",""],["P-A17",""],["P-A16",""],["P-A11",""]]],
+  ["管理端",[["P-M01",""],["P-M02",""],["P-M03",""],["P-M04",""],["P-M05",""]]]
 ];
-
-/* 每页可直接切换查看的状态（替代原来的演示分支开关面板） */
+/* 每页可直接切换查看的状态（替代行为仿真） */
 var STATES = {
   "P-A01":[["default","Default","默认"],["sent","Code sent","已发码"],["attempts","3rd failure","第 3 次失败"],
-           ["locked","Locked (P-A07)","锁定态 P-A07"],["disabled","Account disabled","账户已停用"],
-           ["quota","Rate limited","发码超限"],["kicked","Session ended (C-05)","会话失效 Toast C-05"]],
+           ["locked1","Locked · tier 1 (10 min)","锁定 · 第 1 档 10 分钟"],["locked2","Locked · tier 2 (30 min)","锁定 · 第 2 档 30 分钟"],
+           ["disabled","Account disabled","账户已停用"],["quota","Rate limited","发码超限"],
+           ["kicked","Session ended (Toast)","会话失效 Toast"]],
   "P-A03":[["default","Default","默认"],["sent","Code sent","已发码"],["badcode","Invalid code","验证码错误"],
-           ["toomany","Code voided","单码超限"],["quota","Rate limited","发码超限"]],
-  "P-A04":[["default","Default","默认"],["mismatch","Passwords differ","两次不一致"],["same","Same as current","与原密码相同"]],
-  "P-A05":[["default","Default","默认"],["unlinked","Wallet not linked","地址未绑定"]],
-  "P-A06":[["default","Default","默认"],["taken","Email taken","邮箱已被占用"]],
+           ["toomany","Code voided","单码超限"],["quota","Rate limited","发码超限"],["locked","Account locked","账户锁定"]],
+  "P-A04":[["reset","Reset password","重置密码（已有密码）"],["set","Set password","设置密码（原本无密码）"],
+           ["mismatch","Passwords differ","两次不一致"],["same","Same as current","与原密码相同"]],
   "P-A10":[["email","Created via email","验证码建号"],["wallet","Created via wallet","钱包建号"]],
-  "LAND": [["nowallet","Missing wallet","缺钱包"],["noemail","Missing email","缺邮箱"],["complete","Complete","凭据齐备"],
-           ["folded","Bar collapsed","提示条折叠"],["expiring","Session expiring","会话即将过期"]],
-  "P-A11":[["nowallet","Missing wallet","缺钱包"],["nopwd","No password set","未设密码"],["complete","Complete","凭据齐备"]],
-  "P-A12":[["default","Change email","修改邮箱"],["add","Add email (none yet)","绑定邮箱（原本无邮箱）"]],
-  "P-A13":[["default","Change password","修改密码"],["add","Set password (none yet)","设置密码（原本无密码）"]],
-  "P-A14":[["default","Change wallet","修改钱包"],["add","Link wallet (none yet)","绑定钱包（原本无钱包）"]],
-  "P-M01":[["default","Default","默认"],["attempts","3rd failure","第 3 次失败"],["locked","Locked","锁定态"],
+  "P-A16":[["default","Shell","本期壳子"]],
+  "P-A17":[["nowallet","Missing wallet","缺钱包"],["noemail","Missing email","缺邮箱"],["complete","Complete","凭据齐备"],
+           ["folded","Bar collapsed","提示条折叠"],["sub","Sub page (breadcrumb)","二级页（面包屑）"]],
+  "P-A11":[["nowallet","Wallet not linked","钱包未绑定"],["nopwd","No password set","未设密码"],["complete","Complete","凭据齐备"]],
+  "P-M01":[["default","Default","默认"],["attempts","3rd failure","第 3 次失败"],["locked1","Locked · tier 1","锁定 · 第 1 档"],
            ["expired","Initial password expired","初始密码已过期"]],
-  "P-M02":[["default","Default","默认"],["noack","Notice unchecked","未勾选安全须知"],["same","Same as initial","与初始密码相同"]],
+  "P-M02":[["default","Default","默认"],["same","Same as initial","与初始密码相同"]],
   "P-M03":[["default","Default","默认"],["sent","Code sent","已发码"]],
   "P-M04":[["default","Default","默认"],["same","Same as initial","与初始密码相同"]],
-  "P-M06":[["default","Default","默认"],["loading","Loading","加载中"],["empty","Empty","空数据"],
-           ["noresult","No result","筛选无结果"],["failed","Load failed","加载失败"],["noperm","No access","无权限"],
-           ["submitting","Submitting","提交中"],["submitfail","Submit failed","提交失败"],
-           ["lastadmin","Only one admin left","只剩一个可用管理员"]]
+  "P-M05":[["default","Default","默认"]]
 };
 function route(){ return ROUTES[S.page]||ROUTES["P-A01"]; }
 function pageName(id){ var r=ROUTES[id]; return r?r.name[S.lang==="en"?0:1]:id; }
-function prdKey(){ return (S.page==="P-A01"&&S.st==="locked")?"P-A07":S.page; }
+function prdKey(){ return (S.page==="P-A01"&&(S.st==="locked1"||S.st==="locked2"))?"P-A07":S.page; }
 function defaultState(p){ var l=STATES[p]; return l?l[0][0]:"default"; }
 function go(page,st){
-  S.page=page; S.st=st||defaultState(page); S.err={}; S.modal=null; S.drawer=null; S.toast=null;
-  S.flow=(page==="P-A12"||page==="P-A13"||page==="P-A14")?{id:page,step:0,factor:null}:null;
-  render();
+  S.page=page; S.st=st||defaultState(page); S.err={}; S.modal=null; S.drawer=null; S.menu=null;
+  S.flow=null; S.form={}; S.toasts=[]; render();
+  window.scrollTo(0,0);
 }
-function setState(k){
-  S.st=k; S.err={};
-  S.toast = (k==="kicked") ? {kind:"danger", title:t("sPwdChanged"), body:t("sUnsaved")} : null;
-  if(S.flow) S.flow={id:S.flow.id,step:0,factor:null};
+function setState(k){ S.st=k; S.err={}; S.menu=null; if(k==="kicked") toast("danger",t("sPwdChanged"),t("sUnsaved")); render(); }
+
+/* ------------------------------ Toast (C-12) ------------------------------ */
+/* PRD 8.7.1：顶部居中 · 成功与信息 3 秒 / 失败 5 秒 · 最多 3 条 · 可手动关闭 */
+var tid=0;
+function toast(kind,title,body){
+  var same=S.toasts.filter(function(x){return x.title===title;})[0];
+  if(same) return;                                   /* 去重 */
+  var id=++tid;
+  if(S.toasts.length>=3) S.toasts.shift();
+  S.toasts.push({id:id,kind:kind,title:title,body:body||""});
   render();
+  setTimeout(function(){ S.toasts=S.toasts.filter(function(x){return x.id!==id;}); render(); }, kind==="danger"?5000:3000);
 }
-function toast(kind,title,body){ S.toast={kind:kind,title:title,body:body||""}; render(); }
 
 /* ============================== 通用片段 ================================= */
+/* C-04 语言切换器：下拉形态（图标 + EN/中文） */
 function langSwitcher(){
-  return '<div class="lang" role="group" aria-label="Language">'
-   + '<button type="button" data-act="lang" data-v="en" aria-pressed="'+(S.lang==="en")+'">English</button>'
-   + '<button type="button" data-act="lang" data-v="zh" aria-pressed="'+(S.lang==="zh")+'">简体中文</button></div>';
+  var open=S.menu==="lang";
+  return '<div class="dd"><button class="dd-btn" type="button" data-act="menu" data-v="lang" aria-expanded="'+open+'">'
+   + ICO.globe+'<span>'+L("EN","中文")+'</span>'+ICO.caret+'</button>'
+   + (open?'<div class="dd-list" role="menu">'
+      + '<button type="button" role="menuitem" data-act="lang" data-v="en" aria-current="'+(S.lang==="en")+'">English</button>'
+      + '<button type="button" role="menuitem" data-act="lang" data-v="zh" aria-current="'+(S.lang==="zh")+'">简体中文</button>'
+      + '</div>':'')+'</div>';
+}
+/* C-11 右上角账号下拉 */
+function accountMenu(){
+  var open=S.menu==="acc", admin=S.end==="admin";
+  var ident=admin?ME:(S.page==="P-A11"&&S.st==="noemail"?shortAddr(ADDR):MAIL);
+  var complete=(S.page==="P-A11"||S.page==="P-A17")&&S.st==="complete";
+  return '<div class="dd"><button class="dd-btn acc" type="button" data-act="menu" data-v="acc" aria-expanded="'+open+'">'
+   + '<span class="av">'+(admin?"AD":"CF")+'</span><span class="nm">'+esc(ident)+'</span>'+ICO.caret+'</button>'
+   + (open?'<div class="dd-list wide" role="menu">'
+      + '<div class="dd-head"><b>'+esc(ident)+'</b>'
+      + '<span class="pill '+(complete?"green":"amber")+'">'+(complete?t("stActiveAcc"):t("stIncomplete"))+'</span></div>'
+      + '<button type="button" role="menuitem" data-act="go" data-v="'+(admin?"P-M05":"P-A11")+'">'+t("accountSettings")+'</button>'
+      + '<button type="button" role="menuitem" data-act="go" data-v="'+(admin?"P-M01":"P-A01")+'">'+t("signOut")+'</button>'
+      + '</div>':'')+'</div>';
 }
 function prdBtn(){ return '<button class="btn sm" type="button" data-act="openPrd" title="'+t("prdOpen")+'">'
    + '<span class="mono" style="font-size:10px">PRD</span></button>'; }
 function pagesBtn(){ return '<button class="btn sm" type="button" data-act="openPages">'+t("pagesPanel")+'</button>'; }
 
-/* 页面级状态切换器：替代原演示分支开关面板 */
+/* 页面级状态切换器 */
 function stateBar(list,act,cur,style){
-  if(!list||!list.length) return "";
+  if(!list||list.length<2) return "";
   return '<div class="statebar"'+(style?' style="'+style+'"':'')+'><span class="pill dash">'+L("Prototype · state","原型 · 状态")+'</span>'
    + '<div class="seg">'+list.map(function(x){
        return '<button type="button" data-act="'+act+'" data-v="'+x[0]+'" aria-pressed="'+(cur===x[0])+'">'+L(x[1],x[2])+'</button>';
@@ -1880,24 +1510,26 @@ function pageStates(){ return stateBar(STATES[S.page],"st",S.st); }
 
 function field(id,labelKey,o){
   o=o||{};
-  var v=esc(S.form[id]||""), err=S.err[id];
+  var v=esc(S.form[id]!==undefined?S.form[id]:(o.value||"")), err=S.err[id];
+  var shown=S.form["_show_"+id];
   return '<div class="field">'
    + '<label for="f_'+id+'"><span>'+t(labelKey)+'</span>'+(o.optional?'<span class="opt">'+t("optional")+'</span>':'')+'</label>'
-   + (o.affix
-      ? '<div class="inp-affix"><input class="inp'+(err?" err":"")+'" id="f_'+id+'" data-f="'+id+'" type="'
-        +(S.form["_show_"+id]?"text":"password")+'" value="'+v+'" autocomplete="'+(o.ac||"off")+'">'
-        +'<button type="button" class="affix" data-act="show" data-k="'+id+'">'+(S.form["_show_"+id]?t("hide"):t("show"))+'</button></div>'
-      : '<input class="inp'+(err?" err":"")+'" id="f_'+id+'" data-f="'+id+'" type="'+(o.type||"text")
+   + (o.pwd
+      ? '<div class="inp-affix"><input class="inp'+(err?" err":"")+'" id="f_'+id+'" data-f="'+id+'" type="'+(shown?"text":"password")
+        +'" value="'+v+'" autocomplete="'+(o.ac||"off")+'">'
+        +'<button type="button" class="affix" data-act="show" data-k="'+id+'" aria-label="'+(shown?t("hidePwd"):t("showPwd"))
+        +'" title="'+(shown?t("hidePwd"):t("showPwd"))+'">'+(shown?ICO.eyeOff:ICO.eye)+'</button></div>'
+      : '<input class="inp'+(err?" err":"")+(o.mono?" mono":"")+'" id="f_'+id+'" data-f="'+id+'" type="'+(o.type||"text")
         +'" value="'+v+'" placeholder="'+esc(o.ph||"")+'" '+(o.disabled?"disabled":"")+' autocomplete="'+(o.ac||"off")+'">')
    + (err?'<p class="err-msg" role="alert"><span>!</span><span>'+esc(err)+'</span></p>':'')
+   + (o.note?'<p class="hint">'+o.note+'</p>':'')
    + '</div>';
 }
-/* 发码行：点击弹出 C-01；「已发码」是可切换的展示状态，不做真实倒计时 */
+/* 发码行：点击弹出 C-01；「已发码」为可切换的展示状态，不做真实倒计时 */
 function codeField(key,o){
   o=o||{};
   var err=S.err[key+"Code"]||o.error;
-  return '<div class="field">'
-   + '<label for="f_'+key+'code"><span>'+t("labelCode")+'</span></label>'
+  return '<div class="field"><label for="f_'+key+'code"><span>'+t("labelCode")+'</span></label>'
    + '<div class="inp-row">'
    + '<input class="inp mono'+(err?" err":"")+'" id="f_'+key+'code" data-f="'+key+'code" inputmode="numeric" maxlength="6" value="'
    + esc(S.form[key+"code"]||"")+'" placeholder="000000">'
@@ -1915,9 +1547,9 @@ function pwdRules(key){
 }
 function addrView(a){
   return '<span class="hash"><span class="val">'+esc(shortAddr(a))+'</span>'
-   + '<button class="ico" type="button" data-act="copy" aria-label="'+t("copyAddress")+'" title="'+t("copyAddress")+'">⧉</button>'
+   + '<button class="ico" type="button" data-act="copy" aria-label="'+t("copyAddress")+'" title="'+t("copyAddress")+'">'+ICO.copy+'</button>'
    + '<a class="ico" href="'+EXPLORER+'/address/'+esc(a)+'" target="_blank" rel="noopener noreferrer" aria-label="'
-   + t("viewExplorer")+'" title="'+t("viewExplorer")+'">↗</a></span>';
+   + t("viewExplorer")+'" title="'+t("viewExplorer")+'">'+ICO.ext+'</a></span>';
 }
 function steps(names,cur){
   return '<div class="steps">'+names.map(function(n,i){
@@ -1926,8 +1558,8 @@ function steps(names,cur){
   }).join("")+'</div>';
 }
 function note(kind,body,title){
-  return '<div class="note'+(kind?" "+kind:"")+'"'+(kind==="red"?' role="alert"':'')+'><span class="ico">'
-   + (kind==="red"||kind==="amber"?"!":kind==="green"?"✓":"i")+'</span><div>'
+  var ic = kind==="red"||kind==="amber"?ICO.warn : kind==="green"?ICO.ok : ICO.info;
+  return '<div class="note'+(kind?" "+kind:"")+'"'+(kind==="red"?' role="alert"':'')+'><span class="ico">'+ic+'</span><div>'
    + (title?'<b>'+title+'</b>':'')+body+'</div></div>';
 }
 function gap(h){ return '<div style="height:'+(h||14)+'px"></div>'; }
@@ -1947,7 +1579,7 @@ function focusShell(body,signOut){
    + (signOut?'<button class="btn sm" data-act="go" data-v="P-M01">'+t("signOut")+'</button>':'')
    + pagesBtn() + prdBtn() + langSwitcher() + '</div>'
    + '<div class="focus-body"><div class="focus-col">'+pageStates()+body+'</div></div>'
-   + '<div class="focus-foot"><span>© Chain Financing · '+t("demoOnly")+'</span>'+langSwitcher()+'</div>';
+   + '<div class="focus-foot"><span>© Chain Financing · '+t("demoOnly")+'</span></div>';
 }
 function focusCard(title,sub,body){
   return '<h1 class="page-title" style="font-size:24px">'+title+'</h1>'
@@ -1961,11 +1593,26 @@ function backLink(target){
 
 /* ---------------------------- P-A01 登录页 -------------------------------- */
 function pageLogin(){
-  var locked=S.st==="locked", tab=locked?"code":S.loginTab, body="";
+  /* 锁定态：全通道锁死，页面只展示剩余等待时间，无任何登录入口与解锁入口 */
+  if(S.st==="locked1"||S.st==="locked2"){
+    var tier1=S.st==="locked1";
+    return focusShell(
+      '<div class="card"><div class="card-b"><div class="locked">'
+      + '<div class="lock-ring">'+ICO.lock+'</div>'
+      + '<h2 class="page-title" style="font-size:19px;margin-top:14px">'+t("lockTitle")+'</h2>'
+      + '<div class="lock-time mono">'+(tier1?"09:12":"28:47")+'</div>'
+      + '<p class="lead" style="text-align:center;max-width:360px">'
+      + t("lockDuring",{m:tier1?"9":"28",s:tier1?"12":"47"})+'</p>'
+      + '<p class="tiny" style="margin-top:10px">'+t("lockWait")+'</p>'
+      + gap(10)
+      + note(tier1?"amber":"red", tier1?t("lockTier1",{m:10}):t("lockTier2",{m:30}))
+      + '</div></div></div>');
+  }
+
+  var tab=S.loginTab, body="";
   body += '<div class="seg-tabs" role="tablist">'
-    + segTab("code","tabCode",false,tab) + segTab("pwd","tabPwd",locked,tab) + segTab("wallet","tabWallet",locked,tab) + '</div>';
+    + segTab("code","tabCode",tab) + segTab("pwd","tabPwd",tab) + segTab("wallet","tabWallet",tab) + '</div>';
   if(S.st==="disabled") body += note("red",t("eDisabled")) + gap();
-  if(locked) body += note("red",'<p>'+t("lockAgain",{m:29,s:"47"})+'</p><p>'+t("lockHelpUser")+'</p>',t("lockTitle")) + gap();
 
   if(tab==="code"){
     body += field("loginEmail","labelEmail",{type:"email",ph:"you@company.com",ac:"email"})
@@ -1973,120 +1620,106 @@ function pageLogin(){
               error:S.st==="quota"?t("rlEmailQuota",{t:L("42 minutes","42 分钟")}):""});
   } else if(tab==="pwd"){
     body += field("loginEmail","labelEmail",{type:"email",ph:"you@company.com",ac:"email"})
-         +  field("loginPwd","labelPwd",{affix:true,ac:"current-password"})
+         +  field("loginPwd","labelPwd",{pwd:true,ac:"current-password"})
          +  (S.st==="attempts"?'<p class="err-msg" role="alert" style="margin:-8px 0 12px"><span>!</span><span>'+t("lockPwdLeft",{n:2})+'</span></p>':"")
-         +  '<p class="hint" style="margin:-6px 0 14px"><button class="btn-link" type="button" data-act="tab" data-v="code">'+t("pwdTabHint")+'</button></p>';
+         /* 7.2.2-5：三条静态入口，与是否失败无关，不泄漏账户是否存在 */
+         +  '<div class="entries">'
+         +  '<button class="btn-link" type="button" data-act="go" data-v="P-A03">'+t("forgotPwd")+'</button>'
+         +  '<button class="btn-link" type="button" data-act="go" data-v="P-A03">'+t("noPwdEntry")+'</button>'
+         +  '<button class="btn-link" type="button" data-act="tab" data-v="code">'+t("useCodeEntry")+'</button></div>';
   } else {
-    body += note("",t("walletSignNote")) + gap()
-         +  '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeSignIn">'+t("connectWallet")+'</button>';
+    /* 链接外部钱包：先手填地址，再连钱包签名；所有状态提示走 Toast */
+    body += field("loginAddr","labelWallet",{ph:"0x…",mono:true,
+              note:L("The address you enter only selects which account to sign in to. Your wallet signature is what proves ownership.",
+                     "手填地址只用于指定登录哪个账户；真正的身份证明是钱包签名。")})
+         +  note("",t("walletSignNote")) + gap()
+         +  '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeSignIn">'+t("linkWallet")+'</button>';
   }
-  /* C-02 协议勾选行：全站唯一一处（v4 已删除营销订阅勾选） */
+
+  /* C-02 协议勾选行：全站唯一一处 */
   body += '<div class="check'+(S.err._shake?" shake":"")+'"><input type="checkbox" id="agree" data-f="agree" '+(S.agree?"checked":"")+'>'
        +  '<label for="agree">'+t("terms")+'</label></div>'
        +  (S.err.agree?'<p class="err-msg" role="alert" style="margin:-4px 0 8px"><span>!</span><span>'+esc(S.err.agree)+'</span></p>':'');
   if(tab!=="wallet")
     body += '<button class="btn primary block'+(S.agree?"":" quiet")+'" type="button" data-act="login" style="margin-top:14px">'+t("submitSignIn")+'</button>';
-  body += '<div style="display:flex;gap:18px;justify-content:center;margin-top:18px;flex-wrap:wrap">'
-       +  '<button class="btn-link" type="button" data-act="go" data-v="P-A03">'+t("forgotPwd")+'</button>'
-       +  '<button class="btn-link" type="button" data-act="go" data-v="P-A05">'+t("cantEmail")+'</button></div>';
-  return focusShell(focusCard(t("signInTitle"),t("signInSub"),body));
+  return focusShell(focusCard(t("signInTitle"),"",body));
 }
-function segTab(id,key,locked,cur){
-  return '<button class="seg-tab" role="tab" type="button" data-act="tab" data-v="'+id+'" aria-selected="'+(cur===id)+'" '
-   + (locked?"disabled":"")+'><span>'+t(key)+'</span>'+(locked?'<span class="lk">'+t("lockedTab")+'</span>':'')+'</button>';
+function segTab(id,key,cur){
+  return '<button class="seg-tab" role="tab" type="button" data-act="tab" data-v="'+id+'" aria-selected="'+(cur===id)+'">'
+   + t(key)+'</button>';
 }
 
-/* ------------------------------ 建号确认 ---------------------------------- */
-function pageCreated(){
-  return focusShell('<div class="card"><div class="card-b"><div class="created">'
-   + '<div class="ring">✓</div><h1>'+t("created")+'</h1>'
-   + '<p class="lead" style="text-align:center">'+t("guideTitle")+'</p>'
-   + '<div class="idbox"><span>Account ID · '+t("demoOnly")+'</span><b>ACC-2026-0007-DEMO</b></div>'
-   + '<button class="btn primary block" type="button" data-act="go" data-v="P-A10" style="margin-top:20px;max-width:300px">'+t("contin")+'</button>'
-   + '</div></div></div>');
-}
-
-/* --------------------------- 忘记密码 / 账户恢复 --------------------------- */
-function pageForgot1(){
-  return focusShell(focusCard(t("fpTitle"),t("fpSub"),
-    steps([t("fpStep1"),t("fpStep2")],0)
-    + field("fpEmail","labelEmail",{type:"email",ph:"you@company.com"})
-    + codeField("fp",{sent:S.st==="sent",
+/* ------------------- P-A03 / P-A04 设置或重置密码（复用） ------------------- */
+function pagePwd1(){
+  return focusShell(focusCard(t("pwdFlowTitle"),t("pwdFlowSub"),
+    steps([t("pwdStep1"),t("pwdStep2")],0)
+    + (S.st==="locked"?note("red",t("lockDuring",{m:"9",s:"12"}),t("lockTitle"))+gap():"")
+    + field("pwEmail","labelEmail",{type:"email",ph:"you@company.com"})
+    + codeField("pw",{sent:S.st==="sent",
         error:S.st==="badcode"?t("eCodeBad"):S.st==="toomany"?t("eCodeTooMany")
              :(S.st==="quota"?t("rlEmailQuota",{t:L("42 minutes","42 分钟")}):"")})
     + '<button class="btn primary block" type="button" data-act="go" data-v="P-A04">'+t("contin")+'</button>'
-    + '<p class="hint" style="margin-top:14px">'+t("fpNewUser")+'</p>' + backLink("P-A01")));
-}
-function pageForgot2(){
-  if(S.st==="mismatch") S.err.fpPwd2=t("ePwdMatch");
-  if(S.st==="same") S.err.fpPwd=t("ePwdSameCurrent");
-  return focusShell(focusCard(t("fpStep2"),"",
-    steps([t("fpStep1"),t("fpStep2")],1)
-    + field("fpPwd","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("fpPwd") + gap()
-    + field("fpPwd2","labelConfirmPwd",{affix:true,ac:"new-password"})
-    + '<button class="btn primary block" type="button" data-act="done" data-v="okPwdReset" style="margin-top:16px">'+t("save")+'</button>'
+    + '<p class="hint" style="margin-top:12px">'+L("The title stays neutral until the code is verified — it must not reveal whether this email is registered or has a password.",
+        "验证码校验通过前标题保持中性，不得暴露该邮箱是否已注册、是否已设密码。")+'</p>'
     + backLink("P-A01")));
 }
-function pageRecover1(){
-  return focusShell(focusCard(t("rcTitle"),t("rcSub"),
-    steps([t("rcStep1"),t("rcStep2")],0)
-    + note("",t("walletSignNote")) + gap()
-    + (S.st==="unlinked"?note("red",'<p>'+t("eWalletUnlinkedHint")+'</p>',t("eWalletUnlinked"))+gap():"")
-    + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeRecovery">'+t("connectWallet")+'</button>'
-    + backLink("P-A01")));
-}
-function pageRecover2(){
-  if(S.st==="taken") S.err.rcEmail=t("eEmailTaken");
-  return focusShell(focusCard(t("rcNewEmailTitle"),"",
-    steps([t("rcStep1"),t("rcStep2")],1)
-    + note("green",t("walletConnected")+' · '+shortAddr(ADDR)) + gap()
-    + field("rcEmail","labelNewEmail",{type:"email"}) + codeField("rc",{})
-    + '<button class="btn primary block" type="button" data-act="done" data-v="okRecovered">'+t("save")+'</button>'
-    + backLink("P-A01")));
+function pagePwd2(){
+  var set=S.st==="set";
+  if(S.st==="mismatch") S.err.pwNew2=t("ePwdMatch");
+  if(S.st==="same") S.err.pwNew=t("ePwdSameCurrent");
+  return focusShell(focusCard(set?t("titleSetPwd"):t("titleResetPwd"),"",
+    steps([t("pwdStep1"),t("pwdStep2")],1)
+    + field("pwNew","labelNewPwd",{pwd:true,ac:"new-password"}) + pwdRules("pwNew") + gap()
+    + field("pwNew2","labelConfirmPwd",{pwd:true,ac:"new-password"})
+    + '<button class="btn primary block" type="button" data-act="done" data-v="'+(set?"okPwdSet":"okPwdReset")+'" style="margin-top:16px">'
+    + t("save")+'</button>' + backLink("P-A01")));
 }
 
 /* ------------------------------ 管理端未登录 ------------------------------ */
 function pageAdminLogin(){
-  var locked=S.st==="locked";
-  return focusShell(focusCard(t("admLogin"),"",
-    (locked?note("red",'<p>'+t("lockAgain",{m:29,s:"47"})+'</p><p>'+t("lockHelpAdmin")+'</p>',t("lockTitle"))+gap():"")
-    + (S.st==="expired"?note("red",t("eInitExpired"))+gap():"")
-    + field("admEmail","labelWorkEmail",{type:"email",ph:"name@demo-console.test",disabled:locked})
-    + field("admPwd","labelPwd",{affix:true,ac:"current-password"})
-    + (S.st==="attempts"?'<p class="err-msg" role="alert" style="margin:-8px 0 12px"><span>!</span><span>'+t("lockPwdLeft",{n:2})+'</span></p>':"")
-    + '<button class="btn primary block" type="button" data-act="go" data-v="P-M06" '+(locked?"disabled":"")+'>'+t("admLogin")+'</button>'
+  var locked=S.st==="locked1";
+  if(locked)
+    return focusShell('<div class="card"><div class="card-b"><div class="locked">'
+      + '<div class="lock-ring">'+ICO.lock+'</div>'
+      + '<h2 class="page-title" style="font-size:19px;margin-top:14px">'+t("lockTitle")+'</h2>'
+      + '<div class="lock-time mono">09:12</div>'
+      + '<p class="lead" style="text-align:center;max-width:360px">'+t("lockDuring",{m:"9",s:"12"})+'</p>'
+      + '<p class="tiny" style="margin-top:10px">'+t("lockWait")+'</p>'+gap(10)
+      + note("amber",t("lockTier1",{m:10}))+'</div></div></div>');
+  return focusShell(focusCard(t("signInTitle"),"",
+    (S.st==="expired"?note("red",t("eInitExpired"))+gap():"")
+    + field("admEmail","labelWorkEmail",{type:"email",ph:"name@demo-console.test"})
+    + field("admPwd","labelPwd",{pwd:true,ac:"current-password"})
+    + (S.st==="attempts"?'<p class="err-msg" role="alert" style="margin:-8px 0 12px"><span>!</span><span>'+t("ePwdLoginAdmin")+" "+t("lockPwdLeft",{n:2}).split(". ")[1]+'</span></p>':"")
+    + '<button class="btn primary block" type="button" data-act="go" data-v="P-M05">'+t("submitSignIn")+'</button>'
     + '<div style="text-align:center;margin-top:16px"><button class="btn-link" type="button" data-act="go" data-v="P-M03">'+t("forgotPwd")+'</button></div>'));
 }
-function pageAdminFirstReset(){
-  if(S.st==="noack") S.err.ack=t("eAdminNotice");
+function pageAdminReset(){
   if(S.st==="same") S.err.mrNew=t("ePwdSameInitial");
   return focusShell(focusCard(t("adminFirstTitle"),t("adminFirstSub"),
-    field("mrOld","labelCurrentPwd",{affix:true})
-    + field("mrNew","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("mrNew") + gap()
-    + field("mrNew2","labelConfirmPwd",{affix:true,ac:"new-password"})
-    + '<div class="check" style="margin-top:14px"><input type="checkbox" id="ack" data-f="ack" '+(S.form.ack?"checked":"")+'>'
-    + '<label for="ack">'+t("admNoticeAck")+'</label></div>'
-    + (S.err.ack?'<p class="err-msg" role="alert"><span>!</span><span>'+esc(S.err.ack)+'</span></p>':'')
-    + '<button class="btn primary block" type="button" data-act="done" data-v="okPwdReset" style="margin-top:10px">'+t("save")+'</button>'
+    field("mrOld","labelCurrentPwd",{pwd:true})
+    + field("mrNew","labelNewPwd",{pwd:true,ac:"new-password"}) + pwdRules("mrNew") + gap()
+    + field("mrNew2","labelConfirmPwd",{pwd:true,ac:"new-password"})
+    /* 定稿版：本页无任何勾选项 */
+    + '<button class="btn primary block" type="button" data-act="done" data-v="okPwdReset" style="margin-top:14px">'+t("save")+'</button>'
     + '<p class="hint" style="margin-top:14px;text-align:center">'
     + L("No other page is reachable until this is done.","未完成重置前，其他管理端页面均不可达。")+'</p>'), true);
 }
 function pageAdminForgot1(){
-  return focusShell(focusCard(t("fpTitle"),t("fpSub"),
-    steps([t("fpStep1"),t("fpStep2")],0)
+  return focusShell(focusCard(t("pwdFlowTitle"),t("pwdFlowSub"),
+    steps([t("pwdStep1"),t("pwdStep2")],0)
     + field("mfEmail","labelWorkEmail",{type:"email"})
     + codeField("mf",{sent:S.st==="sent"})
-    + (S.st==="sent"?note("",L("If this email belongs to an admin account, a verification code has been sent.",
-        "若该邮箱为管理端账号，验证码已发送。"))+gap():"")
+    + (S.st==="sent"?note("",t("adminCodeSent"))+gap():"")
     + '<button class="btn primary block" type="button" data-act="go" data-v="P-M04">'+t("contin")+'</button>'
     + backLink("P-M01")));
 }
 function pageAdminForgot2(){
-  if(S.st==="same") S.err.mfPwd=t("ePwdSameInitial");
-  return focusShell(focusCard(t("fpStep2"),"",
-    steps([t("fpStep1"),t("fpStep2")],1)
-    + field("mfPwd","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("mfPwd") + gap()
-    + field("mfPwd2","labelConfirmPwd",{affix:true,ac:"new-password"})
+  if(S.st==="same") S.err.mfNew=t("ePwdSameInitial");
+  return focusShell(focusCard(t("titleResetPwd"),"",
+    steps([t("pwdStep1"),t("pwdStep2")],1)
+    + field("mfNew","labelNewPwd",{pwd:true,ac:"new-password"}) + pwdRules("mfNew") + gap()
+    + field("mfNew2","labelConfirmPwd",{pwd:true,ac:"new-password"})
     + '<button class="btn primary block" type="button" data-act="done" data-v="okPwdReset" style="margin-top:16px">'+t("save")+'</button>'
     + backLink("P-M01")));
 }
@@ -2095,216 +1728,125 @@ function pageAdminForgot2(){
 function pageGuide(){
   var viaWallet=S.st==="wallet";
   var pri = viaWallet
-    ? {title:t("addEmailTitle"), body:t("guideEmail"), cta:t("add")+" "+L("email","邮箱"), go:"P-A12"}
-    : {title:t("addWalletTitle"), body:t("guideWallet"), cta:t("connectWallet"), go:"P-A14"};
+    ? {title:t("addEmailTitle"), body:t("guideEmail"), cta:t("link")+" "+L("email","邮箱"), act:"emailDlg"}
+    : {title:L("Link an EVM wallet","绑定 EVM 钱包"), body:t("guideWallet"), cta:t("linkWallet"), act:"walletLink"};
   return pageHead(t("guideTitle"),"",prdBtn())
-   + note("green",'<p>'+(viaWallet?shortAddr(ADDR):MAIL)+'</p>',t("created"))
+   /* 顶部即建号确认区块（定稿版不设独立确认页），下方展示本次建号所用凭据 */
+   + note("green",'<p class="mono">'+(viaWallet?shortAddr(ADDR):MAIL)+'</p>',t("created"))
    + '<div style="max-width:640px;margin-top:16px">'
    + '<div class="guide pri"><span class="n">1</span><div class="bd"><b class="h3">'+pri.title+'</b><p>'+pri.body+'</p>'
-   + '<button class="btn primary" type="button" data-act="go" data-v="'+pri.go+'" style="margin-top:12px">'+pri.cta+'</button></div></div>'
+   + '<button class="btn primary" type="button" data-act="'+pri.act+'" style="margin-top:12px">'+pri.cta+'</button></div></div>'
    + '<div class="guide"><span class="n">2</span><div class="bd"><b class="h3">'+t("guidePwd")+'</b><p>'+t("guidePwdSub")+'</p>'
-   + '<button class="btn" type="button" data-act="go" data-v="P-A13" style="margin-top:12px">'+t("setPwdTitle")+'</button></div></div>'
-   + '<div style="margin-top:14px">'+note("",t("keepBoth"))+'</div>'
-   + '<div class="btnbar even"><button class="btn" type="button" data-act="go" data-v="LAND">'+t("later")+'</button></div></div>';
+   + '<button class="btn" type="button" data-act="pwdDlg" style="margin-top:12px">'+t("setPwdTitle")+'</button></div></div>'
+   + '<div style="margin-top:14px">'+note("amber",t("keepBoth"))+'</div>'
+   /* 点「稍后」整页收回并按落地规则跳转（F-07 / D-04） */
+   + '<div class="btnbar even"><button class="btn" type="button" data-act="later">'+t("later")+'</button></div>'
+   + '<p class="tiny" style="margin-top:10px">'+L("“Later” dismisses the whole page and lands by verification status: not verified → User center; company verified → Overview.",
+       "点「稍后」整页收回，并按认证状态落地：认证未完成 → 用户中心；企业认证已通过 → 总览页。")+'</p>'
+   + '</div>';
 }
-function pageLanding(){
-  var st=S.st, miss = st==="noemail"?"email":(st==="complete"?null:"wallet"), out="";
-  if(st==="expiring") out += note("",t("sExpiring")) + gap();
+function pageOverview(){
+  return pageHead(t("overviewTitle"),"",prdBtn())
+   + '<div class="card"><div class="card-b shell">'+ICO.info
+   + '<p>'+t("overviewShell")+'</p><span class="pill dash">'+L("Out of scope for this release","本期不做")+'</span>'
+   + '</div></div>';
+}
+function pageUserCenter(){
+  var st=S.st, miss = st==="noemail"?"email":(st==="complete"||st==="sub"?null:"wallet"), out="";
   if(miss && st!=="folded")
     out += '<div class="cbar" role="status"><span class="ic">!</span><p>'+(miss==="email"?t("barEmail"):t("barWallet"))+'</p>'
         +  '<button class="btn sm primary" type="button" data-act="go" data-v="P-A11">'+t("completeNow")+'</button>'
         +  '<button class="btn sm" type="button" data-act="st" data-v="folded">'+L("Collapse","折叠")+'</button></div>';
-  out += pageHead(t("landTitle"),t("landSub"),
+  out += pageHead(st==="sub"?L("Identity verification","个人认证"):t("ucTitle"),t("ucShell"),
       '<button class="btn primary" type="button" data-act="kyc">'+t("startKyc")+'</button>'+prdBtn())
-   + '<div class="stat-row">'
-   + stat(t("rowEmail"), miss==="email"?'<span class="faint">'+t("notSet")+'</span>':MAIL)
-   + stat(t("rowWallet"), miss==="wallet"?'<span class="faint">'+t("notSet")+'</span>':addrView(ADDR))
-   + stat(t("rowPwd"), '<span class="faint">'+t("notSet")+'</span>')
-   + stat(t("accStatus"), miss?'<span class="pill amber">'+t("stIncomplete")+'</span>':'<span class="pill green">'+t("stActiveAcc")+'</span>')
-   + '</div><div style="margin-top:16px">'
-   + note("",'<p>'+L("Business modules gate on identity-verification status, not on this module's credential-completeness status. Skipping the guide never puts the account into a globally restricted state.",
-       "各业务模块的功能放行以认证状态为准，不以本模块的凭据完备状态为准；跳过引导不进入任何全局受限态。")+'</p>',
-       L("Scope boundary","边界声明"))+'</div>'
-   + '<p class="tiny" style="margin-top:14px"><span class="pill dash">'+t("landDemoData")+'</span></p>';
+   + '<div class="card"><div class="card-b shell">'+ICO.info
+   + '<p>'+L("Identity and company verification are implemented in WS-303.","个人认证与企业认证由 WS-303 实现。")+'</p>'
+   + '<span class="pill dash">WS-303</span></div></div>';
   if(miss && st==="folded")
     out += '<button class="cbar-mini" type="button" data-act="st" data-v="nowallet">! '+t("completeNow")+'</button>';
   return out;
 }
-function stat(k,v){ return '<div class="stat"><div class="lbl">'+k+'</div><div class="val">'+v+'</div></div>'; }
 
-function pageSecurity(){
-  var hasWallet=S.st!=="nowallet", hasPwd=S.st==="complete";
-  return pageHead(t("secTitle"),"",prdBtn())
-   + (hasWallet?"":'<div class="cbar"><span class="ic">!</span><p>'+t("barWallet")+'</p></div>')
-   + '<div class="rows" style="max-width:760px">'
-   + srow(t("rowEmail"), MAIL, t("change"), "P-A12")
-   + srow(t("rowPwd"), hasPwd?"••••••••":'<span class="faint">'+t("notSet")+'</span>',
-          hasPwd?t("change"):t("setPwdTitle"), "P-A13", hasPwd?"":t("optional"))
-   + srow(t("rowWallet"), hasWallet?addrView(ADDR):'<span class="faint">'+t("notSet")+'</span>',
-          hasWallet?t("change"):t("add"), "P-A14")
-   + '</div>'
-   + (hasWallet?'<p class="tiny" style="margin-top:12px;max-width:760px">'+t("disconnectNote")+'</p>':"");
-}
-function srow(k,v,cta,target,tag){
-  return '<div class="row"><div class="row-main"><div class="row-k">'+k
-   + (tag?'<span class="pill gray">'+tag+'</span>':'')+'</div><div class="row-v">'+v+'</div></div>'
-   + '<div class="row-act"><button class="btn sm" type="button" data-act="go" data-v="'+target+'">'+cta+'</button></div></div>';
-}
-
-/* P-A12 / P-A13 / P-A14 变更流程：步骤可点，校验反馈保留 */
-function pageFlow(){
-  var f=S.flow||{id:S.page,step:0}, add=S.st==="add";
-  var conf={
-    "P-A12":{title:add?t("addEmailTitle"):t("chgEmailTitle"),
-             steps:add?[t("reauthTitle"),t("chgEmailNew")]:[t("reauthTitle"),t("chgEmailOld"),t("chgEmailNew")]},
-    "P-A13":{title:add?t("setPwdTitle"):t("chgPwdTitle"), steps:[t("reauthTitle"),add?t("setPwdTitle"):t("chgPwdTitle")]},
-    "P-A14":{title:add?t("addWalletTitle"):t("chgWalletTitle"),
-             steps:add?[t("reauthTitle"),t("chgWalletNew")]:[t("reauthTitle"),t("chgWalletOld"),t("chgWalletNew")]}
-  }[f.id];
-  var body;
-  if(f.step===0) body=reauth(f);
-  else if(f.id==="P-A12")
-    body = (!add&&f.step===1)
-      ? '<p class="lead" style="margin:0 0 14px">'+MAIL+'</p>'+codeField("oldEmail",{})
-        + '<button class="btn primary block" type="button" data-act="step" data-v="2">'+t("contin")+'</button>'
-      : field("newEmail","labelNewEmail",{type:"email"})+codeField("newEmail",{})
-        + '<button class="btn primary block" type="button" data-act="done" data-v="'+(add?"okEmailAdded":"okEmailUpdated")+'">'+t("save")+'</button>';
-  else if(f.id==="P-A13")
-    body = (add?note("",t("guidePwdSub"))+gap():"")
-      + field("np","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("np") + gap()
-      + field("np2","labelConfirmPwd",{affix:true,ac:"new-password"})
-      + '<button class="btn primary block" type="button" data-act="done" data-v="'+(add?"okPwdSet":"okPwdUpdated")+'" style="margin-top:16px">'+t("save")+'</button>';
-  else
-    body = (!add&&f.step===1)
-      ? '<p class="lead" style="margin:0 0 14px">'+shortAddr(ADDR)+'</p>'+note("",t("walletSignNote"))+gap()
-        + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeUnlink">'+t("signMessage")+'</button>'
-        + '<p class="hint" style="margin-top:12px"><button class="btn-link" type="button" data-act="step" data-v="2">'+t("walletUnavailable")+'</button></p>'
-      : note("",t("walletSignNote"))+gap()
-        + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeLink">'+t("connectWallet")+'</button>';
-  return pageHead(conf.title,"",prdBtn())
-   + '<div class="card" style="max-width:520px"><div class="card-b">'
-   + steps(conf.steps,f.step) + body
-   + '<div style="text-align:center;margin-top:16px"><button class="btn-link" type="button" data-act="go" data-v="P-A11">'+t("cancel")+'</button></div>'
-   + '</div></div>';
-}
-function reauth(f){
-  var head='<p class="lead" style="margin:0 0 16px">'+t("reauthSub")+'</p>';
-  if(!f.factor)
-    return head+'<div class="wallets">'+[["pwd",t("reauthPwd"),"••"],["wallet",t("reauthWallet"),"0x"],["code",t("reauthCode"),"@"]]
-      .map(function(x){ return '<button class="wallet" type="button" data-act="factor" data-v="'+x[0]+'"><span class="av">'+x[2]+'</span>'
-        + '<span><b>'+x[1]+'</b></span></button>'; }).join("")+'</div>';
-  var sw='<div style="text-align:center;margin-top:14px"><button class="btn-link" type="button" data-act="factor" data-v="">'
-    + L("Use another method","换一种验证方式")+'</button></div>';
-  if(f.factor==="pwd")
-    return head+field("reauthPwd","labelCurrentPwd",{affix:true,ac:"current-password"})
-      + '<button class="btn primary block" type="button" data-act="step" data-v="1">'+t("contin")+'</button>'+sw;
-  if(f.factor==="code")
-    return head+'<p class="lead" style="margin:-8px 0 14px">'+MAIL+'</p>'+codeField("reauth",{})
-      + '<button class="btn primary block" type="button" data-act="step" data-v="1">'+t("contin")+'</button>'+sw;
-  return head+note("",t("walletSignNote"))+gap()
-    + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeReauth">'+t("signMessage")+'</button>'+sw;
-}
-function pagePrefs(){
-  return pageHead(t("prefTitle"),"",prdBtn())
-   + '<div class="rows" style="max-width:760px">'
-   + '<div class="row"><div class="row-main"><div class="row-k">'+t("prefLang")+'</div><div class="row-v">'+langSwitcher()+'</div>'
-   + '<p class="tiny" style="margin-top:9px">'+t("prefLangSub")+'</p></div></div>'
+/* ---------------------- P-A11 账户设置单页（tab 锚点） --------------------- */
+function pageAccount(){
+  var st=S.st, hasWallet=st!=="nowallet", hasPwd=st==="complete";
+  return pageHead(t("accountSettings"),"",prdBtn())
+   + '<div class="anchors">'
+   + '<button type="button" class="anchor" data-act="anchor" data-v="secAccount">'+t("tabAccount")+'</button>'
+   + '<button type="button" class="anchor" data-act="anchor" data-v="secPrefs">'+t("tabPrefs")+'</button></div>'
+   + '<section id="secAccount"><h2 class="sec-title">'+t("tabAccount")+'</h2>'
+   + '<div class="rows">'
+   + srow(t("labelEmail"), MAIL, t("change"), "emailDlg", t("emailNote"))
+   + srow(t("labelPwd"), hasPwd?"••••••••":'<span class="faint">'+t("notSet")+'</span>',
+          hasPwd?t("change"):t("set"), "pwdDlg", "", hasPwd?"":t("optional"))
+   + srowWallet(hasWallet)
+   + srow(t("labelStatus"), hasWallet&&hasPwd
+        ? '<span class="pill green">'+t("stActiveAcc")+'</span>'
+        : '<span class="pill amber">'+t("stIncomplete")+'</span>', "", "", "")
+   + '</div></section>'
+   + '<section id="secPrefs" style="margin-top:26px"><h2 class="sec-title">'+t("tabPrefs")+'</h2>'
+   + '<div class="rows">'
+   + '<div class="row"><div class="row-main"><div class="row-k">'+t("prefLang")+'</div><div class="row-v">'
+   + '<select class="inp" data-f="lang" style="max-width:260px">'
+   + '<option value="en" '+(S.lang==="en"?"selected":"")+'>English</option>'
+   + '<option value="zh" '+(S.lang==="zh"?"selected":"")+'>简体中文</option></select></div>'
+   + '<p class="hint">'+t("prefLangSub")+'</p></div></div>'
    + '<div class="row"><div class="row-main"><div class="row-k">'+t("prefTz")+'</div><div class="row-v">'
-   + '<select class="inp" data-f="tz" style="max-width:280px">'
+   + '<select class="inp" data-f="tz" style="max-width:260px">'
    + ["Asia/Shanghai","UTC","Europe/London","America/New_York"].map(function(z){
        return '<option value="'+z+'" '+(S.tz===z?"selected":"")+'>'+z+'</option>';}).join("")
-   + '</select></div><p class="tiny" style="margin-top:9px">'+t("prefTzSub")+'</p>'
-   + '<p class="tiny mono" style="margin-top:5px">'+t("sampleTime",{t:fmtTime(null,true)})+'</p></div></div></div>';
+   + '</select></div><p class="hint">'+t("prefTzSub")+'</p>'
+   + '<p class="hint mono">'+t("sampleTime",{t:fmtTime(null,true)})+'</p></div></div>'
+   + '</div></section>';
 }
-function pageAdminChangePwd(){
-  return pageHead(t("admNavSecurity"),"",prdBtn())
-   + '<div class="card" style="max-width:520px"><div class="card-b">'
-   + field("apOld","labelCurrentPwd",{affix:true})
-   + field("apNew","labelNewPwd",{affix:true,ac:"new-password"}) + pwdRules("apNew") + gap(12)
-   + field("apNew2","labelConfirmPwd",{affix:true,ac:"new-password"})
-   + '<button class="btn primary" type="button" data-act="done" data-v="okPwdUpdated" style="margin-top:14px">'+t("save")+'</button>'
-   + '</div></div>';
+function srow(k,v,cta,act,note2,tag){
+  return '<div class="row"><div class="row-main"><div class="row-k">'+k
+   + (tag?'<span class="pill gray">'+tag+'</span>':'')+'</div><div class="row-v">'+v+'</div>'
+   + (note2?'<p class="hint">'+note2+'</p>':'')+'</div>'
+   + (cta?'<div class="row-act"><button class="btn sm" type="button" data-act="'+act+'">'+cta+'</button></div>':'')+'</div>';
 }
-
-/* ----------------------------- P-M06 账户管理 ----------------------------- */
-function pageAdminAccounts(){
-  var st=S.st, list = st==="lastadmin" ? [ADMINS[0],ADMINS[3],ADMINS[4]] : ADMINS;
-  var avail = list.filter(function(r){return r.st==="active"||r.st==="pending"||r.st==="locked";}).length;
-  var head='<tr><th>'+t("admColEmail")+'</th><th>'+t("admColName")+'</th><th>'+t("admColStatus")+'</th><th>'
-   + t("admColCreated")+'</th><th>'+t("admColLast")+'</th><th class="col-act">'+t("admColAct")+'</th></tr>';
-  var toolbar='<div class="toolbar">'
-    + '<input class="inp" data-f="admQ" value="'+esc(S.form.admQ||"")+'" placeholder="'+t("admSearch")+'">'
-    + '<div class="seg">'+["all","active","pending","locked","disabled"].map(function(k,i){
-        return '<button type="button" data-act="noop" aria-pressed="'+(i===0)+'">'
-          + t("admFilter"+k.charAt(0).toUpperCase()+k.slice(1))+'</button>';}).join("")+'</div>'
-    + '</div>';
-  var inner;
-  if(st==="loading")
-    inner='<div class="tablewrap"><table class="tbl"><thead>'+head+'</thead><tbody>'
-      + "0123".split("").map(function(){ return '<tr>'+"012345".split("").map(function(){
-          return '<td><div class="skel"></div></td>';}).join("")+'</tr>'; }).join("")
-      + '</tbody></table><p class="tiny" style="padding:11px 12px" role="status">'+t("stLoading")+'</p></div>';
-  else if(st==="empty")
-    inner='<div class="tablewrap"><table class="tbl"><thead>'+head+'</thead></table>'
-      + '<div class="tbl-empty"><b>'+t("stEmptyTitle")+'</b><span>'+t("stEmptyBody")+'</span>'
-      + '<div style="margin-top:14px"><button class="btn primary sm" type="button" data-act="admCreate">'+t("admCreate")+'</button></div></div></div>';
-  else if(st==="noresult")
-    inner='<div class="tablewrap"><table class="tbl"><thead>'+head+'</thead></table>'
-      + '<div class="tbl-empty"><b>'+t("stNoResultTitle")+'</b><span>'+t("stNoResultBody")+'</span></div></div>';
-  else if(st==="failed")
-    inner='<div class="tablewrap"><div class="tbl-empty"><b>'+t("stFailTitle")+'</b><span>'+t("stFailBody")+'</span>'
-      + '<div style="margin-top:14px"><button class="btn sm" type="button" data-act="st" data-v="default">'+t("stRetry")+'</button></div></div></div>';
-  else if(st==="noperm")
-    inner='<div class="tablewrap"><div class="tbl-empty"><b>'+t("stNoPermTitle")+'</b><span>'+t("stNoPermBody")+'</span></div></div>';
-  else
-    inner='<div class="tablewrap"><table class="tbl"><thead>'+head+'</thead><tbody>'
-      + list.map(function(r){ return admRow(r,avail); }).join("")
-      + '</tbody></table></div><p class="tiny" style="margin-top:10px">'+t("admAuditNote")+' · '+t("admExpiredNote")+'</p>';
-  if((st==="submitting"||st==="submitfail") && !S.modal)
-    S.modal={type:"admCreate",busy:st==="submitting",fail:st==="submitfail"};
-  return pageHead(t("admAccountsTitle"), t("demoOnly")+" · "+L("Available administrators: ","可用管理员：")+avail,
-      '<button class="btn primary" type="button" data-act="admCreate">'+t("admCreate")+'</button>'+prdBtn())
-   + toolbar + inner;
+/* F-19 / D-06：钱包地址绑定后只读，无任何修改入口 */
+function srowWallet(hasWallet){
+  return '<div class="row"><div class="row-main"><div class="row-k">'+t("labelWallet")
+   + (hasWallet?'<span class="pill gray">'+L("Read-only","只读")+'</span>':'')+'</div>'
+   + '<div class="row-v">'+(hasWallet?addrView(ADDR):'<span class="faint">'+t("notLinked")+'</span>')+'</div>'
+   + '<p class="hint">'+(hasWallet?t("walletNote"):t("guideWallet"))+'</p></div>'
+   + (hasWallet?'':'<div class="row-act"><button class="btn sm" type="button" data-act="walletLink">'+t("linkWallet")+'</button></div>')
+   + '</div>';
 }
-function admRow(r,avail){
-  var isMe=r.email===ME, s;
-  if(r.st==="active") s=stCell("green",t("stActive"),"");
-  else if(r.st==="pending") s=stCell("amber",t("stPendingS"),t("stPendingD",{t:fmtTime(r.expires)}));
-  else if(r.st==="pendingExpired") s=stCell("red",t("stPendingS"),t("stPendingExpired"));
-  else if(r.st==="locked") s=stCell("red",t("stLockedS"),t("stLockedD",{t:"12m 14s"}));
-  else s=stCell("gray",t("stDisabled"),"");
-  var counts=(r.st==="active"||r.st==="pending"||r.st==="locked");
-  /* 两条约束同时命中时优先展示「最后一个可用管理员」（PRD 7.9.2 / AC-169） */
-  var block=(counts&&avail<=1)?t("admLastTip"):(isMe?t("eSelfAction"):"");
-  var acts=[];
-  if(r.st==="disabled") acts.push(act(t("admActRestore"),"",false,"noop"));
-  else { acts.push(act(t("admActDisable"),block,true,"admConfirm")); acts.push(act(t("admActDelete"),block,true,"admConfirm")); }
-  if(r.st==="locked") acts.push(act(t("admActUnlock"),"",false,"admUnlock"));
-  if(r.st==="pending"||r.st==="pendingExpired")
-    acts.push(act(t("admActRegenShort"),isMe?t("eSelfAction"):"",false,"admPwd",t("admActRegen")));
-  return '<tr><td class="c-email">'+esc(r.email)+(isMe?' <span class="pill gray">'+L("You","我")+'</span>':'')+'</td>'
-   + '<td class="nw">'+esc(r.name)+'</td><td class="c-status">'+s+'</td>'
-   + '<td class="c-time">'+fmtCell(r.created)+'</td><td class="c-time">'+fmtCell(r.last)+'</td>'
-   + '<td class="col-act">'+acts.join("")+'</td></tr>';
-}
-function stCell(cls,label,detail){
-  return '<span class="pill '+cls+'">'+label+'</span>'+(detail?'<div class="tiny" style="margin-top:3px">'+detail+'</div>':'');
-}
-/* 被拦住的操作置灰但仍可点：点击后给出可读原因，而不是静默无反应 */
-function act(label,block,danger,action,title){
-  if(block) return '<button class="actlink off" type="button" data-act="blocked" data-m="'+esc(block)+'" title="'+esc(block)+'">'+label+'</button>';
-  return '<button class="actlink'+(danger?" danger":"")+'" type="button" data-act="'+action+'"'
-   + (title?' title="'+esc(title)+'"':'')+'>'+label+'</button>';
+/* P-M05 管理端账户设置单页 */
+function pageAdminAccount(){
+  return pageHead(t("accountSettings"),"",prdBtn())
+   + '<div class="anchors">'
+   + '<button type="button" class="anchor" data-act="anchor" data-v="secAccount">'+t("tabAccount")+'</button>'
+   + '<button type="button" class="anchor" data-act="anchor" data-v="secPrefs">'+t("tabPrefs")+'</button></div>'
+   + '<section id="secAccount"><h2 class="sec-title">'+t("tabAccount")+'</h2><div class="rows">'
+   + srow(t("labelWorkEmail"), '<span class="mono">'+ME+'</span>', "", "",
+       L("Sign-in account. Read-only.","登录账号，只读。"))
+   + srow(t("labelName"), ME_NAME, "", "")
+   + srow(t("labelPwd"), "••••••••", t("change"), "pwdDlg")
+   + srow(t("labelStatus"), '<span class="pill green">'+t("stActiveAcc")+'</span>', "", "")
+   + '</div></section>'
+   + '<section id="secPrefs" style="margin-top:26px"><h2 class="sec-title">'+t("tabPrefs")+'</h2><div class="rows">'
+   + '<div class="row"><div class="row-main"><div class="row-k">'+t("prefLang")+'</div><div class="row-v">'
+   + '<select class="inp" data-f="lang" style="max-width:260px">'
+   + '<option value="en" '+(S.lang==="en"?"selected":"")+'>English</option>'
+   + '<option value="zh" '+(S.lang==="zh"?"selected":"")+'>简体中文</option></select></div></div></div>'
+   + '<div class="row"><div class="row-main"><div class="row-k">'+t("prefTz")+'</div><div class="row-v">'
+   + '<select class="inp" data-f="tz" style="max-width:260px">'
+   + ["Asia/Shanghai","UTC","Europe/London","America/New_York"].map(function(z){
+       return '<option value="'+z+'" '+(S.tz===z?"selected":"")+'>'+z+'</option>';}).join("")
+   + '</select></div><p class="hint mono">'+t("sampleTime",{t:fmtTime(null,true)})+'</p></div></div>'
+   + '</div></section>';
 }
 
 /* ================================ 弹层 =================================== */
 function renderModal(){
   var m=S.modal; if(!m) return "";
   return { captcha:modalCaptcha, wallet:modalWallet, reconsent:modalReconsent, gate:modalGate,
-           admCreate:modalAdmCreate, admPwd:modalAdmPwd, admConfirm:modalAdmConfirm, doc:modalDoc }[m.type]();
+           email:modalEmail, pwd:modalPwd, doc:modalDoc }[m.type]();
 }
-/* C-01 滑块弹窗：视觉完整、能开能关、可切「默认 / 通过 / 失败 / 冷却」四种样子。
-   拖拽轨迹与落点容差校验属于前端实现范围（PRD 12.3.2 / 12.3.3），原型不做仿真。 */
+/* C-01 滑块弹窗：视觉完整、能开能关、可切五种样子；拖拽校验由前端实现 */
 function modalCaptcha(){
   var v=S.modal.view||"idle", x=(v==="ok"?133:0);
   var msg = v==="ok"?["ok",t("capVerified")] : v==="fail"?["bad",t("capFail")]
@@ -2317,7 +1859,7 @@ function modalCaptcha(){
    + '<div class="modal-b">'
    + '<div class="cap-canvas"><canvas id="capBg" width="328" height="180"></canvas>'
    + '<canvas id="capPiece" class="cap-piece" width="328" height="180" style="transform:translateX('+x+'px)"></canvas></div>'
-   + '<div class="cap-track'+(v==="ok"?" ok":(v==="fail"||v==="cool")?" bad":"")+(v==="cool"?" cool":"")+'">'
+   + '<div class="cap-track'+(v==="ok"?" ok":(v==="fail"||v==="cool"||v==="trouble")?" bad":"")+(v==="cool"?" cool":"")+'">'
    + '<div class="cap-fill" style="width:'+(x+48)+'px"></div>'
    + '<span class="tip">'+(v==="idle"?t("capSlide"):"")+'</span>'
    + '<div class="cap-knob" style="transform:translateX('+x+'px)" role="img" aria-label="'+t("capSlide")+'">›</div></div>'
@@ -2329,33 +1871,34 @@ function modalCaptcha(){
    + '</div><div class="modal-f"><button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
    + '<button class="btn primary" type="button" data-act="capPass">'+t("contin")+'</button></div></div></div>';
 }
-/* C-06 钱包面板：连接 → 待签消息 → 结果，六种样子可直接切换 */
+/* C-06 链接外部钱包面板：所有状态提示走 Toast（PRD 7.2.3） */
 function modalWallet(){
-  var w=S.modal, v=w.view||"pick", body;
-  if(v==="pick")
-    body='<p class="lead" style="margin:0 0 14px">'+t("walletPickSub")+'</p><div class="wallets">'
+  var w=S.modal, v=w.view||"pick";
+  var body = v==="pick"
+    ? '<p class="lead" style="margin:0 0 14px">'+t("walletPickSub")+'</p><div class="wallets">'
       + ["Demo Wallet A","Demo Wallet B","Demo Wallet C"].map(function(n,i){
           return '<button class="wallet" type="button" data-act="wView" data-v="sign"><span class="av">W'+(i+1)+'</span>'
-            + '<span><b>'+n+'</b><span>'+t("demoOnly")+'</span></span></button>';}).join("")+'</div>';
-  else if(v==="nowallet") body=note("red",t("eNoWallet"));
-  else if(v==="network")  body=note("red",t("eNetwork"));
-  else if(v==="rejected") body=note("red",t("eSigRejected"));
-  else if(v==="failed")   body=note("red",t("eSigFailed"));
-  else {
-    var msg="Chain Financing (demo.chain-financing.test)\n\nAddress: "+ADDR+"\nChain ID: 1\nNonce: 8f31c0a4d27b\n"
-      + "Issued at: "+fmtTime(null,true)+"\nExpires in: 5 minutes\nPurpose: "+t(w.purpose||"purposeSignIn")+"\n\n"+t("walletSignNote");
-    body=note("green",t("walletConnected")+' · <span class="mono">'+shortAddr(ADDR)+'</span>')
-      + gap(12) + '<div class="sigmsg">'+esc(msg)+'</div>'
-      /* 「只签消息、不发交易」不放在可滚动区域里，单独常驻一条 */
-      + '<div style="margin-top:12px">'+note("",t("walletSignNote"))+'</div>';
-  }
+            + '<span><b>'+n+'</b><span>'+t("demoOnly")+'</span></span></button>';}).join("")+'</div>'
+    : note("green",L("Linked","已链接")+' · <span class="mono">'+shortAddr(ADDR)+'</span>')
+      + gap(12)
+      + '<div class="sigmsg">'+esc("Chain Financing (demo.chain-financing.test)\n\nAddress: "+ADDR
+        + "\nChain ID: 1\nNonce: 8f31c0a4d27b\nIssued at: "+fmtTime(null,true)
+        + "\nExpires in: 5 minutes\nPurpose: "+t(w.purpose||"purposeSignIn")+"\n\n"+t("walletSignNote"))+'</div>'
+      + '<div style="margin-top:12px">'+note("",t("walletSignNote"))+'</div>'
+      + '<p class="hint">'+t("disconnectNote")+'</p>';
+  var toasts=[["tNoWallet","No wallet","未检测到钱包"],["tConnRejected","Conn. rejected","拒绝链接"],
+              ["tSignPrompt","Sign prompt","请求签名"],["tSignRejected","Sign rejected","拒绝签名"],
+              ["tSignExpired","Sign expired","签名过期"],["tVerifyFailed","Verify failed","验签失败"],
+              ["tAddrMismatch","Address mismatch","地址不一致"],["tAccountChanged","Account changed","切换账户"],
+              ["tNetworkBad","Wrong network","网络不支持"],["tNetworkOk","Network switched","切换成功"],
+              ["tSdkFail","SDK failed","SDK 失败"],["tLinked","Linked","链接成功"]];
   return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
    + '<div class="modal-h"><b>'+(v==="pick"?t("walletPick"):t("walletSignTitle"))+'</b>'
    + '<button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
    + '<div class="modal-b">'+body
-   + stateBar([["pick","Wallets","选择钱包"],["sign","Sign","待签名"],["rejected","Rejected","拒签"],
-               ["failed","Verify failed","验签失败"],["nowallet","No wallet","无钱包"],["network","Wrong network","网络不支持"]],
-              "wView", v, "margin:14px 0 0")
+   + '<div class="statebar" style="margin:14px 0 0"><span class="pill dash">'+L("Prototype · wallet Toasts","原型 · 钱包 Toast")+'</span>'
+   + '<div class="seg">'+toasts.map(function(x){
+       return '<button type="button" data-act="wToast" data-v="'+x[0]+'">'+L(x[1],x[2])+'</button>';}).join("")+'</div></div>'
    + '</div><div class="modal-f"><button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
    + (v==="sign"?'<button class="btn primary" type="button" data-act="wSign">'+t("signMessage")+'</button>':'')
    + '</div></div></div>';
@@ -2364,10 +1907,10 @@ function modalReconsent(){
   return '<div class="mask"><div class="modal wide" role="dialog" aria-modal="true">'
    + '<div class="modal-h"><b>'+t("reconsentTitle")+'</b></div>'
    + '<div class="modal-b"><p class="lead" style="margin:0 0 12px">'+t("reconsentBody")+'</p>'
-   + '<div class="sigmsg" style="max-height:190px;white-space:normal;font-family:var(--sans);font-size:12px">'
+   + '<div class="sigmsg" style="max-height:180px;white-space:normal;font-family:var(--sans);font-size:12px">'
    + '<b>Terms of Service · v3.2 · '+t("demoOnly")+'</b><br><br>'
-   + new Array(7).join('<p style="margin:0 0 10px">'+L("Placeholder clause. The Terms of Service text, its version, effective time and re-consent rules are owned by WS-301; this prototype only demonstrates the front-end consent interaction.",
-      "占位条款。协议正文、版本号、生效时间与强制重新同意的判定规则归 WS-301 定义，本原型只演示前台同意交互。")+'</p>')
+   + new Array(6).join('<p style="margin:0 0 10px">'+L("Placeholder clause. The Terms of Service text, its version and re-consent rules are owned by WS-301.",
+      "占位条款。协议正文、版本与强制重新同意规则归 WS-301 定义。")+'</p>')
    + '</div><p class="hint">'+t("reconsentScroll")+'</p></div>'
    + '<div class="modal-f"><button class="btn" type="button" data-act="go" data-v="P-A01">'+t("signOut")+'</button>'
    + '<button class="btn primary" type="button" data-act="close">'+t("reconsentAgree")+'</button></div></div></div>';
@@ -2375,59 +1918,72 @@ function modalReconsent(){
 /* C-09 凭据补齐弹层 */
 function modalGate(){
   var need=S.modal.need;
+  var sw=stateBar([["wallet","Missing wallet","缺钱包"],["email","Missing email","缺邮箱"],["","All set","已齐备"]],
+                  "gateView", need, "margin:14px 0 0");
   if(!need)
     return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
      + '<div class="modal-h"><b>'+t("allSet")+'</b><button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
-     + '<div class="modal-b">'+note("green",t("allSet"))
-     + stateBar([["wallet","Missing wallet","缺钱包"],["email","Missing email","缺邮箱"],["","All set","已齐备"]],
-                "gateView", need, "margin:14px 0 0")
-     + '</div><div class="modal-f"><button class="btn primary" type="button" data-act="close">'+t("startKyc")+'</button></div></div></div>';
-  var body='<p class="lead" style="margin:0 0 14px">'+t("gateBody")+'</p><p class="tiny" style="margin-bottom:10px">1 / 2</p>'
-   + (need==="email"
-      ? field("gateEmail","labelEmail",{type:"email"})+codeField("gate",{})
-        + '<button class="btn primary block" type="button" data-act="close">'+t("save")+'</button>'
-      : note("",t("walletSignNote"))+gap()
-        + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeLink">'+t("connectWallet")+'</button>');
+     + '<div class="modal-b">'+note("green",t("allSet"))+sw+'</div>'
+     + '<div class="modal-f"><button class="btn primary" type="button" data-act="close">'+t("startKyc")+'</button></div></div></div>';
   return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
    + '<div class="modal-h"><b>'+(need==="email"?t("gateEmail"):t("gateWallet"))+'</b>'
    + '<button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
-   + '<div class="modal-b">'+body
-   + stateBar([["wallet","Missing wallet","缺钱包"],["email","Missing email","缺邮箱"],["","All set","已齐备"]],
-              "gateView", need, "margin:14px 0 0")
-   + '</div></div></div>';
+   + '<div class="modal-b"><p class="lead" style="margin:0 0 14px">'+t("gateBody")+'</p>'
+   + '<p class="tiny" style="margin-bottom:10px">1 / 2</p>'
+   + (need==="email"
+      ? field("gateEmail","labelEmail",{type:"email"})+codeField("gate",{})
+        + '<button class="btn primary block" type="button" data-act="close">'+t("save")+'</button>'
+      : field("gateAddr","labelWallet",{ph:"0x…",mono:true})+note("",t("walletSignNote"))+gap()
+        + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeLink">'+t("linkWallet")+'</button>')
+   + sw + '</div></div></div>';
 }
-function modalAdmCreate(){
-  var m=S.modal;
+/* P-A12 修改 / 绑定邮箱（弹窗）：再认证 → 旧邮箱 → 新邮箱 */
+function modalEmail(){
+  var f=S.modal, add=f.add, step=f.step||0;
+  var names=add?[t("reauthTitle"),t("chgEmailNew")]:[t("reauthTitle"),t("chgEmailOld"),t("chgEmailNew")];
+  var body;
+  if(step===0) body=reauthBlock(f);
+  else if(!add&&step===1)
+    body='<p class="lead" style="margin:0 0 14px">'+MAIL+'</p>'+codeField("oldEmail",{})
+      + '<p class="hint">'+L("This step can't be skipped — see D-07.","本步骤不可跳过（D-07）。")+'</p>'
+      + '<button class="btn primary block" type="button" data-act="mStep" data-v="2" style="margin-top:12px">'+t("contin")+'</button>';
+  else
+    body=field("newEmail","labelNewEmail",{type:"email"})+codeField("newEmail",{})
+      + '<button class="btn primary block" type="button" data-act="done" data-v="'+(add?"okEmailAdded":"okEmailUpdated")+'">'+t("save")+'</button>';
+  return dialog(add?t("addEmailTitle"):t("chgEmailTitle"), steps(names,step)+body);
+}
+/* P-A13 修改 / 设置密码（弹窗）：再认证 → 设置新密码 */
+function modalPwd(){
+  var f=S.modal, set=f.set, step=f.step||0;
+  var body = step===0 ? reauthBlock(f)
+    : (set?note("",t("guidePwdSub"))+gap():"")
+      + field("dNew","labelNewPwd",{pwd:true,ac:"new-password"}) + pwdRules("dNew") + gap()
+      + field("dNew2","labelConfirmPwd",{pwd:true,ac:"new-password"})
+      + '<button class="btn primary block" type="button" data-act="done" data-v="'+(set?"okPwdSet":"okPwdUpdated")+'" style="margin-top:16px">'
+      + t("save")+'</button>';
+  return dialog(set?t("setPwdTitle"):t("chgPwdTitle"), steps([t("reauthTitle"),set?t("setPwdTitle"):t("chgPwdTitle")],step)+body);
+}
+function reauthBlock(f){
+  var head='<p class="lead" style="margin:0 0 16px">'+t("reauthSub")+'</p>';
+  if(!f.factor)
+    return head+'<div class="wallets">'+[["pwd",t("reauthPwd"),"••"],["wallet",t("reauthWallet"),"0x"],["code",t("reauthCode"),"@"]]
+      .map(function(x){ return '<button class="wallet" type="button" data-act="mFactor" data-v="'+x[0]+'"><span class="av">'+x[2]+'</span>'
+        + '<span><b>'+x[1]+'</b></span></button>'; }).join("")+'</div>';
+  var sw='<div style="text-align:center;margin-top:14px"><button class="btn-link" type="button" data-act="mFactor" data-v="">'
+    + L("Use another method","换一种验证方式")+'</button></div>';
+  if(f.factor==="pwd")
+    return head+field("reauthPwd","labelCurrentPwd",{pwd:true,ac:"current-password"})
+      + '<button class="btn primary block" type="button" data-act="mStep" data-v="1">'+t("contin")+'</button>'+sw;
+  if(f.factor==="code")
+    return head+'<p class="lead" style="margin:-8px 0 14px">'+MAIL+'</p>'+codeField("reauth",{})
+      + '<button class="btn primary block" type="button" data-act="mStep" data-v="1">'+t("contin")+'</button>'+sw;
+  return head+note("",t("walletSignNote"))+gap()
+    + '<button class="btn primary block" type="button" data-act="wallet" data-p="purposeReauth">'+t("signMessage")+'</button>'+sw;
+}
+function dialog(title,body){
   return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
-   + '<div class="modal-h"><b>'+t("admCreate")+'</b><button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
-   + '<div class="modal-b">'
-   + (m.fail?note("red",'<p>'+t("stSubmitFailBody")+'</p>',t("stSubmitFailTitle"))+gap(12):"")
-   + field("acEmail","labelWorkEmail",{type:"email",ph:"name@demo-console.test"})
-   + field("acName","labelName") + note("amber",t("admDeliverOffline"))
-   + '</div><div class="modal-f"><button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
-   + '<button class="btn primary" type="button" data-act="admPwd" '+(m.busy?"disabled":"")+'>'
-   + (m.busy?'<span class="spinner"></span>'+t("stSubmitting"):t("admCreate"))+'</button></div></div></div>';
-}
-function modalAdmPwd(){
-  return '<div class="mask"><div class="modal" role="dialog" aria-modal="true">'
-   + '<div class="modal-h"><b>'+t("adminCreated")+'</b></div>'
-   + '<div class="modal-b"><div class="row-k">'+t("admInitialPwd")+'</div>'
-   + '<div class="hash" style="width:100%;justify-content:space-between;font-size:15px"><span class="val">Dq7m2xR4vT</span>'
-   + '<button class="ico" type="button" data-act="copy" aria-label="'+t("copyAddress")+'">⧉</button></div>'
-   + '<p class="hint">'+t("initExpiresOn",{t:fmtTime("2026-09-14T08:00:00Z")})+'</p>'
-   + '<div style="margin-top:12px">'+note("amber",t("admDeliverOffline"))+'</div>'
-   + '</div><div class="modal-f"><button class="btn primary" type="button" data-act="close">'+t("savedIt")+'</button></div></div></div>';
-}
-function modalAdmConfirm(){
-  var u=S.modal.unlock, mail="settle.ops@demo-console.test";
-  return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true">'
-   + '<div class="modal-h"><b>'+(u?t("admUnlockTitle"):t("admConfirmDisable"))+'</b>'
-   + '<button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
-   + '<div class="modal-b">'+(S.modal.err?note("red",t("eLastAdmin"))+gap(12):"")
-   + '<p class="lead" style="margin:0">'
-   + (u?t("admUnlockBody",{email:mail}):t("admConfirmDisableBody",{email:"risk.review@demo-console.test"}))+'</p></div>'
-   + '<div class="modal-f"><button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
-   + '<button class="btn '+(u?"primary":"danger")+'" type="button" data-act="'+(u?"close":"admReject")+'">'+t("confirm")+'</button></div></div></div>';
+   + '<div class="modal-h"><b>'+title+'</b><button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b">'+body+'</div></div></div>';
 }
 function modalDoc(){
   return '<div class="mask" data-act="close"><div class="modal wide" role="dialog" aria-modal="true">'
@@ -2441,10 +1997,8 @@ function modalDoc(){
 /* ================================ 抽屉 =================================== */
 function renderDrawer(){
   if(!S.drawer) return "";
-  return '<div class="drawer-scrim" data-act="closeDrawer"></div>'
-   + (S.drawer==="prd"?drawerPrd():drawerPages());
+  return '<div class="drawer-scrim" data-act="closeDrawer"></div>'+(S.drawer==="prd"?drawerPrd():drawerPages());
 }
-/* PRD 摘录里的 **强调** 与 `代码` 渲染为 HTML；先转义，避免注入 */
 function md(x){
   return esc(x).replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>").replace(/`([^`]+)`/g,'<code class="mono">$1</code>');
 }
@@ -2466,8 +2020,6 @@ function drawerPrd(){
   var c=(d.copy||[]).map(function(x){
     return '<div class="prd-copy"><span class="sc">'+esc(x[0])+'</span><span class="en">EN&nbsp;&nbsp;'+esc(x[1])+'</span>'
      + '<span class="zh">中文&nbsp;&nbsp;'+esc(x[2])+'</span></div>';}).join("");
-  var a=(d.ac||[]).map(function(x){
-    return '<div class="prd-ac"><code>'+esc(x[0])+'</code><span>'+md(x[1])+'</span></div>';}).join("");
   return '<aside class="drawer prd" role="complementary" aria-label="PRD">'
    + '<div class="drawer-h"><b>PRD · '+esc(d.title)+'</b>'
    + '<button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">✕</button></div>'
@@ -2476,10 +2028,9 @@ function drawerPrd(){
    + sec("② 关键业务规则",rows(d.rules),(d.rules||[]).length,true)
    + sec("③ 状态与异常分支",rows(d.states),(d.states||[]).length,false)
    + sec("④ 中英双语文案",c,(d.copy||[]).length,false)
-   + sec("⑤ 验收标准",a,(d.ac||[]).length,false)
-   + '<div class="prd-foot">本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD。完整口径以 '
-   + 'prd/v1.0-账户与登录-PRD.md（v4）为准。面板固定中文，是给前端开发看的规格说明，不属于产品界面。</div>'
-   + '</div></aside>';
+   + '<div class="prd-foot">本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD，按用户要求**不展示验收标准**。'
+   + '完整口径以 prd/v1.0-账户与登录-PRD.md（定稿版）为准；编号体系 F-01～36 / N-01～21 / D-01～31。'
+   + '面板固定中文，是给前端开发看的规格说明，不属于产品界面。</div></div></aside>';
 }
 function drawerPages(){
   return '<aside class="drawer" role="complementary" aria-label="Pages">'
@@ -2492,44 +2043,44 @@ function drawerPages(){
        return '<div class="pp-sec">'+g[0]+'</div>'+g[1].map(function(p){
          var id=p[0], st=p[1];
          return '<button class="pp-link" type="button" data-act="go" data-v="'+id+'" data-st="'+st+'" aria-current="'
-          + (S.page===id&&(!st||S.st===st))+'"><code>'+(st==="locked"?"P-A07":id)+'</code><span>'
-          + pageName(id)+(st==="locked"?" · "+L("locked","锁定态"):"")+'</span></button>';}).join("");
+          + (S.page===id&&(!st||S.st===st))+'"><code>'+(st?"P-A07":id)+'</code><span>'
+          + pageName(id)+(st?" · "+L("locked","锁定态"):"")+'</span></button>';}).join("");
      }).join("")
    + '</div></aside>';
 }
 
 /* ================================ 渲染 =================================== */
 function renderContent(){
-  return ({ "P-A10":pageGuide, "LAND":pageLanding, "P-A11":pageSecurity, "P-A12":pageFlow, "P-A13":pageFlow,
-            "P-A14":pageFlow, "P-A15":pagePrefs, "P-M05":pageAdminChangePwd, "P-M06":pageAdminAccounts }[S.page]||function(){return "";})();
+  return ({ "P-A10":pageGuide, "P-A16":pageOverview, "P-A17":pageUserCenter,
+            "P-A11":pageAccount, "P-M05":pageAdminAccount }[S.page]||function(){return "";})();
 }
 function renderFocus(){
-  return ({ "P-A01":pageLogin, "CREATED":pageCreated, "P-A03":pageForgot1, "P-A04":pageForgot2,
-            "P-A05":pageRecover1, "P-A06":pageRecover2, "P-M01":pageAdminLogin, "P-M02":pageAdminFirstReset,
-            "P-M03":pageAdminForgot1, "P-M04":pageAdminForgot2 }[S.page]||function(){return "";})();
+  return ({ "P-A01":pageLogin, "P-A03":pagePwd1, "P-A04":pagePwd2, "P-M01":pageAdminLogin,
+            "P-M02":pageAdminReset, "P-M03":pageAdminForgot1, "P-M04":pageAdminForgot2 }[S.page]||function(){return "";})();
 }
+/* F-21：左侧菜单只保留总览与用户中心 */
 function renderNav(){
-  var html="", grp=null;
-  Object.keys(ROUTES).forEach(function(id){
+  var html='<div class="nav-label">'+t("grpMenu")+'</div>';
+  ["P-A16","P-A17"].forEach(function(id){
+    if(S.end!=="asset") return;
     var r=ROUTES[id];
-    if(r.layout!=="app"||r.end!==S.end) return;
-    if(r.grp!==grp){ html+='<div class="nav-label">'+t(r.grp)+'</div>'; grp=r.grp; }
     html+='<button class="nav-item'+(S.page===id?" active":"")+'" type="button" data-act="go" data-v="'+id+'">'
-     + '<span class="nav-ico">'+r.ico+'</span><span>'+t(r.nav)+'</span><span class="nav-tag">'+id+'</span></button>';
+     + '<span class="nav-ico">'+r.ico+'</span><span>'+t(r.nav)+'</span></button>';
   });
+  if(S.end==="admin") html='<div class="nav-label">'+t("adminConsole")+'</div>'
+    + '<button class="nav-item active" type="button" data-act="go" data-v="P-M05">'
+    + '<span class="nav-ico">⚙</span><span>'+t("accountSettings")+'</span></button>';
   return html;
 }
-function renderSideFoot(){
-  if(S.end==="admin")
-    return '<div class="op-row"><div class="op-avatar">AD</div><div><div class="op-name">'+ME+'</div>'
-     + '<div class="op-role">Administrator · '+t("demoOnly")+'</div></div></div>'
-     + '<button class="btn sm" style="margin-top:9px;width:100%" data-act="go" data-v="P-M01">'+t("signOut")+'</button>';
-  var complete=(S.page==="LAND"||S.page==="P-A11")&&S.st==="complete";
-  return '<div class="op-row"><div class="op-avatar">CF</div><div><div class="op-name">'+MAIL+'</div>'
-   + '<div class="op-role">'+t("signedInAs")+' · '+t("demoOnly")+'</div></div></div>'
-   + '<div class="side-chip"><span class="dot'+(complete?"":" warn")+'"></span>'
-   + t("accStatus")+" · "+(complete?t("stActiveAcc"):t("stIncomplete"))+'</div>'
-   + '<button class="btn sm" style="margin-top:9px;width:100%" data-act="go" data-v="P-A01">'+t("signOut")+'</button>';
+/* C-10 面包屑：顶部导航栏下方，非当前级可点击 */
+function renderCrumb(){
+  var r=route(), cur=r.crumb?r.crumb[S.lang==="en"?0:1]:pageName(S.page);
+  var parts=[];
+  if(S.page==="P-A17"&&S.st==="sub") parts.push([t("navUserCenter"),"P-A17"]);
+  var html=parts.map(function(p){
+    return '<button class="crumb-link" type="button" data-act="go" data-v="'+p[1]+'">'+p[0]+'</button><span class="sep">/</span>';
+  }).join("");
+  return html+'<span class="crumb-cur">'+(S.page==="P-A17"&&S.st==="sub"?L("Identity verification","个人认证"):cur)+'</span>';
 }
 function render(){
   var fk=document.activeElement&&document.activeElement.getAttribute
@@ -2541,31 +2092,29 @@ function render(){
   q("#focus").hidden=!isFocus; q("#app").hidden=isFocus;
   if(isFocus){
     q("#focus").innerHTML=renderFocus();
-    q("#nav").innerHTML=""; q("#sideFoot").innerHTML=""; q("#topRight").innerHTML=""; q("#content").innerHTML="";
+    q("#nav").innerHTML=""; q("#topRight").innerHTML=""; q("#content").innerHTML=""; q("#crumb").innerHTML="";
   } else {
     q("#focus").innerHTML="";
     q("#brandSub").textContent = S.end==="admin"?t("adminConsole"):t("endAsset");
     q("#nav").innerHTML=renderNav();
-    q("#sideFoot").innerHTML=renderSideFoot();
-    q("#crumb").innerHTML='<span>'+(S.end==="admin"?t("adminConsole"):t("endAsset"))+' / </span><b>'
-     + esc(pageName(S.page))+'</b> <span class="mono faint" style="font-size:10px">'+S.page+'</span>';
-    q("#topRight").innerHTML='<span class="tchip">'+t("demoOnly")+'</span>'
-     + '<button class="tchip is-btn'+(S.drawer==="pages"?" on":"")+'" type="button" data-act="openPages">'+t("pagesPanel")+'</button>'
-     + langSwitcher();
+    q("#crumb").innerHTML=renderCrumb();
+    q("#topRight").innerHTML=pagesBtn()+langSwitcher()+accountMenu();
     q("#content").innerHTML=renderContent();
   }
-  q("#layers").innerHTML=renderToast()+renderModal()+renderDrawer();
+  q("#layers").innerHTML=renderToasts()+renderModal()+renderDrawer();
   if(S.modal&&S.modal.type==="captcha") drawCaptcha();
   if(fk){ var n=q('[data-f="'+fk+'"]');
     if(n){ n.focus(); try{ if(sel!=null&&n.setSelectionRange) n.setSelectionRange(sel,sel); }catch(e){} } }
 }
-function renderToast(){
-  if(!S.toast) return "";
-  var x=S.toast;
-  return '<div class="toasts" role="region" aria-live="polite"><div class="toast '+x.kind+'">'
-   + '<span class="ico">'+(x.kind==="danger"?"!":"✓")+'</span><div class="tx"><b>'+esc(x.title)+'</b>'
-   + (x.body?'<span>'+esc(x.body)+'</span>':'')+'</div>'
-   + '<button class="cl" type="button" data-act="toastClose" aria-label="'+t("close")+'">✕</button></div></div>';
+/* C-12 Toast：顶部居中 */
+function renderToasts(){
+  if(!S.toasts.length) return "";
+  return '<div class="toasts" role="region" aria-live="polite">'+S.toasts.map(function(x){
+    return '<div class="toast '+x.kind+'"><span class="ico">'
+     + (x.kind==="danger"?ICO.warn:x.kind==="success"?ICO.ok:ICO.info)+'</span>'
+     + '<div class="tx"><b>'+esc(x.title)+'</b>'+(x.body?'<span>'+esc(x.body)+'</span>':'')+'</div>'
+     + '<button class="cl" type="button" data-act="toastClose" data-i="'+x.id+'" aria-label="'+t("close")+'">✕</button></div>';
+  }).join("")+'</div>';
 }
 /* 滑块背景图：运行时生成，不引用任何外部图片 */
 function drawCaptcha(){
@@ -2602,52 +2151,60 @@ function drawCaptcha(){
 
 /* ================================ 交互 =================================== */
 document.addEventListener("click",function(e){
-  var n=e.target.closest("[data-act]"); if(!n) return;
+  var n=e.target.closest("[data-act]");
+  if(!n){ if(S.menu){ S.menu=null; render(); } return; }
   var a=n.getAttribute("data-act"), v=n.getAttribute("data-v");
-  if(n.classList.contains("mask")&&e.target!==n) return;   /* 点遮罩才关闭 */
+  if(n.classList.contains("mask")&&e.target!==n) return;
   if(n.tagName==="A"&&n.getAttribute("href")&&n.getAttribute("href")!=="#") return;
   e.preventDefault();
+  if(a!=="menu"&&S.menu) S.menu=null;
   switch(a){
+    case "menu": S.menu=(S.menu===v?null:v); render(); break;
     case "lang": S.lang=v; render(); break;
     case "go": go(v,n.getAttribute("data-st")||""); break;
     case "st": setState(v); break;
     case "tab": S.loginTab=v; S.err={}; render(); break;
     case "show": S.form["_show_"+n.getAttribute("data-k")]=!S.form["_show_"+n.getAttribute("data-k")]; render(); break;
+    case "anchor":
+      var el=document.getElementById(v);
+      if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+      break;
     case "openPrd": S.drawer=S.drawer==="prd"?null:"prd"; render(); break;
     case "openPages": S.drawer=S.drawer==="pages"?null:"pages"; render(); break;
     case "closeDrawer": S.drawer=null; render(); break;
-    case "close": S.modal=null; if(S.st==="submitting"||S.st==="submitfail") S.st="default"; render(); break;
-    case "toastClose": S.toast=null; render(); break;
-    case "noop": break;
+    case "close": S.modal=null; render(); break;
+    case "toastClose": S.toasts=S.toasts.filter(function(x){return x.id!=n.getAttribute("data-i");}); render(); break;
+
     case "captcha": S.modal={type:"captcha",view:"idle"}; render(); break;
     case "capView": S.modal.view=v; render(); break;
     case "capPass": S.modal=null; markSent(); break;
+
     case "wallet": S.modal={type:"wallet",view:"pick",purpose:n.getAttribute("data-p")}; render(); break;
     case "wView": S.modal.view=v; render(); break;
+    case "wToast": toast(v==="tLinked"||v==="tNetworkOk"?"success":v==="tSignPrompt"?"info":"danger",t(v)); break;
     case "wSign": walletSigned(); break;
+    case "walletLink": S.modal={type:"wallet",view:"pick",purpose:"purposeLink"}; render(); break;
+
     case "login": doLogin(); break;
-    case "step": if(S.flow){ S.flow.step=+v; S.err={}; render(); } break;
-    case "factor": if(S.flow){ S.flow.factor=v||null; S.err={}; render(); } break;
-    case "done": submitDone(v); break;
+    case "later": go("P-A17"); toast("info",L("Landed by verification status.","已按认证状态落地。")); break;
     case "kyc": S.modal={type:"gate",need:(S.st==="noemail"?"email":(S.st==="complete"?"":"wallet"))}; render(); break;
     case "gateView": S.modal.need=v; render(); break;
-    case "admCreate": S.modal={type:"admCreate"}; render(); break;
-    case "admPwd": S.modal={type:"admPwd"}; render(); break;
-    case "admConfirm": S.modal={type:"admConfirm"}; render(); break;
-    case "admUnlock": S.modal={type:"admConfirm",unlock:true}; render(); break;
-    /* 服务端才是唯一防线：即便前端未置灰，服务端也会拒绝（PRD 7.9.1 / AC-162） */
-    case "admReject": S.modal={type:"admConfirm",err:true}; render(); break;
-    case "blocked": toast("danger",n.getAttribute("data-m")); break;
+
+    case "emailDlg": S.modal={type:"email",step:0,factor:null,add:(S.page==="P-A10"&&S.st==="wallet")}; render(); break;
+    case "pwdDlg": S.modal={type:"pwd",step:0,factor:null,set:(S.page!=="P-M05"&&S.st!=="complete")}; render(); break;
+    case "mStep": S.modal.step=+v; S.err={}; render(); break;
+    case "mFactor": S.modal.factor=v||null; S.err={}; render(); break;
+    case "done": submitDone(v); break;
     case "copy": toast("success",t("addrCopied")); break;
   }
 });
-/* 协议链接：弹层打开，不打断表单 */
 document.addEventListener("click",function(e){
   var a=e.target.closest("a[data-doc]"); if(!a) return;
   e.preventDefault(); S.modal={type:"doc",doc:a.getAttribute("data-doc")}; render();
 });
 document.addEventListener("keydown",function(e){
   if(e.key!=="Escape") return;
+  if(S.menu){ S.menu=null; render(); return; }
   if(S.drawer){ S.drawer=null; render(); return; }
   if(S.modal&&S.modal.type!=="reconsent"){ S.modal=null; render(); }
 });
@@ -2658,13 +2215,14 @@ document.addEventListener("input",function(e){
     if(k==="agree"){ S.agree=n.checked; S.err.agree=""; S.err._shake=false; } else S.form[k]=n.checked;
     render(); return;
   }
-  if(k==="tz"){ S.tz=n.value; render(); return; }
   S.form[k]=n.value;
-  if(/^(fpPwd|np|mrNew|mfPwd|apNew)$/.test(k)) render();    /* 密码规则清单实时反馈 */
+  if(/^(pwNew|dNew|mrNew|mfNew)$/.test(k)) render();     /* 密码规则清单实时反馈 */
 });
 document.addEventListener("change",function(e){
-  var s=e.target.closest('select[data-f]');
-  if(s&&s.getAttribute("data-f")==="tz"){ S.tz=s.value; render(); }
+  var s=e.target.closest('select[data-f]'); if(!s) return;
+  var k=s.getAttribute("data-f");
+  if(k==="tz"){ S.tz=s.value; render(); toast("success",t("okPrefsSaved")); }
+  if(k==="lang"){ S.lang=s.value; render(); toast("success",t("okPrefsSaved")); }
 });
 
 /* ------------------------------ 具体动作 --------------------------------- */
@@ -2674,14 +2232,8 @@ function markSent(){
 }
 function walletSigned(){
   S.modal=null;
-  if(S.page==="P-A05"){ go("P-A06"); return; }
-  if(S.page==="P-A01"){ go("CREATED"); return; }
-  if(S.flow){
-    if(S.flow.step===1 && S.st!=="add"){ S.flow.step=2; render(); return; }
-    submitDone(S.flow.id==="P-A14"?(S.st==="add"?"okWalletLinked":"okWalletUpdated"):"okEmailUpdated");
-    return;
-  }
-  render();
+  if(S.page==="P-A01"){ toast("success",t("tLinked")); go("P-A10"); S.st="wallet"; render(); return; }
+  toast("success",t("tLinked")); render();
 }
 function doLogin(){
   S.err={};
@@ -2690,14 +2242,13 @@ function doLogin(){
   if(!isEmail(email)){ S.err.loginEmail=t("eEmailFmt"); render(); return; }
   if(S.loginTab==="code"){
     if(!/^\d{6}$/.test(S.form.logincode||"")){ S.err.loginCode=t("eCodeReq"); render(); return; }
-    go("CREATED"); return;                    /* 首次登录即建号 */
+    go("P-A10"); return;                       /* 首次登录即建号 → 直接进引导页 */
   }
-  if(!S.form.loginPwd){ S.err.loginPwd=t("ePwdReq"); render(); return; }
-  S.err.loginPwd=t("ePwdLogin"); render();    /* 三种失败情形返回完全一致的提示 */
+  S.err.loginPwd=t("ePwdLogin"); render();     /* 三种失败情形返回完全一致的提示 */
 }
-/* 提交成功 → 跳登录页 + 成功提示与会话失效说明（会话失效的实际行为由前端实现） */
 function submitDone(key){
   var admin=S.end==="admin";
+  if(key==="okEmailAdded"){ S.modal=null; render(); toast("success",t(key)); return; }  /* 首次绑定不失效会话 */
   go(admin?"P-M01":"P-A01");
   toast("success",t(key),t("sAllDevices"));
 }
@@ -2705,7 +2256,6 @@ function submitDone(key){
 /* -------------------------------- 初始化 --------------------------------- */
 DICT.en.capHelpNote="A security check appears before any code is sent.";
 DICT.zh.capHelpNote="点击发送验证码后会先弹出滑块人机校验。";
-DICT.en.pagesPanel="Pages"; DICT.zh.pagesPanel="页面";
 render();
 })();
 </script>
