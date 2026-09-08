@@ -39,6 +39,18 @@
                name: ["Notifications", "消息中心"] },
     "P-A19": { end: "asset", layout: "app", name: ["Notification details", "消息详情"] },
 
+    /* 应收账款录入与确权（WS-305） */
+    "P-A20": { end: "asset", layout: "app", nav: "P-A20", navKey: "navReceivables", ico: "▧",
+               crumb: ["My receivables", "我的应收账款"], name: ["My receivables", "我的应收账款列表"] },
+    "P-A21": { end: "asset", layout: "app", nav: "P-A20",
+               name: ["Add or edit receivable", "新增/编辑应收账款"] },
+    "P-A22": { end: "asset", layout: "app", nav: "P-A20",
+               name: ["Receivable details", "应收账款详情（卖方视角）"] },
+    "P-A23": { end: "asset", layout: "app", nav: "P-A23", navKey: "navConfirmReceivables", ico: "✓",
+               crumb: ["Confirm receivables", "待我确权"], name: ["Confirm receivables", "待我确权列表"] },
+    "P-A24": { end: "asset", layout: "app", nav: "P-A23",
+               name: ["Receivable details", "应收账款详情（买方视角）"] },
+
     /* ------------------------------ 管理端 ------------------------------ */
     "P-M01": { end: "admin", layout: "focus", name: ["Sign in", "管理端登录页"] },
     "P-M02": { end: "admin", layout: "focus", name: ["First sign-in reset", "首登强制重置密码"] },
@@ -64,6 +76,12 @@
     "P-M33": { end: "admin", layout: "app", nav: "P-M32",
                crumb: ["Business review", "企业认证审核"], name: ["Business review details", "企业认证审核详情"] },
 
+    /* 应收账款录入与确权（WS-305） */
+    "P-M40": { end: "admin", layout: "app", nav: "P-M40", navKey: "navReceivableAdmin", ico: "▦",
+               crumb: ["Receivables", "应收账款"], name: ["Receivables", "应收账款列表"] },
+    "P-M41": { end: "admin", layout: "app", nav: "P-M40",
+               name: ["Receivable details", "应收账款详情"] },
+
     /* 协议管理（WS-301）。页面编号已按其 PRD 3.3 从 P-M10/P-M11/P-M13 整体迁到模块前缀式
        P-AG-01/02/03：原段位与 WS-303 管理端审核页重号（X-01），P-M1x 全段已交还平台。 */
     "P-AG-01": { end: "admin", layout: "app", nav: "P-AG-01", navKey: "navAgreements", icoKey: "doc",
@@ -76,18 +94,23 @@
      各模块渲染出的菜单完全一致，只有高亮项不同；指向本模块未实现页面的菜单项
      由 shell 统一渲染为跨文件链接。 */
   CF.NAV = {
-    admin: ["P-AG-01", { navKey: "navUserManagement", ico: "用", children: ["P-M30", "P-M32"] }, "P-M05"],
-    asset: ["P-A16", "P-A17"]
+    admin: ["P-AG-01", "P-M40", { navKey: "navUserManagement", ico: "用", children: ["P-M30", "P-M32"] }, "P-M05"],
+    asset: [
+      "P-A16",
+      { navKey: "navReceivableGroup", ico: "▧", children: ["P-A20", "P-A23"] },
+      "P-A17"
+    ]
   };
 
   /* 模块登记：每个模块的目录、入口文件与名称。
-     两份原型是各自独立可打开的文件，但侧栏是同一份；点到不属于当前文件的页面时，
+     各模块原型是各自独立可打开的文件，但侧栏是同一份；点到不属于当前文件的页面时，
      shell 会用这里的信息直接跳到对方文件的对应页面，而不是停在占位页。 */
   CF.MODULES = {
     agreements: { dir: "协议管理", file: "v1.0-协议管理-原型.html", name: ["Agreements", "协议管理"] },
     account:    { dir: "账户与登录", file: "v1.0-账户与登录-原型.html", name: ["Account & sign-in", "账户与登录"] },
     kyc:        { dir: "实名认证与审核", file: "v1.0-实名认证与审核-原型.html", name: ["Verification", "实名认证与审核"] },
-    notify:     { dir: "消息通知", file: "v1.0-消息通知-原型.html", name: ["Notifications", "消息通知"] }
+    notify:     { dir: "消息通知", file: "v1.0-消息通知-原型.html", name: ["Notifications", "消息通知"] },
+    receivable: { dir: "应收账款录入与确权", file: "v1.0-应收账款录入与确权-原型.html", name: ["Receivables", "应收账款录入与确权"] }
   };
 
   /* 页面 → 所属模块。跨文件跳转和指向页文案都读这张表。 */
@@ -99,7 +122,10 @@
     "P-A11": "account", "P-A16": "account",
     "P-A17": "kyc", "P-K01": "kyc", "P-K02": "kyc", "P-K03": "kyc",
     "P-M30": "kyc", "P-M31": "kyc", "P-M32": "kyc", "P-M33": "kyc",
-    "P-A18": "notify", "P-A19": "notify", "P-M20": "notify", "P-M21": "notify"
+    "P-A18": "notify", "P-A19": "notify", "P-M20": "notify", "P-M21": "notify",
+    "P-A20": "receivable", "P-A21": "receivable", "P-A22": "receivable",
+    "P-A23": "receivable", "P-A24": "receivable",
+    "P-M40": "receivable", "P-M41": "receivable"
   };
 
   /* 页面 → 外部需求。这些页面不属于本仓库的任何原型文件，只在此登记归属，
@@ -128,7 +154,14 @@
     "P-M30": "#/p-m30",
     "P-M31": "#/p-m31",
     "P-M32": "#/p-m32",
-    "P-M33": "#/p-m33"
+    "P-M33": "#/p-m33",
+    "P-A20": "#/receivables",
+    "P-A21": "#/receivables/new",
+    "P-A22": "#/receivables/detail",
+    "P-A23": "#/confirmations",
+    "P-A24": "#/confirmations/detail",
+    "P-M40": "#/admin/receivables",
+    "P-M41": "#/admin/receivables/detail"
   };
 
 })(window.CF = window.CF || {});
