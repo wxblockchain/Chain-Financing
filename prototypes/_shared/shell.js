@@ -78,14 +78,16 @@
           navOverview:"Overview", navUserCenter:"User center",
           accountSettings:"Account settings",
           ownedTitle:"Owned by another module",
-          ownedBody:"This page is delivered by the {m} prototype. This module does not re-implement it." },
+          ownedBody:"This page is delivered by the {m} prototype. This module does not re-implement it.",
+          goThere:"Open the {m} prototype" },
     zh: { stateSwitch:"原型 · 状态", prdOpen:"PRD 摘录", close:"关闭",
           adminConsole:"管理端", grpMenu:"菜单",
           navAgreements:"协议管理", navAccount:"账户设置",
           navOverview:"总览", navUserCenter:"用户中心",
           accountSettings:"账户设置",
           ownedTitle:"本页归其他模块",
-          ownedBody:"本页由「{m}」原型交付，本模块不重复实现该页面。" }
+          ownedBody:"本页由「{m}」原型交付，本模块不重复实现该页面。",
+          goThere:"打开「{m}」原型" }
   };
   CF.PRD = {};
   CF.STATES = {};
@@ -213,7 +215,9 @@
       + (open ? '<div class="dd-list wide" role="menu">'
         + '<div class="dd-head"><b>' + esc(a.ident) + "</b>"
         + '<span class="pill ' + (a.ok ? "green" : "amber") + '">' + (a.ok ? a.okText : a.badText) + "</span></div>"
-        + '<button type="button" role="menuitem" data-act="go" data-v="' + a.settings + '">' + t("accountSettings") + "</button>"
+        + (crossHref(a.settings)
+            ? '<a role="menuitem" href="' + esc(crossHref(a.settings)) + '">' + t("accountSettings") + "</a>"
+            : '<button type="button" role="menuitem" data-act="go" data-v="' + a.settings + '">' + t("accountSettings") + "</button>")
         + '<button type="button" role="menuitem" data-act="' + (a.signOutPage ? "go" : "signout") + '"'
         + (a.signOutPage ? ' data-v="' + a.signOutPage + '"' : "") + ">" + t("signOut") + "</button>"
         + "</div>" : "") + "</div>";
@@ -226,6 +230,14 @@
   }
 
   /* ------------------------------ 侧栏导航 -------------------------------- */
+  /* 目标页不在本文件里时，返回指向对方原型文件的相对地址；否则返回 null。 */
+  function crossHref(id) {
+    if ((M.owns || []).indexOf(id) >= 0) return null;
+    var mod = CF.MODULES[CF.OWNER[id]];
+    if (!mod) return null;
+    return "../" + mod.dir + "/" + mod.file + (CF.ENTRY[id] || "#/" + id.toLowerCase());
+  }
+
   function renderNav() {
     var end = S.end || "admin";
     var ids = CF.NAV[end] || [];
@@ -235,9 +247,14 @@
       var r = CF.PAGES[id] || {};
       var on = cur.nav === id;
       var ico = r.icoKey ? CF.ICO[r.icoKey] : (r.ico || "");
+      var body = '<span class="nav-ico">' + ico + "</span><span>" + t(r.navKey) + "</span>";
+      var href = crossHref(id);
+      /* 跨文件用真链接，点一下直接到对方原型的对应页面，不停在占位页 */
+      if (href) {
+        return '<a class="nav-item" href="' + esc(href) + '">' + body + "</a>";
+      }
       return '<button class="nav-item' + (on ? " active" : "") + '" type="button" data-act="go" data-v="' + id + '"'
-        + (on ? ' aria-current="page"' : "") + '><span class="nav-ico">' + ico + "</span><span>"
-        + t(r.navKey) + "</span></button>";
+        + (on ? ' aria-current="page"' : "") + ">" + body + "</button>";
     }).join("");
   }
   function renderCrumb() {
@@ -253,15 +270,19 @@
     return html + '<span class="crumb-cur">' + esc(cur) + "</span>";
   }
 
-  /* 导航目标不属于本模块时，统一渲染归属指向页 */
+  /* 直接用 URL 落到不属于本文件的页面时的兜底页：说明归属，并给出跳转入口。
+     正常从侧栏点击不会走到这里——那条路径是直接跨文件跳转的。 */
   function ownedElsewhere(id) {
-    var own = CF.OWNER[id] || ["", ""];
-    var label = S.lang === "en" ? own[1] : own[0];
+    var mod = CF.MODULES[CF.OWNER[id]];
+    var label = mod ? mod.name[S.lang === "en" ? 0 : 1] : "";
     var r = CF.PAGES[id] || {};
+    var href = crossHref(id);
     return pageHead(t(r.navKey || "") || (r.name ? r.name[S.lang === "en" ? 0 : 1] : id), "", "")
       + '<div class="card"><div class="card-b shell">' + CF.ICO.info
       + "<p><b>" + t("ownedTitle") + "</b><br>" + t("ownedBody", { m: label }) + "</p>"
-      + '<span class="pill dash">' + esc(id) + "</span></div></div>";
+      + (href ? '<a class="btn primary" href="' + esc(href) + '">' + t("goThere", { m: label }) + "</a>"
+              : '<span class="pill dash">' + esc(id) + "</span>")
+      + "</div></div>";
   }
 
   /* ------------------------------ Modal / Drawer -------------------------- */

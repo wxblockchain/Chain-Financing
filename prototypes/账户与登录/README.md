@@ -134,4 +134,13 @@
 
 ## 8. 源码组织
 
-交付的单文件是**产物**，不是维护形态。源码分层在工作区 `src/` 下：`10-tokens.css`（竞品 token）、`20-components.css`（组件层）、`30-body.html`（外壳）、`40-i18n.js`（中英文案表）、`45-prd.js`（每页 PRD 摘录）、`50-app.js`（路由与交互）；`build.sh` 机械内联成单文件。后续迭代改 `src/` 后重跑 `build.sh`，不要直接手改产物。
+本文件不再是自包含单文件，公共层已抽出到 `prototypes/_shared/`：
+
+- `_shared/tokens.css` — 全站 token 唯一来源
+- `_shared/base.css` — 公共组件（壳层、focus 版式、控件、表格、弹层、反馈）
+- `_shared/registry.js` — 页面登记表、侧栏菜单、模块与跨文件入口
+- `_shared/shell.js` — 公共运行时（i18n、路由与 URL 同步、侧栏、面包屑、Toast、弹层宿主、PRD 面板）
+
+本目录的 HTML 只保留本模块自己的东西：模块专有样式（滑块校验、钱包、建号引导、建号完成、锁定态、补全提示条）、
+中英文案、PRD 摘录、演示数据、页面与交互。
+改公共部分去 `_shared/`，改一处两个模块同时生效；用法与纪律见 `_shared/README.md`。

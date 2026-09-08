@@ -52,16 +52,29 @@
     asset: ["P-A16", "P-A17"]
   };
 
-  /* 各页面归属的模块目录名，用于生成指向页文案 */
+  /* 模块登记：每个模块的目录、入口文件与名称。
+     两份原型是各自独立可打开的文件，但侧栏是同一份；点到不属于当前文件的页面时，
+     shell 会用这里的信息直接跳到对方文件的对应页面，而不是停在占位页。 */
+  CF.MODULES = {
+    agreements: { dir: "协议管理", file: "v1.0-协议管理-原型.html", name: ["Agreements", "协议管理"] },
+    account:    { dir: "账户与登录", file: "v1.0-账户与登录-原型.html", name: ["Account & sign-in", "账户与登录"] }
+  };
+
+  /* 页面 → 所属模块。跨文件跳转和指向页文案都读这张表。 */
   CF.OWNER = {
-    "P-M10": ["协议管理", "Agreements"], "P-M11": ["协议管理", "Agreements"], "P-M13": ["协议管理", "Agreements"],
-    "P-M01": ["账户与登录", "Account & sign-in"], "P-M02": ["账户与登录", "Account & sign-in"],
-    "P-M03": ["账户与登录", "Account & sign-in"], "P-M04": ["账户与登录", "Account & sign-in"],
-    "P-M05": ["账户与登录", "Account & sign-in"],
-    "P-A01": ["账户与登录", "Account & sign-in"], "P-A03": ["账户与登录", "Account & sign-in"],
-    "P-A04": ["账户与登录", "Account & sign-in"], "P-A10": ["账户与登录", "Account & sign-in"],
-    "P-A11": ["账户与登录", "Account & sign-in"], "P-A16": ["账户与登录", "Account & sign-in"],
-    "P-A17": ["账户与登录", "Account & sign-in"]
+    "P-M10": "agreements", "P-M11": "agreements", "P-M13": "agreements",
+    "P-M01": "account", "P-M02": "account", "P-M03": "account", "P-M04": "account",
+    "P-M05": "account",
+    "P-A01": "account", "P-A03": "account", "P-A04": "account", "P-A10": "account",
+    "P-A11": "account", "P-A16": "account", "P-A17": "account"
+  };
+
+  /* 跨文件深链的 hash。模块自定义了 URL 方案时在这里登记对应入口，
+     没登记的用默认 #/<小写 page id>。 */
+  CF.ENTRY = {
+    "P-M10": "#/agreements",
+    "P-M11": "#/agreements",
+    "P-M13": "#/agreements"
   };
 
 })(window.CF = window.CF || {});
