@@ -279,12 +279,18 @@ function notify(key,kind='danger'){
 }
 function input(id,key,type='text',opts={}){
  let err=S.errors[id],show=S.shown[id],password=type==='password';
- const tag='<input class="inp'+(err?' err':'')+'" id="'+id+'" data-f="'+id+'" type="'+(password&&show?'text':type)+'" value="'+E(S.form[id]||'')+'" '+
+ const tag='<input class="inp'+(opts.cls?' '+opts.cls:'')+(err?' err':'')+'" id="'+id+'" data-f="'+id+'" type="'+(password&&show?'text':type)+'" value="'+E(S.form[id]||'')+'" '+
  'aria-required="true" aria-invalid="'+!!err+'" aria-describedby="'+id+'-help" autocomplete="'+(opts.autocomplete||'off')+'" '+
  (opts.max?'maxlength="'+opts.max+'" ':'')+(id==='code'?'inputmode="numeric" ':'')+(opts.placeholder?'placeholder="'+E(opts.placeholder)+'" ':'')+'>';
- return '<div class="field"><label for="'+id+'">'+t(key)+'</label>'+(password?'<div class="inp-affix">'+tag+'<button type="button" class="affix" data-act="eye" data-v="'+id+'" aria-label="'+t(show?'hide':'show')+'">'+CF.ICO[show?'eyeOff':'eye']+'</button></div>':tag)+
+ // opts.trail puts a control beside the input on one row, using the shared
+ // .inp-row layout from _shared/base.css — no module-local layout for this.
+ const body=password?'<div class="inp-affix">'+tag+'<button type="button" class="affix" data-act="eye" data-v="'+id+'" aria-label="'+t(show?'hide':'show')+'">'+CF.ICO[show?'eyeOff':'eye']+'</button></div>'
+  :opts.trail?'<div class="inp-row">'+tag+opts.trail+'</div>':tag;
+ return '<div class="field"><label for="'+id+'">'+t(key)+'</label>'+body+
  '<p class="ops-helper'+(err?' ops-error':'')+'" id="'+id+'-help" '+(err?'role="alert"':'')+'>'+E(err?t(err):(opts.hint||''))+'</p></div>';
 }
+function resendLabel(n){return L('Resend in '+n+'s',n+' 秒后重发')}
+function sendBtn(secs){return '<button type="button" class="btn" data-act="send" data-count="resend" '+(secs>0||S.busy?'disabled':'')+'>'+(secs>0?resendLabel(secs):t('send'))+'</button>'}
 function rules(){const v=(S.form.newPassword||'').trim();if(!v)return '<div id="pwd-rules"></div>';return '<ul class="ops-rules" id="pwd-rules" aria-live="polite">'+[[v.length>=8&&v.length<=20,'ruleLength'],[/[a-z]/i.test(v)&&/\d/.test(v)&&! /\s/.test(v),'ruleComplex']].map(([ok,k])=>'<li class="'+(ok?'ops-rule-ok':'')+'"><span aria-hidden="true">'+(ok?'✓':'○')+'</span>'+t(k)+'</li>').join('')+'</ul>'}
 function submit(key,act){return '<button type="submit" class="btn primary block" data-submit="'+act+'" '+(S.busy?'disabled aria-busy="true"':'')+'>'+t(S.busy?(S.busy==='wait'?'awaiting':S.busy==='loading'?'loading':'submitting'):key)+'</button>'}
 function form(body,act){return '<form class="ops-form" data-form="'+act+'" novalidate>'+body+'</form>'}
@@ -317,7 +323,7 @@ function renderFocus(){
  if(S.page==='P-O01')return focus(card('loginTitle','loginSub',banner()+form(input('email','email','email',{max:254,autocomplete:'username',placeholder:'name@company.com'})+input('password','password','password',{autocomplete:'current-password'})+submit('signin','login'),'login')+'<div class="ops-center"><button class="btn-link" data-act="go" data-v="P-O03">'+L('Forgot password?','忘记密码？')+'</button></div>'));
  if(S.page==='P-O03'){
  const secs=remaining(S.resendAt);
- return focus(card('forgotTitle','forgotSub','<div class="steps"><div class="s" data-on="1"><span class="n">1</span>'+L('Verify email','验证邮箱')+'</div><span class="ln"></span><div class="s"><span class="n">2</span>'+L('New password','设置新密码')+'</div></div>'+banner()+form(input('email','email','email',{max:254,autocomplete:'username'})+input('code','code','text',{max:12,autocomplete:'one-time-code'})+'<div class="ops-status">'+btn('send','send',false,secs>0||!!S.busy)+' <span class="ops-readout" data-count="resend">'+(secs?L('Resend in ','重发倒计时 ')+secs+'s':'')+'</span></div>'+submit('next','verifyCode'),'verifyCode')+back()+'<p class="ops-readout">'+t('support')+'</p>'));
+ return focus(card('forgotTitle','forgotSub','<div class="steps"><div class="s" data-on="1"><span class="n">1</span>'+L('Verify email','验证邮箱')+'</div><span class="ln"></span><div class="s"><span class="n">2</span>'+L('New password','设置新密码')+'</div></div>'+banner()+form(input('email','email','email',{max:254,autocomplete:'username'})+input('code','code','text',{max:12,autocomplete:'one-time-code',cls:'mono',placeholder:'000000',trail:sendBtn(secs)})+submit('next','verifyCode'),'verifyCode')+back()+'<p class="ops-readout">'+t('support')+'</p>'));
  }
  const first=S.page==='P-O02';
  return focus(card(first?'firstTitle':'newTitle',first?'firstSub':'',banner()+form((first?input('current','current','password',{autocomplete:'current-password'}):'<div class="steps"><div class="s" data-done="1"><span class="n">✓</span>'+L('Verify email','验证邮箱')+'</div><span class="ln"></span><div class="s" data-on="1"><span class="n">2</span>'+L('New password','设置新密码')+'</div></div>')+input('newPassword','newPassword','password',{autocomplete:'new-password'})+rules()+input('confirm','confirm','password',{autocomplete:'new-password'})+submit('save','reset'),'reset')+(first?'':back())));
@@ -560,7 +566,7 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('storage',e=>{if(e.key===KEY+'revoked'&&S.auth){let v;try{v=JSON.parse(e.newValue)}catch{}expire(v?.reason||'session',true,false)}});
 timer=setInterval(()=>{
  if(S.lockUntil){const n=remaining(S.lockUntil);document.querySelector('[data-count="lock"]')?.replaceChildren(document.createTextNode(mmss(n)));if(!n){S.lockUntil=0;S.st='default';CF.render()}}
- if(S.resendAt){const n=remaining(S.resendAt);document.querySelector('[data-count="resend"]')?.replaceChildren(document.createTextNode(n?L('Resend in ','重发倒计时 ')+n+'s':''));if(!n){S.resendAt=0;CF.render()}}
+ if(S.resendAt){const n=remaining(S.resendAt);document.querySelector('[data-count="resend"]')?.replaceChildren(document.createTextNode(n?resendLabel(n):t('send')));if(!n){S.resendAt=0;CF.render()}}
  if(S.capUntil){const n=remaining(S.capUntil);document.querySelector('[data-count="captcha"]')?.replaceChildren(document.createTextNode(n+'s'));if(!n){S.capUntil=0;S.capError='';CF.render()}}
  if(S.auth){if(clock()-S.lastAction>=1800000){expire('idle');return}if(S.expiresAt<=clock()){expire('session');return}if(!S.renewShown&&remaining(S.expiresAt)<=120){S.renewShown=true;S.modal={type:'renew'};CF.render()}document.querySelector('[data-count="renew"]')?.replaceChildren(document.createTextNode(mmss(remaining(S.expiresAt))))}
 },1000);
