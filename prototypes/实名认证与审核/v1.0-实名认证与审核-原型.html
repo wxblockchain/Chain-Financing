@@ -44,7 +44,10 @@
   border:1px solid var(--warn-border);border-radius:var(--radius-sm);color:var(--warn);margin-bottom:var(--sp-4)}
 .gatebar p{margin:0;flex:1;font-size:var(--fs-12)}
 .form-layout{display:grid;grid-template-columns:minmax(0,1fr) 286px;gap:var(--sp-4);align-items:start}
-.sticky-rail{position:sticky;top:118px}.save-state{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-11);color:var(--ok)}
+.sticky-rail{position:sticky;top:118px;display:flex;flex-direction:column;gap:var(--sp-4);max-height:calc(100vh - 134px)}
+.sticky-rail>.review-box{margin-bottom:0}
+.rail-progress-box{min-height:0;display:flex;flex-direction:column}.rail-progress-box>.bd{min-height:0;overflow:auto}
+.rail-actions{flex:none}.save-state{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-11);color:var(--ok)}
 .step-actions{display:flex;align-items:center;gap:var(--sp-2);justify-content:flex-end;padding-top:var(--sp-4);border-top:1px solid var(--border)}
 .step-actions .save-state{margin-right:auto}.upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)}
 .form-action-list{display:flex;flex-direction:column;gap:var(--sp-2)}.form-action-list .btn{width:100%}
@@ -90,7 +93,31 @@
 .issue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
 .issue-option{display:flex;gap:var(--sp-2);align-items:flex-start;border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-2) var(--sp-3);font-size:var(--fs-11)}
 .issue-option input{margin-top:2px;accent-color:var(--accent)}
-@media (max-width:1180px){.form-layout,.review-cols{grid-template-columns:1fr}.sticky-rail{position:static}.review-cols{grid-template-columns:1fr}.viewer-stage{min-height:270px}.decisionbar{position:sticky;top:auto;bottom:0;flex-direction:row;align-items:center}.decisionbar .decision-title{border:0;padding:0;margin-right:auto}.decisionbar .hint{display:none}.decisionbar .btn{width:auto}}
+/* 国家 / 地区选择器：单一值集驱动国籍与企业注册地，弹层沿用 _shared 的 dd-list 语言。 */
+.cs{position:relative}
+.cs-btn{display:flex;align-items:center;gap:var(--sp-2);text-align:left;cursor:pointer;font:inherit}
+.cs-btn .globe,.cs-btn .caret{color:var(--faint);flex:none;display:flex}
+.cs-btn .cs-cur{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-btn .cs-ph{color:var(--faint)}
+.cs-code{font-family:var(--mono);font-size:var(--fs-10);color:var(--muted);background:var(--card-2);
+  border:1px solid var(--border);border-radius:var(--radius-pill);padding:1px 7px;flex:none}
+.cs.open .cs-btn{border-color:var(--accent)}.cs.open .cs-btn .caret{transform:rotate(180deg)}
+.cs-pop{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:60;background:var(--bg-elev);border:1px solid var(--border);
+  border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);overflow:hidden;animation:rise var(--dur-fast) var(--ease-out)}
+.cs-search{padding:var(--sp-2);border-bottom:1px solid var(--border)}
+.cs-list{max-height:262px;overflow:auto;padding:var(--sp-1)}
+.cs-group{position:sticky;top:0;background:var(--bg-elev);padding:var(--sp-2) var(--sp-2) var(--sp-1);
+  font-size:var(--fs-10);font-weight:650;letter-spacing:.04em;color:var(--faint)}
+.cs-opt{display:flex;align-items:center;gap:var(--sp-2);width:100%;text-align:left;border:0;background:none;cursor:pointer;
+  padding:7px 8px;border-radius:var(--radius-xs);color:var(--text);font-size:var(--fs-12)}
+.cs-opt:hover{background:var(--card-hover)}
+.cs-opt[aria-selected="true"]{background:var(--accent-soft);color:var(--accent);font-weight:620}
+.cs-opt .nm{flex:none;max-width:54%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-opt .alt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--faint);font-size:var(--fs-10)}
+.cs-empty{margin:0;padding:var(--sp-5) var(--sp-4);font-size:var(--fs-11);color:var(--muted);text-align:center}
+.cs-foot{margin:0;padding:var(--sp-2) var(--sp-3);border-top:1px solid var(--border);background:var(--card-2);
+  font-size:var(--fs-10);color:var(--faint);line-height:1.45}
+@media (max-width:1180px){.form-layout,.review-cols{grid-template-columns:1fr}.sticky-rail{position:static;max-height:none}.review-cols{grid-template-columns:1fr}.viewer-stage{min-height:270px}.decisionbar{position:sticky;top:auto;bottom:0;flex-direction:row;align-items:center}.decisionbar .decision-title{border:0;padding:0;margin-right:auto}.decisionbar .hint{display:none}.decisionbar .btn{width:auto}}
 @media (max-width:860px){.track-grid,.upload-grid,.issue-grid,.viewer-stage,.credential-core{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.doc-sheet{transition:none}}
 </style>
@@ -157,7 +184,7 @@ var DICT={
 };
 var PRD={
  "P-A17":{title:"P-A17 用户中心 · 认证状态区",src:"01-个人认证.md 7.1 · F-K01～F-K03",fields:[["personal_status / business_status","enum · 只读","双轨独立展示；主操作按组合态切换。"]],rules:[["F-K01","个人与企业两条状态、版本、提交时间、结论独立展示。"],["F-K02","双认证通过前业务功能不放行。"],["F-K03","发起前校验邮箱与钱包，缺失时 C-09 就地补齐。"]]},
- "P-K01":{title:"P-K01 认证填写 · 三步",src:"01-个人认证.md · 02-企业认证与模板.md · 03-流程与状态机.md",fields:[["个人六字段","必填","顺序固定：证件类型→姓名→英文姓名→国籍→证件号码→证件影像。"],["企业公共字段 + 模板字段","按注册地","T1～T6 配置驱动；澳门、台湾走 T6。"]],rules:[["F-K04～F-K16","校验、原样展示、模板切换、唯一键、草稿、上传全覆盖。"],["N-K05","同一账号 24 小时最多提交 5 次。"]]},
+ "P-K01":{title:"P-K01 认证填写 · 三步",src:"01-个人认证.md · 02-企业认证与模板.md · 03-流程与状态机.md",fields:[["个人六字段","必填","顺序固定：证件类型→姓名→英文姓名→国籍→证件号码→证件影像；国籍取标准国家 / 地区清单。"],["企业公共字段 + 模板字段","按注册地","注册地与国籍共用同一份标准清单；CN / HK / US / KY / NG 走 T1～T5 专属模板，其余落 T6 通用模板。"]],rules:[["F-K04～F-K16","校验、原样展示、模板切换、唯一键、草稿、上传全覆盖。"],["N-K05","同一账号 24 小时最多提交 5 次。"]]},
  "P-K02":{title:"P-K02 提交结果",src:"03-流程与状态机.md 10.1",rules:[["DK-33","不展示审核时长、排队位次或倒计时。"]]},
  "P-K03":{title:"P-K03 认证详情",src:"03-流程与状态机.md 7.5 · F-K17～F-K19",rules:[["F-K17","四态状态机；重新提交是动作，不是第五状态。"],["F-K18","驳回原因在顶部汇总并在字段旁就地回显。"],["F-K19","驳回后与已通过后都可重提。"]]},
  "P-M30":{title:"P-M30 个人认证审核列表",src:"04-管理端审核.md 7.6.1 · F-K20",rules:[["F-K20","默认提交时间升序；默认状态=审核中；20 条/页；列表不展示证件号码。"]]},
@@ -176,17 +203,53 @@ var STATES={
  "P-M33":[["default","Default","默认"],["loading","Loading","加载中"],["previewfail","Preview failed","预览失败"],["cascadeWait","Cascade · in review","级联 · 企业审核中"],["cascadeApproved","Cascade · approved","级联 · 企业原已通过"],["cascadeRejected","Cascade · rejected","级联 · 企业原已驳回"],["waiting","Submitting","提交中"],["concurrent","Concurrent decision","并发冲突"],["duplicate","Duplicate key","二次查重失败"]]
 };
 
-var MINE=["st","open","openPages","step","saveDraft","idType","region","confirmSwitch","close","gateMode","gateNext","gateDone","upload","uploadRetry",
+var MINE=["st","open","openPages","step","saveDraft","idType","region","csOpen","csPick","confirmSwitch","close","gateMode","gateNext","gateDone","upload","uploadRetry",
  "preview","removeFile","submitOpen","submitConfirm","backCenter","copy","viewer","rejectOpen","issue","decision","decisionCommit","refresh","filter","reset","related"];
 var PAGE_DIR=[
  ["Asset / 资产端",[["P-A17",""],["P-K01",""],["P-K02",""],["P-K03",""]]],
  ["Admin / 管理端",[["P-M30",""],["P-M31",""],["P-M32",""],["P-M33",""]]]
 ];
-var REGIONS=[
- ["CN","China (Mainland)","中国（大陆）","T1"],["HK","Hong Kong SAR, China","中国香港特别行政区","T2"],
- ["US","United States","美国","T3"],["KY","Cayman Islands","开曼群岛","T4"],["NG","Nigeria","尼日利亚","T5"],
- ["MO","Macao SAR, China","中国澳门特别行政区","T6"],["TW","Taiwan, China","中国台湾地区","T6"],["SG","Singapore","新加坡","T6"]
+/* 国家 / 地区值集：原型内置 ISO 3166-1 alpha-2 的代表性子集（68 条，含全部模板驱动项），
+   个人认证「国籍」与企业认证「企业注册地」共用同一份数据；
+   生产环境由平台元数据服务下发 ISO 3166-1 全量清单，结构与字段名不变。 */
+var COUNTRY_GROUPS=[
+ ["Key jurisdictions","业务常用法域",[
+  ["CN","China (Mainland)","中国（大陆）"],["HK","Hong Kong SAR, China","中国香港特别行政区"],
+  ["US","United States","美国"],["KY","Cayman Islands","开曼群岛"],["NG","Nigeria","尼日利亚"],
+  ["SG","Singapore","新加坡"],["MO","Macao SAR, China","中国澳门特别行政区"],["TW","Taiwan, China","中国台湾地区"]]],
+ ["Asia-Pacific","亚太",[
+  ["JP","Japan","日本"],["KR","Korea, Republic of","韩国"],["MY","Malaysia","马来西亚"],["TH","Thailand","泰国"],
+  ["VN","Viet Nam","越南"],["ID","Indonesia","印度尼西亚"],["PH","Philippines","菲律宾"],["IN","India","印度"],
+  ["PK","Pakistan","巴基斯坦"],["BD","Bangladesh","孟加拉国"],["AU","Australia","澳大利亚"],["NZ","New Zealand","新西兰"]]],
+ ["Middle East & Central Asia","中东与中亚",[
+  ["AE","United Arab Emirates","阿拉伯联合酋长国"],["SA","Saudi Arabia","沙特阿拉伯"],["QA","Qatar","卡塔尔"],
+  ["IL","Israel","以色列"],["TR","Türkiye","土耳其"],["KZ","Kazakhstan","哈萨克斯坦"]]],
+ ["Europe","欧洲",[
+  ["GB","United Kingdom","英国"],["IE","Ireland","爱尔兰"],["FR","France","法国"],["DE","Germany","德国"],
+  ["NL","Netherlands","荷兰"],["BE","Belgium","比利时"],["LU","Luxembourg","卢森堡"],["CH","Switzerland","瑞士"],
+  ["AT","Austria","奥地利"],["IT","Italy","意大利"],["ES","Spain","西班牙"],["PT","Portugal","葡萄牙"],
+  ["SE","Sweden","瑞典"],["NO","Norway","挪威"],["DK","Denmark","丹麦"],["FI","Finland","芬兰"],
+  ["PL","Poland","波兰"],["CZ","Czechia","捷克"],["GR","Greece","希腊"],["CY","Cyprus","塞浦路斯"],
+  ["MT","Malta","马耳他"],["RU","Russian Federation","俄罗斯联邦"]]],
+ ["Americas","美洲",[
+  ["CA","Canada","加拿大"],["MX","Mexico","墨西哥"],["BR","Brazil","巴西"],["AR","Argentina","阿根廷"],
+  ["CL","Chile","智利"],["CO","Colombia","哥伦比亚"],["PE","Peru","秘鲁"],["PA","Panama","巴拿马"],
+  ["VG","Virgin Islands (British)","英属维尔京群岛"],["BM","Bermuda","百慕大"],["BS","Bahamas","巴哈马"]]],
+ ["Africa","非洲",[
+  ["ZA","South Africa","南非"],["EG","Egypt","埃及"],["KE","Kenya","肯尼亚"],["GH","Ghana","加纳"],
+  ["TZ","Tanzania, United Republic of","坦桑尼亚"],["MA","Morocco","摩洛哥"],["ET","Ethiopia","埃塞俄比亚"],
+  ["MU","Mauritius","毛里求斯"],["SC","Seychelles","塞舌尔"]]]
 ];
+var COUNTRY_INDEX={},COUNTRY_COUNT=0;
+COUNTRY_GROUPS.forEach(function(g){g[2].forEach(function(c){COUNTRY_INDEX[c[0]]=c;COUNTRY_COUNT++;});});
+/* 专属模板只认这五个注册地，清单里的其余国家 / 地区一律落 T6 通用模板。 */
+var TEMPLATE_BY_COUNTRY={CN:"CN",HK:"HK",US:"US",KY:"KY",NG:"NG"};
+function countryName(code){var c=COUNTRY_INDEX[code];return c?L(c[1],c[2]):(code||"—");}
+function countryLabel(code){var c=COUNTRY_INDEX[code];return c?L(c[1],c[2])+" · "+c[0]:(code||"—");}
+function countryHit(c,kw){
+ if(!kw)return true;
+ return c[0].toLowerCase().indexOf(kw)>=0||c[1].toLowerCase().indexOf(kw)>=0||c[2].indexOf(kw)>=0;
+}
 var TEMPLATES={
  CN:{tag:"T1 · CN",fields:[["uscc","Unified Social Credit Code","统一社会信用代码","91310000MA1K3XYZ8H"]],files:[["business_license","Business licence","营业执照"],["legal_rep_id","Legal representative ID","法定代表人证件"],["authorization_letter","Letter of authorization","授权委托书"]]},
  HK:{tag:"T2 · HK",fields:[["hk_cr_number","Company registration number (CR No.)","公司注册编号（CR No.）","3012345"],["hk_br_number","Business registration number (BR No.)","商业登记号码（BR No.）","88123456"]],files:[["hk_ci","Certificate of Incorporation","法团成立为法团证明书"],["hk_br_cert","Business Registration Certificate","商业登记证"],["hk_nar1","NAR1 / NNC1","周年申报表 NAR1 / 法团成立表格 NNC1"],["hk_director_id","Director / authorized person ID","董事 / 授权人证件"],["hk_authorization","Authorization / board resolution","授权委托书 / 董事会决议"]]},
@@ -231,10 +294,39 @@ function emptyBox(kind){
  var err=kind==="error", title=err?t("loadFail"):(kind==="noresults"?t("noResults"):t("empty"));
  return '<div class="card"><div class="card-b shell">'+(err?ICO.warn:ICO.info)+'<p>'+title+'</p>'+(err?'<button class="btn" type="button" data-act="refresh">'+t("retry")+'</button>':'')+'</div></div>';
 }
+/* 国家 / 地区选择器：按钮触发弹层，弹层内是搜索框 + 分组清单；
+   搜索框带 data-f，公共层 render() 会在重绘后把焦点与光标位置还原，因此可以边输入边过滤。 */
+function countryPicker(id){
+ var open=S.cs===id, code=S.form[id]||"", cur=COUNTRY_INDEX[code], kw=open?String(S.csq||"").trim().toLowerCase():"";
+ var pop="";
+ if(open){
+  var hits=0;
+  var body=COUNTRY_GROUPS.map(function(g){
+   var items=g[2].filter(function(c){return countryHit(c,kw);});
+   if(!items.length)return "";
+   hits+=items.length;
+   return '<div class="cs-group">'+esc(L(g[0],g[1]))+'</div>'+items.map(function(c){
+    return '<button class="cs-opt" type="button" role="option" aria-selected="'+(c[0]===code)+'" data-act="csPick" data-v="'+id+':'+c[0]+'">'
+     +'<span class="nm">'+esc(L(c[1],c[2]))+'</span><span class="alt">'+esc(L(c[2],c[1]))+'</span><code class="cs-code">'+c[0]+'</code></button>';
+   }).join("");
+  }).join("");
+  if(!hits)body='<p class="cs-empty">'+L("No match in this demo subset. Production searches the full ISO 3166-1 list.","演示子集中没有匹配项；生产环境检索 ISO 3166-1 全量清单。")+'</p>';
+  pop='<div class="cs-pop"><div class="cs-search"><input class="inp" data-f="csq" value="'+esc(S.csq||"")+'" autocomplete="off"'
+   +' placeholder="'+L("Search by name or ISO code","搜索中英文名称或 ISO 代码")+'" aria-label="'+L("Search country or region","搜索国家 / 地区")+'"></div>'
+   +'<div class="cs-list" role="listbox">'+body+'</div>'
+   +'<p class="cs-foot">'+L("Demo subset · "+COUNTRY_COUNT+" entries. Production loads the full ISO 3166-1 alpha-2 list from the platform metadata service.","演示子集 · "+COUNTRY_COUNT+" 条；生产环境由平台元数据服务下发 ISO 3166-1 alpha-2 全量清单。")+'</p></div>';
+ }
+ return '<div class="cs'+(open?' open':'')+'" data-cs="'+id+'">'
+  +'<button class="inp cs-btn" type="button" id="'+id+'" data-act="csOpen" data-v="'+id+'" aria-haspopup="listbox" aria-expanded="'+open+'">'
+  +'<span class="globe">'+ICO.globe+'</span>'
+  +'<span class="cs-cur">'+(cur?esc(L(cur[1],cur[2])):'<span class="cs-ph">'+L("Select a country / region","请选择国家 / 地区")+'</span>')+'</span>'
+  +(cur?'<code class="cs-code">'+cur[0]+'</code>':'')+'<span class="caret">'+ICO.caret+'</span></button>'+pop+'</div>';
+}
 function field(id,label,opt){
  opt=opt||{};var v=S.form[id]!==undefined?S.form[id]:(opt.value||"");var bad=(S.st==="validation"&&(!v||id==="idNumber"));
  return '<div class="field'+(opt.problem?' problem':'')+'"><label for="'+id+'">'+label+(opt.req!==false?' <span class="faint">· '+t("required")+'</span>':'')+(opt.flag?'<span class="flag '+opt.flag[0]+'">'+opt.flag[1]+'</span>':'')+'</label>'
-  +(opt.select?'<select class="inp" id="'+id+'" data-f="'+id+'">'+opt.select.map(function(x){return '<option value="'+x[0]+'" '+(String(v)===String(x[0])?'selected':'')+'>'+x[1]+'</option>';}).join("")+'</select>'
+  +(opt.country?countryPicker(id)
+   :opt.select?'<select class="inp" id="'+id+'" data-f="'+id+'">'+opt.select.map(function(x){return '<option value="'+x[0]+'" '+(String(v)===String(x[0])?'selected':'')+'>'+x[1]+'</option>';}).join("")+'</select>'
    :'<input class="inp'+(bad?' err':'')+(opt.mono?' mono':'')+'" id="'+id+'" data-f="'+id+'" value="'+esc(v)+'" placeholder="'+esc(opt.ph||"")+'" '+(opt.ro?'readonly':'')+' aria-invalid="'+bad+'">')
   +'<p class="'+(bad?'err-msg':'hint')+'" id="'+id+'Help">'+(bad?L("Check this required field and its format.","请检查必填内容与格式。"):(opt.help||"&nbsp;"))+'</p></div>';
 }
@@ -262,8 +354,8 @@ function trackCard(type,st,ver,time,extra){
 function credentialCard(type,st,opt){
  opt=opt||{};var isP=type==="p",empty=st==="not_submitted",k=st==="approved"?"green":st==="rejected"?"red":st==="under_review"?"amber":"blue";
  var title=isP?t("personalInfo"):t("businessInfo"),core=isP
-  ?[[t("fullName"),"林安 / AN LIN"],[t("documentType"),t("idCard")],[t("nationality"),"China · CN"],[t("version"),opt.ver||"v1"]]
-  :[[t("companyName"),"Harbour Demo Holdings Limited"],[t("registrationRegion"),"Hong Kong SAR, China · HK"],["CR No.","3012345"],[t("version"),opt.ver||"v1"]];
+  ?[[t("fullName"),"林安 / AN LIN"],[t("documentType"),t("idCard")],[t("nationality"),countryLabel("CN")],[t("version"),opt.ver||"v1"]]
+  :[[t("companyName"),"Harbour Demo Holdings Limited"],[t("registrationRegion"),countryLabel("HK")],["CR No.","3012345"],[t("version"),opt.ver||"v1"]];
  var action=empty?t("start"):(st==="draft"?t("resume"):t("view"));
  return '<button class="credential-card" type="button" data-k="'+k+'" data-empty="'+empty+'" data-act="'+(opt.act||"open")+'" data-v="'+esc(opt.value||"P-K03")+'" aria-label="'+esc(title+" · "+action)+'">'
   +'<span class="credential-head"><span class="track-ico">'+(isP?"ID":"CO")+'</span><span class="title">'+title+'</span><span class="status">'+pill(st,opt.extra||"")+'</span></span>'
@@ -289,17 +381,17 @@ function personalForm(){
  return '<div class="review-box formcard"><div class="hd"><b>'+t("personalInfo")+'</b><span class="right pill dash">F-K04 · 6 fields</span></div><div class="bd">'
   +field("idType",t("documentType"),{select:[["id_card",t("idCard")],["passport",t("passport")]]})
   +'<div class="fgrid">'+field("name",t("fullName"),{value:"林安",flag:resub?["changed",L("Updated","本次已修改")]:null})+field("nameEn",t("englishName"),{value:"AN LIN"})+'</div>'
-  +field("nationality",t("nationality"),{select:[["CN",L("China · CN","中国 · CN")],["SG",L("Singapore · SG","新加坡 · SG")],["US",L("United States · US","美国 · US")],["OTHER",L("Not in list — contact support","清单外情形 — 联系客服")]],help:L("Search by English name, Chinese name or ISO code. Free text is not accepted.","可按中英文名称或 ISO 代码检索，不接受自由输入。")})
+  +field("nationality",t("nationality"),{country:true,help:L("Standard country / region list. Search by English name, Chinese name or ISO code; free text is not accepted.","取标准国家 / 地区清单，可按中英文名称或 ISO 代码检索，不接受自由输入。")})
   +field("idNumber",t("documentNumber"),{value:pass?"EJ 82-93 014":"11010119900101123X",mono:true,problem:resub,flag:resub?["problem",L("Needs update","需修改")]:null,help:pass?L("Separators are ignored for validation; your original input is preserved.","校验时剔除分隔符；存储与展示保留原样输入。"):L("18 characters: 17 digits + digit or X. Must match the uploaded document.","18 位：前 17 位数字，末位数字或 X；须与证件影像一致。")})
   +'<div class="upload-grid">'+(pass?uploadSlot("passportPage",t("passportPage"),{mode:"empty",live:"passportPage",problem:resub}):uploadSlot("idFront",t("front"),{live:"idFront",problem:resub})+uploadSlot("idBack",t("back"),{}))+'</div></div></div>';
 }
-function templateKey(){var r=S.form.region||"CN";return (r==="MO"||r==="TW"||r==="SG")?"T6":r;}
+function templateKey(){return TEMPLATE_BY_COUNTRY[S.form.region||"CN"]||"T6";}
 function businessForm(){
  if(S.st==="configfail")return note("red",t("loadFail")+' '+L("The company template could not be loaded. Submission is disabled.","企业模板配置加载失败，当前不可提交。"),"","alert")+'<div class="step-actions"><button class="btn primary" data-act="refresh">'+t("retry")+'</button></div>';
- var key=templateKey(),tpl=TEMPLATES[key],regions=REGIONS.map(function(x){return [x[0],L(x[1],x[2])+" · "+x[3]];});
+ var key=templateKey(),tpl=TEMPLATES[key];
  var dynamic=tpl.fields.map(function(x){return field(x[0],L(x[1],x[2]),{value:x[3],mono:true});}).join("");
  return '<div class="review-box formcard"><div class="hd"><b>'+t("businessInfo")+'</b><span class="right template-tag">'+tpl.tag+'</span></div><div class="bd">'
-  +field("region",t("registrationRegion"),{select:regions,help:L("Changing the region clears template-only fields and documents after confirmation.","切换注册地会在确认后清空模板专有字段与材料。")})
+  +field("region",t("registrationRegion"),{country:true,help:L("The place of registration drives the template — "+tpl.tag+" applies now. CN / HK / US / KY / NG use dedicated templates; every other country or region falls back to T6 general. Template-only fields and documents are cleared only after you confirm the change.","所选注册地决定企业模板 — 当前命中 "+tpl.tag+"。CN / HK / US / KY / NG 走专属模板，清单内其余国家 / 地区一律落 T6 通用模板。切换后需确认才会清空模板专有字段与材料。")})
   +'<div class="fgrid">'+field("companyName",t("companyName"),{value:"Harbour Demo Holdings Limited"})+field("companyNameEn",t("companyNameEn"),{value:"Harbour Demo Holdings Limited"})+'</div>'
   +field("address",t("registeredAddress"),{value:L("Demo registered address — not a real location","演示注册地址 — 非真实地点")})
   +'<div class="fgrid">'+field("role",t("applicantRole"),{select:[["legal",t("legalRep")],["director",t("director")],["signatory",t("authorizedSignatory")]]})+field("authorized",t("authorizedPerson"),{value:"林安 / AN LIN · 11010119900101123X",ro:true,mono:true,req:false})+'</div>'
@@ -311,9 +403,9 @@ function reviewForm(){
  var err=S.st==="unique"?note("red",t("duplicate"),"","alert"):S.st==="limited"?note("red",t("limit"),"","alert"):S.st==="update"?note("amber",t("currentValid")):"";
  return err+'<div class="review-box"><div class="hd"><b>'+t("reviewTitle")+'</b><span class="right template-tag">'+TEMPLATES[templateKey()].tag+'</span></div><div class="bd">'
   +'<div class="sec-head"><h2>'+t("personalInfo")+'</h2><button class="btn-link right" data-act="step" data-v="personal">'+L("Edit","编辑")+'</button></div><dl class="dl">'
-  +'<div><dt>'+t("documentType")+'</dt><dd>'+t(S.form.idType==="passport"?"passport":"idCard")+'</dd></div><div><dt>'+t("fullName")+'</dt><dd>林安 / AN LIN</dd></div><div><dt>'+t("nationality")+'</dt><dd>China · CN</dd></div><div><dt>'+t("documentNumber")+'</dt><dd class="mono">'+esc(S.form.idNumber||"11010119900101123X")+'</dd></div></dl>'
+  +'<div><dt>'+t("documentType")+'</dt><dd>'+t(S.form.idType==="passport"?"passport":"idCard")+'</dd></div><div><dt>'+t("fullName")+'</dt><dd>林安 / AN LIN</dd></div><div><dt>'+t("nationality")+'</dt><dd>'+esc(countryLabel(S.form.nationality))+'</dd></div><div><dt>'+t("documentNumber")+'</dt><dd class="mono">'+esc(S.form.idNumber||"11010119900101123X")+'</dd></div></dl>'
   +'<div class="sec-head" style="margin-top:var(--sp-5)"><h2>'+t("businessInfo")+'</h2><button class="btn-link right" data-act="step" data-v="business">'+L("Edit","编辑")+'</button></div><dl class="dl">'
-  +'<div><dt>'+t("registrationRegion")+'</dt><dd>'+esc(S.form.region||"CN")+' · '+TEMPLATES[templateKey()].tag+'</dd></div><div><dt>'+t("companyName")+'</dt><dd>Harbour Demo Holdings Limited</dd></div><div><dt>'+t("uniqueKey")+'</dt><dd class="mono">'+uniqueKey()+'</dd></div><div><dt>'+t("authorizedPerson")+'</dt><dd>林安 / AN LIN</dd></div></dl>'
+  +'<div><dt>'+t("registrationRegion")+'</dt><dd>'+esc(countryName(S.form.region||"CN"))+' · '+TEMPLATES[templateKey()].tag+'</dd></div><div><dt>'+t("companyName")+'</dt><dd>Harbour Demo Holdings Limited</dd></div><div><dt>'+t("uniqueKey")+'</dt><dd class="mono">'+uniqueKey()+'</dd></div><div><dt>'+t("authorizedPerson")+'</dt><dd>林安 / AN LIN</dd></div></dl>'
   +'<div style="margin-top:var(--sp-4)">'+note("amber",L("Once submitted, your information cannot be edited until a review decision is made.","提交后在审核出结论前不可修改。"))+'</div></div></div>';
 }
 function pageForm(){
@@ -323,8 +415,8 @@ function pageForm(){
  var primary=n<3?'<button class="btn primary" type="button" data-act="step" data-v="'+(n===1?"business":"review")+'">'+t("next")+'</button>':'<button class="btn primary" type="button" data-act="submitOpen" '+(S.st==="limited"?'disabled aria-disabled="true"':'')+'>'+t("submit")+'</button>';
  var secondary='<button class="btn" type="button" data-act="saveDraft">'+t("saveDraft")+'</button>'+(n>1?'<button class="btn" type="button" data-act="step" data-v="'+(n===3?"business":"personal")+'">'+t("previous")+'</button>':'');
  return demoBar()+pageHead(t("verifyTitle"),L("One continuous submission creates two independent review tasks.","一次连续填写，同时创建个人与企业两个独立审核任务。"),prdBtn())+'<div class="form-layout"><main>'+body+'</main>'
-  +'<aside class="sticky-rail"><div class="review-box"><div class="hd"><b>'+L("Actions","操作")+'</b></div><div class="bd"><div class="form-action-list">'+primary+secondary+'<span class="save-state">'+ICO.ok+' '+t("saved")+' · '+L("just now","刚刚")+'</span></div></div></div>'
-  +'<div class="review-box"><div class="hd"><b>'+L("Progress","进度")+'</b></div><div class="bd">'+progressRail(n)+'</div></div></aside></div>';
+  +'<aside class="sticky-rail"><div class="review-box rail-progress-box"><div class="hd"><b>'+L("Progress","进度")+'</b><span class="right pill dash mono">'+n+' / 3</span></div><div class="bd">'+progressRail(n)+'</div></div>'
+  +'<div class="review-box rail-actions"><div class="hd"><b>'+L("Actions","操作")+'</b></div><div class="bd"><div class="form-action-list">'+primary+secondary+'<span class="save-state">'+ICO.ok+' '+t("saved")+' · '+L("just now","刚刚")+'</span></div></div></div></aside></div>';
 }
 
 function pageResult(){
@@ -334,7 +426,7 @@ function pageResult(){
   +'<div class="btnbar"><button class="btn" type="button" data-act="backCenter">'+t("userCenter")+'</button><button class="btn primary" type="button" data-act="open" data-v="P-K03">'+t("view")+'</button></div></div></div>';
 }
 function readOnlyPersonal(problem,admin){
- return '<dl class="dl"><div><dt>'+t("documentType")+'</dt><dd>'+t("idCard")+'</dd></div><div><dt>'+t("fullName")+'</dt><dd>林安 <span class="flag changed">'+L("Updated","本次已修改")+'</span></dd></div><div><dt>'+t("englishName")+'</dt><dd>AN LIN</dd></div><div><dt>'+t("nationality")+'</dt><dd>China · CN</dd></div><div class="'+(problem?'problem':'')+'"><dt>'+t("documentNumber")+'</dt><dd class="mono">11010119900101123X '+(problem?'<span class="flag problem">'+L("Needs update","需修改")+'</span>':'')+(admin?' <button class="btn sm" data-act="copy">'+t("copy")+'</button>':'')+'</dd></div><div><dt>'+t("documentImages")+'</dt><dd>'+t("front")+' · '+t("back")+'</dd></div></dl>';
+ return '<dl class="dl"><div><dt>'+t("documentType")+'</dt><dd>'+t("idCard")+'</dd></div><div><dt>'+t("fullName")+'</dt><dd>林安 <span class="flag changed">'+L("Updated","本次已修改")+'</span></dd></div><div><dt>'+t("englishName")+'</dt><dd>AN LIN</dd></div><div><dt>'+t("nationality")+'</dt><dd>'+esc(countryLabel("CN"))+'</dd></div><div class="'+(problem?'problem':'')+'"><dt>'+t("documentNumber")+'</dt><dd class="mono">11010119900101123X '+(problem?'<span class="flag problem">'+L("Needs update","需修改")+'</span>':'')+(admin?' <button class="btn sm" data-act="copy">'+t("copy")+'</button>':'')+'</dd></div><div><dt>'+t("documentImages")+'</dt><dd>'+t("front")+' · '+t("back")+'</dd></div></dl>';
 }
 function pageDetails(){
  var st=S.st;if(st==="loading")return demoBar()+pageHead(t("details"),"",prdBtn())+skeleton(7);if(st==="failed")return demoBar()+pageHead(t("details"),"",prdBtn())+emptyBox("error");
@@ -348,19 +440,19 @@ function pageDetails(){
 }
 
 var PERSONAL_ROWS=[
- [DEMO_ID,"ada@demo-mail.test","林安","AN LIN","idCard","China · CN","2026-09-08T02:02:00Z","v2","under_review"],
- ["KYC-20260908-000124","0x71aF…19B2","Noah Reed","NOAH REED","passport","United States · US","2026-09-08T02:08:00Z","v1","under_review"],
- ["KYC-20260908-000125","mina@demo-mail.test","米娜","MINA HE","passport","Singapore · SG","2026-09-08T02:15:00Z","v1","under_review"]
+ [DEMO_ID,"ada@demo-mail.test","林安","AN LIN","idCard","CN","2026-09-08T02:02:00Z","v2","under_review"],
+ ["KYC-20260908-000124","0x71aF…19B2","Noah Reed","NOAH REED","passport","US","2026-09-08T02:08:00Z","v1","under_review"],
+ ["KYC-20260908-000125","mina@demo-mail.test","米娜","MINA HE","passport","SG","2026-09-08T02:15:00Z","v1","under_review"]
 ];
 var BUSINESS_ROWS=[
- [DEMO_BIZ,"ada@demo-mail.test","Harbour Demo Holdings Limited","Hong Kong SAR, China · HK","3012345","2026-09-08T02:02:00Z","v2","under_review",false],
- ["KYB-20260908-000124","0x71aF…19B2","Northstar Demo LLC","United States · US","7654321","2026-09-08T02:08:00Z","v1","under_review",false],
- ["KYB-20260908-000120","mina@demo-mail.test","Lagoon Demo Ltd","Nigeria · NG","RC-1,234.567","2026-09-08T01:20:00Z","v1","rejected",true]
+ [DEMO_BIZ,"ada@demo-mail.test","Harbour Demo Holdings Limited","HK","3012345","2026-09-08T02:02:00Z","v2","under_review",false],
+ ["KYB-20260908-000124","0x71aF…19B2","Northstar Demo LLC","US","7654321","2026-09-08T02:08:00Z","v1","under_review",false],
+ ["KYB-20260908-000120","mina@demo-mail.test","Lagoon Demo Ltd","NG","RC-1,234.567","2026-09-08T01:20:00Z","v1","rejected",true]
 ];
 function listFilters(type){
  return '<div class="filters"><div class="fl fl-kw"><span>'+t("search")+'</span><input class="inp" data-f="query" value="'+esc(S.query||"")+'" placeholder="'+(type==="p"?L("Name or exact document number","姓名或完整证件号码"):L("Company or exact registration no.","企业名称或完整注册号"))+'"></div>'
   +'<div class="fl"><span>'+t("status")+'</span><select class="inp" data-f="listStatus"><option value="under_review">'+t("underReview")+'</option><option value="approved">'+t("approved")+'</option><option value="rejected">'+t("rejected")+'</option></select></div>'
-  +'<div class="fl"><span>'+(type==="p"?t("documentType"):t("registrationRegion"))+'</span><select class="inp"><option>'+L("All","全部")+'</option><option>'+(type==="p"?t("passport"):"Hong Kong · HK")+'</option></select></div>'
+  +'<div class="fl"><span>'+(type==="p"?t("documentType"):t("registrationRegion"))+'</span><select class="inp"><option>'+L("All","全部")+'</option><option>'+(type==="p"?t("passport"):countryLabel("HK"))+'</option></select></div>'
   +'<div class="fl"><span>'+L("Submitted","提交日期")+'</span><input class="inp" type="date" value="2026-09-08"></div>'
   +'<div class="fl-act"><button class="btn sm" type="button" data-act="reset">'+t("reset")+'</button><button class="btn sm primary" type="button" data-act="filter">'+t("search")+'</button></div></div>';
 }
@@ -369,7 +461,7 @@ function listTable(type){
  if(S.st==="resub")rows=rows.slice(0,1);if(S.st==="cascade")rows=rows.slice(2);
  var heads=type==="p"?[t("applicationNo"),t("account"),t("fullName"),t("englishName"),t("documentType"),t("country"),t("submittedAt"),t("version"),t("status"),t("action")]:[t("applicationNo"),t("account"),t("companyName"),t("registrationRegion"),L("Registration no.","注册号"),t("submittedAt"),t("version"),t("status"),t("action")];
  return '<div class="tablewrap"><table class="tbl wide"><thead><tr>'+heads.map(function(h,i){return '<th'+(i===heads.length-1?' class="col-act"':'')+'>'+h+'</th>';}).join("")+'</tr></thead><tbody>'
-  +rows.map(function(r){var status=type==="p"?r[8]:r[7],cascade=type==="b"&&r[8];return '<tr class="rowlink" data-act="open" data-v="'+detail+'">'+r.slice(0,type==="p"?8:7).map(function(c,i){var shown=i===6&&type==="p"?fmtTime(c):i===5&&type==="b"?fmtTime(c):(type==="p"&&i===4?t(c):c);return '<td'+((i===0||i===6)?' class="mono"':'')+'>'+esc(shown)+'</td>';}).join("")+'<td>'+pill(status)+(cascade?' '+pill("rejected",t("cascaded")):'')+'</td><td class="col-act"><button class="actlink" data-act="open" data-v="'+detail+'">'+t("view")+'</button></td></tr>';}).join("")+'</tbody></table><div class="pager"><span>'+L("Total ","共 ")+rows.length+L(" applications"," 条申请")+'</span><div class="right"><button class="pgbtn" disabled>‹</button><button class="pgbtn" aria-current="true">1</button><button class="pgbtn" disabled>›</button><select class="inp"><option>20 / '+L("page","页")+'</option></select></div></div></div>';
+  +rows.map(function(r){var status=type==="p"?r[8]:r[7],cascade=type==="b"&&r[8];return '<tr class="rowlink" data-act="open" data-v="'+detail+'">'+r.slice(0,type==="p"?8:7).map(function(c,i){var shown=i===6&&type==="p"?fmtTime(c):i===5&&type==="b"?fmtTime(c):(type==="p"&&i===4?t(c):((type==="p"&&i===5)||(type==="b"&&i===3)?countryLabel(c):c));return '<td'+((i===0||i===6)?' class="mono"':'')+'>'+esc(shown)+'</td>';}).join("")+'<td>'+pill(status)+(cascade?' '+pill("rejected",t("cascaded")):'')+'</td><td class="col-act"><button class="actlink" data-act="open" data-v="'+detail+'">'+t("view")+'</button></td></tr>';}).join("")+'</tbody></table><div class="pager"><span>'+L("Total ","共 ")+rows.length+L(" applications"," 条申请")+'</span><div class="right"><button class="pgbtn" disabled>‹</button><button class="pgbtn" aria-current="true">1</button><button class="pgbtn" disabled>›</button><select class="inp"><option>20 / '+L("page","页")+'</option></select></div></div></div>';
 }
 function pageList(type){
  var title=type==="p"?t("navIdentityReviews"):t("navBusinessReviews");
@@ -412,7 +504,10 @@ function modalGate(){
   +'</div><div class="modal-f">'+(done?'<button class="btn primary" data-act="gateDone">'+t("start")+'</button>':'<button class="btn" data-act="close">'+t("cancel")+'</button><button class="btn primary" data-act="gateNext">'+(step===1?t("next"):t("confirm"))+'</button>')+'</div></div></div>';
 }
 function modalSwitch(){
- return '<div class="mask"><div class="modal" role="dialog" aria-modal="true"><div class="modal-h"><b>'+L("Confirm template change","确认切换模板")+'</b><button class="modal-x" data-act="close">✕</button></div><div class="modal-b">'+note("amber",L("Changing the place of registration clears the following template-only content:","切换企业注册地将清空以下模板专有内容："))+'<ul class="reason-list"><li>'+L("Registration number fields","注册号字段")+'</li><li>'+L("Registration certificate files","注册证明文件")+'</li><li>'+L("Template-specific director materials","模板专有董事材料")+'</li></ul><p class="hint">'+L("Common company fields and authorization documents are preserved. Cleared uploads remain available under Recently uploaded.","企业公共字段与授权委托书保留；被清空文件仍可从“最近上传”复用。")+'</p></div><div class="modal-f"><button class="btn" data-act="close">'+t("cancel")+'</button><button class="btn primary" data-act="confirmSwitch">'+t("confirm")+'</button></div></div></div>';
+ var from=S.form.region||"CN",to=S.pendingRegion||from;
+ var tagTo=TEMPLATES[TEMPLATE_BY_COUNTRY[to]||"T6"].tag,tagFrom=TEMPLATES[TEMPLATE_BY_COUNTRY[from]||"T6"].tag;
+ var move='<p class="hint" style="margin-bottom:var(--sp-3)"><b>'+esc(countryName(from))+'</b> · '+tagFrom+' → <b>'+esc(countryName(to))+'</b> · '+tagTo+'</p>';
+ return '<div class="mask"><div class="modal" role="dialog" aria-modal="true"><div class="modal-h"><b>'+L("Confirm template change","确认切换模板")+'</b><button class="modal-x" data-act="close">✕</button></div><div class="modal-b">'+move+note("amber",L("Changing the place of registration clears the following template-only content:","切换企业注册地将清空以下模板专有内容："))+'<ul class="reason-list"><li>'+L("Registration number fields","注册号字段")+'</li><li>'+L("Registration certificate files","注册证明文件")+'</li><li>'+L("Template-specific director materials","模板专有董事材料")+'</li></ul><p class="hint">'+L("Common company fields and authorization documents are preserved. Cleared uploads remain available under Recently uploaded.","企业公共字段与授权委托书保留；被清空文件仍可从“最近上传”复用。")+'</p></div><div class="modal-f"><button class="btn" data-act="close">'+t("cancel")+'</button><button class="btn primary" data-act="confirmSwitch">'+t("confirm")+'</button></div></div></div>';
 }
 function modalSubmit(){
  return '<div class="mask"><div class="modal" role="dialog" aria-modal="true"><div class="modal-h"><b>'+L("Submit verification","提交认证")+'</b><button class="modal-x" data-act="close">✕</button></div><div class="modal-b">'+note("amber",L("After submission, both applications enter review and cannot be edited until a decision is made.","提交后两份申请进入审核，在结论作出前不可修改。"))+'<dl class="dl"><div><dt>'+t("identity")+'</dt><dd>v1</dd></div><div><dt>'+t("business")+'</dt><dd>v1 · '+uniqueKey()+'</dd></div></dl></div><div class="modal-f"><button class="btn" data-act="close">'+t("cancel")+'</button><button class="btn primary" data-act="submitConfirm">'+t("confirm")+'</button></div></div></div>';
@@ -440,7 +535,13 @@ function onAct(n,a,v,e){
   case "open":go(v);if(n.getAttribute("data-st")){S.st=n.getAttribute("data-st");render();}break;
   case "openPages":S.drawer=S.drawer==="pages"?null:"pages";render();break;
   case "backCenter":go("P-A17");break;
-  case "step":S.st=v;render();toast("success",t("saved"));break;
+  case "step":S.cs=null;S.csq="";S.st=v;render();toast("success",t("saved"));break;
+  case "csOpen":S.cs=(S.cs===v?null:v);S.csq="";render();break;
+  case "csPick":
+   var cut=v.indexOf(":"),fid=v.slice(0,cut),code=v.slice(cut+1);
+   S.cs=null;S.csq="";
+   if(fid==="region"){if(code!==S.form.region){S.pendingRegion=code;S.modal={type:"switch"};}render();break;}
+   S.form[fid]=code;render();break;
   case "saveDraft":toast("success",t("saved"),L("Saved across steps in this demonstration.","本演示已跨步骤保存。"));break;
   case "gateMode":S.modal={type:"gate",mode:v,step:1,done:false};render();break;
   case "gateNext":if(S.modal.step===1)S.modal.step=2;else S.modal.done=true;render();break;
@@ -471,27 +572,40 @@ function onAct(n,a,v,e){
  return true;
 }
 function onInput(n,k){
- if(k==="region"){
-  var next=n.value;if(next!==S.form.region){S.pendingRegion=next;S.modal={type:"switch"};render();}return;
- }
+ if(k==="csq"){S.csq=n.value;render();return;}
  S.form[k]=n.value;if(k==="idType")render();if(k==="query")S.query=n.value;
 }
 function previewModal(){return '<div class="mask"><div class="modal wide" role="dialog" aria-modal="true"><div class="modal-h"><b>'+t("preview")+' · '+esc(S.modal.file)+'</b><button class="modal-x" data-act="close">✕</button></div><div class="modal-b"><div class="preview"><div class="sheet"><i class="t"></i><i></i><i class="s"></i><i></i><i class="s"></i></div><span>'+t("demoOnly")+'</span></div></div><div class="modal-f"><button class="btn" data-act="close">'+t("close")+'</button></div></div></div>';}
 
 document.addEventListener("input",function(e){var n=e.target.closest("[data-f]");if(!n||n.tagName==="SELECT")return;onInput(n,n.getAttribute("data-f"));if(n.getAttribute("data-f")==="reviewNote")render();});
 document.addEventListener("change",function(e){var n=e.target.closest("select[data-f]");if(!n)return;onInput(n,n.getAttribute("data-f"));});
+/* 国家 / 地区弹层：点空白与 Esc 关闭；两个监听都早于公共层注册，公共层随后拿到的是 no-op。 */
+document.addEventListener("click",function(e){
+ if(!S||!S.cs)return;if(e.target.closest(".cs"))return;S.cs=null;S.csq="";render();
+});
+document.addEventListener("keydown",function(e){
+ if(!S||!S.cs)return;
+ if(e.key==="Escape"){S.cs=null;S.csq="";render();return;}
+ var onSearch=e.target&&e.target.getAttribute&&e.target.getAttribute("data-f")==="csq";
+ if(!onSearch)return;
+ var first=document.querySelector(".cs-opt");if(!first)return;
+ if(e.key==="Enter"){e.preventDefault();first.click();}
+ else if(e.key==="ArrowDown"){e.preventDefault();first.focus();}
+});
 
 CF.define({
  id:"kyc",end:"asset",home:"P-A17",owns:["P-A17","P-K01","P-K02","P-K03","P-M30","P-M31","P-M32","P-M33"],
  dict:DICT,prd:PRD,states:STATES,onBoot:function(st){S=st;},
- state:function(){return {form:{idType:"id_card",name:"林安",nameEn:"AN LIN",nationality:"CN",idNumber:"11010119900101123X",region:"CN",role:"legal"},upload:{idFront:"ready",idBack:"ready"},pendingRegion:null,issues:[],query:"",zoom:1,rot:0};},
+ state:function(){return {form:{idType:"id_card",name:"林安",nameEn:"AN LIN",nationality:"CN",idNumber:"11010119900101123X",region:"CN",role:"legal"},upload:{idFront:"ready",idBack:"ready"},pendingRegion:null,cs:null,csq:"",issues:[],query:"",zoom:1,rot:0};},
  content:renderContent,
  modals:{gate:modalGate,switch:modalSwitch,submit:modalSubmit,reject:modalReject,approve:modalApprove,preview:previewModal},
  drawers:{pages:drawerPages},topExtra:pagesBtn,topbarPrd:false,
+ /* 弹层一打开就把焦点交给搜索框；公共层随后按 data-f 还原焦点与光标，两者结果一致。 */
+ afterRender:function(){if(!S.cs)return;var i=document.querySelector('.cs-pop [data-f="csq"]');if(i&&document.activeElement!==i)i.focus();},
  account:accountInfo,
  crumbParts:function(){if(S.page==="P-A17"||S.page==="P-M30"||S.page==="P-M32")return [];if(S.end==="asset")return [[t("userCenter"),"P-A17",""]];return [[S.page==="P-M31"?t("navIdentityReviews"):t("navBusinessReviews"),S.page==="P-M31"?"P-M30":"P-M32",""]];},
  prdFoot:function(){return 'PRD baseline: <b>commit 77c3020</b> · prd/v1.0-实名认证与审核/ 主文档 + 7 分册。界面演示数据均为虚构；本面板仅摘录页面直接相关规则。';},
- onGo:function(){S.modal=null;S.issues=[];},onSetState:function(){S.modal=null;},onAct:onAct,onInput:onInput
+ onGo:function(){S.modal=null;S.issues=[];S.cs=null;S.csq="";},onSetState:function(){S.modal=null;S.cs=null;S.csq="";},onAct:onAct,onInput:onInput
 });
 CF.boot();
 })();
