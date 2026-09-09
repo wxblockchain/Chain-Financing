@@ -1,19 +1,22 @@
 # Chain Financing 设计系统
 
 本目录是设计侧的**语义说明与约束**：组件 anatomy、状态、组合规则、可访问性与响应式要求。
+它是**两个平台共用**的，所以留在仓库顶层，不属于 `asset-platform/` 或 `financial-service-platform/` 任何一方。
 
-**它不再复述任何具体数值。** token 的唯一来源是 [`prototypes/_shared/tokens.css`](../../prototypes/_shared/tokens.css)；
-公共组件的唯一实现是 [`prototypes/_shared/base.css`](../../prototypes/_shared/base.css)。
+**「管理端」「面客端」指的是画布形态，不是平台或端的划分。** 管理端＝高密度控制台画布（固定侧栏、紧凑顶栏、清晰的表格边界）；面客端＝宽容器面客画布（居中宽内容容器、轻量顶栏、较舒展的留白）。四个端按各自的画布形态归入其一，而不是各有一套规范：资产端、金融服务端是面客形态，资产管理端、运营端是控制台形态。因此下面两份组件规范覆盖的是两个平台的全部四个端。
+
+**它不再复述任何具体数值。** token 的唯一来源是 [`asset-platform/prototypes/_shared/tokens.css`](../../asset-platform/prototypes/_shared/tokens.css)；
+公共组件的唯一实现是 [`asset-platform/prototypes/_shared/base.css`](../../asset-platform/prototypes/_shared/base.css)。
 新增或修改 token、组件先改 `_shared/`，再回来更新本目录的语义说明。
 
 ## 分层
 
 | 层 | 位置 | 谁说了算 |
 | --- | --- | --- |
-| token（颜色 / 字号 / 间距 / 圆角 / 控件高 / 动效） | `prototypes/_shared/tokens.css` | 代码为准 |
-| 公共组件（壳层 / 控件 / 表格 / 弹层 / 反馈） | `prototypes/_shared/base.css` | 代码为准 |
-| 页面登记表与导航 | `prototypes/_shared/registry.js` | 代码为准 |
-| 公共运行时（i18n / 路由 / Toast / 弹层宿主） | `prototypes/_shared/shell.js` | 代码为准 |
+| token（颜色 / 字号 / 间距 / 圆角 / 控件高 / 动效） | `asset-platform/prototypes/_shared/tokens.css` | 代码为准 |
+| 公共组件（壳层 / 控件 / 表格 / 弹层 / 反馈） | `asset-platform/prototypes/_shared/base.css` | 代码为准 |
+| 页面登记表与导航 | `asset-platform/prototypes/_shared/registry.js` | 代码为准 |
+| 公共运行时（i18n / 路由 / Toast / 弹层宿主） | `asset-platform/prototypes/_shared/shell.js` | 代码为准 |
 | 语义、约束、禁止用法、可访问性 | 本目录 | 文档为准，实现必须遵守 |
 
 模块只写自己的页面、文案、演示数据与状态表；不得在模块内重定义 token、重建导航或复制公共组件。
@@ -28,11 +31,13 @@
 
 ## 现有实现
 
-| 模块 | 文件 | 端别 |
-| --- | --- | --- |
-| 协议管理 | `prototypes/协议管理/v1.0-协议管理-原型.html` | 管理端 |
-| 账户与登录 | `prototypes/账户与登录/v1.0-账户与登录-原型.html` | 资产端 + 管理端 |
-| 消息通知 | `prototypes/消息通知/v1.0-消息通知-原型.html` | 资产端 + 管理端 |
+| 模块 | 所属平台 | 文件 | 画布形态 |
+| --- | --- | --- | --- |
+| 协议管理 | 资产平台 | `asset-platform/prototypes/协议管理/v1.0-协议管理-原型.html` | 管理端（覆盖资产管理端） |
+| 账户与登录 | 资产平台 | `asset-platform/prototypes/账户与登录/v1.0-账户与登录-原型.html` | 面客端 + 管理端（覆盖资产端、资产管理端） |
+| 消息通知 | 资产平台 | `asset-platform/prototypes/消息通知/v1.0-消息通知-原型.html` | 面客端 + 管理端（覆盖资产端、资产管理端） |
+
+金融服务平台目前尚无原型入库；落库后在本表补行，规范本身不需要为它另起一份。
 
 三个模块共用同一套 `_shared/`，侧栏菜单、路由、Toast、弹层、语言切换的渲染结果完全一致。
 通知铃铛、快捷面板、消息列表项是**壳层级的全局组件**，实现在 `_shared/` 里。
@@ -62,7 +67,11 @@
 | 进度 | `--track` | 进度条与骨架屏底槽 |
 
 `[data-end="asset"]` 会覆盖 `--ctrl-h` / `--ctrl-h-sm` / `--field-gap` / `--card-pad`，
-让资产端在同一套 token 下呈现更松的密度。端别差异只体现在这四个值上，不体现为两套色板。
+让面客形态在同一套 token 下呈现更松的密度。**两种画布形态的差异只体现在这四个值上，不体现为两套色板。**
+
+承载这个差异的是 `registry.js` 里的 `end` 字段，目前是 `admin` / `asset` 二值——它表达的是**形态**（控制台 / 面客），
+不是平台或端。新的端接入时先归入两种形态之一复用现有取值，不要为平台或端本身新增取值；
+确有第三种画布形态时再扩枚举，并同步 `shell.js` 的 `data-end` 写入与 `base.css` 的覆盖规则。
 
 ## 通用状态与无障碍
 

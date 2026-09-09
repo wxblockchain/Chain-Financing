@@ -604,7 +604,7 @@ CF.define({
  afterRender:function(){if(!S.cs)return;var i=document.querySelector('.cs-pop [data-f="csq"]');if(i&&document.activeElement!==i)i.focus();},
  account:accountInfo,
  crumbParts:function(){if(S.page==="P-A17"||S.page==="P-M30"||S.page==="P-M32")return [];if(S.end==="asset")return [[t("userCenter"),"P-A17",""]];return [[S.page==="P-M31"?t("navIdentityReviews"):t("navBusinessReviews"),S.page==="P-M31"?"P-M30":"P-M32",""]];},
- prdFoot:function(){return 'PRD baseline: <b>commit 77c3020</b> · prd/v1.0-实名认证与审核/ 主文档 + 7 分册。界面演示数据均为虚构；本面板仅摘录页面直接相关规则。';},
+ prdFoot:function(){return 'PRD baseline: <b>commit 77c3020</b> · asset-platform/prd/v1.0-实名认证与审核/ 主文档 + 7 分册。界面演示数据均为虚构；本面板仅摘录页面直接相关规则。';},
  onGo:function(){S.modal=null;S.issues=[];S.cs=null;S.csq="";},onSetState:function(){S.modal=null;S.cs=null;S.csq="";},onAct:onAct,onInput:onInput
 });
 CF.boot();

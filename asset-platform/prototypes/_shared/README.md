@@ -17,7 +17,7 @@
 
 `_shared/` 回答「长什么样、怎么写」——引用 token、套用 base.css 的类，结果自然一致，不需要查文档确认数值。
 
-[`docs/design-system/`](../../docs/design-system/) 回答「该用哪个、什么不能做」——这类判断代码强制不了：
+[`docs/design-system/`](../../../docs/design-system/) 回答「该用哪个、什么不能做」——这类判断代码强制不了：
 `base.css` 不会阻止你在一个信息区放两个 primary 按钮，也不会告诉你这个场景该用 Drawer 还是 Modal。
 
 | 你想知道的 | 去哪里 |
@@ -25,17 +25,17 @@
 | 某个颜色 / 圆角 / 间距 / 控件高是多少 | `tokens.css`，直接引用 token，不必查文档 |
 | 按钮、表格、弹窗、Tab 的类名和写法 | `base.css` + 本文件 |
 | 怎么把新模块接进来 | 本文件「新增一个模块」 |
-| 这个场景该用 Drawer 还是 Modal、统计卡放几列 | [组件规范](../../docs/design-system/)的「组合规则」列 |
+| 这个场景该用 Drawer 还是 Modal、统计卡放几列 | [组件规范](../../../docs/design-system/)的「组合规则」列 |
 | 什么是明确禁止的 | 组件规范的「禁止用法」列 |
-| 新页面从哪个 shell / archetype 开始 | [现有页面继承参考](../../docs/design-system/harbour-credit-page-prototype-reference.md) |
-| 可访问性与响应式的硬性契约 | [设计系统 README](../../docs/design-system/README.md) 的「通用状态与无障碍」「组合总则」 |
+| 新页面从哪个 shell / archetype 开始 | [现有页面继承参考](../../../docs/design-system/harbour-credit-page-prototype-reference.md) |
+| 可访问性与响应式的硬性契约 | [设计系统 README](../../../docs/design-system/README.md) 的「通用状态与无障碍」「组合总则」 |
 
 ### 新增模块时的阅读顺序
 
 1. 本文件——接入四步 + 纪律；
-2. [现有页面继承参考](../../docs/design-system/harbour-credit-page-prototype-reference.md) 第 3–5 节——声明本模块每一页继承哪套 shell 与 archetype；
+2. [现有页面继承参考](../../../docs/design-system/harbour-credit-page-prototype-reference.md) 第 3–5 节——声明本模块每一页继承哪套 shell 与 archetype；
 3. 对应端别的组件规范——**只读本页会用到的组件行**，重点看「禁止用法」和「组合规则」两列；
-4. [设计系统 README](../../docs/design-system/README.md) 的「通用状态与无障碍」「组合总则」——每页交付前对一遍的检查清单。
+4. [设计系统 README](../../../docs/design-system/README.md) 的「通用状态与无障碍」「组合总则」——每页交付前对一遍的检查清单。
 
 不需要通读，四份文档合计约 420 行。文档里已经没有任何数值，抄不到也不用抄。
 
@@ -46,7 +46,7 @@
    - `CF.PAGES` 登记页面 ID（`end` / `layout` / `name`，一级菜单再加 `nav` / `navKey` / `icoKey`）；
    - `CF.NAV` 的普通一级项直接写页面 ID；需要常驻展开的一级/二级分组写 `{ navKey, ico, children:[页面 ID] }`，二级页仍通过 `CF.PAGES` 的 `navKey` 取文案；
    - `CF.OWNER` 把这些页面指向本模块；自定义了 URL 方案的再在 `CF.ENTRY` 登记跨文件入口 hash。
-2. 新建 `prototypes/[模块名]/[版本]-[模块名]-原型.html`，`<head>` 里按顺序引入：
+2. 新建 `asset-platform/prototypes/[模块名]/[版本]-[模块名]-原型.html`，`<head>` 里按顺序引入：
 
    ```html
    <link rel="stylesheet" href="../_shared/tokens.css">
@@ -88,7 +88,7 @@
 两者都由公共层渲染，任何模块接入后自动获得，不需要各自实现。
 
 - 点铃铛或「消息中心」落到 `CF.MSG_PAGE` 指定的页面（资产端 `P-A18`、管理端 `P-M20`）。
-  这两页由 `prototypes/消息通知/` 交付，不在本文件里时按跨文件规则**真的跳过去**。
+  这两页由 `asset-platform/prototypes/消息通知/` 交付，不在本文件里时按跨文件规则**真的跳过去**。
 - **铃铛的完整形态（未读角标 + 快捷面板 C-21）只在模块实现了 `notify()` 时渲染**；
   其余模块保留铃铛的位置与形态但**不渲染角标**——公共层不替没有数据源的模块编造未读数。
 - `notify()` 返回 `{ unread, phase, items }`，面板内的「打开某条 / 重试 / 查看全部」
@@ -105,7 +105,7 @@
 **直接跳到对方原型文件的对应页面**（例如从协议管理点「账户设置」→ `../账户与登录/…#/p-m05`），
 而不是停在占位页。顶栏账户菜单里的「账户设置」同理。
 
-这要求各模块目录是同级的，且都在本地存在——从仓库直接打开或整个 `prototypes/` 一起拷走都满足。
+这要求各模块目录是同级的，且都在本地存在——从仓库直接打开或整个 `asset-platform/prototypes/` 一起拷走都满足。
 只单独拷走一个 HTML 时，跨文件链接会失效，`_shared/` 也加载不到，请整目录一起拷。
 
 用 URL 直接落到不属于本文件的页面时，会看到一张说明归属的兜底页，上面有跳转按钮。

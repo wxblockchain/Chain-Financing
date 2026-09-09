@@ -9,7 +9,7 @@
 ```text
 financial-service-platform/
 ├── prd/          # 金融服务平台的产品需求文档（待补）
-└── prototypes/   # 金融服务平台的原型（待建，随首批原型需求一起落位）
+└── prototypes/   # 金融服务平台的原型（占位目录，待补）
 ```
 
 ## 约定

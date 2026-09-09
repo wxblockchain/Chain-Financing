@@ -2,9 +2,9 @@
 
 ## 1. 范围与视觉口径
 
-本规范面向管理端的组件语义与禁止用法。实现以 `prototypes/_shared/base.css` 为准，token 以 `prototypes/_shared/tokens.css` 为准；本文不复述数值。
+本规范面向管理端的组件语义与禁止用法。实现以 `asset-platform/prototypes/_shared/base.css` 为准，token 以 `asset-platform/prototypes/_shared/tokens.css` 为准；本文不复述数值。
 
-现有实现：`prototypes/协议管理/v1.0-协议管理-原型.html`（管理端画布、列表 / 详情 / 编辑）。
+现有实现：`asset-platform/prototypes/协议管理/v1.0-协议管理-原型.html`（管理端画布、列表 / 详情 / 编辑）。
 
 管理端的核心特征是：浅色应用底、固定侧栏、紧凑顶栏、白色卡片、清晰表格边界、蓝色主操作、青绿正向状态以及对结构化值的等宽排版。
 

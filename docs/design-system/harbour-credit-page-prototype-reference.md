@@ -2,7 +2,7 @@
 
 ## 1. 目的与强制边界
 
-本文件用于后续页面生成与调整。`prototypes/` 下已落库的两份原型是**已经生成的现有页面**；后续页面必须以它们为母版做增量调整，而不是把它们当作可自由改写的灵感样张。
+本文件用于后续页面生成与调整。`asset-platform/prototypes/` 下已落库的两份原型是**已经生成的现有页面**；后续页面必须以它们为母版做增量调整，而不是把它们当作可自由改写的灵感样张。
 
 每个新页面都属于 `existing-system adaptation`，必须遵守：
 
@@ -20,11 +20,11 @@
 
 | 端别 | 已生成页面 | 用途 |
 | --- | --- | --- |
-| 管理端 | `prototypes/协议管理/v1.0-协议管理-原型.html` | 管理端 app shell、密度、列表 / 详情 / 编辑布局母版 |
-| 管理端 + 资产端 | `prototypes/账户与登录/v1.0-账户与登录-原型.html` | focus shell（登录、重置密码）与资产端 app shell 母版 |
-| 管理端 + 资产端 | `prototypes/消息通知/v1.0-消息通知-原型.html` | 顶栏通知入口（铃铛 + 快捷面板）与「消息流列表 + 单条详情」母版；它本身继承上面两份的 shell，未新增版式 |
+| 管理端 | `asset-platform/prototypes/协议管理/v1.0-协议管理-原型.html` | 管理端 app shell、密度、列表 / 详情 / 编辑布局母版 |
+| 管理端 + 资产端 | `asset-platform/prototypes/账户与登录/v1.0-账户与登录-原型.html` | focus shell（登录、重置密码）与资产端 app shell 母版 |
+| 管理端 + 资产端 | `asset-platform/prototypes/消息通知/v1.0-消息通知-原型.html` | 顶栏通知入口（铃铛 + 快捷面板）与「消息流列表 + 单条详情」母版；它本身继承上面两份的 shell，未新增版式 |
 
-三份原型共用 `prototypes/_shared/`：token、组件、侧栏、路由、Toast、弹层都在那里，
+三份原型共用 `asset-platform/prototypes/_shared/`：token、组件、侧栏、路由、Toast、弹层都在那里，
 新页面不需要也不允许复制其中任何一段。
 
 原型中的领域名称、机构、数值、日期、地址、身份信息、权限与流程规则不构成通用页面内容；

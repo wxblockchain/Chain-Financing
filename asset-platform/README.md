@@ -8,10 +8,12 @@
 ```text
 asset-platform/
 ├── prd/          # 资产平台的产品需求文档，按模块建子目录
-└── prototypes/   # 资产平台的原型（HTML、Figma、交互稿等）——待原型侧迁移后落位
+└── prototypes/   # 资产平台的原型（HTML、Figma、交互稿等）
+    ├── _shared/  # 原型公共底座：tokens.css / base.css / registry.js / shell.js
+    └── [功能名]/ # 每个模块一个子目录，以 ../_shared/ 引用底座
 ```
 
-> 当前 `prototypes/` 仍在仓库顶层，将由原型侧单独迁入本目录（含 `_shared/`），迁移完成前请仍按顶层路径查找原型。
+> `_shared/` 必须与模块目录保持同级：模块 HTML 以 `../_shared/` 引用底座，跨模块跳转按 `../[模块目录]/` 拼接，挪动它会同时打断这两条相对路径。
 
 ## PRD 模块清单与端归属
 

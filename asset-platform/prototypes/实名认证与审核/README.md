@@ -6,15 +6,15 @@
 - artifact class：`existing-system adaptation`
 - surface class：`console`
 - 所属端 / 角色：资产端用户；资产管理端管理员（本期不区分管理端角色）
-- PRD baseline：`cly-V1.0.0` commit `77c3020`，`prd/v1.0-实名认证与审核/` 主文档 + 7 个分册
-- 视觉口径：`prototypes/_shared/tokens.css`、`prototypes/_shared/base.css`、`prototypes/_shared/shell.js`、`docs/design-system/`
+- PRD baseline：`cly-V1.0.0` commit `77c3020`，`asset-platform/prd/v1.0-实名认证与审核/` 主文档 + 7 个分册
+- 视觉口径：`asset-platform/prototypes/_shared/tokens.css`、`asset-platform/prototypes/_shared/base.css`、`asset-platform/prototypes/_shared/shell.js`、`docs/design-system/`
 - 仓库维护形态：本目录 HTML 引用 `_shared` 公共层；不得手工维护附件中的内联快照
 
-双击 `v1.0-实名认证与审核-原型.html` 即可打开。请保留整个 `prototypes/` 目录结构；否则公共样式、运行时和跨模块跳转不可用。
+双击 `v1.0-实名认证与审核-原型.html` 即可打开。请保留整个 `asset-platform/prototypes/` 目录结构；否则公共样式、运行时和跨模块跳转不可用。
 
 ## Stage 2 设计方向（已按一次性完成授权执行）
 
-`端/角色: 资产端用户 + 资产管理端管理员 · 模块: 实名认证与审核 · 功能点: F-K01～F-K32 · 页面: P-A17 / P-K01～P-K03 / P-M30～P-M33 · 状态: 九态 + 业务异常分支 · 视觉口径取自: prototypes/_shared/* + docs/design-system/*`
+`端/角色: 资产端用户 + 资产管理端管理员 · 模块: 实名认证与审核 · 功能点: F-K01～F-K32 · 页面: P-A17 / P-K01～P-K03 / P-M30～P-M33 · 状态: 九态 + 业务异常分支 · 视觉口径取自: asset-platform/prototypes/_shared/* + docs/design-system/*`
 
 | 页面 | 继承 shell / archetype | 本页增量 |
 | --- | --- | --- |

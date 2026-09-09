@@ -6,16 +6,16 @@
 | surface class | `console` |
 | 所属端 · 模块 | 资产端 Web + 资产管理端 Web · 应收账款录入与确权 |
 | 需求 | WS-305 |
-| PRD 基线 | 本 issue 2026-09-08 08:50 附件 `chain-financing-ar-prd.md`，v1.1 |
+| PRD 基线 | 仓库 `asset-platform/prd/v1.0-应收账款录入与确权/v1.0-应收账款录入与确权-PRD.md`，v1.1（原为本 issue 2026-09-08 08:50 附件 `chain-financing-ar-prd.md`，现已入库） |
 | 原型文件 | `v1.0-应收账款录入与确权-原型.html` |
-| 视觉基线 | `../_shared/`（token、公共组件、页面登记、运行时）+ `../../docs/design-system/` |
+| 视觉基线 | `../_shared/`（token、公共组件、页面登记、运行时）+ `../../../docs/design-system/` |
 | 定位 | 轻量化 UI 页面 + 走通流程所必需的交互；无后端、文件、邮件、消息或定时任务联调 |
 
 > 界面内的企业、账号、编号、金额、日期与文件均标注为**演示数据**，不代表真实业务。
 
 ## 1. Stage 2 设计方向与继承关系
 
-**端/角色: 资产端企业用户（单据卖方/买方）+ 资产管理端人员 · 模块: 应收账款录入与确权 · 功能点: 18 个 · 页面: P-A20～P-A24、P-M40～P-M41 · 状态: 五态 + 9 类必达界面状态 · 视觉口径取自: `prototypes/_shared/`、`docs/design-system/`、`prototypes/账户与登录/`、`prototypes/消息通知/`、`prototypes/协议管理/`。**
+**端/角色: 资产端企业用户（单据卖方/买方）+ 资产管理端人员 · 模块: 应收账款录入与确权 · 功能点: 18 个 · 页面: P-A20～P-A24、P-M40～P-M41 · 状态: 五态 + 9 类必达界面状态 · 视觉口径取自: `asset-platform/prototypes/_shared/`、`docs/design-system/`、`asset-platform/prototypes/账户与登录/`、`asset-platform/prototypes/消息通知/`、`asset-platform/prototypes/协议管理/`。**
 
 | 页面 | 继承端别 / shell | archetype | 本页增量 |
 | --- | --- | --- | --- |
@@ -51,7 +51,7 @@
 
 ### 仓库原生版
 
-保留整个 `prototypes/` 目录结构，双击本目录 HTML。它以普通 `<link>` / `<script src>` 引用 `../_shared/`，不使用 CDN、远程字体、远程图片、ES module、`fetch` 或网络请求。
+保留整个 `asset-platform/prototypes/` 目录结构，双击本目录 HTML。它以普通 `<link>` / `<script src>` 引用 `../_shared/`，不使用 CDN、远程字体、远程图片、ES module、`fetch` 或网络请求。
 
 ### Issue 附件版
 
@@ -177,7 +177,7 @@ Hallmark 自评分（1～5）：Philosophy **4** / Hierarchy **4** / Execution *
 
 本轮只覆盖以下两个既有文件，独立 PRD 与 `_shared/` 公共层均不修改：
 
-- `prototypes/应收账款录入与确权/v1.0-应收账款录入与确权-原型.html`
-- `prototypes/应收账款录入与确权/README.md`
+- `asset-platform/prototypes/应收账款录入与确权/v1.0-应收账款录入与确权-原型.html`
+- `asset-platform/prototypes/应收账款录入与确权/README.md`
 
 目标仓库为 `wxblockchain/Chain-Financing`，目标分支为 `cly-V1.0.0`，直接 push、不创建 PR。

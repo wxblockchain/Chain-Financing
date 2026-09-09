@@ -2,9 +2,9 @@
 
 ## 1. 范围与视觉口径
 
-本规范面向资产端（面客端）在宽容器、轻导航场景下的组件语义与禁止用法。实现以 `prototypes/_shared/base.css` 为准，token 以 `prototypes/_shared/tokens.css` 为准；本文不复述数值。
+本规范面向资产端（面客端）在宽容器、轻导航场景下的组件语义与禁止用法。实现以 `asset-platform/prototypes/_shared/base.css` 为准，token 以 `asset-platform/prototypes/_shared/tokens.css` 为准；本文不复述数值。
 
-现有实现：`prototypes/账户与登录/v1.0-账户与登录-原型.html` 的资产端部分（总览、用户中心、账户设置）与 focus 版式（登录、重置密码）。公开门户层目前仓库内尚无原型，相关条目按设计意图保留，落库后再作为母版。
+现有实现：`asset-platform/prototypes/账户与登录/v1.0-账户与登录-原型.html` 的资产端部分（总览、用户中心、账户设置）与 focus 版式（登录、重置密码）。公开门户层目前仓库内尚无原型，相关条目按设计意图保留，落库后再作为母版。
 
 面客端的核心特征是：同一浅色金融科技 token 基础、居中宽内容容器、轻量顶栏、较舒展的留白、卡片与摘要信息并置，以及对结构化短值的谨慎等宽展示。
 
