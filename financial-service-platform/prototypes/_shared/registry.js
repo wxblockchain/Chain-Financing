@@ -24,7 +24,7 @@
   'fs-ops-login':{dir:'账户与登录',file:'v1.0-账户与登录-原型.html',name:['Operations account','运营端账户与登录']}
  };
  // WS-309 pages belong to the delivered notifications module, not the account module.
- CF.NAV={admin:['P-O06','P-O-AG-01'],asset:[]};
+ CF.NAV={admin:['P-O06','P-O-AG-01',{navKey:'navTokenManagement',icoKey:'doc',children:['P-O-TC-01']}],asset:[]};
  Object.assign(CF.PAGES,{
  'P-O-AG-01':{end:'admin',layout:'app',nav:'P-O-AG-01',navKey:'navAgreements',icoKey:'doc',name:['Agreements','协议管理']},
  'P-O-AG-02':{end:'admin',layout:'app',nav:'P-O-AG-01',name:['Agreement details','协议详情']},
@@ -36,5 +36,11 @@
  CF.ENTRY["P-O-AG-01"]="#/agreements";
  // Both global notification entrances resolve to the delivered WS-309 file.
  CF.MODULES["fs-ops-notify"]={dir:"消息通知",file:"v1.0-消息通知-原型.html",name:["Notifications","消息通知"]};
+ CF.MODULES['smart-contracts']={dir:'代币合约',file:'v1.0-代币合约-原型.html',name:['Smart contracts','智能合约']};
+ ['P-O-TC-01','P-O-TC-02'].forEach(function(id){
+   CF.PAGES[id]={end:'admin',layout:'app',nav:'P-O-TC-01',navKey:'navSmartContracts',name:id==='P-O-TC-01'?['Smart contracts','智能合约']:['Contract details','合约详情']};
+   CF.OWNER[id]='smart-contracts';
+ });
+ CF.ENTRY['P-O-TC-01']='#/ops/token-contracts';
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});
