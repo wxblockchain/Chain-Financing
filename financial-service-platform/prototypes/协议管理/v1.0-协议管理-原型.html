@@ -1,0 +1,1619 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Financial Services · Agreements · WS-310</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>
+/* ==========================================================================
+   本模块专有样式。token、壳层与全部通用组件都在 ../_shared/ 里，不在这里重复。
+   ========================================================================== */
+/* ---- 协议管理专有：定时生效失败的行内提示（E-10）---- */
+/* 与 .cell-note 是两个类：一个是「将要生效」的预告，一个是「没能生效」的故障。 */
+.cell-fail{font-size:10.5px;color:var(--danger);font-weight:620;line-height:1.5;margin-top:3px;white-space:normal}
+
+/* ---- 协议管理专有：当前生效版本的行状态 ---- */
+table.tbl tbody tr.is-active-ver td{background:var(--accent-soft)}
+table.tbl tbody tr.is-active-ver:hover td{background:var(--accent-soft)}
+table.tbl.wide tbody tr.is-active-ver td.col-act,
+table.tbl.wide tbody tr.is-active-ver:hover td.col-act{background:var(--accent-soft)}
+</style>
+<style>
+/* Module additions only; canonical tokens/base are inlined by build.py. */
+.review-controls{margin-bottom:var(--sp-4);color:var(--muted);font-size:var(--fs-11)}
+.review-controls>summary{cursor:pointer;padding:var(--sp-2) 0;width:fit-content}
+.review-controls .statebar{margin-top:var(--sp-2)}
+.review-controls .seg{flex-wrap:wrap}
+.statebar{flex-wrap:wrap}
+.statebar .seg{flex-wrap:wrap}
+.ag-sample{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--mono);font-size:var(--fs-12);line-height:1.8;padding:var(--sp-4);margin:0;background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.ag-pdf{width:100%;height:360px;border:1px solid var(--border);border-radius:var(--radius-sm)}
+.ag-toolrow{display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap;margin:var(--sp-3) 0}
+.ag-clock{font-family:var(--mono);font-size:var(--fs-11);color:var(--muted)}
+.ag-clock select{max-width:150px}
+.ag-readonly{display:inline-flex;align-items:center;gap:var(--sp-2)}
+.ag-events{margin-top:var(--sp-4)}
+.ag-events pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--mono);font-size:var(--fs-11)}
+.ag-navtoggle{display:none}
+.ag-upload-note{margin-top:var(--sp-2)}
+.rowacts{align-items:flex-start}
+html[data-ag-review] table.tbl.wide thead th.col-act{white-space:nowrap}
+html[data-ag-review] .pill.dash,html[data-ag-review] .tab:not([aria-selected=true]),html[data-ag-review] .c-time .t2{color:var(--muted)}
+.actlink{white-space:normal}
+.drawer [role=dialog]{max-width:100%}
+html[data-ag-review] .faint,html[data-ag-review] .tiny,html[data-ag-review] .hint,html[data-ag-review] .cell-sub,html[data-ag-review] .tbl thead th{color:var(--muted)}
+html[data-ag-review] .dl dd,html[data-ag-review] .vsum .v{overflow-wrap:anywhere}
+html[data-ag-review] .btn,html[data-ag-review] .inp,html[data-ag-review] .ta{transition:none}
+html[data-ag-review] [data-act=st][aria-pressed=true]{font-weight:700}
+@media(max-width:1279px){
+ html[data-ag-review] .app{grid-template-columns:minmax(0,1fr)}
+ html[data-ag-review] .sidebar{display:none;position:fixed;left:0;top:0;bottom:0;width:238px;z-index:90;box-shadow:var(--shadow-lg)}
+ html[data-ag-review].nav-open .sidebar{display:flex}
+ .ag-navtoggle{display:inline-flex}
+ html[data-ag-review] .tbl.wide{min-width:0;display:block}
+ html[data-ag-review] .tbl.wide thead{display:none}
+ html[data-ag-review] .tbl.wide tbody,html[data-ag-review] .tbl.wide tr{display:block}
+ html[data-ag-review] .tbl.wide tr{padding:var(--sp-3);border-bottom:1px solid var(--border)}
+ html[data-ag-review] .tbl.wide td{display:grid;grid-template-columns:140px minmax(0,1fr);gap:var(--sp-2);border:0;text-align:left;padding:var(--sp-2);width:auto;position:static;box-shadow:none}
+ html[data-ag-review] .tbl.wide td::before{content:attr(data-label);color:var(--muted);font-family:var(--sans);font-size:var(--fs-11)}
+ html[data-ag-review] .tbl.wide td>div+div{grid-column:2}
+ html[data-ag-review] .tablewrap{overflow:visible}
+ html[data-ag-review] .fgrid,html[data-ag-review] .vsum{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:600px){
+ html[data-ag-review] .content{padding:var(--sp-4)}
+ html[data-ag-review] .topbar,html[data-ag-review] .crumbbar{padding:var(--sp-3) var(--sp-4)}
+ html[data-ag-review] .topbar-right{gap:var(--sp-2)}
+ html[data-ag-review] .acc .nm{max-width:100px;overflow:hidden;text-overflow:ellipsis}
+ html[data-ag-review] .page-head,html[data-ag-review] .demobar{flex-direction:column;align-items:flex-start}
+ html[data-ag-review] .dl{grid-template-columns:minmax(0,1fr)}
+ html[data-ag-review] .card-head,html[data-ag-review] .pager,html[data-ag-review] .pager .right,html[data-ag-review] .sec-head,html[data-ag-review] .filecard,html[data-ag-review] .radios{flex-wrap:wrap}
+ html[data-ag-review] .fl-date{flex-wrap:wrap}
+ html[data-ag-review] .tbl.wide td{grid-template-columns:100px minmax(0,1fr)}
+ html[data-ag-review] .btn,html[data-ag-review] .actlink,html[data-ag-review] .ico{min-height:44px}
+ html[data-ag-review] .modal-f{flex-wrap:wrap}
+}
+
+</style></head>
+<body>
+<!-- 运营端控制台外壳：与 WS-302 交付物逐节点一致（侧边导航 + 顶栏 + 面包屑 + 内容区） -->
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">FS</div>
+      <div>
+        <div class="brand-name">Financial Services</div>
+        <div class="brand-sub" id="brandSub"></div>
+      </div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div style="flex:1"></div>
+      <div class="topbar-right" id="topRight"></div>
+    </div>
+    <!-- 面包屑（WS-302 C-10）：顶部导航栏下方，通栏左对齐 -->
+    <div class="crumbbar" id="crumb"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div id="layers"></div><input type="file" id="localFile" hidden>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script>
+/* ==========================================================================
+   i18n.js — 运营端界面文案中英对照。英文为默认语言（沿用 WS-302 国际化基线）。
+   文案逐条取自 WS-310 定稿 PRD 第 13 章（13.1 菜单与标题 / 13.2 字段标签 /
+   13.3 状态与标签 / 13.4 操作按钮 / 13.5 提示与说明）与第 10.3 异常总表，未擅自改写。
+   注意：这里是**运营端界面文案**的双语；协议内容本身不分语种（决策 5），
+        原型里没有任何协议内容的语种切换、locale 字段或中英两份正文。
+   ========================================================================== */
+var DICT = {
+  en: {
+    /* —— 菜单与页面标题 13.1 —— */
+    adminConsole:"Operations console",
+    navAgreements:"Agreements", navAccount:"Account settings",
+    grpMenu:"Menu",
+    agTitle:"Agreements", agList:"Agreement list", agDetail:"Agreement details",
+    tabOverview:"Overview", tabVersions:"Version history", tabLog:"Activity log",
+    newVersion:"New version", versionDetail:"Version details",
+
+    /* —— 字段标签 13.2 —— */
+    fName:"Agreement name", fKey:"Agreement key", fType:"Agreement type", fUsedIn:"Used in",
+    fDesc:"Description", fTypes:"Allowed file types", fMaxSize:"Maximum file size",
+    fAvailability:"Availability", fFile:"Agreement file", fFileName:"File name", fFileSize:"File size",
+    fVersion:"Version", fActiveVersion:"Active version", fActivation:"Activation",
+    fImmediate:"Activate immediately", fScheduled:"Schedule activation",
+    fEffectiveAt:"Effective time", fArchivedAt:"Archived at", fNote:"Change note",
+    fBasedOn:"Based on", fPublishedBy:"Published by", fOperator:"Operator",
+    fLastUpdated:"Last updated", fVersions:"Versions", fHash:"Content hash",
+    fReconsent:"Requires re-consent", fStatus:"Status", fUploadedAt:"Uploaded at",
+    fSource:"Source IP", fAction:"Action", fSummary:"Summary", fKeyword:"Keyword",
+    fUpdatedRange:"Last updated", fFormat:"Format", fVersionId:"Version ID", fFileShort:"File",
+
+    /* —— 状态与标签 13.3 —— */
+    stDraft:"Draft", stScheduled:"Scheduled", stActive:"Active", stArchived:"Archived",
+    stUnpublished:"Unpublished", stOffline:"Offline", stSystem:"System",
+
+    /* —— 操作按钮 13.4 —— */
+    bSaveDraft:"Save draft", bContinueDraft:"Continue editing draft", bDiscardDraft:"Discard draft",
+    bPublish:"Publish", bConfirmPublish:"Confirm publish", bCancelAndPublish:"Cancel and publish",
+    bCancelScheduled:"Cancel scheduled version", bFromThis:"Create new version from this",
+    bUpload:"Upload file", bReplace:"Replace file", bDownload:"Download", bView:"View",
+    bSearch:"Search", bReset:"Reset", bCopy:"Copy", bEdit:"Edit",
+    cancel:"Cancel", close:"Close", back:"Back", retry:"Retry", confirm:"Confirm",
+    selectAll:"Select all", clear:"Clear",
+
+    /* —— 提示与说明 13.5 —— */
+    hPredefinedPage:"Agreements are predefined by the system. Manage their content and versions here.",
+    hPredefinedBlock:"Predefined by the system. Not editable here.",
+    hFileLimit:"This agreement accepts {formats} only, up to {limit}.",
+    hPublishedImmutable:"Published content cannot be edited. Create a new version to update it.",
+    hScheduledConflict:"This agreement already has a scheduled version {version} (effective {time}). Continuing will cancel it.",
+    hOffline:"This agreement is offline. Content cannot be updated.",
+    hNoPreview:"This format cannot be previewed online. Please download it.",
+    hReconsent:"Re-consent rules will be defined in a later release. This flag has no user-facing effect for now.",
+    hEmptyList:"No agreements. Agreements are predefined by the system.",
+    hNoMatch:"No agreements match your filters.",
+    okPublished:"Published successfully.", okDraftSaved:"Draft saved.", okCopied:"Copied.",
+
+    /* —— 异常总表 10.3 —— */
+    eFormat:"This agreement only accepts {formats}.",
+    eSize:"The file must not exceed {limit}.",
+    eMagic:"File type validation failed. Please check the file.",
+    eUpload:"Upload failed. Please try again.",
+    eNoFile:"Please upload the agreement file first.",
+    eNoNote:"Please provide a change note.",
+    eTooSoon:"The effective time must be at least 5 minutes from now.",
+    eConcurrent:"This draft has been updated by another operator. Please refresh and try again.",
+    eActivateFailed:"Activation failed. Please publish again.",
+    eNoteTooLong:"The change note must not exceed 500 characters.",
+
+    /* —— 页面内其余固定表达 —— */
+    listCount:"{n} agreements", listCountFiltered:"{n} of {total} agreements",
+    verCount:"{n} versions",
+    perPage:"Per page", pageOf:"Page {p} of {t}",
+    emptyVersions:"No versions yet. Create the first version to publish content.",
+    emptyLog:"No activity yet.",
+    loadFailed:"Failed to load. Please retry.",
+    loadFailedSub:"The request did not complete. Nothing has been changed.",
+    noPermission:"You don't have permission to view this module.",
+    noPermissionSub:"Sign in with an admin account that has console access.",
+    loading:"Loading",
+    nextVersion:"Next version {v} takes effect {time}",
+    activationFailed:"{v} failed to activate — publish it again",
+    activeSummary:"Active version", noActive:"No active version yet",
+    uploadHint:"Click to select a file, or drag it here",
+    uploadSingle:"Single file. Format and size are validated against this agreement's definition.",
+    uploading:"Uploading", publishing:"Publishing",
+    unsavedTitle:"Leave without saving?", unsavedBody:"This draft has unsaved changes. They will be lost if you leave now.",
+    leave:"Leave", stay:"Stay",
+    discardTitle:"Discard this draft?", discardBody:"The draft and its file will be removed. This does not affect any published version.",
+    cancelSchTitle:"Cancel the scheduled version?",
+    cancelSchBody:"Version {v} returns to draft and keeps its file. The current active version is unchanged.",
+    overwriteDraftTitle:"An existing draft will be replaced",
+    overwriteDraftBody:"This agreement already has draft {d}. The scheduled version {v} returned to draft will replace it.",
+    publishTitle:"Publish confirmation",
+    rollbackNote:"Content restored from {v}",
+    simActivate:"Simulate scheduled activation",
+    simActivateHint:"Prototype control: fast-forwards the clock to the effective time so the automatic switch can be reviewed.",
+    resetDemo:"Reset demo data",
+    demoBanner:"Demonstration data. The agreement list, touchpoints and files are placeholders for reviewing the interface — the real list is defined in configuration and the PRD does not presuppose one.",
+    stateSwitch:"Prototype · state",
+    predefinedBy:"Defined in configuration, read-only in the console",
+    hashCopy:"Copy content hash",
+    versionFrozen:"Content frozen at publish",
+    logScope:"Only version actions are recorded. Agreement definitions are managed in configuration and produce no console writes.",
+    fromVersion:"Based on {v}",
+    scenariosAll:"Used in (full list)",
+    filtersApplied:"Filters applied",
+    tzNote:"All times carry an explicit time zone.",
+    prdOpen:"Open the PRD notes for this page",
+    demoOnly:"Demonstration data",
+    ws302Title:"Owned by WS-302",
+    ws302Body:"Admin account settings are delivered in the WS-302 prototype. This module does not re-implement the page, and its expression is unchanged.",
+    signOut:"Sign out", accountSettings:"Account settings",
+    stActiveAcc:"Active", signedInAs:"Signed in as"
+  },
+
+  zh: {
+    adminConsole:"运营端",
+    navAgreements:"协议管理", navAccount:"账户设置",
+    grpMenu:"菜单",
+    agTitle:"协议管理", agList:"协议列表", agDetail:"协议详情",
+    tabOverview:"基本信息", tabVersions:"版本历史", tabLog:"操作记录",
+    newVersion:"新建版本", versionDetail:"版本详情",
+
+    fName:"协议名称", fKey:"协议标识", fType:"协议类型", fUsedIn:"金融服务端使用环节",
+    fDesc:"协议说明", fTypes:"允许的文件格式", fMaxSize:"文件大小上限",
+    fAvailability:"上线状态", fFile:"协议文件", fFileName:"文件名", fFileSize:"文件大小",
+    fVersion:"版本号", fActiveVersion:"当前生效版本", fActivation:"生效方式",
+    fImmediate:"立即生效", fScheduled:"定时生效",
+    fEffectiveAt:"生效时间", fArchivedAt:"归档时间", fNote:"变更说明",
+    fBasedOn:"来源版本", fPublishedBy:"发布人", fOperator:"操作人",
+    fLastUpdated:"最近更新", fVersions:"版本数", fHash:"内容哈希",
+    fReconsent:"需重新同意", fStatus:"状态", fUploadedAt:"上传时间",
+    fSource:"来源 IP", fAction:"动作", fSummary:"变更摘要", fKeyword:"关键词",
+    fUpdatedRange:"更新时间", fFormat:"文件格式", fVersionId:"版本标识", fFileShort:"文件",
+
+    stDraft:"草稿", stScheduled:"待生效", stActive:"已生效", stArchived:"已归档",
+    stUnpublished:"未发布", stOffline:"已下线", stSystem:"系统",
+
+    bSaveDraft:"保存草稿", bContinueDraft:"继续编辑草稿", bDiscardDraft:"丢弃草稿",
+    bPublish:"发布", bConfirmPublish:"确认发布", bCancelAndPublish:"撤销并发布",
+    bCancelScheduled:"撤销待生效", bFromThis:"以此版本为基础新建版本",
+    bUpload:"上传文件", bReplace:"替换文件", bDownload:"下载", bView:"查看",
+    bSearch:"查询", bReset:"重置", bCopy:"复制", bEdit:"编辑",
+    cancel:"取消", close:"关闭", back:"返回", retry:"重试", confirm:"确认",
+    selectAll:"全选", clear:"清空",
+
+    hPredefinedPage:"协议由系统预置，此处维护其内容与版本。",
+    hPredefinedBlock:"以下信息由系统预置，不可在此修改。",
+    hFileLimit:"本协议仅支持 {formats} 格式，文件不得超过 {limit}。",
+    hPublishedImmutable:"已发布的版本内容不可修改，请新建版本进行更新。",
+    hScheduledConflict:"该协议已有待生效版本 {version}（将于 {time} 生效），继续将撤销该版本。",
+    hOffline:"该协议已下线，暂不可维护内容。",
+    hNoPreview:"该格式不支持在线预览，请下载查看。",
+    hReconsent:"重新同意的触发规则将在后续需求中定义，当前勾选不会产生任何前台行为。",
+    hEmptyList:"暂无协议，协议由系统预置。",
+    hNoMatch:"没有符合条件的协议。",
+    okPublished:"发布成功。", okDraftSaved:"草稿已保存。", okCopied:"已复制。",
+
+    eFormat:"本协议仅支持 {formats} 格式。",
+    eSize:"文件不得超过 {limit}。",
+    eMagic:"文件格式校验未通过，请确认文件类型。",
+    eUpload:"上传失败，请重试。",
+    eNoFile:"请先上传协议文件。",
+    eNoNote:"请填写变更说明。",
+    eTooSoon:"生效时间需晚于当前时间至少 5 分钟。",
+    eConcurrent:"该草稿已被其他管理员更新，请刷新后重试。",
+    eActivateFailed:"生效失败，请重新发布。",
+    eNoteTooLong:"变更说明不得超过 500 字符。",
+
+    listCount:"共 {n} 份协议", listCountFiltered:"筛选出 {n} 份，共 {total} 份协议",
+    verCount:"共 {n} 个版本",
+    perPage:"每页", pageOf:"第 {p} / {t} 页",
+    emptyVersions:"还没有任何版本，新建第一个版本后即可发布内容。",
+    emptyLog:"暂无操作记录。",
+    loadFailed:"加载失败，请重试。",
+    loadFailedSub:"请求未完成，没有任何数据被改动。",
+    noPermission:"你没有查看本模块的权限。",
+    noPermissionSub:"请使用具备运营端访问权限的管理员账号登录。",
+    loading:"加载中",
+    nextVersion:"下一版本 {v} 将于 {time} 生效",
+    activationFailed:"{v} 生效失败，需重新发布",
+    activeSummary:"当前生效版本", noActive:"暂无生效版本",
+    uploadHint:"点击选择文件，或拖拽到此处",
+    uploadSingle:"单文件上传。格式与大小按该协议的定义校验。",
+    uploading:"上传中", publishing:"发布中",
+    unsavedTitle:"离开且不保存？", unsavedBody:"当前草稿有未保存的改动，离开后不会保留。",
+    leave:"离开", stay:"留在本页",
+    discardTitle:"丢弃这个草稿？", discardBody:"草稿及其文件将被移除，不影响任何已发布的版本。",
+    cancelSchTitle:"撤销这个待生效版本？",
+    cancelSchBody:"版本 {v} 将退回草稿并保留其文件，当前生效版本不变。",
+    overwriteDraftTitle:"已有草稿将被覆盖",
+    overwriteDraftBody:"该协议已存在草稿 {d}，被退回的待生效版本 {v} 将覆盖它。",
+    publishTitle:"发布确认",
+    rollbackNote:"回溯至 {v} 的内容",
+    simActivate:"模拟到点生效",
+    simActivateHint:"原型控制：把时钟快进到生效时间，用来查看系统自动切换的结果。",
+    resetDemo:"重置演示数据",
+    demoBanner:"演示数据。协议清单、使用环节与文件均为查看界面形态用的占位内容——真实清单由配置定义，PRD 明确不预设任何协议。",
+    stateSwitch:"原型 · 状态",
+    predefinedBy:"由配置定义，运营端只读",
+    hashCopy:"复制内容哈希",
+    versionFrozen:"发布时冻结",
+    logScope:"只记录版本相关动作。协议定义由代码管理，在运营端不产生任何写操作。",
+    fromVersion:"基于 {v}",
+    scenariosAll:"金融服务端使用环节（完整清单）",
+    filtersApplied:"已应用筛选",
+    tzNote:"全部时间均带时区标注。",
+    prdOpen:"查看本页的 PRD 摘录",
+    demoOnly:"演示数据",
+    ws302Title:"本页归 WS-302",
+    ws302Body:"运营端账户设置由 WS-302 原型交付。本模块不重复实现该页面，其表达保持不变。",
+    signOut:"退出登录", accountSettings:"账户设置",
+    stActiveAcc:"正常", signedInAs:"当前登录"
+  }
+};
+/* ==========================================================================
+   prd.js — 每页的 PRD 摘录（面向前端开发，紫色面板，不属于产品界面）
+   四类：fields 字段与校验 · rules 关键业务规则 · states 状态与异常分支 · copy 中英文案
+   全部取自 WS-310 定稿 PRD `v1.0-协议管理-PRD.md`（2026-09-08 02:21 修订版）：
+   编号体系 F-O-AG-01～11 / P-O-AG-01～04 / C-O-AG-01～02 / E-01～14 / AC-O-AG-01～88。
+   面板固定中文，只摘录本页用得到的条目，不是全量 PRD。
+   ========================================================================== */
+var PRD={
+ 'P-O-AG-01':{title:'P-O-AG-01 协议列表',src:'WS-310 · V1.0 · §5/6/7.2/8.4/16.1',fields:[['agreement_key','只读','本平台内唯一，不加平台前缀。'],['usage_scenarios','只读','金融服务端使用环节，超过三个折叠。'],['筛选','组合条件','关键词、类型、使用环节、状态、更新时间；AND/OR 组合、排序、分页与 URL 保持。']],rules:[['F-O-AG-01～03','协议来自配置；无新建入口、无平台列。'],['状态边界','仅 scheduled 时沿母版暂归 Unpublished，并展示计划时间；待产品回填。']],states:[['通用状态','加载、空数据、筛选无结果、失败重试、无权限、异步等待。']]},
+ 'P-O-AG-02':{title:'P-O-AG-02 协议详情',src:'WS-310 · V1.0 · §7.4/7.5/8/12.3',fields:[['定义字段','全只读','标识、类型、名称、说明、使用环节、允许格式、上限、上线状态。'],['版本历史','只读+状态动作','文件、时间、状态、来源版本、发布人、变更说明。'],['操作记录','只增不改','对象、动作、操作人姓名及邮箱、时间、摘要与 IP。']],rules:[['F-O-AG-07～10','回溯生成更大版本号的新草稿；下线后保留查看，禁止写入。'],['F-O-AG-11','读取契约仅映射，不在原型中验证服务端能力。'],['§12.3','仅定时生效成功、生效失败、撤销待生效产出运营告警；end=fs_ops、recipient_scope=admin_all、source_module=WS-310。']],states:[['E-10','定时生效失败，保留当前生效版本。'],['E-13','已下线，只读。']]},
+ 'P-O-AG-03':{title:'P-O-AG-03 版本编辑',src:'WS-310 · V1.0 · §7.3/8.4/10.3/16.3～5',fields:[['file','单文件','允许格式与大小按该协议定义；无语种上传位。'],['change_note','必填，≤500字符','保存草稿可暂缺；发布前完整校验。'],['effective_at','定时必填','至少晚于演示时钟5分钟；UTC存储、带时区展示。'],['require_reconsent','布尔值','只存储与透出，不产生前台行为。']],rules:[['F-O-AG-04～06','唯一草稿/待生效/生效版本；发布后内容冻结。'],['C-O-AG-01/02','发布确认、待生效冲突、草稿覆盖二次确认、丢弃与撤销。'],['§7.3.3','保存草稿后停留本页。']],states:[['E-01～09','格式、大小、文件头、上传失败、缺文件、发布冲突、缺说明、时间非法、并发更新。']]}
+};
+var NOW='2026-09-09T02:00:00Z';
+var TYPES=[{code:'demo_document',en:'Demo document',zh:'演示协议类型'},{code:'demo_template',en:'Demo template',zh:'演示模板类型'}];
+var SCEN=[1,2,3,4].map(function(n){return {code:'demo_step_'+n,en:'Demo touchpoint '+n,zh:'演示环节 '+n};});
+var OPS={a:{name:'Demo Operator A',mail:'operator.a@financial-demo.test'},b:{name:'Demo Operator B',mail:'operator.b@financial-demo.test'}};
+var DEMO_IP='192.0.2.31';
+function demoFile(name,ext){
+ var content='DEMONSTRATION FILE - NOT A LEGAL AGREEMENT\n\n'+name+'\n\nThis file demonstrates agreement upload, version review and download.\nNo business terms are defined.\n';
+ return {name:name,size:(new TextEncoder().encode(content).length)+' B',ext:ext||'TXT',content:content,uploadedAt:NOW};
+}
+function seedData(){
+ var result=[];
+ for(var i=1;i<=24;i++){
+  var key='demo_agreement_'+String(i).padStart(2,'0'), versions=[];
+  function version(n,st){return {no:'v'+n,vid:key+'_v'+n,st:st,mode:st==='scheduled'?'scheduled':'immediate',effAt:st==='draft'?null:st==='scheduled'?'2026-09-10T02:00:00Z':'2026-09-01T02:00:00Z',arcAt:st==='archived'?'2026-09-05T02:00:00Z':null,file:demoFile(key+'-v'+n+'.txt'),hash:st==='draft'?null:'demo-'+String(n).repeat(64),note:{en:'Demonstration revision '+n,zh:'Demonstration revision '+n},src:null,rec:false,by:'a',at:'2026-09-01T02:00:00Z'};}
+  if(i===1) versions=[version(1,'archived'),version(2,'active'),version(3,'scheduled')];
+  else if(i===2) versions=[version(1,'active'),version(2,'draft')];
+  else if(i===3) versions=[version(1,'draft')];
+  else if(i===4) versions=[];
+  else if(i===5) versions=[version(1,'active')];
+  else if(i===6) versions=[version(1,'scheduled')];
+  else versions=[version(1,'active')];
+  result.push({key:key,type:i%2?'demo_document':'demo_template',en:'Demo agreement '+String(i).padStart(2,'0'),zh:'演示协议 '+String(i).padStart(2,'0'),dEn:'Demonstration configuration only. The production agreement list will be provided separately.',dZh:'仅用于界面评审的演示配置，真实协议清单后续提供。',scen:i===1?SCEN.map(function(s){return s.code;}):['demo_step_'+(i%4+1)],types:i%2?['TXT','PDF']:['TXT'],max:i%2?'2 MB':'128 KB',maxBytes:i%2?2097152:131072,enabled:i!==5,sort:i,versions:versions,logs:versions.length?[{at:'2026-09-09T01:00:00Z',act:versions[versions.length-1].st==='draft'?'save':'publish',v:versions[versions.length-1].no,by:'a',sum:{en:'Demonstration version prepared.',zh:'演示版本已准备。'}}]:[]});
+ }
+ return result;
+}
+
+(function(){
+"use strict";
+
+/* 公共层能力一次性取出，模块内不再重复实现 */
+var CF = window.CF;
+var ICO=CF.ICO, t=CF.t, L=CF.L, esc=CF.esc, q=CF.q, gap=CF.gap, md=CF.md;
+var note=CF.note, pageHead=CF.pageHead, toast=CF.toast, render=CF.render, syncURL=CF.syncURL;
+var prdBtn=CF.prdBtn, stateBar=CF.pageStates;
+var fmtTime=CF.fmtTime, fmtDate=CF.fmtDate, tzOff=CF.tzOff,
+    isoToLocalInput=CF.isoToLocalInput, localInputToIso=CF.localInputToIso;
+
+/* 本模块自行处理的动作；其余一律交回 shell */
+var MINE=["go","crumb","st","tab","open","more","moreNote","sort","search","resetF","mselClear","pg",
+          "newVer","editDraft","rollback","saveDraft","askPublish","doPublish","askDiscard","doDiscard",
+          "askCancelSch","doCancelSch","simAct","doLeave","upload","download","copy","resetDemo",
+          "signout","ver","close"];
+
+/* --------------------------------- 状态 ---------------------------------- */
+var S;                                     /* 由 CF.boot 注入，见文件末尾 onBoot */
+
+/* -------------------------------- 工具函数 -------------------------------- */
+function nm(o){ return o?L(o.en,o.zh):""; }
+
+/* 时间：一律带时区标注（PRD 13.4 / AC-AG-12），沿用 302 的实现 */
+/* datetime-local 值（管理员时区）↔ UTC ISO */
+function nowMs(){ return Date.parse(NOW); }
+
+/* --------------------------------- 图标 ---------------------------------- */
+
+/* ------------------------------- 路由与页面 ------------------------------- */
+var STATES = {
+  "P-O-AG-01":[["default","Default","默认"],["loading","Loading","加载中"],["empty","No agreements","空数据"],
+           ["nomatch","No filter match","筛选无结果"],["error","Load failed","加载失败可重试"],
+           ["noperm","No permission","无权限"]],
+  "P-O-AG-02":[["default","Default","默认"],["loading","Loading","加载中"],["error","Load failed","加载失败可重试"],
+           ["actfail","E-10 activation failed","E-10 生效失败"]],
+  "P-O-AG-03":[["default","Default","默认"],["uploading","Uploading","上传中"],["euploadv","E-04 upload failed","E-04 上传失败"],
+           ["efmt","E-01 wrong format","E-01 格式不符"],["esize","E-02 too large","E-02 超出大小"],
+           ["emagic","E-03 header check failed","E-03 文件头校验失败"],
+           ["submitting","Publishing","提交中"],["esubmit","Submit failed","提交失败"],
+           ["econflict","E-09 concurrent edit","E-09 并发编辑"]]
+};
+var ACT = {
+  create:["Created draft","创建草稿"], save:["Saved draft","保存草稿"], upload:["Uploaded file","上传文件"],
+  replace:["Replaced file","替换文件"], discard:["Discarded draft","丢弃草稿"], publish:["Published","发布"],
+  cancel:["Cancelled scheduled version","撤销待生效"], revert:["Returned to draft","被替换退回草稿"],
+  activate:["Activated by system","系统自动生效"], archive:["Archived by system","系统自动归档"],
+  rollback:["Created from a historical version","回溯创建"], actfail:["Scheduled activation failed","定时生效失败"]
+};
+
+/* ------------------------------ 数据读写辅助 ------------------------------ */
+function ag(key){ return S.data.filter(function(a){return a.key===key;})[0]; }
+function cur(){ return ag(S.agKey); }
+function verOf(a,st){ return a.versions.filter(function(v){return v.st===st;})[0]||null; }
+function verNo(a,no){ return a.versions.filter(function(v){return v.no===no;})[0]||null; }
+function nextNo(a){
+  var m=0; a.versions.forEach(function(v){ var n=parseInt(v.no.slice(1),10); if(n>m) m=n; });
+  return "v"+(m+1);
+}
+function pubCount(a){ return a.versions.filter(function(v){return v.st!=="draft";}).length; }
+function agStatus(a){
+  if(!a.enabled) return "offline";
+  if(verOf(a,"active")) return "active";
+  if(verOf(a,"draft")) return "draft";
+  return "unpublished";
+}
+function lastLog(a){ return a.logs[0]||null; }
+function typeOf(a){ return TYPES.filter(function(x){return x.code===a.type;})[0]; }
+function scenOf(code){ return SCEN.filter(function(x){return x.code===code;})[0]; }
+function opName(k){ return k==="sys"?t("stSystem"):OPS[k].name; }
+function opMail(k){ return k==="sys"?"—":OPS[k].mail; }
+function addLog(a,act,v,sumEn,sumZh,by,at){
+  a.logs.unshift({at:at||new Date(nowMs()).toISOString(), act:act, v:v, by:by||"a",
+                  sum:{en:sumEn, zh:sumZh}});
+}
+function logText(l){ return L(l.sum.en,l.sum.zh); }
+
+/* ------------------------------- URL 同步 -------------------------------- */
+/* AC-AG-09：筛选条件与分页写入 URL，刷新与浏览器前进后退不丢失。
+   单文件原型用 hash 路由，file:// 下同样有效。 */
+function buildHash(){
+  var h="#/agreements", p=[];
+  if(S.page==="P-M05") return "#/account";
+  if(S.agKey) h+="/"+S.agKey;
+  if(S.page==="P-O-AG-03") h+="/versions/"+(S.editor?S.editor.no:"new");
+  else if(S.page==="P-O-AG-02"&&S.tab!=="overview") p.push("tab="+S.tab);
+  if(S.page==="P-O-AG-01"){
+    var f=S.applied;
+    if(f.kw) p.push("kw="+encodeURIComponent(f.kw));
+    if(f.type.length) p.push("type="+f.type.join(","));
+    if(f.scen.length) p.push("scen="+f.scen.join(","));
+    if(f.status.length) p.push("status="+f.status.join(","));
+    if(f.from) p.push("from="+f.from);
+    if(f.to) p.push("to="+f.to);
+    if(S.pg>1) p.push("page="+S.pg);
+    if(S.size!==20) p.push("size="+S.size);
+    if(S.sort.col) p.push("sort="+S.sort.col+"."+S.sort.dir);
+  }
+  return h+(p.length?"?"+p.join("&"):"");
+}
+function readURL(){
+  var h=location.hash||""; if(!h) return false;
+  var parts=h.replace(/^#\/?/,"").split("?"), seg=parts[0].split("/"), qs={};
+  (parts[1]||"").split("&").forEach(function(kv){
+    if(!kv) return; var i=kv.indexOf("="); qs[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));
+  });
+  if(seg[0]==="account"){ S.page="P-M05"; S.agKey=null; return true; }
+  if(seg[0]!=="agreements") return false;
+  if(seg[1]&&ag(seg[1])){
+    S.agKey=seg[1];
+    if(seg[2]==="versions"){
+      var a=cur(), d=verOf(a,"draft");
+      if(d){ openEditor(a,d,true); return true; }
+      S.page="P-O-AG-02"; S.tab="versions"; return true;
+    }
+    S.page="P-O-AG-02"; S.tab=(qs.tab==="versions"||qs.tab==="log")?qs.tab:"overview";
+    S.st="default"; return true;
+  }
+  S.page="P-O-AG-01"; S.agKey=null; S.st="default";
+  var f={kw:qs.kw||"", type:qs.type?qs.type.split(","):[], scen:qs.scen?qs.scen.split(","):[],
+         status:qs.status?qs.status.split(","):[], from:qs.from||"", to:qs.to||""};
+  S.f=f; S.applied={kw:f.kw,type:f.type.slice(),scen:f.scen.slice(),status:f.status.slice(),from:f.from,to:f.to};
+  S.pg=parseInt(qs.page||"1",10)||1;
+  S.size=parseInt(qs.size||"20",10)||20;
+  if(qs.sort){ var sp=qs.sort.split("."); S.sort={col:sp[0],dir:sp[1]||"desc"}; }
+  return true;
+}
+
+/* -------------------------------- 导航动作 -------------------------------- */
+function go(page,opt){
+  opt=opt||{};
+  if(S.editor&&S.editor.dirty&&page!=="P-O-AG-03"){
+    S.modal={type:"unsaved", to:page, opt:opt}; render(); return;
+  }
+  S.page=page; S.st=opt.st||"default"; S.modal=null; S.drawer=null; S.menu=null; S.more=null;
+  /* E-10 是挂在协议上的数据，不是页面临时状态：进详情时让状态切换器与数据对齐 */
+  if(page==="P-O-AG-02"){
+    var _a=ag(opt.key!==undefined?opt.key:S.agKey);
+    if(_a&&_a.actFail&&!opt.st) S.st="actfail";
+  }
+  if(page!=="P-O-AG-03") S.editor=null;
+  if(opt.key!==undefined) S.agKey=opt.key;
+  if(opt.tab) S.tab=opt.tab;
+  render(); syncURL(); window.scrollTo(0,0);
+}
+function setState(k){ S.st=k; S.menu=null; render(); }
+
+/* --------------------------- Toast（WS-302 C-12） ------------------------- */
+
+/* ============================== 通用片段 ================================= */
+function pill(kind,text){ return '<span class="pill '+kind+'">'+text+'</span>'; }
+function statusPill(code){
+  var m={active:["green","stActive"],draft:["gray","stDraft"],scheduled:["amber","stScheduled"],
+         archived:["dash","stArchived"],unpublished:["amber","stUnpublished"],offline:["red","stOffline"]};
+  return pill(m[code][0],t(m[code][1]));
+}
+function hashChip(h,label){
+  if(!h) return '<span class="faint">—</span>';
+  return '<span class="hash"><span class="val">'+esc(h.slice(0,12))+'…'+esc(h.slice(-6))+'</span>'
+   + '<button class="ico" type="button" data-act="copy" data-v="'+esc(h)+'" aria-label="'+(label||t("hashCopy"))
+   + '" title="'+(label||t("hashCopy"))+'">'+ICO.copy+'</button></span>';
+}
+function scenTags(codes,key,all){
+  var open=all||S.more===key, show=open?codes:codes.slice(0,3), extra=codes.length-3;
+  var html=show.map(function(c){ return '<span class="tag">'+esc(nm(scenOf(c)))+'</span>'; }).join("");
+  if(!open&&extra>0)
+    html+='<button class="tag more" type="button" data-act="more" data-v="'+key+'" title="'
+      + esc(codes.map(function(c){return nm(scenOf(c));}).join(" · "))+'">+'+extra+'</button>';
+  if(open&&extra>0&&!all)
+    html+='<button class="tag more" type="button" data-act="more" data-v="">−</button>';
+  return '<div class="tags">'+html+'</div>';
+}
+function demoBar(extra){
+  return '<div class="demobar"><span>'+ICO.info+'</span><p style="margin:0;flex:1">'+t("demoBanner")+'</p>'
+   + (extra?'<span class="right">'+extra+'</span>':'')+'</div>';
+}
+function emptyBox(title,body,cta){
+  return '<div class="tbl-empty"><b>'+esc(title)+'</b><p style="margin:0 0 12px">'+esc(body)+'</p>'+(cta||"")+'</div>';
+}
+function skelRows(n,cols){
+  var out="";
+  for(var i=0;i<n;i++){
+    out+='<div class="skel-row">'+cols.map(function(c){
+      return '<div class="skel '+c+'"></div>';}).join("")+'</div>';
+  }
+  return '<div role="status" aria-live="polite" aria-label="'+t("loading")+'">'+out+'</div>';
+}
+
+/* ============================== P-O-AG-01 协议列表 ============================= */
+function filtered(){
+  var f=S.applied, list=S.data.filter(function(a){
+    if(f.kw){
+      var k=f.kw.trim().toLowerCase();
+      if((a.en+" "+a.zh+" "+a.key).toLowerCase().indexOf(k)<0) return false;
+    }
+    if(f.type.length&&f.type.indexOf(a.type)<0) return false;
+    if(f.scen.length&&!f.scen.some(function(c){return a.scen.indexOf(c)>=0;})) return false;
+    if(f.status.length&&f.status.indexOf(agStatus(a))<0) return false;
+    var l=lastLog(a);
+    if(f.from&&(!l||fmtDate(l.at)<f.from)) return false;
+    if(f.to&&(!l||fmtDate(l.at)>f.to)) return false;
+    return true;
+  });
+  var c=S.sort.col, d=S.sort.dir==="asc"?1:-1;
+  if(c) list.sort(function(x,y){
+    var vx,vy;
+    if(c==="eff"){ vx=(verOf(x,"active")||{}).effAt||""; vy=(verOf(y,"active")||{}).effAt||""; }
+    else { vx=pubCount(x); vy=pubCount(y); }
+    return vx<vy?-1*d:(vx>vy?1*d:0);
+  });
+  else list.sort(function(x,y){
+    if(x.sort!==y.sort) return x.sort-y.sort;
+    var lx=(lastLog(x)||{}).at||"", ly=(lastLog(y)||{}).at||"";
+    return lx<ly?1:-1;
+  });
+  return list;
+}
+function anyFilter(){
+  var f=S.applied;
+  return !!(f.kw||f.type.length||f.scen.length||f.status.length||f.from||f.to);
+}
+function msel(id,labelKey,opts,sel){
+  var open=S.menu==="ms_"+id;
+  var text=sel.length?sel.map(function(c){
+      var o=opts.filter(function(x){return x.code===c;})[0]; return o?nm(o):c;
+    }).join(", "):null;
+  return '<div class="fl"><span id="lb_'+id+'">'+t(labelKey)+'</span><div class="msel">'
+   + '<button class="msel-btn" type="button" data-act="menu" data-v="ms_'+id+'" aria-expanded="'+open+'" '
+   + 'aria-labelledby="lb_'+id+'"><span class="'+(text?"":"ph")+'" style="overflow:hidden;text-overflow:ellipsis;'
+   + 'white-space:nowrap">'+(text?esc(text):L("All","全部"))+'</span>'
+   + (sel.length?'<span class="n">'+sel.length+'</span>':ICO.caret)+'</button>'
+   + (open?'<div class="msel-list">'+opts.map(function(o){
+       var on=sel.indexOf(o.code)>=0;
+       return '<label><input type="checkbox" data-act="msel" data-k="'+id+'" data-v="'+o.code+'"'
+        + (on?" checked":"")+'><span>'+esc(nm(o))+'</span></label>';}).join("")
+     + '<div class="msel-foot"><button class="btn-link" type="button" data-act="mselClear" data-k="'+id+'">'
+     + t("clear")+'</button></div></div>':'')
+   + '</div></div>';
+}
+function filterBar(){
+  var statusOpts=[{code:"active",en:DICT.en.stActive,zh:DICT.zh.stActive},
+                  {code:"draft",en:DICT.en.stDraft,zh:DICT.zh.stDraft},
+                  {code:"unpublished",en:DICT.en.stUnpublished,zh:DICT.zh.stUnpublished},
+                  {code:"offline",en:DICT.en.stOffline,zh:DICT.zh.stOffline}];
+  return '<div class="filters">'
+   + '<div class="fl fl-kw"><span id="lb_kw">'+t("fKeyword")+'</span>'
+   + '<input class="inp" data-f="kw" aria-labelledby="lb_kw" value="'+esc(S.f.kw)+'" placeholder="'
+   + esc(L("Name or agreement key","名称或协议标识"))+'"></div>'
+   + msel("type","fType",TYPES,S.f.type)
+   + msel("scen","fUsedIn",SCEN,S.f.scen)
+   + msel("status","fStatus",statusOpts,S.f.status)
+   + '<div class="fl"><span id="lb_dt">'+t("fUpdatedRange")+'</span><div class="fl-date">'
+   + '<input class="inp" type="date" data-f="from" aria-labelledby="lb_dt" value="'+esc(S.f.from)+'">'
+   + '<span class="to">–</span>'
+   + '<input class="inp" type="date" data-f="to" aria-labelledby="lb_dt" value="'+esc(S.f.to)+'"></div></div>'
+   + '<div class="fl-act"><button class="btn sm primary" type="button" data-act="search">'+t("bSearch")+'</button>'
+   + '<button class="btn sm" type="button" data-act="resetF">'+t("bReset")+'</button></div>'
+   + '</div>';
+}
+/* 列宽在这里定死一次，列表与版本历史各自加总后都能在 1280px 的内容区里放下 */
+function th(label,w,cls){ return '<th'+(cls?' class="'+cls+'"':"")+' style="width:'+w+'px">'+label+'</th>'; }
+function sortTh(col,label,w){
+  var on=S.sort.col===col;
+  return '<th style="width:'+w+'px"><button class="btn-link" type="button" data-act="sort" data-v="'+col
+   + '" style="font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit" aria-label="'+esc(label)
+   + '">'+label+(on?(S.sort.dir==="asc"?" ↑":" ↓"):" ↕")+'</button></th>';
+}
+function listRow(a){
+  var act=verOf(a,"active"), sch=verOf(a,"scheduled"), l=lastLog(a), st=agStatus(a);
+  return '<tr class="rowlink" data-act="open" data-v="'+a.key+'" tabindex="0">'
+   + '<td><div class="cell-main">'+esc(nm(a))+'</div><div class="cell-sub">'+esc(a.key)+'</div></td>'
+   + '<td>'+pill("gray",esc(nm(typeOf(a))))+'</td>'
+   + '<td>'+scenTags(a.scen,a.key)+'</td>'
+   + '<td class="mono">'+(act?esc(act.no):'<span class="faint">—</span>')+'</td>'
+   + '<td class="c-time">'+(act?esc(fmtTime(act.effAt)):'<span class="faint">—</span>')
+   + (sch?(a.actFail
+        ? '<div class="cell-fail">'+esc(t("activationFailed",{v:sch.no}))+'</div>'
+        : '<div class="cell-note">'+esc(t("nextVersion",{v:sch.no,time:fmtTime(sch.effAt)}))+'</div>'):'')+'</td>'
+   + '<td class="num">'+pubCount(a)+'</td>'
+   + '<td>'+statusPill(st)+'</td>'
+   + '<td class="c-time">'+(l?esc(opName(l.by))+'<div class="t2">'+esc(fmtTime(l.at))+'</div>'
+                            :'<span class="faint">—</span>')+'</td>'
+   + '<td class="col-act"><button class="actlink" type="button" data-act="open" data-v="'+a.key+'">'
+   + t("bView")+'</button></td></tr>';
+}
+function pageList(){
+  var head=pageHead(t("agTitle"),t("hPredefinedPage"),prdBtn());
+  if(S.st==="noperm")
+    return head+'<div class="card"><div class="card-b">'
+      + emptyBox(t("noPermission"),t("noPermissionSub"))+'</div></div>';
+
+  var list = S.st==="empty" ? [] : filtered();
+  if(S.st==="nomatch") list=[];
+  var total = S.st==="empty"?0:S.data.length;
+  var pages = Math.max(1,Math.ceil(list.length/S.size));
+  var pg = Math.min(S.pg,pages);
+  var rows = list.slice((pg-1)*S.size, pg*S.size);
+  var filteredNow = anyFilter()||S.st==="nomatch";
+
+  var body;
+  if(S.st==="loading")
+    body=skelRows(6,["m","s","","s","m","s","s","m"]);
+  else if(S.st==="error")
+    body='<div class="card-b">'+note("red",t("loadFailedSub"),t("loadFailed"),"alert")
+      + '<div style="margin-top:14px"><button class="btn sm" type="button" data-act="st" data-v="default">'
+      + t("retry")+'</button></div></div>';
+  else if(!rows.length)
+    body= filteredNow
+      ? emptyBox(t("hNoMatch"),L("Clear the filters to see every agreement.","清空筛选条件即可看到全部协议。"),
+          '<button class="btn sm" type="button" data-act="resetF">'+t("bReset")+'</button>')
+      : emptyBox(t("hEmptyList"),L("Agreements appear here once they are defined in configuration and released.",
+          "协议在配置下发后会出现在这里。"));
+  else
+    body='<div class="tablewrap" style="border:0;border-radius:0;box-shadow:none">'
+      + '<table class="tbl wide"><thead><tr>'
+      + th(t("fName"),130)+th(t("fType"),110)+th(t("fUsedIn"),112)+th(t("fActiveVersion"),78)
+      + sortTh("eff",t("fEffectiveAt"),136)+sortTh("cnt",t("fVersions"),88)
+      + th(t("fStatus"),104)+th(t("fLastUpdated"),136)
+      + th(L("Actions","操作"),86,"col-act")+'</tr></thead><tbody>'
+      + rows.map(listRow).join("")+'</tbody></table></div>';
+
+  var count = filteredNow ? t("listCountFiltered",{n:list.length,total:total}) : t("listCount",{n:list.length});
+
+  return head + demoBar('<button class="btn sm" type="button" data-act="resetDemo">'+t("resetDemo")+'</button>')
+   + '<div class="card"><div class="card-head"><b>'+t("agList")+'</b><span>'+esc(count)+'</span>'
+   + '<span class="right tiny">'+t("tzNote")+'</span></div>'
+   + filterBar() + body
+   + (S.st==="loading"||S.st==="error"?"":pager(list.length,pages,pg))
+   + '</div>';
+}
+function pager(n,pages,pg){
+  return '<div class="pager"><span>'+L("Total","共")+' <b class="mono">'+n+'</b> '
+   + L(n===1?"agreement":"agreements","条")+'</span>'
+   + '<div class="right"><span>'+t("perPage")+'</span>'
+   + '<select class="inp" data-f="size">'+[20,50,100].map(function(s){
+       return '<option value="'+s+'"'+(S.size===s?" selected":"")+'>'+s+'</option>';}).join("")+'</select>'
+   + '<button class="pgbtn" type="button" data-act="pg" data-v="'+(pg-1)+'"'+(pg<=1?" disabled":"")+' aria-label="'
+   + L("Previous page","上一页")+'">‹</button>'
+   + '<span class="mono">'+t("pageOf",{p:pg,t:pages})+'</span>'
+   + '<button class="pgbtn" type="button" data-act="pg" data-v="'+(pg+1)+'"'+(pg>=pages?" disabled":"")+' aria-label="'
+   + L("Next page","下一页")+'">›</button></div></div>';
+}
+
+/* ============================== P-O-AG-02 协议详情 ============================= */
+function pageDetail(){
+  var a=cur(); if(!a){ go("P-O-AG-01"); return ""; }
+  var draft=verOf(a,"draft"), sch=verOf(a,"scheduled");
+  var actions="";
+  if(a.enabled)
+    actions+='<button class="btn primary" type="button" data-act="newVer">'
+      + (draft?t("bContinueDraft"):t("newVersion"))+'</button>';
+  actions+=prdBtn();
+
+  var head='<div class="page-head"><div><h1 class="page-title">'+esc(nm(a))+'</h1>'
+   + '<p class="page-desc"><span class="mono">'+esc(a.key)+'</span> &nbsp;'
+   + pill("gray",esc(nm(typeOf(a))))+' '+statusPill(agStatus(a))+'</p></div>'
+   + '<div class="page-actions">'+actions+'</div></div>'+stateBar();
+
+  var alerts="";
+  if(!a.enabled) alerts+=note("amber",t("hOffline"),"","status")+gap();
+  if(a.actFail&&sch)
+    alerts+=note("red",t("eActivateFailed")+" "
+      + L("The current active version is unchanged.","当前生效版本保持不变。"),
+      "E-10 · "+esc(sch.no),"alert")+gap();
+  if(sch&&!a.actFail)
+    alerts+=note("amber",esc(t("nextVersion",{v:sch.no,time:fmtTime(sch.effAt)})),"","status")+gap();
+
+  var tabs='<div class="tabs" role="tablist">'
+   + [["overview","tabOverview",""],["versions","tabVersions",a.versions.length],["log","tabLog",a.logs.length]]
+     .map(function(x){
+       return '<button class="tab" type="button" role="tab" data-act="tab" data-v="'+x[0]+'" aria-selected="'
+        + (S.tab===x[0])+'">'+t(x[1])+(x[2]!==""?'<span class="cnt">'+x[2]+'</span>':"")+'</button>';
+     }).join("")+'</div>';
+
+  var body;
+  if(S.st==="loading") body='<div class="card">'+skelRows(5,["m","","s","m"])+'</div>';
+  else if(S.st==="error")
+    body='<div class="card"><div class="card-b">'+note("red",t("loadFailedSub"),t("loadFailed"),"alert")
+      + '<div style="margin-top:14px"><button class="btn sm" type="button" data-act="st" data-v="default">'
+      + t("retry")+'</button></div></div></div>';
+  else body = S.tab==="overview"?tabOverview(a):(S.tab==="versions"?tabVersions(a):tabLog(a));
+
+  /* 原型控制（模拟到点生效）只出现在演示数据条里，不混进产品告警 */
+  var sim = sch&&!a.actFail
+    ? '<button class="btn sm" type="button" data-act="simAct" title="'+t("simActivateHint")+'">'
+      + t("simActivate")+'</button>' : "";
+  return head+demoBar(sim)+alerts+tabs+'<div role="tabpanel">'+body+'</div>';
+}
+function dl(rows){
+  return '<div class="dl">'+rows.map(function(r){
+    return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>';}).join("")+'</div>';
+}
+function tabOverview(a){
+  var act=verOf(a,"active");
+  var info='<div class="card" style="margin-bottom:14px"><div class="card-b">'
+   + '<div class="sec-head"><h2>'+t("tabOverview")+'</h2>'
+   + '<span class="right ro-hint">'+ICO.info+' '+t("hPredefinedBlock")+'</span></div>'
+   + dl([
+      [t("fKey"),'<span class="mono">'+esc(a.key)+'</span>'],
+      [t("fType"),pill("gray",esc(nm(typeOf(a))))+' <span class="tiny mono">'+esc(a.type)+'</span>'],
+      [t("fName"),esc(nm(a))],
+      [t("fDesc"),esc(L(a.dEn,a.dZh))],
+      [t("fUsedIn"),scenTags(a.scen,a.key,true)],
+      [t("fTypes"),a.types.map(function(x){return '<span class="tag ro">'+esc(x)+'</span>';}).join(" ")
+        + ' <span class="tiny">'+t("predefinedBy")+'</span>'],
+      [t("fMaxSize"),'<span class="mono">'+esc(a.max)+'</span> <span class="tiny">'+t("predefinedBy")+'</span>'],
+      [t("fAvailability"),a.enabled?pill("green",L("Available","已上线")):pill("red",t("stOffline"))]
+     ])
+   + '</div></div>';
+
+  var sum;
+  if(act){
+    sum='<div class="card"><div class="card-head"><b>'+t("activeSummary")+'</b>'
+     + '<span class="mono">'+esc(act.no)+'</span><span class="right">'+statusPill("active")+'</span></div>'
+     + '<div class="card-b"><div class="vsum">'
+     + [[t("fFileName"),'<span class="mono" style="font-size:11.5px">'+esc(act.file.name)+'</span>'
+          +'<div class="tiny">'+esc(act.file.ext)+' · '+esc(act.file.size)+'</div>'],
+        [t("fEffectiveAt"),'<span class="mono" style="font-size:11.5px">'+esc(fmtTime(act.effAt))+'</span>'],
+        [t("fPublishedBy"),esc(opName(act.by))+'<div class="tiny mono">'+esc(opMail(act.by))+'</div>'],
+        [t("fHash"),hashChip(act.hash)+'<div class="tiny">'+t("versionFrozen")+'</div>'],
+        [t("fNote"),esc(L(act.note.en,act.note.zh))],
+        [t("fReconsent"),act.rec?pill("amber",L("Yes","是")):pill("dash",L("No","否"))]
+       ].map(function(r){ return '<div><div class="k">'+r[0]+'</div><div class="v">'+r[1]+'</div></div>';}).join("")
+     + '</div><div class="btnbar"><button class="btn sm" type="button" data-act="ver" data-v="'+act.no+'">'
+     + t("bView")+'</button><button class="btn sm" type="button" data-act="download">'+ICO.dl+' '+t("bDownload")
+     + '</button></div></div></div>';
+  } else {
+    sum='<div class="card"><div class="card-b">'
+     + emptyBox(t("noActive"),
+        a.versions.length?L("A draft exists but no version has been published yet.","已有草稿，但还没有任何版本发布。")
+                         :L("No versions yet. Create the first version to publish content.","还没有任何版本，新建第一个版本后即可发布内容。"))
+     + '</div></div>';
+  }
+  return info+sum;
+}
+function verActions(a,v){
+  var out=[];
+  out.push('<button class="actlink" type="button" data-act="ver" data-v="'+v.no+'">'+t("bView")+'</button>');
+  if(v.file) out.push('<button class="actlink" type="button" data-act="download">'+t("bDownload")+'</button>');
+  if(v.st==="draft"&&a.enabled){
+    out.push('<button class="actlink" type="button" data-act="editDraft">'+t("bEdit")+'</button>');
+    out.push('<button class="actlink danger" type="button" data-act="askDiscard">'+t("bDiscardDraft")+'</button>');
+  }
+  if(v.st==="scheduled"&&a.enabled)
+    out.push('<button class="actlink danger" type="button" data-act="askCancelSch">'+t("bCancelScheduled")+'</button>');
+  if((v.st==="active"||v.st==="archived")&&a.enabled)
+    out.push('<button class="actlink" type="button" data-act="rollback" data-v="'+v.no+'">'+t("bFromThis")+'</button>');
+  return '<div class="rowacts">'+out.join("")+'</div>';
+}
+function noteCell(v){
+  var txt=L(v.note.en,v.note.zh), open=S.more==="note:"+v.no;
+  if(!txt) return '<span class="faint">—</span>';
+  return '<button class="notecell" type="button" data-act="moreNote" data-v="'+esc(v.no)+'" title="'+esc(txt)+'" '
+   + 'aria-expanded="'+open+'">'+(open?'<span>'+esc(txt)+'</span>':'<span class="trunc">'+esc(txt)+'</span>')+'</button>';
+}
+function tabVersions(a){
+  if(!a.versions.length)
+    return '<div class="card"><div class="card-b">'+emptyBox(t("emptyVersions"),
+      L("Versions are the only carrier of agreement content.","协议内容只存在于版本上。"),
+      a.enabled?'<button class="btn sm primary" type="button" data-act="newVer">'+t("newVersion")+'</button>':"")
+      + '</div></div>';
+  var rows=a.versions.slice().sort(function(x,y){
+    return parseInt(y.no.slice(1),10)-parseInt(x.no.slice(1),10);});
+  return '<div class="card"><div class="card-head"><b>'+t("tabVersions")+'</b>'
+   + '<span>'+t("verCount",{n:a.versions.length})+'</span>'
+   + '<span class="right tiny">'+t("hPublishedImmutable")+'</span></div>'
+   + '<div class="tablewrap" style="border:0;border-radius:0;box-shadow:none">'
+   + '<table class="tbl wide vers"><thead><tr>'
+   + th(t("fVersion"),95)+th(t("fStatus"),110)+th(t("fFileShort"),130)+th(t("fEffectiveAt"),120)
+   + th(t("fArchivedAt"),120)+th(t("fNote"),100)+th(t("fBasedOn"),75)+th(t("fPublishedBy"),115)
+   + th(L("Actions","操作"),150,"col-act")+'</tr></thead><tbody>'
+   + rows.map(function(v){
+      return '<tr'+(v.st==="active"?' class="is-active-ver"':'')+'>'
+       + '<td class="mono">'+esc(v.no)+'</td>'
+       + '<td>'+statusPill(v.st)+'</td>'
+       + '<td>'+(v.file?'<span class="trunc mono" style="font-size:11px" title="'+esc(v.file.name)+'">'
+            + esc(v.file.name)+'</span><div class="tiny">'+esc(v.file.ext)+' · '+esc(v.file.size)+'</div>'
+            : '<span class="faint">—</span>')+'</td>'
+       + '<td class="c-time">'+(v.st!=="draft"&&v.effAt?esc(fmtTime(v.effAt)):'<span class="faint">—</span>')+'</td>'
+       + '<td class="c-time">'+(v.arcAt?esc(fmtTime(v.arcAt)):'<span class="faint">—</span>')+'</td>'
+       + '<td>'+noteCell(v)+'</td>'
+       + '<td>'+(v.src?'<button class="actlink" type="button" data-act="ver" data-v="'+esc(v.src)+'">'
+            + esc(t("fromVersion",{v:v.src}))+'</button>':'<span class="faint">—</span>')+'</td>'
+       + '<td class="c-time">'+esc(opName(v.by))+'<div class="t2">'+esc(fmtTime(v.at))+'</div></td>'
+       + '<td class="col-act">'+verActions(a,v)+'</td></tr>';
+     }).join("")
+   + '</tbody></table></div></div>';
+}
+function tabLog(a){
+  if(!a.logs.length)
+    return '<div class="card"><div class="card-b">'+emptyBox(t("emptyLog"),t("logScope"))+'</div></div>';
+  return '<div class="card"><div class="card-head"><b>'+t("tabLog")+'</b>'
+   + '<span class="right tiny">'+t("logScope")+'</span></div>'
+   + '<div class="card-b"><ul class="tl">'+a.logs.map(function(l){
+      var sys=l.by==="sys";
+      return '<li data-sys="'+(sys?1:0)+'"><span class="pt"></span>'
+       + '<div class="tm">'+esc(fmtTime(l.at,true))+'</div>'
+       + '<div class="ac">'+esc(L(ACT[l.act][0],ACT[l.act][1]))+' <span class="mono tiny">'+esc(l.v)+'</span>'
+       + (sys?pill("dash",t("stSystem")):"")+'</div>'
+       + '<div class="sm">'+esc(logText(l))+'</div>'
+       + '<div class="op">'+esc(opName(l.by))
+       + (sys?"":' · <span class="mono">'+esc(opMail(l.by))+'</span>')
+       + ' · '+t("fSource")+' <span class="mono">'+(sys?"—":esc(DEMO_IP))+'</span></div></li>';
+     }).join("")+'</ul></div></div>';
+}
+
+/* ============================ P-O-AG-03 版本编辑页 ============================= */
+function openEditor(a,v,silent){
+  S.editor={key:a.key, no:v.no, file:v.file?{name:v.file.name,size:v.file.size,ext:v.file.ext}:null,
+            mode:v.mode||"immediate", effAt:v.effAt||null, note:L(v.note.en,v.note.zh),
+            noteEn:v.note.en, noteZh:v.note.zh, rec:!!v.rec, src:v.src||null,
+            dirty:false, err:{}, origFile:v.file?v.file.name:null};
+  S.page="P-O-AG-03"; S.agKey=a.key; S.st="default"; S.modal=null; S.drawer=null;
+  if(!silent){ render(); syncURL(); window.scrollTo(0,0); }
+}
+function ed(){ return S.editor; }
+function pageEditor(){
+  var a=cur(), e=ed(); if(!a||!e){ go("P-O-AG-01"); return ""; }
+  var busy=S.st==="submitting"||S.st==="uploading";
+  var head='<div class="page-head"><div><h1 class="page-title">'
+   + (e.src?L("New version from ","以历史版本新建 ")+'<span class="mono">'+esc(e.no)+'</span>'
+          :t("newVersion")+' <span class="mono">'+esc(e.no)+'</span>')+'</h1>'
+   + '<p class="page-desc">'+esc(nm(a))+' &nbsp;<span class="mono">'+esc(a.key)+'</span></p></div>'
+   + '<div class="page-actions">'
+   + '<button class="btn" type="button" data-act="saveDraft"'+(busy?" disabled":"")+'>'+t("bSaveDraft")+'</button>'
+   + '<button class="btn primary" type="button" data-act="askPublish"'+(busy?" disabled":"")+'>'
+   + (S.st==="submitting"?'<span class="spinner"></span>'+t("publishing"):t("bPublish"))+'</button>'
+   + prdBtn()+'</div></div>'+stateBar();
+
+  var alerts="";
+  if(S.st==="econflict") alerts+=note("red",t("eConcurrent"),"E-09","alert")+gap();
+  if(S.st==="esubmit") alerts+=note("red",L("The publish request did not complete. Nothing has changed; you can retry.",
+      "发布请求没有完成，数据未发生变化，可以直接重试。"),L("Publish failed","发布失败"),"alert")+gap();
+  if(e.src) alerts+=note("",t("rollbackNote",{v:e.src})+" "
+      + L("The file was copied from that version and the change note is prefilled.",
+          "文件已从该版本复制，变更说明已预填。"),"F-O-AG-08")+gap();
+
+  return head+demoBar()+alerts+fileCard(a,e)+versionCard(a,e);
+}
+function fileCard(a,e){
+  var limit=t("hFileLimit",{formats:a.types.join(" / "),limit:a.max});
+  var err=e.err.file, body;
+  if(S.st==="uploading"){
+    body='<div class="filecard"><span class="ic">'+esc((e.file&&e.file.ext)||"PDF")+'</span>'
+      + '<div class="bd"><b>'+esc((e.file&&e.file.name)||"demo-file.pdf")+'</b>'
+      + '<span>'+t("uploading")+' · 64%</span><div class="bar"><i style="width:64%"></i></div></div>'
+      + '<div class="act"><button class="btn sm" type="button" data-act="st" data-v="default">'+t("cancel")
+      + '</button></div></div>';
+  } else if(S.st==="euploadv"){
+    body=note("red",t("eUpload")+" "+L("The version information you entered was kept.","已填写的版本信息没有丢失。"),
+        "E-04","alert")
+      + '<div style="margin-top:12px"><button class="btn sm" type="button" data-act="upload">'+t("retry")+'</button></div>';
+  } else if(e.file){
+    body='<div class="filecard"><span class="ic">'+esc(e.file.ext)+'</span>'
+      + '<div class="bd"><b>'+esc(e.file.name)+'</b><span>'+esc(e.file.size)+' · '+t("fUploadedAt")+' '
+      + esc(fmtTime(e.file.uploadedAt||NOW))+'</span></div>'
+      + '<div class="act"><button class="btn sm" type="button" data-act="upload">'+t("bReplace")+'</button>'
+      + '<button class="btn sm" type="button" data-act="download">'+t("bDownload")+'</button></div></div>';
+  } else {
+    body='<button class="drop'+(err?" err":"")+'" type="button" data-act="upload">'
+      + '<span class="ic">'+ICO.up+'</span><b>'+t("uploadHint")+'</b>'
+      + '<span class="tiny">'+t("uploadSingle")+'</span></button>';
+  }
+  var msg="";
+  if(S.st==="efmt") msg=note("red",t("eFormat",{formats:a.types.join(" / ")}),"E-01","alert");
+  else if(S.st==="esize") msg=note("red",t("eSize",{limit:a.max}),"E-02","alert");
+  else if(S.st==="emagic") msg=note("red",t("eMagic"),"E-03","alert");
+  else if(err) msg='<p class="err-msg" role="alert"><span>!</span><span>'+esc(err)+'</span></p>';
+
+  return '<div class="card formcard"><div class="card-head"><b>'+t("fFile")+'</b>'
+   + '<span class="right tiny">'+L("Upload only. No rich-text editor in this release.",
+       "只允许上传文件，本期不提供富文本编辑器。")+'</span></div>'
+   + '<div class="card-b">'+body
+   + '<p class="hint" style="margin-top:10px">'+esc(limit)+'</p>'
+   + (msg?'<div style="margin-top:10px">'+msg+'</div>':"")
+   + '<div class="tiny" style="margin-top:12px">'
+   + L("Prototype controls: ","原型控制：")
+   + ['efmt|E-01','esize|E-02','emagic|E-03','euploadv|E-04','uploading|'+t("uploading")].map(function(x){
+       var p=x.split("|");
+       return '<button class="btn-link" type="button" data-act="st" data-v="'+p[0]+'" style="margin-right:10px">'
+        + p[1]+'</button>';}).join("")
+   + '</div></div></div>';
+}
+function versionCard(a,e){
+  var min=isoToLocalInput(new Date(nowMs()+5*60000).toISOString());
+  var over=e.note.length>500;
+  return '<div class="card formcard"><div class="card-head"><b>'
+   + L("Version information","版本信息")+'</b></div><div class="card-b">'
+   + '<div class="fgrid">'
+   + '<div class="field"><label>'+t("fVersion")+'</label><div class="ro-val">'+esc(e.no)
+   + '<span class="tiny" style="font-family:var(--sans)">'
+   + L("Generated by the system, read-only","系统自动递增，只读")+'</span></div></div>'
+   + '<div class="field"><label>'+t("fActivation")+'</label><div class="radios">'
+   + '<label class="radio" data-on="'+(e.mode==="immediate"?1:0)+'">'
+   + '<input type="radio" name="mode" data-f="mode" value="immediate"'+(e.mode==="immediate"?" checked":"")+'>'
+   + '<span class="rb"><b>'+t("fImmediate")+'</b><span>'
+   + L("The new version becomes active the moment it is published; the previous active version is archived.",
+       "发布瞬间新版本生效，原生效版本自动归档。")+'</span></span></label>'
+   + '<label class="radio" data-on="'+(e.mode==="scheduled"?1:0)+'">'
+   + '<input type="radio" name="mode" data-f="mode" value="scheduled"'+(e.mode==="scheduled"?" checked":"")+'>'
+   + '<span class="rb"><b>'+t("fScheduled")+'</b><span>'
+   + L("The system switches versions automatically at the effective time.","到达生效时间后由系统自动切换。")
+   + '</span></span></label></div></div>'
+   + '</div>'
+   + (e.mode==="scheduled"
+      ? '<div class="field"><label for="f_eff">'+t("fEffectiveAt")+'</label>'
+        + '<div class="inp-row" style="align-items:center">'
+        + '<input class="inp'+(e.err.eff?" err":"")+'" id="f_eff" data-f="eff" type="datetime-local" min="'+min+'" '
+        + 'value="'+esc(isoToLocalInput(e.effAt))+'" style="max-width:260px">'
+        + '<span class="pill dash">'+ICO.clock+' UTC+'+tzOff()+' · '+esc(S.tz)+'</span></div>'
+        + (e.err.eff?'<p class="err-msg" role="alert"><span>!</span><span>'+esc(e.err.eff)+'</span></p>':"")
+        + '<p class="hint">'+t("eTooSoon")+' '+L("Stored in UTC; the switch is judged by server time.",
+            "存储为 UTC，切换以服务端时间为准。")+'</p></div>'
+      : "")
+   + '<div class="field"><label for="f_note">'+t("fNote")+'</label>'
+   + '<textarea class="ta'+(e.err.note||over?" err":"")+'" id="f_note" data-f="note" rows="4" maxlength="600" '
+   + 'aria-describedby="noteHint">'+esc(e.note)+'</textarea>'
+   + '<div class="counter'+(over?" over":"")+'">'+e.note.length+' / 500</div>'
+   + (e.err.note?'<p class="err-msg" role="alert"><span>!</span><span>'+esc(e.err.note)+'</span></p>':"")
+   + '<p class="hint" id="noteHint">'+L("Shown in the version history. Required before publishing.",
+       "会展示在版本历史里，发布前必填。")+'</p></div>'
+   + '<div class="check"><input type="checkbox" id="f_rec" data-f="rec"'+(e.rec?" checked":"")+'>'
+   + '<label for="f_rec" style="display:block;font-weight:400"><b style="font-weight:620">'+t("fReconsent")+'</b>'
+   + '<p class="hint" style="margin-top:3px">'+t("hReconsent")+'</p></label></div>'
+   + '</div></div>';
+}
+
+/* ================================ 弹层 =================================== */
+function shell(title,body,foot,wide){
+  return '<div class="mask" data-act="close"><div class="modal'+(wide?" wide":"")+'" role="dialog" aria-modal="true">'
+   + '<div class="modal-h"><b>'+title+'</b>'
+   + '<button class="modal-x" type="button" data-act="close" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="modal-b">'+body+'</div>'
+   + (foot?'<div class="modal-f">'+foot+'</div>':"")+'</div></div>';
+}
+function kv(k,v){ return '<div style="display:flex;gap:14px;padding:7px 0;border-bottom:1px dashed var(--border-dash)">'
+   + '<span class="tiny" style="width:96px;flex:none">'+k+'</span><span style="font-size:12.5px;flex:1;'
+   + 'overflow-wrap:anywhere">'+v+'</span></div>'; }
+/* C-30 发布确认（含 E-06「撤销并发布」分支） */
+function modalPublish(){
+  var a=cur(), e=ed(), sch=verOf(a,"scheduled");
+  var conflict=!!sch;
+  var body=kv(t("fName"),esc(nm(a)))
+   + kv(t("fVersion"),'<span class="mono">'+esc(e.no)+'</span>')
+   + kv(t("fFile"),'<span class="mono" style="font-size:11.5px">'+esc(e.file.name)+'</span> · '+esc(e.file.size))
+   + kv(t("fActivation"),e.mode==="immediate"?t("fImmediate")
+        :t("fScheduled")+' · <span class="mono">'+esc(fmtTime(e.effAt))+'</span>')
+   + kv(t("fReconsent"),e.rec?pill("amber",L("Yes","是"))+'<p class="hint" style="margin-top:5px">'
+        + t("hReconsent")+'</p>':pill("dash",L("No","否")));
+  if(conflict)
+    body+=gap(12)+note("amber",esc(t("hScheduledConflict",{version:sch.no,time:fmtTime(sch.effAt)}))
+      + '<p style="margin:5px 0 0">'+L("The cancelled version returns to draft and keeps its file. Both actions are recorded.",
+        "被撤销的版本会退回草稿并保留其文件，两条动作各记一条操作记录。")+'</p>',"E-06","alert");
+  return shell(t("publishTitle"),body,
+    '<button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
+    + '<button class="btn primary" type="button" data-act="doPublish">'
+    + (conflict?t("bCancelAndPublish"):t("bConfirmPublish"))+'</button>');
+}
+function modalDiscard(){
+  return shell(t("discardTitle"),'<p class="lead" style="margin:0">'+t("discardBody")+'</p>',
+    '<button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
+    + '<button class="btn danger" type="button" data-act="doDiscard">'+t("bDiscardDraft")+'</button>');
+}
+function modalCancelSch(){
+  var a=cur(), sch=verOf(a,"scheduled");
+  return shell(t("cancelSchTitle"),'<p class="lead" style="margin:0">'
+    + esc(t("cancelSchBody",{v:sch?sch.no:""}))+'</p>',
+    '<button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
+    + '<button class="btn danger" type="button" data-act="doCancelSch">'+t("bCancelScheduled")+'</button>');
+}
+/* C-31 二次确认：退回的待生效版本会覆盖已有草稿（E-06 后半段） */
+function modalOverwrite(){
+  var a=cur(), d=verOf(a,"draft"), sch=verOf(a,"scheduled");
+  return shell(t("overwriteDraftTitle"),
+    note("amber",esc(t("overwriteDraftBody",{d:d?d.no:"",v:sch?sch.no:""})),"E-06"),
+    '<button class="btn" type="button" data-act="close">'+t("cancel")+'</button>'
+    + '<button class="btn danger" type="button" data-act="doCancelSch" data-v="force">'+t("confirm")+'</button>');
+}
+function modalUnsaved(){
+  return shell(t("unsavedTitle"),'<p class="lead" style="margin:0">'+t("unsavedBody")+'</p>',
+    '<button class="btn" type="button" data-act="close">'+t("stay")+'</button>'
+    + '<button class="btn danger" type="button" data-act="doLeave">'+t("leave")+'</button>');
+}
+function modalScen(){
+  var a=ag(S.modal.key);
+  return shell(t("scenariosAll"),scenTags(a.scen,a.key,true)
+    + '<p class="hint" style="margin-top:12px">'+t("predefinedBy")+'</p>',"");
+}
+
+/* ================================ 抽屉 =================================== */
+/* P-O-AG-04 版本详情预览（抽屉） */
+function drawerVersion(){
+  var a=cur(), v=verNo(a,S.ver); if(!v) return "";
+  var canPreview=v.file&&["PDF","HTML","TXT","PNG","JPG"].indexOf(v.file.ext)>=0;
+  return '<aside class="drawer" role="dialog" aria-modal="true" aria-label="'+t("versionDetail")+'">'
+   + '<div class="drawer-h"><b class="mono">'+esc(v.no)+'</b>'+statusPill(v.st)
+   + '<button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">✕</button></div>'
+   + '<div class="drawer-b">'
+   + (v.file
+      ? (canPreview
+         ? '<div class="preview"><div class="sheet"><i class="t"></i><i></i><i></i><i class="s"></i><i></i>'
+           + '<i class="s"></i></div><span>'+L("Inline preview of the uploaded file.","上传文件的内嵌预览。")
+           + '<br>'+t("demoOnly")+'</span></div>'
+         : '<div class="preview"><span>'+ICO.doc+'</span><span>'+t("hNoPreview")+'</span>'
+           + '<button class="btn sm" type="button" data-act="download">'+ICO.dl+' '+t("bDownload")+'</button></div>')
+      : '<div class="preview"><span>'+t("emptyVersions")+'</span></div>')
+   + gap(16)
+   + kv(t("fVersionId"),'<span class="mono">'+esc(v.vid)+'</span>')
+   + (v.file?kv(t("fFileName"),'<span class="mono" style="font-size:11.5px">'+esc(v.file.name)+'</span>')
+     + kv(t("fFormat"),esc(v.file.ext))+kv(t("fFileSize"),esc(v.file.size)):"")
+   + kv(t("fHash"),hashChip(v.hash))
+   + kv(t("fActivation"),v.st==="draft"?'<span class="faint">—</span>'
+        :(v.mode==="immediate"?t("fImmediate"):t("fScheduled")))
+   + kv(t("fEffectiveAt"),'<span class="mono" style="font-size:11.5px">'+esc(fmtTime(v.effAt))+'</span>')
+   + kv(t("fArchivedAt"),'<span class="mono" style="font-size:11.5px">'+esc(fmtTime(v.arcAt))+'</span>')
+   + kv(t("fPublishedBy"),esc(opName(v.by))+' <span class="tiny mono">'+esc(opMail(v.by))+'</span>')
+   + kv(t("fNote"),esc(L(v.note.en,v.note.zh)))
+   + kv(t("fBasedOn"),v.src?esc(t("fromVersion",{v:v.src})):'<span class="faint">—</span>')
+   + kv(t("fReconsent"),v.rec?pill("amber",L("Yes","是")):pill("dash",L("No","否")))
+   + (v.file?'<div class="btnbar"><button class="btn sm" type="button" data-act="download">'+ICO.dl+' '
+      + t("bDownload")+'</button></div>':"")
+   + '</div></aside>';
+}
+
+/* ============================ WS-302 已有页面 ============================= */
+
+/* ================================ 渲染 =================================== */
+function renderContent(){
+  return ({ "P-O-AG-01":pageList, "P-O-AG-02":pageDetail, "P-O-AG-03":pageEditor }[S.page]
+          ||function(){return "";})();
+}
+
+/* ============================== 业务动作 ================================= */
+/* 新建 / 继续编辑草稿：已有草稿则不生成第二个（7.3.2 / AC-AG-29） */
+function newVersion(){
+  var a=cur(), d=verOf(a,"draft");
+  if(d){ openEditor(a,d); return; }
+  var act=verOf(a,"active"), no=nextNo(a);
+  var v={no:no, st:"draft", vid:"ver_new"+no, mode:"immediate", effAt:null, arcAt:null,
+         file:act?{name:act.file.name.replace(/v\d+/,no),size:act.file.size,ext:act.file.ext}:null,
+         hash:null, note:{en:"",zh:""}, src:null, rec:false, by:"a", at:new Date(nowMs()).toISOString()};
+  a.versions.push(v);
+  addLog(a,"create",no,
+    act?("Created draft "+no+" from the active version "+act.no+".") :("Created draft "+no+" from scratch."),
+    act?("以当前生效版本 "+act.no+" 为基础创建草稿 "+no+"。"):("空白新建草稿 "+no+"。"));
+  openEditor(a,v);
+}
+/* F-47 版本回溯：复制历史版本文件生成版本号更大的新草稿 */
+function rollback(no){
+  var a=cur(), src=verNo(a,no), d=verOf(a,"draft");
+  if(d){ toast("danger",t("bContinueDraft"),
+      L("This agreement already has draft "+d.no+". Discard it first.","该协议已有草稿 "+d.no+"，请先处理它。")); return; }
+  var nn=nextNo(a);
+  var v={no:nn, st:"draft", vid:"ver_new"+nn, mode:"immediate", effAt:null, arcAt:null,
+         file:{name:src.file.name.replace(/v\d+/,nn),size:src.file.size,ext:src.file.ext},
+         hash:null, note:{en:"Content restored from "+no, zh:"回溯至 "+no+" 的内容"}, src:no, rec:false,
+         by:"a", at:new Date(nowMs()).toISOString()};
+  a.versions.push(v);
+  addLog(a,"rollback",nn,"Created draft "+nn+" from the historical version "+no+".",
+         "以历史版本 "+no+" 为基础创建草稿 "+nn+"。");
+  openEditor(a,v);
+}
+function writeBack(){
+  var a=cur(), e=ed(), v=verNo(a,e.no);
+  var renamed = e.file && e.origFile && e.file.name!==e.origFile;
+  v.file=e.file?{name:e.file.name,size:e.file.size,ext:e.file.ext}:null;
+  v.mode=e.mode; v.effAt=e.effAt; v.rec=e.rec; v.src=e.src;
+  v.note={en:e.note,zh:e.note};
+  v.at=new Date(nowMs()).toISOString();
+  return {v:v, renamed:renamed};
+}
+function saveDraft(){
+  var a=cur(), e=ed(), r=writeBack();
+  if(r.renamed) addLog(a,"replace",e.no,"Replaced file: "+e.origFile+" → "+e.file.name,
+                       "替换文件："+e.origFile+" → "+e.file.name);
+  addLog(a,"save",e.no,"Saved draft "+e.no+".","保存草稿 "+e.no+"。");
+  e.origFile=e.file?e.file.name:null; e.dirty=false;
+  render(); toast("success",t("okDraftSaved"));
+}
+function validatePublish(){
+  var a=cur(), e=ed(); e.err={};
+  if(!e.file){ e.err.file=t("eNoFile"); }
+  if(!e.note.trim()){ e.err.note=t("eNoNote"); }
+  else if(e.note.length>500){ e.err.note=t("eNoteTooLong"); }
+  if(e.mode==="scheduled"){
+    if(!e.effAt) e.err.eff=t("eTooSoon");
+    else if(Date.parse(e.effAt)<nowMs()+5*60000) e.err.eff=t("eTooSoon");
+  }
+  var bad=Object.keys(e.err).length>0;
+  if(bad){
+    render();
+    toast("danger",e.err.file||e.err.note||e.err.eff);
+    var id=e.err.file?null:(e.err.note?"f_note":"f_eff");
+    if(id){ var n=document.getElementById(id); if(n) n.focus(); }
+  }
+  return !bad;
+}
+function doPublish(){
+  var a=cur(), e=ed(), sch=verOf(a,"scheduled");
+  S.modal=null; S.st="submitting"; render();
+  setTimeout(function(){
+    var r=writeBack(), v=r.v;
+    if(r.renamed) addLog(a,"replace",v.no,"Replaced file: "+e.origFile+" → "+e.file.name,
+                         "替换文件："+e.origFile+" → "+e.file.name);
+    /* E-06：先把原待生效版本退回草稿并保留文件，再发布新版本，两条动作各记一条记录 */
+    if(sch){
+      sch.st="draft"; sch.effAt=null; sch.hash=null; sch.mode="immediate";
+      addLog(a,"revert",sch.no,"Scheduled version "+sch.no+" was cancelled and returned to draft when "+v.no+" was published.",
+             "发布 "+v.no+" 时撤销待生效版本 "+sch.no+"，已退回草稿并保留其文件。");
+    }
+    v.hash=fakeHash(v.no+v.file.name);
+    v.by="a"; v.at=new Date(nowMs()).toISOString();
+    if(v.mode==="immediate"){
+      var old=verOf(a,"active");
+      v.st="active"; v.effAt=new Date(nowMs()).toISOString();
+      addLog(a,"publish",v.no,"Published "+v.no+", activate immediately.","发布 "+v.no+"，立即生效。");
+      /* 归档由系统在切换时执行，操作人记为「系统 / System」（7.4.4 / AC-AG-53） */
+      if(old){ old.st="archived"; old.arcAt=v.effAt;
+        addLog(a,"archive",old.no,"Archived "+old.no+" automatically when "+v.no+" took effect.",
+               v.no+" 生效时自动归档 "+old.no+"。","sys",v.effAt); }
+    } else {
+      v.st="scheduled";
+      addLog(a,"publish",v.no,"Published "+v.no+", scheduled for "+fmtTime(v.effAt)+".",
+             "发布 "+v.no+"，定时生效于 "+fmtTime(v.effAt)+"。");
+    }
+    S.editor=null; S.st="default"; S.page="P-O-AG-02"; S.tab="versions";
+    render(); syncURL(); toast("success",t("okPublished"));
+  },520);
+}
+function fakeHash(seed){
+  var h=0, out="";
+  for(var i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0;
+  for(var j=0;j<64;j++){ h=(h*1103515245+12345)>>>0; out+="0123456789abcdef"[h>>>28]; }
+  return out;
+}
+/* 模拟到点生效：系统自动切换，操作人记为「系统 / System」（AC-AG-53） */
+function simulateActivation(){
+  var a=cur(), sch=verOf(a,"scheduled"); if(!sch) return;
+  var old=verOf(a,"active");
+  sch.st="active";
+  if(old){ old.st="archived"; old.arcAt=sch.effAt;
+    addLog(a,"archive",old.no,"Archived "+old.no+" automatically when "+sch.no+" took effect.",
+           sch.no+" 生效时自动归档 "+old.no+"。","sys",sch.effAt); }
+  addLog(a,"activate",sch.no,sch.no+" took effect at the scheduled time.",
+         sch.no+" 到达生效时间后自动生效。","sys",sch.effAt);
+  S.st="default"; render();
+  toast("success",L("Scheduled activation completed.","定时生效已完成。"),
+        L("The previous active version was archived automatically.","原生效版本已自动归档。"));
+}
+function discardDraft(){
+  var a=cur(), d=verOf(a,"draft"); if(!d) return;
+  a.versions=a.versions.filter(function(v){return v!==d;});
+  addLog(a,"discard",d.no,"Discarded draft "+d.no+".","丢弃草稿 "+d.no+"。");
+  S.modal=null; S.editor=null; S.page="P-O-AG-02"; S.tab="versions"; render(); syncURL();
+  toast("success",L("Draft discarded.","草稿已丢弃。"));
+}
+function cancelScheduled(force){
+  var a=cur(), sch=verOf(a,"scheduled"), d=verOf(a,"draft");
+  if(!sch) return;
+  if(d&&!force){ S.modal={type:"overwrite"}; render(); return; }
+  if(d){ a.versions=a.versions.filter(function(v){return v!==d;});
+    addLog(a,"discard",d.no,"Draft "+d.no+" was replaced by the cancelled scheduled version "+sch.no+".",
+           "草稿 "+d.no+" 被退回的待生效版本 "+sch.no+" 覆盖。"); }
+  sch.st="draft"; sch.effAt=null; sch.hash=null; sch.mode="immediate";
+  addLog(a,"cancel",sch.no,"Cancelled the scheduled version "+sch.no+". It returned to draft and kept its file.",
+         "撤销待生效版本 "+sch.no+"，已退回草稿并保留其文件。");
+  S.modal=null; render();
+  toast("success",L("Scheduled version cancelled.","待生效版本已撤销。"));
+}
+
+/* ================================ 交互 =================================== */
+/* 模块自己的动作；返回 true 表示已处理，shell 不再接管。
+   公共动作（menu / lang / openPrd / closeDrawer / toastClose / Esc）都在 shell 里。 */
+function onAct(n,a,v,e){
+  if(n.classList.contains("mask")&&e.target!==n) return true;
+  if(a==="msel") return true;                             /* 复选框走 change */
+  /* E-10 由状态切换器写进协议数据，好让列表与详情看到同一件事；shell 继续处理 st */
+  if(a==="st"&&S.page==="P-O-AG-02"&&cur()) cur().actFail=(v==="actfail");
+  if(MINE.indexOf(a)<0) return false;
+  e.preventDefault();
+  if(S.menu) S.menu=null;
+  switch(a){
+    case "go": go(v); break;
+    case "crumb": go(v,{key:n.getAttribute("data-k")||S.agKey}); break;
+    case "st": setState(v); break;
+    case "tab": S.tab=v; render(); syncURL(); break;
+    case "open": go("P-O-AG-02",{key:v,tab:"overview"}); break;
+    case "more": S.more=v||null; render(); break;
+    case "moreNote": S.more=(S.more==="note:"+v?null:"note:"+v); render(); break;
+    case "sort":
+      S.sort = S.sort.col===v ? {col:v,dir:S.sort.dir==="asc"?"desc":"asc"} : {col:v,dir:"desc"};
+      render(); syncURL(); break;
+    case "search":
+      S.applied={kw:S.f.kw,type:S.f.type.slice(),scen:S.f.scen.slice(),status:S.f.status.slice(),
+                 from:S.f.from,to:S.f.to};
+      S.pg=1; S.st="default"; render(); syncURL(); break;
+    case "resetF":
+      S.f={kw:"",type:[],scen:[],status:[],from:"",to:""};
+      S.applied={kw:"",type:[],scen:[],status:[],from:"",to:""};
+      S.pg=1; S.st="default"; render(); syncURL(); break;
+    case "mselClear": S.f[n.getAttribute("data-k")]=[]; render(); break;
+    case "pg": S.pg=Math.max(1,parseInt(v,10)); render(); syncURL(); break;
+
+    case "newVer": newVersion(); break;
+    case "editDraft": openEditor(cur(),verOf(cur(),"draft")); break;
+    case "rollback": rollback(v); break;
+    case "saveDraft": saveDraft(); break;
+    case "askPublish": if(validatePublish()){ S.modal={type:"publish"}; render(); } break;
+    case "doPublish": doPublish(); break;
+    case "askDiscard": S.modal={type:"discard"}; render(); break;
+    case "doDiscard": discardDraft(); break;
+    case "askCancelSch": S.modal={type:"cancelSch"}; render(); break;
+    case "doCancelSch": cancelScheduled(v==="force"); break;
+    case "simAct": simulateActivation(); break;
+    case "doLeave":
+      var to=S.modal.to, opt=S.modal.opt; S.editor=null; S.modal=null; go(to,opt); break;
+
+    case "upload":
+      /* 原型不读取真实文件：点击后按“已选择一个合规文件”呈现 */
+      var ag2=cur(), ed2=ed();
+      ed2.file={name:ag2.key.replace(/_/g,"-")+"-"+ed2.no+"."+ag2.types[0].toLowerCase(),
+                size:"1.9 MB", ext:ag2.types[0]};
+      ed2.err.file=""; ed2.dirty=true; S.st="default"; render();
+      toast("success",L("File selected.","已选择文件。"),
+            L("Prototype: no real file is read or uploaded.","原型不会真的读取或上传文件。"));
+      break;
+    case "download":
+      toast("info",L("Demonstration prototype","演示原型"),
+            L("No file is actually downloaded.","不会真的下载文件。")); break;
+    case "copy":
+      try{ if(navigator.clipboard) navigator.clipboard.writeText(v); }catch(err){}
+      toast("success",t("okCopied")); break;
+    case "resetDemo": S.data=seedData(); S.editor=null; S.st="default"; render();
+      toast("success",L("Demo data reset.","演示数据已重置。")); break;
+    case "signout":
+      toast("info",L("Sign-out is owned by the account module.","退出登录归账户与登录模块。"),
+            L("This module does not re-implement the sign-in flow.","本模块不重复实现登录流程。")); break;
+
+    case "ver": S.ver=v; S.drawer="ver"; render(); break;
+    case "close": S.modal=null; render(); break;
+  }
+  return true;
+}
+/* 行整体可点：键盘也能进入详情 */
+/* Esc 由 shell 统一处理；这里只补行整体可点时的键盘进入 */
+document.addEventListener("keydown",function(e){
+  if(e.key==="Enter"||e.key===" "){
+    var r=e.target.closest&&e.target.closest("tr.rowlink");
+    if(r&&e.target===r){ e.preventDefault(); go("P-O-AG-02",{key:r.getAttribute("data-v"),tab:"overview"}); }
+  }
+});
+document.addEventListener("input",function(e){
+  var n=e.target.closest("[data-f]"); if(!n) return;
+  var k=n.getAttribute("data-f");
+  if(k==="kw"||k==="from"||k==="to"){ S.f[k]=n.value; return; }
+  var E=ed(); if(!E) return;
+  if(k==="note"){ E.note=n.value; E.err.note=""; E.dirty=true; render(); }
+  if(k==="eff"){ E.effAt=localInputToIso(n.value); E.err.eff=""; E.dirty=true; }
+});
+document.addEventListener("change",function(e){
+  var n=e.target.closest("[data-f],[data-act='msel']"); if(!n) return;
+  if(n.getAttribute("data-act")==="msel"){
+    var key=n.getAttribute("data-k"), val=n.getAttribute("data-v"), arr=S.f[key];
+    if(arr.indexOf(val)>=0) S.f[key]=arr.filter(function(x){return x!==val;});
+    else S.f[key]=arr.concat([val]);
+    render(); return;
+  }
+  var k=n.getAttribute("data-f");
+  if(k==="size"){ S.size=parseInt(n.value,10); S.pg=1; render(); syncURL(); return; }
+  var E=ed(); if(!E) return;
+  if(k==="mode"){ E.mode=n.value; E.dirty=true; render(); }
+  if(k==="rec"){ E.rec=n.checked; E.dirty=true; render(); }
+});
+/* 12.4：版本编辑页有未保存改动时，浏览器关闭 / 刷新触发原生离开确认 */
+window.addEventListener("beforeunload",function(e){
+  if(S.editor&&S.editor.dirty){ e.preventDefault(); e.returnValue=""; }
+});
+
+
+/* ============================== 装配 ==================================== */
+/* WS-310 review adapter. Business data is local; server responses are simulated. */
+var revisionClock=Date.parse(NOW), taskSerial=0, realBusy=false, lastLayer='', returnFocus=null;
+var initialGo=go, initialAct=onAct, initialPageList=pageList, initialPageDetail=pageDetail, initialPageEditor=pageEditor;
+var initialFileCard=fileCard, initialVersionCard=versionCard, initialOpenEditor=openEditor;
+var initialDrawerVersion=drawerVersion, initialReadURL=readURL;
+var initialValidatePublish=validatePublish;
+validatePublish=function(){var ok=initialValidatePublish();if(!ok&&ed().err.file){var btn=document.querySelector('.drop');if(btn){btn.setAttribute('aria-invalid','true');var error=document.querySelector('.err-msg');if(error){error.id='fileError';btn.setAttribute('aria-describedby','fileError');}btn.focus();}}return ok;};
+DICT.en.adminConsole='Operations console'; DICT.zh.adminConsole='金融服务平台 · 运营端';
+DICT.en.demoBanner='Demonstration data only. Agreement names, touchpoints and files are samples; the production list will be defined separately.';
+DICT.zh.demoBanner='演示数据：协议名称、使用环节与文件仅供评审，真实协议清单后续定义。';
+DICT.en.noPermissionSub='An active operations session is required. Restore the demo session to continue.';
+DICT.zh.noPermissionSub='需要有效的运营端会话，恢复演示会话后可继续。';
+DICT.en.logScope='Version actions only. Agreement definitions are maintained through configuration.';
+DICT.zh.logScope='仅记录版本相关操作；协议定义由配置维护。';
+DICT.en.demoOnly='Demonstration file · not legal terms'; DICT.zh.demoOnly='演示文件 · 不构成协议正文';
+DICT.en.stActiveAcc='Operations Administrator'; DICT.zh.stActiveAcc='运营管理员';
+DICT.en.predefinedBy='Defined in configuration, read-only'; DICT.zh.predefinedBy='配置下发，只读';
+
+var commonStates=[['default','Default','默认'],['loading','Loading','加载中'],['waiting','Waiting for response','等待响应'],['error','Load failed','加载失败'],['noperm','Session unavailable','无权限']];
+STATES['P-O-AG-01']=commonStates.concat([['empty','No definitions','空数据'],['nomatch','No results','筛选无结果']]);
+STATES['P-O-AG-02']=commonStates.concat([['empty','No version / activity','空版本与记录'],['actfail','Activation failed','生效失败']]);
+STATES['P-O-AG-03']=commonStates.concat([['empty','Blank form','空表单'],['uploading','Uploading','上传中'],['euploadv','Upload failed','上传失败'],['efmt','Wrong format','格式不符'],['esize','File too large','超过大小'],['emagic','Header rejected','文件头拒绝'],['submitting','Submitting','提交中'],['esubmit','Submit failed','提交失败'],['econflict','Concurrent update','并发更新'],['firstlogin','Password reset required','首登未改密']]);
+
+nowMs=function(){return revisionClock;};
+function bootLocal(){
+ document.documentElement.setAttribute('data-ag-review','');
+ S.reviewOpen=false; S.events=[]; S.sessionValid=true; S.failNext=false;
+ hydrateHashes();
+ document.getElementById('localFile').addEventListener('change',function(e){if(e.target.files[0]) acceptFile(e.target.files[0]);e.target.value='';});
+ document.addEventListener('dragover',function(e){if(e.target.closest('.formcard')&&S.page==='P-O-AG-03')e.preventDefault();});
+ document.addEventListener('drop',function(e){if(S.page==='P-O-AG-03'&&e.target.closest('.formcard')){e.preventDefault();if(e.dataTransfer.files.length!==1){toast('danger',L('Choose one file.','请选择单个文件。'));return;}acceptFile(e.dataTransfer.files[0]);}});
+ document.addEventListener('toggle',function(e){if(e.target.matches('.review-controls')){if(e.target.hasAttribute('data-preview-controls'))S.previewOpen=e.target.open;else S.reviewOpen=e.target.open;}},true);
+ document.addEventListener('keydown',function(e){
+  var layer=document.querySelector('.modal[role=dialog],.drawer[role=dialog]');
+  if(e.key==='Tab'&&layer){var els=Array.from(layer.querySelectorAll('button:not([disabled]),a[href],input,select,textarea,[tabindex="0"]')).filter(function(n){return n.getClientRects().length;});
+   if(!els.length){e.preventDefault();layer.focus();return;}
+   if(e.shiftKey&&(document.activeElement===els[0]||!layer.contains(document.activeElement))){e.preventDefault();els[els.length-1].focus();}
+   else if(!e.shiftKey&&(document.activeElement===els[els.length-1]||!layer.contains(document.activeElement))){e.preventDefault();els[0].focus();}
+  }
+  if(e.key==='Escape')document.documentElement.classList.remove('nav-open');
+  if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)&&e.target.matches('[role=tab]')){e.preventDefault();var tabs=Array.from(document.querySelectorAll('[role=tab]'));var i=tabs.indexOf(e.target);i=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[i].click();document.querySelectorAll('[role=tab]')[i].focus();}
+ },true);
+ document.addEventListener('click',function(e){if(document.documentElement.classList.contains('nav-open')&&!e.target.closest('.sidebar,.ag-navtoggle'))document.documentElement.classList.remove('nav-open');},true);
+}
+async function hashDemo(f){if(!f||!crypto.subtle)return;var hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(f.content||''));f.sha=Array.from(new Uint8Array(hash)).map(function(n){return n.toString(16).padStart(2,'0');}).join('');}
+function hydrateHashes(){S.data.forEach(function(a){a.versions.forEach(function(v){if(v.file)hashDemo(v.file).then(function(){if(v.st!=='draft')v.hash=v.file.sha;});});});}
+function topExtra(){return '<button class="btn sm ag-navtoggle" data-act="toggleNav" aria-label="'+L('Toggle navigation','展开导航')+'">☰</button><span class="ag-clock">'+L('Operations','运营端')+'</span>';}
+stateBar=function(){
+ var rows=STATES[S.page]||[];
+ return '<details class="review-controls"'+(S.reviewOpen?' open':'')+'><summary>'+L('Prototype scenarios','原型场景')+'</summary>'+CF.stateBar(rows,'st',S.st)
+ +'<div class="ag-toolrow"><span class="ag-clock">'+L('Demo clock: ','演示时钟：')+esc(fmtTime(new Date(nowMs()).toISOString()))+'</span>'
+ +'<label class="ag-clock">'+L('Time zone ','时区 ')+'<select class="inp" id="demoTimezone"><option value="Asia/Shanghai"'+(S.tz==='Asia/Shanghai'?' selected':'')+'>UTC+8</option><option value="UTC"'+(S.tz==='UTC'?' selected':'')+'>UTC</option></select></label>'
+ +(S.page==='P-O-AG-03'?'<button class="btn sm" data-act="failNext">'+L('Fail next save / publish','下一次保存/发布失败')+'</button>':'')
+ +(S.events.length?'<button class="btn sm" data-act="eventTarget">'+L('Open latest event target','打开最近告警落点')+'</button>':'')+'</div>'
+ +(S.events.length?'<details class="ag-events"><summary>'+L('Simulated notification contract','模拟通知契约')+' ('+S.events.length+')</summary><pre>'+esc(JSON.stringify(S.events,null,2))+'</pre></details>':'')+'</details>';
+};
+pageHead=function(title,desc,actions){return '<div class="page-head"><div><h1 class="page-title">'+title+'</h1><p class="page-desc">'+desc+'</p></div><div class="page-actions">'+(actions||'')+'</div></div>'+stateBar();};
+
+function restrictedSurface(){return '<div class="card"><div class="card-b">'+emptyBox(t('noPermission'),t('noPermissionSub'),'<button class="btn" data-act="restoreSession">'+L('Restore demo session','恢复演示会话')+'</button>')+'</div></div>';}
+function genericSurface(){
+ if(S.st==='noperm'||!S.sessionValid)return restrictedSurface();
+ if(S.st==='loading')return '<div class="card">'+skelRows(5,['m','','s'])+'</div>';
+ if(S.st==='waiting'||S.st==='submitting')return '<div class="card"><div class="card-b"><div role="status" class="ag-toolrow"><span class="spinner"></span>'+L('Waiting for the response. Your changes are kept.','等待响应，已填写的内容将保留。')+'</div>'+(!realBusy?'<button class="btn sm" data-act="resume">'+L('Complete simulated response','完成模拟响应')+'</button>':'')+'</div></div>';
+ if(S.st==='error')return '<div class="card"><div class="card-b">'+note('red',t('loadFailedSub'),t('loadFailed'))+'<div class="btnbar"><button class="btn" data-act="resume">'+t('retry')+'</button></div></div></div>';
+ return '';
+}
+pageList=function(){var generic=genericSurface();if(generic)return pageHead(t('agTitle'),t('hPredefinedPage'),prdBtn())+demoBar()+generic;return initialPageList();};
+pageDetail=function(){
+ var generic=genericSurface();if(generic)return pageHead(esc(nm(cur())),t('agDetail'),prdBtn())+demoBar()+generic;
+ if(S.st==='empty'){var a=cur(),backupV=a.versions,backupL=a.logs;a.versions=[];a.logs=[];var output=initialPageDetail();a.versions=backupV;a.logs=backupL;return output;}
+ return initialPageDetail();
+};
+pageEditor=function(){var generic=genericSurface();if(generic)return pageHead(t('newVersion')+' '+esc(ed().no),esc(nm(cur())),prdBtn())+demoBar()+generic;
+ var text=initialPageEditor();
+ if(S.st==='firstlogin')text=pageHead(t('newVersion'),esc(nm(cur())),prdBtn())+demoBar()+note('amber',L('Change your initial password before maintaining content. Writes are blocked.','首次登录需修改密码后才能维护内容，写入已被拒绝。'))+'<div class="btnbar"><button class="btn" data-act="resume">'+L('Simulate password changed','模拟已完成改密')+'</button></div>';
+ return text;
+};
+openEditor=function(a,v,silent){initialOpenEditor(a,v,true);S.editor.file=v.file?Object.assign({},v.file):null;S.editor.baseRevision=v.revision||0;if(!silent){render();syncURL();}};
+nextNo=function(a){a.nextVersion=Math.max(a.nextVersion||1,1+Math.max(0,...a.versions.map(function(v){return +v.no.slice(1);})));return 'v'+(a.nextVersion++);};
+newVersion=function(){var a=cur(),d=verOf(a,'draft');if(d){openEditor(a,d);return;}var active=verOf(a,'active'),no=nextNo(a);var v={no:no,vid:a.key+'_'+no,st:'draft',mode:'immediate',effAt:null,arcAt:null,file:active?Object.assign({},active.file):null,hash:null,note:{en:'',zh:''},src:null,rec:false,by:'a',at:new Date(nowMs()).toISOString(),revision:0};a.versions.push(v);addLog(a,'create',no,'Created draft '+no+'.','创建草稿 '+no+'。');openEditor(a,v);};
+rollback=function(no){var a=cur(),src=verNo(a,no);if(verOf(a,'draft')){toast('danger',t('bContinueDraft'),L('Discard or publish the existing draft first.','请先处理现有草稿。'));return;}var next=nextNo(a),v={no:next,vid:a.key+'_'+next,st:'draft',mode:'immediate',effAt:null,arcAt:null,file:Object.assign({},src.file),hash:null,note:{en:t('rollbackNote',{v:no}),zh:t('rollbackNote',{v:no})},src:no,rec:false,by:'a',at:new Date(nowMs()).toISOString(),revision:0};a.versions.push(v);addLog(a,'rollback',next,'Created '+next+' from '+no+'.','以 '+no+' 为基础创建 '+next+'。');openEditor(a,v);};
+writeBack=function(){var a=cur(),e=ed(),v=verNo(a,e.no),renamed=e.file&&e.origFile&&e.file.name!==e.origFile;v.file=e.file?Object.assign({},e.file):null;v.mode=e.mode;v.effAt=e.effAt;v.rec=e.rec;v.src=e.src;v.note={en:e.note,zh:e.note};v.at=new Date(nowMs()).toISOString();v.revision=(v.revision||0)+1;e.baseRevision=v.revision;return {v:v,renamed:renamed};};
+function canWrite(){
+ if(!S.sessionValid||S.st==='noperm'){toast('danger',t('noPermission'));return false;}
+ if(S.st==='firstlogin'){toast('danger',L('Change your initial password first.','请先完成首次登录改密。'));return false;}
+ if(cur()&&!cur().enabled){toast('danger',t('hOffline'));return false;}
+ if(realBusy)return false;
+ if(S.st==='econflict'||(ed()&&verNo(cur(),ed().no)&&(verNo(cur(),ed().no).revision||0)!==ed().baseRevision)){S.st='econflict';render();toast('danger',t('eConcurrent'));return false;}
+ return true;
+}
+saveDraft=function(){
+ if(!canWrite())return;var e=ed();if(e.note.length>500){e.err.note=t('eNoteTooLong');render();return;}
+ simulateRequest(function(){var a=cur(),r=writeBack();addLog(a,'save',e.no,'Saved draft '+e.no+'.','保存草稿 '+e.no+'。');e.dirty=false;e.origFile=e.file?e.file.name:null;S.st='default';render();toast('success',t('okDraftSaved'));});
+};
+function simulateRequest(done){
+ var seq=++taskSerial;realBusy=true;S.st='submitting';S.modal=null;render();
+ setTimeout(function(){if(seq!==taskSerial)return;realBusy=false;if(S.failNext){S.failNext=false;S.st='esubmit';render();return;}done();},650);
+}
+doPublish=function(){
+ if(!canWrite()||!validatePublish())return;
+ simulateRequest(function(){var a=cur(),e=ed(),sch=verOf(a,'scheduled'),v=writeBack().v,old=verOf(a,'active');
+  if(sch){sch.st='draft';sch.effAt=null;sch.hash=null;sch.mode='immediate';addLog(a,'revert',sch.no,'Returned '+sch.no+' to draft.','待生效版本 '+sch.no+' 退回草稿。');emitEvent('scheduled_cancelled',a,sch,'replaced_by_new_publish');}
+  v.by='a';v.at=new Date(nowMs()).toISOString();v.hash=v.file.sha||('demo-'+fakeHash(v.file.content||v.file.name));
+  if(v.mode==='immediate'){v.st='active';v.effAt=v.at;if(old){old.st='archived';old.arcAt=v.at;addLog(a,'archive',old.no,'Archived '+old.no+' automatically.','自动归档 '+old.no+'。','sys',v.at);}}
+  else v.st='scheduled';
+  addLog(a,'publish',v.no,'Published '+v.no+'; '+v.mode+'.','发布 '+v.no+'，'+(v.mode==='immediate'?'立即生效。':'定时生效于 '+fmtTime(v.effAt)+'。'));
+  a.actFail=false;S.editor=null;S.page='P-O-AG-02';S.tab='versions';S.st='default';render();syncURL();toast('success',t('okPublished'));
+ });
+};
+function modalPublishReplace(){return shell(L('Confirm draft replacement','确认草稿替换'),note('amber',L('The outgoing draft will be published, and the previous scheduled version will become the only draft. Its file will be kept.','当前草稿将发布，原待生效版本将退回并成为唯一草稿，保留原文件。')),'<button class="btn" data-act="close">'+t('cancel')+'</button><button class="btn primary" data-act="publishConfirmed">'+t('bCancelAndPublish')+'</button>');}
+var oldSimAct=simulateActivation,oldCancel=cancelScheduled;
+simulateActivation=function(){var a=cur(),v=verOf(a,'scheduled');if(!v)return;revisionClock=Math.max(nowMs(),Date.parse(v.effAt));a.actFail=false;oldSimAct();emitEvent('activated',a,v);render();};
+cancelScheduled=function(force){var a=cur(),v=verOf(a,'scheduled');oldCancel(force);if(v&&v.st==='draft'){a.actFail=false;emitEvent('scheduled_cancelled',a,v,'manual_cancelled');render();}};
+function emitEvent(kind,a,v,reason){
+ var type='agreement.version.'+kind,key=type+':'+v.vid,old=S.events.find(function(x){return x.dedupe_key===key;});
+ var x={event_id:key+':'+(old?old.attempt_seq+1:1),attempt_seq:old?old.attempt_seq+1:1,end:'fs_ops',recipient_scope:'admin_all',category:'ops_alert',biz_type:type,biz_ref:{resource_type:'agreement.version',resource_id:v.vid,extra:{tab:'versions'}},dedupe_key:key,source_module:'WS-310',require_precheck:true,subscribable:false,title_key:'msg.'+type+'.title',body_key:'msg.'+type+'.body',params:{agreement_name:{en:a.en,zh:a.zh},version_no:v.no}};
+ if(kind==='scheduled_cancelled'){x.params.cancel_reason_key=reason;x.params.operator_name=OPS.a.name;}else if(kind==='activated')x.params.effective_time=v.effAt;else{x.params.scheduled_time=v.effAt;x.params.current_version_no=(verOf(a,'active')||{}).no||null;}
+ S.events=S.events.filter(function(y){return y.dedupe_key!==key;});S.events.unshift(x);
+}
+function readFileBytes(file){return new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(){resolve(new Uint8Array(reader.result));};reader.onerror=reject;reader.readAsArrayBuffer(file);});}
+async function acceptFile(file){
+ if(!canWrite()||!ed())return;var a=cur(),editor=ed(),ext=(file.name.split('.').pop()||'').toUpperCase();
+ if(a.types.indexOf(ext)<0){S.st='efmt';render();return;}if(file.size>a.maxBytes){S.st='esize';render();return;}
+ if(!file.size){editor.err.file=L('The file is empty.','文件为空，请重新选择。');S.st='default';render();return;}
+ var seq=++taskSerial;realBusy=true;S.st='uploading';render();
+ try{var bytes=await readFileBytes(file);if(seq!==taskSerial)return;
+  if((ext==='PDF'&&new TextDecoder().decode(bytes.slice(0,5))!=='%PDF-')||(ext==='TXT'&&bytes.some(function(b){return b===0;}))){realBusy=false;S.st='emagic';render();return;}
+  var digest=crypto.subtle?Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(function(n){return n.toString(16).padStart(2,'0');}).join(''):null;
+  if(seq!==taskSerial)return;var binary='';bytes.forEach(function(n){binary+=String.fromCharCode(n);});
+  var f={name:file.name,ext:ext,size:file.size+' B',content:ext==='TXT'?new TextDecoder().decode(bytes):null,data:'data:'+(ext==='PDF'?'application/pdf':'text/plain')+';base64,'+btoa(binary),sha:digest,uploadedAt:new Date(nowMs()).toISOString()};
+  var before=editor.file;editor.file=f;editor.err.file='';editor.dirty=true;
+  var draft=verNo(a,editor.no);draft.file=Object.assign({},f);draft.revision=(draft.revision||0)+1;editor.baseRevision=draft.revision;
+  addLog(a,before?'replace':'upload',editor.no,(before?'Replaced '+before.name+' with ':'Uploaded ')+file.name,(before?'替换文件：'+before.name+' → ':'上传文件：')+file.name);
+  editor.origFile=file.name;realBusy=false;S.st='default';render();toast('success',L('File ready. Stored in this page only.','文件已就绪，仅保存在当前页面。'));
+ }catch(error){realBusy=false;S.st='euploadv';render();}
+}
+async function sampleUpload(){var a=cur(),e=ed();if(!e||!canWrite())return;var f=demoFile(a.key+'-'+e.no+'.txt');await hashDemo(f);var v=verNo(a,e.no),before=e.file;e.file=f;e.origFile=f.name;e.dirty=true;e.err.file='';v.file=Object.assign({},f);addLog(a,before?'replace':'upload',e.no,(before?'Replaced '+before.name+' with ':'Uploaded ')+f.name,(before?'替换文件：'+before.name+' → ':'上传文件：')+f.name);S.st='default';render();}
+fileCard=function(a,e){return initialFileCard(a,e)+'<div class="ag-toolrow"><button class="btn sm" data-act="sampleFile">'+L('Use a demonstration file','使用演示文件')+'</button><span class="tiny">'+L('Files stay in memory; nothing is uploaded to a server.','文件仅保存在页面内存，不会上传到服务器。')+'</span></div>';};
+versionCard=function(a,e){var html=initialVersionCard(a,e);return html.replace('aria-describedby="noteHint"','aria-invalid="'+!!e.err.note+'" aria-describedby="noteHint"');};
+function fileUrl(f){return f.data||URL.createObjectURL(new Blob([f.content||'DEMONSTRATION FILE'],{type:f.ext==='PDF'?'application/pdf':'text/plain;charset=utf-8'}));}
+function downloadFile(f){if(!f){toast('danger',L('No file attached.','尚未上传文件。'));return;}var url=fileUrl(f),a=document.createElement('a');a.href=url;a.download=f.name;document.body.appendChild(a);a.click();a.remove();if(url.startsWith('blob:'))setTimeout(function(){URL.revokeObjectURL(url);},1500);}
+drawerVersion=function(){
+ var a=cur(),v=verNo(a,S.ver);if(!v)return '';var body='';
+ if(S.previewState==='loading')body=skelRows(3,['m','']);
+ else if(S.previewState==='error')body=note('red',L('Preview failed. The file is still available to download.','预览失败，可重试或下载文件。'))+'<div class="btnbar"><button class="btn sm" data-act="previewState" data-v="default">'+t('retry')+'</button></div>';
+ else if(!v.file)body=note('',L('No file attached to this draft.','当前草稿尚未上传文件。'));
+ else if(S.previewState==='unsupported')body=note('',t('hNoPreview'));
+ else if(v.file.ext==='TXT')body='<pre class="ag-sample">'+esc(v.file.content||'DEMONSTRATION FILE')+'</pre>';
+ else if(v.file.ext==='PDF')body='<iframe class="ag-pdf" title="'+esc(v.file.name)+'" src="'+esc(fileUrl(v.file))+'"></iframe><p class="hint">'+L('If the PDF viewer is unavailable, download the file below.','若浏览器无法显示 PDF，请下载查看。')+'</p>';
+ else body=note('',t('hNoPreview'));
+ return '<aside class="drawer" role="dialog" aria-modal="true" aria-label="'+t('versionDetail')+'"><div class="drawer-h"><b>'+esc(v.no)+'</b>'+statusPill(v.st)+'<button class="modal-x" data-act="closeDrawer" aria-label="'+t('close')+'">✕</button></div><div class="drawer-b">'
+ +'<details class="review-controls" data-preview-controls'+(S.previewOpen?' open':'')+'><summary>'+L('Preview scenarios','预览场景')+'</summary>'+CF.stateBar([['default','Default','默认'],['loading','Loading','加载'],['error','Failed','失败'],['unsupported','Download only','仅下载']],'previewState',S.previewState||'default')+'</details>'
+ +body+gap()+kv(t('fVersionId'),esc(v.vid))+(v.file?kv(t('fFileName'),esc(v.file.name))+kv(t('fFormat'),esc(v.file.ext))+kv(t('fFileSize'),esc(v.file.size))+kv(t('fUploadedAt'),esc(fmtTime(v.file.uploadedAt||v.at))):'')
+ +kv(t('fHash'),hashChip(v.hash))+kv(t('fEffectiveAt'),esc(fmtTime(v.st==='draft'?null:v.effAt)))+kv(t('fArchivedAt'),esc(fmtTime(v.arcAt)))+kv(t('fPublishedBy'),esc(v.st==='draft'?L('Not published','尚未发布'):opName(v.by)))+kv(t('fNote'),esc(v.note.en))+kv(t('fBasedOn'),v.src?'<button class="actlink" data-act="ver" data-v="'+v.src+'">'+esc(v.src)+'</button>':'—')
+ +(v.file?'<div class="btnbar"><button class="btn" data-act="download">'+t('bDownload')+'</button></div>':'')+'</div></aside>';
+};
+var oldVerActions=verActions;
+verActions=function(a,v){return oldVerActions(a,v).replace('data-act="download"','data-act="download" data-v="'+v.no+'"').replace('</div>',v.st==='draft'&&a.enabled?'<button class="actlink" data-act="rowPublish" data-v="'+v.no+'">'+t('bPublish')+'</button></div>':'</div>');};
+var oldOverview=tabOverview;
+tabOverview=function(a){return oldOverview(a).replace(L('A draft exists but no version has been published yet.','已有草稿，但还没有任何版本发布。'),verOf(a,'scheduled')?L('The first version is scheduled; no version is active yet.','首个版本等待定时生效，当前尚无生效版本。'):L('A draft exists but no version has been published yet.','已有草稿，但还没有任何版本发布。'));};
+var oldLog=tabLog;
+tabLog=function(a){return oldLog(a).replaceAll('<div class="ac">','<div class="ac"><span class="tiny">'+esc(a.key)+' · </span>');};
+
+go=function(page,opt){if(realBusy){toast('info',L('Please wait for the current request.','请等待当前请求完成。'));return;}if(page==='P-O-AG-01')opt=Object.assign({},opt,{key:null});initialGo(page,opt);document.documentElement.classList.remove('nav-open');};
+readURL=function(){
+ if(S.editor&&S.editor.dirty){if(!window.confirm(L('Leave and discard unsaved changes?','离开并放弃未保存的修改？'))){syncURL();return false;}S.editor=null;}
+ var raw=location.hash.replace(/^#\//,'').split('?')[0].split('/')[1];
+ if(raw&&!ag(raw)){var found=null;S.data.forEach(function(a){if(a.versions.some(function(v){return v.vid===raw;}))found=a;});if(found){S.agKey=found.key;S.page='P-O-AG-02';S.tab='versions';S.st='default';return true;}}
+ var ok=initialReadURL();if(!location.hash.includes('sort='))S.sort={col:'',dir:'desc'};return ok;
+};
+function adaptedAct(n,action,value,event){
+ if(n.classList.contains('mask')&&event.target!==n)return true;
+ if(!lastLayer&&['ver','askPublish','doPublish','askDiscard','askCancelSch','openPrd','rowPublish','go','crumb'].includes(action))returnFocus={act:action,value:value};
+ var writes=['newVer','editDraft','rollback','saveDraft','askPublish','doPublish','publishConfirmed','askDiscard','doDiscard','askCancelSch','doCancelSch','upload','sampleFile','rowPublish'];
+ if(writes.includes(action)&&!canWrite())return true;
+ if(realBusy&&!['copy','lang','menu','toastClose'].includes(action))return true;
+ if(action==='toggleNav'){document.documentElement.classList.toggle('nav-open');return true;}
+ if(action==='go'&&!CF.PAGES[value])return true;
+ if(action==='signout'){S.sessionValid=false;S.st='noperm';S.menu=null;render();return true;}
+ if(action==='restoreSession'){S.sessionValid=true;S.st='default';render();return true;}
+ if(action==='resume'){if(S.st==='econflict'&&ed())openEditor(cur(),verNo(cur(),ed().no));else{S.st='default';render();}return true;}
+ if(action==='failNext'){S.failNext=true;toast('info',L('The next save or publish will fail without changing the version.','下一次保存或发布将失败，版本数据保持不变。'));return true;}
+ if(action==='sampleFile'){sampleUpload();return true;}
+ if(action==='upload'){document.getElementById('localFile').accept=cur().types.map(function(x){return '.'+x.toLowerCase();}).join(',');document.getElementById('localFile').click();return true;}
+ if(action==='download'){var v=value?verNo(cur(),value):S.drawer==='ver'?verNo(cur(),S.ver):null;downloadFile(v?v.file:ed()?ed().file:(verOf(cur(),'active')||{}).file);return true;}
+ if(action==='copy'){
+  var input=document.createElement('textarea');input.value=value;input.setAttribute('readonly','');document.body.appendChild(input);input.select();var ok=false;try{ok=document.execCommand('copy');}catch(e){}input.remove();toast(ok?'success':'info',ok?t('okCopied'):L('Select and copy the full value below.','请选中下方完整值复制。'),ok?'':value);return true;
+ }
+ if(action==='previewState'){S.previewState=value;render();return true;}
+ if(action==='ver')S.previewState='default';
+ if(action==='rowPublish'){openEditor(cur(),verNo(cur(),value));if(validatePublish()){S.modal={type:'publish'};render();}return true;}
+ if(action==='doPublish'&&verOf(cur(),'scheduled')){S.modal={type:'publishReplace'};render();return true;}
+ if(action==='publishConfirmed'){doPublish();return true;}
+ if(action==='eventTarget'){var x=S.events[0],a=S.data.find(function(a){return a.versions.some(function(v){return v.vid===x.biz_ref.resource_id;});});if(a){var target=a.versions.find(function(v){return v.vid===x.biz_ref.resource_id;}),expected=x.biz_type.endsWith('activated')?'active':x.biz_type.endsWith('activation_failed')?'scheduled':'draft';if(target.st!==expected||(x.biz_type.endsWith('activation_failed')&&!a.actFail)){toast('info',L('The version status has changed. Review the latest version history.','版本状态已变化，请查看最新版本历史。'));return true;}go('P-O-AG-02',{key:a.key,tab:'versions'});toast('info',L('Opened version history for the event.','已打开告警对应的版本历史。'));}return true;}
+ if(action==='st'){
+  if(S.page==='P-O-AG-02'&&cur()){
+   if(value==='actfail'){var v=verOf(cur(),'scheduled');if(!v){toast('info',L('Choose an agreement with a scheduled version, such as Demo agreement 01.','请选择有待生效版本的协议，例如演示协议 01。'));return true;}cur().actFail=true;addLog(cur(),'actfail',v.no,'Scheduled activation failed.','定时生效失败。','sys');emitEvent('activation_failed',cur(),v);}
+   else if(value==='default')cur().actFail=false;
+  }
+  if(value==='empty'&&ed()){ed().file=null;ed().note='';ed().mode='immediate';ed().dirty=true;ed().err={};}
+  S.st=value;S.menu=null;render();return true;
+ }
+ if(action==='resetDemo'){S.data=seedData();S.events=[];S.failNext=false;S.agKey=null;revisionClock=Date.parse(NOW);S.editor=null;S.st='default';hydrateHashes();render();return true;}
+ return initialAct(n,action,value,event);
+}
+function afterRender(){
+ // Apply this module's modal focus contract through the shell extension hook.
+ var prdLayer=document.querySelector('.drawer.prd');
+ if(prdLayer){prdLayer.setAttribute('role','dialog');prdLayer.setAttribute('aria-modal','true');}
+
+ document.documentElement.lang=S.lang;
+ document.querySelectorAll('[data-act="go"][data-v="null"],[data-act="go"][data-v="undefined"]').forEach(function(n){n.remove();});
+ document.querySelectorAll('table').forEach(function(table){var heads=Array.from(table.querySelectorAll('th')).map(function(th){return th.innerText;});table.querySelectorAll('tbody tr').forEach(function(row){Array.from(row.children).forEach(function(td,i){td.dataset.label=heads[i]||'';});});});
+ document.querySelectorAll('.hash .ico').forEach(function(btn){btn.parentElement.title=btn.dataset.v;});
+ var zone=document.getElementById('demoTimezone');if(zone)zone.onchange=function(){S.tz=zone.value;render();};
+ if(S.st==='econflict'){var alert=document.querySelector('#content .note.red');if(alert&&!alert.querySelector('button'))alert.insertAdjacentHTML('beforeend','<button class="btn sm" data-act="resume">'+L('Refresh draft','刷新草稿')+'</button>');}
+ if(S.st==='esubmit'){var alert=document.querySelector('#content .note.red');if(alert)alert.setAttribute('role','alert');}
+ var input=document.getElementById('f_note');if(input&&ed().err.note){document.getElementById('noteHint').textContent=ed().err.note;input.setAttribute('aria-invalid','true');}
+ var eff=document.getElementById('f_eff');if(eff){eff.setAttribute('aria-invalid',!!ed().err.eff);var h=eff.closest('.field').querySelector('.hint');h.id='effHint';eff.setAttribute('aria-describedby','effHint');if(ed().err.eff)h.textContent=ed().err.eff;}
+ document.querySelectorAll('.modal[role=dialog]').forEach(function(layer){layer.setAttribute('aria-label',layer.querySelector('.modal-h b').textContent);});
+ var layer=document.querySelector('.modal[role=dialog],.drawer[role=dialog]'),key=S.modal?'m:'+S.modal.type:S.drawer?'d:'+S.drawer:'';
+ document.getElementById('app').inert=!!layer;
+ if(layer){layer.tabIndex=-1;queueMicrotask(function(){var current=document.querySelector('.modal[role=dialog],.drawer[role=dialog]');if(current&&!current.contains(document.activeElement))(current.querySelector('button:not([disabled])')||current).focus();});}
+ else if(lastLayer&&returnFocus){var all=Array.from(document.querySelectorAll('[data-act]')),target=all.find(function(n){return n.dataset.act===returnFocus.act&&n.dataset.v===returnFocus.value;});if(target)queueMicrotask(function(){target.focus();});}
+ lastLayer=key;
+}
+
+CF.define({
+  id:"agreements",
+  end:"admin",
+  home:"P-O-AG-01",
+  owns:["P-O-AG-01","P-O-AG-02","P-O-AG-03"],
+  dict:DICT,
+  prd:PRD,
+  states:STATES,
+  onBoot:function(st){ S=st; bootLocal(); },
+  state:function(){
+    return { agKey:null, tab:"overview", editor:null, ver:null,
+             f:{kw:"",type:[],scen:[],status:[],from:"",to:""},
+             applied:{kw:"",type:[],scen:[],status:[],from:"",to:""},
+             pg:1, size:20, sort:{col:"",dir:"desc"}, more:null,
+             data:seedData() };
+  },
+  content:renderContent,
+  topbarPrd:false,
+  topExtra:topExtra,
+  afterRender:afterRender,
+  modals:{ publish:modalPublish, discard:modalDiscard, cancelSch:modalCancelSch,
+           overwrite:modalOverwrite, unsaved:modalUnsaved, scen:modalScen, publishReplace:modalPublishReplace },
+  drawers:{ ver:drawerVersion },
+  account:function(){
+    return { avatar:"OP", ident:OPS.a.mail, ok:true, okText:t("stActiveAcc"), settings:null };
+  },
+  crumbParts:function(){
+    if(S.page!=="P-O-AG-02"&&S.page!=="P-O-AG-03") return [];
+    var parts=[[t("agTitle"),"P-O-AG-01",""]];
+    if(S.page==="P-O-AG-03"){ var a=cur(); parts.push([nm(a),"P-O-AG-02",a.key]); }
+    return parts;
+  },
+  crumbCur:function(){
+    if(S.page==="P-O-AG-01") return t("agTitle");
+    if(S.page==="P-O-AG-02") return nm(cur());
+    if(S.page==="P-O-AG-03") return t("newVersion")+" "+(ed()?ed().no:"");
+    return null;
+  },
+  hash:{ build:buildHash, read:readURL },
+  prdFoot:function(){
+    return '本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD。完整口径以 '
+     + '<code class="mono">v1.0-协议管理-PRD.md</code>（仓库 <code class="mono">financial-service-platform/prd/v1.0-协议管理/</code> 定稿版）为准；'
+     + '编号体系 F-O-AG-01～11 / P-O-AG-01～04 / C-O-AG-01～02 / E-01～14 / AC-O-AG-01～88。'
+     + '面板固定中文，是给前端开发看的规格说明，不属于产品界面。';
+  },
+  onAct:adaptedAct
+});
+CF.boot();
+})();
+</script>
+</body>
+</html>
