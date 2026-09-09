@@ -15,7 +15,7 @@
 | --- | --- | --- |
 | token（颜色 / 字号 / 间距 / 圆角 / 控件高 / 动效） | `asset-platform/prototypes/_shared/tokens.css` | 代码为准 |
 | 公共组件（壳层 / 控件 / 表格 / 弹层 / 反馈） | `asset-platform/prototypes/_shared/base.css` | 代码为准 |
-| 页面登记表与导航 | 各平台 `prototypes/_shared/registry.js` | 代码为准；平台之间独立 |
+| 页面登记表与导航 | 各平台 `prototypes/_shared/registry.js` | 代码为准，按平台隔离 |
 | 公共运行时（i18n / 路由 / Toast / 弹层宿主） | `asset-platform/prototypes/_shared/shell.js` | 代码为准 |
 | 语义、约束、禁止用法、可访问性 | 本目录 | 文档为准，实现必须遵守 |
 
@@ -39,10 +39,12 @@
 | 实名认证与审核 | 资产平台 | `asset-platform/prototypes/实名认证与审核/v1.0-实名认证与审核-原型.html` | 面客端 + 管理端（覆盖资产端、资产管理端） |
 | 应收账款录入与确权 | 资产平台 | `asset-platform/prototypes/应收账款录入与确权/v1.0-应收账款录入与确权-原型.html` | 面客端 + 管理端（覆盖资产端、资产管理端） |
 | 协议管理 | 金融服务平台 | `financial-service-platform/prototypes/协议管理/v1.0-协议管理-原型.html` | 管理端（覆盖运营端） |
+| 账户与登录 | 金融服务平台 | `financial-service-platform/prototypes/账户与登录/v1.0-账户与登录-原型.html` | 管理端（运营端 focus + app） |
+| 消息通知 | 金融服务平台 | `financial-service-platform/prototypes/消息通知/v1.0-消息通知-原型.html` | 管理端（运营端；delta prototype，外部页面与真实接口未接入） |
 
-金融服务平台复用同一份 token、base.css 和 shell.js，页面与导航单独登记在该平台的 `_shared/registry.js`，不接入资产平台业务页面。其账户与登录、消息通知原型尚未落地，暂不挂载这些入口；下述铃铛与跨模块导航说明适用于资产平台现有五个模块。
+金融服务平台复用资产平台的 `tokens.css`、`base.css`、`shell.js`，由自己的 [`registry.js`](../../financial-service-platform/prototypes/_shared/registry.js) 登记页面与入口；接入和单文件导出见其 [公共层说明](../../financial-service-platform/prototypes/_shared/README.md)。
 
-资产平台五个模块共用同一套 `_shared/`，侧栏菜单、路由、Toast、弹层、语言切换的渲染结果完全一致。
+资产平台五个模块共用同一份登记表；两平台共用 token、组件与运行时，并各自维护侧栏和跨文件路由。
 通知铃铛、快捷面板、消息列表项是**壳层级的全局组件**，实现在 `_shared/` 里。
 铃铛与账号下拉的「消息中心」入口在所有模块都渲染；**未读角标与快捷面板只在提供了数据源的模块出现**，
 其余模块不编造未读数，点铃铛直接跳到消息通知原型。

@@ -259,7 +259,16 @@ function savePassword(kind){S.errors={};S.message='';if(kind==='reset'&&S.page==
 }
 function safePath(p){try{if(!p||!p.startsWith('/ops/')||/[\\\x00-\x20]/.test(p))return '';const u=new URL(p,'https://prototype.invalid');return u.origin==='https://prototype.invalid'&&u.pathname.startsWith('/ops/')?u.pathname+u.search:''}catch{return ''}}
 function idFor(p){if(p.startsWith('/ops/messages/'))return 'P-O21';return Object.keys(paths).find(id=>paths[id]===p.split('?')[0])||'P-O06'}
-function navigatePath(p){const target=safePath(p)||'/ops/overview';S.externalPath=target;CF.go(idFor(target))}
+function navigatePath(p){
+ const target=safePath(p)||'/ops/overview';S.externalPath=target;CF.go(idFor(target));
+ // The notification module owns its pages; preserve the full requested deep link.
+ // A real anchor also lets the standalone exporter explain its module boundary.
+ if(S.auth&&!S.pending&&['P-O20','P-O21'].includes(S.page)){
+  const module=CF.MODULES[CF.OWNER[S.page]],link=document.createElement('a');
+  link.href='../'+module.dir+'/'+module.file+'#'+target;link.hidden=true;
+  document.body.append(link);link.click();link.remove();
+ }
+}
 function guard(){
  if(S.pending&&S.page!=='P-O02'){S.page='P-O02';S.st='default';}
  else if(!S.auth&&['P-O05','P-O06','P-O20','P-O21'].includes(S.page)){S.redirect=safePath(S.externalPath||paths[S.page]);S.page='P-O01';S.st='default';}
@@ -335,7 +344,7 @@ function hashRead(){
  if(q.has('redirect'))S.redirect=safePath(q.get('redirect'));
  guard();return true;
 }
-CF.define({id:'fs-ops-login',end:'admin',home:'P-O01',owns:Object.keys(paths),dict:tx,
+CF.define({id:'fs-ops-login',end:'admin',home:'P-O01',owns:Object.keys(paths).filter(id=>!['P-O20','P-O21'].includes(id)),dict:tx,
  state:()=>({form:{},errors:{},shown:{},auth:false,pending:false,role:null,review:false,message:'',busy:false,failures:0,lockTier:0,lastLock:0,lockUntil:0,capFails:0,capUntil:0,sentAt:0,resendAt:0,codeTries:0,resetTicket:0,reauthUntil:0,events:[],redirect:'',externalPath:'',prefFailed:false,prefBusy:false,loginAt:0,lastAction:0,expiresAt:0,tzSaved:false}),
  onBoot(st){S=st;S.lang=get('manualLocale')?.locale==='zh-CN'?'zh':'en';S.tz=inferZone()},
  focus:renderFocus,content:content,topbarPrd:false,

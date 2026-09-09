@@ -12,7 +12,7 @@
   'P-O05':['Account settings','账户设置','app','/ops/account'],
   'P-O06':['Overview','总览','app','/ops/overview'],
   'P-O20':['Notifications','消息中心','app','/ops/messages'],
-  'P-O21':['Notification details','消息详情','app','/ops/messages/demo-password-change']
+  'P-O21':['Notification details','消息详情','app','/ops/messages']
  };
  for(const [id,p] of Object.entries(pages)){
   CF.PAGES[id]={end:'admin',layout:p[2],name:p.slice(0,2)};
@@ -23,8 +23,7 @@
  CF.MODULES={
   'fs-ops-login':{dir:'账户与登录',file:'v1.0-账户与登录-原型.html',name:['Operations account','运营端账户与登录']}
  };
- // WS-309 pages are reserved above. Register its actual file only when delivered.
- // The account prototype currently renders its approved, explicit handoff boundary.
+ // WS-309 pages belong to the delivered notifications module, not the account module.
  CF.NAV={admin:['P-O06','P-O-AG-01'],asset:[]};
  Object.assign(CF.PAGES,{
  'P-O-AG-01':{end:'admin',layout:'app',nav:'P-O-AG-01',navKey:'navAgreements',icoKey:'doc',name:['Agreements','协议管理']},
@@ -35,7 +34,7 @@
  CF.MODULES.agreements={dir:"协议管理",file:"v1.0-协议管理-原型.html",name:["Agreements","协议管理"]};
  ["P-O-AG-01","P-O-AG-02","P-O-AG-03","P-O-AG-04"].forEach(id=>CF.OWNER[id]="agreements");
  CF.ENTRY["P-O-AG-01"]="#/agreements";
- // Temporary handoff target, not a message implementation. WS-309 replaces it.
- CF.MODULES["fs-ops-notify"]={dir:"账户与登录",file:"v1.0-账户与登录-原型.html",name:["Notification handoff","消息接入边界"]};
+ // Both global notification entrances resolve to the delivered WS-309 file.
+ CF.MODULES["fs-ops-notify"]={dir:"消息通知",file:"v1.0-消息通知-原型.html",name:["Notifications","消息通知"]};
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});

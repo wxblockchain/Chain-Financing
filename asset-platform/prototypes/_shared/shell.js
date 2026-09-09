@@ -357,7 +357,7 @@
         + '<div class="dd-head"><b>' + esc(a.ident) + "</b>"
         + '<span class="pill ' + (a.ok ? "green" : "amber") + '">' + (a.ok ? a.okText : a.badText) + "</span></div>"
         + notifyMenuItem()
-        + (crossHref(a.settings)
+        + (!a.settings ? "" : crossHref(a.settings)
             ? '<a role="menuitem" href="' + esc(crossHref(a.settings)) + '">' + t("accountSettings") + "</a>"
             : '<button type="button" role="menuitem" data-act="go" data-v="' + a.settings + '">' + t("accountSettings") + "</button>")
         + '<button type="button" role="menuitem" data-act="' + (a.signOutPage ? "go" : "signout") + '"'

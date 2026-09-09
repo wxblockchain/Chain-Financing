@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en" data-end="admin">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financial Services · Notifications · WS-309</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>/* Page-specific composition. Canonical tokens/base are loaded directly from the repository shared layer. */
+.ops-skip{position:fixed;top:var(--sp-2);left:var(--sp-2);transform:translateY(-200%);z-index:500;background:var(--card);padding:var(--sp-3);color:var(--accent)}
+.ops-skip:focus{transform:none}
+.ops-side-note{font-size:var(--fs-11);line-height:1.6;color:var(--muted);margin:var(--sp-3) 0 0}
+.ops-meta{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin:var(--sp-3) 0 var(--sp-6);color:var(--muted);font-size:var(--fs-12)}
+.ops-body{white-space:pre-wrap;overflow-wrap:anywhere;font-size:var(--fs-14);line-height:1.85;color:var(--text);margin:var(--sp-5) 0 var(--sp-7)}
+.ops-actions{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:var(--sp-5);margin-top:var(--sp-5)}
+.ops-muted{color:var(--muted);font-size:var(--fs-12);line-height:1.65}
+.ops-tools{margin:var(--sp-4) 0 var(--sp-6);font-size:var(--fs-12);color:var(--muted)}
+.ops-tools summary{cursor:pointer;display:list-item;width:fit-content;padding:var(--sp-2) 0}
+.ops-tools-body{display:flex;align-items:flex-end;gap:var(--sp-3);flex-wrap:wrap;padding:var(--sp-4);margin-top:var(--sp-2);border:1px dashed var(--border-strong);border-radius:var(--radius-sm);background:var(--card-2)}
+.ops-tools-body label{display:flex;flex-direction:column;gap:var(--sp-2)}
+.ops-tools-body select{min-width:180px;max-width:100%}
+.ops-demo-note{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-11);color:var(--muted);margin:var(--sp-3) 0}
+.ops-empty{padding:var(--sp-8);min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-4);text-align:center}
+.ops-empty svg{width:32px;height:32px;color:var(--muted)}
+.ops-empty h2{font-size:var(--fs-16);margin:0}.ops-empty p{margin:0;color:var(--muted)}
+.ops-pagination{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:var(--sp-4);padding:var(--sp-4);border-top:1px solid var(--border);font-size:var(--fs-12);color:var(--muted)}
+.ops-pagination .ops-page-buttons{display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap}
+.ops-pagination select{width:80px}.ops-page-current{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.ops-issue-note{padding:var(--sp-3) var(--sp-4);border-top:1px solid var(--border);color:var(--danger);background:var(--danger-bg);display:flex;gap:var(--sp-4);align-items:center}
+.ops-row-pending{opacity:.65;pointer-events:none}
+.ops-invalidation{margin:var(--sp-4) 0}
+.ops-session{min-height:65vh;display:flex;align-items:center;justify-content:center}.ops-session .card{max-width:560px;width:100%}
+.ops-detail-head h1{overflow-wrap:anywhere}
+.ops-filter{display:flex;align-items:flex-end;gap:var(--sp-4);flex-wrap:wrap;padding:var(--sp-4);border-bottom:1px solid var(--border)}
+.ops-filter label{display:flex;flex-direction:column;gap:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
+.ops-filter select{min-width:190px}.ops-status{display:flex;flex-direction:column;gap:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
+.ops-detail-card{padding:var(--sp-6)}
+@media(max-width:1000px){.ops-tools-body{align-items:stretch}.ops-filter select{min-width:150px}}
+@media(prefers-reduced-motion:reduce){.ops-notifications *{animation:none!important;transition:none!important}}
+</style></head>
+<body class="ops-notifications">
+<a class="ops-skip" href="#content">Skip to notifications / 跳到消息内容</a>
+<div class="app" id="app">
+<aside class="sidebar"><div class="brand"><div class="brand-mark">CF</div><div><div class="brand-name">Chain Financing</div><div class="brand-sub" id="brandSub"></div></div></div><nav class="nav" id="nav" aria-label="Operations navigation"></nav><div class="side-foot"><div class="op-row"><span class="dot"></span><span id="sideContext">Financial Services</span></div><p class="ops-side-note" id="sideNote"></p></div></aside>
+<div class="main"><header class="topbar"><div class="topbar-right" id="topRight"></div></header><div class="crumbbar" id="crumb"></div><main class="content" id="content" tabindex="-1"></main></div>
+</div><div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script>/* WS-309 review consumer. Shared shell/styles are loaded from the canonical repository sources.
+   No production endpoint, formal business event, or cross-platform account is invented. */
+(function () {
+'use strict';
+const CF=window.CF, L=CF.L, esc=CF.esc, t=CF.t, render=CF.render;
+const NOW=Date.parse('2026-09-09T07:00:00Z'), STORE='ws309-notifications-review-v1';
+const uuid=i=>'30900000-0000-4000-8000-'+String(i).padStart(12,'0');
+const msgTitle=['A record is ready for review','A reconciliation exception needs attention','An account security notification','A scheduled operation has completed'];
+const msgTitleZh=['一条记录待审核','一项对账差异待核对','一条账号安全通知','一项计划操作已完成'];
+const CATEGORY={review_todo:['Review tasks','审核待办'],ops_alert:['Operations alerts','运营告警'],security:['Security','安全'],system:['System','系统']};
+const scenarios=[['normal','Normal data','正常数据'],['loading','Loading','首屏加载'],['empty','No notifications','首次空态'],['nomatch','No filter matches','筛选无结果'],['error','Load failed','首屏失败'],['pagefail','Page request fails','翻页失败'],['readfail','Read request fails','已读提交失败'],['panelfail','Panel request fails','快捷面板失败'],['countfail','Unread count unavailable','未读数接口失败'],['notfound','Message unavailable','越权 / 消息不存在'],['expired','Expired notification','已过期'],['deleted','Related record deleted','资源已删除'],['changed','Already handled','状态已流转'],['permission','Target permission denied','目标无权限'],['missing','Mapping unavailable','跳转映射缺失'],['none','No action required','无跳转消息'],['static','Static page target','静态页面目标'],['timeout','Precheck times out','预检 3 秒超时'],['degraded','Translation unavailable','文案缺失降级'],['long','Long content','长标题 / 纯文本'],['session','Session expired','会话失效'],['bulk401','Session expires during bulk read','全部已读时会话失效']];
+scenarios.splice(6,0,['detailloading','Detail loading','详情加载中'],['detailerror','Detail request fails','详情加载失败']);
+const sampleCases={detailloading:1,detailerror:1,expired:5,deleted:6,changed:7,permission:8,missing:9,none:10,static:11,timeout:12,degraded:13,long:14};
+let S, sequence=0, timerIds=new Set(), pendingFocus=null, modalReturn=null, pollId=null;
+let sessionStart=Date.now(), activity=Date.now(), syncChannel=null;
+const accountCreated={A:NOW-365*86400000,B:NOW-365*86400000,C:NOW};
+function seed(){
+ const data=[];
+ for(let i=1;i<=64;i++){
+  const type=(i-1)%4,cat=Object.keys(CATEGORY)[type];
+  data.push({id:uuid(i),end:'fs_ops',scope:i===3?'admin_account':'admin_all',owner:i===3?'A':null,
+   category:cat,at:NOW-(i-1)*3600000,title:[msgTitle[type],msgTitleZh[type]],
+   body:[`Demonstration message ${String(i).padStart(3,'0')}.\n\nThis sample shows how an operations notification presents its content. The related record can be reviewed from the action below.\n\nNo real business event or account is represented.`,
+    `演示消息 ${String(i).padStart(3,'0')}。\n\n此示例用于查看运营端消息正文与操作的展示方式。可通过下方操作了解关联记录的跳转表现。\n\n内容不对应真实业务事件或账号。`],
+   target:i%3===0?'none':'resource',pre:'ok',readBy:i%5===0?{A:NOW-1000}:{}});
+ }
+ data[4].expired=true;data[5].pre='deleted';data[5].target='resource';data[6].pre='changed';data[7].pre='permission';
+ data[8].target='missing';data[9].target='none';data[10].target='static';data[11].pre='timeout';data[11].target='resource';
+ data[12].degraded=true;data[13].title=['A long notification title remains readable in full when you open the details, even when the list has to shorten it to one line','这是一条较长的演示消息标题：列表保持单行展示，进入详情后完整换行显示，避免在回查时遗漏任何信息'];
+ data[13].body=['Demonstration of plain-text rendering.\n\n<script>alert("example")<\/script>\n<img src=x onerror=alert(1)>\n\nThese strings must remain text.\n\n'+('This is a long paragraph for checking line wrapping and readability. '.repeat(28)),
+ '纯文本渲染示例。\n\n<script>alert("example")<\/script>\n<img src=x onerror=alert(1)>\n\n以上内容只能作为文本展示。\n\n'+('这是一段用于检查长正文换行、阅读节奏和容器宽度的演示文字。'.repeat(38))];
+ data.push({id:uuid(900),end:'fs_ops',scope:'admin_account',owner:'B',category:'security',at:NOW-1000,title:['A private notification for administrator B','仅投递给管理员 B 的个人消息'],body:['Demo only. This message is visible to administrator B.','仅为演示：这条消息只对管理员 B 可见。'],target:'none',readBy:{}});
+ data.push({id:uuid(901),end:'admin',scope:'admin_all',category:'system',at:NOW,title:['Other platform sample','其他平台示例'],body:['Not visible from operations.','运营端不可见。'],target:'none',readBy:{}});
+ return data;
+}
+function restore(){try{const x=JSON.parse(localStorage.getItem(STORE));if(x&&Array.isArray(x)&&x.length>=64)return x;}catch(e){}return seed();}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S.data));}catch(e){}if(syncChannel)syncChannel.postMessage(S.data);}
+function word(v){return v ? (v[S.lang==='en'?0:1] || v[0] || L('Notification','消息')) : '';}
+function title(m){return m.degraded?L('Notification','消息'):word(m.title);}
+function cat(c){return word(CATEGORY[c]||['Other','其他']);}
+function visible(){return S.data.filter(m=>m.end==='fs_ops'&&(m.scope==='admin_all'||m.owner===S.user)).sort((a,b)=>b.at-a.at||b.id.localeCompare(a.id));}
+function byId(id){return visible().find(m=>m.id===id);}
+function isRead(m){return !!m.readBy[S.user]||m.at<accountCreated[S.user];}
+function count(){return visible().filter(m=>!isRead(m)&&!m.expired&&!m.invalidated).length;}
+function badge(){if(S.scenario==='empty')return 0;if(S.scenario==='countfail')return S.lastCount;S.lastCount=count();return S.lastCount;}
+function matched(){return visible().filter(m=>(S.cat==='all'||S.cat===m.category)&&(S.status==='all'||(S.status==='read'?isRead(m):!isRead(m)||S.keep.includes(m.id))));}
+function unreadHits(){return matched().filter(m=>!isRead(m));}
+function hasFilters(){return S.cat!=='all'||S.status!=='all';}
+function stop(){sequence++;timerIds.forEach(clearTimeout);timerIds.clear();S.busy=false;S.rowBusy=null;S.pageLoading=false;}
+function later(fn,ms=500){const seq=sequence;const id=setTimeout(()=>{timerIds.delete(id);if(seq===sequence&&!S.session)fn();},ms);timerIds.add(id);}
+function btn(label,act,value='',kind='',disabled=false){return `<button type="button" class="btn ${kind}" data-act="${act}" data-v="${esc(value)}"${disabled?' disabled':''}>${label}</button>`;}
+function note(txt){return `<div class="ops-invalidation">${CF.note('',esc(txt))}</div>`;}
+function absolute(at){return CF.fmtTime(new Date(at).toISOString(),true);}
+function item(m){return {id:m.id,title:title(m),catLabel:cat(m.category),summary:m.degraded?'':word(m.body).split('\n')[0],unread:!isRead(m),expired:m.expired||m.invalidated,timeTitle:absolute(m.at)+' · '+S.tz,timeText:NOW-m.at<86400000?CF.fmtRel(new Date(m.at).toISOString(),new Date(NOW).toISOString()):absolute(m.at)};}
+function skeleton(n){return `<div role="status" aria-label="${L('Loading','加载中')}">${Array.from({length:n},()=>'<div class="skel-row"><div class="skel s"></div><div class="skel"></div><div class="skel m"></div></div>').join('')}</div>`;}
+function empty(titleText,sub,actions=''){return `<div class="ops-empty">${CF.ICO.bell}<h2>${esc(titleText)}</h2><p>${esc(sub)}</p>${actions}</div>`;}
+function demoTools(){return `<div class="ops-demo-note">${CF.ICO.info}<span>${L('Demonstration data · No real account or business event','演示数据 · 不对应真实账号或业务事件')}</span></div><details class="ops-tools" ${S.tools?'open':''}><summary>${L('Prototype scenarios','原型状态演示')}</summary><div class="ops-tools-body"><label>${L('Operations Administrator (same role)','运营管理员（同一角色）')}<select class="inp" data-f="user">${['A','B','C'].map(u=>`<option value="${u}" ${S.user===u?'selected':''}>${L('Operations Administrator ','运营管理员 ')+u+(u==='C'?L(' · new account',' · 新账号'):'')}</option>`).join('')}</select></label><label>${L('Scenario','演示状态')}<select class="inp" data-f="scenario">${scenarios.map(o=>`<option value="${o[0]}" ${S.scenario===o[0]?'selected':''}>${word(o.slice(1))}</option>`).join('')}</select></label>${btn(L('Add a notification','模拟新消息'),'new','','sm')}${btn(L('132 unread','132 条未读'),'many','','sm')}${btn(L('Reset demo','重置演示'),'reset','','sm')}<p class="ops-muted">${L('Cross-module account sessions and business data are simulated. Scenario controls are for review only.','跨模块账号会话和业务数据仅为模拟；本区操作仅用于原型演示。')}</p></div></details>`;}
+function filter(){return `<div class="ops-filter"><label for="category">${L('Category','分类')}<select class="inp" id="category" data-f="category"><option value="all">${L('All categories','全部分类')}</option>${[...new Set(visible().map(m=>m.category))].map(c=>`<option value="${c}" ${S.cat===c?'selected':''}>${esc(cat(c))}</option>`).join('')}</select></label><div class="ops-status"><span>${L('Status','状态')}</span><div class="seg" role="group" aria-label="${L('Read status','阅读状态')}">${[['all','All','全部'],['unread','Unread','未读'],['read','Read','已读']].map(x=>`<button type="button" data-act="status" data-v="${x[0]}" aria-pressed="${S.status===x[0]}">${word(x.slice(1))}</button>`).join('')}</div></div>${hasFilters()?btn(L('Clear filters','清除筛选'),'clear','','sm'):''}</div>`;}
+function pager(n){const pages=Math.max(1,Math.ceil(n/S.size));S.pg=Math.min(S.pg,pages);const around=Array.from({length:pages},(_,i)=>i+1).filter(p=>p===1||p===pages||Math.abs(p-S.pg)<2);return `<div class="ops-pagination"><span>${L('Total','共')} <b class="mono">${n}</b> ${L('notifications','条消息')}${S.pageLoading?' · '+L('Loading…','加载中…'):''}</span><div class="ops-page-buttons"><label for="page-size">${L('Per page','每页条数')}</label><select id="page-size" class="inp" data-f="size"${S.pageLoading?' disabled':''}>${[20,50,100].map(n=>`<option ${n===S.size?'selected':''}>${n}</option>`).join('')}</select>${btn('‹','page',String(S.pg-1),'sm',S.pg===1||S.pageLoading)}${around.map((p,i)=>(i&&p>around[i-1]+1?'<span>…</span>':'')+`<button type="button" class="pgbtn ${p===S.pg?'ops-page-current':''}" data-act="page" data-v="${p}" aria-label="${L('Page ','第 ')+p}"${p===S.pg?' aria-current="page"':''}${S.pageLoading?' disabled':''}>${p}</button>`).join('')}${btn('›','page',String(S.pg+1),'sm',S.pg===pages||S.pageLoading)}</div></div>`;}
+function list(){
+ const bad=['empty','nomatch','loading','error'].includes(S.scenario),n=unreadHits().length;
+ const action=`<span title="${n? '':L('No unread messages match these filters','当前筛选下没有未读消息')}">${btn(L('Mark all as read','全部标为已读'),'askAll','','primary sm',!n||bad)}</span>`;
+ let body;
+ const rows=matched(),pages=Math.max(1,Math.ceil(rows.length/S.size));S.pg=Math.min(S.pg,pages);
+ if(S.scenario==='loading')body=skeleton(5);
+ else if(S.scenario==='error')body=empty(L('Failed to load notifications','消息加载失败'),L('Please try again.','请稍后重试。'),btn(L('Retry','重试'),'retryList','','primary'));
+ else if(S.scenario==='empty'||(!rows.length&&!hasFilters()))body=empty(L('No notifications yet','暂无消息'),L('Notifications about your account and business will appear here.','与你的账号和业务相关的消息将显示在这里。'));
+ else if(S.scenario==='nomatch'||!rows.length)body=empty(L('No messages match these filters','没有符合筛选条件的消息'),L('Clear the filters to see every notification.','清除筛选即可查看全部消息。'),btn(L('Clear filters','清除筛选'),'clear','','primary'));
+ else body=`<ul class="msgs" aria-label="${L('Notifications','消息列表')}">${rows.slice((S.pg-1)*S.size,S.pg*S.size).map(m=>CF.msgItem(item(m),{act:'open',markable:true,markAct:'mark'})).join('')}</ul>`+(S.pageError?`<div class="ops-issue-note" role="alert">${L('This page could not be loaded. Your current page is unchanged.','翻页失败，当前页内容已保留。')}${btn(L('Retry','重试'),'retryPage','','sm')}</div>`:'')+pager(rows.length);
+ return CF.pageHead(L('Notifications','消息中心'),L('Shared operations notifications and messages addressed to you personally.','运营端共享消息，以及投递给你个人的消息。'),action)+demoTools()+`<section class="card" aria-label="${L('Notification list','消息列表')}">${filter()}${body}</section>`;
+}
+const reason={expired:['This notification has expired.','该消息已过期。'],deleted:['The related record is no longer available.','相关记录已不存在。'],changed:['This has already been handled — no action is needed. Current status: completed.','该业务状态已变更，无需再处理。当前状态：已完成。'],permission:['You no longer have access to this record.','你当前无权访问该记录。']};
+function detail(){
+ const m=byId(S.msgId);
+ if(!m||S.scenario==='notfound')return CF.pageHead(L('Notifications','消息中心'),'','')+demoTools()+`<div class="card">${empty(L('This notification is not available.','消息不存在'),L('Return to notifications to continue.','返回消息中心继续查看。'),btn(L('Back to notifications','返回消息中心'),'back','','primary'))}</div>`;
+ if(S.detail==='loading')return CF.pageHead(L('Notification details','消息详情'),'','')+demoTools()+`<div class="card">${skeleton(3)}</div>`;
+ if(S.detail==='error')return CF.pageHead(L('Notification details','消息详情'),'','')+demoTools()+`<div class="card">${empty(L('Failed to load this notification','消息详情加载失败'),L('It has not been marked as read.','本条消息未被标记为已读。'),btn(L('Retry','重试'),'retryDetail','','primary')+btn(L('Back to list','返回列表'),'back'))}</div>`;
+ let cta='',info='';
+ if(reason[S.pre])info=note(word(reason[S.pre]));
+ if(S.pre==='missing')info=`<p class="ops-muted">${L('This notification has no available action in the current version.','当前版本暂不支持该消息的跳转操作。')}</p>`;
+ else if(S.pre==='pending')cta=btn('<span class="spinner"></span>'+L('Checking…','检查中…'),'jump','','primary',true);
+ else if(['deleted','changed','permission'].includes(S.pre))cta=`<span tabindex="0" title="${esc(word(reason[S.pre]))}">${btn(L('View details','查看详情'),'jump','','primary',true)}</span>`;
+ else if(S.pre==='ok')cta=btn(m.target==='static'?L('Open notifications','打开消息中心'):L('View details','查看详情'),'jump','','primary');
+ return `<div class="ops-detail-head">${CF.pageHead(esc(title(m)),'','')}</div>`+demoTools()+`<article class="card ops-detail-card"><span class="tag">${esc(cat(m.category))}</span>${m.expired?` <span class="pill dash">${t('expired')}</span>`:''}<div class="ops-meta"><span>${L('Created','创建时间')} <time>${esc(absolute(m.at))}</time></span></div>${info}<div class="ops-body">${esc(m.degraded?L('Notification','消息'):word(m.body))}</div><div class="ops-actions">${cta}${btn(L('Back to list','返回列表'),'back')}</div></article>`;
+}
+function markAllModal(){return `<div class="mask" data-act="closeModal"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="all-title"><div class="modal-h"><b id="all-title">${L('Mark '+S.batch.length+' notifications as read?','将 '+S.batch.length+' 条消息标为已读？')}</b></div><div class="modal-b">${note(L('Filter: ','当前筛选：')+(S.cat==='all'?L('All categories','全部分类'):cat(S.cat))+' · '+word({all:['All','全部'],unread:['Unread','未读'],read:['Read','已读']}[S.status]))}<p class="ops-muted">${L("This includes every matching page, for your account only. This can't be undone.",'包含所有符合筛选的页面，仅影响你的账号。该操作不可撤销。')}</p></div><div class="modal-f">${btn(L('Cancel','取消'),'closeModal','','',S.busy)}${btn(S.busy?'<span class="spinner"></span>'+L('Marking…','标记中…'):L('Confirm','确认'),'doAll','','primary',S.busy)}</div></section></div>`;}
+function boundaryModal(){return `<div class="mask" data-act="closeModal"><section class="modal" role="dialog" aria-modal="true" aria-label="${L('Prototype boundary','原型范围说明')}"><div class="modal-h"><b>${L('Prototype boundary','原型范围说明')}</b></div><div class="modal-b"><p class="ops-muted">${L('The notification action is available. Its business destination is supplied by the integrating module and is not included in this review. No real operation has been performed.','该消息可以执行跳转。业务目标页由接入模块提供，未包含在本次评审中。此演示未执行真实业务操作。')}</p></div><div class="modal-f">${btn(L('Return to notification','返回消息'),'closeModal','','primary')}</div></section></div>`;}
+function signInLink(){const module=CF.MODULES[CF.OWNER['P-O01']];const target=buildHash().slice(1);const href='../'+module.dir+'/'+module.file+'#/ops/login?redirect='+encodeURIComponent(target);return `<a class="btn primary" href="${esc(href)}">${L('Sign in','登录')}</a>`;}
+function sessionView(){return `<div class="ops-session"><section class="card"><div class="card-b">${CF.ICO.lock}<h1>${L('Your session has ended','会话已结束')}</h1><p class="ops-muted">${L('Sign in again to continue.','请重新登录后继续。')}</p><p class="ops-demo-note">${L('Open the operations sign-in prototype with the original notification path. Account sessions are simulated independently.','打开运营端登录原型并保留原消息路径；各模块账号会话独立模拟。')}</p>${signInLink()} ${btn(L('Restore demo session','恢复演示会话'),'resume')}</div></section></div>`;}
+function buildHash(){const q=new URLSearchParams();if(S.cat!=='all')q.set('cat',S.cat);if(S.status!=='all')q.set('status',S.status);if(S.pg!==1)q.set('page',S.pg);if(S.size!==20)q.set('size',S.size);return '#/ops/messages'+(S.page==='P-O21'?'/'+encodeURIComponent(S.msgId):'')+(q.size?'?'+q:'');}
+function readURL(){const parts=location.hash.slice(1).split('?');const route=parts[0].match(/^\/(?:ops\/messages|p-o20)(?:\/([^/]+))?\/?$/);if(!route)return false;const q=new URLSearchParams(parts[1]||''),old=S.page,next=route[1];const newCat=q.get('cat')||'all',newStatus=q.get('status')||'all';if(S.cat!==newCat||S.status!==newStatus)S.keep=[];S.cat=newCat;S.status=['all','unread','read'].includes(newStatus)?newStatus:'all';S.pg=Math.max(1,Number(q.get('page'))||1);S.size=[20,50,100].includes(Number(q.get('size')))?Number(q.get('size')):20;S.page=next?'P-O21':'P-O20';try{S.msgId=next?decodeURIComponent(next):null;}catch(e){S.msgId='invalid-message-id';}if(next)loadDetail();else if(old==='P-O21')S.restoreY=S.scrollY;return true;}
+function goList(keep=false){stop();S.page='P-O20';S.msgId=null;S.menu=null;S.modal=null;S.detail='ready';if(!keep){S.cat='all';S.status='all';S.pg=1;S.keep=[];}S.restoreY=keep?S.scrollY:0;render();CF.syncURL();if(!keep)window.scrollTo(0,0);}
+function open(id){stop();S.scrollY=window.scrollY;S.page='P-O21';S.msgId=id;S.menu=null;S.modal=null;loadDetail();render();CF.syncURL();window.scrollTo(0,0);}
+function loadDetail(){stop();S.detail='loading';S.pre='idle';if(S.scenario==='detailloading')return;const id=S.msgId;later(()=>{const m=byId(id);if(!m||S.scenario==='notfound'){S.detail='ready';render();return;}if(S.failDetail){S.detail='error';render();return;}S.detail='ready';render(); // render BEFORE read request
+ later(()=>{if(S.scenario!=='readfail'&&!isRead(m)){m.readBy[S.user]=Date.now();S.keep.push(m.id);save();render();}},180);
+ if(m.expired||m.invalidated)S.pre='expired';else if(m.target==='none')S.pre='none';else if(m.target==='missing')S.pre='missing';else if(m.target==='static')S.pre='ok';else {S.pre='pending';later(()=>{S.pre=m.pre==='timeout'?'ok':m.pre;render();},m.pre==='timeout'?3000:650);}render();});}
+function expire(){stop();S.session=true;S.modal=null;S.menu=null;clearTimeout(pollId);pollId=null;render();}
+function applyScenario(key){stop();S.scenario=key;S.pageError=false;S.failDetail=key==='detailerror';S.keep=[];S.session=false;S.menu=null;S.modal=null;
+ if(sampleCases[key])open(uuid(sampleCases[key]));
+ else if(key==='notfound')open(uuid(901));
+ else if(key==='session'){expire();}
+ else {goList(false);if(key==='normal'){S.lastCount=count();}}render();CF.syncURL();}
+function loadPanel(){S.panel='loading';later(()=>{S.panel=S.scenario==='panelfail'?'error':'ready';render();});}
+function onAct(n,a,v,e){
+ if(S.session&&a!=='resume')return true;
+ if(a==='lang'){S.lang=v;try{localStorage.setItem('fs-prototype-language',JSON.stringify({language:v==='en'?'en':'zh-CN',updated_at:new Date().toISOString()}));}catch(e){}S.menu=null;render();return true;}
+ if(a==='menu'&&v==='bell'){S.menu=S.menu==='bell'?null:'bell';if(S.menu)loadPanel();pendingFocus=S.menu?'.panel button':'[data-f="bell"]';render();return true;}
+ if(a==='menu'&&v==='acc'){pendingFocus=S.menu==='acc'?'[data-v="acc"]':'.dd-list [role="menuitem"]';return false;}
+ if(a==='notifyRetry'){S.scenario='normal';loadPanel();render();return true;}
+ if(a==='open'||a==='notifyGo'){open(v);return true;}
+ if(a==='back'||a==='crumb'){goList(true);return true;}
+ if(a==='notifyAll'||(a==='go'&&v==='P-O20')){S.scenario='normal';goList(false);return true;}
+ if(a==='status'){stop();S.status=v;S.pg=1;S.keep=[];render();CF.syncURL();window.scrollTo(0,0);return true;}
+ if(a==='clear'){S.scenario='normal';goList(false);return true;}
+ if(a==='retryList'){S.scenario='loading';render();later(()=>{S.scenario='normal';render();});return true;}
+ if(a==='mark'){const m=byId(v);if(!m||isRead(m)||S.rowBusy)return true;S.rowBusy=v;render();later(()=>{S.rowBusy=null;if(S.scenario==='readfail'){CF.toast('danger',L('Could not mark this notification as read. Try again.','标记已读失败，请重试。'));return;}m.readBy[S.user]=Date.now();S.keep.push(v);save();render();pendingFocus='[data-act="open"][data-v="'+v+'"]';render();});return true;}
+ if(a==='page'||a==='retryPage'){if(S.pageLoading)return true;S.requestPg=a==='retryPage'?S.requestPg:Number(v);S.pageLoading=true;S.pageError=false;render();later(()=>{S.pageLoading=false;if(S.scenario==='pagefail'&&a!=='retryPage')S.pageError=true;else {S.pg=S.requestPg;S.scenario='normal';CF.syncURL();window.scrollTo(0,0);}render();});return true;}
+ if(a==='askAll'){S.batch=unreadHits().map(m=>m.id);if(!S.batch.length)return true;modalReturn='[data-act="askAll"]';S.modal={type:'markAll'};pendingFocus='.modal [data-act="closeModal"]';render();return true;}
+ if(a==='doAll'){if(S.busy)return true;S.busy=true;render();const user=S.user,ids=[...S.batch];later(()=>{S.busy=false;if(S.scenario==='bulk401'){expire();return;}S.modal=null;pendingFocus=modalReturn;if(S.scenario==='readfail'){render();CF.toast('danger',L('Could not mark notifications as read. Try again.','标记已读失败，请重试。'));return;}let marked=0;ids.forEach(id=>{const m=byId(id);if(m&&!isRead(m)){m.readBy[user]=Date.now();S.keep.push(id);marked++;}});save();render();CF.toast('success',L(marked+' notifications marked as read','已将 '+marked+' 条消息标为已读'));},850);return true;}
+ if(a==='closeModal'){if(S.busy)return true;if(n.classList.contains('mask')&&e.target!==n)return true;S.modal=null;pendingFocus=modalReturn;render();return true;}
+ if(a==='retryDetail'){S.failDetail=false;loadDetail();render();return true;}
+ if(a==='jump'){if(S.pre!=='ok')return true;const m=byId(S.msgId);if(m.target==='static')goList(false);else {modalReturn='[data-act="jump"]';S.modal={type:'boundary'};pendingFocus='.modal button';render();}return true;}
+ if(a==='new'){S.data.unshift({id:uuid(1000+S.data.length),end:'fs_ops',scope:'admin_all',category:'system',at:NOW+S.data.length*1000,title:['A new demonstration notification','一条新的演示消息'],body:['This is a new sample notification.','这是一条新增的演示消息。'],target:'none',readBy:{}});save();render();return true;}
+ if(a==='many'){stop();const current=count();for(let i=current;i<132;i++)S.data.push({id:uuid(2000+S.data.length),end:'fs_ops',scope:'admin_all',category:'system',at:NOW+S.data.length*1000,title:['Demonstration notification '+(i+1),'演示消息 '+(i+1)],body:['Sample for pagination and unread-count review.','用于检查分页与未读角标的演示消息。'],target:'none',readBy:{}});S.scenario='normal';save();goList(false);return true;}
+ if(a==='reset'){stop();S.data=seed();S.user='A';S.size=20;S.scenario='normal';save();goList(false);return true;}
+ if(a==='signout'){expire();return true;}
+ if(a==='resume'){S.session=false;S.scenario='normal';sessionStart=activity=Date.now();S.lastCount=count();if(S.page==='P-O21')loadDetail();render();schedulePoll();return true;}
+ return false;
+}
+function afterRender(){
+ document.documentElement.lang=S.lang==='en'?'en':'zh-CN';
+ document.getElementById('sideContext').textContent=L('Financial Services','金融服务平台');
+ document.getElementById('sideNote').textContent=L('Operations Administrator','运营管理员')+' '+S.user;
+ if(S.session){document.getElementById('topRight').innerHTML='';document.getElementById('crumb').innerHTML='';}
+ document.querySelectorAll('.msg').forEach(li=>{const b=li.querySelector('.msg-hit'),id=b.dataset.v,m=byId(id);if(m){b.title=title(m);b.setAttribute('aria-label',(isRead(m)?L('Read: ','已读：'):L('Unread: ','未读：'))+title(m));}if(S.rowBusy===id){li.classList.add('ops-row-pending');li.setAttribute('aria-busy','true');li.querySelectorAll('button').forEach(x=>x.disabled=true);}});
+ if(S.restoreY!==null){const y=S.restoreY;S.restoreY=null;requestAnimationFrame(()=>window.scrollTo(0,y));}
+ if(pendingFocus){const target=pendingFocus;pendingFocus=null;queueMicrotask(()=>document.querySelector(target)?.focus({preventScroll:true}));}
+ // Preserve focus through shared-shell full renders, and trap the active overlay.
+ const overlay=document.querySelector('.modal')||document.querySelector('.panel');
+ if(overlay){overlay.setAttribute('aria-modal','true');document.querySelector('#content').inert=!!S.modal;queueMicrotask(()=>{if(!overlay.contains(document.activeElement)){const preferred=overlay.querySelector('[data-act="closeModal"]:not(:disabled)')||overlay.querySelector('button:not(:disabled)');preferred?.focus({preventScroll:true});}});}else document.querySelector('#content').inert=false;
+ const prev=document.querySelector('[data-act="page"][data-v="'+(S.pg-1)+'"]');if(prev)prev.setAttribute('aria-label',L('Previous page','上一页'));
+ const next=document.querySelector('[data-act="page"][data-v="'+(S.pg+1)+'"]:last-child');if(next)next.setAttribute('aria-label',L('Next page','下一页'));
+}
+CF.define({id:'fs-ops-notify',end:'admin',home:'P-O20',owns:['P-O20','P-O21'],topbarPrd:false,
+ dict:{en:{adminConsole:'Operations',navOverview:'Overview'},zh:{adminConsole:'运营端',navOverview:'总览'}},
+ state:()=>({data:restore(),user:'A',cat:'all',status:'all',pg:1,size:20,keep:[],msgId:null,scenario:'normal',detail:'ready',pre:'none',panel:'ready',tools:false,busy:false,batch:[],lastCount:0,scrollY:0,restoreY:null}),
+ onBoot:s=>{S=s;try{const pref=JSON.parse(localStorage.getItem('fs-prototype-language'));if(pref&&['en','zh-CN'].includes(pref.language))S.lang=pref.language==='en'?'en':'zh';}catch(e){}S.lastCount=count();},content:()=>S.session?sessionView():(S.page==='P-O20'?list():detail()),
+ account:()=>({settings:'P-O05',avatar:S.user,ident:L('Operations Administrator ','运营管理员 ')+S.user,ok:true,okText:L('Operations','运营端')}),
+ notify:()=>({unread:badge(),phase:S.panel,items:S.scenario==='empty'?[]:visible().slice(0,10).map(item)}),
+ notifyOpen:open,notifyRetry:()=>{S.scenario='normal';loadPanel();render();},
+ modals:{markAll:markAllModal,boundary:boundaryModal},modalLocked:()=>!!S.busy,
+ crumbParts:()=>S.page==='P-O21'?[[L('Notifications','消息中心'),'P-O20']]:[],
+ crumbCur:()=>S.page==='P-O21'?(byId(S.msgId)&&S.scenario!=='notfound'?title(byId(S.msgId)):L('Notification','消息')):L('Notifications','消息中心'),
+ hash:{build:buildHash,read:readURL},afterRender,onAct});
+CF.boot();
+document.addEventListener('toggle',e=>{if(e.target.matches('.ops-tools'))S.tools=e.target.open;},true);
+document.addEventListener('change',e=>{const el=e.target,field=el.dataset.f;if(!field)return;
+ if(field==='scenario'){applyScenario(el.value);return;}
+ if(field==='user'){stop();S.user=el.value;S.keep=[];S.lastCount=count();if(S.page==='P-O21')loadDetail();render();return;}
+ if(field==='category'){stop();S.cat=el.value;S.keep=[];S.pg=1;S.scenario='normal';render();CF.syncURL();}
+ if(field==='size'){stop();S.size=Number(el.value);S.pg=1;render();CF.syncURL();}
+});
+document.addEventListener('keydown',e=>{const overlay=document.querySelector('.modal')||document.querySelector('.panel');if(e.key==='Escape'&&overlay){e.preventDefault();e.stopImmediatePropagation();if(S.busy)return;const bell=!!S.menu;S.modal=null;S.menu=null;pendingFocus=bell?'[data-f="bell"]':modalReturn;render();return;}
+ if(e.key==='Tab'&&overlay){const list=[...overlay.querySelectorAll('button:not(:disabled),a[href],select,[tabindex="0"]')].filter(x=>x.getClientRects().length);if(!list.length){e.preventDefault();return;}const first=list[0],last=list[list.length-1];if(e.shiftKey&&(document.activeElement===first||!overlay.contains(document.activeElement))){e.preventDefault();last.focus();}else if(!e.shiftKey&&(document.activeElement===last||!overlay.contains(document.activeElement))){e.preventDefault();first.focus();}}
+},true);
+['pointerdown','keydown'].forEach(name=>document.addEventListener(name,()=>{activity=Date.now();},{passive:true}));
+function schedulePoll(){clearTimeout(pollId);pollId=null;if(S.session||document.hidden)return;pollId=setTimeout(()=>{if(Date.now()-sessionStart>=7200000||Date.now()-activity>=1800000){expire();return;}if(S.scenario!=='countfail'){S.data=restore();render();}schedulePoll();},60000);}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!S.session){if(Date.now()-sessionStart>=7200000||Date.now()-activity>=1800000){expire();return;}S.data=restore();render();}schedulePoll();});
+try{syncChannel=new BroadcastChannel(STORE);syncChannel.onmessage=e=>{if(Array.isArray(e.data)&&!S.session){S.data=e.data;render();}};}catch(e){}
+window.addEventListener('storage',e=>{if(e.key===STORE&&!S.session){S.data=restore();render();}});
+window.addEventListener('pagehide',()=>{stop();clearTimeout(pollId);if(syncChannel)syncChannel.close();});
+schedulePoll();
+})();
+</script>
+</body></html>

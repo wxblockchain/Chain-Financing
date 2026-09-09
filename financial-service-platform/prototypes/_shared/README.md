@@ -1,22 +1,46 @@
 # 金融服务平台原型接入层
 
-本目录只维护本平台的页面登记与导航配置，不复制 token、组件或公共运行时。
+本层维护金融服务平台的页面与跨文件导航登记；视觉和运行时直接复用仓库现有实现，不复制第二套公共代码。
 
-`registry.js` 定义 `CF.PAGES`、`CF.NAV`、`CF.MODULES`、`CF.OWNER`、`CF.MSG_PAGE`、`CF.ENTRY`。运营端使用 `end: admin` 表示控制台画布，消息数据的 `end: fs_ops` 是另一维度。资产平台的登记表不在本平台文件中加载，避免资产菜单与运营菜单互相覆盖。
+| 内容 | 唯一来源 |
+| --- | --- |
+| 语义、组件约束与画布规范 | [`docs/design-system/`](../../../docs/design-system/README.md) |
+| token / 公共组件 / 运行时 | [`asset-platform/prototypes/_shared/`](../../../asset-platform/prototypes/_shared/README.md) 的 `tokens.css`、`base.css`、`shell.js` |
+| 本平台页面、模块归属、导航、消息入口 | 本目录 [`registry.js`](registry.js) |
+| 本平台国际化与脱敏规则 | [`01-国际化基线.md`](../../prd/v1.0-账户与登录/01-国际化基线.md) |
 
-模块 HTML 的加载顺序：
+`registry.end = admin` 表达控制台画布，消息契约的 `end = fs_ops` 表达运营端消息池，两者不要混用。金融服务平台模块**只加载本平台 registry**，不加载后再覆盖资产平台 registry；资产平台原有五个模块继续读取自己的登记表。
 
-1. `../../../asset-platform/prototypes/_shared/tokens.css`
-2. `../../../asset-platform/prototypes/_shared/base.css`
-3. 模块专有样式（HTML 内，仅内容组合）
-4. `../_shared/registry.js`
-5. `../../../asset-platform/prototypes/_shared/shell.js`
-6. 模块脚本（HTML 内，调用 `CF.define()` 和 `CF.boot()`）
+## 接入模块
 
-相对路径以本平台的模块子目录为起点。公共源文件只读复用，其路径和资产原型均不迁移、不修改。
+模块放在 `prototypes/[功能名]/`，先在本层登记页面、模块、OWNER、ENTRY，再实现页面。消息中心 P-O20 不登记侧栏入口，铃铛及账号菜单通过 `CF.MSG_PAGE.admin` 进入。
 
-本平台登记 P-O01～P-O06 和已入库协议管理 P-O-AG-01～04；侧栏为总览、协议管理。为 WS-309 保留 P-O20／P-O21。消息原型尚未入库，`fs-ops-notify` 暂时指向账户模块的接入边界（不是消息页面实现），让其他模块的铃铛也能进入明确的边界说明。跨文件进入账户模块仍经登录守卫，不模拟跨模块单点登录。WS-309 接入时登记真实文件、将其页面从登录模块的 `owns` 中移出，再验证铃铛／账号菜单的跨文件跳转；不能把消息页实现放到账户模块。
+模块按顺序加载：
 
-新增模块先在此登记，再引用同一公共运行时。若要交付可单独下载的 HTML，使用 `export.py` 机械内联公共文件，勿手改导出的快照。
+```html
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>/* 仅本模块专有样式，禁止覆盖 token 或公共组件 */</style>
+<!-- 沿用公共运行时要求的 app / nav / topRight / crumb / content / layers 挂载点 -->
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script>/* CF.define(...) + CF.boot()，不重建导航 */</script>
+```
 
-导出工具保留协议管理既有 `--output` 用法；其他模块用 `--source <HTML> --output <附件>`。导出附件内点击跨模块链接会提示使用完整仓库，避免跳转到不存在的相邻文件。仓库版链接正常跳转。
+因此仓库预览需保留两个平台的目录相对位置，不能只拷走某个模块 HTML。`account().settings` 仅在对应页面可用时提供；公共运行时现在允许省略它，避免生成 `undefined` 死入口。账号设置与登录原型已入库；消息模块提供 P-O05 账户设置入口，会话中断页提供携带原消息路径的登录入口。账户模块按自身演示守卫处理登录，不共享真实登录态。
+
+## 导出独立评审附件
+
+在仓库根目录执行（Python 3.9+，标准库，无需构建依赖）：
+
+```bash
+python3 financial-service-platform/prototypes/_shared/export.py \
+  --source financial-service-platform/prototypes/消息通知/v1.0-消息通知-原型.html \
+  --output ../deliverables/金融服务平台-运营端-消息通知-入库版.html
+```
+
+输出 HTML 从当前仓库源文件内联 CSS / JS，可单文件双击打开，无网络依赖。生成件不放回仓库，避免出现第二份可编辑公共代码；公共源更新后重新执行导出即可。
+
+该脚本处理本仓库采用的普通 stylesheet link / script src 写法，不是通用网页打包器；不收录远程资源。
+
+省略 `--source` 时仍导出协议管理，保留已发布的 `export.py --output …` 用法。三个模块的仓库版导航可互相跳转；单文件附件中的跨模块链接会显示范围提示，完整跨模块操作请使用完整仓库。

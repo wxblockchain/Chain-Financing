@@ -2,6 +2,8 @@
 
 五个模块原型共用的 token、组件、页面登记表与运行时。**这里是唯一来源**：任何一处改动对所有模块同时生效。
 
+金融服务平台消息通知也直接引用这里的 `tokens.css`、`base.css`、`shell.js`，但使用它自己的 [页面登记层](../../../financial-service-platform/prototypes/_shared/README.md)。修改公共视觉或运行时需同时检查该消费端；资产平台的 `registry.js` 仍只管理资产平台页面。
+
 ## 文件
 
 | 文件 | 内容 | 改它意味着 |
@@ -119,7 +121,7 @@
 | `owns` | 本模块真正实现的页面；不在其中的菜单目标由 shell 渲染成指向对方文件的链接 |
 | `content()` / `focus()` | 两种版式的页面内容 |
 | `modals` / `drawers` | 弹窗与抽屉表（`prd` 抽屉由 shell 提供） |
-| `account()` | 顶栏账户菜单的身份与跳转目标 |
+| `account()` | 顶栏账户菜单的身份与跳转目标；`settings` 可省略，省略时不渲染账户设置项 |
 | `crumbParts()` / `crumbCur()` | 面包屑的上级层级与当前级文案 |
 | `hash` | 自定义 URL 方案；不给就用 `#/<page-id>` |
 | `onAct(n,a,v,e)` | 模块自己的 `data-act`；返回 `true` 表示已处理 |
