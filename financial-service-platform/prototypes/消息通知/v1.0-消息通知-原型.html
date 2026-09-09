@@ -123,7 +123,10 @@ function detail(){
  if(S.detail==='error')return CF.pageHead(L('Notification details','消息详情'),'','')+demoTools()+`<div class="card">${empty(L('Failed to load this notification','消息详情加载失败'),L('It has not been marked as read.','本条消息未被标记为已读。'),btn(L('Retry','重试'),'retryDetail','','primary')+btn(L('Back to list','返回列表'),'back'))}</div>`;
  let cta='',info='';
  if(reason[S.pre])info=note(word(reason[S.pre]));
- if(S.pre==='missing')info=`<p class="ops-muted">${L('This notification has no available action in the current version.','当前版本暂不支持该消息的跳转操作。')}</p>`;
+ /* 7.6.3 映射缺失（D-O20 / AC-O37，用户 2026-09-08 在 WS-304 的裁定）：不渲染跳转按钮，
+    也不展示任何说明文案，操作区只剩「返回列表」。与 7.6.4「无跳转」（S.pre==='none'）界面表现
+    完全一致，区别只在后台要不要上报一次「未知业务类型」日志。 */
+ if(S.pre==='missing'){/* 无按钮、无文案 */}
  else if(S.pre==='pending')cta=btn('<span class="spinner"></span>'+L('Checking…','检查中…'),'jump','','primary',true);
  else if(['deleted','changed','permission'].includes(S.pre))cta=`<span tabindex="0" title="${esc(word(reason[S.pre]))}">${btn(L('View details','查看详情'),'jump','','primary',true)}</span>`;
  else if(S.pre==='ok')cta=btn(m.target==='static'?L('Open notifications','打开消息中心'):L('View details','查看详情'),'jump','','primary');
@@ -147,8 +150,15 @@ function applyScenario(key){stop();S.scenario=key;S.pageError=false;S.failDetail
  else if(key==='session'){expire();}
  else {goList(false);if(key==='normal'){S.lastCount=count();}}render();CF.syncURL();}
 function loadPanel(){S.panel='loading';later(()=>{S.panel=S.scenario==='panelfail'?'error':'ready';render();});}
+/* PRD 摘录面板：P-O20 / P-O21 由公共层顶栏按钮按当前 page 取键；C-O21 快捷面板不是路由页，
+   由面板标题栏里的按钮显式传 data-v="C-O21"。从面板里打开的，关掉后回到面板，不把人丢回页面。 */
+function closePrd(){const back=S.prdBack;S.drawer=null;S.prdPage=null;S.prdBack=null;
+ if(back==='bell'){S.menu='bell';pendingFocus='.panel [data-act="openPrd"]';}else pendingFocus='[data-act="openPrd"]';
+ render();return true;}
 function onAct(n,a,v,e){
  if(S.session&&a!=='resume')return true;
+ if(a==='openPrd'){S.prdBack=S.menu==='bell'?'bell':null;S.prdPage=v||null;S.drawer='prd';S.menu=null;pendingFocus='.drawer.prd .modal-x';render();return true;}
+ if(a==='closeDrawer'&&S.drawer==='prd')return closePrd();
  if(a==='lang'){S.lang=v;try{localStorage.setItem('fs-prototype-language',JSON.stringify({language:v==='en'?'en':'zh-CN',updated_at:new Date().toISOString()}));}catch(e){}S.menu=null;render();return true;}
  if(a==='menu'&&v==='bell'){S.menu=S.menu==='bell'?null:'bell';if(S.menu)loadPanel();pendingFocus=S.menu?'.panel button':'[data-f="bell"]';render();return true;}
  if(a==='menu'&&v==='acc'){pendingFocus=S.menu==='acc'?'[data-v="acc"]':'.dd-list [role="menuitem"]';return false;}
@@ -181,15 +191,194 @@ function afterRender(){
  document.querySelectorAll('.msg').forEach(li=>{const b=li.querySelector('.msg-hit'),id=b.dataset.v,m=byId(id);if(m){b.title=title(m);b.setAttribute('aria-label',(isRead(m)?L('Read: ','已读：'):L('Unread: ','未读：'))+title(m));}if(S.rowBusy===id){li.classList.add('ops-row-pending');li.setAttribute('aria-busy','true');li.querySelectorAll('button').forEach(x=>x.disabled=true);}});
  if(S.restoreY!==null){const y=S.restoreY;S.restoreY=null;requestAnimationFrame(()=>window.scrollTo(0,y));}
  if(pendingFocus){const target=pendingFocus;pendingFocus=null;queueMicrotask(()=>document.querySelector(target)?.focus({preventScroll:true}));}
+ // C-O21 不是路由页，公共层的 PRD 按钮按当前 page 取键，面板本身点不出 PRD；
+ // 在面板标题栏补一个显式传 C-O21 的入口，公共层不动。
+ const panelHead=document.querySelector('.panel .panel-h');
+ if(panelHead&&!panelHead.querySelector('[data-act="openPrd"]')){
+  const b=document.createElement('button');b.type='button';b.className='btn sm';
+  b.dataset.act='openPrd';b.dataset.v='C-O21';b.title=t('prdOpen');
+  b.innerHTML='<span class="mono" style="font-size:10px">PRD</span>';
+  panelHead.insertBefore(b,panelHead.querySelector('.modal-x'));}
+ const prdDrawer=document.querySelector('.drawer.prd');
+ if(prdDrawer){prdDrawer.setAttribute('role','dialog');}
  // Preserve focus through shared-shell full renders, and trap the active overlay.
- const overlay=document.querySelector('.modal')||document.querySelector('.panel');
+ const overlay=document.querySelector('.modal')||document.querySelector('.panel')||prdDrawer;
  if(overlay){overlay.setAttribute('aria-modal','true');document.querySelector('#content').inert=!!S.modal;queueMicrotask(()=>{if(!overlay.contains(document.activeElement)){const preferred=overlay.querySelector('[data-act="closeModal"]:not(:disabled)')||overlay.querySelector('button:not(:disabled)');preferred?.focus({preventScroll:true});}});}else document.querySelector('#content').inert=false;
  const prev=document.querySelector('[data-act="page"][data-v="'+(S.pg-1)+'"]');if(prev)prev.setAttribute('aria-label',L('Previous page','上一页'));
  const next=document.querySelector('[data-act="page"][data-v="'+(S.pg+1)+'"]:last-child');if(next)next.setAttribute('aria-label',L('Next page','下一页'));
 }
-CF.define({id:'fs-ops-notify',end:'admin',home:'P-O20',owns:['P-O20','P-O21'],topbarPrd:false,
+/* ==========================================================================
+   PRD 摘录面板（C-O21 面板 / P-O20 / P-O21）——给前后端开发在原型里直接对照 PRD，
+   紫色面板，**不属于产品界面**，固定中文、不随界面语言切换。
+   四类：fields 字段与校验 · rules 关键业务规则 · states 状态与异常分支 · copy 中英文案。
+   全部摘自本模块定稿 PRD（financial-service-platform/prd/v1.0-消息通知/，commit a913c3d），
+   只摘本页用得到的条目、不摘全量，逐条注明章节号或 F-O* / D-O* / N-O* / AC-O* 编号。
+   ========================================================================== */
+var PRDSRC="financial-service-platform/prd/v1.0-消息通知/ · 主文档 + 01-页面与展示.md + 02-验收标准.md（a913c3d 定稿版）";
+var PRD={
+
+"P-O20":{title:"P-O20 运营端消息中心",src:PRDSRC,
+ fields:[
+  ["category","分类筛选 · 下拉","筛选项由**服务端返回的分类元数据动态渲染，前端不写死清单**；且**只渲染该运营管理员实际拥有消息的分类**，不产生必然为空的筛选项（`01` 7.3.2 / AC-O11 / AC-O12）。分类未登记时标签展示「其他 / Other」，消息照常展示（`01` 10.3 第 12 条）。"],
+  ["read_state","状态筛选 · 三档","全部 / 未读 / 已读，默认「全部」，与分类筛选**可叠加，是与关系**（`01` 7.3.2 / AC-O13）。"],
+  ["cat / status / page / size","URL 查询参数","缺省值分别为 `all` / `all` / `1` / `20`，**取缺省值时不写进 URL**——无筛选的消息中心永远是同一个干净地址。非法取值（`status=foo`、`size=37`）**一律回落缺省值**，不报错、不空列表（`01` 7.3.2 / AC-O85 / AC-O86）。"],
+  ["created_at","排序键","创建时间倒序；**已读状态不参与排序**（未读不置顶、已读不沉底）；同一时间戳以消息 ID 作稳定次级键（`01` 7.3.3 / AC-O15 / AC-O16）。"],
+  ["cursor","分页游标","**必须基于 `created_at + message_id` 的稳定游标，不使用 offset**——列表期间可能有新消息插入顶部。分页器只是交互形态，游标口径不变（`01` 7.3.4 / AC-O18）。"],
+  ["共 N 条消息","分页条左侧","N 为**当前筛选命中的总条数**（不是全部消息数），与「全部已读」确认弹窗里的条数**同源**（`01` 7.3.4 / AC-O87）。"],
+  ["列表项 C-O22","展示字段","未读圆点 / 分类标签 / 标题单行截断 / 摘要单行截断 / 时间 / 「已过期」条件标签 / 悬浮出现的行内「标为已读」（已读项不展示）。进度型变体运营端本期不使用（`01` 12.1 / 7.8）。"],
+  ["aria-label","列表项无障碍名称","每行消息入口须有 `aria-label`，格式为「已读：/ 未读：」+ **完整标题**；`title` 同样给完整标题。未读圆点是纯视觉的，读屏用户只能从这里知道读没读（`01` 12.1 / AC-O96）。"],
+  ["时间","列表口径","24 小时内相对时间（hover 展示绝对时间），超过 24 小时展示绝对时间；一律带时区标注（`01` 12.4 / AC-O23）。"],
+  ["recipient_scope","可见集","`end = fs_ops` 且 `admin_all` 的共享池消息 **∪** 本人 `admin_account` 个人消息，混排不分区（主文档 8.1.2 / AC-O52）。"]
+ ],
+ rules:[
+  ["F-O06 / F-O07","分类与状态筛选可叠加；筛选条件**写入 URL 查询参数**支持刷新保持；筛选变化时**重置到第 1 页并回到顶部**（`01` 7.3.2 / AC-O14）。"],
+  ["F-O08 / D-O14","分页形态取**分页器**（页码 + 每页条数 20 / 50 / 100），**不用「加载更多」**。依据不是新决策：运营端属**控制台画布形态**，控制台端存在「跳到某一页复查」的诉求（`01` 7.3.4）。"],
+  ["D-O17 / `01` 7.3.3","**标记已读后行位置不变、不被移除。** 运营人员读完一条待办后该行若立刻跳位，正在处理的上下文会被打乱；需要「只看未读」时用状态筛选器（AC-O15）。"],
+  ["F-O10 / D-O18","行内「标为已读」与「打开详情即已读」**并存，不是二选一**；仅展开、仅滚动经过**不产生已读**；界面上**不存在「标为未读」入口**（`01` 7.5.1 / AC-O27 / AC-O28）。"],
+  ["F-O11 / D-O19","「全部标为已读」作用于**当前筛选命中的全部消息**，不限当前页也不是全库无差别：当前页 20 条、实际命中 300 条时 300 条全部标记（`01` 7.5.2 / AC-O31）。"],
+  ["`01` 7.5.2（运营端强制条款）","**二次确认不得省略**，且必须明确说明作用范围与条数；默认焦点落在「取消」；执行失败时**列表与角标不做任何变更**（不做乐观更新）；当前筛选下无未读时按钮禁用并 tooltip 说明（AC-O32 / AC-O33）。"],
+  ["D-O03 / 主文档 8.1.2","**全员共享池 + 已读个人独立**：A 读过的消息对 B 仍是未读，A 执行「全部已读」同样不影响 B（AC-O51）。个人消息只对归属的那一个运营管理员可见（AC-O52）。"],
+  ["主文档 8.1.2 / AC-O53","新建的运营管理员账号，其**创建时间之前**的历史消息**可见但不计入未读**（机制同 `visible_from`）。"],
+  ["D-O05 / 主文档 5.1","**左侧菜单不新增「消息中心」一级入口**，入口收敛在顶栏铃铛与账号下拉——消息中心是通知汇总，不是工作队列（AC-O83）。"],
+  ["主文档 8.1.2 / AC-O54","界面上**不存在**「谁读过这条消息」的任何展示：没有认领机制时，A 读过不代表 A 在处理。"],
+  ["D-O07 / AC-O44、AC-O45","列表接口**忽略请求参数里任何形式的接收者标识与 `end` 参数**，只按会话身份 + `end = fs_ops` 返回；**四端不串池**。"],
+  ["N-O04 / N-O06","每页 **20** 条，可切换 20 / 50 / 100；标题截断 1 行、摘要截断 1 行（主文档 17.2）。"]
+ ],
+ states:[
+  ["首屏加载","**5 行骨架屏**，保持与列表项相同高度，避免加载完成后跳动（`01` 7.3.5）。"],
+  ["首次空态","无筛选且结果为 0：插画位 + 主副文案，**无额外操作**。运营端上线初期无接入方，**首次空态是常态**，文案要经得起「空很久」（`01` 7.3.5）。"],
+  ["筛选空态","有筛选且结果为 0：**另一套文案** + 「清除筛选」出口。**两种空态必须区分**——用同一套文案会让人以为消息全丢了（`01` 7.3.5 / AC-O19）。"],
+  ["首屏失败","内容区错误态 + 原因 + 「重试」，**不清空已填筛选条件**（`01` 7.3.5 / 10.3 第 1 条）。"],
+  ["翻页进行中","**页码按钮与「每页条数」选择器同时禁用**，总数行追加「加载中…」；**当前页内容保持不动**，不清空、不换骨架屏（`01` 7.3.5 / AC-O89）。"],
+  ["翻页失败","错误提示，**当前页已加载内容不清空**，可重试（`01` 10.3 第 2 条 / AC-O20）。"],
+  ["单条渲染降级（文案 key 缺失）","标题位展示通用词、**摘要整行留空**，分类标签与时间照常展示；**任何位置都不出现文案键名**，且该条仍可进详情（`01` 7.3.5 / AC-O90）。"],
+  ["全部已读 · 执行中","「确认」变加载态并禁用，**「取消」同时禁用**，遮罩点击与 Esc 也不关闭——批量已读不可撤销，中途关窗会让人不知道操作有没有发生（`01` 7.5.2 / AC-O94）。"],
+  ["全部已读 · 失败 / 401","失败：Toast 报错，列表与角标不变，可重试。401：走 WS-308 统一会话失效处理，**不展示「操作成功」**，重新登录后未读数以服务端为准（`01` 7.5.5 / AC-O62）。"],
+  ["行内已读 · 提交中","该行降低不透明度、**行内所有按钮禁用**、行元素标记 `aria-busy`；完成后**焦点回到该行的消息入口**。同一时刻只允许一行处于提交中（`01` 7.5.3 / AC-O95）。"],
+  ["会话失效","走 WS-308 统一处理：清除登录态、**中止进行中的请求（含未读数轮询）**、跳 `/ops/login?redirect=` 并在登录后回跳（主文档 8.3 / AC-O58 / AC-O61）。"]
+ ],
+ copy:[
+  ["页面标题 / 面包屑","Notifications","消息中心"],
+  ["首次空态 · 主文案","No notifications yet","暂无消息"],
+  ["筛选空态 · 主文案","No messages match these filters","没有符合筛选条件的消息"],
+  ["筛选空态 · 操作","Clear filters","清除筛选"],
+  ["失败态 · 操作","Retry","重试"],
+  ["行内已读","Mark as read","标为已读"],
+  ["分页条总数（AC-O87）","Total {N} notifications","共 {N} 条消息"],
+  ["每页条数（`01` 12.3 运营端新增）","Per page","每页条数"],
+  ["全部已读 · 确认标题","Mark {n} notifications as read?","将 {n} 条消息标为已读？"],
+  ["全部已读 · 筛选说明行（`01` 12.3 运营端新增，无筛选时也展示）","Filter: {category} · {status}","当前筛选：{分类} · {状态}"],
+  ["全部已读 · 影响范围（跨页 / 仅本人 / 不可撤销，三件事都要说全）","This includes every matching page, for your account only. This can not be undone.","包含所有符合筛选的页面，仅影响你的账号。该操作不可撤销。"],
+  ["列表项无障碍前缀（AC-O96）","Read: / Unread:","已读： / 未读："],
+  ["文案降级通用词（AC-O90）","Notification","消息"],
+  ["已过期标签","Expired","已过期"]
+ ]},
+
+"P-O21":{title:"P-O21 运营端消息详情",src:PRDSRC,
+ fields:[
+  ["面包屑","必现","`消息中心 / {标题}`，上级可点击返回。用**运营端的面包屑组件**（WS-308），不是 WS-302 的 `C-10`（`01` 7.4.2 / 12.2）。"],
+  ["title / body","必现","渲染后的标题与正文，**纯文本 + 转义，不支持富文本 / HTML**；标题过长换行不截断。提交含 HTML 标签的正文时页面上原样显示为文本（`01` 7.4.2 / AC-O24）。"],
+  ["created_at","必现","详情**一律绝对时间 + 时区标注**，不用相对时间——详情是回查场景，需要精确时间（`01` 12.2 / 12.4 / AC-O23）。"],
+  ["biz_ref / page_target","跳转目标","三形态**互斥**：业务资源目标 / 静态页面目标 / 无跳转。**消息实体中不存放 URL**（URL 会随前端路由重构失效，历史消息无法回头批量改写）。两者同时存在属接入错误，**服务端拒收**（`01` 7.6.1 / AC-O34 / AC-O35）。"],
+  ["page_target 段位","强制校验","运营端消息的 `page_target` **只能取 `P-O*` 段位内已登记的页面编号**；服务端必须校验其所属端与消息 `end` 一致，**不一致时拒收**（`01` 7.6.1 / 10.3 第 17 条 / AC-O57）。"],
+  ["cta_label_key","跳转按钮文案","由业务类型登记表提供，缺省「查看详情 / View details」（`01` 7.4.2）。"],
+  ["C-O23 失效说明条","条件展示","详情页正文上方的浅底说明条，左侧信息图标，纯文本，**不可关闭，不使用错误红色**——失效是正常业务状态，不是错误（`01` 7.7 / 12.2 / AC-O43）。"],
+  ["「已过期」标记","条件展示","已过期消息在详情头部**紧随分类标签**另带一个标记，与 C-O23 说明条**并存**：标记回答「这条是什么状态」，说明条回答「所以会怎样」（`01` 7.4.2 / AC-O91）。"],
+  ["运营端去掉的两行","不渲染","「业务编号」与「进度区块」——两者是进度类消息专属，运营端本期不产生。**字段定义与组件变体本身不删**（`01` 12.2 / 7.8 / AC-O81）。"]
+ ],
+ rules:[
+  ["F-O12 / `01` 7.4.1","详情为**整页 + 独立路由 + 支持深链**，路由 `/ops/messages/{message_id}`，**不用抽屉或弹窗**。前缀 `/ops` 由 WS-308 定义，不复用资产管理端的 `/admin`（AC-O22）。"],
+  ["F-O10 / `01` 7.4.3","已读标记在**详情内容请求成功并渲染之后**才发起，**不在路由进入时就发**；详情加载失败时**不产生任何已读记录**（AC-O25）。"],
+  ["`01` 7.4.3","已读请求失败**不阻断详情展示**、不弹错，下次进入时重试；重复标记**幂等**，首次已读时间不被覆盖（AC-O26）。"],
+  ["F-O13 / `01` 7.4.4","三种返回方式（面包屑上级 / 「返回列表」/ 浏览器后退）行为一致：**保留筛选条件、页码、每页条数与滚动位置**，不跳回第 1 页；刚读过的那条**就地变已读样式、不重排、不移除**，「只看未读」下仍留在列表中直到主动刷新或切换筛选（AC-O29 / AC-O30）。"],
+  ["F-O14 / `01` 7.6.2","**预检在进入详情页时执行一次**（不是点击时才执行），使失效状态能在按钮上提前体现；**列表页不做任何预检**（会对每行触发一次业务查询，成本不可接受）（AC-O40）。"],
+  ["`01` 7.6.2 / N-O05","静态页面目标（形态 2）**一律不预检**；业务资源目标是否预检由业务类型登记表声明，默认「需要预检」；**预检接口本身失败或超时（3 秒）时放行跳转**，由目标页按自己的规则处理（AC-O39 / AC-O41）。"],
+  ["D-O20 / `01` 7.6.3（本轮已改）","**映射缺失**（携带 `biz_type` 但前端登记表无对应条目）时：**不渲染跳转按钮**、**不展示任何说明文案**，操作区只保留「返回列表」；仍上报一次「未知业务类型」日志。原「当前版本暂不支持该消息的跳转操作」一句**已作废**（用户 2026-09-08 在 WS-304 裁定）（AC-O37）。"],
+  ["`01` 7.6.3 / AC-O38","映射缺失时**不出现**以下任何一种：跳 404 页、跳首页、展示点了没反应的按钮、隐藏整条消息。**消息内容本身永远优先于跳转能力**——跳转是增强，不是消息的存在前提。"],
+  ["`01` 7.6.4 / AC-O36","「无跳转」（既无 `biz_ref` 也无 `page_target`）是**合法状态，不是缺失**，界面表现与映射缺失**完全一致**；两者的区别**只剩后台要不要上报日志**，运营人员看到的界面没有差别。"],
+  ["`01` 7.7 / AC-O42","四类失效**各有独立文案**（不使用一句笼统的「该消息已失效」）：`expired` 的跳转按钮**不渲染**，其余三类**按钮禁用而非隐藏**并带 hover tooltip 说明原因——直接隐藏会让人分不清「本来就没有跳转」与「有但现在不能用」。"],
+  ["`01` 7.7 / AC-O43","四类失效下消息的**标题、正文、时间均完整展示**，消息不被删除、不被隐藏。失效只影响「能不能跳过去」。"],
+  ["`01` 7.7（可访问性）/ AC-O68","`disabled` 按钮既不可聚焦、也不触发原生 `title`，键盘与读屏用户拿不到 tooltip 里的原因；实现用一个 **`tabindex=0` 且带 `title` 的容器包住禁用按钮**。C-O23 说明条同时承载同一原因，tooltip 是补充而非唯一通道。"],
+  ["主文档 8.2.2 / AC-O46、AC-O47","消息不存在、他人个人消息、非 `fs_ops` 消息**一律返回 404 语义且完全不可区分**；深链登录后归属不符同样落到「消息不存在」页，**不提示「你登录了错误的账号」**（AC-O60）。"],
+  ["`01` 7.4.5 / AC-O58、AC-O59","未登录访问详情深链跳 `/ops/login?redirect=<原路径>`，登录成功后回跳；**不落到资产管理端登录页 `P-M01`**；登录前**不泄漏任何消息内容，也不泄漏该消息是否存在**。"]
+ ],
+ states:[
+  ["加载中","详情骨架；**此时尚未标记已读**（`01` 7.4.3 / 10.3 第 4 条）。"],
+  ["加载失败","错误态必须**明确告知该条未被标记为已读**，并同时提供「重试」与「返回列表」。这句不是客套——7.4.3 定的是渲染成功后才标已读，用户需要知道这条仍留在未读里（`01` 7.4.2 / AC-O92）。"],
+  ["消息不存在 / 越权 / end 不符","统一「消息不存在」页 + 返回消息中心，**三者不可区分**（`01` 10.3 第 5 条 / AC-O46 / AC-O47）。"],
+  ["预检中","跳转按钮进入异步等待态，不让用户点了才被告知失效（`01` 7.6.2）。"],
+  ["映射缺失 / 无跳转","**不渲染按钮、不展示任何说明文案**，操作区只剩「返回列表」；两者界面表现完全一致（D-O20 / AC-O36 / AC-O37）。"],
+  ["已过期 expired","C-O23 说明条 + 头部「已过期」标记，跳转按钮**不渲染**；**不计入未读角标**但仍完整可读（`01` 7.7 / AC-O05 / AC-O42 / AC-O91）。"],
+  ["目标资源已删除 / 状态已流转 / 无权限","C-O23 说明条 + 按钮**禁用**并带 tooltip；这三类是预检的实时结果、**不落库**，且**仍然计入未读角标**（`01` 7.7 / 11.1 / AC-O06）。"],
+  ["state_changed 在运营端高频","共享池里「一条待办被同事先处理掉了」正是典型场景；预检可附带**当前状态描述**一并展示（`01` 7.7）。"],
+  ["文案 key 缺失","正文降级为通用词，**不展示键名**；回落到该端默认语言（运营端即英文），英文也缺失时降级为最小形态（`01` 10.3 第 11 条 / 12.4 / D-O22 / AC-O90）。"],
+  ["会话失效","走 WS-308 统一处理并**中止进行中的请求（含未读数轮询）**（主文档 8.3 / AC-O61）。"]
+ ],
+ copy:[
+  ["主操作 · 缺省","View details","查看详情"],
+  ["次操作","Back to list","返回列表"],
+  ["加载失败 · 主文案","Failed to load this notification","消息详情加载失败"],
+  ["加载失败 · 副文案（AC-O92）","It has not been marked as read.","本条消息未被标记为已读。"],
+  ["C-O23 · expired","This notification has expired.","该消息已过期。"],
+  ["C-O23 · resource_deleted","The related record is no longer available.","相关记录已不存在。"],
+  ["C-O23 · state_changed","This has already been handled — no action is needed.","该业务状态已变更，无需再处理。"],
+  ["C-O23 · no_permission","You no longer have access to this record.","你当前无权访问该记录。"],
+  ["映射缺失 / 无跳转（D-O20 裁定后）","（界面上不展示任何说明文案）","（界面上不展示任何说明文案）"],
+  ["详情头部标记","Expired","已过期"],
+  ["文案降级通用词（AC-O90）","Notification","消息"]
+ ]},
+
+"C-O21":{title:"C-O21 铃铛快捷面板（含 C-O20 铃铛与角标）",src:PRDSRC,
+ fields:[
+  ["N-O02","面板条数","展示**最近 10 条，且不区分已读未读**（主文档 17.2 / F-O03 / AC-O08）。"],
+  ["单条结构","面板内","分类标签 + 标题单行截断 + 摘要单行截断 + 相对时间 + 未读圆点（`01` 7.2，逐条沿用 WS-304 `01` 7.2）。"],
+  ["数据源与已读状态","强制条款","面板、角标与消息中心列表来自**同一套服务端数据与同一份已读状态**，任一处的已读在另一处立即生效。**不得为快捷面板另建一套本地已读缓存**——这是本模块把两个入口合并的根本原因（主文档 5.2 / `01` 7.5.4）。"],
+  ["底部「查看全部」","面板底部","进入 P-O20 消息中心，**不带任何筛选条件**（主文档 5.2）。"],
+  ["C-O20 挂载位","顶栏","运营端顶部导航栏右侧，**语言切换器 `C-O04` 左侧、账号下拉 `C-O11` 之前**；两个挂载点组件由 WS-308 定义并提供（主文档 5.1 / `01` 7.1.1 / AC-O02）。"],
+  ["未读角标","计数口径","**服务端计算，前端不自行统计**；全分类合计不做多个角标；**已过期与已主动失效不计入**；三类跳转失效（删除 / 流转 / 无权限）**仍然计入**；上限 N-O03 = 99，超出展示 `99+`（D-O15 / `01` 7.1.2 / AC-O04～AC-O06）。"],
+  ["可见集","计数范围","当前运营管理员可见集中未读的条数 = 「`end = fs_ops` 且 `admin_all`」∪「本人个人消息」。**将来新增 `role` scope 时未读计数算法零改动**（`01` 7.1.2 / AC-O74）。"],
+  ["账号下拉「消息中心」条目","F-O04","位于账号下拉 `C-O11` 内、「账户设置」`P-O05` **之上**（消息中心高频、账户设置低频）；点击**直达 P-O20，不经快捷面板、不带筛选**（`01` 7.1.5 / AC-O07）。"],
+  ["progress","组件变体","运营端本期**不产生**带 `progress` 的消息，进度型列表项变体**在契约与代码中保留不删**（`01` 7.2 / 7.8 / AC-O81）。"]
+ ],
+ rules:[
+  ["F-O03 / D-O13","**铃铛点击展开快捷面板，不直接跳页**——多数情况下用户只想确认「是什么事」，直接跳整页会打断当前任务；要「集中处理消息」走账号下拉直达整页（主文档 5.2）。"],
+  ["AC-O09 / `01` 7.2（运营端强制条款）","**仅展开不算已读**，滚动经过也不算；点击面板内某条进入详情后才按 7.5 标记。面板一展开就批量清未读，等于让运营人员丢掉待办。"],
+  ["`01` 7.2（运营端强制条款）","**面板内不提供「全部已读」**：该操作影响面广、本期不可撤销，必须在能看清作用范围（当前筛选条件）的消息中心内执行。在一个只展示 10 条的浮层里误清全部未读，代价比资产端高。"],
+  ["`01` 7.2 / AC-O84","**四种关闭方式等价**：再次点击铃铛 / 点击面板外区域 / Esc / 标题栏右侧 `✕`；四者都把焦点还给铃铛。"],
+  ["`01` 7.2","**每次展开重新拉取，不用缓存。**"],
+  ["F-O05 / D-O16","实时性方案：**轮询 N-O01（60 秒）+ 切回前台立即拉取并重置计时器 + 页面不可见时暂停轮询**；本期**不引入长连接**（`01` 7.1.3 / AC-O10 / AC-O66）。"],
+  ["`01` 7.1.3","未读数接口失败时**静默保留上次数值**，不清零、不弹提示（`01` 10.3 第 3 条 / AC-O10）。"],
+  ["D-O08（本 PRD 新增）","**未读数轮询不得被计入 WS-308 的「30 分钟无操作」活跃度判定**——本模块有一个每 60 秒发一次的常驻请求，若被计为用户活跃，无操作自动登出将永远不会触发（主文档 8.3 / AC-O64）。"],
+  ["主文档 8.3 / AC-O63","未读数轮询遇 401 与其他接口一视同仁，**触发统一的会话失效处理，不得静默忽略**——不出现「页面还在、角标还在刷、但登录态已没了」的假活状态。"],
+  ["`01` 7.1.4","任一标签页的已读变更通过**浏览器本地事件广播**同步给其他标签页（复用 WS-308 的跨标签页同步通道）；广播不可用时**降级为轮询同步**（最长滞后 60 秒），不报错（`01` 10.3 第 14 条）。"],
+  ["AC-O69","面板展开后**焦点进入面板，Tab 循环限制在面板内**，Esc 关闭并把焦点还给铃铛；角标数值变化通过 `aria-live=polite` 播报，**不抢焦点**。"],
+  ["D-O07 / AC-O55","运营端界面**不存在**任何查看资产平台消息或金融服务端用户消息的入口；一个人在两个平台是**两个铃铛、两套未读数**。"]
+ ],
+ states:[
+  ["加载中","面板内 **3 行骨架屏**（`01` 7.2）。"],
+  ["空态","铃铛图标 + 无消息文案，不提供额外操作（`01` 7.2）。"],
+  ["失败态","面板内错误提示 + 「重试」；**角标本身不受影响**，未读数接口失败时静默保留上次数值（`01` 7.2 / 7.1.3）。"],
+  ["无未读","铃铛**不展示角标，也不展示 `0`**（`01` 7.1.1 / AC-O03）。"],
+  ["超过 99 条未读","展示 `99+`，且该状态下**不展示精确数字**（N-O03 / AC-O04）。"],
+  ["已过期消息","**仍出现在面板与列表中**并带「已过期」标签，但**不计入角标**（`01` 7.7 / AC-O05）。"],
+  ["未登录 / 会话失效","**未登录页面不展示铃铛**；会话失效后按 WS-308 统一处理并中止轮询（主文档 5.4 / AC-O01 / AC-O61）。"],
+  ["页面切到后台","轮询**暂停**，页面不可见时轮询开销为 0；切回前台**立即拉取一次**并重置计时器（`01` 7.1.3 / AC-O10 / AC-O66）。"]
+ ],
+ copy:[
+  ["面板标题","Notifications","消息中心"],
+  ["底部入口","View all","查看全部"],
+  ["空态","No notifications yet","暂无消息"],
+  ["失败态","Failed to load.","加载失败。"],
+  ["失败态 · 操作","Retry","重试"],
+  ["关闭按钮无障碍名称（AC-O84）","Close","关闭"],
+  ["铃铛无障碍名称（AC-O69）","Notifications, {n} unread / Notifications, no unread","通知，{n} 条未读 / 通知，无未读"],
+  ["账号下拉条目（F-O04）","Notifications","消息中心"],
+  ["已过期标签","Expired","已过期"]
+ ]}
+};
+CF.define({id:'fs-ops-notify',end:'admin',home:'P-O20',owns:['P-O20','P-O21'],
  dict:{en:{adminConsole:'Operations',navOverview:'Overview'},zh:{adminConsole:'运营端',navOverview:'总览'}},
- state:()=>({data:restore(),user:'A',cat:'all',status:'all',pg:1,size:20,keep:[],msgId:null,scenario:'normal',detail:'ready',pre:'none',panel:'ready',tools:false,busy:false,batch:[],lastCount:0,scrollY:0,restoreY:null}),
+ state:()=>({data:restore(),user:'A',cat:'all',status:'all',pg:1,size:20,keep:[],msgId:null,scenario:'normal',detail:'ready',pre:'none',panel:'ready',tools:false,busy:false,batch:[],lastCount:0,scrollY:0,restoreY:null,prdPage:null,prdBack:null}),
  onBoot:s=>{S=s;try{const pref=JSON.parse(localStorage.getItem('fs-prototype-language'));if(pref&&['en','zh-CN'].includes(pref.language))S.lang=pref.language==='en'?'en':'zh';}catch(e){}S.lastCount=count();},content:()=>S.session?sessionView():(S.page==='P-O20'?list():detail()),
  account:()=>({settings:'P-O05',avatar:S.user,ident:L('Operations Administrator ','运营管理员 ')+S.user,ok:true,okText:L('Operations','运营端')}),
  notify:()=>({unread:badge(),phase:S.panel,items:S.scenario==='empty'?[]:visible().slice(0,10).map(item)}),
@@ -197,6 +386,12 @@ CF.define({id:'fs-ops-notify',end:'admin',home:'P-O20',owns:['P-O20','P-O21'],to
  modals:{markAll:markAllModal,boundary:boundaryModal},modalLocked:()=>!!S.busy,
  crumbParts:()=>S.page==='P-O21'?[[L('Notifications','消息中心'),'P-O20']]:[],
  crumbCur:()=>S.page==='P-O21'?(byId(S.msgId)&&S.scenario!=='notfound'?title(byId(S.msgId)):L('Notification','消息')):L('Notifications','消息中心'),
+ prd:PRD,prdKey:()=>S.prdPage||S.page,
+ prdFoot:()=>'本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD。完整口径以 '
+  +'<code class="mono">v1.0-消息通知-PRD.md</code> 及其分册 <code class="mono">01-页面与展示.md</code> / '
+  +'<code class="mono">02-验收标准.md</code>（仓库 <code class="mono">financial-service-platform/prd/v1.0-消息通知/</code> 定稿版）为准；'
+  +'编号体系 F-O01～F-O18 / P-O20～P-O21 / C-O20～C-O23 / D-O01～D-O24 / N-O01～N-O07 / AC-O01～AC-O96。'
+  +'面板固定中文，是给前后端开发看的规格说明，<b>不属于产品界面</b>。',
  hash:{build:buildHash,read:readURL},afterRender,onAct});
 CF.boot();
 document.addEventListener('toggle',e=>{if(e.target.matches('.ops-tools'))S.tools=e.target.open;},true);
@@ -206,7 +401,9 @@ document.addEventListener('change',e=>{const el=e.target,field=el.dataset.f;if(!
  if(field==='category'){stop();S.cat=el.value;S.keep=[];S.pg=1;S.scenario='normal';render();CF.syncURL();}
  if(field==='size'){stop();S.size=Number(el.value);S.pg=1;render();CF.syncURL();}
 });
-document.addEventListener('keydown',e=>{const overlay=document.querySelector('.modal')||document.querySelector('.panel');if(e.key==='Escape'&&overlay){e.preventDefault();e.stopImmediatePropagation();if(S.busy)return;const bell=!!S.menu;S.modal=null;S.menu=null;pendingFocus=bell?'[data-f="bell"]':modalReturn;render();return;}
+document.addEventListener('keydown',e=>{const prdDrawer=document.querySelector('.drawer.prd');
+ if(e.key==='Escape'&&prdDrawer){e.preventDefault();e.stopImmediatePropagation();closePrd();return;}
+ const overlay=document.querySelector('.modal')||document.querySelector('.panel')||prdDrawer;if(e.key==='Escape'&&overlay){e.preventDefault();e.stopImmediatePropagation();if(S.busy)return;const bell=!!S.menu;S.modal=null;S.menu=null;pendingFocus=bell?'[data-f="bell"]':modalReturn;render();return;}
  if(e.key==='Tab'&&overlay){const list=[...overlay.querySelectorAll('button:not(:disabled),a[href],select,[tabindex="0"]')].filter(x=>x.getClientRects().length);if(!list.length){e.preventDefault();return;}const first=list[0],last=list[list.length-1];if(e.shiftKey&&(document.activeElement===first||!overlay.contains(document.activeElement))){e.preventDefault();last.focus();}else if(!e.shiftKey&&(document.activeElement===last||!overlay.contains(document.activeElement))){e.preventDefault();first.focus();}}
 },true);
 ['pointerdown','keydown'].forEach(name=>document.addEventListener(name,()=>{activity=Date.now();},{passive:true}));
