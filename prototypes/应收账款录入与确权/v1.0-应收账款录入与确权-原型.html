@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="../_shared/base.css">
 <style>
 /* 本模块只定义应收账款页面的局部组合；token、壳层与公共组件均来自 ../_shared/。 */
-.ar-sums{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--sp-3);margin-bottom:var(--sp-4)}
+.ar-sums{display:grid;grid-template-columns:repeat(4,minmax(190px,1fr));gap:var(--sp-3);margin-bottom:var(--sp-4)}
 .ar-sum{padding:var(--sp-4);background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
 .ar-sum .k{font-size:var(--fs-11);font-weight:640;color:var(--muted);margin-bottom:var(--sp-1)}
 .ar-sum .v{font-family:var(--mono);font-size:var(--fs-16);font-weight:640}
@@ -45,7 +45,9 @@
 .ar-no-preview{font-size:var(--fs-10);color:var(--faint);white-space:nowrap}
 .ar-modal-list{display:flex;flex-direction:column;gap:var(--sp-2)}
 .ar-status-help{font-size:var(--fs-11);color:var(--muted);line-height:1.55}
-@media (max-width:1180px){.ar-layout{grid-template-columns:1fr}}
+.ar-command{position:sticky;top:var(--sp-4);z-index:3}
+.drawer.prd{width:min(680px,100vw)}
+@media (max-width:1180px){.ar-layout{grid-template-columns:1fr}.ar-sums{grid-template-columns:repeat(2,minmax(0,1fr))}.ar-command{position:static}}
 </style>
 </head>
 <body>
@@ -84,7 +86,7 @@ var DICT={
     status:"Status",updated:"Updated",submitted:"Submitted",actions:"Actions",view:"View",edit:"Edit",submit:"Submit",del:"Delete",
     noWithdraw:"No withdrawal",readOnly:"Read only",resubmit:"Edit & resubmit",confirm:"Confirm",reject:"Reject",download:"Download",preview:"Preview",
     sDraft:"Draft",sPending:"Pending confirmation",sConfirmed:"Confirmed",sRejected:"Rejected",sExpired:"Expired",
-    sum:"Currency summary",records:"records",newTitle:"Add receivable",editTitle:"Edit receivable",editRejected:"Edit rejected receivable",
+    sum:"Currency summary",records:"records",confirmedUsd:"Confirmed total · converted to USD",demoConverted:"Demonstration converted value",newTitle:"Add receivable",editTitle:"Edit receivable",editRejected:"Edit rejected receivable",
     basic:"Basic information",party:"Parties",materials:"Trade documents",timeline:"Activity timeline",currency:"Currency",
     start:"Period start",trade:"Trade type",settlement:"Settlement method",invoice:"Invoice no.",description:"Trade description",remark:"Remarks",
     chooseBuyer:"Choose buyer",buyerChosen:"Selected buyer",contractHelp:"1–10 values; Enter or comma/new line paste. Duplicate values are ignored.",
@@ -109,7 +111,7 @@ var DICT={
     opCreated:"Draft created",opSubmitted:"Submitted",opConfirmed:"Confirmed",opRejected:"Rejected",opExpired:"Expired by batch job",
     bySystem:"System",bySeller:"Demo Enterprise Alpha · demo.seller@demo.test",byBuyer:"Demo Enterprise Beta · demo.buyer@demo.test",
     tGoods:"Goods trade",tService:"Services trade",settTT:"Telegraphic transfer (T/T)",settLC:"Letter of credit (L/C)",
-    pagesPanel:"Pages",pageDirectory:"Jump to any page in this module. Page-level states remain available on each page.",
+    pagesPanel:"Pages",pageDirectory:"Jump to any page in this module. Page-level states remain available on each page.",prdOpen:"Page specification",
     assetPages:"Asset portal",adminPages:"Asset admin",actionArea:"Actions",prd:"PRD",close:"Close",cancel:"Cancel"
   },
   zh:{
@@ -127,7 +129,7 @@ var DICT={
     status:"状态",updated:"最近更新",submitted:"提交时间",actions:"操作",view:"查看",edit:"编辑",submit:"提交",del:"删除",
     noWithdraw:"不可撤回",readOnly:"只读",resubmit:"修改重提",confirm:"确权通过",reject:"驳回",download:"下载",preview:"预览",
     sDraft:"待提交",sPending:"待确权",sConfirmed:"已确权",sRejected:"已驳回",sExpired:"已失效",
-    sum:"分币种汇总",records:"笔",newTitle:"新增应收账款",editTitle:"编辑应收账款",editRejected:"修改并重新提交",
+    sum:"分币种汇总",records:"笔",confirmedUsd:"已确权总金额 · 统一折算为 USD",demoConverted:"演示折算值",newTitle:"新增应收账款",editTitle:"编辑应收账款",editRejected:"修改并重新提交",
     basic:"基本信息",party:"买卖双方",materials:"贸易背景材料",timeline:"操作时间线",currency:"币种",
     start:"账期起始日",trade:"贸易类型",settlement:"结算方式",invoice:"发票号",description:"贸易背景描述",remark:"备注",
     chooseBuyer:"选择买方",buyerChosen:"已选买方",contractHelp:"1～10 个；回车添加，也可粘贴逗号/换行分隔内容；规范化重复值不会重复入列。",
@@ -152,96 +154,135 @@ var DICT={
     opCreated:"创建草稿",opSubmitted:"提交",opConfirmed:"确权通过",opRejected:"驳回",opExpired:"批处理置为已失效",
     bySystem:"系统",bySeller:"Demo Enterprise Alpha · demo.seller@demo.test",byBuyer:"Demo Enterprise Beta · demo.buyer@demo.test",
     tGoods:"货物贸易",tService:"服务贸易",settTT:"电汇（T/T）",settLC:"信用证（L/C）",
-    pagesPanel:"页面",pageDirectory:"快速切换本模块任一页面；页面级状态仍在各页的状态条中切换。",
+    pagesPanel:"页面",pageDirectory:"快速切换本模块任一页面；页面级状态仍在各页的状态条中切换。",prdOpen:"页面规格",
     assetPages:"资产端",adminPages:"资产管理端",actionArea:"操作栏",prd:"PRD",close:"关闭",cancel:"取消"
   }
 };
 
-/* 每页 PRD 摘录供设计、前端与测试核对；固定中文展示，不属于产品界面。 */
+/* 页面内 PRD 为可独立实施的页面级规格；固定中文展示，不改动仓库独立 PRD 文件。 */
+function pageSpec(title,src,fields,rules,copy){return{title:title,src:src,fields:fields,rules:rules,copy:copy};}
 var PRD={
- "P-A20":{
-  title:"P-A20 我的应收账款列表",
-  src:"PRD v1.1 · 3.1 / 5.1 / 6.3 / 9.2 / 13.1（2026-09-08 08:50 版）",
-  fields:[
-   ["列表字段","只读","编号、买方、首个合同号 + 数量、金额与币种、账期、到期日、状态、最近更新时间、操作。"],
-   ["筛选","状态 / 币种 / 买方 / 到期日 / 关键词","关键词匹配编号、任一合同号、发票号与买方名称；本原型演示核心筛选。"],
-   ["汇总","按币种分组","每币种独立展示笔数与金额，不产生跨币种总额。"]
-  ],
-  rules:[
-   ["F-01 · AC-01/24～26","只展示本企业作为债权方的记录并包含草稿；金额排序仅在选择单一币种后开放。"],
-   ["本轮反馈 4","列表操作统一最小化：所有状态只保留「查看」，待提交额外保留「删除」；编辑、提交与重提进入详情或表单后执行。"]
-  ],
-  states:[["五态","待提交 / 待确权 / 已确权 / 已驳回 / 已失效。"],["列表必达态","默认、加载、空、筛选无结果、失败重试、无权限、异步等待、提交中、提交失败。"]],
-  copy:[["页面标题","My receivables","我的应收账款"],["主操作","Add receivable","新增应收账款"]]
- },
- "P-A21":{
-  title:"P-A21 新增 / 编辑应收账款",
-  src:"PRD v1.1 · 3.1 / 5.2～5.5 / 6 / 7 / 8 / 13.2～13.5",
-  fields:[
-   ["D-02～D-14","录入字段","卖方自动带出；买方、币种、金额、账期、到期日、合同号、贸易类型、结算方式与材料等。"],
-   ["D-08 合同号","数组 · 必填","1～10 个，每个 ≤64 字符；chip 输入，支持回车、逗号与换行；规范化后单笔内自去重。"],
-   ["D-13 材料","附件 · 必填","1～20 份，单份 <10M，JPG / PNG / PDF / ZIP；ZIP 仅下载。"]
-  ],
-  rules:[
-   ["F-05 · AC-13","保存草稿允许业务字段不完整；提交才执行全部必填与业务校验。"],
-   ["F-07/F-14","新增提交按纯合同号执行硬阻断；任一命中则整笔不提交。"],
-   ["冻结修订","C-41 只显示固定文案与被拦合同号，**不显示企业、金额、状态、记录编号或跳转**；覆盖 PRD v1.1 旧摘要分支。"],
-   ["F-08 · AC-23","已驳回记录可修改并不限次数重提；重提是同一记录流转，不触发重复校验。"],
-   ["本轮反馈 1","保存草稿与提交放在右侧「买卖双方」卡片下方的操作栏，不悬浮在页头。"]
-  ],
-  states:[["表单必达态","默认、加载、空白、买方无结果、失败重试、无权限、异步等待、提交中、提交失败。"],["校验态","字段错误、材料拒绝、重复合同号拦截。"]],
-  copy:[["重复拦截","This contract number already has a receivable record and can't be entered again.","该合同号已存在应收账款记录，无法重复录入"],["材料约束","1–20 files · each under 10 MB","1～20 份 · 单份 <10M"]]
- },
- "P-A22":{
-  title:"P-A22 应收账款详情（卖方视角）",
-  src:"PRD v1.1 · 3.1 / 5.5～5.6 / 9 / 13.2～13.4",
-  fields:[["全量字段","只读","基本信息、买卖双方、全部合同号、材料、状态与提交次数。"],["操作时间线","只增不改","操作时间、企业、账号、动作与备注；驳回原因显示全文。"]],
-  rules:[["F-08/F-09","待提交可编辑或删除；已驳回可修改重提；待确权后不可撤回；终态不可修改。"],["本轮反馈 1/2","买卖双方单独放在右侧，状态相关操作紧随其下；操作时间线移至左侧主内容。"]],
-  states:[["业务态","五态详情及各自动作显隐。"],["页面态","默认、加载、失败重试、无权限、异步状态变化。"]],
-  copy:[["驳回原因","Latest rejection reason","最近一次驳回原因"],["待确权限制","No withdrawal","不可撤回"]]
- },
- "P-A23":{
-  title:"P-A23 应收账款确权列表",
-  src:"PRD v1.1 · 3.1 / 10.1 / 13.1",
-  fields:[["数据范围","只读","其他企业录入、本企业为买方且状态为待确权 / 已确权 / 已驳回 / 已失效；不含草稿。"],["默认筛选","状态 = 待确权","支持切换历史状态；汇总与排序沿用币种约束。"]],
-  rules:[["F-10 · AC-01/02","与「我的应收账款」数据集互斥；卖方 / 买方是单据身份，不是账号角色。"],["本轮反馈 4","列表操作只保留「查看」，确权与驳回进入详情后执行。"]],
-  states:[["四态","待确权 / 已确权 / 已驳回 / 已失效。"],["列表必达态","默认、加载、空、筛选无结果、失败重试、无权限、异步等待、提交中、提交失败。"]],
-  copy:[["导航","Receivable confirmation","应收账款确权"],["页面标题","Confirm receivables","待我确权"]]
- },
- "P-A24":{
-  title:"P-A24 应收账款详情（买方视角）",
-  src:"PRD v1.1 · 3.1 / 10.2～10.4 / 13.2～13.4",
-  fields:[["业务字段与材料","只读","完整字段与全部合同号；JPG / PNG / PDF 可预览下载，ZIP 仅下载。"],["D-16 驳回原因","1～500 字符","自由文本、必填、无分类、不接受全空白。"]],
-  rules:[["F-12 · AC-15/28","只允许整笔确权，不提供部分金额输入；二次确认后进入不可撤销、不可修改终态。"],["F-13 · AC-16","驳回原因全文入时间线并回显给卖方；每次驳回新增历史。"],["本轮反馈 2","右侧明确展示买卖双方与操作栏，确权 / 驳回按钮只在待确权时出现；时间线位于左侧。"]],
-  states:[["业务态","待确权可操作；已确权 / 已驳回 / 已失效只读。"],["页面态","默认、加载、失败重试、无权限、异步状态变化。"]],
-  copy:[["确权警示","Confirmation applies to the full amount.","本次对整笔金额确权，不支持部分金额确权。"],["驳回帮助","Required · free text · no category","必填 · 自由文本 · 不设分类"]]
- },
- "P-M40":{
-  title:"P-M40 资产管理端应收账款列表",
-  src:"PRD v1.1 · 3.1 / 12 / 13.1 / AC-41～43",
-  fields:[["数据范围","全量只读","所有企业的非草稿记录，不脱敏。"],["筛选与汇总","只读","状态、币种、双方企业、到期日与关键词；按币种分组汇总。"]],
-  rules:[["F-18","可查看全量记录并进入详情；列表操作仅「查看」。"],["AC-43","不存在新增、编辑、提交、确权、驳回、删除或改状态入口。"]],
-  states:[["四态 + 页面态","非草稿四态；列表 9 类必达界面状态均可切换。"]],
-  copy:[["页面说明","All non-draft receivables. Read-only and unmasked.","全部非草稿记录，只读、不脱敏。"]]
- },
- "P-M41":{
-  title:"P-M41 资产管理端应收账款详情",
-  src:"PRD v1.1 · 3.1 / 12 / AC-41～43",
-  fields:[["完整详情","只读、不脱敏","双方主体、全部合同号、金额币种、全部材料、状态与完整时间线。"],["材料","原件","JPG / PNG / PDF 可预览与下载，ZIP 只下载。"]],
-  rules:[["F-18 · AC-42/43","管理端可下载任意记录材料原件；页面不出现任何写操作入口。"],["时间线","展示每次操作、操作人、时间和驳回原因全文。"]],
-  states:[["页面态","默认、加载、失败重试、无权限、异步状态变化。"]],
-  copy:[["身份说明","Asset admin view: full, unmasked and read-only.","资产管理端视图：全量、不脱敏、只读。"]]
- }
+ "P-A20":pageSpec("P-A20 我的应收账款列表","页面级开发规格 · PRD v1.1 3.1 / 5.1 / 9.2 / 13.1 + 2026-09-09 UI 反馈",[
+  ["角色与前置条件","资产端 · 已认证企业用户","当前企业在单据中为**卖方/债权方**；企业认证通过后可进入。服务端从登录会话取得 seller_company_id，前端不得传入或改写归属主体。"],
+  ["字段及来源","GET /api/receivables","列表项返回 id、ar_no、buyer{name,id}、contract_nos[]、amount、currency、period_start、due_date、status、updated_at、version；金额来自单据原币种，时间按账户时区展示。"],
+  ["展示与交互规则","列表 + 单一统计卡","数据域仅含本企业作为卖方的五态记录。统计区只显示**已确权总金额**，统一格式为 `123,456.00 USD`；其余统计位置留空。列表金额仍显示原金额与原币种；到期日同屏标注 UTC+8。"],
+  ["前端校验","筛选与排序","状态、原币种、关键词输入做枚举/长度约束；金额排序仅选择单一原币种后可用；分页切换保留筛选条件。关键词匹配编号、任一合同号、发票号和买方。"],
+  ["后端校验","范围与排序","强制 seller_company_id=当前企业；拒绝未知状态/币种、非法日期区间和未白名单排序字段；列表按记录去重，多个合同号命中不得重复返回。"],
+  ["接口输入","GET /api/receivables?scope=seller","query: status?、currency?、keyword?、due_from?、due_to?、sort?、page、page_size(默认20，最大100)。`scope` 仅表达视图，真实企业范围由会话决定。"],
+  ["接口输出","200","`{items,total,page,page_size,summary:{confirmed_total_usd,currency:'USD'}}`。summary 是后端权威聚合值，按入口数据域全部已确权记录计算，不受分页和状态筛选影响；前端不自行换汇。"],
+  ["错误处理","401 / 403 / 422 / 5xx","401 回登录；403 展示无权限并隐藏新增；422 定位非法筛选；5xx 保留筛选并给出重试。summary 缺失或失败时显示 `— USD`，列表仍可独立展示。"]
+ ],[
+  ["按钮权限","页头「新增应收账款」仅认证通过企业可见。行操作：所有状态有「查看」；仅待提交额外有「编辑」；**列表不出现删除**。提交、重提、确权、驳回均不在列表执行。"],
+  ["状态流转","待提交 → 待确权 → 已确权 / 已驳回 / 已失效；已驳回可经编辑重提回待确权。列表动作显隐由 status + 当前企业归属共同决定，后端再次校验。"],
+  ["异常 / 空态","首次无数据展示空态与新增入口；筛选无结果展示清空筛选；加载失败可重试；接口等待展示 skeleton；会话过期与无权限分开处理。"],
+  ["验收标准","AC-01/02/24～26 + 本轮反馈","两个入口数据互斥；五态可筛选；行操作严格为查看/待提交编辑；统计区只有已确权 USD 总额且其他统计位无内容；金额格式数值在前、代码在后。"]
+ ],[["统计标题","Confirmed total · converted to USD","已确权总金额 · 统一折算为 USD"],["空态","No receivables yet","暂无应收账款"],["无权限","Complete enterprise verification to use this module.","请先完成企业认证后使用本模块。"]]),
+
+ "P-A21":pageSpec("P-A21 新增 / 编辑应收账款","页面级开发规格 · PRD v1.1 5.2～5.5 / 6 / 7 / 8 / 13.2～13.5",[
+  ["角色与前置条件","资产端 · 卖方","新增时当前企业自动成为卖方；编辑仅允许本企业名下待提交或已驳回记录。已驳回进入同一记录编辑，不创建新记录。"],
+  ["字段及来源","D-02～D-14","seller 取会话且只读；buyer_id 来自 C-40；currency=CNY/HKD/USD/KYD/NGN；amount>0 且2位小数；period_start、due_date 必填；contract_nos 1～10；invoice_no 可空；trade_type、settlement_method 枚举；description/remark≤500；file_ids 1～20。"],
+  ["展示与交互规则","表单 + chips + 上传","合同号支持回车、逗号/中文逗号/换行批量拆分，按规范化值即时自去重；材料不分类，JPG/PNG/PDF/ZIP，ZIP 仅下载。保存/提交位于右侧买卖双方下方，操作卡在桌面滚动时固定可见。"],
+  ["前端校验","即时 + 提交","合同号单值≤64、最多10；金额数字且>0；到期日≥账期起始日；描述/备注≤500；材料最多20且单份<10M。保存草稿仅做格式校验；提交检查全部必填。错误与字段一一对应并聚焦首错。"],
+  ["后端校验","权威校验","校验主体归属、买方已认证且不等于卖方、字段枚举/长度/日期/金额、材料真实 MIME/大小/病毒扫描、状态和 version。新增提交批量规范化合同号并以数据库唯一约束兜底；重提排除自身且不触发重复校验。"],
+  ["接口输入","草稿与提交","POST `/api/receivables` 新建草稿；PATCH `/api/receivables/{id}` 更新草稿/已驳回记录，body 含 buyer_id、currency、amount、period_start、due_date、contract_nos[]、invoice_no?、trade_type、settlement_method、description?、remark?、file_ids[]、version；POST `/{id}/submit` 提交。"],
+  ["接口输出","草稿 / 提交","保存返回 `{id,ar_no,status:'draft',version,updated_at}`；提交成功返回 `{id,status:'pending',submit_count,version,submitted_at}`。文件上传先取得 upload_token，完成后换取 file_id；页面只提交 file_id。"],
+  ["错误处理","业务错误码","VALIDATION_FAILED 映射字段；BUYER_NOT_VERIFIED / BUYER_IS_SELF 回买方字段；DUPLICATE_CONTRACT 打开 C-41，仅回传 blocked_contract_nos[]；STATE_CONFLICT 刷新详情；UPLOAD_* 保留表单并定位材料；5xx 保留本地输入允许重试。"]
+ ],[
+  ["按钮权限","保存草稿、提交","新增/待提交显示「保存草稿」「提交」；已驳回显示保存修改与重新提交语义；提交中全部禁用防重复。服务端以幂等键 + version 防重复写。"],
+  ["状态流转","新增 → 待提交；首次提交 → 待确权；已驳回修改重提 → 待确权且 submit_count+1。提交后不可撤回；重提不限次数。"],
+  ["异常 / 空态","草稿加载失败可重试；买方搜索无结果给固定提示；材料上传失败保留已成功项；离页有未保存提示；无权限/状态冲突不得渲染可写表单。"],
+  ["验收标准","AC-03～14/17/19～23/45/46/51","1～10 合同号和 1～20 材料边界可复现；新增命中任一合同号整笔阻断；拦截面不显示企业、金额、状态、编号或跳转；重提不查重且同记录流转。"]
+ ],[["重复拦截","This contract number already has a receivable record and can't be entered again.","该合同号已存在应收账款记录，无法重复录入"],["买方空结果","Only verified buyers on the platform can be selected.","未找到该企业。本期仅支持已在平台完成企业认证的买方。"],["材料约束","1–20 files · each under 10 MB","1～20 份 · 单份 <10M"]]),
+
+ "P-A22":pageSpec("P-A22 应收账款详情（卖方视角）","页面级开发规格 · PRD v1.1 5.5～5.6 / 9 / AC-16～18/23/27～29 + 2026-09-09 UI 反馈",[
+  ["角色与前置条件","资产端 · 单据卖方","仅单据 seller_company_id 与当前企业一致的账号可读；企业认证失效后按平台只读策略返回权限结果，任何越权 id 均返回 403 而非泄露存在性。"],
+  ["字段及来源","GET /api/receivables/{id}","返回基本字段、seller/buyer、contract_nos[]、files[]、status、submit_count、latest_rejection_reason、timeline[]、version。材料项含 file_id、name、mime_type、size、previewable、downloadable。"],
+  ["展示与交互规则","详情信息架构","左侧顺序固定：基本信息 → 最近驳回原因（有则显示）→ **贸易背景材料 → 操作时间线**。右侧为时区说明、买卖双方、状态操作。桌面端操作卡 `position: sticky`，滚动时持续可见；窄屏回归文档流。"],
+  ["前端校验","动作前置","根据 status/version 渲染按钮；下载/预览前检查能力位，ZIP 不显示可用预览；时间按账户时区格式化，到期/失效旁保留 UTC+8 判定说明。"],
+  ["后端校验","归属 + 状态","读取校验卖方归属；编辑/删除只接受 draft；重提只接受 rejected；每次写入校验 version，冲突返回 STATE_CONFLICT；材料链接短时签名且再次鉴权。"],
+  ["接口输入","详情与动作","GET `/{id}`；DELETE `/{id}?version=` 仅草稿；POST `/{id}/resubmit` body=`{version}`，业务字段修改先走 PATCH；GET `/files/{file_id}/preview|download`。"],
+  ["接口输出","详情","`{receivable,files,timeline,permissions:{can_edit,can_delete,can_resubmit},version}`；timeline 按发生时间倒序，每条含 action、actor_company、actor_account、occurred_at、remark/rejection_reason。"],
+  ["错误处理","403 / 404 / 409 / 410 / 5xx","403 无权限；404 不存在；409 状态或版本冲突时提示并刷新；410 材料链接过期则重新获取；5xx 保留当前详情并提供重试，不重复提交动作。"]
+ ],[
+  ["按钮权限","卖方状态矩阵","待提交：编辑、删除；已驳回：修改重提；待确权：无编辑/撤回/删除；已确权/已失效：只读。操作卡无可用动作时不渲染。"],
+  ["状态流转","draft 可删除或提交；rejected 可重提到 pending；pending 对卖方只读；confirmed/expired 为终态。时间线只增不改，完整保留每次驳回原因。"],
+  ["异常 / 空态","材料为空仅可能来自历史/异常数据，显示空态不隐藏区块；时间线为空显示审计数据异常；加载失败、权限拒绝、异步状态变化均有独立页面态。"],
+  ["验收标准","AC-16～18/23/27～29 + 本轮反馈","五态按钮显隐准确；待确权无撤回；材料后紧接完整时间线；操作区滚动持续可见；驳回原因全文可读；构造越权/错状态请求由后端拒绝。"]
+ ],[["待确权限制","No withdrawal","提交后不可撤回"],["驳回原因","Latest rejection reason","最近一次驳回原因"],["状态冲突","This record changed. The page has been refreshed.","单据状态已变化，页面已刷新。"]]),
+
+ "P-A23":pageSpec("P-A23 应收账款确权列表","页面级开发规格 · PRD v1.1 10.1 / 13.1 + 2026-09-09 UI 反馈",[
+  ["角色与前置条件","资产端 · 单据买方","当前企业为单据 buyer_company_id；账号无需独立买方角色。企业认证通过后可进入，数据与「我的应收账款」按主体关系互斥。"],
+  ["字段及来源","GET /api/receivables?scope=buyer","返回 ar_no、seller、contract_nos[]、amount/currency、账期、到期日、status、submitted_at、version；不返回草稿。统计字段由服务端聚合。"],
+  ["展示与交互规则","默认待确权","首次进入默认 status=pending，可切换已确权/已驳回/已失效历史。统计区只显示入口数据域的已确权总金额并统一为 USD，其余统计位置留空；列表金额仍用原币种。"],
+  ["前端校验","筛选","不提供 draft 选项；原币种金额排序仅单币种筛选开放；关键词匹配编号、任一合同号、发票号与卖方；到期/失效同屏标注 UTC+8。"],
+  ["后端校验","买方范围","强制 buyer_company_id=当前企业且 status!=draft；排序、筛选白名单；同一条记录只能返回一次；summary 只聚合 confirmed。"],
+  ["接口输入","GET /api/receivables?scope=buyer","query 同 P-A20，默认 status=pending；page/page_size 必填默认值；企业 id 不接受客户端输入。"],
+  ["接口输出","200","`{items,total,page,page_size,summary:{confirmed_total_usd,currency:'USD'}}`；summary 不受分页和当前状态筛选影响，前端仅格式化两位小数。"],
+  ["错误处理","通用列表错误","401 回登录；403 展示无权限；422 清晰标记筛选问题；5xx 可重试。summary 单独失败显示 `— USD`，不阻断待确权列表。"]
+ ],[
+  ["按钮权限","行操作仅「查看」","确权与驳回必须进入 P-A24 核对完整字段和材料后执行；列表不出现编辑、删除、确权、驳回。"],
+  ["状态流转","pending 由详情进入 confirmed 或 rejected；到期日次日 00:00（UTC+8）批处理进入 expired。列表接收变更后刷新并保留当前筛选。"],
+  ["异常 / 空态","无待确权时展示空态但可切历史；筛选无结果可清空；异步状态变化提示刷新；加载/失败/无权限/提交中与失败态可独立到达。"],
+  ["验收标准","AC-01/02/24～26 + 本轮反馈","不含草稿且与入口 A 互斥；默认待确权；行操作只有查看；统计卡只有已确权 USD 总额；金额与币种同屏相邻。"]
+ ],[["页面标题","Confirm receivables","待我确权"],["统计标题","Confirmed total · converted to USD","已确权总金额 · 统一折算为 USD"],["空态","No receivables require confirmation.","暂无待确权应收账款。"]]),
+
+ "P-A24":pageSpec("P-A24 应收账款详情（买方视角）","页面级开发规格 · PRD v1.1 10.2～10.4 / AC-09/10/15/16/18/28 + 2026-09-09 UI 反馈",[
+  ["角色与前置条件","资产端 · 单据买方","仅 buyer_company_id=当前企业可读。待确权记录可决策；主体异常期间禁止确权/驳回并返回明确 permission 状态。"],
+  ["字段及来源","GET /api/receivables/{id}","完整只读业务字段、双方主体、全部合同号、files[]、status、timeline[]、version、permissions。驳回原因 1～500 字符，自由文本、无分类。"],
+  ["展示与交互规则","核对与决策","左侧顺序：基本信息 → 最近驳回原因（有则显示）→ **贸易背景材料 → 操作时间线**；右侧买卖双方下方为决策卡。桌面滚动时决策卡固定可见。确权不提供任何部分金额输入。"],
+  ["前端校验","确权/驳回","确权必须二次确认；驳回 trim 后 1～500 字符，空或全空白不可提交；提交中禁用关闭和重复提交；ZIP 预览禁用、下载保留。"],
+  ["后端校验","主体 + 状态 + 幂等","两动作均校验 buyer_company_id、status=pending、主体可用、version 与 Idempotency-Key。confirm 不接受 amount 字段；reject 校验 reason trim 后长度。并发只允许首个动作成功。"],
+  ["接口输入","决策动作","POST `/{id}/confirm` body=`{version}`；POST `/{id}/reject` body=`{reason,version}`；header `Idempotency-Key`。GET 文件预览/下载沿用详情鉴权。"],
+  ["接口输出","成功","confirm 返回 `{id,status:'confirmed',confirmed_at,version}`；reject 返回 `{id,status:'rejected',rejected_at,rejection_reason,version}`；成功后时间线新增动作并返回通知事件已受理标识。"],
+  ["错误处理","409 / 422 / 403 / 5xx","409 STATE_CONFLICT 关闭弹层、刷新并提示已被处理；422 就地显示 reason 错误；403 隐藏操作卡；5xx 保留输入和页面上下文，可显式重试，不假定状态未变化。"]
+ ],[
+  ["按钮权限","仅 pending","待确权显示「驳回」「确权通过」；已确权/已驳回/已失效均只读且不显示操作卡。服务端 permissions 为最终依据。"],
+  ["状态流转","pending → confirmed 为不可撤销终态；pending → rejected 后由卖方修改重提；pending 到期后 → expired。任何路径都不允许部分确权。"],
+  ["异常 / 空态","材料为空提示无法核验但不提供绕过；timeline 空提示审计异常；状态异步变化立即刷新；权限、加载失败和链接过期分别处理。"],
+  ["验收标准","AC-09/10/15/16/18/28 + 本轮反馈","所有材料可鉴权访问且 ZIP 不预览；确权二次确认、无金额输入；驳回原因必填；材料下方展示完整时间线；操作卡滚动可见且终态消失。"]
+ ],[["确权警示","Confirmation applies to the full amount. It can't be undone.","本次对整笔金额确权，不支持部分金额确权；确权后不可撤销。"],["驳回帮助","Required · free text · 1–500 characters · no category","必填 · 自由文本 · 1～500 字符 · 不设分类"],["状态冲突","This receivable has already been handled.","该应收账款状态已变化，请刷新后查看。"]]),
+
+ "P-M40":pageSpec("P-M40 资产管理端应收账款列表","页面级开发规格 · PRD v1.1 12 / AC-41～43 + 2026-09-09 UI 反馈",[
+  ["角色与前置条件","资产管理端 · 资产管理人员","需 receivable:read_all 与 material:download 权限；全量可见、不脱敏、不可写。前端不提供企业范围参数，服务端按管理端权限判断。"],
+  ["字段及来源","GET /api/admin/receivables","返回所有企业非草稿记录：双方主体、合同号、金额/原币种、账期、到期日、状态、最近更新时间；summary 返回全部已确权记录的 USD 总额。"],
+  ["展示与交互规则","全量只读列表","统计区只显示**已确权总金额 · USD**，其余统计位置留空；列表原金额/原币种不改变。筛选含状态、原币种、双方企业、到期日、关键词；任何字段均不脱敏。"],
+  ["前端校验","查询条件","筛选和分页同资产端；单币种才开放原金额排序；不得在 DOM 中渲染任何写入口或复用资产端写动作。"],
+  ["后端校验","管理权限","校验 read_all；排除 draft；所有查询、导出和详情访问写审计日志；排序/筛选白名单；summary 只聚合 confirmed 并由后端给出最终 USD 数值。"],
+  ["接口输入","GET /api/admin/receivables","query: status?、currency?、seller_id?、buyer_id?、keyword?、due_from?、due_to?、sort?、page、page_size。"],
+  ["接口输出","200","`{items,total,page,page_size,summary:{confirmed_total_usd,currency:'USD'}}`；列表项保留原币种，summary 为后端权威聚合，不返回前端换汇所需的汇率。"],
+  ["错误处理","401 / 403 / 422 / 5xx","403 展示管理权限不足；422 标识非法条件；5xx 保留查询条件并重试；summary 失败不阻断列表，显示 `— USD`。"]
+ ],[
+  ["按钮权限","仅「查看」","无新增、编辑、提交、删除、确权、驳回和状态变更入口；构造写请求由服务端统一 403/405。"],
+  ["状态流转","管理端不触发任何流转，仅观察 pending/confirmed/rejected/expired。收到状态更新后按 version 刷新行。"],
+  ["异常 / 空态","无记录、筛选无结果、加载中、失败重试、无权限、异步刷新、接口等待均独立展示；空态不出现创建入口。"],
+  ["验收标准","AC-41～43 + 本轮反馈","不含草稿；全量不脱敏；列表只有查看；统计区只有全部已确权 USD 总额；无任何写操作，越权请求后端拒绝并审计。"]
+ ],[["页面说明","All non-draft receivables. Read-only and unmasked.","全部非草稿记录，只读、不脱敏。"],["统计标题","Confirmed total · converted to USD","已确权总金额 · 统一折算为 USD"],["无权限","You don't have permission to view receivables.","你暂无查看应收账款的管理权限。"]]),
+
+ "P-M41":pageSpec("P-M41 资产管理端应收账款详情","页面级开发规格 · PRD v1.1 12 / AC-41～43 + 2026-09-09 UI 反馈",[
+  ["角色与前置条件","资产管理端 · 资产管理人员","需 receivable:read_all；材料下载另需 material:download。全量、不脱敏、只读；页面不按买卖方归属限制，但每次访问写审计。"],
+  ["字段及来源","GET /api/admin/receivables/{id}","返回双方主体、全部合同号、业务字段、状态、submit_count、全部 files[]、完整 timeline[]、version；操作人账号和驳回原因不脱敏。"],
+  ["展示与交互规则","完整只读详情","左侧顺序固定为基本信息 → 最近驳回原因（有则显示）→ **贸易背景材料 → 操作时间线**；右侧展示时区说明与买卖双方。页面不渲染操作卡。JPG/PNG/PDF 可预览下载，ZIP 仅下载。"],
+  ["前端校验","能力位","按 file.previewable/downloadable 控制按钮；ZIP 永不预览；时间按账户时区展示并标注，到期/失效以 UTC+8 判定。任何返回的 can_write=true 均忽略并记录前端监控。"],
+  ["后端校验","只读与文件鉴权","校验管理权限；详情与文件分别鉴权；下载链接短时签名且不可跨用户复用；不暴露任何修改/状态接口给管理端路由。"],
+  ["接口输入","详情与材料","GET `/api/admin/receivables/{id}`；GET `/api/admin/receivables/{id}/files/{file_id}/preview|download`。路径 id 必须属于同一记录。"],
+  ["接口输出","200","`{receivable,files,timeline,permissions:{can_view:true,can_download,can_write:false}}`；timeline 按时间倒序，含 action、actor_company、actor_account、occurred_at、remark/rejection_reason。"],
+  ["错误处理","403 / 404 / 410 / 5xx","403 无权限；404 不存在；410 下载链接失效后重新请求；病毒隔离文件返回 FILE_QUARANTINED 并禁用访问；5xx 保留页面框架和重试入口。"]
+ ],[
+  ["按钮权限","只读","仅材料预览/下载；不存在新增、编辑、删除、提交、重提、确权、驳回或改状态按钮。"],
+  ["状态流转","页面不发起流转；展示服务端最新状态与完整审计时间线。version 变化时提示并刷新，不覆盖当前滚动位置。"],
+  ["异常 / 空态","材料为空显示明确空态；时间线为空提示审计数据异常；无下载权限时仍可看详情但隐藏下载；异步状态变化与接口失败分别处理。"],
+  ["验收标准","AC-41～43 + 本轮反馈","完整字段/材料/时间线不脱敏；材料后方紧接时间线；ZIP 仅下载；页面及网络层均无写操作；服务端拒绝任何管理端写请求。"]
+ ],[["身份说明","Asset admin view: full, unmasked and read-only.","资产管理端视图：全量、不脱敏、只读。"],["材料隔离","This file is unavailable because it didn't pass the security scan.","该文件未通过安全扫描，暂不可访问。"],["审计异常","Activity history is temporarily unavailable.","操作时间线暂不可用，请稍后重试。"]])
 };
 
 function seed(){return [
  {id:"a-draft",side:"seller",no:"AR20260908000001",buyer:"Demo Enterprise Beta",seller:"Demo Enterprise Alpha",contracts:["HT-2026/001","PO-ALPHA-09"],amount:120000,currency:"USD",start:"2026-08-01",due:"2026-10-31",st:"draft",invoice:"INV-DEMO-001",updated:"2026-09-08 09:18 (UTC+8)",files:[file("trade-contract.pdf","PDF","1.8 MB")],reason:"",count:0},
  {id:"a-pending",side:"seller",no:"AR20260908000002",buyer:"Demo Enterprise Gamma",seller:"Demo Enterprise Alpha",contracts:["SG-2026-204"],amount:680000,currency:"HKD",start:"2026-07-15",due:"2026-09-15",st:"pending",invoice:"",updated:"2026-09-08 08:42 (UTC+8)",files:[file("agreement.png","PNG","860 KB"),file("supporting-files.zip","ZIP","4.2 MB")],reason:"",count:1},
- {id:"a-confirmed",side:"seller",no:"AR20260907000006",buyer:"Demo Enterprise Beta",seller:"Demo Enterprise Alpha",contracts:["KY-AR-2026-88"],amount:45000,currency:"KYD",start:"2026-06-01",due:"2026-12-01",st:"confirmed",invoice:"INV-DEMO-006",updated:"2026-09-07 17:06 (UTC+8)",files:[file("invoice.jpg","JPG","620 KB")],reason:"",count:1},
+ {id:"a-confirmed",side:"seller",no:"AR20260907000006",buyer:"Demo Enterprise Beta",seller:"Demo Enterprise Alpha",contracts:["KY-AR-2026-88"],amount:45000,currency:"KYD",usdAmount:54000,start:"2026-06-01",due:"2026-12-01",st:"confirmed",invoice:"INV-DEMO-006",updated:"2026-09-07 17:06 (UTC+8)",files:[file("invoice.jpg","JPG","620 KB")],reason:"",count:1},
  {id:"a-rejected",side:"seller",no:"AR20260906000018",buyer:"Demo Enterprise Delta",seller:"Demo Enterprise Alpha",contracts:["NG-SVC-2026-113"],amount:2800000,currency:"NGN",start:"2026-08-12",due:"2026-10-12",st:"rejected",invoice:"",updated:"2026-09-08 07:55 (UTC+8)",files:[file("service-record.pdf","PDF","2.4 MB")],reason:"材料中的交付日期与账期起始日不一致，请核对后重新提交。",count:2},
  {id:"a-expired",side:"seller",no:"AR20260815000021",buyer:"Demo Enterprise Gamma",seller:"Demo Enterprise Alpha",contracts:["HT-EXP-2026-17"],amount:325000,currency:"CNY",start:"2026-05-01",due:"2026-09-01",st:"expired",invoice:"INV-DEMO-021",updated:"2026-09-02 00:00 (UTC+8)",files:[file("contract.pdf","PDF","1.1 MB")],reason:"",count:1},
  {id:"b-pending",side:"buyer",no:"AR20260908000031",buyer:"Demo Enterprise Alpha",seller:"Demo Enterprise Beta",contracts:["TB-2026-0908","TB-PO-771"],amount:98000,currency:"USD",start:"2026-08-08",due:"2026-09-12",st:"pending",invoice:"INV-DEMO-031",updated:"2026-09-08 09:06 (UTC+8)",files:[file("contract.pdf","PDF","1.4 MB"),file("delivery.png","PNG","720 KB"),file("archive.zip","ZIP","3.6 MB")],reason:"",count:1},
- {id:"b-confirmed",side:"buyer",no:"AR20260905000012",buyer:"Demo Enterprise Alpha",seller:"Demo Enterprise Gamma",contracts:["CN-2026-518"],amount:560000,currency:"CNY",start:"2026-07-01",due:"2026-11-30",st:"confirmed",invoice:"",updated:"2026-09-06 13:20 (UTC+8)",files:[file("trade-document.pdf","PDF","2.1 MB")],reason:"",count:1},
+ {id:"b-confirmed",side:"buyer",no:"AR20260905000012",buyer:"Demo Enterprise Alpha",seller:"Demo Enterprise Gamma",contracts:["CN-2026-518"],amount:560000,currency:"CNY",usdAmount:78000,start:"2026-07-01",due:"2026-11-30",st:"confirmed",invoice:"",updated:"2026-09-06 13:20 (UTC+8)",files:[file("trade-document.pdf","PDF","2.1 MB")],reason:"",count:1},
  {id:"b-rejected",side:"buyer",no:"AR20260903000007",buyer:"Demo Enterprise Alpha",seller:"Demo Enterprise Delta",contracts:["HK-SVC-4008"],amount:310000,currency:"HKD",start:"2026-06-20",due:"2026-10-20",st:"rejected",invoice:"",updated:"2026-09-04 10:12 (UTC+8)",files:[file("statement.pdf","PDF","980 KB")],reason:"金额与合同约定不一致。",count:1}
 ];}
 function file(name,type,size){return{name:name,type:type,size:size};}
@@ -304,14 +345,14 @@ function visible(side,admin){
   if(S.sortAmount)a.sort(function(a,b){return S.sortAmount*(a.amount-b.amount);});
   return a;
 }
-function summaries(rows){
-  var order=["CNY","HKD","USD","KYD","NGN"],g={};rows.forEach(function(r){g[r.currency]=g[r.currency]||{n:0,a:0};g[r.currency].n++;g[r.currency].a+=r.amount;});
-  var html=order.filter(function(c){return g[c];}).map(function(c){var x=g[c];return '<div class="ar-sum"><div class="k">'+c+'</div><div class="v">'+Number(x.a).toLocaleString("en-US",{minimumFractionDigits:2})+' '+c+'</div><div class="n">'+x.n+' '+t("records")+'</div></div>';}).join('');
-  return '<div class="ar-sums">'+(html||'<div class="ar-sum"><div class="k">'+t("sum")+'</div><div class="n">—</div></div>')+'</div>';
+function summaries(mode){
+  var rows=S.data.filter(function(r){return r.st==="confirmed"&&(mode==="admin"||r.side===(mode==="buyer"?"buyer":"seller"));});
+  var total=rows.reduce(function(n,r){return n+Number(r.usdAmount||(r.currency==="USD"?r.amount:0));},0);
+  return '<div class="ar-sums"><div class="ar-sum"><div class="k">'+t("confirmedUsd")+'</div><div class="v">'+total.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+' USD</div><div class="n">'+t("demoConverted")+'</div></div></div>';
 }
 function rowActions(r,mode){
   var out=['<button class="actlink" type="button" data-act="view" data-v="'+r.id+'">'+t("view")+'</button>'];
-  if(mode==="seller"&&r.st==="draft")out.push('<button class="actlink danger" type="button" data-act="askDelete" data-v="'+r.id+'">'+t("del")+'</button>');
+  if(mode==="seller"&&r.st==="draft")out.push('<button class="actlink" type="button" data-act="edit" data-v="'+r.id+'">'+t("edit")+'</button>');
   return '<div class="rowacts">'+out.join('')+'</div>';
 }
 function table(rows,mode){
@@ -327,7 +368,7 @@ function pageList(mode){
   if(surf)return head+demoBar()+surf;
   var rows=visible(buyer?"buyer":"seller",admin);
   var alert=S.st==="submitting"?note("",t("rowSubmitting")):S.st==="submitfail"?note("red",t("rowSubmitFail")):'';
-  return head+demoBar()+alert+summaries(rows)+'<div class="card">'+filters(admin,buyer)+'</div>'+CF.gap(12)+(rows.length?table(rows,mode):stateSurfaceForNoMatch());
+  return head+demoBar()+alert+summaries(mode)+'<div class="card">'+filters(admin,buyer)+'</div>'+CF.gap(12)+(rows.length?table(rows,mode):stateSurfaceForNoMatch());
 }
 function stateSurfaceForNoMatch(){return '<div class="card"><div class="shell"><b>'+t("noMatch")+'</b><button class="btn sm" type="button" data-act="clear">'+t("clear")+'</button></div></div>';}
 
@@ -396,8 +437,8 @@ function pageDetail(mode){
    +'<div class="card"><div class="card-head"><b>'+t("basic")+'</b><span>'+statusPill(r.st)+'</span></div><div class="card-b"><div class="ar-state-note">'+note("",identity)+'</div><dl class="dl">'
    +'<div><dt>'+t("arNo")+'</dt><dd class="mono">'+r.no+'</dd></div><div><dt>'+t("amount")+'</dt><dd class="ar-money">'+money(r)+'</dd></div><div><dt>'+t("contracts")+'</dt><dd>'+contracts(r.contracts,false)+'</dd></div><div><dt>'+t("invoice")+'</dt><dd>'+(r.invoice||'—')+'</dd></div><div><dt>'+t("start")+'</dt><dd class="mono">'+r.start+'</dd></div><div><dt>'+t("due")+'</dt><dd class="mono">'+r.due+' · UTC+8</dd></div><div><dt>'+t("trade")+'</dt><dd>'+t((r.trade||"goods")==="goods"?"tGoods":"tService")+'</dd></div><div><dt>'+t("settlement")+'</dt><dd>'+t((r.settlement||"tt")==="tt"?"settTT":"settLC")+'</dd></div><div><dt>'+t("description")+'</dt><dd>'+(r.description||'—')+'</dd></div><div><dt>'+t("remark")+'</dt><dd>'+(r.remark||'—')+'</dd></div></dl></div></div>'
    +(r.reason?'<div class="card"><div class="card-head"><b>'+t("fullReason")+'</b></div><div class="card-b"><div class="ar-reason">'+esc(r.reason)+'</div></div></div>':'')
-   +'<div class="card"><div class="card-head"><b>'+t("timeline")+'</b></div><div class="card-b">'+timeline(r,admin,buyer)+'</div></div>'
-   +'<div class="card"><div class="card-head"><b>'+t("materials")+'</b><span>'+r.files.length+' / 20</span></div><div class="card-b">'+files(r,false)+'</div></div></div>'
+   +'<div class="card"><div class="card-head"><b>'+t("materials")+'</b><span>'+r.files.length+' / 20</span></div><div class="card-b">'+files(r,false)+'</div></div>'
+   +'<div class="card"><div class="card-head"><b>'+t("timeline")+'</b></div><div class="card-b">'+timeline(r,admin,buyer)+'</div></div></div>'
    +'<aside class="ar-stack"><div class="card"><div class="card-b">'+note("",t("timezone"))+'</div></div><div class="card"><div class="card-head"><b>'+t("party")+'</b></div><div class="card-b"><dl class="dl"><div><dt>'+t("seller")+'</dt><dd>'+r.seller+'</dd></div><div><dt>'+t("buyer")+'</dt><dd>'+r.buyer+'</dd></div></dl></div></div>'
    +(acts?'<div class="card ar-command"><div class="card-head"><b>'+t("actionArea")+'</b></div><div class="card-b">'+acts+'</div></div>':'')+'</aside></div>';
 }
@@ -441,7 +482,7 @@ function onAct(n,a,v){
   if(a==="askDelete"){var r=byId(v);S.rid=v;S.modal={type:"delete",no:r.no};render();return true;}
   if(a==="confirmDelete"){var fromDetail=S.page==="P-A22";S.data=S.data.filter(function(x){return x.id!==S.rid;});S.modal=null;toast("success",t("deleted"));if(fromDetail)go("P-A20");else render();return true;}
   if(a==="askConfirm"){S.modal={type:"confirm"};render();return true;}if(a==="askReject"){S.modal={type:"reject"};S.rejectReason="";S.rejectError=false;S.needFocus=true;render();return true;}
-  if(a==="confirmApprove"){var r=byId(S.rid);r.st="confirmed";r.updated="2026-09-08 09:31 (UTC+8)";S.modal=null;toast("success",t("approved"));render();return true;}
+  if(a==="confirmApprove"){var r=byId(S.rid);r.st="confirmed";if(r.currency==="USD")r.usdAmount=Number(r.amount);r.updated="2026-09-08 09:31 (UTC+8)";S.modal=null;toast("success",t("approved"));render();return true;}
   if(a==="confirmReject"){if(!S.rejectReason.trim()){S.rejectError=true;S.needFocus=true;render();return true;}var rr=byId(S.rid);rr.st="rejected";rr.reason=S.rejectReason;rr.updated="2026-09-08 09:31 (UTC+8)";S.modal=null;toast("success",t("rejected"));render();return true;}
   return false;
 }
