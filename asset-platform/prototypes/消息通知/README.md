@@ -5,7 +5,7 @@
 | 需求 | WS-304（父需求 WS-296） |
 | 所属端 · 模块 | 资产端 Web + 资产管理端 Web · 消息通知（站内信） |
 | 交付物 | `v1.0-消息通知-原型.html` + 本说明。原型引用 `../_shared/`，双击打开即可预览，无任何网络依赖：无 CDN、无远程字体、无远程图片 |
-| PRD 基线 | `asset-platform/prd/v1.0-消息通知/` 五件套（本 issue 2026-09-08 08:02 交付版）：主文档 + `01-页面与展示.md` + `02-数据契约与字段.md` + `03-验收标准.md` + `04-接入指南.md` |
+| PRD 基线 | `asset-platform/prd/v1.0-消息通知/`（本 issue 2026-09-08 08:02 交付版）：主文档 + `01-页面与展示.md` + `02-数据契约与字段.md` + `03-验收标准.md`；接入指南已迁至 `docs/notification-contract/接入指南.md` |
 | 视觉基线 | `asset-platform/prototypes/_shared/`（tokens.css + base.css），语义与约束见 `docs/design-system/` |
 | artifact class | **existing-system adaptation**（接进仓库现有设计体系，不另立基线、不另起 token） |
 | surface class | `console` |

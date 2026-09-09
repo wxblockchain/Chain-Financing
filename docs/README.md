@@ -6,6 +6,10 @@
 
 - [Harbour Credit 组件规范](design-system/README.md)：管理端与面客端的纯组件布局、token 与状态规范。
 
+## 通知契约
+
+- [消息通知接入指南](notification-contract/接入指南.md)：**四个端共用**的站内消息接入规范，含接入 Checklist、`biz_type` 命名空间与全平台唯一登记表、页面 / 组件编号段位表、`dedupe_key` 构造规范与反例、禁止事项与最小完整接入示例。规则的定义方是消息通知模块（`asset-platform/prd/v1.0-消息通知/`），本指南是其操作化版本；任何平台的模块要发站内消息，读这一份即可。
+
 ## 约定
 
 - 每个主题使用一个 Markdown 文件，文件名体现主题与日期，例如 `竞品调研-2026-09.md`。
