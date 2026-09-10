@@ -4,7 +4,7 @@
    模块不得自行发明未登记的 ID，也不得在模块内重建导航。
 
    字段说明
-     end     所属端：admin（管理端） / asset（资产端）
+     end     所属端／画布：admin（管理端） / asset（资产端） / ops（运营端画布，WS-313 起）
      layout  版式：app（侧栏+顶栏+内容区） / focus（居中卡片，无侧栏）
      name    页面名 [en, zh]，用于页面目录与面包屑兜底
      nav     该页在侧栏中的归属项；值为某个一级菜单的 page ID。
@@ -82,6 +82,20 @@
     "P-M41": { end: "admin", layout: "app", nav: "P-M40",
                name: ["Receivable details", "应收账款详情"] },
 
+    /* 可信数据同步（WS-313）。资产管理端推送侧三页；运营端收单侧两页。
+       运营端的画布端别取 ops：它与 admin 同密度，但侧栏只有本模块交付的资产清单，
+       两端在同一份原型里可切换，推送与收单的联动才看得出来。 */
+    "P-M-DS-01": { end: "admin", layout: "app", nav: "P-M-DS-01", navKey: "navDataSyncAssets",
+               crumb: ["Push confirmed assets", "已确权资产推送"], name: ["Push confirmed assets", "已确权资产推送"] },
+    "P-M-DS-02": { end: "admin", layout: "app", nav: "P-M-DS-02", navKey: "navDataSyncBatches",
+               crumb: ["Push batches", "推送记录"], name: ["Push batches", "推送记录"] },
+    "P-M-DS-03": { end: "admin", layout: "app", nav: "P-M-DS-02",
+               crumb: ["Batch details", "推送批次详情"], name: ["Batch details", "推送批次详情"] },
+    "P-O-DS-01": { end: "ops", layout: "app", nav: "P-O-DS-01", navKey: "navAssetInventory", ico: "▤",
+               crumb: ["Asset inventory", "资产清单"], name: ["Asset inventory", "资产清单"] },
+    "P-O-DS-02": { end: "ops", layout: "app", nav: "P-O-DS-01",
+               crumb: ["Asset details", "资产详情"], name: ["Asset details", "资产详情"] },
+
     /* 协议管理（WS-301）。页面编号已按其 PRD 3.3 从 P-M10/P-M11/P-M13 整体迁到模块前缀式
        P-AG-01/02/03：原段位与 WS-303 管理端审核页重号（X-01），P-M1x 全段已交还平台。 */
     "P-AG-01": { end: "admin", layout: "app", nav: "P-AG-01", navKey: "navAgreements", icoKey: "doc",
@@ -94,7 +108,10 @@
      各模块渲染出的菜单完全一致，只有高亮项不同；指向本模块未实现页面的菜单项
      由 shell 统一渲染为跨文件链接。 */
   CF.NAV = {
-    admin: ["P-AG-01", "P-M40", { navKey: "navUserManagement", ico: "用", children: ["P-M30", "P-M32"] }, "P-M05"],
+    admin: ["P-AG-01", "P-M40",
+            { navKey: "navDataSync", ico: "⇄", children: ["P-M-DS-01", "P-M-DS-02"] },
+            { navKey: "navUserManagement", ico: "用", children: ["P-M30", "P-M32"] }, "P-M05"],
+    ops: ["P-O-DS-01"],
     asset: [
       "P-A16",
       { navKey: "navReceivableGroup", ico: "▧", children: ["P-A20", "P-A23"] },
@@ -110,7 +127,8 @@
     account:    { dir: "账户与登录", file: "v1.0-账户与登录-原型.html", name: ["Account & sign-in", "账户与登录"] },
     kyc:        { dir: "实名认证与审核", file: "v1.0-实名认证与审核-原型.html", name: ["Verification", "实名认证与审核"] },
     notify:     { dir: "消息通知", file: "v1.0-消息通知-原型.html", name: ["Notifications", "消息通知"] },
-    receivable: { dir: "应收账款录入与确权", file: "v1.0-应收账款录入与确权-原型.html", name: ["Receivables", "应收账款录入与确权"] }
+    receivable: { dir: "应收账款录入与确权", file: "v1.0-应收账款录入与确权-原型.html", name: ["Receivables", "应收账款录入与确权"] },
+    datasync:   { dir: "可信数据同步", file: "v1.0-可信数据同步-原型.html", name: ["Trusted data sync", "可信数据同步"] }
   };
 
   /* 页面 → 所属模块。跨文件跳转和指向页文案都读这张表。 */
@@ -125,7 +143,9 @@
     "P-A18": "notify", "P-A19": "notify", "P-M20": "notify", "P-M21": "notify",
     "P-A20": "receivable", "P-A21": "receivable", "P-A22": "receivable",
     "P-A23": "receivable", "P-A24": "receivable",
-    "P-M40": "receivable", "P-M41": "receivable"
+    "P-M40": "receivable", "P-M41": "receivable",
+    "P-M-DS-01": "datasync", "P-M-DS-02": "datasync", "P-M-DS-03": "datasync",
+    "P-O-DS-01": "datasync", "P-O-DS-02": "datasync"
   };
 
   /* 页面 → 外部需求。这些页面不属于本仓库的任何原型文件，只在此登记归属，
@@ -161,7 +181,12 @@
     "P-A23": "#/confirmations",
     "P-A24": "#/confirmations/detail",
     "P-M40": "#/admin/receivables",
-    "P-M41": "#/admin/receivables/detail"
+    "P-M41": "#/admin/receivables/detail",
+    "P-M-DS-01": "#/admin/data-sync/assets",
+    "P-M-DS-02": "#/admin/data-sync/batches",
+    "P-M-DS-03": "#/admin/data-sync/batches",
+    "P-O-DS-01": "#/ops/asset-inventory",
+    "P-O-DS-02": "#/ops/asset-inventory"
   };
 
 })(window.CF = window.CF || {});

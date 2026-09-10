@@ -9,7 +9,7 @@
 
    模块接口（除 id / dict / content 外均可省略）
      id            模块标识，仅用于调试
-     end           默认端别：admin / asset
+     end           默认端别：admin（管理端） / asset（资产端） / ops（运营端画布）
      home          默认落地页 ID
      owns          本模块真正实现的 page ID 列表；不在其中的导航目标由 shell
                    统一渲染为归属指向页
@@ -81,7 +81,7 @@
      模块 dict 里的同名键仍可覆盖。 */
   CF.DICT = {
     en: { stateSwitch:"Prototype · state", prdOpen:"PRD excerpt", close:"Close",
-          adminConsole:"Console", grpMenu:"Menu",
+          adminConsole:"Console", opsConsole:"Operations", grpMenu:"Menu",
           navAgreements:"Agreements", navUserManagement:"User management",
           navIdentityReviews:"Identity reviews", navBusinessReviews:"Business reviews", navAccount:"Account settings",
           navOverview:"Overview", navUserCenter:"User center",
@@ -89,6 +89,8 @@
           navReceivableGroup:"Receivables", navReceivables:"My receivables",
           navConfirmReceivables:"Receivable confirmation",
           navReceivableAdmin:"Receivables",
+          navDataSync:"Data sync", navDataSyncAssets:"Push confirmed assets", navDataSyncBatches:"Push batches",
+          navAssetInventory:"Asset inventory",
           accountSettings:"Account settings",
           ownedTitle:"Owned by another module",
           ownedBody:"This page is delivered by the {m} prototype. This module does not re-implement it.",
@@ -102,7 +104,7 @@
           extBody:"This page belongs to the {m} module ({r}). This prototype only provides the entry point — the bell and the account menu item — and does not implement the page itself.",
           extNote:"Bell behaviour (quick panel, unread badge, read semantics) and the message list are defined by {r}." },
     zh: { stateSwitch:"原型 · 状态", prdOpen:"PRD 摘录", close:"关闭",
-          adminConsole:"管理端", grpMenu:"菜单",
+          adminConsole:"管理端", opsConsole:"运营端", grpMenu:"菜单",
           navAgreements:"协议管理", navUserManagement:"用户管理",
           navIdentityReviews:"个人认证审核", navBusinessReviews:"企业认证审核", navAccount:"账户设置",
           navOverview:"总览", navUserCenter:"用户中心",
@@ -110,6 +112,8 @@
           navReceivableGroup:"应收账款", navReceivables:"我的应收账款",
           navConfirmReceivables:"应收账款确权",
           navReceivableAdmin:"应收账款",
+          navDataSync:"数据同步", navDataSyncAssets:"已确权资产推送", navDataSyncBatches:"推送记录",
+          navAssetInventory:"资产清单",
           accountSettings:"账户设置",
           ownedTitle:"本页归其他模块",
           ownedBody:"本页由「{m}」原型交付，本模块不重复实现该页面。",
@@ -394,7 +398,8 @@
     var end = S.end || "admin";
     var ids = CF.NAV[end] || [];
     var cur = CF.PAGES[S.page] || {};
-    var head = '<div class="nav-label">' + t(end === "admin" ? "adminConsole" : "grpMenu") + "</div>";
+    var head = '<div class="nav-label">'
+      + t(end === "admin" ? "adminConsole" : end === "ops" ? "opsConsole" : "grpMenu") + "</div>";
     function item(id, sub) {
       var r = CF.PAGES[id] || {};
       var on = cur.nav === id;
@@ -574,7 +579,8 @@
       q("#content").innerHTML = ""; q("#crumb").innerHTML = "";
     } else {
       if (focusHost) focusHost.innerHTML = "";
-      q("#brandSub").textContent = r.end === "admin" ? t("adminConsole") : "";
+      q("#brandSub").textContent = r.end === "admin" ? t("adminConsole")
+                                 : r.end === "ops" ? t("opsConsole") : "";
       q("#nav").innerHTML = renderNav();
       q("#crumb").innerHTML = renderCrumb();
       q("#topRight").innerHTML = (M.topExtra ? M.topExtra() : "")

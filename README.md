@@ -8,7 +8,7 @@
 
 | 平台 | 目录 | 包含的端 | 现状 |
 | --- | --- | --- | --- |
-| 资产平台 | [`asset-platform/`](asset-platform/README.md) | 资产端、资产管理端 | 已有 5 个模块的 PRD 与 5 份原型，模块清单与端归属见该目录 README |
+| 资产平台 | [`asset-platform/`](asset-platform/README.md) | 资产端、资产管理端 | 已有 6 个模块的 PRD 与 6 份原型，模块清单与端归属见该目录 README |
 | 金融服务平台 | [`financial-service-platform/`](financial-service-platform/README.md) | 金融服务端、运营端 | 已有 3 个模块的 PRD（协议管理、消息通知、账户与登录），以及运营端「协议管理」「账户与登录」「消息通知」三份原型；模块清单与端归属见该目录 README |
 
 ## 目录结构
