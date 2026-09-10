@@ -86,11 +86,11 @@
        运营端的画布端别取 ops：它与 admin 同密度，但侧栏只有本模块交付的资产清单，
        两端在同一份原型里可切换，推送与收单的联动才看得出来。 */
     "P-M-DS-01": { end: "admin", layout: "app", nav: "P-M-DS-01", navKey: "navDataSyncAssets",
-               crumb: ["Push confirmed assets", "已确权资产推送"], name: ["Push confirmed assets", "已确权资产推送"] },
+               crumb: ["Data push", "数据推送"], name: ["Data push", "数据推送"] },
     "P-M-DS-02": { end: "admin", layout: "app", nav: "P-M-DS-02", navKey: "navDataSyncBatches",
-               crumb: ["Push batches", "推送记录"], name: ["Push batches", "推送记录"] },
+               crumb: ["Sync records", "同步记录"], name: ["Sync records", "同步记录"] },
     "P-M-DS-03": { end: "admin", layout: "app", nav: "P-M-DS-02",
-               crumb: ["Batch details", "推送批次详情"], name: ["Batch details", "推送批次详情"] },
+               crumb: ["Batch details", "批次详情"], name: ["Batch details", "批次详情"] },
     "P-O-DS-01": { end: "ops", layout: "app", nav: "P-O-DS-01", navKey: "navAssetInventory", ico: "▤",
                crumb: ["Asset inventory", "资产清单"], name: ["Asset inventory", "资产清单"] },
     "P-O-DS-02": { end: "ops", layout: "app", nav: "P-O-DS-01",
