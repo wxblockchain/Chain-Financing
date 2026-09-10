@@ -77,13 +77,17 @@
  CF.ENTRY['P-O-TI-01']='#/ops/token-list';
  CF.ENTRY['P-O-TI-02']='#/ops/token-list';
 
- /* WS-311 金融服务端登录（主干 + 资产方 SSO + 资金方账户体系）。三点说明：
+ /* WS-311 金融服务端登录（主干 + 资产方 SSO + 资金方账户体系）。四点说明：
     ① 本模块是**面客画布**，端别取 end:'asset'——按 docs/design-system/README.md，
        end 表达画布形态（控制台 / 面客）而不是平台或端；金融服务端归面客形态，
        密度由 base.css 的 [data-end="asset"] 覆盖承担，不新增第三种取值。
-    ② 页面 ID 直接取 PRD 的 P-F 段位（主干 P-F50~P-F53、资产方 P-F01~P-F05、
-       资金方 P-F20~P-F24），与 PRD 一一对应，便于逐条核验；不在模块内自造。
-    ③ 弹层不占页面 ID 路由：P-F02 离站告知、P-F25 改邮箱、P-F26 改密码在 PRD 里
+    ② 页面 ID 取 PRD 的 P-F 段位：主干 P-F50~P-F53、资产方 P-F01~P-F09（PRD 用到 05）、
+       资金方 P-F10~P-F29（PRD 用到 26），与 PRD 一一对应，便于逐条核验。
+    ③ **P-F06 与 P-F27 是本轮用户新增的两页，PRD 里还没有**：分别取各自段位内
+       尚未分配的下一个号（资产方 P-F06、资金方 P-F27），落在正确段位、不与任何
+       已用号相撞。**待《登录模块 · 统一编号段位分配表》正式登记后回写**，
+       在那之前它们是原型侧的暂定号，不要据此当成 PRD 已定义的页面。
+    ④ 弹层不占页面 ID 路由：P-F02 离站告知、P-F25 改邮箱、P-F26 改密码在 PRD 里
        就是弹窗形态，由模块的 modals 表承载，不登记为可路由页面。 */
  CF.MODULES['fs-portal-login']={dir:'金融服务端登录',file:'v1.0-金融服务端登录-原型.html',
    name:['Portal sign-in','金融服务端登录']};
@@ -100,9 +104,11 @@
    'P-F22':[['Set your password','设置密码 · 设置新密码'],'/signin/password/new']
   };
   var appPages={
-   'P-F51':[['Home','平台首页'],'/'],
+   'P-F51':[['Home','首页'],'/'],
    'P-F04':[['Account settings','账户设置'],'/account'],
-   'P-F24':[['Account settings','账户设置'],'/account']
+   'P-F24':[['Account settings','账户设置'],'/account'],
+   'P-F06':[['Get verified','入驻引导'],'/account/verification'],
+   'P-F27':[['Institution','机构信息'],'/account/institution']
   };
   for(var id in focusPages){
    CF.PAGES[id]={end:'asset',layout:'focus',name:focusPages[id][0]};
@@ -115,11 +121,13 @@
   Object.assign(CF.PAGES['P-F51'],{nav:'P-F51',navKey:'navPortalHome',ico:'⌂'});
   Object.assign(CF.PAGES['P-F04'],{nav:'P-F04',navKey:'navAccount'});
   Object.assign(CF.PAGES['P-F24'],{nav:'P-F24',navKey:'navAccount'});
+  Object.assign(CF.PAGES['P-F06'],{nav:'P-F06',navKey:'navVerification'});
+  Object.assign(CF.PAGES['P-F27'],{nav:'P-F27',navKey:'navInstitution'});
  })();
- /* 面客侧栏只登记「平台首页」这一条常驻项。账户设置随身份解析到 P-F04（资产方）
-    或 P-F24（资金方），游客态两条都不出现——这是权限矩阵总表第 16 行（游客 ❌）
-    在导航上的直接落点，由模块在会话态变化时改写 CF.NAV.asset 的第二项实现，
-    侧栏本身仍由 shell 按登记表渲染，模块不自建菜单。 */
+ /* 面客侧栏：首页 + 一个「账户」常驻分组。分组的第二项随身份解析——
+    资产方是入驻引导 P-F06，资金方是机构信息 P-F27，游客两条都不出现
+    （权限矩阵第 16 行游客列为 ❌ 在导航上的落点）。由模块在会话态变化时
+    改写 CF.NAV.asset，菜单本身仍由 shell 按登记表渲染，模块不自建菜单。 */
  CF.NAV.asset=['P-F51'];
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});

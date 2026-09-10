@@ -41,7 +41,7 @@
 | 协议管理 | 金融服务平台 | `financial-service-platform/prototypes/协议管理/v1.0-协议管理-原型.html` | 管理端（覆盖运营端） |
 | 账户与登录 | 金融服务平台 | `financial-service-platform/prototypes/账户与登录/v1.0-账户与登录-原型.html` | 管理端（运营端 focus + app） |
 | 消息通知 | 金融服务平台 | `financial-service-platform/prototypes/消息通知/v1.0-消息通知-原型.html` | 管理端（运营端；delta prototype，外部页面与真实接口未接入） |
-| 金融服务端登录 | 金融服务平台 | `financial-service-platform/prototypes/金融服务端登录/v1.0-金融服务端登录-原型.html` | 面客端（金融服务端 focus + app；入驻与审核归 WS-316，本模块只做到交接点） |
+| 金融服务端登录 | 金融服务平台 | `financial-service-platform/prototypes/金融服务端登录/v1.0-金融服务端登录-原型.html` | 面客端（金融服务端 focus + app；首页为空壳、内容归其他 issue，入驻与审核归 WS-316，本模块只做到交接点） |
 
 金融服务平台复用资产平台的 `tokens.css`、`base.css`、`shell.js`，由自己的 [`registry.js`](../../financial-service-platform/prototypes/_shared/registry.js) 登记页面与入口；接入和单文件导出见其 [公共层说明](../../financial-service-platform/prototypes/_shared/README.md)。
 
