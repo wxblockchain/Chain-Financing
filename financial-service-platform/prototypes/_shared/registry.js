@@ -76,5 +76,50 @@
  CF.ENTRY['P-O-FX-02']='#/ops/fx-rates/CNY/history';
  CF.ENTRY['P-O-TI-01']='#/ops/token-list';
  CF.ENTRY['P-O-TI-02']='#/ops/token-list';
+
+ /* WS-311 金融服务端登录（主干 + 资产方 SSO + 资金方账户体系）。三点说明：
+    ① 本模块是**面客画布**，端别取 end:'asset'——按 docs/design-system/README.md，
+       end 表达画布形态（控制台 / 面客）而不是平台或端；金融服务端归面客形态，
+       密度由 base.css 的 [data-end="asset"] 覆盖承担，不新增第三种取值。
+    ② 页面 ID 直接取 PRD 的 P-F 段位（主干 P-F50~P-F53、资产方 P-F01~P-F05、
+       资金方 P-F20~P-F24），与 PRD 一一对应，便于逐条核验；不在模块内自造。
+    ③ 弹层不占页面 ID 路由：P-F02 离站告知、P-F25 改邮箱、P-F26 改密码在 PRD 里
+       就是弹窗形态，由模块的 modals 表承载，不登记为可路由页面。 */
+ CF.MODULES['fs-portal-login']={dir:'金融服务端登录',file:'v1.0-金融服务端登录-原型.html',
+   name:['Portal sign-in','金融服务端登录']};
+ (function(){
+  var focusPages={
+   'P-F50':[['Choose your role','选择你的身份'],'/signin/role'],
+   'P-F52':[['Switching role','切换身份'],'/signin/switch'],
+   'P-F53':[['Something went wrong','通用失败态'],'/signin/error'],
+   'P-F01':[['Signing you in','SSO 中转'],'/signin/sso/callback'],
+   'P-F03':[['Terms of service','首登协议同意'],'/signin/agreement'],
+   'P-F05':[['Sign-in could not be completed','SSO 失败'],'/signin/sso/failed'],
+   'P-F20':[['Funder sign in','资金方登录 / 申请入驻'],'/signin/funder'],
+   'P-F21':[['Set your password','设置密码 · 提交邮箱'],'/signin/password/email'],
+   'P-F22':[['Set your password','设置密码 · 设置新密码'],'/signin/password/new']
+  };
+  var appPages={
+   'P-F51':[['Home','平台首页'],'/'],
+   'P-F04':[['Account settings','账户设置'],'/account'],
+   'P-F24':[['Account settings','账户设置'],'/account']
+  };
+  for(var id in focusPages){
+   CF.PAGES[id]={end:'asset',layout:'focus',name:focusPages[id][0]};
+   CF.OWNER[id]='fs-portal-login'; CF.ENTRY[id]='#'+focusPages[id][1];
+  }
+  for(var id2 in appPages){
+   CF.PAGES[id2]={end:'asset',layout:'app',name:appPages[id2][0]};
+   CF.OWNER[id2]='fs-portal-login'; CF.ENTRY[id2]='#'+appPages[id2][1];
+  }
+  Object.assign(CF.PAGES['P-F51'],{nav:'P-F51',navKey:'navPortalHome',ico:'⌂'});
+  Object.assign(CF.PAGES['P-F04'],{nav:'P-F04',navKey:'navAccount'});
+  Object.assign(CF.PAGES['P-F24'],{nav:'P-F24',navKey:'navAccount'});
+ })();
+ /* 面客侧栏只登记「平台首页」这一条常驻项。账户设置随身份解析到 P-F04（资产方）
+    或 P-F24（资金方），游客态两条都不出现——这是权限矩阵总表第 16 行（游客 ❌）
+    在导航上的直接落点，由模块在会话态变化时改写 CF.NAV.asset 的第二项实现，
+    侧栏本身仍由 shell 按登记表渲染，模块不自建菜单。 */
+ CF.NAV.asset=['P-F51'];
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});
