@@ -450,7 +450,9 @@ table.tbl tbody tr.rowlink{cursor:pointer}
 .tab[aria-selected="true"] .cnt{color:var(--accent)}
 
 /* ============================== 描述栅格 / 键值摘要 ======================== */
-.dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px 26px}
+/* min(280px,100%)：桌面与原先逐像素相同；只有当容器比一列还窄时（320px 下的
+   嵌套卡片）才让列收到容器宽度，而不是撑出横向滚动条。 */
+.dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:2px 26px}
 .dl>div{padding:9px 0;border-bottom:1px dashed var(--border-dash);min-width:0}
 .dl dt{font-size:11.5px;color:var(--muted);font-weight:620;margin:0 0 4px}
 .dl dd{margin:0;font-size:12.5px;overflow-wrap:anywhere}
@@ -459,7 +461,7 @@ table.tbl tbody tr.rowlink{cursor:pointer}
 .sec-head{display:flex;align-items:baseline;gap:12px;margin:0 0 6px}
 .sec-head h2{font-size:var(--fs-14);font-weight:660;margin:0}
 .sec-head .right{margin-left:auto;font-size:var(--fs-11);color:var(--faint)}
-.vsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px 22px;align-items:start}
+.vsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:14px 22px;align-items:start}
 .vsum .k{font-size:11.5px;color:var(--muted);font-weight:620;margin-bottom:4px}
 .vsum .v{font-size:12.5px;overflow-wrap:anywhere}
 
@@ -514,7 +516,7 @@ table.tbl tbody tr.rowlink{cursor:pointer}
 .counter.over{color:var(--danger)}
 .formcard{margin-bottom:14px}
 .formcard>.card-head b{font-size:13px}
-.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 22px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:0 22px}
 .ro-val{display:flex;align-items:center;gap:9px;height:var(--ctrl-h);border:1px solid var(--border);border-radius:8px;
   background:var(--card-2);padding:0 11px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
 .preview{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);min-height:190px;
@@ -626,7 +628,9 @@ table.tbl tbody tr.rowlink{cursor:pointer}
 .portal-nav .nav-ico{display:none}
 .portal-nav .nav-item{width:auto;flex:none;padding:8px 14px;border-radius:10px;
   font-size:13.5px;margin-bottom:0;white-space:nowrap}
-.portal-tools{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none;
+/* flex:0 1 auto 而不是 none：769～1030px 之间顶栏还不折行，工具区必须能收缩，
+   否则账号下拉这类长标签会把整页顶出几像素横向滚动条。 */
+.portal-tools{margin-left:auto;display:flex;align-items:center;gap:8px;flex:0 1 auto;
   flex-wrap:wrap;justify-content:flex-end;min-width:0}
 /* subnav / 上下文行：面包屑与页内上下文，居中同宽容器，与内容区左右对齐。 */
 .portal-sub{background:var(--bg-elev);border-bottom:1px solid var(--border)}
@@ -651,4 +655,12 @@ table.tbl tbody tr.rowlink{cursor:pointer}
   .portal-tools .dd-btn .nm{max-width:112px}
   .portal-sub-in{padding:0 16px}
   .portal-wrap{padding:16px 16px 48px}
+}
+
+/* 窄屏下文件卡改为上下两段：文件名占满一行再排操作，避免文件名被挤成一列
+   逐字换行。只作用于面客顶栏版式，管理端侧栏画布不受影响。 */
+@media(max-width:640px){
+  .portal .filecard{flex-wrap:wrap}
+  .portal .filecard .bd{flex:1 1 auto;min-width:120px}
+  .portal .filecard .act{flex:1 1 100%;justify-content:flex-end}
 }

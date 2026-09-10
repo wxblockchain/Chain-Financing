@@ -108,7 +108,18 @@
    'P-F04':[['Account settings','账户设置'],'/account'],
    'P-F24':[['Account settings','账户设置'],'/account'],
    'P-F06':[['Get verified','入驻引导'],'/account/verification'],
-   'P-F27':[['Institution','机构信息'],'/account/institution']
+   'P-F27':[['Institution','机构信息'],'/account/institution'],
+   /* WS-316 资金方机构认证审核。编号取 PRD 03-1 第 5 章的页面清单
+      P-F30～P-F34，逐一对应、不自行改号；C-F50 二次确认弹窗与 C-F52
+      客服入口在 PRD 里就是弹层形态，由模块的 modals 表承载，与 P-F02 /
+      P-F25 / P-F26 同一处理，不登记为可路由页面。
+      五页都挂在「机构信息」P-F27 之下，不占顶栏导航项：PRD 8.1～8.6 的
+      入口就是账户 · 机构信息，而顶栏主导航只有首页。 */
+   'P-F30':[['Institution profile form','入驻引导 · 机构资料'],'/account/institution/apply'],
+   'P-F31':[['Review and submit','提交预览'],'/account/institution/review'],
+   'P-F32':[['Application submitted','提交结果'],'/account/institution/submitted'],
+   'P-F33':[['Application status','审核进度'],'/account/institution/status'],
+   'P-F34':[['Application details','申请详情'],'/account/institution/application']
   };
   for(var id in focusPages){
    CF.PAGES[id]={end:'asset',layout:'focus',name:focusPages[id][0]};
@@ -121,10 +132,16 @@
   /* 只有首页进顶栏主导航。账户设置与机构信息挂在右上角账号下拉里（account().extra），
      入驻引导页 P-F06 不进任何菜单——它是资产方首登后的落地页与流程页，入口只来自
      首登流程本身、常驻补全提示条与受限操作引导弹层，不占导航位。
-     因此这三页都不登记 nav / navKey。 */
+     WS-316 的申请链路五页同理：入口是「机构信息」P-F27，不占导航位、不进账号下拉。
+     因此这些页都不登记 nav / navKey，只登记 crumb 让面包屑当前级有稳定文案。 */
   Object.assign(CF.PAGES['P-F51'],{nav:'P-F51',navKey:'navPortalHome'});
   Object.assign(CF.PAGES['P-F06'],{crumb:['Get verified','入驻引导']});
   Object.assign(CF.PAGES['P-F27'],{crumb:['Institution','机构信息']});
+  Object.assign(CF.PAGES['P-F30'],{crumb:['Institution profile','机构资料']});
+  Object.assign(CF.PAGES['P-F31'],{crumb:['Review and submit','核对并提交']});
+  Object.assign(CF.PAGES['P-F32'],{crumb:['Application submitted','申请已提交']});
+  Object.assign(CF.PAGES['P-F33'],{crumb:['Application status','审核进度']});
+  Object.assign(CF.PAGES['P-F34'],{crumb:['Application details','申请详情']});
  })();
  CF.NAV.asset=['P-F51'];
  CF.MSG_PAGE={admin:'P-O20'};

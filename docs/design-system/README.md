@@ -21,6 +21,21 @@
 
 模块只写自己的页面、文案、演示数据与状态表；不得在模块内重定义 token、重建导航或复制公共组件。
 
+## 三种整页骨架
+
+`base.css` 现在提供三种整页骨架，模块按页面性质选一种，不自行拼第四种：
+
+| 骨架 | 开启方式 | 用在哪 | 导航形态 |
+| --- | --- | --- | --- |
+| app（控制台侧栏） | `.app` 一族 | 管理端 / 运营端画布，以及资产平台现有五个模块 | 238px 左侧栏 + 顶栏 |
+| portal（面客顶栏） | `.portal` 一族 | 金融服务端已登录页面 | 顶栏单行主导航 + subnav，无侧栏，内容居中于 1560px 宽容器 |
+| focus（居中卡片） | `registry` 的 `layout: 'focus'` | 登录、重置密码等未登录或强制中断页 | 只有品牌与轻量工具区，不放业务导航 |
+
+`.portal` 是**纯新增**的一族类名，没有改动 `.app` 侧栏骨架的任何取值，既有模块逐像素一致。
+两种骨架共用同一份 `renderNav()` 与同一张登记表，差别只在导航项的排布方向与容器；
+**任何一种骨架下模块都不得自建菜单**。账户级页面（账户设置、机构信息一类）在顶栏骨架里
+挂进账号下拉（`account().extra`），不占主导航位。
+
 ## 文档入口
 
 | 文档 | 用途 |
@@ -41,7 +56,7 @@
 | 协议管理 | 金融服务平台 | `financial-service-platform/prototypes/协议管理/v1.0-协议管理-原型.html` | 管理端（覆盖运营端） |
 | 账户与登录 | 金融服务平台 | `financial-service-platform/prototypes/账户与登录/v1.0-账户与登录-原型.html` | 管理端（运营端 focus + app） |
 | 消息通知 | 金融服务平台 | `financial-service-platform/prototypes/消息通知/v1.0-消息通知-原型.html` | 管理端（运营端；delta prototype，外部页面与真实接口未接入） |
-| 金融服务端登录 | 金融服务平台 | `financial-service-platform/prototypes/金融服务端登录/v1.0-金融服务端登录-原型.html` | 面客端（金融服务端 focus + app；首页为空壳、内容归其他 issue，入驻与审核归 WS-316，本模块只做到交接点） |
+| 金融服务端登录 + 资金方机构认证审核 | 金融服务平台 | `financial-service-platform/prototypes/金融服务端登录/v1.0-金融服务端登录-原型.html` | 面客端（金融服务端 focus + portal 顶栏壳层；首页仍为空壳、内容归其他 issue。WS-316 的资金方入驻链路 `P-F30`～`P-F34` 已实现，原「归 WS-316」说明层已删除；运营端审核界面仍归 WS-308） |
 
 金融服务平台复用资产平台的 `tokens.css`、`base.css`、`shell.js`，由自己的 [`registry.js`](../../financial-service-platform/prototypes/_shared/registry.js) 登记页面与入口；接入和单文件导出见其 [公共层说明](../../financial-service-platform/prototypes/_shared/README.md)。
 
