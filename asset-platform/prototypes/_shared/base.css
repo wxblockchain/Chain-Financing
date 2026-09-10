@@ -605,3 +605,50 @@ table.tbl tbody tr.rowlink{cursor:pointer}
 .msg.compact .msg-hit{padding:12px 4px 12px 13px}
 .msg.compact .msg-side{padding:12px 13px 12px 0;min-width:0}
 .msg.compact .msg-sum{font-size:11.5px}
+
+/* ======================= 面客顶栏版式（portal shell）========================= */
+/* 继承参考 4.3「header + subnav + main/right rail」的实现层。整段为**新增**：
+   不修改、不覆盖本文件已有的任何规则；对 .nav-item / .nav-label / .nav-ico 只在
+   .portal-nav 作用域内加了横向排布的上下文变体，侧栏版式的取值一个都没动。
+   首个落库参考：financial-service-platform/prototypes/金融服务端登录/。
+   与 .app 侧栏版式并列，由模块在自己的 body 里选用其一，registry 的 layout
+   字段仍然只区分 focus 与非 focus。 */
+.portal{min-height:100vh;display:flex;flex-direction:column;background:var(--bg)}
+.portal[hidden]{display:none}
+.portal-head{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:22px;
+  padding:0 24px;min-height:64px;background:var(--bg-elev);border-bottom:1px solid var(--border)}
+.portal-head .brand{border:0;padding:0;gap:10px;flex:none}
+/* 顶栏里的主导航：横排、单行、不换行；容不下时整条横向滚动而不是让标签折成两行。 */
+.portal-nav{display:flex;align-items:center;gap:6px;flex:1;min-width:0;overflow-x:auto;
+  scrollbar-width:none;padding:0}
+.portal-nav::-webkit-scrollbar{display:none}
+.portal-nav .nav-label{display:none}
+.portal-nav .nav-ico{display:none}
+.portal-nav .nav-item{width:auto;flex:none;padding:8px 14px;border-radius:10px;
+  font-size:13.5px;margin-bottom:0;white-space:nowrap}
+.portal-tools{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none;
+  flex-wrap:wrap;justify-content:flex-end;min-width:0}
+/* subnav / 上下文行：面包屑与页内上下文，居中同宽容器，与内容区左右对齐。 */
+.portal-sub{background:var(--bg-elev);border-bottom:1px solid var(--border)}
+.portal-sub-in{max-width:1560px;margin:0 auto;padding:0 24px;min-height:40px;
+  display:flex;align-items:center;gap:8px;font-size:var(--fs-12)}
+.portal-main{flex:1;min-width:0}
+.portal-wrap{max-width:1560px;margin:0 auto;width:100%;padding:24px 24px 64px}
+/* main + right rail：主列在左、常驻辅助列在右；窄屏收成单列，辅助列不再吸顶。 */
+.portal-cols{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:var(--sp-5);align-items:start}
+.portal-rail{position:sticky;top:88px;display:flex;flex-direction:column;gap:var(--sp-4);min-width:0}
+@media(max-width:1100px){
+  .portal-cols{grid-template-columns:minmax(0,1fr)}
+  .portal-rail{position:static}
+}
+/* 窄屏把顶栏拆成三行：品牌一行、主导航一行、工具区一行。
+   主导航标签保持单行（容不下就横向滚动），不折成两行。 */
+@media(max-width:768px){
+  .portal-head{flex-wrap:wrap;padding:10px 16px;gap:10px;min-height:0}
+  .portal-head .brand{flex:1;min-width:0}
+  .portal-nav{order:2;flex-basis:100%}
+  .portal-tools{order:3;flex-basis:100%;margin-left:0;justify-content:flex-start}
+  .portal-tools .dd-btn .nm{max-width:112px}
+  .portal-sub-in{padding:0 16px}
+  .portal-wrap{padding:16px 16px 48px}
+}

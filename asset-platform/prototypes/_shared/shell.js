@@ -22,6 +22,7 @@
      modals        { type: fn } 弹窗表
      drawers       { name: fn } 抽屉表（prd 由 shell 提供，不要覆盖）
      account()     顶栏账户菜单的身份信息 { avatar, ident, ok, okText, badText }
+                   可选 extra:[[pageId, 文案键], ...] 在「账户设置」之下追加条目
      notify()      通知铃铛 C-20 / 快捷面板 C-21 的数据源。实现它的模块拿到带计数的角标与
                    快捷面板；不实现的模块仍有铃铛，但不渲染角标（不替模块编造未读数）。
                    返回 { unread:Number, phase:"loading"|"ready"|"error", items:[msgItem 结构] }
@@ -368,6 +369,14 @@
         + (!a.settings ? "" : crossHref(a.settings)
             ? '<a role="menuitem" href="' + esc(crossHref(a.settings)) + '">' + t("accountSettings") + "</a>"
             : '<button type="button" role="menuitem" data-act="go" data-v="' + a.settings + '">' + t("accountSettings") + "</button>")
+        /* a.extra：账户设置之下的附加条目 [[pageId, 文案键], ...]。**可选，新增**——
+           不提供时行为与从前完全一致，因此对既有模块零影响。给顶栏版式用：
+           那里没有侧栏可挂「机构信息」这类账户级页面，只能落在账号下拉里。 */
+        + (a.extra || []).map(function (x) {
+            var eh = crossHref(x[0]);
+            return eh ? '<a role="menuitem" href="' + esc(eh) + '">' + t(x[1]) + "</a>"
+                      : '<button type="button" role="menuitem" data-act="go" data-v="' + x[0] + '">' + t(x[1]) + "</button>";
+          }).join("")
         + '<button type="button" role="menuitem" data-act="' + (a.signOutPage ? "go" : "signout") + '"'
         + (a.signOutPage ? ' data-v="' + a.signOutPage + '"' : "") + ">" + t("signOut") + "</button>"
         + "</div>" : "") + "</div>";

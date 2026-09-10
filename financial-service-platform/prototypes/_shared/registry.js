@@ -118,16 +118,14 @@
    CF.PAGES[id2]={end:'asset',layout:'app',name:appPages[id2][0]};
    CF.OWNER[id2]='fs-portal-login'; CF.ENTRY[id2]='#'+appPages[id2][1];
   }
-  Object.assign(CF.PAGES['P-F51'],{nav:'P-F51',navKey:'navPortalHome',ico:'⌂'});
-  Object.assign(CF.PAGES['P-F04'],{nav:'P-F04',navKey:'navAccount'});
-  Object.assign(CF.PAGES['P-F24'],{nav:'P-F24',navKey:'navAccount'});
-  Object.assign(CF.PAGES['P-F06'],{nav:'P-F06',navKey:'navVerification'});
-  Object.assign(CF.PAGES['P-F27'],{nav:'P-F27',navKey:'navInstitution'});
+  /* 只有首页进顶栏主导航。账户设置与机构信息挂在右上角账号下拉里（account().extra），
+     入驻引导页 P-F06 不进任何菜单——它是资产方首登后的落地页与流程页，入口只来自
+     首登流程本身、常驻补全提示条与受限操作引导弹层，不占导航位。
+     因此这三页都不登记 nav / navKey。 */
+  Object.assign(CF.PAGES['P-F51'],{nav:'P-F51',navKey:'navPortalHome'});
+  Object.assign(CF.PAGES['P-F06'],{crumb:['Get verified','入驻引导']});
+  Object.assign(CF.PAGES['P-F27'],{crumb:['Institution','机构信息']});
  })();
- /* 面客侧栏：首页 + 一个「账户」常驻分组。分组的第二项随身份解析——
-    资产方是入驻引导 P-F06，资金方是机构信息 P-F27，游客两条都不出现
-    （权限矩阵第 16 行游客列为 ❌ 在导航上的落点）。由模块在会话态变化时
-    改写 CF.NAV.asset，菜单本身仍由 shell 按登记表渲染，模块不自建菜单。 */
  CF.NAV.asset=['P-F51'];
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});

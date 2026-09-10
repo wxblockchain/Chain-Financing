@@ -154,24 +154,27 @@
  .pl-top{flex-wrap:wrap;row-gap:var(--sp-3);padding-left:var(--sp-4);padding-right:var(--sp-4)}
  .pl-top .pl-spacer{flex-basis:100%;height:0}
  .pl-foot{flex-wrap:wrap;row-gap:var(--sp-2);padding-left:var(--sp-4);padding-right:var(--sp-4)}
+ /* 窄屏收起「原型 · 身份」这几个字，只留下拉本身——它是评审用的控件，
+    不该在小屏上跟产品导航抢宽度。 */
+ .pl-idsw>span{display:none}
 }
 @media(max-width:420px){.cap-canvas,.cap-canvas canvas,.cap-track{width:100%}}
 @media(prefers-reduced-motion:reduce){.cap-knob.shake{animation:none}}
 </style></head>
 <body>
-<div class="app" id="app" hidden>
- <aside class="sidebar">
+<!-- 已登录页走顶栏版式（继承参考 4.3：header + subnav + main/right rail）。
+     公共运行时要求的挂载点一个不少：brandSub / nav / topRight / crumb / content / layers，
+     只是容器换成 _shared/base.css 新增的 .portal* 一族，不再用 .app 侧栏骨架。 -->
+<div class="portal" id="app" hidden>
+ <header class="portal-head">
   <div class="brand"><div class="brand-mark">FS</div><div>
    <div class="brand-name" data-brand>Financial Services</div>
    <div class="brand-sub" id="brandSub"></div></div></div>
-  <nav class="nav" id="nav" aria-label="Main navigation"></nav>
-  <div class="side-foot"><span class="muted" data-demo>Demonstration data</span></div>
- </aside>
- <main class="main">
-  <header class="topbar"><div class="topbar-right" id="topRight"></div></header>
-  <div class="crumbbar" id="crumb"></div>
-  <div class="content" id="content"></div>
- </main>
+  <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+  <div class="portal-tools" id="topRight"></div>
+ </header>
+ <div class="portal-sub"><div class="portal-sub-in" id="crumb"></div></div>
+ <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
 </div>
 <div class="focus" id="focus"></div>
 <div id="layers"></div>
@@ -228,16 +231,16 @@ const SELF_PATHS=['/signin'];
 
 /* ------------------------------ 文案 ------------------------------------- */
 const DICT={
- en:{navPortalHome:'Home',navAccountGroup:'Account',navVerification:'Get verified',
-     navInstitution:'Institution',signOut:'Sign out',demo:'Demonstration data',
+ en:{navPortalHome:'Home',navInstitution:'Institution',
+     signOut:'Sign out',demo:'Demonstration data',
      capTitle:'Security check',capSlide:'Slide to complete the puzzle',
      capVerified:'Verified',capFail:'Try again',capRefresh:'New puzzle',
      capTrouble:'Having trouble? Tap the refresh icon for a new puzzle.',
      capCool:'Too many attempts. Try again in {n}s.',capLoadFail:'The check could not load.',
      capHelp:'We verify this before sending any code.',
      cancel:'Cancel',contin:'Continue',pagesPanel:'Pages'},
- zh:{navPortalHome:'首页',navAccountGroup:'账户',navVerification:'入驻引导',
-     navInstitution:'机构信息',signOut:'退出登录',demo:'演示数据',
+ zh:{navPortalHome:'首页',navInstitution:'机构信息',
+     signOut:'退出登录',demo:'演示数据',
      capTitle:'安全校验',capSlide:'拖动滑块完成拼图',
      capVerified:'校验通过',capFail:'校验失败，请重试',capRefresh:'换一张',
      capTrouble:'连续失败？点右上角图标换一张。',capCool:'尝试过于频繁，请 {n} 秒后再试。',
@@ -556,6 +559,9 @@ function pageVerification(){
    L('Two verifications open financing on this platform. Both are handled on the asset platform.',
      '完成两项认证即可在本平台发起融资。两项都在资产平台办理。'),'')
   +bar()
+  /* 4.3 母版的 main + right rail：主列是两张整卡，右侧常驻列说明接下来会发生什么。
+     窄屏由 .portal-cols 收成单列，辅助列不再吸顶。 */
+  +'<div class="portal-cols"><div>'
   +'<div class="pl-entries">'
   +entryCard({ico:'ID',title:L('Identity verification','个人实名认证'),pill:pl,k:k,status:st,
     act:'leaveSite',v:'usercenter',action:done?L('View','查看'):L('Start','去认证'),
@@ -574,9 +580,20 @@ function pageVerification(){
   +'<div class="pl-ro pl-gap-lg"><p>'
   +L('Your company details and verification results are maintained by the asset platform. This platform keeps a read-only copy, so there is nothing to fill in here — the buttons above take you there and bring you back when you are done.',
      '你的企业资料与认证结论由资产平台维护，本平台只保存只读副本，因此这里没有需要填写的内容——上面的按钮会带你过去，办完再带你回来。')
-  +'</p></div>'
-  +(done?'':note('','<p>'+L('You can browse the platform while this is pending. Only submitting a financing request needs verification.',
-     '认证期间你可以正常浏览平台，只有「发起融资申请」需要认证通过。')+'</p>'));
+  +'</p></div></div>'
+  +'<aside class="portal-rail"><div class="card"><div class="card-head"><b>'
+  +L('What happens next','接下来会发生什么')+'</b></div><div class="card-b"><ul class="tl">'
+  +'<li'+(done?'':' class="faint"')+'><b>'+L('Verify on the asset platform','在资产平台完成认证')+'</b><br>'
+  +'<span class="tiny">'+L('Both verifications are handled there.','两项认证都在那边办理。')+'</span></li>'
+  +'<li class="faint"><b>'+L('Come back here','回到本平台')+'</b><br><span class="tiny">'
+  +L('We bring you back to where you were.','我们会把你带回刚才的位置。')+'</span></li>'
+  +'<li class="faint"><b>'+L('Financing opens','融资能力开放')+'</b><br><span class="tiny">'
+  +L('No need to sign out and back in.','不需要退出重新登录。')+'</span></li>'
+  +'</ul></div></div>'
+  +(done?'':'<div class="card"><div class="card-b">'+note('','<p>'
+     +L('You can browse the platform while this is pending. Only submitting a financing request needs verification.',
+        '认证期间你可以正常浏览平台，只有「发起融资申请」需要认证通过。')+'</p>')+'</div></div>')
+  +'</aside></div>';
 }
 
 /* =================== 机构信息（资金方，账户设置下）===================== */
@@ -1366,12 +1383,9 @@ function setIdent(k){
  if(S.page==='P-F06'&&S.ident!=='asset') CF.go('P-F51');
  if((S.page==='P-F24'||S.page==='P-F27')&&S.ident!=='funder') CF.go('P-F51');
 }
-/* 侧栏：首页 + 一个「账户」常驻分组。分组第二项随身份解析——资产方是入驻引导，
-   资金方是机构信息，游客两条都不出现。菜单本身仍由公共层按登记表渲染。 */
+/* 顶栏主导航只有首页——账户设置与机构信息都在右上角账号下拉里，
+   入驻引导页不进任何菜单。因此这里不随身份改写导航，只切账号下拉的有无。 */
 function syncNav(){
- CF.NAV.asset = S.ident==='guest' ? ['P-F51']
-   : ['P-F51',{navKey:'navAccountGroup',ico:'⚙',
-       children:S.ident==='asset'?['P-F04','P-F06']:['P-F24','P-F27']}];
  mod.account = S.ident==='guest' ? null : accountOf;
 }
 function accountOf(){
@@ -1380,7 +1394,9 @@ function accountOf(){
    ident:S.ident==='asset'?DEMO.assetEmail
      :(S.creds.email?DEMO.funderEmail:DEMO.funderWallet.slice(0,8)+'…'+DEMO.funderWallet.slice(-4)),
    ok:ok, okText:L(nm[1],nm[2]), badText:L(nm[1],nm[2]),
-   settings:S.ident==='asset'?'P-F04':'P-F24' };
+   settings:S.ident==='asset'?'P-F04':'P-F24',
+   /* 机构信息是账户设置下的一项，跟着账号下拉走，不进主导航（公共层新增的可选 extra）。 */
+   extra:S.ident==='funder'?[['P-F27','navInstitution']]:[] };
 }
 function topExtra(){
  var nm=IDENTS.filter(function(x){return x[0]===identKey();})[0];
