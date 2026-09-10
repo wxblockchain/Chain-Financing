@@ -24,7 +24,10 @@
   'fs-ops-login':{dir:'账户与登录',file:'v1.0-账户与登录-原型.html',name:['Operations account','运营端账户与登录']}
  };
  // WS-309 pages belong to the delivered notifications module, not the account module.
- CF.NAV={admin:['P-O06','P-O-AG-01',{navKey:'navTokenManagement',icoKey:'doc',children:['P-O-TC-01']}],asset:[]};
+ /* 菜单顺序按 WS-318 PRD V1.1 5.1：总览 / 资产清单 / 汇率管理 / 代币管理 / 协议管理。 */
+ CF.NAV={admin:['P-O06','P-O-DS-01','P-O-FX-01',
+   {navKey:'navTokenManagement',icoKey:'doc',children:['P-O-TC-01','P-O-TI-01']},
+   'P-O-AG-01'],asset:[]};
  Object.assign(CF.PAGES,{
  'P-O-AG-01':{end:'admin',layout:'app',nav:'P-O-AG-01',navKey:'navAgreements',icoKey:'doc',name:['Agreements','协议管理']},
  'P-O-AG-02':{end:'admin',layout:'app',nav:'P-O-AG-01',name:['Agreement details','协议详情']},
@@ -42,5 +45,32 @@
    CF.OWNER[id]='smart-contracts';
  });
  CF.ENTRY['P-O-TC-01']='#/ops/token-contracts';
+ /* WS-318 资产清单与代币签发。三点说明：
+    ① P-O-DS-01 / P-O-DS-02 的**定义方仍是 WS-313**（资产平台那份登记一个字不动）。
+       这里只是把同两个页面登记进金融服务平台运营端画布 end:'admin'，让它们与总览、
+       汇率管理、代币管理、协议管理同处一根侧栏——PRD 5.1 的菜单树要求如此。
+       不要据此把它们当成 WS-318 新增的页面编号，也不要拿来和资产平台那份对账判成撞号。
+    ② 本模块本期新增的页面编号恰好三个：P-O-TI-01 / P-O-FX-01 / P-O-FX-02（AC-TI-53）。
+    ③ P-O-TI-01 挂在代币管理菜单下、与 P-O-TC-01 平级，且是只读视图（AC-TI-54 / AC-TI-58）。 */
+ CF.MODULES['token-issuance']={dir:'资产清单与代币签发',file:'v1.0-资产清单与代币签发-原型.html',
+   name:['Asset inventory & token issuance','资产清单与代币签发']};
+ Object.assign(CF.PAGES,{
+  'P-O-DS-01':{end:'admin',layout:'app',nav:'P-O-DS-01',navKey:'navAssetInventory',ico:'\u25a4',
+    crumb:['Asset inventory','资产清单'],name:['Asset inventory','资产清单']},
+  'P-O-DS-02':{end:'admin',layout:'app',nav:'P-O-DS-01',name:['Asset details','资产详情']},
+  'P-O-FX-01':{end:'admin',layout:'app',nav:'P-O-FX-01',navKey:'navFxRates',ico:'\u2696',
+    crumb:['FX rates','汇率管理'],name:['FX rates','汇率管理']},
+  'P-O-FX-02':{end:'admin',layout:'app',nav:'P-O-FX-01',name:['FX rate history','汇率历史版本']},
+  'P-O-TI-01':{end:'admin',layout:'app',nav:'P-O-TI-01',navKey:'navTokenList',
+    crumb:['Token list','代币清单'],name:['Token list','代币清单']}
+ });
+ ['P-O-DS-01','P-O-DS-02','P-O-FX-01','P-O-FX-02','P-O-TI-01'].forEach(function(id){
+   CF.OWNER[id]='token-issuance';
+ });
+ CF.ENTRY['P-O-DS-01']='#/ops/asset-inventory';
+ CF.ENTRY['P-O-DS-02']='#/ops/asset-inventory';
+ CF.ENTRY['P-O-FX-01']='#/ops/fx-rates';
+ CF.ENTRY['P-O-FX-02']='#/ops/fx-rates/CNY/history';
+ CF.ENTRY['P-O-TI-01']='#/ops/token-list';
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});
