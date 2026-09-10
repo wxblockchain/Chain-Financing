@@ -24,11 +24,32 @@
 .ops-lock-icon{color:var(--warn);margin-bottom:var(--sp-4)}
 .ops-count{font-family:var(--mono);font-size:var(--fs-28);margin:var(--sp-4) 0}
 .ops-gap{margin-top:var(--sp-4)}
-.ops-puzzle{height:144px;position:relative;background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:var(--sp-4)}
-.ops-puzzle-target,.ops-puzzle-piece{position:absolute;top:46px;width:44px;height:44px;border-radius:var(--radius-xs)}
-.ops-puzzle-target{left:calc(72% - 29.44px);background:var(--accent-soft);border:2px dashed var(--accent)}
-.ops-puzzle-piece{left:var(--sp-2);background:var(--accent);color:var(--card);display:grid;place-items:center;font-family:var(--mono);font-weight:700}
-.ops-slider{width:100%;height:44px;accent-color:var(--accent);cursor:ew-resize}
+/* C-O01 puzzle slider. These .cap-* rules are copied verbatim from the asset-platform
+   account & sign-in prototype's own style block — they live there, not in _shared,
+   and asset-platform/ is read-only for this module (AC-O100), so the shape cannot be
+   hoisted into the shared layer from here. Keep the two in sync by hand until one of
+   them moves into _shared/base.css. */
+.cap-canvas{position:relative;width:328px;margin:0 auto;border-radius:var(--radius-sm);overflow:hidden;
+  border:1px solid var(--border);background:var(--card-2)}
+.cap-canvas canvas{display:block;width:328px;height:180px}
+.cap-piece{position:absolute;top:0;left:0;will-change:transform}
+.cap-track{margin:14px auto 0;width:328px;height:42px;border-radius:var(--radius-pill);background:var(--card-2);
+  border:1px solid var(--border-strong);position:relative;display:flex;align-items:center;user-select:none;touch-action:none}
+.cap-track.ok{border-color:var(--ok-border);background:var(--ok-bg)}
+.cap-track.bad{border-color:var(--danger-border);background:var(--danger-bg)}
+.cap-track.cool{opacity:.6}
+.cap-track .tip{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--fs-11);color:var(--faint);
+  pointer-events:none}
+.cap-fill{position:absolute;left:0;top:0;bottom:0;border-radius:var(--radius-pill);background:var(--accent-soft)}
+.cap-knob{position:absolute;left:0;top:0;height:40px;width:48px;border-radius:var(--radius-pill);background:var(--bg-elev);
+  border:1px solid var(--border-strong);display:grid;place-items:center;cursor:grab;color:var(--accent);
+  font-family:var(--mono);font-size:13px;box-shadow:var(--shadow)}
+.cap-knob:active{cursor:grabbing}
+.cap-knob.shake{animation:shake var(--dur-slow) var(--ease-in-out)}
+.cap-knob[aria-disabled="true"]{cursor:not-allowed;opacity:.6}
+.cap-msg{margin-top:10px;min-height:17px;font-size:var(--fs-11);line-height:1.5;text-align:center;color:var(--faint)}
+.cap-msg.bad{color:var(--danger)}
+.cap-msg.ok{color:var(--ok)}
 .ops-readout{font-size:var(--fs-12);color:var(--muted);margin-top:var(--sp-3);overflow-wrap:anywhere}
 .ops-wait{padding:var(--sp-6);min-height:180px}
 .ops-skeleton{height:var(--sp-4);margin:var(--sp-4) 0;background:var(--track);border-radius:var(--radius-xs)}
@@ -38,7 +59,7 @@
 .ops-pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--mono);font-size:var(--fs-11);background:var(--card-2);padding:var(--sp-3);border-radius:var(--radius-sm)}
 .ops-actions{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3)}
 .ops-note-limit{max-width:640px}
-@media(prefers-reduced-motion:reduce){.ops-puzzle-piece{transition:none}}
+@media(prefers-reduced-motion:reduce){.cap-knob.shake{animation:none}}
 </style></head>
 <body>
 <div class="app" id="app" hidden>
@@ -48,7 +69,7 @@
 <script src="../_shared/registry.js"></script><script src="../../../asset-platform/prototypes/_shared/shell.js"></script><script>(function(){
 'use strict';
 const CF=window.CF, L=CF.L, E=CF.esc, note=CF.note;
-let S, timer, taskVersion=0, lastModal=null, returnFocus=null;
+let S, timer, taskVersion=0, capToken=0, lastModal=null, returnFocus=null;
 const EMAIL='ops@demo-finance.test', INITIAL='Init2026!', KEY='ws308.ops.prototype.';
 let currentPassword='Demo2026!', initialAllowed=true;
 const paths={'P-O01':'/ops/login','P-O02':'/ops/first-reset','P-O03':'/ops/forgot-password','P-O04':'/ops/reset-password','P-O05':'/ops/account','P-O06':'/ops/overview','P-O20':'/ops/messages','P-O21':'/ops/messages/demo-password-change'};
@@ -74,12 +95,13 @@ const tx={
  firstSub:'Set a new password before accessing the operations console.',forgotSub:'Verify your work email to reset your password.',
  loginSub:'Use the work account provided by your technical team.',ruleLength:'8–20 characters',ruleComplex:'At least one letter and one number',
  locked:'Account temporarily locked',lockExplain:'Sign-in and password reset are unavailable until the lock expires.',lockTier:'If another lock is triggered, the lock period will be longer.',
- awaiting:'Waiting for a response…',submitting:'Submitting…',loading:'Loading…',verify:'Verify your identity',slide:'Move the piece into the outlined square',
+ awaiting:'Waiting for a response…',submitting:'Submitting…',loading:'Loading…',verify:'Security check',slide:'Slide to complete the puzzle',capVerified:'Verified',
+ capTrouble:'Having trouble? Select the refresh icon for a new puzzle.',capRefresh:'New puzzle',
+ capKeys:'Drag the handle, or focus it and use the arrow keys, then press Enter.',
  accountInfo:'Account information',preferences:'Preferences',name:'Full name',status:'Account status',active:'Active',change:'Change',lang:'Interface language',timezone:'Time zone',
  reauthTitle:'Confirm your current password',reauthSub:'Verify your identity before changing your password.',changeTitle:'Change password',reauthOk:'Identity verified. Set your new password.',
  exitTitle:'Stay signed in?',exitSub:'Your session expires in less than 2 minutes.',stay:'Stay signed in',signoutNow:'Sign out now',
- boundary:'Notifications are delivered by the notification module.',boundarySub:'This review file covers account and sign-in flows. Notification pages are outside this delivery.',
- overviewNote:'You are signed in. Business content will be added in a later release.',overview:'Overview',support:'Cannot access your work email? Contact your technical team.',
+ boundary:'Notifications are delivered by the notification module.',boundarySub:'This review file covers account and sign-in flows. Notification pages are outside this delivery.',overview:'Overview',support:'Cannot access your work email? Contact your technical team.',
  pwReset:'Password reset. All sessions have been signed out. Please sign in again.',empty:'Account information is unavailable.',loadFail:'Could not load account information.',refresh:'Reload account information'},
  zh:{adminConsole:'运营端',signOut:'退出登录',accountSettings:'账户设置',bounce:'安全邮件无法送达此工作邮箱，请联系技术人员处理。',
  email:'工作邮箱',password:'密码',current:'当前密码',newPassword:'新密码',confirm:'确认新密码',code:'验证码',
@@ -96,10 +118,12 @@ const tx={
  demo:'演示数据 · 本地交互原型',review:'原型状态与评审说明',loginTitle:'登录',firstTitle:'重置初始密码',forgotTitle:'重置密码',newTitle:'设置新密码',
  firstSub:'首次使用前，请设置新密码以进入运营端。',forgotSub:'验证工作邮箱后，设置新的登录密码。',loginSub:'请使用技术人员提供的工作账号登录。',
  ruleLength:'8–20 个字符',ruleComplex:'至少 1 个英文字母和 1 个数字',locked:'账号暂时锁定',lockExplain:'锁定期间无法登录或重置密码，请等待锁定到期。',lockTier:'若再次触发锁定，锁定时间会更长。',
- awaiting:'正在等待响应…',submitting:'正在提交…',loading:'正在加载…',verify:'身份验证',slide:'拖动拼块至虚线框内',accountInfo:'账号信息',preferences:'偏好信息',
+ awaiting:'正在等待响应…',submitting:'正在提交…',loading:'正在加载…',verify:'安全校验',slide:'拖动滑块完成拼图',capVerified:'验证通过',
+ capTrouble:'遇到困难？点击右上角刷新换一张。',capRefresh:'换一张',
+ capKeys:'拖动手柄，或聚焦手柄后用方向键调整，然后按回车。',accountInfo:'账号信息',preferences:'偏好信息',
  name:'姓名',status:'账号状态',active:'正常',change:'修改',lang:'界面语言',timezone:'时区',reauthTitle:'验证当前密码',reauthSub:'修改密码前，请先确认是你本人操作。',
  changeTitle:'修改密码',reauthOk:'身份验证通过，请设置新密码。',exitTitle:'继续保持登录？',exitSub:'当前会话将在 2 分钟内到期。',stay:'继续保持登录',signoutNow:'立即退出',
- boundary:'消息通知由消息通知模块提供。',boundarySub:'此评审文件覆盖账户与登录流程，消息页面不在本次交付范围。',overviewNote:'已成功登录，业务内容将在后续版本提供。',overview:'总览',
+ boundary:'消息通知由消息通知模块提供。',boundarySub:'此评审文件覆盖账户与登录流程，消息页面不在本次交付范围。',overview:'总览',
  support:'无法访问工作邮箱？请联系技术人员。',pwReset:'密码已重置，全部会话已退出，请重新登录。',empty:'暂无可用的账号信息。',loadFail:'账号信息加载失败。',refresh:'重新加载账号信息'}
 };
 /* ==========================================================================
@@ -254,7 +278,7 @@ const PRD={
   ['—','本页无业务字段','**本模块只出壳子**，页面内容归运营端后续业务需求。']
  ],
  rules:[
-  ['5.1 / AC-O16','本页是登录成功且 `must_reset_password = false` 时的**落地目标**，同时作为左侧菜单项存在；壳子中应给出**简短说明文字而非完全空白**。'],
+  ['5.1 / AC-O16','本页是登录成功且 `must_reset_password = false` 时的**落地目标**，同时作为左侧菜单项存在。PRD 原文要求壳子中给出**简短说明文字而非完全空白**；**本原型自 2026-09-10 起按需求方指示改为完全空白，与该句不一致，待 PRD 侧裁定**（原型不代改 PRD）。'],
   ['5.3','左侧菜单本期只有「总览」一项；业务菜单项由运营端后续业务模块各自登记，**本模块不预先编造菜单项**。'],
   ['AC-O97 / D-O24','运营端页面总数为 **6 个**（P-O01～P-O06）。消息中心 `P-O20` / 消息详情 `P-O21` 与铃铛 `C-O20` 归 **WS-309**，本模块只提供挂载位，不实现消息中心。'],
   ['D-O10 / N-O16','会话有效期 **2 小时**、**30 分钟无操作自动登出**、**不提供「记住我」**；到期前 2 分钟弹出续期确认弹窗（AC-O51～AC-O53）。'],
@@ -349,13 +373,93 @@ function timezoneOptions(){return ZONES.map(z=>'<option '+(S.tz===z?'selected':'
 function content(){
  guard();
  if(S.page==='P-O05')return account();
- if(S.page==='P-O06')return CF.pageHead(t('overview'),'',CF.prdBtn())+'<div class="card"><div class="card-b"><p class="ops-note-limit">'+t('overviewNote')+'</p><span class="pill dash">'+L('Business content · out of scope','业务内容 · 本期不做')+'</span></div></div>'+review();
+ // P-O06 is the console shell only: top bar, the single "Overview" menu item and the
+ // page title. Body intentionally empty — business content belongs to later operations
+ // modules. NOTE: PRD 5.1 asks the shell to carry a short line of text rather than be
+ // completely blank; emptying it is a 2026-09-10 instruction that knowingly departs from
+ // that sentence. Flagged for the PRD owner; not changed here.
+ if(S.page==='P-O06')return CF.pageHead(t('overview'),'',CF.prdBtn())+review();
  return CF.pageHead(CF.pageName(S.page),'','')+'<div class="card"><div class="card-b">'+note('',t('boundary'),L('Module handoff','模块接入边界'))+'<p>'+t('boundarySub')+'</p><p class="mono">'+E(S.externalPath||paths[S.page])+'</p>'+btn('accountSettings','go',false,false,'P-O05')+'</div></div>';
 }
-function modal(title,body,footer){return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-h"><b id="modal-title">'+t(title)+'</b><button class="modal-x" type="button" data-act="close" aria-label="'+CF.t('close')+'">✕</button></div><div class="modal-b">'+body+'</div>'+(footer?'<div class="modal-f">'+footer+'</div>':'')+'</div></div>'}
+function modal(title,body,footer,extra){return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-h"><b id="modal-title">'+t(title)+'</b>'+(extra||'')+'<button class="modal-x" type="button" data-act="close" aria-label="'+CF.t('close')+'">✕</button></div><div class="modal-b">'+body+'</div>'+(footer?'<div class="modal-f">'+footer+'</div>':'')+'</div></div>'}
+/* C-O01 puzzle slider. Visual form and markup follow the asset-platform C-01
+   (canvas puzzle + drag track + "new puzzle"); the verification itself is this
+   module's own — the asset file renders the knob as role="img" and lets Continue
+   pass unconditionally, which would drop both the real check and the keyboard path
+   the previous range input had. Business rules are unchanged: every send is gated on
+   this, and N-O13 consecutive failures start the cooldown (F-O03 / F-O08 / 11.3). */
+const CAP={w:328,h:180,piece:46,knob:48};
+function capMax(){return CAP.w-CAP.knob}
+function capView(){
+ if(S.capError==='capLoad')return 'load';
+ if(remaining(S.capUntil))return 'cool';
+ if(S.capOk)return 'ok';
+ if(S.capError==='capTrouble')return 'trouble';
+ if(S.capError==='capFailed')return 'fail';
+ return 'idle';
+}
 function captcha(){
- let err=S.capError,cool=remaining(S.capUntil);
- return modal('verify',(err?note('red',t(err)):'')+'<div class="ops-puzzle" aria-hidden="true"><div class="ops-puzzle-target"></div><div class="ops-puzzle-piece" id="puzzle-piece">FS</div></div><label for="slider">'+t('slide')+'</label><input class="ops-slider" id="slider" type="range" min="0" max="100" value="0" aria-label="'+t('slide')+'" '+(cool||err==='capLoad'?'disabled':'')+'><p class="ops-readout" role="status">'+(cool?'<span data-count="captcha">'+cool+'s</span>':L('Drag, or use the arrow keys, then select Continue.','拖动或使用方向键调整，然后点击继续。'))+'</p>',btn('retry','capRetry',false,cool>0)+btn('next','capVerify',true,cool>0||err==='capLoad'));
+ const view=capView(),cool=remaining(S.capUntil),x=S.capX||0,locked=['load','cool','ok'].includes(view);
+ const msg={ok:['ok','capVerified'],fail:['bad','capFailed'],trouble:['bad','capTrouble'],
+  cool:['bad','capCool'],load:['bad','capLoad'],idle:['','']}[view];
+ return modal('verify',
+  '<div class="cap-canvas"><canvas id="capBg" width="'+CAP.w+'" height="'+CAP.h+'"></canvas>'+
+  '<canvas id="capPiece" class="cap-piece" width="'+CAP.w+'" height="'+CAP.h+'" style="transform:translateX('+x+'px)"></canvas></div>'+
+  '<div class="cap-track'+(view==='ok'?' ok':['fail','trouble','cool','load'].includes(view)?' bad':'')+(view==='cool'?' cool':'')+'">'+
+  '<div class="cap-fill" style="width:'+(x+CAP.knob)+'px"></div>'+
+  '<span class="tip">'+(view==='idle'?t('slide'):'')+'</span>'+
+  '<div class="cap-knob" id="capKnob" style="transform:translateX('+x+'px)" role="slider" tabindex="'+(locked?-1:0)+'"'+
+  (locked?' aria-disabled="true"':'')+' aria-label="'+t('slide')+'" aria-valuemin="0" aria-valuemax="'+capMax()+'" aria-valuenow="'+x+'">\u203a</div></div>'+
+  '<p class="cap-msg '+msg[0]+'" role="status">'+(msg[1]?E(t(msg[1])):'')+(view==='cool'?' <span class="mono" data-count="captcha">'+cool+'s</span>':'')+'</p>'+
+  '<p class="ops-readout ops-center">'+t('capKeys')+'</p>',
+  btn('cancel','close')+btn('next','capVerify',true,locked),
+  '<button class="modal-x" type="button" data-act="capRefresh"'+(cool?' disabled':'')+' title="'+t('capRefresh')+'" aria-label="'+t('capRefresh')+'">\u27f3</button>');
+}
+/* Puzzle art is generated at runtime — no external image, so the single-file
+   attachment stays network-free. Ported from the asset prototype's drawCaptcha. */
+function drawCaptcha(){
+ const bg=document.getElementById('capBg'),pc=document.getElementById('capPiece');
+ if(!bg||!pc)return;
+ const W=CAP.w,H=CAP.h,PS=CAP.piece,tx=S.capGap,ty=58;
+ let seed=S.capSeed||7;
+ const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+ const off=document.createElement('canvas');off.width=W;off.height=H;
+ const o=off.getContext('2d'),hue=212,g=o.createLinearGradient(0,0,W,H);
+ g.addColorStop(0,'hsl('+hue+',58%,74%)');g.addColorStop(1,'hsl('+((hue+52)%360)+',52%,58%)');
+ o.fillStyle=g;o.fillRect(0,0,W,H);
+ for(let i=0;i<9;i++){
+  o.globalAlpha=0.12+rnd()*0.2;o.fillStyle='hsl('+((hue+i*26)%360)+',62%,'+(52+rnd()*32)+'%)';
+  const x=rnd()*W,y=rnd()*H,w=24+rnd()*140,h=10+rnd()*90;
+  o.beginPath();o.roundRect?o.roundRect(x,y,w,h,10):o.rect(x,y,w,h);o.fill();
+ }
+ o.globalAlpha=1;
+ function path(c,px,py){
+  const rr=6,k=PS*0.22;
+  c.beginPath();c.moveTo(px+rr,py);c.lineTo(px+PS*0.42,py);
+  c.arc(px+PS*0.5,py,k,Math.PI,0,true);
+  c.lineTo(px+PS-rr,py);c.quadraticCurveTo(px+PS,py,px+PS,py+rr);
+  c.lineTo(px+PS,py+PS*0.38);c.arc(px+PS,py+PS*0.5,k,-Math.PI/2,Math.PI/2,false);
+  c.lineTo(px+PS,py+PS-rr);c.quadraticCurveTo(px+PS,py+PS,px+PS-rr,py+PS);
+  c.lineTo(px+rr,py+PS);c.quadraticCurveTo(px,py+PS,px,py+PS-rr);
+  c.lineTo(px,py+rr);c.quadraticCurveTo(px,py,px+rr,py);c.closePath();
+ }
+ const b=bg.getContext('2d');b.clearRect(0,0,W,H);b.drawImage(off,0,0);
+ b.save();path(b,tx,ty);b.fillStyle='rgba(16,24,40,.55)';b.fill();
+ b.strokeStyle='rgba(255,255,255,.75)';b.lineWidth=1.5;b.stroke();b.restore();
+ const p=pc.getContext('2d');p.clearRect(0,0,W,H);
+ p.save();path(p,0,ty);p.clip();p.drawImage(off,-tx,0);p.restore();
+ p.save();path(p,0,ty);p.strokeStyle='rgba(255,255,255,.9)';p.lineWidth=1.5;p.stroke();p.restore();
+}
+function newPuzzle(){S.capSeed=Math.floor(Math.random()*200000)+1;S.capGap=90+Math.floor(Math.random()*(capMax()-90));S.capX=0;S.capOk=false}
+function capMove(px,commit){
+ if(['load','cool','ok'].includes(capView()))return;
+ const x=Math.max(0,Math.min(capMax(),Math.round(px)));
+ S.capX=x;
+ const knob=document.getElementById('capKnob'),piece=document.getElementById('capPiece'),fill=document.querySelector('.cap-fill');
+ if(knob){knob.style.transform='translateX('+x+'px)';knob.setAttribute('aria-valuenow',x)}
+ if(piece)piece.style.transform='translateX('+x+'px)';
+ if(fill)fill.style.width=(x+CAP.knob)+'px';
+ if(commit)capVerify();
 }
 function passwordModal(){
  const verified=S.reauthUntil>clock();
@@ -393,13 +497,23 @@ function login(){S.errors={};S.message='';if(!validateEmail()||!(S.form.password
  signedIn(initialAllowed&&password===INITIAL);
  });
 }
-function openCaptcha(purpose){S.capPurpose=purpose;S.capError=['capLoad','capCool'].includes(S.st)?S.st:'';if(S.capError==='capCool')S.capUntil=clock()+60000;S.capEmail=S.form.email;S.modal={type:'captcha'};CF.render()}
+function openCaptcha(purpose){S.capPurpose=purpose;S.capError=['capLoad','capCool'].includes(S.st)?S.st:'';if(S.capError==='capCool')S.capUntil=clock()+60000;S.capEmail=S.form.email;newPuzzle();S.modal={type:'captcha'};CF.render()}
 function send(){S.errors={};S.message='';if(!validateEmail()){CF.render();return}if(remaining(S.resendAt)||S.busy)return;openCaptcha('code')}
 function capVerify(){
- if(remaining(S.capUntil)||S.capError==='capLoad')return;
- const value=Number(document.getElementById('slider')?.value||0);
- if(value<69||value>75){S.capFails++;S.capError='capFailed';if(S.capFails>=5){S.capUntil=clock()+60000;S.capError='capCool';S.capFails=0}CF.render();return}
- S.capFails=0;S.modal=null;
+ if(['load','cool','ok'].includes(capView()))return;
+ if(Math.abs((S.capX||0)-S.capGap)>6){
+  S.capFails++;S.capX=0;S.capShake=true;
+  S.capError=S.capFails>=3?'capTrouble':'capFailed';
+  if(S.capFails>=5){S.capUntil=clock()+60000;S.capError='capCool';S.capFails=0}
+  CF.render();return;
+ }
+ // Show the verified state before continuing, as the asset-platform C-01 does.
+ S.capFails=0;S.capError='';S.capOk=true;S.capX=S.capGap;CF.render();
+ const version=++capToken;
+ window.setTimeout(()=>{if(version===capToken&&S.capOk)capPass()},650);
+}
+function capPass(){
+ S.capOk=false;S.modal=null;
  if(S.capPurpose==='login'){S.ipVerified=true;login();return}
  if(S.capEmail!==S.form.email){S.message='ticket';CF.render();return}
  request(()=>{
@@ -457,7 +571,7 @@ function expire(reason,keepRedirect=true,broadcast=true){
 function savePrefs(){if(S.prefBusy)return;S.prefBusy=true;CF.render();const version=taskVersion;setTimeout(()=>{if(version!==taskVersion||!S.auth)return;S.prefBusy=false;if(S.st==='saveFailed'){S.prefFailed=true;S.st='default';}else{S.prefFailed=false;put('accountPrefs',{locale:S.lang==='zh'?'zh-CN':'en',timezone:S.tz,at:clock()});notify('saved','ok')}CF.render()},450)}
 function setLang(lang){S.lang=lang;S.menu=null;put('manualLocale',{locale:lang==='zh'?'zh-CN':'en',at:clock()});if(S.auth&&!S.pending)savePrefs();CF.render()}
 function scenario(k){
- taskVersion++;S.busy=false;S.message='';S.errors={};S.st=k;S.review=true;S.shown={};S.modal=null;S.capError='';
+ taskVersion++;capToken++;S.busy=false;S.message='';S.errors={};S.st=k;S.review=true;S.shown={};S.modal=null;S.capError='';S.capOk=false;
  if(['loading','submitting','wait'].includes(k)&&S.page!=='P-O05')S.busy=k==='wait'?'wait':k==='loading'?'loading':'submit';
  if(['failure','timeout','expired','disabled','codeService','rateEmail','rateIp','rateDevice','ticket','saveFailed'].includes(k))S.message=k;
  if(k==='incorrect')S.message='incorrect';
@@ -482,7 +596,11 @@ function act(n,a,v,e){
  if(a==='logout'||a==='signout'){expire('logout',false);return true}
  if(a==='send'){send();return true}
  if(a==='capVerify'){capVerify();return true}
- if(a==='capRetry'){S.capError='';S.st='default';CF.render();return true}
+ if(a==='capRefresh'){
+  if(remaining(S.capUntil))return true;
+  if(S.capError==='capLoad'&&S.st==='capLoad')S.st='default';
+  S.capError='';newPuzzle();CF.render();return true;
+ }
  if(a==='resume'){S.busy=false;S.message='';S.st='default';CF.render();return true}
  if(a==='reload'){S.st='default';S.message='';CF.render();return true}
  if(a==='changePassword'){S.errors={};S.form={};S.message='';S.modal={type:'password'};CF.render();return true}
@@ -491,7 +609,7 @@ function act(n,a,v,e){
  if(a==='renew'){S.expiresAt=clock()+7200000;S.lastAction=clock();S.renewShown=false;S.modal=null;CF.render();return true}
  if(a==='close'){
   if(n.classList.contains('mask')&&e.target!==n)return true;
-  taskVersion++;S.busy=false;S.modal=null;S.message='';S.errors={};S.form={};CF.render();return true;
+  taskVersion++;capToken++;S.capOk=false;S.busy=false;S.modal=null;S.message='';S.errors={};S.form={};CF.render();return true;
  }
  return false;
 }
@@ -505,12 +623,22 @@ function after(){
  [['[data-act="menu"][data-v="lang"]','C-O04'],['[data-act="menu"][data-v="acc"]','C-O11'],['#crumb','C-O10'],['.toasts','C-O12'],['.bell','C-O20']].forEach(([selector,id])=>document.querySelector(selector)?.setAttribute('data-component',id));
  const prdLayer=document.querySelector('.drawer.prd');
  if(prdLayer){prdLayer.setAttribute('role','dialog');prdLayer.setAttribute('aria-modal','true');}
- if(S.modal?.type==='captcha')document.querySelector('.modal[role="dialog"]')?.setAttribute('data-component','C-O01');
+ if(S.modal?.type==='captcha'){
+  document.querySelector('.modal[role="dialog"]')?.setAttribute('data-component','C-O01');
+  drawCaptcha();
+  if(S.capShake){const k=document.getElementById('capKnob');if(k){k.classList.add('shake');k.addEventListener('animationend',()=>k.classList.remove('shake'),{once:true})}S.capShake=false}
+  // A failed attempt re-renders the layer and destroys the focused handle; put focus
+  // back inside so the keyboard path survives a retry.
+  const layer=document.querySelector('.modal[role="dialog"]');
+  if(layer&&!layer.contains(document.activeElement))
+   (layer.querySelector('#capKnob[tabindex="0"]')||layer.querySelector('button:not([disabled])'))?.focus();
+ }
  const dialog=document.querySelector('[role="dialog"]');
  document.getElementById('app').inert=!!dialog;document.getElementById('focus').inert=!!dialog;
  const identity=dialog?(S.drawer?'drawer:'+S.drawer:S.modal?.type+(S.reauthUntil>clock()?'verified':'')):null;
  if(identity!==lastModal){
-  if(dialog){if(!lastModal)returnFocus=document.activeElement;dialog.querySelector('input:not([disabled]),button:not([disabled])')?.focus();}
+  if(dialog){if(!lastModal)returnFocus=document.activeElement;
+   (dialog.querySelector('#capKnob[tabindex="0"]')||dialog.querySelector('input:not([disabled]),button:not([disabled])'))?.focus();}
   else if(String(lastModal||'').startsWith('drawer:'))document.querySelector('[data-act="openPrd"]')?.focus();
   else document.querySelector('[data-act="changePassword"]')?.focus();
   lastModal=identity;
@@ -525,7 +653,7 @@ function hashRead(){
  guard();return true;
 }
 CF.define({id:'fs-ops-login',end:'admin',home:'P-O01',owns:Object.keys(paths).filter(id=>!['P-O20','P-O21'].includes(id)),dict:tx,
- state:()=>({form:{},errors:{},shown:{},auth:false,pending:false,role:null,review:false,message:'',busy:false,failures:0,lockTier:0,lastLock:0,lockUntil:0,capFails:0,capUntil:0,sentAt:0,resendAt:0,codeTries:0,resetTicket:0,reauthUntil:0,events:[],redirect:'',externalPath:'',prefFailed:false,prefBusy:false,loginAt:0,lastAction:0,expiresAt:0,tzSaved:false}),
+ state:()=>({form:{},errors:{},shown:{},auth:false,pending:false,role:null,review:false,message:'',busy:false,failures:0,lockTier:0,lastLock:0,lockUntil:0,capFails:0,capUntil:0,capX:0,capGap:200,capSeed:7,capOk:false,capShake:false,sentAt:0,resendAt:0,codeTries:0,resetTicket:0,reauthUntil:0,events:[],redirect:'',externalPath:'',prefFailed:false,prefBusy:false,loginAt:0,lastAction:0,expiresAt:0,tzSaved:false}),
  onBoot(st){S=st;S.lang=get('manualLocale')?.locale==='zh-CN'?'zh':'en';S.tz=inferZone()},
  focus:renderFocus,content:content,prd:PRD,
  // Platform convention: the topbar does not carry the PRD button; the module places it
@@ -555,12 +683,37 @@ document.addEventListener('input',e=>{
   if(S.errors[id]){delete S.errors[id];e.target.setAttribute('aria-invalid','false');document.getElementById(id+'-help').textContent=''}
   if(id==='newPassword'){const host=document.getElementById('pwd-rules');if(host)host.outerHTML=rules()}
  }
- if(e.target.id==='slider'){const piece=document.getElementById('puzzle-piece'),box=piece.parentElement;piece.style.transform='translateX('+(Number(e.target.value)/100*(box.clientWidth-52))+'px)'}
 });
 document.addEventListener('change',e=>{const f=e.target.dataset.f;if(f==='scenario')scenario(e.target.value);if(f==='locale')setLang(e.target.value);if(f==='timezone'){S.tz=e.target.value;savePrefs()}if(f==='modalScenario'){S.st=e.target.value;S.busy=S.st==='wait'?'wait':false;S.message='';CF.render()}});
 document.addEventListener('blur',e=>{if(e.target.dataset.f==='email'&&e.target.value&&!S.busy){S.errors={};validateEmail();e.target.value=S.form.email;const err=S.errors.email;document.getElementById('email-help').textContent=err?t(err):'';e.target.setAttribute('aria-invalid',String(!!err));}},true);
 document.addEventListener('keydown',e=>{
- if(e.key==='Tab'&&(S.modal||S.drawer)){const all=Array.from(document.querySelectorAll('[role="dialog"] button:not([disabled]),[role="dialog"] input:not([disabled]),[role="dialog"] select:not([disabled]),[role="dialog"] summary,[role="dialog"] a[href]'));if(!all.length)return;const first=all[0],last=all[all.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}
+ if(e.key==='Tab'&&(S.modal||S.drawer)){const all=Array.from(document.querySelectorAll('[role="dialog"] button:not([disabled]),[role="dialog"] input:not([disabled]),[role="dialog"] select:not([disabled]),[role="dialog"] summary,[role="dialog"] a[href],[role="dialog"] [tabindex="0"]'));if(!all.length)return;const first=all[0],last=all[all.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}
+});
+/* C-O01 drag. The handle is a role="slider", so arrow keys / Home / End / Enter reach
+   the same verification a pointer drag does — the asset prototype's knob is role="img"
+   and has no keyboard path, and the range input this replaced did, so it is kept. */
+document.addEventListener('pointerdown',e=>{
+ const knob=e.target.closest?.('#capKnob');
+ if(!knob||knob.getAttribute('aria-disabled')==='true')return;
+ e.preventDefault();knob.focus();
+ const grab=e.clientX-(S.capX||0);let moved=false;
+ const move=ev=>{moved=true;capMove(ev.clientX-grab,false)};
+ const up=ev=>{
+  knob.removeEventListener('pointermove',move);knob.removeEventListener('pointerup',up);knob.removeEventListener('pointercancel',up);
+  if(moved)capMove(ev.clientX-grab,true);
+ };
+ try{knob.setPointerCapture(e.pointerId)}catch{}
+ knob.addEventListener('pointermove',move);knob.addEventListener('pointerup',up);knob.addEventListener('pointercancel',up);
+});
+document.addEventListener('keydown',e=>{
+ const knob=e.target.closest?.('#capKnob');
+ if(!knob||knob.getAttribute('aria-disabled')==='true')return;
+ const step=e.shiftKey?20:4,x=S.capX||0;
+ const nudge={ArrowLeft:-step,ArrowDown:-step,ArrowRight:step,ArrowUp:step,PageDown:-40,PageUp:40}[e.key];
+ if(nudge!==undefined){e.preventDefault();capMove(x+nudge,false);return}
+ if(e.key==='Home'){e.preventDefault();capMove(0,false);return}
+ if(e.key==='End'){e.preventDefault();capMove(capMax(),false);return}
+ if(e.key==='Enter'||e.key===' '){e.preventDefault();capVerify()}
 });
 ['pointerdown','keydown','submit'].forEach(name=>document.addEventListener(name,()=>{S.lastAction=clock()},{passive:true}));
 window.addEventListener('storage',e=>{if(e.key===KEY+'revoked'&&S.auth){let v;try{v=JSON.parse(e.newValue)}catch{}expire(v?.reason||'session',true,false)}});
