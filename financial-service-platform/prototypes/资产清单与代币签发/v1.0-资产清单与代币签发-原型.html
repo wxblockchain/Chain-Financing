@@ -160,12 +160,36 @@ tr.ti-warn-row:hover td{background:#FFF6DF}
 .ti-res .it .rs{font-size:var(--fs-11);color:var(--muted);line-height:1.6;margin-top:3px;overflow-wrap:anywhere}
 .ti-res-sum{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
 
+/* —— 代币 logo（D-TI-23）：圆角方形，24×24 / 48×48，不可点击；
+   缺配置时走首字母块兜底，不用通用占位图 —— */
+.ti-logo{display:inline-grid;place-items:center;flex:none;overflow:hidden;
+  border-radius:var(--radius-xs);background:var(--card-2);border:1px solid var(--border)}
+.ti-logo svg{width:100%;height:100%;display:block}
+.ti-logo-24{width:24px;height:24px}
+.ti-logo-48{width:48px;height:48px;border-radius:var(--radius-sm)}
+.ti-logo-fb{background:var(--gray-bg);border-color:var(--gray-border);color:var(--gray-fg);
+  font-weight:700;font-family:var(--sans);letter-spacing:0}
+.ti-logo-fb.ti-logo-24{font-size:11px}
+.ti-logo-fb.ti-logo-48{font-size:20px}
+.ti-tokname{display:flex;align-items:center;gap:var(--sp-2);min-width:0}
+.ti-tkno{font-size:var(--fs-11);white-space:nowrap;letter-spacing:.02em}
+
+/* 代币概览头：logo + 名称 + 本笔数量 */
+.ti-tokhead{display:flex;align-items:center;gap:var(--sp-3)}
+.ti-tokhead-n{font-size:var(--fs-16);font-weight:680;line-height:1.3}
+.ti-tokhead-s{font-size:var(--fs-11);color:var(--faint);margin-top:2px}
+.ti-tokhead-q{margin-left:auto;text-align:right;display:flex;flex-direction:column;gap:2px}
+.ti-tokhead-q .lb{font-size:10.5px;color:var(--faint);font-weight:640}
+.ti-tokhead-q .vv{font-family:var(--mono);font-size:var(--fs-19);font-weight:700;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+
 /* 只读页的边界声明（代币清单没有任何写操作入口） */
 .ti-ro{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-11);color:var(--muted)}
 .ti-demo-flag{font-size:10.5px;color:var(--warn);background:var(--warn-bg);border:1px solid var(--warn-border);
   border-radius:var(--radius-xs);padding:1px 6px;font-weight:620;white-space:nowrap}
 
 /* 主值 / 副值分两行：公共层默认行内，本模块的窄列里会黏成一行 */
+.ti-tok-table .ti-tokname .cell-main,.ti-tok-table .ti-tokname .cell-sub{display:block}
 .ti-inv-table .cell-main,.ti-inv-table .cell-sub,
 .ti-fx-table .cell-main,.ti-fx-table .cell-sub,
 .ti-tok-table .cell-main,.ti-tok-table .cell-sub{display:block}
@@ -174,12 +198,29 @@ tr.ti-warn-row:hover td{background:#FFF6DF}
 .ti-em{font-weight:700}
 
 /* 1280 下仍要求操作列可达：宽表固定布局 + 粘住操作列（base.css 的 .tbl.wide 已提供） */
-.ti-inv-table{min-width:1080px}
-.ti-inv-table .c-amt{width:118px}
-.ti-inv-table .c-st{width:216px}
-.ti-tok-table{min-width:1010px}
-.ti-fx-table{min-width:980px}
-.ti-his-table{min-width:820px}
+table.tbl.ti-inv-table{min-width:1080px}
+table.tbl.ti-inv-table .c-amt{width:118px}
+table.tbl.ti-inv-table .c-st{width:216px}
+/* 11 列的台账：给固定布局明确的列宽，否则均分之后每个单元格都在折行。
+   超过可用宽度时由 .tablewrap 内部横向滚动承担，操作列 sticky 保持可达。 */
+table.tbl.ti-tok-table{min-width:1450px}
+table.tbl.ti-tok-table th:nth-child(1),table.tbl.ti-tok-table td:nth-child(1){width:170px}
+table.tbl.ti-tok-table th:nth-child(2),table.tbl.ti-tok-table td:nth-child(2){width:146px}
+table.tbl.ti-tok-table th:nth-child(3),table.tbl.ti-tok-table td:nth-child(3){width:118px}
+table.tbl.ti-tok-table th:nth-child(4),table.tbl.ti-tok-table td:nth-child(4){width:92px}
+table.tbl.ti-tok-table th:nth-child(5),table.tbl.ti-tok-table td:nth-child(5){width:112px}
+table.tbl.ti-tok-table th:nth-child(6),table.tbl.ti-tok-table td:nth-child(6){width:170px}
+table.tbl.ti-tok-table th:nth-child(7),table.tbl.ti-tok-table td:nth-child(7){width:110px}
+table.tbl.ti-tok-table th:nth-child(8),table.tbl.ti-tok-table td:nth-child(8){width:132px}
+table.tbl.ti-tok-table th:nth-child(9),table.tbl.ti-tok-table td:nth-child(9){width:150px}
+table.tbl.ti-tok-table th:nth-child(10),table.tbl.ti-tok-table td:nth-child(10){width:112px}
+table.tbl.ti-tok-table .col-act{width:138px}
+table.tbl.ti-tok-table td{vertical-align:top}
+.ti-tok-table .hash .val{white-space:nowrap}
+.ti-tok-table .ti-tokname .cell-main{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+table.tbl.ti-tok-table .c-time{white-space:normal;width:auto}
+table.tbl.ti-fx-table{min-width:980px}
+table.tbl.ti-his-table{min-width:820px}
 
 @media (max-width:1360px){
   .ti-layout{grid-template-columns:minmax(0,1fr)}
@@ -215,7 +256,7 @@ tr.ti-warn-row:hover td{background:#FFF6DF}
 (function(CF){
 "use strict";
 var t=CF.t,L=CF.L,esc=CF.esc,note=CF.note,pageHead=CF.pageHead,gap=CF.gap;
-var INV="P-O-DS-01",DET="P-O-DS-02",FX="P-O-FX-01",FXH="P-O-FX-02",TOK="P-O-TI-01";
+var INV="P-O-DS-01",DET="P-O-DS-02",FX="P-O-FX-01",FXH="P-O-FX-02",TOK="P-O-TI-01",TDET="P-O-TI-02";
 var S=null,focusAfter="";
 
 /* ------------------------------- 文案 ------------------------------------ */
@@ -225,6 +266,9 @@ function D(k,en,zh){DICT.en[k]=en;DICT.zh[k]=zh;}
 /* 侧栏菜单文案（navAssetInventory / navFxRates / navTokenList / navTokenManagement）
    属于登记表，唯一来源在 _shared/shell.js 的公共 DICT，本模块不复制一份。 */
 D("demoData","Demo data","演示数据");
+/* ST-02【红线】：页面任何位置不出现无限定词的「状态」。公共层的 stateSwitch 是
+   「原型 · 状态」，这里按同名键覆盖机制在本模块内改写，不动公共层。 */
+D("stateSwitch","Prototype · page state","原型 · 页面状态");
 D("permLabel","Permission view","权限视图");
 D("scenarioLabel","Chain receipt scenario","链上回执情景");
 D("clockLabel","Prototype clock","演示时钟");
@@ -262,9 +306,10 @@ D("readOnly","Read only","只读");D("selected","Selected","已选");
 D("prdRef","PRD","PRD 摘录");D("close","Close","关闭");
 D("loadFail","Failed to load. Retry.","加载失败，请重试。");
 D("nomatch","No records match the filters.","没有符合条件的资产。");
+D("nomatchTok","No tokens match the filters.","没有符合条件的代币。");
 D("noPermPage","You do not have permission to view this page.","没有查看本页的权限。");
 D("waitingTx","Waiting for the interface to return…","正在等待接口返回…");
-D("staleHint","This record changed while the page was open. Refresh before acting.","该资产状态已变化，请刷新后重试。");
+D("staleHint","This record changed while the page was open. Refresh before acting.","该资产的签发状态已变化，请刷新后重试。");
 
 /* 六态 */
 D("S-TI-1","Pending issuance","待签发");
@@ -303,6 +348,7 @@ D("colSrc","Source asset ID","来源资产 ID");
 D("colAmt","Amount","应收账款金额");
 D("colDue","Due date","到期日");
 D("colStatus","Issuance status & reason","签发状态与原因");
+D("colVerStatus2","","");
 D("colTokens","Token amount","代币数量");
 D("colRetries","Retries","重试次数");
 D("colRecv","Received at","收单时间");
@@ -371,7 +417,7 @@ D("addrMismatch","Differs from the actual recipient address on chain. Use this w
 D("secTl","Issuance timeline","签发时间线");
 D("secSyncTl","Sync timeline (WS-313)","同步链路时间线（WS-313）");
 D("syncTlNote","Defined and delivered by WS-313; kept here so the two timelines are never merged.","由 WS-313 定义与交付，此处保留其位置，与签发时间线不合并");
-D("tlAppend","Append-only: a status change adds an entry, it never edits one.","只增不改：任何状态变化只追加条目，不修改旧条目。");
+D("tlAppend","Append-only: an issuance-status change adds an entry, it never edits one.","只增不改：任何签发状态变化只追加条目，不修改旧条目。");
 D("secDo","What can be done now","当前可做的动作");
 D("doNothing1","Nothing. It is waiting for the automatic trigger and normally stays here only briefly.","无。等待自动触发，正常只停留极短时间。");
 D("doNothing2","Nothing. A chain transaction is in flight; no new trigger or retry is accepted.","无。链上交易在途，期间不接受任何新的触发或重试。");
@@ -408,7 +454,7 @@ D("mQueryTitle","On-chain state","链上状态查询结果");
 D("qOn","On chain and successful — the asset moves to Issued and the hash, recipient address and completion time are filled in.","已上链且成功。资产转为「已签发」，并补全交易哈希、实际收币地址与签发完成时间。");
 D("qOnFail","On chain but the transaction failed — the asset moves to Issuance failed with the on-chain reason.","已上链但交易失败。资产转为「签发失败」，原因取链上回执。");
 D("qOff","Confirmed absent from the chain — the asset moves to Issuance failed, and only now does Retry appear.","已确认未上链。资产转为「签发失败」，此时才出现重试按钮。");
-D("qErr","The chain state is temporarily unavailable. The status is left unchanged — a failed query must never be read as “not on chain”.","链上状态暂时查不到，请稍后重试查询。状态保持不变——查询失败不得被推断为未上链。");
+D("qErr","The chain state is temporarily unavailable. The issuance status is left unchanged — a failed query must never be read as “not on chain”.","链上状态暂时查不到，请稍后重试查询。签发状态保持不变——查询失败不得被推断为未上链。");
 D("resTitle","Retry results","逐条重试结果");
 D("resOk","Submitted","已提交");
 D("resFail","Failed","失败");
@@ -512,16 +558,46 @@ D("opOff","Disabled the currency","停用币种");
 D("opReplace","Replaced the pending version","替换待生效版本");
 D("fxhEmpty","No versions recorded for this currency yet.","该币种暂无版本记录");
 
-/* 代币清单 */
+/* 代币清单与代币详情 */
+D("tokDetTitle","Token details","代币详情");
+D("actGoDetail","View token details","查看代币详情");
+D("colTkNo","Token no.","代币编号");
+D("colTokenState","Token status","代币状态");
+D("colPledge","Financing pledge status","融资质押状态");
+D("TS-1","Valid","有效");
+D("TS-2","Expired","失效");
+D("TS-3","Burned","已销毁");
+D("PS-0","Not pledged","未质押");
+D("PS-1","Pledged","已质押");
+D("tsWhy1","The receivable behind it has not fallen due.","对应应收账款尚未到期");
+D("tsWhy2","The receivable behind it fell due on {d}.","对应应收账款已于 {d} 到期");
+D("psWhy","No pledging flow exists this period — reserved display.","本期无融资质押流程，恒为「未质押」，属预留展示");
+D("logoAlt","{n} logo","{n} 的代币图标");
+D("logoFallback","Logo configuration not delivered — showing the initial block.","logo 配置未下发，展示首字母块兜底");
+D("secTokOverview","Token overview","代币概览");
+D("secMintProof","Mint credentials","铸造凭证");
+D("fSymbol","Name / symbol","代币名称 / 符号");
+D("fChainResult","On-chain result of this mint","本笔铸造的链上结果");
+D("mintOk","Minted successfully","铸造成功");
+D("mintOkSub","Confirmed on chain at {t}; verifiable in the block explorer.","{t} 链上确认成功，可在区块浏览器自行核查");
+D("goInv","Go to the asset inventory","前往资产清单");
+D("goInvWhy","Opens the asset inventory and locates the source asset. Everything about the receivable behind this token lives there.","跳到资产清单并定位到来源资产。这枚代币背后那笔债权的完整信息都在那边。");
+D("backTokDet","Back to token details","返回代币详情");
+D("mintProofOnly","This block is the credential for the transaction that minted this token; verify it in the block explorer.","本区块是这枚代币铸造那一笔交易的凭证，可在区块浏览器自行核查。");
+D("tokNotFound","This token does not exist.","该代币不存在");
+D("fStateTok","Token status","代币状态");
+D("addrShort","The asset holder company’s single receiving address.","该地址为该资产方企业的统一收币地址");
+
 D("tokTitle","Token list","代币清单");
-D("tokDesc","A read-only second view of the same data, organised by token. It only lists tokens minted for issued assets, and carries no write action of any kind.","按代币视角组织的只读切面，只收录已签发资产对应的代币。页面上没有任何写操作入口。");
-D("tokRo","This page answers “what is this token”. Anything that changes an asset or its issuance status is done on the asset side — open the source asset first.","本页回答的是「这个代币是什么」。凡是会改变资产或签发状态的动作都在资产侧完成，请先「查看对应资产」。");
+D("tokDesc","A read-only second view of the same data, organised by token. It lists only tokens that were minted successfully, and carries no write action of any kind.","按代币视角组织的只读切面，只收录已铸造成功的代币。页面上没有任何写操作入口。");
+D("tokRo","This page answers “what is this token”. To act on this record, go to the asset side.","本页回答的是「这个代币是什么」。要对这一笔做处置，请到资产侧操作。");
 D("colToken","Token","代币名称");
 D("colQty","Amount","数量");
 D("colTo","Recipient address","收币地址");
 D("colMintAt","Minted at","铸造时间");
 D("actGoAsset","View the source asset","查看对应资产");
 D("tokEmpty","No minted tokens yet.","暂无已铸造的代币");
+D("tokKwHint","Token no. / name / recipient address / mint tx hash / source asset ID","代币编号 / 代币名称 / 收币地址 / 铸造交易哈希 / 来源资产 ID");
 D("fContractF","Contract","所属合约");
 D("fChainF","Chain","链");
 D("fMintAt","Minted at","铸造时间");
@@ -533,7 +609,7 @@ var CLOCK0="2026-09-10T04:00:00.000Z";           /* 演示时钟起点 = 2026-09
 var CURS=["USD","CNY","HKD","KYD","NGN"];        /* 值域取 WS-313 D-DS-07，不可自定义 */
 var CUR_NAME={USD:["US dollar","美元"],CNY:["Renminbi","人民币"],HKD:["Hong Kong dollar","港币"],
               KYD:["Cayman Islands dollar","开曼群岛元"],NGN:["Naira","奈拉"]};
-var MINT={name:["Receivable mint contract","应收账款铸币合约"],
+var MINT={key:"receivable-mint",name:["Receivable mint contract","应收账款铸币合约"],
           addr:"0x7C41aB93De55f0c2E9d4B18aA3f6E27b5cD0914e",
           chain:["Chain Financing Chain","链融链"],chainId:"DEMO-MINT-01",
           token:["Receivable token","应收账款代币"],symbol:"RCV"};
@@ -777,6 +853,19 @@ function assetsSeed(){
   st:"S-TI-6",code:"E-TI-06",retries:0,snap:null,txHash:null,to:null,doneAt:null,
   tl:[tl("2026-09-01T05:30:00.000Z","tlRecv"),tl("2026-09-01T05:30:04.000Z","tlTrigger"),
       tl("2026-09-01T05:30:04.000Z","tlBlock",null,"E-TI-06")]});
+ /* 已签发 + 已过到期日：让代币状态的「失效」真的出现（TS-2）。
+    铸造发生在到期之前，到期日过去之后由系统按日翻转，无需人工操作。 */
+ add({srcId:"AR-20260812-0013",pid:"EP-2026-0602",amt:36000.00,cur:"HKD",due:"2026-09-05",
+  recvAt:"2026-08-20T02:15:00.000Z",batch:"PB-20260820-001",
+  proof:{hash:hx(131,64),tx:hx(132,64),block:8290441,chain:"DEMO-ATTEST-01",at:"2026-08-20T02:06:00.000Z"},
+  st:"S-TI-3",code:null,retries:0,
+  snap:snapOf(36000.00,"HKD",hkdVer),
+  txHash:hx(133,64),to:party("EP-2026-0602").wallet,doneAt:"2026-08-20T02:15:38.000Z",
+  tl:[tl("2026-08-20T02:15:00.000Z","tlRecv"),tl("2026-08-20T02:15:04.000Z","tlTrigger"),
+      tl("2026-08-20T02:15:08.000Z","tlSnap",null,"FXV-0003 · 0.127838"),
+      tl("2026-08-20T02:15:10.000Z","tlSubmit",null,hx(133,64)),
+      tl("2026-08-20T02:15:38.000Z","tlDone",null,"4,602.16 RCV")]});
+
  /* 批量演示数据：让分页与「单次最多 200 条」这条验收项真的走得到。
     收单时间落在 09-02，默认的「当日」汇总口径看不到它们，不干扰上面 12 条主线数据。 */
  var BULK=[["KYD","E-TI-03"],["KYD","E-TI-03"],["HKD","E-TI-04"]];
@@ -791,9 +880,56 @@ function assetsSeed(){
    tl:[tl("2026-09-02T02:00:00.000Z","tlRecv"),tl("2026-09-02T02:00:04.000Z","tlTrigger"),
        tl("2026-09-02T02:00:04.000Z","tlFail",null,b[1])]});
  }
+ /* 已签发记录的代币编号在「铸造成功」那一刻生成，此后不可变；
+    未铸造成功的资产没有代币编号（AC-TI-69 / AC-TI-70）。 */
+ var seq={};
+ A.forEach(function(a){
+  if(a.st!=="S-TI-3")return;
+  var d=a.doneAt.slice(0,10).replace(/-/g,"");
+  seq[d]=(seq[d]||0)+1;
+  a.tkNo="TK"+d+("00000"+seq[d]).slice(-6);
+ });
  return A;
 }
 function walletOf(a){return a.noWallet?"":party(a.pid).wallet;}
+
+/* --------------- 代币编号 · 两根状态轴 · logo（V1.2 新增） ----------------- */
+/* D-TI-21 代币编号：TK + yyyyMMdd（铸造完成日，UTC）+ 6 位序列，共 16 位。
+   铸造成功时生成、此后不可变；与来源资产 ID 严格 1:1。
+   【红线】它只用于展示与检索，不承担任何判重职责——防超发的唯一约束仍是
+   「来源资产 ID」唯一（AC-TI-40 / AC-TI-70）。本原型的判重同样只看来源资产 ID。 */
+function mkTkNo(doneAtIso){
+ return "TK"+doneAtIso.slice(0,10).replace(/-/g,"")+("00000"+(S.tkSeq++)).slice(-6);
+}
+/* D-TI-22 代币状态：失效 = 对应应收账款已过到期日（当前 UTC 日期 > D-DS-10），
+   系统按日判定，与签发侧 S-TI-6「已到期」用同一个日期口径。
+   TS-3 已销毁本期无数据来源，恒不出现（AC-TI-78）。 */
+function tokenState(a){
+ if(a.burned)return "TS-3";
+ return S.clock.slice(0,10)>a.due?"TS-2":"TS-1";
+}
+/* D-TI-24 融资质押状态：本期无数据来源，恒为 PS-0 未质押，属预留展示。
+   与 D-TI-22 是两根独立的轴，不合并、不做组合枚举。 */
+function pledgeState(){return "PS-0";}
+
+/* D-TI-23 代币 logo：平台按「合约标识 → logo」映射下发，运营端只读消费。
+   本期只有一个合约，配置未下发时走首字母块兜底（不用通用占位图——占位图会被
+   读成「图片加载失败」，首字母块是一个确定的最终形态）。 */
+var LOGO_MAP={
+ "receivable-mint":'<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">'
+  +'<rect width="32" height="32" rx="8" fill="#1E46C4"/>'
+  +'<path d="M9 22.5V9.5h7.4c2.7 0 4.4 1.5 4.4 3.9 0 1.9-1.1 3.2-2.9 3.6l3.3 5.5h-3.3l-3-5.1h-2.8v5.1H9Zm3.1-7.5h3.9c1.2 0 2-.6 2-1.6s-.8-1.6-2-1.6h-3.9V15Z" fill="#fff"/>'
+  +'<circle cx="24" cy="23" r="4.6" fill="#4DA2FF" stroke="#fff" stroke-width="1.4"/></svg>'
+};
+function tokenLogo(size){
+ var name=L(MINT.token[0],MINT.token[1]);
+ var cfg=S.logoOn?LOGO_MAP[MINT.key]:null;
+ var cls="ti-logo ti-logo-"+size;
+ if(cfg)return '<span class="'+cls+'" role="img" aria-label="'+esc(t("logoAlt",{n:name}))+'">'+cfg+"</span>";
+ /* 兜底：取代币符号首字母（无符号时取代币名称首字） */
+ var ch=(MINT.symbol||name||"?").charAt(0).toUpperCase();
+ return '<span class="'+cls+' ti-logo-fb" role="img" aria-label="'+esc(t("logoAlt",{n:name}))+'">'+esc(ch)+"</span>";
+}
 
 /* ------------------------------ 权限 ------------------------------------- */
 var PERMS={
@@ -814,7 +950,7 @@ function shortHash(v){return v&&v.length>20?v.slice(0,10)+"…"+v.slice(-8):(v||
 function shortAddr(v){return v&&v.length>12?v.slice(0,6)+"…"+v.slice(-4):(v||"");}
 function hashCell(v,label,kind){
  if(!v)return '<span class="faint">—</span>';
- var shown=kind==="addr"?shortAddr(v):shortHash(v);
+ var shown=kind==="full"?v:(kind==="addr"?shortAddr(v):shortHash(v));
  return '<span class="hash" title="'+esc(v)+'"><span class="val">'+esc(shown)+'</span>'
   +'<button class="ico" type="button" data-act="ti-copy" data-v="'+esc(v)+'" aria-label="'+esc(label||t("copy"))+'">'
   +CF.ICO.copy+'</button></span>';
@@ -847,7 +983,7 @@ function reasonText(a){
 
 /* ------------------------------ 筛选 ------------------------------------- */
 function emptyInvF(){return {st:[],cur:"all",party:"all",from:"",to:"",kw:""};}
-function emptyTokF(){return {contract:"all",chain:"all",from:"",to:"",kw:""};}
+function emptyTokF(){return {contract:"all",chain:"all",ts:"all",from:"",to:"",kw:""};}
 function emptyFxF(){return {cur:[],on:"all",nofx:"all"};}
 
 /* 计数基数：除签发状态之外的全部筛选条件 */
@@ -876,11 +1012,12 @@ function tokRows(){
  var f=S.tokF;
  var a=S.assets.filter(function(r){return r.st==="S-TI-3";});   /* T-01：只收录已签发 */
  if(f.chain!=="all")a=a.filter(function(){return f.chain===MINT.chainId;});
+ if(f.ts!=="all")a=a.filter(function(r){return tokenState(r)===f.ts;});
  if(f.from)a=a.filter(function(r){return r.doneAt.slice(0,10)>=f.from;});
  if(f.to)a=a.filter(function(r){return r.doneAt.slice(0,10)<=f.to;});
  var q=(f.kw||"").trim().toLowerCase();
  if(q)a=a.filter(function(r){
-  return (L(MINT.token[0],MINT.token[1])+" "+MINT.symbol+" "+(r.to||"")+" "+(r.txHash||"")+" "+r.srcId).toLowerCase().indexOf(q)>=0;});
+  return ((r.tkNo||"")+" "+L(MINT.token[0],MINT.token[1])+" "+MINT.symbol+" "+(r.to||"")+" "+(r.txHash||"")+" "+r.srcId).toLowerCase().indexOf(q)>=0;});
  a.sort(function(x,y){return x.doneAt<y.doneAt?1:-1;});
  return a;
 }
@@ -914,7 +1051,7 @@ function shellCard(title,btn){return '<div class="card"><div class="shell"><b>'+
 function surface(emptyKey){
  if(S.st==="loading")return skel();
  if(S.st==="empty")return shellCard(t(emptyKey));
- if(S.st==="nomatch")return shellCard(t("nomatch"),'<button class="btn sm" type="button" data-act="ti-clear">'+t("clear")+"</button>");
+ if(S.st==="nomatch")return shellCard(t(S.page===TOK?"nomatchTok":"nomatch"),'<button class="btn sm" type="button" data-act="ti-clear">'+t("clear")+"</button>");
  if(S.st==="error")return shellCard(t("loadFail"),'<button class="btn sm" type="button" data-act="ti-reload">'+t("retry")+"</button>");
  if(S.st==="noperm")return note("amber",t("noPermPage"));
  if(S.st==="waiting")return note("",t("waitingTx"));
@@ -1042,7 +1179,7 @@ function pageInv(){
  var locate=S.focusId
   ? '<div class="ti-locate">'+CF.ICO.info+"<span>"+t("locatedTo",{id:S.focusId})+"</span>"
     +'<span class="right"><button class="btn sm" type="button" data-act="ti-unfocus">'+t("clearLocate")+"</button>"
-    +(S.backTok?'<button class="btn sm" type="button" data-act="ti-backtok">'+t("backTok")+"</button>":"")+"</span></div>"
+    +(S.backTok?'<button class="btn sm" type="button" data-act="ti-backtok">'+t(S.backTokDet?"backTokDet":"backTok")+"</button>":"")+"</span></div>"
   : "";
  var n=selCount();
  var selbar=n?'<div class="ti-selbar">'+CF.ICO.info+"<span>"+t("selN",{n:n})+"</span>"
@@ -1332,45 +1469,128 @@ function pageFxh(){
 /* ========================================================================== */
 /*  P-O-TI-01 代币清单（只读，无任何写操作入口）                                */
 /* ========================================================================== */
+function tsPill(a){
+ var k=tokenState(a);
+ var cls=k==="TS-1"?"green":k==="TS-2"?"gray":"red";
+ return '<span class="pill '+cls+'">'+t(k)+"</span>";
+}
+function psPill(){return '<span class="pill dash">'+t("PS-0")+"</span>";}
+
 function tokFilters(){
  return '<div class="filters">'
   +'<label class="fl"><span>'+t("fContractF")+'</span><select class="inp" data-f="tokF.contract"><option value="all">'+t("all")+"</option>"
    +'<option value="mint"'+(S.tokF.contract==="mint"?" selected":"")+">"+esc(L(MINT.name[0],MINT.name[1]))+"</option></select></label>"
   +'<label class="fl"><span>'+t("fChainF")+'</span><select class="inp" data-f="tokF.chain"><option value="all">'+t("all")+"</option>"
    +'<option value="'+MINT.chainId+'"'+(S.tokF.chain===MINT.chainId?" selected":"")+">"+esc(L(MINT.chain[0],MINT.chain[1]))+"</option></select></label>"
+  /* 代币状态可筛选；融资质押状态本期恒为单一取值，刻意不给筛选器——
+     给了等于暗示这里能筛出已质押的代币，而那样的代币本期不存在（9.7 / AC-TI-77）。 */
+  +'<label class="fl"><span>'+t("colTokenState")+'</span><select class="inp" data-f="tokF.ts"><option value="all">'+t("all")+"</option>"
+   +["TS-1","TS-2","TS-3"].map(function(k){
+     return '<option value="'+k+'"'+(S.tokF.ts===k?" selected":"")+">"+t(k)+"</option>";}).join("")+"</select></label>"
   +'<div class="fl"><span>'+t("fMintAt")+'</span><div class="fl-date"><input class="inp" type="date" data-f="tokF.from" value="'+esc(S.tokF.from)+'">'
    +'<span class="to">'+t("to")+'</span><input class="inp" type="date" data-f="tokF.to" value="'+esc(S.tokF.to)+'"></div></div>'
-  +'<label class="fl fl-kw"><span>'+t("tokKw")+'</span><input class="inp" data-f="tokF.kw" value="'+esc(S.tokF.kw)+'" placeholder="'+esc(t("tokKw"))+'"></label>'
+  +'<label class="fl fl-kw"><span>'+t("tokKwHint")+'</span><input class="inp" data-f="tokF.kw" value="'+esc(S.tokF.kw)+'" placeholder="'+esc(t("tokKwHint"))+'"></label>'
   +'<div class="fl-act"><button class="btn sm primary" type="button" data-act="ti-search">'+t("search")+"</button>"
   +'<button class="btn sm" type="button" data-act="ti-clear">'+t("clear")+"</button></div></div>";
 }
 function pageTok(){
  var head=pageHead(t("tokTitle"),t("tokDesc"),
   '<span class="ti-ro">'+CF.ICO.eye+t("readOnly")+"</span>"+prdBtn()+'<span class="ti-demo-flag">'+t("demoData")+"</span>");
+ var lead=note("",t("tokRo"))+(S.logoOn?"":gap(10)+note("amber",t("logoFallback")));
  var surf=surface("tokEmpty");
- if(surf)return head+surf;
+ if(surf)return head+lead+gap(12)+surf;
  var rows=tokRows();
  if(!rows.length)
-  return head+note("",t("tokRo"))+gap(12)+'<div class="card">'+tokFilters()+"</div>"+gap(12)
-   +shellCard(t(S.assets.some(function(a){return a.st==="S-TI-3";})?"nomatch":"tokEmpty"),
+  return head+lead+gap(12)+'<div class="card">'+tokFilters()+"</div>"+gap(12)
+   +shellCard(t(S.assets.some(function(a){return a.st==="S-TI-3";})?"nomatchTok":"tokEmpty"),
      '<button class="btn sm" type="button" data-act="ti-clear">'+t("clear")+"</button>");
  var per=20,page=Math.min(S.pgTok,Math.max(1,Math.ceil(rows.length/per)));
  var body=rows.slice((page-1)*per,page*per).map(function(a){
-  return "<tr><td><span class=\"cell-main\">"+esc(L(MINT.token[0],MINT.token[1]))+'</span><span class="cell-sub mono">'+MINT.symbol+"</span></td>"
+  return "<tr>"
+   +'<td><div class="ti-tokname">'+tokenLogo(24)
+    +'<span><span class="cell-main">'+esc(L(MINT.token[0],MINT.token[1]))+'</span>'
+    +'<span class="cell-sub">'+MINT.symbol+"</span></span></div></td>"
+   +'<td class="mono ti-tkno">'+esc(a.tkNo||"—")+"</td>"
    +'<td class="num">'+fmtNum(a.snap.tokens,2)+" "+MINT.symbol+"</td>"
+   +"<td>"+tsPill(a)+"</td>"
+   +"<td>"+psPill()+"</td>"
    +"<td>"+esc(L(MINT.name[0],MINT.name[1]))+'<span class="cell-sub">'+hashCell(MINT.addr,t("fContract"),"addr")+"</span></td>"
    +"<td>"+esc(L(MINT.chain[0],MINT.chain[1]))+'<span class="cell-sub mono">'+esc(MINT.chainId)+"</span></td>"
    +"<td>"+hashCell(a.to,t("colTo"),"addr")+"</td>"
    +"<td>"+hashCell(a.txHash,t("fMintTx"))+"</td>"
    +'<td class="c-time">'+CF.fmtTime(a.doneAt)+"</td>"
-   +'<td class="col-act"><button class="actlink" type="button" data-act="ti-goasset" data-v="'+esc(a.srcId)+'">'+t("actGoAsset")+"</button></td></tr>";
+   /* 两个入口都是跳转、不是动作，文案必须可区分（AC-TI-63） */
+   +'<td class="col-act">'
+    +'<button class="actlink" type="button" data-act="ti-tokdet" data-v="'+esc(a.srcId)+'">'+t("actGoDetail")+"</button>"
+    +'<button class="actlink" type="button" data-act="ti-goasset" data-v="'+esc(a.srcId)+'">'+t("actGoAsset")+"</button></td></tr>";
  }).join("");
- return head+note("",t("tokRo"))+gap(12)+'<div class="card">'+tokFilters()+"</div>"+gap(12)
+ return head+lead+gap(12)+'<div class="card">'+tokFilters()+"</div>"+gap(12)
   +'<div class="card"><div class="tablewrap"><table class="tbl wide ti-tok-table"><thead><tr>'
-  +"<th>"+t("colToken")+"</th><th>"+t("colQty")+"</th><th>"+t("fContractF")+"</th><th>"+t("fChainF")+"</th>"
+  +"<th>"+t("colToken")+"</th><th>"+t("colTkNo")+"</th><th>"+t("colQty")+"</th>"
+  +"<th>"+t("colTokenState")+"</th><th>"+t("colPledge")+"</th>"
+  +"<th>"+t("fContractF")+"</th><th>"+t("fChainF")+"</th>"
   +"<th>"+t("colTo")+"</th><th>"+t("fMintTx")+"</th><th>"+t("colMintAt")+"</th>"
   +'<th class="col-act">'+t("colAct")+"</th></tr></thead><tbody>"+body+"</tbody></table></div>"
   +pager(rows.length,page,"ti-pgTok")+'<div class="ti-sum-foot">'+t("tokNoSum")+"</div></div>";
+}
+
+/* ========================================================================== */
+/*  P-O-TI-02 代币详情（只读，唯一入口是代币清单）                             */
+/* ========================================================================== */
+/* 职责边界是红线：只讲代币自身。应收金额、贸易背景、确权信息等资产属性一条不放；
+   签发过程（签发状态、拦截原因、重试次数、签发时间线、换算过程）同样不放——
+   那是「这笔资产发出去了没」，属资产侧。见 10.6 / AC-TI-65 / AC-TI-74。 */
+function pageTokDet(){
+ var a=byId(S.tokDetId);
+ var head=pageHead(t("tokDetTitle"),a&&a.tkNo?a.tkNo:"",
+  '<span class="ti-ro">'+CF.ICO.eye+t("readOnly")+"</span>"+prdBtn()+'<span class="ti-demo-flag">'+t("demoData")+"</span>");
+ if(S.st==="loading")return head+skel(6);
+ if(S.st==="error")return head+shellCard(t("loadFail"),'<button class="btn sm" type="button" data-act="ti-reload">'+t("retry")+"</button>");
+ if(S.st==="noperm")return head+note("amber",t("noPermPage"));
+ if(!a||a.st!=="S-TI-3")return head+shellCard(t("tokNotFound"),
+  '<button class="btn sm" type="button" data-act="ti-backtokdet">'+t("backTok")+"</button>");
+ var ts=tokenState(a);
+ var tsWhy=ts==="TS-2"?t("tsWhy2",{d:a.due}):ts==="TS-1"?t("tsWhy1"):"";
+ var overview='<div class="card"><div class="card-head"><b>'+t("secTokOverview")+"</b>"
+  +(S.logoOn?"":'<span class="right">'+t("logoFallback")+"</span>")+"</div>"
+  +'<div class="card-b">'
+  +'<div class="ti-tokhead">'+tokenLogo(48)
+   +'<div><div class="ti-tokhead-n">'+esc(L(MINT.token[0],MINT.token[1]))+'</div>'
+   +'<div class="ti-tokhead-s mono">'+MINT.symbol+"</div></div>"
+   +'<div class="ti-tokhead-q"><span class="lb">'+t("fMintAmt")+'</span>'
+   +'<span class="vv">'+fmtNum(a.snap.tokens,2)+" "+MINT.symbol+"</span></div></div>"
+  +gap(12)+'<dl class="dl">'
+  +"<div><dt>"+t("colTkNo")+"</dt><dd>"+hashCell(a.tkNo,t("colTkNo"),"full")+"</dd></div>"
+  +"<div><dt>"+t("fSymbol")+"</dt><dd>"+esc(L(MINT.token[0],MINT.token[1]))+' <span class="faint mono">'+MINT.symbol+"</span></dd></div>"
+  +"<div><dt>"+t("fContract")+"</dt><dd>"+esc(L(MINT.name[0],MINT.name[1]))+'<span class="cell-sub">'+hashCell(MINT.addr,t("fContract"),"addr")+"</span></dd></div>"
+  +"<div><dt>"+t("fChain")+"</dt><dd>"+esc(L(MINT.chain[0],MINT.chain[1]))+' <span class="faint mono">'+esc(MINT.chainId)+"</span></dd></div>"
+  +"<div><dt>"+t("fRecvAddr")+"</dt><dd>"+hashCell(a.to,t("fRecvAddr"),"addr")
+   +'<span class="cell-sub">'+t("addrShort")+"</span></dd></div>"
+  +"<div><dt>"+t("colTokenState")+"</dt><dd>"+tsPill(a)
+   +(tsWhy?'<span class="cell-sub">'+esc(tsWhy)+"</span>":"")+"</dd></div>"
+  +"<div><dt>"+t("colPledge")+"</dt><dd>"+psPill()+'<span class="cell-sub">'+t("psWhy")+"</span></dd></div>"
+  +"</dl></div></div>";
+ var proof='<div class="card ti-proof" data-seq="2"><div class="card-head">'
+  +"<b>"+t("secMintProof")+"</b>"
+  +'<span class="ti-proof-who">'+t("who2")+"</span>"
+  +'<span class="right">'+explorerBtn(MINT.chainId,a.txHash,true)+"</span></div>"
+  +'<div class="card-b"><p class="ti-ask">'+t("ask2")+'</p><dl class="dl">'
+  +"<div><dt>"+t("fMintTx")+"</dt><dd>"+hashCell(a.txHash,t("fMintTx"))+"</dd></div>"
+  +"<div><dt>"+t("colMintAt")+"</dt><dd>"+CF.fmtTime(a.doneAt)+"</dd></div>"
+  +"<div><dt>"+t("fChainResult")+'</dt><dd><span class="pill green">'+t("mintOk")+"</span>"
+   +'<span class="cell-sub">'+esc(t("mintOkSub",{t:CF.fmtTime(a.doneAt)}))+"</span></dd></div></dl>"
+  +(EXPLORERS[MINT.chainId]?"":'<p class="tiny" style="margin-top:10px">'+t("noExplorer")+"</p>")
+  +"</div></div>";
+ /* 唯一跳出口：前往资产清单并精确定位；逐层返回每层保留状态（AC-TI-67） */
+ var out='<div class="card"><div class="card-head"><b>'+t("goInv")+"</b></div>"
+  +'<div class="card-b"><p class="ti-ask">'+t("goInvWhy")+"</p>"
+  +'<button class="btn primary" type="button" data-act="ti-tokgoasset" data-v="'+esc(a.srcId)+'">'+t("goInv")+"</button>"
+  +"</div></div>";
+ return head
+  +'<div class="ti-locate"><span>'+CF.ICO.info+"</span><span>"+t("tokRo")+"</span>"
+   +'<span class="right"><button class="btn sm" type="button" data-act="ti-backtokdet">'+t("backTok")+"</button></span></div>"
+  +'<div class="ti-layout"><div class="ti-stack">'+overview+proof+"</div>"
+  +'<aside class="ti-stack">'+out+"</aside></div>";
 }
 
 /* ========================================================================== */
@@ -1595,6 +1815,7 @@ function settle(a){
  if(S.scenario==="timeout"){a.st="S-TI-5";a.code=null;pushTl(a,"tlTimeout",null,"30 min");return;}
  if(S.scenario==="fail"){a.st="S-TI-4";a.code="E-TI-04";a.desc="execution reverted: mint paused";pushTl(a,"tlFail",null,"E-TI-04");return;}
  a.st="S-TI-3";a.code=null;a.to=walletOf(a);a.doneAt=S.clock;
+ if(!a.tkNo)a.tkNo=mkTkNo(a.doneAt);          /* 铸造成功即生成，重试多次也只生成一个 */
  pushTl(a,"tlDone",null,fmtNum(a.snap.tokens,2)+" "+MINT.symbol);
 }
 /* 11.2 定时补扫：只处理从未提交过链上交易的资产（S-TI-1 与校验类 S-TI-4），
@@ -1711,7 +1932,9 @@ function queryChain(id){
   var r=S.scenario==="fail"?"onfail":S.scenario==="timeout"?"err":S.scenario==="submitfail"?"off":"on";
   S.modal.result=r;
   pushTl(a,"tlQuery","byOp",r==="on"?"on-chain / success":r==="onfail"?"on-chain / failed":r==="off"?"absent":"unavailable");
-  if(r==="on"){a.st="S-TI-3";a.code=null;a.to=walletOf(a);a.doneAt=S.clock;pushTl(a,"tlDone",null,fmtNum(a.snap.tokens,2)+" "+MINT.symbol);}
+  if(r==="on"){a.st="S-TI-3";a.code=null;a.to=walletOf(a);a.doneAt=S.clock;
+   if(!a.tkNo)a.tkNo=mkTkNo(a.doneAt);
+   pushTl(a,"tlDone",null,fmtNum(a.snap.tokens,2)+" "+MINT.symbol);}
   if(r==="onfail"){a.st="S-TI-4";a.code="E-TI-04";a.desc="execution reverted";}
   if(r==="off"){a.st="S-TI-4";a.code="E-TI-05";}
   /* r==="err"：状态保持 S-TI-5 不变，查询失败不得被推断为未上链（AC-TI-34） */
@@ -1742,6 +1965,7 @@ function buildHash(){
  if(S.page===FX)return "#/ops/fx-rates"+qs({cur:S.backInv?S.fxCur:""});
  if(S.page===FXH)return "#/ops/fx-rates/"+encodeURIComponent(S.fxCur||"CNY")+"/history"+qs({});
  if(S.page===TOK)return "#/ops/token-list"+qs({});
+ if(S.page===TDET)return "#/ops/token-list/"+encodeURIComponent(S.tokDetId)+qs({});
  return "#/"+S.page.toLowerCase();
 }
 function readHash(){
@@ -1756,7 +1980,9 @@ function readHash(){
  }else if(seg[0]==="ops"&&seg[1]==="fx-rates"){
   if(seg[3]==="history"){page=FXH;S.fxCur=decodeURIComponent(seg[2]||"CNY");}
   else{page=FX;if(p.cur){S.fxCur=p.cur;S.backInv=true;}}
- }else if(seg[0]==="ops"&&seg[1]==="token-list"){page=TOK;}
+ }else if(seg[0]==="ops"&&seg[1]==="token-list"){
+  if(seg[2]){page=TDET;S.tokDetId=decodeURIComponent(seg[2]);}else page=TOK;
+ }
  else{
   var id=(seg[0]||"").toUpperCase();
   if(CF.PAGES[id])page=id;
@@ -1798,9 +2024,9 @@ PRD[INV]={title:"资产清单 P-O-DS-01",src:SRC,
   ["D-TI-01","枚举 · 必填","签发状态，值域 `S-TI-1`～`S-TI-6`，须实现为可扩展枚举；与 WS-313 同步状态是两根轴，互不写"],
   ["D-TI-02","枚举 · 选填","拦截 / 失败原因码 `E-TI-01`～`E-TI-06`，仅 S-TI-4 / S-TI-6 有值"],
   ["D-TI-09","整数 · 必填","重试次数，≥ 0 且**不设上限**；补扫自动重发不计入，只在时间线留痕"],
-  ["D-TI-11","数值 · 选填","代币数量，仅 S-TI-3 在列表展示；其余状态一律 `—`，不展示预估值也不展示 0"]],
+  ["D-TI-11","数值 · 选填","代币数量，仅 S-TI-3 在列表展示；其余五态一律 `—`，不展示预估值也不展示 0"]],
  rules:[
-  ["F-TI-03","签发概况汇总条 `C-O-TI-01`：当前筛选下的六个状态笔数，**只统计笔数，不出现金额**"],
+  ["F-TI-03","签发概况汇总条 `C-O-TI-01`：当前筛选下的六个签发状态笔数，**只统计笔数，不出现金额**"],
   ["F-TI-04","异常筛选快捷入口等价于「签发状态 ∈ {S-TI-4, S-TI-5}」，条件在筛选区可见、可清除"],
   ["F-TI-05","链上状态查询——**这是 S-TI-5 唯一可做的动作**"],
   ["F-TI-06","人工重试**仅对 S-TI-4 开放**；批量为 N 笔独立交易，逐条独立成败，部分成功不整体回滚，单次上限 200 条"],
@@ -1811,7 +2037,7 @@ PRD[INV]={title:"资产清单 P-O-DS-01",src:SRC,
   ["AC-TI-06","仅 S-TI-4 行渲染「重试」，且仅 S-TI-4 行的勾选框可勾选"],
   ["AC-TI-42","【红线】`S-TI-5 → S-TI-2` 这条边不存在"],
   ["AC-TI-45","【反向】不存在「批量签发」「立即签发」「发起签发」任何入口"],
-  ["AC-TI-62","【反向】不新增「上链状态」列、状态标签或筛选项，也不调链"]],
+  ["AC-TI-62","【反向】不新增「上链状态」列、上链状态标签或筛选项，也不调链"]],
  copy:[["E-TI-03","{c} currently has no effective FX rate.","币种 {币种} 当前没有生效的汇率配置，无法换算金额"]]};
 
 PRD[DET]={title:"资产详情 P-O-DS-02",src:SRC,
@@ -1823,7 +2049,7 @@ PRD[DET]={title:"资产详情 P-O-DS-02",src:SRC,
  rules:[
   ["F-TI-09","换算过程按固定顺序单向展示七项，每一段都取自签发时刻的快照，**不重算**"],
   ["F-TI-10","数币地址按**企业维度**取值（币归公司）；区块内固定标注「该资产方企业的统一收币地址」"],
-  ["F-TI-11","签发时间线按时间正序、**只增不改**，任何状态回退也只追加新条目"],
+  ["F-TI-11","签发时间线按时间正序、**只增不改**，任何签发状态回退也只追加新条目"],
   ["13.2","保留 2 位小数、**向下截断**（舍去，不四舍五入），被舍去的部分显式展示"]],
  states:[
   ["AC-TI-60","【红线】两区块分开各带标题；两处哈希**均带限定词**；**页面任何位置不出现无限定词的「交易哈希」**；顺序存证在前、铸造在后"],
@@ -1864,21 +2090,39 @@ PRD[FXH]={title:"汇率历史版本 P-O-FX-02",src:SRC,
  copy:[]};
 
 PRD[TOK]={title:"代币清单 P-O-TI-01",src:SRC,
- fields:[["D-TI-11～13","取自资产","代币数量、所属合约、所属链——**不新增任何实体、不新增任何字段**"],
-  ["9.7","不展示","原币金额、汇率、换算过程、签发状态、拦截原因——这些属于「那笔债权是什么」，在资产侧看"]],
- rules:[["F-TI-17","**只收录 `S-TI-3 已签发` 的资产所对应的代币**；其余五种状态不出现——它们还没有代币"],
-  ["F-TI-18","「查看对应资产」按来源资产 ID 深链并**精确定位到该行**；返回保留筛选与分页"],
-  ["T-04","方向**单向**：资产侧不提供「查看对应代币」的反向入口"],
-  ["9.7","**本期不做金额或数量汇总**——不同合约的代币数量不可相加"]],
- states:[["AC-TI-54","出现在**代币管理菜单下**，与「智能合约」平级；**不新增一级导航项**"],
-  ["AC-TI-58","【反向】**不存在任何写操作入口**：无签发、无重试、无查链上、无编辑、无删除、无导出；**也不存在代币详情页**"],
-  ["AC-TI-56","跳转**精确定位到该行**（高亮且在首屏可见），不是跳到列表首页"]],
+ fields:[["D-TI-21","文本 · 16 位","代币编号 `TK` + `yyyyMMdd`（铸造完成日，UTC）+ 6 位序列。与来源资产 ID **严格 1:1、双向可反查**；**不是链上 tokenId**"],
+  ["D-TI-22","枚举 · 必填","代币状态 `TS-1 有效` / `TS-2 失效` / `TS-3 已销毁`。**失效 = 对应应收账款已过到期日**，系统按日判定；`TS-3` 本期无来源、恒不出现"],
+  ["D-TI-23","配置引用 · 选填","代币 logo，按「合约标识 → logo」平台下发映射取；缺失走**首字母块**兜底。清单 24×24、详情 48×48，圆角方形，不可点击"],
+  ["D-TI-24","枚举 · 必填","融资质押状态 `PS-0 未质押` / `PS-1 已质押`。本期**恒为 `PS-0`**，属预留展示，与 `D-TI-22` 是**两根独立的轴**"]],
+ rules:[["F-TI-17","**只收录已铸造成功的代币**；未铸造成功的资产不出现——它们还没有代币"],
+  ["F-TI-21","每行两个入口：「查看代币详情」进 `P-O-TI-02`，「查看对应资产」进资产清单并精确定位。**两个都是跳转，不是动作**"],
+  ["F-TI-24","代币状态**可筛选**；**融资质押状态本期不做筛选项**——它恒为单一取值，给筛选等于暗示这里能筛出已质押的代币"],
+  ["9.7","**不做跨合约数量汇总**——不同合约的代币数量不可相加"]],
+ states:[["AC-TI-74","【红线】代币侧**不出现签发状态**；反过来资产侧不出现代币状态与融资质押状态"],
+  ["AC-TI-75","【红线】三个状态字段字面分别为「签发状态」「代币状态」「融资质押状态」，**页面任何位置不出现无限定词的「状态」**"],
+  ["AC-TI-77","两者是**两列**，未被合并为一列或组合枚举；融资质押状态不作为筛选项"],
+  ["AC-TI-78","【反向】「已销毁」与「已质押」本期构造不出；不存在销毁/冻结/质押/解押入口；**也不存在「已冻结」这一取值**"],
+  ["AC-TI-58","【反向】代币管理菜单下的每一个页面都**不存在任何写操作入口**"]],
+ copy:[]};
+
+PRD[TDET]={title:"代币详情 P-O-TI-02",src:SRC,
+ fields:[["D-TI-21","完整展示 + 可复制","代币编号——**这是对外应答时报给对方的那个号**"],
+  ["D-TI-11 / 12 / 13 / 20","代币自身","铸造数量、所属合约（完整地址可复制）、所属链、实际收币地址"],
+  ["D-TI-06 / 07","铸造凭证","**铸造**交易哈希（可跳区块浏览器）、铸造时间"]],
+ rules:[["10.6","**唯一入口**是代币清单的「查看代币详情」；纯只读，无任何写操作入口"],
+  ["10.7","概览区 logo 48×48；收币地址旁注「该资产方企业的统一收币地址」；代币状态旁以小字给出判定依据"],
+  ["10.8","页内唯一跳出口是「前往资产清单」并精确定位；**逐层返回**资产清单 → 代币详情 → 代币清单，每层保留筛选与分页"],
+  ["T-04","方向**仍是单向**：资产侧不提供任何「查看对应代币」的反向入口"]],
+ states:[["AC-TI-65","【红线】**不出现任何资产属性**（应收金额与币种、到期日、资产方与债务方、贸易背景、确权信息），**也不出现任何签发过程信息**（签发状态、拦截原因、重试次数、签发时间线、换算过程）"],
+  ["AC-TI-66","【红线】**只出现铸造凭证，不出现链上存证凭证**；哈希字段字面必须是「**铸造交易哈希**」——本页只有一组凭证也不放宽"],
+  ["AC-TI-72","logo 配置缺失时展示**首字母块**，不出现破图或「加载失败」式通用占位图"],
+  ["TD-01～TD-08","本期不做：任何写操作、实时读链、资产属性、签发过程、导出、logo 管理入口、代币两轴的人工修改入口"]],
  copy:[]};
 
 /* ------------------------------ 装配 ------------------------------------- */
 CF.define({
  id:"token-issuance",end:"admin",home:INV,
- owns:[INV,DET,FX,FXH,TOK],
+ owns:[INV,DET,FX,FXH,TOK,TDET],
  dict:DICT,topbarPrd:false,
  states:{
   "P-O-DS-01":[["default","Default","默认"],["loading","Loading","加载中"],["empty","Empty","空数据"],
@@ -1891,14 +2135,17 @@ CF.define({
   "P-O-FX-02":[["default","Default","默认"],["loading","Loading","加载中"],["empty","Empty","空数据"],
    ["error","Load failed","加载失败"],["noperm","No permission","无权限"]],
   "P-O-TI-01":[["default","Default","默认"],["loading","Loading","加载中"],["empty","Empty","空数据"],
-   ["nomatch","No match","筛选无结果"],["error","Load failed","加载失败"],["noperm","No permission","无权限"]]
+   ["nomatch","No match","筛选无结果"],["error","Load failed","加载失败"],["noperm","No permission","无权限"],
+   ["nologo","Logo config missing","logo 配置未下发"]],
+  "P-O-TI-02":[["default","Default","默认"],["loading","Loading","加载中"],["error","Load failed","加载失败"],
+   ["noperm","No permission","无权限"],["nologo","Logo config missing","logo 配置未下发"]]
  },
  state:function(){
   return {lang:"zh",tz:"Asia/Shanghai",clock:CLOCK0,perm:"full",scenario:"ok",scope:"day",
    assets:assetsSeed(),fx:fxSeed(),fxOps:fxOpsSeed(),fxOn:{CNY:true,HKD:true,KYD:true,NGN:true},
    fxSeq:7,fxForm:null,fxCur:"CNY",
    invF:emptyInvF(),tokF:emptyTokF(),fxF:emptyFxF(),
-   sel:{},pgInv:1,pgTok:1,detId:"AR-20260909-0003",
+   sel:{},pgInv:1,pgTok:1,detId:"AR-20260909-0003",tokDetId:"",tkSeq:900,logoOn:true,backTokDet:false,
    focusId:"",backTok:false,backInv:false,busy:false,result:null};
  },
  onBoot:function(s){S=s;},
@@ -1911,11 +2158,13 @@ CF.define({
   if(S.page===DET)return [[t("invTitle"),INV,""]];
   if(S.page===FXH)return [[t("fxTitle"),FX,""]];
   if(S.page===TOK)return [[t("navTokenManagement"),TOK,""]];
+  if(S.page===TDET)return [[t("navTokenManagement"),TOK,""],[t("tokTitle"),TOK,""]];
   return [];
  },
  crumbCur:function(){
   if(S.page===DET)return t("detTitle")+" · "+S.detId;
   if(S.page===FXH)return t("fxhTitle")+" · "+(S.fxCur||"CNY");
+  if(S.page===TDET){var a0=byId(S.tokDetId);return t("tokDetTitle")+(a0&&a0.tkNo?" · "+a0.tkNo:"");}
   return null;
  },
  prd:PRD,
@@ -1926,12 +2175,18 @@ CF.define({
   if(S.page===FX)return pageFx();
   if(S.page===FXH)return pageFxh();
   if(S.page===TOK)return pageTok();
+  if(S.page===TDET)return pageTokDet();
   return "";
  },
  modals:{retry1:modalRetry1,retryN:modalRetryN,query:modalQuery,fxForm:modalFxForm,
          fxToggle:modalFxToggle,fxDel:modalFxDel,fxLocked:modalFxLocked},
  drawers:{result:drawerResult},
  modalLocked:function(m){return !!(S.busy&&m);},
+ onSetState:function(k){
+  /* 本期只有一个合约，因此只有一个 logo：有 logo 与缺 logo 两种形态不可能同时
+     出现在数据里（9.11）。用页面状态切换来展示首字母块兜底，而不是伪造第二个合约。 */
+  S.logoOn=(k!=="nologo");
+ },
  onGo:function(page){
   /* 勾选不随导航清空：这样「勾好 → 去配汇率 → 补扫已接管 → 回来批量重试」
      能真实走出「被跳过：该资产已有在途交易」这一分支。 */
@@ -1964,10 +2219,17 @@ CF.define({
    if(!on)fails.forEach(function(r){S.sel[r.srcId]=true;});
    CF.render();return true;}
   if(a==="ti-unfocus"){S.focusId="";CF.render();CF.syncURL();return true;}
-  if(a==="ti-backtok"){S.focusId="";S.backTok=false;CF.go(TOK);return true;}
+  if(a==="ti-backtok"){
+   var toDet=S.backTokDet;S.focusId="";S.backTok=false;S.backTokDet=false;
+   CF.go(toDet?TDET:TOK);return true;}
   if(a==="ti-backinv"){S.backInv=false;CF.go(INV);return true;}
   /* T-02 / AC-TI-56：按来源资产 ID 深链并精确定位到该行，不是跳到列表首页 */
-  if(a==="ti-goasset"){S.focusId=v;S.backTok=true;S.invF=emptyInvF();S.pgInv=1;CF.go(INV);return true;}
+  if(a==="ti-goasset"){S.focusId=v;S.backTok=true;S.backTokDet=false;S.invF=emptyInvF();S.pgInv=1;CF.go(INV);return true;}
+  if(a==="ti-tokdet"){S.tokDetId=v;CF.go(TDET);return true;}
+  if(a==="ti-backtokdet"){CF.go(TOK);return true;}
+  /* 从代币详情跳资产侧：返回时逐层退回（资产清单 → 代币详情 → 代币清单），
+     每一层都保留状态，代币清单的筛选与分页必须保住（AC-TI-67 / T-03 / T-06）。 */
+  if(a==="ti-tokgoasset"){S.focusId=v;S.backTok=true;S.backTokDet=true;S.invF=emptyInvF();S.pgInv=1;CF.go(INV);return true;}
   /* L-02 / AC-FX-13：带币种深链进汇率管理，币种预填不可改，保存后可返回并保留筛选与分页 */
   if(a==="ti-gofx"){S.fxCur=v;S.backInv=true;CF.go(FX);fxFormOpen(v,"",true);CF.render();return true;}
   if(a==="ti-fxblocked"){
@@ -2016,7 +2278,7 @@ CF.define({
  },
  afterRender:function(){
   document.documentElement.lang=S.lang==="en"?"en":"zh-CN";
-  document.title=(S.page===FX||S.page===FXH?t("fxTitle"):S.page===TOK?t("tokTitle"):t("invTitle"))+" · "+L("Financial Services","金融服务平台");
+  document.title=(S.page===FX||S.page===FXH?t("fxTitle"):S.page===TDET?t("tokDetTitle"):S.page===TOK?t("tokTitle"):t("invTitle"))+" · "+L("Financial Services","金融服务平台");
   var ctx=document.getElementById("tiContext");
   if(ctx)ctx.textContent=L("Operations","运营端")+" · "+L("Asset inventory & token issuance","资产清单与代币签发");
   /* 精确定位：命中行滚进首屏（AC-TI-56 / 16 章「深链定位须在目标页首屏内完成」） */

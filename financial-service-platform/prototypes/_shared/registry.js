@@ -51,7 +51,9 @@
        汇率管理、代币管理、协议管理同处一根侧栏——PRD 5.1 的菜单树要求如此。
        不要据此把它们当成 WS-318 新增的页面编号，也不要拿来和资产平台那份对账判成撞号。
     ② 本模块本期新增的页面编号恰好三个：P-O-TI-01 / P-O-FX-01 / P-O-FX-02（AC-TI-53）。
-    ③ P-O-TI-01 挂在代币管理菜单下、与 P-O-TC-01 平级，且是只读视图（AC-TI-54 / AC-TI-58）。 */
+    ③ P-O-TI-01 与其下的 P-O-TI-02 都挂在代币管理菜单下、与 P-O-TC-01 平级，
+       且都是只读视图（AC-TI-54 / AC-TI-58）。代币详情只在侧栏体现为代币清单的下级，
+       不单独占一个侧栏条目——它的唯一入口是代币清单某行的「查看代币详情」。 */
  CF.MODULES['token-issuance']={dir:'资产清单与代币签发',file:'v1.0-资产清单与代币签发-原型.html',
    name:['Asset inventory & token issuance','资产清单与代币签发']};
  Object.assign(CF.PAGES,{
@@ -62,9 +64,10 @@
     crumb:['FX rates','汇率管理'],name:['FX rates','汇率管理']},
   'P-O-FX-02':{end:'admin',layout:'app',nav:'P-O-FX-01',name:['FX rate history','汇率历史版本']},
   'P-O-TI-01':{end:'admin',layout:'app',nav:'P-O-TI-01',navKey:'navTokenList',
-    crumb:['Token list','代币清单'],name:['Token list','代币清单']}
+    crumb:['Token list','代币清单'],name:['Token list','代币清单']},
+  'P-O-TI-02':{end:'admin',layout:'app',nav:'P-O-TI-01',name:['Token details','代币详情']}
  });
- ['P-O-DS-01','P-O-DS-02','P-O-FX-01','P-O-FX-02','P-O-TI-01'].forEach(function(id){
+ ['P-O-DS-01','P-O-DS-02','P-O-FX-01','P-O-FX-02','P-O-TI-01','P-O-TI-02'].forEach(function(id){
    CF.OWNER[id]='token-issuance';
  });
  CF.ENTRY['P-O-DS-01']='#/ops/asset-inventory';
@@ -72,5 +75,6 @@
  CF.ENTRY['P-O-FX-01']='#/ops/fx-rates';
  CF.ENTRY['P-O-FX-02']='#/ops/fx-rates/CNY/history';
  CF.ENTRY['P-O-TI-01']='#/ops/token-list';
+ CF.ENTRY['P-O-TI-02']='#/ops/token-list';
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});
