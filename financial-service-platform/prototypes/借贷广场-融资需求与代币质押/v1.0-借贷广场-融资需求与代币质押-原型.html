@@ -1,0 +1,2753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>金融服务端 · 借贷广场 — 融资需求与代币质押（原型）</title>
+<!--
+  WS-324 借贷广场 · 融资需求与代币质押 — 一体化原型
+  PRD 基线：v1.0-借贷广场-融资需求与代币质押-PRD.md V5.0 + 01-对外契约与数据字典.md V5.0
+  形态：console（金融服务端 · 面客）。单文件，双击即开，无网络依赖。
+  本文件由 src/ 下的分层源码内联生成（见 build.sh），不要直接手改本文件。
+  后续模块 WS-325～WS-329 在 60-pages.js 末尾的「模块注册区」追加页面即可。
+-->
+<style>
+/* ============================================================
+   1. tokens —— 所有颜色与字体只走命名 token，页面内不写裸色值
+   ============================================================ */
+:root{
+  /* 纸面与墨色 */
+  --paper:#F3F5F9;
+  --card:#FFFFFF;
+  --sunken:#F7F9FC;
+  --sunken-2:#EFF3F9;
+  --line:#E3E8F0;
+  --line-strong:#CDD6E3;
+  --ink:#0E1725;
+  --ink-2:#4C5768;
+  --ink-3:#7D8899;
+  --ink-inv:#FFFFFF;
+
+  /* 主色（界面动作） */
+  --accent:#1F53C4;
+  --accent-hover:#1A46A8;
+  --accent-wash:#EEF3FD;
+  --accent-line:#C2D4F5;
+
+  /* 状态色：保留色，永不充当数据系列 */
+  --st-good:#0C7A43;    --st-good-wash:#EAF6EF;   --st-good-line:#BFE3CE;
+  --st-warn:#8F5400;    --st-warn-wash:#FCF3E3;   --st-warn-line:#EBD5A9;
+  --st-crit:#AE2F2A;    --st-crit-wash:#FBEDEC;   --st-crit-line:#EEC6C3;
+  --st-mute:#59657A;    --st-mute-wash:#EDF0F5;   --st-mute-line:#D6DCE6;
+
+  /* 数据系列色：经 dataviz validator 校验（light / surface #FFFFFF / --pairs all 全通过） */
+  --s1:#2a78d6;  --s1-fill:rgba(42,120,214,.16);   /* 有效质押价值 · 融资上限 */
+  --s2:#eb6834;  --s2-fill:rgba(235,104,52,.20);   /* 项目融资余额 */
+  --s3:#1baf7a;  --s3-fill:rgba(27,175,122,.20);   /* 项目在途金额 */
+  --s-void:#8D99A9; --s-void-fill:rgba(141,153,169,.18); /* 失效代币：中性灰＋斜纹，非系列色 */
+  --s-free:#93B4E4;                                 /* 可融金额（额度尺空段） */
+
+  /* 图表底盘 */
+  --grid:#EBEEF3;
+  --axis:#C8CFDA;
+  --axis-ink:#7D8899;
+
+  /* 字体 */
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --num:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+
+  /* 形制 */
+  --r-s:6px; --r:10px; --r-l:14px;
+  --shadow:0 1px 2px rgba(14,23,37,.05),0 1px 3px rgba(14,23,37,.05);
+  --shadow-pop:0 16px 40px rgba(14,23,37,.16),0 2px 8px rgba(14,23,37,.08);
+  --maxw:1440px;
+  --ease:cubic-bezier(.2,.7,.3,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  padding-bottom:52px;
+}
+.num,.n{font-family:var(--num);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+button,input,select{font:inherit;color:inherit}
+table{border-collapse:collapse;width:100%}
+a{color:var(--accent);text-decoration:none}
+
+/* 焦点环：≥3:1，立刻出现，永不参与动效 */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+
+/* ============================================================
+   2. 壳层：顶栏 · 导航 · 内容区
+   ============================================================ */
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+
+.appbar{
+  position:sticky;top:0;z-index:40;background:var(--card);
+  border-bottom:1px solid var(--line);
+}
+.appbar .wrap{display:flex;align-items:center;gap:28px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;background:none;border:0;padding:0}
+.brand .mk{
+  width:28px;height:28px;border-radius:8px;background:var(--accent);color:var(--ink-inv);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none;
+}
+.brand .nm{font-weight:650;font-size:15px;letter-spacing:-.01em;white-space:nowrap}
+.brand .nm i{font-style:normal;color:var(--ink-3);font-weight:400;margin-left:7px;font-size:12.5px}
+
+.mainnav{display:flex;gap:2px;flex:1;min-width:0}
+.mainnav button{
+  background:none;border:0;padding:7px 13px;border-radius:var(--r-s);cursor:pointer;
+  color:var(--ink-2);font-size:14px;white-space:nowrap;transition:background .15s var(--ease),color .15s var(--ease);
+}
+.mainnav button:hover{background:var(--sunken-2);color:var(--ink)}
+.mainnav button[aria-current="page"]{background:var(--accent-wash);color:var(--accent);font-weight:600}
+
+.who{display:flex;align-items:center;gap:10px;flex:none}
+.who .id{text-align:right;line-height:1.25}
+.who .id b{display:block;font-size:13px;font-weight:600}
+.who .id span{display:block;font-size:11.5px;color:var(--ink-3)}
+.who .av{
+  width:32px;height:32px;border-radius:50%;background:var(--sunken-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink-2);font-weight:600;flex:none;
+}
+
+main{padding:26px 0 44px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:18px}
+.page-head h1{font-size:22px;font-weight:650;letter-spacing:-.02em;line-height:1.3}
+.page-head .sub{color:var(--ink-2);font-size:13px;margin-top:5px}
+.crumb{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-3);margin-bottom:12px}
+.crumb button{background:none;border:0;padding:0;color:var(--ink-2);cursor:pointer;font-size:12.5px}
+.crumb button:hover{color:var(--accent);text-decoration:underline}
+.crumb i{font-style:normal;color:var(--line-strong)}
+
+/* ============================================================
+   3. 基础件：卡片 · 按钮 · 徽标 · 键值 · 表格
+   ============================================================ */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--shadow)}
+.card + .card{margin-top:16px}
+.card > .ch{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:15px 20px;border-bottom:1px solid var(--line);
+}
+.card > .ch h2{font-size:15px;font-weight:650;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+.card > .ch .lvl{
+  font-family:var(--num);font-size:10.5px;font-weight:700;color:var(--ink-3);
+  background:var(--sunken-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px;letter-spacing:.04em;
+}
+.card > .ch p{font-size:12.5px;color:var(--ink-3);margin-top:3px;font-weight:400}
+.cb{padding:20px}
+.cb.tight{padding:0}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:36px;padding:0 15px;border-radius:var(--r-s);border:1px solid var(--line-strong);
+  background:var(--card);color:var(--ink);cursor:pointer;font-size:13.5px;font-weight:500;
+  transition:background .15s var(--ease),border-color .15s var(--ease);white-space:nowrap;
+}
+.btn:hover:not(:disabled){background:var(--sunken-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--ink-inv);font-weight:600}
+.btn.primary:hover:not(:disabled){background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn.sm{height:30px;padding:0 11px;font-size:12.5px}
+.btn.lg{height:42px;padding:0 22px;font-size:14.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.block{width:100%}
+.btn.danger{color:var(--st-crit);border-color:var(--st-crit-line)}
+.btn.danger:hover:not(:disabled){background:var(--st-crit-wash)}
+.btn.link{border:0;background:none;height:auto;padding:0;color:var(--accent);font-size:13px}
+.btn.link:hover{text-decoration:underline;background:none}
+
+/* ⊘ 可见不可点：保留可聚焦，带原因 */
+.btn.blocked{
+  color:var(--ink-3);background:var(--sunken);border-color:var(--line);
+  border-style:dashed;cursor:not-allowed;font-weight:500;
+}
+.btn.blocked:hover{background:var(--sunken)}
+.btn.blocked .sig{color:var(--ink-3);font-size:14px;line-height:1}
+.why{
+  display:flex;align-items:flex-start;gap:7px;margin-top:8px;
+  font-size:12.5px;color:var(--ink-2);line-height:1.5;
+}
+.why .sig{color:var(--ink-3);flex:none;line-height:1.45}
+
+.tag{
+  display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:5px;
+  font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap;
+}
+.tag .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag.good{color:var(--st-good);background:var(--st-good-wash);border-color:var(--st-good-line)}
+.tag.warn{color:var(--st-warn);background:var(--st-warn-wash);border-color:var(--st-warn-line)}
+.tag.crit{color:var(--st-crit);background:var(--st-crit-wash);border-color:var(--st-crit-line)}
+.tag.mute{color:var(--st-mute);background:var(--st-mute-wash);border-color:var(--st-mute-line)}
+.tag.info{color:var(--accent);background:var(--accent-wash);border-color:var(--accent-line)}
+.tag.plain{color:var(--ink-2);background:var(--card);border-color:var(--line-strong)}
+
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.kv > div{background:var(--card);padding:13px 16px}
+.kv .k{font-size:12.5px;color:var(--ink-3);display:flex;align-items:center;gap:5px}
+.kv .v{font-size:15px;font-weight:600;margin-top:4px;font-family:var(--num);font-variant-numeric:tabular-nums}
+.kv .v.txt{font-family:var(--sans);font-weight:550;font-size:14px}
+.kv .x{font-size:11.5px;color:var(--ink-3);margin-top:3px;font-family:var(--sans)}
+.kv.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kv.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+table.dt{font-size:13px}
+table.dt th{
+  text-align:left;font-weight:500;color:var(--ink-3);font-size:12.5px;
+  padding:0 14px;height:40px;background:var(--sunken);border-bottom:1px solid var(--line);white-space:nowrap;
+}
+table.dt td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.dt tbody tr:last-child td{border-bottom:0}
+table.dt tbody tr:hover{background:var(--sunken)}
+table.dt td.n,table.dt th.n{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.dt th.n{font-family:var(--sans)}
+table.dt .sel{width:40px}
+table.dt tr.picked td{background:var(--accent-wash)}
+table.dt tr.picked:hover td{background:var(--accent-wash)}
+.tscroll{overflow-x:auto}
+
+input[type=text],input[type=number],select{
+  height:38px;padding:0 12px;border:1px solid var(--line-strong);border-radius:var(--r-s);
+  background:var(--card);width:100%;transition:border-color .15s var(--ease);
+}
+input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--accent)}
+input.bad{border-color:var(--st-crit)}
+input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
+label.fl{display:block;font-size:13px;color:var(--ink-2);margin-bottom:6px}
+label.fl b{color:var(--st-crit);font-weight:400}
+.hint{font-size:12px;color:var(--ink-3);margin-top:6px}
+.err{font-size:12.5px;color:var(--st-crit);margin-top:6px;display:flex;gap:6px;align-items:flex-start}
+
+/* 提示条 */
+.note{
+  display:flex;gap:11px;padding:13px 15px;border-radius:var(--r);
+  border:1px solid var(--line);background:var(--sunken);font-size:13px;line-height:1.6;
+}
+.note .ic{flex:none;font-family:var(--num);font-size:12px;font-weight:700;margin-top:1px}
+.note b{font-weight:650}
+.note.good{background:var(--st-good-wash);border-color:var(--st-good-line);color:var(--st-good)}
+.note.warn{background:var(--st-warn-wash);border-color:var(--st-warn-line);color:var(--st-warn)}
+.note.crit{background:var(--st-crit-wash);border-color:var(--st-crit-line);color:var(--st-crit)}
+.note.info{background:var(--accent-wash);border-color:var(--accent-line);color:var(--accent)}
+.note .bd{min-width:0}
+.note .bd p{margin-top:4px;color:inherit;opacity:.92}
+.note .act{margin-left:auto;flex:none;align-self:center}
+
+/* ============================================================
+   4. 招牌件 A：三数等式（AC-LS-53 —— ①×②=③ 在页面上可验算）
+   ============================================================ */
+.trio{
+  display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:0;
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--card);
+}
+.trio .cell{padding:16px 18px;background:var(--card);min-width:0}
+.trio .op{
+  display:flex;align-items:center;justify-content:center;width:44px;
+  background:var(--sunken);border-left:1px solid var(--line);border-right:1px solid var(--line);
+  font-family:var(--num);font-size:17px;color:var(--ink-3);font-weight:600;
+}
+.trio .idx{
+  font-family:var(--num);font-size:10.5px;font-weight:700;color:var(--ink-3);letter-spacing:.06em;
+}
+.trio .lb{font-size:13px;color:var(--ink-2);margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.trio .amt{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:26px;font-weight:650;letter-spacing:-.03em;margin-top:6px;line-height:1.15}
+.trio .cell.out{background:var(--accent-wash)}
+.trio .cell.out .amt{color:var(--accent)}
+/* 质押率：纯文本，不可编辑，不带任何焦点态（AC-LS-56 / D-MC-110 / D-MC-111） */
+.trio .rate{
+  font-family:var(--num);font-size:26px;font-weight:650;margin-top:6px;letter-spacing:-.03em;
+  user-select:text;line-height:1.15;
+}
+.trio .fixed{font-size:12px;color:var(--ink-3);margin-top:5px;font-family:var(--sans)}
+.trio-sub{
+  font-size:12.5px;color:var(--ink-2);margin-top:10px;padding:9px 13px;
+  background:var(--sunken);border:1px solid var(--line);border-radius:var(--r-s);
+}
+.trio-sub .n{font-weight:600;color:var(--ink)}
+
+/* ============================================================
+   5. 招牌件 B：额度尺（融资上限 / 余额 / 在途 / 可融 / 担保缺口）
+   ============================================================ */
+.meter{margin-top:2px}
+.meter .mwrap{position:relative;padding-top:18px}
+.meter .track{
+  position:relative;height:26px;border-radius:var(--r-s);background:var(--sunken);
+  border:1px solid var(--line);display:flex;overflow:hidden;
+}
+.meter .seg{height:100%;position:relative}
+.meter .seg + .seg{border-left:2px solid var(--card)}
+.meter .seg.bal{background:var(--s2-fill);box-shadow:inset 0 0 0 1px var(--s2)}
+.meter .seg.fly{background:var(--s3-fill);box-shadow:inset 0 0 0 1px var(--s3)}
+.meter .seg.free{background:rgba(42,120,214,.10);box-shadow:inset 0 0 0 1px var(--s-free)}
+.meter .seg.gap{background:var(--st-crit-wash);background-image:repeating-linear-gradient(135deg,transparent 0 5px,var(--st-crit-line) 5px 7px);box-shadow:inset 0 0 0 1px var(--st-crit)}
+.meter .mwrap > .capline{
+  position:absolute;top:13px;bottom:-5px;width:2px;background:var(--s1);border-radius:2px;z-index:2;
+}
+.meter .mwrap > .caplb{
+  position:absolute;top:0;white-space:nowrap;font-size:11px;color:var(--s1);font-weight:650;line-height:1.3;
+}
+.meter .legend{display:flex;flex-wrap:wrap;gap:5px 18px;margin-top:11px;font-size:12.5px;color:var(--ink-2)}
+.meter .legend span{display:inline-flex;align-items:center;gap:6px}
+.meter .legend i{width:11px;height:11px;border-radius:3px;flex:none;font-style:normal}
+.meter .legend i.bal{background:var(--s2-fill);box-shadow:inset 0 0 0 1px var(--s2)}
+.meter .legend i.fly{background:var(--s3-fill);box-shadow:inset 0 0 0 1px var(--s3)}
+.meter .legend i.free{background:rgba(42,120,214,.10);box-shadow:inset 0 0 0 1px var(--s-free)}
+.meter .legend i.gap{background:var(--st-crit-wash);box-shadow:inset 0 0 0 1px var(--st-crit)}
+.meter .legend i.cap{width:2px;height:13px;border-radius:1px;background:var(--s1)}
+.meter .legend b{font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
+.meter.mini .mwrap{padding-top:0}
+.meter.mini .mwrap > .capline{top:-4px;bottom:-4px}
+.meter.mini .track{height:16px}
+
+.meter.mini .legend{margin-top:8px;font-size:11.5px;gap:4px 13px}
+
+/* 担保档位三档条 */
+.grades{display:flex;gap:8px;margin-top:14px}
+.grades .g{
+  flex:1;padding:10px 12px;border-radius:var(--r-s);border:1px solid var(--line);
+  background:var(--sunken);font-size:12.5px;color:var(--ink-3);line-height:1.45;
+}
+.grades .g b{display:block;font-size:13px;color:var(--ink-2);font-weight:600;margin-bottom:3px}
+.grades .g.on{background:var(--card);border-color:var(--ink-2);box-shadow:0 0 0 1px var(--ink-2)}
+.grades .g.on b{color:var(--ink)}
+.grades .g.on.crit{border-color:var(--st-crit);box-shadow:0 0 0 1px var(--st-crit);background:var(--st-crit-wash)}
+.grades .g.on.crit b{color:var(--st-crit)}
+.grades .g.on.warn{border-color:var(--st-warn);box-shadow:0 0 0 1px var(--st-warn);background:var(--st-warn-wash)}
+.grades .g.on.warn b{color:var(--st-warn)}
+.grades .g.on.good{border-color:var(--st-good);box-shadow:0 0 0 1px var(--st-good);background:var(--st-good-wash)}
+.grades .g.on.good b{color:var(--st-good)}
+
+/* ============================================================
+   6. P-LS-01 广场卡片
+   ============================================================ */
+.filters{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;
+  padding:14px 18px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
+  box-shadow:var(--shadow);margin-bottom:16px;
+}
+.filters .f{min-width:132px}
+.filters .f > span{display:block;font-size:11.5px;color:var(--ink-3);margin-bottom:5px}
+.filters .f select{height:34px;font-size:13px}
+.filters .spacer{flex:1}
+.filters .rs{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-3);padding-bottom:7px}
+
+.plist{display:flex;flex-direction:column;gap:14px}
+.pcard{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--shadow);
+  overflow:hidden;transition:border-color .15s var(--ease),box-shadow .15s var(--ease);
+}
+.pcard:hover{border-color:var(--line-strong);box-shadow:0 2px 6px rgba(14,23,37,.07)}
+.pcard .top{display:flex;gap:0;align-items:stretch}
+.pcard .pool{flex:1;padding:17px 20px;min-width:0;border-right:1px solid var(--line);background:var(--sunken)}
+.pcard .fin{flex:1.35;padding:17px 20px;min-width:0}
+.pcard .zn{font-size:11px;color:var(--ink-3);letter-spacing:.06em;font-weight:650;margin-bottom:11px}
+.pcard h3{font-size:16px;font-weight:650;letter-spacing:-.01em;line-height:1.35;margin-bottom:3px}
+.pcard h3 button{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.pcard h3 button:hover{color:var(--accent)}
+.pcard .org{font-size:12.5px;color:var(--ink-3);margin-bottom:11px}
+.pcard .org .id{font-family:var(--num);font-size:11.5px}
+.pcard .facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px}
+.pcard .facts .k{font-size:11.5px;color:var(--ink-3)}
+.pcard .facts .v{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:14.5px;font-weight:600;margin-top:2px}
+.pcard .facts .v.txt{font-family:var(--sans);font-size:13.5px;font-weight:550}
+.pcard .demand{display:flex;align-items:baseline;gap:9px;margin-bottom:12px;flex-wrap:wrap}
+.pcard .demand .big{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:26px;font-weight:650;letter-spacing:-.03em}
+.pcard .demand .lb{font-size:12.5px;color:var(--ink-3)}
+.pcard .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pcard .bot{
+  display:flex;align-items:center;gap:20px;padding:13px 20px;border-top:1px solid var(--line);background:var(--card);
+}
+.pcard .bot .m{flex:1;min-width:0}
+.pcard .bot .act{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:0}
+.pcard .bot .act .why{max-width:290px;text-align:left;margin-top:7px}
+
+.pager{display:flex;align-items:center;justify-content:space-between;margin-top:18px;font-size:13px;color:var(--ink-3)}
+.pager .pg{display:flex;gap:6px}
+
+/* 骨架 / 空 / 失败 */
+.sk{background:linear-gradient(90deg,var(--sunken-2) 25%,var(--sunken) 37%,var(--sunken-2) 63%);background-size:400% 100%;animation:shim 1.3s linear infinite;border-radius:5px}
+@keyframes shim{0%{background-position:100% 0}100%{background-position:0 0}}
+.blank{text-align:center;padding:64px 24px}
+.blank .ic{font-size:26px;color:var(--ink-3);font-family:var(--num);margin-bottom:12px}
+.blank h3{font-size:16px;font-weight:600;margin-bottom:6px}
+.blank p{color:var(--ink-2);font-size:13.5px;max-width:440px;margin:0 auto 16px}
+
+/* ============================================================
+   7. P-LS-02 详情
+   ============================================================ */
+.hero{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
+  box-shadow:var(--shadow);padding:22px 24px;margin-bottom:16px;
+}
+.hero .l1{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.hero h1{font-size:24px;font-weight:650;letter-spacing:-.02em;line-height:1.28}
+.hero .meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:9px;font-size:12.5px;color:var(--ink-3)}
+.hero .meta b{color:var(--ink-2);font-weight:500}
+.hero .meta .n{color:var(--ink-2)}
+.hero .demand{text-align:right;flex:none}
+.hero .demand .lb{font-size:12.5px;color:var(--ink-3)}
+.hero .demand .big{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:34px;font-weight:680;letter-spacing:-.035em;line-height:1.1;margin-top:3px}
+.hero .demand .ccy{font-size:14px;color:var(--ink-3);font-weight:500;margin-left:5px}
+.hero .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+
+.sec-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.rail{position:sticky;top:76px;display:flex;flex-direction:column;gap:16px}
+.rail .card{margin-top:0}
+
+.tl{position:relative;padding-left:22px}
+.tl .it{position:relative;padding:0 0 18px 0}
+.tl .it:last-child{padding-bottom:0}
+.tl .it::before{content:"";position:absolute;left:-22px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--card);border:2px solid var(--line-strong)}
+.tl .it::after{content:"";position:absolute;left:-18px;top:16px;bottom:-2px;width:1px;background:var(--line)}
+.tl .it:last-child::after{display:none}
+.tl .it.on::before{border-color:var(--accent);background:var(--accent)}
+.tl .d{font-family:var(--num);font-size:11.5px;color:var(--ink-3)}
+.tl .t{font-size:13.5px;font-weight:550;margin-top:2px}
+.tl .x{font-size:12.5px;color:var(--ink-2);margin-top:3px}
+
+/* ============================================================
+   8. 图表
+   ============================================================ */
+.chartbox{padding:4px 0 0}
+.chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:2px;padding:0 20px}
+.chart-head h3{font-size:14px;font-weight:650}
+.chart-head p{font-size:12.5px;color:var(--ink-3);margin-top:3px;max-width:640px;line-height:1.5}
+.chart-legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 20px;margin:10px 0 2px;font-size:12.5px;color:var(--ink-2)}
+.chart-legend span{display:inline-flex;align-items:center;gap:7px}
+.chart-legend i{width:12px;height:12px;border-radius:3px;flex:none;font-style:normal}
+.chart-legend i.l{height:3px;border-radius:2px;width:16px}
+.chart-legend i.dash{height:0;width:16px;border-radius:0;border-top:2px dashed var(--s-void);background:none}
+.chart-legend i.s1{background:var(--s1-fill);box-shadow:inset 0 0 0 1px var(--s1)}
+.chart-legend i.s1l{background:var(--s1)}
+.chart-legend i.s2{background:var(--s2-fill);box-shadow:inset 0 0 0 1px var(--s2)}
+.chart-legend i.s3{background:var(--s3-fill);box-shadow:inset 0 0 0 1px var(--s3)}
+.chart-legend i.void{background:var(--s-void-fill);box-shadow:inset 0 0 0 1px var(--s-void)}
+.chart-legend i.gap{background:var(--st-crit-wash);box-shadow:inset 0 0 0 1px var(--st-crit)}
+.chart-svg{display:block;width:100%}
+.chart-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 20px 0;border-top:1px solid var(--line);margin-top:6px}
+.chart-foot .rd{font-size:12.5px;color:var(--ink-2);line-height:1.5;max-width:760px}
+.chart-tip{
+  position:absolute;pointer-events:none;z-index:30;background:var(--card);border:1px solid var(--line-strong);
+  border-radius:var(--r-s);box-shadow:var(--shadow-pop);padding:9px 11px;font-size:12.5px;min-width:196px;
+  opacity:0;transition:opacity .1s var(--ease);
+}
+.chart-tip.on{opacity:1}
+.chart-tip .dt{font-family:var(--num);font-size:11.5px;color:var(--ink-3);margin-bottom:6px}
+.chart-tip .r{display:flex;align-items:center;gap:8px;justify-content:space-between;line-height:1.8}
+.chart-tip .r .lf{display:inline-flex;align-items:center;gap:7px;color:var(--ink-2)}
+.chart-tip .r i{width:9px;height:9px;border-radius:2px;flex:none;font-style:normal}
+.chart-tip .r b{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:600}
+.chart-tip .ev{margin-top:7px;padding-top:7px;border-top:1px solid var(--line);color:var(--ink-2);font-size:12px;line-height:1.5}
+.chart-wrap{position:relative}
+.chart-table{padding:0 20px 4px}
+.chart-table table.dt th,.chart-table table.dt td{font-size:12px;padding:7px 10px;height:auto}
+
+/* ============================================================
+   9. P-LS-03 两步进度条与流程
+   ============================================================ */
+.steps{
+  display:flex;align-items:stretch;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r-l);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;
+}
+.steps .st{
+  flex:1;display:flex;align-items:center;gap:12px;padding:15px 20px;background:var(--card);
+  border:0;text-align:left;cursor:default;color:var(--ink-3);position:relative;
+}
+.steps .st.clickable{cursor:pointer}
+.steps .st.clickable:hover{background:var(--sunken)}
+.steps .st + .st{border-left:1px solid var(--line)}
+.steps .st .no{
+  width:26px;height:26px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  font-family:var(--num);font-size:12px;font-weight:700;border:1.5px solid var(--line-strong);background:var(--card);
+}
+.steps .st .tx b{display:block;font-size:14px;font-weight:600;color:var(--ink-3)}
+.steps .st .tx span{display:block;font-size:12px;margin-top:2px}
+.steps .st.done .no{background:var(--st-good);border-color:var(--st-good);color:var(--ink-inv)}
+.steps .st.done .tx b{color:var(--ink-2)}
+.steps .st.now{background:var(--accent-wash)}
+.steps .st.now .no{background:var(--accent);border-color:var(--accent);color:var(--ink-inv)}
+.steps .st.now .tx b{color:var(--accent)}
+.steps .st.now .tx span{color:var(--accent)}
+.steps .st .sv{margin-left:auto;flex:none;font-size:12px;text-align:right;line-height:1.45}
+
+.two{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.pick-sum{
+  display:flex;align-items:center;gap:18px;padding:12px 16px;background:var(--accent-wash);
+  border:1px solid var(--accent-line);border-radius:var(--r);font-size:13px;flex-wrap:wrap;
+}
+.pick-sum .n{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:650;font-size:15px}
+.pick-sum .sp{width:1px;height:22px;background:var(--accent-line)}
+
+.sub-h{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:11px 16px;background:var(--sunken);border:1px solid var(--line);border-radius:var(--r) var(--r) 0 0;
+  font-size:13px;font-weight:600;flex-wrap:wrap;
+}
+.sub-h .x{font-weight:400;color:var(--ink-3);font-size:12.5px}
+.sub-b{border:1px solid var(--line);border-top:0;border-radius:0 0 var(--r) var(--r);overflow:hidden}
+.sub-b table.dt th{background:var(--card)}
+
+.cost{border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.cost .row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 15px;font-size:13px;border-bottom:1px solid var(--line)}
+.cost .row:last-of-type{border-bottom:0}
+.cost .row .k{color:var(--ink-2)}
+.cost .row .v{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:600}
+.cost .row .v.txt{font-family:var(--sans);font-weight:550}
+.cost .foot{padding:11px 15px;background:var(--sunken);border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-2);line-height:1.6}
+
+/* ============================================================
+   10. 弹层 · SDK 唤起 · Toast
+   ============================================================ */
+.scrim{
+  position:fixed;inset:0;background:rgba(14,23,37,.44);z-index:60;
+  display:none;align-items:center;justify-content:center;padding:28px;
+}
+.scrim.on{display:flex}
+.modal{
+  background:var(--card);border-radius:var(--r-l);box-shadow:var(--shadow-pop);
+  width:100%;max-width:520px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;
+}
+.modal.wide{max-width:640px}
+.modal .mh{padding:18px 22px 14px;border-bottom:1px solid var(--line)}
+.modal .mh h2{font-size:16px;font-weight:650}
+.modal .mh p{font-size:12.5px;color:var(--ink-3);margin-top:4px}
+.modal .mb{padding:20px 22px;overflow-y:auto}
+.modal .mf{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--sunken);flex-wrap:wrap}
+.modal .mf .left{margin-right:auto}
+
+/* 外部签名 SDK：明确标注为第三方界面，不是平台自建钱包组件 */
+.sdk{
+  background:var(--ink);color:var(--ink-inv);border-radius:var(--r-l);box-shadow:var(--shadow-pop);
+  width:100%;max-width:400px;overflow:hidden;
+}
+.sdk .sh{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.14);display:flex;align-items:center;gap:10px}
+.sdk .sh .mk{width:24px;height:24px;border-radius:6px;background:var(--ink-inv);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex:none}
+.sdk .sh b{font-size:13.5px;font-weight:600}
+.sdk .sh span{font-size:11px;color:var(--s-free);margin-left:auto}
+.sdk .sb{padding:18px}
+.sdk .sb .kk{display:flex;justify-content:space-between;gap:14px;font-size:12.5px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.sdk .sb .kk:last-child{border-bottom:0}
+.sdk .sb .kk span{color:var(--s-free)}
+.sdk .sb .kk b{font-family:var(--num);font-weight:600}
+.sdk .sf{padding:14px 18px;border-top:1px solid rgba(255,255,255,.14);display:flex;gap:10px}
+.sdk .sf .btn{flex:1;background:transparent;border-color:rgba(255,255,255,.3);color:var(--ink-inv)}
+.sdk .sf .btn:hover{background:rgba(255,255,255,.1)}
+.sdk .sf .btn.primary{background:var(--ink-inv);color:var(--ink);border-color:var(--ink-inv)}
+.sdk .sf .btn.primary:hover{background:var(--s-free)}
+.sdk .sim{padding:11px 18px;background:rgba(255,255,255,.06);border-top:1px solid rgba(255,255,255,.1);font-size:11.5px;color:var(--s-free)}
+.sdk .sim select{height:30px;font-size:12px;margin-top:7px;background:transparent;color:var(--ink-inv);border-color:rgba(255,255,255,.3)}
+.sdk .sim select option{color:var(--ink)}
+
+.spin{
+  width:15px;height:15px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);
+  animation:sp .7s linear infinite;flex:none;
+}
+.spin.inv{border-color:rgba(255,255,255,.3);border-top-color:var(--ink-inv)}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+#toast{position:fixed;left:50%;bottom:72px;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+#toast .t{
+  background:var(--ink);color:var(--ink-inv);padding:10px 16px;border-radius:var(--r-s);
+  font-size:13px;box-shadow:var(--shadow-pop);max-width:520px;
+}
+
+/* ============================================================
+   11. 原型演示条（角色 / 数据状态切换，非产品导航）
+   ============================================================ */
+.protobar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;height:44px;
+  background:var(--ink);color:var(--ink-inv);display:flex;align-items:center;gap:14px;
+  padding:0 20px;font-size:12.5px;
+}
+.protobar b.badge{
+  font-family:var(--num);font-size:10.5px;letter-spacing:.1em;font-weight:700;
+  border:1px solid rgba(255,255,255,.35);border-radius:4px;padding:2px 7px;flex:none;
+}
+.protobar .grp{display:flex;align-items:center;gap:8px}
+.protobar .grp > span{color:var(--s-free)}
+.protobar .sw{display:flex;background:rgba(255,255,255,.1);border-radius:var(--r-s);padding:2px}
+.protobar .sw button{
+  background:none;border:0;color:var(--s-free);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12.5px;
+}
+.protobar .sw button:hover{color:var(--ink-inv)}
+.protobar .sw button.on{background:var(--ink-inv);color:var(--ink);font-weight:600}
+.protobar .sp{width:1px;height:20px;background:rgba(255,255,255,.2)}
+.protobar .tail{margin-left:auto;color:var(--s-free);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.demo-flag{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--st-warn);
+  background:var(--st-warn-wash);border:1px solid var(--st-warn-line);border-radius:4px;padding:1px 6px;font-weight:600;
+}
+
+/* ============================================================
+   12. 宽度：1280 / 1440 / 1920
+   ============================================================ */
+@media (max-width:1439px){
+  .sec-grid{grid-template-columns:minmax(0,1fr) 296px}
+  .two{grid-template-columns:minmax(0,1fr) 316px}
+  .kv{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:1319px){
+  .wrap{padding:0 20px}
+  .sec-grid,.two{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static}
+  .pcard .top{flex-wrap:wrap}
+  .pcard .pool,.pcard .fin{flex:1 1 100%;border-right:0}
+  .pcard .pool{border-bottom:1px solid var(--line)}
+  .grades{flex-wrap:wrap}
+  .grades .g{flex:1 1 210px}
+}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="wrap">
+    <button class="brand" onclick="go('plaza')" aria-label="返回融资需求广场">
+      <span class="mk">链</span>
+      <span class="nm">跨境链融 · 金融服务端<i>借贷广场</i></span>
+    </button>
+    <nav class="mainnav" id="mainnav" aria-label="主导航"></nav>
+    <div class="who" id="who"></div>
+  </div>
+</header>
+
+<main><div class="wrap" id="view"></div></main>
+
+<div class="scrim" id="scrim" role="dialog" aria-modal="true"><div id="scrimBody"></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<div class="protobar">
+  <b class="badge">原型演示条</b>
+  <div class="grp">
+    <span>身份</span>
+    <div class="sw" id="swRole"></div>
+  </div>
+  <div class="sp"></div>
+  <div class="grp">
+    <span>数据状态</span>
+    <div class="sw" id="swFeed"></div>
+  </div>
+  <div class="sp"></div>
+  <span class="tail">全部业务数据为演示数据，企业名 / 编号 / 金额 / 哈希均为虚构，不代表任何真实主体或交易</span>
+</div>
+
+<script>
+/* ================================================================
+   20-data.js —— 常量与演示数据
+   全部业务数据为演示数据（虚构企业、编号、金额、哈希），
+   仅用于走通界面与交互，不代表任何真实主体或交易。
+   ================================================================ */
+
+/* ---- 口径常量（分册 7.3 枚举与常量） ---- */
+var PLEDGE_RATE   = 0.8;   /* 质押率：硬编码常量 80%，非配置项、非数据对象（D-MC-110 / D-MC-111 / AC-LS-56） */
+var TERM_YEARS    = 1;     /* 融资项目有效期：常量 1 年（D-FIN-37） */
+var CCY           = 'USD'; /* 记账本位币（D-FIN-13） */
+var CHAIN_TIMEOUT = 30;    /* 链上超时阈值：30 分钟（假设值，待开发按真实链况确认，D-FIN-70） */
+var PAGE_SIZE     = 20;    /* P-LS-01 单页 20 条 */
+var EXPIRY_NEAR   = [30, 7]; /* 到期提醒标记：到期前 30 天 / 7 天（AC-LS-03） */
+var TODAY         = '2026-09-11';
+var TZ_LABEL      = 'UTC+8'; /* 平台统一时区标注，口径引用 WS-308『01-国际化基线』 */
+
+/* ---- 状态枚举：一处定义，多处引用（AC-MC-14 / D-FIN-28） ---- */
+var FP_STATUS = {
+  'S-FP-1': { t:'草稿', x:'已建池 · 未发布', tone:'mute' },
+  'S-FP-2': { t:'募集中', x:'公开接受报价',   tone:'info' },
+  'S-FP-3': { t:'已锁定', x:'已有在途报价',   tone:'info' },
+  'S-FP-4': { t:'融资中', x:'存在未结清融资业务', tone:'info' },
+  'S-FP-5': { t:'已关闭', x:'质押已全部释放', tone:'mute' },
+  'S-FP-6': { t:'已结清', x:'质押已全部释放', tone:'mute' }
+};
+var CT_STATUS = {
+  'CT-0': { t:'未发起', tone:'mute' },
+  'CT-1': { t:'处理中', tone:'warn' },
+  'CT-2': { t:'成功',   tone:'good' },
+  'CT-3': { t:'失败',   tone:'crit' }
+};
+var PS_STATUS = {
+  'PS-1': '可质押',
+  'PS-2': '已质押',
+  'PS-4': '已释放'
+};
+/* 担保状态档位（主册 5.3.1）；PS-3 已作废，编号保留占位不复用 */
+var GRADES = [
+  { k:'normal',  t:'正常',            x:'INV-FIN-01 成立且可融金额 > 0', tone:'good' },
+  { k:'used-up', t:'额度用尽',        x:'已借部分担保足额，但不能再借；不预警', tone:'warn' },
+  { k:'short',   t:'担保不足预警',    x:'融资上限 < 项目融资余额', tone:'crit' }
+];
+
+/* ---- 链上失败与等待的五类文案（分册 6.7.2，D-FIN-69 / D-FIN-70） ---- */
+var CHAIN_OUTCOMES = {
+  ok:      { k:'ok',      t:'全部成功' },
+  partial: { k:'partial', t:'部分成功（按张独立结算 E-2）' },
+  offchain:{ k:'offchain',t:'未上链失败 · 未扣费',
+             head:'提交失败，本次未产生链上费用，可直接重试',
+             body:'原因：节点返回 nonce 校验失败，交易未广播到链上。',
+             fee:'本次未产生任何链上费用。', retry:'直接重试', tone:'crit' },
+  onchain: { k:'onchain', t:'已上链失败 · 已扣费',
+             head:'链上执行失败，本次 gas 已产生、不可退回',
+             body:'原因：质押合约执行被回退（代币已被其他有效质押占用）。',
+             fee:'本次 gas 已产生、不可退回；重试将发起一笔新交易并再次产生 gas。', retry:'重试（将产生新的 gas）', tone:'crit' },
+  timeout: { k:'timeout', t:'超时未决',
+             head:'等待链上结果超过 ' + CHAIN_TIMEOUT + ' 分钟，当前结果未知',
+             body:'请先查询链上状态，确认未上链后再重试——直接重试可能造成重复转移与重复扣费。',
+             fee:'是否已产生费用取决于交易是否已上链，需先查询确认。', retry:null, tone:'warn' },
+  cancel:  { k:'cancel',  t:'在外部 SDK 内取消签名',
+             head:'您取消了签名，本次未产生任何费用',
+             body:'已回到本页，未产生任何记录变更。',
+             fee:'本次未产生任何链上费用。', retry:'重新发起', tone:'mute' },
+  nogas:   { k:'nogas',   t:'gas 不足',
+             head:'钱包余额不足以支付本次链上费用',
+             body:'请充值后重试。本次交易未发出，未产生费用。',
+             fee:'本次未产生任何链上费用。', retry:'充值后重试', tone:'crit' }
+};
+
+/* ---- 身份（角色是同一份产物上的可切换视图） ---- */
+var ACTORS = {
+  guest: { k:'guest', t:'游客', full:'未登录访客', entity:null,  short:'游' },
+  asset: { k:'asset', t:'资产方', full:'晟远科技（演示）', entity:'E-ASSET-01', short:'晟' },
+  fund:  { k:'fund',  t:'资金方', full:'北岸融资租赁（演示）', entity:'E-FUND-07', short:'北' }
+};
+
+/* ---- 演示用买方企业与合同号池 ---- */
+var BUYERS = ['北方制造集团（演示）','东海重工（演示）','南岭电力设备（演示）','中垣建材（演示）','明泰家电（演示）','瑞和能源装备（演示）','恒盛供应链（演示）'];
+
+function seq(n){ var a=[],i; for(i=0;i<n;i++){a.push(i);} return a; }
+
+/* 把总额确定性地切成 n 张，金额落在 4 万～20 万之间，便于阅读 */
+function splitAmount(total, n, seed){
+  var w=[], i, s=0;
+  for(i=0;i<n;i++){ var x = 60 + ((seed*37 + i*53) % 90); w.push(x); s += x; }
+  var out=[], acc=0;
+  for(i=0;i<n-1;i++){ var v = Math.round(total*w[i]/s/1000)*1000; out.push(v); acc+=v; }
+  out.push(total-acc);
+  return out;
+}
+
+var tokenSeq = 0;
+function mkTokens(cfg){
+  /* cfg: {total, n, seed, voidTotal, voidN, due, ct} */
+  var amounts = splitAmount(cfg.total - (cfg.voidTotal||0), cfg.n - (cfg.voidN||0), cfg.seed);
+  var list = [], i;
+  for(i=0;i<amounts.length;i++){
+    tokenSeq++;
+    list.push({
+      id:'TI-2026-' + String(4100 + tokenSeq),
+      amt:amounts[i],
+      due:cfg.due[i % cfg.due.length],
+      buyer:BUYERS[(cfg.seed + i) % BUYERS.length],
+      contract:'HT-2026-' + String(700 + tokenSeq),
+      invoice:'FP' + String(93100 + tokenSeq * 7),
+      ct: cfg.ct || 'CT-2',
+      dead:false,
+      hash:'0x' + (cfg.seed*7+i).toString(16).padStart(2,'0') + 'b4e9c1a7f2038d5e6041c98a2b7d3e5f10496c8adb3f72e5104c9b8a3f6d2e' + String(10+i)
+    });
+  }
+  if(cfg.voidN){
+    var vAmounts = splitAmount(cfg.voidTotal, cfg.voidN, cfg.seed+5);
+    for(i=0;i<vAmounts.length;i++){
+      tokenSeq++;
+      list.push({
+        id:'TI-2026-' + String(4100 + tokenSeq),
+        amt:vAmounts[i],
+        due:cfg.voidDue ? cfg.voidDue[i % cfg.voidDue.length] : '2026-08-15',
+        buyer:BUYERS[(cfg.seed + i + 2) % BUYERS.length],
+        contract:'HT-2026-' + String(700 + tokenSeq),
+        invoice:'FP' + String(93100 + tokenSeq * 7),
+        ct:'CT-2',
+        dead:true,
+        deadAt:cfg.deadAt || '2026-08-19',
+        hash:'0x' + (cfg.seed*9+i).toString(16).padStart(2,'0') + 'c72fa5e30bd1497c2a8e6f05d3b91746ea0c28df53961bb47ce02a8f6d15b3' + String(20+i)
+      });
+    }
+  }
+  return list;
+}
+
+/* ================================================================
+   融资项目（＝资产池＝广场上的一条融资需求，D-LS-11：同一个对象）
+   events[] 同时驱动两张图与历史时间线，保证口径一处产生、多处消费
+   ================================================================ */
+var PROJECTS = [
+  {
+    id:'FP-20260416-0007', name:'长三角医疗器械应收账款池',
+    owner:'晟远科技（演示）', entity:'E-ASSET-01',
+    status:'S-FP-4', expired:false,
+    publishedAt:'2026-04-20', expiresAt:'2027-04-20',
+    demand:200000,               /* 当前在途需求，发布于 2026-07-10 */
+    quotes:2, assetType:'应收账款类',
+    tokens:mkTokens({ total:900000, n:9, seed:1, voidTotal:300000, voidN:2,
+                      due:['2026-11-20','2026-12-05','2027-01-18','2026-10-30'],
+                      voidDue:['2026-08-10','2026-08-18'], deadAt:'2026-08-19' }),
+    events:[
+      { d:'2026-04-16', k:'pledge',   t:'创建资产池 · 首笔质押 10 张',            dTotal:1000000, note:'链上转入成功（CT-2）后才计入有效质押价值（D-FIN-40 / AC-LS-28）' },
+      { d:'2026-04-20', k:'publish',  t:'发布融资需求 500,000.00 USD',            dFly:500000,    note:'发布即产生在途占用，唯一来源（AC-FIN-23）' },
+      { d:'2026-05-06', k:'quote',    t:'收到机构报价 500,000.00 USD',                            note:'报价不新增占用，项目在途金额保持不变（AC-FIN-23）' },
+      { d:'2026-05-12', k:'fund',     t:'放款并完成融资确认',                      dFly:-500000, dBal:500000, note:'额度原子转移：项目在途金额 → 项目融资余额，无空档（AC-FIN-25）' },
+      { d:'2026-06-12', k:'topup',    t:'追加质押 2 张 · 200,000.00 USD',          dTotal:200000,  note:'追加在 S-FP-1～S-FP-4 任何状态下都允许，只增不减（D-FIN-48）' },
+      { d:'2026-07-03', k:'withdraw', t:'撤回质押 3 张 · 300,000.00 USD',          dTotal:-300000, note:'撤回时可撤回上限 575,000.00 USD，本次通过额度判定（AC-FIN-13 / AC-FIN-22）' },
+      { d:'2026-07-10', k:'publish',  t:'再次发布融资需求 200,000.00 USD',          dFly:200000,    note:'S-FP-4 且可融金额 220,000.00 USD > 0，可再次发布剩余额度（6.1）' },
+      { d:'2026-08-19', k:'invalid',  t:'池内 2 张代币底层应收账款失效 · 300,000.00 USD', dVoid:300000,
+        note:'失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发担保不足预警（E-9 / 6.4.1）' }
+    ],
+    snapshot:{ at:'2026-05-06 10:24', tokens:10, valid:1000000, cap:800000, free:300000 },
+    terms:{ rate:'年化 6.80%（演示）', term:'180 天', repay:'到期一次性还本付息', use:'补充经营性流动资金' },
+    deals:[
+      { id:'FD-20260512-0044', amt:500000, st:'还款中', at:'2026-05-12', x:'放款并完成融资确认，计入项目融资余额' }
+    ]
+  },
+  {
+    id:'FP-20260812-0031', name:'华东电子元件应收账款池',
+    owner:'晟远科技（演示）', entity:'E-ASSET-01',
+    status:'S-FP-2', expired:false,
+    publishedAt:'2026-08-14', expiresAt:'2027-08-14',
+    demand:500000, quotes:0, assetType:'应收账款类',
+    tokens:mkTokens({ total:1000000, n:3, seed:2, due:['2026-12-10','2027-01-25','2027-02-08'] }),
+    events:[
+      { d:'2026-08-12', k:'pledge',  t:'创建资产池 · 首笔质押 3 张', dTotal:1000000, note:'链上转入成功（CT-2）' },
+      { d:'2026-08-14', k:'publish', t:'发布融资需求 500,000.00 USD', dFly:500000,  note:'项目在途金额 = 500,000.00 USD，可融金额 = 800,000 − 0 − 500,000 = 300,000.00 USD' }
+    ],
+    snapshot:null,
+    terms:{ rate:'年化 7.20%（演示）', term:'150 天', repay:'到期一次性还本付息', use:'原材料采购' },
+    deals:[]
+  },
+  {
+    id:'FP-20260820-0036', name:'华南汽配应收账款池',
+    owner:'恒盛供应链（演示）', entity:'E-ASSET-09',
+    status:'S-FP-3', expired:false,
+    publishedAt:'2026-08-21', expiresAt:'2027-08-21',
+    demand:600000, quotes:1, assetType:'应收账款类',
+    tokens:mkTokens({ total:1200000, n:4, seed:3, due:['2026-11-28','2027-01-09','2027-02-20','2026-12-19'] }),
+    events:[
+      { d:'2026-08-20', k:'pledge',  t:'创建资产池 · 首笔质押 4 张', dTotal:1200000 },
+      { d:'2026-08-21', k:'publish', t:'发布融资需求 600,000.00 USD', dFly:600000 },
+      { d:'2026-09-02', k:'quote',   t:'收到机构报价 600,000.00 USD', note:'项目转 S-FP-3 已锁定；在途占用不变（AC-FIN-23）' }
+    ],
+    snapshot:{ at:'2026-09-02 15:41', tokens:4, valid:1200000, cap:960000, free:360000 },
+    terms:{ rate:'年化 6.95%（演示）', term:'180 天', repay:'到期一次性还本付息', use:'供应商货款结算' },
+    deals:[]
+  },
+  {
+    id:'FP-20260705-0018', name:'珠三角家电应收账款池',
+    owner:'明泰家电（演示）', entity:'E-ASSET-04',
+    status:'S-FP-4', expired:false,
+    publishedAt:'2026-07-08', expiresAt:'2027-07-08',
+    demand:null, quotes:1, assetType:'应收账款类',
+    tokens:mkTokens({ total:625000, n:5, seed:4, due:['2026-12-01','2027-01-15','2026-11-11','2027-03-02','2026-12-22'] }),
+    events:[
+      { d:'2026-07-05', k:'pledge',  t:'创建资产池 · 首笔质押 5 张', dTotal:625000 },
+      { d:'2026-07-08', k:'publish', t:'发布融资需求 500,000.00 USD', dFly:500000 },
+      { d:'2026-07-20', k:'quote',   t:'收到机构报价 500,000.00 USD', note:'在途占用不变（AC-FIN-23）' },
+      { d:'2026-07-26', k:'fund',    t:'放款并完成融资确认', dFly:-500000, dBal:500000,
+        note:'融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「额度用尽」档；INV-FIN-01 仍成立，不预警（D-FIN-55）' }
+    ],
+    snapshot:{ at:'2026-07-20 09:12', tokens:5, valid:625000, cap:500000, free:500000 },
+    terms:{ rate:'年化 7.05%（演示）', term:'120 天', repay:'到期一次性还本付息', use:'渠道铺货' },
+    deals:[ { id:'FD-20260726-0061', amt:500000, st:'还款中', at:'2026-07-26', x:'放款并完成融资确认' } ]
+  },
+  {
+    id:'FP-20250916-0112', name:'西部能源设备应收账款池',
+    owner:'瑞和能源装备（演示）', entity:'E-ASSET-06',
+    status:'S-FP-2', expired:false,
+    publishedAt:'2025-09-16', expiresAt:'2026-09-16',
+    demand:200000, quotes:0, assetType:'应收账款类',
+    tokens:mkTokens({ total:400000, n:2, seed:5, due:['2026-11-05','2026-12-16'] }),
+    events:[
+      { d:'2025-09-14', k:'pledge',  t:'创建资产池 · 首笔质押 2 张', dTotal:400000 },
+      { d:'2025-09-16', k:'publish', t:'发布融资需求 200,000.00 USD', dFly:200000 }
+    ],
+    snapshot:null,
+    terms:{ rate:'年化 7.40%（演示）', term:'90 天', repay:'到期一次性还本付息', use:'设备维保备件采购' },
+    deals:[]
+  },
+  {
+    id:'FP-20250820-0098', name:'北方建材应收账款池',
+    owner:'中垣建材（演示）', entity:'E-ASSET-03',
+    status:'S-FP-4', expired:true,
+    publishedAt:'2025-08-20', expiresAt:'2026-08-20',
+    demand:null, quotes:3, assetType:'应收账款类',
+    tokens:mkTokens({ total:1500000, n:5, seed:6, due:['2026-11-30','2027-01-07','2026-12-12','2027-02-14','2026-10-28'] }),
+    events:[
+      { d:'2025-08-18', k:'pledge',  t:'创建资产池 · 首笔质押 5 张', dTotal:1500000 },
+      { d:'2025-08-20', k:'publish', t:'发布融资需求 900,000.00 USD', dFly:900000 },
+      { d:'2025-09-02', k:'quote',   t:'收到机构报价 900,000.00 USD' },
+      { d:'2025-09-10', k:'fund',    t:'放款并完成融资确认', dFly:-900000, dBal:900000 },
+      { d:'2026-08-20', k:'expire',  t:'有效期到期 · 存在未结清融资业务，项目不关闭',
+        note:'转「已到期 · 存量处理中」并行标记：停止接受新报价、不允许再次发布，存量走完后转 S-FP-6 并释放质押（D-FIN-43 分支②，按正常状态呈现 D-FIN-47）' }
+    ],
+    snapshot:{ at:'2025-09-02 11:08', tokens:5, valid:1500000, cap:1200000, free:300000 },
+    terms:{ rate:'年化 6.60%（演示）', term:'360 天', repay:'到期一次性还本付息', use:'工程项目垫资' },
+    deals:[ { id:'FD-20250910-0012', amt:900000, st:'已到期（存量履约中）', at:'2025-09-10', x:'本期无提前还款，还本发生在项目到期后（X-LS-06）' } ]
+  },
+  /* ---- 以下两条为草稿，不进广场（D-FIN-64 / AC-LS-05），仅本企业可见 ---- */
+  {
+    id:'FP-20260910-0051', name:'华北纺织应收账款池',
+    owner:'晟远科技（演示）', entity:'E-ASSET-01',
+    status:'S-FP-1', expired:false, draft:true,
+    publishedAt:null, expiresAt:null,
+    demand:null, quotes:0, assetType:'应收账款类',
+    tokens:mkTokens({ total:600000, n:2, seed:7, due:['2026-12-28','2027-01-30'] }),
+    events:[ { d:'2026-09-10', k:'pledge', t:'创建资产池 · 首笔质押 2 张', dTotal:600000,
+               note:'第一段完成，项目已持久化；可离开页面后再回来续做第二段（AC-LS-54）' } ],
+    snapshot:null, terms:null, deals:[]
+  },
+  {
+    id:'FP-20260911-0053', name:'西南物流应收账款池',
+    owner:'晟远科技（演示）', entity:'E-ASSET-01',
+    status:'S-FP-1', expired:false, draft:true, emptyPool:true,
+    publishedAt:null, expiresAt:null,
+    demand:null, quotes:0, assetType:'应收账款类',
+    tokens:[],
+    events:[ { d:'2026-09-11', k:'fail', t:'创建资产池 · 首笔质押 2 张 · 链上执行失败',
+               note:'创建时那唯一一笔质押最终链上失败，项目保留为空池草稿（E-12 / D-FIN-62 / FP-25）' } ],
+    snapshot:null, terms:null, deals:[]
+  }
+];
+
+/* ---- 资产方钱包：可质押代币（已按 6.3.1 六条筛选后的结果） ---- */
+var WALLET = mkTokens({ total:555000, n:6, seed:8,
+  due:['2026-12-04','2027-01-22','2026-11-19','2027-02-27','2026-12-30','2027-03-15'] });
+WALLET.forEach(function(t){ t.ct='CT-0'; t.ps='PS-1'; });
+
+/* ---- 已释放 · 待提取代币（PS-4 + PL-18，来自已结清项目 FP-20251103-0021） ---- */
+var REDEEMABLE = mkTokens({ total:280000, n:3, seed:9, due:['2026-10-08','2026-11-02','2026-12-13'] });
+REDEEMABLE.forEach(function(t){ t.ps='PS-4'; t.pending=true; t.from='FP-20251103-0021'; t.reason='项目结清释放'; });
+
+/* ================================================================
+   30-calc.js —— 派生量的唯一实现
+   六个派生量、担保档位、可撤回上限只在这里算一次，
+   卡片 / 详情 / 发布页 / 两张图全部消费同一份结果（AC-FIN-15 / H-04）。
+   原型内为前端即时预览；真实系统提交时一律由服务端权威重算（AC-FIN-06）。
+   ================================================================ */
+
+/* ---- 格式化：USD 保留 2 位小数，界面标注币种（AC-FIN-14 / AC-FIN-18） ---- */
+function amt(n){
+  if(n===null||n===undefined) return '—';
+  var neg = n<0; n = Math.abs(n);
+  var s = n.toFixed(2), p = s.split('.');
+  return (neg?'−':'') + p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + p[1];
+}
+function usd(n){ return n===null||n===undefined ? '—' : amt(n) + ' ' + CCY; }
+/* 坐标轴刻度：压缩取整，仅为可读性；精确值见悬浮提示、数据表与键值区 */
+function axisAmt(n){
+  if(n>=1000000) return '$' + (n/1000000).toFixed(n%1000000===0?0:1) + 'M';
+  if(n>=1000)    return '$' + Math.round(n/1000) + 'K';
+  return '$' + Math.round(n);
+}
+function intn(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function shortHash(h){ return h.slice(0,10) + '…' + h.slice(-6); }
+
+/* ---- 日期 ---- */
+function dnum(s){ var p=s.split('-'); return Date.UTC(+p[0], +p[1]-1, +p[2]) / 86400000; }
+function dstr(n){ var d=new Date(n*86400000);
+  return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0'); }
+function addYears(s, y){ var p=s.split('-'); return (+p[0]+y) + '-' + p[1] + '-' + p[2]; }
+function daysTo(s){ return dnum(s) - dnum(TODAY); }
+function mdLabel(s){ var p=s.split('-'); return p[1] + '/' + p[2]; }
+
+/* ---- 到期提醒标记（AC-LS-03；触达依赖消息中心，本期只做页面标记） ---- */
+function expiryFlag(p){
+  if(!p.expiresAt) return null;
+  var d = daysTo(p.expiresAt);
+  if(d < 0)  return { tone:'mute', t:'已到期', x:'到期日 ' + p.expiresAt };
+  if(d <= EXPIRY_NEAR[1]) return { tone:'warn', t:'有效期剩余 ' + d + ' 天', x:'到期前 7 天标记' };
+  if(d <= EXPIRY_NEAR[0]) return { tone:'warn', t:'有效期剩余 ' + d + ' 天', x:'到期前 30 天标记' };
+  return null;
+}
+
+/* ================================================================
+   事件流 → 时点序列。两张图、时间线、当前派生量同源。
+   ================================================================ */
+function seriesOf(p){
+  var total=0, dead=0, bal=0, fly=0, pts=[], i;
+  for(i=0;i<p.events.length;i++){
+    var e = p.events[i];
+    total += e.dTotal || 0;
+    dead  += e.dVoid  || 0;
+    bal   += e.dBal   || 0;
+    fly   += e.dFly   || 0;
+    pts.push(snap(e.d, total, dead, bal, fly, e));
+  }
+  /* 末点补到今天，让"当前处于哪一档"在图上有横向宽度可读 */
+  var last = pts[pts.length-1];
+  if(last && last.d !== TODAY) pts.push(snap(TODAY, total, dead, bal, fly, null));
+  return pts;
+}
+function snap(d, total, dead, bal, fly, ev){
+  var valid = total - dead;
+  var cap   = round2(valid * PLEDGE_RATE);
+  return {
+    d:d, x:dnum(d), ev:ev,
+    total:total,            /* 池内资产总额 FP-10（含失效，不参与校验） */
+    dead:dead,              /* 失效代币价值 FP-19 */
+    valid:valid,            /* 有效质押价值 FP-11 —— 一切校验只认这个数 */
+    cap:cap,                /* 融资上限 FP-12 = FP-11 × 80% */
+    bal:bal,                /* 项目融资余额 FP-13 */
+    fly:fly,                /* 项目在途金额 FP-14（唯一来源为发布占用） */
+    free:Math.max(0, round2(cap - bal - fly)),   /* 可融金额 FP-15 */
+    short:cap < bal          /* 担保不足：融资上限 < 项目融资余额（档③） */
+  };
+}
+function round2(n){ return Math.round(n*100)/100; }
+
+/* ---- 当前派生量 ---- */
+function derive(p){
+  var pts = seriesOf(p), cur = pts[pts.length-1];
+  var g = cur.short ? 'short' : (cur.free === 0 ? 'used-up' : 'normal');
+  return {
+    pts:pts,
+    total:cur.total, dead:cur.dead, valid:cur.valid,
+    cap:cur.cap, bal:cur.bal, fly:cur.fly, free:cur.free,
+    grade:g,
+    gap:      cur.short ? round2(cur.bal - cur.cap) : 0,             /* 担保缺口 FP-21 */
+    need:     cur.short ? round2((cur.bal - cur.cap) / PLEDGE_RATE) : 0, /* 需追加资产价值 = 缺口 ÷ 80% */
+    shortFrom:shortFrom(pts),
+    /* 可撤回上限 FP-16 = 可融金额 ÷ 质押率（AC-FIN-22，AC-FIN-13 的代数变形） */
+    wLimit:round2(cur.free / PLEDGE_RATE),
+    deadCount:p.tokens.filter(function(t){ return t.dead; }).length,
+    liveCount:p.tokens.filter(function(t){ return !t.dead; }).length
+  };
+}
+/* 担保不足起始日：最后一段连续 short 区间的起点 */
+function shortFrom(pts){
+  var i, from=null;
+  for(i=0;i<pts.length;i++){
+    if(pts[i].short){ if(from===null) from = pts[i].d; }
+    else from = null;
+  }
+  return from;
+}
+function gradeOf(p){ return derive(p).grade; }
+function gradeMeta(k){ for(var i=0;i<GRADES.length;i++){ if(GRADES[i].k===k) return GRADES[i]; } return GRADES[0]; }
+
+/* ---- 演示用 gas 预估（虚构值，仅用于走通费用区与二次确认） ---- */
+function gasEstimate(n){ return (0.00042 * n + 0.00018).toFixed(5); }
+
+/* ================================================================
+   available_actions（H-03）
+   服务端在每次读取时返回当前可执行动作清单，前端按其渲染、
+   不自行依据状态推断；须区分「不可见」与「可见不可点 ⊘」，后者附原因。
+   原型内由本函数就地模拟同一份契约。
+   ================================================================ */
+function availableActions(p, role){
+  var d = derive(p), own = (role === 'asset' && p.entity === ACTORS.asset.entity), out = [];
+  var guest = (role === 'guest');
+  var st = p.status;
+  var live = (st==='S-FP-1'||st==='S-FP-2'||st==='S-FP-3'||st==='S-FP-4');
+
+  /* --- 报价：资金方动作，广场唯一对外入口 --- */
+  var q = { key:'quote', label:'立即报价', anchor:'quote', primary:true, enabled:false, reason:'' };
+  if(guest){
+    q.reason = '未登录。登录并以资金方企业主体进入后可发起报价；页面信息 L1～L5 不因未登录而隐藏。';
+  } else if(role === 'asset'){
+    q.reason = own ? '不能为自己的项目报价。' : '当前企业主体未开通资金方资质，无法发起报价。';
+  } else if(p.draft){
+    q.reason = '草稿项目不进广场。';
+  } else if(d.grade === 'short'){
+    q.reason = '该项目处于担保不足预警，已暂停接受新报价（AC-LS-39）。当前担保缺口 ' + usd(d.gap) + '。';
+  } else if(p.expired){
+    q.reason = '该项目有效期已到期，停止接受新报价；存量融资业务照常履约（D-FIN-43 分支②）。';
+  } else if(st === 'S-FP-3'){
+    q.reason = '该项目已有在途报价，同一时刻至多承载一笔在途融资业务（D-FIN-33）。';
+  } else if(!p.demand){
+    q.reason = '该项目当前无在途融资需求。';
+  } else if(d.free === 0){
+    q.reason = '该项目可融金额为 ' + usd(0) + '，不能再新增占用（AC-FIN-12）。';
+  } else if(st !== 'S-FP-2'){
+    q.reason = '当前项目状态为「' + FP_STATUS[st].t + '」，只有「募集中」接受新报价。';
+  } else {
+    q.enabled = true;
+  }
+  out.push(q);
+
+  /* --- 以下为资产方对自有项目的动作；非本方登录用户不可见（服务端归属过滤 AC-LS-06） --- */
+  var mine = own || guest;   /* 游客：可见不可点 + 引导登录（D-LS-04 L6） */
+  if(mine && live){
+    var pub = { key:'publish', anchor:'publish', enabled:false, reason:'',
+                label: st==='S-FP-1' ? '填写金额并发布' : '再次发布 / 管理需求' };
+    if(guest)                 pub.reason = '未登录。项目动作仅对该项目所属企业主体开放。';
+    else if(p.emptyPool)      pub.reason = '本项目暂无有效质押，请重新质押后再发布（D-FIN-62）。';
+    else if(d.valid <= 0)     pub.reason = '有效质押价值为 ' + usd(0) + '，不满足发布校验（D-FIN-61）。';
+    else if(p.expired)        pub.reason = '项目已到期，不允许再次发布（D-FIN-43 分支②）。';
+    else if(d.free <= 0)      pub.reason = '可融金额为 ' + usd(0) + '，无可发布额度（AC-FIN-12）。';
+    else pub.enabled = true;
+    out.push(pub);
+
+    out.push({ key:'pledge', anchor:'pledge', label:'追加质押', enabled:!guest, primary:(d.grade==='short'),
+               reason: guest ? '未登录。项目动作仅对该项目所属企业主体开放。' : '' });
+
+    var w = { key:'withdraw', anchor:'withdraw', label:'撤回质押', enabled:false, reason:'' };
+    if(guest) w.reason = '未登录。项目动作仅对该项目所属企业主体开放。';
+    else if(d.wLimit <= 0 && d.deadCount === 0)
+      w.reason = '当前可撤回上限为 ' + usd(0) + '（可融金额 ÷ 80%），池内也没有已失效代币，暂无可撤回的代币。'
+               + '入口保留可见，不隐藏（H-03）。';
+    else w.enabled = true;
+    out.push(w);
+
+    var c = { key:'close', anchor:'close', label:'关闭项目', enabled:false, reason:'' };
+    if(guest) c.reason = '未登录。项目动作仅对该项目所属企业主体开放。';
+    else if(st==='S-FP-3'||st==='S-FP-4') c.reason = '存在在途或未结清融资业务，项目不可关闭（6.1）。';
+    else if(d.fly > 0) c.reason = '存在在途占用 ' + usd(d.fly) + '，请先撤下需求再关闭。';
+    else c.enabled = true;
+    out.push(c);
+  }
+
+  /* --- 提取：无可提取代币时不返回该动作，页面不得自行判断（AC-LS-71） --- */
+  if(own && REDEEMABLE.length > 0){
+    out.push({ key:'redeem', anchor:'redeem', label:'提取已释放代币（' + REDEEMABLE.length + ' 张）', enabled:true, reason:'' });
+  }
+  return out;
+}
+function actionOf(list, key){ for(var i=0;i<list.length;i++){ if(list[i].key===key) return list[i]; } return null; }
+
+/* ---- 可见项目集：草稿不进广场（D-FIN-64 / AC-LS-05） ---- */
+function plazaProjects(){ return PROJECTS.filter(function(p){ return !p.draft; }); }
+function myProjects(){ return PROJECTS.filter(function(p){ return p.entity === ACTORS.asset.entity; }); }
+function findProject(id){ for(var i=0;i<PROJECTS.length;i++){ if(PROJECTS[i].id===id) return PROJECTS[i]; } return null; }
+/* ================================================================
+   40-ui.js —— 共用组件层
+   两个招牌件：三数等式（AC-LS-53）与额度尺（INV-FIN-01 的可视化读数）。
+   后续模块新增页面时复用本层，不要各自造一套。
+   ================================================================ */
+
+/* ---- 徽标 ---- */
+function tag(tone, t, dot){
+  return '<span class="tag ' + tone + '">' + (dot ? '<i class="dot"></i>' : '') + esc(t) + '</span>';
+}
+function statusTags(p){
+  var d = derive(p), s = FP_STATUS[p.status], g = gradeMeta(d.grade), out = [];
+  out.push(tag(s.tone, s.t, true));
+  /* 到期分支②按正常状态呈现：中性样式，不做告警（D-FIN-47） */
+  if(p.expired) out.push(tag('plain', '已到期 · 存量融资业务照常履约中'));
+  var ef = expiryFlag(p);
+  if(ef && !p.expired) out.push(tag(ef.tone, ef.t));
+  out.push(tag(g.tone, '担保状态：' + g.t, true));
+  if(p.emptyPool) out.push(tag('warn', '空池草稿 · 暂无有效质押'));
+  return out.join('');
+}
+
+/* ---- 三数等式：① 有效质押价值 × ② 质押率 = ③ 融资上限 ---- */
+function trioBlock(d){
+  return '' +
+  '<div class="trio">' +
+    '<div class="cell">' +
+      '<div class="idx">① 参与计算</div>' +
+      '<div class="lb">有效质押价值<span class="tag plain">FP-11</span></div>' +
+      '<div class="amt">' + amt(d.valid) + '</div>' +
+      '<div class="fixed">' + CCY + ' · 已排除失效、未上链、对账差异部分</div>' +
+    '</div>' +
+    '<div class="op" aria-hidden="true">×</div>' +
+    '<div class="cell">' +
+      '<div class="idx">② 质押率</div>' +
+      '<div class="lb">质押率</div>' +
+      /* 纯文本展示：无输入框 / 下拉 / 滑块 / 步进器，无焦点态（AC-LS-56 / D-MC-110 / D-MC-111） */
+      '<div class="rate">' + (PLEDGE_RATE*100) + '%</div>' +
+      '<div class="fixed">本期固定，不可调整</div>' +
+    '</div>' +
+    '<div class="op" aria-hidden="true">=</div>' +
+    '<div class="cell out">' +
+      '<div class="idx">③ ＝ ① × ②</div>' +
+      '<div class="lb">融资上限<span class="tag plain">FP-12</span></div>' +
+      '<div class="amt">' + amt(d.cap) + '</div>' +
+      '<div class="fixed">' + CCY + ' · 一切担保充足性判断的比较对象</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="trio-sub">池内资产总额 <span class="n">' + usd(d.total) + '</span>，其中 <span class="n">' + usd(d.dead) +
+    '</span>（' + d.deadCount + ' 张）因底层资产失效不计入担保。账面总额不参与任何校验。</div>';
+}
+
+/* ---- 额度尺：一条尺上读出 融资上限 / 余额 / 在途 / 可融 / 担保缺口 ---- */
+function meterBlock(d, mini){
+  var used = d.bal + d.fly;
+  var scale = Math.max(d.cap, used) * 1.03 || 1;
+  var pct = function(v){ return (v / scale * 100); };
+  var balIn  = Math.min(d.bal, d.cap);
+  var balOver= Math.max(0, d.bal - d.cap);
+  var capPct = pct(d.cap);
+  var segs = '';
+  if(balIn > 0)   segs += '<div class="seg bal"  style="width:' + pct(balIn).toFixed(3) + '%"></div>';
+  if(balOver > 0) segs += '<div class="seg gap"  style="width:' + pct(balOver).toFixed(3) + '%"></div>';
+  if(d.fly > 0)   segs += '<div class="seg fly"  style="width:' + pct(d.fly).toFixed(3) + '%"></div>';
+  if(d.free > 0)  segs += '<div class="seg free" style="width:' + pct(d.free).toFixed(3) + '%"></div>';
+  var lbShift = capPct > 80 ? 'transform:translateX(-100%);padding-right:4px' : 'transform:translateX(-50%)';
+
+  var legend =
+    '<span><i class="cap"></i>融资上限 <b>' + amt(d.cap) + '</b></span>' +
+    '<span><i class="bal"></i>项目融资余额 <b>' + amt(d.bal) + '</b></span>' +
+    '<span><i class="fly"></i>项目在途金额 <b>' + amt(d.fly) + '</b></span>' +
+    '<span><i class="free"></i>可融金额 <b>' + amt(d.free) + '</b></span>' +
+    (d.gap > 0 ? '<span><i class="gap"></i>担保缺口 <b>' + amt(d.gap) + '</b></span>' : '');
+
+  return '<div class="meter' + (mini?' mini':'') + '"><div class="mwrap">' +
+    '<div class="track" role="img" aria-label="额度尺：融资上限 ' + amt(d.cap) + ' USD，项目融资余额 ' + amt(d.bal) +
+      ' USD，项目在途金额 ' + amt(d.fly) + ' USD，可融金额 ' + amt(d.free) + ' USD">' + segs + '</div>' +
+    '<div class="capline" style="left:' + capPct.toFixed(3) + '%"></div>' +
+    (mini ? '' : '<div class="caplb" style="left:' + capPct.toFixed(3) + '%;' + lbShift + '">融资上限 ' + amt(d.cap) + '</div>') +
+    '</div><div class="legend">' + legend + '</div>' +
+  '</div>';
+}
+
+/* ---- 担保档位三档（D-FIN-55：预警线与准入闸门分别定义、分别呈现） ---- */
+function gradesBlock(d){
+  return '<div class="grades">' + GRADES.map(function(g){
+    var on = (g.k === d.grade);
+    return '<div class="g' + (on ? ' on ' + g.tone : '') + '">' +
+      '<b>' + (on ? '● ' : '○ ') + g.t + '</b>' + esc(g.x) + '</div>';
+  }).join('') + '</div>';
+}
+
+/* ---- 担保不足预警条：中性事实文案，不用评价性措辞（D-FIN-56） ---- */
+function shortAlert(p, d, withAction){
+  if(d.grade !== 'short') return '';
+  return '<div class="note crit" style="margin-bottom:14px">' +
+    '<span class="ic">!</span><div class="bd">' +
+    '<b>担保不足</b>：当前池内有效质押价值低于项目融资余额，缺口 <span class="n">' + usd(d.gap) + '</span>，自 ' +
+    (d.shortFrom || '—') + ' 起。' +
+    '<p>需追加资产价值 <span class="n">' + usd(d.need) + '</span>（＝担保缺口 ÷ ' + (PLEDGE_RATE*100) + '%）。' +
+    '只按缺口追加不足以解除——追加的是资产，参与计算的是资产的 ' + (PLEDGE_RATE*100) + '%。' +
+    '条件反转（追加质押抬高融资上限，或还款降低项目融资余额）即自动解除，无需人工确认。</p>' +
+    '<p>诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效，价值合计 ' + usd(d.dead) + '，自失效之日起不计入有效质押价值。</p>' +
+    '</div>' + (withAction ? '<div class="act"><button class="btn sm" onclick="openPledge(\'' + p.id + '\')">追加质押</button></div>' : '') +
+  '</div>';
+}
+
+/* ---- 额度用尽档：成立但不预警，必须与档③分开说（D-FIN-55） ---- */
+function usedUpNote(d){
+  if(d.grade !== 'used-up') return '';
+  return '<div class="note warn" style="margin-bottom:14px"><span class="ic">i</span><div class="bd">' +
+    '<b>额度用尽</b>：可融金额为 <span class="n">' + usd(0) + '</span>，暂不能新增占用。' +
+    '<p>已发生的债务仍有足额担保（融资上限 ' + usd(d.cap) + ' ≥ 项目融资余额 ' + usd(d.bal) + '），' +
+    '<b>这不是担保不足预警</b>。此档下可撤回上限同为 ' + usd(0) + '；追加质押可抬高融资上限并重新打开额度。</p>' +
+    '</div></div>';
+}
+
+/* ---- 可提取常驻提示（AC-LS-38）：不得让资产方以为代币会自动回到钱包 ---- */
+function redeemBanner(){
+  if(state.role !== 'asset' || REDEEMABLE.length === 0) return '';
+  var sum = REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0);
+  return '<div class="note info" style="margin-bottom:14px"><span class="ic">↧</span><div class="bd">' +
+    '您有 <b>' + REDEEMABLE.length + ' 张</b>代币（合计 <span class="n">' + usd(sum) + '</span>）可提取。' +
+    '<p>业务上已释放，链上仍停留在质押合约内，<b>不会自动回到钱包</b>；需您自行发起提取并自付 gas，支持批量一次提完，无时间限制、不过期。' +
+    '未提取前不属于任何资产池、不计入任何质押价值，也不能被再次质押。</p>' +
+    '</div><div class="act"><button class="btn sm primary" onclick="openRedeem()">批量提取</button></div></div>';
+}
+
+/* ---- 动作按钮：区分「不可见」与「可见不可点 ⊘」（H-03） ---- */
+function actionBtn(a, handler, size){
+  var cls = 'btn' + (size ? ' ' + size : '') + (a.primary && a.enabled ? ' primary' : '');
+  if(a.enabled){
+    return '<button class="' + cls + '" onclick="' + handler + '">' + esc(a.label) + '</button>';
+  }
+  return '<button class="btn blocked' + (size ? ' ' + size : '') + '" aria-disabled="true" ' +
+         'onclick="toast(' + JSON.stringify(a.reason).replace(/"/g,'&quot;') + ')">' +
+         '<span class="sig" aria-hidden="true">⊘</span>' + esc(a.label) + '</button>' +
+         '<div class="why"><span class="sig" aria-hidden="true">⊘</span><span>' + esc(a.reason) +
+         (state.role === 'guest' ? ' <button class="btn link" onclick="signIn()">登录 / 注册</button>' : '') +
+         '</span></div>';
+}
+
+/* ---- 通用状态：加载中 / 空 / 筛选无结果 / 加载失败 ---- */
+function skeletonCards(n){
+  var h = '', i;
+  for(i=0;i<(n||3);i++){
+    h += '<div class="pcard"><div class="top">' +
+      '<div class="pool"><div class="sk" style="height:13px;width:70px"></div><div class="sk" style="height:19px;width:64%;margin-top:12px"></div>' +
+      '<div class="sk" style="height:13px;width:40%;margin-top:9px"></div><div class="sk" style="height:44px;margin-top:14px"></div></div>' +
+      '<div class="fin"><div class="sk" style="height:13px;width:70px"></div><div class="sk" style="height:30px;width:46%;margin-top:12px"></div>' +
+      '<div class="sk" style="height:22px;width:72%;margin-top:12px"></div><div class="sk" style="height:44px;margin-top:14px"></div></div>' +
+      '</div><div class="bot"><div class="sk" style="height:16px;flex:1"></div></div></div>';
+  }
+  return '<div class="plist" aria-busy="true">' + h + '</div>';
+}
+function blankState(ic, title, body, btn){
+  return '<div class="card"><div class="blank"><div class="ic">' + ic + '</div><h3>' + esc(title) + '</h3><p>' + body + '</p>' +
+    (btn || '') + '</div></div>';
+}
+
+/* ---- 弹层 ---- */
+function openScrim(html){
+  document.getElementById('scrimBody').innerHTML = html;
+  var s = document.getElementById('scrim'); s.classList.add('on');
+  var f = s.querySelector('[data-autofocus]'); if(f) f.focus();
+}
+function closeScrim(){ document.getElementById('scrim').classList.remove('on'); }
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeScrim(); });
+document.getElementById('scrim').addEventListener('mousedown', function(e){ if(e.target === this) closeScrim(); });
+
+function toast(msg){
+  var box = document.getElementById('toast');
+  var el = document.createElement('div'); el.className = 't'; el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 4200);
+}
+function signIn(){
+  toast('登录 / 注册流程不在本模块范围内（本原型直接用底部演示条切换身份）。');
+}
+
+/* ---- 外部签名 SDK（D-FIN-71）：平台不自建钱包连接组件 ---- */
+/* cfg: { title, rows:[[k,v]], gas, n, onDone(outcomeKey) } */
+var sdkCfg = null;
+function openSDK(cfg){
+  sdkCfg = cfg;
+  openScrim(
+    '<div class="sdk" role="dialog" aria-label="外部签名 SDK">' +
+      '<div class="sh"><span class="mk">S</span><b>外部签名 SDK 服务</b><span>第三方界面 · 非平台页面</span></div>' +
+      '<div class="sb">' +
+        cfg.rows.map(function(r){ return '<div class="kk"><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></div>'; }).join('') +
+        '<div class="kk"><span>预估 gas</span><b>' + cfg.gas + ' ETH</b></div>' +
+        '<div class="kk"><span>承担方</span><b>' + esc(ACTORS.asset.full) + '</b></div>' +
+      '</div>' +
+      '<div class="sim">原型内的结果模拟：选择本次链上返回，用于走通分册 6.7.2 的五类失败与等待页面态' +
+        '<select id="sdkOutcome">' +
+          '<option value="ok">全部成功（CT-2）</option>' +
+          '<option value="partial">部分成功 · 按张独立结算（E-2）</option>' +
+          '<option value="offchain">未上链失败 · 未扣费</option>' +
+          '<option value="onchain">已上链失败 · 已扣费</option>' +
+          '<option value="timeout">超时未决（&gt; ' + CHAIN_TIMEOUT + ' 分钟）</option>' +
+          '<option value="nogas">gas 不足</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="sf">' +
+        '<button class="btn" onclick="sdkCancel()">取消</button>' +
+        '<button class="btn primary" data-autofocus onclick="sdkSign()">签名并支付</button>' +
+      '</div>' +
+    '</div>');
+}
+function sdkCancel(){ var c = sdkCfg; closeScrim(); if(c) c.onDone('cancel'); }
+function sdkSign(){
+  var v = document.getElementById('sdkOutcome').value, c = sdkCfg;
+  closeScrim(); if(c) c.onDone(v);
+}
+
+/* ---- 二次确认 + 费用区（AC-LS-32）：唤起 SDK 前必须先说清操作内容与 gas ---- */
+function confirmChain(cfg){
+  openScrim(
+  '<div class="modal">' +
+    '<div class="mh"><h2>' + esc(cfg.title) + '</h2><p>唤起外部签名 SDK 前，请先确认本次链上操作的内容与费用</p></div>' +
+    '<div class="mb">' +
+      '<div class="cost">' +
+        cfg.rows.map(function(r){ return '<div class="row"><span class="k">' + esc(r[0]) + '</span><span class="v' +
+          (r[2] ? ' txt' : '') + '">' + esc(r[1]) + '</span></div>'; }).join('') +
+        '<div class="row"><span class="k">本次链上操作笔数</span><span class="v">' + cfg.n + ' 笔</span></div>' +
+        '<div class="row"><span class="k">预估 gas</span><span class="v">' + cfg.gas + ' ETH</span></div>' +
+        '<div class="row"><span class="k">承担方</span><span class="v txt">' + esc(ACTORS.asset.full) + '（本企业）</span></div>' +
+        '<div class="foot">gas 由区块链收取，<b>平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</b>。' +
+        '链上失败也可能已经产生费用。批量一次提交是最有效的降费手段：' + cfg.n + ' 笔已合并为一次提交。</div>' +
+      '</div>' +
+      (cfg.extra || '') +
+    '</div>' +
+    '<div class="mf"><button class="btn" onclick="closeScrim()">取消</button>' +
+    '<button class="btn primary" data-autofocus onclick="chainGo()">确认并唤起签名</button></div>' +
+  '</div>');
+  pendingChain = cfg;
+}
+var pendingChain = null;
+function chainGo(){
+  var c = pendingChain;
+  openSDK({ rows:c.rows, gas:c.gas, n:c.n, onDone:c.onDone });
+}
+
+/* ---- 五类失败 / 等待的结果页面态（分册 6.7.2；不允许只写"操作失败"） ---- */
+function chainResultCard(o, ctx){
+  if(o.k === 'ok' || o.k === 'partial') return '';
+  return '<div class="note ' + (o.tone === 'mute' ? '' : o.tone) + '"><span class="ic">' +
+    (o.k === 'timeout' ? '⧗' : '!') + '</span><div class="bd"><b>' + esc(o.head) + '</b>' +
+    '<p>' + esc(o.body) + '</p><p>费用：' + esc(o.fee) + '</p>' +
+    '<p style="margin-top:8px">' +
+      (o.k === 'timeout'
+        /* 超时态不出现重试按钮，只给「查询链上状态」（AC-LS-74 / D-FIN-70） */
+        ? '<button class="btn sm" onclick="queryChain()">查询链上状态</button>'
+        : '<button class="btn sm" onclick="' + (ctx.retry || 'closeScrim()') + '">' + esc(o.retry) + '</button>') +
+    '</p></div></div>';
+}
+function queryChain(){
+  toast('正在查询链上状态……（原型内为模拟）确认未上链后，重试入口才会出现——沿用 WS-318 S-TI-5 红线，超时态不得直接重试。');
+}
+/* ================================================================
+   50-charts.js —— P-LS-02 详情页两张图
+   图 1 池内资产变动：有效质押价值 + 失效代币价值 = 池内资产总额（堆叠阶梯面积）
+   图 2 融资变动：融资上限（线）vs 项目融资余额 + 项目在途金额（堆叠阶梯面积）
+   四个量口径互不混用；担保不足（融资上限 < 项目融资余额）在图 2 上有独立区间。
+   两图共用 30-calc.js 的同一份 seriesOf()，与页面数字同源。
+   数值为阶梯：一次事件改变一次取值，事件之间保持不变——这就是业务的真实形状。
+   ================================================================ */
+
+var CHART_H = 252, CH_M = { l:74, r:116, t:18, b:44 };
+
+function niceTicks(max, n){
+  var raw = max / n, mag = Math.pow(10, Math.floor(Math.log(raw)/Math.LN10)), norm = raw / mag;
+  var step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 4 ? 4 : norm <= 5 ? 5 : 10) * mag;
+  var out = [], v = 0;
+  while(v <= max + 1e-6){ out.push(v); v = round2(v + step); }
+  return out;
+}
+function monthTicks(x0, x1){
+  var out = [], d = new Date(x0 * 86400000);
+  d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
+  while(d.getTime()/86400000 <= x1){
+    var v = d.getTime()/86400000;
+    if(v >= x0) out.push(v);
+    d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth()+1, 1));
+  }
+  if(out.length > 8) out = out.filter(function(_,i){ return i % 2 === 0; });
+  return out;
+}
+
+function stepFwd(pts, get, X, Y){
+  var d = '', i;
+  for(i=0;i<pts.length;i++){
+    var y = Y(get(pts[i])).toFixed(1), x = X(pts[i].x).toFixed(1);
+    d += (i===0 ? 'M' : 'L') + x + ',' + y;
+    if(i < pts.length-1) d += 'L' + X(pts[i+1].x).toFixed(1) + ',' + y;
+  }
+  return d;
+}
+function stepBack(pts, get, X, Y){
+  var d = '', i, n = pts.length;
+  d += 'L' + X(pts[n-1].x).toFixed(1) + ',' + Y(get(pts[n-1])).toFixed(1);
+  for(i=n-2;i>=0;i--){
+    d += 'L' + X(pts[i+1].x).toFixed(1) + ',' + Y(get(pts[i])).toFixed(1);
+    d += 'L' + X(pts[i].x).toFixed(1)   + ',' + Y(get(pts[i])).toFixed(1);
+  }
+  return d;
+}
+var zero = function(){ return 0; };
+
+/* 端点直标：色块携带身份，文字一律用墨色 token；同栏标签自动避让，不叠字 */
+function endLabels(x, items){
+  var minY = CH_M.t + 10, maxY = CHART_H - CH_M.b - 6, gap = 30, i;
+  items = items.slice().sort(function(a,b){ return a.y - b.y; });
+  for(i=0;i<items.length;i++){
+    items[i].ly = Math.max(minY, items[i].y);
+    if(i > 0 && items[i].ly - items[i-1].ly < gap) items[i].ly = items[i-1].ly + gap;
+  }
+  for(i=items.length-1;i>=0;i--){
+    if(items[i].ly > maxY) items[i].ly = maxY;
+    if(i < items.length-1 && items[i+1].ly - items[i].ly < gap) items[i].ly = items[i+1].ly - gap;
+  }
+  return items.map(function(it){
+    var lead = (Math.abs(it.ly - it.y) > 3)
+      ? '<path d="M' + (x+1).toFixed(1) + ',' + it.y.toFixed(1) + 'L' + (x+6).toFixed(1) + ',' + it.ly.toFixed(1) +
+        '" stroke="var(--line-strong)" stroke-width="1" fill="none"></path>' : '';
+    return lead + '<g transform="translate(' + (x+9).toFixed(1) + ',' + it.ly.toFixed(1) + ')">' +
+      '<rect x="0" y="-8" width="9" height="9" rx="2" fill="' + it.sw + '"></rect>' +
+      '<text x="13" y="0" font-size="11" fill="var(--ink)" font-weight="600" font-family="var(--num)">' + axisAmt(it.val) + '</text>' +
+      '<text x="0"  y="13" font-size="10.5" fill="var(--ink-3)">' + esc(it.name) + '</text></g>';
+  }).join('');
+}
+
+function chartFrame(uid, W, yTicks, yMax, xTicks, X, Y){
+  var g = '', i;
+  for(i=0;i<yTicks.length;i++){
+    var y = Y(yTicks[i]).toFixed(1);
+    g += '<line x1="' + CH_M.l + '" y1="' + y + '" x2="' + (W - CH_M.r) + '" y2="' + y +
+         '" stroke="var(--grid)" stroke-width="1"></line>' +
+         '<text x="' + (CH_M.l - 9) + '" y="' + y + '" dy="3.5" text-anchor="end" font-size="10.5" ' +
+         'fill="var(--axis-ink)" font-family="var(--num)">' + axisAmt(yTicks[i]) + '</text>';
+  }
+  for(i=0;i<xTicks.length;i++){
+    var x = X(xTicks[i]).toFixed(1);
+    g += '<text x="' + x + '" y="' + (CHART_H - CH_M.b + 18) + '" text-anchor="middle" font-size="10.5" ' +
+         'fill="var(--axis-ink)" font-family="var(--num)">' + mdLabel(dstr(xTicks[i])) + '</text>';
+  }
+  g += '<line x1="' + CH_M.l + '" y1="' + Y(0) + '" x2="' + (W - CH_M.r) + '" y2="' + Y(0) +
+       '" stroke="var(--axis)" stroke-width="1"></line>';
+  return g;
+}
+
+/* ---- 图 1：池内资产变动 ---- */
+function chartPool(uid, pts, W){
+  var x0 = pts[0].x, x1 = pts[pts.length-1].x;
+  if(x1 <= x0) x1 = x0 + 30;
+  var PW = W - CH_M.l - CH_M.r, PH = CHART_H - CH_M.t - CH_M.b;
+  var yMax = Math.max.apply(null, pts.map(function(p){ return p.total; })) * 1.14 || 1;
+  var X = function(v){ return CH_M.l + (v - x0) / (x1 - x0) * PW; };
+  var Y = function(v){ return CH_M.t + PH - v / yMax * PH; };
+  var cur = pts[pts.length-1];
+  var s = '';
+
+  s += '<defs><pattern id="hatchVoid' + uid + '" width="7" height="7" patternTransform="rotate(135)" patternUnits="userSpaceOnUse">' +
+       '<rect width="7" height="7" fill="var(--s-void-fill)"></rect>' +
+       '<line x1="0" y1="0" x2="0" y2="7" stroke="var(--s-void)" stroke-width="1.4" opacity=".55"></line></pattern></defs>';
+  s += chartFrame(uid, W, niceTicks(yMax, 4), yMax, monthTicks(x0, x1), X, Y);
+
+  /* 事件竖线 */
+  pts.forEach(function(p){
+    if(!p.ev) return;
+    s += '<line x1="' + X(p.x).toFixed(1) + '" y1="' + CH_M.t + '" x2="' + X(p.x).toFixed(1) + '" y2="' + Y(0) +
+         '" stroke="var(--grid)" stroke-width="1" stroke-dasharray="2 3"></line>';
+  });
+
+  /* 有效质押价值（底层，计入担保） */
+  s += '<path d="' + stepFwd(pts, function(p){ return p.valid; }, X, Y) + stepBack(pts, zero, X, Y) +
+       'Z" fill="var(--s1-fill)"></path>';
+  /* 失效代币价值（上层，不计入担保）—— 中性灰 + 斜纹，双通道编码 */
+  s += '<path d="' + stepFwd(pts, function(p){ return p.total; }, X, Y) +
+       stepBack(pts, function(p){ return p.valid; }, X, Y) + 'Z" fill="url(#hatchVoid' + uid + ')"></path>';
+  /* 池内资产总额：堆叠顶缘，虚线。先画它，失效为 0 的区段由下面的实线盖住，避免蓝线看起来是虚的 */
+  s += '<path d="' + stepFwd(pts, function(p){ return p.total; }, X, Y) +
+       '" fill="none" stroke="var(--s-void)" stroke-width="1.5" stroke-dasharray="5 3"></path>';
+  /* 堆叠分界：先铺 3px 底色留缝，再描 1.9px 系列线 */
+  s += '<path d="' + stepFwd(pts, function(p){ return p.valid; }, X, Y) + '" fill="none" stroke="var(--card)" stroke-width="3.4"></path>';
+  s += '<path d="' + stepFwd(pts, function(p){ return p.valid; }, X, Y) + '" fill="none" stroke="var(--s1)" stroke-width="1.9" stroke-linejoin="round"></path>';
+
+  /* 事件点 */
+  pts.forEach(function(p){
+    if(!p.ev) return;
+    s += '<circle cx="' + X(p.x).toFixed(1) + '" cy="' + Y(p.total).toFixed(1) +
+         '" r="3.6" fill="var(--card)" stroke="var(--s-void)" stroke-width="1.8"></circle>';
+  });
+
+  /* 失效起点标注 */
+  var firstDead = null;
+  pts.forEach(function(p){ if(firstDead === null && p.dead > 0) firstDead = p; });
+  if(firstDead){
+    s += '<line x1="' + X(firstDead.x).toFixed(1) + '" y1="' + (CH_M.t - 2) + '" x2="' + X(firstDead.x).toFixed(1) +
+         '" y2="' + Y(0) + '" stroke="var(--s-void)" stroke-width="1.2" stroke-dasharray="3 3"></line>' +
+         '<text x="' + (X(firstDead.x) + 6).toFixed(1) + '" y="' + (CH_M.t + 10) + '" font-size="10.5" fill="var(--ink-2)">' +
+         '底层资产失效 ' + firstDead.d + '</text>';
+  }
+
+  var labels = [{ y:Y(cur.valid), sw:'var(--s1)', name:'有效质押价值', val:cur.valid }];
+  if(cur.dead > 0) labels.push({ y:Y(cur.total), sw:'var(--s-void)', name:'池内资产总额', val:cur.total });
+  s += endLabels(X(x1), labels);
+
+  return { svg:s, W:W, X:X, Y:Y, x0:x0, x1:x1 };
+}
+
+/* ---- 图 2：融资变动 ---- */
+function chartFin(uid, pts, W){
+  var x0 = pts[0].x, x1 = pts[pts.length-1].x;
+  if(x1 <= x0) x1 = x0 + 30;
+  var PW = W - CH_M.l - CH_M.r, PH = CHART_H - CH_M.t - CH_M.b;
+  var yMax = Math.max.apply(null, pts.map(function(p){ return Math.max(p.cap, p.bal + p.fly); })) * 1.18 || 1;
+  var X = function(v){ return CH_M.l + (v - x0) / (x1 - x0) * PW; };
+  var Y = function(v){ return CH_M.t + PH - v / yMax * PH; };
+  var cur = pts[pts.length-1];
+  var s = '';
+
+  s += '<defs><pattern id="hatchGap' + uid + '" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">' +
+       '<rect width="7" height="7" fill="var(--st-crit-wash)"></rect>' +
+       '<line x1="0" y1="0" x2="0" y2="7" stroke="var(--st-crit)" stroke-width="1.4" opacity=".45"></line></pattern></defs>';
+  s += chartFrame(uid, W, niceTicks(yMax, 4), yMax, monthTicks(x0, x1), X, Y);
+
+  /* 担保不足区间：融资上限 < 项目融资余额 的连续区段 —— 先铺底，图形压在上面 */
+  var bands = [], i, open = null;
+  for(i=0;i<pts.length;i++){
+    if(pts[i].short && open === null) open = pts[i];
+    if(!pts[i].short && open !== null){ bands.push([open, pts[i]]); open = null; }
+  }
+  if(open !== null) bands.push([open, pts[pts.length-1]]);
+  bands.forEach(function(b){
+    var bx = X(b[0].x), bw = Math.max(2, X(b[1].x) - bx);
+    s += '<rect x="' + bx.toFixed(1) + '" y="' + CH_M.t + '" width="' + bw.toFixed(1) + '" height="' + PH +
+         '" fill="url(#hatchGap' + uid + ')"></rect>' +
+         '<line x1="' + bx.toFixed(1) + '" y1="' + CH_M.t + '" x2="' + bx.toFixed(1) + '" y2="' + Y(0) +
+         '" stroke="var(--st-crit)" stroke-width="1.4"></line>';
+  });
+
+  pts.forEach(function(p){
+    if(!p.ev) return;
+    s += '<line x1="' + X(p.x).toFixed(1) + '" y1="' + CH_M.t + '" x2="' + X(p.x).toFixed(1) + '" y2="' + Y(0) +
+         '" stroke="var(--grid)" stroke-width="1" stroke-dasharray="2 3"></line>';
+  });
+
+  /* 项目融资余额（底层） */
+  s += '<path d="' + stepFwd(pts, function(p){ return p.bal; }, X, Y) + stepBack(pts, zero, X, Y) +
+       'Z" fill="var(--s2-fill)"></path>';
+  /* 项目在途金额（堆在余额之上，两条线因此可分辨） */
+  s += '<path d="' + stepFwd(pts, function(p){ return p.bal + p.fly; }, X, Y) +
+       stepBack(pts, function(p){ return p.bal; }, X, Y) + 'Z" fill="var(--s3-fill)"></path>';
+  s += '<path d="' + stepFwd(pts, function(p){ return p.bal; }, X, Y) + '" fill="none" stroke="var(--card)" stroke-width="3.4"></path>';
+  s += '<path d="' + stepFwd(pts, function(p){ return p.bal; }, X, Y) + '" fill="none" stroke="var(--s2)" stroke-width="1.9" stroke-linejoin="round"></path>';
+  s += '<path d="' + stepFwd(pts, function(p){ return p.bal + p.fly; }, X, Y) + '" fill="none" stroke="var(--s3)" stroke-width="1.9" stroke-linejoin="round"></path>';
+  /* 融资上限：主线，比两条面积更重 */
+  s += '<path d="' + stepFwd(pts, function(p){ return p.cap; }, X, Y) +
+       '" fill="none" stroke="var(--card)" stroke-width="4"></path>';
+  s += '<path d="' + stepFwd(pts, function(p){ return p.cap; }, X, Y) +
+       '" fill="none" stroke="var(--s1)" stroke-width="2.4" stroke-linejoin="round"></path>';
+
+  /* 跨线点：担保不足起点 */
+  bands.forEach(function(b){
+    var bx = X(b[0].x);
+    s += '<circle cx="' + bx.toFixed(1) + '" cy="' + Y(b[0].cap).toFixed(1) +
+         '" r="5" fill="var(--card)" stroke="var(--st-crit)" stroke-width="2.4"></circle>' +
+         '<text x="' + (bx + 9).toFixed(1) + '" y="' + (CH_M.t + 11) + '" font-size="10.5" fill="var(--st-crit)" font-weight="700">' +
+         '担保不足区间 · 自 ' + b[0].d + ' 起</text>' +
+         '<text x="' + (bx + 9).toFixed(1) + '" y="' + (CH_M.t + 24) + '" font-size="10.5" fill="var(--ink-2)">' +
+         '融资上限跌破项目融资余额</text>';
+  });
+
+  /* 可融金额：末端的上限线与占用顶之间的竖向标注 */
+  if(cur.free > 0){
+    var fx = X(x1) - 14, yTop = Y(cur.cap), yBot = Y(cur.bal + cur.fly);
+    s += '<line x1="' + fx.toFixed(1) + '" y1="' + yTop.toFixed(1) + '" x2="' + fx.toFixed(1) + '" y2="' + yBot.toFixed(1) +
+         '" stroke="var(--ink-3)" stroke-width="1"></line>' +
+         '<line x1="' + (fx-4).toFixed(1) + '" y1="' + yTop.toFixed(1) + '" x2="' + (fx+4).toFixed(1) + '" y2="' + yTop.toFixed(1) + '" stroke="var(--ink-3)" stroke-width="1"></line>' +
+         '<line x1="' + (fx-4).toFixed(1) + '" y1="' + yBot.toFixed(1) + '" x2="' + (fx+4).toFixed(1) + '" y2="' + yBot.toFixed(1) + '" stroke="var(--ink-3)" stroke-width="1"></line>' +
+         '<text x="' + (fx-7).toFixed(1) + '" y="' + ((yTop+yBot)/2).toFixed(1) + '" dy="3.5" text-anchor="end" font-size="10.5" fill="var(--ink-2)">可融</text>';
+  }
+
+  var labels = [{ y:Y(cur.cap), sw:'var(--s1)', name:'融资上限', val:cur.cap },
+                { y:Y(cur.bal), sw:'var(--s2)', name:'项目融资余额', val:cur.bal }];
+  if(cur.fly > 0) labels.push({ y:Y(cur.bal + cur.fly), sw:'var(--s3)', name:'项目在途金额', val:cur.fly });
+  s += endLabels(X(x1), labels);
+
+  return { svg:s, W:W, X:X, Y:Y, x0:x0, x1:x1 };
+}
+
+/* ---- 悬浮层：十字线 + 全序列读数（线/面积图默认带交互） ---- */
+function attachHover(wrapId, pts, built, kind){
+  var wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  var svg = wrap.querySelector('svg'), tip = wrap.querySelector('.chart-tip');
+  var cross = svg.querySelector('.cross');
+  function idxAt(px){
+    var i, last = 0;
+    for(i=0;i<pts.length;i++){ if(built.X(pts[i].x) <= px + 0.5) last = i; }
+    return last;
+  }
+  function move(e){
+    var r = svg.getBoundingClientRect(), px = e.clientX - r.left;
+    if(px < CH_M.l || px > built.W - CH_M.r){ leave(); return; }
+    var i = idxAt(px), p = pts[i], cx = built.X(p.x);
+    cross.setAttribute('transform', 'translate(' + cx.toFixed(1) + ',0)');
+    cross.style.display = '';
+    var rows;
+    if(kind === 'pool'){
+      rows = [['var(--s1)','有效质押价值', p.valid], ['var(--s-void)','失效代币价值（不计入担保）', p.dead], [null,'池内资产总额', p.total]];
+    } else {
+      rows = [['var(--s1)','融资上限', p.cap], ['var(--s2)','项目融资余额', p.bal], ['var(--s3)','项目在途金额', p.fly], [null,'可融金额', p.free]];
+    }
+    tip.innerHTML = '<div class="dt">' + p.d + ' · ' + TZ_LABEL + '</div>' +
+      rows.map(function(r){
+        return '<div class="r"><span class="lf">' + (r[0] ? '<i style="background:' + r[0] + '"></i>' : '<i style="background:transparent"></i>') +
+          esc(r[1]) + '</span><b>' + amt(r[2]) + '</b></div>';
+      }).join('') +
+      (kind === 'fin' && p.short ? '<div class="ev" style="color:var(--st-crit)">担保不足：融资上限 < 项目融资余额，缺口 ' + amt(p.bal - p.cap) + ' ' + CCY + '</div>' : '') +
+      (p.ev ? '<div class="ev"><b>' + esc(p.ev.t) + '</b>' + (p.ev.note ? '<br>' + esc(p.ev.note) : '') + '</div>' : '');
+    var tw = tip.offsetWidth || 240;
+    var left = cx + 14; if(left + tw > built.W - 6) left = cx - tw - 14;
+    tip.style.left = Math.max(6, left) + 'px';
+    tip.style.top  = (CH_M.t + 6) + 'px';
+    tip.classList.add('on');
+  }
+  function leave(){ tip.classList.remove('on'); if(cross) cross.style.display = 'none'; }
+  svg.addEventListener('mousemove', move);
+  svg.addEventListener('mouseleave', leave);
+}
+
+/* ---- 一张图的完整外壳：标题 + 图例 + 图 + 读法 + 数据表 ---- */
+function chartCard(p, kind){
+  var d = derive(p), pts = d.pts, uid = kind + '-' + p.id.replace(/[^A-Za-z0-9]/g,'');
+  var isPool = (kind === 'pool');
+  var legend = isPool
+    ? '<span><i class="s1"></i>有效质押价值（计入担保）</span>' +
+      '<span><i class="void"></i>失效代币价值（不计入担保）</span>' +
+      '<span><i class="dash"></i>池内资产总额（＝上两项之和）</span>'
+    : '<span><i class="l s1l"></i>融资上限（＝有效质押价值 × ' + (PLEDGE_RATE*100) + '%）</span>' +
+      '<span><i class="s2"></i>项目融资余额（已发生债务）</span>' +
+      '<span><i class="s3"></i>项目在途金额（已发布未终结的占用）</span>' +
+      '<span><i class="gap"></i>担保不足区间</span>';
+  var read = isPool
+    ? '读法：蓝色是<b>参与计算</b>的那部分，灰斜纹是<b>因底层应收账款失效而不计入担保</b>的那部分，两者之和才是账面的池内资产总额。' +
+      '台阶只在质押、追加、撤回、失效这些事件上变化，事件之间保持不变。'
+    : '读法：蓝线是<b>融资上限</b>，橙色面积是<b>项目融资余额</b>（已发生的债务），绿色面积堆在它之上、是<b>项目在途金额</b>（已发布未终结的占用）。' +
+      '面积顶到蓝线之间的空隙就是<b>可融金额</b>；<b>橙色面积高过蓝线的那一段就是担保不足</b>——判据只比项目融资余额，不含在途。';
+  var tbl = '<table class="dt"><thead><tr><th>日期</th>' +
+    (isPool ? '<th class="n">有效质押价值</th><th class="n">失效代币价值</th><th class="n">池内资产总额</th>'
+            : '<th class="n">融资上限</th><th class="n">项目融资余额</th><th class="n">项目在途金额</th><th class="n">可融金额</th>') +
+    '<th>事件</th></tr></thead><tbody>' +
+    pts.map(function(q){
+      return '<tr><td class="n">' + q.d + '</td>' +
+        (isPool ? '<td class="n">' + amt(q.valid) + '</td><td class="n">' + amt(q.dead) + '</td><td class="n">' + amt(q.total) + '</td>'
+                : '<td class="n">' + amt(q.cap) + '</td><td class="n">' + amt(q.bal) + '</td><td class="n">' + amt(q.fly) + '</td><td class="n">' + amt(q.free) + '</td>') +
+        '<td>' + (q.ev ? esc(q.ev.t) : '当前（' + TODAY + '）') + '</td></tr>';
+    }).join('') + '</tbody></table>';
+
+  return '<div class="card"><div class="chartbox">' +
+    '<div class="chart-head"><div><h3>' + (isPool ? '池内资产变动' : '融资变动') + '</h3>' +
+      '<p>' + (isPool ? '池子里有多少钱、其中多少还顶用。金额单位 ' + CCY + '，坐标轴刻度为压缩取整，精确值见悬浮读数与数据表。'
+                      : '额度被什么消耗、还剩多少、什么时候跨过担保线。金额单位 ' + CCY + '，单一纵轴。') + '</p></div>' +
+      '<button class="btn sm" onclick="toggleTable(\'' + uid + '\')">数据表</button></div>' +
+    '<div class="chart-legend">' + legend + '</div>' +
+    '<div class="chart-wrap" id="wrap-' + uid + '"><div class="chart-tip"></div></div>' +
+    '<div class="chart-foot"><div class="rd">' + read + '</div></div>' +
+    '<div class="chart-table" id="tbl-' + uid + '" style="display:none;margin-top:10px">' + tbl + '</div>' +
+    '</div></div>';
+}
+function toggleTable(uid){
+  var el = document.getElementById('tbl-' + uid);
+  el.style.display = (el.style.display === 'none') ? '' : 'none';
+}
+
+/* ---- 挂载 / 重绘（宽度变化时重算像素，不做缩放变形） ---- */
+var mountedCharts = [];
+function drawCharts(){
+  mountedCharts.forEach(function(m){
+    var wrap = document.getElementById('wrap-' + m.uid);
+    if(!wrap) return;
+    var W = Math.max(560, wrap.clientWidth);
+    var built = (m.kind === 'pool') ? chartPool(m.uid, m.pts, W) : chartFin(m.uid, m.pts, W);
+    var tip = wrap.querySelector('.chart-tip');
+    wrap.innerHTML = '<svg class="chart-svg" width="' + W + '" height="' + CHART_H + '" role="img" aria-label="' +
+      (m.kind === 'pool' ? '池内资产变动阶梯面积图' : '融资变动图') + '，精确数值见同卡片的数据表">' + built.svg +
+      '<g class="cross" style="display:none"><line x1="0" y1="' + CH_M.t + '" x2="0" y2="' + (CHART_H - CH_M.b) +
+      '" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="3 3"></line></g></svg>';
+    wrap.appendChild(tip);
+    attachHover('wrap-' + m.uid, m.pts, built, m.kind);
+  });
+}
+function registerChart(p, kind){
+  mountedCharts.push({ uid:kind + '-' + p.id.replace(/[^A-Za-z0-9]/g,''), pts:derive(p).pts, kind:kind });
+}
+var rsz = null;
+window.addEventListener('resize', function(){ clearTimeout(rsz); rsz = setTimeout(drawCharts, 120); });
+/* ================================================================
+   60-pages-plaza.js —— P-LS-01 融资需求列表（广场首页）
+   ================================================================ */
+
+var F_DEFAULT = { type:'', pool:'', demand:'', status:'', quotable:'', expiry:'', grade:'' };
+
+function matchFilter(p){
+  var d = derive(p), f = state.filters;
+  if(f.type   && p.assetType !== f.type) return false;
+  if(f.pool){
+    var r = f.pool.split('-');
+    if(d.valid < +r[0] || (r[1] !== 'x' && d.valid > +r[1])) return false;
+  }
+  if(f.demand){
+    var q = f.demand.split('-');
+    if(!p.demand) return false;
+    if(p.demand < +q[0] || (q[1] !== 'x' && p.demand > +q[1])) return false;
+  }
+  if(f.status && p.status !== f.status) return false;
+  if(f.grade  && d.grade !== f.grade) return false;
+  if(f.quotable === 'y' && !actionOf(availableActions(p, 'fund'), 'quote').enabled) return false;
+  if(f.quotable === 'n' &&  actionOf(availableActions(p, 'fund'), 'quote').enabled) return false;
+  if(f.expiry){
+    var dd = p.expiresAt ? daysTo(p.expiresAt) : 99999;
+    if(f.expiry === 'x'  && dd >= 0) return false;
+    if(f.expiry === '7'  && (dd < 0 || dd > 7)) return false;
+    if(f.expiry === '30' && (dd < 0 || dd > 30)) return false;
+  }
+  return true;
+}
+function sortList(list){
+  var s = state.sort;
+  return list.slice().sort(function(a,b){
+    if(s === 'demand') return (b.demand||0) - (a.demand||0);
+    if(s === 'pool')   return derive(b).valid - derive(a).valid;
+    return dnum(b.publishedAt || TODAY) - dnum(a.publishedAt || TODAY);
+  });
+}
+
+function filterBar(){
+  function sel(key, label, opts){
+    return '<div class="f"><span>' + label + '</span><select onchange="setFilter(\'' + key + '\',this.value)">' +
+      opts.map(function(o){
+        return '<option value="' + o[0] + '"' + (state.filters[key] === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+      }).join('') + '</select></div>';
+  }
+  return '<div class="filters">' +
+    sel('type','资产类型',    [['','全部'],['应收账款类','应收账款类']]) +
+    sel('pool','池内资产价值（有效质押价值）', [['','不限'],['0-500000','50 万以下'],['500000-1000000','50–100 万'],['1000000-x','100 万以上']]) +
+    sel('demand','融资需求金额', [['','不限'],['0-300000','30 万以下'],['300000-600000','30–60 万'],['600000-x','60 万以上']]) +
+    sel('status','项目状态',  [['','全部']].concat(['S-FP-2','S-FP-3','S-FP-4','S-FP-5','S-FP-6'].map(function(k){ return [k, FP_STATUS[k].t]; }))) +
+    sel('quotable','是否可报价', [['','不限'],['y','可报价'],['n','暂不可报价']]) +
+    sel('expiry','有效期临近',[['','不限'],['7','7 天内到期'],['30','30 天内到期'],['x','已到期']]) +
+    sel('grade','担保状态',   [['','全部']].concat(GRADES.map(function(g){ return [g.k, g.t]; }))) +
+    '<div class="spacer"></div>' +
+    '<div class="f"><span>排序</span><select onchange="setSort(this.value)">' +
+      [['pub','发布时间倒序'],['demand','按需求金额'],['pool','按池内资产价值']].map(function(o){
+        return '<option value="' + o[0] + '"' + (state.sort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+      }).join('') + '</select></div>' +
+    (JSON.stringify(state.filters) !== JSON.stringify(F_DEFAULT)
+      ? '<div class="rs"><button class="btn sm" onclick="resetFilters()">清空筛选</button></div>' : '') +
+  '</div>';
+}
+
+function projectCard(p){
+  var d = derive(p), acts = availableActions(p, state.role), q = actionOf(acts, 'quote');
+  var lastDue = p.tokens.length
+    ? p.tokens.map(function(t){ return t.due; }).sort()[0] : '—';
+  return '<article class="pcard"><div class="top">' +
+    '<div class="pool">' +
+      '<div class="zn">池内资产</div>' +
+      '<div class="facts">' +
+        '<div><div class="k">抵押物张数</div><div class="v">' + p.tokens.length + ' 张' +
+          (d.deadCount ? '<span style="font-size:11.5px;color:var(--ink-3);font-family:var(--sans)"> · 含失效 ' + d.deadCount + ' 张</span>' : '') + '</div></div>' +
+        '<div><div class="k">有效质押价值</div><div class="v">' + amt(d.valid) + '</div></div>' +
+        '<div><div class="k">资产类型</div><div class="v txt">' + esc(p.assetType) + '</div></div>' +
+        '<div><div class="k">底层资产最近到期日</div><div class="v">' + lastDue + '</div></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="fin">' +
+      '<div class="zn">融资信息</div>' +
+      '<h3><button onclick="go(\'project\',{id:\'' + p.id + '\'})">' + esc(p.name) + '</button></h3>' +
+      '<div class="org">' + esc(p.owner) + ' · <span class="id">' + p.id + '</span></div>' +
+      '<div class="demand">' +
+        (p.demand ? '<span class="big">' + amt(p.demand) + '</span><span class="lb">' + CCY + ' · 融资需求金额</span>'
+                  : '<span class="big">—</span><span class="lb">当前无在途融资需求</span>') +
+      '</div>' +
+      '<div class="tags">' + statusTags(p) + (p.quotes ? tag('plain','已收到报价 ' + p.quotes + ' 笔') : '') + '</div>' +
+      '<div class="facts">' +
+        '<div><div class="k">融资上限</div><div class="v">' + amt(d.cap) + '</div></div>' +
+        '<div><div class="k">可融金额</div><div class="v">' + amt(d.free) + '</div></div>' +
+        '<div><div class="k">有效期至</div><div class="v">' + (p.expiresAt || '—') + '</div></div>' +
+        (d.gap ? '<div><div class="k">担保缺口</div><div class="v" style="color:var(--st-crit)">' + amt(d.gap) + '</div></div>'
+               : '<div><div class="k">项目融资余额</div><div class="v">' + amt(d.bal) + '</div></div>') +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="bot">' +
+    '<div class="m">' + meterBlock(d, true) + '</div>' +
+    '<div class="act">' +
+      '<div style="display:flex;gap:8px">' +
+        '<button class="btn sm" onclick="go(\'project\',{id:\'' + p.id + '\'})">查看详情</button>' +
+        (q.enabled ? '<button class="btn sm primary" onclick="doQuote(\'' + p.id + '\')">立即报价</button>'
+                   : '<button class="btn blocked sm" aria-disabled="true" onclick="toast(' + JSON.stringify(q.reason).replace(/"/g,'&quot;') + ')"><span class="sig" aria-hidden="true">⊘</span>立即报价</button>') +
+      '</div>' +
+      (q.enabled ? '' : '<div class="why"><span class="sig" aria-hidden="true">⊘</span><span>' + esc(q.reason) +
+        (state.role === 'guest' ? ' <button class="btn link" onclick="signIn()">登录 / 注册</button>' : '') + '</span></div>') +
+    '</div>' +
+  '</div></article>';
+}
+
+function pagePlaza(){
+  var head = '<div class="page-head"><div><h1>融资需求广场</h1>' +
+    '<div class="sub">平台上全部入驻资产方创建的融资项目，一个项目就是一个资产池。' +
+    '信息 L1～L5 对所有人全量可见，不登录也能看完；只有操作入口按登录态与权限收敛。</div></div>' +
+    (state.role === 'asset' ? '<button class="btn primary" onclick="go(\'publish\',{id:null})">创建融资项目</button>' : '') +
+    '</div>';
+
+  if(state.feed === 'loading') return head + filterBar() + skeletonCards(3);
+  if(state.feed === 'fail')
+    return head + filterBar() + blankState('⚠', '融资需求加载失败',
+      '服务端未返回列表数据。这不影响已发布项目的链上与额度状态，可重试。',
+      '<button class="btn primary" onclick="setFeed(\'ok\')">重新加载</button>');
+  if(state.feed === 'empty')
+    return head + filterBar() + blankState('○', '暂无融资需求',
+      '目前平台上还没有已发布的融资项目。资产方在资产平台完成应收账款确权、由运营端签发代币后，' +
+      '即可在此创建资产池并发布融资需求。',
+      '<button class="btn" onclick="signIn()">注册为资产方</button>');
+
+  var list = sortList(plazaProjects().filter(matchFilter));
+  if(state.feed === 'noresult' || list.length === 0)
+    return head + filterBar() + blankState('⌕', '没有符合筛选条件的融资需求',
+      '当前筛选组合下没有匹配的资产池。可放宽池内资产价值区间或项目状态，' +
+      '也可以清空筛选查看全部 ' + plazaProjects().length + ' 条。',
+      '<button class="btn primary" onclick="resetFilters()">清空筛选</button>');
+
+  var total = list.length, start = (state.pageNo-1)*PAGE_SIZE;
+  var shown = list.slice(start, start + PAGE_SIZE);
+  return head + filterBar() +
+    '<div class="plist">' + shown.map(projectCard).join('') + '</div>' +
+    '<div class="pager"><span>共 ' + total + ' 条 · 单页 ' + PAGE_SIZE + ' 条 · 第 ' + state.pageNo + ' / ' +
+      Math.max(1, Math.ceil(total/PAGE_SIZE)) + ' 页</span>' +
+      '<div class="pg"><button class="btn sm" ' + (state.pageNo<=1?'disabled':'') + ' onclick="setPage(' + (state.pageNo-1) + ')">上一页</button>' +
+      '<button class="btn sm" ' + (start+PAGE_SIZE>=total?'disabled':'') + ' onclick="setPage(' + (state.pageNo+1) + ')">下一页</button></div></div>';
+}
+
+function setFilter(k, v){ state.filters[k] = v; state.pageNo = 1; render(); }
+function setSort(v){ state.sort = v; render(); }
+function resetFilters(){ state.filters = JSON.parse(JSON.stringify(F_DEFAULT)); state.pageNo = 1; if(state.feed==='noresult') state.feed='ok'; render(); }
+function setPage(n){ state.pageNo = n; render(); window.scrollTo(0,0); }
+
+/* 报价流程属 WS-325（M-2），本模块只交付广场侧入口与 ⊘ 口径 */
+function doQuote(id){
+  var p = findProject(id);
+  openScrim('<div class="modal"><div class="mh"><h2>立即报价</h2><p>' + esc(p.name) + ' · ' + p.id + '</p></div>' +
+    '<div class="mb"><div class="note info"><span class="ic">i</span><div class="bd">' +
+    '<b>报价及之后的环节不在本模块范围内</b>（X-LS-01）。授信核定、报价、接受 / 拒绝报价、放款与融资确认在 WS-325（M-2）及之后实现。' +
+    '<p>本模块交付的是广场侧的报价入口与它的准入口径：报价<b>不新增在途占用</b>（AC-FIN-23），' +
+    '项目在途金额的唯一来源是发布占用；提交报价时服务端按 <b>可融金额 ≥ 本次金额</b> 校验（AC-FIN-12），' +
+    '并保留一份池快照供机构回看（AC-LS-27）。</p></div></div></div>' +
+    '<div class="mf"><button class="btn primary" data-autofocus onclick="closeScrim()">知道了</button></div></div>');
+}
+/* ================================================================
+   61-pages-detail.js —— P-LS-02 融资需求详情
+   分区顺序按资金方决策路径：先看要融多少 → 再看池子值多少、够不够
+   → 再看抵押物逐张明细 → 最后看条款与历史。
+   L1～L5 对游客全量可见、不脱敏、不区间化、不限行数；只有 L6 操作区按 ⊘ 收敛。
+   ================================================================ */
+
+function pageProject(){
+  var p = findProject(state.id);
+  /* 草稿项目不进广场：他人与游客深链直达一律返回"内容不存在或无权访问"，不暴露其是否存在 */
+  if(!p || (p.draft && !(state.role === 'asset' && p.entity === ACTORS.asset.entity))){
+    return blankState('⊘', '内容不存在或无权访问',
+      '该地址对应的融资需求不存在，或您当前的身份没有访问权限。草稿项目不进入广场、不可搜索、不可深链直达（AC-LS-05 / D-FIN-64）。',
+      '<button class="btn primary" onclick="go(\'plaza\')">返回融资需求广场</button>');
+  }
+  if(p.draft) return pagePublish();   /* 本方草稿直接进入 P-LS-03 续做 */
+
+  var d = derive(p), acts = availableActions(p, state.role);
+  mountedCharts = [];
+  registerChart(p, 'pool'); registerChart(p, 'fin');
+
+  var crumb = '<div class="crumb"><button onclick="go(\'plaza\')">融资需求广场</button><i>/</i><span>' +
+    esc(p.name) + '</span>' +
+    (state.from === 'console'
+      /* H-05：深链来源时提供返回入口；非深链来源不展示 */
+      ? '<span style="margin-left:auto"><button class="btn sm" onclick="backToConsole()">← 返回我的控制台</button></span>' : '') +
+    '</div>';
+
+  /* ---- L2 融资需求摘要 ---- */
+  var hero = '<section class="hero"><div class="l1"><div>' +
+    '<h1>' + esc(p.name) + '</h1>' +
+    '<div class="meta"><span>资产方 <b>' + esc(p.owner) + '</b></span>' +
+      '<span>项目编号 <b class="n">' + p.id + '</b></span>' +
+      '<span>发布时间 <b class="n">' + (p.publishedAt || '—') + '</b></span>' +
+      '<span>有效期至 <b class="n">' + (p.expiresAt || '—') + '</b>（系统按首次发布日 + ' + TERM_YEARS + ' 年生成，只读）</span>' +
+      '<span>时区 <b>' + TZ_LABEL + '</b></span></div>' +
+    '<div class="tags">' + statusTags(p) + (p.quotes ? tag('plain','已收到报价 ' + p.quotes + ' 笔') : '') + '</div>' +
+    '</div><div class="demand"><div class="lb">融资需求金额</div>' +
+      (p.demand ? '<div class="big">' + amt(p.demand) + '<span class="ccy">' + CCY + '</span></div>'
+                : '<div class="big">—</div><div class="lb" style="margin-top:4px">当前无在途融资需求</div>') +
+    '</div></div></section>';
+
+  /* ---- L3 池内资产与额度总览（含两张图） ---- */
+  var l3 = '<div class="card"><div class="ch"><h2><span class="lvl">L3</span>池内资产与额度总览</h2>' +
+    '<div style="font-size:12.5px;color:var(--ink-3)">派生量由服务端权威重算，控制台与广场读到的是同一个数</div></div>' +
+    '<div class="cb">' +
+      trioBlock(d) +
+      '<div style="height:26px"></div>' +
+      meterBlock(d) +
+      '<div style="height:18px"></div>' +
+      '<div class="kv c4">' +
+        '<div><div class="k">池内资产总额 <span class="tag plain">FP-10</span></div><div class="v">' + amt(d.total) + '</div><div class="x">含失效代币，仅展示，不参与任何校验</div></div>' +
+        '<div><div class="k">失效代币价值 / 张数 <span class="tag plain">FP-19</span></div><div class="v">' + amt(d.dead) + ' / ' + d.deadCount + ' 张</div><div class="x">因底层应收账款失效，不计入担保</div></div>' +
+        '<div><div class="k">项目融资余额 <span class="tag plain">FP-13</span></div><div class="v">' + amt(d.bal) + '</div><div class="x">已确认（还款中）/ 已到期 / 逾期的未偿本金合计</div></div>' +
+        '<div><div class="k">项目在途金额 <span class="tag plain">FP-14</span></div><div class="v">' + amt(d.fly) + '</div><div class="x">唯一来源为发布占用，报价不新增</div></div>' +
+        '<div><div class="k">可融金额 <span class="tag plain">FP-15</span></div><div class="v">' + amt(d.free) + '</div><div class="x">max(0, 融资上限 − 项目融资余额 − 项目在途金额)</div></div>' +
+        '<div><div class="k">可撤回上限 <span class="tag plain">FP-16</span></div><div class="v">' + amt(d.wLimit) + '</div><div class="x">可融金额 ÷ ' + (PLEDGE_RATE*100) + '%，仅约束未失效代币</div></div>' +
+        '<div><div class="k">担保状态档位 <span class="tag plain">FP-20</span></div><div class="v txt">' + gradeMeta(d.grade).t + '</div><div class="x">' + esc(gradeMeta(d.grade).x) + '</div></div>' +
+        (d.gap
+          ? '<div><div class="k">担保缺口 / 需追加资产价值 <span class="tag plain">FP-21</span></div><div class="v" style="color:var(--st-crit)">' + amt(d.gap) + ' / ' + amt(d.need) + '</div><div class="x">需追加资产价值 ＝ 缺口 ÷ ' + (PLEDGE_RATE*100) + '%</div></div>'
+          : '<div><div class="k">已收到报价数 <span class="tag plain">FP-22</span></div><div class="v">' + p.quotes + ' 笔</div><div class="x">累计报价笔数，含已拒绝 / 已失效</div></div>') +
+      '</div>' +
+      gradesBlock(d) +
+      '<div class="note" style="margin-top:14px"><span class="ic">≠</span><div class="bd">' +
+        '<b>预警线与准入闸门不是同一条线。</b>闸门比较 <span class="n">项目融资余额 + 项目在途金额</span>，管"还能不能借"；' +
+        '预警只比较 <span class="n">项目融资余额</span>，管"已借的还保得住吗"。两者受众与处置动作都不同，分别呈现。' +
+      '</div></div>' +
+    '</div></div>' +
+    chartCard(p, 'pool') +
+    chartCard(p, 'fin');
+
+  /* ---- L4 抵押物明细 ---- */
+  var l4 = '<div class="card"><div class="ch"><h2><span class="lvl">L4</span>抵押物明细</h2>' +
+    '<div style="font-size:12.5px;color:var(--ink-3)">共 ' + p.tokens.length + ' 张 · 全量展示，不脱敏、不区间化、不限行数</div></div>' +
+    '<div class="cb tight"><div class="tscroll"><table class="dt"><thead><tr>' +
+      '<th>代币编号</th><th class="n">美元金额</th><th>底层账期</th><th>买方企业名</th><th>合同号 / 发票号</th>' +
+      '<th>质押状态</th><th>是否计入担保</th><th>链上状态</th><th>入池交易哈希</th></tr></thead><tbody>' +
+      (p.tokens.length ? p.tokens.map(function(t){
+        return '<tr><td class="n">' + t.id + '</td><td class="n">' + amt(t.amt) + '</td><td class="n">' + t.due + '</td>' +
+          '<td>' + esc(t.buyer) + '</td><td class="n">' + t.contract + ' / ' + t.invoice + '</td>' +
+          '<td>' + tag('mute','PS-2 已质押') + '</td>' +
+          '<td>' + (t.dead ? tag('warn','不计入担保 · ' + (t.deadAt||'') + ' 失效') : tag('good','计入担保', true)) + '</td>' +
+          '<td>' + tag(CT_STATUS[t.ct].tone, t.ct + ' ' + CT_STATUS[t.ct].t, true) + '</td>' +
+          '<td class="n" style="color:var(--ink-3)">' + shortHash(t.hash) + '</td></tr>';
+      }).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--ink-3);padding:28px">本项目暂无有效质押</td></tr>') +
+    '</tbody></table></div></div>' +
+    '<div class="cb" style="padding-top:14px"><div class="note"><span class="ic">i</span><div class="bd">' +
+      '全量公开的范围是广场上展示的融资需求与融资业务信息；<b>不含</b>授信额度、他人控制台数据、运营端诊断字段、附件影像件与联系人联系方式。' +
+      '<p>客观记录：买方企业名、合同号、发票号与精确金额对公网访客完全公开，涉及第三方权益，而确权流程目前没有"同意公开"授权环节。' +
+      '按需求方裁定执行，配套的接口速率限制与异常抓取识别见分册第 8 章。</p>' +
+    '</div></div></div></div>';
+
+  /* ---- L5 商务条款与历史融资记录 ---- */
+  var snap = p.snapshot ? '<div class="card"><div class="ch"><h2>报价时的池快照</h2>' +
+      '<p>' + p.snapshot.at + ' · ' + TZ_LABEL + '</p></div><div class="cb">' +
+      '<div class="kv c2">' +
+        '<div><div class="k">快照时抵押物</div><div class="v">' + p.snapshot.tokens + ' 张</div></div>' +
+        '<div><div class="k">快照时有效质押价值</div><div class="v">' + amt(p.snapshot.valid) + '</div></div>' +
+        '<div><div class="k">快照时融资上限</div><div class="v">' + amt(p.snapshot.cap) + '</div></div>' +
+        '<div><div class="k">快照时可融金额</div><div class="v">' + amt(p.snapshot.free) + '</div></div>' +
+      '</div>' +
+      '<div class="note" style="margin-top:12px"><span class="ic">⇄</span><div class="bd">' +
+        '与<b>实时池况</b>并列：当前有效质押价值 <span class="n">' + amt(d.valid) + '</span>、融资上限 <span class="n">' + amt(d.cap) + '</span>。' +
+        '池子既可增也可减，机构必须能看到"我报价时池子是什么样"；池值下降到触发预警时会同时通知在途报价机构。' +
+      '</div></div></div></div>' : '';
+
+  var l5 = '<div class="card"><div class="ch"><h2><span class="lvl">L5</span>商务条款与历史融资记录</h2></div><div class="cb">' +
+    (p.terms ? '<div class="kv c4">' +
+      '<div><div class="k">报价利率</div><div class="v txt">' + esc(p.terms.rate) + '</div></div>' +
+      '<div><div class="k">融资期限</div><div class="v txt">' + esc(p.terms.term) + '</div></div>' +
+      '<div><div class="k">还款方式</div><div class="v txt">' + esc(p.terms.repay) + '</div></div>' +
+      '<div><div class="k">资金用途</div><div class="v txt">' + esc(p.terms.use) + '</div></div>' +
+    '</div>' : '<div class="note"><span class="ic">○</span><div class="bd">该项目当前无公开的在途业务商务条款。</div></div>') +
+    '<div style="height:20px"></div>' +
+    '<h3 style="font-size:13.5px;font-weight:650;margin-bottom:12px">历史时间线</h3>' +
+    '<div class="tl">' + d.pts.filter(function(q){ return q.ev; }).slice().reverse().map(function(q, i){
+      return '<div class="it' + (i===0?' on':'') + '"><div class="d">' + q.d + '</div><div class="t">' + esc(q.ev.t) + '</div>' +
+        (q.ev.note ? '<div class="x">' + esc(q.ev.note) + '</div>' : '') + '</div>';
+    }).join('') + '</div>' +
+    (p.deals.length ? '<div style="height:20px"></div><h3 style="font-size:13.5px;font-weight:650;margin-bottom:10px">融资业务（本模块只读引用，写在 WS-325 及之后）</h3>' +
+      '<div class="tscroll"><table class="dt"><thead><tr><th>融资业务编号</th><th class="n">金额</th><th>状态</th><th class="n">发生日</th><th>说明</th></tr></thead><tbody>' +
+      p.deals.map(function(x){
+        return '<tr><td class="n">' + x.id + '</td><td class="n">' + amt(x.amt) + '</td><td>' + tag('plain', x.st) + '</td>' +
+          '<td class="n">' + x.at + '</td><td style="color:var(--ink-2)">' + esc(x.x) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' : '') +
+  '</div></div>';
+
+  /* ---- L6 操作区：按 available_actions 渲染，不自行依据状态推断 ---- */
+  var rail = '<div class="card"><div class="ch"><h2><span class="lvl">L6</span>操作区</h2>' +
+    '<p>当前身份：' + esc(ACTORS[state.role].full) + '</p></div><div class="cb">' +
+    '<div style="display:flex;flex-direction:column;gap:12px">' +
+      acts.map(function(a){
+        return '<div>' + actionBtn(a, actionHandler(p, a) , 'block') + '</div>';
+      }).join('') +
+    '</div>' +
+    '<div class="note" style="margin-top:16px;font-size:12.5px"><span class="ic">⊘</span><div class="bd">' +
+      '置灰不构成校验。可执行动作清单由服务端每次读取时返回，未登录或越权直接调用写接口一律在服务端拒绝。' +
+    '</div></div>' +
+    '<div style="margin-top:14px;font-size:11.5px;color:var(--ink-3);line-height:1.7;border-top:1px solid var(--line);padding-top:12px">' +
+      '本页深链锚点：<span class="n">project/' + p.id + '</span><br>' +
+      '动作锚点：<span class="n">?action=pledge / withdraw / publish / redeem</span>' +
+    '</div>' +
+  '</div></div>';
+
+  return crumb + hero + shortAlert(p, d, state.role === 'asset' && p.entity === ACTORS.asset.entity) + usedUpNote(d) +
+    (state.role === 'asset' && p.entity === ACTORS.asset.entity ? redeemBanner() : '') +
+    '<div class="sec-grid"><div>' + l3 + l4 + l5 + '</div><aside class="rail">' + rail + snap + '</aside></div>';
+}
+
+function actionHandler(p, a){
+  switch(a.key){
+    case 'quote':    return 'doQuote(\'' + p.id + '\')';
+    case 'publish':  return 'go(\'publish\',{id:\'' + p.id + '\',action:\'publish\'})';
+    case 'pledge':   return 'openPledge(\'' + p.id + '\')';
+    case 'withdraw': return 'go(\'publish\',{id:\'' + p.id + '\',action:\'withdraw\'})';
+    case 'redeem':   return 'openRedeem()';
+    case 'close':    return 'closeProject(\'' + p.id + '\')';
+  }
+  return 'void 0';
+}
+function backToConsole(){
+  toast('我的控制台（M-5）不在本模块范围内（X-LS-02）。来源上下文由服务端暂存，动作完成后回控制台对应 tab 与锚点。');
+}
+function closeProject(id){
+  var p = findProject(id);
+  openScrim('<div class="modal"><div class="mh"><h2>关闭融资项目</h2><p>' + esc(p.name) + ' · ' + p.id + '</p></div>' +
+    '<div class="mb"><div class="note warn"><span class="ic">!</span><div class="bd">' +
+    '关闭后项目转「已关闭」，平台在同一时刻解除该池全部占用与担保关系，池内 ' + p.tokens.length + ' 张代币置「已释放 · 待提取」。' +
+    '<p>业务释放<b>即时、无链上动作、无费用</b>；代币仍停留在质押合约内，需您自行发起提取并自付 gas，' +
+    '<b>不会自动回到钱包</b>。未提取前不属于任何池、不计入任何质押价值、也不能被再次质押。</p>' +
+    '</div></div></div>' +
+    '<div class="mf"><button class="btn" onclick="closeScrim()">取消</button>' +
+    '<button class="btn primary" data-autofocus onclick="closeScrim();toast(\'演示原型：此处不真正改动演示数据。\')">确认关闭</button></div></div>');
+}
+/* ================================================================
+   62-pages-publish.js —— P-LS-03 建池与发布（两段式）
+   ① 建池与质押 → ② 填写金额并发布；顶部两步进度条常驻，可中断可续做。
+   两段之间项目已持久化：关页面、断网、换设备后从"我的融资项目"回来直接进第二段，
+   任何一步都不要求重新质押或重新付一次 gas（AC-LS-54）。
+   第二段的发布校验失败不回滚已完成的质押（AC-LS-55）。
+   ================================================================ */
+
+function stepsBar(step, p){
+  var d = p ? derive(p) : null;
+  var s1done = !!p, s2done = !!(p && !p.draft);
+  function cell(no, title, sub, cls, sv, click){
+    return '<' + (click ? 'button' : 'div') + ' class="st ' + cls + (click ? ' clickable' : '') + '"' +
+      (click ? ' onclick="' + click + '"' : '') + '>' +
+      '<span class="no">' + (cls.indexOf('done') >= 0 ? '✓' : no) + '</span>' +
+      '<span class="tx"><b>' + title + '</b><span>' + sub + '</span></span>' +
+      (sv ? '<span class="sv">' + sv + '</span>' : '') +
+      '</' + (click ? 'button' : 'div') + '>';
+  }
+  return '<div class="steps">' +
+    cell(1, '建池与质押', s1done ? '已完成 · 项目已持久化' : '填项目名 + 勾选至少一张可质押代币',
+         s1done ? (step === 1 ? 'now' : 'done') : (step === 1 ? 'now' : ''),
+         p ? (p.tokens.length + ' 张 · ' + amt(derive(p).total) + ' ' + CCY) : '',
+         (s1done && step !== 1) ? 'go(\'publish\',{id:\'' + p.id + '\',step:1})' : null) +
+    cell(2, '填写金额并发布', s2done ? '已发布 · 当前为质押与需求管理' : '填融资需求金额，发布即占用额度',
+         step === 2 ? 'now' : (s2done ? 'done' : ''),
+         d ? ('可融金额 ' + amt(d.free) + ' ' + CCY) : '',
+         (s1done && step !== 2) ? 'go(\'publish\',{id:\'' + p.id + '\',step:2})' : null) +
+  '</div>';
+}
+
+/* ---- 第一段：建池与质押 ---- */
+/* 第一段回看：项目已建，只读呈现当时的建池结果 + 进入第二段 */
+function stepOneReview(p){
+  var d = derive(p);
+  return '<div class="two"><div>' +
+    '<div class="card"><div class="ch"><h2>基本信息</h2><p>第一段已完成 · 项目已持久化</p></div><div class="cb">' +
+      '<div class="kv c2"><div><div class="k">项目名称</div><div class="v txt">' + esc(p.name) + '</div></div>' +
+      '<div><div class="k">项目编号</div><div class="v">' + p.id + '</div></div></div></div></div>' +
+    '<div class="card"><div class="ch"><h2>本池已质押代币</h2>' +
+      '<p>共 ' + p.tokens.length + ' 张 · 池内资产总额 ' + usd(d.total) + '</p></div><div class="cb tight">' +
+      '<div class="tscroll"><table class="dt"><thead><tr><th>代币编号</th><th class="n">美元金额</th><th>底层账期</th>' +
+      '<th>买方企业名</th><th>链上状态</th><th>是否计入担保</th></tr></thead><tbody>' +
+      (p.tokens.length ? p.tokens.map(function(t){
+        return '<tr><td class="n">' + t.id + '</td><td class="n">' + amt(t.amt) + '</td><td class="n">' + t.due + '</td>' +
+          '<td>' + esc(t.buyer) + '</td><td>' + tag(CT_STATUS[t.ct].tone, t.ct + ' ' + CT_STATUS[t.ct].t, true) + '</td>' +
+          '<td>' + (t.dead ? tag('warn','不计入担保') : t.ct === 'CT-2' ? tag('good','计入担保', true) : tag('mute','处理中不预先计入')) + '</td></tr>';
+      }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--ink-3);padding:26px">本项目暂无有效质押</td></tr>') +
+      '</tbody></table></div></div></div>' +
+  '</div><aside class="rail"><div class="card"><div class="ch"><h2>继续</h2></div><div class="cb">' +
+    trioBlock(d) +
+    '<button class="btn primary block lg" style="margin-top:14px" onclick="go(\'publish\',{id:\'' + p.id + '\',step:2})">进入第二段 · 填写金额并发布</button>' +
+    '<button class="btn block" style="margin-top:10px" onclick="openPledge(\'' + p.id + '\')">追加质押</button>' +
+    '<div class="hint" style="margin-top:12px">第一段与第二段的失败互不牵连：第二段的发布校验失败不会回滚已完成的质押。</div>' +
+  '</div></div></aside></div>';
+}
+
+function stepOne(p){
+  if(p) return stepOneReview(p);
+  var editable = true;                           /* 新建模式才可勾选钱包代币 */
+  var sel = state.wiz.sel, selList = WALLET.filter(function(t){ return sel[t.id]; });
+  var selSum = selList.reduce(function(a,t){ return a + t.amt; }, 0);
+  var nameOk = state.wiz.name.trim().length >= 1 && state.wiz.name.trim().length <= 60;
+  var canSubmit = editable && nameOk && selList.length > 0 && !state.wiz.busy;
+
+  var filterNote = '<div class="note" style="margin-bottom:14px"><span class="ic">⌕</span><div class="bd">' +
+    '<b>下列代币已按可质押条件筛选</b>：① 签发状态为「已签发」；② 归属当前企业主体；③ 当前未被任何有效质押占用、且不在质押合约内' +
+    '（含"已释放待提取"的代币，须先提取才能再质押）；④ 底层应收账款未失效；⑤ 代币类型为应收账款类（本期能力边界）；' +
+    '⑥ 与本项目已质押代币为同一类型（长期规则，同一池内不混合类型）。' +
+    '<p>本期不支持按数量拆分，<b>一张代币整张质押</b>，以"张"为单位勾选，没有数量输入框。</p></div></div>';
+
+  var tbl = '<div class="sub-h"><span>可质押代币 · ' + WALLET.length + ' 张</span>' +
+    (editable ? '<span class="x"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">' +
+      '<input type="checkbox" ' + (selList.length === WALLET.length ? 'checked' : '') + ' onchange="wizAll(this.checked)">批量勾选全部（把 N 笔合成 1 笔是最有效的降费手段）</label></span>' : '') +
+    '</div><div class="sub-b"><div class="tscroll"><table class="dt"><thead><tr>' +
+    (editable ? '<th class="sel"></th>' : '') +
+    '<th>代币编号</th><th class="n">美元金额</th><th>底层账期</th><th>买方企业名</th><th>合同号 / 发票号</th><th>代币类型</th></tr></thead><tbody>' +
+    WALLET.map(function(t){
+      return '<tr class="' + (sel[t.id] ? 'picked' : '') + '">' +
+        (editable ? '<td class="sel"><input type="checkbox" ' + (sel[t.id] ? 'checked' : '') +
+          ' onchange="wizTok(\'' + t.id + '\')" aria-label="勾选 ' + t.id + '"></td>' : '') +
+        '<td class="n">' + t.id + '</td><td class="n">' + amt(t.amt) + '</td><td class="n">' + t.due + '</td>' +
+        '<td>' + esc(t.buyer) + '</td><td class="n">' + t.contract + ' / ' + t.invoice + '</td><td>' + esc('应收账款类') + '</td></tr>';
+    }).join('') + '</tbody></table></div></div>';
+
+  var preview = '<div class="pick-sum" style="margin-top:14px">' +
+    '<span>已勾选 <span class="n">' + selList.length + '</span> 张</span><span class="sp"></span>' +
+    '<span>合计 <span class="n">' + amt(selSum) + '</span> ' + CCY + '</span><span class="sp"></span>' +
+    '<span>提交成功后融资上限将增加 <span class="n">' + amt(round2(selSum * PLEDGE_RATE)) + '</span> ' + CCY + '</span>' +
+    '<span style="margin-left:auto;font-size:12px;color:var(--ink-3)">前端即时预览；提交时由服务端权威重算并校验，不一致以服务端为准</span></div>';
+
+  var gas = gasEstimate(Math.max(1, selList.length));
+  var rail = '<div class="card"><div class="ch"><h2>费用与签名</h2><p>链上转入质押合约</p></div><div class="cb">' +
+    '<div class="cost">' +
+      '<div class="row"><span class="k">本次链上操作笔数</span><span class="v">' + Math.max(0, selList.length) + ' 笔（合并为一次提交）</span></div>' +
+      '<div class="row"><span class="k">预估 gas</span><span class="v">' + gas + ' ETH</span></div>' +
+      '<div class="row"><span class="k">承担方</span><span class="v txt">' + esc(ACTORS.asset.full) + '（本企业）</span></div>' +
+      '<div class="foot">gas 由区块链收取，<b>平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</b>。' +
+      '链上失败也可能已经产生费用。签名与付费由本页<b>唤起外部 SDK 服务</b>完成，平台不自建钱包连接组件。</div>' +
+    '</div>' +
+    '<button class="btn primary block lg" style="margin-top:14px" ' + (canSubmit ? '' : 'disabled') + ' onclick="submitCreate()">' +
+      (state.wiz.busy ? '提交中…' : '创建项目并发起质押') + '</button>' +
+    (editable && !canSubmit && !state.wiz.busy
+      ? '<div class="hint">' + (!nameOk ? '请先填写项目名称（1～60 字符）。' : '未勾选任何一张代币时不可提交——创建项目时必须至少质押一笔。') + '</div>' : '') +
+    '</div></div>' +
+    '<div class="card"><div class="ch"><h2>本段规则</h2></div><div class="cb" style="font-size:12.5px;color:var(--ink-2);line-height:1.75">' +
+      '<p>· 创建校验的对象是<b>质押申请已提交</b>（链上「处理中」或「成功」均算通过），不要求等待链上确认完成。</p>' +
+      '<p>· 提交后项目落<b>草稿（已建池 · 未发布）</b>，对外完全不可见：不进广场、不可搜索、他人深链直达返回"内容不存在或无权访问"。</p>' +
+      '<p>· 第一段成功后项目即已持久化，可随时离开、随后从"我的融资项目"续做第二段，<b>不会要求重新质押或重新付一次 gas</b>。</p>' +
+      '<p>· 发布校验的对象才是链上事实：有效质押价值 &gt; 0 且融资需求金额 ≤ 可融金额。</p>' +
+    '</div></div>';
+
+  return '<div class="two"><div>' +
+    (state.wiz.result ? resultPanel() : '') +
+    '<div class="card"><div class="ch"><h2>基本信息</h2></div><div class="cb">' +
+      '<label class="fl" for="pname">项目名称 <b>*</b></label>' +
+      '<input id="pname" type="text" maxlength="60" placeholder="例如：华东电子元件应收账款池" ' +
+        (editable ? '' : 'disabled ') + 'value="' + esc(p ? p.name : state.wiz.name) + '" oninput="wizName(this.value)" class="' +
+        (state.wiz.name && !nameOk ? 'bad' : '') + '">' +
+      '<div class="hint">1～60 字符；同一企业内不要求唯一。项目名称在发布后仍可修改。</div>' +
+    '</div></div>' +
+    '<div class="card"><div class="ch"><h2>代币质押</h2><p>创建项目时必须至少质押一笔代币，"空池草稿"不能由创建动作产生</p></div>' +
+      '<div class="cb">' + filterNote + tbl + preview + '</div></div>' +
+  '</div><aside class="rail">' + rail + '</aside></div>';
+}
+
+/* ---- 链上结果面板：五类失败 / 等待各有独立页面态 ---- */
+function resultPanel(){
+  var r = state.wiz.result, o = CHAIN_OUTCOMES[r.k];
+  if(r.k === 'ok')
+    return '<div class="note good" style="margin-bottom:16px"><span class="ic">✓</span><div class="bd">' +
+      '<b>链上转入成功</b>（CT-2）：' + r.n + ' 张代币已入池并计入有效质押价值。' +
+      '<p>实际 gas ' + r.gas + ' ETH，同一次操作只记一次。可继续第二段：填写融资需求金额并发布。</p></div></div>';
+  if(r.k === 'partial')
+    return '<div class="note warn" style="margin-bottom:16px"><span class="ic">!</span><div class="bd">' +
+      '<b>部分成功 · 按张独立结算</b>：' + r.ok + ' 张入池成功（CT-2），' + r.bad + ' 张链上执行失败（CT-3）已退回可质押。' +
+      '<p>失败原因：质押合约执行被回退。失败那 ' + r.bad + ' 张的 gas 已产生、不可退回；重试将发起新交易并再次产生 gas。' +
+      '发布校验以实际成功入池后的服务端重算结果为准。</p>' +
+      '<p style="margin-top:8px"><button class="btn sm" onclick="go(\'publish\',{id:\'' + state.wiz.pid + '\',step:1})">重新质押失败的 ' + r.bad + ' 张（将产生新的 gas）</button></p></div></div>';
+  if(r.k === 'timeout')
+    return '<div class="note warn" style="margin-bottom:16px"><span class="ic">⧗</span><div class="bd">' +
+      '<b>' + esc(o.head) + '</b><p>' + esc(o.body) + '</p>' +
+      '<p>费用：' + esc(o.fee) + ' 该 ' + r.n + ' 张代币保持「处理中」，期间不接受新动作。' +
+      '超过阈值后转为失败并生成运营待办。</p>' +
+      '<p style="margin-top:8px"><button class="btn sm" onclick="queryChain()">查询链上状态</button>' +
+      '<span style="margin-left:10px;font-size:12px;color:var(--ink-3)">本状态下不提供重试按钮——查得未上链后，重试入口才会出现。</span></p></div></div>';
+  return '<div class="note ' + (o.tone === 'mute' ? '' : o.tone) + '" style="margin-bottom:16px"><span class="ic">' +
+    (o.k === 'cancel' ? '○' : '!') + '</span><div class="bd"><b>' + esc(o.head) + '</b>' +
+    '<p>' + esc(o.body) + '</p><p>费用：' + esc(o.fee) + '</p>' +
+    '<p style="margin-top:8px"><button class="btn sm" onclick="retryChain()">' + esc(o.retry) + '</button></p></div></div>';
+}
+function retryChain(){ state.wiz.result = null; render(); }
+
+/* ---- 第二段：填写金额并发布 + 质押管理 ---- */
+function stepTwo(p){
+  var d = derive(p), published = !p.draft;
+  var amtVal = state.wiz.amount, err = state.wiz.amtErr;
+
+  var empty = p.emptyPool
+    ? '<div class="note crit" style="margin-bottom:16px"><span class="ic">!</span><div class="bd">' +
+      '<b>本项目暂无有效质押，请重新质押后再发布。</b>' +
+      '<p>创建时那笔质押最终链上执行失败，项目与项目名称等准备工作已为您保留；空池只能由这条路径产生，不能由用户直接建出。</p>' +
+      '<p style="margin-top:8px"><button class="btn sm primary" onclick="openPledge(\'' + p.id + '\')">重新质押</button>' +
+      '<button class="btn sm" style="margin-left:8px" onclick="closeProject(\'' + p.id + '\')">关闭项目</button></p></div></div>' : '';
+
+  /* --- 需求金额 --- */
+  var pubAct = actionOf(availableActions(p, 'asset'), 'publish') || { enabled:false, reason:'' };
+  var amountCard = '<div class="card"><div class="ch"><h2>' + (published ? '融资需求' : '填写融资需求金额') + '</h2>' +
+    '<p>' + (published ? '已发布；在「募集中」且该需求尚未被报价时可修改金额或撤下需求' : '发布成功后按需求金额产生在途占用，这是项目在途金额的唯一来源') + '</p></div><div class="cb">' +
+    '<div style="display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px;align-items:start">' +
+      '<div><label class="fl" for="damt">融资需求金额（' + CCY + '） <b>*</b></label>' +
+      '<input id="damt" type="text" inputmode="decimal" placeholder="0.00" value="' + esc(amtVal) + '" ' +
+        (p.emptyPool ? 'disabled ' : '') + 'oninput="wizAmount(this.value)" class="' + (err ? 'bad' : '') + '">' +
+      '<div class="hint">必填，大于 0 且不超过可融金额 ' + usd(d.free) + '。金额精度为 ' + CCY + ' 2 位小数。</div>' +
+      (err ? '<div class="err"><span>!</span><div><b>' + esc(err.head) + '</b><br>' + err.body + '</div></div>' : '') +
+      '</div>' +
+      '<div><label class="fl">有效期至</label>' +
+      /* 只读：不提供输入框、日期选择器或"修改有效期"入口（AC-LS-02 / D-FIN-37） */
+      '<div style="height:38px;display:flex;align-items:center;padding:0 12px;border:1px dashed var(--line-strong);' +
+        'border-radius:var(--r-s);background:var(--sunken);font-family:var(--num);color:var(--ink-2)">' +
+        (p.expiresAt || addYears(TODAY, TERM_YEARS)) + '</div>' +
+      '<div class="hint">系统按首次发布日 + ' + TERM_YEARS + ' 年生成，只读、不可编辑、不可延期；再次发布不重置。</div></div>' +
+    '</div>' +
+    '<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">' +
+      (pubAct.enabled
+        ? '<button class="btn primary lg" onclick="submitPublish(\'' + p.id + '\')">' + (published ? '再次发布剩余额度' : '发布融资需求') + '</button>'
+        : '<button class="btn blocked lg" aria-disabled="true" onclick="toast(' + JSON.stringify(pubAct.reason).replace(/"/g,'&quot;') + ')"><span class="sig" aria-hidden="true">⊘</span>发布融资需求</button>') +
+      (published && p.demand && p.quotes === 0
+        ? '<button class="btn lg" onclick="toast(\'撤下需求将释放对应的在途占用 ' + amt(p.demand) + ' USD，项目回到「已建池未发布」的草稿语义。演示原型不改动演示数据。\')">撤下需求</button>' : '') +
+    '</div>' +
+    (pubAct.enabled ? '' : '<div class="why"><span class="sig" aria-hidden="true">⊘</span><span>' + esc(pubAct.reason) + '</span></div>') +
+  '</div></div>';
+
+  /* --- 已质押清单 + 撤回（分两区） --- */
+  var dead = p.tokens.filter(function(t){ return t.dead; });
+  var live = p.tokens.filter(function(t){ return !t.dead; });
+  var wsel = state.wiz.wsel;
+  var wLive = live.filter(function(t){ return wsel[t.id]; }).reduce(function(a,t){ return a + t.amt; }, 0);
+  var wDead = dead.filter(function(t){ return wsel[t.id]; }).reduce(function(a,t){ return a + t.amt; }, 0);
+  var over = wLive > d.wLimit;
+
+  function wRow(t, limited){
+    return '<tr class="' + (wsel[t.id] ? 'picked' : '') + '">' +
+      '<td class="sel"><input type="checkbox" ' + (wsel[t.id] ? 'checked' : '') + ' onchange="wTok(\'' + t.id + '\')" aria-label="勾选 ' + t.id + '"></td>' +
+      '<td class="n">' + t.id + '</td><td class="n">' + amt(t.amt) + '</td><td class="n">' + t.due + '</td>' +
+      '<td>' + esc(t.buyer) + '</td>' +
+      '<td>' + tag(CT_STATUS[t.ct].tone, t.ct + ' ' + CT_STATUS[t.ct].t, true) + '</td>' +
+      '<td>' + (limited ? tag('good','计入担保', true) : tag('warn','不计入担保 · ' + (t.deadAt||'') + ' 失效')) + '</td></tr>';
+  }
+  var head5 = '<thead><tr><th class="sel"></th><th>代币编号</th><th class="n">美元金额</th><th>底层账期</th><th>买方企业名</th><th>链上状态</th><th>是否计入担保</th></tr></thead>';
+
+  var pledgeCard = '<div class="card"><div class="ch"><h2>已质押清单与撤回</h2>' +
+    '<p>两区分开：失效代币的撤回不做任何额度判定，有效抵押物受额度限制</p></div><div class="cb">' +
+    (dead.length ?
+      '<div class="sub-h"><span>已失效 · 可随时撤回（不计入担保）· ' + dead.length + ' 张</span>' +
+        '<span class="x">这些代币本来就不顶担保，移出它们不会削弱担保，因此不做额度判定、直接放行</span></div>' +
+      '<div class="sub-b"><div class="tscroll"><table class="dt">' + head5 + '<tbody>' +
+      dead.map(function(t){ return wRow(t, false); }).join('') + '</tbody></table></div></div><div style="height:18px"></div>' : '') +
+    '<div class="sub-h"><span>有效抵押物 · 受额度限制 · ' + live.length + ' 张</span>' +
+      '<span class="x">当前最多可撤回 <b class="n">' + usd(d.wLimit) + '</b>（＝可融金额 ÷ ' + (PLEDGE_RATE*100) + '%）</span></div>' +
+    '<div class="sub-b"><div class="tscroll"><table class="dt">' + head5 + '<tbody>' +
+      (live.length ? live.map(function(t){ return wRow(t, true); }).join('')
+                   : '<tr><td colspan="7" style="text-align:center;color:var(--ink-3);padding:24px">池内暂无有效抵押物</td></tr>') +
+    '</tbody></table></div></div>' +
+    '<div class="pick-sum" style="margin-top:14px;' + (over ? 'background:var(--st-crit-wash);border-color:var(--st-crit-line)' : '') + '">' +
+      '<span>拟撤回（有效抵押物）<span class="n">' + amt(wLive) + '</span></span><span class="sp"></span>' +
+      '<span>可撤回上限 <span class="n">' + amt(d.wLimit) + '</span></span><span class="sp"></span>' +
+      '<span>差额 <span class="n">' + amt(Math.abs(d.wLimit - wLive)) + '</span>' + (over ? '（超出）' : '（尚余）') + '</span>' +
+      (wDead ? '<span class="sp"></span><span>另含失效代币 <span class="n">' + amt(wDead) + '</span>（不受限制）</span>' : '') +
+    '</div>' +
+    (over ? '<div class="err" style="margin-top:10px"><span>!</span><div><b>拟撤回价值超出可撤回上限，本次撤回不予放行。</b><br>' +
+      '拟撤回价值 <span class="n">' + usd(wLive) + '</span>；当前可撤回上限 <span class="n">' + usd(d.wLimit) + '</span>；差额 <span class="n">' + usd(wLive - d.wLimit) + '</span>。<br>' +
+      '两条出路：① 减少勾选，把拟撤回价值压到 ' + usd(d.wLimit) + ' 以内；② 等待还款降低项目融资余额，可撤回上限会随之抬高。</div></div>' : '') +
+    '<div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">' +
+      '<button class="btn primary" ' + ((wLive + wDead) === 0 || over ? 'disabled' : '') + ' onclick="submitWithdraw(\'' + p.id + '\')">撤回勾选的代币</button>' +
+      '<button class="btn" onclick="openPledge(\'' + p.id + '\')">追加质押</button>' +
+    '</div>' +
+    '<div class="note" style="margin-top:14px;font-size:12.5px"><span class="ic">i</span><div class="bd">' +
+      '撤回一进入链上「处理中」即<b>预扣</b>该部分价值（宁可低估不可高估），失败回滚才恢复；' +
+      '撤回不得先置「已释放」再回滚。撤回与提取<b>不设硬性阻断</b>：24 小时内提交超过 5 次会提示"频繁链上操作会产生较多 gas"，但不阻断。' +
+    '</div></div>' +
+  '</div></div>';
+
+  /* --- 追加质押面板 --- */
+  var addSel = state.wiz.sel, addList = WALLET.filter(function(t){ return addSel[t.id]; });
+  var addSum = addList.reduce(function(a,t){ return a + t.amt; }, 0);
+  var addCard = (state.panel === 'pledge') ? '<div class="card" id="panel-pledge"><div class="ch"><h2>追加质押</h2>' +
+    '<p>任何项目状态下都允许，池内资产只增不减地增强担保</p></div><div class="cb">' +
+    '<div class="sub-h"><span>可质押代币 · ' + WALLET.length + ' 张</span>' +
+      '<span class="x"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">' +
+      '<input type="checkbox" ' + (addList.length === WALLET.length ? 'checked' : '') + ' onchange="wizAll(this.checked)">批量勾选全部</label></span></div>' +
+    '<div class="sub-b"><div class="tscroll"><table class="dt"><thead><tr><th class="sel"></th><th>代币编号</th>' +
+      '<th class="n">美元金额</th><th>底层账期</th><th>买方企业名</th><th>合同号 / 发票号</th></tr></thead><tbody>' +
+      WALLET.map(function(t){
+        return '<tr class="' + (addSel[t.id] ? 'picked' : '') + '"><td class="sel"><input type="checkbox" ' +
+          (addSel[t.id] ? 'checked' : '') + ' onchange="wizTok(\'' + t.id + '\')" aria-label="勾选 ' + t.id + '"></td>' +
+          '<td class="n">' + t.id + '</td><td class="n">' + amt(t.amt) + '</td><td class="n">' + t.due + '</td>' +
+          '<td>' + esc(t.buyer) + '</td><td class="n">' + t.contract + ' / ' + t.invoice + '</td></tr>';
+      }).join('') + '</tbody></table></div></div>' +
+    '<div class="pick-sum" style="margin-top:14px"><span>已勾选 <span class="n">' + addList.length + '</span> 张</span>' +
+      '<span class="sp"></span><span>合计 <span class="n">' + amt(addSum) + '</span> ' + CCY + '</span>' +
+      '<span class="sp"></span><span>融资上限将增加 <span class="n">' + amt(round2(addSum * PLEDGE_RATE)) + '</span> ' + CCY +
+      (d.gap ? '，本次追加后担保缺口 ' + (addSum * PLEDGE_RATE >= d.gap ? '可解除' : '仍有 ' + amt(d.gap - addSum * PLEDGE_RATE)) : '') + '</span></div>' +
+    '<div style="margin-top:14px"><button class="btn primary" ' + (addList.length ? '' : 'disabled') +
+      ' onclick="submitPledge(\'' + p.id + '\')">确认追加并发起质押</button>' +
+      '<button class="btn" style="margin-left:10px" onclick="state.panel=null;render()">收起</button></div>' +
+  '</div></div>' : '';
+
+  /* --- 可提取区 --- */
+  var redSum = REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0);
+  var redeemCard = REDEEMABLE.length ? '<div class="card"><div class="ch"><h2>可提取代币</h2>' +
+    '<p>业务已释放，链上仍在质押合约内 · 待提取</p></div><div class="cb">' +
+    '<div class="note info" style="margin-bottom:14px"><span class="ic">↧</span><div class="bd">' +
+      '您有 <b>' + REDEEMABLE.length + ' 张</b>代币（合计 <span class="n">' + usd(redSum) + '</span>）可提取，需自付 gas，可批量一次提完，无时间限制、不过期。' +
+      '<p>释放分两段：<b>第一段业务释放</b>在项目关闭 / 结清的同一时刻完成，即时、无链上动作、无费用；' +
+      '<b>第二段链上提取</b>由您自助发起。未提取前代币不属于任何池、不计入任何质押价值，也不能被再次质押。</p></div></div>' +
+    '<div class="sub-b"><div class="tscroll"><table class="dt"><thead><tr><th>代币编号</th><th class="n">美元金额</th>' +
+      '<th>底层账期</th><th>来源项目</th><th>移出触发原因</th><th>质押状态</th></tr></thead><tbody>' +
+      REDEEMABLE.map(function(t){
+        return '<tr><td class="n">' + t.id + '</td><td class="n">' + amt(t.amt) + '</td><td class="n">' + t.due + '</td>' +
+          '<td class="n">' + t.from + '</td><td>' + esc(t.reason) + '</td><td>' + tag('mute','PS-4 已释放 · 待提取') + '</td></tr>';
+      }).join('') + '</tbody></table></div></div>' +
+    '<div style="margin-top:14px"><button class="btn primary" onclick="openRedeem()">批量提取全部 ' + REDEEMABLE.length + ' 张</button></div>' +
+  '</div></div>' : '';
+
+  var rail = '<div class="card"><div class="ch"><h2>当前派生量</h2><p>与广场、控制台同源</p></div><div class="cb">' +
+    '<div class="kv c2" style="grid-template-columns:1fr 1fr">' +
+      '<div><div class="k">有效质押价值</div><div class="v">' + amt(d.valid) + '</div></div>' +
+      '<div><div class="k">融资上限</div><div class="v">' + amt(d.cap) + '</div></div>' +
+      '<div><div class="k">项目融资余额</div><div class="v">' + amt(d.bal) + '</div></div>' +
+      '<div><div class="k">项目在途金额</div><div class="v">' + amt(d.fly) + '</div></div>' +
+      '<div><div class="k">可融金额</div><div class="v">' + amt(d.free) + '</div></div>' +
+      '<div><div class="k">可撤回上限</div><div class="v">' + amt(d.wLimit) + '</div></div>' +
+    '</div>' +
+    '<div style="height:14px"></div>' + meterBlock(d, true) +
+  '</div></div>';
+
+  return empty + shortAlert(p, d, true) + usedUpNote(d) +
+    '<div class="two"><div>' +
+      (state.wiz.result ? resultPanel() : '') +
+      '<div class="card"><div class="ch"><h2>池内资产与额度</h2>' +
+        '<p>三个数在页面上必须乘得平：① × ② = ③</p></div><div class="cb">' + trioBlock(d) + '</div></div>' +
+      amountCard + addCard + pledgeCard + redeemCard +
+    '</div><aside class="rail">' + rail + '</aside></div>';
+}
+
+function pagePublish(){
+  var p = state.id ? findProject(state.id) : null;
+  if(state.role !== 'asset')
+    return blankState('⊘', '无权访问',
+      '建池与发布页只对资产方企业主体开放。当前身份为「' + esc(ACTORS[state.role].full) + '」。' +
+      '游客与资金方在广场与详情页可以看到 L1～L5 的全量信息，但本页属于本方数据，按企业主体做服务端归属过滤。',
+      '<button class="btn primary" onclick="go(\'plaza\')">返回融资需求广场</button>');
+  if(p && p.entity !== ACTORS.asset.entity)
+    return blankState('⊘', '内容不存在或无权访问', '该项目不属于当前企业主体。',
+      '<button class="btn primary" onclick="go(\'plaza\')">返回融资需求广场</button>');
+
+  var step = state.step || (p ? 2 : 1);
+  var head = '<div class="crumb">' +
+    '<button onclick="go(\'mine\')">我的融资项目</button><i>/</i><span>' + (p ? esc(p.name) : '创建融资项目') + '</span></div>' +
+    '<div class="page-head"><div><h1>' + (p ? esc(p.name) : '创建融资项目') + '</h1>' +
+    '<div class="sub">' + (p ? '项目编号 ' + p.id + ' · ' + FP_STATUS[p.status].t + '（' + FP_STATUS[p.status].x + '）'
+                              : '两段式：先建池与质押，金额想好了再填再发布；中途可离开，随时回来续做。') + '</div></div></div>';
+
+  return head + stepsBar(step, p) + (step === 1 || !p ? stepOne(p) : stepTwo(p));
+}
+
+/* ---- 我的融资项目：两段式的续做入口（AC-LS-54）。我的控制台 M-5 本期不做 ---- */
+function pageMine(){
+  if(state.role !== 'asset')
+    return blankState('⊘', '无权访问', '本页只对资产方企业主体开放。',
+      '<button class="btn primary" onclick="go(\'plaza\')">返回融资需求广场</button>');
+  var list = myProjects();
+  return '<div class="page-head"><div><h1>我的融资项目</h1>' +
+    '<div class="sub">' + esc(ACTORS.asset.full) + ' 名下的资产池。草稿项目只有本企业可见，不进广场、不可搜索、不可被深链直达。</div></div>' +
+    '<button class="btn primary" onclick="go(\'publish\',{id:null})">创建融资项目</button></div>' +
+    redeemBanner() +
+    '<div class="note" style="margin-bottom:16px"><span class="ic">i</span><div class="bd">' +
+      '我的控制台（M-5）不在本模块范围内。本页只承担两段式所必需的<b>续做入口</b>：第一段完成后项目即已持久化，' +
+      '关页面、断网、换设备都能从这里回到第二段，不会要求重新质押或重新付一次 gas。' +
+    '</div></div>' +
+    '<div class="card"><div class="cb tight"><div class="tscroll"><table class="dt"><thead><tr>' +
+      '<th>项目名称</th><th>项目编号</th><th>状态 / 进度</th><th class="n">有效质押价值</th><th class="n">融资上限</th>' +
+      '<th class="n">可融金额</th><th>担保状态</th><th>有效期至</th><th style="width:200px">操作</th></tr></thead><tbody>' +
+      list.map(function(p){
+        var d = derive(p), g = gradeMeta(d.grade);
+        return '<tr><td><button class="btn link" onclick="go(\'' + (p.draft ? 'publish' : 'project') + '\',{id:\'' + p.id + '\'})">' +
+            esc(p.name) + '</button></td>' +
+          '<td class="n">' + p.id + '</td>' +
+          '<td>' + tag(FP_STATUS[p.status].tone, FP_STATUS[p.status].t, true) +
+            (p.draft ? '<div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">' +
+              (p.emptyPool ? '第 ① 段链上失败 · 空池草稿' : '第 ① 段已完成 · 待填金额') + '</div>' : '') +
+            (p.expired ? '<div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">已到期 · 存量履约中</div>' : '') + '</td>' +
+          '<td class="n">' + amt(d.valid) + '</td><td class="n">' + amt(d.cap) + '</td><td class="n">' + amt(d.free) + '</td>' +
+          '<td>' + tag(g.tone, g.t, true) + '</td><td class="n">' + (p.expiresAt || '—') + '</td>' +
+          '<td><div style="display:flex;gap:6px;flex-wrap:wrap">' +
+            (p.draft ? '<button class="btn sm primary" onclick="go(\'publish\',{id:\'' + p.id + '\',step:2})">继续发布</button>'
+                     : '<button class="btn sm" onclick="go(\'project\',{id:\'' + p.id + '\'})">详情</button>') +
+            '<button class="btn sm" onclick="openPledge(\'' + p.id + '\')">追加质押</button>' +
+          '</div></td></tr>';
+      }).join('') + '</tbody></table></div></div></div>';
+}
+/* ================================================================
+   70-actions.js —— 动作层
+   链上调用只发生在三个动作上：入池（质押 / 追加）、撤回、提取。
+   额度动作（发布需求、撤下、占用与释放、预警触发与解除）一律不触达链上。
+   ================================================================ */
+
+function resetWiz(){ state.wiz = { pid:null, name:'', sel:{}, amount:'', amtErr:null, result:null, wsel:{}, busy:false }; }
+
+function wizName(v){ state.wiz.name = v; renderSoft(); }
+function wizTok(id){ state.wiz.sel[id] = !state.wiz.sel[id]; render(); }
+function wizAll(on){ WALLET.forEach(function(t){ state.wiz.sel[t.id] = on; }); render(); }
+function wTok(id){ state.wiz.wsel[id] = !state.wiz.wsel[id]; render(); }
+function wizAmount(v){ state.wiz.amount = v; state.wiz.amtErr = null; renderSoft(); }
+
+function removeFromWallet(ids){
+  for(var i = WALLET.length - 1; i >= 0; i--){ if(ids.indexOf(WALLET[i].id) >= 0) WALLET.splice(i, 1); }
+}
+function newProjectId(){
+  var n = PROJECTS.length + 55;
+  return 'FP-' + TODAY.replace(/-/g,'') + '-' + String(n).padStart(4,'0');
+}
+
+/* ---- 建池：一次提交完成"建池 + 首笔质押" ---- */
+function submitCreate(){
+  var sel = WALLET.filter(function(t){ return state.wiz.sel[t.id]; });
+  if(!sel.length || !state.wiz.name.trim()) return;
+  confirmChain({
+    title:'创建融资项目并发起首笔质押',
+    rows:[ ['操作内容', '将 ' + sel.length + ' 张代币转入质押合约', true],
+           ['项目名称', state.wiz.name.trim(), true],
+           ['质押价值合计', usd(sel.reduce(function(a,t){ return a + t.amt; }, 0))] ],
+    n:sel.length, gas:gasEstimate(sel.length),
+    extra:'<div class="note" style="margin-top:14px"><span class="ic">i</span><div class="bd">' +
+      '创建校验的对象是<b>质押申请已提交</b>：链上「处理中」或「成功」均算通过，不要求等待链上确认完成。' +
+      '所以您不需要在页面上干等——提交后随时可以离开，回来继续第二段。</div></div>',
+    onDone:function(k){ finishCreate(k, sel); }
+  });
+}
+function finishCreate(k, sel){
+  /* 取消签名 / gas 不足：交易未发出，不产生任何记录变更（D-FIN-71 / E-10） */
+  if(k === 'cancel' || k === 'nogas'){ state.wiz.result = { k:k }; render(); return; }
+
+  var id = newProjectId(), gas = gasEstimate(sel.length);
+  var okTok = [], badN = 0, ct = 'CT-2';
+  if(k === 'ok')      { okTok = sel.slice(); }
+  else if(k === 'partial'){ var c = Math.max(1, Math.ceil(sel.length/2)); okTok = sel.slice(0, c); badN = sel.length - c; }
+  else if(k === 'timeout'){ okTok = sel.slice(); ct = 'CT-1'; }
+  else                { okTok = []; badN = sel.length; }   /* offchain / onchain：空池草稿 E-12 */
+
+  okTok.forEach(function(t){ t.ct = ct; t.ps = 'PS-2'; });
+  var total = okTok.reduce(function(a,t){ return a + t.amt; }, 0);
+  var p = {
+    id:id, name:state.wiz.name.trim(), owner:ACTORS.asset.full, entity:ACTORS.asset.entity,
+    status:'S-FP-1', expired:false, draft:true, emptyPool:(okTok.length === 0 || ct === 'CT-1' ? okTok.length === 0 : false),
+    publishedAt:null, expiresAt:null, demand:null, quotes:0, assetType:'应收账款类',
+    tokens:okTok,
+    /* 处理中（CT-1）不预先计入质押价值——估值保守原则 */
+    events:[{ d:TODAY, k:(okTok.length ? 'pledge' : 'fail'),
+              t:'创建资产池 · 质押 ' + sel.length + ' 张' + (badN ? '（' + badN + ' 张链上失败）' : ''),
+              dTotal:(ct === 'CT-2' ? total : 0),
+              note:(ct === 'CT-1' ? '链上结果未返回，处理中不预先计入有效质押价值（D-FIN-54 ①）'
+                                  : okTok.length ? '链上转入成功（CT-2），计入有效质押价值'
+                                                 : '首笔质押链上失败，项目保留为空池草稿（E-12 / D-FIN-62）') }]
+  };
+  if(ct === 'CT-1') p.emptyPool = true;   /* 尚无 CT-2 ⇒ 有效质押价值为 0，发布入口 ⊘ */
+  PROJECTS.push(p);
+  removeFromWallet(okTok.map(function(t){ return t.id; }));
+
+  state.wiz.result = { k:k, n:okTok.length, ok:okTok.length, bad:badN, gas:gas };
+  state.wiz.pid = id; state.wiz.sel = {};
+  state.id = id; state.page = 'publish'; state.step = 2;
+  syncHash(); render(); window.scrollTo(0, 0);
+}
+
+/* ---- 追加质押（D-FIN-48：任何项目状态下都允许，只增不减） ---- */
+function openPledge(pid){ go('publish', { id:pid, action:'pledge', step:2 }); }
+function submitPledge(pid){
+  var p = findProject(pid), sel = WALLET.filter(function(t){ return state.wiz.sel[t.id]; });
+  if(!sel.length) return;
+  var sum = sel.reduce(function(a,t){ return a + t.amt; }, 0);
+  confirmChain({
+    title:'追加质押',
+    rows:[ ['操作内容', '将 ' + sel.length + ' 张代币转入质押合约', true],
+           ['目标资产池', p.name + ' · ' + p.id, true],
+           ['追加价值合计', usd(sum)],
+           ['融资上限将增加', usd(round2(sum * PLEDGE_RATE))] ],
+    n:sel.length, gas:gasEstimate(sel.length),
+    onDone:function(k){
+      if(k === 'cancel' || k === 'nogas'){ state.wiz.result = { k:k }; render(); return; }
+      if(k === 'ok' || k === 'partial'){
+        var take = (k === 'ok') ? sel : sel.slice(0, Math.max(1, Math.ceil(sel.length/2)));
+        take.forEach(function(t){ t.ct = 'CT-2'; t.ps = 'PS-2'; });
+        p.tokens = p.tokens.concat(take);
+        p.emptyPool = false;
+        var s = take.reduce(function(a,t){ return a + t.amt; }, 0);
+        p.events.push({ d:TODAY, k:'topup', t:'追加质押 ' + take.length + ' 张 · ' + usd(s), dTotal:s,
+                        note:'池内资产只增不减地增强担保（D-FIN-48）' });
+        removeFromWallet(take.map(function(t){ return t.id; }));
+        state.wiz.result = { k:k, n:take.length, ok:take.length, bad:sel.length - take.length, gas:gasEstimate(sel.length) };
+      } else {
+        state.wiz.result = { k:k, n:sel.length, gas:gasEstimate(sel.length) };
+      }
+      state.wiz.sel = {}; state.panel = null; render(); window.scrollTo(0, 0);
+    }
+  });
+}
+
+/* ---- 发布：额度动作，不触达链上（D-FIN-67） ---- */
+function submitPublish(pid){
+  var p = findProject(pid), d = derive(p);
+  var v = parseFloat(String(state.wiz.amount).replace(/,/g, ''));
+  if(!(v > 0)){
+    state.wiz.amtErr = { head:'请填写有效的融资需求金额。', body:'金额必须大于 ' + usd(0) + '，精度为 ' + CCY + ' 2 位小数。' };
+    render(); return;
+  }
+  v = round2(v);
+  if(v > d.free){
+    var diff = round2(v - d.free);
+    state.wiz.amtErr = {
+      head:'融资需求金额超出可融金额，发布校验不通过。',
+      body:'本次填写 <span class="n">' + usd(v) + '</span>；当前可融金额 <span class="n">' + usd(d.free) +
+           '</span>；差额 <span class="n">' + usd(diff) + '</span>。<br>' +
+           '两条出路：① 把需求金额下调到 ' + usd(d.free) + ' 以内；② 追加质押抬高融资上限——需追加资产价值 <span class="n">' +
+           usd(round2(diff / PLEDGE_RATE)) + '</span>（＝差额 ÷ ' + (PLEDGE_RATE*100) + '%）。<br>' +
+           '已完成的质押不会因为本次发布校验失败而回滚，代币照常在池、照常计入价值。'
+    };
+    render(); return;
+  }
+  var first = !p.publishedAt;
+  p.demand = v; p.status = 'S-FP-2'; p.draft = false;
+  if(first){ p.publishedAt = TODAY; p.expiresAt = addYears(TODAY, TERM_YEARS); }
+  p.events.push({ d:TODAY, k:'publish', t:(first ? '发布' : '再次发布') + '融资需求 ' + usd(v), dFly:v,
+                  note:'发布即产生在途占用，这是项目在途金额的唯一来源；报价环节不再新增占用（AC-FIN-23）' });
+  state.wiz.amount = ''; state.wiz.amtErr = null;
+  toast('发布成功：项目转「募集中」，需求金额 ' + usd(v) + ' 已计入项目在途金额' +
+        (first ? '，有效期至 ' + p.expiresAt + '（首次发布日 + 1 年，只读）' : '（有效期不重置）') + '。');
+  go('project', { id:pid });
+}
+
+/* ---- 撤回：按额度判定；失效代币无限制（AC-FIN-13 / D-FIN-59） ---- */
+function submitWithdraw(pid){
+  var p = findProject(pid), d = derive(p);
+  var sel = p.tokens.filter(function(t){ return state.wiz.wsel[t.id]; });
+  if(!sel.length) return;
+  var live = sel.filter(function(t){ return !t.dead; }), liveSum = live.reduce(function(a,t){ return a + t.amt; }, 0);
+  if(liveSum > d.wLimit){ render(); return; }   /* 页面上已给出三个数与两条出路 */
+  var deadSel = sel.filter(function(t){ return t.dead; });
+  confirmChain({
+    title:'撤回质押',
+    rows:[ ['操作内容', '将 ' + sel.length + ' 张代币从质押合约转回原持有地址', true],
+           ['其中有效抵押物', live.length + ' 张 · ' + usd(liveSum), true],
+           ['其中已失效代币', deadSel.length + ' 张 · ' + usd(deadSel.reduce(function(a,t){ return a + t.amt; }, 0)) + '（不做额度判定）', true],
+           ['目的地址', '质押前的原持有地址（不接受人工指定）', true] ],
+    n:sel.length, gas:gasEstimate(sel.length),
+    onDone:function(k){
+      if(k === 'cancel' || k === 'nogas'){ state.wiz.result = { k:k }; render(); return; }
+      if(k === 'ok'){
+        var ids = sel.map(function(t){ return t.id; });
+        p.tokens = p.tokens.filter(function(t){ return ids.indexOf(t.id) < 0; });
+        var dTot = sel.reduce(function(a,t){ return a + t.amt; }, 0);
+        var dVoid = deadSel.reduce(function(a,t){ return a + t.amt; }, 0);
+        p.events.push({ d:TODAY, k:'withdraw',
+          t:'撤回质押 ' + sel.length + ' 张 · ' + usd(dTot), dTotal:-dTot, dVoid:-dVoid,
+          note:(deadSel.length ? '其中 ' + deadSel.length + ' 张为已失效代币，不做额度判定直接放行（D-FIN-59）；' : '') +
+               '链上转出成功后代币移出池、派生量重算、回到可质押' });
+        /* 失效代币不再满足可质押条件，不回到钱包 */
+        live.forEach(function(t){ t.ct = 'CT-0'; t.ps = 'PS-1'; WALLET.push(t); });
+        state.wiz.result = { k:'ok', n:sel.length, gas:gasEstimate(sel.length) };
+      } else {
+        /* E-3：代币保持在池，预扣撤销，禁止先置已释放再回滚 */
+        state.wiz.result = { k:k, n:sel.length, gas:gasEstimate(sel.length) };
+      }
+      state.wiz.wsel = {}; render(); window.scrollTo(0, 0);
+    }
+  });
+}
+
+/* ---- 自助提取（D-FIN-57 第二段） ---- */
+function openRedeem(){
+  if(!REDEEMABLE.length){ toast('当前没有可提取的代币。'); return; }
+  var sum = REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0);
+  confirmChain({
+    title:'批量提取已释放代币',
+    rows:[ ['操作内容', '将 ' + REDEEMABLE.length + ' 张代币从质押合约转回原持有地址', true],
+           ['合计价值', usd(sum)],
+           ['来源', '项目结清释放（业务释放已于结清同刻完成，无费用）', true] ],
+    n:REDEEMABLE.length, gas:gasEstimate(REDEEMABLE.length),
+    onDone:function(k){
+      if(k === 'ok'){
+        REDEEMABLE.forEach(function(t){ t.ct = 'CT-0'; t.ps = 'PS-1'; t.pending = false; WALLET.push(t); });
+        REDEEMABLE.length = 0;
+        toast('提取成功：代币已转回原持有地址，重新成为可质押代币。');
+      } else if(k === 'cancel' || k === 'nogas'){
+        state.wiz.result = { k:k };
+      } else {
+        /* E-4：提取失败不影响任何项目的额度与状态，业务已在第一段释放完毕，可随时重试 */
+        state.wiz.result = { k:k, n:REDEEMABLE.length };
+      }
+      render(); window.scrollTo(0, 0);
+    }
+  });
+}
+/* ================================================================
+   80-router.js —— 壳层与路由
+   路由即深链锚点（H-02）：project/new · project/{id} · project/{id}?action=…
+   新增模块（WS-325～WS-329）只需在 ROUTES 里补一条，并在 PAGES 里注册渲染函数，
+   壳层、导航、角色切换、状态切换都不用动。
+   ================================================================ */
+
+var state = {
+  role:'guest', page:'plaza', id:null, action:null, step:null, from:null, panel:null,
+  feed:'ok', sort:'pub', pageNo:1,
+  filters:JSON.parse(JSON.stringify(F_DEFAULT)),
+  wiz:{ pid:null, name:'', sel:{}, amount:'', amtErr:null, result:null, wsel:{}, busy:false }
+};
+
+/* ---- 路由表：模块 · 页面编号 · 深链锚点 · 可见角色 ---- */
+var ROUTES = [
+  { key:'plaza',   mod:'M-1', page:'P-LS-01', nav:'融资需求广场', hash:'plaza',       roles:['guest','asset','fund'], render:pagePlaza },
+  { key:'mine',    mod:'M-1', page:'—',       nav:'我的融资项目', hash:'mine',        roles:['asset'],                render:pageMine },
+  { key:'project', mod:'M-1', page:'P-LS-02', nav:null,           hash:'project/:id', roles:['guest','asset','fund'], render:pageProject },
+  { key:'publish', mod:'M-1', page:'P-LS-03', nav:'创建融资项目', hash:'project/new', roles:['asset'],                render:pagePublish }
+  /* ---- 模块注册区：WS-325～WS-329 在此追加，例如
+  { key:'quote',  mod:'M-2', page:'P-QT-01', nav:'我的报价', hash:'quote', roles:['fund'], render:pageQuote }
+  ---- */
+];
+function routeOf(k){ for(var i=0;i<ROUTES.length;i++){ if(ROUTES[i].key===k) return ROUTES[i]; } return ROUTES[0]; }
+
+function go(page, params){
+  params = params || {};
+  state.page  = page;
+  state.id    = ('id' in params) ? params.id : null;
+  state.action= params.action || null;
+  state.step  = params.step || null;
+  state.from  = params.from || null;
+  state.panel = (params.action === 'pledge') ? 'pledge' : null;
+  if(page === 'publish' && !state.id) resetWiz();
+  if(page !== 'publish'){ state.wiz.result = null; state.wiz.amtErr = null; }
+  syncHash(); render(); window.scrollTo(0, 0);
+  if(state.action){
+    setTimeout(function(){
+      var el = document.getElementById('panel-' + state.action);
+      if(el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 40);
+  }
+}
+
+/* ---- 深链（H-02）：服务端重新判权；状态已变时落详情页 + Toast，不报 404、不白屏、不静默跳首页 ---- */
+function syncHash(){
+  var h = '#/';
+  if(state.page === 'project') h += 'project/' + state.id;
+  else if(state.page === 'publish') h += state.id ? ('project/' + state.id + '?action=publish') : 'project/new';
+  else h += routeOf(state.page).hash;
+  if(state.action && state.page === 'publish' && state.id) h = '#/project/' + state.id + '?action=' + state.action;
+  if(state.from) h += (h.indexOf('?') >= 0 ? '&' : '?') + 'from=' + state.from;
+  if(location.hash !== h){ suppressHash = true; location.hash = h; }
+}
+var suppressHash = false;
+function readHash(){
+  var h = location.hash.replace(/^#\/?/, ''); if(!h) return false;
+  var qi = h.indexOf('?'), path = qi >= 0 ? h.slice(0, qi) : h, qs = qi >= 0 ? h.slice(qi+1) : '';
+  var q = {}; qs.split('&').forEach(function(kv){ var p = kv.split('='); if(p[0]) q[p[0]] = p[1]; });
+  var seg = path.split('/');
+  state.step = null; state.panel = null; state.wiz.result = null; state.wiz.amtErr = null;
+  if(seg[0] === 'project'){
+    if(seg[1] === 'new'){ state.page = 'publish'; state.id = null; resetWiz(); }
+    else {
+      var p = findProject(seg[1]);
+      if(!p){ state.page = 'project'; state.id = seg[1]; }
+      else if(q.action && q.action !== 'quote'){ state.page = 'publish'; state.id = seg[1]; state.step = 2; state.panel = (q.action === 'pledge') ? 'pledge' : null; }
+      else { state.page = 'project'; state.id = seg[1]; }
+    }
+    state.action = q.action || null; state.from = q.from || null;
+    return true;
+  }
+  if(seg[0] === 'mine'){ state.page = 'mine'; return true; }
+  if(seg[0] === 'plaza'){ state.page = 'plaza'; return true; }
+  return false;
+}
+window.addEventListener('hashchange', function(){
+  if(suppressHash){ suppressHash = false; return; }
+  if(readHash()) render();
+});
+
+/* ---- 壳层渲染 ---- */
+function renderNav(){
+  var items = ROUTES.filter(function(r){ return r.nav && r.roles.indexOf(state.role) >= 0; });
+  document.getElementById('mainnav').innerHTML = items.map(function(r){
+    var on = (r.key === state.page) || (r.key === 'publish' && state.page === 'publish');
+    return '<button ' + (on ? 'aria-current="page"' : '') + ' onclick="go(\'' + r.key + '\',{id:null})">' + r.nav + '</button>';
+  }).join('');
+
+  var a = ACTORS[state.role];
+  document.getElementById('who').innerHTML = state.role === 'guest'
+    ? '<div class="id"><b>未登录</b><span>L1～L5 全量可见 · 操作入口 ⊘</span></div>' +
+      '<button class="btn sm primary" onclick="signIn()">登录 / 注册</button>'
+    : '<div class="id"><b>' + esc(a.full) + '</b><span>' + a.t + ' · 企业主体 ' + a.entity + '</span></div>' +
+      '<div class="av">' + a.short + '</div>';
+}
+function renderSwitches(){
+  document.getElementById('swRole').innerHTML = ['guest','asset','fund'].map(function(k){
+    return '<button class="' + (state.role === k ? 'on' : '') + '" onclick="setRole(\'' + k + '\')">' + ACTORS[k].t + '</button>';
+  }).join('');
+  document.getElementById('swFeed').innerHTML = [['ok','默认'],['loading','加载中'],['empty','空数据'],
+    ['noresult','筛选无结果'],['fail','加载失败']].map(function(o){
+    return '<button class="' + (state.feed === o[0] ? 'on' : '') + '" onclick="setFeed(\'' + o[0] + '\')">' + o[1] + '</button>';
+  }).join('');
+}
+function setRole(k){
+  state.role = k;
+  var r = routeOf(state.page);
+  if(r.roles.indexOf(k) < 0) { go('plaza'); return; }
+  render();
+}
+function setFeed(k){ state.feed = k; render(); }
+
+/* renderSoft：只重算依赖输入的按钮态，不重建 DOM，避免输入框失焦 */
+function renderSoft(){
+  var el = document.getElementById('pname'), el2 = document.getElementById('damt');
+  var focus = document.activeElement ? document.activeElement.id : null;
+  render();
+  if(focus){
+    var back = document.getElementById(focus);
+    if(back){ back.focus(); if(back.setSelectionRange){ var v = back.value.length; back.setSelectionRange(v, v); } }
+  }
+}
+
+function render(){
+  renderNav(); renderSwitches();
+  mountedCharts = [];
+  var r = routeOf(state.page);
+  document.getElementById('view').innerHTML = r.render();
+  drawCharts();
+  document.title = (r.nav || (state.page === 'project' ? '融资需求详情' : '借贷广场')) + ' · 借贷广场 · 金融服务端';
+}
+
+/* ---- 启动：直接落在模块第一个功能页，不做登录页 / 端选择页 ---- */
+if(!readHash()) { state.page = 'plaza'; }
+render();
+if(!location.hash) syncHash();
+</script>
+</body>
+</html>
