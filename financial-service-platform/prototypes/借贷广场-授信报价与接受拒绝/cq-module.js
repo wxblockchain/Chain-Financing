@@ -527,6 +527,103 @@ function threeQuantities(p, c, thisAmt){
   '三个量一律用全名，界面不出现无限定词的"占用""在途"。</p>';
 }
 
+/* ================================================================
+   WS-327 增量：初始还款计划（试算版）与日期重算告知
+   PRD 分册 6.6.4：P-LS-06 接受页新增初始还款计划表（D-RP-04）+ 日期重算告知（D-RP-07），
+   告知的展示事实与展示时间留痕为 FD-28，**只留痕、不要求勾选**（同 D-FIN-103 的处理）。
+
+   口径全部来自 WS-327，本模块只是把那张表摆在资产方**接受报价之前**能看到的地方：
+     基准日 ＝ 预计放款日 ＝ QT-09 报价提交日（D-RP-04）；
+     期次边界 ＝ 自基准日起每 3 个自然月一个付息日，严格早于融资到期日的各成一期利息期，
+                 末期应还日恒为融资到期日、还该期利息 + 全部本金；
+                 最后一个付息日与到期日之间不足 3 个月时该段并入末期（D-RP-13 / D-RP-14）；
+     利息 ＝ 融资金额 × 年化利率 × 本期计息天数 ÷ 360，算头不算尾（D-RP-17 ～ D-RP-20）。
+   **不落库、不占号、不产生期次对象**（D-RP-05）：它是一张按当前 QT-* 实时算出来的表，
+   报价被拒绝、失效或终止时随之消失。真实系统里这张表由服务端算并下发，
+   这里就地算一遍只是为了让原型上的每一个数都能被逐项核对。
+   ================================================================ */
+function rpDMs(x){ var q = String(x).slice(0,10).split('-'); return Date.UTC(+q[0], +q[1]-1, +q[2]); }
+function rpDStr(ms){ var x = new Date(ms), z = function(n){ return (n<10?'0':'')+n; };
+  return x.getUTCFullYear() + '-' + z(x.getUTCMonth()+1) + '-' + z(x.getUTCDate()); }
+function rpAddMonths(x, n){
+  var q = String(x).slice(0,10).split('-'), y = +q[0], m = +q[1]-1, d = +q[2], t = m + n;
+  var ny = y + Math.floor(t/12), nm = ((t%12)+12)%12;
+  var last = new Date(Date.UTC(ny, nm+1, 0)).getUTCDate();
+  return rpDStr(Date.UTC(ny, nm, Math.min(d, last)));
+}
+function rpDays(a, b){ return Math.round((rpDMs(b) - rpDMs(a)) / 86400000); }
+function initialPlan(t0, tn, principal, ratePct, fxV){
+  var marks = [], k = 1, nx;
+  while(true){ nx = rpAddMonths(t0, 3*k); if(rpDMs(nx) < rpDMs(tn)){ marks.push(nx); k++; } else break; }
+  if(marks.length && rpDMs(rpAddMonths(marks[marks.length-1], 3)) > rpDMs(tn)) marks.pop();
+  var bounds = [t0].concat(marks, [tn]), out = [];
+  for(var i = 1; i < bounds.length; i++){
+    var from = bounds[i-1], due = bounds[i], n = rpDays(from, due), last = (i === bounds.length-1);
+    var interest = round2(principal * (ratePct/100) * n / 360);
+    var pri = last ? principal : 0, total = round2(pri + interest);
+    out.push({ seq:i, from:from, due:due, days:n, principal:pri, interest:interest,
+               total:total, settle:round2(total / fxV), last:last });
+  }
+  return out;
+}
+/* 初始还款计划卡：整表带「预计 · 未生效」、日期列名带「预计」、表下常驻重算告知——
+   三处缺一不可（D-RP-06）。反向验收 AC-RP-01：本卡内提到这张表与表上的日期时一律带限定词。 */
+function initialPlanCard(deal, p){
+  var base = String(deal.at).slice(0, 10);          /* 预计放款日 ＝ QT-09 报价提交日 */
+  var tn   = p.expiresAt;                            /* 融资到期日取该项目 FP-09 有效期至（D-RP-12）*/
+  if(!tn) return '';
+  var plan = initialPlan(base, tn, deal.amt, deal.rate, deal.fx.v);
+  var sumP = 0, sumI = 0, sumT = 0;
+  var rows = plan.map(function(x){
+    sumP += x.principal; sumI += x.interest; sumT += x.total;
+    return '<tr><td class="mono">第 ' + x.seq + ' 期' +
+      (x.last ? '<div class="cell-sub">含本金 · 到期还本付息</div>' : '') + '</td>' +
+      '<td class="mono">' + x.due + (x.last ? '<div class="cell-sub">恒等于融资到期日</div>' : '') + '</td>' +
+      '<td class="mono">' + x.from + ' ~ ' + x.due + '<div class="cell-sub">' + x.days + ' 天' +
+        (x.last && x.days > 92 ? ' · 末期并入不足 3 个月的尾段' : '') + '</div></td>' +
+      '<td class="mono num">' + (x.principal ? amt(x.principal) : '0.00') + '</td>' +
+      '<td class="mono num">' + amt(x.interest) + '</td>' +
+      '<td class="mono num"><b>' + amt(x.total) + '</b></td>' +
+      '<td class="mono num">' + amt(x.settle) + ' ' + deal.ccy + '</td>' +
+      '<td><span class="pill dash">预计 · 未生效</span></td></tr>';
+  }).join('');
+  return '<div class="card" style="margin-top:16px">' +
+    cardHead('初始还款计划（试算版）',
+      '<span class="faint">WS-327 F-LS-60 · 整表预计 · 未生效 · 公开字段</span>') +
+    '<div class="card-b">' +
+    CF.note('',
+      '<b class="ls-b">这张表整表未生效。</b>它按<b class="ls-b">预计放款日 ' + base +
+      '</b>（＝ 本次报价提交日）试算：报价提交那一刻商务条款固化、汇率快照锁定，' +
+      '用同一时刻做基准，双方看到的是同一套数。' +
+      '<p><b class="ls-b">实际还款日将在放款确认后按实际放款日重算并定稿，届时以定稿计划为准；' +
+      '每期金额的计算规则不变。</b>变的只有日期，以及由日期派生的天数与利息——' +
+      '公式、年化利率、本金、期次边界规则一个都不会变（WS-327 D-RP-06 / D-RP-07）。</p>' +
+      '<p>本表<b class="ls-b">不落库、不占号、不产生期次对象</b>：您拒绝报价或报价有效期届满时，' +
+      '它随之消失、不留残留期次。</p>', '预计 · 未生效') +
+    '<div class="tablewrap" style="margin-top:14px"><table class="tbl wide ls-tbl">' +
+    '<thead><tr><th>期次</th><th>预计还款日</th><th>计息区间与天数</th><th>应还本金</th>' +
+      '<th>应还利息</th><th>应还合计</th><th>结算金额</th><th>版本</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>' +
+    '<div class="rows" style="box-shadow:none;margin-top:14px">' +
+      '<div class="row"><div class="row-main"><div class="row-k">计息规则</div>' +
+      '<div class="row-v mono" style="font-size:12px;color:var(--muted)">' +
+      '年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = ' + base + '（预计放款日）' +
+      '</div></div></div>' +
+      '<div class="row"><div class="row-main"><div class="row-k">还款方式</div>' +
+      '<div class="row-v">先息后本 · 到期还本付息，利息每 3 个月一期' +
+      '<div class="cell-sub">本期硬编码、只读展示，界面不提供可选项</div></div></div></div>' +
+      '<div class="row"><div class="row-main"><div class="row-k">合计（仅 ' + CCY + ' 记账口径）</div>' +
+      '<div class="row-v mono">本金 ' + amt(sumP) + '　利息 ' + amt(sumI) + '　合计 ' + amt(sumT) +
+      '<div class="cell-sub">结算币种金额不参与任何合计——跨币种不得求和</div></div></div></div>' +
+    '</div>' +
+    '<p class="hint" style="margin-top:12px"><b>本期不支持提前还款</b>：还本金只发生在融资项目到期之后，' +
+    '每期的还款入口在该期应还日前 3 个自然日开启，逐期开窗、不可跨期合并。' +
+    '本卡的展示事实与展示时间在您接受报价时<b>留痕（FD-28）</b>，' +
+    '<b>只留痕、不要求您勾选确认</b>——它是平台尽到告知义务的证据，' +
+    '定稿后若对日期有疑问，这条留痕可以拿出来对账。</p>' +
+    '</div></div>';
+}
+
 /* ---- 商务条款摘要（D-FIN-87）：九项，与 QT-* / FD-* 的存值逐项一致（AC-LS-88） ---- */
 function termsSummary(deal, p, printable){
   var fx = deal.fx, settle = round2(deal.amt / fx.v);
@@ -1351,7 +1448,9 @@ function pageRespond(){
     '机构可以选择不放款，但平台<b>不提供"打回重传"</b>。这是一条已知的开口。</p>';
 
   var readyToAccept = done.account && done.terms && done.seal;
-  var body = '<div class="card" style="margin-top:16px">' +
+  /* WS-327 增量：初始还款计划摆在「接受报价 · 三步」之前——
+     资产方接受报价**之前**就该知道这笔钱以后要怎么还、分几次、每次多少（US-34）。 */
+  var body = initialPlanCard(deal, p) + '<div class="card" style="margin-top:16px">' +
     cardHead('接受报价 · 三步', '<span class="faint">FD-04 填写进度 · 不是状态</span>') +
     '<div class="card-b">' + prog + '</div>' +
 

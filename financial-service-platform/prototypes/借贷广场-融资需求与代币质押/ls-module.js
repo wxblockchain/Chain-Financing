@@ -171,8 +171,20 @@ var PROJECTS = [
       { d:'2026-07-03', k:'withdraw', t:'撤回质押 3 张 · 300,000.00 USD',          dTotal:-300000, note:'撤回时可撤回上限 575,000.00 USD，本次通过额度判定（AC-FIN-13 / AC-FIN-22）' },
       { d:'2026-07-10', k:'publish',  t:'再次发布融资需求 200,000.00 USD',          dFly:200000,    note:'S-FP-4 且可融金额 220,000.00 USD > 0，可再次发布剩余额度（6.1）' },
       { d:'2026-08-19', k:'invalid',  t:'池内 2 张代币底层应收账款失效 · 300,000.00 USD', dVoid:300000,
-        note:'失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发担保不足预警（E-9 / 6.4.1）' }
+        note:'失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发担保不足预警（E-9 / 6.4.1）' },
+      /* WS-327 增量：FD-20260512-0044 的还款计划与第 1 期还款。事件续接同一张公开时间线。 */
+      { d:'2026-05-12', k:'plan',   t:'还款计划定稿 · 3 期 · 起息日 2026-05-12',
+        note:'融资确认完成的同一次结算内定稿，起息日取实际放款日；到期日 2027-04-20 取项目有效期至（WS-327 D-RP-10 / D-RP-11 / D-RP-12）' },
+      { d:'2026-08-12', k:'repay',  t:'第 1 期利息 8,688.89 USD 已提交还款记录 · 期次转 S-RP-2',
+        note:'提交时刻即停止该期计息与逾期累加（D-FIN-11）；两个额度量一个都不动——钱有没有到只有机构知道（D-RP-37）' }
     ],
+    /* WS-327 增量：公开的还款进度。本页**只读引用、不自行重算利息或逾期天数**（AC-LS-115）。
+       第 1 期正常还款（应还日当天提交，无逾期标记），机构至今未确认——
+       还款确认时限已届满，但期次状态、额度、权限一个都没变（D-RP-53 / D-RP-54）。 */
+    rep:{ deal:'FD-20260512-0044', n:3, done:0, t0:'2026-05-12', tn:'2027-04-20',
+          nextDue:'2026-11-12', nextTotal:8688.89, unpaidPri:500000,
+          overdueDays:0, overdueSeq:null, overdueDue:null,
+          hasDue:true, awaitConfirm:'RP20260512000001', rules:'年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2026-05-12' },
     terms:{ rate:'年化 6.80%（演示）', term:'180 天', repay:'到期一次性还本付息', use:'补充经营性流动资金' },
     deals:[
       { id:'FD-20260512-0044', amt:500000, st:'还款中', at:'2026-05-12', x:'放款并完成融资确认，计入项目融资余额' }
@@ -242,8 +254,16 @@ var PROJECTS = [
       { d:'2026-07-08', k:'publish', t:'发布融资需求 500,000.00 USD', dFly:500000 },
       { d:'2026-07-20', k:'quote',   t:'收到机构报价 500,000.00 USD', note:'在途占用不变（AC-FIN-23）' },
       { d:'2026-07-26', k:'fund',    t:'放款并完成融资确认', dFly:-500000, dBal:500000,
-        note:'融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「额度用尽」档；INV-FIN-01 仍成立，不预警（D-FIN-55）' }
+        note:'融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「额度用尽」档；INV-FIN-01 仍成立，不预警（D-FIN-55）' },
+      /* WS-327 增量：同一次结算内还款计划定稿，首期尚未到应还日。 */
+      { d:'2026-07-26', k:'plan',    t:'还款计划定稿 · 3 期 · 起息日 2026-07-26',
+        note:'首期应还日 2026-10-26，还款入口于应还日前 3 个自然日开启；本期不支持提前还款（WS-327 D-RP-26 / X-LS-40）' }
     ],
+    /* WS-327 增量：尚无任何期次到期，因此没有逾期标记、没有待确认。 */
+    rep:{ deal:'FD-20260726-0061', n:3, done:0, t0:'2026-07-26', tn:'2027-07-08',
+          nextDue:'2026-10-26', nextTotal:9008.33, unpaidPri:500000,
+          overdueDays:0, overdueSeq:null, overdueDue:null,
+          hasDue:true, awaitConfirm:null, rules:'年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2026-07-26' },
     terms:{ rate:'年化 7.05%（演示）', term:'120 天', repay:'到期一次性还本付息', use:'渠道铺货' },
     deals:[ { id:'FD-20260726-0061', amt:500000, st:'还款中', at:'2026-07-26', x:'放款并完成融资确认' } ]
   },
@@ -288,8 +308,25 @@ var PROJECTS = [
       { d:'2026-08-05', k:'accept',  t:'资产方接受报价 · 业务转 S-FD-3 待放款',
         note:'项目到期不终结在途业务：机构照常放款、资产方照常确认（WS-326 D-LN-15）' },
       { d:'2026-08-20', k:'expire',  t:'有效期到期 · 存在未结清融资业务，项目不关闭',
-        note:'转「已到期 · 存量处理中」并行标记：停止接受新报价、不允许再次发布，存量走完后转 S-FP-6 并释放质押（D-FIN-43 分支②，按正常状态呈现 D-FIN-47）' }
+        note:'转「已到期 · 存量处理中」并行标记：停止接受新报价、不允许再次发布，存量走完后转 S-FP-6 并释放质押（D-FIN-43 分支②，按正常状态呈现 D-FIN-47）' },
+      /* WS-327 增量：这一笔的三期还款。**利息期结清不递减任何额度**——
+         项目融资余额与授信占用额都是未偿本金的合计，利息不在其中（D-RP-36），
+         因此这两条 repay/rconf 事件不带 dBal / dFly。 */
+      { d:'2025-09-10', k:'plan',   t:'还款计划定稿 · 3 期 · 起息日 2025-09-10',
+        note:'末期应还日 2026-08-20 恒等于融资到期日（＝项目有效期至）；末期含全部本金 900,000.00 USD（WS-327 D-RP-13）' },
+      { d:'2025-12-12', k:'rconf',  t:'第 1 期利息 15,015.00 USD 已结清',
+        note:'利息期结清：项目融资余额与授信占用额**一动不动**——它们是未偿本金的合计（WS-327 D-RP-36）' },
+      { d:'2026-03-12', k:'rconf',  t:'第 2 期利息 14,850.00 USD 已结清',
+        note:'同上，利息不递减任何额度' },
+      { d:'2026-08-21', k:'odue',   t:'第 3 期（含本金）逾期 · 应还日 2026-08-20',
+        note:'应还日次日 00:00 起打逾期标记、逾期天数每日 +1，不设宽限期；业务打 S-FD-9 并行标记，**状态仍是 S-FD-6 还款中**。平台不计罚息、不触发任何质押处置（WS-327 D-RP-34 / D-RP-35 / X-LS-45 / X-LS-46）' }
     ],
+    /* WS-327 增量：末期（含本金）已逾期 22 天且尚未提交。逾期期次的还款入口**保持开启**——
+       关掉就等于不让人还钱（D-RP-35）。项目「已到期 · 存量处理中」与逾期是两个独立的并行标记。 */
+    rep:{ deal:'FD-20250910-0012', n:3, done:2, t0:'2025-09-10', tn:'2026-08-20',
+          nextDue:'2026-08-20', nextTotal:926895.00, unpaidPri:900000,
+          overdueDays:22, overdueSeq:3, overdueDue:'2026-08-20',
+          hasDue:true, awaitConfirm:null, rules:'年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2025-09-10' },
     terms:{ rate:'年化 6.60%（演示）', term:'360 天', repay:'到期一次性还本付息', use:'工程项目垫资' },
     deals:[ { id:'FD-20250910-0012', amt:900000, st:'已到期（存量履约中）', at:'2025-09-10', x:'本期无提前还款，还本发生在项目到期后（X-LS-06）' } ]
   },
@@ -345,6 +382,19 @@ var PROJECTS = [
     terms:null, deals:[]
   }
 ];
+
+/* ---- WS-327 增量：events[] 按日期升序归一化 ----
+   两张图（seriesOf）与 P-LS-02 的公开时间线都假定 events[] 是升序的：
+   seriesOf 按数组顺序逐条累加并把 e.d 当作 x 坐标，乱序会让折线往回跳。
+   而逐轮追加增量的自然写法是**按主题成组追加**（WS-326 的放款一组、WS-327 的还款一组），
+   不是按日期插队。在这里统一排一次序，比要求每个增量作者手工插到正确位置更不容易出错。
+   稳定排序：同一天的多条事件保持各自的书写顺序。 */
+PROJECTS.forEach(function(p){
+  if(!p.events) return;
+  p.events = p.events.map(function(e, i){ return [e, i]; })
+    .sort(function(a, b){ return a[0].d === b[0].d ? a[1] - b[1] : (a[0].d < b[0].d ? -1 : 1); })
+    .map(function(x){ return x[0]; });
+});
 
 /* ---- 资产方钱包：可质押代币（已按 6.3.1 六条筛选后的结果） ---- */
 var WALLET = mkTokens({ total:555000, n:6, seed:8,
@@ -601,6 +651,26 @@ function availableActions(p, role){
       out.push({ key:'reupload', label:'重传盖章件', anchor:'reupload_contract', enabled:!guest,
                  href:lnHref('#/deal/' + f.deal + '?action=reupload_contract'),
                  reason: guest ? '未登录。重传盖章件仅对该项目所属企业主体开放。' : '' });
+    }
+  }
+  /* --- WS-327 增量：去还款 / 确认收到还款（AC-LS-113）。
+         两个动作同样由服务端返回的 available_actions 决定，前端不自行依据状态或日期推断。
+         repay 在该业务存在 S-RP-1 期次时返回；**未开窗的期次照常返回该动作**，
+         由 P-LS-09 上的那一期以 ⊘ + 开启日期呈现（AC-RP-17）。 --- */
+  if(p.rep){
+    var rp = p.rep;
+    if(rp.hasDue && (own || guest)){
+      out.push({ key:'repay', label:'去还款', anchor:'repay', enabled:!guest,
+                 href:rpHref('#/deal/' + rp.deal + '?action=repay'),
+                 reason: guest ? '未登录。还款动作仅对该项目所属企业主体开放；'
+                               + '还款计划的公开字段（期次、应还日、本息拆分、期次状态、'
+                               + '逾期标记与逾期天数）本身不因未登录而隐藏。' : '' });
+    }
+    if(rp.awaitConfirm && (role === 'fund' || guest)){
+      out.push({ key:'confirm_repayment', label:'确认收到还款', anchor:'confirm_repayment', enabled:!guest,
+                 href:rpHref('#/schedule/' + rp.awaitConfirm + '?action=confirm_repayment'),
+                 reason: guest ? '未登录。还款确认仅对该笔业务的资金方企业主体开放；'
+                               + '还款记录的提交时间与币种金额本身是公开的。' : '' });
     }
   }
   if(p.quote && st === 'S-FP-3' && (own || guest)){
@@ -1073,13 +1143,29 @@ function lnHref(hash){
   var m = (CF.MODULES || {})['lending-disbursement'];
   return m ? '../' + m.dir + '/' + m.file + (hash || '') : '#';
 }
+/* WS-327 增量：还款计划与还款确认在第四个模块文件里，同样按登记表拼地址 */
+function rpHref(hash){
+  var m = (CF.MODULES || {})['lending-repayment'];
+  return m ? '../' + m.dir + '/' + m.file + (hash || '') : '#';
+}
 /* WS-326 增量：在途业务的公开进度（FD-20260902-0054 这一类），只读引用 WS-326 的输出。
    P-LS-01 只给进度、**不给确认时限倒计时**——广场的读者是潜在报价方，
    他关心的是这个项目能不能报价，不是别人那笔业务还剩几天（WS-326 分册 6.5.3）。 */
-var FIN_ST = { 'S-FD-3':'待放款', 'S-FD-4':'待融资确认' };
+var FIN_ST = { 'S-FD-3':'待放款', 'S-FD-4':'待融资确认', 'S-FD-6':'还款中', 'S-FD-8':'已结清' };
+/* WS-327 增量：还款进度（已还 X / 共 N 期）与逾期标记进 P-LS-01 卡片。
+   **不给还款确认时限的剩余时间**——广场首页的读者是潜在报价方，他关心的是这个项目还能不能报价，
+   不是别人那笔业务的哪一期还剩几小时（分册 6.6.4）。
+   rep 是 WS-327 权威产出的公开进度，本页**只读引用、不自行计算**：
+   AC-LS-115 明确要求下游不得自行重算利息或逾期天数。 */
 function finLine(p){
-  if(!p.fin) return '';
-  return '<div class="cell-sub">业务进度 · ' + (FIN_ST[p.fin.st] || p.fin.st) + '</div>';
+  var out = '';
+  if(p.fin) out += '<div class="cell-sub">业务进度 · ' + (FIN_ST[p.fin.st] || p.fin.st) + '</div>';
+  if(p.rep){
+    out += '<div class="cell-sub">还款进度 · 已还 ' + p.rep.done + ' / 共 ' + p.rep.n + ' 期' +
+      (p.rep.overdueDays ? '　<span class="pill gray">已逾期 ' + p.rep.overdueDays + ' 天</span>' : '') +
+      '</div>';
+  }
+  return out;
 }
 
 /* ---- 动作按钮：区分「不可见」与「可见不可点 ⊘」（H-03） ---- */
@@ -1431,7 +1517,16 @@ function pageProject(){
     accept   :{ t:'已接受报价 · 待放款', tone:'' },
     disb     :{ t:'已放款 · 待融资确认', tone:'' },
     fund     :{ t:'已确认到账 · 额度已原子转移', tone:'green' },
-    terminate:{ t:'业务已终止 · 需求重回广场', tone:'gray' }
+    terminate:{ t:'业务已终止 · 需求重回广场', tone:'gray' },
+    /* WS-327 增量：还款事件**接着往这张时间线上续**，不另起一张。
+       进时间线的只有公开字段（D-RP-41）：期次、应还日、应还本息与合计、期次状态、
+       逾期标记与逾期天数、还款记录的提交时间与币种金额、结清时间。
+       凭证、交易哈希与链、机构收款账户、还款与确认备注**不在其中**。 */
+    plan     :{ t:'还款计划已定稿', tone:'' },
+    repay    :{ t:'已提交还款记录 · 待还款确认', tone:'' },
+    rconf    :{ t:'该期已结清', tone:'green' },
+    odue     :{ t:'逾期标记（并行标记，非状态）', tone:'gray' },
+    settle   :{ t:'业务已结清 · 终态', tone:'green' }
   };
   var finEv = (p.events || []).filter(function(e){ return FIN_EV[e.k]; });
   var finCard = (!fin && !finEv.length) ? '' :
@@ -1495,6 +1590,60 @@ function pageProject(){
       '收款账户、凭证文件、交易哈希与盖章件不在其中（D-LN-06）。</p></div>' : '') +
     '</div>';
 
+  /* ---- 左栏 5（WS-327 增量）：还款计划与还款进度的公开进度 ----
+     公开字段：期次数与已结清期数、每期应还日、每期应还本息与合计（USD）、期次状态、
+     逾期标记与逾期天数、结清时间、还款记录的提交时间与币种金额（D-RP-41）。
+     **不公开**：还款凭证文件、交易哈希与链、机构收款账户快照、还款备注与补充材料、确认备注。
+     口径由 WS-327 权威产出，本页只读引用、**不自行重算利息或逾期天数**（AC-LS-115）。 */
+  var rep = p.rep;
+  var repCard = !rep ? '' :
+    '<div class="card" style="margin-top:16px">' + cardHead('还款计划与还款进度',
+      '<span class="faint">公开字段 · 口径由 WS-327 权威产出，本页只读引用</span>') +
+    '<div class="card-b"><div class="ls-kgrid">' +
+      '<div><div class="k">融资业务编号</div><div class="v">' + rep.deal + '</div>' +
+        '<div class="x">还款计划在融资确认完成的同一次结算内定稿</div></div>' +
+      '<div><div class="k">已结清 / 总期数</div><div class="v">' + rep.done + ' / ' + rep.n + '</div>' +
+        '<div class="x">先息后本 · 到期还本付息，利息每 3 个月一期</div></div>' +
+      '<div><div class="k">起息日</div><div class="v">' + rep.t0 + '</div>' +
+        '<div class="x">＝ 实际放款日（放款记录提交时间的日期部分）</div></div>' +
+      '<div><div class="k">融资到期日</div><div class="v">' + rep.tn + '</div>' +
+        '<div class="x">末期应还日恒等于本项，定稿时固化</div></div>' +
+      '<div><div class="k">最近一笔应还</div><div class="v">' + (rep.nextDue || '—') + '</div>' +
+        '<div class="x">' + (rep.nextDue ? '应还合计 ' + amt(rep.nextTotal) + ' ' + CCY : '无待还期次') + '</div></div>' +
+      '<div><div class="k">未偿本金</div><div class="v">' + amt(rep.unpaidPri) + '</div>' +
+        '<div class="x">' + CCY + ' · 它就是 项目融资余额 与 授信占用额 的被加数</div></div>' +
+      (rep.overdueDays
+        ? '<div><div class="k">逾期标记与逾期天数</div><div class="v">已逾期 ' + rep.overdueDays + ' 天</div>' +
+          '<div class="x">第 ' + rep.overdueSeq + ' 期（应还日 ' + rep.overdueDue + '）· 每日 +1，提交即冻结</div></div>'
+        : '<div><div class="k">逾期标记</div><div class="v" style="font-family:var(--sans)">无</div>' +
+          '<div class="x">该业务当前没有带逾期标记的期次</div></div>') +
+    '</div>' +
+    '<div class="rows" style="box-shadow:none;margin-top:16px"><div class="row"><div class="row-main">' +
+      '<div class="row-k">计息规则</div><div class="row-v mono" style="font-size:12px;color:var(--muted)">' +
+      E(rep.rules) + '</div></div></div></div>' +
+    (rep.overdueDays ? CF.note('',
+      '<b class="ls-b">逾期是并行标记，不是状态。</b>该业务状态仍是 <b class="ls-b">S-FD-6 还款中</b>——' +
+      '一笔业务可以同时「还款中」且「逾期」：三期里第一期逾期、第三期还没到期，' +
+      '做成互斥状态会让状态与事实不符（D-FIN-09 / D-RP-35）。' +
+      '<p>本期<b class="ls-b">只记逾期天数、不算罚息</b>，逾期<b class="ls-b">不触发任何自动处置</b>：' +
+      '不处置质押代币、不强制平仓、不代偿、不提前到期（X-LS-45 / X-LS-46）。' +
+      '<b class="ls-b">还本金本来就发生在融资项目到期之后</b>（X-LS-06），' +
+      '项目「已到期 · 存量处理中」是常态路径，不是异常。</p>', '关于这个逾期标记') : '') +
+    (rep.awaitConfirm ? CF.note('',
+      '有一期<b class="ls-b">已提交还款记录、等待资金方确认</b>（还款计划编号 ' + rep.awaitConfirm + '）。' +
+      '<b class="ls-b">还款确认时限</b>届满<b class="ls-b">不会自动确认、不会自动改状态、' +
+      '不会自动递减任何额度</b>：到期只发一条通知（WS-327 D-RP-53）。' +
+      '<p><b class="ls-b">资产方的逾期天数已在提交那一刻冻结</b>，' +
+      '<b class="ls-b">不因机构迟迟不确认而继续增加</b>（D-FIN-11）。' +
+      '本期<b class="ls-b">没有「提出异议」入口</b>：金额不符或款没到时，' +
+      '请先不要点确认，发邮件到 <b class="ls-b">{平台客服邮箱}</b> 并注明融资业务编号 ' + rep.deal +
+      ' 与还款计划编号 ' + rep.awaitConfirm + '，走线下核实——' +
+      '本页是该入口的三处之一（D-RP-55）。</p>', '有一期正在等待还款确认') : '') +
+    '<p class="hint" style="margin-top:12px"><b>不公开字段</b>（服务端过滤，不是前端隐藏）：' +
+    '还款凭证文件、交易哈希与链、机构收款账户快照、还款备注与补充材料、确认备注。' +
+    '游客与第三方深链直达时，这些字段在接口响应里根本不存在（AC-LS-110）。</p>' +
+    '</div></div>';
+
   /* ---- 右栏：操作区（融资进度并入）---- */
   /* 主操作唯一：有在途报价时，资产方本人最该做的事是处理它（它带着一个会到期的倒计时）；
      担保不足时仍然先追加质押。其余沿用本模块原有的排序。 */
@@ -1536,7 +1685,7 @@ function pageProject(){
     '<div class="card-b">' + chartBlock(p,'pool') + chartBlock(p,'fin') + '</div></div>';
 
   return head + shortAlert(p, d, own) + usedUpNote(d) + readout +
-    '<div class="portal-cols"><div>' + pledgeCard + quoteCard + finCard + demandCard + '</div>' + rail + '</div>' + charts;
+    '<div class="portal-cols"><div>' + pledgeCard + quoteCard + finCard + repCard + demandCard + '</div>' + rail + '</div>' + charts;
 }
 
 /* ---- 图表外壳（几何与口径来自 Part A，逐行同源） ---- */

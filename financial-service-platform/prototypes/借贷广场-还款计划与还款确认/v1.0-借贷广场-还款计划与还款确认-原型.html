@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="zh" data-end="asset">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financial Service Platform · Repayment schedule and confirmation</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>/* Hallmark · pre-emit critique: P5 H5 E4 S5 R4 V4
+   只放本模块专有的组合。token 与公共组件一律来自 _shared，此处不重定义、不覆盖。
+   继承端别：面客端 asset　继承 shell：portal（顶栏导航 + subnav，无侧栏）
+   继承母版：4.3 顶栏母版（金融服务端登录）＋ 4.2 公开层内容节奏
+   继承模块：WS-324 借贷广场原型 v1.2.3 / WS-325 授信报价与接受拒绝 v1.0 /
+             WS-326 放款与融资确认 v1.0（commit aac0aed）
+             —— 下面第一段是它们共用的模块作用域类，类名一字不改，**第四份拷贝**。
+             上收 base.css 做成面客档位修饰类的那件事记在 README §5.2：到第四份已经明显该做，
+             但它影响四个已交付模块，应单独一轮做完并回归，不夹在本轮里。
+             第二段是直接沿用 WS-326 招牌件的五个类（.ln-cd / .ln-mail / .ln-mark /
+             .ln-pair / .ln-hash），**形状复用、文案按本模块重写**。
+
+   本模块的招牌件（前三个模块没有、这里新造的五个）：
+     .rp-vs     两版计划对照 —— 初始（预计·未生效）vs 定稿，同屏比差异，
+                并把差异来源钉死在「实际放款日」上，不是口径变了（D-RP-04 ~ D-RP-08）
+     .rp-freeze 两条轴 —— 「时间的停止」停在提交时刻，「状态的终结」停在确认时刻。
+                本模块最不能被优化掉的一条，给它一个独立的、看得见的形状（D-FIN-11 / D-RP-29）
+     .rp-sel    期次选择器 —— 已逾期 / 待还款 / 未开窗 三组，组内排序键写在行上，
+                未开窗可见但 ⊘ + 开启日期（D-RP-21 ~ D-RP-26）
+     .rp-stop   五个拦截点牌 —— 提前还款由五件事一起挡住，缺一件就等于没拦（6.2.2）
+     .rp-rule   计息规则常驻条 —— RP-18 那句话的页面形态，利率始终带「年化」（AC-RP-04）
+   ========================================================================== */
+
+/* ============================================================
+   第一段：继承自 WS-324 / WS-325 / WS-326 模块作用域的版式（面客公开页档位）
+   base.css 的 .page-title 19px / body 13.5px 是管理端控制台档位；
+   面客页在参考件里是 body 14.5px、详情标题 ~42px、卡片标题 15px。
+   全部是模块作用域的组合类，不重定义 token、不覆盖公共组件。
+   ============================================================ */
+.portal-wrap{font-size:14.5px;line-height:1.55}
+.portal-wrap table.tbl{font-size:13px}
+.portal-wrap .card-head span{font-size:12.5px}
+.ls-back{margin-bottom:var(--sp-5)}
+.ls-phead{display:flex;align-items:flex-start;gap:var(--sp-5);margin-bottom:var(--sp-6)}
+.ls-phead .tile{
+  width:56px;height:56px;border-radius:16px;flex:none;background:var(--accent-soft);
+  border:1px solid var(--accent-border);display:grid;place-items:center;font-size:22px;margin-top:6px;
+}
+.ls-phead .body{flex:1;min-width:0}
+.ls-phead .kick{font-size:12.5px;color:var(--faint);margin:0 0 4px;letter-spacing:.01em}
+.ls-phead .kick .mono{color:var(--muted)}
+.ls-phead h1{margin:0;font-size:clamp(26px,2.7vw,42px);font-weight:740;letter-spacing:-.03em;line-height:1.1}
+.ls-phead h1 em{font-style:normal;color:var(--faint);font-weight:600;margin-left:12px;font-size:.62em}
+.ls-phead .amt{text-align:right;flex:none;padding-top:10px}
+.ls-phead .amt .k{font-size:12.5px;color:var(--faint)}
+.ls-phead .amt .v{
+  font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(26px,2.4vw,38px);
+  font-weight:700;letter-spacing:-.035em;line-height:1.06;margin-top:3px;
+}
+.ls-phead .amt .cy{font-size:14px;color:var(--faint);font-weight:500;margin-left:6px}
+.ls-phead .amt .x{font-size:12px;color:var(--faint);margin-top:6px}
+.ls-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-4)}
+.ls-tags .pill{height:28px;padding:0 12px;font-size:12.5px;border-radius:var(--radius-pill)}
+.card-head b{font-size:15px}
+.note .ls-b{font-weight:700;display:inline}
+.note{font-size:12.5px;line-height:1.6}
+.ls-alert{margin-bottom:var(--sp-5)}
+.ls-kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--sp-4) var(--sp-5)}
+.ls-kgrid .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ls-kgrid .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:640;margin-top:4px}
+.ls-kgrid .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+.ls-fold{border-top:1px solid var(--border);margin-top:var(--sp-5)}
+.ls-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 0;
+  font-size:12.5px;color:var(--muted);font-weight:620}
+.ls-fold>summary::-webkit-details-marker{display:none}
+.ls-fold>summary:hover{color:var(--accent)}
+.ls-fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-xs)}
+.ls-fold>summary .ca{font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);display:inline-block;
+  transition:transform var(--dur-fast) var(--ease-out)}
+.ls-fold[open]>summary .ca{transform:rotate(90deg)}
+.ls-fold>summary .n{margin-left:auto;font-size:var(--fs-11);color:var(--faint);font-weight:400}
+.ls-fold .fb{padding:2px 0 var(--sp-5)}
+.ls-why{display:flex;gap:6px;margin-top:6px;font-size:11px;color:var(--faint);line-height:1.5}
+.ls-why .sg{flex:none}
+.btn.blocked{background:var(--card-2);border-style:dashed;color:var(--faint);cursor:not-allowed}
+.btn.blocked:hover{background:var(--card-2)}
+.ls-pick{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;padding:11px 14px;background:var(--card-2);
+  border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px}
+.ls-pick.bad{background:var(--danger-bg);border-color:var(--danger-border)}
+.ls-pick .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:660;font-size:13.5px}
+.ls-pick .sp{width:1px;height:18px;background:var(--border-strong)}
+.ls-ro{min-height:var(--ctrl-h);display:flex;align-items:center;padding:0 12px;border:1px dashed var(--border-strong);
+  border-radius:var(--radius-sm);background:var(--card-2);font-family:var(--mono);color:var(--muted);font-size:12.5px}
+.ls-tbl tbody td{padding:16px 12px}
+.ls-tbl thead th{padding:11px 12px}
+.ls-tbl .cell-sub{font-size:11px;margin-top:3px}
+.skel-row{padding:14px 0;border-bottom:1px solid var(--border)}
+.skel-row:last-child{border-bottom:0}
+
+/* ============================================================
+   第二段：直接沿用 WS-326 招牌件的五个类（形状复用、文案按本模块重写）
+   ============================================================ */
+
+/* —— 还款确认时限条（RM-15 / RM-16 / RM-17 / D-RP-52 / D-RP-53）——
+   与 WS-326 的融资确认时限条同形同口径：到点只提醒，状态、额度、权限、
+   逾期天数一个不动。因此超期态走中性灰（.over）而不是告警色（D-RP-54）。
+   本模块的文案一律写全称「还款确认时限」——同一笔业务上已经有三个 168 小时（D-RP-33）。 */
+.ln-cd{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:14px}
+.ln-cd.soon{border-color:var(--warn-border);background:var(--warn-bg)}
+.ln-cd.over{border-color:var(--border-strong);background:var(--gray-bg)}
+.ln-cd .by{font-size:12.5px;line-height:1.6;color:var(--muted)}
+.ln-cd .by b{color:var(--text);font-weight:660}
+.ln-cd .big{display:flex;align-items:baseline;gap:4px 8px;margin-top:9px;flex-wrap:wrap}
+.ln-cd .big .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;
+  letter-spacing:-.03em;line-height:1.05;color:var(--text);white-space:nowrap}
+.ln-cd.soon .big .v{color:var(--warn)}
+.ln-cd.over .big .v{color:var(--gray-fg)}
+.ln-cd .big .u{font-size:12px;color:var(--faint)}
+.ln-cd .bar{display:flex;height:9px;margin-top:11px;border-radius:5px;overflow:hidden;
+  background:var(--track);border:1px solid var(--border)}
+.ln-cd .bar .el{background:rgba(139,148,166,.28)}
+.ln-cd .bar .rm{background:var(--accent)}
+.ln-cd.soon .bar .rm{background:var(--warn)}
+.ln-cd.over .bar .rm{background:var(--border-strong)}
+.ln-cd .scale{display:flex;justify-content:space-between;gap:12px;font-size:var(--fs-10);color:var(--faint);margin-top:5px}
+.ln-cd .scale b{font-family:var(--mono);color:var(--muted);font-weight:620}
+.ln-cd .ways{margin-top:11px;padding-top:10px;border-top:1px solid var(--border);font-size:11.5px;line-height:1.6}
+.ln-cd .ways .w{display:flex;gap:7px;color:var(--muted)}
+.ln-cd .ways .w+.w{margin-top:5px}
+.ln-cd .ways .w i{flex:none;font-style:normal;font-family:var(--mono);color:var(--faint)}
+.ln-cd .ways .w b{color:var(--text);font-weight:660}
+
+/* —— 中性标记条（RP-11 / RM-17 / FD-32 / D-FIN-47 / D-RP-24）——
+   已逾期 N 天 · 已超过还款确认时限 N 天 · 已到期存量处理中 · 还款计划生成中：
+   四个标记一律中性灰。逾期在本期**没有任何金额后果**（X-LS-45），做成红色警示
+   就是给一个平台兑现不了的威慑；PRD 也直接写明逾期用中性标记（D-RP-24 / 6.6.2）。
+   .day 是这里唯一的加重：天数是这条标记真正要读的那个数。 */
+.ln-mark{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm);background:var(--gray-bg);padding:12px 14px}
+.ln-mark+.ln-mark{margin-top:var(--sp-3)}
+.ln-mark .tg{flex:none;font-size:var(--fs-10);font-weight:700;letter-spacing:.04em;color:var(--gray-fg);
+  border:1px solid var(--border-strong);background:var(--bg-elev);border-radius:var(--radius-xs);padding:3px 8px;
+  margin-top:1px}
+.ln-mark .bd{flex:1;min-width:0;font-size:12.5px;line-height:1.6;color:var(--muted)}
+.ln-mark .bd b{color:var(--text);font-weight:660}
+.ln-mark .bd .mt{font-size:11px;color:var(--faint);margin-top:4px}
+.ln-mark .bd .day{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;color:var(--text)}
+
+/* —— 客服邮箱卡（D-RP-55）——
+   本期还款异议的唯一入口，三处必须出现。与动作区并排，不是页脚小字。 */
+.ln-mail{border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);padding:15px 16px}
+.ln-mail .mh{font-size:13.5px;font-weight:680}
+.ln-mail .ad{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:11px;
+  border:1px dashed var(--accent-border);background:var(--bg-elev);border-radius:var(--radius-xs);padding:9px 12px}
+.ln-mail .ad .em{font-family:var(--mono);font-size:13px;font-weight:640;overflow-wrap:anywhere}
+.ln-mail .ad .btn{margin-left:auto}
+.ln-mail p{margin:11px 0 0;font-size:11.5px;color:var(--muted);line-height:1.6}
+.ln-mail p b{color:var(--text);font-weight:640}
+
+/* —— 还款时间 / 提交时间并列（RM-05 vs RM-06，D-FIN-21）——
+   与放款侧的发放时间 / 提交时间同构：左边是提交方填的，右边是服务端记的。
+   时效、计息、逾期冻结点一律只认右边。 */
+.ln-pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(236px,1fr));gap:var(--sp-4)}
+.ln-pair .t{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:12px 13px}
+.ln-pair .t.auth{border-color:var(--accent-border);background:var(--accent-soft)}
+.ln-pair .t .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ln-pair .t .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-16);font-weight:660;margin-top:5px}
+.ln-pair .t .src{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.55}
+.ln-pair .t .src b{color:var(--text);font-weight:640}
+
+/* —— 交易哈希 + 链 + 区块浏览器（RM-08 / RM-09 / RM-13 / D-RP-43 / AC-RP-10）——
+   链接常驻「平台未核验」。这块不允许出现任何「已核验 / 已上链确认 / 交易有效」的形态。 */
+.ln-hash{border:1px solid var(--hash-border);background:var(--hash-bg);border-radius:var(--radius-sm);padding:13px 14px}
+.ln-hash .hv{font-family:var(--mono);font-size:12.5px;color:var(--hash-text);overflow-wrap:anywhere;line-height:1.6}
+.ln-hash .meta{display:flex;gap:var(--sp-4);flex-wrap:wrap;margin-top:9px;font-size:11.5px;color:var(--muted)}
+.ln-hash .meta b{color:var(--text);font-weight:640}
+.ln-hash .lk{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:11px;padding-top:11px;
+  border-top:1px solid var(--hash-border)}
+.ln-hash .lk .nv{font-size:11.5px;color:var(--warn);font-weight:620}
+
+/* —— 两个维度四个量的转移牌（AC-FIN-32 / D-RP-36 / D-RP-37）——
+   WS-326 的 .ln-xfer 反向：还款侧只有**含本金的期次结清**才递减，
+   利息期结清时四格全是「不变」。类名沿用，不新造一个同形的。 */
+.ln-xfer{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elev);overflow:hidden}
+.ln-xfer .xh{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border);
+  font-size:12.5px;font-weight:660;background:var(--card-2)}
+.ln-xfer .xh .at{margin-left:auto;font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);font-weight:600}
+.ln-xfer .dim{padding:12px 14px}
+.ln-xfer .dim+.dim{border-top:1px solid var(--border)}
+.ln-xfer .dim>.dn{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ln-xfer .qr{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:var(--sp-3);margin-top:9px}
+.ln-xfer .q{border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2);padding:10px 11px}
+.ln-xfer .q.out{border-color:var(--border-strong)}
+.ln-xfer .q.in{border-color:var(--accent-border);background:var(--accent-soft)}
+.ln-xfer .q .nm{font-size:12px;font-weight:660}
+.ln-xfer .q .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-16);
+  font-weight:660;margin-top:6px;letter-spacing:-.02em}
+.ln-xfer .q .v s{text-decoration:line-through;color:var(--faint);font-weight:500;margin-right:7px}
+.ln-xfer .q .x{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+.ln-xfer .ar{font-family:var(--mono);color:var(--accent);font-size:var(--fs-19);text-align:center}
+.ln-xfer .xf{padding:11px 14px;border-top:1px solid var(--border);background:var(--card-2);
+  font-size:11.5px;color:var(--muted);line-height:1.6}
+.ln-xfer .xf b{color:var(--text);font-weight:660}
+.ln-xfer.still .q{background:var(--card-2);border-color:var(--border)}
+.ln-xfer.still .ar{color:var(--faint)}
+@media (max-width:720px){
+  .ln-xfer .qr{grid-template-columns:1fr}
+  .ln-xfer .ar{transform:rotate(90deg)}
+}
+
+/* —— 原型注解卡：反向清单与口径说明不是产品界面的一部分。
+       标出来有两个用处：读者一眼能分清"页面本身"与"对页面的说明"，
+       AC-RP-10 的全文检索也能据此把注解排除在产品文案之外。 —— */
+.ln-annot{border-style:dashed}
+.ln-annot .card-head b{color:var(--muted);font-weight:660}
+
+/* ============================================================
+   第三段：本模块的招牌件
+   ============================================================ */
+
+/* —— 招牌件 A：两版计划对照（D-RP-04 ～ D-RP-08 / F-LS-63 / AC-RP-02）——
+   左「初始 · 预计 · 未生效」，右「已定稿」，**同屏**。中间那一列只干一件事：
+   把差异来源钉在「实际放款日」上。两版之间变的是日期与由日期派生的天数与利息，
+   **公式、利率、本金、期数规则一个没变**——不写清这一点，资产方会以为口径被改了。 */
+.rp-vs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--sp-5)}
+@media (max-width:1000px){ .rp-vs{grid-template-columns:minmax(0,1fr)} }
+.rp-ver{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elev);
+  display:flex;flex-direction:column}
+.rp-ver.draft{border-style:dashed;background:var(--card-2)}
+.rp-ver.final{border-color:var(--accent-border)}
+.rp-ver .vh{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 14px;
+  border-bottom:1px solid var(--border);font-size:12.5px;font-weight:660}
+.rp-ver .vh .tag{font-size:var(--fs-10);font-weight:700;letter-spacing:.04em;padding:3px 8px;
+  border-radius:var(--radius-xs);border:1px solid var(--border-strong);background:var(--gray-bg);color:var(--gray-fg)}
+.rp-ver.final .vh .tag{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent)}
+.rp-ver .vb{padding:13px 14px;flex:1}
+.rp-ver .base{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding-bottom:11px;
+  border-bottom:1px dashed var(--border)}
+.rp-ver .base .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.rp-ver .base .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-19);font-weight:700;
+  letter-spacing:-.02em}
+.rp-ver .base .src{flex-basis:100%;font-size:11px;color:var(--muted);line-height:1.55;margin-top:5px}
+.rp-ver .base .src b{color:var(--text);font-weight:640}
+.rp-ver .mini{width:100%;border-collapse:collapse;font-size:12px;margin-top:11px}
+.rp-ver .mini th{text-align:left;font-size:var(--fs-10);font-weight:650;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--faint);padding:0 8px 7px 0;border-bottom:1px solid var(--border);white-space:nowrap}
+.rp-ver .mini th:last-child,.rp-ver .mini td:last-child{text-align:right;padding-right:0}
+.rp-ver .mini td{padding:8px 8px 8px 0;border-bottom:1px dashed var(--border);vertical-align:top;line-height:1.5}
+.rp-ver .mini tr:last-child td{border-bottom:0}
+.rp-ver .mini .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:640}
+.rp-ver .mini .dif{color:var(--accent);font-weight:700}
+.rp-ver .mini .same{color:var(--faint)}
+.rp-ver .vf{padding:11px 14px;border-top:1px solid var(--border);background:var(--card-2);
+  font-size:11.5px;color:var(--muted);line-height:1.6}
+.rp-ver .vf b{color:var(--text);font-weight:660}
+/* 差异来源条：横跨两版之下，是这张对照的结论行 */
+.rp-why{border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);
+  padding:14px 16px;margin-top:var(--sp-5)}
+.rp-why .wh{font-size:13.5px;font-weight:680}
+.rp-why .wg{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:var(--sp-3);margin-top:11px}
+.rp-why .w{border:1px solid var(--accent-border);background:var(--bg-elev);border-radius:var(--radius-xs);padding:10px 11px}
+.rp-why .w .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.rp-why .w .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:660;margin-top:5px}
+.rp-why .w .v .ch{color:var(--accent)}
+.rp-why .w .x{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+.rp-why p{margin:11px 0 0;font-size:11.5px;color:var(--muted);line-height:1.6}
+.rp-why p b{color:var(--text);font-weight:640}
+
+/* —— 招牌件 B：两条轴（D-FIN-11 / D-RP-29 / D-RP-30 / AC-RP-09）——
+   本模块最容易被"优化"掉的一条，因此给它一个独立的形状而不是一段文字：
+   上轴是「时间的停止」，停在**提交时刻**；下轴是「状态的终结」，停在**确认时刻**。
+   两轴的终点在横向位置上刻意不对齐——它们本来就不是同一个时刻。 */
+.rp-freeze{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elev);overflow:hidden}
+.rp-freeze .fh{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 14px;
+  border-bottom:1px solid var(--border);background:var(--card-2);font-size:12.5px;font-weight:660}
+.rp-freeze .fh .at{margin-left:auto;font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);font-weight:600}
+.rp-ax{padding:13px 14px}
+.rp-ax+.rp-ax{border-top:1px solid var(--border)}
+.rp-ax .an{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.rp-ax .an .t{font-size:12.5px;font-weight:680}
+.rp-ax .an .s{font-size:11px;color:var(--faint)}
+.rp-ax .track{display:flex;align-items:stretch;gap:0;margin-top:11px;border:1px solid var(--border);
+  border-radius:var(--radius-xs);overflow:hidden;background:var(--card-2)}
+.rp-ax .seg2{flex:1;min-width:0;padding:9px 10px;border-right:1px solid var(--border)}
+.rp-ax .seg2:last-child{border-right:0}
+.rp-ax .seg2.on{background:var(--accent-soft)}
+.rp-ax .seg2.stop{background:var(--gray-bg)}
+.rp-ax .seg2 .sk{font-size:var(--fs-10);color:var(--faint);letter-spacing:.04em;text-transform:uppercase;
+  overflow-wrap:anywhere}
+.rp-ax .seg2 .sv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:660;
+  margin-top:5px;overflow-wrap:anywhere}
+.rp-ax .seg2 .sx{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+.rp-ax .mark2{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-size:11.5px;color:var(--muted)}
+.rp-ax .mark2 i{font-style:normal;font-family:var(--mono);color:var(--accent)}
+.rp-ax .mark2 b{color:var(--text);font-weight:660}
+.rp-freeze .ff{padding:12px 14px;border-top:1px solid var(--border-strong);background:var(--card-2);
+  font-size:12px;color:var(--muted);line-height:1.65}
+.rp-freeze .ff b{color:var(--text);font-weight:680}
+@media (max-width:720px){
+  .rp-ax .track{flex-direction:column}
+  .rp-ax .seg2{border-right:0;border-bottom:1px solid var(--border)}
+  .rp-ax .seg2:last-child{border-bottom:0}
+}
+
+/* —— 招牌件 C：期次选择器（D-RP-21 ～ D-RP-26 / 6.6.2）——
+   三组：已逾期 / 待还款 / 未开窗。排序键写在每一行上（应还日 → 放款日 → 业务编号），
+   因为 D-RP-22 的排序结果必须是可核对的，不能只是"看起来差不多"。
+   未开窗的**可见但不可选**——隐藏会让资产方以为计划少了几期。 */
+.rp-sel{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elev);overflow:hidden}
+.rp-grp{border-bottom:1px solid var(--border)}
+.rp-grp:last-child{border-bottom:0}
+.rp-grp>.gh{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 14px;background:var(--card-2);
+  font-size:var(--fs-10);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-fg);
+  border-bottom:1px solid var(--border)}
+.rp-grp>.gh .n{margin-left:auto;font-family:var(--mono);letter-spacing:0;font-weight:600;color:var(--faint)}
+.rp-opt{display:flex;align-items:flex-start;gap:var(--sp-3);width:100%;text-align:left;appearance:none;
+  font:inherit;background:var(--bg-elev);border:0;border-bottom:1px solid var(--border);padding:11px 14px;
+  cursor:pointer;color:var(--text);transition:background var(--dur-fast) var(--ease-out)}
+.rp-opt:last-child{border-bottom:0}
+.rp-opt:hover{background:var(--card-hover)}
+.rp-opt:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.rp-opt[aria-pressed="true"]{background:var(--accent-soft)}
+.rp-opt[aria-disabled="true"]{cursor:not-allowed;background:var(--card-2);color:var(--faint)}
+.rp-opt[aria-disabled="true"]:hover{background:var(--card-2)}
+.rp-opt .ix{flex:none;width:22px;font-family:var(--mono);font-size:11px;color:var(--faint);padding-top:2px}
+.rp-opt[aria-pressed="true"] .ix{color:var(--accent);font-weight:700}
+.rp-opt .ob{flex:1;min-width:0}
+.rp-opt .o1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:12.5px}
+.rp-opt .o1 .dt{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:13.5px}
+.rp-opt .o1 .dl{color:var(--muted)}
+.rp-opt .o2{font-size:11px;color:var(--faint);margin-top:4px;line-height:1.55;overflow-wrap:anywhere}
+.rp-opt .o2 .key{font-family:var(--mono);color:var(--muted)}
+.rp-opt .oa{flex:none;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:13px;font-weight:660;padding-top:1px}
+.rp-opt .oa .oc{display:block;font-size:10.5px;color:var(--faint);font-weight:500;margin-top:3px}
+.rp-opt .blk{flex:none;font-family:var(--mono);color:var(--faint);padding-top:2px}
+@media (max-width:640px){
+  .rp-opt{flex-wrap:wrap}
+  .rp-opt .oa{text-align:left;padding-top:6px}
+}
+
+/* —— 招牌件 D：五个拦截点（6.2.2 / D-RP-25 / AC-RP-07）——
+   「不允许提前还款」如果只写一句话而入口常开，等于没拦。五张牌摆在一起，
+   每一张都指向页面上一个**看得见、点得到**的东西。 */
+.rp-stop{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:var(--sp-3)}
+.rp-stop .s{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:12px 13px}
+.rp-stop .s .sn{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:660}
+.rp-stop .s .sn i{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--accent);
+  border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-pill);
+  width:19px;height:19px;display:grid;place-items:center;flex:none}
+.rp-stop .s .sx{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:7px}
+.rp-stop .s .sx b{color:var(--text);font-weight:640}
+.rp-stop .s .wh{font-size:11px;color:var(--faint);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);
+  line-height:1.5}
+
+/* —— 招牌件 E：计息规则常驻条（RP-18 / D-RP-16 ～ D-RP-20 / AC-RP-04）——
+   ACT/360 让"年化利率 × 整年"实际略高于名义利率，对资产方不直观，
+   因此规则全文常驻、不折叠、不只给一个百分数；利率始终带「年化」二字。 */
+.rp-rule{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--card-2);padding:12px 14px}
+.rp-rule .rt{font-family:var(--mono);font-size:12.5px;font-weight:640;line-height:1.7;overflow-wrap:anywhere}
+.rp-rule .rt b{color:var(--accent);font-weight:700}
+.rp-rule .rx{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:var(--sp-3);margin-top:11px;
+  padding-top:11px;border-top:1px dashed var(--border)}
+.rp-rule .rx .i .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.rp-rule .rx .i .v{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.55}
+.rp-rule .rx .i .v b{color:var(--text);font-weight:640}
+.rp-rule .td{font-size:var(--fs-10);color:var(--faint);margin-top:9px}
+
+/* —— 计划表的行修饰：末期、逾期、当前选中。只做底色与左缘，不换字号 —— */
+.rp-plan tbody tr.last td{background:var(--accent-soft)}
+.rp-plan tbody tr.last td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.rp-plan tbody tr.odue td:first-child{box-shadow:inset 3px 0 0 var(--border-strong)}
+.rp-plan tbody tr.cur td{background:var(--card-hover)}
+.rp-plan tfoot td{padding:11px 12px;border-top:1px solid var(--border-strong);font-weight:660;
+  font-family:var(--mono);font-variant-numeric:tabular-nums;background:var(--card-2)}
+.rp-plan tfoot td.lb{font-family:var(--sans);font-weight:640}
+.rp-plan .sub{font-size:10.5px;color:var(--faint);margin-top:3px;line-height:1.45;font-family:var(--sans);
+  font-weight:400;letter-spacing:0}
+
+/* —— 只读带出的机构收款账户（RP-14 / RM-10 / D-FIN-24）——
+   这里**没有输入框**，不是置灰的输入框：可改就等于给了钓鱼的口子。 —— */
+.rp-acct{border:1px dashed var(--border-strong);border-radius:var(--radius-sm);background:var(--card-2);padding:13px 14px}
+.rp-acct .ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(186px,1fr));gap:var(--sp-3) var(--sp-5)}
+.rp-acct .ag .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.rp-acct .ag .v{font-family:var(--mono);font-size:12.5px;font-weight:640;margin-top:4px;overflow-wrap:anywhere}
+.rp-acct .lock{display:flex;gap:7px;margin-top:11px;padding-top:10px;border-top:1px dashed var(--border);
+  font-size:11.5px;color:var(--muted);line-height:1.6}
+.rp-acct .lock i{flex:none;font-style:normal;font-family:var(--mono);color:var(--faint)}
+.rp-acct .lock b{color:var(--text);font-weight:660}
+
+/* —— 还款记录只读栏（RM-01 ～ RM-18 的读值形态，与放款侧同构）—— */
+.ln-rec{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:var(--sp-4) var(--sp-5)}
+.ln-rec .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ln-rec .v{font-size:13.5px;font-weight:640;margin-top:4px;overflow-wrap:anywhere}
+.ln-rec .v.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.ln-rec .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+
+/* —— 右栏窄档的修正：300px 的右栏放不下三列对照与两列版本，转单列 —— */
+.portal-rail .ln-xfer .qr{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
+.portal-rail .ln-xfer .ar{transform:rotate(90deg)}
+.portal-rail .ln-xfer .q .v{font-size:var(--fs-14)}
+.portal-rail .rp-vs{grid-template-columns:minmax(0,1fr)}
+.portal-rail .rp-ax .track{flex-direction:column}
+.portal-rail .rp-ax .seg2{border-right:0;border-bottom:1px solid var(--border)}
+.portal-rail .rp-ax .seg2:last-child{border-bottom:0}
+
+/* —— 右栏与窄屏 —— */
+@media (max-width:980px){
+  .portal-cols{grid-template-columns:minmax(0,1fr)}
+  .portal-rail{position:static}
+}
+
+/* 公共 .btn / .inp / .check 已带 hover / focus-visible / active / disabled 全套状态，本模块不覆盖。
+   本模块唯一的自有动效是 <details> 箭头旋转与期次选项的底色过渡，统一在这里给 reduced-motion 兜底。 */
+@media (prefers-reduced-motion:reduce){
+  .ls-fold>summary .ca,.rp-opt{transition:none}
+}
+</style>
+</head>
+<body>
+<!-- 面客顶栏版式（继承参考 4.3）。公共运行时要求的挂载点一个不少：
+     brandSub / nav / topRight / crumb / content / layers；容器用 _shared/base.css 的 .portal* 一族。
+     模块不自建菜单、不放第二套导航——状态切换走公共 stateBar，身份切换走顶栏上下文操作区。 -->
+<div class="portal" id="app" hidden>
+ <header class="portal-head">
+  <div class="brand"><div class="brand-mark">FS</div><div>
+   <div class="brand-name" data-brand>Financial Services</div>
+   <div class="brand-sub" id="brandSub"></div></div></div>
+  <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+  <div class="portal-tools" id="topRight"></div>
+ </header>
+ <div class="portal-sub"><div class="portal-sub-in" id="crumb"></div></div>
+ <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+</div>
+<div class="focus" id="focus"></div>
+<div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script src="./rp-module.js"></script>
+</body>
+</html>

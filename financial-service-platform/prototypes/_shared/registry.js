@@ -225,6 +225,40 @@
   Object.assign(CF.PAGES['P-LS-07'],{crumb:['Record disbursement','放款与放款凭证上传']});
   Object.assign(CF.PAGES['P-LS-08'],{crumb:['Confirm receipt','确认到账']});
  })();
+
+ /* WS-327 借贷广场 · 还款计划与还款确认（同一块面客画布，与 WS-324 / WS-325 / WS-326 共用 portal 顶栏骨架）。
+    (1) 页面 ID 直接取 PRD 给的 P-LS-09 / P-LS-10，不自造号；已占用的号段是
+        P-LS-01/02/03（WS-324）、P-LS-04/05/06（WS-325）、P-LS-07/08（WS-326）、
+        P-LS-90（WS-324 原型侧内部页「我的融资项目」）。
+    (2) **P-LS-91「还款计划」是原型侧内部页，PRD 未定义此页**：PRD 分册 6.6.1 把还款计划表
+        定义为一张**跨页面共用的表**（报价接受页 / 还款页 / 业务详情 / 控制台），没有给它页号。
+        但 F-LS-60 / 62 / 63 / 64 四个功能点都落在这张表上，其中 F-LS-63「定稿通知的新旧对比」
+        本身就要求两版同屏，因此原型侧给它一个承载页。**号段取 90 段避让 PRD 连号段位**，
+        与 P-LS-90 同一处理；不要据此把它当成 PRD 已定义的页面，也不要拿它去和 PRD 对账。
+    (3) 三页都不进顶栏主导航：还款录入与还款确认是从业务深链带出来的处理页，
+        还款计划由前两者与 P-LS-02 带出，按 4.3「流程页与落地页不一定进菜单」只登记 crumb。
+    (4) ENTRY 用分册 6.8.1 的新增锚点：deal/{id}?action=repay 与 schedule/{id}?action=repay
+        **并存且落到同一页面**（D-RP-60），区别只在默认选中哪个期次；
+        **不新增 repayment/{id} 这一层**（D-RP-59）——还款记录没有需要被深链直达的独立页面，
+        它永远在期次里呈现。deal/{id}?action=schedule 是原型侧为 P-LS-91 自用的锚点，
+        **不是 PRD 契约的一部分**，不要把它当成新增的深链约定往下游传。 */
+ CF.MODULES['lending-repayment']={dir:'借贷广场-还款计划与还款确认',
+   file:'v1.0-借贷广场-还款计划与还款确认-原型.html',
+   name:['Repayment schedule and confirmation','借贷广场 · 还款计划与还款确认']};
+ (function(){
+  var pages={
+   'P-LS-09':[['Record repayment','还款录入'],'/deal?action=repay'],
+   'P-LS-10':[['Confirm repayment','还款确认'],'/schedule?action=confirm_repayment'],
+   'P-LS-91':[['Repayment schedule','还款计划'],'/deal?action=schedule']
+  };
+  for(var id in pages){
+   CF.PAGES[id]={end:'asset',layout:'app',name:pages[id][0]};
+   CF.OWNER[id]='lending-repayment'; CF.ENTRY[id]='#'+pages[id][1];
+  }
+  Object.assign(CF.PAGES['P-LS-09'],{crumb:['Record repayment','还款录入']});
+  Object.assign(CF.PAGES['P-LS-10'],{crumb:['Confirm repayment','还款确认']});
+  Object.assign(CF.PAGES['P-LS-91'],{crumb:['Repayment schedule','还款计划']});
+ })();
  CF.NAV.asset=['P-F51','P-LS-01','P-LS-90'];
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});
