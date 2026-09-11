@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="zh" data-end="asset">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financial Service Platform · Credit, quote and response</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>/* Hallmark · pre-emit critique: P5 H5 E4 S5 R4 V4
+   只放本模块专有的组合。token 与公共组件一律来自 _shared，此处不重定义、不覆盖。
+   继承端别：面客端 asset　继承 shell：portal（顶栏导航 + subnav，无侧栏）
+   继承母版：4.3 顶栏母版（金融服务端登录）＋ 4.2 公开层内容节奏
+   继承模块：WS-324 借贷广场原型 v1.2.1 —— 下面第一段是它的模块作用域类，逐行搬过来，
+             类名一字不改，将来两个模块合并或上收 base.css 时是机械操作。
+
+   本模块的招牌件（WS-324 没有、这里新造的四个）：
+     .cq-crbar  授信尺 —— AC-CR-03 的可视化读数，机构维度；与 WS-324 的 .ls-meter（项目维度）成对
+     .cq-gates  两道闸门牌 —— 担保闸门 / 授信闸门并置，各给判据、取值、结论与出路（D-CR-21）
+     .cq-cd     锁定倒计时 —— 已锁定 + 剩余 ≡ 168 小时，这条恒等式在条上可验（D-LS-13 / FD-13 + QT-13）
+     .cq-fee    手续费差额条 —— 融资金额 → 到账（无数字）→ 应还本金，三格对照（D-FIN-103 / D-FIN-104）
+   ========================================================================== */
+
+/* ============================================================
+   第一段：继承自 WS-324 模块作用域的版式（面客公开页档位）
+   base.css 的 .page-title 19px / body 13.5px 是管理端控制台档位；
+   面客页在参考件里是 body 14.5px、详情标题 ~42px、卡片标题 15px。
+   下面全部是模块作用域的组合类，不重定义 token、不覆盖公共组件。
+   ============================================================ */
+.portal-wrap{font-size:14.5px;line-height:1.55}
+.portal-wrap table.tbl{font-size:13px}
+.portal-wrap .card-head span{font-size:12.5px}
+.ls-back{margin-bottom:var(--sp-5)}
+.ls-phead{display:flex;align-items:flex-start;gap:var(--sp-5);margin-bottom:var(--sp-6)}
+.ls-phead .tile{
+  width:56px;height:56px;border-radius:16px;flex:none;background:var(--accent-soft);
+  border:1px solid var(--accent-border);display:grid;place-items:center;font-size:22px;margin-top:6px;
+}
+.ls-phead .body{flex:1;min-width:0}
+.ls-phead .kick{font-size:12.5px;color:var(--faint);margin:0 0 4px;letter-spacing:.01em}
+.ls-phead .kick .mono{color:var(--muted)}
+.ls-phead h1{margin:0;font-size:clamp(26px,2.7vw,42px);font-weight:740;letter-spacing:-.03em;line-height:1.1}
+.ls-phead h1 em{font-style:normal;color:var(--faint);font-weight:600;margin-left:12px;font-size:.62em}
+.ls-phead .amt{text-align:right;flex:none;padding-top:10px}
+.ls-phead .amt .k{font-size:12.5px;color:var(--faint)}
+.ls-phead .amt .v{
+  font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(26px,2.4vw,38px);
+  font-weight:700;letter-spacing:-.035em;line-height:1.06;margin-top:3px;
+}
+.ls-phead .amt .cy{font-size:14px;color:var(--faint);font-weight:500;margin-left:6px}
+.ls-phead .amt .x{font-size:12px;color:var(--faint);margin-top:6px}
+.ls-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-4)}
+.ls-tags .pill{height:28px;padding:0 12px;font-size:12.5px;border-radius:var(--radius-pill)}
+.card-head b{font-size:15px}
+.note .ls-b{font-weight:700;display:inline}
+.note{font-size:12.5px;line-height:1.6}
+.ls-alert{margin-bottom:var(--sp-5)}
+.ls-kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--sp-4) var(--sp-5)}
+.ls-kgrid .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ls-kgrid .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:640;margin-top:4px}
+.ls-kgrid .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+.ls-fold{border-top:1px solid var(--border);margin-top:var(--sp-5)}
+.ls-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 0;
+  font-size:12.5px;color:var(--muted);font-weight:620}
+.ls-fold>summary::-webkit-details-marker{display:none}
+.ls-fold>summary:hover{color:var(--accent)}
+.ls-fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-xs)}
+.ls-fold>summary .ca{font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);display:inline-block;
+  transition:transform var(--dur-fast) var(--ease-out)}
+.ls-fold[open]>summary .ca{transform:rotate(90deg)}
+.ls-fold>summary .n{margin-left:auto;font-size:var(--fs-11);color:var(--faint);font-weight:400}
+.ls-fold .fb{padding:2px 0 var(--sp-5)}
+.ls-why{display:flex;gap:6px;margin-top:6px;font-size:11px;color:var(--faint);line-height:1.5}
+.ls-why .sg{flex:none}
+.btn.blocked{background:var(--card-2);border-style:dashed;color:var(--faint);cursor:not-allowed}
+.btn.blocked:hover{background:var(--card-2)}
+.ls-pick{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;padding:11px 14px;background:var(--card-2);
+  border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px}
+.ls-pick.bad{background:var(--danger-bg);border-color:var(--danger-border)}
+.ls-pick .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:660;font-size:13.5px}
+.ls-pick .sp{width:1px;height:18px;background:var(--border-strong)}
+.ls-ro{min-height:var(--ctrl-h);display:flex;align-items:center;padding:0 12px;border:1px dashed var(--border-strong);
+  border-radius:var(--radius-sm);background:var(--card-2);font-family:var(--mono);color:var(--muted);font-size:12.5px}
+.ls-tbl tbody td{padding:16px 12px}
+.ls-tbl thead th{padding:11px 12px}
+.ls-tbl .cell-sub{font-size:11px;margin-top:3px}
+.skel-row{padding:14px 0;border-bottom:1px solid var(--border)}
+.skel-row:last-child{border-bottom:0}
+
+/* ============================================================
+   第二段：本模块的招牌件
+   ============================================================ */
+
+/* —— 招牌件 A：授信尺（AC-CR-03 的可视化读数，机构 × 资产方维度）——
+   与 WS-324 的 .ls-meter 成对：那把尺量项目撑不撑得住，这把尺量机构借不借得出。
+   段序固定为「授信占用额 → 在途报价金额 → 本次报价 → 可用授信」，与不等式左端同序。 */
+.cq-crbar{margin-top:var(--sp-4)}
+.cq-crbar .wrap{position:relative;padding-top:17px}
+.cq-crbar .track{position:relative;height:20px;border-radius:var(--radius-xs);background:var(--track);
+  border:1px solid var(--border);display:flex;overflow:hidden}
+.cq-crbar .sg{height:100%}
+.cq-crbar .sg+.sg{border-left:2px solid var(--card)}
+.cq-crbar .sg.used{background:rgba(181,71,8,.16);box-shadow:inset 0 0 0 1px var(--warn)}
+.cq-crbar .sg.fly{background:rgba(11,138,118,.14);box-shadow:inset 0 0 0 1px var(--pos)}
+.cq-crbar .sg.now{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent);
+  background-image:repeating-linear-gradient(135deg,transparent 0 5px,var(--accent-border) 5px 7px)}
+.cq-crbar .sg.free{background:var(--card);box-shadow:inset 0 0 0 1px var(--border-strong)}
+.cq-crbar .sg.over{background:var(--danger-bg);box-shadow:inset 0 0 0 1px var(--danger);
+  background-image:repeating-linear-gradient(135deg,transparent 0 5px,var(--danger-border) 5px 7px)}
+.cq-crbar .wrap>.cap{position:absolute;top:12px;bottom:-5px;width:2px;background:var(--accent);border-radius:2px;z-index:2}
+.cq-crbar .wrap>.caplb{position:absolute;top:0;white-space:nowrap;font-size:var(--fs-10);color:var(--accent);font-weight:660}
+.cq-crbar .lg{display:flex;flex-wrap:wrap;gap:5px var(--sp-5);margin-top:11px;font-size:11.5px;color:var(--muted)}
+.cq-crbar .lg span{display:inline-flex;align-items:center;gap:6px}
+.cq-crbar .lg i{width:9px;height:9px;border-radius:3px;flex:none;font-style:normal}
+.cq-crbar .lg i.used{background:rgba(181,71,8,.16);box-shadow:inset 0 0 0 1px var(--warn)}
+.cq-crbar .lg i.fly{background:rgba(11,138,118,.14);box-shadow:inset 0 0 0 1px var(--pos)}
+.cq-crbar .lg i.now{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.cq-crbar .lg i.free{background:var(--card);box-shadow:inset 0 0 0 1px var(--border-strong)}
+.cq-crbar .lg i.over{background:var(--danger-bg);box-shadow:inset 0 0 0 1px var(--danger)}
+.cq-crbar .lg i.cap{width:2px;height:11px;border-radius:1px;background:var(--accent)}
+.cq-crbar .lg b{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--text);font-weight:620}
+.cq-crbar.mini .wrap{padding-top:0}
+.cq-crbar.mini .wrap>.cap{top:-3px;bottom:-3px}
+.cq-crbar.mini .track{height:7px;border-radius:4px}
+.cq-crbar.mini .lg{display:none}
+
+/* 不等式一行：把 AC-CR-03 摆成可读的算式，各项与尺上的段同色 */
+.cq-eq{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 7px;margin-top:var(--sp-4);
+  font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--muted)}
+.cq-eq .t{position:relative;padding-left:13px;color:var(--text);font-weight:620}
+.cq-eq .t::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:8px;height:8px;border-radius:2px}
+.cq-eq .t.used::before{background:rgba(181,71,8,.16);box-shadow:inset 0 0 0 1px var(--warn)}
+.cq-eq .t.fly::before{background:rgba(11,138,118,.14);box-shadow:inset 0 0 0 1px var(--pos)}
+.cq-eq .t.now::before{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.cq-eq .t.cap::before{background:var(--accent)}
+.cq-eq .op{color:var(--faint)}
+.cq-eq .vd{margin-left:auto;font-family:var(--sans);font-weight:650}
+.cq-eq .vd.pass{color:var(--ok)}
+.cq-eq .vd.fail{color:var(--danger)}
+
+/* —— 招牌件 B：两道闸门牌（AC-FIN-07 / AC-CR-22 / D-CR-21）——
+   两张并置的判据牌，各自给「判据 · 当前取值 · 结论 · 谁来解决」。
+   并置本身就是那条口径：两道独立、须同时通过，失败提示必须能被区分开。 */
+.cq-gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:var(--sp-4)}
+.cq-gate{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:14px}
+.cq-gate.pass{border-color:var(--ok-border);background:var(--ok-bg)}
+.cq-gate.fail{border-color:var(--danger-border);background:var(--danger-bg)}
+.cq-gate.soft{border-color:var(--warn-border);background:var(--warn-bg)}
+.cq-gate .gh{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:660;color:var(--text)}
+.cq-gate .gh .st{margin-left:auto;font-size:var(--fs-10);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.cq-gate.pass .gh .st{color:var(--ok)}
+.cq-gate.fail .gh .st{color:var(--danger)}
+.cq-gate.soft .gh .st{color:var(--warn)}
+.cq-gate .fm{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.6;
+  overflow-wrap:anywhere}
+.cq-gate .fm b{color:var(--text);font-weight:640}
+.cq-gate .who{font-size:11.5px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);
+  color:var(--muted);line-height:1.55}
+.cq-gate .who b{font-weight:660;color:var(--text)}
+
+/* —— 招牌件 C：锁定倒计时（D-LS-13 / AC-LS-85）——
+   条上两段：已锁定 + 剩余 ≡ 168 小时。这条恒等式在屏幕上可以直接核。
+   不足 24 小时切到分钟精度并换 warn 档；业务离开 S-FD-1 后整块不渲染（D-CR-28）。 */
+.cq-cd{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:14px}
+.cq-cd.soon{border-color:var(--warn-border);background:var(--warn-bg)}
+.cq-cd .by{font-size:12.5px;line-height:1.6;color:var(--muted)}
+.cq-cd .by b{color:var(--text);font-weight:660}
+.cq-cd .big{display:flex;align-items:baseline;gap:4px 8px;margin-top:9px;flex-wrap:wrap}
+.cq-cd .big .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;
+  letter-spacing:-.03em;line-height:1.05;color:var(--text);white-space:nowrap}
+.cq-cd.soon .big .v{color:var(--warn)}
+.cq-cd .big .u{font-size:12px;color:var(--faint)}
+.cq-cd .bar{display:flex;height:9px;margin-top:11px;border-radius:5px;overflow:hidden;
+  background:var(--track);border:1px solid var(--border)}
+.cq-cd .bar .el{background:rgba(139,148,166,.28)}
+.cq-cd .bar .rm{background:var(--accent)}
+.cq-cd.soon .bar .rm{background:var(--warn)}
+.cq-cd .scale{display:flex;justify-content:space-between;font-size:var(--fs-10);color:var(--faint);margin-top:5px}
+.cq-cd .scale b{font-family:var(--mono);color:var(--muted);font-weight:620}
+.cq-cd .ways{margin-top:11px;padding-top:10px;border-top:1px solid var(--border);font-size:11.5px;line-height:1.6}
+.cq-cd .ways .w{display:flex;gap:7px;color:var(--muted)}
+.cq-cd .ways .w+.w{margin-top:5px}
+.cq-cd .ways .w i{flex:none;font-style:normal;font-family:var(--mono);color:var(--faint)}
+
+/* —— 招牌件 D：手续费差额条（D-FIN-103 / D-FIN-104）——
+   三格对照，中间那格故意没有数字：平台不预估、不代收、不垫付。
+   不折叠、不做小字注脚，位置在「确认接受」之前。 */
+.cq-fee{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:var(--sp-3);
+  border:1px solid var(--warn-border);background:var(--warn-bg);border-radius:var(--radius-sm);padding:14px}
+.cq-fee .c .k{font-size:var(--fs-10);color:#8A5D10;letter-spacing:.05em;text-transform:uppercase}
+.cq-fee .c .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:19px;font-weight:680;
+  letter-spacing:-.02em;margin-top:4px;color:var(--text)}
+.cq-fee .c .v.unknown{font-family:var(--sans);font-size:14px;font-weight:620;color:var(--warn);letter-spacing:0}
+.cq-fee .c .x{font-size:11px;color:#8A5D10;margin-top:4px;line-height:1.5}
+.cq-fee .op{font-family:var(--mono);color:var(--warn);font-size:var(--fs-16)}
+@media (max-width:760px){
+  .cq-fee{grid-template-columns:1fr;gap:var(--sp-2)}
+  .cq-fee .op{display:none}
+}
+
+/* —— 授信分支说明带：为什么会走到这一步（AC-CR-10，不得只显示一个空表单）—— */
+.cq-why{display:flex;gap:var(--sp-5);flex-wrap:wrap;align-items:flex-start;
+  border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);padding:15px 16px}
+.cq-why .bd{flex:1;min-width:260px}
+.cq-why .bd b{display:block;font-size:13.5px;font-weight:680;color:var(--text)}
+.cq-why .bd p{margin:5px 0 0;font-size:12.5px;color:var(--muted);line-height:1.6}
+.cq-why .nums{display:flex;gap:var(--sp-5);flex-wrap:wrap;flex:none}
+.cq-why .nums .n .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.cq-why .nums .n .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-19);
+  font-weight:680;letter-spacing:-.025em;margin-top:3px}
+.cq-why .nums .n.gap .v{color:var(--danger)}
+
+/* —— 额度前后对照：当前 → 调整后（D-CR-12，追加填增加额，不是新总额）—— */
+.cq-delta{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;padding:11px 14px;
+  background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.cq-delta .c .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.cq-delta .c .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-16);
+  font-weight:660;margin-top:3px}
+.cq-delta .c.to .v{color:var(--accent)}
+.cq-delta .ar{font-family:var(--mono);color:var(--faint)}
+
+/* —— 报价条款并排读数（P-LS-06 顶部与摘要共用的键值网格）—— */
+.cq-terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(184px,1fr));gap:var(--sp-4) var(--sp-5)}
+.cq-terms .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.cq-terms .v{font-size:13.5px;font-weight:620;margin-top:4px;overflow-wrap:anywhere}
+.cq-terms .v.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:640}
+.cq-terms .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+
+/* —— 三占用对照（5.1 表的页面形态，D-CR-18 的命名红线落点）—— */
+.cq-three{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:var(--sp-4)}
+.cq-three .q{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 13px;background:var(--card-2)}
+.cq-three .q.on{border-color:var(--accent-border);background:var(--accent-soft)}
+.cq-three .q .nm{font-size:12.5px;font-weight:660}
+.cq-three .q .dm{font-size:var(--fs-10);color:var(--faint);margin-top:3px}
+.cq-three .q .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-16);font-weight:660;margin-top:7px}
+.cq-three .q .ch{font-size:11px;margin-top:6px;line-height:1.5;color:var(--muted)}
+.cq-three .q .ch b{font-weight:660;color:var(--text)}
+
+/* —— 接受流程三步的进度轨（AC-LS-90 可中断可续做；进度不是状态，D-FIN-77）—— */
+.cq-prog{display:flex;flex-direction:column;gap:2px}
+.cq-prog .p{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--border)}
+.cq-prog .p:last-child{border-bottom:0}
+.cq-prog .p .n{width:21px;height:21px;border-radius:50%;border:1px solid var(--border-strong);flex:none;
+  display:grid;place-items:center;font-size:var(--fs-10);font-weight:660;color:var(--faint);background:var(--bg-elev)}
+.cq-prog .p[data-on="1"] .n{background:var(--accent);border-color:var(--accent);color:#fff}
+.cq-prog .p[data-done="1"] .n{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
+.cq-prog .p .bd{flex:1;min-width:0;font-size:12px;color:var(--faint);line-height:1.5}
+.cq-prog .p .bd b{display:block;font-size:12.5px;font-weight:620;color:var(--muted)}
+.cq-prog .p[data-on="1"] .bd b,.cq-prog .p[data-done="1"] .bd b{color:var(--text)}
+
+/* —— 商务条款摘要：可复制、可打印，明确标注不是合同（D-FIN-87）—— */
+.cq-sum{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elev)}
+.cq-sum .sh{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border);
+  font-size:12.5px;font-weight:660}
+.cq-sum .sh .no{margin-left:auto;font-size:var(--fs-10);font-weight:600;color:var(--warn);
+  border:1px solid var(--warn-border);background:var(--warn-bg);border-radius:var(--radius-xs);padding:2px 7px}
+.cq-sum .sb{padding:13px 14px}
+.cq-sum .kk{display:flex;justify-content:space-between;gap:16px;font-size:12.5px;padding:7px 0;
+  border-bottom:1px dashed var(--border)}
+.cq-sum .kk:last-child{border-bottom:0}
+.cq-sum .kk s{text-decoration:none;color:var(--muted);flex:none}
+.cq-sum .kk b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:640;text-align:right;
+  overflow-wrap:anywhere}
+.cq-sum .sf{padding:11px 14px;border-top:1px solid var(--border);background:var(--card-2);
+  display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.cq-sum .sf .hint{margin:0;flex:1;min-width:180px}
+@media print{
+  .portal-head,.portal-sub,.cq-sum .sf,.statebar,.cq-noprint{display:none!important}
+  .cq-sum{border-color:#000}
+}
+
+/* —— 终结态牌：已拒绝 / 已失效各有自己的结论与下一步（D-FIN-92 / FD-15）—— */
+.cq-end{border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;background:var(--card-2)}
+.cq-end .eh{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:660}
+.cq-end .eb{font-size:12.5px;color:var(--muted);margin-top:7px;line-height:1.6}
+.cq-end .eb b{color:var(--text);font-weight:640}
+
+/* —— 中转行分组：默认折叠（D-FIN-97 给字段但选填）—— */
+.cq-opt{border:1px dashed var(--border-strong);border-radius:var(--radius-sm);background:var(--card-2);
+  padding:0 13px;margin-bottom:var(--field-gap)}
+.cq-opt>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:11px 0;
+  font-size:12px;font-weight:620;color:var(--muted)}
+.cq-opt>summary::-webkit-details-marker{display:none}
+.cq-opt>summary:hover{color:var(--accent)}
+.cq-opt>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-xs)}
+.cq-opt>summary .ca{font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);
+  transition:transform var(--dur-fast) var(--ease-out)}
+.cq-opt[open]>summary .ca{transform:rotate(90deg)}
+.cq-opt .ob{padding:2px 0 13px}
+
+/* —— 户名对照（E-CR-20：两组值并排，不是一句「不一致」）—— */
+.cq-cmp{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);margin-top:var(--sp-3)}
+.cq-cmp .c{border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--bg-elev);padding:10px 11px}
+.cq-cmp .c.bad{border-color:var(--danger-border)}
+.cq-cmp .c .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.cq-cmp .c .v{font-size:12.5px;font-weight:620;margin-top:4px;overflow-wrap:anywhere}
+.cq-cmp .c .v i{display:block;font-style:normal;font-weight:500;color:var(--muted);font-size:11.5px;margin-top:3px}
+@media (max-width:640px){ .cq-cmp{grid-template-columns:1fr} }
+
+/* —— 右栏里的授信尺：藏掉浮动的尺长标签（300px 放不下会压到条上），
+       图例必须留着并改单列纵排 —— 没有图例的彩条读不出哪段是哪个量 —— */
+.portal-rail .cq-crbar .caplb{display:none}
+.portal-rail .cq-crbar .lg{flex-direction:column;gap:5px}
+.portal-rail .cq-crbar .lg span{justify-content:flex-start}
+.portal-rail .cq-crbar .lg b{margin-left:auto}
+@media (max-width:980px){
+  .portal-cols{grid-template-columns:minmax(0,1fr)}
+  .portal-rail{position:static}
+}
+
+/* 公共 .btn / .inp / .check 已带 hover / focus-visible / active / disabled 八态，本模块不覆盖。
+   本模块唯一的动效是 <details> 的箭头旋转与公共层的 Toast，统一在这里给 reduced-motion 兜底。 */
+@media (prefers-reduced-motion:reduce){
+  .ls-fold>summary .ca,.cq-opt>summary .ca{transition:none}
+}
+</style>
+</head>
+<body>
+<!-- 面客顶栏版式（继承参考 4.3）。公共运行时要求的挂载点一个不少：
+     brandSub / nav / topRight / crumb / content / layers；容器用 _shared/base.css 的 .portal* 一族。
+     模块不自建菜单、不放第二套导航——状态切换走公共 stateBar，身份切换走顶栏上下文操作区。 -->
+<div class="portal" id="app" hidden>
+ <header class="portal-head">
+  <div class="brand"><div class="brand-mark">FS</div><div>
+   <div class="brand-name" data-brand>Financial Services</div>
+   <div class="brand-sub" id="brandSub"></div></div></div>
+  <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+  <div class="portal-tools" id="topRight"></div>
+ </header>
+ <div class="portal-sub"><div class="portal-sub-in" id="crumb"></div></div>
+ <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+</div>
+<div class="focus" id="focus"></div>
+<div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script src="./cq-module.js"></script>
+</body>
+</html>

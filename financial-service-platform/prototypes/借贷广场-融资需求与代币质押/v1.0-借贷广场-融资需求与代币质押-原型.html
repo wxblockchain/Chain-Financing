@@ -125,6 +125,34 @@
 .ls-tip .r b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:620}
 .ls-tip .ev{margin-top:7px;padding-top:7px;border-top:1px solid var(--border);color:var(--muted);font-size:var(--fs-10);line-height:1.5}
 
+/* —— WS-325 增量：锁定信息（D-LS-13）——
+   条上两段：已锁定 + 剩余 ≡ 168 小时，这条恒等式在屏幕上可以直接核。
+   不足 24 小时切 warn 档并换分钟精度。措辞只陈述事实，不做评价（D-LS-14）。 */
+.ls-lockmini{display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:5px;font-size:11px;color:var(--faint);line-height:1.5}
+.ls-lockmini b{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--accent);font-weight:660}
+.ls-lockmini.soon b{color:var(--warn)}
+.ls-lock{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:13px}
+.ls-lock.soon{border-color:var(--warn-border);background:var(--warn-bg)}
+.ls-lock .by{font-size:12.5px;line-height:1.6;color:var(--muted)}
+.ls-lock .by b{color:var(--text);font-weight:660}
+.ls-lock .big{display:flex;align-items:baseline;gap:8px;margin-top:9px;flex-wrap:wrap}
+.ls-lock .big .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:23px;font-weight:700;
+  letter-spacing:-.03em;line-height:1.05;color:var(--text);white-space:nowrap}
+.ls-lock.soon .big .v{color:var(--warn)}
+.ls-lock .big .u{font-size:11.5px;color:var(--faint)}
+.ls-lock .bar{display:flex;height:9px;margin-top:11px;border-radius:5px;overflow:hidden;
+  background:var(--track);border:1px solid var(--border)}
+.ls-lock .bar .el{background:rgba(139,148,166,.28)}
+.ls-lock .bar .rm{background:var(--accent)}
+.ls-lock.soon .bar .rm{background:var(--warn)}
+.ls-lock .scale{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;
+  font-size:var(--fs-10);color:var(--faint);margin-top:5px}
+.ls-lock .scale b{font-family:var(--mono);color:var(--muted);font-weight:620}
+.ls-lock .ways{margin-top:11px;padding-top:10px;border-top:1px solid var(--border);font-size:11.5px;line-height:1.6}
+.ls-lock .ways .w{display:flex;gap:7px;color:var(--muted)}
+.ls-lock .ways .w+.w{margin-top:5px}
+.ls-lock .ways .w i{flex:none;font-style:normal;font-family:var(--mono);color:var(--faint)}
+
 /* —— 操作区分级：主操作唯一；减少担保的操作单独降级 —— */
 .ls-acts .sec{display:flex;flex-direction:column;gap:8px;margin-top:var(--sp-3)}
 .ls-acts .risky{margin-top:var(--sp-4);padding-top:var(--sp-3);border-top:1px solid var(--border)}

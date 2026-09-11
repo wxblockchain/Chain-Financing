@@ -176,6 +176,31 @@
   Object.assign(CF.PAGES['P-LS-02'],{crumb:['Request details','融资需求详情']});
   Object.assign(CF.PAGES['P-LS-03'],{crumb:['Create and publish','建池与发布']});
  })();
+
+ /* WS-325 借贷广场 · 授信、报价与接受/拒绝（同一块面客画布，与 WS-324 共用 portal 顶栏骨架）。
+    (1) 页面 ID 直接取 PRD 给的 P-LS-04 / 05 / 06，不自造号；WS-324 的「我的融资项目」已让到
+        P-LS-90（commit 6f31e6e），两边不撞号。
+    (2) 三页都不进顶栏主导航：授信核定与报价是从广场「立即报价」带出来的流程页，
+        接受/拒绝是从融资业务深链带出来的处理页，按 4.3「流程页与落地页不一定进菜单」只登记 crumb。
+    (3) ENTRY 用各页自己的锚点，与分册 6.6.1 的深链契约一致：
+        授信步骤不另开锚点（D-LS-15），它是 project/{id}?action=quote 内的一步。 */
+ CF.MODULES['lending-credit-quote']={dir:'借贷广场-授信报价与接受拒绝',
+   file:'v1.0-借贷广场-授信报价与接受拒绝-原型.html',
+   name:['Credit, quote and response','借贷广场 · 授信报价与接受/拒绝']};
+ (function(){
+  var pages={
+   'P-LS-04':[['Credit assessment','授信核定'],'/project?action=quote'],
+   'P-LS-05':[['Institution quote','机构报价'],'/project?action=quote'],
+   'P-LS-06':[['Accept or decline','接受 / 拒绝报价'],'/deal?action=respond_quote']
+  };
+  for(var id in pages){
+   CF.PAGES[id]={end:'asset',layout:'app',name:pages[id][0]};
+   CF.OWNER[id]='lending-credit-quote'; CF.ENTRY[id]='#'+pages[id][1];
+  }
+  Object.assign(CF.PAGES['P-LS-04'],{crumb:['Credit assessment','授信核定']});
+  Object.assign(CF.PAGES['P-LS-05'],{crumb:['Institution quote','机构报价']});
+  Object.assign(CF.PAGES['P-LS-06'],{crumb:['Accept or decline','接受 / 拒绝报价']});
+ })();
  CF.NAV.asset=['P-F51','P-LS-01','P-LS-90'];
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});
