@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en" data-end="admin">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financial Services · Notifications · WS-309</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>/* Page-specific composition. Canonical tokens/base are loaded directly from the repository shared layer. */
+.ops-skip{position:fixed;top:var(--sp-2);left:var(--sp-2);transform:translateY(-200%);z-index:500;background:var(--card);padding:var(--sp-3);color:var(--accent)}
+.ops-skip:focus{transform:none}
+.ops-side-note{font-size:var(--fs-11);line-height:1.6;color:var(--muted);margin:var(--sp-3) 0 0}
+.ops-meta{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin:var(--sp-3) 0 var(--sp-6);color:var(--muted);font-size:var(--fs-12)}
+.ops-body{white-space:pre-wrap;overflow-wrap:anywhere;font-size:var(--fs-14);line-height:1.85;color:var(--text);margin:var(--sp-5) 0 var(--sp-7)}
+.ops-actions{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:var(--sp-5);margin-top:var(--sp-5)}
+.ops-muted{color:var(--muted);font-size:var(--fs-12);line-height:1.65}
+.ops-tools{margin:var(--sp-4) 0 var(--sp-6);font-size:var(--fs-12);color:var(--muted)}
+.ops-tools summary{cursor:pointer;display:list-item;width:fit-content;padding:var(--sp-2) 0}
+.ops-tools-body{display:flex;align-items:flex-end;gap:var(--sp-3);flex-wrap:wrap;padding:var(--sp-4);margin-top:var(--sp-2);border:1px dashed var(--border-strong);border-radius:var(--radius-sm);background:var(--card-2)}
+.ops-tools-body label{display:flex;flex-direction:column;gap:var(--sp-2)}
+.ops-tools-body select{min-width:180px;max-width:100%}
+.ops-demo-note{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-11);color:var(--muted);margin:var(--sp-3) 0}
+.ops-empty{padding:var(--sp-8);min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-4);text-align:center}
+.ops-empty svg{width:32px;height:32px;color:var(--muted)}
+.ops-empty h2{font-size:var(--fs-16);margin:0}.ops-empty p{margin:0;color:var(--muted)}
+.ops-pagination{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:var(--sp-4);padding:var(--sp-4);border-top:1px solid var(--border);font-size:var(--fs-12);color:var(--muted)}
+.ops-pagination .ops-page-buttons{display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap}
+.ops-pagination select{width:80px}.ops-page-current{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.ops-issue-note{padding:var(--sp-3) var(--sp-4);border-top:1px solid var(--border);color:var(--danger);background:var(--danger-bg);display:flex;gap:var(--sp-4);align-items:center}
+.ops-row-pending{opacity:.65;pointer-events:none}
+.ops-invalidation{margin:var(--sp-4) 0}
+.ops-session{min-height:65vh;display:flex;align-items:center;justify-content:center}.ops-session .card{max-width:560px;width:100%}
+.ops-detail-head h1{overflow-wrap:anywhere}
+.ops-filter{display:flex;align-items:flex-end;gap:var(--sp-4);flex-wrap:wrap;padding:var(--sp-4);border-bottom:1px solid var(--border)}
+.ops-filter label{display:flex;flex-direction:column;gap:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
+.ops-filter select{min-width:190px}.ops-status{display:flex;flex-direction:column;gap:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
+.ops-detail-card{padding:var(--sp-6)}
+@media(max-width:1000px){.ops-tools-body{align-items:stretch}.ops-filter select{min-width:150px}}
+@media(prefers-reduced-motion:reduce){.ops-notifications *{animation:none!important;transition:none!important}}
+</style></head>
+<body class="ops-notifications">
+<a class="ops-skip" href="#content">Skip to notifications / 跳到消息内容</a>
+<div class="app" id="app">
+<aside class="sidebar"><div class="brand"><div class="brand-mark">CF</div><div><div class="brand-name">Chain Financing</div><div class="brand-sub" id="brandSub"></div></div></div><nav class="nav" id="nav" aria-label="Operations navigation"></nav><div class="side-foot"><div class="op-row"><span class="dot"></span><span id="sideContext">Financial Services</span></div><p class="ops-side-note" id="sideNote"></p></div></aside>
+<div class="main"><header class="topbar"><div class="topbar-right" id="topRight"></div></header><div class="crumbbar" id="crumb"></div><main class="content" id="content" tabindex="-1"></main></div>
+</div><div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script>/* WS-309 review consumer. Shared shell/styles are loaded from the canonical repository sources.
+   No production endpoint, formal business event, or cross-platform account is invented. */
+(function () {
+'use strict';
+const CF=window.CF, L=CF.L, esc=CF.esc, t=CF.t, render=CF.render;
+const NOW=Date.parse('2026-09-09T07:00:00Z'), STORE='ws309-notifications-review-v1';
+const uuid=i=>'30900000-0000-4000-8000-'+String(i).padStart(12,'0');
+const msgTitle=['A record is ready for review','A reconciliation exception needs attention','An account security notification','A scheduled operation has completed'];
+const msgTitleZh=['一条记录待审核','一项对账差异待核对','一条账号安全通知','一项计划操作已完成'];
+const CATEGORY={review_todo:['Review tasks','审核待办'],ops_alert:['Operations alerts','运营告警'],security:['Security','安全'],system:['System','系统']};
+const scenarios=[['normal','Normal data','正常数据'],['loading','Loading','首屏加载'],['empty','No notifications','首次空态'],['nomatch','No filter matches','筛选无结果'],['error','Load failed','首屏失败'],['pagefail','Page request fails','翻页失败'],['readfail','Read request fails','已读提交失败'],['panelfail','Panel request fails','快捷面板失败'],['countfail','Unread count unavailable','未读数接口失败'],['notfound','Message unavailable','越权 / 消息不存在'],['expired','Expired notification','已过期'],['deleted','Related record deleted','资源已删除'],['changed','Already handled','状态已流转'],['permission','Target permission denied','目标无权限'],['missing','Mapping unavailable','跳转映射缺失'],['none','No action required','无跳转消息'],['static','Static page target','静态页面目标'],['timeout','Precheck times out','预检 3 秒超时'],['degraded','Translation unavailable','文案缺失降级'],['long','Long content','长标题 / 纯文本'],['session','Session expired','会话失效'],['bulk401','Session expires during bulk read','全部已读时会话失效']];
+scenarios.splice(6,0,['detailloading','Detail loading','详情加载中'],['detailerror','Detail request fails','详情加载失败']);
+const sampleCases={detailloading:1,detailerror:1,expired:5,deleted:6,changed:7,permission:8,missing:9,none:10,static:11,timeout:12,degraded:13,long:14};
+let S, sequence=0, timerIds=new Set(), pendingFocus=null, modalReturn=null, pollId=null;
+let sessionStart=Date.now(), activity=Date.now(), syncChannel=null;
+const accountCreated={A:NOW-365*86400000,B:NOW-365*86400000,C:NOW};
+function seed(){
+ const data=[];
+ for(let i=1;i<=64;i++){
+  const type=(i-1)%4,cat=Object.keys(CATEGORY)[type];
+  data.push({id:uuid(i),end:'fs_ops',scope:i===3?'admin_account':'admin_all',owner:i===3?'A':null,
+   category:cat,at:NOW-(i-1)*3600000,title:[msgTitle[type],msgTitleZh[type]],
+   body:[`Demonstration message ${String(i).padStart(3,'0')}.\n\nThis sample shows how an operations notification presents its content. The related record can be reviewed from the action below.\n\nNo real business event or account is represented.`,
+    `演示消息 ${String(i).padStart(3,'0')}。\n\n此示例用于查看运营端消息正文与操作的展示方式。可通过下方操作了解关联记录的跳转表现。\n\n内容不对应真实业务事件或账号。`],
+   target:i%3===0?'none':'resource',pre:'ok',readBy:i%5===0?{A:NOW-1000}:{}});
+ }
+ data[4].expired=true;data[5].pre='deleted';data[5].target='resource';data[6].pre='changed';data[7].pre='permission';
+ data[8].target='missing';data[9].target='none';data[10].target='static';data[11].pre='timeout';data[11].target='resource';
+ data[12].degraded=true;data[13].title=['A long notification title remains readable in full when you open the details, even when the list has to shorten it to one line','这是一条较长的演示消息标题：列表保持单行展示，进入详情后完整换行显示，避免在回查时遗漏任何信息'];
+ data[13].body=['Demonstration of plain-text rendering.\n\n<script>alert("example")<\/script>\n<img src=x onerror=alert(1)>\n\nThese strings must remain text.\n\n'+('This is a long paragraph for checking line wrapping and readability. '.repeat(28)),
+ '纯文本渲染示例。\n\n<script>alert("example")<\/script>\n<img src=x onerror=alert(1)>\n\n以上内容只能作为文本展示。\n\n'+('这是一段用于检查长正文换行、阅读节奏和容器宽度的演示文字。'.repeat(38))];
+ data.push({id:uuid(900),end:'fs_ops',scope:'admin_account',owner:'B',category:'security',at:NOW-1000,title:['A private notification for administrator B','仅投递给管理员 B 的个人消息'],body:['Demo only. This message is visible to administrator B.','仅为演示：这条消息只对管理员 B 可见。'],target:'none',readBy:{}});
+ data.push({id:uuid(901),end:'admin',scope:'admin_all',category:'system',at:NOW,title:['Other platform sample','其他平台示例'],body:['Not visible from operations.','运营端不可见。'],target:'none',readBy:{}});
+ return data;
+}
+function restore(){try{const x=JSON.parse(localStorage.getItem(STORE));if(x&&Array.isArray(x)&&x.length>=64)return x;}catch(e){}return seed();}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S.data));}catch(e){}if(syncChannel)syncChannel.postMessage(S.data);}
+function word(v){return v ? (v[S.lang==='en'?0:1] || v[0] || L('Notification','消息')) : '';}
+function title(m){return m.degraded?L('Notification','消息'):word(m.title);}
+function cat(c){return word(CATEGORY[c]||['Other','其他']);}
+function visible(){return S.data.filter(m=>m.end==='fs_ops'&&(m.scope==='admin_all'||m.owner===S.user)).sort((a,b)=>b.at-a.at||b.id.localeCompare(a.id));}
+function byId(id){return visible().find(m=>m.id===id);}
+function isRead(m){return !!m.readBy[S.user]||m.at<accountCreated[S.user];}
+function count(){return visible().filter(m=>!isRead(m)&&!m.expired&&!m.invalidated).length;}
+function badge(){if(S.scenario==='empty')return 0;if(S.scenario==='countfail')return S.lastCount;S.lastCount=count();return S.lastCount;}
+function matched(){return visible().filter(m=>(S.cat==='all'||S.cat===m.category)&&(S.status==='all'||(S.status==='read'?isRead(m):!isRead(m)||S.keep.includes(m.id))));}
+function unreadHits(){return matched().filter(m=>!isRead(m));}
+function hasFilters(){return S.cat!=='all'||S.status!=='all';}
+function stop(){sequence++;timerIds.forEach(clearTimeout);timerIds.clear();S.busy=false;S.rowBusy=null;S.pageLoading=false;}
+function later(fn,ms=500){const seq=sequence;const id=setTimeout(()=>{timerIds.delete(id);if(seq===sequence&&!S.session)fn();},ms);timerIds.add(id);}
+function btn(label,act,value='',kind='',disabled=false){return `<button type="button" class="btn ${kind}" data-act="${act}" data-v="${esc(value)}"${disabled?' disabled':''}>${label}</button>`;}
+function note(txt){return `<div class="ops-invalidation">${CF.note('',esc(txt))}</div>`;}
+function absolute(at){return CF.fmtTime(new Date(at).toISOString(),true);}
+function item(m){return {id:m.id,title:title(m),catLabel:cat(m.category),summary:m.degraded?'':word(m.body).split('\n')[0],unread:!isRead(m),expired:m.expired||m.invalidated,timeTitle:absolute(m.at)+' · '+S.tz,timeText:NOW-m.at<86400000?CF.fmtRel(new Date(m.at).toISOString(),new Date(NOW).toISOString()):absolute(m.at)};}
+function skeleton(n){return `<div role="status" aria-label="${L('Loading','加载中')}">${Array.from({length:n},()=>'<div class="skel-row"><div class="skel s"></div><div class="skel"></div><div class="skel m"></div></div>').join('')}</div>`;}
+function empty(titleText,sub,actions=''){return `<div class="ops-empty">${CF.ICO.bell}<h2>${esc(titleText)}</h2><p>${esc(sub)}</p>${actions}</div>`;}
+function demoTools(){return `<div class="ops-demo-note">${CF.ICO.info}<span>${L('Demonstration data · No real account or business event','演示数据 · 不对应真实账号或业务事件')}</span></div><details class="ops-tools" ${S.tools?'open':''}><summary>${L('Prototype scenarios','原型状态演示')}</summary><div class="ops-tools-body"><label>${L('Operations Administrator (same role)','运营管理员（同一角色）')}<select class="inp" data-f="user">${['A','B','C'].map(u=>`<option value="${u}" ${S.user===u?'selected':''}>${L('Operations Administrator ','运营管理员 ')+u+(u==='C'?L(' · new account',' · 新账号'):'')}</option>`).join('')}</select></label><label>${L('Scenario','演示状态')}<select class="inp" data-f="scenario">${scenarios.map(o=>`<option value="${o[0]}" ${S.scenario===o[0]?'selected':''}>${word(o.slice(1))}</option>`).join('')}</select></label>${btn(L('Add a notification','模拟新消息'),'new','','sm')}${btn(L('132 unread','132 条未读'),'many','','sm')}${btn(L('Reset demo','重置演示'),'reset','','sm')}<p class="ops-muted">${L('Cross-module account sessions and business data are simulated. Scenario controls are for review only.','跨模块账号会话和业务数据仅为模拟；本区操作仅用于原型演示。')}</p></div></details>`;}
+function filter(){return `<div class="ops-filter"><label for="category">${L('Category','分类')}<select class="inp" id="category" data-f="category"><option value="all">${L('All categories','全部分类')}</option>${[...new Set(visible().map(m=>m.category))].map(c=>`<option value="${c}" ${S.cat===c?'selected':''}>${esc(cat(c))}</option>`).join('')}</select></label><div class="ops-status"><span>${L('Status','状态')}</span><div class="seg" role="group" aria-label="${L('Read status','阅读状态')}">${[['all','All','全部'],['unread','Unread','未读'],['read','Read','已读']].map(x=>`<button type="button" data-act="status" data-v="${x[0]}" aria-pressed="${S.status===x[0]}">${word(x.slice(1))}</button>`).join('')}</div></div>${hasFilters()?btn(L('Clear filters','清除筛选'),'clear','','sm'):''}</div>`;}
+function pager(n){const pages=Math.max(1,Math.ceil(n/S.size));S.pg=Math.min(S.pg,pages);const around=Array.from({length:pages},(_,i)=>i+1).filter(p=>p===1||p===pages||Math.abs(p-S.pg)<2);return `<div class="ops-pagination"><span>${L('Total','共')} <b class="mono">${n}</b> ${L('notifications','条消息')}${S.pageLoading?' · '+L('Loading…','加载中…'):''}</span><div class="ops-page-buttons"><label for="page-size">${L('Per page','每页条数')}</label><select id="page-size" class="inp" data-f="size"${S.pageLoading?' disabled':''}>${[20,50,100].map(n=>`<option ${n===S.size?'selected':''}>${n}</option>`).join('')}</select>${btn('‹','page',String(S.pg-1),'sm',S.pg===1||S.pageLoading)}${around.map((p,i)=>(i&&p>around[i-1]+1?'<span>…</span>':'')+`<button type="button" class="pgbtn ${p===S.pg?'ops-page-current':''}" data-act="page" data-v="${p}" aria-label="${L('Page ','第 ')+p}"${p===S.pg?' aria-current="page"':''}${S.pageLoading?' disabled':''}>${p}</button>`).join('')}${btn('›','page',String(S.pg+1),'sm',S.pg===pages||S.pageLoading)}</div></div>`;}
+function list(){
+ const bad=['empty','nomatch','loading','error'].includes(S.scenario),n=unreadHits().length;
+ const action=`<span title="${n? '':L('No unread messages match these filters','当前筛选下没有未读消息')}">${btn(L('Mark all as read','全部标为已读'),'askAll','','primary sm',!n||bad)}</span>`;
+ let body;
+ const rows=matched(),pages=Math.max(1,Math.ceil(rows.length/S.size));S.pg=Math.min(S.pg,pages);
+ if(S.scenario==='loading')body=skeleton(5);
+ else if(S.scenario==='error')body=empty(L('Failed to load notifications','消息加载失败'),L('Please try again.','请稍后重试。'),btn(L('Retry','重试'),'retryList','','primary'));
+ else if(S.scenario==='empty'||(!rows.length&&!hasFilters()))body=empty(L('No notifications yet','暂无消息'),L('Notifications about your account and business will appear here.','与你的账号和业务相关的消息将显示在这里。'));
+ else if(S.scenario==='nomatch'||!rows.length)body=empty(L('No messages match these filters','没有符合筛选条件的消息'),L('Clear the filters to see every notification.','清除筛选即可查看全部消息。'),btn(L('Clear filters','清除筛选'),'clear','','primary'));
+ else body=`<ul class="msgs" aria-label="${L('Notifications','消息列表')}">${rows.slice((S.pg-1)*S.size,S.pg*S.size).map(m=>CF.msgItem(item(m),{act:'open',markable:true,markAct:'mark'})).join('')}</ul>`+(S.pageError?`<div class="ops-issue-note" role="alert">${L('This page could not be loaded. Your current page is unchanged.','翻页失败，当前页内容已保留。')}${btn(L('Retry','重试'),'retryPage','','sm')}</div>`:'')+pager(rows.length);
+ return CF.pageHead(L('Notifications','消息中心'),L('Shared operations notifications and messages addressed to you personally.','运营端共享消息，以及投递给你个人的消息。'),action)+demoTools()+`<section class="card" aria-label="${L('Notification list','消息列表')}">${filter()}${body}</section>`;
+}
+const reason={expired:['This notification has expired.','该消息已过期。'],deleted:['The related record is no longer available.','相关记录已不存在。'],changed:['This has already been handled — no action is needed. Current status: completed.','该业务状态已变更，无需再处理。当前状态：已完成。'],permission:['You no longer have access to this record.','你当前无权访问该记录。']};
+function detail(){
+ const m=byId(S.msgId);
+ if(!m||S.scenario==='notfound')return CF.pageHead(L('Notifications','消息中心'),'','')+demoTools()+`<div class="card">${empty(L('This notification is not available.','消息不存在'),L('Return to notifications to continue.','返回消息中心继续查看。'),btn(L('Back to notifications','返回消息中心'),'back','','primary'))}</div>`;
+ if(S.detail==='loading')return CF.pageHead(L('Notification details','消息详情'),'','')+demoTools()+`<div class="card">${skeleton(3)}</div>`;
+ if(S.detail==='error')return CF.pageHead(L('Notification details','消息详情'),'','')+demoTools()+`<div class="card">${empty(L('Failed to load this notification','消息详情加载失败'),L('It has not been marked as read.','本条消息未被标记为已读。'),btn(L('Retry','重试'),'retryDetail','','primary')+btn(L('Back to list','返回列表'),'back'))}</div>`;
+ let cta='',info='';
+ if(reason[S.pre])info=note(word(reason[S.pre]));
+ /* 7.6.3 映射缺失（D-O20 / AC-O37，用户 2026-09-08 在 WS-304 的裁定）：不渲染跳转按钮，
+    也不展示任何说明文案，操作区只剩「返回列表」。与 7.6.4「无跳转」（S.pre==='none'）界面表现
+    完全一致，区别只在后台要不要上报一次「未知业务类型」日志。 */
+ if(S.pre==='missing'){/* 无按钮、无文案 */}
+ else if(S.pre==='pending')cta=btn('<span class="spinner"></span>'+L('Checking…','检查中…'),'jump','','primary',true);
+ else if(['deleted','changed','permission'].includes(S.pre))cta=`<span tabindex="0" title="${esc(word(reason[S.pre]))}">${btn(L('View details','查看详情'),'jump','','primary',true)}</span>`;
+ else if(S.pre==='ok')cta=btn(m.target==='static'?L('Open notifications','打开消息中心'):L('View details','查看详情'),'jump','','primary');
+ return `<div class="ops-detail-head">${CF.pageHead(esc(title(m)),'','')}</div>`+demoTools()+`<article class="card ops-detail-card"><span class="tag">${esc(cat(m.category))}</span>${m.expired?` <span class="pill dash">${t('expired')}</span>`:''}<div class="ops-meta"><span>${L('Created','创建时间')} <time>${esc(absolute(m.at))}</time></span></div>${info}<div class="ops-body">${esc(m.degraded?L('Notification','消息'):word(m.body))}</div><div class="ops-actions">${cta}${btn(L('Back to list','返回列表'),'back')}</div></article>`;
+}
+function markAllModal(){return `<div class="mask" data-act="closeModal"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="all-title"><div class="modal-h"><b id="all-title">${L('Mark '+S.batch.length+' notifications as read?','将 '+S.batch.length+' 条消息标为已读？')}</b></div><div class="modal-b">${note(L('Filter: ','当前筛选：')+(S.cat==='all'?L('All categories','全部分类'):cat(S.cat))+' · '+word({all:['All','全部'],unread:['Unread','未读'],read:['Read','已读']}[S.status]))}<p class="ops-muted">${L("This includes every matching page, for your account only. This can't be undone.",'包含所有符合筛选的页面，仅影响你的账号。该操作不可撤销。')}</p></div><div class="modal-f">${btn(L('Cancel','取消'),'closeModal','','',S.busy)}${btn(S.busy?'<span class="spinner"></span>'+L('Marking…','标记中…'):L('Confirm','确认'),'doAll','','primary',S.busy)}</div></section></div>`;}
+function boundaryModal(){return `<div class="mask" data-act="closeModal"><section class="modal" role="dialog" aria-modal="true" aria-label="${L('Prototype boundary','原型范围说明')}"><div class="modal-h"><b>${L('Prototype boundary','原型范围说明')}</b></div><div class="modal-b"><p class="ops-muted">${L('The notification action is available. Its business destination is supplied by the integrating module and is not included in this review. No real operation has been performed.','该消息可以执行跳转。业务目标页由接入模块提供，未包含在本次评审中。此演示未执行真实业务操作。')}</p></div><div class="modal-f">${btn(L('Return to notification','返回消息'),'closeModal','','primary')}</div></section></div>`;}
+function signInLink(){const module=CF.MODULES[CF.OWNER['P-O01']];const target=buildHash().slice(1);const href='../'+module.dir+'/'+module.file+'#/ops/login?redirect='+encodeURIComponent(target);return `<a class="btn primary" href="${esc(href)}">${L('Sign in','登录')}</a>`;}
+function sessionView(){return `<div class="ops-session"><section class="card"><div class="card-b">${CF.ICO.lock}<h1>${L('Your session has ended','会话已结束')}</h1><p class="ops-muted">${L('Sign in again to continue.','请重新登录后继续。')}</p><p class="ops-demo-note">${L('Open the operations sign-in prototype with the original notification path. Account sessions are simulated independently.','打开运营端登录原型并保留原消息路径；各模块账号会话独立模拟。')}</p>${signInLink()} ${btn(L('Restore demo session','恢复演示会话'),'resume')}</div></section></div>`;}
+function buildHash(){const q=new URLSearchParams();if(S.cat!=='all')q.set('cat',S.cat);if(S.status!=='all')q.set('status',S.status);if(S.pg!==1)q.set('page',S.pg);if(S.size!==20)q.set('size',S.size);return '#/ops/messages'+(S.page==='P-O21'?'/'+encodeURIComponent(S.msgId):'')+(q.size?'?'+q:'');}
+function readURL(){const parts=location.hash.slice(1).split('?');const route=parts[0].match(/^\/(?:ops\/messages|p-o20)(?:\/([^/]+))?\/?$/);if(!route)return false;const q=new URLSearchParams(parts[1]||''),old=S.page,next=route[1];const newCat=q.get('cat')||'all',newStatus=q.get('status')||'all';if(S.cat!==newCat||S.status!==newStatus)S.keep=[];S.cat=newCat;S.status=['all','unread','read'].includes(newStatus)?newStatus:'all';S.pg=Math.max(1,Number(q.get('page'))||1);S.size=[20,50,100].includes(Number(q.get('size')))?Number(q.get('size')):20;S.page=next?'P-O21':'P-O20';try{S.msgId=next?decodeURIComponent(next):null;}catch(e){S.msgId='invalid-message-id';}if(next)loadDetail();else if(old==='P-O21')S.restoreY=S.scrollY;return true;}
+function goList(keep=false){stop();S.page='P-O20';S.msgId=null;S.menu=null;S.modal=null;S.detail='ready';if(!keep){S.cat='all';S.status='all';S.pg=1;S.keep=[];}S.restoreY=keep?S.scrollY:0;render();CF.syncURL();if(!keep)window.scrollTo(0,0);}
+function open(id){stop();S.scrollY=window.scrollY;S.page='P-O21';S.msgId=id;S.menu=null;S.modal=null;loadDetail();render();CF.syncURL();window.scrollTo(0,0);}
+function loadDetail(){stop();S.detail='loading';S.pre='idle';if(S.scenario==='detailloading')return;const id=S.msgId;later(()=>{const m=byId(id);if(!m||S.scenario==='notfound'){S.detail='ready';render();return;}if(S.failDetail){S.detail='error';render();return;}S.detail='ready';render(); // render BEFORE read request
+ later(()=>{if(S.scenario!=='readfail'&&!isRead(m)){m.readBy[S.user]=Date.now();S.keep.push(m.id);save();render();}},180);
+ if(m.expired||m.invalidated)S.pre='expired';else if(m.target==='none')S.pre='none';else if(m.target==='missing')S.pre='missing';else if(m.target==='static')S.pre='ok';else {S.pre='pending';later(()=>{S.pre=m.pre==='timeout'?'ok':m.pre;render();},m.pre==='timeout'?3000:650);}render();});}
+function expire(){stop();S.session=true;S.modal=null;S.menu=null;clearTimeout(pollId);pollId=null;render();}
+function applyScenario(key){stop();S.scenario=key;S.pageError=false;S.failDetail=key==='detailerror';S.keep=[];S.session=false;S.menu=null;S.modal=null;
+ if(sampleCases[key])open(uuid(sampleCases[key]));
+ else if(key==='notfound')open(uuid(901));
+ else if(key==='session'){expire();}
+ else {goList(false);if(key==='normal'){S.lastCount=count();}}render();CF.syncURL();}
+function loadPanel(){S.panel='loading';later(()=>{S.panel=S.scenario==='panelfail'?'error':'ready';render();});}
+/* PRD 摘录面板：P-O20 / P-O21 由公共层顶栏按钮按当前 page 取键；C-O21 快捷面板不是路由页，
+   由面板标题栏里的按钮显式传 data-v="C-O21"。从面板里打开的，关掉后回到面板，不把人丢回页面。 */
+function closePrd(){const back=S.prdBack;S.drawer=null;S.prdPage=null;S.prdBack=null;
+ if(back==='bell'){S.menu='bell';pendingFocus='.panel [data-act="openPrd"]';}else pendingFocus='[data-act="openPrd"]';
+ render();return true;}
+function onAct(n,a,v,e){
+ if(S.session&&a!=='resume')return true;
+ if(a==='openPrd'){S.prdBack=S.menu==='bell'?'bell':null;S.prdPage=v||null;S.drawer='prd';S.menu=null;pendingFocus='.drawer.prd .modal-x';render();return true;}
+ if(a==='closeDrawer'&&S.drawer==='prd')return closePrd();
+ if(a==='lang'){S.lang=v;try{localStorage.setItem('fs-prototype-language',JSON.stringify({language:v==='en'?'en':'zh-CN',updated_at:new Date().toISOString()}));}catch(e){}S.menu=null;render();return true;}
+ if(a==='menu'&&v==='bell'){S.menu=S.menu==='bell'?null:'bell';if(S.menu)loadPanel();pendingFocus=S.menu?'.panel button':'[data-f="bell"]';render();return true;}
+ if(a==='menu'&&v==='acc'){pendingFocus=S.menu==='acc'?'[data-v="acc"]':'.dd-list [role="menuitem"]';return false;}
+ if(a==='notifyRetry'){S.scenario='normal';loadPanel();render();return true;}
+ if(a==='open'||a==='notifyGo'){open(v);return true;}
+ if(a==='back'||a==='crumb'){goList(true);return true;}
+ if(a==='notifyAll'||(a==='go'&&v==='P-O20')){S.scenario='normal';goList(false);return true;}
+ if(a==='status'){stop();S.status=v;S.pg=1;S.keep=[];render();CF.syncURL();window.scrollTo(0,0);return true;}
+ if(a==='clear'){S.scenario='normal';goList(false);return true;}
+ if(a==='retryList'){S.scenario='loading';render();later(()=>{S.scenario='normal';render();});return true;}
+ if(a==='mark'){const m=byId(v);if(!m||isRead(m)||S.rowBusy)return true;S.rowBusy=v;render();later(()=>{S.rowBusy=null;if(S.scenario==='readfail'){CF.toast('danger',L('Could not mark this notification as read. Try again.','标记已读失败，请重试。'));return;}m.readBy[S.user]=Date.now();S.keep.push(v);save();render();pendingFocus='[data-act="open"][data-v="'+v+'"]';render();});return true;}
+ if(a==='page'||a==='retryPage'){if(S.pageLoading)return true;S.requestPg=a==='retryPage'?S.requestPg:Number(v);S.pageLoading=true;S.pageError=false;render();later(()=>{S.pageLoading=false;if(S.scenario==='pagefail'&&a!=='retryPage')S.pageError=true;else {S.pg=S.requestPg;S.scenario='normal';CF.syncURL();window.scrollTo(0,0);}render();});return true;}
+ if(a==='askAll'){S.batch=unreadHits().map(m=>m.id);if(!S.batch.length)return true;modalReturn='[data-act="askAll"]';S.modal={type:'markAll'};pendingFocus='.modal [data-act="closeModal"]';render();return true;}
+ if(a==='doAll'){if(S.busy)return true;S.busy=true;render();const user=S.user,ids=[...S.batch];later(()=>{S.busy=false;if(S.scenario==='bulk401'){expire();return;}S.modal=null;pendingFocus=modalReturn;if(S.scenario==='readfail'){render();CF.toast('danger',L('Could not mark notifications as read. Try again.','标记已读失败，请重试。'));return;}let marked=0;ids.forEach(id=>{const m=byId(id);if(m&&!isRead(m)){m.readBy[user]=Date.now();S.keep.push(id);marked++;}});save();render();CF.toast('success',L(marked+' notifications marked as read','已将 '+marked+' 条消息标为已读'));},850);return true;}
+ if(a==='closeModal'){if(S.busy)return true;if(n.classList.contains('mask')&&e.target!==n)return true;S.modal=null;pendingFocus=modalReturn;render();return true;}
+ if(a==='retryDetail'){S.failDetail=false;loadDetail();render();return true;}
+ if(a==='jump'){if(S.pre!=='ok')return true;const m=byId(S.msgId);if(m.target==='static')goList(false);else {modalReturn='[data-act="jump"]';S.modal={type:'boundary'};pendingFocus='.modal button';render();}return true;}
+ if(a==='new'){S.data.unshift({id:uuid(1000+S.data.length),end:'fs_ops',scope:'admin_all',category:'system',at:NOW+S.data.length*1000,title:['A new demonstration notification','一条新的演示消息'],body:['This is a new sample notification.','这是一条新增的演示消息。'],target:'none',readBy:{}});save();render();return true;}
+ if(a==='many'){stop();const current=count();for(let i=current;i<132;i++)S.data.push({id:uuid(2000+S.data.length),end:'fs_ops',scope:'admin_all',category:'system',at:NOW+S.data.length*1000,title:['Demonstration notification '+(i+1),'演示消息 '+(i+1)],body:['Sample for pagination and unread-count review.','用于检查分页与未读角标的演示消息。'],target:'none',readBy:{}});S.scenario='normal';save();goList(false);return true;}
+ if(a==='reset'){stop();S.data=seed();S.user='A';S.size=20;S.scenario='normal';save();goList(false);return true;}
+ if(a==='signout'){expire();return true;}
+ if(a==='resume'){S.session=false;S.scenario='normal';sessionStart=activity=Date.now();S.lastCount=count();if(S.page==='P-O21')loadDetail();render();schedulePoll();return true;}
+ return false;
+}
+function afterRender(){
+ document.documentElement.lang=S.lang==='en'?'en':'zh-CN';
+ document.getElementById('sideContext').textContent=L('Financial Services','金融服务平台');
+ document.getElementById('sideNote').textContent=L('Operations Administrator','运营管理员')+' '+S.user;
+ if(S.session){document.getElementById('topRight').innerHTML='';document.getElementById('crumb').innerHTML='';}
+ document.querySelectorAll('.msg').forEach(li=>{const b=li.querySelector('.msg-hit'),id=b.dataset.v,m=byId(id);if(m){b.title=title(m);b.setAttribute('aria-label',(isRead(m)?L('Read: ','已读：'):L('Unread: ','未读：'))+title(m));}if(S.rowBusy===id){li.classList.add('ops-row-pending');li.setAttribute('aria-busy','true');li.querySelectorAll('button').forEach(x=>x.disabled=true);}});
+ if(S.restoreY!==null){const y=S.restoreY;S.restoreY=null;requestAnimationFrame(()=>window.scrollTo(0,y));}
+ if(pendingFocus){const target=pendingFocus;pendingFocus=null;queueMicrotask(()=>document.querySelector(target)?.focus({preventScroll:true}));}
+ // C-O21 不是路由页，公共层的 PRD 按钮按当前 page 取键，面板本身点不出 PRD；
+ // 在面板标题栏补一个显式传 C-O21 的入口，公共层不动。
+ const panelHead=document.querySelector('.panel .panel-h');
+ if(panelHead&&!panelHead.querySelector('[data-act="openPrd"]')){
+  const b=document.createElement('button');b.type='button';b.className='btn sm';
+  b.dataset.act='openPrd';b.dataset.v='C-O21';b.title=t('prdOpen');
+  b.innerHTML='<span class="mono" style="font-size:10px">PRD</span>';
+  panelHead.insertBefore(b,panelHead.querySelector('.modal-x'));}
+ const prdDrawer=document.querySelector('.drawer.prd');
+ if(prdDrawer){prdDrawer.setAttribute('role','dialog');}
+ // Preserve focus through shared-shell full renders, and trap the active overlay.
+ const overlay=document.querySelector('.modal')||document.querySelector('.panel')||prdDrawer;
+ if(overlay){overlay.setAttribute('aria-modal','true');document.querySelector('#content').inert=!!S.modal;queueMicrotask(()=>{if(!overlay.contains(document.activeElement)){const preferred=overlay.querySelector('[data-act="closeModal"]:not(:disabled)')||overlay.querySelector('button:not(:disabled)');preferred?.focus({preventScroll:true});}});}else document.querySelector('#content').inert=false;
+ const prev=document.querySelector('[data-act="page"][data-v="'+(S.pg-1)+'"]');if(prev)prev.setAttribute('aria-label',L('Previous page','上一页'));
+ const next=document.querySelector('[data-act="page"][data-v="'+(S.pg+1)+'"]:last-child');if(next)next.setAttribute('aria-label',L('Next page','下一页'));
+}
+/* ==========================================================================
+   PRD 摘录面板（C-O21 面板 / P-O20 / P-O21）——给前后端开发在原型里直接对照 PRD，
+   紫色面板，**不属于产品界面**，固定中文、不随界面语言切换。
+   四类：fields 字段与校验 · rules 关键业务规则 · states 状态与异常分支 · copy 中英文案。
+   全部摘自本模块定稿 PRD（financial-service-platform/prd/v1.0-消息通知/，commit a913c3d），
+   只摘本页用得到的条目、不摘全量，逐条注明章节号或 F-O* / D-O* / N-O* / AC-O* 编号。
+   ========================================================================== */
+var PRDSRC="financial-service-platform/prd/v1.0-消息通知/ · 主文档 + 01-页面与展示.md + 02-验收标准.md（a913c3d 定稿版）";
+var PRD={
+
+"P-O20":{title:"P-O20 运营端消息中心",src:PRDSRC,
+ fields:[
+  ["category","分类筛选 · 下拉","筛选项由**服务端返回的分类元数据动态渲染，前端不写死清单**；且**只渲染该运营管理员实际拥有消息的分类**，不产生必然为空的筛选项（`01` 7.3.2 / AC-O11 / AC-O12）。分类未登记时标签展示「其他 / Other」，消息照常展示（`01` 10.3 第 12 条）。"],
+  ["read_state","状态筛选 · 三档","全部 / 未读 / 已读，默认「全部」，与分类筛选**可叠加，是与关系**（`01` 7.3.2 / AC-O13）。"],
+  ["cat / status / page / size","URL 查询参数","缺省值分别为 `all` / `all` / `1` / `20`，**取缺省值时不写进 URL**——无筛选的消息中心永远是同一个干净地址。非法取值（`status=foo`、`size=37`）**一律回落缺省值**，不报错、不空列表（`01` 7.3.2 / AC-O85 / AC-O86）。"],
+  ["created_at","排序键","创建时间倒序；**已读状态不参与排序**（未读不置顶、已读不沉底）；同一时间戳以消息 ID 作稳定次级键（`01` 7.3.3 / AC-O15 / AC-O16）。"],
+  ["cursor","分页游标","**必须基于 `created_at + message_id` 的稳定游标，不使用 offset**——列表期间可能有新消息插入顶部。分页器只是交互形态，游标口径不变（`01` 7.3.4 / AC-O18）。"],
+  ["共 N 条消息","分页条左侧","N 为**当前筛选命中的总条数**（不是全部消息数），与「全部已读」确认弹窗里的条数**同源**（`01` 7.3.4 / AC-O87）。"],
+  ["列表项 C-O22","展示字段","未读圆点 / 分类标签 / 标题单行截断 / 摘要单行截断 / 时间 / 「已过期」条件标签 / 悬浮出现的行内「标为已读」（已读项不展示）。进度型变体运营端本期不使用（`01` 12.1 / 7.8）。"],
+  ["aria-label","列表项无障碍名称","每行消息入口须有 `aria-label`，格式为「已读：/ 未读：」+ **完整标题**；`title` 同样给完整标题。未读圆点是纯视觉的，读屏用户只能从这里知道读没读（`01` 12.1 / AC-O96）。"],
+  ["时间","列表口径","24 小时内相对时间（hover 展示绝对时间），超过 24 小时展示绝对时间；一律带时区标注（`01` 12.4 / AC-O23）。"],
+  ["recipient_scope","可见集","`end = fs_ops` 且 `admin_all` 的共享池消息 **∪** 本人 `admin_account` 个人消息，混排不分区（主文档 8.1.2 / AC-O52）。"]
+ ],
+ rules:[
+  ["F-O06 / F-O07","分类与状态筛选可叠加；筛选条件**写入 URL 查询参数**支持刷新保持；筛选变化时**重置到第 1 页并回到顶部**（`01` 7.3.2 / AC-O14）。"],
+  ["F-O08 / D-O14","分页形态取**分页器**（页码 + 每页条数 20 / 50 / 100），**不用「加载更多」**。依据不是新决策：运营端属**控制台画布形态**，控制台端存在「跳到某一页复查」的诉求（`01` 7.3.4）。"],
+  ["D-O17 / `01` 7.3.3","**标记已读后行位置不变、不被移除。** 运营人员读完一条待办后该行若立刻跳位，正在处理的上下文会被打乱；需要「只看未读」时用状态筛选器（AC-O15）。"],
+  ["F-O10 / D-O18","行内「标为已读」与「打开详情即已读」**并存，不是二选一**；仅展开、仅滚动经过**不产生已读**；界面上**不存在「标为未读」入口**（`01` 7.5.1 / AC-O27 / AC-O28）。"],
+  ["F-O11 / D-O19","「全部标为已读」作用于**当前筛选命中的全部消息**，不限当前页也不是全库无差别：当前页 20 条、实际命中 300 条时 300 条全部标记（`01` 7.5.2 / AC-O31）。"],
+  ["`01` 7.5.2（运营端强制条款）","**二次确认不得省略**，且必须明确说明作用范围与条数；默认焦点落在「取消」；执行失败时**列表与角标不做任何变更**（不做乐观更新）；当前筛选下无未读时按钮禁用并 tooltip 说明（AC-O32 / AC-O33）。"],
+  ["D-O03 / 主文档 8.1.2","**全员共享池 + 已读个人独立**：A 读过的消息对 B 仍是未读，A 执行「全部已读」同样不影响 B（AC-O51）。个人消息只对归属的那一个运营管理员可见（AC-O52）。"],
+  ["主文档 8.1.2 / AC-O53","新建的运营管理员账号，其**创建时间之前**的历史消息**可见但不计入未读**（机制同 `visible_from`）。"],
+  ["D-O05 / 主文档 5.1","**左侧菜单不新增「消息中心」一级入口**，入口收敛在顶栏铃铛与账号下拉——消息中心是通知汇总，不是工作队列（AC-O83）。"],
+  ["主文档 8.1.2 / AC-O54","界面上**不存在**「谁读过这条消息」的任何展示：没有认领机制时，A 读过不代表 A 在处理。"],
+  ["D-O07 / AC-O44、AC-O45","列表接口**忽略请求参数里任何形式的接收者标识与 `end` 参数**，只按会话身份 + `end = fs_ops` 返回；**四端不串池**。"],
+  ["N-O04 / N-O06","每页 **20** 条，可切换 20 / 50 / 100；标题截断 1 行、摘要截断 1 行（主文档 17.2）。"]
+ ],
+ states:[
+  ["首屏加载","**5 行骨架屏**，保持与列表项相同高度，避免加载完成后跳动（`01` 7.3.5）。"],
+  ["首次空态","无筛选且结果为 0：插画位 + 主副文案，**无额外操作**。运营端上线初期无接入方，**首次空态是常态**，文案要经得起「空很久」（`01` 7.3.5）。"],
+  ["筛选空态","有筛选且结果为 0：**另一套文案** + 「清除筛选」出口。**两种空态必须区分**——用同一套文案会让人以为消息全丢了（`01` 7.3.5 / AC-O19）。"],
+  ["首屏失败","内容区错误态 + 原因 + 「重试」，**不清空已填筛选条件**（`01` 7.3.5 / 10.3 第 1 条）。"],
+  ["翻页进行中","**页码按钮与「每页条数」选择器同时禁用**，总数行追加「加载中…」；**当前页内容保持不动**，不清空、不换骨架屏（`01` 7.3.5 / AC-O89）。"],
+  ["翻页失败","错误提示，**当前页已加载内容不清空**，可重试（`01` 10.3 第 2 条 / AC-O20）。"],
+  ["单条渲染降级（文案 key 缺失）","标题位展示通用词、**摘要整行留空**，分类标签与时间照常展示；**任何位置都不出现文案键名**，且该条仍可进详情（`01` 7.3.5 / AC-O90）。"],
+  ["全部已读 · 执行中","「确认」变加载态并禁用，**「取消」同时禁用**，遮罩点击与 Esc 也不关闭——批量已读不可撤销，中途关窗会让人不知道操作有没有发生（`01` 7.5.2 / AC-O94）。"],
+  ["全部已读 · 失败 / 401","失败：Toast 报错，列表与角标不变，可重试。401：走 WS-308 统一会话失效处理，**不展示「操作成功」**，重新登录后未读数以服务端为准（`01` 7.5.5 / AC-O62）。"],
+  ["行内已读 · 提交中","该行降低不透明度、**行内所有按钮禁用**、行元素标记 `aria-busy`；完成后**焦点回到该行的消息入口**。同一时刻只允许一行处于提交中（`01` 7.5.3 / AC-O95）。"],
+  ["会话失效","走 WS-308 统一处理：清除登录态、**中止进行中的请求（含未读数轮询）**、跳 `/ops/login?redirect=` 并在登录后回跳（主文档 8.3 / AC-O58 / AC-O61）。"]
+ ],
+ copy:[
+  ["页面标题 / 面包屑","Notifications","消息中心"],
+  ["首次空态 · 主文案","No notifications yet","暂无消息"],
+  ["筛选空态 · 主文案","No messages match these filters","没有符合筛选条件的消息"],
+  ["筛选空态 · 操作","Clear filters","清除筛选"],
+  ["失败态 · 操作","Retry","重试"],
+  ["行内已读","Mark as read","标为已读"],
+  ["分页条总数（AC-O87）","Total {N} notifications","共 {N} 条消息"],
+  ["每页条数（`01` 12.3 运营端新增）","Per page","每页条数"],
+  ["全部已读 · 确认标题","Mark {n} notifications as read?","将 {n} 条消息标为已读？"],
+  ["全部已读 · 筛选说明行（`01` 12.3 运营端新增，无筛选时也展示）","Filter: {category} · {status}","当前筛选：{分类} · {状态}"],
+  ["全部已读 · 影响范围（跨页 / 仅本人 / 不可撤销，三件事都要说全）","This includes every matching page, for your account only. This can not be undone.","包含所有符合筛选的页面，仅影响你的账号。该操作不可撤销。"],
+  ["列表项无障碍前缀（AC-O96）","Read: / Unread:","已读： / 未读："],
+  ["文案降级通用词（AC-O90）","Notification","消息"],
+  ["已过期标签","Expired","已过期"]
+ ]},
+
+"P-O21":{title:"P-O21 运营端消息详情",src:PRDSRC,
+ fields:[
+  ["面包屑","必现","`消息中心 / {标题}`，上级可点击返回。用**运营端的面包屑组件**（WS-308），不是 WS-302 的 `C-10`（`01` 7.4.2 / 12.2）。"],
+  ["title / body","必现","渲染后的标题与正文，**纯文本 + 转义，不支持富文本 / HTML**；标题过长换行不截断。提交含 HTML 标签的正文时页面上原样显示为文本（`01` 7.4.2 / AC-O24）。"],
+  ["created_at","必现","详情**一律绝对时间 + 时区标注**，不用相对时间——详情是回查场景，需要精确时间（`01` 12.2 / 12.4 / AC-O23）。"],
+  ["biz_ref / page_target","跳转目标","三形态**互斥**：业务资源目标 / 静态页面目标 / 无跳转。**消息实体中不存放 URL**（URL 会随前端路由重构失效，历史消息无法回头批量改写）。两者同时存在属接入错误，**服务端拒收**（`01` 7.6.1 / AC-O34 / AC-O35）。"],
+  ["page_target 段位","强制校验","运营端消息的 `page_target` **只能取 `P-O*` 段位内已登记的页面编号**；服务端必须校验其所属端与消息 `end` 一致，**不一致时拒收**（`01` 7.6.1 / 10.3 第 17 条 / AC-O57）。"],
+  ["cta_label_key","跳转按钮文案","由业务类型登记表提供，缺省「查看详情 / View details」（`01` 7.4.2）。"],
+  ["C-O23 失效说明条","条件展示","详情页正文上方的浅底说明条，左侧信息图标，纯文本，**不可关闭，不使用错误红色**——失效是正常业务状态，不是错误（`01` 7.7 / 12.2 / AC-O43）。"],
+  ["「已过期」标记","条件展示","已过期消息在详情头部**紧随分类标签**另带一个标记，与 C-O23 说明条**并存**：标记回答「这条是什么状态」，说明条回答「所以会怎样」（`01` 7.4.2 / AC-O91）。"],
+  ["运营端去掉的两行","不渲染","「业务编号」与「进度区块」——两者是进度类消息专属，运营端本期不产生。**字段定义与组件变体本身不删**（`01` 12.2 / 7.8 / AC-O81）。"]
+ ],
+ rules:[
+  ["F-O12 / `01` 7.4.1","详情为**整页 + 独立路由 + 支持深链**，路由 `/ops/messages/{message_id}`，**不用抽屉或弹窗**。前缀 `/ops` 由 WS-308 定义，不复用资产管理端的 `/admin`（AC-O22）。"],
+  ["F-O10 / `01` 7.4.3","已读标记在**详情内容请求成功并渲染之后**才发起，**不在路由进入时就发**；详情加载失败时**不产生任何已读记录**（AC-O25）。"],
+  ["`01` 7.4.3","已读请求失败**不阻断详情展示**、不弹错，下次进入时重试；重复标记**幂等**，首次已读时间不被覆盖（AC-O26）。"],
+  ["F-O13 / `01` 7.4.4","三种返回方式（面包屑上级 / 「返回列表」/ 浏览器后退）行为一致：**保留筛选条件、页码、每页条数与滚动位置**，不跳回第 1 页；刚读过的那条**就地变已读样式、不重排、不移除**，「只看未读」下仍留在列表中直到主动刷新或切换筛选（AC-O29 / AC-O30）。"],
+  ["F-O14 / `01` 7.6.2","**预检在进入详情页时执行一次**（不是点击时才执行），使失效状态能在按钮上提前体现；**列表页不做任何预检**（会对每行触发一次业务查询，成本不可接受）（AC-O40）。"],
+  ["`01` 7.6.2 / N-O05","静态页面目标（形态 2）**一律不预检**；业务资源目标是否预检由业务类型登记表声明，默认「需要预检」；**预检接口本身失败或超时（3 秒）时放行跳转**，由目标页按自己的规则处理（AC-O39 / AC-O41）。"],
+  ["D-O20 / `01` 7.6.3（本轮已改）","**映射缺失**（携带 `biz_type` 但前端登记表无对应条目）时：**不渲染跳转按钮**、**不展示任何说明文案**，操作区只保留「返回列表」；仍上报一次「未知业务类型」日志。原「当前版本暂不支持该消息的跳转操作」一句**已作废**（用户 2026-09-08 在 WS-304 裁定）（AC-O37）。"],
+  ["`01` 7.6.3 / AC-O38","映射缺失时**不出现**以下任何一种：跳 404 页、跳首页、展示点了没反应的按钮、隐藏整条消息。**消息内容本身永远优先于跳转能力**——跳转是增强，不是消息的存在前提。"],
+  ["`01` 7.6.4 / AC-O36","「无跳转」（既无 `biz_ref` 也无 `page_target`）是**合法状态，不是缺失**，界面表现与映射缺失**完全一致**；两者的区别**只剩后台要不要上报日志**，运营人员看到的界面没有差别。"],
+  ["`01` 7.7 / AC-O42","四类失效**各有独立文案**（不使用一句笼统的「该消息已失效」）：`expired` 的跳转按钮**不渲染**，其余三类**按钮禁用而非隐藏**并带 hover tooltip 说明原因——直接隐藏会让人分不清「本来就没有跳转」与「有但现在不能用」。"],
+  ["`01` 7.7 / AC-O43","四类失效下消息的**标题、正文、时间均完整展示**，消息不被删除、不被隐藏。失效只影响「能不能跳过去」。"],
+  ["`01` 7.7（可访问性）/ AC-O68","`disabled` 按钮既不可聚焦、也不触发原生 `title`，键盘与读屏用户拿不到 tooltip 里的原因；实现用一个 **`tabindex=0` 且带 `title` 的容器包住禁用按钮**。C-O23 说明条同时承载同一原因，tooltip 是补充而非唯一通道。"],
+  ["主文档 8.2.2 / AC-O46、AC-O47","消息不存在、他人个人消息、非 `fs_ops` 消息**一律返回 404 语义且完全不可区分**；深链登录后归属不符同样落到「消息不存在」页，**不提示「你登录了错误的账号」**（AC-O60）。"],
+  ["`01` 7.4.5 / AC-O58、AC-O59","未登录访问详情深链跳 `/ops/login?redirect=<原路径>`，登录成功后回跳；**不落到资产管理端登录页 `P-M01`**；登录前**不泄漏任何消息内容，也不泄漏该消息是否存在**。"]
+ ],
+ states:[
+  ["加载中","详情骨架；**此时尚未标记已读**（`01` 7.4.3 / 10.3 第 4 条）。"],
+  ["加载失败","错误态必须**明确告知该条未被标记为已读**，并同时提供「重试」与「返回列表」。这句不是客套——7.4.3 定的是渲染成功后才标已读，用户需要知道这条仍留在未读里（`01` 7.4.2 / AC-O92）。"],
+  ["消息不存在 / 越权 / end 不符","统一「消息不存在」页 + 返回消息中心，**三者不可区分**（`01` 10.3 第 5 条 / AC-O46 / AC-O47）。"],
+  ["预检中","跳转按钮进入异步等待态，不让用户点了才被告知失效（`01` 7.6.2）。"],
+  ["映射缺失 / 无跳转","**不渲染按钮、不展示任何说明文案**，操作区只剩「返回列表」；两者界面表现完全一致（D-O20 / AC-O36 / AC-O37）。"],
+  ["已过期 expired","C-O23 说明条 + 头部「已过期」标记，跳转按钮**不渲染**；**不计入未读角标**但仍完整可读（`01` 7.7 / AC-O05 / AC-O42 / AC-O91）。"],
+  ["目标资源已删除 / 状态已流转 / 无权限","C-O23 说明条 + 按钮**禁用**并带 tooltip；这三类是预检的实时结果、**不落库**，且**仍然计入未读角标**（`01` 7.7 / 11.1 / AC-O06）。"],
+  ["state_changed 在运营端高频","共享池里「一条待办被同事先处理掉了」正是典型场景；预检可附带**当前状态描述**一并展示（`01` 7.7）。"],
+  ["文案 key 缺失","正文降级为通用词，**不展示键名**；回落到该端默认语言（运营端即英文），英文也缺失时降级为最小形态（`01` 10.3 第 11 条 / 12.4 / D-O22 / AC-O90）。"],
+  ["会话失效","走 WS-308 统一处理并**中止进行中的请求（含未读数轮询）**（主文档 8.3 / AC-O61）。"]
+ ],
+ copy:[
+  ["主操作 · 缺省","View details","查看详情"],
+  ["次操作","Back to list","返回列表"],
+  ["加载失败 · 主文案","Failed to load this notification","消息详情加载失败"],
+  ["加载失败 · 副文案（AC-O92）","It has not been marked as read.","本条消息未被标记为已读。"],
+  ["C-O23 · expired","This notification has expired.","该消息已过期。"],
+  ["C-O23 · resource_deleted","The related record is no longer available.","相关记录已不存在。"],
+  ["C-O23 · state_changed","This has already been handled — no action is needed.","该业务状态已变更，无需再处理。"],
+  ["C-O23 · no_permission","You no longer have access to this record.","你当前无权访问该记录。"],
+  ["映射缺失 / 无跳转（D-O20 裁定后）","（界面上不展示任何说明文案）","（界面上不展示任何说明文案）"],
+  ["详情头部标记","Expired","已过期"],
+  ["文案降级通用词（AC-O90）","Notification","消息"]
+ ]},
+
+"C-O21":{title:"C-O21 铃铛快捷面板（含 C-O20 铃铛与角标）",src:PRDSRC,
+ fields:[
+  ["N-O02","面板条数","展示**最近 10 条，且不区分已读未读**（主文档 17.2 / F-O03 / AC-O08）。"],
+  ["单条结构","面板内","分类标签 + 标题单行截断 + 摘要单行截断 + 相对时间 + 未读圆点（`01` 7.2，逐条沿用 WS-304 `01` 7.2）。"],
+  ["数据源与已读状态","强制条款","面板、角标与消息中心列表来自**同一套服务端数据与同一份已读状态**，任一处的已读在另一处立即生效。**不得为快捷面板另建一套本地已读缓存**——这是本模块把两个入口合并的根本原因（主文档 5.2 / `01` 7.5.4）。"],
+  ["底部「查看全部」","面板底部","进入 P-O20 消息中心，**不带任何筛选条件**（主文档 5.2）。"],
+  ["C-O20 挂载位","顶栏","运营端顶部导航栏右侧，**语言切换器 `C-O04` 左侧、账号下拉 `C-O11` 之前**；两个挂载点组件由 WS-308 定义并提供（主文档 5.1 / `01` 7.1.1 / AC-O02）。"],
+  ["未读角标","计数口径","**服务端计算，前端不自行统计**；全分类合计不做多个角标；**已过期与已主动失效不计入**；三类跳转失效（删除 / 流转 / 无权限）**仍然计入**；上限 N-O03 = 99，超出展示 `99+`（D-O15 / `01` 7.1.2 / AC-O04～AC-O06）。"],
+  ["可见集","计数范围","当前运营管理员可见集中未读的条数 = 「`end = fs_ops` 且 `admin_all`」∪「本人个人消息」。**将来新增 `role` scope 时未读计数算法零改动**（`01` 7.1.2 / AC-O74）。"],
+  ["账号下拉「消息中心」条目","F-O04","位于账号下拉 `C-O11` 内、「账户设置」`P-O05` **之上**（消息中心高频、账户设置低频）；点击**直达 P-O20，不经快捷面板、不带筛选**（`01` 7.1.5 / AC-O07）。"],
+  ["progress","组件变体","运营端本期**不产生**带 `progress` 的消息，进度型列表项变体**在契约与代码中保留不删**（`01` 7.2 / 7.8 / AC-O81）。"]
+ ],
+ rules:[
+  ["F-O03 / D-O13","**铃铛点击展开快捷面板，不直接跳页**——多数情况下用户只想确认「是什么事」，直接跳整页会打断当前任务；要「集中处理消息」走账号下拉直达整页（主文档 5.2）。"],
+  ["AC-O09 / `01` 7.2（运营端强制条款）","**仅展开不算已读**，滚动经过也不算；点击面板内某条进入详情后才按 7.5 标记。面板一展开就批量清未读，等于让运营人员丢掉待办。"],
+  ["`01` 7.2（运营端强制条款）","**面板内不提供「全部已读」**：该操作影响面广、本期不可撤销，必须在能看清作用范围（当前筛选条件）的消息中心内执行。在一个只展示 10 条的浮层里误清全部未读，代价比资产端高。"],
+  ["`01` 7.2 / AC-O84","**四种关闭方式等价**：再次点击铃铛 / 点击面板外区域 / Esc / 标题栏右侧 `✕`；四者都把焦点还给铃铛。"],
+  ["`01` 7.2","**每次展开重新拉取，不用缓存。**"],
+  ["F-O05 / D-O16","实时性方案：**轮询 N-O01（60 秒）+ 切回前台立即拉取并重置计时器 + 页面不可见时暂停轮询**；本期**不引入长连接**（`01` 7.1.3 / AC-O10 / AC-O66）。"],
+  ["`01` 7.1.3","未读数接口失败时**静默保留上次数值**，不清零、不弹提示（`01` 10.3 第 3 条 / AC-O10）。"],
+  ["D-O08（本 PRD 新增）","**未读数轮询不得被计入 WS-308 的「30 分钟无操作」活跃度判定**——本模块有一个每 60 秒发一次的常驻请求，若被计为用户活跃，无操作自动登出将永远不会触发（主文档 8.3 / AC-O64）。"],
+  ["主文档 8.3 / AC-O63","未读数轮询遇 401 与其他接口一视同仁，**触发统一的会话失效处理，不得静默忽略**——不出现「页面还在、角标还在刷、但登录态已没了」的假活状态。"],
+  ["`01` 7.1.4","任一标签页的已读变更通过**浏览器本地事件广播**同步给其他标签页（复用 WS-308 的跨标签页同步通道）；广播不可用时**降级为轮询同步**（最长滞后 60 秒），不报错（`01` 10.3 第 14 条）。"],
+  ["AC-O69","面板展开后**焦点进入面板，Tab 循环限制在面板内**，Esc 关闭并把焦点还给铃铛；角标数值变化通过 `aria-live=polite` 播报，**不抢焦点**。"],
+  ["D-O07 / AC-O55","运营端界面**不存在**任何查看资产平台消息或金融服务端用户消息的入口；一个人在两个平台是**两个铃铛、两套未读数**。"]
+ ],
+ states:[
+  ["加载中","面板内 **3 行骨架屏**（`01` 7.2）。"],
+  ["空态","铃铛图标 + 无消息文案，不提供额外操作（`01` 7.2）。"],
+  ["失败态","面板内错误提示 + 「重试」；**角标本身不受影响**，未读数接口失败时静默保留上次数值（`01` 7.2 / 7.1.3）。"],
+  ["无未读","铃铛**不展示角标，也不展示 `0`**（`01` 7.1.1 / AC-O03）。"],
+  ["超过 99 条未读","展示 `99+`，且该状态下**不展示精确数字**（N-O03 / AC-O04）。"],
+  ["已过期消息","**仍出现在面板与列表中**并带「已过期」标签，但**不计入角标**（`01` 7.7 / AC-O05）。"],
+  ["未登录 / 会话失效","**未登录页面不展示铃铛**；会话失效后按 WS-308 统一处理并中止轮询（主文档 5.4 / AC-O01 / AC-O61）。"],
+  ["页面切到后台","轮询**暂停**，页面不可见时轮询开销为 0；切回前台**立即拉取一次**并重置计时器（`01` 7.1.3 / AC-O10 / AC-O66）。"]
+ ],
+ copy:[
+  ["面板标题","Notifications","消息中心"],
+  ["底部入口","View all","查看全部"],
+  ["空态","No notifications yet","暂无消息"],
+  ["失败态","Failed to load.","加载失败。"],
+  ["失败态 · 操作","Retry","重试"],
+  ["关闭按钮无障碍名称（AC-O84）","Close","关闭"],
+  ["铃铛无障碍名称（AC-O69）","Notifications, {n} unread / Notifications, no unread","通知，{n} 条未读 / 通知，无未读"],
+  ["账号下拉条目（F-O04）","Notifications","消息中心"],
+  ["已过期标签","Expired","已过期"]
+ ]}
+};
+CF.define({id:'fs-ops-notify',end:'admin',home:'P-O20',owns:['P-O20','P-O21'],
+ dict:{en:{adminConsole:'Operations',navOverview:'Overview'},zh:{adminConsole:'运营端',navOverview:'总览'}},
+ state:()=>({data:restore(),user:'A',cat:'all',status:'all',pg:1,size:20,keep:[],msgId:null,scenario:'normal',detail:'ready',pre:'none',panel:'ready',tools:false,busy:false,batch:[],lastCount:0,scrollY:0,restoreY:null,prdPage:null,prdBack:null}),
+ onBoot:s=>{S=s;try{const pref=JSON.parse(localStorage.getItem('fs-prototype-language'));if(pref&&['en','zh-CN'].includes(pref.language))S.lang=pref.language==='en'?'en':'zh';}catch(e){}S.lastCount=count();},content:()=>S.session?sessionView():(S.page==='P-O20'?list():detail()),
+ account:()=>({settings:'P-O05',avatar:S.user,ident:L('Operations Administrator ','运营管理员 ')+S.user,ok:true,okText:L('Operations','运营端')}),
+ notify:()=>({unread:badge(),phase:S.panel,items:S.scenario==='empty'?[]:visible().slice(0,10).map(item)}),
+ notifyOpen:open,notifyRetry:()=>{S.scenario='normal';loadPanel();render();},
+ modals:{markAll:markAllModal,boundary:boundaryModal},modalLocked:()=>!!S.busy,
+ crumbParts:()=>S.page==='P-O21'?[[L('Notifications','消息中心'),'P-O20']]:[],
+ crumbCur:()=>S.page==='P-O21'?(byId(S.msgId)&&S.scenario!=='notfound'?title(byId(S.msgId)):L('Notification','消息')):L('Notifications','消息中心'),
+ prd:PRD,prdKey:()=>S.prdPage||S.page,
+ prdFoot:()=>'本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD。完整口径以 '
+  +'<code class="mono">v1.0-消息通知-PRD.md</code> 及其分册 <code class="mono">01-页面与展示.md</code> / '
+  +'<code class="mono">02-验收标准.md</code>（仓库 <code class="mono">financial-service-platform/prd/v1.0-消息通知/</code> 定稿版）为准；'
+  +'编号体系 F-O01～F-O18 / P-O20～P-O21 / C-O20～C-O23 / D-O01～D-O24 / N-O01～N-O07 / AC-O01～AC-O96。'
+  +'面板固定中文，是给前后端开发看的规格说明，<b>不属于产品界面</b>。',
+ hash:{build:buildHash,read:readURL},afterRender,onAct});
+CF.boot();
+document.addEventListener('toggle',e=>{if(e.target.matches('.ops-tools'))S.tools=e.target.open;},true);
+document.addEventListener('change',e=>{const el=e.target,field=el.dataset.f;if(!field)return;
+ if(field==='scenario'){applyScenario(el.value);return;}
+ if(field==='user'){stop();S.user=el.value;S.keep=[];S.lastCount=count();if(S.page==='P-O21')loadDetail();render();return;}
+ if(field==='category'){stop();S.cat=el.value;S.keep=[];S.pg=1;S.scenario='normal';render();CF.syncURL();}
+ if(field==='size'){stop();S.size=Number(el.value);S.pg=1;render();CF.syncURL();}
+});
+document.addEventListener('keydown',e=>{const prdDrawer=document.querySelector('.drawer.prd');
+ if(e.key==='Escape'&&prdDrawer){e.preventDefault();e.stopImmediatePropagation();closePrd();return;}
+ const overlay=document.querySelector('.modal')||document.querySelector('.panel')||prdDrawer;if(e.key==='Escape'&&overlay){e.preventDefault();e.stopImmediatePropagation();if(S.busy)return;const bell=!!S.menu;S.modal=null;S.menu=null;pendingFocus=bell?'[data-f="bell"]':modalReturn;render();return;}
+ if(e.key==='Tab'&&overlay){const list=[...overlay.querySelectorAll('button:not(:disabled),a[href],select,[tabindex="0"]')].filter(x=>x.getClientRects().length);if(!list.length){e.preventDefault();return;}const first=list[0],last=list[list.length-1];if(e.shiftKey&&(document.activeElement===first||!overlay.contains(document.activeElement))){e.preventDefault();last.focus();}else if(!e.shiftKey&&(document.activeElement===last||!overlay.contains(document.activeElement))){e.preventDefault();first.focus();}}
+},true);
+['pointerdown','keydown'].forEach(name=>document.addEventListener(name,()=>{activity=Date.now();},{passive:true}));
+function schedulePoll(){clearTimeout(pollId);pollId=null;if(S.session||document.hidden)return;pollId=setTimeout(()=>{if(Date.now()-sessionStart>=7200000||Date.now()-activity>=1800000){expire();return;}if(S.scenario!=='countfail'){S.data=restore();render();}schedulePoll();},60000);}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!S.session){if(Date.now()-sessionStart>=7200000||Date.now()-activity>=1800000){expire();return;}S.data=restore();render();}schedulePoll();});
+try{syncChannel=new BroadcastChannel(STORE);syncChannel.onmessage=e=>{if(Array.isArray(e.data)&&!S.session){S.data=e.data;render();}};}catch(e){}
+window.addEventListener('storage',e=>{if(e.key===STORE&&!S.session){S.data=restore();render();}});
+window.addEventListener('pagehide',()=>{stop();clearTimeout(pollId);if(syncChannel)syncChannel.close();});
+schedulePoll();
+})();
+</script>
+</body></html>

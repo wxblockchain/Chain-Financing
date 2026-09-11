@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en" data-end="admin">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Financial Services · Operations · Account & Sign in</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css"><link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css"><style>/* Only module composition. All tokens and components come from canonical _shared. */
+.ops-brand{border:0;padding:0;gap:var(--sp-3)}
+.ops-spacer{flex:1}
+.ops-title{font-size:var(--fs-24);margin:0 0 var(--sp-2)}
+.ops-card-gap{margin-top:var(--sp-5)}
+.ops-center{text-align:center;margin-top:var(--sp-4)}
+.ops-muted{color:var(--muted)}
+.ops-form{margin:0}
+.ops-helper{min-height:1.5em;font-size:var(--fs-12);margin:var(--sp-1) 0 0;color:var(--muted)}
+.ops-error{color:var(--danger)}
+.ops-rules{list-style:none;padding:0;margin:var(--sp-2) 0 var(--sp-4);font-size:var(--fs-12);color:var(--muted)}
+.ops-rules li{display:flex;gap:var(--sp-2);margin-top:var(--sp-1)}
+.ops-rule-ok{color:var(--ok)}
+.ops-section{margin-top:var(--sp-7);scroll-margin-top:var(--sp-8)}
+.ops-pref{max-width:300px}
+.ops-review{margin-top:var(--sp-6);color:var(--muted);font-size:var(--fs-12)}
+.ops-review summary{cursor:pointer;padding:var(--sp-2) 0}
+.ops-review-body{padding:var(--sp-3);margin-top:var(--sp-2);border:1px dashed var(--border-strong);border-radius:var(--radius-sm);background:var(--card)}
+.ops-review .inp{margin:var(--sp-2) 0}
+.ops-lock{text-align:center;padding:var(--sp-6) var(--sp-4)}
+.ops-lock-icon{color:var(--warn);margin-bottom:var(--sp-4)}
+.ops-count{font-family:var(--mono);font-size:var(--fs-28);margin:var(--sp-4) 0}
+.ops-gap{margin-top:var(--sp-4)}
+/* C-O01 puzzle slider. These .cap-* rules are copied verbatim from the asset-platform
+   account & sign-in prototype's own style block — they live there, not in _shared,
+   and asset-platform/ is read-only for this module (AC-O100), so the shape cannot be
+   hoisted into the shared layer from here. Keep the two in sync by hand until one of
+   them moves into _shared/base.css. */
+.cap-canvas{position:relative;width:328px;margin:0 auto;border-radius:var(--radius-sm);overflow:hidden;
+  border:1px solid var(--border);background:var(--card-2)}
+.cap-canvas canvas{display:block;width:328px;height:180px}
+.cap-piece{position:absolute;top:0;left:0;will-change:transform}
+.cap-track{margin:14px auto 0;width:328px;height:42px;border-radius:var(--radius-pill);background:var(--card-2);
+  border:1px solid var(--border-strong);position:relative;display:flex;align-items:center;user-select:none;touch-action:none}
+.cap-track.ok{border-color:var(--ok-border);background:var(--ok-bg)}
+.cap-track.bad{border-color:var(--danger-border);background:var(--danger-bg)}
+.cap-track.cool{opacity:.6}
+.cap-track .tip{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--fs-11);color:var(--faint);
+  pointer-events:none}
+.cap-fill{position:absolute;left:0;top:0;bottom:0;border-radius:var(--radius-pill);background:var(--accent-soft)}
+.cap-knob{position:absolute;left:0;top:0;height:40px;width:48px;border-radius:var(--radius-pill);background:var(--bg-elev);
+  border:1px solid var(--border-strong);display:grid;place-items:center;cursor:grab;color:var(--accent);
+  font-family:var(--mono);font-size:13px;box-shadow:var(--shadow)}
+.cap-knob:active{cursor:grabbing}
+.cap-knob.shake{animation:shake var(--dur-slow) var(--ease-in-out)}
+.cap-knob[aria-disabled="true"]{cursor:not-allowed;opacity:.6}
+.cap-msg{margin-top:10px;min-height:17px;font-size:var(--fs-11);line-height:1.5;text-align:center;color:var(--faint)}
+.cap-msg.bad{color:var(--danger)}
+.cap-msg.ok{color:var(--ok)}
+.ops-readout{font-size:var(--fs-12);color:var(--muted);margin-top:var(--sp-3);overflow-wrap:anywhere}
+.ops-wait{padding:var(--sp-6);min-height:180px}
+.ops-skeleton{height:var(--sp-4);margin:var(--sp-4) 0;background:var(--track);border-radius:var(--radius-xs)}
+.ops-skeleton-short{width:55%}
+.ops-status{margin-bottom:var(--sp-4)}
+.ops-state-caption{display:block;font-size:var(--fs-11);margin-bottom:var(--sp-3);color:var(--muted)}
+.ops-pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--mono);font-size:var(--fs-11);background:var(--card-2);padding:var(--sp-3);border-radius:var(--radius-sm)}
+.ops-actions{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3)}
+.ops-note-limit{max-width:640px}
+@media(prefers-reduced-motion:reduce){.cap-knob.shake{animation:none}}
+</style></head>
+<body>
+<div class="app" id="app" hidden>
+ <aside class="sidebar"><div class="brand"><div class="brand-mark">FS</div><div><div class="brand-name" data-brand>Financial Services</div><div class="brand-sub" id="brandSub"></div></div></div><nav class="nav" id="nav" aria-label="Main navigation"></nav><div class="side-foot"><span class="muted" data-demo>Demonstration data · WS-308</span></div></aside>
+ <main class="main"><header class="topbar"><div class="topbar-right" id="topRight"></div></header><div class="crumbbar" id="crumb"></div><div class="content" id="content"></div></main>
+</div><div class="focus" id="focus"></div><div id="layers"></div>
+<script src="../_shared/registry.js"></script><script src="../../../asset-platform/prototypes/_shared/shell.js"></script><script>(function(){
+'use strict';
+const CF=window.CF, L=CF.L, E=CF.esc, note=CF.note;
+let S, timer, taskVersion=0, capToken=0, lastModal=null, returnFocus=null;
+const EMAIL='ops@demo-finance.test', INITIAL='Init2026!', KEY='ws308.ops.prototype.';
+let currentPassword='Demo2026!', initialAllowed=true;
+const paths={'P-O01':'/ops/login','P-O02':'/ops/first-reset','P-O03':'/ops/forgot-password','P-O04':'/ops/reset-password','P-O05':'/ops/account','P-O06':'/ops/overview','P-O20':'/ops/messages','P-O21':'/ops/messages/demo-password-change'};
+const tx={
+ en:{adminConsole:'Operations',signOut:'Sign out',accountSettings:'Account settings',bounce:'Security emails could not be delivered to this work email. Contact your technical team.',
+ email:'Work email',password:'Password',current:'Current password',newPassword:'New password',confirm:'Confirm new password',code:'Verification code',
+ required:'This field is required.',emailBad:'Enter a valid work email address (up to 254 characters).',incorrect:'Incorrect email or password.',
+ currentBad:'Incorrect current password.',length:'Use 8–20 characters.',complex:'Include at least one letter and one number; no spaces.',mismatch:'Passwords do not match.',
+ same:'Your new password must be different from your current password.',sameInitial:'Your new password must be different from the initial password.',
+ codeBad:'Invalid or expired code.',codeMany:'Too many attempts. Please request a new code.',codeFormat:'Enter the 6-digit code.',
+ sent:'If this email belongs to an operations account, a verification code has been sent.',
+ expired:'Your initial password has expired. Contact technical support to have it reissued.',disabled:'This account has been disabled. Contact support for help.',
+ timeout:'The request timed out. Your entries have been kept. Please retry.',failure:'The request failed. Your entries have been kept. Please retry.',
+ session:'Your session has expired. Please sign in again.',idle:'You were signed out due to inactivity.',changed:'Your password has changed. All sessions have been signed out. Please sign in again.',
+ logout:'You have been signed out on all devices.',saved:'Preferences saved.',saveFailed:'Could not save your preference. Your selection is kept here. Retry saving.',
+ noPermission:'You do not have permission to access this page.',codeService:'The email service is unavailable. You can retry once immediately.',
+ ticket:'Verification expired or already used. Complete the slider again.',rateEmail:'Too many requests for this email. Please try again later.',rateIp:'Too many requests from this network. Please try again later.',rateDevice:'Too many requests from this device. Please try again later.',
+ capFailed:'Verification failed. Try again.',capLoad:'Could not load verification. Please retry.',capCool:'Too many verification attempts. Please wait.',
+ resetTicket:'Your reset session has expired. Verify your work email again.',newCode:'A new code has been requested. Earlier codes are no longer valid.',
+ signin:'Sign in',save:'Save password',next:'Continue',send:'Send code',back:'Back to sign in',retry:'Retry',cancel:'Cancel',
+ show:'Show password',hide:'Hide password',demo:'Demonstration data · Local prototype',review:'Prototype states & review notes',
+ loginTitle:'Sign in',firstTitle:'Reset your initial password',forgotTitle:'Reset password',newTitle:'Set a new password',
+ firstSub:'Set a new password before accessing the operations console.',forgotSub:'Verify your work email to reset your password.',
+ loginSub:'Use the work account provided by your technical team.',ruleLength:'8–20 characters',ruleComplex:'At least one letter and one number',
+ locked:'Account temporarily locked',lockExplain:'Sign-in and password reset are unavailable until the lock expires.',lockTier:'If another lock is triggered, the lock period will be longer.',
+ awaiting:'Waiting for a response…',submitting:'Submitting…',loading:'Loading…',verify:'Security check',slide:'Slide to complete the puzzle',capVerified:'Verified',
+ capTrouble:'Having trouble? Select the refresh icon for a new puzzle.',capRefresh:'New puzzle',
+ capKeys:'Drag the handle, or focus it and use the arrow keys, then press Enter.',
+ accountInfo:'Account information',preferences:'Preferences',name:'Full name',status:'Account status',active:'Active',change:'Change',lang:'Interface language',timezone:'Time zone',
+ reauthTitle:'Confirm your current password',reauthSub:'Verify your identity before changing your password.',changeTitle:'Change password',reauthOk:'Identity verified. Set your new password.',
+ exitTitle:'Stay signed in?',exitSub:'Your session expires in less than 2 minutes.',stay:'Stay signed in',signoutNow:'Sign out now',
+ boundary:'Notifications are delivered by the notification module.',boundarySub:'This review file covers account and sign-in flows. Notification pages are outside this delivery.',overview:'Overview',support:'Cannot access your work email? Contact your technical team.',
+ pwReset:'Password reset. All sessions have been signed out. Please sign in again.',empty:'Account information is unavailable.',loadFail:'Could not load account information.',refresh:'Reload account information'},
+ zh:{adminConsole:'运营端',signOut:'退出登录',accountSettings:'账户设置',bounce:'安全邮件无法送达此工作邮箱，请联系技术人员处理。',
+ email:'工作邮箱',password:'密码',current:'当前密码',newPassword:'新密码',confirm:'确认新密码',code:'验证码',
+ required:'此项为必填项。',emailBad:'请输入有效的工作邮箱（不超过 254 个字符）。',incorrect:'邮箱或密码不正确。',currentBad:'当前密码不正确。',
+ length:'请输入 8–20 个字符。',complex:'至少包含 1 个英文字母和 1 个数字，不能包含空格。',mismatch:'两次输入的密码不一致。',
+ same:'新密码不能与当前密码相同。',sameInitial:'新密码不能与初始密码相同。',codeBad:'验证码不正确或已过期。',codeMany:'验证次数过多，请重新获取验证码。',codeFormat:'请输入 6 位数字验证码。',
+ sent:'若该邮箱为运营端账号，验证码已发送。',expired:'初始密码已过期，请联系技术人员重新发放。',disabled:'该账号已被停用，请联系技术人员。',
+ timeout:'请求超时，已保留填写内容，请重试。',failure:'请求失败，已保留填写内容，请重试。',session:'会话已过期，请重新登录。',idle:'因长时间未操作，已自动退出登录。',
+ changed:'密码已修改，全部会话已退出，请重新登录。',logout:'已在所有设备退出登录。',saved:'偏好已保存。',saveFailed:'偏好保存失败，已保留当前选择，请重试保存。',
+ noPermission:'你没有权限访问此页面。',codeService:'邮件服务暂不可用，可立即重试一次。',ticket:'验证票据已失效或已使用，请重新完成滑块校验。',
+ rateEmail:'该邮箱请求过于频繁，请稍后再试。',rateIp:'当前网络请求过于频繁，请稍后再试。',rateDevice:'当前设备请求过于频繁，请稍后再试。',
+ capFailed:'验证失败，请重试。',capLoad:'验证加载失败，请重试。',capCool:'验证次数过多，请稍后再试。',resetTicket:'重置会话已过期，请重新验证工作邮箱。',newCode:'已请求新验证码，旧验证码已失效。',
+ signin:'登录',save:'保存密码',next:'继续',send:'发送验证码',back:'返回登录',retry:'重试',cancel:'取消',show:'显示密码',hide:'隐藏密码',
+ demo:'演示数据 · 本地交互原型',review:'原型状态与评审说明',loginTitle:'登录',firstTitle:'重置初始密码',forgotTitle:'重置密码',newTitle:'设置新密码',
+ firstSub:'首次使用前，请设置新密码以进入运营端。',forgotSub:'验证工作邮箱后，设置新的登录密码。',loginSub:'请使用技术人员提供的工作账号登录。',
+ ruleLength:'8–20 个字符',ruleComplex:'至少 1 个英文字母和 1 个数字',locked:'账号暂时锁定',lockExplain:'锁定期间无法登录或重置密码，请等待锁定到期。',lockTier:'若再次触发锁定，锁定时间会更长。',
+ awaiting:'正在等待响应…',submitting:'正在提交…',loading:'正在加载…',verify:'安全校验',slide:'拖动滑块完成拼图',capVerified:'验证通过',
+ capTrouble:'遇到困难？点击右上角刷新换一张。',capRefresh:'换一张',
+ capKeys:'拖动手柄，或聚焦手柄后用方向键调整，然后按回车。',accountInfo:'账号信息',preferences:'偏好信息',
+ name:'姓名',status:'账号状态',active:'正常',change:'修改',lang:'界面语言',timezone:'时区',reauthTitle:'验证当前密码',reauthSub:'修改密码前，请先确认是你本人操作。',
+ changeTitle:'修改密码',reauthOk:'身份验证通过，请设置新密码。',exitTitle:'继续保持登录？',exitSub:'当前会话将在 2 分钟内到期。',stay:'继续保持登录',signoutNow:'立即退出',
+ boundary:'消息通知由消息通知模块提供。',boundarySub:'此评审文件覆盖账户与登录流程，消息页面不在本次交付范围。',overview:'总览',
+ support:'无法访问工作邮箱？请联系技术人员。',pwReset:'密码已重置，全部会话已退出，请重新登录。',empty:'暂无可用的账号信息。',loadFail:'账号信息加载失败。',refresh:'重新加载账号信息'}
+};
+/* ==========================================================================
+   prd.js — 每页的 PRD 摘录（面向前端开发，紫色面板，不属于产品界面）
+   四类：fields 字段与校验 · rules 关键业务规则 · states 状态与异常分支 · copy 中英文案
+   全部取自 WS-308 定稿 PRD（仓库 financial-service-platform/prd/v1.0-账户与登录/，
+   v1.0-账户与登录-PRD.md + 01-国际化基线.md，commit 6c5dc63）：
+   编号体系 P-O01～P-O06 / C-O01～C-O12 / F-O01～F-O16 / D-O01～D-O24 /
+   N-O01～N-O21 / E-O01 / M-O01～M-O02 / AC-O01～AC-O108。
+   面板固定中文，只摘录本页用得到的条目，不是全量 PRD。体例同本平台协议管理原型。
+   ========================================================================== */
+const PRD={
+'P-O01':{
+ title:'P-O01 运营端登录页',
+ src:'WS-308 · V1.0 · 主文档 5.1 页面清单 / 5.2 页面流 / 5.4 路由 · 7.2 登录 · 8.1 字段总表 · 11.1 会话 / 11.2 锁定 · 15.2 / 15.7',
+ fields:[
+  ['work_email','string · 必填','RFC 5322 基本格式；长度 ≤ 254；前后空格自动去除；大小写不敏感（存储小写）。**即登录账号**，本平台内全局唯一，不可自助修改。'],
+  ['password','string · 必填','规则见 8.2；输入框右侧带**眼睛图标**切换显示/隐藏，图标须有 `aria-label`（AC-O14）。']
+ ],
+ rules:[
+  ['F-O01 / D-O07','**工作邮箱 + 密码是唯一登录方式**。无验证码登录、无钱包登录、无第三方登录、无自动建号、无协议勾选行、无「记住我」、无注册入口（AC-O09～AC-O12）。'],
+  ['D-O01 / AC-O01','运营端账号与资产管理端账号**完全独立**：不共享数据、不跨平台单点登录、不做同步。'],
+  ['7.2 / D-O12','失败提示统一为「邮箱或密码不正确」；**邮箱不存在与密码错误的文案与响应时间都不可区分**（AC-O13）。'],
+  ['7.2 / AC-O16','登录成功后：`must_reset_password = true` → 立即跳 P-O02；否则 → **P-O06 总览页**。运营端**不做**「按认证状态选落地页」（AC-O99）。'],
+  ['F-O07 / N-O04','连续密码失败达阈值即锁定，时长按阶梯 N-O01 / N-O02、归零窗口 N-O03；**锁定判定必须置于凭据校验之后**（防枚举）。锁定期间登录与忘记密码全通道不可用，无提前解除通道（D-O09、AC-O59）。'],
+  ['F-O15 / AC-O17','**首次登录成功时**按浏览器推断并写入 `timezone`，推断失败兜底 `UTC`（分册第 4 节的运营端口径）。'],
+  ['AC-O102～AC-O104','未登录访问任何 `/ops/*` 受保护路由 → `/ops/login?redirect=<URL 编码后的原路径>`，登录后回跳；`redirect` 不以 `/ops/` 开头则**丢弃**并落 `/ops/overview`（防开放重定向）；`must_reset_password = true` 时一律被 P-O02 拦截、`redirect` 保留。']
+ ],
+ states:[
+  ['凭据错误','统一提示；达 N-O05 次失败后才开始提示剩余次数（AC-O61）。'],
+  ['账号锁定','**在本页内以状态态展示**，不是独立页面：剩余时间实时倒计时，归零后表单自动恢复可用、无需刷新；第 1 档附带「若再次触发，锁定时间会更长」（AC-O61～AC-O62）。'],
+  ['初始密码已过期','提示联系技术人员重新发放，**且不建立会话**（AC-O07）。'],
+  ['账号已停用','`status = disabled` 登录被拒并提示联系技术人员（AC-O15）。'],
+  ['IP 触发人机验证','同一 IP 1 小时内累计失败达 N-O06 → 后续登录提交**强制先过滑块 C-O01**；**不做 IP 封禁**（AC-O63）。'],
+  ['超时 / 提交失败','按钮恢复可点，**保留已填内容**；倒计时以服务端剩余秒数为准（9.3 弱网行）。']
+ ],
+ copy:[
+  ['登录失败（统一）','Incorrect email or password.','邮箱或密码不正确。'],
+  ['初始密码过期','Your initial password has expired. Contact technical support to have it reissued.','初始密码已过期，请联系技术人员重新发放。'],
+  ['账号停用','This account has been disabled. Contact support for help.','该账号已被停用，请联系技术人员。']
+ ]
+},
+'P-O02':{
+ title:'P-O02 首登强制重置密码页',
+ src:'WS-308 · V1.0 · 7.3 首登强制重置 · 8.2 密码规则 · 8.4 线框级说明 · 9.1 状态机 · 10 权限 · 15.3',
+ fields:[
+  ['current_password','string · 必填','本页中即技术线下交付的**初始密码**。'],
+  ['password / password_confirm','string · 必填','8–20 字符、至少 1 个英文字母 + 1 个数字、不接受中间空格；展示**两条实时校验清单**，**不展示强弱分档**（AC-O35～AC-O38）。']
+ ],
+ rules:[
+  ['F-O02 / D-O08','**双重拦截**：登录成功后立即跳本页；前端路由守卫拦截所有其他运营端路由，**且服务端对所有运营端业务接口做同样拦截**——前端拦截不可作为唯一防线（AC-O19～AC-O20）。'],
+  ['7.3 / AC-O21～AC-O22','页面上**无任何勾选项**；只保留「退出登录」与语言切换两个逃生出口；无左侧菜单、无面包屑。'],
+  ['F-O10 / D-O14','新密码不得与原密码相同，**另不得与初始密码相同**；两项比对均由**服务端**在提交后返回，前端不做预判（AC-O23、AC-O39）。初始密码哈希单独留存、**不可用于登录校验**（AC-O40）。'],
+  ['9.1 / F-O06','成功后 `must_reset_password = false`、`status = active` → **全部会话失效（含当前设备）** → 跳回 P-O01 重新登录（AC-O24）。'],
+  ['E-O01 / AC-O25','触发密码变更通知，`{password_action}` 取 `reset / 重置`；触发时点为**新密码哈希落库之后、会话批量失效之前**（AC-O69）。']
+ ],
+ states:[
+  ['受限会话','只能访问 P-O02、退出登录与语言切换；其余运营端接口服务端一律拒绝。'],
+  ['当前密码错误','提示当前密码不正确，并**计入登录失败计数**（与登录共用同一计数器，11.2）。'],
+  ['与初始密码相同','服务端拒绝并返回对应文案，**保留已填内容**。'],
+  ['两次不一致','提示两次输入的密码不一致。']
+ ],
+ copy:[
+  ['与初始密码相同','Your new password must be different from the initial password.','新密码不能与初始密码相同。']
+ ]
+},
+'P-O03':{
+ title:'P-O03 忘记密码 · 提交工作邮箱',
+ src:'WS-308 · V1.0 · 7.4 忘记密码 · 9.2 流程 / 9.3 异常总表 · 11.3 滑块与发码限频 · 12.3 M-O02 · 15.4 / 15.7',
+ fields:[
+  ['work_email','string · 必填','同 8.1；页面标题与提示在发码阶段保持中性，**不透露该邮箱是否为有效运营端账号**（AC-O27、AC-O34）。'],
+  ['code','string · 必填','**6 位数字**；仅接受数字输入；粘贴自动去除空格与连字符。有效期 N-O11，单个验证码最大错误次数 N-O12。']
+ ],
+ rules:[
+  ['F-O03 / 7.4','流程固定为：工作邮箱 → **滑块 C-O01** → 限频校验 → 发送验证码 M-O02 → 输入验证码 →（校验通过后）**锁定判定** → P-O04。'],
+  ['F-O08 / AC-O28～AC-O30','点「Send code」**必先过滑块**；**服务端**校验票据存在、未过期、未使用，且绑定的邮箱与用途与本次请求完全一致，跨邮箱或跨用途一律拒绝。服务端校验是唯一防线。'],
+  ['F-O09 / AC-O64','发码限频三个维度：**邮箱 N-O08 / IP N-O09 / 设备 N-O10**，另有同邮箱最小发送间隔 N-O07。超限提示同样不区分该邮箱是否已有账号。'],
+  ['9.3','邮件服务商返回失败时，**允许立即重试 1 次且不计入限频额度**。'],
+  ['D-O09 / AC-O31','**锁定判定在验证码校验之后**：锁定期间用户仍会收到验证码邮件，输入正确验证码后才被告知账号锁定、流程终止。提前判定会重新打开邮箱枚举通道。'],
+  ['12.3 M-O02','验证码邮件：一封信含中英两份、**英前中后**，HTML + 纯文本双版本；**验证码不进主题行与预览文本**；**不放一键登录链接**（AC-O73）。']
+ ],
+ states:[
+  ['已发码','中性提示 + 重发倒计时（N-O07）。'],
+  ['验证码错误 / 过期 / 单码次数耗尽','Toast 提示，**不透露账号是否存在**；耗尽后须重新获取验证码。'],
+  ['邮箱 / IP / 设备限频','不发码，返回剩余冷却秒数或提示稍后再试。'],
+  ['滑块失败 / 加载失败 / 冷却','连续失败达 N-O13 进入冷却；票据无效或已使用时前端重新弹出滑块。'],
+  ['账号处于锁定','正确验证码后提示锁定与本次剩余时间，流程终止。'],
+  ['收不到邮件','运营端**无替代自助途径**，只能联系技术人员重新发放初始密码（9.3）。']
+ ],
+ copy:[
+  ['中性发码提示','If this email belongs to an operations account, a verification code has been sent.','若该邮箱为运营端账号，验证码已发送。']
+ ]
+},
+'P-O04':{
+ title:'P-O04 忘记密码 · 设置新密码',
+ src:'WS-308 · V1.0 · 7.4 第 4～5 步 · 8.2 密码规则 · 9.2 状态机 · 15.4 / 15.5',
+ fields:[
+  ['password / password_confirm','string · 必填','规则同 8.2；带复杂度**实时校验清单**，全绿方可提交。'],
+  ['重置票据','服务端签发','验证码校验通过后签发；过期须重新验证工作邮箱。']
+ ],
+ rules:[
+  ['F-O10 / D-O14','**双重比对**：不得与原密码相同、**另不得与初始密码相同**；两项均由**服务端**在提交后返回（AC-O32、AC-O39）。'],
+  ['8.2 / AC-O37','前后空格自动去除，**中间空格不被接受**；长度 8–20，至少 1 字母 + 1 数字（N-O18）。'],
+  ['F-O06 / AC-O33','成功 → **全部会话失效（含当前设备）** → 跳 P-O01 → 触发 E-O01，`{password_action}` 取 `reset / 重置`。'],
+  ['AC-O41','任何界面、日志、邮件中都不出现明文密码。']
+ ],
+ states:[
+  ['重置票据过期','提示重置会话已过期，退回 P-O03 重新验证工作邮箱。'],
+  ['与原密码 / 初始密码相同','服务端拒绝并返回对应文案，**保留已填内容**。'],
+  ['两次不一致','提示两次输入的密码不一致。'],
+  ['账号在此期间被锁定','流程终止，回到 P-O01 的锁定状态态。']
+ ]
+},
+'P-O05':{
+ title:'P-O05 运营端账户设置（单页 + tab 锚点）',
+ src:'WS-308 · V1.0 · 5.3 已登录信息架构 · 7.5 账户设置 · 8.4 线框级说明 · 11.1 会话失效 · 12.3 退信处理 · 15.6 / 15.7 · 分册 01-国际化基线 第 1 / 3 / 4 节',
+ fields:[
+  ['工作邮箱','只读','登录账号。**界面上不存在「修改邮箱」入口**；绕过前端直接调接口，服务端必须拒绝或该接口不存在（AC-O45、11.4）。'],
+  ['姓名','只读','—'],
+  ['登录密码','弹窗修改','弹窗内先做**当前密码再认证**（有效期 N-O15），再设置新密码；再认证输错**计入登录失败计数**（AC-O46～AC-O47）。'],
+  ['账号状态','只读','取值见 9.4：`pending_reset` / `active` / `locked` / `disabled`。'],
+  ['locale','下拉 · 必填','`en` / `zh-CN`，默认 **`en`**，**不读浏览器语言**；即时生效并双态持久化（分册第 1、3 节）。'],
+  ['timezone','下拉 · 必填','IANA 时区标识；首次登录推断写入、兜底 `UTC`；界面所有时间点**必须带时区标注**，24 小时制（分册第 4 节，AC-O90）。']
+ ],
+ rules:[
+  ['F-O04 / 7.5','单页 + tab **锚点滚动**（点击 tab 整页滚动到对应区块）；修改密码在本页内以**弹窗**完成，弹窗不产生面包屑层级（AC-O43、AC-O46）。'],
+  ['F-O05 / AC-O42 / AC-O106','进入方式为右上角账号下拉 **C-O11**；下拉内「消息中心」排在「账户设置」**之上**；铃铛 **C-O20** 渲染在语言切换器 **C-O04** 左侧、账号下拉之前。'],
+  ['D-O21 / AC-O50','账号信息**本期不扩充**：只有工作邮箱 / 姓名 / 登录密码 / 账号状态四项，**不加部门、岗位等运营字段**。'],
+  ['F-O06 / AC-O48','改密成功 → 全部会话失效 → 跳登录页 → 触发 E-O01，`{password_action}` 取 `changed / 修改`。'],
+  ['12.3 / AC-O77','硬退信累计达 N-O21 后，在本页**工作邮箱条目下**展示告知性提示；**不解绑邮箱、不改账号状态**，送达失败也不阻断业务操作（AC-O76）。'],
+  ['F-O14 / AC-O88','本地手动偏好与账号偏好冲突时，以**设置时间较晚**的一方为准并回写另一侧；退出登录后本地语言偏好保留（AC-O89）。'],
+  ['E-O01 接入 / AC-O78','站内信负载：`end = fs_ops`、`recipient_scope = admin_account`、`recipient_admin_id = ops_admin_id`、`category = security`、`biz_type = account.password.changed`、`page_target = P-O05`，**不填 `biz_ref`**；`dedupe_key = account.password.changed:{ops_admin_id}:{password_changed_at}`（AC-O79）。展示层归 WS-309。']
+ ],
+ states:[
+  ['加载中 / 空数据 / 加载失败','账号信息取不到时的三态，失败态提供重试。'],
+  ['无权限','非 `active` 状态不得进入本页（第 10 章权限矩阵）。'],
+  ['硬退信提示','工作邮箱条目下的告知性提示（N-O21）。'],
+  ['偏好保存失败','**保留用户当前选择**并提供重试，不回滚选择。'],
+  ['会话续期确认','会话到期前 **2 分钟**弹出，提供「继续保持登录」与「立即退出」（AC-O53）。'],
+  ['无操作登出 / 会话过期 / 轮询 401 / 其他设备改密 / 账号被停用','统一走 **C-O05 会话失效**处理：清本地登录态（**语言偏好保留**）、中止进行中请求、Toast 提示、跳登录页并携带原路径；多标签页一并失效（AC-O54～AC-O57、AC-O108）。']
+ ],
+ copy:[
+  ['tab','Account information / Preferences','账号信息 / 偏好信息'],
+  ['无操作登出','You were signed out due to inactivity.','因长时间未操作，已自动退出登录。'],
+  ['改密后','Your password has changed. All sessions have been signed out. Please sign in again.','密码已修改，全部会话已退出，请重新登录。']
+ ]
+},
+'P-O06':{
+ title:'P-O06 总览页（本模块只出壳子）',
+ src:'WS-308 · V1.0 · 5.1 页面清单 · 5.3 已登录信息架构 · 5.4 路由 · 11.1 会话与轮询口径 · 15.10 / 15.11',
+ fields:[
+  ['—','本页无业务字段','**本模块只出壳子**，页面内容归运营端后续业务需求。']
+ ],
+ rules:[
+  ['5.1 / AC-O16','本页是登录成功且 `must_reset_password = false` 时的**落地目标**，同时作为左侧菜单项存在。PRD 原文要求壳子中给出**简短说明文字而非完全空白**；**本原型自 2026-09-10 起按需求方指示改为完全空白，与该句不一致，待 PRD 侧裁定**（原型不代改 PRD）。'],
+  ['5.3','左侧菜单本期只有「总览」一项；业务菜单项由运营端后续业务模块各自登记，**本模块不预先编造菜单项**。'],
+  ['AC-O97 / D-O24','运营端页面总数为 **6 个**（P-O01～P-O06）。消息中心 `P-O20` / 消息详情 `P-O21` 与铃铛 `C-O20` 归 **WS-309**，本模块只提供挂载位，不实现消息中心。'],
+  ['D-O10 / N-O16','会话有效期 **2 小时**、**30 分钟无操作自动登出**、**不提供「记住我」**；到期前 2 分钟弹出续期确认弹窗（AC-O51～AC-O53）。'],
+  ['11.1 / AC-O107～AC-O108','**未读数轮询不得计为「用户操作」**，不重置 30 分钟无操作计时；轮询遇 401 与其他接口一视同仁触发统一失效处理，**不得静默忽略**。']
+ ],
+ states:[
+  ['续期确认 / 无操作登出 / 轮询 401','与 P-O05 共用同一套会话失效处理。'],
+  ['业务内容','**本期不做**，属运营端后续业务需求（AC-O97 的范围边界）。']
+ ]
+}
+};
+function t(k){return (tx[S.lang]||tx.en)[k]||CF.t(k)}
+function get(k){try{return JSON.parse(localStorage.getItem(KEY+k))}catch{return null}}
+function put(k,v){try{localStorage.setItem(KEY+k,JSON.stringify(v))}catch{}}
+function clock(){return Date.now()}
+function remaining(until){return Math.max(0,Math.ceil((until-clock())/1000))}
+function mmss(n){return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
+function btn(key,act,primary=false,disabled=false,value=''){return '<button type="button" class="btn'+(primary?' primary':'')+'" data-act="'+act+'" data-v="'+E(value)+'" '+(disabled?'disabled':'')+'>'+t(key)+'</button>'}
+function banner(){return S.message?'<div class="ops-status">'+note(S.message==='sent'?'':'red',E(t(S.message)))+'</div>':''}
+function notify(key,kind='danger'){
+ S.toasts=[];S.toastKey=key;CF.toast(kind==='ok'?'success':kind,t(key));
+}
+function input(id,key,type='text',opts={}){
+ let err=S.errors[id],show=S.shown[id],password=type==='password';
+ const tag='<input class="inp'+(opts.cls?' '+opts.cls:'')+(err?' err':'')+'" id="'+id+'" data-f="'+id+'" type="'+(password&&show?'text':type)+'" value="'+E(S.form[id]||'')+'" '+
+ 'aria-required="true" aria-invalid="'+!!err+'" aria-describedby="'+id+'-help" autocomplete="'+(opts.autocomplete||'off')+'" '+
+ (opts.max?'maxlength="'+opts.max+'" ':'')+(id==='code'?'inputmode="numeric" ':'')+(opts.placeholder?'placeholder="'+E(opts.placeholder)+'" ':'')+'>';
+ // opts.trail puts a control beside the input on one row, using the shared
+ // .inp-row layout from _shared/base.css — no module-local layout for this.
+ const body=password?'<div class="inp-affix">'+tag+'<button type="button" class="affix" data-act="eye" data-v="'+id+'" aria-label="'+t(show?'hide':'show')+'">'+CF.ICO[show?'eyeOff':'eye']+'</button></div>'
+  :opts.trail?'<div class="inp-row">'+tag+opts.trail+'</div>':tag;
+ return '<div class="field"><label for="'+id+'">'+t(key)+'</label>'+body+
+ '<p class="ops-helper'+(err?' ops-error':'')+'" id="'+id+'-help" '+(err?'role="alert"':'')+'>'+E(err?t(err):(opts.hint||''))+'</p></div>';
+}
+function resendLabel(n){return L('Resend in '+n+'s',n+' 秒后重发')}
+function sendBtn(secs){return '<button type="button" class="btn" data-act="send" data-count="resend" '+(secs>0||S.busy?'disabled':'')+'>'+(secs>0?resendLabel(secs):t('send'))+'</button>'}
+function rules(){const v=(S.form.newPassword||'').trim();if(!v)return '<div id="pwd-rules"></div>';return '<ul class="ops-rules" id="pwd-rules" aria-live="polite">'+[[v.length>=8&&v.length<=20,'ruleLength'],[/[a-z]/i.test(v)&&/\d/.test(v)&&! /\s/.test(v),'ruleComplex']].map(([ok,k])=>'<li class="'+(ok?'ops-rule-ok':'')+'"><span aria-hidden="true">'+(ok?'✓':'○')+'</span>'+t(k)+'</li>').join('')+'</ul>'}
+function submit(key,act){return '<button type="submit" class="btn primary block" data-submit="'+act+'" '+(S.busy?'disabled aria-busy="true"':'')+'>'+t(S.busy?(S.busy==='wait'?'awaiting':S.busy==='loading'?'loading':'submitting'):key)+'</button>'}
+function form(body,act){return '<form class="ops-form" data-form="'+act+'" novalidate>'+body+'</form>'}
+const common=[['default','Default','默认'],['loading','Loading','加载中'],['wait','Awaiting response','异步等待'],['submitting','Submitting','提交中'],['failure','Submission failed','提交失败'],['timeout','Timeout / retry','超时重试']];
+const states={
+ 'P-O01':common.concat([['incorrect','Wrong credentials','凭据错误'],['third','Third failure','第 3 次失败'],['locked1','First lock · 10 min','首次锁定 · 10 分钟'],['locked2','Repeat lock · 30 min','再次锁定 · 30 分钟'],['lockEnding','Lock ends in 5 sec','5 秒后解锁'],['expired','Initial password expired','初始密码过期'],['disabled','Account disabled','账号停用'],['ipChallenge','IP challenge required','IP 触发人机验证']]),
+ 'P-O02':common.concat([['sameInitial','Same as initial password','新密码等于初始密码'],['mismatch','Passwords mismatch','两次不一致'],['currentBad','Wrong current password','当前密码错误']]),
+ 'P-O03':common.concat([['sent','Code sent','已发码'],['codeBad','Invalid / expired code','验证码错误或过期'],['codeMany','Code attempt limit','单码次数耗尽'],['rateEmail','Email rate limit','邮箱限频'],['rateIp','IP rate limit','IP 限频'],['rateDevice','Device rate limit','设备限频'],['codeService','Email service failed','邮件服务失败'],['ticket','Slider ticket expired','滑块票据失效'],['lockedCode','Locked account reset','锁定账号找回'],['capLoad','Slider load failed','滑块加载失败'],['capCool','Slider cooldown','滑块冷却']]),
+ 'P-O04':common.concat([['same','Same as current','新密码等于原密码'],['sameInitial','Same as initial','新密码等于初始密码'],['mismatch','Passwords mismatch','两次不一致'],['resetTicket','Reset ticket expired','重置票据过期']]),
+ 'P-O05':[['default','Default','默认'],['loading','Loading','加载中'],['empty','No account data','空数据'],['loadFail','Load failed','加载失败'],['noPermission','Access denied','无权限'],['bounce','Email delivery warning','邮箱硬退信提示'],['saveFailed','Preference save failed','偏好保存失败'],['renew','Session expiry warning','续期确认'],['idle','Inactivity sign-out','无操作退出'],['session','Session expired','会话过期'],['poll401','Polling returned 401','轮询返回 401'],['changed','Password changed elsewhere','其他设备改密'],['disabled','Account disabled','账号被停用']],
+ 'P-O06':[['default','Default','默认'],['renew','Session expiry warning','续期确认'],['idle','Inactivity sign-out','无操作退出'],['poll401','Polling returned 401','轮询返回 401']]
+};
+function review(){
+ if(!states[S.page])return '';
+ return '<details class="ops-review" '+(S.review?'open':'')+'><summary>'+t('review')+'</summary><div class="ops-review-body">'+
+ '<label for="scenario">'+L('Page state (simulated response)','页面状态（模拟响应）')+'</label><select class="inp" id="scenario" data-f="scenario">'+states[S.page].map(x=>'<option value="'+x[0]+'" '+(S.st===x[0]?'selected':'')+'>'+E(x[S.lang==='en'?1:2])+'</option>').join('')+'</select>'+
+ '<p>'+L('All data is fictional. No requests are sent. Use the credentials in the attached review note.','全部为演示数据，不发送请求。演示凭据见随附评审说明。')+'</p>'+
+ '<p class="mono">'+S.page+' · '+E(paths[S.page])+'</p>'+
+ (S.busy?btn('retry','resume'): '')+
+ (S.events.length?'<details><summary>'+L('Simulated notification output','模拟通知输出')+'</summary><pre class="ops-pre">'+E(JSON.stringify(S.events,null,2))+'</pre></details>':'')+
+ '</div></details>';
+}
+function focus(body){return '<header class="focus-top"><div class="brand ops-brand"><div class="brand-mark">FS</div><div><div class="brand-name">'+L('Financial Services','金融服务平台')+'</div><div class="brand-sub">'+t('adminConsole')+'</div></div></div><div class="ops-spacer"></div>'+(S.pending?btn('signOut','logout'):'')+CF.prdBtn()+CF.langSwitcher()+'</header><main class="focus-body"><div class="focus-col">'+body+review()+'</div></main><footer class="focus-foot"><span class="ops-muted">'+t('demo')+'</span><span class="ops-muted">'+L('Operations · Account & sign-in','运营端 · 账户与登录')+'</span></footer>'}
+function card(title,sub,body){return '<h1 class="page-title ops-title" tabindex="-1">'+t(title)+'</h1>'+(sub?'<p class="page-desc">'+t(sub)+'</p>':'')+'<div class="card ops-card-gap"><div class="card-b">'+body+'</div></div>'}
+function back(){return '<div class="ops-center"><button class="btn-link" data-act="go" data-v="P-O01">'+t('back')+'</button></div>'}
+function locked(){return '<div class="card"><div class="card-b ops-lock"><div class="ops-lock-icon">'+CF.ICO.lock+'</div><h1 class="page-title" tabindex="-1">'+t('locked')+'</h1><div class="ops-count" data-count="lock">'+mmss(remaining(S.lockUntil))+'</div><p>'+t('lockExplain')+'</p>'+(S.lockTier===1?note('amber',t('lockTier')):'')+'</div></div>'}
+function renderFocus(){
+ guard();
+ if(S.lockUntil>clock()&&S.page==='P-O01')return focus(locked());
+ if(S.page==='P-O01')return focus(card('loginTitle','loginSub',banner()+form(input('email','email','email',{max:254,autocomplete:'username',placeholder:'name@company.com'})+input('password','password','password',{autocomplete:'current-password'})+submit('signin','login'),'login')+'<div class="ops-center"><button class="btn-link" data-act="go" data-v="P-O03">'+L('Forgot password?','忘记密码？')+'</button></div>'));
+ if(S.page==='P-O03'){
+ const secs=remaining(S.resendAt);
+ return focus(card('forgotTitle','forgotSub','<div class="steps"><div class="s" data-on="1"><span class="n">1</span>'+L('Verify email','验证邮箱')+'</div><span class="ln"></span><div class="s"><span class="n">2</span>'+L('New password','设置新密码')+'</div></div>'+banner()+form(input('email','email','email',{max:254,autocomplete:'username'})+input('code','code','text',{max:12,autocomplete:'one-time-code',cls:'mono',placeholder:'000000',trail:sendBtn(secs)})+submit('next','verifyCode'),'verifyCode')+back()+'<p class="ops-readout">'+t('support')+'</p>'));
+ }
+ const first=S.page==='P-O02';
+ return focus(card(first?'firstTitle':'newTitle',first?'firstSub':'',banner()+form((first?input('current','current','password',{autocomplete:'current-password'}):'<div class="steps"><div class="s" data-done="1"><span class="n">✓</span>'+L('Verify email','验证邮箱')+'</div><span class="ln"></span><div class="s" data-on="1"><span class="n">2</span>'+L('New password','设置新密码')+'</div></div>')+input('newPassword','newPassword','password',{autocomplete:'new-password'})+rules()+input('confirm','confirm','password',{autocomplete:'new-password'})+submit('save','reset'),'reset')+(first?'':back())));
+}
+function row(label,value,action=''){return '<div class="row"><div class="row-main"><div class="row-k">'+t(label)+'</div><div class="row-v">'+value+'</div></div>'+ (action?'<div class="row-act">'+action+'</div>':'')+'</div>'}
+function account(){
+ const header=CF.pageHead(t('accountSettings'),'',CF.prdBtn());
+ if(['loading','empty','loadFail','noPermission'].includes(S.st)){
+  const body=S.st==='loading'?'<div role="status">'+t('loading')+'<div class="ops-skeleton"></div><div class="ops-skeleton ops-skeleton-short"></div><div class="ops-skeleton"></div></div>':note(S.st==='noPermission'?'red':'',t(S.st));
+  return header+'<div class="card"><div class="ops-wait">'+body+'<div class="ops-gap">'+btn('refresh','reload')+'</div></div></div>'+review();
+ }
+ return header+'<div class="anchors"><button class="anchor" data-act="anchor" data-v="accountInfo">'+t('accountInfo')+'</button><button class="anchor" data-act="anchor" data-v="preferences">'+t('preferences')+'</button></div>'+
+ '<section id="accountInfo"><h2 class="sec-title">'+t('accountInfo')+'</h2><div class="rows">'+row('email','<span class="mono">'+EMAIL+'</span><p class="hint">'+L('Sign-in account. Read-only.','登录账号，只读。')+'</p>'+(S.st==='bounce'?note('amber',t('bounce')):''))+row('name',L('Demo Operations Administrator','演示运营管理员'))+row('password','••••••••',btn('change','changePassword'))+row('status','<span class="pill green">'+t('active')+'</span>')+'</div></section>'+
+ '<section id="preferences" class="ops-section"><h2 class="sec-title">'+t('preferences')+'</h2><div class="rows">'+
+ row('lang','<label class="sr-only" for="locale">'+t('lang')+'</label><select class="inp ops-pref" id="locale" data-f="locale"><option value="en" '+(S.lang==='en'?'selected':'')+'>English</option><option value="zh" '+(S.lang==='zh'?'selected':'')+'>简体中文</option></select>')+
+ row('timezone','<label class="sr-only" for="timezone">'+t('timezone')+'</label><select class="inp ops-pref" id="timezone" data-f="timezone">'+timezoneOptions()+'</select><p class="hint mono" title="'+E(S.tz)+'">'+L('Example: ','示例：')+E(CF.fmtNow(true))+'</p>')+'</div>'+
+ (S.prefBusy?'<p role="status" class="ops-readout">'+t('awaiting')+'</p>':'')+(S.prefFailed?'<div class="ops-gap">'+note('amber',t('saveFailed'))+btn('retry','savePrefs')+'</div>':'')+'</section>'+review();
+}
+// The shared formatter (_shared/shell.js tzOff) models these zones only; offering a zone
+// it cannot compute would print a wrong (UTC±n) label beside the zone name.
+const ZONES=['UTC','Asia/Shanghai','Asia/Hong_Kong','Asia/Singapore','Europe/London','America/New_York'];
+function timezoneOptions(){return ZONES.map(z=>'<option '+(S.tz===z?'selected':'')+'>'+z+'</option>').join('')}
+function content(){
+ guard();
+ if(S.page==='P-O05')return account();
+ // P-O06 is the console shell only: top bar, the single "Overview" menu item and the
+ // page title. Body intentionally empty — business content belongs to later operations
+ // modules. NOTE: PRD 5.1 asks the shell to carry a short line of text rather than be
+ // completely blank; emptying it is a 2026-09-10 instruction that knowingly departs from
+ // that sentence. Flagged for the PRD owner; not changed here.
+ if(S.page==='P-O06')return CF.pageHead(t('overview'),'',CF.prdBtn())+review();
+ return CF.pageHead(CF.pageName(S.page),'','')+'<div class="card"><div class="card-b">'+note('',t('boundary'),L('Module handoff','模块接入边界'))+'<p>'+t('boundarySub')+'</p><p class="mono">'+E(S.externalPath||paths[S.page])+'</p>'+btn('accountSettings','go',false,false,'P-O05')+'</div></div>';
+}
+function modal(title,body,footer,extra){return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-h"><b id="modal-title">'+t(title)+'</b>'+(extra||'')+'<button class="modal-x" type="button" data-act="close" aria-label="'+CF.t('close')+'">✕</button></div><div class="modal-b">'+body+'</div>'+(footer?'<div class="modal-f">'+footer+'</div>':'')+'</div></div>'}
+/* C-O01 puzzle slider. Visual form and markup follow the asset-platform C-01
+   (canvas puzzle + drag track + "new puzzle"); the verification itself is this
+   module's own — the asset file renders the knob as role="img" and lets Continue
+   pass unconditionally, which would drop both the real check and the keyboard path
+   the previous range input had. Business rules are unchanged: every send is gated on
+   this, and N-O13 consecutive failures start the cooldown (F-O03 / F-O08 / 11.3). */
+const CAP={w:328,h:180,piece:46,knob:48};
+function capMax(){return CAP.w-CAP.knob}
+function capView(){
+ if(S.capError==='capLoad')return 'load';
+ if(remaining(S.capUntil))return 'cool';
+ if(S.capOk)return 'ok';
+ if(S.capError==='capTrouble')return 'trouble';
+ if(S.capError==='capFailed')return 'fail';
+ return 'idle';
+}
+function captcha(){
+ const view=capView(),cool=remaining(S.capUntil),x=S.capX||0,locked=['load','cool','ok'].includes(view);
+ const msg={ok:['ok','capVerified'],fail:['bad','capFailed'],trouble:['bad','capTrouble'],
+  cool:['bad','capCool'],load:['bad','capLoad'],idle:['','']}[view];
+ return modal('verify',
+  '<div class="cap-canvas"><canvas id="capBg" width="'+CAP.w+'" height="'+CAP.h+'"></canvas>'+
+  '<canvas id="capPiece" class="cap-piece" width="'+CAP.w+'" height="'+CAP.h+'" style="transform:translateX('+x+'px)"></canvas></div>'+
+  '<div class="cap-track'+(view==='ok'?' ok':['fail','trouble','cool','load'].includes(view)?' bad':'')+(view==='cool'?' cool':'')+'">'+
+  '<div class="cap-fill" style="width:'+(x+CAP.knob)+'px"></div>'+
+  '<span class="tip">'+(view==='idle'?t('slide'):'')+'</span>'+
+  '<div class="cap-knob" id="capKnob" style="transform:translateX('+x+'px)" role="slider" tabindex="'+(locked?-1:0)+'"'+
+  (locked?' aria-disabled="true"':'')+' aria-label="'+t('slide')+'" aria-valuemin="0" aria-valuemax="'+capMax()+'" aria-valuenow="'+x+'">\u203a</div></div>'+
+  '<p class="cap-msg '+msg[0]+'" role="status">'+(msg[1]?E(t(msg[1])):'')+(view==='cool'?' <span class="mono" data-count="captcha">'+cool+'s</span>':'')+'</p>'+
+  '<p class="ops-readout ops-center">'+t('capKeys')+'</p>',
+  btn('cancel','close')+btn('next','capVerify',true,locked),
+  '<button class="modal-x" type="button" data-act="capRefresh"'+(cool?' disabled':'')+' title="'+t('capRefresh')+'" aria-label="'+t('capRefresh')+'">\u27f3</button>');
+}
+/* Puzzle art is generated at runtime — no external image, so the single-file
+   attachment stays network-free. Ported from the asset prototype's drawCaptcha. */
+function drawCaptcha(){
+ const bg=document.getElementById('capBg'),pc=document.getElementById('capPiece');
+ if(!bg||!pc)return;
+ const W=CAP.w,H=CAP.h,PS=CAP.piece,tx=S.capGap,ty=58;
+ let seed=S.capSeed||7;
+ const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+ const off=document.createElement('canvas');off.width=W;off.height=H;
+ const o=off.getContext('2d'),hue=212,g=o.createLinearGradient(0,0,W,H);
+ g.addColorStop(0,'hsl('+hue+',58%,74%)');g.addColorStop(1,'hsl('+((hue+52)%360)+',52%,58%)');
+ o.fillStyle=g;o.fillRect(0,0,W,H);
+ for(let i=0;i<9;i++){
+  o.globalAlpha=0.12+rnd()*0.2;o.fillStyle='hsl('+((hue+i*26)%360)+',62%,'+(52+rnd()*32)+'%)';
+  const x=rnd()*W,y=rnd()*H,w=24+rnd()*140,h=10+rnd()*90;
+  o.beginPath();o.roundRect?o.roundRect(x,y,w,h,10):o.rect(x,y,w,h);o.fill();
+ }
+ o.globalAlpha=1;
+ function path(c,px,py){
+  const rr=6,k=PS*0.22;
+  c.beginPath();c.moveTo(px+rr,py);c.lineTo(px+PS*0.42,py);
+  c.arc(px+PS*0.5,py,k,Math.PI,0,true);
+  c.lineTo(px+PS-rr,py);c.quadraticCurveTo(px+PS,py,px+PS,py+rr);
+  c.lineTo(px+PS,py+PS*0.38);c.arc(px+PS,py+PS*0.5,k,-Math.PI/2,Math.PI/2,false);
+  c.lineTo(px+PS,py+PS-rr);c.quadraticCurveTo(px+PS,py+PS,px+PS-rr,py+PS);
+  c.lineTo(px+rr,py+PS);c.quadraticCurveTo(px,py+PS,px,py+PS-rr);
+  c.lineTo(px,py+rr);c.quadraticCurveTo(px,py,px+rr,py);c.closePath();
+ }
+ const b=bg.getContext('2d');b.clearRect(0,0,W,H);b.drawImage(off,0,0);
+ b.save();path(b,tx,ty);b.fillStyle='rgba(16,24,40,.55)';b.fill();
+ b.strokeStyle='rgba(255,255,255,.75)';b.lineWidth=1.5;b.stroke();b.restore();
+ const p=pc.getContext('2d');p.clearRect(0,0,W,H);
+ p.save();path(p,0,ty);p.clip();p.drawImage(off,-tx,0);p.restore();
+ p.save();path(p,0,ty);p.strokeStyle='rgba(255,255,255,.9)';p.lineWidth=1.5;p.stroke();p.restore();
+}
+function newPuzzle(){S.capSeed=Math.floor(Math.random()*200000)+1;S.capGap=90+Math.floor(Math.random()*(capMax()-90));S.capX=0;S.capOk=false}
+function capMove(px,commit){
+ if(['load','cool','ok'].includes(capView()))return;
+ const x=Math.max(0,Math.min(capMax(),Math.round(px)));
+ S.capX=x;
+ const knob=document.getElementById('capKnob'),piece=document.getElementById('capPiece'),fill=document.querySelector('.cap-fill');
+ if(knob){knob.style.transform='translateX('+x+'px)';knob.setAttribute('aria-valuenow',x)}
+ if(piece)piece.style.transform='translateX('+x+'px)';
+ if(fill)fill.style.width=(x+CAP.knob)+'px';
+ if(commit)capVerify();
+}
+function passwordModal(){
+ const verified=S.reauthUntil>clock();
+ return modal(verified?'changeTitle':'reauthTitle','<p class="page-desc">'+t(verified?'reauthOk':'reauthSub')+'</p>'+banner()+form(verified?input('newPassword','newPassword','password',{autocomplete:'new-password'})+rules()+input('confirm','confirm','password',{autocomplete:'new-password'})+submit('save','change'):input('current','current','password',{autocomplete:'current-password'})+submit('next','reauth'),verified?'change':'reauth')+'<details class="ops-review"><summary>'+t('review')+'</summary><label for="modalScenario">'+L('Simulated submission response','模拟提交响应')+'</label><select id="modalScenario" class="inp" data-f="modalScenario">'+common.filter(x=>!['loading','submitting'].includes(x[0])).map(x=>'<option value="'+x[0]+'" '+(x[0]===S.st?'selected':'')+'>'+x[S.lang==='en'?1:2]+'</option>').join('')+'</select>'+(S.busy?btn('retry','resume'):'')+'</details>',btn('cancel','close'));
+}
+function renewModal(){return modal('exitTitle','<p>'+t('exitSub')+'</p><p class="mono" data-count="renew">'+mmss(remaining(S.expiresAt))+'</p>',btn('signoutNow','logout')+btn('stay','renew',true))}
+function error(id,key){S.errors[id]=key}
+function validateEmail(){const x=(S.form.email||'').trim().toLowerCase();S.form.email=x;if(!x){error('email','required');return false}if(x.length>254||! /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)){error('email','emailBad');return false}return true}
+function validatePassword(){const p=(S.form.newPassword||'').trim(), c=(S.form.confirm||'').trim();S.form.newPassword=p;S.form.confirm=c;if(p.length<8||p.length>20)error('newPassword','length');else if(!/[a-z]/i.test(p)||!/\d/.test(p)||/\s/.test(p))error('newPassword','complex');if(p!==c||!c)error('confirm','mismatch');return !Object.keys(S.errors).length}
+function failedLogin(field='password'){
+ S.failures++;error(field,field==='current'?'currentBad':'incorrect');S.message='incorrect';
+ if(S.failures>=5){lock();return false}
+ return true;
+}
+function lock(){if(clock()-S.lastLock>86400000)S.lockTier=0;S.lockTier++;S.lastLock=clock();S.lockUntil=clock()+(S.lockTier===1?600000:1800000);S.failures=0;S.auth=false;S.pending=false;CF.go('P-O01')}
+function request(fn){
+ if(S.busy)return;
+ const version=++taskVersion;S.busy='submit';CF.render();
+ window.setTimeout(()=>{if(version!==taskVersion)return;S.busy=false;if(['timeout','failure'].includes(S.st)){S.message=S.st;S.st='default';CF.render();return}fn();CF.render()},550);
+}
+function inferZone(){try{const z=Intl.DateTimeFormat().resolvedOptions().timeZone;return ZONES.includes(z)?z:'UTC'}catch{return 'UTC'}}
+function signedIn(initial){S.auth=true;S.pending=initial;S.role='operations_administrator';S.failures=0;S.loginAt=clock();S.expiresAt=clock()+7200000;S.lastAction=clock();S.renewShown=false;
+ const prefs=get('accountPrefs');if(!S.tzSaved){S.tz=ZONES.includes(prefs?.timezone)?prefs.timezone:inferZone();S.tzSaved=true;put('accountPrefs',{...prefs,timezone:S.tz})}
+ const manual=get('manualLocale');const winner=manual&&(!prefs?.locale||(manual.at||0)>=(prefs.at||0))?manual:prefs;
+ if(winner?.locale){S.lang=winner.locale==='zh-CN'?'zh':'en';put('manualLocale',{locale:winner.locale,at:winner.at});put('accountPrefs',{...prefs,locale:winner.locale,timezone:S.tz,at:winner.at})}
+ const dest=S.redirect; if(initial)CF.go('P-O02');else{S.redirect='';navigatePath(dest||'/ops/overview')}
+}
+function login(){S.errors={};S.message='';if(!validateEmail()||!(S.form.password||'').trim()){if(!S.form.password)error('password','required');CF.render();return}
+ if(S.st==='ipChallenge'&&!S.ipVerified){openCaptcha('login');return}
+ request(()=>{
+ const password=S.form.password.trim(), known=S.form.email===EMAIL;
+ if(!known||!(password===currentPassword||(initialAllowed&&password===INITIAL))){failedLogin();return}
+ if(S.lockUntil>clock()){CF.go('P-O01');return}
+ if(['expired','disabled'].includes(S.st)){S.message=S.st;return}
+ signedIn(initialAllowed&&password===INITIAL);
+ });
+}
+function openCaptcha(purpose){S.capPurpose=purpose;S.capError=['capLoad','capCool'].includes(S.st)?S.st:'';if(S.capError==='capCool')S.capUntil=clock()+60000;S.capEmail=S.form.email;newPuzzle();S.modal={type:'captcha'};CF.render()}
+function send(){S.errors={};S.message='';if(!validateEmail()){CF.render();return}if(remaining(S.resendAt)||S.busy)return;openCaptcha('code')}
+function capVerify(){
+ if(['load','cool','ok'].includes(capView()))return;
+ if(Math.abs((S.capX||0)-S.capGap)>6){
+  S.capFails++;S.capX=0;S.capShake=true;
+  S.capError=S.capFails>=3?'capTrouble':'capFailed';
+  if(S.capFails>=5){S.capUntil=clock()+60000;S.capError='capCool';S.capFails=0}
+  CF.render();return;
+ }
+ // Show the verified state before continuing, as the asset-platform C-01 does.
+ S.capFails=0;S.capError='';S.capOk=true;S.capX=S.capGap;CF.render();
+ const version=++capToken;
+ window.setTimeout(()=>{if(version===capToken&&S.capOk)capPass()},650);
+}
+function capPass(){
+ S.capOk=false;S.modal=null;
+ if(S.capPurpose==='login'){S.ipVerified=true;login();return}
+ if(S.capEmail!==S.form.email){S.message='ticket';CF.render();return}
+ request(()=>{
+ if(['rateEmail','rateIp','rateDevice','codeService','ticket'].includes(S.st)){S.message=S.st;if(S.st==='codeService')S.st='default';return}
+ S.sentAt=clock();S.resendAt=clock()+60000;S.codeTries=0;S.sentTo=S.form.email;S.activeCode=S.activeCode==='123456'?'654321':'123456';S.message='sent';S.events.push({simulation:true,type:'M-O02',recipient:'o**@demo-finance.test',delivery:'not sent',format:'HTML + text/plain; English then Chinese'});
+ });
+}
+function verifyCode(){S.errors={};S.message='';if(!validateEmail()) {CF.render();return}const c=(S.form.code||'').replace(/[\s-]/g,'');S.form.code=c;if(!/^\d{6}$/.test(c)){error('code','codeFormat');CF.render();return}
+ request(()=>{
+ if(S.codeTries>=5){error('code','codeMany');notify('codeMany');return}
+ if(!S.sentAt||clock()-S.sentAt>600000||S.sentTo!==S.form.email||S.form.email!==EMAIL||c!==S.activeCode){S.codeTries++;error('code',S.codeTries>=5?'codeMany':'codeBad');notify(S.codeTries>=5?'codeMany':'codeBad');return}
+ if(S.lockUntil>clock()){S.resetTicket=0;CF.go('P-O01');return}
+ S.resetTicket=clock()+600000;S.sentAt=0;CF.go('P-O04');
+ });
+}
+function reauth(){S.errors={};S.message='';if(!S.form.current){error('current','required');CF.render();return}request(()=>{if(S.form.current.trim()!==currentPassword){failedLogin('current');return}S.failures=0;S.reauthUntil=clock()+600000;S.form={};S.message='';S.modal={type:'password'};})}
+function savePassword(kind){S.errors={};S.message='';if(kind==='reset'&&S.page==='P-O02'&&!S.form.current)error('current','required');if(!validatePassword()){CF.render();return}
+ request(()=>{
+ if(S.lockUntil>clock()){S.auth=false;CF.go('P-O01');return}
+ if(kind==='change'&&S.reauthUntil<=clock()){S.reauthUntil=0;S.message='session';return}
+ if(S.page==='P-O02'&&S.form.current.trim()!==INITIAL){failedLogin('current');return}
+ if(S.page==='P-O04'&&S.resetTicket<=clock()){S.message='resetTicket';return}
+ // Simulated service checks; these comparisons belong on the server in production.
+ if(S.form.newPassword===INITIAL){error('newPassword','sameInitial');return}
+ if(S.form.newPassword===currentPassword){error('newPassword','same');return}
+ currentPassword=S.form.newPassword;initialAllowed=false;const at=new Date().toISOString();
+ S.events.push({simulation:true,event:'E-O01',mail:'M-O01',delivery:'not sent',payload:{event_id:'demo-'+at,end:'fs_ops',recipient_scope:'admin_account',recipient_admin_id:'00000000-0000-4000-8000-000000000308',category:'security',biz_type:'account.password.changed',page_target:'P-O05',source_module:'fs-ops-login',subscribable:false,title_key:'account.password.changed.title',body_key:'account.password.changed.body',params:{time:at,device:'Demo browser / Demo OS / Demo region',password_action:kind==='change'?'change':'reset'},created_at:at,dedupe_key:'account.password.changed:00000000-0000-4000-8000-000000000308:'+at}});
+ expire(kind==='change'?'changed':'pwReset',false,true);
+ });
+}
+function safePath(p){try{if(!p||!p.startsWith('/ops/')||/[\\\x00-\x20]/.test(p))return '';const u=new URL(p,'https://prototype.invalid');return u.origin==='https://prototype.invalid'&&u.pathname.startsWith('/ops/')?u.pathname+u.search:''}catch{return ''}}
+function idFor(p){if(p.startsWith('/ops/messages/'))return 'P-O21';return Object.keys(paths).find(id=>paths[id]===p.split('?')[0])||'P-O06'}
+function navigatePath(p){
+ const target=safePath(p)||'/ops/overview';S.externalPath=target;CF.go(idFor(target));
+ // The notification module owns its pages; preserve the full requested deep link.
+ // A real anchor also lets the standalone exporter explain its module boundary.
+ if(S.auth&&!S.pending&&['P-O20','P-O21'].includes(S.page)){
+  const module=CF.MODULES[CF.OWNER[S.page]],link=document.createElement('a');
+  link.href='../'+module.dir+'/'+module.file+'#'+target;link.hidden=true;
+  document.body.append(link);link.click();link.remove();
+ }
+}
+function guard(){
+ if(S.pending&&S.page!=='P-O02'){S.page='P-O02';S.st='default';}
+ else if(!S.auth&&['P-O05','P-O06','P-O20','P-O21'].includes(S.page)){S.redirect=safePath(S.externalPath||paths[S.page]);S.page='P-O01';S.st='default';}
+ else if(S.page==='P-O02'&&!S.pending){S.page='P-O01';S.st='default';}
+ else if(S.page==='P-O04'&&!S.resetTicket){S.page='P-O03';S.st='default';S.message='resetTicket';}
+ CF.syncURL();
+}
+function expire(reason,keepRedirect=true,broadcast=true){
+ taskVersion++;S.busy=false;S.prefBusy=false;if(keepRedirect&&S.auth&&!S.pending)S.redirect=safePath(S.externalPath||paths[S.page]);
+ S.auth=false;S.pending=false;S.reauthUntil=0;S.resetTicket=0;S.sentAt=0;S.resendAt=0;S.shown={};S.ipVerified=false;
+ if(broadcast)put('revoked',{at:clock(),reason});CF.go('P-O01');notify(reason,reason==='logout'||reason==='pwReset'||reason==='changed'?'ok':'danger');
+}
+function savePrefs(){if(S.prefBusy)return;S.prefBusy=true;CF.render();const version=taskVersion;setTimeout(()=>{if(version!==taskVersion||!S.auth)return;S.prefBusy=false;if(S.st==='saveFailed'){S.prefFailed=true;S.st='default';}else{S.prefFailed=false;put('accountPrefs',{locale:S.lang==='zh'?'zh-CN':'en',timezone:S.tz,at:clock()});notify('saved','ok')}CF.render()},450)}
+function setLang(lang){S.lang=lang;S.menu=null;put('manualLocale',{locale:lang==='zh'?'zh-CN':'en',at:clock()});if(S.auth&&!S.pending)savePrefs();CF.render()}
+function scenario(k){
+ taskVersion++;capToken++;S.busy=false;S.message='';S.errors={};S.st=k;S.review=true;S.shown={};S.modal=null;S.capError='';S.capOk=false;
+ if(['loading','submitting','wait'].includes(k)&&S.page!=='P-O05')S.busy=k==='wait'?'wait':k==='loading'?'loading':'submit';
+ if(['failure','timeout','expired','disabled','codeService','rateEmail','rateIp','rateDevice','ticket','saveFailed'].includes(k))S.message=k;
+ if(k==='incorrect')S.message='incorrect';
+ if(k==='third'){S.failures=3;S.message='incorrect'}
+ if(k.startsWith('locked')||k==='lockEnding'){
+  S.lockTier=k==='locked2'?2:1;S.lockUntil=clock()+(k==='lockEnding'?5000:k==='locked2'?1800000:600000);
+ }
+ if(k==='default'&&S.page==='P-O01'){S.lockUntil=0;S.failures=0}
+ if(['sent','codeBad','codeMany','lockedCode'].includes(k)){S.form.email=EMAIL;S.sentTo=EMAIL;S.activeCode='123456';S.sentAt=clock();S.resendAt=clock()+60000;S.codeTries=k==='codeMany'?5:0;if(k==='sent')S.message='sent';if(k==='codeBad'||k==='codeMany')error('code',k)}
+ if(['same','sameInitial','mismatch','currentBad'].includes(k))error(k==='mismatch'?'confirm':k==='currentBad'?'current':'newPassword',k);
+ if(k==='resetTicket'){S.resetTicket=clock()-1;S.message=k}
+ if(k==='saveFailed')S.prefFailed=true;
+ if(k==='renew'){S.expiresAt=clock()+120000;S.renewShown=true;S.modal={type:'renew'}}
+ if(['idle','session','poll401','changed','disabled'].includes(k)&&S.auth){expire(k==='poll401'?'session':k);return}
+ CF.render();CF.syncURL();
+}
+function act(n,a,v,e){
+ if(n.disabled)return true;
+ if(a==='go'||a==='crumb'){if(v==='P-O01'&&S.auth){expire('logout');return true}return false}
+ if(a==='eye'){S.shown[v]=!S.shown[v];CF.render();return true}
+ if(a==='lang'){setLang(v);return true}
+ if(a==='logout'||a==='signout'){expire('logout',false);return true}
+ if(a==='send'){send();return true}
+ if(a==='capVerify'){capVerify();return true}
+ if(a==='capRefresh'){
+  if(remaining(S.capUntil))return true;
+  if(S.capError==='capLoad'&&S.st==='capLoad')S.st='default';
+  S.capError='';newPuzzle();CF.render();return true;
+ }
+ if(a==='resume'){S.busy=false;S.message='';S.st='default';CF.render();return true}
+ if(a==='reload'){S.st='default';S.message='';CF.render();return true}
+ if(a==='changePassword'){S.errors={};S.form={};S.message='';S.modal={type:'password'};CF.render();return true}
+ if(a==='anchor'){document.getElementById(v)?.scrollIntoView({behavior:'auto',block:'start'});return true}
+ if(a==='savePrefs'){savePrefs();return true}
+ if(a==='renew'){S.expiresAt=clock()+7200000;S.lastAction=clock();S.renewShown=false;S.modal=null;CF.render();return true}
+ if(a==='close'){
+  if(n.classList.contains('mask')&&e.target!==n)return true;
+  taskVersion++;capToken++;S.capOk=false;S.busy=false;S.modal=null;S.message='';S.errors={};S.form={};CF.render();return true;
+ }
+ return false;
+}
+function after(){
+ document.documentElement.lang=S.lang==='zh'?'zh-CN':'en';
+ document.querySelectorAll('[data-brand]').forEach(x=>x.textContent=L('Financial Services','金融服务平台'));
+ document.querySelectorAll('[data-demo]').forEach(x=>x.textContent=t('demo'));
+ // Reachable error hint after 3 failures, translated without replacing form input.
+ if(S.message==='incorrect'&&S.failures>=3&&S.failures<5){const x=document.querySelector('.ops-status .note');if(x)x.insertAdjacentHTML('beforeend','<p>'+L((5-S.failures)+' attempts remaining.','还可尝试 '+(5-S.failures)+' 次。')+'</p>')}
+ if(S.toastKey&&S.toasts.length){S.toasts[0].title=t(S.toastKey);const title=document.querySelector('.toast .tx b');if(title)title.textContent=t(S.toastKey);document.querySelector('.toasts')?.setAttribute('aria-live',S.toasts[0].kind==='danger'?'assertive':'polite')}
+ [['[data-act="menu"][data-v="lang"]','C-O04'],['[data-act="menu"][data-v="acc"]','C-O11'],['#crumb','C-O10'],['.toasts','C-O12'],['.bell','C-O20']].forEach(([selector,id])=>document.querySelector(selector)?.setAttribute('data-component',id));
+ const prdLayer=document.querySelector('.drawer.prd');
+ if(prdLayer){prdLayer.setAttribute('role','dialog');prdLayer.setAttribute('aria-modal','true');}
+ if(S.modal?.type==='captcha'){
+  document.querySelector('.modal[role="dialog"]')?.setAttribute('data-component','C-O01');
+  drawCaptcha();
+  if(S.capShake){const k=document.getElementById('capKnob');if(k){k.classList.add('shake');k.addEventListener('animationend',()=>k.classList.remove('shake'),{once:true})}S.capShake=false}
+  // A failed attempt re-renders the layer and destroys the focused handle; put focus
+  // back inside so the keyboard path survives a retry.
+  const layer=document.querySelector('.modal[role="dialog"]');
+  if(layer&&!layer.contains(document.activeElement))
+   (layer.querySelector('#capKnob[tabindex="0"]')||layer.querySelector('button:not([disabled])'))?.focus();
+ }
+ const dialog=document.querySelector('[role="dialog"]');
+ document.getElementById('app').inert=!!dialog;document.getElementById('focus').inert=!!dialog;
+ const identity=dialog?(S.drawer?'drawer:'+S.drawer:S.modal?.type+(S.reauthUntil>clock()?'verified':'')):null;
+ if(identity!==lastModal){
+  if(dialog){if(!lastModal)returnFocus=document.activeElement;
+   (dialog.querySelector('#capKnob[tabindex="0"]')||dialog.querySelector('input:not([disabled]),button:not([disabled])'))?.focus();}
+  else if(String(lastModal||'').startsWith('drawer:'))document.querySelector('[data-act="openPrd"]')?.focus();
+  else document.querySelector('[data-act="changePassword"]')?.focus();
+  lastModal=identity;
+ }
+ if(S.page==='P-O01'&&S.lockUntil>clock())S.message='';
+}
+function hashRead(){
+ const raw=location.hash.slice(1);if(!raw)return false;
+ const [path,query='']=raw.split('?');const q=new URLSearchParams(query);const id=idFor(path);
+ S.externalPath=safePath(path);S.page=id;S.st='default';
+ if(q.has('redirect'))S.redirect=safePath(q.get('redirect'));
+ guard();return true;
+}
+CF.define({id:'fs-ops-login',end:'admin',home:'P-O01',owns:Object.keys(paths).filter(id=>!['P-O20','P-O21'].includes(id)),dict:tx,
+ state:()=>({form:{},errors:{},shown:{},auth:false,pending:false,role:null,review:false,message:'',busy:false,failures:0,lockTier:0,lastLock:0,lockUntil:0,capFails:0,capUntil:0,capX:0,capGap:200,capSeed:7,capOk:false,capShake:false,sentAt:0,resendAt:0,codeTries:0,resetTicket:0,reauthUntil:0,events:[],redirect:'',externalPath:'',prefFailed:false,prefBusy:false,loginAt:0,lastAction:0,expiresAt:0,tzSaved:false}),
+ onBoot(st){S=st;S.lang=get('manualLocale')?.locale==='zh-CN'?'zh':'en';S.tz=inferZone()},
+ focus:renderFocus,content:content,prd:PRD,
+ // Platform convention: the topbar does not carry the PRD button; the module places it
+ // itself (focus header for P-O01～P-O04, page head for P-O05 / P-O06).
+ topbarPrd:false,
+ prdFoot:function(){
+  return '本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD。完整口径以 '
+   + '<code class="mono">v1.0-账户与登录-PRD.md</code> 与 <code class="mono">01-国际化基线.md</code>'
+   + '（仓库 <code class="mono">financial-service-platform/prd/v1.0-账户与登录/</code> 定稿版）为准；'
+   + '编号体系 P-O01～P-O06 / C-O01～C-O12 / F-O01～F-O16 / D-O01～D-O24 / N-O01～N-O21 / E-O01 / M-O01～M-O02 / AC-O01～AC-O108。'
+   + '铃铛 <code class="mono">C-O20</code> 与消息中心 <code class="mono">P-O20</code> / <code class="mono">P-O21</code> 归 WS-309，本模块只提供挂载位。'
+   + '面板固定中文，是给前端开发看的开发态浮层，不属于产品界面。';
+ },
+ account:()=>({avatar:'OP',ident:EMAIL,ok:true,okText:t('active'),badText:t('disabled'),settings:'P-O05'}),
+ modals:{captcha:captcha,password:passwordModal,renew:renewModal},modalLocked:()=>!!S.busy,
+ onGo(){taskVersion++;S.busy=false;S.form={};S.errors={};S.message='';S.shown={};S.review=false;S.toasts=[];S.toastKey='';S.externalPath=(S.page==='P-O21'?S.externalPath:paths[S.page]);guard();},
+ onAct:act,afterRender:after,
+ hash:{read:hashRead,build:()=> '#'+(S.page==='P-O21'?(S.externalPath||paths[S.page]):paths[S.page])+(S.page==='P-O01'&&S.redirect?'?redirect='+encodeURIComponent(S.redirect):'')}
+});
+CF.boot();
+document.addEventListener('submit',e=>{const f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();if(S.busy)return;const a=f.dataset.form;if(a==='login')login();if(a==='verifyCode')verifyCode();if(a==='reauth')reauth();if(a==='reset'||a==='change')savePassword(a)});
+document.addEventListener('input',e=>{
+ const id=e.target.dataset.f;
+ if(id&& !['scenario','locale','timezone'].includes(id)){
+  S.form[id]=id==='code'?e.target.value.replace(/[\s-]/g,'').replace(/\D/g,'').slice(0,6):e.target.value;if(id==='code')e.target.value=S.form[id];
+  if(id==='email'&&S.sentTo&&S.form.email.trim().toLowerCase()!==S.sentTo){S.sentAt=0;S.resendAt=0;S.message=''}
+  if(S.errors[id]){delete S.errors[id];e.target.setAttribute('aria-invalid','false');document.getElementById(id+'-help').textContent=''}
+  if(id==='newPassword'){const host=document.getElementById('pwd-rules');if(host)host.outerHTML=rules()}
+ }
+});
+document.addEventListener('change',e=>{const f=e.target.dataset.f;if(f==='scenario')scenario(e.target.value);if(f==='locale')setLang(e.target.value);if(f==='timezone'){S.tz=e.target.value;savePrefs()}if(f==='modalScenario'){S.st=e.target.value;S.busy=S.st==='wait'?'wait':false;S.message='';CF.render()}});
+document.addEventListener('blur',e=>{if(e.target.dataset.f==='email'&&e.target.value&&!S.busy){S.errors={};validateEmail();e.target.value=S.form.email;const err=S.errors.email;document.getElementById('email-help').textContent=err?t(err):'';e.target.setAttribute('aria-invalid',String(!!err));}},true);
+document.addEventListener('keydown',e=>{
+ if(e.key==='Tab'&&(S.modal||S.drawer)){const all=Array.from(document.querySelectorAll('[role="dialog"] button:not([disabled]),[role="dialog"] input:not([disabled]),[role="dialog"] select:not([disabled]),[role="dialog"] summary,[role="dialog"] a[href],[role="dialog"] [tabindex="0"]'));if(!all.length)return;const first=all[0],last=all[all.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}
+});
+/* C-O01 drag. The handle is a role="slider", so arrow keys / Home / End / Enter reach
+   the same verification a pointer drag does — the asset prototype's knob is role="img"
+   and has no keyboard path, and the range input this replaced did, so it is kept. */
+document.addEventListener('pointerdown',e=>{
+ const knob=e.target.closest?.('#capKnob');
+ if(!knob||knob.getAttribute('aria-disabled')==='true')return;
+ e.preventDefault();knob.focus();
+ const grab=e.clientX-(S.capX||0);let moved=false;
+ const move=ev=>{moved=true;capMove(ev.clientX-grab,false)};
+ const up=ev=>{
+  knob.removeEventListener('pointermove',move);knob.removeEventListener('pointerup',up);knob.removeEventListener('pointercancel',up);
+  if(moved)capMove(ev.clientX-grab,true);
+ };
+ try{knob.setPointerCapture(e.pointerId)}catch{}
+ knob.addEventListener('pointermove',move);knob.addEventListener('pointerup',up);knob.addEventListener('pointercancel',up);
+});
+document.addEventListener('keydown',e=>{
+ const knob=e.target.closest?.('#capKnob');
+ if(!knob||knob.getAttribute('aria-disabled')==='true')return;
+ const step=e.shiftKey?20:4,x=S.capX||0;
+ const nudge={ArrowLeft:-step,ArrowDown:-step,ArrowRight:step,ArrowUp:step,PageDown:-40,PageUp:40}[e.key];
+ if(nudge!==undefined){e.preventDefault();capMove(x+nudge,false);return}
+ if(e.key==='Home'){e.preventDefault();capMove(0,false);return}
+ if(e.key==='End'){e.preventDefault();capMove(capMax(),false);return}
+ if(e.key==='Enter'||e.key===' '){e.preventDefault();capVerify()}
+});
+['pointerdown','keydown','submit'].forEach(name=>document.addEventListener(name,()=>{S.lastAction=clock()},{passive:true}));
+window.addEventListener('storage',e=>{if(e.key===KEY+'revoked'&&S.auth){let v;try{v=JSON.parse(e.newValue)}catch{}expire(v?.reason||'session',true,false)}});
+timer=setInterval(()=>{
+ if(S.lockUntil){const n=remaining(S.lockUntil);document.querySelector('[data-count="lock"]')?.replaceChildren(document.createTextNode(mmss(n)));if(!n){S.lockUntil=0;S.st='default';CF.render()}}
+ if(S.resendAt){const n=remaining(S.resendAt);document.querySelector('[data-count="resend"]')?.replaceChildren(document.createTextNode(n?resendLabel(n):t('send')));if(!n){S.resendAt=0;CF.render()}}
+ if(S.capUntil){const n=remaining(S.capUntil);document.querySelector('[data-count="captcha"]')?.replaceChildren(document.createTextNode(n+'s'));if(!n){S.capUntil=0;S.capError='';CF.render()}}
+ if(S.auth){if(clock()-S.lastAction>=1800000){expire('idle');return}if(S.expiresAt<=clock()){expire('session');return}if(!S.renewShown&&remaining(S.expiresAt)<=120){S.renewShown=true;S.modal={type:'renew'};CF.render()}document.querySelector('[data-count="renew"]')?.replaceChildren(document.createTextNode(mmss(remaining(S.expiresAt))))}
+},1000);
+window.addEventListener('pagehide',()=>clearInterval(timer));
+})();
+</script>
+</body></html>

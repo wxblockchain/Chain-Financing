@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="zh" data-end="asset">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financial Service Platform · Lending marketplace</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>/* 只放本模块专有的组合。token 与公共组件一律来自 _shared，此处不重定义、不覆盖。
+   继承端别：面客端 asset　继承 shell：portal（顶栏导航 + subnav，无侧栏）
+   继承母版：4.3 顶栏母版（金融服务端登录）＋ 4.2 公开层内容节奏
+   继承 archetype：公开列表页 / 公开详情页 / 认证后分步页
+   本页增量：三数等式、额度尺、融资进度轨、折叠层、两张阶梯图 —— 都是本模块专有组合 */
+
+/* —— 招牌件 A：三数等式（AC-LS-53，① × ② = ③ 在页面上可验算）—— */
+.ls-trio{display:flex;align-items:flex-end;gap:var(--sp-5);flex-wrap:wrap}
+.ls-trio .c{min-width:0}
+.ls-trio .op{font-family:var(--mono);font-size:var(--fs-19);color:var(--faint);padding-bottom:14px}
+.ls-trio .ix{font-family:var(--mono);font-size:var(--fs-10);font-weight:700;color:var(--faint);letter-spacing:.07em}
+.ls-trio .lb{font-size:11.5px;color:var(--muted);margin-top:4px}
+.ls-trio .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-24);
+  font-weight:660;letter-spacing:-.03em;margin-top:5px;line-height:1.1}
+.ls-trio .c.out .v{font-size:var(--fs-28);color:var(--accent)}
+.ls-trio .x{font-size:var(--fs-10);color:var(--faint);margin-top:5px}
+.ls-sub{font-size:11.5px;color:var(--muted);margin-top:var(--sp-4)}
+.ls-sub .mono{color:var(--text);font-weight:620}
+
+/* —— 招牌件 B：额度尺（INV-FIN-01 的可视化读数）—— */
+.ls-meter{margin-top:var(--sp-5)}
+.ls-meter .wrap{position:relative;padding-top:17px}
+.ls-meter .track{position:relative;height:20px;border-radius:var(--radius-xs);background:var(--track);
+  border:1px solid var(--border);display:flex;overflow:hidden}
+.ls-meter .sg{height:100%}
+.ls-meter .sg+.sg{border-left:2px solid var(--card)}
+.ls-meter .sg.bal{background:rgba(181,71,8,.16);box-shadow:inset 0 0 0 1px var(--warn)}
+.ls-meter .sg.fly{background:rgba(11,138,118,.14);box-shadow:inset 0 0 0 1px var(--pos)}
+.ls-meter .sg.free{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-border)}
+.ls-meter .sg.gap{background:var(--danger-bg);background-image:repeating-linear-gradient(135deg,transparent 0 5px,var(--danger-border) 5px 7px);
+  box-shadow:inset 0 0 0 1px var(--danger)}
+.ls-meter .wrap>.cap{position:absolute;top:12px;bottom:-5px;width:2px;background:var(--accent);border-radius:2px;z-index:2}
+.ls-meter .wrap>.caplb{position:absolute;top:0;white-space:nowrap;font-size:var(--fs-10);color:var(--accent);font-weight:660}
+.ls-meter .lg{display:flex;flex-wrap:wrap;gap:5px var(--sp-5);margin-top:11px;font-size:11.5px;color:var(--muted)}
+.ls-meter .lg span{display:inline-flex;align-items:center;gap:6px}
+.ls-meter .lg i{width:9px;height:9px;border-radius:3px;flex:none;font-style:normal}
+.ls-meter .lg i.bal{background:rgba(181,71,8,.16);box-shadow:inset 0 0 0 1px var(--warn)}
+.ls-meter .lg i.fly{background:rgba(11,138,118,.14);box-shadow:inset 0 0 0 1px var(--pos)}
+.ls-meter .lg i.free{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-border)}
+.ls-meter .lg i.gap{background:var(--danger-bg);box-shadow:inset 0 0 0 1px var(--danger)}
+.ls-meter .lg i.cap{width:2px;height:11px;border-radius:1px;background:var(--accent)}
+.ls-meter .lg b{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--text);font-weight:620}
+.ls-meter.mini .wrap{padding-top:0}
+.ls-meter.mini .wrap>.cap{top:-3px;bottom:-3px}
+.ls-meter.mini .track{height:7px;border-radius:4px}
+.ls-meter.mini .lg{display:none}
+
+/* —— 公开层列表行：用共享 .rows/.row 承载，这里只排内部栅格 —— */
+.ls-lrow{display:grid;grid-template-columns:minmax(210px,1.5fr) 140px 128px 150px 136px 108px;
+  gap:var(--sp-4);align-items:center;width:100%}
+.ls-lrow .nm{font-size:var(--fs-14);font-weight:650;letter-spacing:-.01em;line-height:1.35}
+.ls-lrow .sub{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+.ls-lrow .sub .mono{font-family:var(--mono)}
+.ls-lrow .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ls-lrow .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;font-weight:620;margin-top:3px}
+.ls-lrow .v.big{font-size:var(--fs-16);font-weight:680;letter-spacing:-.02em}
+.ls-lrow .v.none{color:var(--faint);font-weight:500;font-size:12.5px}
+.ls-lrow .rt{text-align:right}
+.ls-lrow .act{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.ls-lrow .rz{font-size:var(--fs-10);color:var(--faint);white-space:nowrap}
+.ls-row-link{cursor:pointer}
+.ls-row-link:hover{background:#FAFBFD}
+
+/* —— 融资进度轨：环节名取自 PRD 状态机 S-FP-*，后段标注后续环节 —— */
+.ls-flow{display:flex;align-items:stretch;flex-wrap:wrap;gap:var(--sp-3) 0}
+.ls-flow .fs{flex:1 1 150px;min-width:0;padding-left:13px;position:relative}
+.ls-flow .fs::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:2px;background:var(--border)}
+.ls-flow .fs.done::before{background:var(--ok)}
+.ls-flow .fs.now::before{background:var(--accent)}
+.ls-flow .fs.later::before{background:repeating-linear-gradient(180deg,var(--border-strong) 0 3px,transparent 3px 7px)}
+.ls-flow .fs.now.later::before{background:repeating-linear-gradient(180deg,var(--accent) 0 4px,transparent 4px 8px)}
+.ls-flow .fs .id{font-family:var(--mono);font-size:var(--fs-10);font-weight:700;color:var(--faint)}
+.ls-flow .fs .t{font-size:12.5px;font-weight:650;color:var(--muted);margin-top:3px}
+.ls-flow .fs.done .t{color:var(--text)}
+.ls-flow .fs.now .t{color:var(--accent)}
+.ls-flow .fs .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+.ls-flow .sep{flex:none;width:1px;background:var(--border-strong);margin:0 var(--sp-4);position:relative}
+.ls-flow .sep span{position:absolute;top:-2px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font-size:var(--fs-10);color:var(--faint);background:var(--card);padding:0 6px}
+
+/* —— 折叠层（第二层：验算与核对用，默认收起）—— */
+.ls-fold{border-top:1px solid var(--border);margin-top:var(--sp-5)}
+.ls-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 0;
+  font-size:12.5px;color:var(--muted);font-weight:620}
+.ls-fold>summary::-webkit-details-marker{display:none}
+.ls-fold>summary:hover{color:var(--accent)}
+.ls-fold>summary .ca{font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);display:inline-block;
+  transition:transform var(--dur-fast) var(--ease-out)}
+.ls-fold[open]>summary .ca{transform:rotate(90deg)}
+.ls-fold>summary .n{margin-left:auto;font-size:var(--fs-11);color:var(--faint);font-weight:400}
+.ls-fold .fb{padding:2px 0 var(--sp-5)}
+
+/* —— 图表框（Chart frame：图形区、低对比网格、最小图例/轴、标题与说明）—— */
+.ls-chart+.ls-chart{border-top:1px solid var(--border);margin-top:var(--sp-5);padding-top:var(--sp-5)}
+.ls-chart h3{font-size:12.5px;font-weight:660;margin:0}
+.ls-chart .cd{font-size:11.5px;color:var(--faint);margin-top:3px;line-height:1.5}
+.ls-chart .lg{display:flex;flex-wrap:wrap;gap:5px var(--sp-4);margin:11px 0 0;font-size:11.5px;color:var(--muted)}
+.ls-chart .lg span{display:inline-flex;align-items:center;gap:6px}
+.ls-chart .lg i{width:10px;height:10px;border-radius:3px;flex:none;font-style:normal}
+.ls-chart .lg i.ln{height:3px;border-radius:2px;width:15px;background:var(--accent)}
+.ls-chart .lg i.dash{height:0;width:15px;border-radius:0;border-top:2px dashed var(--faint);background:none}
+.ls-chart .lg i.s1{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.ls-chart .lg i.s2{background:rgba(181,71,8,.16);box-shadow:inset 0 0 0 1px var(--warn)}
+.ls-chart .lg i.s3{background:rgba(11,138,118,.14);box-shadow:inset 0 0 0 1px var(--pos)}
+.ls-chart .lg i.void{background:rgba(139,148,166,.16);box-shadow:inset 0 0 0 1px var(--faint)}
+.ls-chart .lg i.gap{background:var(--danger-bg);box-shadow:inset 0 0 0 1px var(--danger)}
+.ls-chart .rd{font-size:11.5px;color:var(--faint);margin-top:6px;line-height:1.55}
+.ls-chart .rd b{color:var(--muted)}
+.ls-cw{position:relative;margin-top:6px}
+.ls-cw svg{display:block;width:100%}
+.ls-tip{position:absolute;pointer-events:none;z-index:30;background:var(--card);border:1px solid var(--border-strong);
+  border-radius:var(--radius-xs);box-shadow:var(--shadow-lg);padding:9px 11px;font-size:11.5px;min-width:200px;
+  opacity:0;transition:opacity var(--dur-fast) var(--ease-out)}
+.ls-tip.on{opacity:1}
+.ls-tip .dt{font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);margin-bottom:5px}
+.ls-tip .r{display:flex;align-items:center;gap:10px;justify-content:space-between;line-height:1.7}
+.ls-tip .r .lf{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.ls-tip .r i{width:8px;height:8px;border-radius:2px;flex:none;font-style:normal}
+.ls-tip .r b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:620}
+.ls-tip .ev{margin-top:7px;padding-top:7px;border-top:1px solid var(--border);color:var(--muted);font-size:var(--fs-10);line-height:1.5}
+
+/* —— WS-325 增量：锁定信息（D-LS-13）——
+   条上两段：已锁定 + 剩余 ≡ 168 小时，这条恒等式在屏幕上可以直接核。
+   不足 24 小时切 warn 档并换分钟精度。措辞只陈述事实，不做评价（D-LS-14）。 */
+.ls-lockmini{display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:5px;font-size:11px;color:var(--faint);line-height:1.5}
+.ls-lockmini b{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--accent);font-weight:660}
+.ls-lockmini.soon b{color:var(--warn)}
+.ls-lock{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:13px}
+.ls-lock.soon{border-color:var(--warn-border);background:var(--warn-bg)}
+.ls-lock .by{font-size:12.5px;line-height:1.6;color:var(--muted)}
+.ls-lock .by b{color:var(--text);font-weight:660}
+.ls-lock .big{display:flex;align-items:baseline;gap:8px;margin-top:9px;flex-wrap:wrap}
+.ls-lock .big .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:23px;font-weight:700;
+  letter-spacing:-.03em;line-height:1.05;color:var(--text);white-space:nowrap}
+.ls-lock.soon .big .v{color:var(--warn)}
+.ls-lock .big .u{font-size:11.5px;color:var(--faint)}
+.ls-lock .bar{display:flex;height:9px;margin-top:11px;border-radius:5px;overflow:hidden;
+  background:var(--track);border:1px solid var(--border)}
+.ls-lock .bar .el{background:rgba(139,148,166,.28)}
+.ls-lock .bar .rm{background:var(--accent)}
+.ls-lock.soon .bar .rm{background:var(--warn)}
+.ls-lock .scale{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;
+  font-size:var(--fs-10);color:var(--faint);margin-top:5px}
+.ls-lock .scale b{font-family:var(--mono);color:var(--muted);font-weight:620}
+.ls-lock .ways{margin-top:11px;padding-top:10px;border-top:1px solid var(--border);font-size:11.5px;line-height:1.6}
+.ls-lock .ways .w{display:flex;gap:7px;color:var(--muted)}
+.ls-lock .ways .w+.w{margin-top:5px}
+.ls-lock .ways .w i{flex:none;font-style:normal;font-family:var(--mono);color:var(--faint)}
+
+/* —— 操作区分级：主操作唯一；减少担保的操作单独降级 —— */
+.ls-acts .sec{display:flex;flex-direction:column;gap:8px;margin-top:var(--sp-3)}
+.ls-acts .risky{margin-top:var(--sp-4);padding-top:var(--sp-3);border-top:1px solid var(--border)}
+.ls-acts .risky .rl{font-size:var(--fs-10);color:var(--faint);margin-bottom:7px}
+.ls-why{display:flex;gap:6px;margin-top:6px;font-size:11px;color:var(--faint);line-height:1.5}
+.ls-why .sg{flex:none}
+.btn.blocked{background:var(--card-2);border-style:dashed;color:var(--faint);cursor:not-allowed}
+.btn.blocked:hover{background:var(--card-2)}
+
+.ls-kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--sp-4) var(--sp-5)}
+.ls-kgrid .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ls-kgrid .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:640;margin-top:4px}
+.ls-kgrid .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+.ls-grades{display:flex;flex-direction:column;gap:8px}
+.ls-grades .g{display:flex;gap:10px;align-items:baseline;font-size:11.5px;color:var(--faint)}
+.ls-grades .g.on{color:var(--text)}
+.ls-grades .g .m{font-family:var(--mono);width:12px;flex:none}
+.ls-grades .g b{width:96px;flex:none;font-weight:500}
+.ls-grades .g.on b{font-weight:650}
+
+.ls-dhead{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-6);flex-wrap:wrap}
+.ls-dhead .dm{text-align:right;flex:none}
+.ls-dhead .dm .k{font-size:11.5px;color:var(--faint)}
+.ls-dhead .dm .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-28);
+  font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-top:3px}
+.ls-dhead .dm .cy{font-size:12.5px;color:var(--faint);font-weight:500;margin-left:6px}
+.ls-pick{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;padding:11px 14px;background:var(--card-2);
+  border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px}
+.ls-pick.bad{background:var(--danger-bg);border-color:var(--danger-border)}
+.ls-pick .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:660;font-size:13.5px}
+.ls-pick .sp{width:1px;height:18px;background:var(--border-strong)}
+.ls-sdk{background:var(--text);color:#fff;border-radius:var(--radius);width:100%;max-width:380px;overflow:hidden}
+.ls-sdk .h{padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.14);display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:650}
+.ls-sdk .h span{margin-left:auto;font-size:var(--fs-10);color:#9AA7C4;font-weight:400}
+.ls-sdk .b{padding:15px 16px}
+.ls-sdk .kk{display:flex;justify-content:space-between;gap:12px;font-size:11.5px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.ls-sdk .kk:last-child{border-bottom:0}
+.ls-sdk .kk s{text-decoration:none;color:#9AA7C4}
+.ls-sdk .kk b{font-family:var(--mono);font-weight:620}
+.ls-sdk .sim{padding:11px 16px;background:rgba(255,255,255,.06);border-top:1px solid rgba(255,255,255,.1);
+  font-size:var(--fs-10);color:#9AA7C4}
+.ls-sdk .sim select{width:100%;height:30px;margin-top:7px;background:transparent;color:#fff;font-size:11.5px;
+  border:1px solid rgba(255,255,255,.3);border-radius:var(--radius-xs);padding:0 8px}
+.ls-sdk .sim select option{color:var(--text)}
+.ls-sdk .f{padding:13px 16px;border-top:1px solid rgba(255,255,255,.14);display:flex;gap:9px}
+.ls-sdk .f .btn{flex:1;background:transparent;border-color:rgba(255,255,255,.3);color:#fff}
+.ls-sdk .f .btn:hover{background:rgba(255,255,255,.1)}
+.ls-sdk .f .btn.primary{background:#fff;color:var(--text);border-color:#fff;box-shadow:none}
+.ls-ro{height:var(--ctrl-h);display:flex;align-items:center;padding:0 12px;border:1px dashed var(--border-strong);
+  border-radius:var(--radius-sm);background:var(--card-2);font-family:var(--mono);color:var(--muted);font-size:12.5px}
+
+/* ============================================================
+   复刻还原：参考件的页面头与内容层尺度
+   base.css 的 .page-title 是 19px、body 13.5px —— 那是管理端控制台的档位。
+   面客公开页在参考件里是 body 14.5px、详情标题 ~52px、stat 值 40px。
+   下面全部是本模块作用域的组合类，不重定义 token、不覆盖公共组件。
+   ============================================================ */
+.portal-wrap{font-size:14.5px;line-height:1.55}
+.portal-wrap table.tbl{font-size:13px}
+.portal-wrap .card-head span{font-size:12.5px}
+.ls-back{margin-bottom:var(--sp-5)}
+.ls-phead{display:flex;align-items:flex-start;gap:var(--sp-5);margin-bottom:var(--sp-6)}
+.ls-phead .tile{
+  width:56px;height:56px;border-radius:16px;flex:none;background:var(--accent-soft);
+  border:1px solid var(--accent-border);display:grid;place-items:center;font-size:22px;margin-top:6px;
+}
+.ls-phead .body{flex:1;min-width:0}
+.ls-phead .kick{font-size:12.5px;color:var(--faint);margin:0 0 4px;letter-spacing:.01em}
+.ls-phead .kick .mono{color:var(--muted)}
+.ls-phead h1{
+  margin:0;font-size:clamp(26px,2.7vw,42px);font-weight:740;letter-spacing:-.03em;line-height:1.1;
+}
+.ls-phead h1 em{font-style:normal;color:var(--faint);font-weight:600;margin-left:12px;font-size:.62em}
+.ls-phead .amt{text-align:right;flex:none;padding-top:10px}
+.ls-phead .amt .k{font-size:12.5px;color:var(--faint)}
+.ls-phead .amt .v{
+  font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(26px,2.4vw,38px);
+  font-weight:700;letter-spacing:-.035em;line-height:1.06;margin-top:3px;
+}
+.ls-phead .amt .cy{font-size:14px;color:var(--faint);font-weight:500;margin-left:6px}
+.ls-phead .amt .x{font-size:12px;color:var(--faint);margin-top:6px}
+
+/* 大号标签行：参考件的 pill 是 pill 形、28px 高、带色点或图标 */
+.ls-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-4)}
+.ls-tags .pill{height:28px;padding:0 12px;font-size:12.5px;border-radius:var(--radius-pill)}
+.ls-tags .pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:2px}
+
+/* stat 值与卡片标题提到参考件档位 */
+.ls-trio .v{font-size:var(--fs-28)}
+.ls-trio .c.out .v{font-size:clamp(30px,2.6vw,40px)}
+.ls-trio .lb{font-size:12.5px}
+.ls-trio .x{font-size:11.5px}
+.card-head b{font-size:15px}
+.ls-chart h3{font-size:14px}
+
+/* 公共 .note 的 b{display:block} 会把正文里的 <b> 顶成整行——
+   模块正文用 .ls-b 做行内强调，不动公共实现。 */
+.note .ls-b{font-weight:700;display:inline}
+.note{font-size:12.5px;line-height:1.6}
+.ls-alert{margin-bottom:var(--sp-5)}
+
+/* —— 右栏内的进度轨强制单列：rail 只有 300px，媒体查询按视口算不生效 —— */
+.portal-rail .ls-flow{flex-direction:column;gap:var(--sp-3)}
+.portal-rail .ls-flow .fs{flex:1 1 auto}
+.portal-rail .ls-flow .sep{display:none}
+/* —— 九列的抵押物明细：给足最小宽度，靠 .tablewrap 横向滚动，不截断关键内容 —— */
+.ls-wide{min-width:1000px}
+
+/* —— 公开层列表的面客密度：参考件 55px 行高。不改公共 table.tbl（那是管理端密度），
+   只在本模块的列表上叠一层 padding —— */
+.ls-tbl tbody td{padding:16px 12px}
+.ls-tbl thead th{padding:11px 12px}
+.ls-tbl .cell-sub{font-size:11px;margin-top:3px}
+.skel-row{padding:14px 0;border-bottom:1px solid var(--border)}
+.skel-row:last-child{border-bottom:0}
+
+@media (max-width:1180px){
+  .ls-lrow{grid-template-columns:minmax(180px,1.4fr) 128px 130px 124px 104px;}
+  .ls-lrow .cExp{display:none}
+}
+@media (max-width:900px){
+  .ls-lrow{grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+  .ls-lrow .cMeter,.ls-lrow .cExp{display:none}
+  .ls-lrow .act{align-items:flex-start}
+  .ls-flow .sep{display:none}
+}
+</style>
+</head>
+<body>
+<!-- 面客顶栏版式（继承参考 4.3）。公共运行时要求的挂载点一个不少：
+     brandSub / nav / topRight / crumb / content / layers；容器用 _shared/base.css 的 .portal* 一族。
+     模块不自建菜单、不放第二套导航、不再自带底部演示条——状态切换走公共 stateBar，
+     身份切换走顶栏上下文操作区（portal 规范 §3「语言/上下文操作分区」）。 -->
+<div class="portal" id="app" hidden>
+ <header class="portal-head">
+  <div class="brand"><div class="brand-mark">FS</div><div>
+   <div class="brand-name" data-brand>Financial Services</div>
+   <div class="brand-sub" id="brandSub"></div></div></div>
+  <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+  <div class="portal-tools" id="topRight"></div>
+ </header>
+ <div class="portal-sub"><div class="portal-sub-in" id="crumb"></div></div>
+ <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+</div>
+<div class="focus" id="focus"></div>
+<div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script src="./ls-module.js"></script>
+</body>
+</html>

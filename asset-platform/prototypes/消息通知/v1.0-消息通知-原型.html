@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chain Financing · 消息通知 可交互原型 (WS-304)</title>
+<link rel="stylesheet" href="../_shared/tokens.css">
+<link rel="stylesheet" href="../_shared/base.css">
+<style>
+/* ==========================================================================
+   本模块专有样式。token、壳层、铃铛 C-20、快捷面板 C-21、列表项 C-22 都在
+   ../_shared/ 里，这里只放消息详情页与列表页脚这几处本模块独有的组合。
+   ========================================================================== */
+/* ---- 列表页脚：加载更多 / 加载更多失败条（资产端） ---- */
+.lm{display:flex;justify-content:center;padding:14px var(--card-pad);border-top:1px solid var(--border)}
+.lm-err{display:flex;align-items:center;gap:12px;justify-content:center;padding:11px var(--card-pad);
+  border-top:1px solid var(--border);background:var(--danger-bg);color:#B42318;font-size:11.5px;flex-wrap:wrap}
+/* ---- 消息详情（P-A19 / P-M21）---- */
+.dmeta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:9px 0 0;font-size:11.5px;color:var(--faint)}
+.dmeta .sep{color:var(--border-strong)}
+.dbody{font-size:13px;line-height:1.75;color:var(--text);white-space:pre-line;overflow-wrap:anywhere;margin:0}
+.dfoot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:20px;padding-top:16px;
+  border-top:1px solid var(--border-dash)}
+/* ---- 进度区块（详情页，C-22 进度型的详情形态）---- */
+.prog{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);
+  padding:13px 15px;margin-bottom:16px}
+.prog .rw{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.prog .rw+.rw{margin-top:7px}
+.prog .nd{font-weight:640;color:var(--text)}
+/* ---- 演示控制条内的分段控件间距（.demobar 本身来自 base.css）---- */
+.dm-grp{display:flex;align-items:center;gap:7px}
+</style>
+</head>
+<body>
+<!-- 双端共用同一套外壳：侧栏 + 顶栏（铃铛 C-20 在语言切换器左侧）+ 面包屑 + 内容区。
+     消息中心按 WS-304 PRD 5.1 不进左侧菜单，入口是铃铛与账号下拉。 -->
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">CF</div>
+      <div>
+        <div class="brand-name">Chain Financing</div>
+        <div class="brand-sub" id="brandSub"></div>
+      </div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div style="flex:1"></div>
+      <div class="topbar-right" id="topRight"></div>
+    </div>
+    <div class="crumbbar" id="crumb"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../_shared/shell.js"></script>
+<script>
+/* ==========================================================================
+   消息通知模块（WS-304）· 资产端 P-A18 / P-A19 + 管理端 P-M20 / P-M21
+   文案逐条取自 PRD 分册 01-页面与展示.md 12.3「界面文案中英对照」，未擅自改写。
+   ========================================================================== */
+var DICT = {
+  en: {
+    /* 导航与标题 */
+    nTitle:"Notifications", nDesc:"Everything the platform has told you about your account and your business.",
+    nDescAdmin:"Shared console notifications and messages addressed to you personally.",
+    /* 筛选与列表 */
+    fCategory:"Category", catAll:"All categories", fStatus:"Status",
+    stAll:"All", stUnread:"Unread", stRead:"Read", otherCat:"Other",
+    loadMore:"Load more", loadedOf:"Showing {n} of {total}", listCount:"{n} notifications",
+    listCountF:"{n} of {total} match the filters", perPage:"Per page", pageOf:"Page {p} / {t}",
+    /* 操作与反馈 */
+    markAll:"Mark all as read", markAllNone:"No unread messages",
+    markAllTitle:"Mark {n} notifications as read?",
+    markAllFilter:"Filter: {category} · {status}", markAllUndo:"This can't be undone.",
+    markAllOk:"{n} notifications marked as read",
+    markAllFail:"Couldn't mark notifications as read. Try again.",
+    ctaDefault:"View details", ctaBiz:"View business details", ctaReview:"Open review case",
+    backList:"Back to list", cancel:"Cancel", confirm:"Confirm", markingAll:"Marking…",
+    /* 空态、加载态与错误态 */
+    emptyTitle:"No notifications yet",
+    emptySub:"Notifications about your account and business will appear here.",
+    nomatchTitle:"No messages match these filters", clearFilters:"Clear filters",
+    listFail:"Failed to load notifications", listFailSub:"Network or service error.",
+    moreFail:"Couldn't load more.", detailFail:"Failed to load this notification",
+    notFound:"This notification is not available.", notFoundBack:"Back to notifications",
+    minTitle:"Notification",
+    /* 失效说明 C-23 与跳转降级 */
+    invExpired:"This notification has expired.",
+    invDeleted:"The related record is no longer available.",
+    invChanged:"This has already been handled — no action is needed.",
+    invChangedSt:"This has already been handled. Current status: {status}.",
+    invNoPerm:"You no longer have access to this record.",
+    ctaOff:"This action is no longer available.", checking:"Checking…",
+    /* 进度 */
+    nodePrefix:"Current step: {node}", stepOf:"Step {i} of {n}", bizNo:"Reference: {biz_no}",
+    ns_in_progress:"In progress", ns_action_required:"Action required",
+    ns_succeeded:"Completed", ns_failed:"Not approved",
+    /* 分类展示名 */
+    c_security:"Security", c_account:"Account", c_compliance:"Verification",
+    c_business_progress:"Business progress", c_review_todo:"Review tasks",
+    /* 时间与杂项 */
+    tzNote:"Times shown in UTC+8", copyOk:"Copied", copy:"Copy",
+    detailTime:"Created {t}", jumpDemo:"Target page lives in WS-303 and is not in this repository yet.",
+    /* 演示控制条 */
+    demoBanner:"Demonstration data. Names, references and message bodies are made up for review; "
+      + "no real account, case or counterparty appears here.",
+    dmReset:"Reset demo data", dmNew:"Simulate new message", dmDedupe:"Simulate duplicate push",
+    dmBulk:"Simulate 132 unread", dmBulkOff:"Back to real count", dmFail:"Simulate API failure",
+    dmFailOn:"API failure: ON", dmFailOff:"API failure: off",
+    dmNewToast:"A new notification arrived", dmDedupeToast:"Merged by dedupe_key",
+    dmDedupeBody:"The message was already read; the new event restored it to unread and moved it to the top."
+  },
+  zh: {
+    nTitle:"消息中心", nDesc:"平台关于你的账户与业务的全部告知。",
+    nDescAdmin:"管理端共享消息池与投递给你个人的消息。",
+    fCategory:"分类", catAll:"全部分类", fStatus:"状态",
+    stAll:"全部", stUnread:"未读", stRead:"已读", otherCat:"其他",
+    loadMore:"加载更多", loadedOf:"已加载 {n} / {total} 条", listCount:"共 {n} 条",
+    listCountF:"筛选命中 {n} 条 / 共 {total} 条", perPage:"每页", pageOf:"第 {p} / {t} 页",
+    markAll:"全部标为已读", markAllNone:"没有未读消息",
+    markAllTitle:"将 {n} 条消息标为已读？",
+    markAllFilter:"当前筛选：{category} · {status}", markAllUndo:"该操作不可撤销。",
+    markAllOk:"已将 {n} 条消息标为已读",
+    markAllFail:"标记已读失败，请重试。",
+    ctaDefault:"查看详情", ctaBiz:"查看业务详情", ctaReview:"打开审核单",
+    backList:"返回列表", cancel:"取消", confirm:"确认", markingAll:"标记中…",
+    emptyTitle:"暂无消息",
+    emptySub:"与你的账户和业务相关的消息会显示在这里。",
+    nomatchTitle:"没有符合筛选条件的消息", clearFilters:"清除筛选",
+    listFail:"消息加载失败", listFailSub:"网络或服务异常。", moreFail:"加载更多失败。",
+    detailFail:"消息加载失败",
+    notFound:"该消息不存在或已不可访问。", notFoundBack:"返回消息中心",
+    minTitle:"消息",
+    invExpired:"该消息已过期。",
+    invDeleted:"相关记录已不存在。",
+    invChanged:"该业务状态已变更，无需再处理。",
+    invChangedSt:"该业务状态已变更，当前状态：{status}。",
+    invNoPerm:"你当前无权访问该记录。",
+    ctaOff:"该操作已不可用。", checking:"校验中…",
+    nodePrefix:"当前节点：{node}", stepOf:"第 {i}/{n} 步", bizNo:"业务编号：{biz_no}",
+    ns_in_progress:"处理中", ns_action_required:"待你处理",
+    ns_succeeded:"已完成", ns_failed:"未通过",
+    c_security:"安全", c_account:"账户", c_compliance:"认证与合规",
+    c_business_progress:"业务办理进度", c_review_todo:"审核待办",
+    tzNote:"时间按 UTC+8 展示", copyOk:"已复制", copy:"复制",
+    detailTime:"创建于 {t}", jumpDemo:"目标页属于 WS-303，本仓库尚未落库。",
+    demoBanner:"演示数据。文中的姓名、业务编号与消息正文都是为评审编的，"
+      + "不含任何真实账户、真实业务单据或真实交易对手。",
+    dmReset:"重置演示数据", dmNew:"模拟收到新消息", dmDedupe:"模拟重复推送（去重合并）",
+    dmBulk:"模拟 132 条未读", dmBulkOff:"回到真实计数", dmFail:"模拟接口故障",
+    dmFailOn:"接口故障：开", dmFailOff:"接口故障：关",
+    dmNewToast:"收到一条新消息", dmDedupeToast:"按 dedupe_key 合并",
+    dmDedupeBody:"这条消息此前已读，新事件命中同一个 dedupe_key，已恢复为未读并回到列表顶部。"
+  }
+};
+
+/* ==========================================================================
+   PRD 摘录面板：只摘录本页用得到的条目，给前端开发看，不属于产品界面。
+   ========================================================================== */
+var PRDSRC = "asset-platform/prd/v1.0-消息通知/ · 主文档 + 01-页面与展示.md（2026-09-08 08:02 版）";
+var PRD = {
+  "P-A18":{ title:"P-A18 消息中心（资产端）", src:PRDSRC,
+    fields:[
+      ["category","筛选器","分类筛选项由**服务端返回的分类元数据**渲染，且**只渲染该接收者名下已有消息的分类**（7.3.2 / AC-N11、AC-N12）。本原型的选项由演示数据现算，写死清单一处也没有"],
+      ["read_state","筛选器","全部 / 未读 / 已读，单选，默认「全部」，与分类**可叠加**（与关系，AC-N13）"],
+      ["created_at","排序","创建时间倒序；**已读状态不参与排序**，标记已读后行位置不变、不移除（7.3.3、AC-N15）"],
+      ["cursor","分页","资产端「加载更多」，每页 N-N04（20）条；游标基于 `created_at + message_id`，不用 offset（7.3.4）"]
+    ],
+    rules:[
+      ["F-N06 / F-N07","分类与状态筛选叠加，条件写入 URL，刷新保持（AC-N14）"],
+      ["F-N08","加载更多而非无限滚动：详情往返后位置恢复更可靠，且有确定的操作落点（7.3.4）"],
+      ["F-N09","两种空态必须区分——首次空态是「一切正常」，筛选空态给「清除筛选」出口（AC-N17）"],
+      ["F-N10","行内「标为已读」与「打开详情即已读」**并存**，不是二选一（7.5.1、AC-N24）"],
+      ["F-N11","「全部标为已读」作用于**当前筛选命中的全部消息**，不限当前页；二次确认必须写明条数与筛选，并说明不可撤销（7.5.2、AC-N25～AC-N27）"],
+      ["N-N04","每页 20 条；管理端可切 20 / 50 / 100"]
+    ],
+    states:[
+      ["首屏加载","5 行骨架屏，高度与列表项一致，避免加载完跳动"],
+      ["首次空态 / 筛选空态","文案与操作各不相同（7.3.5）"],
+      ["首屏失败","内容区错误态 + 重试；**加载更多失败时已加载内容不清空**（AC-N18）"],
+      ["部分渲染失败","单条文案 key 缺失时降级为「标题 + 时间」最小形态，不影响其他行（9.5.4）；"
+       + "详情页正文留空，**界面上不解释原因**，也绝不展示文案键名"],
+      ["全部已读失败","Toast 报错，列表与角标**不做任何变更**（AC-N29）"]
+    ],
+    copy:[
+      ["空态 · 主文案","No notifications yet","暂无消息"],
+      ["筛选空态","No messages match these filters","没有符合筛选条件的消息"],
+      ["全部已读确认","Mark {n} notifications as read?","将 {n} 条消息标为已读？"],
+      ["禁用 tooltip","No unread messages","没有未读消息"]
+    ]},
+  "P-A19":{ title:"P-A19 消息详情（资产端）", src:PRDSRC,
+    fields:[
+      ["title / body","展示","纯文本渲染并转义，**不支持富文本 / HTML**（13.2、AC-N64）"],
+      ["created_at","展示","详情**一律绝对时间 + 时区标注**，不用相对时间（12.4）"],
+      ["biz_ref / page_target","跳转","三形态互斥：业务资源 / 静态页面 / 无跳转；消息实体内**不存 URL**（7.6.1、AC-N31）"],
+      ["progress","进度区块","业务名称、业务编号、当前节点 + 四态标签、更新时间（7.8.3）"]
+    ],
+    rules:[
+      ["F-N12","详情为整页独立路由，支持深链与刷新，不用抽屉或弹窗（7.4.1、AC-N19）"],
+      ["F-N10","详情内容**渲染成功之后**才标记已读；加载失败不标记（7.4.3、AC-N20）"],
+      ["F-N14","预检在**进入详情时执行一次**，失效状态提前体现在按钮上；列表页不预检（7.6.2、AC-N37）"],
+      ["7.6.3","映射缺失：**不渲染**跳转按钮 + 上报日志，不跳 404、不跳首页（AC-N32）。"
+       + "**用户 2026-09-08 裁定：界面上不再展示「当前版本暂不支持跳转」这句说明文案**——"
+       + "没有跳转的消息一律只留「返回列表」。原 7.6.3 的说明文案要求作废，PRD 需同步"],
+      ["7.7","四类失效各有独立文案；后三类**按钮禁用而非隐藏**；四类均完整展示标题、正文、时间（AC-N34、AC-N35）"],
+      ["7.6.4 / 本轮裁定","**没有跳转按钮的消息，界面上一律不给任何说明**：无跳转（形态 3）、"
+       + "映射缺失、已过期三种情形的详情页都只保留「返回列表」（AC-N76 + 用户 2026-09-08 裁定）"],
+      ["N-N05","预检超时 3 秒；预检接口本身失败**放行跳转**——按钮保持可用，界面上**不作任何解释**"
+       + "（AC-N36）。演示消息：管理端「认证审核单重开」"]
+    ],
+    states:[
+      ["加载中 / 加载失败","失败时展示错误态与重试，且**不标记已读**（10.3 第 4 条）"],
+      ["预检中","跳转按钮进入异步等待态，不让用户点了才被告知失效"],
+      ["消息不存在 / 越权","一律 404 语义，与「不存在」不可区分（AC-N40）"]
+    ],
+    copy:[
+      ["expired","This notification has expired.","该消息已过期。"],
+      ["resource_deleted","The related record is no longer available.","相关记录已不存在。"],
+      ["state_changed","This has already been handled — no action is needed.","该业务状态已变更，无需再处理。"],
+      ["no_permission","You no longer have access to this record.","你当前无权访问该记录。"],
+      ["映射缺失","（界面上不展示任何说明文案）","（界面上不展示任何说明文案）"]
+    ]},
+  "P-M20":{ title:"P-M20 消息中心（管理端）", src:PRDSRC,
+    fields:[
+      ["recipient_scope","可见集","共享池 `admin_all` + 本人个人消息 `admin_account` 的**并集**，混排不分区（7.9）"],
+      ["read_state","已读","按管理员账号**个人独立**：A 读了不影响 B 的未读（8.2.2、AC-N45）"],
+      ["page / size","分页","分页器，每页 20 / 50 / 100（7.3.4）"]
+    ],
+    rules:[
+      ["F-N17","全量管理员共享同一消息池，已读个人独立（D-N19）"],
+      ["F-N22","`admin_account` 个人消息只对指定管理员可见，其他管理员按 404 语义拒绝（D-N34）"],
+      ["7.9","管理端**没有**「业务办理进度」分类（AC-N55）；两端分类集合互相独立"],
+      ["8.4","管理端界面不存在任何「查看某个资产端用户的消息」的入口（AC-N46）"]
+    ],
+    states:[
+      ["与资产端同构","加载 / 空 / 筛选无结果 / 失败重试 / 全部已读失败，口径与 P-A18 一致"]
+    ],
+    copy:[
+      ["页面标题","Notifications","消息中心"],
+      ["分类 · 审核待办","Review tasks","审核待办"]
+    ]},
+  "P-M21":{ title:"P-M21 消息详情（管理端）", src:PRDSRC,
+    fields:[
+      ["message_id","归属校验","他人个人消息返回 404 语义，与「不存在」完全一致（AC-N70）"]
+    ],
+    rules:[
+      ["F-N12 / F-N14","与 P-A19 同构：整页、深链、进入即已读、预检一次、四类失效表现一致"],
+      ["AC-N44","管理端接口只返回 `end = admin` 的消息，两端不串池"]
+    ],
+    states:[
+      ["他人个人消息","404 语义页，不透露该消息是否存在"]
+    ],
+    copy:[
+      ["消息不存在","This notification is not available.","该消息不存在或已不可访问。"]
+    ]}
+};
+
+/* ==========================================================================
+   演示数据。全部为评审用编造数据，不含任何真实账户、业务单据或交易对手。
+   ========================================================================== */
+var NOW = "2026-09-08T01:30:00Z";             /* = 2026-09-08 09:30 (UTC+8) */
+function ago(h){ return new Date(Date.parse(NOW) - h * 3600000).toISOString(); }
+
+/* 前端业务类型登记表（7.6.1 形态 1）。页面路由表用的是 registry.js 的 CF.PAGES。 */
+var BIZ = {
+  "idv.verification.progress":{ page:"P-A17", pre:true, cta:"ctaBiz" },
+  "idv.verification.rejected":{ page:"P-A17", pre:true, cta:"ctaDefault" },
+  /* 管理端审核单：目标页由 WS-303 交付，本仓库尚未落库，点击时如实说明 */
+  "review.idv_case.assigned":{ page:null, pre:true, cta:"ctaReview", offRepo:true }
+};
+
+function seed(){
+  var d = [];
+  function m(o){ d.push(o); return o; }
+  /* ------------------------------ 资产端 ------------------------------ */
+  /* 事件来源严格按 cly-V1.0.0 现状：WS-302 站内信只剩 E-03 / E-05 / E-10 三类
+     （8e18350、46e1d59 精简后），WS-303 提供认证与合规、业务办理进度两类。
+     被明确判定「不产出站内信」的事件（建号成功、凭据补齐、登录成功 / 失败、
+     偏好变更、其他设备退出）在本演示数据里一条都没有。 */
+  m({ id:"m-a01", end:"asset", cat:"security", page:"P-A11", at:ago(2), read:false,
+      dedupe:"account.password.changed:2026-09-08",
+      t:{en:"Your password was changed", zh:"登录密码已修改"},
+      b:{en:"Your password was changed on Sep 8, 2026, 07:30 (UTC+8) from Chrome on macOS. All devices were signed out.",
+         zh:"你的密码已于 2026-09-08 07:30 (UTC+8) 在 macOS 上的 Chrome 修改，所有设备均已退出登录。"} });
+  m({ id:"m-a02", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(5), read:false,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260905-014",
+             node:{en:"Document review", zh:"材料复核"}, st:"in_progress", i:2, n:4 },
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"We are reviewing the documents you submitted. This usually takes 1–2 business days.",
+         zh:"我们正在复核你提交的材料，预计 1–2 个工作日。"} });
+  m({ id:"m-a03", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(28), read:false,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260905-014",
+             node:{en:"Additional documents", zh:"补充材料"}, st:"action_required", i:2, n:4 },
+      pre:"state_changed", preStatus:{en:"Under review", zh:"审核中"},
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"One of your documents was unreadable. Please upload the business licence again.",
+         zh:"其中一份材料无法识别，请重新上传营业执照。"} });
+  m({ id:"m-a04", end:"asset", cat:"compliance", page:"P-A17", at:ago(50), read:true,
+      t:{en:"Company verification approved", zh:"企业认证已通过"},
+      b:{en:"Your company verification has been approved. Full platform features are now available.",
+         zh:"你的企业认证已通过审核，平台完整功能已开放。"} });
+  m({ id:"m-a05", end:"asset", cat:"security", page:"P-A11", at:ago(54), read:true,
+      t:{en:"Email address updated", zh:"账户邮箱已更新"},
+      b:{en:"This address became your account email on Sep 5, 2026, 21:30 (UTC+8). Sign in with the new address from now on.",
+         zh:"该邮箱已于 2026-09-05 21:30 (UTC+8) 成为你的账户邮箱，之后请用新邮箱登录。"} });
+  m({ id:"m-a06", end:"asset", cat:"business_progress", biz:"idv.verification.rejected", at:ago(72), read:false,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260901-007",
+             node:{en:"Document review", zh:"材料复核"}, st:"failed", i:2, n:4 },
+      pre:"resource_deleted",
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"The submission was not approved: the uploaded licence had expired. You can submit a new application at any time.",
+         zh:"本次提交未通过：上传的营业执照已过期。你可以随时重新提交申请。"} });
+  m({ id:"m-a07", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(76), read:true,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260901-007",
+             node:{en:"Submitted", zh:"已提交"}, st:"succeeded", i:1, n:4 },
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"Your application was submitted and queued for review.",
+         zh:"你的申请已提交，正在排队等待审核。"} });
+  m({ id:"m-a08", end:"asset", cat:"compliance", page:"P-A17", at:ago(96), read:false, exp:true,
+      t:{en:"Re-confirm your business scope", zh:"请复核你的经营范围"},
+      b:{en:"We asked you to re-confirm your registered business scope before Sep 5, 2026. The window has closed; nothing further is required.",
+         zh:"我们曾请你在 2026-09-05 前复核登记的经营范围。该时限已过，你无需再处理。"} });
+  /* 映射缺失演示：服务端已开始发这个业务类型，本客户端版本还没登记它 */
+  m({ id:"m-a09", end:"asset", cat:"compliance", biz:"idv.verification.recheck", at:ago(101), read:false,
+      t:{en:"Verification recheck started", zh:"认证复核已启动"},
+      b:{en:"A periodic recheck of your verification has started. No action is needed from you.",
+         zh:"我们已对你的认证发起例行复核，你无需做任何处理。"} });
+  m({ id:"m-a10", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(120), read:true,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260901-007",
+             node:{en:"Document review", zh:"材料复核"}, st:"in_progress", i:2, n:4 },
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"Your documents entered review.", zh:"你的材料已进入复核。"} });
+  m({ id:"m-a11", end:"asset", cat:"security", page:"P-A11", at:ago(126), read:true,
+      t:{en:"Wallet linked", zh:"钱包已绑定"},
+      b:{en:"The wallet address 0x8f2c…4b71 was linked to your account on Sep 2, 2026, 23:30 (UTC+8). "
+          + "Your wallet address can't be changed after linking — keep this wallet accessible.",
+         zh:"钱包地址 0x8f2c…4b71 已于 2026-09-02 23:30 (UTC+8) 绑定到你的账户。"
+          + "钱包地址绑定后不可修改，请妥善保管该钱包。"} });
+  m({ id:"m-a12", end:"asset", cat:"security", page:"P-A11", at:ago(130), read:true,
+      t:{en:"Your password was set", zh:"登录密码已设置"},
+      b:{en:"Your password was set on Sep 2, 2026, 19:30 (UTC+8) from Chrome on macOS. All devices were signed out.",
+         zh:"你的密码已于 2026-09-02 19:30 (UTC+8) 在 macOS 上的 Chrome 设置，所有设备均已退出登录。"} });
+  /* 未登记分类演示：分类标签回落「其他」，消息照常展示 */
+  m({ id:"m-a13", end:"asset", cat:"promo_beta", at:ago(140), read:false,
+      t:{en:"You're in the early-access group", zh:"你已加入早期体验组"},
+      b:{en:"This message carries a category this client version doesn't know. It still shows, tagged as Other.",
+         zh:"这条消息带的分类当前客户端未登记，仍然正常展示，分类标签回落为「其他」。"} });
+  /* 文案模板缺失演示：降级为「标题 + 时间」最小形态 */
+  m({ id:"m-a14", end:"asset", cat:"security", at:ago(150), read:true, degraded:true,
+      t:null, b:null });
+  m({ id:"m-a15", end:"asset", cat:"compliance", page:"P-A17", at:ago(160), read:true,
+      t:{en:"Verification materials received", zh:"认证材料已收到"},
+      b:{en:"We received your verification materials and will start the review shortly.",
+         zh:"我们已收到你的认证材料，稍后开始审核。"} });
+  m({ id:"m-a16", end:"asset", cat:"security", page:"P-A11", at:ago(168), read:true,
+      t:{en:"Your password was reset", zh:"登录密码已重置"},
+      b:{en:"Your password was reset on Sep 1, 2026, 09:30 (UTC+8) through the email flow. All devices were signed out.",
+         zh:"你的密码已于 2026-09-01 09:30 (UTC+8) 通过邮箱流程重置，所有设备均已退出登录。"} });
+  m({ id:"m-a17", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(180), read:true,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260830-002",
+             node:{en:"Closed", zh:"已关闭"}, st:"succeeded", i:4, n:4 },
+      pre:"no_permission",
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"This application was closed after the company context changed.",
+         zh:"企业上下文变更后，该笔申请已关闭。"} });
+  m({ id:"m-a18", end:"asset", cat:"compliance", page:"P-A17", at:ago(196), read:true,
+      t:{en:"A duplicate application was blocked", zh:"重复申请已被拦截"},
+      b:{en:"Another application for the same company was blocked because this one is still open.",
+         zh:"同一企业的另一笔申请已被拦截，因为当前这笔仍在进行中。"} });
+  m({ id:"m-a19", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(210), read:true,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260830-002",
+             node:{en:"Document review", zh:"材料复核"}, st:"succeeded", i:2, n:4 },
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"Document review passed.", zh:"材料复核已通过。"} });
+  m({ id:"m-a20", end:"asset", cat:"security", page:"P-A11", at:ago(226), read:true,
+      t:{en:"Email address updated", zh:"账户邮箱已更新"},
+      b:{en:"This address became your account email on Aug 29, 2026, 23:30 (UTC+8).",
+         zh:"该邮箱已于 2026-08-29 23:30 (UTC+8) 成为你的账户邮箱。"} });
+  m({ id:"m-a21", end:"asset", cat:"business_progress", biz:"idv.verification.progress", at:ago(240), read:true,
+      prog:{ name:{en:"Identity verification", zh:"实名认证"}, no:"IDV-20260830-002",
+             node:{en:"Submitted", zh:"已提交"}, st:"succeeded", i:1, n:4 },
+      t:{en:"Identity verification", zh:"实名认证"},
+      b:{en:"Your application was submitted and queued for review.",
+         zh:"你的申请已提交，正在排队等待审核。"} });
+  m({ id:"m-a22", end:"asset", cat:"compliance", page:"P-A17", at:ago(262), read:true,
+      t:{en:"Verification reminder", zh:"认证提醒"},
+      b:{en:"Complete identity verification to unlock financing features.",
+         zh:"完成实名认证后即可使用融资相关功能。"} });
+  m({ id:"m-a23", end:"asset", cat:"security", page:"P-A11", at:ago(286), read:true,
+      t:{en:"Your password was changed", zh:"登录密码已修改"},
+      b:{en:"Your password was changed on Aug 27, 2026, 11:30 (UTC+8) from Safari on iOS. All devices were signed out.",
+         zh:"你的密码已于 2026-08-27 11:30 (UTC+8) 在 iOS 上的 Safari 修改，所有设备均已退出登录。"} });
+  m({ id:"m-a24", end:"asset", cat:"compliance", page:"P-A17", at:ago(310), read:true,
+      t:{en:"Verification materials received", zh:"认证材料已收到"},
+      b:{en:"We received the materials for your first application.",
+         zh:"我们已收到你首次申请的材料。"} });
+  m({ id:"m-a25", end:"asset", cat:"security", page:"P-A11", at:ago(340), read:true,
+      t:{en:"Wallet linked", zh:"钱包已绑定"},
+      b:{en:"The wallet address 0x3ab9…07de was linked to your account. This is the oldest message in this demo set.",
+         zh:"钱包地址 0x3ab9…07de 已绑定到你的账户。这是本演示数据里最早的一条消息。"} });
+
+  /* ------------------------------ 管理端 ------------------------------ */
+  m({ id:"m-m01", end:"admin", cat:"review_todo", biz:"review.idv_case.assigned", at:ago(1), read:false,
+      t:{en:"New verification case to review", zh:"新的认证审核待办"},
+      b:{en:"Case IDV-20260908-031 is waiting for first review.",
+         zh:"审核单 IDV-20260908-031 待初审。"} });
+  m({ id:"m-m02", end:"admin", cat:"review_todo", biz:"review.idv_case.assigned", at:ago(3), read:false,
+      pre:"state_changed", preStatus:{en:"Approved by another admin", zh:"已由其他管理员审结"},
+      t:{en:"Verification case escalated", zh:"认证审核单已升级"},
+      b:{en:"Case IDV-20260907-118 was escalated for second review.",
+         zh:"审核单 IDV-20260907-118 已升级至复审。"} });
+  /* 个人消息（recipient_scope = admin_account）的形态演示。
+     注意：WS-302 现行口径是「管理端本期不产生任何通知」（其 05 文件 12.5.5，E-08 已删除），
+     所以这条不挂在任何现存事件上，只用来验证「只投递给一个管理员」这条契约。 */
+  m({ id:"m-m03", end:"admin", cat:"security", page:"P-M05", at:ago(6), read:false, personal:true,
+      t:{en:"Security notice for your console account", zh:"你的管理端账号安全提醒"},
+      b:{en:"Delivered to you only (recipient_scope = admin_account): other admins do not see this message "
+          + "in their list and get a 404 on its ID.\nDemonstration message — no live event produces it today, "
+          + "because console-side notifications are out of scope for WS-302 this round.",
+         zh:"本条只投递给你本人（recipient_scope = admin_account）：其他管理员的列表里没有这条，"
+          + "用这条的 ID 访问详情会按 404 语义拒绝。\n演示消息——当前没有任何在跑的事件产出它，"
+          + "因为 WS-302 本期不产出管理端通知。"} });
+  m({ id:"m-m04", end:"admin", cat:"review_todo", biz:"review.idv_case.assigned", at:ago(9), read:false,
+      pre:"no_permission",
+      t:{en:"Case reassigned to another team", zh:"审核单已转交其他团队"},
+      b:{en:"Case IDV-20260906-072 moved to the compliance queue.",
+         zh:"审核单 IDV-20260906-072 已转入合规队列。"} });
+  m({ id:"m-m05", end:"admin", cat:"review_todo", biz:"review.idv_case.assigned", at:ago(20), read:true,
+      pre:"fail",
+      t:{en:"Verification case reopened", zh:"认证审核单重开"},
+      b:{en:"Case IDV-20260905-014 was reopened after the applicant submitted new documents.",
+         zh:"申请人重新提交材料后，审核单 IDV-20260905-014 已重开。"} });
+  m({ id:"m-m06", end:"admin", cat:"review_todo", at:ago(27), read:false, exp:true,
+      t:{en:"Weekend review roster", zh:"周末值班审核安排"},
+      b:{en:"The roster for last weekend is no longer actionable.",
+         zh:"上周末的值班安排已过时，无需再处理。"} });
+  m({ id:"m-m07", end:"admin", cat:"review_todo", biz:"review.case.batch_import", at:ago(33), read:false,
+      t:{en:"Batch import finished", zh:"批量导入完成"},
+      b:{en:"This message carries a biz_type this client version hasn't registered, so no action button is rendered.",
+         zh:"这条消息带的 biz_type 当前客户端未登记，因此不渲染跳转按钮。"} });
+  m({ id:"m-m08", end:"admin", cat:"risk_scan", at:ago(40), read:false,
+      t:{en:"Weekly risk scan report is ready", zh:"每周风险扫描报告已生成"},
+      b:{en:"This category is not registered in this client version; the label falls back to Other.",
+         zh:"该分类当前客户端未登记，分类标签回落为「其他」。"} });
+  m({ id:"m-m09", end:"admin", cat:"review_todo", biz:"review.idv_case.assigned", at:ago(48), read:true,
+      t:{en:"Verification case assigned", zh:"认证审核单已分派"},
+      b:{en:"Case IDV-20260906-051 was assigned to the review pool.",
+         zh:"审核单 IDV-20260906-051 已进入审核池。"} });
+  m({ id:"m-m10", end:"admin", cat:"review_todo", at:ago(56), read:true, degraded:true, t:null, b:null });
+  m({ id:"m-m11", end:"admin", cat:"review_todo", biz:"review.idv_case.assigned", at:ago(64), read:true,
+      pre:"resource_deleted",
+      t:{en:"Case withdrawn by applicant", zh:"申请人已撤回审核单"},
+      b:{en:"Case IDV-20260904-090 was withdrawn before review started.",
+         zh:"审核单 IDV-20260904-090 在审核开始前被撤回。"} });
+  m({ id:"m-m12", end:"admin", cat:"review_todo", biz:"review.idv_case.assigned", at:ago(70), read:true,
+      t:{en:"Verification case assigned", zh:"认证审核单已分派"},
+      b:{en:"Case IDV-20260905-033 entered the review pool.", zh:"审核单 IDV-20260905-033 已进入审核池。"} });
+  for (var i = 0; i < 10; i++) {
+    m({ id:"m-m" + (13 + i), end:"admin", cat:"review_todo", biz:"review.idv_case.assigned",
+        at:ago(80 + i * 9), read:true,
+        t:{en:"Verification case assigned", zh:"认证审核单已分派"},
+        b:{en:"Case IDV-2026090" + (i % 9 + 1) + "-0" + (40 + i) + " entered the review pool.",
+           zh:"审核单 IDV-2026090" + (i % 9 + 1) + "-0" + (40 + i) + " 已进入审核池。"} });
+  }
+  return d;
+}
+
+(function(){
+"use strict";
+
+/* 公共层能力一次性取出，模块内不再重复实现 */
+var CF = window.CF;
+var ICO=CF.ICO, t=CF.t, L=CF.L, esc=CF.esc, q=CF.q, gap=CF.gap;
+var note=CF.note, pageHead=CF.pageHead, toast=CF.toast, render=CF.render, syncURL=CF.syncURL;
+var prdBtn=CF.prdBtn, fmtTime=CF.fmtTime, fmtRel=CF.fmtRel, msgItem=CF.msgItem;
+
+var S;                                      /* 由 CF.boot 注入，见文件末尾 onBoot */
+var timer = null;                           /* 演示用的异步计时器，切页时统一清掉 */
+
+/* ------------------------------- 基础工具 -------------------------------- */
+function isAdmin(){ return S.end === "admin"; }
+function listPage(){ return isAdmin() ? "P-M20" : "P-A18"; }
+function detailPage(){ return isAdmin() ? "P-M21" : "P-A19"; }
+function byId(id){ return S.data.filter(function(x){ return x.id === id; })[0] || null; }
+function nm(o){ return o ? L(o.en, o.zh) : ""; }
+function catLabel(c){
+  var k = "c_" + c;
+  return t(k) || t("otherCat");                      /* 未登记分类回落「其他」，绝不展示键名 */
+}
+function nodeLabel(st){ return t("ns_" + st); }
+function title(m){ return m.degraded ? t("minTitle") : (m.prog ? nm(m.prog.name) : nm(m.t)); }
+function summary(m){ return m.degraded ? "" : nm(m.b).split("\n")[0]; }
+
+/* 可见集：按端隔离，管理端 = 共享池 + 本人个人消息（演示里 personal 即本人的） */
+function visible(){
+  var end = S.end;
+  return S.data.filter(function(m){ return m.end === end; })
+               .sort(function(a,b){ return a.at < b.at ? 1 : (a.at > b.at ? -1 : (a.id < b.id ? 1 : -1)); });
+}
+/* 未读角标：可见集里未读且**未过期**的条数（7.1.2）。服务端口径，前端不自行加工。 */
+function unreadCount(){
+  var n = visible().filter(function(m){ return !m.read && !m.exp; }).length;
+  return n + (S.bulk || 0);
+}
+/* 分类筛选项：只渲染该接收者名下**已有消息**的分类（7.3.2） */
+function catsPresent(){
+  var seen = [], out = [];
+  visible().forEach(function(m){
+    if (seen.indexOf(m.cat) < 0) { seen.push(m.cat); out.push(m.cat); }
+  });
+  return out;
+}
+/* 7.5.3 / AC-N23：在「只看未读」下刚被读掉的那几条**留在原位**并显示为已读样式，
+   直到用户主动换筛选或刷新才消失——否则下面的行会整体上移，用户接着点的就不是他想点的那条。 */
+function matched(){
+  var f = S.f;
+  return visible().filter(function(m){
+    if (f.cat !== "all" && m.cat !== f.cat) return false;
+    if (f.st === "unread" && m.read && S.keep.indexOf(m.id) < 0) return false;
+    if (f.st === "read" && !m.read) return false;
+    return true;
+  });
+}
+function keepVisible(id){ if (S.keep.indexOf(id) < 0) S.keep.push(id); }
+function anyFilter(){ return S.f.cat !== "all" || S.f.st !== "all"; }
+function unreadInFilter(){ return matched().filter(function(m){ return !m.read; }).length; }
+
+/* ------------------------------- URL 同步 -------------------------------- */
+/* AC-N14：筛选条件写入 URL，刷新保持；详情是独立路由，支持深链。 */
+function buildHash(){
+  var base = isAdmin() ? "#/admin/messages" : "#/messages", p = [];
+  if (S.page === "P-A19" || S.page === "P-M21") return base + "/" + (S.msgId || "");
+  if (S.f.cat !== "all") p.push("cat=" + encodeURIComponent(S.f.cat));
+  if (S.f.st !== "all") p.push("st=" + S.f.st);
+  if (isAdmin()) {
+    if (S.pg > 1) p.push("page=" + S.pg);
+    if (S.size !== 20) p.push("size=" + S.size);
+  } else if (S.loaded > 20) p.push("loaded=" + S.loaded);
+  if (S.st !== "default") p.push("state=" + S.st);
+  return base + (p.length ? "?" + p.join("&") : "");
+}
+function readURL(){
+  var h = location.hash || ""; if (!h) return false;
+  var parts = h.replace(/^#\/?/, "").split("?"), seg = parts[0].split("/"), qs = {};
+  (parts[1] || "").split("&").forEach(function(kv){
+    if (!kv) return; var i = kv.indexOf("="); qs[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1));
+  });
+  var admin = seg[0] === "admin";
+  if (seg[admin ? 1 : 0] !== "messages") return false;
+  S.end = admin ? "admin" : "asset";
+  var id = seg[admin ? 2 : 1];
+  if (id) {
+    var m = byId(id);
+    S.msgId = id;
+    S.page = admin ? "P-M21" : "P-A19";
+    S.st = m && m.end === S.end ? "default" : "notfound";
+    if (S.st === "default") beginDetail(m, true);
+    return true;
+  }
+  S.page = admin ? "P-M20" : "P-A18";
+  S.f = { cat: qs.cat || "all", st: (qs.st === "unread" || qs.st === "read") ? qs.st : "all" };
+  S.keep = [];
+  S.pg = parseInt(qs.page || "1", 10) || 1;
+  S.size = parseInt(qs.size || "20", 10) || 20;
+  S.loaded = parseInt(qs.loaded || "20", 10) || 20;
+  S.st = (CF.STATES[S.page] || []).some(function(x){ return x[0] === qs.state; }) ? qs.state : "default";
+  return true;
+}
+
+/* -------------------------------- 导航动作 -------------------------------- */
+function goList(keepScroll){
+  if (timer) { clearTimeout(timer); timer = null; }
+  S.page = listPage(); S.msgId = null; S.menu = null; S.modal = null;
+  S.st = "default";
+  S.restoreY = keepScroll ? S.scrollY : 0;
+  render(); syncURL();
+}
+function goEnd(end){
+  if (timer) { clearTimeout(timer); timer = null; }
+  S.end = end; S.f = { cat:"all", st:"all" }; S.pg = 1; S.loaded = 20;
+  goList(false);
+}
+/* 打开详情：先记住列表滚动位置（AC-N22），再走「加载 → 渲染成功 → 标记已读」 */
+function openDetail(id){
+  var m = byId(id); if (!m) return;
+  S.scrollY = window.scrollY || 0;
+  S.end = m.end;
+  S.msgId = id; S.page = detailPage(); S.menu = null; S.st = "default";
+  S.restoreY = 0;
+  beginDetail(m, false);
+  render(); syncURL(); window.scrollTo(0, 0);
+}
+/* 详情加载 + 预检。两者都是模拟的异步请求，用来展示等待态与失败态。 */
+function beginDetail(m, silent){
+  if (timer) { clearTimeout(timer); timer = null; }
+  S.detail = "loading"; S.pre = "idle";
+  timer = setTimeout(function(){
+    timer = null;
+    if (S.fail) { S.detail = "error"; render(); return; }   /* 加载失败 → 不标记已读 */
+    S.detail = "ready";
+    /* 7.4.3：详情内容渲染成功之后才标记已读 */
+    if (!m.read) { m.read = true; keepVisible(m.id); }
+    startPrecheck(m);
+    render();
+  }, silent ? 520 : 460);
+}
+function startPrecheck(m){
+  var reg = m.biz ? BIZ[m.biz] : null;
+  if (!m.biz && !m.page) { S.pre = "none"; return; }          /* 形态 3：无跳转 */
+  if (m.biz && !reg) { S.pre = "missing"; return; }           /* 7.6.3：映射缺失 */
+  if (m.exp) { S.pre = "expired"; return; }                   /* 已过期：不渲染按钮 */
+  if (!m.biz && m.page) { S.pre = "ok"; return; }             /* 形态 2：静态页面不预检 */
+  if (!reg.pre) { S.pre = "ok"; return; }
+  S.pre = "pending";
+  timer = setTimeout(function(){
+    timer = null;
+    /* 预检接口本身失败：放行跳转（AC-N36） */
+    S.pre = (!m.pre || m.pre === "fail") ? "ok" : m.pre;
+    S.preFailed = m.pre === "fail";
+    render();
+  }, 620);
+}
+
+/* ============================== 通用片段 ================================= */
+function demoBar(){
+  var right = '<span class="right">' + endSwitch()
+    + '<button class="btn sm" type="button" data-act="dmNew">' + t("dmNew") + "</button>"
+    + '<button class="btn sm" type="button" data-act="dmDedupe">' + t("dmDedupe") + "</button>"
+    + '<button class="btn sm" type="button" data-act="dmBulk" aria-pressed="' + (S.bulk > 0) + '">'
+    + (S.bulk > 0 ? t("dmBulkOff") : t("dmBulk")) + "</button>"
+    + '<button class="btn sm" type="button" data-act="dmFail" aria-pressed="' + !!S.fail + '">'
+    + (S.fail ? t("dmFailOn") : t("dmFailOff")) + "</button>"
+    + '<button class="btn sm" type="button" data-act="dmReset">' + t("dmReset") + "</button>"
+    + "</span>";
+  return '<div class="demobar"><span>' + ICO.info + '</span><p style="margin:0;flex:1;min-width:220px">'
+    + t("demoBanner") + "</p>" + right + "</div>";
+}
+/* 端切换：同一份原型的两个端别视图，切换后菜单、分类集合、分页形态、权限口径都会变 */
+function endSwitch(){
+  return '<div class="dm-grp"><span class="tiny">' + L("End", "端别") + "</span>"
+    + '<div class="seg">'
+    + '<button type="button" data-act="end" data-v="asset" aria-pressed="' + (S.end === "asset") + '">'
+    + L("Asset side", "资产端") + "</button>"
+    + '<button type="button" data-act="end" data-v="admin" aria-pressed="' + (S.end === "admin") + '">'
+    + L("Console", "管理端") + "</button></div></div>";
+}
+function skelRows(n){
+  var out = "";
+  for (var i = 0; i < n; i++)
+    out += '<div class="skel-row"><div class="skel s"></div><div class="skel"></div>'
+        + '<div class="skel m"></div></div>';
+  return '<div role="status" aria-live="polite" aria-label="' + L("Loading", "加载中") + '">' + out + "</div>";
+}
+function emptyBox(title2, body, cta){
+  return '<div class="tbl-empty"><b>' + esc(title2) + '</b><p style="margin:0 0 12px">' + esc(body) + "</p>"
+    + (cta || "") + "</div>";
+}
+/* 列表项：把演示数据映射成公共组件 C-22 的入参，渲染由 _shared 负责。
+   时间：24 小时内相对时间，超过则绝对时间；快捷面板宽度有限，只取日期，hover 看完整值。 */
+function itemOf(m, compact){
+  var rel = fmtRel(m.at, NOW);
+  var over = Date.parse(NOW) - Date.parse(m.at) >= 86400000;
+  return { id:m.id, catLabel:catLabel(m.cat), title:title(m), summary:summary(m),
+           timeText:(compact && over) ? CF.fmtDate(m.at) : rel,
+           timeTitle:fmtTime(m.at), unread:!m.read, expired:!!m.exp,
+           node:m.prog ? { text:t("nodePrefix", { node:nm(m.prog.node) }),
+                           status:m.prog.st, label:nodeLabel(m.prog.st) } : null };
+}
+
+/* ============================== P-A18 / P-M20 列表 ======================== */
+function filterBar(){
+  var cats = catsPresent();
+  return '<div class="filters">'
+    + '<div class="fl"><span id="lb_cat">' + t("fCategory") + "</span>"
+    + '<select class="inp" data-f="cat" aria-labelledby="lb_cat">'
+    + '<option value="all"' + (S.f.cat === "all" ? " selected" : "") + ">" + esc(t("catAll")) + "</option>"
+    + cats.map(function(c){
+        return '<option value="' + esc(c) + '"' + (S.f.cat === c ? " selected" : "") + ">"
+          + esc(catLabel(c)) + "</option>";
+      }).join("")
+    + "</select></div>"
+    + '<div class="fl"><span id="lb_st">' + t("fStatus") + "</span>"
+    + '<div class="seg" role="group" aria-labelledby="lb_st">'
+    + [["all","stAll"],["unread","stUnread"],["read","stRead"]].map(function(x){
+        return '<button type="button" data-act="fst" data-v="' + x[0] + '" aria-pressed="'
+          + (S.f.st === x[0]) + '">' + t(x[1]) + "</button>";
+      }).join("")
+    + "</div></div>"
+    + (anyFilter()
+        ? '<div class="fl-act"><button class="btn sm" type="button" data-act="clearF">'
+          + t("clearFilters") + "</button></div>"
+        : "")
+    + "</div>";
+}
+function pager(n, pages, pg){
+  return '<div class="pager"><span>' + L("Total", "共") + ' <b class="mono">' + n + "</b> "
+    + L(n === 1 ? "notification" : "notifications", "条") + "</span>"
+    + '<div class="right"><span>' + t("perPage") + "</span>"
+    + '<select class="inp" data-f="size">' + [20, 50, 100].map(function(s){
+        return '<option value="' + s + '"' + (S.size === s ? " selected" : "") + ">" + s + "</option>";
+      }).join("") + "</select>"
+    + '<button class="pgbtn" type="button" data-act="pg" data-v="' + (pg - 1) + '"' + (pg <= 1 ? " disabled" : "")
+    + ' aria-label="' + L("Previous page", "上一页") + '">‹</button>'
+    + '<span class="mono">' + t("pageOf", { p:pg, t:pages }) + "</span>"
+    + '<button class="pgbtn" type="button" data-act="pg" data-v="' + (pg + 1) + '"'
+    + (pg >= pages ? " disabled" : "") + ' aria-label="' + L("Next page", "下一页") + '">›</button></div></div>';
+}
+function pageList(){
+  var admin = isAdmin();
+  var unread = unreadInFilter();
+  var markBtn = '<button class="btn sm primary" type="button" data-act="askAll"'
+    + (unread === 0 || S.st !== "default" ? " disabled" : "")
+    + (unread === 0 ? ' title="' + esc(t("markAllNone")) + '"' : "")
+    + ">" + t("markAll") + "</button>";
+  var head = pageHead(t("nTitle"), t(admin ? "nDescAdmin" : "nDesc"), markBtn + prdBtn());
+
+  var list = (S.st === "empty" || S.st === "nomatch") ? [] : matched();
+  var total = S.st === "empty" ? 0 : visible().length;
+  var filteredNow = anyFilter() || S.st === "nomatch";
+  var pages = Math.max(1, Math.ceil(list.length / S.size));
+  var pg = Math.min(S.pg, pages);
+  var rows = admin ? list.slice((pg - 1) * S.size, pg * S.size) : list.slice(0, S.loaded);
+
+  var body, foot = "";
+  if (S.st === "loading") {
+    body = skelRows(5);
+  } else if (S.st === "error") {
+    body = '<div class="card-b">' + note("red", t("listFailSub"), t("listFail"), "alert")
+      + '<div style="margin-top:14px"><button class="btn sm" type="button" data-act="st" data-v="default">'
+      + L("Retry", "重试") + "</button></div></div>";
+  } else if (!rows.length) {
+    body = filteredNow
+      ? emptyBox(t("nomatchTitle"), L("Clear the filters to see every notification.", "清除筛选条件即可看到全部消息。"),
+          '<button class="btn sm" type="button" data-act="clearF">' + t("clearFilters") + "</button>")
+      : emptyBox(t("emptyTitle"), t("emptySub"));
+  } else {
+    body = '<ul class="msgs">' + rows.map(function(m){
+      return msgItem(itemOf(m), { act:"open", markable:true, markAct:"mark", current:S.msgId === m.id });
+    }).join("") + "</ul>";
+    if (admin) {
+      foot = pager(list.length, pages, pg);
+    } else if (S.more === "error") {
+      foot = '<div class="lm-err" role="alert"><span>' + t("moreFail") + "</span>"
+        + '<button class="btn sm" type="button" data-act="more">' + L("Retry", "重试") + "</button></div>";
+    } else if (S.loaded < list.length) {
+      foot = '<div class="lm"><button class="btn sm" type="button" data-act="more"'
+        + (S.more === "loading" ? " disabled" : "") + ">"
+        + (S.more === "loading"
+            ? '<span class="spinner"></span>' + L("Loading", "加载中")
+            : t("loadMore")) + "</button></div>";
+    } else {
+      foot = '<div class="lm"><span class="tiny">'
+        + t("loadedOf", { n:rows.length, total:list.length }) + "</span></div>";
+    }
+  }
+
+  var count = filteredNow ? t("listCountF", { n:list.length, total:total })
+                          : t("listCount", { n:list.length });
+  return head + demoBar()
+    + '<div class="card"><div class="card-head"><b>' + t("nTitle") + "</b><span>" + esc(count) + "</span>"
+    + '<span class="right tiny">' + t("tzNote") + "</span></div>"
+    + filterBar() + body + foot + "</div>";
+}
+
+/* ============================== P-A19 / P-M21 详情 ======================== */
+function invalidNote(m){
+  if (m.exp) return note("", t("invExpired"));
+  if (S.pre === "resource_deleted") return note("", t("invDeleted"));
+  if (S.pre === "state_changed")
+    return note("", m.preStatus ? t("invChangedSt", { status:nm(m.preStatus) }) : t("invChanged"));
+  if (S.pre === "no_permission") return note("", t("invNoPerm"));
+  return "";
+}
+function ctaBlock(m){
+  var reg = m.biz ? BIZ[m.biz] : null;
+  var label = t(reg ? reg.cta : "ctaDefault");
+  /* 没有跳转的消息一律只留「返回列表」，不加任何说明文案——用户 2026-09-08 裁定，
+     覆盖 PRD 7.6.3「映射缺失展示说明文案」这一条；7.6.4 的无跳转形态本来就不给文案。
+     映射缺失仍然按 AC-N33 上报一次「未知业务类型」事件，只是界面上不出现。 */
+  if (S.pre === "none") return "";
+  if (S.pre === "missing") return "";
+  /* 已过期：不渲染跳转按钮（7.7 第 1 类） */
+  if (S.pre === "expired") return "";
+  if (S.pre === "pending")
+    return '<button class="btn primary" type="button" disabled><span class="spinner"></span>'
+      + t("checking") + "</button>";
+  if (S.pre === "resource_deleted" || S.pre === "state_changed" || S.pre === "no_permission")
+    return '<button class="btn primary" type="button" disabled title="' + esc(t("ctaOff")) + '">'
+      + esc(label) + "</button>";
+  /* 可跳转：静态页面目标与业务资源目标都由前端解析路由，消息实体内不存 URL */
+  var target = reg ? reg.page : m.page;
+  var href = target ? crossHref(target) : null;
+  if (href) return '<a class="btn primary" href="' + esc(href) + '">' + esc(label) + "</a>";
+  if (target) return '<button class="btn primary" type="button" data-act="go" data-v="' + target + '">'
+    + esc(label) + "</button>";
+  /* 目标页不在本仓库（WS-303 审核台）：如实说明，不造一个假页面 */
+  return '<button class="btn primary" type="button" data-act="jumpDemo">' + esc(label) + "</button>";
+}
+/* 目标页在别的原型文件里时给出相对地址，与侧栏跨文件跳转同一套规则 */
+function crossHref(id){
+  var mod = CF.MODULES[CF.OWNER[id]];
+  if (!mod || CF.OWNER[id] === "notify") return null;
+  return "../" + mod.dir + "/" + mod.file + (CF.ENTRY[id] || "#/" + id.toLowerCase());
+}
+function pageDetail(){
+  var m = byId(S.msgId);
+  if (S.st === "notfound" || !m || m.end !== S.end)
+    return pageHead(t("nTitle"), "", prdBtn())
+      + '<div class="card"><div class="card-b shell">' + ICO.info + "<p>" + t("notFound") + "</p>"
+      + '<button class="btn primary" type="button" data-act="back">' + t("notFoundBack") + "</button>"
+      + "</div></div>";
+  if (S.st === "loading" || S.detail === "loading")
+    return pageHead(t("nTitle"), "", prdBtn())
+      + '<div class="card"><div class="card-b">' + skelRows(3) + "</div></div>";
+  if (S.st === "error" || S.detail === "error")
+    return pageHead(t("nTitle"), "", prdBtn())
+      + '<div class="card"><div class="card-b">'
+      + note("red", L("The notification could not be loaded, so it was not marked as read.",
+                      "本条消息未能加载，因此没有被标记为已读。"), t("detailFail"), "alert")
+      + '<div class="dfoot">'
+      + '<button class="btn primary" type="button" data-act="retryDetail">' + L("Retry", "重试") + "</button>"
+      + '<button class="btn" type="button" data-act="back">' + t("backList") + "</button></div></div></div>";
+
+  /* 标题即页面标题（长标题换行不截断）；分类、时间、业务编号在卡片内的元信息行 */
+  var head = pageHead(esc(title(m)), "", prdBtn());
+  var body = '<div class="card"><div class="card-b">'
+    + '<span class="tag">' + esc(catLabel(m.cat)) + "</span>"
+    + (m.exp ? ' <span class="pill dash">' + t("expired") + "</span>" : "")
+    + '<div class="dmeta"><span>' + esc(t("detailTime", { t:fmtTime(m.at) })) + "</span>"
+    + (m.prog && m.prog.no
+        ? '<span class="sep">·</span><span class="hash"><span class="val">'
+          + esc(t("bizNo", { biz_no:m.prog.no })) + "</span>"
+          + '<button class="ico" type="button" data-act="copy" data-v="' + esc(m.prog.no)
+          + '" aria-label="' + esc(t("copy")) + '" title="' + esc(t("copy")) + '">' + ICO.copy + "</button></span>"
+        : "")
+    + "</div>" + gap(16)
+    /* 进度区块：仅进度类消息（7.8.3） */
+    + (m.prog
+        ? '<div class="prog"><div class="rw"><span class="nd">' + esc(nm(m.prog.name)) + "</span>"
+          + '<span class="sep">·</span><span>' + esc(t("nodePrefix", { node:nm(m.prog.node) })) + "</span>"
+          + '<span class="pill ' + (CF.NODE_PILL[m.prog.st] || "gray") + '">' + esc(nodeLabel(m.prog.st))
+          + "</span></div>"
+          + (m.prog.i && m.prog.n
+              ? '<div class="rw"><span>' + esc(t("stepOf", { i:m.prog.i, n:m.prog.n })) + "</span></div>"
+              : "")
+          + "</div>"
+        : "")
+    + invalidNote(m)
+    + (invalidNote(m) ? gap(14) : "")
+    /* 文案模板缺失时降级为「标题 + 时间」：正文留空，**不加解释文案**——
+       「这条消息的模板在当前客户端缺失」是给前端看的，不该出现在用户界面上，
+       规格说明留在 PRD 面板与 README 里。 */
+    + '<p class="dbody">' + esc(m.degraded ? "" : nm(m.b)) + "</p>"
+    + '<div class="dfoot">' + ctaBlock(m)
+    + '<button class="btn" type="button" data-act="back">' + t("backList") + "</button></div>"
+    + "</div></div>";
+  return head + body;
+}
+
+/* ============================== 全部已读（F-N11） ========================= */
+function modalMarkAll(){
+  var n = unreadInFilter();
+  var fCat = S.f.cat === "all" ? t("catAll") : catLabel(S.f.cat);
+  var fSt = S.f.st === "all" ? t("stAll") : (S.f.st === "unread" ? t("stUnread") : t("stRead"));
+  return '<div class="mask" data-act="closeModal"><div class="modal" role="dialog" aria-modal="true"'
+    + ' aria-label="' + esc(t("markAllTitle", { n:n })) + '">'
+    + '<div class="modal-h"><b>' + esc(t("markAllTitle", { n:n })) + "</b>"
+    + '<button class="modal-x" type="button" data-act="closeModal" aria-label="' + t("close") + '">✕</button></div>'
+    + '<div class="modal-b">'
+    + (anyFilter()
+        ? note("", esc(t("markAllFilter", { category:fCat, status:fSt })))
+        : note("", L("No filter is active, so every unread notification in your list is included.",
+                     "当前没有筛选条件，你列表中的全部未读消息都会被标记。")))
+    + gap(12)
+    + '<p class="lead" style="margin:0">' + esc(t("markAllUndo")) + "</p></div>"
+    + '<div class="modal-f"><button class="btn" type="button" data-act="closeModal">' + t("cancel") + "</button>"
+    + '<button class="btn primary" type="button" data-act="doAll"' + (S.busy ? " disabled" : "") + ">"
+    + (S.busy ? '<span class="spinner"></span>' + t("markingAll") : t("confirm")) + "</button></div>"
+    + "</div></div>";
+}
+function doMarkAll(){
+  S.busy = true; render();
+  timer = setTimeout(function(){
+    timer = null; S.busy = false;
+    if (S.fail) {                                   /* AC-N29：失败时列表与角标不做任何变更 */
+      S.modal = null; render();
+      toast("danger", t("markAllFail"));
+      return;
+    }
+    var hit = matched().filter(function(m){ return !m.read; });
+    hit.forEach(function(m){ m.read = true; });
+    S.keep = [];
+    S.modal = null; render();
+    toast("success", t("markAllOk", { n:hit.length }));
+  }, 620);
+}
+
+/* ============================== 事件 ==================================== */
+function onAct(n, a, v, e){
+  /* 铃铛：每次展开都重新拉一次（7.2），因此在这里接管开合 */
+  if (a === "menu" && v === "bell") {
+    var opening = S.menu !== "bell";
+    S.menu = opening ? "bell" : null;
+    if (opening) loadPanel();
+    render(); return true;
+  }
+  if (a === "open") { openDetail(v); return true; }
+  if (a === "back" || a === "crumb") { goList(true); return true; }
+  if (a === "end") { goEnd(v); return true; }
+  if (a === "mark") {                                /* 行内标为已读：就地标记，不进详情 */
+    var m = byId(v); if (m && !m.read) { m.read = true; keepVisible(m.id); render(); }
+    return true;
+  }
+  if (a === "fst") { S.f.st = v; S.pg = 1; S.loaded = 20; S.more = null; S.keep = [];
+                     render(); syncURL(); return true; }
+  if (a === "clearF") { S.f = { cat:"all", st:"all" }; S.pg = 1; S.loaded = 20; S.more = null; S.keep = [];
+                        if (S.st === "nomatch") S.st = "default"; render(); syncURL(); return true; }
+  if (a === "pg") { S.pg = parseInt(v, 10); render(); syncURL(); window.scrollTo(0, 0); return true; }
+  if (a === "more") {
+    S.more = "loading"; render();
+    timer = setTimeout(function(){
+      timer = null;
+      if (S.fail) { S.more = "error"; render(); return; }   /* 已加载内容不清空 */
+      S.more = null; S.loaded += 20; render(); syncURL();
+    }, 520);
+    return true;
+  }
+  if (a === "askAll") { S.modal = { type:"markAll" }; render(); return true; }
+  if (a === "doAll") { doMarkAll(); return true; }
+  if (a === "retryDetail") { var md = byId(S.msgId); if (md) { beginDetail(md, false); render(); } return true; }
+  if (a === "jumpDemo") { toast("info", t(BIZ["review.idv_case.assigned"].cta), t("jumpDemo")); return true; }
+  if (a === "copy") {
+    if (navigator.clipboard) { try { navigator.clipboard.writeText(v); } catch (err) {} }
+    toast("success", t("copyOk")); return true;
+  }
+  /* ------------------------- 演示控制条 ------------------------- */
+  if (a === "dmReset") { S.data = seed(); S.f = { cat:"all", st:"all" }; S.pg = 1; S.loaded = 20; S.keep = [];
+                         S.bulk = 0; S.fail = false; S.more = null; goList(false); return true; }
+  if (a === "dmNew") {
+    S.data.unshift({ id:"m-new-" + S.data.length, end:S.end,
+      cat:S.end === "admin" ? "review_todo" : "security",
+      page:S.end === "admin" ? "P-M05" : "P-A11", at:new Date().toISOString(), read:false,
+      t:{ en:S.end === "admin" ? "New verification case to review" : "Your password was changed",
+          zh:S.end === "admin" ? "新的认证审核待办" : "登录密码已修改" },
+      b:{ en:S.end === "admin" ? "A new case is waiting for first review."
+                               : "Your password was just changed. All devices were signed out.",
+          zh:S.end === "admin" ? "有一条新的审核单待初审。" : "你的密码刚刚被修改，所有设备均已退出登录。" } });
+    render(); toast("info", t("dmNewToast")); return true;
+  }
+  if (a === "dmDedupe") {                            /* 9.1.3：命中去重键 → 合并、更新时间、恢复未读 */
+    var old = visible().filter(function(x){ return x.read && !x.exp; })[0];
+    if (old) { old.read = false; old.at = new Date().toISOString(); }
+    render(); toast("info", t("dmDedupeToast"), t("dmDedupeBody")); return true;
+  }
+  if (a === "dmBulk") { S.bulk = S.bulk > 0 ? 0 : 125; render(); return true; }
+  if (a === "dmFail") { S.fail = !S.fail; render(); return true; }
+  return false;                                      /* 其余交回 shell */
+}
+
+/* 铃铛面板：展开即重新拉取，展示骨架屏；失败态给重试（7.2） */
+function loadPanel(){
+  S.panel = "loading";
+  setTimeout(function(){
+    S.panel = S.fail ? "error" : "ready";
+    render();
+  }, 520);
+}
+
+document.addEventListener("change", function(e){
+  var n = e.target.closest("[data-f]"); if (!n) return;
+  var k = n.getAttribute("data-f");
+  if (k === "cat") { S.f.cat = n.value; S.pg = 1; S.loaded = 20; S.more = null; S.keep = [];
+                     if (S.st === "nomatch") S.st = "default"; render(); syncURL(); }
+  if (k === "size") { S.size = parseInt(n.value, 10); S.pg = 1; render(); syncURL(); }
+});
+
+/* ============================== 渲染 ==================================== */
+function renderContent(){
+  return (S.page === "P-A18" || S.page === "P-M20") ? pageList() : pageDetail();
+}
+
+var STATES = {
+  "P-A18":[["default","Default","默认"],["loading","Loading","首屏加载中"],["empty","No messages","首次空态"],
+           ["nomatch","No filter match","筛选无结果"],["error","Load failed","首屏加载失败"]],
+  "P-M20":[["default","Default","默认"],["loading","Loading","首屏加载中"],["empty","No messages","首次空态"],
+           ["nomatch","No filter match","筛选无结果"],["error","Load failed","首屏加载失败"]],
+  "P-A19":[["default","Default","默认"],["loading","Loading","加载中"],["error","Load failed","加载失败可重试"],
+           ["notfound","Not available (404)","消息不存在 / 越权 · 404 语义"]],
+  "P-M21":[["default","Default","默认"],["loading","Loading","加载中"],["error","Load failed","加载失败可重试"],
+           ["notfound","Not available (404)","他人个人消息 · 404 语义"]]
+};
+
+/* ============================== 装配 ==================================== */
+CF.define({
+  id:"notify",
+  end:"asset",
+  home:"P-A18",
+  owns:["P-A18","P-A19","P-M20","P-M21"],
+  dict:DICT,
+  prd:PRD,
+  states:STATES,
+  onBoot:function(st){ S = st; },
+  state:function(){
+    return { f:{ cat:"all", st:"all" }, pg:1, size:20, loaded:20, more:null, keep:[],
+             msgId:null, detail:"ready", pre:"idle", preFailed:false, panel:"ready",
+             busy:false, fail:false, bulk:0, scrollY:0, restoreY:0, data:seed() };
+  },
+  content:renderContent,
+  modals:{ markAll:modalMarkAll },
+  /* 铃铛 C-20 与快捷面板 C-21 的数据源：最近 10 条，不区分已读未读（N-N02） */
+  notify:function(){
+    return { unread:unreadCount(), phase:S.panel,
+             items:visible().slice(0, 10).map(function(m){ return itemOf(m, true); }) };
+  },
+  notifyOpen:function(id){ openDetail(id); },
+  notifyRetry:function(){ loadPanel(); render(); },
+  account:function(){
+    var admin = isAdmin();
+    return { avatar:admin ? "AD" : "CF",
+             ident:admin ? "ops.admin@chain-financing.example" : "user@chain-financing.example",
+             ok:true, okText:L("Active", "正常"),
+             settings:admin ? "P-M05" : "P-A11",
+             signOutPage:admin ? "P-M01" : "P-A01" };
+  },
+  crumbParts:function(){
+    return (S.page === "P-A19" || S.page === "P-M21") ? [[t("nTitle"), listPage(), ""]] : [];
+  },
+  crumbCur:function(){
+    if (S.page === "P-A19" || S.page === "P-M21") {
+      var m = byId(S.msgId);
+      return (S.st === "notfound" || !m) ? t("minTitle") : title(m);
+    }
+    return null;
+  },
+  hash:{ build:buildHash, read:readURL },
+  prdFoot:function(){
+    return '本面板只摘录<b>本页用得到的</b>条目，不是全量 PRD。完整口径以 '
+      + '<code class="mono">asset-platform/prd/v1.0-消息通知/</code> 5 个文件（2026-09-08 08:02 版）为准；'
+      + '编号体系 F-N01～F-N22 / P-A18～19 / P-M20～21 / C-20～23 / N-N01～06 / AC-N01～88。'
+      + '面板固定中文，是给前端开发看的规格说明，不属于产品界面。';
+  },
+  onGo:function(){ if (timer) { clearTimeout(timer); timer = null; } S.more = null; },
+  onSetState:function(k){
+    /* 切到某个强制状态时先停掉正在跑的模拟请求，免得它把状态改回去 */
+    if (timer) { clearTimeout(timer); timer = null; }
+    S.more = null;
+    if (k === "default" && (S.page === "P-A19" || S.page === "P-M21")) {
+      var m = byId(S.msgId); if (m) beginDetail(m, false);
+    }
+  },
+  afterRender:function(){
+    /* AC-N22：从详情返回时恢复进入前的滚动位置，不回到顶部 */
+    if (S.restoreY) { var y = S.restoreY; S.restoreY = 0; window.scrollTo(0, y); }
+  },
+  onAct:onAct
+});
+CF.boot();
+})();
+</script>
+</body>
+</html>

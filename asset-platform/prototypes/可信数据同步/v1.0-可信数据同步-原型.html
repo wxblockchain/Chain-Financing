@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chain Financing · 可信数据同步 可交互原型 (WS-313)</title>
+<link rel="stylesheet" href="../_shared/tokens.css">
+<link rel="stylesheet" href="../_shared/base.css">
+<style>
+/* 本模块只定义可信数据同步页面的局部组合；token、壳层与公共组件均来自 ../_shared/。 */
+.ds-sums{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:var(--sp-3);margin-bottom:var(--sp-4)}
+.ds-sums .sub{font-size:var(--fs-11);color:var(--faint);margin-top:var(--sp-1)}
+.ds-money{font-family:var(--mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+.ds-table{min-width:1370px;table-layout:fixed}
+.ds-table th:nth-child(1){width:42px}.ds-table th:nth-child(2){width:158px}.ds-table th:nth-child(3){width:164px}
+.ds-table th:nth-child(4){width:100px}.ds-table th:nth-child(5){width:142px}.ds-table th:nth-child(6){width:94px}
+.ds-table th:nth-child(7){width:110px}.ds-table th:nth-child(8){width:186px}.ds-table th:nth-child(9){width:186px}
+.ds-table th:nth-child(10){width:110px}.ds-table th:nth-child(11){width:72px}
+.ds-table td:nth-child(4),.ds-inv-table td:nth-child(3){overflow-wrap:normal;word-break:keep-all}
+.ds-batch-table{min-width:1080px;table-layout:fixed}
+.ds-batch-table th:nth-child(1){width:88px}.ds-batch-table th:nth-child(2){width:186px}.ds-batch-table th:nth-child(3){width:206px}
+.ds-batch-table th:nth-child(5){width:92px}.ds-batch-table th:nth-child(6){width:92px}.ds-batch-table th:nth-child(7){width:92px}
+.ds-batch-table th:nth-child(8){width:126px}
+.ds-item-table{min-width:1120px;table-layout:fixed}
+.ds-item-table th:nth-child(1){width:44px}.ds-item-table th:nth-child(2){width:168px}.ds-item-table th:nth-child(3){width:172px}
+.ds-item-table th:nth-child(4){width:150px}.ds-item-table th:nth-child(5){width:126px}
+.ds-item-table .cell-sub{display:block}
+.ds-inv-table{min-width:1160px;table-layout:fixed}
+.ds-inv-table th:nth-child(1){width:172px}.ds-inv-table th:nth-child(2){width:176px}.ds-inv-table th:nth-child(3){width:108px}
+.ds-inv-table th:nth-child(4){width:152px}.ds-inv-table th:nth-child(5){width:104px}.ds-inv-table th:nth-child(6){width:118px}
+.ds-inv-table th:nth-child(7){width:118px}.ds-inv-table th:nth-child(8){width:168px}
+/* 表格局部：只约束本模块四张表的列宽与换行，不改 base.css 的通用行为
+   （与应收账款母版对 .ar-table 的处理同一手法）。 */
+.ds-table td,.ds-item-table td,.ds-inv-table td,.ds-batch-table td{overflow-wrap:anywhere}
+.ds-table .c-time,.ds-item-table .c-time,.ds-inv-table .c-time,.ds-batch-table .c-time{width:auto;white-space:normal}
+.ds-table .cell-sub,.ds-table .cell-note,.ds-inv-table .cell-sub,.ds-inv-table .cell-note{display:block}
+.ds-table .c-date,.ds-inv-table .c-date{white-space:nowrap}
+.ds-table .col-act,.ds-item-table .col-act,.ds-inv-table .col-act,.ds-batch-table .col-act{position:sticky;right:0;background:var(--card);z-index:2;box-shadow:-7px 0 9px -9px var(--overlay)}
+.ds-table thead .col-act,.ds-item-table thead .col-act,.ds-inv-table thead .col-act,.ds-batch-table thead .col-act{background:var(--card-2)}
+.ds-table tbody tr:hover .col-act,.ds-item-table tbody tr:hover .col-act,.ds-inv-table tbody tr:hover .col-act,.ds-batch-table tbody tr:hover .col-act{background:var(--card-hover)}
+.ds-selbar{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;padding:11px var(--card-pad);
+  border-bottom:1px solid var(--border);background:var(--card-2);border-radius:var(--radius) var(--radius) 0 0}
+.ds-selbar .n{font-family:var(--mono);font-weight:660;color:var(--accent)}
+.ds-selbar .right{margin-left:auto;display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap}
+.ds-check{width:15px;height:15px;accent-color:var(--accent);margin:0}
+.ds-check:disabled{cursor:not-allowed;opacity:.5}
+.ds-reason{display:block;color:var(--danger);font-size:var(--fs-11);line-height:1.5;margin-top:3px;overflow-wrap:anywhere}
+.ds-flag{display:block;color:var(--warn);font-size:var(--fs-11);line-height:1.5;margin-top:3px}
+.ds-res{display:flex;flex-direction:column;gap:var(--sp-2)}
+.ds-res-row{display:flex;gap:var(--sp-3);align-items:flex-start;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--bg-elev);padding:11px 13px}
+.ds-res-row .bd{flex:1;min-width:0}
+.ds-res-row .bd b{display:block;font-family:var(--mono);font-size:12px;font-weight:640}
+.ds-res-row .bd span{display:block;font-size:var(--fs-11);color:var(--muted);margin-top:3px;overflow-wrap:anywhere}
+.ds-res-row .act{flex:none}
+.ds-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.5fr);gap:var(--sp-4);align-items:start}
+.ds-stack{display:flex;flex-direction:column;gap:var(--sp-3)}
+.ds-modal-list{display:flex;flex-direction:column;gap:var(--sp-2);max-height:230px;overflow:auto}
+.ds-kv{display:flex;justify-content:space-between;gap:var(--sp-4);padding:7px 0;border-bottom:1px dashed var(--border-dash);font-size:12.5px}
+.ds-kv:last-child{border-bottom:none}
+.ds-kv .v{font-family:var(--mono);white-space:nowrap}
+.ds-chips{display:flex;gap:var(--sp-1);flex-wrap:wrap}
+.ds-demo-sel{height:var(--ctrl-h-sm);border:1px solid var(--border-strong);border-radius:var(--radius-xs);
+  background:var(--card);padding:0 var(--sp-2);font-size:var(--fs-11);max-width:210px}
+.drawer.ds-result{width:min(560px,100vw)}
+@media (max-width:1180px){.ds-layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">CF</div><div><div class="brand-name">Chain Financing</div><div class="brand-sub" id="brandSub"></div></div></div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <div class="main">
+    <div class="topbar"><div style="flex:1"></div><div class="topbar-right" id="topRight"></div></div>
+    <div class="crumbbar" id="crumb"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+<div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../_shared/shell.js"></script>
+<script>
+(function(){
+var CF=window.CF,t=CF.t,L=CF.L,esc=CF.esc,note=CF.note,pageHead=CF.pageHead,toast=CF.toast,go=CF.go,render=CF.render;
+var S;
+
+var DICT={
+ en:{
+  demo:"Demonstration data",demoText:"Enterprises, receivables, amounts, wallets and batches are made up for interface review.",
+  reset:"Reset demo data",switchOps:"Operations console",switchAdmin:"Asset admin console",
+  permLabel:"Permissions",permFull:"data_sync.view + push",permView:"data_sync.view only",permDenied:"data_sync.push is not granted to this account.",
+  scenarioLabel:"Next receipt",scOk:"All accepted",scPartial:"Partially rejected (E-DS-02)",scDown:"Receiver unavailable (E-DS-05)",scTimeout:"Receipt unknown (E-DS-06)",
+  bulkOn:"Load 495 more demo assets",bulkOff:"Unload bulk demo assets",
+  all:"All",search:"Search",clear:"Reset",retry:"Retry",view:"View",close:"Close",cancel:"Cancel",
+  countN:"{n} records",countN1:"1 record",pageOf:"Page {p} / {q}",recordsN:"{n} records",recordsN1:"1 record",
+  loading:"Loading",empty:"Empty",nomatch:"No match",errorSt:"Load failed",nopermSt:"No permission",waiting:"Waiting",submitting:"Submitting",submitfail:"Submit failed",stDefault:"Default",
+
+  pushTitle:"Data push",
+  pushDesc:"Confirmed receivables that are already anchored on chain, pushed to the financial-service operations console.",
+  fSync:"Sync status",fChain:"Chain status",fCur:"Currency",fParty:"Asset holder",fConfirmed:"Confirmed on",
+  fKw:"Reference / holder / contract / tx hash",
+  fType:"Asset type",fReceived:"Received on",to:"to",
+  sNone:"Not pushed",sPushed:"Pushed",sFailed:"Push failed",
+  cNone:"Not anchored",cChained:"Anchored",cFailed:"Anchoring failed",
+  colChain:"Chain status",goChain:"Anchor it",
+  notChained:"This asset is not anchored on chain yet. Anchor it on the Receivables page before pushing.",
+  proof:"On-chain proof",proofHash:"Proof hash",txHash:"Transaction hash",block:"Block height",chainId:"Chain ID",proofAt:"Anchored at",
+  proofNote:"This asset was anchored on chain before it was pushed. Use the transaction hash to verify independently in a block explorer that it has not been altered.",
+  explorer:"Open in block explorer",noExplorer:"No block explorer is configured for this chain yet",
+  proofIncomplete:"The on-chain proof is incomplete. Anchor the asset again.",
+  colNo:"Receivable no.",colParty:"Asset holder",colType:"Asset type",colAmount:"Amount",colDue:"Due date",
+  colConfirmed:"Confirmed at",colSync:"Sync status",colLastPush:"Last push",colRetry:"Re-pushes",colAct:"Actions",
+  tyReceivable:"Receivable",
+  selN:"{n} selected",clearSel:"Clear selection",selectAll:"Select all matching",pushBtn:"Push",repush:"Re-push",
+  pushedHint:"Already pushed. Pushing it again will not create a second record on the operations side.",
+  overLimit:"Up to 500 assets per push. Split the selection into batches.",
+  sortAmount:"Sort by amount",sortHint:"Select a single currency before sorting by amount.",
+  emptyPush:"No confirmed assets yet",nomatchTx:"No assets match these filters",loadFail:"Couldn't load the asset list.",
+  noPermView:"You don't have data_sync.view. Ask an administrator to grant access to Data sync.",
+  waitingTx:"Waiting for the latest sync state…",pushingTx:"Pushing the selected assets…",pushFailTx:"The push request could not be sent. Nothing was submitted; try again.",
+
+  cfTitle:"Confirm push",cfCount:"Assets to push",cfCurrency:"Amount by currency",
+  cfExcluded:"{n} asset(s) failed the pre-push checks and will not be submitted:",
+  cfSubmit:"Confirm and push",submittingTx:"Pushing…",
+  rpTitle:"Confirm re-push",rpCount:"Assets to re-push",
+  rpNote:"Re-pushing is idempotent: an asset already stored on the operations side will not be added a second time.",
+
+  rsTitle:"Push result",rsBatch:"Batch",rsOk:"{n} succeeded",rsFail:"{n} failed",
+  rNew:"Stored",rDup:"Idempotent hit",rFail:"Failed",
+  rDupNote:"Already on the operations side; no second record was created.",
+  rDupChainNote:"The asset already had a valid proof; no second transaction was sent.",
+  rsRepush:"Re-push all failed items",rsViewBatch:"Open batch",
+
+  batchTitle:"Sync records",batchDesc:"Every anchoring and push batch, newest first. Records are append-only.",
+  colBatch:"Batch no.",colBy:"Operator",colAt:"Submitted at",colTotal:"Assets",colOk:"Succeeded",colFail:"Failed",colKind:"Trigger",
+  colBatchType:"Batch type",fBatchType:"Batch type",bChain:"Anchoring",bPush:"Push",
+  kPush:"Manual push",kRepush:"Manual re-push",kChain:"Manual anchoring",kRechain:"Manual re-anchoring",
+  fBatchKw:"Batch no. / operator",
+  emptyBatch:"No sync batches yet",batchFail:"Couldn't load sync records.",
+
+  bdTitle:"Batch details",bdRepushAll:"Re-push all failed items",colResult:"Result",colReason:"Reason",
+  bdOk:"Succeeded",bdFail:"Failed",bdTotal:"Assets",bdNoFail:"No failed items in this batch.",
+
+  invTitle:"Asset inventory",invDesc:"Assets pushed from the asset platform and accepted on this side.",
+  invConst:"Every asset in this inventory has sync status “Pushed”, so it is not offered as a filter.",
+  colSrcId:"Source asset ID",colReceived:"Received at",colSrcBatch:"Source batch",
+  emptyInv:"No synced assets yet",invFail:"Couldn't load the asset inventory.",
+  noPermInv:"You don't have asset_inventory.view.",readOnly:"Read only",
+
+  adTitle:"Asset details",secBasic:"Asset",secParty:"Asset holder",secTrade:"Trade information",
+  secConfirm:"Confirmation snapshot",secSync:"Sync timeline",
+  fWallet:"Holder wallet address",notProvided:"Not provided",copy:"Copy",copiedTx:"Full address copied",
+  fSrcSystem:"Source system",srcAsset:"Asset platform",fPartyName:"Name",fPartyId:"Enterprise ID",fStart:"Period start",fContracts:"Contract no.",fInvoice:"Invoice no.",
+  fTrade:"Trade type",fSettle:"Settlement",fDocs:"Trade documents",docsN:"{n} file(s)",
+  tGoods:"Goods trade",tService:"Services trade",settTT:"Telegraphic transfer (T/T)",settLC:"Letter of credit (L/C)",
+  cfParty:"Confirmed by (buyer)",cfAt:"Confirmed at",cfResult:"Decision",cfSubmits:"Submissions",cfPassed:"Confirmed",
+  tlChained:"Anchored on chain by the asset admin console",
+  tlPushed:"Pushed from the asset admin console",tlReceived:"Accepted into the asset inventory",tlDup:"Duplicate push ignored",
+  tlBatch:"Batch {b}",tlBy:"by {u}",
+
+  vStale:"The asset is no longer confirmed and cannot be pushed.",
+  vMissing:"Incomplete data: {f}",vParty:"The asset holder is not available.",
+  vWallet:"The holder wallet address is missing or malformed. Fix it on the asset platform before pushing.",
+  vNotChained:"Not anchored on chain yet, so it cannot be pushed.",
+  vProof:"The on-chain proof is incomplete. Anchor the asset again before pushing.",
+  eDS02:"Incomplete data: {f}. Complete it and re-push.",
+  eDS05:"The receiving system is temporarily unavailable. Re-push later.",
+  eDS06:"Result unknown. You can re-push directly — re-pushing is protected by idempotency.",
+  eDS07:"The chain service is temporarily unavailable. Anchor it again later.",
+  eDS08:"The anchoring result is unknown. You can anchor it again — the existing proof is checked first.",
+  eDS10:"Anchoring did not succeed or the proof is incomplete. Anchor it again.",
+  pushedOk:"Push finished",repushedOk:"Re-push finished",resetOk:"Demo data restored",
+  signOutDemo:"Sign-in and sign-out are delivered by the Account & sign-in prototype.",
+  lastReason:"Failure reason"
+ },
+ zh:{
+  demo:"演示数据",demoText:"企业、单据、金额、钱包地址与批次均为界面评审而虚构，不代表真实业务。",
+  reset:"重置演示数据",switchOps:"运营端",switchAdmin:"资产管理端",
+  permLabel:"权限",permFull:"data_sync.view + push",permView:"仅 data_sync.view",permDenied:"当前账号没有 data_sync.push 权限。",
+  scenarioLabel:"下次回执",scOk:"全部收单成功",scPartial:"部分收单失败（E-DS-02）",scDown:"对方系统不可用（E-DS-05）",scTimeout:"回执未知（E-DS-06）",
+  bulkOn:"载入 495 条批量演示资产",bulkOff:"移除批量演示资产",
+  all:"全部",search:"查询",clear:"重置",retry:"重试",view:"查看",close:"关闭",cancel:"取消",
+  countN:"共 {n} 笔",countN1:"共 1 笔",pageOf:"第 {p} / {q} 页",recordsN:"{n} 笔",recordsN1:"1 笔",
+  loading:"加载中",empty:"空数据",nomatch:"筛选无结果",errorSt:"失败可重试",nopermSt:"无权限",waiting:"异步等待",submitting:"提交中",submitfail:"提交失败",stDefault:"默认",
+
+  pushTitle:"数据推送",
+  pushDesc:"已确权并完成上链存证的应收账款，推送至金融服务平台运营端。",
+  fSync:"同步状态",fChain:"上链状态",fCur:"币种",fParty:"资产方",fConfirmed:"确权时间",
+  fKw:"编号 / 资产方 / 合同号 / 交易哈希",
+  fType:"资产类型",fReceived:"收单时间",to:"至",
+  sNone:"未推送",sPushed:"已推送",sFailed:"推送失败",
+  cNone:"未上链",cChained:"已上链",cFailed:"上链失败",
+  colChain:"上链状态",goChain:"去上链",
+  notChained:"该资产尚未上链，请先在「应收账款」页完成上链后再推送。",
+  proof:"链上凭证",proofHash:"存证哈希",txHash:"交易哈希",block:"区块高度",chainId:"链 ID",proofAt:"存证时间",
+  proofNote:"这条资产在推送前已上链存证，可用交易哈希到区块浏览器独立核对它没有被改过。",
+  explorer:"在区块浏览器查看",noExplorer:"该链暂未配置区块浏览器",
+  proofIncomplete:"链上凭证不完整，请重新上链。",
+  colNo:"应收账款编号",colParty:"资产方",colType:"资产类型",colAmount:"金额",colDue:"到期日",
+  colConfirmed:"确权时间",colSync:"同步状态",colLastPush:"最近推送时间",colRetry:"重推次数",colAct:"操作",
+  tyReceivable:"应收账款",
+  selN:"已选 {n} 条",clearSel:"清空",selectAll:"全选筛选结果",pushBtn:"推送",repush:"重推",
+  pushedHint:"该资产已推送，重复推送不会在运营端新增记录。",
+  overLimit:"单次最多推送 500 条，请分批处理。",
+  sortAmount:"按金额排序",sortHint:"请先选择单一币种后再按金额排序。",
+  emptyPush:"暂无已确权资产",nomatchTx:"没有符合当前筛选条件的资产",loadFail:"资产列表加载失败。",
+  noPermView:"你暂无 data_sync.view 权限，请联系管理员开通「数据同步」。",
+  waitingTx:"正在等待最新同步状态返回…",pushingTx:"正在推送已勾选的资产…",pushFailTx:"推送请求未能发出，本次未提交任何资产，请重试。",
+
+  cfTitle:"确认推送",cfCount:"待推送",cfCurrency:"分币种金额",
+  cfExcluded:"以下 {n} 条未通过推送前校验，本次不会提交：",
+  cfSubmit:"确认推送",submittingTx:"推送中…",
+  rpTitle:"确认重推",rpCount:"待重推",
+  rpNote:"重推受幂等保护：运营端已存在的资产不会重复入库。",
+
+  rsTitle:"推送结果",rsBatch:"批次",rsOk:"成功 {n} 条",rsFail:"失败 {n} 条",
+  rNew:"新入库",rDup:"幂等命中",rFail:"失败",
+  rDupNote:"运营端已存在，未重复入库。",
+  rDupChainNote:"该资产已有有效存证，未重复发交易。",
+  rsRepush:"重推全部失败条目",rsViewBatch:"查看批次",
+
+  batchTitle:"同步记录",batchDesc:"全部上链与推送批次，按时间倒序；记录只增不改。",
+  colBatch:"批次号",colBy:"操作人",colAt:"提交时间",colTotal:"总条数",colOk:"成功",colFail:"失败",colKind:"来源",
+  colBatchType:"批次类型",fBatchType:"批次类型",bChain:"上链",bPush:"推送",
+  kPush:"人工推送",kRepush:"人工重推",kChain:"人工上链",kRechain:"人工重新上链",
+  fBatchKw:"批次号 / 操作人",
+  emptyBatch:"暂无同步批次",batchFail:"同步记录加载失败。",
+
+  bdTitle:"推送批次详情",bdRepushAll:"重推本批全部失败条目",colResult:"结果",colReason:"原因",
+  bdOk:"成功",bdFail:"失败",bdTotal:"总条数",bdNoFail:"本批次没有失败条目。",
+
+  invTitle:"资产清单",invDesc:"由资产平台推送并在本端成功收单的资产。",
+  invConst:"清单内资产的同步状态恒为「已推送」，因此不设该筛选项。",
+  colSrcId:"来源资产 ID",colReceived:"收单时间",colSrcBatch:"来源批次",
+  emptyInv:"暂无已同步的资产",invFail:"资产清单加载失败。",
+  noPermInv:"你暂无 asset_inventory.view 权限。",readOnly:"只读",
+
+  adTitle:"资产详情",secBasic:"资产信息",secParty:"资产方",secTrade:"贸易信息",
+  secConfirm:"确权信息快照",secSync:"同步链路",
+  fWallet:"资产方钱包地址",notProvided:"未提供",copy:"复制",copiedTx:"已复制完整地址",
+  fSrcSystem:"来源系统",srcAsset:"资产平台",fPartyName:"企业名称",fPartyId:"企业唯一标识",fStart:"账期起始日",fContracts:"合同号",fInvoice:"发票号",
+  fTrade:"贸易类型",fSettle:"结算方式",fDocs:"贸易背景材料",docsN:"{n} 份",
+  tGoods:"货物贸易",tService:"服务贸易",settTT:"电汇（T/T）",settLC:"信用证（L/C）",
+  cfParty:"确权方（买方）",cfAt:"确权时间",cfResult:"确权结论",cfSubmits:"提交次数",cfPassed:"确权通过",
+  tlChained:"资产管理端完成上链存证",
+  tlPushed:"资产管理端推送",tlReceived:"运营端收单成功",tlDup:"重复推送已忽略",
+  tlBatch:"批次 {b}",tlBy:"操作人 {u}",
+
+  vStale:"资产状态已变化，不可推送。",
+  vMissing:"数据不完整：{f}",vParty:"资产方主体不可用。",
+  vWallet:"资产方钱包地址缺失或格式异常，请先在资产平台补齐后再推送。",
+  vNotChained:"该资产尚未上链，不可推送。",
+  vProof:"链上凭证不完整，请重新上链后再推送。",
+  eDS02:"数据不完整：{f}，请补齐后重推",
+  eDS05:"对方系统暂时不可用，请稍后重推",
+  eDS06:"结果未知，可直接重推，重推受幂等保护",
+  eDS07:"链服务暂时不可用，请稍后重新上链",
+  eDS08:"上链结果未知，可直接重新上链——重试前系统会先查该资产是否已有存证",
+  eDS10:"上链未成功或凭证不完整，请重新上链",
+  pushedOk:"推送已完成",repushedOk:"重推已完成",resetOk:"演示数据已重置",
+  signOutDemo:"登录与退出由「账户与登录」原型交付，本模块不重复实现。",
+  lastReason:"失败原因"
+ }
+};
+
+/* ------------------------------ 演示数据 -------------------------------- */
+var HOLDERS=[
+ {id:"ENT-DEMO-ALPHA",  name:"Demo Enterprise Alpha",  wallet:"0x4a7d1e2f9b0c3a8d5e6f70112233445566778899"},
+ {id:"ENT-DEMO-BETA",   name:"Demo Enterprise Beta",   wallet:"0x37b6c5d4e3f21908a7b6c5d4e3f21908a7b6c5d4"},
+ {id:"ENT-DEMO-GAMMA",  name:"Demo Enterprise Gamma",  wallet:"0x8e1f0a2b3c4d5e6f708192a3b4c5d6e7f8091a2b"},
+ {id:"ENT-DEMO-DELTA",  name:"Demo Enterprise Delta",  wallet:"0xc1b2a3948576e5d4c3b2a1908172635445362718"},
+ /* 钱包地址改必填后的两个反例：缺失与格式非法，推送前校验会剔除它们（V-DS-05）。 */
+ {id:"ENT-DEMO-EPSILON",name:"Demo Enterprise Epsilon",wallet:""},
+ {id:"ENT-DEMO-ZETA",   name:"Demo Enterprise Zeta",   wallet:"0x9f21"}
+];
+var BUYERS=["Demo Enterprise Omega","Demo Enterprise Sigma","Demo Enterprise Theta","Demo Enterprise Kappa"];
+function holder(i){return HOLDERS[i%HOLDERS.length];}
+
+/* 演示凭证：链侧的存证结构、哈希算法、链 ID 与回执取值尚未定稿（Q-DS-13），
+   这里按资产编号生成稳定的演示值，链 ID 固定为 DEMO-LOCAL——它不在区块浏览器
+   映射表内，所以详情页的跳转入口按「未配置」置灰。 */
+function demoProof(no,at){
+ var k=Number(no.slice(-6)).toString(16);
+ while(k.length<8)k="0"+k;
+ var rep8=function(x){var o="";for(var i=0;i<8;i++)o+=x;return o;};
+ return {hash:"0x"+rep8(k),tx:"0x"+rep8("d"+k.slice(1)),block:21000000+Number(no.slice(-6)),chain:"DEMO-LOCAL",at:at};
+}
+
+function asset(o){
+ var h=holder(o.h);
+ var chain=o.chain===undefined?"chained":o.chain;
+ return {id:o.no,no:o.no,partyId:h.id,party:h.name,wallet:h.wallet,type:"receivable",
+  cur:o.cur,amt:o.amt,start:o.start,due:o.due,confirmedAt:o.confirmedAt,
+  buyer:BUYERS[o.h%BUYERS.length],buyerId:"ENT-DEMO-BUYER-"+(o.h%BUYERS.length+1),confirmSubmits:o.subs||1,
+  contracts:o.contracts||["HT-2026-"+o.no.slice(-4)],invoice:o.invoice||("INV-2026-"+o.no.slice(-4)),
+  trade:o.trade||"goods",settle:o.settle||"tt",docs:o.docs||3,
+  chain:chain,proof:chain==="chained"?demoProof(o.no,o.chainedAt||"2026-09-08T01:00:00Z"):null,
+  chainBatch:chain==="chained"?(o.chainBatch||"CB-20260908-001"):(o.chainBatch||""),
+  chainRetries:o.chainRetries||0,chainErr:o.chainErr||null,
+  sync:o.sync||"",lastPushAt:o.lastPushAt||"",lastPushBy:o.lastPushBy||"",lastBatch:o.lastBatch||"",
+  retries:o.retries||0,err:o.err||null,partyOk:o.partyOk!==false,stale:!!o.stale,bulk:!!o.bulk};
+}
+function seedAssets(){
+ return [
+  asset({no:"AR20260901000101",h:0,cur:"CNY",amt:1200000,start:"2026-06-01",due:"2026-12-01",confirmedAt:"2026-09-01T02:14:00Z"}),
+  asset({no:"AR20260901000102",h:0,cur:"CNY",amt:860000,start:"2026-06-15",due:"2026-12-15",confirmedAt:"2026-09-01T06:02:00Z",contracts:["HT-2026-0102","HT-2026-0102B"]}),
+  /* 未上链：在数据推送页不可勾选，行内给出「去上链」入口 */
+  asset({no:"AR20260902000103",h:1,cur:"HKD",amt:240000,start:"2026-07-01",due:"2026-11-30",confirmedAt:"2026-09-02T01:20:00Z",chain:""}),
+  asset({no:"AR20260902000104",h:1,cur:"USD",amt:95000,start:"2026-07-10",due:"2026-10-10",confirmedAt:"2026-09-02T08:45:00Z",trade:"service",settle:"lc"}),
+  asset({no:"AR20260903000105",h:2,cur:"USD",amt:320000,start:"2026-07-20",due:"2027-01-20",confirmedAt:"2026-09-03T03:30:00Z"}),
+  asset({no:"AR20260903000106",h:2,cur:"KYD",amt:45000,start:"2026-08-01",due:"2026-11-01",confirmedAt:"2026-09-03T09:05:00Z",subs:2}),
+  /* 合同号缺失：V-DS-02 */
+  asset({no:"AR20260904000107",h:3,cur:"NGN",amt:18000000,start:"2026-08-05",due:"2026-12-05",confirmedAt:"2026-09-04T02:00:00Z",contracts:[],invoice:""}),
+  /* 资产方主体不可用：V-DS-03 */
+  asset({no:"AR20260904000108",h:3,cur:"NGN",amt:6500000,start:"2026-08-08",due:"2026-11-08",confirmedAt:"2026-09-04T07:40:00Z",partyOk:false}),
+  asset({no:"AR20260905000109",h:0,cur:"CNY",amt:2000000,start:"2026-05-01",due:"2026-11-01",confirmedAt:"2026-09-05T01:10:00Z",
+         chainedAt:"2026-09-05T01:50:00Z",chainBatch:"CB-20260905-001",
+         sync:"pushed",lastPushAt:"2026-09-05T02:12:00Z",lastPushBy:"demo.admin@demo.test",lastBatch:"PB-20260905-002"}),
+  asset({no:"AR20260905000110",h:1,cur:"HKD",amt:150000,start:"2026-05-20",due:"2026-10-20",confirmedAt:"2026-09-05T04:25:00Z",
+         chainedAt:"2026-09-05T01:50:00Z",chainBatch:"CB-20260905-001",
+         sync:"pushed",lastPushAt:"2026-09-05T02:12:00Z",lastPushBy:"demo.admin@demo.test",lastBatch:"PB-20260905-002"}),
+  asset({no:"AR20260906000111",h:2,cur:"USD",amt:78000,start:"2026-06-10",due:"2026-12-10",confirmedAt:"2026-09-06T01:05:00Z",
+         chainedAt:"2026-09-06T00:40:00Z",chainBatch:"CB-20260906-001",
+         sync:"failed",lastPushAt:"2026-09-06T06:05:00Z",lastPushBy:"demo.admin@demo.test",lastBatch:"PB-20260906-004",
+         retries:1,err:{code:"E-DS-02",field:"invoice"}}),
+  asset({no:"AR20260906000112",h:3,cur:"NGN",amt:3200000,start:"2026-06-18",due:"2026-12-18",confirmedAt:"2026-09-06T03:15:00Z",
+         chainedAt:"2026-09-06T00:40:00Z",chainBatch:"CB-20260906-001",
+         sync:"failed",lastPushAt:"2026-09-06T01:40:00Z",lastPushBy:"demo.admin@demo.test",lastBatch:"PB-20260906-003",
+         retries:0,err:{code:"E-DS-05"}}),
+  /* 资产状态已变化：V-DS-01 */
+  asset({no:"AR20260907000113",h:0,cur:"CNY",amt:430000,start:"2026-07-02",due:"2027-01-02",confirmedAt:"2026-09-07T02:30:00Z",stale:true}),
+  /* 钱包地址缺失 / 格式非法：V-DS-05，本期为硬拦项 */
+  asset({no:"AR20260907000114",h:4,cur:"USD",amt:128000,start:"2026-07-05",due:"2026-12-20",confirmedAt:"2026-09-07T05:10:00Z"}),
+  asset({no:"AR20260907000115",h:5,cur:"HKD",amt:96000,start:"2026-07-08",due:"2026-11-25",confirmedAt:"2026-09-07T07:45:00Z"}),
+  /* 上链失败：不可推送，行内给出「去上链」入口 */
+  asset({no:"AR20260908000116",h:0,cur:"CNY",amt:540000,start:"2026-07-12",due:"2027-01-12",confirmedAt:"2026-09-08T02:05:00Z",
+         chain:"failed",chainBatch:"CB-20260908-002",chainRetries:1,chainErr:{code:"E-DS-07"}})
+ ];
+}
+var CURS=["CNY","HKD","USD","KYD","NGN"];
+function bulkAssets(){
+ var out=[],i;
+ for(i=0;i<495;i++){
+  var n=200+i;
+  out.push(asset({no:"AR20260908"+("00000"+n).slice(-6),h:i%4,cur:CURS[i%5],
+   amt:(50000+i*137)%900000+12000,start:"2026-07-01",due:"2026-12-31",
+   chainBatch:"CB-20260908-003",
+   confirmedAt:"2026-09-08T"+("0"+(i%20)).slice(-2)+":"+("0"+(i%60)).slice(-2)+":00Z",bulk:true}));
+ }
+ return out;
+}
+function invRecord(a,batch,at){
+ return {srcSystem:"asset",srcId:a.no,party:a.party,partyId:a.partyId,wallet:a.wallet,type:a.type,
+  cur:a.cur,amt:a.amt,start:a.start,due:a.due,contracts:a.contracts.slice(),invoice:a.invoice,
+  trade:a.trade,settle:a.settle,docs:a.docs,buyer:a.buyer,buyerId:a.buyerId,
+  confirmedAt:a.confirmedAt,confirmSubmits:a.confirmSubmits,batch:batch,receivedAt:at,
+  proof:a.proof,
+  tl:[{k:"chain",at:a.proof?a.proof.at:at,batch:a.chainBatch,tx:a.proof?a.proof.tx:""},
+      {k:"push",at:at,batch:batch,by:"demo.admin@demo.test"},{k:"recv",at:at}]};
+}
+function seedInv(){
+ var a=seedAssets(),out=[];
+ [8,9].forEach(function(i){out.push(invRecord(a[i],"PB-20260905-002","2026-09-05T02:12:00Z"));});
+ return out;
+}
+function seedBatches(){
+ return [
+  {no:"CB-20260908-002",type:"chain",by:"demo.admin@demo.test",at:"2026-09-08T02:40:00Z",kind:"rechain",
+   items:[{no:"AR20260908000116",party:"Demo Enterprise Alpha",cur:"CNY",amt:540000,result:"fail",code:"E-DS-07"}]},
+  {no:"CB-20260908-001",type:"chain",by:"demo.admin@demo.test",at:"2026-09-08T01:00:00Z",kind:"chain",
+   items:[{no:"AR20260901000101",party:"Demo Enterprise Alpha",cur:"CNY",amt:1200000,result:"new",proof:demoProof("AR20260901000101","2026-09-08T01:00:00Z")},
+          {no:"AR20260901000102",party:"Demo Enterprise Alpha",cur:"CNY",amt:860000,result:"new",proof:demoProof("AR20260901000102","2026-09-08T01:00:00Z")},
+          {no:"AR20260902000104",party:"Demo Enterprise Beta",cur:"USD",amt:95000,result:"new",proof:demoProof("AR20260902000104","2026-09-08T01:00:00Z")},
+          {no:"AR20260908000116",party:"Demo Enterprise Alpha",cur:"CNY",amt:540000,result:"fail",code:"E-DS-10"}]},
+  {no:"PB-20260906-004",type:"push",by:"demo.admin@demo.test",at:"2026-09-06T06:05:00Z",kind:"repush",
+   items:[{no:"AR20260906000111",party:"Demo Enterprise Gamma",cur:"USD",amt:78000,result:"fail",code:"E-DS-02",field:"invoice"}]},
+  {no:"PB-20260906-003",type:"push",by:"demo.admin@demo.test",at:"2026-09-06T01:40:00Z",kind:"push",
+   items:[{no:"AR20260906000111",party:"Demo Enterprise Gamma",cur:"USD",amt:78000,result:"fail",code:"E-DS-02",field:"invoice"},
+          {no:"AR20260906000112",party:"Demo Enterprise Delta",cur:"NGN",amt:3200000,result:"fail",code:"E-DS-05"}]},
+  {no:"CB-20260906-001",type:"chain",by:"demo.admin@demo.test",at:"2026-09-06T00:40:00Z",kind:"chain",
+   items:[{no:"AR20260906000111",party:"Demo Enterprise Gamma",cur:"USD",amt:78000,result:"new",proof:demoProof("AR20260906000111","2026-09-06T00:40:00Z")},
+          {no:"AR20260906000112",party:"Demo Enterprise Delta",cur:"NGN",amt:3200000,result:"new",proof:demoProof("AR20260906000112","2026-09-06T00:40:00Z")}]},
+  {no:"PB-20260905-002",type:"push",by:"demo.admin@demo.test",at:"2026-09-05T02:12:00Z",kind:"push",
+   items:[{no:"AR20260905000109",party:"Demo Enterprise Alpha",cur:"CNY",amt:2000000,result:"new"},
+          {no:"AR20260905000110",party:"Demo Enterprise Beta",cur:"HKD",amt:150000,result:"new"}]},
+  {no:"CB-20260905-001",type:"chain",by:"demo.admin@demo.test",at:"2026-09-05T01:50:00Z",kind:"chain",
+   items:[{no:"AR20260905000109",party:"Demo Enterprise Alpha",cur:"CNY",amt:2000000,result:"new",proof:demoProof("AR20260905000109","2026-09-05T01:50:00Z")},
+          {no:"AR20260905000110",party:"Demo Enterprise Beta",cur:"HKD",amt:150000,result:"new",proof:demoProof("AR20260905000110","2026-09-05T01:50:00Z")}]}
+ ];
+}
+
+/* ------------------------------ 通用片段 -------------------------------- */
+function nRec(n){return t(n===1?"recordsN1":"recordsN",{n:n});}
+function nCount(n){return t(n===1?"countN1":"countN",{n:n});}
+function money(amt,cur){return Number(amt).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" "+cur;}
+function byNo(no){return S.data.filter(function(x){return x.no===no;})[0];}
+function invByNo(no){return S.inv.filter(function(x){return x.srcId===no;})[0];}
+function batchByNo(no){return S.batches.filter(function(x){return x.no===no;})[0];}
+function errText(e){
+ if(!e)return "";
+ if(e.code==="E-DS-02")return t("eDS02",{f:t(e.field==="invoice"?"fInvoice":"fContracts")});
+ if(e.code==="E-DS-05")return t("eDS05");
+ if(e.code==="E-DS-07")return t("eDS07");
+ if(e.code==="E-DS-08")return t("eDS08");
+ if(e.code==="E-DS-10")return t("eDS10");
+ return t("eDS06");
+}
+/* 链上哈希按 WS-308 国际化基线第 5 节缩略：前 10 位 + … + 后 8 位。 */
+function hashCell(v,label){
+ if(!v)return '<span class="faint">—</span>';
+ var shown=v.length>20?v.slice(0,10)+"…"+v.slice(-8):v;
+ return '<span class="hash" title="'+esc(v)+'"><span class="val">'+esc(shown)+'</span>'
+  +'<button class="ico" type="button" data-act="copyHash" data-v="'+esc(v)+'" aria-label="'+esc(label||t("copy"))+'">'+CF.ICO.copy+'</button></span>';
+}
+function proofOk(p){return !!(p&&p.hash&&p.tx&&p.block&&p.chain&&p.at);}
+function chainPill(a){
+ if(a.chain==="chained")return '<span class="pill green">'+t("cChained")+'</span>';
+ if(a.chain==="failed")return '<span class="pill red">'+t("cFailed")+'</span>';
+ return '<span class="pill gray">'+t("cNone")+'</span>';
+}
+function syncPill(a){
+ if(a.sync==="pushed")return '<span class="pill green">'+t("sPushed")+'</span>';
+ if(a.sync==="failed")return '<span class="pill red">'+t("sFailed")+'</span>';
+ return '<span class="pill gray">'+t("sNone")+'</span>';
+}
+function resultPill(r){
+ if(r==="new")return '<span class="pill green">'+t("rNew")+'</span>';
+ if(r==="dup")return '<span class="pill gray">'+t("rDup")+'</span>';
+ return '<span class="pill red">'+t("rFail")+'</span>';
+}
+function curSums(rows){
+ var m={},ks=[];
+ rows.forEach(function(r){if(!m[r.cur]){m[r.cur]={n:0,s:0};ks.push(r.cur);}m[r.cur].n++;m[r.cur].s+=Number(r.amt);});
+ if(!ks.length)return "";
+ ks.sort();
+ return '<div class="ds-sums">'+ks.map(function(k){
+  return '<div class="stat"><div class="lbl">'+k+'</div><div class="val">'+money(m[k].s,k)+'</div>'
+   +'<div class="sub">'+nRec(m[k].n)+'</div></div>';}).join('')+'</div>';
+}
+function walletOk(w){return /^0x[0-9a-fA-F]{40}$/.test(w||"");}
+/* 钱包地址改必填后，运营端清单里不可能出现缺失或格式非法的地址（收单已拦截），
+   因此这里没有「未提供」分支。缩略按脱敏基线：前 6 + … + 后 4。 */
+function walletCell(w){
+ var shown=w.length>12?w.slice(0,6)+"…"+w.slice(-4):w;
+ return '<span class="hash" title="'+esc(w)+'"><span class="val">'+esc(shown)+'</span>'
+  +'<button class="ico" type="button" data-act="copyWallet" data-v="'+esc(w)+'" aria-label="'+t("copy")+'">'+CF.ICO.copy+'</button></span>';
+}
+function demoBar(extra){
+ var admin=S.end!=="ops";
+ var right='<button class="btn sm" type="button" data-act="switchEnd">'+t(admin?"switchOps":"switchAdmin")+'</button>';
+ if(admin)right+='<label class="sr-only" for="dsPerm">'+t("permLabel")+'</label>'
+  +'<select class="ds-demo-sel" id="dsPerm" data-f="perm"><option value="full"'+(S.perm==="full"?" selected":"")+'>'+t("permFull")+'</option>'
+  +'<option value="view"'+(S.perm==="view"?" selected":"")+'>'+t("permView")+'</option></select>'
+  +'<label class="sr-only" for="dsScenario">'+t("scenarioLabel")+'</label>'
+  +'<select class="ds-demo-sel" id="dsScenario" data-f="scenario">'
+  +[["ok","scOk"],["partial","scPartial"],["down","scDown"],["timeout","scTimeout"]].map(function(x){
+    return '<option value="'+x[0]+'"'+(S.scenario===x[0]?" selected":"")+'>'+t(x[1])+'</option>';}).join('')+'</select>';
+ right+=(extra||'')+'<button class="btn sm" type="button" data-act="reset">'+t("reset")+'</button>';
+ return '<div class="demobar"><b>'+t("demo")+'</b><span>'+t("demoText")+'</span><div class="right">'+right+'</div></div>';
+}
+
+/* ------------------------------ 状态表面 -------------------------------- */
+function skel(){return '<div class="card">'+[1,2,3,4,5].map(function(){
+ return '<div class="skel-row"><span class="skel s"></span><span class="skel"></span><span class="skel m"></span></div>';}).join('')+'</div>';}
+function shellCard(title,btn){return '<div class="card"><div class="shell"><b>'+title+'</b>'+(btn||'')+'</div></div>';}
+function listSurface(o){
+ if(S.st==="loading")return skel();
+ if(S.st==="empty")return shellCard(t(o.empty));
+ if(S.st==="nomatch")return shellCard(t("nomatchTx"),'<button class="btn sm" type="button" data-act="clear">'+t("clear")+'</button>');
+ if(S.st==="error")return shellCard(t(o.fail),'<button class="btn sm" type="button" data-act="retry">'+t("retry")+'</button>');
+ if(S.st==="noperm")return note("amber",t(o.noperm));
+ if(S.st==="waiting")return note("",t("waitingTx"));
+ return "";
+}
+
+/* --------------------------- P-M-DS-01 推送列表 -------------------------- */
+function adminFilters(){
+ return '<div class="filters">'
+  +'<label class="fl"><span>'+t("fChain")+'</span><select class="inp" data-f="f.chain">'
+   +[["all","all"],["none","cNone"],["chained","cChained"],["failed","cFailed"]].map(function(x){
+     return '<option value="'+x[0]+'"'+(S.f.chain===x[0]?" selected":"")+'>'+t(x[1])+'</option>';}).join('')+'</select></label>'
+  +'<label class="fl"><span>'+t("fSync")+'</span><select class="inp" data-f="f.sync">'
+   +[["all","all"],["none","sNone"],["pushed","sPushed"],["failed","sFailed"]].map(function(x){
+     return '<option value="'+x[0]+'"'+(S.f.sync===x[0]?" selected":"")+'>'+t(x[1])+'</option>';}).join('')+'</select></label>'
+  +'<label class="fl"><span>'+t("fCur")+'</span><select class="inp" data-f="f.cur"><option value="all">'+t("all")+'</option>'
+   +CURS.map(function(x){return '<option'+(S.f.cur===x?" selected":"")+'>'+x+'</option>';}).join('')+'</select></label>'
+  +'<label class="fl"><span>'+t("fParty")+'</span><select class="inp" data-f="f.party"><option value="all">'+t("all")+'</option>'
+   +HOLDERS.map(function(x){return '<option value="'+x.id+'"'+(S.f.party===x.id?" selected":"")+'>'+esc(x.name)+'</option>';}).join('')+'</select></label>'
+  +'<div class="fl"><span>'+t("fConfirmed")+'</span><div class="fl-date"><input class="inp" type="date" data-f="f.from" value="'+esc(S.f.from)+'">'
+   +'<span class="to">'+t("to")+'</span><input class="inp" type="date" data-f="f.to" value="'+esc(S.f.to)+'"></div></div>'
+  +'<label class="fl fl-kw"><span>'+t("fKw")+'</span><input class="inp" data-f="f.kw" value="'+esc(S.f.kw)+'" placeholder="'+esc(t("fKw"))+'"></label>'
+  +'<div class="fl-act">'
+   +'<button class="btn sm" type="button" data-act="sort"'+(S.f.cur==="all"?' disabled title="'+esc(t("sortHint"))+'"':'')+'>'+t("sortAmount")+'</button>'
+   +'<button class="btn sm primary" type="button" data-act="search">'+t("search")+'</button>'
+   +'<button class="btn sm" type="button" data-act="clear">'+t("clear")+'</button></div></div>';
+}
+function adminRows(){
+ var a=S.data.slice();
+ if(S.f.sync!=="all")a=a.filter(function(r){return (r.sync||"none")===S.f.sync;});
+ if(S.f.chain!=="all")a=a.filter(function(r){return (r.chain||"none")===S.f.chain;});
+ if(S.f.cur!=="all")a=a.filter(function(r){return r.cur===S.f.cur;});
+ if(S.f.party!=="all")a=a.filter(function(r){return r.partyId===S.f.party;});
+ if(S.f.from)a=a.filter(function(r){return r.confirmedAt.slice(0,10)>=S.f.from;});
+ if(S.f.to)a=a.filter(function(r){return r.confirmedAt.slice(0,10)<=S.f.to;});
+ var q=S.f.kw.trim().toLowerCase();
+ if(q)a=a.filter(function(r){
+  return [r.no,r.party,(r.proof?r.proof.tx:"")].concat(r.contracts).join(" ").toLowerCase().indexOf(q)>=0;});
+ if(S.sortAmount)a.sort(function(x,y){return S.sortAmount*(x.amt-y.amt);});
+ else a.sort(function(x,y){return x.confirmedAt<y.confirmedAt?1:-1;});
+ return a;
+}
+function pager(total,cur,act){
+ var pages=Math.max(1,Math.ceil(total/20));
+ return '<div class="pager"><span>'+nCount(total)+'</span><div class="right">'
+  +'<button class="pgbtn" type="button" data-act="'+act+'" data-v="'+(cur-1)+'"'+(cur<=1?" disabled":"")+'>‹</button>'
+  +'<span>'+t("pageOf",{p:cur,q:pages})+'</span>'
+  +'<button class="pgbtn" type="button" data-act="'+act+'" data-v="'+(cur+1)+'"'+(cur>=pages?" disabled":"")+'>›</button></div></div>';
+}
+function selCount(){var n=0;for(var k in S.sel)if(S.sel[k])n++;return n;}
+function selIds(){var out=[];for(var k in S.sel)if(S.sel[k])out.push(k);return out;}
+function canPush(){return S.perm==="full";}
+function selBar(rows){
+ var n=selCount(),over=n>500;
+ var pushBtn=canPush()
+  ? '<button class="btn sm primary" type="button" data-act="askPush"'+(!n||over?" disabled":"")+'>'+t("pushBtn")+'</button>'
+  : '<button class="btn sm primary" type="button" data-act="denied" title="'+esc(t("permDenied"))+'">'+t("pushBtn")+'</button>';
+ return '<div class="ds-selbar"><span class="n">'+t("selN",{n:n})+'</span>'
+  +(n?'<button class="btn-link" type="button" data-act="clearSel">'+t("clearSel")+'</button>':'')
+  +(over?'<span class="pill red">'+t("overLimit")+'</span>':'')
+  +'<div class="right"><button class="btn sm" type="button" data-act="selectAll" data-v="'+rows.length+'">'+t("selectAll")+'</button>'
+  +pushBtn+'</div></div>';
+}
+function adminTable(rows){
+ var page=Math.min(S.page1,Math.max(1,Math.ceil(rows.length/20)));
+ var slice=rows.slice((page-1)*20,page*20);
+ var body=slice.map(function(r){
+  var pushed=r.sync==="pushed", chained=r.chain==="chained";
+  var lock=pushed?t("pushedHint"):!chained?t("notChained"):"";
+  var box='<input class="ds-check" type="checkbox" data-act="pick" data-v="'+r.no+'"'
+   +(S.sel[r.no]?" checked":"")+(lock?' disabled title="'+esc(lock)+'"':"")
+   +' aria-label="'+esc(r.no)+'">';
+  var acts=!chained
+   ? '<a class="actlink" href="'+esc(chainHref())+'">'+t("goChain")+'</a>'
+   : r.sync==="failed"
+     ? (canPush()?'<button class="actlink" type="button" data-act="askRepush" data-v="'+r.no+'">'+t("repush")+'</button>'
+                : '<button class="actlink off" type="button" data-act="denied">'+t("repush")+'</button>')
+     : '<span class="actlink off">—</span>';
+  return '<tr><td>'+box+'</td>'
+   +'<td><span class="cell-main mono">'+esc(r.no)+'</span></td>'
+   +'<td><span class="cell-main">'+esc(r.party)+'</span><span class="cell-sub mono">'+esc(r.partyId)+'</span></td>'
+   +'<td>'+t("tyReceivable")+'</td>'
+   +'<td class="ds-money">'+money(r.amt,r.cur)+'</td>'
+   +'<td class="c-date"><span class="mono">'+esc(r.due)+'</span><span class="cell-note">UTC+8</span></td>'
+   +'<td class="c-time">'+CF.fmtTime(r.confirmedAt)+'</td>'
+   +'<td>'+chainPill(r)
+     +(chained?'<span class="cell-sub">'+hashCell(r.proof.tx,t("txHash"))+'</span>':'')
+     +(r.chain==="failed"?'<span class="ds-reason">'+esc(errText(r.chainErr))+'</span>':'')+'</td>'
+   +'<td>'+syncPill(r)+(r.sync==="failed"?'<span class="ds-reason">'+esc(errText(r.err))+'</span>':'')+'</td>'
+   +'<td class="c-time">'+(r.lastPushAt?CF.fmtTime(r.lastPushAt):"—")+'</td>'
+   +'<td class="col-act">'+acts+'</td></tr>';
+ }).join('');
+ return '<div class="card">'+selBar(rows)+'<div class="tablewrap"><table class="tbl ds-table"><thead><tr>'
+  +'<th><span class="sr-only">'+t("selN",{n:selCount()})+'</span></th><th>'+t("colNo")+'</th><th>'+t("colParty")+'</th><th>'+t("colType")+'</th>'
+  +'<th>'+t("colAmount")+'</th><th>'+t("colDue")+'</th><th>'+t("colConfirmed")+'</th>'
+  +'<th>'+t("colChain")+'</th><th>'+t("colSync")+'</th>'
+  +'<th>'+t("colLastPush")+'</th><th class="col-act">'+t("colAct")+'</th></tr></thead><tbody>'+body+'</tbody></table></div>'
+  +pager(rows.length,page,"page1")+'</div>';
+}
+/* 上链动作按 2026-09-10 的合页口径落在 WS-305 的「应收账款」页，本页只做推送，
+   因此未上链 / 上链失败的行给的是跨文件入口，而不是在这里再放一个上链按钮。 */
+function chainHref(){
+ var mod=CF.MODULES[CF.OWNER["P-M40"]];
+ return mod?("../"+mod.dir+"/"+mod.file+(CF.ENTRY["P-M40"]||"#/p-m40")):"#";
+}
+
+function pagePush(){
+ var head=pageHead(t("pushTitle"),t("pushDesc"),"");
+ var bulkBtn='<button class="btn sm" type="button" data-act="bulk">'+t(S.bulk?"bulkOff":"bulkOn")+'</button>';
+ var surf=listSurface({empty:"emptyPush",fail:"loadFail",noperm:"noPermView"});
+ if(surf)return head+demoBar(bulkBtn)+surf;
+ var alert=S.st==="submitting"?note("",t("pushingTx")):S.st==="submitfail"?note("red",t("pushFailTx")):"";
+ var perm=S.perm==="view"?note("amber",t("permDenied")):"";
+ var rows=adminRows();
+ return head+demoBar(bulkBtn)+alert+perm+curSums(rows)
+  +'<div class="card">'+adminFilters()+'</div>'+CF.gap(12)
+  +(rows.length?adminTable(rows):shellCard(t("nomatchTx"),'<button class="btn sm" type="button" data-act="clear">'+t("clear")+'</button>'));
+}
+
+/* --------------------------- P-M-DS-02 推送记录 -------------------------- */
+function batchRows(){
+ var a=S.batches.slice();
+ if(S.bf.type!=="all")a=a.filter(function(r){return r.type===S.bf.type;});
+ if(S.bf.from)a=a.filter(function(r){return r.at.slice(0,10)>=S.bf.from;});
+ if(S.bf.to)a=a.filter(function(r){return r.at.slice(0,10)<=S.bf.to;});
+ var q=S.bf.kw.trim().toLowerCase();
+ if(q)a=a.filter(function(r){return (r.no+" "+r.by).toLowerCase().indexOf(q)>=0;});
+ return a;
+}
+function batchTypePill(b){
+ return b.type==="chain"?'<span class="pill">'+t("bChain")+'</span>':'<span class="pill dash">'+t("bPush")+'</span>';
+}
+function kindKey(b){
+ return b.kind==="rechain"?"kRechain":b.kind==="chain"?"kChain":b.kind==="repush"?"kRepush":"kPush";
+}
+function countBy(b,k){return b.items.filter(function(x){return k==="fail"?x.result==="fail":x.result!=="fail";}).length;}
+function pageBatches(){
+ var head=pageHead(t("batchTitle"),t("batchDesc"),"");
+ var surf=listSurface({empty:"emptyBatch",fail:"batchFail",noperm:"noPermView"});
+ if(surf)return head+demoBar()+surf;
+ var rows=batchRows();
+ var filters='<div class="filters">'
+  +'<label class="fl"><span>'+t("fBatchType")+'</span><select class="inp" data-f="bf.type">'
+   +[["all","all"],["chain","bChain"],["push","bPush"]].map(function(x){
+     return '<option value="'+x[0]+'"'+(S.bf.type===x[0]?" selected":"")+'>'+t(x[1])+'</option>';}).join('')+'</select></label>'
+  +'<div class="fl"><span>'+t("colAt")+'</span><div class="fl-date"><input class="inp" type="date" data-f="bf.from" value="'+esc(S.bf.from)+'">'
+   +'<span class="to">'+t("to")+'</span><input class="inp" type="date" data-f="bf.to" value="'+esc(S.bf.to)+'"></div></div>'
+  +'<label class="fl fl-kw"><span>'+t("fBatchKw")+'</span><input class="inp" data-f="bf.kw" value="'+esc(S.bf.kw)+'" placeholder="'+esc(t("fBatchKw"))+'"></label>'
+  +'<div class="fl-act"><button class="btn sm primary" type="button" data-act="search">'+t("search")+'</button>'
+  +'<button class="btn sm" type="button" data-act="clear">'+t("clear")+'</button></div></div>';
+ var page=Math.min(S.pageB,Math.max(1,Math.ceil(rows.length/20)));
+ var body=rows.slice((page-1)*20,page*20).map(function(b){
+  var ok=countBy(b,"ok"),fail=countBy(b,"fail");
+  return '<tr><td>'+batchTypePill(b)+'</td>'
+   +'<td><span class="cell-main mono">'+esc(b.no)+'</span></td>'
+   +'<td class="mono">'+esc(b.by)+'</td>'
+   +'<td class="c-time">'+CF.fmtTime(b.at)+'</td>'
+   +'<td class="mono">'+b.items.length+'</td>'
+   +'<td><span class="pill green">'+ok+'</span></td>'
+   +'<td>'+(fail?'<span class="pill red">'+fail+'</span>':'<span class="faint mono">0</span>')+'</td>'
+   +'<td>'+t(kindKey(b))+'</td>'
+   +'<td class="col-act"><button class="actlink" type="button" data-act="openBatch" data-v="'+esc(b.no)+'">'+t("view")+'</button></td></tr>';
+ }).join('');
+ if(!rows.length)return head+demoBar()+'<div class="card">'+filters+'</div>'+CF.gap(12)
+  +shellCard(t("nomatchTx"),'<button class="btn sm" type="button" data-act="clear">'+t("clear")+'</button>');
+ return head+demoBar()+'<div class="card">'+filters+'</div>'+CF.gap(12)
+  +'<div class="card"><div class="tablewrap"><table class="tbl ds-batch-table"><thead><tr><th>'+t("colBatchType")+'</th>'
+  +'<th>'+t("colBatch")+'</th><th>'+t("colBy")+'</th>'
+  +'<th>'+t("colAt")+'</th><th>'+t("colTotal")+'</th><th>'+t("colOk")+'</th><th>'+t("colFail")+'</th><th>'+t("colKind")+'</th>'
+  +'<th class="col-act">'+t("colAct")+'</th></tr></thead><tbody>'+body+'</tbody></table></div>'+pager(rows.length,page,"pageB")+'</div>';
+}
+
+/* --------------------------- P-M-DS-03 批次详情 -------------------------- */
+function pageBatchDetail(){
+ var b=batchByNo(S.batchNo)||S.batches[0];
+ if(!b)return pageHead(t("bdTitle"),"","")+demoBar()+shellCard(t("emptyBatch"));
+ var head=pageHead(t("bdTitle"),b.no,"");
+ var surf=listSurface({empty:"emptyBatch",fail:"batchFail",noperm:"noPermView"});
+ if(surf)return head+demoBar()+surf;
+ var ok=countBy(b,"ok"),fail=countBy(b,"fail");
+ var failNos=b.items.filter(function(x){return x.result==="fail";}).map(function(x){return x.no;});
+ var chain=b.type==="chain";
+ var repushAll=!failNos.length?''
+  : chain?'<a class="btn sm primary" href="'+esc(chainHref())+'">'+t("goChain")+'</a>'
+  : (canPush()?'<button class="btn sm primary" type="button" data-act="repushBatch" data-v="'+esc(b.no)+'">'+t("bdRepushAll")+'</button>'
+             : '<button class="btn sm primary" type="button" data-act="denied" title="'+esc(t("permDenied"))+'">'+t("bdRepushAll")+'</button>');
+ var body=b.items.map(function(x){
+  var a=byNo(x.no);
+  var acts=chain
+   ? (x.result==="fail"?'<a class="actlink" href="'+esc(chainHref())+'">'+t("goChain")+'</a>':'<span class="actlink off">—</span>')
+   : (x.result==="fail"&&a&&a.sync==="failed"
+      ? (canPush()?'<button class="actlink" type="button" data-act="askRepush" data-v="'+esc(x.no)+'">'+t("repush")+'</button>'
+                 : '<button class="actlink off" type="button" data-act="denied">'+t("repush")+'</button>')
+      : '<span class="actlink off">—</span>');
+  var reason=x.result==="fail"
+   ? '<span class="mono">'+esc(x.code)+'</span><span class="ds-reason">'+esc(errText(x))+'</span>'
+   : x.result==="dup"?'<span class="muted">'+t(chain?"rDupChainNote":"rDupNote")+'</span>':'—';
+  return '<tr><td class="mono">'+(b.items.indexOf(x)+1)+'</td>'
+   +'<td><span class="cell-main mono">'+esc(x.no)+'</span></td>'
+   +'<td>'+esc(x.party)+'</td><td class="ds-money">'+money(x.amt,x.cur)+'</td>'
+   +'<td>'+resultPill(x.result)+'</td>'
+   +(chain?'<td>'+(x.proof?hashCell(x.proof.tx,t("txHash"))
+        +'<span class="cell-sub mono">#'+x.proof.block+' · '+esc(x.proof.chain)+'</span>'
+        +'<span class="cell-sub">'+CF.fmtTime(x.proof.at)+'</span>':'<span class="faint">—</span>')+'</td>':'')
+   +'<td>'+reason+'</td>'
+   +'<td class="col-act">'+acts+'</td></tr>';
+ }).join('');
+ return head+demoBar()
+  +'<div class="ds-sums"><div class="stat"><div class="lbl">'+t("colBatch")+'</div><div class="val">'+esc(b.no)+'</div>'
+   +'<div class="sub">'+t(kindKey(b))+' · '+esc(b.by)+'</div></div>'
+  +'<div class="stat"><div class="lbl">'+t("bdTotal")+'</div><div class="val">'+b.items.length+'</div>'
+   +'<div class="sub">'+CF.fmtTime(b.at)+'</div></div>'
+  +'<div class="stat"><div class="lbl">'+t("bdOk")+'</div><div class="val">'+ok+'</div></div>'
+  +'<div class="stat"><div class="lbl">'+t("bdFail")+'</div><div class="val">'+fail+'</div></div></div>'
+  +'<div class="card"><div class="card-head"><b>'+t("bdTitle")+'</b><span>'+(failNos.length?"":t("bdNoFail"))+'</span>'
+   +'<span class="right">'+repushAll+'</span></div>'
+  +'<div class="tablewrap"><table class="tbl ds-item-table"><thead><tr><th>#</th><th>'+t("colNo")+'</th><th>'+t("colParty")+'</th>'
+  +'<th>'+t("colAmount")+'</th><th>'+t("colResult")+'</th>'
+  +(chain?'<th>'+t("proof")+'</th>':'')
+  +'<th>'+t("colReason")+'</th><th class="col-act">'+t("colAct")+'</th>'
+  +'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+}
+
+/* --------------------------- P-O-DS-01 资产清单 -------------------------- */
+function invRows(){
+ var a=S.inv.slice();
+ if(S.of.cur!=="all")a=a.filter(function(r){return r.cur===S.of.cur;});
+ if(S.of.party!=="all")a=a.filter(function(r){return r.partyId===S.of.party;});
+ if(S.of.cfrom)a=a.filter(function(r){return r.confirmedAt.slice(0,10)>=S.of.cfrom;});
+ if(S.of.cto)a=a.filter(function(r){return r.confirmedAt.slice(0,10)<=S.of.cto;});
+ if(S.of.rfrom)a=a.filter(function(r){return r.receivedAt.slice(0,10)>=S.of.rfrom;});
+ if(S.of.rto)a=a.filter(function(r){return r.receivedAt.slice(0,10)<=S.of.rto;});
+ var q=S.of.kw.trim().toLowerCase();
+ if(q)a=a.filter(function(r){return (r.srcId+" "+r.party+" "+r.batch).toLowerCase().indexOf(q)>=0;});
+ a.sort(function(x,y){return x.receivedAt<y.receivedAt?1:-1;});
+ return a;
+}
+function invFilters(){
+ return '<div class="filters">'
+  +'<label class="fl"><span>'+t("fCur")+'</span><select class="inp" data-f="of.cur"><option value="all">'+t("all")+'</option>'
+   +CURS.map(function(x){return '<option'+(S.of.cur===x?" selected":"")+'>'+x+'</option>';}).join('')+'</select></label>'
+  +'<label class="fl"><span>'+t("fParty")+'</span><select class="inp" data-f="of.party"><option value="all">'+t("all")+'</option>'
+   +HOLDERS.map(function(x){return '<option value="'+x.id+'"'+(S.of.party===x.id?" selected":"")+'>'+esc(x.name)+'</option>';}).join('')+'</select></label>'
+  +'<label class="fl"><span>'+t("fType")+'</span><select class="inp" data-f="of.type"><option value="all">'+t("all")+'</option>'
+   +'<option value="receivable"'+(S.of.type==="receivable"?" selected":"")+'>'+t("tyReceivable")+'</option></select></label>'
+  +'<div class="fl"><span>'+t("fConfirmed")+'</span><div class="fl-date"><input class="inp" type="date" data-f="of.cfrom" value="'+esc(S.of.cfrom)+'">'
+   +'<span class="to">'+t("to")+'</span><input class="inp" type="date" data-f="of.cto" value="'+esc(S.of.cto)+'"></div></div>'
+  +'<div class="fl"><span>'+t("fReceived")+'</span><div class="fl-date"><input class="inp" type="date" data-f="of.rfrom" value="'+esc(S.of.rfrom)+'">'
+   +'<span class="to">'+t("to")+'</span><input class="inp" type="date" data-f="of.rto" value="'+esc(S.of.rto)+'"></div></div>'
+  +'<label class="fl fl-kw"><span>'+t("fKw")+'</span><input class="inp" data-f="of.kw" value="'+esc(S.of.kw)+'" placeholder="'+esc(t("fKw"))+'"></label>'
+  +'<div class="fl-act"><button class="btn sm primary" type="button" data-act="search">'+t("search")+'</button>'
+  +'<button class="btn sm" type="button" data-act="clear">'+t("clear")+'</button></div></div>';
+}
+function pageInventory(){
+ var head=pageHead(t("invTitle"),t("invDesc"),'<span class="pill dash">'+t("readOnly")+'</span>');
+ var surf=listSurface({empty:"emptyInv",fail:"invFail",noperm:"noPermInv"});
+ if(surf)return head+demoBar()+surf;
+ var rows=invRows();
+ var page=Math.min(S.pageO,Math.max(1,Math.ceil(rows.length/20)));
+ var body=rows.slice((page-1)*20,page*20).map(function(r){
+  return '<tr><td><span class="cell-main mono">'+esc(r.srcId)+'</span><span class="cell-sub"><span class="pill green">'+t("sPushed")+'</span></span></td>'
+   +'<td><span class="cell-main">'+esc(r.party)+'</span><span class="cell-sub mono">'+esc(r.partyId)+'</span></td>'
+   +'<td>'+t("tyReceivable")+'</td>'
+   +'<td class="ds-money">'+money(r.amt,r.cur)+'</td>'
+   +'<td class="c-date"><span class="mono">'+esc(r.due)+'</span><span class="cell-note">UTC+8</span></td>'
+   +'<td class="c-time">'+CF.fmtTime(r.confirmedAt)+'</td>'
+   +'<td class="c-time">'+CF.fmtTime(r.receivedAt)+'</td>'
+   +'<td class="mono">'+esc(r.batch)+'</td>'
+   +'<td class="col-act"><button class="actlink" type="button" data-act="openInv" data-v="'+esc(r.srcId)+'">'+t("view")+'</button></td></tr>';
+ }).join('');
+ var table=rows.length
+  ? '<div class="card"><div class="card-head"><b>'+t("invTitle")+'</b><span>'+t("invConst")+'</span></div>'
+    +'<div class="tablewrap"><table class="tbl ds-inv-table"><thead><tr><th>'+t("colSrcId")+'</th><th>'+t("colParty")+'</th>'
+    +'<th>'+t("colType")+'</th><th>'+t("colAmount")+'</th><th>'+t("colDue")+'</th><th>'+t("colConfirmed")+'</th>'
+    +'<th>'+t("colReceived")+'</th><th>'+t("colSrcBatch")+'</th><th class="col-act">'+t("colAct")+'</th></tr></thead><tbody>'
+    +body+'</tbody></table></div>'+pager(rows.length,page,"pageO")+'</div>'
+  : shellCard(t(S.inv.length?"nomatchTx":"emptyInv"),S.inv.length?'<button class="btn sm" type="button" data-act="clear">'+t("clear")+'</button>':'');
+ return head+demoBar()+curSums(rows)+'<div class="card">'+invFilters()+'</div>'+CF.gap(12)+table;
+}
+
+/* --------------------------- P-O-DS-02 资产详情 -------------------------- */
+function tlItem(e){
+ var ac=e.k==="chain"?t("tlChained"):e.k==="push"?t("tlPushed"):e.k==="recv"?t("tlReceived"):t("tlDup");
+ var sm=e.k==="chain"?t("tlBatch",{b:e.batch})
+      :e.k==="push"?t("tlBatch",{b:e.batch})+" · "+t("tlBy",{u:e.by})
+      :e.k==="dup"?t("tlBatch",{b:e.batch})+" · "+t("rDupNote"):"";
+ return '<li'+(e.k==="recv"?' data-sys="1"':'')+'><span class="pt"></span>'
+  +'<div class="tm">'+CF.fmtTime(e.at,true)+'</div><div class="ac">'+ac+'</div>'
+  +(sm?'<div class="sm">'+esc(sm)+'</div>':'')
+  +(e.k==="chain"&&e.tx?'<div class="op">'+hashCell(e.tx,t("txHash"))+'</div>':'')+'</li>';
+}
+/* F-DS-22 链上凭证区：五项凭证 + 一句业务语言的说明 + 区块浏览器入口。
+   链 ID 不在映射表内时入口置灰并说明原因，凭证本身照常展示（AC-DS-71）。 */
+var EXPLORERS={};   /* 链 ID → 区块浏览器基址；链侧配置未定，本期为空表 */
+function proofCard(pf){
+ if(!proofOk(pf))return '<div class="card"><div class="card-head"><b>'+t("proof")+'</b></div>'
+  +'<div class="card-b">'+note("amber",t("proofIncomplete"))+'</div></div>';
+ var base=EXPLORERS[pf.chain];
+ var link=base
+  ? '<a class="btn sm" href="'+esc(base+"/tx/"+pf.tx)+'" target="_blank" rel="noopener">'+t("explorer")+'</a>'
+  : '<button class="btn sm" type="button" disabled title="'+esc(t("noExplorer"))+'">'+t("explorer")+'</button>';
+ return '<div class="card"><div class="card-head"><b>'+t("proof")+'</b><span class="right">'+link+'</span></div>'
+  +'<div class="card-b">'+note("",t("proofNote"))+CF.gap(10)+'<dl class="dl">'
+  +'<div><dt>'+t("proofHash")+'</dt><dd>'+hashCell(pf.hash,t("proofHash"))+'</dd></div>'
+  +'<div><dt>'+t("txHash")+'</dt><dd>'+hashCell(pf.tx,t("txHash"))+'</dd></div>'
+  +'<div><dt>'+t("block")+'</dt><dd class="mono">'+pf.block+'</dd></div>'
+  +'<div><dt>'+t("chainId")+'</dt><dd class="mono">'+esc(pf.chain)+'</dd></div>'
+  +'<div><dt>'+t("proofAt")+'</dt><dd>'+CF.fmtTime(pf.at)+'</dd></div>'
+  +'</dl>'+(base?'':'<p class="tiny" style="margin-top:10px">'+t("noExplorer")+'</p>')+'</div></div>';
+}
+function pageAssetDetail(){
+ var r=invByNo(S.invId)||S.inv[0];
+ if(!r)return pageHead(t("adTitle"),"","")+demoBar()+shellCard(t("emptyInv"));
+ var head=pageHead(t("adTitle"),r.srcId,'<span class="pill dash">'+t("readOnly")+'</span>');
+ if(S.st==="loading")return head+demoBar()+skel();
+ if(S.st==="error")return head+demoBar()+shellCard(t("invFail"),'<button class="btn sm" type="button" data-act="retry">'+t("retry")+'</button>');
+ if(S.st==="noperm")return head+demoBar()+note("amber",t("noPermInv"));
+ if(S.st==="waiting")return head+demoBar()+note("",t("waitingTx"));
+ return head+demoBar()+'<div class="ds-layout"><div class="ds-stack">'
+  +'<div class="card"><div class="card-head"><b>'+t("secBasic")+'</b><span class="right"><span class="pill green">'+t("sPushed")+'</span></span></div>'
+  +'<div class="card-b"><dl class="dl">'
+   +'<div><dt>'+t("colSrcId")+'</dt><dd class="mono">'+esc(r.srcId)+'</dd></div>'
+   +'<div><dt>'+t("fSrcSystem")+'</dt><dd>'+t("srcAsset")+'</dd></div>'
+   +'<div><dt>'+t("colType")+'</dt><dd>'+t("tyReceivable")+'</dd></div>'
+   +'<div><dt>'+t("colAmount")+'</dt><dd class="ds-money">'+money(r.amt,r.cur)+'</dd></div>'
+   +'<div><dt>'+t("fStart")+'</dt><dd class="mono">'+esc(r.start)+'</dd></div>'
+   +'<div><dt>'+t("colDue")+'</dt><dd><span class="mono">'+esc(r.due)+'</span> · UTC+8</dd></div>'
+   +'<div><dt>'+t("colSrcBatch")+'</dt><dd class="mono">'+esc(r.batch)+'</dd></div>'
+   +'<div><dt>'+t("colReceived")+'</dt><dd>'+CF.fmtTime(r.receivedAt)+'</dd></div>'
+  +'</dl></div></div>'
+  +'<div class="card"><div class="card-head"><b>'+t("secTrade")+'</b></div><div class="card-b"><dl class="dl">'
+   +'<div><dt>'+t("fContracts")+'</dt><dd><div class="ds-chips">'+(r.contracts.length?r.contracts.map(function(c){
+      return '<span class="tag">'+esc(c)+'</span>';}).join(''):'<span class="faint">—</span>')+'</div></dd></div>'
+   +'<div><dt>'+t("fInvoice")+'</dt><dd class="mono">'+(r.invoice?esc(r.invoice):'—')+'</dd></div>'
+   +'<div><dt>'+t("fTrade")+'</dt><dd>'+t(r.trade==="service"?"tService":"tGoods")+'</dd></div>'
+   +'<div><dt>'+t("fSettle")+'</dt><dd>'+t(r.settle==="lc"?"settLC":"settTT")+'</dd></div>'
+   +'<div><dt>'+t("fDocs")+'</dt><dd>'+t("docsN",{n:r.docs})+'</dd></div>'
+  +'</dl></div></div>'
+  +'<div class="card"><div class="card-head"><b>'+t("secConfirm")+'</b></div><div class="card-b"><dl class="dl">'
+   +'<div><dt>'+t("cfParty")+'</dt><dd>'+esc(r.buyer)+'<span class="cell-sub mono">'+esc(r.buyerId)+'</span></dd></div>'
+   +'<div><dt>'+t("cfAt")+'</dt><dd>'+CF.fmtTime(r.confirmedAt)+'</dd></div>'
+   +'<div><dt>'+t("cfResult")+'</dt><dd><span class="pill green">'+t("cfPassed")+'</span></dd></div>'
+   +'<div><dt>'+t("cfSubmits")+'</dt><dd class="mono">'+r.confirmSubmits+'</dd></div>'
+  +'</dl></div></div>'+proofCard(r.proof)+'</div>'
+  +'<aside class="ds-stack">'
+  +'<div class="card"><div class="card-head"><b>'+t("secParty")+'</b></div><div class="card-b"><dl class="dl">'
+   +'<div><dt>'+t("fPartyName")+'</dt><dd>'+esc(r.party)+'</dd></div>'
+   +'<div><dt>'+t("fPartyId")+'</dt><dd class="mono">'+esc(r.partyId)+'</dd></div>'
+   +'<div><dt>'+t("fWallet")+'</dt><dd>'+walletCell(r.wallet)+'</dd></div>'
+  +'</dl></div></div>'
+  +'<div class="card"><div class="card-head"><b>'+t("secSync")+'</b></div><div class="card-b"><ul class="tl">'
+   +r.tl.map(tlItem).join('')+'</ul></div></div></aside></div>';
+}
+
+/* ------------------------------ 校验与推送 ------------------------------ */
+/* 推送前校验 V-DS-01～V-DS-06。V-DS-05 钱包必填与 V-DS-06 上链前置都是 2026-09-10
+   收紧的硬拦项——本期已经没有「校验但不阻断」的项。 */
+function checkAsset(a){
+ if(a.stale)return {ok:false,why:t("vStale")};
+ if(a.chain!=="chained")return {ok:false,why:t("vNotChained")};
+ if(!proofOk(a.proof))return {ok:false,why:t("vProof")};
+ if(!a.contracts.length)return {ok:false,why:t("vMissing",{f:t("fContracts")})};
+ if(!a.partyOk)return {ok:false,why:t("vParty")};
+ if(!walletOk(a.wallet))return {ok:false,why:t("vWallet")};
+ if(a.sync==="pushed")return {ok:false,why:t("pushedHint")};
+ return {ok:true};
+}
+function nextBatchNo(){
+ var n=S.batches.filter(function(b){return b.type==="push";}).length+1;
+ return "PB-20260910-"+("00"+n).slice(-3);
+}
+function decide(a,i){
+ if(invByNo(a.no))return {result:"dup"};
+ if(S.scenario==="timeout")return {result:"fail",code:"E-DS-06"};
+ if(S.scenario==="down")return {result:"fail",code:"E-DS-05"};
+ if(S.scenario==="partial"&&i%3===2)return {result:"fail",code:"E-DS-02",field:"invoice"};
+ return {result:"new"};
+}
+function runPush(nos,kind){
+ var at=new Date().toISOString(),batch=nextBatchNo(),items=[];
+ nos.forEach(function(no,i){
+  var a=byNo(no);if(!a)return;
+  var d=decide(a,i);
+  items.push({no:a.no,party:a.party,cur:a.cur,amt:a.amt,result:d.result,code:d.code,field:d.field});
+  a.lastPushAt=at;a.lastPushBy="demo.admin@demo.test";a.lastBatch=batch;
+  if(kind==="repush")a.retries=(a.retries||0)+1;
+  if(d.result==="fail"){
+   a.sync="failed";a.err={code:d.code,field:d.field};
+   /* 回执未知：运营端其实已入库，只是回执丢了（R-DS-02）。再次推送会命中幂等，
+      而不是产生第二条记录——这是本期红线在原型里唯一说得清的演示路径。 */
+   if(d.code==="E-DS-06"&&!invByNo(a.no))S.inv.unshift(invRecord(a,batch,at));
+  }
+  else{
+   a.sync="pushed";a.err=null;
+   if(d.result==="new")S.inv.unshift(invRecord(a,batch,at));
+   else{var rec=invByNo(a.no);if(rec)rec.tl.push({k:"dup",at:at,batch:batch});}
+  }
+ });
+ S.batches.unshift({no:batch,type:"push",by:"demo.admin@demo.test",at:at,kind:kind,items:items});
+ S.result={batch:batch,items:items,kind:kind};
+ return batch;
+}
+function submit(nos,kind){
+ S.pushing=true;render();
+ setTimeout(function(){
+  runPush(nos,kind);
+  S.pushing=false;S.modal=null;S.sel={};S.drawer="result";
+  toast("success",t(kind==="repush"?"repushedOk":"pushedOk"));
+  render();
+ },700);
+}
+
+/* ------------------------------ 弹层与抽屉 ------------------------------ */
+function modalBox(title,body,foot,wide){
+ return '<div class="mask" data-act="closeModal"><div class="modal'+(wide?" wide":"")+'" role="dialog" aria-modal="true" aria-label="'+esc(title)+'">'
+  +'<div class="modal-h"><b>'+esc(title)+'</b><button class="modal-x" type="button" data-act="closeModal" aria-label="'+t("close")+'">×</button></div>'
+  +'<div class="modal-b">'+body+'</div><div class="modal-f">'+foot+'</div></div></div>';
+}
+function pushModal(){
+ var m=S.modal,ids=m.ids,ok=[],bad=[];
+ ids.forEach(function(no){var a=byNo(no);if(!a)return;var c=checkAsset(a);(c.ok?ok:bad).push({a:a,why:c.why});});
+ var m2={},ks=[];
+ ok.forEach(function(x){if(!m2[x.a.cur]){m2[x.a.cur]={n:0,s:0};ks.push(x.a.cur);}m2[x.a.cur].n++;m2[x.a.cur].s+=Number(x.a.amt);});
+ ks.sort();
+ var sums=ks.map(function(k){return '<div class="ds-kv"><span>'+k+' · '+nRec(m2[k].n)+'</span>'
+   +'<span class="v">'+money(m2[k].s,k)+'</span></div>';}).join('');
+ var body='<div class="ds-kv"><span>'+t(m.type==="repush"?"rpCount":"cfCount")+'</span><span class="v">'+ok.length+'</span></div>'
+  +(sums?'<div class="sec-head" style="margin-top:14px"><h2>'+t("cfCurrency")+'</h2></div>'+sums:'')
+  +(m.type==="repush"?note("",t("rpNote")):'')
+  +(bad.length?note("red",'<b>'+t("cfExcluded",{n:bad.length})+'</b><div class="ds-modal-list" style="margin-top:8px">'
+     +bad.map(function(x){return '<div class="ds-res-row"><div class="bd"><b>'+esc(x.a.no)+'</b><span>'+esc(x.why)+'</span></div></div>';}).join('')
+     +'</div>'):'');
+ var foot='<button class="btn" type="button" data-act="closeModal"'+(S.pushing?" disabled":"")+'>'+t("cancel")+'</button>'
+  +'<button class="btn primary" type="button" data-act="doPush"'+(S.pushing||!ok.length?" disabled":"")+'>'
+  +(S.pushing?'<span class="spinner"></span>'+t("submittingTx"):t("cfSubmit"))+'</button>';
+ return modalBox(t(m.type==="repush"?"rpTitle":"cfTitle"),body,foot,bad.length>0);
+}
+function resultDrawer(){
+ var r=S.result;if(!r)return '';
+ var ok=r.items.filter(function(x){return x.result!=="fail";}).length;
+ var fail=r.items.filter(function(x){return x.result==="fail";});
+ var rows=r.items.map(function(x){
+  var sub=x.result==="dup"?t("rDupNote"):x.result==="fail"?x.code+" · "+errText(x):money(x.amt,x.cur);
+  var act=x.result==="fail"&&canPush()
+   ? '<button class="btn sm" type="button" data-act="askRepush" data-v="'+esc(x.no)+'">'+t("repush")+'</button>':'';
+  return '<div class="ds-res-row"><div class="bd"><b>'+esc(x.no)+'</b><span>'+esc(x.party)+' · '+esc(sub)+'</span></div>'
+   +'<div class="act">'+resultPill(x.result)+'</div>'+(act?'<div class="act">'+act+'</div>':'')+'</div>';
+ }).join('');
+ return '<aside class="drawer ds-result" role="complementary" aria-label="'+esc(t("rsTitle"))+'">'
+  +'<div class="drawer-h"><b>'+t("rsTitle")+'</b><button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t("close")+'">×</button></div>'
+  +'<div class="drawer-b">'
+  +'<div class="ds-kv"><span>'+t("rsBatch")+'</span><span class="v">'+esc(r.batch)+'</span></div>'
+  +'<div class="ds-kv"><span>'+t("rsOk",{n:ok})+'</span><span class="v">'+(fail.length?t("rsFail",{n:fail.length}):"")+'</span></div>'
+  +CF.gap(12)+'<div class="ds-res">'+rows+'</div>'+CF.gap(14)
+  +'<div class="btnbar">'
+  +(fail.length&&canPush()?'<button class="btn" type="button" data-act="repushResult">'+t("rsRepush")+'</button>':'')
+  +'<button class="btn primary" type="button" data-act="openBatch" data-v="'+esc(r.batch)+'">'+t("rsViewBatch")+'</button></div>'
+  +'</div></aside>';
+}
+
+/* ------------------------------ URL 方案 -------------------------------- */
+function q(){return S.st&&S.st!=="default"?"?st="+S.st:"";}
+function buildHash(){
+ if(S.page==="P-M-DS-02")return "#/admin/data-sync/batches"+q();
+ if(S.page==="P-M-DS-03")return "#/admin/data-sync/batches/"+encodeURIComponent(S.batchNo)+q();
+ if(S.page==="P-O-DS-01")return "#/ops/asset-inventory"+q();
+ if(S.page==="P-O-DS-02")return "#/ops/asset-inventory/"+encodeURIComponent(S.invId)+q();
+ return "#/admin/data-sync/assets"+q();
+}
+function readHash(){
+ var h=(location.hash||"").replace(/^#\/?/,"");if(!h)return false;
+ var parts=h.split("?"),seg=parts[0].split("/"),qs={};
+ (parts[1]||"").split("&").forEach(function(kv){if(!kv)return;var i=kv.indexOf("=");qs[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));});
+ var page=null;
+ if(seg[0]==="admin"&&seg[1]==="data-sync"&&seg[2]==="assets")page="P-M-DS-01";
+ else if(seg[0]==="admin"&&seg[1]==="data-sync"&&seg[2]==="batches"){
+  if(seg[3]){page="P-M-DS-03";S.batchNo=decodeURIComponent(seg[3]);}else page="P-M-DS-02";
+ } else if(seg[0]==="ops"&&seg[1]==="asset-inventory"){
+  if(seg[2]){page="P-O-DS-02";S.invId=decodeURIComponent(seg[2]);}else page="P-O-DS-01";
+ } else if(CF.PAGES[parts[0].toUpperCase()])page=parts[0].toUpperCase();
+ if(!page)return false;
+ S.page=page;
+ S.st=qs.st&&(CF.STATES[page]||[]).some(function(x){return x[0]===qs.st;})?qs.st:CF.defaultState(page);
+ return true;
+}
+
+/* ------------------------------ 交互 ------------------------------------ */
+function resetDemo(){
+ S.data=seedAssets();if(S.bulk)S.data=S.data.concat(bulkAssets());
+ S.inv=seedInv();S.batches=seedBatches();S.sel={};S.result=null;
+ S.page1=1;S.pageB=1;S.pageO=1;
+}
+function clearFilters(){
+ if(S.page==="P-M-DS-01"){S.f={chain:"chained",sync:"none",cur:"all",party:"all",from:"",to:"",kw:""};S.sortAmount=0;S.page1=1;}
+ else if(S.page==="P-M-DS-02"){S.bf={type:"all",from:"",to:"",kw:""};S.pageB=1;}
+ else {S.of={cur:"all",party:"all",type:"all",cfrom:"",cto:"",rfrom:"",rto:"",kw:""};S.pageO=1;}
+ S.st="default";
+}
+function onAct(n,a,v){
+ if(a==="switchEnd"){go(S.end==="ops"?"P-M-DS-01":"P-O-DS-01");return true;}
+ if(a==="reset"){resetDemo();toast("success",t("resetOk"));render();return true;}
+ if(a==="bulk"){S.bulk=!S.bulk;resetDemo();render();return true;}
+ if(a==="retry"){S.st="default";render();return true;}
+ if(a==="clear"){clearFilters();render();return true;}
+ if(a==="search"){
+  var empty=S.page==="P-M-DS-01"?!adminRows().length:S.page==="P-M-DS-02"?!batchRows().length:!invRows().length;
+  S.st=empty?"nomatch":"default";S.page1=1;S.pageB=1;S.pageO=1;render();return true;}
+ if(a==="sort"){if(S.f.cur==="all")return true;S.sortAmount=S.sortAmount===1?-1:1;render();return true;}
+ if(a==="page1"){S.page1=Math.max(1,Number(v));render();return true;}
+ if(a==="pageB"){S.pageB=Math.max(1,Number(v));render();return true;}
+ if(a==="pageO"){S.pageO=Math.max(1,Number(v));render();return true;}
+ if(a==="pick"){if(S.sel[v])delete S.sel[v];else S.sel[v]=true;render();return true;}
+ if(a==="clearSel"){S.sel={};render();return true;}
+ if(a==="selectAll"){adminRows().forEach(function(r){
+  if(r.sync!=="pushed"&&r.chain==="chained")S.sel[r.no]=true;});render();return true;}
+ if(a==="denied"){toast("danger",t("permDenied"));return true;}
+ if(a==="askPush"){S.modal={type:"push",ids:selIds()};render();return true;}
+ if(a==="askRepush"){S.drawer=null;S.modal={type:"repush",ids:[v]};render();return true;}
+ if(a==="repushBatch"){var b=batchByNo(v);if(!b)return true;
+  S.modal={type:"repush",ids:b.items.filter(function(x){return x.result==="fail";}).map(function(x){return x.no;})};render();return true;}
+ if(a==="repushResult"){S.drawer=null;
+  S.modal={type:"repush",ids:S.result.items.filter(function(x){return x.result==="fail";}).map(function(x){return x.no;})};render();return true;}
+ if(a==="doPush"){var m=S.modal,ok=m.ids.filter(function(no){var x=byNo(no);return x&&checkAsset(x).ok;});
+  if(!ok.length)return true;submit(ok,m.type==="repush"?"repush":"push");return true;}
+ if(a==="closeModal"){if(S.pushing)return true;S.modal=null;render();return true;}
+ if(a==="openBatch"){S.batchNo=v;S.drawer=null;go("P-M-DS-03");return true;}
+ if(a==="openInv"){S.invId=v;go("P-O-DS-02");return true;}
+ if(a==="copyHash"||a==="copyWallet"){if(navigator.clipboard)navigator.clipboard.writeText(v)["catch"](function(){});toast("success",t("copiedTx"));return true;}
+ if(a==="signout"){S.menu=null;toast("info",t("signOutDemo"));render();return true;}
+ return false;
+}
+function setField(k,v){
+ if(k.indexOf("f.")===0)S.f[k.slice(2)]=v;
+ else if(k.indexOf("bf.")===0)S.bf[k.slice(3)]=v;
+ else if(k.indexOf("of.")===0)S.of[k.slice(3)]=v;
+ else if(k==="perm")S.perm=v;
+ else if(k==="scenario")S.scenario=v;
+}
+document.addEventListener("input",function(e){
+ var n=e.target.closest("[data-f]");if(!n)return;setField(n.getAttribute("data-f"),n.value);
+});
+document.addEventListener("change",function(e){
+ var n=e.target.closest("[data-f]");if(!n)return;setField(n.getAttribute("data-f"),n.value);render();
+});
+/* 页面快捷键 Alt+1～5：输入控件内不截获。 */
+var SHORTCUT=["P-M-DS-01","P-M-DS-02","P-M-DS-03","P-O-DS-01","P-O-DS-02"];
+document.addEventListener("keydown",function(e){
+ if(!e.altKey||e.ctrlKey||e.metaKey)return;
+ var tag=(e.target.tagName||"").toLowerCase();
+ if(tag==="input"||tag==="textarea"||tag==="select")return;
+ var i=["1","2","3","4","5"].indexOf(e.key);if(i<0)return;
+ e.preventDefault();
+ var target=SHORTCUT[i];
+ if(target==="P-M-DS-03"&&S.batches.length)S.batchNo=S.batches[0].no;
+ if(target==="P-O-DS-02"){if(!S.inv.length)return;S.invId=S.inv[0].srcId;}
+ go(target);
+});
+
+function renderContent(){
+ if(S.page==="P-M-DS-02")return pageBatches();
+ if(S.page==="P-M-DS-03")return pageBatchDetail();
+ if(S.page==="P-O-DS-01")return pageInventory();
+ if(S.page==="P-O-DS-02")return pageAssetDetail();
+ return pagePush();
+}
+
+var LIST_STATES=[["default","Default","默认"],["loading","Loading","加载中"],["empty","Empty","空数据"],
+ ["nomatch","No match","筛选无结果"],["error","Load failed","失败可重试"],["noperm","No permission","无权限"],
+ ["waiting","Waiting","异步等待"],["submitting","Pushing","推送中"],["submitfail","Submit failed","提交失败"]];
+var READ_STATES=[["default","Default","默认"],["loading","Loading","加载中"],["empty","Empty","空数据"],
+ ["nomatch","No match","筛选无结果"],["error","Load failed","失败可重试"],["noperm","No permission","无权限"],
+ ["waiting","Waiting","异步等待"]];
+var DETAIL_STATES=[["default","Default","默认"],["loading","Loading","加载中"],["error","Load failed","失败可重试"],
+ ["noperm","No permission","无权限"],["waiting","Waiting","异步等待"]];
+
+CF.define({
+ id:"datasync",end:"admin",home:"P-M-DS-01",
+ owns:["P-M-DS-01","P-M-DS-02","P-M-DS-03","P-O-DS-01","P-O-DS-02"],
+ dict:DICT,topbarPrd:false,
+ states:{"P-M-DS-01":LIST_STATES,"P-M-DS-02":READ_STATES,"P-M-DS-03":DETAIL_STATES,
+         "P-O-DS-01":READ_STATES,"P-O-DS-02":DETAIL_STATES},
+ state:function(){
+  return {f:{chain:"chained",sync:"none",cur:"all",party:"all",from:"",to:"",kw:""},
+   bf:{type:"all",from:"",to:"",kw:""},
+   of:{cur:"all",party:"all",type:"all",cfrom:"",cto:"",rfrom:"",rto:"",kw:""},
+   sortAmount:0,page1:1,pageB:1,pageO:1,sel:{},bulk:false,perm:"full",scenario:"ok",
+   data:seedAssets(),inv:seedInv(),batches:seedBatches(),
+   batchNo:"PB-20260905-001",invId:"AR20260905000109",result:null,pushing:false};
+ },
+ onBoot:function(st){S=st;},
+ content:renderContent,
+ modals:{push:pushModal,repush:pushModal},
+ drawers:{result:resultDrawer},
+ modalLocked:function(){return S.pushing;},
+ account:function(){
+  var ops=S.end==="ops";
+  return {avatar:ops?"OP":"AD",ident:ops?"demo.ops@demo.test":"demo.admin@demo.test",
+   ok:true,okText:L("Active","正常"),settings:ops?null:"P-M05",signOutPage:ops?null:"P-M01"};
+ },
+ crumbParts:function(){
+  if(S.page==="P-M-DS-03")return [[t("batchTitle"),"P-M-DS-02",""]];
+  if(S.page==="P-O-DS-02")return [[t("invTitle"),"P-O-DS-01",""]];
+  return [];
+ },
+ crumbCur:function(){
+  if(S.page==="P-M-DS-03")return t("bdTitle")+" · "+S.batchNo;
+  if(S.page==="P-O-DS-02")return t("adTitle")+" · "+S.invId;
+  return null;
+ },
+ hash:{build:buildHash,read:readHash},
+ onAct:onAct
+});
+CF.boot();
+})();
+</script>
+</body>
+</html>
