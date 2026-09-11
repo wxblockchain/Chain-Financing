@@ -5,61 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>金融服务端 · 借贷广场 — 融资需求与代币质押（原型）</title>
 <!--
-  WS-324 借贷广场 · 融资需求与代币质押 — 一体化原型
+  WS-324 借贷广场 · 融资需求与代币质押 — 一体化原型 v1.1
   PRD 基线：v1.0-借贷广场-融资需求与代币质押-PRD.md V5.0 + 01-对外契约与数据字典.md V5.0
   形态：console（金融服务端 · 面客）。单文件，双击即开，无网络依赖。
   本文件由 src/ 下的分层源码内联生成（见 build.sh），不要直接手改本文件。
-  后续模块 WS-325～WS-329 在 60-pages.js 末尾的「模块注册区」追加页面即可。
+  后续模块 WS-325～WS-329 在 80-router.js 的 ROUTES「模块注册区」追加页面即可。
 -->
 <style>
 /* ============================================================
    1. tokens —— 所有颜色与字体只走命名 token，页面内不写裸色值
+   字阶是本版的主要修订点：把跨度从 2.4× 拉到 4.0×，
+   让"该突出的"靠尺寸而不是靠颜色去突出。
    ============================================================ */
 :root{
   /* 纸面与墨色 */
-  --paper:#F3F5F9;
+  --paper:#F4F6FA;
   --card:#FFFFFF;
-  --sunken:#F7F9FC;
+  --sunken:#F8FAFC;
   --sunken-2:#EFF3F9;
-  --line:#E3E8F0;
-  --line-strong:#CDD6E3;
-  --ink:#0E1725;
-  --ink-2:#4C5768;
-  --ink-3:#7D8899;
+  --line:#E5E9F0;
+  --line-soft:#EEF1F6;
+  --line-strong:#CBD5E3;
+  --ink:#0C1420;
+  --ink-2:#4A5567;
+  --ink-3:#7A8698;
+  --ink-4:#9BA5B4;
   --ink-inv:#FFFFFF;
 
-  /* 主色（界面动作） */
+  /* 主色：整页只用在一处主操作与一个关键读数上 */
   --accent:#1F53C4;
   --accent-hover:#1A46A8;
   --accent-wash:#EEF3FD;
   --accent-line:#C2D4F5;
 
   /* 状态色：保留色，永不充当数据系列 */
-  --st-good:#0C7A43;    --st-good-wash:#EAF6EF;   --st-good-line:#BFE3CE;
-  --st-warn:#8F5400;    --st-warn-wash:#FCF3E3;   --st-warn-line:#EBD5A9;
-  --st-crit:#AE2F2A;    --st-crit-wash:#FBEDEC;   --st-crit-line:#EEC6C3;
-  --st-mute:#59657A;    --st-mute-wash:#EDF0F5;   --st-mute-line:#D6DCE6;
+  --st-good:#0C7A43;    --st-good-wash:#EDF7F1;   --st-good-line:#C6E4D4;
+  --st-warn:#8A5200;    --st-warn-wash:#FDF5E8;   --st-warn-line:#EBD9B2;
+  --st-crit:#AC2E29;    --st-crit-wash:#FCEFEE;   --st-crit-line:#EFCAC7;
+  --st-mute:#5A6578;    --st-mute-wash:#EFF2F6;   --st-mute-line:#DBE1EA;
 
   /* 数据系列色：经 dataviz validator 校验（light / surface #FFFFFF / --pairs all 全通过） */
-  --s1:#2a78d6;  --s1-fill:rgba(42,120,214,.16);   /* 有效质押价值 · 融资上限 */
-  --s2:#eb6834;  --s2-fill:rgba(235,104,52,.20);   /* 项目融资余额 */
-  --s3:#1baf7a;  --s3-fill:rgba(27,175,122,.20);   /* 项目在途金额 */
-  --s-void:#8D99A9; --s-void-fill:rgba(141,153,169,.18); /* 失效代币：中性灰＋斜纹，非系列色 */
-  --s-free:#93B4E4;                                 /* 可融金额（额度尺空段） */
+  --s1:#2a78d6;  --s1-fill:rgba(42,120,214,.15);   /* 有效质押价值 · 融资上限 */
+  --s2:#eb6834;  --s2-fill:rgba(235,104,52,.18);   /* 项目融资余额 */
+  --s3:#1baf7a;  --s3-fill:rgba(27,175,122,.18);   /* 项目在途金额 */
+  --s-void:#8D99A9; --s-void-fill:rgba(141,153,169,.16); /* 失效代币：中性灰＋斜纹，非系列色 */
+  --s-free:#A9C2E8;
 
   /* 图表底盘 */
-  --grid:#EBEEF3;
-  --axis:#C8CFDA;
-  --axis-ink:#7D8899;
+  --grid:#EDF0F5;
+  --axis:#CBD5E3;
+  --axis-ink:#8A94A5;
 
   /* 字体 */
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
   --num:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
 
+  /* 字阶：8 级，11 → 44，跨度 4.0× */
+  --fs-xs:11px; --fs-sm:12px; --fs-b:13.5px; --fs-md:15px;
+  --fs-lg:20px; --fs-stat:26px; --fs-h1:34px; --fs-hero:44px;
+
   /* 形制 */
-  --r-s:6px; --r:10px; --r-l:14px;
-  --shadow:0 1px 2px rgba(14,23,37,.05),0 1px 3px rgba(14,23,37,.05);
-  --shadow-pop:0 16px 40px rgba(14,23,37,.16),0 2px 8px rgba(14,23,37,.08);
+  --r-s:6px; --r:10px; --r-l:12px;
+  --shadow:0 1px 2px rgba(12,20,32,.04);
+  --shadow-pop:0 18px 44px rgba(12,20,32,.18),0 2px 8px rgba(12,20,32,.08);
   --maxw:1440px;
   --ease:cubic-bezier(.2,.7,.3,1);
 }
@@ -68,141 +76,141 @@
 html{-webkit-text-size-adjust:100%}
 body{
   background:var(--paper);color:var(--ink);font-family:var(--sans);
-  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  font-size:var(--fs-b);line-height:1.6;-webkit-font-smoothing:antialiased;
   padding-bottom:52px;
 }
-.num,.n{font-family:var(--num);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.num,.n{font-family:var(--num);font-variant-numeric:tabular-nums;letter-spacing:-.012em}
 button,input,select{font:inherit;color:inherit}
 table{border-collapse:collapse;width:100%}
 a{color:var(--accent);text-decoration:none}
-
-/* 焦点环：≥3:1，立刻出现，永不参与动效 */
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
-
-@media (prefers-reduced-motion:reduce){
-  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
-}
+@media (prefers-reduced-motion:reduce){ *{animation-duration:.001ms !important;transition-duration:.001ms !important} }
 
 /* ============================================================
-   2. 壳层：顶栏 · 导航 · 内容区
+   2. 壳层
    ============================================================ */
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
 
-.appbar{
-  position:sticky;top:0;z-index:40;background:var(--card);
-  border-bottom:1px solid var(--line);
-}
-.appbar .wrap{display:flex;align-items:center;gap:28px;height:60px}
+.appbar{position:sticky;top:0;z-index:40;background:var(--card);border-bottom:1px solid var(--line)}
+.appbar .wrap{display:flex;align-items:center;gap:30px;height:62px}
 .brand{display:flex;align-items:center;gap:10px;cursor:pointer;background:none;border:0;padding:0}
 .brand .mk{
-  width:28px;height:28px;border-radius:8px;background:var(--accent);color:var(--ink-inv);
+  width:29px;height:29px;border-radius:8px;background:var(--accent);color:var(--ink-inv);
   display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none;
 }
-.brand .nm{font-weight:650;font-size:15px;letter-spacing:-.01em;white-space:nowrap}
-.brand .nm i{font-style:normal;color:var(--ink-3);font-weight:400;margin-left:7px;font-size:12.5px}
+.brand .nm{font-weight:680;font-size:16px;letter-spacing:-.02em;white-space:nowrap}
+.brand .nm i{font-style:normal;color:var(--ink-3);font-weight:400;margin-left:8px;font-size:var(--fs-sm)}
 
-.mainnav{display:flex;gap:2px;flex:1;min-width:0}
+.mainnav{display:flex;gap:3px;flex:1;min-width:0}
 .mainnav button{
-  background:none;border:0;padding:7px 13px;border-radius:var(--r-s);cursor:pointer;
-  color:var(--ink-2);font-size:14px;white-space:nowrap;transition:background .15s var(--ease),color .15s var(--ease);
+  background:none;border:0;padding:7px 14px;border-radius:var(--r-s);cursor:pointer;
+  color:var(--ink-2);font-size:var(--fs-b);white-space:nowrap;transition:background .15s var(--ease),color .15s var(--ease);
 }
 .mainnav button:hover{background:var(--sunken-2);color:var(--ink)}
-.mainnav button[aria-current="page"]{background:var(--accent-wash);color:var(--accent);font-weight:600}
+.mainnav button[aria-current="page"]{background:var(--sunken-2);color:var(--ink);font-weight:650}
 
 .who{display:flex;align-items:center;gap:10px;flex:none}
 .who .id{text-align:right;line-height:1.25}
-.who .id b{display:block;font-size:13px;font-weight:600}
-.who .id span{display:block;font-size:11.5px;color:var(--ink-3)}
+.who .id b{display:block;font-size:var(--fs-sm);font-weight:650}
+.who .id span{display:block;font-size:var(--fs-xs);color:var(--ink-3)}
 .who .av{
-  width:32px;height:32px;border-radius:50%;background:var(--sunken-2);border:1px solid var(--line);
-  display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink-2);font-weight:600;flex:none;
+  width:31px;height:31px;border-radius:50%;background:var(--sunken-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:var(--fs-sm);color:var(--ink-2);font-weight:650;flex:none;
 }
 
-main{padding:26px 0 44px}
-.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:18px}
-.page-head h1{font-size:22px;font-weight:650;letter-spacing:-.02em;line-height:1.3}
-.page-head .sub{color:var(--ink-2);font-size:13px;margin-top:5px}
-.crumb{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-3);margin-bottom:12px}
-.crumb button{background:none;border:0;padding:0;color:var(--ink-2);cursor:pointer;font-size:12.5px}
+main{padding:30px 0 56px}
+
+/* 页头：字阶的顶点之一。标题 34px，副题 13.5px —— 跨度靠这里建立 */
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:22px}
+.page-head h1{font-size:var(--fs-h1);font-weight:700;letter-spacing:-.028em;line-height:1.18}
+.page-head .sub{color:var(--ink-2);font-size:var(--fs-b);margin-top:8px;max-width:820px}
+.page-head .sum{color:var(--ink-3);font-size:var(--fs-sm);margin-top:9px}
+.page-head .sum b{color:var(--ink-2);font-weight:600;font-family:var(--num)}
+.page-head .sum .demo{
+  display:inline-flex;align-items:center;font-size:10px;color:var(--st-warn);background:var(--st-warn-wash);
+  border:1px solid var(--st-warn-line);border-radius:4px;padding:1px 6px;font-weight:600;vertical-align:1px;
+}
+
+.crumb{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);color:var(--ink-3);margin-bottom:14px}
+.crumb button{background:none;border:0;padding:0;color:var(--ink-2);cursor:pointer;font-size:var(--fs-sm)}
 .crumb button:hover{color:var(--accent);text-decoration:underline}
 .crumb i{font-style:normal;color:var(--line-strong)}
 
 /* ============================================================
-   3. 基础件：卡片 · 按钮 · 徽标 · 键值 · 表格
+   3. 基础件
+   卡片外壳变轻：标题行不再是填色条 + 分隔线，只是一行标签。
+   分区靠留白和白底本身，不靠额外的框线。
    ============================================================ */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--shadow)}
-.card + .card{margin-top:16px}
-.card > .ch{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
-  padding:15px 20px;border-bottom:1px solid var(--line);
-}
-.card > .ch h2{font-size:15px;font-weight:650;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+.card + .card{margin-top:20px}
+.card > .ch{display:flex;align-items:baseline;justify-content:space-between;gap:18px;padding:20px 24px 2px}
+.card > .ch h2{font-size:var(--fs-md);font-weight:680;letter-spacing:-.015em;display:flex;align-items:center;gap:9px}
+.card > .ch .note-r,.card > .ch p{font-size:var(--fs-sm);color:var(--ink-3);font-weight:400}
 .card > .ch .lvl{
-  font-family:var(--num);font-size:10.5px;font-weight:700;color:var(--ink-3);
-  background:var(--sunken-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px;letter-spacing:.04em;
+  font-family:var(--num);font-size:10px;font-weight:700;color:var(--ink-4);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px;letter-spacing:.04em;
 }
-.card > .ch p{font-size:12.5px;color:var(--ink-3);margin-top:3px;font-weight:400}
-.cb{padding:20px}
+.card.tbl > .ch{padding-bottom:16px;border-bottom:1px solid var(--line)}
+.cb{padding:18px 24px 24px}
 .cb.tight{padding:0}
+.cb.t0{padding-top:12px}
 
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  height:36px;padding:0 15px;border-radius:var(--r-s);border:1px solid var(--line-strong);
-  background:var(--card);color:var(--ink);cursor:pointer;font-size:13.5px;font-weight:500;
+  height:36px;padding:0 16px;border-radius:var(--r-s);border:1px solid var(--line-strong);
+  background:var(--card);color:var(--ink);cursor:pointer;font-size:var(--fs-b);font-weight:500;
   transition:background .15s var(--ease),border-color .15s var(--ease);white-space:nowrap;
 }
 .btn:hover:not(:disabled){background:var(--sunken-2)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--ink-inv);font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--ink-inv);font-weight:650}
 .btn.primary:hover:not(:disabled){background:var(--accent-hover);border-color:var(--accent-hover)}
-.btn.sm{height:30px;padding:0 11px;font-size:12.5px}
-.btn.lg{height:42px;padding:0 22px;font-size:14.5px}
-.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.sm{height:29px;padding:0 11px;font-size:var(--fs-sm)}
+.btn.lg{height:44px;padding:0 24px;font-size:var(--fs-md);font-weight:650}
+.btn.ghost{border-color:transparent;background:var(--sunken)}
+.btn.ghost:hover:not(:disabled){background:var(--sunken-2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.block{width:100%}
-.btn.danger{color:var(--st-crit);border-color:var(--st-crit-line)}
-.btn.danger:hover:not(:disabled){background:var(--st-crit-wash)}
-.btn.link{border:0;background:none;height:auto;padding:0;color:var(--accent);font-size:13px}
+.btn.danger{color:var(--st-crit);border-color:var(--line-strong);background:var(--card)}
+.btn.danger:hover:not(:disabled){background:var(--st-crit-wash);border-color:var(--st-crit-line)}
+.btn.link{border:0;background:none;height:auto;padding:0;color:var(--accent);font-size:inherit;font-weight:inherit}
 .btn.link:hover{text-decoration:underline;background:none}
 
-/* ⊘ 可见不可点：保留可聚焦，带原因 */
 .btn.blocked{
   color:var(--ink-3);background:var(--sunken);border-color:var(--line);
   border-style:dashed;cursor:not-allowed;font-weight:500;
 }
 .btn.blocked:hover{background:var(--sunken)}
-.btn.blocked .sig{color:var(--ink-3);font-size:14px;line-height:1}
-.why{
-  display:flex;align-items:flex-start;gap:7px;margin-top:8px;
-  font-size:12.5px;color:var(--ink-2);line-height:1.5;
-}
-.why .sig{color:var(--ink-3);flex:none;line-height:1.45}
+.btn.blocked .sig{color:var(--ink-4);font-size:13px;line-height:1}
+.why{display:flex;gap:7px;margin-top:7px;font-size:var(--fs-sm);color:var(--ink-3);line-height:1.5}
+.why .sig{color:var(--ink-4);flex:none;line-height:1.45}
 
 .tag{
-  display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:5px;
-  font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:5px;height:21px;padding:0 8px;border-radius:5px;
+  font-size:var(--fs-sm);font-weight:600;border:1px solid transparent;white-space:nowrap;
 }
-.tag .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag .dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex:none}
 .tag.good{color:var(--st-good);background:var(--st-good-wash);border-color:var(--st-good-line)}
 .tag.warn{color:var(--st-warn);background:var(--st-warn-wash);border-color:var(--st-warn-line)}
 .tag.crit{color:var(--st-crit);background:var(--st-crit-wash);border-color:var(--st-crit-line)}
 .tag.mute{color:var(--st-mute);background:var(--st-mute-wash);border-color:var(--st-mute-line)}
 .tag.info{color:var(--accent);background:var(--accent-wash);border-color:var(--accent-line)}
-.tag.plain{color:var(--ink-2);background:var(--card);border-color:var(--line-strong)}
+.tag.plain{color:var(--ink-3);background:var(--card);border-color:var(--line)}
 
-.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.kv > div{background:var(--card);padding:13px 16px}
-.kv .k{font-size:12.5px;color:var(--ink-3);display:flex;align-items:center;gap:5px}
-.kv .v{font-size:15px;font-weight:600;margin-top:4px;font-family:var(--num);font-variant-numeric:tabular-nums}
-.kv .v.txt{font-family:var(--sans);font-weight:550;font-size:14px}
-.kv .x{font-size:11.5px;color:var(--ink-3);margin-top:3px;font-family:var(--sans)}
+/* 键值：去掉网格线，改为留白分栏——同样的信息，少一层框 */
+.kv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 28px}
 .kv.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.kv.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.kv.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kv .k{font-size:var(--fs-sm);color:var(--ink-3);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.kv .v{font-size:var(--fs-md);font-weight:650;margin-top:5px;font-family:var(--num);font-variant-numeric:tabular-nums}
+.kv .v.txt{font-family:var(--sans);font-weight:600}
+.kv .x{font-size:var(--fs-xs);color:var(--ink-4);margin-top:4px;font-family:var(--sans);line-height:1.5}
 
-table.dt{font-size:13px}
+table.dt{font-size:var(--fs-b)}
 table.dt th{
-  text-align:left;font-weight:500;color:var(--ink-3);font-size:12.5px;
-  padding:0 14px;height:40px;background:var(--sunken);border-bottom:1px solid var(--line);white-space:nowrap;
+  text-align:left;font-weight:500;color:var(--ink-3);font-size:var(--fs-sm);
+  padding:0 14px;height:38px;border-bottom:1px solid var(--line);white-space:nowrap;
 }
-table.dt td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.dt td{padding:0 14px;height:48px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
 table.dt tbody tr:last-child td{border-bottom:0}
 table.dt tbody tr:hover{background:var(--sunken)}
 table.dt td.n,table.dt th.n{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -210,6 +218,7 @@ table.dt th.n{font-family:var(--sans)}
 table.dt .sel{width:40px}
 table.dt tr.picked td{background:var(--accent-wash)}
 table.dt tr.picked:hover td{background:var(--accent-wash)}
+table.dt td.wrap2{white-space:normal;line-height:1.45}
 .tscroll{overflow-x:auto}
 
 input[type=text],input[type=number],select{
@@ -219,208 +228,229 @@ input[type=text],input[type=number],select{
 input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--accent)}
 input.bad{border-color:var(--st-crit)}
 input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
-label.fl{display:block;font-size:13px;color:var(--ink-2);margin-bottom:6px}
+label.fl{display:block;font-size:var(--fs-sm);color:var(--ink-2);margin-bottom:7px}
 label.fl b{color:var(--st-crit);font-weight:400}
-.hint{font-size:12px;color:var(--ink-3);margin-top:6px}
-.err{font-size:12.5px;color:var(--st-crit);margin-top:6px;display:flex;gap:6px;align-items:flex-start}
+.hint{font-size:var(--fs-sm);color:var(--ink-3);margin-top:7px}
+.err{font-size:var(--fs-sm);color:var(--st-crit);margin-top:8px;display:flex;gap:7px;align-items:flex-start;line-height:1.6}
 
-/* 提示条 */
+/* 提示条：只有担保不足用填色，其余降为左侧色规 + 白底，整页的色块数量因此减少 */
 .note{
-  display:flex;gap:11px;padding:13px 15px;border-radius:var(--r);
-  border:1px solid var(--line);background:var(--sunken);font-size:13px;line-height:1.6;
+  display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);
+  border:1px solid var(--line);background:var(--card);font-size:var(--fs-b);line-height:1.62;
 }
-.note .ic{flex:none;font-family:var(--num);font-size:12px;font-weight:700;margin-top:1px}
-.note b{font-weight:650}
-.note.good{background:var(--st-good-wash);border-color:var(--st-good-line);color:var(--st-good)}
-.note.warn{background:var(--st-warn-wash);border-color:var(--st-warn-line);color:var(--st-warn)}
-.note.crit{background:var(--st-crit-wash);border-color:var(--st-crit-line);color:var(--st-crit)}
-.note.info{background:var(--accent-wash);border-color:var(--accent-line);color:var(--accent)}
+.note .ic{flex:none;font-family:var(--num);font-size:var(--fs-sm);font-weight:700;margin-top:2px;color:var(--ink-4)}
+.note b{font-weight:680}
 .note .bd{min-width:0}
-.note .bd p{margin-top:4px;color:inherit;opacity:.92}
+.note .bd p{margin-top:5px;color:var(--ink-2)}
 .note .act{margin-left:auto;flex:none;align-self:center}
+.note.good{border-left:3px solid var(--st-good)} .note.good .ic{color:var(--st-good)}
+.note.warn{border-left:3px solid var(--st-warn)} .note.warn .ic{color:var(--st-warn)}
+.note.info{border-left:3px solid var(--accent)}  .note.info .ic{color:var(--accent)}
+.note.crit{background:var(--st-crit-wash);border-color:var(--st-crit-line);border-left:3px solid var(--st-crit)}
+.note.crit .ic{color:var(--st-crit)} .note.crit .bd p{color:var(--st-crit);opacity:.92}
+.note.quiet{background:var(--sunken);border-color:var(--line)}
+.note.quiet,.note.quiet .bd p{color:var(--ink-2);font-size:var(--fs-sm)}
 
 /* ============================================================
-   4. 招牌件 A：三数等式（AC-LS-53 —— ①×②=③ 在页面上可验算）
+   4. 招牌件 A：三数等式（AC-LS-53）
+   本版改为裸露在页面底色上的读数带，不再包一层卡片——
+   它是详情页的视觉顶点，靠 44px 字号和留白拿权重，不靠填色。
    ============================================================ */
-.trio{
-  display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:0;
-  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--card);
-}
-.trio .cell{padding:16px 18px;background:var(--card);min-width:0}
+.strip{padding:4px 2px 0}
+.strip + .strip{margin-top:26px}
+.trio{display:grid;grid-template-columns:auto 34px auto 34px auto;align-items:end;gap:0;margin-bottom:18px}
+.trio .cell{min-width:0;padding-right:26px}
 .trio .op{
-  display:flex;align-items:center;justify-content:center;width:44px;
-  background:var(--sunken);border-left:1px solid var(--line);border-right:1px solid var(--line);
-  font-family:var(--num);font-size:17px;color:var(--ink-3);font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--num);font-size:var(--fs-lg);color:var(--ink-4);font-weight:400;padding-bottom:14px;
 }
-.trio .idx{
-  font-family:var(--num);font-size:10.5px;font-weight:700;color:var(--ink-3);letter-spacing:.06em;
+.trio .idx{font-family:var(--num);font-size:10px;font-weight:700;color:var(--ink-4);letter-spacing:.08em}
+.trio .lb{font-size:var(--fs-sm);color:var(--ink-2);margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.trio .amt{
+  font-family:var(--num);font-variant-numeric:tabular-nums;font-size:var(--fs-stat);
+  font-weight:650;letter-spacing:-.035em;margin-top:7px;line-height:1.1;
 }
-.trio .lb{font-size:13px;color:var(--ink-2);margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.trio .amt{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:26px;font-weight:650;letter-spacing:-.03em;margin-top:6px;line-height:1.15}
-.trio .cell.out{background:var(--accent-wash)}
-.trio .cell.out .amt{color:var(--accent)}
-/* 质押率：纯文本，不可编辑，不带任何焦点态（AC-LS-56 / D-MC-110 / D-MC-111） */
+.trio .cell.out .amt{font-size:var(--fs-hero);color:var(--accent);font-weight:700}
+/* 质押率：纯文本，无控件、无焦点态（AC-LS-56 / D-MC-110 / D-MC-111） */
 .trio .rate{
-  font-family:var(--num);font-size:26px;font-weight:650;margin-top:6px;letter-spacing:-.03em;
-  user-select:text;line-height:1.15;
+  font-family:var(--num);font-size:var(--fs-stat);font-weight:650;margin-top:7px;
+  letter-spacing:-.035em;line-height:1.1;color:var(--ink-2);
 }
-.trio .fixed{font-size:12px;color:var(--ink-3);margin-top:5px;font-family:var(--sans)}
-.trio-sub{
-  font-size:12.5px;color:var(--ink-2);margin-top:10px;padding:9px 13px;
-  background:var(--sunken);border:1px solid var(--line);border-radius:var(--r-s);
-}
-.trio-sub .n{font-weight:600;color:var(--ink)}
+.trio .fixed{font-size:var(--fs-xs);color:var(--ink-4);margin-top:6px;font-family:var(--sans)}
+.trio-sub{font-size:var(--fs-sm);color:var(--ink-3);margin-top:-6px;margin-bottom:20px}
+.trio-sub .n{color:var(--ink-2);font-weight:600}
 
 /* ============================================================
-   5. 招牌件 B：额度尺（融资上限 / 余额 / 在途 / 可融 / 担保缺口）
+   5. 招牌件 B：额度尺
    ============================================================ */
-.meter{margin-top:2px}
 .meter .mwrap{position:relative;padding-top:18px}
 .meter .track{
-  position:relative;height:26px;border-radius:var(--r-s);background:var(--sunken);
+  position:relative;height:22px;border-radius:5px;background:var(--sunken-2);
   border:1px solid var(--line);display:flex;overflow:hidden;
 }
 .meter .seg{height:100%;position:relative}
 .meter .seg + .seg{border-left:2px solid var(--card)}
 .meter .seg.bal{background:var(--s2-fill);box-shadow:inset 0 0 0 1px var(--s2)}
 .meter .seg.fly{background:var(--s3-fill);box-shadow:inset 0 0 0 1px var(--s3)}
-.meter .seg.free{background:rgba(42,120,214,.10);box-shadow:inset 0 0 0 1px var(--s-free)}
+.meter .seg.free{background:rgba(42,120,214,.08);box-shadow:inset 0 0 0 1px var(--s-free)}
 .meter .seg.gap{background:var(--st-crit-wash);background-image:repeating-linear-gradient(135deg,transparent 0 5px,var(--st-crit-line) 5px 7px);box-shadow:inset 0 0 0 1px var(--st-crit)}
-.meter .mwrap > .capline{
-  position:absolute;top:13px;bottom:-5px;width:2px;background:var(--s1);border-radius:2px;z-index:2;
-}
-.meter .mwrap > .caplb{
-  position:absolute;top:0;white-space:nowrap;font-size:11px;color:var(--s1);font-weight:650;line-height:1.3;
-}
-.meter .legend{display:flex;flex-wrap:wrap;gap:5px 18px;margin-top:11px;font-size:12.5px;color:var(--ink-2)}
-.meter .legend span{display:inline-flex;align-items:center;gap:6px}
-.meter .legend i{width:11px;height:11px;border-radius:3px;flex:none;font-style:normal}
+.meter .mwrap > .capline{position:absolute;top:13px;bottom:-5px;width:2px;background:var(--s1);border-radius:2px;z-index:2}
+.meter .mwrap > .caplb{position:absolute;top:0;white-space:nowrap;font-size:var(--fs-xs);color:var(--s1);font-weight:650;line-height:1.3}
+.meter .legend{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:12px;font-size:var(--fs-sm);color:var(--ink-3)}
+.meter .legend span{display:inline-flex;align-items:center;gap:7px}
+.meter .legend i{width:10px;height:10px;border-radius:3px;flex:none;font-style:normal}
 .meter .legend i.bal{background:var(--s2-fill);box-shadow:inset 0 0 0 1px var(--s2)}
 .meter .legend i.fly{background:var(--s3-fill);box-shadow:inset 0 0 0 1px var(--s3)}
-.meter .legend i.free{background:rgba(42,120,214,.10);box-shadow:inset 0 0 0 1px var(--s-free)}
+.meter .legend i.free{background:rgba(42,120,214,.08);box-shadow:inset 0 0 0 1px var(--s-free)}
 .meter .legend i.gap{background:var(--st-crit-wash);box-shadow:inset 0 0 0 1px var(--st-crit)}
-.meter .legend i.cap{width:2px;height:13px;border-radius:1px;background:var(--s1)}
+.meter .legend i.cap{width:2px;height:12px;border-radius:1px;background:var(--s1)}
 .meter .legend b{font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
+/* 列表行内的迷你尺：只保留"已占用 vs 可融"与上限刻度，两色以内 */
 .meter.mini .mwrap{padding-top:0}
-.meter.mini .mwrap > .capline{top:-4px;bottom:-4px}
-.meter.mini .track{height:16px}
-
-.meter.mini .legend{margin-top:8px;font-size:11.5px;gap:4px 13px}
-
-/* 担保档位三档条 */
-.grades{display:flex;gap:8px;margin-top:14px}
-.grades .g{
-  flex:1;padding:10px 12px;border-radius:var(--r-s);border:1px solid var(--line);
-  background:var(--sunken);font-size:12.5px;color:var(--ink-3);line-height:1.45;
-}
-.grades .g b{display:block;font-size:13px;color:var(--ink-2);font-weight:600;margin-bottom:3px}
-.grades .g.on{background:var(--card);border-color:var(--ink-2);box-shadow:0 0 0 1px var(--ink-2)}
-.grades .g.on b{color:var(--ink)}
-.grades .g.on.crit{border-color:var(--st-crit);box-shadow:0 0 0 1px var(--st-crit);background:var(--st-crit-wash)}
-.grades .g.on.crit b{color:var(--st-crit)}
-.grades .g.on.warn{border-color:var(--st-warn);box-shadow:0 0 0 1px var(--st-warn);background:var(--st-warn-wash)}
-.grades .g.on.warn b{color:var(--st-warn)}
-.grades .g.on.good{border-color:var(--st-good);box-shadow:0 0 0 1px var(--st-good);background:var(--st-good-wash)}
-.grades .g.on.good b{color:var(--st-good)}
+.meter.mini .mwrap > .capline{top:-3px;bottom:-3px}
+.meter.mini .track{height:8px;border-radius:4px}
+.meter.mini .legend{display:none}
 
 /* ============================================================
-   6. P-LS-01 广场卡片
+   6. 融资进度（环节名取自 PRD 状态机 S-FP-*；后段标注为后续环节）
+   ============================================================ */
+.flow{display:flex;align-items:stretch;gap:0;margin:0}
+.flow .fs{flex:1;min-width:0;padding:0 0 0 15px;position:relative}
+.flow .fs::before{
+  content:"";position:absolute;left:0;top:3px;bottom:3px;width:3px;border-radius:2px;background:var(--line);
+}
+.flow .fs.done::before{background:var(--st-good)}
+.flow .fs.now::before{background:var(--accent)}
+.flow .fs.next::before{background:repeating-linear-gradient(180deg,var(--line-strong) 0 3px,transparent 3px 7px)}
+.flow .fs.later::before{background:repeating-linear-gradient(180deg,var(--line-strong) 0 3px,transparent 3px 7px)}
+.flow .fs.now.later::before{background:repeating-linear-gradient(180deg,var(--accent) 0 4px,transparent 4px 8px)}
+.flow .fs.later .st{color:var(--ink-3)}
+.flow .fs.now.later .st{color:var(--accent)}
+.flow .fs .sid{font-family:var(--num);font-size:10px;font-weight:700;color:var(--ink-4);letter-spacing:.04em}
+.flow .fs .st{font-size:var(--fs-b);font-weight:650;color:var(--ink-3);margin-top:3px}
+.flow .fs.done .st{color:var(--ink-2)}
+.flow .fs.now .st{color:var(--accent)}
+.flow .fs .sx{font-size:var(--fs-xs);color:var(--ink-4);margin-top:3px;line-height:1.5}
+.flow .fsep{
+  flex:none;width:1px;background:var(--line-strong);margin:0 18px;position:relative;
+}
+.flow .fsep span{
+  position:absolute;top:-1px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font-size:10px;color:var(--ink-4);background:var(--card);padding:0 6px;letter-spacing:.04em;
+}
+.flow-foot{font-size:var(--fs-sm);color:var(--ink-3);margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
+
+/* ============================================================
+   7. 折叠层（第二层：验算与核对用，默认收起）
+   ============================================================ */
+.fold{border-top:1px solid var(--line-soft)}
+.fold > summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;
+  padding:13px 0 13px;font-size:var(--fs-b);color:var(--ink-2);font-weight:600;
+}
+.fold > summary::-webkit-details-marker{display:none}
+.fold > summary:hover{color:var(--accent)}
+.fold > summary .caret{
+  font-family:var(--num);font-size:10px;color:var(--ink-4);transition:transform .15s var(--ease);display:inline-block;
+}
+.fold[open] > summary .caret{transform:rotate(90deg)}
+.fold > summary .cnt{margin-left:auto;font-size:var(--fs-sm);color:var(--ink-4);font-weight:400}
+.fold .fb{padding:2px 0 20px}
+
+/* ============================================================
+   8. 次级视图 tab（第三层：项目档案，不是本次决策的输入）
+   ============================================================ */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 24px}
+.tabs button{
+  background:none;border:0;padding:14px 14px 12px;cursor:pointer;font-size:var(--fs-b);
+  color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;
+}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink);font-weight:650;border-bottom-color:var(--accent)}
+.tabs .cnt{font-family:var(--num);font-size:var(--fs-xs);color:var(--ink-4);margin-left:6px}
+
+/* ============================================================
+   9. P-LS-01 列表：表格形态，行高 56px
    ============================================================ */
 .filters{
-  display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;
-  padding:14px 18px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
+  display:flex;flex-wrap:wrap;gap:10px 12px;align-items:flex-end;
+  padding:16px 20px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
   box-shadow:var(--shadow);margin-bottom:16px;
 }
-.filters .f{min-width:132px}
-.filters .f > span{display:block;font-size:11.5px;color:var(--ink-3);margin-bottom:5px}
-.filters .f select{height:34px;font-size:13px}
+.filters .f{min-width:124px}
+.filters .f > span{display:block;font-size:var(--fs-xs);color:var(--ink-3);margin-bottom:5px}
+.filters .f select{height:33px;font-size:var(--fs-sm)}
 .filters .spacer{flex:1}
-.filters .rs{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-3);padding-bottom:7px}
+.filters .rs{display:flex;align-items:center;gap:10px;padding-bottom:6px}
 
-.plist{display:flex;flex-direction:column;gap:14px}
-.pcard{
-  background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--shadow);
-  overflow:hidden;transition:border-color .15s var(--ease),box-shadow .15s var(--ease);
+table.list{font-size:var(--fs-b)}
+table.list th{
+  text-align:left;font-weight:500;color:var(--ink-3);font-size:var(--fs-sm);
+  padding:0 16px;height:42px;border-bottom:1px solid var(--line);white-space:nowrap;
 }
-.pcard:hover{border-color:var(--line-strong);box-shadow:0 2px 6px rgba(14,23,37,.07)}
-.pcard .top{display:flex;gap:0;align-items:stretch}
-.pcard .pool{flex:1;padding:17px 20px;min-width:0;border-right:1px solid var(--line);background:var(--sunken)}
-.pcard .fin{flex:1.35;padding:17px 20px;min-width:0}
-.pcard .zn{font-size:11px;color:var(--ink-3);letter-spacing:.06em;font-weight:650;margin-bottom:11px}
-.pcard h3{font-size:16px;font-weight:650;letter-spacing:-.01em;line-height:1.35;margin-bottom:3px}
-.pcard h3 button{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left}
-.pcard h3 button:hover{color:var(--accent)}
-.pcard .org{font-size:12.5px;color:var(--ink-3);margin-bottom:11px}
-.pcard .org .id{font-family:var(--num);font-size:11.5px}
-.pcard .facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px}
-.pcard .facts .k{font-size:11.5px;color:var(--ink-3)}
-.pcard .facts .v{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:14.5px;font-weight:600;margin-top:2px}
-.pcard .facts .v.txt{font-family:var(--sans);font-size:13.5px;font-weight:550}
-.pcard .demand{display:flex;align-items:baseline;gap:9px;margin-bottom:12px;flex-wrap:wrap}
-.pcard .demand .big{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:26px;font-weight:650;letter-spacing:-.03em}
-.pcard .demand .lb{font-size:12.5px;color:var(--ink-3)}
-.pcard .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.pcard .bot{
-  display:flex;align-items:center;gap:20px;padding:13px 20px;border-top:1px solid var(--line);background:var(--card);
-}
-.pcard .bot .m{flex:1;min-width:0}
-.pcard .bot .act{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:0}
-.pcard .bot .act .why{max-width:290px;text-align:left;margin-top:7px}
+table.list th.n{text-align:right}
+table.list td{padding:0 16px;height:56px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+table.list tbody tr:last-child td{border-bottom:0}
+table.list tbody tr{cursor:pointer;transition:background .12s var(--ease)}
+table.list tbody tr:hover{background:var(--sunken)}
+table.list td.n{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.prow .nm{font-size:var(--fs-b);font-weight:650;letter-spacing:-.01em;line-height:1.3}
+.prow .sub{font-size:var(--fs-xs);color:var(--ink-3);margin-top:3px;display:flex;gap:8px;align-items:center}
+.prow .sub .id{font-family:var(--num)}
+.prow .dm{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:var(--fs-md);font-weight:680;letter-spacing:-.02em}
+.prow .dm.none{color:var(--ink-4);font-weight:500;font-size:var(--fs-b)}
+.prow .mt{width:136px}
+.prow .mt .cover{font-size:var(--fs-xs);color:var(--ink-3);margin-top:5px;font-family:var(--num);white-space:nowrap}
+.prow .mt .cover + .cover{margin-top:1px}
+.prow .qa{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.prow .qa .rz{font-size:var(--fs-xs);color:var(--ink-4);white-space:nowrap}
+.pager{display:flex;align-items:center;justify-content:space-between;margin-top:16px;font-size:var(--fs-sm);color:var(--ink-3)}
+.pager .pg{display:flex;gap:8px}
 
-.pager{display:flex;align-items:center;justify-content:space-between;margin-top:18px;font-size:13px;color:var(--ink-3)}
-.pager .pg{display:flex;gap:6px}
-
-/* 骨架 / 空 / 失败 */
 .sk{background:linear-gradient(90deg,var(--sunken-2) 25%,var(--sunken) 37%,var(--sunken-2) 63%);background-size:400% 100%;animation:shim 1.3s linear infinite;border-radius:5px}
 @keyframes shim{0%{background-position:100% 0}100%{background-position:0 0}}
-.blank{text-align:center;padding:64px 24px}
-.blank .ic{font-size:26px;color:var(--ink-3);font-family:var(--num);margin-bottom:12px}
-.blank h3{font-size:16px;font-weight:600;margin-bottom:6px}
-.blank p{color:var(--ink-2);font-size:13.5px;max-width:440px;margin:0 auto 16px}
+.blank{text-align:center;padding:72px 24px}
+.blank .ic{font-size:24px;color:var(--ink-4);font-family:var(--num);margin-bottom:14px}
+.blank h3{font-size:var(--fs-lg);font-weight:680;margin-bottom:8px;letter-spacing:-.02em}
+.blank p{color:var(--ink-2);font-size:var(--fs-b);max-width:460px;margin:0 auto 18px}
 
 /* ============================================================
-   7. P-LS-02 详情
+   10. P-LS-02 详情
    ============================================================ */
-.hero{
-  background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
-  box-shadow:var(--shadow);padding:22px 24px;margin-bottom:16px;
+.dhead{margin-bottom:26px}
+.dhead .top{display:flex;align-items:flex-start;justify-content:space-between;gap:36px;flex-wrap:wrap}
+.dhead .kick{font-size:var(--fs-sm);color:var(--ink-3);margin-bottom:8px}
+.dhead .kick .n{color:var(--ink-2)}
+.dhead h1{font-size:var(--fs-h1);font-weight:700;letter-spacing:-.03em;line-height:1.16}
+.dhead h1 em{font-style:normal;color:var(--ink-3);font-weight:500;margin-left:12px;font-size:var(--fs-lg)}
+.dhead .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.dhead .dm{text-align:right;flex:none}
+.dhead .dm .lb{font-size:var(--fs-sm);color:var(--ink-3)}
+.dhead .dm .big{
+  font-family:var(--num);font-variant-numeric:tabular-nums;font-size:var(--fs-hero);
+  font-weight:700;letter-spacing:-.04em;line-height:1.06;margin-top:4px;
 }
-.hero .l1{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.hero h1{font-size:24px;font-weight:650;letter-spacing:-.02em;line-height:1.28}
-.hero .meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:9px;font-size:12.5px;color:var(--ink-3)}
-.hero .meta b{color:var(--ink-2);font-weight:500}
-.hero .meta .n{color:var(--ink-2)}
-.hero .demand{text-align:right;flex:none}
-.hero .demand .lb{font-size:12.5px;color:var(--ink-3)}
-.hero .demand .big{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:34px;font-weight:680;letter-spacing:-.035em;line-height:1.1;margin-top:3px}
-.hero .demand .ccy{font-size:14px;color:var(--ink-3);font-weight:500;margin-left:5px}
-.hero .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.dhead .dm .ccy{font-size:var(--fs-md);color:var(--ink-3);font-weight:500;margin-left:7px}
 
-.sec-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
-.rail{position:sticky;top:76px;display:flex;flex-direction:column;gap:16px}
+.sec-grid{display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:24px;align-items:start}
+.rail{position:sticky;top:80px;display:flex;flex-direction:column;gap:20px}
 .rail .card{margin-top:0}
 
-.tl{position:relative;padding-left:22px}
-.tl .it{position:relative;padding:0 0 18px 0}
-.tl .it:last-child{padding-bottom:0}
-.tl .it::before{content:"";position:absolute;left:-22px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--card);border:2px solid var(--line-strong)}
-.tl .it::after{content:"";position:absolute;left:-18px;top:16px;bottom:-2px;width:1px;background:var(--line)}
-.tl .it:last-child::after{display:none}
-.tl .it.on::before{border-color:var(--accent);background:var(--accent)}
-.tl .d{font-family:var(--num);font-size:11.5px;color:var(--ink-3)}
-.tl .t{font-size:13.5px;font-weight:550;margin-top:2px}
-.tl .x{font-size:12.5px;color:var(--ink-2);margin-top:3px}
+/* 操作区：主操作唯一且最重，次操作平级并列，减少担保的操作单独降级到底部 */
+.acts .lead{margin-bottom:4px}
+.acts .second{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.acts .risky{margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft)}
+.acts .risky .rl{font-size:var(--fs-xs);color:var(--ink-4);margin-bottom:9px}
 
-/* ============================================================
-   8. 图表
-   ============================================================ */
-.chartbox{padding:4px 0 0}
-.chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:2px;padding:0 20px}
-.chart-head h3{font-size:14px;font-weight:650}
-.chart-head p{font-size:12.5px;color:var(--ink-3);margin-top:3px;max-width:640px;line-height:1.5}
-.chart-legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 20px;margin:10px 0 2px;font-size:12.5px;color:var(--ink-2)}
+/* 两张图：合并进一张卡片、共用一套标题层级，单图高度下调，权重让位给读数与操作 */
+.chart-pair .cbody{padding-bottom:6px}
+.chart-pair .cbody + .cbody{border-top:1px solid var(--line)}
+.chart-head{display:flex;align-items:baseline;justify-content:space-between;gap:18px;padding:18px 24px 0}
+.chart-head h3{font-size:var(--fs-b);font-weight:680}
+.chart-head p{font-size:var(--fs-sm);color:var(--ink-3);margin-top:4px;max-width:660px;line-height:1.5}
+.chart-legend{display:flex;flex-wrap:wrap;gap:6px 20px;padding:0 24px;margin:11px 0 0;font-size:var(--fs-sm);color:var(--ink-2)}
 .chart-legend span{display:inline-flex;align-items:center;gap:7px}
-.chart-legend i{width:12px;height:12px;border-radius:3px;flex:none;font-style:normal}
+.chart-legend i{width:11px;height:11px;border-radius:3px;flex:none;font-style:normal}
 .chart-legend i.l{height:3px;border-radius:2px;width:16px}
 .chart-legend i.dash{height:0;width:16px;border-radius:0;border-top:2px dashed var(--s-void);background:none}
 .chart-legend i.s1{background:var(--s1-fill);box-shadow:inset 0 0 0 1px var(--s1)}
@@ -430,33 +460,31 @@ label.fl b{color:var(--st-crit);font-weight:400}
 .chart-legend i.void{background:var(--s-void-fill);box-shadow:inset 0 0 0 1px var(--s-void)}
 .chart-legend i.gap{background:var(--st-crit-wash);box-shadow:inset 0 0 0 1px var(--st-crit)}
 .chart-svg{display:block;width:100%}
-.chart-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 20px 0;border-top:1px solid var(--line);margin-top:6px}
-.chart-foot .rd{font-size:12.5px;color:var(--ink-2);line-height:1.5;max-width:760px}
+.chart-rd{font-size:var(--fs-sm);color:var(--ink-3);padding:0 24px 4px;line-height:1.55}
+.chart-rd b{color:var(--ink-2)}
+.chart-wrap{position:relative;padding:0 4px}
 .chart-tip{
   position:absolute;pointer-events:none;z-index:30;background:var(--card);border:1px solid var(--line-strong);
-  border-radius:var(--r-s);box-shadow:var(--shadow-pop);padding:9px 11px;font-size:12.5px;min-width:196px;
+  border-radius:var(--r-s);box-shadow:var(--shadow-pop);padding:10px 12px;font-size:var(--fs-sm);min-width:208px;
   opacity:0;transition:opacity .1s var(--ease);
 }
 .chart-tip.on{opacity:1}
-.chart-tip .dt{font-family:var(--num);font-size:11.5px;color:var(--ink-3);margin-bottom:6px}
-.chart-tip .r{display:flex;align-items:center;gap:8px;justify-content:space-between;line-height:1.8}
+.chart-tip .dt{font-family:var(--num);font-size:var(--fs-xs);color:var(--ink-3);margin-bottom:6px}
+.chart-tip .r{display:flex;align-items:center;gap:10px;justify-content:space-between;line-height:1.75}
 .chart-tip .r .lf{display:inline-flex;align-items:center;gap:7px;color:var(--ink-2)}
 .chart-tip .r i{width:9px;height:9px;border-radius:2px;flex:none;font-style:normal}
 .chart-tip .r b{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:600}
-.chart-tip .ev{margin-top:7px;padding-top:7px;border-top:1px solid var(--line);color:var(--ink-2);font-size:12px;line-height:1.5}
-.chart-wrap{position:relative}
-.chart-table{padding:0 20px 4px}
-.chart-table table.dt th,.chart-table table.dt td{font-size:12px;padding:7px 10px;height:auto}
+.chart-tip .ev{margin-top:8px;padding-top:8px;border-top:1px solid var(--line-soft);color:var(--ink-2);font-size:var(--fs-xs);line-height:1.55}
 
 /* ============================================================
-   9. P-LS-03 两步进度条与流程
+   11. P-LS-03
    ============================================================ */
 .steps{
   display:flex;align-items:stretch;background:var(--card);border:1px solid var(--line);
-  border-radius:var(--r-l);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;
+  border-radius:var(--r-l);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px;
 }
 .steps .st{
-  flex:1;display:flex;align-items:center;gap:12px;padding:15px 20px;background:var(--card);
+  flex:1;display:flex;align-items:center;gap:13px;padding:17px 22px;background:var(--card);
   border:0;text-align:left;cursor:default;color:var(--ink-3);position:relative;
 }
 .steps .st.clickable{cursor:pointer}
@@ -464,144 +492,113 @@ label.fl b{color:var(--st-crit);font-weight:400}
 .steps .st + .st{border-left:1px solid var(--line)}
 .steps .st .no{
   width:26px;height:26px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
-  font-family:var(--num);font-size:12px;font-weight:700;border:1.5px solid var(--line-strong);background:var(--card);
+  font-family:var(--num);font-size:var(--fs-sm);font-weight:700;border:1.5px solid var(--line-strong);background:var(--card);
 }
-.steps .st .tx b{display:block;font-size:14px;font-weight:600;color:var(--ink-3)}
-.steps .st .tx span{display:block;font-size:12px;margin-top:2px}
+.steps .st .tx b{display:block;font-size:var(--fs-b);font-weight:650;color:var(--ink-3)}
+.steps .st .tx span{display:block;font-size:var(--fs-sm);margin-top:2px}
 .steps .st.done .no{background:var(--st-good);border-color:var(--st-good);color:var(--ink-inv)}
 .steps .st.done .tx b{color:var(--ink-2)}
-.steps .st.now{background:var(--accent-wash)}
+.steps .st.now{background:var(--sunken-2)}
 .steps .st.now .no{background:var(--accent);border-color:var(--accent);color:var(--ink-inv)}
-.steps .st.now .tx b{color:var(--accent)}
-.steps .st.now .tx span{color:var(--accent)}
-.steps .st .sv{margin-left:auto;flex:none;font-size:12px;text-align:right;line-height:1.45}
+.steps .st.now .tx b{color:var(--ink)}
+.steps .st .sv{margin-left:auto;flex:none;font-size:var(--fs-sm);text-align:right;line-height:1.45;font-family:var(--num)}
 
-.two{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.two{display:grid;grid-template-columns:minmax(0,1fr) 352px;gap:24px;align-items:start}
 .pick-sum{
-  display:flex;align-items:center;gap:18px;padding:12px 16px;background:var(--accent-wash);
-  border:1px solid var(--accent-line);border-radius:var(--r);font-size:13px;flex-wrap:wrap;
+  display:flex;align-items:center;gap:20px;padding:13px 16px;background:var(--sunken);
+  border:1px solid var(--line);border-radius:var(--r);font-size:var(--fs-b);flex-wrap:wrap;
 }
-.pick-sum .n{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:650;font-size:15px}
-.pick-sum .sp{width:1px;height:22px;background:var(--accent-line)}
+.pick-sum .n{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:680;font-size:var(--fs-md)}
+.pick-sum .sp{width:1px;height:20px;background:var(--line-strong)}
+.pick-sum.bad{background:var(--st-crit-wash);border-color:var(--st-crit-line)}
 
 .sub-h{
   display:flex;align-items:center;justify-content:space-between;gap:14px;
   padding:11px 16px;background:var(--sunken);border:1px solid var(--line);border-radius:var(--r) var(--r) 0 0;
-  font-size:13px;font-weight:600;flex-wrap:wrap;
+  font-size:var(--fs-b);font-weight:650;flex-wrap:wrap;
 }
-.sub-h .x{font-weight:400;color:var(--ink-3);font-size:12.5px}
+.sub-h .x{font-weight:400;color:var(--ink-3);font-size:var(--fs-sm)}
 .sub-b{border:1px solid var(--line);border-top:0;border-radius:0 0 var(--r) var(--r);overflow:hidden}
-.sub-b table.dt th{background:var(--card)}
 
 .cost{border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.cost .row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 15px;font-size:13px;border-bottom:1px solid var(--line)}
+.cost .row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 15px;font-size:var(--fs-b);border-bottom:1px solid var(--line-soft)}
 .cost .row:last-of-type{border-bottom:0}
 .cost .row .k{color:var(--ink-2)}
-.cost .row .v{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:600}
-.cost .row .v.txt{font-family:var(--sans);font-weight:550}
-.cost .foot{padding:11px 15px;background:var(--sunken);border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-2);line-height:1.6}
+.cost .row .v{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:650}
+.cost .row .v.txt{font-family:var(--sans);font-weight:600}
+.cost .foot{padding:12px 15px;background:var(--sunken);border-top:1px solid var(--line);font-size:var(--fs-sm);color:var(--ink-2);line-height:1.62}
 
 /* ============================================================
-   10. 弹层 · SDK 唤起 · Toast
+   12. 弹层 · SDK · Toast
    ============================================================ */
-.scrim{
-  position:fixed;inset:0;background:rgba(14,23,37,.44);z-index:60;
-  display:none;align-items:center;justify-content:center;padding:28px;
-}
+.scrim{position:fixed;inset:0;background:rgba(12,20,32,.46);z-index:60;display:none;align-items:center;justify-content:center;padding:28px}
 .scrim.on{display:flex}
-.modal{
-  background:var(--card);border-radius:var(--r-l);box-shadow:var(--shadow-pop);
-  width:100%;max-width:520px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;
-}
-.modal.wide{max-width:640px}
-.modal .mh{padding:18px 22px 14px;border-bottom:1px solid var(--line)}
-.modal .mh h2{font-size:16px;font-weight:650}
-.modal .mh p{font-size:12.5px;color:var(--ink-3);margin-top:4px}
-.modal .mb{padding:20px 22px;overflow-y:auto}
-.modal .mf{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--sunken);flex-wrap:wrap}
-.modal .mf .left{margin-right:auto}
+.modal{background:var(--card);border-radius:var(--r-l);box-shadow:var(--shadow-pop);width:100%;max-width:540px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden}
+.modal .mh{padding:20px 24px 15px;border-bottom:1px solid var(--line)}
+.modal .mh h2{font-size:var(--fs-lg);font-weight:680;letter-spacing:-.02em}
+.modal .mh p{font-size:var(--fs-sm);color:var(--ink-3);margin-top:5px}
+.modal .mb{padding:20px 24px;overflow-y:auto}
+.modal .mf{padding:15px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--sunken);flex-wrap:wrap}
 
-/* 外部签名 SDK：明确标注为第三方界面，不是平台自建钱包组件 */
-.sdk{
-  background:var(--ink);color:var(--ink-inv);border-radius:var(--r-l);box-shadow:var(--shadow-pop);
-  width:100%;max-width:400px;overflow:hidden;
-}
-.sdk .sh{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.14);display:flex;align-items:center;gap:10px}
-.sdk .sh .mk{width:24px;height:24px;border-radius:6px;background:var(--ink-inv);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex:none}
-.sdk .sh b{font-size:13.5px;font-weight:600}
-.sdk .sh span{font-size:11px;color:var(--s-free);margin-left:auto}
+.sdk{background:var(--ink);color:var(--ink-inv);border-radius:var(--r-l);box-shadow:var(--shadow-pop);width:100%;max-width:404px;overflow:hidden}
+.sdk .sh{padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.14);display:flex;align-items:center;gap:10px}
+.sdk .sh .mk{width:24px;height:24px;border-radius:6px;background:var(--ink-inv);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--fs-xs);flex:none}
+.sdk .sh b{font-size:var(--fs-b);font-weight:650}
+.sdk .sh span{font-size:var(--fs-xs);color:var(--s-free);margin-left:auto}
 .sdk .sb{padding:18px}
-.sdk .sb .kk{display:flex;justify-content:space-between;gap:14px;font-size:12.5px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.sdk .sb .kk{display:flex;justify-content:space-between;gap:14px;font-size:var(--fs-sm);padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1)}
 .sdk .sb .kk:last-child{border-bottom:0}
 .sdk .sb .kk span{color:var(--s-free)}
 .sdk .sb .kk b{font-family:var(--num);font-weight:600}
-.sdk .sf{padding:14px 18px;border-top:1px solid rgba(255,255,255,.14);display:flex;gap:10px}
+.sdk .sf{padding:15px 18px;border-top:1px solid rgba(255,255,255,.14);display:flex;gap:10px}
 .sdk .sf .btn{flex:1;background:transparent;border-color:rgba(255,255,255,.3);color:var(--ink-inv)}
 .sdk .sf .btn:hover{background:rgba(255,255,255,.1)}
 .sdk .sf .btn.primary{background:var(--ink-inv);color:var(--ink);border-color:var(--ink-inv)}
 .sdk .sf .btn.primary:hover{background:var(--s-free)}
-.sdk .sim{padding:11px 18px;background:rgba(255,255,255,.06);border-top:1px solid rgba(255,255,255,.1);font-size:11.5px;color:var(--s-free)}
-.sdk .sim select{height:30px;font-size:12px;margin-top:7px;background:transparent;color:var(--ink-inv);border-color:rgba(255,255,255,.3)}
+.sdk .sim{padding:12px 18px;background:rgba(255,255,255,.06);border-top:1px solid rgba(255,255,255,.1);font-size:var(--fs-xs);color:var(--s-free)}
+.sdk .sim select{height:30px;font-size:var(--fs-sm);margin-top:8px;background:transparent;color:var(--ink-inv);border-color:rgba(255,255,255,.3)}
 .sdk .sim select option{color:var(--ink)}
 
-.spin{
-  width:15px;height:15px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);
-  animation:sp .7s linear infinite;flex:none;
-}
-.spin.inv{border-color:rgba(255,255,255,.3);border-top-color:var(--ink-inv)}
+.spin{width:15px;height:15px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);animation:sp .7s linear infinite;flex:none}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-#toast{position:fixed;left:50%;bottom:72px;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
-#toast .t{
-  background:var(--ink);color:var(--ink-inv);padding:10px 16px;border-radius:var(--r-s);
-  font-size:13px;box-shadow:var(--shadow-pop);max-width:520px;
-}
+#toast{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+#toast .t{background:var(--ink);color:var(--ink-inv);padding:11px 17px;border-radius:var(--r-s);font-size:var(--fs-b);box-shadow:var(--shadow-pop);max-width:560px;line-height:1.55}
 
 /* ============================================================
-   11. 原型演示条（角色 / 数据状态切换，非产品导航）
+   13. 原型演示条（角色 / 数据状态切换，非产品导航）
    ============================================================ */
 .protobar{
   position:fixed;left:0;right:0;bottom:0;z-index:50;height:44px;
   background:var(--ink);color:var(--ink-inv);display:flex;align-items:center;gap:14px;
-  padding:0 20px;font-size:12.5px;
+  padding:0 20px;font-size:var(--fs-sm);
 }
-.protobar b.badge{
-  font-family:var(--num);font-size:10.5px;letter-spacing:.1em;font-weight:700;
-  border:1px solid rgba(255,255,255,.35);border-radius:4px;padding:2px 7px;flex:none;
-}
+.protobar b.badge{font-family:var(--num);font-size:10px;letter-spacing:.1em;font-weight:700;border:1px solid rgba(255,255,255,.35);border-radius:4px;padding:2px 7px;flex:none}
 .protobar .grp{display:flex;align-items:center;gap:8px}
 .protobar .grp > span{color:var(--s-free)}
 .protobar .sw{display:flex;background:rgba(255,255,255,.1);border-radius:var(--r-s);padding:2px}
-.protobar .sw button{
-  background:none;border:0;color:var(--s-free);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12.5px;
-}
+.protobar .sw button{background:none;border:0;color:var(--s-free);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:var(--fs-sm)}
 .protobar .sw button:hover{color:var(--ink-inv)}
-.protobar .sw button.on{background:var(--ink-inv);color:var(--ink);font-weight:600}
+.protobar .sw button.on{background:var(--ink-inv);color:var(--ink);font-weight:650}
 .protobar .sp{width:1px;height:20px;background:rgba(255,255,255,.2)}
 .protobar .tail{margin-left:auto;color:var(--s-free);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.demo-flag{
-  display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--st-warn);
-  background:var(--st-warn-wash);border:1px solid var(--st-warn-line);border-radius:4px;padding:1px 6px;font-weight:600;
-}
-
 /* ============================================================
-   12. 宽度：1280 / 1440 / 1920
+   14. 宽度：1280 / 1440 / 1920
    ============================================================ */
 @media (max-width:1439px){
-  .sec-grid{grid-template-columns:minmax(0,1fr) 296px}
-  .two{grid-template-columns:minmax(0,1fr) 316px}
-  .kv{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sec-grid{grid-template-columns:minmax(0,1fr) 312px}
+  .two{grid-template-columns:minmax(0,1fr) 328px}
 }
 @media (max-width:1319px){
   .wrap{padding:0 20px}
+  :root{--fs-h1:30px;--fs-hero:38px}
   .sec-grid,.two{grid-template-columns:minmax(0,1fr)}
   .rail{position:static}
-  .pcard .top{flex-wrap:wrap}
-  .pcard .pool,.pcard .fin{flex:1 1 100%;border-right:0}
-  .pcard .pool{border-bottom:1px solid var(--line)}
-  .grades{flex-wrap:wrap}
-  .grades .g{flex:1 1 210px}
+  .trio{grid-template-columns:auto 28px auto 28px auto}
+  .flow{flex-wrap:wrap;gap:14px 0}
+  .flow .fs{flex:1 1 160px}
+  .flow .fsep{display:none}
 }
 </style>
 </head>
@@ -778,7 +775,8 @@ var PROJECTS = [
   {
     id:'FP-20260416-0007', name:'长三角医疗器械应收账款池',
     owner:'晟远科技（演示）', entity:'E-ASSET-01',
-    status:'S-FP-4', expired:false,
+    /* 2026-07-10 再次发布剩余额度后由 S-FP-4 回到 S-FP-2（主册 6.1 / 4.3 状态机） */
+    status:'S-FP-2', expired:false,
     publishedAt:'2026-04-20', expiresAt:'2027-04-20',
     demand:200000,               /* 当前在途需求，发布于 2026-07-10 */
     quotes:2, assetType:'应收账款类',
@@ -796,7 +794,6 @@ var PROJECTS = [
       { d:'2026-08-19', k:'invalid',  t:'池内 2 张代币底层应收账款失效 · 300,000.00 USD', dVoid:300000,
         note:'失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发担保不足预警（E-9 / 6.4.1）' }
     ],
-    snapshot:{ at:'2026-05-06 10:24', tokens:10, valid:1000000, cap:800000, free:300000 },
     terms:{ rate:'年化 6.80%（演示）', term:'180 天', repay:'到期一次性还本付息', use:'补充经营性流动资金' },
     deals:[
       { id:'FD-20260512-0044', amt:500000, st:'还款中', at:'2026-05-12', x:'放款并完成融资确认，计入项目融资余额' }
@@ -813,7 +810,6 @@ var PROJECTS = [
       { d:'2026-08-12', k:'pledge',  t:'创建资产池 · 首笔质押 3 张', dTotal:1000000, note:'链上转入成功（CT-2）' },
       { d:'2026-08-14', k:'publish', t:'发布融资需求 500,000.00 USD', dFly:500000,  note:'项目在途金额 = 500,000.00 USD，可融金额 = 800,000 − 0 − 500,000 = 300,000.00 USD' }
     ],
-    snapshot:null,
     terms:{ rate:'年化 7.20%（演示）', term:'150 天', repay:'到期一次性还本付息', use:'原材料采购' },
     deals:[]
   },
@@ -829,7 +825,6 @@ var PROJECTS = [
       { d:'2026-08-21', k:'publish', t:'发布融资需求 600,000.00 USD', dFly:600000 },
       { d:'2026-09-02', k:'quote',   t:'收到机构报价 600,000.00 USD', note:'项目转 S-FP-3 已锁定；在途占用不变（AC-FIN-23）' }
     ],
-    snapshot:{ at:'2026-09-02 15:41', tokens:4, valid:1200000, cap:960000, free:360000 },
     terms:{ rate:'年化 6.95%（演示）', term:'180 天', repay:'到期一次性还本付息', use:'供应商货款结算' },
     deals:[]
   },
@@ -847,7 +842,6 @@ var PROJECTS = [
       { d:'2026-07-26', k:'fund',    t:'放款并完成融资确认', dFly:-500000, dBal:500000,
         note:'融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「额度用尽」档；INV-FIN-01 仍成立，不预警（D-FIN-55）' }
     ],
-    snapshot:{ at:'2026-07-20 09:12', tokens:5, valid:625000, cap:500000, free:500000 },
     terms:{ rate:'年化 7.05%（演示）', term:'120 天', repay:'到期一次性还本付息', use:'渠道铺货' },
     deals:[ { id:'FD-20260726-0061', amt:500000, st:'还款中', at:'2026-07-26', x:'放款并完成融资确认' } ]
   },
@@ -862,7 +856,6 @@ var PROJECTS = [
       { d:'2025-09-14', k:'pledge',  t:'创建资产池 · 首笔质押 2 张', dTotal:400000 },
       { d:'2025-09-16', k:'publish', t:'发布融资需求 200,000.00 USD', dFly:200000 }
     ],
-    snapshot:null,
     terms:{ rate:'年化 7.40%（演示）', term:'90 天', repay:'到期一次性还本付息', use:'设备维保备件采购' },
     deals:[]
   },
@@ -881,7 +874,6 @@ var PROJECTS = [
       { d:'2026-08-20', k:'expire',  t:'有效期到期 · 存在未结清融资业务，项目不关闭',
         note:'转「已到期 · 存量处理中」并行标记：停止接受新报价、不允许再次发布，存量走完后转 S-FP-6 并释放质押（D-FIN-43 分支②，按正常状态呈现 D-FIN-47）' }
     ],
-    snapshot:{ at:'2025-09-02 11:08', tokens:5, valid:1500000, cap:1200000, free:300000 },
     terms:{ rate:'年化 6.60%（演示）', term:'360 天', repay:'到期一次性还本付息', use:'工程项目垫资' },
     deals:[ { id:'FD-20250910-0012', amt:900000, st:'已到期（存量履约中）', at:'2025-09-10', x:'本期无提前还款，还本发生在项目到期后（X-LS-06）' } ]
   },
@@ -895,7 +887,7 @@ var PROJECTS = [
     tokens:mkTokens({ total:600000, n:2, seed:7, due:['2026-12-28','2027-01-30'] }),
     events:[ { d:'2026-09-10', k:'pledge', t:'创建资产池 · 首笔质押 2 张', dTotal:600000,
                note:'第一段完成，项目已持久化；可离开页面后再回来续做第二段（AC-LS-54）' } ],
-    snapshot:null, terms:null, deals:[]
+    terms:null, deals:[]
   },
   {
     id:'FP-20260911-0053', name:'西南物流应收账款池',
@@ -906,7 +898,7 @@ var PROJECTS = [
     tokens:[],
     events:[ { d:'2026-09-11', k:'fail', t:'创建资产池 · 首笔质押 2 张 · 链上执行失败',
                note:'创建时那唯一一笔质押最终链上失败，项目保留为空池草稿（E-12 / D-FIN-62 / FP-25）' } ],
-    snapshot:null, terms:null, deals:[]
+    terms:null, deals:[]
   }
 ];
 
@@ -1046,22 +1038,29 @@ function availableActions(p, role){
   var q = { key:'quote', label:'立即报价', anchor:'quote', primary:true, enabled:false, reason:'' };
   if(guest){
     q.reason = '未登录。登录并以资金方企业主体进入后可发起报价；页面信息 L1～L5 不因未登录而隐藏。';
+    q.brief = '需登录';
   } else if(role === 'asset'){
     q.reason = own ? '不能为自己的项目报价。' : '当前企业主体未开通资金方资质，无法发起报价。';
+    q.brief = own ? '本方项目' : '无资金方资质';
   } else if(p.draft){
-    q.reason = '草稿项目不进广场。';
+    q.reason = '草稿项目不进广场。'; q.brief = '草稿';
   } else if(d.grade === 'short'){
     q.reason = '该项目处于担保不足预警，已暂停接受新报价（AC-LS-39）。当前担保缺口 ' + usd(d.gap) + '。';
+    q.brief = '担保不足';
   } else if(p.expired){
     q.reason = '该项目有效期已到期，停止接受新报价；存量融资业务照常履约（D-FIN-43 分支②）。';
+    q.brief = '已到期';
   } else if(st === 'S-FP-3'){
     q.reason = '该项目已有在途报价，同一时刻至多承载一笔在途融资业务（D-FIN-33）。';
+    q.brief = '已有报价';
   } else if(!p.demand){
-    q.reason = '该项目当前无在途融资需求。';
+    q.reason = '该项目当前无在途融资需求。'; q.brief = '无在途需求';
   } else if(d.free === 0){
     q.reason = '该项目可融金额为 ' + usd(0) + '，不能再新增占用（AC-FIN-12）。';
+    q.brief = '额度用尽';
   } else if(st !== 'S-FP-2'){
     q.reason = '当前项目状态为「' + FP_STATUS[st].t + '」，只有「募集中」接受新报价。';
+    q.brief = FP_STATUS[st].t;
   } else {
     q.enabled = true;
   }
@@ -1095,6 +1094,7 @@ function availableActions(p, role){
     if(guest) c.reason = '未登录。项目动作仅对该项目所属企业主体开放。';
     else if(st==='S-FP-3'||st==='S-FP-4') c.reason = '存在在途或未结清融资业务，项目不可关闭（6.1）。';
     else if(d.fly > 0) c.reason = '存在在途占用 ' + usd(d.fly) + '，请先撤下需求再关闭。';
+    else if(d.bal > 0) c.reason = '存在未结清融资业务（项目融资余额 ' + usd(d.bal) + '），项目不可关闭（6.1）。';
     else c.enabled = true;
     out.push(c);
   }
@@ -1114,6 +1114,7 @@ function findProject(id){ for(var i=0;i<PROJECTS.length;i++){ if(PROJECTS[i].id=
 /* ================================================================
    40-ui.js —— 共用组件层
    两个招牌件：三数等式（AC-LS-53）与额度尺（INV-FIN-01 的可视化读数）。
+   本版的原则：层级靠字号与留白建立，颜色只用在"必须一眼看到"的地方。
    后续模块新增页面时复用本层，不要各自造一套。
    ================================================================ */
 
@@ -1121,27 +1122,29 @@ function findProject(id){ for(var i=0;i<PROJECTS.length;i++){ if(PROJECTS[i].id=
 function tag(tone, t, dot){
   return '<span class="tag ' + tone + '">' + (dot ? '<i class="dot"></i>' : '') + esc(t) + '</span>';
 }
-function statusTags(p){
+/* 主视图只挂"改变判断"的标记；解释性文字下沉到折叠层 */
+function statusTags(p, compact){
   var d = derive(p), s = FP_STATUS[p.status], g = gradeMeta(d.grade), out = [];
   out.push(tag(s.tone, s.t, true));
-  /* 到期分支②按正常状态呈现：中性样式，不做告警（D-FIN-47） */
+  if(d.grade !== 'normal') out.push(tag(g.tone, g.t, true));
   if(p.expired) out.push(tag('plain', '已到期 · 存量融资业务照常履约中'));
   var ef = expiryFlag(p);
   if(ef && !p.expired) out.push(tag(ef.tone, ef.t));
-  out.push(tag(g.tone, '担保状态：' + g.t, true));
   if(p.emptyPool) out.push(tag('warn', '空池草稿 · 暂无有效质押'));
+  if(!compact && p.quotes) out.push(tag('plain', '已收到报价 ' + p.quotes + ' 笔'));
   return out.join('');
 }
 
-/* ---- 三数等式：① 有效质押价值 × ② 质押率 = ③ 融资上限 ---- */
+/* ---- 三数等式：① 有效质押价值 × ② 质押率 = ③ 融资上限 ----
+   ③ 是资金方与资产方都要先读到的那个数，给它 44px 与唯一的一处主色。 */
 function trioBlock(d){
   return '' +
   '<div class="trio">' +
     '<div class="cell">' +
       '<div class="idx">① 参与计算</div>' +
-      '<div class="lb">有效质押价值<span class="tag plain">FP-11</span></div>' +
+      '<div class="lb">有效质押价值</div>' +
       '<div class="amt">' + amt(d.valid) + '</div>' +
-      '<div class="fixed">' + CCY + ' · 已排除失效、未上链、对账差异部分</div>' +
+      '<div class="fixed">' + CCY + ' · 已排除失效、未上链、对账差异</div>' +
     '</div>' +
     '<div class="op" aria-hidden="true">×</div>' +
     '<div class="cell">' +
@@ -1154,7 +1157,7 @@ function trioBlock(d){
     '<div class="op" aria-hidden="true">=</div>' +
     '<div class="cell out">' +
       '<div class="idx">③ ＝ ① × ②</div>' +
-      '<div class="lb">融资上限<span class="tag plain">FP-12</span></div>' +
+      '<div class="lb">融资上限</div>' +
       '<div class="amt">' + amt(d.cap) + '</div>' +
       '<div class="fixed">' + CCY + ' · 一切担保充足性判断的比较对象</div>' +
     '</div>' +
@@ -1163,21 +1166,30 @@ function trioBlock(d){
     '</span>（' + d.deadCount + ' 张）因底层资产失效不计入担保。账面总额不参与任何校验。</div>';
 }
 
-/* ---- 额度尺：一条尺上读出 融资上限 / 余额 / 在途 / 可融 / 担保缺口 ---- */
+/* ---- 额度尺 ----
+   完整版（详情 / 发布页）：余额 · 在途 · 可融 · 缺口 四段 + 上限刻度。
+   迷你版（列表行）：合并为「已占用 / 可融」两段 + 缺口 —— 列表要回答的是
+   "还有没有空间"，余额与在途的切分是详情页的问题，塞进 8px 高的条里只会变噪声。 */
 function meterBlock(d, mini){
   var used = d.bal + d.fly;
   var scale = Math.max(d.cap, used) * 1.03 || 1;
   var pct = function(v){ return (v / scale * 100); };
-  var balIn  = Math.min(d.bal, d.cap);
-  var balOver= Math.max(0, d.bal - d.cap);
+  var balOver = Math.max(0, d.bal - d.cap);
   var capPct = pct(d.cap);
   var segs = '';
-  if(balIn > 0)   segs += '<div class="seg bal"  style="width:' + pct(balIn).toFixed(3) + '%"></div>';
-  if(balOver > 0) segs += '<div class="seg gap"  style="width:' + pct(balOver).toFixed(3) + '%"></div>';
-  if(d.fly > 0)   segs += '<div class="seg fly"  style="width:' + pct(d.fly).toFixed(3) + '%"></div>';
-  if(d.free > 0)  segs += '<div class="seg free" style="width:' + pct(d.free).toFixed(3) + '%"></div>';
-  var lbShift = capPct > 80 ? 'transform:translateX(-100%);padding-right:4px' : 'transform:translateX(-50%)';
-
+  if(mini){
+    var usedIn = Math.min(used, d.cap);
+    if(usedIn > 0)  segs += '<div class="seg bal"  style="width:' + pct(usedIn).toFixed(3) + '%"></div>';
+    if(used > d.cap)segs += '<div class="seg gap"  style="width:' + pct(used - d.cap).toFixed(3) + '%"></div>';
+    if(d.free > 0)  segs += '<div class="seg free" style="width:' + pct(d.free).toFixed(3) + '%"></div>';
+  } else {
+    var balIn = Math.min(d.bal, d.cap);
+    if(balIn > 0)   segs += '<div class="seg bal"  style="width:' + pct(balIn).toFixed(3) + '%"></div>';
+    if(balOver > 0) segs += '<div class="seg gap"  style="width:' + pct(balOver).toFixed(3) + '%"></div>';
+    if(d.fly > 0)   segs += '<div class="seg fly"  style="width:' + pct(d.fly).toFixed(3) + '%"></div>';
+    if(d.free > 0)  segs += '<div class="seg free" style="width:' + pct(d.free).toFixed(3) + '%"></div>';
+  }
+  var lbShift = capPct > 78 ? 'transform:translateX(-100%);padding-right:4px' : 'transform:translateX(-50%)';
   var legend =
     '<span><i class="cap"></i>融资上限 <b>' + amt(d.cap) + '</b></span>' +
     '<span><i class="bal"></i>项目融资余额 <b>' + amt(d.bal) + '</b></span>' +
@@ -1190,81 +1202,116 @@ function meterBlock(d, mini){
       ' USD，项目在途金额 ' + amt(d.fly) + ' USD，可融金额 ' + amt(d.free) + ' USD">' + segs + '</div>' +
     '<div class="capline" style="left:' + capPct.toFixed(3) + '%"></div>' +
     (mini ? '' : '<div class="caplb" style="left:' + capPct.toFixed(3) + '%;' + lbShift + '">融资上限 ' + amt(d.cap) + '</div>') +
-    '</div><div class="legend">' + legend + '</div>' +
+    '</div>' + (mini ? '' : '<div class="legend">' + legend + '</div>') +
   '</div>';
 }
 
-/* ---- 担保档位三档（D-FIN-55：预警线与准入闸门分别定义、分别呈现） ---- */
+/* ---- 担保三档：下沉到折叠层，改为紧凑三行，不再是三个色块 ---- */
 function gradesBlock(d){
-  return '<div class="grades">' + GRADES.map(function(g){
+  return '<div style="display:flex;flex-direction:column;gap:10px">' + GRADES.map(function(g){
     var on = (g.k === d.grade);
-    return '<div class="g' + (on ? ' on ' + g.tone : '') + '">' +
-      '<b>' + (on ? '● ' : '○ ') + g.t + '</b>' + esc(g.x) + '</div>';
+    return '<div style="display:flex;gap:11px;align-items:baseline;font-size:var(--fs-sm);' +
+      (on ? 'color:var(--ink)' : 'color:var(--ink-3)') + '">' +
+      '<span style="font-family:var(--num);width:14px;flex:none' + (on ? ';color:var(--st-' + (g.tone) + ')' : '') + '">' +
+        (on ? '●' : '○') + '</span>' +
+      '<b style="font-weight:' + (on ? '650' : '500') + ';width:104px;flex:none">' + g.t + '</b>' +
+      '<span>' + esc(g.x) + '</span></div>';
   }).join('') + '</div>';
 }
 
-/* ---- 担保不足预警条：中性事实文案，不用评价性措辞（D-FIN-56） ---- */
+/* ---- 担保不足预警：主视图唯一保留填色的提示块（D-FIN-56 中性事实文案） ---- */
 function shortAlert(p, d, withAction){
   if(d.grade !== 'short') return '';
-  return '<div class="note crit" style="margin-bottom:14px">' +
+  return '<div class="note crit" style="margin-bottom:22px">' +
     '<span class="ic">!</span><div class="bd">' +
-    '<b>担保不足</b>：当前池内有效质押价值低于项目融资余额，缺口 <span class="n">' + usd(d.gap) + '</span>，自 ' +
+    '<b>担保不足</b>：池内有效质押价值低于项目融资余额，缺口 <span class="n">' + usd(d.gap) +
+    '</span>，需追加资产价值 <span class="n">' + usd(d.need) + '</span>（＝缺口 ÷ ' + (PLEDGE_RATE*100) + '%），自 ' +
     (d.shortFrom || '—') + ' 起。' +
-    '<p>需追加资产价值 <span class="n">' + usd(d.need) + '</span>（＝担保缺口 ÷ ' + (PLEDGE_RATE*100) + '%）。' +
-    '只按缺口追加不足以解除——追加的是资产，参与计算的是资产的 ' + (PLEDGE_RATE*100) + '%。' +
-    '条件反转（追加质押抬高融资上限，或还款降低项目融资余额）即自动解除，无需人工确认。</p>' +
-    '<p>诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效，价值合计 ' + usd(d.dead) + '，自失效之日起不计入有效质押价值。</p>' +
+    '<p>诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效（合计 ' + usd(d.dead) + '），不计入有效质押价值。' +
+    '追加质押抬高融资上限或还款降低项目融资余额，条件反转即自动解除，无需人工确认。</p>' +
     '</div>' + (withAction ? '<div class="act"><button class="btn sm" onclick="openPledge(\'' + p.id + '\')">追加质押</button></div>' : '') +
   '</div>';
 }
 
-/* ---- 额度用尽档：成立但不预警，必须与档③分开说（D-FIN-55） ---- */
 function usedUpNote(d){
   if(d.grade !== 'used-up') return '';
-  return '<div class="note warn" style="margin-bottom:14px"><span class="ic">i</span><div class="bd">' +
+  return '<div class="note warn" style="margin-bottom:22px"><span class="ic">i</span><div class="bd">' +
     '<b>额度用尽</b>：可融金额为 <span class="n">' + usd(0) + '</span>，暂不能新增占用。' +
     '<p>已发生的债务仍有足额担保（融资上限 ' + usd(d.cap) + ' ≥ 项目融资余额 ' + usd(d.bal) + '），' +
-    '<b>这不是担保不足预警</b>。此档下可撤回上限同为 ' + usd(0) + '；追加质押可抬高融资上限并重新打开额度。</p>' +
+    '<b>这不是担保不足预警</b>。追加质押可抬高融资上限并重新打开额度。</p>' +
     '</div></div>';
 }
 
-/* ---- 可提取常驻提示（AC-LS-38）：不得让资产方以为代币会自动回到钱包 ---- */
+/* ---- 可提取常驻提示（AC-LS-38） ---- */
 function redeemBanner(){
   if(state.role !== 'asset' || REDEEMABLE.length === 0) return '';
   var sum = REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0);
-  return '<div class="note info" style="margin-bottom:14px"><span class="ic">↧</span><div class="bd">' +
+  return '<div class="note info" style="margin-bottom:22px"><span class="ic">↧</span><div class="bd">' +
     '您有 <b>' + REDEEMABLE.length + ' 张</b>代币（合计 <span class="n">' + usd(sum) + '</span>）可提取。' +
     '<p>业务上已释放，链上仍停留在质押合约内，<b>不会自动回到钱包</b>；需您自行发起提取并自付 gas，支持批量一次提完，无时间限制、不过期。' +
     '未提取前不属于任何资产池、不计入任何质押价值，也不能被再次质押。</p>' +
-    '</div><div class="act"><button class="btn sm primary" onclick="openRedeem()">批量提取</button></div></div>';
+    '</div><div class="act"><button class="btn sm" onclick="openRedeem()">批量提取</button></div></div>';
+}
+
+/* ---- 折叠层：第二层信息（验算与核对用，默认收起，信息仍然可达） ---- */
+function fold(title, count, body, open){
+  return '<details class="fold"' + (open ? ' open' : '') + '>' +
+    '<summary><span class="caret" aria-hidden="true">▶</span>' + esc(title) +
+    (count ? '<span class="cnt">' + esc(count) + '</span>' : '') + '</summary>' +
+    '<div class="fb">' + body + '</div></details>';
+}
+
+/* ---- 融资进度：环节名取自 PRD 状态机 S-FP-*，后段明确标注为后续环节 ---- */
+var FLOW = [
+  { id:'S-FP-1', t:'草稿',   x:'已建池 · 未发布',          mine:true },
+  { id:'S-FP-2', t:'募集中', x:'需求已发布 · 公开接受报价', mine:true },
+  { id:'S-FP-3', t:'已锁定', x:'已被报价 · 暂不接受新报价', mine:true },
+  { id:'S-FP-4', t:'融资中', x:'接受报价 → 放款 → 融资确认', mine:false, who:'WS-325 ～ WS-326' },
+  { id:'S-FP-6', t:'已结清', x:'还款结清 → 释放全部质押',   mine:false, who:'WS-327' }
+];
+function flowRail(p){
+  var order = ['S-FP-1','S-FP-2','S-FP-3','S-FP-4','S-FP-6'];
+  var cur = p.status === 'S-FP-5' ? 'S-FP-1' : p.status;
+  var ci = order.indexOf(cur); if(ci < 0) ci = 0;
+  var cells = '';
+  FLOW.forEach(function(f, i){
+    if(i === 3) cells += '<div class="fsep" aria-hidden="true"><span>本模块边界</span></div>';
+    var cls = (i < ci ? 'done' : i === ci ? 'now' : 'next') + (f.mine ? '' : ' later');
+    cells += '<div class="fs ' + cls + '">' +
+      '<div class="sid">' + f.id + (f.mine ? '' : ' · 后续环节') + '</div>' +
+      '<div class="st">' + f.t + (i === ci ? '（当前）' : '') + '</div>' +
+      '<div class="sx">' + esc(f.x) + (f.who ? '<br>由 ' + f.who + ' 实现' : '') + '</div>' +
+    '</div>';
+  });
+  var foot = '本模块（WS-324）只承载到 <b>S-FP-3 已锁定</b>：建池、质押、发布需求，以及"已被报价"这个状态落点。' +
+    '虚线段为后续环节，<b>此刻不可操作</b>——报价与接受在 WS-325，放款与融资确认在 WS-326，还款结清在 WS-327。' +
+    (p.status === 'S-FP-5' ? '<br>本项目已关闭（S-FP-5），未进入后段。' : '') +
+    (p.expired ? '<br>本项目有效期已到期，并行标记为「已到期 · 存量处理中」，停止接受新报价、不允许再次发布；存量融资业务照常履约。' : '');
+  return '<div class="flow">' + cells + '</div><div class="flow-foot">' + foot + '</div>';
 }
 
 /* ---- 动作按钮：区分「不可见」与「可见不可点 ⊘」（H-03） ---- */
-function actionBtn(a, handler, size){
-  var cls = 'btn' + (size ? ' ' + size : '') + (a.primary && a.enabled ? ' primary' : '');
+function actionBtn(a, handler, cls, noWhy){
   if(a.enabled){
-    return '<button class="' + cls + '" onclick="' + handler + '">' + esc(a.label) + '</button>';
+    return '<button class="btn ' + (cls || '') + '" onclick="' + handler + '">' + esc(a.label) + '</button>';
   }
-  return '<button class="btn blocked' + (size ? ' ' + size : '') + '" aria-disabled="true" ' +
-         'onclick="toast(' + JSON.stringify(a.reason).replace(/"/g,'&quot;') + ')">' +
+  return '<button class="btn blocked ' + (cls || '').replace('primary','') + '" aria-disabled="true" ' +
+         'title="' + esc(a.reason) + '" onclick="toast(' + JSON.stringify(a.reason).replace(/"/g,'&quot;') + ')">' +
          '<span class="sig" aria-hidden="true">⊘</span>' + esc(a.label) + '</button>' +
-         '<div class="why"><span class="sig" aria-hidden="true">⊘</span><span>' + esc(a.reason) +
-         (state.role === 'guest' ? ' <button class="btn link" onclick="signIn()">登录 / 注册</button>' : '') +
-         '</span></div>';
+         (noWhy ? '' : whyLine(a.reason));
+}
+function whyLine(reason){
+  return '<div class="why"><span class="sig" aria-hidden="true">⊘</span><span>' + esc(reason) +
+    (state.role === 'guest' ? ' <button class="btn link" onclick="signIn()">登录 / 注册</button>' : '') + '</span></div>';
 }
 
-/* ---- 通用状态：加载中 / 空 / 筛选无结果 / 加载失败 ---- */
-function skeletonCards(n){
+/* ---- 通用状态 ---- */
+function skeletonRows(n){
   var h = '', i;
-  for(i=0;i<(n||3);i++){
-    h += '<div class="pcard"><div class="top">' +
-      '<div class="pool"><div class="sk" style="height:13px;width:70px"></div><div class="sk" style="height:19px;width:64%;margin-top:12px"></div>' +
-      '<div class="sk" style="height:13px;width:40%;margin-top:9px"></div><div class="sk" style="height:44px;margin-top:14px"></div></div>' +
-      '<div class="fin"><div class="sk" style="height:13px;width:70px"></div><div class="sk" style="height:30px;width:46%;margin-top:12px"></div>' +
-      '<div class="sk" style="height:22px;width:72%;margin-top:12px"></div><div class="sk" style="height:44px;margin-top:14px"></div></div>' +
-      '</div><div class="bot"><div class="sk" style="height:16px;flex:1"></div></div></div>';
+  for(i=0;i<(n||8);i++){
+    h += '<tr><td colspan="8" style="padding:0 16px"><div class="sk" style="height:20px;margin:18px 0"></div></td></tr>';
   }
-  return '<div class="plist" aria-busy="true">' + h + '</div>';
+  return '<div class="card tbl" aria-busy="true"><div class="cb tight"><table class="list"><tbody>' + h + '</tbody></table></div></div>';
 }
 function blankState(ic, title, body, btn){
   return '<div class="card"><div class="blank"><div class="ic">' + ic + '</div><h3>' + esc(title) + '</h3><p>' + body + '</p>' +
@@ -1285,14 +1332,11 @@ function toast(msg){
   var box = document.getElementById('toast');
   var el = document.createElement('div'); el.className = 't'; el.textContent = msg;
   box.appendChild(el);
-  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 4200);
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 4600);
 }
-function signIn(){
-  toast('登录 / 注册流程不在本模块范围内（本原型直接用底部演示条切换身份）。');
-}
+function signIn(){ toast('登录 / 注册流程不在本模块范围内（本原型直接用底部演示条切换身份）。'); }
 
 /* ---- 外部签名 SDK（D-FIN-71）：平台不自建钱包连接组件 ---- */
-/* cfg: { title, rows:[[k,v]], gas, n, onDone(outcomeKey) } */
 var sdkCfg = null;
 function openSDK(cfg){
   sdkCfg = cfg;
@@ -1326,7 +1370,7 @@ function sdkSign(){
   closeScrim(); if(c) c.onDone(v);
 }
 
-/* ---- 二次确认 + 费用区（AC-LS-32）：唤起 SDK 前必须先说清操作内容与 gas ---- */
+/* ---- 二次确认 + 费用区（AC-LS-32） ---- */
 function confirmChain(cfg){
   openScrim(
   '<div class="modal">' +
@@ -1349,24 +1393,8 @@ function confirmChain(cfg){
   pendingChain = cfg;
 }
 var pendingChain = null;
-function chainGo(){
-  var c = pendingChain;
-  openSDK({ rows:c.rows, gas:c.gas, n:c.n, onDone:c.onDone });
-}
+function chainGo(){ var c = pendingChain; openSDK({ rows:c.rows, gas:c.gas, n:c.n, onDone:c.onDone }); }
 
-/* ---- 五类失败 / 等待的结果页面态（分册 6.7.2；不允许只写"操作失败"） ---- */
-function chainResultCard(o, ctx){
-  if(o.k === 'ok' || o.k === 'partial') return '';
-  return '<div class="note ' + (o.tone === 'mute' ? '' : o.tone) + '"><span class="ic">' +
-    (o.k === 'timeout' ? '⧗' : '!') + '</span><div class="bd"><b>' + esc(o.head) + '</b>' +
-    '<p>' + esc(o.body) + '</p><p>费用：' + esc(o.fee) + '</p>' +
-    '<p style="margin-top:8px">' +
-      (o.k === 'timeout'
-        /* 超时态不出现重试按钮，只给「查询链上状态」（AC-LS-74 / D-FIN-70） */
-        ? '<button class="btn sm" onclick="queryChain()">查询链上状态</button>'
-        : '<button class="btn sm" onclick="' + (ctx.retry || 'closeScrim()') + '">' + esc(o.retry) + '</button>') +
-    '</p></div></div>';
-}
 function queryChain(){
   toast('正在查询链上状态……（原型内为模拟）确认未上链后，重试入口才会出现——沿用 WS-318 S-TI-5 红线，超时态不得直接重试。');
 }
@@ -1379,7 +1407,7 @@ function queryChain(){
    数值为阶梯：一次事件改变一次取值，事件之间保持不变——这就是业务的真实形状。
    ================================================================ */
 
-var CHART_H = 252, CH_M = { l:74, r:116, t:18, b:44 };
+var CHART_H = 206, CH_M = { l:72, r:114, t:16, b:38 };
 
 function niceTicks(max, n){
   var raw = max / n, mag = Math.pow(10, Math.floor(Math.log(raw)/Math.LN10)), norm = raw / mag;
@@ -1644,24 +1672,25 @@ function attachHover(wrapId, pts, built, kind){
   svg.addEventListener('mouseleave', leave);
 }
 
-/* ---- 一张图的完整外壳：标题 + 图例 + 图 + 读法 + 数据表 ---- */
-function chartCard(p, kind){
+/* ---- 两张图合成一张卡片 ----
+   上一版两张图各占一张大卡（合计 ~900px），在详情页里压过了三数与操作区。
+   本版合成一张卡、单图高度 252 → 206、去掉每图的边框与底部大段读法块，
+   数据表下沉到折叠层：图仍然完整可读，但不再是页面上最重的东西。 */
+function chartBody(p, kind){
   var d = derive(p), pts = d.pts, uid = kind + '-' + p.id.replace(/[^A-Za-z0-9]/g,'');
   var isPool = (kind === 'pool');
   var legend = isPool
     ? '<span><i class="s1"></i>有效质押价值（计入担保）</span>' +
       '<span><i class="void"></i>失效代币价值（不计入担保）</span>' +
-      '<span><i class="dash"></i>池内资产总额（＝上两项之和）</span>'
+      '<span><i class="dash"></i>池内资产总额</span>'
     : '<span><i class="l s1l"></i>融资上限（＝有效质押价值 × ' + (PLEDGE_RATE*100) + '%）</span>' +
-      '<span><i class="s2"></i>项目融资余额（已发生债务）</span>' +
-      '<span><i class="s3"></i>项目在途金额（已发布未终结的占用）</span>' +
+      '<span><i class="s2"></i>项目融资余额</span>' +
+      '<span><i class="s3"></i>项目在途金额</span>' +
       '<span><i class="gap"></i>担保不足区间</span>';
   var read = isPool
-    ? '读法：蓝色是<b>参与计算</b>的那部分，灰斜纹是<b>因底层应收账款失效而不计入担保</b>的那部分，两者之和才是账面的池内资产总额。' +
-      '台阶只在质押、追加、撤回、失效这些事件上变化，事件之间保持不变。'
-    : '读法：蓝线是<b>融资上限</b>，橙色面积是<b>项目融资余额</b>（已发生的债务），绿色面积堆在它之上、是<b>项目在途金额</b>（已发布未终结的占用）。' +
-      '面积顶到蓝线之间的空隙就是<b>可融金额</b>；<b>橙色面积高过蓝线的那一段就是担保不足</b>——判据只比项目融资余额，不含在途。';
-  var tbl = '<table class="dt"><thead><tr><th>日期</th>' +
+    ? '蓝色是<b>参与计算</b>的部分，灰斜纹是<b>因底层应收账款失效而不计入担保</b>的部分，两者之和才是账面的池内资产总额。'
+    : '面积顶到蓝线之间的空隙就是<b>可融金额</b>；<b>橙色面积高过蓝线的那一段就是担保不足</b>——判据只比项目融资余额，不含在途。';
+  var tbl = '<div class="tscroll"><table class="dt"><thead><tr><th>日期</th>' +
     (isPool ? '<th class="n">有效质押价值</th><th class="n">失效代币价值</th><th class="n">池内资产总额</th>'
             : '<th class="n">融资上限</th><th class="n">项目融资余额</th><th class="n">项目在途金额</th><th class="n">可融金额</th>') +
     '<th>事件</th></tr></thead><tbody>' +
@@ -1670,22 +1699,20 @@ function chartCard(p, kind){
         (isPool ? '<td class="n">' + amt(q.valid) + '</td><td class="n">' + amt(q.dead) + '</td><td class="n">' + amt(q.total) + '</td>'
                 : '<td class="n">' + amt(q.cap) + '</td><td class="n">' + amt(q.bal) + '</td><td class="n">' + amt(q.fly) + '</td><td class="n">' + amt(q.free) + '</td>') +
         '<td>' + (q.ev ? esc(q.ev.t) : '当前（' + TODAY + '）') + '</td></tr>';
-    }).join('') + '</tbody></table>';
+    }).join('') + '</tbody></table></div>';
 
-  return '<div class="card"><div class="chartbox">' +
+  return '<div class="cbody">' +
     '<div class="chart-head"><div><h3>' + (isPool ? '池内资产变动' : '融资变动') + '</h3>' +
-      '<p>' + (isPool ? '池子里有多少钱、其中多少还顶用。金额单位 ' + CCY + '，坐标轴刻度为压缩取整，精确值见悬浮读数与数据表。'
-                      : '额度被什么消耗、还剩多少、什么时候跨过担保线。金额单位 ' + CCY + '，单一纵轴。') + '</p></div>' +
-      '<button class="btn sm" onclick="toggleTable(\'' + uid + '\')">数据表</button></div>' +
+      '<p>' + (isPool ? '池子里有多少钱、其中多少还顶用' : '额度被什么消耗、还剩多少、什么时候跨过担保线') +
+      '。单位 ' + CCY + '，刻度为压缩取整，精确值见悬浮读数与数据表。</p></div></div>' +
     '<div class="chart-legend">' + legend + '</div>' +
     '<div class="chart-wrap" id="wrap-' + uid + '"><div class="chart-tip"></div></div>' +
-    '<div class="chart-foot"><div class="rd">' + read + '</div></div>' +
-    '<div class="chart-table" id="tbl-' + uid + '" style="display:none;margin-top:10px">' + tbl + '</div>' +
-    '</div></div>';
+    '<div class="chart-rd">读法：' + read + '</div>' +
+    '<div style="padding:0 24px 6px">' + fold('数据表 · ' + (isPool ? '池内资产' : '融资') + '逐时点数值', pts.length + ' 行', tbl) + '</div>' +
+  '</div>';
 }
-function toggleTable(uid){
-  var el = document.getElementById('tbl-' + uid);
-  el.style.display = (el.style.display === 'none') ? '' : 'none';
+function chartPairCard(p){
+  return '<div class="card chart-pair">' + chartBody(p, 'pool') + chartBody(p, 'fin') + '</div>';
 }
 
 /* ---- 挂载 / 重绘（宽度变化时重算像素，不做缩放变形） ---- */
@@ -1712,6 +1739,13 @@ var rsz = null;
 window.addEventListener('resize', function(){ clearTimeout(rsz); rsz = setTimeout(drawCharts, 120); });
 /* ================================================================
    60-pages-plaza.js —— P-LS-01 融资需求列表（广场首页）
+   本版由卡片流改为台账式列表：行高 56px，一屏可扫的项目数提升 4～5 倍。
+   留在主行的字段，判准是资金方扫列表时要做的那个决定——值不值得点进去：
+     ① 要融多少（融资需求金额）② 能不能报（担保状态 / 可报价）
+     ③ 抵押物值多少（有效质押价值 + 张数）④ 额度还剩多少（迷你额度尺）
+     ⑤ 什么时候截止（有效期至）
+   其余字段（融资上限 / 项目融资余额 / 项目在途金额 / 可融金额 / 逐张明细 /
+   合同号 / 链上哈希）一个都没删，全部在详情页 L3、折叠层与次级视图里可达。
    ================================================================ */
 
 var F_DEFAULT = { type:'', pool:'', demand:'', status:'', quotable:'', expiry:'', grade:'' };
@@ -1758,8 +1792,8 @@ function filterBar(){
   }
   return '<div class="filters">' +
     sel('type','资产类型',    [['','全部'],['应收账款类','应收账款类']]) +
-    sel('pool','池内资产价值（有效质押价值）', [['','不限'],['0-500000','50 万以下'],['500000-1000000','50–100 万'],['1000000-x','100 万以上']]) +
-    sel('demand','融资需求金额', [['','不限'],['0-300000','30 万以下'],['300000-600000','30–60 万'],['600000-x','60 万以上']]) +
+    sel('pool','池内资产价值', [['','不限'],['0-500000','50 万以下'],['500000-1000000','50–100 万'],['1000000-x','100 万以上']]) +
+    sel('demand','需求金额', [['','不限'],['0-300000','30 万以下'],['300000-600000','30–60 万'],['600000-x','60 万以上']]) +
     sel('status','项目状态',  [['','全部']].concat(['S-FP-2','S-FP-3','S-FP-4','S-FP-5','S-FP-6'].map(function(k){ return [k, FP_STATUS[k].t]; }))) +
     sel('quotable','是否可报价', [['','不限'],['y','可报价'],['n','暂不可报价']]) +
     sel('expiry','有效期临近',[['','不限'],['7','7 天内到期'],['30','30 天内到期'],['x','已到期']]) +
@@ -1770,65 +1804,56 @@ function filterBar(){
         return '<option value="' + o[0] + '"' + (state.sort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
       }).join('') + '</select></div>' +
     (JSON.stringify(state.filters) !== JSON.stringify(F_DEFAULT)
-      ? '<div class="rs"><button class="btn sm" onclick="resetFilters()">清空筛选</button></div>' : '') +
+      ? '<div class="rs"><button class="btn sm ghost" onclick="resetFilters()">清空筛选</button></div>' : '') +
   '</div>';
 }
 
-function projectCard(p){
-  var d = derive(p), acts = availableActions(p, state.role), q = actionOf(acts, 'quote');
-  var lastDue = p.tokens.length
-    ? p.tokens.map(function(t){ return t.due; }).sort()[0] : '—';
-  return '<article class="pcard"><div class="top">' +
-    '<div class="pool">' +
-      '<div class="zn">池内资产</div>' +
-      '<div class="facts">' +
-        '<div><div class="k">抵押物张数</div><div class="v">' + p.tokens.length + ' 张' +
-          (d.deadCount ? '<span style="font-size:11.5px;color:var(--ink-3);font-family:var(--sans)"> · 含失效 ' + d.deadCount + ' 张</span>' : '') + '</div></div>' +
-        '<div><div class="k">有效质押价值</div><div class="v">' + amt(d.valid) + '</div></div>' +
-        '<div><div class="k">资产类型</div><div class="v txt">' + esc(p.assetType) + '</div></div>' +
-        '<div><div class="k">底层资产最近到期日</div><div class="v">' + lastDue + '</div></div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="fin">' +
-      '<div class="zn">融资信息</div>' +
-      '<h3><button onclick="go(\'project\',{id:\'' + p.id + '\'})">' + esc(p.name) + '</button></h3>' +
-      '<div class="org">' + esc(p.owner) + ' · <span class="id">' + p.id + '</span></div>' +
-      '<div class="demand">' +
-        (p.demand ? '<span class="big">' + amt(p.demand) + '</span><span class="lb">' + CCY + ' · 融资需求金额</span>'
-                  : '<span class="big">—</span><span class="lb">当前无在途融资需求</span>') +
-      '</div>' +
-      '<div class="tags">' + statusTags(p) + (p.quotes ? tag('plain','已收到报价 ' + p.quotes + ' 笔') : '') + '</div>' +
-      '<div class="facts">' +
-        '<div><div class="k">融资上限</div><div class="v">' + amt(d.cap) + '</div></div>' +
-        '<div><div class="k">可融金额</div><div class="v">' + amt(d.free) + '</div></div>' +
-        '<div><div class="k">有效期至</div><div class="v">' + (p.expiresAt || '—') + '</div></div>' +
-        (d.gap ? '<div><div class="k">担保缺口</div><div class="v" style="color:var(--st-crit)">' + amt(d.gap) + '</div></div>'
-               : '<div><div class="k">项目融资余额</div><div class="v">' + amt(d.bal) + '</div></div>') +
-      '</div>' +
-    '</div>' +
-  '</div>' +
-  '<div class="bot">' +
-    '<div class="m">' + meterBlock(d, true) + '</div>' +
-    '<div class="act">' +
-      '<div style="display:flex;gap:8px">' +
-        '<button class="btn sm" onclick="go(\'project\',{id:\'' + p.id + '\'})">查看详情</button>' +
-        (q.enabled ? '<button class="btn sm primary" onclick="doQuote(\'' + p.id + '\')">立即报价</button>'
-                   : '<button class="btn blocked sm" aria-disabled="true" onclick="toast(' + JSON.stringify(q.reason).replace(/"/g,'&quot;') + ')"><span class="sig" aria-hidden="true">⊘</span>立即报价</button>') +
-      '</div>' +
-      (q.enabled ? '' : '<div class="why"><span class="sig" aria-hidden="true">⊘</span><span>' + esc(q.reason) +
-        (state.role === 'guest' ? ' <button class="btn link" onclick="signIn()">登录 / 注册</button>' : '') + '</span></div>') +
-    '</div>' +
-  '</div></article>';
+function projectRow(p){
+  var d = derive(p), q = actionOf(availableActions(p, state.role), 'quote');
+  var g = gradeMeta(d.grade);
+  var cover = d.cap > 0 ? Math.round((d.bal + d.fly) / d.cap * 100) : 0;
+  var ef = expiryFlag(p);
+  var open = 'go(\'project\',{id:\'' + p.id + '\'})';
+  return '<tr class="prow" onclick="' + open + '">' +
+    '<td><div class="nm">' + esc(p.name) + '</div>' +
+      '<div class="sub"><span>' + esc(p.owner) + '</span><span class="id">' + p.id + '</span></div></td>' +
+    '<td class="n"><div class="dm' + (p.demand ? '' : ' none') + '">' + (p.demand ? amt(p.demand) : '—') + '</div>' +
+      '<div class="sub" style="justify-content:flex-end">' + (p.demand ? CCY : '无在途需求') + '</div></td>' +
+    '<td>' + tag(FP_STATUS[p.status].tone, FP_STATUS[p.status].t, true) +
+      (p.expired ? '<div class="sub">已到期 · 存量履约中</div>' : '') + '</td>' +
+    '<td>' + tag(g.tone, g.t, true) +
+      (d.gap ? '<div class="sub">缺口 <span class="n">' + amt(d.gap) + '</span></div>' : '') + '</td>' +
+    '<td class="n"><span style="font-weight:600">' + amt(d.valid) + '</span>' +
+      '<div class="sub" style="justify-content:flex-end">' + p.tokens.length + ' 张' +
+      (d.deadCount ? ' · 含失效 ' + d.deadCount + ' 张' : '') + '</div></td>' +
+    '<td><div class="mt">' + meterBlock(d, true) +
+      '<div class="cover">已占用 ' + cover + '%</div>' +
+      '<div class="cover">可融 ' + amt(d.free) + '</div></div></td>' +
+    '<td class="n">' + (p.expiresAt || '—') +
+      (ef && !p.expired ? '<div class="sub" style="justify-content:flex-end;color:var(--st-warn)">' + esc(ef.t) + '</div>' : '') + '</td>' +
+    '<td onclick="event.stopPropagation()"><div class="qa">' +
+      (q.enabled
+        ? '<button class="btn sm primary" onclick="doQuote(\'' + p.id + '\')">立即报价</button>'
+        : '<button class="btn blocked sm" aria-disabled="true" title="' + esc(q.reason) + '" onclick="toast(' +
+          JSON.stringify(q.reason).replace(/"/g,'&quot;') + ')"><span class="sig" aria-hidden="true">⊘</span>报价</button>' +
+          '<span class="rz">' + esc(q.brief || '') + '</span>') +
+    '</div></td>' +
+  '</tr>';
 }
 
 function pagePlaza(){
+  var all = plazaProjects();
+  var sumValid = all.reduce(function(a,p){ return a + derive(p).valid; }, 0);
+  var sumDemand = all.reduce(function(a,p){ return a + (p.demand || 0); }, 0);
   var head = '<div class="page-head"><div><h1>融资需求广场</h1>' +
     '<div class="sub">平台上全部入驻资产方创建的融资项目，一个项目就是一个资产池。' +
-    '信息 L1～L5 对所有人全量可见，不登录也能看完；只有操作入口按登录态与权限收敛。</div></div>' +
+    '信息 L1～L5 对所有人全量可见，不登录也能看完；只有操作入口按登录态与权限收敛。</div>' +
+    '<div class="sum">当前在架 <b>' + all.length + '</b> 个项目 · 有效质押价值合计 <b>' + usd(sumValid) +
+    '</b> · 在途融资需求合计 <b>' + usd(sumDemand) + '</b>　<span class="demo">演示数据</span></div></div>' +
     (state.role === 'asset' ? '<button class="btn primary" onclick="go(\'publish\',{id:null})">创建融资项目</button>' : '') +
     '</div>';
 
-  if(state.feed === 'loading') return head + filterBar() + skeletonCards(3);
+  if(state.feed === 'loading') return head + filterBar() + skeletonRows(9);
   if(state.feed === 'fail')
     return head + filterBar() + blankState('⚠', '融资需求加载失败',
       '服务端未返回列表数据。这不影响已发布项目的链上与额度状态，可重试。',
@@ -1839,21 +1864,23 @@ function pagePlaza(){
       '即可在此创建资产池并发布融资需求。',
       '<button class="btn" onclick="signIn()">注册为资产方</button>');
 
-  var list = sortList(plazaProjects().filter(matchFilter));
+  var list = sortList(all.filter(matchFilter));
   if(state.feed === 'noresult' || list.length === 0)
     return head + filterBar() + blankState('⌕', '没有符合筛选条件的融资需求',
-      '当前筛选组合下没有匹配的资产池。可放宽池内资产价值区间或项目状态，' +
-      '也可以清空筛选查看全部 ' + plazaProjects().length + ' 条。',
+      '当前筛选组合下没有匹配的资产池。可放宽池内资产价值区间或项目状态，也可以清空筛选查看全部 ' + all.length + ' 条。',
       '<button class="btn primary" onclick="resetFilters()">清空筛选</button>');
 
   var total = list.length, start = (state.pageNo-1)*PAGE_SIZE;
   var shown = list.slice(start, start + PAGE_SIZE);
   return head + filterBar() +
-    '<div class="plist">' + shown.map(projectCard).join('') + '</div>' +
+    '<div class="card tbl"><div class="cb tight"><div class="tscroll"><table class="list"><thead><tr>' +
+      '<th>融资项目 / 资产方</th><th class="n">融资需求金额</th><th>项目状态</th><th>担保状态</th>' +
+      '<th class="n">有效质押价值</th><th>额度占用</th><th class="n">有效期至</th><th style="text-align:right">操作</th>' +
+    '</tr></thead><tbody>' + shown.map(projectRow).join('') + '</tbody></table></div></div></div>' +
     '<div class="pager"><span>共 ' + total + ' 条 · 单页 ' + PAGE_SIZE + ' 条 · 第 ' + state.pageNo + ' / ' +
-      Math.max(1, Math.ceil(total/PAGE_SIZE)) + ' 页</span>' +
-      '<div class="pg"><button class="btn sm" ' + (state.pageNo<=1?'disabled':'') + ' onclick="setPage(' + (state.pageNo-1) + ')">上一页</button>' +
-      '<button class="btn sm" ' + (start+PAGE_SIZE>=total?'disabled':'') + ' onclick="setPage(' + (state.pageNo+1) + ')">下一页</button></div></div>';
+      Math.max(1, Math.ceil(total/PAGE_SIZE)) + ' 页 · 点击任意一行进入详情</span>' +
+      '<div class="pg"><button class="btn sm ghost" ' + (state.pageNo<=1?'disabled':'') + ' onclick="setPage(' + (state.pageNo-1) + ')">上一页</button>' +
+      '<button class="btn sm ghost" ' + (start+PAGE_SIZE>=total?'disabled':'') + ' onclick="setPage(' + (state.pageNo+1) + ')">下一页</button></div></div>';
 }
 
 function setFilter(k, v){ state.filters[k] = v; state.pageNo = 1; render(); }
@@ -1868,157 +1895,219 @@ function doQuote(id){
     '<div class="mb"><div class="note info"><span class="ic">i</span><div class="bd">' +
     '<b>报价及之后的环节不在本模块范围内</b>（X-LS-01）。授信核定、报价、接受 / 拒绝报价、放款与融资确认在 WS-325（M-2）及之后实现。' +
     '<p>本模块交付的是广场侧的报价入口与它的准入口径：报价<b>不新增在途占用</b>（AC-FIN-23），' +
-    '项目在途金额的唯一来源是发布占用；提交报价时服务端按 <b>可融金额 ≥ 本次金额</b> 校验（AC-FIN-12），' +
-    '并保留一份池快照供机构回看（AC-LS-27）。</p></div></div></div>' +
+    '项目在途金额的唯一来源是发布占用；提交报价时服务端按 <b>可融金额 ≥ 本次金额</b> 校验（AC-FIN-12）。</p></div></div></div>' +
     '<div class="mf"><button class="btn primary" data-autofocus onclick="closeScrim()">知道了</button></div></div>');
 }
 /* ================================================================
    61-pages-detail.js —— P-LS-02 融资需求详情
-   分区顺序按资金方决策路径：先看要融多少 → 再看池子值多少、够不够
-   → 再看抵押物逐张明细 → 最后看条款与历史。
-   L1～L5 对游客全量可见、不脱敏、不区间化、不限行数；只有 L6 操作区按 ⊘ 收敛。
+   信息分三层，一个字段都不删（游客 L1～L5 全量可见是红线 D-LS-09）：
+
+   【第一层 · 主视图】决策必需，不折叠
+     摘要头（需求金额 44px）→ 担保状态提示 → 融资进度 → 三数等式 + 额度尺
+     → 操作区 → 池内资产变动 / 融资变动两张图
+     判准：资金方决定"要不要报价"、资产方决定"要不要追加 / 撤回"时**必须看到**的。
+
+   【第二层 · 折叠可展开】就地展开，默认收起
+     额度明细六个派生量 + 担保三档判据 + 预警线与准入闸门的区别 + 图表数据表
+     判准：不影响"做不做"，只影响"我要不要核一遍账"。
+
+   【第三层 · 次级视图】页面底部 tab 切换
+     抵押物明细（全量逐张、不脱敏）/ 历史融资记录（列表）/ 商务条款与对外契约
+     判准：属于这个项目的档案，不是这次决策的输入；全量可达。
    ================================================================ */
 
 function pageProject(){
   var p = findProject(state.id);
-  /* 草稿项目不进广场：他人与游客深链直达一律返回"内容不存在或无权访问"，不暴露其是否存在 */
   if(!p || (p.draft && !(state.role === 'asset' && p.entity === ACTORS.asset.entity))){
     return blankState('⊘', '内容不存在或无权访问',
       '该地址对应的融资需求不存在，或您当前的身份没有访问权限。草稿项目不进入广场、不可搜索、不可深链直达（AC-LS-05 / D-FIN-64）。',
       '<button class="btn primary" onclick="go(\'plaza\')">返回融资需求广场</button>');
   }
-  if(p.draft) return pagePublish();   /* 本方草稿直接进入 P-LS-03 续做 */
+  if(p.draft) return pagePublish();
 
   var d = derive(p), acts = availableActions(p, state.role);
+  var own = (state.role === 'asset' && p.entity === ACTORS.asset.entity);
   mountedCharts = [];
   registerChart(p, 'pool'); registerChart(p, 'fin');
 
   var crumb = '<div class="crumb"><button onclick="go(\'plaza\')">融资需求广场</button><i>/</i><span>' +
     esc(p.name) + '</span>' +
     (state.from === 'console'
-      /* H-05：深链来源时提供返回入口；非深链来源不展示 */
-      ? '<span style="margin-left:auto"><button class="btn sm" onclick="backToConsole()">← 返回我的控制台</button></span>' : '') +
+      ? '<span style="margin-left:auto"><button class="btn sm ghost" onclick="backToConsole()">← 返回我的控制台</button></span>' : '') +
     '</div>';
 
-  /* ---- L2 融资需求摘要 ---- */
-  var hero = '<section class="hero"><div class="l1"><div>' +
-    '<h1>' + esc(p.name) + '</h1>' +
-    '<div class="meta"><span>资产方 <b>' + esc(p.owner) + '</b></span>' +
-      '<span>项目编号 <b class="n">' + p.id + '</b></span>' +
-      '<span>发布时间 <b class="n">' + (p.publishedAt || '—') + '</b></span>' +
-      '<span>有效期至 <b class="n">' + (p.expiresAt || '—') + '</b>（系统按首次发布日 + ' + TERM_YEARS + ' 年生成，只读）</span>' +
-      '<span>时区 <b>' + TZ_LABEL + '</b></span></div>' +
-    '<div class="tags">' + statusTags(p) + (p.quotes ? tag('plain','已收到报价 ' + p.quotes + ' 笔') : '') + '</div>' +
-    '</div><div class="demand"><div class="lb">融资需求金额</div>' +
+  /* ---- 第一层 · 摘要头（L2） ---- */
+  var head = '<div class="dhead"><div class="top"><div>' +
+    '<div class="kick">融资项目 · 发布于 <span class="n">' + (p.publishedAt || '—') + '</span>' +
+      ' · 编号 <span class="n">' + p.id + '</span> · 时区 ' + TZ_LABEL + '</div>' +
+    '<h1>' + esc(p.name) + '<em>' + esc(p.owner) + '</em></h1>' +
+    '<div class="tags">' + statusTags(p) + '</div>' +
+    '</div><div class="dm"><div class="lb">融资需求金额</div>' +
       (p.demand ? '<div class="big">' + amt(p.demand) + '<span class="ccy">' + CCY + '</span></div>'
-                : '<div class="big">—</div><div class="lb" style="margin-top:4px">当前无在途融资需求</div>') +
-    '</div></div></section>';
+                : '<div class="big" style="color:var(--ink-4)">—</div>') +
+      '<div class="lb" style="margin-top:6px">' + (p.demand ? '有效期至 ' + p.expiresAt + '（首次发布日 + ' + TERM_YEARS + ' 年，只读）'
+                                                            : '当前无在途融资需求') + '</div>' +
+    '</div></div></div>';
 
-  /* ---- L3 池内资产与额度总览（含两张图） ---- */
-  var l3 = '<div class="card"><div class="ch"><h2><span class="lvl">L3</span>池内资产与额度总览</h2>' +
-    '<div style="font-size:12.5px;color:var(--ink-3)">派生量由服务端权威重算，控制台与广场读到的是同一个数</div></div>' +
-    '<div class="cb">' +
-      trioBlock(d) +
-      '<div style="height:26px"></div>' +
-      meterBlock(d) +
-      '<div style="height:18px"></div>' +
-      '<div class="kv c4">' +
-        '<div><div class="k">池内资产总额 <span class="tag plain">FP-10</span></div><div class="v">' + amt(d.total) + '</div><div class="x">含失效代币，仅展示，不参与任何校验</div></div>' +
-        '<div><div class="k">失效代币价值 / 张数 <span class="tag plain">FP-19</span></div><div class="v">' + amt(d.dead) + ' / ' + d.deadCount + ' 张</div><div class="x">因底层应收账款失效，不计入担保</div></div>' +
-        '<div><div class="k">项目融资余额 <span class="tag plain">FP-13</span></div><div class="v">' + amt(d.bal) + '</div><div class="x">已确认（还款中）/ 已到期 / 逾期的未偿本金合计</div></div>' +
-        '<div><div class="k">项目在途金额 <span class="tag plain">FP-14</span></div><div class="v">' + amt(d.fly) + '</div><div class="x">唯一来源为发布占用，报价不新增</div></div>' +
-        '<div><div class="k">可融金额 <span class="tag plain">FP-15</span></div><div class="v">' + amt(d.free) + '</div><div class="x">max(0, 融资上限 − 项目融资余额 − 项目在途金额)</div></div>' +
-        '<div><div class="k">可撤回上限 <span class="tag plain">FP-16</span></div><div class="v">' + amt(d.wLimit) + '</div><div class="x">可融金额 ÷ ' + (PLEDGE_RATE*100) + '%，仅约束未失效代币</div></div>' +
-        '<div><div class="k">担保状态档位 <span class="tag plain">FP-20</span></div><div class="v txt">' + gradeMeta(d.grade).t + '</div><div class="x">' + esc(gradeMeta(d.grade).x) + '</div></div>' +
-        (d.gap
-          ? '<div><div class="k">担保缺口 / 需追加资产价值 <span class="tag plain">FP-21</span></div><div class="v" style="color:var(--st-crit)">' + amt(d.gap) + ' / ' + amt(d.need) + '</div><div class="x">需追加资产价值 ＝ 缺口 ÷ ' + (PLEDGE_RATE*100) + '%</div></div>'
-          : '<div><div class="k">已收到报价数 <span class="tag plain">FP-22</span></div><div class="v">' + p.quotes + ' 笔</div><div class="x">累计报价笔数，含已拒绝 / 已失效</div></div>') +
-      '</div>' +
-      gradesBlock(d) +
-      '<div class="note" style="margin-top:14px"><span class="ic">≠</span><div class="bd">' +
-        '<b>预警线与准入闸门不是同一条线。</b>闸门比较 <span class="n">项目融资余额 + 项目在途金额</span>，管"还能不能借"；' +
-        '预警只比较 <span class="n">项目融资余额</span>，管"已借的还保得住吗"。两者受众与处置动作都不同，分别呈现。' +
-      '</div></div>' +
+  /* ---- 第一层 · 三数等式 + 额度尺（裸露在底色上，全页视觉顶点） ---- */
+  var detail = '<div class="kv c3" style="margin-top:4px">' +
+      kvCell('池内资产总额', amt(d.total), 'FP-10', '含失效代币，仅展示，不参与任何校验') +
+      kvCell('失效代币价值 / 张数', amt(d.dead) + ' / ' + d.deadCount + ' 张', 'FP-19', '因底层应收账款失效，不计入担保') +
+      kvCell('项目融资余额', amt(d.bal), 'FP-13', '已确认（还款中）/ 已到期 / 逾期的未偿本金合计') +
+      kvCell('项目在途金额', amt(d.fly), 'FP-14', '唯一来源为发布占用，报价环节不新增') +
+      kvCell('可融金额', amt(d.free), 'FP-15', 'max(0, 融资上限 − 项目融资余额 − 项目在途金额)') +
+      kvCell('可撤回上限', amt(d.wLimit), 'FP-16', '可融金额 ÷ ' + (PLEDGE_RATE*100) + '%，仅约束未失效代币') +
+      (d.gap ? kvCell('担保缺口 / 需追加资产价值', amt(d.gap) + ' / ' + amt(d.need), 'FP-21',
+                      '需追加资产价值 ＝ 缺口 ÷ ' + (PLEDGE_RATE*100) + '%', true)
+             : kvCell('已收到报价数', p.quotes + ' 笔', 'FP-22', '累计报价笔数，含已拒绝 / 已失效')) +
+    '</div>' +
+    '<div style="height:24px"></div>' +
+    '<div style="font-size:var(--fs-sm);color:var(--ink-2);font-weight:650;margin-bottom:12px">担保状态档位判据（FP-20）</div>' +
+    gradesBlock(d) +
+    '<div class="note quiet" style="margin-top:16px"><span class="ic">≠</span><div class="bd">' +
+      '<b>预警线与准入闸门不是同一条线。</b>闸门比较「项目融资余额 + 项目在途金额」，管"还能不能借"；' +
+      '预警只比较「项目融资余额」，管"已借的还保得住吗"。两者受众与处置动作都不同，分别呈现。' +
+    '</div></div>';
+
+  var strip = '<div class="strip">' + trioBlock(d) + meterBlock(d) +
+    '<div style="height:18px"></div>' +
+    fold('额度明细与判定口径', '六个派生量 · 担保三档 · 判据', detail) +
+  '</div>';
+
+  /* ---- 第一层 · 融资进度（环节名取自 PRD 状态机） ---- */
+  var flow = '<div class="card"><div class="ch"><h2>融资进度</h2>' +
+    '<span class="note-r">环节取自融资项目状态机 S-FP-1 ～ S-FP-6</span></div>' +
+    '<div class="cb">' + flowRail(p) + '</div></div>';
+
+  /* ---- 第一层 · 操作区（主操作唯一；减少担保的操作单独降级） ---- */
+  var lead, second = [], risky = actionOf(acts, 'withdraw');
+  if(own){
+    lead = (d.grade === 'short' && actionOf(acts,'pledge')) ? actionOf(acts,'pledge') : actionOf(acts, 'publish');
+  } else {
+    lead = actionOf(acts, 'quote');
+  }
+  acts.forEach(function(a){
+    if(a === lead || a.key === 'withdraw') return;
+    second.push(a);
+  });
+  /* 同一条原因重复 4 遍只是噪声：全部被同一理由挡住时，只写一次（入口仍逐个可见可聚焦） */
+  var sameWhy = second.length > 1 && second.every(function(a){ return !a.enabled && a.reason === second[0].reason; });
+  var rail = '<div class="card"><div class="ch"><h2>操作区</h2>' +
+    '<span class="note-r lvl">L6</span></div><div class="cb acts">' +
+    (lead ? '<div class="lead">' + actionBtn(lead, actionHandler(p, lead), 'primary lg block') + '</div>' : '') +
+    (second.length ? '<div class="second">' + second.map(function(a){
+        return '<div>' + actionBtn(a, actionHandler(p, a), 'ghost block', sameWhy) + '</div>'; }).join('') +
+        (sameWhy ? whyLine(second[0].reason) : '') + '</div>' : '') +
+    (risky ? '<div class="risky"><div class="rl">以下操作会减少池内担保，请先确认额度</div>' +
+        actionBtn(risky, actionHandler(p, risky), 'danger block') + '</div>' : '') +
+    '<div class="note quiet" style="margin-top:16px"><span class="ic">⊘</span><div class="bd">' +
+      '置灰不构成校验。可执行动作清单由服务端每次读取时返回（available_actions），未登录或越权直接调用写接口一律在服务端拒绝。' +
     '</div></div>' +
-    chartCard(p, 'pool') +
-    chartCard(p, 'fin');
+    '<div style="margin-top:14px;font-size:var(--fs-xs);color:var(--ink-4);line-height:1.7">' +
+      '深链锚点 <span class="n">project/' + p.id + '</span><br>' +
+      '动作锚点 <span class="n">?action=pledge / withdraw / publish / redeem</span>' +
+    '</div>' +
+  '</div></div>';
 
-  /* ---- L4 抵押物明细 ---- */
-  var l4 = '<div class="card"><div class="ch"><h2><span class="lvl">L4</span>抵押物明细</h2>' +
-    '<div style="font-size:12.5px;color:var(--ink-3)">共 ' + p.tokens.length + ' 张 · 全量展示，不脱敏、不区间化、不限行数</div></div>' +
+  /* ---- 第三层 · 次级视图 ---- */
+  var tab = state.tab || 'collateral';
+  var tabsBar = '<div class="tabs" role="tablist">' +
+    [['collateral','抵押物明细', p.tokens.length + ' 张'],
+     ['history','历史融资记录', (p.events.length + p.deals.length) + ' 条'],
+     ['terms','商务条款与公开范围', '']].map(function(t){
+      return '<button role="tab" aria-selected="' + (tab === t[0]) + '" onclick="setTab(\'' + t[0] + '\')">' +
+        t[1] + (t[2] ? '<span class="cnt">' + t[2] + '</span>' : '') + '</button>';
+    }).join('') + '</div>';
+
+  var tabBody = tab === 'history' ? tabHistory(p) : tab === 'terms' ? tabTerms(p) : tabCollateral(p, d);
+
+  return crumb + head +
+    shortAlert(p, d, own) + usedUpNote(d) + (own ? redeemBanner() : '') +
+    strip +
+    '<div style="height:26px"></div>' +
+    '<div class="sec-grid"><div>' + flow + chartPairCard(p) + '</div>' +
+    '<aside class="rail">' + rail + '</aside></div>' +
+    '<div style="height:20px"></div>' +
+    '<div class="card">' + tabsBar + tabBody + '</div>';
+}
+
+function kvCell(k, v, code, x, crit){
+  return '<div><div class="k">' + esc(k) + '<span class="tag plain">' + code + '</span></div>' +
+    '<div class="v"' + (crit ? ' style="color:var(--st-crit)"' : '') + '>' + v + '</div>' +
+    '<div class="x">' + esc(x) + '</div></div>';
+}
+function setTab(t){ state.tab = t; render(); }
+
+/* ---- 次级视图 1：抵押物明细（L4，全量、不脱敏、不区间化、不限行数） ---- */
+function tabCollateral(p, d){
+  return '<div class="cb tight"><div class="tscroll"><table class="dt"><thead><tr>' +
+    '<th>代币编号</th><th class="n">美元金额</th><th>底层账期</th><th>买方企业名</th><th>合同号 / 发票号</th>' +
+    '<th>质押状态</th><th>是否计入担保</th><th>链上状态</th><th>入池交易哈希</th></tr></thead><tbody>' +
+    (p.tokens.length ? p.tokens.map(function(t){
+      return '<tr><td class="n">' + t.id + '</td><td class="n">' + amt(t.amt) + '</td><td class="n">' + t.due + '</td>' +
+        '<td>' + esc(t.buyer) + '</td><td class="n">' + t.contract + ' / ' + t.invoice + '</td>' +
+        '<td>' + tag('mute','PS-2 已质押') + '</td>' +
+        '<td>' + (t.dead ? tag('warn','不计入 · ' + (t.deadAt||'') + ' 失效') : tag('good','计入担保', true)) + '</td>' +
+        '<td>' + tag(CT_STATUS[t.ct].tone, t.ct + ' ' + CT_STATUS[t.ct].t, true) + '</td>' +
+        '<td class="n" style="color:var(--ink-4)">' + shortHash(t.hash) + '</td></tr>';
+    }).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--ink-3);padding:30px">本项目暂无有效质押</td></tr>') +
+  '</tbody></table></div></div>' +
+  '<div class="cb t0"><div class="note quiet"><span class="ic">i</span><div class="bd">' +
+    '全量公开的范围是广场上展示的融资需求与融资业务信息；<b>不含</b>授信额度、他人控制台数据、运营端诊断字段、附件影像件与联系人联系方式。' +
+    '<p>客观记录：买方企业名、合同号、发票号与精确金额对公网访客完全公开，涉及第三方权益，而确权流程目前没有"同意公开"授权环节。' +
+    '按需求方裁定执行，配套的接口速率限制与异常抓取识别见分册第 8 章。</p></div></div></div>';
+}
+
+/* ---- 次级视图 2：历史融资记录（列表，不用时间线） ---- */
+function tabHistory(p){
+  var d = derive(p);
+  var evRows = d.pts.filter(function(q){ return q.ev; }).slice().reverse().map(function(q){
+    return '<tr><td class="n">' + q.d + '</td><td style="font-weight:550">' + esc(q.ev.t) + '</td>' +
+      '<td class="n">' + amt(q.valid) + '</td><td class="n">' + amt(q.cap) + '</td>' +
+      '<td class="n">' + amt(q.bal) + '</td><td class="n">' + amt(q.fly) + '</td>' +
+      '<td class="wrap2" style="color:var(--ink-3);font-size:var(--fs-sm);max-width:360px">' +
+        (q.ev.note ? esc(q.ev.note) : '—') + '</td></tr>';
+  }).join('');
+  var dealRows = p.deals.length ? p.deals.map(function(x){
+    return '<tr><td class="n">' + x.id + '</td><td class="n">' + amt(x.amt) + '</td><td>' + tag('plain', x.st) + '</td>' +
+      '<td class="n">' + x.at + '</td><td class="wrap2" style="color:var(--ink-3);font-size:var(--fs-sm)">' + esc(x.x) + '</td></tr>';
+  }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--ink-3);padding:26px">本项目暂无融资业务记录</td></tr>';
+
+  return '<div class="cb"><div style="font-size:var(--fs-sm);color:var(--ink-2);font-weight:650;margin-bottom:10px">' +
+      '融资业务<span style="font-weight:400;color:var(--ink-3);margin-left:8px">本模块只读引用，写在 WS-325 及之后</span></div></div>' +
     '<div class="cb tight"><div class="tscroll"><table class="dt"><thead><tr>' +
-      '<th>代币编号</th><th class="n">美元金额</th><th>底层账期</th><th>买方企业名</th><th>合同号 / 发票号</th>' +
-      '<th>质押状态</th><th>是否计入担保</th><th>链上状态</th><th>入池交易哈希</th></tr></thead><tbody>' +
-      (p.tokens.length ? p.tokens.map(function(t){
-        return '<tr><td class="n">' + t.id + '</td><td class="n">' + amt(t.amt) + '</td><td class="n">' + t.due + '</td>' +
-          '<td>' + esc(t.buyer) + '</td><td class="n">' + t.contract + ' / ' + t.invoice + '</td>' +
-          '<td>' + tag('mute','PS-2 已质押') + '</td>' +
-          '<td>' + (t.dead ? tag('warn','不计入担保 · ' + (t.deadAt||'') + ' 失效') : tag('good','计入担保', true)) + '</td>' +
-          '<td>' + tag(CT_STATUS[t.ct].tone, t.ct + ' ' + CT_STATUS[t.ct].t, true) + '</td>' +
-          '<td class="n" style="color:var(--ink-3)">' + shortHash(t.hash) + '</td></tr>';
-      }).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--ink-3);padding:28px">本项目暂无有效质押</td></tr>') +
-    '</tbody></table></div></div>' +
-    '<div class="cb" style="padding-top:14px"><div class="note"><span class="ic">i</span><div class="bd">' +
-      '全量公开的范围是广场上展示的融资需求与融资业务信息；<b>不含</b>授信额度、他人控制台数据、运营端诊断字段、附件影像件与联系人联系方式。' +
-      '<p>客观记录：买方企业名、合同号、发票号与精确金额对公网访客完全公开，涉及第三方权益，而确权流程目前没有"同意公开"授权环节。' +
-      '按需求方裁定执行，配套的接口速率限制与异常抓取识别见分册第 8 章。</p>' +
-    '</div></div></div></div>';
+      '<th>融资业务编号</th><th class="n">金额</th><th>状态</th><th class="n">发生日</th><th>说明</th>' +
+    '</tr></thead><tbody>' + dealRows + '</tbody></table></div></div>' +
+    '<div class="cb" style="padding-top:26px"><div style="font-size:var(--fs-sm);color:var(--ink-2);font-weight:650;margin-bottom:10px">' +
+      '项目事件与派生量变化<span style="font-weight:400;color:var(--ink-3);margin-left:8px">每一行就是两张图上的一级台阶</span></div></div>' +
+    '<div class="cb tight"><div class="tscroll"><table class="dt"><thead><tr>' +
+      '<th>日期</th><th>事件</th><th class="n">有效质押价值</th><th class="n">融资上限</th>' +
+      '<th class="n">项目融资余额</th><th class="n">项目在途金额</th><th>依据</th>' +
+    '</tr></thead><tbody>' + evRows + '</tbody></table></div></div>';
+}
 
-  /* ---- L5 商务条款与历史融资记录 ---- */
-  var snap = p.snapshot ? '<div class="card"><div class="ch"><h2>报价时的池快照</h2>' +
-      '<p>' + p.snapshot.at + ' · ' + TZ_LABEL + '</p></div><div class="cb">' +
-      '<div class="kv c2">' +
-        '<div><div class="k">快照时抵押物</div><div class="v">' + p.snapshot.tokens + ' 张</div></div>' +
-        '<div><div class="k">快照时有效质押价值</div><div class="v">' + amt(p.snapshot.valid) + '</div></div>' +
-        '<div><div class="k">快照时融资上限</div><div class="v">' + amt(p.snapshot.cap) + '</div></div>' +
-        '<div><div class="k">快照时可融金额</div><div class="v">' + amt(p.snapshot.free) + '</div></div>' +
-      '</div>' +
-      '<div class="note" style="margin-top:12px"><span class="ic">⇄</span><div class="bd">' +
-        '与<b>实时池况</b>并列：当前有效质押价值 <span class="n">' + amt(d.valid) + '</span>、融资上限 <span class="n">' + amt(d.cap) + '</span>。' +
-        '池子既可增也可减，机构必须能看到"我报价时池子是什么样"；池值下降到触发预警时会同时通知在途报价机构。' +
-      '</div></div></div></div>' : '';
-
-  var l5 = '<div class="card"><div class="ch"><h2><span class="lvl">L5</span>商务条款与历史融资记录</h2></div><div class="cb">' +
+/* ---- 次级视图 3：商务条款与公开范围（L5） ---- */
+function tabTerms(p){
+  return '<div class="cb">' +
     (p.terms ? '<div class="kv c4">' +
       '<div><div class="k">报价利率</div><div class="v txt">' + esc(p.terms.rate) + '</div></div>' +
       '<div><div class="k">融资期限</div><div class="v txt">' + esc(p.terms.term) + '</div></div>' +
       '<div><div class="k">还款方式</div><div class="v txt">' + esc(p.terms.repay) + '</div></div>' +
       '<div><div class="k">资金用途</div><div class="v txt">' + esc(p.terms.use) + '</div></div>' +
-    '</div>' : '<div class="note"><span class="ic">○</span><div class="bd">该项目当前无公开的在途业务商务条款。</div></div>') +
-    '<div style="height:20px"></div>' +
-    '<h3 style="font-size:13.5px;font-weight:650;margin-bottom:12px">历史时间线</h3>' +
-    '<div class="tl">' + d.pts.filter(function(q){ return q.ev; }).slice().reverse().map(function(q, i){
-      return '<div class="it' + (i===0?' on':'') + '"><div class="d">' + q.d + '</div><div class="t">' + esc(q.ev.t) + '</div>' +
-        (q.ev.note ? '<div class="x">' + esc(q.ev.note) + '</div>' : '') + '</div>';
-    }).join('') + '</div>' +
-    (p.deals.length ? '<div style="height:20px"></div><h3 style="font-size:13.5px;font-weight:650;margin-bottom:10px">融资业务（本模块只读引用，写在 WS-325 及之后）</h3>' +
-      '<div class="tscroll"><table class="dt"><thead><tr><th>融资业务编号</th><th class="n">金额</th><th>状态</th><th class="n">发生日</th><th>说明</th></tr></thead><tbody>' +
-      p.deals.map(function(x){
-        return '<tr><td class="n">' + x.id + '</td><td class="n">' + amt(x.amt) + '</td><td>' + tag('plain', x.st) + '</td>' +
-          '<td class="n">' + x.at + '</td><td style="color:var(--ink-2)">' + esc(x.x) + '</td></tr>';
-      }).join('') + '</tbody></table></div>' : '') +
-  '</div></div>';
-
-  /* ---- L6 操作区：按 available_actions 渲染，不自行依据状态推断 ---- */
-  var rail = '<div class="card"><div class="ch"><h2><span class="lvl">L6</span>操作区</h2>' +
-    '<p>当前身份：' + esc(ACTORS[state.role].full) + '</p></div><div class="cb">' +
-    '<div style="display:flex;flex-direction:column;gap:12px">' +
-      acts.map(function(a){
-        return '<div>' + actionBtn(a, actionHandler(p, a) , 'block') + '</div>';
-      }).join('') +
+    '</div>' : '<div class="note quiet"><span class="ic">○</span><div class="bd">该项目当前无公开的在途业务商务条款。</div></div>') +
+    '<div style="height:24px"></div>' +
+    '<div class="kv c2">' +
+      '<div><div class="k">融资需求币种</div><div class="v txt">' + CCY + '<span style="font-weight:400;color:var(--ink-3);font-size:var(--fs-sm)"> · 本期固定，只读；结算币种在报价环节确定</span></div></div>' +
+      '<div><div class="k">有效期</div><div class="v txt">' + (p.expiresAt || '—') +
+        '<span style="font-weight:400;color:var(--ink-3);font-size:var(--fs-sm)"> · 首次发布日 + ' + TERM_YEARS + ' 年，只读、不可编辑、不可延期</span></div></div>' +
     '</div>' +
-    '<div class="note" style="margin-top:16px;font-size:12.5px"><span class="ic">⊘</span><div class="bd">' +
-      '置灰不构成校验。可执行动作清单由服务端每次读取时返回，未登录或越权直接调用写接口一律在服务端拒绝。' +
+    '<div style="height:24px"></div>' +
+    '<div class="note quiet"><span class="ic">↗</span><div class="bd">' +
+      '<b>对外契约（H-01 ～ H-05）</b>：项目编号即广场上这条融资需求的编号，全局唯一、终身稳定，不另发号；' +
+      '本页锚点 <span class="n">project/' + p.id + '</span>，动作锚点 <span class="n">?action=pledge / withdraw / publish / redeem</span>；' +
+      '可执行动作清单由服务端返回，前端不自行依据状态推断；六个派生量、担保状态档位、质押四态与链上转移状态均由本模块权威输出，控制台只读引用。' +
     '</div></div>' +
-    '<div style="margin-top:14px;font-size:11.5px;color:var(--ink-3);line-height:1.7;border-top:1px solid var(--line);padding-top:12px">' +
-      '本页深链锚点：<span class="n">project/' + p.id + '</span><br>' +
-      '动作锚点：<span class="n">?action=pledge / withdraw / publish / redeem</span>' +
-    '</div>' +
-  '</div></div>';
-
-  return crumb + hero + shortAlert(p, d, state.role === 'asset' && p.entity === ACTORS.asset.entity) + usedUpNote(d) +
-    (state.role === 'asset' && p.entity === ACTORS.asset.entity ? redeemBanner() : '') +
-    '<div class="sec-grid"><div>' + l3 + l4 + l5 + '</div><aside class="rail">' + rail + snap + '</aside></div>';
+  '</div>';
 }
 
 function actionHandler(p, a){
@@ -2619,7 +2708,7 @@ function openRedeem(){
 
 var state = {
   role:'guest', page:'plaza', id:null, action:null, step:null, from:null, panel:null,
-  feed:'ok', sort:'pub', pageNo:1,
+  feed:'ok', sort:'pub', pageNo:1, tab:'collateral',
   filters:JSON.parse(JSON.stringify(F_DEFAULT)),
   wiz:{ pid:null, name:'', sel:{}, amount:'', amtErr:null, result:null, wsel:{}, busy:false }
 };
@@ -2644,6 +2733,7 @@ function go(page, params){
   state.step  = params.step || null;
   state.from  = params.from || null;
   state.panel = (params.action === 'pledge') ? 'pledge' : null;
+  if(!('tab' in params)) state.tab = 'collateral';
   if(page === 'publish' && !state.id) resetWiz();
   if(page !== 'publish'){ state.wiz.result = null; state.wiz.amtErr = null; }
   syncHash(); render(); window.scrollTo(0, 0);
@@ -2671,7 +2761,7 @@ function readHash(){
   var qi = h.indexOf('?'), path = qi >= 0 ? h.slice(0, qi) : h, qs = qi >= 0 ? h.slice(qi+1) : '';
   var q = {}; qs.split('&').forEach(function(kv){ var p = kv.split('='); if(p[0]) q[p[0]] = p[1]; });
   var seg = path.split('/');
-  state.step = null; state.panel = null; state.wiz.result = null; state.wiz.amtErr = null;
+  state.step = null; state.panel = null; state.tab = 'collateral'; state.wiz.result = null; state.wiz.amtErr = null;
   if(seg[0] === 'project'){
     if(seg[1] === 'new'){ state.page = 'publish'; state.id = null; resetWiz(); }
     else {

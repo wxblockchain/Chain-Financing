@@ -7,7 +7,7 @@
    数值为阶梯：一次事件改变一次取值，事件之间保持不变——这就是业务的真实形状。
    ================================================================ */
 
-var CHART_H = 252, CH_M = { l:74, r:116, t:18, b:44 };
+var CHART_H = 206, CH_M = { l:72, r:114, t:16, b:38 };
 
 function niceTicks(max, n){
   var raw = max / n, mag = Math.pow(10, Math.floor(Math.log(raw)/Math.LN10)), norm = raw / mag;
@@ -272,24 +272,25 @@ function attachHover(wrapId, pts, built, kind){
   svg.addEventListener('mouseleave', leave);
 }
 
-/* ---- 一张图的完整外壳：标题 + 图例 + 图 + 读法 + 数据表 ---- */
-function chartCard(p, kind){
+/* ---- 两张图合成一张卡片 ----
+   上一版两张图各占一张大卡（合计 ~900px），在详情页里压过了三数与操作区。
+   本版合成一张卡、单图高度 252 → 206、去掉每图的边框与底部大段读法块，
+   数据表下沉到折叠层：图仍然完整可读，但不再是页面上最重的东西。 */
+function chartBody(p, kind){
   var d = derive(p), pts = d.pts, uid = kind + '-' + p.id.replace(/[^A-Za-z0-9]/g,'');
   var isPool = (kind === 'pool');
   var legend = isPool
     ? '<span><i class="s1"></i>有效质押价值（计入担保）</span>' +
       '<span><i class="void"></i>失效代币价值（不计入担保）</span>' +
-      '<span><i class="dash"></i>池内资产总额（＝上两项之和）</span>'
+      '<span><i class="dash"></i>池内资产总额</span>'
     : '<span><i class="l s1l"></i>融资上限（＝有效质押价值 × ' + (PLEDGE_RATE*100) + '%）</span>' +
-      '<span><i class="s2"></i>项目融资余额（已发生债务）</span>' +
-      '<span><i class="s3"></i>项目在途金额（已发布未终结的占用）</span>' +
+      '<span><i class="s2"></i>项目融资余额</span>' +
+      '<span><i class="s3"></i>项目在途金额</span>' +
       '<span><i class="gap"></i>担保不足区间</span>';
   var read = isPool
-    ? '读法：蓝色是<b>参与计算</b>的那部分，灰斜纹是<b>因底层应收账款失效而不计入担保</b>的那部分，两者之和才是账面的池内资产总额。' +
-      '台阶只在质押、追加、撤回、失效这些事件上变化，事件之间保持不变。'
-    : '读法：蓝线是<b>融资上限</b>，橙色面积是<b>项目融资余额</b>（已发生的债务），绿色面积堆在它之上、是<b>项目在途金额</b>（已发布未终结的占用）。' +
-      '面积顶到蓝线之间的空隙就是<b>可融金额</b>；<b>橙色面积高过蓝线的那一段就是担保不足</b>——判据只比项目融资余额，不含在途。';
-  var tbl = '<table class="dt"><thead><tr><th>日期</th>' +
+    ? '蓝色是<b>参与计算</b>的部分，灰斜纹是<b>因底层应收账款失效而不计入担保</b>的部分，两者之和才是账面的池内资产总额。'
+    : '面积顶到蓝线之间的空隙就是<b>可融金额</b>；<b>橙色面积高过蓝线的那一段就是担保不足</b>——判据只比项目融资余额，不含在途。';
+  var tbl = '<div class="tscroll"><table class="dt"><thead><tr><th>日期</th>' +
     (isPool ? '<th class="n">有效质押价值</th><th class="n">失效代币价值</th><th class="n">池内资产总额</th>'
             : '<th class="n">融资上限</th><th class="n">项目融资余额</th><th class="n">项目在途金额</th><th class="n">可融金额</th>') +
     '<th>事件</th></tr></thead><tbody>' +
@@ -298,22 +299,20 @@ function chartCard(p, kind){
         (isPool ? '<td class="n">' + amt(q.valid) + '</td><td class="n">' + amt(q.dead) + '</td><td class="n">' + amt(q.total) + '</td>'
                 : '<td class="n">' + amt(q.cap) + '</td><td class="n">' + amt(q.bal) + '</td><td class="n">' + amt(q.fly) + '</td><td class="n">' + amt(q.free) + '</td>') +
         '<td>' + (q.ev ? esc(q.ev.t) : '当前（' + TODAY + '）') + '</td></tr>';
-    }).join('') + '</tbody></table>';
+    }).join('') + '</tbody></table></div>';
 
-  return '<div class="card"><div class="chartbox">' +
+  return '<div class="cbody">' +
     '<div class="chart-head"><div><h3>' + (isPool ? '池内资产变动' : '融资变动') + '</h3>' +
-      '<p>' + (isPool ? '池子里有多少钱、其中多少还顶用。金额单位 ' + CCY + '，坐标轴刻度为压缩取整，精确值见悬浮读数与数据表。'
-                      : '额度被什么消耗、还剩多少、什么时候跨过担保线。金额单位 ' + CCY + '，单一纵轴。') + '</p></div>' +
-      '<button class="btn sm" onclick="toggleTable(\'' + uid + '\')">数据表</button></div>' +
+      '<p>' + (isPool ? '池子里有多少钱、其中多少还顶用' : '额度被什么消耗、还剩多少、什么时候跨过担保线') +
+      '。单位 ' + CCY + '，刻度为压缩取整，精确值见悬浮读数与数据表。</p></div></div>' +
     '<div class="chart-legend">' + legend + '</div>' +
     '<div class="chart-wrap" id="wrap-' + uid + '"><div class="chart-tip"></div></div>' +
-    '<div class="chart-foot"><div class="rd">' + read + '</div></div>' +
-    '<div class="chart-table" id="tbl-' + uid + '" style="display:none;margin-top:10px">' + tbl + '</div>' +
-    '</div></div>';
+    '<div class="chart-rd">读法：' + read + '</div>' +
+    '<div style="padding:0 24px 6px">' + fold('数据表 · ' + (isPool ? '池内资产' : '融资') + '逐时点数值', pts.length + ' 行', tbl) + '</div>' +
+  '</div>';
 }
-function toggleTable(uid){
-  var el = document.getElementById('tbl-' + uid);
-  el.style.display = (el.style.display === 'none') ? '' : 'none';
+function chartPairCard(p){
+  return '<div class="card chart-pair">' + chartBody(p, 'pool') + chartBody(p, 'fin') + '</div>';
 }
 
 /* ---- 挂载 / 重绘（宽度变化时重算像素，不做缩放变形） ---- */

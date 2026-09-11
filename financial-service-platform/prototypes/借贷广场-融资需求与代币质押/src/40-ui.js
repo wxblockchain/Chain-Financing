@@ -1,6 +1,7 @@
 /* ================================================================
    40-ui.js —— 共用组件层
    两个招牌件：三数等式（AC-LS-53）与额度尺（INV-FIN-01 的可视化读数）。
+   本版的原则：层级靠字号与留白建立，颜色只用在"必须一眼看到"的地方。
    后续模块新增页面时复用本层，不要各自造一套。
    ================================================================ */
 
@@ -8,27 +9,29 @@
 function tag(tone, t, dot){
   return '<span class="tag ' + tone + '">' + (dot ? '<i class="dot"></i>' : '') + esc(t) + '</span>';
 }
-function statusTags(p){
+/* 主视图只挂"改变判断"的标记；解释性文字下沉到折叠层 */
+function statusTags(p, compact){
   var d = derive(p), s = FP_STATUS[p.status], g = gradeMeta(d.grade), out = [];
   out.push(tag(s.tone, s.t, true));
-  /* 到期分支②按正常状态呈现：中性样式，不做告警（D-FIN-47） */
+  if(d.grade !== 'normal') out.push(tag(g.tone, g.t, true));
   if(p.expired) out.push(tag('plain', '已到期 · 存量融资业务照常履约中'));
   var ef = expiryFlag(p);
   if(ef && !p.expired) out.push(tag(ef.tone, ef.t));
-  out.push(tag(g.tone, '担保状态：' + g.t, true));
   if(p.emptyPool) out.push(tag('warn', '空池草稿 · 暂无有效质押'));
+  if(!compact && p.quotes) out.push(tag('plain', '已收到报价 ' + p.quotes + ' 笔'));
   return out.join('');
 }
 
-/* ---- 三数等式：① 有效质押价值 × ② 质押率 = ③ 融资上限 ---- */
+/* ---- 三数等式：① 有效质押价值 × ② 质押率 = ③ 融资上限 ----
+   ③ 是资金方与资产方都要先读到的那个数，给它 44px 与唯一的一处主色。 */
 function trioBlock(d){
   return '' +
   '<div class="trio">' +
     '<div class="cell">' +
       '<div class="idx">① 参与计算</div>' +
-      '<div class="lb">有效质押价值<span class="tag plain">FP-11</span></div>' +
+      '<div class="lb">有效质押价值</div>' +
       '<div class="amt">' + amt(d.valid) + '</div>' +
-      '<div class="fixed">' + CCY + ' · 已排除失效、未上链、对账差异部分</div>' +
+      '<div class="fixed">' + CCY + ' · 已排除失效、未上链、对账差异</div>' +
     '</div>' +
     '<div class="op" aria-hidden="true">×</div>' +
     '<div class="cell">' +
@@ -41,7 +44,7 @@ function trioBlock(d){
     '<div class="op" aria-hidden="true">=</div>' +
     '<div class="cell out">' +
       '<div class="idx">③ ＝ ① × ②</div>' +
-      '<div class="lb">融资上限<span class="tag plain">FP-12</span></div>' +
+      '<div class="lb">融资上限</div>' +
       '<div class="amt">' + amt(d.cap) + '</div>' +
       '<div class="fixed">' + CCY + ' · 一切担保充足性判断的比较对象</div>' +
     '</div>' +
@@ -50,21 +53,30 @@ function trioBlock(d){
     '</span>（' + d.deadCount + ' 张）因底层资产失效不计入担保。账面总额不参与任何校验。</div>';
 }
 
-/* ---- 额度尺：一条尺上读出 融资上限 / 余额 / 在途 / 可融 / 担保缺口 ---- */
+/* ---- 额度尺 ----
+   完整版（详情 / 发布页）：余额 · 在途 · 可融 · 缺口 四段 + 上限刻度。
+   迷你版（列表行）：合并为「已占用 / 可融」两段 + 缺口 —— 列表要回答的是
+   "还有没有空间"，余额与在途的切分是详情页的问题，塞进 8px 高的条里只会变噪声。 */
 function meterBlock(d, mini){
   var used = d.bal + d.fly;
   var scale = Math.max(d.cap, used) * 1.03 || 1;
   var pct = function(v){ return (v / scale * 100); };
-  var balIn  = Math.min(d.bal, d.cap);
-  var balOver= Math.max(0, d.bal - d.cap);
+  var balOver = Math.max(0, d.bal - d.cap);
   var capPct = pct(d.cap);
   var segs = '';
-  if(balIn > 0)   segs += '<div class="seg bal"  style="width:' + pct(balIn).toFixed(3) + '%"></div>';
-  if(balOver > 0) segs += '<div class="seg gap"  style="width:' + pct(balOver).toFixed(3) + '%"></div>';
-  if(d.fly > 0)   segs += '<div class="seg fly"  style="width:' + pct(d.fly).toFixed(3) + '%"></div>';
-  if(d.free > 0)  segs += '<div class="seg free" style="width:' + pct(d.free).toFixed(3) + '%"></div>';
-  var lbShift = capPct > 80 ? 'transform:translateX(-100%);padding-right:4px' : 'transform:translateX(-50%)';
-
+  if(mini){
+    var usedIn = Math.min(used, d.cap);
+    if(usedIn > 0)  segs += '<div class="seg bal"  style="width:' + pct(usedIn).toFixed(3) + '%"></div>';
+    if(used > d.cap)segs += '<div class="seg gap"  style="width:' + pct(used - d.cap).toFixed(3) + '%"></div>';
+    if(d.free > 0)  segs += '<div class="seg free" style="width:' + pct(d.free).toFixed(3) + '%"></div>';
+  } else {
+    var balIn = Math.min(d.bal, d.cap);
+    if(balIn > 0)   segs += '<div class="seg bal"  style="width:' + pct(balIn).toFixed(3) + '%"></div>';
+    if(balOver > 0) segs += '<div class="seg gap"  style="width:' + pct(balOver).toFixed(3) + '%"></div>';
+    if(d.fly > 0)   segs += '<div class="seg fly"  style="width:' + pct(d.fly).toFixed(3) + '%"></div>';
+    if(d.free > 0)  segs += '<div class="seg free" style="width:' + pct(d.free).toFixed(3) + '%"></div>';
+  }
+  var lbShift = capPct > 78 ? 'transform:translateX(-100%);padding-right:4px' : 'transform:translateX(-50%)';
   var legend =
     '<span><i class="cap"></i>融资上限 <b>' + amt(d.cap) + '</b></span>' +
     '<span><i class="bal"></i>项目融资余额 <b>' + amt(d.bal) + '</b></span>' +
@@ -77,81 +89,116 @@ function meterBlock(d, mini){
       ' USD，项目在途金额 ' + amt(d.fly) + ' USD，可融金额 ' + amt(d.free) + ' USD">' + segs + '</div>' +
     '<div class="capline" style="left:' + capPct.toFixed(3) + '%"></div>' +
     (mini ? '' : '<div class="caplb" style="left:' + capPct.toFixed(3) + '%;' + lbShift + '">融资上限 ' + amt(d.cap) + '</div>') +
-    '</div><div class="legend">' + legend + '</div>' +
+    '</div>' + (mini ? '' : '<div class="legend">' + legend + '</div>') +
   '</div>';
 }
 
-/* ---- 担保档位三档（D-FIN-55：预警线与准入闸门分别定义、分别呈现） ---- */
+/* ---- 担保三档：下沉到折叠层，改为紧凑三行，不再是三个色块 ---- */
 function gradesBlock(d){
-  return '<div class="grades">' + GRADES.map(function(g){
+  return '<div style="display:flex;flex-direction:column;gap:10px">' + GRADES.map(function(g){
     var on = (g.k === d.grade);
-    return '<div class="g' + (on ? ' on ' + g.tone : '') + '">' +
-      '<b>' + (on ? '● ' : '○ ') + g.t + '</b>' + esc(g.x) + '</div>';
+    return '<div style="display:flex;gap:11px;align-items:baseline;font-size:var(--fs-sm);' +
+      (on ? 'color:var(--ink)' : 'color:var(--ink-3)') + '">' +
+      '<span style="font-family:var(--num);width:14px;flex:none' + (on ? ';color:var(--st-' + (g.tone) + ')' : '') + '">' +
+        (on ? '●' : '○') + '</span>' +
+      '<b style="font-weight:' + (on ? '650' : '500') + ';width:104px;flex:none">' + g.t + '</b>' +
+      '<span>' + esc(g.x) + '</span></div>';
   }).join('') + '</div>';
 }
 
-/* ---- 担保不足预警条：中性事实文案，不用评价性措辞（D-FIN-56） ---- */
+/* ---- 担保不足预警：主视图唯一保留填色的提示块（D-FIN-56 中性事实文案） ---- */
 function shortAlert(p, d, withAction){
   if(d.grade !== 'short') return '';
-  return '<div class="note crit" style="margin-bottom:14px">' +
+  return '<div class="note crit" style="margin-bottom:22px">' +
     '<span class="ic">!</span><div class="bd">' +
-    '<b>担保不足</b>：当前池内有效质押价值低于项目融资余额，缺口 <span class="n">' + usd(d.gap) + '</span>，自 ' +
+    '<b>担保不足</b>：池内有效质押价值低于项目融资余额，缺口 <span class="n">' + usd(d.gap) +
+    '</span>，需追加资产价值 <span class="n">' + usd(d.need) + '</span>（＝缺口 ÷ ' + (PLEDGE_RATE*100) + '%），自 ' +
     (d.shortFrom || '—') + ' 起。' +
-    '<p>需追加资产价值 <span class="n">' + usd(d.need) + '</span>（＝担保缺口 ÷ ' + (PLEDGE_RATE*100) + '%）。' +
-    '只按缺口追加不足以解除——追加的是资产，参与计算的是资产的 ' + (PLEDGE_RATE*100) + '%。' +
-    '条件反转（追加质押抬高融资上限，或还款降低项目融资余额）即自动解除，无需人工确认。</p>' +
-    '<p>诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效，价值合计 ' + usd(d.dead) + '，自失效之日起不计入有效质押价值。</p>' +
+    '<p>诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效（合计 ' + usd(d.dead) + '），不计入有效质押价值。' +
+    '追加质押抬高融资上限或还款降低项目融资余额，条件反转即自动解除，无需人工确认。</p>' +
     '</div>' + (withAction ? '<div class="act"><button class="btn sm" onclick="openPledge(\'' + p.id + '\')">追加质押</button></div>' : '') +
   '</div>';
 }
 
-/* ---- 额度用尽档：成立但不预警，必须与档③分开说（D-FIN-55） ---- */
 function usedUpNote(d){
   if(d.grade !== 'used-up') return '';
-  return '<div class="note warn" style="margin-bottom:14px"><span class="ic">i</span><div class="bd">' +
+  return '<div class="note warn" style="margin-bottom:22px"><span class="ic">i</span><div class="bd">' +
     '<b>额度用尽</b>：可融金额为 <span class="n">' + usd(0) + '</span>，暂不能新增占用。' +
     '<p>已发生的债务仍有足额担保（融资上限 ' + usd(d.cap) + ' ≥ 项目融资余额 ' + usd(d.bal) + '），' +
-    '<b>这不是担保不足预警</b>。此档下可撤回上限同为 ' + usd(0) + '；追加质押可抬高融资上限并重新打开额度。</p>' +
+    '<b>这不是担保不足预警</b>。追加质押可抬高融资上限并重新打开额度。</p>' +
     '</div></div>';
 }
 
-/* ---- 可提取常驻提示（AC-LS-38）：不得让资产方以为代币会自动回到钱包 ---- */
+/* ---- 可提取常驻提示（AC-LS-38） ---- */
 function redeemBanner(){
   if(state.role !== 'asset' || REDEEMABLE.length === 0) return '';
   var sum = REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0);
-  return '<div class="note info" style="margin-bottom:14px"><span class="ic">↧</span><div class="bd">' +
+  return '<div class="note info" style="margin-bottom:22px"><span class="ic">↧</span><div class="bd">' +
     '您有 <b>' + REDEEMABLE.length + ' 张</b>代币（合计 <span class="n">' + usd(sum) + '</span>）可提取。' +
     '<p>业务上已释放，链上仍停留在质押合约内，<b>不会自动回到钱包</b>；需您自行发起提取并自付 gas，支持批量一次提完，无时间限制、不过期。' +
     '未提取前不属于任何资产池、不计入任何质押价值，也不能被再次质押。</p>' +
-    '</div><div class="act"><button class="btn sm primary" onclick="openRedeem()">批量提取</button></div></div>';
+    '</div><div class="act"><button class="btn sm" onclick="openRedeem()">批量提取</button></div></div>';
+}
+
+/* ---- 折叠层：第二层信息（验算与核对用，默认收起，信息仍然可达） ---- */
+function fold(title, count, body, open){
+  return '<details class="fold"' + (open ? ' open' : '') + '>' +
+    '<summary><span class="caret" aria-hidden="true">▶</span>' + esc(title) +
+    (count ? '<span class="cnt">' + esc(count) + '</span>' : '') + '</summary>' +
+    '<div class="fb">' + body + '</div></details>';
+}
+
+/* ---- 融资进度：环节名取自 PRD 状态机 S-FP-*，后段明确标注为后续环节 ---- */
+var FLOW = [
+  { id:'S-FP-1', t:'草稿',   x:'已建池 · 未发布',          mine:true },
+  { id:'S-FP-2', t:'募集中', x:'需求已发布 · 公开接受报价', mine:true },
+  { id:'S-FP-3', t:'已锁定', x:'已被报价 · 暂不接受新报价', mine:true },
+  { id:'S-FP-4', t:'融资中', x:'接受报价 → 放款 → 融资确认', mine:false, who:'WS-325 ～ WS-326' },
+  { id:'S-FP-6', t:'已结清', x:'还款结清 → 释放全部质押',   mine:false, who:'WS-327' }
+];
+function flowRail(p){
+  var order = ['S-FP-1','S-FP-2','S-FP-3','S-FP-4','S-FP-6'];
+  var cur = p.status === 'S-FP-5' ? 'S-FP-1' : p.status;
+  var ci = order.indexOf(cur); if(ci < 0) ci = 0;
+  var cells = '';
+  FLOW.forEach(function(f, i){
+    if(i === 3) cells += '<div class="fsep" aria-hidden="true"><span>本模块边界</span></div>';
+    var cls = (i < ci ? 'done' : i === ci ? 'now' : 'next') + (f.mine ? '' : ' later');
+    cells += '<div class="fs ' + cls + '">' +
+      '<div class="sid">' + f.id + (f.mine ? '' : ' · 后续环节') + '</div>' +
+      '<div class="st">' + f.t + (i === ci ? '（当前）' : '') + '</div>' +
+      '<div class="sx">' + esc(f.x) + (f.who ? '<br>由 ' + f.who + ' 实现' : '') + '</div>' +
+    '</div>';
+  });
+  var foot = '本模块（WS-324）只承载到 <b>S-FP-3 已锁定</b>：建池、质押、发布需求，以及"已被报价"这个状态落点。' +
+    '虚线段为后续环节，<b>此刻不可操作</b>——报价与接受在 WS-325，放款与融资确认在 WS-326，还款结清在 WS-327。' +
+    (p.status === 'S-FP-5' ? '<br>本项目已关闭（S-FP-5），未进入后段。' : '') +
+    (p.expired ? '<br>本项目有效期已到期，并行标记为「已到期 · 存量处理中」，停止接受新报价、不允许再次发布；存量融资业务照常履约。' : '');
+  return '<div class="flow">' + cells + '</div><div class="flow-foot">' + foot + '</div>';
 }
 
 /* ---- 动作按钮：区分「不可见」与「可见不可点 ⊘」（H-03） ---- */
-function actionBtn(a, handler, size){
-  var cls = 'btn' + (size ? ' ' + size : '') + (a.primary && a.enabled ? ' primary' : '');
+function actionBtn(a, handler, cls, noWhy){
   if(a.enabled){
-    return '<button class="' + cls + '" onclick="' + handler + '">' + esc(a.label) + '</button>';
+    return '<button class="btn ' + (cls || '') + '" onclick="' + handler + '">' + esc(a.label) + '</button>';
   }
-  return '<button class="btn blocked' + (size ? ' ' + size : '') + '" aria-disabled="true" ' +
-         'onclick="toast(' + JSON.stringify(a.reason).replace(/"/g,'&quot;') + ')">' +
+  return '<button class="btn blocked ' + (cls || '').replace('primary','') + '" aria-disabled="true" ' +
+         'title="' + esc(a.reason) + '" onclick="toast(' + JSON.stringify(a.reason).replace(/"/g,'&quot;') + ')">' +
          '<span class="sig" aria-hidden="true">⊘</span>' + esc(a.label) + '</button>' +
-         '<div class="why"><span class="sig" aria-hidden="true">⊘</span><span>' + esc(a.reason) +
-         (state.role === 'guest' ? ' <button class="btn link" onclick="signIn()">登录 / 注册</button>' : '') +
-         '</span></div>';
+         (noWhy ? '' : whyLine(a.reason));
+}
+function whyLine(reason){
+  return '<div class="why"><span class="sig" aria-hidden="true">⊘</span><span>' + esc(reason) +
+    (state.role === 'guest' ? ' <button class="btn link" onclick="signIn()">登录 / 注册</button>' : '') + '</span></div>';
 }
 
-/* ---- 通用状态：加载中 / 空 / 筛选无结果 / 加载失败 ---- */
-function skeletonCards(n){
+/* ---- 通用状态 ---- */
+function skeletonRows(n){
   var h = '', i;
-  for(i=0;i<(n||3);i++){
-    h += '<div class="pcard"><div class="top">' +
-      '<div class="pool"><div class="sk" style="height:13px;width:70px"></div><div class="sk" style="height:19px;width:64%;margin-top:12px"></div>' +
-      '<div class="sk" style="height:13px;width:40%;margin-top:9px"></div><div class="sk" style="height:44px;margin-top:14px"></div></div>' +
-      '<div class="fin"><div class="sk" style="height:13px;width:70px"></div><div class="sk" style="height:30px;width:46%;margin-top:12px"></div>' +
-      '<div class="sk" style="height:22px;width:72%;margin-top:12px"></div><div class="sk" style="height:44px;margin-top:14px"></div></div>' +
-      '</div><div class="bot"><div class="sk" style="height:16px;flex:1"></div></div></div>';
+  for(i=0;i<(n||8);i++){
+    h += '<tr><td colspan="8" style="padding:0 16px"><div class="sk" style="height:20px;margin:18px 0"></div></td></tr>';
   }
-  return '<div class="plist" aria-busy="true">' + h + '</div>';
+  return '<div class="card tbl" aria-busy="true"><div class="cb tight"><table class="list"><tbody>' + h + '</tbody></table></div></div>';
 }
 function blankState(ic, title, body, btn){
   return '<div class="card"><div class="blank"><div class="ic">' + ic + '</div><h3>' + esc(title) + '</h3><p>' + body + '</p>' +
@@ -172,14 +219,11 @@ function toast(msg){
   var box = document.getElementById('toast');
   var el = document.createElement('div'); el.className = 't'; el.textContent = msg;
   box.appendChild(el);
-  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 4200);
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 4600);
 }
-function signIn(){
-  toast('登录 / 注册流程不在本模块范围内（本原型直接用底部演示条切换身份）。');
-}
+function signIn(){ toast('登录 / 注册流程不在本模块范围内（本原型直接用底部演示条切换身份）。'); }
 
 /* ---- 外部签名 SDK（D-FIN-71）：平台不自建钱包连接组件 ---- */
-/* cfg: { title, rows:[[k,v]], gas, n, onDone(outcomeKey) } */
 var sdkCfg = null;
 function openSDK(cfg){
   sdkCfg = cfg;
@@ -213,7 +257,7 @@ function sdkSign(){
   closeScrim(); if(c) c.onDone(v);
 }
 
-/* ---- 二次确认 + 费用区（AC-LS-32）：唤起 SDK 前必须先说清操作内容与 gas ---- */
+/* ---- 二次确认 + 费用区（AC-LS-32） ---- */
 function confirmChain(cfg){
   openScrim(
   '<div class="modal">' +
@@ -236,24 +280,8 @@ function confirmChain(cfg){
   pendingChain = cfg;
 }
 var pendingChain = null;
-function chainGo(){
-  var c = pendingChain;
-  openSDK({ rows:c.rows, gas:c.gas, n:c.n, onDone:c.onDone });
-}
+function chainGo(){ var c = pendingChain; openSDK({ rows:c.rows, gas:c.gas, n:c.n, onDone:c.onDone }); }
 
-/* ---- 五类失败 / 等待的结果页面态（分册 6.7.2；不允许只写"操作失败"） ---- */
-function chainResultCard(o, ctx){
-  if(o.k === 'ok' || o.k === 'partial') return '';
-  return '<div class="note ' + (o.tone === 'mute' ? '' : o.tone) + '"><span class="ic">' +
-    (o.k === 'timeout' ? '⧗' : '!') + '</span><div class="bd"><b>' + esc(o.head) + '</b>' +
-    '<p>' + esc(o.body) + '</p><p>费用：' + esc(o.fee) + '</p>' +
-    '<p style="margin-top:8px">' +
-      (o.k === 'timeout'
-        /* 超时态不出现重试按钮，只给「查询链上状态」（AC-LS-74 / D-FIN-70） */
-        ? '<button class="btn sm" onclick="queryChain()">查询链上状态</button>'
-        : '<button class="btn sm" onclick="' + (ctx.retry || 'closeScrim()') + '">' + esc(o.retry) + '</button>') +
-    '</p></div></div>';
-}
 function queryChain(){
   toast('正在查询链上状态……（原型内为模拟）确认未上链后，重试入口才会出现——沿用 WS-318 S-TI-5 红线，超时态不得直接重试。');
 }

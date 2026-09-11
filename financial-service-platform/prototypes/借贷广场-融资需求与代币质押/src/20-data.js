@@ -137,7 +137,8 @@ var PROJECTS = [
   {
     id:'FP-20260416-0007', name:'长三角医疗器械应收账款池',
     owner:'晟远科技（演示）', entity:'E-ASSET-01',
-    status:'S-FP-4', expired:false,
+    /* 2026-07-10 再次发布剩余额度后由 S-FP-4 回到 S-FP-2（主册 6.1 / 4.3 状态机） */
+    status:'S-FP-2', expired:false,
     publishedAt:'2026-04-20', expiresAt:'2027-04-20',
     demand:200000,               /* 当前在途需求，发布于 2026-07-10 */
     quotes:2, assetType:'应收账款类',
@@ -155,7 +156,6 @@ var PROJECTS = [
       { d:'2026-08-19', k:'invalid',  t:'池内 2 张代币底层应收账款失效 · 300,000.00 USD', dVoid:300000,
         note:'失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发担保不足预警（E-9 / 6.4.1）' }
     ],
-    snapshot:{ at:'2026-05-06 10:24', tokens:10, valid:1000000, cap:800000, free:300000 },
     terms:{ rate:'年化 6.80%（演示）', term:'180 天', repay:'到期一次性还本付息', use:'补充经营性流动资金' },
     deals:[
       { id:'FD-20260512-0044', amt:500000, st:'还款中', at:'2026-05-12', x:'放款并完成融资确认，计入项目融资余额' }
@@ -172,7 +172,6 @@ var PROJECTS = [
       { d:'2026-08-12', k:'pledge',  t:'创建资产池 · 首笔质押 3 张', dTotal:1000000, note:'链上转入成功（CT-2）' },
       { d:'2026-08-14', k:'publish', t:'发布融资需求 500,000.00 USD', dFly:500000,  note:'项目在途金额 = 500,000.00 USD，可融金额 = 800,000 − 0 − 500,000 = 300,000.00 USD' }
     ],
-    snapshot:null,
     terms:{ rate:'年化 7.20%（演示）', term:'150 天', repay:'到期一次性还本付息', use:'原材料采购' },
     deals:[]
   },
@@ -188,7 +187,6 @@ var PROJECTS = [
       { d:'2026-08-21', k:'publish', t:'发布融资需求 600,000.00 USD', dFly:600000 },
       { d:'2026-09-02', k:'quote',   t:'收到机构报价 600,000.00 USD', note:'项目转 S-FP-3 已锁定；在途占用不变（AC-FIN-23）' }
     ],
-    snapshot:{ at:'2026-09-02 15:41', tokens:4, valid:1200000, cap:960000, free:360000 },
     terms:{ rate:'年化 6.95%（演示）', term:'180 天', repay:'到期一次性还本付息', use:'供应商货款结算' },
     deals:[]
   },
@@ -206,7 +204,6 @@ var PROJECTS = [
       { d:'2026-07-26', k:'fund',    t:'放款并完成融资确认', dFly:-500000, dBal:500000,
         note:'融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「额度用尽」档；INV-FIN-01 仍成立，不预警（D-FIN-55）' }
     ],
-    snapshot:{ at:'2026-07-20 09:12', tokens:5, valid:625000, cap:500000, free:500000 },
     terms:{ rate:'年化 7.05%（演示）', term:'120 天', repay:'到期一次性还本付息', use:'渠道铺货' },
     deals:[ { id:'FD-20260726-0061', amt:500000, st:'还款中', at:'2026-07-26', x:'放款并完成融资确认' } ]
   },
@@ -221,7 +218,6 @@ var PROJECTS = [
       { d:'2025-09-14', k:'pledge',  t:'创建资产池 · 首笔质押 2 张', dTotal:400000 },
       { d:'2025-09-16', k:'publish', t:'发布融资需求 200,000.00 USD', dFly:200000 }
     ],
-    snapshot:null,
     terms:{ rate:'年化 7.40%（演示）', term:'90 天', repay:'到期一次性还本付息', use:'设备维保备件采购' },
     deals:[]
   },
@@ -240,7 +236,6 @@ var PROJECTS = [
       { d:'2026-08-20', k:'expire',  t:'有效期到期 · 存在未结清融资业务，项目不关闭',
         note:'转「已到期 · 存量处理中」并行标记：停止接受新报价、不允许再次发布，存量走完后转 S-FP-6 并释放质押（D-FIN-43 分支②，按正常状态呈现 D-FIN-47）' }
     ],
-    snapshot:{ at:'2025-09-02 11:08', tokens:5, valid:1500000, cap:1200000, free:300000 },
     terms:{ rate:'年化 6.60%（演示）', term:'360 天', repay:'到期一次性还本付息', use:'工程项目垫资' },
     deals:[ { id:'FD-20250910-0012', amt:900000, st:'已到期（存量履约中）', at:'2025-09-10', x:'本期无提前还款，还本发生在项目到期后（X-LS-06）' } ]
   },
@@ -254,7 +249,7 @@ var PROJECTS = [
     tokens:mkTokens({ total:600000, n:2, seed:7, due:['2026-12-28','2027-01-30'] }),
     events:[ { d:'2026-09-10', k:'pledge', t:'创建资产池 · 首笔质押 2 张', dTotal:600000,
                note:'第一段完成，项目已持久化；可离开页面后再回来续做第二段（AC-LS-54）' } ],
-    snapshot:null, terms:null, deals:[]
+    terms:null, deals:[]
   },
   {
     id:'FP-20260911-0053', name:'西南物流应收账款池',
@@ -265,7 +260,7 @@ var PROJECTS = [
     tokens:[],
     events:[ { d:'2026-09-11', k:'fail', t:'创建资产池 · 首笔质押 2 张 · 链上执行失败',
                note:'创建时那唯一一笔质押最终链上失败，项目保留为空池草稿（E-12 / D-FIN-62 / FP-25）' } ],
-    snapshot:null, terms:null, deals:[]
+    terms:null, deals:[]
   }
 ];
 

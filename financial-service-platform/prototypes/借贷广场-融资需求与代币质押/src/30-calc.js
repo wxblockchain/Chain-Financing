@@ -125,22 +125,29 @@ function availableActions(p, role){
   var q = { key:'quote', label:'立即报价', anchor:'quote', primary:true, enabled:false, reason:'' };
   if(guest){
     q.reason = '未登录。登录并以资金方企业主体进入后可发起报价；页面信息 L1～L5 不因未登录而隐藏。';
+    q.brief = '需登录';
   } else if(role === 'asset'){
     q.reason = own ? '不能为自己的项目报价。' : '当前企业主体未开通资金方资质，无法发起报价。';
+    q.brief = own ? '本方项目' : '无资金方资质';
   } else if(p.draft){
-    q.reason = '草稿项目不进广场。';
+    q.reason = '草稿项目不进广场。'; q.brief = '草稿';
   } else if(d.grade === 'short'){
     q.reason = '该项目处于担保不足预警，已暂停接受新报价（AC-LS-39）。当前担保缺口 ' + usd(d.gap) + '。';
+    q.brief = '担保不足';
   } else if(p.expired){
     q.reason = '该项目有效期已到期，停止接受新报价；存量融资业务照常履约（D-FIN-43 分支②）。';
+    q.brief = '已到期';
   } else if(st === 'S-FP-3'){
     q.reason = '该项目已有在途报价，同一时刻至多承载一笔在途融资业务（D-FIN-33）。';
+    q.brief = '已有报价';
   } else if(!p.demand){
-    q.reason = '该项目当前无在途融资需求。';
+    q.reason = '该项目当前无在途融资需求。'; q.brief = '无在途需求';
   } else if(d.free === 0){
     q.reason = '该项目可融金额为 ' + usd(0) + '，不能再新增占用（AC-FIN-12）。';
+    q.brief = '额度用尽';
   } else if(st !== 'S-FP-2'){
     q.reason = '当前项目状态为「' + FP_STATUS[st].t + '」，只有「募集中」接受新报价。';
+    q.brief = FP_STATUS[st].t;
   } else {
     q.enabled = true;
   }
@@ -174,6 +181,7 @@ function availableActions(p, role){
     if(guest) c.reason = '未登录。项目动作仅对该项目所属企业主体开放。';
     else if(st==='S-FP-3'||st==='S-FP-4') c.reason = '存在在途或未结清融资业务，项目不可关闭（6.1）。';
     else if(d.fly > 0) c.reason = '存在在途占用 ' + usd(d.fly) + '，请先撤下需求再关闭。';
+    else if(d.bal > 0) c.reason = '存在未结清融资业务（项目融资余额 ' + usd(d.bal) + '），项目不可关闭（6.1）。';
     else c.enabled = true;
     out.push(c);
   }

@@ -1,150 +1,213 @@
 /* ================================================================
    61-pages-detail.js —— P-LS-02 融资需求详情
-   分区顺序按资金方决策路径：先看要融多少 → 再看池子值多少、够不够
-   → 再看抵押物逐张明细 → 最后看条款与历史。
-   L1～L5 对游客全量可见、不脱敏、不区间化、不限行数；只有 L6 操作区按 ⊘ 收敛。
+   信息分三层，一个字段都不删（游客 L1～L5 全量可见是红线 D-LS-09）：
+
+   【第一层 · 主视图】决策必需，不折叠
+     摘要头（需求金额 44px）→ 担保状态提示 → 融资进度 → 三数等式 + 额度尺
+     → 操作区 → 池内资产变动 / 融资变动两张图
+     判准：资金方决定"要不要报价"、资产方决定"要不要追加 / 撤回"时**必须看到**的。
+
+   【第二层 · 折叠可展开】就地展开，默认收起
+     额度明细六个派生量 + 担保三档判据 + 预警线与准入闸门的区别 + 图表数据表
+     判准：不影响"做不做"，只影响"我要不要核一遍账"。
+
+   【第三层 · 次级视图】页面底部 tab 切换
+     抵押物明细（全量逐张、不脱敏）/ 历史融资记录（列表）/ 商务条款与对外契约
+     判准：属于这个项目的档案，不是这次决策的输入；全量可达。
    ================================================================ */
 
 function pageProject(){
   var p = findProject(state.id);
-  /* 草稿项目不进广场：他人与游客深链直达一律返回"内容不存在或无权访问"，不暴露其是否存在 */
   if(!p || (p.draft && !(state.role === 'asset' && p.entity === ACTORS.asset.entity))){
     return blankState('⊘', '内容不存在或无权访问',
       '该地址对应的融资需求不存在，或您当前的身份没有访问权限。草稿项目不进入广场、不可搜索、不可深链直达（AC-LS-05 / D-FIN-64）。',
       '<button class="btn primary" onclick="go(\'plaza\')">返回融资需求广场</button>');
   }
-  if(p.draft) return pagePublish();   /* 本方草稿直接进入 P-LS-03 续做 */
+  if(p.draft) return pagePublish();
 
   var d = derive(p), acts = availableActions(p, state.role);
+  var own = (state.role === 'asset' && p.entity === ACTORS.asset.entity);
   mountedCharts = [];
   registerChart(p, 'pool'); registerChart(p, 'fin');
 
   var crumb = '<div class="crumb"><button onclick="go(\'plaza\')">融资需求广场</button><i>/</i><span>' +
     esc(p.name) + '</span>' +
     (state.from === 'console'
-      /* H-05：深链来源时提供返回入口；非深链来源不展示 */
-      ? '<span style="margin-left:auto"><button class="btn sm" onclick="backToConsole()">← 返回我的控制台</button></span>' : '') +
+      ? '<span style="margin-left:auto"><button class="btn sm ghost" onclick="backToConsole()">← 返回我的控制台</button></span>' : '') +
     '</div>';
 
-  /* ---- L2 融资需求摘要 ---- */
-  var hero = '<section class="hero"><div class="l1"><div>' +
-    '<h1>' + esc(p.name) + '</h1>' +
-    '<div class="meta"><span>资产方 <b>' + esc(p.owner) + '</b></span>' +
-      '<span>项目编号 <b class="n">' + p.id + '</b></span>' +
-      '<span>发布时间 <b class="n">' + (p.publishedAt || '—') + '</b></span>' +
-      '<span>有效期至 <b class="n">' + (p.expiresAt || '—') + '</b>（系统按首次发布日 + ' + TERM_YEARS + ' 年生成，只读）</span>' +
-      '<span>时区 <b>' + TZ_LABEL + '</b></span></div>' +
-    '<div class="tags">' + statusTags(p) + (p.quotes ? tag('plain','已收到报价 ' + p.quotes + ' 笔') : '') + '</div>' +
-    '</div><div class="demand"><div class="lb">融资需求金额</div>' +
+  /* ---- 第一层 · 摘要头（L2） ---- */
+  var head = '<div class="dhead"><div class="top"><div>' +
+    '<div class="kick">融资项目 · 发布于 <span class="n">' + (p.publishedAt || '—') + '</span>' +
+      ' · 编号 <span class="n">' + p.id + '</span> · 时区 ' + TZ_LABEL + '</div>' +
+    '<h1>' + esc(p.name) + '<em>' + esc(p.owner) + '</em></h1>' +
+    '<div class="tags">' + statusTags(p) + '</div>' +
+    '</div><div class="dm"><div class="lb">融资需求金额</div>' +
       (p.demand ? '<div class="big">' + amt(p.demand) + '<span class="ccy">' + CCY + '</span></div>'
-                : '<div class="big">—</div><div class="lb" style="margin-top:4px">当前无在途融资需求</div>') +
-    '</div></div></section>';
+                : '<div class="big" style="color:var(--ink-4)">—</div>') +
+      '<div class="lb" style="margin-top:6px">' + (p.demand ? '有效期至 ' + p.expiresAt + '（首次发布日 + ' + TERM_YEARS + ' 年，只读）'
+                                                            : '当前无在途融资需求') + '</div>' +
+    '</div></div></div>';
 
-  /* ---- L3 池内资产与额度总览（含两张图） ---- */
-  var l3 = '<div class="card"><div class="ch"><h2><span class="lvl">L3</span>池内资产与额度总览</h2>' +
-    '<div style="font-size:12.5px;color:var(--ink-3)">派生量由服务端权威重算，控制台与广场读到的是同一个数</div></div>' +
-    '<div class="cb">' +
-      trioBlock(d) +
-      '<div style="height:26px"></div>' +
-      meterBlock(d) +
-      '<div style="height:18px"></div>' +
-      '<div class="kv c4">' +
-        '<div><div class="k">池内资产总额 <span class="tag plain">FP-10</span></div><div class="v">' + amt(d.total) + '</div><div class="x">含失效代币，仅展示，不参与任何校验</div></div>' +
-        '<div><div class="k">失效代币价值 / 张数 <span class="tag plain">FP-19</span></div><div class="v">' + amt(d.dead) + ' / ' + d.deadCount + ' 张</div><div class="x">因底层应收账款失效，不计入担保</div></div>' +
-        '<div><div class="k">项目融资余额 <span class="tag plain">FP-13</span></div><div class="v">' + amt(d.bal) + '</div><div class="x">已确认（还款中）/ 已到期 / 逾期的未偿本金合计</div></div>' +
-        '<div><div class="k">项目在途金额 <span class="tag plain">FP-14</span></div><div class="v">' + amt(d.fly) + '</div><div class="x">唯一来源为发布占用，报价不新增</div></div>' +
-        '<div><div class="k">可融金额 <span class="tag plain">FP-15</span></div><div class="v">' + amt(d.free) + '</div><div class="x">max(0, 融资上限 − 项目融资余额 − 项目在途金额)</div></div>' +
-        '<div><div class="k">可撤回上限 <span class="tag plain">FP-16</span></div><div class="v">' + amt(d.wLimit) + '</div><div class="x">可融金额 ÷ ' + (PLEDGE_RATE*100) + '%，仅约束未失效代币</div></div>' +
-        '<div><div class="k">担保状态档位 <span class="tag plain">FP-20</span></div><div class="v txt">' + gradeMeta(d.grade).t + '</div><div class="x">' + esc(gradeMeta(d.grade).x) + '</div></div>' +
-        (d.gap
-          ? '<div><div class="k">担保缺口 / 需追加资产价值 <span class="tag plain">FP-21</span></div><div class="v" style="color:var(--st-crit)">' + amt(d.gap) + ' / ' + amt(d.need) + '</div><div class="x">需追加资产价值 ＝ 缺口 ÷ ' + (PLEDGE_RATE*100) + '%</div></div>'
-          : '<div><div class="k">已收到报价数 <span class="tag plain">FP-22</span></div><div class="v">' + p.quotes + ' 笔</div><div class="x">累计报价笔数，含已拒绝 / 已失效</div></div>') +
-      '</div>' +
-      gradesBlock(d) +
-      '<div class="note" style="margin-top:14px"><span class="ic">≠</span><div class="bd">' +
-        '<b>预警线与准入闸门不是同一条线。</b>闸门比较 <span class="n">项目融资余额 + 项目在途金额</span>，管"还能不能借"；' +
-        '预警只比较 <span class="n">项目融资余额</span>，管"已借的还保得住吗"。两者受众与处置动作都不同，分别呈现。' +
-      '</div></div>' +
+  /* ---- 第一层 · 三数等式 + 额度尺（裸露在底色上，全页视觉顶点） ---- */
+  var detail = '<div class="kv c3" style="margin-top:4px">' +
+      kvCell('池内资产总额', amt(d.total), 'FP-10', '含失效代币，仅展示，不参与任何校验') +
+      kvCell('失效代币价值 / 张数', amt(d.dead) + ' / ' + d.deadCount + ' 张', 'FP-19', '因底层应收账款失效，不计入担保') +
+      kvCell('项目融资余额', amt(d.bal), 'FP-13', '已确认（还款中）/ 已到期 / 逾期的未偿本金合计') +
+      kvCell('项目在途金额', amt(d.fly), 'FP-14', '唯一来源为发布占用，报价环节不新增') +
+      kvCell('可融金额', amt(d.free), 'FP-15', 'max(0, 融资上限 − 项目融资余额 − 项目在途金额)') +
+      kvCell('可撤回上限', amt(d.wLimit), 'FP-16', '可融金额 ÷ ' + (PLEDGE_RATE*100) + '%，仅约束未失效代币') +
+      (d.gap ? kvCell('担保缺口 / 需追加资产价值', amt(d.gap) + ' / ' + amt(d.need), 'FP-21',
+                      '需追加资产价值 ＝ 缺口 ÷ ' + (PLEDGE_RATE*100) + '%', true)
+             : kvCell('已收到报价数', p.quotes + ' 笔', 'FP-22', '累计报价笔数，含已拒绝 / 已失效')) +
+    '</div>' +
+    '<div style="height:24px"></div>' +
+    '<div style="font-size:var(--fs-sm);color:var(--ink-2);font-weight:650;margin-bottom:12px">担保状态档位判据（FP-20）</div>' +
+    gradesBlock(d) +
+    '<div class="note quiet" style="margin-top:16px"><span class="ic">≠</span><div class="bd">' +
+      '<b>预警线与准入闸门不是同一条线。</b>闸门比较「项目融资余额 + 项目在途金额」，管"还能不能借"；' +
+      '预警只比较「项目融资余额」，管"已借的还保得住吗"。两者受众与处置动作都不同，分别呈现。' +
+    '</div></div>';
+
+  var strip = '<div class="strip">' + trioBlock(d) + meterBlock(d) +
+    '<div style="height:18px"></div>' +
+    fold('额度明细与判定口径', '六个派生量 · 担保三档 · 判据', detail) +
+  '</div>';
+
+  /* ---- 第一层 · 融资进度（环节名取自 PRD 状态机） ---- */
+  var flow = '<div class="card"><div class="ch"><h2>融资进度</h2>' +
+    '<span class="note-r">环节取自融资项目状态机 S-FP-1 ～ S-FP-6</span></div>' +
+    '<div class="cb">' + flowRail(p) + '</div></div>';
+
+  /* ---- 第一层 · 操作区（主操作唯一；减少担保的操作单独降级） ---- */
+  var lead, second = [], risky = actionOf(acts, 'withdraw');
+  if(own){
+    lead = (d.grade === 'short' && actionOf(acts,'pledge')) ? actionOf(acts,'pledge') : actionOf(acts, 'publish');
+  } else {
+    lead = actionOf(acts, 'quote');
+  }
+  acts.forEach(function(a){
+    if(a === lead || a.key === 'withdraw') return;
+    second.push(a);
+  });
+  /* 同一条原因重复 4 遍只是噪声：全部被同一理由挡住时，只写一次（入口仍逐个可见可聚焦） */
+  var sameWhy = second.length > 1 && second.every(function(a){ return !a.enabled && a.reason === second[0].reason; });
+  var rail = '<div class="card"><div class="ch"><h2>操作区</h2>' +
+    '<span class="note-r lvl">L6</span></div><div class="cb acts">' +
+    (lead ? '<div class="lead">' + actionBtn(lead, actionHandler(p, lead), 'primary lg block') + '</div>' : '') +
+    (second.length ? '<div class="second">' + second.map(function(a){
+        return '<div>' + actionBtn(a, actionHandler(p, a), 'ghost block', sameWhy) + '</div>'; }).join('') +
+        (sameWhy ? whyLine(second[0].reason) : '') + '</div>' : '') +
+    (risky ? '<div class="risky"><div class="rl">以下操作会减少池内担保，请先确认额度</div>' +
+        actionBtn(risky, actionHandler(p, risky), 'danger block') + '</div>' : '') +
+    '<div class="note quiet" style="margin-top:16px"><span class="ic">⊘</span><div class="bd">' +
+      '置灰不构成校验。可执行动作清单由服务端每次读取时返回（available_actions），未登录或越权直接调用写接口一律在服务端拒绝。' +
     '</div></div>' +
-    chartCard(p, 'pool') +
-    chartCard(p, 'fin');
+    '<div style="margin-top:14px;font-size:var(--fs-xs);color:var(--ink-4);line-height:1.7">' +
+      '深链锚点 <span class="n">project/' + p.id + '</span><br>' +
+      '动作锚点 <span class="n">?action=pledge / withdraw / publish / redeem</span>' +
+    '</div>' +
+  '</div></div>';
 
-  /* ---- L4 抵押物明细 ---- */
-  var l4 = '<div class="card"><div class="ch"><h2><span class="lvl">L4</span>抵押物明细</h2>' +
-    '<div style="font-size:12.5px;color:var(--ink-3)">共 ' + p.tokens.length + ' 张 · 全量展示，不脱敏、不区间化、不限行数</div></div>' +
+  /* ---- 第三层 · 次级视图 ---- */
+  var tab = state.tab || 'collateral';
+  var tabsBar = '<div class="tabs" role="tablist">' +
+    [['collateral','抵押物明细', p.tokens.length + ' 张'],
+     ['history','历史融资记录', (p.events.length + p.deals.length) + ' 条'],
+     ['terms','商务条款与公开范围', '']].map(function(t){
+      return '<button role="tab" aria-selected="' + (tab === t[0]) + '" onclick="setTab(\'' + t[0] + '\')">' +
+        t[1] + (t[2] ? '<span class="cnt">' + t[2] + '</span>' : '') + '</button>';
+    }).join('') + '</div>';
+
+  var tabBody = tab === 'history' ? tabHistory(p) : tab === 'terms' ? tabTerms(p) : tabCollateral(p, d);
+
+  return crumb + head +
+    shortAlert(p, d, own) + usedUpNote(d) + (own ? redeemBanner() : '') +
+    strip +
+    '<div style="height:26px"></div>' +
+    '<div class="sec-grid"><div>' + flow + chartPairCard(p) + '</div>' +
+    '<aside class="rail">' + rail + '</aside></div>' +
+    '<div style="height:20px"></div>' +
+    '<div class="card">' + tabsBar + tabBody + '</div>';
+}
+
+function kvCell(k, v, code, x, crit){
+  return '<div><div class="k">' + esc(k) + '<span class="tag plain">' + code + '</span></div>' +
+    '<div class="v"' + (crit ? ' style="color:var(--st-crit)"' : '') + '>' + v + '</div>' +
+    '<div class="x">' + esc(x) + '</div></div>';
+}
+function setTab(t){ state.tab = t; render(); }
+
+/* ---- 次级视图 1：抵押物明细（L4，全量、不脱敏、不区间化、不限行数） ---- */
+function tabCollateral(p, d){
+  return '<div class="cb tight"><div class="tscroll"><table class="dt"><thead><tr>' +
+    '<th>代币编号</th><th class="n">美元金额</th><th>底层账期</th><th>买方企业名</th><th>合同号 / 发票号</th>' +
+    '<th>质押状态</th><th>是否计入担保</th><th>链上状态</th><th>入池交易哈希</th></tr></thead><tbody>' +
+    (p.tokens.length ? p.tokens.map(function(t){
+      return '<tr><td class="n">' + t.id + '</td><td class="n">' + amt(t.amt) + '</td><td class="n">' + t.due + '</td>' +
+        '<td>' + esc(t.buyer) + '</td><td class="n">' + t.contract + ' / ' + t.invoice + '</td>' +
+        '<td>' + tag('mute','PS-2 已质押') + '</td>' +
+        '<td>' + (t.dead ? tag('warn','不计入 · ' + (t.deadAt||'') + ' 失效') : tag('good','计入担保', true)) + '</td>' +
+        '<td>' + tag(CT_STATUS[t.ct].tone, t.ct + ' ' + CT_STATUS[t.ct].t, true) + '</td>' +
+        '<td class="n" style="color:var(--ink-4)">' + shortHash(t.hash) + '</td></tr>';
+    }).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--ink-3);padding:30px">本项目暂无有效质押</td></tr>') +
+  '</tbody></table></div></div>' +
+  '<div class="cb t0"><div class="note quiet"><span class="ic">i</span><div class="bd">' +
+    '全量公开的范围是广场上展示的融资需求与融资业务信息；<b>不含</b>授信额度、他人控制台数据、运营端诊断字段、附件影像件与联系人联系方式。' +
+    '<p>客观记录：买方企业名、合同号、发票号与精确金额对公网访客完全公开，涉及第三方权益，而确权流程目前没有"同意公开"授权环节。' +
+    '按需求方裁定执行，配套的接口速率限制与异常抓取识别见分册第 8 章。</p></div></div></div>';
+}
+
+/* ---- 次级视图 2：历史融资记录（列表，不用时间线） ---- */
+function tabHistory(p){
+  var d = derive(p);
+  var evRows = d.pts.filter(function(q){ return q.ev; }).slice().reverse().map(function(q){
+    return '<tr><td class="n">' + q.d + '</td><td style="font-weight:550">' + esc(q.ev.t) + '</td>' +
+      '<td class="n">' + amt(q.valid) + '</td><td class="n">' + amt(q.cap) + '</td>' +
+      '<td class="n">' + amt(q.bal) + '</td><td class="n">' + amt(q.fly) + '</td>' +
+      '<td class="wrap2" style="color:var(--ink-3);font-size:var(--fs-sm);max-width:360px">' +
+        (q.ev.note ? esc(q.ev.note) : '—') + '</td></tr>';
+  }).join('');
+  var dealRows = p.deals.length ? p.deals.map(function(x){
+    return '<tr><td class="n">' + x.id + '</td><td class="n">' + amt(x.amt) + '</td><td>' + tag('plain', x.st) + '</td>' +
+      '<td class="n">' + x.at + '</td><td class="wrap2" style="color:var(--ink-3);font-size:var(--fs-sm)">' + esc(x.x) + '</td></tr>';
+  }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--ink-3);padding:26px">本项目暂无融资业务记录</td></tr>';
+
+  return '<div class="cb"><div style="font-size:var(--fs-sm);color:var(--ink-2);font-weight:650;margin-bottom:10px">' +
+      '融资业务<span style="font-weight:400;color:var(--ink-3);margin-left:8px">本模块只读引用，写在 WS-325 及之后</span></div></div>' +
     '<div class="cb tight"><div class="tscroll"><table class="dt"><thead><tr>' +
-      '<th>代币编号</th><th class="n">美元金额</th><th>底层账期</th><th>买方企业名</th><th>合同号 / 发票号</th>' +
-      '<th>质押状态</th><th>是否计入担保</th><th>链上状态</th><th>入池交易哈希</th></tr></thead><tbody>' +
-      (p.tokens.length ? p.tokens.map(function(t){
-        return '<tr><td class="n">' + t.id + '</td><td class="n">' + amt(t.amt) + '</td><td class="n">' + t.due + '</td>' +
-          '<td>' + esc(t.buyer) + '</td><td class="n">' + t.contract + ' / ' + t.invoice + '</td>' +
-          '<td>' + tag('mute','PS-2 已质押') + '</td>' +
-          '<td>' + (t.dead ? tag('warn','不计入担保 · ' + (t.deadAt||'') + ' 失效') : tag('good','计入担保', true)) + '</td>' +
-          '<td>' + tag(CT_STATUS[t.ct].tone, t.ct + ' ' + CT_STATUS[t.ct].t, true) + '</td>' +
-          '<td class="n" style="color:var(--ink-3)">' + shortHash(t.hash) + '</td></tr>';
-      }).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--ink-3);padding:28px">本项目暂无有效质押</td></tr>') +
-    '</tbody></table></div></div>' +
-    '<div class="cb" style="padding-top:14px"><div class="note"><span class="ic">i</span><div class="bd">' +
-      '全量公开的范围是广场上展示的融资需求与融资业务信息；<b>不含</b>授信额度、他人控制台数据、运营端诊断字段、附件影像件与联系人联系方式。' +
-      '<p>客观记录：买方企业名、合同号、发票号与精确金额对公网访客完全公开，涉及第三方权益，而确权流程目前没有"同意公开"授权环节。' +
-      '按需求方裁定执行，配套的接口速率限制与异常抓取识别见分册第 8 章。</p>' +
-    '</div></div></div></div>';
+      '<th>融资业务编号</th><th class="n">金额</th><th>状态</th><th class="n">发生日</th><th>说明</th>' +
+    '</tr></thead><tbody>' + dealRows + '</tbody></table></div></div>' +
+    '<div class="cb" style="padding-top:26px"><div style="font-size:var(--fs-sm);color:var(--ink-2);font-weight:650;margin-bottom:10px">' +
+      '项目事件与派生量变化<span style="font-weight:400;color:var(--ink-3);margin-left:8px">每一行就是两张图上的一级台阶</span></div></div>' +
+    '<div class="cb tight"><div class="tscroll"><table class="dt"><thead><tr>' +
+      '<th>日期</th><th>事件</th><th class="n">有效质押价值</th><th class="n">融资上限</th>' +
+      '<th class="n">项目融资余额</th><th class="n">项目在途金额</th><th>依据</th>' +
+    '</tr></thead><tbody>' + evRows + '</tbody></table></div></div>';
+}
 
-  /* ---- L5 商务条款与历史融资记录 ---- */
-  var snap = p.snapshot ? '<div class="card"><div class="ch"><h2>报价时的池快照</h2>' +
-      '<p>' + p.snapshot.at + ' · ' + TZ_LABEL + '</p></div><div class="cb">' +
-      '<div class="kv c2">' +
-        '<div><div class="k">快照时抵押物</div><div class="v">' + p.snapshot.tokens + ' 张</div></div>' +
-        '<div><div class="k">快照时有效质押价值</div><div class="v">' + amt(p.snapshot.valid) + '</div></div>' +
-        '<div><div class="k">快照时融资上限</div><div class="v">' + amt(p.snapshot.cap) + '</div></div>' +
-        '<div><div class="k">快照时可融金额</div><div class="v">' + amt(p.snapshot.free) + '</div></div>' +
-      '</div>' +
-      '<div class="note" style="margin-top:12px"><span class="ic">⇄</span><div class="bd">' +
-        '与<b>实时池况</b>并列：当前有效质押价值 <span class="n">' + amt(d.valid) + '</span>、融资上限 <span class="n">' + amt(d.cap) + '</span>。' +
-        '池子既可增也可减，机构必须能看到"我报价时池子是什么样"；池值下降到触发预警时会同时通知在途报价机构。' +
-      '</div></div></div></div>' : '';
-
-  var l5 = '<div class="card"><div class="ch"><h2><span class="lvl">L5</span>商务条款与历史融资记录</h2></div><div class="cb">' +
+/* ---- 次级视图 3：商务条款与公开范围（L5） ---- */
+function tabTerms(p){
+  return '<div class="cb">' +
     (p.terms ? '<div class="kv c4">' +
       '<div><div class="k">报价利率</div><div class="v txt">' + esc(p.terms.rate) + '</div></div>' +
       '<div><div class="k">融资期限</div><div class="v txt">' + esc(p.terms.term) + '</div></div>' +
       '<div><div class="k">还款方式</div><div class="v txt">' + esc(p.terms.repay) + '</div></div>' +
       '<div><div class="k">资金用途</div><div class="v txt">' + esc(p.terms.use) + '</div></div>' +
-    '</div>' : '<div class="note"><span class="ic">○</span><div class="bd">该项目当前无公开的在途业务商务条款。</div></div>') +
-    '<div style="height:20px"></div>' +
-    '<h3 style="font-size:13.5px;font-weight:650;margin-bottom:12px">历史时间线</h3>' +
-    '<div class="tl">' + d.pts.filter(function(q){ return q.ev; }).slice().reverse().map(function(q, i){
-      return '<div class="it' + (i===0?' on':'') + '"><div class="d">' + q.d + '</div><div class="t">' + esc(q.ev.t) + '</div>' +
-        (q.ev.note ? '<div class="x">' + esc(q.ev.note) + '</div>' : '') + '</div>';
-    }).join('') + '</div>' +
-    (p.deals.length ? '<div style="height:20px"></div><h3 style="font-size:13.5px;font-weight:650;margin-bottom:10px">融资业务（本模块只读引用，写在 WS-325 及之后）</h3>' +
-      '<div class="tscroll"><table class="dt"><thead><tr><th>融资业务编号</th><th class="n">金额</th><th>状态</th><th class="n">发生日</th><th>说明</th></tr></thead><tbody>' +
-      p.deals.map(function(x){
-        return '<tr><td class="n">' + x.id + '</td><td class="n">' + amt(x.amt) + '</td><td>' + tag('plain', x.st) + '</td>' +
-          '<td class="n">' + x.at + '</td><td style="color:var(--ink-2)">' + esc(x.x) + '</td></tr>';
-      }).join('') + '</tbody></table></div>' : '') +
-  '</div></div>';
-
-  /* ---- L6 操作区：按 available_actions 渲染，不自行依据状态推断 ---- */
-  var rail = '<div class="card"><div class="ch"><h2><span class="lvl">L6</span>操作区</h2>' +
-    '<p>当前身份：' + esc(ACTORS[state.role].full) + '</p></div><div class="cb">' +
-    '<div style="display:flex;flex-direction:column;gap:12px">' +
-      acts.map(function(a){
-        return '<div>' + actionBtn(a, actionHandler(p, a) , 'block') + '</div>';
-      }).join('') +
+    '</div>' : '<div class="note quiet"><span class="ic">○</span><div class="bd">该项目当前无公开的在途业务商务条款。</div></div>') +
+    '<div style="height:24px"></div>' +
+    '<div class="kv c2">' +
+      '<div><div class="k">融资需求币种</div><div class="v txt">' + CCY + '<span style="font-weight:400;color:var(--ink-3);font-size:var(--fs-sm)"> · 本期固定，只读；结算币种在报价环节确定</span></div></div>' +
+      '<div><div class="k">有效期</div><div class="v txt">' + (p.expiresAt || '—') +
+        '<span style="font-weight:400;color:var(--ink-3);font-size:var(--fs-sm)"> · 首次发布日 + ' + TERM_YEARS + ' 年，只读、不可编辑、不可延期</span></div></div>' +
     '</div>' +
-    '<div class="note" style="margin-top:16px;font-size:12.5px"><span class="ic">⊘</span><div class="bd">' +
-      '置灰不构成校验。可执行动作清单由服务端每次读取时返回，未登录或越权直接调用写接口一律在服务端拒绝。' +
+    '<div style="height:24px"></div>' +
+    '<div class="note quiet"><span class="ic">↗</span><div class="bd">' +
+      '<b>对外契约（H-01 ～ H-05）</b>：项目编号即广场上这条融资需求的编号，全局唯一、终身稳定，不另发号；' +
+      '本页锚点 <span class="n">project/' + p.id + '</span>，动作锚点 <span class="n">?action=pledge / withdraw / publish / redeem</span>；' +
+      '可执行动作清单由服务端返回，前端不自行依据状态推断；六个派生量、担保状态档位、质押四态与链上转移状态均由本模块权威输出，控制台只读引用。' +
     '</div></div>' +
-    '<div style="margin-top:14px;font-size:11.5px;color:var(--ink-3);line-height:1.7;border-top:1px solid var(--line);padding-top:12px">' +
-      '本页深链锚点：<span class="n">project/' + p.id + '</span><br>' +
-      '动作锚点：<span class="n">?action=pledge / withdraw / publish / redeem</span>' +
-    '</div>' +
-  '</div></div>';
-
-  return crumb + hero + shortAlert(p, d, state.role === 'asset' && p.entity === ACTORS.asset.entity) + usedUpNote(d) +
-    (state.role === 'asset' && p.entity === ACTORS.asset.entity ? redeemBanner() : '') +
-    '<div class="sec-grid"><div>' + l3 + l4 + l5 + '</div><aside class="rail">' + rail + snap + '</aside></div>';
+  '</div>';
 }
 
 function actionHandler(p, a){

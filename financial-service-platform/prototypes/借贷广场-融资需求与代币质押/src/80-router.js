@@ -7,7 +7,7 @@
 
 var state = {
   role:'guest', page:'plaza', id:null, action:null, step:null, from:null, panel:null,
-  feed:'ok', sort:'pub', pageNo:1,
+  feed:'ok', sort:'pub', pageNo:1, tab:'collateral',
   filters:JSON.parse(JSON.stringify(F_DEFAULT)),
   wiz:{ pid:null, name:'', sel:{}, amount:'', amtErr:null, result:null, wsel:{}, busy:false }
 };
@@ -32,6 +32,7 @@ function go(page, params){
   state.step  = params.step || null;
   state.from  = params.from || null;
   state.panel = (params.action === 'pledge') ? 'pledge' : null;
+  if(!('tab' in params)) state.tab = 'collateral';
   if(page === 'publish' && !state.id) resetWiz();
   if(page !== 'publish'){ state.wiz.result = null; state.wiz.amtErr = null; }
   syncHash(); render(); window.scrollTo(0, 0);
@@ -59,7 +60,7 @@ function readHash(){
   var qi = h.indexOf('?'), path = qi >= 0 ? h.slice(0, qi) : h, qs = qi >= 0 ? h.slice(qi+1) : '';
   var q = {}; qs.split('&').forEach(function(kv){ var p = kv.split('='); if(p[0]) q[p[0]] = p[1]; });
   var seg = path.split('/');
-  state.step = null; state.panel = null; state.wiz.result = null; state.wiz.amtErr = null;
+  state.step = null; state.panel = null; state.tab = 'collateral'; state.wiz.result = null; state.wiz.amtErr = null;
   if(seg[0] === 'project'){
     if(seg[1] === 'new'){ state.page = 'publish'; state.id = null; resetWiz(); }
     else {
