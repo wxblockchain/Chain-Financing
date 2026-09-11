@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh" data-end="asset">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financial Service Platform · Disbursement and financing confirmation</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>/* Hallmark · pre-emit critique: P5 H5 E4 S5 R4 V4
+   只放本模块专有的组合。token 与公共组件一律来自 _shared，此处不重定义、不覆盖。
+   继承端别：面客端 asset　继承 shell：portal（顶栏导航 + subnav，无侧栏）
+   继承母版：4.3 顶栏母版（金融服务端登录）＋ 4.2 公开层内容节奏
+   继承模块：WS-324 借贷广场原型 v1.2.2 / WS-325 授信报价与接受拒绝 v1.0
+             —— 下面第一段是它们共用的模块作用域类，类名一字不改，第三份拷贝。
+             上收 base.css 做成面客档位修饰类的那件事记在 README §5.1，本轮不做：
+             它影响两个已交付模块，应单独一轮做完再回归。
+
+   本模块的招牌件（前两个模块没有、这里新造的六个）：
+     .ln-cd     融资确认时限条 —— 与 .cq-cd 同形不同口径：到点只提醒、不改状态，
+                超期态走中性灰而不是 warn（D-LN-03 / D-LN-19 / AC-LN-13）
+     .ln-xfer   四量转移牌 —— AC-FIN-25 / AC-FIN-30 的页面形态：两个维度四个量，
+                一个时刻、原子、无空档；放款那一列全是「不变」（D-LN-07）
+     .ln-verify 盖章件核验区 —— 左件右摘要同屏比对，历史版本可切换（AC-LN-03 / D-LN-23）
+     .ln-disp   三处置动作牌 —— 暂不放款 / 要求重传 / 终止，各给后果与能不能回到放款（DEP-14）
+     .ln-mark   中性标记条 —— 已暂缓 / 待重传 / 已超期 / 已到期存量处理中一律中性（AC-LN-13）
+     .ln-mail   客服邮箱卡 —— 本期异议的唯一入口，是功能点不是提示（D-LN-34 / F-LS-49）
+   ========================================================================== */
+
+/* ============================================================
+   第一段：继承自 WS-324 / WS-325 模块作用域的版式（面客公开页档位）
+   base.css 的 .page-title 19px / body 13.5px 是管理端控制台档位；
+   面客页在参考件里是 body 14.5px、详情标题 ~42px、卡片标题 15px。
+   全部是模块作用域的组合类，不重定义 token、不覆盖公共组件。
+   ============================================================ */
+.portal-wrap{font-size:14.5px;line-height:1.55}
+.portal-wrap table.tbl{font-size:13px}
+.portal-wrap .card-head span{font-size:12.5px}
+.ls-back{margin-bottom:var(--sp-5)}
+.ls-phead{display:flex;align-items:flex-start;gap:var(--sp-5);margin-bottom:var(--sp-6)}
+.ls-phead .tile{
+  width:56px;height:56px;border-radius:16px;flex:none;background:var(--accent-soft);
+  border:1px solid var(--accent-border);display:grid;place-items:center;font-size:22px;margin-top:6px;
+}
+.ls-phead .body{flex:1;min-width:0}
+.ls-phead .kick{font-size:12.5px;color:var(--faint);margin:0 0 4px;letter-spacing:.01em}
+.ls-phead .kick .mono{color:var(--muted)}
+.ls-phead h1{margin:0;font-size:clamp(26px,2.7vw,42px);font-weight:740;letter-spacing:-.03em;line-height:1.1}
+.ls-phead h1 em{font-style:normal;color:var(--faint);font-weight:600;margin-left:12px;font-size:.62em}
+.ls-phead .amt{text-align:right;flex:none;padding-top:10px}
+.ls-phead .amt .k{font-size:12.5px;color:var(--faint)}
+.ls-phead .amt .v{
+  font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(26px,2.4vw,38px);
+  font-weight:700;letter-spacing:-.035em;line-height:1.06;margin-top:3px;
+}
+.ls-phead .amt .cy{font-size:14px;color:var(--faint);font-weight:500;margin-left:6px}
+.ls-phead .amt .x{font-size:12px;color:var(--faint);margin-top:6px}
+.ls-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-4)}
+.ls-tags .pill{height:28px;padding:0 12px;font-size:12.5px;border-radius:var(--radius-pill)}
+.card-head b{font-size:15px}
+.note .ls-b{font-weight:700;display:inline}
+.note{font-size:12.5px;line-height:1.6}
+.ls-alert{margin-bottom:var(--sp-5)}
+.ls-kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--sp-4) var(--sp-5)}
+.ls-kgrid .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ls-kgrid .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:640;margin-top:4px}
+.ls-kgrid .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+.ls-fold{border-top:1px solid var(--border);margin-top:var(--sp-5)}
+.ls-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 0;
+  font-size:12.5px;color:var(--muted);font-weight:620}
+.ls-fold>summary::-webkit-details-marker{display:none}
+.ls-fold>summary:hover{color:var(--accent)}
+.ls-fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-xs)}
+.ls-fold>summary .ca{font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);display:inline-block;
+  transition:transform var(--dur-fast) var(--ease-out)}
+.ls-fold[open]>summary .ca{transform:rotate(90deg)}
+.ls-fold>summary .n{margin-left:auto;font-size:var(--fs-11);color:var(--faint);font-weight:400}
+.ls-fold .fb{padding:2px 0 var(--sp-5)}
+.ls-why{display:flex;gap:6px;margin-top:6px;font-size:11px;color:var(--faint);line-height:1.5}
+.ls-why .sg{flex:none}
+.btn.blocked{background:var(--card-2);border-style:dashed;color:var(--faint);cursor:not-allowed}
+.btn.blocked:hover{background:var(--card-2)}
+.ls-pick{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;padding:11px 14px;background:var(--card-2);
+  border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px}
+.ls-pick.bad{background:var(--danger-bg);border-color:var(--danger-border)}
+.ls-pick .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:660;font-size:13.5px}
+.ls-pick .sp{width:1px;height:18px;background:var(--border-strong)}
+.ls-ro{min-height:var(--ctrl-h);display:flex;align-items:center;padding:0 12px;border:1px dashed var(--border-strong);
+  border-radius:var(--radius-sm);background:var(--card-2);font-family:var(--mono);color:var(--muted);font-size:12.5px}
+.ls-tbl tbody td{padding:16px 12px}
+.ls-tbl thead th{padding:11px 12px}
+.ls-tbl .cell-sub{font-size:11px;margin-top:3px}
+.skel-row{padding:14px 0;border-bottom:1px solid var(--border)}
+.skel-row:last-child{border-bottom:0}
+
+/* —— 继承自 WS-325 的两件，本模块同构复用，类名不改 —— */
+/* 闸门牌：本模块用它呈现「担保闸门挡住放款、但挡不住三个处置动作」（AC-LN-08） */
+.cq-gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:var(--sp-4)}
+.cq-gate{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:14px}
+.cq-gate.pass{border-color:var(--ok-border);background:var(--ok-bg)}
+.cq-gate.fail{border-color:var(--danger-border);background:var(--danger-bg)}
+.cq-gate.soft{border-color:var(--warn-border);background:var(--warn-bg)}
+.cq-gate .gh{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:660;color:var(--text)}
+.cq-gate .gh .st{margin-left:auto;font-size:var(--fs-10);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.cq-gate.pass .gh .st{color:var(--ok)}
+.cq-gate.fail .gh .st{color:var(--danger)}
+.cq-gate.soft .gh .st{color:var(--warn)}
+.cq-gate .fm{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.6;
+  overflow-wrap:anywhere}
+.cq-gate .fm b{color:var(--text);font-weight:640}
+.cq-gate .who{font-size:11.5px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);
+  color:var(--muted);line-height:1.55}
+.cq-gate .who b{font-weight:660;color:var(--text)}
+/* 手续费差额条：WS-325 在接受前用它告知，本模块在确认页接住它（D-FIN-103 / R-LS-29） */
+.cq-fee{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:var(--sp-3);
+  border:1px solid var(--warn-border);background:var(--warn-bg);border-radius:var(--radius-sm);padding:14px}
+.cq-fee .c .k{font-size:var(--fs-10);color:#8A5D10;letter-spacing:.05em;text-transform:uppercase}
+.cq-fee .c .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:19px;font-weight:680;
+  letter-spacing:-.02em;margin-top:4px;color:var(--text)}
+.cq-fee .c .v.unknown{font-family:var(--sans);font-size:14px;font-weight:620;color:var(--warn);letter-spacing:0}
+.cq-fee .c .x{font-size:11px;color:#8A5D10;margin-top:4px;line-height:1.5}
+.cq-fee .op{font-family:var(--mono);color:var(--warn);font-size:var(--fs-16)}
+@media (max-width:760px){
+  .cq-fee{grid-template-columns:1fr;gap:var(--sp-2)}
+  .cq-fee .op{display:none}
+}
+/* 商务条款摘要：核验区右半与确认页第二区共用（D-FIN-87 九项） */
+.cq-sum{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elev)}
+.cq-sum .sh{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border);
+  font-size:12.5px;font-weight:660}
+.cq-sum .sh .no{margin-left:auto;font-size:var(--fs-10);font-weight:600;color:var(--warn);
+  border:1px solid var(--warn-border);background:var(--warn-bg);border-radius:var(--radius-xs);padding:2px 7px}
+.cq-sum .sb{padding:13px 14px}
+.cq-sum .kk{display:flex;justify-content:space-between;gap:16px;font-size:12.5px;padding:7px 0;
+  border-bottom:1px dashed var(--border)}
+.cq-sum .kk:last-child{border-bottom:0}
+.cq-sum .kk s{text-decoration:none;color:var(--muted);flex:none}
+.cq-sum .kk b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:640;text-align:right;
+  overflow-wrap:anywhere}
+
+/* ============================================================
+   第二段：本模块的招牌件
+   ============================================================ */
+
+/* —— 招牌件 A：融资确认时限条（D-LN-17 / D-LN-32 / FD-26 / FD-27）——
+   与 WS-325 的 .cq-cd 同形，口径刻意不同，文案一律写全称「融资确认时限」：
+   报价 7 天到点即失效；确认 7 天到点只提醒，状态、额度、权限一个不动。
+   因此本条的超期态走中性灰（.over），不是 warn —— 超期不是告警（AC-LN-13）。 */
+.ln-cd{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:14px}
+.ln-cd.soon{border-color:var(--warn-border);background:var(--warn-bg)}
+.ln-cd.over{border-color:var(--border-strong);background:var(--gray-bg)}
+.ln-cd .by{font-size:12.5px;line-height:1.6;color:var(--muted)}
+.ln-cd .by b{color:var(--text);font-weight:660}
+.ln-cd .big{display:flex;align-items:baseline;gap:4px 8px;margin-top:9px;flex-wrap:wrap}
+.ln-cd .big .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;
+  letter-spacing:-.03em;line-height:1.05;color:var(--text);white-space:nowrap}
+.ln-cd.soon .big .v{color:var(--warn)}
+.ln-cd.over .big .v{color:var(--gray-fg)}
+.ln-cd .big .u{font-size:12px;color:var(--faint)}
+.ln-cd .bar{display:flex;height:9px;margin-top:11px;border-radius:5px;overflow:hidden;
+  background:var(--track);border:1px solid var(--border)}
+.ln-cd .bar .el{background:rgba(139,148,166,.28)}
+.ln-cd .bar .rm{background:var(--accent)}
+.ln-cd.soon .bar .rm{background:var(--warn)}
+.ln-cd.over .bar .rm{background:var(--border-strong)}
+.ln-cd .scale{display:flex;justify-content:space-between;gap:12px;font-size:var(--fs-10);color:var(--faint);margin-top:5px}
+.ln-cd .scale b{font-family:var(--mono);color:var(--muted);font-weight:620}
+.ln-cd .ways{margin-top:11px;padding-top:10px;border-top:1px solid var(--border);font-size:11.5px;line-height:1.6}
+.ln-cd .ways .w{display:flex;gap:7px;color:var(--muted)}
+.ln-cd .ways .w+.w{margin-top:5px}
+.ln-cd .ways .w i{flex:none;font-style:normal;font-family:var(--mono);color:var(--faint)}
+.ln-cd .ways .w b{color:var(--text);font-weight:660}
+
+/* —— 招牌件 B：四量转移牌（AC-FIN-25 / AC-FIN-30 / D-LN-07）——
+   两个维度、四个量、一个时刻。左列是放款时刻（四个「不变」），右列是确认时刻。
+   「同一次结算」的括号横跨两行，表示原子：中间没有任何可观察的中间态。 */
+.ln-xfer{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elev);overflow:hidden}
+.ln-xfer .xh{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border);
+  font-size:12.5px;font-weight:660;background:var(--card-2)}
+.ln-xfer .xh .at{margin-left:auto;font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);font-weight:600}
+.ln-xfer .dim{padding:12px 14px}
+.ln-xfer .dim+.dim{border-top:1px solid var(--border)}
+.ln-xfer .dim>.dn{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ln-xfer .qr{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:var(--sp-3);margin-top:9px}
+.ln-xfer .q{border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2);padding:10px 11px}
+.ln-xfer .q.out{border-color:var(--border-strong)}
+.ln-xfer .q.in{border-color:var(--accent-border);background:var(--accent-soft)}
+.ln-xfer .q .nm{font-size:12px;font-weight:660}
+.ln-xfer .q .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-16);
+  font-weight:660;margin-top:6px;letter-spacing:-.02em}
+.ln-xfer .q .v s{text-decoration:line-through;color:var(--faint);font-weight:500;margin-right:7px}
+.ln-xfer .q .x{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+.ln-xfer .ar{font-family:var(--mono);color:var(--accent);font-size:var(--fs-19);text-align:center}
+.ln-xfer .xf{padding:11px 14px;border-top:1px solid var(--border);background:var(--card-2);
+  font-size:11.5px;color:var(--muted);line-height:1.6}
+.ln-xfer .xf b{color:var(--text);font-weight:660}
+.ln-xfer.still .q{background:var(--card-2);border-color:var(--border)}
+.ln-xfer.still .ar{color:var(--faint)}
+@media (max-width:720px){
+  .ln-xfer .qr{grid-template-columns:1fr}
+  .ln-xfer .ar{transform:rotate(90deg)}
+}
+
+/* —— 招牌件 C：盖章件核验区（AC-LN-03 / D-LN-20 / D-LN-23）——
+   左件右摘要，同屏可比对；不要求机构下载后自行对照。没有「核验通过」按钮。 */
+.ln-verify{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--sp-5)}
+@media (max-width:900px){ .ln-verify{grid-template-columns:minmax(0,1fr)} }
+.ln-doc{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elev);
+  display:flex;flex-direction:column;min-height:100%}
+.ln-doc .dh{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border);
+  font-size:12.5px;font-weight:660}
+.ln-doc .dh .v{margin-left:auto;font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);font-weight:600}
+.ln-doc .pv{flex:1;margin:14px;border:1px dashed var(--border-strong);border-radius:var(--radius-xs);
+  background:repeating-linear-gradient(135deg,var(--card-2) 0 9px,var(--bg-elev) 9px 18px);
+  display:grid;place-items:center;text-align:center;padding:26px 16px;min-height:188px}
+.ln-doc .pv .ic{font-size:26px;color:var(--faint)}
+.ln-doc .pv b{display:block;font-size:12.5px;margin-top:9px;overflow-wrap:anywhere}
+.ln-doc .pv span{display:block;font-size:11px;color:var(--faint);margin-top:5px;line-height:1.6}
+.ln-doc .df{padding:0 14px 13px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ln-vers{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 12px}
+.ln-vers button{appearance:none;font:inherit;cursor:pointer;border:1px solid var(--border-strong);
+  background:var(--bg-elev);color:var(--muted);border-radius:var(--radius-pill);padding:4px 11px;
+  font-size:11.5px;transition:background var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out)}
+.ln-vers button:hover{background:var(--card-hover);color:var(--text)}
+.ln-vers button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ln-vers button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent-border);color:var(--accent);font-weight:640}
+
+/* —— 招牌件 D：三处置动作牌（DEP-14 / AC-LN-07 / AC-LN-08）——
+   三张并列、各自可独立执行。担保不足时它们照常可用 —— 把三者一起置灰会制造死局。 */
+.ln-disp{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:var(--sp-4)}
+.ln-disp .d{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);
+  padding:14px;display:flex;flex-direction:column}
+.ln-disp .d.end{border-color:var(--danger-border);background:var(--danger-bg)}
+.ln-disp .d .dt{font-size:13.5px;font-weight:680}
+.ln-disp .d .dx{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:7px;flex:1}
+.ln-disp .d .dx b{color:var(--text);font-weight:640}
+.ln-disp .d .back{font-size:11px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);color:var(--muted)}
+.ln-disp .d .back b{color:var(--text);font-weight:660}
+.ln-disp .d .btn{margin-top:11px}
+
+/* —— 招牌件 E：中性标记条（FD-20 / FD-21 / FD-25 / D-FIN-47 / AC-LN-13）——
+   已暂缓放款 · 待资产方重传 · 已超过确认时限 · 已到期存量处理中：
+   四个标记一律中性灰，不用告警色、不用警示图标。它们不是坏消息，是状态说明。 */
+.ln-mark{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm);background:var(--gray-bg);padding:12px 14px}
+.ln-mark+.ln-mark{margin-top:var(--sp-3)}
+.ln-mark .tg{flex:none;font-size:var(--fs-10);font-weight:700;letter-spacing:.04em;color:var(--gray-fg);
+  border:1px solid var(--border-strong);background:var(--bg-elev);border-radius:var(--radius-xs);padding:3px 8px;
+  margin-top:1px}
+.ln-mark .bd{flex:1;min-width:0;font-size:12.5px;line-height:1.6;color:var(--muted)}
+.ln-mark .bd b{color:var(--text);font-weight:660}
+.ln-mark .bd .mt{font-size:11px;color:var(--faint);margin-top:4px}
+
+/* —— 招牌件 F：客服邮箱卡（D-LN-34 / D-LN-35 / F-LS-49）——
+   本期异议的唯一入口。与动作区并排，不是页脚小字；可一键复制，附融资业务编号。 */
+.ln-mail{border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);padding:15px 16px}
+.ln-mail .mh{font-size:13.5px;font-weight:680}
+.ln-mail .ad{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:11px;
+  border:1px dashed var(--accent-border);background:var(--bg-elev);border-radius:var(--radius-xs);padding:9px 12px}
+.ln-mail .ad .em{font-family:var(--mono);font-size:13px;font-weight:640;overflow-wrap:anywhere}
+.ln-mail .ad .btn{margin-left:auto}
+.ln-mail p{margin:11px 0 0;font-size:11.5px;color:var(--muted);line-height:1.6}
+.ln-mail p b{color:var(--text);font-weight:640}
+
+/* —— 发放时间 / 提交时间并列（LN-05 vs LN-06，D-FIN-21）——
+   两格必须并排且各自标注来源：左边是提交方填的，右边是服务端记的，时效只认右边。 */
+.ln-pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(236px,1fr));gap:var(--sp-4)}
+.ln-pair .t{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:12px 13px}
+.ln-pair .t.auth{border-color:var(--accent-border);background:var(--accent-soft)}
+.ln-pair .t .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ln-pair .t .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-16);font-weight:660;margin-top:5px}
+.ln-pair .t .src{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.55}
+.ln-pair .t .src b{color:var(--text);font-weight:640}
+
+/* —— 交易哈希 + 链 + 区块浏览器（LN-08 / LN-09 / LN-13 / D-LN-11 / AC-LN-02）——
+   链接常驻「平台未核验」。这块不允许出现任何「已核验 / 已上链确认 / 交易有效」的形态。 */
+.ln-hash{border:1px solid var(--hash-border);background:var(--hash-bg);border-radius:var(--radius-sm);padding:13px 14px}
+.ln-hash .hv{font-family:var(--mono);font-size:12.5px;color:var(--hash-text);overflow-wrap:anywhere;line-height:1.6}
+.ln-hash .meta{display:flex;gap:var(--sp-4);flex-wrap:wrap;margin-top:9px;font-size:11.5px;color:var(--muted)}
+.ln-hash .meta b{color:var(--text);font-weight:640}
+.ln-hash .lk{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:11px;padding-top:11px;
+  border-top:1px solid var(--hash-border)}
+.ln-hash .lk .nv{font-size:11.5px;color:var(--warn);font-weight:620}
+
+/* —— 两个 168 小时对照（D-LN-19 / AC-LN-16 / R-LS-35）——
+   同一笔业务上先后出现两个 168 小时，混称会让资产方以为不确认也会自动作废。 */
+.ln-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));gap:var(--sp-4)}
+.ln-two .c{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:13px 14px}
+.ln-two .c.now{border-color:var(--accent-border);background:var(--accent-soft)}
+.ln-two .c .nm{font-size:12.5px;font-weight:680}
+.ln-two .c .rows2{margin-top:9px;font-size:11.5px;line-height:1.6;color:var(--muted)}
+.ln-two .c .rows2 div{display:flex;gap:10px;padding:4px 0;border-bottom:1px dashed var(--border)}
+.ln-two .c .rows2 div:last-child{border-bottom:0}
+.ln-two .c .rows2 s{text-decoration:none;color:var(--faint);flex:none;width:64px}
+.ln-two .c .rows2 b{color:var(--text);font-weight:640}
+
+/* —— 放款记录只读栏（LN-01 ～ LN-14 的读值形态）—— */
+.ln-rec{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:var(--sp-4) var(--sp-5)}
+.ln-rec .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ln-rec .v{font-size:13.5px;font-weight:640;margin-top:4px;overflow-wrap:anywhere}
+.ln-rec .v.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.ln-rec .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+
+/* —— 原型注解卡：反向清单与口径说明不是产品界面的一部分。
+       标出来有两个用处：读者一眼能分清"页面本身"与"对页面的说明"，
+       AC-LN-02 的全文检索也能据此把注解排除在产品文案之外。 —— */
+.ln-annot{border-style:dashed}
+.ln-annot .card-head b{color:var(--muted);font-weight:660}
+
+/* —— 右栏窄档的修正：300px 的右栏放不下三列对照，转为单列纵排，箭头随之转向 —— */
+.portal-rail .ln-xfer .qr{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
+.portal-rail .ln-xfer .ar{transform:rotate(90deg)}
+.portal-rail .ln-xfer .q .v{font-size:var(--fs-14)}
+.portal-rail .ln-two{grid-template-columns:minmax(0,1fr)}
+
+/* —— 右栏与窄屏 —— */
+@media (max-width:980px){
+  .portal-cols{grid-template-columns:minmax(0,1fr)}
+  .portal-rail{position:static}
+}
+
+/* 公共 .btn / .inp / .check 已带 hover / focus-visible / active / disabled 全套状态，本模块不覆盖。
+   本模块唯一的自有动效是 <details> 箭头旋转与版本切换的底色过渡，统一在这里给 reduced-motion 兜底。 */
+@media (prefers-reduced-motion:reduce){
+  .ls-fold>summary .ca,.ln-vers button{transition:none}
+}
+</style>
+</head>
+<body>
+<!-- 面客顶栏版式（继承参考 4.3）。公共运行时要求的挂载点一个不少：
+     brandSub / nav / topRight / crumb / content / layers；容器用 _shared/base.css 的 .portal* 一族。
+     模块不自建菜单、不放第二套导航——状态切换走公共 stateBar，身份切换走顶栏上下文操作区。 -->
+<div class="portal" id="app" hidden>
+ <header class="portal-head">
+  <div class="brand"><div class="brand-mark">FS</div><div>
+   <div class="brand-name" data-brand>Financial Services</div>
+   <div class="brand-sub" id="brandSub"></div></div></div>
+  <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+  <div class="portal-tools" id="topRight"></div>
+ </header>
+ <div class="portal-sub"><div class="portal-sub-in" id="crumb"></div></div>
+ <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+</div>
+<div class="focus" id="focus"></div>
+<div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script src="./ln-module.js"></script>
+</body>
+</html>

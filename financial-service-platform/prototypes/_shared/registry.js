@@ -201,6 +201,30 @@
   Object.assign(CF.PAGES['P-LS-05'],{crumb:['Institution quote','机构报价']});
   Object.assign(CF.PAGES['P-LS-06'],{crumb:['Accept or decline','接受 / 拒绝报价']});
  })();
+
+ /* WS-326 借贷广场 · 放款与融资确认（同一块面客画布，与 WS-324 / WS-325 共用 portal 顶栏骨架）。
+    (1) 页面 ID 直接取 PRD 分册 6.5 给的 P-LS-07 / P-LS-08，不自造号；已占用的号段是
+        P-LS-01/02/03（WS-324）、P-LS-04/05/06（WS-325）、P-LS-90（WS-324 原型侧内部页）。
+    (2) 两页都不进顶栏主导航：放款是从融资业务深链带出来的处理页，融资确认同理，
+        按 4.3「流程页与落地页不一定进菜单」只登记 crumb。
+    (3) ENTRY 用分册 6.7.1 的新增锚点，与深链契约一致：三个处置动作**不各占锚点**（D-LN-39），
+        它们随 deal/{id}?action=disburse 一并返回；也不新增 disbursement/{id} 这一层（D-LN-40）。
+        资产方重传盖章件的锚点 deal/{id}?action=reupload_contract 落在 P-LS-07 的资产方视角。 */
+ CF.MODULES['lending-disbursement']={dir:'借贷广场-放款与融资确认',
+   file:'v1.0-借贷广场-放款与融资确认-原型.html',
+   name:['Disbursement and confirmation','借贷广场 · 放款与融资确认']};
+ (function(){
+  var pages={
+   'P-LS-07':[['Record disbursement','放款与放款凭证上传'],'/deal?action=disburse'],
+   'P-LS-08':[['Confirm receipt','确认到账'],'/deal?action=confirm_disbursement']
+  };
+  for(var id in pages){
+   CF.PAGES[id]={end:'asset',layout:'app',name:pages[id][0]};
+   CF.OWNER[id]='lending-disbursement'; CF.ENTRY[id]='#'+pages[id][1];
+  }
+  Object.assign(CF.PAGES['P-LS-07'],{crumb:['Record disbursement','放款与放款凭证上传']});
+  Object.assign(CF.PAGES['P-LS-08'],{crumb:['Confirm receipt','确认到账']});
+ })();
  CF.NAV.asset=['P-F51','P-LS-01','P-LS-90'];
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});

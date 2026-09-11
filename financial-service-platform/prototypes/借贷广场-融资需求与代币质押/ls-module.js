@@ -192,6 +192,16 @@ var PROJECTS = [
     events:[
       { d:'2026-08-12', k:'pledge',  t:'创建资产池 · 首笔质押 3 张', dTotal:1000000, note:'链上转入成功（CT-2）' },
       { d:'2026-08-14', k:'publish', t:'发布融资需求 500,000.00 USD', dFly:500000,  note:'项目在途金额 = 500,000.00 USD，可融金额 = 800,000 − 0 − 500,000 = 300,000.00 USD' },
+      /* WS-326 增量：8 月那笔业务被资金方终止后需求回到广场，9 月被重新报价。
+         终止的公开字段（时间 + 中性表述的原因）进时间线（D-LN-06 / FD-22 / FD-23）。 */
+      { d:'2026-08-15', k:'quote',     t:'收到机构报价 500,000.00 USD（FD-20260815-0041）',
+        note:'报价不新增占用（AC-FIN-23）' },
+      { d:'2026-08-16', k:'accept',    t:'资产方接受报价 · 业务转 S-FD-3 待放款',
+        note:'项目转 S-FP-4 融资中；在途报价金额不变——业务仍在途，尚未成为未偿本金（WS-325）' },
+      { d:'2026-08-18', k:'terminate', t:'资金方终止业务 FD-20260815-0041',
+        note:'终止原因（FD-22，对资产方可见、公开时中性表述）：合同主体名称与平台登记的企业主体不一致，两次沟通后未能提供更正件。' +
+             '五个后果同一次结算内生效：在途报价金额全额释放且不进授信占用额、项目在途金额不变（需求还挂着）、' +
+             '项目回 S-FP-2 募集中、质押不释放、编号保留但作废（WS-326 D-LN-24）' },
       { d:'2026-09-08', k:'quote',   t:'收到机构报价 500,000.00 USD', note:'项目转 S-FP-3 已锁定；报价不新增占用，项目在途金额不变（AC-FIN-23）' }
     ],
     terms:{ rate:'年化 7.20%（演示）', term:'150 天', repay:'到期一次性还本付息', use:'原材料采购' },
@@ -260,18 +270,56 @@ var PROJECTS = [
     owner:'中垣建材（演示）', entity:'E-ASSET-03',
     status:'S-FP-4', expired:true,
     publishedAt:'2025-08-20', expiresAt:'2026-08-20',
-    demand:null, quotes:3, assetType:'应收账款类',
+    demand:250000, quotes:3, assetType:'应收账款类',
+    /* WS-326 增量：存量业务走到「待放款」。项目已到期只是并行标记，
+       停止的是「接受新报价 / 再次发布」，存量业务照常走完（D-FIN-43 分支② / D-FIN-47）。
+       fin 是 WS-326 权威产出的公开进度，本页只读引用、不自行计算（AC-LS-105）。 */
+    fin:{ deal:'FD-20260903-0056', st:'S-FD-3', fund:'北岸融资租赁（演示）',
+          amt:250000, ccy:'USD', settle:250000, rate:8.80, acceptedAt:'2026-08-05 11:20' },
     tokens:mkTokens({ total:1500000, n:5, seed:6, due:['2026-11-30','2027-01-07','2026-12-12','2027-02-14','2026-10-28'] }),
     events:[
       { d:'2025-08-18', k:'pledge',  t:'创建资产池 · 首笔质押 5 张', dTotal:1500000 },
       { d:'2025-08-20', k:'publish', t:'发布融资需求 900,000.00 USD', dFly:900000 },
       { d:'2025-09-02', k:'quote',   t:'收到机构报价 900,000.00 USD' },
       { d:'2025-09-10', k:'fund',    t:'放款并完成融资确认', dFly:-900000, dBal:900000 },
+      { d:'2026-07-15', k:'publish', t:'再次发布融资需求 250,000.00 USD', dFly:250000,
+        note:'可融金额 1,200,000 − 900,000 − 0 ＝ 300,000.00 USD > 0，可再次发布剩余额度（6.1）' },
+      { d:'2026-08-02', k:'quote',   t:'收到机构报价 250,000.00 USD（FD-20260903-0056）' },
+      { d:'2026-08-05', k:'accept',  t:'资产方接受报价 · 业务转 S-FD-3 待放款',
+        note:'项目到期不终结在途业务：机构照常放款、资产方照常确认（WS-326 D-LN-15）' },
       { d:'2026-08-20', k:'expire',  t:'有效期到期 · 存在未结清融资业务，项目不关闭',
         note:'转「已到期 · 存量处理中」并行标记：停止接受新报价、不允许再次发布，存量走完后转 S-FP-6 并释放质押（D-FIN-43 分支②，按正常状态呈现 D-FIN-47）' }
     ],
     terms:{ rate:'年化 6.60%（演示）', term:'360 天', repay:'到期一次性还本付息', use:'工程项目垫资' },
     deals:[ { id:'FD-20250910-0012', amt:900000, st:'已到期（存量履约中）', at:'2025-09-10', x:'本期无提前还款，还本发生在项目到期后（X-LS-06）' } ]
+  },
+  /* WS-326 增量：本方（晟远科技）名下一笔已放款、待融资确认的业务。
+     加它是因为原有六个项目里没有一笔「本方 + S-FD-4」的业务，
+     L6 的「确认到账」入口就只能停在 ⊘ 上，验收不到可用态（AC-LS-103）。
+     放款与确认的权威数据在 WS-326，本页只读引用（AC-LS-105）。 */
+  {
+    id:'FP-20260624-0021', name:'华北仪器仪表应收账款池',
+    owner:'晟远科技（演示）', entity:'E-ASSET-01',
+    status:'S-FP-4', expired:false,
+    publishedAt:'2026-06-24', expiresAt:'2027-06-24',
+    demand:300000, quotes:1, assetType:'应收账款类',
+    fin:{ deal:'FD-20260902-0054', st:'S-FD-4', fund:'北岸融资租赁（演示）',
+          amt:300000, ccy:'USD', settle:300000, rate:8.35, acceptedAt:'2026-09-04 13:15',
+          lnId:'LN20260905000001', lnAt:'2026-09-05 02:10', confirmTo:'2026-09-12 02:10' },
+    tokens:mkTokens({ total:620000, n:7, seed:11,
+                      due:['2026-11-18','2026-12-26','2027-01-30','2026-10-22','2027-02-11','2026-12-04','2027-03-15'] }),
+    events:[
+      { d:'2026-06-22', k:'pledge',  t:'创建资产池 · 首笔质押 7 张', dTotal:620000 },
+      { d:'2026-06-24', k:'publish', t:'发布融资需求 300,000.00 USD', dFly:300000,
+        note:'可融金额 ＝ 496,000 − 0 − 300,000 ＝ 196,000.00 USD' },
+      { d:'2026-09-02', k:'quote',   t:'收到机构报价 300,000.00 USD（FD-20260902-0054）' },
+      { d:'2026-09-04', k:'accept',  t:'资产方接受报价 · 业务转 S-FD-3 待放款' },
+      { d:'2026-09-05', k:'disb',    t:'资金方提交放款记录 LN20260905000001 · 业务转 S-FD-4 待融资确认',
+        note:'放款时四个量一个都不动：金额要到融资确认完成才从项目在途金额转入项目融资余额（WS-326 AC-FIN-25 / D-LN-07）。' +
+             '融资确认时限自提交成功的服务端时间起算 168 小时（D-LN-31 / D-LN-32）' }
+    ],
+    terms:{ rate:'年化 8.35%（演示）', term:'150 天', repay:'到期一次性还本付息', use:'精密仪器采购' },
+    deals:[]
   },
   /* ---- 以下两条为草稿，不进广场（D-FIN-64 / AC-LS-05），仅本企业可见 ---- */
   {
@@ -533,6 +581,28 @@ function availableActions(p, role){
 
   /* --- WS-325 增量：接受 / 拒绝报价。业务已终结时不返回（不可见，不是 ⊘）。
          需求因担保不足失效时报价一并终结，该动作随之消失（D-CR-30 / AC-LS-91）。 --- */
+  /* --- WS-326 增量：放款 / 确认到账 / 重传盖章件（AC-LS-103）。
+         可用性一律由服务端返回的 available_actions 决定，前端不自行依据状态推断；
+         「不返回」与「返回但 ⊘ + 原因」是两件事：前者不可见，后者可见不可点。 --- */
+  if(p.fin){
+    var f = p.fin;
+    if(f.st === 'S-FD-3' && (role === 'fund' || guest)){
+      out.push({ key:'disburse', label:'放款', anchor:'disburse', enabled:!guest,
+                 href:lnHref('#/deal/' + f.deal + '?action=disburse'),
+                 reason: guest ? '未登录。放款动作仅对该笔业务的资金方企业主体开放；'
+                               + '本页的放款公开字段（提交时间、币种与金额）本身不因未登录而隐藏。' : '' });
+    }
+    if(f.st === 'S-FD-4' && (own || guest)){
+      out.push({ key:'confirm', label:'确认到账', anchor:'confirm_disbursement', enabled:!guest, primary:true,
+                 href:lnHref('#/deal/' + f.deal + '?action=confirm_disbursement'),
+                 reason: guest ? '未登录。融资确认仅对该项目所属企业主体开放；放款的公开字段本身是公开的。' : '' });
+    }
+    if(f.st === 'S-FD-3' && f.redo && (own || guest)){
+      out.push({ key:'reupload', label:'重传盖章件', anchor:'reupload_contract', enabled:!guest,
+                 href:lnHref('#/deal/' + f.deal + '?action=reupload_contract'),
+                 reason: guest ? '未登录。重传盖章件仅对该项目所属企业主体开放。' : '' });
+    }
+  }
   if(p.quote && st === 'S-FP-3' && (own || guest)){
     out.push({ key:'respond', label:'接受 / 拒绝报价',
                anchor:'respond_quote', enabled:!guest,
@@ -998,6 +1068,19 @@ function cqHref(hash){
   var m = (CF.MODULES || {})['lending-credit-quote'];
   return m ? '../' + m.dir + '/' + m.file + (hash || '') : '#';
 }
+/* WS-326 增量：放款与融资确认在另一个模块文件里，同样按登记表拼地址 */
+function lnHref(hash){
+  var m = (CF.MODULES || {})['lending-disbursement'];
+  return m ? '../' + m.dir + '/' + m.file + (hash || '') : '#';
+}
+/* WS-326 增量：在途业务的公开进度（FD-20260902-0054 这一类），只读引用 WS-326 的输出。
+   P-LS-01 只给进度、**不给确认时限倒计时**——广场的读者是潜在报价方，
+   他关心的是这个项目能不能报价，不是别人那笔业务还剩几天（WS-326 分册 6.5.3）。 */
+var FIN_ST = { 'S-FD-3':'待放款', 'S-FD-4':'待融资确认' };
+function finLine(p){
+  if(!p.fin) return '';
+  return '<div class="cell-sub">业务进度 · ' + (FIN_ST[p.fin.st] || p.fin.st) + '</div>';
+}
 
 /* ---- 动作按钮：区分「不可见」与「可见不可点 ⊘」（H-03） ---- */
 function actBtn(a, cls, noWhy){
@@ -1090,7 +1173,7 @@ function plazaRow(p){
         '<div class="cell-sub">' + CCY + '</div>' : '<span class="faint">—</span><div class="cell-sub">无在途需求</div>') + '</td>' +
     '<td>' + pill(TONE[FP_STATUS[p.status].tone] || 'gray', FP_STATUS[p.status].t) +
       (p.expired ? '<div class="cell-sub">已到期 · 存量履约中</div>' : '') +
-      lockLine(p) + '</td>' +
+      lockLine(p) + finLine(p) + '</td>' +
     '<td>' + pill(gTone(d.grade), gradeMeta(d.grade).t) +
       (d.gap ? '<div class="cell-sub">缺口 ' + amt(d.gap) + '</div>' : '') + '</td>' +
     '<td class="num">' + amt(d.valid) + '<div class="cell-sub">' + p.tokens.length + ' 张' +
@@ -1172,6 +1255,16 @@ function demandRecords(p){
     } else if(e.k === 'quote' && pending){
       pending.st = '已被报价'; pending.tone = '';
       pending.x = '报价不新增占用，项目在途金额保持不变（AC-FIN-23）';
+    /* ---- WS-326 增量：接受 / 放款 / 终止三类事件的进度落点 ---- */
+    } else if(e.k === 'accept' && pending){
+      pending.st = '已接受 · 待放款'; pending.tone = '';
+      pending.x = '接受不新增占用；放款与融资确认在 WS-326';
+    } else if(e.k === 'disb' && pending){
+      pending.st = '已放款 · 待融资确认'; pending.tone = '';
+      pending.x = '放款时四个量一个都不动，确认完成才转入项目融资余额（AC-FIN-25 / D-LN-07）';
+    } else if(e.k === 'terminate' && pending){
+      pending.st = '业务已终止 · 需求重回募集'; pending.tone = 'gray';
+      pending.x = '在途报价金额全额释放，项目在途金额不变——需求还挂着，可被任何机构重新报价（D-LN-24）';
     }
   });
   rows.reverse();
@@ -1326,14 +1419,93 @@ function pageProject(){
       '</div>'
     : '';
 
+  /* ---- 左栏 4（WS-326 增量）：放款与融资确认的公开进度 ----
+     公开字段：放款提交时间、放款币种与金额、确认时间、终止时间与原因（D-LN-06）。
+     **不公开**：收款账户、凭证文件、交易哈希与链、盖章件、暂缓与重传原因——
+     它们由服务端按归属过滤，不是前端隐藏（AC-LN-17 / AC-LS-100）。
+     口径由 WS-326 权威产出，本页只读引用、不自行计算、不另存一份（AC-LS-105）。 */
+  var fin = p.fin;
+  /* 放款 / 确认 / 终止三类事件的公开字段进时间线（WS-326 分册 6.5.3）：
+     已放款取放款提交时间、已确认取确认时间、已终止取终止时间与中性表述的原因。 */
+  var FIN_EV = {
+    accept   :{ t:'已接受报价 · 待放款', tone:'' },
+    disb     :{ t:'已放款 · 待融资确认', tone:'' },
+    fund     :{ t:'已确认到账 · 额度已原子转移', tone:'green' },
+    terminate:{ t:'业务已终止 · 需求重回广场', tone:'gray' }
+  };
+  var finEv = (p.events || []).filter(function(e){ return FIN_EV[e.k]; });
+  var finCard = (!fin && !finEv.length) ? '' :
+    '<div class="card" style="margin-top:16px">' + cardHead('放款与融资确认',
+      '<span class="faint">公开字段 · 口径由 WS-326 权威产出，本页只读引用</span>') +
+    (!fin ? '' : '<div class="card-b"><div class="ls-kgrid">' +
+      '<div><div class="k">融资业务编号</div><div class="v">' + fin.deal + '</div>' +
+        '<div class="x">接受报价时生成，终身稳定</div></div>' +
+      '<div><div class="k">业务状态</div><div class="v" style="font-family:var(--sans)">' +
+        pill('', fin.st + ' ' + (FIN_ST[fin.st] || '')) + '</div>' +
+        '<div class="x">' + (fin.st === 'S-FD-3'
+          ? '等待资金方核验盖章件并放款；核验与处置动作不是状态（D-LN-01）'
+          : '放款记录已提交，等待资产方确认到账') + '</div></div>' +
+      '<div><div class="k">资金方</div><div class="v" style="font-family:var(--sans)">' + E(fin.fund) + '</div>' +
+        '<div class="x">机构企业主体全称 · 公开字段</div></div>' +
+      '<div><div class="k">融资金额</div><div class="v">' + amt(fin.amt) + '</div>' +
+        '<div class="x">' + CCY + ' · 债务本金按此计，不按实收计</div></div>' +
+      '<div><div class="k">结算币种与金额</div><div class="v">' + amt(fin.settle) + ' ' + fin.ccy + '</div>' +
+        '<div class="x">按报价时锁定的汇率快照折算</div></div>' +
+      '<div><div class="k">接受时间</div><div class="v">' + fin.acceptedAt + ' ' + TZ_LABEL + '</div>' +
+        '<div class="x">报价有效期计时自此终止</div></div>' +
+      (fin.st === 'S-FD-4' ?
+        '<div><div class="k">放款提交时间 · LN-06</div><div class="v">' + fin.lnAt + ' ' + TZ_LABEL + '</div>' +
+          '<div class="x">服务端时间，融资确认时限的起算点</div></div>' +
+        '<div><div class="k">放款记录编号 · LN-01</div><div class="v">' + fin.lnId + '</div>' +
+          '<div class="x">提交成功的同一时刻生成</div></div>' +
+        '<div><div class="k">融资确认时限至 · FD-26</div><div class="v">' + fin.confirmTo + ' ' + TZ_LABEL + '</div>' +
+          '<div class="x">＝ 放款提交时间 + 168 小时，只读、不可延长</div></div>' : '') +
+    '</div>' +
+    (fin.st === 'S-FD-4'
+      ? CF.note('',
+          '<b class="ls-b">融资确认时限届满不会自动确认、不会自动作废这笔业务</b>，也不会自动转移任何额度：' +
+          '到期只发一条通知，业务仍是 S-FD-4，确认入口照常可用（WS-326 D-LN-03）。' +
+          '<p>这与上面「在途报价」的 168 小时<b class="ls-b">不是同一个时限</b>：' +
+          '报价有效期到点<b class="ls-b">自动失效</b>，融资确认时限到点<b class="ls-b">只提醒</b>。' +
+          '两者措辞不同、不共用"有效期"三个字（D-LN-19）。</p>' +
+          (own ? '<p>钱没到账或金额对不上？平台上<b class="ls-b">没有「提出异议」入口</b>，' +
+                 '请先不要点确认，发邮件到 <b class="ls-b">{平台客服邮箱}</b> 并注明融资业务编号 ' + fin.deal +
+                 '，走线下核实（WS-326 D-LN-34，本页是该入口的三处之一）。</p>' : ''),
+          '关于融资确认时限')
+      : CF.note('',
+          '盖章件由<b class="ls-b">资金方在放款前核验</b>，平台不审核真伪与法律效力、不设平台侧审核态。' +
+          '机构可以<b class="ls-b">暂不放款 / 要求重传盖章件 / 终止业务</b>（WS-326 DEP-14 的三个处置动作）。' +
+          '<p><b class="ls-b">暂缓与重传的原因对资产方可见，但不进广场公开字段</b>——' +
+          '它们是双方之间的商务沟通，公开等于把一方的商业判断对全市场广播（D-LN-06）。</p>',
+          '当前这一步由谁在做什么')) +
+    '<p class="hint" style="margin-top:12px"><b>不公开字段</b>（服务端过滤，不是前端隐藏）：' +
+    '收款账户、转账凭证文件、交易哈希与链、盖章件及其历史版本、暂缓放款原因、要求重传原因。' +
+    '游客与第三方资金方深链直达时，这些字段在接口响应里根本不存在（AC-LN-17）。</p>' +
+    '</div>') +
+    (finEv.length ? '<div class="card-b"' + (fin ? ' style="border-top:1px solid var(--border)"' : '') + '>' +
+      '<h3 class="sec-title" style="font-size:12.5px;margin-bottom:10px">放款与确认时间线 · 公开字段</h3>' +
+      '<ul class="tl">' + finEv.slice().reverse().map(function(e){
+        var m = FIN_EV[e.k];
+        return '<li><div style="font-size:12.5px">' + pill(m.tone, m.t) +
+          '<span class="mono" style="margin-left:8px">' + e.d + '</span></div>' +
+          '<div class="faint" style="font-size:11.5px;margin-top:4px;line-height:1.6">' + E(e.t) +
+          (e.note ? '<br>' + E(e.note) : '') + '</div></li>';
+      }).join('') + '</ul>' +
+      '<p class="hint">进时间线的只有公开字段：<b>放款提交时间、放款币种与金额、确认时间、终止时间与原因</b>（中性表述）。' +
+      '收款账户、凭证文件、交易哈希与盖章件不在其中（D-LN-06）。</p></div>' : '') +
+    '</div>';
+
   /* ---- 右栏：操作区（融资进度并入）---- */
   /* 主操作唯一：有在途报价时，资产方本人最该做的事是处理它（它带着一个会到期的倒计时）；
      担保不足时仍然先追加质押。其余沿用本模块原有的排序。 */
   var respondAct = actionOf(acts, 'respond');
+  /* WS-326 增量：本方有一笔待确认到账的业务时，它比"再次发布"更该是主操作——
+     它带着一个会到期的时限，而且不确认这笔业务就一直停在 S-FD-4。 */
+  var confirmAct = actionOf(acts, 'confirm');
   var lead = own
     ? (d.grade === 'short' && actionOf(acts,'pledge') ? actionOf(acts,'pledge')
-       : respondAct ? respondAct : actionOf(acts,'publish'))
-    : actionOf(acts,'quote');
+       : confirmAct ? confirmAct : respondAct ? respondAct : actionOf(acts,'publish'))
+    : (actionOf(acts,'disburse') || actionOf(acts,'quote'));
   var risky = actionOf(acts, 'withdraw'), second = [];
   acts.forEach(function(a){ if(a !== lead && a.key !== 'withdraw') second.push(a); });
   var sameWhy = second.length > 1 && second.every(function(a){ return !a.enabled && a.reason === second[0].reason; });
@@ -1364,7 +1536,7 @@ function pageProject(){
     '<div class="card-b">' + chartBlock(p,'pool') + chartBlock(p,'fin') + '</div></div>';
 
   return head + shortAlert(p, d, own) + usedUpNote(d) + readout +
-    '<div class="portal-cols"><div>' + pledgeCard + quoteCard + demandCard + '</div>' + rail + '</div>' + charts;
+    '<div class="portal-cols"><div>' + pledgeCard + quoteCard + finCard + demandCard + '</div>' + rail + '</div>' + charts;
 }
 
 /* ---- 图表外壳（几何与口径来自 Part A，逐行同源） ---- */
