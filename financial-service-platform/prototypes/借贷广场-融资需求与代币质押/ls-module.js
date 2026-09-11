@@ -806,7 +806,7 @@ function statusPills(p){
   if(ef && !p.expired) out.push(pill('amber', ef.t));
   if(p.emptyPool) out.push(pill('amber', '空池草稿 · 暂无有效质押'));
   if(p.quotes) out.push(pill('gray', '已收到报价 ' + p.quotes + ' 笔'));
-  return '<div class="tags" style="margin-top:10px">' + out.join('') + '</div>';
+  return out.join('');
 }
 
 /* ---- 三数等式：① 有效质押价值 × ② 质押率 = ③ 融资上限（AC-LS-53） ---- */
@@ -907,26 +907,25 @@ function whyLine(reason){
 /* ---- 提示块：只有担保不足保留填色（D-FIN-56 中性事实文案） ---- */
 function shortAlert(p, d, own){
   if(d.grade !== 'short') return '';
-  return CF.note('red',
-    '池内有效质押价值低于项目融资余额，缺口 <span class="mono">' + usd(d.gap) + '</span>，需追加资产价值 <span class="mono">' +
-    usd(d.need) + '</span>（＝缺口 ÷ ' + (PLEDGE_RATE*100) + '%），自 ' + (d.shortFrom || '—') + ' 起。' +
-    '<p>诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效（合计 ' + usd(d.dead) + '），不计入有效质押价值。' +
-    '追加质押抬高融资上限或还款降低项目融资余额，条件反转即自动解除，无需人工确认。</p>' +
-    (own ? '<p style="margin-top:8px"><button class="btn sm" type="button" data-act="ls.do" data-v="pledge">追加质押</button></p>' : ''),
-    '担保不足');
+  return '<div class="ls-alert">' + CF.note('red',
+    '缺口 <span class="mono">' + usd(d.gap) + '</span>，需追加资产价值 <span class="mono">' + usd(d.need) +
+    '</span>（＝缺口 ÷ ' + (PLEDGE_RATE*100) + '%），自 ' + (d.shortFrom || '—') + ' 起。' +
+    '诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效（合计 ' + usd(d.dead) + '），不计入有效质押价值；' +
+    '追加质押抬高融资上限或还款降低项目融资余额，条件反转即自动解除。',
+    '担保不足：池内有效质押价值低于项目融资余额') + '</div>';
 }
 function usedUpNote(d){
   if(d.grade !== 'used-up') return '';
   return CF.note('amber',
     '可融金额为 <span class="mono">' + usd(0) + '</span>，暂不能新增占用。' +
     '<p>已发生的债务仍有足额担保（融资上限 ' + usd(d.cap) + ' ≥ 项目融资余额 ' + usd(d.bal) +
-    '），<b>这不是担保不足预警</b>。追加质押可抬高融资上限并重新打开额度。</p>', '额度用尽');
+    '），<strong class="ls-b">这不是担保不足预警</strong>。追加质押可抬高融资上限并重新打开额度。</p>', '额度用尽');
 }
 function redeemBanner(){
   if(S.role !== 'asset' || !REDEEMABLE.length) return '';
   var sum = REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0);
-  return CF.note('', '您有 <b>' + REDEEMABLE.length + ' 张</b>代币（合计 <span class="mono">' + usd(sum) + '</span>）可提取。' +
-    '<p>业务上已释放，链上仍停留在质押合约内，<b>不会自动回到钱包</b>；需您自行发起提取并自付 gas，支持批量一次提完，无时间限制、不过期。' +
+  return CF.note('', '您有 <strong class="ls-b">' + REDEEMABLE.length + ' 张</strong>代币（合计 <span class="mono">' + usd(sum) + '</span>）可提取。' +
+    '<p>业务上已释放，链上仍停留在质押合约内，<strong class="ls-b">不会自动回到钱包</strong>；需您自行发起提取并自付 gas，支持批量一次提完，无时间限制、不过期。' +
     '未提取前不属于任何资产池、不计入任何质押价值，也不能被再次质押。' +
     '<button class="btn-link" type="button" data-act="ls.do" data-v="redeem" style="margin-left:8px">批量提取</button></p>', '可提取代币');
 }
@@ -1090,17 +1089,18 @@ function pageProject(){
       '服务端未返回该项目数据，可重试。<div style="margin-top:14px">' +
       '<button class="btn primary" type="button" data-act="st" data-v="default">重新加载</button></div></div></div>';
 
-  /* ---- 页头 ---- */
-  var head = '<div class="ls-dhead"><div>' +
-    '<p class="faint" style="font-size:11.5px;margin:0 0 6px">融资项目 · 发布于 <span class="mono">' + (p.publishedAt || '—') +
-      '</span> · 编号 <span class="mono">' + p.id + '</span> · 时区 ' + TZ_LABEL + '</p>' +
-    '<h1 class="page-title" style="font-size:var(--fs-28)">' + E(p.name) +
-      '<span class="faint" style="font-weight:500;font-size:var(--fs-16);margin-left:10px">' + E(p.owner) + '</span></h1>' +
-    statusPills(p) +
-    '</div><div class="dm"><div class="k">融资需求金额</div>' +
+  /* ---- 页头：复刻参考件——返回按钮 + 图标块 + 超大标题 + 大号标签行 ---- */
+  var head =
+    '<div class="ls-back"><button class="btn" type="button" data-act="go" data-v="P-LS-01">← 返回融资需求广场</button></div>' +
+    '<div class="ls-phead"><div class="tile" aria-hidden="true">◧</div><div class="body">' +
+      '<p class="kick">融资项目 · 发布于 <span class="mono">' + (p.publishedAt || '—') +
+        '</span> · 编号 <span class="mono">' + p.id + '</span> · 时区 ' + TZ_LABEL + '</p>' +
+      '<h1>' + E(p.name) + '<em>' + E(p.owner) + '</em></h1>' +
+      '<div class="ls-tags">' + statusPills(p) + '</div>' +
+    '</div><div class="amt"><div class="k">融资需求金额</div>' +
       (p.demand ? '<div class="v">' + amt(p.demand) + '<span class="cy">' + CCY + '</span></div>'
                 : '<div class="v faint">—</div>') +
-      '<div class="k" style="margin-top:5px">' + (p.demand
+      '<div class="x">' + (p.demand
         ? '有效期至 ' + p.expiresAt + '（首次发布日 + ' + TERM_YEARS + ' 年，只读）' : '当前无在途融资需求') + '</div>' +
     '</div></div>' + CF.pageStates();
 
@@ -1144,7 +1144,7 @@ function pageProject(){
       }).join('') : '<tr><td colspan="9" class="tbl-empty"><b>本项目暂无有效质押</b>创建时那笔质押最终链上失败，可重新质押后再发布。</td></tr>') +
     '</tbody></table></div>' +
     '<div class="card-b" style="padding-top:12px">' + CF.note('',
-      '全量公开的范围是广场上展示的融资需求与融资业务信息；<b>不含</b>授信额度、他人控制台数据、运营端诊断字段、附件影像件与联系人联系方式。' +
+      '全量公开的范围是广场上展示的融资需求与融资业务信息；<strong class="ls-b">不含</strong>授信额度、他人控制台数据、运营端诊断字段、附件影像件与联系人联系方式。' +
       '<p>客观记录：买方企业名、合同号、发票号与精确金额对公网访客完全公开，涉及第三方权益，而确权流程目前没有"同意公开"授权环节。' +
       '按需求方裁定执行，配套的接口速率限制与异常抓取识别见分册第 8 章。</p>') + '</div></div>';
 
@@ -1164,7 +1164,7 @@ function pageProject(){
       }).join('') : '<tr><td colspan="6" class="tbl-empty"><b>本项目尚未发布过融资需求</b>完成建池与质押后，在第二段填写金额即可发布。</td></tr>') +
     '</tbody></table></div>' +
     '<div class="card-b" style="padding-top:12px">' + CF.note('',
-      '融资需求不是独立对象——项目编号即广场上这条融资需求的编号，<b>不另发号</b>（D-LS-11 / H-01）。' +
+      '融资需求不是独立对象——项目编号即广场上这条融资需求的编号，<strong class="ls-b">不另发号</strong>（D-LS-11 / H-01）。' +
       '因此这里用「项目编号 · 第 N 次发布」做显示引用，进行中与历史同表，用状态列区分。' +
       '<p>商务条款：' + (p.terms ? '报价利率 ' + E(p.terms.rate) + ' · 融资期限 ' + E(p.terms.term) + ' · ' + E(p.terms.repay) + ' · 资金用途 ' + E(p.terms.use)
         : '该项目当前无公开的在途业务商务条款。') + '</p>') + '</div></div>';
@@ -1175,7 +1175,7 @@ function pageProject(){
   var risky = actionOf(acts, 'withdraw'), second = [];
   acts.forEach(function(a){ if(a !== lead && a.key !== 'withdraw') second.push(a); });
   var sameWhy = second.length > 1 && second.every(function(a){ return !a.enabled && a.reason === second[0].reason; });
-  var rail = '<aside class="portal-rail"><div class="card">' + cardHead('操作区', '<span class="faint">L6</span>') +
+  var rail = '<aside class="portal-rail">' + (own ? redeemBanner() : '') + '<div class="card">' + cardHead('操作区', '<span class="faint">L6</span>') +
     '<div class="card-b ls-acts">' +
       (lead ? actBtn(lead, 'primary block') : '') +
       (second.length ? '<div class="sec">' + second.map(function(a){ return actBtn(a, 'block', sameWhy); }).join('') +
@@ -1196,7 +1196,7 @@ function pageProject(){
       '<span class="faint">口径与上方读数同源 · 单位 ' + CCY + '</span>') +
     '<div class="card-b">' + chartBlock(p,'pool') + chartBlock(p,'fin') + '</div></div>';
 
-  return head + shortAlert(p, d, own) + usedUpNote(d) + (own ? redeemBanner() : '') + readout +
+  return head + shortAlert(p, d, own) + usedUpNote(d) + readout +
     '<div class="portal-cols"><div>' + pledgeCard + demandCard + '</div>' + rail + '</div>' + charts;
 }
 
@@ -1290,9 +1290,9 @@ function stepOne(p){
     '<div class="card" style="margin-top:16px">' + cardHead('代币质押',
       '<span class="faint">创建项目时必须至少质押一笔代币，"空池草稿"不能由创建动作产生</span>') +
     '<div class="card-b" style="padding-bottom:12px">' + CF.note('',
-      '<b>下列代币已按可质押条件筛选</b>：① 签发状态为「已签发」；② 归属当前企业主体；③ 当前未被任何有效质押占用、且不在质押合约内（含"已释放待提取"的代币，须先提取才能再质押）；' +
+      '<strong class="ls-b">下列代币已按可质押条件筛选</strong>：① 签发状态为「已签发」；② 归属当前企业主体；③ 当前未被任何有效质押占用、且不在质押合约内（含"已释放待提取"的代币，须先提取才能再质押）；' +
       '④ 底层应收账款未失效；⑤ 代币类型为应收账款类（本期能力边界）；⑥ 与本项目已质押代币为同一类型（长期规则）。' +
-      '<p>本期不支持按数量拆分，<b>一张代币整张质押</b>，以"张"为单位勾选，没有数量输入框。</p>') + '</div>' +
+      '<p>本期不支持按数量拆分，<strong class="ls-b">一张代币整张质押</strong>，以"张"为单位勾选，没有数量输入框。</p>') + '</div>' +
     '<div class="tablewrap" style="border:0;box-shadow:none;border-radius:0"><table class="tbl"><thead><tr>' +
       '<th style="width:40px"><input type="checkbox" ' + (picked.length === WALLET.length ? 'checked' : '') +
       ' data-act="ls.selAll" aria-label="批量勾选全部"></th><th>代币编号</th><th class="num">美元金额</th>' +
@@ -1314,7 +1314,7 @@ function stepOne(p){
         '<div class="row-v mono">' + picked.length + ' 笔（合并为一次提交）</div></div></div>' +
         '<div class="row"><div class="row-main"><div class="row-k">预估 gas</div><div class="row-v mono">' + gas + ' ETH</div></div></div>' +
         '<div class="row"><div class="row-main"><div class="row-k">承担方</div><div class="row-v">' + E(ACTORS.asset.full) + '（本企业）</div></div></div></div>' +
-        '<p class="hint" style="margin-top:10px">gas 由区块链收取，<b>平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</b>。' +
+        '<p class="hint" style="margin-top:10px">gas 由区块链收取，<strong class="ls-b">平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</strong>。' +
         '链上失败也可能已经产生费用。签名与付费由本页<b>唤起外部 SDK 服务</b>完成，平台不自建钱包连接组件。</p>' +
         '<button class="btn primary block" type="button" style="margin-top:14px" ' +
           (nameOk && picked.length ? '' : 'disabled ') + 'data-act="ls.create">创建项目并发起质押</button>' +
@@ -1400,7 +1400,7 @@ function stepTwo(p){
       (REDEEMABLE.length ? '<div class="card" style="margin-top:16px">' + cardHead('可提取代币',
         '<span class="faint">业务已释放，链上仍在质押合约内 · 待提取</span>') +
         '<div class="card-b" style="padding-bottom:12px">' + CF.note('',
-          '您有 <b>' + REDEEMABLE.length + ' 张</b>代币（合计 <span class="mono">' + usd(redSum) + '</span>）可提取，需自付 gas，可批量一次提完，无时间限制、不过期。' +
+          '您有 <strong class="ls-b">' + REDEEMABLE.length + ' 张</strong>代币（合计 <span class="mono">' + usd(redSum) + '</span>）可提取，需自付 gas，可批量一次提完，无时间限制、不过期。' +
           '<p>释放分两段：<b>第一段业务释放</b>在项目关闭 / 结清的同一时刻完成，即时、无链上动作、无费用；' +
           '<b>第二段链上提取</b>由您自助发起。未提取前代币不属于任何池、不计入任何质押价值，也不能被再次质押。</p>') + '</div>' +
         '<div class="tablewrap" style="border:0;box-shadow:none;border-radius:0"><table class="tbl"><thead><tr>' +
@@ -1470,18 +1470,18 @@ function pageMine(){
    ================================================================ */
 function chainResult(){
   var r = S.chain, o = CHAIN_OUTCOMES[r.k];
-  if(r.k === 'ok') return CF.note('green', '<b>链上转入成功</b>（CT-2）：' + r.n + ' 张代币已入池并计入有效质押价值。' +
+  if(r.k === 'ok') return CF.note('green', '<strong class="ls-b">链上转入成功</strong>（CT-2）：' + r.n + ' 张代币已入池并计入有效质押价值。' +
     '<p>实际 gas ' + r.gas + ' ETH，同一次操作只记一次。</p>', '链上结果');
   if(r.k === 'partial') return CF.note('amber',
-    '<b>部分成功 · 按张独立结算</b>：' + r.ok + ' 张入池成功（CT-2），' + r.bad + ' 张链上执行失败（CT-3）已退回可质押。' +
+    '<strong class="ls-b">部分成功 · 按张独立结算</strong>：' + r.ok + ' 张入池成功（CT-2），' + r.bad + ' 张链上执行失败（CT-3）已退回可质押。' +
     '<p>失败原因：质押合约执行被回退。失败那 ' + r.bad + ' 张的 gas 已产生、不可退回；重试将发起新交易并再次产生 gas。' +
     '发布校验以实际成功入池后的服务端重算结果为准。</p>', '链上结果');
-  if(r.k === 'timeout') return CF.note('amber', '<b>' + o.head + '</b><p>' + o.body + '</p>' +
+  if(r.k === 'timeout') return CF.note('amber', '<strong class="ls-b">' + o.head + '</strong><p>' + o.body + '</p>' +
     '<p>费用：' + o.fee + ' 该 ' + r.n + ' 张代币保持「处理中」，期间不接受新动作。</p>' +
     '<p style="margin-top:8px"><button class="btn sm" type="button" data-act="ls.query">查询链上状态</button>' +
     '<span class="faint" style="margin-left:10px">本状态下不提供重试按钮——查得未上链后，重试入口才会出现。</span></p>', '等待链上结果');
   return CF.note(o.tone === 'mute' ? '' : o.tone === 'warn' ? 'amber' : 'red',
-    '<b>' + o.head + '</b><p>' + o.body + '</p><p>费用：' + o.fee + '</p>' +
+    '<strong class="ls-b">' + o.head + '</strong><p>' + o.body + '</p><p>费用：' + o.fee + '</p>' +
     '<p style="margin-top:8px"><button class="btn sm" type="button" data-act="ls.retry">' + o.retry + '</button></p>', '链上结果');
 }
 
@@ -1635,7 +1635,7 @@ var mod = {
                        ['承担方', ACTORS.asset.full + '（本企业）']]).map(function(r){
           return '<div class="row"><div class="row-main"><div class="row-k">' + E(r[0]) + '</div>' +
             '<div class="row-v">' + E(r[1]) + '</div></div></div>'; }).join('') + '</div>' +
-        '<p class="hint">gas 由区块链收取，<b>平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</b>。' +
+        '<p class="hint">gas 由区块链收取，<strong class="ls-b">平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</strong>。' +
         '链上失败也可能已经产生费用。批量一次提交是最有效的降费手段：' + m.n + ' 笔已合并为一次提交。</p></div>' +
         '<div class="modal-f"><button class="btn" type="button" data-act="ls.mclose">取消</button>' +
         '<button class="btn primary" type="button" data-act="ls.sdk">确认并唤起签名</button></div></div></div>';
@@ -1662,9 +1662,9 @@ var mod = {
       return '<div class="mask" data-act="ls.mclose"><div class="modal" role="dialog" aria-modal="true">' +
         '<div class="modal-h"><b>立即报价</b><button class="modal-x" type="button" data-act="ls.mclose" aria-label="关闭">✕</button></div>' +
         '<div class="modal-b">' + CF.note('',
-          '<b>报价及之后的环节不在本模块范围内</b>（X-LS-01）。授信核定、报价、接受 / 拒绝报价、放款与融资确认在 WS-325（M-2）及之后实现。' +
-          '<p>本模块交付的是广场侧的报价入口与它的准入口径：报价<b>不新增在途占用</b>（AC-FIN-23），项目在途金额的唯一来源是发布占用；' +
-          '提交报价时服务端按 <b>可融金额 ≥ 本次金额</b> 校验（AC-FIN-12）。</p>') +
+          '<strong class="ls-b">报价及之后的环节不在本模块范围内</strong>（X-LS-01）。授信核定、报价、接受 / 拒绝报价、放款与融资确认在 WS-325（M-2）及之后实现。' +
+          '<p>本模块交付的是广场侧的报价入口与它的准入口径：报价<strong class="ls-b">不新增在途占用</strong>（AC-FIN-23），项目在途金额的唯一来源是发布占用；' +
+          '提交报价时服务端按 <strong class="ls-b">可融金额 ≥ 本次金额</strong> 校验（AC-FIN-12）。</p>') +
         '<p class="hint">' + E(p.name) + ' · ' + p.id + '</p></div>' +
         '<div class="modal-f"><button class="btn primary" type="button" data-act="ls.mclose">知道了</button></div></div></div>';
     },
@@ -1674,7 +1674,7 @@ var mod = {
         '<div class="modal-h"><b>关闭融资项目</b><button class="modal-x" type="button" data-act="ls.mclose" aria-label="关闭">✕</button></div>' +
         '<div class="modal-b">' + CF.note('amber',
           '关闭后项目转「已关闭」，平台在同一时刻解除该池全部占用与担保关系，池内 ' + p.tokens.length + ' 张代币置「已释放 · 待提取」。' +
-          '<p>业务释放<b>即时、无链上动作、无费用</b>；代币仍停留在质押合约内，需您自行发起提取并自付 gas，<b>不会自动回到钱包</b>。</p>') +
+          '<p>业务释放<strong class="ls-b">即时、无链上动作、无费用</strong>；代币仍停留在质押合约内，需您自行发起提取并自付 gas，<strong class="ls-b">不会自动回到钱包</strong>。</p>') +
         '</div><div class="modal-f"><button class="btn" type="button" data-act="ls.mclose">取消</button>' +
         '<button class="btn primary" type="button" data-act="ls.closeOk">确认关闭</button></div></div></div>';
     }

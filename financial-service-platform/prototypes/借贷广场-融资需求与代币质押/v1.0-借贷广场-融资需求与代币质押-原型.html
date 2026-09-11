@@ -176,6 +176,56 @@
 .ls-ro{height:var(--ctrl-h);display:flex;align-items:center;padding:0 12px;border:1px dashed var(--border-strong);
   border-radius:var(--radius-sm);background:var(--card-2);font-family:var(--mono);color:var(--muted);font-size:12.5px}
 
+/* ============================================================
+   复刻还原：参考件的页面头与内容层尺度
+   base.css 的 .page-title 是 19px、body 13.5px —— 那是管理端控制台的档位。
+   面客公开页在参考件里是 body 14.5px、详情标题 ~52px、stat 值 40px。
+   下面全部是本模块作用域的组合类，不重定义 token、不覆盖公共组件。
+   ============================================================ */
+.portal-wrap{font-size:14.5px;line-height:1.55}
+.portal-wrap table.tbl{font-size:13px}
+.portal-wrap .card-head span{font-size:12.5px}
+.ls-back{margin-bottom:var(--sp-5)}
+.ls-phead{display:flex;align-items:flex-start;gap:var(--sp-5);margin-bottom:var(--sp-6)}
+.ls-phead .tile{
+  width:56px;height:56px;border-radius:16px;flex:none;background:var(--accent-soft);
+  border:1px solid var(--accent-border);display:grid;place-items:center;font-size:22px;margin-top:6px;
+}
+.ls-phead .body{flex:1;min-width:0}
+.ls-phead .kick{font-size:12.5px;color:var(--faint);margin:0 0 4px;letter-spacing:.01em}
+.ls-phead .kick .mono{color:var(--muted)}
+.ls-phead h1{
+  margin:0;font-size:clamp(26px,2.7vw,42px);font-weight:740;letter-spacing:-.03em;line-height:1.1;
+}
+.ls-phead h1 em{font-style:normal;color:var(--faint);font-weight:600;margin-left:12px;font-size:.62em}
+.ls-phead .amt{text-align:right;flex:none;padding-top:10px}
+.ls-phead .amt .k{font-size:12.5px;color:var(--faint)}
+.ls-phead .amt .v{
+  font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(26px,2.4vw,38px);
+  font-weight:700;letter-spacing:-.035em;line-height:1.06;margin-top:3px;
+}
+.ls-phead .amt .cy{font-size:14px;color:var(--faint);font-weight:500;margin-left:6px}
+.ls-phead .amt .x{font-size:12px;color:var(--faint);margin-top:6px}
+
+/* 大号标签行：参考件的 pill 是 pill 形、28px 高、带色点或图标 */
+.ls-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-4)}
+.ls-tags .pill{height:28px;padding:0 12px;font-size:12.5px;border-radius:var(--radius-pill)}
+.ls-tags .pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:2px}
+
+/* stat 值与卡片标题提到参考件档位 */
+.ls-trio .v{font-size:var(--fs-28)}
+.ls-trio .c.out .v{font-size:clamp(30px,2.6vw,40px)}
+.ls-trio .lb{font-size:12.5px}
+.ls-trio .x{font-size:11.5px}
+.card-head b{font-size:15px}
+.ls-chart h3{font-size:14px}
+
+/* 公共 .note 的 b{display:block} 会把正文里的 <b> 顶成整行——
+   模块正文用 .ls-b 做行内强调，不动公共实现。 */
+.note .ls-b{font-weight:700;display:inline}
+.note{font-size:12.5px;line-height:1.6}
+.ls-alert{margin-bottom:var(--sp-5)}
+
 /* —— 右栏内的进度轨强制单列：rail 只有 300px，媒体查询按视口算不生效 —— */
 .portal-rail .ls-flow{flex-direction:column;gap:var(--sp-3)}
 .portal-rail .ls-flow .fs{flex:1 1 auto}
