@@ -1246,7 +1246,7 @@ function drawAll(){
 }
 
 /* ================================================================
-   P-LS-03 建池与发布（两段式）/ P-LS-04 我的融资项目
+   P-LS-03 建池与发布（两段式）/ P-LS-90 我的融资项目
    ================================================================ */
 function stepsBar(step, p){
   function s(n, t, x, on, done){
@@ -1594,7 +1594,7 @@ var mod = {
   end:'asset', home:'P-LS-01',
   dict:{ en:{ navPlaza:'Marketplace', navMyProjects:'My projects' },
          zh:{ navPlaza:'融资需求广场', navMyProjects:'我的融资项目' } },
-  owns:['P-LS-01','P-LS-02','P-LS-03','P-LS-04'],
+  owns:['P-LS-01','P-LS-02','P-LS-03','P-LS-90'],
   topbarPrd:false,
   states:{
     'P-LS-01':[['default','Default','默认'],['loading','Loading','加载中'],['empty','Empty','空数据'],
@@ -1602,7 +1602,7 @@ var mod = {
     'P-LS-02':[['default','Default','默认'],['loading','Loading','加载中'],
                ['error','Load failed','加载失败'],['gone','Not found','不存在或无权访问']],
     'P-LS-03':[['default','Default','默认']],
-    'P-LS-04':[['default','Default','默认']]
+    'P-LS-90':[['default','Default','默认']]
   },
   state:function(){
     return { lang:'zh', role:'guest', pid:'FP-20260416-0007', pubPid:null, pubStep:1, panel:null,
@@ -1620,7 +1620,7 @@ var mod = {
   content:function(){
     if(S.page === 'P-LS-02') return pageProject();
     if(S.page === 'P-LS-03') return pagePublish();
-    if(S.page === 'P-LS-04') return pageMine();
+    if(S.page === 'P-LS-90') return pageMine();
     return pagePlaza();
   },
   modals:{
@@ -1683,7 +1683,7 @@ var mod = {
     build:function(){
       if(S.page === 'P-LS-02') return '#/project/' + (S.pid || '');
       if(S.page === 'P-LS-03') return S.pubPid ? '#/project/' + S.pubPid + '?action=' + (S.panel === 'pledge' ? 'pledge' : 'publish') : '#/project/new';
-      if(S.page === 'P-LS-04') return '#/my-projects';
+      if(S.page === 'P-LS-90') return '#/my-projects';
       return '#/plaza';
     },
     read:function(){
@@ -1691,7 +1691,7 @@ var mod = {
       var parts = h.split('?'), seg = parts[0].split('/'), qs = {};
       (parts[1] || '').split('&').forEach(function(kv){ var i = kv.indexOf('='); if(i>0) qs[kv.slice(0,i)] = decodeURIComponent(kv.slice(i+1)); });
       if(seg[0] === 'plaza'){ S.page = 'P-LS-01'; S.st = 'default'; return true; }
-      if(seg[0] === 'my-projects'){ S.page = 'P-LS-04'; S.st = 'default'; return true; }
+      if(seg[0] === 'my-projects'){ S.page = 'P-LS-90'; S.st = 'default'; return true; }
       if(seg[0] === 'project'){
         if(seg[1] === 'new'){ S.page = 'P-LS-03'; S.pubPid = null; S.pubStep = 1; S.st = 'default'; return true; }
         var p = findProject(seg[1]);
@@ -1712,7 +1712,7 @@ var mod = {
     if(a.indexOf('ls.') !== 0) return false;
     var p = findProject(S.pid || S.pubPid);
     switch(a){
-      case 'ls.role': S.role = v; if(S.page === 'P-LS-03' || S.page === 'P-LS-04'){ if(v !== 'asset') CF.go('P-LS-01'); else CF.render(); } else CF.render(); return true;
+      case 'ls.role': S.role = v; if(S.page === 'P-LS-03' || S.page === 'P-LS-90'){ if(v !== 'asset') CF.go('P-LS-01'); else CF.render(); } else CF.render(); return true;
       case 'ls.flt':  if(v === 'sort') S.flt.sort = n.value; else S.flt[v] = n.value; CF.render(); return true;
       case 'ls.reset': S.flt = JSON.parse(JSON.stringify(F0)); S.flt.sort = 'pub'; CF.setState('default'); return true;
       case 'ls.open': S.pid = v; CF.go('P-LS-02'); return true;

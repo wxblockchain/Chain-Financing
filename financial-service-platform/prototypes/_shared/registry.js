@@ -150,9 +150,11 @@
         本模块继承 4.3 已落库的顶栏（金融服务端登录），不并入 WS-308/309/310/312/318 的 .app 侧栏骨架。
     (2) 页面 ID 取 PRD 的 P-LS 段位：P-LS-01 融资需求列表、P-LS-02 融资需求详情、P-LS-03 建池与发布，
         与 PRD 6.5 一一对应、不自行改号。
-    (3) P-LS-04「我的融资项目」是原型侧暂定号：PRD 6.1 只写了「草稿在"我的项目"与控制台有继续发布入口」，
-        没有给页面编号。它承载 AC-LS-54「两段式可中断可续做」所必需的最小续做入口，不是 M-5 我的控制台
-        （M-5 本期不做，X-LS-02）。待 PRD 正式登记页面号后回写。 */
+    (3) P-LS-90「我的融资项目」是原型侧内部页，PRD 未定义此页：WS-324 PRD 6.1 只写了
+        「草稿在"我的项目"与控制台有继续发布入口」，没有给页面编号。它承载 AC-LS-54
+        「两段式可中断可续做」所必需的最小续做入口，不是 WS-328 我的控制台。
+        **号段特意取 90 段避让 PRD**：P-LS-04 / 05 / 06 已被 WS-325 PRD V4.0 占用
+        （授信核定 / 机构报价 / 接受拒绝），原型侧不得再占 PRD 连号段位。 */
  CF.MODULES['lending-marketplace']={dir:'借贷广场-融资需求与代币质押',
    file:'v1.0-借贷广场-融资需求与代币质押-原型.html',
    name:['Lending marketplace','借贷广场 · 融资需求与代币质押']};
@@ -161,7 +163,7 @@
    'P-LS-01':[['Financing marketplace','融资需求广场'],'/plaza'],
    'P-LS-02':[['Financing request details','融资需求详情'],'/project'],
    'P-LS-03':[['Create pool and publish','建池与发布'],'/project/new'],
-   'P-LS-04':[['My financing projects','我的融资项目'],'/my-projects']
+   'P-LS-90':[['My financing projects','我的融资项目'],'/my-projects']
   };
   for(var id in pages){
    CF.PAGES[id]={end:'asset',layout:'app',name:pages[id][0]};
@@ -170,10 +172,10 @@
   /* 只有广场与我的融资项目进顶栏主导航；详情与建池是由列表 / 流程带出来的页面，
      按 4.3「流程页与落地页不一定进菜单」不占导航位，只登记 crumb。 */
   Object.assign(CF.PAGES['P-LS-01'],{nav:'P-LS-01',navKey:'navPlaza',ico:'\u25a4'});
-  Object.assign(CF.PAGES['P-LS-04'],{nav:'P-LS-04',navKey:'navMyProjects',ico:'\u25a6'});
+  Object.assign(CF.PAGES['P-LS-90'],{nav:'P-LS-90',navKey:'navMyProjects',ico:'\u25a6'});
   Object.assign(CF.PAGES['P-LS-02'],{crumb:['Request details','融资需求详情']});
   Object.assign(CF.PAGES['P-LS-03'],{crumb:['Create and publish','建池与发布']});
  })();
- CF.NAV.asset=['P-F51','P-LS-01','P-LS-04'];
+ CF.NAV.asset=['P-F51','P-LS-01','P-LS-90'];
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});
