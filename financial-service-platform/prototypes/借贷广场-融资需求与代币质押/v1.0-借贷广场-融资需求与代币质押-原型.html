@@ -10,80 +10,6 @@
    继承 archetype：公开列表页 / 公开详情页 / 认证后分步页
    本页增量：三数等式、额度尺、融资进度轨、折叠层、两张阶梯图 —— 都是本模块专有组合 */
 
-/* —— 招牌件 A：三数等式（AC-LS-53，① × ② = ③ 在页面上可验算）—— */
-.ls-trio{display:flex;align-items:flex-end;gap:var(--sp-5);flex-wrap:wrap}
-.ls-trio .c{min-width:0}
-.ls-trio .op{font-family:var(--mono);font-size:var(--fs-19);color:var(--faint);padding-bottom:14px}
-.ls-trio .ix{font-family:var(--mono);font-size:var(--fs-10);font-weight:700;color:var(--faint);letter-spacing:.07em}
-.ls-trio .lb{font-size:11.5px;color:var(--muted);margin-top:4px}
-.ls-trio .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-24);
-  font-weight:660;letter-spacing:-.03em;margin-top:5px;line-height:1.1}
-.ls-trio .c.out .v{font-size:var(--fs-28);color:var(--accent)}
-.ls-trio .x{font-size:var(--fs-10);color:var(--faint);margin-top:5px}
-.ls-sub{font-size:11.5px;color:var(--muted);margin-top:var(--sp-4)}
-.ls-sub .mono{color:var(--text);font-weight:620}
-
-/* —— 招牌件 B：额度尺（INV-FIN-01 的可视化读数）—— */
-.ls-meter{margin-top:var(--sp-5)}
-.ls-meter .wrap{position:relative;padding-top:17px}
-.ls-meter .track{position:relative;height:20px;border-radius:var(--radius-xs);background:var(--track);
-  border:1px solid var(--border);display:flex;overflow:hidden}
-.ls-meter .sg{height:100%}
-.ls-meter .sg+.sg{border-left:2px solid var(--card)}
-.ls-meter .sg.bal{background:rgba(181,71,8,.16);box-shadow:inset 0 0 0 1px var(--warn)}
-.ls-meter .sg.fly{background:rgba(11,138,118,.14);box-shadow:inset 0 0 0 1px var(--pos)}
-.ls-meter .sg.free{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-border)}
-.ls-meter .sg.gap{background:var(--danger-bg);background-image:repeating-linear-gradient(135deg,transparent 0 5px,var(--danger-border) 5px 7px);
-  box-shadow:inset 0 0 0 1px var(--danger)}
-.ls-meter .wrap>.cap{position:absolute;top:12px;bottom:-5px;width:2px;background:var(--accent);border-radius:2px;z-index:2}
-.ls-meter .wrap>.caplb{position:absolute;top:0;white-space:nowrap;font-size:var(--fs-10);color:var(--accent);font-weight:660}
-.ls-meter .lg{display:flex;flex-wrap:wrap;gap:5px var(--sp-5);margin-top:11px;font-size:11.5px;color:var(--muted)}
-.ls-meter .lg span{display:inline-flex;align-items:center;gap:6px}
-.ls-meter .lg i{width:9px;height:9px;border-radius:3px;flex:none;font-style:normal}
-.ls-meter .lg i.bal{background:rgba(181,71,8,.16);box-shadow:inset 0 0 0 1px var(--warn)}
-.ls-meter .lg i.fly{background:rgba(11,138,118,.14);box-shadow:inset 0 0 0 1px var(--pos)}
-.ls-meter .lg i.free{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-border)}
-.ls-meter .lg i.gap{background:var(--danger-bg);box-shadow:inset 0 0 0 1px var(--danger)}
-.ls-meter .lg i.cap{width:2px;height:11px;border-radius:1px;background:var(--accent)}
-.ls-meter .lg b{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--text);font-weight:620}
-.ls-meter.mini .wrap{padding-top:0}
-.ls-meter.mini .wrap>.cap{top:-3px;bottom:-3px}
-.ls-meter.mini .track{height:7px;border-radius:4px}
-.ls-meter.mini .lg{display:none}
-
-/* —— 公开层列表行：用共享 .rows/.row 承载，这里只排内部栅格 —— */
-.ls-lrow{display:grid;grid-template-columns:minmax(210px,1.5fr) 140px 128px 150px 136px 108px;
-  gap:var(--sp-4);align-items:center;width:100%}
-.ls-lrow .nm{font-size:var(--fs-14);font-weight:650;letter-spacing:-.01em;line-height:1.35}
-.ls-lrow .sub{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
-.ls-lrow .sub .mono{font-family:var(--mono)}
-.ls-lrow .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
-.ls-lrow .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;font-weight:620;margin-top:3px}
-.ls-lrow .v.big{font-size:var(--fs-16);font-weight:680;letter-spacing:-.02em}
-.ls-lrow .v.none{color:var(--faint);font-weight:500;font-size:12.5px}
-.ls-lrow .rt{text-align:right}
-.ls-lrow .act{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-.ls-lrow .rz{font-size:var(--fs-10);color:var(--faint);white-space:nowrap}
-.ls-row-link{cursor:pointer}
-.ls-row-link:hover{background:#FAFBFD}
-
-/* —— 融资进度轨：环节名取自 PRD 状态机 S-FP-*，后段标注后续环节 —— */
-.ls-flow{display:flex;align-items:stretch;flex-wrap:wrap;gap:var(--sp-3) 0}
-.ls-flow .fs{flex:1 1 150px;min-width:0;padding-left:13px;position:relative}
-.ls-flow .fs::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:2px;background:var(--border)}
-.ls-flow .fs.done::before{background:var(--ok)}
-.ls-flow .fs.now::before{background:var(--accent)}
-.ls-flow .fs.later::before{background:repeating-linear-gradient(180deg,var(--border-strong) 0 3px,transparent 3px 7px)}
-.ls-flow .fs.now.later::before{background:repeating-linear-gradient(180deg,var(--accent) 0 4px,transparent 4px 8px)}
-.ls-flow .fs .id{font-family:var(--mono);font-size:var(--fs-10);font-weight:700;color:var(--faint)}
-.ls-flow .fs .t{font-size:12.5px;font-weight:650;color:var(--muted);margin-top:3px}
-.ls-flow .fs.done .t{color:var(--text)}
-.ls-flow .fs.now .t{color:var(--accent)}
-.ls-flow .fs .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
-.ls-flow .sep{flex:none;width:1px;background:var(--border-strong);margin:0 var(--sp-4);position:relative}
-.ls-flow .sep span{position:absolute;top:-2px;left:50%;transform:translateX(-50%);white-space:nowrap;
-  font-size:var(--fs-10);color:var(--faint);background:var(--card);padding:0 6px}
-
 /* —— 折叠层（第二层：验算与核对用，默认收起）—— */
 .ls-fold{border-top:1px solid var(--border);margin-top:var(--sp-5)}
 .ls-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 0;
@@ -166,12 +92,58 @@
 .ls-kgrid .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
 .ls-kgrid .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:640;margin-top:4px}
 .ls-kgrid .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
-.ls-grades{display:flex;flex-direction:column;gap:8px}
-.ls-grades .g{display:flex;gap:10px;align-items:baseline;font-size:11.5px;color:var(--faint)}
-.ls-grades .g.on{color:var(--text)}
-.ls-grades .g .m{font-family:var(--mono);width:12px;flex:none}
-.ls-grades .g b{width:96px;flex:none;font-weight:500}
-.ls-grades .g.on b{font-weight:650}
+
+/* —— v1.3 统计区：一排 5 个（AC-LS-53 / AC-LS-84，取代三数等式区与额度尺）——
+   五个格子等宽，读者的眼睛沿一条水平线扫过去；数值取参考件的 stat 档位。 */
+.ls-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:var(--sp-5) 0 var(--sp-6)}
+.ls-stats .s{background:var(--card);padding:16px 18px 17px;min-width:0}
+.ls-stats .k{font-size:12.5px;color:var(--muted);line-height:1.35}
+.ls-stats .v{font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:clamp(21px,1.9vw,30px);font-weight:700;letter-spacing:-.035em;line-height:1.12;margin-top:7px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls-stats .s.lead .v{color:var(--accent)}
+.ls-stats .x{font-size:11px;color:var(--faint);margin-top:6px;line-height:1.5}
+
+/* —— v1.3 操作区三段（6.5.5）：段间一条分隔线 + 一行小标题；只有当前环节那一段出按钮 —— */
+.ls-seg+.ls-seg{border-top:1px solid var(--border);margin-top:var(--sp-4);padding-top:var(--sp-4)}
+.ls-seg>.sh{font-size:var(--fs-10);letter-spacing:.07em;text-transform:uppercase;color:var(--faint);
+  display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ls-seg>.sh .n{margin-left:auto;text-transform:none;letter-spacing:0}
+.ls-seg .btn.block+.btn.block{margin-top:8px}
+/* 合并后的「解除质押」入口上的角标与副文案（D-FIN-78，取代原可提取代币提示块，AC-LS-38 改写） */
+.ls-badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 5px;
+  margin-left:7px;border-radius:var(--radius-pill);background:var(--accent);color:#fff;
+  font-family:var(--mono);font-size:10px;font-weight:700}
+.ls-subcap{font-size:11px;color:var(--faint);margin:5px 0 0;line-height:1.5}
+
+/* —— v1.3 融资流程四环节（6.5.5 段② / 分册 6.9）：竖排，右栏 300px 横排会把环节名折行 —— */
+.ls-flow4{display:flex;flex-direction:column;gap:var(--sp-3)}
+.ls-flow4 .fs{padding-left:13px;position:relative;min-width:0}
+.ls-flow4 .fs::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:2px;background:var(--border)}
+.ls-flow4 .fs.done::before{background:var(--ok)}
+.ls-flow4 .fs.now::before{background:var(--accent)}
+.ls-flow4 .fs .t{font-size:12.5px;font-weight:650;color:var(--muted);display:flex;align-items:baseline;gap:7px}
+.ls-flow4 .fs.done .t{color:var(--text)}
+.ls-flow4 .fs.now .t{color:var(--accent)}
+.ls-flow4 .fs .t .no{font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);font-weight:700}
+.ls-flow4 .fs .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+.ls-flow4 .fs .fa{margin-top:8px}
+
+/* —— 长弹窗：公共 .modal 是 flex 列且 max-height:100%，但 .modal-b 没有 min-height:0，
+   内容一长（解除质押里可能有三张清单）页脚就被顶出视口。只在本模块补这一条，不改公共实现。 —— */
+.mask > .modal{max-height:calc(100vh - 48px)}
+.modal > .modal-b{flex:1 1 auto;min-height:0}
+
+/* —— 非登录态操作区：一个按钮，一句话（D-LS-14 / AC-LS-86）—— */
+.ls-guest .lead{font-size:12.5px;color:var(--muted);line-height:1.6;margin:0 0 12px}
+
+/* —— 代币类型选择（D-FIN-77）：本期只有一个取值，做成看得见的单选而不是隐式过滤 —— */
+.ls-types{display:flex;flex-wrap:wrap;gap:9px}
+.ls-types label{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--card);padding:10px 13px;font-size:12.5px;cursor:pointer}
+.ls-types label[data-on="1"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:620}
+.ls-types label.off{opacity:.5;cursor:not-allowed}
 
 .ls-dhead{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-6);flex-wrap:wrap}
 .ls-dhead .dm{text-align:right;flex:none}
@@ -240,11 +212,7 @@
 .ls-tags .pill{height:28px;padding:0 12px;font-size:12.5px;border-radius:var(--radius-pill)}
 .ls-tags .pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:2px}
 
-/* stat 值与卡片标题提到参考件档位 */
-.ls-trio .v{font-size:var(--fs-28)}
-.ls-trio .c.out .v{font-size:clamp(30px,2.6vw,40px)}
-.ls-trio .lb{font-size:12.5px}
-.ls-trio .x{font-size:11.5px}
+/* 卡片标题提到参考件档位 */
 .card-head b{font-size:15px}
 .ls-chart h3{font-size:14px}
 
@@ -254,12 +222,8 @@
 .note{font-size:12.5px;line-height:1.6}
 .ls-alert{margin-bottom:var(--sp-5)}
 
-/* —— 右栏内的进度轨强制单列：rail 只有 300px，媒体查询按视口算不生效 —— */
-.portal-rail .ls-flow{flex-direction:column;gap:var(--sp-3)}
-.portal-rail .ls-flow .fs{flex:1 1 auto}
-.portal-rail .ls-flow .sep{display:none}
-/* —— 九列的抵押物明细：给足最小宽度，靠 .tablewrap 横向滚动，不截断关键内容 —— */
-.ls-wide{min-width:1000px}
+/* —— 七列的质押代币清单：给足最小宽度，靠 .tablewrap 横向滚动，不截断关键内容 —— */
+.ls-wide{min-width:880px}
 
 /* —— 公开层列表的面客密度：参考件 55px 行高。不改公共 table.tbl（那是管理端密度），
    只在本模块的列表上叠一层 padding —— */
@@ -269,16 +233,8 @@
 .skel-row{padding:14px 0;border-bottom:1px solid var(--border)}
 .skel-row:last-child{border-bottom:0}
 
-@media (max-width:1180px){
-  .ls-lrow{grid-template-columns:minmax(180px,1.4fr) 128px 130px 124px 104px;}
-  .ls-lrow .cExp{display:none}
-}
-@media (max-width:900px){
-  .ls-lrow{grid-template-columns:1fr 1fr;gap:var(--sp-3)}
-  .ls-lrow .cMeter,.ls-lrow .cExp{display:none}
-  .ls-lrow .act{align-items:flex-start}
-  .ls-flow .sep{display:none}
-}
+@media (max-width:1180px){ .ls-stats{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:900px){ .ls-stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
 </style>
 </head>
 <body>

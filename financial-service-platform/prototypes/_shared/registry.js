@@ -148,7 +148,7 @@
  /* WS-324 借贷广场 · 融资需求与代币质押（金融服务端面客画布，portal 顶栏骨架）。三点说明：
     (1) 端别 end:'asset'——按 docs/design-system/README.md，end 表达画布形态；金融服务端归面客形态。
         本模块继承 4.3 已落库的顶栏（金融服务端登录），不并入 WS-308/309/310/312/318 的 .app 侧栏骨架。
-    (2) 页面 ID 取 PRD 的 P-LS 段位：P-LS-01 融资需求列表、P-LS-02 融资需求详情、P-LS-03 建池与发布，
+    (2) 页面 ID 取 PRD 的 P-LS 段位：P-LS-01 借贷广场、P-LS-02 融资需求详情、P-LS-03 创建融资项目，
         与 PRD 6.5 一一对应、不自行改号。
     (3) P-LS-90「我的融资项目」是原型侧内部页，PRD 未定义此页：WS-324 PRD 6.1 只写了
         「草稿在"我的项目"与控制台有继续发布入口」，没有给页面编号。它承载 AC-LS-54
@@ -160,9 +160,9 @@
    name:['Lending marketplace','借贷广场 · 融资需求与代币质押']};
  (function(){
   var pages={
-   'P-LS-01':[['Financing marketplace','融资需求广场'],'/plaza'],
+   'P-LS-01':[['Lending Marketplace','借贷广场'],'/marketplace'],
    'P-LS-02':[['Financing request details','融资需求详情'],'/project'],
-   'P-LS-03':[['Create pool and publish','建池与发布'],'/project/new'],
+   'P-LS-03':[['Create financing project','创建融资项目'],'/project/new'],
    'P-LS-90':[['My financing projects','我的融资项目'],'/my-projects']
   };
   for(var id in pages){
@@ -174,7 +174,7 @@
   Object.assign(CF.PAGES['P-LS-01'],{nav:'P-LS-01',navKey:'navPlaza',ico:'\u25a4'});
   Object.assign(CF.PAGES['P-LS-90'],{nav:'P-LS-90',navKey:'navMyProjects',ico:'\u25a6'});
   Object.assign(CF.PAGES['P-LS-02'],{crumb:['Request details','融资需求详情']});
-  Object.assign(CF.PAGES['P-LS-03'],{crumb:['Create and publish','建池与发布']});
+  Object.assign(CF.PAGES['P-LS-03'],{crumb:['Create financing project','创建融资项目']});
  })();
 
  /* WS-325 借贷广场 · 授信、报价与接受/拒绝（同一块面客画布，与 WS-324 共用 portal 顶栏骨架）。
