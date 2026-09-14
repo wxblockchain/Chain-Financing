@@ -358,6 +358,34 @@ var PROJECTS = [
     terms:{ rate:'年化 8.35%（演示）', term:'150 天', repay:'到期一次性还本付息', use:'精密仪器采购' },
     deals:[]
   },
+  /* ---- 终态样本（v1.5 新增）：已结清项目 ----
+     REDEEMABLE 里那 3 张「项目结清释放」的代币本来就写着 from:'FP-20251103-0021'，
+     但这个项目此前没有在 PROJECTS 里出现过，导致**终态下的全局操作区无从评审**。
+     补上它，用来验证：终态下追加质押与关闭项目置为不可用并给原因，
+     而「解除质押」入口仍然可用——D-FIN-57 的第二段由资产方自助发起、不设时限。
+     池内 tokens 为空（业务释放已在结清同刻完成），代币现在躺在 REDEEMABLE 里等提取。 */
+  {
+    id:'FP-20251103-0021', name:'华中冷链应收账款池',
+    owner:'晟远科技（演示）', entity:'E-ASSET-01',
+    status:'S-FP-6', expired:false,
+    publishedAt:'2025-11-05', expiresAt:'2026-11-05',
+    demand:null, quotes:1, assetType:'应收账款类',
+    tokens:[],
+    events:[
+      { d:'2025-11-03', k:'pledge',  t:'创建资产池 · 首笔质押 3 张', dTotal:350000 },
+      { d:'2025-11-05', k:'publish', t:'发布融资需求 280,000.00 USD', dFly:280000 },
+      { d:'2025-11-18', k:'quote',   t:'收到机构报价 280,000.00 USD' },
+      { d:'2025-11-26', k:'fund',    t:'放款并完成融资确认', dFly:-280000, dBal:280000 },
+      { d:'2025-11-26', k:'plan',    t:'还款计划定稿 · 2 期 · 起息日 2025-11-26' },
+      { d:'2026-05-26', k:'rconf',   t:'第 1 期利息 9,660.00 USD 已结清' },
+      { d:'2026-08-26', k:'settle',  t:'末期本息已结清 · 业务转 S-FD-8 已结清', dBal:-280000,
+        note:'业务结清的同一时刻，项目转 S-FP-6 已结清、池内质押全额业务释放（即时、无链上动作、无费用）' },
+      { d:'2026-08-26', k:'withdraw',t:'项目结清释放 3 张 · 280,000.00 USD 置「已释放 · 待提取」', dTotal:-350000,
+        note:'第二段链上提取由资产方自助发起、无时间限制；未提取前不属于任何资产池、不计入任何质押价值（D-FIN-57）' }
+    ],
+    terms:{ rate:'年化 6.90%（演示）', term:'270 天', repay:'到期一次性还本付息', use:'冷链仓储运营' },
+    deals:[ { id:'FD-20251126-0012', amt:280000, st:'已结清', at:'2025-11-26', x:'放款并完成融资确认' } ]
+  },
   /* ---- 以下两条为草稿，不进广场（D-FIN-64 / AC-LS-05），仅本企业可见 ---- */
   {
     id:'FP-20260910-0051', name:'华北纺织应收账款池',
@@ -607,49 +635,72 @@ function availableActions(p, role){
   /* --- 以下为资产方对自有项目的动作；非本方登录用户不可见（服务端归属过滤 AC-LS-06） --- */
   /* v1.3：游客不再逐动作返回 ⊘ + 各自原因，操作区收敛为单个「立即登录」（D-LS-14）。
      服务端动作鉴权与跨主体隔离一条不减（AC-LS-86），这里只是不再把它们画成按钮。 */
+  /* v1.5：**全局三件事对本方资产方一律常驻**（需求方 09-14「全局操作按钮是常在的」）。
+     它们从来不是按环节开关的——PRD 给的是量化判定：
+       · 追加质押   D-FIN-48「S-FP-1～S-FP-4 任何状态下都允许，只增不减」
+       · 解除质押   AC-FIN-13 视角 C 的可撤回上限 = 可融金额 ÷ 质押率（INV-FIN-01）
+       · 关闭项目   6.1 的在途占用 / 未偿余额判定
+     所以这一版把「按环节隐藏入口」改成「入口常在 + 提交时权威判定 + 拒绝时给出具体原因与数值」。
+     判定条款一条未改，改的只是入口可见性与拒绝时的反馈形态。 */
   var NOAUTH = L('Not signed in. Project actions are limited to the owning entity.',
                  '未登录。项目动作仅对该项目所属企业主体开放。');
   var mine = own || guest;
-  if(mine && live){
-    var pub = { key:'publish', anchor:'publish', enabled:false, reason:'',
-                label: st==='S-FP-1' ? g('publishDemand') : L('Republish / manage demand','再次发布 / 管理需求') };
-    if(guest)                 pub.reason = NOAUTH;
-    else if(p.emptyPool)      pub.reason = L('This project has no valid collateral; pledge again before publishing (D-FIN-62).',
-                                             '本项目暂无有效质押，请重新质押后再发布（D-FIN-62）。');
-    else if(d.valid <= 0)     pub.reason = L('Pledged token value is ' + usd(0) + ', which fails the publish check (D-FIN-61).',
-                                             '有效质押价值为 ' + usd(0) + '，不满足发布校验（D-FIN-61）。');
-    else if(p.expired)        pub.reason = L('The project term has expired; republishing is not allowed (D-FIN-43 branch 2).',
-                                             '项目已到期，不允许再次发布（D-FIN-43 分支②）。');
-    else if(d.free <= 0)      pub.reason = L('Available to borrow is ' + usd(0) + '; there is no headroom to publish (AC-FIN-12).',
-                                             '可融金额为 ' + usd(0) + '，无可发布额度（AC-FIN-12）。');
-    else pub.enabled = true;
-    out.push(pub);
+  /* 终态：已关闭 / 已结清。池内质押已在同一时刻全部业务释放，不能再追加、也无从再关闭；
+     但**提取已释放代币恰恰是这之后的主场**——D-FIN-57 的第二段由资产方自助发起、不设时限，
+     未提取的代币仍在质押合约内。所以终态下「解除质押」入口必须保留可用。 */
+  var terminal = (st === 'S-FP-5' || st === 'S-FP-6');
+  if(mine){
+    /* 发布是融资流程环节①的动作，不属于全局常驻三件；只在项目还活着时返回 */
+    if(live){
+      var pub = { key:'publish', anchor:'publish', enabled:false, reason:'',
+                  label: st==='S-FP-1' ? g('publishDemand') : L('Republish / manage demand','再次发布 / 管理需求') };
+      if(guest)                 pub.reason = NOAUTH;
+      else if(p.emptyPool)      pub.reason = L('This project has no valid collateral; pledge again before publishing (D-FIN-62).',
+                                               '本项目暂无有效质押，请重新质押后再发布（D-FIN-62）。');
+      else if(d.valid <= 0)     pub.reason = L('Pledged token value is ' + usd(0) + ', which fails the publish check (D-FIN-61).',
+                                               '有效质押价值为 ' + usd(0) + '，不满足发布校验（D-FIN-61）。');
+      else if(p.expired)        pub.reason = L('The project term has expired; republishing is not allowed (D-FIN-43 branch 2).',
+                                               '项目已到期，不允许再次发布（D-FIN-43 分支②）。');
+      else if(d.free <= 0)      pub.reason = L('Available to borrow is ' + usd(0) + '; there is no headroom to publish (AC-FIN-12).',
+                                               '可融金额为 ' + usd(0) + '，无可发布额度（AC-FIN-12）。');
+      else pub.enabled = true;
+      out.push(pub);
+    }
 
-    out.push({ key:'pledge', anchor:'pledge', label:g('addPledge'), enabled:!guest, primary:(d.grade==='short'),
-               reason: guest ? NOAUTH : '' });
+    /* 追加质押：D-FIN-48 —— S-FP-1～S-FP-4 任何状态下都允许，只增不减地增强覆盖。
+       报价中、放款中、还款中一律可点；只有终态不行。 */
+    var pg = { key:'pledge', anchor:'pledge', label:g('addPledge'),
+               enabled:(!guest && !terminal), primary:(d.grade === 'short'), reason:'' };
+    if(guest) pg.reason = NOAUTH;
+    else if(terminal) pg.reason = L('The project is in a terminal state (' + fpStatus(p) + '); its collateral has already been released, so nothing can be added.',
+                                    '项目已是终态（' + fpStatus(p) + '），池内质押已全部释放，不能再追加。');
+    out.push(pg);
 
     /* D-FIN-78：撤回质押与提取已释放代币合并为一个入口「解除质押」。
-       两种情形的判定与后续链路照旧，只是入口合一——用户不需要先知道自己的代币
-       此刻在池里还是在合约里待提取。 */
-    var w = { key:'release', anchor:'withdraw', label:g('releasePledge'), enabled:false, reason:'',
+       入口**一律可点**（含终态）：两类代币各走各的判定——池内的受可撤回上限约束，
+       合约里待提取的不做任何额度判定（D-FIN-57 第二段）。
+       可撤回上限为 0 时不藏入口，而是在弹窗里给出上限数值与两条出路（AC-LS-37）。 */
+    var w = { key:'release', anchor:'withdraw', label:g('releasePledge'), enabled:!guest, reason:(guest ? NOAUTH : ''),
+              wLimit: d.wLimit,
               redeemable: (own ? REDEEMABLE.length : 0),
               redeemValue: (own ? REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0) : 0) };
-    if(guest) w.reason = NOAUTH;
-    else if(d.wLimit <= 0 && d.deadCount === 0 && !REDEEMABLE.length)
-      w.reason = L('Release headroom is ' + usd(0) + ' (available to borrow ÷ 80%), there are no invalidated tokens in the pool, and nothing is awaiting withdrawal. The entry stays visible rather than hidden (H-03).',
-                   '当前可撤回上限为 ' + usd(0) + '（可融金额 ÷ 80%），池内也没有已失效代币，合约里也没有待提取的代币。入口保留可见，不隐藏（H-03）。');
-    else w.enabled = true;
     out.push(w);
 
-    var c = { key:'close', anchor:'close', label:g('closeProject'), enabled:false, reason:'' };
+    /* 关闭项目：入口常在，**拦截发生在提交时**（弹窗内），不靠隐藏按钮。
+       block 里带的是拒绝原因与数值，由 modalClose 呈现。 */
+    var c = { key:'close', anchor:'close', label:g('closeProject'), enabled:(!guest && !terminal), reason:'', block:'' };
     if(guest) c.reason = NOAUTH;
-    else if(st==='S-FP-3'||st==='S-FP-4') c.reason = L('An open or unsettled deal exists; the project cannot be closed (6.1).',
-                                                       '存在在途或未结清融资业务，项目不可关闭（6.1）。');
-    else if(d.fly > 0) c.reason = L('Committed demand of ' + usd(d.fly) + ' is outstanding; withdraw the demand first.',
-                                    '存在在途占用 ' + usd(d.fly) + '，请先撤下需求再关闭。');
-    else if(d.bal > 0) c.reason = L('An unsettled deal exists (outstanding financing ' + usd(d.bal) + '); the project cannot be closed (6.1).',
-                                    '存在未结清融资业务（项目融资余额 ' + usd(d.bal) + '），项目不可关闭（6.1）。');
-    else c.enabled = true;
+    else if(terminal) c.reason = L('The project is already in a terminal state (' + fpStatus(p) + ').',
+                                   '项目已是终态（' + fpStatus(p) + '）。');
+    else if(st === 'S-FP-3' || st === 'S-FP-4')
+      c.block = L('An open or unsettled financing deal exists on this project, so it cannot be closed (6.1). The deal must reach a terminal state first.',
+                  '本项目存在在途或未结清的融资业务，不可关闭（6.1）。需先让该业务走到终态。');
+    else if(d.fly > 0)
+      c.block = L('Committed demand of ' + usd(d.fly) + ' is still outstanding. Withdraw the demand first, then close.',
+                  '存在在途占用 ' + usd(d.fly) + '。请先撤下融资需求，再关闭项目。');
+    else if(d.bal > 0)
+      c.block = L('An unsettled deal exists (outstanding financing ' + usd(d.bal) + '), so the project cannot be closed (6.1).',
+                  '存在未结清融资业务（项目融资余额 ' + usd(d.bal) + '），项目不可关闭（6.1）。');
     out.push(c);
   }
 
@@ -1090,6 +1141,19 @@ var DEMO_TR = {
 /* 演示事件流的英文视图：只做展示层翻译，PROJECTS 里的数据一字未改。
    键是中文原串，值是英文；新增演示事件时在此补一条即可。 */
 var EV_TR = {
+  "创建资产池 · 首笔质押 3 张": "Pool created · first pledge of 3 tokens",
+  "发布融资需求 280,000.00 USD": "Financing demand published · 280,000.00 USD",
+  "收到机构报价 280,000.00 USD": "Quote received · 280,000.00 USD",
+  "还款计划定稿 · 2 期 · 起息日 2025-11-26": "Repayment schedule finalised · 2 instalments · interest start date 2025-11-26",
+  "第 1 期利息 9,660.00 USD 已结清": "Instalment 1 interest 9,660.00 USD settled",
+  "末期本息已结清 · 业务转 S-FD-8 已结清": "Final principal and interest settled · deal moves to S-FD-8 Settled",
+  "业务结清的同一时刻，项目转 S-FP-6 已结清、池内质押全额业务释放（即时、无链上动作、无费用）": "In the same instant the deal settles, the project moves to S-FP-6 Settled and the entire pool is released in business terms - immediate, no on-chain action, no cost",
+  "项目结清释放 3 张 · 280,000.00 USD 置「已释放 · 待提取」": "3 tokens worth 280,000.00 USD released on settlement, set to 'released, awaiting withdrawal'",
+  "第二段链上提取由资产方自助发起、无时间限制；未提取前不属于任何资产池、不计入任何质押价值（D-FIN-57）": "The second stage, the on-chain withdrawal, is initiated by the asset owner with no time limit; until withdrawn the tokens belong to no pool and count towards no pledged value (D-FIN-57)",
+  "冷链仓储运营": "Cold-chain warehousing",
+  "华中冷链应收账款池": "Central China cold-chain receivables pool",
+  "270 天": "270 days",
+  "已结清": "Settled",
   "创建资产池 · 首笔质押 10 张": "Pool created · first pledge of 10 tokens",
   "链上转入成功（CT-2）后才计入有效质押价值（D-FIN-40 / AC-LS-28）": "Only a confirmed on-chain transfer (CT-2) counts towards pledged token value (D-FIN-40 / AC-LS-28)",
   "发布融资需求 500,000.00 USD": "Financing demand published · 500,000.00 USD",
@@ -1244,8 +1308,10 @@ function statRow(p){
   var d = derive(p), liveCount = p.tokens.length - d.deadCount;
   var cells = [
     { k:g('pledgedCount'), v:liveCount + ' ' + L(liveCount === 1 ? 'token' : 'tokens','张'),
-      x:d.deadCount ? L(d.deadCount + ' more invalidated, excluded', '另有 ' + d.deadCount + ' 张已失效、不计入')
-                    : L('All tokens in this pool are valid','池内代币全部有效') },
+      x:p.tokens.length === 0
+          ? L('The pool holds no tokens','池内已无代币')
+          : d.deadCount ? L(d.deadCount + ' more invalidated, excluded', '另有 ' + d.deadCount + ' 张已失效、不计入')
+                        : L('All tokens in this pool are valid','池内代币全部有效') },
     { k:g('pledgedValue'), v:amt(d.valid) + cy(), lead:true,
       x:L('Valid tokens only — invalidated, unconfirmed and reconciliation-flagged excluded',
           '只取有效部分 —— 已排除失效、未上链、对账差异') },
@@ -1365,8 +1431,12 @@ function shortAlert(p, d, own){
     L('Insufficient pledge coverage: pledged token value has fallen below outstanding financing',
       '质押覆盖不足：池内有效质押价值低于项目融资余额')) + '</div>';
 }
-function usedUpNote(d){
+function usedUpNote(d, p){
   if(d.grade !== 'used-up') return '';
+  /* v1.5：终态项目（已关闭 / 已结清）池子已空，这段提示的建议——"追加质押可抬高融资上限
+     并重新打开额度"——在终态根本做不到，留着只会误导。**判据与 pill 一个都没动**，
+     只是这段建议不再渲染。终态下三档的呈现口径 PRD 没写，已登记进交付说明。 */
+  if(p && (p.status === 'S-FP-5' || p.status === 'S-FP-6')) return '';
   return CF.note('amber', L(
     'There is <span class="mono">' + usd(0) + '</span> left to borrow, so no new commitment can be taken on.' +
       '<p>Existing debt is still fully covered (borrowing cap ' + usd(d.cap) + ' ≥ outstanding financing ' + usd(d.bal) +
@@ -1615,6 +1685,9 @@ function flowStage(p){
 /* 本轮要约是否走完：没有在途需求，且业务已进入还款或结清。
    只看 p.rep 是不对的——一个项目可以「上一笔在还款」同时「这一笔刚发布等报价」。 */
 function flowDone(p){
+  /* 终态项目（已关闭 / 已结清）没有在跑的融资流程，四环节一律按走完呈现，
+     否则会在一个已结清的项目上把「融资需求」标成"当前环节"并挂一个 ⊘ 发布按钮。 */
+  if(p.status === 'S-FP-5' || p.status === 'S-FP-6') return true;
   return !p.demand && !!(p.rep || (p.fin && (p.fin.st === 'S-FD-6' || p.fin.st === 'S-FD-8')));
 }
 function flowBlock(p, acts){
@@ -1665,8 +1738,11 @@ function stageBtn(a, k){
 function repayBlock(p, acts){
   var rec = demandRecords(p).filter(function(r){ return r.st === 'funded'; });
   if(!p.rep || !rec.length)
-    return '<p class="hint">' + L('No disbursed financing on this project yet, so there is nothing to repay.',
-                                  '本项目暂无已放款的融资业务，当前没有还款事项。') + '</p>';
+    return '<p class="hint">' + (rec.length
+      ? L('The financing on this project has been settled; there is nothing left to repay.',
+          '本项目的融资业务已结清，没有待还款事项。')
+      : L('No disbursed financing on this project yet, so there is nothing to repay.',
+          '本项目暂无已放款的融资业务，当前没有还款事项。')) + '</p>';
   var sel = rec.filter(function(r){ return r.no === S.repayNo; })[0] || rec[0];
   var rp = p.rep;
   var rows = [
@@ -1698,29 +1774,55 @@ function repayBlock(p, acts){
 
 /* ---------------- 操作区段 ①：全局操作（6.5.5 / D-FIN-78） ---------------- */
 function globalBlock(p, acts, own){
-  var out = '';
+  var out = '', st = p.status, terminal = (st === 'S-FP-5' || st === 'S-FP-6');
+  /* 非本方企业主体：本方数据按企业主体在服务端过滤（AC-LS-06），所以这里本就没有全局动作。
+     v1.4 那句"当前身份对本项目没有可用的全局操作"会让人以为是按环节禁掉了，改成讲清归属。 */
+  if(!own)
+    return '<p class="hint">' + L(
+      'This project belongs to another entity (' + E(dtr(p.owner)) + '). Own-entity actions — adding collateral, releasing collateral, closing the project — are filtered by entity on the server (AC-LS-06), so they are not available here. Everything on this page that is public stays fully visible.',
+      '本项目属于另一个企业主体（' + E(dtr(p.owner)) + '）。追加质押、解除质押、关闭项目属于本方数据，按企业主体在服务端过滤（AC-LS-06），因此这里没有这些入口。本页的公开信息一条不少。') + '</p>';
+
   /* 草稿态时「发布融资需求」也在这一段出现（6.5.5 段①），
      因为此时页面上没有第 ② 段可点的环节按钮，用户第一件事就是发布。 */
   if(p.draft){
     var pub = actionOf(acts, 'publish');
     if(pub) out += actBtn(pub, 'primary block');
   }
+  /* 三件全局操作对本方资产方常驻——报价中、放款中、还款中都在，不按环节消失。
+     终态下追加与关闭置为不可用并给原因，**解除质押仍然可用**（D-FIN-57）。 */
   var pl = actionOf(acts, 'pledge');
-  if(pl) out += actBtn(pl, (p.draft ? '' : 'primary ') + 'block');
+  if(pl) out += actBtn(pl, (p.draft || terminal ? '' : 'primary ') + 'block', true);
   var rel = actionOf(acts, 'release');
   if(rel){
     /* D-FIN-78：可提取代币不再单独做提示块（AC-LS-38 改写），
        改为在合并后的「解除质押」入口上以角标 + 副文案提示数量与金额。 */
     if(rel.redeemable) rel.badge = rel.redeemable;
-    out += actBtn(rel, 'block');
-    if(rel.redeemable) out += '<p class="ls-subcap">' + L(
-      rel.redeemable + ' token(s) worth ' + usd(rel.redeemValue) + ' are already released in business terms but still sit in the pledge contract, waiting for you to withdraw them on chain.',
-      '其中 ' + rel.redeemable + ' 张（合计 ' + usd(rel.redeemValue) + '）业务上已释放、链上仍在质押合约内，等待您发起提取。') + '</p>';
+    out += actBtn(rel, (terminal ? 'primary ' : '') + 'block', true);
+    /* 待提取代币是**企业主体级**的（合约里躺着的那批），不是本项目池内的，
+       所以副文案要说清来源项目，否则在每个项目下都写「其中 N 张」会让人以为是本项目的。 */
+    if(rel.redeemable){
+      var srcs = [], i;
+      for(i=0;i<REDEEMABLE.length;i++) if(srcs.indexOf(REDEEMABLE[i].from) < 0) srcs.push(REDEEMABLE[i].from);
+      out += '<p class="ls-subcap">' + L(
+        'The pledge contract still holds ' + rel.redeemable + ' released token(s) worth ' + usd(rel.redeemValue) +
+        ' from ' + srcs.join(' / ') + '. They can be withdrawn from this same entry, with no time limit.',
+        '质押合约内还有 ' + rel.redeemable + ' 张已释放代币（合计 ' + usd(rel.redeemValue) + '，来自 ' + srcs.join(' / ') +
+        '）待提取，可在本入口一并提取，无时间限制。') + '</p>';
+    }
+    if(!terminal) out += '<p class="ls-subcap">' + L(
+      'Release headroom on this pool right now: ' + usd(rel.wLimit) + ' (available to borrow ÷ ' + (PLEDGE_RATE*100) +
+      '%). Invalidated tokens are not subject to it.',
+      '本池当前可撤回上限 ' + usd(rel.wLimit) + '（＝可融金额 ÷ ' + (PLEDGE_RATE*100) + '%）。已失效代币不受此限制。') + '</p>';
   }
   var cl = actionOf(acts, 'close');
-  if(cl) out += actBtn(cl, 'block');
-  if(!out) out = '<p class="hint">' + L('No global action is available to your role on this project.',
-                                        '当前身份对本项目没有可用的全局操作。') + '</p>';
+  if(cl) out += actBtn(cl, 'block', true);
+  /* ⊘ 的原因不再逐个挂在按钮下面（三个按钮会堆出三段小字）：
+     终态由段末那一整段说明承载，其余情形才逐条给原因。 */
+  if(!terminal)
+    [pl, rel, cl].forEach(function(a){ if(a && !a.enabled && a.reason) out += whyLine(a.reason); });
+  if(terminal) out += '<p class="hint" style="margin-top:12px">' + L(
+    'The project is in a terminal state, so adding collateral and closing are no longer available. <b>Releasing collateral stays open</b>: the business-side release happened at the moment of closure / settlement, but the tokens are still inside the pledge contract — you withdraw them yourself, pay the gas, and there is <b>no deadline and no expiry</b> (D-FIN-57).',
+    '项目已是终态，追加质押与关闭项目不再可用。<b>解除质押仍然可用</b>：业务释放在关闭 / 结清的同一时刻已完成，但代币仍停留在质押合约内，需您自行发起提取并自付 gas，<b>无时间限制、不过期</b>（D-FIN-57）。') + '</p>';
   return out;
 }
 
@@ -1753,6 +1855,7 @@ function pageProject(){
       L('← Back to the marketplace','← 返回借贷广场') + '</button></div></div></div>';
 
   var d = derive(p), acts = availableActions(p, S.role);
+  var terminalP = (p.status === 'S-FP-5' || p.status === 'S-FP-6');
   chartQueue = [];
 
   if(S.st === 'loading')
@@ -1816,9 +1919,14 @@ function pageProject(){
                                              '已失效 · 不计入覆盖 · ' + (t.deadAt||'')))
                            : pill('green', g('valid'))) + '</td>' +
           '<td>' + pill(TONE[CT_STATUS[t.ct].tone] || 'gray', ctStatus(t.ct)) + '</td></tr>';
-      }).join('') : '<tr><td colspan="7" class="tbl-empty"><b>' + L('No valid collateral in this pool','本项目暂无有效质押') + '</b>' +
-        L('The pledge submitted at creation ultimately failed on chain. Pledge again before publishing.',
-          '创建时那笔质押最终链上失败，可重新质押后再发布。') + '</td></tr>') +
+      }).join('') : '<tr><td colspan="7" class="tbl-empty"><b>' +
+        (terminalP
+          ? L('The pool is empty','本池已空') + '</b>' +
+            L('The collateral was released in business terms at the moment the project closed or settled. Tokens still awaiting on-chain withdrawal are listed in the "Release collateral" dialog (D-FIN-57).',
+              '质押在项目关闭 / 结清的同一时刻已全额业务释放。仍待链上提取的代币在「解除质押」弹窗内列出（D-FIN-57）。')
+          : L('No valid collateral in this pool','本项目暂无有效质押') + '</b>' +
+            L('The pledge submitted at creation ultimately failed on chain. Pledge again before publishing.',
+              '创建时那笔质押最终链上失败，可重新质押后再发布。')) + '</td></tr>') +
     '</tbody></table></div>' + pgBar(tp, 'tokPage') +
     '<div class="card-b" style="padding-top:12px">' + CF.note('', L(
       'What is fully public is the financing demand and deal information shown on the marketplace. It does <strong class="ls-b">not</strong> include credit lines, other parties’ console data, operations-side diagnostic fields, scanned attachments or contact details.' +
@@ -2063,7 +2171,7 @@ function pageProject(){
       faint(L('same source as the figures above · ' + CCY, '口径与上方读数同源 · 单位 ' + CCY))) +
     '<div class="card-b">' + chartBlock(p,'pool') + chartBlock(p,'fin') + '</div></div>';
 
-  return head + shortAlert(p, d, own) + usedUpNote(d) + statRow(p) +
+  return head + shortAlert(p, d, own) + usedUpNote(d, p) + statRow(p) +
     '<div class="portal-cols"><div>' + lockBlock + pledgeCard + finCard + repCard + demandCard + quoteCard +
     '</div>' + rail + '</div>' + charts;
 }
@@ -2433,10 +2541,41 @@ function modalRelease(){
   }
   var H = '<thead><tr><th style="width:36px"></th><th>' + g('tokenId') + '</th><th class="num">' + g('tokenValue') +
           '</th><th class="num">' + g('dueDate') + '</th><th>' + g('tokenState') + '</th></tr></thead>';
+  /* 池内那一侧没得撤时，把上限数值与两条出路摆出来——不是把入口藏起来（AC-LS-37）。
+     合约里待提取的那一侧不受可撤回上限约束，单独说明。 */
+  var poolEmpty   = !p.tokens.length;
+  var poolNothing = (!poolEmpty && d.wLimit <= 0 && !dead.length);
   var body =
     '<p class="lead" style="margin-top:0">' + L(
       'One entry for both cases: tokens still in the pool are withdrawn (subject to the release limit), and tokens already released in business terms are withdrawn from the pledge contract back to your address. You do not need to know which side a token is on.',
       '一个入口涵盖两种情形：还在池里的代币走撤回（受可撤回上限约束），业务上已释放、链上仍在合约里的代币走提取。您不需要先分清自己的代币在哪一边。') + '</p>' +
+    /* 池子已空（关闭 / 结清后质押已在同一时刻全额业务释放）——此时讲"可撤回上限"没有意义，
+       该讲的是代币现在在哪、怎么拿回来（D-FIN-57 第二段）。 */
+    (poolEmpty ? CF.note('', L(
+      'This pool is empty: the collateral was released in business terms at the moment the project closed or settled — immediate, no on-chain action, no cost.' +
+      (REDEEMABLE.length
+        ? '<p>The ' + REDEEMABLE.length + ' token(s) worth ' + usd(REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0)) +
+          ' listed below are <b class="ls-b">still inside the pledge contract</b>. Withdrawing them is the second stage, initiated by you and paid for by you, with <b class="ls-b">no deadline and no expiry</b>. Until withdrawn they belong to no pool, count towards no pledged value, and cannot be pledged again.</p>'
+        : '<p>There is nothing awaiting withdrawal in the contract either.</p>'),
+      '本池已空：质押在项目关闭 / 结清的同一时刻已全额业务释放——即时、无链上动作、无费用。' +
+      (REDEEMABLE.length
+        ? '<p>下面列出的 ' + REDEEMABLE.length + ' 张（合计 ' + usd(REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0)) +
+          '）<b class="ls-b">仍在质押合约内</b>。提取是第二段，由您自行发起、自付 gas，<b class="ls-b">无时间限制、不过期</b>。未提取前不属于任何资产池、不计入任何质押价值，也不能被再次质押。</p>'
+        : '<p>合约里也没有待提取的代币。</p>')),
+      L('The pool is empty — what is left is the withdrawal','本池已空，剩下的是提取这一步')) : '') +
+    /* 池内有代币但可撤回上限为 0：不把入口藏起来，把数值与两条出路讲清（AC-LS-37） */
+    (poolNothing ? CF.note('amber', L(
+      'Release headroom is <span class="mono">' + usd(0) + '</span> right now — it is <b class="ls-b">available to borrow ÷ ' + (PLEDGE_RATE*100) +
+      '%</b>, and available to borrow is ' + usd(d.free) + ' because the pool is carrying outstanding financing of ' + usd(d.bal) +
+      ' and committed demand of ' + usd(d.fly) + '. There are no invalidated tokens in this pool either (they would not be subject to the limit).' +
+      '<p>Two ways forward: ① repayment lowers outstanding financing, which raises the release limit; ② withdrawing the open demand frees the committed part. This is a quantified test (INV-FIN-01 / AC-FIN-13 view C), not a stage lock — the entry stays open and is re-evaluated by the server on every submission.</p>' +
+      (REDEEMABLE.length ? '<p>The ' + REDEEMABLE.length + ' released token(s) sitting in the pledge contract are <b class="ls-b">not subject to this limit</b> and can be withdrawn right now (D-FIN-57).</p>' : ''),
+      '当前可撤回上限为 <span class="mono">' + usd(0) + '</span>——它<b class="ls-b">＝ 可融金额 ÷ ' + (PLEDGE_RATE*100) +
+      '%</b>，而可融金额是 ' + usd(d.free) + '，因为池子正扛着项目融资余额 ' + usd(d.bal) + ' 与项目在途金额 ' + usd(d.fly) +
+      '。池内也没有已失效代币（失效代币本来就不受这个上限约束）。' +
+      '<p>两条出路：① 还款降低项目融资余额，可撤回上限随之抬高；② 撤下在途需求，释放被占用的那部分。这是量化判定（INV-FIN-01 / AC-FIN-13 视角 C），不是按环节上锁——入口照常开着，每次提交都由服务端重新判定。</p>' +
+      (REDEEMABLE.length ? '<p>质押合约内那 ' + REDEEMABLE.length + ' 张已释放代币<b class="ls-b">不受本上限约束</b>，现在就可以提取（D-FIN-57）。</p>' : '')),
+      L('Nothing in this pool can be withdrawn right now','本池此刻没有可撤回的代币')) : '') +
     (dead.length ? '<h3 class="sec-title" style="font-size:12.5px;margin:14px 0 6px">' +
       L('Invalidated · withdrawable at any time, no credit test · ' + dead.length,
         '已失效 · 可随时撤回、不做额度判定 · ' + dead.length + ' 张') + '</h3>' +
@@ -2532,12 +2671,36 @@ function modalStage(){
 
 /* ---- 弹窗：关闭项目 ---- */
 function modalClose(){
-  var p = findProject(S.modal.id);
+  var p = findProject(S.modal.id), d = derive(p);
+  var c = actionOf(availableActions(p, S.role), 'close') || {};
+  /* 入口常在、拦截在提交时（v1.5）：有存量融资业务时不是把按钮藏起来，
+     而是在这里给出**具体原因 + 当前的量**，并让「确认关闭」不可提交。 */
+  if(c.block){
+    var rows = [
+      [g('committed'), usd(d.fly)],
+      [g('outstanding'), usd(d.bal)],
+      [L('Project status','项目状态'), fpStatus(p)]
+    ];
+    return mWrap(g('closeProject'),
+      CF.note('red', E(c.block) +
+        '<p>' + L('The check runs on the server every time and uses freshly recomputed figures (6.1 / AC-FIN-12). Nothing about this project has been changed by opening this dialog.',
+                  '该校验每次提交都由服务端用当场重算的数值执行（6.1 / AC-FIN-12）。打开本弹窗不会改变项目的任何状态。') + '</p>',
+        L('This project cannot be closed right now','当前不能关闭本项目')) +
+      '<div class="rows" style="box-shadow:none;margin-top:14px">' + rows.map(function(r){
+        return '<div class="row"><div class="row-main"><div class="row-k">' + E(r[0]) + '</div>' +
+          '<div class="row-v mono">' + E(String(r[1])) + '</div></div></div>'; }).join('') + '</div>' +
+      '<p class="hint" style="margin-top:12px">' + L(
+        'Two ways forward: ① withdraw the open demand, so committed demand returns to ' + usd(0) +
+        '; ② wait for the deal to settle, so outstanding financing returns to ' + usd(0) + '. Closing becomes available the moment both are zero.',
+        '两条出路：① 撤下在途需求，让项目在途金额回到 ' + usd(0) + '；② 等业务结清，让项目融资余额回到 ' + usd(0) +
+        '。两个量都归零的那一刻，关闭入口即可提交。') + '</p>',
+      btnCancel() + '<button class="btn primary" type="button" disabled>' + L('Confirm close','确认关闭') + '</button>');
+  }
   return mWrap(g('closeProject'), CF.note('amber', L(
     'Closing moves the project to Closed. In the same instant the platform releases every commitment and collateral relationship on this pool, and the ' + p.tokens.length + ' token(s) in it become "released · awaiting withdrawal".' +
-    '<p>The business-side release is <strong class="ls-b">immediate, involves no on-chain action and costs nothing</strong>. The tokens stay inside the pledge contract: you withdraw them yourself and pay the gas, and they <strong class="ls-b">never return to your wallet automatically</strong>.</p>',
+    '<p>The business-side release is <strong class="ls-b">immediate, involves no on-chain action and costs nothing</strong>. The tokens stay inside the pledge contract: you withdraw them yourself and pay the gas, and they <strong class="ls-b">never return to your wallet automatically</strong>. The "Release collateral" entry stays available after closing, with no deadline (D-FIN-57).</p>',
     '关闭后项目转「已关闭」，平台在同一时刻解除该池全部占用与覆盖关系，池内 ' + p.tokens.length + ' 张代币置「已释放 · 待提取」。' +
-    '<p>业务释放<strong class="ls-b">即时、无链上动作、无费用</strong>；代币仍停留在质押合约内，需您自行发起提取并自付 gas，<strong class="ls-b">不会自动回到钱包</strong>。</p>')),
+    '<p>业务释放<strong class="ls-b">即时、无链上动作、无费用</strong>；代币仍停留在质押合约内，需您自行发起提取并自付 gas，<strong class="ls-b">不会自动回到钱包</strong>。关闭之后「解除质押」入口照常可用，<strong class="ls-b">无时间限制</strong>（D-FIN-57）。</p>')),
     btnCancel() + '<button class="btn primary" type="button" data-act="ls.closeOk">' + L('Confirm close','确认关闭') + '</button>');
 }
 
