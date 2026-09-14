@@ -51,11 +51,11 @@ var PS_STATUS = {
   'PS-2': '已质押',
   'PS-4': '已释放'
 };
-/* 担保状态档位（主册 5.3.1）；PS-3 已作废，编号保留占位不复用 */
+/* 质押覆盖状态三档（主册 5.3.1，D-LS-17 已在 PRD V9.0 定稿）；PS-3 已作废，编号保留占位不复用 */
 var GRADES = [
-  { k:'normal',  t:'正常',            x:'INV-FIN-01 成立且可融金额 > 0', tone:'good' },
-  { k:'used-up', t:'额度用尽',        x:'已借部分担保足额，但不能再借；不预警', tone:'warn' },
-  { k:'short',   t:'担保不足预警',    x:'融资上限 < 项目融资余额', tone:'crit' }
+  { k:'normal',  t:'覆盖有余', x:'INV-FIN-01 成立且可融金额 > 0', tone:'good' },
+  { k:'used-up', t:'覆盖持平', x:'已借的被池子完全覆盖，但不能再借；不提醒', tone:'warn' },
+  { k:'short',   t:'覆盖不足', x:'融资上限 < 项目融资余额', tone:'crit' }
 ];
 
 /* ---- 链上失败与等待的五类文案（分册 6.7.2，D-FIN-69 / D-FIN-70） ---- */
@@ -171,7 +171,7 @@ var PROJECTS = [
       { d:'2026-07-03', k:'withdraw', t:'撤回质押 3 张 · 300,000.00 USD',          dTotal:-300000, note:'撤回时可撤回上限 575,000.00 USD，本次通过额度判定（AC-FIN-13 / AC-FIN-22）' },
       { d:'2026-07-10', k:'publish',  t:'再次发布融资需求 200,000.00 USD',          dFly:200000,    note:'S-FP-4 且可融金额 220,000.00 USD > 0，可再次发布剩余额度（6.1）' },
       { d:'2026-08-19', k:'invalid',  t:'池内 2 张代币底层应收账款失效 · 300,000.00 USD', dVoid:300000,
-        note:'失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发担保不足预警（E-9 / 6.4.1）' },
+        note:'失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发覆盖不足提醒（E-9 / 6.4.1）' },
       /* WS-327 增量：FD-20260512-0044 的还款计划与第 1 期还款。事件续接同一张公开时间线。 */
       { d:'2026-05-12', k:'plan',   t:'还款计划定稿 · 3 期 · 起息日 2026-05-12',
         note:'融资确认完成的同一次结算内定稿，起息日取实际放款日；到期日 2027-04-20 取项目有效期至（WS-327 D-RP-10 / D-RP-11 / D-RP-12）' },
@@ -254,7 +254,7 @@ var PROJECTS = [
       { d:'2026-07-08', k:'publish', t:'发布融资需求 500,000.00 USD', dFly:500000 },
       { d:'2026-07-20', k:'quote',   t:'收到机构报价 500,000.00 USD', note:'在途占用不变（AC-FIN-23）' },
       { d:'2026-07-26', k:'fund',    t:'放款并完成融资确认', dFly:-500000, dBal:500000,
-        note:'融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「额度用尽」档；INV-FIN-01 仍成立，不预警（D-FIN-55）' },
+        note:'融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「覆盖持平」档；INV-FIN-01 仍成立，不触发覆盖不足提醒（D-FIN-55）' },
       /* WS-327 增量：同一次结算内还款计划定稿，首期尚未到应还日。 */
       { d:'2026-07-26', k:'plan',    t:'还款计划定稿 · 3 期 · 起息日 2026-07-26',
         note:'首期应还日 2026-10-26，还款入口于应还日前 3 个自然日开启；本期不支持提前还款（WS-327 D-RP-26 / X-LS-40）' }
@@ -408,7 +408,7 @@ REDEEMABLE.forEach(function(t){ t.ps='PS-4'; t.pending=true; t.from='FP-20251103
 
 /* ================================================================
    30-calc.js —— 派生量的唯一实现
-   六个派生量、担保档位、可撤回上限只在这里算一次，
+   六个派生量、质押覆盖档位、可撤回上限只在这里算一次，
    卡片 / 详情 / 发布页 / 两张图全部消费同一份结果（AC-FIN-15 / H-04）。
    原型内为前端即时预览；真实系统提交时一律由服务端权威重算（AC-FIN-06）。
    ================================================================ */
@@ -509,7 +509,7 @@ function snap(d, total, dead, bal, fly, ev){
     bal:bal,                /* 项目融资余额 FP-13 */
     fly:fly,                /* 项目在途金额 FP-14（唯一来源为发布占用） */
     free:Math.max(0, round2(cap - bal - fly)),   /* 可融金额 FP-15 */
-    short:cap < bal          /* 担保不足：融资上限 < 项目融资余额（档③） */
+    short:cap < bal          /* 覆盖不足：融资上限 < 项目融资余额（档③） */
   };
 }
 function round2(n){ return Math.round(n*100)/100; }
@@ -523,7 +523,7 @@ function derive(p){
     total:cur.total, dead:cur.dead, valid:cur.valid,
     cap:cur.cap, bal:cur.bal, fly:cur.fly, free:cur.free,
     grade:g,
-    gap:      cur.short ? round2(cur.bal - cur.cap) : 0,             /* 担保缺口 FP-21 */
+    gap:      cur.short ? round2(cur.bal - cur.cap) : 0,             /* 覆盖缺口 FP-21 */
     need:     cur.short ? round2((cur.bal - cur.cap) / PLEDGE_RATE) : 0, /* 需追加资产价值 = 缺口 ÷ 80% */
     shortFrom:shortFrom(pts),
     /* 可撤回上限 FP-16 = 可融金额 ÷ 质押率（AC-FIN-22，AC-FIN-13 的代数变形） */
@@ -532,7 +532,7 @@ function derive(p){
     liveCount:p.tokens.filter(function(t){ return !t.dead; }).length
   };
 }
-/* 担保不足起始日：最后一段连续 short 区间的起点 */
+/* 覆盖不足起始日：最后一段连续 short 区间的起点 */
 function shortFrom(pts){
   var i, from=null;
   for(i=0;i<pts.length;i++){
@@ -574,7 +574,7 @@ function availableActions(p, role){
     q.reason = L('Draft projects are not listed on the marketplace.','草稿项目不进广场。'); q.brief = L('Draft','草稿');
   } else if(d.grade === 'short'){
     q.reason = L('This project is undercollateralised and has stopped accepting new quotes (AC-LS-39). Shortfall ' + usd(d.gap) + '.',
-                 '该项目处于担保不足预警，已暂停接受新报价（AC-LS-39）。当前担保缺口 ' + usd(d.gap) + '。');
+                 '该项目质押覆盖不足，已暂停接受新报价（AC-LS-39）。当前覆盖缺口 ' + usd(d.gap) + '。');
     q.brief = g('covUnder');
   } else if(p.expired){
     q.reason = L('The project term has expired; no new quotes are accepted. Existing deals keep performing (D-FIN-43 branch 2).',
@@ -652,7 +652,7 @@ function availableActions(p, role){
   }
 
   /* --- WS-325 增量：接受 / 拒绝报价。业务已终结时不返回（不可见，不是 ⊘）。
-         需求因担保不足失效时报价一并终结，该动作随之消失（D-CR-30 / AC-LS-91）。 --- */
+         需求因覆盖不足失效时报价一并终结，该动作随之消失（D-CR-30 / AC-LS-91）。 --- */
   /* --- WS-326 增量：放款 / 确认到账 / 重传盖章件（AC-LS-103）。
          可用性一律由服务端返回的 available_actions 决定，前端不自行依据状态推断；
          「不返回」与「返回但 ⊘ + 原因」是两件事：前者不可见，后者可见不可点。 --- */
@@ -715,7 +715,7 @@ function findProject(id){ for(var i=0;i<PROJECTS.length;i++){ if(PROJECTS[i].id=
    50-charts.js —— P-LS-02 详情页两张图
    图 1 池内资产变动：有效质押价值 + 失效代币价值 = 池内资产总额（堆叠阶梯面积）
    图 2 融资变动：融资上限（线）vs 项目融资余额 + 项目在途金额（堆叠阶梯面积）
-   四个量口径互不混用；担保不足（融资上限 < 项目融资余额）在图 2 上有独立区间。
+   四个量口径互不混用；覆盖不足（融资上限 < 项目融资余额）在图 2 上有独立区间。
    两图共用 30-calc.js 的同一份 seriesOf()，与页面数字同源。
    数值为阶梯：一次事件改变一次取值，事件之间保持不变——这就是业务的真实形状。
    ================================================================ */
@@ -826,10 +826,10 @@ function chartPool(uid, pts, W){
          '" stroke="var(--border)" stroke-width="1" stroke-dasharray="2 3"></line>';
   });
 
-  /* 有效质押价值（底层，计入担保） */
+  /* 有效质押价值（底层，计入覆盖） */
   s += '<path d="' + stepFwd(pts, function(p){ return p.valid; }, X, Y) + stepBack(pts, zero, X, Y) +
        'Z" fill="var(--accent-soft)"></path>';
-  /* 失效代币价值（上层，不计入担保）—— 中性灰 + 斜纹，双通道编码 */
+  /* 失效代币价值（上层，不计入覆盖）—— 中性灰 + 斜纹，双通道编码 */
   s += '<path d="' + stepFwd(pts, function(p){ return p.total; }, X, Y) +
        stepBack(pts, function(p){ return p.valid; }, X, Y) + 'Z" fill="url(#hatchVoid' + uid + ')"></path>';
   /* 池内资产总额：堆叠顶缘，虚线。先画它，失效为 0 的区段由下面的实线盖住，避免蓝线看起来是虚的 */
@@ -879,7 +879,7 @@ function chartFin(uid, pts, W){
        '<line x1="0" y1="0" x2="0" y2="7" stroke="var(--danger)" stroke-width="1.4" opacity=".45"></line></pattern></defs>';
   s += chartFrame(uid, W, niceTicks(yMax, 4), yMax, monthTicks(x0, x1), X, Y);
 
-  /* 担保不足区间：融资上限 < 项目融资余额 的连续区段 —— 先铺底，图形压在上面 */
+  /* 覆盖不足区间：融资上限 < 项目融资余额 的连续区段 —— 先铺底，图形压在上面 */
   var bands = [], i, open = null;
   for(i=0;i<pts.length;i++){
     if(pts[i].short && open === null) open = pts[i];
@@ -915,13 +915,13 @@ function chartFin(uid, pts, W){
   s += '<path d="' + stepFwd(pts, function(p){ return p.cap; }, X, Y) +
        '" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linejoin="round"></path>';
 
-  /* 跨线点：担保不足起点 */
+  /* 跨线点：覆盖不足起点 */
   bands.forEach(function(b){
     var bx = X(b[0].x);
     s += '<circle cx="' + bx.toFixed(1) + '" cy="' + Y(b[0].cap).toFixed(1) +
          '" r="5" fill="var(--card)" stroke="var(--danger)" stroke-width="2.4"></circle>' +
          '<text x="' + (bx + 9).toFixed(1) + '" y="' + (CH_M.t + 11) + '" font-size="10" fill="var(--danger)" font-weight="700">' +
-         L('Undercollateralised from ' + b[0].d, '担保不足区间 · 自 ' + b[0].d + ' 起') + '</text>' +
+         L('Insufficient coverage from ' + b[0].d, '覆盖不足区间 · 自 ' + b[0].d + ' 起') + '</text>' +
          '<text x="' + (bx + 9).toFixed(1) + '" y="' + (CH_M.t + 24) + '" font-size="10" fill="var(--muted)">' +
          L('borrowing cap fell below outstanding financing', '融资上限跌破项目融资余额') + '</text>';
   });
@@ -964,7 +964,7 @@ function attachHover(wrapId, pts, built, kind){
     var rows;
     if(kind === 'pool'){
       rows = [['var(--accent)', g('pledgedValue'), p.valid],
-              ['var(--faint)', L('Invalidated token value (excluded)','失效代币价值（不计入担保）'), p.dead],
+              ['var(--faint)', L('Invalidated token value (excluded)','失效代币价值（不计入覆盖）'), p.dead],
               [null, L('Total pool value','池内资产总额'), p.total]];
     } else {
       rows = [['var(--accent)', g('cap'), p.cap], ['var(--warn)', g('outstanding'), p.bal],
@@ -975,7 +975,7 @@ function attachHover(wrapId, pts, built, kind){
         return '<div class="r"><span class="lf">' + (r[0] ? '<i style="background:' + r[0] + '"></i>' : '<i style="background:transparent"></i>') +
           esc(r[1]) + '</span><b>' + amt(r[2]) + '</b></div>';
       }).join('') +
-      (kind === 'fin' && p.short ? '<div class="ev" style="color:var(--danger)">' + L('Undercollateralised: borrowing cap < outstanding financing, shortfall ', '担保不足：融资上限 < 项目融资余额，缺口 ') + amt(p.bal - p.cap) + ' ' + CCY + '</div>' : '') +
+      (kind === 'fin' && p.short ? '<div class="ev" style="color:var(--danger)">' + L('Insufficient coverage: borrowing cap < outstanding financing, gap ', '覆盖不足：融资上限 < 项目融资余额，覆盖缺口 ') + amt(p.bal - p.cap) + ' ' + CCY + '</div>' : '') +
       (p.ev ? '<div class="ev"><b>' + esc(dtr(p.ev.t)) + '</b>' + (p.ev.note ? '<br>' + esc(dtr(p.ev.note)) : '') + '</div>' : '');
     var tw = tip.offsetWidth || 240;
     var left = cx + 14; if(left + tw > built.W - 6) left = cx - tw - 14;
@@ -1022,10 +1022,13 @@ var G = {
   cap          :['Borrowing cap','融资上限'],
   committed    :['Committed demand','项目在途金额'],
   available    :['Available to borrow','可融金额'],
-  coverage     :['Collateral coverage','抵押覆盖'],       /* 原「担保状态」，D-LS-17 本轮定名 */
-  covSufficient:['Sufficient','覆盖充足'],
-  covFullyDrawn:['Fully drawn','额度已用尽'],
-  covUnder     :['Undercollateralised','覆盖不足'],
+  /* D-LS-17 已由 PRD V9.0 定稿，这四条是 PRD 术语，设计师按 PRD 的标签走（分册 7.6） */
+  coverage     :['Pledge coverage status','质押覆盖状态'],
+  covSufficient:['Ample','覆盖有余'],
+  covFullyDrawn:['At Capacity','覆盖持平'],
+  covUnder     :['Insufficient','覆盖不足'],
+  coverageGap  :['Coverage gap','覆盖缺口'],
+  covNotice    :['Insufficient-coverage notice','覆盖不足提醒'],
   tokenId      :['Token ID','代币编号'],
   tokenQty     :['Quantity / Currency','代币数量 / 币种'],
   tokenValue   :['Token value','代币价值'],
@@ -1100,7 +1103,7 @@ var EV_TR = {
   "再次发布融资需求 200,000.00 USD": "Financing demand republished · 200,000.00 USD",
   "S-FP-4 且可融金额 220,000.00 USD > 0，可再次发布剩余额度（6.1）": "In S-FP-4 with 220,000.00 USD still available to borrow, the remaining headroom can be republished (6.1)",
   "池内 2 张代币底层应收账款失效 · 300,000.00 USD": "Underlying receivables behind 2 tokens in the pool were invalidated · 300,000.00 USD",
-  "失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发担保不足预警（E-9 / 6.4.1）": "The invalidated part stops counting towards pledged token value; the borrowing cap fell to 480,000.00 USD, below outstanding financing of 500,000.00 USD, so the project became undercollateralised (E-9 / 6.4.1)",
+  "失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发覆盖不足提醒（E-9 / 6.4.1）": "The invalidated part stops counting towards pledged token value; the borrowing cap fell to 480,000.00 USD, below outstanding financing of 500,000.00 USD, so pledge coverage became insufficient (E-9 / 6.4.1)",
   "还款计划定稿 · 3 期 · 起息日 2026-05-12": "Repayment schedule finalised · 3 instalments · interest start date 2026-05-12",
   "融资确认完成的同一次结算内定稿，起息日取实际放款日；到期日 2027-04-20 取项目有效期至（WS-327 D-RP-10 / D-RP-11 / D-RP-12）": "Finalised in the same settlement as the financing confirmation. The interest start date is the actual disbursement date; the maturity date 2027-04-20 is the project validity date (WS-327 D-RP-10 / D-RP-11 / D-RP-12)",
   "第 1 期利息 8,688.89 USD 已提交还款记录 · 期次转 S-RP-2": "Instalment 1 interest 8,688.89 USD submitted · instalment moves to S-RP-2",
@@ -1124,7 +1127,7 @@ var EV_TR = {
   "项目转 S-FP-3 已锁定；在途占用不变（AC-FIN-23）": "The project moves to S-FP-3 Locked; committed demand is unchanged (AC-FIN-23)",
   "创建资产池 · 首笔质押 5 张": "Pool created · first pledge of 5 tokens",
   "在途占用不变（AC-FIN-23）": "Committed demand unchanged (AC-FIN-23)",
-  "融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「额度用尽」档；INV-FIN-01 仍成立，不预警（D-FIN-55）": "Borrowing cap 500,000.00 = outstanding financing 500,000.00, so available to borrow is zero and the project is fully drawn; INV-FIN-01 still holds, so this is not a warning (D-FIN-55)",
+  "融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「覆盖持平」档；INV-FIN-01 仍成立，不触发覆盖不足提醒（D-FIN-55）": "Borrowing cap 500,000.00 = outstanding financing 500,000.00, so available to borrow is zero and coverage is at capacity; INV-FIN-01 still holds, so no insufficient-coverage notice is raised (D-FIN-55)",
   "还款计划定稿 · 3 期 · 起息日 2026-07-26": "Repayment schedule finalised · 3 instalments · interest start date 2026-07-26",
   "首期应还日 2026-10-26，还款入口于应还日前 3 个自然日开启；本期不支持提前还款（WS-327 D-RP-26 / X-LS-40）": "The first instalment is due 2026-10-26 and the repayment entry opens 3 calendar days before the due date; early repayment is not supported this release (WS-327 D-RP-26 / X-LS-40)",
   "年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2026-07-26": "Simple annual interest, actual days ÷ 360, interest accrues from the start date and not on the due date; start date = 2026-07-26",
@@ -1170,7 +1173,7 @@ function dtr(v){
   return t.replace(/（演示）/g, ' (demo)');
 }
 
-/* 抵押覆盖三档（原「担保状态」，D-LS-17 本轮定名）。判据一字未动，只换标签。 */
+/* 质押覆盖状态三档（D-LS-17，PRD V9.0 定稿）。判据一字未动，只换标签。 */
 function covMeta(k){
   return k === 'short'   ? { tone:'red',   t:g('covUnder') }
        : k === 'used-up' ? { tone:'amber', t:g('covFullyDrawn') }
@@ -1350,25 +1353,25 @@ function whyLine(reason){
 function shortAlert(p, d, own){
   if(d.grade !== 'short') return '';
   return '<div class="ls-alert">' + CF.note('red', L(
-    'Shortfall <span class="mono">' + usd(d.gap) + '</span>; collateral value to add <span class="mono">' + usd(d.need) +
-      '</span> (= shortfall ÷ ' + (PLEDGE_RATE*100) + '%), since ' + (d.shortFrom || '—') + '. ' +
+    'Coverage gap <span class="mono">' + usd(d.gap) + '</span>; collateral value to add <span class="mono">' + usd(d.need) +
+      '</span> (= coverage gap ÷ ' + (PLEDGE_RATE*100) + '%), since ' + (d.shortFrom || '—') + '. ' +
       'Cause: the underlying receivables behind ' + d.deadCount + ' token(s) in this pool have been invalidated (' + usd(d.dead) +
       ' in total), so they no longer count towards pledged token value. Adding collateral raises the borrowing cap and repayment lowers outstanding financing; the flag clears automatically once the condition reverses.',
-    '缺口 <span class="mono">' + usd(d.gap) + '</span>，需追加资产价值 <span class="mono">' + usd(d.need) +
-      '</span>（＝缺口 ÷ ' + (PLEDGE_RATE*100) + '%），自 ' + (d.shortFrom || '—') + ' 起。' +
+    '覆盖缺口 <span class="mono">' + usd(d.gap) + '</span>，需追加资产价值 <span class="mono">' + usd(d.need) +
+      '</span>（＝覆盖缺口 ÷ ' + (PLEDGE_RATE*100) + '%），自 ' + (d.shortFrom || '—') + ' 起。' +
       '诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效（合计 ' + usd(d.dead) + '），不计入有效质押价值；' +
       '追加质押抬高融资上限或还款降低项目融资余额，条件反转即自动解除。'),
-    L('Undercollateralised: pledged token value has fallen below outstanding financing',
-      '覆盖不足：池内有效质押价值低于项目融资余额')) + '</div>';
+    L('Insufficient pledge coverage: pledged token value has fallen below outstanding financing',
+      '质押覆盖不足：池内有效质押价值低于项目融资余额')) + '</div>';
 }
 function usedUpNote(d){
   if(d.grade !== 'used-up') return '';
   return CF.note('amber', L(
     'There is <span class="mono">' + usd(0) + '</span> left to borrow, so no new commitment can be taken on.' +
       '<p>Existing debt is still fully covered (borrowing cap ' + usd(d.cap) + ' ≥ outstanding financing ' + usd(d.bal) +
-      '), so <strong class="ls-b">this is not an undercollateralisation warning</strong>. Adding collateral raises the borrowing cap and reopens headroom.</p>',
+      '), so <strong class="ls-b">this is not an insufficient-coverage notice</strong>. Adding collateral raises the borrowing cap and reopens headroom.</p>',
     '可融金额为 <span class="mono">' + usd(0) + '</span>，暂不能新增占用。' +
-      '<p>已发生的债务仍有足额担保（融资上限 ' + usd(d.cap) + ' ≥ 项目融资余额 ' + usd(d.bal) +
+      '<p>已发生的债务仍被池内价值足额覆盖（融资上限 ' + usd(d.cap) + ' ≥ 项目融资余额 ' + usd(d.bal) +
       '），<strong class="ls-b">这不是覆盖不足</strong>。追加质押可抬高融资上限并重新打开额度。</p>'),
     g('covFullyDrawn'));
 }
@@ -1509,43 +1512,60 @@ function pagePlaza(){
    它是**派生编号，不是新对象、不另开号段**——守住 D-LS-11：
    同一个项目对象的第 N 轮要约，不产生第二套状态机、第二个深链锚点。 */
 var DST = {
-  open     :{ tone:'amber', t:['Open for quotes','募集中'] },
+  open     :{ tone:'amber', t:['Awaiting quotes','待报价'] },
   quoted   :{ tone:'',      t:['Quoted · awaiting response','已报价待确认'] },
-  financing:{ tone:'',      t:['Financing','融资中'] },
-  settled  :{ tone:'green', t:['Settled','已结清'] },
-  void     :{ tone:'red',   t:['Void · undercollateralised','已失效 · 担保不足'] },
-  pulled   :{ tone:'gray',  t:['Withdrawn','已撤下'] }
+  disb     :{ tone:'',      t:['Disbursing','放款中'] },
+  funded   :{ tone:'green', t:['Disbursed','已放款'] },
+  ended    :{ tone:'gray',  t:['Void / closed','已失效／已关闭'] }
 };
-function demandPill(k){ var m = DST[k] || DST.open; return pill(m.tone, L(m.t[0], m.t[1])); }
+/* FP-27 本轮需求终结原因。D-LS-19 把「已失效／已关闭」合并成一个展示取值，
+   但 AC-LS-95 要求终结原因必须在标签旁与详情页看得到——所以标签下面永远带一行原因。 */
+var FP27 = {
+  autovoid :['Auto-voided · insufficient coverage','自动失效 · 覆盖不足'],
+  withdrawn:['Withdrawn by the asset owner','资产方撤下'],
+  closed   :['Project closed','项目关闭'],
+  terminated:['Deal terminated','业务终止']
+};
+function demandPill(r){
+  var m = DST[r.st] || DST.open;
+  return pill(m.tone, L(m.t[0], m.t[1])) +
+    (r.st === 'ended' && r.why ? '<div class="cell-sub">' + E(L(FP27[r.why][0], FP27[r.why][1])) + '</div>' : '');
+}
+/* 对外状态由服务端派生下发，前端不得用 S-FP / S-FD 的内部状态自行拼装（AC-LS-93）。
+   原型没有服务端，这里按分册 6.9.1 的映射表从事件流推导，仅为演示。 */
 function demandRecords(p){
   var rows = [], seq = 0, pending = null, dealIdx = 0;
   p.events.forEach(function(e){
     if(e.k === 'publish'){
       seq++;
       pending = { no:p.id + '-' + String(seq).padStart(2,'0'), seq:seq, at:e.d,
-                  amt:e.dFly || 0, st:'open', deal:'', fund:'', qat:'' };
+                  amt:e.dFly || 0, st:'open', why:null, deal:'', fund:'', qat:'' };
       rows.push(pending);
     } else if(!pending){
       return;
     } else if(e.k === 'quote'){
       pending.st = 'quoted'; pending.qat = e.d;
     } else if(e.k === 'accept' || e.k === 'disb'){
-      pending.st = 'financing';
+      pending.st = 'disb';
     } else if(e.k === 'fund'){
       var dl = p.deals[dealIdx++];
-      pending.st = 'financing'; pending.deal = dl ? dl.id : '—';
-      pending = null;
+      pending.st = 'funded'; pending.deal = dl ? dl.id : '—';
+      pending = null;                       /* 已放款不再退出（分册 6.9.1） */
     } else if(e.k === 'terminate'){
+      /* ⚠️ 分册 6.9.1 把 S-FD-10 已终止映射到「已失效／已关闭」，
+         而 WS-326 D-LN-24 明确"需求还挂着、项目回 S-FP-2 募集中"。
+         演示数据按 WS-326 的那条走（需求重回待报价），不一致已登记进交付说明。 */
       pending.st = 'open'; pending.qat = ''; pending.deal = '';
     } else if(e.k === 'settle'){
-      pending.st = 'settled'; pending = null;
+      pending.st = 'funded'; pending = null;
     }
   });
-  /* 需求因担保不足即时失效（AC-LS-39）：最新那笔在途需求落 void 档 */
-  if(pending && derive(p).grade === 'short') pending.st = 'void';
+  /* 需求因覆盖不足即时失效（AC-LS-39 / D-FIN-76），原因取 FP-27 */
+  if(pending && derive(p).grade === 'short'){ pending.st = 'ended'; pending.why = 'autovoid'; }
+  if(p.status === 'S-FP-5' && pending){ pending.st = 'ended'; pending.why = 'closed'; }
   rows.forEach(function(r){
-    if(r.st === 'financing' && p.fin){ r.fund = p.fin.fund; r.deal = r.deal || p.fin.deal; }
-    if((r.st === 'quoted' || r.st === 'void') && p.quote){ r.fund = p.quote.fund; r.qat = p.quote.at; }
+    if((r.st === 'disb' || r.st === 'funded') && p.fin){ r.fund = p.fin.fund; r.deal = r.deal || p.fin.deal; }
+    if((r.st === 'quoted' || r.st === 'ended') && p.quote){ r.fund = p.quote.fund; r.qat = p.quote.at; }
   });
   return rows.reverse();
 }
@@ -1630,7 +1650,7 @@ function stageBtn(a, k){
    展示最近一笔还款的核心信息，可按需求编号切换；规则属 WS-327，本模块只承载展示，
    **不自行重算利息或逾期天数**（AC-LS-115）。 */
 function repayBlock(p, acts){
-  var rec = demandRecords(p).filter(function(r){ return r.st === 'financing' || r.st === 'settled'; });
+  var rec = demandRecords(p).filter(function(r){ return r.st === 'funded'; });
   if(!p.rep || !rec.length)
     return '<p class="hint">' + L('No disbursed financing on this project yet, so there is nothing to repay.',
                                   '本项目暂无已放款的融资业务，当前没有还款事项。') + '</p>';
@@ -1764,8 +1784,8 @@ function pageProject(){
           '<td class="num">1 · <span class="faint">' + L(TOKEN_SYM[0], TOKEN_SYM[1]) + '</span></td>' +
           '<td class="num">' + amt(t.amt) + ' <span class="faint">' + CCY + '</span></td>' +
           '<td class="num">' + t.due + '</td><td>' + E(dtr(t.buyer)) + '</td>' +
-          '<td>' + (t.dead ? pill('amber', L('Invalid · excluded from collateral since ' + (t.deadAt||''),
-                                             '已失效 · 不计入担保 · ' + (t.deadAt||'')))
+          '<td>' + (t.dead ? pill('amber', L('Invalid · excluded from coverage since ' + (t.deadAt||''),
+                                             '已失效 · 不计入覆盖 · ' + (t.deadAt||'')))
                            : pill('green', g('valid'))) + '</td>' +
           '<td>' + pill(TONE[CT_STATUS[t.ct].tone] || 'gray', ctStatus(t.ct)) + '</td></tr>';
       }).join('') : '<tr><td colspan="7" class="tbl-empty"><b>' + L('No valid collateral in this pool','本项目暂无有效质押') + '</b>' +
@@ -1790,7 +1810,7 @@ function pageProject(){
         return '<tr><td class="mono">' + r.no +
             '<div class="cell-sub">' + L('published ','发布于 ') + r.at + (r.deal ? ' · ' + r.deal : '') + '</div></td>' +
           '<td class="num">' + amt(r.amt) + ' <span class="faint">' + CCY + '</span></td>' +
-          '<td>' + demandPill(r.st) + '</td>' +
+          '<td>' + demandPill(r) + '</td>' +
           '<td>' + (r.fund ? E(dtr(r.fund)) + (r.qat ? '<div class="cell-sub">' + r.qat + '</div>' : '')
                            : '<span class="faint">—</span>') + '</td></tr>';
       }).join('') : '<tr><td colspan="4" class="tbl-empty"><b>' + L('No demand has been published on this project yet','本项目尚未发布过融资需求') + '</b>' +
@@ -2024,19 +2044,19 @@ function chartBlock(p, kind){
   chartQueue.push({ uid:uid, pts:pts, kind:kind });
   var isPool = kind === 'pool';
   var lg = isPool
-    ? '<span><i class="s1"></i>' + L('Pledged token value (counts as collateral)','有效质押价值（计入担保）') + '</span>' +
-      '<span><i class="void"></i>' + L('Invalidated token value (excluded)','失效代币价值（不计入担保）') + '</span>' +
+    ? '<span><i class="s1"></i>' + L('Pledged token value (counts towards coverage)','有效质押价值（计入覆盖）') + '</span>' +
+      '<span><i class="void"></i>' + L('Invalidated token value (excluded)','失效代币价值（不计入覆盖）') + '</span>' +
       '<span><i class="dash"></i>' + L('Total pool value','池内资产总额') + '</span>'
     : '<span><i class="ln"></i>' + L('Borrowing cap (= pledged token value × ' + (PLEDGE_RATE*100) + '%)',
         '融资上限（＝有效质押价值 × ' + (PLEDGE_RATE*100) + '%）') + '</span>' +
       '<span><i class="s2"></i>' + g('outstanding') + '</span>' +
       '<span><i class="s3"></i>' + g('committed') + '</span>' +
-      '<span><i class="gap"></i>' + L('Undercollateralised interval','担保不足区间') + '</span>';
+      '<span><i class="gap"></i>' + L('Insufficient-coverage interval','覆盖不足区间') + '</span>';
   var rd = isPool
     ? L('Blue is the part that <b>counts</b>; the grey hatching is the part <b>excluded because the underlying receivable was invalidated</b>. The two together are the book value of the pool.',
-        '蓝色是<b>参与计算</b>的部分，灰斜纹是<b>因底层应收账款失效而不计入担保</b>的部分，两者之和才是账面的池内资产总额。')
+        '蓝色是<b>参与计算</b>的部分，灰斜纹是<b>因底层应收账款失效而不计入覆盖</b>的部分，两者之和才是账面的池内资产总额。')
     : L('The gap between the top of the area and the blue line is <b>available to borrow</b>; <b>where the orange area rises above the blue line the project is undercollateralised</b> — that test compares outstanding financing only, committed demand is not included.',
-        '面积顶到蓝线之间的空隙就是<b>可融金额</b>；<b>橙色面积高过蓝线的那一段就是担保不足</b>——判据只比项目融资余额，不含在途。');
+        '面积顶到蓝线之间的空隙就是<b>可融金额</b>；<b>橙色面积高过蓝线的那一段就是覆盖不足</b>——判据只比项目融资余额，不含在途。');
   var tbl = '<div class="tablewrap" style="box-shadow:none"><table class="tbl"><thead><tr><th>' + L('Date','日期') + '</th>' +
     (isPool ? '<th class="num">' + g('pledgedValue') + '</th><th class="num">' + L('Invalidated token value','失效代币价值') +
               '</th><th class="num">' + L('Total pool value','池内资产总额') + '</th>'
@@ -2050,7 +2070,7 @@ function chartBlock(p, kind){
     }).join('') + '</tbody></table></div>';
   return '<div class="ls-chart"><h3>' + (isPool ? L('Pool movement','池内资产变动') : L('Financing movement','融资变动')) + '</h3>' +
     '<p class="cd">' + (isPool ? L('How much is in the pool and how much of it still counts','池子里有多少钱、其中多少还顶用')
-                               : L('What consumes the cap, how much is left, and when it was crossed','额度被什么消耗、还剩多少、什么时候跨过担保线')) +
+                               : L('What consumes the cap, how much is left, and when it was crossed','额度被什么消耗、还剩多少、什么时候跨过覆盖线')) +
     L('. Axis values are rounded; exact figures are in the hover readout and the data table.',
       '。刻度为压缩取整，精确值见悬浮读数与数据表。') + '</p>' +
     '<div class="lg">' + lg + '</div>' +
@@ -2334,7 +2354,7 @@ function modalPledge(){
   var body =
     '<p class="lead" style="margin-top:0">' + L(
       'Allowed in any project status — the pool only ever grows this way, so collateral can only improve (D-FIN-48). Only tokens of this pool’s type are listed (D-FIN-77).',
-      '任何项目状态下都允许，池内资产只增不减地增强担保（D-FIN-48）。清单只列与本池同类型的代币（D-FIN-77）。') + '</p>' +
+      '任何项目状态下都允许，池内资产只增不减地增强覆盖（D-FIN-48）。清单只列与本池同类型的代币（D-FIN-77）。') + '</p>' +
     '<div class="tablewrap"><table class="tbl"><thead><tr><th style="width:36px"></th><th>' + g('tokenId') + '</th>' +
       '<th class="num">' + g('tokenValue') + '</th><th class="num">' + g('dueDate') + '</th><th>' + g('buyer') + '</th></tr></thead><tbody>' +
       (wp.rows.length ? wp.rows.map(function(t){
@@ -2481,7 +2501,7 @@ function modalClose(){
   return mWrap(g('closeProject'), CF.note('amber', L(
     'Closing moves the project to Closed. In the same instant the platform releases every commitment and collateral relationship on this pool, and the ' + p.tokens.length + ' token(s) in it become "released · awaiting withdrawal".' +
     '<p>The business-side release is <strong class="ls-b">immediate, involves no on-chain action and costs nothing</strong>. The tokens stay inside the pledge contract: you withdraw them yourself and pay the gas, and they <strong class="ls-b">never return to your wallet automatically</strong>.</p>',
-    '关闭后项目转「已关闭」，平台在同一时刻解除该池全部占用与担保关系，池内 ' + p.tokens.length + ' 张代币置「已释放 · 待提取」。' +
+    '关闭后项目转「已关闭」，平台在同一时刻解除该池全部占用与覆盖关系，池内 ' + p.tokens.length + ' 张代币置「已释放 · 待提取」。' +
     '<p>业务释放<strong class="ls-b">即时、无链上动作、无费用</strong>；代币仍停留在质押合约内，需您自行发起提取并自付 gas，<strong class="ls-b">不会自动回到钱包</strong>。</p>')),
     btnCancel() + '<button class="btn primary" type="button" data-act="ls.closeOk">' + L('Confirm close','确认关闭') + '</button>');
 }
@@ -2569,7 +2589,7 @@ function finishChain(kind, outcome){
       p.tokens = p.tokens.concat(take); p.emptyPool = false;
       var s2 = take.reduce(function(a,t){ return a+t.amt; },0);
       p.events.push({ d:TODAY, k:'topup', t:'追加质押 ' + take.length + ' 张 · ' + usd(s2), dTotal:s2,
-        note:'池内资产只增不减地增强担保（D-FIN-48）' });
+        note:'池内资产只增不减地增强覆盖（D-FIN-48）' });
       var ids2 = take.map(function(t){ return t.id; });
       for(var j=WALLET.length-1;j>=0;j--) if(ids2.indexOf(WALLET[j].id) >= 0) WALLET.splice(j,1);
       S.chain = { k:outcome, n:take.length, ok:take.length, bad:ps.length-take.length, gas:gasEstimate(ps.length) };
