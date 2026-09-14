@@ -592,9 +592,11 @@ function availableActions(p, role){
                  '该项目可融金额为 ' + usd(0) + '，不能再新增占用（AC-FIN-12）。');
     q.brief = g('covFullyDrawn');
   } else if(st !== 'S-FP-2'){
-    q.reason = L('Project status is "' + fpStatus(p) + '"; only "Open for quotes" accepts new quotes.',
-                 '当前项目状态为「' + FP_STATUS[st].t + '」，只有「募集中」接受新报价。');
-    q.brief = fpStatus(p);
+    /* 对外只说需求的对外状态，不把内部 S-FP-* 的档位名搬到界面上（AC-LS-93） */
+    var cdq = curDemand(p), cdt = cdq ? L(DST[cdq.st].t[0], DST[cdq.st].t[1]) : fpStatus(p);
+    q.reason = L('This demand is "' + cdt + '"; only a demand awaiting quotes accepts new quotes.',
+                 '该需求当前是「' + cdt + '」，只有「待报价」的需求接受新报价。');
+    q.brief = cdt;
   } else {
     q.enabled = true;
     /* 报价与它的授信前置由 WS-325 承载，锚点沿用 H-02 既有体系，不新开一套跳转约定 */
@@ -1211,7 +1213,9 @@ function pgBar(pp, key){
 }
 
 function pill(tone, t){ return '<span class="pill ' + tone + '">' + E(t) + '</span>'; }
-var TONE = { mute:'gray', info:'', good:'green', warn:'amber', crit:'red' };
+/* info 档在本模块落到 .pill.info（accent-soft，模块样式里定义）——
+   公共 .pill 不带 tone 时是透明的「无强调」变体，放进状态列会让半列变成裸文字。 */
+var TONE = { mute:'gray', info:'info', good:'green', warn:'amber', crit:'red' };
 function gTone(k){ return covMeta(k).tone; }
 function cardHead(t, note){
   return '<div class="card-head"><b>' + E(t) + '</b>' + (note ? '<span style="margin-left:auto">' + note + '</span>' : '') + '</div>';
@@ -1235,26 +1239,27 @@ function statusPills(p){
    融资上限 / 可融金额 / 项目在途金额三个中间量不再常驻展示——
    它们只在发布与改额弹窗里由服务端当场重算后给出（AC-LS-09）。
    **不展示 ≠ 不校验**：INV-FIN-01 与 AC-FIN-12 视角 B 一条不减。 */
+function cy(){ return '<span class="cy">' + CCY + '</span>'; }
 function statRow(p){
   var d = derive(p), liveCount = p.tokens.length - d.deadCount;
   var cells = [
     { k:g('pledgedCount'), v:liveCount + ' ' + L(liveCount === 1 ? 'token' : 'tokens','张'),
       x:d.deadCount ? L(d.deadCount + ' more invalidated, excluded', '另有 ' + d.deadCount + ' 张已失效、不计入')
                     : L('All tokens in this pool are valid','池内代币全部有效') },
-    { k:g('pledgedValue'), v:amt(d.valid) + ' ' + CCY, lead:true,
+    { k:g('pledgedValue'), v:amt(d.valid) + cy(), lead:true,
       x:L('Valid tokens only — invalidated, unconfirmed and reconciliation-flagged excluded',
           '只取有效部分 —— 已排除失效、未上链、对账差异') },
-    { k:g('demand'), v:p.demand ? amt(p.demand) + ' ' + CCY : '—',
+    { k:g('demand'), v:p.demand ? amt(p.demand) + cy() : '—',
       x:p.demand ? L('Published · occupying the borrowing cap','已发布 · 占用额度')
                  : L('No open demand on this project','当前无在途融资需求') },
-    { k:g('outstanding'), v:amt(d.bal) + ' ' + CCY,
+    { k:g('outstanding'), v:amt(d.bal) + cy(),
       x:L('Unpaid principal on confirmed, matured or overdue deals','已确认 / 已到期 / 逾期业务的未偿本金合计') },
     { k:g('pledgeRate'), v:(PLEDGE_RATE*100) + '%',
       x:L('Fixed constant this release — not editable, not configurable','本期固定常量，不可编辑、不可配置') }
   ];
   return '<div class="ls-stats">' + cells.map(function(c){
     return '<div class="s' + (c.lead ? ' lead' : '') + '"><div class="k">' + E(c.k) + '</div>' +
-      '<div class="v" title="' + E(c.v) + '">' + c.v + '</div><div class="x">' + E(c.x) + '</div></div>';
+      '<div class="v">' + c.v + '</div><div class="x">' + E(c.x) + '</div></div>';
   }).join('') + '</div>';
 }
 
@@ -1272,66 +1277,62 @@ function rpHref(hash){ var m = (CF.MODULES || {})['lending-repayment'];     retu
 /* ---- WS-325 增量：锁定信息（D-LS-13 / AC-LS-85）----
    S-FP-3 期间必须展示四件事：被谁锁定 / 从什么时候开始 / 已锁定多久 / 还剩多久，并给两条出路。
    锁定信息属于公开信息，对游客与全部资金方可见；只陈述事实，不做评价性措辞（D-LS-14）。 */
-function lockLine(p){
-  if(!p.quote) return '';
-  var k = quoteClock(p.quote);
-  return '<div class="ls-lockmini' + (k.soon ? ' soon' : '') + '">' +
-    '<span>' + L('Locked by ' + dtr(p.quote.fund), '被 ' + dtr(p.quote.fund) + ' 锁定') + '</span>' +
-    '<span>' + L('for ' + fmtDur(k.heldMin), '已 ' + fmtDur(k.heldMin)) + '</span>' +
-    '<b>' + L(fmtDur(k.leftMin) + ' left', '剩余 ' + fmtDur(k.leftMin)) + '</b></div>';
-}
-function lockCard(p, own){
+/* v1.4 移除：lockLine()（列表页的锁定倒计时，WS-325 D-LS-20 / AC-LS-97 曾要求列表页也给）
+   与 finLine()（WS-326 的业务进度、WS-327 的还款进度与逾期天数）。
+   需求方 09-14 第 1 条要求列表页只留状态本身，细节去详情页看。
+   **详情页四项齐全的要求没有放松**——锁定信息整块搬到了左栏第一张卡（见 lockCard）。
+   与 WS-325 AC-LS-97「三处都能看到」的偏离已登记进交付说明。 */
+function lockCard(p, own, wide){
   if(!p.quote) return '';
   var qq = p.quote, k = quoteClock(qq);
   var held = (k.heldMin / (QUOTE_HOURS * 60) * 100).toFixed(2);
-  return '<div class="ls-lock' + (k.soon ? ' soon' : '') + '">' +
-    '<div class="by">' + L('Locked by <b>' + E(dtr(qq.fund)) + '</b> since <b>' + qq.at + ' ' + TZ_LABEL +
-        '</b>, held for <b>' + fmtDur(k.heldMin) + '</b>.',
-      '被 <b>' + E(dtr(qq.fund)) + '</b> 锁定，自 <b>' + qq.at + ' ' + TZ_LABEL + '</b> 起，已锁定 <b>' + fmtDur(k.heldMin) + '</b>。') + '</div>' +
-    '<div class="big"><span class="v">' + fmtDur(k.leftMin) + '</span>' +
-      '<span class="u">' + L('until automatic expiry　·　expires ' + k.to + ' ' + TZ_LABEL,
-                             '后自动失效　·　到期时刻 ' + k.to + ' ' + TZ_LABEL) + '</span></div>' +
-    '<div class="bar" role="img" aria-label="' + L('Quote validity ' + QUOTE_HOURS + ' hours: ' + fmtDur(k.heldMin) + ' held, ' + fmtDur(k.leftMin) + ' left',
-        '报价有效期 ' + QUOTE_HOURS + ' 小时：已锁定 ' + fmtDur(k.heldMin) + '，剩余 ' + fmtDur(k.leftMin)) + '">' +
-      '<div class="el" style="width:' + held + '%"></div>' +
-      '<div class="rm" style="width:' + (100 - held).toFixed(2) + '%"></div></div>' +
-    '<div class="scale"><span>' + L('Submitted <b>' + qq.at + '</b>', '提交 <b>' + qq.at + '</b>') + '</span>' +
-      '<span>' + L('held <b>' + fmtDur(k.heldMin) + '</b> ＋ left <b>' + fmtDur(k.leftMin) + '</b> ≡ <b>' + QUOTE_HOURS + ' hours</b>',
-                   '已锁定 <b>' + fmtDur(k.heldMin) + '</b> ＋ 剩余 <b>' + fmtDur(k.leftMin) + '</b> ≡ <b>' + QUOTE_HOURS + ' 小时</b>') + '</span></div>' +
-    (k.soon ? '<p class="hint" style="color:var(--warn)">' + L(
-        'Less than 24 hours left, so the countdown has switched to minute precision. Expiry is executed by the system at the exact moment and does not depend on anyone being signed in. There is no grace period.',
-        '剩余不足 24 小时，倒计时已切到分钟精度。到点即失效，由系统自动执行、不依赖任何人登录；无宽限期。') + '</p>' : '') +
-    '<div class="ways">' +
-      (own
-        ? '<div class="w"><i>①</i><span>' + L('You may <b>reject at any time</b>; the demand returns to quotable immediately.',
-              '您可以<b>随时拒绝</b>该报价，需求将立即回到可被报价的状态。') + '</span></div>' +
-          '<div class="w"><i>②</i><span>' + L('If nothing is done within <b>' + fmtDur(k.leftMin) + '</b>, the quote <b>expires automatically</b> and the demand reopens.',
-              '若 <b>' + fmtDur(k.leftMin) + '</b> 内未处理，该报价将<b>自动失效</b>、需求自动放开。') + '</span></div>'
-        : '<div class="w"><i>①</i><span>' + L('The asset owner may <b>reject at any time</b>; the demand then returns to quotable.',
-              '资产方可<b>随时拒绝</b>，需求随即回到可被报价的状态。') + '</span></div>' +
-          '<div class="w"><i>②</i><span>' + L('If nothing is done within <b>' + fmtDur(k.leftMin) + '</b>, the quote <b>expires automatically</b> and the demand reopens.',
-              '若 <b>' + fmtDur(k.leftMin) + '</b> 内未处理，报价<b>自动失效</b>、需求自动放开。') + '</span></div>') +
+  /* 四件事一件不少（WS-325 D-LS-20 / AC-LS-97）：
+     ① 被谁锁定 ② 从什么时候起 ③ 已锁定多久 ④ 还剩多久（小时级，不足 24 小时切分钟）。
+     左列是①②③的事实，右列是④的倒计时与两条出路——宽栏下并排，窄栏下自动堆叠。 */
+  return '<div class="ls-lock' + (k.soon ? ' soon' : '') + (wide ? ' wide' : '') + '">' +
+    '<div class="cA">' +
+      '<div class="lb">' + L('This demand is locked by a quote','该需求已被一笔报价锁定') + '</div>' +
+      '<div class="rows" style="box-shadow:none;margin-top:7px">' +
+        [[L('Locked by','被谁锁定'), E(dtr(qq.fund))],
+         [L('Locked since','锁定起算'), qq.at + ' ' + TZ_LABEL],
+         [L('Held for','已锁定'), fmtDur(k.heldMin)],
+         [L('Expires at','到期时刻'), k.to + ' ' + TZ_LABEL]].map(function(r){
+          return '<div class="row"><div class="row-main"><div class="row-k">' + r[0] + '</div>' +
+            '<div class="row-v mono">' + r[1] + '</div></div></div>'; }).join('') +
+      '</div>' +
+    '</div>' +
+    '<div class="cB">' +
+      '<div class="lb">' + L('Time left before the quote expires automatically','距报价自动失效还剩') + '</div>' +
+      '<div class="big"><span class="v">' + fmtDur(k.leftMin) + '</span></div>' +
+      '<div class="bar" role="img" aria-label="' + L('Quote validity ' + QUOTE_HOURS + ' hours: ' + fmtDur(k.heldMin) + ' held, ' + fmtDur(k.leftMin) + ' left',
+          '报价有效期 ' + QUOTE_HOURS + ' 小时：已锁定 ' + fmtDur(k.heldMin) + '，剩余 ' + fmtDur(k.leftMin)) + '">' +
+        '<div class="el" style="width:' + held + '%"></div>' +
+        '<div class="rm" style="width:' + (100 - held).toFixed(2) + '%"></div></div>' +
+      '<div class="scale"><span>' + L('submitted <b>' + qq.at + '</b>', '提交 <b>' + qq.at + '</b>') + '</span>' +
+        '<span>' + L('held <b>' + fmtDur(k.heldMin) + '</b> ＋ left <b>' + fmtDur(k.leftMin) + '</b> ≡ <b>' + QUOTE_HOURS + ' hours</b>',
+                     '已锁定 <b>' + fmtDur(k.heldMin) + '</b> ＋ 剩余 <b>' + fmtDur(k.leftMin) + '</b> ≡ <b>' + QUOTE_HOURS + ' 小时</b>') + '</span></div>' +
+      (k.soon ? '<p class="hint" style="color:var(--warn)">' + L(
+          'Less than 24 hours left, so the countdown has switched to minute precision. Expiry is executed by the system at the exact moment and does not depend on anyone being signed in. There is no grace period.',
+          '剩余不足 24 小时，倒计时已切到分钟精度。到点即失效，由系统自动执行、不依赖任何人登录；无宽限期。') + '</p>' : '') +
+      '<div class="ways">' +
+        (own
+          ? '<div class="w"><i>①</i><span>' + L('You may <b>reject at any time</b>; the demand returns to quotable immediately.',
+                '您可以<b>随时拒绝</b>该报价，需求将立即回到可被报价的状态。') + '</span></div>' +
+            '<div class="w"><i>②</i><span>' + L('If nothing is done within <b>' + fmtDur(k.leftMin) + '</b>, the quote <b>expires automatically</b> and the demand reopens.',
+                '若 <b>' + fmtDur(k.leftMin) + '</b> 内未处理，该报价将<b>自动失效</b>、需求自动放开。') + '</span></div>'
+          : '<div class="w"><i>①</i><span>' + L('The asset owner may <b>reject at any time</b>; the demand then returns to quotable.',
+                '资产方可<b>随时拒绝</b>，需求随即回到可被报价的状态。') + '</span></div>' +
+            '<div class="w"><i>②</i><span>' + L('If nothing is done within <b>' + fmtDur(k.leftMin) + '</b>, the quote <b>expires automatically</b> and the demand reopens.',
+                '若 <b>' + fmtDur(k.leftMin) + '</b> 内未处理，报价<b>自动失效</b>、需求自动放开。') + '</span></div>') +
+      '</div>' +
     '</div></div>';
 }
 
-/* WS-326 / WS-327 增量：在途业务与还款的公开进度，只读引用下游模块的输出。
-   P-LS-01 只给进度、**不给任何确认时限倒计时**——广场的读者是潜在报价方。 */
+/* WS-326 / WS-327 的业务状态文案。v1.4 起只在详情页用——
+   列表页的业务进度与还款进度副行已按需求方第 1 条移除。 */
 var FIN_ST = { 'S-FD-3':['Awaiting disbursement','待放款'], 'S-FD-4':['Awaiting financing confirmation','待融资确认'],
                'S-FD-6':['Repaying','还款中'], 'S-FD-8':['Settled','已结清'] };
 function finSt(k){ var v = FIN_ST[k]; return v ? L(v[0], v[1]) : k; }
-function finLine(p){
-  var out = '';
-  if(p.fin) out += '<div class="cell-sub">' + L('Deal · ' + finSt(p.fin.st), '业务进度 · ' + finSt(p.fin.st)) + '</div>';
-  if(p.rep){
-    out += '<div class="cell-sub">' +
-      L('Repayment · ' + p.rep.done + ' of ' + p.rep.n + ' instalments settled',
-        '还款进度 · 已还 ' + p.rep.done + ' / 共 ' + p.rep.n + ' 期') +
-      (p.rep.overdueDays ? '　<span class="pill gray">' + L(p.rep.overdueDays + ' days overdue', '已逾期 ' + p.rep.overdueDays + ' 天') + '</span>' : '') +
-      '</div>';
-  }
-  return out;
-}
-
 /* ---- 动作按钮：区分「不可见」与「可见不可点 ⊘」（H-03）----
    v1.3：游客态不再走这条路径，操作区收敛为单个「立即登录」（D-LS-14）。 */
 function actBtn(a, cls, noWhy){
@@ -1379,18 +1380,18 @@ function usedUpNote(d){
 /* ================================================================
    P-LS-01 借贷广场（公开列表页）
    ================================================================ */
-var F0 = { type:'', pool:'', demand:'', status:'', quotable:'', expiry:'', grade:'', sort:'pub' };
+var F0 = { type:'', pool:'', demand:'', dstate:'', expiry:'', grade:'', sort:'pub' };
 function matchFilter(p){
   var d = derive(p), f = S.flt;
   if(f.type && p.assetType !== f.type) return false;
   if(f.pool){ var r = f.pool.split('-'); if(d.valid < +r[0] || (r[1] !== 'x' && d.valid > +r[1])) return false; }
   if(f.demand){ var gg = f.demand.split('-'); if(!p.demand) return false;
     if(p.demand < +gg[0] || (gg[1] !== 'x' && p.demand > +gg[1])) return false; }
-  if(f.status && p.status !== f.status) return false;
+  /* 只按对外状态五值过滤（D-LS-18）。v1.3 里那两个「项目状态 S-FP-*」与
+     「是否可报价」筛选已删除——它们是自建的第二套展示状态，WS-325 分册 6.4.1 ③
+     与 WS-324 AC-LS-93 都明令不许有。 */
+  if(f.dstate){ var cd = curDemand(p); if(!cd || cd.st !== f.dstate) return false; }
   if(f.grade && d.grade !== f.grade) return false;
-  if(f.quotable === 'y' && !actionOf(availableActions(p,'fund'),'quote').enabled) return false;
-  if(f.quotable === 'locked' && p.status !== 'S-FP-3') return false;
-  if(f.quotable === 'n' && actionOf(availableActions(p,'fund'),'quote').enabled) return false;
   if(f.expiry){ var dd = p.expiresAt ? daysTo(p.expiresAt) : 99999;
     if(f.expiry === 'x' && dd >= 0) return false;
     if(f.expiry === '7' && (dd < 0 || dd > 7)) return false;
@@ -1410,10 +1411,8 @@ function filterBar(){
         ['500000-1000000', L('500K – 1M','50–100 万')],['1000000-x', L('over 1M','100 万以上')]]) +
     sel('demand', g('demand'), [['', no],['0-300000', L('under 300K','30 万以下')],
         ['300000-600000', L('300K – 600K','30–60 万')],['600000-x', L('over 600K','60 万以上')]]) +
-    sel('status', L('Project status','项目状态'), [['', any]].concat(['S-FP-2','S-FP-3','S-FP-4','S-FP-5','S-FP-6'].map(function(k){
-        return [k, L(FP_EN[FP_STATUS[k].t] || FP_STATUS[k].t, FP_STATUS[k].t)]; }))) +
-    sel('quotable', L('Quotable','是否可报价'), [['', no],['y', L('Quotable now','可报价')],
-        ['locked', L('Locked by a quote','已被锁定')],['n', L('Not quotable','暂不可报价')]]) +
+    sel('dstate', L('Demand status','融资需求状态'), [['', any]].concat(
+        ['open','quoted','disb','funded','ended'].map(function(k){ return [k, L(DST[k].t[0], DST[k].t[1])]; }))) +
     sel('expiry', L('Term ending','有效期临近'), [['', no],['7', L('within 7 days','7 天内到期')],
         ['30', L('within 30 days','30 天内到期')],['x', L('already expired','已到期')]]) +
     sel('grade', g('coverage'), [['', any]].concat(GRADES.map(function(x){ return [x.k, covMeta(x.k).t]; }))) +
@@ -1424,15 +1423,21 @@ function filterBar(){
 }
 function plazaRow(p){
   var d = derive(p), qa = actionOf(availableActions(p, S.role), 'quote'), ef = expiryFlag(p);
+  var cd = curDemand(p);
   return '<tr class="rowlink" data-act="ls.open" data-v="' + p.id + '">' +
     '<td><div class="cell-main">' + E(dtr(p.name)) + '</div>' +
       '<div class="cell-sub">' + E(dtr(p.owner)) + ' · ' + p.id + '</div></td>' +
     '<td class="num">' + (p.demand ? '<span style="font-size:15px;font-weight:680">' + amt(p.demand) + '</span>' +
         '<div class="cell-sub">' + CCY + '</div>'
       : '<span class="faint">—</span><div class="cell-sub">' + L('No open demand','无在途需求') + '</div>') + '</td>' +
-    '<td>' + pill(TONE[FP_STATUS[p.status].tone] || 'gray', fpStatus(p)) +
-      (p.expired ? '<div class="cell-sub">' + L('Expired · existing deals performing','已到期 · 存量履约中') + '</div>' : '') +
-      lockLine(p) + finLine(p) + '</td>' +
+    /* v1.4：状态列只留状态本身。锁定倒计时、业务进度、还款进度、逾期天数四类副行
+       全部移到详情页（需求方 09-14 第 1 条）。
+       状态取**融资需求对外状态五值**而不是内部 S-FP-*（D-LS-18 / AC-LS-93）。
+       「已到期」是项目级并行标记，L2 要求必须有，作为并列 pill 保留、不是副行。
+       「已失效／已关闭」下方那行终结原因是 AC-LS-95 的硬要求，不能省。 */
+    '<td><div class="ls-pills">' +
+      (cd ? demandPill(cd) : pill('gray', L('No demand published','尚未发布需求'))) +
+      (p.expired ? pill('gray', L('Term expired','已到期')) : '') + '</div></td>' +
     '<td>' + pill(gTone(d.grade), covMeta(d.grade).t) +
       (d.gap ? '<div class="cell-sub">' + L('shortfall ','缺口 ') + amt(d.gap) + '</div>' : '') + '</td>' +
     '<td class="num">' + amt(d.valid) + '<div class="cell-sub">' +
@@ -1440,12 +1445,16 @@ function plazaRow(p){
         (p.tokens.length - d.deadCount) + ' 张有效' + (d.deadCount ? ' · 含失效 ' + d.deadCount + ' 张' : '')) + '</div></td>' +
     '<td class="num">' + (p.expiresAt || '—') +
       (ef && !p.expired ? '<div class="cell-note">' + E(ef.t) + '</div>' : '') + '</td>' +
+    /* 未登录时卡片上只出「立即登录」，不再逐动作 ⊘（WS-325 D-LS-21，与详情页操作区同口径）。
+       已登录的四种不可点情形仍各给各的原因（AC-LS-98）。 */
     '<td class="col-act" style="text-align:right">' +
-      (qa.enabled
-        ? '<a class="btn sm primary" href="' + qa.href + '" data-act="ls.cross">' + E(qa.label) + '</a>'
-        : '<button class="btn sm blocked" type="button" aria-disabled="true" title="' + E(qa.reason) +
-          '" data-act="ls.whyq" data-v="' + p.id + '">⊘ ' + g('stQuote') + '</button>' +
-          '<div class="cell-sub" style="margin-top:4px">' + E(qa.brief || '') + '</div>') +
+      (S.role === 'guest'
+        ? '<button class="btn sm" type="button" data-act="ls.signin">' + g('signIn') + '</button>'
+        : qa.enabled
+          ? '<a class="btn sm primary" href="' + qa.href + '" data-act="ls.cross">' + E(qa.label) + '</a>'
+          : '<button class="btn sm blocked" type="button" aria-disabled="true" title="' + E(qa.reason) +
+            '" data-act="ls.whyq" data-v="' + p.id + '">⊘ ' + g('stQuote') + '</button>' +
+            '<div class="cell-sub" style="margin-top:4px">' + E(qa.brief || '') + '</div>') +
     '</td></tr>';
 }
 function pagePlaza(){
@@ -1493,7 +1502,7 @@ function pagePlaza(){
   return head + strip + '<div class="card">' + filterBar() +
     '<div class="tablewrap" style="border:0;box-shadow:none;border-radius:0"><table class="tbl ls-tbl"><thead><tr>' +
       '<th>' + g('project') + ' / ' + g('assetOwner') + '</th><th class="num">' + g('demandAmt') + '</th>' +
-      '<th>' + L('Project status','项目状态') + '</th><th>' + g('coverage') + '</th>' +
+      '<th>' + L('Demand status','融资需求状态') + '</th><th>' + g('coverage') + '</th>' +
       '<th class="num">' + g('pledgedValue') + '</th><th class="num">' + g('validityTo') + '</th>' +
       '<th class="col-act" style="text-align:right">' + g('actions') + '</th>' +
     '</tr></thead><tbody>' + list.map(plazaRow).join('') + '</tbody></table></div>' +
@@ -1513,8 +1522,8 @@ function pagePlaza(){
    同一个项目对象的第 N 轮要约，不产生第二套状态机、第二个深链锚点。 */
 var DST = {
   open     :{ tone:'amber', t:['Awaiting quotes','待报价'] },
-  quoted   :{ tone:'',      t:['Quoted · awaiting response','已报价待确认'] },
-  disb     :{ tone:'',      t:['Disbursing','放款中'] },
+  quoted   :{ tone:'info',  t:['Quoted · awaiting response','已报价待确认'] },
+  disb     :{ tone:'info',  t:['Disbursing','放款中'] },
   funded   :{ tone:'green', t:['Disbursed','已放款'] },
   ended    :{ tone:'gray',  t:['Void / closed','已失效／已关闭'] }
 };
@@ -1569,6 +1578,10 @@ function demandRecords(p){
   });
   return rows.reverse();
 }
+
+/* 项目当前这一轮需求的对外状态。广场列表、融资信息清单、我的融资项目三处
+   都从这里取，保证同一笔需求三处读到的对外状态一致（AC-LS-93）。 */
+function curDemand(p){ var r = demandRecords(p); return r.length ? r[0] : null; }
 
 /* ---------------- 操作区段 ②：融资流程四环节（6.5.5 / 分册 6.9） ----------------
    本模块只承载环节展示与映射；报价、接受/拒绝、放款、确认的业务规则分属 WS-325／326，
@@ -1751,25 +1764,40 @@ function pageProject(){
       '<button class="btn primary" type="button" data-act="st" data-v="default">' + L('Reload','重新加载') + '</button></div></div></div>';
 
   /* ---- 页头：返回按钮 + 图标块 + 超大标题 + 大号标签行 ---- */
+  /* v1.4：页头右上角那块「融资需求金额 + 有效期至」整块删除——金额与统计区第 3 格
+     是同一个数（需求方 09-14 第 5 条）。
+     **有效期的绝对日期没有跟着一起丢**：它是 L2 融资需求摘要的必备字段，
+     且 D-FIN-37 要求「首次发布日 + 1 年、只读、不可延期」这条口径看得见，
+     所以挪进 kick 行与发布日并列。pill 行上的「有效期剩余 N 天」是相对倒计时，
+     两者并存才既有绝对日期又有紧迫感（AC-LS-02 的"无输入框、无日期选择器"不受影响）。 */
   var head =
     '<div class="ls-back"><button class="btn" type="button" data-act="go" data-v="P-LS-01">' +
       L('← Back to the marketplace','← 返回借贷广场') + '</button></div>' +
     '<div class="ls-phead"><div class="tile" aria-hidden="true">◧</div><div class="body">' +
       '<p class="kick">' + g('project') + ' · ' +
         L('published ','发布于 ') + '<span class="mono">' + (p.publishedAt || '—') + '</span> · ' +
+        g('validityTo') + ' <span class="mono">' + (p.expiresAt || '—') + '</span> ' +
+        '<span class="ro">' + (p.expiresAt
+          ? L('first publish + ' + TERM_YEARS + ' year · read-only', '首次发布日 + ' + TERM_YEARS + ' 年 · 只读')
+          : L('generated at first publish','首次发布时生成')) + '</span> · ' +
         L('ID ','编号 ') + '<span class="mono">' + p.id + '</span> · ' + TZ_LABEL + '</p>' +
       '<h1>' + E(dtr(p.name)) + '<em>' + E(dtr(p.owner)) + '</em></h1>' +
       '<div class="ls-tags">' + statusPills(p) + '</div>' +
-    '</div><div class="amt"><div class="k">' + g('demandAmt') + '</div>' +
-      (p.demand ? '<div class="v">' + amt(p.demand) + '<span class="cy">' + CCY + '</span></div>'
-                : '<div class="v faint">—</div>') +
-      '<div class="x">' + (p.demand
-        ? L('Valid until ' + p.expiresAt + ' (first publish date + ' + TERM_YEARS + ' year, read-only)',
-            '有效期至 ' + p.expiresAt + '（首次发布日 + ' + TERM_YEARS + ' 年，只读）')
-        : L('No open financing demand','当前无在途融资需求')) + '</div>' +
     '</div></div>' + CF.pageStates();
 
-  /* ---- 左栏 1：质押代币清单（L4 全量逐张，不脱敏、不区间化；固定每页 5 条 AC-LS-90） ---- */
+  /* ---- 左栏 1（v1.4 新位置）：锁定信息 ----
+     原来在右栏顶部，需求方 09-14 第 2 条要求右栏只放操作项，所以整块搬到质押代币清单上方。
+     **内容一项没减**：被谁锁定 / 从什么时候起 / 已锁定多久 / 还剩多久，外加两条出路，
+     四项齐全（WS-325 D-LS-20 / AC-LS-97）。搬到宽栏后改用 .ls-lock.wide 的两列排布，
+     左列讲"被谁锁、从何时起"，右列是倒计时与两条出路。 */
+  var lockBlock = p.quote
+    ? '<div class="card" style="margin-bottom:16px">' +
+        cardHead(L('Lock information','锁定信息'),
+          faint(L('public field · countdown produced by WS-325','公开字段 · 倒计时口径由 WS-325 权威产出'))) +
+        '<div class="card-b">' + lockCard(p, own, true) + '</div></div>'
+    : '';
+
+  /* ---- 左栏 2：质押代币清单（L4 全量逐张，不脱敏、不区间化；固定每页 5 条 AC-LS-90） ---- */
   var tp = paged(p.tokens, 'tokPage');
   var pledgeCard = '<div class="card">' + cardHead(L('Pledged token list','质押代币清单'),
       faint(L(p.tokens.length + ' tokens · every token listed individually, not masked, not bucketed',
@@ -1825,52 +1853,60 @@ function pageProject(){
       '<p>商务条款：' + (p.terms ? '报价利率 ' + E(dtr(p.terms.rate)) + ' · 融资期限 ' + E(dtr(p.terms.term)) + ' · ' + E(dtr(p.terms.repay)) + ' · 资金用途 ' + E(dtr(p.terms.use))
         : '该项目当前无公开的在途业务商务条款。') + '</p>')) + '</div></div>';
 
-  /* ---- 左栏 3（WS-325 增量）：在途报价的公开商务条款 + 历史报价时间线 ----
-     公开字段：机构名称、报价金额、年化利率、结算币种、报价提交时间、已锁定时长、
-     剩余有效期与到期时刻。**不展示报价时的池快照**（AC-LS-27 已作废）。 */
+  /* ---- 左栏（v1.4 新位置：融资信息清单下方）：在途报价与报价历史 ----
+     需求方 09-14 第 3 条要求改列表展示。一行 = 一笔报价，在途与历史同表、用状态列区分，
+     与「融资信息清单」是同一套表格语言。
+     公开字段：机构名称、报价金额、年化利率、结算币种与金额、报价提交时间、终结方式与原因。
+     **不展示报价时的池快照**（AC-LS-27 已作废）；锁定倒计时不在这张表里重复，
+     它整块在左栏第一张「锁定信息」卡上（四项齐全）。
+     口径由 WS-325 权威产出，本页只读引用、不自行计算（AC-LS-94）。 */
   var past = p.pastQuotes || [];
-  var quoteCard = (p.quote || past.length)
-    ? '<div class="card" style="margin-top:16px">' + cardHead(L('Open quote and quote history','在途报价与报价历史'),
-        faint(L('public terms · produced by WS-325, read-only here','公开商务条款 · 口径由 WS-325 权威产出，本页只读引用'))) +
-      (p.quote ? '<div class="card-b">' +
-        '<div class="ls-kgrid">' +
-          kcell(L('Financing deal ID','融资业务编号'), p.quote.deal,
-                L('Generated at the moment the quote is submitted; stable for life','提交成功的同一时刻生成，终身稳定')) +
-          kcell(L('Quoting institution','报价机构'), E(dtr(p.quote.fund)),
-                L('Full legal entity name · public field','机构企业主体全称 · 公开字段'), true) +
-          kcell(L('Quoted amount','报价金额'), amt(p.quote.amt),
-                CCY + L(' · always equal to the demand amount',' · 恒等于需求金额')) +
-          kcell(L('Annual rate','年化利率'), p.quote.rate.toFixed(2) + '%',
-                L('Interest accrual follows the signed financing contract','计息规则以双方签署的融资合同为准')) +
-          kcell(L('Settlement currency and amount','结算币种与金额'), amt(p.quote.settle) + ' ' + p.quote.ccy,
-                L('Converted at the FX snapshot locked when the quote was submitted','按报价提交时锁定的汇率快照折算')) +
-          kcell(L('Quote submitted at','报价提交时间'), p.quote.at + ' ' + TZ_LABEL,
-                L('Start of the lock clock','锁定信息的起算点')) +
-        '</div>' +
-        '<div style="margin-top:16px">' + lockCard(p, own) + '</div></div>' : '') +
-      (past.length ? '<div class="card-b"' + (p.quote ? ' style="border-top:1px solid var(--border)"' : '') + '>' +
-        '<h3 class="sec-title" style="font-size:12.5px;margin-bottom:10px">' +
-        L('Quote history · labelled by how it ended','报价历史 · 按终结方式标注') + '</h3>' +
-        '<ul class="tl">' + past.map(function(qq){
-          var tag = qq.st === 'S-FD-2'
-            ? pill('gray', L('S-FD-2 Rejected','S-FD-2 已拒绝'))
-            : pill('gray', L('S-FD-11 Quote expired · ' + dtr(qq.void), 'S-FD-11 报价已失效 · ' + qq.void));
-          return '<li><div style="font-size:12.5px">' + tag +
-            '<span class="mono" style="margin-left:8px">' + qq.deal + '</span></div>' +
-            '<div class="faint" style="font-size:11.5px;margin-top:4px;line-height:1.6">' +
-            E(dtr(qq.fund)) + ' · ' + amt(qq.amt) + ' ' + CCY + ' · ' + qq.rate.toFixed(2) + '%<br>' +
-            L('submitted ','提交 ') + qq.at + ' ' + TZ_LABEL + L(' · ended ',' · 终结 ') + qq.endAt + ' ' + TZ_LABEL +
-            (qq.why ? '<br><b style="color:var(--muted)">' + L('Rejection reason','拒绝原因') + '</b>' +
-                      L(' (visible to the quoting institution): ','（对报价机构可见）：') + E(dtr(qq.why))
-                    : '<br>' + L('System event — <b style="color:var(--muted)">no reason to record</b>; not counted towards a rejection rate and leaves no negative record.',
-                                 '系统事件，<b style="color:var(--muted)">无原因可填</b>，不计入拒绝率、不产生负面记录')) +
-            '</div></li>'; }).join('') + '</ul>' +
-        '<p class="hint">' + L(
-          'Rejected and expired are <b>two different terminal states</b>: a rejection is the asset owner’s decision (has a reason, visible to the institution); an expiry is a system event (no reason, not counted towards a rejection rate). The consequences for the credit line and the project are identical — only the landing state and the presence of a reason differ. The deal ID is retained but voided; it is never recycled or reused.',
-          '已拒绝与已失效是<b>两个不同的终态</b>：拒绝是资产方的意思表示（有原因、对机构可见）；失效是系统事件（无原因、不计入拒绝率）。两者对额度与项目的后果完全相同，差别只在状态落点与有没有原因。编号保留但作废，不回收、不复用。') +
-        '</p></div>' : '') +
-      '</div>'
-    : '';
+  var qRows = [];
+  if(p.quote) qRows.push({ q:p.quote, live:true });
+  past.forEach(function(qq){ qRows.push({ q:qq, live:false }); });
+  function quoteState(r){
+    if(r.live){
+      var k = quoteClock(r.q);
+      return pill(k.soon ? 'amber' : 'info', L('Live · ' + fmtDur(k.leftMin) + ' left', '在途 · 剩余 ' + fmtDur(k.leftMin))) +
+        '<div class="cell-sub">' + L('expires ' + k.to, '到期时刻 ' + k.to) + '</div>';
+    }
+    if(r.q.st === 'S-FD-2')
+      return pill('gray', L('S-FD-2 Rejected','S-FD-2 已拒绝')) +
+        '<div class="cell-sub" style="white-space:normal">' +
+        L('Rejection reason (visible to the quoting institution): ','拒绝原因（对报价机构可见）：') +
+        E(dtr(r.q.why || '')) + '</div>';
+    return pill('gray', L('S-FD-11 Quote expired','S-FD-11 报价已失效')) +
+      '<div class="cell-sub" style="white-space:normal">' + E(dtr(r.q.void || '')) + ' · ' +
+      L('system event, no reason to record','系统事件，无原因可填') + '</div>';
+  }
+  var quoteCard = !qRows.length ? '' :
+    '<div class="card" style="margin-top:16px">' + cardHead(L('Quotes on this project','在途报价与报价历史'),
+      faint(L('one row per quote · ' + qRows.length + ' in total · produced by WS-325, read-only here',
+              '一行 = 一笔报价 · 共 ' + qRows.length + ' 笔 · 口径由 WS-325 权威产出，本页只读引用'))) +
+    '<div class="tablewrap" style="border:0;box-shadow:none;border-radius:0"><table class="tbl ls-qtbl"><thead><tr>' +
+      '<th>' + L('Financing deal ID','融资业务编号') + '</th>' +
+      '<th>' + L('Quoting institution','报价机构') + '</th>' +
+      '<th class="num">' + L('Quoted amount','报价金额') + '</th>' +
+      '<th class="num">' + L('Annual rate','年化利率') + '</th>' +
+      '<th class="num">' + L('Settlement','结算币种与金额') + '</th>' +
+      '<th class="num">' + L('Submitted at','报价提交时间') + '</th>' +
+      '<th>' + g('status') + '</th></tr></thead><tbody>' +
+      qRows.map(function(r){
+        return '<tr><td class="mono">' + r.q.deal + '</td>' +
+          '<td>' + E(dtr(r.q.fund)) + '</td>' +
+          '<td class="num">' + amt(r.q.amt) + ' <span class="faint">' + CCY + '</span></td>' +
+          '<td class="num">' + r.q.rate.toFixed(2) + '%</td>' +
+          '<td class="num">' + (r.q.settle ? amt(r.q.settle) + ' ' + (r.q.ccy || CCY) : '—') + '</td>' +
+          '<td class="num">' + r.q.at + '<div class="cell-sub">' + TZ_LABEL +
+            (r.q.endAt ? ' · ' + L('ended ','终结 ') + r.q.endAt : '') + '</div></td>' +
+          '<td>' + quoteState(r) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+    '<div class="card-b" style="padding-top:12px">' + CF.note('', L(
+      'Rejected and expired are <b class="ls-b">two different terminal states</b>: a rejection is the asset owner’s decision (has a reason, visible to the institution); an expiry is a system event (no reason, not counted towards a rejection rate). The consequences for the credit line and the project are identical — only the landing state and the presence of a reason differ. The deal ID is retained but voided; it is never recycled or reused.' +
+      '<p>The quoted amount is always equal to the demand amount; the settlement figure uses the FX snapshot locked at submission. Interest accrual follows the signed financing contract, not this table.</p>',
+      '已拒绝与已失效是<b class="ls-b">两个不同的终态</b>：拒绝是资产方的意思表示（有原因、对机构可见）；失效是系统事件（无原因、不计入拒绝率）。两者对额度与项目的后果完全相同，差别只在状态落点与有没有原因。编号保留但作废，不回收、不复用。' +
+      '<p>报价金额恒等于需求金额；结算金额按报价提交时锁定的汇率快照折算。计息规则以双方签署的融资合同为准，不以本表为准。</p>')) +
+    '</div></div>';
 
   /* ---- 左栏 4（WS-326 增量）：放款与融资确认的公开进度 ----
      公开字段：放款提交时间、放款币种与金额、确认时间、终止时间与原因（D-LN-06）。
@@ -1894,7 +1930,7 @@ function pageProject(){
       faint(L('public fields · produced by WS-326, read-only here','公开字段 · 口径由 WS-326 权威产出，本页只读引用'))) +
     (!fin ? '' : '<div class="card-b"><div class="ls-kgrid">' +
       kcell(L('Financing deal ID','融资业务编号'), fin.deal, L('Generated when the quote is accepted; stable for life','接受报价时生成，终身稳定')) +
-      kcell(L('Deal status','业务状态'), pill('', fin.st + ' ' + finSt(fin.st)),
+      kcell(L('Deal status','业务状态'), pill('info', fin.st + ' ' + finSt(fin.st)),
         fin.st === 'S-FD-3'
           ? L('Waiting for the funder to verify the signed contract and disburse; verification and handling are actions, not statuses (D-LN-01)',
               '等待资金方核验盖章件并放款；核验与处置动作不是状态（D-LN-01）')
@@ -2003,11 +2039,9 @@ function pageProject(){
     '</div></div>';
 
   /* ---- 右栏：三段式操作区（6.5.5）---- */
+  /* v1.4：右栏只放操作项（需求方 09-14 第 2 条）。原来顶部那张「锁定信息」卡已搬到左栏第一张。 */
   var rail = '<aside class="portal-rail">' +
-    (p.quote ? '<div class="card">' + cardHead(L('Lock information','锁定信息'), faint(L('D-LS-13 · public field','D-LS-13 · 公开字段'))) +
-      '<div class="card-b">' + lockCard(p, own) + '</div></div>' : '') +
-    '<div class="card"' + (p.quote ? ' style="margin-top:16px"' : '') + '>' +
-    cardHead(g('actions'), faint('L6')) +
+    '<div class="card">' + cardHead(g('actions'), faint('L6')) +
     (S.role === 'guest' ? guestActs() :
       '<div class="card-b">' +
         seg(g('globalOps'), '', globalBlock(p, acts, own)) +
@@ -2030,7 +2064,8 @@ function pageProject(){
     '<div class="card-b">' + chartBlock(p,'pool') + chartBlock(p,'fin') + '</div></div>';
 
   return head + shortAlert(p, d, own) + usedUpNote(d) + statRow(p) +
-    '<div class="portal-cols"><div>' + pledgeCard + quoteCard + finCard + repCard + demandCard + '</div>' + rail + '</div>' + charts;
+    '<div class="portal-cols"><div>' + lockBlock + pledgeCard + finCard + repCard + demandCard + quoteCard +
+    '</div>' + rail + '</div>' + charts;
 }
 function kcell(k, v, x, sans){
   return '<div><div class="k">' + E(k) + '</div><div class="v"' + (sans ? ' style="font-family:var(--sans)"' : '') + '>' + v + '</div>' +

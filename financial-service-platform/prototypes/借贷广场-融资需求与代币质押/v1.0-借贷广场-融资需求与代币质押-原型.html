@@ -58,6 +58,20 @@
 .ls-lockmini b{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--accent);font-weight:660}
 .ls-lockmini.soon b{color:var(--warn)}
 .ls-lock{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:13px}
+/* v1.4：锁定信息从 300px 的右栏搬到宽的左栏，两列并排——
+   左列是"被谁锁 / 从何时起 / 已多久 / 到期时刻"四项事实，右列是剩余倒计时与两条出路。
+   窄于 900px 时自动堆叠回单列。四项内容在两种排布下都完整（WS-325 D-LS-20 / AC-LS-97）。 */
+.ls-lock.wide{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:var(--sp-5);align-items:start}
+.ls-lock.wide .cB{border-left:1px solid var(--border);padding-left:var(--sp-5)}
+.ls-lock.wide .cB .lb{font-size:11.5px;color:var(--faint)}
+.ls-lock .cB .lb{font-size:11.5px;color:var(--faint);margin-bottom:2px}
+.ls-lock .rows .row{padding:8px 11px}
+.ls-lock .rows .row-k{font-size:11.5px}
+.ls-lock .rows .row-v{font-size:12px;margin-top:1px}
+@media (max-width:1180px){
+  .ls-lock.wide{grid-template-columns:1fr}
+  .ls-lock.wide .cB{border-left:0;padding-left:0;border-top:1px solid var(--border);padding-top:var(--sp-4)}
+}
 .ls-lock.soon{border-color:var(--warn-border);background:var(--warn-bg)}
 .ls-lock .by{font-size:12.5px;line-height:1.6;color:var(--muted)}
 .ls-lock .by b{color:var(--text);font-weight:660}
@@ -100,8 +114,9 @@
 .ls-stats .s{background:var(--card);padding:16px 18px 17px;min-width:0}
 .ls-stats .k{font-size:12.5px;color:var(--muted);line-height:1.35}
 .ls-stats .v{font-family:var(--mono);font-variant-numeric:tabular-nums;
-  font-size:clamp(21px,1.9vw,30px);font-weight:700;letter-spacing:-.035em;line-height:1.12;margin-top:7px;
+  font-size:clamp(19px,1.62vw,27px);font-weight:700;letter-spacing:-.035em;line-height:1.12;margin-top:7px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls-stats .v .cy{font-size:.62em;color:var(--faint);font-weight:600;margin-left:5px;letter-spacing:0}
 .ls-stats .s.lead .v{color:var(--accent)}
 .ls-stats .x{font-size:11px;color:var(--faint);margin-top:6px;line-height:1.5}
 
@@ -134,6 +149,23 @@
    内容一长（解除质押里可能有三张清单）页脚就被顶出视口。只在本模块补这一条，不改公共实现。 —— */
 .mask > .modal{max-height:calc(100vh - 48px)}
 .modal > .modal-b{flex:1 1 auto;min-height:0}
+
+
+
+/* —— v1.4：进行中状态的 pill 档位。公共 base.css 只给了 green / amber / red / gray / dash，
+   不带 tone 的 .pill 是透明的"无强调"变体。状态列需要一个"进行中"的档，
+   用系统已有的 accent 三个 token 组出来，不新建 token、不改公共实现。 —— */
+.pill.info{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-border)}
+/* —— v1.4 列表页状态列：状态本身可能有两个并列 pill（对外状态 + 已到期并行标记）—— */
+.ls-pills{display:flex;flex-wrap:wrap;gap:6px}
+
+/* —— v1.4 在途报价与报价历史改列表：七列，给足最小宽度靠 .tablewrap 横向滚动 —— */
+.ls-qtbl{min-width:940px}
+.ls-qtbl .cell-sub{max-width:280px}
+
+/* —— v1.4 页头 kick 行里的只读口径小注（有效期 = 首次发布日 + 1 年）—— */
+.ls-phead .kick .ro{margin-left:6px;padding:1px 6px;border:1px dashed var(--border-strong);border-radius:var(--radius-xs);
+  font-size:11px;color:var(--faint);white-space:nowrap}
 
 /* —— 非登录态操作区：一个按钮，一句话（D-LS-14 / AC-LS-86）—— */
 .ls-guest .lead{font-size:12.5px;color:var(--muted);line-height:1.6;margin:0 0 12px}
