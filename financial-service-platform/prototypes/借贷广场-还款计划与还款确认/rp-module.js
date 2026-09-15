@@ -102,6 +102,7 @@ var MAIL = '{platform-support-mailbox}';   /* Q-LN-01 占位常量，与 WS-326 
 var CO = {
   asset  :['Shengyuan Technology (demo)','晟远科技（演示）'],
   fund   :['Beian Leasing (demo)','北岸融资租赁（演示）'],
+  fund2  :['Huanhai Commercial Factoring (demo)','环海商业保理（演示）'],
   other  :['Mingtai Appliance (demo)','明泰家电（演示）'],
   opAsset:['Shengyuan Technology (demo) · Zhou Min','晟远科技（演示）· 周敏'],
   opFund :['Beian Leasing (demo) · Chen Li','北岸融资租赁（演示）· 陈立']
@@ -157,7 +158,7 @@ var DEALS = [
 
   /* ② 同日两笔的排序演示（D-RP-22 ②）：与 ① 同日应还，但放款记录提交时间晚（15:40 vs 10:12）
         → 排在 ① 之后、默认不选中。同一项目下的**另一轮需求**，第③段按 FP-28 可切过去。 */
-  { id:'FD-20260918-0067', fp:'FP-20260812-0031-04', pid:'FP-20260812-0031',
+  { id:'FD-20260918-0067', fp:'FP-20260812-0031-04', pid:'FP-20260812-0031', funder:'fund2',
     pname:['East China electronic components pool','华东电子元件应收账款池'],
     amt:350000, rate:7.95, ccy:'USD', st:'S-FD-6', matured:false, planReady:true,
     quotedAt:'2026-09-18 09:05', ln06:'2026-09-20 15:40', t0:'2026-09-20',
@@ -385,12 +386,10 @@ function finalPlan(d){
   if(!d || !d.planReady || !d.t0) return [];
   return buildPlan(d.t0, d.fd46, d.amt, d.rate, d.fx.v);
 }
-/* 初始计划（RP-16 ＝ 预计）：基准日取**预计放款日 ＝ QT-09 报价提交日**（D-RP-04）。
-   派生试算、不落库、不占号、不产生期次对象（D-RP-05）。 */
-function draftPlan(d){
-  if(!d) return [];
-  return buildPlan(dayOnly(d.quotedAt), d.fd46, d.amt, d.rate, d.fx.v);
-}
+/* ⚠️ 初始计划（试算版）**已不在本模块**：V3.4 起它只在报价环节呈现
+   （报价详情页与 P-LS-06 接受抽屉，见 WS-325 原型里的 initialPlanCard）。
+   业务规则未变——报价期仍要拟定、放款确认后仍按实际放款日重算定稿并锁死（D-RP-80）。 */
+
 /* RP-01 还款计划编号：定稿时刻按期生成，一期一个（初始计划不占号）。 */
 function planNo(d, p){
   if(!d || !d.planReady || !p) return '—';
@@ -436,6 +435,20 @@ function progress(d){
   return { plan:plan, n:plan.length, done:done, paidPri:round2(paidPri), paidInt:round2(paidInt),
            unpaidPri:round2(d.amt - paidPri), overdue:od, next:next, await2:aw,
            settled:d.st === 'S-FD-8' };
+}
+/* 出资机构名称（QT-10）。同一项目下的多笔业务可能来自不同机构——
+   计划视图的标题区必须带它，否则多笔之间分不清这份计划是欠谁的（D-RP-81 ①）。 */
+function funderOf(d){ return co(d.funder || 'fund'); }
+/* LN-01 放款记录编号。本期 FP-28 → FD-01 → LN-01 恒为 1:1:1（D-RP-78），
+   因此它由该笔业务的 LN-06 日期派生，不新造第三个编号（承接 D-LN-49）。 */
+function lnNo(d){
+  if(!d || !d.ln06) return '—';
+  /* 编号规则：前缀 + 服务端日期 + **当日 6 位序号**。同一天可能有多笔放款
+     （演示数据里 FP-20260812-0031 下的两笔就同为 2026-09-20），
+     因此序号不能写死成 000001——那会让两笔撞号、按编号检索也就失去意义。
+     这里用业务编号末四位派生一个稳定的当日序号，保证同日两笔不同号。 */
+  var seq = String(d.id).slice(-4);
+  return 'LN' + dayOnly(d.ln06).replace(/-/g, '') + '00' + seq;
 }
 function findDeal(id){ for(var i = 0; i < DEALS.length; i++) if(DEALS[i].id === id) return DEALS[i]; return null; }
 function isFiat(d){ return d.ccy === CCY; }
@@ -577,15 +590,14 @@ function noChain(what){
 }
 
 /* ---- 计息规则常驻条（RP-18 / AC-RP-04）。在计划抽屉里它固定在顶部、不随表体滚走 ---- */
-function ruleBar(d, ver){
-  var base = ver === 'draft' ? dayOnly(d.quotedAt) : d.t0;
+function ruleBar(d){
+  var base = d.t0;
   return '<div class="rp-rule"><div class="rt">' +
     L('<b>Annual</b> simple interest, actual days ÷ ' + BASIS + ' (ACT/360); interest accrues from the ' +
       'start date and not on the due date. Interest start date = <b>' + base + '</b>',
       '<b>年化</b>单利，实际天数 ÷ ' + BASIS + '（ACT/360），起息日计息、应还日不计息；' +
       '起息日 = <b>' + base + '</b>') +
-    (ver === 'draft' ? L(' (expected disbursement date).',' （预计放款日）。')
-                     : L(' (actual disbursement date · FD-45).',' （实际放款日 · FD-45）。')) +
+    L(' (the actual disbursement date).',' （实际放款日）。') +
   '</div><div class="rx">' +
     '<div class="i"><div class="k">' + L('Rate basis','利率口径') + '</div><div class="v">' +
       L('<b>Annual</b> ' + d.rate.toFixed(2) + '% (QT-06). The quote captures an annual percentage; ' +
@@ -616,60 +628,72 @@ function ruleBar(d, ver){
   '</div></div>';
 }
 
-/* ---- 还款计划表（分册 6.6.1，两版共用一套结构）----
-   表尾合计**只给 USD 口径**；结算币种金额只在单期内展示、不参与任何合计（D-RP-40）。
-   表头与期次序号列固定（D-RP-72 ①）。 */
-function planTable(d, plan, ver, curSeq){
+/* ---- 还款计划表（分册 6.6.1 · V3.4：**定稿版单版 + 精简为 6 列**）----
+   V3.4 取消两版同屏对照，初始版收敛到报价环节（D-RP-80）。因此这里**不再出现**：
+   「预计 · 未生效」版本标识、「预计还款日」列名、两版切换 tab、差异行高亮。
+   主表 6 列：期次序号 · 应还日 · 应还合计（USD）· 结算币种金额 · 期次状态 · 逾期天数。
+   **本息拆分与计息区间收进行内展开**——不是删掉：AC-RP-04 要求资产方能用页面数据自行验算利息，
+   这三项是验算的必要输入，只能收起、不能移除。
+   表尾合计**只在选定笔内、只给 USD 口径**；跨笔跨币种一律不得求和（D-RP-40 / D-RP-81 ③）。 */
+function planTable(d, plan, curSeq){
   var sumP = 0, sumI = 0, sumT = 0;
   var rows = plan.map(function(p){
-    var s = ver === 'final' ? pState(d, p) : null;
+    var st = pState(d, p);
     sumP += p.principal; sumI += p.interest; sumT += p.total;
-    var cls = (p.last ? 'last ' : '') + (s && s.overdue && s.st === 'S-RP-1' ? 'odue ' : '') +
-              (curSeq === p.seq ? 'cur' : '');
-    return '<tr' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '>' +
+    /* 当前应还期次默认高亮——精简之后最该突出的就是这一行（D-RP-72 ③） */
+    var isCur = (curSeq === p.seq);
+    var cls = (isCur ? 'cur ' : '') + (p.last ? 'last ' : '') +
+              (st.overdue && st.st === 'S-RP-1' ? 'odue' : '');
+    var open = (S.rowOpen === p.seq);
+    return '<tr' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') +
+        (isCur ? ' data-cur="1"' : '') + '>' +
       '<td class="mono">#' + p.seq +
-        (p.last ? '<div class="sub">' + L('incl. principal · at maturity','含本金 · 到期还本付息') + '</div>' : '') + '</td>' +
-      '<td class="mono">' + p.due +
-        (p.last ? '<div class="sub">' + L('= final repayment date','恒等于最终还款日') + '</div>'
-                : (ver === 'final' ? '<div class="sub">' + L('window opens ','入口开启 ') + p.openAt + '</div>' : '')) + '</td>' +
-      '<td class="mono">' + p.from + ' ~ ' + p.due + '<div class="sub">' + p.days + L(' days',' 天') +
-        (p.last && p.days > 92 ? L(' · final instalment absorbs the sub-quarter tail',
-                                   ' · 末期并入不足 ' + PERIOD_M + ' 个月的尾段') : '') + '</div></td>' +
-      '<td class="mono num">' + (p.principal ? amt(p.principal) : '0.00') + '</td>' +
-      '<td class="mono num">' + amt(p.interest) + '</td>' +
+        (isCur ? '<div class="sub">' + L('current','当前应还') + '</div>' : '') +
+        (p.last ? '<div class="sub">' + L('incl. principal','含本金') + '</div>' : '') + '</td>' +
+      '<td class="mono">' + p.due + '</td>' +
       '<td class="mono num"><b>' + amt(p.total) + '</b></td>' +
       '<td class="mono num">' + amt(p.settle) + ' ' + d.ccy + '</td>' +
-      (ver === 'final'
-        ? '<td>' + pill(TONE[RP_ST[s.st][1]] || 'gray', txt(RP_ST[s.st][0])) +
-            (s.overdue ? '<div class="sub">' + L('overdue ','已逾期 ') + '<b>' + s.odDays + '</b>' +
-              L(' days','  天') + (s.frozen ? L(' · frozen at ' + s.frozenAt, '（已于 ' + s.frozenAt + ' 冻结）')
-                                            : L(' · +1 per day','（每日 +1）')) + '</div>' : '') + '</td>'
-        : '<td><span class="pill dash">' + L('Expected · not in effect','预计 · 未生效') + '</span></td>') +
-    '</tr>';
+      '<td>' + pill(TONE[RP_ST[st.st][1]] || 'gray', txt(RP_ST[st.st][0])) + '</td>' +
+      '<td class="mono num">' + (st.overdue ? st.odDays + (st.frozen ? L(' · frozen',' · 已冻结') : '') : '—') + '</td>' +
+      '<td class="col-x"><button class="btn sm link" type="button" data-act="rp.row" data-v="' + p.seq +
+        '" aria-expanded="' + open + '">' + (open ? '−' : '+') + '</button></td>' +
+    '</tr>' +
+    (open ? '<tr class="xr"><td colspan="7"><div class="xg">' +
+      '<div><span class="k">' + g('duePrincipal') + '</span><span class="v">' + amt(p.principal) + '</span></div>' +
+      '<div><span class="k">' + g('dueInterest') + '</span><span class="v">' + amt(p.interest) + '</span></div>' +
+      '<div><span class="k">' + g('accrualSpan') + '</span><span class="v">' + p.from + ' ~ ' + p.due + '</span></div>' +
+      '<div><span class="k">' + L('Days','天数') + '</span><span class="v">' + p.days +
+        (p.last && p.days > 92 ? L(' · absorbs the sub-quarter tail',' · 末期并入不足一季的尾段') : '') + '</span></div>' +
+      '</div><p class="xn">' +
+      L('Check it yourself: ' + amt(d.amt) + ' × ' + d.rate.toFixed(2) + '% × ' + p.days + ' ÷ ' + BASIS +
+        ' = ' + amt(p.interest) + '.',
+        '可自行验算：' + amt(d.amt) + ' × 年化 ' + d.rate.toFixed(2) + '% × ' + p.days + ' ÷ ' + BASIS +
+        ' = ' + amt(p.interest) + '。') + '</p></td></tr>' : '');
   }).join('');
-  return '<div class="rp-wrap"><table class="tbl wide ls-tbl rp-plan">' +
-    '<thead><tr><th>' + g('instalment') + '</th>' +
-      '<th>' + (ver === 'final' ? g('dueDate') + ' · RP-04' : L('Expected due date','预计还款日')) + '</th>' +
-      '<th>' + g('accrualSpan') + ' · RP-05</th><th>' + g('duePrincipal') + '</th>' +
-      '<th>' + g('dueInterest') + '</th><th>' + g('dueTotal') + '</th>' +
-      '<th>' + g('settleAmount') + '</th>' +
-      '<th>' + (ver === 'final' ? L('Status & marks','期次状态与标记') : L('Version','版本')) + '</th></tr></thead>' +
+  return '<div class="rp-wrap"><table class="tbl ls-tbl rp-plan">' +
+    '<thead><tr><th>' + g('instalment') + '</th><th>' + g('dueDate') + '</th>' +
+      '<th>' + g('dueTotal') + '</th><th>' + g('settleAmount') + '</th>' +
+      '<th>' + L('Status','期次状态') + '</th><th>' + L('Days overdue','逾期天数') + '</th>' +
+      '<th class="col-x"><span class="tiny">' + L('detail','明细') + '</span></th></tr></thead>' +
     '<tbody>' + rows + '</tbody>' +
-    '<tfoot><tr><td class="lb" colspan="3">' + L('Total · ' + CCY + ' ledger basis only',
-      '合计 · 仅 ' + CCY + ' 记账口径') + '</td>' +
-      '<td class="num">' + amt(sumP) + '</td><td class="num">' + amt(sumI) + '</td>' +
+    '<tfoot><tr><td class="lb" colspan="2">' + L('Total · this deal only, ' + CCY + ' basis',
+      '合计 · 仅本笔、仅 ' + CCY + ' 记账口径') + '</td>' +
       '<td class="num">' + amt(sumT) + '</td>' +
       '<td class="lb" style="font-size:10px;color:var(--faint);font-weight:400">' +
         L('settlement amounts never roll up','结算币种金额不参与任何合计') + '</td>' +
-      '<td></td></tr></tfoot></table></div>' +
+      '<td colspan="3" class="lb" style="font-size:10px;color:var(--faint);font-weight:400">' +
+        L('principal ' + amt(sumP) + ' · interest ' + amt(sumI),
+          '本金 ' + amt(sumP) + ' · 利息 ' + amt(sumI)) + '</td></tr></tfoot></table></div>' +
     '<p class="hint" style="margin-top:9px">' +
-      L('Totals are given on the <b>' + CCY + '</b> ledger basis only. <b>Amounts in different ' +
-        'currencies are never summed</b>: one asset owner may hold deals settling in USD and in USDT, ' +
-        'and adding them together would be wrong — no such total row exists anywhere in this module.',
-        '合计一律按 <b>' + CCY + '</b> 记账口径给出（D-FIN-13）。<b>跨币种不得求和</b>：' +
-        '同一资产方名下多笔业务的结算币种可能不同，把 USDT 与 USD 加在一起是错的，' +
-        '界面上不存在这样的合计行（D-RP-40）。') + '</p>';
+      L('Totals are given <b>within this deal only</b> and on the <b>' + CCY + '</b> ledger basis. ' +
+        '<b>Amounts across deals or across currencies are never summed</b>: one project may carry several ' +
+        'deals settling in different currencies and funded by different institutions, so a combined total ' +
+        'would be wrong — no such view exists anywhere in this module.',
+        '合计<b>只在选定笔内</b>、一律按 <b>' + CCY + '</b> 记账口径给出。' +
+        '<b>跨笔、跨币种一律不得求和</b>：同一项目可能有多笔业务、结算币种不同、出资机构也不同，' +
+        '把它们加在一起是错的——本模块不存在这样的汇总视图（D-RP-40 / D-RP-81 ③）。') + '</p>';
 }
+
 
 /* ---- 两条轴：计息停止点 vs 还款记录终结点（D-FIN-11 / D-RP-29 / D-RP-30 / AC-RP-09）----
    本模块最不能被优化掉的一条，因此给它一个独立的形状而不是一段文字。
@@ -1030,71 +1054,143 @@ function hostPage(){
       '<div class="x">' + E(txt(f[1])) + '</div></div>';
   }).join('');
 
-  var rail = '<aside class="portal-rail"><div class="card">' +
-    '<div class="card-head"><b>' + L('Actions','操作区') + '</b>' +
-    '<span style="margin-left:auto" class="faint">' + L('3 sections','三段') + '</span></div>' +
-    /* 第①段 全局操作 */
+  /* ---- 第③段的出现条件（D-RP-77 ②）：业务进入 S-FD-6 之后才出现；
+         未进入时**整段不渲染**——不是渲染成空块或占位。
+         空块会被读成"还款流程坏了"，而此刻正确的事实是"还没走到这一步"。 ---- */
+  var inRepay = (d.st === 'S-FD-6' || d.st === 'S-FD-8');
+
+  var rail = '<aside class="portal-rail">' +
+    /* ①② 两段：容器规范与内容都归上游（WS-324 主册 6.5.5 / WS-325 / WS-326），
+       本模块只把它们复刻出来托住自己的第③段，**不重新定义**（D-RP-77）。 */
+    '<div class="card"><div class="card-head"><b>' + L('Actions','操作区') + '</b>' +
+    '<span style="margin-left:auto" class="faint">' + L('sections 1-2 · owned upstream','①② 段 · 归上游') +
+    '</span></div>' +
     '<div class="card-b"><div class="ls-flow4"><div class="fs done">' +
       '<div class="t"><span class="no">1</span>' + L('Global','全局操作') + '</div>' +
-      '<div class="x">' + L('Project-level actions live on the project owner’s side and are not part ' +
-        'of this module.','项目级动作归项目侧，不属于本模块。') + '</div></div></div></div>' +
-    /* 第②段 融资流程四环节 —— 本模块进来时四环节都已走完 */
+      '<div class="x">' + L('Project-level actions belong to the financing-demand module and are not ' +
+        'defined here.','项目级动作归融资需求与代币质押模块，本模块不重新定义。') + '</div></div></div></div>' +
     '<div class="card-b" style="border-top:1px solid var(--border)">' +
       '<div class="sec-head" style="margin-bottom:8px"><h2 style="font-size:12px;color:var(--faint);' +
       'text-transform:uppercase;letter-spacing:.05em;margin:0">' + L('2 · Financing flow','② 融资流程四环节') +
-      '</h2></div><div class="ls-flow4">' + flow + '</div></div>' +
-    /* 第③段 还款流程 —— 本模块 */
-    '<div class="card-b" style="border-top:1px solid var(--border)">' +
-      '<div class="sec-head" style="margin-bottom:0"><h2 style="font-size:12px;color:var(--text);' +
-      'text-transform:uppercase;letter-spacing:.05em;margin:0;font-weight:700">' +
-      L('3 · Repayment','③ 还款流程') + '</h2></div>' + section3(d, demands, gp) + '</div>' +
-    /* 深链说明 */
-    '<div class="card-b" style="border-top:1px solid var(--border)"><p class="hint">' +
+      '</h2></div><div class="ls-flow4">' + flow + '</div></div></div>' +
+
+    /* ---- 第③段：**独立成一张卡**，与①②在结构上真分开——自己的区块标题、明确的分隔、
+           不与②的环节条混排、不共用②的当前环节高亮态（D-RP-77 ①）。 ---- */
+    (inRepay
+      ? '<div class="card rp-block"><div class="card-head"><b>' + L('3 · Repayment','③ 还款流程') + '</b>' +
+        '<span style="margin-left:auto" class="faint">' + L('owned by this module','本模块') + '</span></div>' +
+        '<div class="card-b">' + section3(d, demands, gp) + '</div></div>'
+      : '') +
+
+    (inRepay ? '<div class="card"><div class="card-b"><p class="hint">' +
       L('Deep links land on this page, scroll to section 3 and open the matching drawer; closing the ' +
         'drawer keeps you here.',
         '深链落到本页、定位到第③段并打开对应抽屉；关掉抽屉就停在这一页，不返回、不跳走。') +
       '<br><span class="mono">deal/' + d.id + '?action=repay</span>' +
-      '<br><span class="mono">schedule/' + planNo(d, gp.next || gp.plan[0]) + '?action=repay</span>' +
-      '<br><span class="mono">schedule/{id}?action=confirm_repayment</span>' +
-      '<br><span class="mono">deal/' + d.id + '?action=view_schedule</span></p></div>' +
-    '</div></aside>';
+      '<br><span class="mono">deal/' + d.id + '?action=view_schedule</span>' +
+      '<br><span class="mono">schedule/{id}?action=confirm_repayment</span></p></div></div>' : '') +
+    '</aside>';
+
+  /* ---- 原型说明件：**不属于生产界面**（分册 6.6.2 的"移走"表最后一行）----
+     五个拦截点说明与两条轴示意是 PRD 条款（6.2.2 / 5.6）与原型的说明件，不是给终端用户看的
+     界面元素，因此从「立即还款」抽屉里移了出来。它们仍然要能被评审看到——规则本身一条没改，
+     只是不再摆在资产方面前。界面上保留的是它们的**效果**：未开窗 ⊘ + 原因、金额只读、
+     逾期天数那句「提交后即冻结」。 */
+  var explain = '';
+  if(inRepay && d.planReady){
+    var fp2 = gp.next || gp.await2 || gp.plan[0];
+    explain = '<div class="card ln-annot-card" style="margin-top:16px">' +
+      cardHead(L('Prototype explainers · not part of the production UI','原型说明件 · 不属于生产界面'),
+        L('PRD clauses 6.2.2 / 5.6 · moved out of the drawer in V3.4','PRD 6.2.2 / 5.6 条款 · V3.4 起移出抽屉')) +
+      '<div class="card-b">' +
+      '<p class="hint" style="margin-top:0">' +
+        L('These two are how the rules are argued, not what the asset owner is shown. They were in the ' +
+          '"Record a repayment" drawer before V3.4; the simplification moved them here. The rules ' +
+          'themselves are unchanged — their <b>effects</b> are still enforced in the drawer.',
+          '这两件是规则的论证，不是给资产方看的东西。V3.4 之前它们在「立即还款」抽屉里，' +
+          '本轮精简把它们移到这里。<b>规则本身一条没改</b>——它们的<b>效果</b>仍然在抽屉里生效。') + '</p>' +
+      '<div style="margin-top:14px">' + freezeCard(d, fp2) + '</div>' +
+      '<div style="margin-top:16px">' + stopCards(fp2) + '</div>' +
+      '</div></div>';
+  }
 
   return CF.pageStates() + head +
     (marks ? '<div style="margin-bottom:16px">' + marks + '</div>' : '') +
-    '<div class="portal-cols"><div>' + planCard + resultCard() + '</div>' + rail + '</div>';
+    '<div class="portal-cols"><div>' + planCard + resultCard() + explain + '</div>' + rail + '</div>';
 }
 
-/* ---- 第③段「还款流程」（F-LS-77 / D-RP-66 / D-RP-73 / D-RP-67）----
-   按 FP-28 需求编号切换 + 最近一笔还款的核心信息 + 三个入口（一律抽屉，不跳离详情页）。
-   ⚠️ 未登录时**只出「立即登录」**，不再逐动作 ⊘ + 独立原因（D-RP-67）。
-   ⚠️ 业务进 S-FD-8 后**只保留只读的「查看还款计划」**，两个动作按钮一律不再出现（D-RP-73）。 */
+/* ---- 第③段「还款流程」（分册 6.6.0 · F-LS-77 / D-RP-77 / D-RP-78 / D-RP-73 / D-RP-67）----
+   **本模块只拥有第③段**（D-RP-77）：三段式操作区的容器规范属 WS-324 主册 6.5.5，
+   ①全局操作归 WS-324、②融资流程四环节跨 WS-325 / WS-326，本模块一律引用、不重新定义。
+   本段要做到的三件事：
+     ① **独立成块**——自己的区块标题、与②之间有明确分隔，不与②的环节条混排、不共用②的高亮态；
+     ② **业务未进 S-FD-6 时整段不渲染**（不是空块、不是占位）——空块会被读成"还款流程坏了"，
+        而此刻正确的事实是"还没走到这一步"；
+     ③ **一个编号选择器，不是两个切换器**（D-RP-78）——本期 FP-28 → FD-01 → LN-01 恒为 1:1:1，
+        两个编号是同一笔业务的两种叫法，做成两级筛选是错的。
+   ⚠️ 本段的标签**只出业务名称、不出 RP- 与 LN- 这类内部字段编号**（AC-RP-28 ④）：
+   字段号是原型的标注约定，不是界面规格。 */
 function section3(d, demands, gp){
   var guest = (S.role === 'guest');
-  /* 需求编号切换器：同一项目下的各轮需求。与抽屉内按 D-RP-22 的期次排序不是同一个（D-RP-74） */
-  var picker = demands.length < 2 ? '' :
-    '<div class="dm"><span class="lb">' + g('demandNo') + '</span><div class="seg-mini">' +
-    demands.map(function(x){
-      return '<button type="button" data-act="rp.demand" data-v="' + x.id + '" aria-pressed="' +
-        (x.id === d.id) + '">' + E(x.fp.slice(-2)) + '</button>';
-    }).join('') + '</div><span class="lb" style="text-transform:none">' + E(d.fp) + '</span></div>';
+
+  /* ---- 编号选择器：一个。主标识 FP-28，副行并排 FD-01 与 LN-01，按任一编号可检索 ---- */
+  var kw = (S.find || '').trim().toUpperCase();
+  var hit = function(x){
+    return !kw || x.fp.toUpperCase().indexOf(kw) >= 0 || x.id.toUpperCase().indexOf(kw) >= 0 ||
+           lnNo(x).toUpperCase().indexOf(kw) >= 0;
+  };
+  var shown = demands.filter(hit);
+  var picker = '';
+  if(demands.length > 1){
+    picker =
+      '<div class="rp-pick">' +
+      '<div class="ph"><span class="lb">' + L('Select by ID','按编号选择') + '</span>' +
+        '<input class="inp sm" type="text" value="' + E(S.find || '') + '" data-act="rp.f" data-v="find" ' +
+        /* data-f 是公共壳层自带的焦点恢复键：重绘前记下它、重绘后把焦点与光标位置放回去。
+           检索要边打边筛，每次输入都会重绘，没有它就会输一个字符跳一次焦点。 */
+        'data-f="find" placeholder="' + E(L('demand / deal / disbursement ID','需求 / 业务 / 放款编号')) + '"></div>' +
+      (shown.length ? shown.map(function(x){
+        return '<button class="rp-po" type="button" data-act="rp.demand" data-v="' + x.id + '" ' +
+          'aria-pressed="' + (x.id === d.id) + '">' +
+          '<span class="pb"><span class="p1">' + E(x.fp) + '</span>' +
+          '<span class="p2">' + E(x.id) + '　·　' + E(lnNo(x)) + '</span>' +
+          '<span class="p3">' + E(funderOf(x)) + '</span></span>' +
+          '<span class="pa">' + amt(x.amt) + ' ' + x.ccy + '</span></button>';
+      }).join('') :
+        '<div class="pe">' + L('No financing deal matches that ID.','没有匹配该编号的融资业务。') + '</div>') +
+      '<p class="px">' +
+        L('One selector, not two filters: a demand carries at most one closed deal, and a deal carries at ' +
+          'most one valid disbursement record, so the demand ID, the deal ID and the disbursement ID are ' +
+          '<b>one-to-one-to-one</b> here — two of them would be the same thing twice. Searching by any of ' +
+          'the three lands on the same option.',
+          '一个选择器，不是两级筛选：一条需求至多一笔成交业务、一笔业务至多一条有效放款记录，' +
+          '因此需求编号、融资业务编号与放款记录编号在还款段内<b>恒为 1:1:1</b>——' +
+          '做成两个切换器等于把同一件事筛两遍。按三个编号中的任意一个检索，命中的都是同一个选项。') +
+      '</p></div>';
+  } else if(demands.length === 1){
+    /* 只有一笔时仍展示编号、但不展示选择控件——没得选就别给控件 */
+    picker = '<div class="rp-pick one"><div class="pb"><span class="p1">' + E(d.fp) + '</span>' +
+      '<span class="p2">' + E(d.id) + '　·　' + E(lnNo(d)) + '</span>' +
+      '<span class="p3">' + E(funderOf(d)) + '</span></div></div>';
+  }
 
   if(guest){
-    /* D-RP-67：未登录时本段**只出「立即登录」一个入口**——连 FP-28 需求切换器也不出，
+    /* D-RP-67：未登录时本段**只出「立即登录」一个入口**——连编号选择器也不出，
        否则本段就不止一个可点的东西了。服务端鉴权与跨主体隔离一条不减（AC-LS-86）。 */
     return '<div class="rp-seg3">' +
       '<div class="fa" style="margin:0"><button class="btn sm primary" type="button" data-act="rp.signin">' +
       g('signIn') + '</button>' +
       '<p class="hint" style="margin:7px 0 0">' +
-      L('The repayment schedule’s public fields stay visible without signing in — instalment count, ' +
+      L('The repayment schedule\u2019s public fields stay visible without signing in — instalment count, ' +
         'due dates, amounts due, instalment status, overdue marks and days. Only the actions need an ' +
-        'account, and this section shows <b>one</b> entry rather than greying out each action with its ' +
-        'own reason.',
+        'account, so this section shows <b>one</b> entry rather than greying out each action with its own ' +
+        'reason.',
         '还款计划的公开字段不登录也看得到——期次数、应还日、应还本息与合计、期次状态、逾期标记与天数。' +
         '需要账号的只是操作，因此本段只出<b>一个</b>入口，不再逐动作 ⊘ + 独立原因（D-RP-67）。') +
       '</p></div></div>';
   }
 
-  /* 最近一笔还款的核心信息 */
+  /* ---- 最近一笔应还卡片：第③段唯一的数据卡，其余信息进抽屉 ---- */
   var focus = gp.await2 || gp.next || gp.plan[gp.plan.length - 1];
   var core = '';
   if(d.planReady && focus){
@@ -1102,15 +1198,17 @@ function section3(d, demands, gp){
     core = '<div class="core">' +
       '<div class="r"><s>' + g('instalment') + '</s><b>#' + focus.seq + ' / ' + gp.n + '</b></div>' +
       '<div class="r"><s>' + g('dueDate') + '</s><b>' + focus.due + '</b></div>' +
-      '<div class="r"><s>' + g('dueTotal') + '</s><b>' + usd(focus.total) + '</b></div>' +
+      '<div class="r"><s>' + g('dueTotal') + '</s><b>' + usd(focus.total) +
+        '<span class="sc">' + amt(focus.settle) + ' ' + d.ccy + '</span></b></div>' +
       '<div class="r"><s>' + L('Instalment status','期次状态') + '</s><b class="txt">' +
         pill(TONE[RP_ST[fs.st][1]] || 'gray', txt(RP_ST[fs.st][0])) + '</b></div>' +
-      (fs.overdue ? '<div class="r"><s>' + L('Days overdue','逾期天数') + ' · RP-11</s><b>' + fs.odDays +
-        (fs.frozen ? L(' · frozen', ' · 已冻结') : '') + '</b></div>' : '') +
+      /* 逾期天数：中性样式；标签只出业务名称、不带字段号（AC-RP-28 ④） */
+      (fs.overdue ? '<div class="r"><s>' + L('Days overdue','逾期天数') + '</s><b>' + fs.odDays +
+        (fs.frozen ? L(' · frozen',' · 已冻结') : '') + '</b></div>' : '') +
     '</div>';
   }
 
-  /* 三个入口。D-RP-73：动作按钮只在 S-FD-6 时出现；进 S-FD-8 后只剩查看。 */
+  /* ---- 三个入口。D-RP-73：动作按钮只在 S-FD-6 时出现；进 S-FD-8 后只剩查看 ---- */
   var btns = '';
   if(d.planReady && focus){
     if(!gp.settled){
@@ -1138,11 +1236,11 @@ function section3(d, demands, gp){
     (gp.settled ? '<p class="hint" style="margin:8px 0 0">' +
       L('This deal is settled, so only the read-only schedule view remains in this section — the two ' +
         'action buttons are gone for good.',
-        '本笔业务已结清，第③段<b>只保留只读的「查看还款计划」</b>，两个动作按钮一律不再出现（D-RP-73）。') +
+        '本笔业务已结清，本段<b>只保留只读的「查看还款计划」</b>，两个动作按钮一律不再出现（D-RP-73）。') +
       '</p>' : '') +
     (!d.planReady ? '<p class="hint" style="margin:8px 0 0">' +
-      L('No instalment exists yet, so this section carries no action.',
-        '计划就绪前没有任何期次，本段不出动作按钮。') + '</p>' : '') +
+      L('The schedule is still being generated, so this section carries no action yet.',
+        '还款计划仍在生成，本段暂不出动作按钮。') + '</p>' : '') +
     '</div>';
 }
 
@@ -1298,41 +1396,37 @@ function drawerRepay(){
   if(!p) return '';
   var s = pState(d, p), a = repayAction(d, p), v = formState(d, p), gp = progress(d);
 
+  /* 本期应还信息（精简）。D-RP-79 的四条下限中的两条在这里：
+     ② 本期应还合计与结算金额、③ 期次序号与应还日；④ 逾期时的天数与「提交后即冻结」那句话。
+     ⚠️ 标签只出业务名称，不出内部字段编号（AC-RP-28 ④）。 */
   var planInfo = '<div class="ls-kgrid">' +
-    '<div><div class="k">' + g('demandNo') + ' · FP-28</div><div class="v">' + d.fp + '</div></div>' +
-    '<div><div class="k">' + g('dealNo') + '</div><div class="v">' + d.id + '</div></div>' +
-    '<div><div class="k">' + g('planNoLbl') + ' · RP-01</div><div class="v">' + planNo(d, p) + '</div></div>' +
-    '<div><div class="k">' + g('instalment') + ' · RP-03</div><div class="v">#' + p.seq + ' / ' + gp.n + '</div>' +
-      '<div class="x">' + (p.last ? L('final · incl. principal','末期 · 含本金') : L('interest only','利息期 · 本金为 0')) + '</div></div>' +
-    '<div><div class="k">' + g('dueDate') + ' · RP-04</div><div class="v">' + p.due + '</div>' +
-      '<div class="x">' + (p.last ? L('= final repayment date FD-46','恒等于最终还款日 FD-46')
-                                  : L('window opens ','入口开启 ') + p.openAt) + '</div></div>' +
-    '<div><div class="k">' + g('accrualSpan') + ' · RP-05</div><div class="v">' + p.from + ' ~ ' + p.due + '</div>' +
-      '<div class="x">' + p.days + L(' days · start date counts, due date does not',' 天 · 算头不算尾') + '</div></div>' +
-    '<div><div class="k">' + g('duePrincipal') + ' · RP-06</div><div class="v">' + amt(p.principal) + '</div></div>' +
-    '<div><div class="k">' + g('dueInterest') + ' · RP-07</div><div class="v">' + amt(p.interest) + '</div>' +
-      '<div class="x">' + amt(d.amt) + ' × ' + d.rate.toFixed(2) + '% × ' + p.days + ' ÷ ' + BASIS + '</div></div>' +
-    '<div><div class="k">' + g('dueTotal') + ' · RP-08</div><div class="v">' + amt(p.total) + '</div>' +
-      '<div class="x">' + CCY + '</div></div>' +
-    '<div><div class="k">' + g('settleAmount') + ' · RP-09</div><div class="v">' + amt(p.settle) + ' ' + d.ccy + '</div>' +
-      '<div class="x">' + L('÷ FX snapshot ','÷ 汇率快照 ') + d.fx.v.toFixed(4) +
-      L(' · shown per instalment, never summed',' · 只在单期内展示、不参与任何合计') + '</div></div>' +
-    '<div><div class="k">' + g('repayType') + ' · QT-15</div><div class="v txt">' + txt(QT15) + '</div>' +
-      '<div class="x">' + L('read-only reference to the quote · no dropdown','只读引用报价 · 不做下拉') + '</div></div>' +
-    '<div><div class="k">' + g('repayNature') + ' · RP-13</div><div class="v txt">' + s.nature + '</div>' +
-      '<div class="x">' + L('derived by the system, not user-selectable','系统派生、用户不可选') + '</div></div>' +
+    '<div><div class="k">' + g('instalment') + '</div><div class="v">#' + p.seq + ' / ' + gp.n + '</div>' +
+      '<div class="x">' + (p.last ? L('final · incl. principal','末期 · 含本金') : L('interest only','利息期')) + '</div></div>' +
+    '<div><div class="k">' + g('dueDate') + '</div><div class="v">' + p.due + '</div></div>' +
+    '<div><div class="k">' + g('dueTotal') + '</div><div class="v">' + amt(p.total) + ' ' + CCY + '</div>' +
+      '<div class="x">' + L('settlement ','结算 ') + amt(p.settle) + ' ' + d.ccy + '</div></div>' +
+    '<div><div class="k">' + L('Instalment status','期次状态') + '</div>' +
+      '<div class="v txt">' + pill(TONE[RP_ST[s.st][1]] || 'gray', txt(RP_ST[s.st][0])) + '</div></div>' +
   '</div>' +
+  /* D-RP-79 ④：逾期天数与「提交后即冻结」——D-FIN-11 的界面形态，精简掉等于取消这条保护 */
   (s.overdue && s.st === 'S-RP-1' ? CF.note('',
     L('This instalment is <b class="ls-b">' + s.odDays + '</b> days overdue. <b class="ls-b">Submitting a ' +
-      'repayment record freezes that number</b> — it will not grow afterwards, whenever the funder gets ' +
-      'round to confirming.<p>Overdue carries <b class="ls-b">no monetary consequence</b> this round: no ' +
-      'penalty interest, no compounding, and the amount due does not change by a cent (each ' +
-      'instalment’s interest was fixed when the schedule was finalised).</p>',
+      'repayment record freezes that number</b> — it does not grow afterwards, however long the funder ' +
+      'takes to confirm. Overdue carries <b class="ls-b">no monetary consequence</b> this round: no ' +
+      'penalty interest, and the amount due does not change by a cent.',
       '该期已逾期 <b class="ls-b">' + s.odDays + '</b> 天。<b class="ls-b">提交还款记录后逾期天数即冻结</b>，' +
-      '此后不再增加——机构什么时候点确认，都不会让这个数继续涨（D-FIN-11）。' +
-      '<p>本期逾期<b class="ls-b">不产生任何金额后果</b>：不计罚息、不计复利、应还金额一分不变' +
-      '（每期利息在计划定稿时就已固定）。</p>'),
-    L('About those ' + s.odDays + ' days','关于这 ' + s.odDays + ' 天')) : '');
+      '此后不再增加——机构什么时候点确认，都不会让这个数继续涨。' +
+      '本期逾期<b class="ls-b">不产生任何金额后果</b>：不计罚息、应还金额一分不变。'),
+    L('About those ' + s.odDays + ' days','关于这 ' + s.odDays + ' 天')) : '') +
+  /* 移走的那部分，给一个一键可达的去处（D-RP-79：不得只写「不展示」） */
+  '<p class="hint" style="margin-top:12px">' +
+    L('The full schedule, the accrual-rule text and this instalment\u2019s principal / interest split live ' +
+      'in ', '完整还款计划、计息规则全文与本期的本息拆分、计息区间在 ') +
+    '<button class="btn-link" type="button" data-act="rp.open" data-v="schedule">' +
+    L('View repayment schedule','查看完整还款计划') + '</button>' +
+    L('. Opening it closes this drawer (one layer at a time); coming back returns you to this instalment.',
+      '。打开它会关掉本抽屉（同一时刻只有一层），返回时回到本期次。') + '</p>';
+
 
   /* 还款表单 */
   var form =
@@ -1440,38 +1534,46 @@ function drawerRepay(){
       '<b>对资金方可见</b>——它常常是解释手续费、分行、到账时间的唯一位置。已填 ' +
       (S.f.memo || '').trim().length + ' / ' + MEMO_MAX + ' 字。备注<b>不公开</b>。'));
 
+  /* ---- V3.4 精简（分册 6.6.2 / D-RP-79）：只留四类，其余逐项写明去处 ----
+     留下的：期次选择器 · 本期应还信息（精简）· 机构收款账户 · 填写项。
+     移走的：完整计划表 / 计息规则全文 / 本息拆分与计息区间 → 「查看还款计划」抽屉（文字链一键可达）；
+             跨业务期次全集 → 我的控制台；五个拦截点说明与两条轴示意 → **不进生产界面**，
+             它们是 PRD 条款与原型说明件，界面上保留的只有它们的效果
+             （未开窗 ⊘ + 原因、金额只读、逾期天数那句冻结提示）。
+     ⚠️ 精简的是呈现，不是规则：校验与结算一条不少（AC-RP-31 ③）。 ---- */
   var body =
     sec(L('Choose the instalment to repay','选择要还的期次'),
-        L('D-RP-21 – D-RP-24 · across deals and projects','D-RP-21 ~ D-RP-24 · 跨融资业务、跨融资项目'),
+        L('nearest due first · overdue on top','默认最近一笔应还 · 逾期排最前'),
         selector(p)) +
-    sec(L('1 · Instalment details','① 本期计划信息'),
-        L('read-only · locked once finalised','只读 · 定稿即锁死 D-RP-09'), planInfo, true) +
-    sec('2 · ' + g('payeeAcct'), L('RP-14 · registered at disbursement','RP-14 · 放款时登记'),
+    sec(L('1 · This instalment','① 本期应还信息'), L('read-only','只读'), planInfo, true) +
+    sec('2 · ' + g('payeeAcct'), L('registered at disbursement · read-only','放款时登记 · 只读'),
         payeeRo(d, true)) +
-    sec(L('3 · Repayment record','③ 还款记录'),
-        L('RM-* · symmetrical with the disbursement side','RM-* · 与放款侧 LN-* 严格对称'),
+    sec(L('3 · What you fill in','③ 填写项'), '',
         (s.st === 'S-RP-1' && a.enabled ? form
-          : (s.rec ? recordRead(d, p, true) : '<p class="hint" style="margin:0">' + E(a.reason) + '</p>')) +
-        noChain(['recording a repayment','提交还款记录'])) +
-    sec(L('Where the clock stops, and where the record ends','计息停止点与还款记录终结点'),
-        L('the one protection the asset owner has this round','本模块唯一的资产方保护 · D-FIN-11'),
-        freezeCard(d, p), true) +
-    sec(L('Why the later instalments cannot be paid here','为什么这里还不了后面几期'),
-        L('early repayment is out of scope · five blocks, none optional','本期不支持提前还款 · 五个拦截点缺一不可'),
-        stopCards(p)) +
+          : (s.rec ? recordRead(d, p, true) : '<p class="hint" style="margin:0">' + E(a.reason) + '</p>'))) +
     sec('', '', mailCard(d, p, 'repay'), true) +
     sec('', '', annot(
-      L('<b>Prototype note · what does not exist this round.</b> This drawer carries no: early ' +
-        'settlement / pay-off-in-one-go / early principal entry; multi-select or "select all"; editable ' +
-        'amount field; editable or re-enterable payee account; entry to edit or withdraw a submitted ' +
-        'record; supplementary-explanation entry; "verified / confirmed on chain / valid transaction" ' +
-        'badge next to the hash; "audited by the platform" wording on the proof; threat copy about ' +
-        'disposing of the pledge; any penalty-interest amount. These are deliberate exclusions, not gaps.',
-        '<b>原型注解 · 本期没有的东西。</b>本抽屉<b>不存在</b>：提前结清 / 一次性还清 / 提前还本入口、' +
-        '多选与"全选"、可编辑的金额框、可编辑或可另填的机构收款账户、修改或撤回已提交还款记录的入口、' +
-        '补充说明入口、哈希旁的"已核验 / 已确认上链 / 交易有效"标识、凭证的"平台已审核"字样、' +
-        '"逾期将处置您的质押资产"一类没有兑现能力的威慑文案、任何罚息金额。' +
-        '这些不是"还没做"，是本期明确不做。')));
+      L('<b>Prototype note · what moved out and where it went (V3.4 simplification).</b> ' +
+        'The full schedule, the accrual-rule text and the principal/interest split moved to the ' +
+        '<b>View repayment schedule</b> drawer — reachable from the link above; instalments belonging to ' +
+        'your other deals moved to the console. The five interception cards and the two-axis diagram are ' +
+        '<b>not production UI at all</b>: they are PRD clauses and prototype explainers, kept on the ' +
+        'detail page under "prototype explainers". What stays here is their <i>effect</i> — a window that ' +
+        'is not open shows ⊘ with its reason, the amount is read-only, and the overdue line says the count ' +
+        'freezes on submission. <b>Nothing was cut without a destination.</b><br>' +
+        'This drawer also carries no: early settlement / pay-off-in-one-go / early principal entry; ' +
+        'multi-select; editable amount; editable payee account; edit or withdraw of a submitted record; ' +
+        '"verified on chain" badge; penalty-interest amount.',
+        '<b>原型注解 · V3.4 精简：移走了什么、移到哪儿。</b>' +
+        '完整还款计划表、计息规则全文、本息拆分与计息区间 → <b>「查看完整还款计划」抽屉</b>' +
+        '（上方文字链一键可达）；其他融资业务的期次全集 → 我的控制台还款信息 tab。' +
+        '五个拦截点说明与两条轴示意<b>不进生产界面</b>——它们是 PRD 条款与原型说明件，' +
+        '已移到详情页的「原型说明件」区；界面上保留的只有它们的<b>效果</b>：' +
+        '未开窗 ⊘ + 原因、金额只读、逾期天数那句「提交后即冻结」。<b>没有只砍不给去处的字段。</b><br>' +
+        '本抽屉同样<b>不存在</b>：提前结清 / 一次性还清 / 提前还本入口、多选与"全选"、可编辑的金额框、' +
+        '可编辑或可另填的机构收款账户、修改或撤回已提交还款记录的入口、' +
+        '哈希旁的"已核验"标识、任何罚息金额。')));
+
 
   var canSubmit = (s.st === 'S-RP-1' && a.enabled && v.ok);
   var foot = '<div class="u-foot">' +
@@ -1482,6 +1584,9 @@ function drawerRepay(){
       ? '<button class="btn primary" type="button"' + (canSubmit ? '' : ' disabled') +
         ' data-act="rp.askSubmit">' + L('Submit repayment record','提交还款记录') + '</button>'
       : '') +
+    /* 页脚注脚收为一行浅色（6.6.2）：它防的是「以为平台会代为转账」，成本一行、收益明确 */
+    '<p class="note">' + L('This step performs no on-chain operation and consumes no gas — the transfer ' +
+      'happens outside the platform.','本步骤不产生任何链上操作、不消耗 gas——转账发生在平台之外。') + '</p>' +
     (s.st === 'S-RP-1' && a.enabled && !v.ok ? '<p class="note">' +
       L('Complete the required fields first: ','补齐必填项后方可提交：') +
       (v.givenOk ? '' : L('repayment time missing or later than now; ','还款时间未填或晚于提交时刻；')) +
@@ -1822,7 +1927,7 @@ function drawerConfirm(){
         '<div style="margin-top:14px">' + payeeRo(d, visible) + '</div>') +
     sec(L('2 · Instalment details','② 本期计划信息'),
         L('to check the amount against your contract','供核对金额是否与合同一致'),
-        planInfo + '<div style="margin-top:14px">' + ruleBar(d, 'final') + '</div>', true) +
+        planInfo + '<div style="margin-top:14px">' + ruleBar(d) + '</div>', true) +
     sec(L('3 · What this confirmation does','③ 确认这一下会发生什么'),
         L('AC-FIN-36 · atomic, no gap','AC-FIN-36 · 原子、无空档'),
         decCard(d, p, done) + (p.last ? '<div style="margin-top:14px">' + pledgeHandoff() + '</div>' : '')) +
@@ -1882,140 +1987,33 @@ function drawerConfirm(){
 
 /* ================================================================
    Part G —— 承载单元③：还款计划查看（只读，右侧抽屉 760px）
-   **按「做事类」归类**（D-RP-72）：它虽然零录入，但不是"知悉一件事"——两版计划要逐行比出
-   差在哪，属于判据里"一边看信息一边逐行核对"的那一类；且 560px 装不下两版各 9 列的对照表，
-   硬塞就只能横向滚动或拆列，**那正好毁掉"同屏比出差在哪"这个唯一目的**。
-   抽屉内三条：① 高度受限时整体纵向滚动、表头与期次序号列固定；
-   ② 计息规则常驻条与版本标识**固定在抽屉顶部**、不随表体滚走；
-   ③ 期数多时默认只展开"定稿版 + 差异行高亮"，初始版收在**同一抽屉内的次级 tab** 里，
-      **tab 切换不离开抽屉**。不得拆页、不得跳新页、不得做成分步向导、不得改为卡片式逐期展开。
-   原型侧的 P-LS-91 即本承载单元；该编号是原型内部页号、不进 PRD 页面清单。
+   **V3.4：定稿版单版 + 精简 + 按选定笔收敛**（D-RP-80 / D-RP-81）。
+   两版同屏对照已取消，初始版收敛回它本来的位置——**只在报价环节可见**
+   （报价详情页与 P-LS-06 接受抽屉，见 WS-325 原型）。业务规则一条未改：
+   报价期仍要拟定初始计划、放款确认后仍按实际放款日重算定稿、定稿仍即锁死。
+
+   **承载仍是 760px 抽屉，但理由换了**（D-RP-72，V3.0 的理由已作废）：
+   原理由是"两版各 9 列要同屏比出差在哪，560px 装不下"——两版对照取消后这条论证不成立。
+   新理由按判据重过一遍：提示类要求"零录入**且**只知悉**一件事**"。定稿计划表零录入没错，
+   但它是 N 期 × 6 列的**表格型参考数据**，用户要按行定位"我在还哪一期、下一期什么时候"
+   并与还款抽屉里的本期信息对照，属"一边看信息一边逐行核对"那一类；
+   560px 弹窗放一张 6 列表，每列都会被压到换行，逐行核对反而更费劲。
    ================================================================ */
-function versusCard(d){
-  var dft = draftPlan(d), fin = finalPlan(d);
-  var baseD = dayOnly(d.quotedAt), baseF = d.t0;
-  var shift = dayDiff(baseD, baseF);
-  var sumI = function(a){ var s = 0; a.forEach(function(p){ s += p.interest; }); return round2(s); };
-
-  function mini(plan, other, ver){
-    return '<table class="mini"><thead><tr><th>' + g('instalment') + '</th>' +
-      '<th>' + (ver === 'draft' ? L('Expected','预计还款日') : g('dueDate')) + '</th>' +
-      '<th>' + L('Days','天数') + '</th><th>' + g('dueTotal') + '</th></tr></thead><tbody>' +
-      plan.map(function(p, i){
-        var o = other[i];
-        return '<tr><td>#' + p.seq + (p.last ? '<div style="font-size:10px;color:var(--faint)">' +
-            L('incl. principal','含本金') + '</div>' : '') + '</td>' +
-          '<td class="n' + (o && o.due !== p.due ? ' dif' : ' same') + '">' + p.due + '</td>' +
-          '<td class="n' + (o && o.days !== p.days ? ' dif' : ' same') + '">' + p.days + '</td>' +
-          '<td class="n' + (o && o.total !== p.total ? ' dif' : ' same') + '">' + amt(p.total) + '</td></tr>';
-      }).join('') + '</tbody></table>';
-  }
-
-  return '<div class="rp-vs">' +
-    '<div class="rp-ver draft"><div class="vh"><span class="tag">' +
-      L('Expected · not in effect','预计 · 未生效') + '</span>' +
-      L('Initial schedule (indicative)','初始还款计划（试算版）') + '</div>' +
-      '<div class="vb"><div class="base"><div class="k">' +
-        L('Basis · expected disbursement date','基准日 · 预计放款日') + '</div>' +
-        '<div class="v">' + baseD + '</div>' +
-        '<div class="src">' + L('Taken from <b>QT-09, the quote submission date</b>. At that instant the ' +
-          'commercial terms and the FX snapshot are fixed, so both sides read the same set of numbers off ' +
-          'one table. Any "acceptance date + N days" basis would have to invent an N that no data supports.',
-          '取 <b>QT-09 报价提交日</b>（D-RP-04）。报价提交那一刻商务条款固化、汇率快照锁定，' +
-          '用同一时刻做试算基准，双方在同一张表上看到的是同一套数。' +
-          '任何"接受日 + N 天"的口径都要凭空造一个 N，而这个 N 没有任何数据支撑。') + '</div></div>' +
-        mini(dft, fin, 'draft') + '</div>' +
-      '<div class="vf">' + L('<b>Not stored, holds no ID, creates no instalment object.</b> It is a table ' +
-        'computed live off the current quote; if the quote is declined, lapses or is terminated it ' +
-        'disappears with it, <b>leaving no orphan instalments</b>. The cost is that it cannot be replayed ' +
-        'afterwards — mitigated by the display trace taken at acceptance (<b>FD-40</b>).',
-        '<b>不落库、不占号、不产生期次对象</b>（D-RP-05）。它是一张按当前 QT-* 实时算出来的表；' +
-        '报价被拒绝、失效或终止时随之消失，<b>不留残留期次</b>。代价是事后不可回溯，' +
-        '缓解手段是接受环节的展示留痕 <b>FD-40</b>。') + '</div></div>' +
-
-    '<div class="rp-ver final"><div class="vh"><span class="tag">' + L('Final','已定稿') + '</span>' +
-      L('Final repayment schedule','定稿还款计划') + '</div>' +
-      '<div class="vb"><div class="base"><div class="k">' +
-        L('Basis · actual disbursement date · FD-45','基准日 · 实际放款日 · FD-45') + '</div>' +
-        '<div class="v">' + baseF + '</div>' +
-        '<div class="src">' + L('Taken from the date part of <b>LN-06, the disbursement record submission ' +
-          'time</b>. <b>Not LN-05</b>, the disbursement date typed in by the funder — that field is theirs ' +
-          'to fill and can hold any past date. <b>Not FD-35</b> either, the disbursement confirmation ' +
-          'time — that is the moment the asset owner clicks confirm, possibly days after the money ' +
-          'actually moved, and using it would let them pay less interest by stalling.',
-          '取 <b>LN-06 放款记录提交时间</b>的日期部分（D-RP-11）。' +
-          '<b>不取 LN-05 提交方填写的发放时间</b>——它由资金方自己填、可以填任意过去日期；' +
-          '也<b>不取 FD-35 放款确认时间</b>——那是资产方点确认的时刻，可能比实际打款晚好几天，' +
-          '用它等于让资产方通过拖延确认来少付利息。') + '</div></div>' +
-        mini(fin, dft, 'final') + '</div>' +
-      '<div class="vf">' + L('<b>Locked once finalised.</b> Nobody can change the instalments, dates, ' +
-        'amounts or accrual rules afterwards. Only three things may be layered on top: the <b>overdue ' +
-        'mark</b>, <b>repayment records</b> and the <b>settlement fact</b>. There is no rescheduling, ' +
-        'restructuring or term-change entry this round.',
-        '<b>定稿即锁死</b>（D-RP-09）：此后任何人都不能修改期次、日期、金额与计息规则。' +
-        '可以叠加在计划之上的只有三样：<b>逾期标记、还款记录、结清事实</b>。' +
-        '本期不存在展期、重组与条款变更入口。') + '</div></div></div>' +
-
-    '<div class="rp-why"><div class="wh">' +
-      L('What differs between the two versions, and why','两版差在哪、为什么差') + '</div><div class="wg">' +
-      '<div class="w"><div class="k">' + g('accrualStart') + '</div>' +
-        '<div class="v">' + baseD + ' <span class="ch">→</span> ' + baseF + '</div>' +
-        '<div class="x">' + (shift === 0 ? L('Same day here; the start date did not move.','恰好同日，本笔两版起息日未变。')
-          : L('Disbursement landed <b>' + shift + ' days after</b> the quote was submitted. This is the ' +
-              '<b>only</b> input that changed between the two versions.',
-              '实际放款比报价提交<b>晚 ' + shift + ' 天</b>。这是两版之间<b>唯一</b>变动的输入。')) + '</div></div>' +
-      '<div class="w"><div class="k">' + L('Instalments','期数') + '</div>' +
-        '<div class="v">' + dft.length + ' <span class="ch">→</span> ' + fin.length + '</div>' +
-        '<div class="x">' + (dft.length === fin.length
-          ? L('Unchanged. The boundary rule (a quarter per instalment, tail absorbed by the final one) is ' +
-              'identical in both versions.','未变。期次边界规则（3 个自然月一期、末期并入）两版一致。')
-          : L('Changed because the shifted start date crossed a quarter boundary.',
-              '因起息日移动跨过了一个 3 个月边界而变化。')) + '</div></div>' +
-      '<div class="w"><div class="k">' + L('Final due date','末期应还日') + '</div>' +
-        '<div class="v">' + (dft.length ? dft[dft.length - 1].due : '—') + ' <span class="ch">＝</span> ' +
-        (fin.length ? fin[fin.length - 1].due : '—') + '</div>' +
-        '<div class="x">' + L('<b>Unchanged.</b> The final due date always equals FD-46, which follows the ' +
-          'project end date — it does not move with the start date.',
-          '<b>不变</b>。末期应还日恒等于最终还款日 FD-46（跟随项目截止日），不随起息日移动。') + '</div></div>' +
-      '<div class="w"><div class="k">' + L('Total interest','利息合计') + '</div>' +
-        '<div class="v">' + amt(sumI(dft)) + ' <span class="ch">→</span> ' + amt(sumI(fin)) + '</div>' +
-        '<div class="x">' + L('A difference of <b>' + amt(Math.abs(round2(sumI(fin) - sumI(dft)))) + ' ' +
-          CCY + '</b>: the later start cuts ' + Math.abs(dayDiff(baseF, baseD)) + ' accrual days.',
-          '差 <b>' + amt(Math.abs(round2(sumI(fin) - sumI(dft)))) + ' ' + CCY +
-          '</b>。起息日后移使总计息天数减少 ' + Math.abs(dayDiff(baseF, baseD)) + ' 天。') + '</div></div>' +
-    '</div>' +
-    '<p>' + L('<b>What changed is the dates, and the day counts and interest derived from them. The formula, ' +
-      'the annual rate, the principal and the instalment-boundary rule are all untouched.</b> There is no ' +
-      '"change of basis" between the two versions and this is not a variation of terms — the initial ' +
-      'version was labelled "Expected · not in effect" from the first moment it existed, and carried a ' +
-      'standing note that it would be recomputed and finalised on the actual disbursement date. That ' +
-      'notice, and when it was shown to you at acceptance, is on record (<b>FD-40</b>) precisely so it ' +
-      'can be produced at this moment.',
-      '<b>变的是日期，以及由日期派生的天数与利息。公式、年化利率、本金、期次边界规则一个都没变。</b>' +
-      '两版之间不存在任何"口径变更"，也不是一次条款变更——' +
-      '初始那版从产生的第一刻就标着「预计 · 未生效」，并在表下常驻告知了它会按实际放款日重算并定稿。' +
-      '这段告知在您接受报价时的展示事实与展示时间已留痕（<b>FD-40</b>），' +
-      '正是为了在这一刻可以拿出来对账。') + '</p></div>';
-}
-
 function drawerSchedule(){
   var d = curDeal();
-  var quoting = !!d.quoting, ready = d.planReady;
-  var tab = S.tab || 'final';   /* tab 切换**不离开抽屉**（D-RP-72 ③） */
-
   var head = '<aside class="drawer u" role="dialog" aria-modal="true" aria-label="' + E(g('repaySchedule')) + '">' +
     '<div class="drawer-h"><b>' + g('repaySchedule') +
-      '<span class="sb">' + d.fp + ' · ' + d.id + '</span></b>' +
+      '<span class="sb">' + d.fp + '</span></b>' +
     '<button class="modal-x" type="button" data-act="rp.close" aria-label="' + L('Close','关闭') + '">✕</button></div>';
   var foot = '<div class="u-foot"><span class="sp"></span>' +
     '<button class="btn" type="button" data-act="rp.close">' + L('Close','关闭') + '</button></div>';
 
   /* 还款计划生成中：**中间态不是错误页**（E-RP-01） */
-  if(!ready && !quoting){
+  if(!d.planReady){
     return head + '<div class="drawer-b u-scroll">' +
       sec('', '', markRow(L('Schedule being generated','还款计划生成中'),
         L('Disbursement confirmation completed at <b>' + withTz(d.fd35) + '</b>; the four figures moved ' +
-          'atomically and the debt exists. The schedule is being generated and the full instalment list ' +
+          'atomically and the debt exists. The schedule is being generated and the instalment list ' +
           'appears here once ready.',
           '放款确认已于 <b>' + withTz(d.fd35) + '</b> 完成，四个量已原子转移，债务已成立。' +
           '还款计划正在生成，就绪后本抽屉自动显示完整期次。'),
@@ -2024,88 +2022,28 @@ function drawerSchedule(){
         CF.note('',
           L('<b class="ls-b">This is not an error screen.</b> A failed schedule generation <b class="ls-b">' +
             'does not roll back</b> the upstream credit transfer or status migration: the money arrived ' +
-            'and the debt exists, and the platform cannot undo that because one of its own follow-up ' +
-            'steps did not land.<p>So there is <b class="ls-b">no error shown, no retry button and no ' +
-            'failure reason</b> here — retrying is the platform’s job, and putting it in front of the ' +
-            'asset owner only manufactures anxiety they cannot act on.</p><p>Until the schedule is ready ' +
+            'and the debt exists.<p>So there is <b class="ls-b">no error shown, no retry button and no ' +
+            'failure reason</b> here — retrying is the platform\u2019s job. Until the schedule is ready ' +
             'there is <b class="ls-b">nothing to repay</b> and <b class="ls-b">no overdue mark can ' +
-            'arise</b> — the object an overdue test applies to is an instalment, and no instalment exists yet.</p>',
+            'arise</b> — the object an overdue test applies to is an instalment, and none exists yet.</p>',
             '<b class="ls-b">这不是一个错误页。</b>还款计划生成失败<b class="ls-b">不回滚</b>上游的额度转移' +
-            '与状态迁移（承接 E-LN-13）：钱已到账、债务已成立是事实，不能因为平台自己的一个后续动作' +
-            '没做成就退回去。<p>因此这里<b class="ls-b">不展示错误、不给重试按钮、不给失败原因</b>——' +
-            '重试是平台侧的事，把它摆到资产方面前只会制造一个他无法处置的焦虑。</p>' +
-            '<p>在计划就绪之前：<b class="ls-b">没有任何期次可还</b>，也<b class="ls-b">不会产生逾期</b>' +
+            '与状态迁移：钱已到账、债务已成立是事实。' +
+            '<p>因此这里<b class="ls-b">不展示错误、不给重试按钮、不给失败原因</b>——重试是平台侧的事。' +
+            '在计划就绪之前：<b class="ls-b">没有任何期次可还</b>，也<b class="ls-b">不会产生逾期</b>' +
             '——逾期判定的对象是期次，而期次还不存在。</p>'),
           L('Why this is not "failed to load"','为什么这里不是"加载失败"')), true) +
-      sec(L('What is already fixed','已经确定的事'), L('unchanged once the schedule generates','计划生成后不再变化'),
-        '<div class="ls-kgrid">' +
-        '<div><div class="k">' + g('accrualStart') + ' · FD-45</div><div class="v">' + d.t0 + '</div></div>' +
-        '<div><div class="k">' + g('finalDueDate') + ' · FD-46</div><div class="v">' + d.fd46 + '</div></div>' +
-        '<div><div class="k">' + L('Principal · QT-03','本金 · QT-03') + '</div><div class="v">' + usd(d.amt) + '</div></div>' +
-        '<div><div class="k">' + L('Annual rate · QT-06','年化利率 · QT-06') + '</div><div class="v">' + d.rate.toFixed(2) + '%</div></div>' +
-        '</div>') +
       '</div>' + foot + '</aside>';
   }
 
-  /* 报价期：只有初始计划（试算版） */
-  if(quoting){
-    var dft = draftPlan(d);
-    return head + '<div class="drawer-b u-scroll">' +
-      '<div class="u-fixed">' + ruleBar(d, 'draft') + '</div>' +
-      sec('', '', CF.note('',
-        L('<b class="ls-b">This whole table is not in effect.</b> The actual due dates will be recomputed ' +
-          'on the <b class="ls-b">actual disbursement date</b> after disbursement confirmation and only ' +
-          'then finalised; the finalised schedule governs. <b class="ls-b">The way each amount is ' +
-          'computed does not change.</b><p>It is computed off the <b class="ls-b">expected disbursement ' +
-          'date ' + dayOnly(d.quotedAt) + '</b> (the quote submission date) and is <b class="ls-b">not ' +
-          'stored, holds no ID and creates no instalment object</b>.</p>',
-          '<b class="ls-b">这张表整表未生效。</b>实际还款日将在放款确认后按<b class="ls-b">实际放款日</b>' +
-          '重算并定稿，届时以定稿计划为准；<b class="ls-b">每期金额的计算规则不变</b>。' +
-          '<p>本表按<b class="ls-b">预计放款日 ' + dayOnly(d.quotedAt) +
-          '</b>（＝ 报价提交日 QT-09）试算，<b class="ls-b">不落库、不占号、不产生期次对象</b>；' +
-          '报价被拒绝、失效或终止时它随之消失，不留残留期次。</p>'),
-        L('Expected · not in effect','预计 · 未生效')) +
-        '<div style="margin-top:14px">' + planTable(d, dft, 'draft', null) + '</div>' +
-        CF.note('', L('<b class="ls-b">The date column is labelled "Expected".</b> The table-level ' +
-          '"Expected · not in effect" tag, the word "Expected" in the column head, and this standing note ' +
-          'below the table — all three are required, none optional.<p>Before the schedule is finalised, ' +
-          'every mention of this table and its dates <b class="ls-b">carries a qualifier</b>: the platform ' +
-          'is not entitled to present a computed estimate as settled.</p>',
-          '<b class="ls-b">日期列名带「预计」二字。</b>整表的「预计 · 未生效」标识、列名里的「预计」、' +
-          '表下这句常驻告知——三处缺一不可（D-RP-06）。' +
-          '<p>在计划定稿之前，本抽屉每一处提到这张表与表上的日期时<b class="ls-b">都带限定词</b>：' +
-          '平台没有资格把一个试算出来的日期说成是确定的（AC-RP-01）。</p>')), true) +
-      '</div>' + foot + '</aside>';
-  }
-
-  /* 定稿后：版本 tab（默认定稿版 + 差异行高亮）+ 两版对照，tab 切换不离开抽屉 */
-  var fin = finalPlan(d), gp = progress(d);
-  var tabs = '<div class="seg-mini" role="group" aria-label="' + L('Schedule version','计划版本') + '">' +
-    [['final', L('Final','定稿版')], ['compare', L('Both versions','两版对照')],
-     ['draft', L('Initial (indicative)','初始（试算版）')]].map(function(x){
-      return '<button type="button" data-act="rp.tab" data-v="' + x[0] + '" aria-pressed="' +
-        (tab === x[0]) + '">' + x[1] + '</button>';
-    }).join('') + '</div>';
-
-  var bodyTab;
-  if(tab === 'compare'){
-    bodyTab = sec(L('Two versions side by side','两版还款计划对照'),
-      L('F-LS-64 · initial (expected) vs final','F-LS-64 · 初始（预计）vs 定稿'), versusCard(d));
-  } else if(tab === 'draft'){
-    bodyTab = sec(L('Initial schedule (indicative)','初始还款计划（试算版）'),
-      L('RP-16 = expected · superseded by the final version','RP-16 ＝ 预计 · 已被定稿版取代'),
-      planTable(d, draftPlan(d), 'draft', null));
-  } else {
-    bodyTab = sec(L('Final repayment schedule','定稿还款计划'),
-      L('RP-01 – RP-18 · finalised ','RP-01 ～ RP-18 · 定稿时间 FD-41 ') + d.fd35,
-      planTable(d, fin, 'final', null));
-  }
+  var plan = finalPlan(d), gp = progress(d);
+  var cur = (gp.await2 || gp.next || plan[plan.length - 1]);
+  var curSeq = cur ? cur.seq : null;
 
   var marks = '';
   if(gp.overdue)
     marks = markRow(g('overdueMark'),
       L('Instalment ' + gp.overdue.seq + ' (due ' + gp.overdue.due + ') is <span class="day">' +
-        gp.overdue.days + '</span> days overdue. The repayment window for it <b>stays open</b>.',
+        gp.overdue.days + '</span> days overdue. Its repayment window <b>stays open</b>.',
         '第 ' + gp.overdue.seq + ' 期（应还日 ' + gp.overdue.due + '）已逾期 <span class="day">' +
         gp.overdue.days + '</span> 天。该期还款入口<b>保持开启</b>。'),
       L('Overdue is a <b>parallel mark, not a status</b>; the platform computes no penalty interest and ' +
@@ -2113,28 +2051,39 @@ function drawerSchedule(){
         '逾期是<b>并行标记不是状态</b>；平台不计罚息、不触发任何质押处置。'));
 
   return head + '<div class="drawer-b u-scroll">' +
-    /* 计息规则条与版本标识固定在抽屉顶部，不随表体滚走（D-RP-72 ②） */
+    /* ---- 标题区（按选定笔收敛，D-RP-81 ①）+ 计息规则条，**固定在抽屉顶部、不随表体滚走**（D-RP-72 ②）---- */
     '<div class="u-fixed">' +
-      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">' + tabs +
-      '<span class="pill ' + (tab === 'draft' ? 'dash' : 'green') + '">' +
-        (tab === 'draft' ? L('Expected · not in effect','预计 · 未生效') : L('Final','已定稿')) + '</span>' +
-      '<span class="faint" style="font-size:11px;margin-left:auto">' + g('demandNo') + ' ' + d.fp + '</span></div>' +
-      ruleBar(d, tab === 'draft' ? 'draft' : 'final') + '</div>' +
+      '<div class="rp-title">' +
+        '<div class="t1">' + E(d.fp) + '</div>' +
+        '<div class="t2">' + E(funderOf(d)) + '</div>' +
+        '<div class="t3">' + E(d.id) + '　·　' + E(lnNo(d)) + '　·　' +
+          L('settles in ','结算币种 ') + d.ccy + '</div>' +
+      '</div>' +
+      '<p class="rp-only">' +
+        L('One deal at a time. A project may be financed several times, by different institutions and in ' +
+          'different currencies — so this view never merges deals and never shows a project-wide total.',
+          '一次只呈现一笔。同一项目可以融资多次、出资机构不同、结算币种也可能不同——' +
+          '因此本视图<b>不做跨笔合并</b>，也不给「本项目全部还款计划」的汇总表（D-RP-81 ②）。') + '</p>' +
+      ruleBar(d) + '</div>' +
     (marks ? sec('', '', marks, true) : '') +
-    bodyTab +
+    sec('', '', planTable(d, plan, curSeq)) +
     sec('', '', annot(
-      L('<b>Prototype note.</b> All three versions live in <b>this one drawer</b>: the tabs switch in ' +
-        'place and never leave it, the header row and the accrual-rule bar stay pinned, and the table ' +
-        'scrolls as a whole. The comparison is <b>never</b> split across pages, pushed to a new page, ' +
-        'turned into a step-by-step wizard, or rebuilt as per-instalment cards — splitting it would ' +
-        'destroy the one thing it exists for, which is seeing where the two versions differ side by side.',
-        '<b>原型注解。</b>三个版本都在<b>同一个抽屉</b>里：tab 就地切换、不离开抽屉，' +
-        '表头与计息规则条固定，表体整体滚动。两版对照<b>不</b>拆页、<b>不</b>跳新页、' +
-        '<b>不</b>做成分步向导、<b>不</b>改为卡片式逐期展开——拆开就毁掉"同屏比出差在哪"这个唯一目的' +
-        '（D-RP-72）。')), true) +
+      L('<b>Prototype note.</b> V3.4 keeps <b>only the final version</b> here: the "Expected · not in ' +
+        'effect" tag, the "Expected due date" column name, the two-version tabs and the diff highlight are ' +
+        'all gone. The initial (indicative) schedule is <b>not deleted</b> — it moved back to where it ' +
+        'belongs, the quote stage (quote detail and the accept drawer), because its only job is to show ' +
+        'the asset owner how the money will be repaid <b>before</b> they accept. Once the deal is in ' +
+        'repayment, only the final version is in force, and showing a second "expected" version would ' +
+        'just stop the numbers from reconciling.',
+        '<b>原型注解。</b>V3.4 起此处<b>只留定稿版</b>：「预计 · 未生效」标识、「预计还款日」列名、' +
+        '两版切换 tab 与差异行高亮都已取消。初始（试算）计划<b>不是被删掉</b>，' +
+        '而是收敛回它本来的位置——<b>报价环节</b>（报价详情页与接受抽屉），' +
+        '因为它的唯一用途就是让资产方<b>在接受报价之前</b>看到这笔钱以后怎么还。' +
+        '业务一旦进入还款段，有效的只有定稿版，再摆一版「预计」只会让人对不上账（D-RP-80）。<br>' +
+        '⚠️ <b>取消对照表 ≠ 取消告知</b>：定稿通知里的新旧对比仍然保留，' +
+        '它是资产方得知「日期整体后移」的唯一渠道。')), true) +
     '</div>' + foot + '</aside>';
 }
-
 
 /* ================================================================
    Part H —— 提示类：居中弹窗 560px（零录入、只要一次表态，D-RP-76）
@@ -2499,20 +2448,22 @@ var SCENES = {
   last     :{ deal:'FD-20260315-0018', role:'fund',  drawer:'confirm', seq:2 },
   doneCf   :{ deal:'FD-20251120-0009', role:'fund',  drawer:'confirm', seq:3 },
   assetWait:{ deal:'FD-20260904-0062', role:'asset', drawer:'confirm', seq:1 },
-  /* 还款计划查看抽屉 */
-  compare  :{ deal:'FD-20260820-0046', role:'asset', drawer:'schedule', tab:'compare' },
-  finalTab :{ deal:'FD-20260908-0061', role:'asset', drawer:'schedule', tab:'final' },
-  draftTab :{ deal:'FD-20261215-0071', role:'asset', drawer:'schedule' },
+  /* 还款计划查看抽屉（V3.4：定稿版单版） */
+  planMulti:{ deal:'FD-20260908-0061', role:'asset', drawer:'schedule' },
+  planOne  :{ deal:'FD-20260826-0050', role:'asset', drawer:'schedule' },
+  planOdue :{ deal:'FD-20260820-0046', role:'asset', drawer:'schedule' },
   /* 身份与加载 */
   guest    :{ deal:'FD-20260908-0061', role:'guest', drawer:null },
   other    :{ deal:'FD-20260907-0060', role:'asset', drawer:null },
+  /* 业务未进 S-FD-6：第③段**整段不渲染**（D-RP-77 ②） */
+  preRepay :{ deal:'FD-20261215-0071', role:'asset', drawer:null },
   loading  :{ deal:'FD-20260908-0061', role:'asset', drawer:null },
   error    :{ deal:'FD-20260908-0061', role:'asset', drawer:null }
 };
 function syncScene(){
   var sc = SCENES[S.st] || SCENES['due'];
   S.deal = sc.deal; S.role = sc.role; S.drawer = sc.drawer || null;
-  S.seq = sc.seq || null; S.tab = sc.tab || 'final';
+  S.seq = sc.seq || null; S.find = ''; S.rowOpen = null;
   S.modal = null; S.ack = false; S.result = null;
   S.f = { given:'2026-12-18 09:30', hash:'', memo:'', files:[], extra:[], upErr:null, shown:false };
   /* 数币场景预填一个格式正确的哈希，便于直接走到二次确认 */
@@ -2556,6 +2507,7 @@ var mod = {
                ['pending','Schedule generating','还款计划生成中'],
                ['guest','Not signed in','未登录'],
                ['other','Third party','非当事方'],
+               ['preRepay','Not in repayment yet','未进还款段 · 第③段不渲染'],
                ['loading','Loading','加载中'],
                ['error','Load failed','加载失败']],
     'P-LS-10':[['left','3 days left · frozen at 5','剩余 3 天 · 逾期冻结在 5'],
@@ -2568,9 +2520,9 @@ var mod = {
                ['guest','Not signed in','未登录'],
                ['loading','Loading','加载中'],
                ['error','Load failed','加载失败']],
-    'P-LS-91':[['compare','Both versions','两版对照'],
-               ['finalTab','Final only','定稿全表'],
-               ['draftTab','Quote-stage draft','报价期 · 初始计划'],
+    'P-LS-91':[['planMulti','Final schedule','定稿计划 · 单版'],
+               ['planOdue','With an overdue instalment','含逾期期次'],
+               ['planOne','Single deal in project','项目下只有一笔'],
                ['pending','Schedule generating','还款计划生成中'],
                ['guest','Not signed in','未登录'],
                ['loading','Loading','加载中'],
@@ -2578,14 +2530,20 @@ var mod = {
   },
   state:function(){
     /* 面客端默认英文（WS-324 D-LS-15）；中文由顶栏语言开关切换 */
-    return { lang:'en', role:'asset', deal:'FD-20260908-0061', drawer:'repay', seq:1, tab:'final',
-             modal:null, ack:false, out:'ok', cout:'ok', result:null,
+    return { lang:'en', role:'asset', deal:'FD-20260908-0061', drawer:'repay', seq:1,
+             find:'', rowOpen:null, modal:null, ack:false, out:'ok', cout:'ok', result:null,
              f:{ given:'2026-12-18 09:30', hash:'', memo:'', files:[], extra:[], upErr:null, shown:false } };
   },
   onBoot:function(st){ S = st; syncScene(); },
   onSetState:function(){ syncScene(); },
   onGo:function(){ syncScene(); },
   crumbParts:function(){ return []; },
+  /* D-RP-72 ③：当前应还期次默认高亮**并滚动到可视区**——精简之后最该突出的就是这一行。
+     编号检索框的焦点恢复走公共壳层的 data-f 机制，这里不另造一套。 */
+  afterRender:function(){
+    var row = document.querySelector('.rp-plan tr[data-cur="1"]');
+    if(row && row.scrollIntoView) row.scrollIntoView({ block:'center' });
+  },
   content:function(){
     if(S.st === 'loading') return skel();
     if(S.st === 'error') return failCard();
@@ -2643,7 +2601,8 @@ var mod = {
       /* ---- 承载：开 / 关抽屉。同一时刻只有一层（D-RP-76） ---- */
       case 'rp.open':  S.drawer = v; S.result = null; CF.render(); return true;
       case 'rp.close': S.drawer = null; S.modal = null; S.ack = false; CF.render(); return true;
-      case 'rp.tab':   S.tab = v; CF.render(); return true;
+      /* 行内展开本息拆分与计息区间（AC-RP-04 的验算输入，收起不等于移除） */
+      case 'rp.row':   S.rowOpen = (S.rowOpen === +v ? null : +v); CF.render(); return true;
       /* 换选期次：可逆、零后果，**就地切换，不为此再开一层** */
       case 'rp.pick':
         pair = String(v).split(':');
@@ -2651,7 +2610,8 @@ var mod = {
         S.f = { given:'2026-12-18 09:30', hash:'', memo:'', files:[], extra:[], upErr:null, shown:false };
         CF.render(); return true;
       /* 第③段按 FP-28 需求编号切换（与抽屉内期次排序不是同一个，D-RP-74） */
-      case 'rp.demand': S.deal = v; S.seq = null; S.result = null; CF.render(); return true;
+      /* 换选笔：卡片、还款抽屉的默认期次、计划视图三者同步切换（D-RP-81 ④） */
+      case 'rp.demand': S.deal = v; S.seq = null; S.rowOpen = null; S.result = null; CF.render(); return true;
       case 'rp.signin':
         toast('info', L('Sign-in is out of scope for this prototype','原型内不实现登录'),
           L('The sign-in flow belongs to the portal sign-in module. Switch the demo identity with the ' +
@@ -2838,6 +2798,7 @@ function writeField(k, val){
   if(k === 'given')      S.f.given = val;
   else if(k === 'hash')  S.f.hash = val;
   else if(k === 'memo')  S.f.memo = val;
+  else if(k === 'find')  S.find = val;
   else if(k === 'out')   S.out = val;
   else if(k === 'cout')  S.cout = val;
 }
@@ -2847,7 +2808,11 @@ function fieldNode(e){
 }
 document.addEventListener('input', function(e){
   var n = fieldNode(e); if(!n) return;
-  writeField(n.getAttribute('data-v'), n.value);
+  var k = n.getAttribute('data-v');
+  writeField(k, n.value);
+  /* 编号检索要边打边筛，所以它是唯一在 input 上就重绘的字段；
+     重绘会冲掉焦点，因此置一个标记由 afterRender 把焦点与光标位置放回去。 */
+  if(k === 'find') CF.render();
 });
 document.addEventListener('change', function(e){
   var n = fieldNode(e); if(!n) return;

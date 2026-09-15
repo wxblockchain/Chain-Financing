@@ -21,13 +21,20 @@
      ④ 还款类型引用 WS-325 QT-15，并补最终还款日 QT-16
      ⑤ 界面文案默认英文、中文可切换；旧词根改为「质押覆盖」（D-LS-17）
 
-   本模块的五个招牌件（形状与设计意图沿用 v1.0，一个都没动，只是装进 760 抽屉）：
-     .rp-vs     两版计划对照 —— 初始（预计·未生效）vs 定稿，同屏比差异，
-                差异来源钉死在「实际放款日」上（D-RP-04 ~ D-RP-08）
-     .rp-freeze 两条轴 —— 「时间的停止」停在提交时刻，「状态的终结」停在确认时刻（D-FIN-11）
+   v2.1 相对 v2.0（对应 PRD V3.4，需求方 09-15 09:35 四条）：
+     ⑥ 第③段独立成块、未进 S-FD-6 时整段不渲染；一个编号选择器（FP-28 主标识 +
+        FD-01/LN-01 副行 + 按任一编号检索），不是两级筛选（D-RP-77 / D-RP-78）
+     ⑦ 「立即还款」抽屉精简为四类，移走的逐项给了去处（D-RP-79）
+     ⑧ 「查看还款计划」只留定稿版、精简为 6 列 + 行内展开，按选定笔收敛（D-RP-80 / D-RP-81）
+     ⑨ 第③段与抽屉的标签不再带 RP- / LN- 内部字段编号（AC-RP-28 ④）
+
+   招牌件现状：
+     .rp-vs     两版计划对照 —— **V3.4 退役**，两版同屏对照取消、初始版收敛回报价环节
+     .rp-freeze 两条轴 —— 「时间的停止」停在提交时刻，「状态的终结」停在确认时刻（D-FIN-11）。
+                **V3.4 起移出抽屉**，落在详情页的「原型说明件」区：它是规则的论证，不是生产界面
      .rp-sel    期次选择器 —— 已逾期 / 待还款 / 未开窗 三组，排序键写在行上（D-RP-21 ~ D-RP-26）
-     .rp-stop   五个拦截点牌 —— 提前还款由五件事一起挡住（6.2.2）
-     .rp-rule   计息规则常驻条 —— 固定在抽屉顶部、不随表体滚走（D-RP-72 ②）
+     .rp-stop   五个拦截点牌 —— 同 .rp-freeze，移到「原型说明件」区；界面上保留的是它们的效果
+     .rp-rule   计息规则常驻条 —— 固定在计划抽屉顶部、不随表体滚走（D-RP-72 ②）
    ========================================================================== */
 
 /* ============================================================
@@ -261,50 +268,11 @@
    第四段：本模块的五个招牌件（形状与设计意图沿用 v1.0，适配 760 抽屉）
    ============================================================ */
 
-/* —— 招牌件 A：两版计划对照（D-RP-04 ~ D-RP-08 / F-LS-64 / D-RP-72）——
-   760 内左右两版同屏，差异列高亮；结论行把差异来源钉在实际放款日上。
-   D-RP-72 明写：不得拆页、不得跳新页、不得做成分步向导、不得改为卡片式逐期展开。 */
-.rp-vs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--sp-4)}
-.rp-ver{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elev);
-  display:flex;flex-direction:column;min-width:0}
-.rp-ver.draft{border-style:dashed;background:var(--card-2)}
-.rp-ver.final{border-color:var(--accent-border)}
-.rp-ver .vh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 11px;
-  border-bottom:1px solid var(--border);font-size:12px;font-weight:660}
-.rp-ver .vh .tag{font-size:var(--fs-10);font-weight:700;letter-spacing:.04em;padding:2px 7px;
-  border-radius:var(--radius-xs);border:1px solid var(--border-strong);background:var(--gray-bg);color:var(--gray-fg)}
-.rp-ver.final .vh .tag{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent)}
-.rp-ver .vb{padding:11px;flex:1;min-width:0}
-.rp-ver .base{padding-bottom:9px;border-bottom:1px dashed var(--border)}
-.rp-ver .base .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
-.rp-ver .base .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-16);font-weight:700;
-  letter-spacing:-.02em;margin-top:3px}
-.rp-ver .base .src{font-size:10.5px;color:var(--muted);line-height:1.55;margin-top:5px}
-.rp-ver .base .src b{color:var(--text);font-weight:640}
-.rp-ver .mini{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:9px}
-.rp-ver .mini th{text-align:left;font-size:var(--fs-10);font-weight:650;letter-spacing:.04em;text-transform:uppercase;
-  color:var(--faint);padding:0 6px 6px 0;border-bottom:1px solid var(--border);white-space:nowrap}
-.rp-ver .mini th:last-child,.rp-ver .mini td:last-child{text-align:right;padding-right:0}
-.rp-ver .mini td{padding:7px 6px 7px 0;border-bottom:1px dashed var(--border);vertical-align:top;line-height:1.45}
-.rp-ver .mini tr:last-child td{border-bottom:0}
-.rp-ver .mini .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:640}
-.rp-ver .mini .dif{color:var(--accent);font-weight:700}
-.rp-ver .mini .same{color:var(--faint)}
-.rp-ver .vf{padding:9px 11px;border-top:1px solid var(--border);background:var(--card-2);
-  font-size:10.5px;color:var(--muted);line-height:1.6}
-.rp-ver .vf b{color:var(--text);font-weight:660}
-.rp-why{border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);
-  padding:12px 14px;margin-top:var(--sp-4)}
-.rp-why .wh{font-size:13px;font-weight:680}
-.rp-why .wg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-3);margin-top:10px}
-.rp-why .w{border:1px solid var(--accent-border);background:var(--bg-elev);border-radius:var(--radius-xs);padding:9px 10px}
-.rp-why .w .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.04em;text-transform:uppercase}
-.rp-why .w .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:660;margin-top:4px}
-.rp-why .w .v .ch{color:var(--accent)}
-.rp-why .w .x{font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.5}
-.rp-why p{margin:10px 0 0;font-size:11px;color:var(--muted);line-height:1.6}
-.rp-why p b{color:var(--text);font-weight:640}
-@media (max-width:860px){ .rp-vs{grid-template-columns:minmax(0,1fr)} }
+/* —— 招牌件 A（**V3.4 退役**）：两版计划对照 .rp-vs / .rp-ver / .rp-why ——
+   需求方 09-15 09:35 定「查看还款计划只查看定稿版即可」，两版同屏对照取消（D-RP-80），
+   初始版收敛回报价环节（见 WS-325 原型的 initialPlanCard）。样式一并删除，不留死代码。
+   ⚠️ 业务规则一条没改：报价期仍要拟定初始计划、放款确认后仍按实际放款日重算定稿并锁死；
+   定稿通知里的新旧对比也仍然保留——取消对照表 ≠ 取消告知。 */
 
 /* —— 招牌件 B：两条轴（D-FIN-11 / D-RP-29 / D-RP-30 / AC-RP-09）——
    上轴「时间的停止」停在提交时刻，下轴「状态的终结」停在确认时刻。
@@ -401,6 +369,61 @@
 .rp-rule .rx .i .v{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.5}
 .rp-rule .rx .i .v b{color:var(--text);font-weight:640}
 .rp-rule .td{font-size:var(--fs-10);color:var(--faint);margin-top:8px;line-height:1.5}
+
+/* ---- 第③段：编号选择器（一个，不是两级筛选，D-RP-78）与最近一笔应还卡片 ---- */
+.rp-block{border-color:var(--accent-border)}
+.rp-block>.card-head{background:var(--accent-soft);border-bottom-color:var(--accent-border)}
+.rp-pick{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elev);
+  overflow:hidden;margin-bottom:11px}
+.rp-pick .ph{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;
+  background:var(--card-2);border-bottom:1px solid var(--border)}
+.rp-pick .ph .lb{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase;flex:none}
+.rp-pick .ph .inp.sm{height:var(--ctrl-h-sm);font-size:11.5px;flex:1;min-width:120px}
+.rp-po{display:flex;align-items:flex-start;gap:8px;width:100%;text-align:left;appearance:none;font:inherit;
+  background:var(--bg-elev);border:0;border-bottom:1px solid var(--border);padding:9px 10px;cursor:pointer;
+  color:var(--text);transition:background var(--dur-fast) var(--ease-out)}
+.rp-po:last-of-type{border-bottom:0}
+.rp-po:hover{background:var(--card-hover)}
+.rp-po:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.rp-po[aria-pressed="true"]{background:var(--accent-soft)}
+.rp-pick .pb{flex:1;min-width:0}
+.rp-pick .p1{display:block;font-family:var(--mono);font-size:12px;font-weight:700;overflow-wrap:anywhere}
+.rp-pick .p2{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px;
+  overflow-wrap:anywhere}
+.rp-pick .p3{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.rp-pick .pa{flex:none;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11.5px;
+  font-weight:660;padding-top:1px}
+.rp-pick .pe{padding:12px 10px;font-size:11.5px;color:var(--faint)}
+.rp-pick .px{margin:0;padding:8px 10px;border-top:1px solid var(--border);background:var(--card-2);
+  font-size:10.5px;color:var(--muted);line-height:1.55}
+.rp-pick .px b{color:var(--text);font-weight:640}
+/* 只有一笔时：仍展示编号，但不给选择控件——没得选就别给控件 */
+.rp-pick.one{padding:9px 10px;background:var(--card-2)}
+.rp-seg3 .core .r b .sc{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);
+  font-weight:500;margin-top:2px}
+
+/* ---- 计划抽屉的标题区（按选定笔收敛，D-RP-81 ①）---- */
+.rp-title .t1{font-family:var(--mono);font-size:13.5px;font-weight:700;letter-spacing:-.01em}
+.rp-title .t2{font-size:12.5px;font-weight:660;color:var(--accent);margin-top:2px}
+.rp-title .t3{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:3px;overflow-wrap:anywhere}
+.rp-only{margin:8px 0 10px;font-size:10.5px;color:var(--muted);line-height:1.55}
+.rp-only b{color:var(--text);font-weight:640}
+
+/* ---- 计划表的行内展开（本息拆分与计息区间；收起 ≠ 移除，AC-RP-04）---- */
+.rp-plan .col-x{width:34px;text-align:center}
+.rp-plan tbody tr.xr td{background:var(--card-2);padding:10px 11px}
+.rp-plan .xg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--sp-3)}
+.rp-plan .xg .k{display:block;font-size:var(--fs-10);color:var(--faint);letter-spacing:.04em;text-transform:uppercase}
+.rp-plan .xg .v{display:block;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11.5px;
+  font-weight:640;margin-top:3px}
+.rp-plan .xn{margin:8px 0 0;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+/* 当前应还期次：精简之后最该突出的一行（D-RP-72 ③） */
+.rp-plan tbody tr.cur td{background:var(--accent-soft);font-weight:640}
+.rp-plan tbody tr.cur td:first-child{box-shadow:inset 3px 0 0 var(--accent);background:#EDF1FE}
+
+/* ---- 原型说明件卡：两条轴与五个拦截点从抽屉移出后的落点，**不属于生产界面** ---- */
+.ln-annot-card{border-style:dashed;border-color:var(--border-strong);background:var(--card-2)}
+.ln-annot-card>.card-head b{color:var(--muted)}
 
 /* —— 计划表的行修饰：末期、逾期、当前选中。只做底色与左缘，不换字号 ——
    表头与期次序号列固定（D-RP-72 ①）。 */
