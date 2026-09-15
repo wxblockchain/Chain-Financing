@@ -169,7 +169,7 @@ var PROJECTS = [
       { d:'2026-05-12', k:'fund',     t:'放款完成并确认到账',                      dFly:-500000, dBal:500000, note:'额度原子转移：项目在途金额 → 项目融资余额，无空档' },
       { d:'2026-06-12', k:'topup',    t:'追加质押 2 张 · 200,000.00 USD',          dTotal:200000,  note:'任何阶段都可以追加，只增不减' },
       { d:'2026-07-03', k:'withdraw', t:'撤回质押 3 张 · 300,000.00 USD',          dTotal:-300000, note:'撤回时可撤回上限 575,000.00 USD，本次通过额度判定' },
-      { d:'2026-07-10', k:'publish',  t:'再次发布融资需求 200,000.00 USD',          dFly:200000,    note:'可融金额 220,000.00 USD > 0，可再次发布剩余额度（6.1）' },
+      { d:'2026-07-10', k:'publish',  t:'再次发布融资需求 200,000.00 USD',          dFly:200000,    note:'可融金额 220,000.00 USD > 0，可再次发布剩余额度' },
       { d:'2026-08-19', k:'invalid',  t:'池内 2 张代币底层应收账款失效 · 300,000.00 USD', dVoid:300000,
         note:'失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发覆盖不足提醒' },
       /* WS-327 增量：FD-20260512-0044 的还款计划与第 1 期还款。事件续接同一张公开时间线。 */
@@ -303,7 +303,7 @@ var PROJECTS = [
       { d:'2025-09-02', k:'quote',   t:'收到机构报价 900,000.00 USD' },
       { d:'2025-09-10', k:'fund',    t:'放款完成并确认到账', dFly:-900000, dBal:900000 },
       { d:'2026-07-15', k:'publish', t:'再次发布融资需求 250,000.00 USD', dFly:250000,
-        note:'可融金额 1,200,000 − 900,000 − 0 ＝ 300,000.00 USD > 0，可再次发布剩余额度（6.1）' },
+        note:'可融金额 1,200,000 − 900,000 − 0 ＝ 300,000.00 USD > 0，可再次发布剩余额度' },
       { d:'2026-08-02', k:'quote',   t:'收到机构报价 250,000.00 USD（FD-20260903-0056）' },
       { d:'2026-08-05', k:'accept',  t:'资产方接受报价 · 这笔业务转入待放款',
         note:'项目到期不终结在途业务：机构照常放款、资产方照常确认' },
@@ -497,7 +497,34 @@ function quoteClock(q){
            soon:(left > 0 && left < 1440) };
 }
 
-/* ---- 到期提醒标记（AC-LS-03；触达依赖消息中心，本期只做页面标记） ---- */
+/* ================================================================
+   推送位 biz_type（分册 8.1.1 / D-LS-20 / AC-LS-96）
+   ----------------------------------------------------------------
+   六个取值一经登记不得更名，实现时必须**逐字一致**。它们是给实现与消息中心看的
+   内部标识，**界面上一个字都不印**（和条款编号、内部状态码同一类），
+   所以本原型只在代码注释与交付说明里给出映射，UI 侧只呈现事实本身。
+
+     financing.demand.auto_voided             → 需求因覆盖不足自动失效
+       落点：融资信息清单 / 广场列表的「已失效／已关闭」+ 终结原因「自动失效 · 覆盖不足」
+     financing.project.coverage_insufficient  → 覆盖不足提醒触发
+       落点：详情页顶部的覆盖不足提示块（shortAlert）
+     financing.project.coverage_restored      → 覆盖不足解除
+       落点：同上，条件反转后该提示块消失；提示块正文里写明"条件反转即自动解除"
+     financing.pledge.chain_failed            → 链上失败（未上链未扣 gas / 已上链已扣 gas）
+       落点：详情页操作区的链上结果块（chainResult 的 offchain / onchain / partial 分支）
+     financing.pledge.chain_pending_timeout   → 链上超时未决
+       落点：同上的 timeout 分支。**与失败分开登记**：超时态不给重试按钮、须先查链上，
+             可执行动作与失败态不同，合成一条会逼前端按 payload 分叉
+     financing.project.expiring_soon          → 有效期届满前 7 天
+       落点：页头 pill 与列表「有效期至」列下的到期提醒标记（expiryFlag）
+
+   跳转一律落 P-LS-02；链上那两条落详情页操作区。
+   ⚠️ 六个取值尚未合入 WS-329 的登记表（docs/notification-contract/接入指南.md 3.4）——
+      未登记时服务端只告警不丢消息，但跳转按钮不会渲染，登记必须排在本模块提测之前。
+   ================================================================ */
+
+/* ---- 到期提醒标记（AC-LS-03；触达依赖消息中心，本期只做页面标记）
+       对应推送位 financing.project.expiring_soon ---- */
 function expiryFlag(p){
   if(!p.expiresAt) return null;
   var d = daysTo(p.expiresAt);
@@ -693,14 +720,14 @@ function availableActions(p, role){
     else if(terminal) c.reason = L('The project is already in a terminal state (' + fpStatus(p) + ').',
                                    '项目已是终态（' + fpStatus(p) + '）。');
     else if(st === 'S-FP-3' || st === 'S-FP-4')
-      c.block = L('An open or unsettled financing deal exists on this project, so it cannot be closed (6.1). The deal must reach a terminal state first.',
-                  '本项目存在在途或未结清的融资业务，不可关闭（6.1）。需先让该业务走到终态。');
+      c.block = L('An open or unsettled financing deal exists on this project, so it cannot be closed. The deal must reach a terminal state first.',
+                  '本项目存在在途或未结清的融资业务，不可关闭。需先让该业务走到终态。');
     else if(d.fly > 0)
       c.block = L('Committed demand of ' + usd(d.fly) + ' is still outstanding. Withdraw the demand first, then close.',
                   '存在在途占用 ' + usd(d.fly) + '。请先撤下融资需求，再关闭项目。');
     else if(d.bal > 0)
-      c.block = L('An unsettled deal exists (outstanding financing ' + usd(d.bal) + '), so the project cannot be closed (6.1).',
-                  '存在未结清融资业务（项目融资余额 ' + usd(d.bal) + '），项目不可关闭（6.1）。');
+      c.block = L('An unsettled deal exists (outstanding financing ' + usd(d.bal) + '), so the project cannot be closed.',
+                  '存在未结清融资业务（项目融资余额 ' + usd(d.bal) + '），项目不可关闭。');
     out.push(c);
   }
 
@@ -1062,8 +1089,9 @@ function attachHover(wrapId, pts, built, kind){
 var CF = window.CF, L = CF.L, E = CF.esc, q = CF.q, pageHead = CF.pageHead, toast = CF.toast;
 var S = null;
 
-/* ---------------- EN／中文术语对照表（唯一来源，分册 7.6 引用本表） ----------------
-   页面只通过 g('key') 取词，改词改一处；WS-325～329 一律照此表做。
+/* ---------------- EN／中文术语对照表 ----------------
+   **唯一事实源是 PRD 分册 7.6（D-LS-21）**，本表是它在原型里的落地，逐词对齐、不自行重译。
+   页面只通过 g('key') 取词，改词改一处。
    中文一侧一律用 PRD 的红线术语全称，界面展示名与文档术语不同时以注释标出（D-LS-16）。 */
 var G = {
   marketplace  :['Lending Marketplace','借贷广场'],
@@ -1086,33 +1114,34 @@ var G = {
   /* D-LS-17 已由 PRD V9.0 定稿，这四条是 PRD 术语，设计师按 PRD 的标签走（分册 7.6） */
   coverage     :['Pledge coverage status','质押覆盖状态'],
   covSufficient:['Ample','覆盖有余'],
-  covFullyDrawn:['At Capacity','覆盖持平'],
+  covFullyDrawn:['At capacity','覆盖持平'],
   covUnder     :['Insufficient','覆盖不足'],
   coverageGap  :['Coverage gap','覆盖缺口'],
-  covNotice    :['Insufficient-coverage notice','覆盖不足提醒'],
+  covNotice    :['Coverage shortfall alert','覆盖不足提醒'],
+  assetToAdd   :['Asset value to add','需追加资产价值'],
   tokenId      :['Token ID','代币编号'],
   tokenQty     :['Quantity','代币数量'],
   tokenValue   :['Token value','代币价值'],
   tokenState   :['Token status','代币状态'],
   valid        :['Valid','有效'],
-  invalid      :['Invalid','已失效'],
+  invalid      :['Void · Not counted towards coverage','已失效 · 不计入覆盖'],
   dueDate      :['Underlying due date','底层应收账款账期'],
   buyer        :['Buyer','买方企业名'],
   onchain      :['On-chain status','链上状态'],
   txHash       :['Deposit tx hash','入池交易哈希'],
-  tokenType    :['Token type','代币类型'],
+  tokenType    :['Asset type','代币类型'],
   receivable   :['Receivables','应收账款'],
-  addPledge    :['Add collateral','追加质押'],
-  releasePledge:['Release collateral','解除质押'],
+  addPledge    :['Add pledge','追加质押'],
+  releasePledge:['Release pledge','解除质押'],
   closeProject :['Close project','关闭项目'],
   signIn       :['Sign in','立即登录'],
-  publishDemand:['Publish demand','发布融资需求'],
+  publishDemand:['Publish a demand','发布融资需求'],
   stDemand     :['Financing demand','融资需求'],
   stQuote      :['Quote','融资报价'],
   stConfirm    :['Quote confirmation','报价确认'],
   stDisburse   :['Disbursement','融资放款'],
   repayNow     :['Repay now','立即还款'],
-  createProject:['Create financing project','创建融资项目'],
+  createProject:['Create a financing project','创建融资项目'],
   status       :['Status','状态'],
   actions      :['Actions','操作'],
   validityTo   :['Valid until','有效期至'],
@@ -1169,7 +1198,7 @@ var EV_TR = {
   "收到机构报价 280,000.00 USD": "Quote received · 280,000.00 USD",
   "还款计划定稿 · 2 期 · 起息日 2025-11-26": "Repayment schedule finalised · 2 instalments · interest start date 2025-11-26",
   "第 1 期利息 9,660.00 USD 已结清": "Instalment 1 interest 9,660.00 USD settled",
-  "末期本息已结清 · 业务转 已结清": "Final principal and interest settled · deal moves to Settled",
+  "末期本息已结清 · 这笔业务结清": "Final principal and interest settled · this deal is now settled",
   "业务结清的同一时刻，项目结清、池内质押全额业务释放（即时、无链上动作、无费用）": "In the same instant the deal settles, the project moves to Settled and the entire pool is released in business terms - immediate, no on-chain action, no cost",
   "项目结清释放 3 张 · 280,000.00 USD 置「已释放 · 待提取」": "3 tokens worth 280,000.00 USD released on settlement, set to 'released, awaiting withdrawal'",
   "第二段链上提取由资产方自助发起、无时间限制；未提取前不属于任何资产池、不计入任何质押价值": "The second stage, the on-chain withdrawal, is initiated by the asset owner with no time limit; until withdrawn the tokens belong to no pool and count towards no pledged value",
@@ -1190,9 +1219,9 @@ var EV_TR = {
   "撤回质押 3 张 · 300,000.00 USD": "Collateral withdrawn · 3 tokens · 300,000.00 USD",
   "撤回时可撤回上限 575,000.00 USD，本次通过额度判定": "The release limit at the time was 575,000.00 USD, so this withdrawal passed the credit test",
   "再次发布融资需求 200,000.00 USD": "Financing demand republished · 200,000.00 USD",
-  "可融金额 220,000.00 USD > 0，可再次发布剩余额度（6.1）": "with 220,000.00 USD still available to borrow, the remaining headroom can be republished (6.1)",
+  "可融金额 220,000.00 USD > 0，可再次发布剩余额度": "with 220,000.00 USD still available to borrow, the remaining headroom can be republished",
   "池内 2 张代币底层应收账款失效 · 300,000.00 USD": "Underlying receivables behind 2 tokens in the pool were invalidated · 300,000.00 USD",
-  "失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发覆盖不足提醒": "The invalidated part stops counting towards pledged token value; the borrowing cap fell to 480,000.00 USD, below outstanding financing of 500,000.00 USD, so pledge coverage became insufficient (E-9 / 6.4.1)",
+  "失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发覆盖不足提醒": "The invalidated part stops counting towards pledged token value; the borrowing cap fell to 480,000.00 USD, below outstanding financing of 500,000.00 USD, so pledge coverage became insufficient",
   "还款计划定稿 · 3 期 · 起息日 2026-05-12": "Repayment schedule finalised · 3 instalments · interest start date 2026-05-12",
   "放款确认完成的同一次结算内定稿，起息日取实际放款日；到期日 2027-04-20 取项目有效期至": "Finalised in the same settlement as the disbursement confirmation. The interest start date is the actual disbursement date; the maturity date 2027-04-20 is the project validity date",
   "第 1 期利息 8,688.89 USD 已提交还款记录 · 该期转入待确认": "Instalment 1 interest 8,688.89 USD submitted · instalment moves to",
@@ -1225,7 +1254,7 @@ var EV_TR = {
   "发布融资需求 900,000.00 USD": "Financing demand published · 900,000.00 USD",
   "收到机构报价 900,000.00 USD": "Quote received · 900,000.00 USD",
   "再次发布融资需求 250,000.00 USD": "Financing demand republished · 250,000.00 USD",
-  "可融金额 1,200,000 − 900,000 − 0 ＝ 300,000.00 USD > 0，可再次发布剩余额度（6.1）": "Available to borrow 1,200,000 − 900,000 − 0 = 300,000.00 USD > 0, so the remaining headroom can be republished (6.1)",
+  "可融金额 1,200,000 − 900,000 − 0 ＝ 300,000.00 USD > 0，可再次发布剩余额度": "Available to borrow 1,200,000 − 900,000 − 0 = 300,000.00 USD > 0, so the remaining headroom can be republished",
   "收到机构报价 250,000.00 USD（FD-20260903-0056）": "Quote received · 250,000.00 USD (FD-20260903-0056)",
   "项目到期不终结在途业务：机构照常放款、资产方照常确认": "Project expiry does not terminate deals in flight: the institution disburses and the asset owner confirms as normal",
   "有效期到期 · 存在未结清融资业务，项目不关闭": "Project term expired · an unsettled deal exists, so the project is not closed",
@@ -1276,7 +1305,8 @@ var FPX_EN = { '已建池 · 未发布':'Pool created · not published','公开�
 function fpStatus(p){ var t = FP_STATUS[p.status].t; return L(FP_EN[t] || t, t); }
 function fpHint(p){ var x = FP_STATUS[p.status].x; return L(FPX_EN[x] || x, x); }
 var CT_EN = { '未发起':'Not submitted','处理中':'Pending','成功':'Confirmed','失败':'Failed' };
-function ctStatus(k){ var t = CT_STATUS[k].t; return k + ' ' + L(CT_EN[t] || t, t); }
+/* 链上状态只给读得懂的词，不印 CT-0/1/2/3 这类内部码——与条款编号同一类内部信息。 */
+function ctStatus(k){ var t = CT_STATUS[k].t; return L(CT_EN[t] || t, t); }
 function actorT(k){ return L({ guest:'Guest', asset:'Asset owner', fund:'Funder' }[k], ACTORS[k].t); }
 function actorFull(k){ return dtr(ACTORS[k].full); }
 
@@ -1439,11 +1469,14 @@ function whyLine(reason){
   return '<div class="ls-why"><span class="sg" aria-hidden="true">⊘</span><span>' + E(reason) + '</span></div>';
 }
 
-/* ---- 提示块：只有覆盖不足保留填色（D-FIN-56 中性事实文案） ---- */
+/* ---- 提示块：只有覆盖不足保留填色（中性事实文案）----
+       对应推送位 financing.project.coverage_insufficient（触发）与
+       financing.project.coverage_restored（解除：条件反转后本块消失）。
+       去重键带轮次时间戳——同一项目可反复进出档③，不带轮次第二次会被误判为重复。 ---- */
 function shortAlert(p, d, own){
   if(d.grade !== 'short') return '';
   return '<div class="ls-alert">' + CF.note('red', L(
-    'Coverage gap <span class="mono">' + usd(d.gap) + '</span>; collateral value to add <span class="mono">' + usd(d.need) +
+    'Coverage gap <span class="mono">' + usd(d.gap) + '</span>; asset value to add <span class="mono">' + usd(d.need) +
       '</span> (= coverage gap ÷ ' + (PLEDGE_RATE*100) + '%), since ' + (d.shortFrom || '—') + '. ' +
       'Cause: the underlying receivables behind ' + d.deadCount + ' token(s) in this pool have been invalidated (' + usd(d.dead) +
       ' in total), so they no longer count towards pledged token value. Adding collateral raises the borrowing cap and repayment lowers outstanding financing; the flag clears automatically once the condition reverses.',
@@ -1532,7 +1565,7 @@ function plazaRow(p){
       (cd ? demandPill(cd) : pill('gray', L('No demand published','尚未发布需求'))) +
       (p.expired ? pill('gray', L('Term expired','已到期')) : '') + '</div></td>' +
     '<td>' + pill(gTone(d.grade), covMeta(d.grade).t) +
-      (d.gap ? '<div class="cell-sub">' + L('shortfall ','缺口 ') + amt(d.gap) + '</div>' : '') + '</td>' +
+      (d.gap ? '<div class="cell-sub">' + L(g('coverageGap') + ' ', '覆盖缺口 ') + amt(d.gap) + '</div>' : '') + '</td>' +
     '<td class="num">' + amt(d.valid) + '<div class="cell-sub">' +
       L((p.tokens.length - d.deadCount) + ' valid' + (d.deadCount ? ' · ' + d.deadCount + ' invalidated' : ''),
         (p.tokens.length - d.deadCount) + ' 张有效' + (d.deadCount ? ' · 含失效 ' + d.deadCount + ' 张' : '')) + '</div></td>' +
@@ -1615,7 +1648,7 @@ function pagePlaza(){
    同一个项目对象的第 N 轮要约，不产生第二套状态机、第二个深链锚点。 */
 var DST = {
   open     :{ tone:'amber', t:['Awaiting quotes','待报价'] },
-  quoted   :{ tone:'info',  t:['Quoted · awaiting response','已报价待确认'] },
+  quoted   :{ tone:'info',  t:['Awaiting quote confirmation','已报价待确认'] },
   disb     :{ tone:'info',  t:['Disbursing','放款中'] },
   funded   :{ tone:'green', t:['Disbursed','已放款'] },
   ended    :{ tone:'gray',  t:['Void / closed','已失效／已关闭'] }
@@ -1662,9 +1695,19 @@ function demandRecords(p){
       pending.st = 'funded'; pending = null;
     }
   });
-  /* 需求因覆盖不足即时失效（AC-LS-39 / D-FIN-76），原因取 FP-27 */
+  /* 需求因覆盖不足即时失效（AC-LS-39 / D-FIN-76），原因取 FP-27。
+     对应推送位 financing.demand.auto_voided。**资产方主动撤下不发这条消息**——
+     将来若要推，另行申请 financing.demand.withdrawn，不复用本条。 */
   if(pending && derive(p).grade === 'short'){ pending.st = 'ended'; pending.why = 'autovoid'; }
-  if(p.status === 'S-FP-5' && pending){ pending.st = 'ended'; pending.why = 'closed'; }
+  /* 项目进入终态：**只收口还没放出去的那一笔**。
+     V9.3 分册 6.9.1 明写「项目进入终态后，已放款的需求对外状态仍为 `已放款`、
+     不改写为 `已失效／已关闭`」——项目终态说的是池子收口，而那笔需求的钱确实放出去过，
+     改写会让历史记录看起来像从未成交。
+     代码上这一点由 pending 保证：记录一旦落 funded 就 pending = null，下面这行够不着它；
+     这里再加一道 st !== 'funded' 的显式条件，免得将来有人改动 pending 的赋值时把它带塌。 */
+  if(pending && pending.st !== 'funded' && (p.status === 'S-FP-5' || p.status === 'S-FP-6')){
+    pending.st = 'ended'; pending.why = 'closed';
+  }
   rows.forEach(function(r){
     if((r.st === 'disb' || r.st === 'funded') && p.fin){ r.fund = p.fin.fund; r.deal = r.deal || p.fin.deal; }
     if((r.st === 'quoted' || r.st === 'ended') && p.quote){ r.fund = p.quote.fund; r.qat = p.quote.at; }
@@ -1972,14 +2015,13 @@ function pageProject(){
           '<td class="num">1</td>' +
           '<td class="num">' + amt(t.amt) + ' <span class="faint">' + CCY + '</span></td>' +
           '<td class="num">' + t.due + '</td><td>' + E(dtr(t.buyer)) + '</td>' +
-          '<td>' + (t.dead ? pill('amber', L('Invalid · excluded from coverage since ' + (t.deadAt||''),
-                                             '已失效 · 不计入覆盖 · ' + (t.deadAt||'')))
+          '<td>' + (t.dead ? pill('amber', g('invalid') + ' · ' + (t.deadAt||''))
                            : pill('green', g('valid'))) + '</td>' +
           '<td>' + pill(TONE[CT_STATUS[t.ct].tone] || 'gray', ctStatus(t.ct)) + '</td></tr>';
       }).join('') : '<tr><td colspan="7" class="tbl-empty"><b>' +
         (terminalP
           ? L('The pool is empty','本池已空') + '</b>' +
-            L('The collateral was released in business terms at the moment the project closed or settled. Tokens still awaiting on-chain withdrawal are listed in the "Release collateral" dialog .',
+            L('The collateral was released in business terms at the moment the project closed or settled. Tokens still awaiting on-chain withdrawal are listed in the "Release pledge" dialog .',
               '质押在项目关闭 / 结清的同一时刻已全额业务释放。仍待链上提取的代币在「解除质押」弹窗内列出。')
           : L('No valid collateral in this pool','本项目暂无有效质押') + '</b>' +
             L('The pledge submitted at creation ultimately failed on chain. Pledge again before publishing.',
@@ -2095,7 +2137,7 @@ function pageProject(){
       faint(L('public fields','公开信息'))) +
     (!fin ? '' : '<div class="card-b"><div class="ls-kgrid">' +
       kcell(L('Financing deal ID','融资业务编号'), fin.deal, L('Generated when the quote is accepted; stable for life','接受报价时生成，终身稳定')) +
-      kcell(L('Deal status','业务状态'), pill('info', fin.st + ' ' + finSt(fin.st)),
+      kcell(L('Deal status','业务状态'), pill('info', finSt(fin.st)),
         fin.st === 'S-FD-3'
           ? L('Waiting for the funder to verify the signed contract and disburse; verification and handling are actions, not statuses ',
               '等待资金方核验盖章件并放款；核验与处置动作不是状态')
@@ -2109,9 +2151,9 @@ function pageProject(){
       kcell(L('Accepted at','接受时间'), fin.acceptedAt + ' ' + TZ_LABEL,
         L('The quote validity clock stops here','报价有效期计时自此终止')) +
       (fin.st === 'S-FD-4' ?
-        kcell(L('Disbursement submitted at · LN-06','放款提交时间 · LN-06'), fin.lnAt + ' ' + TZ_LABEL,
+        kcell(L('Disbursement submitted at','放款提交时间'), fin.lnAt + ' ' + TZ_LABEL,
           L('Server time; start of the disbursement-confirmation window','服务端时间，放款确认时限的起算点')) +
-        kcell(L('Disbursement record ID · LN-01','放款记录编号 · LN-01'), fin.lnId,
+        kcell(L('Disbursement record ID','放款记录编号'), fin.lnId,
           L('Generated at the moment of successful submission','提交成功的同一时刻生成')) +
         kcell(L('Confirmation window until','放款确认时限至'), fin.confirmTo + ' ' + TZ_LABEL,
           L('= disbursement time + 168 hours; read-only, cannot be extended','＝ 放款提交时间 + 168 小时，只读、不可延长')) : '') +
@@ -2464,6 +2506,10 @@ var CO_TR = {
              fee:['No on-chain fee was incurred.','本次未产生任何链上费用。'], retry:['Top up and retry','充值后重试'] }
 };
 function co(k, f){ var m = CO_TR[k]; return m ? L(m[f][0], m[f][1]) : ''; }
+/* 链上结果块：ok / partial 之外的分支各自对应一个推送位——
+   offchain / onchain / partial → financing.pledge.chain_failed
+   timeout                      → financing.pledge.chain_pending_timeout（独立取值）
+   两者分开的理由就在代码里看得见：timeout 分支不给重试按钮，只给「查询链上状态」。 */
 function chainResult(){
   var r = S.chain, o = CHAIN_OUTCOMES[r.k], ttl = L('On-chain result','链上结果');
   if(r.k === 'ok') return CF.note('green', L(
@@ -2497,25 +2543,49 @@ function chainResult(){
    ================================================================ */
 function doAction(key){
   var p = findProject(S.pid);
-  if(key === 'publish'){ S.modal = { type:'publish', id:p.id }; S.amt = p.demand ? String(p.demand) : ''; S.amtErr = null; return CF.render(); }
-  if(key === 'pledge'){  S.modal = { type:'pledge',  id:p.id }; S.sel = {};  S.walPage = 1; return CF.render(); }
-  if(key === 'release'){ S.modal = { type:'release', id:p.id }; S.wsel = {}; S.rsel = {}; return CF.render(); }
+  /* 做事 → 右侧抽屉（S.drawer 由公共壳层托管，连带渲染 .drawer-scrim） */
+  if(key === 'publish'){ S.drawer = 'publish'; S.unit = { id:p.id }; S.amt = p.demand ? String(p.demand) : ''; S.amtErr = null; return CF.render(); }
+  if(key === 'pledge'){  S.drawer = 'pledge';  S.unit = { id:p.id }; S.sel = {};  S.walPage = 1; return CF.render(); }
+  if(key === 'release'){ S.drawer = 'release'; S.unit = { id:p.id }; S.wsel = {}; S.rsel = {}; return CF.render(); }
+  /* 提示 → 居中弹窗 */
   if(key === 'close')    { S.modal = { type:'close', id:p.id }; return CF.render(); }
 }
+/* ================================================================
+   承载形态（与 WS-325／326／327 同一套，09-15 需求方裁定）
+   ----------------------------------------------------------------
+   **提示 = 居中弹窗**：一次要你表态的打断（关闭项目、链上费用二次确认、环节壳），
+     居中比从边上滑出更像"停一下"。宽 560（公共 .modal 默认 430，本模块用 .ls-dlg 放到 560）。
+   **做事 = 右侧抽屉**：有表单、有多选、要来回核对的（发布需求、追加质押、解除质押），
+     用公共 .drawer 一族，宽 760 —— 440 装不下代币多选表，整屏又等于变回一个页面，
+     760 在 1440 下约占一半，身后的详情页还留得下三分之一可见。窄屏收到 92vw。
+   **一个承载单元同一时刻只有一层**；唯一的例外是链上费用二次确认，
+     它按 AC-LS-32 必须叠在做事抽屉之上（与 WS-327 D-RP-76 同形），层级见 .mask.ls-top。
+   ================================================================ */
 function mHead(t){
   return '<div class="modal-h"><b>' + E(t) + '</b><button class="modal-x" type="button" data-act="ls.mclose" aria-label="' +
     L('Close','关闭') + '">✕</button></div>';
 }
-function mWrap(t, body, foot, wide){
-  return '<div class="mask" data-act="ls.mclose"><div class="modal"' + (wide ? ' style="max-width:720px"' : '') +
-    ' role="dialog" aria-modal="true">' + mHead(t) + '<div class="modal-b">' + body + '</div>' +
+/* 提示：居中弹窗 */
+function mWrap(t, body, foot, top){
+  return '<div class="mask ls-dlg' + (top ? ' ls-top' : '') + '" data-act="ls.mclose">' +
+    '<div class="modal" role="dialog" aria-modal="true">' + mHead(t) +
+    '<div class="modal-b">' + body + '</div>' +
     '<div class="modal-f">' + foot + '</div></div></div>';
 }
+/* 做事：右侧抽屉。遮罩 .drawer-scrim 由公共壳层统一渲染（shell.js renderDrawer），本层不自造。 */
+function uWrap(t, sub, body, foot){
+  return '<aside class="drawer ls-unit" role="dialog" aria-modal="true" aria-label="' + E(t) + '">' +
+    '<div class="drawer-h"><b>' + E(t) + (sub ? '<span class="sb">' + E(sub) + '</span>' : '') + '</b>' +
+    '<button class="modal-x" type="button" data-act="ls.uclose" aria-label="' + L('Close','关闭') + '">✕</button></div>' +
+    '<div class="drawer-b">' + body + '</div>' +
+    '<div class="ls-unit-f">' + foot + '</div></aside>';
+}
 function btnCancel(){ return '<button class="btn" type="button" data-act="ls.mclose">' + L('Cancel','取消') + '</button>'; }
+function btnUCancel(){ return '<button class="btn" type="button" data-act="ls.uclose">' + L('Cancel','取消') + '</button>'; }
 
 /* ---- 弹窗：发布 / 修改融资需求金额（本模块自己的动作，规则在这里） ---- */
-function modalPublish(){
-  var p = findProject(S.modal.id), d = derive(p);
+function drawerPublish(){
+  var p = findProject(S.unit.id), d = derive(p);
   var body =
     '<p class="lead" style="margin-top:0">' + L(
       'Publishing is the only thing that creates committed demand on this project. The amount is checked against available to borrow, recomputed by the server at this moment .',
@@ -2534,14 +2604,15 @@ function modalPublish(){
     '<p class="hint">' + L(
       'The validity date is generated by the system as first publish date + ' + TERM_YEARS + ' year. It is read-only, cannot be edited or extended, and republishing does not reset it.',
       '有效期由系统按首次发布日 + ' + TERM_YEARS + ' 年生成，只读、不可编辑、不可延期；再次发布不重置。') + '</p>';
-  return mWrap(p.draft ? g('publishDemand') : L('Republish / amend demand','再次发布 / 修改需求'), body,
-    btnCancel() + '<button class="btn primary" type="button" data-act="ls.publish">' +
+  return uWrap(p.draft ? g('publishDemand') : L('Republish / amend demand','再次发布 / 修改需求'),
+    dtr(p.name) + ' · ' + p.id, body,
+    btnUCancel() + '<button class="btn primary" type="button" data-act="ls.publish">' +
       (p.draft ? g('publishDemand') : L('Publish','发布')) + '</button>');
 }
 
 /* ---- 弹窗：追加质押 ---- */
-function modalPledge(){
-  var p = findProject(S.modal.id), d = derive(p);
+function drawerPledge(){
+  var p = findProject(S.unit.id), d = derive(p);
   var wl = WALLET.filter(function(t){ return p.assetType ? true : true; });
   var wp = paged(wl, 'walPage');
   var picked = WALLET.filter(function(t){ return S.sel[t.id]; });
@@ -2564,19 +2635,19 @@ function modalPledge(){
       '<span class="sp"></span><span>' + L('total <span class="n">' + amt(sum) + '</span> ' + CCY,
         '合计 <span class="n">' + amt(sum) + '</span> ' + CCY) + '</span>' +
       (d.gap ? '<span class="sp"></span><span>' + (sum * PLEDGE_RATE >= d.gap
-        ? L('clears the shortfall','可解除覆盖不足')
-        : L('shortfall would still be ' + amt(d.gap - sum*PLEDGE_RATE), '仍有缺口 ' + amt(d.gap - sum*PLEDGE_RATE))) + '</span>' : '') + '</div>';
-  return mWrap(g('addPledge'), body,
-    btnCancel() + '<button class="btn primary" type="button" ' + (picked.length?'':'disabled ') +
-    'data-act="ls.addPledge">' + L('Confirm and sign','确认追加并发起质押') + '</button>', true);
+        ? L('clears the coverage gap','可补平覆盖缺口')
+        : L('coverage gap would still be ' + amt(d.gap - sum*PLEDGE_RATE), '仍有覆盖缺口 ' + amt(d.gap - sum*PLEDGE_RATE))) + '</span>' : '') + '</div>';
+  return uWrap(g('addPledge'), dtr(p.name) + ' · ' + p.id, body,
+    btnUCancel() + '<button class="btn primary" type="button" ' + (picked.length?'':'disabled ') +
+    'data-act="ls.addPledge">' + L('Confirm and sign','确认追加并发起质押') + '</button>');
 }
 
 /* ---- 弹窗：解除质押（D-FIN-78：撤回与提取的合并入口）----
    合并的是**入口**，不是判定：池内代币受可撤回上限约束（AC-FIN-13 视角 C），
    合约里待提取的代币是两段式释放的第二段（D-FIN-57），不做任何额度判定。
    用户不需要先知道自己的代币此刻在哪一边。 */
-function modalRelease(){
-  var p = findProject(S.modal.id), d = derive(p);
+function drawerRelease(){
+  var p = findProject(S.unit.id), d = derive(p);
   var dead = p.tokens.filter(function(t){ return t.dead; }), live = p.tokens.filter(function(t){ return !t.dead; });
   var wLive = live.filter(function(t){ return S.wsel[t.id]; }).reduce(function(a,t){ return a+t.amt; },0);
   var wDead = dead.filter(function(t){ return S.wsel[t.id]; }).reduce(function(a,t){ return a+t.amt; },0);
@@ -2632,7 +2703,7 @@ function modalRelease(){
       L('Invalidated · withdrawable at any time, no credit test · ' + dead.length,
         '已失效 · 可随时撤回、不做额度判定 · ' + dead.length + ' 张') + '</h3>' +
       '<div class="tablewrap"><table class="tbl">' + H + '<tbody>' + dead.map(function(t){
-        return row(t, 'pool', pill('amber', L('Invalid · ' + (t.deadAt||''), '已失效 · ' + (t.deadAt||'')))); }).join('') +
+        return row(t, 'pool', pill('amber', g('invalid') + ' · ' + (t.deadAt||''))); }).join('') +
       '</tbody></table></div>' : '') +
     '<h3 class="sec-title" style="font-size:12.5px;margin:14px 0 6px">' +
       L('Active collateral · subject to the release limit · ' + live.length, '有效抵押物 · 受额度限制 · ' + live.length + ' 张') +
@@ -2668,9 +2739,9 @@ function modalRelease(){
     '<p class="hint" style="margin-top:12px">' + L(
       'A withdrawal <b>provisionally deducts</b> the value as soon as it enters "pending" on chain (understate rather than overstate); only a failure rolls it back. It never marks tokens "released" first and rolls back afterwards. Withdrawal and redemption are <b>never hard-blocked</b>: more than 5 submissions in 24 hours shows a note about gas cost, but does not block.',
       '撤回一进入链上「处理中」即<b>预扣</b>该部分价值（宁可低估不可高估），失败回滚才恢复；撤回不得先置「已释放」再回滚。撤回与提取<b>不设硬性阻断</b>：24 小时内提交超过 5 次会提示"频繁链上操作会产生较多 gas"，但不阻断。') + '</p>';
-  return mWrap(g('releasePledge'), body,
-    btnCancel() + '<button class="btn danger" type="button" ' + (n === 0 || over ? 'disabled ' : '') +
-    'data-act="ls.release">' + L('Release ' + n + ' token(s)', '解除勾选的 ' + n + ' 张') + '</button>', true);
+  return uWrap(g('releasePledge'), dtr(p.name) + ' · ' + p.id, body,
+    btnUCancel() + '<button class="btn danger" type="button" ' + (n === 0 || over ? 'disabled ' : '') +
+    'data-act="ls.release">' + L('Release ' + n + ' token(s)', '解除勾选的 ' + n + ' 张') + '</button>');
 }
 
 /* ---- 弹窗壳：下游模块承载的四个环节动作（AC-LS-85）----
@@ -2750,7 +2821,7 @@ function modalClose(){
   }
   return mWrap(g('closeProject'), CF.note('amber', L(
     'Closing moves the project to Closed. In the same instant the platform releases every commitment and collateral relationship on this pool, and the ' + p.tokens.length + ' token(s) in it become "released · awaiting withdrawal".' +
-    '<p>The business-side release is <strong class="ls-b">immediate, involves no on-chain action and costs nothing</strong>. The tokens stay inside the pledge contract: you withdraw them yourself and pay the gas, and they <strong class="ls-b">never return to your wallet automatically</strong>. The "Release collateral" entry stays available after closing, with no deadline .</p>',
+    '<p>The business-side release is <strong class="ls-b">immediate, involves no on-chain action and costs nothing</strong>. The tokens stay inside the pledge contract: you withdraw them yourself and pay the gas, and they <strong class="ls-b">never return to your wallet automatically</strong>. The "Release pledge" entry stays available after closing, with no deadline .</p>',
     '关闭后项目转「已关闭」，平台在同一时刻解除该池全部占用与覆盖关系，池内 ' + p.tokens.length + ' 张代币置「已释放 · 待提取」。' +
     '<p>业务释放<strong class="ls-b">即时、无链上动作、无费用</strong>；代币仍停留在质押合约内，需您自行发起提取并自付 gas，<strong class="ls-b">不会自动回到钱包</strong>。关闭之后「解除质押」入口照常可用，<strong class="ls-b">无时间限制</strong>。</p>')),
     btnCancel() + '<button class="btn primary" type="button" data-act="ls.closeOk">' + L('Confirm close','确认关闭') + '</button>');
@@ -2772,11 +2843,12 @@ function modalChain(){
     '<p class="hint">' + L(
       'Gas is charged by the blockchain. <strong class="ls-b">The platform does not pay it for you, does not advance it, and charges no service fee on pledging, withdrawal or redemption</strong>. A failed transaction may still have cost gas. Batching is the single most effective way to reduce cost: these ' + m.n + ' items have been merged into one submission.',
       'gas 由区块链收取，<strong class="ls-b">平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</strong>。链上失败也可能已经产生费用。批量一次提交是最有效的降费手段：' + m.n + ' 笔已合并为一次提交。') + '</p>',
-    btnCancel() + '<button class="btn primary" type="button" data-act="ls.sdk">' + L('Confirm and sign','确认并唤起签名') + '</button>');
+    btnCancel() + '<button class="btn primary" type="button" data-act="ls.sdk">' + L('Confirm and sign','确认并唤起签名') + '</button>',
+    true);
 }
 function modalSdk(){
   var m = S.modal;
-  return '<div class="mask"><div class="ls-sdk" role="dialog" aria-modal="true" aria-label="' +
+  return '<div class="mask ls-top"><div class="ls-sdk" role="dialog" aria-modal="true" aria-label="' +
     L('External signing SDK','外部签名 SDK') + '">' +
     '<div class="h"><span>◈</span><b>' + L('External signing SDK','外部签名 SDK 服务') + '</b><span>' +
       L('third-party surface · not a platform page','第三方界面 · 非平台页面') + '</span></div>' +
@@ -2901,7 +2973,7 @@ var mod = {
     return { lang:'en', role:'guest', pid:'FP-20260416-0007', panel:null,
              flt:JSON.parse(JSON.stringify(F0)), sel:{}, wsel:{}, rsel:{},
              pname:'', ptype:'应收账款类', amt:'', amtErr:null, chain:null, chainKeep:false,
-             tokPage:1, demPage:1, walPage:1, repayNo:null };
+             tokPage:1, demPage:1, walPage:1, repayNo:null, unit:null };
   },
   onBoot:function(st){ S = st; S.flt.sort = 'pub'; },
   /* 身份切换走顶栏上下文操作区（portal 规范 §3「语言/上下文操作分区」） */
@@ -2917,10 +2989,9 @@ var mod = {
     if(S.page === 'P-LS-90') return pageMine();
     return pagePlaza();
   },
-  modals:{
-    publish:modalPublish, pledge:modalPledge, release:modalRelease,
-    close:modalClose, stage:modalStage, chain:modalChain, sdk:modalSdk
-  },
+  /* 提示走弹窗，做事走抽屉——两个注册表分开，形态在装配处一眼可见 */
+  modals:{ close:modalClose, stage:modalStage, chain:modalChain, sdk:modalSdk },
+  drawers:{ publish:drawerPublish, pledge:drawerPledge, release:drawerRelease },
   hash:{
     build:function(){
       if(S.page === 'P-LS-02') return '#/project/' + (S.pid || '');
@@ -2932,7 +3003,7 @@ var mod = {
       var h = (location.hash || '').replace(/^#\/?/, ''); if(!h) return false;
       var parts = h.split('?'), seg = parts[0].split('/'), qs = {};
       (parts[1] || '').split('&').forEach(function(kv){ var i = kv.indexOf('='); if(i>0) qs[kv.slice(0,i)] = decodeURIComponent(kv.slice(i+1)); });
-      S.tokPage = S.demPage = S.walPage = 1; S.modal = null;
+      S.tokPage = S.demPage = S.walPage = 1; S.modal = null; S.drawer = null; S.unit = null;
       if(seg[0] === 'marketplace' || seg[0] === 'plaza'){ S.page = 'P-LS-01'; S.st = 'default'; return true; }
       if(seg[0] === 'my-projects'){ S.page = 'P-LS-90'; S.st = 'default'; return true; }
       if(seg[0] === 'project'){
@@ -2950,9 +3021,13 @@ var mod = {
     }
   },
   onGo:function(){ if(S.chainKeep) S.chainKeep = false; else S.chain = null;
-                   S.amtErr = null; S.modal = null; S.tokPage = S.demPage = S.walPage = 1; },
+                   S.amtErr = null; S.modal = null; S.drawer = null; S.unit = null;
+                   S.tokPage = S.demPage = S.walPage = 1; },
   afterRender:function(){ drawAll(); },
   onAct:function(n, a, v, e){
+    /* 公共层的 .drawer-scrim 点击走 closeDrawer，由 shell 负责置空 S.drawer；
+       这里只把本模块挂在上面的 S.unit 一并清掉，然后放行（返回 false）。 */
+    if(a === 'closeDrawer'){ S.unit = null; return false; }
     if(a.indexOf('ls.') !== 0) return false;
     var p = findProject(S.pid);
     switch(a){
@@ -2992,6 +3067,9 @@ var mod = {
           '确认未上链后，重试入口才会出现——沿用 红线，超时态不得直接重试。')); return true;
       case 'ls.retry': S.chain = null; CF.render(); return true;
       case 'ls.mclose': if(n.classList.contains('mask') || n.classList.contains('modal-x') || n.tagName === 'BUTTON'){ S.modal = null; CF.render(); } return true;
+      /* 抽屉的关闭：公共层的 .drawer-scrim 走 closeDrawer（下面那条），
+         抽屉头部与底部的关闭按钮走这条，两条都要把 S.unit 一起清掉。 */
+      case 'ls.uclose': S.drawer = null; S.unit = null; CF.render(); return true;
       case 'ls.closeOk': S.modal = null; toast('info', L('Demo prototype','演示原型'),
         L('This prototype does not actually mutate the demo data here.','此处不真正改动演示数据。')); return true;
       case 'ls.create': {
@@ -3054,7 +3132,7 @@ var mod = {
           S.amtErr = L(
             '<b>The demand amount exceeds available to borrow, so the publish check fails.</b><br>Entered <span class="mono">' + usd(val) +
             '</span>; available to borrow <span class="mono">' + usd(d2.free) + '</span>; difference <span class="mono">' + usd(diff) + '</span>.<br>' +
-            'Two ways out: ① lower the amount to within ' + usd(d2.free) + '; ② add collateral to raise the borrowing cap — the collateral value to add is <span class="mono">' +
+            'Two ways out: ① lower the amount to within ' + usd(d2.free) + '; ② add pledge to raise the borrowing cap — the asset value to add is <span class="mono">' +
             usd(round2(diff / PLEDGE_RATE)) + '</span> (= difference ÷ ' + (PLEDGE_RATE*100) + '%).<br>' +
             'A failed publish check never rolls back pledges you already made; those tokens stay in the pool and keep counting.',
             '<b>融资需求金额超出可融金额，发布校验不通过。</b><br>本次填写 <span class="mono">' + usd(val) +
@@ -3069,7 +3147,7 @@ var mod = {
         if(first){ p.publishedAt = TODAY; p.expiresAt = addYears(TODAY, TERM_YEARS); }
         p.events.push({ d:TODAY, k:'publish', t:(first?'发布':'再次发布') + '融资需求 ' + usd(val), dFly:val,
           note:'发布即产生在途占用，这是项目在途金额的唯一来源；报价环节不再新增占用' });
-        S.amt = ''; S.amtErr = null; S.modal = null;
+        S.amt = ''; S.amtErr = null; S.modal = null; S.drawer = null; S.unit = null;
         toast('success', L('Published','发布成功'),
           L('The project is now Open for quotes and ' + usd(val) + ' has been added to committed demand' +
             (first ? ', valid until ' + p.expiresAt + ' (first publish date + 1 year, read-only).' : ' (the validity date is not reset).'),
@@ -3081,7 +3159,8 @@ var mod = {
       case 'ls.sdkCancel': { var k1 = S.modal.kind; S.modal = null; finishChain(k1, 'cancel'); CF.render(); return true; }
       case 'ls.sdkSign': {
         var out = (q('#sdkOut') || {}).value || 'ok', k2 = S.modal.kind;
-        S.modal = null; finishChain(k2, out);
+        /* 签完把身后那层做事抽屉一起收掉——结果要落在详情页上给人看，不是落在抽屉里 */
+        S.modal = null; S.drawer = null; S.unit = null; finishChain(k2, out);
         if(k2 !== 'create'){ CF.render(); window.scrollTo(0,0); }
         return true;
       }
