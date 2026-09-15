@@ -825,56 +825,100 @@ function pageCredit(){
   }
 
   /* ================================================================
-     v1.1 —— 分支②「额度不足」的前置确认（需求方裁定，AC-CR-05 分支② + D-MC-91 流程）
+     v1.1 —— 授信前置确认（PRD V6.0 `D-CR-46` ～ `D-CR-50`）
 
-     额度不足时**不得直接把机构送进授信表单**：机构点的是「报价」，不该在毫无预告的
-     情况下被一个报价动作推到一张要他掏额度的表单前面。先问一句，三个数摆在问句里，
-     确认之后才出表单；不确认就留在原处，**不产生任何记录、不占用授信、不锁定需求**。
+     **不得直接把机构送进授信表单。** 用户点的是「报价」不是「授信」——不先问一句，
+     就等于用一个动作触发了另一个改变本机构敞口的写操作。①②③ 三支都要问：
+     ① 是建立一段全新的授信关系，③ 是把敞口窗口再开一年（重新核定会生成新的有效期），
+     两者比②「在已有关系上加码」更重。分支④ 额度充足**不出现确认**，直接进报价表单。
 
-     ⚠️ 形态：它是**本流程内的一步**，替换掉表单的位置就地呈现 —— 不是新开页面，
-     也不是在当前承载单元之上再叠一层。PRD V5.0 `D-LS-30` 已把 P-LS-04/05/06 从"页面"
-     改为详情页操作区内的**承载单元（弹窗）**，本步骤按"单元内的一步"实现，
-     将来承载形态落成弹窗时这一步**原样搬过去即可，不会变成弹窗套弹窗**。
+     ⚠️ 形态（`D-CR-48` 写死）：确认 → 授信表单 → 回到报价表单是**同一个承载单元里的三个步骤**，
+     不新开页、不叠第二层。本步骤就地替换表单的位置呈现；`D-LS-30` 把 P-LS-04/05/06
+     由页面改为详情页操作区内的弹窗之后，这三步原样搬进那一个弹窗即可。
 
-     本轮只做需求方点名的分支②。分支①（无额度新建）与③（已到期重新核定）是否也先问
-     一句，等 PRD V6.0 的结论，这里不擅自统一。
+     取消（`D-CR-49`）：回到详情页操作区，「融资报价」按钮保持原样、随时可再点。
+     **什么都不留**——不生成编号、不产生授信记录与占用、不锁定需求，**也不记录"曾经取消过"**。
      ================================================================ */
   /* 换项目即失效：额度是机构 × 资产方二元组，换了对手方就是另一条额度的事，要重新问一次。
      在渲染前判，不放到 afterRender —— 那会晚一帧，换项目后表单会先闪一下再复位。 */
   if(S.cr.confirmed && S.cr.askedFor !== p.id){ S.cr.confirmed = false; S.cr.askedFor = null; }
-  if(f.b === 'topup' && !S.cr.confirmed){
+  if(!S.cr.confirmed){
+    /* 三支的问句与理由各不相同（`D-CR-47`）；只有②摆三个数（`D-CR-46`），
+       ③把原到期日摆进来（它本就是 `AC-CR-10` 要求展示的内容）。 */
+    var ASK = {
+      'new':{
+        h:'您尚未对 ' + p.owner + ' 核定授信额度，是否现在核定？',
+        go:'去核定',
+        pills:pill('', '分支 ① · 无额度'),
+        why:'这是<b>建立一段全新的授信关系</b>：核定之后，您对 ' + E(p.owner) +
+            ' 的<b>所有</b>融资项目都用这一条额度，不必逐个项目重复核定。',
+        yes:'进入核定表单，填<b>授信总额</b>与<b>有效期至</b>（下限＝核定日 + 1 年，默认即下限）。' +
+            '提交即生效、无审批流；之后自动回到报价表单并<b>重跑两道校验</b>。'
+      },
+      'topup':{
+        h:'当前授信额度不足，是否提额？',
+        go:'去提额',
+        pills:pill('amber', '分支 ② · 额度不足'),
+        why:'您对 <b>' + E(p.owner) + '</b> 的授信额度不足以覆盖本次报价。',
+        yes:'进入追加表单，填<b>增加额</b>（不是新总额）。提交即生效、无审批流；' +
+            '之后自动回到报价表单并<b>重跑两道校验</b>。'
+      },
+      'renew':{
+        h:'您对 ' + p.owner + ' 的授信额度已于 ' + (c.cr ? c.cr.until : '—') + ' 到期，是否重新核定？',
+        go:'去重新核定',
+        pills:pill('gray', '分支 ③ · 已到期'),
+        why:'到期额度<b>视同无额度</b>，没有"再顶一次"的宽限；但到期<b>不释放已有占用</b>——钱还没还，债务就还在。' +
+            '重新核定会<b>生成新的有效期</b>，等于把您对这家资产方的敞口窗口再开一段。',
+        yes:'进入重新核定表单，带出上一版额度 <b>' + (c.cr ? amt(c.cr.limit) : '—') +
+            '</b> 供修改，并<b>重新填写有效期</b>（下限按重新核定日重算）。提交即生效；' +
+            '之后自动回到报价表单并<b>重跑两道校验</b>。'
+      }
+    };
+    var a = ASK[f.b];
+    /* 只有分支②摆三个数：本次报价 − 当前可用授信 ＝ 差额，排成算式，机构自己就能验 */
+    var nums = f.b === 'topup'
+      ? '<div class="nums">' +
+          '<div class="n"><div class="k">本次报价金额</div><div class="v">' + amt(c.need) + '</div>' +
+            '<div class="x">' + CCY + ' · 恒等于需求金额</div></div>' +
+          '<div class="op" aria-hidden="true">−</div>' +
+          '<div class="n"><div class="k">当前可用授信</div><div class="v">' + amt(c.avail) + '</div>' +
+            '<div class="x">授信额度 ' + amt(c.limit) + ' − 已用 ' + amt(c.usedTotal) + '</div></div>' +
+          '<div class="op" aria-hidden="true">＝</div>' +
+          '<div class="n gap"><div class="k">差额</div><div class="v">' + amt(c.gap) + '</div>' +
+            '<div class="x">至少要补这么多才够报本次</div></div>' +
+        '</div>'
+      : '<div class="nums">' +
+          '<div class="n"><div class="k">本次报价金额</div><div class="v">' + amt(c.need) + '</div>' +
+            '<div class="x">' + CCY + ' · 恒等于需求金额，不可修改</div></div>' +
+          (f.b === 'renew'
+            ? '<div class="n"><div class="k">上一版额度</div><div class="v">' +
+                (c.cr ? amt(c.cr.limit) : '—') + '</div><div class="x">原到期日 ' +
+                (c.cr ? c.cr.until : '—') + ' · 已转 S-CR-2 已到期</div></div>'
+            : '<div class="n"><div class="k">当前可用授信</div><div class="v">—</div>' +
+                '<div class="x">本机构对该资产方尚无授信记录</div></div>') +
+        '</div>';
     return backToPlaza() + phead(
-      '授信核定 · <span class="mono">P-LS-04</span> · 报价的前置步骤 · ② 追加额度',
-      '当前授信额度不足，是否提额？', null,
-      pill('amber', '分支 ② · 额度不足') + pill('gray', '尚未进入表单') +
-        pill('gray', '此刻不产生任何记录'),
+      '授信核定 · <span class="mono">P-LS-04</span> · 报价的前置步骤 · ' + bm.n + ' ' + bm.t,
+      a.h, null,
+      a.pills + pill('gray', '尚未进入表单') + pill('gray', '此刻不产生任何记录'),
       amtBlock('本次报价金额', amt(c.need), CCY,
         '恒等于该需求金额，不可修改（D-FIN-19）')) + CF.pageStates() +
       '<div class="card"><div class="card-b">' +
         '<div class="cq-ask">' +
-          '<p class="q">您对 <b>' + E(p.owner) + '</b> 的授信额度不足以覆盖本次报价，' +
-            '需要现在提额吗？</p>' +
-          '<div class="nums">' +
-            '<div class="n"><div class="k">本次报价金额</div><div class="v">' + amt(c.need) + '</div>' +
-              '<div class="x">' + CCY + ' · 恒等于需求金额</div></div>' +
-            '<div class="op" aria-hidden="true">−</div>' +
-            '<div class="n"><div class="k">当前可用授信</div><div class="v">' + amt(c.avail) + '</div>' +
-              '<div class="x">授信额度 ' + amt(c.limit) + ' − 已用 ' + amt(c.usedTotal) + '</div></div>' +
-            '<div class="op" aria-hidden="true">＝</div>' +
-            '<div class="n gap"><div class="k">差额</div><div class="v">' + amt(c.gap) + '</div>' +
-              '<div class="x">至少要补这么多才够报本次</div></div>' +
-          '</div>' +
+          '<p class="q">' + E(a.h) + '</p>' +
+          '<p class="sub">' + a.why + '</p>' +
+          nums +
           '<div class="ways">' +
-            '<div class="w"><i>提额</i><span>进入追加表单，填<b>增加额</b>（不是新总额）。' +
-              '提交即生效、无审批流；之后自动回到报价表单并<b>重跑两道校验</b>。' +
-              '额度与报价<b>解耦</b>——提完额即使放弃报价，额度也照常保留。</span></div>' +
-            '<div class="w"><i>暂不</i><span>回到报价入口，<b>什么都不留</b>：不产生授信记录、' +
-              '不占用您的授信、不锁定该需求，这条需求对其他机构照常开放。您随时可以再来。</span></div>' +
+            '<div class="w"><i>确认</i><span>' + a.yes +
+              '额度与报价<b>解耦</b>——办完即使放弃报价，额度也照常保留。</span></div>' +
+            '<div class="w"><i>取消</i><span>回到详情页操作区，「融资报价」按钮保持原样、随时可再点。' +
+              '<b>什么都不留</b>：不生成融资业务编号、不产生授信记录、不占用您的授信、不锁定该需求，' +
+              '<b>也不记录"曾经取消过"</b>。这条需求对其他机构照常开放。</span></div>' +
           '</div>' +
         '</div>' +
         '<div class="btnbar">' +
-          '<button class="btn primary" type="button" data-act="cq.askYes">去提额</button>' +
-          '<a class="btn" href="' + lsHref('#/project/' + p.id) + '">暂不提额，返回报价入口</a>' +
+          '<button class="btn primary" type="button" data-act="cq.askYes">' + E(a.go) + '</button>' +
+          '<a class="btn" href="' + lsHref('#/project/' + p.id) + '">取消，返回详情页</a>' +
         '</div>' +
         noChainFoot('本步骤与随后的授信核定都') +
       '</div></div>';
@@ -1862,6 +1906,9 @@ var mod = {
           S.result = { k:'credit', avail:round2(c2.avail * 0.4), amt:p2.demand,
                        gap:round2(p2.demand - c2.avail * 0.4) };
           S.qt.creditDone = false;
+          /* D-CR-50：确认在一次报价流程里只出现一次。此路径直接回到追加表单，
+             不再问第二遍 —— 机构此刻已经在授信流程里，意图早已表达过。 */
+          S.cr.confirmed = true; S.cr.askedFor = p2.id;
         } else {
           S.result = { k:out };
         }
