@@ -13,7 +13,7 @@
 
    本模块的招牌件（WS-324 没有、这里新造的四个）：
      .cq-crbar  授信尺 —— AC-CR-03 的可视化读数，机构维度；与 WS-324 的 .ls-meter（项目维度）成对
-     .cq-gates  两道闸门牌 —— 担保闸门 / 授信闸门并置，各给判据、取值、结论与出路（D-CR-21）
+     .cq-gates  两道闸门牌 —— 覆盖闸门 / 授信闸门并置，各给判据、取值、结论与出路（D-CR-21）
      .cq-cd     锁定倒计时 —— 已锁定 + 剩余 ≡ 168 小时，这条恒等式在条上可验（D-LS-13 / FD-13 + QT-13）
      .cq-fee    手续费差额条 —— 融资金额 → 到账（无数字）→ 应还本金，三格对照（D-FIN-103 / D-FIN-104）
    ========================================================================== */
@@ -200,13 +200,42 @@
 .cq-why{display:flex;gap:var(--sp-5);flex-wrap:wrap;align-items:flex-start;
   border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);padding:15px 16px}
 .cq-why .bd{flex:1;min-width:260px}
-.cq-why .bd b{display:block;font-size:13.5px;font-weight:680;color:var(--text)}
+/* 只有小节标题那个 b 是整行；正文里的 b 是行内强调（数值），
+   不加 > 的话 v1.1 那条"上一步的三个数"会被逐个数字顶成竖排 */
+.cq-why .bd > b{display:block;font-size:13.5px;font-weight:680;color:var(--text)}
 .cq-why .bd p{margin:5px 0 0;font-size:12.5px;color:var(--muted);line-height:1.6}
+.cq-why .bd p b{display:inline;font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-weight:660;color:var(--text)}
 .cq-why .nums{display:flex;gap:var(--sp-5);flex-wrap:wrap;flex:none}
 .cq-why .nums .n .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
 .cq-why .nums .n .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-19);
   font-weight:680;letter-spacing:-.025em;margin-top:3px}
 .cq-why .nums .n.gap .v{color:var(--danger)}
+
+/* —— v1.1 招牌件 E：提额前置确认（分支②）——
+   机构点的是「报价」，不该被直接推到一张要他掏额度的表单前面。先问一句，
+   三个数（本次报价 − 可用授信 ＝ 差额）以算式形态摆进问句里，两条出路各说清后果。
+   它是本流程内的一步，就地替换表单的位置 —— 不叠层、不新开页，
+   承载形态落成弹窗时原样搬过去即可（D-LS-30）。 */
+.cq-ask .q{margin:0;font-size:var(--fs-16);font-weight:660;line-height:1.55;color:var(--text)}
+.cq-ask .nums{display:flex;align-items:flex-end;flex-wrap:wrap;gap:var(--sp-3) var(--sp-5);
+  margin-top:var(--sp-5);padding:15px 16px;background:var(--card-2);
+  border:1px solid var(--border);border-radius:var(--radius-sm)}
+.cq-ask .nums .n{min-width:0}
+.cq-ask .nums .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.cq-ask .nums .v{font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:clamp(20px,2vw,26px);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-top:4px;
+  white-space:nowrap}
+.cq-ask .nums .n.gap .v{color:var(--danger)}
+.cq-ask .nums .x{font-size:var(--fs-10);color:var(--faint);margin-top:4px;line-height:1.5}
+.cq-ask .nums .op{font-family:var(--mono);font-size:var(--fs-19);color:var(--faint);padding-bottom:14px}
+.cq-ask .ways{margin-top:var(--sp-5);font-size:12.5px;line-height:1.6}
+.cq-ask .ways .w{display:flex;gap:10px;color:var(--muted)}
+.cq-ask .ways .w+.w{margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.cq-ask .ways .w i{flex:none;font-style:normal;font-size:var(--fs-10);font-weight:700;
+  color:var(--faint);letter-spacing:.06em;width:30px;padding-top:2px}
+.cq-ask .ways .w b{color:var(--text);font-weight:660}
+@media (max-width:640px){ .cq-ask .nums .op{display:none} }
 
 /* —— 额度前后对照：当前 → 调整后（D-CR-12，追加填增加额，不是新总额）—— */
 .cq-delta{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;padding:11px 14px;
