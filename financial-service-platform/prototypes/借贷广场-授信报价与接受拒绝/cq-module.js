@@ -1,12 +1,12 @@
 /* ==========================================================================
-   cq-module.js — 借贷广场 · 授信、报价与接受/拒绝（WS-325）
+   cq-module.js — 借贷广场 · 授信、报价与报价确认（WS-325）
    PRD 基线：v1.0-借贷广场-授信报价与接受拒绝-PRD.md V4.0 + 分册 01 V4.0
    上游：WS-324 PRD V7.0；上游原型 借贷广场-融资需求与代币质押 v1.2.1
 
    本文件只写本模块的页面、文案、演示数据与状态。
    token / 公共组件 / 运行时 / 页面登记一律来自 _shared，不在此重建。
 
-   页面：P-LS-04 授信核定（报价前置）· P-LS-05 机构报价 · P-LS-06 接受 / 拒绝
+   页面：P-LS-04 授信核定（报价前置）· P-LS-05 机构报价 · P-LS-06 报价确认
    ========================================================================== */
 (function () {
 "use strict";
@@ -392,9 +392,9 @@ function availableActions(p, role){
   }
   out.push(q);
 
-  /* --- respond_quote：去接受 / 拒绝。业务已终结时不返回（不可见，非 ⊘） --- */
+  /* --- respond_quote：去报价确认。业务已终结时不返回（不可见，非 ⊘） --- */
   if(deal && (own || guest)){
-    var r = { key:'respond', label:'接受 / 拒绝报价', enabled:!guest,
+    var r = { key:'respond', label:'报价确认', enabled:!guest,
               reason: guest ? '未登录。融资业务的处理动作仅对该项目所属企业主体开放；商务条款与锁定信息本身是公开的。' : '' };
     out.push(r);
   }
@@ -739,7 +739,7 @@ function creditForm(c, p){
    ================================================================
    P-LS-04 / 05 / 06 不是页面。它们是详情页操作区的按钮打开的弹窗：
      · 融资报价弹窗   —— 内含三步：授信提示（对话框） → 额度编辑 → 报价表单
-     · 接受/拒绝弹窗  —— 资产方处理在途报价
+     · 报价确认弹窗  —— 资产方处理在途报价
    不跳离详情页、不新开页面、不弹窗套弹窗。
 
    ⚠️ v1.1 把授信提示做成了"就地替换、没有遮罩"，看上去不像一次需要机构表态的动作 ——
@@ -760,15 +760,26 @@ function unitBackdrop(p, title){
 }
 
 /* ---- 弹窗外壳：统一头部 / 主体 / 底部，所有承载单元共用一套 ---- */
+/* 承载单元外壳：**从右侧划出的抽屉**（需求方 09-15）。
+   用公共层的 .drawer 一族，不自造——遮罩（.drawer-scrim）由壳层统一渲染，
+   宽度用模块修饰类 .cq-unit 放大到 760px：
+
+   为什么是 760 而不是整屏或 440：
+     · 公共 .drawer 的 440px 装不下报价确认里的条款网格与三步流程，
+       每行只能塞一列，读者要上下扒拉很久；
+     · 整屏等于又变回一个页面，右侧划出的意义（"我还在详情页上，只是开了一层"）就没了；
+     · 760px 在 1440 下约占一半，条款网格能排两到三列，
+       身后的详情页还留得下三分之一可见——既有上下文，又不挤。
+   窄屏按 92vw 收，保证两侧仍留出可点的"回到详情页"余地。 */
 function unitShell(title, sub, body, foot, opt){
   opt = opt || {};
-  return '<div class="mask" data-act="cq.maskClose">' +
-    '<div class="modal cq-unit' + (opt.dialog ? ' dialog' : '') + '" role="dialog" aria-modal="true" aria-label="' + E(title) + '">' +
-      '<div class="modal-h"><b>' + E(title) + (sub ? '<span class="sb">' + E(sub) + '</span>' : '') + '</b>' +
+  return '<aside class="drawer cq-unit' + (opt.dialog ? ' dialog' : '') +
+      '" role="dialog" aria-modal="true" aria-label="' + E(title) + '">' +
+      '<div class="drawer-h"><b>' + E(title) + (sub ? '<span class="sb">' + E(sub) + '</span>' : '') + '</b>' +
       '<button class="modal-x" type="button" data-act="cq.unitClose" aria-label="关闭">✕</button></div>' +
-      '<div class="modal-b">' + body + '</div>' +
-      '<div class="modal-f">' + foot + '</div>' +
-    '</div></div>';
+      '<div class="drawer-b">' + body + '</div>' +
+      '<div class="cq-unit-f">' + foot + '</div>' +
+    '</aside>';
 }
 
 /* ================================================================
@@ -918,28 +929,8 @@ function quoteStep(p, c, f){
           '<div class="x">本次报价占用 ' + amt(p.demand) + '</div></div>' +
       '</div></div>';
 
-  var acct = f.fiat
-    ? field('机构收款账户', '必填',
-        '<div class="field" style="margin-bottom:9px">' + inp('qtBank', f.a.bank, '开户行名称') + '</div>' +
-        '<div class="field" style="margin-bottom:9px">' + inp('qtAcct', f.a.acct, '账号') + '</div>' +
-        '<div class="field" style="margin-bottom:9px">' +
-          inp('qtName', f.a.name, '户名（须与机构名称一致）', { err:f.need.indexOf('nameMismatch') >= 0 }) + '</div>' +
-        '<div class="inp-row" style="margin-bottom:2px">' + inp('qtSwift', f.a.swift, 'SWIFT / BIC') +
-          inp('qtCountry', f.a.country, '国别') + '</div>',
-        f.need.indexOf('nameMismatch') >= 0
-          ? '<b style="color:var(--danger)">户名要和机构名称一致</b>：本机构登记名称为「' + E(ACTORS.fund.full) + '」。'
-          : '资产方将来还款打到这个账户。')
-    : field('机构收款地址', '必填',
-        '<div class="field" style="margin-bottom:9px">' +
-          '<select class="inp" data-act="cq.f" data-v="qtChain">' +
-          ['', 'Ethereum', 'Tron', 'Polygon'].map(function(ch){
-            return '<option value="' + ch + '"' + (f.a.chain === ch ? ' selected' : '') + '>' +
-              (ch || '选择链') + '</option>'; }).join('') + '</select></div>' +
-        inp('qtAddr', f.a.addr, '0x 开头的 42 位地址', { err:f.need.indexOf('addr') >= 0 }),
-        f.need.indexOf('chainMismatch') >= 0
-          ? '<b style="color:var(--danger)">链和币种对不上</b>：' + f.ccy + ' 不在所选链上发行。'
-          : '资产方将来还款转到这个地址。');
-
+  /* 报价环节不再采集机构收款账户：需求方 09-15 裁定，机构收款信息不在报价时填。
+     整块字段与它的必填校验一起撤下，不留一个填不了又挡住提交的必填项。 */
   var form =
     '<div class="cq-sec"><h3>本次报价</h3>' +
       field('融资金额', '只读', ro(amt(p.demand) + ' ' + CCY),
@@ -962,7 +953,6 @@ function quoteStep(p, c, f){
         '本期只有这一种还款方式。') +
       field('最终还款日', '只读', ro(p.expiresAt),
         '等于该融资项目的截止日期，跟着项目走，不单独设置。') +
-      acct +
       field('报价有效期', '只读', ro(QUOTE_HOURS + ' 小时（7 天）'),
         '这份报价将在 <b>' + withTz(expireAt) + '</b> 自动失效。资产方在这之前没有处理，' +
         '需求就自动放开、您的额度也自动还回来。') +
@@ -1023,23 +1013,12 @@ function quoteForm(p){
       rateErr = '年化利率须满足 <b>0 &lt; 利率 ≤ 100</b>，2 位小数。具体计息口径以双方签署的融资合同为准，' +
                 '本字段只采集数值。';
   }
+  /* 报价环节不再收机构收款账户，所以这里也不再有账户类的必填与校验。
+     现在唯一要填的就是利率。 */
   var fiat = (ccy === 'USD');
-  var a = S.qt.acct || {};
-  var need = [];
-  if(fiat){
-    ['bank','acct','name','swift','country'].forEach(function(k){ if(!String(a[k]||'').trim()) need.push(k); });
-    /* 户名须与机构企业主体名称一致，不一致拒绝提交（QT-07） */
-    if(a.name && String(a.name).trim() && String(a.name).trim() !== ACTORS.fund.full)
-      need.push('nameMismatch');
-  } else {
-    if(!String(a.chain||'').trim()) need.push('chain');
-    if(!/^0x[0-9a-fA-F]{40}$/.test(String(a.addr||'').trim())) need.push('addr');
-    if(a.chain && ((ccy === 'USDT' && a.chain === 'Polygon') || (ccy === 'USDC' && a.chain === 'Tron')))
-      need.push('chainMismatch');
-  }
-  var ok = !rateErr && rate > 0 && rate <= 100 && need.length === 0;
+  var ok = !rateErr && rate > 0 && rate <= 100;
   return { ccy:ccy, fx:fx, settle:round2(p.demand / fx.v), rate:rate, rateRaw:rateRaw, rateErr:rateErr,
-           fiat:fiat, a:a, need:need, ok:ok };
+           fiat:fiat, a:{}, need:[], ok:ok };
 }
 
 function normName(s){
@@ -1097,12 +1076,12 @@ function progOf(deal){
 
 function respondUnit(){
   var deal = findDeal(S.did);
-  if(S.st === 'loading') return skel('接受 / 拒绝报价');
-  if(!deal) return failCard('接受 / 拒绝报价', '内容不存在或无权访问',
+  if(S.st === 'loading') return skel('报价确认');
+  if(!deal) return failCard('报价确认', '内容不存在或无权访问',
       '该融资业务编号不存在。融资业务编号一经生成即<b>全局唯一、终身稳定</b>，被拒或失效后保留但作废、不回收、不复用。',
       '<a class="btn primary" href="' + lsHref('#/plaza') + '">返回融资需求广场</a>');
   var p = findProject(deal.pid);
-  if(S.st === 'error') return failCard('接受 / 拒绝报价', '融资业务加载失败',
+  if(S.st === 'error') return failCard('报价确认', '融资业务加载失败',
       '服务端未返回该笔业务的商务条款与剩余有效期。<b>倒计时必须由服务端给出到期时刻、前端只负责渲染</b> —— ' +
       '前端自行按本地时间推算会在跨时区与时钟偏差下与服务端判定不一致。可重试。');
 
@@ -1136,10 +1115,7 @@ function respondUnit(){
         '<div class="x">融资金额 ÷ 汇率 ' + fx.v.toFixed(4) + '</div></div>' +
       '<div><div class="k">汇率快照</div><div class="v mono">' + fx.v.toFixed(4) + '</div>' +
         '<div class="x">生效 ' + withTz(fx.at) + ' · ' + E(fx.src) + ' · ' + fx.ver + '</div></div>' +
-      '<div><div class="k">机构还款账户</div><div class="v">' +
-        (deal.payee ? (deal.payee.addr ? deal.payee.chain + ' · ' +
-          deal.payee.addr.slice(0,10) + '…' + deal.payee.addr.slice(-6) : E(deal.payee.bank || '—')) : '—') +
-        '</div><div class="x">还款时汇入该账户</div></div>' +
+
       '<div><div class="k">报价提交时间</div><div class="v mono">' + withTz(deal.at) + '</div>' +
         '<div class="x">锁定信息的起算点</div></div>' +
       '<div><div class="k">有效期至</div><div class="v mono">' +
@@ -1200,19 +1176,19 @@ function respondUnit(){
         (deal.void === 'timeout' ? '可对同一需求重新报价。' : '可在资产方补足质押覆盖并重新发布后再报价。') +
         '原汇率快照已作废，重新报价会取新的快照。</div></div>';
     }
-    return unitShell('这笔报价', deal.id, head + terms + pool +
+    return unitShell('报价确认', deal.id, head + terms + pool +
       '<div class="cq-sec"><h3>本笔业务已终结</h3>' + end + '</div>',
       '<button class="btn primary" type="button" data-act="cq.unitClose">知道了</button>');
   }
 
   /* ---- S-FD-1：可处理 ---- */
   if(!own)
-    return unitShell('这笔报价', deal.id, head + terms + pool +
-      '<div class="cq-sec"><h3>处理这笔报价</h3>' +
+    return unitShell('报价确认', deal.id, head + terms + pool +
+      '<div class="cq-sec"><h3>报价确认</h3>' +
       countdown(deal, false) +
       (S.role === 'guest'
         ? '<div class="cq-signin"><p>上面这些是公开信息，不登录也看得到。' +
-          '要处理这笔报价，请先登录。</p>' +
+          '要确认这笔报价，请先登录。</p>' +
           '<button class="btn primary" type="button" data-act="cq.signin">立即登录</button></div>'
         : '<p class="hint" style="margin-top:12px">这笔业务的处理只属于该项目的资产方（' +
           E(p.owner) + '）。当前身份是「' + E(ACTORS[S.role].full) + '」。</p>') +
@@ -1389,7 +1365,7 @@ function respondUnit(){
       '融资业务的公开信息也可从 <span class="mono">deal/' + deal.id + '</span> 直达。</p></div></div></aside>';
 
   /* 弹窗内不放操作栏：锁定倒计时并进内容流，底部只留两个动作 */
-  return unitShell('处理这笔报价', deal.id,
+  return unitShell('报价确认', deal.id,
     head + terms + pool +
     '<div class="cq-sec"><h3>锁定信息</h3>' + countdown(deal, true) + '</div>' + body,
     '<button class="btn danger" type="button" data-act="cq.rejectOpen">拒绝报价</button>' +
@@ -1421,7 +1397,7 @@ var JUMPS = [
   { t:'无额度 · 提示',   h:'#/project/FP-20250916-0112?action=quote' },
   { t:'额度过期 · 提示', h:'#/project/FP-20260628-0044?action=quote' },
   { t:'额度够 · 直接报价', h:'#/project/FP-20260705-0018?action=quote' },
-  { t:'接受 / 拒绝',     h:'#/deal/FD-20260908-0061?action=respond_quote' },
+  { t:'报价确认',       h:'#/deal/FD-20260908-0061?action=respond_quote' },
   { t:'剩余不足 24 小时', h:'#/deal/FD-20260904-0057?action=respond_quote' },
   { t:'已终结',          h:'#/deal/FD-20260825-0049?action=respond_quote' }
 ];
@@ -1441,13 +1417,13 @@ function unitJump(){
 /* 页面这一层：只画详情页上下文；承载单元是它上面的弹窗 */
 function pageRespond(){
   var deal = findDeal(S.did);
-  if(S.st === 'loading') return skel('处理这笔报价');
-  if(!deal) return unitBlocked(null, '处理这笔报价', '内容不存在或无权访问',
+  if(S.st === 'loading') return skel('报价确认');
+  if(!deal) return unitBlocked(null, '报价确认', '内容不存在或无权访问',
       '这个融资业务编号不存在。编号一经生成就终身稳定，被拒或失效后保留但作废，不回收也不复用。');
   var p = findProject(deal.pid);
-  if(S.st === 'error') return unitBlocked(p, '处理这笔报价', '信息没能加载出来',
+  if(S.st === 'error') return unitBlocked(p, '报价确认', '信息没能加载出来',
       '没能取到这笔业务的条款和剩余时间，稍后重试。');
-  return unitBackdrop(p, '处理这笔报价') + submitResultCard();
+  return unitBackdrop(p, '报价确认') + submitResultCard();
 }
 
 function submitResultCard(){
@@ -1533,11 +1509,12 @@ var mod = {
   content:function(){
     return (S.page === 'P-LS-06' ? pageRespond() : pageQuote()) + unitJump();
   },
-  modals:{
-    /* —— 承载单元：融资报价（内含 授信提示 → 额度编辑 → 报价表单 三步）—— */
+  /* 两个承载单元走公共层的抽屉通道：遮罩由壳层渲染，右侧划出 */
+  drawers:{
     quoteUnit:quoteUnit,
-    /* —— 承载单元：接受 / 拒绝报价 —— */
-    respondUnit:respondUnit,
+    respondUnit:respondUnit
+  },
+  modals:{
     /* 提交前二次确认：五件事必须讲清，必须显式确认才可提交 */
     qtConfirm:function(){
       var p = findProject(S.pid), c = creditCheck(p.entity, p.demand), f = quoteForm(p);
@@ -1651,34 +1628,34 @@ var mod = {
            顺序反了的话，一个已到期 / 已被他人报价 / 需求已失效的项目，会因为该资产方的
            授信恰好不足而被送进授信表单 —— 机构在一个根本不能报价的需求上先被要求掏额度。 */
         if(!actionOf(availableActions(p, 'fund'), 'quote').enabled || S.role !== 'fund'){
-          S.page = 'P-LS-05'; S.modal = null; return true;
+          S.page = 'P-LS-05'; S.drawer = null; return true;
         }
         S.page = 'P-LS-05';
-        S.modal = { type:'quoteUnit' };   /* 承载单元以弹窗打开在详情页上 */
+        S.drawer = 'quoteUnit';   /* 承载单元以弹窗打开在详情页上 */
         return true;
       }
       if(seg[0] === 'deal'){
         var d = findDeal(seg[1]);
         S.page = 'P-LS-06'; S.did = seg[1]; S.st = 'default';
         if(d){ S.ac.dealId = d.id; S.ac.acctConfirmed = (d.prog === 'account'); }
-        S.modal = (d && qs.action === 'respond_quote') ? { type:'respondUnit' } : null;
+        S.drawer = (d && qs.action === 'respond_quote') ? 'respondUnit' : null;
         return true;
       }
       return false;
     }
   },
-  onGo:function(){ S.modal = null; },
+  onGo:function(){ S.modal = null; S.drawer = null; },
   onAct:function(n, a, v){
     if(a.indexOf('cq.') !== 0) return false;
     switch(a){
       /* 关闭承载单元：回到它下面那层详情页。什么都不留。 */
       case 'cq.unitClose':
-        S.modal = null; S.cr.confirmed = false; S.cr.askedFor = null;
+        S.drawer = null; S.modal = null; S.cr.confirmed = false; S.cr.askedFor = null;
         location.href = lsHref('#/project/' + (S.pid || (findDeal(S.did) || {}).pid || ''));
         return true;
       case 'cq.maskClose':
-        if(n.classList.contains('mask')){
-          S.modal = null; S.cr.confirmed = false; S.cr.askedFor = null;
+        if(n.classList.contains('mask') || n.classList.contains('drawer-scrim')){
+          S.drawer = null; S.modal = null; S.cr.confirmed = false; S.cr.askedFor = null;
           location.href = lsHref('#/project/' + (S.pid || (findDeal(S.did) || {}).pid || ''));
         }
         return true;
@@ -1707,7 +1684,7 @@ var mod = {
          因为额度是机构 × 资产方二元组，换了对手方就是另一条额度的事。 */
       case 'cq.askYes':
         S.cr.confirmed = true; S.cr.askedFor = S.pid;
-        S.modal = { type:'quoteUnit' };   /* 同一个弹窗内换到额度编辑步骤，不开第二层 */
+        S.drawer = 'quoteUnit';   /* 同一个弹窗内换到额度编辑步骤，不开第二层 */
         CF.render(); return true;
 
       case 'cq.crSubmit': {
@@ -1727,7 +1704,7 @@ var mod = {
         S.cr = { amtRaw:null, until:null, memo:'', confirmed:false, askedFor:null };
         toast('success', '额度已' + BRANCH[f1.b].verb,
           '额度 ' + usd(from) + ' → ' + usd(cr.limit) + '，有效期至 ' + cr.until + '。');
-        S.page = 'P-LS-05'; S.modal = { type:'quoteUnit' };   /* 同一个弹窗内回到报价步骤 */
+        S.page = 'P-LS-05'; S.drawer = 'quoteUnit';   /* 同一个弹窗内回到报价步骤 */
         CF.render(); return true;
       }
 
@@ -1744,9 +1721,7 @@ var mod = {
           DEALS.push({ id:id, pid:p2.id, fund:ACTORS.fund.full, fundEntity:ACTORS.fund.entity,
             party:p2.owner, entity:p2.entity, amt:p2.demand, rate:f2.rate, ccy:f2.ccy,
             at:NOW, st:'S-FD-1', prog:'none',
-            fx:{ v:f2.fx.v, at:NOW, src:f2.fx.src, ver:f2.fx.ver },
-            payee:f2.fiat ? { bank:f2.a.bank, acct:f2.a.acct, name:f2.a.name, swift:f2.a.swift, country:f2.a.country }
-                          : { chain:f2.a.chain, addr:f2.a.addr } });
+            fx:{ v:f2.fx.v, at:NOW, src:f2.fx.src, ver:f2.fx.ver } });
           p2.status = 'S-FP-3';
           S.result = { k:'ok', id:id, amt:p2.demand, until:tstr(tmin(NOW) + QUOTE_HOURS * 60) };
           S.did = id; S.ac.dealId = id; S.ac.acctConfirmed = false;
@@ -1771,7 +1746,7 @@ var mod = {
         CF.render(); window.scrollTo(0, 0); return true;
       }
 
-      /* ---- P-LS-06 接受 / 拒绝 ---- */
+      /* ---- P-LS-06 报价确认 ---- */
       case 'cq.acctConfirm': S.ac.acctConfirmed = n.checked; CF.render(); return true;
       case 'cq.termsSeen': S.ac.termsSeen = true; CF.render(); return true;
       case 'cq.copy':

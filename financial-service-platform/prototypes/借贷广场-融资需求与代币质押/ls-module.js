@@ -704,7 +704,7 @@ function availableActions(p, role){
     out.push(c);
   }
 
-  /* --- WS-325 增量：接受 / 拒绝报价。业务已终结时不返回（不可见，不是 ⊘）。
+  /* --- WS-325 增量：报价确认。业务已终结时不返回（不可见，不是 ⊘）。
          需求因覆盖不足失效时报价一并终结，该动作随之消失（D-CR-30 / AC-LS-91）。 --- */
   /* --- WS-326 增量：放款 / 确认到账 / 重传盖章件（AC-LS-103）。
          可用性一律由服务端返回的 available_actions 决定，前端不自行依据状态推断；
@@ -749,7 +749,7 @@ function availableActions(p, role){
     }
   }
   if(p.quote && st === 'S-FP-3' && (own || guest)){
-    out.push({ key:'respond', label:L('Accept / Reject quote','接受 / 拒绝报价'),
+    out.push({ key:'respond', label:L('Confirm quote','报价确认'),
                anchor:'respond_quote', enabled:!guest,
                href:cqHref('#/deal/' + p.quote.deal + '?action=respond_quote'),
                reason: guest ? L('Not signed in. Deal actions are limited to the owning entity; the open quote terms and lock information above stay public.',
@@ -1731,7 +1731,7 @@ function flowBlock(p, acts){
 }
 function stageLabel(f){
   return { publish:g('publishDemand'), quote:L('Submit quote','提交报价'),
-           respond:L('Accept / Reject quote','接受 / 拒绝报价'), disburse:L('Disburse','放款') }[f.act];
+           respond:L('Confirm quote','报价确认'), disburse:L('Disburse','放款') }[f.act];
 }
 /* 环节操作一律走弹窗、不跳离详情页（AC-LS-85）。发布是本模块自己的动作，弹窗内完成；
    报价 / 接受拒绝 / 放款 / 确认到账属下游模块，弹窗是壳，壳里给出口。 */
@@ -2635,7 +2635,7 @@ var STAGE_DLG = {
     note:['A quote locks this demand for 168 hours and no other institution can quote meanwhile. Quoting does not create new committed demand. The quote form, its credit prerequisites and all validation belong to .',
           '报价将该需求锁定 168 小时，期间其他机构不能报价；报价不新增在途占用。报价表单、授信前置与全部校验属。'],
     href:function(p){ return cqHref('#/project/' + p.id + '?action=quote'); } },
-  respond:{ t:['Accept or reject the quote','接受 / 拒绝报价'], owner:'WS-325',
+  respond:{ t:['Confirm the quote','报价确认'], owner:'WS-325',
     need:[['Payee account','收款账户'],['Signed financing contract','盖章融资合同'],['Rejection reason (when rejecting)','拒绝原因（拒绝时）']],
     note:['Accepting moves the deal to "awaiting disbursement" and the project to Financing. Rejecting returns the demand to the Quote stage and other institutions may quote again . The rules belong to .',
           '接受后业务转「待放款」、项目转融资中；拒绝后需求退回融资报价环节，其他机构可继续报价。'],

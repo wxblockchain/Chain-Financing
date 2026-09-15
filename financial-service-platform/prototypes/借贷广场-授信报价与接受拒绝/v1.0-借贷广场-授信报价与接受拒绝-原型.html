@@ -188,15 +188,21 @@
 .cq-ctx-id span{display:block;font-size:12.5px;color:var(--faint);margin-top:4px}
 .cq-ctx-note{font-size:12px;color:var(--faint);margin:var(--sp-5) auto 0;max-width:46ch;line-height:1.7}
 
-/* 承载单元弹窗：比公共 .modal 宽，内容多但不放操作栏。
-   用修饰类扩展，不改 base.css 的 .modal 本体。 */
-.modal.cq-unit{max-width:880px;width:calc(100vw - 48px);max-height:calc(100vh - 132px);
-  margin-bottom:68px;display:flex;flex-direction:column}
-.modal.cq-unit .modal-h b{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.modal.cq-unit .modal-h .sb{font-size:12px;font-weight:500;color:var(--faint)}
-.modal.cq-unit .modal-b{flex:1;min-height:0;overflow:auto;font-size:14px;line-height:1.55;
-  padding-bottom:var(--sp-6)}
-.modal.cq-unit.dialog{max-width:560px}
+/* 承载单元抽屉：从右侧划出。公共 .drawer 是 440px，这里用修饰类放大——
+   440 装不下条款网格与三步流程，整屏又等于变回一个页面。760px 在 1440 下约占一半：
+   网格能排两到三列，身后的详情页还留得下三分之一可见。窄屏收到 92vw。 */
+.drawer.cq-unit{width:min(760px,92vw)}
+.drawer.cq-unit.dialog{width:min(520px,92vw)}
+/* 提示抽屉窄，19px 的三个数在 520 里排不下会被右边裁掉——这一档降到 17px 并收紧间距 */
+.drawer.cq-unit.dialog .cq-ask-nums{gap:var(--sp-2);padding:12px 13px}
+.drawer.cq-unit.dialog .cq-ask-nums .v{font-size:17px}
+.drawer.cq-unit.dialog .cq-ask-nums .cy{display:none}
+.drawer.cq-unit .drawer-h b{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.drawer.cq-unit .drawer-h .sb{font-size:12px;font-weight:500;color:var(--faint)}
+.drawer.cq-unit .drawer-b{font-size:14px;line-height:1.55;padding-bottom:var(--sp-6)}
+/* 抽屉底部动作条：公共层没有 drawer 的 footer，这里新起一个类，不动公共组件 */
+.cq-unit-f{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;
+  padding:12px 16px;border-top:1px solid var(--border);background:var(--card-2)}
 
 /* 单元内的分节：替代原来的卡片堆叠，弹窗里不再套卡片 */
 .cq-sec+.cq-sec{margin-top:var(--sp-6);padding-top:var(--sp-6);border-top:1px solid var(--border)}
@@ -245,10 +251,12 @@
 .cq-signin p{margin:0 0 var(--sp-4);font-size:12.5px;color:var(--muted);line-height:1.65}
 
 /* 评审用的承载单元切换器（只在原型里，不是产品导航） */
-.cq-jump{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:240;
+/* 承载单元是右侧抽屉，评审条靠左放，别和抽屉底部的动作按钮抢同一块地方。
+   宽度上限压在抽屉左边界以内；窄屏放不下时它自己横向滚。 */
+.cq-jump{position:fixed;left:16px;bottom:16px;z-index:240;flex-wrap:nowrap;overflow-x:auto;
+  max-width:calc(100vw - min(760px,92vw) - 32px);
   display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--text);
   border-radius:var(--radius-pill);box-shadow:var(--shadow-lg)}
-.cq-jump{flex-wrap:nowrap;max-width:calc(100vw - 24px);overflow-x:auto}
 .cq-jump s{text-decoration:none;font-size:var(--fs-10);color:#9AA7C4;letter-spacing:.06em;
   padding:0 3px;white-space:nowrap;flex:none}
 .cq-jump a,.cq-jump button{flex:none}
@@ -261,7 +269,6 @@
 @media print{ .cq-jump{display:none} }
 
 @media (max-width:760px){
-  .modal.cq-unit{width:calc(100vw - 16px);max-height:calc(100vh - 140px)}
   .cq-ask{flex-direction:column;gap:var(--sp-4)}
   .cq-ask-nums .op{display:none}
 }

@@ -191,7 +191,7 @@
   var pages={
    'P-LS-04':[['Credit assessment','授信核定'],'/project?action=quote'],
    'P-LS-05':[['Institution quote','机构报价'],'/project?action=quote'],
-   'P-LS-06':[['Accept or decline','接受 / 拒绝报价'],'/deal?action=respond_quote']
+   'P-LS-06':[['Confirm quote','报价确认'],'/deal?action=respond_quote']
   };
   for(var id in pages){
    CF.PAGES[id]={end:'asset',layout:'app',name:pages[id][0]};
@@ -199,7 +199,7 @@
   }
   Object.assign(CF.PAGES['P-LS-04'],{crumb:['Credit assessment','授信核定']});
   Object.assign(CF.PAGES['P-LS-05'],{crumb:['Institution quote','机构报价']});
-  Object.assign(CF.PAGES['P-LS-06'],{crumb:['Accept or decline','接受 / 拒绝报价']});
+  Object.assign(CF.PAGES['P-LS-06'],{crumb:['Confirm quote','报价确认']});
  })();
 
  /* WS-326 借贷广场 · 放款与融资确认（同一块面客画布，与 WS-324 / WS-325 共用 portal 顶栏骨架）。
