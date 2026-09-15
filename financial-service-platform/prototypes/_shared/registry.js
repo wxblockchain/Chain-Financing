@@ -230,37 +230,41 @@
   Object.assign(CF.PAGES['P-LS-08'],{crumb:['Confirm receipt','确认到账']});
  })();
 
- /* WS-327 借贷广场 · 还款计划与还款确认（同一块面客画布，与 WS-324 / WS-325 / WS-326 共用 portal 顶栏骨架）。
+ /* WS-327 借贷广场 · 还款计划与还款确认（同一块面客画布，与 WS-324 / 325 / 326 共用 portal 顶栏骨架）。
     (1) 页面 ID 直接取 PRD 给的 P-LS-09 / P-LS-10，不自造号；已占用的号段是
         P-LS-01/02/03（WS-324）、P-LS-04/05/06（WS-325）、P-LS-07/08（WS-326）、
         P-LS-90（WS-324 原型侧内部页「我的融资项目」）。
-    (2) **P-LS-91「还款计划」是原型侧内部页，PRD 未定义此页**：PRD 分册 6.6.1 把还款计划表
-        定义为一张**跨页面共用的表**（报价接受页 / 还款页 / 业务详情 / 控制台），没有给它页号。
-        但 F-LS-60 / 62 / 63 / 64 四个功能点都落在这张表上，其中 F-LS-63「定稿通知的新旧对比」
-        本身就要求两版同屏，因此原型侧给它一个承载页。**号段取 90 段避让 PRD 连号段位**，
-        与 P-LS-90 同一处理；不要据此把它当成 PRD 已定义的页面，也不要拿它去和 PRD 对账。
-    (3) 三页都不进顶栏主导航：还款录入与还款确认是从业务深链带出来的处理页，
-        还款计划由前两者与 P-LS-02 带出，按 4.3「流程页与落地页不一定进菜单」只登记 crumb。
-    (4) ENTRY 用分册 6.8.1 的新增锚点：deal/{id}?action=repay 与 schedule/{id}?action=repay
-        **并存且落到同一页面**（D-RP-60），区别只在默认选中哪个期次；
-        **不新增 repayment/{id} 这一层**（D-RP-59）——还款记录没有需要被深链直达的独立页面，
-        它永远在期次里呈现。deal/{id}?action=schedule 是原型侧为 P-LS-91 自用的锚点，
-        **不是 PRD 契约的一部分**，不要把它当成新增的深链约定往下游传。 */
+    (2) **V3.0 起 P-LS-09 / P-LS-10 的语义是「承载单元」而不是页面**（D-RP-71）：
+        它们是融资项目详情页操作区第③段「还款流程」内的**右侧抽屉 760px**，不跳离详情页、
+        不可独立寻址。编号保留不回收，本册对它们的字段、校验、文案与验收原样成立，只是换了容器。
+        原型侧仍登记为页，是因为公共壳层按 page 组织状态切换器；三个页 ID 渲染的是**同一张详情页**，
+        区别只在 syncScene() 给 S.drawer 配了哪个抽屉。
+    (3) **P-LS-91 是原型侧内部页号，PRD 未定义此页**：PRD 4.5 把「还款计划查看」列为第三个承载单元，
+        并明写「原型侧的 P-LS-91 即本承载单元，该编号是原型内部页号、不进 PRD 页面清单」。
+        号段取 90 段避让 PRD 连号段位，与 P-LS-90 同一处理。**不要拿它去和 PRD 的页面清单对账。**
+    (4) 三页都不进顶栏主导航：它们是从融资业务深链带出来的处理页，
+        按 4.3「流程页与落地页不一定进菜单」只登记 crumb。
+    (5) ENTRY 用分册 6.8.1 的锚点。锚点语义一律是「**落详情页 + 定位第③段 + 打开对应抽屉
+        （并选中对应期次）**」，不是落到一个独立页面（D-RP-71）。
+        deal/{id}?action=repay 与 schedule/{id}?action=repay **并存且打开同一个抽屉**（D-RP-60），
+        区别只在默认选中哪个期次；**不新增 repayment/{id} 这一层**（D-RP-59）——
+        还款记录没有需要被深链直达的独立页面，它永远在期次里呈现。
+        deal/{id}?action=view_schedule 是 V2.0 新增的只读锚点，双方 + 未登录访客可用。 */
  CF.MODULES['lending-repayment']={dir:'借贷广场-还款计划与还款确认',
    file:'v1.0-借贷广场-还款计划与还款确认-原型.html',
    name:['Repayment schedule and confirmation','借贷广场 · 还款计划与还款确认']};
  (function(){
   var pages={
-   'P-LS-09':[['Record repayment','还款录入'],'/deal?action=repay'],
-   'P-LS-10':[['Confirm repayment','还款确认'],'/schedule?action=confirm_repayment'],
-   'P-LS-91':[['Repayment schedule','还款计划'],'/deal?action=schedule']
+   'P-LS-09':[['Record a repayment','还款录入'],'/deal?action=repay'],
+   'P-LS-10':[['Confirm repayment received','还款确认'],'/schedule?action=confirm_repayment'],
+   'P-LS-91':[['Repayment schedule','还款计划'],'/deal?action=view_schedule']
   };
   for(var id in pages){
    CF.PAGES[id]={end:'asset',layout:'app',name:pages[id][0]};
    CF.OWNER[id]='lending-repayment'; CF.ENTRY[id]='#'+pages[id][1];
   }
-  Object.assign(CF.PAGES['P-LS-09'],{crumb:['Record repayment','还款录入']});
-  Object.assign(CF.PAGES['P-LS-10'],{crumb:['Confirm repayment','还款确认']});
+  Object.assign(CF.PAGES['P-LS-09'],{crumb:['Record a repayment','还款录入']});
+  Object.assign(CF.PAGES['P-LS-10'],{crumb:['Confirm repayment received','还款确认']});
   Object.assign(CF.PAGES['P-LS-91'],{crumb:['Repayment schedule','还款计划']});
  })();
  CF.NAV.asset=['P-F51','P-LS-01','P-LS-90'];
