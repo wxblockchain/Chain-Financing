@@ -169,10 +169,13 @@
    CF.PAGES[id]={end:'asset',layout:'app',name:pages[id][0]};
    CF.OWNER[id]='lending-marketplace'; CF.ENTRY[id]='#'+pages[id][1];
   }
-  /* 只有广场与我的融资项目进顶栏主导航；详情与建池是由列表 / 流程带出来的页面，
-     按 4.3「流程页与落地页不一定进菜单」不占导航位，只登记 crumb。 */
+  /* 只有广场进顶栏主导航；详情与建池是由列表 / 流程带出来的页面，
+     按 4.3「流程页与落地页不一定进菜单」不占导航位，只登记 crumb。
+     **P-LS-90 自 WS-328 入库起也不再占导航位**（见下方 WS-328 段第 (3) 条）：
+     它当初是 M-5 控制台未立项时的最小续做入口，M-5 已落地，入口由控制台承接。
+     页面与编号保留、ENTRY 保留、#/my-projects 仍可直达，只是不再与控制台并排出现。 */
   Object.assign(CF.PAGES['P-LS-01'],{nav:'P-LS-01',navKey:'navPlaza',ico:'\u25a4'});
-  Object.assign(CF.PAGES['P-LS-90'],{nav:'P-LS-90',navKey:'navMyProjects',ico:'\u25a6'});
+  Object.assign(CF.PAGES['P-LS-90'],{crumb:['My financing projects','我的融资项目']});
   Object.assign(CF.PAGES['P-LS-02'],{crumb:['Request details','融资需求详情']});
   Object.assign(CF.PAGES['P-LS-03'],{crumb:['Create financing project','创建融资项目']});
  })();
@@ -267,6 +270,28 @@
   Object.assign(CF.PAGES['P-LS-10'],{crumb:['Confirm repayment received','还款确认']});
   Object.assign(CF.PAGES['P-LS-91'],{crumb:['Repayment schedule','还款计划']});
  })();
- CF.NAV.asset=['P-F51','P-LS-01','P-LS-90'];
+
+ /* WS-328 我的控制台（只读）。四点说明：
+    (1) 端别 end:'asset'——与 WS-311 / WS-324～327 同一块面客画布，继承 portal 顶栏骨架。
+    (2) 页面 ID 取 PRD 6.1 给的 P-MC-01，**整个模块只有这一页**：统计区、待办带与
+        五个（资金方四个）tab 都是页内切换，不各占页面 ID，也不做第六个 tab。
+        待办带 C-MC-02 与快捷按钮组 C-MC-05 是组件，不是页。
+    (3) **进顶栏主导航，并吸收 P-LS-90「我的融资项目」的入口**：控制台是登录后的个人
+        数据聚合页，两个角色都从菜单进。P-LS-90 当初的定位就是"M-5 控制台立项前，
+        AC-LS-54 草稿可续做所必需的最小入口"，M-5 就是本模块——**入口在此合一，
+        不并存两个**：控制台「融资项目」tab 已覆盖本方项目台账，草稿行的
+        「发布融资需求」即 AC-LS-54 的续做入口（深链 project/{id}?action=publish）。
+        P-LS-90 的页面、编号与 ENTRY 全部保留、不回收，WS-324 原型内 #/my-projects
+        仍可直达，只是不再占导航位。
+    (4) 本模块零业务写操作：全部动作按钮都是跳广场的深链，锚点由 WS-324～327 登记，
+        控制台只消费、不新增任何 action 取值（X-MC-20）。深链语义一律是
+        「落详情页 + 打开右侧抽屉 760px」，控制台不深链到任何提示类 560px 弹窗（D-MC-171）。 */
+ CF.MODULES['my-console']={dir:'我的控制台',file:'v1.0-我的控制台-原型.html',
+   name:['My Console','我的控制台']};
+ CF.PAGES['P-MC-01']={end:'asset',layout:'app',nav:'P-MC-01',navKey:'navMyConsole',ico:'\u25a5',
+   crumb:['My Console','我的控制台'],name:['My Console','我的控制台']};
+ CF.OWNER['P-MC-01']='my-console';
+ CF.ENTRY['P-MC-01']='#/console';
+ CF.NAV.asset=['P-F51','P-LS-01','P-MC-01'];
  CF.MSG_PAGE={admin:'P-O20'};
 })(window.CF=window.CF||{});

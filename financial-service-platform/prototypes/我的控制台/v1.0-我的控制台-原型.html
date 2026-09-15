@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en" data-end="asset">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financial Service Platform · My Console</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>/* Hallmark · pre-emit critique: P5 H5 E4 S4 R5 V4
+   只放本模块专有的组合。token 与公共组件一律来自 _shared，此处不重定义、不覆盖。
+   继承端别：面客端 asset　继承 shell：portal（顶栏导航 + subnav，无侧栏）
+   继承母版：4.3 顶栏母版（金融服务端登录）
+   继承模块：WS-324 v1.3 的面客档位版式与术语；WS-326 v2.0 的 .btn.blocked / 时限条 / 哈希块
+             （同名同值，保证四个模块里同一个东西长同一个样）
+
+   本页是聚合页而不是流程页，所以版式只有三段：统计区 → 待办带 → tab 容器。
+   页面上没有任何业务提交控件——每一个按钮要么跳广场，要么切换视图。
+   ========================================================================== */
+
+/* ============================================================
+   第一段：面客档位版式（与 WS-324 / 325 / 326 / 327 共用的那批模块作用域类，类名一字不改）
+   ============================================================ */
+.portal-wrap{font-size:14.5px;line-height:1.55}
+.portal-wrap table.tbl{font-size:13px}
+.portal-wrap .card-head span{font-size:12.5px}
+.card-head b{font-size:15px}
+.btn.blocked{background:var(--card-2);border-style:dashed;color:var(--faint);cursor:not-allowed}
+.btn.blocked:hover{background:var(--card-2)}
+.mc-why{display:block;font-size:10.5px;color:var(--faint);line-height:1.5;margin-top:3px;
+  max-width:220px;white-space:normal;text-align:right}
+
+/* ---- 页头：标题 + 身份与刷新口径（右侧一列，1280 下换行到标题下方）---- */
+.mc-head{display:flex;align-items:flex-start;gap:var(--sp-6);margin:2px 0 var(--sp-5);flex-wrap:wrap}
+.mc-head .hb{flex:1;min-width:320px}
+.mc-head .page-title{font-size:clamp(23px,2vw,30px);font-weight:740;letter-spacing:-.025em;line-height:1.14}
+.mc-head .page-desc{margin-top:6px;max-width:720px;font-size:13px}
+.mc-head .hm{flex:none;max-width:300px;display:flex;flex-direction:column;align-items:flex-end;gap:5px;
+  text-align:right;padding-top:5px}
+.mc-head .hm .tiny{line-height:1.55}
+
+/* ============================================================
+   第二段：统计区。①与②是包含关系，所以②是①卡片里的嵌套块，
+   不是并排的第二张卡——并排会被读成两个同级指标，然后拿去互相对账。
+   ============================================================ */
+.mc-stats{display:grid;grid-template-columns:minmax(300px,1.5fr) repeat(3,minmax(190px,1fr));
+  gap:var(--sp-3);margin-bottom:var(--sp-5)}
+.mc-stats .stat{padding:15px 17px;display:flex;flex-direction:column;min-width:0}
+.mc-stats .stat .lbl{font-size:var(--fs-11);font-weight:640;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:7px}
+.mc-stats .stat .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;
+  letter-spacing:-.03em;line-height:1.1}
+.mc-stats .stat .val .u{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--faint)}
+.mc-stats .stat .amt{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;
+  color:var(--muted);margin-top:4px}
+.mc-stats .stat .x{font-size:10.5px;color:var(--faint);line-height:1.55;margin-top:auto;padding-top:9px}
+.mc-stat-nest .nest{margin-top:12px;border-top:1px dashed var(--border);padding-top:10px;
+  padding-left:11px;border-left:2px solid var(--accent-border)}
+.mc-stat-nest .nest .nk{font-size:var(--fs-11);color:var(--muted);font-weight:620}
+.mc-stat-nest .nest .nv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:15px;
+  font-weight:660;margin-top:3px}
+.mc-stat-nest .nest .nv .u{font-family:var(--sans);font-size:11.5px;font-weight:600;color:var(--faint)}
+.mc-stat-nest .nest .nx{font-size:10.5px;color:var(--faint);line-height:1.55;margin-top:5px}
+.mc-stat-nest .nest .nx b{color:var(--gray-fg);font-weight:660}
+.mc-stat-avail{border-color:var(--accent-border);background:var(--accent-soft)}
+.mc-stat-avail .val{color:var(--accent-strong)}
+.mc-stat-err{border-style:dashed}
+.mc-stat-err .val{font-family:var(--sans);font-size:14px;font-weight:620;color:var(--muted)}
+
+/* ============================================================
+   第三段：待办带。不是第六个 tab、不是浮层、不是红点——
+   它的价值在于"进页面就看见"，所以留在正文里、占一整条。
+   ============================================================ */
+.mc-band{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);
+  box-shadow:var(--shadow);margin-bottom:var(--sp-5);overflow:hidden}
+.mc-band .bh{display:flex;align-items:center;gap:10px;padding:12px var(--card-pad);
+  border-bottom:1px solid var(--border);background:var(--card-2);flex-wrap:wrap}
+.mc-band .bh b{font-size:14px;font-weight:680}
+.mc-band .bh .n{background:var(--accent);color:#fff;border-radius:var(--radius-pill);min-width:22px;
+  height:22px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:var(--fs-11);font-weight:700;font-variant-numeric:tabular-nums}
+.mc-explain{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:600;
+  border-bottom:1px dashed var(--border-strong);padding-bottom:1px}
+.mc-explain:hover{color:var(--accent);border-bottom-color:var(--accent-border)}
+.mc-band .bx{padding:10px var(--card-pad);background:var(--accent-soft);
+  border-bottom:1px solid var(--accent-border);font-size:11.5px;color:var(--accent-strong);line-height:1.65}
+.mc-band .bb{padding:var(--sp-3) var(--card-pad) var(--card-pad)}
+.mc-band .none{padding:14px 2px;color:var(--faint);font-size:12.5px}
+.mc-band .grp+.grp{margin-top:var(--sp-4)}
+.mc-band .gh{display:flex;align-items:center;gap:8px;font-size:var(--fs-10);font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin:0 0 8px}
+.mc-band .gh .cnt{color:var(--muted);background:var(--gray-bg);border:1px solid var(--gray-border);
+  border-radius:var(--radius-pill);padding:0 7px;letter-spacing:0}
+.mc-todo{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elev);
+  padding:11px 13px;margin-bottom:8px}
+.mc-todo:last-child{margin-bottom:0}
+.mc-todo.soon{border-color:var(--warn-border);background:var(--warn-bg)}
+.mc-todo.over{border-color:var(--border-strong);background:var(--gray-bg)}
+.mc-todo>header{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px}
+.mc-todo>header .tt{font-size:13.5px;font-weight:680}
+.mc-todo>header .cnt{margin-left:auto;font-size:var(--fs-11);color:var(--muted)}
+.mc-todo>header .btn{margin-left:6px}
+.mc-todo .ti{display:flex;align-items:flex-start;gap:var(--sp-4);padding:6px 0;min-width:0}
+.mc-todo .ti.multi{border-top:1px dashed var(--border);padding-top:9px}
+.mc-todo .ti.multi:first-of-type{border-top:0}
+.mc-todo .ti .ix{flex:none;width:19px;height:19px;border-radius:50%;border:1px solid var(--border-strong);
+  display:grid;place-items:center;font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);margin-top:2px}
+.mc-todo .tb{flex:1;min-width:0}
+.mc-todo .tb .l{font-size:12.5px;color:var(--muted);line-height:1.6}
+.mc-todo .tb .l:first-child{color:var(--text);font-weight:620}
+.mc-todo .tb .f{font-size:11px;color:var(--faint);line-height:1.6;margin-top:4px}
+.mc-todo .ta{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+
+/* 客服邮箱指引：超期两条待办必须带可复制邮箱与编号 */
+.mc-mail{border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);
+  padding:10px 12px;margin-top:9px}
+.mc-mail .h{font-size:12px;font-weight:680;color:var(--accent-strong)}
+.mc-mail .ad{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:7px;
+  border:1px dashed var(--accent-border);background:var(--bg-elev);border-radius:var(--radius-xs);padding:6px 9px}
+.mc-mail .ad .em{font-size:12px;font-weight:640}
+.mc-mail p{margin:7px 0 0;font-size:11px;color:var(--muted);line-height:1.6}
+.mc-mail p b{color:var(--text);font-weight:640}
+
+/* ============================================================
+   第四段：tab 容器 —— 筛选条 / 排序 / 过滤条带 → 列表 → 分页
+   ============================================================ */
+.mc-tabsec{margin-top:2px}
+.mc-tabs{margin-bottom:0;border-bottom:1px solid var(--border)}
+.mc-tabs .tab{font-size:13.5px;padding:10px 15px}
+.mc-tabs .tab .cnt{background:var(--gray-bg);border:1px solid var(--gray-border);border-radius:var(--radius-pill);
+  padding:0 6px;font-size:var(--fs-10)}
+.mc-tabs .tab[aria-selected="true"] .cnt{background:var(--accent-soft);border-color:var(--accent-border)}
+.mc-tabbody{margin-top:var(--sp-4)}
+.mc-strip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:var(--sp-3);
+  border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);
+  padding:8px 12px;font-size:12px;color:var(--accent-strong)}
+.mc-strip .ico{font-family:var(--mono);font-size:10px}
+.mc-strip .btn{margin-left:auto}
+.mc-wrap{border:0;box-shadow:none;border-radius:0}
+.mc-wrap table.tbl thead th{background:var(--card-2)}
+.mc-cw{width:34px}
+.mc-caret{width:24px;height:24px;border-radius:var(--radius-xs);color:var(--faint);display:grid;place-items:center;
+  font-size:10px}
+.mc-caret:hover{background:var(--card-hover);color:var(--accent)}
+.mc-caret[aria-expanded="true"]{color:var(--accent);background:var(--accent-soft)}
+tr.is-open>td{background:var(--card-2)}
+.mc-sort{display:inline-flex;align-items:center;gap:5px;font:inherit;color:inherit;letter-spacing:inherit;
+  text-transform:inherit}
+.mc-sort .ar{font-size:9px;color:var(--border-strong)}
+.mc-sort[aria-pressed="true"]{color:var(--accent)}
+.mc-sort[aria-pressed="true"] .ar{color:var(--accent)}
+.mc-sort:hover{color:var(--accent)}
+th.num .mc-sort{justify-content:flex-end;width:100%}
+.mc-total{font-weight:680}
+.mc-soon{color:var(--warn);font-weight:660}
+.mc-over{color:var(--gray-fg);font-weight:660}
+.mc-size{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
+.mc-size .inp{height:var(--ctrl-h-sm);width:auto;font-size:11.5px;padding:0 6px}
+
+/* ---- 展开明细：同一行的第二层，不是弹层 ---- */
+tr.mc-detail>td{background:var(--card-2);padding:0 12px 16px;border-bottom:1px solid var(--border)}
+.mc-detail .dl{margin-top:6px}
+.mc-sub{border-top:1px dashed var(--border);padding-top:11px;margin-top:11px}
+.mc-sub:first-child{border-top:0;margin-top:4px}
+.mc-sub .sh{font-size:var(--fs-10);font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:6px}
+.mc-sub .tbl{background:var(--bg-elev)}
+
+/* ---- 项目行内的五个数：与广场详情页统计区同一组、标签一字不改 ---- */
+.mc-five{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:var(--sp-4) var(--sp-5);
+  background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:13px 15px;margin:10px 0 2px}
+.mc-five .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.mc-five .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:14px;font-weight:660;margin-top:4px}
+.mc-five .v.txt{font-family:var(--sans)}
+.mc-five .x{font-size:10px;color:var(--faint);margin-top:3px;line-height:1.5}
+
+/* ---- 覆盖不足提醒：中性事实描述。没有倒计时、没有进度条、没有"还来得及"。 ---- */
+.mc-alert{border:1px solid var(--warn-border);background:var(--warn-bg);border-radius:var(--radius-sm);
+  padding:12px 14px;margin:10px 0 2px}
+.mc-alert .h{font-size:12.5px;font-weight:680;color:#8A5D10}
+.mc-alert p{margin:6px 0 0;font-size:12px;line-height:1.65;color:#7a5410}
+.mc-alert p b{color:var(--text);font-weight:680}
+.mc-alert p.x{font-size:11px;color:#8A5D10}
+.mc-alert .a{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+/* ---- 可提取代币提醒：不设时限、不做倒计时 ---- */
+.mc-remind{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;border:1px solid var(--accent-border);
+  background:var(--accent-soft);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:var(--sp-3)}
+.mc-remind .rb{flex:1;min-width:260px}
+.mc-remind .rb b{font-size:13px;font-weight:680;color:var(--accent-strong)}
+.mc-remind .rb p{margin:5px 0 0;font-size:11.5px;color:var(--muted);line-height:1.6}
+.mc-remind .ra{flex:none}
+
+/* ---- 时限条与哈希块：与 WS-326 同名同值，超期走中性灰、不是告警色 ---- */
+.mc-cd{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elev);
+  padding:11px 13px;margin:10px 0 2px}
+.mc-cd.soon{border-color:var(--warn-border);background:var(--warn-bg)}
+.mc-cd.over{border-color:var(--border-strong);background:var(--gray-bg)}
+.mc-cd .by{font-size:11.5px;color:var(--muted);line-height:1.6}
+.mc-cd .big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:4px}
+.mc-cd .big .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:21px;font-weight:700;
+  letter-spacing:-.03em;line-height:1.06}
+.mc-cd.soon .big .v{color:var(--warn)}
+.mc-cd.over .big .v{color:var(--gray-fg)}
+.mc-hash{border:1px solid var(--hash-border);background:var(--hash-bg);border-radius:var(--radius-sm);
+  padding:10px 12px;margin-top:8px}
+.mc-hash .hv{font-size:11.5px;color:var(--hash-text);overflow-wrap:anywhere;line-height:1.6}
+.mc-hash .lk{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:8px;padding-top:8px;
+  border-top:1px solid var(--hash-border)}
+.mc-hash .lk .nv{font-size:11px;color:var(--warn);font-weight:620}
+
+/* ---- 会话失效后的游客态 ---- */
+.mc-guest{max-width:620px;margin:40px auto}
+.mc-guest .shell{padding:34px 26px}
+.mc-guest .page-title{font-size:22px}
+
+/* ---- 宽度：1280 / 1440 / 1920 三档都不横向滚动；
+        1280 下统计区收成两列，操作列由 .tbl.wide 的吸附列保证可达。 ---- */
+@media (max-width:1400px){
+  .mc-stats{grid-template-columns:minmax(280px,1.4fr) repeat(3,minmax(170px,1fr))}
+}
+@media (max-width:1180px){
+  .mc-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mc-head .hm{max-width:none;align-items:flex-start;text-align:left}
+}
+@media (max-width:760px){
+  .mc-stats{grid-template-columns:minmax(0,1fr)}
+  .mc-todo .ti{flex-direction:column;gap:8px}
+  .mc-todo .ta{align-items:flex-start}
+  .mc-why{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){ .mc-caret{transition:none} }
+</style>
+</head>
+<body>
+<!-- 面客顶栏版式（继承 4.3）。公共运行时要求的挂载点一个不少。
+     语言默认 EN（面客端默认英文），中文由顶栏语言开关切换。 -->
+<div class="portal" id="app" hidden>
+ <header class="portal-head">
+  <div class="brand"><div class="brand-mark">FS</div><div>
+   <div class="brand-name" data-brand>Financial Services</div>
+   <div class="brand-sub" id="brandSub"></div></div></div>
+  <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+  <div class="portal-tools" id="topRight"></div>
+ </header>
+ <div class="portal-sub"><div class="portal-sub-in" id="crumb"></div></div>
+ <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+</div>
+<div class="focus" id="focus"></div>
+<div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script src="./mc-module.js"></script>
+</body>
+</html>
