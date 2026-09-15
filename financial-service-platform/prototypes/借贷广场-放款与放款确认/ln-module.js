@@ -78,6 +78,12 @@ var PLEDGE_RATE   = 0.8;
 var NOW  = '2026-09-15 15:20';
 var TZ   = 'UTC+8';
 var MAIL = '{platform-support-mailbox}';   /* Q-LN-01 待业务方提供，占位常量 */
+/* 链：本期**只有一条**，不是"默认一条"（D-LN-60，口径主体在主册 5.6）。
+   界面上一律只展示、不给任何选择控件；USDT / USDC 本期即 ERC-20。
+   区块浏览器取 ETH 固定前缀，不再由链字段推导（D-LN-63）。 */
+var CHAIN = 'ETH';
+var TOKEN_STD = 'ERC-20';
+var EXPLORER_TX = 'https://etherscan.io/tx/';
 
 /* ---- 演示主体：EN / ZH 成对，避免英文视图里漏中文 ---- */
 var CO = {
@@ -117,7 +123,10 @@ function baseDeal(){
     payeeFiat:{ name:'Shengyuan Technology Co., Ltd.', acct:'CNY62-4410-8827-0031',
                 bank:'China Merchants Bank, Shanghai Branch', swift:'CMBCCNBS021',
                 country:['Chinese mainland','中国大陆'] },
-    payeeCoin:{ chain:'Ethereum', addr:'0x9C41Ab27Ee5d0B3f58Aa41E9d0c7B2Aa45E1c704' },
+    payeeCoin:{ addr:'0x9C41Ab27Ee5d0B3f58Aa41E9d0c7B2Aa45E1c704' },
+    /* 资金方登录时绑定的钱包地址（WS-315 D-F43：绑定后不可改）。
+       它是**还款收款地址**，与上面那个"放款打给资产方"的地址是两回事。 */
+    fundWallet:{ addr:'0x3A77Bc19Fd6e04C82b5D1147Aa90Ee37C1b6D852' },
     seals:[
       { n:['EastChina-financing-contract-sealed.pdf','华东电子元件-融资合同-双方盖章件.pdf'],
         s:'2.4 MB', at:'2026-09-10 09:10', by:'opAsset' },
@@ -511,7 +520,7 @@ function paper(d){
      [L('Borrower (asset owner)','借款方（资产方）'), co('asset')],
      [L('Financing amount','融资金额'), 'USD 500,000.00'],
      [L('Annual rate','年化利率'), '7.20%'],
-     [L('Settlement currency','结算币种'), isFiat(d) ? 'USD' : 'USDT (Ethereum)'],
+     [L('Settlement currency','结算币种'), isFiat(d) ? 'USD' : 'USDT (' + TOKEN_STD + ')'],
      [L('Term','融资期限'), L('150 days','150 天')]
     ].map(function(r){ return '<div class="row"><span>' + E(r[0]) + '</span><b>' + E(r[1]) + '</b></div>'; }).join('') +
     '<p>' + L('Clause 7 — Disbursement: the lender shall remit the financing amount to the account designated by the borrower after this contract is signed and sealed by both parties. Intermediary-bank charges and receiving-bank fees arising from the cross-border remittance are borne by the borrower.',
@@ -559,6 +568,38 @@ function verifyPane(d){
         '多一个"通过"会像一个平台侧的审核态，而平台并不审核；而且"点了通过但没放款"会变成第四种中间态。您的意思表示由您实际做的那个动作表达——直接放款即视为您接受了这份合同。')) + '</p>';
 }
 
+/* 还款收款账户（法币）的五项。⚠️ 比资产方侧的收款账户多一个**中转行**：
+   资产方是收放款、机构是收还款，链路与经手行不同，两侧规格**有意不同**，
+   不得为了"两侧视觉对齐"把中转行删掉（D-LN-64 / AC-LN-26 的反向断言）。 */
+var REPAY_FIELDS = [
+  ['rName',  ['Account name','户名'],        ['Legal name of the account holder','账户的法定名称']],
+  ['rAcct',  ['Account number','账号'],      ['IBAN or account number','IBAN 或银行账号']],
+  ['rSwift', ['SWIFT / BIC','SWIFT / BIC'],  ['8 or 11 characters','8 位或 11 位']],
+  ['rBank',  ['Bank','开户行'],              ['Bank name and branch','开户行名称与分行']],
+  ['rCorr',  ['Correspondent bank','中转行'],['Required — a cross-border repayment will not land without it',
+                                              '必填——跨境收款没有中转行到不了账']]
+];
+function repayFiatFields(){
+  return REPAY_FIELDS.map(function(f){
+    return field(L(f[1][0], f[1][1]), L('required','必填'),
+      '<input class="inp" type="text" value="' + E(S.f[f[0]] || '') + '" data-act="ln.f" data-v="' + f[0] +
+      '" placeholder="' + E(L(f[2][0], f[2][1])) + '">',
+      (S.f[f[0]] || '').trim() ? '' : L(f[2][0], f[2][1]));
+  }).join('') +
+  '<p class="hint">' +
+  L('All five are required as a group — the correspondent bank included. This set is deliberately fuller than the one the asset owner gives for receiving the disbursement: they are receiving a payout, you are being repaid, and the two routes go through different banks.',
+    '五项<b>整组必填</b>，中转行也在内。这套比资产方给的收款账户更全是<b>有意的</b>：他们收的是放款、您收的是还款，两条链路经手的银行不同。') + '</p>';
+}
+function repayOk(d){
+  if(!isFiat(d)) return true;                    /* 数币取绑定钱包，没有录入项 */
+  return REPAY_FIELDS.every(function(f){ return (S.f[f[0]] || '').trim().length > 0; });
+}
+function repayMissing(d){
+  if(!isFiat(d)) return [];
+  return REPAY_FIELDS.filter(function(f){ return !(S.f[f[0]] || '').trim(); })
+    .map(function(f){ return L(f[1][0], f[1][1]); });
+}
+
 function formState(d){
   var f = S.f, fiat = isFiat(d);
   var given = (f.given || '').trim(), gErr = '';
@@ -568,8 +609,9 @@ function formState(d){
   var hash = (f.hash || '').trim(), hErr = '';
   if(!fiat){ if(!hash) hErr = 'empty'; else if(!hashOk(hash)) hErr = 'format'; }
   var filesOk = fiat ? (f.files.length >= FIAT_MIN_N && f.files.length <= FIAT_MAX_N) : true;
-  return { fiat:fiat, given:given, gErr:gErr, hash:hash, hErr:hErr, filesOk:filesOk,
-           ok:!gErr && !hErr && filesOk };
+  var rOk = repayOk(d);
+  return { fiat:fiat, given:given, gErr:gErr, hash:hash, hErr:hErr, filesOk:filesOk, repayOk:rOk,
+           ok:!gErr && !hErr && filesOk && rOk };
 }
 function disbForm(d){
   var f = S.f, v = formState(d), fiat = v.fiat;
@@ -624,10 +666,12 @@ function disbForm(d){
   } else {
     body += field(L('Payout address','收款地址'), L('read-only · the asset owner’s registered address','只读带出 · 资产方登记的企业统一数币地址'),
       ro(maskAddr(d.payeeCoin.addr))) +
-    field(g('chain'), L('read-only · taken from the payout address above','只读 · 取自上面这个收款地址所在的链'),
-      ro(d.payeeCoin.chain),
-      L('The money goes to the asset owner, so the chain is taken from the receiving side. A chain that differs from it is rejected, with no "continue anyway".',
-        '钱是打给资产方的，链取收款那一侧。填的链与它不一致会被拒绝，不提供"仍要继续"。')) +
+    field(g('chain'), L('read-only · one chain this release','只读 · 本期只有这一条链'),
+      ro(CHAIN),
+      L('This release supports <b>' + CHAIN + ' only</b> — one chain, not a default one. USDT and USDC are ' + TOKEN_STD +
+        ' this release, so there is nothing to pick and no way to pick the wrong chain.',
+        '本期<b>只支持 ' + CHAIN + '</b>——是"只有一条"，不是"默认一条"。USDT 与 USDC 本期即 ' + TOKEN_STD +
+        '，没有可选项，也就不存在"选错链"。')) +
     field(g('txHashLn'), L('required · format check only','必填 · 只做格式校验'),
       '<input class="inp' + (v.hErr === 'format' ? ' err' : '') + '" type="text" value="' + E(f.hash) +
         '" data-act="ln.f" data-v="hash" placeholder="0x…">',
@@ -649,6 +693,28 @@ function disbForm(d){
           '<button class="btn sm" type="button" data-act="ln.rmx" data-v="' + i + '">' + L('Remove','移除') + '</button></div></div>';
       }).join('') + '</div>' : ''));
   }
+  /* 第三区之二：还款收款账户（V3.2 · D-LN-64 ～ D-LN-68）。
+     法币五项整组必填（比资产方侧多一个中转行，两侧有意不同，不得为"对齐"删减）；
+     数币取绑定钱包只读。与出账账户无关、不做一致性校验；放款后不可改，因此没有"修改账户"入口。 */
+  body += '<div style="border-top:1px solid var(--border);margin:16px 0 14px;padding-top:14px">' +
+    '<div style="font-size:12.5px;font-weight:680">' + L('Account for receiving repayments','还款收款账户') + '</div>' +
+    '<p class="hint" style="margin:5px 0 12px">' +
+    L('This is where <b>you</b> will be repaid. It is registered together with this disbursement record, and the repayment module pays into it. ' +
+      'It has nothing to do with the account you are paying out from, and the platform does not compare the two. ' +
+      '<b>It cannot be changed after you submit</b>, so check it now.',
+      '这是<b>您将来收还款</b>的账户，随本条放款记录一并登记，还款模块按它打款。' +
+      '它与本次出账的账户<b>无关</b>，平台也不做两者的一致性校验。' +
+      '<b>提交后本期不可修改</b>，请现在核对。') + '</p>' +
+    (isFiat(d)
+      ? repayFiatFields()
+      : field(L('Repayment address','还款收款地址'), L('read-only · your bound wallet','只读 · 您登录时绑定的钱包地址'),
+          ro(maskAddr(d.fundWallet.addr)) +
+          '<div style="margin-top:10px">' +
+          field(g('chain'), L('read-only · one chain this release','只读 · 本期只有这一条链'), ro(CHAIN)) + '</div>',
+          L('Taken from the wallet bound to your account. That binding cannot be changed once made, so the platform does not keep a second, editable copy of it here.',
+            '取自您账号绑定的钱包地址。该绑定一经建立不可更改，平台不在此另存一份可编辑的副本。'))) +
+    '</div>';
+
   body += field(L('Note to the asset owner','放款备注'), L('optional · ≤ ' + MEMO_MAX + ' characters','选填 · ≤ ' + MEMO_MAX + ' 字'),
     '<textarea class="inp" rows="2" maxlength="' + MEMO_MAX + '" data-act="ln.f" data-v="memo" placeholder="' +
     L('e.g. remitted through our Shanghai branch; outward remittance and cable charges are borne by you.',
@@ -749,7 +815,9 @@ function drawerDisb(){
           [v.gErr ? L('a valid value date','有效的发放时间') : '',
            v.hErr ? L('a well-formed transaction hash','格式正确的交易哈希') : '',
            !v.filesOk ? L('at least one transfer receipt','至少一个转账凭证') : ''
-          ].filter(Boolean).join(L(' · ', '、')) + '</p>')
+          ].concat(repayMissing(d).map(function(x){
+            return L('repayment account — ','还款收款账户 — ') + x; }))
+           .filter(Boolean).join(L(' · ', '、')) + '</p>')
       : '<button class="btn blocked" type="button" aria-disabled="true" data-act="ln.why" data-v="cov">⊘ ' +
         L('Submit disbursement record','提交放款记录') + '</button>') +
     '<p class="note">' +
@@ -828,7 +896,11 @@ function recordBlock(d, full){
       L('The platform does not vet whether the receipt is genuine — please check it against your own bank statement.',
         '平台不审核凭证真伪——请对照您的银行流水核对。') + '</p>'
     : '<div class="hash"><div class="hv">' + E(ln.hash) + '</div>' +
-      '<div class="lk"><a class="btn sm" href="https://etherscan.io/tx/' + E(ln.hash) +
+      '<div style="display:flex;gap:var(--sp-4);flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:var(--muted)">' +
+      '<span>' + g('chain') + ' · <b>' + CHAIN + '</b></span>' +
+      '<span>' + L('Token standard','代币标准') + ' · <b>' + TOKEN_STD + '</b></span>' +
+      '<span>' + L('format check','格式校验') + ' · <b>' + L('passed','通过') + '</b></span></div>' +
+      '<div class="lk"><a class="btn sm" href="' + EXPLORER_TX + E(ln.hash) +
       '" target="_blank" rel="noopener noreferrer">' + L('Open on Etherscan','在 Etherscan 打开该交易') + '</a>' +
       '<span class="nv">' + L('The platform has not verified this transaction; the link is for your own check.',
         '平台未核验该交易，链接仅供自行查验。') + '</span></div>' +
@@ -947,7 +1019,6 @@ var SUBMIT_OUT = [
   ['cov',    ['E-LN-01 · coverage dropped below the invariant at submission','E-LN-01 提交瞬间质押覆盖跌破']],
   ['race',   ['E-LN-02 · a colleague submitted the same disbursement first','E-LN-02 并发：同事先一步提交了同一笔放款']],
   ['moved',  ['E-LN-03 · the deal had already left "awaiting disbursement"','E-LN-03 提交时业务已不在待放款']],
-  ['chain',  ['E-LN-05 · the chain does not match the payout address','E-LN-05 链与收款地址所在的链不一致']],
   ['upload', ['E-LN-06 · the receipt failed format / size checks','E-LN-06 凭证格式或大小不合规']]
 ];
 var CONFIRM_OUT = [
@@ -978,6 +1049,9 @@ var MODALS = {
            '资产方将在 ' + CONFIRM_HOURS + ' 小时内确认，到期不会自动视为确认'),
          L('The window closes at <b>' + withTz(to) + '</b>. When it closes, one notice goes out and nothing else changes. If they never confirm, the deal simply waits and no repayment schedule is generated.',
            '到期时刻 <b>' + withTz(to) + '</b>。到点只发一条通知，其他什么都不变；对方始终不确认，业务就停在那里，还款计划不生成。')],
+        [L('The repayment account you just registered is locked after this','刚登记的还款收款账户提交后即锁定'),
+         L('The repayment module will pay into it, and <b>this release has no way to change it</b>. Check the account, the SWIFT code and the correspondent bank once more before you submit. The account you paid out from is irrelevant here and is never compared with it.',
+           '还款模块按它打款，<b>本期没有修改入口</b>。提交前请再核一遍账号、SWIFT 与中转行。本次出账用的是哪个账户与它无关，平台也不比对两者。')],
         [L('The platform does not verify that the transfer is real','平台不核验转账真伪'),
          v.fiat ? L('It cannot see your bank statement; the receipt is checked for format, size and count only.',
                     '平台看不到银行流水，凭证只校验格式、大小与数量。')
@@ -1039,6 +1113,7 @@ var ST = {
     fiat      :{ v:'fiat',       role:'fund',  d:'disb' },
     coin      :{ v:'coin',       role:'fund',  d:'disb' },
     short     :{ v:'short',      role:'fund',  d:'disb' },
+    noCorr    :{ v:'fiat',       role:'fund',  d:'disb', repay:'noCorr' },
     reupload  :{ v:'reupload',   role:'fund',  d:'disb' },
     onhold    :{ v:'onhold',     role:'fund',  d:'disb' },
     reupAsset :{ v:'reupload',   role:'asset', d:'redo' },
@@ -1068,7 +1143,15 @@ function syncState(){
   if(!m) return;
   S.variant = m.v; S.role = m.role; S.drawer = m.d;
   S.disp = null; S.reason = ''; S.modal = null; S.sealIdx = 1; S.zoom = 'fit'; S.split = 'even';
-  S.f = { given:'2026-09-15 14:00', hash:'', memo:'', recv:'', files:[], extra:[], seal:null, upErr:null, shown:false };
+  S.f = { given:'2026-09-15 14:00', hash:'', memo:'', recv:'', files:[], extra:[], seal:null, upErr:null, shown:false,
+          rName:'', rAcct:'', rSwift:'', rBank:'', rCorr:'' };
+  /* 演示预填：真实系统里由资金方逐项填写，这里预填只是免去评审手打五个字段。
+     「缺中转行」那一档刻意留空 rCorr，用来验 AC-LN-26 的"只填四项必须被拦下"。 */
+  S.f.rName  = 'Beian Leasing Co., Ltd. (demo)';
+  S.f.rAcct  = 'GB29NWBK60161331926819';
+  S.f.rSwift = 'NWBKGB2L';
+  S.f.rBank  = 'NatWest Bank, London Branch';
+  S.f.rCorr  = (m.repay === 'noCorr') ? '' : 'Citibank N.A., New York';
   S.out = 'ok'; S.cout = 'ok';
 }
 function skel(){
@@ -1096,6 +1179,7 @@ var mod = {
     'P-LS-07':[['fiat','Fiat · default','法币 · 默认'],
                ['coin','Stablecoin','数币 USDT'],
                ['short','Coverage short','覆盖不足 · 放款 ⊘'],
+               ['noCorr','Repayment account · no correspondent bank','还款账户 · 缺中转行'],
                ['reupload','Re-upload requested','已要求重传（资金方视角）'],
                ['onhold','On hold · project matured','已暂缓 · 项目已到期'],
                ['reupAsset','Re-upload drawer','重传抽屉（资产方视角）'],
@@ -1121,7 +1205,8 @@ var mod = {
     /* 面客端默认英文（WS-324 D-LS-15）；中文由顶栏语言开关切换 */
     return { lang:'en', role:'fund', variant:'fiat', drawer:'disb', modal:null,
              zoom:'fit', split:'even', sealIdx:1, disp:null, reason:'', out:'ok', cout:'ok',
-             f:{ given:'2026-09-15 14:00', hash:'', memo:'', recv:'', files:[], extra:[], seal:null, upErr:null, shown:false } };
+             f:{ given:'2026-09-15 14:00', hash:'', memo:'', recv:'', files:[], extra:[], seal:null, upErr:null, shown:false,
+        rName:'', rAcct:'', rSwift:'', rBank:'', rCorr:'' } };
   },
   onBoot:function(st){ S = st; syncState(); },
   onSetState:function(){ syncState(); },
@@ -1270,10 +1355,6 @@ var mod = {
           toast('info', L('The deal had already left "awaiting disbursement"','该业务已不在待放款'),
             L('A colleague terminated it moments ago. The submission is settled against the authoritative state at that instant and rejected — no 404, no blank screen, you simply land back here.',
               '同事刚刚终止了它。按提交时刻的权威状态结算并拒绝——不报 404、不白屏，页面落回详情。'));
-        } else if(out === 'chain'){
-          toast('danger', L('Chain does not match the payout address','链与收款地址所在的链不一致'),
-            L('Money sent on another chain is not the delivery this deal agreed on, so the submission is rejected and there is no "continue anyway".',
-              '钱打到另一条链不是这笔业务约定的交付方式，提交被拒绝，且不提供"仍要继续"。'));
         } else {
           S.f.upErr = L('"wire-advice-back.tiff" was not accepted: TIFF is not among PDF / JPG / PNG, and 12.6 MB exceeds the ' +
               FILE_MAX_MB + ' MB per-file limit. <b class="ls-b">The files already uploaded are kept.</b>',
@@ -1336,6 +1417,7 @@ function writeField(k, val){
   else if(k === 'memo') S.f.memo = val;
   else if(k === 'recv') S.f.recv = val;
   else if(k === 'reason') S.reason = val;
+  else if(k === 'rName' || k === 'rAcct' || k === 'rSwift' || k === 'rBank' || k === 'rCorr') S.f[k] = val;
   else if(k === 'submitOut') S.out = val;
   else if(k === 'confirmOut') S.cout = val;
 }
