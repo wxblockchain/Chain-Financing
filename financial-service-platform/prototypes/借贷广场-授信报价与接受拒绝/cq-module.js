@@ -843,7 +843,16 @@ function creditAsk(p, c, f){
   var foot =
     '<button class="btn" type="button" data-act="cq.unitClose">取消</button>' +
     '<button class="btn primary" type="button" data-act="cq.askYes">' + E(A.go) + '</button>';
-  return unitShell('融资报价', bm.t, body, foot, { dialog:true });
+  /* 授信三支的提示维持**居中弹窗**（需求方 09-15：这部分不调整）。
+     它不走抽屉外壳——提示是一次要你表态的打断，居中比从边上滑出更像"停一下"；
+     确认之后才换成右侧抽屉去做事。同一时刻只有一层：这里是弹窗，那里是抽屉。 */
+  return '<div class="mask" data-act="cq.maskClose">' +
+    '<div class="modal cq-ask-modal" role="dialog" aria-modal="true" aria-label="融资报价">' +
+      '<div class="modal-h"><b>融资报价<span class="sb">' + E(bm.t) + '</span></b>' +
+      '<button class="modal-x" type="button" data-act="cq.unitClose" aria-label="关闭">✕</button></div>' +
+      '<div class="modal-b">' + body + '</div>' +
+      '<div class="modal-f">' + foot + '</div>' +
+    '</div></div>';
 }
 
 /* ================================================================
@@ -966,14 +975,28 @@ function quoteStep(p, c, f){
 }
 
 /* ---- 融资报价弹窗：按状态挑步骤 ---- */
+/* 抽屉里的承载单元：额度编辑 / 报价表单。提示不在这里——它是居中弹窗（creditAskModal）。 */
 function quoteUnit(){
   var p = findProject(S.pid);
   if(!p) return '';
   var c = creditCheck(p.entity, p.demand);
   if(c.branch === 'enough' || S.qt.creditDone) return quoteStep(p, c, quoteForm(p));
-  var f = creditForm(c, p);
+  return creditStep(p, c, creditForm(c, p));
+}
+/* 居中提示弹窗：三支各一句问法，确认后才开抽屉 */
+function creditAskModal(){
+  var p = findProject(S.pid);
+  if(!p) return '';
+  var c = creditCheck(p.entity, p.demand);
+  if(c.branch === 'enough') return '';
+  return creditAsk(p, c, creditForm(c, p));
+}
+/* 该开提示还是该开抽屉：一处判定，路由与动作都用它，避免两边判得不一样 */
+function openQuoteUnit(p){
   if(S.cr.confirmed && S.cr.askedFor !== p.id){ S.cr.confirmed = false; S.cr.askedFor = null; }
-  return S.cr.confirmed ? creditStep(p, c, f) : creditAsk(p, c, f);
+  var need = creditCheck(p.entity, p.demand).branch !== 'enough' && !S.qt.creditDone && !S.cr.confirmed;
+  if(need){ S.modal = { type:'creditAsk' }; S.drawer = null; }
+  else    { S.modal = null; S.drawer = 'quoteUnit'; }
 }
 
 /* ---- 承载单元打不开时的说明（不可报价 / 无权 / 不存在），落在详情页上下文里 ---- */
@@ -1403,7 +1426,8 @@ var JUMPS = [
 ];
 function unitJump(){
   var cur = location.hash || '';
-  return '<nav class="cq-jump" aria-label="原型 · 承载单元与身份切换">' +
+  return '<nav class="cq-jump' + (S.drawer ? ' aside' : '') +
+    '" aria-label="原型 · 承载单元与身份切换">' +
     '<s>身份</s>' +
     ['guest','asset','fund'].map(function(k){
       return '<button type="button" data-act="cq.role" data-v="' + k + '" aria-pressed="' +
@@ -1515,6 +1539,8 @@ var mod = {
     respondUnit:respondUnit
   },
   modals:{
+    /* 授信三支的提示：居中弹窗 */
+    creditAsk:creditAskModal,
     /* 提交前二次确认：五件事必须讲清，必须显式确认才可提交 */
     qtConfirm:function(){
       var p = findProject(S.pid), c = creditCheck(p.entity, p.demand), f = quoteForm(p);
@@ -1631,7 +1657,7 @@ var mod = {
           S.page = 'P-LS-05'; S.drawer = null; return true;
         }
         S.page = 'P-LS-05';
-        S.drawer = 'quoteUnit';   /* 承载单元以弹窗打开在详情页上 */
+        openQuoteUnit(p);         /* 缺额度先出居中提示，够了直接开抽屉 */
         return true;
       }
       if(seg[0] === 'deal'){
@@ -1684,7 +1710,7 @@ var mod = {
          因为额度是机构 × 资产方二元组，换了对手方就是另一条额度的事。 */
       case 'cq.askYes':
         S.cr.confirmed = true; S.cr.askedFor = S.pid;
-        S.drawer = 'quoteUnit';   /* 同一个弹窗内换到额度编辑步骤，不开第二层 */
+        S.modal = null; S.drawer = 'quoteUnit';   /* 关掉提示、开抽屉做事；同一时刻只有一层 */
         CF.render(); return true;
 
       case 'cq.crSubmit': {
@@ -1704,7 +1730,7 @@ var mod = {
         S.cr = { amtRaw:null, until:null, memo:'', confirmed:false, askedFor:null };
         toast('success', '额度已' + BRANCH[f1.b].verb,
           '额度 ' + usd(from) + ' → ' + usd(cr.limit) + '，有效期至 ' + cr.until + '。');
-        S.page = 'P-LS-05'; S.drawer = 'quoteUnit';   /* 同一个弹窗内回到报价步骤 */
+        S.page = 'P-LS-05'; S.modal = null; S.drawer = 'quoteUnit';   /* 回到抽屉里的报价步骤 */
         CF.render(); return true;
       }
 
