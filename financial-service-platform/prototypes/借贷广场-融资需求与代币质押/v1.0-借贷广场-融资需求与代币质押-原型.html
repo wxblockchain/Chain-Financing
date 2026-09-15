@@ -266,6 +266,26 @@
 
 @media (max-width:1180px){ .ls-stats{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media (max-width:900px){ .ls-stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
+
+/* ---- WS-326 增量：「融资放款」环节内的两步轮次轨 ----
+   谁在动作、轮没轮到你。对外状态两步都是「放款中」，这里不产生第二套展示状态，
+   所以轮到自己那一步用描边 + 一行提示语，不用第二个 pill（pill 会被读成状态）。 */
+.ls-turn{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);
+  padding:9px 10px;margin:9px 0 0 28px}
+.ls-turn-cue{font-size:11.5px;line-height:1.5;font-weight:620;border-radius:var(--radius-xs);
+  padding:6px 8px;margin-bottom:8px}
+.ls-turn-cue.you{background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent)}
+.ls-turn-cue.wait{background:var(--bg-elev);border:1px dashed var(--border-strong);color:var(--muted);font-weight:560}
+.ls-turn .s{display:grid;grid-template-columns:auto 1fr;gap:8px;padding:5px 0}
+.ls-turn .s+.s{border-top:1px dashed var(--border)}
+.ls-turn .s .dot{width:8px;height:8px;border-radius:50%;margin-top:5px;background:var(--bg-elev);
+  border:1.5px solid var(--border-strong)}
+.ls-turn .s.done .dot{background:var(--ok);border-color:var(--ok)}
+.ls-turn .s.now .dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.ls-turn .s .bd{min-width:0;display:flex;flex-direction:column;gap:1px}
+.ls-turn .s .bd b{font-size:11.5px;font-weight:640;color:var(--muted)}
+.ls-turn .s.now .bd b,.ls-turn .s.done .bd b{color:var(--text)}
+.ls-turn .s .bd span{font-size:10.5px;color:var(--faint);line-height:1.5}
 </style>
 </head>
 <body>

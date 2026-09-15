@@ -164,6 +164,28 @@
 .cd.over .bar .rm{background:var(--border-strong)}
 .cd .sc{display:flex;justify-content:space-between;gap:10px;font-size:var(--fs-10);color:var(--faint);margin-top:5px}
 
+/* ---- 「融资放款」环节内的两步轮次轨 ----
+   放款确认不拆独立环节（环节集合归 WS-324），而是在本环节内把两步轮次画出来：
+   谁在动作、轮没轮到你、对方还剩多久。对外状态两步都是「放款中」，这里**不产生第二套展示状态**。
+   轮到自己那一步用 accent 描边 + 一行提示语，不用第二个 pill —— pill 会被读成状态。 */
+.tt{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:11px 12px;margin-top:10px}
+.tt-cue{font-size:12px;line-height:1.55;font-weight:620;border-radius:var(--radius-xs);padding:7px 9px;margin-bottom:9px}
+.tt-cue.you{background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent)}
+.tt-cue.wait{background:var(--bg-elev);border:1px dashed var(--border-strong);color:var(--muted);font-weight:560}
+.tt-s{display:grid;grid-template-columns:auto 1fr;gap:9px;padding:7px 0;border-bottom:1px dashed var(--border)}
+.tt-s:last-child{border-bottom:0}
+.tt-s .dot{width:9px;height:9px;border-radius:50%;margin-top:5px;background:var(--bg-elev);
+  border:1.5px solid var(--border-strong)}
+.tt-s.done .dot{background:var(--ok);border-color:var(--ok)}
+.tt-s.now .dot{background:var(--accent);border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft)}
+.tt-s .bd{min-width:0;display:flex;flex-direction:column;gap:2px}
+.tt-s .bd b{font-size:12px;font-weight:660;color:var(--muted)}
+.tt-s.now .bd b,.tt-s.done .bd b{color:var(--text)}
+.tt-s .bd .who{font-size:10.5px;color:var(--faint);letter-spacing:.03em;text-transform:uppercase}
+.tt-s .bd .x{font-size:11px;color:var(--faint);line-height:1.5}
+.tt-s.mine .bd b{color:var(--accent)}
+
 /* ---- 中性标记条：暂缓 / 待重传 / 已超期 / 已到期存量处理中（AC-LN-13）---- */
 .mark{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border-strong);
   border-radius:var(--radius-sm);background:var(--gray-bg);padding:10px 12px}

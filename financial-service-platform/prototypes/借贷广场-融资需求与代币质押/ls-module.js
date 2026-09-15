@@ -1713,6 +1713,39 @@ function flowDone(p){
   if(p.status === 'S-FP-5' || p.status === 'S-FP-6') return true;
   return !p.demand && !!(p.rep || (p.fin && (p.fin.st === 'S-FD-6' || p.fin.st === 'S-FD-8')));
 }
+/* ---- WS-326 增量：「融资放款」环节内的两步轮次轨 ----
+   放款（资金方）与放款确认（资产方）是**同一个环节内的两步**：WS-326 D-LN-44 明确
+   S-FD-3 与 S-FD-4 的区别是环节内的进度、不进对外状态。环节集合仍是四个，不加第五环节；
+   这里加的是环节内部的轮次呈现——资产方在「融资放款」这个名字下面本来看不出"轮到我了"。 */
+function turnTrack(p){
+  var fin = p.fin;
+  if(!fin) return '';
+  var cur = fin.st === 'S-FD-3' ? 0 : fin.st === 'S-FD-4' ? 1 : 2;
+  if(cur > 1) return '';
+  var own = (S.role === 'asset' && p.entity === ACTORS.asset.entity);
+  var isFund = (S.role === 'fund');
+  var steps = [
+    ['fund',  L('Funder disburses','资金方放款'),
+              L('Checks the sealed contract and records the transfer.','核验盖章件、登记转账。')],
+    ['asset', L('Asset owner confirms receipt','资产方确认到账'),
+              L('Checks the money landed and confirms. The 168-hour window runs here.',
+                '核对钱是否到账并确认，168 小时确认时限走在这一步。')]
+  ];
+  var actor = steps[cur][0];
+  var mine = (actor === 'fund' && isFund) || (actor === 'asset' && own);
+  var cue = mine
+    ? '<div class="ls-turn-cue you">' + L('Your turn — ','轮到您了 —— ') +
+      (actor === 'fund' ? L('record the disbursement.','登记放款。') : L('confirm receipt of the money.','确认到账。')) + '</div>'
+    : (isFund || own)
+      ? '<div class="ls-turn-cue wait">' + L('Waiting on the ','等待') +
+        (actor === 'fund' ? g('funder') : g('assetOwner')) + L('.','。') + '</div>'
+      : '';
+  return '<div class="ls-turn">' + cue + steps.map(function(t, i){
+    var st = i < cur ? 'done' : i === cur ? 'now' : 'next';
+    return '<div class="s ' + st + '"><span class="dot" aria-hidden="true"></span>' +
+      '<div class="bd"><b>' + E(t[1]) + '</b><span>' + E(t[2]) + '</span></div></div>';
+  }).join('') + '</div>';
+}
 function flowBlock(p, acts){
   var cur = flowStage(p), done = flowDone(p);
   var body = FLOW4.map(function(f, i){
@@ -1734,9 +1767,10 @@ function flowBlock(p, acts){
             '该环节由' + whoT + '操作，当前身份不能在此动作。') + '</p></div>';
       }
     }
+    var track = (i === cur && !done && f.act === 'disburse') ? turnTrack(p) : '';
     return '<div class="fs ' + cls + '"><div class="t"><span class="no">' + (i+1) + '</span>' + g(f.g) +
       (i === cur && !done ? ' · ' + L('current','当前') : '') + '</div>' +
-      '<div class="x">' + E(L(f.x[0], f.x[1])) + '</div>' + btn + '</div>';
+      '<div class="x">' + E(L(f.x[0], f.x[1])) + '</div>' + track + btn + '</div>';
   }).join('');
   return '<div class="ls-flow4">' + body + '</div>' +
     '<p class="hint" style="margin-top:11px">' + L(

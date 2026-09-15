@@ -285,7 +285,6 @@ function actionOf(list, k){ for(var i = 0; i < list.length; i++) if(list[i].key 
    Part C —— 共用片段
    ================================================================ */
 function pill(tone, t){ return '<span class="pill ' + tone + '">' + E(t) + '</span>'; }
-function stPill(d){ var m = FD_ST[d.st]; return pill(TONE[m[1]] || 'gray', L(m[0][0], m[0][1])); }
 function why(title, body){
   return '<details class="why"><summary><span class="ca" aria-hidden="true">▶</span>' + E(title) +
     '</summary><div class="wb">' + body + '</div></details>';
@@ -354,13 +353,74 @@ function demandState(d){
   if(d.st === 'S-FD-10') return DEMAND_ST.open;      /* 终止 → 需求退回待报价（D-LN-45 建议口径） */
   return DEMAND_ST.disb;
 }
+/* ---- 「融资放款」环节内的两步轮次轨 ----
+   落位结论：**放款确认不拆成独立环节**，留在「融资放款」内，但把这一环节内部的
+   两步轮次显式画出来：① 资金方放款 → ② 资产方确认到账。
+   依据就在 PRD 自己身上：D-LN-44 说 S-FD-3 与 S-FD-4 的区别是**环节内的进度**、
+   只在放款环节内呈现、不升格为对外状态。既然它本来就是"进度不是状态"，
+   那它该长成进度的样子——而不是再开一个环节（环节集合归 WS-324，加第五个属于改上游）。
+   这样做同时满足两条硬约束：对外状态仍只有「放款中」一格、环节集合仍是四个。 */
+var TURN_STEPS = [
+  { k:'disb',    who:'fund',  t:['Funder disburses','资金方放款'],
+    x:['Checks the sealed contract, records the transfer and registers the account for receiving repayments.',
+       '核验盖章件、登记转账与还款收款账户。'] },
+  { k:'confirm', who:'asset', t:['Asset owner confirms receipt','资产方确认到账'],
+    x:['Checks the money actually landed and confirms. The 168-hour window runs here.',
+       '核对钱是否真的到账并确认。168 小时确认时限走在这一步。'] }
+];
+function turnTrack(d){
+  var cur = (d.st === 'S-FD-3') ? 0 : (d.st === 'S-FD-4') ? 1 : 2;   /* 2 = 两步都走完 */
+  var k = clock(d);
+  var mine = { fund:'fund', asset:'asset' };
+  var rows = TURN_STEPS.map(function(t, i){
+    var state = i < cur ? 'done' : i === cur ? 'now' : 'next';
+    var yours = (S.role === mine[t.who]) && state === 'now';
+    var who = t.who === 'fund' ? g('funder') : g('assetOwner');
+    return '<div class="tt-s ' + state + (yours ? ' mine' : '') + '">' +
+      '<span class="dot" aria-hidden="true"></span>' +
+      '<div class="bd"><b>' + E(L(t.t[0], t.t[1])) + '</b>' +
+      '<span class="who">' + E(who) + (state === 'now' ? ' · ' + L('acting now','正在进行') : '') + '</span>' +
+      '<span class="x">' + E(L(t.x[0], t.x[1])) + '</span>' +
+      (i === 1 && cur === 1 && k.has
+        ? '<span class="x">' + (k.over
+            ? L('Window elapsed ' + k.overDays + ' days ago — nothing is auto-confirmed, the entry still works.',
+                '确认时限已过 ' + k.overDays + ' 天——不会自动确认，入口照常可用。')
+            : L(dur(k.leftMin) + ' left in the confirmation window.', '确认时限剩余 ' + dur(k.leftMin) + '。')) + '</span>'
+        : '') +
+      '</div></div>';
+  }).join('');
+  /* 轮到谁：只对"轮到的那一方"出提示语，措辞是动作提示而不是状态名——
+     不新增任何展示状态，也不进列表与筛选（D-LN-44）。 */
+  var cue = '';
+  if(cur < 2){
+    var actor = TURN_STEPS[cur].who;
+    if(S.role === mine[actor])
+      cue = '<div class="tt-cue you">' + L('Your turn — ','轮到您了 —— ') +
+        (actor === 'fund' ? L('record the disbursement below.','在下面登记放款。')
+                          : L('check the money landed and confirm receipt below.','核对钱是否到账，然后在下面确认到账。')) + '</div>';
+    else if(S.role === 'fund' || S.role === 'asset')
+      cue = '<div class="tt-cue wait">' + L('Waiting on the ','等待') +
+        (actor === 'fund' ? g('funder') : g('assetOwner')) + L('.','。') +
+        (actor === 'asset' && k.has && !k.over
+          ? L(' ' + dur(k.leftMin) + ' left in their confirmation window.', '　对方的确认时限还剩 ' + dur(k.leftMin) + '。') : '') + '</div>';
+  }
+  return '<div class="tt">' + cue + rows + '</div>' +
+    '<p class="hint" style="margin-top:9px">' +
+    L('These two steps sit inside one stage on purpose: the external status stays <b>Disbursing</b> for both of them. ' +
+      'Who acts next is progress inside the stage, not a status of its own.',
+      '这两步<b>有意放在同一个环节里</b>：对外状态在这两步上都是「放款中」。' +
+      '轮到谁动作是环节内的进度，不是另一个状态。') + '</p>';
+}
+
 function hostPage(){
   var d = deal(), cv = coverage(d), acts = actions(d), ds = demandState(d);
   var head = '<div class="ls-phead"><div class="tile" aria-hidden="true">◎</div><div class="body">' +
     '<p class="kick">' + g('demandNo') + ' <span class="mono">' + d.fp + '</span> · ' +
       g('project') + ' <span class="mono">' + d.pid + '</span> · ' + L('Time zone','时区') + ' ' + TZ + '</p>' +
     '<h1>' + E(tr(d.pname)) + '<em>' + E(co('asset')) + '</em></h1>' +
-    '<div class="ls-tags">' + pill(ds[1], L(ds[0][0], ds[0][1])) + stPill(d) +
+    /* 页头只出**对外状态**一格（D-LN-44）。S-FD-3 与 S-FD-4 的区别是放款环节内的进度，
+       由环节内的轮次轨承载；把内部业务状态也摆到页头，等于在页头造了第二套展示状态。 */
+    '<div class="ls-tags">' + pill(ds[1], L(ds[0][0], ds[0][1])) +
       pill('gray', g('funder') + ' · ' + co('fund')) +
       pill('gray', g('dealNo') + ' ' + d.id) +
       (d.marks.redo ? pill('gray', L('Awaiting re-upload','待资产方重传盖章件')) : '') +
@@ -416,9 +476,10 @@ function hostPage(){
     var cls = i < stage ? 'done' : i === stage ? 'now' : 'next';
     var btn = '';
     if(i === stage) btn = stageActions(d, acts);
+    var track = (i === stage && S.role !== 'other') ? turnTrack(d) : '';
     return '<div class="fs ' + cls + '"><div class="t"><span class="no">' + (i + 1) + '</span>' + g(f[0]) +
       (i === stage ? ' · ' + L('current','当前') : '') + '</div>' +
-      '<div class="x">' + E(L(f[1][0], f[1][1])) + '</div>' + btn + '</div>';
+      '<div class="x">' + E(L(f[1][0], f[1][1])) + '</div>' + track + btn + '</div>';
   }).join('');
 
   var rail = '<aside class="portal-rail"><div class="card">' +
@@ -1145,13 +1206,15 @@ function syncState(){
   S.disp = null; S.reason = ''; S.modal = null; S.sealIdx = 1; S.zoom = 'fit'; S.split = 'even';
   S.f = { given:'2026-09-15 14:00', hash:'', memo:'', recv:'', files:[], extra:[], seal:null, upErr:null, shown:false,
           rName:'', rAcct:'', rSwift:'', rBank:'', rCorr:'' };
-  /* 演示预填：真实系统里由资金方逐项填写，这里预填只是免去评审手打五个字段。
-     「缺中转行」那一档刻意留空 rCorr，用来验 AC-LN-26 的"只填四项必须被拦下"。 */
-  S.f.rName  = 'Beian Leasing Co., Ltd. (demo)';
-  S.f.rAcct  = 'GB29NWBK60161331926819';
-  S.f.rSwift = 'NWBKGB2L';
-  S.f.rBank  = 'NatWest Bank, London Branch';
-  S.f.rCorr  = (m.repay === 'noCorr') ? '' : 'Citibank N.A., New York';
+  /* 还款收款账户**空表单起步**：平台没有"记得上次账户"这种能力，预填会让人误以为有。
+     只有「缺中转行」那一档预填前四项、刻意留空中转行，用来验 AC-LN-26 的"只填四项必须被拦下"。 */
+  if(m.repay === 'noCorr'){
+    S.f.rName  = 'Beian Leasing Co., Ltd. (demo)';
+    S.f.rAcct  = 'GB29NWBK60161331926819';
+    S.f.rSwift = 'NWBKGB2L';
+    S.f.rBank  = 'NatWest Bank, London Branch';
+    S.f.rCorr  = '';
+  }
   S.out = 'ok'; S.cout = 'ok';
 }
 function skel(){
