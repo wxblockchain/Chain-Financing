@@ -791,6 +791,14 @@ function monthTicks(x0, x1){
     d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth()+1, 1));
   }
   if(out.length > 8) out = out.filter(function(_,i){ return i % 2 === 0; });
+  /* 跨度不到两个月时只会落到一个月初刻度，一条时间轴上只有一个标签读不出跨度。
+     补上首尾两端，至少让人看得出这张图从什么时候画到什么时候。 */
+  if(out.length < 2){
+    out = [x0, x1];
+  } else {
+    if(out[0] - x0 > 3) out.unshift(x0);
+    if(x1 - out[out.length-1] > 3) out.push(x1);
+  }
   return out;
 }
 
@@ -1083,7 +1091,7 @@ var G = {
   coverageGap  :['Coverage gap','覆盖缺口'],
   covNotice    :['Insufficient-coverage notice','覆盖不足提醒'],
   tokenId      :['Token ID','代币编号'],
-  tokenQty     :['Quantity / Currency','代币数量 / 币种'],
+  tokenQty     :['Quantity','代币数量'],
   tokenValue   :['Token value','代币价值'],
   tokenState   :['Token status','代币状态'],
   valid        :['Valid','有效'],
@@ -1117,7 +1125,6 @@ function g(k){ var v = G[k]; return v ? L(v[0], v[1]) : k; }
 
 /* 代币符号缩写：取值来自 WS-318 的代币符号配置，本期该配置仍为「待确认」。
    分册 7.5.1 明确要求此处**不自造** ticker，所以原型照实显示占位。 */
-var TOKEN_SYM = ['[TBC]','［待确认］'];
 
 /* 演示数据里的中文短语在英文视图下的渲染翻译；只作用于展示层，不改数据 */
 var DEMO_TR = {
@@ -1141,61 +1148,63 @@ var DEMO_TR = {
 /* 演示事件流的英文视图：只做展示层翻译，PROJECTS 里的数据一字未改。
    键是中文原串，值是英文；新增演示事件时在此补一条即可。 */
 var EV_TR = {
+  "资产方接受报价 · 这笔业务转入待放款": "Asset owner accepted the quote · the deal moves to awaiting disbursement",
+  "终止原因：合同主体名称与平台登记的企业主体不一致，两次沟通后未能提供更正件。五个后果同一次结算内生效：在途报价金额全额释放且不进授信占用额、项目在途金额不变（需求还挂着）、需求回到「待报价」、质押不释放、编号保留但作废": "Terminated because the contract counterparty name did not match the entity registered on the platform, and no corrected document was provided after two rounds of follow-up. Five consequences take effect in the same settlement: the committed quote amount is released in full and does not enter the credit line, committed demand is unchanged (the demand is still open), the demand returns to Awaiting quotes, the collateral is not released, and the deal ID is retained but voided",
   "创建资产池 · 首笔质押 3 张": "Pool created · first pledge of 3 tokens",
   "发布融资需求 280,000.00 USD": "Financing demand published · 280,000.00 USD",
   "收到机构报价 280,000.00 USD": "Quote received · 280,000.00 USD",
   "还款计划定稿 · 2 期 · 起息日 2025-11-26": "Repayment schedule finalised · 2 instalments · interest start date 2025-11-26",
   "第 1 期利息 9,660.00 USD 已结清": "Instalment 1 interest 9,660.00 USD settled",
-  "末期本息已结清 · 业务转 S-FD-8 已结清": "Final principal and interest settled · deal moves to S-FD-8 Settled",
-  "业务结清的同一时刻，项目转 S-FP-6 已结清、池内质押全额业务释放（即时、无链上动作、无费用）": "In the same instant the deal settles, the project moves to S-FP-6 Settled and the entire pool is released in business terms - immediate, no on-chain action, no cost",
+  "末期本息已结清 · 业务转 已结清": "Final principal and interest settled · deal moves to Settled",
+  "业务结清的同一时刻，项目结清、池内质押全额业务释放（即时、无链上动作、无费用）": "In the same instant the deal settles, the project moves to Settled and the entire pool is released in business terms - immediate, no on-chain action, no cost",
   "项目结清释放 3 张 · 280,000.00 USD 置「已释放 · 待提取」": "3 tokens worth 280,000.00 USD released on settlement, set to 'released, awaiting withdrawal'",
-  "第二段链上提取由资产方自助发起、无时间限制；未提取前不属于任何资产池、不计入任何质押价值（D-FIN-57）": "The second stage, the on-chain withdrawal, is initiated by the asset owner with no time limit; until withdrawn the tokens belong to no pool and count towards no pledged value (D-FIN-57)",
+  "第二段链上提取由资产方自助发起、无时间限制；未提取前不属于任何资产池、不计入任何质押价值": "The second stage, the on-chain withdrawal, is initiated by the asset owner with no time limit; until withdrawn the tokens belong to no pool and count towards no pledged value",
   "冷链仓储运营": "Cold-chain warehousing",
   "华中冷链应收账款池": "Central China cold-chain receivables pool",
   "270 天": "270 days",
   "已结清": "Settled",
   "创建资产池 · 首笔质押 10 张": "Pool created · first pledge of 10 tokens",
-  "链上转入成功（CT-2）后才计入有效质押价值（D-FIN-40 / AC-LS-28）": "Only a confirmed on-chain transfer (CT-2) counts towards pledged token value (D-FIN-40 / AC-LS-28)",
+  "链上转入成功（CT-2）后才计入有效质押价值": "Only a confirmed on-chain transfer (CT-2) counts towards pledged token value",
   "发布融资需求 500,000.00 USD": "Financing demand published · 500,000.00 USD",
-  "发布即产生在途占用，唯一来源（AC-FIN-23）": "Publishing creates committed demand — the only source of it (AC-FIN-23)",
+  "发布即产生在途占用，唯一来源": "Publishing creates committed demand — the only source of it",
   "收到机构报价 500,000.00 USD": "Quote received · 500,000.00 USD",
-  "报价不新增占用，项目在途金额保持不变（AC-FIN-23）": "A quote adds no commitment; committed demand is unchanged (AC-FIN-23)",
+  "报价不新增占用，项目在途金额保持不变": "A quote adds no commitment; committed demand is unchanged",
   "放款并完成融资确认": "Disbursed and financing confirmed",
-  "额度原子转移：项目在途金额 → 项目融资余额，无空档（AC-FIN-25）": "Credit transferred atomically: committed demand → outstanding financing, with no gap (AC-FIN-25)",
+  "额度原子转移：项目在途金额 → 项目融资余额，无空档": "Credit transferred atomically: committed demand → outstanding financing, with no gap",
   "追加质押 2 张 · 200,000.00 USD": "Collateral added · 2 tokens · 200,000.00 USD",
-  "追加在 S-FP-1～S-FP-4 任何状态下都允许，只增不减（D-FIN-48）": "Adding is allowed in any status from S-FP-1 to S-FP-4 and only ever increases the pool (D-FIN-48)",
+  "追加在 ～任何状态下都允许，只增不减": "Adding is allowed in any status from to and only ever increases the pool",
   "撤回质押 3 张 · 300,000.00 USD": "Collateral withdrawn · 3 tokens · 300,000.00 USD",
-  "撤回时可撤回上限 575,000.00 USD，本次通过额度判定（AC-FIN-13 / AC-FIN-22）": "The release limit at the time was 575,000.00 USD, so this withdrawal passed the credit test (AC-FIN-13 / AC-FIN-22)",
+  "撤回时可撤回上限 575,000.00 USD，本次通过额度判定": "The release limit at the time was 575,000.00 USD, so this withdrawal passed the credit test",
   "再次发布融资需求 200,000.00 USD": "Financing demand republished · 200,000.00 USD",
-  "S-FP-4 且可融金额 220,000.00 USD > 0，可再次发布剩余额度（6.1）": "In S-FP-4 with 220,000.00 USD still available to borrow, the remaining headroom can be republished (6.1)",
+  "可融金额 220,000.00 USD > 0，可再次发布剩余额度（6.1）": "with 220,000.00 USD still available to borrow, the remaining headroom can be republished (6.1)",
   "池内 2 张代币底层应收账款失效 · 300,000.00 USD": "Underlying receivables behind 2 tokens in the pool were invalidated · 300,000.00 USD",
-  "失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发覆盖不足提醒（E-9 / 6.4.1）": "The invalidated part stops counting towards pledged token value; the borrowing cap fell to 480,000.00 USD, below outstanding financing of 500,000.00 USD, so pledge coverage became insufficient (E-9 / 6.4.1)",
+  "失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发覆盖不足提醒": "The invalidated part stops counting towards pledged token value; the borrowing cap fell to 480,000.00 USD, below outstanding financing of 500,000.00 USD, so pledge coverage became insufficient (E-9 / 6.4.1)",
   "还款计划定稿 · 3 期 · 起息日 2026-05-12": "Repayment schedule finalised · 3 instalments · interest start date 2026-05-12",
-  "融资确认完成的同一次结算内定稿，起息日取实际放款日；到期日 2027-04-20 取项目有效期至（WS-327 D-RP-10 / D-RP-11 / D-RP-12）": "Finalised in the same settlement as the financing confirmation. The interest start date is the actual disbursement date; the maturity date 2027-04-20 is the project validity date (WS-327 D-RP-10 / D-RP-11 / D-RP-12)",
-  "第 1 期利息 8,688.89 USD 已提交还款记录 · 期次转 S-RP-2": "Instalment 1 interest 8,688.89 USD submitted · instalment moves to S-RP-2",
-  "提交时刻即停止该期计息与逾期累加（D-FIN-11）；两个额度量一个都不动——钱有没有到只有机构知道（D-RP-37）": "Submission stops interest accrual and the overdue counter for that instalment at that moment (D-FIN-11); neither credit figure moves — only the institution knows whether the money arrived (D-RP-37)",
+  "融资确认完成的同一次结算内定稿，起息日取实际放款日；到期日 2027-04-20 取项目有效期至": "Finalised in the same settlement as the financing confirmation. The interest start date is the actual disbursement date; the maturity date 2027-04-20 is the project validity date",
+  "第 1 期利息 8,688.89 USD 已提交还款记录 · 该期转入待确认": "Instalment 1 interest 8,688.89 USD submitted · instalment moves to",
+  "提交时刻即停止该期计息与逾期累加；两个额度量一个都不动——钱有没有到只有机构知道": "Submission stops interest accrual and the overdue counter for that instalment at that moment; neither credit figure moves — only the institution knows whether the money arrived",
   "年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2026-05-12": "Simple annual interest, actual days ÷ 360, interest accrues from the start date and not on the due date; start date = 2026-05-12",
   "放款并完成融资确认，计入项目融资余额": "Disbursed and financing confirmed; counted into outstanding financing",
   "创建资产池 · 首笔质押 3 张": "Pool created · first pledge of 3 tokens",
   "链上转入成功（CT-2）": "Transfer confirmed on chain (CT-2)",
   "项目在途金额 = 500,000.00 USD，可融金额 = 800,000 − 0 − 500,000 = 300,000.00 USD": "Committed demand = 500,000.00 USD; available to borrow = 800,000 − 0 − 500,000 = 300,000.00 USD",
   "收到机构报价 500,000.00 USD（FD-20260815-0041）": "Quote received · 500,000.00 USD (FD-20260815-0041)",
-  "报价不新增占用（AC-FIN-23）": "A quote adds no commitment (AC-FIN-23)",
-  "资产方接受报价 · 业务转 S-FD-3 待放款": "Quote accepted by the asset owner · deal moves to S-FD-3 awaiting disbursement",
-  "项目转 S-FP-4 融资中；在途报价金额不变——业务仍在途，尚未成为未偿本金（WS-325）": "The project moves to S-FP-4 Financing; the quoted amount is unchanged — the deal is still in flight and has not become unpaid principal yet (WS-325)",
+  "报价不新增占用": "A quote adds no commitment",
+  "资产方接受报价 · 业务转 待放款": "Quote accepted by the asset owner · deal moves to awaiting disbursement",
+  "需求转「放款中」；在途报价金额不变——业务仍在途，尚未成为未偿本金": "The project moves to Financing; the quoted amount is unchanged — the deal is still in flight and has not become unpaid principal yet",
   "资金方终止业务 FD-20260815-0041": "Deal FD-20260815-0041 terminated by the funder",
-  "终止原因（FD-22，对资产方可见、公开时中性表述）：合同主体名称与平台登记的企业主体不一致，两次沟通后未能提供更正件。五个后果同一次结算内生效：在途报价金额全额释放且不进授信占用额、项目在途金额不变（需求还挂着）、项目回 S-FP-2 募集中、质押不释放、编号保留但作废（WS-326 D-LN-24）": "Termination reason (FD-22, visible to the asset owner and neutrally worded when public): the contracting party name did not match the entity registered on the platform, and no corrected document was provided after two exchanges. Five consequences take effect in the same settlement: the quoted amount is released in full and never enters credit utilisation; committed demand is unchanged (the demand is still live); the project returns to S-FP-2 Open for quotes; collateral is not released; the deal ID is retained but voided (WS-326 D-LN-24)",
-  "项目转 S-FP-3 已锁定；报价不新增占用，项目在途金额不变（AC-FIN-23）": "The project moves to S-FP-3 Locked; a quote adds no commitment, so committed demand is unchanged (AC-FIN-23)",
+  "终止原因（FD-22，对资产方可见、公开时中性表述）：合同主体名称与平台登记的企业主体不一致，两次沟通后未能提供更正件。五个后果同一次结算内生效：在途报价金额全额释放且不进授信占用额、项目在途金额不变（需求还挂着）、项目回 募集中、质押不释放、编号保留但作废": "Termination reason (FD-22, visible to the asset owner and neutrally worded when public): the contracting party name did not match the entity registered on the platform, and no corrected document was provided after two exchanges. Five consequences take effect in the same settlement: the quoted amount is released in full and never enters credit utilisation; committed demand is unchanged (the demand is still live); the project returns to Open for quotes; collateral is not released; the deal ID is retained but voided",
+  "项目转 已锁定；报价不新增占用，项目在途金额不变": "The project moves to Locked; a quote adds no commitment, so committed demand is unchanged",
   "年化 9.80% 高于我方本轮可接受区间（不超过 8.50%），且还款方式与我方现金流不匹配。": "An APR of 9.80% is above the range we can accept this round (8.50% ceiling), and the repayment structure does not match our cash flow.",
   "创建资产池 · 首笔质押 4 张": "Pool created · first pledge of 4 tokens",
   "发布融资需求 600,000.00 USD": "Financing demand published · 600,000.00 USD",
   "收到机构报价 600,000.00 USD": "Quote received · 600,000.00 USD",
-  "项目转 S-FP-3 已锁定；在途占用不变（AC-FIN-23）": "The project moves to S-FP-3 Locked; committed demand is unchanged (AC-FIN-23)",
+  "项目转 已锁定；在途占用不变": "The project moves to Locked; committed demand is unchanged",
   "创建资产池 · 首笔质押 5 张": "Pool created · first pledge of 5 tokens",
-  "在途占用不变（AC-FIN-23）": "Committed demand unchanged (AC-FIN-23)",
-  "融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「覆盖持平」档；INV-FIN-01 仍成立，不触发覆盖不足提醒（D-FIN-55）": "Borrowing cap 500,000.00 = outstanding financing 500,000.00, so available to borrow is zero and coverage is at capacity; INV-FIN-01 still holds, so no insufficient-coverage notice is raised (D-FIN-55)",
+  "在途占用不变": "Committed demand unchanged",
+  "融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「覆盖持平」档；不触发覆盖不足提醒": "Borrowing cap 500,000.00 = outstanding financing 500,000.00, so available to borrow is zero and coverage is at capacity; still holds, so no insufficient-coverage notice is raised",
   "还款计划定稿 · 3 期 · 起息日 2026-07-26": "Repayment schedule finalised · 3 instalments · interest start date 2026-07-26",
-  "首期应还日 2026-10-26，还款入口于应还日前 3 个自然日开启；本期不支持提前还款（WS-327 D-RP-26 / X-LS-40）": "The first instalment is due 2026-10-26 and the repayment entry opens 3 calendar days before the due date; early repayment is not supported this release (WS-327 D-RP-26 / X-LS-40)",
+  "首期应还日 2026-10-26，还款入口于应还日前 3 个自然日开启；本期不支持提前还款": "The first instalment is due 2026-10-26 and the repayment entry opens 3 calendar days before the due date; early repayment is not supported this release",
   "年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2026-07-26": "Simple annual interest, actual days ÷ 360, interest accrues from the start date and not on the due date; start date = 2026-07-26",
   "创建资产池 · 首笔质押 2 张": "Pool created · first pledge of 2 tokens",
   "发布融资需求 200,000.00 USD": "Financing demand published · 200,000.00 USD",
@@ -1204,28 +1213,28 @@ var EV_TR = {
   "再次发布融资需求 250,000.00 USD": "Financing demand republished · 250,000.00 USD",
   "可融金额 1,200,000 − 900,000 − 0 ＝ 300,000.00 USD > 0，可再次发布剩余额度（6.1）": "Available to borrow 1,200,000 − 900,000 − 0 = 300,000.00 USD > 0, so the remaining headroom can be republished (6.1)",
   "收到机构报价 250,000.00 USD（FD-20260903-0056）": "Quote received · 250,000.00 USD (FD-20260903-0056)",
-  "项目到期不终结在途业务：机构照常放款、资产方照常确认（WS-326 D-LN-15）": "Project expiry does not terminate deals in flight: the institution disburses and the asset owner confirms as normal (WS-326 D-LN-15)",
+  "项目到期不终结在途业务：机构照常放款、资产方照常确认": "Project expiry does not terminate deals in flight: the institution disburses and the asset owner confirms as normal",
   "有效期到期 · 存在未结清融资业务，项目不关闭": "Project term expired · an unsettled deal exists, so the project is not closed",
-  "转「已到期 · 存量处理中」并行标记：停止接受新报价、不允许再次发布，存量走完后转 S-FP-6 并释放质押（D-FIN-43 分支②，按正常状态呈现 D-FIN-47）": "The parallel flag 'matured · in run-off' is applied: no new quotes are accepted and republishing is not allowed; once the existing deals finish, the project moves to S-FP-6 and the collateral is released (D-FIN-43 branch 2, presented as a normal state per D-FIN-47)",
+  "转「已到期 · 存量处理中」并行标记：停止接受新报价、不允许再次发布，存量走完后转 并释放质押": "The parallel flag 'matured · in run-off' is applied: no new quotes are accepted and republishing is not allowed; once the existing deals finish, the project moves to and the collateral is released ( branch 2, presented as a normal state per )",
   "还款计划定稿 · 3 期 · 起息日 2025-09-10": "Repayment schedule finalised · 3 instalments · interest start date 2025-09-10",
-  "末期应还日 2026-08-20 恒等于融资到期日（＝项目有效期至）；末期含全部本金 900,000.00 USD（WS-327 D-RP-13）": "The final due date 2026-08-20 is identical to the financing maturity date (= the project validity date); the final instalment carries the entire principal of 900,000.00 USD (WS-327 D-RP-13)",
+  "末期应还日 2026-08-20 恒等于融资到期日（＝项目有效期至）；末期含全部本金 900,000.00 USD": "The final due date 2026-08-20 is identical to the financing maturity date (= the project validity date); the final instalment carries the entire principal of 900,000.00 USD",
   "第 1 期利息 15,015.00 USD 已结清": "Instalment 1 interest 15,015.00 USD settled",
-  "利息期结清：项目融资余额与授信占用额**一动不动**——它们是未偿本金的合计（WS-327 D-RP-36）": "Settling an interest instalment moves neither outstanding financing nor credit utilisation — both are sums of unpaid principal (WS-327 D-RP-36)",
+  "利息期结清：项目融资余额与授信占用额**一动不动**——它们是未偿本金的合计": "Settling an interest instalment moves neither outstanding financing nor credit utilisation — both are sums of unpaid principal",
   "第 2 期利息 14,850.00 USD 已结清": "Instalment 2 interest 14,850.00 USD settled",
   "同上，利息不递减任何额度": "Same as above: interest never decrements any credit figure",
   "第 3 期（含本金）逾期 · 应还日 2026-08-20": "Instalment 3 (including principal) overdue · due 2026-08-20",
-  "应还日次日 00:00 起打逾期标记、逾期天数每日 +1，不设宽限期；业务打 S-FD-9 并行标记，**状态仍是 S-FD-6 还款中**。平台不计罚息、不触发任何质押处置（WS-327 D-RP-34 / D-RP-35 / X-LS-45 / X-LS-46）": "The overdue flag is applied from 00:00 on the day after the due date and the overdue count rises by 1 each day, with no grace period; the deal carries the parallel flag S-FD-9 while its status stays S-FD-6 Repaying. The platform charges no penalty interest and triggers no disposal of collateral (WS-327 D-RP-34 / D-RP-35 / X-LS-45 / X-LS-46)",
+  "应还日次日 00:00 起打逾期标记、逾期天数每日 +1，不设宽限期；业务打逾期标记，**仍在还款中**。平台不计罚息、不触发任何质押处置": "The overdue flag is applied from 00:00 on the day after the due date and the overdue count rises by 1 each day, with no grace period; the deal carries the parallel flag while its status stays Repaying. The platform charges no penalty interest and triggers no disposal of collateral",
   "年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2025-09-10": "Simple annual interest, actual days ÷ 360, interest accrues from the start date and not on the due date; start date = 2025-09-10",
-  "本期无提前还款，还本发生在项目到期后（X-LS-06）": "Early repayment is not supported this release; principal is repaid after the project term ends (X-LS-06)",
+  "本期无提前还款，还本发生在项目到期后": "Early repayment is not supported this release; principal is repaid after the project term ends",
   "创建资产池 · 首笔质押 7 张": "Pool created · first pledge of 7 tokens",
   "发布融资需求 300,000.00 USD": "Financing demand published · 300,000.00 USD",
   "可融金额 ＝ 496,000 − 0 − 300,000 ＝ 196,000.00 USD": "Available to borrow = 496,000 − 0 − 300,000 = 196,000.00 USD",
   "收到机构报价 300,000.00 USD（FD-20260902-0054）": "Quote received · 300,000.00 USD (FD-20260902-0054)",
-  "资金方提交放款记录 LN20260905000001 · 业务转 S-FD-4 待融资确认": "Disbursement record LN20260905000001 submitted by the funder · deal moves to S-FD-4 awaiting financing confirmation",
-  "放款时四个量一个都不动：金额要到融资确认完成才从项目在途金额转入项目融资余额（WS-326 AC-FIN-25 / D-LN-07）。融资确认时限自提交成功的服务端时间起算 168 小时（D-LN-31 / D-LN-32）": "None of the four figures moves at disbursement: the amount only shifts from committed demand to outstanding financing once the financing confirmation completes (WS-326 AC-FIN-25 / D-LN-07). The 168-hour confirmation window starts from the server time of a successful submission (D-LN-31 / D-LN-32)",
-  "第一段完成，项目已持久化；可离开页面后再回来续做第二段（AC-LS-54）": "Step one complete and the project is persisted; you can leave the page and come back to finish later (AC-LS-54)",
+  "资金方提交放款记录 LN20260905000001 · 这笔业务转入待放款确认": "Disbursement record LN20260905000001 submitted by the funder · deal moves to awaiting financing confirmation",
+  "放款时四个量一个都不动：金额要到融资确认完成才从项目在途金额转入项目融资余额。融资确认时限自提交成功的服务端时间起算 168 小时": "None of the four figures moves at disbursement: the amount only shifts from committed demand to outstanding financing once the financing confirmation completes. The 168-hour confirmation window starts from the server time of a successful submission",
+  "第一段完成，项目已持久化；可离开页面后再回来续做第二段": "Step one complete and the project is persisted; you can leave the page and come back to finish later",
   "创建资产池 · 首笔质押 2 张 · 链上执行失败": "Pool created · first pledge of 2 tokens · on-chain execution failed",
-  "创建时那唯一一笔质押最终链上失败，项目保留为空池草稿（E-12 / D-FIN-62 / FP-25）": "The single pledge submitted at creation ultimately failed on chain, so the project is kept as an empty-pool draft (E-12 / D-FIN-62 / FP-25)"
+  "创建时那唯一一笔质押最终链上失败，项目保留为空池草稿": "The single pledge submitted at creation ultimately failed on chain, so the project is kept as an empty-pool draft"
 };
 
 function dtr(v){
@@ -1717,7 +1726,7 @@ function flowBlock(p, acts){
   }).join('');
   return '<div class="ls-flow4">' + body + '</div>' +
     '<p class="hint" style="margin-top:11px">' + L(
-      'Quote, accept/reject and disbursement are delivered by / . This module carries the stage display and mapping only; each stage dialog shows the public facts and hands off to the owning module.',
+      'Quote, accept/reject and disbursement happen in their own stages. This page carries the stage display only; each stage dialog shows the public facts and hands off to the owning module.',
       '报价、接受/拒绝与放款在各自的环节里完成。本页只承载环节展示；环节弹窗给出已公开的事实，真正的操作交回对应模块完成。') + '</p>';
 }
 function stageLabel(f){
@@ -1912,7 +1921,7 @@ function pageProject(){
       (tp.rows.length ? tp.rows.map(function(t){
         return '<tr><td class="mono">' + t.id +
             '<div class="cell-sub"><span class="hash"><span class="val">' + shortHash(t.hash) + '</span></span></div></td>' +
-          '<td class="num">1 · <span class="faint">' + L(TOKEN_SYM[0], TOKEN_SYM[1]) + '</span></td>' +
+          '<td class="num">1</td>' +
           '<td class="num">' + amt(t.amt) + ' <span class="faint">' + CCY + '</span></td>' +
           '<td class="num">' + t.due + '</td><td>' + E(dtr(t.buyer)) + '</td>' +
           '<td>' + (t.dead ? pill('amber', L('Invalid · excluded from coverage since ' + (t.deadAt||''),
@@ -1928,11 +1937,11 @@ function pageProject(){
             L('The pledge submitted at creation ultimately failed on chain. Pledge again before publishing.',
               '创建时那笔质押最终链上失败，可重新质押后再发布。')) + '</td></tr>') +
     '</tbody></table></div>' + pgBar(tp, 'tokPage') +
-    '<div class="card-b" style="padding-top:12px">' + CF.note('', L(
+    '<div class="card-b" style="padding-top:4px;padding-bottom:4px">' + fold(L('What is public and what is not','哪些信息公开、哪些不公开'), '', CF.note('', L(
       'What is fully public is the financing demand and deal information shown on the marketplace. It does <strong class="ls-b">not</strong> include credit lines, other parties’ console data, operations-side diagnostic fields, scanned attachments or contact details.' +
       '<p>Since V8.0 the contract number and invoice number of the underlying receivable are <strong class="ls-b">no longer public either</strong> . Buyer name, exact amount and due date remain public; the rate limiting and scraping detection that go with that are in appendix chapter 8.</p>',
       '全量公开的范围是广场上展示的融资需求与融资业务信息；<strong class="ls-b">不含</strong>授信额度、他人控制台数据、运营端诊断字段、附件影像件与联系人联系方式。' +
-      '<p>V8.0 起<strong class="ls-b">底层应收账款的合同号与发票号也不再公开</strong>。买方企业名、精确金额与账期仍然公开，配套的接口速率限制与异常抓取识别见分册第 8 章。</p>')) +
+      '<p>V8.0 起<strong class="ls-b">底层应收账款的合同号与发票号也不再公开</strong>。买方企业名、精确金额与账期仍然公开，配套的接口速率限制与异常抓取识别见分册第 8 章。</p>'))) +
     '</div></div>';
 
   /* ---- 左栏 2：融资信息清单（一行 = 一笔需求，按需求编号 FP-28 逐笔；固定每页 5 条） ---- */
@@ -1953,13 +1962,13 @@ function pageProject(){
         L('Once the pool holds valid collateral, publish a demand from the actions panel.',
           '池内有有效质押后，在右侧操作区发布融资需求即可。') + '</td></tr>') +
     '</tbody></table></div>' + pgBar(rp2, 'demPage') +
-    '<div class="card-b" style="padding-top:12px">' + CF.note('', L(
+    '<div class="card-b" style="padding-top:4px;padding-bottom:4px">' + fold(L('How a demand ID is formed','需求编号怎么来的'), '', CF.note('', L(
       'A demand ID is <strong class="ls-b">project ID + a two-digit round number</strong> . It is a derived identifier, not a second object: no second state machine, no second deep-link anchor — it is still round N of the same project .' +
       '<p>Commercial terms: ' + (p.terms ? 'rate ' + E(dtr(p.terms.rate)) + ' · term ' + E(dtr(p.terms.term)) + ' · ' + E(dtr(p.terms.repay)) + ' · use of funds ' + E(dtr(p.terms.use))
         : 'this project currently has no public commercial terms.') + '</p>',
       '需求编号 ＝ <strong class="ls-b">项目编号 + 两位轮次序号</strong>。它是派生编号、不是第二个对象：不产生第二套状态机、第二个深链锚点——仍然是同一个项目的第 N 轮要约。' +
       '<p>商务条款：' + (p.terms ? '报价利率 ' + E(dtr(p.terms.rate)) + ' · 融资期限 ' + E(dtr(p.terms.term)) + ' · ' + E(dtr(p.terms.repay)) + ' · 资金用途 ' + E(dtr(p.terms.use))
-        : '该项目当前无公开的在途业务商务条款。') + '</p>')) + '</div></div>';
+        : '该项目当前无公开的在途业务商务条款。') + '</p>'))) + '</div></div>';
 
   /* ---- 左栏（v1.4 新位置：融资信息清单下方）：在途报价与报价历史 ----
      需求方 09-14 第 3 条要求改列表展示。一行 = 一笔报价，在途与历史同表、用状态列区分，
@@ -2009,11 +2018,11 @@ function pageProject(){
             (r.q.endAt ? ' · ' + L('ended ','终结 ') + r.q.endAt : '') + '</div></td>' +
           '<td>' + quoteState(r) + '</td></tr>';
       }).join('') + '</tbody></table></div>' +
-    '<div class="card-b" style="padding-top:12px">' + CF.note('', L(
+    '<div class="card-b" style="padding-top:4px;padding-bottom:4px">' + fold(L('Rejected vs expired','已拒绝与已失效的区别'), '', CF.note('', L(
       'Rejected and expired are <b class="ls-b">two different terminal states</b>: a rejection is the asset owner’s decision (has a reason, visible to the institution); an expiry is a system event (no reason, not counted towards a rejection rate). The consequences for the credit line and the project are identical — only the landing state and the presence of a reason differ. The deal ID is retained but voided; it is never recycled or reused.' +
       '<p>The quoted amount is always equal to the demand amount; the settlement figure uses the FX snapshot locked at submission. Interest accrual follows the signed financing contract, not this table.</p>',
       '已拒绝与已失效是<b class="ls-b">两个不同的终态</b>：拒绝是资产方的意思表示（有原因、对机构可见）；失效是系统事件（无原因、不计入拒绝率）。两者对额度与项目的后果完全相同，差别只在状态落点与有没有原因。编号保留但作废，不回收、不复用。' +
-      '<p>报价金额恒等于需求金额；结算金额按报价提交时锁定的汇率快照折算。计息规则以双方签署的融资合同为准，不以本表为准。</p>')) +
+      '<p>报价金额恒等于需求金额；结算金额按报价提交时锁定的汇率快照折算。计息规则以双方签署的融资合同为准，不以本表为准。</p>'))) +
     '</div></div>';
 
   /* ---- 左栏 4（WS-326 增量）：放款与融资确认的公开进度 ----
@@ -2159,11 +2168,6 @@ function pageProject(){
             flowBlock(p, acts)) +
         seg(g('repayFlow'), '', repayBlock(p, acts)) +
       '</div>') +
-    '<div class="card-b" style="border-top:1px solid var(--border);padding-top:12px">' +
-      '<p class="hint">' + L('Deep link ','深链锚点 ') + '<span class="mono">project/' + p.id + '</span><br>' +
-      L('Action anchors ','动作锚点 ') + '<span class="mono">?action=publish / pledge / withdraw / redeem</span><br>' +
-      L('Quote and accept/reject are carried by : ','报价与接受 / 拒绝由 承载：') +
-      '<span class="mono">project/' + p.id + '?action=quote</span></p></div>' +
   '</div></aside>';
 
   /* ---- 两张图：两栏之下，页面最下方 ---- */
@@ -2303,7 +2307,7 @@ function pageCreate(){
         (wp.rows.length ? wp.rows.map(function(t){
           return '<tr><td><input type="checkbox" ' + (S.sel[t.id] ? 'checked' : '') + ' data-act="ls.sel" data-v="' + t.id +
             '" aria-label="' + t.id + '"></td><td class="mono">' + t.id + '</td>' +
-            '<td class="num">1 · <span class="faint">' + L(TOKEN_SYM[0], TOKEN_SYM[1]) + '</span></td>' +
+            '<td class="num">1</td>' +
             '<td class="num">' + amt(t.amt) + ' <span class="faint">' + CCY + '</span></td>' +
             '<td class="num">' + t.due + '</td><td>' + E(dtr(t.buyer)) + '</td><td>' + g('receivable') + '</td></tr>';
         }).join('') : '<tr><td colspan="7" class="tbl-empty"><b>' + L('No pledgeable tokens','暂无可质押代币') + '</b>' +

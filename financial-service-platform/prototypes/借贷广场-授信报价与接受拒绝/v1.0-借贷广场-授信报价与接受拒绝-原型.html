@@ -13,7 +13,6 @@
 
    本模块的招牌件（WS-324 没有、这里新造的四个）：
      .cq-crbar  授信尺 —— AC-CR-03 的可视化读数，机构维度；与 WS-324 的 .ls-meter（项目维度）成对
-     .cq-gates  两道闸门牌 —— 覆盖闸门 / 授信闸门并置，各给判据、取值、结论与出路（D-CR-21）
      .cq-cd     锁定倒计时 —— 已锁定 + 剩余 ≡ 168 小时，这条恒等式在条上可验（D-LS-13 / FD-13 + QT-13）
      .cq-fee    手续费差额条 —— 融资金额 → 到账（无数字）→ 应还本金，三格对照（D-FIN-103 / D-FIN-104）
    ========================================================================== */
@@ -121,41 +120,6 @@
 .cq-crbar.mini .track{height:7px;border-radius:4px}
 .cq-crbar.mini .lg{display:none}
 
-/* 不等式一行：把 AC-CR-03 摆成可读的算式，各项与尺上的段同色 */
-.cq-eq{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 7px;margin-top:var(--sp-4);
-  font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--muted)}
-.cq-eq .t{position:relative;padding-left:13px;color:var(--text);font-weight:620}
-.cq-eq .t::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
-  width:8px;height:8px;border-radius:2px}
-.cq-eq .t.used::before{background:rgba(181,71,8,.16);box-shadow:inset 0 0 0 1px var(--warn)}
-.cq-eq .t.fly::before{background:rgba(11,138,118,.14);box-shadow:inset 0 0 0 1px var(--pos)}
-.cq-eq .t.now::before{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
-.cq-eq .t.cap::before{background:var(--accent)}
-.cq-eq .op{color:var(--faint)}
-.cq-eq .vd{margin-left:auto;font-family:var(--sans);font-weight:650}
-.cq-eq .vd.pass{color:var(--ok)}
-.cq-eq .vd.fail{color:var(--danger)}
-
-/* —— 招牌件 B：两道闸门牌（AC-FIN-07 / AC-CR-22 / D-CR-21）——
-   两张并置的判据牌，各自给「判据 · 当前取值 · 结论 · 谁来解决」。
-   并置本身就是那条口径：两道独立、须同时通过，失败提示必须能被区分开。 */
-.cq-gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:var(--sp-4)}
-.cq-gate{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:14px}
-.cq-gate.pass{border-color:var(--ok-border);background:var(--ok-bg)}
-.cq-gate.fail{border-color:var(--danger-border);background:var(--danger-bg)}
-.cq-gate.soft{border-color:var(--warn-border);background:var(--warn-bg)}
-.cq-gate .gh{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:660;color:var(--text)}
-.cq-gate .gh .st{margin-left:auto;font-size:var(--fs-10);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-.cq-gate.pass .gh .st{color:var(--ok)}
-.cq-gate.fail .gh .st{color:var(--danger)}
-.cq-gate.soft .gh .st{color:var(--warn)}
-.cq-gate .fm{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.6;
-  overflow-wrap:anywhere}
-.cq-gate .fm b{color:var(--text);font-weight:640}
-.cq-gate .who{font-size:11.5px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);
-  color:var(--muted);line-height:1.55}
-.cq-gate .who b{font-weight:660;color:var(--text)}
-
 /* —— 招牌件 C：锁定倒计时（D-LS-13 / AC-LS-85）——
    条上两段：已锁定 + 剩余 ≡ 168 小时。这条恒等式在屏幕上可以直接核。
    不足 24 小时切到分钟精度并换 warn 档；业务离开 S-FD-1 后整块不渲染（D-CR-28）。 */
@@ -230,7 +194,8 @@
   margin-bottom:68px;display:flex;flex-direction:column}
 .modal.cq-unit .modal-h b{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .modal.cq-unit .modal-h .sb{font-size:12px;font-weight:500;color:var(--faint)}
-.modal.cq-unit .modal-b{flex:1;min-height:0;overflow:auto;font-size:14px;line-height:1.55}
+.modal.cq-unit .modal-b{flex:1;min-height:0;overflow:auto;font-size:14px;line-height:1.55;
+  padding-bottom:var(--sp-6)}
 .modal.cq-unit.dialog{max-width:560px}
 
 /* 单元内的分节：替代原来的卡片堆叠，弹窗里不再套卡片 */
@@ -344,17 +309,6 @@
 .cq-terms .v.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:640}
 .cq-terms .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
 
-/* —— 三占用对照（5.1 表的页面形态，D-CR-18 的命名红线落点）—— */
-.cq-three{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:var(--sp-4)}
-.cq-three .q{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 13px;background:var(--card-2)}
-.cq-three .q.on{border-color:var(--accent-border);background:var(--accent-soft)}
-.cq-three .q .nm{font-size:12.5px;font-weight:660}
-.cq-three .q .dm{font-size:var(--fs-10);color:var(--faint);margin-top:3px}
-.cq-three .q .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-16);font-weight:660;margin-top:7px}
-.cq-three .q .ch{font-size:11px;margin-top:6px;line-height:1.5;color:var(--muted)}
-.cq-three .q .ch b{font-weight:660;color:var(--text)}
-
-/* —— 接受流程三步的进度轨（AC-LS-90 可中断可续做；进度不是状态，D-FIN-77）—— */
 .cq-prog{display:flex;flex-direction:column;gap:2px}
 .cq-prog .p{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--border)}
 .cq-prog .p:last-child{border-bottom:0}
@@ -378,7 +332,6 @@
 .cq-sum .kk:last-child{border-bottom:0}
 .cq-sum .kk s{text-decoration:none;color:var(--muted);flex:none}
 .cq-sum .kk b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:640;text-align:right;
-  overflow-wrap:anywhere}
 .cq-sum .sf{padding:11px 14px;border-top:1px solid var(--border);background:var(--card-2);
   display:flex;gap:9px;flex-wrap:wrap;align-items:center}
 .cq-sum .sf .hint{margin:0;flex:1;min-width:180px}

@@ -1522,12 +1522,9 @@ var mod = {
   },
   /* 身份切换走顶栏上下文操作区（portal 规范 §3「语言/上下文操作分区」）；
      数据状态切换走公共 stateBar。模块不自带底部演示条。 */
-  topExtra:function(){
-    return '<div class="seg" role="group" aria-label="演示身份">' +
-      ['guest','asset','fund'].map(function(k){
-        return '<button type="button" data-act="cq.role" data-v="' + k + '" aria-pressed="' + (S.role===k) + '">' +
-          ACTORS[k].t + '</button>'; }).join('') + '</div>';
-  },
+  /* 身份切换只保留评审条上那一个。顶栏那个在弹窗打开时会被遮罩盖住、点不动——
+     承载单元本来就是弹窗，留着它只会变成一个点不动的死控件。 */
+
   crumbParts:function(){ return []; },
   /* 提交结果紧跟页头之后呈现（各页 head 末尾的 submitResultCard 槽位）；
      五类结局各有独立页面态与独立出路，不存在只写"操作失败"的兜底。 */

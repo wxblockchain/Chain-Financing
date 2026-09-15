@@ -54,9 +54,6 @@
 /* —— WS-325 增量：锁定信息（D-LS-13）——
    条上两段：已锁定 + 剩余 ≡ 168 小时，这条恒等式在屏幕上可以直接核。
    不足 24 小时切 warn 档并换分钟精度。措辞只陈述事实，不做评价（D-LS-14）。 */
-.ls-lockmini{display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:5px;font-size:11px;color:var(--faint);line-height:1.5}
-.ls-lockmini b{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--accent);font-weight:660}
-.ls-lockmini.soon b{color:var(--warn)}
 .ls-lock{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:13px}
 /* v1.4：锁定信息从 300px 的右栏搬到宽的左栏，两列并排——
    左列是"被谁锁 / 从何时起 / 已多久 / 到期时刻"四项事实，右列是剩余倒计时与两条出路。
@@ -143,14 +140,16 @@
 .ls-flow4 .fs.now .t{color:var(--accent)}
 .ls-flow4 .fs .t .no{font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);font-weight:700}
 .ls-flow4 .fs .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
-.ls-flow4 .fs .fa{margin-top:8px}
+/* 环节按钮按规范挂在当前环节下（不能挪走），但给它一条分隔线并撑满，
+   让进度列表仍然读作列表、按钮读作"这一环节的动作"，而不是浮在列表中间的一颗。 */
+.ls-flow4 .fs .fa{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.ls-flow4 .fs .fa .btn{width:100%;justify-content:center}
+.ls-flow4 .fs .fa+.fa{margin-top:8px;padding-top:0;border-top:0}
 
 /* —— 长弹窗：公共 .modal 是 flex 列且 max-height:100%，但 .modal-b 没有 min-height:0，
    内容一长（解除质押里可能有三张清单）页脚就被顶出视口。只在本模块补这一条，不改公共实现。 —— */
 .mask > .modal{max-height:calc(100vh - 48px)}
 .modal > .modal-b{flex:1 1 auto;min-height:0}
-
-
 
 /* —— v1.4：进行中状态的 pill 档位。公共 base.css 只给了 green / amber / red / gray / dash，
    不带 tone 的 .pill 是透明的"无强调"变体。状态列需要一个"进行中"的档，
