@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en" data-end="asset">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financial Service Platform · Disbursement and disbursement confirmation</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>/* Hallmark · pre-emit critique: P5 H5 E4 S5 R4 V4
+   只放本模块专有的组合。token 与公共组件一律来自 _shared，此处不重定义、不覆盖。
+   继承端别：面客端 asset　继承 shell：portal（顶栏导航 + subnav，无侧栏）
+   继承母版：4.3 顶栏母版（金融服务端登录）＋ 4.2 公开层内容节奏
+   继承模块：WS-324 v1.3（详情页三段式操作区、术语表、EN 默认）
+             WS-325 v1.3.1（承载单元抽屉 .drawer + 760px 修饰类、提示走居中弹窗）
+
+   v2.0 的四处结构变化（对应 09-15 裁定）：
+     ① P-LS-07 / P-LS-08 由**整页**改为详情页操作区内的**右侧抽屉 760px**，不跳离详情页
+     ② 核验区在 760px 内左右分栏：左盖章件（独立滚动 + 三档缩放 + 两档配比）、右条款对照单，
+        **同屏、不折叠、不上下排**——AC-LN-03 在 760 内的解法，实测证据见 README §4
+     ③ 三个处置动作降到抽屉底部动作条的次级位，点开在抽屉内就地展开二级区（D-LN-55）
+     ④ 界面文案默认英文、中文可切换（WS-324 D-LS-15），术语取 WS-324 v1.3 的 G 表 + 分册 7.3 新词
+   ========================================================================== */
+
+/* ============================================================
+   第一段：面客档位版式（与 WS-324 / WS-325 共用的那批模块作用域类，类名一字不改）
+   base.css 的 .page-title 19px / body 13.5px 是管理端档位；面客页要抬到参考件档位。
+   上收 base.css 的事已第四次记录在 README §6，仍建议单独一轮做。
+   ============================================================ */
+.portal-wrap{font-size:14.5px;line-height:1.55}
+.portal-wrap table.tbl{font-size:13px}
+.portal-wrap .card-head span{font-size:12.5px}
+.ls-phead{display:flex;align-items:flex-start;gap:var(--sp-5);margin-bottom:var(--sp-5)}
+.ls-phead .tile{width:52px;height:52px;border-radius:15px;flex:none;background:var(--accent-soft);
+  border:1px solid var(--accent-border);display:grid;place-items:center;font-size:21px;margin-top:5px}
+.ls-phead .body{flex:1;min-width:0}
+.ls-phead .kick{font-size:12.5px;color:var(--faint);margin:0 0 4px}
+.ls-phead h1{margin:0;font-size:clamp(24px,2.5vw,38px);font-weight:740;letter-spacing:-.03em;line-height:1.12}
+.ls-phead h1 em{font-style:normal;color:var(--faint);font-weight:600;margin-left:10px;font-size:.58em}
+.ls-phead .amt{text-align:right;flex:none;padding-top:8px}
+.ls-phead .amt .k{font-size:12.5px;color:var(--faint)}
+.ls-phead .amt .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(24px,2.2vw,34px);
+  font-weight:700;letter-spacing:-.035em;line-height:1.06;margin-top:3px}
+.ls-phead .amt .cy{font-size:13px;color:var(--faint);font-weight:500;margin-left:5px}
+.ls-phead .amt .x{font-size:12px;color:var(--faint);margin-top:5px}
+.ls-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-4)}
+.ls-tags .pill{height:27px;padding:0 11px;font-size:12.5px;border-radius:var(--radius-pill)}
+.ls-kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:var(--sp-4) var(--sp-5)}
+.ls-kgrid .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.ls-kgrid .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:640;margin-top:4px}
+.ls-kgrid .v.txt{font-family:var(--sans)}
+.ls-kgrid .x{font-size:var(--fs-10);color:var(--faint);margin-top:3px;line-height:1.5}
+.card-head b{font-size:15px}
+.btn.blocked{background:var(--card-2);border-style:dashed;color:var(--faint);cursor:not-allowed}
+.btn.blocked:hover{background:var(--card-2)}
+.ls-why{display:flex;gap:6px;margin-top:6px;font-size:11px;color:var(--faint);line-height:1.5}
+.ls-why .sg{flex:none}
+
+/* ---- 详情页操作区的四环节（承接 WS-324 v1.3 6.5.5 三段式的第 ② 段）---- */
+.ls-flow4{display:flex;flex-direction:column;gap:2px}
+.ls-flow4 .fs{padding:11px 0;border-bottom:1px dashed var(--border)}
+.ls-flow4 .fs:last-child{border-bottom:0}
+.ls-flow4 .fs .t{font-size:12.5px;font-weight:640;color:var(--muted);display:flex;align-items:center;gap:8px}
+.ls-flow4 .fs .t .no{width:20px;height:20px;border-radius:50%;border:1px solid var(--border-strong);flex:none;
+  display:grid;place-items:center;font-size:var(--fs-10);font-weight:660;color:var(--faint);background:var(--bg-elev)}
+.ls-flow4 .fs.done .t .no{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
+.ls-flow4 .fs.now .t{color:var(--text)}
+.ls-flow4 .fs.now .t .no{background:var(--accent);border-color:var(--accent);color:#fff}
+.ls-flow4 .fs .x{font-size:11.5px;color:var(--faint);line-height:1.55;padding-left:28px;margin-top:4px}
+.ls-flow4 .fs .fa{margin:10px 0 0 28px}
+.ls-flow4 .fs .fa .btn+.btn{margin-left:8px}
+
+/* ============================================================
+   第二段：承载单元 —— 右侧抽屉 760px（D-LN-48 / D-LN-54）
+   公共 .drawer 是 440px（PRD 面板用），这里用模块修饰类放到 760，
+   与 WS-325 的承载单元同一个数：做事走抽屉、提示走弹窗、同一时刻只有一层。
+   ============================================================ */
+.drawer.u{width:min(760px,92vw);display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+.drawer.u .drawer-h{padding:12px 18px;gap:12px;align-items:flex-start}
+.drawer.u .drawer-h b{flex:1;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;font-size:15px}
+.drawer.u .drawer-h .sb{font-size:11.5px;font-weight:500;color:var(--faint);font-family:var(--mono)}
+.drawer.u .drawer-b{padding:0;font-size:13.5px;line-height:1.55}
+/* 抽屉底部动作条：公共层没有 drawer footer，这里新起一个类，不动公共组件 */
+.u-foot{display:flex;align-items:center;gap:var(--sp-2);padding:11px 18px;border-top:1px solid var(--border);
+  background:var(--bg-elev);flex-wrap:wrap}
+.u-foot .sp{flex:1;min-width:8px}
+.u-foot .side{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.u-foot .note{font-size:10.5px;color:var(--faint);flex-basis:100%;line-height:1.45;margin:1px 0 0}
+.u-sec{padding:15px 18px;border-bottom:1px solid var(--border)}
+.u-sec:last-child{border-bottom:0}
+.u-sec.tint{background:var(--card-2)}
+.u-sec>.sh{display:flex;align-items:baseline;gap:10px;margin-bottom:11px}
+.u-sec>.sh b{font-size:13px;font-weight:680}
+.u-sec>.sh .c{font-size:11px;color:var(--faint);margin-left:auto;text-align:right;line-height:1.45}
+/* 次级动作按钮：常驻可用，但不与主操作抢视线（「常驻 ≠ 同权重」，09-15 裁定 4） */
+.btn.link{background:transparent;border-color:transparent;color:var(--muted);padding:0 9px}
+.btn.link:hover{background:var(--card-hover);color:var(--text)}
+.btn.link.danger{color:var(--danger)}
+
+/* ---- 核验区：760 内左右分栏，两栏各自滚动、同屏、不折叠（AC-LN-03）----
+   两档配比：默认 1:1（各约 354px）；「侧重合同」切到 1.55:1（约 430 / 278），
+   条款单仍整列可见——重的是配比，不是折叠。 */
+/* 两栏等高、各自滚动：高度取一屏能放下的一档（392px），
+   1440×860 下核验区连同下方的表单起始行仍在同一屏里 */
+.vf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--sp-4);align-items:start}
+.vf.doc{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)}
+.vf-doc{border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-elev);
+  display:flex;flex-direction:column;overflow:hidden;height:392px}
+.vf-doc .dh{display:flex;align-items:center;gap:6px;padding:7px 9px;border-bottom:1px solid var(--border);
+  font-size:11px;flex-wrap:wrap}
+.vf-doc .dh .nm{font-weight:660;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:60px}
+.seg-mini{display:flex;gap:2px;background:var(--card-2);border:1px solid var(--border);
+  border-radius:var(--radius-pill);padding:2px;flex:none}
+.seg-mini button{appearance:none;border:0;background:transparent;font:inherit;font-size:10.5px;
+  padding:2px 7px;border-radius:var(--radius-pill);color:var(--muted);cursor:pointer;white-space:nowrap}
+.seg-mini button[aria-pressed="true"]{background:var(--bg-elev);color:var(--text);font-weight:640;box-shadow:var(--shadow)}
+.seg-mini button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vf-doc .stage{overflow:auto;background:var(--card-2);padding:10px;flex:1;min-height:0}
+.vf-doc .vers{display:flex;gap:5px;flex-wrap:wrap;padding:7px 9px;border-top:1px solid var(--border)}
+.vf-doc .vers button{appearance:none;font:inherit;font-size:10.5px;cursor:pointer;border:1px solid var(--border-strong);
+  background:var(--bg-elev);color:var(--muted);border-radius:var(--radius-pill);padding:2px 9px}
+.vf-doc .vers button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent-border);
+  color:var(--accent);font-weight:640}
+.vf-doc .vers button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* 盖章件占位：按真实 PDF 的比例与字号排版并整体缩放，不放大字号伪装"看得清"——
+   760px 下这一栏就是这么大，README §4 记了实测值与已知偏离。 */
+.paper{background:#fff;border:1px solid var(--border);box-shadow:var(--shadow);width:794px;
+  font-size:11px;line-height:1.75;color:#2b3444}
+.paper .pp{padding:30px 34px}
+.paper h4{margin:0 0 15px;text-align:center;font-size:15px;letter-spacing:.22em;font-weight:700}
+.paper .row{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dotted #d8dde6;padding:4px 0}
+.paper .row b{font-family:var(--mono);font-weight:600}
+.paper p{margin:10px 0 0;color:#5c6575}
+.paper .seal{margin-top:22px;display:flex;justify-content:flex-end;gap:20px}
+.paper .seal .st{width:88px;height:88px;border:2px solid #c0392b;border-radius:50%;display:grid;
+  place-items:center;text-align:center;font-size:9.5px;color:#c0392b;transform:rotate(-13deg);line-height:1.35;padding:9px}
+.paper .ph{text-align:center;font-size:9.5px;color:#9aa3b2;margin-top:18px}
+/* 条款对照单：紧凑读值，整列自己滚动，与左栏同屏 */
+.vf-list{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elev);
+  overflow:auto;height:392px}
+.vf-list .it{padding:7px 11px;border-bottom:1px dashed var(--border)}
+.vf-list .it:last-child{border-bottom:0}
+.vf-list .it .k{display:block;font-size:10px;color:var(--faint);letter-spacing:.03em;text-transform:uppercase}
+.vf-list .it .v{display:block;font-size:12.5px;font-weight:640;font-family:var(--mono);
+  font-variant-numeric:tabular-nums;margin-top:2px;overflow-wrap:anywhere;line-height:1.45}
+.vf-list .it .v.txt{font-family:var(--sans);font-weight:620}
+.vf-foot{margin-top:11px;font-size:11.5px;color:var(--muted);line-height:1.6}
+.vf-foot b{color:var(--text);font-weight:660}
+
+/* ---- 时限条（FD-37 / FD-38）：超期走中性灰，不是告警色（AC-LN-13）---- */
+.cd{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:12px 13px}
+.cd.soon{border-color:var(--warn-border);background:var(--warn-bg)}
+.cd.over{border-color:var(--border-strong);background:var(--gray-bg)}
+.cd .by{font-size:12px;color:var(--muted);line-height:1.6}
+.cd .by b{color:var(--text);font-weight:660}
+.cd .big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:6px}
+.cd .big .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:24px;font-weight:700;
+  letter-spacing:-.03em;line-height:1.05}
+.cd.soon .big .v{color:var(--warn)}
+.cd.over .big .v{color:var(--gray-fg)}
+.cd .big .u{font-size:11.5px;color:var(--faint)}
+.cd .bar{display:flex;height:8px;margin-top:9px;border-radius:5px;overflow:hidden;background:var(--track);
+  border:1px solid var(--border)}
+.cd .bar .el{background:rgba(139,148,166,.28)}
+.cd .bar .rm{background:var(--accent)}
+.cd.soon .bar .rm{background:var(--warn)}
+.cd.over .bar .rm{background:var(--border-strong)}
+.cd .sc{display:flex;justify-content:space-between;gap:10px;font-size:var(--fs-10);color:var(--faint);margin-top:5px}
+
+/* ---- 中性标记条：暂缓 / 待重传 / 已超期 / 已到期存量处理中（AC-LN-13）---- */
+.mark{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm);background:var(--gray-bg);padding:10px 12px}
+.mark+.mark{margin-top:var(--sp-3)}
+.mark .tg{flex:none;font-size:var(--fs-10);font-weight:700;color:var(--gray-fg);border:1px solid var(--border-strong);
+  background:var(--bg-elev);border-radius:var(--radius-xs);padding:3px 8px;margin-top:1px}
+.mark .bd{font-size:12px;line-height:1.6;color:var(--muted);min-width:0}
+.mark .bd b{color:var(--text);font-weight:660}
+
+/* ---- 手续费三格 / 客服邮箱 / 哈希块 / 双时间 ---- */
+.fee{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:var(--sp-2);
+  border:1px solid var(--warn-border);background:var(--warn-bg);border-radius:var(--radius-sm);padding:12px 13px}
+.fee .c .k{font-size:var(--fs-10);color:#8A5D10;letter-spacing:.04em;text-transform:uppercase;line-height:1.4}
+.fee .c .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:16px;font-weight:680;margin-top:4px}
+.fee .c .v.un{font-family:var(--sans);font-size:12.5px;font-weight:620;color:var(--warn);line-height:1.4}
+.fee .c .x{font-size:10.5px;color:#8A5D10;margin-top:4px;line-height:1.5}
+.fee .op{font-family:var(--mono);color:var(--warn);font-size:13px}
+@media (max-width:860px){ .fee{grid-template-columns:1fr} .fee .op{display:none} }
+.mail{border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);padding:12px 13px}
+.mail .h{font-size:12.5px;font-weight:680}
+.mail .ad{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:8px;
+  border:1px dashed var(--accent-border);background:var(--bg-elev);border-radius:var(--radius-xs);padding:7px 10px}
+.mail .ad .em{font-family:var(--mono);font-size:12px;font-weight:640}
+.mail .ad .btn{margin-left:auto}
+.mail p{margin:8px 0 0;font-size:11.5px;color:var(--muted);line-height:1.6}
+.mail p b{color:var(--text);font-weight:640}
+.hash{border:1px solid var(--hash-border);background:var(--hash-bg);border-radius:var(--radius-sm);padding:11px 12px}
+.hash .hv{font-family:var(--mono);font-size:11.5px;color:var(--hash-text);overflow-wrap:anywhere;line-height:1.6}
+.hash .lk{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:9px;padding-top:9px;
+  border-top:1px solid var(--hash-border)}
+.hash .lk .nv{font-size:11px;color:var(--warn);font-weight:620}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--sp-3)}
+.pair .t{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:10px 11px}
+.pair .t.auth{border-color:var(--accent-border);background:var(--accent-soft)}
+.pair .t .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.pair .t .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:14px;font-weight:660;margin-top:4px}
+.pair .t .src{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.55}
+.pair .t .src b{color:var(--text);font-weight:640}
+
+/* ---- 处置动作的抽屉内二级区（D-LN-55：不另开层）---- */
+.u-2nd{border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);
+  padding:13px 14px;margin-top:13px}
+.u-2nd.stop{border-color:var(--danger-border);background:var(--danger-bg)}
+.u-2nd .h{font-size:12.5px;font-weight:680}
+.u-2nd .x{font-size:11.5px;color:var(--muted);line-height:1.6;margin:4px 0 9px}
+.u-2nd .x b{color:var(--text);font-weight:640}
+.u-2nd .bar{display:flex;gap:var(--sp-2);margin-top:10px;flex-wrap:wrap}
+
+/* ---- 「为什么」折叠：结论留在外面，理由收进来（红线三句不折）---- */
+.why{margin-top:8px}
+.why>summary{list-style:none;cursor:pointer;font-size:11.5px;color:var(--muted);font-weight:620;
+  display:inline-flex;align-items:center;gap:6px}
+.why>summary::-webkit-details-marker{display:none}
+.why>summary:hover{color:var(--accent)}
+.why>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-xs)}
+.why>summary .ca{font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);display:inline-block;
+  transition:transform var(--dur-fast) var(--ease-out)}
+.why[open]>summary .ca{transform:rotate(90deg)}
+.why .wb{font-size:11.5px;color:var(--muted);line-height:1.65;margin-top:6px;padding-left:13px;
+  border-left:2px solid var(--border)}
+.why .wb b{color:var(--text);font-weight:640}
+
+/* ---- 通知清单（本模块产生的触达，分册 10.4）---- */
+.notif .n{display:grid;grid-template-columns:auto 1fr;gap:9px;padding:7px 0;border-bottom:1px dashed var(--border)}
+.notif .n:last-child{border-bottom:0}
+.notif .n .who{font-size:var(--fs-10);font-weight:700;color:var(--gray-fg);border:1px solid var(--border-strong);
+  background:var(--card-2);border-radius:var(--radius-xs);padding:2px 7px;height:fit-content;white-space:nowrap}
+.notif .n .bd{font-size:11.5px;line-height:1.6;color:var(--muted);min-width:0}
+.notif .n .bd b{color:var(--text);font-weight:640;display:block;font-size:12px}
+
+@media (max-width:980px){
+  .portal-cols{grid-template-columns:minmax(0,1fr)}
+  .portal-rail{position:static}
+}
+@media (prefers-reduced-motion:reduce){ .why>summary .ca{transition:none} }
+</style>
+</head>
+<body>
+<!-- 面客顶栏版式（继承 4.3）。公共运行时要求的挂载点一个不少。
+     语言默认 EN（WS-324 D-LS-15），中文由顶栏语言开关切换。 -->
+<div class="portal" id="app" hidden>
+ <header class="portal-head">
+  <div class="brand"><div class="brand-mark">FS</div><div>
+   <div class="brand-name" data-brand>Financial Services</div>
+   <div class="brand-sub" id="brandSub"></div></div></div>
+  <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+  <div class="portal-tools" id="topRight"></div>
+ </header>
+ <div class="portal-sub"><div class="portal-sub-in" id="crumb"></div></div>
+ <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+</div>
+<div class="focus" id="focus"></div>
+<div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script src="./ln-module.js"></script>
+</body>
+</html>

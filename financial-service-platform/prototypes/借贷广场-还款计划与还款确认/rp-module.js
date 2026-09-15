@@ -45,7 +45,7 @@ var SUPPORT_MAIL = '{平台客服邮箱}';
 /* ---- 融资业务状态（承接附册 A4.2；本模块新增业务状态数 = 0，D-RP-01）---- */
 var FD_STATUS = {
   'S-FD-2':{ t:'待资产方处理', tone:'info', x:'报价已提交，资产方尚未接受或拒绝（WS-325）' },
-  'S-FD-6':{ t:'还款中',      tone:'good', x:'融资确认完成，还款计划已定稿，按期还款中' },
+  'S-FD-6':{ t:'还款中',      tone:'good', x:'放款确认完成，还款计划已定稿，按期还款中' },
   'S-FD-8':{ t:'已结清',      tone:'mute', x:'终态 · 全部期次已结清，两个额度量该笔归零' }
 };
 /* S-FD-9 逾期：**并行标记，不是状态**（D-FIN-09 / D-RP-35）。一笔业务可以同时
@@ -230,7 +230,7 @@ var DEALS = [
                files:[{ n:'银行支付凭证-北方精密铸造-末期本息.pdf', s:'1.0 MB' }],
                memo:'末期本金与利息一并汇出。', confirmAt:'2026-11-10 14:22' } } },
 
-  /* ⑪ 还款计划生成中（E-RP-01 / 承接 WS-326 E-LN-13）：融资确认已完成、四个量已转移，
+  /* ⑪ 还款计划生成中（E-RP-01 / 承接 WS-326 E-LN-13）：放款确认已完成、四个量已转移，
         计划生成失败或尚未就绪。**不展示错误**，也不回滚上游（D-RP-10） */
   { id:'FD-20260910-0065', pid:'FP-20261105-0061', pname:'华东精密模具应收账款池', ws324:false,
     fund:ACTORS.fund.full, fundEntity:'E-FUND-07', party:'晟远科技（演示）', entity:'E-ASSET-01',
@@ -933,7 +933,7 @@ function pageSchedule(){
     return dealHead(deal, 'P-LS-91', '还款计划', '生成中') +
       '<div class="card"><div class="card-b">' +
       markRow('还款计划生成中',
-        '融资确认已于 <b>' + withTz(deal.fd24) + '</b> 完成，四个量已原子转移，债务已成立。' +
+        '放款确认已于 <b>' + withTz(deal.fd24) + '</b> 完成，四个量已原子转移，债务已成立。' +
         '还款计划正在生成，就绪后本页自动显示完整期次。',
         '生成动作可重试且必须幂等——重试不会产生第二套期次（E-RP-01）') +
       CF.note('',
@@ -1069,7 +1069,7 @@ function pageSchedule(){
                '">去还款（P-LS-09）</button>' : '') +
         '<a class="btn" href="' + projHref(deal) + '">融资需求详情（P-LS-02）</a>' +
         '<a class="btn" href="' + lnHref('#/deal/' + deal.id + '?action=confirm_disbursement') +
-          '">放款与融资确认（WS-326）</a>' +
+          '">放款与放款确认（WS-326）</a>' +
       '</div>' + noChainFoot('查看还款计划') + '</div></div>' +
     '</div>' + rail + '</div>';
 }
@@ -1293,7 +1293,7 @@ function pageRepay(){
   if(!deal.planReady || !p){
     return dealHead(deal, 'P-LS-09', '还款录入', '') +
       '<div class="ls-alert">' + markRow('还款计划生成中',
-        '融资确认已于 <b>' + withTz(deal.fd24) + '</b> 完成，还款计划正在生成。' +
+        '放款确认已于 <b>' + withTz(deal.fd24) + '</b> 完成，还款计划正在生成。' +
         '计划就绪前<b>没有任何期次可还</b>，也<b>不会产生逾期</b>——逾期判定的对象是期次，而期次还不存在。',
         '额度转移与状态迁移<b>不因此回滚</b>（承接 WS-326 E-LN-13）；这里不展示错误、不给重试按钮') + '</div>' +
       '<div class="card"><div class="card-b">' +
@@ -1454,7 +1454,7 @@ function pageRepay(){
    ================================================================ */
 
 /* ---- 还款确认时限条（RM-15 / RM-16 / RM-17 / D-RP-51 ～ D-RP-54）----
-   与 WS-326 的融资确认时限条同形同口径：到点只提醒，状态、额度、权限、逾期天数一个不动。
+   与 WS-326 的放款确认时限条同形同口径：到点只提醒，状态、额度、权限、逾期天数一个不动。
    因此超期态走中性灰而不是告警色。文案一律写全称——同一笔业务上已经有三个 168 小时。 */
 function confirmBar(deal, p, forFund){
   var s = periodState(deal, p), k = confirmClock(deal, p);
@@ -1492,7 +1492,7 @@ function confirmBar(deal, p, forFund){
       '<div class="w"><i aria-hidden="true">③</i><span>这与同一笔业务上的另外两个 ' + CONFIRM_HOURS +
         ' 小时<b>不是同一件事</b>，三者一律写全称：' +
         '<b>报价有效期</b>约束资产方处理报价，到点<b>自动失效</b>、报价终结、额度释放；' +
-        '<b>融资确认时限</b>约束资产方确认到账，到点<b>只提醒</b>；' +
+        '<b>放款确认时限</b>约束资产方确认到账，到点<b>只提醒</b>；' +
         '本条<b>还款确认时限</b>约束您确认收到还款，到点同样<b>只提醒</b>。' +
         '写成简称会让人以为不确认就会自动作废（D-RP-33）。</span></div>' +
     '</div></div>';

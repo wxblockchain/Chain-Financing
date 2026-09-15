@@ -166,7 +166,7 @@ var PROJECTS = [
       { d:'2026-04-16', k:'pledge',   t:'创建资产池 · 首笔质押 10 张',            dTotal:1000000, note:'链上转入成功后才计入有效质押价值' },
       { d:'2026-04-20', k:'publish',  t:'发布融资需求 500,000.00 USD',            dFly:500000,    note:'发布即产生在途占用，唯一来源' },
       { d:'2026-05-06', k:'quote',    t:'收到机构报价 500,000.00 USD',                            note:'报价不新增占用，项目在途金额保持不变' },
-      { d:'2026-05-12', k:'fund',     t:'放款并完成融资确认',                      dFly:-500000, dBal:500000, note:'额度原子转移：项目在途金额 → 项目融资余额，无空档' },
+      { d:'2026-05-12', k:'fund',     t:'放款完成并确认到账',                      dFly:-500000, dBal:500000, note:'额度原子转移：项目在途金额 → 项目融资余额，无空档' },
       { d:'2026-06-12', k:'topup',    t:'追加质押 2 张 · 200,000.00 USD',          dTotal:200000,  note:'任何阶段都可以追加，只增不减' },
       { d:'2026-07-03', k:'withdraw', t:'撤回质押 3 张 · 300,000.00 USD',          dTotal:-300000, note:'撤回时可撤回上限 575,000.00 USD，本次通过额度判定' },
       { d:'2026-07-10', k:'publish',  t:'再次发布融资需求 200,000.00 USD',          dFly:200000,    note:'可融金额 220,000.00 USD > 0，可再次发布剩余额度（6.1）' },
@@ -174,7 +174,7 @@ var PROJECTS = [
         note:'失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发覆盖不足提醒' },
       /* WS-327 增量：FD-20260512-0044 的还款计划与第 1 期还款。事件续接同一张公开时间线。 */
       { d:'2026-05-12', k:'plan',   t:'还款计划定稿 · 3 期 · 起息日 2026-05-12',
-        note:'融资确认完成的同一次结算内定稿，起息日取实际放款日；到期日 2027-04-20 取项目有效期至' },
+        note:'放款确认完成的同一次结算内定稿，起息日取实际放款日；到期日 2027-04-20 取项目有效期至' },
       { d:'2026-08-12', k:'repay',  t:'第 1 期利息 8,688.89 USD 已提交还款记录 · 该期转入待确认',
         note:'提交时刻即停止该期计息与逾期累加；两个额度量一个都不动——钱有没有到只有机构知道' }
     ],
@@ -187,7 +187,7 @@ var PROJECTS = [
           hasDue:true, awaitConfirm:'RP20260512000001', rules:'年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2026-05-12' },
     terms:{ rate:'年化 6.80%（演示）', term:'180 天', repay:'到期一次性还本付息', use:'补充经营性流动资金' },
     deals:[
-      { id:'FD-20260512-0044', amt:500000, st:'还款中', at:'2026-05-12', x:'放款并完成融资确认，计入项目融资余额' }
+      { id:'FD-20260512-0044', amt:500000, st:'还款中', at:'2026-05-12', x:'放款完成并确认到账，计入项目融资余额' }
     ]
   },
   {
@@ -253,7 +253,7 @@ var PROJECTS = [
       { d:'2026-07-05', k:'pledge',  t:'创建资产池 · 首笔质押 5 张', dTotal:625000 },
       { d:'2026-07-08', k:'publish', t:'发布融资需求 500,000.00 USD', dFly:500000 },
       { d:'2026-07-20', k:'quote',   t:'收到机构报价 500,000.00 USD', note:'在途占用不变' },
-      { d:'2026-07-26', k:'fund',    t:'放款并完成融资确认', dFly:-500000, dBal:500000,
+      { d:'2026-07-26', k:'fund',    t:'放款完成并确认到账', dFly:-500000, dBal:500000,
         note:'融资上限 500,000.00 = 项目融资余额 500,000.00，可融金额归零，进入「覆盖持平」档；不触发覆盖不足提醒' },
       /* WS-327 增量：同一次结算内还款计划定稿，首期尚未到应还日。 */
       { d:'2026-07-26', k:'plan',    t:'还款计划定稿 · 3 期 · 起息日 2026-07-26',
@@ -265,7 +265,7 @@ var PROJECTS = [
           overdueDays:0, overdueSeq:null, overdueDue:null,
           hasDue:true, awaitConfirm:null, rules:'年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2026-07-26' },
     terms:{ rate:'年化 7.05%（演示）', term:'120 天', repay:'到期一次性还本付息', use:'渠道铺货' },
-    deals:[ { id:'FD-20260726-0061', amt:500000, st:'还款中', at:'2026-07-26', x:'放款并完成融资确认' } ]
+    deals:[ { id:'FD-20260726-0061', amt:500000, st:'还款中', at:'2026-07-26', x:'放款完成并确认到账' } ]
   },
   {
     id:'FP-20250916-0112', name:'西部能源设备应收账款池',
@@ -301,7 +301,7 @@ var PROJECTS = [
       { d:'2025-08-18', k:'pledge',  t:'创建资产池 · 首笔质押 5 张', dTotal:1500000 },
       { d:'2025-08-20', k:'publish', t:'发布融资需求 900,000.00 USD', dFly:900000 },
       { d:'2025-09-02', k:'quote',   t:'收到机构报价 900,000.00 USD' },
-      { d:'2025-09-10', k:'fund',    t:'放款并完成融资确认', dFly:-900000, dBal:900000 },
+      { d:'2025-09-10', k:'fund',    t:'放款完成并确认到账', dFly:-900000, dBal:900000 },
       { d:'2026-07-15', k:'publish', t:'再次发布融资需求 250,000.00 USD', dFly:250000,
         note:'可融金额 1,200,000 − 900,000 − 0 ＝ 300,000.00 USD > 0，可再次发布剩余额度（6.1）' },
       { d:'2026-08-02', k:'quote',   t:'收到机构报价 250,000.00 USD（FD-20260903-0056）' },
@@ -330,7 +330,7 @@ var PROJECTS = [
     terms:{ rate:'年化 6.60%（演示）', term:'360 天', repay:'到期一次性还本付息', use:'工程项目垫资' },
     deals:[ { id:'FD-20250910-0012', amt:900000, st:'已到期（存量履约中）', at:'2025-09-10', x:'本期无提前还款，还本发生在项目到期后' } ]
   },
-  /* WS-326 增量：本方（晟远科技）名下一笔已放款、待融资确认的业务。
+  /* WS-326 增量：本方（晟远科技）名下一笔已放款、待放款确认的业务。
      加它是因为原有六个项目里没有一笔「本方 + S-FD-4」的业务，
      L6 的「确认到账」入口就只能停在 ⊘ 上，验收不到可用态（AC-LS-103）。
      放款与确认的权威数据在 WS-326，本页只读引用（AC-LS-105）。 */
@@ -352,8 +352,8 @@ var PROJECTS = [
       { d:'2026-09-02', k:'quote',   t:'收到机构报价 300,000.00 USD（FD-20260902-0054）' },
       { d:'2026-09-04', k:'accept',  t:'资产方接受报价 · 这笔业务转入待放款' },
       { d:'2026-09-05', k:'disb',    t:'资金方提交放款记录 LN20260905000001 · 这笔业务转入待放款确认',
-        note:'放款时四个量一个都不动：金额要到融资确认完成才从项目在途金额转入项目融资余额。' +
-             '融资确认时限自提交成功的服务端时间起算 168 小时' }
+        note:'放款时四个量一个都不动：金额要到放款确认完成才从项目在途金额转入项目融资余额。' +
+             '放款确认时限自提交成功的服务端时间起算 168 小时' }
     ],
     terms:{ rate:'年化 8.35%（演示）', term:'150 天', repay:'到期一次性还本付息', use:'精密仪器采购' },
     deals:[]
@@ -375,7 +375,7 @@ var PROJECTS = [
       { d:'2025-11-03', k:'pledge',  t:'创建资产池 · 首笔质押 3 张', dTotal:350000 },
       { d:'2025-11-05', k:'publish', t:'发布融资需求 280,000.00 USD', dFly:280000 },
       { d:'2025-11-18', k:'quote',   t:'收到机构报价 280,000.00 USD' },
-      { d:'2025-11-26', k:'fund',    t:'放款并完成融资确认', dFly:-280000, dBal:280000 },
+      { d:'2025-11-26', k:'fund',    t:'放款完成并确认到账', dFly:-280000, dBal:280000 },
       { d:'2025-11-26', k:'plan',    t:'还款计划定稿 · 2 期 · 起息日 2025-11-26' },
       { d:'2026-05-26', k:'rconf',   t:'第 1 期利息 9,660.00 USD 已结清' },
       { d:'2026-08-26', k:'settle',  t:'末期本息已结清 · 这笔业务结清', dBal:-280000,
@@ -384,7 +384,7 @@ var PROJECTS = [
         note:'第二段链上提取由资产方自助发起、无时间限制；未提取前不属于任何资产池、不计入任何质押价值' }
     ],
     terms:{ rate:'年化 6.90%（演示）', term:'270 天', repay:'到期一次性还本付息', use:'冷链仓储运营' },
-    deals:[ { id:'FD-20251126-0012', amt:280000, st:'已结清', at:'2025-11-26', x:'放款并完成融资确认' } ]
+    deals:[ { id:'FD-20251126-0012', amt:280000, st:'已结清', at:'2025-11-26', x:'放款完成并确认到账' } ]
   },
   /* ---- 以下两条为草稿，不进广场（D-FIN-64 / AC-LS-05），仅本企业可见 ---- */
   {
@@ -721,7 +721,7 @@ function availableActions(p, role){
       out.push({ key:'confirm', label:L('Confirm receipt','确认到账'), anchor:'confirm_disbursement', enabled:!guest, primary:true,
                  href:lnHref('#/deal/' + f.deal + '?action=confirm_disbursement'),
                  reason: guest ? L('Not signed in. Financing confirmation is limited to the owning entity; the public disbursement fields themselves stay public.',
-                                   '未登录。融资确认仅对该项目所属企业主体开放；放款的公开字段本身是公开的。') : '' });
+                                   '未登录。放款确认仅对该项目所属企业主体开放；放款的公开字段本身是公开的。') : '' });
     }
     if(f.st === 'S-FD-3' && f.redo && (own || guest)){
       out.push({ key:'reupload', label:L('Re-upload signed contract','重传盖章件'), anchor:'reupload_contract', enabled:!guest,
@@ -1109,7 +1109,7 @@ var G = {
   publishDemand:['Publish demand','发布融资需求'],
   stDemand     :['Financing demand','融资需求'],
   stQuote      :['Quote','融资报价'],
-  stConfirm    :['Confirmation','融资确认'],
+  stConfirm    :['Quote confirmation','报价确认'],
   stDisburse   :['Disbursement','融资放款'],
   repayNow     :['Repay now','立即还款'],
   createProject:['Create financing project','创建融资项目'],
@@ -1128,6 +1128,20 @@ function g(k){ var v = G[k]; return v ? L(v[0], v[1]) : k; }
 
 /* 演示数据里的中文短语在英文视图下的渲染翻译；只作用于展示层，不改数据 */
 var DEMO_TR = {
+  /* 演示企业主体的英文名：英文视图下它们此前原样落中文，是 D-LS-15「面客端默认英文」的漏网之鱼。
+     键写全（含「（演示）」后缀）才会命中——dtr() 先查表、查不到才去掉后缀，
+     两种引号写法的键都要在同一张表里，不能只改一处。 */
+  '晟远科技（演示）':'Shengyuan Technology (demo)',
+  '北岸融资租赁（演示）':'Beian Leasing (demo)',
+  '恒盛供应链（演示）':'Hengsheng Supply Chain (demo)',
+  '中垣建材（演示）':'Zhongyuan Building Materials (demo)',
+  '明泰家电（演示）':'Mingtai Home Appliances (demo)',
+  '瑞和能源装备（演示）':'Ruihe Energy Equipment (demo)',
+  '环海商业保理（演示）':'Huanhai Commercial Factoring (demo)',
+  '北方制造集团（演示）':'Northern Manufacturing Group (demo)',
+  '东海重工（演示）':'Donghai Heavy Industry (demo)',
+  '南岭电力设备（演示）':'Nanling Power Equipment (demo)',
+
   '还款中':'Repaying','已到期（存量履约中）':'Matured · performing','应收账款类':'Receivables',
   '到期一次性还本付息':'Bullet repayment at maturity','补充经营性流动资金':'Working capital',
   '原材料采购':'Raw material purchase','供应商货款结算':'Supplier settlement','渠道铺货':'Channel stocking',
@@ -1169,7 +1183,7 @@ var EV_TR = {
   "发布即产生在途占用，唯一来源": "Publishing creates committed demand — the only source of it",
   "收到机构报价 500,000.00 USD": "Quote received · 500,000.00 USD",
   "报价不新增占用，项目在途金额保持不变": "A quote adds no commitment; committed demand is unchanged",
-  "放款并完成融资确认": "Disbursed and financing confirmed",
+  "放款完成并确认到账": "Disbursed and receipt confirmed",
   "额度原子转移：项目在途金额 → 项目融资余额，无空档": "Credit transferred atomically: committed demand → outstanding financing, with no gap",
   "追加质押 2 张 · 200,000.00 USD": "Collateral added · 2 tokens · 200,000.00 USD",
   "追加在 ～任何状态下都允许，只增不减": "Adding is allowed in any status from to and only ever increases the pool",
@@ -1180,11 +1194,11 @@ var EV_TR = {
   "池内 2 张代币底层应收账款失效 · 300,000.00 USD": "Underlying receivables behind 2 tokens in the pool were invalidated · 300,000.00 USD",
   "失效部分不计入有效质押价值；融资上限降至 480,000.00 USD，低于项目融资余额 500,000.00 USD，触发覆盖不足提醒": "The invalidated part stops counting towards pledged token value; the borrowing cap fell to 480,000.00 USD, below outstanding financing of 500,000.00 USD, so pledge coverage became insufficient (E-9 / 6.4.1)",
   "还款计划定稿 · 3 期 · 起息日 2026-05-12": "Repayment schedule finalised · 3 instalments · interest start date 2026-05-12",
-  "融资确认完成的同一次结算内定稿，起息日取实际放款日；到期日 2027-04-20 取项目有效期至": "Finalised in the same settlement as the financing confirmation. The interest start date is the actual disbursement date; the maturity date 2027-04-20 is the project validity date",
+  "放款确认完成的同一次结算内定稿，起息日取实际放款日；到期日 2027-04-20 取项目有效期至": "Finalised in the same settlement as the disbursement confirmation. The interest start date is the actual disbursement date; the maturity date 2027-04-20 is the project validity date",
   "第 1 期利息 8,688.89 USD 已提交还款记录 · 该期转入待确认": "Instalment 1 interest 8,688.89 USD submitted · instalment moves to",
   "提交时刻即停止该期计息与逾期累加；两个额度量一个都不动——钱有没有到只有机构知道": "Submission stops interest accrual and the overdue counter for that instalment at that moment; neither credit figure moves — only the institution knows whether the money arrived",
   "年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2026-05-12": "Simple annual interest, actual days ÷ 360, interest accrues from the start date and not on the due date; start date = 2026-05-12",
-  "放款并完成融资确认，计入项目融资余额": "Disbursed and financing confirmed; counted into outstanding financing",
+  "放款完成并确认到账，计入项目融资余额": "Disbursed and receipt confirmed; counted into outstanding financing",
   "创建资产池 · 首笔质押 3 张": "Pool created · first pledge of 3 tokens",
   "链上转入成功（CT-2）": "Transfer confirmed on chain (CT-2)",
   "项目在途金额 = 500,000.00 USD，可融金额 = 800,000 − 0 − 500,000 = 300,000.00 USD": "Committed demand = 500,000.00 USD; available to borrow = 800,000 − 0 − 500,000 = 300,000.00 USD",
@@ -1231,7 +1245,7 @@ var EV_TR = {
   "可融金额 ＝ 496,000 − 0 − 300,000 ＝ 196,000.00 USD": "Available to borrow = 496,000 − 0 − 300,000 = 196,000.00 USD",
   "收到机构报价 300,000.00 USD（FD-20260902-0054）": "Quote received · 300,000.00 USD (FD-20260902-0054)",
   "资金方提交放款记录 LN20260905000001 · 这笔业务转入待放款确认": "Disbursement record LN20260905000001 submitted by the funder · deal moves to awaiting financing confirmation",
-  "放款时四个量一个都不动：金额要到融资确认完成才从项目在途金额转入项目融资余额。融资确认时限自提交成功的服务端时间起算 168 小时": "None of the four figures moves at disbursement: the amount only shifts from committed demand to outstanding financing once the financing confirmation completes. The 168-hour confirmation window starts from the server time of a successful submission",
+  "放款时四个量一个都不动：金额要到放款确认完成才从项目在途金额转入项目融资余额。放款确认时限自提交成功的服务端时间起算 168 小时": "None of the four figures moves at disbursement: the amount only shifts from committed demand to outstanding financing once the disbursement confirmation completes. The 168-hour confirmation window starts from the server time of a successful submission",
   "第一段完成，项目已持久化；可离开页面后再回来续做第二段": "Step one complete and the project is persisted; you can leave the page and come back to finish later",
   "创建资产池 · 首笔质押 2 张 · 链上执行失败": "Pool created · first pledge of 2 tokens · on-chain execution failed",
   "创建时那唯一一笔质押最终链上失败，项目保留为空池草稿": "The single pledge submitted at creation ultimately failed on chain, so the project is kept as an empty-pool draft"
@@ -1405,7 +1419,7 @@ function lockCard(p, own, wide){
 
 /* WS-326 / WS-327 的业务状态文案。v1.4 起只在详情页用——
    列表页的业务进度与还款进度副行已按需求方第 1 条移除。 */
-var FIN_ST = { 'S-FD-3':['Awaiting disbursement','待放款'], 'S-FD-4':['Awaiting financing confirmation','待融资确认'],
+var FIN_ST = { 'S-FD-3':['Awaiting disbursement','待放款'], 'S-FD-4':['Awaiting disbursement confirmation','待放款确认'],
                'S-FD-6':['Repaying','还款中'], 'S-FD-8':['Settled','已结清'] };
 function finSt(k){ var v = FIN_ST[k]; return v ? L(v[0], v[1]) : k; }
 /* ---- 动作按钮：区分「不可见」与「可见不可点 ⊘」（H-03）----
@@ -1666,8 +1680,8 @@ function curDemand(p){ var r = demandRecords(p); return r.length ? r[0] : null; 
    本模块只承载环节展示与映射；报价、接受/拒绝、放款、确认的业务规则分属 WS-325／326，
    **本原型不替它们发明规则**——环节按钮打开的是弹窗壳，壳里只放已经权威公开的信息，
    真正的操作跳到对应模块页面完成。
-   ⚠️ 需求方四环节里的「融资确认」＝资产方接受/拒绝报价（放款之前），
-      与附册／WS-326 里的「融资确认」＝资产方确认收到放款（放款之后）同名不同义。
+   ⚠️ 09-15 裁定后这里已无同名不同义：第 3 环节＝资产方接受/拒绝报价，定名「报价确认」；
+      资产方确认收到放款（放款之后）定名「放款确认」，由 WS-326 承载。旧展示名全链路作废。
       本页按分册 6.9 的映射表承载，冲突已登记进分册 10.5。 */
 var FLOW4 = [
   { k:'demand',   g:'stDemand',   act:'publish',  who:'asset',
@@ -2025,14 +2039,14 @@ function pageProject(){
       '<p>报价金额恒等于需求金额；结算金额按报价提交时锁定的汇率快照折算。计息规则以双方签署的融资合同为准，不以本表为准。</p>'))) +
     '</div></div>';
 
-  /* ---- 左栏 4（WS-326 增量）：放款与融资确认的公开进度 ----
+  /* ---- 左栏 4（WS-326 增量）：放款与放款确认的公开进度 ----
      公开字段：放款提交时间、放款币种与金额、确认时间、终止时间与原因（D-LN-06）。
      **不公开**：收款账户、凭证文件、交易哈希与链、盖章件、暂缓与重传原因——
      它们由服务端按归属过滤，不是前端隐藏（AC-LN-17 / AC-LS-100）。 */
   var fin = p.fin;
   var FIN_EV = {
     accept   :{ t:['Quote accepted · awaiting disbursement','已接受报价 · 待放款'], tone:'' },
-    disb     :{ t:['Disbursed · awaiting financing confirmation','已放款 · 待融资确认'], tone:'' },
+    disb     :{ t:['Disbursed · awaiting disbursement confirmation','已放款 · 待放款确认'], tone:'' },
     fund     :{ t:['Receipt confirmed · credit transferred atomically','已确认到账 · 额度已原子转移'], tone:'green' },
     terminate:{ t:['Deal terminated · demand back on the marketplace','业务已终止 · 需求重回广场'], tone:'gray' },
     plan     :{ t:['Repayment schedule finalised','还款计划已定稿'], tone:'' },
@@ -2043,7 +2057,7 @@ function pageProject(){
   };
   var finEv = (p.events || []).filter(function(e){ return FIN_EV[e.k]; });
   var finCard = (!fin && !finEv.length) ? '' :
-    '<div class="card" style="margin-top:16px">' + cardHead(L('Disbursement and financing confirmation','放款与融资确认'),
+    '<div class="card" style="margin-top:16px">' + cardHead(L('Disbursement and disbursement confirmation','放款与放款确认'),
       faint(L('public fields','公开信息'))) +
     (!fin ? '' : '<div class="card-b"><div class="ls-kgrid">' +
       kcell(L('Financing deal ID','融资业务编号'), fin.deal, L('Generated when the quote is accepted; stable for life','接受报价时生成，终身稳定')) +
@@ -2062,10 +2076,10 @@ function pageProject(){
         L('The quote validity clock stops here','报价有效期计时自此终止')) +
       (fin.st === 'S-FD-4' ?
         kcell(L('Disbursement submitted at · LN-06','放款提交时间 · LN-06'), fin.lnAt + ' ' + TZ_LABEL,
-          L('Server time; start of the financing-confirmation window','服务端时间，融资确认时限的起算点')) +
+          L('Server time; start of the disbursement-confirmation window','服务端时间，放款确认时限的起算点')) +
         kcell(L('Disbursement record ID · LN-01','放款记录编号 · LN-01'), fin.lnId,
           L('Generated at the moment of successful submission','提交成功的同一时刻生成')) +
-        kcell(L('Confirmation window until','融资确认时限至'), fin.confirmTo + ' ' + TZ_LABEL,
+        kcell(L('Confirmation window until','放款确认时限至'), fin.confirmTo + ' ' + TZ_LABEL,
           L('= disbursement time + 168 hours; read-only, cannot be extended','＝ 放款提交时间 + 168 小时，只读、不可延长')) : '') +
     '</div>' +
     (fin.st === 'S-FD-4'
@@ -2074,11 +2088,11 @@ function pageProject(){
           '<p>This is <b class="ls-b">not the same clock</b> as the 168-hour quote validity above: a quote <b class="ls-b">expires automatically</b>, a financing-confirmation window <b class="ls-b">only reminds</b>. The two are worded differently and do not share the phrase "validity" .</p>' +
           (own ? '<p>Money missing or the amount wrong? There is <b class="ls-b">no "raise a dispute" entry</b> on the platform. Do not confirm; email <b class="ls-b">{platform support mailbox}</b> quoting deal ID ' + fin.deal +
                  ' and settle it offline .</p>' : ''),
-          '<b class="ls-b">融资确认时限届满不会自动确认、不会自动作废这笔业务</b>，也不会自动转移任何额度：到期只发一条通知，业务仍是，确认入口照常可用。' +
-          '<p>这与上面「在途报价」的 168 小时<b class="ls-b">不是同一个时限</b>：报价有效期到点<b class="ls-b">自动失效</b>，融资确认时限到点<b class="ls-b">只提醒</b>。两者措辞不同、不共用"有效期"三个字。</p>' +
+          '<b class="ls-b">放款确认时限届满不会自动确认、不会自动作废这笔业务</b>，也不会自动转移任何额度：到期只发一条通知，业务仍是，确认入口照常可用。' +
+          '<p>这与上面「在途报价」的 168 小时<b class="ls-b">不是同一个时限</b>：报价有效期到点<b class="ls-b">自动失效</b>，放款确认时限到点<b class="ls-b">只提醒</b>。两者措辞不同、不共用"有效期"三个字。</p>' +
           (own ? '<p>钱没到账或金额对不上？平台上<b class="ls-b">没有「提出异议」入口</b>，请先不要点确认，发邮件到 <b class="ls-b">{平台客服邮箱}</b> 并注明融资业务编号 ' + fin.deal +
                  '，走线下核实。</p>' : '')),
-          L('About the financing-confirmation window','关于融资确认时限'))
+          L('About the disbursement-confirmation window','关于放款确认时限'))
       : CF.note('', L(
           'The signed contract is <b class="ls-b">verified by the funder before disbursing</b>. The platform does not vet its authenticity or legal effect and has no platform-side review state. The institution may <b class="ls-b">hold off disbursing / ask for a re-upload / terminate the deal</b>.' +
           '<p><b class="ls-b">Hold and re-upload reasons are visible to the asset owner but are not marketplace-public fields</b> — they are commercial communication between two parties, and publishing them would broadcast one side’s commercial judgement to the whole market .</p>',
@@ -2115,7 +2129,7 @@ function pageProject(){
       faint(L('public fields','公开字段'))) +
     '<div class="card-b"><div class="ls-kgrid">' +
       kcell(L('Financing deal ID','融资业务编号'), rep.deal,
-        L('The schedule is finalised in the same settlement as the financing confirmation','还款计划在融资确认完成的同一次结算内定稿')) +
+        L('The schedule is finalised in the same settlement as the disbursement confirmation','还款计划在放款确认完成的同一次结算内定稿')) +
       kcell(L('Settled / total instalments','已结清 / 总期数'), rep.done + ' / ' + rep.n,
         L('Interest first, principal at maturity · interest every 3 months','先息后本 · 到期还本付息，利息每 3 个月一期')) +
       kcell(L('Interest start date','起息日'), rep.t0,
