@@ -25,6 +25,9 @@ var PLEDGE_RATE  = 0.8;     /* 质押率：常量 80%（D-MC-110），本模块�
 var REASON_MAX   = 200;     /* 拒绝原因 1～200 字，不分类（6.3.5） */
 var SEAL_MAX_MB  = 10;      /* 盖章件单文件 ≤ 10 MB，≤ 5 个（沿用 WS-305 第 6 节基线） */
 var SEAL_MAX_N   = 5;
+/* 还款类型：本期唯一取值。枚举位保留，将来要扩展在这里加，不要散在文案里。 */
+var REPAY_TYPES  = { quarterly:{ k:'quarterly', t:'按季付息；到期还本付息' } };
+var REPAY_TYPE   = REPAY_TYPES.quarterly;
 var NOW          = '2026-09-11 10:40';   /* 演示"当前时刻"，服务端时间 */
 var TZ_LABEL     = 'UTC+8';              /* 平台统一时区标注，口径引用 WS-308『01-国际化基线』第 4 节 */
 
@@ -39,13 +42,40 @@ var FD_STATUS = {
   'S-FD-1': { t:'待接受',     tone:'info', x:'等待资产方处理，7 天有效期计时中' },
   'S-FD-2': { t:'已拒绝',     tone:'mute', x:'终态 · 资产方的意思表示，有原因、对机构可见' },
   'S-FD-11':{ t:'报价已失效', tone:'mute', x:'终态 · 系统事件，无原因、不计入拒绝率' },
-  'S-FD-3': { t:'待放款',     tone:'good', x:'已接受，放款与融资确认在 WS-326' }
+  'S-FD-3': { t:'待放款',     tone:'good', x:'已接受，等待放款' }
 };
 /* 失效原因（FD-15）：不是评价性标签，对机构不产生任何负面记录（D-CR-31） */
 var VOID_REASON = {
   timeout:'有效期届满',
   demand :'所属融资需求失效'
 };
+
+/* ---- 融资需求的对外状态：五个取值，由服务端派生下发 ----
+   前端不拿 S-FP-* / S-FD-* 拼展示状态，也不把内部档位名搬到界面上。
+   取值与 WS-324 同一张表，两边不得各写一套。 */
+var DST = {
+  open  :{ tone:'warn', t:'待报价' },
+  quoted:{ tone:'info', t:'已报价待确认' },
+  disb  :{ tone:'info', t:'放款中' },
+  funded:{ tone:'good', t:'已放款' },
+  ended :{ tone:'mute', t:'已失效／已关闭' }
+};
+/* 演示内就地派生一次，模拟服务端下发的那个字段 */
+function demandState(p){
+  if(!p) return DST.ended;
+  if(p.voidedDemand || p.expired) return DST.ended;
+  if(p.status === 'S-FP-4') return DST.disb;
+  if(p.status === 'S-FP-6') return DST.funded;
+  if(p.status === 'S-FP-3') return DST.quoted;
+  if(p.status === 'S-FP-2' && p.demand) return DST.open;
+  return DST.ended;
+}
+function dealState(deal){
+  if(!deal) return DST.ended;
+  if(deal.st === 'S-FD-1') return DST.quoted;
+  if(deal.st === 'S-FD-3') return DST.disb;
+  return DST.ended;
+}
 
 /* ---- 融资项目状态（引用 WS-324 D-FIN-28，一处定义两处引用） ---- */
 var FP_STATUS = {
@@ -57,9 +87,9 @@ var FP_STATUS = {
 
 /* ---- 接受填写进度（FD-04）：S-FD-1 内部的进度，不是状态（D-FIN-77） ---- */
 var STEPS = [
-  { k:'account', n:1, t:'填写并确认收款账户', x:'预填可改 · 必须逐笔显式确认（D-FIN-94 / FD-20）' },
-  { k:'terms',   n:2, t:'查看商务条款摘要',   x:'可复制 / 可打印，供双方线下拟约（D-FIN-87）' },
-  { k:'seal',    n:3, t:'上传盖章件并声明',   x:'PDF / JPG / PNG，单文件 ≤ 10 MB、≤ 5 个（FD-09 / FD-16）' }
+  { k:'account', n:1, t:'填写并确认收款账户', x:'预填可改 · 必须逐笔显式确认' },
+  { k:'terms',   n:2, t:'查看商务条款摘要',   x:'可复制 / 可打印，供双方线下拟约' },
+  { k:'seal',    n:3, t:'上传盖章件并声明',   x:'PDF / JPG / PNG，单文件 ≤ 10 MB、≤ 5 个' }
 ];
 
 /* ---- 身份：与 WS-324 同一套演示身份，不另造一套 ---- */
@@ -138,7 +168,7 @@ var DEALS = [
   { id:'FD-20260908-0061', pid:'FP-20260812-0031', fund:ACTORS.fund.full, fundEntity:'E-FUND-07',
     party:'晟远科技（演示）', entity:'E-ASSET-01',
     amt:500000, rate:7.20, ccy:'USD', at:'2026-09-08 14:20', st:'S-FD-1', prog:'none',
-    fx:{ v:1.0000, at:'2026-09-08 14:20', src:'WS-318 汇率管理 · 中间价', ver:'FX-20260908-T1420' },
+    fx:{ v:1.0000, at:'2026-09-08 14:20', src:'平台汇率管理 · 中间价', ver:'FX-20260908-T1420' },
     payee:{ bank:'Bank of Communications, Shanghai Branch', acct:'310066123456789012',
             name:'北岸融资租赁（演示）', swift:'COMMCNSHSDB', country:'中国大陆' },
     memo:'医疗器械应收，买方集中度可接受。' },
@@ -146,7 +176,7 @@ var DEALS = [
   { id:'FD-20260904-0057', pid:'FP-20260722-0027', fund:OTHER_FUND, fundEntity:'E-FUND-22',
     party:'晟远科技（演示）', entity:'E-ASSET-01',
     amt:300000, rate:8.50, ccy:'USDT', at:'2026-09-04 19:05', st:'S-FD-1', prog:'account',
-    fx:{ v:0.9994, at:'2026-09-04 19:05', src:'WS-318 汇率管理 · 中间价', ver:'FX-20260904-T1905' },
+    fx:{ v:0.9994, at:'2026-09-04 19:05', src:'平台汇率管理 · 中间价', ver:'FX-20260904-T1905' },
     payee:{ chain:'Ethereum', addr:'0x7F2c9A41B6ee0D3c58Ab41E9d0c7B2Aa45E1c390' } },
 
   { id:'FD-20260901-0055', pid:'FP-20260820-0036', fund:ACTORS.fund.full, fundEntity:'E-FUND-07',
@@ -154,28 +184,28 @@ var DEALS = [
     amt:600000, rate:9.80, ccy:'USD', at:'2026-09-01 09:30', st:'S-FD-2',
     endAt:'2026-09-03 16:12',
     reject:'年化 9.80% 高于我方本轮可接受区间（不超过 8.50%），且还款方式与我方现金流不匹配。若贵司可下调至 8.20% 以内，我方愿意重新评估。',
-    fx:{ v:1.0000, at:'2026-09-01 09:30', src:'WS-318 汇率管理 · 中间价', ver:'FX-20260901-T0930' } },
+    fx:{ v:1.0000, at:'2026-09-01 09:30', src:'平台汇率管理 · 中间价', ver:'FX-20260901-T0930' } },
 
   { id:'FD-20260825-0049', pid:'FP-20250916-0112', fund:OTHER_FUND, fundEntity:'E-FUND-22',
     party:'瑞和能源装备（演示）', entity:'E-ASSET-06',
     amt:200000, rate:7.90, ccy:'USD', at:'2026-08-25 11:00', st:'S-FD-11', void:'timeout',
     endAt:'2026-09-01 11:00',
-    fx:{ v:1.0000, at:'2026-08-25 11:00', src:'WS-318 汇率管理 · 中间价', ver:'FX-20260825-T1100' } },
+    fx:{ v:1.0000, at:'2026-08-25 11:00', src:'平台汇率管理 · 中间价', ver:'FX-20260825-T1100' } },
 
   { id:'FD-20260819-0047', pid:'FP-20260416-0007', fund:OTHER_FUND, fundEntity:'E-FUND-22',
     party:'晟远科技（演示）', entity:'E-ASSET-01',
     amt:200000, rate:7.40, ccy:'USD', at:'2026-08-19 10:05', st:'S-FD-11', void:'demand',
     endAt:'2026-08-19 23:40',
-    fx:{ v:1.0000, at:'2026-08-19 10:05', src:'WS-318 汇率管理 · 中间价', ver:'FX-20260819-T1005' } }
+    fx:{ v:1.0000, at:'2026-08-19 10:05', src:'平台汇率管理 · 中间价', ver:'FX-20260819-T1005' } }
 ];
 
 /* ---- 汇率快照池：选中结算币种时即时展示（D-FIN-80）。
    本期融资需求币种恒为 USD 且报价金额只读等于需求金额，故"折 USD"在本期取值上恒等于原值；
    这是本期取值说明，不写进公式本身（D-FIN-82）。 ---- */
 var FX = {
-  USD :{ v:1.0000, src:'WS-318 汇率管理 · 中间价', ver:'FX-20260911-T1040', at:NOW, x:'本位币，不折算' },
-  USDT:{ v:0.9994, src:'WS-318 汇率管理 · 中间价', ver:'FX-20260911-T1040', at:NOW, x:'1 USD ＝ 1.0006 USDT' },
-  USDC:{ v:1.0002, src:'WS-318 汇率管理 · 中间价', ver:'FX-20260911-T1040', at:NOW, x:'1 USD ＝ 0.9998 USDC' }
+  USD :{ v:1.0000, src:'平台汇率管理 · 中间价', ver:'FX-20260911-T1040', at:NOW, x:'本位币，不折算' },
+  USDT:{ v:0.9994, src:'平台汇率管理 · 中间价', ver:'FX-20260911-T1040', at:NOW, x:'1 USD ＝ 1.0006 USDT' },
+  USDC:{ v:1.0002, src:'平台汇率管理 · 中间价', ver:'FX-20260911-T1040', at:NOW, x:'1 USD ＝ 0.9998 USDC' }
 };
 
 /* ---- 该企业主体最近一次成功接受时使用的收款账户（D-FIN-94 预填来源）----
@@ -337,7 +367,7 @@ function availableActions(p, role){
     q.reason = own ? '不能为自己的项目报价。' : '当前企业主体未开通资金方资质，无法发起报价。';
     q.brief  = own ? '本方项目' : '无资金方资质';
   } else if(p.expired){
-    q.reason = '该融资项目有效期已于 ' + p.expiresAt + ' 到期，停止接受新报价；存量融资业务照常履约（D-FIN-43 分支②）。';
+    q.reason = '该融资项目有效期已于 ' + p.expiresAt + ' 到期，停止接受新报价；存量融资业务照常履约。';
     q.brief  = '项目已到期';
   } else if(p.voidedDemand){
     q.reason = '该融资需求已失效（池内质押覆盖不足）。判据：融资上限 ' + amt(p.cap) + ' − 项目融资余额 ' +
@@ -346,7 +376,7 @@ function availableActions(p, role){
     q.brief  = '需求已失效 · 覆盖不足';
   } else if(p.status === 'S-FP-3' && deal){
     q.reason = '该需求已被' + (deal.fundEntity === ACTORS.fund.entity ? '本机构' : '其他机构') +
-               '报价（' + deal.fund + '，' + withTz(deal.at) + '），同一时刻至多承载一笔在途融资业务（D-FIN-33）。' +
+               '报价（' + deal.fund + '，' + withTz(deal.at) + '），同一时刻至多承载一笔在途融资业务。' +
                '剩余有效期 ' + fmtDur(quoteClock(deal).leftMin) + '，届满自动失效、需求自动放开。';
     q.brief  = '已被报价';
   } else if(!p.demand){
@@ -426,53 +456,7 @@ function creditBar(c, mini){
     (over > 0 ? '<span><i class="over"></i>差额 <b>' + amt(over) + '</b></span>' : '') + '</div>') +
   '</div>';
 }
-/* 不等式一行：把 AC-CR-03 摆成可读的算式，各项与尺上的段同色，结论在行尾 */
-function creditEq(c){
-  return '<div class="cq-eq">' +
-    '<span class="t used">' + amt(c.used) + '</span><span class="op">＋</span>' +
-    '<span class="t fly">' + amt(c.fly) + '</span><span class="op">＋</span>' +
-    '<span class="t now">' + amt(c.need) + '</span><span class="op">＝</span>' +
-    '<span>' + amt(round2(c.used + c.fly + c.need)) + '</span>' +
-    '<span class="op">' + (c.pass ? '≤' : '＞') + '</span>' +
-    '<span class="t cap">' + amt(c.limit) + '</span>' +
-    '<span class="vd ' + (c.pass ? 'pass' : 'fail') + '">' + (c.pass ? '通过' : '不通过 · 差额 ' + amt(c.gap)) + '</span>' +
-  '</div>' +
-  '<p class="hint">授信占用额（未偿本金）＋ 在途报价金额 ＋ 本次报价金额（折 ' + CCY + '）≤ 授信额度 —— AC-CR-03 修正式。' +
-  '前两项之和是<b>授信已用额</b> ' + amt(c.usedTotal) + '，它是两者的合称，不单独存储、不作为第四个量展示。</p>';
-}
 
-/* ---- 招牌件 B：两道闸门牌（AC-FIN-07 / AC-CR-22 / D-CR-21）----
-   两道相互独立、必须同时通过。失败提示必须能被用户区分开：
-   覆盖不足是资产方要解决的事，授信不足是机构自己要解决的事。 */
-function gates(p, c, g){
-  function gate(cls, name, num, formula, who){
-    return '<div class="cq-gate ' + cls + '"><div class="gh">' + E(name) +
-      '<span class="st">' + (cls === 'pass' ? '通过' : cls === 'soft' ? '需先处理' : '不通过') + '</span></div>' +
-      '<div class="fm">' + formula + '</div>' +
-      '<div class="who">' + who + '</div></div>';
-  }
-  var gOk = g.pass;
-  var cCls = c.pass ? 'pass' : 'soft';    /* 授信不足不是 ⊘、不是报错，进入授信步骤（AC-CR-06） */
-  return '<div class="cq-gates">' +
-    gate(gOk ? 'pass' : 'fail', '覆盖闸门 · 项目维度',
-      null,
-      '判据 <b>融资上限 − 项目融资余额 − 更早已保留需求金额合计 &lt; 本笔需求金额 ⇒ 失效</b><br>' +
-      amt(g.cap) + ' − ' + amt(g.bal) + ' − ' + amt(g.earlier) + ' ＝ <b>' + amt(g.head) + '</b>　' +
-      (gOk ? '≥' : '&lt;') + '　本笔需求 <b>' + amt(g.need) + '</b>',
-      gOk ? '管"这个<b>池子</b>还撑不撑得住这笔需求"。本判据由服务端在提交时刻<b>实时重算</b>，不吃缓存（AC-CR-20）。'
-          : '这是<b>资产方</b>要解决的事：补足质押后重新发布。机构做什么都改变不了它。') +
-    gate(cCls, '授信闸门 · 机构 × 资产方维度',
-      null,
-      '判据 <b>授信占用额 ＋ 在途报价金额 ＋ 本次报价金额 ≤ 授信额度</b><br>' +
-      amt(c.used) + ' ＋ ' + amt(c.fly) + ' ＋ ' + amt(c.need) + ' ＝ <b>' + amt(round2(c.used + c.fly + c.need)) +
-      '</b>　' + (c.pass ? '≤' : '＞') + '　额度 <b>' + amt(c.limit) + '</b>' +
-      (c.pass ? '' : '<br>差额 <b>' + amt(c.gap) + '</b>'),
-      c.pass ? '管"这家<b>机构</b>还能不能借给这家资产方"。额度是机构自己的风险决策，平台本期不介入。'
-             : '这是<b>机构自己</b>能解决的事：在下面的授信步骤里补足额度即可继续，<b>不是报错、不是被拒</b>。') +
-  '</div>' +
-  '<p class="hint">两道<b>相互独立、必须同时通过</b>（AC-FIN-07 / AC-CR-22）。前端隐藏或置灰不构成校验，' +
-  '准入以提交时刻的服务端实时重算为准。</p>';
-}
 
 /* ---- 招牌件 C：锁定倒计时（D-LS-13 / AC-LS-85 / FD-13 + QT-13）----
    四件事一个不少：被谁锁定 / 从什么时候开始 / 已锁定多久 / 还剩多久；并给两条出路。
@@ -500,32 +484,12 @@ function countdown(deal, forAsset){
     '<div class="ways">' +
       (forAsset
         ? '<div class="w"><i>①</i><span>您可以<b>随时拒绝</b>该报价，需求将立即回到可被报价的状态，在途报价金额全额释放。</span></div>' +
-          '<div class="w"><i>②</i><span>若 <b>' + fmtDur(k.leftMin) + '</b> 内未处理，该报价将<b>自动失效</b>、需求自动放开，后果与拒绝完全相同（AC-CR-15）。</span></div>'
+          '<div class="w"><i>②</i><span>若 <b>' + fmtDur(k.leftMin) + '</b> 内未处理，该报价将<b>自动失效</b>、需求自动放开，后果与拒绝完全相同。</span></div>'
         : '<div class="w"><i>①</i><span>资产方可<b>随时拒绝</b>，需求随即回到可被报价的状态。</span></div>' +
           '<div class="w"><i>②</i><span>若 <b>' + fmtDur(k.leftMin) + '</b> 内未处理，报价<b>自动失效</b>、需求自动放开，占用的授信全额释放。</span></div>') +
     '</div></div>';
 }
 
-/* ---- 三占用对照：5.1 表的页面形态，D-CR-18 命名红线的落点 ----
-   本模块最容易翻车的地方：三个量分属两个维度、由不同动作触发。
-   高亮那一格是本次动作真正会改变的量。 */
-function threeQuantities(p, c, thisAmt){
-  function box(on, nm, dim, v, ch){
-    return '<div class="q' + (on ? ' on' : '') + '"><div class="nm">' + nm + '</div>' +
-      '<div class="dm">' + dim + '</div><div class="v">' + v + '</div><div class="ch">' + ch + '</div></div>';
-  }
-  return '<div class="cq-three">' +
-    box(false, '项目在途金额', '项目维度 · FP-14', amt(p.fly),
-      '<b>本次不变。</b>唯一来源是资产方发布需求时的发布占用，报价环节不新增（AC-FIN-23）。') +
-    box(true, '在途报价金额', '机构 × 资产方维度 · CR-09', amt(c.fly) + ' → ' + amt(round2(c.fly + thisAmt)),
-      '<b>本次 +' + amt(thisAmt) + '。</b>报价提交成功的同一时刻产生，拒绝 / 失效时全额释放。') +
-    box(false, '授信占用额', '机构 × 资产方维度 · CR-08', amt(c.used),
-      '<b>本次不变。</b>它的定义是未偿本金，报价时钱还没放出去，不存在本金（D-CR-16）。') +
-  '</div>' +
-  '<p class="hint">把「在途报价金额」和「授信占用额」混为一谈，会在报价环节把同一笔钱扣两次；' +
-  '把「在途报价金额」和「项目在途金额」混为一谈，会让可融金额凭空少一半。' +
-  '三个量一律用全名，界面不出现无限定词的"占用""在途"。</p>';
-}
 
 /* ================================================================
    WS-327 增量：初始还款计划（试算版）与日期重算告知
@@ -589,7 +553,7 @@ function initialPlanCard(deal, p){
   }).join('');
   return '<div class="card" style="margin-top:16px">' +
     cardHead('初始还款计划（试算版）',
-      '<span class="faint">WS-327 F-LS-60 · 整表预计 · 未生效 · 公开字段</span>') +
+      '<span class="faint">整表预计 · 未生效</span>') +
     '<div class="card-b">' +
     CF.note('',
       '<b class="ls-b">这张表整表未生效。</b>它按<b class="ls-b">预计放款日 ' + base +
@@ -597,7 +561,7 @@ function initialPlanCard(deal, p){
       '用同一时刻做基准，双方看到的是同一套数。' +
       '<p><b class="ls-b">实际还款日将在放款确认后按实际放款日重算并定稿，届时以定稿计划为准；' +
       '每期金额的计算规则不变。</b>变的只有日期，以及由日期派生的天数与利息——' +
-      '公式、年化利率、本金、期次边界规则一个都不会变（WS-327 D-RP-06 / D-RP-07）。</p>' +
+      '公式、年化利率、本金、期次边界规则一个都不会变。</p>' +
       '<p>本表<b class="ls-b">不落库、不占号、不产生期次对象</b>：您拒绝报价或报价有效期届满时，' +
       '它随之消失、不留残留期次。</p>', '预计 · 未生效') +
     '<div class="tablewrap" style="margin-top:14px"><table class="tbl wide ls-tbl">' +
@@ -618,7 +582,7 @@ function initialPlanCard(deal, p){
     '</div>' +
     '<p class="hint" style="margin-top:12px"><b>本期不支持提前还款</b>：还本金只发生在融资项目到期之后，' +
     '每期的还款入口在该期应还日前 3 个自然日开启，逐期开窗、不可跨期合并。' +
-    '本卡的展示事实与展示时间在您接受报价时<b>留痕（FD-28）</b>，' +
+    '本卡的展示事实与展示时间在您接受报价时<b>留痕</b>，' +
     '<b>只留痕、不要求您勾选确认</b>——它是平台尽到告知义务的证据，' +
     '定稿后若对日期有疑问，这条留痕可以拿出来对账。</p>' +
     '</div></div>';
@@ -696,7 +660,7 @@ function ro(text, note){
 function noChainFoot(what){
   return '<p class="hint" style="margin-top:14px">' + E(what) +
     '<b>不产生任何链上操作、不消耗 gas、不需要唤起签名 SDK</b>。' +
-    '本模块全部动作都发生在平台内：授信核定、报价、接受与拒绝都只改平台侧的额度与状态，链上动作只发生在质押与提取（WS-324）。</p>';
+    '本模块全部动作都发生在平台内：授信核定、报价、接受与拒绝都只改平台侧的额度与状态，链上动作只发生在质押与提取。</p>';
 }
 /* 动作按钮：区分「不可见」与「可见不可点 ⊘ + 原因」（H-03） */
 function actBtn(a, cls){
@@ -750,7 +714,7 @@ function creditForm(c, p){
   if(!(val > 0))
     err = '请填写有效的' + BRANCH[b].lb + '：必须大于 ' + usd(0) + '，精度为 ' + CCY + ' 2 位小数。';
   else if(b !== 'topup' && after < c.usedTotal)
-    err = '授信额度不得低于已用额。本期额度<b>只增不减</b>（D-CR-12 / X-LS-15）：当前授信已用额 <span class="mono">' +
+    err = '授信额度不得低于已用额。本期额度<b>只增不减</b>：当前授信已用额 <span class="mono">' +
           usd(c.usedTotal) + '</span>，填写值 <span class="mono">' + usd(after) + '</span> 低于它。';
   /* 有效期下限硬校验，不提供"我知道风险仍要提交"的绕过项（D-CR-19） */
   var dErr = null;
@@ -762,284 +726,292 @@ function creditForm(c, p){
            '"机构重新审视这家资产方"的机会一定会到来 —— 本期额度只增不减、无调低无冻结，' +
            '到期后的重新核定是唯一一次重新评估的入口。';
   else if(b === 'topup' && c.cr && tmin(until) < tmin(c.cr.until))
-    dErr = '追加时<b>只能往后延，不能提前</b>（D-CR-20）。当前有效期至 <b>' + c.cr.until +
+    dErr = '追加时<b>只能往后延，不能提前</b>。当前有效期至 <b>' + c.cr.until +
            '</b>，新值不得早于它 —— 提前到期等于变相调低这条额度的存续期，而额度的主动调低本期明确不做，' +
            '且调低不向资产方推送，机构单方面提前会直接砍掉资产方的融资通道而对方毫无感知。';
   return { b:b, raw:raw, val:val, after:after, until:until, minDate:minDate, maxDate:maxDate,
            err:err, dErr:dErr, ok:(!err && !dErr) };
 }
 
-function pageCredit(){
-  var p = findProject(S.pid);
-  if(S.role !== 'fund')
-    return failCard('授信核定', '无权访问',
-      '授信核定是报价流程内的一步，只对<b>已登录的资金方企业主体</b>开放。当前身份为「' + E(ACTORS[S.role].full) + '」。' +
-      '授信额度属于机构的内部风险决策，资产方在自己的控制台只能<b>只读</b>看到各机构对本企业的额度与已用额（WS-328），' +
-      '看不到备注，也看不到该企业在其他机构的授信情况。',
-      '<a class="btn primary" href="' + lsHref('#/plaza') + '">返回融资需求广场</a>');
-  if(!p) return failCard('授信核定', '内容不存在或无权访问',
-      '授信步骤由进入时的融资项目决定授信对象，没有独立入口、没有独立锚点（D-LS-15 / D-LS-16）。' +
-      '请从广场的「立即报价」进入。',
-      '<a class="btn primary" href="' + lsHref('#/plaza') + '">返回融资需求广场</a>');
-  if(S.st === 'loading') return skel('授信核定');
-  if(S.st === 'error') return failCard('授信核定', '授信信息加载失败',
-      '服务端未返回本机构对该资产方的授信额度与已用额。这不影响已生效的额度与在途业务，可重试。');
 
-  /* 授信步骤是报价流程内的一步：报价这件事本身不成立时，这一步也不该出现（AC-CR-06 的前提）。
-     落到报价页的说明态，由它逐种给出可区分的原因。 */
-  if(!actionOf(availableActions(p, 'fund'), 'quote').enabled){ S.page = 'P-LS-05'; return pageQuote(); }
-  var c = creditCheck(p.entity, p.demand);
-  var g = guaranteeCheck(p);
-  /* 分支④：充足则不出现该步 —— 直接回到报价表单，不做成一个"恭喜通过"页 */
-  if(c.branch === 'enough'){ S.page = 'P-LS-05'; CF.syncURL(); return pageQuote(); }
-  var f = creditForm(c, p);
+/* ================================================================
+   v1.2 承载形态：三个承载单元都是详情页操作区里的**弹窗**
+   ================================================================
+   P-LS-04 / 05 / 06 不是页面。它们是详情页操作区的按钮打开的弹窗：
+     · 融资报价弹窗   —— 内含三步：授信提示（对话框） → 额度编辑 → 报价表单
+     · 接受/拒绝弹窗  —— 资产方处理在途报价
+   不跳离详情页、不新开页面、不弹窗套弹窗。
+
+   ⚠️ v1.1 把授信提示做成了"就地替换、没有遮罩"，看上去不像一次需要机构表态的动作 ——
+   需求方指出的正是这一点。现在它是**对话框形态**：有遮罩、有确认/取消、有明确问句，
+   确认后**在同一个弹窗内**换到额度编辑步骤，不再开第二层。
+
+   弹窗内**不放操作栏**；报价步骤的内容自上而下 = 授信信息 → 报价表单。
+   ================================================================ */
+
+/* ---- 弹窗下面那层：详情页上下文。只放身份与去向，不重画一遍详情页 ---- */
+function unitBackdrop(p, title){
+  if(!p) return '';
+  return '<div class="cq-ctx">' +
+    '<a class="cq-ctx-back" href="' + lsHref('#/project/' + p.id) + '">← 返回融资项目详情</a>' +
+    '<div class="cq-ctx-id"><b>' + E(p.name) + '</b><span>' + E(p.owner) + '</span></div>' +
+    '<p class="cq-ctx-note">' + E(title) + '在详情页的操作区内以弹窗完成，不跳离详情页。' +
+    '这里是它下面那层详情页的位置。</p></div>';
+}
+
+/* ---- 弹窗外壳：统一头部 / 主体 / 底部，所有承载单元共用一套 ---- */
+function unitShell(title, sub, body, foot, opt){
+  opt = opt || {};
+  return '<div class="mask" data-act="cq.maskClose">' +
+    '<div class="modal cq-unit' + (opt.dialog ? ' dialog' : '') + '" role="dialog" aria-modal="true" aria-label="' + E(title) + '">' +
+      '<div class="modal-h"><b>' + E(title) + (sub ? '<span class="sb">' + E(sub) + '</span>' : '') + '</b>' +
+      '<button class="modal-x" type="button" data-act="cq.unitClose" aria-label="关闭">✕</button></div>' +
+      '<div class="modal-b">' + body + '</div>' +
+      '<div class="modal-f">' + foot + '</div>' +
+    '</div></div>';
+}
+
+/* ================================================================
+   步骤一：授信提示（对话框形态）
+   三支都问：① 没额度 ② 额度不够 ③ 额度过期。④ 够用就不出这一步。
+   ================================================================ */
+function creditAsk(p, c, f){
   var bm = BRANCH[f.b];
+  var A = {
+    'new':{
+      h:'您还没有给 ' + p.owner + ' 核定授信额度，现在核定吗？',
+      go:'去核定额度',
+      why:'核定之后，您对 ' + E(p.owner) + ' 的<b>所有</b>融资项目都用这一条额度，不必逐个项目重复核定。',
+      yes:'填授信总额与有效期，提交即生效，然后回到报价。'
+    },
+    'topup':{
+      h:'当前授信额度不够这笔报价，现在提额吗？',
+      go:'去提额',
+      why:'您对 <b>' + E(p.owner) + '</b> 的可用授信不够覆盖本次报价金额。',
+      yes:'填要增加多少额度，提交即生效，然后回到报价。'
+    },
+    'renew':{
+      h:'您给 ' + p.owner + ' 的授信额度已经到期，现在重新核定吗？',
+      go:'去重新核定',
+      why:'额度已于 <b>' + (c.cr ? c.cr.until : '—') + '</b> 到期。到期的额度不能再用来报价，' +
+          '但已经借出去的钱不受影响。重新核定会给这条额度一个新的有效期。',
+      yes:'带出上一版额度 <b>' + (c.cr ? amt(c.cr.limit) : '—') + '</b> 供修改，并重新填有效期。'
+    }
+  }[f.b];
 
-  /* 为什么会走到这里（AC-CR-10）：三种情形各有说明，不得只显示一个空表单 */
-  var why;
-  if(f.b === 'new'){
-    why = '<div class="cq-why"><div class="bd"><b>本机构尚未对该资产方核定授信额度</b>' +
-      '<p>授信额度是<b>机构 × 资产方企业二元组</b>上的一条独立记录，与任何单个融资项目无关 —— ' +
-      '核定一次之后，您对 ' + E(p.owner) + ' 的<b>所有</b>融资项目都用这一条额度，不必逐个项目重复核定。</p></div>' +
-      '<div class="nums"><div class="n"><div class="k">本次报价金额</div><div class="v">' + amt(c.need) + '</div></div>' +
-      '<div class="n"><div class="k">当前可用授信</div><div class="v">—</div></div></div></div>';
-  } else if(f.b === 'topup'){
-    /* 三个数已前移到上一步的确认里（v1.1）。这里保留一条紧凑的复述而不是再摆一次大字：
-       AC-CR-10「必须显示为什么走到这里、不得只显示一个空表单」仍然成立，
-       但此刻机构已经看过并确认过那三个数，主视觉该让给表单本身。 */
-    why = '<div class="cq-why"><div class="bd"><b>您已确认提额，现在填增加额</b>' +
-      '<p>上一步的三个数：本次报价 <b>' + amt(c.need) + '</b>　当前可用授信 <b>' + amt(c.avail) +
-      '</b>　差额 <b>' + amt(c.gap) + '</b>（' + CCY + '）。' +
-      '可以只追加一部分，但本次报价须在追加后仍然通过 AC-CR-03。' +
-      '差额在您填任何一个报价字段之前就已告知（AC-CR-06）—— 不会让您填完币种、利率、账户再拒绝。</p></div>' +
-      '<div class="nums"><div class="n"><div class="k">仍需补足</div><div class="v gap">' +
-        amt(c.gap) + '</div></div></div></div>';
-  } else {
-    why = '<div class="cq-why"><div class="bd"><b>原授信额度已到期，需重新核定</b>' +
-      '<p>原额度 <span class="mono">' + amt(c.cr.limit) + ' ' + CCY + '</span>，有效期至 <b>' + c.cr.until +
-      '</b>，已于当日转 <b>S-CR-2 已到期</b>。到期额度<b>视同无额度</b>，不存在"再顶一次"的宽限（AC-CR-07）；' +
-      '但到期<b>不释放已有占用</b> —— 钱还没还，债务就还在（D-CR-13）。' +
-      '重新核定生成新的有效期，下限按<b>重新核定日</b>重算，历史留痕不覆盖。</p></div>' +
-      '<div class="nums"><div class="n"><div class="k">本次报价金额</div><div class="v">' + amt(c.need) + '</div></div>' +
-      '<div class="n"><div class="k">上一版额度</div><div class="v">' + amt(c.cr.limit) + '</div></div></div></div>';
-  }
+  /* 只有"额度不够"这一支摆三个数：本次报价 − 可用授信 ＝ 差额，排成算式，机构自己就能核 */
+  var nums = f.b === 'topup'
+    ? '<div class="cq-ask-nums">' +
+        '<div class="n"><div class="k">本次报价</div><div class="v">' + amt(c.need) + '</div></div>' +
+        '<div class="op" aria-hidden="true">−</div>' +
+        '<div class="n"><div class="k">可用授信</div><div class="v">' + amt(c.avail) + '</div></div>' +
+        '<div class="op" aria-hidden="true">＝</div>' +
+        '<div class="n gap"><div class="k">还差</div><div class="v">' + amt(c.gap) + '</div></div>' +
+        '<div class="cy">' + CCY + '</div>' +
+      '</div>'
+    : '<div class="cq-ask-nums">' +
+        '<div class="n"><div class="k">本次报价</div><div class="v">' + amt(c.need) + '</div></div>' +
+        (f.b === 'renew'
+          ? '<div class="n"><div class="k">上一版额度</div><div class="v">' + (c.cr ? amt(c.cr.limit) : '—') + '</div></div>'
+          : '<div class="n"><div class="k">当前额度</div><div class="v">无</div></div>') +
+        '<div class="cy">' + CCY + '</div>' +
+      '</div>';
 
-  /* ================================================================
-     v1.1 —— 授信前置确认（PRD V6.0 `D-CR-46` ～ `D-CR-50`）
-
-     **不得直接把机构送进授信表单。** 用户点的是「报价」不是「授信」——不先问一句，
-     就等于用一个动作触发了另一个改变本机构敞口的写操作。①②③ 三支都要问：
-     ① 是建立一段全新的授信关系，③ 是把敞口窗口再开一年（重新核定会生成新的有效期），
-     两者比②「在已有关系上加码」更重。分支④ 额度充足**不出现确认**，直接进报价表单。
-
-     ⚠️ 形态（`D-CR-48` 写死）：确认 → 授信表单 → 回到报价表单是**同一个承载单元里的三个步骤**，
-     不新开页、不叠第二层。本步骤就地替换表单的位置呈现；`D-LS-30` 把 P-LS-04/05/06
-     由页面改为详情页操作区内的弹窗之后，这三步原样搬进那一个弹窗即可。
-
-     取消（`D-CR-49`）：回到详情页操作区，「融资报价」按钮保持原样、随时可再点。
-     **什么都不留**——不生成编号、不产生授信记录与占用、不锁定需求，**也不记录"曾经取消过"**。
-     ================================================================ */
-  /* 换项目即失效：额度是机构 × 资产方二元组，换了对手方就是另一条额度的事，要重新问一次。
-     在渲染前判，不放到 afterRender —— 那会晚一帧，换项目后表单会先闪一下再复位。 */
-  if(S.cr.confirmed && S.cr.askedFor !== p.id){ S.cr.confirmed = false; S.cr.askedFor = null; }
-  if(!S.cr.confirmed){
-    /* 三支的问句与理由各不相同（`D-CR-47`）；只有②摆三个数（`D-CR-46`），
-       ③把原到期日摆进来（它本就是 `AC-CR-10` 要求展示的内容）。 */
-    var ASK = {
-      'new':{
-        h:'您尚未对 ' + p.owner + ' 核定授信额度，是否现在核定？',
-        go:'去核定',
-        pills:pill('', '分支 ① · 无额度'),
-        why:'这是<b>建立一段全新的授信关系</b>：核定之后，您对 ' + E(p.owner) +
-            ' 的<b>所有</b>融资项目都用这一条额度，不必逐个项目重复核定。',
-        yes:'进入核定表单，填<b>授信总额</b>与<b>有效期至</b>（下限＝核定日 + 1 年，默认即下限）。' +
-            '提交即生效、无审批流；之后自动回到报价表单并<b>重跑两道校验</b>。'
-      },
-      'topup':{
-        h:'当前授信额度不足，是否提额？',
-        go:'去提额',
-        pills:pill('amber', '分支 ② · 额度不足'),
-        why:'您对 <b>' + E(p.owner) + '</b> 的授信额度不足以覆盖本次报价。',
-        yes:'进入追加表单，填<b>增加额</b>（不是新总额）。提交即生效、无审批流；' +
-            '之后自动回到报价表单并<b>重跑两道校验</b>。'
-      },
-      'renew':{
-        h:'您对 ' + p.owner + ' 的授信额度已于 ' + (c.cr ? c.cr.until : '—') + ' 到期，是否重新核定？',
-        go:'去重新核定',
-        pills:pill('gray', '分支 ③ · 已到期'),
-        why:'到期额度<b>视同无额度</b>，没有"再顶一次"的宽限；但到期<b>不释放已有占用</b>——钱还没还，债务就还在。' +
-            '重新核定会<b>生成新的有效期</b>，等于把您对这家资产方的敞口窗口再开一段。',
-        yes:'进入重新核定表单，带出上一版额度 <b>' + (c.cr ? amt(c.cr.limit) : '—') +
-            '</b> 供修改，并<b>重新填写有效期</b>（下限按重新核定日重算）。提交即生效；' +
-            '之后自动回到报价表单并<b>重跑两道校验</b>。'
-      }
-    };
-    var a = ASK[f.b];
-    /* 只有分支②摆三个数：本次报价 − 当前可用授信 ＝ 差额，排成算式，机构自己就能验 */
-    var nums = f.b === 'topup'
-      ? '<div class="nums">' +
-          '<div class="n"><div class="k">本次报价金额</div><div class="v">' + amt(c.need) + '</div>' +
-            '<div class="x">' + CCY + ' · 恒等于需求金额</div></div>' +
-          '<div class="op" aria-hidden="true">−</div>' +
-          '<div class="n"><div class="k">当前可用授信</div><div class="v">' + amt(c.avail) + '</div>' +
-            '<div class="x">授信额度 ' + amt(c.limit) + ' − 已用 ' + amt(c.usedTotal) + '</div></div>' +
-          '<div class="op" aria-hidden="true">＝</div>' +
-          '<div class="n gap"><div class="k">差额</div><div class="v">' + amt(c.gap) + '</div>' +
-            '<div class="x">至少要补这么多才够报本次</div></div>' +
-        '</div>'
-      : '<div class="nums">' +
-          '<div class="n"><div class="k">本次报价金额</div><div class="v">' + amt(c.need) + '</div>' +
-            '<div class="x">' + CCY + ' · 恒等于需求金额，不可修改</div></div>' +
-          (f.b === 'renew'
-            ? '<div class="n"><div class="k">上一版额度</div><div class="v">' +
-                (c.cr ? amt(c.cr.limit) : '—') + '</div><div class="x">原到期日 ' +
-                (c.cr ? c.cr.until : '—') + ' · 已转 S-CR-2 已到期</div></div>'
-            : '<div class="n"><div class="k">当前可用授信</div><div class="v">—</div>' +
-                '<div class="x">本机构对该资产方尚无授信记录</div></div>') +
-        '</div>';
-    return backToPlaza() + phead(
-      '授信核定 · <span class="mono">P-LS-04</span> · 报价的前置步骤 · ' + bm.n + ' ' + bm.t,
-      a.h, null,
-      a.pills + pill('gray', '尚未进入表单') + pill('gray', '此刻不产生任何记录'),
-      amtBlock('本次报价金额', amt(c.need), CCY,
-        '恒等于该需求金额，不可修改（D-FIN-19）')) + CF.pageStates() +
-      '<div class="card"><div class="card-b">' +
-        '<div class="cq-ask">' +
-          '<p class="q">' + E(a.h) + '</p>' +
-          '<p class="sub">' + a.why + '</p>' +
-          nums +
-          '<div class="ways">' +
-            '<div class="w"><i>确认</i><span>' + a.yes +
-              '额度与报价<b>解耦</b>——办完即使放弃报价，额度也照常保留。</span></div>' +
-            '<div class="w"><i>取消</i><span>回到详情页操作区，「融资报价」按钮保持原样、随时可再点。' +
-              '<b>什么都不留</b>：不生成融资业务编号、不产生授信记录、不占用您的授信、不锁定该需求，' +
-              '<b>也不记录"曾经取消过"</b>。这条需求对其他机构照常开放。</span></div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="btnbar">' +
-          '<button class="btn primary" type="button" data-act="cq.askYes">' + E(a.go) + '</button>' +
-          '<a class="btn" href="' + lsHref('#/project/' + p.id) + '">取消，返回详情页</a>' +
-        '</div>' +
-        noChainFoot('本步骤与随后的授信核定都') +
-      '</div></div>';
-  }
-
-  var head = backToPlaza() + phead(
-    '授信核定 · <span class="mono">P-LS-04</span> · 报价的前置步骤 · ' + bm.n + ' ' + bm.t,
-    bm.t, null,
-    pill('', '分支 ' + bm.n + ' · ' + bm.t) +
-      pill(c.alive ? TONE[CR_STATUS[c.cr.st].tone] : 'gray',
-           c.cr ? 'S-CR-' + (c.cr.st === 'S-CR-1' ? '1 生效中' : '2 已到期') : '无授信记录') +
-      pill('gray', '提交即生效 · 无审批流') + pill('gray', '本步骤无链上操作'),
-    amtBlock('本次报价金额', amt(c.need), CCY,
-      '恒等于该需求金额，不可修改（D-FIN-19）')) + CF.pageStates();
-
-  /* 授信对象只读带出，由进入时的项目决定，不可选择、不可修改（CR-03） */
-  var form =
-    '<div class="card">' + cardHead('授信对象', '<span class="faint">CR-02 / CR-03 · 只读带出</span>') +
-    '<div class="card-b">' +
-      '<div class="ls-kgrid">' +
-        '<div><div class="k">资金方企业主体 · CR-02</div><div class="v" style="font-family:var(--sans)">' +
-          E(ACTORS.fund.full) + '</div><div class="x">取当前会话的企业主体标识</div></div>' +
-        '<div><div class="k">资产方企业主体 · CR-03</div><div class="v" style="font-family:var(--sans)">' +
-          E(p.owner) + '</div><div class="x">由进入时的融资项目决定，不可选择、不可修改</div></div>' +
-        '<div><div class="k">触发来源项目</div><div class="v">' + p.id + '</div>' +
-          '<div class="x">只作留痕（CR-13），额度本身与该项目无关</div></div>' +
-        '<div><div class="k">授信额度编号 · CR-01</div><div class="v">' + (c.cr ? c.cr.id : '提交后生成') +
-          '</div><div class="x">首次核定时生成，全局唯一且终身稳定</div></div>' +
+  var body =
+    '<div class="cq-ask">' +
+      '<div class="ic" aria-hidden="true">?</div>' +
+      '<div class="bd">' +
+        '<p class="q">' + E(A.h) + '</p>' +
+        '<p class="sub">' + A.why + '</p>' +
+        nums +
+        '<p class="yes">' + A.yes + '</p>' +
+        '<p class="no">取消不会留下任何东西：不生成报价、不动用您的额度、不锁定这条需求，' +
+        '它对其他机构照常开放。您随时可以再来。</p>' +
       '</div>' +
-      '<p class="hint" style="margin-top:12px">一个「资金方 × 资产方」二元组<b>有且只有一条</b>授信额度记录。' +
-      '"机构 × 资产方 × 项目"三元组的读法已正式作废 —— 那会让机构对单一资产方的总敞口失去上限，' +
-      '而总敞口控制正是授信这个概念存在的目的。</p>' +
-    '</div></div>' +
+    '</div>';
+  var foot =
+    '<button class="btn" type="button" data-act="cq.unitClose">取消</button>' +
+    '<button class="btn primary" type="button" data-act="cq.askYes">' + E(A.go) + '</button>';
+  return unitShell('融资报价', bm.t, body, foot, { dialog:true });
+}
 
-    '<div class="card" style="margin-top:16px">' + cardHead(bm.lb,
-      '<span class="faint">CR-05 · ' + (f.b === 'topup' ? '填增加额，不是新总额' : 'USD，> 0，2 位小数') + '</span>') +
-    '<div class="card-b">' +
+/* ================================================================
+   步骤二：额度编辑
+   ================================================================ */
+function creditStep(p, c, f){
+  var bm = BRANCH[f.b];
+  var body =
+    '<div class="cq-sec"><h3>授信对象</h3>' +
+      '<div class="ls-kgrid">' +
+        '<div><div class="k">资金方</div><div class="v" style="font-family:var(--sans)">' + E(ACTORS.fund.full) + '</div></div>' +
+        '<div><div class="k">资产方</div><div class="v" style="font-family:var(--sans)">' + E(p.owner) + '</div>' +
+          '<div class="x">由本次报价的项目决定，不可更改</div></div>' +
+        '<div><div class="k">授信额度编号</div><div class="v">' + (c.cr ? c.cr.id : '提交后生成') + '</div></div>' +
+        '<div><div class="k">当前额度</div><div class="v">' + (c.cr ? amt(c.limit) : '—') + '</div>' +
+          '<div class="x">' + (c.cr ? '已用 ' + amt(c.usedTotal) + ' · 可用 ' + amt(c.avail) : '尚无授信记录') + '</div></div>' +
+      '</div></div>' +
+
+    '<div class="cq-sec"><h3>' + E(bm.lb) + '</h3>' +
       field(bm.lb, CCY,
         inp('crAmt', f.raw, f.b === 'topup' ? '例如 ' + amt(c.gap) : '例如 ' + amt(c.need), { err:!!f.err }),
-        f.b === 'topup'
-          ? '追加的输入是<b>增加额</b>而不是新的总额 —— 填"新总额"会让一次手滑就把额度改小，而调低本期根本不该发生。'
-          : '本期只允许调高，<b>不允许调低、冻结、解冻</b>；界面没有这三个入口。') +
-      (f.err ? '<div class="ls-alert">' + CF.note('red', f.err, '额度校验不通过') + '</div>' : '') +
+        f.b === 'topup' ? '填<b>要增加多少</b>，不是填新的总额。' : '本期额度只能调高，没有调低、冻结、解冻。') +
+      (f.err ? '<div class="ls-alert">' + CF.note('red', f.err, '额度填写有问题') + '</div>' : '') +
       '<div class="cq-delta">' +
         '<div class="c"><div class="k">当前额度</div><div class="v">' + amt(c.limit) + '</div></div>' +
         '<div class="ar" aria-hidden="true">→</div>' +
-        '<div class="c to"><div class="k">' + (f.b === 'topup' ? '追加后额度' : '核定后额度') + '</div>' +
+        '<div class="c to"><div class="k">' + (f.b === 'topup' ? '追加后' : '核定后') + '</div>' +
           '<div class="v">' + amt(f.after) + '</div></div>' +
         '<div class="sp" style="width:1px;height:22px;background:var(--border-strong)"></div>' +
-        '<div class="c"><div class="k">授信已用额</div><div class="v">' + amt(c.usedTotal) + '</div></div>' +
-        '<div class="c"><div class="k">' + bm.verb + '后可用授信</div><div class="v">' +
+        '<div class="c"><div class="k">已用</div><div class="v">' + amt(c.usedTotal) + '</div></div>' +
+        '<div class="c"><div class="k">可用</div><div class="v">' +
           amt(Math.max(0, round2(f.after - c.usedTotal))) + '</div></div>' +
       '</div>' +
       (f.ok && round2(f.after - c.usedTotal) >= c.need
-        ? '<p class="hint" style="color:var(--ok);margin-top:10px">' + bm.verb + '后可用授信 ' +
-          amt(round2(f.after - c.usedTotal)) + '，已可覆盖本次报价 ' + amt(c.need) + '。' +
-          '提交后会自动回到报价表单并<b>重跑两道校验</b>，不需要您手动返回。</p>'
+        ? '<p class="hint" style="color:var(--ok);margin-top:10px">够了：' + bm.verb + '后可用 ' +
+          amt(round2(f.after - c.usedTotal)) + '，覆盖得住本次报价 ' + amt(c.need) + '。</p>'
         : f.ok
-          ? '<p class="hint" style="color:var(--warn);margin-top:10px">' + bm.verb + '后可用授信 ' +
-            amt(round2(f.after - c.usedTotal)) + '，仍不足本次报价 ' + amt(c.need) + '（差 ' +
-            amt(round2(c.need - (f.after - c.usedTotal))) + '）。可以只' + bm.verb +
-            '一部分并保留额度，但本次报价会在重跑 AC-CR-03 时回到这一步。</p>' : '') +
+          ? '<p class="hint" style="color:var(--warn);margin-top:10px">还不够：' + bm.verb + '后可用 ' +
+            amt(round2(f.after - c.usedTotal)) + '，本次报价 ' + amt(c.need) + '，还差 ' +
+            amt(round2(c.need - (f.after - c.usedTotal))) + '。可以只' + bm.verb + '一部分，但这笔报价还报不出去。</p>' : '') +
 
-      field('有效期至', f.b === 'topup' ? '选填 · 不动则保持原值' : '必填 · CR-07',
-        inp('crUntil', f.until, '', { type:'date', err:!!f.dErr, attr:'min="' + (f.b === 'topup' && c.cr ? c.cr.until : f.minDate) + '" max="' + f.maxDate + '"' }),
+      field('有效期至', f.b === 'topup' ? '选填 · 不动则保持原值' : '必填',
+        inp('crUntil', f.until, '', { type:'date', err:!!f.dErr,
+          attr:'min="' + (f.b === 'topup' && c.cr ? c.cr.until : f.minDate) + '" max="' + f.maxDate + '"' }),
         f.b === 'topup'
-          ? '当前有效期至 <b>' + (c.cr ? c.cr.until : '—') + '</b>。追加时可顺带延长，<b>只能往后、不能提前</b>，' +
-            '且<b>不受 1 年下限约束</b> —— 下限只约束"设定有效期"的两个动作（首次核定、到期后重新核定）。'
-          : '下限 <b>' + f.minDate + '</b>（核定日 + ' + CR_MIN_YEARS + ' 年，默认值即下限）· 上限 <b>' + f.maxDate +
-            '</b>（核定日 + ' + CR_MAX_YEARS + ' 年）。默认取下限是因为它是最短也最保守的一档，要更长自己往后调，' +
-            '比反过来更不容易出错。') +
-      (f.dErr ? '<div class="ls-alert">' + CF.note('red', f.dErr, '有效期校验不通过') + '</div>' : '') +
+          ? '当前有效期至 <b>' + (c.cr ? c.cr.until : '—') + '</b>。可以顺带往后延，不能提前。'
+          : '最早 <b>' + f.minDate + '</b>，最晚 <b>' + f.maxDate + '</b>。默认取最早那档。') +
+      (f.dErr ? '<div class="ls-alert">' + CF.note('red', f.dErr, '有效期填写有问题') + '</div>' : '') +
 
-      field('备注', '选填 · ≤ 200 字 · 仅本机构可见',
+      field('备注', '选填 · 只有本机构看得到',
         '<textarea class="inp" rows="2" maxlength="200" placeholder="机构内部的风险判断，不对资产方展示" ' +
-        'data-act="cq.f" data-v="crMemo">' + E(S.cr.memo || '') + '</textarea>',
-        '它是机构的内部风险判断，<b>不对资产方展示</b>（CR-12）。资产方在控制台只看得到额度与已用额。') +
-
-      '<div class="btnbar"><button class="btn primary" type="button" ' + (f.ok ? '' : 'disabled ') +
-        'data-act="cq.crSubmit">提交并继续报价</button>' +
-        '<a class="btn" href="' + lsHref('#/plaza') + '">放弃本次报价</a></div>' +
-      '<p class="hint"><b>提交即生效</b>，无平台审核、无多级风控 —— 授信是机构自己的风险决策，平台本期不介入。' +
-      '与报价<b>解耦</b>：授信成功后即便放弃报价，额度照常保留；报价提交失败也不回滚额度。</p>' +
-      noChainFoot('授信核定') +
-    '</div></div>';
-
-  /* 右栏：授信尺 + 当前额度读数 + 留痕 */
-  var rail = '<aside class="portal-rail">' +
-    '<div class="card">' + cardHead('授信尺', '<span class="faint">AC-CR-03 · 机构维度</span>') +
-    '<div class="card-b">' + creditBar({ limit:Math.max(c.limit, f.after), used:c.used, fly:c.fly,
-        avail:Math.max(0, round2(f.after - c.usedTotal)), need:c.need,
-        usedTotal:c.usedTotal, gap:Math.max(0, round2(c.need - (f.after - c.usedTotal))),
-        pass:round2(f.after - c.usedTotal) >= c.need }) +
-      '<p class="hint" style="margin-top:11px">尺长 ＝ ' + bm.verb + '后的授信额度 ' + amt(f.after) +
-      '。段序与 AC-CR-03 不等式左端同序。</p></div></div>' +
-    (c.cr ? '<div class="card">' + cardHead('额度留痕', '<span class="faint">CR-13</span>') +
-      '<div class="card-b"><ul class="tl">' + c.cr.log.map(function(l){
-        return '<li><div style="font-size:12px"><b>' + E(l.k) + '</b>' +
-          '<span class="faint" style="margin-left:8px">' + l.at + '</span></div>' +
-          '<div class="faint" style="font-size:11.5px;margin-top:3px">' + amt(l.from) + ' → ' + amt(l.to) +
-          ' ' + CCY + ' · 有效期至 ' + l.until + '</div></li>'; }).join('') + '</ul>' +
-      '<p class="hint">每一次核定、追加、重新核定、到期都留痕（动作人、双方主体、变更前后额度、有效期、时间、' +
-      '触发来源项目）。这是将来发生额度纠纷时的唯一证据。</p></div></div>' : '') +
-    '<div class="card">' + cardHead('两道闸门', '<span class="faint">AC-FIN-07</span>') +
-      '<div class="card-b">' +
-      '<p class="hint" style="margin:0 0 9px">覆盖闸门（项目维度）此刻 <b style="color:var(--ok)">通过</b>：' +
-      amt(g.head) + ' ≥ 本笔需求 ' + amt(g.need) + '。授信闸门就是您现在在处理的这一道。</p>' +
-      '<p class="hint">授信步骤完成后<b>两道一起重跑</b>（AC-CR-04 V3.0 补充）—— 不只是重跑 AC-CR-03。' +
-      '理由相同：您填授信额度的这段时间里，代币同样可能失效。</p></div></div>' +
-    '<div class="card"><div class="card-b"><p class="hint">深链锚点 <span class="mono">project/' + p.id +
-      '?action=quote</span><br>授信步骤<b>不另开锚点</b>：它是报价流程内的一步，是否出现由服务端判定后在页面内插入。</p>' +
-    '</div></div></aside>';
-
-  return head + why + '<div class="portal-cols" style="margin-top:18px"><div>' + form + '</div>' + rail + '</div>';
+        'data-act="cq.f" data-v="crMemo">' + E(S.cr.memo || '') + '</textarea>') +
+    '</div>';
+  var foot =
+    '<button class="btn" type="button" data-act="cq.unitClose">取消</button>' +
+    '<button class="btn primary" type="button" ' + (f.ok ? '' : 'disabled ') +
+      'data-act="cq.crSubmit">提交并继续报价</button>';
+  return unitShell('融资报价', bm.t, body, foot);
 }
 
-
 /* ================================================================
-   Part D2 —— P-LS-05 机构报价
-   左区：项目与抵押物摘要 + 本次报价占用后的授信余量；右区：报价表单 → 二次确认。
+   步骤三：报价表单
+   弹窗内不放操作栏；内容自上而下 = 授信信息 → 报价表单
    ================================================================ */
+function quoteStep(p, c, f){
+  var expireAt = tstr(tmin(NOW) + QUOTE_HOURS * 60);
+  var done = S.qt.creditDone;
+
+  var creditInfo =
+    '<div class="cq-sec"><h3>授信信息</h3>' +
+      (done ? '<div class="ls-alert">' + CF.note('green',
+        '额度已' + BRANCH[S.qt.creditBranch].verb + '到 <span class="mono">' + usd(c.limit) +
+        '</span>，现在可用 <span class="mono">' + usd(c.avail) + '</span>。', '额度已更新') + '</div>' : '') +
+      creditBar(c) +
+      '<div class="ls-kgrid" style="margin-top:16px">' +
+        '<div><div class="k">授信额度</div><div class="v">' + amt(c.limit) + '</div>' +
+          '<div class="x">有效期至 ' + (c.cr ? c.cr.until : '—') + '</div></div>' +
+        '<div><div class="k">已用</div><div class="v">' + amt(c.usedTotal) + '</div>' +
+          '<div class="x">已放款未还 ' + amt(c.used) + ' · 在途报价 ' + amt(c.fly) + '</div></div>' +
+        '<div><div class="k">可用授信</div><div class="v">' + amt(c.avail) + '</div></div>' +
+        '<div><div class="k">报出去之后还剩</div><div class="v">' +
+          amt(Math.max(0, round2(c.avail - p.demand))) + '</div>' +
+          '<div class="x">本次报价占用 ' + amt(p.demand) + '</div></div>' +
+      '</div></div>';
+
+  var acct = f.fiat
+    ? field('机构收款账户', '必填',
+        '<div class="field" style="margin-bottom:9px">' + inp('qtBank', f.a.bank, '开户行名称') + '</div>' +
+        '<div class="field" style="margin-bottom:9px">' + inp('qtAcct', f.a.acct, '账号') + '</div>' +
+        '<div class="field" style="margin-bottom:9px">' +
+          inp('qtName', f.a.name, '户名（须与机构名称一致）', { err:f.need.indexOf('nameMismatch') >= 0 }) + '</div>' +
+        '<div class="inp-row" style="margin-bottom:2px">' + inp('qtSwift', f.a.swift, 'SWIFT / BIC') +
+          inp('qtCountry', f.a.country, '国别') + '</div>',
+        f.need.indexOf('nameMismatch') >= 0
+          ? '<b style="color:var(--danger)">户名要和机构名称一致</b>：本机构登记名称为「' + E(ACTORS.fund.full) + '」。'
+          : '资产方将来还款打到这个账户。')
+    : field('机构收款地址', '必填',
+        '<div class="field" style="margin-bottom:9px">' +
+          '<select class="inp" data-act="cq.f" data-v="qtChain">' +
+          ['', 'Ethereum', 'Tron', 'Polygon'].map(function(ch){
+            return '<option value="' + ch + '"' + (f.a.chain === ch ? ' selected' : '') + '>' +
+              (ch || '选择链') + '</option>'; }).join('') + '</select></div>' +
+        inp('qtAddr', f.a.addr, '0x 开头的 42 位地址', { err:f.need.indexOf('addr') >= 0 }),
+        f.need.indexOf('chainMismatch') >= 0
+          ? '<b style="color:var(--danger)">链和币种对不上</b>：' + f.ccy + ' 不在所选链上发行。'
+          : '资产方将来还款转到这个地址。');
+
+  var form =
+    '<div class="cq-sec"><h3>本次报价</h3>' +
+      field('融资金额', '只读', ro(amt(p.demand) + ' ' + CCY),
+        '本期不支持部分融资，金额固定等于这条需求的金额。') +
+      field('融资币种', '必填',
+        '<select class="inp" data-act="cq.f" data-v="qtCcy">' +
+        ['USD','USDT','USDC'].map(function(k){
+          return '<option value="' + k + '"' + (f.ccy === k ? ' selected' : '') + '>' + k + '</option>'; }).join('') +
+        '</select>', '结算用的币种。记账一律按 ' + CCY + '。') +
+      '<div class="ls-pick" style="margin-bottom:var(--field-gap)">' +
+        '<span>结算金额 <span class="n">' + amt(f.settle) + '</span> ' + f.ccy + '</span>' +
+        '<span class="sp"></span><span>汇率 <span class="n">' + f.fx.v.toFixed(4) + '</span></span>' +
+        '<span class="faint" style="font-size:11px;margin-left:auto">' + E(f.fx.src) + '</span></div>' +
+      '<p class="hint" style="margin-top:-8px;margin-bottom:var(--field-gap)">' + E(f.fx.x) +
+      '。汇率在您提交报价的那一刻锁定，之后不再变动。</p>' +
+      field('融资利率', '年化 % · 必填',
+        inp('qtRate', f.rateRaw, '例如 7.20', { type:'number', err:!!f.rateErr, attr:'step="0.01" min="0.01" max="100"' }),
+        f.rateErr || '计息规则以双方签署的融资合同为准。') +
+      field('还款类型', '只读', ro(REPAY_TYPE.t),
+        '本期只有这一种还款方式。') +
+      field('最终还款日', '只读', ro(p.expiresAt),
+        '等于该融资项目的截止日期，跟着项目走，不单独设置。') +
+      acct +
+      field('报价有效期', '只读', ro(QUOTE_HOURS + ' 小时（7 天）'),
+        '这份报价将在 <b>' + withTz(expireAt) + '</b> 自动失效。资产方在这之前没有处理，' +
+        '需求就自动放开、您的额度也自动还回来。') +
+    '</div>';
+
+  var foot =
+    '<button class="btn" type="button" data-act="cq.unitClose">取消</button>' +
+    '<button class="btn primary" type="button" ' + (f.ok ? '' : 'disabled ') +
+      'data-act="cq.qtConfirm">提交报价</button>';
+  return unitShell('融资报价', p.name, creditInfo + form, foot);
+}
+
+/* ---- 融资报价弹窗：按状态挑步骤 ---- */
+function quoteUnit(){
+  var p = findProject(S.pid);
+  if(!p) return '';
+  var c = creditCheck(p.entity, p.demand);
+  if(c.branch === 'enough' || S.qt.creditDone) return quoteStep(p, c, quoteForm(p));
+  var f = creditForm(c, p);
+  if(S.cr.confirmed && S.cr.askedFor !== p.id){ S.cr.confirmed = false; S.cr.askedFor = null; }
+  return S.cr.confirmed ? creditStep(p, c, f) : creditAsk(p, c, f);
+}
+
+/* ---- 承载单元打不开时的说明（不可报价 / 无权 / 不存在），落在详情页上下文里 ---- */
+function unitBlocked(p, title, b, body){
+  return unitBackdrop(p, title) +
+    '<div class="card"><div class="tbl-empty"><b>' + E(b) + '</b>' + body +
+    '<div style="margin-top:14px"><a class="btn primary" href="' +
+    (p ? lsHref('#/project/' + p.id) : lsHref('#/plaza')) + '">' +
+    (p ? '返回融资项目详情' : '返回借贷广场') + '</a></div></div></div>';
+}
+
+function pageQuote(){
+  var p = findProject(S.pid);
+  if(S.st === 'loading') return skel('融资报价');
+  if(!p) return unitBlocked(null, '融资报价', '内容不存在或无权访问',
+      '该融资项目不存在，或者它还是一份没发布的草稿。');
+  if(S.role !== 'fund')
+    return unitBlocked(p, '融资报价', '这个操作只对资金方开放',
+      '当前身份是「' + E(ACTORS[S.role].full) + '」。项目和这笔在途报价的公开信息您照常看得到，' +
+      '报价本身只有资金方能做。');
+  if(S.st === 'error') return unitBlocked(p, '融资报价', '信息没能加载出来',
+      '没能取到这个项目的质押覆盖读数和您的授信额度，稍后重试。');
+  var qa = actionOf(availableActions(p, 'fund'), 'quote');
+  if(!qa.enabled || S.st === 'gone')
+    return unitBlocked(p, '融资报价', '这条需求现在不能报价', E(qa.reason));
+  return unitBackdrop(p, '融资报价') + submitResultCard();
+}
+
 function quoteForm(p){
   var ccy = S.qt.ccy || 'USD';
   var fx = FX[ccy];
@@ -1048,7 +1020,7 @@ function quoteForm(p){
   var rateErr = null;
   if(rateRaw !== null && rateRaw !== undefined && String(rateRaw).trim() !== ''){
     if(!(rate > 0 && rate <= 100))
-      rateErr = '年化利率须满足 <b>0 &lt; 利率 ≤ 100</b>，2 位小数。计息口径（单复利、计息基数、起息日）由 WS-327 定义，' +
+      rateErr = '年化利率须满足 <b>0 &lt; 利率 ≤ 100</b>，2 位小数。具体计息口径以双方签署的融资合同为准，' +
                 '本字段只采集数值。';
   }
   var fiat = (ccy === 'USD');
@@ -1070,181 +1042,6 @@ function quoteForm(p){
            fiat:fiat, a:a, need:need, ok:ok };
 }
 
-function pageQuote(){
-  var p = findProject(S.pid);
-  if(S.role !== 'fund')
-    return failCard('机构报价', '无权访问',
-      '报价页只对<b>已登录的资金方企业主体</b>开放。当前身份为「' + E(ACTORS[S.role].full) + '」。' +
-      '游客与资产方在广场与详情页可以看到 L1～L5 的全量信息，包括这笔在途报价的公开商务条款，' +
-      '但报价表单属于机构本方数据，按企业主体做服务端归属过滤。',
-      '<a class="btn primary" href="' + lsHref('#/plaza') + '">返回融资需求广场</a>');
-  if(!p) return failCard('机构报价', '内容不存在或无权访问',
-      '该融资项目不存在，或它是尚未发布的草稿 —— 草稿不进广场、不可搜索、不可深链直达。',
-      '<a class="btn primary" href="' + lsHref('#/plaza') + '">返回融资需求广场</a>');
-  if(S.st === 'loading') return skel('机构报价');
-  if(S.st === 'error') return failCard('机构报价', '报价信息加载失败',
-      '服务端未返回该项目的覆盖读数与本机构授信额度。<b>不会退回读缓存值</b>继续渲染 —— 那正是 AC-CR-20 要堵的口子。可重试。');
-
-  var qa = actionOf(availableActions(p, 'fund'), 'quote');
-  /* 状态已变 / 不可报价：落说明页而非空表单，原因逐种可区分（AC-LS-92 / AC-LS-93） */
-  if(!qa.enabled || S.st === 'gone')
-    return backToPlaza() + pageHead('机构报价 · ' + p.name, '') +
-      '<div class="card"><div class="tbl-empty"><b>该需求当前不可报价</b>' + E(qa.reason) +
-      '<div style="margin-top:14px"><a class="btn primary" href="' + lsHref('#/plaza') + '">返回融资需求广场</a>' +
-      '</div></div></div>';
-
-  var c = creditCheck(p.entity, p.demand);
-  /* 第五个条件决定进去之后先走哪一步：授信闸门不是 ⊘，不通过时进入授信步骤（AC-CR-06） */
-  if(c.branch !== 'enough' && !S.qt.creditDone){ S.page = 'P-LS-04'; CF.syncURL(); return pageCredit(); }
-  var g = guaranteeCheck(p);
-  var f = quoteForm(p);
-  var expireAt = tstr(tmin(NOW) + QUOTE_HOURS * 60);
-
-  var head = backToPlaza() + phead(
-    '机构报价 · <span class="mono">P-LS-05</span> · 项目 <span class="mono">' + p.id + '</span> · 时区 ' + TZ_LABEL,
-    p.name, p.owner,
-    pill('green', FP_STATUS[p.status].t) + pill('gray', p.assetType) +
-      pill('gray', '有效期至 ' + p.expiresAt) +
-      (S.qt.creditDone ? pill('green', '授信已' + BRANCH[S.qt.creditBranch || 'new'].verb + ' · 两道校验已重跑') : ''),
-    amtBlock('报价金额', amt(p.demand), CCY,
-      '只读，恒等于需求金额 —— 本期不支持部分融资')) + CF.pageStates() + submitResultCard();
-
-  var afterNote = S.qt.creditDone
-    ? '<div class="ls-alert">' + CF.note('green',
-      '授信已' + BRANCH[S.qt.creditBranch].verb + '至 <span class="mono">' + usd(c.limit) + '</span>，当前可用授信 <span class="mono">' +
-      usd(c.avail) + '</span>。回到报价表单时<b>两道校验已一起重跑</b>并通过（AC-CR-04）。' +
-      '<p>授信与报价<b>解耦</b>：此刻放弃报价，额度照常保留；报价提交失败也不回滚额度。</p>',
-      '授信步骤已完成') + '</div>' : '';
-
-  /* ---- 左区：项目与抵押物摘要（复用 P-LS-02 L3/L4 的只读呈现）+ 两道闸门 + 授信余量 ---- */
-  var left =
-    '<div class="card">' + cardHead('两道闸门 · 当前判定', '<span class="faint">准入以提交时刻的服务端实时重算为准</span>') +
-    '<div class="card-b">' + gates(p, c, g) + '</div></div>' +
-
-    '<div class="card" style="margin-top:16px">' + cardHead('项目与抵押物摘要',
-      '<span class="faint">只读 · 与广场详情同源</span>') +
-    '<div class="card-b">' +
-      '<div class="ls-kgrid">' +
-        '<div><div class="k">有效质押价值</div><div class="v">' + amt(p.valid) + '</div>' +
-          '<div class="x">已排除底层失效的代币</div></div>' +
-        '<div><div class="k">融资上限</div><div class="v">' + amt(p.cap) + '</div>' +
-          '<div class="x">有效质押价值 × 质押率 ' + (PLEDGE_RATE*100) + '%，本期固定</div></div>' +
-        '<div><div class="k">项目融资余额</div><div class="v">' + amt(p.bal) + '</div>' +
-          '<div class="x">已确认业务的未偿本金合计</div></div>' +
-        '<div><div class="k">项目在途金额</div><div class="v">' + amt(p.fly) + '</div>' +
-          '<div class="x">唯一来源是发布占用，本次报价不新增</div></div>' +
-        '<div><div class="k">可融金额</div><div class="v">' + amt(g.free) + '</div>' +
-          '<div class="x">max(0, 融资上限 − 项目融资余额 − 项目在途金额)</div></div>' +
-        '<div><div class="k">抵押物</div><div class="v">' + p.tokens + ' 张</div>' +
-          '<div class="x">' + p.assetType + '代币，逐张明细见广场详情 L4</div></div>' +
-      '</div>' +
-      fold('本次报价会改变哪几个量', '三个占用量的对照 · 只有一个会变',
-        threeQuantities(p, c, p.demand), true) +
-    '</div></div>' +
-
-    '<div class="card" style="margin-top:16px">' + cardHead('本次报价占用后的授信余量',
-      '<span class="faint">CR-08 ～ CR-11</span>') +
-    '<div class="card-b">' + creditBar(c) + creditEq(c) +
-      '<div class="ls-kgrid" style="margin-top:16px">' +
-        '<div><div class="k">授信额度 · CR-05</div><div class="v">' + amt(c.limit) + '</div>' +
-          '<div class="x">有效期至 ' + (c.cr ? c.cr.until : '—') + '（' + (c.cr ? CR_STATUS[c.cr.st].t : '—') + '）</div></div>' +
-        '<div><div class="k">授信占用额 · CR-08</div><div class="v">' + amt(c.used) + '</div>' +
-          '<div class="x">未结清业务的未偿本金合计，不含在途报价</div></div>' +
-        '<div><div class="k">在途报价金额 · CR-09</div><div class="v">' + amt(c.fly) + '</div>' +
-          '<div class="x">已提交、尚未终结、尚未转为未偿本金的业务金额</div></div>' +
-        '<div><div class="k">提交后可用授信</div><div class="v">' +
-          amt(Math.max(0, round2(c.avail - p.demand))) + '</div>' +
-          '<div class="x">本次报价占用 ' + amt(p.demand) + ' 之后的余量</div></div>' +
-      '</div></div></div>';
-
-  /* ---- 右区：报价表单 ---- */
-  var acct = f.fiat
-    ? field('机构还款账户（法币）', 'QT-07 · 必填',
-        '<div class="field" style="margin-bottom:9px">' + inp('qtBank', f.a.bank, '开户行名称') + '</div>' +
-        '<div class="field" style="margin-bottom:9px">' + inp('qtAcct', f.a.acct, '账号') + '</div>' +
-        '<div class="field" style="margin-bottom:9px">' +
-          inp('qtName', f.a.name, '户名（须与机构企业主体名称一致）',
-              { err:f.need.indexOf('nameMismatch') >= 0 }) + '</div>' +
-        '<div class="inp-row" style="margin-bottom:2px">' + inp('qtSwift', f.a.swift, 'SWIFT / BIC') +
-          inp('qtCountry', f.a.country, '国别') + '</div>',
-        f.need.indexOf('nameMismatch') >= 0
-          ? '<b style="color:var(--danger)">户名须与机构企业主体名称一致</b>：本机构登记名称为「' +
-            E(ACTORS.fund.full) + '」，不一致将被服务端拒绝提交。'
-          : '结算币种为 USD 时必填。这是<b>机构收还款</b>的账户，与资产方的收款账户是两回事 —— ' +
-            '后者在资产方接受报价时由资产方自己填。')
-    : field('机构还款地址（数币）', 'QT-08 · 必填',
-        '<div class="field" style="margin-bottom:9px">' +
-          '<select class="inp" data-act="cq.f" data-v="qtChain">' +
-          ['', 'Ethereum', 'Tron', 'Polygon'].map(function(ch){
-            return '<option value="' + ch + '"' + (f.a.chain === ch ? ' selected' : '') + '>' +
-              (ch || '选择链') + '</option>'; }).join('') + '</select></div>' +
-        inp('qtAddr', f.a.addr, '0x + 40 位十六进制', { err:f.need.indexOf('addr') >= 0 }),
-        f.need.indexOf('chainMismatch') >= 0
-          ? '<b style="color:var(--danger)">链与币种不匹配</b>：' + f.ccy + ' 不在所选链上发行，提交会被拒绝。'
-          : '地址格式沿用 <span class="mono">0x</span> + 40 位十六进制。本期<b>只做格式校验，不做链上核验</b> —— ' +
-            '平台不判断该地址是否存在、是否属于贵司。');
-
-  var right = '<aside class="portal-rail"><div class="card">' +
-    cardHead('报价表单', '<span class="faint">QT-02 ～ QT-08</span>') +
-    '<div class="card-b">' +
-      field('融资金额', 'QT-03 · 只读',
-        ro(amt(p.demand) + ' ' + CCY),
-        '<b>本期不支持部分融资，金额不可修改</b>，恒等于该需求的融资需求金额（D-FIN-19）。' +
-        '授信不足的机构直接出局，没有"报一部分"这条路。') +
-      field('融资币种（结算币种）', 'QT-02 · 必填',
-        '<select class="inp" data-act="cq.f" data-v="qtCcy">' +
-        ['USD','USDT','USDC'].map(function(k){
-          return '<option value="' + k + '"' + (f.ccy === k ? ' selected' : '') + '>' + k + '</option>'; }).join('') +
-        '</select>',
-        '只是<b>结算币种</b>，不改变记账口径 —— 额度类的量一律以 USD 记账。') +
-      '<div class="ls-pick" style="margin-bottom:var(--field-gap)">' +
-        '<span>结算金额 <span class="n">' + amt(f.settle) + '</span> ' + f.ccy + '</span>' +
-        '<span class="sp"></span><span>汇率快照 <span class="n">' + f.fx.v.toFixed(4) + '</span></span>' +
-        '<span class="faint" style="font-size:11px;margin-left:auto">' + E(f.fx.src) + ' · ' + f.fx.ver + '</span></div>' +
-      '<p class="hint" style="margin-top:-8px;margin-bottom:var(--field-gap)">' + E(f.fx.x) +
-      '。快照在<b>提交时锁定，此后永不重算</b>：每一笔在途报价与未偿本金都用它自己那份快照汇率，' +
-      '不采用"每次校验实时取汇率"—— 那会让占用变成随行情浮动的数，机构在完全没有新动作的情况下也可能突然超额。</p>' +
-      field('融资利率', 'QT-06 · 年化百分比 · 必填',
-        inp('qtRate', f.rateRaw, '例如 7.20', { type:'number', err:!!f.rateErr, attr:'step="0.01" min="0.01" max="100"' }),
-        f.rateErr || '计息规则以双方签署的融资合同为准。本字段只采集数值，计息口径（单复利、计息基数、起息日）由 WS-327 定义。') +
-      acct +
-      field('报价有效期', '常量 · 不是输入项',
-        ro(QUOTE_HOURS + ' 小时（7 个自然日）'),
-        '本报价将于 <b>' + withTz(expireAt) + '</b> 自动失效。' +
-        '用"+' + QUOTE_HOURS + ' 小时"而不是"第 7 天 23:59"：后者会让 23:50 提交的报价实际只有 6 天零 10 分钟。' +
-        '<b>界面上不存在有效期的输入控件、展期入口或延长入口。</b>') +
-      '<div class="btnbar"><button class="btn primary block" type="button" ' + (f.ok ? '' : 'disabled ') +
-        'data-act="cq.qtConfirm">提交报价</button></div>' +
-      (f.ok ? '' : '<p class="hint">请先补齐：' +
-        (f.rateErr ? '年化利率；' : '') +
-        (f.need.length ? (f.fiat ? '机构还款账户的必填项' : '链与地址') +
-          (f.need.indexOf('nameMismatch') >= 0 ? '（户名与机构主体不一致）' : '') +
-          (f.need.indexOf('chainMismatch') >= 0 ? '（链与币种不匹配）' : '') + '。' : '') + '</p>') +
-      noChainFoot('提交报价') +
-    '</div>' +
-    '<div class="card-head" style="border-top:1px solid var(--border)"><b>提交后会发生什么</b></div>' +
-    '<div class="card-b"><p class="hint">同一次结算内完成：生成融资业务编号 → 锁定汇率快照 → ' +
-      QUOTE_HOURS + ' 小时计时开始 → 在途报价金额 +' + amt(p.demand) + ' → 业务落 <b>S-FD-1 待接受</b> → ' +
-      '项目转 <b>S-FP-3 已锁定</b>。<b>项目在途金额不变。</b><br>' +
-      '<b>报价一经提交不可修改、不可撤回</b>（X-LS-20）—— 界面上没有这两个入口。' +
-      '机构侧唯一的后续动作是等待资产方处理，或等 ' + QUOTE_HOURS + ' 小时自然失效。</p></div></div>' +
-    '<div class="card"><div class="card-b"><p class="hint">深链锚点 <span class="mono">project/' + p.id +
-      '?action=quote</span> · 已在附册 A0 预留，本模块正式交付。</p></div></div></aside>';
-
-  return head + afterNote + '<div class="portal-cols"><div>' + left + '</div>' + right + '</div>';
-}
-
-
-/* ================================================================
-   Part D3 —— P-LS-06 接受 / 拒绝
-   顶部：报价摘要 + 锁定信息（含剩余有效期倒计时）+ 质押覆盖状态
-   中部：三步（填写收款账户 → 查看条款摘要 → 上传盖章件），可中断可续做
-   底部：并列「确认接受」与「拒绝报价」
-   ================================================================ */
-
-/* 户名一致性校验（D-FIN-99 / D-FIN-100）：比对对象是法定名称及其已登记的英文名 / 曾用名集合；
-   忽略大小写、空格、常见公司后缀的标点与缩写差异。不是字符串全等 —— 做成全等，
-   上线第一天就会把全部合法汇款拒掉（跨境户名多为英文，主体名称多为中文）。 */
 function normName(s){
   return String(s || '').toLowerCase()
     .replace(/[\s,.、， ]/g, '')
@@ -1298,7 +1095,7 @@ function progOf(deal){
   return done;
 }
 
-function pageRespond(){
+function respondUnit(){
   var deal = findDeal(S.did);
   if(S.st === 'loading') return skel('接受 / 拒绝报价');
   if(!deal) return failCard('接受 / 拒绝报价', '内容不存在或无权访问',
@@ -1314,42 +1111,41 @@ function pageRespond(){
   var g = guaranteeCheck(p, deal.amt);
   var fx = deal.fx, settle = round2(deal.amt / fx.v);
 
-  var head = backToPlaza() + phead(
-    '融资业务 · <span class="mono">P-LS-06</span> · 编号 <span class="mono">' + deal.id +
-      '</span> · 项目 <span class="mono">' + p.id + '</span> · 时区 ' + TZ_LABEL,
-    p.name, p.owner,
-    pill(TONE[FD_STATUS[deal.st].tone] || 'gray', deal.st + ' ' + FD_STATUS[deal.st].t) +
-      (deal.void ? pill('gray', '失效原因 · ' + VOID_REASON[deal.void]) : '') +
-      pill('gray', '报价机构 ' + deal.fund) +
-      (k.live ? pill(k.soon ? 'amber' : '', '剩余 ' + fmtDur(k.leftMin)) : ''),
-    amtBlock('融资金额', amt(deal.amt), CCY,
-      '结算 ' + amt(settle) + ' ' + deal.ccy + ' · 年化 ' + deal.rate.toFixed(2) + '%')) +
-    CF.pageStates() + submitResultCard();
+  var ds = dealState(deal);
+  var head =
+    '<div class="cq-unit-top">' +
+      '<div class="l"><div class="amt">' + amt(deal.amt) + '<span class="cy">' + CCY + '</span></div>' +
+        '<div class="x">结算 ' + amt(settle) + ' ' + deal.ccy + ' · 年化 ' + deal.rate.toFixed(2) + '%</div></div>' +
+      '<div class="r">' + pill(TONE[ds.tone] || 'gray', ds.t) +
+        (deal.void ? pill('gray', VOID_REASON[deal.void]) : '') +
+        pill('gray', deal.fund) +
+        (k.live ? pill(k.soon ? 'amber' : '', '剩余 ' + fmtDur(k.leftMin)) : '') +
+      '</div></div>';
 
   /* ---- 报价摘要（判断依据先于动作，6.3.1）---- */
   var terms = '<div class="card">' + cardHead('报价条款',
-      '<span class="faint">QT-01 ～ QT-12 · 公开字段</span>') +
+      '<span class="faint">公开信息</span>') +
     '<div class="card-b"><div class="cq-terms">' +
       '<div><div class="k">报价机构</div><div class="v">' + E(deal.fund) + '</div>' +
-        '<div class="x">机构企业主体全称 · 公开字段</div></div>' +
-      '<div><div class="k">融资金额 · QT-03</div><div class="v mono">' + amt(deal.amt) + ' ' + CCY + '</div>' +
-        '<div class="x">恒等于需求金额，本期不支持部分融资</div></div>' +
-      '<div><div class="k">年化利率 · QT-06</div><div class="v mono">' + deal.rate.toFixed(2) + '%</div>' +
+        '<div class="x">机构企业主体全称</div></div>' +
+      '<div><div class="k">融资金额</div><div class="v mono">' + amt(deal.amt) + ' ' + CCY + '</div>' +
+        '<div class="x">等于这条需求的金额，本期不支持部分融资</div></div>' +
+      '<div><div class="k">年化利率</div><div class="v mono">' + deal.rate.toFixed(2) + '%</div>' +
         '<div class="x">计息规则以双方签署的融资合同为准</div></div>' +
-      '<div><div class="k">结算币种与金额 · QT-02/05</div><div class="v mono">' + amt(settle) + ' ' + deal.ccy + '</div>' +
-        '<div class="x">融资金额 ÷ 汇率快照 ' + fx.v.toFixed(4) + '</div></div>' +
-      '<div><div class="k">汇率快照 · QT-04</div><div class="v mono">' + fx.v.toFixed(4) + '</div>' +
+      '<div><div class="k">结算币种与金额</div><div class="v mono">' + amt(settle) + ' ' + deal.ccy + '</div>' +
+        '<div class="x">融资金额 ÷ 汇率 ' + fx.v.toFixed(4) + '</div></div>' +
+      '<div><div class="k">汇率快照</div><div class="v mono">' + fx.v.toFixed(4) + '</div>' +
         '<div class="x">生效 ' + withTz(fx.at) + ' · ' + E(fx.src) + ' · ' + fx.ver + '</div></div>' +
-      '<div><div class="k">机构还款账户 · QT-07/08</div><div class="v">' +
+      '<div><div class="k">机构还款账户</div><div class="v">' +
         (deal.payee ? (deal.payee.addr ? deal.payee.chain + ' · ' +
           deal.payee.addr.slice(0,10) + '…' + deal.payee.addr.slice(-6) : E(deal.payee.bank || '—')) : '—') +
         '</div><div class="x">还款时汇入该账户</div></div>' +
-      '<div><div class="k">报价提交时间 · QT-09</div><div class="v mono">' + withTz(deal.at) + '</div>' +
+      '<div><div class="k">报价提交时间</div><div class="v mono">' + withTz(deal.at) + '</div>' +
         '<div class="x">锁定信息的起算点</div></div>' +
-      '<div><div class="k">有效期至 · QT-12</div><div class="v mono">' +
+      '<div><div class="k">有效期至</div><div class="v mono">' +
         (k.live ? withTz(k.to) : (deal.endAt ? withTz(deal.endAt) : '—')) + '</div>' +
         '<div class="x">' + (k.live ? '提交时刻 + ' + QUOTE_HOURS + ' 小时，只读不可延长'
-                                    : '业务已离开 S-FD-1，计时终止') + '</div></div>' +
+                                    : '该报价已处理，不再计时') + '</div></div>' +
     '</div></div></div>';
 
   /* ---- 当前池况与质押覆盖状态（6.3.1；不展示报价时的池快照，AC-LS-27 已作废）---- */
@@ -1364,34 +1160,33 @@ function pageRespond(){
         '<div class="x">已确认业务的未偿本金合计</div></div>' +
       '<div><div class="k">质押覆盖状态</div><div class="v" style="font-family:var(--sans)">' +
         (g.pass ? pill('green','正常') : pill('red','覆盖不足')) + '</div>' +
-        '<div class="x">' + amt(g.cap) + ' − ' + amt(g.bal) + ' ＝ ' + amt(g.head) +
-        (g.pass ? ' ≥ ' : ' &lt; ') + amt(g.need) + '</div></div>' +
+        '<div class="x">' + (g.pass ? '池内质押够覆盖这笔业务' : '池内质押已不够覆盖这笔业务') + '</div></div>' +
     '</div>' +
-    (g.pass ? '<p class="hint" style="margin-top:12px"><b>接受不重跑额度闸门</b>：接受动作不新增任何占用 —— ' +
-        '金额早在发布时进了项目在途金额、在报价时进了在途报价金额。闸门管的是"能不能新增占用"，此处无新增。</p>'
+    (g.pass ? ''
       : '<div class="ls-alert" style="margin-top:14px">' + CF.note('red',
-        '当前池内质押覆盖已低于本笔业务金额，缺口 <span class="mono">' + usd(round2(g.need - g.head)) +
-        '</span>，需追加资产价值 <span class="mono">' + usd(round2((g.need - g.head) / PLEDGE_RATE)) + '</span>。' +
-        '<p>接受<b>不重跑</b>额度闸门，因此这一步不会被拦死 —— 但<b>随后的放款会被覆盖闸门挡住</b>。' +
-        '您仍然可以接受、也随时可以拒绝，这两条路都开着；追加质押后放款照常。' +
-        '<b>拦死会让您既不能接受又无法自救</b>，而拒绝这条路本来就在。机构侧同样看得到这段。</p>',
-        '当前质押覆盖状态') + '</div>') +
+        '池内质押已不够覆盖这笔业务，还差 <span class="mono">' + usd(round2(g.need - g.head)) +
+        '</span>；补上需要追加约 <span class="mono">' + usd(round2((g.need - g.head) / PLEDGE_RATE)) +
+        '</span> 的资产。' +
+        '<p>这一步<b class="ls-b">不会被拦住</b>：您仍然可以接受，也随时可以拒绝。' +
+        '但要注意，<b class="ls-b">在质押补足之前，这笔钱放不下来</b>。补足之后放款照常。' +
+        '报价机构看到的是同一段话。</p>',
+        '质押覆盖不足') + '</div>') +
     '</div></div>';
 
   /* ---- 终结态：已拒绝 / 已失效各有自己的结论与下一步（D-FIN-92）---- */
   if(deal.st !== 'S-FD-1'){
     var end;
     if(deal.st === 'S-FD-2'){
-      end = '<div class="cq-end"><div class="eh">' + pill('gray','S-FD-2 已拒绝') +
+      end = '<div class="cq-end"><div class="eh">' + pill('gray','已拒绝') +
         '　该报价已于 ' + withTz(deal.endAt) + ' 被拒绝</div>' +
-        '<div class="eb"><b>拒绝原因</b>（FD-11，必填，对报价机构可见）<br>' + E(deal.reject) + '</div>' +
-        '<div class="eb">五个后果在同一次结算内一致生效：业务落终态、项目回 <b>S-FP-2 募集中</b>、' +
+        '<div class="eb"><b>拒绝原因</b><br>' + E(deal.reject) + '</div>' +
+        '<div class="eb">五个后果在同一次结算内一致生效：业务落终态、这条需求回到 <b>待报价</b>、' +
         '在途报价金额<b>全额释放</b>、项目在途金额<b>不变</b>（需求还挂着）、质押<b>不释放</b>（项目还在）。' +
         '不存在"已拒绝但需求仍显示被锁定"或"额度未回"的中间态。<br>' +
         '同一机构可在被拒后<b>立即重新报价</b>，本期不设冷却期与次数上限 —— 那是一笔全新的融资业务：' +
         '新编号、新汇率快照、新的 ' + QUOTE_HOURS + ' 小时计时，不是原报价的续期。</div></div>';
     } else {
-      end = '<div class="cq-end"><div class="eh">' + pill('gray','S-FD-11 报价已失效') +
+      end = '<div class="cq-end"><div class="eh">' + pill('gray','报价已失效') +
         '　失效原因：' + VOID_REASON[deal.void] + '　·　失效时间 ' + withTz(deal.endAt) + '</div>' +
         '<div class="eb">' + (deal.void === 'timeout'
           ? '<b>' + QUOTE_HOURS + ' 小时有效期届满，资产方未处理</b>，由系统自动执行，不依赖任何人登录。' +
@@ -1400,31 +1195,29 @@ function pageRespond(){
             '保住报价等于保住一份抵押物撑不起的要约，而覆盖闸门本来就会挡住它的放款 —— ' +
             '留着只会让业务卡在"能接受、不能放款"的死状态。') +
         '</div>' +
-        '<div class="eb"><b>失效不是拒绝，机构不吃亏</b>：无原因可填（FD-11 在本状态下恒为空）、' +
+        '<div class="eb"><b>失效不是拒绝，机构不吃亏</b>：无原因可填、' +
         '<b>不计入拒绝率</b>、不产生任何负面记录。额度已释放，' +
         (deal.void === 'timeout' ? '可对同一需求重新报价。' : '可在资产方补足质押覆盖并重新发布后再报价。') +
-        '汇率快照已按 QT-14 作废，重新报价取新的快照。</div></div>';
+        '原汇率快照已作废，重新报价会取新的快照。</div></div>';
     }
-    return head + terms + pool + '<div class="card" style="margin-top:16px">' +
-      cardHead('本笔业务已终结', '<span class="faint">编号保留但作废，不回收、不复用</span>') +
-      '<div class="card-b">' + end +
-      '<div class="btnbar"><a class="btn primary" href="' + lsHref('#/plaza') + '">返回融资需求广场</a></div>' +
-      '</div></div>';
+    return unitShell('这笔报价', deal.id, head + terms + pool +
+      '<div class="cq-sec"><h3>本笔业务已终结</h3>' + end + '</div>',
+      '<button class="btn primary" type="button" data-act="cq.unitClose">知道了</button>');
   }
 
   /* ---- S-FD-1：可处理 ---- */
   if(!own)
-    return head + terms + pool + '<div class="card" style="margin-top:16px">' +
-      cardHead('接受 / 拒绝', '<span class="faint">L6 操作区</span>') + '<div class="card-b">' +
+    return unitShell('这笔报价', deal.id, head + terms + pool +
+      '<div class="cq-sec"><h3>处理这笔报价</h3>' +
       countdown(deal, false) +
-      '<div style="margin-top:14px">' + actBtn({ key:'respond', label:'接受 / 拒绝报价', enabled:false,
-        reason: S.role === 'guest'
-          ? '未登录。融资业务的处理动作仅对该项目所属企业主体开放；上面的商务条款与锁定信息本身是公开信息，不因未登录而隐藏。'
-          : '本笔业务的处理动作只属于该项目的资产方企业主体（' + p.owner + '）。当前身份为「' +
-            ACTORS[S.role].full + '」。' }, 'block') + '</div>' +
-      '<p class="hint" style="margin-top:12px">锁定信息属于<b>公开信息</b>，对游客与全部资金方可见 —— ' +
-      '它是在途业务的公开商务条款的一部分。措辞只陈述事实，<b>不做评价性判断</b>。</p>' +
-      '</div></div>';
+      (S.role === 'guest'
+        ? '<div class="cq-signin"><p>上面这些是公开信息，不登录也看得到。' +
+          '要处理这笔报价，请先登录。</p>' +
+          '<button class="btn primary" type="button" data-act="cq.signin">立即登录</button></div>'
+        : '<p class="hint" style="margin-top:12px">这笔业务的处理只属于该项目的资产方（' +
+          E(p.owner) + '）。当前身份是「' + E(ACTORS[S.role].full) + '」。</p>') +
+      '</div>',
+      '<button class="btn primary" type="button" data-act="cq.unitClose">知道了</button>');
 
   var ps = payeeState(deal);
   var done = progOf(deal);
@@ -1437,7 +1230,7 @@ function pageRespond(){
       '<span class="bd"><b>' + E(s.t) + '</b>' + s.x + '</span></div>';
   }).join('') + '</div>' +
   '<p class="hint" style="margin-top:10px">三步<b>可中断可续做</b>：填到第二步离开页面，再次进入时已确认的账户与已完成的步骤保留，' +
-  '不要求从头再来。<b>任何一步都不改变融资业务状态</b> —— 这是 S-FD-1 内部的填写进度，不是状态。' +
+  '不要求从头再来。<b>中途离开不会影响这笔业务。</b>' +
   '<b>但计时不因中断而暂停</b>。</p>';
 
   /* ---- 第 ① 步：收款账户 ---- */
@@ -1449,7 +1242,7 @@ function pageRespond(){
       '而平台没有任何地址归属核验能力。</p>') +
       '<div class="ls-kgrid" style="margin-top:14px">' +
         '<div><div class="k">链</div><div class="v">' + ASSET_WALLET.chain + '</div></div>' +
-        '<div><div class="k">收款地址 · FD-06</div><div class="v" style="font-size:12px">' +
+        '<div><div class="k">收款地址</div><div class="v" style="font-size:12px">' +
           ASSET_WALLET.addr + '</div></div></div>';
   } else {
     step1 =
@@ -1500,7 +1293,7 @@ function pageRespond(){
       (canConfirm ? '' : ' disabled') + ' data-act="cq.acctConfirm">' +
       '<label for="acctOk">我确认以上收款' + (ps.digital ? '地址' : '账户') +
       '信息准确无误，本笔融资款' + (ps.digital ? '转入该地址' : '汇入该账户') + '。' +
-      '<span class="faint">（FD-20 · 默认不勾选、不自动带过，确认动作单独留痕）</span></label></div>' +
+      '<span class="faint"></span></label></div>' +
     (canConfirm ? '' : '<p class="hint">补齐必填项并通过户名校验后方可勾选确认。</p>');
 
   /* ---- 手续费差额告知（D-FIN-103）：位置在确认接受之前，不折叠、不做小字注脚 ---- */
@@ -1530,11 +1323,11 @@ function pageRespond(){
       '平台只做两件事：提供上一步的商务条款摘要让线下合同与平台记录对得上，以及在这里承接盖章件上传。' +
       '<p>盖章件由<b class="ls-b">资金方</b>在放款前审核 —— 机构是出钱方，它有天然动机检查合同真伪与条款一致性。' +
       '<b class="ls-b">平台不审核合同，也不对其真伪与法律效力作任何保证</b>：本模块的职责到"收下文件、校验格式与大小、' +
-      '置业务为待放款、对机构可见"为止。上传后业务直接进 S-FD-3，<b class="ls-b">不设"待审核"中间态</b>。</p>') +
+      '置业务为待放款、对机构可见"为止。上传后这笔业务直接进入待放款，<b class="ls-b">不设"待审核"中间态</b>。</p>') +
     '<div class="drop" role="button" tabindex="0" data-act="cq.upload" style="margin-top:14px">' +
       '<div class="ic" aria-hidden="true">↑</div><div><b>点击上传双方盖章件</b>' +
       '<div class="hint" style="margin-top:3px">PDF / JPG / PNG · 单文件 ≤ ' + SEAL_MAX_MB + ' MB · 最多 ' +
-      SEAL_MAX_N + ' 个（沿用 WS-305 第 6 节贸易背景材料的既有基线，不另定一套）</div></div></div>' +
+      SEAL_MAX_N + ' 个</div></div></div>' +
     (S.ac.upErr ? '<div class="ls-alert" style="margin-top:12px">' + CF.note('red', S.ac.upErr, '上传未完成') + '</div>' : '') +
     (files.length ? '<div style="margin-top:12px">' + files.map(function(fl, i){
       return '<div class="filecard" style="margin-top:8px"><div class="ic" aria-hidden="true">▤</div>' +
@@ -1545,7 +1338,7 @@ function pageRespond(){
       '<input type="checkbox" id="declOk" ' + (S.ac.declared ? 'checked' : '') +
       (files.length ? '' : ' disabled') + ' data-act="cq.declare">' +
       '<label for="declOk">我确认所上传合同的商务条款与本页摘要一致。' +
-      '<span class="faint">（FD-16 · 未勾选时「确认接受」不可提交）</span></label></div>' +
+      '<span class="faint">（未勾选时「确认接受」不可提交）</span></label></div>' +
     '<p class="hint">这是平台侧成本最低、唯一可得的"合同与业务数据相关联"的痕迹 —— 线下合同平台看不见，' +
     '没有这条声明，纠纷时平台连"双方是照着这组数字签的"都举证不出来。<br>' +
     '<b>如实记录</b>：在放款环节承接处置能力之前，上传一份错误的盖章件，系统层面不会有任何人被要求去看它；' +
@@ -1555,7 +1348,7 @@ function pageRespond(){
   /* WS-327 增量：初始还款计划摆在「接受报价 · 三步」之前——
      资产方接受报价**之前**就该知道这笔钱以后要怎么还、分几次、每次多少（US-34）。 */
   var body = initialPlanCard(deal, p) + '<div class="card" style="margin-top:16px">' +
-    cardHead('接受报价 · 三步', '<span class="faint">FD-04 填写进度 · 不是状态</span>') +
+    cardHead('接受报价 · 三步', '<span class="faint">填写进度</span>') +
     '<div class="card-b">' + prog + '</div>' +
 
     '<div class="card-head" style="border-top:1px solid var(--border)"><b>① 填写并确认收款账户</b>' +
@@ -1589,19 +1382,19 @@ function pageRespond(){
     '</div></div>';
 
   var rail = '<aside class="portal-rail">' +
-    '<div class="card">' + cardHead('锁定信息', '<span class="faint">D-LS-13 · 公开字段</span>') +
+    '<div class="card">' + cardHead('锁定信息', '<span class="faint">公开信息</span>') +
     '<div class="card-b">' + countdown(deal, true) + '</div></div>' +
-    '<div class="card">' + cardHead('本期没有的东西', '<span class="faint">AC-LS-89 反向清单</span>') +
-    '<div class="card-b"><p class="hint">本页<b>不存在</b>：任何由平台生成或提供合同文件的入口' +
-      '（本期平台不生成融资合同，也没有可据以生成的模板）、任何表示平台已核验盖章件的措辞、' +
-      '报价有效期的输入或可编辑控件、任何延长有效期的入口、机构侧撤销或改动已提交报价的入口、' +
-      '收款账户的自由新建入口与账户簿、数币地址的可编辑控件。<br>' +
-      '这些不是"还没做"，是本期明确不做，逐条写在验收清单里。</p></div></div>' +
     '<div class="card"><div class="card-b"><p class="hint">深链锚点 <span class="mono">deal/' + deal.id +
       '?action=respond_quote</span> · 已在附册 A0 预留，本模块正式交付。<br>' +
       '融资业务的公开信息也可从 <span class="mono">deal/' + deal.id + '</span> 直达。</p></div></div></aside>';
 
-  return head + terms + pool + '<div class="portal-cols" style="margin-top:16px"><div>' + body + '</div>' + rail + '</div>';
+  /* 弹窗内不放操作栏：锁定倒计时并进内容流，底部只留两个动作 */
+  return unitShell('处理这笔报价', deal.id,
+    head + terms + pool +
+    '<div class="cq-sec"><h3>锁定信息</h3>' + countdown(deal, true) + '</div>' + body,
+    '<button class="btn danger" type="button" data-act="cq.rejectOpen">拒绝报价</button>' +
+    '<button class="btn primary" type="button" ' + (readyToAccept ? '' : 'disabled ') +
+      'data-act="cq.acceptConfirm">确认接受</button>');
 }
 
 
@@ -1613,11 +1406,49 @@ function pageRespond(){
    真实系统里这些结论一律由服务端在提交时刻实时重算给出（AC-FIN-06 / AC-CR-20）。 */
 var SUBMIT_OUTCOMES = [
   ['ok',      '提交成功（生成编号 · 锁定需求）'],
-  ['taken',   'E-CR-03 并发：已被其他机构抢先报价'],
-  ['invalid', 'E-CR-17 实时判定：该需求当场失效（池内质押覆盖不足）'],
-  ['recalc',  'E-CR-18 实时重算超时或失败'],
-  ['credit',  'E-CR-02 期间产生新的在途报价，授信重跑不通过']
+  ['taken',   '并发：已被其他机构抢先报价'],
+  ['invalid', '该需求当场失效（池内质押覆盖不足）'],
+  ['recalc',  '质押覆盖校验暂时不可用'],
+  ['credit',  '期间产生新的在途报价，授信不够了']
 ];
+
+/* ---- 评审用的承载单元切换器 ----
+   需求方本轮明确要求加页面切换的快捷操作，它**覆盖**了"原型不套评审脚手架"的默认约束。
+   它只是评审入口：固定在视口底部、不进顶栏、不进面包屑、不改产品自己的导航结构。
+   产品里这三个单元的真实入口只有一个 —— 详情页操作区的按钮。 */
+var JUMPS = [
+  { t:'额度不足 · 提示', h:'#/project/FP-20260820-0036?action=quote' },
+  { t:'无额度 · 提示',   h:'#/project/FP-20250916-0112?action=quote' },
+  { t:'额度过期 · 提示', h:'#/project/FP-20260628-0044?action=quote' },
+  { t:'额度够 · 直接报价', h:'#/project/FP-20260705-0018?action=quote' },
+  { t:'接受 / 拒绝',     h:'#/deal/FD-20260908-0061?action=respond_quote' },
+  { t:'剩余不足 24 小时', h:'#/deal/FD-20260904-0057?action=respond_quote' },
+  { t:'已终结',          h:'#/deal/FD-20260825-0049?action=respond_quote' }
+];
+function unitJump(){
+  var cur = location.hash || '';
+  return '<nav class="cq-jump" aria-label="原型 · 承载单元与身份切换">' +
+    '<s>身份</s>' +
+    ['guest','asset','fund'].map(function(k){
+      return '<button type="button" data-act="cq.role" data-v="' + k + '" aria-pressed="' +
+        (S.role === k) + '">' + ACTORS[k].t + '</button>'; }).join('') +
+    '<span class="sp" aria-hidden="true"></span><s>承载单元</s>' +
+    JUMPS.map(function(j){
+      return '<a href="' + j.h + '" data-on="' + (cur === j.h ? 1 : 0) + '">' + E(j.t) + '</a>';
+    }).join('') + '</nav>';
+}
+
+/* 页面这一层：只画详情页上下文；承载单元是它上面的弹窗 */
+function pageRespond(){
+  var deal = findDeal(S.did);
+  if(S.st === 'loading') return skel('处理这笔报价');
+  if(!deal) return unitBlocked(null, '处理这笔报价', '内容不存在或无权访问',
+      '这个融资业务编号不存在。编号一经生成就终身稳定，被拒或失效后保留但作废，不回收也不复用。');
+  var p = findProject(deal.pid);
+  if(S.st === 'error') return unitBlocked(p, '处理这笔报价', '信息没能加载出来',
+      '没能取到这笔业务的条款和剩余时间，稍后重试。');
+  return unitBackdrop(p, '处理这笔报价') + submitResultCard();
+}
 
 function submitResultCard(){
   var r = S.result;
@@ -1627,8 +1458,8 @@ function submitResultCard(){
     box = CF.note('green',
       '融资业务编号 <b class="ls-b">' + r.id + '</b> 已生成，汇率快照已锁定，' + QUOTE_HOURS + ' 小时计时已开始 —— ' +
       '本报价将于 <b class="ls-b">' + withTz(r.until) + '</b> 自动失效。' +
-      '<p>同一次结算内：在途报价金额 +<span class="mono">' + usd(r.amt) + '</span>、业务落 <b class="ls-b">S-FD-1 待接受</b>、' +
-      '项目转 <b class="ls-b">S-FP-3 已锁定</b>；<b class="ls-b">项目在途金额不变</b>。' +
+      '<p>同一次结算内：在途报价金额 +<span class="mono">' + usd(r.amt) + '</span>、这笔业务落 <b class="ls-b">已报价待确认</b>、' +
+      '这条需求转 <b class="ls-b">已报价待确认</b>；<b class="ls-b">项目在途金额不变</b>。' +
       '报价一经提交不可修改、不可撤回。</p>', '报价提交成功');
   } else if(r.k === 'taken'){
     box = CF.note('amber',
@@ -1647,7 +1478,7 @@ function submitResultCard(){
     box = CF.note('amber',
       '<b class="ls-b">暂时无法完成覆盖校验，请稍后重试。</b>实时重算所依赖的代币或汇率数据此刻不可读。' +
       '<p>本次<b class="ls-b">不生成编号、不产生占用，也不会使该需求失效</b>。' +
-      '校验失败时<b class="ls-b">既不放行、也不退回读缓存值</b> —— 读缓存正是实时重算这条规则要堵的口子。</p>',
+      '校验失败时</p>',
       '校验暂不可用');
   } else {
     box = CF.note('amber',
@@ -1700,11 +1531,17 @@ var mod = {
   crumbParts:function(){ return []; },
   /* 提交结果紧跟页头之后呈现（各页 head 末尾的 submitResultCard 槽位）；
      五类结局各有独立页面态与独立出路，不存在只写"操作失败"的兜底。 */
+  /* 页面这一层只画"详情页上下文"；三个承载单元一律是它上面的弹窗，由 modals 表渲染。
+     承载单元开不了（无权 / 不可报价 / 不存在）时不开弹窗，就地给说明。 */
   content:function(){
-    return S.page === 'P-LS-04' ? pageCredit() : S.page === 'P-LS-06' ? pageRespond() : pageQuote();
+    return (S.page === 'P-LS-06' ? pageRespond() : pageQuote()) + unitJump();
   },
   modals:{
-    /* 提交前二次确认：五件事必须讲清（AC-CR-11），必须显式确认才可提交 */
+    /* —— 承载单元：融资报价（内含 授信提示 → 额度编辑 → 报价表单 三步）—— */
+    quoteUnit:quoteUnit,
+    /* —— 承载单元：接受 / 拒绝报价 —— */
+    respondUnit:respondUnit,
+    /* 提交前二次确认：五件事必须讲清，必须显式确认才可提交 */
     qtConfirm:function(){
       var p = findProject(S.pid), c = creditCheck(p.entity, p.demand), f = quoteForm(p);
       var until = tstr(tmin(NOW) + QUOTE_HOURS * 60);
@@ -1716,7 +1553,7 @@ var mod = {
         [['① 提交后不可修改、不可撤回',
           '商务条款在提交的同一时刻固化。本期<b>没有</b>撤回与修改入口，机构侧唯一的后续动作是等待资产方处理。'],
          ['② 提交即锁定该需求',
-          '项目转 S-FP-3 已锁定，<b>其他机构无法再报价</b>，直至您被拒绝或 ' + QUOTE_HOURS + ' 小时届满。'],
+          '这条需求转「已报价待确认」，<b>其他机构无法再报价</b>，直至您被拒绝或 ' + QUOTE_HOURS + ' 小时届满。'],
          ['③ 将占用本机构对该资产方 ' + amt(p.demand) + ' ' + CCY + ' 的授信',
           '在途报价金额 ' + amt(c.fly) + ' → ' + amt(round2(c.fly + p.demand)) + '；提交后可用授信 ' +
           amt(Math.max(0, round2(c.avail - p.demand))) + '。<b>授信占用额与项目在途金额都不变。</b>'],
@@ -1753,7 +1590,7 @@ var mod = {
         '<button class="modal-x" type="button" data-act="cq.mclose" aria-label="关闭">✕</button></div>' +
         '<div class="modal-b">' +
         '<div class="rows" style="box-shadow:none">' +
-        [['融资业务将转 S-FD-3 待放款', '项目转 S-FP-4 融资中，' + QUOTE_HOURS + ' 小时有效期计时<b>终止</b>，此后页面不再显示倒计时。'],
+        [['这笔业务转入「放款中」', '需求转「放款中」，' + QUOTE_HOURS + ' 小时有效期计时<b>终止</b>，此后页面不再显示倒计时。'],
          ['在途报价金额不变', '业务仍在途，尚未成为未偿本金。放款与融资确认完成时才会原子转入授信占用额。'],
          ['本金按融资金额 ' + amt(deal.amt) + ' ' + CCY + ' 计', '跨境手续费由您承担，实收会少于融资金额，<b>但本金不按实收计</b>。'],
          ['盖章件已收下，平台不审核', '由资金方在放款前审核真伪与条款一致性。平台不审核合同，也不对其真伪与法律效力作任何保证。']
@@ -1761,11 +1598,11 @@ var mod = {
           return '<div class="row"><div class="row-main"><div class="row-k">' + E(r[0]) + '</div>' +
             '<div class="row-v" style="color:var(--muted);font-size:12.5px;line-height:1.6">' + r[1] + '</div></div></div>';
         }).join('') + '</div>' +
-        '<p class="hint">原型内的结果模拟：<span class="mono">E-CR-13</span> 演示"报价到期时刻与您的提交撞在一起"' +
+        '<p class="hint">原型内的结果模拟：演示"报价到期时刻与您的提交撞在一起"' +
         '—— 以服务端落库时刻为准并串行结算，任何情况下占用只释放一次。</p>' +
         '<select class="inp" data-f="acceptOut" id="acceptOut">' +
           '<option value="ok">接受成功（先落库）</option>' +
-          '<option value="expired">E-CR-13：报价已先一步失效</option></select>' +
+          '<option value="expired">报价已先一步失效</option></select>' +
         '</div>' +
         '<div class="modal-f"><button class="btn" type="button" data-act="cq.mclose">再想想</button>' +
         '<button class="btn primary" type="button" data-act="cq.acceptSubmit">确认接受</button></div></div></div>';
@@ -1787,7 +1624,7 @@ var mod = {
           '自由文本、不设分类，<b>对报价机构可见</b> —— 否则机构不知道为什么被拒，只能盲目重报。' +
           '已填 ' + v.trim().length + ' / ' + REASON_MAX + ' 字。') +
         CF.note('',
-          '拒绝后<b class="ls-b">同一次结算内</b>：业务落 S-FD-2 已拒绝（终态）、项目回 S-FP-2 募集中、' +
+          '拒绝后<b class="ls-b">同一次结算内</b>：业务落 已拒绝（终态）、这条需求回到「待报价」、' +
           '在途报价金额<b class="ls-b">全额释放</b>、项目在途金额<b class="ls-b">不变</b>、质押<b class="ls-b">不释放</b>。' +
           '<p>您<b class="ls-b">随时可以拒绝</b>，服务端不设冷却期、不做理由审核。' +
           '同一机构可在被拒后立即重新报价，本期不设冷却与次数限制。</p>') +
@@ -1816,14 +1653,18 @@ var mod = {
         /* 先问 available_actions 能不能报价（前四个条件），再谈第五个条件决定走哪一步。
            顺序反了的话，一个已到期 / 已被他人报价 / 需求已失效的项目，会因为该资产方的
            授信恰好不足而被送进授信表单 —— 机构在一个根本不能报价的需求上先被要求掏额度。 */
-        if(!actionOf(availableActions(p, 'fund'), 'quote').enabled){ S.page = 'P-LS-05'; return true; }
-        S.page = (creditCheck(p.entity, p.demand).branch === 'enough' || S.qt.creditDone) ? 'P-LS-05' : 'P-LS-04';
+        if(!actionOf(availableActions(p, 'fund'), 'quote').enabled || S.role !== 'fund'){
+          S.page = 'P-LS-05'; S.modal = null; return true;
+        }
+        S.page = 'P-LS-05';
+        S.modal = { type:'quoteUnit' };   /* 承载单元以弹窗打开在详情页上 */
         return true;
       }
       if(seg[0] === 'deal'){
         var d = findDeal(seg[1]);
         S.page = 'P-LS-06'; S.did = seg[1]; S.st = 'default';
         if(d){ S.ac.dealId = d.id; S.ac.acctConfirmed = (d.prog === 'account'); }
+        S.modal = (d && qs.action === 'respond_quote') ? { type:'respondUnit' } : null;
         return true;
       }
       return false;
@@ -1833,6 +1674,21 @@ var mod = {
   onAct:function(n, a, v){
     if(a.indexOf('cq.') !== 0) return false;
     switch(a){
+      /* 关闭承载单元：回到它下面那层详情页。什么都不留。 */
+      case 'cq.unitClose':
+        S.modal = null; S.cr.confirmed = false; S.cr.askedFor = null;
+        location.href = lsHref('#/project/' + (S.pid || (findDeal(S.did) || {}).pid || ''));
+        return true;
+      case 'cq.maskClose':
+        if(n.classList.contains('mask')){
+          S.modal = null; S.cr.confirmed = false; S.cr.askedFor = null;
+          location.href = lsHref('#/project/' + (S.pid || (findDeal(S.did) || {}).pid || ''));
+        }
+        return true;
+      case 'cq.signin':
+        toast('info', '登录 / 注册', '登录流程不在本模块内（本原型用顶栏右上角的身份切换演示）。');
+        return true;
+
       case 'cq.role':
         S.role = v; S.result = null;
         S.cr.confirmed = false; S.cr.askedFor = null;
@@ -1852,7 +1708,10 @@ var mod = {
       /* ---- P-LS-04 授信核定 ---- */
       /* 分支②前置确认：确认后才出表单。只对当前这个项目生效 —— 换一个资产方就要重新问，
          因为额度是机构 × 资产方二元组，换了对手方就是另一条额度的事。 */
-      case 'cq.askYes': S.cr.confirmed = true; S.cr.askedFor = S.pid; CF.render(); return true;
+      case 'cq.askYes':
+        S.cr.confirmed = true; S.cr.askedFor = S.pid;
+        S.modal = { type:'quoteUnit' };   /* 同一个弹窗内换到额度编辑步骤，不开第二层 */
+        CF.render(); return true;
 
       case 'cq.crSubmit': {
         var p1 = findProject(S.pid), c1 = creditCheck(p1.entity, p1.demand), f1 = creditForm(c1, p1);
@@ -1869,10 +1728,10 @@ var mod = {
         cr.log.push({ at:dayOnly(NOW), k:BRANCH[f1.b].t, from:from, to:cr.limit, until:cr.until });
         S.qt.creditDone = true; S.qt.creditBranch = f1.b;
         S.cr = { amtRaw:null, until:null, memo:'', confirmed:false, askedFor:null };
-        toast('success', '授信已' + BRANCH[f1.b].verb + '并生效',
-          '额度 ' + usd(from) + ' → ' + usd(cr.limit) + '，有效期至 ' + cr.until +
-          '。已自动回到报价表单并重跑两道校验。');
-        CF.go('P-LS-05'); return true;
+        toast('success', '额度已' + BRANCH[f1.b].verb,
+          '额度 ' + usd(from) + ' → ' + usd(cr.limit) + '，有效期至 ' + cr.until + '。');
+        S.page = 'P-LS-05'; S.modal = { type:'quoteUnit' };   /* 同一个弹窗内回到报价步骤 */
+        CF.render(); return true;
       }
 
       /* ---- P-LS-05 报价 ---- */
@@ -1967,8 +1826,8 @@ var mod = {
         } else {
           deal.st = 'S-FD-3'; deal.endAt = NOW; pr.status = 'S-FP-4';
           toast('success', '已接受报价',
-            '业务转 S-FD-3 待放款，项目转 S-FP-4 融资中，' + QUOTE_HOURS + ' 小时有效期计时已终止。' +
-            '在途报价金额不变 —— 业务仍在途，尚未成为未偿本金。放款与融资确认在 WS-326。');
+            '这笔业务转入「放款中」，需求转「放款中」，' + QUOTE_HOURS + ' 小时有效期计时已终止。' +
+            '在途报价金额不变 —— 这笔钱仍在途，还没成为未偿本金。');
         }
         CF.render(); window.scrollTo(0, 0); return true;
       }
@@ -1980,7 +1839,7 @@ var mod = {
         pj.status = 'S-FP-2';
         S.modal = null; S.ac.reject = '';
         toast('success', '已拒绝该报价',
-          '业务落 S-FD-2 已拒绝（终态），项目回 S-FP-2 募集中，在途报价金额全额释放；' +
+          '业务落 已拒绝（终态），这条需求回到「待报价」，在途报价金额全额释放；' +
           '项目在途金额不变、质押不释放。拒绝原因对该机构可见。');
         CF.render(); window.scrollTo(0, 0); return true;
       }

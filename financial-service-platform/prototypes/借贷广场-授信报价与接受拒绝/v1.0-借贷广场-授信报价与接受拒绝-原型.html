@@ -212,6 +212,95 @@
   font-weight:680;letter-spacing:-.025em;margin-top:3px}
 .cq-why .nums .n.gap .v{color:var(--danger)}
 
+/* ============================================================
+   v1.2 承载形态：三个承载单元＝详情页操作区里的弹窗
+   ============================================================ */
+
+/* 弹窗下面那层：详情页上下文。只放身份与去向，不重画一遍详情页。 */
+.cq-ctx{max-width:760px;margin:0 auto;padding:var(--sp-8) 0;text-align:center}
+.cq-ctx-back{display:inline-block;font-size:12.5px;color:var(--muted);margin-bottom:var(--sp-5)}
+.cq-ctx-back:hover{color:var(--accent)}
+.cq-ctx-id b{display:block;font-size:var(--fs-19);font-weight:700;letter-spacing:-.02em}
+.cq-ctx-id span{display:block;font-size:12.5px;color:var(--faint);margin-top:4px}
+.cq-ctx-note{font-size:12px;color:var(--faint);margin:var(--sp-5) auto 0;max-width:46ch;line-height:1.7}
+
+/* 承载单元弹窗：比公共 .modal 宽，内容多但不放操作栏。
+   用修饰类扩展，不改 base.css 的 .modal 本体。 */
+.modal.cq-unit{max-width:880px;width:calc(100vw - 48px);max-height:calc(100vh - 132px);
+  margin-bottom:68px;display:flex;flex-direction:column}
+.modal.cq-unit .modal-h b{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.modal.cq-unit .modal-h .sb{font-size:12px;font-weight:500;color:var(--faint)}
+.modal.cq-unit .modal-b{flex:1;min-height:0;overflow:auto;font-size:14px;line-height:1.55}
+.modal.cq-unit.dialog{max-width:560px}
+
+/* 单元内的分节：替代原来的卡片堆叠，弹窗里不再套卡片 */
+.cq-sec+.cq-sec{margin-top:var(--sp-6);padding-top:var(--sp-6);border-top:1px solid var(--border)}
+.cq-sec>h3{margin:0 0 var(--sp-4);font-size:14.5px;font-weight:680;letter-spacing:-.01em}
+
+/* 单元顶部读数条（接受/拒绝单元用） */
+.cq-unit-top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-5);
+  flex-wrap:wrap;padding-bottom:var(--sp-5);border-bottom:1px solid var(--border);margin-bottom:var(--sp-5)}
+.cq-unit-top .amt{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;
+  font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.cq-unit-top .amt .cy{font-size:13px;color:var(--faint);font-weight:500;margin-left:6px}
+.cq-unit-top .x{font-size:12px;color:var(--faint);margin-top:5px}
+.cq-unit-top .r{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+
+/* —— 授信提示：对话框形态 ——
+   v1.1 把它做成了没有遮罩的就地替换，看上去不像一次需要表态的动作。
+   现在它有遮罩、有问号、有确认/取消，一眼看得出是在等一个决定。 */
+.cq-ask{display:flex;gap:var(--sp-5);align-items:flex-start}
+.cq-ask .ic{width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent);
+  font-size:20px;font-weight:700;font-family:var(--mono)}
+.cq-ask .bd{flex:1;min-width:0}
+.cq-ask .q{margin:0;font-size:var(--fs-16);font-weight:680;line-height:1.5;letter-spacing:-.01em}
+.cq-ask .sub{margin:8px 0 0;font-size:12.5px;color:var(--muted);line-height:1.65}
+.cq-ask .sub b{font-weight:660;color:var(--text)}
+.cq-ask .yes{margin:var(--sp-4) 0 0;font-size:12.5px;color:var(--muted);line-height:1.65}
+.cq-ask .yes b{font-weight:660;color:var(--text)}
+.cq-ask .no{margin:8px 0 0;font-size:12px;color:var(--faint);line-height:1.6}
+/* 算式必须整条读下来，不能在中间断行——断了就不成其为算式了。
+   宁可在窄屏横向滚动，也不把「＝」和它后面的数拆到两行。 */
+.cq-ask-nums{display:flex;align-items:flex-end;flex-wrap:nowrap;overflow-x:auto;
+  gap:var(--sp-3);margin-top:var(--sp-4);padding:13px 15px;background:var(--card-2);
+  border:1px solid var(--border);border-radius:var(--radius-sm)}
+.cq-ask-nums .n{flex:none}
+.cq-ask-nums .k{font-size:var(--fs-10);color:var(--faint);letter-spacing:.05em;white-space:nowrap}
+.cq-ask-nums .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:19px;
+  font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-top:4px;white-space:nowrap}
+.cq-ask-nums .n.gap .v{color:var(--danger)}
+.cq-ask-nums .op{font-family:var(--mono);font-size:var(--fs-14);color:var(--faint);
+  padding-bottom:3px;flex:none}
+.cq-ask-nums .cy{font-size:11px;color:var(--faint);padding-bottom:5px;margin-left:auto;flex:none}
+
+/* 未登录：只给一个入口，不逐动作解释为什么不能点 */
+.cq-signin{margin-top:var(--sp-5);padding:var(--sp-5);background:var(--card-2);
+  border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center}
+.cq-signin p{margin:0 0 var(--sp-4);font-size:12.5px;color:var(--muted);line-height:1.65}
+
+/* 评审用的承载单元切换器（只在原型里，不是产品导航） */
+.cq-jump{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:240;
+  display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--text);
+  border-radius:var(--radius-pill);box-shadow:var(--shadow-lg)}
+.cq-jump{flex-wrap:nowrap;max-width:calc(100vw - 24px);overflow-x:auto}
+.cq-jump s{text-decoration:none;font-size:var(--fs-10);color:#9AA7C4;letter-spacing:.06em;
+  padding:0 3px;white-space:nowrap;flex:none}
+.cq-jump a,.cq-jump button{flex:none}
+.cq-jump a{font-size:11.5px;color:#fff;padding:4px 10px;border-radius:var(--radius-pill);white-space:nowrap}
+.cq-jump a:hover{background:rgba(255,255,255,.14)}
+.cq-jump a[data-on="1"],.cq-jump button[aria-pressed="true"]{background:#fff;color:var(--text);font-weight:640}
+.cq-jump button{font-size:11.5px;color:#fff;padding:4px 10px;border-radius:var(--radius-pill);white-space:nowrap}
+.cq-jump button:hover{background:rgba(255,255,255,.14)}
+.cq-jump .sp{width:1px;height:16px;background:rgba(255,255,255,.22);flex:none}
+@media print{ .cq-jump{display:none} }
+
+@media (max-width:760px){
+  .modal.cq-unit{width:calc(100vw - 16px);max-height:calc(100vh - 140px)}
+  .cq-ask{flex-direction:column;gap:var(--sp-4)}
+  .cq-ask-nums .op{display:none}
+}
+
 /* —— v1.1 招牌件 E：提额前置确认（分支②）——
    机构点的是「报价」，不该被直接推到一张要他掏额度的表单前面。先问一句，
    三个数（本次报价 − 可用授信 ＝ 差额）以算式形态摆进问句里，两条出路各说清后果。
