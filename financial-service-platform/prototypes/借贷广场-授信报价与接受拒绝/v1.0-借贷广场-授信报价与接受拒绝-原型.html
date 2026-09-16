@@ -188,25 +188,19 @@
 .cq-ctx-id span{display:block;font-size:12.5px;color:var(--faint);margin-top:4px}
 .cq-ctx-note{font-size:12px;color:var(--faint);margin:var(--sp-5) auto 0;max-width:46ch;line-height:1.7}
 
-/* 承载单元抽屉：从右侧划出。公共 .drawer 是 440px，这里用修饰类放大——
-   440 装不下条款网格与三步流程，整屏又等于变回一个页面。760px 在 1440 下约占一半：
-   网格能排两到三列，身后的详情页还留得下三分之一可见。窄屏收到 92vw。 */
-.drawer.cq-unit{width:min(760px,92vw)}
-.drawer.cq-unit .drawer-h b{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.drawer.cq-unit .drawer-h .sb{font-size:12px;font-weight:500;color:var(--faint)}
-.drawer.cq-unit .drawer-b{font-size:14px;line-height:1.55;padding-bottom:var(--sp-6)}
-/* 抽屉底部动作条：公共层没有 drawer 的 footer，这里新起一个类，不动公共组件 */
-.cq-unit-f{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;
-  padding:12px 16px;border-top:1px solid var(--border);background:var(--card-2)}
+/* 承载单元抽屉：从右侧划出。尺寸档（760 / 92vw）、头部与底部动作条 .drawer-f
+   已于 2026-09-16 收进公共层的 .drawer.wide，本模块不再自带 .cq-unit / .cq-unit-f。
+   这里只留本模块自己的正文档位。 */
+.drawer.wide .drawer-b{font-size:14px;line-height:1.55;padding-bottom:var(--sp-6)}
 
 /* 授信三支的提示：居中弹窗（需求方 09-15 这部分不调整）。
-   它是一次打断，居中比从边上滑出更像"停一下"；确认之后才换成右侧抽屉去做事。 */
-.modal.cq-ask-modal{max-width:560px}
-.modal.cq-ask-modal .modal-h b{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.modal.cq-ask-modal .modal-h .sb{font-size:12px;font-weight:500;color:var(--faint)}
-.modal.cq-ask-modal .modal-b{font-size:14px;line-height:1.55}
+   它是一次打断，居中比从边上滑出更像"停一下"；确认之后才换成右侧抽屉去做事。
+   宽度用公共 .modal.wide（560），不再自带 .cq-ask-modal 的平行写法。 */
+.modal.wide .modal-h b{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.modal.wide .modal-h .sb{font-size:12px;font-weight:500;color:var(--faint)}
+.modal.wide .modal-b{font-size:14px;line-height:1.55}
 /* 560 宽里三个数的算式排得下，但留点余量，降半档更稳 */
-.modal.cq-ask-modal .cq-ask-nums .v{font-size:18px}
+.modal.wide .cq-ask-nums .v{font-size:18px}
 
 /* 单元内的分节：替代原来的卡片堆叠，弹窗里不再套卡片 */
 .cq-sec+.cq-sec{margin-top:var(--sp-6);padding-top:var(--sp-6);border-top:1px solid var(--border)}
@@ -257,7 +251,7 @@
 /* 评审用的承载单元切换器（只在原型里，不是产品导航） */
 /* 承载单元是右侧抽屉，评审条靠左放，别和抽屉底部的动作按钮抢同一块地方。
    宽度上限压在抽屉左边界以内；窄屏放不下时它自己横向滚。 */
-.cq-jump{position:fixed;left:16px;bottom:16px;z-index:240;flex-wrap:nowrap;overflow-x:auto;
+.cq-jump{position:fixed;left:16px;bottom:16px;z-index:var(--z-review);flex-wrap:nowrap;overflow-x:auto;
   max-width:calc(100vw - 32px);
   display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--text);
   border-radius:var(--radius-pill);box-shadow:var(--shadow-lg)}

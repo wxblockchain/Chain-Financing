@@ -1576,7 +1576,7 @@ function drawerRepay(){
 
 
   var canSubmit = (s.st === 'S-RP-1' && a.enabled && v.ok);
-  var foot = '<div class="u-foot">' +
+  var foot = '<div class="drawer-f">' +
     '<button class="btn link" type="button" data-act="rp.open" data-v="schedule">' + g('viewSchedule') + '</button>' +
     '<span class="sp"></span>' +
     '<button class="btn" type="button" data-act="rp.close">' + L('Close','关闭') + '</button>' +
@@ -1595,7 +1595,7 @@ function drawerRepay(){
       (v.hashOk ? '' : L('transaction hash format invalid.','交易哈希格式不合法。')) + '</p>' : '') +
   '</div>';
 
-  return '<aside class="drawer u" role="dialog" aria-modal="true" aria-label="' + E(g('recordRepay')) + '">' +
+  return '<aside class="drawer wide" role="dialog" aria-modal="true" aria-label="' + E(g('recordRepay')) + '">' +
     '<div class="drawer-h"><b>' + g('recordRepay') +
       '<span class="sb">' + d.fp + ' · ' + d.id + ' · #' + p.seq + '</span></b>' +
     '<button class="modal-x" type="button" data-act="rp.close" aria-label="' + L('Close','关闭') + '">✕</button></div>' +
@@ -1963,7 +1963,7 @@ function drawerConfirm(){
         '哈希旁的"已核验 / 已确认上链 / 交易有效"标识、凭证的"平台已审核"字样、' +
         '"逾期视为确认"一类措辞、任何罚息金额与差额说明字段。')));
 
-  var foot = '<div class="u-foot">' +
+  var foot = '<div class="drawer-f">' +
     '<button class="btn link" type="button" data-act="rp.open" data-v="schedule">' + g('viewSchedule') + '</button>' +
     '<span class="sp"></span>' +
     '<button class="btn" type="button" data-act="rp.close">' + L('Close','关闭') + '</button>' +
@@ -1977,7 +1977,7 @@ function drawerConfirm(){
         usd(p.principal) + '。') + '</p>' : '') +
   '</div>';
 
-  return '<aside class="drawer u" role="dialog" aria-modal="true" aria-label="' + E(g('confirmRepay')) + '">' +
+  return '<aside class="drawer wide" role="dialog" aria-modal="true" aria-label="' + E(g('confirmRepay')) + '">' +
     '<div class="drawer-h"><b>' + g('confirmRepay') +
       '<span class="sb">' + d.fp + ' · ' + d.id + ' · #' + p.seq + '</span></b>' +
     '<button class="modal-x" type="button" data-act="rp.close" aria-label="' + L('Close','关闭') + '">✕</button></div>' +
@@ -2001,11 +2001,11 @@ function drawerConfirm(){
    ================================================================ */
 function drawerSchedule(){
   var d = curDeal();
-  var head = '<aside class="drawer u" role="dialog" aria-modal="true" aria-label="' + E(g('repaySchedule')) + '">' +
+  var head = '<aside class="drawer wide" role="dialog" aria-modal="true" aria-label="' + E(g('repaySchedule')) + '">' +
     '<div class="drawer-h"><b>' + g('repaySchedule') +
       '<span class="sb">' + d.fp + '</span></b>' +
     '<button class="modal-x" type="button" data-act="rp.close" aria-label="' + L('Close','关闭') + '">✕</button></div>';
-  var foot = '<div class="u-foot"><span class="sp"></span>' +
+  var foot = '<div class="drawer-f"><span class="sp"></span>' +
     '<button class="btn" type="button" data-act="rp.close">' + L('Close','关闭') + '</button></div>';
 
   /* 还款计划生成中：**中间态不是错误页**（E-RP-01） */
@@ -2091,7 +2091,7 @@ function drawerSchedule(){
    关闭后回到原处继续。**不新开第三层、不出现抽屉套抽屉、不出现弹窗套弹窗。**
    ================================================================ */
 function modalShell(title, rows, ackLabel, ackId, footBtn, extra){
-  return '<div class="mask rp-top" data-act="rp.mclose"><div class="modal wide" role="dialog" aria-modal="true">' +
+  return '<div class="mask" data-act="rp.mclose"><div class="modal wide" role="dialog" aria-modal="true">' +
     '<div class="modal-h"><b>' + title + '</b>' +
     '<button class="modal-x" type="button" data-act="rp.mclose" aria-label="' + L('Close','关闭') + '">✕</button></div>' +
     '<div class="modal-b"><div class="rows" style="box-shadow:none">' +

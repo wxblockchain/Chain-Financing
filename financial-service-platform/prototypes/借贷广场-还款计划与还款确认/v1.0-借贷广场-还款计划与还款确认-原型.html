@@ -117,16 +117,13 @@
    公共 .drawer 是 440px（PRD 面板用），这里用模块修饰类放到 760，
    与 WS-325 / WS-326 的承载单元同一个数、不分档（D-LN-57）。
    ============================================================ */
-.drawer.u{width:min(760px,92vw);display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
-.drawer.u .drawer-h{padding:12px 18px;gap:12px;align-items:flex-start}
-.drawer.u .drawer-h b{flex:1;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;font-size:15px}
-.drawer.u .drawer-h .sb{font-size:11.5px;font-weight:500;color:var(--faint);font-family:var(--mono)}
-.drawer.u .drawer-b{padding:0;font-size:13.5px;line-height:1.55}
-/* 抽屉底部动作条：公共层没有 drawer footer，沿用 WS-326 新起的这个类，不动公共组件 */
-.u-foot{display:flex;align-items:center;gap:var(--sp-2);padding:11px 18px;border-top:1px solid var(--border);
-  background:var(--bg-elev);flex-wrap:wrap}
-.u-foot .sp{flex:1;min-width:8px}
-.u-foot .note{font-size:10.5px;color:var(--faint);flex-basis:100%;line-height:1.45;margin:1px 0 0}
+/* 尺寸档（760 / 92vw）、头部与底部动作条 .drawer-f 已于 2026-09-16 收进公共层的
+   .drawer.wide，本模块不再自带 .u / .drawer-f 这套平行写法；这里只留本模块自己的正文档位。
+   正文 padding 归零是本模块特有的：抽屉里有自己的吸顶头与分区，公共的 20/18 会再套一层边距。 */
+.drawer.wide .drawer-h b{font-size:15px}
+.drawer.wide .drawer-b{padding:0;font-size:13.5px;line-height:1.55}
+/* 抽屉底部动作条已收进公共层的 .drawer-f（2026-09-16），此处不再自定义 */
+.drawer-f .note{font-size:10.5px;color:var(--faint);flex-basis:100%;line-height:1.45;margin:1px 0 0}
 .u-sec{padding:15px 18px;border-bottom:1px solid var(--border)}
 .u-sec:last-child{border-bottom:0}
 .u-sec.tint{background:var(--card-2)}
@@ -146,12 +143,8 @@
 .seg-mini button[aria-pressed="true"]{background:var(--bg-elev);color:var(--text);font-weight:640;box-shadow:var(--shadow)}
 .seg-mini button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* —— 二次确认弹窗必须叠在抽屉之上（D-RP-76）——
-   公共层 .mask 是 z-index 200，而 .drawer-scrim 是 205、.drawer 是 210，且 shell 把抽屉渲染在
-   弹窗**之后**：抽屉开着时弹窗会被抽屉与它的遮罩盖住、整个点不到。
-   这里用**模块作用域的修饰类**把本模块的弹窗抬到 220（高于 .drawer 的 210），
-   **不改公共组件的默认值**。已作为公共层缺陷回报（README §6 第 4 条）。 */
-.mask.rp-top{z-index:220}
+/* 二次确认弹窗叠在抽屉之上：公共层已把弹窗排在抽屉之上（tokens.css 的 --z-*，2026-09-16 修根），
+   本模块 .mask.rp-top{z-index:220} 的本地补丁已撤除。 */
 
 /* ============================================================
    第三段：沿用 WS-326 招牌件的四个类（形状复用、文案按本模块重写）

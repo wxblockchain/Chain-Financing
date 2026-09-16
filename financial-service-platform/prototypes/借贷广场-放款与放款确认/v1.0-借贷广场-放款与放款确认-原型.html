@@ -72,17 +72,14 @@
    公共 .drawer 是 440px（PRD 面板用），这里用模块修饰类放到 760，
    与 WS-325 的承载单元同一个数：做事走抽屉、提示走弹窗、同一时刻只有一层。
    ============================================================ */
-.drawer.u{width:min(760px,92vw);display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
-.drawer.u .drawer-h{padding:12px 18px;gap:12px;align-items:flex-start}
-.drawer.u .drawer-h b{flex:1;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;font-size:15px}
-.drawer.u .drawer-h .sb{font-size:11.5px;font-weight:500;color:var(--faint);font-family:var(--mono)}
-.drawer.u .drawer-b{padding:0;font-size:13.5px;line-height:1.55}
-/* 抽屉底部动作条：公共层没有 drawer footer，这里新起一个类，不动公共组件 */
-.u-foot{display:flex;align-items:center;gap:var(--sp-2);padding:11px 18px;border-top:1px solid var(--border);
-  background:var(--bg-elev);flex-wrap:wrap}
-.u-foot .sp{flex:1;min-width:8px}
-.u-foot .side{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
-.u-foot .note{font-size:10.5px;color:var(--faint);flex-basis:100%;line-height:1.45;margin:1px 0 0}
+/* 尺寸档（760 / 92vw）、头部与底部动作条 .drawer-f 已于 2026-09-16 收进公共层的
+   .drawer.wide，本模块不再自带 .u / .drawer-f 这套平行写法；这里只留本模块自己的正文档位。
+   正文 padding 归零是本模块特有的：抽屉里有自己的吸顶头与分区，公共的 20/18 会再套一层边距。 */
+.drawer.wide .drawer-h b{font-size:15px}
+.drawer.wide .drawer-b{padding:0;font-size:13.5px;line-height:1.55}
+/* 抽屉底部动作条已收进公共层的 .drawer-f（2026-09-16），此处不再自定义 */
+.drawer-f .side{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.drawer-f .note{font-size:10.5px;color:var(--faint);flex-basis:100%;line-height:1.45;margin:1px 0 0}
 .u-sec{padding:15px 18px;border-bottom:1px solid var(--border)}
 .u-sec:last-child{border-bottom:0}
 .u-sec.tint{background:var(--card-2)}

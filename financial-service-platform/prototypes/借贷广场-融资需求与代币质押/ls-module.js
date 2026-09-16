@@ -2554,31 +2554,32 @@ function doAction(key){
    承载形态（与 WS-325／326／327 同一套，09-15 需求方裁定）
    ----------------------------------------------------------------
    **提示 = 居中弹窗**：一次要你表态的打断（关闭项目、链上费用二次确认、环节壳），
-     居中比从边上滑出更像"停一下"。宽 560（公共 .modal 默认 430，本模块用 .ls-dlg 放到 560）。
+     居中比从边上滑出更像"停一下"。宽 560（公共 .modal.wide）。
    **做事 = 右侧抽屉**：有表单、有多选、要来回核对的（发布需求、追加质押、解除质押），
-     用公共 .drawer 一族，宽 760 —— 440 装不下代币多选表，整屏又等于变回一个页面，
+     用公共 .drawer.wide，宽 760 —— 440 装不下代币多选表，整屏又等于变回一个页面，
      760 在 1440 下约占一半，身后的详情页还留得下三分之一可见。窄屏收到 92vw。
    **一个承载单元同一时刻只有一层**；唯一的例外是链上费用二次确认，
-     它按 AC-LS-32 必须叠在做事抽屉之上（与 WS-327 D-RP-76 同形），层级见 .mask.ls-top。
+     它按 AC-LS-32 必须叠在做事抽屉之上——公共层已把弹窗排在抽屉之上（tokens.css --z-*），
+     本模块 09-15 那条 .mask.ls-top 的本地补丁已撤除。
    ================================================================ */
 function mHead(t){
   return '<div class="modal-h"><b>' + E(t) + '</b><button class="modal-x" type="button" data-act="ls.mclose" aria-label="' +
     L('Close','关闭') + '">✕</button></div>';
 }
-/* 提示：居中弹窗 */
-function mWrap(t, body, foot, top){
-  return '<div class="mask ls-dlg' + (top ? ' ls-top' : '') + '" data-act="ls.mclose">' +
-    '<div class="modal" role="dialog" aria-modal="true">' + mHead(t) +
+/* 提示：居中弹窗（公共 .modal.wide = 560） */
+function mWrap(t, body, foot){
+  return '<div class="mask" data-act="ls.mclose">' +
+    '<div class="modal wide" role="dialog" aria-modal="true">' + mHead(t) +
     '<div class="modal-b">' + body + '</div>' +
     '<div class="modal-f">' + foot + '</div></div></div>';
 }
 /* 做事：右侧抽屉。遮罩 .drawer-scrim 由公共壳层统一渲染（shell.js renderDrawer），本层不自造。 */
 function uWrap(t, sub, body, foot){
-  return '<aside class="drawer ls-unit" role="dialog" aria-modal="true" aria-label="' + E(t) + '">' +
+  return '<aside class="drawer wide" role="dialog" aria-modal="true" aria-label="' + E(t) + '">' +
     '<div class="drawer-h"><b>' + E(t) + (sub ? '<span class="sb">' + E(sub) + '</span>' : '') + '</b>' +
     '<button class="modal-x" type="button" data-act="ls.uclose" aria-label="' + L('Close','关闭') + '">✕</button></div>' +
     '<div class="drawer-b">' + body + '</div>' +
-    '<div class="ls-unit-f">' + foot + '</div></aside>';
+    '<div class="drawer-f">' + foot + '</div></aside>';
 }
 function btnCancel(){ return '<button class="btn" type="button" data-act="ls.mclose">' + L('Cancel','取消') + '</button>'; }
 function btnUCancel(){ return '<button class="btn" type="button" data-act="ls.uclose">' + L('Cancel','取消') + '</button>'; }
@@ -2843,12 +2844,11 @@ function modalChain(){
     '<p class="hint">' + L(
       'Gas is charged by the blockchain. <strong class="ls-b">The platform does not pay it for you, does not advance it, and charges no service fee on pledging, withdrawal or redemption</strong>. A failed transaction may still have cost gas. Batching is the single most effective way to reduce cost: these ' + m.n + ' items have been merged into one submission.',
       'gas 由区块链收取，<strong class="ls-b">平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</strong>。链上失败也可能已经产生费用。批量一次提交是最有效的降费手段：' + m.n + ' 笔已合并为一次提交。') + '</p>',
-    btnCancel() + '<button class="btn primary" type="button" data-act="ls.sdk">' + L('Confirm and sign','确认并唤起签名') + '</button>',
-    true);
+    btnCancel() + '<button class="btn primary" type="button" data-act="ls.sdk">' + L('Confirm and sign','确认并唤起签名') + '</button>');
 }
 function modalSdk(){
   var m = S.modal;
-  return '<div class="mask ls-top"><div class="ls-sdk" role="dialog" aria-modal="true" aria-label="' +
+  return '<div class="mask"><div class="ls-sdk" role="dialog" aria-modal="true" aria-label="' +
     L('External signing SDK','外部签名 SDK') + '">' +
     '<div class="h"><span>◈</span><b>' + L('External signing SDK','外部签名 SDK 服务') + '</b><span>' +
       L('third-party surface · not a platform page','第三方界面 · 非平台页面') + '</span></div>' +

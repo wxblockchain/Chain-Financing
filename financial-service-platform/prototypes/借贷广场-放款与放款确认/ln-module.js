@@ -861,7 +861,7 @@ function drawerDisb(){
         '本步骤<b>不产生任何链上操作、不消耗 gas</b>：数币转账发生在平台之外，平台只收下哈希与链的文本记录。') + '</p>');
 
   var dis = actionOf(acts, 'disburse');
-  var foot = '<div class="u-foot"><div class="side">' +
+  var foot = '<div class="drawer-f"><div class="side">' +
     ['hold', 'redo', 'stop'].map(function(k){
       var a = actionOf(acts, k);
       if(!a) return '';
@@ -885,7 +885,7 @@ function drawerDisb(){
     L('The three handling actions are always available — including when coverage is short. They are reversible, so they sit in the secondary position rather than competing with the main action.',
       '三个处置动作常驻可用，覆盖不足时也一样；它们是可逆的，所以放在次级位，不和主操作抢视线。') + '</p></div>';
 
-  return '<aside class="drawer u" role="dialog" aria-modal="true" aria-label="' + L('Record disbursement','放款') + '">' +
+  return '<aside class="drawer wide" role="dialog" aria-modal="true" aria-label="' + L('Record disbursement','放款') + '">' +
     '<div class="drawer-h"><b>' + g('disburse') + '<span class="sb">' + d.fp + ' · ' + d.id + '</span></b>' +
     '<button class="modal-x" type="button" data-act="ln.close" aria-label="' + L('Close','关闭') + '">✕</button></div>' +
     '<div class="drawer-b">' + body + '</div>' + foot + '</aside>';
@@ -1023,14 +1023,14 @@ function drawerConfirm(){
           mailBlock(d))
       : '');
   var foot = isAsset
-    ? '<div class="u-foot"><div class="sp"></div>' +
+    ? '<div class="drawer-f"><div class="sp"></div>' +
       '<button class="btn" type="button" data-act="ln.close">' + L('Not yet','稍后再说') + '</button>' +
       '<button class="btn primary" type="button" data-act="ln.confirmAsk">' + g('confirmReceipt') + '</button>' +
       '<p class="note">' + L('This drawer has exactly one action. There is no "raise a dispute", no "reject", and no "undo confirmation" — confirming cannot be undone.',
         '本抽屉只有一个动作：没有「提出异议」「驳回」，也没有「撤销确认」——确认后不可撤销。') + '</p></div>'
-    : '<div class="u-foot"><div class="sp"></div>' +
+    : '<div class="drawer-f"><div class="sp"></div>' +
       '<button class="btn" type="button" data-act="ln.close">' + L('Close','关闭') + '</button></div>';
-  return '<aside class="drawer u" role="dialog" aria-modal="true" aria-label="' + g('confirmReceipt') + '">' +
+  return '<aside class="drawer wide" role="dialog" aria-modal="true" aria-label="' + g('confirmReceipt') + '">' +
     '<div class="drawer-h"><b>' + g('confirmReceipt') + '<span class="sb">' + d.fp + ' · ' + d.id + '</span></b>' +
     '<button class="modal-x" type="button" data-act="ln.close" aria-label="' + L('Close','关闭') + '">✕</button></div>' +
     '<div class="drawer-b">' + body + '</div>' + foot + '</aside>';
@@ -1056,11 +1056,11 @@ function drawerRedo(){
       L('Earlier versions are kept, never overwritten.','历史版本保留、不覆盖。') + '</b> ' +
       L('Every version carries its upload time and uploader, and the funder can switch between them in the check pane. A successful upload <b>clears the mark by itself</b> — the funder does not confirm it again. Uploading more than once is allowed; only the first success clears the mark and sends the notification.',
         '每一版都带上传时间与上传人，机构在核验区可逐版切换。重传成功后标记<b>自动清除</b>，机构无需再点一次"通过"。重复上传是允许的，只有第一次成功会清除标记并发通知。') + '</p>');
-  return '<aside class="drawer u" role="dialog" aria-modal="true" aria-label="' + g('reupload') + '">' +
+  return '<aside class="drawer wide" role="dialog" aria-modal="true" aria-label="' + g('reupload') + '">' +
     '<div class="drawer-h"><b>' + g('reupload') + '<span class="sb">' + d.fp + '</span></b>' +
     '<button class="modal-x" type="button" data-act="ln.close" aria-label="' + L('Close','关闭') + '">✕</button></div>' +
     '<div class="drawer-b">' + body + '</div>' +
-    '<div class="u-foot"><div class="sp"></div>' +
+    '<div class="drawer-f"><div class="sp"></div>' +
     '<button class="btn" type="button" data-act="ln.close">' + L('Cancel','取消') + '</button>' +
     '<button class="btn primary" type="button" ' + (S.f.seal ? '' : 'disabled ') + 'data-act="ln.redoGo">' +
     L('Confirm re-upload','确认重传') + '</button></div></aside>';

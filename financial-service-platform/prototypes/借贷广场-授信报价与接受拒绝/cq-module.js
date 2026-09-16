@@ -762,7 +762,7 @@ function unitBackdrop(p, title){
 /* ---- 弹窗外壳：统一头部 / 主体 / 底部，所有承载单元共用一套 ---- */
 /* 承载单元外壳：**从右侧划出的抽屉**（需求方 09-15）。
    用公共层的 .drawer 一族，不自造——遮罩（.drawer-scrim）由壳层统一渲染，
-   宽度用模块修饰类 .cq-unit 放大到 760px：
+   宽度用公共层的 .drawer.wide（760 / 92vw，2026-09-16 收进公共层）：
 
    为什么是 760 而不是整屏或 440：
      · 公共 .drawer 的 440px 装不下报价确认里的条款网格与三步流程，
@@ -773,12 +773,12 @@ function unitBackdrop(p, title){
    窄屏按 92vw 收，保证两侧仍留出可点的"回到详情页"余地。 */
 function unitShell(title, sub, body, foot, opt){
   opt = opt || {};
-  return '<aside class="drawer cq-unit' + (opt.dialog ? ' dialog' : '') +
+  return '<aside class="drawer wide' + (opt.dialog ? ' dialog' : '') +
       '" role="dialog" aria-modal="true" aria-label="' + E(title) + '">' +
       '<div class="drawer-h"><b>' + E(title) + (sub ? '<span class="sb">' + E(sub) + '</span>' : '') + '</b>' +
       '<button class="modal-x" type="button" data-act="cq.unitClose" aria-label="关闭">✕</button></div>' +
       '<div class="drawer-b">' + body + '</div>' +
-      '<div class="cq-unit-f">' + foot + '</div>' +
+      '<div class="drawer-f">' + foot + '</div>' +
     '</aside>';
 }
 
@@ -847,7 +847,7 @@ function creditAsk(p, c, f){
      它不走抽屉外壳——提示是一次要你表态的打断，居中比从边上滑出更像"停一下"；
      确认之后才换成右侧抽屉去做事。同一时刻只有一层：这里是弹窗，那里是抽屉。 */
   return '<div class="mask" data-act="cq.maskClose">' +
-    '<div class="modal cq-ask-modal" role="dialog" aria-modal="true" aria-label="融资报价">' +
+    '<div class="modal wide" role="dialog" aria-modal="true" aria-label="融资报价">' +
       '<div class="modal-h"><b>融资报价<span class="sb">' + E(bm.t) + '</span></b>' +
       '<button class="modal-x" type="button" data-act="cq.unitClose" aria-label="关闭">✕</button></div>' +
       '<div class="modal-b">' + body + '</div>' +
@@ -1491,6 +1491,394 @@ function submitResultCard(){
   return '<div class="ls-alert">' + box + '</div>';
 }
 
+/* ==========================================================================
+   EN 字典（2026-09-16）
+   本模块正文原本是中文单语，而 D-LS-15 要求面客端默认英文、中文可切换；
+   四个广场模块里只有本模块是 lang:'zh'，用户从广场走到报价时界面语言会自己变。
+   一次性把 1892 行里的中文字面量改成 L(en, zh) 风险太大，这里改用**渲染后翻译**：
+   中文仍是唯一事实源，EN 视图在 afterRender 里按本表替换文本节点与三个属性。
+   ⚠️ 新增中文文案时必须同步在这里加一条，否则 EN 视图会漏出中文。
+   演示企业主体名（带「（演示）」）按四个模块的既有约定保持中文，不翻译。
+   ========================================================================== */
+var CQ_EN = {
+  "\"格式对不对\"与\"户名一致不一致\"": "whether the format is valid and whether the account name matches",
+  "0.9994　生效 2026-09-04 19:05 UTC+8　来源 平台汇率管理 · 中间价　版本 FX-20260904-T1905": "0.9994　effective 2026-09-04 19:05 UTC+8　source Platform FX management · mid rate　version FX-20260904-T1905",
+  "1.0000　生效 2026-09-08 14:20 UTC+8　来源 平台汇率管理 · 中间价　版本 FX-20260908-T1420": "1.0000　effective 2026-09-08 14:20 UTC+8　source Platform FX management · mid rate　version FX-20260908-T1420",
+  "144 天 · 末期并入不足 3 个月的尾段": "144 days · the final instalment absorbs the sub-3-month tail",
+  "159 天 · 末期并入不足 3 个月的尾段": "159 days · the final instalment absorbs the sub-3-month tail",
+  "168 小时": "168 hours",
+  "168 小时有效期届满，资产方未处理": "the 168-hour validity window elapsed with no response from the asset owner",
+  "168 小时（7 天）": "168 hours (7 days)",
+  "6 张应收账款类代币 · 有效质押价值 560,000.00 USD": "6 receivables tokens · pledged token value 560,000.00 USD",
+  "8 位或 11 位，字母数字": "8 or 11 characters, alphanumeric",
+  "9 张应收账款类代币 · 有效质押价值 900,000.00 USD": "9 receivables tokens · pledged token value 900,000.00 USD",
+  "90 天": "90 days",
+  "91 天": "91 days",
+  "FP-20260722-0027（长三角精密零部件应收账款池）": "FP-20260722-0027 (Yangtze Delta precision component receivables pool)",
+  "FP-20260812-0031（华东电子元件应收账款池）": "FP-20260812-0031 (East China electronic component receivables pool)",
+  "PDF / JPG / PNG · 单文件 ≤ 10 MB · 最多 5 个": "PDF / JPG / PNG · max 10 MB per file · up to 5 files",
+  "PDF / JPG / PNG，单文件 ≤ 10 MB、≤ 5 个": "PDF / JPG / PNG, max 10 MB per file, up to 5 files",
+  "× 质押率 80%，本期固定": "× pledge rate 80%, fixed this release",
+  "—— 平台没有这个能力。": "— the platform has no such capability.",
+  "——它是平台尽到告知义务的证据，定稿后若对日期有疑问，这条留痕可以拿出来对账。": "— it is the platform's evidence of having given notice; if the dates are ever questioned after finalisation, this record is what gets checked.",
+  "← 返回融资项目详情": "← Back to the project detail page",
+  "① 填写并确认收款账户": "① Fill in and confirm the payee account",
+  "② 查看商务条款摘要": "② Review the commercial terms summary",
+  "③ 上传盖章件并声明": "③ Upload the signed contract and declare",
+  "、不产生任何负面记录。额度已释放，可对同一需求重新报价。原汇率快照已作废，重新报价会取新的快照。": ", and leaves no negative record. The credit has been released and you may quote on the same demand again. The old FX snapshot is void; a new quote takes a new snapshot.",
+  "、需求自动放开，占用的授信全额释放。": ", the demand reopens automatically and the credit it held is released in full.",
+  "、需求自动放开，后果与拒绝完全相同。": ", the demand reopens automatically, with exactly the same consequences as a rejection.",
+  "。手续费是您为了把钱拿到手而付出的成本，不是本金的减少；按实收计本金会让机构凭空少收一笔债权。": ". The fees are what you pay to get the money in hand, not a reduction of the principal; counting the principal as the amount actually received would simply erase part of the institution's claim.",
+  "。本模块全部动作都发生在平台内：授信核定、报价、接受与拒绝都只改平台侧的额度与状态，链上动作只发生在质押与提取。": ". Everything in this module happens inside the platform: granting credit, quoting, accepting and rejecting only change platform-side credit and status. On-chain actions occur only at pledging and withdrawal.",
+  "。本页的校验只到": ". The checks on this page go no further than",
+  "。这是一条已知的开口。": ". This is a known gap.",
+  "。预填来源是平台自己的这份数据，不依赖任何账户设置模块；首次接受时为空白手填。本次填写的账户会自动成为下次的预填值。": ". The prefill comes from the platform's own record, not from any account-settings module; the first time you accept, the form starts blank. Whatever you enter here becomes the prefill next time.",
+  "三步": "three steps",
+  "三步全部完成后方可确认接受：① 收款账户尚未逐笔确认；② 商务条款摘要尚未查看；③ 盖章件未上传或条款一致性声明未勾选。": "All three steps must be complete before you can accept: ① the payee account has not been confirmed field by field; ② the commercial terms summary has not been reviewed; ③ the signed contract is missing or the consistency declaration is unticked.",
+  "三步全部完成后方可确认接受：② 商务条款摘要尚未查看；③ 盖章件未上传或条款一致性声明未勾选。": "All three steps must be complete before you can accept: ② the commercial terms summary has not been reviewed; ③ the signed contract is missing or the consistency declaration is unticked.",
+  "上一版额度": "Previous credit line",
+  "上传盖章件并声明": "Upload the signed contract and declare",
+  "上面这些是公开信息，不登录也看得到。要确认这笔报价，请先登录。": "Everything above is public and visible without signing in. To act on this quote, sign in first.",
+  "下列各项": "each of the fields below",
+  "不产生任何链上操作、不消耗 gas、不需要唤起签名 SDK": "no on-chain action, no gas, no signing SDK",
+  "不做银行账户真实性核验、不做账号与户名的银企联验、不判断汇路是否可达": "no bank-account verification, no name-to-account matching with the bank, no routing reachability check",
+  "不按实收计": "not the amount actually received",
+  "不提供\"打回重传\"": "there is no \"reject and re-upload\" flow",
+  "不落库、不占号、不产生期次对象": "nothing is persisted, no ID is taken, no instalment objects are created",
+  "不计入拒绝率": "not counted towards the rejection rate",
+  "不设\"待审核\"中间态": "there is no intermediate \"under review\" state",
+  "与 SWIFT 的国家段不一致时提示但不阻断": "a mismatch with the country segment of the SWIFT code is flagged but not blocked",
+  "中转行 SWIFT": "Intermediary bank SWIFT",
+  "中转行信息（选填）": "Intermediary bank (optional)",
+  "中转行名称": "Intermediary bank name",
+  "中途离开不会影响这笔业务。": "Leaving midway does not affect this deal.",
+  "中部机械应收账款池": "Central China machinery receivables pool",
+  "为止。": ".",
+  "企业统一数币地址": "the entity's registered digital-currency address",
+  "但您需要偿还的本金仍按融资金额 300,000.00 USD 计算。": "The principal you must repay is still calculated on the financing amount of 300,000.00 USD.",
+  "但您需要偿还的本金仍按融资金额 500,000.00 USD 计算。": "The principal you must repay is still calculated on the financing amount of 500,000.00 USD.",
+  "但计时不因中断而暂停": "but the clock does not pause while you are away",
+  "例如 7.20": "e.g. 7.20",
+  "供修改，并重新填有效期。": "so you can amend it, then re-enter the validity date.",
+  "债务本金、授信占用额、项目融资余额、项目在途金额、放款确认时的转移金额、还款计划的本息 —— 一律按融资金额计，": "Debt principal, credit utilisation, outstanding financing, committed demand, the amount transferred at disbursement confirmation, and the principal and interest in the repayment schedule are all calculated on the financing amount,",
+  "允许填任意地址等于给了一条把融资款打进个人钱包的通道，而平台没有任何地址归属核验能力。": "Allowing an arbitrary address would open a route for paying the financing into a personal wallet, and the platform has no way to verify address ownership.",
+  "先息后本 · 到期还本付息，利息每 3 个月一期": "Interest first, principal at maturity · interest every 3 months",
+  "公开信息": "Public information",
+  "关闭": "Close",
+  "内未处理，报价": "without a response, the quote",
+  "内未处理，该报价将": "without a response, this quote will",
+  "初始还款计划（试算版）": "Initial repayment schedule (indicative)",
+  "到期。到期的额度不能再用来报价，但已经借出去的钱不受影响。重新核定会给这条额度一个新的有效期。": ". An expired credit line can no longer back a quote, but money already lent is unaffected. Re-granting gives the line a new validity date.",
+  "到期时刻": "Expires at",
+  "剩余不足 24 小时": "Less than 24 hours left",
+  "剩余不足 24 小时，倒计时已切到分钟精度。到点即失效，由系统自动执行、不依赖任何人登录；无展期、无宽限期。": "Less than 24 hours left, so the countdown has switched to minute precision. Expiry is executed by the system at the exact moment and does not depend on anyone being signed in. There is no extension and no grace period.",
+  "华东电子元件应收账款池": "East China electronic component receivables pool",
+  "华南汽配应收账款池": "South China auto parts receivables pool",
+  "原型 · 承载单元与身份切换": "Prototype · carrier units and role switch",
+  "去提额": "Increase the credit line",
+  "去核定额度": "Grant a credit line",
+  "去重新核定": "Re-grant the credit line",
+  "取消": "Cancel",
+  "取消不会留下任何东西：不生成报价、不动用您的额度、不锁定这条需求，它对其他机构照常开放。您随时可以再来。": "Cancelling leaves nothing behind: no quote is created, none of your credit is used, and the demand is not locked — it stays open to other institutions. You can come back any time.",
+  "变的只有日期，以及由日期派生的天数与利息——公式、年化利率、本金、期次边界规则一个都不会变。": "Only the dates change, together with the day counts and interest derived from them — the formula, the annual rate, the principal and the instalment boundary rules all stay as they are.",
+  "只留痕、不要求您勾选确认": "recorded only; you are not asked to tick anything",
+  "只读": "Read-only",
+  "可中断可续做": "can be interrupted and resumed",
+  "可以修改": "can be amended",
+  "可复制 / 可打印，供双方线下拟约": "copyable and printable, for drafting the contract offline",
+  "可用授信": "Available credit",
+  "合同由双方": "The contract is drafted and signed by the two parties",
+  "合计（仅 USD 记账口径）": "Total (USD accounting basis only)",
+  "后自动失效　·　到期时刻 2026-09-11 19:05 UTC+8": "until automatic expiry　·　expires 2026-09-11 19:05 UTC+8",
+  "后自动失效　·　到期时刻 2026-09-15 14:20 UTC+8": "until automatic expiry　·　expires 2026-09-15 14:20 UTC+8",
+  "含本金 · 到期还本付息": "includes principal · principal and interest at maturity",
+  "商务条款摘要": "Commercial terms summary",
+  "国家/地区 + 城市 + 详址": "Country/region + city + full address",
+  "在中转行的账号": "Account number at the intermediary bank",
+  "在平台外自行拟定与签署": "drafted and signed by the two parties outside the platform",
+  "在放款前审核 —— 机构是出钱方，它有天然动机检查合同真伪与条款一致性。": "reviews it before disbursing — the institution is the one paying out, so it has every reason to check the contract's authenticity and the consistency of its terms.",
+  "在途报价金额": "Quoted amount in flight",
+  "填写并确认收款账户": "Fill in and confirm the payee account",
+  "填写进度": "Progress",
+  "填授信总额与有效期，提交即生效，然后回到报价。": "Enter the total credit line and its validity date; it takes effect on submission and you return to the quote.",
+  "填要增加多少额度，提交即生效，然后回到报价。": "Enter how much to add; it takes effect on submission and you return to the quote.",
+  "复制全文": "Copy all",
+  "失效不是拒绝，机构不吃亏": "Expiry is not a rejection, and the institution loses nothing",
+  "失效原因：有效期届满　·　失效时间 2026-09-01 11:00 UTC+8": "Reason: validity window elapsed　·　expired at 2026-09-01 11:00 UTC+8",
+  "如实记录": "recorded as it happened",
+  "它按": "It follows",
+  "它的作用是让线下合同里的数字与平台记录一致，避免放款和还款时两边对不上。": "Its purpose is to keep the numbers in the offline contract identical to the platform's record, so disbursement and repayment do not disagree.",
+  "完全相同": "exactly the same",
+  "实际还款日将在放款确认后按实际放款日重算并定稿，届时以定稿计划为准；每期金额的计算规则不变。": "The actual repayment dates are recalculated from the real disbursement date and finalised at disbursement confirmation; the finalised schedule governs from then on. The rule for computing each instalment does not change.",
+  "少于 300,000.00": "less than 300,000.00",
+  "少于 500,000.00": "less than 500,000.00",
+  "已失效／已关闭": "Void / closed",
+  "已报价待确认": "Awaiting quote confirmation",
+  "已按贵司最近一次成功接受时使用的账户预填": "Prefilled with the account you used the last time you accepted",
+  "已排除底层失效的代币": "tokens whose underlying receivable has been invalidated are excluded",
+  "已放款未还 120,000.00 · 在途报价 0.00": "disbursed and unpaid 120,000.00 · quoted in flight 0.00",
+  "已用": "Used",
+  "已确认": "Confirmed",
+  "已确认业务的未偿本金合计": "total unpaid principal on confirmed deals",
+  "已终结": "Ended",
+  "已锁定": "Locked",
+  "带出上一版额度": "Carry over the previous credit line",
+  "平台": "The platform",
+  "平台不判断是否需要、不校验其正确性": "the platform does not judge whether it is needed, nor check that it is correct",
+  "平台不审核合同，也不对其真伪与法律效力作任何保证": "the platform does not review the contract and gives no assurance as to its authenticity or legal effect",
+  "平台不预估金额": "the platform does not estimate the amount",
+  "平台不预知、不代收、不垫付，也不展示预估金额": "the platform cannot know them in advance, does not collect them, does not advance them, and does not show an estimate",
+  "平台汇率管理 · 中间价": "Platform FX management · mid rate",
+  "平台的能力边界": "What the platform can and cannot do",
+  "年化 % · 必填": "Annual % · required",
+  "年化利率": "Annual rate",
+  "年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2026-09-04（预计放款日）": "Simple annual interest, actual days ÷ 360, accruing from the start date and not on the due date; start date = 2026-09-04 (expected disbursement date)",
+  "年化单利，实际天数 ÷ 360，起息日计息、应还日不计息；起息日 = 2026-09-08（预计放款日）": "Simple annual interest, actual days ÷ 360, accruing from the start date and not on the due date; start date = 2026-09-08 (expected disbursement date)",
+  "应还利息": "Interest due",
+  "应还合计": "Total due",
+  "应还本金": "Principal due",
+  "当前值 · 不是报价时的快照": "current value · not the snapshot taken at quoting",
+  "当前授信额度不够这笔报价，现在提额吗？": "Your current credit line does not cover this quote. Increase it now?",
+  "当前池况": "Pool status now",
+  "当前身份是「晟远科技（演示）」。项目和这笔在途报价的公开信息您照常看得到，报价本身只有资金方能做。": "You are signed in as 晟远科技（演示）. You can still see the project and the public information about this open quote; quoting itself is for funders only.",
+  "当前身份是「未登录访客」。项目和这笔在途报价的公开信息您照常看得到，报价本身只有资金方能做。": "You are a signed-out visitor. You can still see the project and the public information about this open quote; quoting itself is for funders only.",
+  "当前额度": "Current credit line",
+  "待完成": "To do",
+  "待查看": "Not yet reviewed",
+  "待确认": "Not yet confirmed",
+  "必填": "Required",
+  "恒等于融资到期日": "always identical to the financing maturity date",
+  "您可以": "You may",
+  "您对": "your credit line for",
+  "您的实收金额": "What you actually receive",
+  "您给 中垣建材（演示） 的授信额度已经到期，现在重新核定吗？": "Your credit line for 中垣建材（演示） has expired. Re-grant it now?",
+  "您还没有给 瑞和能源装备（演示） 核定授信额度，现在核定吗？": "You have not granted 瑞和能源装备（演示） a credit line yet. Grant one now?",
+  "我已查看并抄录条款": "I have reviewed and copied down the terms",
+  "我确认以上收款地址信息准确无误，本笔融资款转入该地址。": "I confirm the receiving address above is correct and that this financing will be transferred to it.",
+  "我确认以上收款账户信息准确无误，本笔融资款汇入该账户。": "I confirm the payee account above is correct and that this financing will be remitted to it.",
+  "我确认所上传合同的商务条款与本页摘要一致。": "I confirm the commercial terms in the uploaded contract match the summary on this page.",
+  "所有": "all",
+  "所用汇率快照": "FX snapshot used",
+  "打印 / 存为 PDF": "Print / save as PDF",
+  "承载单元": "Carrier unit",
+  "报价已失效": "Quote expired",
+  "报价提交时间": "Quote submitted at",
+  "报价有效期": "Quote validity window",
+  "报价有效期 168 小时：已锁定 2 天 20 小时，剩余 4 天 3 小时": "Quote validity 168 hours: held 2 days 20 h, 4 days 3 h left",
+  "报价有效期 168 小时：已锁定 6 天 15 小时，剩余 8 小时 25 分钟": "Quote validity 168 hours: held 6 days 15 h, 8 h 25 min left",
+  "报价机构": "Quoting institution",
+  "报价条款": "Quote terms",
+  "报价确认": "Quote confirmation",
+  "报价确认在详情页的操作区内以弹窗完成，不跳离详情页。这里是它下面那层详情页的位置。": "Quote confirmation happens in a layer over the actions panel of the project detail page and never navigates away from it. This is where that detail page would sit underneath.",
+  "报出去之后还剩": "left after this quote",
+  "抵押物概况": "Collateral overview",
+  "拒绝": "Reject",
+  "拒绝报价": "Reject the quote",
+  "按季付息；到期还本付息": "Quarterly interest; principal and interest at maturity",
+  "按收款行所在国家/地区自行填账号或 IBAN": "Enter the account number or IBAN as used in the beneficiary bank's country/region",
+  "按融资金额 300,000.00 USD 计，不按实收计": "calculated on the financing amount of 300,000.00 USD, not the amount actually received",
+  "按融资金额 500,000.00 USD 计，不按实收计": "calculated on the financing amount of 500,000.00 USD, not the amount actually received",
+  "授信信息": "Credit information",
+  "授信占用额": "Credit utilisation",
+  "授信尺：授信额度 900,000.00 USD，授信占用额 120,000.00 USD，在途报价金额 0.00 USD，本次报价金额 450,000.00 USD，可用授信 780,000.00 USD": "Credit meter: credit line 900,000.00 USD, utilisation 120,000.00 USD, quoted in flight 0.00 USD, this quote 450,000.00 USD, available 780,000.00 USD",
+  "授信额度": "Credit line",
+  "授信额度 900,000.00": "Credit line 900,000.00",
+  "接受与拒绝": "Accept and reject",
+  "接受报价 · 三步": "Accept the quote · three steps",
+  "提交": "Submit",
+  "提交报价": "Submit the quote",
+  "提交时刻 + 168 小时，只读不可延长": "submission time + 168 hours, read-only and not extendable",
+  "收款人名称 Beneficiary Name": "Beneficiary Name",
+  "收款人地址 Beneficiary Address": "Beneficiary Address",
+  "收款地址": "Receiving address",
+  "收款行名称 Beneficiary Bank Name": "Beneficiary Bank Name",
+  "收款行地址 Beneficiary Bank Address": "Beneficiary Bank Address",
+  "收款行所在国家 / 地区": "Beneficiary bank country / region",
+  "收款账号 / IBAN": "Account number / IBAN",
+  "整表预计 · 未生效": "Whole schedule indicative · not in force",
+  "新建授信": "New credit line",
+  "无": "None",
+  "无额度 · 提示": "No credit line · prompt",
+  "最终还款日": "Final repayment date",
+  "有效期届满": "Validity window elapsed",
+  "有效期至": "Valid until",
+  "有效期至 2027-06-30": "Valid until 2027-06-30",
+  "有效质押价值": "Pledged token value",
+  "期次": "Instalment",
+  "本位币，不折算。汇率在您提交报价的那一刻锁定，之后不再变动。": "The accounting currency; no conversion. The rate is locked at the moment you submit the quote and does not move afterwards.",
+  "本摘要不是合同，不产生法律效力": "This summary is not a contract and has no legal effect",
+  "本期不支持提前还款": "early repayment is not supported this release",
+  "本期不支持部分融资，金额固定等于这条需求的金额。": "Partial financing is not supported this release; the amount is fixed at the demand amount.",
+  "本期只有这一种还款方式。": "This is the only repayment structure this release.",
+  "本期只读、不可修改": "read-only this release",
+  "本期平台不生成融资合同": "the platform does not generate a financing contract this release",
+  "本期平台不生成融资合同。": "The platform does not generate a financing contract this release.",
+  "本期硬编码、只读展示，界面不提供可选项": "hard-coded and read-only this release; the interface offers no alternatives",
+  "本次报价": "This quote",
+  "本次报价占用 450,000.00": "This quote uses 450,000.00",
+  "本次报价金额": "This quote amount",
+  "本笔业务已终结": "This deal has ended",
+  "本笔结算币种为": "The settlement currency for this deal is",
+  "本表": "this table",
+  "本金 300,000.00　利息 23,020.83　合计 323,020.83": "Principal 300,000.00　Interest 23,020.83　Total 323,020.83",
+  "本金 500,000.00　利息 34,000.00　合计 534,000.00": "Principal 500,000.00　Interest 34,000.00　Total 534,000.00",
+  "本金计量口径": "How the principal is measured",
+  "本页": "this page",
+  "机构企业主体全称": "the institution's full legal entity name",
+  "机构按此金额放款": "the institution disburses this amount",
+  "查看商务条款摘要": "Review the commercial terms summary",
+  "核定之后，您对 瑞和能源装备（演示） 的": "Once granted, your",
+  "正常": "Normal",
+  "汇出行手续费、中转行扣费、收款行入账费；中转行扣费通常逐笔发生且事前不告知": "the sending bank's fee, intermediary bank deductions and the receiving bank's credit fee; intermediary deductions usually happen per transfer and are not disclosed in advance",
+  "汇率": "FX rate",
+  "汇率快照": "FX snapshot",
+  "池内质押够覆盖这笔业务": "the pool holds enough pledged value to cover this deal",
+  "没有账户簿": "there is no address book",
+  "游客": "Guest",
+  "点击上传双方盖章件": "Click to upload the contract signed and stamped by both parties",
+  "版本": "Version",
+  "珠三角家电应收账款池": "Pearl River Delta home appliance receivables pool",
+  "生效 2026-08-25 11:00 UTC+8 · 平台汇率管理 · 中间价 · FX-20260825-T1100": "effective 2026-08-25 11:00 UTC+8 · Platform FX management · mid rate · FX-20260825-T1100",
+  "生效 2026-09-04 19:05 UTC+8 · 平台汇率管理 · 中间价 · FX-20260904-T1905": "effective 2026-09-04 19:05 UTC+8 · Platform FX management · mid rate · FX-20260904-T1905",
+  "生效 2026-09-08 14:20 UTC+8 · 平台汇率管理 · 中间价 · FX-20260908-T1420": "effective 2026-09-08 14:20 UTC+8 · Platform FX management · mid rate · FX-20260908-T1420",
+  "留痕": "on record",
+  "的可用授信不够覆盖本次报价金额。": "does not have enough available credit to cover this quote.",
+  "盖章件由": "The signed contract is reviewed by",
+  "知道了": "Got it",
+  "确认接受": "Confirm acceptance",
+  "立即登录": "Sign in",
+  "第 1 期": "Instalment 1",
+  "第 2 期": "Instalment 2",
+  "第 3 期": "Instalment 3",
+  "等于该融资项目的截止日期，跟着项目走，不单独设置。": "equal to the project's own end date; it follows the project and is not set separately.",
+  "等于这条需求的金额，本期不支持部分融资": "equal to the demand amount; partial financing is not supported this release",
+  "结算 200,000.00 USD · 年化 7.90%": "Settlement 200,000.00 USD · APR 7.90%",
+  "结算 300,180.11 USDT · 年化 8.50%": "Settlement 300,180.11 USDT · APR 8.50%",
+  "结算 500,000.00 USD · 年化 7.20%": "Settlement 500,000.00 USD · APR 7.20%",
+  "结算币种与结算金额": "Settlement currency and amount",
+  "结算币种与金额": "Settlement currency and amount",
+  "结算币种金额不参与任何合计——跨币种不得求和": "settlement-currency amounts never enter a total — figures in different currencies must not be summed",
+  "结算用的币种。记账一律按 USD。": "The currency used for settlement. Accounting is always in USD.",
+  "结算金额": "Settlement amount",
+  "自动失效": "expire automatically",
+  "自动失效。资产方在这之前没有处理，需求就自动放开、您的额度也自动还回来。": "expires automatically. If the asset owner has not acted by then, the demand reopens and your credit is returned.",
+  "至少到城市与国家/地区": "at least city and country/region",
+  "若": "If",
+  "若您的开户行需要通过中转行接收外币汇款，请填写；不确定时请咨询开户行。部分走廊缺了中转行汇款会被退回或长期滞留，而": "Fill this in if your bank needs an intermediary to receive foreign-currency transfers; ask your bank if you are unsure. On some corridors a missing intermediary causes the transfer to be returned or held for a long time, and",
+  "融资上限": "Borrowing cap",
+  "融资业务编号": "Financing deal ID",
+  "融资利率": "Financing rate",
+  "融资币种": "Financing currency",
+  "融资报价": "Quote",
+  "融资报价在详情页的操作区内以弹窗完成，不跳离详情页。这里是它下面那层详情页的位置。": "Quoting happens in a layer over the actions panel of the project detail page and never navigates away from it. This is where that detail page would sit underneath.",
+  "融资金额": "Financing amount",
+  "融资金额 ÷ 汇率 0.9994": "financing amount ÷ FX rate 0.9994",
+  "融资金额 ÷ 汇率 1.0000": "financing amount ÷ FX rate 1.0000",
+  "融资项目编号": "Project ID",
+  "融资项目都用这一条额度，不必逐个项目重复核定。": "financing projects all draw on this one credit line; you do not have to grant credit project by project.",
+  "被": "Locked by",
+  "西部能源设备应收账款池": "Western energy equipment receivables pool",
+  "计息区间与天数": "Accrual period and days",
+  "计息规则": "Interest rule",
+  "计息规则以双方签署的融资合同为准": "the interest rule follows the financing contract signed by the two parties",
+  "计息规则以双方签署的融资合同为准。": "The interest rule follows the financing contract signed by the two parties.",
+  "该报价已处理，不再计时": "This quote has been dealt with; the clock has stopped",
+  "该报价，需求将立即回到可被报价的状态，在途报价金额全额释放。": "this quote, and the demand returns to quotable immediately with the quoted amount released in full.",
+  "质押覆盖状态": "Pledge coverage status",
+  "资产方": "Asset owner",
+  "资产方企业主体": "Asset-owner entity",
+  "资产方可": "The asset owner may",
+  "资产方（晟远科技（演示））": "the asset owner 晟远科技（演示）",
+  "资金方": "Funder",
+  "资金方企业主体": "Funder entity",
+  "起，已锁定": ", held for",
+  "跨境手续费 · 由您承担": "Cross-border fees · borne by you",
+  "跨境手续费承担方": "Who bears the cross-border fees",
+  "身份": "Role",
+  "返回融资项目详情": "Back to the project detail page",
+  "还差": "short by",
+  "还款方式": "Repayment structure",
+  "还款类型": "Repayment type",
+  "这个操作只对资金方开放": "This action is for funders only",
+  "这份报价将在": "This quote will",
+  "这张表整表未生效。": "This whole table is indicative and not in force.",
+  "这是平台侧成本最低、唯一可得的\"合同与业务数据相关联\"的痕迹 —— 线下合同平台看不见，没有这条声明，纠纷时平台连\"双方是照着这组数字签的\"都举证不出来。": "This is the cheapest and only record the platform can obtain that ties the contract to the deal data — the platform never sees the offline contract, and without this declaration it could not even show that the two parties signed against these numbers.",
+  "这条同样写进下一步的商务条款摘要 —— 合同平台看不见，摘要是唯一能把\"手续费承担方\"与\"本金按融资金额计\"带进线下合同正文的地方。": "This also goes into the commercial terms summary in the next step — the platform never sees the contract, and the summary is the only place that can carry \"who bears the fees\" and \"principal measured on the financing amount\" into the offline contract.",
+  "这笔业务的处理只属于该项目的资产方（晟远科技（演示））。当前身份是「北岸融资租赁（演示）」。": "Acting on this deal is for the project's asset owner 晟远科技（演示） only. You are signed in as 北岸融资租赁（演示）.",
+  "追加额度": "Add credit",
+  "退汇手续费照样由资产方承担": "the return-transfer fee is still borne by the asset owner",
+  "选填": "Optional",
+  "重新核定": "Re-grant",
+  "链": "Chain",
+  "锁定信息": "Lock information",
+  "锁定信息的起算点": "the start of the lock clock",
+  "锁定，自": ", since",
+  "长三角精密零部件应收账款池": "Yangtze Delta precision component receivables pool",
+  "随时可用": "available at any time",
+  "随时拒绝": "reject at any time",
+  "项目融资余额": "Outstanding financing",
+  "须通过户名一致性校验": "must pass the name-consistency check",
+  "预填可改 · 必须逐笔显式确认": "prefilled and editable · each field must be confirmed explicitly",
+  "预计 · 未生效": "Indicative · not in force",
+  "预计放款日 2026-09-04": "Expected disbursement date 2026-09-04",
+  "预计放款日 2026-09-08": "Expected disbursement date 2026-09-08",
+  "预计还款日": "Expected repayment date",
+  "额度不足 · 提示": "Credit short · prompt",
+  "额度够 · 直接报价": "Credit sufficient · quote directly",
+  "额度已于": "The credit line expired on",
+  "额度过期 · 提示": "Credit expired · prompt",
+  "（未勾选时「确认接受」不可提交）": "(Confirm acceptance stays disabled until this is ticked)",
+  "（＝ 本次报价提交日）试算：报价提交那一刻商务条款固化、汇率快照锁定，用同一时刻做基准，双方看到的是同一套数。": "(= the day this quote is submitted). At the moment of submission the commercial terms are fixed and the FX snapshot is locked; using that same moment as the baseline means both sides see one set of numbers.",
+  "＋ 剩余": "＋ left",
+  "，不取任务实际执行时刻。": ", not the moment the job happens to run.",
+  "，全部": ", all of them",
+  "，合同由双方在平台外自行拟定与签署。": ". The contract is drafted and signed by the two parties outside the platform.",
+  "，差别只在状态落点与有没有原因：拒绝是您的意思表示（有原因、对机构可见、计入拒绝率），届满是系统事件（无原因、不计入拒绝率）。": ". The only differences are the state it lands in and whether there is a reason: a rejection is your decision (it has a reason, the institution can see it, and it counts towards the rejection rate); an elapsed window is a system event (no reason, not counted).",
+  "，平台只做两件事：提供上一步的商务条款摘要让线下合同与平台记录对得上，以及在这里承接盖章件上传。": ". The platform does exactly two things: it gives you the commercial terms summary in the previous step so the offline contract matches the platform record, and it accepts the signed contract here.",
+  "，收款地址默认为贵司的": ", the receiving address defaults to your",
+  "，服务端不设冷却期、不做理由审核。拒绝与 168 小时届满对额度与项目的后果": ". The server imposes no cooling-off period and does not vet the reason. For credit and for the project, a rejection and an elapsed 168-hour window have",
+  "，由系统自动执行，不依赖任何人登录。失效时间取": ", executed by the system without anyone needing to be signed in. The expiry time is taken from",
+  "，需求随即回到可被报价的状态。": ", and the demand returns to quotable.",
+  "：在放款环节承接处置能力之前，上传一份错误的盖章件，系统层面不会有任何人被要求去看它；机构可以选择不放款，但平台": ": until the disbursement stage gains the ability to handle it, uploading the wrong contract means no one is required by the system to look at it. The institution can decline to disburse, but the platform",
+  "：填到第二步离开页面，再次进入时已确认的账户与已完成的步骤保留，不要求从头再来。": ": if you leave after step two, the account you confirmed and the steps you finished are still there when you come back — you do not start over.",
+  "：您拒绝报价或报价有效期届满时，它随之消失、不留残留期次。": ": if you reject the quote or the validity window elapses, it disappears with no leftover instalments.",
+  "：无原因可填、": ": there is no reason to record, and it is",
+  "：无多账户列表、无账户管理入口、无\"设为默认\"开关。本期只有\"上一次用过的那一个\"作为预填；多账户管理属账户设置模块的能力。": ": no list of accounts, no account-management entry, no \"set as default\" switch. This release prefills only the one you used last; managing multiple accounts belongs to the account-settings module.",
+  "：本模块的职责到\"收下文件、校验格式与大小、置业务为待放款、对机构可见\"为止。上传后这笔业务直接进入待放款，": ": this module's job ends at accepting the file, checking its format and size, moving the deal to awaiting disbursement and making it visible to the institution. After upload the deal goes straight to awaiting disbursement,",
+  "：还本金只发生在融资项目到期之后，每期的还款入口在该期应还日前 3 个自然日开启，逐期开窗、不可跨期合并。本卡的展示事实与展示时间在您接受报价时": ": principal is only repaid after the project matures, and each instalment's repayment entry opens 3 calendar days before its due date — one window per instalment, never merged. What this card shows, and when it shows it, are fixed when you accept the quote",
+  "；但主流银行不需要它，强制必填会让大多数用户去向银行索要一个并不存在的号。": "; but mainstream banks do not need one, and making it mandatory would send most users to their bank asking for a number that does not exist."
+};
+
+/* 渲染后把 EN 视图里的中文换成英文。走文本节点 + 三个属性，
+   不动源码里的中文字面量（它们仍是唯一事实源）。
+   时长这类由数字拼出来的串走正则，其余走 CQ_EN 精确匹配。 */
+function cqEnStr(t){
+  if(CQ_EN[t]) return CQ_EN[t];
+  var m1 = t.match(/^(\d+) 天 (\d+) 小时$/);   if(m1) return m1[1] + (m1[1] === '1' ? ' day ' : ' days ') + m1[2] + ' h';
+  var m2 = t.match(/^(\d+) 小时 (\d+) 分钟$/);  if(m2) return m2[1] + ' h ' + m2[2] + ' min';
+  var m3 = t.match(/^剩余 (.+)$/);
+  if(m3){ var inner = cqEnStr(m3[1]); return inner == null ? null : inner + ' left'; }
+  return null;
+}
+function cqEnPatch(){
+  if(!S || S.lang !== 'en') return;
+  var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), n;
+  while((n = w.nextNode())){
+    var p = n.parentNode && n.parentNode.nodeName;
+    if(p === 'SCRIPT' || p === 'STYLE') continue;
+    var raw = n.nodeValue, t = raw.trim();
+    if(!t || !/[\u4e00-\u9fff]/.test(t)) continue;
+    var en = cqEnStr(t);
+    if(en != null) n.nodeValue = raw.replace(t, en);
+  }
+  ['title', 'aria-label', 'placeholder'].forEach(function(k){
+    Array.prototype.forEach.call(document.querySelectorAll('[' + k + ']'), function(e){
+      var v = e.getAttribute(k); if(!v || !/[\u4e00-\u9fff]/.test(v)) return;
+      var en = cqEnStr(v.trim()); if(en != null) e.setAttribute(k, en);
+    });
+  });
+}
+
 var mod = {
   end:'asset', home:'P-LS-05',
   dict:{ en:{}, zh:{} },
@@ -1503,7 +1891,7 @@ var mod = {
     'P-LS-06':[['default','Default','默认'],['loading','Loading','加载中'],['error','Load failed','加载失败']]
   },
   state:function(){
-    return { lang:'zh', role:'fund',
+    return { lang:'en', role:'fund',
              pid:'FP-20260820-0036',          /* 默认落在「额度不足 → 追加」分支 */
              did:'FD-20260908-0061',          /* 默认落在本方提交、剩余 4 天的那笔 */
              cr:{ amtRaw:null, until:null, memo:'', confirmed:false, askedFor:null },
@@ -1512,6 +1900,7 @@ var mod = {
                   files:[], declared:false, imOpen:false, upErr:null, reject:'' },
              result:null, modal:null };
   },
+  afterRender:function(){ cqEnPatch(); },
   onBoot:function(st){
     S = st;
     /* 收款账户预填：该企业主体最近一次成功接受时使用的账户（D-FIN-94），可改 */
@@ -1611,7 +2000,7 @@ var mod = {
       var deal = findDeal(S.did);
       var v = S.ac.reject || '';
       var ok = v.trim().length >= 1 && v.trim().length <= REASON_MAX;
-      return '<div class="mask" data-act="cq.mclose"><div class="modal" role="dialog" aria-modal="true">' +
+      return '<div class="mask" data-act="cq.mclose"><div class="modal wide" role="dialog" aria-modal="true">' +
         '<div class="modal-h"><b>拒绝报价</b>' +
         '<button class="modal-x" type="button" data-act="cq.mclose" aria-label="关闭">✕</button></div>' +
         '<div class="modal-b">' +

@@ -149,34 +149,19 @@
 /* —— 长弹窗：公共 .modal 是 flex 列且 max-height:100%，但 .modal-b 没有 min-height:0，
    内容一长（解除质押里可能有三张清单）页脚就被顶出视口。只在本模块补这一条，不改公共实现。 —— */
 /* ============================================================
-   承载形态与层级（09-15 跨模块统一，与 WS-325／326／327 同一套）
+   承载形态（09-15 跨模块统一，与 WS-325／326／327 同一套）
    ------------------------------------------------------------
-   提示 = 居中弹窗 .mask.ls-dlg > .modal，560px
-   做事 = 右侧抽屉 .drawer.ls-unit，760px（窄屏 92vw）
-   公共层的层级阶梯（_shared/base.css，本模块不改它的默认值）：
-     .portal-head 60 < .mask 200 < .drawer-scrim 205 < .drawer 210 < .toasts 300
-   于是有两件事要交代：
-   ① **链上费用二次确认必须叠在做事抽屉之上**（AC-LS-32 要求提交前二次确认，
-      而它是从抽屉里点出来的）。公共 .mask 是 200，会被 .drawer 的 210 盖住、整个点不到。
-      用模块作用域的修饰类 .mask.ls-top 抬到 220，**不改公共组件的默认值**。
-      与 WS-327 的 .mask.rp-top 同形，两边保持一致。
-   ② **Toast 在 300，始终盖得住本模块的任何一层**——这是对的：
-      抽屉里提交后的结果提示必须看得见。本模块不去动它。
-   顶栏（60）在遮罩之下、开层时点不动，这是模态该有的行为，不作为缺陷处理。
+   提示 = 居中弹窗 .modal.wide（560）　做事 = 右侧抽屉 .drawer.wide（760 / 92vw）
+   两个尺寸档与底部动作条 .drawer-f 现在都在公共层（_shared/base.css），
+   本模块不再自带 .ls-unit / .ls-unit-f / .ls-dlg 这三个平行写法。
+   层级也回到公共层的一条阶梯（tokens.css 的 --z-*）：
+     粘性头部 60 < 抽屉遮罩 200 < 抽屉 210 < 弹窗遮罩 300 < 评审 350 < Toast 400
+   **弹窗已高于抽屉**，本模块 2026-09-15 那条 .mask.ls-top{z-index:220} 的本地补丁
+   已随之撤除——根在公共层，补丁不该留在四个模块里各写一份。
+   顶栏在遮罩之下、开层时点不动，这是模态该有的行为，不作为缺陷处理。
    ============================================================ */
-.mask.ls-dlg > .modal{max-width:560px}
-.mask.ls-top{z-index:220}
-
-.drawer.ls-unit{width:760px;max-width:92vw}
-.drawer.ls-unit .drawer-h b{display:flex;align-items:baseline;gap:10px;min-width:0}
-.drawer.ls-unit .drawer-h .sb{font-size:11.5px;font-weight:500;color:var(--faint);
-  font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.drawer.ls-unit .drawer-b{padding:var(--sp-5) 18px}
-/* 底部按钮条：与公共 .modal-f 同一套视觉，抽屉里没有现成的 */
-.ls-unit-f{display:flex;gap:9px;justify-content:flex-end;padding:12px 18px;
-  border-top:1px solid var(--border);background:var(--card-2)}
 /* 抽屉里的两张代币表都可能很宽，横向滚动交给 .tablewrap，纵向交给 .drawer-b */
-.drawer.ls-unit .tablewrap{max-width:100%}
+.drawer.wide .tablewrap{max-width:100%}
 
 .mask > .modal{max-height:calc(100vh - 48px)}
 .modal > .modal-b{flex:1 1 auto;min-height:0}
