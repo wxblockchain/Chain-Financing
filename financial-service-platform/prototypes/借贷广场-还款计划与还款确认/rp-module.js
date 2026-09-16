@@ -505,7 +505,7 @@ function repayAction(d, p){
                  withTz(s.rec.at) + ') awaiting confirmation. One instalment carries at most one ' +
                  'valid repayment record; a submitted record cannot be edited or withdrawn.',
                  '第 ' + p.seq + ' 期已提交还款记录（' + s.rec.id + '，' + withTz(s.rec.at) +
-                 '），正在等待资金方确认。一个期次至多一条有效还款记录（D-RP-44），' +
+                 '），正在等待资金方确认。一个期次至多一条有效还款记录，' +
                  '提交后不可修改、不可撤回。');
   } else if(s.st === 'S-RP-3'){
     a.brief = L('Already settled','该期已结清');
@@ -564,7 +564,6 @@ function markRow(tag, body, meta){
   return '<div class="ln-mark"><span class="tg">' + E(tag) + '</span><div class="bd">' + body +
     (meta ? '<div class="mt">' + meta + '</div>' : '') + '</div></div>';
 }
-function annot(body){ return '<div class="ln-annot">' + body + '</div>'; }
 function sec(title, count, body, tint){
   return '<div class="u-sec' + (tint ? ' tint' : '') + '">' +
     (title ? '<div class="sh"><b>' + title + '</b>' + (count ? '<span class="c">' + count + '</span>' : '') + '</div>' : '') +
@@ -579,14 +578,8 @@ function blockedBtn(a, cls){
 /* 本模块不触达链上（承接 D-FIN-67 / X-LS-52） */
 function noChain(what){
   return '<p class="hint" style="margin-top:12px">' +
-    L('This step performs no on-chain operation and consumes no gas: the repayment transfer happens ' +
-      '<b>outside the platform</b> (your own bank or wallet) and the platform only records the hash ' +
-      'and the chain as text. This module also <b>does not release or withdraw any pledge</b> — ' +
-      'that belongs to the financing-demand module.',
-      '本步骤（' + what[1] + '）<b>不产生任何链上操作、不消耗 gas</b>：还款的转账发生在' +
-      '<b>平台之外</b>（您自己的钱包或银行），平台只收下哈希与链的文本记录。' +
-      '本模块<b>不发起任何链上调用</b>，也<b>不释放、不提取任何质押</b>——' +
-      '质押的释放与提取由融资需求与代币质押模块承接（D-RP-39）。') + '</p>';
+    L('This step performs no on-chain operation and consumes no gas.',
+      '本步骤（' + what[1] + '）<b>不产生任何链上操作、不消耗 gas</b>。') + '</p>';
 }
 
 /* ---- 计息规则常驻条（RP-18 / AC-RP-04）。在计划抽屉里它固定在顶部、不随表体滚走 ---- */
@@ -685,112 +678,11 @@ function planTable(d, plan, curSeq){
         L('principal ' + amt(sumP) + ' · interest ' + amt(sumI),
           '本金 ' + amt(sumP) + ' · 利息 ' + amt(sumI)) + '</td></tr></tfoot></table></div>' +
     '<p class="hint" style="margin-top:9px">' +
-      L('Totals are given <b>within this deal only</b> and on the <b>' + CCY + '</b> ledger basis. ' +
-        '<b>Amounts across deals or across currencies are never summed</b>: one project may carry several ' +
-        'deals settling in different currencies and funded by different institutions, so a combined total ' +
-        'would be wrong — no such view exists anywhere in this module.',
-        '合计<b>只在选定笔内</b>、一律按 <b>' + CCY + '</b> 记账口径给出。' +
-        '<b>跨笔、跨币种一律不得求和</b>：同一项目可能有多笔业务、结算币种不同、出资机构也不同，' +
-        '把它们加在一起是错的——本模块不存在这样的汇总视图（D-RP-40 / D-RP-81 ③）。') + '</p>';
+      L('Totals are given <b>within this deal only</b> and on the <b>' + CCY + '</b> ledger basis.',
+        '合计<b>只在选定笔内</b>、一律按 <b>' + CCY + '</b> 记账口径给出。') + '</p>';
 }
 
 
-/* ---- 两条轴：计息停止点 vs 还款记录终结点（D-FIN-11 / D-RP-29 / D-RP-30 / AC-RP-09）----
-   本模块最不能被优化掉的一条，因此给它一个独立的形状而不是一段文字。
-   形状与设计意图沿用 v1.0，一个都没动。 */
-function freezeCard(d, p){
-  var s = pState(d, p), k = clock(d, p);
-  var submitted = !!s.rec, confirmed = submitted && !!s.rec.confirmAt;
-  return '<div class="rp-freeze"><div class="fh">' +
-    L('Two different stops: when the clock stops, and when the record ends',
-      '计息停止点与还款记录终结点是两件事') +
-    '<span class="at">D-FIN-11 · D-RP-29</span></div>' +
-
-    /* 轴一：时间的停止 —— 停在提交时刻 */
-    '<div class="rp-ax"><div class="an"><span class="t">' +
-      L('Axis 1 · the clock stops','轴一 · 时间的停止') + '</span><span class="s">' +
-      L('stops the moment the <b>asset owner submits</b> (RM-06, server time)',
-        '停在<b>资产方提交成功</b>的那一刻（RM-06 服务端时间）') + '</span></div>' +
-      '<div class="track">' +
-        '<div class="seg2"><div class="sk">' + g('dueDate') + '</div><div class="sv">' + p.due + '</div>' +
-          '<div class="sx">' + L('Submitting any time that day is not late. No grace period.',
-                                 '当日 24:00 前提交即不逾期；不设宽限期（D-RP-34）。') + '</div></div>' +
-        '<div class="seg2' + (s.overdue ? ' on' : '') + '"><div class="sk">' +
-          L('Overdue accrual','逾期累加') + '</div><div class="sv">' +
-          (s.overdue ? L(s.odDays + ' days overdue', '已逾期 ' + s.odDays + ' 天') : L('not triggered','未发生')) + '</div>' +
-          '<div class="sx">' + (s.overdue
-            ? L('+1 per day from 00:00 the day after the due date' + (submitted ? '; already stopped.' : '; still counting.'),
-                '自应还日次日 00:00 起每日 +1' + (submitted ? '，已停止累加。' : '，当前仍在累加。'))
-            : L('This instalment never carried an overdue mark.','该期未触发逾期标记。')) + '</div></div>' +
-        '<div class="seg2 stop"><div class="sk">' + L('Stopped at','停止时刻') + '</div>' +
-          '<div class="sv">' + (submitted ? s.rec.at : L('not submitted yet','尚未提交')) + '</div>' +
-          '<div class="sx">' + (submitted
-            ? L('Days overdue <b>frozen at ' + s.odDays + '</b> and never increment again; no further ' +
-                'overdue events or notices are produced for this instalment.',
-                '逾期天数<b>冻结在 ' + s.odDays + ' 天</b>，此后不再 +1；该期不再产生任何新的逾期事件与逾期通知。')
-            : L('Stops the instant the submission succeeds — regardless of whether the funder confirms.',
-                '提交成功的同一刻停止，与资金方确认与否无关。')) + '</div></div>' +
-      '</div>' +
-      '<div class="mark2"><i aria-hidden="true">■</i><span>' +
-        L('The stop is set by <b>RM-06 submission time</b> — <b>not</b> by the funder’s confirmation, ' +
-          'and <b>not</b> by the repayment time the submitter typed in (RM-05).',
-          '停止点由 <b>RM-06 提交时间</b> 决定，<b>不是</b>资金方的确认时刻，' +
-          '也<b>不是</b>提交方自己填写的还款时间（RM-05）。') + '</span></div></div>' +
-
-    /* 轴二：状态的终结 —— 停在确认时刻 */
-    '<div class="rp-ax"><div class="an"><span class="t">' +
-      L('Axis 2 · the record ends','轴二 · 状态的终结') + '</span><span class="s">' +
-      L('ends the moment the <b>funder confirms receipt</b> (RM-18)',
-        '停在<b>资金方确认收到还款</b>的那一刻（RM-18）') + '</span></div>' +
-      '<div class="track">' +
-        '<div class="seg2' + (!submitted ? ' on' : '') + '"><div class="sk">S-RP-1 ' + txt(RP_ST['S-RP-1'][0]) +
-          '</div><div class="sv">' + (submitted ? L('left','已离开') : L('current','当前')) + '</div>' +
-          '<div class="sx">' + L('The repayment window opens per instalment.','还款入口按期次逐个开窗。') + '</div></div>' +
-        '<div class="seg2' + (submitted && !confirmed ? ' on' : '') + '"><div class="sk">S-RP-2 ' +
-          txt(RP_ST['S-RP-2'][0]) + '</div><div class="sv">' +
-          (submitted ? (confirmed ? L('left','已离开') : L('current','当前')) : L('not reached','未到达')) + '</div>' +
-          '<div class="sx">' + (submitted && !confirmed
-            ? L('Window closes ' + s.limitAt + '; ') + (k.over
-                ? L('elapsed ' + k.overDays + ' days ago — <b>status, amounts and permissions all unchanged</b>.',
-                    '已超过 ' + k.overDays + ' 天，<b>状态不变、额度不动、权限不变</b>。')
-                : L(fmtDur(k.leftMin) + ' remaining. Expiry only sends a notice; it <b>never counts as confirmation</b>.',
-                    '剩余 ' + fmtDur(k.leftMin) + '。到期只发通知，<b>不自动视为确认</b>。'))
-            : L('Neither credit figure moves during this leg.','两个额度量在这一段<b>一个都不动</b>。')) + '</div></div>' +
-        '<div class="seg2 stop"><div class="sk">S-RP-3 ' + txt(RP_ST['S-RP-3'][0]) + '</div>' +
-          '<div class="sv">' + (confirmed ? s.rec.confirmAt : L('awaiting the funder','待资金方确认')) + '</div>' +
-          '<div class="sx">' + (p.principal
-            ? L('Instalment carrying principal: <b>' + G.outstanding[0] + '</b> and <b>' + G.creditUsed[0] +
-                '</b> step down by the same amount at this instant.',
-                '含本金期次：同刻 <b>项目融资余额</b> 与 <b>授信占用额</b> 等额递减。')
-            : L('Interest-only instalment: <b>neither figure moves</b> — both are sums of outstanding ' +
-                'principal, and interest is not principal.',
-                '利息期结清：两个量<b>一动不动</b>——它们是未偿本金的合计，利息不在其中。')) + '</div></div>' +
-      '</div>' +
-      '<div class="mark2"><i aria-hidden="true">■</i><span>' +
-        L('Settling the instalment, stepping the credit figures down and moving the deal to settled ' +
-          '<b>all wait for the funder</b> — that part is not weakened.',
-          '期次结清、额度递减、业务进 S-FD-8 <b>都必须等资金方确认</b>——这一条没有被削弱。') +
-      '</span></div></div>' +
-
-    '<div class="ff">' + (S.role === 'fund'
-      ? L('In one line: <b>confirmation decides whether this repayment counts; submission decides where ' +
-          'the clock stopped.</b> The counterparty’s overdue days froze the moment they submitted and ' +
-          '<b>will not grow while you take your time</b> — so check the actual receipt properly rather ' +
-          'than confirming to beat a deadline.',
-          '一句话：<b>确认决定"这笔还款算不算数"，提交决定"时间停在哪一刻"。</b>' +
-          '对方的逾期天数已经在他提交的那一刻定住了，<b>不会因为您暂时不确认而继续增加</b>；' +
-          '您也不会因为多花几天核对而让他多背一天逾期。请按实际到账情况决定是否确认，不要为了"赶时间"而确认。')
-      : L('In one line: <b>confirmation decides whether this repayment counts; submission decides where ' +
-          'the clock stopped.</b> Once you have paid and filed the record, <b>the funder not confirming ' +
-          'cannot make you pay more interest and cannot keep your overdue days growing</b>. Each ' +
-          'instalment’s interest was fixed when the schedule was finalised — it is <b>not</b> recomputed ' +
-          'per day, so "submit early and pay less" or "submit late and pay more" simply do not exist here.',
-          '一句话：<b>确认决定"这笔还款算不算数"，提交决定"时间停在哪一刻"。</b>' +
-          '您把钱打了、记录提交了，<b>机构不确认不会让您多付利息、也不会让您继续背逾期</b>。' +
-          '本期每期利息在计划定稿时就已固定（D-RP-09），<b>不按日重算</b>——' +
-          '"提前几天提交少付利息"或"晚几天提交多付利息"在本期都不存在。')) +
-    '</div></div>';
-}
 
 /* ---- 客服邮箱卡（D-RP-55）：本期还款异议的唯一入口 ---- */
 function mailCard(d, p, where){
@@ -830,11 +722,8 @@ function mailCard(d, p, where){
 function payeeRo(d, visible){
   if(!visible){
     return '<div class="rp-acct"><div class="lock"><i aria-hidden="true">▤</i><span>' +
-      L('<b>The payee account is not public.</b> It is visible only to the two parties of this deal and ' +
-        'is filtered server-side by ownership — the fields are simply absent from the response, not ' +
-        'hidden by the front end.',
-        '<b>机构还款收款账户不对外公开</b>。它只对该笔业务的双方可见，由服务端按归属过滤——' +
-        '接口响应里根本不含这些字段，不是前端隐藏（D-RP-41 / AC-LS-131）。') + '</span></div></div>';
+      L('<b>The payee account is not public.</b> It is visible only to the two parties of this deal.',
+        '<b>机构还款收款账户不对外公开</b>，只对该笔业务的双方可见。') + '</span></div></div>';
   }
   var f = isFiat(d);
   /* 法币五项整组（含中转行，LN-15）；数币取绑定钱包地址（LN-16），链为常量 ETH */
@@ -849,20 +738,10 @@ function payeeRo(d, visible){
   return '<div class="rp-acct"><div class="ag">' + grid + '</div>' +
     '<div class="lock"><i aria-hidden="true">⊘</i><span>' +
     L('This is the <b>repayment payee account the funder registered at disbursement</b> (' +
-      (f ? 'LN-15' : 'LN-16') + '); it <b>cannot be changed or replaced here</b>. There is <b>no edit ' +
-      'control in this block</b> — not a greyed-out input, no input at all. Being able to change it ' +
-      'would be exactly the phishing opening this rule exists to close. ' +
-      (f ? 'The fiat group is five fields including the <b>correspondent bank</b> — one more than the ' +
-           'asset-owner side, deliberately so.'
-         : 'The address comes from the funder’s bound wallet and is read-only; the chain is the ' +
-           'constant ' + CHAIN + '.') +
+      (f ? 'LN-15' : 'LN-16') + '); it <b>cannot be changed or replaced here</b>.' +
       ' Values are masked per the i18n baseline.',
       '该账户为<b>资金方放款时登记的还款收款账户</b>（' + (f ? 'LN-15' : 'LN-16') +
-      '），还款时<b>不可修改、不可另填</b>。本区<b>没有任何编辑控件</b>——不是置灰的输入框，' +
-      '是不存在输入框。可改就等于给了钓鱼的口子（D-FIN-24）。' +
-      (f ? '法币是<b>户名 / 账号 / SWIFT / 开户行 / 中转行</b>五项整组——比资产方侧多一个中转行，' +
-           '两侧规格有意不同。'
-         : '数币取资金方<b>绑定钱包地址</b>、只读；链是常量 ' + CHAIN + '。') +
+      '），还款时<b>不可修改、不可另填</b>。' +
       '地址与账号按国际化基线脱敏展示。') + '</span></div></div>';
 }
 
@@ -878,11 +757,8 @@ function hashBlock(rec, compact){
     '<span class="nv">' + L('The platform has not verified this transaction; the link is for your own check.',
                             '平台未核验该交易，链接仅供自行查验') + '</span></div>' +
     '<p class="hint" style="margin-top:8px">' +
-      L('This round the hash is <b>format-checked only, never verified on chain</b>: no indexer is wired ' +
-        'in, neither blocking nor advisory. That means a well-formed but non-existent hash can be ' +
-        'submitted — the risk is caught by human judgement at confirmation.',
-        '本期<b>只做格式校验、不做链上核验</b>：不接索引服务，既不做阻断式也不做告警式（D-RP-42）。' +
-        '这意味着提交方可以填一个格式正确但不存在的哈希——这个风险由确认环节的人工判断兜底。') +
+      L('This round the hash is <b>format-checked only, never verified on chain</b>.',
+        '本期<b>只做格式校验、不做链上核验</b>。') +
     '</p></div>';
 }
 
@@ -891,16 +767,11 @@ function timesPair(rec){
   return '<div class="ln-pair">' +
     '<div class="t"><div class="k">' + g('repaidAt') + ' · RM-05</div><div class="v">' + withTz(rec.given) + '</div>' +
       '<div class="src">' + L('Source: <b>typed in by the submitter</b>. May be in the past, never later ' +
-        'than the submission instant. <b>No deadline or interest calculation uses it</b> — it is a ' +
-        'reconciliation reference only.',
-        '来源：<b>提交方填写</b>。可为过去时间、不得晚于提交时刻。' +
-        '<b>任何时效与计息都不使用它</b>——它只是业务参考与对账依据（D-FIN-21）。') + '</div></div>' +
+        'than the submission instant; a reconciliation reference only.',
+        '来源：<b>提交方填写</b>。可为过去时间、不得晚于提交时刻，仅作对账参考。') + '</div></div>' +
     '<div class="t auth"><div class="k">' + g('submittedAt') + ' · RM-06</div><div class="v">' + withTz(rec.at) + '</div>' +
-      '<div class="src">' + L('Source: <b>recorded by the server</b>. This is the authoritative time in ' +
-        'this module: <b>the instant overdue accrual stops</b>, and <b>the start of the repayment ' +
-        'confirmation window</b>.',
-        '来源：<b>服务端记录</b>。本模块的权威时间：<b>停止逾期累加的时点</b>，' +
-        '以及<b>还款确认时限的起算点</b>。') + '</div></div></div>';
+      '<div class="src">' + L('Source: <b>recorded by the server</b>.',
+        '来源：<b>服务端记录</b>。') + '</div></div></div>';
 }
 
 
@@ -974,49 +845,27 @@ function hostPage(){
     marks += markRow(g('overdueMark'),
       L('Instalment ' + gp.overdue.seq + ' (due ' + gp.overdue.due + ') is <span class="day">' +
         gp.overdue.days + '</span> days overdue, +1 per day, <b>frozen the moment a repayment record ' +
-        'is submitted</b>. The repayment window for an overdue instalment <b>stays open</b> — closing ' +
-        'it would mean refusing to let anyone pay.',
+        'is submitted</b>. The repayment window for an overdue instalment <b>stays open</b>.',
         '第 ' + gp.overdue.seq + ' 期（应还日 ' + gp.overdue.due + '）已逾期 <span class="day">' +
-        gp.overdue.days + '</span> 天，逾期天数每日 +1，<b>提交还款记录即冻结</b>（D-FIN-11）。' +
-        '该期还款入口<b>保持开启</b>——关掉就等于不让人还钱。'),
-      L('Overdue is a <b>parallel mark, not a status</b>: the deal is still S-FD-6. The platform ' +
-        '<b>computes no penalty interest, shows no penalty amount and rolls nothing into the amount ' +
-        'due</b>, and overdue <b>triggers no disposal</b> of the pledge.',
-        '逾期是<b>并行标记不是状态</b>：业务状态仍是 S-FD-6 还款中（D-FIN-09 / D-RP-35）。' +
-        '平台<b>不计算罚息、不展示罚息金额、不把罚息并入任何应还金额</b>（X-LS-45），' +
-        '逾期也<b>不触发任何质押处置</b>（X-LS-46）。'));
+        gp.overdue.days + '</span> 天，逾期天数每日 +1，<b>提交还款记录即冻结</b>。' +
+        '该期还款入口<b>保持开启</b>。'));
   if(d.matured)
     marks += markRow(L('Matured · run-off','已到期 · 存量处理中'),
       L('The financing project matured on <b>' + d.fd46 + '</b>. What stops is accepting new quotes and ' +
         'republishing; <b>existing deals keep performing as normal</b>.',
         '融资项目已于 <b>' + d.fd46 + '</b> 到期。停止的是「接受新报价 / 再次发布」，' +
-        '<b>存量融资业务照常履约中</b>。'),
-      L('This is the <b>normal path</b>, not an exception: principal is only ever repaid after the ' +
-        'project matures. Shown neutrally — no alert colour, no warning icon.',
-        '这是<b>常态路径</b>，不是异常：还本本来就发生在融资项目到期之后（X-LS-06 / D-FIN-47）。' +
-        '一律中性呈现，不用告警色、不写"项目已过期"（AC-RP-18）。'));
+        '<b>存量融资业务照常履约中</b>。'));
   if(!d.planReady && d.st === 'S-FD-6')
     marks += markRow(L('Schedule being generated','还款计划生成中'),
       L('Disbursement confirmation completed at <b>' + withTz(d.fd35) + '</b>; the repayment schedule ' +
         'is being generated and will appear here once ready.',
-        '放款确认已于 <b>' + withTz(d.fd35) + '</b> 完成，还款计划正在生成，就绪后本段自动显示。'),
-      L('Credit transfer and status migration <b>are not rolled back</b> for this: the money arrived and ' +
-        'the debt exists. <b>No error is shown and no retry button is offered</b> — retrying is the ' +
-        'platform’s job. Until the schedule exists there is nothing to repay, and <b>no overdue mark ' +
-        'can arise</b> either.',
-        '额度转移与状态迁移<b>不因此回滚</b>（承接 E-LN-13）：钱已到账、债务已成立是事实。' +
-        '这里<b>不展示错误、不给重试按钮</b>——重试是平台侧的事。' +
-        '计划就绪前没有任何期次可还，也<b>不会产生逾期</b>——逾期判定的对象是期次，而期次还不存在。'));
+        '放款确认已于 <b>' + withTz(d.fd35) + '</b> 完成，还款计划正在生成，就绪后本段自动显示。'));
   if(gp.settled)
     marks += markRow(txt(FD_ST['S-FD-8'][0]),
       L('All <b>' + gp.n + '</b> instalments are settled; the deal reached S-FD-8 on <b>' +
         withTz(d.fd47) + '</b>. Both credit figures for this deal are back to zero.',
         '全部 <b>' + gp.n + '</b> 期已结清，业务于 <b>' + withTz(d.fd47) +
-        '</b> 进入 S-FD-8 已结清（终态）。项目融资余额与授信占用额该笔已归零。'),
-      L('Settlement <b>does not move the public demand status</b> — it stays "Disbursed". That is a ' +
-        'deliberate upstream trade-off (D-RP-64): repayment progress is not expressed by the demand status.',
-        '结清<b>不驱动对外状态跃迁</b>——需求对外仍是「已放款」。这是上游刻意的取舍（D-RP-64）：' +
-        '还款进展不用需求状态表达，要看进展就来第③段或我的控制台。'));
+        '</b> 进入 S-FD-8 已结清（终态）。项目融资余额与授信占用额该笔已归零。'));
 
   var planCard = !d.planReady ? '' :
     '<div class="card">' + cardHead(g('repaySchedule'),
@@ -1041,11 +890,6 @@ function hostPage(){
         '<div class="v">' + amt(gp.unpaidPri) + '</div>' +
         '<div class="x">' + L('the summand behind both credit figures','它就是 项目融资余额 与 授信占用额 的被加数') + '</div></div>' +
     '</div>' +
-    (guest ? '<p class="hint" style="margin-top:12px">' +
-      L('<b>Not public</b> (filtered server-side, not hidden by the front end): repayment proof files, ' +
-        'transaction hash, the funder’s payee account, repayment and confirmation remarks.',
-        '<b>不公开字段</b>（服务端过滤，不是前端隐藏）：还款凭证文件、交易哈希、机构收款账户、' +
-        '还款备注与补充材料、确认备注（D-RP-41 / AC-LS-131）。') + '</p>' : '') +
     '</div></div>';
 
   /* ---- 右栏：三段式操作区 ---- */
@@ -1082,41 +926,11 @@ function hostPage(){
         '<div class="card-b">' + section3(d, demands, gp) + '</div></div>'
       : '') +
 
-    (inRepay ? '<div class="card"><div class="card-b"><p class="hint">' +
-      L('Deep links land on this page, scroll to section 3 and open the matching drawer; closing the ' +
-        'drawer keeps you here.',
-        '深链落到本页、定位到第③段并打开对应抽屉；关掉抽屉就停在这一页，不返回、不跳走。') +
-      '<br><span class="mono">deal/' + d.id + '?action=repay</span>' +
-      '<br><span class="mono">deal/' + d.id + '?action=view_schedule</span>' +
-      '<br><span class="mono">schedule/{id}?action=confirm_repayment</span></p></div></div>' : '') +
     '</aside>';
-
-  /* ---- 原型说明件：**不属于生产界面**（分册 6.6.2 的"移走"表最后一行）----
-     五个拦截点说明与两条轴示意是 PRD 条款（6.2.2 / 5.6）与原型的说明件，不是给终端用户看的
-     界面元素，因此从「立即还款」抽屉里移了出来。它们仍然要能被评审看到——规则本身一条没改，
-     只是不再摆在资产方面前。界面上保留的是它们的**效果**：未开窗 ⊘ + 原因、金额只读、
-     逾期天数那句「提交后即冻结」。 */
-  var explain = '';
-  if(inRepay && d.planReady){
-    var fp2 = gp.next || gp.await2 || gp.plan[0];
-    explain = '<div class="card ln-annot-card" style="margin-top:16px">' +
-      cardHead(L('Prototype explainers · not part of the production UI','原型说明件 · 不属于生产界面'),
-        L('PRD clauses 6.2.2 / 5.6 · moved out of the drawer in V3.4','PRD 6.2.2 / 5.6 条款 · V3.4 起移出抽屉')) +
-      '<div class="card-b">' +
-      '<p class="hint" style="margin-top:0">' +
-        L('These two are how the rules are argued, not what the asset owner is shown. They were in the ' +
-          '"Record a repayment" drawer before V3.4; the simplification moved them here. The rules ' +
-          'themselves are unchanged — their <b>effects</b> are still enforced in the drawer.',
-          '这两件是规则的论证，不是给资产方看的东西。V3.4 之前它们在「立即还款」抽屉里，' +
-          '本轮精简把它们移到这里。<b>规则本身一条没改</b>——它们的<b>效果</b>仍然在抽屉里生效。') + '</p>' +
-      '<div style="margin-top:14px">' + freezeCard(d, fp2) + '</div>' +
-      '<div style="margin-top:16px">' + stopCards(fp2) + '</div>' +
-      '</div></div>';
-  }
 
   return CF.pageStates() + head +
     (marks ? '<div style="margin-bottom:16px">' + marks + '</div>' : '') +
-    '<div class="portal-cols"><div>' + planCard + resultCard() + explain + '</div>' + rail + '</div>';
+    '<div class="portal-cols"><div>' + planCard + resultCard() + '</div>' + rail + '</div>';
 }
 
 /* ---- 第③段「还款流程」（分册 6.6.0 · F-LS-77 / D-RP-77 / D-RP-78 / D-RP-73 / D-RP-67）----
@@ -1186,7 +1000,7 @@ function section3(d, demands, gp){
         'account, so this section shows <b>one</b> entry rather than greying out each action with its own ' +
         'reason.',
         '还款计划的公开字段不登录也看得到——期次数、应还日、应还本息与合计、期次状态、逾期标记与天数。' +
-        '需要账号的只是操作，因此本段只出<b>一个</b>入口，不再逐动作 ⊘ + 独立原因（D-RP-67）。') +
+        '需要账号的只是操作，因此本段只出<b>一个</b>入口，不再逐动作 ⊘ + 独立原因。') +
       '</p></div></div>';
   }
 
@@ -1236,7 +1050,7 @@ function section3(d, demands, gp){
     (gp.settled ? '<p class="hint" style="margin:8px 0 0">' +
       L('This deal is settled, so only the read-only schedule view remains in this section — the two ' +
         'action buttons are gone for good.',
-        '本笔业务已结清，本段<b>只保留只读的「查看还款计划」</b>，两个动作按钮一律不再出现（D-RP-73）。') +
+        '本笔业务已结清，本段<b>只保留只读的「查看还款计划」</b>，两个动作按钮一律不再出现。') +
       '</p>' : '') +
     (!d.planReady ? '<p class="hint" style="margin:8px 0 0">' +
       L('The schedule is still being generated, so this section carries no action yet.',
@@ -1306,80 +1120,10 @@ function selector(cur){
         '名下所有融资业务的期次都已提交或已结清。') + '</div>' : '') +
     '</div>' +
     '<p class="hint" style="margin-top:9px">' +
-      L('<b>The first row after sorting is selected by default</b>; you may switch to any instalment ' +
-        'whose window is open. Sort keys compare in order: ① due date ascending → ② the deal’s ' +
-        '<b>actual disbursement date</b> (LN-06 submission time) ascending → ③ deal ID ascending → ' +
-        '④ instalment number ascending.<br><b>Overdue necessarily sorts above not-yet-due</b>: an overdue ' +
-        'instalment has an earlier due date, so ascending order puts it first. Sorting by "closest to ' +
-        'today" in absolute terms would put tomorrow’s instalment ahead of one 30 days overdue, and the ' +
-        'asset owner would pay the new debt while the old one keeps running — that is exactly what this ' +
-        'ordering blocks.<br><b>Instalments whose window has not opened stay visible rather than hidden</b>: ' +
-        'hiding them would make the schedule look short a few instalments.',
-        '<b>默认选中排序后的第一条</b>，您可以改选任何一个<b>已开窗</b>的期次。' +
-        '排序键按序比较：① 应还日升序 → ② 该期次所属业务的<b>实际放款日</b>（LN-06 放款记录提交时间）升序 ' +
-        '→ ③ 融资业务编号升序 → ④ 期次序号升序。<br>' +
-        '<b>逾期的必然排在未到期的前面</b>：逾期期次的应还日必然更早，按应还日升序排它天然在前。' +
-        '按"距今最近"取绝对值排序会把明天到期的排在逾期 30 天的前面，资产方就会先还新账、旧账一直滚——' +
-        '那正是这条排序要挡住的（D-RP-24）。<br>' +
-        '<b>未开窗的可见但不可选，不隐藏</b>：隐藏会让资产方以为计划少了几期。') + '</p>';
+      L('The first row after sorting is selected by default; you may switch to any instalment whose window is open.',
+        '默认选中排序后的第一条，您可以改选任何一个<b>已开窗</b>的期次。') + '</p>';
 }
 
-/* 五个拦截点（6.2.2 / D-RP-25 / AC-RP-07） */
-function stopCards(p){
-  var items = [
-    ['1', L('The window opens per instalment','入口按期次逐个开窗'),
-     L('RP-15 = <b>' + OPEN_DAYS + ' calendar days before the due date, 00:00</b>, and stays open until ' +
-       'the instalment settles. Instalments not yet open are <b>visible but ⊘</b> in the selector above, ' +
-       'with the reason and the opening date. Opening instalment N does <b>not</b> open N+1.',
-       '开启时间 <b>RP-15 ＝ 应还日前 ' + OPEN_DAYS + ' 个自然日 00:00</b>，开启后一直保持开启直到该期结清。' +
-       '未开窗的期次在上面的选择器里<b>可见但 ⊘</b>，附原因与开启日期。' +
-       '第 N 期开窗<b>不会</b>让第 N+1 期跟着开。')],
-    ['2', L('One instalment per submission','一次只能提交一个期次'),
-     L('The form binds a single instalment: <b>no multi-select, no "select all"</b>. What this really ' +
-       'blocks is skipping ahead and merging instalments.',
-       '本表单<b>绑定单个期次</b>：<b>不存在多选框、不存在"全选"</b>。' +
-       '真正被挡住的是跳期还款与多期合并提交。')],
-    ['3', L('The amount is read-only','金额只读'),
-     L('RM-04 is <b>read-only and equal to</b> this instalment’s RP-08 total due' +
-       (p ? ' (<b>' + usd(p.total) + '</b>)' : '') + '. The same rule blocks <b>partial</b> and ' +
-       '<b>excess</b> repayment. There is no input in the amount block below — it is a read value.',
-       'RM-04 <b>只读等于</b>该期 RP-08 应还合计' + (p ? '（<b>' + usd(p.total) + '</b>）' : '') +
-       '，<b>不可编辑</b>。这一条同时挡住了<b>部分还款</b>与<b>超额还款</b>。' +
-       '下方金额区没有 input，是只读读值。')],
-    ['4', L('No early-settlement entry','没有提前结清入口'),
-     L('This drawer carries no button or copy offering to settle early, pay off in one go, or repay ' +
-       'principal ahead of schedule. Principal is only repaid after the financing project matures.',
-       '本抽屉<b>不存在</b>任何提供提前结清、一次性还清或提前还本的按钮与文案。' +
-       '还本金只发生在融资项目到期之后（X-LS-06）。')],
-    ['5', L('Server-side final check','服务端终检'),
-     L('On submit the server <b>re-evaluates</b> whether the window is open, whether the instalment is ' +
-       'still S-RP-1, and whether it belongs to you. <b>A front-end ⊘ or a hidden row is not a check</b>.',
-       '提交时服务端<b>重新判定</b>该期是否已开窗、是否仍为 S-RP-1、是否为本人名下。' +
-       '<b>前端的 ⊘ 与隐藏均不构成校验</b>（E-RP-03）。')]
-  ];
-  return '<div class="rp-stop">' + items.map(function(x){
-    return '<div class="s"><div class="sn"><i>' + x[0] + '</i>' + x[1] + '</div>' +
-      '<div class="sx">' + x[2] + '</div></div>';
-  }).join('') + '</div>' +
-  '<p class="hint" style="margin-top:10px">' +
-    L('<b>Why opening ' + OPEN_DAYS + ' days early is not early repayment</b>: ① the amount is unchanged — ' +
-      'RM-04 equals the full instalment; ② it is economically identical — each instalment’s interest ' +
-      'was fixed when the schedule was finalised and is not recomputed per day, so submitting ' +
-      OPEN_DAYS + ' days early <b>saves nothing</b> and the asset owner has no incentive to; ③ it moves ' +
-      'no other instalment.<br><b>Why not open only on the due date</b>: a cross-border wire usually takes ' +
-      '1–3 business days to land and a stablecoin transfer waits for confirmations; allowing the payment ' +
-      'to start only on the due date would demand a same-day cross-border settlement, while the overdue ' +
-      'test fires at 00:00 the next day.',
-      '<b>为什么提前 ' + OPEN_DAYS + ' 天开窗不构成"提前还款"</b>：' +
-      '① 金额一分不少——RM-04 只读等于本期应还合计；' +
-      '② 经济上完全等价——每期利息在定稿时已固定、不按日重算，提前 ' + OPEN_DAYS +
-      ' 天提交<b>不会少付一分钱利息</b>，资产方没有任何提前的动机；' +
-      '③ 动不了别的期——开窗是逐期的。<br>' +
-      '<b>为什么不是"到期日当天才开"</b>：跨境电汇到账普遍需要 1～3 个工作日，数币转账也要等区块确认；' +
-      '当天才允许发起就等于要求当天完成跨境支付，而逾期判定在次日 00:00（D-RP-27）。' +
-      '') +
-  '</p>';
-}
 
 function formState(d, p){
   var f = S.f, fiat = isFiat(d);
@@ -1443,7 +1187,7 @@ function drawerRepay(){
            'repayment</b>. Partial and excess repayment are both out of scope.',
            '<b>只读等于该期 RP-08 应还合计</b>：本金 ' + amt(p.principal) + ' + 利息 ' + amt(p.interest) +
            '。结算金额按<b>报价时锁定的汇率快照 ' + d.fx.v.toFixed(4) +
-           '</b> 折算，<b>还款时不重新取汇率</b>（D-FIN-80）。本期不支持部分还款与超额还款。'))) +
+           '</b> 折算，<b>还款时不重新取汇率</b>。本期不支持部分还款与超额还款。'))) +
     field(g('repaidAt') + ' · RM-05', L('required · may be in the past, never in the future','必填 · 可填过去、不得晚于提交时刻'),
       inp('given', S.f.given, '2026-12-18 09:30', { err:!!S.f.given && !v.givenOk }),
       (!!S.f.given && !v.givenOk
@@ -1451,14 +1195,14 @@ function drawerRepay(){
           L('The repayment time is later than the submission instant; the server will reject it. ' +
             '<b>The past is fine, the future is not</b> — a future repayment time means the money has ' +
             'not left yet.',
-            '还款时间晚于提交时刻，服务端将拒绝提交（E-RP-07）。' +
+            '还款时间晚于提交时刻，服务端将拒绝提交。' +
             '<b>时间可以填过去，不能填未来</b>——未来的还款时间意味着钱还没打。') + '</span>'
         : L('Format <span class="mono">YYYY-MM-DD HH:MM</span> (' + TZ + '). <b>For reconciliation only; ' +
             'no deadline or interest calculation uses it</b> — the overdue freeze point and the start of ' +
             'the confirmation window both take the server-recorded submission time RM-06.',
             '格式 <span class="mono">YYYY-MM-DD HH:MM</span>（' + TZ + '）。' +
             '<b>仅作对账参考，时效与计息不使用该时间</b>：逾期冻结点与还款确认时限起点一律取' +
-            '服务端记录的提交时间 RM-06（D-FIN-21）。')));
+            '服务端记录的提交时间 RM-06。')));
 
   if(isFiat(d)){
     form += field(g('proofFiat') + ' · RM-07',
@@ -1479,7 +1223,7 @@ function drawerRepay(){
       }).join('') + '</div>' : ''),
       L('<b>The platform does not audit authenticity</b> — only format, size and count are checked. ' +
         'Proof files are <b>not public</b>; only the two parties of this deal can see them.',
-        '<b>平台不审核真伪</b>：只校验格式、大小与数量。凭证<b>不公开</b>，仅该笔业务双方可见（D-RP-41）。'));
+        '<b>平台不审核真伪</b>：只校验格式、大小与数量。凭证<b>不公开</b>，仅该笔业务双方可见。'));
   } else {
     form += field(g('txHash') + ' · RM-08', L('required · format check only','必填 · 只做格式校验'),
       inp('hash', S.f.hash, '0x + 64 hex', { err:!!S.f.hash && !v.hashOk }),
@@ -1488,10 +1232,10 @@ function drawerRepay(){
           L('Invalid format: must be <span class="mono">0x</span> + 64 hexadecimal characters. ' +
             '<b>The platform will never tell you the transaction does not exist</b> — it has no way to know.',
             '格式不合法：须为 <span class="mono">0x</span> + 64 位十六进制。' +
-            '<b>平台不会提示"该交易不存在"</b>——它没有这个判断能力（E-RP-04）。') + '</span>'
+            '<b>平台不会提示"该交易不存在"</b>——它没有这个判断能力。') + '</span>'
         : L('<b>Format check only, never verified on chain.</b> After submission the drawer shows a block ' +
             'explorer link with a standing note that the platform has not verified the transaction.',
-            '<b>只做格式校验、不做链上核验</b>（D-RP-42）。提交后给出区块浏览器链接，' +
+            '<b>只做格式校验、不做链上核验</b>。提交后给出区块浏览器链接，' +
             '旁边常驻「平台未核验该交易，链接仅供自行查验」。'))) +
     /* RM-09：常量 ETH，**只展示、不录入、不给任何选择控件** */
     field(g('chainLbl') + ' · RM-09', L('system constant · display only','系统常量 · 只展示'),
@@ -1502,7 +1246,7 @@ function drawerRepay(){
            'chain, rejected if different" — <b>that path is unreachable this round</b>.',
            '链是<b>本期系统常量 ' + CHAIN + '</b>：<b>只展示、不录入，本抽屉不给任何选择控件</b>。' +
            'USDT / USDC 即 ERC-20。多链恢复时才回到"只读带出、必须等于机构收款地址的链、不一致拒绝"' +
-           '——<b>那条路径本期不可达</b>（E-RP-05）。'))) +
+           '——<b>那条路径本期不可达</b>。'))) +
     field(L('Supporting material · RM-12','补充材料 · RM-12'),
       L('optional · ≤ ' + EXTRA_MAX_N + ' files','选填 · ≤ ' + EXTRA_MAX_N + ' 个'),
       '<div class="drop" role="button" tabindex="0" data-act="rp.upload" data-v="extra">' +
@@ -1551,28 +1295,7 @@ function drawerRepay(){
     sec(L('3 · What you fill in','③ 填写项'), '',
         (s.st === 'S-RP-1' && a.enabled ? form
           : (s.rec ? recordRead(d, p, true) : '<p class="hint" style="margin:0">' + E(a.reason) + '</p>'))) +
-    sec('', '', mailCard(d, p, 'repay'), true) +
-    sec('', '', annot(
-      L('<b>Prototype note · what moved out and where it went (V3.4 simplification).</b> ' +
-        'The full schedule, the accrual-rule text and the principal/interest split moved to the ' +
-        '<b>View repayment schedule</b> drawer — reachable from the link above; instalments belonging to ' +
-        'your other deals moved to the console. The five interception cards and the two-axis diagram are ' +
-        '<b>not production UI at all</b>: they are PRD clauses and prototype explainers, kept on the ' +
-        'detail page under "prototype explainers". What stays here is their <i>effect</i> — a window that ' +
-        'is not open shows ⊘ with its reason, the amount is read-only, and the overdue line says the count ' +
-        'freezes on submission. <b>Nothing was cut without a destination.</b><br>' +
-        'This drawer also carries no: early settlement / pay-off-in-one-go / early principal entry; ' +
-        'multi-select; editable amount; editable payee account; edit or withdraw of a submitted record; ' +
-        '"verified on chain" badge; penalty-interest amount.',
-        '<b>原型注解 · V3.4 精简：移走了什么、移到哪儿。</b>' +
-        '完整还款计划表、计息规则全文、本息拆分与计息区间 → <b>「查看完整还款计划」抽屉</b>' +
-        '（上方文字链一键可达）；其他融资业务的期次全集 → 我的控制台还款信息 tab。' +
-        '五个拦截点说明与两条轴示意<b>不进生产界面</b>——它们是 PRD 条款与原型说明件，' +
-        '已移到详情页的「原型说明件」区；界面上保留的只有它们的<b>效果</b>：' +
-        '未开窗 ⊘ + 原因、金额只读、逾期天数那句「提交后即冻结」。<b>没有只砍不给去处的字段。</b><br>' +
-        '本抽屉同样<b>不存在</b>：提前结清 / 一次性还清 / 提前还本入口、多选与"全选"、可编辑的金额框、' +
-        '可编辑或可另填的机构收款账户、修改或撤回已提交还款记录的入口、' +
-        '哈希旁的"已核验"标识、任何罚息金额。')));
+    sec('', '', mailCard(d, p, 'repay'), true);
 
 
   var canSubmit = (s.st === 'S-RP-1' && a.enabled && v.ok);
@@ -1674,26 +1397,22 @@ function windowBar(d, p){
     '<div class="ways">' +
       '<div class="w"><i aria-hidden="true">①</i><span>' +
         L('Expiry <b>sends one notice only</b>; it <b>does not change the status, does not count as ' +
-          'confirmation, and steps no credit figure</b>. Auto-confirming would mean the platform ' +
-          'asserting on your behalf that the money arrived — and on the repayment side it would also ' +
-          'release <b>your own credit</b>.',
-          '到期<b>只发一条通知</b>，<b>不自动改状态、不自动视为确认、不自动递减任何额度</b>（D-RP-53）。' +
-          '自动确认等于平台替您承认"钱已收到"；在还款侧它还会直接递减<b>您的授信占用额</b>。') + '</span></div>' +
+          'confirmation, and steps no credit figure</b>.',
+          '到期<b>只发一条通知</b>，<b>不自动改状态、不自动视为确认、不自动递减任何额度</b>。') + '</span></div>' +
       '<div class="w"><i aria-hidden="true">②</i><span>' +
         L('Elapsing <b>changes no permission and no data</b>: this drawer stays usable, the action stays ' +
           'executable, the instalment stays in S-RP-2. It produces <b>one neutral mark</b> and <b>one ' +
           'notice</b>, never a recurring push.',
           '超期<b>不改变任何权限与任何数据</b>：本抽屉照常可用、确认动作照常可执行、期次仍是 S-RP-2' +
-          '（D-RP-54）。超期只产生<b>一个中性展示标记</b>与<b>一次通知</b>，之后不再周期性推送。') + '</span></div>' +
+          '。超期只产生<b>一个中性展示标记</b>与<b>一次通知</b>，之后不再周期性推送。') + '</span></div>' +
       '<div class="w"><i aria-hidden="true">③</i><span>' +
         L('Two other ' + CONFIRM_HOURS + '-hour windows exist on this deal and each is named in full: ' +
           'the <b>quote validity period</b> binds the asset owner and <b>lapses automatically</b>; the ' +
           '<b>disbursement confirmation window</b> and this <b>repayment confirmation window</b> both ' +
-          '<b>only remind</b>. Short forms would suggest the deal lapses if nobody confirms.',
+          '<b>only remind</b>.',
           '同一笔业务上还有另外两个 ' + CONFIRM_HOURS + ' 小时，三者一律写全称：' +
           '<b>报价有效期</b>约束资产方处理报价，到点<b>自动失效</b>；' +
-          '<b>放款确认时限</b>与本条<b>还款确认时限</b>到点<b>只提醒</b>。' +
-          '写成简称会让人以为不确认就会自动作废（D-RP-33）。') + '</span></div>' +
+          '<b>放款确认时限</b>与本条<b>还款确认时限</b>到点<b>只提醒</b>。') + '</span></div>' +
     '</div></div>';
 }
 
@@ -1734,13 +1453,9 @@ function decCard(d, p, done){
     '<div class="xf">' + (interestOnly
       ? L('<b>Stepped down by principal repaid, not by amount repaid.</b> Both figures are defined as sums ' +
           'of <b>outstanding principal</b>; interest is not part of them, so an interest-only instalment ' +
-          'moves neither. <b>Counter-example</b>: stepping down by the total due (' + amt(p.total) + ') ' +
-          'would release ' + amt(p.interest) + ' of credit out of thin air every time interest is paid, ' +
-          'and the same pledge could fund another deal.',
+          'moves neither.',
           '<b>按已偿本金递减，不按已还金额递减。</b>项目融资余额与授信占用额的定义都是<b>未偿本金</b>的合计，' +
-          '利息不在其中——因此利息期结清时两个量一动不动（D-RP-36）。' +
-          '<b>反例</b>：按应还合计 ' + amt(p.total) + ' 递减，会让每还一期利息就凭空释放一次额度 ' +
-          amt(p.interest) + '，资产方可以用同一份质押再融一笔。')
+          '利息不在其中——因此利息期结清时两个量一动不动。')
       : L('<b>Stepping down and settling take effect within one settlement</b>: instalment status, both ' +
           'figures, cumulative repaid, outstanding principal and (for the final instalment) the deal ' +
           'status either all succeed or none happens. <b>There is no "confirmed but credit not released" ' +
@@ -1749,8 +1464,8 @@ function decCard(d, p, done){
           'submission is just a statement.',
           '<b>递减与结清在同一次结算内一致生效</b>：期次状态、两个量、累计已还、未偿本金、' +
           '业务状态（末期时）整体成功或整体不发生。' +
-          '<b>不存在"已确认但额度未减"或"额度已减但期次未结清"的中间态</b>（AC-FIN-36 / E-RP-11）。<br>' +
-          '资产方提交（S-RP-2）时两个量<b>一个都不动</b>——钱有没有到只有您知道，提交只是一次陈述（D-RP-37）。')) +
+          '<b>不存在"已确认但额度未减"或"额度已减但期次未结清"的中间态</b>。<br>' +
+          '资产方提交（S-RP-2）时两个量<b>一个都不动</b>。')) +
     '</div></div>';
 }
 
@@ -1770,25 +1485,20 @@ function pledgeHandoff(){
       '<b class="ls-b">② On-chain withdrawal</b> — initiated by the asset owner, <b class="ls-b">gas paid ' +
       'by them</b>, batchable, no deadline, never fronted or surcharged by the platform. Tokens not yet ' +
       'withdrawn stay in the contract, belong to no pool and <b class="ls-b">cannot be pledged again</b> ' +
-      'until withdrawn. <b class="ls-b">That stage has genuine on-chain failures</b>; its five failure ' +
-      'states and gas wording live in the financing-demand module’s withdrawal flow, and are not ' +
-      'duplicated here.</p>' +
+      'until withdrawn.</p>' +
       '<p><b class="ls-b">This drawer will not tell you the tokens return to your wallet automatically</b> ' +
       '— they do not; you have to withdraw them yourself.</p>',
-      '<b class="ls-b">本模块不释放质押。</b>它只把「该笔业务已结清」这一事实交给融资需求与代币质押模块，' +
-      '由它按 <b class="ls-b">D-FIN-49</b> 判定<b class="ls-b">项目终态</b>、再做两段式释放。' +
-      '<p><b class="ls-b">不提供"某笔结清即释放对应代币"的部分释放</b>：' +
+      '<b class="ls-b">结清本身不释放质押。</b><p><b class="ls-b">没有"某笔结清即释放对应代币"的部分释放</b>：' +
       '同一个资产池可能承载多笔融资业务，一笔结清不等于这个池子自由了。</p>' +
-      '<p>项目真的进入终态之后，释放分两段：<br>' +
+      '<p>项目进入终态之后，释放分两段：<br>' +
       '<b class="ls-b">① 业务释放</b>——进入终态同刻解除全部占用与<b class="ls-b">质押覆盖</b>、' +
       '代币置「已释放 · 待提取」、不再计入任何池。' +
       '<b class="ls-b">即时、无链上动作、不被链上失败阻塞</b>。<br>' +
       '<b class="ls-b">② 链上提取</b>——由资产方<b class="ls-b">自助发起、自付 gas</b>，可批量、无时限，' +
       '平台不代付不加收。未提取的代币留在合约内、不属于任何池、<b class="ls-b">不能再次质押</b>' +
-      '（须先提回自己地址）。<b class="ls-b">这一段有真实的链上失败</b>，五类失败态与 gas 口径' +
-      '在融资需求与代币质押模块的提取环节承载，本模块不复制一份。</p>' +
+      '（须先提回自己地址）。</p>' +
       '<p><b class="ls-b">本抽屉不会告诉您"结清后代币将自动回到您的钱包"</b>——它不会自动回来，' +
-      '需要您自己去提（AC-RP-19）。</p>'),
+      '需要您自己去提。</p>'),
     L('What happens to the pledge after settlement','结清之后，质押怎么办'));
 }
 
@@ -1812,7 +1522,7 @@ function drawerConfirm(){
         '<b>期次状态、两个额度量、双方权限一个都没有变</b>；确认入口照常可用。'),
       L('<b>The asset owner’s overdue days remain frozen at ' + s.odDays + '</b> and do not accrue ' +
         'because you have not confirmed yet.',
-        '<b>资产方的逾期天数仍然冻结在 ' + s.odDays + ' 天</b>，不因您暂时不确认而继续累加（D-FIN-11）。'));
+        '<b>资产方的逾期天数仍然冻结在 ' + s.odDays + ' 天</b>，不因您暂时不确认而继续累加。'));
   if(s.overdue)
     marks += markRow(L('This instalment was late','对方该期曾逾期'),
       L('Due ' + p.due + '; the record was submitted at <b>' + s.rec.at + '</b>, so the overdue count ' +
@@ -1820,11 +1530,8 @@ function drawerConfirm(){
         '第 ' + p.seq + ' 期应还日 ' + p.due + '，对方于 <b>' + s.rec.at + '</b> 提交还款记录，' +
         '逾期天数 <span class="day">' + s.odDays + '</span> 天<b>已在提交时刻冻结</b>。'),
       L('That number <b>will not grow again</b>. The platform <b>computes no penalty interest, shows no ' +
-        'penalty amount and rolls nothing into the amount due</b> — a penalty rate is a commercial term ' +
-        'and the platform does not hold it. Late payment’s economic consequence sits entirely in the ' +
-        'offline contract this round.',
-        '这个数<b>不会再涨</b>。平台<b>不计算罚息、不展示罚息金额、不把罚息并入应还金额</b>——' +
-        '罚息率是商务条款，平台手里没有它（X-LS-45 / D-RP-46）。逾期的经济后果本期完全由线下合同承担。'));
+        'penalty amount and rolls nothing into the amount due</b>.',
+        '这个数<b>不会再涨</b>。平台<b>不计算罚息、不展示罚息金额、不把罚息并入应还金额</b>。'));
 
   var planInfo = '<div class="ls-kgrid">' +
     '<div><div class="k">' + g('demandNo') + ' · FP-28</div><div class="v">' + d.fp + '</div></div>' +
@@ -1867,17 +1574,15 @@ function drawerConfirm(){
               'undone and it immediately ' + (p.principal ? 'releases ' + usd(p.principal) + ' of your credit'
                                                           : 'closes this instalment') + '.</p>' +
               '<p><b class="ls-b">Nor should you read the delay as the counterparty still running late</b>: ' +
-              'their overdue days froze the instant they submitted and do not grow however long you take. ' +
-              'That rule is the asset owner’s only protection this round — they cannot even raise a ' +
-              'dispute.</p>',
+              'their overdue days froze the instant they submitted and do not grow however long you take.</p>',
               '<b class="ls-b">本抽屉只有「确认收到还款」一个动作。</b>' +
-              '<b class="ls-b">不存在</b>「提出异议」「申诉」「驳回」「部分确认」等入口——本期不做（X-LS-42）。' +
+              '<b class="ls-b">不存在</b>「提出异议」「申诉」「驳回」「部分确认」等入口——本期不做。' +
               '<p>金额不符、凭证有问题、款根本没到时，您唯一能做的是<b class="ls-b">不点确认</b>，' +
               '并走下方客服邮箱与对方线下联系。<b class="ls-b">不要"先确认再说"</b>：' +
               '确认不可撤销，且会立刻' + (p.principal ? '释放您 ' + usd(p.principal) + ' 的授信占用额'
                                                       : '把这一期关掉') + '。</p>' +
               '<p><b class="ls-b">也不要因此认为对方在继续逾期</b>：他的逾期天数在提交那一刻就冻结了，' +
-              '您拖多久都不会增加（D-FIN-11）。这条是本期资产方唯一的保护——因为他连异议都提不了。</p>'),
+              '您拖多久都不会增加。</p>'),
             L('About having exactly one action','关于「只有一个动作」'))
         : blockedBtn(a, ''));
 
@@ -1897,14 +1602,13 @@ function drawerConfirm(){
      [L('The pledge cannot be released','质押无法释放'),
       L('Release requires the <b>project terminal state</b>, and the project cannot reach it while a deal ' +
         'is unsettled — the asset owner’s tokens stay in the pledge contract.',
-        '质押的释放要求<b>项目终态</b>（D-FIN-49），而业务不结清项目就到不了终态——' +
+        '质押的释放要求<b>项目终态</b>，而业务不结清项目就到不了终态——' +
         '资产方的代币会一直留在质押合约里。')],
      [L('But their overdue days still do not grow','但对方的逾期天数不会继续增加'),
       L('<b>This does not change because of your inaction.</b> On the repayment side, when you do not ' +
         'confirm the party bearing the consequences is mainly the other one — you are merely late ' +
-        'receiving a settlement record. <b>This rule exists precisely so that asymmetry does not land on ' +
-        'them.</b>',
-        '<b>这一条不因您的不作为而改变</b>（D-FIN-11）。还款侧您不确认时，承受后果的主要是对方' +
+        'receiving a settlement record.',
+        '<b>这一条不因您的不作为而改变</b>。还款侧您不确认时，承受后果的主要是对方' +
         '（业务无法结清、质押无法释放），而您只是晚点拿到结清凭证——' +
         '<b>这条红线正是为了不让这种不对称落到他头上</b>。')]
     ].map(function(r){
@@ -1929,39 +1633,23 @@ function drawerConfirm(){
         L('to check the amount against your contract','供核对金额是否与合同一致'),
         planInfo + '<div style="margin-top:14px">' + ruleBar(d) + '</div>', true) +
     sec(L('3 · What this confirmation does','③ 确认这一下会发生什么'),
-        L('AC-FIN-36 · atomic, no gap','AC-FIN-36 · 原子、无空档'),
+        L('atomic, no gap','原子、无空档'),
         decCard(d, p, done) + (p.last ? '<div style="margin-top:14px">' + pledgeHandoff() + '</div>' : '')) +
-    sec(L('Where the clock stops, and where the record ends','计息停止点与还款记录终结点'),
-        'D-FIN-11 · D-RP-29', freezeCard(d, p), true) +
     sec(L('4 · What you can do now','④ 您现在能做什么'),
-        L('X-LS-42 · exactly one action this round','X-LS-42 · 本期只有一个动作'),
+        L('exactly one action this round','本期只有一个动作'),
         actionArea +
         '<p class="hint" style="margin-top:12px">' +
         L('If the asset owner says they paid and you say nothing arrived, <b>the platform does not judge ' +
           'who is right</b>: take it to the support mailbox. The same applies when cross-border charges ' +
           'make the received amount smaller than the amount due — there is no shortfall field this round ' +
           'and the amount is read-only. <b>In both cases the asset owner’s overdue days stay frozen.</b>',
-          '<b>资产方声称已还、您声称未收到</b>时，平台<b>不判定谁对谁错</b>（E-RP-13）：走客服邮箱线下核实。' +
-          '<b>跨境手续费导致实收少于应还</b>时同理（E-RP-14）——本期没有差额说明字段，金额只读；' +
+          '<b>资产方声称已还、您声称未收到</b>时，平台<b>不判定谁对谁错</b>：走客服邮箱线下核实。' +
+          '<b>跨境手续费导致实收少于应还</b>时同理——本期没有差额说明字段，金额只读；' +
           '<b>资产方的逾期天数在两种情形下都保持冻结</b>。') + '</p>' +
         noChain(['confirming a repayment','确认收到还款'])) +
     sec(L('If confirmation never comes','如果一直不确认会怎样'),
-        L('D-RP-57 · the consequences must be spelled out','D-RP-57 · 后果必须写明'), consequences) +
-    sec('', '', mailCard(d, p, 'confirm'), true) +
-    sec('', '', annot(
-      L('<b>Prototype note · what does not exist this round.</b> This drawer carries no: raise-a-dispute / ' +
-        'appeal / reject / partial-confirmation entry; the S-RP-4 repayment-dispute status (unreachable ' +
-        'this round, and no copy or filter is prepared for it); an operations adjudication desk; undo ' +
-        'confirmation; edit or withdraw a repayment record; extending the confirmation window; ' +
-        '"platform is intervening" or "we will handle it within X business days" promises; a ' +
-        '"verified / confirmed on chain / valid transaction" badge; "audited by the platform" wording; ' +
-        '"lapsing counts as confirmation" wording; any penalty amount or shortfall field.',
-        '<b>原型注解 · 本期没有的东西。</b>本抽屉<b>不存在</b>：提出异议 / 申诉 / 驳回 / 部分确认入口、' +
-        '<b>S-RP-4 还款异议处理中</b>状态（本期不可达，也不为它准备文案与筛选项）、运营端裁决台、' +
-        '撤销确认、修改或撤回还款记录、延长还款确认时限、' +
-        '"平台介入中""平台将在 X 个工作日内处理"一类承诺、' +
-        '哈希旁的"已核验 / 已确认上链 / 交易有效"标识、凭证的"平台已审核"字样、' +
-        '"逾期视为确认"一类措辞、任何罚息金额与差额说明字段。')));
+        L('the consequences must be spelled out','后果必须写明'), consequences) +
+    sec('', '', mailCard(d, p, 'confirm'), true);
 
   var foot = '<div class="drawer-f">' +
     '<button class="btn link" type="button" data-act="rp.open" data-v="schedule">' + g('viewSchedule') + '</button>' +
@@ -2016,9 +1704,7 @@ function drawerSchedule(){
           'atomically and the debt exists. The schedule is being generated and the instalment list ' +
           'appears here once ready.',
           '放款确认已于 <b>' + withTz(d.fd35) + '</b> 完成，四个量已原子转移，债务已成立。' +
-          '还款计划正在生成，就绪后本抽屉自动显示完整期次。'),
-        L('Generation is retryable and must be idempotent — a retry never produces a second set of instalments.',
-          '生成动作可重试且必须幂等——重试不会产生第二套期次（E-RP-01）。')) +
+          '还款计划正在生成，就绪后本抽屉自动显示完整期次。')) +
         CF.note('',
           L('<b class="ls-b">This is not an error screen.</b> A failed schedule generation <b class="ls-b">' +
             'does not roll back</b> the upstream credit transfer or status migration: the money arrived ' +
@@ -2045,10 +1731,7 @@ function drawerSchedule(){
       L('Instalment ' + gp.overdue.seq + ' (due ' + gp.overdue.due + ') is <span class="day">' +
         gp.overdue.days + '</span> days overdue. Its repayment window <b>stays open</b>.',
         '第 ' + gp.overdue.seq + ' 期（应还日 ' + gp.overdue.due + '）已逾期 <span class="day">' +
-        gp.overdue.days + '</span> 天。该期还款入口<b>保持开启</b>。'),
-      L('Overdue is a <b>parallel mark, not a status</b>; the platform computes no penalty interest and ' +
-        'triggers no disposal of the pledge.',
-        '逾期是<b>并行标记不是状态</b>；平台不计罚息、不触发任何质押处置。'));
+        gp.overdue.days + '</span> 天。该期还款入口<b>保持开启</b>。'));
 
   return head + '<div class="drawer-b u-scroll">' +
     /* ---- 标题区（按选定笔收敛，D-RP-81 ①）+ 计息规则条，**固定在抽屉顶部、不随表体滚走**（D-RP-72 ②）---- */
@@ -2060,28 +1743,11 @@ function drawerSchedule(){
           L('settles in ','结算币种 ') + d.ccy + '</div>' +
       '</div>' +
       '<p class="rp-only">' +
-        L('One deal at a time. A project may be financed several times, by different institutions and in ' +
-          'different currencies — so this view never merges deals and never shows a project-wide total.',
-          '一次只呈现一笔。同一项目可以融资多次、出资机构不同、结算币种也可能不同——' +
-          '因此本视图<b>不做跨笔合并</b>，也不给「本项目全部还款计划」的汇总表（D-RP-81 ②）。') + '</p>' +
+        L('One deal at a time — this view never merges deals.',
+          '一次只呈现一笔，本视图<b>不做跨笔合并</b>。') + '</p>' +
       ruleBar(d) + '</div>' +
     (marks ? sec('', '', marks, true) : '') +
     sec('', '', planTable(d, plan, curSeq)) +
-    sec('', '', annot(
-      L('<b>Prototype note.</b> V3.4 keeps <b>only the final version</b> here: the "Expected · not in ' +
-        'effect" tag, the "Expected due date" column name, the two-version tabs and the diff highlight are ' +
-        'all gone. The initial (indicative) schedule is <b>not deleted</b> — it moved back to where it ' +
-        'belongs, the quote stage (quote detail and the accept drawer), because its only job is to show ' +
-        'the asset owner how the money will be repaid <b>before</b> they accept. Once the deal is in ' +
-        'repayment, only the final version is in force, and showing a second "expected" version would ' +
-        'just stop the numbers from reconciling.',
-        '<b>原型注解。</b>V3.4 起此处<b>只留定稿版</b>：「预计 · 未生效」标识、「预计还款日」列名、' +
-        '两版切换 tab 与差异行高亮都已取消。初始（试算）计划<b>不是被删掉</b>，' +
-        '而是收敛回它本来的位置——<b>报价环节</b>（报价详情页与接受抽屉），' +
-        '因为它的唯一用途就是让资产方<b>在接受报价之前</b>看到这笔钱以后怎么还。' +
-        '业务一旦进入还款段，有效的只有定稿版，再摆一版「预计」只会让人对不上账（D-RP-80）。<br>' +
-        '⚠️ <b>取消对照表 ≠ 取消告知</b>：定稿通知里的新旧对比仍然保留，' +
-        '它是资产方得知「日期整体后移」的唯一渠道。')), true) +
     '</div>' + foot + '</aside>';
 }
 
@@ -2117,7 +1783,7 @@ function modalRepay(){
        'entry this round — a typo in the hash can only be sorted out offline. Put anything you need to ' +
        'say into the remark (RM-11) now.',
        '还款记录是您对"我已经付款"的<b>事实陈述</b>，机构正是据此判断要不要确认。' +
-       '本期<b>没有</b>修改、撤回与补充说明入口（X-LS-49 / D-RP-45）——' +
+       '本期<b>没有</b>修改、撤回与补充说明入口——' +
        '填错了（例如哈希抄错一位）只能靠线下沟通。要写的说明请现在写进备注 RM-11。')],
     [L('2 · Submitting stops overdue accrual; the funder has ' + CONFIRM_HOURS +
        ' hours, and expiry never counts as confirmation',
@@ -2130,7 +1796,7 @@ function modalRepay(){
        'will not assert receipt on the funder’s behalf, and will not mark you late for it.',
        '<b>提交成功的那一刻</b>（服务端时间 RM-06）起，该期的逾期天数' +
        (s.overdue ? '<b>冻结在 ' + s.odDays + ' 天</b>' : '<b>停止任何累加</b>') +
-       '，此后<b>机构再拖多久都不变</b>（D-FIN-11）。<br>' +
+       '，此后<b>机构再拖多久都不变</b>。<br>' +
        '还款确认时限到期时刻 <b>' + withTz(to) + '</b>（＝ 提交成功的服务端时间 + ' + CONFIRM_HOURS +
        ' 小时，精确到秒）。<b>到期只发一条通知，状态不变、额度不动</b>：' +
        '平台不会替机构承认"钱已收到"，也不会因此判定您逾期。')],
@@ -2138,10 +1804,8 @@ function modalRepay(){
      (v.fiat ? L('The platform cannot see your bank statement; the proof is checked for format, size and ' +
                  'count only and is <b>not audited for authenticity</b>.',
                  '平台看不到银行流水，凭证只校验格式、大小与数量，<b>不审核真伪</b>。')
-             : L('The transaction hash is <b>format-checked only, never verified on chain</b>: no indexer ' +
-                 'is wired in, neither blocking nor advisory.',
-                 '交易哈希<b>只做格式校验、不做链上核验</b>（D-RP-42）：平台不接索引服务，' +
-                 '既不做阻断式也不做告警式核验。')) +
+             : L('The transaction hash is <b>format-checked only, never verified on chain</b>.',
+                 '交易哈希<b>只做格式校验、不做链上核验</b>。')) +
      L(' Judgement sits with the funder — which is exactly why the confirmation step exists.',
        '判断权在机构手里——这正是确认环节存在的意义。')]
   ];
@@ -2153,10 +1817,8 @@ function modalRepay(){
       (v.fiat ? S.f.files.length + L(' file(s)',' 个') : E(shortHash(v.hash)) + ' · ' + CHAIN) + '</div></div>' +
     '</div></div>' +
     '<p class="hint" style="margin-top:10px">' +
-    L('Prototype only — pick the server’s final-check outcome to walk the branches in 6.7. In the real ' +
-      'system these are recomputed server-side at submission.',
-      '原型内的结果模拟：选择服务端终检的返回，用于走通分册 6.7 的各条分支。' +
-      '真实系统里这些结论一律由服务端在提交时刻实时重算给出。') + '</p>' +
+    L('Prototype outcome switch: pick what the server returns at submission.',
+      '原型内的结果模拟：选择本次提交的返回。') + '</p>' +
     '<select class="inp" data-act="rp.f" data-v="out" id="submitOut">' +
       SUBMIT_OUTCOMES.map(function(o){
         return '<option value="' + o[0] + '"' + (S.out === o[0] ? ' selected' : '') + '>' + txt(o[1]) + '</option>';
@@ -2217,7 +1879,7 @@ function modalConfirm(){
       '这是最后一个未结清期次。确认完成后业务 S-FD-6 → <b>S-FD-8 已结清</b>（终态），' +
       '清除逾期标记，<b>您对该资产方的授信占用额将等额释放 ' + usd(p.principal) + '</b>，可用授信同额恢复。<br>' +
       '「该笔已结清」这一事实交给融资需求与代币质押模块判定项目终态与质押释放，' +
-      '<b>本模块不释放任何质押</b>（D-RP-39）。')]);
+      '<b>本模块不释放任何质押</b>。')]);
 
   var extra = (s.overdue ? '<div class="rp-acct" style="margin-top:14px"><div class="ag">' +
       '<div><div class="k">' + L('Days overdue','逾期天数') + '</div><div class="v">' + s.odDays + '</div></div>' +
@@ -2225,8 +1887,8 @@ function modalConfirm(){
       '<div><div class="k">' + L('Effect of confirming','确认与否') + '</div><div class="v">' +
         L('does not change it','不改变这个数') + '</div></div></div></div>' : '') +
     '<p class="hint" style="margin-top:10px">' +
-    L('Prototype only — pick the settlement outcome to walk 6.7 and AC-RP-13.',
-      '原型内的结果模拟：走通分册 6.7 与 AC-RP-13 的一致性要求。') + '</p>' +
+    L('Prototype outcome switch: pick what the server returns at confirmation.',
+      '原型内的结果模拟：选择本次确认的返回。') + '</p>' +
     '<select class="inp" data-act="rp.f" data-v="cout" id="confirmOut">' +
       CONFIRM_OUTCOMES.map(function(o){
         return '<option value="' + o[0] + '"' + (S.cout === o[0] ? ' selected' : '') + '>' + txt(o[1]) + '</option>';
@@ -2246,24 +1908,24 @@ function modalConfirm(){
 var SUBMIT_OUTCOMES = [
   ['ok',      ['Submitted (RM-01 issued → S-RP-2 → overdue frozen → window starts)',
                '提交成功（生成 RM-01 → S-RP-2 → 冻结逾期天数 → 时限开始计时）']],
-  ['notopen', ['E-RP-03 server final check: window not open → rejected, no record created',
-               'E-RP-03 服务端终检：该期尚未开窗 → 拒绝，不产生记录']],
-  ['race',    ['E-RP-02 concurrent submission: first to land wins, no second record',
-               'E-RP-02 并发提交：先落库者成功，后到者不产生第二条']],
-  ['moved',   ['E-RP-08 instalment left S-RP-1 → settled against the authoritative state and rejected',
-               'E-RP-08 期次已不在 S-RP-1 → 按权威状态结算并拒绝']],
-  ['upload',  ['E-RP-06 proof format / size / count invalid → shown in place, other files kept',
-               'E-RP-06 凭证格式 / 大小 / 数量不合格 → 就地提示，已传文件保留']],
-  ['future',  ['E-RP-07 repayment time later than the submission instant → rejected',
-               'E-RP-07 还款时间晚于提交时刻 → 拒绝']]
+  ['notopen', ['server final check: window not open → rejected, no record created',
+               '服务端终检：该期尚未开窗 → 拒绝，不产生记录']],
+  ['race',    ['concurrent submission: first to land wins, no second record',
+               '并发提交：先落库者成功，后到者不产生第二条']],
+  ['moved',   ['instalment left S-RP-1 → settled against the authoritative state and rejected',
+               '期次已不在 S-RP-1 → 按权威状态结算并拒绝']],
+  ['upload',  ['proof format / size / count invalid → shown in place, other files kept',
+               '凭证格式 / 大小 / 数量不合格 → 就地提示，已传文件保留']],
+  ['future',  ['repayment time later than the submission instant → rejected',
+               '还款时间晚于提交时刻 → 拒绝']]
 ];
 var CONFIRM_OUTCOMES = [
   ['ok',     ['Confirmed (instalment settles; a principal instalment steps both figures down)',
               '确认成功（期次结清 + 含本金期次两量等额递减）']],
-  ['settle', ['E-RP-11 partial settlement failure → rolled back as a whole, stays S-RP-2',
-              'E-RP-11 结算部分失败 → 整体回滚，保持 S-RP-2']],
-  ['gone',   ['E-RP-09 instalment no longer in S-RP-2 → authoritative settlement + ops alert',
-              'E-RP-09 期次已不在 S-RP-2 → 按权威状态结算 + 运营告警']]
+  ['settle', ['partial settlement failure → rolled back as a whole, stays S-RP-2',
+              '结算部分失败 → 整体回滚，保持 S-RP-2']],
+  ['gone',   ['instalment no longer in S-RP-2 → authoritative settlement + ops alert',
+              '期次已不在 S-RP-2 → 按权威状态结算 + 运营告警']]
 ];
 
 /* ---- 结果卡：紧跟页头之后。每一类结局各有独立呈现与独立出路 ---- */
@@ -2306,7 +1968,7 @@ function resultCard(){
           '<b class="ls-b">提交被服务端终检拒绝：该期尚未开窗。</b>第 ' + r.seq + ' 期的还款入口将于 ' +
           '<b class="ls-b">' + r.openAt + ' 00:00 ' + TZ + '</b> 开启（应还日 ' + r.due + ' 前 ' +
           OPEN_DAYS + ' 个自然日）。<p><b class="ls-b">本期不支持提前还款</b>——还本金只发生在融资项目' +
-          '到期之后。本次<b class="ls-b">不产生还款记录、不改变任何状态</b>（E-RP-03）。</p>' +
+          '到期之后。本次<b class="ls-b">不产生还款记录、不改变任何状态</b>。</p>' +
           '<p>前端的 ⊘ 与隐藏<b class="ls-b">均不构成校验</b>：开窗结论由服务端在提交时刻重新判定。' +
           '抽屉停留过久、或绕过前端直接提交，都会落到这里。</p>'),
         L('Window not open — nothing submitted','该期尚未开窗，本次未提交'));
@@ -2321,7 +1983,7 @@ function resultCard(){
           'colleagues hit submit at once and exactly one succeeded.</p>',
           '该期<b class="ls-b">已提交还款记录</b>（' + r.id + '，' + withTz(r.at) + '），本次提交未落库。' +
           '<p>并发提交<b class="ls-b">串行结算、先落库者成功</b>，后到者不产生第二条记录' +
-          '（E-RP-02 / D-RP-44）。编号只在提交成功的同一时刻生成，本次<b class="ls-b">不占号</b>。</p>' +
+          '。编号只在提交成功的同一时刻生成，本次<b class="ls-b">不占号</b>。</p>' +
           '<p>同一企业主体下任一登录员工都可以代表企业提交，因此这条路径是真实存在的：' +
           '两位同事同时点了提交，只有一笔成功。</p>'),
         L('This instalment already has a record','该期已提交还款记录'));
@@ -2335,14 +1997,14 @@ function resultCard(){
           '提交时该期<b class="ls-b">已不在 S-RP-1 待还款</b>：' + E(r.detail) +
           '。按<b class="ls-b">提交时刻的权威状态</b>结算并拒绝本次提交。' +
           '<p>页面已落回详情页并给出说明，<b class="ls-b">不报 404、不白屏、不静默跳首页</b>' +
-          '（E-RP-08 / AC-LS-134）。</p>'),
+          '。</p>'),
         L('Instalment status changed','期次状态已变更'));
       break;
     case 'upload':
       box = CF.note('red', txt(r.detail) +
         L('<p><b class="ls-b">The other uploaded files are kept</b>, nothing needs re-uploading. Format and ' +
           'size limits are identical to the disbursement side — not a second baseline.</p>',
-          '<p><b class="ls-b">已上传的其他文件保留</b>，无需重传（E-RP-06）。' +
+          '<p><b class="ls-b">已上传的其他文件保留</b>，无需重传。' +
           '格式与大小基线与放款侧完全一致，不另定一套。</p>'),
         L('Proof rejected','凭证未通过'));
       break;
@@ -2352,9 +2014,9 @@ function resultCard(){
           'it.</b><p>The repayment time <b class="ls-b">may be in the past but never in the future</b> — a ' +
           'future repayment time means the money has not left yet. It is a reconciliation reference only; ' +
           'no deadline or interest calculation uses it.</p>',
-          '<b class="ls-b">还款时间晚于提交时刻，服务端拒绝提交</b>（E-RP-07）。' +
+          '<b class="ls-b">还款时间晚于提交时刻，服务端拒绝提交</b>。' +
           '<p>还款时间<b class="ls-b">可以填过去，不能填未来</b>——未来的还款时间意味着钱还没打。' +
-          '它只是业务参考与对账依据，任何时效与计息都不使用它（D-FIN-21）。</p>'),
+          '它只是业务参考与对账依据，任何时效与计息都不使用它。</p>'),
         L('Invalid repayment time','还款时间不合法'));
       break;
     case 'confirmed':
@@ -2380,14 +2042,14 @@ function resultCard(){
           '确认时间 <b class="ls-b">' + withTz(r.at) + '</b>（RM-18 / RP-17）。<p>' + (r.principal
             ? '同一次结算内：<b class="ls-b">项目融资余额 −' + amt(r.principal) + '</b>、' +
               '<b class="ls-b">授信占用额 −' + amt(r.principal) + '</b>、累计已还与未偿本金更新。' +
-              '两个量<b class="ls-b">等额递减、原子、无空档</b>（AC-FIN-36）。'
+              '两个量<b class="ls-b">等额递减、原子、无空档</b>。'
             : '这是利息期：<b class="ls-b">项目融资余额与授信占用额一动不动</b>——' +
-              '它们是未偿本金的合计，利息不在其中（D-RP-36）。') + '</p>' +
+              '它们是未偿本金的合计，利息不在其中。') + '</p>' +
           (r.settled
             ? '<p><b class="ls-b">该业务全部期次已结清</b>：业务 S-FD-6 → <b class="ls-b">S-FD-8 已结清</b>' +
               '（终态），清除逾期标记，结清时间落库，两个量该笔归零。' +
               '「该笔已结清」这一事实<b class="ls-b">交给融资需求与代币质押模块</b>判定项目终态与' +
-              '质押两段式释放——<b class="ls-b">本模块不释放任何质押</b>（D-RP-39）。</p>'
+              '质押两段式释放——<b class="ls-b">本模块不释放任何质押</b>。</p>'
             : '<p>该业务还有未结清期次，业务仍是 <b class="ls-b">S-FD-6 还款中</b>。</p>') +
           '<p>确认<b class="ls-b">不可撤销</b>：它是对事实的陈述，不是一个可以反悔的选项。</p>'),
         L('Repayment confirmed','还款确认完成'));
@@ -2404,10 +2066,10 @@ function resultCard(){
           'stay frozen</b> throughout — a settlement retry does not touch that rule.</p>',
           '<b class="ls-b">结算未完成，期次保持 S-RP-2 待还款确认。</b>' +
           '该结算必须<b class="ls-b">整体成功或整体不发生</b>：期次状态、两个额度量、累计已还、' +
-          '未偿本金、业务状态（末期时）、结清事实的输出，缺一不可（E-RP-11 / AC-RP-13）。' +
+          '未偿本金、业务状态（末期时）、结清事实的输出，缺一不可。' +
           '<p>本次已整体回滚，<b class="ls-b">没有出现"已确认但额度未减"或"末期已结清但业务仍显示还款中"' +
           '的中间态</b>；重试期间对外仍按未确认呈现。请稍后重试确认。</p>' +
-          '<p>资产方的逾期天数在这期间<b class="ls-b">仍然冻结</b>——结算重试不影响 D-FIN-11。</p>'),
+          '<p>资产方的逾期天数在这期间<b class="ls-b">仍然冻结</b>——结算重试不影响逾期天数。</p>'),
         L('Rolled back as a whole; retryable','结算整体回滚，可重试'));
       break;
     case 'gone':
@@ -2418,7 +2080,7 @@ function resultCard(){
           'state, explained on the page, and an <b class="ls-b">operations alert is raised</b>.',
           '确认的同一时刻该期<b class="ls-b">已不在 S-RP-2</b>。本期<b class="ls-b">不存在合法的并发路径</b>' +
           '（S-RP-2 段只有机构一个写动作），因此这被视为数据异常：按权威状态结算、落详情页说明，' +
-          '并<b class="ls-b">生成运营告警</b>（E-RP-09）。'),
+          '并<b class="ls-b">生成运营告警</b>。'),
         L('Instalment status anomaly','期次状态异常'));
       break;
     default: box = CF.note('', '—');
@@ -2479,12 +2141,8 @@ function failCard(){
   return CF.pageStates() + '<div class="card"><div class="tbl-empty"><b>' +
     L('Could not load the repayment schedule','还款计划与期次未能加载') + '</b>' +
     '<p style="max-width:620px;margin:0 auto">' +
-    L('The server did not return this deal’s instalments. <b>The window-opening instant (RP-15) and the ' +
-      'confirmation deadline (RM-15) are issued by the server as absolute instants and the front end only ' +
-      'renders them</b> — deriving them from local time would disagree with the server across time zones ' +
-      'and clock drift.',
-      '服务端未返回该笔业务的还款计划期次。<b>开窗时刻 RP-15 与到期时刻 RM-15 必须由服务端下发绝对时刻、' +
-      '前端只负责渲染</b>——按本地时间推算会在跨时区与时钟偏差下与服务端判定不一致（AC-LS-133）。') +
+    L('The server did not return this deal’s instalments.',
+      '服务端未返回该笔业务的还款计划期次。') +
     '</p><div style="margin-top:14px">' +
     '<button class="btn primary" type="button" data-act="st" data-v="due">' +
     L('Reload','重新加载') + '</button></div></div></div>';
@@ -2758,8 +2416,8 @@ var mod = {
         } else if(co === 'gone'){
           S.result = { k:'gone' }; S.drawer = null;
           toast('danger', L('Instalment status anomaly','期次状态异常'),
-            L('Settled against the authoritative state; an operations alert was raised (E-RP-09).',
-              '按权威状态结算并生成运营告警（E-RP-09）。'));
+            L('Settled against the authoritative state; an operations alert was raised.',
+              '按权威状态结算并生成运营告警。'));
         } else {
           d.paid[p.seq].confirmAt = NOW;
           if(p.principal){

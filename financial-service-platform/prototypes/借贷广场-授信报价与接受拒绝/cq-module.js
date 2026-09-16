@@ -556,9 +556,7 @@ function initialPlanCard(deal, p){
       '<span class="faint">整表预计 · 未生效</span>') +
     '<div class="card-b">' +
     CF.note('',
-      '<b class="ls-b">这张表整表未生效。</b>它按<b class="ls-b">预计放款日 ' + base +
-      '</b>（＝ 本次报价提交日）试算：报价提交那一刻商务条款固化、汇率快照锁定，' +
-      '用同一时刻做基准，双方看到的是同一套数。' +
+      '<b class="ls-b">这张表整表未生效。</b>它按<b class="ls-b">预计放款日 ' + base + '</b> 试算。' +
       '<p><b class="ls-b">实际还款日将在放款确认后按实际放款日重算并定稿，届时以定稿计划为准；' +
       '每期金额的计算规则不变。</b>变的只有日期，以及由日期派生的天数与利息——' +
       '公式、年化利率、本金、期次边界规则一个都不会变。</p>' +
@@ -580,11 +578,7 @@ function initialPlanCard(deal, p){
       '<div class="row-v mono">本金 ' + amt(sumP) + '　利息 ' + amt(sumI) + '　合计 ' + amt(sumT) +
       '<div class="cell-sub">结算币种金额不参与任何合计——跨币种不得求和</div></div></div></div>' +
     '</div>' +
-    '<p class="hint" style="margin-top:12px"><b>本期不支持提前还款</b>：还本金只发生在融资项目到期之后，' +
-    '每期的还款入口在该期应还日前 3 个自然日开启，逐期开窗、不可跨期合并。' +
-    '本卡的展示事实与展示时间在您接受报价时<b>留痕</b>，' +
-    '<b>只留痕、不要求您勾选确认</b>——它是平台尽到告知义务的证据，' +
-    '定稿后若对日期有疑问，这条留痕可以拿出来对账。</p>' +
+
     '</div></div>';
 }
 
@@ -614,8 +608,7 @@ function termsSummary(deal, p, printable){
     (printable ? '<div class="sf cq-noprint">' +
       '<button class="btn sm" type="button" data-act="cq.copy">复制全文</button>' +
       '<button class="btn sm" type="button" data-act="cq.print">打印 / 存为 PDF</button>' +
-      '<p class="hint">它的作用是让线下合同里的数字与平台记录一致，避免放款和还款时两边对不上。' +
-      '<b>本期平台不生成融资合同</b>，合同由双方在平台外自行拟定与签署。</p></div>' : '') +
+      '</div>' : '') +
   '</div>';
 }
 
@@ -659,8 +652,7 @@ function ro(text, note){
 /* 不产生链上操作的常驻页脚（6.1.2 费用提示；避免机构误以为要签名付费） */
 function noChainFoot(what){
   return '<p class="hint" style="margin-top:14px">' + E(what) +
-    '<b>不产生任何链上操作、不消耗 gas、不需要唤起签名 SDK</b>。' +
-    '本模块全部动作都发生在平台内：授信核定、报价、接受与拒绝都只改平台侧的额度与状态，链上动作只发生在质押与提取。</p>';
+    '<b>不产生任何链上操作、不消耗 gas、不需要唤起签名 SDK</b>。</p>';
 }
 /* 动作按钮：区分「不可见」与「可见不可点 ⊘ + 原因」（H-03） */
 function actBtn(a, cls){
@@ -953,8 +945,7 @@ function quoteStep(p, c, f){
         '<span>结算金额 <span class="n">' + amt(f.settle) + '</span> ' + f.ccy + '</span>' +
         '<span class="sp"></span><span>汇率 <span class="n">' + f.fx.v.toFixed(4) + '</span></span>' +
         '<span class="faint" style="font-size:11px;margin-left:auto">' + E(f.fx.src) + '</span></div>' +
-      '<p class="hint" style="margin-top:-8px;margin-bottom:var(--field-gap)">' + E(f.fx.x) +
-      '。汇率在您提交报价的那一刻锁定，之后不再变动。</p>' +
+      '<p class="hint" style="margin-top:-8px;margin-bottom:var(--field-gap)">' + E(f.fx.x) + '</p>' +
       field('融资利率', '年化 % · 必填',
         inp('qtRate', f.rateRaw, '例如 7.20', { type:'number', err:!!f.rateErr, attr:'step="0.01" min="0.01" max="100"' }),
         f.rateErr || '计息规则以双方签署的融资合同为准。') +
@@ -1228,17 +1219,14 @@ function respondUnit(){
       '<span class="n">' + (done[s.k] ? '✓' : s.n) + '</span>' +
       '<span class="bd"><b>' + E(s.t) + '</b>' + s.x + '</span></div>';
   }).join('') + '</div>' +
-  '<p class="hint" style="margin-top:10px">三步<b>可中断可续做</b>：填到第二步离开页面，再次进入时已确认的账户与已完成的步骤保留，' +
-  '不要求从头再来。<b>中途离开不会影响这笔业务。</b>' +
-  '<b>但计时不因中断而暂停</b>。</p>';
+  '';
 
   /* ---- 第 ① 步：收款账户 ---- */
   var step1;
   if(ps.digital){
     step1 = CF.note('',
-      '本笔结算币种为 <b class="ls-b">' + deal.ccy + '</b>，收款地址默认为贵司的<b class="ls-b">企业统一数币地址</b>，' +
-      '<b class="ls-b">本期只读、不可修改</b>。<p>允许填任意地址等于给了一条把融资款打进个人钱包的通道，' +
-      '而平台没有任何地址归属核验能力。</p>') +
+      '本笔结算币种为 <b class="ls-b">' + deal.ccy + '</b>，收款地址为贵司的<b class="ls-b">企业统一数币地址</b>，' +
+      '<b class="ls-b">本期只读、不可修改</b>。') +
       '<div class="ls-kgrid" style="margin-top:14px">' +
         '<div><div class="k">链</div><div class="v">' + ASSET_WALLET.chain + '</div></div>' +
         '<div><div class="k">收款地址</div><div class="v" style="font-size:12px">' +
@@ -1254,9 +1242,7 @@ function respondUnit(){
           ps.errs[f[0]] === 'format' ? '<b style="color:var(--danger)">SWIFT / BIC 须为 8 位或 11 位字母数字。</b>' : f[2]);
       }).join('') +
       (ps.nameBad ? '<div class="ls-alert">' + CF.note('red',
-        '<b class="ls-b">收款人名称与本企业主体不一致，提交将被拒绝</b>，且<b class="ls-b">不提供"仍要继续"的绕过项</b>。' +
-        '<p>融资款打给第三方是挪用风险，不是一个可以由用户自行承担的选项；' +
-        '合同已改线下、平台连正文都没有，<b class="ls-b">资金方的核验是这条链路上唯一的检查点</b>，而户名是它唯一能对上的字段。</p>' +
+        '<b class="ls-b">收款人名称与本企业主体不一致，提交将被拒绝</b>。' +
         '<div class="cq-cmp"><div class="c bad"><div class="k">您填写的收款人名称</div>' +
           '<div class="v">' + E(ps.v.name) + '</div></div>' +
         '<div class="c"><div class="k">本企业主体已登记的名称</div><div class="v">' +
@@ -1269,19 +1255,12 @@ function respondUnit(){
         '户名一致性校验不通过') + '</div>' : '') +
       '<details class="cq-opt"' + (S.ac.imOpen ? ' open' : '') + '><summary>' +
         '<span class="ca" aria-hidden="true">▶</span>中转行信息（选填）</summary><div class="ob">' +
-        '<p class="hint" style="margin:0 0 11px">若您的开户行需要通过中转行接收外币汇款，请填写；不确定时请咨询开户行。' +
-        '部分走廊缺了中转行汇款会被退回或长期滞留，而<b>退汇手续费照样由资产方承担</b>；' +
-        '但主流银行不需要它，强制必填会让大多数用户去向银行索要一个并不存在的号。<br>' +
-        '<b>平台不判断是否需要、不校验其正确性</b> —— 平台没有这个能力。</p>' +
+        '<p class="hint" style="margin:0 0 11px">若您的开户行需要通过中转行接收外币汇款，请填写；不确定时请咨询开户行。</p>' +
         field('中转行 SWIFT', '选填', inp('pa_imSwift', ps.v.imSwift, '')) +
         field('中转行名称', '选填', inp('pa_imBank', ps.v.imBank, '')) +
         field('在中转行的账号', '选填', inp('pa_imAcct', ps.v.imAcct, '')) +
       '</div></details>' +
-      CF.note('amber',
-        '平台<b class="ls-b">不做银行账户真实性核验、不做账号与户名的银企联验、不判断汇路是否可达</b>。' +
-        '本页的校验只到<b class="ls-b">"格式对不对"与"户名一致不一致"</b>为止。' +
-        '<p>本页<b class="ls-b">没有账户簿</b>：无多账户列表、无账户管理入口、无"设为默认"开关。' +
-        '本期只有"上一次用过的那一个"作为预填；多账户管理属账户设置模块的能力。</p>', '平台的能力边界') +
+
       '';
   }
   /* 逐笔显式确认对两种币种一视同仁（D-FIN-94）：数币地址虽然只读，确认动作照样一笔一次、
@@ -1307,22 +1286,12 @@ function respondUnit(){
       '<div class="x">平台不预知、不代收、不垫付，也不展示预估金额</div></div>' +
   '</div>' +
   '<p class="hint" style="margin-top:9px"><b style="color:var(--warn)">但您需要偿还的本金仍按融资金额 ' +
-    amt(deal.amt) + ' ' + CCY + ' 计算。</b>' +
-    '债务本金、授信占用额、项目融资余额、项目在途金额、放款确认时的转移金额、还款计划的本息 —— ' +
-    '一律按融资金额计，<b>不按实收计</b>。手续费是您为了把钱拿到手而付出的成本，不是本金的减少；' +
-    '按实收计本金会让机构凭空少收一笔债权。<br>' +
-    '这条同样写进下一步的商务条款摘要 —— 合同平台看不见，摘要是唯一能把"手续费承担方"与' +
-    '"本金按融资金额计"带进线下合同正文的地方。</p>';
+    amt(deal.amt) + ' ' + CCY + ' 计算。</b></p>';
 
   /* ---- 第 ③ 步：盖章件 ---- */
   var files = S.ac.files || [];
   var step3 =
-    CF.note('',
-      '<b class="ls-b">本期平台不生成融资合同。</b>合同由双方<b class="ls-b">在平台外自行拟定与签署</b>，' +
-      '平台只做两件事：提供上一步的商务条款摘要让线下合同与平台记录对得上，以及在这里承接盖章件上传。' +
-      '<p>盖章件由<b class="ls-b">资金方</b>在放款前审核 —— 机构是出钱方，它有天然动机检查合同真伪与条款一致性。' +
-      '<b class="ls-b">平台不审核合同，也不对其真伪与法律效力作任何保证</b>：本模块的职责到"收下文件、校验格式与大小、' +
-      '置业务为待放款、对机构可见"为止。上传后这笔业务直接进入待放款，<b class="ls-b">不设"待审核"中间态</b>。</p>') +
+
     '<div class="drop" role="button" tabindex="0" data-act="cq.upload" style="margin-top:14px">' +
       '<div class="ic" aria-hidden="true">↑</div><div><b>点击上传双方盖章件</b>' +
       '<div class="hint" style="margin-top:3px">PDF / JPG / PNG · 单文件 ≤ ' + SEAL_MAX_MB + ' MB · 最多 ' +
@@ -1338,10 +1307,7 @@ function respondUnit(){
       (files.length ? '' : ' disabled') + ' data-act="cq.declare">' +
       '<label for="declOk">我确认所上传合同的商务条款与本页摘要一致。' +
       '<span class="faint">（未勾选时「确认接受」不可提交）</span></label></div>' +
-    '<p class="hint">这是平台侧成本最低、唯一可得的"合同与业务数据相关联"的痕迹 —— 线下合同平台看不见，' +
-    '没有这条声明，纠纷时平台连"双方是照着这组数字签的"都举证不出来。<br>' +
-    '<b>如实记录</b>：在放款环节承接处置能力之前，上传一份错误的盖章件，系统层面不会有任何人被要求去看它；' +
-    '机构可以选择不放款，但平台<b>不提供"打回重传"</b>。这是一条已知的开口。</p>';
+    '';
 
   var readyToAccept = done.account && done.terms && done.seal;
   /* WS-327 增量：初始还款计划摆在「接受报价 · 三步」之前——
@@ -1373,19 +1339,14 @@ function respondUnit(){
         (done.account ? '' : '① 收款账户尚未逐笔确认；') +
         (done.terms ? '' : '② 商务条款摘要尚未查看；') +
         (done.seal ? '' : '③ 盖章件未上传或条款一致性声明未勾选。') + '</p>') +
-      '<p class="hint">拒绝<b>随时可用</b>，服务端不设冷却期、不做理由审核。' +
-      '拒绝与 ' + QUOTE_HOURS + ' 小时届满对额度与项目的后果<b>完全相同</b>，' +
-      '差别只在状态落点与有没有原因：拒绝是您的意思表示（有原因、对机构可见、计入拒绝率），' +
-      '届满是系统事件（无原因、不计入拒绝率）。</p>' +
+
       noChainFoot('接受与拒绝') +
     '</div></div>';
 
   var rail = '<aside class="portal-rail">' +
     '<div class="card">' + cardHead('锁定信息', '<span class="faint">公开信息</span>') +
     '<div class="card-b">' + countdown(deal, true) + '</div></div>' +
-    '<div class="card"><div class="card-b"><p class="hint">深链锚点 <span class="mono">deal/' + deal.id +
-      '?action=respond_quote</span> · 已在附册 A0 预留，本模块正式交付。<br>' +
-      '融资业务的公开信息也可从 <span class="mono">deal/' + deal.id + '</span> 直达。</p></div></div></aside>';
+    '</aside>';
 
   /* 弹窗内不放操作栏：锁定倒计时并进内容流，底部只留两个动作 */
   return unitShell('报价确认', deal.id,
@@ -1458,27 +1419,20 @@ function submitResultCard(){
     box = CF.note('green',
       '融资业务编号 <b class="ls-b">' + r.id + '</b> 已生成，汇率快照已锁定，' + QUOTE_HOURS + ' 小时计时已开始 —— ' +
       '本报价将于 <b class="ls-b">' + withTz(r.until) + '</b> 自动失效。' +
-      '<p>同一次结算内：在途报价金额 +<span class="mono">' + usd(r.amt) + '</span>、这笔业务落 <b class="ls-b">已报价待确认</b>、' +
-      '这条需求转 <b class="ls-b">已报价待确认</b>；<b class="ls-b">项目在途金额不变</b>。' +
+      '<p>在途报价金额 +<span class="mono">' + usd(r.amt) + '</span>；这条需求转 <b class="ls-b">已报价待确认</b>。' +
       '报价一经提交不可修改、不可撤回。</p>', '报价提交成功');
   } else if(r.k === 'taken'){
     box = CF.note('amber',
-      '该需求已被其他机构报价 —— <b class="ls-b">先到先得</b>，同一时刻至多承载一笔在途融资业务。' +
-      '<p>本次提交<b class="ls-b">不产生占用、不生成编号、不改变项目状态</b>：编号只在提交成功的同一时刻生成，不预先占号。' +
-      '您的授信额度没有任何变化。</p>', '并发提交，本笔未成功');
+      '该需求已被其他机构报价。' +
+      '<p>本次提交<b class="ls-b">不产生占用、不生成编号</b>，您的授信额度没有任何变化。</p>', '并发提交，本笔未成功');
   } else if(r.k === 'invalid'){
     box = CF.note('red',
-      '<b class="ls-b">该融资需求已失效（池内质押覆盖不足）。</b>服务端在提交时刻实时重算了有效质押价值、融资上限与项目融资余额，' +
-      '判据成立：' + r.detail + '。' +
-      '<p>资产方补足质押覆盖并重新发布后可再次报价。本次报价<b class="ls-b">不提交、不生成编号、不产生任何占用</b>；' +
-      '该需求上若已有其他在途报价，也一并失效。</p>' +
-      '<p>代币失效由上游按日判定、经后台重算回流，从代币实际失效到派生量更新之间存在时间差 —— ' +
-      '判据在您提交之前就已成立，提交只是让它被发现。</p>', '需求已失效');
+      '<b class="ls-b">该融资需求已失效（池内质押覆盖不足）：</b>' + r.detail + '。' +
+      '<p>资产方补足质押覆盖并重新发布后可再次报价。本次报价<b class="ls-b">不提交、不生成编号、不产生任何占用</b>。</p>', '需求已失效');
   } else if(r.k === 'recalc'){
     box = CF.note('amber',
       '<b class="ls-b">暂时无法完成覆盖校验，请稍后重试。</b>实时重算所依赖的代币或汇率数据此刻不可读。' +
-      '<p>本次<b class="ls-b">不生成编号、不产生占用，也不会使该需求失效</b>。' +
-      '校验失败时</p>',
+      '<p>本次<b class="ls-b">不生成编号、不产生占用，也不会使该需求失效</b>。</p>',
       '校验暂不可用');
   } else {
     box = CF.note('amber',
@@ -1501,6 +1455,10 @@ function submitResultCard(){
    演示企业主体名（带「（演示）」）按四个模块的既有约定保持中文，不翻译。
    ========================================================================== */
 var CQ_EN = {
+  "试算。": "as an indicative projection.",
+  "若您的开户行需要通过中转行接收外币汇款，请填写；不确定时请咨询开户行。": "Fill this in if your bank needs an intermediary to receive foreign-currency transfers; ask your bank if you are unsure.",
+  "，收款地址为贵司的": ", the receiving address is your",
+  "本位币，不折算": "The accounting currency; no conversion",
   "\"格式对不对\"与\"户名一致不一致\"": "whether the format is valid and whether the account name matches",
   "0.9994　生效 2026-09-04 19:05 UTC+8　来源 平台汇率管理 · 中间价　版本 FX-20260904-T1905": "0.9994　effective 2026-09-04 19:05 UTC+8　source Platform FX management · mid rate　version FX-20260904-T1905",
   "1.0000　生效 2026-09-08 14:20 UTC+8　来源 平台汇率管理 · 中间价　版本 FX-20260908-T1420": "1.0000　effective 2026-09-08 14:20 UTC+8　source Platform FX management · mid rate　version FX-20260908-T1420",
@@ -1962,8 +1920,7 @@ var mod = {
         '<div class="check" style="margin-top:14px"><input type="checkbox" id="qtAck" ' +
           (S.qt.ack ? 'checked' : '') + ' data-act="cq.qtAck">' +
           '<label for="qtAck">我已阅读并理解以上五条，确认提交本次报价。</label></div>' +
-        '<p class="hint">原型内的结果模拟：选择服务端终检的返回，用于走通 6.2.5 与 6.5 的各条分支。' +
-        '真实系统里这些结论一律由服务端在提交时刻实时重算给出。</p>' +
+        '<p class="hint">原型内的结果模拟：选择本次提交的返回。</p>' +
         '<select class="inp" data-f="submitOut" id="submitOut">' +
           SUBMIT_OUTCOMES.map(function(o){ return '<option value="' + o[0] + '">' + o[1] + '</option>'; }).join('') +
         '</select></div>' +
@@ -1987,8 +1944,7 @@ var mod = {
           return '<div class="row"><div class="row-main"><div class="row-k">' + E(r[0]) + '</div>' +
             '<div class="row-v" style="color:var(--muted);font-size:12.5px;line-height:1.6">' + r[1] + '</div></div></div>';
         }).join('') + '</div>' +
-        '<p class="hint">原型内的结果模拟：演示"报价到期时刻与您的提交撞在一起"' +
-        '—— 以服务端落库时刻为准并串行结算，任何情况下占用只释放一次。</p>' +
+        '<p class="hint">原型内的结果模拟：演示"报价到期时刻与您的提交撞在一起"。</p>' +
         '<select class="inp" data-f="acceptOut" id="acceptOut">' +
           '<option value="ok">接受成功（先落库）</option>' +
           '<option value="expired">报价已先一步失效</option></select>' +
@@ -2013,10 +1969,7 @@ var mod = {
           '自由文本、不设分类，<b>对报价机构可见</b> —— 否则机构不知道为什么被拒，只能盲目重报。' +
           '已填 ' + v.trim().length + ' / ' + REASON_MAX + ' 字。') +
         CF.note('',
-          '拒绝后<b class="ls-b">同一次结算内</b>：业务落 已拒绝（终态）、这条需求回到「待报价」、' +
-          '在途报价金额<b class="ls-b">全额释放</b>、项目在途金额<b class="ls-b">不变</b>、质押<b class="ls-b">不释放</b>。' +
-          '<p>您<b class="ls-b">随时可以拒绝</b>，服务端不设冷却期、不做理由审核。' +
-          '同一机构可在被拒后立即重新报价，本期不设冷却与次数限制。</p>') +
+          '拒绝后：业务落 <b class="ls-b">已拒绝</b>，这条需求回到「待报价」，在途报价金额<b class="ls-b">全额释放</b>。') +
         '</div>' +
         '<div class="modal-f"><button class="btn" type="button" data-act="cq.mclose">取消</button>' +
         '<button class="btn danger" type="button" ' + (ok ? '' : 'disabled ') +

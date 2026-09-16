@@ -1431,8 +1431,8 @@ function lockCard(p, own, wide){
         '<span>' + L('held <b>' + fmtDur(k.heldMin) + '</b> ＋ left <b>' + fmtDur(k.leftMin) + '</b> ≡ <b>' + QUOTE_HOURS + ' hours</b>',
                      '已锁定 <b>' + fmtDur(k.heldMin) + '</b> ＋ 剩余 <b>' + fmtDur(k.leftMin) + '</b> ≡ <b>' + QUOTE_HOURS + ' 小时</b>') + '</span></div>' +
       (k.soon ? '<p class="hint" style="color:var(--warn)">' + L(
-          'Less than 24 hours left, so the countdown has switched to minute precision. Expiry is executed by the system at the exact moment and does not depend on anyone being signed in. There is no grace period.',
-          '剩余不足 24 小时，倒计时已切到分钟精度。到点即失效，由系统自动执行、不依赖任何人登录；无宽限期。') + '</p>' : '') +
+          'Less than 24 hours left — the countdown is now in minutes.',
+          '剩余不足 24 小时，倒计时已切到分钟精度。') + '</p>' : '') +
       '<div class="ways">' +
         (own
           ? '<div class="w"><i>①</i><span>' + L('You may <b>reject at any time</b>; the demand returns to quotable immediately.',
@@ -1478,12 +1478,10 @@ function shortAlert(p, d, own){
   return '<div class="ls-alert">' + CF.note('red', L(
     'Coverage gap <span class="mono">' + usd(d.gap) + '</span>; asset value to add <span class="mono">' + usd(d.need) +
       '</span> (= coverage gap ÷ ' + (PLEDGE_RATE*100) + '%), since ' + (d.shortFrom || '—') + '. ' +
-      'Cause: the underlying receivables behind ' + d.deadCount + ' token(s) in this pool have been invalidated (' + usd(d.dead) +
-      ' in total), so they no longer count towards pledged token value. Adding collateral raises the borrowing cap and repayment lowers outstanding financing; the flag clears automatically once the condition reverses.',
+      'Cause: the underlying receivables behind ' + d.deadCount + ' token(s) in this pool have been invalidated (' + usd(d.dead) + ' in total).',
     '覆盖缺口 <span class="mono">' + usd(d.gap) + '</span>，需追加资产价值 <span class="mono">' + usd(d.need) +
       '</span>（＝覆盖缺口 ÷ ' + (PLEDGE_RATE*100) + '%），自 ' + (d.shortFrom || '—') + ' 起。' +
-      '诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效（合计 ' + usd(d.dead) + '），不计入有效质押价值；' +
-      '追加质押抬高融资上限或还款降低项目融资余额，条件反转即自动解除。'),
+      '诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效（合计 ' + usd(d.dead) + '）。'),
     L('Insufficient pledge coverage: pledged token value has fallen below outstanding financing',
       '质押覆盖不足：池内有效质押价值低于项目融资余额')) + '</div>';
 }
@@ -1494,12 +1492,8 @@ function usedUpNote(d, p){
      只是这段建议不再渲染。终态下三档的呈现口径 PRD 没写，已登记进交付说明。 */
   if(p && (p.status === 'S-FP-5' || p.status === 'S-FP-6')) return '';
   return CF.note('amber', L(
-    'There is <span class="mono">' + usd(0) + '</span> left to borrow, so no new commitment can be taken on.' +
-      '<p>Existing debt is still fully covered (borrowing cap ' + usd(d.cap) + ' ≥ outstanding financing ' + usd(d.bal) +
-      '), so <strong class="ls-b">this is not an insufficient-coverage notice</strong>. Adding collateral raises the borrowing cap and reopens headroom.</p>',
-    '可融金额为 <span class="mono">' + usd(0) + '</span>，暂不能新增占用。' +
-      '<p>已发生的债务仍被池内价值足额覆盖（融资上限 ' + usd(d.cap) + ' ≥ 项目融资余额 ' + usd(d.bal) +
-      '），<strong class="ls-b">这不是覆盖不足</strong>。追加质押可抬高融资上限并重新打开额度。</p>'),
+    'There is <span class="mono">' + usd(0) + '</span> left to borrow, so no new commitment can be taken on.',
+    '可融金额为 <span class="mono">' + usd(0) + '</span>，暂不能新增占用。'),
     g('covFullyDrawn'));
 }
 
@@ -1815,10 +1809,7 @@ function flowBlock(p, acts){
       (i === cur && !done ? ' · ' + L('current','当前') : '') + '</div>' +
       '<div class="x">' + E(L(f.x[0], f.x[1])) + '</div>' + track + btn + '</div>';
   }).join('');
-  return '<div class="ls-flow4">' + body + '</div>' +
-    '<p class="hint" style="margin-top:11px">' + L(
-      'Quote, accept/reject and disbursement happen in their own stages. This page carries the stage display only; each stage dialog shows the public facts and hands off to the owning module.',
-      '报价、接受/拒绝与放款在各自的环节里完成。本页只承载环节展示；环节弹窗给出已公开的事实，真正的操作交回对应模块完成。') + '</p>';
+  return '<div class="ls-flow4">' + body + '</div>';
 }
 function stageLabel(f){
   return { publish:g('publishDemand'), quote:L('Submit quote','提交报价'),
@@ -1866,10 +1857,7 @@ function repayBlock(p, acts){
     (repay ? '<div style="margin-top:12px">' +
        (repay.enabled ? '<button class="btn block" type="button" data-act="ls.stage" data-v="repay">' + g('repayNow') + '</button>'
                       : '<button class="btn blocked block" type="button" aria-disabled="true" data-act="ls.why" data-v="repay">⊘ ' +
-                        g('repayNow') + '</button>' + whyLine(repay.reason)) + '</div>' : '') +
-    '<p class="hint" style="margin-top:11px">' + L(
-      'Instalment amounts, interest and overdue days are produced by and read here without recalculation . The overdue flag runs in parallel with the deal status — a deal can be both repaying and overdue.',
-      '期次金额、利息与逾期天数在此只读引用，不自行重算。逾期是并行标记而非状态——一笔业务可以同时「还款中」且「逾期」。') + '</p>';
+                        g('repayNow') + '</button>' + whyLine(repay.reason)) + '</div>' : '');
 }
 
 /* ---------------- 操作区段 ①：全局操作（6.5.5 / D-FIN-78） ---------------- */
@@ -1879,8 +1867,8 @@ function globalBlock(p, acts, own){
      v1.4 那句"当前身份对本项目没有可用的全局操作"会让人以为是按环节禁掉了，改成讲清归属。 */
   if(!own)
     return '<p class="hint">' + L(
-      'This project belongs to another entity (' + E(dtr(p.owner)) + '). Own-entity actions — adding collateral, releasing collateral, closing the project — are filtered by entity on the server , so they are not available here. Everything on this page that is public stays fully visible.',
-      '本项目属于另一个企业主体（' + E(dtr(p.owner)) + '）。追加质押、解除质押、关闭项目属于本方数据，按企业主体在服务端过滤，因此这里没有这些入口。本页的公开信息一条不少。') + '</p>';
+      'This project belongs to another entity (' + E(dtr(p.owner)) + '), so there are no actions here.',
+      '本项目属于另一个企业主体（' + E(dtr(p.owner)) + '），这里没有可用的操作。') + '</p>';
 
   /* 草稿态时「发布融资需求」也在这一段出现（6.5.5 段①），
      因为此时页面上没有第 ② 段可点的环节按钮，用户第一件事就是发布。 */
@@ -1921,8 +1909,8 @@ function globalBlock(p, acts, own){
   if(!terminal)
     [pl, rel, cl].forEach(function(a){ if(a && !a.enabled && a.reason) out += whyLine(a.reason); });
   if(terminal) out += '<p class="hint" style="margin-top:12px">' + L(
-    'The project is in a terminal state, so adding collateral and closing are no longer available. <b>Releasing collateral stays open</b>: the business-side release happened at the moment of closure / settlement, but the tokens are still inside the pledge contract — you withdraw them yourself, pay the gas, and there is <b>no deadline and no expiry</b> .',
-    '项目已是终态，追加质押与关闭项目不再可用。<b>解除质押仍然可用</b>：业务释放在关闭 / 结清的同一时刻已完成，但代币仍停留在质押合约内，需您自行发起提取并自付 gas，<b>无时间限制、不过期</b>。') + '</p>';
+    'The project is in a terminal state. <b>Releasing collateral stays open</b> — the tokens are still inside the pledge contract.',
+    '项目已是终态。<b>解除质押仍然可用</b>——代币仍停留在质押合约内。') + '</p>';
   return out;
 }
 
@@ -1937,10 +1925,7 @@ function guestActs(){
   return '<div class="card-b ls-guest"><p class="lead">' + L(
     'Everything on this page is public. Sign in to act on it.',
     '本页信息全量公开，登录后即可操作。') + '</p>' +
-    '<button class="btn primary block" type="button" data-act="ls.signin">' + g('signIn') + '</button>' +
-    '<p class="hint" style="margin-top:12px">' + L(
-      'Action authorisation lives on the server. Calling any write endpoint while signed out — or as a different entity — is rejected there and the response carries no business data. Removing the greyed-out buttons changes nothing about that check .',
-      '动作鉴权在服务端。未登录或越权主体直接调用任何写接口一律被拒绝，且响应不含业务数据。前端少了几个置灰按钮，不构成任何校验上的放松。') + '</p></div>';
+    '<button class="btn primary block" type="button" data-act="ls.signin">' + g('signIn') + '</button></div>';
 }
 
 function pageProject(){
@@ -2026,13 +2011,7 @@ function pageProject(){
           : L('No valid collateral in this pool','本项目暂无有效质押') + '</b>' +
             L('The pledge submitted at creation ultimately failed on chain. Pledge again before publishing.',
               '创建时那笔质押最终链上失败，可重新质押后再发布。')) + '</td></tr>') +
-    '</tbody></table></div>' + pgBar(tp, 'tokPage') +
-    '<div class="card-b" style="padding-top:4px;padding-bottom:4px">' + fold(L('What is public and what is not','哪些信息公开、哪些不公开'), '', CF.note('', L(
-      'What is fully public is the financing demand and deal information shown on the marketplace. It does <strong class="ls-b">not</strong> include credit lines, other parties’ console data, operations-side diagnostic fields, scanned attachments or contact details.' +
-      '<p>Since V8.0 the contract number and invoice number of the underlying receivable are <strong class="ls-b">no longer public either</strong> . Buyer name, exact amount and due date remain public; the rate limiting and scraping detection that go with that are in appendix chapter 8.</p>',
-      '全量公开的范围是广场上展示的融资需求与融资业务信息；<strong class="ls-b">不含</strong>授信额度、他人控制台数据、运营端诊断字段、附件影像件与联系人联系方式。' +
-      '<p>V8.0 起<strong class="ls-b">底层应收账款的合同号与发票号也不再公开</strong>。买方企业名、精确金额与账期仍然公开，配套的接口速率限制与异常抓取识别见分册第 8 章。</p>'))) +
-    '</div></div>';
+    '</tbody></table></div>' + pgBar(tp, 'tokPage') + '</div>';
 
   /* ---- 左栏 2：融资信息清单（一行 = 一笔需求，按需求编号 FP-28 逐笔；固定每页 5 条） ---- */
   var recs = demandRecords(p), rp2 = paged(recs, 'demPage');
@@ -2052,13 +2031,12 @@ function pageProject(){
         L('Once the pool holds valid collateral, publish a demand from the actions panel.',
           '池内有有效质押后，在右侧操作区发布融资需求即可。') + '</td></tr>') +
     '</tbody></table></div>' + pgBar(rp2, 'demPage') +
-    '<div class="card-b" style="padding-top:4px;padding-bottom:4px">' + fold(L('How a demand ID is formed','需求编号怎么来的'), '', CF.note('', L(
-      'A demand ID is <strong class="ls-b">project ID + a two-digit round number</strong> . It is a derived identifier, not a second object: no second state machine, no second deep-link anchor — it is still round N of the same project .' +
-      '<p>Commercial terms: ' + (p.terms ? 'rate ' + E(dtr(p.terms.rate)) + ' · term ' + E(dtr(p.terms.term)) + ' · ' + E(dtr(p.terms.repay)) + ' · use of funds ' + E(dtr(p.terms.use))
-        : 'this project currently has no public commercial terms.') + '</p>',
-      '需求编号 ＝ <strong class="ls-b">项目编号 + 两位轮次序号</strong>。它是派生编号、不是第二个对象：不产生第二套状态机、第二个深链锚点——仍然是同一个项目的第 N 轮要约。' +
-      '<p>商务条款：' + (p.terms ? '报价利率 ' + E(dtr(p.terms.rate)) + ' · 融资期限 ' + E(dtr(p.terms.term)) + ' · ' + E(dtr(p.terms.repay)) + ' · 资金用途 ' + E(dtr(p.terms.use))
-        : '该项目当前无公开的在途业务商务条款。') + '</p>'))) + '</div></div>';
+    (p.terms ? '<div class="card-b" style="padding-top:10px">' +
+      '<div class="rows" style="box-shadow:none"><div class="row"><div class="row-main">' +
+      '<div class="row-k">' + L('Commercial terms','商务条款') + '</div><div class="row-v">' +
+      L('rate ' + E(dtr(p.terms.rate)) + ' · term ' + E(dtr(p.terms.term)) + ' · ' + E(dtr(p.terms.repay)) + ' · use of funds ' + E(dtr(p.terms.use)),
+        '报价利率 ' + E(dtr(p.terms.rate)) + ' · 融资期限 ' + E(dtr(p.terms.term)) + ' · ' + E(dtr(p.terms.repay)) + ' · 资金用途 ' + E(dtr(p.terms.use))) +
+      '</div></div></div></div>' : '') + '</div>';
 
   /* ---- 左栏（v1.4 新位置：融资信息清单下方）：在途报价与报价历史 ----
      需求方 09-14 第 3 条要求改列表展示。一行 = 一笔报价，在途与历史同表、用状态列区分，
@@ -2107,13 +2085,7 @@ function pageProject(){
           '<td class="num">' + r.q.at + '<div class="cell-sub">' + TZ_LABEL +
             (r.q.endAt ? ' · ' + L('ended ','终结 ') + r.q.endAt : '') + '</div></td>' +
           '<td>' + quoteState(r) + '</td></tr>';
-      }).join('') + '</tbody></table></div>' +
-    '<div class="card-b" style="padding-top:4px;padding-bottom:4px">' + fold(L('Rejected vs expired','已拒绝与已失效的区别'), '', CF.note('', L(
-      'Rejected and expired are <b class="ls-b">two different terminal states</b>: a rejection is the asset owner’s decision (has a reason, visible to the institution); an expiry is a system event (no reason, not counted towards a rejection rate). The consequences for the credit line and the project are identical — only the landing state and the presence of a reason differ. The deal ID is retained but voided; it is never recycled or reused.' +
-      '<p>The quoted amount is always equal to the demand amount; the settlement figure uses the FX snapshot locked at submission. Interest accrual follows the signed financing contract, not this table.</p>',
-      '已拒绝与已失效是<b class="ls-b">两个不同的终态</b>：拒绝是资产方的意思表示（有原因、对机构可见）；失效是系统事件（无原因、不计入拒绝率）。两者对额度与项目的后果完全相同，差别只在状态落点与有没有原因。编号保留但作废，不回收、不复用。' +
-      '<p>报价金额恒等于需求金额；结算金额按报价提交时锁定的汇率快照折算。计息规则以双方签署的融资合同为准，不以本表为准。</p>'))) +
-    '</div></div>';
+      }).join('') + '</tbody></table></div></div>';
 
   /* ---- 左栏 4（WS-326 增量）：放款与放款确认的公开进度 ----
      公开字段：放款提交时间、放款币种与金额、确认时间、终止时间与原因（D-LN-06）。
@@ -2158,26 +2130,6 @@ function pageProject(){
         kcell(L('Confirmation window until','放款确认时限至'), fin.confirmTo + ' ' + TZ_LABEL,
           L('= disbursement time + 168 hours; read-only, cannot be extended','＝ 放款提交时间 + 168 小时，只读、不可延长')) : '') +
     '</div>' +
-    (fin.st === 'S-FD-4'
-      ? CF.note('', L(
-          '<b class="ls-b">When the financing-confirmation window expires, nothing is auto-confirmed, nothing is voided</b> and no credit moves: expiry only sends a notification, the deal stays at and the confirm entry keeps working .' +
-          '<p>This is <b class="ls-b">not the same clock</b> as the 168-hour quote validity above: a quote <b class="ls-b">expires automatically</b>, a financing-confirmation window <b class="ls-b">only reminds</b>. The two are worded differently and do not share the phrase "validity" .</p>' +
-          (own ? '<p>Money missing or the amount wrong? There is <b class="ls-b">no "raise a dispute" entry</b> on the platform. Do not confirm; email <b class="ls-b">{platform support mailbox}</b> quoting deal ID ' + fin.deal +
-                 ' and settle it offline .</p>' : ''),
-          '<b class="ls-b">放款确认时限届满不会自动确认、不会自动作废这笔业务</b>，也不会自动转移任何额度：到期只发一条通知，业务仍是，确认入口照常可用。' +
-          '<p>这与上面「在途报价」的 168 小时<b class="ls-b">不是同一个时限</b>：报价有效期到点<b class="ls-b">自动失效</b>，放款确认时限到点<b class="ls-b">只提醒</b>。两者措辞不同、不共用"有效期"三个字。</p>' +
-          (own ? '<p>钱没到账或金额对不上？平台上<b class="ls-b">没有「提出异议」入口</b>，请先不要点确认，发邮件到 <b class="ls-b">{平台客服邮箱}</b> 并注明融资业务编号 ' + fin.deal +
-                 '，走线下核实。</p>' : '')),
-          L('About the disbursement-confirmation window','关于放款确认时限'))
-      : CF.note('', L(
-          'The signed contract is <b class="ls-b">verified by the funder before disbursing</b>. The platform does not vet its authenticity or legal effect and has no platform-side review state. The institution may <b class="ls-b">hold off disbursing / ask for a re-upload / terminate the deal</b>.' +
-          '<p><b class="ls-b">Hold and re-upload reasons are visible to the asset owner but are not marketplace-public fields</b> — they are commercial communication between two parties, and publishing them would broadcast one side’s commercial judgement to the whole market .</p>',
-          '盖章件由<b class="ls-b">资金方在放款前核验</b>，平台不审核真伪与法律效力、不设平台侧审核态。机构可以<b class="ls-b">暂不放款 / 要求重传盖章件 / 终止业务</b>。' +
-          '<p><b class="ls-b">暂缓与重传的原因对资产方可见，但不进广场公开字段</b>——它们是双方之间的商务沟通，公开等于把一方的商业判断对全市场广播。</p>'),
-          L('Who is doing what at this step','当前这一步由谁在做什么'))) +
-    '<p class="hint" style="margin-top:12px"><b>' + L('Non-public fields','不公开字段') + '</b>' + L(
-      ' (filtered on the server, not hidden in the front end): payee account, transfer receipt files, transaction hash and chain, the signed contract and its version history, hold-disbursement reasons, re-upload requests. For guests and third-party funders arriving by deep link these fields simply do not exist in the API response .',
-      '（服务端过滤，不是前端隐藏）：收款账户、转账凭证文件、交易哈希与链、盖章件及其历史版本、暂缓放款原因、要求重传原因。游客与第三方资金方深链直达时，这些字段在接口响应里根本不存在。') + '</p>' +
     '</div>') +
     (finEv.length ? '<div class="card-b"' + (fin ? ' style="border-top:1px solid var(--border)"' : '') + '>' +
       '<h3 class="sec-title" style="font-size:12.5px;margin-bottom:10px">' +
@@ -2188,11 +2140,7 @@ function pageProject(){
           '<span class="mono" style="margin-left:8px">' + e.d + '</span></div>' +
           '<div class="faint" style="font-size:11.5px;margin-top:4px;line-height:1.6">' + E(dtr(e.t)) +
           (e.note ? '<br>' + E(dtr(e.note)) : '') + '</div></li>';
-      }).join('') + '</ul>' +
-      '<p class="hint">' + L(
-        'Only public fields make it onto this timeline: <b>disbursement time, disbursement currency and amount, confirmation time, termination time and a neutrally worded reason</b>. Payee account, receipt files, transaction hash and the signed contract are not among them .',
-        '进时间线的只有公开字段：<b>放款提交时间、放款币种与金额、确认时间、终止时间与原因</b>（中性表述）。收款账户、凭证文件、交易哈希与盖章件不在其中。') +
-      '</p></div>' : '') +
+      }).join('') + '</ul></div>' : '') +
     '</div>';
 
   /* ---- 左栏 5（WS-327 增量）：还款计划与还款进度的公开进度 ----
@@ -2228,21 +2176,16 @@ function pageProject(){
     '<div class="rows" style="box-shadow:none;margin-top:16px"><div class="row"><div class="row-main">' +
       '<div class="row-k">' + L('Interest rule','计息规则') + '</div>' +
       '<div class="row-v mono" style="font-size:12px;color:var(--muted)">' + E(dtr(rep.rules)) + '</div></div></div></div>' +
-    (rep.overdueDays ? CF.note('', L(
-      '<b class="ls-b">Overdue is a parallel flag, not a status.</b> The deal is still <b class="ls-b">Repaying</b> — one deal can be both repaying and overdue at the same time: instalment 1 is overdue while instalment 3 is not yet due. Making them mutually exclusive would put the status at odds with the facts .' +
-      '<p>An overdue instalment <b class="ls-b">accrues days only, no penalty interest</b>, and <b class="ls-b">triggers no automatic enforcement</b>: no disposal of pledged tokens, no forced liquidation, no subrogation, no acceleration . <b class="ls-b">Principal repayment happens after the project term ends by design</b> , so "matured · in run-off" is a normal path, not an anomaly.</p>',
-      '<b class="ls-b">逾期是并行标记，不是状态。</b>该业务状态仍是 <b class="ls-b">还款中</b>——一笔业务可以同时「还款中」且「逾期」：三期里第一期逾期、第三期还没到期，做成互斥状态会让状态与事实不符。' +
-      '<p>本期<b class="ls-b">只记逾期天数、不算罚息</b>，逾期<b class="ls-b">不触发任何自动处置</b>：不处置质押代币、不强制平仓、不代偿、不提前到期。<b class="ls-b">还本金本来就发生在融资项目到期之后</b>，项目「已到期 · 存量处理中」是常态路径，不是异常。</p>'),
-      L('About this overdue flag','关于这个逾期标记')) : '') +
+    (rep.overdueDays ? CF.note('amber', L(
+      'Instalment <b class="ls-b">' + rep.overdueSeq + '</b> is <b class="ls-b">' + rep.overdueDays +
+        ' days overdue</b> (due ' + rep.overdueDue + '). The deal status is still <b class="ls-b">Repaying</b>.',
+      '第 <b class="ls-b">' + rep.overdueSeq + '</b> 期<b class="ls-b">已逾期 ' + rep.overdueDays +
+        ' 天</b>（应还日 ' + rep.overdueDue + '）。该业务状态仍是<b class="ls-b">还款中</b>。'),
+      L('Overdue','逾期')) : '') +
     (rep.awaitConfirm ? CF.note('', L(
-      'One instalment has a <b class="ls-b">repayment record submitted and is waiting for the funder to confirm</b> (schedule ID ' + rep.awaitConfirm + '). When the <b class="ls-b">repayment-confirmation window</b> expires it <b class="ls-b">does not auto-confirm, does not change any status and does not decrement any credit</b>: expiry only sends a notification .' +
-      '<p><b class="ls-b">The asset owner’s overdue-day count froze at the moment of submission</b> and <b class="ls-b">does not keep growing because the institution is slow to confirm</b> . There is <b class="ls-b">no "raise a dispute" entry</b> here either: if the amount does not match or the money has not arrived, do not confirm — email <b class="ls-b">{platform support mailbox}</b> quoting deal ID ' + rep.deal + ' and schedule ID ' + rep.awaitConfirm + '.</p>',
-      '有一期<b class="ls-b">已提交还款记录、等待资金方确认</b>（还款计划编号 ' + rep.awaitConfirm + '）。<b class="ls-b">还款确认时限</b>届满<b class="ls-b">不会自动确认、不会自动改状态、不会自动递减任何额度</b>：到期只发一条通知。' +
-      '<p><b class="ls-b">资产方的逾期天数已在提交那一刻冻结</b>，<b class="ls-b">不因机构迟迟不确认而继续增加</b>。本期<b class="ls-b">没有「提出异议」入口</b>：金额不符或款没到时，请先不要点确认，发邮件到 <b class="ls-b">{平台客服邮箱}</b> 并注明融资业务编号 ' + rep.deal + ' 与还款计划编号 ' + rep.awaitConfirm + '，走线下核实——本页是该入口的三处之一。</p>'),
-      L('One instalment is awaiting repayment confirmation','有一期正在等待还款确认')) : '') +
-    '<p class="hint" style="margin-top:12px"><b>' + L('Non-public fields','不公开字段') + '</b>' + L(
-      ' (filtered on the server, not hidden in the front end): repayment receipt files, transaction hash and chain, the institution’s payee-account snapshot, repayment notes and supporting materials, confirmation notes. For guests and third parties arriving by deep link these fields do not exist in the API response .',
-      '（服务端过滤，不是前端隐藏）：还款凭证文件、交易哈希与链、机构收款账户快照、还款备注与补充材料、确认备注。游客与第三方深链直达时，这些字段在接口响应里根本不存在。') + '</p>' +
+      'One instalment has a repayment record submitted and is waiting for the funder to confirm (schedule ID <b class="ls-b">' + rep.awaitConfirm + '</b>).',
+      '有一期已提交还款记录、等待资金方确认（还款计划编号 <b class="ls-b">' + rep.awaitConfirm + '</b>）。'),
+      L('Awaiting repayment confirmation','等待还款确认')) : '') +
     '</div></div>';
 
   /* ---- 右栏：三段式操作区（6.5.5）---- */
@@ -2375,20 +2318,13 @@ function pageCreate(){
             '<input type="radio" name="ptype" ' + (t[2] ? '' : 'disabled ') + (S.ptype === t[0] ? 'checked ' : '') +
             'data-act="ls.ptype" data-v="' + t[0] + '">' + E(t[1]) +
             (t[2] ? '' : ' <span class="faint">' + L('(outside this release)','（本期能力边界外）') + '</span>') + '</label>';
-        }).join('') + '</div>' +
-        '<p class="hint">' + L(
-          'Choosing the type here turns what used to be an invisible filter into a visible decision : you know from the start what this pool holds, and later top-ups can only add tokens of the same type.',
-          '把原来"可质押清单的隐式过滤"升格为创建时的显式选择：建池那一刻就知道这个池装什么，后续追加质押只能追加同类型代币。') + '</p></div>' +
+        }).join('') + '</div></div>' +
       '</div></div>' +
 
       '<div class="card" style="margin-top:16px">' + cardHead(L('Pledge tokens','代币质押'),
         faint(L('at least one token is required at creation — an empty-pool draft cannot be produced by this action',
                 '创建项目时必须至少质押一笔代币，"空池草稿"不能由创建动作产生'))) +
-      '<div class="card-b" style="padding-bottom:12px">' + CF.note('', L(
-        '<strong class="ls-b">The tokens below have already been filtered</strong>: issued; owned by your entity; not currently pledged and not sitting in the pledge contract (tokens "released, awaiting withdrawal" must be withdrawn before they can be pledged again); underlying receivable not invalidated; and matching the token type selected above.' +
-        '<p>Splitting by quantity is not supported this release: <strong class="ls-b">a token is pledged whole</strong>, selected by the piece, with no quantity input.</p>',
-        '<strong class="ls-b">下列代币已按可质押条件筛选</strong>：签发状态为「已签发」；归属当前企业主体；当前未被任何有效质押占用、且不在质押合约内（含"已释放待提取"的代币，须先提取才能再质押）；底层应收账款未失效；且与上方所选代币类型一致。' +
-        '<p>本期不支持按数量拆分，<strong class="ls-b">一张代币整张质押</strong>，以"张"为单位勾选，没有数量输入框。</p>')) + '</div>' +
+
       '<div class="tablewrap" style="border:0;box-shadow:none;border-radius:0"><table class="tbl"><thead><tr>' +
         '<th style="width:40px"><input type="checkbox" ' + (picked.length && picked.length === wl.length ? 'checked' : '') +
         ' data-act="ls.selAll" aria-label="' + L('Select all','批量勾选全部') + '"></th>' +
@@ -2433,16 +2369,6 @@ function pageCreate(){
             : L('At least one token must be pledged at creation, so submission is disabled with nothing selected.',
                 '未勾选任何一张代币时不可提交——创建项目时必须至少质押一笔。')) + '</p>') +
         '</div></div>' +
-        '<div class="card" style="margin-top:16px">' + cardHead(L('Rules for this step','本段规则')) + '<div class="card-b"><p class="hint">' +
-          L('· The creation check tests that the <b>pledge has been submitted</b> (on-chain "pending" or "confirmed" both pass); it does not wait for on-chain confirmation.<br>' +
-            '· After submission the project sits in <b>Draft (pool created · not published)</b> and is entirely invisible externally: not on the marketplace, not searchable, and a deep link from anyone else returns "not found or not accessible".<br>' +
-            '· <b>On success you land straight on the project detail page</b> — the two-step progress bar and the separate publish page are gone (V8.0). You can publish now or much later; <b>neither path ever asks you to pledge again or pay gas twice</b>.<br>' +
-            '· The publish check is the one that tests on-chain facts: pledged token value &gt; 0 and demand amount ≤ available to borrow.',
-            '· 创建校验的对象是<b>质押申请已提交</b>（链上「处理中」或「成功」均算通过），不要求等待链上确认完成。<br>' +
-            '· 提交后项目落<b>草稿（已建池 · 未发布）</b>，对外完全不可见：不进广场、不可搜索、他人深链直达返回"内容不存在或无权访问"。<br>' +
-            '· <b>创建成功后直接进入项目详情页</b>——两步进度条与独立发布页已作废（V8.0）。可以马上发布，也可以隔很久再发布，<b>任何一步都不会要求重新质押或重新付一次 gas</b>。<br>' +
-            '· 发布校验的对象才是链上事实：有效质押价值 &gt; 0 且融资需求金额 ≤ 可融金额。') +
-        '</p></div></div>' +
     '</aside></div>';
 }
 
@@ -2601,10 +2527,7 @@ function drawerPublish(){
       '" data-f="damt" data-act="ls.amt"' + (p.emptyPool ? ' disabled' : '') + '>' +
       '<p class="hint">' + L('Required, greater than 0 and no more than available to borrow ' + usd(d.free) + '. Precision is 2 decimal places in ' + CCY + '.',
         '必填，大于 0 且不超过可融金额 ' + usd(d.free) + '。金额精度为 ' + CCY + ' 2 位小数。') + '</p>' +
-      (S.amtErr ? '<p class="err-msg"><span>!</span><span>' + S.amtErr + '</span></p>' : '') + '</div>' +
-    '<p class="hint">' + L(
-      'The validity date is generated by the system as first publish date + ' + TERM_YEARS + ' year. It is read-only, cannot be edited or extended, and republishing does not reset it.',
-      '有效期由系统按首次发布日 + ' + TERM_YEARS + ' 年生成，只读、不可编辑、不可延期；再次发布不重置。') + '</p>';
+      (S.amtErr ? '<p class="err-msg"><span>!</span><span>' + S.amtErr + '</span></p>' : '') + '</div>';
   return uWrap(p.draft ? g('publishDemand') : L('Republish / amend demand','再次发布 / 修改需求'),
     dtr(p.name) + ' · ' + p.id, body,
     btnUCancel() + '<button class="btn primary" type="button" data-act="ls.publish">' +
@@ -2676,28 +2599,26 @@ function drawerRelease(){
     /* 池子已空（关闭 / 结清后质押已在同一时刻全额业务释放）——此时讲"可撤回上限"没有意义，
        该讲的是代币现在在哪、怎么拿回来（D-FIN-57 第二段）。 */
     (poolEmpty ? CF.note('', L(
-      'This pool is empty: the collateral was released in business terms at the moment the project closed or settled — immediate, no on-chain action, no cost.' +
-      (REDEEMABLE.length
-        ? '<p>The ' + REDEEMABLE.length + ' token(s) worth ' + usd(REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0)) +
-          ' listed below are <b class="ls-b">still inside the pledge contract</b>. Withdrawing them is the second stage, initiated by you and paid for by you, with <b class="ls-b">no deadline and no expiry</b>. Until withdrawn they belong to no pool, count towards no pledged value, and cannot be pledged again.</p>'
-        : '<p>There is nothing awaiting withdrawal in the contract either.</p>'),
-      '本池已空：质押在项目关闭 / 结清的同一时刻已全额业务释放——即时、无链上动作、无费用。' +
-      (REDEEMABLE.length
-        ? '<p>下面列出的 ' + REDEEMABLE.length + ' 张（合计 ' + usd(REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0)) +
-          '）<b class="ls-b">仍在质押合约内</b>。提取是第二段，由您自行发起、自付 gas，<b class="ls-b">无时间限制、不过期</b>。未提取前不属于任何资产池、不计入任何质押价值，也不能被再次质押。</p>'
-        : '<p>合约里也没有待提取的代币。</p>')),
-      L('The pool is empty — what is left is the withdrawal','本池已空，剩下的是提取这一步')) : '') +
+      REDEEMABLE.length
+        ? 'This pool is empty. The ' + REDEEMABLE.length + ' token(s) worth ' + usd(REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0)) +
+          ' listed below are still inside the pledge contract and can be withdrawn here.'
+        : 'This pool is empty, and there is nothing awaiting withdrawal in the contract either.',
+      REDEEMABLE.length
+        ? '本池已空。下面列出的 ' + REDEEMABLE.length + ' 张（合计 ' + usd(REDEEMABLE.reduce(function(a,t){ return a + t.amt; }, 0)) +
+          '）仍在质押合约内，可在此提取。'
+        : '本池已空，合约里也没有待提取的代币。'),
+      L('The pool is empty','本池已空')) : '') +
     /* 池内有代币但可撤回上限为 0：不把入口藏起来，把数值与两条出路讲清（AC-LS-37） */
     (poolNothing ? CF.note('amber', L(
       'Release headroom is <span class="mono">' + usd(0) + '</span> right now — it is <b class="ls-b">available to borrow ÷ ' + (PLEDGE_RATE*100) +
       '%</b>, and available to borrow is ' + usd(d.free) + ' because the pool is carrying outstanding financing of ' + usd(d.bal) +
       ' and committed demand of ' + usd(d.fly) + '. There are no invalidated tokens in this pool either (they would not be subject to the limit).' +
-      '<p>Two ways forward: ① repayment lowers outstanding financing, which raises the release limit; ② withdrawing the open demand frees the committed part. This is a quantified test , not a stage lock — the entry stays open and is re-evaluated by the server on every submission.</p>' +
+      '<p>Two ways forward: ① repayment lowers outstanding financing, which raises the release limit; ② withdrawing the open demand frees the committed part.</p>' +
       (REDEEMABLE.length ? '<p>The ' + REDEEMABLE.length + ' released token(s) sitting in the pledge contract are <b class="ls-b">not subject to this limit</b> and can be withdrawn right now .</p>' : ''),
       '当前可撤回上限为 <span class="mono">' + usd(0) + '</span>——它<b class="ls-b">＝ 可融金额 ÷ ' + (PLEDGE_RATE*100) +
       '%</b>，而可融金额是 ' + usd(d.free) + '，因为池子正扛着项目融资余额 ' + usd(d.bal) + ' 与项目在途金额 ' + usd(d.fly) +
       '。池内也没有已失效代币（失效代币本来就不受这个上限约束）。' +
-      '<p>两条出路：① 还款降低项目融资余额，可撤回上限随之抬高；② 撤下在途需求，释放被占用的那部分。这是量化判定，不是按环节上锁——入口照常开着，每次提交都由服务端重新判定。</p>' +
+      '<p>两条出路：① 还款降低项目融资余额，可撤回上限随之抬高；② 撤下在途需求，释放被占用的那部分。</p>' +
       (REDEEMABLE.length ? '<p>质押合约内那 ' + REDEEMABLE.length + ' 张已释放代币<b class="ls-b">不受本上限约束</b>，现在就可以提取。</p>' : '')),
       L('Nothing in this pool can be withdrawn right now','本池此刻没有可撤回的代币')) : '') +
     (dead.length ? '<h3 class="sec-title" style="font-size:12.5px;margin:14px 0 6px">' +
@@ -2736,10 +2657,7 @@ function drawerRelease(){
       '; ② wait for repayment to lower outstanding financing, which raises the release limit.',
       '拟撤回价值 <span class="mono">' + usd(wLive) + '</span>；当前可撤回上限 <span class="mono">' + usd(d.wLimit) +
       '</span>；差额 <span class="mono">' + usd(wLive - d.wLimit) + '</span>。<br>两条出路：① 减少勾选，把拟撤回价值压到 ' + usd(d.wLimit) +
-      ' 以内；② 等待还款降低项目融资余额，可撤回上限会随之抬高。') + '</span></p>' : '') +
-    '<p class="hint" style="margin-top:12px">' + L(
-      'A withdrawal <b>provisionally deducts</b> the value as soon as it enters "pending" on chain (understate rather than overstate); only a failure rolls it back. It never marks tokens "released" first and rolls back afterwards. Withdrawal and redemption are <b>never hard-blocked</b>: more than 5 submissions in 24 hours shows a note about gas cost, but does not block.',
-      '撤回一进入链上「处理中」即<b>预扣</b>该部分价值（宁可低估不可高估），失败回滚才恢复；撤回不得先置「已释放」再回滚。撤回与提取<b>不设硬性阻断</b>：24 小时内提交超过 5 次会提示"频繁链上操作会产生较多 gas"，但不阻断。') + '</p>';
+      ' 以内；② 等待还款降低项目融资余额，可撤回上限会随之抬高。') + '</span></p>' : '');
   return uWrap(g('releasePledge'), dtr(p.name) + ' · ' + p.id, body,
     btnUCancel() + '<button class="btn danger" type="button" ' + (n === 0 || over ? 'disabled ' : '') +
     'data-act="ls.release">' + L('Release ' + n + ' token(s)', '解除勾选的 ' + n + ' 张') + '</button>');
@@ -2787,7 +2705,7 @@ function modalStage(){
     '<div class="rows" style="box-shadow:none">' + m.need.map(function(r){
       return '<div class="row"><div class="row-main"><div class="row-k">' + E(L(r[0], r[1])) + '</div>' +
         '<div class="row-v faint">' + L('collected in ' + m.owner, '在 ' + m.owner + ' 内填写') + '</div></div></div>'; }).join('') + '</div>' +
-    CF.note('', E(L(m.note[0], m.note[1])), L('Why this dialog is a shell','为什么这里只是一层壳'));
+    '';
   return mWrap(L(m.t[0], m.t[1]), body,
     btnCancel() + '<a class="btn primary" href="' + m.href(p) + '">' +
       L('Continue in ' + m.owner, '前往 ' + m.owner + ' 完成') + '</a>');
@@ -2806,10 +2724,7 @@ function modalClose(){
       [L('Project status','项目状态'), fpStatus(p)]
     ];
     return mWrap(g('closeProject'),
-      CF.note('red', E(c.block) +
-        '<p>' + L('The check runs on the server every time and uses freshly recomputed figures. Nothing about this project has been changed by opening this dialog.',
-                  '该校验每次提交都由服务端用当场重算的数值执行。打开本弹窗不会改变项目的任何状态。') + '</p>',
-        L('This project cannot be closed right now','当前不能关闭本项目')) +
+      CF.note('red', E(c.block), L('This project cannot be closed right now','当前不能关闭本项目')) +
       '<div class="rows" style="box-shadow:none;margin-top:14px">' + rows.map(function(r){
         return '<div class="row"><div class="row-main"><div class="row-k">' + E(r[0]) + '</div>' +
           '<div class="row-v mono">' + E(String(r[1])) + '</div></div></div>'; }).join('') + '</div>' +
@@ -2821,10 +2736,8 @@ function modalClose(){
       btnCancel() + '<button class="btn primary" type="button" disabled>' + L('Confirm close','确认关闭') + '</button>');
   }
   return mWrap(g('closeProject'), CF.note('amber', L(
-    'Closing moves the project to Closed. In the same instant the platform releases every commitment and collateral relationship on this pool, and the ' + p.tokens.length + ' token(s) in it become "released · awaiting withdrawal".' +
-    '<p>The business-side release is <strong class="ls-b">immediate, involves no on-chain action and costs nothing</strong>. The tokens stay inside the pledge contract: you withdraw them yourself and pay the gas, and they <strong class="ls-b">never return to your wallet automatically</strong>. The "Release pledge" entry stays available after closing, with no deadline .</p>',
-    '关闭后项目转「已关闭」，平台在同一时刻解除该池全部占用与覆盖关系，池内 ' + p.tokens.length + ' 张代币置「已释放 · 待提取」。' +
-    '<p>业务释放<strong class="ls-b">即时、无链上动作、无费用</strong>；代币仍停留在质押合约内，需您自行发起提取并自付 gas，<strong class="ls-b">不会自动回到钱包</strong>。关闭之后「解除质押」入口照常可用，<strong class="ls-b">无时间限制</strong>。</p>')),
+    'Closing moves the project to Closed and the ' + p.tokens.length + ' token(s) in it become "released · awaiting withdrawal". You withdraw them yourself from "Release pledge", which stays available after closing.',
+    '关闭后项目转「已关闭」，池内 ' + p.tokens.length + ' 张代币置「已释放 · 待提取」。需您自行从「解除质押」发起提取，该入口在关闭后照常可用。')),
     btnCancel() + '<button class="btn primary" type="button" data-act="ls.closeOk">' + L('Confirm close','确认关闭') + '</button>');
 }
 
@@ -2856,8 +2769,8 @@ function modalSdk(){
       return '<div class="kk"><s>' + E(r[0]) + '</s><b>' + E(String(r[1])) + '</b></div>'; }).join('') +
       '<div class="kk"><s>' + L('Estimated gas','预估 gas') + '</s><b>' + m.gas + ' ETH</b></div>' +
       '<div class="kk"><s>' + L('Paid by','承担方') + '</s><b>' + E(actorFull('asset')) + '</b></div></div>' +
-    '<div class="sim">' + L('Prototype outcome simulator: pick what the chain returns, to walk the five failure and waiting states in appendix 6.7.2',
-      '原型内的结果模拟：选择本次链上返回，用于走通分册 6.7.2 的五类失败与等待页面态') +
+    '<div class="sim">' + L('Prototype outcome switch: pick what the chain returns.',
+      '原型内的结果模拟：选择本次链上返回。') +
     '<select data-f="sdkOut" id="sdkOut">' +
       '<option value="ok">' + L('All confirmed ','全部成功') + '</option>' +
       '<option value="partial">' + L('Partial success · settled token by token ','部分成功 · 按张独立结算') + '</option>' +

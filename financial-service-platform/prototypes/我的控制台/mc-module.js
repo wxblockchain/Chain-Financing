@@ -634,8 +634,8 @@ function mailBlock(idsLabel) {
     + '<button class="btn sm" type="button" data-act="mc.copy" data-v="' + E(MAIL) + '">'
     + L('Copy','复制') + '</button></div>'
     + '<p>' + L('Please quote ','请注明') + '<b>' + E(idsLabel) + '</b>'
-    + L('. The platform does not confirm on either party&#39;s behalf and does not commit to a turnaround time. The action stays available — being past the window changes no status, permission or amount.',
-        '。平台不代为确认、不承诺处理时效；确认入口照常可用，超期不改变状态、权限与任何金额。') + '</p></div>';
+    + L('. The action stays available — being past the window changes no status, permission or amount.',
+        '。确认入口照常可用，超期不改变状态、权限与任何金额。') + '</p></div>';
 }
 
 /* ---- 骨架屏 / 空态 / 失败态：分块降级，一块坏了其余照常 ---- */
@@ -806,8 +806,8 @@ function statBlock() {
       + '<div class="nv">' + num(t.pn, 0) + ' <span class="u">' + L('tokens','张') + '</span> · ' + usd(t.pAmt) + '</div>'
       + '<div class="nx">' + L('of which void: ','其中已失效：') + num(t.dn, 0) + L(' tokens',' 张') + ' · '
       + usd(t.dAmt) + ' · <b>' + L('not counted towards coverage','不计入覆盖') + '</b></div></div>'
-      + '<div class="x">' + L('Book figure on the token ledger, void tokens included. The project pages show the pledged token value, which excludes them.',
-          '代币台账的账面口径，含失效代币；项目侧的「质押代币价值」已排除失效，两者本就不是同一个数。') + '</div>'
+      + '<div class="x">' + L('Book figure on the token ledger, void tokens included.',
+          '代币台账的账面口径，含失效代币。') + '</div>'
       + '</div>');
   }
   if (S.blocks.credit === 'error') {
@@ -1012,8 +1012,6 @@ function projectDetail(p) {
       + '<b>' + g('coverageGap') + ' ' + usd(gapOf(p)) + '</b>' + L('; ','，')
       + '<b>' + g('topUpNeeded') + ' ' + usd(topUpOf(p)) + '</b>'
       + L('. In this state since ' + p.covSince + '.', '，自 ' + p.covSince + ' 起。') + '</p>'
-      + '<p class="x">' + L('Adding collateral restores the coverage of the money already disbursed. It cannot bring back a demand that has already lapsed — and a lapsed demand is not a penalty: you can publish again right away, with no cooling-off period.',
-          '追加质押可以把已放款债务的覆盖补回来；它救不回已经失效的那笔需求。失效不是惩罚，可立即重新发布、不设冷却。') + '</p>'
       + '<div class="a">' + actBtn({ label: L('Add pledge','去追加质押'), primary:true,
           href: hAction('pledge', 'project/' + p.id) })
       + actBtn({ label: L('View void tokens','查看失效代币清单'), act:'mc.voidList', v:p.id }) + '</div></div>';
@@ -1187,8 +1185,8 @@ function payAcctBlock(fundId) {
     : dl([ kv(L('Wallet address','钱包地址'), mono(a.wallet)),
            kv(g('chain'), CHAIN + ' · ' + TOKEN_STD) ]);
   return '<div class="mc-sub"><div class="sh">' + L('Repayment collection account','还款收款账户') + '</div>'
-    + '<p class="tiny">' + L('This is the account the funder will receive repayments in. It is not the account this disbursement was paid from. Read-only after disbursement.',
-        '这是资金方将来收还款的账户，与本次出账账户无关；放款后本期不可修改。') + '</p>'
+    + '<p class="tiny">' + L('This is the account the funder will receive repayments in. Read-only after disbursement.',
+        '这是资金方将来收还款的账户；放款后本期不可修改。') + '</p>'
     + body + '</div>';
 }
 function disbDetail(d) {
@@ -1644,67 +1642,6 @@ function modalVoid() {
 }
 
 /* ================================================================
-   Part K —— PRD 摘录（给实现方的面板，不属于产品界面）
-   ================================================================ */
-var PRD_MC = {
-  title: '我的控制台（只读）',
-  src: 'v1.0-我的控制台-PRD.md V2.0 + 分册 01 / 02 ｜ 上游 WS-324 V9.2 / WS-325 V7.2 / WS-326 V3.2 / WS-327 V3.3',
-  fields: [
-    ['C-MC-01', '统计区', '四组指标 + 剩余可用授信；①与②是包含关系，②下必须给失效副行（`D-MC-47`/`D-MC-126`）；资金方不渲染①②'],
-    ['C-MC-02 / F-MC-08 待办提示带', '**本页不放**（需求方 2026-09-16 裁定）', '原 14 类判据（`T-MC-01`～`T-MC-14`）与 `D-MC-154`～`D-MC-158`、`AC-MC-28`～`30` / `62`～`65` 在本页**无落点**，需要 PRD 侧重新裁定归属。原待办对应的动作按钮仍在各 tab 行内，紧迫度由状态列与时限列承担'],
-    ['C-MC-03', 'tab 容器', '资产方五个、资金方四个，不渲染空 tab（`D-MC-124`）；默认落地资产方=代币列表、资金方=我的报价（`D-MC-125`）'],
-    ['C-MC-04', '过滤条带', '带过滤的跳转必须显示「已按 X 过滤 / 清除」（`D-MC-148`）'],
-    ['C-MC-05', '快捷按钮组', '三态由 `available_actions` 决定（`AC-MC-32`）：不返回→不渲染；可用→可点；⊘→可见不可点 + 服务端原因'],
-    ['FP-11 / FP-13 / FP-20 / FP-21', '项目五个数与覆盖', '质押代币价值 / 已融资余额 / 质押覆盖状态 / 覆盖缺口；缺口与需追加资产价值成对给（`D-MC-134`）'],
-    ['CR-08～CR-11', '授信四量', '只读消费、不自算；`CR-10` 呈现为"合计"，不作第四个并列量（`D-MC-119`/`D-MC-92`）'],
-    ['FD-36～FD-38 / RM-15～RM-17 / QT-12 / QT-13 / RP-15', '时限与开窗', '一律取服务端绝对时刻，前端只渲染（`D-MC-120`）'],
-    ['QT-15 / QT-16 / RP-12 / RP-13', '还款类型与还款性质', '`QT-15` 定值只读；`QT-16` 派生跟随 `FP-09` 不快照；`RP-13` 一律称「还款性质」（`D-MC-170`）'],
-    ['LN-15 / LN-16', '还款收款账户', '法币五项含中转行 / 数币绑定钱包；只读脱敏、无修改入口（`D-MC-169`）；不是已作废的 `QT-07`/`QT-08`']
-  ],
-  rules: [
-    ['AC-MC-11 零业务写操作', '页面上不存在任何业务提交入口；每个动作按钮都是跳广场的深链，**无任何例外**'],
-    ['D-MC-115 深链承载', '`P-LS-04`～`P-LS-10` 是详情页操作区内的承载单元；控制台的全部深链目标都是做事类 → **右侧抽屉 760px**；控制台不深链到任何提示类 560px 弹窗（`D-MC-171`）'],
-    ['D-MC-121 三个 168 小时分别命名', '报价有效期 / 放款确认时限 / 还款确认时限；界面不得出现无限定词的"7 天""有效期""倒计时"'],
-    ['D-MC-122 环节名', '只用「报价确认」与「放款确认」；旧展示名全链路零残留；界面与消息标题不得出现无限定词的单字「确认」'],
-    ['D-MC-135 档位与失效是两条线', '覆盖不足提醒挂项目行、失效结果挂逐轮需求行，两处分开呈现、文案互不引用，不写成因果句'],
-    ['D-MC-134 覆盖不足提醒四条硬约束', '两个数成对给；中性事实描述；不得出现倒计时、进度条或"还来得及追加"的暗示；资金方同样可见'],
-    ['D-MC-126 统计区②≠有效质押价值', '②是跨项目账面口径（含失效），必须给失效副行并标注「不计入覆盖」'],
-    ['D-MC-127 剩余可用授信', '常驻一句"实际可融金额以发布需求时服务端当场重算的结果为准"，不得给出"你还能融 X"的数字'],
-    ['6.2.1 四个中间量不展示', '融资上限 / 可融金额 / 项目在途金额 / 可撤回上限不在控制台任何位置展示，也不做额度尺与进度条'],
-    ['D-MC-162 待办按企业、消息按人', '该条随待办带一并**移出本页**：它原本挂在待办带头部的可展开说明上。若待办改由其他模块承载，这句说明要跟着过去，不要丢'],
-    ['D-MC-167 界面不呈现平台内部规则', '不出现判据公式与任何条款/验收编号；但覆盖缺口两个数、三个倒计时、差额与出路、客服邮箱一个都不许删'],
-    ['D-MC-168 链是常量', '本期只支持 ETH：只读展示、无选择控件；USDT/USDC 标注 ERC-20；浏览器链接取 ETH 固定前缀并常驻"平台未核验该交易"'],
-    ['D-MC-68 精确值排序', '`X-2`（游客排序只能按区间）不适用于控制台：控制台对游客完全不可见，看的是本人本企业的完整口径数据'],
-    ['D-MC-147～D-MC-149 URL 视图状态', 'tab / 筛选 / 排序 / 页码写入 URL；不得出现 `redirect`/`return_to`/`next`/`target` 参数'],
-    ['D-MC-132 可提取代币提醒', '给出张数与金额、需自付 gas、可批量提取；不暗示代币自动回钱包；不设时限、不做倒计时'],
-    ['D-MC-140 / D-MC-143 超期表述', '一律「已超过放款/还款确认时限 N 天」+ 可复制客服邮箱与编号指引；不得写"已失效""已逾期"；超期不改变状态、权限与金额']
-  ],
-  states: [
-    ['加载中', '统计区与各 tab 各自独立骨架屏，互不阻塞'],
-    ['分块降级', '某块取数失败就地给可重试错误态与原因，其余块照常可用；统计区某组取不到给"暂时取不到"占位，**不展示 0**'],
-    ['空态', '六种空态各有自己的文案与 CTA；CTA 一律指向借贷广场或资产平台，控制台自己没有可执行动作（`D-MC-145`）'],
-    ['entity_id 为 null', '资金方 L0 走整页空态，CTA 指向机构资料，不报错、不渲染一排 0（`D-MC-116`）'],
-    ['会话失效', '回落游客态并把已渲染的个人数据从 DOM 清除，不是弹层遮挡（`D-MC-11` 红线）；不弹登录框、不进错误页'],
-    ['深链带过滤落地', '按 URL 视图状态接住并显示过滤条带（`D-MC-165`）'],
-    ['筛选无结果', '与空态区分：给"没有符合筛选条件的记录"与一键清空筛选'],
-    ['状态已变', '控制台不预判、不提前拦截；落广场详情页 + Toast，返回后重新取数，行上的动作按钮随之消失（`E-MC-03`）']
-  ],
-  copy: [
-    ['质押覆盖状态', 'Pledge coverage status', '覆盖有余 / 覆盖持平 / 覆盖不足'],
-    ['三个 168 小时', 'Quote validity window / Disbursement confirmation window / Repayment confirmation window',
-     '报价有效期 / 放款确认时限 / 还款确认时限'],
-    ['三个确认环节', 'Quote confirmation / Disbursement confirmation / Repayment confirmation',
-     '报价确认 / 放款确认 / 还款确认（英文下三者不得共用同一个词）'],
-    ['还款类型 vs 还款性质', 'Repayment type (fixed value) / Repayment nature (on-time · overdue)',
-     '还款类型（定值）/ 还款性质（正常还款 · 逾期还款）'],
-    ['超期表述', 'Past the disbursement confirmation window by N day(s)', '已超过放款确认时限 N 天'],
-    ['统计区五项', 'All tokens / Pledged tokens / Total credit granted / Financing drawn / Available credit remaining',
-     '全部代币 / 已质押代币 / 总授信 / 已融额度 / 剩余可用授信'],
-    ['过滤条带', 'Filtered by X · Clear', '已按 X 过滤 · 清除']
-  ]
-};
-
-/* ================================================================
    Part L —— 模块装配
    ================================================================ */
 var SCENES = [
@@ -1747,7 +1684,6 @@ var mod = {
           navMyProjects:'我的融资项目', signOut:'退出登录' }
   },
   states: { 'P-MC-01': SCENES.map(function (x) { return [x[0], x[1], x[2]]; }) },
-  prd: { 'P-MC-01': PRD_MC },
   state: function () {
     return { lang:'en', role:'asset', tab:'tokens', scene:'default',
              blocks:{ stat:'ready', credit:'ready', tab:'ready', disb:'ready', repay:'ready' },
@@ -1774,11 +1710,6 @@ var mod = {
         }).join('') + '</div>';
   },
   crumbParts: function () { return []; },
-  prdFoot: function () {
-    return '口径以 <b>v1.0-我的控制台-PRD.md V2.0</b> 与分册 01 / 02 为准；'
-      + '上游锚点与 available_actions 取值由 WS-324～327 登记，本模块只消费、不新增。'
-      + '界面上不出现任何条款与验收编号，本面板是给实现方看的，不属于产品界面。';
-  },
   content: function () { return pageConsole(); },
   modals: { leave: modalLeave, voidList: modalVoid },
   hash: {
