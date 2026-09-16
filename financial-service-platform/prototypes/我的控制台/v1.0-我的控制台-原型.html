@@ -11,7 +11,8 @@
    继承模块：WS-324 v1.3 的面客档位版式与术语；WS-326 v2.0 的 .btn.blocked / 时限条 / 哈希块
              （同名同值，保证四个模块里同一个东西长同一个样）
 
-   本页是聚合页而不是流程页，所以版式只有三段：统计区 → 待办带 → tab 容器。
+   本页是聚合页而不是流程页，版式两段：统计区 → tab 容器。
+   （待办带原在两者之间，需求方 2026-09-16 裁定「这里不放待办」，已整块撤除。）
    页面上没有任何业务提交控件——每一个按钮要么跳广场，要么切换视图。
    ========================================================================== */
 
@@ -64,51 +65,10 @@
 .mc-stat-err{border-style:dashed}
 .mc-stat-err .val{font-family:var(--sans);font-size:14px;font-weight:620;color:var(--muted)}
 
-/* ============================================================
-   第三段：待办带。不是第六个 tab、不是浮层、不是红点——
-   它的价值在于"进页面就看见"，所以留在正文里、占一整条。
-   ============================================================ */
-.mc-band{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);
-  box-shadow:var(--shadow);margin-bottom:var(--sp-5);overflow:hidden}
-.mc-band .bh{display:flex;align-items:center;gap:10px;padding:12px var(--card-pad);
-  border-bottom:1px solid var(--border);background:var(--card-2);flex-wrap:wrap}
-.mc-band .bh b{font-size:14px;font-weight:680}
-.mc-band .bh .n{background:var(--accent);color:#fff;border-radius:var(--radius-pill);min-width:22px;
-  height:22px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;
-  font-size:var(--fs-11);font-weight:700;font-variant-numeric:tabular-nums}
-.mc-explain{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:600;
-  border-bottom:1px dashed var(--border-strong);padding-bottom:1px}
-.mc-explain:hover{color:var(--accent);border-bottom-color:var(--accent-border)}
-.mc-band .bx{padding:10px var(--card-pad);background:var(--accent-soft);
-  border-bottom:1px solid var(--accent-border);font-size:11.5px;color:var(--accent-strong);line-height:1.65}
-.mc-band .bb{padding:var(--sp-3) var(--card-pad) var(--card-pad)}
-.mc-band .none{padding:14px 2px;color:var(--faint);font-size:12.5px}
-.mc-band .grp+.grp{margin-top:var(--sp-4)}
-.mc-band .gh{display:flex;align-items:center;gap:8px;font-size:var(--fs-10);font-weight:700;
-  letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin:0 0 8px}
-.mc-band .gh .cnt{color:var(--muted);background:var(--gray-bg);border:1px solid var(--gray-border);
-  border-radius:var(--radius-pill);padding:0 7px;letter-spacing:0}
-.mc-todo{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elev);
-  padding:11px 13px;margin-bottom:8px}
-.mc-todo:last-child{margin-bottom:0}
-.mc-todo.soon{border-color:var(--warn-border);background:var(--warn-bg)}
-.mc-todo.over{border-color:var(--border-strong);background:var(--gray-bg)}
-.mc-todo>header{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px}
-.mc-todo>header .tt{font-size:13.5px;font-weight:680}
-.mc-todo>header .cnt{margin-left:auto;font-size:var(--fs-11);color:var(--muted)}
-.mc-todo>header .btn{margin-left:6px}
-.mc-todo .ti{display:flex;align-items:flex-start;gap:var(--sp-4);padding:6px 0;min-width:0}
-.mc-todo .ti.multi{border-top:1px dashed var(--border);padding-top:9px}
-.mc-todo .ti.multi:first-of-type{border-top:0}
-.mc-todo .ti .ix{flex:none;width:19px;height:19px;border-radius:50%;border:1px solid var(--border-strong);
-  display:grid;place-items:center;font-family:var(--mono);font-size:var(--fs-10);color:var(--faint);margin-top:2px}
-.mc-todo .tb{flex:1;min-width:0}
-.mc-todo .tb .l{font-size:12.5px;color:var(--muted);line-height:1.6}
-.mc-todo .tb .l:first-child{color:var(--text);font-weight:620}
-.mc-todo .tb .f{font-size:11px;color:var(--faint);line-height:1.6;margin-top:4px}
-.mc-todo .ta{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+/* 原第三段（待办带）已按需求方 2026-09-16 裁定整块撤除，样式一并删除，不留死规则。
+   客服邮箱指引 .mc-mail 保留——放款与还款两处超期仍要用它。 */
 
-/* 客服邮箱指引：超期两条待办必须带可复制邮箱与编号 */
+/* 客服邮箱指引：放款确认 / 还款确认两处超期必须带可复制邮箱与编号 */
 .mc-mail{border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:var(--radius-sm);
   padding:10px 12px;margin-top:9px}
 .mc-mail .h{font-size:12px;font-weight:680;color:var(--accent-strong)}
@@ -119,7 +79,7 @@
 .mc-mail p b{color:var(--text);font-weight:640}
 
 /* ============================================================
-   第四段：tab 容器 —— 筛选条 / 排序 / 过滤条带 → 列表 → 分页
+   第三段：tab 容器 —— 筛选条 / 排序 / 过滤条带 → 列表 → 分页
    ============================================================ */
 .mc-tabsec{margin-top:2px}
 .mc-tabs{margin-bottom:0;border-bottom:1px solid var(--border)}
@@ -223,8 +183,6 @@ tr.mc-detail>td{background:var(--card-2);padding:0 12px 16px;border-bottom:1px s
 }
 @media (max-width:760px){
   .mc-stats{grid-template-columns:minmax(0,1fr)}
-  .mc-todo .ti{flex-direction:column;gap:8px}
-  .mc-todo .ta{align-items:flex-start}
   .mc-why{text-align:left}
 }
 @media (prefers-reduced-motion:reduce){ .mc-caret{transition:none} }

@@ -833,239 +833,18 @@ function statBlock() {
 }
 
 /* ================================================================
-   Part G —— ② 待办提示带
-   待办由业务状态派生、不落库：没有已读、没有归档、没有"标记已办"。
-   分三组：去广场办 / 等待中 / 去其他模块；组内按时限紧迫度排序。
+   Part G —— 待办提示带：**本页不放**（需求方 2026-09-16 裁定）
+   原 PRD 的 C-MC-02 / F-MC-08（14 类待办）曾放在统计区与 tab 之间，版式上它把
+   页面主体（tab 容器）推到了首屏之外，且同一条业务在待办带与 tab 行里各出现一次。
+   需求方裁定「这里不放待办」，本模块据此整块撤除，不改成折叠、不改成浮层、
+   不改成第六个 tab——那都还是把它放在这里。
+
+   撤除后动作没有丢：每一条原待办对应的动作按钮都在它自己那张表的行上
+   （报价确认在融资项目 tab、放款确认与重传盖章件在融资放款 tab、还款与还款确认
+   在还款信息 tab、报价在我的报价 tab），状态列与时限列也照常展示紧迫度。
+   三条跨模块的原待办落点见 README §4。
+   待办这件事本身的归属需要 PRD 侧重新裁定，本模块只登记、不代为安排。
    ================================================================ */
-function todoList() {
-  var out = [];
-  var role = S.role;
-  myDeals().forEach(function (d) {
-    var pl = planOf(d.id);
-    if (role === 'asset') {
-      if (d.st === 'S-FD-1' && d.lockTo) {
-        out.push({ id:'t1-' + d.id, grp:'plaza', urgent: urgent(d.lockTo), due: d.lockTo,
-          title: L('A quote is waiting for you to accept or decline','有报价待我接受 / 拒绝'),
-          tag: g('quoteConfirm'),
-          lines: [ g('demandNo') + ' ' + d.round,
-                   co(d.fund) + ' · ' + usd(d.amt),
-                   g('quoteWindow') + ' · ' + leftText(d.lockTo)
-                     + L(' (expires ' + d.lockTo + ' ' + TZ + ')', '（到期时刻 ' + d.lockTo + ' ' + TZ + '）') ],
-          foot: L('A quote left unhandled for seven days lapses automatically.','7 天未处理将自动失效。'),
-          act: { label: L('Accept or decline','去接受 / 拒绝报价'), primary:true,
-                 href: hAction('respond_quote', 'deal/' + d.id) } });
-      }
-      if (d.st === 'S-FD-3' && d.reupload && d.reupload.need) {
-        out.push({ id:'t2-' + d.id, grp:'plaza', urgent:false, due:null,
-          title: L('A stamped contract is waiting for you to re-upload','有盖章件待我重传'),
-          lines: [ g('demandNo') + ' ' + d.round, g('dealNo') + ' ' + d.id,
-                   L('Reason given: ','机构给的原因：') + L(d.reupload.why[0], d.reupload.why[1]) ],
-          act: { label: L('Re-upload the stamped contract','去重传盖章件'), primary:true,
-                 href: hAction('reupload_contract', 'deal/' + d.id) } });
-      }
-      if (d.st === 'S-FD-4' && !d.overdue) {
-        out.push({ id:'t3-' + d.id, grp:'plaza', urgent: urgent(d.windowTo), due: d.windowTo,
-          title: L('Waiting for you to confirm the disbursement','待我确认收到放款'),
-          tag: g('disbConfirm'),
-          lines: [ g('demandNo') + ' ' + d.round,
-                   usd(d.ln.amt) + ' · ' + CCY,
-                   g('disbWindow') + ' · ' + leftText(d.windowTo)
-                     + L(' (due ' + d.windowTo + ' ' + TZ + ')', '（到期时刻 ' + d.windowTo + ' ' + TZ + '）') ],
-          foot: L('Reaching the end of the window does not count as confirmed — it only sends one reminder.',
-                  '到期不会自动视为已确认，只会发一次提醒。'),
-          act: { label: L('Confirm the disbursement','去确认收到放款'), primary:true,
-                 href: hAction('confirm_disbursement', 'deal/' + d.id) } });
-      }
-      if (d.st === 'S-FD-4' && d.overdue) {
-        out.push({ id:'t4-' + d.id, grp:'plaza', urgent:true, due:d.windowTo, over:true,
-          title: L('Past the disbursement confirmation window — still waiting for your confirmation',
-                   '已超过放款确认时限，待我确认收到放款'),
-          tag: g('disbConfirm'),
-          lines: [ g('demandNo') + ' ' + d.round, g('dealNo') + ' ' + d.id,
-                   L('Past the window by ' + left(d.windowTo).days + ' day(s)',
-                     '已超过放款确认时限 ' + left(d.windowTo).days + ' 天') ],
-          mail: g('demandNo') + ' ' + d.round + ' / ' + g('dealNo') + ' ' + d.id,
-          act: { label: L('Confirm the disbursement','去确认收到放款'), primary:true,
-                 href: hAction('confirm_disbursement', 'deal/' + d.id) } });
-      }
-      if (pl) {
-        pl.rows.forEach(function (r) {
-          if (r.st !== 'S-RP-1') return;
-          if (r.overdue > 0) {
-            out.push({ id:'t6-' + d.id + '-' + r.seq, grp:'plaza', urgent:true, due:r.due, over:true,
-              title: L('Overdue — waiting for your repayment','已逾期待我还款'),
-              lines: [ g('demandNo') + ' ' + d.round,
-                       L('Instalment ' + r.seq, '第 ' + r.seq + ' 期') + ' · ' + L('due ','应还日 ') + r.due,
-                       L('Overdue by ' + r.overdue + ' day(s)','已逾期 ' + r.overdue + ' 天') + ' · '
-                         + usd(r.pri + r.int) ],
-              foot: L('Submitting the repayment record stops interest and the overdue count for this instalment.',
-                      '提交还款记录即停止该期计息与逾期累加。'),
-              act: { label: L('Repay','去还款'), primary:true,
-                     href: hAction('repay', 'schedule/' + d.id + '-' + r.seq) } });
-          } else if (windowOpen(r.window)) {
-            out.push({ id:'t5-' + d.id + '-' + r.seq, grp:'plaza', urgent:false, due:r.due,
-              title: L('Waiting for your repayment','待我还款'),
-              lines: [ g('demandNo') + ' ' + d.round,
-                       L('Instalment ' + r.seq, '第 ' + r.seq + ' 期') + ' · ' + L('due ','应还日 ') + r.due,
-                       L('Total due ','应还合计 ') + usd(r.pri + r.int) ],
-              act: { label: L('Repay','去还款'), primary:true,
-                     href: hAction('repay', 'schedule/' + d.id + '-' + r.seq) } });
-          }
-        });
-      }
-    } else {
-      if (d.st === 'S-FD-3') {
-        out.push({ id:'t7-' + d.id, grp:'plaza', urgent:false, due:null,
-          title: L('Waiting for you to disburse','待我放款'),
-          lines: [ g('demandNo') + ' ' + d.round,
-                   co(d.asset) + ' · ' + usd(d.amt) ],
-          act: { label: L('Record the disbursement','去放款'), primary:true,
-                 href: hAction('disburse', 'deal/' + d.id) } });
-      }
-      if (d.st === 'S-FD-1' && d.lockTo) {
-        out.push({ id:'t11-' + d.id, grp:'wait', urgent:false, due:d.lockTo,
-          title: L('Your quote is waiting for the other party','我的报价待对方处理'),
-          lines: [ co(d.asset) + ' · ' + usd(d.amt),
-                   g('quoteWindow') + ' · ' + leftText(d.lockTo) ],
-          foot: L('Nothing to do here. Quotes cannot be withdrawn or amended this release; after seven days the quote lapses and the credit is released immediately.',
-                  '等待对方处理，本期不支持撤回或修改报价；7 天未处理将自动失效、额度即时释放。'),
-          stay: true });
-      }
-      if (pl) {
-        pl.rows.forEach(function (r) {
-          if (r.st !== 'S-RP-2') return;
-          if (r.confirmOverdue) {
-            out.push({ id:'t9-' + d.id + '-' + r.seq, grp:'plaza', urgent:true, due:r.confirmTo, over:true,
-              title: L('Past the repayment confirmation window — still waiting for your confirmation',
-                       '已超过还款确认时限，待我确认收到还款'),
-              tag: g('repayConfirm'),
-              lines: [ g('demandNo') + ' ' + d.round,
-                       L('Instalment ' + r.seq, '第 ' + r.seq + ' 期') + ' · ' + usd(r.pri + r.int),
-                       L('Past the window by ' + left(r.confirmTo).days + ' day(s)',
-                         '已超过还款确认时限 ' + left(r.confirmTo).days + ' 天') ],
-              mail: g('demandNo') + ' ' + d.round + ' / ' + L('instalment ','期次 ') + r.seq,
-              foot: L('The other party&#39;s overdue day count was frozen when they submitted; it does not grow with how late this confirmation is.',
-                      '资产方的逾期天数已在其提交时冻结，与本次确认早晚无关。'),
-              act: { label: L('Confirm the repayment','去确认收到还款'), primary:true,
-                     href: hAction('confirm_repayment', 'schedule/' + d.id + '-' + r.seq) } });
-          } else {
-            out.push({ id:'t8-' + d.id + '-' + r.seq, grp:'plaza', urgent: urgent(r.confirmTo), due:r.confirmTo,
-              title: L('Waiting for you to confirm the repayment','待我确认收到还款'),
-              tag: g('repayConfirm'),
-              lines: [ g('demandNo') + ' ' + d.round,
-                       L('Instalment ' + r.seq, '第 ' + r.seq + ' 期') + ' · ' + usd(r.pri + r.int),
-                       g('repayWindow') + ' · ' + leftText(r.confirmTo) ],
-              act: { label: L('Confirm the repayment','去确认收到还款'), primary:true,
-                     href: hAction('confirm_repayment', 'schedule/' + d.id + '-' + r.seq) } });
-          }
-        });
-      }
-    }
-  });
-  if (S.role === 'fund') {
-    out.push({ id:'t10', grp:'plaza', urgent:false, due:null,
-      title: L('New financing demands are open for quotes','有新的融资需求可报价'),
-      lines: [ L('4 demands are currently awaiting quotes','当前有 4 条需求处于待报价') ],
-      foot: L('Browse and pick them in the marketplace; this page does not list them.',
-              '去广场挑选，控制台不列出需求明细。'),
-      act: { label: L('Browse the marketplace','去广场挑选'), href: hMarketplace() } });
-  }
-  if (S.role === 'asset') {
-    out.push({ id:'t12', grp:'other', urgent:false, due:null,
-      title: L('Identity verification is not complete','实名认证未完成'),
-      lines: [ L('Complete it on the asset platform before publishing a financing demand.',
-                 '在资产平台完成后方可发布融资需求。') ],
-      act: { label: L('Go to the asset platform','去资产平台'), act:'mc.leave', v:'verify' } });
-    out.push({ id:'t13', grp:'other', urgent:false, due:null,
-      title: L('A receivable was rejected and needs resubmitting','应收账款被驳回，待重提'),
-      lines: [ L('1 receivable is waiting for you on the asset platform.','资产平台上有 1 笔待重提。') ],
-      act: { label: L('Go to the asset platform','去资产平台'), act:'mc.leave', v:'receivable' } });
-  } else {
-    out.push({ id:'t14', grp:'other', urgent:false, due:null,
-      title: L('Institution profile has not been submitted','机构资料未提交'),
-      lines: [ L('Some pages stay read-only until the profile is approved.','资料通过审核前部分页面保持只读。') ],
-      act: { label: L('Submit the institution profile','去提交机构资料'), href: hInstitution() } });
-  }
-  return out;
-}
-/* 组内排序：带超期标记的最前、其次剩余时限最短、再次无时限 */
-function todoSort(list) {
-  return list.slice().sort(function (a, b) {
-    var ao = a.over ? 0 : 1, bo = b.over ? 0 : 1;
-    if (ao !== bo) return ao - bo;
-    var ad = a.due ? ts(a.due) : Infinity, bd = b.due ? ts(b.due) : Infinity;
-    return ad - bd;
-  });
-}
-/* 同一类命中多笔时行内聚合计数并可展开，不拆成多行 */
-function todoGroupBy(list) {
-  var map = {}, order = [];
-  list.forEach(function (x) {
-    var k = x.title;
-    if (!map[k]) { map[k] = []; order.push(k); }
-    map[k].push(x);
-  });
-  return order.map(function (k) { return map[k]; });
-}
-function todoCard(items) {
-  var head = items[0], n = items.length;
-  var id = 'todo-' + head.id;
-  var open = !!S.open[id];
-  var body = (n > 1 && !open ? [head] : items).map(function (x, ix) {
-    return '<div class="ti' + (n > 1 ? ' multi' : '') + '">'
-      + (n > 1 ? '<div class="ix">' + (ix + 1) + '</div>' : '')
-      + '<div class="tb">' + x.lines.map(function (l) { return '<div class="l">' + E(l) + '</div>'; }).join('')
-      + (x.foot ? '<div class="f">' + x.foot + '</div>' : '')
-      + (x.mail ? mailBlock(x.mail) : '')
-      + '</div>'
-      + '<div class="ta">' + (x.act ? actBtn(x.act) : (x.stay
-          ? '<span class="pill dash">' + L('Waiting','等待中') + '</span>' : '')) + '</div></div>';
-  }).join('');
-  return '<article class="mc-todo' + (head.over ? ' over' : (head.urgent ? ' soon' : '')) + '">'
-    + '<header><span class="tt">' + E(head.title) + '</span>'
-    + (head.tag ? '<span class="tag">' + E(head.tag) + '</span>' : '')
-    + (n > 1 ? '<span class="cnt mono">' + n + L(' items',' 笔') + '</span>' : '')
-    + (n > 1 ? '<button class="btn sm" type="button" data-act="mc.toggle" data-v="' + id + '"'
-        + ' aria-expanded="' + open + '">'
-        + (open ? L('Collapse','收起') : L('Show all','展开全部')) + '</button>' : '')
-    + '</header>' + body + '</article>';
-}
-function todoBlock() {
-  if (S.blocks.todo === 'loading') {
-    return '<section class="mc-band"><div class="bh"><b>' + L('To-dos','待办') + '</b></div>'
-      + '<div class="bb">' + skelRows(2) + '</div></section>';
-  }
-  var all = S.scene === 'empty' ? [] : todoList();
-  var groups = { plaza: [], wait: [], other: [] };
-  all.forEach(function (x) { groups[x.grp].push(x); });
-  var label = {
-    plaza: L('Handle in the marketplace','去广场办'),
-    wait : L('Waiting on the other party','等待中'),
-    other: L('Handle in another module','去其他模块')
-  };
-  var body = '';
-  ['plaza','wait','other'].forEach(function (k) {
-    if (!groups[k].length) return;
-    body += '<div class="grp"><div class="gh">' + label[k]
-      + '<span class="cnt mono">' + groups[k].length + '</span></div>'
-      + todoGroupBy(todoSort(groups[k])).map(todoCard).join('') + '</div>';
-  });
-  if (!all.length) {
-    body = '<div class="none">' + L('Nothing needs your action right now.','当前没有待办事项。') + '</div>';
-  }
-  var explain = 'mc-b5';
-  return '<section class="mc-band" aria-label="' + L('To-dos','待办') + '">'
-    + '<div class="bh"><b>' + L('To-dos','待办') + '</b>'
-    + '<span class="n mono">' + all.length + '</span>'
-    + '<button class="mc-explain" type="button" data-act="mc.toggle" data-v="' + explain + '"'
-    + ' aria-expanded="' + (!!S.open[explain]) + '">'
-    + L('Who sees these?','谁能看到这些？') + '</button></div>'
-    + (S.open[explain] ? '<div class="bx">'
-        + L('To-dos are shown per company: anyone signed in under this company sees the same list. Notifications are sent only to the person who performed the action, so the bell can read zero while a to-do is still listed here. The two counts are deliberately separate.',
-            '待办按企业展示，同企业任一员工都看得到；消息只发给发起操作的那个人，所以铃铛可能是 0 而这里仍有待办——两个计数分开，不合并。')
-        + '</div>' : '')
-    + '<div class="bb">' + body + '</div></section>';
-}
 
 /* ================================================================
    Part H —— ③ tab 容器与六个 tab
@@ -1780,8 +1559,8 @@ function guestView() {
   return '<div class="mc-guest"><div class="card"><div class="card-b shell">'
     + '<span class="pill dash">' + L('Session ended','会话已结束') + '</span>'
     + '<h1 class="page-title" style="margin-top:8px">' + g('console') + '</h1>'
-    + '<p>' + L('Your session has ended, so everything on this page has been removed — the figures, the to-dos and every list. Nothing is left behind a dialog.',
-        '会话已失效，本页的统计数字、待办与全部列表已从页面上移除，不是被弹层盖住。') + '</p>'
+    + '<p>' + L('Your session has ended, so everything on this page has been removed — the figures and every list. Nothing is left behind a dialog.',
+        '会话已失效，本页的统计数字与全部列表已从页面上移除，不是被弹层盖住。') + '</p>'
     + '<p class="tiny">' + L('Sessions last four hours. There is no "remember me", and nothing you were viewing is kept as a draft.',
         '会话有效期 4 小时，无「记住我」；页面不暂存任何草稿。') + '</p>'
     + '<div style="margin-top:16px">' + actBtn({ label: L('Sign in','立即登录'), primary:true,
@@ -1806,15 +1585,15 @@ function pageConsole() {
   var who = S.role === 'asset' ? g('assetOwner') : g('funder');
   var head = '<div class="mc-head"><div class="hb">'
     + '<h1 class="page-title">' + g('console') + '</h1>'
-    + '<p class="page-desc">' + L('Everything that belongs to you, in one place: the figures, what needs doing, and the way back to the marketplace to do it. This page records nothing itself — every action button opens the marketplace.',
-        '把属于您的数据聚合到一页：把数聚起来、把待办列出来、把您送回广场去办。本页不产生任何新事实，每一个动作按钮都是跳借贷广场。') + '</p>'
+    + '<p class="page-desc">' + L('Everything that belongs to you, in one place: the figures, and the way back to the marketplace to act on them. This page records nothing itself — every action button opens the marketplace.',
+        '把属于您的数据聚合到一页：把数聚起来，把您送回广场去办。本页不产生任何新事实，每一个动作按钮都是跳借贷广场。') + '</p>'
     + '</div><div class="hm">'
     + '<span class="pill gray">' + E(who) + '</span>'
     + '<span class="tiny">' + E(co(me())) + '</span>'
     + '<span class="tiny">' + L('Data refreshes when you open this page, when you come back from the marketplace, or when you refresh.',
         '数据在进入页面、从广场返回、手动刷新时更新。') + '</span>'
     + '</div></div>';
-  return demoBar() + CF.pageStates() + head + statBlock() + todoBlock()
+  return demoBar() + CF.pageStates() + head + statBlock()
     + '<section class="mc-tabsec">' + tabBar() + filterStrip()
     + '<div class="mc-tabbody">' + tabBody() + '</div></section>';
 }
@@ -1825,14 +1604,14 @@ function pageConsole() {
 function modalLeave() {
   var to = S.modal.to;
   var what = to === 'verify'
-    ? L('identity verification','实名认证')
+    ? L('identity verification and token issuance','实名认证与代币签发')
     : L('the rejected receivable','被驳回的应收账款');
   return '<div class="mask" data-act="closeModal"><div class="modal wide" role="dialog" aria-modal="true"'
     + ' aria-label="' + L('Leaving the platform','离站告知') + '" onclick="event.stopPropagation()">'
     + '<div class="modal-h"><b>' + L('You are about to leave this platform','即将离开本平台') + '</b>'
     + '<button class="modal-x" type="button" data-act="closeModal" aria-label="' + L('Close','关闭') + '">✕</button></div>'
     + '<div class="modal-b">'
-    + '<p>' + L('This to-do is handled on the asset platform, a different site. ','这条待办在资产平台处理，属于另一个站点。')
+    + '<p>' + L('This is handled on the asset platform, a different site. ','这件事在资产平台处理，属于另一个站点。')
     + L('You will continue with ','将前往办理：') + '<b>' + E(what) + '</b>.' + '</p>'
     + '<p class="tiny">' + L('If the destination is unavailable, come back and try again later — you will not be left on a blank page.',
         '若落地页暂时不可达，可稍后再试，不会把您留在空白页上。') + '</p>'
@@ -1872,7 +1651,7 @@ var PRD_MC = {
   src: 'v1.0-我的控制台-PRD.md V2.0 + 分册 01 / 02 ｜ 上游 WS-324 V9.2 / WS-325 V7.2 / WS-326 V3.2 / WS-327 V3.3',
   fields: [
     ['C-MC-01', '统计区', '四组指标 + 剩余可用授信；①与②是包含关系，②下必须给失效副行（`D-MC-47`/`D-MC-126`）；资金方不渲染①②'],
-    ['C-MC-02', '待办提示带', '14 类判据、终点 10 跳广场 / 1 留控制台 / 3 跳其他模块；按终点分三组，组内按时限紧迫度排序（`D-MC-154`～`D-MC-158`）'],
+    ['C-MC-02 / F-MC-08 待办提示带', '**本页不放**（需求方 2026-09-16 裁定）', '原 14 类判据（`T-MC-01`～`T-MC-14`）与 `D-MC-154`～`D-MC-158`、`AC-MC-28`～`30` / `62`～`65` 在本页**无落点**，需要 PRD 侧重新裁定归属。原待办对应的动作按钮仍在各 tab 行内，紧迫度由状态列与时限列承担'],
     ['C-MC-03', 'tab 容器', '资产方五个、资金方四个，不渲染空 tab（`D-MC-124`）；默认落地资产方=代币列表、资金方=我的报价（`D-MC-125`）'],
     ['C-MC-04', '过滤条带', '带过滤的跳转必须显示「已按 X 过滤 / 清除」（`D-MC-148`）'],
     ['C-MC-05', '快捷按钮组', '三态由 `available_actions` 决定（`AC-MC-32`）：不返回→不渲染；可用→可点；⊘→可见不可点 + 服务端原因'],
@@ -1892,7 +1671,7 @@ var PRD_MC = {
     ['D-MC-126 统计区②≠有效质押价值', '②是跨项目账面口径（含失效），必须给失效副行并标注「不计入覆盖」'],
     ['D-MC-127 剩余可用授信', '常驻一句"实际可融金额以发布需求时服务端当场重算的结果为准"，不得给出"你还能融 X"的数字'],
     ['6.2.1 四个中间量不展示', '融资上限 / 可融金额 / 项目在途金额 / 可撤回上限不在控制台任何位置展示，也不做额度尺与进度条'],
-    ['D-MC-162 待办按企业、消息按人', '待办带常驻一句可展开说明；不得把待办按 `account_id` 过滤，也不得把未读数按企业聚合'],
+    ['D-MC-162 待办按企业、消息按人', '该条随待办带一并**移出本页**：它原本挂在待办带头部的可展开说明上。若待办改由其他模块承载，这句说明要跟着过去，不要丢'],
     ['D-MC-167 界面不呈现平台内部规则', '不出现判据公式与任何条款/验收编号；但覆盖缺口两个数、三个倒计时、差额与出路、客服邮箱一个都不许删'],
     ['D-MC-168 链是常量', '本期只支持 ETH：只读展示、无选择控件；USDT/USDC 标注 ERC-20；浏览器链接取 ETH 固定前缀并常驻"平台未核验该交易"'],
     ['D-MC-68 精确值排序', '`X-2`（游客排序只能按区间）不适用于控制台：控制台对游客完全不可见，看的是本人本企业的完整口径数据'],
@@ -1901,14 +1680,14 @@ var PRD_MC = {
     ['D-MC-140 / D-MC-143 超期表述', '一律「已超过放款/还款确认时限 N 天」+ 可复制客服邮箱与编号指引；不得写"已失效""已逾期"；超期不改变状态、权限与金额']
   ],
   states: [
-    ['加载中', '统计区、待办带、各 tab 各自独立骨架屏，互不阻塞'],
+    ['加载中', '统计区与各 tab 各自独立骨架屏，互不阻塞'],
     ['分块降级', '某块取数失败就地给可重试错误态与原因，其余块照常可用；统计区某组取不到给"暂时取不到"占位，**不展示 0**'],
     ['空态', '六种空态各有自己的文案与 CTA；CTA 一律指向借贷广场或资产平台，控制台自己没有可执行动作（`D-MC-145`）'],
     ['entity_id 为 null', '资金方 L0 走整页空态，CTA 指向机构资料，不报错、不渲染一排 0（`D-MC-116`）'],
     ['会话失效', '回落游客态并把已渲染的个人数据从 DOM 清除，不是弹层遮挡（`D-MC-11` 红线）；不弹登录框、不进错误页'],
     ['深链带过滤落地', '按 URL 视图状态接住并显示过滤条带（`D-MC-165`）'],
     ['筛选无结果', '与空态区分：给"没有符合筛选条件的记录"与一键清空筛选'],
-    ['状态已变', '控制台不预判、不提前拦截；落广场详情页 + Toast，返回后重取，过期待办自动消失（`E-MC-03`）']
+    ['状态已变', '控制台不预判、不提前拦截；落广场详情页 + Toast，返回后重新取数，行上的动作按钮随之消失（`E-MC-03`）']
   ],
   copy: [
     ['质押覆盖状态', 'Pledge coverage status', '覆盖有余 / 覆盖持平 / 覆盖不足'],
@@ -1939,10 +1718,9 @@ var SCENES = [
 ];
 function applyScene(k) {
   S.scene = k;
-  S.blocks = { stat:'ready', credit:'ready', todo:'ready', tab:'ready', disb:'ready', repay:'ready' };
+  S.blocks = { stat:'ready', credit:'ready', tab:'ready', disb:'ready', repay:'ready' };
   S.strip = null;
-  if (k === 'loading') S.blocks = { stat:'loading', credit:'ready', todo:'loading', tab:'loading',
-                                    disb:'ready', repay:'ready' };
+  if (k === 'loading') S.blocks = { stat:'loading', credit:'ready', tab:'loading', disb:'ready', repay:'ready' };
   if (k === 'blockfail') { S.blocks.credit = 'error'; S.blocks.repay = 'error'; S.blocks.disb = 'ready'; }
   if (k === 'l0') { S.role = 'fund'; }
   if (k === 'filtered') {
@@ -1972,7 +1750,7 @@ var mod = {
   prd: { 'P-MC-01': PRD_MC },
   state: function () {
     return { lang:'en', role:'asset', tab:'tokens', scene:'default',
-             blocks:{ stat:'ready', credit:'ready', todo:'ready', tab:'ready', disb:'ready', repay:'ready' },
+             blocks:{ stat:'ready', credit:'ready', tab:'ready', disb:'ready', repay:'ready' },
              filters:{}, sort:{}, pg:{}, open:{}, strip:null };
   },
   onBoot: function (s) { S = s; CF.S = s; },
