@@ -433,6 +433,87 @@ WALLET.forEach(function(t){ t.ct='CT-0'; t.ps='PS-1'; });
 var REDEEMABLE = mkTokens({ total:280000, n:3, seed:9, due:['2026-10-08','2026-11-02','2026-12-13'] });
 REDEEMABLE.forEach(function(t){ t.ps='PS-4'; t.pending=true; t.from='FP-20251103-0021'; t.reason='项目结清释放'; });
 
+/* ================================================================
+   质押申请 PA-*（PRD V9.4 · D-FIN-84）
+   ----------------------------------------------------------------
+   审核态挂在**申请**上，代币的业务三态 PS-* 与链上轴 CT-* 一律不变：
+   同一张代币可以被驳回后再次提交，申请有多条而代币只有一张。
+   代币上只加一个派生标记 t.app（已被在途申请占用），防同一张进两份申请。
+   审核期内代币留在资产方自己地址，不进 p.tokens ——
+   因此 derive() 的五个数天然不含它们（D-FIN-82 / AC-LS-98），不需要第二套过滤。
+   ================================================================ */
+var REVIEW_DAYS = 7;   /* 审核通过后的入池有效期：常量 7 个自然日（D-FIN-81），与报价有效期是两个不同对象的计时器 */
+var REVIEW_SLA  = 1;   /* 运营端对外承诺的审核处理时限（工作日，C-RV-05）；本模块只负责把它显示出来 */
+
+var PA_ST = {
+  pending : { tone:'info',  t:['Under review','审核中'] },
+  approved: { tone:'amber', t:['Approved · awaiting pool entry','审核通过 · 待入池'] },
+  done    : { tone:'good',  t:['Entered the pool','已入池'] },
+  rejected: { tone:'crit',  t:['Rejected','已驳回'] },
+  expired : { tone:'mute',  t:['Decision lapsed','结论已失效'] },
+  void    : { tone:'crit',  t:['Decision voided','结论已作废'] },
+  withdrawn:{ tone:'mute',  t:['Withdrawn','已撤回'] }
+};
+var appSeq = 7;
+function appNo(){ appSeq++; return 'PA-' + TODAY.replace(/-/g,'') + '-' + String(appSeq).padStart(4,'0'); }
+
+var APPS = [
+  /* ① 待审核：默认落地项目上就有一条在途申请 —— 也是 AC-LS-98 的用例现场
+        （提交审核后立刻看统计区，五个数与提交前完全一致） */
+  { id:'PA-20260911-0007', pid:'FP-20260416-0007', kind:'topup', st:'pending',
+    at:'2026-09-11 09:20', items:[] },
+  /* ② 审核通过 · 待入池：与该项目的报价倒计时并排出现，两个计时器分属不同对象、各自标题写全 */
+  { id:'PA-20260909-0006', pid:'FP-20260812-0031', kind:'topup', st:'approved',
+    at:'2026-09-08 15:02', decidedAt:'2026-09-09 16:40', items:[] },
+  /* ③④⑤ 三个终结结论，作为审核历史留在另一个项目上 */
+  { id:'PA-20260908-0004', pid:'FP-20260624-0021', kind:'topup', st:'rejected',
+    at:'2026-09-07 10:12', decidedAt:'2026-09-08 11:05',
+    reason:'代币 TI-2026-4132 的底层合同扫描件缺少买方盖章页，且账期与发票不一致（发票 2026-11-18、合同 2026-12-18）。请补齐盖章页或更正账期后重新提交。',
+    items:[{ id:'TI-2026-4132', amt:96000, due:'2026-11-18', buyer:'中垣建材（演示）' }] },
+  { id:'PA-20260831-0002', pid:'FP-20260624-0021', kind:'topup', st:'expired',
+    at:'2026-08-30 09:40', decidedAt:'2026-08-31 14:20',
+    items:[{ id:'TI-2026-4137', amt:74000, due:'2026-12-04', buyer:'明泰家电（演示）' }] },
+  { id:'PA-20260905-0003', pid:'FP-20260624-0021', kind:'topup', st:'void',
+    at:'2026-09-04 16:30', decidedAt:'2026-09-05 10:15',
+    voidReason:'入池前复核：代币 TI-2026-4140 已质押至其他融资项目，本次不发起链上转入。',
+    items:[{ id:'TI-2026-4140', amt:88000, due:'2027-01-22', buyer:'恒盛供应链（演示）' }] }
+];
+
+/* 在途申请占用的代币：从钱包里取实体，快照进 items，并在代币上打派生标记 */
+(function seedApps(){
+  function take(app, n){
+    var got = [];
+    for(var i=0;i<WALLET.length && got.length<n;i++){
+      if(!WALLET[i].app){ WALLET[i].app = app.id; got.push(WALLET[i]); }
+    }
+    app.items = got.map(function(t){ return { id:t.id, amt:t.amt, due:t.due, buyer:t.buyer }; });
+  }
+  take(APPS[0], 2);
+  take(APPS[1], 1);
+})();
+
+/* 一张池内代币停在「链上处理中」，与②的「审核中 / 待入池」同页出现：
+   两件事挂在两个对象上（CT-* 在代币、PA-* 在申请），界面上分得开 */
+(function seedPending(){
+  var p = findProject('FP-20260812-0031');
+  if(p && p.tokens.length) p.tokens[p.tokens.length - 1].ct = 'CT-1';
+})();
+
+function appsOf(pid){ return APPS.filter(function(a){ return a.pid === pid; }); }
+function appsLive(pid){ return appsOf(pid).filter(function(a){ return a.st === 'pending' || a.st === 'approved'; }); }
+function appsPast(pid){ return appsOf(pid).filter(function(a){ return a.st !== 'pending' && a.st !== 'approved'; }); }
+function findApp(id){ for(var i=0;i<APPS.length;i++){ if(APPS[i].id === id) return APPS[i]; } return null; }
+function appSum(a){ return a.items.reduce(function(x,t){ return x + t.amt; }, 0); }
+/* 入池有效期：结论时间 + 7 个自然日。与报价有效期同为倒计时，但对象不同、标题不同、互不引用 */
+function appClock(a){
+  var from = tmin(a.decidedAt), to = from + REVIEW_DAYS * 24 * 60, now = tmin(NOW);
+  var left = Math.max(0, to - now);
+  return { from:a.decidedAt, to:tstr(to), leftMin:left,
+           heldMin:Math.min(REVIEW_DAYS*24*60, Math.max(0, now - from)),
+           soon:(left > 0 && left < 1440), over:(left <= 0) };
+}
+function appSt(a){ var v = PA_ST[a.st]; return L(v.t[0], v.t[1]); }
+
 
 /* ================================================================
    30-calc.js —— 派生量的唯一实现
@@ -515,6 +596,10 @@ function quoteClock(q){
      financing.pledge.chain_pending_timeout   → 链上超时未决
        落点：同上的 timeout 分支。**与失败分开登记**：超时态不给重试按钮、须先查链上，
              可执行动作与失败态不同，合成一条会逼前端按 payload 分叉
+     financing.pledge.review_approved         → 质押审核通过 · 待入池（V9.4 新增）
+       落点：详情页左栏的质押申请卡「审核通过 · 待入池」块，深链 ?action=enter_pool
+     financing.pledge.review_rejected         → 质押审核驳回（V9.4 新增，文案须带 PA-07 原文）
+       落点：同一张卡的审核历史里那条「已驳回」+ 原样驳回原因
      financing.project.expiring_soon          → 有效期届满前 7 天
        落点：页头 pill 与列表「有效期至」列下的到期提醒标记（expiryFlag）
 
@@ -1132,6 +1217,17 @@ var G = {
   tokenType    :['Asset type','代币类型'],
   receivable   :['Receivables','应收账款'],
   addPledge    :['Add pledge','追加质押'],
+  /* V9.4 质押审核：审核与链上是两件事，两套词各自写全，界面上不得互相借用 */
+  pledgeReview :['Pledge review','质押审核'],
+  reviewApp    :['Pledge application','质押申请'],
+  appNoLbl     :['Application ID','申请编号'],
+  submitReview :['Submit for review','提交质押申请'],
+  enterPool    :['Sign and enter the pool','签名入池并支付 gas'],
+  poolWindow   :['Pool-entry window','入池有效期'],
+  resubmit     :['Submit a new application','重新提交'],
+  withdrawApp  :['Withdraw the application','撤回申请'],
+  reviewHistory:['Review history','审核历史'],
+  rejectReason :['Rejection reason','驳回原因'],
   releasePledge:['Release pledge','解除质押'],
   closeProject :['Close project','关闭项目'],
   signIn       :['Sign in','立即登录'],
@@ -1191,6 +1287,14 @@ var DEMO_TR = {
 /* 演示事件流的英文视图：只做展示层翻译，PROJECTS 里的数据一字未改。
    键是中文原串，值是英文；新增演示事件时在此补一条即可。 */
 var EV_TR = {
+  "审核期内代币留在资产方地址，不计入有效质押价值":
+    "During the review the tokens stay in the asset owner's own address and do not count towards pledged token value",
+  "审核通过后签名入池，链上转入成功即计入有效质押价值":
+    "Signed into the pool after approval; it counts towards pledged token value once the transfer is confirmed on chain",
+  "代币 TI-2026-4132 的底层合同扫描件缺少买方盖章页，且账期与发票不一致（发票 2026-11-18、合同 2026-12-18）。请补齐盖章页或更正账期后重新提交。":
+    "The underlying contract scan for token TI-2026-4132 is missing the buyer's stamped page, and the due date does not match the invoice (invoice 2026-11-18, contract 2026-12-18). Please attach the stamped page or correct the due date and submit a new application.",
+  "入池前复核：代币 TI-2026-4140 已质押至其他融资项目，本次不发起链上转入。":
+    "Pre-entry recheck: token TI-2026-4140 is already pledged to another financing project, so no on-chain transfer was submitted.",
   "资产方接受报价 · 这笔业务转入待放款": "Asset owner accepted the quote · the deal moves to awaiting disbursement",
   "终止原因：合同主体名称与平台登记的企业主体不一致，两次沟通后未能提供更正件。五个后果同一次结算内生效：在途报价金额全额释放且不进授信占用额、项目在途金额不变（需求还挂着）、需求回到「待报价」、质押不释放、编号保留但作废": "Terminated because the contract counterparty name did not match the entity registered on the platform, and no corrected document was provided after two rounds of follow-up. Five consequences take effect in the same settlement: the committed quote amount is released in full and does not enter the credit line, committed demand is unchanged (the demand is still open), the demand returns to Awaiting quotes, the collateral is not released, and the deal ID is retained but voided",
   "创建资产池 · 首笔质押 3 张": "Pool created · first pledge of 3 tokens",
@@ -1288,6 +1392,15 @@ function dtr(v){
   if(EV_TR[t])   return EV_TR[t];
   var m1 = t.match(/^年化 ([\d.]+)%（演示）$/);      if(m1) return 'APR ' + m1[1] + '% (demo)';
   var m2 = t.match(/^(\d+) 天$/);                    if(m2) return m2[1] + ' days';
+  /* V9.4：审核链路上由动作生成的事件文案是变长的，逐条进词典不现实，按模式译 */
+  var m3 = t.match(/^提交质押申请 (\S+) · (\d+) 张$/);
+  if(m3) return 'Pledge application ' + m3[1] + ' submitted · ' + m3[2] + ' token(s)';
+  var m4 = t.match(/^追加质押 (\d+) 张 · (.+)$/);
+  if(m4) return 'Pledge added · ' + m4[1] + ' token(s) · ' + m4[2];
+  var m5 = t.match(/^创建资产池 · 首笔质押 (\d+) 张 · (.+)$/);
+  if(m5) return 'Pool created · first pledge of ' + m5[1] + ' token(s) · ' + m5[2];
+  var m6 = t.match(/^入池前复核：代币 (\S+) 已质押至其他融资项目，本次不发起链上转入。$/);
+  if(m6) return 'Pre-entry recheck: token ' + m6[1] + ' is already pledged to another financing project, so no on-chain transfer was submitted.';
   return t.replace(/（演示）/g, ' (demo)');
 }
 
@@ -1447,6 +1560,131 @@ function lockCard(p, own, wide){
     '</div></div>';
 }
 
+/* ---- V9.4：质押申请（审核）----
+   审核与链上是两条不同的轴，卡片、词、倒计时全部各自成套：
+   「审核中 / 审核通过 · 待入池」挂在申请 PA-* 上，「处理中 / 成功 / 失败」挂在代币 CT-* 上。
+   申请属本方数据，按企业主体做服务端归属过滤，游客与资金方不返回（AC-LS-06）。 */
+function twoStepBar(n, gas){
+  return '<div class="ls-turn" style="margin-top:12px">' +
+    '<div class="s now"><span class="dot"></span><div class="bd"><b>' +
+      L('Step 1 · submit for review — now','第 ① 步 · 提交审核（现在）') + '</b><span>' +
+      L('No signing, no on-chain transfer, no gas. The ' + n + ' token(s) stay in your own address.',
+        '不唤起签名、不发生链上转入、不产生 gas。' + n + ' 张代币留在您自己的地址里。') + '</span></div></div>' +
+    '<div class="s"><span class="dot"></span><div class="bd"><b>' +
+      L('Step 2 · after approval, come back to sign and pay gas','第 ② 步 · 通过后回来签名并支付 gas') + '</b><span>' +
+      L('Estimated gas ' + gas + ' ETH, paid by your entity. Approval alone does not put the tokens in the pool.',
+        '预估 gas ' + gas + ' ETH，由本企业承担。审核通过本身不会把代币放进池子。') + '</span></div></div>' +
+    '</div>';
+}
+function appFacts(a){
+  return '<div class="rows" style="box-shadow:none;margin-top:7px">' +
+    [[g('appNoLbl'), '<span class="mono">' + a.id + '</span>'],
+     [L('Submitted','提交时间'), '<span class="mono">' + a.at + ' ' + TZ_LABEL + '</span>'],
+     [L('Tokens in this application','本次申请代币'),
+      '<span class="mono">' + a.items.length + L(' · ',' 张 · ') + usd(appSum(a)) + '</span>'],
+     [L('Application type','申请类型'),
+      a.kind === 'first' ? L('First pledge of a new pool','建池首笔') : g('addPledge')]]
+    .concat(a.decidedAt ? [[L('Decision time','结论时间'), '<span class="mono">' + a.decidedAt + ' ' + TZ_LABEL + '</span>']] : [])
+    .map(function(r){
+      return '<div class="row"><div class="row-main"><div class="row-k">' + r[0] + '</div>' +
+        '<div class="row-v">' + r[1] + '</div></div></div>'; }).join('') + '</div>';
+}
+function appTokens(a){
+  return '<div class="tablewrap" style="margin-top:10px"><table class="tbl"><thead><tr><th>' + g('tokenId') +
+    '</th><th class="num">' + g('tokenValue') + '</th><th class="num">' + g('dueDate') + '</th><th>' + g('buyer') +
+    '</th></tr></thead><tbody>' + a.items.map(function(t){
+      return '<tr><td class="mono">' + t.id + '</td><td class="num">' + amt(t.amt) + ' <span class="faint">' + CCY +
+        '</span></td><td class="num">' + t.due + '</td><td>' + E(dtr(t.buyer)) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+function appLiveBlock(a){
+  var head = '<div class="lb">' + pill(TONE[PA_ST[a.st].tone] || 'gray', appSt(a)) + '</div>';
+  if(a.st === 'pending'){
+    return '<div class="ls-lock wide" style="margin-bottom:12px"><div class="cA">' + head + appFacts(a) + '</div>' +
+      '<div class="cB"><div class="lb">' + L('What happens next','接下来会发生什么') + '</div>' +
+      '<div class="by" style="margin-top:6px">' +
+        L('The platform is reviewing this application; a decision is promised within <b>' + REVIEW_SLA +
+          ' business day(s)</b>. These tokens are <b>still in your own address</b> and <b>no gas has been charged</b>. ' +
+          'They do <b>not</b> count towards pledged token value, borrowing cap or available to borrow while the review runs.',
+          '平台正在审核本次申请，承诺 <b>' + REVIEW_SLA + ' 个工作日</b>内给出结论。这些代币<b>仍在您自己的地址里</b>，' +
+          '<b>未产生任何 gas</b>；审核期间它们<b>不计入</b>质押代币价值、融资上限与可融金额。') + '</div>' +
+      '<div class="ways"><div class="w"><i>①</i><span>' +
+        L('If it is <b>approved</b>, you come back here to sign and pay gas — that is when the tokens enter the pool.',
+          '<b>通过</b>后回到这里签名并支付 gas，代币在那一刻才进池。') + '</span></div>' +
+        '<div class="w"><i>②</i><span>' +
+        L('If it is <b>rejected</b>, the reason appears here in full and you may submit a new application. <b>Rejection costs nothing.</b>',
+          '<b>驳回</b>时原因原样显示在这里，可以重新提交。<b>驳回不产生任何费用。</b>') + '</span></div></div>' +
+      '<div style="margin-top:12px"><button class="btn sm" type="button" data-act="ls.appWithdraw" data-v="' + a.id + '">' +
+        g('withdrawApp') + '</button></div>' +
+      '</div></div>';
+  }
+  /* 审核通过 · 待入池：入池有效期倒计时。**这不是报价有效期**——对象是这条申请，不是任何一笔报价 */
+  var k = appClock(a), held = (k.heldMin / (REVIEW_DAYS*24*60) * 100).toFixed(2);
+  return '<div class="ls-lock wide' + (k.soon ? ' soon' : '') + '" style="margin-bottom:12px"><div class="cA">' +
+    head + appFacts(a) + '</div>' +
+    '<div class="cB"><div class="lb">' +
+      L('Time left in the <b>pool-entry window</b> (' + REVIEW_DAYS + ' calendar days from the decision)',
+        '距<b>入池有效期</b>结束还剩（自结论时间起 ' + REVIEW_DAYS + ' 个自然日）') + '</div>' +
+    '<div class="big"><span class="v">' + fmtDur(k.leftMin) + '</span></div>' +
+    '<div class="bar" role="img" aria-label="' + L('Pool-entry window','入池有效期') + '">' +
+      '<div class="el" style="width:' + held + '%"></div>' +
+      '<div class="rm" style="width:' + (100 - held).toFixed(2) + '%"></div></div>' +
+    '<div class="scale"><span>' + L('decided <b>' + a.decidedAt + '</b>', '结论 <b>' + a.decidedAt + '</b>') + '</span>' +
+      '<span>' + L('lapses <b>' + k.to + '</b>', '失效 <b>' + k.to + '</b>') + '</span></div>' +
+    '<div class="ways"><div class="w"><i>①</i><span>' +
+      L('<b>Approved is not pledged yet.</b> The tokens enter the pool only after you sign and the transfer is confirmed on chain; the server rechecks them once more just before that.',
+        '<b>通过还不等于质押成功。</b>代币要等您签名、链上转入成功才进池；发起转入前服务端会再复核一次。') + '</span></div>' +
+      '<div class="w"><i>②</i><span>' +
+      L('If nothing is signed within <b>' + fmtDur(k.leftMin) + '</b>, this decision lapses and you submit a new application. <b>No gas is charged either way.</b>',
+        '若 <b>' + fmtDur(k.leftMin) + '</b> 内未完成签名，本次结论失效，需重新提交。<b>两种情形都不扣 gas。</b>') + '</span></div></div>' +
+    '<div style="margin-top:12px"><button class="btn primary" type="button" data-act="ls.enterPool" data-v="' + a.id + '">' +
+      g('enterPool') + '</button></div>' +
+    '</div></div>';
+}
+function appPastRow(a){
+  var body = '';
+  if(a.st === 'rejected')
+    body = CF.note('red', '<b class="ls-b">' + g('rejectReason') + '</b>：' + E(dtr(a.reason)) +
+      '<p>' + L('No gas was charged. Submit a new application once it is fixed — it gets a new application ID.',
+                '本次未产生任何 gas。整改后可重新提交，重新提交会生成新的申请编号。') + '</p>', '');
+  else if(a.st === 'void')
+    body = CF.note('red', '<b class="ls-b">' + L('Pre-entry recheck failed','入池前复核未通过') + '</b>：' + E(dtr(a.voidReason)) +
+      '<p>' + L('The on-chain transfer was never submitted and no gas was charged.',
+                '未发起链上转入，未扣 gas。') + '</p>', '');
+  else if(a.st === 'expired')
+    body = CF.note('', L('The decision lapsed at <b>' + appClock(a).to + '</b> because the pool entry was not signed within ' +
+        REVIEW_DAYS + ' calendar days. <b>No gas was charged at any point.</b>',
+      '结论已于 <b>' + appClock(a).to + '</b> 失效：通过后 ' + REVIEW_DAYS + ' 个自然日内未完成签名入池。<b>全程未扣任何 gas。</b>'), '');
+  else if(a.st === 'withdrawn')
+    body = CF.note('', L('You withdrew this application before a decision was made.','结论作出前由您自行撤回。'), '');
+  else if(a.st === 'done')
+    body = CF.note('green', L('Signed and confirmed on chain — the tokens are in the pool and count towards pledged token value.',
+      '已签名入池、链上转入成功，代币已进池并计入质押代币价值。'), '');
+  return '<div style="padding:12px 0;border-top:1px solid var(--border)">' +
+    '<div>' + pill(TONE[PA_ST[a.st].tone] || 'gray', appSt(a)) +
+      '<span class="mono" style="margin-left:8px">' + a.id + '</span>' +
+      '<span class="faint" style="margin-left:8px">' + a.items.length + L(' token(s) · ',' 张 · ') + usd(appSum(a)) +
+      ' · ' + (a.decidedAt || a.at) + '</span></div>' +
+    appTokens(a) + '<div style="margin-top:10px">' + body + '</div>' +
+    (a.st === 'rejected' || a.st === 'expired' || a.st === 'void'
+      ? '<div style="margin-top:10px"><button class="btn sm" type="button" data-act="ls.appAgain" data-v="' + a.id + '">' +
+        g('resubmit') + '</button></div>' : '') + '</div>';
+}
+function reviewCard(p, own){
+  if(!own) return '';
+  var live = appsLive(p.id), past = appsPast(p.id);
+  if(!live.length && !past.length) return '';
+  return '<div class="card" style="margin-bottom:16px">' +
+    cardHead(g('pledgeReview'), faint(live.length
+      ? L(live.length + ' application(s) in flight · ' + past.length + ' concluded',
+          '在途 ' + live.length + ' 条 · 已结论 ' + past.length + ' 条')
+      : L('no application in flight · ' + past.length + ' concluded', '当前无在途申请 · 已结论 ' + past.length + ' 条'))) +
+    '<div class="card-b">' +
+      live.map(appLiveBlock).join('') +
+      (past.length ? fold(g('reviewHistory'), String(past.length), past.map(appPastRow).join(''), !live.length) : '') +
+    '</div></div>';
+}
+
 /* WS-326 / WS-327 的业务状态文案。v1.4 起只在详情页用——
    列表页的业务进度与还款进度副行已按需求方第 1 条移除。 */
 var FIN_ST = { 'S-FD-3':['Awaiting disbursement','待放款'], 'S-FD-4':['Awaiting disbursement confirmation','待放款确认'],
@@ -1478,10 +1716,12 @@ function shortAlert(p, d, own){
   return '<div class="ls-alert">' + CF.note('red', L(
     'Coverage gap <span class="mono">' + usd(d.gap) + '</span>; asset value to add <span class="mono">' + usd(d.need) +
       '</span> (= coverage gap ÷ ' + (PLEDGE_RATE*100) + '%), since ' + (d.shortFrom || '—') + '. ' +
-      'Cause: the underlying receivables behind ' + d.deadCount + ' token(s) in this pool have been invalidated (' + usd(d.dead) + ' in total).',
+      'Cause: the underlying receivables behind ' + d.deadCount + ' token(s) in this pool have been invalidated (' + usd(d.dead) + ' in total).' +
+      '<p>Adding pledge <b class="ls-b">goes through platform review first</b> and does not take effect on submission: the tokens count towards coverage only once the application is approved and the pool entry is signed.</p>',
     '覆盖缺口 <span class="mono">' + usd(d.gap) + '</span>，需追加资产价值 <span class="mono">' + usd(d.need) +
       '</span>（＝覆盖缺口 ÷ ' + (PLEDGE_RATE*100) + '%），自 ' + (d.shortFrom || '—') + ' 起。' +
-      '诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效（合计 ' + usd(d.dead) + '）。'),
+      '诱因：池内 ' + d.deadCount + ' 张代币底层应收账款已失效（合计 ' + usd(d.dead) + '）。' +
+      '<p>追加质押<b class="ls-b">需先经平台审核</b>，提交后不立即生效：审核通过并完成签名入池，这批代币才计入覆盖。</p>'),
     L('Insufficient pledge coverage: pledged token value has fallen below outstanding financing',
       '质押覆盖不足：池内有效质押价值低于项目融资余额')) + '</div>';
 }
@@ -2008,9 +2248,13 @@ function pageProject(){
           ? L('The pool is empty','本池已空') + '</b>' +
             L('The collateral was released in business terms at the moment the project closed or settled. Tokens still awaiting on-chain withdrawal are listed in the "Release pledge" dialog .',
               '质押在项目关闭 / 结清的同一时刻已全额业务释放。仍待链上提取的代币在「解除质押」弹窗内列出。')
-          : L('No valid collateral in this pool','本项目暂无有效质押') + '</b>' +
-            L('The pledge submitted at creation ultimately failed on chain. Pledge again before publishing.',
-              '创建时那笔质押最终链上失败，可重新质押后再发布。')) + '</td></tr>') +
+          : appsLive(p.id).length
+            ? L('Nothing in this pool yet','本池暂无代币') + '</b>' +
+              L('The first pledge application is still in the review flow above. Tokens enter the pool only after the decision is approved and you sign the on-chain transfer.',
+                '首笔质押申请还在上方的审核流程里。代币要等审核通过、您签名并链上转入成功之后才进池。')
+            : L('No valid collateral in this pool','本项目暂无有效质押') + '</b>' +
+              L('The pledge submitted at creation ultimately failed on chain. Pledge again before publishing.',
+                '创建时那笔质押最终链上失败，可重新质押后再发布。')) + '</td></tr>') +
     '</tbody></table></div>' + pgBar(tp, 'tokPage') + '</div>';
 
   /* ---- 左栏 2：融资信息清单（一行 = 一笔需求，按需求编号 FP-28 逐笔；固定每页 5 条） ---- */
@@ -2208,8 +2452,10 @@ function pageProject(){
       faint(L('same source as the figures above · ' + CCY, '口径与上方读数同源 · 单位 ' + CCY))) +
     '<div class="card-b">' + chartBlock(p,'pool') + chartBlock(p,'fin') + '</div></div>';
 
-  return head + shortAlert(p, d, own) + usedUpNote(d, p) + statRow(p) +
-    '<div class="portal-cols"><div>' + lockBlock + pledgeCard + finCard + repCard + demandCard + quoteCard +
+  return head + (S.chain ? '<div style="margin-bottom:16px">' + chainResult() + '</div>' : '') +
+    shortAlert(p, d, own) + usedUpNote(d, p) + statRow(p) +
+    '<div class="portal-cols"><div>' + reviewCard(p, own) + lockBlock + pledgeCard +
+    finCard + repCard + demandCard + quoteCard +
     '</div>' + rail + '</div>' + charts;
 }
 function kcell(k, v, x, sans){
@@ -2301,8 +2547,8 @@ function pageCreate(){
   var wp = paged(wl, 'walPage');
 
   return pageHead(g('createProject'),
-      L('Name the pool, choose the token type, and pledge at least one token. The project is persisted as soon as the pledge is submitted; you publish the demand afterwards from the project detail page.',
-        '填项目名、选代币类型、至少质押一张代币。质押申请提交后项目即已持久化，融资需求随后在项目详情页的操作区发布。')) +
+      L('Name the pool, choose the token type, and select at least one token. Submitting creates the project and sends a pledge application for review; the tokens enter the pool after the decision is approved and you sign the on-chain transfer.',
+        '填项目名、选代币类型、至少勾选一张代币。提交后项目即已持久化、质押申请进入审核；代币要等审核通过并完成签名入池才进池。')) +
     (S.chain ? chainResult() : '') +
     '<div class="portal-cols"><div>' +
       '<div class="card">' + cardHead(L('Basic information','基本信息')) + '<div class="card-b">' +
@@ -2331,8 +2577,11 @@ function pageCreate(){
         '<th>' + g('tokenId') + '</th><th class="num">' + g('tokenQty') + '</th><th class="num">' + g('tokenValue') + '</th>' +
         '<th class="num">' + g('dueDate') + '</th><th>' + g('buyer') + '</th><th>' + g('tokenType') + '</th></tr></thead><tbody>' +
         (wp.rows.length ? wp.rows.map(function(t){
-          return '<tr><td><input type="checkbox" ' + (S.sel[t.id] ? 'checked' : '') + ' data-act="ls.sel" data-v="' + t.id +
-            '" aria-label="' + t.id + '"></td><td class="mono">' + t.id + '</td>' +
+          return '<tr' + (t.app ? ' class="ls-ro"' : '') + '><td>' + (t.app
+              ? '<span aria-hidden="true">⊘</span>'
+              : '<input type="checkbox" ' + (S.sel[t.id] ? 'checked' : '') + ' data-act="ls.sel" data-v="' + t.id +
+                '" aria-label="' + t.id + '">') + '</td><td class="mono">' + t.id +
+            (t.app ? '<div class="cell-sub">' + L('held by application ' + t.app, '已被在途申请 ' + t.app + ' 占用') + '</div>' : '') + '</td>' +
             '<td class="num">1</td>' +
             '<td class="num">' + amt(t.amt) + ' <span class="faint">' + CCY + '</span></td>' +
             '<td class="num">' + t.due + '</td><td>' + E(dtr(t.buyer)) + '</td><td>' + g('receivable') + '</td></tr>';
@@ -2349,21 +2598,24 @@ function pageCreate(){
           '前端即时预览；提交时由服务端权威重算并校验，不一致以服务端为准') + '</span></div></div>' +
       '</div></div>' +
 
-      '<aside class="portal-rail"><div class="card">' + cardHead(L('Fees and signing','费用与签名'),
-        faint(L('on-chain transfer into the pledge contract','链上转入质押合约'))) +
+      '<aside class="portal-rail"><div class="card">' + cardHead(L('Submission and fees','提交与费用'),
+        faint(L('review first, on-chain transfer afterwards','先审核，后链上转入'))) +
         '<div class="card-b">' +
           '<div class="rows" style="box-shadow:none">' +
-          '<div class="row"><div class="row-main"><div class="row-k">' + L('On-chain items in this batch','本次链上操作笔数') + '</div>' +
-          '<div class="row-v mono">' + L(picked.length + ' (merged into one submission)', picked.length + ' 笔（合并为一次提交）') + '</div></div></div>' +
-          '<div class="row"><div class="row-main"><div class="row-k">' + L('Estimated gas','预估 gas') + '</div><div class="row-v mono">' + gas + ' ETH</div></div></div>' +
+          '<div class="row"><div class="row-main"><div class="row-k">' + L('This submission','本次提交') + '</div>' +
+          '<div class="row-v">' + L('a pledge application for ' + picked.length + ' token(s)', picked.length + ' 张代币的质押申请') + '</div></div></div>' +
+          '<div class="row"><div class="row-main"><div class="row-k">' + L('Cost of this step','本步骤费用') + '</div>' +
+          '<div class="row-v mono">0 ETH</div></div></div>' +
+          '<div class="row"><div class="row-main"><div class="row-k">' + L('Estimated gas for step 2','第 ② 步预估 gas') + '</div><div class="row-v mono">' + gas + ' ETH</div></div></div>' +
           '<div class="row"><div class="row-main"><div class="row-k">' + L('Paid by','承担方') + '</div><div class="row-v">' +
             E(actorFull('asset')) + L(' (your entity)','（本企业）') + '</div></div></div></div>' +
+          twoStepBar(picked.length, gas) +
           '<p class="hint" style="margin-top:10px">' + L(
             'Gas is charged by the blockchain. <strong class="ls-b">The platform does not pay it for you, does not advance it, and charges no service fee on pledging, withdrawal or redemption</strong>. A failed transaction may still have cost gas. Signing and payment happen in an <b>external SDK service</b>; the platform does not build its own wallet-connect component.',
             'gas 由区块链收取，<strong class="ls-b">平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</strong>。链上失败也可能已经产生费用。签名与付费由本页<b>唤起外部 SDK 服务</b>完成，平台不自建钱包连接组件。') + '</p>' +
           '<button class="btn primary block" type="button" style="margin-top:14px" ' +
             (nameOk && picked.length ? '' : 'disabled ') + 'data-act="ls.create">' +
-            L('Create project and pledge','创建项目并发起质押') + '</button>' +
+            L('Create the project and submit for review','创建项目并提交质押申请') + '</button>' +
           (nameOk && picked.length ? '' : '<p class="hint">' + (!nameOk
             ? L('Enter a project name first (1–60 characters).','请先填写项目名称（1～60 字符）。')
             : L('At least one token must be pledged at creation, so submission is disabled with nothing selected.',
@@ -2398,9 +2650,16 @@ function pageMine(){
       return '<tr><td class="cell-main">' + E(dtr(p.name)) + '</td><td class="mono">' + p.id + '</td>' +
         '<td>' + pill(TONE[FP_STATUS[p.status].tone]||'gray', fpStatus(p)) +
           (p.draft ? '<div class="cell-sub">' + (p.emptyPool
-            ? L('pledge failed on chain · empty pool','首笔质押链上失败 · 空池')
+            ? (appsLive(p.id).length ? L('first pledge application under review · pool still empty','首笔质押申请审核中 · 池内暂无代币')
+                                     : L('pledge failed on chain · empty pool','首笔质押链上失败 · 空池'))
             : L('pool created · demand not published yet','已建池 · 尚未发布需求')) + '</div>' : '') +
-          (p.expired ? '<div class="cell-sub">' + L('expired · existing deals performing','已到期 · 存量履约中') + '</div>' : '') + '</td>' +
+          (p.expired ? '<div class="cell-sub">' + L('expired · existing deals performing','已到期 · 存量履约中') + '</div>' : '') +
+          /* 在途质押申请是本方数据，只在本页与详情页出现，不进广场列表 */
+          appsLive(p.id).map(function(a){
+            return '<div class="cell-sub">' + appSt(a) + ' · ' + a.items.length + L(' token(s)',' 张') +
+              (a.st === 'approved' ? L(' · ' + fmtDur(appClock(a).leftMin) + ' left to sign',
+                                       ' · 入池有效期剩余 ' + fmtDur(appClock(a).leftMin)) : '') + '</div>';
+          }).join('') + '</td>' +
         '<td class="num">' + amt(d.valid) + '</td><td class="num">' + (p.demand ? amt(p.demand) : '—') + '</td>' +
         '<td class="num">' + amt(d.bal) + '</td>' +
         '<td>' + pill(gTone(d.grade), covMeta(d.grade).t) + '</td><td class="num">' + (p.expiresAt || '—') + '</td>' +
@@ -2438,6 +2697,13 @@ function co(k, f){ var m = CO_TR[k]; return m ? L(m[f][0], m[f][1]) : ''; }
    两者分开的理由就在代码里看得见：timeout 分支不给重试按钮，只给「查询链上状态」。 */
 function chainResult(){
   var r = S.chain, o = CHAIN_OUTCOMES[r.k], ttl = L('On-chain result','链上结果');
+  /* 复核不通过：这一条**不是链上结果**——链上什么都没发生，所以标题与费用行都另写 */
+  if(r.k === 'recheck') return CF.note('red',
+    '<strong class="ls-b">' + L('The approval was voided by the pre-entry recheck','审核结论已被入池前复核作废') + '</strong>' +
+    '<p>' + E(dtr(r.reason)) + '</p>' +
+    '<p>' + L('Fee: <b>none</b> — the on-chain transfer was never submitted. Submit a new application once the token is free again.',
+              '费用：<b>无</b>——未发起链上转入、未扣 gas。该代币空出来之后可以重新提交申请。') + '</p>',
+    L('Pre-entry recheck','入池前复核'));
   if(r.k === 'ok') return CF.note('green', L(
     '<strong class="ls-b">Transfer confirmed on chain</strong> : ' + r.n + ' token(s) are in the pool and count towards pledged token value.' +
     '<p>Actual gas ' + r.gas + ' ETH, charged once for the batch.</p>',
@@ -2543,13 +2809,17 @@ function drawerPledge(){
   var sum = picked.reduce(function(a,t){ return a+t.amt; },0);
   var body =
     '<p class="lead" style="margin-top:0">' + L(
-      'Allowed in any project status — the pool only ever grows this way, so collateral can only improve . Only tokens of this pool’s type are listed .',
-      '任何项目状态下都允许，池内资产只增不减地增强覆盖。清单只列与本池同类型的代币。') + '</p>' +
+      'Allowed in any project status — the pool only ever grows this way, so collateral can only improve . Only tokens of this pool’s type are listed . Submitting sends a <b>pledge application for review</b>; nothing goes on chain at this point .',
+      '任何项目状态下都允许，池内资产只增不减地增强覆盖。清单只列与本池同类型的代币。提交的是<b>质押申请</b>，本步骤不发生任何链上操作。') + '</p>' +
     '<div class="tablewrap"><table class="tbl"><thead><tr><th style="width:36px"></th><th>' + g('tokenId') + '</th>' +
       '<th class="num">' + g('tokenValue') + '</th><th class="num">' + g('dueDate') + '</th><th>' + g('buyer') + '</th></tr></thead><tbody>' +
       (wp.rows.length ? wp.rows.map(function(t){
-        return '<tr><td><input type="checkbox" ' + (S.sel[t.id]?'checked':'') + ' data-act="ls.sel" data-v="' + t.id + '"></td>' +
-          '<td class="mono">' + t.id + '</td><td class="num">' + amt(t.amt) + '</td><td class="num">' + t.due + '</td><td>' + E(dtr(t.buyer)) + '</td></tr>';
+        return '<tr' + (t.app ? ' class="ls-ro"' : '') + '><td>' + (t.app
+            ? '<span aria-hidden="true">⊘</span>'
+            : '<input type="checkbox" ' + (S.sel[t.id]?'checked':'') + ' data-act="ls.sel" data-v="' + t.id + '">') + '</td>' +
+          '<td class="mono">' + t.id + (t.app ? '<div class="cell-sub">' +
+            L('held by application ' + t.app, '已被在途申请 ' + t.app + ' 占用') + '</div>' : '') + '</td>' +
+          '<td class="num">' + amt(t.amt) + '</td><td class="num">' + t.due + '</td><td>' + E(dtr(t.buyer)) + '</td></tr>';
       }).join('') : '<tr><td colspan="5" class="tbl-empty"><b>' + L('No pledgeable tokens','暂无可质押代币') + '</b>' +
         L('Released tokens must be withdrawn back to your own address before they can be pledged again.',
           '已释放的代币需先提取回自己地址才能再质押。') + '</td></tr>') +
@@ -2559,11 +2829,12 @@ function drawerPledge(){
       '<span class="sp"></span><span>' + L('total <span class="n">' + amt(sum) + '</span> ' + CCY,
         '合计 <span class="n">' + amt(sum) + '</span> ' + CCY) + '</span>' +
       (d.gap ? '<span class="sp"></span><span>' + (sum * PLEDGE_RATE >= d.gap
-        ? L('clears the coverage gap','可补平覆盖缺口')
-        : L('coverage gap would still be ' + amt(d.gap - sum*PLEDGE_RATE), '仍有覆盖缺口 ' + amt(d.gap - sum*PLEDGE_RATE))) + '</span>' : '') + '</div>';
+        ? L('clears the coverage gap once it is approved and in the pool','通过并入池后可补平覆盖缺口')
+        : L('coverage gap would still be ' + amt(d.gap - sum*PLEDGE_RATE), '仍有覆盖缺口 ' + amt(d.gap - sum*PLEDGE_RATE))) + '</span>' : '') + '</div>' +
+    twoStepBar(picked.length, gasEstimate(Math.max(1, picked.length)));
   return uWrap(g('addPledge'), dtr(p.name) + ' · ' + p.id, body,
     btnUCancel() + '<button class="btn primary" type="button" ' + (picked.length?'':'disabled ') +
-    'data-act="ls.addPledge">' + L('Confirm and sign','确认追加并发起质押') + '</button>');
+    'data-act="ls.addPledge">' + g('submitReview') + '</button>');
 }
 
 /* ---- 弹窗：解除质押（D-FIN-78：撤回与提取的合并入口）----
@@ -2741,13 +3012,38 @@ function modalClose(){
     btnCancel() + '<button class="btn primary" type="button" data-act="ls.closeOk">' + L('Confirm close','确认关闭') + '</button>');
 }
 
+/* ---- 弹窗：提交质押申请（V9.4）----
+   这一步**不唤起 SDK、不付 gas**：提交的是申请，链上转入发生在审核通过之后的第 ② 步。
+   两次操作必须在提交前讲清楚（AC-LS-97），否则用户会以为提交即完事。 ---- */
+function modalReview(){
+  var m = S.modal;
+  return mWrap(m.title,
+    '<p class="lead" style="margin-top:0">' + L(
+      'This submits a pledge application for review. <b>Nothing goes on chain now and no gas is charged now.</b>',
+      '本次提交的是<b>质押申请</b>，交由平台审核。<b>此刻不发生链上操作，也不产生任何 gas。</b>') + '</p>' +
+    '<div class="rows" style="box-shadow:none">' +
+    m.rows.concat([[L('Cost of this step','本步骤费用'), '0 ETH'],
+                   [L('Expected decision','预期结论时间'), L('within ' + REVIEW_SLA + ' business day(s)', REVIEW_SLA + ' 个工作日内')]]).map(function(r){
+      return '<div class="row"><div class="row-main"><div class="row-k">' + E(r[0]) + '</div>' +
+        '<div class="row-v">' + E(String(r[1])) + '</div></div></div>'; }).join('') + '</div>' +
+    twoStepBar(m.n, m.gas) +
+    '<p class="hint" style="margin-top:10px">' + L(
+      'While the review runs, these ' + m.n + ' token(s) stay in your own address and are <b>not counted</b> in pledged token value, borrowing cap or available to borrow. If the application is rejected, <b>you pay nothing</b>.',
+      '审核期间这 ' + m.n + ' 张代币留在您自己的地址里，<b>不计入</b>质押代币价值、融资上限与可融金额。若被驳回，<b>您不承担任何费用</b>。') + '</p>',
+    btnCancel() + '<button class="btn primary" type="button" data-act="ls.reviewOk">' + g('submitReview') + '</button>');
+}
+
 /* ---- 弹窗：链上费用二次确认 + 外部签名 SDK（AC-LS-32 / D-FIN-71） ---- */
 function modalChain(){
   var m = S.modal;
+  var a = m.app ? findApp(m.app) : null;
   return mWrap(m.title,
     '<p class="lead" style="margin-top:0">' + L(
       'Before the external signing SDK is invoked, confirm what this on-chain operation does and what it costs.',
       '唤起外部签名 SDK 前，请先确认本次链上操作的内容与费用。') + '</p>' +
+    (a ? '<p class="hint" style="margin-top:-4px">' + L(
+        'The server rechecks these tokens once more before the transfer is submitted. If the recheck fails, the decision is voided, <b>the transfer is not submitted and no gas is charged</b>.',
+        '发起转入前，服务端会对这批代币再复核一次。复核不通过时本次结论作废，<b>不发起链上转入、不扣 gas</b>。') + '</p>' : '') +
     '<div class="rows" style="box-shadow:none">' +
     m.rows.concat([[L('On-chain items in this batch','本次链上操作笔数'), m.n],
                    [L('Estimated gas','预估 gas'), m.gas + ' ETH'],
@@ -2756,7 +3052,14 @@ function modalChain(){
         '<div class="row-v">' + E(String(r[1])) + '</div></div></div>'; }).join('') + '</div>' +
     '<p class="hint">' + L(
       'Gas is charged by the blockchain. <strong class="ls-b">The platform does not pay it for you, does not advance it, and charges no service fee on pledging, withdrawal or redemption</strong>. A failed transaction may still have cost gas. Batching is the single most effective way to reduce cost: these ' + m.n + ' items have been merged into one submission.',
-      'gas 由区块链收取，<strong class="ls-b">平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</strong>。链上失败也可能已经产生费用。批量一次提交是最有效的降费手段：' + m.n + ' 笔已合并为一次提交。') + '</p>',
+      'gas 由区块链收取，<strong class="ls-b">平台不代付、不垫付，也不对质押 / 撤回 / 提取收取任何服务费</strong>。链上失败也可能已经产生费用。批量一次提交是最有效的降费手段：' + m.n + ' 笔已合并为一次提交。') + '</p>' +
+    (a ? '<div class="field" style="margin-top:12px"><label>' +
+      L('Prototype outcome switch: pick what the pre-entry recheck returns.',
+        '原型内的结果模拟：选择入池前复核的返回。') + '</label>' +
+      '<select class="inp" data-f="rchk" id="rchkOut">' +
+        '<option value="pass">' + L('Recheck passed','复核通过') + '</option>' +
+        '<option value="fail">' + L('Recheck failed · token already pledged elsewhere','复核不通过 · 代币已质押至其他项目') + '</option>' +
+      '</select></div>' : ''),
     btnCancel() + '<button class="btn primary" type="button" data-act="ls.sdk">' + L('Confirm and sign','确认并唤起签名') + '</button>');
 }
 function modalSdk(){
@@ -2785,51 +3088,38 @@ function modalSdk(){
 
 function finishChain(kind, outcome){
   var p = findProject(S.pid);
-  if(kind === 'create'){
-    var sel = WALLET.filter(function(t){ return S.sel[t.id]; });
-    if(outcome === 'cancel' || outcome === 'nogas'){ S.chain = { k:outcome }; return; }
+  /* V9.4：入池是**审核通过之后**的第 ② 步，链上那一段的判定与口径一条没改，
+     改的只是它的触发点——从"提交质押"挪到"通过后签名"。 */
+  if(kind === 'enter'){
+    var app = findApp(S.app); if(!app) return;
+    var tp2 = findProject(app.pid) || p;
+    var sel = WALLET.filter(function(t){ return t.app === app.id; });
+    if(outcome === 'cancel' || outcome === 'nogas'){
+      /* 结论仍在有效期内，代币继续被本申请占用，可以再来一次 */
+      S.chain = { k:outcome, n:sel.length, gas:gasEstimate(sel.length) }; return;
+    }
     var okT = [], bad = 0, ct = 'CT-2';
     if(outcome === 'ok') okT = sel.slice();
-    else if(outcome === 'partial'){ var c = Math.max(1, Math.ceil(sel.length/2)); okT = sel.slice(0,c); bad = sel.length-c; }
+    else if(outcome === 'partial'){ var c = Math.max(1, Math.ceil(sel.length/2)); okT = sel.slice(0,c); bad = sel.length - c; }
     else if(outcome === 'timeout'){ okT = sel.slice(); ct = 'CT-1'; }
     else { okT = []; bad = sel.length; }
-    okT.forEach(function(t){ t.ct = ct; t.ps = 'PS-2'; });
-    var tot = okT.reduce(function(a,t){ return a+t.amt; },0);
-    var id = 'FP-' + TODAY.replace(/-/g,'') + '-' + String(PROJECTS.length + 55).padStart(4,'0');
-    var np = { id:id, name:(S.pname||'').trim(), owner:ACTORS.asset.full, entity:ACTORS.asset.entity,
-      status:'S-FP-1', expired:false, draft:true, emptyPool:(okT.length === 0 || ct === 'CT-1'),
-      publishedAt:null, expiresAt:null, demand:null, quotes:0, assetType:(S.ptype || '应收账款类'), tokens:okT,
-      events:[{ d:TODAY, k:(okT.length?'pledge':'fail'),
-        t:'创建资产池 · 质押 ' + sel.length + ' 张' + (bad ? '（' + bad + ' 张链上失败）' : ''),
+    if(okT.length){
+      var tot = okT.reduce(function(a2,t){ return a2+t.amt; },0);
+      okT.forEach(function(t){ t.ct = ct; t.ps = 'PS-2'; t.app = null; });
+      tp2.tokens = tp2.tokens.concat(okT);
+      if(ct === 'CT-2') tp2.emptyPool = false;
+      var ids = okT.map(function(t){ return t.id; });
+      for(var i=WALLET.length-1;i>=0;i--) if(ids.indexOf(WALLET[i].id) >= 0) WALLET.splice(i,1);
+      tp2.events.push({ d:TODAY, k:(app.kind === 'first' ? 'pledge' : 'topup'),
+        t:(app.kind === 'first' ? '创建资产池 · 首笔质押 ' : '追加质押 ') + okT.length + ' 张 · ' + usd(tot),
         dTotal:(ct === 'CT-2' ? tot : 0),
         note:(ct === 'CT-1' ? '链上结果未返回，处理中不预先计入有效质押价值'
-             : okT.length ? '链上转入成功，计入有效质押价值'
-                          : '首笔质押链上失败，项目保留为空池草稿') }],
-      terms:null, deals:[] };
-    PROJECTS.push(np);
-    var ids = okT.map(function(t){ return t.id; });
-    for(var i=WALLET.length-1;i>=0;i--) if(ids.indexOf(WALLET[i].id) >= 0) WALLET.splice(i,1);
-    S.chain = { k:outcome, n:okT.length, ok:okT.length, bad:bad, gas:gasEstimate(sel.length) };
-    S.sel = {};
-    /* V8.0 第 8 条：创建成功后直达详情页，不再有第二段独立页面 */
-    S.pid = id; S.chainKeep = true; CF.go('P-LS-02');
-    return;
-  }
-  if(kind === 'pledge'){
-    var ps = WALLET.filter(function(t){ return S.sel[t.id]; });
-    if(outcome === 'cancel' || outcome === 'nogas'){ S.chain = { k:outcome }; return; }
-    if(outcome === 'ok' || outcome === 'partial'){
-      var take = outcome === 'ok' ? ps : ps.slice(0, Math.max(1, Math.ceil(ps.length/2)));
-      take.forEach(function(t){ t.ct = 'CT-2'; t.ps = 'PS-2'; });
-      p.tokens = p.tokens.concat(take); p.emptyPool = false;
-      var s2 = take.reduce(function(a,t){ return a+t.amt; },0);
-      p.events.push({ d:TODAY, k:'topup', t:'追加质押 ' + take.length + ' 张 · ' + usd(s2), dTotal:s2,
-        note:'池内资产只增不减地增强覆盖' });
-      var ids2 = take.map(function(t){ return t.id; });
-      for(var j=WALLET.length-1;j>=0;j--) if(ids2.indexOf(WALLET[j].id) >= 0) WALLET.splice(j,1);
-      S.chain = { k:outcome, n:take.length, ok:take.length, bad:ps.length-take.length, gas:gasEstimate(ps.length) };
-    } else S.chain = { k:outcome, n:ps.length, gas:gasEstimate(ps.length) };
-    S.sel = {};
+                            : '审核通过后签名入池，链上转入成功即计入有效质押价值') });
+      app.st = 'done';
+      /* 部分成功时，没进池的那几张退回可选，本条结论不再复用——重来要走新的申请 */
+      WALLET.forEach(function(t){ if(t.app === app.id) t.app = null; });
+    }
+    S.chain = { k:outcome, n:okT.length, ok:okT.length, bad:bad, gas:gasEstimate(sel.length), app:app.id };
     return;
   }
   /* D-FIN-78：合并入口，一次提交可能同时含「池内撤回」与「合约内提取」两类代币。
@@ -2885,7 +3175,7 @@ var mod = {
   state:function(){
     return { lang:'en', role:'guest', pid:'FP-20260416-0007', panel:null,
              flt:JSON.parse(JSON.stringify(F0)), sel:{}, wsel:{}, rsel:{},
-             pname:'', ptype:'应收账款类', amt:'', amtErr:null, chain:null, chainKeep:false,
+             pname:'', ptype:'应收账款类', amt:'', amtErr:null, chain:null, chainKeep:false, app:null,
              tokPage:1, demPage:1, walPage:1, repayNo:null, unit:null };
   },
   onBoot:function(st){ S = st; S.flt.sort = 'pub'; },
@@ -2903,7 +3193,7 @@ var mod = {
     return pagePlaza();
   },
   /* 提示走弹窗，做事走抽屉——两个注册表分开，形态在装配处一眼可见 */
-  modals:{ close:modalClose, stage:modalStage, chain:modalChain, sdk:modalSdk },
+  modals:{ close:modalClose, stage:modalStage, chain:modalChain, sdk:modalSdk, review:modalReview },
   drawers:{ publish:drawerPublish, pledge:drawerPledge, release:drawerRelease },
   hash:{
     build:function(){
@@ -2928,6 +3218,13 @@ var mod = {
         /* 动作锚点深链：直接把对应弹窗打开在详情页上（AC-LS-85，不跳离本页） */
         if(qs.action === 'publish' || qs.action === 'pledge') doAction(qs.action);
         else if(qs.action === 'withdraw' || qs.action === 'redeem') doAction('release');
+        else if(qs.action === 'enter_pool'){
+          /* 审核通过通知的落点：直接把入池确认开在详情页上，不跳离本页（AC-LS-85）。
+             申请是本方数据，归属判定与申请卡同一套：不是本方主体就只落页面。 */
+          var la = (S.role === 'asset' && p.entity === ACTORS.asset.entity)
+            ? appsLive(seg[1]).filter(function(x){ return x.st === 'approved'; })[0] : null;
+          if(la) mod.onAct(null, 'ls.enterPool', la.id, null);
+        }
         return true;
       }
       return false;
@@ -2972,7 +3269,7 @@ var mod = {
       case 'ls.ptype': S.ptype = v; S.sel = {}; S.walPage = 1; CF.render(); return true;
       case 'ls.amt':  if(e && e.type === 'click') return true; S.amt = n.value; S.amtErr = null; CF.render(); return true;
       case 'ls.sel':  S.sel[v] = !S.sel[v]; CF.render(); return true;
-      case 'ls.selAll': WALLET.forEach(function(t){ S.sel[t.id] = n.checked; }); CF.render(); return true;
+      case 'ls.selAll': WALLET.forEach(function(t){ if(!t.app) S.sel[t.id] = n.checked; }); CF.render(); return true;
       case 'ls.wsel': S.wsel[v] = !S.wsel[v]; CF.render(); return true;
       case 'ls.rsel': S.rsel[v] = !S.rsel[v]; CF.render(); return true;
       case 'ls.query': toast('info', L('Query on-chain status','查询链上状态'),
@@ -2986,27 +3283,28 @@ var mod = {
       case 'ls.closeOk': S.modal = null; toast('info', L('Demo prototype','演示原型'),
         L('This prototype does not actually mutate the demo data here.','此处不真正改动演示数据。')); return true;
       case 'ls.create': {
-        var sel = WALLET.filter(function(t){ return S.sel[t.id]; });
+        var sel = WALLET.filter(function(t){ return S.sel[t.id] && !t.app; });
         if(!sel.length || !(S.pname||'').trim()) return true;
-        S.modal = { type:'chain', kind:'create', title:L('Create the project and pledge','创建融资项目并发起首笔质押'),
-          rows:[[L('What happens','操作内容'), L('Transfer ' + sel.length + ' token(s) into the pledge contract',
-                                                '将 ' + sel.length + ' 张代币转入质押合约')],
+        S.modal = { type:'review', kind:'create',
+          title:L('Create the project and submit the pledge application','创建融资项目并提交首笔质押申请'),
+          rows:[[L('What happens','操作内容'), L('Submit ' + sel.length + ' token(s) for pledge review',
+                                                '将 ' + sel.length + ' 张代币提交质押审核')],
                 [L('Project name','项目名称'), (S.pname||'').trim()],
                 [g('tokenType'), g('receivable')],
-                [L('Total pledged value','质押价值合计'), usd(sel.reduce(function(a,t){ return a+t.amt; },0))]],
+                [L('Total value in this application','本次申请价值合计'), usd(sel.reduce(function(a,t){ return a+t.amt; },0))]],
           n:sel.length, gas:gasEstimate(sel.length) };
         CF.render(); return true;
       }
       case 'ls.addPledge': {
-        var ps = WALLET.filter(function(t){ return S.sel[t.id]; });
+        var ps = WALLET.filter(function(t){ return S.sel[t.id] && !t.app; });
         if(!ps.length) return true;
         var s2 = ps.reduce(function(a,t){ return a+t.amt; },0);
-        S.modal = { type:'chain', kind:'pledge', title:g('addPledge'),
-          rows:[[L('What happens','操作内容'), L('Transfer ' + ps.length + ' token(s) into the pledge contract',
-                                                '将 ' + ps.length + ' 张代币转入质押合约')],
+        S.modal = { type:'review', kind:'pledge', title:g('submitReview'),
+          rows:[[L('What happens','操作内容'), L('Submit ' + ps.length + ' token(s) for pledge review',
+                                                '将 ' + ps.length + ' 张代币提交质押审核')],
                 [L('Target pool','目标资产池'), dtr(p.name) + ' · ' + p.id],
-                [L('Added value','追加价值合计'), usd(s2)],
-                [L('Borrowing cap increases by','融资上限将增加'), usd(round2(s2 * PLEDGE_RATE))]],
+                [L('Total value in this application','本次申请价值合计'), usd(s2)],
+                [L('Borrowing cap after approval and pool entry','通过并入池后融资上限将增加'), usd(round2(s2 * PLEDGE_RATE))]],
           n:ps.length, gas:gasEstimate(ps.length) };
         CF.render(); return true;
       }
@@ -3068,11 +3366,84 @@ var mod = {
             (first ? '，有效期至 ' + p.expiresAt + '（首次发布日 + 1 年，只读）。' : '（有效期不重置）。')));
         CF.render(); return true;
       }
-      case 'ls.sdk': { S.modal = { type:'sdk', kind:S.modal.kind, rows:S.modal.rows, n:S.modal.n, gas:S.modal.gas }; CF.render(); return true; }
-      case 'ls.sdkCancel': { var k1 = S.modal.kind; S.modal = null; finishChain(k1, 'cancel'); CF.render(); return true; }
+      /* ---- V9.4 质押审核 ---- */
+      case 'ls.reviewOk': {
+        var m = S.modal, picked = WALLET.filter(function(t){ return S.sel[t.id] && !t.app; });
+        if(!picked.length) return true;
+        var app = { id:appNo(), pid:S.pid, kind:(m.kind === 'create' ? 'first' : 'topup'), st:'pending',
+                    at:NOW, items:picked.map(function(t){ return { id:t.id, amt:t.amt, due:t.due, buyer:t.buyer }; }) };
+        if(m.kind === 'create'){
+          /* 项目在提交申请时即已持久化，但**池子是空的**：代币此刻还在资产方自己地址上 */
+          var nid = 'FP-' + TODAY.replace(/-/g,'') + '-' + String(PROJECTS.length + 55).padStart(4,'0');
+          PROJECTS.push({ id:nid, name:(S.pname||'').trim(), owner:ACTORS.asset.full, entity:ACTORS.asset.entity,
+            status:'S-FP-1', expired:false, draft:true, emptyPool:true,
+            publishedAt:null, expiresAt:null, demand:null, quotes:0, assetType:(S.ptype || '应收账款类'), tokens:[],
+            events:[{ d:TODAY, k:'review', t:'提交质押申请 ' + app.id + ' · ' + picked.length + ' 张',
+                      note:'审核期内代币留在资产方地址，不计入有效质押价值' }],
+            terms:null, deals:[] });
+          app.pid = nid; S.pid = nid;
+        } else {
+          p.events.push({ d:TODAY, k:'review', t:'提交质押申请 ' + app.id + ' · ' + picked.length + ' 张',
+                          note:'审核期内代币留在资产方地址，不计入有效质押价值' });
+        }
+        picked.forEach(function(t){ t.app = app.id; });
+        APPS.push(app);
+        S.sel = {}; S.modal = null; S.drawer = null; S.unit = null;
+        toast('success', L('Application submitted','质押申请已提交'),
+          L('Application ' + app.id + ' is under review. Nothing went on chain and no gas was charged. You will need to come back and sign once it is approved.',
+            '申请 ' + app.id + ' 已进入审核。本次未发生链上操作、未产生 gas；通过后需要您回来签名入池。'));
+        if(m.kind === 'create'){ CF.go('P-LS-02'); } else CF.render();
+        return true;
+      }
+      case 'ls.appWithdraw': {
+        var aw = findApp(v); if(!aw || aw.st !== 'pending') return true;
+        aw.st = 'withdrawn';
+        WALLET.forEach(function(t){ if(t.app === aw.id) t.app = null; });
+        toast('info', g('withdrawApp'),
+          L('Application ' + aw.id + ' has been withdrawn. The tokens are selectable again and nothing was charged.',
+            '申请 ' + aw.id + ' 已撤回，这些代币重新可选，全程未产生费用。'));
+        CF.render(); return true;
+      }
+      case 'ls.appAgain': {
+        var ag = findApp(v); if(!ag) return true;
+        S.sel = {};
+        ag.items.forEach(function(it){
+          for(var i=0;i<WALLET.length;i++) if(WALLET[i].id === it.id && !WALLET[i].app) S.sel[it.id] = true;
+        });
+        S.drawer = 'pledge'; S.unit = { id:ag.pid }; S.walPage = 1; CF.render(); return true;
+      }
+      case 'ls.enterPool': {
+        var ae = findApp(v); if(!ae || ae.st !== 'approved') return true;
+        var ke = appClock(ae);
+        if(ke.over){ ae.st = 'expired'; CF.render(); return true; }
+        S.modal = { type:'chain', kind:'enter', app:ae.id, title:g('enterPool'),
+          rows:[[L('What happens','操作内容'), L('Transfer ' + ae.items.length + ' token(s) into the pledge contract',
+                                                '将 ' + ae.items.length + ' 张代币转入质押合约')],
+                [g('appNoLbl'), ae.id],
+                [L('Decision time','结论时间'), ae.decidedAt + ' ' + TZ_LABEL],
+                [L('Pool-entry window left','入池有效期剩余'), fmtDur(ke.leftMin)],
+                [L('Total value in this application','本次申请价值合计'), usd(appSum(ae))]],
+          n:ae.items.length, gas:gasEstimate(ae.items.length) };
+        CF.render(); return true;
+      }
+      case 'ls.sdk': {
+        /* 入池那一次：先跑服务端的入池前复核，复核不通过就不发起链上转入、不扣 gas */
+        if(S.modal.kind === 'enter' && ((q('#rchkOut') || {}).value === 'fail')){
+          var av = findApp(S.modal.app);
+          av.st = 'void';
+          av.voidReason = '入池前复核：代币 ' + av.items[0].id + ' 已质押至其他融资项目，本次不发起链上转入。';
+          WALLET.forEach(function(t){ if(t.app === av.id) t.app = null; });
+          S.modal = null; S.chain = { k:'recheck', app:av.id, reason:av.voidReason };
+          CF.render(); window.scrollTo(0,0); return true;
+        }
+        S.modal = { type:'sdk', kind:S.modal.kind, app:S.modal.app, rows:S.modal.rows, n:S.modal.n, gas:S.modal.gas };
+        CF.render(); return true;
+      }
+      case 'ls.sdkCancel': { var k1 = S.modal.kind; S.app = S.modal.app; S.modal = null; finishChain(k1, 'cancel'); CF.render(); return true; }
       case 'ls.sdkSign': {
         var out = (q('#sdkOut') || {}).value || 'ok', k2 = S.modal.kind;
         /* 签完把身后那层做事抽屉一起收掉——结果要落在详情页上给人看，不是落在抽屉里 */
+        S.app = S.modal.app;
         S.modal = null; S.drawer = null; S.unit = null; finishChain(k2, out);
         if(k2 !== 'create'){ CF.render(); window.scrollTo(0,0); }
         return true;
