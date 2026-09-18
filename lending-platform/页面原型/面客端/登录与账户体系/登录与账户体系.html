@@ -76,6 +76,48 @@
   .login-prototype .modal-h,.login-prototype .modal-f{padding-inline:var(--sp-4)}
   .login-flow .login-actions>.btn{max-width:100%;font-size:var(--fs-12);padding-inline:var(--sp-2)}
 }
+
+/* 资金方：沿用登录域与公共组件，仅增加步骤、核对和账户分组。 */
+.funder-wrap{max-width:1080px;margin:auto}
+.funder-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:var(--sp-6);align-items:start}
+.funder-form{display:flex;flex-direction:column;gap:var(--sp-5)}
+.funder-steps{display:flex;gap:var(--sp-2);list-style:none;margin:0 0 var(--sp-6);padding:0}
+.funder-steps li{flex:1;min-width:0}
+.funder-steps button{width:100%;display:flex;gap:var(--sp-3);align-items:center;padding:var(--sp-3);min-height:44px;text-align:left;border-bottom:2px solid var(--border);color:var(--muted);font-size:var(--fs-13)}
+.funder-steps [aria-current="step"]{border-color:var(--accent);color:var(--accent);font-weight:650}
+.funder-steps .step-num{display:grid;place-items:center;background:var(--gray-bg);border-radius:var(--radius-pill);width:28px;height:28px;flex:none}
+.funder-steps [aria-current="step"] .step-num{background:var(--accent-soft);color:var(--accent)}
+.funder-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--sp-6)}
+.funder-detail-heading{margin-top:var(--sp-6)!important}
+.funder-line{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap}
+.funder-line .field{flex:1;min-width:160px}
+.funder-summary{padding:var(--sp-5);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius)}
+.funder-summary h2,.funder-wrap h2{font-size:var(--fs-19);margin:0 0 var(--sp-4)}
+.funder-summary p{font-size:var(--fs-13);color:var(--muted)}
+.funder-wrap .login-fields dd{font-size:var(--fs-14)}
+.funder-wrap .login-fields div:last-child{border-bottom:0}
+.funder-tabs{display:flex;gap:var(--sp-5);border-bottom:1px solid var(--border);margin-bottom:var(--sp-6)}
+.funder-tabs a{min-height:44px;display:flex;align-items:center;font-size:var(--fs-14);font-weight:600}
+.funder-section{scroll-margin-top:110px;margin-bottom:var(--sp-6)}
+.funder-section .field{max-width:520px}
+.funder-code{display:grid;grid-template-columns:minmax(120px,1fr) auto;gap:var(--sp-3);align-items:end}
+.funder-code button{max-width:100%}
+.funder-timeline{list-style:none;padding:0;margin:var(--sp-6) 0}
+.funder-timeline li{border-left:2px solid var(--border);padding:0 0 var(--sp-6) var(--sp-5);position:relative}
+.funder-timeline li:before{content:"";position:absolute;left:-5px;top:7px;width:8px;height:8px;background:var(--accent);border-radius:var(--radius-pill)}
+.funder-timeline li:last-child{padding-bottom:0}
+.funder-timeline small{display:block;color:var(--muted);font-size:var(--fs-12)}
+.funder-upload{padding:var(--sp-4);border:1px dashed var(--border-strong);border-radius:var(--radius-sm)}
+.funder-upload input{max-width:100%;font-size:var(--fs-12)}
+.funder-wrap .hash{font-size:var(--fs-13)}
+.funder-error{color:var(--danger);font-size:var(--fs-13)}
+.funder-stamp{font-size:var(--fs-12);color:var(--muted);margin-top:var(--sp-5)}
+.funder-actions{display:flex;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-6)}
+.funder-demo{border-top:1px solid var(--border);margin-top:var(--sp-6);padding-top:var(--sp-5)}
+.funder-demo label{display:block;font-size:var(--fs-12);margin-top:var(--sp-3)}
+.funder-demo .seg{gap:var(--sp-2)}
+@media(max-width:900px){.funder-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.funder-detail-grid{grid-template-columns:minmax(0,1fr)}.funder-steps button{flex-direction:column;gap:var(--sp-2);padding:var(--sp-2);text-align:center}.funder-code{grid-template-columns:minmax(0,1fr)}.funder-wrap .card-b{padding:var(--sp-4)}.funder-actions .btn{font-size:var(--fs-12);padding-inline:var(--sp-3)}}
 </style>
 </head>
 <body class="login-prototype">
@@ -136,6 +178,7 @@
 
 <script src="../../_shared/registry.portal.js"></script>
 <script src="../../_shared/shell.js"></script>
+<script src="资金方账户.js"></script>
 <script src="登录与账户体系.js"></script>
 </body>
 </html>

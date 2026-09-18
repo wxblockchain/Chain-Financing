@@ -95,6 +95,7 @@
   function choose(role){
     D.entryError='';D.sessionMessage='';remember(role);
     if(role==='asset_party')open('leave','login');
+    else if(CF.funder){CF.funder.connect('entry');}
     else {
       S.layer=null;go('/login');D.handoff='wallet';D.reviewMessage=L('Wallet connection requested. Use the controls below to simulate the external result. No wallet is contacted.','已到钱包连接边界。下方可模拟外部结果；不会连接真实钱包。');S.demo=true;
     }
@@ -104,6 +105,7 @@
     CF.openLayer('modal',key,data);
   }
   function notices(){
+    if(S.role==='fund'&&CF.funder){CF.funder.notices();return;}
     if(S.role!=='asset'||D.restricted){CF.setCompletion([]);return;}
     const items=[];
     if(D.level!=='L3')items.push({priority:2,text:L('Complete identity verification on the asset trust platform to unlock financing.','在资产可信平台完成实名认证后即可使用融资功能。'),label:L('Complete now','立即前往'),act:'login-leave',value:'verify'});
@@ -176,6 +178,7 @@
       </div></section>${D.sessionMessage?CF.note('warn',L('You signed out on the asset trust platform. Your sign-in here has also ended.','你已在资产可信平台登出，本平台登录同时结束。')):''}</div>`;
   }
   function content(id){
+    if(CF.funder){const own=CF.funder.content(id);if(own!==undefined){queueMicrotask(postRender);return own;}}
     // 受限会话只有协议、协议正文与退出可达。路由守卫不依赖画不画入口。
     if(D.restricted&&id!=='P-L11'){queueMicrotask(()=>go('/auth/agreements'));return '';}
     notices();queueMicrotask(postRender);
@@ -244,6 +247,7 @@
     support:()=>({title:L('Asset trust platform support','资产可信平台客服'),html:`<p>${L('Please contact support through the asset trust platform and provide reference HC-204.','请通过资产可信平台联系客服，并提供参考码 HC-204。')}</p>`,foot:btn('Close','关闭','closelayer')})
   };
   function action(act,v){
+    if(CF.funder&&CF.funder.action(act,v))return true;
     if(!act.startsWith('login-'))return false;
     switch(act){
       case 'login-choose':choose(v);break;
@@ -257,7 +261,7 @@
         S.layer=null;D.handoff='asset';S.demo=true;D.reviewMessage=L('External handoff: asset trust platform. The destination is not configured; use a simulated return below.','已到资产可信平台离站边界；目标域名尚未登记，可在下方模拟返回。');break;
       case 'login-gate':gate();break;
       case 'login-sso-retry':sso();break;
-      case 'login-account':go('/account');break;
+      case 'login-account':go(S.role==='fund'?'/funder/account':'/account');break;
       case 'login-signout':endSession('logout');break;
       case 'login-account-retry':D.accountState='loading';later(()=>{D.accountState='default';CF.render();});break;
       case 'login-support':open('support');break;
@@ -353,6 +357,7 @@
     if(D.restricted){document.querySelector('#focus .brand').removeAttribute('href');}
     else document.querySelector('#focus .brand').setAttribute('href','#/');
     demoPanel();
+    if(CF.funder)CF.funder.afterRender();
     const dialog=document.querySelector('#layers [role="dialog"]');
     if(dialog){
       if(S.layer.key==='role')dialog.classList.add('login-role-dialog');
@@ -366,6 +371,7 @@
     }
     priorLayer=!!dialog;
   }
+  if(CF.funder){Object.assign(dict.en,CF.funder.dict.en);Object.assign(dict.zh,CF.funder.dict.zh);Object.assign(layers,CF.funder.layers);}
   CF.define({id:'login-account',dict,content,layers,onAct:action});
   // 登录域优先接管底座的样例登录/退出动作；路由与浮层仍使用 CF。
   document.addEventListener('click',e=>{
@@ -374,7 +380,7 @@
       if(a==='login-start'||a==='signin'){
         e.preventDefault();e.stopImmediatePropagation();D.origin=CF.ENTRY[S.page]||'/';D.originAction='';D.returnResult='none';D.entryError='';go('/login');return;
       }
-      if(a==='signout'){e.preventDefault();e.stopImmediatePropagation();endSession('logout');return;}
+      if(a==='signout'){e.preventDefault();e.stopImmediatePropagation();if(S.role==='fund'&&CF.funder)CF.funder.logout();else endSession('logout');return;}
       if(a==='login-notifications'){e.preventDefault();e.stopImmediatePropagation();open('notification');return;}
       // 防止点击对话框非按钮区域被底座解释为遮罩关闭。
       if(a==='closelayer'&&el.classList.contains('modal-mask')&&e.target.closest('.modal')){e.stopImmediatePropagation();return;}
