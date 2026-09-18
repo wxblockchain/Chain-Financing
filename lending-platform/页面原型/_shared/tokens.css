@@ -94,6 +94,7 @@
   --ctrl-h-sm:28px;
   --field-gap:13px;
   --card-pad:16px;
+  --cell-pad-y:12px;
   --fs-body:13.5px;
   --lh-body:1.5;
 }
@@ -104,6 +105,7 @@
   --ctrl-h-sm:34px;
   --field-gap:18px;
   --card-pad:22px;
+  --cell-pad-y:16px;
   --fs-body:15px;
   --lh-body:1.6;
 }

@@ -64,12 +64,21 @@
   /* ====================== 演示数据 ======================================
      全部为演示数据，不对应任何真实企业、金额或利率。 */
   var ASSETS = [
-    { sym: "AR-USD-2606", pool: ["Receivable pool · Jun 2026", "应收账款池 · 2026 年 6 月"],
-      holder: ["Asset Holder A", "资产方 A"], ccy: "USD", out: 1250000, tenor: 90, st: "listed" },
-    { sym: "AR-EUR-2607", pool: ["Receivable pool · Jul 2026", "应收账款池 · 2026 年 7 月"],
-      holder: ["Asset Holder B", "资产方 B"], ccy: "EUR", out: 860000, tenor: 120, st: "listed" },
-    { sym: "AR-USD-2608", pool: ["Receivable pool · Aug 2026", "应收账款池 · 2026 年 8 月"],
-      holder: ["Asset Holder C", "资产方 C"], ccy: "USD", out: 2040000, tenor: 60, st: "pledged" }
+    { no: "TK20260612000147", name: "HC-AR-2606", holder: ["Asset Holder A", "资产方 A"],
+      kind: "ar", qty: 1250, val: 1250000, ts: "valid", ps: "pledged",
+      from: "2026-06-12", to: "2026-09-10", at: "2026-06-12T10:20:00" },
+    { no: "TK20260705000288", name: "HC-AR-2607", holder: ["Asset Holder B", "资产方 B"],
+      kind: "ar", qty: 860, val: 860000, ts: "valid", ps: "unpledged",
+      from: "2026-07-05", to: "2026-11-02", at: "2026-07-05T09:05:00" },
+    { no: "TK20260818000361", name: "HC-AR-2608", holder: ["Asset Holder C", "资产方 C"],
+      kind: "ar", qty: 2040, val: 2040000, ts: "valid", ps: "pledged",
+      from: "2026-08-18", to: "2026-10-17", at: "2026-08-18T16:40:00" },
+    { no: "TK20260220000092", name: "HC-AR-2602", holder: ["Asset Holder A", "资产方 A"],
+      kind: "ar", qty: 460, val: 460000, ts: "void", ps: "unpledged",
+      from: "2026-02-20", to: "2026-05-21", at: "2026-02-20T11:15:00" },
+    { no: "TK20260903000415", name: "HC-AR-2609", holder: ["Asset Holder D", "资产方 D"],
+      kind: "ar", qty: 1120, val: 1120000, ts: "valid", ps: "unpledged",
+      from: "2026-09-03", to: "2027-01-01", at: "2026-09-03T08:30:00" }
   ];
 
   var REQUESTS = [
@@ -95,8 +104,10 @@
   ];
 
   var ST_TAG = {
-    listed: ["ok", ["Listed", "已上架"]],
+    valid: ["ok", ["Valid", "有效"]],
+    void: ["", ["Void", "失效"]],
     pledged: ["accent", ["Pledged", "已质押"]],
+    unpledged: ["", ["Not pledged", "未质押"]],
     quoting: ["accent", ["Receiving quotes", "报价中"]],
     review: ["warn", ["Pledge under review", "质押审核中"]],
     disbursing: ["violet", ["Disbursing", "放款中"]],
@@ -125,30 +136,37 @@
   };
 
   /* ====================== 官网首页 ====================================== */
-  function assetCard(a) {
-    return '<article class="rail-card">' +
-      '<div class="rc-top"><span class="rc-id mono">' + esc(a.sym) + "</span>" + stTag(a.st) + "</div>" +
-      "<h3>" + esc(nm(a.pool)) + "</h3>" +
-      '<dl class="dl">' +
-      "<dt>" + L("Holder", "资产方") + "</dt><dd>" + esc(nm(a.holder)) + "</dd>" +
-      "<dt>" + L("Outstanding", "存续金额") + '</dt><dd class="num">' + CF.fmtAmt(a.out, a.ccy) + "</dd>" +
-      "<dt>" + L("Tenor", "账期") + "</dt><dd>" + a.tenor + L(" days", " 天") + "</dd>" +
-      "</dl>" +
-      '<div class="rc-foot"><a class="btn-link" href="#/assets">' + L("View asset", "查看资产") +
-      '<span class="ar" aria-hidden="true">&rarr;</span></a></div></article>';
+  /* 24×24 圆角方形首字母块；没有 logo 时不用通用占位图。 */
+  function tokMark(text) {
+    var ch = String(text || "?").replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "?";
+    var hue = (ch.charCodeAt(0) % 4) + 1;
+    return '<span class="tok-mark" data-hue="' + hue + '" aria-hidden="true">' + esc(ch) + "</span>";
+  }
+  function tokCell(mark, name) {
+    return '<div class="tok">' + tokMark(mark) + '<span class="tok-name">' + esc(name) + "</span></div>";
   }
 
-  function reqCard(r) {
-    return '<article class="rail-card">' +
-      '<div class="rc-top"><span class="rc-id mono">' + esc(r.id) + "</span>" + stTag(r.st) + "</div>" +
-      "<h3>" + CF.fmtAmt(r.amt, r.ccy) + "</h3>" +
-      '<dl class="dl">' +
-      "<dt>" + L("Requested by", "发起方") + "</dt><dd>" + esc(nm(r.holder)) + "</dd>" +
-      "<dt>" + L("Tenor", "期限") + "</dt><dd>" + r.tenor + L(" days", " 天") + "</dd>" +
-      "<dt>" + L("Indicative rate", "参考年化") + '</dt><dd class="num">' + esc(r.rate) + " %</dd>" +
-      "</dl>" +
-      '<div class="rc-foot"><a class="btn-link" href="#/marketplace">' + L("View request", "查看需求") +
-      '<span class="ar" aria-hidden="true">&rarr;</span></a></div></article>';
+  function assetMiniRow(a) {
+    return '<a class="mini-row" href="#/assets">' +
+      '<div class="lead-col">' + tokCell(a.name.slice(-2), a.name) +
+        '<div class="sub">' + esc(nm(a.holder)) + " · " + esc(a.no) + "</div></div>" +
+      '<div class="val"><span class="k">' + L("Token value", "代币价值") + '</span>' +
+        '<span class="v">' + CF.fmtAmt(a.val, "USD") + "</span></div>" +
+      '<div class="val"><span class="k">' + L("Pledge status", "质押状态") + '</span>' +
+        '<span class="v txt">' + L(a.ps === "pledged" ? "Pledged" : "Not pledged",
+                               a.ps === "pledged" ? "已质押" : "未质押") + "</span></div>" +
+      '<span class="go" aria-hidden="true">&rarr;</span></a>';
+  }
+
+  function reqMiniRow(r) {
+    return '<a class="mini-row" href="#/marketplace">' +
+      '<div class="lead-col">' + tokCell(r.holder[0].slice(-1), r.id) +
+        '<div class="sub">' + esc(nm(r.holder)) + " · " + r.tenor + L(" days", " 天") + "</div></div>" +
+      '<div class="val"><span class="k">' + L("Amount", "金额") + '</span>' +
+        '<span class="v">' + CF.fmtAmt(r.amt, r.ccy) + "</span></div>" +
+      '<div class="val"><span class="k">' + L("Indicative rate", "参考年化") + '</span>' +
+        '<span class="v">' + esc(r.rate) + " %</span></div>" +
+      '<span class="go" aria-hidden="true">&rarr;</span></a>';
   }
 
   var STEPS = [
@@ -179,7 +197,7 @@
       '<p class="sec-note">' + L("Tokenised receivable pools available to pledge.", "可用于质押的应收账款池。") + "</p>" +
       '</div><a class="btn-link more" href="#/assets">' + L("See all", "查看全部") +
       '<span class="ar" aria-hidden="true">&rarr;</span></a></div>' +
-      '<div class="site-rail">' + ASSETS.map(assetCard).join("") + "</div>" +
+      '<div class="mini-list">' + ASSETS.slice(0, 3).map(assetMiniRow).join("") + "</div>" +
       "</div></section>" +
 
       '<section class="site-band alt"><div class="site-wrap">' +
@@ -188,7 +206,7 @@
       '<p class="sec-note">' + L("Requests currently receiving or executing quotes.", "正在接受报价或执行中的融资需求。") + "</p>" +
       '</div><a class="btn-link more" href="#/marketplace">' + L("See all", "查看全部") +
       '<span class="ar" aria-hidden="true">&rarr;</span></a></div>' +
-      '<div class="site-rail">' + REQUESTS.slice(0, 3).map(reqCard).join("") + "</div>" +
+      '<div class="mini-list">' + REQUESTS.slice(0, 3).map(reqMiniRow).join("") + "</div>" +
       "</div></section>" +
 
       '<section class="site-band"><div class="site-wrap">' +
@@ -219,27 +237,112 @@
   }
 
   /* ====================== 资产广场 ====================================== */
+  /* 列集与头部汇总取《资产广场 · 已上架代币只读域》PRD 的 L-AM-01～L-AM-10 与 F-AM-02。
+     本页是列表形态的 shell 母版，完整字段校验与验收归 WS-350。 */
+  function sortTh(key, label) {
+    var cur = S.sort === key;
+    var dir = cur ? S.sortDir : null;
+    var aria = cur ? (dir === "asc" ? "ascending" : "descending") : "none";
+    return '<th class="sortable" aria-sort="' + aria + '" scope="col">' +
+      '<button type="button" data-act="sort" data-v="' + key + '">' + esc(label) +
+      '<span class="ar" aria-hidden="true">' + (dir === "asc" ? "\u2191" : "\u2193") + "</span></button></th>";
+  }
+
+  function sortedAssets() {
+    var list = ASSETS.slice();
+    var key = S.sort || "at", dir = S.sortDir === "asc" ? 1 : -1;
+    list.sort(function (a, b) {
+      var x = key === "val" ? a.val : (key === "to" ? a.to : a.at);
+      var y = key === "val" ? b.val : (key === "to" ? b.to : b.at);
+      return x > y ? dir : (x < y ? -dir : 0);
+    });
+    return list;
+  }
+
+  function assetRow(a) {
+    return "<tr>" +
+      '<td data-label="' + L("Token", "代币") + '">' + tokCell(a.name.slice(-2), a.name) + "</td>" +
+      '<td data-label="' + L("Token number", "代币编号") + '"><div class="cell-wrap">' +
+        '<span class="mono nw">' + esc(a.no) + "</span>" +
+        '<button class="btn-link sm" type="button" data-act="copy" data-v="' + esc(a.no) + '">' +
+        L("Copy", "复制") + "</button></div></td>" +
+      '<td data-label="' + L("Asset holder", "资产方企业") + '">' + esc(nm(a.holder)) + "</td>" +
+      '<td data-label="' + L("Token type", "代币类型") + '">' + L("Receivables", "应收账款类") + "</td>" +
+      '<td data-label="' + L("Token quantity", "代币数量") + '" class="num">' + a.qty.toFixed(2) + "</td>" +
+      '<td data-label="' + L("Token value", "代币价值") + '" class="num nw">' + CF.fmtAmt(a.val, "USD") + "</td>" +
+      '<td data-label="' + L("Token status", "代币状态") + '">' + stTag(a.ts) + "</td>" +
+      '<td data-label="' + L("Pledge status", "质押状态") + '">' + stTag(a.ps) + "</td>" +
+      '<td data-label="' + L("Receivable term", "底层应收账款账期") + '" class="tiny nw">' +
+        esc(a.from) + " \u2013 " + esc(a.to) + "</td>" +
+      '<td data-label="' + L("Minted at", "铸造时间") + '" class="tiny">' + CF.fmtTime(a.at) + "</td>" +
+      "</tr>";
+  }
+
   function pageAssets() {
     var alt = CF.surface({
-      skelRows: 3,
-      emptyTitle: L("No listed assets yet", "暂无已上架资产"),
-      emptyDesc: L("Assets appear here once the issuance platform lists them.", "代币发行平台上架后，资产会出现在这里。")
+      skelRows: 5,
+      emptyTitle: L("No tokens synced yet", "暂无已同步代币"),
+      emptyDesc: L("Tokens appear here once the issuance platform lists them.", "代币发行平台上架后，代币会出现在这里。")
     });
-    return '<div class="page-head"><div>' +
+    var shown = S.st === "empty" || S.st === "noresult" ? [] : ASSETS;
+    var total = shown.length;
+    var value = shown.reduce(function (n, a) { return n + a.val; }, 0);
+    var voidCount = shown.filter(function (a) { return a.ts === "void"; }).length;
+
+    var head = '<div class="page-head"><div>' +
       '<h1 class="page-title">' + L("Asset marketplace", "资产广场") + "</h1>" +
       '<p class="page-desc">' + L(
-        "Read-only view of tokenised receivable pools listed by the issuance platform.",
-        "代币发行平台已上架的应收账款池，只读。") + "</p></div></div>" +
-      '<div class="card"><div class="filters">' +
-      '<div class="field"><label for="f-ccy">' + L("Currency", "币种") + "</label>" +
-      '<select class="inp" id="f-ccy"><option>' + L("All", "全部") + "</option><option>USD</option><option>EUR</option></select></div>" +
-      '<div class="field"><label for="f-st">' + L("Status", "状态") + "</label>" +
-      '<select class="inp" id="f-st"><option>' + L("All", "全部") + "</option><option>" +
-      L("Listed", "已上架") + "</option><option>" + L("Pledged", "已质押") + "</select></div>" +
-      '<div class="acts"><button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button></div>" +
-      "</div>" +
-      (alt || '<div class="card-b"><div class="site-rail">' + ASSETS.map(assetCard).join("") + "</div></div>") +
+        "Tokens synced from the issuance platform. Read-only, open to everyone.",
+        "由代币发行平台同步过来的代币，只读，对所有人开放。") + "</p></div></div>";
+
+    /* 头部汇总三项；空态显示 0 不隐藏整块。 */
+    var summary = '<div class="stat-row">' +
+      '<div class="stat"><div class="k">' + L("Tokens", "代币数量") + '</div><div class="v">' +
+        total + '</div><div class="n">' + L("issued tokens", "张") + "</div></div>" +
+      '<div class="stat"><div class="k">' + L("Token value", "代币价值") + '</div><div class="v">' +
+        CF.fmtAmt(value, "USD") + "</div></div>" +
+      '<div class="stat"><div class="k">' + L("Of which void", "其中失效") + '</div><div class="v">' +
+        voidCount + '</div><div class="n">' + L("issued tokens", "张") + "</div></div>" +
+      '</div><p class="sum-note">' +
+      L("Converted at each issuance-time FX rate.", "按各笔签发时汇率折算。") + "</p>";
+
+    var filters = '<div class="filters">' +
+      '<div class="field"><label for="a-ts">' + L("Token status", "代币状态") + "</label>" +
+      '<select class="inp" id="a-ts"><option>' + L("All", "全部") + "</option><option>" +
+        L("Valid", "有效") + "</option><option>" + L("Void", "失效") + "</option></select></div>" +
+      '<div class="field"><label for="a-ps">' + L("Pledge status", "质押状态") + "</label>" +
+      '<select class="inp" id="a-ps"><option>' + L("All", "全部") + "</option><option>" +
+        L("Pledged", "已质押") + "</option><option>" + L("Not pledged", "未质押") + "</select></div>" +
+      '<div class="field"><label for="a-kind">' + L("Token type", "代币类型") + "</label>" +
+      '<select class="inp" id="a-kind"><option>' + L("All", "全部") + "</option><option>" +
+        L("Receivables", "应收账款类") + "</option></select></div>" +
+      '<div class="field"><label for="a-holder">' + L("Asset holder", "资产方企业") + "</label>" +
+      '<select class="inp" id="a-holder"><option>' + L("All", "全部") + "</option><option>" +
+        L("Asset Holder A", "资产方 A") + "</option><option>" + L("Asset Holder B", "资产方 B") + "</select></div>" +
+      '<div class="field"><label for="a-kw">' + L("Search", "搜索") + "</label>" +
+      '<input class="inp" id="a-kw" type="search" placeholder="' +
+        L("Token number, holder or minting hash", "代币编号、资产方企业名或铸造交易哈希") + '"></div>' +
+      '<div class="acts"><button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
+      '<button class="btn primary" type="button" data-act="clearfilter">' + L("Search", "查询") + "</button></div>" +
       "</div>";
+
+    var table = '<div class="tablewrap"><table class="tbl resp"><thead><tr>' +
+      "<th>" + L("Token", "代币") + "</th><th>" + L("Token number", "代币编号") + "</th>" +
+      "<th>" + L("Asset holder", "资产方企业") + "</th><th>" + L("Token type", "代币类型") + "</th>" +
+      "<th>" + L("Token quantity", "代币数量") + "</th>" +
+      sortTh("val", L("Token value", "代币价值")) +
+      "<th>" + L("Token status", "代币状态") + "</th><th>" + L("Pledge status", "质押状态") + "</th>" +
+      sortTh("to", L("Receivable term", "底层应收账款账期")) +
+      sortTh("at", L("Minted at", "铸造时间")) +
+      "</tr></thead><tbody>" + sortedAssets().map(assetRow).join("") + "</tbody></table></div>" +
+      '<div class="pager"><span class="total">' +
+        L(total + " tokens", "共 " + total + " 张") + "</span>" +
+      '<button class="pgbtn" type="button" disabled>&larr;</button>' +
+      '<button class="pgbtn" type="button" aria-current="true">1</button>' +
+      '<button class="pgbtn" type="button" disabled>&rarr;</button></div>';
+
+    return head + summary + '<div style="height:var(--sp-6)"></div>' +
+      '<div class="card">' + filters + (alt || table) + "</div>";
   }
 
   /* ====================== 借贷广场 ====================================== */
@@ -252,9 +355,9 @@
           ? L("Sign in to submit a quote.", "登录后可提交报价。")
           : L("Quoting is limited to funder accounts on requests that are receiving quotes.", "仅资金方账号可对报价中的需求提交报价。")) + '"';
     return "<tr>" +
-      '<td data-label="' + L("Request", "需求") + '"><div class="cell-wrap">' +
-        '<div class="cell-main mono">' + esc(r.id) + "</div>" +
-        '<div class="cell-sub">' + esc(nm(r.holder)) + "</div></div></td>" +
+      '<td data-label="' + L("Request", "需求") + '"><div class="tok">' + tokMark(r.holder[0].slice(-1)) +
+        '<div class="cell-wrap"><div class="cell-main mono nw">' + esc(r.id) + "</div>" +
+        '<div class="cell-sub">' + esc(nm(r.holder)) + "</div></div></div></td>" +
       '<td data-label="' + L("Amount", "金额") + '" class="num">' + CF.fmtAmt(r.amt, r.ccy) + "</td>" +
       '<td data-label="' + L("Tenor", "期限") + '">' + r.tenor + L(" days", " 天") + "</td>" +
       '<td data-label="' + L("Rate", "年化") + '" class="num">' + esc(r.rate) + " %</td>" +
@@ -267,6 +370,13 @@
           ? '<a class="actlink"' + quoteAttrs + ">" + L("Quote", "报价") + "</a>"
           : "<span" + quoteAttrs + ">" + L("Quote", "报价") + "</span>") +
       "</td></tr>";
+  }
+
+  function sortedRequests() {
+    var list = REQUESTS.slice();
+    var key = S.sort === "amt" ? "amt" : "at", dir = S.sortDir === "asc" ? 1 : -1;
+    list.sort(function (a, b) { return a[key] > b[key] ? dir : (a[key] < b[key] ? -dir : 0); });
+    return list;
   }
 
   function pagePlaza() {
@@ -294,11 +404,11 @@
       : "";
 
     var table = '<div class="tablewrap"><table class="tbl resp"><thead><tr>' +
-      "<th>" + L("Request", "需求") + "</th><th>" + L("Amount", "金额") + "</th>" +
+      "<th>" + L("Request", "需求") + "</th>" + sortTh("amt", L("Amount", "金额")) +
       "<th>" + L("Tenor", "期限") + "</th><th>" + L("Rate", "年化") + "</th>" +
       "<th>" + L("Pledged token", "质押代币") + "</th><th>" + L("Status", "状态") + "</th>" +
-      "<th>" + L("Updated", "更新") + '</th><th class="col-act">' + L("Actions", "操作") + "</th>" +
-      "</tr></thead><tbody>" + REQUESTS.map(reqRow).join("") + "</tbody></table></div>" +
+      sortTh("at", L("Updated", "更新")) + '<th class="col-act">' + L("Actions", "操作") + "</th>" +
+      "</tr></thead><tbody>" + sortedRequests().map(reqRow).join("") + "</tbody></table></div>" +
       '<div class="pager"><span class="total">' + L("4 requests", "共 4 条") + "</span>" +
       '<button class="pgbtn" type="button" disabled>&larr;</button>' +
       '<button class="pgbtn" type="button" aria-current="true">1</button>' +
@@ -521,6 +631,21 @@
     onAct: function (act, v) {
       if (act === "detail") { CF.openLayer("drawer", "reqDetail", v); return true; }
       if (act === "agdetail") { CF.openLayer("drawer", "agDetail", v); return true; }
+      if (act === "sort") {
+        if (S.sort === v) { S.sortDir = S.sortDir === "asc" ? "desc" : "asc"; }
+        else { S.sort = v; S.sortDir = "desc"; }
+        return true;
+      }
+      if (act === "copy") {
+        try {
+          if (navigator.clipboard) navigator.clipboard.writeText(v);
+          CF.toast(L("Token number copied.", "代币编号已复制。"));
+        } catch (e) {
+          CF.toast(L("Copy is unavailable here — select the number to copy it.",
+                     "此处无法自动复制，请手动选中编号。"));
+        }
+        return true;
+      }
       if (act === "quote") {
         CF.closeLayer();
         CF.toast(L("Quote submitted — demonstration only.", "报价已提交 —— 仅为演示。"));

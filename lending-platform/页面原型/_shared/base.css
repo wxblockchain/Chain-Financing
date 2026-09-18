@@ -54,6 +54,8 @@ img,svg{max-width:100%}
 .btn-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:620;
   font-size:var(--fs-13);border-radius:var(--radius-xs);padding:2px 4px}
 .btn-link:hover{background:var(--accent-soft)}
+.btn-link.sm{font-size:var(--fs-11);font-weight:600;color:var(--faint)}
+.btn-link.sm:hover{color:var(--accent)}
 .btn-link .ar{transition:transform var(--dur-fast) var(--ease-out)}
 .btn-link:hover .ar{transform:translateX(3px)}
 
@@ -151,7 +153,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--fs-13)}
 table.tbl thead th{text-align:left;font-size:var(--fs-10);font-weight:650;letter-spacing:.06em;
   text-transform:uppercase;color:var(--faint);padding:10px var(--sp-3);
   border-bottom:1px solid var(--border);background:var(--card-2);white-space:nowrap}
-table.tbl tbody td{padding:12px var(--sp-3);border-bottom:1px solid var(--row-line);vertical-align:middle}
+table.tbl tbody td{padding:var(--cell-pad-y) var(--sp-3);border-bottom:1px solid var(--row-line);vertical-align:middle}
 table.tbl tbody tr:last-child td{border-bottom:none}
 table.tbl tbody tr:hover td{background:var(--row-hover)}
 .cell-main{font-weight:620}
@@ -162,6 +164,47 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .actlink:hover{background:var(--accent-soft)}
 .actlink.off{color:var(--faint);cursor:not-allowed}
 .actlink.off:hover{background:none}
+
+/* 可排序列头：整格可点，当前排序列显示方向箭头。 */
+.tbl th.sortable{padding:0}
+.tbl th.sortable button{display:flex;align-items:center;gap:6px;width:100%;padding:10px var(--sp-3);
+  font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
+.tbl th.sortable button:hover{color:var(--muted)}
+.tbl th.sortable .ar{opacity:0;transition:opacity var(--dur-fast) var(--ease-out)}
+.tbl th[aria-sort="ascending"] button,.tbl th[aria-sort="descending"] button{color:var(--accent)}
+.tbl th[aria-sort="ascending"] .ar,.tbl th[aria-sort="descending"] .ar{opacity:1}
+
+/* 资产标识块：24×24 圆角方形首字母块 + 名称。没有 logo 时不用通用占位图。 */
+.tok{display:flex;align-items:center;gap:10px;min-width:0}
+.tok-mark{width:24px;height:24px;border-radius:var(--radius-xs);flex:none;display:grid;place-items:center;
+  font-size:var(--fs-10);font-weight:700;letter-spacing:-.02em;
+  background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-border)}
+.tok-mark[data-hue="2"]{background:var(--pos-soft);color:var(--pos);border-color:var(--pos)}
+.tok-mark[data-hue="3"]{background:var(--violet-bg);color:var(--violet);border-color:var(--violet-border)}
+.tok-mark[data-hue="4"]{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-border)}
+.tok-name{font-weight:620;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 汇总条下方的口径标注。 */
+.sum-note{margin-top:var(--sp-3);font-size:var(--fs-11);color:var(--faint)}
+
+/* 官网层的精简列表：图标 + 主副值 + 右侧数值 + 箭头，一行一条。 */
+.mini-list{border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--card);
+  box-shadow:var(--shadow-soft);overflow:hidden}
+.mini-row{display:flex;align-items:center;gap:var(--sp-5);padding:var(--sp-4) var(--card-pad);
+  color:var(--text);border-bottom:1px solid var(--row-line);
+  transition:background var(--dur-fast) var(--ease-out)}
+.mini-row .tok-name{color:var(--accent)}
+.mini-row:last-child{border-bottom:0}
+.mini-row:hover{background:var(--row-hover)}
+.mini-row .lead-col{flex:1 1 40%;min-width:0}
+.mini-row .sub{font-size:var(--fs-12);color:var(--faint);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-row .val{flex:0 0 auto;text-align:right;min-width:0}
+.mini-row .val .k{font-size:var(--fs-11);color:var(--faint);display:block}
+.mini-row .val .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:620}
+.mini-row .val .v.txt{font-family:var(--sans)}
+.mini-row .go{flex:none;color:var(--accent);opacity:.7;transition:transform var(--dur-fast) var(--ease-out)}
+.mini-row:hover .go{transform:translateX(3px);opacity:1}
 
 .tbl-empty{padding:var(--sp-9) var(--sp-5);text-align:center;color:var(--faint);font-size:var(--fs-13)}
 .tbl-empty b{display:block;color:var(--text);font-size:var(--fs-14);margin-bottom:6px;font-weight:640}
@@ -385,6 +428,10 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
   table.tbl.resp td.col-act{width:auto;text-align:left;justify-content:flex-start;
     border-top:1px solid var(--border-dash);margin-top:var(--sp-2);padding-top:var(--sp-3)}
   table.tbl.resp td.col-act::before{content:""}
+  .mini-row{flex-wrap:wrap;gap:var(--sp-2) var(--sp-4)}
+  .mini-row .lead-col{flex-basis:100%}
+  .mini-row .val{text-align:left}
+  .mini-row .val .v{font-size:var(--fs-13)}
   .filters .field{max-width:none;flex-basis:100%}
   .filters .acts{margin-left:0;width:100%}
   .filters .acts .btn{flex:1}

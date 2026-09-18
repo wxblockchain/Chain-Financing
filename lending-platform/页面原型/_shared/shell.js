@@ -24,6 +24,8 @@
     role: "guest",           // guest / asset / fund / ops
     page: null,
     st: "default",           // 演示状态：default/loading/empty/noresult/error/denied
+    sort: "at",              // 当前排序键；列表默认按时间倒序
+    sortDir: "desc",
     menu: null,              // 当前展开的下拉
     layer: null,             // { type:'drawer'|'modal', key:... }
     demo: false
@@ -418,7 +420,7 @@
       var id = pageFromHash();
       if (id && CF.PAGES[id]) {
         if (CF.PAGES[id].end !== S.end) { S.end = CF.PAGES[id].end; S.role = S.end === "admin" ? "ops" : S.role; }
-        S.page = id; S.layer = null; S.st = "default";
+        S.page = id; S.layer = null; S.st = "default"; S.sort = "at"; S.sortDir = "desc";
       }
       render();
     });
