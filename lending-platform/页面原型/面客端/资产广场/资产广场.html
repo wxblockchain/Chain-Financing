@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" data-end="asset">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asset marketplace · Harbour Credit</title>
+<link rel="stylesheet" href="../../_shared/tokens.css">
+<link rel="stylesheet" href="../../_shared/base.css">
+<style>
+/* 仅本模块的排布补充：不覆盖 token，也不改公共组件的语义与取值。 */
+.am-gap{height:var(--sp-6)}
+.stat .v .am-skel-v{display:block;width:60%;height:20px;margin:8px 0 2px}
+.filters .field.am-q{flex:2 1 300px;max-width:380px}
+
+/* 列表：十列在 1280 下要能全部落在内容区里，不横向截断。
+   英文列名比中文长得多，本表的表头允许折行；取值、字号与配色仍取公共组件。 */
+table.tbl.am-tbl thead th{white-space:normal;padding-left:10px;padding-right:10px}
+table.tbl.am-tbl thead th.sortable{padding:0}
+table.tbl.am-tbl thead th.sortable button{align-items:flex-start;text-align:left;
+  padding-left:10px;padding-right:10px}
+table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
+.am-tbl .am-id{font-size:var(--fs-11);color:var(--accent)}
+.am-tbl .am-term{min-width:88px}
+.am-tbl .am-at{min-width:112px;max-width:146px;white-space:normal}
+.am-tbl .tok-name{max-width:118px}
+
+/* 详情：单列分区，按访客的判断路径从上往下读。 */
+.am-detail{max-width:1040px;display:flex;flex-direction:column;gap:var(--sp-5)}
+/* 宽屏下每行放两组字段，窄屏回到一组一行；标签与取值仍是公共组件的 .dl。 */
+@media (min-width:1100px){
+  .am-detail .dl{grid-template-columns:minmax(110px,auto) minmax(0,1fr) minmax(110px,auto) minmax(0,1fr)}
+  .am-detail .dl dt.wide-k{grid-column:1}
+  .am-detail .dl dd.wide{grid-column:2 / -1}
+}
+.am-back{margin-bottom:var(--sp-4)}
+.am-ov-top{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
+.am-mark{width:48px;height:48px;border-radius:var(--radius-sm);font-size:var(--fs-14)}
+.am-ov .page-title{font-size:var(--fs-24)}
+.am-ov-no{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:4px}
+.am-ov-tags{display:flex;gap:var(--sp-8);flex-wrap:wrap;margin-top:var(--sp-5);
+  padding-top:var(--sp-5);border-top:1px solid var(--border-dash)}
+.am-ov-tag{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.am-hash{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
+.am-addr{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:4px}
+.am-addr .mono{font-size:var(--fs-11);overflow-wrap:anywhere}
+.am-caveat{margin:5px 0 0}
+.am-cta .card-b{display:flex;align-items:center;gap:var(--sp-5);flex-wrap:wrap}
+.am-cta p{margin:0;font-weight:620}
+.am-cta .btn{margin-left:auto}
+
+@media (max-width:768px){
+  .am-tbl .am-at{max-width:none}
+  .am-cta .btn{margin-left:0;width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- 面客端顶栏骨架：沿用公共运行时要求的挂载点，不重建导航。 -->
+<div class="portal" id="portal" hidden>
+  <header class="portal-head">
+    <a class="brand" href="#/assets">
+      <span class="brand-mark" aria-hidden="true">HC</span>
+      <span>
+        <span class="brand-name">Harbour Credit</span>
+        <span class="brand-sub">Lending</span>
+      </span>
+    </a>
+    <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+    <div class="portal-tools" id="tools"></div>
+  </header>
+  <div class="portal-sub" id="subwrap"><div class="portal-sub-in" id="crumb"></div></div>
+  <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+  <footer class="site-foot" id="foot"></footer>
+</div>
+
+<!-- 管理端骨架：本模块不登记管理端页面，这里只保留公共运行时要求的挂载点。 -->
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">HC</span>
+      <span>
+        <span class="brand-name">Harbour Credit</span>
+        <span class="brand-sub">Operations</span>
+      </span>
+    </div>
+    <nav class="nav" id="anav" aria-label="Main navigation"></nav>
+    <div class="side-foot" id="asidefoot"></div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="crumbbar-in" id="acrumb"></div>
+      <div class="topbar-right" id="atools"></div>
+    </div>
+    <div class="content" id="acontent"></div>
+  </div>
+</div>
+
+<div id="layers"></div>
+<div class="toasts" id="toasts"></div>
+<button class="demo-btn" id="demoBtn" type="button"></button>
+<aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
+
+<script src="../../_shared/registry.portal.js"></script>
+<script src="../../_shared/shell.js"></script>
+<script src="演示数据.js"></script>
+<script src="资产广场.js"></script>
+</body>
+</html>
