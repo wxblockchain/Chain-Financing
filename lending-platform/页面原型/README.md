@@ -7,28 +7,31 @@
 ```
 页面原型/
   _shared/
-    tokens.css                # 色板、字号阶梯、间距、圆角、控件高、动效
-    base.css                  # 整页骨架与公共组件
-    shell.js                  # i18n、路由、导航渲染、面包屑、Toast、弹层与抽屉宿主
-    registry.面客端.js          # 面客端页面登记表与导航
-    registry.管理端.js          # 管理端页面登记表与导航
+    tokens.css                # 色板、字号阶梯、间距、圆角、控件高、动效、层级
+    base.css                  # 四种整页骨架（site / portal / app / focus）与公共组件
+    shell.js                  # i18n、路由、导航与面包屑、Toast、抽屉与弹窗宿主、演示工具
+    registry.portal.js        # 面客端页面登记表与导航
+    registry.admin.js         # 管理端页面登记表与导航
     export.py                 # 单文件评审件导出
-    README.md                 # 接入顺序与公共层说明
+    README.md                 # 接入顺序与模块接口
     design-system/            # 本平台自持的设计规范
+    样板/底座样板.html          # 四种 shell 与状态表面的母版
   面客端/<模块目录>/
   管理端/<模块目录>/
 ```
 
-面客端与管理端共用同一份 token、公共组件与壳层运行时，差别在整页骨架与各自的登记表；两端可独立打包部署。模块只写自己的页面、文案、演示数据与状态，不重定义 token、不复制公共组件、不自建导航。
+面客端与管理端是两个独立部署单元，各自只加载自己那张登记表；两端共用同一份 token、组件与运行时，差异只落在密度与正文字号上。接入方式见 [`_shared/README.md`](_shared/README.md)。
 
-当前 `_shared/` 与模块目录尚未落库，落库归 WS-347。
+## 从哪开始
+
+新增或改造页面前先读 [`_shared/design-system/页面继承参考.md`](_shared/design-system/页面继承参考.md)，选定部署单元、shell 与 archetype，再做增量。母版是 [`_shared/样板/底座样板.html`](_shared/样板/底座样板.html) —— 它是底座样板，不是业务模块原型，字段集只是够用的样例。
 
 ## 参考基线
 
-参考原型与设计规范请到 **`cly-V1.0.0`** 分支读取：
+参考原型与原设计规范请到 **`cly-V1.0.0`** 分支读取：
 
 - 原型：`financial-service-platform/prototypes/`
-- 原型底座：`financial-service-platform/prototypes/_shared/` 与 `asset-platform/prototypes/_shared/`
+- 原型底座：`asset-platform/prototypes/_shared/` 与 `financial-service-platform/prototypes/_shared/`
 - 组件与设计规范：`docs/design-system/`
 
-逐模块的参考路径见 WS-346。
+本分支不复制、不搬动 `cly-V1.0.0` 上的任何文件。逐模块的参考路径见 WS-346。

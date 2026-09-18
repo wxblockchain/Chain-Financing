@@ -1,0 +1,109 @@
+/* ==========================================================================
+   tokens.css — 借贷平台原型设计 token（本平台唯一来源）
+   面客端与管理端共用同一份取值；两端差异只落在 [data-end] 覆盖的密度与正文字号上。
+   组件层与模块层不得出现字面色值、字号或时长，一律引用这里的具名 token。
+   ========================================================================== */
+:root{
+  /* —— 字体 —— */
+  --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --display:var(--sans);
+  --mono:"SF Mono","JetBrains Mono","Roboto Mono",ui-monospace,Menlo,Consolas,monospace;
+
+  /* —— 面与描边 —— */
+  --bg:#F7F8FB;
+  --bg-elev:#FFFFFF;
+  --card:#FFFFFF;
+  --card-2:#F8FAFC;
+  --card-hover:#F2F5FA;
+  --border:#E3E8EF;
+  --border-strong:#CFD6E0;
+  --border-dash:#EBEFF5;
+  --row-line:#EFF2F7;
+  --row-hover:#FAFBFD;
+
+  /* —— 文字 —— */
+  --text:#0D1526;
+  --muted:#4A5568;
+  --faint:#7A8699;
+  --on-accent:#FFFFFF;
+
+  /* —— 主色与语义色 —— */
+  --accent:#1D4ED8;
+  --accent-strong:#1A3FAE;
+  --accent-soft:rgba(29,78,216,.07);
+  --accent-border:rgba(29,78,216,.26);
+  --ok:#067647;
+  --ok-bg:#ECFDF3;
+  --ok-border:#A9EFC5;
+  --warn:#B54708;
+  --warn-bg:#FFFAEB;
+  --warn-border:#FEDF89;
+  --danger:#D42620;
+  --danger-bg:#FEF3F2;
+  --danger-border:#FECDCA;
+  --gray-bg:#F1F4F8;
+  --gray-fg:#41506B;
+  --gray-border:#E2E7EF;
+  --violet:#5925DC;
+  --violet-bg:#F4F3FF;
+  --violet-border:#D9D6FE;
+  --pos:#0A8270;
+  --pos-soft:rgba(10,130,112,.09);
+
+  /* —— 链上数据（地址 / 哈希）—— */
+  --hash-text:#2F53C4;
+  --hash-bg:rgba(29,78,216,.055);
+  --hash-border:rgba(29,78,216,.18);
+
+  /* —— 阴影 · 遮罩 · 圆角 · 轨道 —— */
+  --shadow:0 1px 2px rgba(13,21,38,.05),0 1px 3px rgba(13,21,38,.06);
+  --shadow-soft:0 2px 6px rgba(13,21,38,.04),0 12px 32px -14px rgba(13,21,38,.14);
+  --shadow-lg:0 12px 28px rgba(13,21,38,.12);
+  --overlay:rgba(13,21,38,.44);
+  --track:#EDF0F5;
+  --radius-lg:16px;
+  --radius:12px;
+  --radius-sm:9px;
+  --radius-xs:7px;
+  --radius-pill:999px;
+
+  /* —— 字号阶梯（32 / 40 两档只给官网层的展示标题）—— */
+  --fs-10:10px; --fs-11:11px; --fs-12:12px; --fs-13:13px;
+  --fs-14:14px; --fs-16:16px; --fs-19:19px; --fs-24:24px;
+  --fs-28:28px; --fs-32:32px; --fs-40:40px;
+
+  /* —— 间距（56 / 72 两档只给官网层的区块间距）—— */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+  --sp-6:24px; --sp-7:32px; --sp-8:40px; --sp-9:56px; --sp-10:72px;
+
+  /* —— 浮层层级 —— */
+  --z-sticky:60;
+  --z-drawer-scrim:200;
+  --z-drawer:210;
+  --z-mask:300;
+  --z-demo:350;
+  --z-toast:400;
+
+  /* —— 缓动 —— */
+  --ease-out:cubic-bezier(.22,.61,.36,1);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);
+  --dur-fast:120ms; --dur-base:200ms; --dur-slow:320ms;
+
+  /* —— 密度（默认 = 管理端控制台密度）—— */
+  --ctrl-h:36px;
+  --ctrl-h-sm:28px;
+  --field-gap:13px;
+  --card-pad:16px;
+  --fs-body:13.5px;
+  --lh-body:1.5;
+}
+
+/* 面客端：官网密度。两端的差异只在这六个值上，不是两套色板。 */
+[data-end="asset"]{
+  --ctrl-h:44px;
+  --ctrl-h-sm:34px;
+  --field-gap:18px;
+  --card-pad:22px;
+  --fs-body:15px;
+  --lh-body:1.6;
+}
