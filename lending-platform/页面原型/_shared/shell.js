@@ -362,10 +362,60 @@
     if (location.hash.replace(/^#/, "") !== want) { location.hash = "#" + want; }
   }
 
+  /* focus + C-L03：新增契约，未配置的旧模块不产生提示条或布局变化。 */
+  var completionItems = [], completionFolded = false, completionListOpen = false;
+  CF.setCompletion = function (items) {
+    completionItems = (items || []).slice().sort(function (a, b) { return a.priority - b.priority; });
+  };
+  CF.resetCompletion = function () {
+    completionItems = []; completionFolded = false; completionListOpen = false;
+  };
+  function renderCompletion() {
+    var host = $("completion");
+    if (!host && !completionItems.length) return;
+    if (!host) {
+      host = document.createElement("section"); host.id = "completion"; host.className = "completion";
+      var main = document.querySelector("#portal .portal-main");
+      if (!main) return;
+      main.parentNode.insertBefore(host, main);
+    }
+    if (S.role === "guest") CF.resetCompletion();
+    if (S.layer) return; // 弹层期间不重绘常驻条
+    host.hidden = !completionItems.length;
+    if (host.hidden) { host.innerHTML = ""; return; }
+    function action(item) {
+      return '<button class="btn" type="button" data-act="' + esc(item.act) + '" data-v="' + esc(item.value || "") + '">' + esc(item.label) + '</button>';
+    }
+    var first = completionItems[0], count = completionItems.length;
+    if (completionFolded) {
+      host.innerHTML = '<div class="completion-in"><button class="completion-fold" type="button" data-act="completion-fold" aria-expanded="false">' +
+        '<span aria-hidden="true">ⓘ</span>' + esc(L(count + ' pending item(s) · Expand', '待完成 ' + count + ' 项 · 展开')) + '</button></div>';
+      return;
+    }
+    host.innerHTML = '<div class="completion-in"><span class="completion-copy">' + esc(first.text) + '</span>' + action(first) +
+      (count > 1 ? '<button class="btn ghost" type="button" data-act="completion-list" aria-expanded="' + completionListOpen + '">' +
+        esc(L((count - 1) + ' more pending', '还有 ' + (count - 1) + ' 项待完成')) + '</button>' : '') +
+      '<button class="btn ghost" type="button" data-act="completion-fold" aria-expanded="true" aria-label="' + L('Collapse reminders', '折叠补全提示') + '">⌃</button>' +
+      (completionListOpen && count > 1 ? '<ul class="completion-list">' + completionItems.slice(1).map(function (item) {
+        return '<li><span>' + esc(item.text) + '</span>' + action(item) + '</li>';
+      }).join('') + '</ul>' : '') + '</div>';
+  }
+  function renderFocus() {
+    var p = CF.PAGES[S.page] || {}, focus = $("focus");
+    if (!focus) throw new Error('focus layout requires the shared focus container');
+    $("portal").hidden = true; $("app").hidden = true; focus.hidden = false;
+    $("focusTools").innerHTML = langDd();
+    $("focusContent").innerHTML = M && M.content ? M.content(S.page) : '';
+    renderLayer(); renderDemo();
+    document.title = t(p.navKey || p.crumbKey) + ' · Harbour Credit';
+  }
+
   /* ------------------------------------------------------------ 渲染 */
   function render() {
     document.documentElement.setAttribute("data-end", S.end);
     document.documentElement.setAttribute("lang", S.lang === "en" ? "en" : "zh-CN");
+    if ((CF.PAGES[S.page] || {}).layout === "focus") { renderFocus(); return; }
+    if ($("focus")) $("focus").hidden = true;
     var portal = $("portal"), app = $("app");
     portal.hidden = S.end !== "asset";
     app.hidden = S.end !== "admin";
@@ -400,6 +450,7 @@
       var anchor = document.querySelector(".portal-wrap, .content");
       if (anchor) window.scrollTo({ top: Math.max(0, anchor.offsetTop - 12), behavior: "auto" });
     }
+    renderCompletion();
     observeMore();
     document.title = (t(p.navKey || p.crumbKey) || "Harbour Credit") + " · Harbour Credit";
   }
@@ -433,6 +484,8 @@
     }
     var act = el.getAttribute("data-act"), v = el.getAttribute("data-v");
 
+    if (act === "completion-fold") { completionFolded = !completionFolded; e.preventDefault(); renderCompletion(); return; }
+    if (act === "completion-list") { completionListOpen = !completionListOpen; e.preventDefault(); renderCompletion(); return; }
     if (act === "menu") { S.menu = S.menu === v ? null : v; e.preventDefault(); render(); return; }
     if (act === "lang") { S.lang = v; S.menu = null; e.preventDefault(); render(); return; }
     if (act === "end") {

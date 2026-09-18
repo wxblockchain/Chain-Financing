@@ -49,6 +49,14 @@
   </div>
 </div>
 
+
+<!-- focus：仅品牌与语言工具，不带业务导航。 -->
+<div class="focus" id="focus" hidden>
+  <header class="focus-head"><a class="brand" href="#/"><span class="brand-mark" aria-hidden="true">HC</span><span class="brand-name">Harbour Credit</span></a><div class="focus-tools" id="focusTools"></div></header>
+  <main class="focus-main"><div class="focus-card" id="focusContent"></div></main>
+  <footer class="focus-foot">Harbour Credit</footer>
+</div>
+
 <div id="layers"></div>
 <div class="toasts" id="toasts"></div>
 <button class="demo-btn" id="demoBtn" type="button"></button>
@@ -60,6 +68,18 @@
 <script>
 (function (CF) {
   var L = CF.L, esc = CF.esc, S = CF.S, tag = CF.tag;
+  CF.PAGES["DEMO-FOCUS"] = {end:"asset", layout:"focus", navKey:"focusSample"};
+  CF.ENTRY["DEMO-FOCUS"] = "/sample/focus";
+  var defineSample = CF.define;
+  CF.define = function (module) {
+    module.dict.en.focusSample = "Centered card"; module.dict.zh.focusSample = "居中卡片";
+    var content = module.content;
+    module.content = function (id) {
+      if (id === "DEMO-FOCUS") return '<h1 class="page-title">' + L('Centered card', '居中卡片') + '</h1><p class="page-desc">' + L('A focused task with lightweight tools.', '聚焦单一任务，保留轻量工具。') + '</p><p><a class="btn" href="#/">' + L('Back to sample', '返回样板') + '</a></p>';
+      return content(id);
+    };
+    defineSample(module);
+  };
 
   /* ====================== 演示数据 ======================================
      全部为演示数据，不对应任何真实企业、金额或利率。 */
