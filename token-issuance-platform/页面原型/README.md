@@ -1,0 +1,5 @@
+# 代币发行平台 · 页面原型
+
+本目录存放代币发行平台的页面原型，当前为空，仅有本 README 占位。
+
+参考原型请到 **`cly-V1.0.0`** 分支的 `financial-service-platform/prototypes/` 读取；组件与设计规范见同分支 `docs/design-system/`（与资产可信平台一致，可一并参考 `asset-platform/prototypes/`）。逐模块的参考路径见 WS-345。
