@@ -379,7 +379,13 @@
 
     var host = S.end === "asset" ? $("content") : $("acontent");
     var p = CF.PAGES[S.page] || {};
+    /* 内置列表区是整段重绘的，重绘前记下它滚到哪、重绘后放回去；
+       否则每加载一批，列表都会跳回顶部。 */
+    var prevBox = host.querySelector(".listbox");
+    var keepScroll = prevBox ? prevBox.scrollTop : 0;
     host.innerHTML = M && M.content ? M.content(S.page) : "";
+    var nextBox = host.querySelector(".listbox");
+    if (nextBox && keepScroll && !S.toTop) nextBox.scrollTop = keepScroll;
     /* 官网层用整幅容器，不套 1560px 内容区的内边距。 */
     if (S.end === "asset") {
       var wrap = $("content");
@@ -389,6 +395,8 @@
     renderDemo();
     if (S.toTop) {
       S.toTop = false;
+      var box = document.querySelector(".listbox");
+      if (box) box.scrollTop = 0;
       var anchor = document.querySelector(".portal-wrap, .content");
       if (anchor) window.scrollTo({ top: Math.max(0, anchor.offsetTop - 12), behavior: "auto" });
     }
@@ -404,12 +412,15 @@
     if (typeof IntersectionObserver !== "function") return;
     var btn = document.querySelector(".loadmore button[data-act='more']");
     if (!btn) return;
+    /* 列表在内置框里滚时，哨兵要以那个框为 root；窄屏交还整页滚动时 root 为视口。 */
+    var box = btn.closest(".listbox");
+    var root = box && box.scrollHeight > box.clientHeight + 1 ? box : null;
     moreObserver = new IntersectionObserver(function (entries) {
       if (entries.some(function (x) { return x.isIntersecting; })) {
         S.shown += CF.PAGE_SIZE;
         render();
       }
-    }, { rootMargin: "120px" });
+    }, { root: root, rootMargin: "120px" });
     moreObserver.observe(btn);
   }
 

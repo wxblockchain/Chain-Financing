@@ -153,6 +153,11 @@ img,svg{max-width:100%}
 
 /* ============================== 数据表 ==================================== */
 .tablewrap{overflow-x:auto}
+
+/* 内置列表区：列表在自己的框里滚，页头、汇总、筛选条与表头都留在原处。
+   滚到框底自动加载下一批，不需要把整页往下拉。 */
+.listbox{max-height:var(--list-h);overflow:auto;overscroll-behavior:contain}
+.listbox table.tbl thead th{position:sticky;top:0;z-index:1}
 table.tbl{width:100%;border-collapse:collapse;font-size:var(--fs-13)}
 table.tbl thead th{text-align:left;font-size:var(--fs-10);font-weight:650;letter-spacing:.06em;
   text-transform:uppercase;color:var(--faint);padding:10px var(--sp-3);
@@ -417,6 +422,10 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
   .path{padding:var(--sp-5)}
 }
 /* 窄屏数据表转卡片：同一份标记，靠 data-label 回填列名，不做第二套表格。 */
+/* 窄屏交还整页滚动：手机上套一个内滚框既难操作，也不是用户预期。 */
+@media (max-width:900px){
+  .listbox{max-height:none;overflow:visible}
+}
 @media (max-width:768px){
   table.tbl.resp,table.tbl.resp tbody,table.tbl.resp tr,table.tbl.resp td{display:block;width:100%}
   table.tbl.resp thead{display:none}

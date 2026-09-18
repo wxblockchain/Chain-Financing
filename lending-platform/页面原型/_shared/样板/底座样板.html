@@ -368,7 +368,7 @@
       '<button class="btn primary" type="button" data-act="clearfilter">' + L("Search", "查询") + "</button></div>" +
       "</div>";
 
-    var table = '<div class="tablewrap"><table class="tbl resp"><thead><tr>' +
+    var table = '<div class="tablewrap listbox"><table class="tbl resp"><thead><tr>' +
       "<th>" + L("Token", "代币") + "</th><th>" + L("Token number", "代币编号") + "</th>" +
       "<th>" + L("Asset holder", "资产方企业") + "</th><th>" + L("Token type", "代币类型") + "</th>" +
       "<th>" + L("Token quantity", "代币数量") + "</th>" +
@@ -378,7 +378,7 @@
       sortTh("at", L("Minted at", "铸造时间")) +
       "</tr></thead><tbody>" +
       sortedAssets().slice(0, S.shown).map(assetRow).join("") +
-      "</tbody></table></div>" + CF.moreFoot(total);
+      "</tbody></table>" + CF.moreFoot(total) + "</div>";
 
     return head + summary + '<div style="height:var(--sp-6)"></div>' +
       '<div class="card">' + filters + (alt || table) + "</div>";
@@ -442,14 +442,14 @@
           '<span class="ar" aria-hidden="true">&rarr;</span></button></div>') + '<div style="height:var(--sp-5)"></div>'
       : "";
 
-    var table = '<div class="tablewrap"><table class="tbl resp"><thead><tr>' +
+    var table = '<div class="tablewrap listbox"><table class="tbl resp"><thead><tr>' +
       "<th>" + L("Request", "需求") + "</th>" + sortTh("amt", L("Amount", "金额")) +
       "<th>" + L("Tenor", "期限") + "</th><th>" + L("Rate", "年化") + "</th>" +
       "<th>" + L("Pledged token", "质押代币") + "</th><th>" + L("Status", "状态") + "</th>" +
       sortTh("at", L("Updated", "更新")) + '<th class="col-act">' + L("Actions", "操作") + "</th>" +
       "</tr></thead><tbody>" +
       sortedRequests().slice(0, S.shown).map(reqRow).join("") +
-      "</tbody></table></div>" + CF.moreFoot(REQUESTS.length);
+      "</tbody></table>" + CF.moreFoot(REQUESTS.length) + "</div>";
 
     return head + guestNote +
       '<div class="card"><div class="filters">' +
