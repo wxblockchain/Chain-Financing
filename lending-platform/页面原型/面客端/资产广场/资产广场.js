@@ -21,6 +21,40 @@
      刷新、分享、前进后退与从详情页返回都原样恢复。 */
   function hashPath() { return location.hash.replace(/^#/, ""); }
 
+  /* URL 保存业务视图；会话内按 URL 保存内外滚动位置。公共壳层仍负责渲染。
+     file:// 或禁用存储时退回内存，不影响浏览。 */
+  var positionKey = "am-positions:" + location.pathname;
+  var positions = {}, renderedPath = "", restoreFrame = 0, resetPosition = false;
+  try { positions = JSON.parse(sessionStorage.getItem(positionKey) || "{}"); } catch (e) {}
+  if (!positions || typeof positions !== "object") positions = {};
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+  function rememberPosition() {
+    if (!renderedPath || renderedPath !== hashPath() || restoreFrame) return;
+    var box = document.getElementById("am-listbox");
+    positions[renderedPath] = { outer: window.scrollY, inner: box ? box.scrollTop : 0 };
+    try { sessionStorage.setItem(positionKey, JSON.stringify(positions)); } catch (e) {}
+  }
+
+  function restorePosition(page) {
+    if (!resetPosition) rememberPosition();
+    var path = hashPath();
+    var saved = resetPosition ? { outer: 0, inner: 0 } : positions[path] || { outer: 0, inner: 0 };
+    renderedPath = path;
+    resetPosition = false;
+    cancelAnimationFrame(restoreFrame);
+    restoreFrame = requestAnimationFrame(function () {
+      restoreFrame = 0;
+      if (hashPath() !== path) return;
+      var box = document.getElementById("am-listbox");
+      if (box && page === LIST) box.scrollTop = saved.inner || 0;
+      window.scrollTo(0, saved.outer || 0);
+      rememberPosition();
+    });
+  }
+  document.addEventListener("scroll", rememberPosition, true);
+  window.addEventListener("pagehide", rememberPosition);
+
   function readView() {
     var h = hashPath();
     /* 详情页地址下沿用登记表里保存的列表视图，返回列表时筛选排序页码原样恢复。 */
@@ -62,11 +96,16 @@
 
   var hits = [];
   function writeView(v) {
+    rememberPosition();
     var h = viewHash(v), now = Date.now();
     hits.push(now);
     hits = hits.filter(function (t) { return now - t < 6000; });
     CF.ENTRY[LIST] = h;
+    positions[h] = { outer: 0, inner: 0 };
+    resetPosition = true;
+    S.toTop = true;
     if (hashPath() !== h) location.hash = "#" + h;
+    else CF.render();
   }
   function throttled() { return hits.length > 10; }
 
@@ -212,7 +251,7 @@
        汇总与列表同批到达，因此加载中时汇总也处在加载中，不先出数再出表。 */
     var wait = S.st === "loading";
     function statV(html) { return wait ? '<div class="v"><span class="skel am-skel-v"></span></div>' : '<div class="v">' + html + "</div>"; }
-    var summary = '<div class="stat-row">' +
+    var summary = '<div class="stat-row am-summary">' +
       '<div class="stat"><div class="k">' + L("Tokens", "代币数量") + "</div>" +
         statV(total.toLocaleString("en-US")) +
         '<div class="n">' + L("tokens", "张") + "</div></div>" +
@@ -262,7 +301,8 @@
               "代币从代币发行平台同步过来后即出现在这里。"), "");
     } else {
       var start = (v.page - 1) * CF.PAGE_SIZE;
-      body = '<div class="tablewrap"><table class="tbl resp am-tbl"><thead><tr>' +
+      body = '<div class="tablewrap listbox" id="am-listbox" role="region" tabindex="0" aria-label="' +
+        L("Token list", "代币列表") + '"><table class="tbl resp am-tbl"><thead><tr>' +
         '<th scope="col">' + L("Token", "代币") + "</th>" +
         '<th scope="col">' + L("Token ID", "代币编号") + "</th>" +
         '<th scope="col">' + L("Asset originator", "资产方企业") + "</th>" +
@@ -445,6 +485,7 @@
     id: "portal-asset-marketplace",
     dict: dict,
     content: function (page) {
+      restorePosition(page);
       renderFoot();
       if (S.end !== "asset") {
         return CF.note("", L("This module ships the customer-facing pages only.",
@@ -461,7 +502,7 @@
           setTimeout(function () {
             var el = document.getElementById(want);
             if (!el) return;
-            el.focus();
+            el.focus({ preventScroll: true });
             if (el.tagName === "INPUT") {
               try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {}
             }
@@ -527,6 +568,7 @@
   window.addEventListener("hashchange", syncEntry);
 
   document.addEventListener("click", function (e) {
+    rememberPosition();
     var el = e.target.closest ? e.target.closest("[data-act]") : null;
     if (!el || el.disabled) return;
     var act = el.getAttribute("data-act"), v;

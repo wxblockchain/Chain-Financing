@@ -24,6 +24,25 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
 .am-tbl .am-at{min-width:112px;max-width:146px;white-space:normal}
 .am-tbl .tok-name{max-width:118px}
 
+/* 十列在平板宽度提前采用公共 .resp 的同一单元格卡片组合；
+   只作用于本模块，不改变公共滚动断点（900px）或其他表格。 */
+@media (min-width:769px) and (max-width:1200px){
+  table.tbl.am-tbl,table.tbl.am-tbl tbody,table.tbl.am-tbl tr,table.tbl.am-tbl td{display:block;width:100%}
+  table.tbl.am-tbl thead{display:none}
+  table.tbl.am-tbl tbody tr{border:1px solid var(--border);border-radius:var(--radius);
+    margin-bottom:var(--sp-3);padding:var(--sp-2) 0;background:var(--card)}
+  table.tbl.am-tbl tbody tr:hover td{background:transparent}
+  table.tbl.am-tbl tbody td{border-bottom:0;padding:7px var(--sp-4);display:flex;gap:var(--sp-4);
+    align-items:baseline;justify-content:space-between}
+  table.tbl.am-tbl tbody td::before{content:attr(data-label);flex:none;font-size:var(--fs-11);
+    color:var(--faint);font-weight:620;text-transform:uppercase;letter-spacing:.05em}
+  table.tbl.am-tbl tbody td>*{text-align:right}
+  table.tbl.am-tbl tbody td .cell-wrap{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .am-tbl .am-at{max-width:none}
+}
+/* 汇总金额保留完整币种和数值，手机上不挤入两列。 */
+@media (max-width:600px){.am-summary{grid-template-columns:minmax(0,1fr)}}
+
 /* 详情：单列分区，按访客的判断路径从上往下读。 */
 .am-detail{max-width:1040px;display:flex;flex-direction:column;gap:var(--sp-5)}
 /* 宽屏下每行放两组字段，窄屏回到一组一行；标签与取值仍是公共组件的 .dl。 */
