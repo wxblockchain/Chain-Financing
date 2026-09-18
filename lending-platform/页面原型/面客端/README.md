@@ -10,3 +10,5 @@
 - 组件语义：[`官网层`](../_shared/design-system/官网层组件规范.md) · [`工作区`](../_shared/design-system/面客工作区组件规范.md)
 
 已落库：[资产广场](资产广场/README.md)。当前业务输入取本分支 `lending-platform/PRD/`；`cly-V1.0.0` 仅作历史参考，不能替代最新已确认输入。
+
+- [面客消息中心](消息中心/README.md)：列表、整页详情、顶栏快捷面板；含双语与异常场景。

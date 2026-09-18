@@ -35,6 +35,36 @@
   };
   CF.S = S;
 
+  /* 面客消息快照属于壳层。未接入数据的模块为空池，不编造未读数。 */
+  var N = CF.notifications = { rows: [], panelState: "default", preview: null };
+  N.allowed = function () { return S.end === "asset" && (S.role === "asset" || S.role === "fund"); };
+  N.visible = function () {
+    return N.allowed() ? N.rows.filter(function (r) {
+      return r.platform === "lending" && r.end === "asset" && r.owner === S.role;
+    }).sort(function (a,b) { return b.at.localeCompare(a.at) || b.id.localeCompare(a.id); }) : [];
+  };
+  N.expired = function (r) { return !!r.expires && Date.parse(r.expires) <= Date.now(); };
+  N.unread = function () { return N.visible().filter(function (r) { return !r.read && !N.expired(r); }).length; };
+  N.markRead = function (ids) {
+    N.visible().forEach(function (r) { if (ids.indexOf(r.id) !== -1) r.read = true; });
+    if (N.onRead) N.onRead(ids);
+  };
+  CF.enterPage = function (target, params) {
+    var id = String(target).replace(/^lending:/, "");
+    if (!/^lending:/.test(target) || !CF.PAGES[id]) {
+      (S.unknownTargets || (S.unknownTargets = [])).push(target);
+      location.hash = "#/"; return;
+    }
+    location.hash = "#" + CF.ENTRY[id] + (params ? "?" + new URLSearchParams(params).toString() : "");
+  };
+  CF.authSurface = function () {
+    if (N.allowed()) return null;
+    return CF.empty(S.role === "limited" ? L("Complete your account setup", "请先完成账户必办事项") : L("Sign in to view your messages", "登录后查看消息"),
+      S.role === "limited" ? L("Complete the required steps for your account to continue.", "完成账户必办事项后即可继续。") : L("After signing in, you will return to this page.", "登录后将返回当前页面。"),
+      '<button class="btn primary" data-act="' + (S.role === "limited" ? "prerequisite" : "signin") + '">' +
+      (S.role === "limited" ? L("Continue setup", "继续完善") : L("Sign in", "登录")) + '</button>');
+  };
+
   var M = null;              // 当前模块
   var DICT = { en: {}, zh: {} };
 
@@ -208,9 +238,25 @@
   }
 
   function bell(unread) {
-    return '<button class="bell" type="button" data-act="toast" data-v="notify" aria-label="' +
-      L("Notifications", "消息中心") + '">' + ICON.bell +
-      (unread ? '<span class="badge">' + unread + "</span>" : "") + "</button>";
+    if (S.end === "admin") return '<button class="bell" type="button" data-act="toast" data-v="notify" aria-label="' + L("Notifications", "消息中心") + '">' + ICON.bell + (unread ? '<span class="badge">' + unread + '</span>' : '') + '</button>';
+    // 尚未装载消息模块的独立原型保留其旧入口协议，避免抢走该模块自有的演示动作。
+    if (!N.preview) return '<button class="bell" type="button" data-act="toast" data-v="notify" aria-label="' + L("Notifications", "消息中心") + '">' + ICON.bell + '<span class="badge">3</span></button>';
+    var count = unread > 99 ? "99+" : String(unread), open = S.menu === "notifications";
+    var panel = "";
+    if (open) {
+      var body = N.panelState === "loading" ? CF.skelTable(3) : N.panelState === "error"
+        ? CF.empty(L("Failed to load. Please try again", "加载失败，请重试"), "", '<button class="btn" data-act="notify-retry">' + L("Retry", "重试") + '</button>')
+        : N.visible().slice(0,10).map(function (r) {
+          return '<a class="nc-preview" href="#/notification?id=' + encodeURIComponent(r.id) + '">' +
+            (N.preview ? N.preview(r) : esc(L("Notification", "通知"))) + '</a>';
+        }).join("");
+      panel = '<section id="notification-panel" class="nc-panel" aria-label="' + L("Recent messages", "最近消息") + '"><div class="nc-panel-head"><b>' + L("Notifications", "消息中心") + '</b></div><div class="nc-preview-list">' +
+        (body || CF.empty(L("You have no messages yet", "还没有任何消息"), "", "")) +
+        '</div><a class="nc-panel-foot" href="#/notifications" data-act="go" data-v="/notifications">' + L("View all", "查看全部") + '</a></section>';
+    }
+    return '<div class="dd nc-bell-wrap"><button class="bell" type="button" data-act="menu" data-v="notifications" aria-controls="notification-panel" aria-expanded="' + open + '" aria-label="' +
+      L("Notifications", "消息中心") + (unread ? ' · ' + count + L(" unread", " 条未读") : '') + '">' + ICON.bell +
+      (unread ? '<span class="badge" aria-hidden="true">' + count + '</span>' : '') + '</button>' + panel + '</div>';
   }
 
   function accountDd() {
@@ -222,6 +268,7 @@
         '<div class="dd-head">' + esc(who) + "</div>" +
         '<button type="button" role="menuitem" data-act="toast" data-v="acct">' + L("Account settings", "账户设置") + "</button>" +
         '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + L("Institution", "机构信息") + "</button>" +
+        (N.allowed() && N.preview ? '<button type="button" role="menuitem" data-act="go" data-v="/notifications">' + L("Notifications", "消息中心") + '</button>' : '') +
         '<div class="dd-sep"></div>' +
         '<button type="button" role="menuitem" data-act="signout">' + L("Sign out", "退出登录") + "</button>" +
         "</div>"
@@ -232,13 +279,13 @@
   }
 
   function renderPortalTools() {
-    var html = langDd();
+    var html = (N.allowed() ? bell(N.unread()) : "") + langDd();
     if (S.role === "guest") {
       html += '<button class="btn ghost sm" type="button" data-act="signin">' + L("Sign in", "登录") + "</button>" +
               '<button class="btn primary sm" type="button" data-act="toast" data-v="apply">' +
               L("Apply to join", "申请入驻") + "</button>";
     } else {
-      html += bell(3) + accountDd();
+      html += accountDd();
     }
     $("tools").innerHTML = html;
   }
@@ -278,8 +325,19 @@
     wrap.appendChild(el);
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2600);
   };
-  CF.openLayer = function (type, key, data) { S.layer = { type: type, key: key, data: data }; render(); };
-  CF.closeLayer = function () { S.layer = null; render(); };
+  var layerOpener = null;
+  CF.openLayer = function (type, key, data) {
+    var active = document.activeElement;
+    layerOpener = active && {id:active.id,act:active.getAttribute("data-act"),value:active.getAttribute("data-v")};
+    S.layer = { type: type, key: key, data: data }; render(); };
+  CF.closeLayer = function () {
+    S.layer = null; render();
+    var el = layerOpener && (layerOpener.id ? $(layerOpener.id) : Array.from(document.querySelectorAll("[data-act]")).find(function(node) {
+      return node.getAttribute("data-act") === layerOpener.act && node.getAttribute("data-v") === layerOpener.value;
+    }));
+    if(el) el.focus({preventScroll:true});
+    layerOpener = null;
+  };
 
   function renderLayer() {
     var host = $("layers");
@@ -320,7 +378,7 @@
     if (!S.demo) return;
     var roles = S.end === "admin"
       ? [["ops", L("Operations admin", "运营管理员")]]
-      : [["guest", L("Signed out", "未登录访客")], ["asset", L("Asset holder", "资产方")], ["fund", L("Funder", "资金方")]];
+      : [["limited", L("Restricted session", "受限会话")], ["guest", L("Signed out", "未登录访客")], ["asset", L("Asset holder", "资产方")], ["fund", L("Funder", "资金方")]];
     panel.innerHTML =
       '<div class="grp"><h5>' + L("Deployment unit", "部署单元") + "</h5>" +
       seg("end", S.end, [["asset", L("Customer-facing", "面客端")], ["admin", L("Operations console", "管理端")]]) + "</div>" +
@@ -331,13 +389,13 @@
         ["error", L("Load failed", "加载失败")], ["denied", L("No access", "无权限")]]) + "</div>" +
       '<p class="why">' + L(
         "These switches exist for review only. They are not part of the product: the two deployment units ship separately and a visitor never switches identity in place.",
-        "这些开关只为评审存在，不是产品功能：两个部署单元分开上线，访客也不会在页面里就地切换身份。") + "</p>";
+        "这些开关只为评审存在，不是产品功能：两个部署单元分开上线，访客也不会在页面里就地切换身份。") + "</p>" + (M && M.demo ? M.demo() : "");
   }
 
   /* ------------------------------------------------------------ 路由 */
   function pageFromHash() {
     var h = location.hash.replace(/^#/, "") || "/";
-    for (var id in CF.ENTRY) { if (CF.ENTRY[id] === h) return id; }
+    for (var id in CF.ENTRY) { if (CF.ENTRY[id] === h || CF.ENTRY[id] === h.split("?")[0]) return id; }
     return null;
   }
 
@@ -359,7 +417,7 @@
     var want = CF.ENTRY[id];
     /* 直接写 location.hash，不用 history.replaceState —— 交付件要能从 file:// 双击打开，
        部分浏览器在 file:// 下对 replaceState 抛 SecurityError。 */
-    if (location.hash.replace(/^#/, "") !== want) { location.hash = "#" + want; }
+    if (location.hash.replace(/^#/, "").split("?")[0] !== want.split("?")[0]) { location.hash = "#" + want; }
   }
 
   /* focus + C-L03：新增契约，未配置的旧模块不产生提示条或布局变化。 */
@@ -412,6 +470,11 @@
 
   /* ------------------------------------------------------------ 渲染 */
   function render() {
+    var active = document.activeElement;
+    var focusKey = active && active.id;
+    var focusAct = active && active.getAttribute("data-act"), focusV = active && active.getAttribute("data-v");
+    if (M && M.beforeRender) M.beforeRender();
+    if (!N.allowed() && S.menu === "notifications") S.menu = null;
     document.documentElement.setAttribute("data-end", S.end);
     document.documentElement.setAttribute("lang", S.lang === "en" ? "en" : "zh-CN");
     if ((CF.PAGES[S.page] || {}).layout === "focus") { renderFocus(); return; }
@@ -441,14 +504,23 @@
       var wrap = $("content");
       wrap.className = p.layout === "site" ? "" : "portal-wrap";
     }
+    if (M && M.afterRender) M.afterRender();
+    if (S.end === "asset") renderPortalTools();
     renderLayer();
     renderDemo();
+    if (!S.layer && active && !document.contains(active)) {
+      var replacement = focusKey && $(focusKey);
+      if (!replacement && focusAct) replacement = Array.from(document.querySelectorAll("[data-act]")).find(function (el) {
+        return el.getAttribute("data-act") === focusAct && el.getAttribute("data-v") === focusV;
+      });
+      if (replacement) replacement.focus({preventScroll:true});
+    }
     if (S.toTop) {
       S.toTop = false;
       var box = document.querySelector(".listbox");
       if (box) box.scrollTop = 0;
       var anchor = document.querySelector(".portal-wrap, .content");
-      if (anchor) window.scrollTo({ top: Math.max(0, anchor.offsetTop - 12), behavior: "auto" });
+      if (anchor) window.scrollTo({ top: Math.max(0, anchor.offsetTop - (document.querySelector(".portal-head")?.offsetHeight || 0) - (document.querySelector(".portal-sub")?.offsetHeight || 0) - 20), behavior: "auto" });
     }
     renderCompletion();
     observeMore();
@@ -484,6 +556,10 @@
     }
     var act = el.getAttribute("data-act"), v = el.getAttribute("data-v");
 
+    if (el.disabled || el.getAttribute("aria-disabled") === "true") { e.preventDefault(); return; }
+    if (M && M.onBeforeAct && M.onBeforeAct(act, v, e)) { e.preventDefault(); render(); return; }
+    if (act === "notify-retry") { N.panelState = "default"; render(); return; }
+    if (act === "prerequisite") { CF.toast(L("Account setup handoff — demonstration only.", "账户必办事项交接 —— 仅演示。")); return; }
     if (act === "completion-fold") { completionFolded = !completionFolded; e.preventDefault(); renderCompletion(); return; }
     if (act === "completion-list") { completionListOpen = !completionListOpen; e.preventDefault(); renderCompletion(); return; }
     if (act === "menu") { S.menu = S.menu === v ? null : v; e.preventDefault(); render(); return; }
@@ -492,14 +568,14 @@
       S.end = v; S.role = v === "admin" ? "ops" : "guest"; S.st = "default"; S.layer = null;
       syncRoute(false); render(); return;
     }
-    if (act === "role") { S.role = v; S.layer = null; resetList(); render(); return; }
+    if (act === "role") { S.role = v; S.menu = null; S.layer = null; resetList(); render(); return; }
     if (act === "st") { S.st = v; S.layer = null; resetList(); render(); return; }
     if (act === "demo") { S.demo = !S.demo; render(); return; }
     if (act === "closelayer") {
-      if (el.hasAttribute("data-stop")) return;
+      if (el.hasAttribute("data-stop") || (el.classList.contains("modal-mask") && e.target.closest("[data-stop]"))) return;
       CF.closeLayer(); return;
     }
-    if (act === "go") { location.hash = "#" + v; e.preventDefault(); return; }
+    if (act === "go") { S.menu = null; location.hash = "#" + v; e.preventDefault(); return; }
     if (act === "retry" || act === "clearfilter") {
       S.st = "default"; resetList(); e.preventDefault(); render(); return;
     }
@@ -525,14 +601,27 @@
   }
 
   function onKey(e) {
+    if (e.key === "Tab" && S.layer) {
+      var nodes = Array.from($("layers").querySelectorAll('button:not(:disabled),a[href],input,select,[tabindex="0"]'));
+      var first = nodes[0], last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
     if (e.key === "Escape") {
-      if (S.layer) { CF.closeLayer(); return; }
-      if (S.menu) { S.menu = null; render(); }
+      if (S.layer) { if (M && M.onBeforeAct && M.onBeforeAct("closelayer", null, e)) return; CF.closeLayer(); return; }
+      if (S.menu) { var menu = S.menu; S.menu = null; render(); var btn = document.querySelector('[data-act="menu"][data-v="' + menu + '"]'); if(btn) btn.focus(); }
     }
   }
 
   /* ------------------------------------------------------------ 启动 */
   CF.define = function (mod) {
+    var previous = M;
+    if (previous && mod.pages) {
+      var content = mod.content, action = mod.onAct;
+      mod.content = function (page) { return mod.pages.indexOf(page) >= 0 ? content(page) : previous.content(page); };
+      mod.onAct = function (act,v,e) { return (action && action(act,v,e)) || (previous.onAct && previous.onAct(act,v,e)); };
+      mod.layers = Object.assign({}, previous.layers, mod.layers);
+    }
     M = mod;
     ["en", "zh"].forEach(function (lg) {
       var src = (mod.dict && mod.dict[lg]) || {};
@@ -546,12 +635,14 @@
     document.addEventListener("click", onClick);
     document.addEventListener("keydown", onKey);
     window.addEventListener("hashchange", function () {
+      var prevPage = S.page;
       var id = pageFromHash();
+      if (M && M.onRoute) M.onRoute(prevPage, id);
       if (id && CF.PAGES[id]) {
         if (CF.PAGES[id].end !== S.end) { S.end = CF.PAGES[id].end; S.role = S.end === "admin" ? "ops" : S.role; }
-        S.page = id; S.layer = null; S.st = "default"; S.sort = "at"; S.sortDir = "desc";
-        resetList();
-      }
+        S.page = id; S.menu = null; S.layer = null; S.st = "default"; S.sort = "at"; S.sortDir = "desc";
+        if (!(CF.PAGES[id].retainList && CF.PAGES[prevPage] && CF.PAGES[prevPage].retainList)) resetList();
+      } else { syncRoute(true); }
       render();
     });
     $("demoBtn").setAttribute("data-act", "demo");

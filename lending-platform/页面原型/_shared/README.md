@@ -63,3 +63,9 @@ python3 _shared/export.py \
 ## 参考基线
 
 本层承接自 `cly-V1.0.0` 的 `asset-platform/prototypes/_shared/` 与 `financial-service-platform/prototypes/_shared/`：变量名与语义分层保留，取值重做，运行时按本平台的两个部署单元重写。代币域的 `P-O-TC-*` / `P-O-TI-*` / `P-O-FX-*` / `P-O-DS-*` 已随代币发行平台移交，本平台登记表不再登记。
+
+## 消息中心接入
+
+面客消息快照与角标由 `shell.js` 持有；模块通过 `CF.notifications` 提供演示记录与预览。`CF.define` 可用 `pages` 声明自己承载的页，其他页面委托此前注册的模块；可选钩子为 `beforeRender`、`afterRender`、`onRoute`、`onBeforeAct`、`demo`。组合装载时先设 `CF.deferBoot = true`，最后统一启动。母版内容区维护于 `sample-pages.js`；原母版 HTML 只引用，禁止复制成第二份可编辑内容源。
+
+母版与资产广场已接入同一份消息模块。详见[消息中心说明](../面客端/消息中心/README.md)。共享层更新后重新导出受影响的单文件附件。

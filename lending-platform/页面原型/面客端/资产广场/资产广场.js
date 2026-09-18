@@ -481,6 +481,7 @@
   /* ------------------------------------------------------------ 模块接入 */
   var refocus = null;
 
+  CF.renderFooter = renderFoot;
   CF.define({
     id: "portal-asset-marketplace",
     dict: dict,
@@ -607,5 +608,5 @@
   /* 评审件双击打开时直接落在本模块首页，不落到其他模块的路由上。 */
   if (!hashPath() || hashPath() === "/") location.hash = "#/assets";
   syncEntry();
-  CF.boot();
+  if (!CF.deferBoot) CF.boot();
 })(window.CF);
