@@ -92,6 +92,48 @@
       tenor: 90, rate: "7.10", st: "repaying", token: "AR-USD-2606", at: "2026-09-09T16:30:00" }
   ];
 
+  /* 上面五条是手写样例，下面按同一形状补足到 47 / 33 条，
+     只为演示每批 20 条的滚动加载，全部仍是演示数据。 */
+  (function () {
+    var holders = [["Asset Holder A", "资产方 A"], ["Asset Holder B", "资产方 B"],
+                   ["Asset Holder C", "资产方 C"], ["Asset Holder D", "资产方 D"],
+                   ["Asset Holder E", "资产方 E"], ["Asset Holder F", "资产方 F"]];
+    function pad(n, w) { return ("000000" + n).slice(-w); }
+    for (var i = 0; i < 42; i++) {
+      var mo = (i % 9) + 1, day = (i % 26) + 2, seq = 500 + i * 7;
+      var ds = "2026-" + pad(mo, 2) + "-" + pad(day, 2);
+      var de = "2026-" + pad(Math.min(12, mo + 3), 2) + "-" + pad(day, 2);
+      ASSETS.push({
+        no: "TK2026" + pad(mo, 2) + pad(day, 2) + pad(seq, 6),
+        name: "HC-AR-26" + pad(mo, 2) + "-" + pad(i + 1, 2),
+        holder: holders[i % holders.length],
+        kind: "ar",
+        qty: 180 + (i % 17) * 95,
+        val: (180 + (i % 17) * 95) * 1000,
+        ts: i % 11 === 0 ? "void" : "valid",
+        ps: i % 3 === 0 ? "pledged" : "unpledged",
+        from: ds, to: de,
+        at: ds + "T" + pad(8 + (i % 9), 2) + ":" + pad((i * 7) % 60, 2) + ":00"
+      });
+    }
+    var sts = ["quoting", "review", "disbursing", "repaying"];
+    for (var j = 0; j < 29; j++) {
+      var m2 = (j % 9) + 1, d2 = (j % 25) + 3;
+      var ds2 = "2026-" + pad(m2, 2) + "-" + pad(d2, 2);
+      REQUESTS.push({
+        id: "S-FP-26" + pad(m2, 2) + pad(d2, 2) + pad(100 + j * 3, 2),
+        holder: holders[j % holders.length],
+        amt: 150000 + (j % 13) * 85000,
+        ccy: j % 4 === 1 ? "EUR" : "USD",
+        tenor: [60, 90, 120][j % 3],
+        rate: (5.4 + (j % 9) * 0.25).toFixed(2),
+        st: sts[j % sts.length],
+        token: ASSETS[j % ASSETS.length].name,
+        at: ds2 + "T" + pad(9 + (j % 8), 2) + ":" + pad((j * 11) % 60, 2) + ":00"
+      });
+    }
+  })();
+
   var AGREEMENTS = [
     { code: "AG-PLEDGE", name: ["Pledge service agreement", "质押服务协议"], ver: "V2.1",
       st: "effective", eff: "2026-08-01T00:00:00" },
@@ -334,12 +376,9 @@
       "<th>" + L("Token status", "代币状态") + "</th><th>" + L("Pledge status", "质押状态") + "</th>" +
       sortTh("to", L("Receivable term", "底层应收账款账期")) +
       sortTh("at", L("Minted at", "铸造时间")) +
-      "</tr></thead><tbody>" + sortedAssets().map(assetRow).join("") + "</tbody></table></div>" +
-      '<div class="pager"><span class="total">' +
-        L(total + " tokens", "共 " + total + " 张") + "</span>" +
-      '<button class="pgbtn" type="button" disabled>&larr;</button>' +
-      '<button class="pgbtn" type="button" aria-current="true">1</button>' +
-      '<button class="pgbtn" type="button" disabled>&rarr;</button></div>';
+      "</tr></thead><tbody>" +
+      sortedAssets().slice(0, S.shown).map(assetRow).join("") +
+      "</tbody></table></div>" + CF.moreFoot(total);
 
     return head + summary + '<div style="height:var(--sp-6)"></div>' +
       '<div class="card">' + filters + (alt || table) + "</div>";
@@ -408,11 +447,9 @@
       "<th>" + L("Tenor", "期限") + "</th><th>" + L("Rate", "年化") + "</th>" +
       "<th>" + L("Pledged token", "质押代币") + "</th><th>" + L("Status", "状态") + "</th>" +
       sortTh("at", L("Updated", "更新")) + '<th class="col-act">' + L("Actions", "操作") + "</th>" +
-      "</tr></thead><tbody>" + sortedRequests().map(reqRow).join("") + "</tbody></table></div>" +
-      '<div class="pager"><span class="total">' + L("4 requests", "共 4 条") + "</span>" +
-      '<button class="pgbtn" type="button" disabled>&larr;</button>' +
-      '<button class="pgbtn" type="button" aria-current="true">1</button>' +
-      '<button class="pgbtn" type="button" disabled>&rarr;</button></div>';
+      "</tr></thead><tbody>" +
+      sortedRequests().slice(0, S.shown).map(reqRow).join("") +
+      "</tbody></table></div>" + CF.moreFoot(REQUESTS.length);
 
     return head + guestNote +
       '<div class="card"><div class="filters">' +
@@ -443,7 +480,8 @@
       emptyDesc: L("Your requests appear here once you publish one.", "发布融资需求后会出现在这里。")
     });
     var mine = REQUESTS.filter(function (r) { return r.holder[0] === "Asset Holder A"; });
-    var rows = mine.map(function (r) {
+    var SIZE = 5, from = (S.pageNo - 1) * SIZE;
+    var rows = mine.slice(from, from + SIZE).map(function (r) {
       return "<tr>" +
         '<td data-label="' + L("Request", "需求") + '"><span class="mono cell-main">' + esc(r.id) + "</span></td>" +
         '<td data-label="' + L("Amount", "金额") + '" class="num">' + CF.fmtAmt(r.amt, r.ccy) + "</td>" +
@@ -452,6 +490,7 @@
         '<td class="col-act"><a class="actlink" href="#/marketplace" data-act="detail" data-v="' + esc(r.id) + '">' +
         L("View", "查看") + "</a></td></tr>";
     }).join("");
+    var pager = CF.pagerFoot(mine.length, SIZE);
 
     return '<div class="page-head"><div>' +
       '<h1 class="page-title">' + L("My console", "我的控制台") + "</h1>" +
@@ -468,7 +507,7 @@
       (alt || '<div class="tablewrap"><table class="tbl resp"><thead><tr><th>' +
         L("Request", "需求") + "</th><th>" + L("Amount", "金额") + "</th><th>" + L("Status", "状态") +
         "</th><th>" + L("Updated", "更新") + '</th><th class="col-act">' + L("Actions", "操作") +
-        "</th></tr></thead><tbody>" + rows + "</tbody></table></div>") +
+        "</th></tr></thead><tbody>" + rows + "</tbody></table></div>" + pager) +
       "</div>";
   }
 
@@ -634,6 +673,7 @@
       if (act === "sort") {
         if (S.sort === v) { S.sortDir = S.sortDir === "asc" ? "desc" : "asc"; }
         else { S.sort = v; S.sortDir = "desc"; }
+        CF.resetList();
         return true;
       }
       if (act === "copy") {

@@ -137,6 +137,10 @@ img,svg{max-width:100%}
 .filters .field{flex:1 1 180px;max-width:260px}
 .filters .acts{display:flex;gap:var(--sp-2);margin-left:auto}
 
+.loadmore{display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);
+  padding:var(--sp-6) var(--card-pad);border-top:1px solid var(--border)}
+.loadmore.done{color:var(--faint);font-size:var(--fs-12);padding:var(--sp-5) var(--card-pad)}
+
 .pager{display:flex;align-items:center;gap:var(--sp-2);padding:12px var(--card-pad);
   border-top:1px solid var(--border);font-size:var(--fs-12);color:var(--muted);flex-wrap:wrap}
 .pager .total{margin-right:auto}

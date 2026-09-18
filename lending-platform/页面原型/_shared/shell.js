@@ -26,6 +26,9 @@
     st: "default",           // 演示状态：default/loading/empty/noresult/error/denied
     sort: "at",              // 当前排序键；列表默认按时间倒序
     sortDir: "desc",
+    shown: 20,               // 滚动加载已显示条数（两个广场）
+    toTop: false,            // 重排 / 重置筛选后把视口带回列表顶部
+    pageNo: 1,               // 分页页码（我的控制台）
     menu: null,              // 当前展开的下拉
     layer: null,             // { type:'drawer'|'modal', key:... }
     demo: false
@@ -103,6 +106,39 @@
            L("Loading", "加载中") + "</span>" + out + "</div>";
   };
 
+  CF.PAGE_SIZE = 20;
+
+  /* 滚动加载的列表尾部：一个可聚焦的「加载更多」既是键盘可达的控件，
+     也是滚动哨兵——滚到它就自动加载下一批，不必点。 */
+  CF.moreFoot = function (total) {
+    if (total <= S.shown) {
+      return '<div class="loadmore done">' +
+        L("End of list", "已到末尾") + " \u00b7 " +
+        L(total + (total === 1 ? " item" : " items"), "共 " + total + " 条") + "</div>";
+    }
+    return '<div class="loadmore"><button class="btn" type="button" data-act="more">' +
+      L("Load more", "加载更多") + "</button>" +
+      '<span class="tiny" role="status">' +
+      L("Showing " + S.shown + " of " + total, "已显示 " + S.shown + " / " + total + " 条") +
+      "</span></div>";
+  };
+
+  /* 分页尾部：给需要按页翻的列表用。 */
+  CF.pagerFoot = function (total, size) {
+    var pages = Math.max(1, Math.ceil(total / size));
+    var btns = "";
+    for (var i = 1; i <= pages; i++) {
+      btns += '<button class="pgbtn" type="button" data-act="pageno" data-v="' + i + '"' +
+        (i === S.pageNo ? ' aria-current="true"' : "") + ">" + i + "</button>";
+    }
+    return '<div class="pager"><span class="total">' +
+      L(total + (total === 1 ? " item" : " items"), "共 " + total + " 条") + "</span>" +
+      '<button class="pgbtn" type="button" data-act="pageno" data-v="' + (S.pageNo - 1) + '"' +
+        (S.pageNo <= 1 ? " disabled" : "") + ">&larr;</button>" + btns +
+      '<button class="pgbtn" type="button" data-act="pageno" data-v="' + (S.pageNo + 1) + '"' +
+        (S.pageNo >= pages ? " disabled" : "") + ">&rarr;</button></div>";
+  };
+
   /* 页面级状态表面：模块把自己的默认内容传进来，公共层负责其余状态。 */
   CF.surface = function (opts) {
     if (S.st === "loading") return CF.skelTable(opts.skelRows);
@@ -131,6 +167,9 @@
   };
 
   /* ------------------------------------------------------------ 导航渲染 */
+  function resetList() { S.shown = CF.PAGE_SIZE; S.pageNo = 1; S.toTop = true; }
+  CF.resetList = resetList;
+
   function navItems() { return (CF.NAV[S.end] || []).filter(function (id) { return CF.PAGES[id]; }); }
 
   function renderPortalNav() {
@@ -348,9 +387,31 @@
     }
     renderLayer();
     renderDemo();
+    if (S.toTop) {
+      S.toTop = false;
+      var anchor = document.querySelector(".portal-wrap, .content");
+      if (anchor) window.scrollTo({ top: Math.max(0, anchor.offsetTop - 12), behavior: "auto" });
+    }
+    observeMore();
     document.title = (t(p.navKey || p.crumbKey) || "Harbour Credit") + " · Harbour Credit";
   }
   CF.render = render;
+
+  /* 滚到「加载更多」就自动加载下一批；按钮本身保留，键盘用户照样可达。 */
+  var moreObserver = null;
+  function observeMore() {
+    if (moreObserver) { moreObserver.disconnect(); moreObserver = null; }
+    if (typeof IntersectionObserver !== "function") return;
+    var btn = document.querySelector(".loadmore button[data-act='more']");
+    if (!btn) return;
+    moreObserver = new IntersectionObserver(function (entries) {
+      if (entries.some(function (x) { return x.isIntersecting; })) {
+        S.shown += CF.PAGE_SIZE;
+        render();
+      }
+    }, { rootMargin: "120px" });
+    moreObserver.observe(btn);
+  }
 
   /* ------------------------------------------------------------ 事件 */
   function onClick(e) {
@@ -367,15 +428,19 @@
       S.end = v; S.role = v === "admin" ? "ops" : "guest"; S.st = "default"; S.layer = null;
       syncRoute(false); render(); return;
     }
-    if (act === "role") { S.role = v; S.layer = null; render(); return; }
-    if (act === "st") { S.st = v; S.layer = null; render(); return; }
+    if (act === "role") { S.role = v; S.layer = null; resetList(); render(); return; }
+    if (act === "st") { S.st = v; S.layer = null; resetList(); render(); return; }
     if (act === "demo") { S.demo = !S.demo; render(); return; }
     if (act === "closelayer") {
       if (el.hasAttribute("data-stop")) return;
       CF.closeLayer(); return;
     }
     if (act === "go") { location.hash = "#" + v; e.preventDefault(); return; }
-    if (act === "retry" || act === "clearfilter") { S.st = "default"; e.preventDefault(); render(); return; }
+    if (act === "retry" || act === "clearfilter") {
+      S.st = "default"; resetList(); e.preventDefault(); render(); return;
+    }
+    if (act === "more") { S.shown += CF.PAGE_SIZE; e.preventDefault(); render(); return; }
+    if (act === "pageno") { S.pageNo = Math.max(1, parseInt(v, 10) || 1); e.preventDefault(); render(); return; }
     if (act === "signin") {
       S.role = "asset"; e.preventDefault();
       CF.toast(L("Signed in as an asset holder — demonstration only.", "已以资产方身份登录 —— 仅为演示。"));
@@ -421,6 +486,7 @@
       if (id && CF.PAGES[id]) {
         if (CF.PAGES[id].end !== S.end) { S.end = CF.PAGES[id].end; S.role = S.end === "admin" ? "ops" : S.role; }
         S.page = id; S.layer = null; S.st = "default"; S.sort = "at"; S.sortDir = "desc";
+        resetList();
       }
       render();
     });
