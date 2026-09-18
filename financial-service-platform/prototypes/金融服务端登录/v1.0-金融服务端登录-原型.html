@@ -1,0 +1,2453 @@
+<!doctype html>
+<html lang="en" data-end="asset">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financial Service Platform · Portal sign-in</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>/* 只放本模块专有的组合。token 与公共组件一律来自 _shared，此处不重定义、不覆盖。 */
+.pl-brand{border:0;padding:0;gap:var(--sp-3)}
+.pl-spacer{flex:1}
+.pl-title{font-size:var(--fs-24);margin:0 0 var(--sp-2);font-weight:660;letter-spacing:-.02em}
+.pl-sub{color:var(--muted);margin:0 0 var(--sp-6);font-size:13px;line-height:1.6}
+.pl-center{text-align:center}
+.pl-gap{margin-top:var(--sp-4)}
+.pl-gap-lg{margin-top:var(--sp-6)}
+.pl-actions{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-4)}
+
+/* 类型选择：两张卡片必须视觉权重相同，因此等宽 grid、同一套边框与内边距，
+   不给任一张 accent 底或更大尺寸。 */
+.pl-roles{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4)}
+.pl-role{display:flex;flex-direction:column;text-align:left;background:var(--card);
+  border:1px solid var(--border);border-radius:var(--radius);padding:var(--sp-5);
+  box-shadow:var(--shadow);transition:border-color var(--dur-fast) var(--ease-out)}
+.pl-role:hover{border-color:var(--border-strong)}
+.pl-role h3{font-size:var(--fs-16);font-weight:660;margin:0 0 var(--sp-2)}
+.pl-role p{margin:0 0 var(--sp-5);font-size:12.5px;line-height:1.6;color:var(--muted);flex:1}
+.pl-role p b{color:var(--text);font-weight:620}
+.pl-remember{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;
+  margin-top:var(--sp-5);padding:var(--sp-3) var(--sp-4);background:var(--card-2);
+  border:1px dashed var(--border-strong);border-radius:var(--radius-sm);font-size:12.5px;color:var(--muted)}
+.pl-guest{margin-top:var(--sp-5);text-align:center}
+
+/* 常驻补全提示条：占位而不悬浮，因此放在内容区之上的正常文档流里。 */
+.pl-bar{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;
+  background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:var(--radius-sm);
+  padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-5);font-size:12.5px;color:var(--warn)}
+.pl-bar-tx{flex:1;min-width:180px;line-height:1.55}
+.pl-bar.pl-bar-min{padding:var(--sp-2) var(--sp-3)}
+.pl-bar-more{border:0;background:none;color:inherit;text-decoration:underline;font-size:var(--fs-11)}
+.pl-bar-queue{list-style:none;margin:var(--sp-3) 0 0;padding:0;width:100%;border-top:1px dashed var(--warn-border)}
+.pl-bar-queue li{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;padding:var(--sp-3) 0 0;font-size:12px}
+.pl-bar-queue li span{flex:1;min-width:160px}
+
+/* 整卡认证 / 入驻入口。形态继承 asset-platform/prototypes/实名认证与审核 的
+   credential-card（个人在上、企业在下的整卡入口，未提交时整卡为虚线空态），
+   类名前缀改为本模块自己的 .pl-entry，不复用也不覆盖对方的模块级类名。 */
+.pl-entries{display:flex;flex-direction:column;gap:var(--sp-4)}
+.pl-entry{position:relative;width:100%;text-align:left;background:var(--card);
+  border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:0;overflow:hidden;color:var(--text)}
+.pl-entry::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--sp-1);background:var(--track)}
+.pl-entry[data-k="green"]::before{background:var(--ok)}
+.pl-entry[data-k="amber"]::before{background:var(--warn)}
+.pl-entry[data-k="red"]::before{background:var(--danger)}
+.pl-entry[data-k="blue"]::before{background:var(--accent)}
+.pl-entry:hover{background:var(--card-hover);border-color:var(--border-strong)}
+.pl-entry[data-empty="true"]{background:var(--card-2);border-style:dashed;box-shadow:none;color:var(--muted)}
+.pl-entry[data-empty="true"]::before{background:var(--track)}
+.pl-entry-head{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-4) var(--sp-5);
+  border-bottom:1px solid var(--border)}
+.pl-entry-ico{width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--card-2);display:grid;place-items:center;font-weight:700;color:var(--accent);
+  flex:none;font-family:var(--mono);font-size:var(--fs-11)}
+.pl-entry-head .title{font-size:var(--fs-14);font-weight:660}
+.pl-entry-head .status{margin-left:auto}
+.pl-entry-core{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:var(--sp-4);padding:var(--sp-5)}
+.pl-entry-core span{display:block;font-size:var(--fs-10);color:var(--faint);margin-bottom:var(--sp-1)}
+.pl-entry-core b{display:block;font-size:var(--fs-12);font-weight:620;overflow-wrap:anywhere}
+.pl-entry-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);
+  padding:var(--sp-5);font-size:var(--fs-12);border-top:1px dashed var(--border-dash)}
+.pl-entry[data-empty="true"] .pl-entry-foot{border-top:0}
+.pl-entry-foot p{margin:0;flex:1;min-width:0;line-height:1.55}
+
+/* 只读区块：主体字段由对端维护，用虚线边框 + 说明区表达「不是禁用，是本端无权」，
+   不画置灰输入框。 */
+.pl-ro{background:var(--card-2);border:1px dashed var(--border-strong);
+  border-radius:var(--radius-sm);padding:var(--sp-4);margin-bottom:var(--sp-5)}
+.pl-ro>p{margin:0 0 var(--sp-4);font-size:12.5px;color:var(--muted);line-height:1.6}
+
+/* 引导弹层的补充信息区（只在审核中 / 已驳回两种情形出现）。 */
+.pl-seg4{border-top:1px dashed var(--border-dash);margin-top:var(--sp-4);padding-top:var(--sp-4)}
+.pl-seg4-h{font-size:var(--fs-11);font-weight:650;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:var(--sp-3)}
+
+/* 空壳占位：首页与登录后的落地页归其他 issue，本模块只留版式不铺内容。 */
+.pl-blank{border:1px dashed var(--border-strong);border-radius:var(--radius);background:var(--card-2);
+  padding:var(--sp-8) var(--sp-5);text-align:center;color:var(--faint)}
+.pl-blank b{display:block;color:var(--muted);font-size:var(--fs-14);font-weight:640;margin-bottom:var(--sp-2)}
+.pl-blank p{margin:0 auto;max-width:440px;font-size:12.5px;line-height:1.6}
+.pl-blank-rows{display:flex;flex-direction:column;gap:var(--sp-3);margin-top:var(--sp-6)}
+.pl-blank-row{height:var(--sp-7);border-radius:var(--radius-sm);background:var(--bg-elev);
+  border:1px solid var(--border-dash)}
+
+.pl-idsw{display:flex;align-items:center;gap:var(--sp-2)}
+.pl-idsw>span{font-size:var(--fs-10);color:var(--faint);letter-spacing:.06em;text-transform:uppercase}
+.pl-wallets{display:flex;flex-direction:column;gap:var(--sp-2)}
+.pl-wallet{display:flex;align-items:center;gap:var(--sp-3);text-align:left;width:100%;
+  border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elev);
+  padding:var(--sp-3) var(--sp-4)}
+.pl-wallet:hover{background:var(--card-hover)}
+.pl-wallet .av{width:30px;height:30px;border-radius:var(--radius-xs);flex:none;display:grid;
+  place-items:center;font-family:var(--mono);font-size:var(--fs-11);color:#fff;
+  /* 与 base.css 的 .op-avatar 同一写法：渐变底上的文字色沿用公共层的 #fff 惯例，
+     公共层没有为此发过 token（base.css 自身在 7 处这样写）。 */
+  background:linear-gradient(135deg,var(--violet),var(--accent))}
+.pl-wallet b{display:block;font-size:12.5px;font-weight:620}
+.pl-wallet span span{font-size:var(--fs-10);color:var(--faint)}
+.pl-lock{text-align:center;padding:var(--sp-6) var(--sp-4)}
+.pl-lock-ico{color:var(--warn);margin-bottom:var(--sp-4)}
+.pl-count{font-family:var(--mono);font-size:var(--fs-28);margin:var(--sp-4) 0}
+.pl-skel{height:var(--sp-4);margin:var(--sp-4) 0;background:var(--track);border-radius:var(--radius-xs)}
+.pl-skel-s{width:55%}
+.pl-chain{list-style:none;margin:var(--sp-4) 0 0;padding:0;font-size:var(--fs-11);
+  font-family:var(--mono);color:var(--muted)}
+.pl-chain li{display:flex;align-items:center;gap:var(--sp-3);padding:3px 0}
+.pl-chain li[data-on="1"]{color:var(--text)}
+.pl-chain li[data-fail="1"]{color:var(--danger)}
+.pl-chain .m{width:26px;flex:none;color:var(--faint)}
+.pl-pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--mono);font-size:var(--fs-11);
+  background:var(--card-2);padding:var(--sp-3);border-radius:var(--radius-sm);color:var(--muted)}
+
+/* 滑块人机校验。以下 .cap-* 规则与 asset-platform 账户与登录原型、
+   金融服务平台账户与登录原型里的同名规则逐字相同——它们生长在模块层而不在
+   _shared/base.css 里，而 asset-platform/ 对本模块只读，因此无法在此处上收。
+   沿用同一形态是刻意的：本组件的同构基线就是资产端那一个，换一种滑块会让
+   两端的同一个组件长得不一样。三处的同步需要人工保证，建议后续把这组规则
+   移进 _shared/base.css 收敛为一份。 */
+.cap-canvas{position:relative;width:328px;margin:0 auto;border-radius:var(--radius-sm);overflow:hidden;
+  border:1px solid var(--border);background:var(--card-2)}
+.cap-canvas canvas{display:block;width:328px;height:180px}
+.cap-piece{position:absolute;top:0;left:0;will-change:transform}
+.cap-track{margin:14px auto 0;width:328px;height:42px;border-radius:var(--radius-pill);background:var(--card-2);
+  border:1px solid var(--border-strong);position:relative;display:flex;align-items:center;user-select:none;touch-action:none}
+.cap-track.ok{border-color:var(--ok-border);background:var(--ok-bg)}
+.cap-track.bad{border-color:var(--danger-border);background:var(--danger-bg)}
+.cap-track.cool{opacity:.6}
+.cap-track .tip{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--fs-11);color:var(--faint);
+  pointer-events:none}
+.cap-fill{position:absolute;left:0;top:0;bottom:0;border-radius:var(--radius-pill);background:var(--accent-soft)}
+.cap-knob{position:absolute;left:0;top:0;height:40px;width:48px;border-radius:var(--radius-pill);background:var(--bg-elev);
+  border:1px solid var(--border-strong);display:grid;place-items:center;cursor:grab;color:var(--accent);
+  font-family:var(--mono);font-size:13px;box-shadow:var(--shadow)}
+.cap-knob:active{cursor:grabbing}
+.cap-knob.shake{animation:shake var(--dur-slow) var(--ease-in-out)}
+.cap-knob[aria-disabled="true"]{cursor:not-allowed;opacity:.6}
+.cap-msg{margin-top:10px;min-height:17px;font-size:var(--fs-11);line-height:1.5;text-align:center;color:var(--faint)}
+.cap-msg.bad{color:var(--danger)}
+.cap-msg.ok{color:var(--ok)}
+
+/* ---- WS-316 入驻申请：必填标记、字段级驳回回显、表单页脚 ---- */
+/* 驳回回显不是「输入错误」——它是审核员写给用户的话，因此整段包起来：
+   标题说明是哪一类问题、原文常驻在字段下方，而不是只把输入框描红。 */
+.ap-req{color:var(--danger);margin-left:3px;font-weight:700}
+.ap-flag{border:1px solid var(--danger-border);background:var(--danger-bg);
+  border-radius:var(--radius-sm);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--field-gap);
+  scroll-margin-top:120px}
+.ap-flag .field:last-of-type{margin-bottom:0}
+.ap-flag-h{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-11);
+  font-weight:650;color:var(--danger);margin-bottom:var(--sp-3)}
+.ap-flag-r{margin:var(--sp-3) 0 0;font-size:11.5px;line-height:1.55;color:var(--danger)}
+.ap-steps .s{padding:0}
+.ap-steps .s[aria-disabled="true"]{opacity:.5}
+.ap-foot{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-6)}
+.ap-foot .right{margin-left:auto;display:flex;gap:var(--sp-3);flex-wrap:wrap}
+.ap-flag [id^="ap-"]{scroll-margin-top:120px}
+
+@media(max-width:900px){.pl-roles{grid-template-columns:1fr}}
+/* focus 版式的顶栏与页脚在窄屏折行。这里加的是本模块自己的 .pl-top / .pl-foot，
+   不重定义 base.css 的 .focus-top / .focus-foot——桌面宽度下与其余模块逐像素一致。 */
+@media(max-width:768px){
+ .pl-top{flex-wrap:wrap;row-gap:var(--sp-3);padding-left:var(--sp-4);padding-right:var(--sp-4)}
+ .pl-top .pl-spacer{flex-basis:100%;height:0}
+ .pl-foot{flex-wrap:wrap;row-gap:var(--sp-2);padding-left:var(--sp-4);padding-right:var(--sp-4)}
+ /* 窄屏收起「原型 · 身份」这几个字，只留下拉本身——它是评审用的控件，
+    不该在小屏上跟产品导航抢宽度。 */
+ .pl-idsw>span{display:none}
+}
+@media(max-width:420px){.cap-canvas,.cap-canvas canvas,.cap-track{width:100%}}
+@media(prefers-reduced-motion:reduce){.cap-knob.shake{animation:none}}
+</style></head>
+<body>
+<!-- 已登录页走顶栏版式（继承参考 4.3：header + subnav + main/right rail）。
+     公共运行时要求的挂载点一个不少：brandSub / nav / topRight / crumb / content / layers，
+     只是容器换成 _shared/base.css 新增的 .portal* 一族，不再用 .app 侧栏骨架。 -->
+<div class="portal" id="app" hidden>
+ <header class="portal-head">
+  <div class="brand"><div class="brand-mark">FS</div><div>
+   <div class="brand-name" data-brand>Financial Services</div>
+   <div class="brand-sub" id="brandSub"></div></div></div>
+  <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+  <div class="portal-tools" id="topRight"></div>
+ </header>
+ <div class="portal-sub"><div class="portal-sub-in" id="crumb"></div></div>
+ <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+</div>
+<div class="focus" id="focus"></div>
+<div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script>
+/* ==========================================================================
+   金融服务端登录 · 主干 + 资产方 SSO + 资金方账户体系
+   本文件只写本模块的页面、文案、演示数据与状态；token / 公共组件 / 运行时
+   全部来自 asset-platform/prototypes/_shared/。页面 ID 在 ../_shared/registry.js
+   登记，模块不自造。规则条文与编号追溯放在交付说明文档里，不进页面。
+   ========================================================================== */
+(function(){
+'use strict';
+const CF=window.CF, L=CF.L, t=CF.t, E=CF.esc, note=CF.note, q=CF.q,
+      pageHead=CF.pageHead, stateBar=CF.stateBar, toast=CF.toast;
+let S, mod;
+
+/* ------------------------------ 演示数据 --------------------------------- */
+/* 全部为演示数据。域名一律用保留测试域，不影射任何真实机构。 */
+const DEMO={
+  assetEmail:'ops@asset-demo.test', assetOrg:['Demo Trading Co., Ltd.','演示贸易有限公司'],
+  assetOrgId:'91310000MA1DEMO01X', assetWallet:'0x7A31c0De5F0B4c9a2E88d1b3F6A0c74E9B2D5183',
+  assetPerson:['AN LIN','林安'], assetIdNo:'11010119900101123X',
+  funderEmail:'treasury@funder-demo.test',
+  funderWallet:'0x1F4b9E7c2A6d80B35CeF1a94D7302b8C6E5A0d21',
+  funderOrg:['Demo Capital Partners Ltd.','演示资本合伙企业'],
+  /* 资金方演示机构注册在香港，因此机构唯一标识取 LEI（全球作用域、不带国别
+     前缀），不是境内的统一社会信用代码——两者不能混填。 */
+  funderLei:'5493001KJTIIGC8Y1R12', funderRegion:['Hong Kong SAR','中国香港特别行政区'],
+  trigger:['Receivable AR-2026-0148','应收账款 AR-2026-0148'],
+  triggerPath:'/assets/AR-2026-0148',
+  idpName:['Asset Platform','资产平台'], idpHost:'asset.demo-chainfinancing.test'
+};
+
+/* 权限矩阵（主干持有的那张总表）。它是界面行为的来源：能力入口的取值、
+   置灰后点击的引导、不可见项的不渲染，全部读这张表，不在页面里另写 if 分支。
+   本轮按要求不把表画到界面上——它只在背后决定行为。
+   列序 = [游客, 资产方未认证, 资产方已认证, 资金方未入驻, 资金方已入驻]
+   取值 = ok 完整 / mask 脱敏 / gray 置灰 / no 不可见 / na 不适用 */
+const MATRIX=[
+ [7,['Submit a financing request','发起融资申请'],['gray','gray','ok','na','na'],{hard:'asset'}],
+ [9,['Invest / subscribe','发起出资 / 认购'],['gray','na','na','gray','ok'],{hard:'funder'}],
+ [12,['Fill / edit institution profile','填写 / 编辑机构资料'],['no','na','na','ok','ok'],{l1no:true}],
+ [13,['View review progress','查看审核进度'],['no','na','na','ok','ok'],{}],
+ [16,['Account settings','账户设置'],['no','ok','ok','ok','ok'],{}],
+ [17,['Change password / email','改密码 / 改邮箱'],['no','no','no','ok','ok'],{}]
+];
+function row(n){ return MATRIX.filter(function(r){ return r[0]===n; })[0]; }
+
+/* 允许回跳的路径前缀清单。按完整路径段比较，不做字符串前缀包含判定。 */
+const ALLOW=['/','/assets','/funding','/onboarding','/account','/messages','/about','/faq','/agreement'];
+const DENY_Q=['token','access_token','id_token','session','sid','auth','code','code_verifier','state',
+ 'otp','captcha','sig','signature','nonce','return_to','redirect','redirect_uri','next','url','target'];
+const SELF_PATHS=['/signin'];
+
+/* ------------------------------ 文案 ------------------------------------- */
+const DICT={
+ en:{navPortalHome:'Home',navInstitution:'Institution',
+     signOut:'Sign out',demo:'Demonstration data',
+     capTitle:'Security check',capSlide:'Slide to complete the puzzle',
+     capVerified:'Verified',capFail:'Try again',capRefresh:'New puzzle',
+     capTrouble:'Having trouble? Tap the refresh icon for a new puzzle.',
+     capCool:'Too many attempts. Try again in {n}s.',capLoadFail:'The check could not load.',
+     capHelp:'We verify this before sending any code.',
+     cancel:'Cancel',contin:'Continue',pagesPanel:'Pages'},
+ zh:{navPortalHome:'首页',navInstitution:'机构信息',
+     signOut:'退出登录',demo:'演示数据',
+     capTitle:'安全校验',capSlide:'拖动滑块完成拼图',
+     capVerified:'校验通过',capFail:'校验失败，请重试',capRefresh:'换一张',
+     capTrouble:'连续失败？点右上角图标换一张。',capCool:'尝试过于频繁，请 {n} 秒后再试。',
+     capLoadFail:'校验组件加载失败。',capHelp:'发送验证码前会先做一次校验。',
+     cancel:'取消',contin:'继续',pagesPanel:'页面目录'}
+};
+/* 类型选择页卡片文案：产品定稿，逐字照抄，不另发明。 */
+const ROLE={
+ title:['Choose your role','选择你的身份'],
+ sub:['So we can show you the right features and flows','为你展示对应的功能与流程'],
+ asset:{n:['Asset party','资产方'],
+   d:['I hold receivables and want to raise financing. <b>You’ll sign in on the asset platform.</b>',
+      '我持有应收账款，想发起融资。<b>将前往资产平台登录。</b>']},
+ funder:{n:['Funder','资金方'],
+   d:['I provide capital and want to invest. Sign in with your email or wallet.',
+      '我提供资金，想参与出资。可用邮箱或钱包直接登录。']},
+ go:['Continue','继续'], mem:['Last time you chose','上次你选择了'],
+ memBtn:['Continue','直接继续'], guest:['Keep browsing as a guest','以游客身份继续浏览']
+};
+/* 受限引导弹层的六种触发情形。段序固定：① 缺什么 ② 补完能做什么
+   ③ 主按钮（必带回跳）④ 补充区（只有审核中 / 已驳回两种情形有）。 */
+const GUIDE={
+ assetVerify:{ti:['Complete identity verification on the asset platform to submit a financing request.',
+     '在资产平台完成实名认证后即可发起融资申请。'],
+   why:['Verification is held by the asset platform. Once it is approved, financing opens here automatically.',
+     '实名认证的权威方是资产平台。认证通过后，本平台的融资能力自动开放。'],
+   btn:['Go to asset platform','前往资产平台'],cross:true},
+ assetRejected:{ti:['Your verification was not approved.','你的实名认证未通过。'],
+   why:['Review the reasons on the asset platform and resubmit; financing opens once it is approved.',
+     '请前往资产平台查看原因并重新提交，通过后即可发起融资申请。'],
+   btn:['Go to asset platform','前往资产平台'],cross:true},
+ funderL0:{ti:['Submit your institution profile to invest.','提交机构资料后即可参与出资。'],
+   why:['Investing requires an approved institution. The form has 3 steps and your progress is saved as a draft.',
+     '参与出资需要机构审核通过。资料表单共 3 步，填写进度可随时保存为草稿。'],
+   btn:['Start now','去填写'],to:'P-F30'},
+ /* L1 的文案不得暗示可以修改：三段话里没有「修改」「撤回」的去处，
+    主按钮只到进度页，补充区只给客服（D-F76，与进度页、提交结果页同一句）。 */
+ funderL1:{ti:['Your institution profile is under review.','机构资料审核中。'],
+   why:['Investing opens as soon as the review concludes. Your application is under review and cannot be edited — if any information is wrong, please contact support.',
+     '审核出结论后即可参与出资。审核中无法修改，如资料有误请联系客服。'],
+   btn:['View status','查看进度'],to:'P-F33',extra:'progress'},
+ funderL2:{ti:['Your institution profile was returned for changes.','机构资料被驳回，需要修改。'],
+   why:['Update the flagged items and resubmit — you do not need to fill in everything again. Investing opens once the review passes.',
+     '修改后可直接重新提交，不需重填全部内容。审核通过即可参与出资。'],
+   btn:['Edit and resubmit','编辑重提'],to:'P-F34',extra:'reject'}
+};
+
+/* ------------------------------ 会话模型 --------------------------------- */
+/* 三态由「会话态 × 完备度」两个维度共同判定，不压成一维状态机。
+   界面任何地方都不直接读 ident / level，一律经 contract() 取契约四字段。 */
+function initState(){
+ return {
+  ident:'guest',            /* guest | asset | funder */
+  level:'L0',               /* 资产方只有 L0 / L3；资金方 L0 / L1 / L2 / L3 */
+  vdetail:'unverified',     /* 资产方对端认证状态，只用于文案分流 */
+  creds:{email:true,wallet:true},
+  hasPassword:true, agreed:true, firstLogin:false,
+  entry:'sign_in', tab:'email_code', memory:null, memoryOff:false,
+  handle:null,
+  barCollapsed:false, barQueue:false,
+  reauthAt:0, failCount:0,
+  form:{}, err:{}, walletAddr:'',
+  /* 入驻申请（WS-316）。草稿保存在平台侧，这里用会话内对象等价表达；
+     step / max 表达「已完成的步骤可回改、未开始的不可跳入」。 */
+  updating:false, downgraded:false, cfFocus:false,
+  ap:{step:0,max:0,jump:0,ver:0,v2:false,up:null,touched:false,
+      vals:apSeed(),files:apFilesSeed()}
+ };
+}
+/* 对外契约四字段。展示类功能只消费这四项，不读账户原始状态字段。 */
+function contract(){
+ if(S.ident==='guest') return {session_state:'guest',identity_type:null,completeness_level:'L0',account_id:null};
+ return {session_state:'authenticated',
+   identity_type:S.ident==='asset'?'asset_party':'funder',
+   completeness_level:S.level,
+   account_id:S.ident==='asset'?'shadow_8f21c04b':'funder_3ad9e17c'};
+}
+function col(){
+ if(S.ident==='guest') return 0;
+ if(S.ident==='asset') return S.level==='L3'?2:1;
+ return S.level==='L3'?4:3;   /* 资金方未提交 / 审核中 / 已驳回在权限上合并 */
+}
+function mx(r){
+ if(r[3]&&r[3].l1no&&S.ident==='funder'&&S.level==='L1') return 'no';
+ return r[2][col()];
+}
+function credsMissing(){
+ if(S.ident!=='funder') return [];
+ var m=[]; if(!S.creds.wallet) m.push('wallet'); if(!S.creds.email) m.push('email');
+ return m;   /* 顺序：钱包在前 */
+}
+
+/* ------------------------------ 回跳 ------------------------------------- */
+/* 判定顺序自上而下，任一条不通过即失败并走失效兜底。规则本身不在界面上展示。 */
+function checkTarget(raw){
+ var s=String(raw||'');
+ if(!/^\//.test(s)||/^\/\//.test(s)||/\\/.test(s)||/^\/\./.test(s)) return null;
+ var dec; try{ dec=decodeURIComponent(s); }catch(e){ return null; }
+ if(/%/.test(dec)) return null;
+ var norm=dec.split('?')[0].replace(/\/+/g,'/');
+ if(/(^|\/)\.\.?(\/|$)/.test(norm)) return null;
+ for(var i=0;i<SELF_PATHS.length;i++)
+   if(norm===SELF_PATHS[i]||norm.indexOf(SELF_PATHS[i]+'/')===0) return null;
+ if(!ALLOW.some(function(p){ return p==='/'?norm==='/':(norm===p||norm.indexOf(p+'/')===0); })) return null;
+ if(norm.indexOf('@')>=0) return null;
+ var bad=false;
+ (dec.split('?')[1]||'').split('&').forEach(function(kv){
+   var k=kv.split('=')[0].toLowerCase(); if(k&&DENY_Q.indexOf(k)>=0) bad=true; });
+ return bad?null:norm;
+}
+/* 先校验，通过才生成句柄；不通过就不生成。句柄不含目标信息、不进 URL、
+   不进本地存储——这里放在会话内的 JS 变量里，等价于服务端会话暂存。 */
+function mintHandle(target,capRow,domain,page){
+ var norm=checkTarget(target);
+ if(!norm) return null;
+ return {ref:'h_'+Math.random().toString(36).slice(2,10),target:norm,page:page||null,
+   cap:capRow||null,domain:domain||'self',born:Date.now()};
+}
+/* 落地优先级，自上而下命中即停：
+   ① 有效句柄 → 回原触发点并重新执行被拦下的操作
+   ② 资金方首登建号 → 机构信息（入驻入口）
+   ③ 资产方首登 → 入驻引导页
+   ④ 其余 → 默认落地页 */
+/* 句柄登记的是路径，页面在**消费时**才按当时的身份解析——/account 对资产方和
+   资金方是两个不同的页面，而句柄可能是在游客态生成的，那时还不知道会是谁回来。 */
+function pageForPath(path){
+ if(path==='/account') return S.ident==='asset'?'P-F04':'P-F24';
+ for(var k in PATHS) if(PATHS[k]===path&&k!=='P-F04'&&k!=='P-F24') return k;
+ return null;
+}
+/* 某个页面在当前身份下是否可达。句柄记的是「用户想去哪」，但身份可能已经变了，
+   落地前必须按新身份重新判一次，否则会把人送进一个不属于他的页面。 */
+function pageAllowed(page){
+ if(page==='P-F04'||page==='P-F06') return S.ident==='asset';
+ if(page==='P-F24'||page==='P-F27') return S.ident==='funder';
+ return true;
+}
+function landing(){
+ var h=S.handle;
+ if(h){
+  var expired=Date.now()-h.born>30*60*1000;
+  var r=h.cap?row(h.cap):null;
+  S.handle=null;
+  /* 句柄记录的能力在当前身份下根本不存在（例如以资产方身份回来、句柄却记着出资），
+     或目标页不属于当前身份——这时句柄已经没有意义，按无句柄处理，往下走落地优先级。
+     用户在流程中改变了身份类型时句柄作废，就是这一条。 */
+  h.page=pageForPath(h.target)||h.page;
+  if(expired||(r&&mx(r)==='na')||!pageAllowed(h.page)){
+   if(expired) { fallback(); return; }
+   h=null;
+  }
+ }
+ if(h){
+  var r2=h.cap?row(h.cap):null;
+  if(r2&&mx(r2)!=='ok'){
+   /* 登录成功不等于该能力就可用：重新做一次权限判定，不通过就转受限引导，
+      不是报错，并保留原触发能力供文案取用。 */
+   CF.go(h.page||'P-F51'); openGuide(r2); return;
+  }
+  CF.go(h.page||'P-F51');
+  S.replay=r2?r2[0]:true;
+  toast('success',L('Picking up where you left off','已为你继续刚才的操作'),
+    r2?L(r2[1][0]+' · resumed',r2[1][1]+' · 已重新执行'):'');
+  return;
+ }
+ if(S.ident==='funder'&&S.firstLogin){ S.firstLogin=false; CF.go('P-F27'); return; }
+ if(S.ident==='asset'&&S.firstLogin){ S.firstLogin=false; CF.go('P-F06'); return; }
+ CF.go('P-F51');
+}
+/* 失效兜底：落默认落地页 + 一条 Toast。只说「已为你回到首页」这一层，
+   不暴露校验失败的原因——把判定细节讲给用户等于讲给探测者。 */
+function fallback(){
+ S.handle=null; CF.go('P-F51');
+ toast('info',L('We brought you back','已为你回到首页'),
+   L('That link is no longer valid.','该链接已失效。'));
+}
+function guideKey(){
+ if(S.ident==='asset') return S.vdetail==='action_required'?'assetRejected':'assetVerify';
+ return S.level==='L1'?'funderL1':S.level==='L2'?'funderL2':'funderL0';
+}
+function openGuide(r){
+ if(S.ident==='guest'){ S.modal={type:'role',ctx:r?r[1]:null}; }
+ else if(credsMissing().length){ S.modal={type:'creds',step:0}; }
+ else S.modal={type:'guide',key:guideKey(),row:r||null};
+ CF.render();
+}
+/* 能力入口被点击：置灰 → 先生成回跳句柄再唤起引导，顺序不得颠倒；
+   不可见项在界面上根本不出现，因此点不到。 */
+function capClick(n,page){
+ var r=row(n);
+ if(mx(r)==='gray'){
+  S.handle=mintHandle(page==='P-F27'?'/account/institution':DEMO.triggerPath,n,'self',page||S.page);
+  openGuide(r); return;
+ }
+ toast('info',L(r[1][0],r[1][1]),L('This page is delivered by another issue.','该页面由其他 issue 交付。'));
+}
+
+/* ------------------------------ 通用片段 --------------------------------- */
+function btn(label,act,v,cls,extra){
+ return '<button class="btn '+(cls||'')+'" type="button" data-act="'+act+'"'
+  +(v?' data-v="'+E(v)+'"':'')+(extra||'')+'>'+label+'</button>';
+}
+function field(k,label,ph,type,val,err,hint){
+ return '<div class="field"><label for="f-'+k+'">'+label+'</label>'
+  +'<input class="inp'+(err?' err':'')+'" id="f-'+k+'" data-f="'+k+'" data-k="'+k+'" type="'+(type||'text')+'"'
+  +' value="'+E(val==null?'':val)+'" placeholder="'+E(ph||'')+'"'+(err?' aria-invalid="true"':'')+'>'
+  +(err?'<p class="err-msg" role="alert"><span>!</span>'+err+'</p>':(hint?'<p class="hint">'+hint+'</p>':''))
+  +'</div>';
+}
+function pill(k,tx){ return '<span class="pill '+k+'">'+tx+'</span>'; }
+/* focus 版式：顶栏只放品牌与轻量工具区，不放业务导航；主体单列居中卡片。 */
+function focusWrap(body,foot){
+ return '<header class="focus-top pl-top"><div class="brand pl-brand"><div class="brand-mark">FS</div><div>'
+  +'<div class="brand-name">'+L('Financial Services','金融服务平台')+'</div>'
+  +'<div class="brand-sub">'+L('Portal','面客端')+'</div></div></div><div class="pl-spacer"></div>'
+  +btn(t('pagesPanel'),'openPages','','sm')+CF.langSwitcher()
+  +'</header><main class="focus-body"><div class="focus-col">'+body+'</div></main>'
+  +'<footer class="focus-foot pl-foot"><span class="muted">'+t('demo')+'</span>'
+  +'<span class="muted">'+(foot||'')+'</span></footer>';
+}
+/* 常驻补全提示条：占位而不悬浮，可折叠、不可永久关闭，折叠态仍然可见，
+   折叠状态只记在会话内。全站同一时刻最多一条，其余以计数与清单表达。 */
+function bar(){
+ var qs=barQueue(); if(!qs.length) return '';
+ var top=qs[0];
+ if(S.barCollapsed)
+  return '<div class="pl-bar pl-bar-min">'+CF.ICO.warn
+   +'<span class="pl-bar-tx">'+L('{n} item(s) to complete','还有 {n} 项待完成').replace('{n}',qs.length)+'</span>'
+   +'<button class="pl-bar-more" type="button" data-act="barToggle">'+L('Expand','展开')+'</button></div>';
+ return '<div class="pl-bar">'+CF.ICO.warn
+  +'<span class="pl-bar-tx">'+top.tx+'</span>'
+  +(qs.length>1?'<button class="pl-bar-more" type="button" data-act="barQueue">'
+    +L('{n} more','还有 {n} 项').replace('{n}',qs.length-1)+'</button>':'')
+  +btn(top.btn,'barGo',top.k,'sm primary')
+  +'<button class="pl-bar-more" type="button" data-act="barToggle">'+L('Collapse','折叠')+'</button>'
+  +(S.barQueue&&qs.length>1?'<ul class="pl-bar-queue">'+qs.slice(1).map(function(x){
+      return '<li><span>'+x.tx+'</span>'+btn(x.btn,'barGo',x.k,'sm')+'</li>'; }).join('')+'</ul>':'')
+  +'</div>';
+}
+/* 优先级：① 凭据未齐 → ② 已驳回 → ③ 未提交机构资料 → ④ 资产方未实名 */
+function barQueue(){
+ var out=[],m=credsMissing();
+ if(S.ident==='funder'&&m.length){
+  out.push({k:'creds',btn:L('Complete now','立即补全'),
+   tx:m.length===2?L('Add your email and link a wallet to be ready to apply.','补齐邮箱与钱包后即可提交入驻申请。')
+     :m[0]==='wallet'?L('Link a wallet to be ready to apply.','绑定钱包后即可提交入驻申请。')
+     :L('Add an email to be ready to apply and to receive security notifications.','绑定邮箱后即可提交入驻申请，并接收安全通知。')});
+ }
+ if(S.ident==='funder'&&S.level==='L2')
+  out.push({k:'l2',tx:L('Your institution profile was returned for changes.','机构资料被驳回，需要修改。'),
+    btn:L('Edit and resubmit','编辑重提')});
+ if(S.ident==='funder'&&S.level==='L0')
+  out.push({k:'l0',tx:L('Submit your institution profile to invest.','提交机构资料后即可参与出资。'),
+    btn:L('Complete now','立即前往')});
+ if(S.ident==='asset'&&S.level!=='L3')
+  out.push({k:'verify',btn:L('Complete now','立即前往'),
+    tx:L('Complete identity verification on the asset platform to unlock financing.',
+      '在资产平台完成实名认证后即可使用融资功能。')});
+ return out;
+}
+/* 整卡入口：形态继承资产端实名认证的整卡入口——未提交时整卡是虚线空态，
+   已提交时展示核心信息 + 状态，整卡可点。 */
+function entryCard(o){
+ var empty=o.status==='none';
+ return '<'+(o.act?'button':'div')+' class="pl-entry" data-k="'+(o.k||'blue')+'" data-empty="'+empty+'"'
+  +(o.act?' type="button" data-act="'+o.act+'"'+(o.v?' data-v="'+E(o.v)+'"':'')
+    +' aria-label="'+E(o.title+' · '+o.action)+'"':'')+'>'
+  +'<span class="pl-entry-head"><span class="pl-entry-ico">'+o.ico+'</span>'
+  +'<span class="title">'+o.title+'</span><span class="status">'+o.pill+'</span></span>'
+  +(empty?'':'<span class="pl-entry-core">'+o.core.map(function(x){
+      return '<span><span>'+x[0]+'</span><b'+(x[2]?' class="mono"':'')+'>'+E(x[1])+'</b></span>'; }).join('')+'</span>')
+  +'<span class="pl-entry-foot"><p>'+o.foot+'</p>'
+  +(o.action?'<span class="btn-link">'+o.action+' →</span>':'')+'</span>'
+  +'</'+(o.act?'button':'div')+'>';
+}
+/* 空壳占位：首页与登录后的落地页归其他 issue，本模块只留版式不铺内容。 */
+function blank(title,body){
+ return '<div class="pl-blank"><b>'+title+'</b><p>'+body+'</p>'
+  +'<div class="pl-blank-rows"><div class="pl-blank-row"></div><div class="pl-blank-row"></div>'
+  +'<div class="pl-blank-row"></div></div></div>';
+}
+
+/* ============ 首页 / 登录后落地页（空壳，内容归其他 issue）============== */
+/* 平台默认态是游客态：未登录访问游客态可达路由一律直接渲染——不跳登录页、
+   不弹遮挡性登录层、不用登录墙盖住内容。登录的唯一常驻入口是右上角按钮。
+   本轮不做首页内容，只保留版式与占位。 */
+function pageHome(){
+ var head=pageHead(L('Home','首页'),
+   L('Placeholder. This page is delivered by another issue.','占位页面。本页内容由其他 issue 交付。'),'');
+ if(S.st==='loading') return head+bar()+'<div class="card"><div class="card-b">'
+   +'<div class="pl-skel pl-skel-s"></div><div class="pl-skel"></div><div class="pl-skel"></div></div></div>';
+ if(S.st==='loadfail') return head+bar()+'<div class="card"><div class="card-b shell">'+CF.ICO.warn
+   +'<p><b>'+L('Could not load','加载失败')+'</b><br>'
+   +L('Nothing was changed. You can try again.','未改变任何数据，可以重试。')+'</p>'
+   +btn(L('Retry','重试'),'st','default','primary')+'</div></div>';
+ return head+bar()+replayBanner()
+  +blank(L('No content in this prototype','本原型不铺此页内容'),
+    L('The home page and the post-sign-in landing page belong to another issue. This prototype covers sign-in only, so the layout is kept and the content is left blank on purpose.',
+      '首页与登录成功后的落地页归其他 issue。本原型只做登录，因此保留版式、内容刻意留白。'));
+}
+function replayBanner(){
+ if(!S.replay) return '';
+ var r=S.replay===true?null:row(S.replay);
+ return note('green','<p>'+L('Your earlier action was resumed automatically — no middle page, no extra prompt.',
+   '刚才被拦下的操作已自动重新执行——无中间页、无额外提示。')+'</p>',
+   r?L(r[1][0]+' · resumed',r[1][1]+' · 已重新执行'):L('Resumed','已重新执行'));
+}
+
+/* ================== 入驻引导页（资产方，首登后落地）==================== */
+/* 形态参考资产端个人 / 企业认证的整卡入口：个人在上、企业在下，未提交时
+   整卡为虚线空态。资产方的认证权威在资产平台、本端只读，因此两张卡的
+   去处都是资产平台（先过离站告知），本端不收资料。 */
+function pageVerification(){
+ if(S.ident!=='asset') return notMine();
+ var done=S.level==='L3', rej=S.vdetail==='action_required';
+ var k=done?'green':rej?'red':'blue';
+ var st=done?'ok':rej?'rejected':'none';
+ var pl=done?pill('green',L('Verified','已认证'))
+   :rej?pill('red',L('Not approved','未通过'))
+   :pill('gray',L('Not submitted','未提交'));
+ return pageHead(L('Get verified','入驻引导'),
+   L('Two verifications open financing on this platform. Both are handled on the asset platform.',
+     '完成两项认证即可在本平台发起融资。两项都在资产平台办理。'),'')
+  +bar()
+  /* 4.3 母版的 main + right rail：主列是两张整卡，右侧常驻列说明接下来会发生什么。
+     窄屏由 .portal-cols 收成单列，辅助列不再吸顶。 */
+  +'<div class="portal-cols"><div>'
+  +'<div class="pl-entries">'
+  +entryCard({ico:'ID',title:L('Identity verification','个人实名认证'),pill:pl,k:k,status:st,
+    act:'leaveSite',v:'usercenter',action:done?L('View','查看'):L('Start','去认证'),
+    core:[[L('Name','姓名'),L(DEMO.assetPerson[0],DEMO.assetPerson[1]),false],
+          [L('Document','证件号'),DEMO.assetIdNo,true]],
+    foot:done?L('Approved on the asset platform.','已在资产平台认证通过。')
+      :rej?L('Review the reasons on the asset platform and resubmit.','请前往资产平台查看原因并重新提交。')
+      :L('Not submitted yet. You complete this on the asset platform.','尚未提交。该认证在资产平台完成。')})
+  +entryCard({ico:'CO',title:L('Company verification','企业认证'),pill:pl,k:k,status:st,
+    act:'leaveSite',v:'usercenter',action:done?L('View','查看'):L('Start','去认证'),
+    core:[[L('Company','企业名称'),L(DEMO.assetOrg[0],DEMO.assetOrg[1]),false],
+          [L('Unified code','统一社会信用代码'),DEMO.assetOrgId,true]],
+    foot:done?L('Approved on the asset platform.','已在资产平台认证通过。')
+      :L('Not submitted yet. You complete this on the asset platform.','尚未提交。该认证在资产平台完成。')})
+  +'</div>'
+  +'<div class="pl-ro pl-gap-lg"><p>'
+  +L('Your company details and verification results are maintained by the asset platform. This platform keeps a read-only copy, so there is nothing to fill in here — the buttons above take you there and bring you back when you are done.',
+     '你的企业资料与认证结论由资产平台维护，本平台只保存只读副本，因此这里没有需要填写的内容——上面的按钮会带你过去，办完再带你回来。')
+  +'</p></div></div>'
+  +'<aside class="portal-rail"><div class="card"><div class="card-head"><b>'
+  +L('What happens next','接下来会发生什么')+'</b></div><div class="card-b"><ul class="tl">'
+  +'<li'+(done?'':' class="faint"')+'><b>'+L('Verify on the asset platform','在资产平台完成认证')+'</b><br>'
+  +'<span class="tiny">'+L('Both verifications are handled there.','两项认证都在那边办理。')+'</span></li>'
+  +'<li class="faint"><b>'+L('Come back here','回到本平台')+'</b><br><span class="tiny">'
+  +L('We bring you back to where you were.','我们会把你带回刚才的位置。')+'</span></li>'
+  +'<li class="faint"><b>'+L('Financing opens','融资能力开放')+'</b><br><span class="tiny">'
+  +L('No need to sign out and back in.','不需要退出重新登录。')+'</span></li>'
+  +'</ul></div></div>'
+  +(done?'':'<div class="card"><div class="card-b">'+note('','<p>'
+     +L('You can browse the platform while this is pending. Only submitting a financing request needs verification.',
+        '认证期间你可以正常浏览平台，只有「发起融资申请」需要认证通过。')+'</p>')+'</div></div>')
+  +'</aside></div>';
+}
+
+/* =================== 机构信息（资金方，账户设置下）===================== */
+/* 入驻链路的入口页：整卡入口 + 只读概要 + 出资卡点。申请表单、提交预览与
+   二次确认、审核进度、字段级驳回重提由 P-F30～P-F34 承接（WS-316 本轮交付），
+   整卡点过去就是真实页面。 */
+function pageInstitution(){
+ if(S.ident!=='funder') return notMine();
+ var lv=S.level, m=credsMissing();
+ var meta=S.updating
+  ?{k:'amber',st:'ok',pill:pill('amber',L('Update under review','更新审核中')),
+     action:L('View status','查看进度'),to:'P-F33',
+     foot:L('Onboarded. An update is under review; your onboarding stays valid until the new decision.',
+       '已入驻。资料变更审核中，新结论出来前当前入驻状态继续有效。')}
+  :{L0:{k:'blue',st:S.ap.touched?'ok':'none',
+     pill:S.ap.touched?pill('gray',L('Draft saved','草稿已保存')):pill('gray',L('Not submitted','未提交')),
+     action:S.ap.touched?L('Continue','继续填写'):L('Start','去填写'),to:'P-F30',
+     foot:S.ap.touched?L('A draft is saved on the platform. Continue on any device.','草稿已保存在平台侧，换设备可继续填写。')
+       :L('No institution profile has been submitted yet.','尚未提交机构资料。')},
+   L1:{k:'amber',st:'ok',pill:pill('amber',L('Under review','审核中')),
+     action:L('View status','查看进度'),to:'P-F33',
+     foot:L('Submitted and locked for review. If any information is wrong, please contact support.',
+       '已提交并进入审核，审核中无法修改；如资料有误请联系客服。')},
+   L2:{k:'red',st:'ok',pill:pill('red',L('Returned for changes','已驳回')),
+     action:L('View reasons','查看驳回原因'),to:'P-F34',
+     foot:L('{n} item(s) need changing before you resubmit.','有 {n} 项需要修改后重新提交。').replace('{n}',REJ.length)},
+   L3:{k:'green',st:'ok',pill:pill('green',L('Approved','已通过')),
+     action:L('View details','查看申请详情'),to:'P-F34',
+     foot:L('Approved. Changes to the profile go through review again.','已通过。资料变更需要重新审核。')}}[lv];
+ return pageHead(L('Institution','机构信息'),
+   L('Your institution profile and its review status.','你的机构资料与审核状态。'),'')
+  +bar()+apDowngradeNote()
+  +(m.length?note('amber','<p>'+L('Complete your sign-in credentials first — the profile cannot be submitted until your email and wallet are both linked.',
+     '请先补齐登录凭据——邮箱与钱包都绑定后才能提交机构资料。')+'</p>'
+     +'<p>'+btn(L('Complete now','立即补全'),'barGo','creds','sm primary')+'</p>'):'')
+  +'<div class="pl-entries">'
+  +entryCard({ico:'CO',title:L('Institution profile','机构资料'),pill:meta.pill,k:meta.k,status:meta.st,
+    act:'go',v:meta.to,action:meta.action,
+    core:[[L('Institution','机构名称'),apShow(TPL.groups[0].f[0]),false],
+          [L('Unique key','唯一键'),apKey(),true],
+          [L('Region','注册地'),L(DEMO.funderRegion[0],DEMO.funderRegion[1]),false],
+          [lv==='L0'?L('Last saved','最后保存'):L('Submitted','提交时间'),
+           lv==='L0'?(S.ap.touched?AP.submitted:'—'):AP.submitted,true]],
+    foot:meta.foot})
+  +'</div>'
+  +(lv==='L2'?'<div class="card pl-gap-lg"><div class="card-head"><b>'
+    +L('What needs changing','需要修改的内容')+'</b><span class="right">'
+    +btn(L('Edit and resubmit','编辑重提'),'apResubmit','','sm primary')+'</span></div>'
+    +'<div class="card-b"><dl class="dl">'+REJ.map(function(r){
+       var f=apFieldOf(r.k);
+       return '<div><dt>'+L(f.n[0],f.n[1])+'</dt><dd class="muted">'+L(r.tx[0],r.tx[1])+'</dd></div>';
+     }).join('')+'</dl></div></div>':'')
+  +(lv==='L1'||S.updating?'<div class="pl-gap-lg"></div>'+apLockNote():'')
+  /* 出资是资金方侧的硬卡点：未入驻时置灰，点击唤起引导并带回跳 */
+  +'<div class="card pl-gap-lg"><div class="card-head"><b>'+L('Investing','出资')+'</b></div>'
+  +'<div class="card-b"><div class="row" style="border:0;padding:0"><div class="row-main">'
+  +'<div class="row-k">'+L('Invest / subscribe','发起出资 / 认购')+'</div>'
+  +'<div class="row-v muted" style="font-size:12.5px">'
+  +(mx(row(9))==='ok'?L('Available.','已开放。')
+    :L('Opens once your institution is approved.','机构审核通过后开放。'))+'</div></div>'
+  +'<div class="row-act">'+btn(mx(row(9))==='ok'?L('Invest','去出资'):L('Invest','发起出资'),
+      'cap','9','sm'+(mx(row(9))==='ok'?' primary':''))+'</div></div></div></div>';
+}
+
+/* ======================================================================
+   WS-316 · 资金方机构认证审核（P-F30～P-F34 + C-F50 + C-F52）
+   表单不写死字段：字段名、类型、必填、分组、校验、材料槽位、帮助文案
+   全部来自下面这份模版配置，填写页 / 预览页 / 只读进度页 / 驳回回显
+   四处共用同一份定义，不各写一套（D-F62）。模版内容属「按需自定义、
+   后续完善」，这里只用来验证承载机制，不构成字段需求。
+   ====================================================================== */
+const TPL={
+ ver:'inst-tpl-2026.03', verNext:'inst-tpl-2026.04',
+ uid:'instId',            /* 有且仅有一个字段被指定为机构唯一标识（D-F64） */
+ groups:[
+  {k:'entity',n:['Entity','机构主体'],f:[
+   {k:'orgName',n:['Institution name','机构名称'],t:'text',req:1},
+   {k:'orgNameEn',n:['Institution name (English)','机构英文名称'],t:'text'},
+   {k:'region',n:['Country or region of registration','注册国家或地区'],t:'select',req:1,
+    o:[['CN',['Chinese mainland','中国内地']],['HK',['Hong Kong SAR','中国香港特别行政区']],
+       ['SG',['Singapore','新加坡']],['GB',['United Kingdom','英国']]]},
+   {k:'idType',n:['Identifier type','标识类型'],t:'select',req:1,
+    o:[['USCC',['USCC','统一社会信用代码']],['LEI',['LEI','全球法人识别编码']],
+       ['REG_NO',['Country + registration number','注册国 + 商业登记号']]],
+    help:['Domestic institutions use the USCC. Outside the mainland, LEI first, otherwise country + registration number.',
+          '境内取统一社会信用代码；境外优先取 LEI，其次「注册国 + 商业登记号」。']},
+   {k:'instId',n:['Institution identifier','机构标识码'],t:'text',req:1,mono:1},
+   {k:'orgType',n:['Institution type','机构类型'],t:'select',
+    o:[['fund',['Fund','基金']],['bank',['Bank','银行']],['partnership',['Limited partnership','有限合伙']]]},
+   {k:'founded',n:['Date of incorporation','成立日期'],t:'date'},
+   {k:'capital',n:['Registered capital','注册资本与币种'],t:'text'},
+   {k:'regAddr',n:['Registered address','注册地址'],t:'text',req:1}
+  ]},
+  {k:'licence',n:['Licences','资质与牌照'],f:[
+   {k:'bizLicence',n:['Business licence or equivalent','营业执照或等效注册证明'],t:'file',req:1,
+    fn:'business-licence.pdf'},
+   {k:'licenceNo',n:['Financial licence number','金融业务许可证编号'],t:'text',mono:1,
+    help:['Numbers issued outside the mainland are checked loosely (character set and length only) — a mismatch is flagged but does not block submission, the reviewer decides.',
+          '境外编号一律宽松校验（只校验字符集与长度区间），不符时提示但不阻断，最终以人工审核为准。']},
+   {k:'licenceDoc',n:['Financial licence document','金融业务许可证影像'],t:'file',fn:'licence-2026.pdf'},
+   {k:'licenceExp',n:['Valid until','有效期'],t:'date',req:1}
+  ]},
+  {k:'contact',n:['Business contact','业务联系人'],f:[
+   {k:'cName',n:['Contact name','联系人姓名'],t:'text',req:1},
+   {k:'cTitle',n:['Title','职务'],t:'text'},
+   {k:'cEmail',n:['Contact email','联系邮箱'],t:'email',req:1,risk:1},
+   {k:'cPhone',n:['Contact phone','联系电话'],t:'text',req:1},
+   /* 模版升级新增的必填项，只在「模版已更新」状态下出现（D-F142 第 ③ 条） */
+   {k:'ubo',n:['Beneficial owner (UBO)','受益所有人（UBO）'],t:'text',req:1,v2:1}
+  ]}
+ ]
+};
+/* 申请单演示数据。金额、编号、机构名一律为演示值，域名用保留测试域。 */
+const AP={
+ id:'FA-20260910-000271', submitted:'2026-09-09 14:20 (UTC+8)',
+ submitted2:'2026-09-10 11:06 (UTC+8)', decided:'2026-09-10 09:05 (UTC+8)',
+ days:2, limitAt:'2026-09-11 11:06 (UTC+8)',
+ support:'support@demo-chainfinancing.test', supportTel:'+86 400 000 0000'
+};
+function apSeed(){
+ return {orgName:DEMO.funderOrg, orgNameEn:'Demo Capital Partners Ltd.',
+  region:'HK', idType:'LEI', instId:DEMO.funderLei, orgType:'partnership',
+  founded:'2019-04-18', capital:'HKD 50,000,000',
+  regAddr:['Unit 12, Demo Tower, Central, Hong Kong SAR','中国香港中环演示大厦 12 室'],
+  licenceNo:'AMLO-DEMO-3312', licenceExp:'2028-12-31',
+  cName:['LI WEN','李文'], cTitle:['Treasury manager','资金部经理'],
+  cEmail:'treasury.contact@funder-demo.test', cPhone:'+852 3000 0000', ubo:''};
+}
+function apFilesSeed(){
+ return {bizLicence:{n:'business-licence.pdf',s:'1.8 MB',t:'2026-09-09 14:12'},
+   licenceDoc:{n:'licence-2026.pdf',s:'620 KB',t:'2026-09-09 14:15'}};
+}
+/* 驳回结论 = 问题项列表 + 审核员补充说明。问题项绑定到模版字段（D-F140）。 */
+const REJ=[
+ {k:'bizLicence',cat:['Document illegible','材料不清晰'],
+  tx:['The scan is cut off at the bottom edge; the seal and the issue date are not readable. Please upload a complete scan.',
+      '扫描件底部被裁切，印章与签发日期不可读。请重新上传完整扫描件。']},
+ {k:'regAddr',cat:['Inconsistent information','信息不一致'],
+  tx:['Does not match the registered address on the business licence. Please correct it to match the licence exactly.',
+      '与营业执照上的注册地址不一致。请按执照原文更正。']}
+];
+const REJ_NOTE=['Everything else looks fine. Fix these two items and resubmit — you do not need to fill in the rest again.',
+ '其余内容没有问题。修正上面两项后重新提交即可，不需要重填其他内容。'];
+/* 唯一键：作用域 + 归一化标识。LEI 是全球唯一的法人识别码，走全球作用域、
+   不带国别前缀（D-F144）——加国别会让同一法人换注册地后被判成两家机构。 */
+function apKey(){
+ var t=S.ap.vals.idType, id=apStr(S.ap.vals.instId).replace(/[^0-9A-Za-z]/g,'').toUpperCase();
+ return (t==='LEI'?'LEI':t==='USCC'?'CN':apStr(S.ap.vals.region)||'--')+':'+id;
+}
+
+/* ------------------------------ 表单渲染 -------------------------------- */
+function apStr(v){ return v==null?'':(Array.isArray(v)?L(v[0],v[1]):String(v)); }
+function apFields(g){
+ return g.f.filter(function(f){ return !f.v2||S.ap.v2; });
+}
+function apOptLabel(f,val){
+ var hit=(f.o||[]).filter(function(o){ return o[0]===val; })[0];
+ return hit?L(hit[1][0],hit[1][1]):val;
+}
+function apShow(f){
+ var v=S.ap.vals[f.k];
+ return f.t==='select'?apOptLabel(f,apStr(v)):apStr(v);
+}
+function apFlagOf(k){
+ if(S.level!=='L2') return null;
+ return REJ.filter(function(r){ return r.k===k; })[0]||null;
+}
+function apMissing(){
+ var out=[];
+ TPL.groups.forEach(function(g,gi){
+  apFields(g).forEach(function(f){
+   if(!f.req) return;
+   var has=f.t==='file'?!!S.ap.files[f.k]:!!apStr(S.ap.vals[f.k]);
+   if(!has) out.push({f:f,g:gi});
+  });
+ });
+ return out;
+}
+function apLabelHtml(f){
+ return '<span>'+L(f.n[0],f.n[1])+(f.req?'<b class="ap-req">*</b>':'')+'</span>'
+  +(f.req?'':'<span class="opt">'+L('Optional','选填')+'</span>');
+}
+function apHelpHtml(f){
+ var h=[];
+ if(f.help) h.push(L(f.help[0],f.help[1]));
+ if(f.k===TPL.uid) h.push(L('This template designates this field as the institution unique identifier; duplicate checking runs on it.',
+   '本模版把该字段指定为机构唯一标识，平台按它查重。'));
+ /* RISK-01：常驻提示，不是悬浮 tooltip；解耦说明与它同处一行下方常驻。 */
+ if(f.risk) h.push(L('Please use a long-term corporate mailbox. Avoid personal mailboxes or accounts tied to an individual who may leave.',
+   '请使用长期有效的企业邮箱，避免使用个人邮箱或离职风险高的个人账号。')
+  +'<br>'+L('Used for business contact only; independent from your login email.',
+   '仅用于业务联系，与登录邮箱相互独立。'));
+ return h.length?'<p class="hint">'+h.join('<br>')+'</p>':'';
+}
+function apFlagWrap(f,r,inner){
+ return '<div class="ap-flag" id="ap-'+f.k+'"><div class="ap-flag-h">'+CF.ICO.warn
+  +'<span>'+L('Needs update','需修改')+' · '+L(r.cat[0],r.cat[1])+'</span></div>'
+  +inner+'<p class="ap-flag-r">'+L(r.tx[0],r.tx[1])+'</p></div>';
+}
+function apSlot(f){
+ var file=S.ap.files[f.k], up=S.ap.up===f.k, fail=(S.st==='upfail'&&f.k==='bizLicence'&&!file);
+ var head='<div class="field"><label>'+apLabelHtml(f)+'</label>';
+ var body;
+ if(up){
+  body='<div class="filecard"><span class="ic">'+CF.ICO.up+'</span><div class="bd">'
+   +'<b>'+E(f.fn||'document.pdf')+'</b><span>'+L('Uploading…','上传中…')+'</span>'
+   +'<div class="bar"><i style="width:62%"></i></div></div></div>';
+ } else if(fail){
+  body='<div class="drop err">'+CF.ICO.warn
+   +'<b>'+L('Upload failed','上传失败')+'</b>'
+   +'<span class="tiny">'+L('The connection dropped at 62%. Nothing else on this form was affected.',
+     '连接在 62% 处中断。表单其余内容不受影响。')+'</span>'
+   +btn(L('Retry upload','重新上传'),'apUpload',f.k,'sm primary')+'</div>';
+ } else if(file){
+  body='<div class="filecard"><span class="ic">PDF</span><div class="bd">'
+   +'<b>'+E(file.n)+'</b><span>'+E(file.s)+' · '+E(file.t)+'</span></div>'
+   +'<div class="act">'+btn(L('Preview','预览'),'apPreview',f.k,'sm')
+   +(apLocked()?'':btn(L('Replace','替换'),'apUpload',f.k,'sm')
+     +btn(L('Remove','删除'),'apDel',f.k,'sm'))+'</div></div>';
+ } else {
+  body='<button class="drop" type="button" data-act="apUpload" data-v="'+f.k+'">'
+   +'<span class="ic">'+CF.ICO.up+'</span><b>'+L('Upload a file','上传文件')+'</b>'
+   +'<span class="tiny">'+L('PDF or image. The size and format limits are an operations setting and are not fixed in this prototype.',
+     'PDF 或图片。大小与格式上限属运营口径，本原型未写死数值。')+'</span></button>';
+ }
+ return head+body+apHelpHtml(f)+'</div>';
+}
+function apInput(f){
+ var val=apStr(S.ap.vals[f.k]), r=apFlagOf(f.k), inner;
+ if(f.t==='file') inner=apSlot(f);
+ else if(f.t==='select'){
+  inner='<div class="field"><label for="f-'+f.k+'">'+apLabelHtml(f)+'</label>'
+   +'<select class="inp" id="f-'+f.k+'" data-k="'+f.k+'">'
+   +'<option value="">'+L('Select…','请选择…')+'</option>'
+   +f.o.map(function(o){ return '<option value="'+o[0]+'"'+(val===o[0]?' selected':'')+'>'
+      +L(o[1][0],o[1][1])+'</option>'; }).join('')+'</select>'+apHelpHtml(f)+'</div>';
+ } else {
+  inner='<div class="field"><label for="f-'+f.k+'">'+apLabelHtml(f)+'</label>'
+   +'<input class="inp'+(f.mono?' mono':'')+'" id="f-'+f.k+'" data-f="'+f.k+'" data-k="'+f.k+'"'
+   +' type="'+(f.t==='date'?'date':f.t==='email'?'email':'text')+'" value="'+E(val)+'"'
+   +(f.v2?' data-new="1"':'')+'>'+apHelpHtml(f)+'</div>';
+ }
+ return r?apFlagWrap(f,r,inner):(f.t==='file'?'<div id="ap-'+f.k+'">'+inner+'</div>':inner);
+}
+/* 只读呈现：预览页、审核进度页、申请详情页共用，字段顺序与填写时一致。 */
+function apGroupRO(g,o){
+ var txt=apFields(g).filter(function(f){ return f.t!=='file'; });
+ var files=apFields(g).filter(function(f){ return f.t==='file'; });
+ var html=txt.length?'<dl class="dl">'+txt.map(function(f){
+   var r=o.flags?apFlagOf(f.k):null, v=apShow(f);
+   return '<div id="ap-ro-'+f.k+'"><dt>'+L(f.n[0],f.n[1])
+    +(f.req&&!v?' <span class="pill red">'+L('Missing','未填写')+'</span>':'')
+    +(r?' <span class="pill red">'+L('Needs update','需修改')+'</span>':'')+'</dt>'
+    +'<dd'+(f.mono?' class="mono"':'')+'>'+(v?E(v):'<span class="faint">—</span>')+'</dd>'
+    +(r?'<dd class="ap-flag-r">'+L(r.tx[0],r.tx[1])+'</dd>':'')+'</div>';
+  }).join('')+'</dl>':'';
+ html+=files.map(function(f){
+  var file=S.ap.files[f.k], r=o.flags?apFlagOf(f.k):null;
+  if(!file) return '<div class="pl-gap"><div class="filecard" style="border-style:dashed">'
+   +'<span class="ic">—</span><div class="bd"><b>'+L(f.n[0],f.n[1])+'</b>'
+   +'<span>'+(f.req?'<span class="pill red">'+L('Missing','未上传')+'</span>':L('Optional · not uploaded','选填 · 未上传'))
+   +'</span></div></div></div>';
+  return '<div class="pl-gap" id="ap-ro-'+f.k+'"><div class="filecard">'
+   +'<span class="ic">PDF</span><div class="bd"><b>'+E(file.n)+'</b>'
+   +'<span>'+L(f.n[0],f.n[1])+' · '+E(file.s)+' · '+E(file.t)+'</span></div>'
+   +'<div class="act">'+(r?'<span class="pill red">'+L('Needs update','需修改')+'</span>':'')
+   +btn(L('Preview','预览'),'apPreview',f.k,'sm')+'</div></div>'
+   +(r?'<p class="ap-flag-r">'+L(r.tx[0],r.tx[1])+'</p>':'')+'</div>';
+ }).join('');
+ return html;
+}
+function apReadCards(o){
+ return TPL.groups.map(function(g,gi){
+  return '<div class="card formcard"><div class="card-head"><b>'+(gi+1)+' · '+L(g.n[0],g.n[1])+'</b>'
+   +(o.edit?'<span class="right">'+btn(L('Edit','编辑'),'apEdit',String(gi),'sm')+'</span>':'')
+   +'</div><div class="card-b">'+apGroupRO(g,o)+'</div></div>';
+ }).join('');
+}
+/* 审核中（含变更重审）一律锁定：界面不给编辑 / 删除 / 撤销入口。 */
+function apLocked(){ return S.level==='L1'||S.updating; }
+function apVer(){ return S.ap.ver; }
+function apStatusPill(){
+ if(S.updating) return pill('amber',L('Onboarded · update under review','已入驻 · 更新审核中'));
+ return {L0:pill('gray',S.ap.touched?L('Draft saved','草稿已保存'):L('Not submitted','未提交')),
+  L1:pill('amber',apVer()>1?L('Under review (resubmission {n})','审核中（第 {n} 次提交）').replace('{n}',apVer()):L('Under review','审核中')),
+  L2:pill('red',L('Rejected','已驳回')),
+  L3:pill('green',L('Approved','已通过'))}[S.level];
+}
+/* 审核中被拦下时的统一说明。四处（引导弹层、进度页、提交结果页、站内信）
+   同一句话，且都不暗示可以修改或撤回（D-F76 / D-F139）。 */
+function apLockNote(){
+ return note('amber','<p>'+L('Your application is under review and cannot be edited. If any information is wrong, please contact support.',
+   '审核中无法修改，如资料有误请联系客服。')+'</p>'
+  +'<p>'+btn(L('View status','查看进度'),'go','P-F33','sm')
+  +btn(L('Contact support','联系客服'),'support','','sm')+'</p>',
+  L('Locked for review','审核中已锁定'));
+}
+function apDowngradeNote(){
+ if(!S.downgraded) return '';
+ return note('red','<p>'+L('What happened: the update you submitted was rejected, so your onboarded status was revoked and investing is closed again.',
+   '发生了什么：你提交的资料变更被驳回，已入驻状态被收回，出资能力随之关闭。')+'</p>'
+  +'<p>'+L('What you can do now: fix the flagged items and resubmit. Approval restores investing.',
+   '现在能做什么：修正被指出的问题后重新提交，审核通过即恢复出资能力。')+'</p>'
+  +'<p>'+btn(L('Edit and resubmit','编辑重提'),'apResubmit','','sm primary')
+  +btn(L('View reasons','查看驳回原因'),'go','P-F34','sm')+'</p>',
+  L('Your onboarding was revoked','已入驻状态已被收回'));
+}
+
+/* 锁定态下不渲染状态切换条：这一页此时没有可切的状态，留着会让人以为切了没反应。 */
+function apPageHead(ti,desc,actions,noStates){
+ if(!noStates) return pageHead(ti,desc,actions);
+ return '<div class="page-head"><div><h1 class="page-title">'+ti+'</h1>'
+  +(desc?'<p class="page-desc">'+desc+'</p>':'')+'</div>'
+  +'<div class="page-actions">'+(actions||'')+'</div></div>';
+}
+
+/* ========================= P-F30 入驻引导页 ============================= */
+function pageApply(){
+ if(S.ident!=='funder') return notMine();
+ var head=apPageHead(L('Institution onboarding','入驻引导 · 机构资料'),
+   L('The fields below come from the institution form template. Your progress is saved as a draft.',
+     '下面的字段来自机构信息模版配置，填写进度会保存为草稿。'),
+   apLocked()?'':btn(L('Complete later','稍后再维护'),'apLater','','sm'), apLocked());
+ if(apLocked()) return head+bar()+apLockNote()+apReadCards({edit:false,flags:false});
+ if(S.st==='loading')
+  return head+'<div class="card"><div class="card-b">'
+   +'<div class="pl-skel pl-skel-s"></div><div class="pl-skel"></div><div class="pl-skel"></div>'
+   +'<div class="pl-skel"></div></div></div>';
+ if(S.st==='cfgfail')
+  return head+'<div class="card"><div class="card-b shell">'+CF.ICO.warn
+   +'<p><b>'+L('The form template could not be loaded','机构信息模版加载失败')+'</b><br>'
+   +L('Without the template we cannot tell which fields are required, so the form is not shown. Nothing you filled in was lost.',
+      '模版未加载时无法判断哪些字段必填，因此不展示表单。你已填写的内容没有丢失。')+'</p>'
+   +'<div class="pl-actions" style="justify-content:center">'
+   +btn(L('Retry','重试'),'st','default','primary')
+   +btn(L('Contact support','联系客服'),'support','','')+'</div></div></div>';
+ var gi=Math.min(S.ap.step,TPL.groups.length-1), g=TPL.groups[gi];
+ var flags=S.level==='L2'?REJ.length:0;
+ var body=head+bar();
+ if(S.level==='L2')
+  body+=note('red','<p>'+L('{n} item(s) were returned for changes. They are highlighted in the form; everything else is prefilled from your last submission.',
+    '有 {n} 项被驳回需要修改，已在表单中高亮标注；其余内容以上一版提交内容预填。').replace('{n}',flags)+'</p>'
+   +'<p>'+btn(L('Jump to next issue','跳到下一个问题项'),'apJump','','sm')
+   +btn(L('View full reasons','查看完整驳回原因'),'go','P-F34','sm')+'</p>',
+   L('Returned for changes · resubmission {n}','已驳回 · 第 {n} 次提交').replace('{n}',apVer()+1));
+ if(S.st==='tplUp')
+  body+=note('amber','<p>'+L('The form has been updated. Please complete {n} new required item(s). Everything you already filled in is kept; fields removed by the new version are no longer shown.',
+    '表单已更新，请补充 {n} 项。已填内容全部保留；新版本删除的字段不再展示。').replace('{n}','1')+'</p>',
+   L('Template updated to {v}','模版已更新至 {v}').replace('{v}',TPL.verNext));
+ if(S.st==='stale')
+  body+=note('amber','<p>'+L('This draft was updated elsewhere. Reload to get the latest version.',
+    '草稿已在其他设备更新，请刷新获取最新内容。')+'</p>'
+   +'<p>'+btn(L('Reload draft','刷新草稿'),'st','default','sm primary')+'</p>',
+   L('Draft updated on another device','草稿已在其他设备更新'));
+ /* 步骤条：分组与名称由模版决定；已完成的步骤可回改，未开始的不可跳入。 */
+ body+='<div class="steps ap-steps">'+TPL.groups.map(function(gg,i){
+   var on=i===gi, done=i<S.ap.max, can=i<=S.ap.max;
+   return '<button class="s" type="button" data-act="apStep" data-v="'+i+'" data-on="'+(on?1:0)
+    +'" data-done="'+(done&&!on?1:0)+'"'+(can?'':' aria-disabled="true" disabled')
+    +(on?' aria-current="step"':'')+'><span class="n">'+(i+1)+'</span>'+L(gg.n[0],gg.n[1])+'</button>'
+    +'<span class="ln"></span>'; }).join('')
+  +'<button class="s" type="button" data-act="apNext" data-v="review" data-on="0"'
+  +(S.ap.max>=TPL.groups.length-1?'':' aria-disabled="true" disabled')+'>'
+  +'<span class="n">'+(TPL.groups.length+1)+'</span>'+L('Review and submit','核对提交')+'</button>'
+  +'<span class="nav-tag">'+(gi+1)+'/'+(TPL.groups.length+1)+'</span></div>';
+ body+='<div class="card formcard"><div class="card-head"><b>'+L(g.n[0],g.n[1])+'</b>'
+  +'<span class="right"><span class="pill dash">'+L('Template','模版')+' '
+  +E(S.ap.v2?TPL.verNext:TPL.ver)+'</span></span></div><div class="card-b">'
+  +'<div class="fgrid">'+apFields(g).filter(function(f){ return f.t!=='file'; })
+     .map(apInput).join('')+'</div>'
+  +apFields(g).filter(function(f){ return f.t==='file'; }).map(apInput).join('')
+  +'</div></div>';
+ body+='<div class="ap-foot">'
+  +btn(L('Complete later','稍后再维护'),'apLater','','')
+  +'<span class="right">'+btn(L('Save draft','保存草稿'),'apSave','','')
+  +btn(gi<TPL.groups.length-1?L('Next','下一步'):L('Review and submit','去核对提交'),
+      'apNext',gi<TPL.groups.length-1?String(gi+1):'review','primary')+'</span></div>'
+  +'<p class="tiny pl-gap">'+L('Saving a draft does not run the required-field checks — they run when you move to the next step and when you submit. The draft is kept on the platform, so you can continue on another device.',
+    '保存草稿不做必填与格式校验——校验只在「下一步」与「提交」执行。草稿保存在平台侧，换设备可以继续填写。')+'</p>';
+ return body;
+}
+
+/* ===================== P-F31 提交预览页 + C-F50 ========================= */
+function pageReview(){
+ if(S.ident!=='funder') return notMine();
+ var head=apPageHead(L('Review and submit','核对并提交'),
+   L('This is the whole application as it will be submitted. Check it before you continue.',
+     '这是即将提交的全部内容，请在继续前核对。'),'', apLocked());
+ if(apLocked()) return head+bar()+apLockNote()+apReadCards({edit:false,flags:false});
+ var miss=apMissing(), st=S.st, blocked=miss.length>0||st==='limit'||st==='submitting';
+ var body=head+bar();
+ /* 页面级提示与二次确认弹窗同源同措辞（D-F136）。 */
+ body+=note('amber','<p>'+L('Once submitted, you will not be able to edit or withdraw this application until a review decision is made.',
+   '提交后在审核结论出来前，你将无法修改或撤回本次申请。')+'</p>');
+ if(S.updating===false&&S.level==='L3')
+  body+=note('','<p>'+L('Your current onboarding stays valid while the update is reviewed. If the update is rejected, your onboarded status will be revoked.',
+    '更新审核期间当前入驻状态仍然有效；若更新被驳回，已入驻状态将被收回。')+'</p>');
+ if(miss.length)
+  body+=note('red','<p>'+L('{n} required item(s) are not complete yet. Submitting is disabled until they are filled in.',
+    '还有 {n} 项必填内容未完成，完成前无法提交。').replace('{n}',miss.length)+'</p>'
+   +'<p>'+miss.map(function(m){
+      return btn(L(m.f.n[0],m.f.n[1]),'apEdit',String(m.g),'sm'); }).join(' ')+'</p>',
+   L('Incomplete','必填未完成'));
+ if(st==='precheck')
+  body+=note('red','<p>'+L('The automatic pre-check returned this application. The institution identifier does not match the format for the selected identifier type.',
+    '自动预校验退回了本次提交：机构标识码与所选标识类型的格式不符。')+'</p>'
+   +'<p>'+L('Your application is still a draft — it did not enter the review queue and nothing is locked. Fix the item and submit again.',
+    '本次提交未创建申请：申请仍是草稿，没有进入审核队列，也没有进入锁定态。修正后可再次提交。')+'</p>'
+   +'<p>'+btn(L('Go to the field','定位到该字段'),'apEdit','0','sm primary')+'</p>',
+   L('Returned by the pre-check','预校验未通过'));
+ if(st==='dup')
+  body+=note('red','<p>'+L('This institution is already registered on the platform. If you believe this is an error, contact support.',
+    '该机构已在平台注册，如有疑问请联系客服。')+'</p>'
+   +'<p class="tiny">'+L('Nothing was created and your draft is untouched. The check runs on the unique key {k}.',
+    '未创建任何申请，草稿完整保留。查重按唯一键 {k} 进行。').replace('{k}','<span class="mono">'+E(apKey())+'</span>')+'</p>'
+   +'<p>'+btn(L('Contact support','联系客服'),'support','','sm primary')+'</p>',
+   L('Duplicate institution','机构重复'));
+ if(st==='limit')
+  body+=note('amber','<p>'+L('You have reached the submission limit (5 submissions per 24 hours). You can submit again after {time}.',
+    '24 小时内最多提交 5 次，已达上限。你可以在 {time} 之后再次提交。').replace('{time}',E(AP.limitAt))+'</p>'
+   +'<p class="tiny">'+L('Your draft is kept. Only submissions that actually created an application are counted — attempts stopped by validation, the pre-check or the duplicate check are not.',
+    '草稿完整保留。只有成功创建申请的提交才计数；被表单校验、预校验或查重拦下的尝试不计数。')+'</p>',
+   L('Submission limit reached','已达提交限频'));
+ body+='<div class="card"><div class="card-head"><b>'+L('Application summary','申请概要')+'</b>'
+  +'<span class="right"><span class="pill dash">'+L('Template','模版')+' '+E(S.ap.v2?TPL.verNext:TPL.ver)+'</span></span>'
+  +'</div><div class="card-b"><div class="vsum">'
+  +[[L('Institution','机构名称'),apShow(TPL.groups[0].f[0]),0],
+    [L('Unique key','唯一键'),apKey(),1],
+    [L('Identifier type','标识类型'),apOptLabel(TPL.groups[0].f[3],apStr(S.ap.vals.idType)),0],
+    [L('Documents','材料'),Object.keys(S.ap.files).length+' '+L('file(s)','份'),0]]
+   .map(function(x){ return '<div><div class="k">'+x[0]+'</div><div class="v'+(x[1]?' mono':'')+'">'
+      +E(x[1])+'</div></div>'; }).join('')
+  +'</div></div></div><div class="pl-gap-lg"></div>';
+ body+=apReadCards({edit:true,flags:S.level==='L2'});
+ body+='<div class="ap-foot">'+btn(L('Back to edit','返回修改'),'apEdit','0','')
+  +'<span class="right">'
+  +(st==='submitting'
+    ?'<button class="btn primary" type="button" disabled><span class="spinner"></span>'
+      +L('Submitting…','提交中…')+'</button>'
+    :btn(L('Submit application','提交申请'),'apSubmit','','primary',blocked?' disabled':''))
+  +'</span></div>'
+  +(blocked&&st!=='submitting'?'<p class="tiny pl-gap">'
+    +L('The submit button stays visible while it is unavailable, with the reason above — a button that disappears looks like the feature was taken away.',
+      '不可用时提交按钮置灰但不隐藏，原因写在上方——按钮消失会让人以为功能没了。')+'</p>':'');
+ return body;
+}
+/* C-F50 二次确认弹窗：必弹、无「不再提示」、默认焦点在次按钮。 */
+function modalConfirm(){
+ var upd=S.level==='L3'&&!S.updating;
+ return shellModal(L('Confirm submission','确认提交入驻申请'),
+  '<p class="lead" style="margin:0 0 10px">'
+  +L('Once submitted, you will not be able to edit or withdraw this application until a review decision is made. If anything is wrong, you will need to wait for the decision (you can edit and resubmit after a rejection) or contact support.',
+     '提交后在审核结论出来前，你将无法修改或撤回本次申请。如资料有误，需等待审核结论（被驳回后可修改重提），或通过客服联系平台。')+'</p>'
+  +(upd?note('','<p>'+L('Your current onboarding stays valid while the update is reviewed. If the update is rejected, your onboarded status will be revoked.',
+     '更新审核期间当前入驻状态仍然有效；若更新被驳回，已入驻状态将被收回。')+'</p>'):'')
+  +'<dl class="dl" style="margin-top:12px"><div><dt>'+L('Institution','机构名称')+'</dt>'
+  +'<dd>'+E(apShow(TPL.groups[0].f[0]))+'</dd></div>'
+  +'<div><dt>'+L('Unique key','唯一键')+'</dt><dd class="mono">'+E(apKey())+'</dd></div>'
+  +'<div><dt>'+L('Template version','模版版本')+'</dt><dd class="mono">'
+  +E(S.ap.v2?TPL.verNext:TPL.ver)+'</dd></div>'
+  +'<div><dt>'+L('Submission','本次提交')+'</dt><dd>'
+  +L('Version {n}','第 {n} 次').replace('{n}',apVer()+1)+'</dd></div></dl>',
+  '<button class="btn" type="button" data-act="close" data-f="cfBack">'+L('Back to edit','返回修改')+'</button>'
+  +btn(L('Submit','确认提交'),'apConfirm','','primary'));
+}
+
+/* ======================== P-F32 提交结果页 ============================== */
+function pageSubmitted(){
+ if(S.ident!=='funder') return notMine();
+ return pageHead(L('Application submitted','申请已提交'),'','')
+  +'<div class="card"><div class="card-b">'
+  /* 成功反馈用 note 的 green 语义，不用 .shell——.shell 是空态 / 错误态的弱强调
+     表面，用它承载成功结论会让最该被读到的那句话对比度最低。 */
+  +note('green','<p>'+L('We will notify you by message when a decision is made.',
+     '出具结论后会以站内信通知你。')+'</p>',
+     L('Your institution application is under review','机构入驻申请已进入审核'))
+  +'<div class="pl-gap"></div>'
+  +'<dl class="dl"><div><dt>'+L('Application number','申请编号')+'</dt>'
+  +'<dd class="mono">'+E(AP.id)+'</dd></div>'
+  +'<div><dt>'+L('Submitted at','提交时间')+'</dt><dd class="mono">'
+  +E(S.st==='resub'?AP.submitted2:AP.submitted)+'</dd></div>'
+  +'<div><dt>'+L('Status','当前状态')+'</dt><dd>'+apStatusPill()+'</dd></div>'
+  +'<div><dt>'+L('Estimated decision','预计审核时长')+'</dt><dd>'
+  +L('Within {n} business days','{n} 个工作日内').replace('{n}',AP.days)+'</dd></div></dl>'
+  +note('amber','<p>'+L('Your application is under review and cannot be edited. If any information is wrong, please contact support.',
+    '审核中无法修改，如资料有误请联系客服。')+'</p>')
+  +'<div class="ap-foot">'+btn(L('Back to home','返回首页'),'go','P-F51','')
+  +'<span class="right">'+btn(L('View status','查看进度'),'go','P-F33','primary')+'</span></div>'
+  +'</div></div>';
+}
+
+/* ======================== P-F33 审核进度页 ============================== */
+function pageStatus(){
+ if(S.ident!=='funder') return notMine();
+ var st=S.st, over=st==='overdue', upd=st==='update';
+ var head=pageHead(L('Application status','审核进度'),
+   L('Read-only. This is what you can do while the application is under review.',
+     '只读页面。这是审核期间你可以做的全部事情。'),'');
+ if(st==='loading')
+  return head+'<div class="card"><div class="card-b">'
+   +'<div class="pl-skel pl-skel-s"></div><div class="pl-skel"></div><div class="pl-skel"></div></div></div>';
+ var n=st==='resub'?2:upd?2:1;
+ var title=upd?L('Onboarded · update under review (resubmission {n})','已入驻 · 更新审核中（第 {n} 次提交）').replace('{n}',n)
+   :n>1?L('Under review (resubmission {n})','审核中（第 {n} 次提交）').replace('{n}',n)
+   :L('Under review','审核中');
+ /* 4.3 母版的 main + right rail：预计时长与客服入口放进常驻辅助列，滚到
+    「已提交内容」下方时它们仍在视野里——这一页最怕的就是把用户留在一个
+    没有出口的等待态。窄屏由 .portal-cols 收成单列。 */
+ var body=head+bar()+'<div class="portal-cols"><div>';
+ body+='<div class="card"><div class="card-head"><b>'+title+'</b>'
+  +'<span class="right">'+(upd?pill('amber',L('Onboarded','已入驻')):pill('amber',L('Under review','审核中')))+'</span>'
+  +'</div><div class="card-b">'
+  +'<dl class="dl"><div><dt>'+L('Application number','申请编号')+'</dt>'
+  +'<dd class="mono">'+E(AP.id)+'</dd></div>'
+  +'<div><dt>'+L('Submitted at','提交时间')+'</dt><dd class="mono">'
+  +E(n>1?AP.submitted2:AP.submitted)+'</dd></div>'
+  +'<div><dt>'+L('Template version','模版版本')+'</dt><dd class="mono">'+E(TPL.ver)+'</dd></div></dl>'
+  /* 节点粒度不暴露运营端内部环节：不展示是否被认领、审核员是谁。 */
+  +'<div class="steps" style="margin:18px 0 4px" role="list">'
+  +[[L('Submitted','已提交'),1],[L('Under review','平台审核中'),1],[L('Decision','出具结论'),0]]
+    .map(function(x,i,arr){
+     return '<span class="s" role="listitem" data-on="'+(i===1?1:0)+'" data-done="'+(i===0?1:0)+'">'
+      +'<span class="n">'+(i+1)+'</span>'+x[0]+'</span>'
+      +(i<arr.length-1?'<span class="ln"></span>':''); }).join('')
+  +'</div>'
+  +(upd?note('','<p>'+L('Your onboarding stays valid while this update is reviewed, so investing is not interrupted. If the update is rejected, your onboarded status will be revoked.',
+     '更新审核期间已入驻状态继续有效，出资能力不中断；若更新被驳回，已入驻状态将被收回。')+'</p>'):'')
+  +'</div></div>';
+ body+='<h2 class="sec-title pl-gap-lg">'+L('What you submitted','已提交内容')+'</h2>'
+  +'<p class="tiny" style="margin:-6px 0 12px">'
+  +L('Read-only, in the order you filled it in. There is no edit, delete or cancel action here — and requests that skip the interface are rejected as well.',
+    '只读展示，顺序与填写时一致。本页没有编辑、删除或取消入口——绕过界面直接发起的请求同样会被拒绝。')+'</p>'
+  +apReadCards({edit:false,flags:false});
+ /* 辅助列：预计时长 + 客服入口。客服是「提交后发现填错」唯一的可见起点（D-F56'）。 */
+ body+='</div><aside class="portal-rail">'
+  +'<div class="card"><div class="card-head"><b>'+L('Estimated decision','预计审核时长')+'</b></div>'
+  +'<div class="card-b">'
+  +(over
+    ?note('amber','<p>'+L('Taking longer than expected. Contact support if you have questions.',
+       '已超出预计时长，如有疑问请联系客服。')+'</p>',
+      L('Longer than the estimate','已超出预计时长'))
+    :'<p class="lead" style="margin:0">'+L('Estimated decision within {n} business days.','预计 {n} 个工作日内出结论。')
+       .replace('{n}',AP.days)+'</p>')
+  +'</div></div>'
+  +'<div class="card"><div class="card-head"><b>'
+  +L('What if my information is wrong','资料有误怎么办')+'</b></div><div class="card-b">'
+  +'<p class="lead" style="margin:0 0 10px">'
+  +L('Your application is under review and cannot be edited. If any information is wrong, please contact support: after the platform checks with you, a reviewer returns the application so you can correct it and resubmit.',
+     '审核中无法修改，如资料有误请联系客服：平台核实后会由审核员驳回本次申请，你即可修改并重新提交。')+'</p>'
+  +btn(L('Contact support','联系客服'),'support','','primary block')
+  +'</div></div></aside></div>';
+ return body;
+}
+
+/* ======================== P-F34 申请详情页 ============================== */
+function pageDetail(){
+ if(S.ident!=='funder') return notMine();
+ var st=S.st, rejected=st==='rejected', approved=st==='approved', review=st==='review';
+ var head=pageHead(L('Application details','申请详情'),
+   L('Every submission, its decision and the reasons behind it.','历次提交、结论与结论原因。'),'');
+ if(S.level==='L0'&&!S.ap.touched)
+  return head+'<div class="card"><div class="card-b shell">'+CF.ICO.info
+   +'<p><b>'+L('No application yet','还没有申请记录')+'</b><br>'
+   +L('Once you submit your institution profile, every version and decision shows up here.',
+      '提交机构资料后，历次版本与结论都会出现在这里。')+'</p>'
+   +btn(L('Start now','去填写'),'go','P-F30','primary')+'</div></div>';
+ var body=head+bar()+apDowngradeNote();
+ body+='<div class="card"><div class="card-head"><b>'+E(AP.id)+'</b>'
+  +'<span class="right">'+(rejected?pill('red',L('Rejected','已驳回'))
+    :approved?pill('green',L('Approved','已通过')):pill('amber',L('Under review','审核中')))+'</span>'
+  +'</div><div class="card-b"><dl class="dl">'
+  +'<div><dt>'+L('Current version','当前版本')+'</dt><dd class="mono">v'+apVer()+'</dd></div>'
+  +'<div><dt>'+L('Submitted at','提交时间')+'</dt><dd class="mono">'
+  +E(apVer()>1?AP.submitted2:AP.submitted)+'</dd></div>'
+  +'<div><dt>'+L('Decided at','结论时间')+'</dt><dd class="mono">'
+  +(review?'<span class="faint">—</span>':E(AP.decided))+'</dd></div>'
+  +'<div><dt>'+L('Template version','模版版本')+'</dt><dd class="mono">'+E(TPL.ver)+'</dd></div></dl>'
+  +'</div></div>';
+ if(rejected){
+  body+='<div class="card pl-gap-lg"><div class="card-head"><b>'
+   +L('What needs changing','需要修改的内容')+'</b><span class="right">'
+   +'<span class="pill red">'+L('{n} item(s)','{n} 项').replace('{n}',REJ.length)+'</span></span></div>'
+   +'<div class="card-b"><dl class="dl">'+REJ.map(function(r,i){
+      var f=apFieldOf(r.k);
+      return '<div><dt>'+(i+1)+' · '+L(f.n[0],f.n[1])+' <span class="tag">'
+       +L(r.cat[0],r.cat[1])+'</span></dt><dd>'+L(r.tx[0],r.tx[1])+'</dd></div>'; }).join('')
+   +'</dl>'
+   +note('','<p>'+L(REJ_NOTE[0],REJ_NOTE[1])+'</p>',L('Reviewer note','审核员补充说明'))
+   +'<div class="ap-foot"><span class="right">'
+   +btn(L('Edit and resubmit','编辑重提'),'apResubmit','','primary')+'</span></div>'
+   +'</div></div>';
+ }
+ if(approved)
+  body+=note('green','<p>'+L('Approved. Your institution is onboarded and investing is open. Updating the profile starts a new review — your current onboarding stays valid until the new decision.',
+    '已通过。机构已入驻，出资能力已开放。更新机构资料会触发重新审核，新结论出来前当前入驻状态继续有效。')+'</p>');
+ if(review) body+=apLockNote();
+ body+='<h2 class="sec-title pl-gap-lg">'+L('Submitted content','提交内容')+'</h2>'
+  +'<p class="tiny" style="margin:-6px 0 12px">'
+  +L('Rendered with the template version recorded on this application, so a later template change does not alter what was reviewed.',
+    '按申请单记录的模版版本呈现，之后模版升级不改变当时被审的内容。')+'</p>'
+  +apReadCards({edit:false,flags:rejected});
+ /* 留痕按实际版本组织：v1 提交 → v1 结论 →（有第 2 版时）v2 提交 → v2 结论。 */
+ var hist=[[AP.submitted,L('Submitted (v1)','提交（第 1 次）'),
+   L('Entered the review queue and took the unique key.','进入审核队列，占用机构唯一键。')]];
+ if(apVer()>1){
+  hist.push([AP.decided,S.downgraded?L('Approved (v1)','通过（第 1 次）'):L('Rejected (v1)','驳回（第 1 次）'),
+    S.downgraded?L('Institution onboarded.','机构已入驻。')
+      :L('{n} issue(s) returned to the applicant.','向申请人回显 {n} 个问题项。').replace('{n}',REJ.length)]);
+  hist.push([AP.submitted2,S.downgraded?L('Update submitted (v2)','资料变更提交（第 2 次）')
+      :L('Resubmitted (v2)','重新提交（第 2 次）'),
+    S.downgraded?L('Onboarding stayed valid while this version was reviewed.','该版本审核期间已入驻状态继续有效。')
+      :L('Version 2 entered the review queue; the unique key was re-checked.','第 2 版进入审核队列，重新执行了查重。')]);
+ }
+ if(!review)
+  hist.push([apVer()>1?AP.decided:AP.decided,
+    rejected?L('Rejected (v{v})','驳回（第 {v} 次）').replace('{v}',apVer())
+           :L('Approved (v{v})','通过（第 {v} 次）').replace('{v}',apVer()),
+    rejected?(S.downgraded?L('Onboarded status revoked; the account dropped back to the rejected level.','已入驻状态被收回，档位回落至已驳回。')
+        :L('{n} issue(s) returned to the applicant.','向申请人回显 {n} 个问题项。').replace('{n}',REJ.length))
+      :L('Institution onboarded.','机构已入驻。')]);
+ body+='<h2 class="sec-title pl-gap-lg">'+L('History','历史版本')+'</h2>'
+  +'<div class="card"><div class="card-b"><ul class="tl">'
+  +hist.map(function(x){ return '<li><span class="pt"></span><div class="tm">'+E(x[0])+'</div>'
+      +'<div class="ac">'+x[1]+'</div><div class="sm">'+x[2]+'</div></li>'; }).join('')
+  +'</ul>'
+  +'<p class="tiny">'+L('The record is append-only: it is never edited or deleted, and each entry keeps a snapshot of what was submitted at the time.',
+    '留痕只增不改不删，每条记录都保留当时的提交内容快照。')+'</p></div></div>';
+ if(approved)
+  body+='<div class="ap-foot"><span class="right">'
+   +btn(L('Update institution details','更新机构资料'),'apUpdate','','primary')+'</span></div>';
+ if(review)
+  body+='<div class="ap-foot"><span class="right">'
+   +btn(L('Edit and resubmit','编辑重提'),'apResubmit','','primary',' disabled')+'</span></div>'
+   +'<p class="tiny pl-gap">'+L('Resubmission is unavailable while a review is in progress; the platform rejects it as well, not only the interface.',
+     '审核进行中时重提入口不可用，平台侧同样拒绝，不只是界面置灰。')+'</p>';
+ return body;
+}
+function apFieldOf(k){
+ var out=null;
+ TPL.groups.forEach(function(g){ g.f.forEach(function(f){ if(f.k===k) out=f; }); });
+ return out||{n:[k,k]};
+}
+/* C-F52 客服入口：兜底纠错路径的唯一可见起点。文案不出现撤回。 */
+function modalSupport(){
+ return shellModal(L('Contact support','联系客服'),
+  '<p class="lead" style="margin:0 0 12px">'
+  +L('Your application is under review and cannot be edited. If any information is wrong, tell us which item is wrong and quote your application number — after we check with you, a reviewer returns the application so you can correct it and resubmit.',
+     '审核中无法修改。如资料有误，请说明哪一项有误并提供申请编号——平台核实后会由审核员驳回本次申请，你即可修改并重新提交。')+'</p>'
+  +'<dl class="dl"><div><dt>'+L('Application number','申请编号')+'</dt>'
+  +'<dd class="mono">'+E(AP.id)+'</dd></div>'
+  +'<div><dt>'+L('Email','邮箱')+'</dt><dd class="mono">'+E(AP.support)+'</dd></div>'
+  +'<div><dt>'+L('Phone','电话')+'</dt><dd class="mono">'+E(AP.supportTel)+'</dd></div>'
+  +'<div><dt>'+L('Hours','服务时间')+'</dt><dd>'
+  +L('Business days 09:00–18:00 (UTC+8)','工作日 09:00–18:00（UTC+8）')+'</dd></div></dl>'
+  +'<p class="tiny pl-gap">'+t('demo')+'</p>',
+  btn(L('Close','关闭'),'close','','primary'));
+}
+function modalDoc(){
+ var f=apFieldOf(S.modal.k), file=S.ap.files[S.modal.k]||{n:'document.pdf',s:'',t:''};
+ return shellModal(L(f.n[0],f.n[1]),
+  '<div class="preview"><div class="sheet"><i class="t"></i><i></i><i></i><i class="s"></i>'
+  +'<i></i><i class="s"></i></div>'
+  +'<span>'+E(file.n)+(file.s?' · '+E(file.s):'')+'</span>'
+  +'<span class="tiny">'+L('Preview placeholder. Uploaded documents are visible only to you and the reviewer, never through a link anyone can open.',
+    '预览占位。上传的材料只有你本人与运营审核员可见，不以任何人可直接打开的公开链接暴露。')+'</span></div>',
+  btn(L('Close','关闭'),'close','','primary'));
+}
+
+/* ====================== 用户类型选择页 / 弹层 =========================== */
+/* 两张卡片并列、视觉权重相同：不得把任一方做成默认选中、高亮或更大——
+   本平台两侧是对等的交易参与方。整页与弹层是同一组件的两种呈现，
+   两张卡片的标题、说明、按钮文案逐字一致，因此共用 roleCards()。 */
+function roleCards(){
+ return '<div class="pl-roles">'
+  +['asset','funder'].map(function(x){
+    var c=ROLE[x];
+    return '<div class="pl-role"><h3>'+L(c.n[0],c.n[1])+'</h3><p>'+L(c.d[0],c.d[1])+'</p>'
+     +btn(L(ROLE.go[0],ROLE.go[1]),'pickRole',x,'primary block')+'</div>'; }).join('')
+  +'</div>'
+  /* 记忆只多给一个快捷入口，不影响默认选中，两张卡片仍然对等，不自动跳转。 */
+  +(function(){
+    var m=memRole(); if(!m) return '';
+    return '<div class="pl-remember"><span>'+L(ROLE.mem[0],ROLE.mem[1])+' 「'
+     +(m==='asset'?L(ROLE.asset.n[0],ROLE.asset.n[1]):L(ROLE.funder.n[0],ROLE.funder.n[1]))+'」</span>'
+     +btn(L(ROLE.memBtn[0],ROLE.memBtn[1]),'pickRole',m,'sm')+'</div>';
+   })();
+}
+/* 整页形态下由页面状态说了算（无记忆 / 有记忆 / 本地存储不可用三种），
+   弹层形态下用真实记忆值。存储不可用时静默降级：不展示这一行，不报错。 */
+function memRole(){
+ if(S.page==='P-F50'){
+  if(S.st==='nomem') return null;
+  if(S.st==='mem') return S.memory||'funder';
+  return null;
+ }
+ return S.memoryOff?null:S.memory;
+}
+function pageRole(){
+ var body='<h1 class="pl-title">'+L(ROLE.title[0],ROLE.title[1])+'</h1>'
+  +'<p class="pl-sub">'+L(ROLE.sub[0],ROLE.sub[1])+'</p>'
+  +roleCards()
+  /* 弱化出口是文本链接、不是按钮：登录不是主入口。 */
+  +'<div class="pl-guest"><button class="btn-link" type="button" data-act="guest">'
+  +L(ROLE.guest[0],ROLE.guest[1])+'</button></div>'
+  +(S.st==='nomem'?note('','<p>'+L('Local storage is unavailable (private mode or disabled), so the shortcut row is simply not shown. Nothing else changes.',
+     '浏览器本地存储不可用（隐私模式或已禁用），因此不展示快捷入口行，其余一切正常。')+'</p>'):'')
+  +stateBar([['default','No memory','无记忆'],['mem','Remembered','有身份记忆'],
+             ['nomem','Storage unavailable','本地存储不可用']],'st',S.st,'margin:24px 0 0');
+ return focusWrap(body,L('Choose your role','选择你的身份'));
+}
+function pageSwitch(){
+ return focusWrap('<div class="card"><div class="card-b pl-center">'
+  +'<div class="spinner" style="margin:0 auto 16px"></div>'
+  +'<h1 class="pl-title">'+L('Switching role','正在切换身份')+'</h1>'
+  +'<p class="pl-sub">'+L('Taking you back to the role picker.','正在带你回到类型选择页。')+'</p>'
+  +'<div class="pl-actions" style="justify-content:center">'
+  +btn(L('Continue','继续'),'go','P-F50','primary')+'</div>'
+  +'</div></div>',L('Switching role','切换身份'));
+}
+function pageFail(){
+ return focusWrap('<div class="card"><div class="card-b pl-center">'
+  +'<div class="pl-lock-ico">'+CF.ICO.warn+'</div>'
+  +'<h1 class="pl-title">'+L('Something went wrong','出了点问题')+'</h1>'
+  +'<p class="pl-sub">'+L('We could not continue. Nothing was changed on your account.',
+    '流程无法继续，你的账户未发生任何变化。')+'</p>'
+  +'<p class="pl-pre">trace_id: 8f21-c04b-7e93</p>'
+  +'<div class="pl-actions" style="justify-content:center">'
+  +btn(L('Try again','重试'),'go','P-F50','primary')
+  +btn(L(ROLE.guest[0],ROLE.guest[1]),'guest','','')+'</div>'
+  +'</div></div>',L('Something went wrong','通用失败态'));
+}
+
+/* ========================= 资产方 SSO 中转 ============================== */
+/* 两条入口（资产端发起 / 本端发起）从第一步起共用同一条处理链。 */
+const CHAIN=[
+ [['state / nonce check','回调参数校验'],'R3'],
+ [['exchange code · verify token','换码并校验令牌'],'R3'],
+ [['read account id','解析账户标识'],'R3'],
+ [['subject availability','对端主体可用性判定'],'R2'],
+ [['create local account','建立本端账号'],'E11'],
+ [['clear any other session','清理已有的其他会话'],null],
+ [['establish session','建立会话'],null],
+ [['first-login agreement','首登协议判定'],null],
+ [['land','落地'],null]
+];
+function pageSso(){
+ var st=S.st, fail={R2:3,R3:0,E11:4}[st];
+ var stop=(fail==null)?CHAIN.length:fail;
+ var body='<div class="card"><div class="card-b">'
+  +'<div class="pl-center"><div class="spinner" style="margin:0 auto 16px"></div>'
+  +'<h1 class="pl-title">'+L('Signing you in','正在为你登录')+'</h1>'
+  +'<p class="pl-sub">'+L('Returned from {p}. This takes a moment.','已从「{p}」返回，请稍候。')
+    .replace('{p}',L(DEMO.idpName[0],DEMO.idpName[1]))+'</p></div>'
+  +'<ul class="pl-chain">'+CHAIN.map(function(c,i){
+     var on=i<stop, bad=(fail!=null)&&i===stop;
+     return '<li data-on="'+(on?1:0)+'" data-fail="'+(bad?1:0)+'"><span class="m">'+(i+1)+'</span>'
+      +'<span>'+L(c[0][0],c[0][1])+'</span><span style="margin-left:auto">'
+      +(bad?'✕':on?'✓':'·')+'</span></li>'; }).join('')+'</ul>';
+ if(st==='R2') body+=note('red','<p>'+L('Your account is not available on the asset platform right now. Expected release: 2026-09-11 10:00 (UTC+8) · support@demo-chainfinancing.test',
+   '你在资产平台的账户当前不可用。预计解除：2026-09-11 10:00（UTC+8）· support@demo-chainfinancing.test')+'</p>',
+   L('Account unavailable','账户不可用'));
+ if(st==='R3') body+=note('red','<p>'+L('Sign-in could not be completed. Please try again. Error code: SSO-1042',
+   '登录未能完成，请重试。错误码：SSO-1042')+'</p>',L('Sign-in failed','登录失败'));
+ if(st==='E11') body+=note('amber','<p>'+L('Your identity was verified, but your account could not be created here.',
+   '你的身份已在对端验证通过，但本端账号未能建立。')+'</p>',L('Account not created','账号未建立'));
+ body+='<div class="pl-actions">'
+  +(st==='R2'||st==='R3'?btn(L('Back to the page you were on','回到原来的页面'),'ssoDone',st,'primary'):'')
+  +(st==='E11'?btn(L('Continue','继续'),'go','P-F05','primary'):'')
+  +(st==='ok'||st==='first'?btn(L('Continue','继续'),'ssoDone',st,'primary'):'')
+  +'</div>'
+  +stateBar([['ok','Returning user','已注册用户'],['first','First sign-in','首次登录'],
+             ['R2','Account unavailable','账户不可用'],['R3','Failed','登录失败'],
+             ['E11','Account not created','账号未建立']],'st',st,'margin:20px 0 0')
+  +'</div></div>';
+ return focusWrap(body,L('Signing you in','SSO 中转'));
+}
+/* 唯一的失败状态页：只用于「对端身份已验证通过、但本端账号没建起来」这一种，
+   且必须同时给两个出口，因此仍然没有错误死胡同。 */
+function pageSsoFail(){
+ return focusWrap('<div class="card"><div class="card-b pl-center">'
+  +'<div class="pl-lock-ico">'+CF.ICO.warn+'</div>'
+  +'<h1 class="pl-title">'+L('Sign-in could not be completed','登录未能完成')+'</h1>'
+  +'<p class="pl-sub">'+L('Your identity was verified on {p}, but your account here could not be created. Quote this code to support: SHDW-2117.',
+    '你的身份已在「{p}」验证通过，但本平台账号未能建立。联系客服时请提供代码：SHDW-2117。')
+    .replace('{p}',L(DEMO.idpName[0],DEMO.idpName[1]))+'</p>'
+  +'<div class="pl-actions" style="justify-content:center">'
+  +btn(L('Try again','重试'),'entryB','','primary')
+  +btn(L(ROLE.guest[0],ROLE.guest[1]),'guest','','')+'</div>'
+  +'</div></div>',L('Sign-in could not be completed','SSO 失败'));
+}
+/* 首登协议同意：未完成前会话为受限会话，除本页、协议正文与退出外不放行。 */
+function pageAgree(){
+ var ok=!!S.form.agree;
+ return focusWrap('<div class="card"><div class="card-b">'
+  +'<h1 class="pl-title">'+L('Before you continue','开始之前')+'</h1>'
+  +'<p class="pl-sub">'+L('Please accept the platform service agreement. Until you do, this session can only reach this page, the agreement text and sign-out.',
+    '请先同意平台服务协议。完成之前，本次会话只能到达本页、协议正文与退出登录。')+'</p>'
+  +'<div class="pl-ro"><p>'+L('The agreement text and its versions are maintained separately.',
+    '协议正文与版本由协议管理模块维护。')+'</p>'
+  +'<button class="btn-link" type="button" data-act="agreeDoc">'
+  +L('Platform service agreement · v2.4','平台服务协议 · v2.4')+'</button></div>'
+  +'<label class="check'+(S.err.agree?' shake':'')+'"><input type="checkbox" data-act="agreeChk"'
+  +(ok?' checked':'')+'><span>'+L('I have read and accept the platform service agreement.',
+    '我已阅读并同意《平台服务协议》。')+'</span></label>'
+  +'<div class="btnbar">'+btn(L('Accept and continue','同意并继续'),'agreeGo','','primary block',ok?'':' disabled')+'</div>'
+  +'<div class="pl-center pl-gap"><button class="btn-link" type="button" data-act="guest">'
+  +L('Leave and keep browsing as a guest','退出并以游客身份继续浏览')+'</button></div>'
+  +'</div></div>',L('Terms of service','首登协议同意'));
+}
+
+/* ==================== 资产方账户设置 · 只读态 ========================== */
+/* 主体字段由资产平台维护、本端只读，且只读由服务端强制。不提供编辑入口、
+   也不提供置灰的编辑按钮——一个点了没反应的按钮比没有按钮更糟；
+   只读区块用一句话说明为什么不能改，而不是给一个灰色输入框。 */
+function pageAssetAccount(){
+ if(S.ident!=='asset') return notMine();
+ var ro=[[L('Sign-in email','登录邮箱'),DEMO.assetEmail,true],
+   [L('Company name','企业名称'),L(DEMO.assetOrg[0],DEMO.assetOrg[1]),false],
+   [L('Unified code','统一社会信用代码'),DEMO.assetOrgId,true],
+   [L('Wallet address','钱包地址'),DEMO.assetWallet,true]];
+ var verified=S.level==='L3';
+ return pageHead(L('Account settings','账户设置'),
+   L('Asset party · your profile is held by the asset platform.','资产方 · 主体资料由资产平台维护。'),
+   btn(t('signOut'),'signout','','sm'))
+  +bar()
+  +'<div class="card"><div class="card-head"><b>'+L('Profile','主体信息')+'</b>'
+  +'<span class="pill dash">'+L('From the asset platform','来自资产平台')+'</span></div>'
+  +'<div class="card-b"><div class="pl-ro"><p>'
+  +L('These details are maintained by the asset platform. Changing them here would create a second version of the truth, so this platform keeps a read-only copy.',
+    '这些信息由资产平台维护。在本平台修改会产生第二份真相，因此本端只保存只读副本。')
+  +'</p><dl class="dl">'+ro.map(function(x){
+     return '<div><dt>'+x[0]+'</dt><dd'+(x[2]?' class="mono"':'')+'>'+E(x[1])+'</dd></div>'; }).join('')+'</dl>'
+  +'<div class="pl-actions">'+btn(L('Change on the asset platform','前往资产平台修改'),'leaveSite','usercenter','')+'</div>'
+  +'</div>'
+  +'<div class="row" style="border:0;padding:0"><div class="row-main">'
+  +'<div class="row-k">'+L('Verification status','认证状态')+'</div>'
+  +'<div class="row-v">'+(verified?pill('green',L('Verified','已认证'))
+    :S.vdetail==='action_required'?pill('red',L('Not approved','未通过')):pill('amber',L('Not verified','未认证')))
+  +'</div></div>'
+  +(verified?'':'<div class="row-act">'+btn(L('Get verified','去认证'),'go','P-F06','sm primary')+'</div>')
+  +'</div></div></div>'
+  +'<div class="card pl-gap-lg"><div class="card-head"><b>'+L('Preferences','偏好信息')+'</b>'
+  +'<span>'+L('Owned by this platform','本端可改')+'</span></div><div class="card-b">'
+  +'<div class="field" style="max-width:300px"><label for="f-lang2">'+L('Language','语言')+'</label>'
+  +'<select class="inp" id="f-lang2" data-act="langSel"><option value="en"'+(S.lang==='en'?' selected':'')
+  +'>English</option><option value="zh"'+(S.lang==='zh'?' selected':'')+'>简体中文</option></select></div>'
+  +'<label class="check"><input type="checkbox" checked><span>'
+  +L('Email me security notifications','以邮件接收安全通知')+'</span></label>'
+  +'</div></div>';
+}
+/* ======================= 资金方账户设置 ================================ */
+function pageFunderAccount(){
+ if(S.ident!=='funder') return notMine();
+ var m=credsMissing();
+ var acct=m.length?['amber',L('Credentials incomplete','凭据未补齐')]:['green',L('Active','正常')];
+ function r(k,v,act,sub){
+  return '<div class="row"><div class="row-main"><div class="row-k">'+k+'</div>'
+   +'<div class="row-v">'+v+'</div>'+(sub?'<p class="hint">'+sub+'</p>':'')+'</div>'
+   +(act?'<div class="row-act">'+act+'</div>':'')+'</div>';
+ }
+ return pageHead(L('Account settings','账户设置'),
+   L('Funder · sign-in credentials and preferences.','资金方 · 登录凭据与偏好。'),
+   btn(t('signOut'),'signout','','sm'))
+  +bar()
+  +'<div class="anchors" role="tablist">'
+  +'<button class="anchor" role="tab" aria-selected="true" data-act="anchor" data-v="acc">'+L('Account','账号信息')+'</button>'
+  +'<button class="anchor" role="tab" aria-selected="false" data-act="anchor" data-v="pref">'+L('Preferences','偏好信息')+'</button>'
+  +'</div>'
+  +'<h2 class="sec-title" id="sec-acc">'+L('Account','账号信息')+'</h2>'
+  +'<div class="rows">'
+  +r(L('Sign-in email','登录邮箱'),
+     S.creds.email?'<span class="mono">'+E(DEMO.funderEmail)+'</span>':pill('dash',L('Not linked','未绑定')),
+     btn(S.creds.email?L('Change','修改'):L('Add','绑定'),'openEmail','','sm'),
+     L('This is your <b>sign-in email</b>. Your business contact email is managed in your institution profile and is not affected here.',
+       '这是你的<b>登录邮箱</b>。机构资料中的业务联系邮箱在入驻资料里单独维护，不受此处影响。')
+     +'<br>'+L('Use a long-lived company email. Avoid personal mailboxes or accounts tied to one employee — this address can’t be replaced if you lose access to it.',
+       '请使用长期有效的企业邮箱，避免使用个人邮箱或离职风险高的个人账号——该邮箱一旦无法访问将无法更换。'))
+  +r(L('Password','密码'),
+     S.hasPassword?pill('gray',L('Set','已设置')):pill('dash',L('Not set','未设置')),
+     btn(S.hasPassword?L('Change','修改'):L('Set','设置'),'openPwd','','sm'),
+     L('Password is optional — you can always sign in with a code or your wallet.',
+       '密码是可选的，你随时可以用验证码或钱包登录。'))
+  +r(L('Wallet address','钱包地址'),
+     S.creds.wallet
+       ? '<span class="hash"><span class="val">'+E(DEMO.funderWallet.slice(0,10)+'…'+DEMO.funderWallet.slice(-6))+'</span>'
+         +'<span class="ico" data-act="copyAddr" role="button" tabindex="0" title="'+L('Copy','复制')+'">'+CF.ICO.copy+'</span>'
+         +'<span class="ico" data-act="explorer" role="button" tabindex="0" title="'+L('Open in explorer','区块浏览器')+'">'+CF.ICO.ext+'</span></span>'
+       : pill('dash',L('Not linked','未绑定')),
+     /* 绑定后不存在任何形态的修改 / 解绑入口；服务端独立拒绝 */
+     S.creds.wallet?'':btn(L('Link external wallet','链接外部钱包'),'openWallet','bind','sm primary'),
+     S.creds.wallet
+       ? L('A linked wallet address cannot be changed here or by self-service.','已绑定的钱包地址在本端与自助渠道都不可更换。')
+       : L('This wallet address can’t be changed after linking. Make sure you’ll keep long-term access to it.',
+           '该钱包地址绑定后不可更换，请确保长期可访问。'))
+  +r(L('Account status','账户状态'),pill(acct[0],acct[1]),'','')
+  +r(L('Institution','机构信息'),
+     {L0:pill('gray',L('Not submitted','未提交')),L1:pill('amber',L('Under review','审核中')),
+      L2:pill('red',L('Returned for changes','已驳回')),L3:pill('green',L('Approved','已通过'))}[S.level],
+     btn(L('Open','进入'),'go','P-F27','sm'),
+     L('Your institution profile lives on its own page under Account.','机构资料在「账户 · 机构信息」页维护。'))
+  +'</div>'
+  +'<h2 class="sec-title pl-gap-lg" id="sec-pref">'+L('Preferences','偏好信息')+'</h2>'
+  +'<div class="card"><div class="card-b">'
+  +'<div class="field" style="max-width:300px"><label for="f-lang3">'+L('Language','语言')+'</label>'
+  +'<select class="inp" id="f-lang3" data-act="langSel"><option value="en"'+(S.lang==='en'?' selected':'')
+  +'>English</option><option value="zh"'+(S.lang==='zh'?' selected':'')+'>简体中文</option></select></div>'
+  +'<div class="field" style="max-width:300px"><label for="f-tz">'+L('Time zone','时区')+'</label>'
+  +'<select class="inp" id="f-tz"><option>Asia/Shanghai (UTC+8)</option><option>UTC</option></select></div>'
+  +'</div></div>';
+}
+/* 身份不符或游客直接落进来：给解释与出路，不白屏、不假装有权限。
+   游客点「登录」时先生成指向本页的回跳句柄，登录完会落回这一页。 */
+function notMine(){
+ var guest=S.ident==='guest';
+ return pageHead(CF.pageName(S.page),'','')
+  +'<div class="card"><div class="card-b shell">'+CF.ICO.lock
+  +'<p><b>'+L('Not available for this session','当前会话不可用')+'</b><br>'
+  +(guest?L('Sign in to see this page. We’ll bring you straight back here.',
+      '登录后即可查看本页。登录完会直接把你带回这里。')
+    :L('You are signed in with a different role. Each role has its own pages here.',
+      '当前身份与本页不符。两种身份在这里各有自己的页面。'))+'</p>'
+  +'<div class="pl-actions" style="justify-content:center">'
+  +(guest?btn(L('Sign in','登录'),'signinHere','','primary')
+    :btn(L('Go to my pages','前往我的页面'),'go',S.ident==='asset'?'P-F04':'P-F24','primary'))
+  +btn(L('Back','返回'),'go','P-F51','')+'</div></div></div>';
+}
+
+/* ================= 资金方登录 / 申请入驻（本册唯一入口页）============== */
+/* 「申请入驻」与「资金方登录」共用同一页面、同一套凭据校验与建号逻辑，
+   差别只在入口文案与建号后的引导。两条副标题刻意互相对称：无论从哪个
+   入口进来，都会被明确告知「另一种情况也走这里」。 */
+const P20={
+ apply:{ti:['Apply to join','申请入驻'],
+   sub:['Already have an account? Just sign in below — the steps are the same.',
+        '已有账号？直接在下方登录即可，步骤相同。']},
+ sign_in:{ti:['Funder sign in','资金方登录'],
+   sub:['New here? Signing in with a code or wallet creates your account automatically.',
+        '第一次来？用验证码或钱包登录即自动创建账号。']}
+};
+const TABS=[['email_code',['Email code','邮箱验证码'],
+   ['We’ll email you a 6-digit code. If you’re new, your account is created automatically.',
+    '我们会向该邮箱发送 6 位验证码。若你是新用户，账号将自动创建。']],
+ ['email_password',['Email & password','邮箱密码'],
+   ['Signing in with a password requires an existing account.','密码登录需要已有账号。']],
+ ['wallet_signature',['Wallet','钱包签名'],
+   ['Enter or paste the wallet address you want to sign in with, then sign a message to prove ownership.',
+    '填写或粘贴你要用来登录的钱包地址，然后签署一条消息以证明所有权。']]];
+const P20_STATES=[['default','Default','默认'],['submitting','Submitting','提交中'],
+ ['fail','Sign-in failed','登录失败'],['sent','Code sent','验证码已发送'],
+ ['locked','Locked','账户锁定'],['disabled','Account disabled','账号已停用']];
+
+function pageFunderLogin(){
+ var c=P20[S.entry], st=S.st;
+ /* 锁定态：整个表单区替换为锁定提示 + 剩余等待时间，三个 Tab 全部不可用 */
+ if(st==='locked') return focusWrap('<div class="card"><div class="card-b pl-lock">'
+   +'<div class="pl-lock-ico">'+CF.ICO.lock+'</div>'
+   +'<h1 class="pl-title">'+L('Temporarily locked','账户临时锁定')+'</h1>'
+   +'<p class="pl-sub">'+L('Too many failed attempts. Sign-in and password reset are both unavailable until the lock expires.',
+     '连续失败次数过多。锁定期间所有登录方式与设置 / 重置密码流程全部不可用。')+'</p>'
+   +'<p class="pl-count">09:42</p>'
+   +'<div class="pl-actions" style="justify-content:center">'+btn(L('Back','返回'),'st','default','')+'</div>'
+   +stateBar(P20_STATES,'st',st,'margin:20px 0 0')+'</div></div>',
+   L('Funder sign in','资金方登录'));
+ var body='<h1 class="pl-title">'+L(c.ti[0],c.ti[1])+'</h1>'
+  +'<p class="pl-sub">'+L(c.sub[0],c.sub[1])+'</p>'
+  +'<div class="tabs even" role="tablist">'+TABS.map(function(x){
+     return '<button class="tab" role="tab" type="button" data-act="tab" data-v="'+x[0]+'"'
+      +' aria-selected="'+(S.tab===x[0])+'">'+L(x[1][0],x[1][1])+'</button>'; }).join('')+'</div>'
+  +'<p class="pl-sub" style="margin-bottom:16px">'
+  +L(TABS.filter(function(x){return x[0]===S.tab;})[0][2][0],
+     TABS.filter(function(x){return x[0]===S.tab;})[0][2][1])+'</p>'
+  +'<div class="card"><div class="card-b">'+tabBody(st)+'</div></div>'
+  +'<div class="pl-center pl-gap-lg"><button class="btn-link" type="button" data-act="switchRole">'
+  +L('Not a funder? Choose a different account type','不是资金方？重新选择用户类型')+'</button></div>'
+  +stateBar(P20_STATES,'st',st,'margin:20px 0 0');
+ return focusWrap(body,L('Funder sign in','资金方登录 / 申请入驻'));
+}
+function tabBody(st){
+ var busy=st==='submitting';
+ var agreeRow='<label class="check"><input type="checkbox" data-act="agreeChk"'
+   +(S.form.agree?' checked':'')+'><span>'
+   +L('I have read and accept the platform service agreement.','我已阅读并同意《平台服务协议》。')
+   +'</span></label>';
+ if(st==='disabled') return note('red','<p>'+L('This account has been disabled. Contact support@demo-chainfinancing.test to restore it.',
+   '该账号已被停用。请联系 support@demo-chainfinancing.test 恢复。')+'</p>',L('Account disabled','账号已停用'));
+ if(S.tab==='email_code'){
+  var sent=st==='sent';
+  return field('email',L('Email','邮箱'),'you@company.com','email',S.form.email,S.err.email)
+   +(sent?field('code',L('Verification code','验证码'),'······','text',S.form.code,S.err.code,
+       L('Valid for 10 minutes.','验证码 10 分钟内有效。')):'')
+   +'<div class="btnbar">'
+   +(sent?btn(busy?'<span class="spinner"></span>'+L('Signing in','登录中'):L('Sign in','登录'),
+       'submitCode','','primary block',busy?' disabled':'')
+     :btn(L('Send code','获取验证码'),'sendCode','','primary block'))
+   +'</div>'+agreeRow;
+ }
+ if(S.tab==='email_password'){
+  return field('email',L('Email','邮箱'),'you@company.com','email',S.form.email,S.err.email)
+   +'<div class="field"><label for="f-pwd">'+L('Password','密码')+'</label>'
+   +'<div class="inp-affix"><input class="inp'+(st==='fail'?' err':'')+'" id="f-pwd" data-f="pwd" data-k="pwd" type="'
+   +(S.form._showPwd?'text':'password')+'" value="'+E(S.form.pwd||'')+'"'+(st==='fail'?' aria-invalid="true"':'')+'>'
+   +'<button class="affix" type="button" data-act="showPwd" aria-label="'
+   +L('Show password','显示密码')+'">'+(S.form._showPwd?CF.ICO.eyeOff:CF.ICO.eye)+'</button></div>'
+   /* 「邮箱不存在」「未设密码」「密码错误」三种情形返回完全一致的提示 */
+   +(st==='fail'?'<p class="err-msg" role="alert"><span>!</span>'
+     +L('That email and password combination isn’t correct.','邮箱与密码不匹配。')+'</p>':'')+'</div>'
+   +'<div class="btnbar">'+btn(busy?'<span class="spinner"></span>'+L('Signing in','登录中'):L('Sign in','登录'),
+       'submitPwd','','primary block',busy?' disabled':'')+'</div>'
+   +agreeRow
+   +'<div class="pl-actions" style="justify-content:space-between">'
+   +'<button class="btn-link" type="button" data-act="go" data-v="P-F21">'+L('Forgot password?','忘记密码？')+'</button>'
+   +'<button class="btn-link" type="button" data-act="go" data-v="P-F21">'+L('No password yet? Set one','没有密码？设置密码')+'</button></div>';
+ }
+ var addr=S.walletAddr||'';
+ var fmtBad=addr&&!/^0x[0-9a-fA-F]{40}$/.test(addr.trim());
+ var eip55=addr&&/^0x[0-9a-f]{40}$/.test(addr.trim());
+ return field('addr',L('Wallet address','钱包地址'),'0x…','text',addr,
+     fmtBad?L('Use 0x followed by 40 hexadecimal characters.','请填写 0x 开头 + 40 位十六进制字符。'):'',
+     L('You can paste it; leading and trailing spaces are removed and case is not significant.',
+       '支持粘贴，前后空格自动去除，大小写不敏感。'))
+  +(eip55?note('amber','<p>'+L('This address does not pass the EIP-55 checksum. That is common when copying from a block explorer, so you can continue.',
+     '该地址未通过 EIP-55 校验和。从区块浏览器复制时很常见，可以继续。')+'</p>'):'')
+  +'<div class="btnbar">'+btn(L('Link external wallet','链接外部钱包'),'openWallet','login','primary block',
+      (!addr||fmtBad)?' disabled':'')+'</div>'
+  +agreeRow
+  +'<p class="hint">'+L('If you type the wrong address nothing happens: the signature will not match it and the request is refused, so you are never signed into the wrong account. Just correct it and try again.',
+    '填错地址什么也不会发生：签名与地址对不上，请求会被直接拒绝，不会登录到错误账户。改正后重试即可。')+'</p>';
+}
+/* ================ 设置 / 重置密码（同一套流程，两个入口）=============== */
+/* 标题与提示始终中性，不因邮箱是否存在、是否已设过密码而变化。 */
+function pagePwdEmail(){
+ var st=S.st;
+ return focusWrap('<div class="card"><div class="card-b">'
+  +'<h1 class="pl-title">'+L('Set your password','设置登录密码')+'</h1>'
+  +'<p class="pl-sub">'+L('Enter the email you sign in with. We’ll send a verification code.',
+    '填写你的登录邮箱，我们会向它发送验证码。')+'</p>'
+  +field('email',L('Email','邮箱'),'you@company.com','email',S.form.email,S.err.email)
+  +(st==='sent'?note('','<p>'+L('If an account exists for this address, we’ve sent a verification code to it.',
+     '若该邮箱已注册，我们已向它发送验证码。')+'</p>'):'')
+  +'<div class="btnbar">'
+  +(st==='sent'?btn(L('Continue','继续'),'go','P-F22','primary block')
+    :btn(st==='submitting'?'<span class="spinner"></span>'+L('Sending','发送中'):L('Send code','获取验证码'),
+        'pwdSend','','primary block',st==='submitting'?' disabled':''))+'</div>'
+  +stateBar([['default','Default','默认'],['submitting','Sending','发送中'],['sent','Sent','已发送']],
+     'st',st,'margin:20px 0 0')
+  +'</div></div>',L('Set your password','设置密码'));
+}
+function pwdRules(v,cmp){
+ var ok1=v.length>=8&&v.length<=20, ok2=/[A-Za-z]/.test(v)&&/[0-9]/.test(v)&&!/\s/.test(v),
+     ok3=!cmp||(v&&v!=='Demo2026!');
+ function rule(on,tx){ return '<li data-ok="'+(on?1:0)+'"><span class="box">'+(on?'✓':'')+'</span>'+tx+'</li>'; }
+ return {ok:ok1&&ok2&&ok3, html:'<ul class="rules">'
+   +rule(ok1,L('8–20 characters','8–20 个字符'))
+   +rule(ok2,L('At least one letter and one number; no spaces','至少 1 个字母 + 1 个数字，不含空格'))
+   +(cmp?rule(ok3,L('Different from your current password','与原密码不同')):'')+'</ul>'};
+}
+function pagePwdNew(){
+ var v=S.form.np||'', r=pwdRules(v,true), ok4=v&&v===S.form.np2;
+ return focusWrap('<div class="card"><div class="card-b">'
+  +'<h1 class="pl-title">'+L('Set your password','设置登录密码')+'</h1>'
+  +'<p class="pl-sub">'+L('Choose a password you can use alongside code and wallet sign-in.',
+    '设置一个可与验证码、钱包并用的登录密码。')+'</p>'
+  +field('np',L('New password','新密码'),'','password',S.form.np,'')+r.html+'<div class="pl-gap"></div>'
+  +field('np2',L('Confirm new password','确认新密码'),'','password',S.form.np2,
+     S.form.np2&&!ok4?L('Passwords do not match.','两次输入不一致。'):'')
+  +'<div class="btnbar">'+btn(L('Save and sign in','保存并登录'),'pwdSave','','primary block',
+     (r.ok&&ok4)?'':' disabled')+'</div>'
+  +'<p class="hint">'+L('Saving signs out every session on this account, including this device, and sends a security notification to your email.',
+    '保存后该账户的全部会话失效（含当前设备），并向绑定邮箱发送安全通知。')+'</p>'
+  +'</div></div>',L('Set your password','设置新密码'));
+}
+
+/* ================================ 弹层 =================================== */
+function shellModal(title,body,foot,wide,lock){
+ return '<div class="mask" data-act="close"><div class="modal'+(wide?' wide':'')
+  +'" role="dialog" aria-modal="true" aria-label="'+E(title)+'">'
+  +'<div class="modal-h"><b>'+title+'</b>'
+  +(lock?'':'<button class="modal-x" type="button" data-act="close" aria-label="'+t('close')+'">✕</button>')
+  +'</div><div class="modal-b">'+body+'</div>'
+  +(foot?'<div class="modal-f">'+foot+'</div>':'')+'</div></div>';
+}
+/* 类型选择弹层：与整页是同一组件的另一种呈现，两张卡片的文案逐字一致，
+   弹层形态额外带一行上下文说明。游客不是「缺什么」，而是「你是谁」还没回答，
+   所以这里用的是类型选择，不是受限引导。 */
+function modalRole(){
+ var ctx=S.modal.ctx;
+ return shellModal(L(ROLE.title[0],ROLE.title[1]),
+  '<p class="pl-sub" style="margin-bottom:14px">'
+   +(ctx?L('To continue with “{c}”, tell us which side you are on.','要继续「{c}」，先告诉我们你是哪一方。')
+        .replace('{c}',L(ctx[0],ctx[1])):L(ROLE.sub[0],ROLE.sub[1]))+'</p>'
+   +roleCards()
+   +'<div class="pl-guest"><button class="btn-link" type="button" data-act="close">'
+   +L('Not now','暂不选择')+'</button></div>','',true);
+}
+/* 受限引导弹层：四段结构，自上而下顺序固定。 */
+function modalGuide(){
+ var g=GUIDE[S.modal.key], r=S.modal.row, extra='';
+ if(g.extra==='progress')
+  extra='<div class="pl-seg4"><div class="pl-seg4-h">'+L('Progress','进度')+'</div>'
+   +'<ul class="tl"><li><b>'+L('Submitted','已提交')+'</b><br><span class="tiny">'+E(AP.submitted)+'</span></li>'
+   +'<li><b>'+L('Under review','平台审核中')+'</b><br><span class="tiny">'
+   +L('Estimated decision within {n} business days.','预计 {n} 个工作日内出结论。').replace('{n}',AP.days)+'</span></li>'
+   +'<li class="faint"><b>'+L('Decision','出具结论')+'</b></li></ul>'
+   +'<button class="btn-link" type="button" data-act="support">'+L('Contact support','联系客服')+'</button></div>';
+ /* 驳回摘要：问题项条数 + 首条，全文在申请详情页（P-F34） */
+ if(g.extra==='reject')
+  extra='<div class="pl-seg4"><div class="pl-seg4-h">'
+   +L('{n} item(s) need changing','需要修改 {n} 项').replace('{n}',REJ.length)+'</div>'
+   +'<dl class="dl"><div><dt>'+L(apFieldOf(REJ[0].k).n[0],apFieldOf(REJ[0].k).n[1])+'</dt>'
+   +'<dd class="muted">'+L(REJ[0].tx[0],REJ[0].tx[1])+'</dd></div></dl>'
+   +'<button class="btn-link" type="button" data-act="go" data-v="P-F34">'
+   +L('View all reasons','查看全部原因')+'</button></div>';
+ var main=g.cross?btn(L(g.btn[0],g.btn[1]),'leaveSite','usercenter','primary')
+   :btn(L(g.btn[0],g.btn[1]),'go',g.to,'primary');
+ return shellModal(L(g.ti[0],g.ti[1]),
+  '<p class="lead" style="margin:0 0 4px">'+L(g.why[0],g.why[1])+'</p>'
+  +(r?'<p class="hint">'+L('You were trying to: {c}','你刚才要做的是：{c}').replace('{c}',L(r[1][0],r[1][1]))+'</p>':'')
+  +extra,
+  btn(L('Later','稍后再说'),'close','','')+main);
+}
+/* 离站告知：跨域跳转前必须显式告知并展示目标平台名称，不用 Toast——
+   Toast 出现即消失，用户来不及读就已经跳走。 */
+function modalLeave(){
+ return shellModal(L('You are leaving the financial service platform','即将离开金融服务平台'),
+  '<p class="lead" style="margin:0 0 12px">'
+  +L('We will take you to <b>{p}</b> to continue.','我们将带你前往<b>「{p}」</b>继续操作。')
+    .replace('{p}',L(DEMO.idpName[0],DEMO.idpName[1]))+'</p>'
+  +'<p class="pl-pre">https://'+DEMO.idpHost+(S.modal.to==='usercenter'?'/user-center':'/oauth/authorize')+'</p>'
+  +'<p class="hint">'+L('We remember what you were doing, so you come back to exactly that.',
+    '我们会记住你刚才在做的事，回来时直接落回那里。')+'</p>'
+  +(S.modal.from==='role'?'<div class="pl-center pl-gap"><button class="btn-link" type="button" data-act="switchRole">'
+    +L('Choose a different account type','切换身份')+'</button></div>':''),
+  btn(t('cancel'),'close','','')+btn(t('contin'),'leaveGo',S.modal.to||'authorize','primary'));
+}
+/* 滑块人机校验：所有发送邮箱验证码的入口一律前置，无例外。 */
+function modalCaptcha(){
+ var v=S.modal.view||'idle', x=(v==='ok'?133:0);
+ var msg=v==='ok'?['ok',t('capVerified')]:v==='fail'?['bad',t('capFail')]
+   :v==='trouble'?['bad',t('capTrouble')]:v==='cool'?['bad',t('capCool',{n:47})]
+   :v==='load'?['bad',t('capLoadFail')]:['',t('capSlide')];
+ return '<div class="mask" data-act="close"><div class="modal" role="dialog" aria-modal="true" aria-label="'+t('capTitle')+'">'
+  +'<div class="modal-h"><b>'+t('capTitle')+'</b>'
+  +'<button class="modal-x" type="button" data-act="capView" data-v="idle" title="'+t('capRefresh')
+  +'" aria-label="'+t('capRefresh')+'">⟳</button>'
+  +'<button class="modal-x" type="button" data-act="close" aria-label="'+t('close')+'">✕</button></div>'
+  +'<div class="modal-b">'
+  +'<div class="cap-canvas"><canvas id="capBg" width="328" height="180"></canvas>'
+  +'<canvas id="capPiece" class="cap-piece" width="328" height="180" style="transform:translateX('+x+'px)"></canvas></div>'
+  +'<div class="cap-track'+(v==='ok'?' ok':(v==='fail'||v==='cool'||v==='trouble')?' bad':'')+(v==='cool'?' cool':'')+'">'
+  +'<div class="cap-fill" style="width:'+(x+48)+'px"></div>'
+  +'<span class="tip">'+(v==='idle'?t('capSlide'):'')+'</span>'
+  +'<div class="cap-knob" style="transform:translateX('+x+'px)" role="img" aria-label="'+t('capSlide')+'">›</div></div>'
+  +'<p class="cap-msg '+msg[0]+'" role="status">'+msg[1]+'</p>'
+  +'<p class="tiny" style="margin-top:8px;text-align:center">'+t('capHelp')+'</p>'
+  +stateBar([['idle','Default','默认'],['ok','Verified','通过'],['fail','Failed','失败'],
+             ['trouble','3 failures','连续 3 次失败'],['cool','Cooldown','冷却'],['load','Load failed','加载失败']],
+            'capView',v,'margin:12px 0 0')
+  +'</div><div class="modal-f">'+btn(t('cancel'),'close','','')
+  +btn(t('contin'),'capPass','','primary')+'</div></div></div>';
+}
+function drawCaptcha(){
+ var bg=q('#capBg'), pc=q('#capPiece'); if(!bg||!pc) return;
+ var W=328,H=180,PS=46,tx=133,ty=58,i,x,y,w,h,seed=7;
+ function rnd(){ seed=(seed*9301+49297)%233280; return seed/233280; }
+ var off=document.createElement('canvas'); off.width=W; off.height=H;
+ var o=off.getContext('2d'), hue=212, g=o.createLinearGradient(0,0,W,H);
+ g.addColorStop(0,'hsl('+hue+',58%,74%)'); g.addColorStop(1,'hsl('+((hue+52)%360)+',52%,58%)');
+ o.fillStyle=g; o.fillRect(0,0,W,H);
+ for(i=0;i<9;i++){
+  o.globalAlpha=0.12+rnd()*0.2; o.fillStyle='hsl('+((hue+i*26)%360)+',62%,'+(52+rnd()*32)+'%)';
+  x=rnd()*W; y=rnd()*H; w=24+rnd()*140; h=10+rnd()*90;
+  o.beginPath(); o.roundRect?o.roundRect(x,y,w,h,10):o.rect(x,y,w,h); o.fill();
+ }
+ o.globalAlpha=1;
+ function path(c,px,py){
+  var rr=6,k=PS*0.22;
+  c.beginPath(); c.moveTo(px+rr,py); c.lineTo(px+PS*0.42,py);
+  c.arc(px+PS*0.5,py,k,Math.PI,0,true);
+  c.lineTo(px+PS-rr,py); c.quadraticCurveTo(px+PS,py,px+PS,py+rr);
+  c.lineTo(px+PS,py+PS*0.38); c.arc(px+PS,py+PS*0.5,k,-Math.PI/2,Math.PI/2,false);
+  c.lineTo(px+PS,py+PS-rr); c.quadraticCurveTo(px+PS,py+PS,px+PS-rr,py+PS);
+  c.lineTo(px+rr,py+PS); c.quadraticCurveTo(px,py+PS,px,py+PS-rr);
+  c.lineTo(px,py+rr); c.quadraticCurveTo(px,py,px+rr,py); c.closePath();
+ }
+ var b=bg.getContext('2d'); b.clearRect(0,0,W,H); b.drawImage(off,0,0);
+ b.save(); path(b,tx,ty); b.fillStyle='rgba(16,24,40,.55)'; b.fill();
+ b.strokeStyle='rgba(255,255,255,.75)'; b.lineWidth=1.5; b.stroke(); b.restore();
+ var p=pc.getContext('2d'); p.clearRect(0,0,W,H);
+ p.save(); path(p,0,ty); p.clip(); p.drawImage(off,-tx,0); p.restore();
+ p.save(); path(p,0,ty); p.strokeStyle='rgba(255,255,255,.9)'; p.lineWidth=1.5; p.stroke(); p.restore();
+}
+
+/* 链接外部钱包：连接 → 用途说明 → 签名。所有钱包状态提示统一走 Toast。
+   用途说明必须在本端页面、「签名」按钮的正上方、钱包弹窗弹出之前——
+   钱包内文案要等弹窗弹出来才看得到，那时犹豫的人已经点了取消。 */
+function modalWallet(){
+ var v=S.modal.view||'pick', body;
+ if(v==='pick'){
+  body='<p class="lead" style="margin:0 0 14px">'
+   +L('More than one wallet is available in this browser. Choose which one to use.',
+      '本浏览器检测到多个钱包，请选择要使用的一个。')+'</p><div class="pl-wallets">'
+   +['Demo Wallet A','Demo Wallet B','Demo Wallet C'].map(function(n,i){
+     return '<button class="pl-wallet" type="button" data-act="wView" data-v="sign"><span class="av">W'+(i+1)+'</span>'
+      +'<span><b>'+n+'</b><span>'+t('demo')+'</span></span></button>'; }).join('')+'</div>';
+ } else if(v==='sign'){
+  body='<dl class="dl" style="margin-bottom:14px"><div><dt>'+L('Address','地址')
+   +'</dt><dd class="mono">'+E(S.walletAddr||DEMO.funderWallet)+'</dd></div>'
+   +'<div><dt>'+L('Network','网络')+'</dt><dd>Demo EVM Testnet · chainId 11155111</dd></div></dl>'
+   +note('','<p>'+L('Signing this message proves you own this wallet. It does not send a transaction, does not cost gas, and does not move or approve any assets.',
+     '签署这条消息只用于证明你拥有该钱包。它不会发起交易、不消耗 gas，也不会转移或授权任何资产。')+'</p>')
+   +note('amber','<p>'+L('This wallet address can’t be changed after linking. Make sure you’ll keep long-term access to it.',
+     '该钱包地址绑定后不可更换，请确保长期可访问。')+'</p>');
+ } else if(v==='waiting'){
+  body='<div class="pl-center" style="padding:20px 0"><div class="spinner" style="margin:0 auto 14px"></div>'
+   +'<p class="lead">'+L('Waiting for your wallet…','等待钱包确认…')+'</p>'
+   +'<p class="hint">'+L('Hardware wallets can take a while. We do not time out early.',
+     '硬件钱包可能较慢，界面不会自行提前超时。')+'</p></div>';
+ } else {
+  var m={ mismatch:['The signature does not match the address you entered.','签名恢复地址与你填写的地址不一致。'],
+    taken:['This address is already linked to another funder account.','该地址已被另一资金方账号绑定。'],
+    locked:['Your wallet is locked. Unlock it and try again.','你的钱包已锁定，请先解锁后重试。'],
+    switched:['You switched accounts in your wallet. A linked address cannot be re-pointed.',
+              '你在钱包里切换了账户。已绑定的地址不可改绑。'] }[v];
+  body=note('red','<p>'+L(m[0],m[1])+'</p>')
+   +(v==='taken'?'<button class="btn-link" type="button" data-act="support">'+L('Contact support','联系客服')+'</button>':'');
+ }
+ return shellModal(L('Link external wallet','链接外部钱包'),
+  body+stateBar([['pick','Choose wallet','选择钱包'],['sign','Ready to sign','待签名'],
+    ['waiting','Waiting','等待签名'],['mismatch','Address mismatch','地址不一致'],
+    ['taken','Address taken','地址已被占用'],['locked','Wallet locked','钱包已锁定'],
+    ['switched','Account switched','钱包内切换账户']],'wView',v,'margin:16px 0 0'),
+  btn(t('cancel'),'close','','')
+  +(v==='sign'?btn(L('Sign and continue','签名并继续'),'wSign','','primary'):''),true);
+}
+/* 凭据补齐弹层：缺钱包 / 缺邮箱 / 两项都缺三种形态；补完原地继续，不跳走。 */
+function modalCreds(){
+ var m=credsMissing(), i=S.modal.step||0, cur=m[i]||m[0], two=m.length===2;
+ if(!cur) return '';
+ var ti=cur==='wallet'?L('Link your wallet to continue','绑定钱包后继续')
+                      :L('Add your email to continue','绑定邮箱后继续');
+ var body=(two?'<div class="steps"><span class="s" data-on="'+(i===0?1:0)+'" data-done="'+(i>0?1:0)+'">'
+   +'<span class="n">1</span>'+L('Wallet','钱包')+'</span><span class="ln"></span>'
+   +'<span class="s" data-on="'+(i===1?1:0)+'"><span class="n">2</span>'+L('Email','邮箱')+'</span>'
+   +'<span class="nav-tag">'+(i+1)+'/2</span></div>':'');
+ if(cur==='wallet'){
+  body+=field('addr',L('Wallet address','钱包地址'),'0x…','text',S.walletAddr,'',
+    L('Paste it, or type it. Case is not significant.','支持粘贴或手填，大小写不敏感。'))
+   +'<div class="btnbar">'+btn(L('Link external wallet','链接外部钱包'),'openWallet','creds','primary block',
+      S.walletAddr?'':' disabled')+'</div>'
+   +note('amber','<p>'+L('This wallet address can’t be changed after linking. Make sure you’ll keep long-term access to it.',
+     '该钱包地址绑定后不可更换，请确保长期可访问。')+'</p>');
+ } else {
+  body+=field('email',L('Email','邮箱'),'you@company.com','email',S.form.email,S.err.email)
+   +'<div class="inp-row"><button class="btn" type="button" data-act="openCap" data-v="creds">'
+   +L('Get code','获取验证码')+'</button></div><div class="pl-gap"></div>'
+   +field('code',L('Verification code','验证码'),'······','text',S.form.code,'')
+   +note('amber','<p>'+L('Use a long-lived company email. Avoid personal mailboxes or accounts tied to one employee — this address can’t be replaced if you lose access to it.',
+     '请使用长期有效的企业邮箱，避免使用个人邮箱或离职风险高的个人账号——该邮箱一旦无法访问将无法更换。')+'</p>');
+ }
+ body+='<p class="tiny pl-gap">'+L('Closing this changes nothing, and the action you were doing is not resumed.',
+   '关闭本弹层不改变任何状态，刚才那个动作也不会被继续。')+'</p>';
+ return shellModal(ti,body,
+  btn(t('cancel'),'close','','')+btn(two&&i===0?L('Next','下一步'):L('Done','完成'),'credsNext','','primary'));
+}
+/* 再认证：展示该账户可用的全部因子供自选，绝不写死成「必须输密码」——
+   用钱包建号的账号可能从来没设过密码，写死会把这类账号永久锁在账户设置之外。 */
+function modalReauth(){
+ var f=S.modal.factor||null, avail=[];
+ if(S.hasPassword) avail.push(['password',L('Current password','当前密码')]);
+ if(S.creds.wallet) avail.push(['wallet',L('Wallet signature','钱包签名')]);
+ if(S.creds.email) avail.push(['email_code',L('Email code','邮箱验证码')]);
+ var pick=f||(avail.length===1?avail[0][0]:null);
+ var body='<p class="lead" style="margin:0 0 14px">'
+  +L('Confirm it is you before changing a sign-in credential. Choose any factor you have.',
+     '修改登录凭据前请先确认身份，任选一种你拥有的因子。')+'</p>'
+  +'<div class="seg" style="margin-bottom:14px">'+avail.map(function(a){
+     return '<button type="button" data-act="reFactor" data-v="'+a[0]+'" aria-pressed="'+(pick===a[0])+'">'
+      +a[1]+'</button>'; }).join('')+'</div>';
+ if(pick==='password') body+=field('cur',L('Current password','当前密码'),'','password',S.form.cur,S.err.cur);
+ else if(pick==='wallet') body+='<div class="btnbar">'+btn(L('Sign with wallet','用钱包签名'),'openWallet','reauth','block')+'</div>';
+ else if(pick==='email_code') body+='<div class="inp-row" style="margin-bottom:12px">'
+   +'<button class="btn" type="button" data-act="openCap" data-v="reauth">'+L('Get code','获取验证码')+'</button></div>'
+   +field('code',L('Verification code','验证码'),'······','text',S.form.code,'');
+ else body+=note('','<p>'+L('Pick a factor above.','请先在上方选择一种因子。')+'</p>');
+ body+='<p class="hint">'+L('Once confirmed, you will not be asked again for 10 minutes.',
+   '通过后 10 分钟内不重复要求。')+'</p>';
+ return shellModal(L('Confirm it’s you','请确认身份'),body,
+  btn(t('cancel'),'close','','')+btn(t('contin'),'reGo','','primary',pick?'':' disabled'));
+}
+/* 修改 / 绑定登录邮箱：验旧邮箱这一步不可跳过；账户原本无邮箱时本流程即
+   「绑定邮箱」——跳过该步，且首次绑定不触发会话失效。 */
+function modalEmail(){
+ var bind=!S.creds.email, i=S.modal.step||0;
+ var steps=bind?[['new',L('New email','新邮箱')]]
+   :[['old',L('Verify current email','验证当前邮箱')],['new',L('New email','新邮箱')]];
+ var cur=steps[i]?steps[i][0]:'new';
+ var body=(steps.length>1?'<div class="steps">'+steps.map(function(s,k){
+    return '<span class="s" data-on="'+(k===i?1:0)+'" data-done="'+(k<i?1:0)+'"><span class="n">'+(k+1)
+     +'</span>'+s[1]+'</span>'+(k<steps.length-1?'<span class="ln"></span>':''); }).join('')+'</div>':'');
+ if(cur==='old'){
+  body+='<p class="lead" style="margin:0 0 12px">'
+   +L('We sent a code to <b>{e}</b>.','我们已向 <b>{e}</b> 发送验证码。').replace('{e}',E(DEMO.funderEmail))+'</p>'
+   +'<div class="inp-row" style="margin-bottom:12px"><button class="btn" type="button" data-act="openCap" data-v="oldmail">'
+   +L('Get code','获取验证码')+'</button></div>'
+   +field('code',L('Verification code','验证码'),'······','text',S.form.code,'')
+   +note('amber','<p>'+L('This step cannot be skipped. If you no longer have access to this mailbox you cannot complete the change, and the address stays as it is.',
+     '本步不可跳过。若你已无法访问该邮箱，本流程无法完成，邮箱将永久停留在旧地址。')+'</p>',
+     L('Before you start','开始之前请知悉'));
+ } else {
+  body+=field('newmail',L('New email','新邮箱'),'you@company.com','email',S.form.newmail,S.err.newmail)
+   +'<div class="inp-row" style="margin-bottom:12px"><button class="btn" type="button" data-act="openCap" data-v="newmail">'
+   +L('Get code','获取验证码')+'</button></div>'
+   +field('code2',L('Verification code','验证码'),'······','text',S.form.code2,'')
+   +note('','<p>'+L('This is your <b>sign-in email</b>. Your business contact email is managed in your institution profile and is not affected here.',
+      '这是你的<b>登录邮箱</b>。机构资料中的业务联系邮箱在入驻资料里单独维护，不受此处影响。')+'</p>')
+   +(bind?note('amber','<p>'+L('Use a long-lived company email. Avoid personal mailboxes or accounts tied to one employee — this address can’t be replaced if you lose access to it.',
+      '请使用长期有效的企业邮箱，避免使用个人邮箱或离职风险高的个人账号——该邮箱一旦无法访问将无法更换。')+'</p>'):'')
+   +'<p class="hint">'+(bind?L('First-time linking does not sign out your other sessions.','首次绑定不触发会话失效。')
+      :L('Saving signs out every session on this account, including this device, and notifies both the old and the new address.',
+          '保存后该账户全部会话失效（含当前设备），并向旧邮箱与新邮箱各发一封安全通知。'))+'</p>';
+ }
+ return shellModal(bind?L('Add email','绑定邮箱'):L('Change sign-in email','修改登录邮箱'),body,
+  btn(t('cancel'),'close','','')+btn(i<steps.length-1?L('Next','下一步'):L('Save','保存'),'emailNext','','primary'));
+}
+/* 修改 / 设置密码：账户原本无密码时标题变为「设置登录密码」，
+   此时无原密码可比对，其余步骤不变。 */
+function modalPwd(){
+ var setOnly=!S.hasPassword, v=S.form.np||'', r=pwdRules(v,!setOnly), ok4=v&&v===S.form.np2;
+ return shellModal(setOnly?L('Set password','设置登录密码'):L('Change password','修改登录密码'),
+  field('np',L('New password','新密码'),'','password',S.form.np,'')+r.html+'<div class="pl-gap"></div>'
+  +field('np2',L('Confirm new password','确认新密码'),'','password',S.form.np2,
+     S.form.np2&&!ok4?L('Passwords do not match.','两次输入不一致。'):'')
+  +'<p class="hint">'+L('Saving signs out every session on this account, including this device, and sends a security notification to your email.',
+    '保存后该账户全部会话失效（含当前设备），并向绑定邮箱发送安全通知。')+'</p>',
+  btn(t('cancel'),'close','','')+btn(L('Save','保存'),'pwdModalSave','','primary',(r.ok&&ok4)?'':' disabled'));
+}
+function modalAgreeDoc(){
+ return shellModal(L('Platform service agreement · v2.4','平台服务协议 · v2.4'),
+  '<p class="pl-pre">'+L('The agreement text is maintained by the agreements module and is not reproduced in this prototype. Opening it does not reset the form you were filling in.',
+    '协议正文由协议管理模块维护，本原型不复制其内容。打开它不会打断你正在填写的表单。')+'</p>',
+  btn(L('Close','关闭'),'close','','primary'),true);
+}
+/* 页面目录：未登录页天然没有侧栏，从这里进入。 */
+const PAGE_DIR=[
+ [['Sign in','登录'],['P-F50','P-F20','P-F21','P-F22','P-F01','P-F03','P-F05','P-F52','P-F53']],
+ [['Signed in','登录后'],['P-F51','P-F06','P-F04','P-F24']],
+ [['Institution onboarding','机构入驻申请'],['P-F27','P-F30','P-F31','P-F32','P-F33','P-F34']]
+];
+function drawerPages(){
+ return '<aside class="drawer" role="complementary" aria-label="Pages">'
+  +'<div class="drawer-h"><b>'+t('pagesPanel')+'</b>'
+  +'<button class="modal-x" type="button" data-act="closeDrawer" aria-label="'+t('close')+'">✕</button></div>'
+  +'<div class="drawer-b"><div class="pp-note">'
+  +L('Page directory. Sign-in pages have no sidebar, so they are reachable from here. Per-page states are switched on the page itself; the role is switched from the top bar.',
+     '页面目录。登录页天然没有侧边导航，从这里进入；每页的状态用页面上的状态切换器切换，身份用顶栏的身份切换器切换。')+'</div>'
+  +PAGE_DIR.map(function(g){
+    return '<div class="pp-sec">'+L(g[0][0],g[0][1])+'</div>'+g[1].map(function(id){
+      return '<button class="pp-link" type="button" data-act="go" data-v="'+id+'" aria-current="'
+       +(S.page===id)+'"><code>'+id+'</code><span>'+CF.pageName(id)+'</span></button>'; }).join(''); }).join('')
+  +'</div></aside>';
+}
+
+/* ============================ 顶栏与身份 ================================= */
+/* 右上角常驻「登录」按钮：全站壳层内固定位置，游客态可见；
+   登录后替换为账号下拉。这是登录的唯一常驻入口。 */
+/* 对外称谓只有三个：游客 / 登录（未入驻）/ 登录（已入驻）。L0～L2 都属
+   「登录（未入驻）」，后半段是申请单状态枚举，不是第三套叫法。 */
+const IDENTS=[['guest','Guest','游客'],
+ ['asset0','Asset party · signed in (not verified)','资产方 · 登录（未认证）'],
+ ['asset3','Asset party · signed in (verified)','资产方 · 登录（已认证）'],
+ ['funder0','Funder · signed in (not onboarded) · not submitted','资金方 · 登录（未入驻）· 未提交'],
+ ['funder1','Funder · signed in (not onboarded) · under review','资金方 · 登录（未入驻）· 审核中'],
+ ['funder2','Funder · signed in (not onboarded) · rejected','资金方 · 登录（未入驻）· 已驳回'],
+ ['funder3','Funder · signed in (onboarded)','资金方 · 登录（已入驻）'],
+ ['funder3u','Funder · onboarded · update under review','资金方 · 登录（已入驻）· 更新审核中'],
+ ['funder2d','Funder · update rejected · downgraded','资金方 · 更新被驳回（已降级）']];
+function identKey(){
+ if(S.ident==='guest') return 'guest';
+ if(S.ident==='asset') return S.level==='L3'?'asset3':'asset0';
+ if(S.updating) return 'funder3u';
+ if(S.downgraded) return 'funder2d';
+ return 'funder'+S.level.slice(1);
+}
+function setIdent(k){
+ S.updating=false; S.downgraded=false;
+ if(k==='guest'){ S.ident='guest'; S.level='L0'; }
+ else if(k.indexOf('asset')===0){ S.ident='asset'; S.level=k==='asset3'?'L3':'L0';
+   S.vdetail=k==='asset3'?'verified':(S.vdetail==='action_required'?'action_required':'unverified'); }
+ else if(k==='funder3u'){ S.ident='funder'; S.level='L3'; S.updating=true; S.ap.ver=2; }
+ else if(k==='funder2d'){ S.ident='funder'; S.level='L2'; S.downgraded=true; S.ap.ver=2; }
+ else { S.ident='funder'; S.level='L'+k.slice(6);
+   /* ver = 已成功提交的次数：未提交是 0，提交过一次是 1，变更 / 重提后是 2 */
+   S.ap.ver=k==='funder0'?0:1; }
+ if(S.ident==='funder'&&S.level!=='L0') S.ap.touched=true;
+ /* 顶栏切身份等价于「用户在流程中改变了身份类型」：原句柄记录的触发能力
+    可能不再适用于新身份，一律作废，不带着跨身份的目标继续走。 */
+ S.handle=null; S.replay=null;
+ syncNav();
+ if(S.page==='P-F04'&&S.ident!=='asset') CF.go('P-F51');
+ if(S.page==='P-F06'&&S.ident!=='asset') CF.go('P-F51');
+ if(FUNDER_PAGES.indexOf(S.page)>=0&&S.ident!=='funder') CF.go('P-F51');
+}
+const FUNDER_PAGES=['P-F24','P-F27','P-F30','P-F31','P-F32','P-F33','P-F34'];
+/* 顶栏主导航只有首页——账户设置与机构信息都在右上角账号下拉里，
+   入驻引导页与入驻申请链路五页都不进任何菜单：它们的入口分别是首登流程、
+   常驻补全提示条、受限引导弹层与「机构信息」页。因此这里不随身份改写导航，
+   只切账号下拉的有无。 */
+function syncNav(){
+ mod.account = S.ident==='guest' ? null : accountOf;
+}
+function accountOf(){
+ var ok=S.level==='L3', nm=IDENTS.filter(function(x){return x[0]===identKey();})[0];
+ return { avatar:S.ident==='asset'?'A':'F',
+   ident:S.ident==='asset'?DEMO.assetEmail
+     :(S.creds.email?DEMO.funderEmail:DEMO.funderWallet.slice(0,8)+'…'+DEMO.funderWallet.slice(-4)),
+   ok:ok, okText:L(nm[1],nm[2]), badText:L(nm[1],nm[2]),
+   settings:S.ident==='asset'?'P-F04':'P-F24',
+   /* 机构信息是账户设置下的一项，跟着账号下拉走，不进主导航（公共层新增的可选 extra）。 */
+   extra:S.ident==='funder'?[['P-F27','navInstitution']]:[] };
+}
+function topExtra(){
+ var nm=IDENTS.filter(function(x){return x[0]===identKey();})[0];
+ /* 身份名用公共层的 .nm 截断规则：顶栏是单行的，标签再长也不许把它撑破。 */
+ var out='<div class="pl-idsw"><span>'+L('Prototype · role','原型 · 身份')+'</span>'
+  +'<div class="dd"><button class="dd-btn" type="button" data-act="menu" data-v="ident" aria-expanded="'
+  +(S.menu==='ident')+'" title="'+E(L(nm[1],nm[2]))+'"><span class="nm">'+L(nm[1],nm[2])+'</span>'
+  +CF.ICO.caret+'</button>'
+  +(S.menu==='ident'?'<div class="dd-list wide" role="menu">'
+    +IDENTS.map(function(x){ return '<button type="button" role="menuitem" data-act="ident" data-v="'+x[0]
+      +'" aria-current="'+(identKey()===x[0])+'">'+L(x[1],x[2])+'</button>'; }).join('')
+    +'<div class="dd-head" style="margin-top:6px;border-top:1px solid var(--border);border-bottom:0"><b>'
+    +L('Funder credentials','资金方凭据')+'</b></div>'
+    +[['email',L('Email','邮箱')],['wallet',L('Wallet','钱包')]].map(function(c){
+       return '<button type="button" role="menuitem" data-act="cred" data-v="'+c[0]+'" aria-current="'
+        +(!!S.creds[c[0]])+'">'+c[1]+' · '+(S.creds[c[0]]?L('linked','已绑定'):L('missing','未绑定'))+'</button>';
+     }).join('')
+    +'</div>':'')+'</div></div>';
+ /* 顶栏无侧栏后，演示数据标记随工具区一起常驻，且跟随语言。 */
+ out+='<span class="tag ro">'+t('demo')+'</span>';
+ out+=btn(t('pagesPanel'),'openPages','','sm');
+ if(S.ident==='guest') out+=btn(L('Sign in','登录'),'signin','','sm primary');
+ return out;
+}
+
+/* ============================== 交互 ==================================== */
+const MINE=['go','st','cap','pickRole','guest','signin','signinHere','signout','switchRole','tab',
+ 'showPwd','sendCode','submitCode','submitPwd','openCap','capView','capPass','openWallet','wView',
+ 'wSign','openEmail','openPwd','emailNext','pwdModalSave','credsNext','reFactor','reGo',
+ 'support','leaveSite','leaveGo','entryB','ssoDone','agreeChk','agreeGo','agreeDoc','barToggle',
+ 'barQueue','barGo','anchor','copyAddr','explorer','openPages','ident','cred','pwdSend','pwdSave','close',
+ /* WS-316 入驻申请链路 */
+ 'apStep','apNext','apEdit','apSave','apLater','apSubmit','apConfirm','apJump','apUpload','apDel',
+ 'apPreview','apResubmit','apUpdate'];
+function onAct(n,a,v,e){
+ if(n.classList.contains('mask')&&e.target!==n) return true;
+ if(MINE.indexOf(a)<0) return false;
+ e.preventDefault();
+ if(S.menu&&a!=='ident'&&a!=='cred') S.menu=null;
+ switch(a){
+  /* 关闭弹层等同于「什么都没发生」：待办的那个动作也一并丢掉，
+     否则下一次再认证会把上一次没做完的动作又端出来。 */
+  case 'close': S.modal=null; S.pendingModal=null; break;
+  case 'go': S.modal=null; CF.go(v); return true;
+  case 'st': CF.setState(v); return true;
+  case 'ident': setIdent(v); S.menu=null; break;
+  case 'cred': S.creds[v]=!S.creds[v]; break;
+  case 'cap': capClick(parseInt(v,10),S.page); return true;
+  case 'signin': S.entry='sign_in'; S.modal=null; CF.go('P-F50'); return true;
+  /* 游客在受限页面点登录：先生成指向本页的回跳句柄，登录完落回这一页 */
+  case 'signinHere':
+   S.handle=mintHandle(S.page==='P-F27'?'/account/institution'
+     :S.page==='P-F06'?'/account/verification':'/account',null,'self',S.page);
+   S.entry='sign_in'; S.modal=null; CF.go('P-F50'); return true;
+  case 'signout':
+   /* 退出登录一律回落游客态，不落到登录页 */
+   setIdent('guest'); S.modal=null; S.replay=null; CF.go('P-F51');
+   toast('info',L('You are signed out','已退出登录'),
+     L('You can keep browsing as a guest.','你可以继续以游客身份浏览。')); return true;
+  case 'guest': setIdent('guest'); S.modal=null; S.replay=null; CF.go('P-F51'); return true;
+  case 'pickRole':
+   S.memory=v; S.modal=null;
+   if(v==='asset'){ S.modal={type:'leave',to:'authorize',from:'role'}; }
+   else { S.form={}; S.err={}; CF.go('P-F20'); return true; }
+   break;
+  case 'switchRole':
+   /* 保留回跳句柄、清除身份记忆、清除已填的凭据字段 */
+   S.memory=null; S.form={}; S.err={}; S.walletAddr=''; S.modal=null; CF.go('P-F52'); return true;
+  case 'tab': S.tab=v; S.err={}; break;
+  case 'showPwd': S.form._showPwd=!S.form._showPwd; break;
+  case 'sendCode': case 'pwdSend': S.modal={type:'captcha',view:'idle',next:a}; break;
+  case 'openCap': S.modal={type:'captcha',view:'idle',next:'inline',back:S.modal}; break;
+  case 'capView': S.modal.view=v; break;
+  case 'capPass': {
+   if(S.modal.view!=='ok'){ S.modal.view='ok'; break; }
+   var nx=S.modal.next, back=S.modal.back;
+   if(nx==='inline'){ S.modal=back; toast('success',L('Code sent','验证码已发送'),''); }
+   else { S.modal=null; CF.setState('sent'); return true; }
+   break; }
+  case 'openWallet': S.modal={type:'wallet',view:'pick',ctx:v}; break;
+  case 'wView': S.modal.view=v; break;
+  case 'wSign': {
+   S.modal.view='waiting';
+   var ctx=S.modal.ctx;
+   setTimeout(function(){
+    if(!S.modal||S.modal.type!=='wallet') return;
+    S.modal=null;
+    if(ctx==='creds'||ctx==='bind'){ S.creds.wallet=true;
+      toast('success',L('Wallet linked','钱包已绑定'),
+        L('A security notification was sent to your email.','已向你的邮箱发送安全通知。'));
+      if(ctx==='creds'&&credsMissing().length) S.modal={type:'creds',step:0};
+    } else if(ctx==='reauth'){ S.reauthAt=Date.now();
+      toast('success',L('Identity confirmed','身份已确认'),'');
+      S.modal=S.pendingModal||null; S.pendingModal=null;
+    } else { S.ident='funder'; S.level='L0'; S.creds={email:false,wallet:true}; S.firstLogin=true;
+      syncNav(); landing(); return; }
+    CF.render(); },900);
+   break; }
+  case 'submitCode':
+   CF.setState('submitting');
+   setTimeout(function(){ S.ident='funder'; S.level='L0'; S.creds={email:true,wallet:false};
+     S.firstLogin=true; syncNav(); landing(); },700);
+   return true;
+  case 'submitPwd':
+   CF.setState('submitting');
+   setTimeout(function(){ S.failCount++; CF.setState(S.failCount>=3?'locked':'fail'); },700);
+   return true;
+  case 'entryB': S.modal={type:'leave',to:'authorize',from:'entryB'}; break;
+  case 'leaveSite': S.modal={type:'leave',to:v||'usercenter',from:'guide'}; break;
+  case 'leaveGo':
+   /* 先生成回跳句柄再跳转，顺序不得颠倒 */
+   if(!S.handle) S.handle=mintHandle(DEMO.triggerPath,7,'asset_platform','P-F51');
+   S.modal=null; CF.go('P-F01'); CF.setState('ok'); return true;
+  case 'ssoDone': {
+   var st=S.st;
+   if(st==='R2'||st==='R3'){ setIdent('guest'); S.handle=null; CF.go('P-F51');
+     toast('danger',st==='R2'?L('Your account is not available right now','账户当前不可用')
+                              :L('Sign-in could not be completed','登录未能完成'),
+       L('You are browsing as a guest. Nothing was changed.','你正以游客身份浏览，未改变任何数据。'));
+     return true; }
+   /* 已注册用户 = 对端认证已通过；首次登录 = 新用户，尚未认证且未同意本端协议 */
+   S.ident='asset';
+   if(st==='first'){ S.level='L0'; S.vdetail='unverified'; S.agreed=false; S.firstLogin=true; }
+   else { S.level='L3'; S.vdetail='verified'; S.agreed=true; S.firstLogin=false; }
+   syncNav();
+   if(!S.agreed){ CF.go('P-F03'); return true; }
+   landing(); return true; }
+  case 'agreeChk': S.form.agree=!S.form.agree; break;
+  case 'agreeGo':
+   if(!S.form.agree){ S.err.agree=1; break; }
+   S.agreed=true; S.err={}; landing(); return true;
+  case 'agreeDoc': S.modal={type:'agreeDoc'}; break;
+  case 'openEmail': S.pendingModal={type:'email',step:0};
+   S.modal=reauthNeeded()?{type:'reauth'}:S.pendingModal; break;
+  case 'openPwd': S.pendingModal={type:'pwd'};
+   S.modal=reauthNeeded()?{type:'reauth'}:S.pendingModal; break;
+  case 'reFactor': S.modal.factor=v; break;
+  case 'reGo': S.reauthAt=Date.now(); S.modal=S.pendingModal||null; S.pendingModal=null;
+   toast('success',L('Identity confirmed','身份已确认'),
+     L('You will not be asked again for 10 minutes.','10 分钟内不会再次要求。')); break;
+  case 'emailNext': {
+   var bind=!S.creds.email, last=bind?0:1;
+   if((S.modal.step||0)<last){ S.modal.step=(S.modal.step||0)+1; break; }
+   S.creds.email=true; S.modal=null;
+   if(bind) toast('success',L('Email linked','邮箱已绑定'),
+     L('First-time linking does not sign out your other sessions.','首次绑定不触发会话失效。'));
+   else { setIdent('guest'); CF.go('P-F20');
+     toast('info',L('All sessions signed out','全部会话已失效'),
+       L('Sign in with your new email. We notified both addresses.','请用新邮箱登录。已向新旧邮箱各发一封通知。'));
+     return true; }
+   break; }
+  case 'pwdModalSave':
+   S.hasPassword=true; S.modal=null; setIdent('guest'); CF.go('P-F20');
+   toast('info',L('All sessions signed out','全部会话已失效'),
+     L('Sign in with your new password. A security notification was sent.','请用新密码登录，已发送安全通知。'));
+   return true;
+  case 'pwdSave': S.hasPassword=true; setIdent('guest'); CF.go('P-F20');
+   toast('success',L('Password saved','密码已保存'),
+     L('Sign in with your new password.','请用新密码登录。')); return true;
+  case 'credsNext': {
+   var mm=credsMissing();
+   if(mm.length>1&&(S.modal.step||0)===0){ S.modal.step=1; break; }
+   S.creds.email=true; S.creds.wallet=true; S.modal=null;
+   /* 补完是「重新执行刚才被拦下的那个动作」，不是跳转到某个页面 */
+   toast('success',L('Credentials complete','凭据已补齐'),
+     L('Resuming what you were doing.','正在继续刚才的操作。'));
+   break; }
+  case 'support': S.modal={type:'support'}; break;
+  /* ---------------------- WS-316 入驻申请链路 ------------------------- */
+  case 'apStep': S.ap.step=parseInt(v,10); S.ap.max=Math.max(S.ap.max,S.ap.step); break;
+  case 'apNext': {
+   if(v==='review'){ S.ap.max=Math.max(S.ap.max,TPL.groups.length-1); CF.go('P-F31'); return true; }
+   var nx=parseInt(v,10);
+   /* 「下一步」执行必填校验；「保存草稿」不执行——格式错不该消耗提交机会。 */
+   var bad=apMissing().filter(function(m){ return m.g===S.ap.step; });
+   if(bad.length){
+    toast('danger',L('{n} required item(s) on this step','本步还有 {n} 项必填未完成').replace('{n}',bad.length),
+      bad.map(function(m){ return L(m.f.n[0],m.f.n[1]); }).join(' · '));
+    break;
+   }
+   S.ap.step=nx; S.ap.max=Math.max(S.ap.max,nx); S.ap.touched=true;
+   break; }
+  case 'apEdit': S.ap.step=parseInt(v,10)||0; S.ap.max=Math.max(S.ap.max,S.ap.step);
+   CF.go('P-F30'); return true;
+  case 'apSave': S.ap.touched=true; CF.setState('saved');
+   toast('success',L('Draft saved','草稿已保存'),
+     L('Saved on the platform — you can continue on another device.','已保存在平台侧，换设备可继续填写。'));
+   return true;
+  case 'apLater': S.ap.touched=true; CF.go('P-F51');
+   toast('info',L('Draft kept','草稿已保留'),
+     L('Come back any time; the banner keeps the entry in reach.','随时可以回来继续，提示条会一直带着入口。'));
+   return true;
+  case 'apSubmit': S.cfFocus=true; S.modal={type:'confirm'}; break;
+  case 'apConfirm': {
+   var upd=(S.level==='L3'&&!S.updating);
+   S.modal=null; CF.setState('submitting');
+   setTimeout(function(){
+    S.ap.ver=apVer()+1;
+    S.downgraded=false;
+    if(upd) S.updating=true; else { S.level='L1'; S.updating=false; }
+    S.ap.touched=true; syncNav(); CF.go('P-F32',S.ap.ver>1?'resub':'default');
+   },800);
+   return true; }
+  case 'apJump': {
+   var next=REJ[S.ap.jump%REJ.length]; S.ap.jump++;
+   var gi=0; TPL.groups.forEach(function(g,i){ if(g.f.some(function(f){ return f.k===next.k; })) gi=i; });
+   if(S.ap.step!==gi){ S.ap.step=gi; S.ap.max=Math.max(S.ap.max,gi); CF.render(); }
+   var el=q('#ap-'+next.k); if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+   return true; }
+  case 'apUpload': {
+   var slot=v; S.ap.up=slot; CF.render();
+   setTimeout(function(){
+    if(S.ap.up!==slot) return;
+    S.ap.up=null;
+    var f=apFieldOf(slot);
+    S.ap.files[slot]={n:f.fn||'document.pdf',s:'1.8 MB',t:CF.fmtNow?CF.fmtNow():'2026-09-10 11:02'};
+    S.ap.touched=true;
+    if(S.st==='upfail') S.st='default';
+    toast('success',L('Uploaded','上传完成'),
+      L('The draft was saved as soon as the upload finished.','上传成功后草稿已立即保存。'));
+    CF.render();
+   },900);
+   return true; }
+  case 'apDel': delete S.ap.files[v];
+   toast('info',L('File removed','材料已删除'),
+     L('Only the file was removed; nothing else on the form changed.','只删除了这份材料，表单其余内容不受影响。'));
+   break;
+  case 'apPreview': S.modal={type:'doc',k:v}; break;
+  case 'apResubmit': S.ap.step=0; S.ap.max=TPL.groups.length-1; S.ap.jump=0;
+   S.modal=null; CF.go('P-F30'); return true;
+  case 'apUpdate': S.ap.step=0; S.ap.max=TPL.groups.length-1; S.modal=null; CF.go('P-F30');
+   toast('info',L('Updating your details','正在更新机构资料'),
+     L('Your current onboarding stays valid until the new decision.','新结论出来前当前入驻状态继续有效。'));
+   return true;
+  case 'barToggle': S.barCollapsed=!S.barCollapsed; S.barQueue=false; break;
+  case 'barQueue': S.barQueue=!S.barQueue; break;
+  case 'barGo':
+   if(v==='creds'){ S.modal={type:'creds',step:0}; }
+   else if(v==='verify'){ S.modal=null; CF.go('P-F06'); return true; }
+   else { S.modal=null; CF.go('P-F27'); return true; }
+   break;
+  case 'anchor': { var el=q('#sec-'+v); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); return true; }
+  case 'copyAddr': toast('success',L('Address copied','地址已复制'),''); break;
+  case 'explorer': toast('info',L('Block explorer','区块浏览器'),
+    L('Opens the address on the demo explorer.','在演示区块浏览器中打开该地址。')); break;
+  case 'openPages': S.drawer='pages'; break;
+  default: return false;
+ }
+ CF.render(); return true;
+}
+function reauthNeeded(){ return Date.now()-S.reauthAt>10*60*1000; }
+
+/* 公共运行时不代理 input / change，模块自行绑定一次（与仓库既有模块一致）。
+   需要实时反馈的字段才重绘；其余只更新状态，避免每敲一个字符就重排整页。
+   焦点与光标位置由公共层按 data-f 复位。 */
+const LIVE={np:1,np2:1,addr:1};
+/* 模版字段写进申请单的值，不混进登录表单的 S.form——两者是不同对象。 */
+function apOwns(k){ return S.page==='P-F30'&&!!apFieldOf(k).t; }
+document.addEventListener('input',function(e){
+ var n=e.target, k=n.getAttribute&&n.getAttribute('data-k'); if(!k) return;
+ if(apOwns(k)){ S.ap.vals[k]=n.value; S.ap.touched=true; return; }
+ if(k==='addr') S.walletAddr=n.value.trim(); else { S.form[k]=n.value; if(S.err[k]) delete S.err[k]; }
+ if(LIVE[k]) CF.render();
+});
+document.addEventListener('change',function(e){
+ var n=e.target, k=n.getAttribute&&n.getAttribute('data-k');
+ if(n.getAttribute&&n.getAttribute('data-act')==='langSel'){ S.lang=n.value; CF.render(); return; }
+ /* select 不触发 input；模版里的枚举字段改完立即重绘（标识类型会改唯一键） */
+ if(k&&apOwns(k)){ S.ap.vals[k]=n.value; S.ap.touched=true; CF.render(); }
+});
+
+/* ============================ 状态与路由 ================================= */
+const STATES={
+ 'P-F51':[['default','Default','默认'],['loading','Loading','加载中'],['loadfail','Load failed','加载失败']],
+ 'P-F50':[['default','No memory','无记忆'],['mem','Remembered','有身份记忆'],
+   ['nomem','Storage unavailable','本地存储不可用']],
+ 'P-F01':[['ok','Returning user','已注册用户'],['first','First sign-in','首次登录'],
+   ['R2','Account unavailable','账户不可用'],['R3','Failed','登录失败'],
+   ['E11','Account not created','账号未建立']],
+ 'P-F20':P20_STATES,
+ 'P-F21':[['default','Default','默认'],['submitting','Sending','发送中'],['sent','Sent','已发送']],
+ /* WS-316。状态切换是真的改数据，不是换一张画：切到「必填未完成」会真的清空
+    两项必填，预览页因此真的算出缺项并置灰提交；切回默认再填回来。 */
+ 'P-F30':[['default','Filling in','填写中'],['loading','Loading','加载中'],
+   ['saved','Draft saved','草稿已保存'],['stale','Updated elsewhere','其他设备已更新'],
+   ['tplUp','Template updated','模版已更新'],['upfail','Upload failed','上传失败'],
+   ['cfgfail','Template unavailable','模版加载失败']],
+ 'P-F31':[['default','Ready to submit','可提交'],['incomplete','Missing required','必填未完成'],
+   ['precheck','Pre-check returned','预校验退回'],['dup','Duplicate institution','机构重复'],
+   ['limit','Submission limit','已达提交限频'],['submitting','Submitting','提交中']],
+ 'P-F32':[['default','First submission','首次提交'],['resub','Resubmission','重新提交']],
+ 'P-F33':[['default','Under review','审核中'],['resub','Resubmission 2','审核中（第 2 次）'],
+   ['overdue','Past the estimate','已超出预计时长'],['update','Update under review','已入驻 · 更新审核中'],
+   ['loading','Loading','加载中']],
+ 'P-F34':[['rejected','Rejected','已驳回'],['approved','Approved','已通过'],
+   ['review','Under review','审核中']]
+};
+/* URL 用产品自己的路径，不用 #/<page-id>。取值与 registry 的 CF.ENTRY 一致，
+   别的模块按登记表跳过来时才落得到对应页面。/account 由身份解析到两个账户页之一。 */
+const PATHS={'P-F51':'/','P-F50':'/signin/role','P-F52':'/signin/switch','P-F53':'/signin/error',
+ 'P-F01':'/signin/sso/callback','P-F03':'/signin/agreement','P-F05':'/signin/sso/failed',
+ 'P-F20':'/signin/funder','P-F21':'/signin/password/email','P-F22':'/signin/password/new',
+ 'P-F04':'/account','P-F24':'/account','P-F06':'/account/verification','P-F27':'/account/institution',
+ 'P-F30':'/account/institution/apply','P-F31':'/account/institution/review',
+ 'P-F32':'/account/institution/submitted','P-F33':'/account/institution/status',
+ 'P-F34':'/account/institution/application'};
+const HASH={
+ build:function(){
+  var st=S.st, def=CF.defaultState(S.page);
+  return '#'+(PATHS[S.page]||'/')+(st&&st!==def?'?st='+st:'');
+ },
+ read:function(){
+  var h=(location.hash||'').replace(/^#/,''); if(!h) return false;
+  var parts=h.split('?'), path=parts[0]||'/', qs={};
+  (parts[1]||'').split('&').forEach(function(kv){ var i=kv.indexOf('='); if(i>0) qs[kv.slice(0,i)]=kv.slice(i+1); });
+  var id=null;
+  if(path==='/account') id=S.ident==='asset'?'P-F04':'P-F24';
+  else for(var k in PATHS) if(PATHS[k]===path&&k!=='P-F04'&&k!=='P-F24'){ id=k; break; }
+  if(!id) return false;
+  S.page=id;
+  var list=(STATES[id]||[]).map(function(x){ return x[0]; });
+  S.st=qs.st&&list.indexOf(qs.st)>=0?qs.st:CF.defaultState(id);
+  return true;
+ }
+};
+function renderContent(){
+ var f={'P-F51':pageHome,'P-F04':pageAssetAccount,'P-F24':pageFunderAccount,
+        'P-F06':pageVerification,'P-F27':pageInstitution,
+        'P-F30':pageApply,'P-F31':pageReview,'P-F32':pageSubmitted,
+        'P-F33':pageStatus,'P-F34':pageDetail}[S.page];
+ return f?f():'';
+}
+function renderFocus(){
+ var f={'P-F50':pageRole,'P-F52':pageSwitch,'P-F53':pageFail,'P-F01':pageSso,
+        'P-F03':pageAgree,'P-F05':pageSsoFail,'P-F20':pageFunderLogin,
+        'P-F21':pagePwdEmail,'P-F22':pagePwdNew}[S.page];
+ return f?f():'';
+}
+
+/* ============================== 装配 ==================================== */
+mod={
+ id:'fs-portal-login', end:'asset', home:'P-F51',
+ owns:['P-F51','P-F04','P-F24','P-F06','P-F27','P-F50','P-F52','P-F53','P-F01','P-F03','P-F05',
+       'P-F20','P-F21','P-F22','P-F30','P-F31','P-F32','P-F33','P-F34'],
+ dict:DICT, states:STATES,
+ content:renderContent, focus:renderFocus,
+ topExtra:topExtra, hash:HASH, topbarPrd:false,
+ crumbParts:function(){
+  if(S.page==='P-F51') return [];
+  var base=[[L('Home','首页'),'P-F51']];
+  /* 申请链路的中间页在面包屑里挂回「机构信息」，用户始终知道自己在哪一层 */
+  if(['P-F30','P-F31','P-F32','P-F33','P-F34'].indexOf(S.page)>=0)
+   base.push([L('Institution','机构信息'),'P-F27']);
+  return base;
+ },
+ modals:{role:modalRole,guide:modalGuide,leave:modalLeave,captcha:modalCaptcha,
+   wallet:modalWallet,creds:modalCreds,reauth:modalReauth,email:modalEmail,
+   pwd:modalPwd,agreeDoc:modalAgreeDoc,confirm:modalConfirm,support:modalSupport,doc:modalDoc},
+ drawers:{pages:drawerPages},
+ /* 二次确认必须由用户明确选择，Esc 可退（等同「返回修改」），但不提供
+    「不再提示」——只有类型选择弹层是强制弹层。 */
+ modalLocked:function(m){ return m.type==='role'; },
+ onAct:onAct,
+ onGo:function(p){
+  S.replay=null;
+  /* 进度页与详情页的默认状态跟随当前档位，避免「审核中身份看到已通过详情」 */
+  if(p==='P-F33') S.st=S.updating?'update':(S.ap.ver>1?'resub':'default');
+  if(p==='P-F34') S.st=S.level==='L2'?'rejected':S.level==='L3'?'approved':'review';
+  if(p==='P-F30'&&S.st==='saved') S.st='default';
+ },
+ /* 状态切换真的改数据：必填未完成会真的清空两项，模版更新会真的多出一个必填项。 */
+ onSetState:function(k){
+  if(S.page==='P-F31'){
+   if(k==='incomplete'){ S.ap.vals.licenceExp=''; delete S.ap.files.bizLicence; }
+   else { var seed=apSeed(); S.ap.vals.licenceExp=seed.licenceExp;
+     if(!S.ap.files.bizLicence) S.ap.files.bizLicence=apFilesSeed().bizLicence; }
+  }
+  if(S.page==='P-F30'){
+   S.ap.v2=(k==='tplUp');
+   if(k==='tplUp'){ S.ap.step=TPL.groups.length-1; S.ap.max=TPL.groups.length-1; S.ap.vals.ubo=''; }
+   if(k==='upfail') delete S.ap.files.bizLicence;
+   if(k==='default'&&!S.ap.files.bizLicence) S.ap.files.bizLicence=apFilesSeed().bizLicence;
+  }
+  /* 进度页与详情页的状态本身就代表一个档位。切状态时把身份一起带过去，
+     否则顶部提示条会说「已驳回」而正文说「审核中」，两句话互相打架。 */
+  if(S.page==='P-F33'&&k!=='loading'){
+   S.level=k==='update'?'L3':'L1'; S.updating=(k==='update');
+   S.downgraded=false; S.ap.ver=(k==='default')?1:2; S.ap.touched=true; syncNav();
+  }
+  if(S.page==='P-F34'){
+   S.updating=false;
+   S.level=k==='rejected'?'L2':k==='approved'?'L3':'L1';
+   if(k!=='rejected') S.downgraded=false;
+   if(!S.ap.ver) S.ap.ver=1;
+   S.ap.touched=true; syncNav();
+  }
+ },
+ state:initState,
+ onBoot:function(st){ S=st; syncNav(); },
+ afterRender:function(){
+  if(S.modal&&S.modal.type==='captcha') drawCaptcha();
+  /* C-F50 的默认焦点落在次按钮「返回修改」，不落在提交上 */
+  if(S.modal&&S.modal.type==='confirm'&&S.cfFocus){
+   S.cfFocus=false; var b=q('[data-f="cfBack"]'); if(b&&b.focus) b.focus();
+  }
+ }
+};
+CF.define(mod);
+CF.boot();
+})();
+</script>
+</body>
+</html>

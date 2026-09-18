@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Financial Services · Smart Contracts</title>
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/tokens.css">
+<link rel="stylesheet" href="../../../asset-platform/prototypes/_shared/base.css">
+<style>
+/* WS-312 only. Shared tokens, chrome and components retain their source of record. */
+.tc-tools{display:flex;align-items:center;gap:var(--sp-2);margin-right:var(--sp-3)}
+.tc-tools label{font-size:var(--fs-11);color:var(--muted);white-space:nowrap}
+.tc-tools select{height:var(--ctrl-h-sm);border:1px solid var(--border-strong);border-radius:var(--radius-xs);background:var(--card);padding:0 var(--sp-2);font-size:var(--fs-11);max-width:220px}
+.tc-spacer{flex:1}.tc-context{color:var(--muted);font-size:var(--fs-12)}
+.tc-sample{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-4);padding:var(--sp-3) var(--sp-4);background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border);border-radius:var(--radius-sm);font-size:var(--fs-12)}
+.tc-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--sp-4);align-items:start}
+.tc-full{grid-column:1/-1}.tc-grid .card-head{align-items:center}.tc-section-title{margin:0;font-size:var(--fs-13);font-weight:650}
+.tc-identity .dl{margin:0;grid-template-columns:repeat(2,minmax(0,1fr))}.tc-identity .tc-wide{grid-column:1/-1}
+.tc-about{display:grid;gap:var(--sp-5);margin:0}.tc-about dt{font-size:var(--fs-12);font-weight:620;margin-bottom:var(--sp-2);color:var(--muted)}
+.tc-about dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:var(--fs-13)}
+.tc-contract-head{display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap}.tc-contract-key{font-family:var(--mono);font-size:var(--fs-12);color:var(--muted);margin-top:var(--sp-2);overflow-wrap:anywhere}
+.tc-readonly{font-size:var(--fs-11);color:var(--muted);display:inline-flex;align-items:center;gap:var(--sp-2)}
+.tc-empty{min-height:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--sp-8);text-align:center}
+.tc-empty-icon{width:56px;height:56px;display:grid;place-items:center;background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius);color:var(--muted);margin-bottom:var(--sp-5)}
+.tc-empty-icon svg{width:26px;height:26px}.tc-empty h2{font-size:var(--fs-16);font-weight:650;margin:0 0 var(--sp-2)}
+.tc-empty p{font-size:var(--fs-13);color:var(--muted);max-width:590px;margin:0;line-height:1.8}
+.tc-empty .tc-planned{margin-top:var(--sp-6);font-size:var(--fs-12);padding-top:var(--sp-4);border-top:1px solid var(--border)}
+.tc-empty .btn{margin-top:var(--sp-5)}.tc-empty.tc-error .tc-empty-icon{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
+.tc-table.tbl{table-layout:fixed;min-width:0}.tc-table.tbl th{white-space:normal;overflow-wrap:normal}.tc-table.tbl td{overflow-wrap:anywhere;vertical-align:top;padding-top:var(--sp-4);padding-bottom:var(--sp-4)}
+.tc-table.tbl th{color:var(--muted)}
+.tc-count{color:var(--muted)!important}
+.tc-table .cell-sub{color:var(--muted);margin-top:var(--sp-1)}
+.tc-table .tc-view{white-space:nowrap;font-size:var(--fs-12);min-height:var(--ctrl-h-sm);display:inline-flex;align-items:center}
+.tc-table .tc-time{font-family:var(--mono);font-size:var(--fs-11);color:var(--muted);line-height:1.7}
+.tc-table .pill{white-space:normal;text-align:left;font-size:var(--fs-11)}
+.tc-type-mint{color:var(--accent);background:var(--accent-soft);border-color:var(--accent-border)}
+.tc-type-pledge{color:var(--pos);background:var(--pos-soft);border-color:var(--pos)}
+.tc-type-burn{color:var(--gray-fg);background:var(--gray-bg);border-color:var(--gray-border)}
+.tc-address{display:flex;align-items:center;gap:var(--sp-1);flex-wrap:wrap;min-width:0}
+.tc-address-text{font-family:var(--mono);font-size:var(--fs-11);color:var(--hash-text);overflow-wrap:anywhere;max-width:100%}
+.tc-address-full .tc-address-text{font-size:var(--fs-12)}
+.tc-mini{display:inline-grid;place-items:center;flex:none;min-width:28px;min-height:28px;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-xs);color:var(--muted)}
+.tc-mini:hover{color:var(--accent);background:var(--accent-soft)}.tc-value{white-space:pre-wrap;overflow-wrap:anywhere}
+.tc-tip{position:relative;display:inline-flex}.tc-tip-content{display:none;position:absolute;left:0;top:100%;margin-top:var(--sp-2);z-index:45;padding:var(--sp-2) var(--sp-3);width:max-content;max-width:340px;overflow-wrap:anywhere;background:var(--text);color:var(--card);border-radius:var(--radius-xs);font-size:var(--fs-11);font-family:var(--mono);box-shadow:var(--shadow-lg)}
+.tc-tip:hover>.tc-tip-content,.tc-tip:focus-within>.tc-tip-content{display:block}.tc-help .tc-tip-content{font-family:var(--sans);max-width:260px}
+.tc-helper{display:block;color:var(--muted);font-size:var(--fs-11);margin-top:var(--sp-1)}.tc-invalid{display:block;color:var(--danger);font-size:var(--fs-11);margin-top:var(--sp-1)}
+.tc-param-table{width:100%;border-collapse:collapse;table-layout:fixed}.tc-param-table th,.tc-param-table td{padding:var(--sp-4);vertical-align:top;text-align:left;border-bottom:1px solid var(--border-dash)}
+.tc-param-table tr:last-child th,.tc-param-table tr:last-child td{border-bottom:0}.tc-param-table th{width:32%;font-size:var(--fs-12);font-weight:620;color:var(--muted)}
+.tc-param-table td{font-size:var(--fs-13);overflow-wrap:anywhere}.tc-param-label{display:flex;gap:var(--sp-2);align-items:center}.tc-help button{width:20px;height:20px;color:var(--muted)}
+.tc-loading{padding:var(--sp-4)}.tc-loading-line{display:flex;gap:var(--sp-4);padding:var(--sp-4) 0}.tc-loading-line .skel{flex:1}.tc-loading p{color:var(--muted);font-size:var(--fs-12)}
+.tc-footer{margin-top:var(--sp-5);font-size:var(--fs-11);color:var(--muted)}
+.tc-nav-toggle{display:none}.tc-brand-name{font-size:var(--fs-14)}
+/* 列表工具区复用公共 .filters / .pager，只补最小的宽度约束，不新增组件与 token */
+.tc-filters .fl-kw .inp{width:248px}
+.tc-filters .fl select.inp{min-width:156px;max-width:220px}
+.tc-pager label{font-size:inherit;color:inherit}
+@media(max-width:1279px){.tc-grid{grid-template-columns:minmax(0,1fr)}.tc-filters .fl-kw .inp{width:200px}}
+@media(prefers-reduced-motion:reduce){.tc-loading .skel::after{animation:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+ <aside class="sidebar"><div class="brand"><div class="brand-mark">FS</div><div><div class="brand-name tc-brand-name">Financial Services</div><div class="brand-sub" id="brandSub"></div></div></div><nav class="nav" id="nav" aria-label="Main navigation"></nav></aside>
+ <div class="main"><header class="topbar"><span class="tc-context" id="tcContext"></span><div class="tc-spacer"></div><div class="topbar-right" id="topRight"></div></header><nav class="crumbbar" id="crumb" aria-label="Breadcrumb"></nav><main class="content" id="content"></main></div>
+</div><div id="layers"></div>
+<script src="../_shared/registry.js"></script>
+<script src="../../../asset-platform/prototypes/_shared/shell.js"></script>
+<script>
+(function(CF){
+'use strict';
+const LIST='P-O-TC-01', DETAIL='P-O-TC-02';
+const {esc:e,L,t}=CF;
+let S, timer=0, focusAfter='', testOverride=null;
+const navOriginal=CF.NAV.admin;
+const scenarios=[['empty','Not deployed','尚未部署'],['sample','Sample deployments','演示部署数据'],['bulk','Many deployments','多份部署（分页）'],['loading','Loading','加载中'],['waiting','Waiting for response','等待返回'],['error','Load failed','加载失败'],['denied','Access restricted','无查看权限'],['missing','Contract not found','合约不存在'],['no-types','No type definitions','类型尚未下发'],['edge','Configuration exceptions','配置异常'],['no-params','No parameters','无参数定义'],['long','Long content','长内容'],['no-explorer','Explorer unavailable','无浏览器映射'],['session','Session expired','会话已失效'],['copy-failure','Copy unavailable','复制不可用']];
+const dataModes=['empty','no-types','sample','bulk','edge','no-params','long','no-explorer'];
+const DICT={en:{adminConsole:'Operations console',signOut:'Sign out',title:'Smart Contracts',detailTitle:'Contract details',list:'Contracts',desc:'View the smart contracts supported by the platform.',readOnly:'Read only',fieldContract:'Contract',fieldType:'Type',fieldChain:'Chain',fieldAddress:'Contract address',fieldStatus:'Status',fieldTime:'Deployed at',fieldActions:'Actions',view:'View',identity:'On-chain identity',about:'About this contract',params:'Contract parameters',purpose:'What it does',stage:'Where it fits',related:'Related module',standard:'Token standard',version:'Version',tx:'Deployment tx hash',pending:'Pending confirmation',noContracts:'No contracts deployed yet',emptyHelp:'Contract information is delivered via deployment configuration and will appear here automatically once deployed.',planned:'Planned contract types',failed:'Failed to load contracts',failedHelp:'Please try again later. If the problem persists, contact engineering to check the deployment configuration.',missing:'Contract not found',missingHelp:'This contract is not in the current deployment configuration. It may not be deployed yet, or has been removed.',back:'Back to contracts',denied:'You do not have access to smart contracts',deniedHelp:'Contact your administrator to request access.',session:'Your session has expired',sessionHelp:'Sign in again to continue viewing smart contracts.',signIn:'Sign in again',scenario:'Prototype scenario',fKeyword:'Keyword',searchPh:'Contract name or address',fType:'Type',fStatus:'Status',fChain:'Chain',allTypes:'All types',allStatuses:'All statuses',allChains:'All chains',bSearch:'Search',bReset:'Reset',clearFilters:'Clear filters',noMatch:'No contracts match these filters',noMatchHelp:'Adjust the keyword or the filter values. Clearing the filters brings back every deployed contract.',countFiltered:'{n} of {total} deployed contracts',demoCountFiltered:'{n} of {total} sample deployments',perPage:'Per page',pageRange:'Showing {a}–{b} of {n}',pageOf:'Page {p} / {t}',prevPage:'Previous page',nextPage:'Next page',demo:'Demonstration data · No contracts shown here have been deployed by the platform. Names, addresses and parameters are test fixtures.',demoCount:'{n} sample deployments',count:'{n} deployed contracts',loadingHelp:'Loading contract information…',waitingHelp:'Waiting for contract information. This is taking longer than usual.',copy:'Copy',copiedAddress:'Address copied',copiedHash:'Hash copied',copyFailed:'Unable to copy. Select the value and copy it manually.',explorer:'View on explorer',invalidAddress:'Invalid address format',invalidHash:'Invalid hash format',missingType:'Type definition missing',missingTypeHelp:'The type definition for this contract is missing. Contact engineering to check the deployment configuration.',active:'Active',deprecated:'Deprecated',paused:'Paused',unknown:'Unknown',activeHelp:'The platform is currently configured to call this contract.',yes:'Yes',no:'No',timezone:'Time zone',boundary:'This preview includes smart contracts only. Use the complete repository to open other modules.',demoType:'Demo',info:'Information'},zh:{adminConsole:'运营端',signOut:'退出登录',title:'智能合约',detailTitle:'合约详情',list:'合约列表',desc:'查看平台支持的智能合约信息。',readOnly:'仅供查看',fieldContract:'合约名称',fieldType:'合约类型',fieldChain:'所属链',fieldAddress:'合约地址',fieldStatus:'状态',fieldTime:'部署时间',fieldActions:'操作',view:'查看详情',identity:'链上身份',about:'合约说明',params:'合约参数',purpose:'用途',stage:'业务环节',related:'关联业务模块',standard:'合约标准',version:'版本',tx:'部署交易哈希',pending:'该项待业务确认',noContracts:'平台尚未部署任何链上合约',emptyHelp:'合约信息由部署配置下发，部署完成后将自动出现在此。',planned:'平台已规划的合约类型',failed:'合约信息加载失败',failedHelp:'请稍后重试；若持续失败，请联系研发核对部署配置。',missing:'未找到该合约',missingHelp:'该合约不在当前部署配置中，可能尚未部署或已从配置移除。',back:'返回合约列表',denied:'暂无智能合约查看权限',deniedHelp:'请联系管理员申请查看权限。',session:'登录状态已失效',sessionHelp:'请重新登录后继续查看智能合约。',signIn:'重新登录',scenario:'原型场景',fKeyword:'关键词',searchPh:'合约名称或合约地址',fType:'合约类型',fStatus:'状态',fChain:'所属链',allTypes:'全部类型',allStatuses:'全部状态',allChains:'全部链',bSearch:'搜索',bReset:'重置',clearFilters:'清空筛选条件',noMatch:'没有符合筛选条件的合约',noMatchHelp:'请调整关键词或筛选项；清空筛选条件后可以看到全部已部署合约。',countFiltered:'筛选出 {n} 份，共 {total} 份已部署合约',demoCountFiltered:'筛选出 {n} 份，共 {total} 份演示部署',perPage:'每页',pageRange:'第 {a}–{b} 条，共 {n} 条',pageOf:'第 {p} / {t} 页',prevPage:'上一页',nextPage:'下一页',demo:'演示数据 · 以下合约并非平台真实部署，名称、地址及参数仅用于原型评审。',demoCount:'共 {n} 份演示部署',count:'共 {n} 份已部署合约',loadingHelp:'正在加载合约信息…',waitingHelp:'正在等待合约信息返回，耗时较长，请稍候。',copy:'复制',copiedAddress:'地址已复制',copiedHash:'哈希已复制',copyFailed:'复制失败，请选中内容后手动复制。',explorer:'在区块浏览器中查看',invalidAddress:'地址格式异常',invalidHash:'哈希格式异常',missingType:'类型定义缺失',missingTypeHelp:'该合约的类型定义缺失，请联系研发核对部署配置。',active:'有效',deprecated:'已弃用',paused:'暂停使用',unknown:'未知',activeHelp:'平台后端当前配置为调用这份合约。',yes:'是',no:'否',timezone:'时区',boundary:'本附件仅包含智能合约模块，访问其他模块请打开完整仓库。',demoType:'演示',info:'信息'}};
+
+// Keccak-256 for EIP-55: address text is one ASCII block (<136 bytes).
+// No crypto service or remote library is used. Checked against EIP-55 vectors.
+function keccakAscii(text){
+ const mask=(1n<<64n)-1n, a=Array(25).fill(0n), bytes=Array.from(text,c=>c.charCodeAt(0));
+ if(bytes.length>=136)throw new Error('Checksum input too long');
+ bytes.push(1);while(bytes.length<136)bytes.push(0);bytes[135]|=128;
+ for(let i=0;i<136;i++)a[i>>3]^=BigInt(bytes[i])<<BigInt((i%8)*8);
+ const R=[0,1,62,28,27,36,44,6,55,20,3,10,43,25,39,41,45,15,21,8,18,2,61,56,14];
+ const RC=['1','8082','800000000000808a','8000000080008000','808b','80000001','8000000080008081','8000000000008009','8a','88','80008009','8000000a','8000808b','800000000000008b','8000000000008089','8000000000008003','8000000000008002','8000000000000080','800a','800000008000000a','8000000080008081','8000000000008080','80000001','8000000080008008'];
+ const rol=(v,n)=>n===0?v:((v<<BigInt(n))|(v>>BigInt(64-n)))&mask;
+ for(const rc of RC){
+  const c=Array(5).fill(0n),d=[],b=Array(25).fill(0n);
+  for(let x=0;x<5;x++)for(let y=0;y<5;y++)c[x]^=a[x+5*y];
+  for(let x=0;x<5;x++)d[x]=c[(x+4)%5]^rol(c[(x+1)%5],1);
+  for(let x=0;x<5;x++)for(let y=0;y<5;y++)a[x+5*y]^=d[x];
+  for(let x=0;x<5;x++)for(let y=0;y<5;y++)b[y+5*((2*x+3*y)%5)]=rol(a[x+5*y],R[x+5*y]);
+  for(let x=0;x<5;x++)for(let y=0;y<5;y++)a[x+5*y]=b[x+5*y]^((~b[(x+1)%5+5*y])&b[(x+2)%5+5*y]);
+  a[0]^=BigInt('0x'+rc);
+ }
+ return Array.from({length:32},(_,i)=>Number((a[i>>3]>>BigInt((i%8)*8))&255n).toString(16).padStart(2,'0')).join('');
+}
+const checksumCache=new Map();
+function checksum(value){
+ const lower=String(value).toLowerCase().replace(/^0x/,'');
+ if(!/^[a-f0-9]{40}$/.test(lower))return value;
+ if(!checksumCache.has(lower)){const hash=keccakAscii(lower);checksumCache.set(lower,'0x'+Array.from(lower,(c,i)=>parseInt(hash[i],16)>=8?c.toUpperCase():c).join(''));}
+ return checksumCache.get(lower);
+}
+const missing=v=>v==null||v===''||v==='[待确认]';
+const plain=v=>typeof v==='object'&&v!==null?JSON.stringify(v):String(v??'');
+const bilingual=(o,key)=>{if(!o)return '';const v=o[key+'_'+(S.lang==='en'?'en':'zh')],fallback=o[key+'_'+(S.lang==='en'?'zh':'en')];return !missing(v)?v:!missing(fallback)?fallback:'';};
+function emptyValue(v){return '—'+(v==='[待确认]'?'<small class="tc-helper">'+t('pending')+'</small>':'');}
+function value(v){return missing(v)?emptyValue(v):'<span class="tc-value">'+e(plain(v))+'</span>';}
+const schema=(key,en,zh,value_type,order,extra={})=>({key,label_en:en,label_zh:zh,value_type,order,...extra});
+function fixture(mode){
+ const types=[['mint','Receivables minting','应收账款铸币'],['pledge','Pledge','质押'],['burn','Token burn','代币销毁']].map((v,i)=>({contract_type_key:v[0],name_en:v[1],name_zh:v[2],sort_order:i+1,description_en:'Demonstration description for reviewing this contract type. Actual scope will be supplied with deployment configuration.',description_zh:'此处为合约类型说明的演示文案，实际用途以部署时提供的说明为准。',business_stage_en:'Pending confirmation',business_stage_zh:'该项待业务确认',related_business_module:'[待确认]',param_schema:[]}));
+ if(mode==='no-types')return {types:[],deployments:[],explorers:{}};
+ if(mode==='empty')return {types,deployments:[],explorers:{}};
+ types[0].param_schema=[schema('sample_text','Sample text','示例文本','text',1,{hint_en:'A rendering example, not a confirmed contract parameter.',hint_zh:'仅用于验证展示形态，不代表已确定的合约参数。'}),schema('sample_number','Sample number','示例数值','number',2),schema('sample_address','Sample address','示例地址','address',3),schema('sample_hash','Sample hash','示例哈希','hash',4),schema('sample_time','Sample timestamp','示例时间','datetime',5),schema('sample_url','Reference URL','示例链接','url',6),schema('sample_bool','Sample boolean','示例布尔值','boolean',7),schema('sample_enum','Sample option','示例枚举','enum',8,{options:[{value:'a',label_en:'Option A',label_zh:'选项 A'}]}),schema('sample_missing','Unconfirmed value','尚未确认的值','text',9)];
+ const values={sample_text:'Prototype configuration / 原型配置',sample_number:'1234567890.123456789',sample_address:'0x00000000000000000000000000000000000000ab',sample_hash:'0x'+'1a'.repeat(32),sample_time:'2026-09-09T02:00:00Z',sample_url:'https://ethereum.org/',sample_bool:true,sample_enum:'a',sample_missing:'[待确认]'};
+ if(mode==='bulk'){
+  // 26 份、两条链：正好越过 PRD 7.2.4 写死的补做触发条件（>15 条或 ≥2 条链），用于演示搜索 / 筛选 / 分页。
+  const chains=[[11155111,'Sepolia'],[17000,'Holesky']];
+  return {types,explorers:{11155111:'https://sepolia.etherscan.io'},deployments:Array.from({length:26},(_,i)=>{
+   const ty=types[i%3],ch=chains[i%2],no=String(i+1).padStart(2,'0');
+   return {contract_key:'sample_bulk_'+ty.contract_type_key+'_'+no,contract_type_key:ty.contract_type_key,
+    name_en:'Demo · '+ty.name_en+' contract #'+no,name_zh:'演示 · '+ty.name_zh+'合约 #'+no,
+    chain_id:ch[0],chain_name:ch[1],contract_address:'0x'+(0x1000+(i+1)*7).toString(16).padStart(40,'0'),
+    contract_standard:'[待确认]',version:'[待确认]',status:'active',
+    deployed_at:'2026-0'+(9-i%3)+'-'+String(28-i%28).padStart(2,'0')+'T0'+(i%8)+':30:00Z',
+    deploy_tx_hash:i===0?'0x'+'1a'.repeat(32):null,param_values:i===0?values:{}};
+  })};
+ }
+ const deployments=types.map((ty,i)=>({contract_key:'sample_'+ty.contract_type_key+'_01',contract_type_key:ty.contract_type_key,name_en:'Demo · '+ty.name_en+' contract',name_zh:'演示 · '+ty.name_zh+'合约',chain_id:11155111,chain_name:'Sepolia',contract_address:'0x00000000000000000000000000000000000000a'+(i+1),contract_standard:'[待确认]',version:'[待确认]',status:'active',deployed_at:'2026-09-0'+(9-i)+'T02:00:00Z',deploy_tx_hash:i===0?'0x'+'1a'.repeat(32):null,param_values:i===0?values:{}}));
+ const explorers=mode==='no-explorer'?{}:{11155111:'https://sepolia.etherscan.io'};
+ if(mode==='no-params')types.forEach(x=>x.param_schema=[]);
+ if(mode==='long'){
+  deployments[0].name_en='Demo · Receivables minting contract — long deployment name for cross-border operations and multi-language layout review';
+  deployments[0].name_zh='演示 · 应收账款铸币合约——用于跨境运营、多语言排版及完整长名称展示的部署实例';
+  values.sample_text=('Long sample content / 长内容示例：应完整换行展示，不截断参数值。\n').repeat(10);
+ }
+ if(mode==='edge'){
+  deployments[0].contract_address='invalid-address';deployments[0].chain_name='';deployments[0].deployed_at=null;deployments[0].status='unregistered';
+  delete deployments[0].name_en;types[0].description_en='';
+  values.sample_url='javascript:alert(1)';values.sample_bool='true';values.sample_enum='not_registered';values.sample_address='broken-address';values.sample_hash='broken-hash';delete values.sample_number;values.extra_key='Do not render';
+  types[0].param_schema.push(schema('unknown_type','Unknown value type','未知值类型','custom_unknown',10));values.unknown_type='<img src=x onerror=alert(1)>';
+  deployments[1].contract_type_key='unregistered_type';
+  deployments.push({...deployments[2],contract_key:'sample_missing_required',chain_id:null});
+ }
+ return {types,deployments,explorers};
+}
+function data(){return testOverride||fixture(S.dataMode);}
+function validate(config){
+ const logs=[], map=new Map(config.types.map(x=>[x.contract_type_key,x]));
+ const add=(code,item,field,level='error')=>logs.push({code,contract_key:item.contract_key||null,type_key:item.contract_type_key||null,field,level});
+ const rows=config.deployments.filter(x=>{
+  const bad=['contract_key','contract_type_key','chain_id','contract_address'].filter(k=>missing(x[k]));
+  if(bad.length){bad.forEach(k=>add('E-13',x,k));return false;}return true;
+ });
+ for(const x of rows){
+  const ty=map.get(x.contract_type_key);
+  if(!ty)add('E-04',x,'contract_type_key');
+  if(ty){for(const k of ['name','description','business_stage'])if(missing(ty[k+'_en'])||missing(ty[k+'_zh']))add('E-10',x,k,'warning');}
+  if(!missing(x.name_en)||!missing(x.name_zh)){if(missing(x.name_en)||missing(x.name_zh))add('E-10',x,'name','warning');}
+  if(!/^0x[0-9a-f]{40}$/i.test(x.contract_address))add('E-06',x,'contract_address');
+  if(!['active','paused','deprecated'].includes(x.status))add('E-14',x,'status');
+  const defs=ty?.param_schema||[], vals=x.param_values||{};
+  for(const k of Object.keys(vals))if(!defs.some(p=>p.key===k))add('E-08',x,k,'warning');
+  for(const p of defs){
+   if(!['text','number','address','hash','datetime','url','boolean','enum'].includes(p.value_type))add('E-09',x,p.key);
+   const v=vals[p.key];if(missing(v))continue;
+   if(p.value_type==='address'&&!/^0x[0-9a-f]{40}$/i.test(v))add('E-06',x,p.key);
+   if(p.value_type==='hash'&&!/^0x[0-9a-f]{64}$/i.test(v))add('E-06',x,p.key);
+   if(p.value_type==='url'&&!safeUrl(v))add('E-15',x,p.key,'warning');
+   if(p.value_type==='boolean'&&typeof v!=='boolean')add('INVALID_BOOLEAN',x,p.key,'warning');
+   if(p.value_type==='enum'&&!(p.options||[]).some(o=>o.value===v))add('UNKNOWN_ENUM',x,p.key,'warning');
+  }
+ }
+ const cmp=(a,b)=>a===b?0:a<b?-1:1;
+ rows.sort((a,b)=>{
+  const ta=map.get(a.contract_type_key),tb=map.get(b.contract_type_key),oa=ta?.sort_order,ob=tb?.sort_order;
+  const av=Number.isFinite(oa)?oa:Infinity,bv=Number.isFinite(ob)?ob:Infinity;
+  let n=av===bv?0:av<bv?-1:1;
+  if(n)return n;n=cmp(a.contract_type_key,b.contract_type_key);if(n)return n;
+  const da=Date.parse(a.deployed_at),db=Date.parse(b.deployed_at);
+  if(Number.isFinite(da)!==Number.isFinite(db))return Number.isFinite(da)?-1:1;
+  if(Number.isFinite(da)&&da!==db)return db-da;
+  return cmp(a.contract_key,b.contract_key);
+ });
+ return {rows,map,logs};
+}
+function safeUrl(v){try{const u=new URL(String(v));return /^https:\/\//.test(String(v))&&u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch(_){return null;}}
+function typeTag(row,ty){return ty?'<span class="pill tc-type-'+(['mint','pledge','burn'].includes(ty.contract_type_key)?ty.contract_type_key:'burn')+'">'+e(bilingual(ty,'name')||'—')+'</span>':'<span class="pill amber">'+e(row.contract_type_key)+'</span><small class="tc-invalid">'+t('missingType')+'</small>';}
+function status(row){const known=['active','deprecated','paused'].includes(row.status);return '<span class="pill '+(row.status==='active'?'green':row.status==='paused'?'amber':'gray')+'"'+(row.status==='active'?' title="'+t('activeHelp')+'"':'')+'>'+e(known?t(row.status):plain(row.status)+' · '+t('unknown'))+'</span>';}
+function name(row,ty){return bilingual(row,'name')||bilingual(ty,'name')||row.contract_key;}
+function time(v){return missing(v)?emptyValue(v):Number.isFinite(Date.parse(v))?e(CF.fmtTime(v)):value(v);}
+function number(v){const str=String(v);if(!/^-?\d+(\.\d+)?$/.test(str))return value(v);const parts=str.split('.');return e(parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',')+(parts[1]?'.'+parts[1]:''));}
+function address(v,row,kind='address',full=false){
+ if(missing(v))return emptyValue(v);
+ if(!(kind==='address'?/^0x[0-9a-f]{40}$/i:/^0x[0-9a-f]{64}$/i).test(v))return value(v)+'<small class="tc-invalid">'+t(kind==='address'?'invalidAddress':'invalidHash')+'</small>';
+ const text=kind==='address'?checksum(v):v,short=kind==='address'?text.slice(0,6)+'…'+text.slice(-4):text.slice(0,10)+'…'+text.slice(-8);
+ const base=data().explorers[row.chain_id],href=base&&safeUrl(base)?base.replace(/\/$/,'')+(kind==='address'?'/address/':'/tx/')+text:null;
+ return '<span class="tc-address'+(full?' tc-address-full':'')+'"><span class="tc-tip"><span class="tc-address-text" tabindex="0">'+e(full?text:short)+'</span>'+(!full?'<span class="tc-tip-content" role="tooltip">'+e(text)+'</span>':'')+'</span><button type="button" class="tc-mini" data-act="tc-copy" data-v="'+e(text)+'" data-kind="'+kind+'" data-f="copy-'+e(row.contract_key)+'-'+e(text)+'" aria-label="'+t('copy')+' · '+e(short)+'" title="'+t('copy')+'">'+CF.ICO.copy+'</button>'+(href?'<a class="tc-mini" data-explorer href="'+e(href)+'" target="_blank" rel="noopener noreferrer" aria-label="'+t('explorer')+' · '+e(short)+'" title="'+t('explorer')+'">'+CF.ICO.ext+'</a>':'')+'</span>';
+}
+function param(p,row){const v=(row.param_values||{})[p.key];if(missing(v))return emptyValue(v);
+ switch(p.value_type){case 'number':return '<span class="mono">'+number(v)+'</span>';case 'datetime':return '<span class="mono">'+time(v)+'</span>';case 'address':case 'hash':return address(v,row,p.value_type);case 'url':return safeUrl(v)?'<a href="'+e(safeUrl(v))+'" target="_blank" rel="noopener noreferrer">'+e(v)+' '+CF.ICO.ext+'</a>':value(v);case 'boolean':return typeof v==='boolean'?t(v?'yes':'no'):value(v);case 'enum':{const match=(p.options||[]).find(x=>x.value===v);return match?e(bilingual(match,'label')||plain(v)):value(v);}default:return value(v);}
+}
+function button(label,act,primary=false){return '<button type="button" class="btn'+(primary?' primary':'')+'" data-act="'+act+'">'+e(label)+'</button>';}
+function emptyPanel(kind){
+ const spec={empty:['noContracts','emptyHelp','doc'],nomatch:['noMatch','noMatchHelp','search'],error:['failed','failedHelp','warn'],missing:['missing','missingHelp','doc'],denied:['denied','deniedHelp','lock'],session:['session','sessionHelp','lock']}[kind];
+ let footer='';
+ if(kind==='empty'&&data().types.length)footer='<p class="tc-planned">'+t('planned')+L(': ','：')+data().types.map(x=>e(bilingual(x,'name'))).join(' · ')+'</p>';
+ if(kind==='nomatch')footer=button(t('clearFilters'),'tc-reset');
+ if(kind==='error')footer=button(t('retry'),'tc-retry',true);
+ if(kind==='missing')footer=button(t('back'),'tc-back');
+ if(kind==='session')footer='<a class="btn primary" href="../账户与登录/v1.0-账户与登录-原型.html#/ops/login?redirect='+encodeURIComponent('/ops/token-contracts'+(S.key?'/'+S.key:''))+'">'+t('signIn')+'</a>';
+ return '<section class="tc-empty'+(kind==='error'?' tc-error':'')+'"'+(kind==='error'?' role="alert"':' role="status"')+'><span class="tc-empty-icon" aria-hidden="true">'+(CF.ICO[spec[2]]||TC_ICO[spec[2]])+'</span><h2>'+t(spec[0])+'</h2><p>'+t(spec[1])+'</p>'+footer+'</section>';
+}
+function skeleton(){return '<section class="tc-loading" aria-busy="true" aria-label="'+t('loading')+'"><p role="status">'+t(S.scenario==='waiting'?'waitingHelp':'loadingHelp')+'</p>'+Array.from({length:5},()=>'<div class="tc-loading-line">'+Array.from({length:5},()=>'<div class="skel"></div>').join('')+'</div>').join('')+'</section>';}
+function demoBanner(){return !['empty','no-types'].includes(S.dataMode)?'<aside class="tc-sample" role="note">'+CF.ICO.info+'<span>'+t('demo')+'</span></aside>':'';}
+function heading(row,ty){return '<div class="page-head"><div>'+(row?'<div class="tc-contract-head"><h1 class="page-title" tabindex="-1">'+e(name(row,ty))+'</h1>'+typeTag(row,ty)+status(row)+'</div><div class="tc-contract-key">'+e(row.contract_key)+'</div>':'<h1 class="page-title" tabindex="-1">'+t(S.page===DETAIL?'detailTitle':'title')+'</h1><p class="page-desc">'+t('desc')+'</p>')+'</div><div class="page-actions"><span class="tc-readonly">'+CF.ICO.eye+t('readOnly')+'</span></div></div>';}
+/* ---- 列表工具区：搜索 / 筛选 / 分页。沿用协议管理的「草稿 + 搜索/重置」交互与公共 .filters / .pager 组件 ---- */
+const PAGE_SIZES=[10,20,50], DEFAULT_SIZE=20, STATUS_ORDER=['active','paused','deprecated'];
+const TC_ICO={search:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8.8" cy="8.8" r="5.4"/><path d="M12.7 12.7 16.6 16.6"/></svg>'};
+const emptyFilter=()=>({kw:'',type:'',status:'',chain:''});
+const anyFilter=f=>!!(f&&(f.kw||f.type||f.status||f.chain));
+const typeOrder=(a,b)=>{const av=Number.isFinite(a.sort_order)?a.sort_order:Infinity,bv=Number.isFinite(b.sort_order)?b.sort_order:Infinity;return av!==bv?(av<bv?-1:1):a.contract_type_key<b.contract_type_key?-1:a.contract_type_key>b.contract_type_key?1:0;};
+function matches(row,map,f){
+ const ty=map.get(row.contract_type_key);
+ if(f.type&&(f.type==='__missing'?!!ty:row.contract_type_key!==f.type))return false;
+ if(f.status&&plain(row.status)!==f.status)return false;
+ if(f.chain&&String(row.chain_id)!==f.chain)return false;
+ const q=f.kw.trim().toLowerCase();
+ if(!q)return true;
+ // 名称按界面上显示的两种语言取值匹配；地址大小写与 0x 前缀都不影响匹配，支持只输入末几位。
+ const names=[row.name_en,row.name_zh,name(row,ty)].filter(x=>!missing(x)).map(x=>plain(x).toLowerCase()).join('\n');
+ const addr=plain(row.contract_address).toLowerCase(), bare=addr.replace(/^0x/,''), qBare=q.replace(/^0x/,'');
+ return names.includes(q)||addr.includes(q)||(/^[0-9a-f]+$/.test(qBare)&&bare.includes(qBare));
+}
+function selectField(id,labelKey,allKey,opts,cur){
+ // URL 里带来的取值即使已不在当前配置中也保留成一项，避免筛选生效但控件显示「全部」。
+ if(cur&&!opts.some(o=>o[0]===cur))opts=opts.concat([[cur,plain(cur)]]);
+ return '<div class="fl"><span id="lb-'+id+'">'+t(labelKey)+'</span><select class="inp" id="'+id+'" data-f="'+id+'" aria-labelledby="lb-'+id+'"><option value="">'+t(allKey)+'</option>'+opts.map(o=>'<option value="'+e(o[0])+'"'+(cur===o[0]?' selected':'')+'>'+e(o[1])+'</option>').join('')+'</select></div>';
+}
+function filterBar(all,map){
+ const f=S.f;
+ const typeOpts=data().types.slice().sort(typeOrder).map(x=>[x.contract_type_key,bilingual(x,'name')||x.contract_type_key]);
+ if(all.some(row=>!map.get(row.contract_type_key)))typeOpts.push(['__missing',t('missingType')]);
+ const seen=new Set(all.map(row=>plain(row.status)));
+ // 本期状态恒为 active，筛选项照样在，可选值就只有这一个；配置里真出现别的取值时按原值补进来，不臆造 PRD 未下发的枚举。
+ const statusOpts=STATUS_ORDER.filter(x=>x==='active'||seen.has(x)).concat(Array.from(seen).filter(x=>!STATUS_ORDER.includes(x)).sort())
+  .map(x=>[x,STATUS_ORDER.includes(x)?t(x):plain(x)+' · '+t('unknown')]);
+ const chains=new Map();
+ all.forEach(row=>{const k=String(row.chain_id);if(!chains.has(k))chains.set(k,row.chain_name||'Chain ID '+row.chain_id);});
+ const chainOpts=Array.from(chains).sort((a,b)=>a[1]<b[1]?-1:a[1]>b[1]?1:0);
+ return '<div class="filters tc-filters" role="search">'
+  +'<div class="fl fl-kw"><span id="lb-tcKeyword">'+t('fKeyword')+'</span><input class="inp" id="tcKeyword" data-f="tcKeyword" type="text" autocomplete="off" aria-labelledby="lb-tcKeyword" value="'+e(S.f.kw)+'" placeholder="'+t('searchPh')+'"></div>'
+  +selectField('tcType','fType','allTypes',typeOpts,f.type)
+  +selectField('tcStatus','fStatus','allStatuses',statusOpts,f.status)
+  +selectField('tcChain','fChain','allChains',chainOpts,f.chain)
+  +'<div class="fl-act"><button class="btn sm primary" type="button" data-act="tc-search" data-f="tcSearch">'+t('bSearch')+'</button>'
+  +'<button class="btn sm" type="button" data-act="tc-reset" data-f="tcReset">'+t('bReset')+'</button></div></div>';
+}
+function pager(n,pages,pg){
+ const from=n?(pg-1)*S.size+1:0, to=Math.min(pg*S.size,n);
+ return '<div class="pager tc-pager"><span>'+t('pageRange',{a:from,b:to,n:n})+'</span><div class="right"><label for="tcSize">'+t('perPage')+'</label>'
+  +'<select class="inp" id="tcSize" data-f="tcSize">'+PAGE_SIZES.map(x=>'<option value="'+x+'"'+(S.size===x?' selected':'')+'>'+x+'</option>').join('')+'</select>'
+  +'<button class="pgbtn" type="button" data-act="tc-pg" data-v="'+(pg-1)+'" data-f="tcPrev"'+(pg<=1?' disabled':'')+' aria-label="'+t('prevPage')+'">‹</button>'
+  +'<span class="mono">'+t('pageOf',{p:pg,t:pages})+'</span>'
+  +'<button class="pgbtn" type="button" data-act="tc-pg" data-v="'+(pg+1)+'" data-f="tcNext"'+(pg>=pages?' disabled':'')+' aria-label="'+t('nextPage')+'">›</button></div></div>';
+}
+function applyFilter(focus){S.applied=Object.assign({},S.f);S.pg=1;focusAfter=focus;CF.render();CF.syncURL();}
+function list(v){
+ const headers=['fieldContract','fieldType','fieldChain','fieldAddress','fieldStatus','fieldTime','fieldActions'];
+ const loaded=!['loading','waiting','error','denied','session'].includes(S.scenario);
+ const total=v.rows.length, demo=!['empty','no-types'].includes(S.dataMode);
+ /* 工具区只在「本次加载成功且配置里至少有一份合约」时出现：尚未部署时不留一排筛不出东西的空控件（PRD 7.2.4 的原始顾虑），
+    而筛选后无结果时筛选栏必须留着，否则用户没有清空筛选的入口；分页器则跟着数据行走，一行都没有时不留一排点不动的按钮。 */
+ const tools=loaded&&total>0;
+ const shown=tools?v.rows.filter(row=>matches(row,v.map,S.applied)):v.rows;
+ const pages=Math.max(1,Math.ceil(shown.length/S.size)), pg=Math.min(Math.max(1,S.pg),pages);
+ S.pg=pg;
+ const rows=tools?shown.slice((pg-1)*S.size,pg*S.size):shown;
+ let body='';
+ if(['loading','waiting'].includes(S.scenario))body=skeleton();
+ else if(['error','denied','session'].includes(S.scenario))body=emptyPanel(S.scenario);
+ else if(!total)body=emptyPanel('empty');
+ else if(!shown.length)body=emptyPanel('nomatch');
+ else body='<table class="tbl tc-table"><colgroup>'+[22,12,12,18,9,17,10].map(n=>'<col style="width:'+n+'%">').join('')+'</colgroup><thead><tr>'+headers.map(k=>'<th scope="col">'+t(k)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>{const ty=v.map.get(row.contract_type_key);return '<tr class="rowlink" data-contract="'+e(row.contract_key)+'"><td><div class="cell-main">'+e(name(row,ty))+'</div><div class="cell-sub">'+e(row.contract_key)+'</div></td><td>'+typeTag(row,ty)+'</td><td><div class="cell-main">'+e(row.chain_name||'Chain ID '+row.chain_id)+'</div>'+(row.chain_name?'<div class="cell-sub">Chain ID '+e(row.chain_id)+'</div>':'')+'</td><td>'+address(row.contract_address,row)+'</td><td>'+status(row)+'</td><td class="tc-time">'+time(row.deployed_at)+'</td><td><a class="tc-view" href="'+e(detailHash(row.contract_key))+'" data-act="tc-view" data-v="'+e(row.contract_key)+'">'+t('view')+'</a></td></tr>';}).join('')+'</tbody></table>';
+ const count=!loaded?'—':anyFilter(S.applied)?t(demo?'demoCountFiltered':'countFiltered',{n:shown.length,total:total}):t(demo?'demoCount':'count',{n:total});
+ return heading()+demoBanner()+'<section class="card"><div class="card-head"><h2 class="tc-section-title" tabindex="-1" data-f="tcListTitle">'+t('list')+'</h2><span class="right tc-count">'+count+'</span></div>'+(tools?filterBar(v.rows,v.map):'')+body+(tools&&rows.length?pager(shown.length,pages,pg):'')+'</section>';
+}
+function detail(v){
+ const row=v.rows.find(x=>x.contract_key===S.key),ty=row&&v.map.get(row.contract_type_key);
+ if(['loading','waiting','error','denied','session'].includes(S.scenario))return heading()+demoBanner()+'<section class="card">'+(['loading','waiting'].includes(S.scenario)?skeleton():emptyPanel(S.scenario))+'</section>';
+ if(!row)return heading()+'<section class="card">'+emptyPanel('missing')+'</section>';
+ const fields=[['fieldChain',e(row.chain_name||'—')+' <span class="tc-helper mono">Chain ID '+e(row.chain_id)+'</span>',false],['version',value(row.version),false],['fieldAddress',address(row.contract_address,row,'address',true),true],['standard',missing(row.contract_standard)?emptyValue(row.contract_standard):e(({erc20:'ERC-20',erc721:'ERC-721',erc1155:'ERC-1155',custom:L('Custom','自定义')})[row.contract_standard]||row.contract_standard),false],['fieldTime',time(row.deployed_at),false],['tx',address(row.deploy_tx_hash,row,'hash'),true]];
+ let body=heading(row,ty)+demoBanner()+'<div class="tc-grid"><section class="card tc-identity"><div class="card-head"><h2 class="tc-section-title">'+t('identity')+'</h2></div><div class="card-b"><dl class="dl">'+fields.map(([key,val,wide])=>'<div'+(wide?' class="tc-wide"':'')+'><dt>'+t(key)+'</dt><dd>'+val+'</dd></div>').join('')+'</dl></div></section><section class="card"><div class="card-head"><h2 class="tc-section-title">'+t('about')+'</h2></div><div class="card-b">'+(ty?'<dl class="tc-about"><div><dt>'+t('purpose')+'</dt><dd>'+value(bilingual(ty,'description'))+'</dd></div><div><dt>'+t('stage')+'</dt><dd>'+value(bilingual(ty,'business_stage'))+'</dd></div><div><dt>'+t('related')+'</dt><dd>'+value(ty.related_business_module)+'</dd></div></dl>':CF.note('amber',t('missingTypeHelp')) )+'</div></section>';
+ const defs=(ty?.param_schema||[]).slice().sort((a,b)=>a.order-b.order||(a.key<b.key?-1:a.key>b.key?1:0));
+ if(defs.length)body+='<section class="card tc-full"><div class="card-head"><h2 class="tc-section-title">'+t('params')+'</h2></div><table class="tc-param-table"><tbody>'+defs.map(p=>{const hint=bilingual(p,'hint');return '<tr data-param="'+e(p.key)+'"><th scope="row"><span class="tc-param-label">'+e(bilingual(p,'label')||'—')+(hint?'<span class="tc-tip tc-help"><button type="button" aria-label="'+e(hint)+'">'+CF.ICO.info+'</button><span class="tc-tip-content" role="tooltip">'+e(hint)+'</span></span>':'')+'</span></th><td>'+param(p,row)+'</td></tr>';}).join('')+'</tbody></table></section>';
+ return body+'</div>';
+}
+function query(){
+ const p=new URLSearchParams();
+ if(S.scenario!=='empty')p.set('scene',S.scenario);
+ if(S.dataMode!==S.scenario)p.set('data',S.dataMode);
+ const f=S.applied||emptyFilter();
+ if(f.kw)p.set('q',f.kw);
+ if(f.type)p.set('type',f.type);
+ if(f.status)p.set('status',f.status);
+ if(f.chain)p.set('chain',f.chain);
+ if(S.size!==DEFAULT_SIZE)p.set('size',String(S.size));
+ if(S.pg>1)p.set('page',String(S.pg));
+ return p.size?'?'+p.toString():'';
+}
+function detailHash(key){return '#/ops/token-contracts/'+encodeURIComponent(key)+query();}
+function readHash(){
+ let h=location.hash.slice(1),[path,search='']=h.split('?');if(!path.startsWith('/ops/token-contracts'))return false;
+ const q=new URLSearchParams(search),scene=q.get('scene')||'empty',mode=q.get('data')||scene;
+ S.scenario=scenarios.some(x=>x[0]===scene)?scene:'empty';S.dataMode=dataModes.includes(mode)?mode:'empty';
+ const f={kw:q.get('q')||'',type:q.get('type')||'',status:q.get('status')||'',chain:q.get('chain')||''};
+ S.applied=f;S.f=Object.assign({},f);
+ const size=parseInt(q.get('size'),10),page=parseInt(q.get('page'),10);
+ S.size=PAGE_SIZES.includes(size)?size:DEFAULT_SIZE;
+ S.pg=Number.isFinite(page)&&page>0?page:1;
+ try{S.key=decodeURIComponent(path.replace(/^\/ops\/token-contracts\/?/,''));}catch(_){S.key='invalid-key';}
+ S.page=S.key?DETAIL:LIST;applyNav();scheduleLoad();return true;
+}
+function applyNav(){const denied=['denied','session'].includes(S.scenario);CF.NAV.admin=denied?navOriginal.filter(x=>typeof x==='string'):navOriginal;}
+function setScenario(scene){
+ if(!scenarios.some(x=>x[0]===scene))return;
+ clearTimeout(timer);testOverride=null;S.scenario=scene;S.toasts=[];
+ S.f=emptyFilter();S.applied=emptyFilter();S.pg=1;
+ if(dataModes.includes(scene))S.dataMode=scene;
+ if(scene==='copy-failure')S.dataMode='sample';
+ if(scene==='missing'){S.key='missing-contract';S.page=DETAIL;}
+ else if(['empty','no-types'].includes(scene)){S.key='';S.page=LIST;}
+ else if(dataModes.includes(scene)&&S.page===DETAIL){S.key='sample_mint_01';}
+ applyNav();scheduleLoad();CF.render();CF.syncURL();
+}
+function scheduleLoad(){clearTimeout(timer);if(S.scenario==='loading'){timer=setTimeout(()=>{S.scenario=S.dataMode;CF.render();CF.syncURL();},1100);}}
+async function copy(n,v){let ok=false;
+ if(S.scenario!=='copy-failure'&&S.forceCopyFailure!==true){
+  try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(v);ok=true;}}catch(_){}
+  if(!ok){const area=document.createElement('textarea');area.value=v;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();try{ok=document.execCommand('copy');}catch(_){}area.remove();}
+ }
+ CF.toast(ok?'success':'danger',t(ok?(n.dataset.kind==='hash'?'copiedHash':'copiedAddress'):'copyFailed'));focusAfter=n.dataset.f;CF.render();
+}
+function openDetail(key){S.key=key;focusAfter='heading';CF.go(DETAIL);}
+function back(){S.key='';if(S.scenario==='missing')S.scenario=S.dataMode;focusAfter='heading';CF.go(LIST);}
+CF.define({id:'smart-contracts',end:'admin',home:LIST,owns:[LIST,DETAIL],dict:DICT,topbarPrd:false,
+ state(){let lang='en',tz='Asia/Shanghai';try{lang=localStorage.getItem('fs-smart-contract-lang')==='zh'?'zh':'en';tz=localStorage.getItem('fs-smart-contract-tz')==='UTC'?'UTC':'Asia/Shanghai';}catch(_){}return {lang,tz,scenario:'empty',dataMode:'empty',key:'',f:emptyFilter(),applied:emptyFilter(),pg:1,size:DEFAULT_SIZE};},
+ onBoot(s){S=s;},
+ account(){return {avatar:'OP',ident:L('Operations Administrator','运营管理员'),ok:true,okText:L('Prototype','原型'),settings:'P-O05'};},
+ topExtra(){return '<div class="tc-tools"><label for="tcScenario">'+t('scenario')+'</label><select id="tcScenario" data-f="tcScenario">'+scenarios.map(x=>'<option value="'+x[0]+'"'+(S.scenario===x[0]?' selected':'')+'>'+L(x[1],x[2])+'</option>').join('')+'</select><label class="sr-only" for="tcTimezone">'+t('timezone')+'</label><select id="tcTimezone" data-f="tcTimezone"><option value="Asia/Shanghai"'+(S.tz!=='UTC'?' selected':'')+'>UTC+8</option><option value="UTC"'+(S.tz==='UTC'?' selected':'')+'>UTC</option></select></div>';},
+ crumbParts(){return S.page===DETAIL?[[t('navTokenManagement'),LIST],[t('title'),LIST]]:[[t('navTokenManagement'),LIST]];},
+ crumbCur(){if(S.page!==DETAIL)return t('title');if(['denied','session'].includes(S.scenario))return '—';const v=validate(data()),r=v.rows.find(x=>x.contract_key===S.key);return r?name(r,v.map.get(r.contract_type_key)):'—';},
+ content(){const v=validate(data());window.TC.logs=v.logs;return S.page===DETAIL?detail(v):list(v);},
+ onGo(page){clearTimeout(timer);if(page===LIST){S.key='';if(S.scenario==='missing')S.scenario=S.dataMode;}},
+ hash:{build(){return '#/ops/token-contracts'+(S.page===DETAIL?'/'+encodeURIComponent(S.key):'')+query();},read:readHash},
+ onAct(n,a,v,event){
+  if(a==='tc-view'){event.preventDefault();openDetail(v);return true;}
+  if(a==='tc-back'||a==='crumb'){back();return true;}
+  if(a==='tc-copy'){copy(n,v);return true;}
+  if(a==='tc-search'){applyFilter('tcSearch');return true;}
+  if(a==='tc-reset'){S.f=emptyFilter();applyFilter('tcKeyword');return true;}
+  if(a==='tc-pg'){const to=parseInt(v,10);if(Number.isFinite(to)&&to>0){S.pg=to;focusAfter=n.dataset.f;CF.render();CF.syncURL();}return true;}
+  if(a==='tc-retry'){setScenario('loading');return true;}
+  if(a==='signout'){setScenario('session');return true;}
+  if(a==='lang'){S.lang=v;S.menu=null;S.toasts=[];try{localStorage.setItem('fs-smart-contract-lang',v);}catch(_){}focusAfter='language';CF.render();return true;}
+  return false;
+ },
+ afterRender(){
+  document.documentElement.lang=S.lang==='en'?'en':'zh-CN';document.title=L('Smart Contracts','智能合约')+' · Financial Services';
+  document.getElementById('tcContext').textContent=L('Operations','运营端');
+  document.getElementById('nav').setAttribute('aria-label',L('Main navigation','主导航'));
+  document.getElementById('crumb').setAttribute('aria-label',L('Breadcrumb','面包屑'));
+  if(focusAfter){
+   const target=focusAfter==='heading'?document.querySelector('h1'):focusAfter==='language'?document.querySelector('[data-act="menu"][data-v="lang"]'):Array.from(document.querySelectorAll('[data-f]')).find(x=>x.dataset.f===focusAfter);
+   // 翻到首页 / 末页后按钮会变灰，焦点落到列表标题而不是消失在 body 上。
+   (target&&!target.disabled?target:document.querySelector('[data-f="tcListTitle"]'))?.focus();
+   focusAfter='';
+  }
+ }
+});
+window.TC={checksum,keccakAscii,validate,fixture,setScenario,matches,get logs(){return this._logs||[];},set logs(v){this._logs=v;},get config(){return data();},setTestConfig(config){testOverride=config;S.dataMode='sample';S.scenario='sample';applyNav();CF.render();CF.syncURL();}};
+const FILTER_FIELD={tcType:'type',tcStatus:'status',tcChain:'chain'};
+document.addEventListener('change',event=>{
+ const n=event.target;
+ if(n.id==='tcScenario')setScenario(n.value);
+ if(n.id==='tcTimezone'){S.tz=n.value;try{localStorage.setItem('fs-smart-contract-tz',n.value);}catch(_){}CF.render();}
+ if(FILTER_FIELD[n.id])S.f[FILTER_FIELD[n.id]]=n.value;
+ if(n.id==='tcSize'){const size=parseInt(n.value,10);S.size=PAGE_SIZES.includes(size)?size:DEFAULT_SIZE;S.pg=1;focusAfter='tcSize';CF.render();CF.syncURL();}
+});
+document.addEventListener('input',event=>{if(event.target.id==='tcKeyword')S.f.kw=event.target.value;});
+document.addEventListener('keydown',event=>{if(event.target.id==='tcKeyword'&&event.key==='Enter'){event.preventDefault();S.f.kw=event.target.value;applyFilter('tcKeyword');}});
+document.addEventListener('click',event=>{if(event.target.closest('a,button,input,select,[tabindex]'))return;const tr=event.target.closest('[data-contract]');if(tr)openDetail(tr.dataset.contract);});
+CF.boot();
+})(window.CF);
+</script>
+</body>
+</html>
