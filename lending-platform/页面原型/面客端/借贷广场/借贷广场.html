@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en" data-end="asset">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lending marketplace · Harbour Credit</title>
+<link rel="stylesheet" href="../../_shared/tokens.css">
+<link rel="stylesheet" href="../../_shared/base.css">
+<style>
+.ls-stack{display:flex;flex-direction:column;gap:var(--sp-5)}
+.ls-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6)}
+.ls-stats{grid-template-columns:repeat(5,minmax(0,1fr))}
+.ls-stats .v{font-size:var(--fs-19);overflow-wrap:anywhere}
+.ls-project{padding:var(--card-pad);border-bottom:1px solid var(--border)}
+.ls-project:last-child{border-bottom:0}
+.ls-project h2{font-size:var(--fs-19);margin:0}
+.ls-row{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
+.ls-row .push{margin-left:auto}
+.ls-pool{border-right:1px solid var(--border-dash);padding-right:var(--sp-6)}
+.ls-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);margin-top:var(--sp-4)}
+.ls-metrics dt{font-size:var(--fs-12);color:var(--muted)}
+.ls-metrics dd{margin:var(--sp-1) 0 0;font-family:var(--mono);font-size:var(--fs-16)}
+.ls-project .ls-grid{margin:var(--sp-4) 0}
+.ls-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4);padding:var(--card-pad)}
+.ls-range{display:flex;gap:var(--sp-2)}
+.ls-range input{width:100%;min-width:0}
+.ls-form{max-width:1080px;margin:auto}
+.ls-form .field{margin-bottom:var(--sp-4)}
+.ls-block{margin-top:var(--sp-5)}
+.ls-check{display:flex;gap:var(--sp-3);align-items:center;min-height:44px;cursor:pointer}
+.ls-check input{width:18px;height:18px;flex:none;accent-color:var(--accent)}
+.ls-selected{padding:var(--sp-4);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.ls-actions{padding:var(--card-pad);border-top:1px solid var(--border)}
+.ls-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4)}
+.ls-step{border-top:2px solid var(--border);padding-top:var(--sp-3);min-width:0}
+.ls-step[data-current=true]{border-color:var(--accent)}
+.ls-step h3{font-size:var(--fs-14);margin:var(--sp-2) 0}
+.ls-step .btn{white-space:normal;height:auto;min-height:44px}
+.ls-table th{white-space:normal}
+.ls-table td{overflow-wrap:anywhere}
+.ls-table .ls-select-cell{width:70px}
+.ls-history summary{cursor:pointer;min-height:44px;padding:var(--sp-3) 0;color:var(--accent)}
+.ls-error{margin-top:var(--sp-3)}
+.ls-raw{white-space:pre-wrap;overflow-wrap:anywhere}
+.modal:has(.ls-wide){max-width:960px}
+.modal:has(.ls-medium){max-width:620px}
+body:has(#layers [role="dialog"]) #demoBtn{display:none}
+.ls-review{border-top:1px solid var(--border);padding-top:var(--sp-4)}
+.ls-review .field{margin-bottom:var(--sp-3)}
+.ls-evidence{font-size:var(--fs-12);color:var(--muted);margin:0}
+.ls-subheading{font-size:var(--fs-14);margin:0 0 var(--sp-3)}
+.ls-notice{margin-bottom:var(--sp-5)}
+.ls-demo-mark{font-size:var(--fs-12);color:var(--muted)}
+.ls-table .pgbtn,.ls-check,.ls-history summary{min-height:44px}
+@media(max-width:1100px){.ls-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:768px){.ls-stack .pager .total,.ls-form .pager .total{flex-basis:100%}.ls-grid,.ls-fields,.ls-steps{grid-template-columns:1fr}.ls-pool{border-right:0;border-bottom:1px solid var(--border);padding:0 0 var(--sp-4)}.ls-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-table td{flex-wrap:wrap}.ls-table td:before{max-width:45%;white-space:normal}.ls-table td>*{max-width:100%}.ls-range{width:100%}.ls-actions .btn{flex:1}.ls-row .push{margin-left:0}.ls-step{padding-bottom:var(--sp-3)}}
+</style>
+</head>
+<body>
+
+<!-- 面客端顶栏骨架：沿用公共运行时要求的挂载点，不重建导航。 -->
+<div class="portal" id="portal" hidden>
+  <header class="portal-head">
+    <a class="brand" href="#/marketplace">
+      <span class="brand-mark" aria-hidden="true">HC</span>
+      <span>
+        <span class="brand-name">Harbour Credit</span>
+        <span class="brand-sub">Lending</span>
+      </span>
+    </a>
+    <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+    <div class="portal-tools" id="tools"></div>
+  </header>
+  <div class="portal-sub" id="subwrap"><div class="portal-sub-in" id="crumb"></div></div>
+  <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+  <footer class="site-foot" id="foot"></footer>
+</div>
+
+<!-- 管理端骨架：本模块不登记管理端页面，这里只保留公共运行时要求的挂载点。 -->
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">HC</span>
+      <span>
+        <span class="brand-name">Harbour Credit</span>
+        <span class="brand-sub">Operations</span>
+      </span>
+    </div>
+    <nav class="nav" id="anav" aria-label="Main navigation"></nav>
+    <div class="side-foot" id="asidefoot"></div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="crumbbar-in" id="acrumb"></div>
+      <div class="topbar-right" id="atools"></div>
+    </div>
+    <div class="content" id="acontent"></div>
+  </div>
+</div>
+
+<div id="layers"></div>
+<div class="toasts" id="toasts"></div>
+<button class="demo-btn" id="demoBtn" type="button"></button>
+<aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
+
+<script src="../../_shared/registry.portal.js"></script>
+<script src="../../_shared/shell.js"></script>
+<script src="演示数据.js"></script>
+<script src="借贷广场.js"></script>
+</body>
+</html>

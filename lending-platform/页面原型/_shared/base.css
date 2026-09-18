@@ -504,3 +504,8 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .completion-list li{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);
   padding:var(--sp-3) 0;flex-wrap:wrap;font-size:var(--fs-13)}
 @media(max-width:640px){.completion-in{padding:var(--sp-2) var(--sp-4)}}
+/* Long modal forms: keep header/actions reachable; only the body scrolls. */
+.modal-mask{grid-template-rows:minmax(0,1fr)}
+.modal{min-height:0}
+.modal-b{min-height:0}
+.modal-h,.modal-f{flex-shrink:0}

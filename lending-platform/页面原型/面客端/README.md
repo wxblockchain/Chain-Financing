@@ -9,6 +9,6 @@
 - 继承母版与 archetype：[`../_shared/design-system/页面继承参考.md`](../_shared/design-system/页面继承参考.md)
 - 组件语义：[`官网层`](../_shared/design-system/官网层组件规范.md) · [`工作区`](../_shared/design-system/面客工作区组件规范.md)
 
-已落库：[资产广场](资产广场/README.md)。当前业务输入取本分支 `lending-platform/PRD/`；`cly-V1.0.0` 仅作历史参考，不能替代最新已确认输入。
+已落库：[资产广场](资产广场/README.md)、[借贷广场 · 融资需求与代币质押](借贷广场/README.md)。当前业务输入取本分支 `lending-platform/PRD/`；`cly-V1.0.0` 仅作历史参考，不能替代最新已确认输入。
 
 - [面客消息中心](消息中心/README.md)：列表、整页详情、顶栏快捷面板；含双语与异常场景。
