@@ -16,102 +16,148 @@
   CF.PAGES[DETAIL] = { end: "asset", layout: "portal", crumbKey: "crumbToken", auth: false };
   CF.ENTRY[DETAIL] = "/assets/" + AM.TOKENS[0].no;
 
-  /* ------------------------------------------------------------ 视图状态
-     筛选、排序、搜索关键词与页码写在 URL 上，URL 是视图状态的唯一事实源：
-     刷新、分享、前进后退与从详情页返回都原样恢复。 */
+  /* 可分享视图：条件 + 已加载条数 + 行锚点/偏移 + 内外滚动位置。
+     不依赖会话缓存；滚动与追加 replace 当前历史项，条件变化新增历史项。 */
   function hashPath() { return location.hash.replace(/^#/, ""); }
-
-  /* URL 保存业务视图；会话内按 URL 保存内外滚动位置。公共壳层仍负责渲染。
-     file:// 或禁用存储时退回内存，不影响浏览。 */
-  var positionKey = "am-positions:" + location.pathname;
-  var positions = {}, renderedPath = "", restoreFrame = 0, resetPosition = false;
-  try { positions = JSON.parse(sessionStorage.getItem(positionKey) || "{}"); } catch (e) {}
-  if (!positions || typeof positions !== "object") positions = {};
+  function isList() { return /^\/assets(\?|$)/.test(hashPath()); }
+  var load = null, timer = 0, restoreFrame = 0, restoring = false;
+  var failNext = false, demoLimit = 52, hits = [];
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-
-  function rememberPosition() {
-    if (!renderedPath || renderedPath !== hashPath() || restoreFrame) return;
-    var box = document.getElementById("am-listbox");
-    positions[renderedPath] = { outer: window.scrollY, inner: box ? box.scrollTop : 0 };
-    try { sessionStorage.setItem(positionKey, JSON.stringify(positions)); } catch (e) {}
+  function number(value, fallback, max) {
+    var n = Number(value);
+    return Number.isFinite(n) && n >= 0 ? Math.min(max, Math.floor(n)) : fallback;
   }
-
-  function restorePosition(page) {
-    if (!resetPosition) rememberPosition();
-    var path = hashPath();
-    var saved = resetPosition ? { outer: 0, inner: 0 } : positions[path] || { outer: 0, inner: 0 };
-    renderedPath = path;
-    resetPosition = false;
-    cancelAnimationFrame(restoreFrame);
-    restoreFrame = requestAnimationFrame(function () {
-      restoreFrame = 0;
-      if (hashPath() !== path) return;
-      var box = document.getElementById("am-listbox");
-      if (box && page === LIST) box.scrollTop = saved.inner || 0;
-      window.scrollTo(0, saved.outer || 0);
-      rememberPosition();
-    });
-  }
-  document.addEventListener("scroll", rememberPosition, true);
-  window.addEventListener("pagehide", rememberPosition);
-
   function readView() {
-    var h = hashPath();
-    /* 详情页地址下沿用登记表里保存的列表视图，返回列表时筛选排序页码原样恢复。 */
-    if (!/^\/assets(\?|$)/.test(h)) h = CF.ENTRY[LIST] || "/assets";
-    var qi = h.indexOf("?");
-    var v = { ts: "", ps: "", kind: "", holder: "", q: "", sort: "at", dir: "desc", page: 1 };
-    if (qi < 0) return v;
-    h.slice(qi + 1).split("&").forEach(function (seg) {
-      if (!seg) return;
-      var i = seg.indexOf("="), k = i < 0 ? seg : seg.slice(0, i);
-      var raw = i < 0 ? "" : seg.slice(i + 1).replace(/\+/g, " ");
-      var val;
-      try { val = decodeURIComponent(raw); } catch (e) { val = raw; }
-      if (k === "page") v.page = Math.max(1, parseInt(val, 10) || 1);
-      else if (Object.prototype.hasOwnProperty.call(v, k)) v[k] = val;
+    var h = isList() ? hashPath() : CF.ENTRY[LIST] || "/assets";
+    var q = new URLSearchParams(h.split("?")[1] || "");
+    var v = { ts: "", ps: "", kind: "", holder: "", q: "", sort: "at", dir: "desc",
+      loaded: 20, scroll: 0, outer: 0, anchor: "", offset: 0 };
+    ["ts", "ps", "kind", "holder", "q", "sort", "dir", "anchor"].forEach(function (key) {
+      if (q.has(key)) v[key] = q.get(key);
     });
     if (["at", "val", "due"].indexOf(v.sort) < 0) v.sort = "at";
     if (v.dir !== "asc") v.dir = "desc";
+    v.loaded = Math.min(AM.TOKENS.length, Math.max(20, Math.ceil(number(q.get("loaded") || 20, 20, AM.TOKENS.length) / 20) * 20));
+    ["scroll", "outer", "offset"].forEach(function (key) { v[key] = number(q.get(key), 0, 1000000); });
     return v;
   }
-
   function viewHash(v) {
-    var q = [];
-    ["ts", "ps", "kind", "holder", "q"].forEach(function (k) {
-      if (v[k]) q.push(k + "=" + encodeURIComponent(v[k]));
-    });
-    if (v.sort !== "at" || v.dir !== "desc") { q.push("sort=" + v.sort); q.push("dir=" + v.dir); }
-    if (v.page > 1) q.push("page=" + v.page);
-    return "/assets" + (q.length ? "?" + q.join("&") : "");
+    var q = new URLSearchParams();
+    ["ts", "ps", "kind", "holder", "q"].forEach(function (key) { if (v[key]) q.set(key, v[key]); });
+    if (v.sort !== "at" || v.dir !== "desc") { q.set("sort", v.sort); q.set("dir", v.dir); }
+    if (v.loaded > 20) q.set("loaded", v.loaded);
+    ["scroll", "outer", "offset"].forEach(function (key) { if (v[key]) q.set(key, Math.round(v[key])); });
+    if (v.anchor) q.set("anchor", v.anchor);
+    return "/assets" + (q.size ? "?" + q.toString() : "");
   }
-
-  /* 公共路由按登记表精确匹配。把当前地址回写进登记表，深链与查询串就能走
-     公共路由本身，不必在模块里另起一套路由。 */
+  function replaceView(v) {
+    var h = viewHash(v);
+    history.replaceState(history.state, "", "#" + h);
+    CF.ENTRY[LIST] = h;
+  }
+  function rememberPosition() {
+    if (!isList() || restoring || !load || load.phase === "initial" || S.st !== "default") return;
+    var box = document.getElementById("am-listbox");
+    if (!box) return;
+    var v = readView();
+    v.loaded = load.shown; v.scroll = box.scrollTop; v.outer = window.scrollY;
+    v.anchor = ""; v.offset = 0;
+    var top = box.getBoundingClientRect().top;
+    var row = Array.from(box.querySelectorAll("tbody tr")).find(function (r) { return r.getBoundingClientRect().bottom > top; });
+    if (row) { v.anchor = row.getAttribute("data-v"); v.offset = Math.max(0, top - row.getBoundingClientRect().top); }
+    replaceView(v);
+  }
+  function cancelLoad() { clearTimeout(timer); timer = 0; load = null; }
   function syncEntry() {
     var h = hashPath();
-    if (/^\/assets\/[^/?#]+$/.test(h)) CF.ENTRY[DETAIL] = h;
-    else if (/^\/assets(\?|$)/.test(h)) CF.ENTRY[LIST] = h;
+    if (/^\/assets\/[^/?#]+(?:\?|$)/.test(h)) {
+      CF.ENTRY[DETAIL] = h;
+      var back = new URLSearchParams(h.split("?")[1] || "").get("return");
+      if (back && /^\/assets(\?|$)/.test(back)) CF.ENTRY[LIST] = back;
+    } else if (isList()) CF.ENTRY[LIST] = h;
   }
-
-  var hits = [];
   function writeView(v) {
-    rememberPosition();
+    rememberPosition(); cancelLoad();
+    v.loaded = 20; v.scroll = v.outer = v.offset = 0; v.anchor = "";
     var h = viewHash(v), now = Date.now();
-    hits.push(now);
-    hits = hits.filter(function (t) { return now - t < 6000; });
+    hits.push(now); hits = hits.filter(function (t) { return now - t < 6000; });
+    S.st = "default"; S.toTop = false;
     CF.ENTRY[LIST] = h;
-    positions[h] = { outer: 0, inner: 0 };
-    resetPosition = true;
-    S.toTop = true;
     if (hashPath() !== h) location.hash = "#" + h;
     else CF.render();
   }
   function throttled() { return hits.length > 10; }
+  function ensureLoad(v, total) {
+    if (!load) {
+      load = { shown: Math.min(v.loaded, total), total: total, phase: "initial" };
+      var owner = load;
+      timer = setTimeout(function () {
+        timer = 0;
+        if (load !== owner || !isList()) return;
+        owner.phase = "idle"; CF.render();
+      }, 450);
+    }
+    load.total = total;
+    return load;
+  }
+  function appendBatch() {
+    if (!isList() || !load || ["idle", "error"].indexOf(load.phase) < 0 || load.shown >= load.total || S.st !== "default") return;
+    rememberPosition();
+    var owner = load, failing = failNext;
+    failNext = false; owner.phase = "append";
+    CF.render();
+    timer = setTimeout(function () {
+      timer = 0;
+      if (load !== owner || !isList()) return;
+      rememberPosition();
+      owner.phase = failing ? "error" : "idle";
+      if (!failing) owner.shown = Math.min(owner.total, owner.shown + CF.PAGE_SIZE);
+      var v = readView(); v.loaded = owner.shown; replaceView(v);
+      CF.render();
+    }, 600);
+  }
+  function tail(total) {
+    if (load.phase === "append") return '<div class="loadmore" role="status" aria-live="polite">' + L("Loading more…", "正在加载更多…") + '</div>';
+    if (load.phase === "error") return '<div class="loadmore" role="alert">' + L("Could not load more. Your items are still here.", "加载失败，已显示内容保留。") +
+      '<button class="btn" data-act="am-more" type="button">' + L("Retry", "重试") + '</button></div>';
+    S.shown = load.shown;
+    // 复用公共尾部外观，异步状态与滚动触发由本模块管理，避免同步哨兵越过请求状态。
+    return CF.moreFoot(total).replace('data-act="more"', 'data-act="am-more"');
+  }
+  function afterList(v) {
+    restoring = true; S.toTop = false;
+    cancelAnimationFrame(restoreFrame);
+    restoreFrame = requestAnimationFrame(function () {
+      if (!isList()) { restoring = false; return; }
+      var box = document.getElementById("am-listbox");
+      if (box) {
+        box.scrollTop = v.scroll;
+        var row = Array.from(box.querySelectorAll("tbody tr")).find(function (r) { return r.getAttribute("data-v") === v.anchor; });
+        if (row && v.scroll) box.scrollTop += row.getBoundingClientRect().top - box.getBoundingClientRect().top + v.offset;
+      }
+      window.scrollTo(0, v.outer);
+      renderDemoExtras();
+      restoreFrame = requestAnimationFrame(function () { restoring = false; restoreFrame = 0; if (box) rememberPosition(); });
+    });
+  }
+  function renderDemoExtras() {
+    var panel = document.getElementById("demoPanel");
+    if (!panel || document.getElementById("am-demo")) return;
+    panel.insertAdjacentHTML("beforeend", '<div class="grp" id="am-demo"><h5>' + L("Asset list demonstration", "资产列表演示") + '</h5>' +
+      '<button class="btn" data-act="am-fail">' + L("Fail next batch", "下一批失败") + '</button>' +
+      [7, 20, 52].map(function (n) { return '<button class="btn" data-act="am-size" data-v="' + n + '">' + L(n + " sample items", n + " 条样例") + '</button>'; }).join("") + '</div>');
+  }
+  document.addEventListener("scroll", function (e) {
+    if (!isList() || restoring) return;
+    rememberPosition();
+    var box = document.getElementById("am-listbox");
+    if (box && e.target === box && box.scrollTop > 0 && box.scrollHeight - box.clientHeight - box.scrollTop < 80 && load && load.phase === "idle") appendBatch();
+  }, true);
+  window.addEventListener("pagehide", rememberPosition);
 
   function hasFilter(v) { return !!(v.ts || v.ps || v.kind || v.holder || v.q); }
   function curTokenNo() {
-    var m = hashPath().match(/^\/assets\/([^/?#]+)$/);
+    var m = hashPath().match(/^\/assets\/([^/?#]+)(?:\?|$)/);
     return m ? decodeURIComponent(m[1]) : null;
   }
 
@@ -212,7 +258,7 @@
     var v = readView(), cur = v.sort === key;
     var aria = cur ? (v.dir === "asc" ? "ascending" : "descending") : "none";
     return '<th class="sortable ' + (cls || "") + '" aria-sort="' + aria + '" scope="col">' +
-      '<button type="button" data-act="sort" data-v="' + key + '">' + esc(label) +
+      '<button type="button" data-act="am-sort" data-v="' + key + '">' + esc(label) +
       '<span class="ar" aria-hidden="true">' + (cur && v.dir === "asc" ? "↑" : "↓") + "</span></button></th>";
   }
 
@@ -228,18 +274,16 @@
   /* ------------------------------------------------------------ 列表页 */
   function pageList() {
     var v = readView();
-    S.pageNo = v.page;
 
-    var base = S.st === "empty" ? [] : AM.TOKENS;
+    var base = S.st === "empty" ? [] : AM.TOKENS.slice(0, demoLimit);
     var rows = S.st === "noresult" ? [] : sortRows(base.filter(function (t) { return match(t, v); }), v);
 
     var total = rows.length;
     var value = rows.reduce(function (n, t) { return n + t.val; }, 0);
     var voids = rows.filter(function (t) { return t.ts === "void"; }).length;
 
-    /* 手改地址把页码填过了末页时落回最后一页，不给一张没有行的空表。 */
-    var pages = Math.max(1, Math.ceil(total / CF.PAGE_SIZE));
-    if (v.page > pages) { v.page = pages; S.pageNo = pages; }
+    ensureLoad(v, total);
+    afterList(v);
 
     var head = '<div class="page-head"><div>' +
       '<h1 class="page-title">' + L("Asset marketplace", "资产广场") + "</h1>" +
@@ -249,7 +293,7 @@
 
     /* 头部汇总：含已失效代币；空态显示 0，不隐藏整块。
        汇总与列表同批到达，因此加载中时汇总也处在加载中，不先出数再出表。 */
-    var wait = S.st === "loading";
+    var wait = S.st === "loading" || (S.st === "default" && load.phase === "initial");
     function statV(html) { return wait ? '<div class="v"><span class="skel am-skel-v"></span></div>' : '<div class="v">' + html + "</div>"; }
     var summary = '<div class="stat-row am-summary">' +
       '<div class="stat"><div class="k">' + L("Tokens", "代币数量") + "</div>" +
@@ -279,8 +323,11 @@
             "代币编号、资产方企业名或铸造交易哈希")) + '"></div>' +
       '<div class="acts">' +
       '<button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
-      '<button class="btn primary" type="button" data-act="search">' + L("Search", "查询") + "</button>" +
-      "</div></div>";
+      '<button class="btn primary" type="button" data-act="am-search">' + L("Search", "查询") + "</button>" +
+      "</div>" + '<div class="field am-mobile-sort"><label for="am-order">' + L("Sort by", "排序") + '</label><select class="inp" id="am-order">' +
+      [["at", L("Minted at", "铸造时间")], ["val", L("Token value", "代币价值")], ["due", L("Due date", "到期日")]].map(function (item) {
+        return ["desc", "asc"].map(function (dir) { var key = item[0] + ":" + dir; return '<option value="' + key + '"' + (key === v.sort + ":" + v.dir ? ' selected' : '') + '>' + item[1] + ' · ' + (dir === "asc" ? L("Ascending", "升序") : L("Descending", "降序")) + '</option>'; }).join("");
+      }).join("") + '</select></div></div>';
 
     var body;
     var alt = CF.surface({
@@ -289,7 +336,9 @@
       emptyDesc: L("Tokens appear here as soon as they are synced from the issuance platform.",
                    "代币从代币发行平台同步过来后即出现在这里。")
     });
-    if (alt) {
+    if (wait) {
+      body = CF.skelTable(6);
+    } else if (alt) {
       body = alt;
     } else if (!total) {
       body = hasFilter(v)
@@ -300,8 +349,7 @@
             L("Tokens appear here as soon as they are synced from the issuance platform.",
               "代币从代币发行平台同步过来后即出现在这里。"), "");
     } else {
-      var start = (v.page - 1) * CF.PAGE_SIZE;
-      body = '<div class="tablewrap listbox" id="am-listbox" role="region" tabindex="0" aria-label="' +
+      body = '<div class="tablewrap listbox listbox-contained" id="am-listbox" role="region" tabindex="0" aria-label="' +
         L("Token list", "代币列表") + '"><table class="tbl resp am-tbl"><thead><tr>' +
         '<th scope="col">' + L("Token", "代币") + "</th>" +
         '<th scope="col">' + L("Token ID", "代币编号") + "</th>" +
@@ -314,8 +362,8 @@
         sortTh("due", L("Underlying receivable term", "底层应收账款账期")) +
         sortTh("at", L("Minted at", "铸造时间")) +
         "</tr></thead><tbody>" +
-        rows.slice(start, start + CF.PAGE_SIZE).map(listRow).join("") +
-        "</tbody></table></div>" + CF.pagerFoot(total, CF.PAGE_SIZE);
+        rows.slice(0, load.shown).map(listRow).join("") +
+        "</tbody></table>" + tail(total) + "</div>";
     }
 
     var limit = throttled()
@@ -330,11 +378,11 @@
   function listRow(t) {
     var mark = '<span class="tok-mark" data-hue="' + ((t.holder % 4) + 1) + '" aria-hidden="true">' +
       esc(markText(t)) + "</span>";
-    return '<tr data-act="open" data-v="' + esc(t.no) + '">' +
+    return '<tr data-act="am-open" data-v="' + esc(t.no) + '">' +
       '<td data-label="' + esc(L("Token", "代币")) + '"><div class="tok">' + mark +
         '<span class="tok-name">' + esc(tokenName(t)) + "</span></div></td>" +
       '<td data-label="' + esc(L("Token ID", "代币编号")) + '"><div class="cell-wrap">' +
-        '<a class="mono am-id" href="#/assets/' + esc(t.no) + '">' + esc(t.no) + "</a>" +
+        '<a class="mono am-id" href="#/assets/' + esc(t.no) + '?return=' + encodeURIComponent(CF.ENTRY[LIST]) + '">' + esc(t.no) + "</a>" +
         copyBtn(t.no, L("Token ID", "代币编号")) + "</div></td>" +
       '<td data-label="' + esc(L("Asset originator", "资产方企业")) + '">' + esc(holderName(t)) + "</td>" +
       '<td data-label="' + esc(L("Token type", "代币类型")) + '">' + esc(tokenKind()) + "</td>" +
@@ -486,7 +534,6 @@
     id: "portal-asset-marketplace",
     dict: dict,
     content: function (page) {
-      restorePosition(page);
       renderFoot();
       if (S.end !== "asset") {
         return CF.note("", L("This module ships the customer-facing pages only.",
@@ -515,28 +562,6 @@
         ' <a href="#' + esc(CF.ENTRY[LIST]) + '">' + L("Back to the asset marketplace", "返回资产广场") + "</a>");
     },
     onAct: function (act, v) {
-      if (act === "open") {
-        CF.ENTRY[DETAIL] = "/assets/" + v;
-        location.hash = "#" + CF.ENTRY[DETAIL];
-        return true;
-      }
-      if (act === "sort") {
-        var view = readView();
-        if (view.sort === v) view.dir = view.dir === "asc" ? "desc" : "asc";
-        else { view.sort = v; view.dir = "desc"; }
-        view.page = 1;
-        writeView(view);
-        return true;
-      }
-      if (act === "search") {
-        var el = document.getElementById("am-q");
-        var w = readView();
-        w.q = el ? el.value.trim() : "";
-        w.page = 1;
-        refocus = "am-q";
-        writeView(w);
-        return true;
-      }
       if (act === "copy") {
         try {
           if (navigator.clipboard) navigator.clipboard.writeText(v);
@@ -564,45 +589,48 @@
     }
   });
 
-  /* 下面三个监听器在 CF.boot() 之前注册，因此先于公共运行时执行：
-     它们只做「把用户动作写回 URL」这一件公共层没有的事，不第二次渲染页面。 */
-  window.addEventListener("hashchange", syncEntry);
-
+  /* 在公共事件分发之前处理本列表动作；不影响组合装载的消息中心。 */
+  window.addEventListener("hashchange", function () { cancelLoad(); syncEntry(); });
   document.addEventListener("click", function (e) {
-    rememberPosition();
-    var el = e.target.closest ? e.target.closest("[data-act]") : null;
+    if (!isList()) return;
+    var el = e.target.closest("[data-act]");
     if (!el || el.disabled) return;
-    var act = el.getAttribute("data-act"), v;
-    if (act === "pageno") {
-      v = readView();
-      v.page = Math.max(1, parseInt(el.getAttribute("data-v"), 10) || 1);
+    var act = el.getAttribute("data-act"), value = el.getAttribute("data-v");
+    rememberPosition();
+    if (act === "st") { cancelLoad(); return; }
+    if (act.indexOf("am-") !== 0 && act !== "clearfilter" && act !== "retry") return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var v = readView();
+    if (act === "am-open") {
+      cancelLoad();
+      CF.ENTRY[DETAIL] = "/assets/" + value + "?return=" + encodeURIComponent(CF.ENTRY[LIST]);
+      location.hash = "#" + CF.ENTRY[DETAIL];
+    } else if (act === "am-more") appendBatch();
+    else if (act === "am-fail") { failNext = true; CF.toast(L("Next batch will fail — demonstration.", "下一批将加载失败 —— 演示。")); }
+    else if (act === "am-size") { demoLimit = Number(value); writeView(v); }
+    else if (act === "am-sort") {
+      if (v.sort === value) v.dir = v.dir === "asc" ? "desc" : "asc";
+      else { v.sort = value; v.dir = "desc"; }
       writeView(v);
+    } else if (act === "am-search") {
+      v.q = document.getElementById("am-q").value.trim(); refocus = "am-q"; writeView(v);
     } else if (act === "clearfilter") {
-      v = readView();
-      v.ts = v.ps = v.kind = v.holder = v.q = "";
-      v.page = 1;
-      writeView(v);
-    }
-  });
-
+      v.ts = v.ps = v.kind = v.holder = v.q = ""; writeView(v);
+    } else if (act === "retry") { cancelLoad(); S.st = "default"; CF.render(); }
+  }, true);
   document.addEventListener("change", function (e) {
     var el = e.target;
-    if (!el || !el.getAttribute || !el.getAttribute("data-f")) return;
+    if (!isList() || !el.closest("#content")) return;
     var v = readView();
-    v[el.getAttribute("data-f")] = el.value;
-    v.page = 1;
-    refocus = el.id;
-    writeView(v);
+    if (el.id === "am-order") { var order = el.value.split(":"); v.sort = order[0]; v.dir = order[1]; }
+    else if (el.getAttribute("data-f")) v[el.getAttribute("data-f")] = el.value;
+    else return;
+    refocus = el.id; writeView(v);
   });
-
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Enter" || !e.target || e.target.id !== "am-q") return;
     e.preventDefault();
-    var v = readView();
-    v.q = e.target.value.trim();
-    v.page = 1;
-    refocus = "am-q";
-    writeView(v);
+    var v = readView(); v.q = e.target.value.trim(); refocus = "am-q"; writeView(v);
   });
 
   /* 评审件双击打开时直接落在本模块首页，不落到其他模块的路由上。 */

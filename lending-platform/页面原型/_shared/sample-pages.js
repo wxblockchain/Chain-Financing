@@ -312,7 +312,7 @@
       '<button class="btn primary" type="button" data-act="clearfilter">' + L("Search", "查询") + "</button></div>" +
       "</div>";
 
-    var table = '<div class="tablewrap listbox"><table class="tbl resp"><thead><tr>' +
+    var table = '<div class="tablewrap listbox listbox-contained"><table class="tbl resp"><thead><tr>' +
       "<th>" + L("Token", "代币") + "</th><th>" + L("Token number", "代币编号") + "</th>" +
       "<th>" + L("Asset holder", "资产方企业") + "</th><th>" + L("Token type", "代币类型") + "</th>" +
       "<th>" + L("Token quantity", "代币数量") + "</th>" +

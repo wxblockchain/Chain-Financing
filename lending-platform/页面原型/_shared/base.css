@@ -509,3 +509,6 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .modal{min-height:0}
 .modal-b{min-height:0}
 .modal-h,.modal-f{flex-shrink:0}
+
+/* 需要在全部断点保留内嵌滚动的列表显式启用；不改变其他列表的窄屏策略。 */
+.listbox.listbox-contained{max-height:var(--list-h);overflow:auto;overscroll-behavior:contain}
