@@ -118,7 +118,7 @@
     D.projects=[];D.tokens=[];D.applications=[];D.executions=[];D.events=[];D.offset=0;D.serial=100;
     for(let i=1;i<=24;i++){
       const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],published:new Date(D.now()-i*DAY).toISOString(),expires:new Date(D.now()+(365-i)*DAY).toISOString(),quotes:i===3?1:0};
-      if(i!==5&&i!==6)p.demands.push({id:p.id+'-01',amount:i===4?500000:300000,state:i===4?'funded':i===3?'quoted':'open',at:p.published,institution:i===3?['Demo Capital','演示资金机构']:null,quoteAt:i===3?p.published:null});
+      if(i!==5&&i!==6)p.demands.push({id:p.id+'-01',amount:i===4?500000:300000,state:i===4?'funded':i===3?'quoted':'open',at:p.published,tenorDays:i===3?90:i===4?120:null,rate:i===3?'6.40':i===4?'6.80':null,institution:i===3?['Demo Capital','演示资金机构']:null,quoteAt:i===3?p.published:null});
       D.projects.push(p);
       for(let j=1;j<=7;j++){const released=[5,6].includes(i);const value=j===7?100000:150000;
         D.tokens.push({id:'TK-DEMO-'+i+'-'+j,owner:p.owner,kind:'ar',units:1,symbol:'AR-DEMO',value,valid:i===4?j<=3:j!==7,pool:released?null:p.id,releasedFrom:released?p.id:null,pledge:released?'released':'pledged',buyer:['Demo Buyer '+j,'演示买方 '+j],due:'2027-01-20',from:'2026-07-20',tx:'0x'+(i*10+j).toString(16).padStart(64,'0')});}

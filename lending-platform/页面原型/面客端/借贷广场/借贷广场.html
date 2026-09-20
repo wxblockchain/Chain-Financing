@@ -11,16 +11,8 @@
 .ls-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6)}
 .ls-stats{grid-template-columns:repeat(5,minmax(0,1fr))}
 .ls-stats .v{font-size:var(--fs-19);overflow-wrap:anywhere}
-.ls-project{padding:var(--card-pad);border-bottom:1px solid var(--border)}
-.ls-project:last-child{border-bottom:0}
-.ls-project h2{font-size:var(--fs-19);margin:0}
 .ls-row{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
 .ls-row .push{margin-left:auto}
-.ls-pool{border-right:1px solid var(--border-dash);padding-right:var(--sp-6)}
-.ls-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);margin-top:var(--sp-4)}
-.ls-metrics dt{font-size:var(--fs-12);color:var(--muted)}
-.ls-metrics dd{margin:var(--sp-1) 0 0;font-family:var(--mono);font-size:var(--fs-16)}
-.ls-project .ls-grid{margin:var(--sp-4) 0}
 .ls-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4);padding:var(--card-pad)}
 .ls-range{display:flex;gap:var(--sp-2)}
 .ls-range input{width:100%;min-width:0}
@@ -52,8 +44,39 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-notice{margin-bottom:var(--sp-5)}
 .ls-demo-mark{font-size:var(--fs-12);color:var(--muted)}
 .ls-table .pgbtn,.ls-check,.ls-history summary{min-height:44px}
+.ls-market-table{table-layout:fixed}
+.ls-market-table th:first-child{width:19%}
+.ls-market-table th:nth-child(2){width:15%}
+.ls-market-table th:nth-child(3){width:7%}
+.ls-market-table th:nth-child(4){width:8%}
+.ls-market-table th:nth-child(5){width:10%}
+.ls-market-table th:nth-child(6){width:13%}
+.ls-market-table th:nth-child(7){width:17%}
+.ls-market-table th.col-act{width:11%}
+.ls-market-table td{overflow-wrap:anywhere}
+.ls-market-table .tag{white-space:normal}
+.ls-request{display:flex;gap:var(--sp-2);align-items:center}
+.ls-request>div{min-width:0}
+.ls-row-actions{display:flex;justify-content:flex-end;gap:var(--sp-1)}
+.ls-row-actions .actlink{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
+.ls-market-table th.col-act,.ls-market-table td.col-act{position:sticky;right:0;background:var(--card)}
+.ls-market-table th.col-act{background:var(--card-2);z-index:2}
+.ls-more-filters>summary{cursor:pointer;color:var(--muted);font-size:var(--fs-12);min-height:44px;padding:var(--sp-3) var(--card-pad);border-bottom:1px solid var(--border)}
+.ls-detail-head{display:flex;gap:var(--sp-4);align-items:flex-start}
+.ls-detail-head>div{min-width:0}
+.ls-detail-head .hint{margin-top:0}
+.ls-detail-tags{margin-top:var(--sp-3)}
+.ls-detail-main{min-width:0}
+.ls-action-rail .ls-row{display:grid;grid-template-columns:1fr}
+.ls-action-rail .btn{width:100%;margin-top:var(--sp-2)}
+.ls-action-rail .ls-actions{padding:var(--sp-5) 0 0}
+.ls-action-rail .ls-steps{grid-template-columns:1fr;gap:var(--sp-5)}
+.ls-action-rail .ls-step{border-top:0;border-left:2px solid var(--border);padding:0 0 0 var(--sp-3)}
+.ls-action-rail .ls-step[data-current=true]{border-color:var(--accent)}
+.ls-detail-main .ls-table{table-layout:fixed}
+.ls-detail-main .ls-table .btn{white-space:normal;padding:var(--sp-2);height:auto;min-height:44px}
 @media(max-width:1100px){.ls-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:768px){.ls-stack .pager .total,.ls-form .pager .total{flex-basis:100%}.ls-grid,.ls-fields,.ls-steps{grid-template-columns:1fr}.ls-pool{border-right:0;border-bottom:1px solid var(--border);padding:0 0 var(--sp-4)}.ls-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-table td{flex-wrap:wrap}.ls-table td:before{max-width:45%;white-space:normal}.ls-table td>*{max-width:100%}.ls-range{width:100%}.ls-actions .btn{flex:1}.ls-row .push{margin-left:0}.ls-step{padding-bottom:var(--sp-3)}}
+@media(max-width:768px){.ls-stack .pager .total,.ls-form .pager .total{flex-basis:100%}.ls-grid,.ls-fields,.ls-steps{grid-template-columns:1fr}.ls-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-table td{flex-wrap:wrap}.ls-table td:before{max-width:45%;white-space:normal}.ls-table td>*{max-width:100%}.ls-range{width:100%}.ls-actions .btn{flex:1}.ls-row .push{margin-left:0}.ls-step{padding-bottom:var(--sp-3)}.ls-primary-filters .field{max-width:none;flex-basis:100%}.ls-primary-filters .acts{width:100%;margin:0}.ls-primary-filters .acts .btn{flex:1}.ls-market-table td.col-act{position:static}.ls-market-table td .cell-wrap{min-width:0;max-width:70%}.ls-row-actions{flex-wrap:wrap}.ls-detail-head>.tok-mark{display:none}}
 </style>
 </head>
 <body>
