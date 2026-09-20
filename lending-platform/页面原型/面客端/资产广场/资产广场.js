@@ -21,7 +21,7 @@
   function hashPath() { return location.hash.replace(/^#/, ""); }
   function isList() { return /^\/assets(\?|$)/.test(hashPath()); }
   var load = null, timer = 0, restoreFrame = 0, restoring = false;
-  var intentFrame = 0, touchY = null, restoreListFocus = false;
+  var intentFrame = 0, touchY = null, restoreListFocus = false, returnFocus = null;
   var failNext = false, demoLimit = 52, hits = [];
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   function number(value, fallback, max, precise) {
@@ -39,7 +39,9 @@
     if (["at", "val", "due"].indexOf(v.sort) < 0) v.sort = "at";
     if (v.dir !== "asc") v.dir = "desc";
     v.loaded = Math.min(AM.TOKENS.length, Math.max(20, Math.ceil(number(q.get("loaded") || 20, 20, AM.TOKENS.length) / 20) * 20));
-    ["scroll", "outer", "offset"].forEach(function (key) { v[key] = number(q.get(key), 0, 1000000, key === "offset"); });
+    ["scroll", "outer"].forEach(function (key) { v[key] = number(q.get(key), 0, 1000000); });
+    var offset = Number(q.get("offset"));
+    v.offset = Number.isFinite(offset) ? Math.max(-1000000, Math.min(1000000, offset)) : 0;
     return v;
   }
   function viewHash(v) {
@@ -65,12 +67,12 @@
     v.anchor = ""; v.offset = 0;
     var top = box.getBoundingClientRect().top;
     var row = Array.from(box.querySelectorAll("tbody tr")).find(function (r) { return r.getBoundingClientRect().bottom > top; });
-    if (row) { v.anchor = row.getAttribute("data-v"); v.offset = Math.max(0, top - row.getBoundingClientRect().top); }
+    if (row) { v.anchor = row.getAttribute("data-v"); v.offset = top - row.getBoundingClientRect().top; }
     replaceView(v);
   }
   function cancelLoad() {
     clearTimeout(timer); timer = 0; load = null;
-    cancelAnimationFrame(intentFrame); intentFrame = 0; touchY = null; restoreListFocus = false;
+    cancelAnimationFrame(intentFrame); intentFrame = 0; touchY = null; restoreListFocus = false; returnFocus = null;
   }
   function syncEntry() {
     var h = hashPath();
@@ -150,11 +152,26 @@
         restoreListFocus = false;
         box.scrollTop = v.scroll;
         var row = Array.from(box.querySelectorAll("tbody tr")).find(function (r) { return r.getAttribute("data-v") === v.anchor; });
-        if (row && v.scroll) box.scrollTop += row.getBoundingClientRect().top - box.getBoundingClientRect().top + v.offset;
+        if (row && v.scroll) {
+          var rowTop = row.getBoundingClientRect().top - box.getBoundingClientRect().top;
+          // 新链接保留完整行位于框顶下方时的负偏移；旧零偏移链接保留像素位置。
+          if (v.offset || rowTop <= 0) box.scrollTop += rowTop + v.offset;
+        }
       }
       window.scrollTo(0, v.outer);
       renderDemoExtras();
-      restoreFrame = requestAnimationFrame(function () { restoring = false; restoreFrame = 0; if (box) rememberPosition(); });
+      restoreFrame = requestAnimationFrame(function () {
+        restoring = false; restoreFrame = 0;
+        if (box) {
+          rememberPosition();
+          // 先恢复范围与位置，再恢复键盘落点；不让 focus 把列表另滚到一处。
+          if (returnFocus) {
+            var origin = Array.from(box.querySelectorAll('tr[data-act="am-open"]')).find(function (r) { return r.dataset.v === returnFocus; });
+            (origin || box).focus({ preventScroll: true });
+            returnFocus = null;
+          }
+        }
+      });
     });
   }
   function renderDemoExtras() {
@@ -206,19 +223,21 @@
   window.addEventListener("pagehide", rememberPosition);
 
   function hasFilter(v) { return !!(v.ts || v.ps || v.kind || v.holder || v.q); }
-  function curTokenNo() {
-    var m = hashPath().match(/^\/assets\/([^/?#]+)(?:\?|$)/);
-    return m ? decodeURIComponent(m[1]) : null;
+  function tokenNoFromPath(path) {
+    var m = path.match(/^\/assets\/([^/?#]+)(?:\?|$)/);
+    if (!m) return null;
+    try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
   }
+  function curTokenNo() { return tokenNoFromPath(hashPath()); }
 
   /* ------------------------------------------------------------ 文案 */
   var dict = {
     en: {
-      navHome: "Home", navAssets: "Asset marketplace", navPlaza: "Lending marketplace",
+      navAssets: "Asset marketplace", navPlaza: "Lending marketplace",
       navConsole: "My console", crumbToken: "Token details"
     },
     zh: {
-      navHome: "首页", navAssets: "资产广场", navPlaza: "借贷广场",
+      navAssets: "资产广场", navPlaza: "借贷广场",
       navConsole: "我的控制台", crumbToken: "代币详情"
     }
   };
@@ -673,7 +692,11 @@
   });
 
   /* 在公共事件分发之前处理本列表动作；不影响组合装载的消息中心。 */
-  window.addEventListener("hashchange", function () { cancelLoad(); resetHoldings(); syncEntry(); });
+  window.addEventListener("hashchange", function (e) {
+    var fromToken = tokenNoFromPath(new URL(e.oldURL).hash.replace(/^#/, ""));
+    cancelLoad(); resetHoldings(); syncEntry();
+    if (isList()) returnFocus = fromToken;
+  });
   document.addEventListener("click", function (e) {
     var el = e.target.closest("[data-act]");
     if (!el || !curTokenNo()) return;
@@ -739,7 +762,7 @@
     var v = readView(); v.q = e.target.value.trim(); refocus = "am-q"; writeView(v);
   });
 
-  /* 评审件双击打开时直接落在本模块首页，不落到其他模块的路由上。 */
+  /* 评审件双击与旧根地址直接进入资产广场，保留有效详情深链。 */
   if (!hashPath() || hashPath() === "/") location.hash = "#/assets";
   syncEntry();
   if (!CF.deferBoot) CF.boot();

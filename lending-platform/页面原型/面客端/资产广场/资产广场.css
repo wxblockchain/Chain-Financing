@@ -66,3 +66,9 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
   .am-tbl .am-at{max-width:none}
   .am-cta .btn{margin-left:0;width:100%}
 }
+/* 手机详情按字段上下阅读，避免长标签挤碎金额、时间与地址。 */
+@media (max-width:600px){
+  .am-detail .dl{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
+  .am-detail .dl dd{margin-bottom:var(--sp-4)}
+  .am-detail .dl dd:last-child{margin-bottom:0}
+}
