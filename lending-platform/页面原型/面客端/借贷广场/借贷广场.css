@@ -28,6 +28,8 @@
 .ls-raw{white-space:pre-wrap;overflow-wrap:anywhere}
 .modal:has(.ls-wide){max-width:960px}
 .modal:has(.ls-medium){max-width:620px}
+.modal:has(.ls-deposit-confirm) .modal-f .btn{white-space:normal;height:auto;min-height:44px;padding:var(--sp-3) var(--sp-4)}
+.modal:has(.ls-deposit-confirm) .modal-f .btn.primary{min-width:0}
 body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-review{border-top:1px solid var(--border);padding-top:var(--sp-4)}
 .ls-review .field{margin-bottom:var(--sp-3)}
