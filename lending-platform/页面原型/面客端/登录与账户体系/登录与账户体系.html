@@ -6,6 +6,8 @@
 <title>Sign in · Harbour Credit</title>
 <link rel="stylesheet" href="../../_shared/tokens.css">
 <link rel="stylesheet" href="../../_shared/base.css">
+<link rel="stylesheet" href="../借贷广场/借贷广场.css">
+<link rel="stylesheet" href="../资产广场/资产广场.css">
 <link rel="stylesheet" href="登录与账户体系.css">
 </head>
 <body class="login-prototype">
@@ -13,7 +15,7 @@
 <!-- 面客端：官网顶栏骨架。官网层与工作区共用同一根顶栏，只有内容区节奏不同。 -->
 <div class="portal" id="portal" hidden>
   <header class="portal-head">
-    <a class="brand" href="#/">
+    <a class="brand" href="#/assets">
       <span class="brand-mark" aria-hidden="true">HC</span>
       <span>
         <span class="brand-name">Harbour Credit</span>
@@ -52,7 +54,7 @@
 
 <!-- focus：仅品牌与语言工具，不带业务导航。 -->
 <div class="focus" id="focus" hidden>
-  <header class="focus-head"><a class="brand" href="#/"><span class="brand-mark" aria-hidden="true">HC</span><span class="brand-name">Harbour Credit</span></a><div class="focus-tools" id="focusTools"></div></header>
+  <header class="focus-head"><a class="brand" href="#/assets"><span class="brand-mark" aria-hidden="true">HC</span><span class="brand-name">Harbour Credit</span></a><div class="focus-tools" id="focusTools"></div></header>
   <main class="focus-main"><div class="focus-card" id="focusContent"></div></main>
   <footer class="focus-foot">Harbour Credit</footer>
 </div>
@@ -65,7 +67,15 @@
 
 <script src="../../_shared/registry.portal.js"></script>
 <script src="../../_shared/shell.js"></script>
+<script>CF.deferBoot = true; if (!location.hash || location.hash === '#/') location.hash = '#/assets';</script>
+<script src="../资产广场/演示数据.js"></script>
+<script>CF.LSStorageKey = "hc-ws349-linked-projects";</script>
+<script src="../借贷广场/演示数据.js"></script>
+<script src="../资产广场/项目演示接入.js"></script>
+<script src="../借贷广场/借贷广场.js"></script>
+<script src="../资产广场/资产广场.js"></script>
 <script src="资金方账户.js"></script>
 <script src="登录与账户体系.js"></script>
+<script>CF.boot();</script>
 </body>
 </html>

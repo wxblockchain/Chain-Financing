@@ -7,76 +7,7 @@
 <link rel="stylesheet" href="../../_shared/tokens.css">
 <link rel="stylesheet" href="../../_shared/base.css">
 <link rel="stylesheet" href="../借贷广场/借贷广场.css">
-<style>
-/* 仅本模块的排布补充：不覆盖 token，也不改公共组件的语义与取值。 */
-.am-gap{height:var(--sp-6)}
-.stat .v .am-skel-v{display:block;width:60%;height:20px;margin:8px 0 2px}
-.filters .field.am-q{flex:2 1 300px;max-width:380px}
-
-/* 列表：九列在 1280 下要能全部落在内容区里，不横向截断。
-   英文列名比中文长得多，本表的表头允许折行；取值、字号与配色仍取公共组件。 */
-table.tbl.am-tbl thead th{white-space:normal;padding-left:10px;padding-right:10px}
-table.tbl.am-tbl thead th.sortable{padding:0}
-table.tbl.am-tbl thead th.sortable button{align-items:flex-start;text-align:left;
-  padding-left:10px;padding-right:10px}
-table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
-.am-tbl .am-id{font-size:var(--fs-11);color:var(--accent);min-height:44px;user-select:text}
-.am-tbl tr[data-act="am-open"]{cursor:pointer}
-.am-tbl tr[data-act="am-open"]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.am-tbl .am-at{min-width:112px;max-width:146px;white-space:normal}
-.am-tbl .tok-name{max-width:118px}
-
-/* 九列在平板宽度提前采用公共 .resp 的同一单元格卡片组合；
-   只作用于本模块，不改变公共滚动断点（900px）或其他表格。 */
-@media (min-width:769px) and (max-width:1200px){
-  table.tbl.am-tbl,table.tbl.am-tbl tbody,table.tbl.am-tbl tr,table.tbl.am-tbl td{display:block;width:100%}
-  table.tbl.am-tbl thead{display:none}
-  table.tbl.am-tbl tbody tr{border:1px solid var(--border);border-radius:var(--radius);
-    margin-bottom:var(--sp-3);padding:var(--sp-2) 0;background:var(--card)}
-  table.tbl.am-tbl tbody tr:hover td{background:transparent}
-  table.tbl.am-tbl tbody td{border-bottom:0;padding:7px var(--sp-4);display:flex;gap:var(--sp-4);
-    align-items:baseline;justify-content:space-between}
-  table.tbl.am-tbl tbody td::before{content:attr(data-label);flex:none;font-size:var(--fs-11);
-    color:var(--faint);font-weight:620;text-transform:uppercase;letter-spacing:.05em}
-  table.tbl.am-tbl tbody td>*{text-align:right}
-  table.tbl.am-tbl tbody td .cell-wrap{display:flex;flex-direction:column;gap:2px;min-width:0}
-  .am-tbl .am-at{max-width:none}
-}
-/* 汇总金额保留完整币种和数值，手机上不挤入两列。 */
-@media (max-width:600px){.am-summary{grid-template-columns:minmax(0,1fr)}}
-
-/* 详情：单列分区，按访客的判断路径从上往下读。 */
-.am-detail{width:100%;min-width:0;display:flex;flex-direction:column;gap:var(--sp-5)}
-/* 宽屏下每行放两组字段，窄屏回到一组一行；标签与取值仍是公共组件的 .dl。 */
-@media (min-width:1100px){
-  .am-detail .dl{grid-template-columns:minmax(110px,auto) minmax(0,1fr) minmax(110px,auto) minmax(0,1fr)}
-  .am-detail .dl dt.wide-k{grid-column:1}
-  .am-detail .dl dd.wide{grid-column:2 / -1}
-}
-.am-back{margin-bottom:var(--sp-4)}
-.am-ov-top{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
-.am-mark{width:48px;height:48px;border-radius:var(--radius-sm);font-size:var(--fs-14)}
-.am-ov .page-title{font-size:var(--fs-24)}
-.am-ov-no{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:4px}
-.am-ov-tags{display:flex;gap:var(--sp-8);flex-wrap:wrap;margin-top:var(--sp-5);
-  padding-top:var(--sp-5);border-top:1px solid var(--border-dash)}
-.am-ov-tag{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
-.am-hash{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
-.am-addr{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:4px}
-.am-addr .mono{font-size:var(--fs-11);overflow-wrap:anywhere}
-.am-caveat{margin:5px 0 0}
-.am-cta .card-b{display:flex;align-items:center;gap:var(--sp-5);flex-wrap:wrap}
-.am-cta p{margin:0;font-weight:620}
-.am-cta .btn{margin-left:auto}
-.am-holdings .am-address{min-height:44px}
-.am-holdings td:nth-child(2),.am-holdings td:nth-child(3){font-variant-numeric:tabular-nums}
-.am-holding-demo{padding:var(--sp-3) var(--sp-5);margin:0}
-
-@media (max-width:768px){
-  .am-tbl .am-at{max-width:none}
-  .am-cta .btn{margin-left:0;width:100%}
-}
-</style>
+<link rel="stylesheet" href="资产广场.css">
 </head>
 <body>
 

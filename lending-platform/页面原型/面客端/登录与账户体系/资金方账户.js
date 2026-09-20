@@ -27,7 +27,7 @@
   function response(){F.contract={session_state:S.role==='fund'&&!F.account.disabled?'authenticated':'guest',identity_type:'funder',completeness_level:S.role!=='fund'||F.account.disabled?'L0':({draft:'L0',submitted:'L1',rejected:'L2',verified:'L3'}[F.account.status]),account_id:F.account.exists?'DEMO-FUNDER':''};}
   function btn(en,zh,act,v='',kind='',disabled=false){return `<button type="button" class="btn ${kind}" data-act="f-${act}" data-v="${esc(v)}" ${disabled?'disabled':''}>${L(en,zh)}</button>`;}
   function link(en,zh,act,v=''){return `<button type="button" class="btn-link" data-act="f-${act}" data-v="${esc(v)}">${L(en,zh)}</button>`;}
-  function go(path){if(F.emailFlow){F.generation++;F.emailFlow=false;F.otp=null;F.busy='';}S.menu=null;S.layer=null;F.error=null;F.load='ready';if(location.hash==='#'+path){if(CF.ENTRY[S.page]===path)CF.render();}else location.hash='#'+path;}
+  function go(path){if(path==='/')path='/assets';if(F.emailFlow){F.generation++;F.emailFlow=false;F.otp=null;F.busy='';}S.menu=null;S.layer=null;F.error=null;F.load='ready';if(location.hash==='#'+path){if(CF.ENTRY[S.page]===path)CF.render();}else location.hash='#'+path;}
   function open(key,data){if(!S.layer&&!F.layerOpen){const el=document.activeElement;F.focusBack=el?{id:el.id,act:el.dataset.act,value:el.dataset.v}:null;}CF.openLayer('modal','f-'+key,data);queueMicrotask(afterRender);}
   function error(){return F.error?`<p class="note red" role="alert">${L(...F.error)}</p>`:'';}
   function stamp(){return `<p class="funder-stamp">${L('Demonstration data','演示数据')}</p>`;}
@@ -93,7 +93,7 @@
       S.role='fund';F.sessionUntil=Date.now()+4*3600000;F.reauthUntil=0;F.error=null;persist();response();
       if(F.first){F.notes.push(['Your account has been created.','你的账号已创建。']);persist();}
       if(F.returnTo==='valid'){go('/demo/funder/action');later(gate,30);}
-      else if(F.returnTo==='invalid'){go('/');CF.toast(L('We have returned you to the home page.','已为你回到首页。'));}
+      else if(F.returnTo==='invalid'){go('/');CF.toast(L('We have returned you to the asset marketplace.','已为你回到资产广场。'));}
       else go(F.first?'/funder/register':'/');return;
     }
     if(purpose==='email')open('email');else CF.render();
@@ -182,7 +182,7 @@
     // 公共 boot 会推断时区；在首次内容渲染时恢复已保存的用户选择。
     if(F.savedPreferences&&!F.preferencesRestored){S.lang=F.savedPreferences.lang;S.tz=F.savedPreferences.tz;F.preferencesRestored=true;}
     if(!pages[id])return undefined;
-    if(['P-L21','P-L22','P-L23'].includes(id)&&S.role!=='fund')return `<div class="funder-wrap">${CF.empty(L('Sign in to view your account','登录后查看账户'),L('You can still browse public information.','你仍可浏览公开信息。'),btn('Sign in','登录','login','','primary')+btn('Back to home','返回首页','browse'))}</div>`;
+    if(['P-L21','P-L22','P-L23'].includes(id)&&S.role!=='fund')return `<div class="funder-wrap">${CF.empty(L('Sign in to view your account','登录后查看账户'),L('You can still browse public information.','你仍可浏览公开信息。'),btn('Sign in','登录','login','','primary')+btn('Back to assets','返回资产广场','browse'))}</div>`;
     notices();
     if(F.load==='loading')return `<div class="funder-wrap" role="status">${CF.skelTable(5)}</div>`;
     if(F.load==='error')return CF.empty(L('Unable to load account information','账户信息加载失败'),L('Your saved information is retained.','已保存信息会保留。'),btn('Retry','重试','load-retry','','primary')+(id==='P-L22'?link('Contact support','联系客服','support'):''));

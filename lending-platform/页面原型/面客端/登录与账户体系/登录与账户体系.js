@@ -16,10 +16,10 @@
     // 本模块内的演示落点，绝不占用 P-MC-01 或登记成正式业务页。
     'DEMO-L-GATE':['portal','/demo/login/financing','Financing entry · demo','融资入口 · 演示页']
   };
-  const dict = {en:{navHome:'Home',navAssets:'Asset marketplace',navPlaza:'Lending marketplace',navConsole:'My console'},
-    zh:{navHome:'首页',navAssets:'资产广场',navPlaza:'借贷广场',navConsole:'我的控制台'}};
+  const dict = {en:{navAssets:'Asset marketplace',navPlaza:'Lending marketplace',navConsole:'My console'},
+    zh:{navAssets:'资产广场',navPlaza:'借贷广场',navConsole:'我的控制台'}};
   Object.entries(pages).forEach(([id,p])=>{
-    CF.PAGES[id]={end:'asset',layout:p[0],navKey:id,auth:id==='P-L12',parent:p[0]==='portal'?'P-F51':undefined};
+    CF.PAGES[id]={end:'asset',layout:p[0],navKey:id,auth:id==='P-L12',parent:p[0]==='portal'?'P-F-AM-01':undefined};
     CF.ENTRY[id]=p[1];dict.en[id]=p[2];dict.zh[id]=p[3];
   });
   const D = {
@@ -28,7 +28,7 @@
     entryError:'', handoff:'', missing:false, rejected:false, downgraded:false,
     extraNotices:false, accountState:'default', ssoResult:'first', returnResult:'fallback',
     verificationResult:'verified', submitResult:'success', source:'B', replay:false,
-    origin:'/', originAction:'', accountChanged:false, pending:false, gateState:'idle',
+    origin:'/assets', originAction:'', accountChanged:false, pending:false, gateState:'idle',
     sessionMessage:'', timer:0, timerVersion:0, reviewMessage:'', focusBack:null,
     lastRole:null, memoryDisabled:false, switchScheduled:false
   };
@@ -37,7 +37,7 @@
     return `<button type="button" class="btn ${kind}" data-act="${act}" data-v="${esc(value)}">${L(en,zh)}</button>`;
   }
   function link(en,zh,act,value='') {return `<button type="button" class="btn-link" data-act="${act}" data-v="${esc(value)}">${L(en,zh)}</button>`;}
-  function go(route) {S.menu=null;S.layer=null;if(location.hash==='#'+route)CF.render();else location.hash='#'+route;}
+  function go(route) {if(route==='/')route='/assets';S.menu=null;S.layer=null;if(location.hash==='#'+route)CF.render();else location.hash='#'+route;}
   function later(fn,ms=950){clearTimeout(D.timer);const version=++D.timerVersion;D.timerRoute=location.hash;D.timer=setTimeout(()=>{if(version===D.timerVersion&&D.timerRoute===location.hash)fn();},ms);}
   function cancelPending(){clearTimeout(D.timer);D.timerVersion++;D.timerRoute=null;D.pending=false;D.switchScheduled=false;if(D.gateState==='pending')D.gateState='idle';if(D.preferences==='pending')D.preferences='idle';}
   function clearMemory(){D.lastRole=null;try{localStorage.removeItem('lp_last_role');localStorage.removeItem('lp_last_role_at');}catch(e){}}
@@ -126,15 +126,7 @@
     }
     CF.setCompletion(items);
   }
-  function publicPage(){
-    return `<section class="site-band"><div class="site-wrap"><div class="login-public"><div class="page-head"><div><h1 class="page-title">${L('Receivables. Financing. Connected.','连接应收账款与融资需求')}</h1><p class="page-desc">${L('Explore assets and financing opportunities on Harbour Credit.','在借贷平台浏览资产与融资机会。')}</p></div></div>
-      <div class="login-public-row"><div><h2>${L('Asset marketplace','资产广场')}</h2><p>${L('Explore listed token assets and their public information.','浏览已上架代币资产及其公开信息。')}</p></div>${link('Explore assets →','浏览资产 →','login-handoff','assets')}</div>
-      <div class="login-public-row"><div><h2>${L('Lending marketplace','借贷广场')}</h2><p>${L('Discover financing requests and pledged assets.','查看融资需求与质押资产。')}</p></div>${link('Explore financing →','浏览融资需求 →','login-handoff','marketplace')}</div>
-      ${D.sessionMessage?CF.note('warn',L('You signed out on the asset trust platform. Your sign-in here has also ended.','你已在资产可信平台登出，本平台登录同时结束。')):''}
-      ${D.downgraded?CF.note('warn',L('Your verification status has changed. You have a new account notification.','实名认证状态已变更，你有一条新的账户通知。')):''}
-      </div></div></section>`;
-  }
-  function unavailable(){return (D.sessionMessage?CF.note('warn',L('You signed out on the asset trust platform. Your sign-in here has also ended.','你已在资产可信平台登出，本平台登录同时结束。')):'')+CF.empty(L('This page is not available to guests','当前身份无法查看此页面'),L('You can continue exploring public information.','你可以继续浏览公开信息。'),btn('Back to home','返回首页','login-home'));}
+  function unavailable(){return (D.sessionMessage?CF.note('warn',L('You signed out on the asset trust platform. Your sign-in here has also ended.','你已在资产可信平台登出，本平台登录同时结束。')):'')+CF.empty(L('This page is not available to guests','当前身份无法查看此页面'),L('You can continue exploring public information.','你可以继续浏览公开信息。'),btn('Back to assets','返回资产广场','login-home'));}
   function agreementPage(){
     let content;
     if(D.submit==='loading-list')content=CF.skelTable(2)+btn('Exit and keep browsing','退出并继续浏览','login-exit');
@@ -202,7 +194,8 @@
       case 'P-L12':return accountPage();
       case 'P-L13':return `<div class="login-flow"><div class="login-status-icon" aria-hidden="true">!</div><h1 class="page-title">${L('Account setup was interrupted','账户建立未完成')}</h1><p>${L('Your identity was confirmed, but we could not finish setting up your account. Please retry.','身份已确认，但账户暂未建立完成，请重试。')}</p><p class="mono">HC-241</p><div class="login-actions">${btn('Retry','重试','login-sso-retry','','primary')}${btn('Keep browsing as a guest','以游客身份继续浏览','login-exit')}</div></div>`;
       case 'DEMO-L-GATE':return gatePage();
-      default:return publicPage();
+      case 'P-L02':queueMicrotask(()=>go('/assets'));return '';
+      default:return unavailable();
     }
   }
   function finishLanding(){
@@ -211,7 +204,7 @@
       D.replay=true;go('/demo/login/financing');queueMicrotask(()=>gate());
     }else{
       go('/');
-      if(D.returnResult!=='none')CF.toast(L('We have returned you to the home page.','已为你回到首页。'));
+      if(D.returnResult!=='none')CF.toast(L('We have returned you to the asset marketplace.','已为你回到资产广场。'));
     }
     if(D.accountChanged){CF.toast(L('You are now signed in with the returning account.','已切换为本次授权返回的账户。'));D.accountChanged=false;}
   }
@@ -342,7 +335,7 @@
       ${D.handoff==='asset'?`<div class="seg">${btn('Simulate return','模拟返回','login-demo','return')}${btn('Platform unreachable','授权中心不可达','login-demo','asset-unavailable')}${btn('Abandon and return','放弃并返回','login-demo','asset-cancel')}</div>`:''}</div>
       <div class="grp"><h5>${L('Session and completeness','会话与完备度')}</h5><div class="seg">${btn('Guest','游客','login-demo','guest')}${btn('Asset party','资产方','login-demo','asset')}${btn('Not verified','未认证','login-demo','L0')}${btn('Verified','已认证','login-demo','L3')}</div><p class="login-caption">${L('Current','当前')}：${S.role} / ${D.level}</p>${btn('Open financing entry demo','打开融资硬卡点演示','login-demo','gate')}</div>
       ${options('demo-sso',L('Authorization result','授权结果'),[['first','First sign-in · agreement required','首次登录 · 需同意协议'],['verified','Success · verified','成功 · 已认证'],['unverified','Success · not verified','成功 · 未认证'],['missing','Success · optional fields absent','成功 · 可选字段缺失'],['shadow','Account creation failed','影子账号建立失败'],['failure','Authorization rejected','授权校验失败'],['timeout','Authorization timed out','授权超时'],['locked','Upstream account locked','上游账户锁定'],['disabled','Upstream account disabled','上游账户停用']],D.ssoResult)}
-      ${options('demo-return',L('Return result','回跳结果'),[['fallback','Current baseline · cross-platform fallback','当前基线 · 跨平台兜底'],['none','No original action · home','无原操作 · 首页'],['valid','Valid local return · replay action','有效站内回跳 · 重执行操作']],D.returnResult)}
+      ${options('demo-return',L('Return result','回跳结果'),[['fallback','Current baseline · cross-platform fallback','当前基线 · 跨平台兜底'],['none','No original action · assets','无原操作 · 资产广场'],['valid','Valid local return · replay action','有效站内回跳 · 重执行操作']],D.returnResult)}
       ${options('demo-source',L('Entry source','入口来源'),[['A','Asset trust platform (A)','资产可信平台发起（A）'],['B','Lending platform (B)','借贷平台发起（B）']],D.source)}
       ${btn('Run simulated SSO return','运行模拟 SSO 回调','login-demo','sso')}
       ${options('demo-verify',L('Live eligibility result','实时资格复核结果'),[['verified','Verified','已认证'],['unverified','No longer verified','认证已失效'],['failed','Temporarily unavailable','暂时无法复核']],D.verificationResult)}
@@ -354,8 +347,9 @@
   }
   let priorLayer=false, renderedPage=null;
   function postRender(){
-    if(renderedPage!==S.page){window.scrollTo(0,0);renderedPage=S.page;}
-    const foot=$('foot');foot.innerHTML=`<div class="ft-in"><div class="ft-mark">Harbour Credit</div><p class="ft-tag">${L('Receivables and financing, connected.','连接应收账款与融资需求。')}</p><div class="ft-links">${link('About','平台介绍','login-handoff','about')}${link('FAQ','常见问题','login-handoff','faq')}${link('Agreements','协议','login-handoff','agreement')}</div><div class="ft-meta">${L('Lending platform','借贷平台')}</div></div>`;
+    if(renderedPage!==S.page){if(pages[S.page]||/^P-L2|^DEMO-F-/.test(S.page))window.scrollTo(0,0);renderedPage=S.page;}
+    const foot=$('foot');if(pages[S.page]||/^P-L2|^DEMO-F-/.test(S.page))foot.innerHTML=`<div class="ft-in"><div class="ft-mark">Harbour Credit</div><p class="ft-tag">${L('Receivables and financing, connected.','连接应收账款与融资需求。')}</p><div class="ft-links">${link('About','平台介绍','login-handoff','about')}${link('FAQ','常见问题','login-handoff','faq')}${link('Agreements','协议','login-handoff','agreement')}</div><div class="ft-meta">${L('Lending platform','借贷平台')}</div></div>`;
+    if(D.sessionMessage&&!pages[S.page]&&!$('login-session-notice'))$('content').insertAdjacentHTML('afterbegin',`<div id="login-session-notice">${CF.note('warn',L('You signed out on the asset trust platform. Your sign-in here has also ended.','你已在资产可信平台登出，本平台登录同时结束。'))}</div>`);
     const focusfoot=document.querySelector('.focus-foot');focusfoot.textContent=L('Harbour Credit · Lending platform','Harbour Credit · 借贷平台');
     // 对底座既有入口补上本模块动作，仍由公共层渲染导航、语言及账户下拉。
     document.querySelectorAll('[data-act="signin"]').forEach(x=>x.dataset.act='login-start');
@@ -367,7 +361,7 @@
     });
     const badge=document.querySelector('#tools .badge');if(badge){if(D.downgraded)badge.textContent='1';else badge.remove();}
     if(D.restricted){document.querySelector('#focus .brand').removeAttribute('href');}
-    else document.querySelector('#focus .brand').setAttribute('href','#/');
+    else document.querySelector('#focus .brand').setAttribute('href','#/assets');
     demoPanel();
     if(CF.funder)CF.funder.afterRender();
     const dialog=document.querySelector('#layers > .modal-mask [role="dialog"], #layers > [role="dialog"]');
@@ -384,7 +378,17 @@
     priorLayer=!!dialog;
   }
   if(CF.funder){Object.assign(dict.en,CF.funder.dict.en);Object.assign(dict.zh,CF.funder.dict.zh);Object.assign(layers,CF.funder.layers);}
-  CF.define({id:'login-account',dict,content,layers,onAct:action});
+  CF.define({id:'login-account',dict,content,layers,onAct:action,
+    // 组合只承接已有页面：资产广场及其既有项目链接保持单一实现。
+    ...(CF.AM ? {pages:[...Object.keys(pages),'P-L20','P-L21','P-L22','P-L23','DEMO-F-GATE','P-MC-01'],
+      beforeRender(){
+        if(D.restricted&&S.page!=='P-L11'){S.page='P-L11';go('/auth/agreements');}
+        notices();queueMicrotask(postRender);
+        if(/^\/(project|marketplace)(?:[/?]|$)/.test(location.hash.slice(1)))CF.LSView?.beforeRender?.();
+      },
+      afterRender(){if(/^\/(project|marketplace)(?:[/?]|$)/.test(location.hash.slice(1)))CF.LSView?.afterRender?.();},
+      onBeforeAct(act,v,e){if(/^\/(project|marketplace)(?:[/?]|$)/.test(location.hash.slice(1)))return CF.LSView?.onBeforeAct?.(act,v,e);}
+    }: {})});
   // 登录域优先接管底座的样例登录/退出动作；路由与浮层仍使用 CF。
   document.addEventListener('click',e=>{
     const el=e.target.closest('[data-act]');
@@ -393,7 +397,7 @@
       if(a==='login-gate'&&el.getAttribute('aria-disabled')==='true'){
         e.preventDefault();e.stopImmediatePropagation();gate();CF.render();return;
       }
-      if(a==='login-start'||a==='signin'){
+      if(a==='login-start'||a==='signin'||(CF.AM&&a==='deeplink'&&el.dataset.v==='cta'&&S.role==='guest')){
         e.preventDefault();e.stopImmediatePropagation();D.origin=CF.ENTRY[S.page]||'/';D.originAction='';D.returnResult='none';D.entryError='';go('/login');return;
       }
       if(a==='signout'){e.preventDefault();e.stopImmediatePropagation();if(S.role==='fund'&&CF.funder)CF.funder.logout();else endSession('logout');return;}
@@ -403,7 +407,7 @@
       if(a==='closelayer'&&returnToGuide()){e.preventDefault();e.stopImmediatePropagation();return;}
     }
     const nav=e.target.closest('#nav a, .crumb-link');
-    if(nav&&['#/assets','#/marketplace','#/console'].includes(nav.getAttribute('href'))){
+    if(nav&&(CF.AM?['#/console']:['#/assets','#/marketplace','#/console']).includes(nav.getAttribute('href'))){
       e.preventDefault();e.stopImmediatePropagation();D.reviewMessage=L('This business page is delivered by its owning module.','此业务页由对应模块交付。');S.demo=true;CF.render();
     }
   },true);
@@ -436,6 +440,6 @@
   });
   readMemory();
   // 双击默认为游客壳；登录只有主动点击或受限操作才出现。
-  if(!location.hash)location.hash='#/';
+  if(!location.hash&&!CF.deferBoot)location.hash='#/assets';
   if(!CF.deferBoot)CF.boot();
 })(window.CF);

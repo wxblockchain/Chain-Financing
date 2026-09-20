@@ -51,6 +51,7 @@
   };
   CF.enterPage = function (target, params) {
     var id = String(target).replace(/^lending:/, "");
+    if (id === "P-F51") id = "P-F-AM-01"; // 兼容旧入口，不再登记或展示首页。
     if (!/^lending:/.test(target) || !CF.PAGES[id]) {
       (S.unknownTargets || (S.unknownTargets = [])).push(target);
       location.hash = "#/"; return;
