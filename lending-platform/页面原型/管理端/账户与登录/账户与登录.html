@@ -17,8 +17,11 @@
 .ops-code-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-2);align-items:center}
 .ops-code-row .btn{white-space:nowrap;padding-inline:var(--sp-3)}
 .ops-secret{position:relative}
-.ops-secret input{padding-right:78px}
-.ops-secret button{position:absolute;right:var(--sp-2);top:0;bottom:0;font-size:var(--fs-12);color:var(--accent)}
+.ops-secret input{padding-right:48px}
+.ops-secret button{position:absolute;right:0;top:0;bottom:0;width:44px;display:grid;place-items:center;color:var(--muted);border-radius:var(--radius-sm)}
+.ops-secret button:hover{color:var(--accent)}
+.ops-secret button:active{color:var(--text)}
+.ops-secret svg{width:20px;height:20px}
 .ops-error{min-height:1.5em;font-size:var(--fs-12);color:var(--danger)}
 .ops-actions{display:flex;gap:var(--sp-3);justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:var(--sp-4)}
 .ops-rules{display:grid;gap:var(--sp-1);list-style:none;padding:0;margin:0;font-size:var(--fs-12);color:var(--muted)}

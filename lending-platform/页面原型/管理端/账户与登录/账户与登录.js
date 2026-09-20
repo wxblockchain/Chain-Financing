@@ -27,9 +27,10 @@ function text(m){return m==='locked'?lockCopy():(m?L(m[0],m[1]):'')}
 function err(id,en,zh){E[id]=msg(en,zh)}
 function feedback(){return `<div class="ops-feedback" role="alert">${esc(text(notice))}</div>`}
 function capture(){document.querySelectorAll('[data-field]').forEach(el=>V[el.dataset.field]=el.value)}
+function passwordIcon(shown){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${shown?'<path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A11 11 0 0 1 12 5c7 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.5 6.5C3.5 8.5 2 12 2 12s3 7 10 7a11 11 0 0 0 5.5-1.5"/>':'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>'}</svg>`}
 function field(id,en,zh,type='text',opts='',trail=''){
  const pw=type==='password',val=V[id]||'',error=E[id];
- return `<div class="field"><label for="${id}">${L(en,zh)}</label><div class="${pw?'ops-secret':trail?'ops-code-row':''}"><input class="inp" id="${id}" data-field="${id}" type="${pw&&visible[id]?'text':type}" value="${esc(val)}" aria-required="true" aria-invalid="${!!error}" aria-describedby="${id}-error" ${busy?'readonly':''} ${opts}>${pw?`<button type="button" data-act="ops-show" data-v="${id}" aria-label="${L('Show or hide password','显示或隐藏密码')}">${visible[id]?L('Hide','隐藏'):L('Show','显示')}</button>`:''}${trail}</div><span class="ops-error" id="${id}-error">${esc(text(error))}</span></div>`;
+ return `<div class="field"><label for="${id}">${L(en,zh)}</label><div class="${pw?'ops-secret':trail?'ops-code-row':''}"><input class="inp" id="${id}" data-field="${id}" type="${pw&&visible[id]?'text':type}" value="${esc(val)}" aria-required="true" aria-invalid="${!!error}" aria-describedby="${id}-error" ${busy?'readonly':''} ${opts}>${pw?`<button type="button" data-act="ops-show" data-v="${id}" aria-controls="${id}" aria-label="${visible[id]?L('Hide password','隐藏密码'):L('Show password','显示密码')}">${passwordIcon(visible[id])}</button>`:''}${trail}</div><span class="ops-error" id="${id}-error" aria-live="polite">${esc(text(error))}</span></div>`;
 }
 function button(act,en,zh,primary=true,disabled=false){return `<button type="button" class="btn ${primary?'primary':''}" data-act="${act}" ${disabled||busy?'disabled':''}>${busy&&primary?'<span class="spinner" aria-hidden="true"></span>'+L('Please wait…','处理中…'):L(en,zh)}</button>`}
 function sendWait(act){let target=(V[act==='ops-send-email'?'newEmail':'recoveryEmail']||'').trim().toLowerCase(),last=sendHistory.filter(x=>x.target===target).at(-1);return last?Math.max(0,Math.ceil((last.at+60000-Date.now())/1000)):0}
@@ -44,7 +45,7 @@ function passwordFields(){return field('newPassword','New password','新密码',
 function support(){return `<p class="hint">${L('Cannot access your email? Contact your platform provider or operations support to reinitialize your account.','无法访问工作邮箱？请联系平台建设方或运维重新初始化账号。')}</p>`}
 function lockCopy(){const seconds=Math.max(0,Math.ceil((a.lockUntil-Date.now())/1000));return L('Account locked. Try again in ','账号已锁定，请在 ')+`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`+L('.',' 后重试。')+(a.lockTier===1?L(' Another lock will last longer.','再次触发时锁定时间会更长。'):'')}
 function login(){return heading('Sign in','登录','Use your work email to access the operations console.','使用工作邮箱登录运营管理平台。')+(showLock&&locked()?`<div class="note warn" role="status" id="lockText">${lockCopy()}</div>`:'')+form('ops-login',field('email','Work email','工作邮箱','email','autocomplete="username" maxlength="254"')+field('password','Password','密码','password','autocomplete="current-password"'),L('Sign in','登录'))+`<div class="ops-actions"><a class="btn-link" href="#${R(P.forgot)}">${L('Forgot password?','忘记密码？')}</a></div></div>`}
-function first(){return heading('Set a new password','首次登录 · 设置新密码','Change your initial password before accessing your account.','请先修改初始密码，再使用账户功能。')+form('ops-first',field('currentPassword','Current password','当前密码','password','autocomplete="current-password"')+passwordFields()+`<p class="hint">${L('You will need to sign in again after changing your password.','修改后需要重新登录。')}</p>`,L('Save password','保存密码'))+'</div>'}
+function first(){return heading('Set a new password','首次登录 · 设置新密码','Change your initial password before accessing your account.','请先修改初始密码，再使用账户功能。')+form('ops-first',passwordFields()+`<p class="hint">${L('You will need to sign in again after changing your password.','修改后需要重新登录。')}</p>`,L('Save password','保存密码'))+'</div>'}
 function forgot(){return heading('Reset your password','找回密码','Verify your work email to continue.','验证工作邮箱后设置新密码。')+`<div class="ops-step"><strong>${L('1 · Verify email','1 · 验证邮箱')}</strong><span>—</span><span>${L('2 · New password','2 · 设置新密码')}</span></div>`+form('ops-verify-recovery',field('recoveryEmail','Work email','工作邮箱','email','autocomplete="email" maxlength="254"')+codeField('ops-send-recovery')+(code&&code.purpose==='recovery'?`<p class="hint" role="status">${L('If this email belongs to an operations account, a code has been sent.','若该邮箱为运营端账号，验证码已发送。')}</p>`:''),L('Verify and continue','验证并继续'))+`<div class="ops-actions"><a class="btn-link" href="#${R(P.login)}">${L('Back to sign in','返回登录')}</a></div>`+support()+'</div>'}
 function reset(){return heading('Choose a new password','设置新密码','Your email has been verified.','工作邮箱已验证。')+`<div class="ops-step"><span>${L('1 · Email verified','1 · 邮箱已验证')}</span><span>—</span><strong>${L('2 · New password','2 · 设置新密码')}</strong></div>`+form('ops-reset',passwordFields()+`<p class="hint">${L('All sessions will end. Sign in again with your new password.','所有设备将退出登录，请使用新密码重新登录。')}</p>`,L('Reset password','重置密码'))+`<div class="ops-actions"><a class="btn-link" href="#${R(P.login)}">${L('Back to sign in','返回登录')}</a></div></div>`}
 function row(label,value,act){return `<div><dt>${label}</dt><dd>${value}</dd>${act?`<button class="btn-link" data-act="${act}">${L('Change','修改')}</button>`:''}</div>`}
@@ -81,7 +82,7 @@ if(act==='ops-login'){
  const mail=emailValue('email');if(!V.password)err('password','Enter your password.','请输入密码。');if(!mail||!V.password)return;
  startAsync(()=>{if(mail!==a.email||V.password.trim()!==a.password){failPassword('password',mail!==a.email);return}if(locked()){showLock=true;notice=null;return}if(a.first&&a.expired){notice=msg('Your initial password has expired. Contact your platform provider or operations support.','初始密码已过期，请联系平台建设方或运维重新初始化。');return}a.fail=0;session=true;lastActivity=Date.now();sessionEnd=Date.now()+7200000;warned=false;a.lastLogin=new Date().toISOString();S.tz=read('hc.ops.timezone')||S.tz;clean();jump(a.first?P.first:returnTo)});return;
 }
-if(act==='ops-first'){if((V.currentPassword||'').trim()!==a.password){failPassword('currentPassword');return}if(validPassword())startAsync(()=>changePassword('first'));return}
+if(act==='ops-first'){if(validPassword())startAsync(()=>changePassword('first'));return}
 if(act==='ops-send-recovery'){requestCode('recovery');return}
 if(act==='ops-send-email'){requestCode('email');return}
 if(act==='ops-verify-recovery'){if(!checkCode('recovery'))return;if(locked()){code.used=true;recovery=false;notice='locked';return}if(a.first&&a.expired){notice=msg('Initial password expired. Contact your platform provider or operations support.','初始密码已过期，请联系平台建设方或运维重新初始化。');return}code.used=true;recovery=true;V.newPassword='';V.confirmPassword='';jump(P.reset);return}
@@ -107,7 +108,7 @@ CF.define({id:'ops-account',demoOnly:true,reviewToolsInLayer:true,dict:{en:{navO
 onBeforeAct(act,v,event){capture();if(act==='closelayer'&&event.type==='click'&&event.target.closest('[data-stop]')&&!event.target.closest('button[data-act="closelayer"]'))return false;if(act==='lang'){S.lang=v;save('hc.ops.language',v);S.menu=null;return true}if(busy&&act!=='ops-show'&&act!=='demo')return true;if(act==='closelayer'){if(S.layer&&S.layer.key==='ops-session'){return true}if(S.layer&&S.layer.key==='ops-captcha'){restoreEditor();notice=null;return true}mode='';verifiedUntil=0;code=null;clean();return false}return false},
 onAct(act,v){
  if(act==='ops-send-email'||act==='ops-send-recovery'){submit(act);return true}
- if(act==='ops-show'){visible[v]=!visible[v];return true}
+ if(act==='ops-show'){visible[v]=!visible[v];queueMicrotask(()=>document.querySelector('[data-act="ops-show"][data-v="'+v+'"]')?.focus({preventScroll:true}));return true}
  if(act==='ops-login'||act==='ops-first'||act==='ops-reset'||act==='ops-reauth'){submit(act);return true}
  if(act==='ops-settings'){clean();S.menu=null;jump(P.account);return true}
  if(act==='ops-notifications'){if(CF.opsNotifications&&can(12))CF.opsNotifications.open();return true}
@@ -131,7 +132,16 @@ onAct(act,v){
 },onRoute(prev,id){capture();E={};notice=null;if(!session&&[P.account,P.overview].includes(id))returnTo=id;if(prev===P.first&&!session)returnTo=P.overview;}
 });
 document.addEventListener('submit',e=>{if(e.target.dataset.submit){e.preventDefault();submit(e.target.dataset.submit);CF.render()}});
-document.addEventListener('input',e=>{const id=e.target.dataset.field;if(!id)return;V[id]=e.target.value;refreshSendButtons();if(id==='newPassword'||id==='confirmPassword'){document.querySelectorAll('.ops-rules').forEach(el=>el.outerHTML=rules());const f=e.target.closest('form');if(f)f.querySelector('button[type=submit]').disabled=busy||!passwordReady()}if(E[id]){delete E[id];e.target.setAttribute('aria-invalid','false');if($(id+'-error'))$(id+'-error').textContent=''}});
+document.addEventListener('input',e=>{const id=e.target.dataset.field;if(!id)return;V[id]=e.target.value;refreshSendButtons();
+ if(E[id]){delete E[id];e.target.setAttribute('aria-invalid','false');if($(id+'-error'))$(id+'-error').textContent=''}
+ if(id==='newPassword'||id==='confirmPassword'){
+  const confirmation=(V.confirmPassword||'').trim(),mismatch=confirmation.length>0&&confirmation!==(V.newPassword||'').trim();
+  if(mismatch)err('confirmPassword','The passwords do not match.','两次输入的密码不一致。');else delete E.confirmPassword;
+  $('confirmPassword')?.setAttribute('aria-invalid',String(mismatch));
+  if($('confirmPassword-error'))$('confirmPassword-error').textContent=text(E.confirmPassword);
+  document.querySelectorAll('.ops-rules').forEach(el=>el.outerHTML=rules());const f=e.target.closest('form');if(f)f.querySelector('button[type=submit]').disabled=busy||!passwordReady();
+ }
+});
 document.addEventListener('change',e=>{if(e.target.id==='ops-language'){S.lang=e.target.value;save('hc.ops.language',S.lang);CF.render()}if(e.target.id==='ops-timezone'){S.tz=e.target.value;save('hc.ops.timezone',S.tz);CF.render();CF.toast(L('Time zone updated.','时区已更新。'))}});
 ['click','keydown','submit'].forEach(type=>document.addEventListener(type,e=>{if(e.isTrusted&&session)lastActivity=Date.now()}));
 window.addEventListener('storage',e=>{if(e.key==='hc.ops.invalidate'&&session){expire(msg('Session ended on another tab. Sign in again.','其他标签页已退出登录，请重新登录。'),false);CF.render()}});
