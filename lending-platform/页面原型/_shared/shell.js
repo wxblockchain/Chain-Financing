@@ -267,7 +267,7 @@
       ? '<div class="dd-list" role="menu">' +
         '<div class="dd-head">' + esc(who) + "</div>" +
         '<button type="button" role="menuitem" data-act="toast" data-v="acct">' + L("Account settings", "账户设置") + "</button>" +
-        '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + L("Institution", "机构信息") + "</button>" +
+        '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + (S.role === "fund" ? L("User information", "用户信息") : L("Institution", "机构信息")) + "</button>" +
         (N.allowed() && N.preview ? '<button type="button" role="menuitem" data-act="go" data-v="/notifications">' + L("Notifications", "消息中心") + '</button>' : '') +
         '<div class="dd-sep"></div>' +
         '<button type="button" role="menuitem" data-act="signout">' + L("Sign out", "退出登录") + "</button>" +

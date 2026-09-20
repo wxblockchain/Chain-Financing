@@ -23,9 +23,9 @@
   var load = null, timer = 0, restoreFrame = 0, restoring = false;
   var failNext = false, demoLimit = 52, hits = [];
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-  function number(value, fallback, max) {
+  function number(value, fallback, max, precise) {
     var n = Number(value);
-    return Number.isFinite(n) && n >= 0 ? Math.min(max, Math.floor(n)) : fallback;
+    return Number.isFinite(n) && n >= 0 ? Math.min(max, precise ? n : Math.floor(n)) : fallback;
   }
   function readView() {
     var h = isList() ? hashPath() : CF.ENTRY[LIST] || "/assets";
@@ -38,7 +38,7 @@
     if (["at", "val", "due"].indexOf(v.sort) < 0) v.sort = "at";
     if (v.dir !== "asc") v.dir = "desc";
     v.loaded = Math.min(AM.TOKENS.length, Math.max(20, Math.ceil(number(q.get("loaded") || 20, 20, AM.TOKENS.length) / 20) * 20));
-    ["scroll", "outer", "offset"].forEach(function (key) { v[key] = number(q.get(key), 0, 1000000); });
+    ["scroll", "outer", "offset"].forEach(function (key) { v[key] = number(q.get(key), 0, 1000000, key === "offset"); });
     return v;
   }
   function viewHash(v) {
@@ -46,7 +46,7 @@
     ["ts", "ps", "kind", "holder", "q"].forEach(function (key) { if (v[key]) q.set(key, v[key]); });
     if (v.sort !== "at" || v.dir !== "desc") { q.set("sort", v.sort); q.set("dir", v.dir); }
     if (v.loaded > 20) q.set("loaded", v.loaded);
-    ["scroll", "outer", "offset"].forEach(function (key) { if (v[key]) q.set(key, Math.round(v[key])); });
+    ["scroll", "outer", "offset"].forEach(function (key) { if (v[key]) q.set(key, key === "offset" ? Math.round(v[key] * 1000) / 1000 : Math.round(v[key])); });
     if (v.anchor) q.set("anchor", v.anchor);
     return "/assets" + (q.size ? "?" + q.toString() : "");
   }
@@ -215,6 +215,16 @@
       '" data-k="' + esc(label) + '">' + L("Copy", "复制") + "</button>";
   }
 
+  async function copyValue(value) {
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(value);
+      CF.toast(L("Copied.", "已复制。"));
+    } catch (e) {
+      CF.toast(L("Could not copy. Select the value and copy it manually.", "复制失败，请手动选中编号或文本后复制。"));
+    }
+  }
+
   /* 区块浏览器外链：唯一的新窗口；链接旁常驻未核验标注。 */
   function explorer(hash) {
     return '<a class="btn-link sm" href="' + esc(AM.EXPLORER_TX + hash) + '" target="_blank" rel="noopener noreferrer">' +
@@ -298,13 +308,13 @@
     var summary = '<div class="stat-row am-summary">' +
       '<div class="stat"><div class="k">' + L("Tokens", "代币数量") + "</div>" +
         statV(total.toLocaleString("en-US")) +
-        '<div class="n">' + L("tokens", "张") + "</div></div>" +
+        '<div class="n">' + L("tokens", "枚") + "</div></div>" +
       '<div class="stat"><div class="k">' + L("Token value", "代币价值") + "</div>" +
         statV(CF.fmtAmt(value, "USD")) +
         '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + "</div></div>" +
       '<div class="stat"><div class="k">' + L("Of which void", "其中失效") + "</div>" +
         statV(voids.toLocaleString("en-US")) +
-        '<div class="n">' + L("tokens", "张") + "</div></div></div>" +
+        '<div class="n">' + L("tokens", "枚") + "</div></div></div>" +
       '<p class="sum-note">' + L(
         "Token count and token value include void tokens.",
         "代币数量与代币价值含已失效代币。") + "</p>";
@@ -324,7 +334,7 @@
       '<div class="acts">' +
       '<button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
       '<button class="btn primary" type="button" data-act="am-search">' + L("Search", "查询") + "</button>" +
-      "</div>" + '<div class="field am-mobile-sort"><label for="am-order">' + L("Sort by", "排序") + '</label><select class="inp" id="am-order">' +
+      "</div>" + '<div class="field am-order"><label for="am-order">' + L("Sort by", "排序") + '</label><select class="inp" id="am-order">' +
       [["at", L("Minted at", "铸造时间")], ["val", L("Token value", "代币价值")], ["due", L("Due date", "到期日")]].map(function (item) {
         return ["desc", "asc"].map(function (dir) { var key = item[0] + ":" + dir; return '<option value="' + key + '"' + (key === v.sort + ":" + v.dir ? ' selected' : '') + '>' + item[1] + ' · ' + (dir === "asc" ? L("Ascending", "升序") : L("Descending", "降序")) + '</option>'; }).join("");
       }).join("") + '</select></div></div>';
@@ -359,7 +369,6 @@
         sortTh("val", L("Token value", "代币价值")) +
         '<th scope="col">' + L("Token status", "代币状态") + "</th>" +
         '<th scope="col">' + L("Pledge status", "质押状态") + "</th>" +
-        sortTh("due", L("Underlying receivable term", "底层应收账款账期")) +
         sortTh("at", L("Minted at", "铸造时间")) +
         "</tr></thead><tbody>" +
         rows.slice(0, load.shown).map(listRow).join("") +
@@ -378,20 +387,18 @@
   function listRow(t) {
     var mark = '<span class="tok-mark" data-hue="' + ((t.holder % 4) + 1) + '" aria-hidden="true">' +
       esc(markText(t)) + "</span>";
-    return '<tr data-act="am-open" data-v="' + esc(t.no) + '">' +
+    return '<tr tabindex="0" aria-label="' + esc(L("Open token details: ", "打开代币详情：") + t.no) + '" data-act="am-open" data-v="' + esc(t.no) + '">' +
       '<td data-label="' + esc(L("Token", "代币")) + '"><div class="tok">' + mark +
         '<span class="tok-name">' + esc(tokenName(t)) + "</span></div></td>" +
       '<td data-label="' + esc(L("Token ID", "代币编号")) + '"><div class="cell-wrap">' +
-        '<a class="mono am-id" href="#/assets/' + esc(t.no) + '?return=' + encodeURIComponent(CF.ENTRY[LIST]) + '">' + esc(t.no) + "</a>" +
-        copyBtn(t.no, L("Token ID", "代币编号")) + "</div></td>" +
+        '<button class="btn-link mono am-id" type="button" data-act="am-copy" data-v="' + esc(t.no) + '" aria-label="' +
+        esc(L("Copy token ID: ", "复制代币编号：") + t.no) + '" title="' + L("Copy token ID", "复制代币编号") + '">' + esc(t.no) + "</button></div></td>" +
       '<td data-label="' + esc(L("Asset originator", "资产方企业")) + '">' + esc(holderName(t)) + "</td>" +
       '<td data-label="' + esc(L("Token type", "代币类型")) + '">' + esc(tokenKind()) + "</td>" +
-      '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="num">' + t.qty.toFixed(2) + "</td>" +
+      '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="num">' + t.qty.toFixed(2) + L(" tokens", " 枚") + "</td>" +
       '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="num nw">' + CF.fmtAmt(t.val, "USD") + "</td>" +
       '<td data-label="' + esc(L("Token status", "代币状态")) + '">' + tsTag(t) + "</td>" +
       '<td data-label="' + esc(L("Pledge status", "质押状态")) + '">' + psTag(t) + "</td>" +
-      '<td data-label="' + esc(L("Underlying receivable term", "底层应收账款账期")) + '" class="tiny am-term">' +
-        esc(t.from) + "<br>" + esc(t.to) + "</td>" +
       '<td data-label="' + esc(L("Minted at", "铸造时间")) + '" class="tiny am-at">' + CF.fmtTime(t.at) + "</td>" +
       "</tr>";
   }
@@ -441,7 +448,7 @@
       "</div></div></section>";
 
     var info = section(L("Token information", "代币信息"), dl([
-      [L("Token amount", "代币数量"), '<span class="num">' + t.qty.toFixed(2) + "</span>"],
+      [L("Token amount", "代币数量"), '<span class="num">' + t.qty.toFixed(2) + L(" tokens", " 枚") + "</span>"],
       [L("Token value", "代币价值"), '<span class="num">' + CF.fmtAmt(t.val, "USD") + "</span>"],
       [L("Token type", "代币类型"), esc(tokenKind())],
       [L("Chain", "所属链"), esc(AM.CHAIN)],
@@ -563,12 +570,7 @@
     },
     onAct: function (act, v) {
       if (act === "copy") {
-        try {
-          if (navigator.clipboard) navigator.clipboard.writeText(v);
-          CF.toast(L("Copied.", "已复制。"));
-        } catch (e) {
-          CF.toast(L("Copy is unavailable here — select the value to copy it.", "此处无法自动复制，请手动选中后复制。"));
-        }
+        copyValue(v);
         return true;
       }
       if (act === "deeplink") {
@@ -601,7 +603,8 @@
     if (act.indexOf("am-") !== 0 && act !== "clearfilter" && act !== "retry") return;
     e.preventDefault(); e.stopImmediatePropagation();
     var v = readView();
-    if (act === "am-open") {
+    if (act === "am-copy") copyValue(value);
+    else if (act === "am-open") {
       cancelLoad();
       CF.ENTRY[DETAIL] = "/assets/" + value + "?return=" + encodeURIComponent(CF.ENTRY[LIST]);
       location.hash = "#" + CF.ENTRY[DETAIL];
@@ -628,6 +631,9 @@
     refocus = el.id; writeView(v);
   });
   document.addEventListener("keydown", function (e) {
+    if (isList() && e.target.matches('tr[data-act="am-open"]') && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault(); e.stopPropagation(); e.target.click(); return;
+    }
     if (e.key !== "Enter" || !e.target || e.target.id !== "am-q") return;
     e.preventDefault();
     var v = readView(); v.q = e.target.value.trim(); refocus = "am-q"; writeView(v);

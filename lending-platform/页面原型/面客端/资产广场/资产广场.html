@@ -8,25 +8,24 @@
 <link rel="stylesheet" href="../../_shared/base.css">
 <style>
 /* 仅本模块的排布补充：不覆盖 token，也不改公共组件的语义与取值。 */
-.am-mobile-sort{display:none}
-@media (max-width:1200px){.filters .field.am-mobile-sort{display:block}}
 .am-gap{height:var(--sp-6)}
 .stat .v .am-skel-v{display:block;width:60%;height:20px;margin:8px 0 2px}
 .filters .field.am-q{flex:2 1 300px;max-width:380px}
 
-/* 列表：十列在 1280 下要能全部落在内容区里，不横向截断。
+/* 列表：九列在 1280 下要能全部落在内容区里，不横向截断。
    英文列名比中文长得多，本表的表头允许折行；取值、字号与配色仍取公共组件。 */
 table.tbl.am-tbl thead th{white-space:normal;padding-left:10px;padding-right:10px}
 table.tbl.am-tbl thead th.sortable{padding:0}
 table.tbl.am-tbl thead th.sortable button{align-items:flex-start;text-align:left;
   padding-left:10px;padding-right:10px}
 table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
-.am-tbl .am-id{font-size:var(--fs-11);color:var(--accent)}
-.am-tbl .am-term{min-width:88px}
+.am-tbl .am-id{font-size:var(--fs-11);color:var(--accent);min-height:44px;user-select:text}
+.am-tbl tr[data-act="am-open"]{cursor:pointer}
+.am-tbl tr[data-act="am-open"]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .am-tbl .am-at{min-width:112px;max-width:146px;white-space:normal}
 .am-tbl .tok-name{max-width:118px}
 
-/* 十列在平板宽度提前采用公共 .resp 的同一单元格卡片组合；
+/* 九列在平板宽度提前采用公共 .resp 的同一单元格卡片组合；
    只作用于本模块，不改变公共滚动断点（900px）或其他表格。 */
 @media (min-width:769px) and (max-width:1200px){
   table.tbl.am-tbl,table.tbl.am-tbl tbody,table.tbl.am-tbl tr,table.tbl.am-tbl td{display:block;width:100%}
@@ -46,7 +45,7 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
 @media (max-width:600px){.am-summary{grid-template-columns:minmax(0,1fr)}}
 
 /* 详情：单列分区，按访客的判断路径从上往下读。 */
-.am-detail{max-width:1040px;display:flex;flex-direction:column;gap:var(--sp-5)}
+.am-detail{width:100%;min-width:0;display:flex;flex-direction:column;gap:var(--sp-5)}
 /* 宽屏下每行放两组字段，窄屏回到一组一行；标签与取值仍是公共组件的 .dl。 */
 @media (min-width:1100px){
   .am-detail .dl{grid-template-columns:minmax(110px,auto) minmax(0,1fr) minmax(110px,auto) minmax(0,1fr)}
