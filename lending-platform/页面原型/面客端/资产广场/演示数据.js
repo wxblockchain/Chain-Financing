@@ -58,7 +58,7 @@
   /* —— 手写的几条，覆盖详情页与列表上要看清的分支 —— */
   TOKENS.push({
     no: "TK20260612000147", name: "HC-AR-2606", holder: 0, buyer: 0,
-    qty: 1250, val: 1250000, ts: "valid",
+    qty: 1250000.25, val: 1250000.25, ts: "valid",
     pl: { st: "PS-2", chain: "ok", project: PROJECTS[0] },
     from: "2026-06-12", to: "2026-09-10", at: "2026-06-12T10:20:00",
     recvAmt: 1250000, recvCcy: "USD", trade: 0, settle: 0,
@@ -68,7 +68,7 @@
   /* 失效 + 已质押：两个标签同时出现是正确的。 */
   TOKENS.push({
     no: "TK20260220000092", name: "HC-AR-2602", holder: 1, buyer: 1,
-    qty: 460, val: 460000, ts: "void",
+    qty: 460000.75, val: 460000.75, ts: "void",
     pl: { st: "PS-2", chain: "ok", project: PROJECTS[1] },
     from: "2026-02-20", to: "2026-05-21", at: "2026-02-20T11:15:00",
     recvAmt: 398000, recvCcy: "EUR", trade: 1, settle: 1,
@@ -78,7 +78,7 @@
   /* 已质押，但所属融资项目还是草稿：给标签，不给深链。 */
   TOKENS.push({
     no: "TK20260903000415", name: "HC-AR-2609", holder: 2, buyer: 2,
-    qty: 1120, val: 1120000, ts: "valid",
+    qty: 1120000, val: 1120000, ts: "valid",
     pl: { st: "PS-2", chain: "ok", project: PROJECTS[2] },
     from: "2026-09-03", to: "2027-01-01", at: "2026-09-03T08:30:00",
     recvAmt: 1120000, recvCcy: "USD", trade: 0, settle: 2,
@@ -88,7 +88,7 @@
   /* 链上转移处理中：对外保守显示未质押。 */
   TOKENS.push({
     no: "TK20260705000288", name: "HC-AR-2607", holder: 3, buyer: 3,
-    qty: 860, val: 860000, ts: "valid",
+    qty: 860000, val: 860000, ts: "valid",
     pl: { st: "PS-2", chain: "pending", project: PROJECTS[0] },
     from: "2026-07-05", to: "2026-11-02", at: "2026-07-05T09:05:00",
     recvAmt: 94600000, recvCcy: "JPY", trade: 2, settle: 0,
@@ -98,7 +98,7 @@
   /* 代币名称未下发：该列展示合约名称，不自造符号。 */
   TOKENS.push({
     no: "TK20260818000361", name: "", holder: 4, buyer: 4,
-    qty: 2040, val: 2040000, ts: "valid",
+    qty: 2040000, val: 2040000, ts: "valid",
     pl: { st: "PS-4", chain: "ok", project: PROJECTS[1] },
     from: "2026-08-18", to: "2026-10-17", at: "2026-08-18T16:40:00",
     recvAmt: 2040000, recvCcy: "USD", trade: 0, settle: 1,
@@ -108,7 +108,7 @@
   /* 已同步的链上存证缺项：该区块按字段显示“—”，不隐藏整块。 */
   TOKENS.push({
     no: "TK20260416000203", name: "HC-AR-2604", holder: 5, buyer: 0,
-    qty: 640, val: 640000, ts: "valid",
+    qty: 640000, val: 640000, ts: "valid",
     pl: { st: "PS-2", chain: "failed", project: PROJECTS[1] },
     from: "2026-04-16", to: "2026-10-14", at: "2026-04-16T13:52:00",
     recvAmt: 512000, recvCcy: "EUR", trade: 1, settle: 2,
@@ -116,7 +116,7 @@
     attest: { hash: "0x" + hex(9203, 64), tx: "", block: null, at: "" }
   });
 
-  /* —— 按同一形状补足到 52 条，只为演示每页 20 条的分页，全部仍是演示数据 —— */
+  /* —— 按同一形状补足到 52 条，只为演示每批 20 条的连续追加，全部仍是演示数据 —— */
   (function () {
     for (var i = 0; i < 46; i++) {
       var mo = (i % 9) + 1, day = (i % 26) + 2, seq = 500 + i * 7;
@@ -131,7 +131,7 @@
         no: "TK2026" + pad(mo, 2) + pad(day, 2) + pad(seq, 6),
         name: "HC-AR-26" + pad(mo, 2) + "-" + pad(i + 1, 2),
         holder: i % AM.HOLDERS.length, buyer: i % BUYERS.length,
-        qty: qty, val: qty * 1000,
+        qty: qty * 1000, val: qty * 1000,
         ts: i % 11 === 0 ? "void" : "valid",
         pl: pl,
         from: ds, to: de,
@@ -147,6 +147,15 @@
     }
   })();
 
+  // 独立编写的单地址虚构响应，只在评审工具选择时展示；不是铸造收币快照。
+  // 不从总量推导地址份额，不模拟未经裁定的分份、多地址或多当前项目。
+  AM.HOLDING_SAMPLES = {
+    TK20260612000147: { complete: true, rows: [{ address: "0x1111111111111111111111111111111111111147", qty: 1250000.25, value: 1250000.25, pledged: true, project: PROJECTS[0] }] },
+    TK20260220000092: { complete: true, rows: [{ address: "0x2222222222222222222222222222222222222292", qty: 460000.75, value: 460000.75, pledged: true, project: PROJECTS[1] }] },
+    TK20260903000415: { complete: true, rows: [{ address: "0x3333333333333333333333333333333333333415", qty: 1120000, value: 1120000, pledged: true, project: PROJECTS[2] }] },
+    TK20260818000361: { complete: true, rows: [{ address: "0x1111111111111111111111111111111111111147", qty: 2040000, value: 2040000, pledged: false, project: null }] }
+  };
+  AM.PROJECTS = PROJECTS;
   AM.TOKENS = TOKENS;
   AM.BUYERS = BUYERS;
   AM.TRADES = TRADES;

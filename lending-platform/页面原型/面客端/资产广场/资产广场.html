@@ -6,6 +6,7 @@
 <title>Asset marketplace · Harbour Credit</title>
 <link rel="stylesheet" href="../../_shared/tokens.css">
 <link rel="stylesheet" href="../../_shared/base.css">
+<link rel="stylesheet" href="../借贷广场/借贷广场.css">
 <style>
 /* 仅本模块的排布补充：不覆盖 token，也不改公共组件的语义与取值。 */
 .am-gap{height:var(--sp-6)}
@@ -67,6 +68,9 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
 .am-cta .card-b{display:flex;align-items:center;gap:var(--sp-5);flex-wrap:wrap}
 .am-cta p{margin:0;font-weight:620}
 .am-cta .btn{margin-left:auto}
+.am-holdings .am-address{min-height:44px}
+.am-holdings td:nth-child(2),.am-holdings td:nth-child(3){font-variant-numeric:tabular-nums}
+.am-holding-demo{padding:var(--sp-3) var(--sp-5);margin:0}
 
 @media (max-width:768px){
   .am-tbl .am-at{max-width:none}
@@ -125,6 +129,10 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
 <script src="../../_shared/shell.js"></script>
 <script>CF.deferBoot = true;</script>
 <script src="演示数据.js"></script>
+<script>CF.LSStorageKey = "hc-ws350-linked-projects"; if (!location.hash) location.hash = "#/assets";</script>
+<script src="../借贷广场/演示数据.js"></script>
+<script src="项目演示接入.js"></script>
+<script src="../借贷广场/借贷广场.js"></script>
 <script src="资产广场.js"></script>
 <script src="../消息中心/演示数据.js"></script>
 <script src="../消息中心/消息中心.js"></script>

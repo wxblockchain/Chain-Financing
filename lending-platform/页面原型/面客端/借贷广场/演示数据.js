@@ -4,7 +4,7 @@
  */
 (function (CF) {
   'use strict';
-  const KEY = 'hc-ws351-demo-v1', DAY = 86400000;
+  const KEY = CF.LSStorageKey || 'hc-ws351-demo-v1', DAY = 86400000;
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
   D.now = () => Date.now() + D.offset;
   D.iso = () => new Date(D.now()).toISOString();

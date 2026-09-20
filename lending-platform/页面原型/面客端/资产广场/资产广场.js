@@ -143,6 +143,14 @@
   function renderDemoExtras() {
     var panel = document.getElementById("demoPanel");
     if (!panel || document.getElementById("am-demo")) return;
+    if (curTokenNo()) {
+      panel.insertAdjacentHTML("beforeend", '<div class="grp" id="am-demo"><h5>' + L("Holding data · fictional samples", "持有资料 · 虚构样例") + '</h5>' +
+        [["sample", L("Single-address sample", "单地址样例")], ["loading", L("Loading", "加载中")], ["error", L("Load failed", "加载失败")], ["empty", L("Complete empty set", "完整空集合")], ["missing", L("Missing fields", "字段缺失")], ["conflict", L("Conflicting relations", "关系冲突")], ["unavailable", L("Unavailable", "资料不可用")]].map(function (x) {
+          return '<button class="btn" data-act="am-holding-state" data-v="' + x[0] + '">' + x[1] + '</button>';
+        }).join("") + '<h5>' + L("Open a sample", "打开样例") + '</h5>' +
+        Object.keys(AM.HOLDING_SAMPLES).map(function (no) { return '<button class="btn" data-act="am-holding-token" data-v="' + no + '">' + no + '</button>'; }).join("") + '</div>');
+      return;
+    }
     panel.insertAdjacentHTML("beforeend", '<div class="grp" id="am-demo"><h5>' + L("Asset list demonstration", "资产列表演示") + '</h5>' +
       '<button class="btn" data-act="am-fail">' + L("Fail next batch", "下一批失败") + '</button>' +
       [7, 20, 52].map(function (n) { return '<button class="btn" data-act="am-size" data-v="' + n + '">' + L(n + " sample items", n + " 条样例") + '</button>'; }).join("") + '</div>');
@@ -225,6 +233,54 @@
     }
   }
 
+  function cents(value) { return Math.round(value * 100); }
+  function sum(rows, key) { return rows.reduce(function (n, t) { return n + cents(t[key]); }, 0) / 100; }
+  function quantity(value) { return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  var holdingMode = "unavailable", holdingLoad = null, holdingTimer = 0;
+  function resetHoldings() { clearTimeout(holdingTimer); holdingLoad = null; }
+  function holdingTable(t) {
+    var key = t.no + ":" + holdingMode;
+    if (!holdingLoad || holdingLoad.key !== key) {
+      resetHoldings(); holdingLoad = { key: key, phase: "loading" };
+      if (holdingMode !== "loading") holdingTimer = setTimeout(function () {
+        if (!holdingLoad || holdingLoad.key !== key || curTokenNo() !== t.no) return;
+        holdingLoad.phase = "done";
+        var y = scrollY; CF.render(); requestAnimationFrame(function () { window.scrollTo(0, y); });
+      }, 400);
+    }
+    var title = L("Token holding addresses", "代币持有地址"), body;
+    if (holdingLoad.phase === "loading") body = '<div role="status" aria-live="polite">' + CF.skelTable(2) + '</div>';
+    else if (holdingMode === "error") body = '<div role="alert">' + CF.empty(L("Could not load holding information", "持有信息加载失败"), "",
+      '<button class="btn" data-act="am-holding-retry">' + L("Retry", "重试") + '</button>') + '</div>';
+    else if (holdingMode === "empty") body = CF.empty(L("No holding addresses", "暂无持有地址"), "", "");
+    else {
+      var data = AM.HOLDING_SAMPLES[t.no];
+      if (holdingMode === "missing" && data) data = { complete: true, rows: data.rows.map(function (r) { return Object.assign({}, r, { qty: null }); }) };
+      if (holdingMode === "conflict" && data) data = { complete: true, rows: data.rows.concat(data.rows) };
+      var valid = ["sample", "missing", "conflict"].indexOf(holdingMode) >= 0 && data && data.complete === true && Array.isArray(data.rows) && data.rows.length === 1;
+      if (valid) valid = data.rows.every(function (r) {
+        if (!r || typeof r !== "object") return false;
+        var p = pledgeOf(t);
+        return /^0x[0-9a-fA-F]{40}$/.test(r.address) && typeof r.qty === "number" && Number.isFinite(r.qty) && r.qty > 0 &&
+          typeof r.value === "number" && Number.isFinite(r.value) && r.value >= 0 && typeof r.pledged === "boolean" &&
+          r.pledged === p.on && (r.pledged ? r.project && p.project && r.project.id === p.project.id && r.project.draft === p.project.draft &&
+            (r.project.draft || Array.isArray(r.project.name) && r.project.name.length === 2 && r.project.name.every(function (n) { return typeof n === "string" && n.trim(); })) : r.project === null);
+      }) && cents(sum(data.rows, "qty")) === cents(t.qty) && cents(sum(data.rows, "value")) === cents(t.val);
+      if (!valid) body = CF.empty(L("Holding information is temporarily unavailable", "持有信息暂不可用"), "", "");
+      else {
+        var heads = [L("Address", "地址"), L("Holding amount", "持有数量"), L("Corresponding value", "对应价值"), L("Pledge status", "质押状态"), L("Financing project", "所属融资项目")];
+        body = '<p class="tiny am-holding-demo">' + L("Fictional demonstration data", "虚构演示数据") + '</p><div class="tablewrap"><table class="tbl resp am-holdings"><thead><tr>' + heads.map(function (h) { return '<th scope="col">' + h + '</th>'; }).join("") + '</tr></thead><tbody>' +
+          data.rows.map(function (r) {
+            var project = !r.pledged ? dash() : r.project.draft ? L("The financing project is not public yet", "所属融资项目尚未公开") :
+              '<a class="btn-link" href="#/project/' + esc(r.project.id) + '" data-act="am-project" data-v="' + esc(r.project.id) + '">' + esc(nm(r.project.name)) + '</a>';
+            var values = ['<button class="btn-link mono am-address" data-act="am-address-copy" data-v="' + esc(r.address) + '" aria-label="' + esc(L("Copy address: ", "复制地址：") + r.address) + '">' + esc(r.address.slice(0, 6) + "…" + r.address.slice(-4)) + '</button>', quantity(r.qty) + L(" tokens", " 枚"), CF.fmtAmt(r.value, "USD"), CF.tag(r.pledged ? "accent" : "", r.pledged ? L("Pledged", "已质押") : L("Not pledged", "未质押")), project];
+            return '<tr>' + values.map(function (v, i) { return '<td data-label="' + esc(heads[i]) + '"><div class="cell-wrap">' + v + '</div></td>'; }).join("") + '</tr>';
+          }).join("") + '</tbody></table></div>';
+      }
+    }
+    return '<section class="card am-sec" id="am-holdings"><div class="card-head">' + title + '</div>' + body + '</section>';
+  }
+
   /* 区块浏览器外链：唯一的新窗口；链接旁常驻未核验标注。 */
   function explorer(hash) {
     return '<a class="btn-link sm" href="' + esc(AM.EXPLORER_TX + hash) + '" target="_blank" rel="noopener noreferrer">' +
@@ -289,8 +345,8 @@
     var rows = S.st === "noresult" ? [] : sortRows(base.filter(function (t) { return match(t, v); }), v);
 
     var total = rows.length;
-    var value = rows.reduce(function (n, t) { return n + t.val; }, 0);
-    var voids = rows.filter(function (t) { return t.ts === "void"; }).length;
+    var value = sum(rows, "val"), amount = sum(rows, "qty");
+    var voids = sum(rows.filter(function (t) { return t.ts === "void"; }), "qty");
 
     ensureLoad(v, total);
     afterList(v);
@@ -307,16 +363,16 @@
     function statV(html) { return wait ? '<div class="v"><span class="skel am-skel-v"></span></div>' : '<div class="v">' + html + "</div>"; }
     var summary = '<div class="stat-row am-summary">' +
       '<div class="stat"><div class="k">' + L("Tokens", "代币数量") + "</div>" +
-        statV(total.toLocaleString("en-US")) +
+        statV(quantity(amount)) +
         '<div class="n">' + L("tokens", "枚") + "</div></div>" +
       '<div class="stat"><div class="k">' + L("Token value", "代币价值") + "</div>" +
         statV(CF.fmtAmt(value, "USD")) +
         '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + "</div></div>" +
       '<div class="stat"><div class="k">' + L("Of which void", "其中失效") + "</div>" +
-        statV(voids.toLocaleString("en-US")) +
+        statV(quantity(voids)) +
         '<div class="n">' + L("tokens", "枚") + "</div></div></div>" +
       '<p class="sum-note">' + L(
-        "Token count and token value include void tokens.",
+        "Token amount and token value include void tokens.",
         "代币数量与代币价值含已失效代币。") + "</p>";
 
     var holders = AM.HOLDERS.map(function (h, i) { return [String(i), nm(h)]; });
@@ -417,6 +473,7 @@
   }
 
   function pageDetail() {
+    setTimeout(renderDemoExtras, 0);
     var no = curTokenNo();
     var t = null;
     AM.TOKENS.forEach(function (x) { if (x.no === no) t = x; });
@@ -480,26 +537,6 @@
       [L("Attested at", "存证时间"), a.at ? CF.fmtTime(a.at) : dash()]
     ]));
 
-    var pledgeBody;
-    if (!p.on) {
-      pledgeBody = dl([[L("Pledge status", "质押状态"), psTag(t)]]);
-    } else if (p.project.draft) {
-      pledgeBody = dl([
-        [L("Pledge status", "质押状态"), psTag(t)],
-        [L("Financing project", "所属融资项目"),
-          '<span class="muted">' + L("The financing project is not public yet", "所属融资项目尚未公开") + "</span>"]
-      ]);
-    } else {
-      pledgeBody = dl([
-        [L("Pledge status", "质押状态"), psTag(t)],
-        [L("Financing project", "所属融资项目"),
-          '<a class="btn-link" href="#/marketplace/project/' + esc(p.project.id) + '" data-act="deeplink" data-v="' +
-          esc(p.project.id) + '">' + esc(nm(p.project.name)) +
-          '<span class="ar" aria-hidden="true">→</span></a>', true]
-      ]);
-    }
-    var pledge = section(L("Current pledge", "当前质押信息"), pledgeBody);
-
     var cta = '<section class="card am-sec am-cta"><div class="card-b">' +
       "<p>" + (S.role === "guest"
         ? L("Become a funder and finance receivables like this one.", "成为资金方，参与此类资产融资。")
@@ -508,7 +545,7 @@
       (S.role === "guest" ? L("Apply to join", "申请入驻") : L("Go to the lending marketplace", "前往借贷广场")) +
       "</button></div></section>";
 
-    return back + '<div class="am-detail">' + overview + info + origin + attest + pledge + cta + "</div>";
+    return back + '<div class="am-detail">' + overview + info + origin + attest + holdingTable(t) + cta + "</div>";
   }
 
   /* ------------------------------------------------------------ 页脚 */
@@ -539,6 +576,7 @@
   CF.renderFooter = renderFoot;
   CF.define({
     id: "portal-asset-marketplace",
+    pages: [LIST, DETAIL],
     dict: dict,
     content: function (page) {
       renderFoot();
@@ -575,6 +613,7 @@
       }
       if (act === "deeplink") {
         if (v === "cta") {
+          if (S.role !== "guest" && CF.LSView) { location.hash = "#/marketplace"; return true; }
           CF.toast(S.role === "guest"
             ? L("Sign-up runs in the account module, outside this prototype.", "申请入驻属账号模块，不在本原型范围内。")
             : L("Opens the lending marketplace, which is outside this prototype.", "该入口指向借贷广场，不在本原型范围内。"));
@@ -592,7 +631,26 @@
   });
 
   /* 在公共事件分发之前处理本列表动作；不影响组合装载的消息中心。 */
-  window.addEventListener("hashchange", function () { cancelLoad(); syncEntry(); });
+  window.addEventListener("hashchange", function () { cancelLoad(); resetHoldings(); syncEntry(); });
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-act]");
+    if (!el || !curTokenNo()) return;
+    var act = el.dataset.act, value = el.dataset.v;
+    if (["am-holding-state", "am-holding-token", "am-holding-retry", "am-address-copy", "am-project"].indexOf(act) < 0) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (act === "am-address-copy") { copyValue(value); return; }
+    if (act === "am-project") {
+      CF.AM.returnDetail = location.hash; location.hash = "#/project/" + value;
+      var project = CF.LS.project(value);
+      if (project && ["closed", "settled"].indexOf(project.state) >= 0) setTimeout(function () {
+        CF.toast(project.state === "closed" ? L("This project is closed.", "该项目已关闭。") : L("This project is settled.", "该项目已结清。"));
+      }, 0);
+      return;
+    }
+    resetHoldings();
+    if (act === "am-holding-token") { holdingMode = "sample"; location.hash = "#/assets/" + value + "?return=" + encodeURIComponent(CF.ENTRY[LIST]); }
+    else { holdingMode = act === "am-holding-retry" ? "sample" : value; CF.render(); }
+  }, true);
   document.addEventListener("click", function (e) {
     if (!isList()) return;
     var el = e.target.closest("[data-act]");
