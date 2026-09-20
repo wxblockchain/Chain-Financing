@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" data-end="asset">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in · Harbour Credit</title>
+<link rel="stylesheet" href="../../_shared/tokens.css">
+<link rel="stylesheet" href="../../_shared/base.css">
+<link rel="stylesheet" href="../../面客端/登录与账户体系/登录与账户体系.css">
+<style>
+.review-wrap .rv-grid{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(260px,1fr);gap:var(--sp-5);align-items:start}
+.review-wrap .rv-stack{display:grid;gap:var(--sp-5)}
+.review-wrap .rv-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);margin:0}
+.review-wrap dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-2)}
+.review-wrap dd{margin:0;overflow-wrap:anywhere}
+.review-wrap h2{font-size:var(--fs-16);margin:0 0 var(--sp-5)}
+.review-wrap .rv-meta{font-size:var(--fs-12);color:var(--muted)}
+.review-wrap .rv-table{table-layout:fixed;width:100%}
+.review-wrap .rv-table td{white-space:normal;overflow-wrap:anywhere}
+.review-wrap .rv-table .col-act{width:80px}
+.review-wrap .rv-table th:nth-child(1){width:16%}
+.review-wrap .rv-table th:nth-child(2){width:24%}
+.review-wrap .rv-table th:nth-child(3){width:7%}
+.review-wrap .rv-table th:nth-child(5){width:13%}
+.review-wrap .rv-filters{display:grid;grid-template-columns:1fr 2fr 1.2fr 1.2fr auto;align-items:end;gap:var(--sp-4)}
+.review-wrap .rv-filters .field{min-width:0;max-width:none}
+.review-wrap .rv-foot,.review-wrap .rv-actions{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-4);flex-wrap:wrap}
+.review-wrap .rv-actions{padding:var(--sp-4) 0;margin-top:var(--sp-4);border-top:1px solid var(--border)}
+.review-wrap .rv-doc{display:flex;gap:var(--sp-4);align-items:center;padding:var(--sp-4);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.review-wrap .rv-doc>div{flex:1;min-width:0;overflow-wrap:anywhere}
+.review-wrap .rv-history{border-top:1px solid var(--border);padding:var(--sp-4) 0}
+.review-wrap .rv-history p{margin:var(--sp-2) 0}
+.review-prototype .rv-issue{padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:var(--sp-4)}
+.review-prototype .rv-issue label{display:block;margin-bottom:var(--sp-2)}
+.review-prototype .rv-issue textarea{height:90px;resize:vertical}
+.review-prototype .rv-issue .field{margin-top:var(--sp-3)}
+.review-prototype .rv-preview{padding:var(--sp-6);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius)}
+.review-prototype .rv-preview dl div{padding:var(--sp-3) 0;border-bottom:1px solid var(--border)}
+.review-prototype .rv-preview dd{margin:var(--sp-2) 0;overflow-wrap:anywhere}
+.review-prototype .demo-panel{max-height:calc(100svh - 110px);overflow:auto}
+.review-prototype .rv-demo{border-top:1px solid var(--border);padding-top:var(--sp-4);margin-top:var(--sp-4)}
+.review-prototype .rv-demo .btn{margin-bottom:var(--sp-2)}
+.review-prototype .rv-demo label{display:block;margin:var(--sp-3) 0 var(--sp-2)}
+</style>
+</head>
+<body class="login-prototype review-prototype">
+
+<!-- 面客端：官网顶栏骨架。官网层与工作区共用同一根顶栏，只有内容区节奏不同。 -->
+<div class="portal" id="portal" hidden>
+  <header class="portal-head">
+    <a class="brand" href="#/">
+      <span class="brand-mark" aria-hidden="true">HC</span>
+      <span>
+        <span class="brand-name">Harbour Credit</span>
+        <span class="brand-sub">Lending</span>
+      </span>
+    </a>
+    <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+    <div class="portal-tools" id="tools"></div>
+  </header>
+  <div class="portal-sub" id="subwrap"><div class="portal-sub-in" id="crumb"></div></div>
+  <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+  <footer class="site-foot" id="foot"></footer>
+</div>
+
+<!-- 管理端：侧栏控制台骨架。结构与既有系统一致，只跟随 token 取值变化。 -->
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">HC</span>
+      <span>
+        <span class="brand-name">Harbour Credit</span>
+        <span class="brand-sub">Operations</span>
+      </span>
+    </div>
+    <nav class="nav" id="anav" aria-label="Main navigation"></nav>
+    <div class="side-foot" id="asidefoot"></div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="crumbbar-in" id="acrumb"></div>
+      <div class="topbar-right" id="atools"></div>
+    </div>
+    <div class="content" id="acontent"></div>
+  </div>
+</div>
+
+
+<!-- focus：仅品牌与语言工具，不带业务导航。 -->
+<div class="focus" id="focus" hidden>
+  <header class="focus-head"><a class="brand" href="#/"><span class="brand-mark" aria-hidden="true">HC</span><span class="brand-name">Harbour Credit</span></a><div class="focus-tools" id="focusTools"></div></header>
+  <main class="focus-main"><div class="focus-card" id="focusContent"></div></main>
+  <footer class="focus-foot">Harbour Credit</footer>
+</div>
+
+<div id="layers"></div>
+<div class="toasts" id="toasts"></div>
+<button class="demo-btn" id="demoBtn" type="button"></button>
+<aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
+
+
+<script src="../../_shared/registry.portal.js"></script>
+<script src="../../_shared/shell.js"></script>
+<script>CF.deferBoot=true;</script>
+<script src="../../_shared/registry.admin.js"></script>
+<script src="../../面客端/登录与账户体系/资金方账户.js"></script>
+<script src="../../面客端/登录与账户体系/登录与账户体系.js"></script>
+<script src="资金方机构认证审核.js"></script>
+</body>
+</html>

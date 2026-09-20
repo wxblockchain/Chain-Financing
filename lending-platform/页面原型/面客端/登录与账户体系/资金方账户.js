@@ -14,7 +14,7 @@
   };
   const dict={en:{},zh:{}};
   Object.entries(pages).forEach(([id,p])=>{CF.PAGES[id]={end:'asset',layout:p[0],navKey:id,auth:['P-L21','P-L22','P-L23'].includes(id)};CF.ENTRY[id]=p[1];dict.en[id]=p[2];dict.zh[id]=p[3];});
-  const blank=()=>({exists:false,address,created:null,email:'',status:'draft',disabled:false,step:1,form:{name:'',country:'',identifier:'',institutionType:'',registeredAddress:'',regulator:'',license:'',contact:'',file:'',fileSize:0,fileStatus:''},submitted:null,reviewed:null,history:[],version:0});
+  const blank=()=>({exists:false,address,created:null,email:'',status:'draft',disabled:false,step:1,form:{name:'',country:'',identifierType:'',identifier:'',institutionType:'',registeredAddress:'',regulator:'',license:'',contact:'',file:'',fileSize:0,fileStatus:''},submitted:null,reviewed:null,history:[],version:0});
   const F={account:blank(),accounts:{},connected:'',signState:'A',consent:false,submitConsent:false,change:false,
     busy:'',error:null,entryError:null,fieldErrors:{},otp:null,emailInput:'',codeInput:'',reauthUntil:0,
     emailStage:'auth',connectionOrigin:'entry',signPurpose:'login',signatureResult:'success',connectionResult:'success',
@@ -98,10 +98,10 @@
     if(purpose==='email')open('email');else CF.render();
   }
   function agreementCheck(id,checked){return `<div class="funder-consent"><input id="${id}" type="checkbox" ${checked?'checked':''} aria-label="${L('I have read and agree to the Platform Agreement','我已阅读并同意《平台协议》')}"><div><label for="${id}">${L('I have read and agree to ','我已阅读并同意')}</label><button type="button" class="btn-link" data-act="f-agreements">${L('the Platform Agreement','《平台协议》')}</button></div></div>`;}
-  function fields(){const f=F.account.form;return [['Institution name','机构名称',f.name],['Country or region','注册国家或地区',f.country],['Registration number','商业登记号',f.identifier],['Institution type','机构类型',f.institutionType||'—'],['Registered address','注册地址',f.registeredAddress||'—'],['Regulator','监管机构',f.regulator||'—'],['Financial licence number','金融牌照编号',f.license||'—'],['Business contact email','业务联系人邮箱',f.contact||'—'],['Institution document','机构证明材料',f.file||'—']];}
+  function fields(){const f=F.account.form;return [['Institution name','机构名称',f.name],['Country or region','注册国家或地区',f.country],['Identifier type','标识类型',f.identifierType||'REG_NO'],['Institution identifier','机构唯一标识',f.identifier],['Institution type','机构类型',f.institutionType||'—'],['Registered address','注册地址',f.registeredAddress||'—'],['Regulator','监管机构',f.regulator||'—'],['Financial licence number','金融牌照编号',f.license||'—'],['Business contact email','业务联系人邮箱',f.contact||'—'],['Institution document','机构证明材料',f.file||'—']].filter(x=>F.activeTemplate!=='DEMO-2'||x[0]!=='Business contact email');}
   function fileSize(size){return size>=1048576?(size/1048576).toFixed(1)+' MB':Math.max(1,Math.ceil(size/1024))+' KB';}
   function uploadArea(){const f=F.account.form;return `<div class="field"><span class="funder-field-label">${L('Institution document *','机构证明材料 *')}</span><div class="funder-upload"><input id="f-file" type="file" hidden aria-label="${L('Select institution document','选择机构证明材料')}">${f.file?`<div class="funder-file-row"><span class="funder-file-icon" aria-hidden="true">↑</span><div class="funder-file-meta"><strong>${esc(f.file)}</strong><span>${f.fileSize?fileSize(f.fileSize):L('Size unavailable','大小未记录')}</span><span role="status" class="${F.upload==='failed'?'funder-error':''}">${F.upload==='loading'?L('Uploading…','正在上传…'):F.upload==='failed'?L('Upload failed. Retry or replace the file.','上传失败，请重试或替换文件。'):L('Uploaded','上传成功')}</span></div></div><div class="funder-file-actions">${F.upload==='failed'?btn('Retry upload','重试上传','upload','','primary'):''}${btn('Replace file','替换文件','pick-file')}${link('Delete','删除','remove-file')}</div>`:`<div class="funder-upload-empty"><span class="funder-file-icon" aria-hidden="true">↑</span><div><strong>${L('Upload institution document','上传机构证明材料')}</strong><p class="login-caption">${L('Choose a file from your computer.','从电脑选择需要提交的文件。')}</p></div>${btn('Choose file','选择文件','pick-file')}</div>`}</div></div>`;}
-  function startUpload(file){const version=++F.uploadVersion;if(file){F.account.form.file=file.name;F.account.form.fileSize=file.size;}F.upload='loading';F.account.form.fileStatus='loading';persist();later(()=>{if(version!==F.uploadVersion)return;F.upload=F.saveResult==='failed'?'failed':'done';F.account.form.fileStatus=F.upload;persist();});}
+  function startUpload(file){if(F.account.status==='submitted')return;const version=++F.uploadVersion;if(file){F.account.form.file=file.name;F.account.form.fileSize=file.size;}F.upload='loading';F.account.form.fileStatus='loading';persist();later(()=>{if(version!==F.uploadVersion)return;F.upload=F.saveResult==='failed'?'failed':'done';F.account.form.fileStatus=F.upload;persist();});}
   function preferenceFeedback(){return F.preferenceState?`<p class="${F.preferenceState==='failed'?'funder-error':'login-caption'}" role="${F.preferenceState==='failed'?'alert':'status'}">${F.preferenceState==='failed'?L('Could not save. Your previous preference is restored. Please select again to retry.','保存失败，已恢复原偏好，请重新选择后重试。'):L('Preferences saved','偏好已保存')}</p>`:'';}
   function savePreference(key,value){
     const next={lang:S.lang,tz:S.tz,[key]:value};
@@ -118,7 +118,7 @@
     if(F.template==='error')return CF.empty(L('Institution details are unavailable','机构资料暂不可填写'),L('Please retry. Your saved details are retained.','请重试，已保存内容会保留。'),btn('Retry','重试','template-retry','','primary'));
     if(F.template==='loading')return CF.skelTable(4);
     const f=F.account.form;
-    return `<h2>${L('Financial institution details','金融机构资料')}</h2>${F.account.status==='rejected'?CF.note('warn',L('Registration number: enter the number exactly as shown on the document.','商业登记号：请填写与证明材料一致的完整编号。')):''}<div class="funder-form"><div class="funder-field-grid">${input('name','Institution name *','机构名称 *',f.name)}${input('country','Country or region *','注册国家或地区 *',f.country)}${input('identifier','Registration number *','商业登记号 *',f.identifier)}${input('institutionType','Institution type *','机构类型 *',f.institutionType)}<div class="funder-field-wide">${input('registeredAddress','Registered address *','注册地址 *',f.registeredAddress)}</div>${input('regulator','Regulator (optional)','监管机构（选填）',f.regulator)}${input('license','Financial licence number (optional)','金融牌照编号（选填）',f.license)}<div class="funder-field-wide">${input('contact','Business contact email (optional)','业务联系人邮箱（选填）',f.contact,'type="email"')}</div></div>${uploadArea()}</div>`;
+    return `<h2>${L('Financial institution details','金融机构资料')}</h2>${F.account.status==='rejected'?CF.note('warn',issuesHTML(F.account,true)):''}<div class="funder-form"><div class="funder-field-grid">${input('name','Institution name *','机构名称 *',f.name)}${input('country','Country or region *','注册国家或地区 *',f.country)}<div class="field"><label for="f-identifierType">${L('Identifier type *','标识类型 *')}</label><select class="inp" id="f-identifierType" aria-required="true" aria-invalid="${!!F.fieldErrors.identifierType}"><option value="">${L('Select identifier type','请选择标识类型')}</option>${[['USCC','USCC · Mainland China','统一社会信用代码 · 中国境内'],['LEI','LEI · if available','LEI · 境外优先'],['REG_NO','Country + registration number','注册国家 + 商业登记号']].map(o=>`<option value="${o[0]}" ${f.identifierType===o[0]?'selected':''}>${L(o[1],o[2])}</option>`).join('')}</select></div>${input('identifier','Institution identifier *','机构唯一标识 *',f.identifier)}${input('institutionType','Institution type *','机构类型 *',f.institutionType)}<div class="funder-field-wide">${input('registeredAddress','Registered address *','注册地址 *',f.registeredAddress)}</div>${input('regulator',F.activeTemplate==='DEMO-2'?'Regulator *':'Regulator (optional)',F.activeTemplate==='DEMO-2'?'监管机构 *':'监管机构（选填）',f.regulator)}${input('license','Financial licence number (optional)','金融牌照编号（选填）',f.license)}${F.activeTemplate==='DEMO-2'?'':`<div class="funder-field-wide">${input('contact','Business contact email (optional)','业务联系人邮箱（选填）',f.contact,'type="email"')}</div>`}</div>${uploadArea()}</div>`;
   }
 
   function registration(){
@@ -128,20 +128,25 @@
     let body=a.step===1?emailStep():a.step===2?institution():`<h2>${L('Review and submit','核对并提交')}</h2>${details([['Contact email','联系邮箱',a.email||L('Not verified','未验证')],...fields()],true)}${!a.email?CF.note('red',L('Verify your contact email before submitting.','提交前请先验证联系邮箱。'))+link('Go to contact email','前往联系邮箱','step','1'):''}${F.fieldErrors.summary?CF.note('red',L(...F.fieldErrors.summary))+link('Complete institution details','完善机构资料','step','2'):''}${agreementCheck('f-submit-consent',F.submitConsent)}${error()}`;
     return `<div class="funder-wrap">${head(F.change?'Update institution details':'Institution registration',F.change?'变更机构资料':'机构注册',L('Complete your registration to unlock funding actions.','完成机构认证后即可使用出资功能。'))}<div class="funder-grid"><section class="card"><div class="card-b"><ol class="funder-steps">${[['Contact email','联系邮箱'],['Institution','机构资料'],['Review','确认提交']].map((x,i)=>`<li><button data-act="f-step" data-v="${i+1}" ${a.step===i+1?'aria-current="step"':''}><span class="step-num">${i===0&&a.email?'✓':i+1}</span>${L(...x)}</button></li>`).join('')}</ol>${body}<div class="funder-actions">${a.step>1?btn('Back','上一步','step',String(a.step-1)):link('Continue browsing','稍后完成，继续浏览','browse')}${a.step<3?btn('Continue','下一步','step',String(a.step+1),a.step===1&&!a.email?'':'primary'):btn(F.busy==='submit'?'Submitting…':'Submit registration',F.busy==='submit'?'正在提交…':'提交注册','submit','','primary',!F.submitConsent||!!F.busy)}</div><p class="login-caption" role="status">${F.storageFailed?L('Draft could not be saved on this device. Keep this page open.','当前设备无法保存草稿，请暂勿关闭页面。'):L('Draft saved on this device','草稿已保存在当前设备')}</p></div></section><aside class="funder-summary"><h2>${F.first?L('Your account is ready','账号已创建'):L('Your account','你的账号')}</h2>${wallet()}${details([['Created','创建时间',time(a.created)]])}<p>${walletCare()}</p>${F.change?CF.note('warn',L('After submission, your institution will be reviewed again. Funding actions will be unavailable during review.','提交后将重新进入审核，期间恢复为未认证权限。')):''}${link('Account settings','账户设置','account')}${stamp()}</aside></div></div>`;
   }
+
+  function issuesHTML(view,locate=false){
+    const issues=view.issues||[{key:'identifier',label:['Registration number','商业登记号'],en:'The submitted number does not match the document. Check and correct the full number.',zh:'提交编号与证明材料不一致，请核对并填写完整编号。'}];
+    return issues.map(i=>`<p><b>${esc(L(...i.label))}</b> · ${esc(L(i.en,i.zh))}${locate?(F.activeTemplate==='DEMO-2'&&i.key==='contact'?L(' · This field has changed',' · 该字段已调整'):link('Go to field','定位字段','issue-field',i.key)):''}</p>`).join('')+(view.additional?`<p>${esc(view.additional)}</p>`:'');
+  }
   function statusPage(){
     const a=F.account;
     if(a.status==='draft')return `<div class="funder-wrap">${head('Registration status','注册状态')}${CF.empty(L('No registration submitted','尚未提交注册'),L('Complete your email and institution details to send your registration for review.','完成邮箱验证并填写机构资料后，即可提交审核。'),btn('Go to registration','去完成注册','register','','primary'))}</div>`;
     const hist=F.historyVersion?a.history.find(x=>x.version===F.historyVersion):null;
     const view=hist||{...a,fields:a.submittedFields};
     const current=a.status;
-    const reason=L('Registration number: the submitted number does not match the document. Check and correct the full number.','商业登记号：提交编号与证明材料不一致，请核对并填写完整编号。');
+    const reason=issuesHTML(view);
     const feedback=view.status==='rejected'
       ? `<section class="card funder-status-action"><div class="card-b"><h2>${L('Your registration needs changes','注册资料需要修改')}</h2>${CF.note('red',reason)}${!hist&&current==='rejected'?`<div class="login-actions">${btn('Edit and resubmit','修改并重新提交','register','','primary')}</div>`:''}</div></section>`
-      : view.status==='submitted'?CF.note('accent',L('Your registration is under review. Institution details cannot be edited until a decision is available. We will notify you by email.','机构注册正在审核中，审核期间不可修改机构资料。审核结果将通过邮件通知你。')):'';
+      : view.status==='submitted'?CF.note('accent',`<b>${L('Submitted → Platform review → Decision','已提交 → 平台审核中 → 出具结论')}</b><p>${L('Under review. Institution details are locked until a decision is available. Check progress or contact support.','审核中，机构资料在结论出具前不可修改。可查看进度或联系客服。')}</p>`):'';
     return `<div class="funder-wrap"><div class="page-head"><div><h1 class="page-title">${L('Registration status','注册状态')}</h1><p class="page-desc">${hist?L('Historical submission — read only','历史提交 · 只读'):L('View your institution details and verification status.','查看机构资料及认证状态。')}</p></div>${tag(view.status)}</div>
       ${F.downgrade?CF.note('warn',L('Your details are being reviewed again. Funding actions are unavailable until approval.','机构资料正在重新审核，审核通过前暂不可发起出资等操作。')):''}
       <div class="funder-status-stack">${feedback}
-        <section class="card" id="f-submission-summary"><div class="card-b"><h2>${L('Submission information','提交信息')}</h2>${details([['Application','申请编号','DEMO-REG-001'],['Submission version','提交版本',String(view.version)],['Template','资料模版','DEMO-1'],['Submitted','提交时间',time(view.submitted)],['Review decision','审核结论时间',time(view.reviewed)],['Contact email at submission','提交时联系邮箱',view.snapshotEmail||a.email]],true)}${hist?`<div class="login-actions">${btn('Return to current version','返回当前版本','history','0')}</div>`:''}</div></section>
+        <section class="card" id="f-submission-summary"><div class="card-b"><h2>${L('Submission information','提交信息')}</h2>${details([['Application','申请编号','DEMO-REG-001'],['Submission version','提交版本',String(view.version)],['Template','资料模版',view.template||'DEMO-1'],['Submitted','提交时间',time(view.submitted)],['Review decision','审核结论时间',time(view.reviewed)],['Contact email at submission','提交时联系邮箱',view.snapshotEmail||a.email]],true)}${hist?`<div class="login-actions">${btn('Return to current version','返回当前版本','history','0')}</div>`:''}</div></section>
         <section class="card" id="f-institution-summary"><div class="card-b"><h2>${L('Institution details','机构资料')}</h2>${details((view.fields||fields()),true)}${!hist&&current==='verified'?`<div class="login-actions">${btn('Update institution details','变更机构资料','change','','primary')}</div>`:''}</div></section>
         <div class="funder-status-footer">${a.history.length>0?`<div class="funder-line">${a.history.map(h=>link('Version '+h.version,'版本 '+h.version,'history',String(h.version))).join('')}</div>`:''}<div class="funder-line">${link('Refresh status','刷新状态','refresh')}${link('Contact support','联系客服','support')}${link('Account settings','账户设置','account')}</div>${stamp()}</div>
       </div></div>`;
@@ -202,14 +207,14 @@
     });
   }
   function canSubmit(){
-    F.fieldErrors={};if(!F.account.email){F.error=['Verify your contact email first.','请先验证联系邮箱。'];return false;}
+    F.fieldErrors={};if(CF.funder.review.beforeSubmit){const message=CF.funder.review.beforeSubmit(F.account);if(message){F.error=message;return false;}}if(!F.account.email){F.error=['Verify your contact email first.','请先验证联系邮箱。'];return false;}
     const f=F.account.form;
-    ['name','country','identifier','institutionType','registeredAddress'].forEach(k=>{if(!f[k].trim())F.fieldErrors[k]=['Complete this field.','请填写此项。'];});
-    if(f.contact&&!emailValid(f.contact))F.fieldErrors.contact=['Enter a valid email.','请输入有效邮箱。'];
+    ['name','country','identifierType','identifier','institutionType','registeredAddress'].forEach(k=>{if(!f[k].trim())F.fieldErrors[k]=['Complete this field.','请填写此项。'];});
+    if(F.activeTemplate!=='DEMO-2'&&f.contact&&!emailValid(f.contact))F.fieldErrors.contact=['Enter a valid email.','请输入有效邮箱。'];
     if(!f.file||F.upload!=='done'||F.template!=='ready'||Object.keys(F.fieldErrors).length){F.fieldErrors.summary=['Complete institution details and upload the document.','请补全机构资料并成功上传材料。'];return false;}
     return F.submitConsent;
   }
-  function submit(){if(F.account.status==='submitted'||F.busy||!canSubmit())return;open('submit');}
+  function submit(){if(F.pendingSubmission){open('unknown');return;}if(F.account.status==='submitted'||F.busy||!canSubmit())return;open('submit');}
   function commitSubmit(){
     if(F.busy||F.account.status==='submitted'||!canSubmit())return;F.busy='submit';F.error=null;
     later(()=>{F.busy='';S.layer=null;if(F.saveResult==='failed'){F.error=['Registration could not be submitted. Your draft is saved. Please retry.','注册提交失败，草稿已保留，请重试。'];return;}
@@ -219,13 +224,13 @@
   }
   function completeSubmit(){
     F.notes.push(['Your registration has been submitted.','注册资料已提交。']);const a=F.account;if(a.status==='submitted')return;
-    if(a.version)a.history.push({version:a.version,status:a.status,submitted:a.submitted,reviewed:a.reviewed,snapshotEmail:a.snapshotEmail,fields:a.submittedFields});
-    F.downgrade=a.status==='verified';a.version++;a.status='submitted';a.submitted=new Date().toISOString();a.reviewed=null;a.snapshotEmail=a.email;a.submittedFields=fields();F.change=false;F.pendingSubmission=false;F.historyVersion=0;F.submitConsent=false;persist();response();go('/funder/status');CF.toast(L('Registration submitted.','注册已提交。'));
+    if(a.version)a.history.push({version:a.version,status:a.status,submitted:a.submitted,reviewed:a.reviewed,snapshotEmail:a.snapshotEmail,fields:a.submittedFields,form:a.submittedForm,issues:a.issues,additional:a.additional,reviewer:a.reviewer,template:a.template||'DEMO-1'});
+    F.downgrade=a.status==='verified';a.version++;a.status='submitted';a.submitted=new Date().toISOString();a.reviewed=null;a.snapshotEmail=a.email;a.submittedFields=fields();a.submittedForm=JSON.parse(JSON.stringify(a.form));a.issues=[];a.additional='';a.reviewer='';a.template=F.activeTemplate||'DEMO-1';a.successTimes=[...(a.successTimes||[]),Date.now()];F.change=false;F.pendingSubmission=false;F.historyVersion=0;F.submitConsent=false;persist();response();go('/funder/status');CF.toast(L('Registration submitted.','注册已提交。'));
   }
   function changeEmail(){F.emailFlow=true;F.error=null;F.fieldErrors={};F.otp=null;F.emailInput='';F.codeInput='';F.emailStage=Date.now()<F.reauthUntil?'edit':'auth';open('email');}
   function fixture(s){
     F.generation++;F.busy='';F.error=null;F.otp=null;F.connected=address;hydrate(address);const a=F.account;a.exists=true;a.created=a.created||new Date().toISOString();a.disabled=false;
-    if(s!=='draft'){a.email=a.email||'finance@example.test';a.form={name:'Demo Institution',country:'Demo jurisdiction',identifier:'DEMO-REG-100',institutionType:'Demo financial institution',registeredAddress:'Demo registered address',regulator:'',license:'',fileSize:204800,fileStatus:'done',contact:'contact@example.test',file:'institution-demo.pdf'};F.upload='done';a.submitted=a.submitted||new Date().toISOString();a.version=Math.max(1,a.version);a.snapshotEmail=a.email;a.submittedFields=fields();}
+    if(s!=='draft'){a.email=a.email||'finance@example.test';a.form={name:'Demo Institution',country:'Demo jurisdiction',identifierType:'REG_NO',identifier:'DEMO-REG-100',institutionType:'Demo financial institution',registeredAddress:'Demo registered address',regulator:'',license:'',fileSize:204800,fileStatus:'done',contact:'contact@example.test',file:'institution-demo.pdf'};F.upload='done';a.submitted=a.submitted||new Date().toISOString();a.version=Math.max(1,a.version);a.snapshotEmail=a.email;a.submittedFields=fields();a.submittedForm=JSON.parse(JSON.stringify(a.form));a.template=F.activeTemplate||'DEMO-1';}
     a.status=s;a.reviewed=['verified','rejected'].includes(s)?new Date().toISOString():null;S.role='fund';F.sessionUntil=Date.now()+4*3600000;F.load='ready';F.historyVersion=0;persist();response();S.demo=false;go(s==='draft'?'/funder/register':'/funder/status');
   }
   function demo(){return `<section class="funder-demo"><h5>${L('Funder review tools','资金方评审工具')}</h5><p class="login-caption">${L('Local simulation only. No wallet, email or backend is contacted. Institution fields are an illustrative template, not the final collection standard.','仅本地模拟，不调用钱包、邮件或后端。机构字段为演示模版，不代表正式采集标准。')}</p>${select('connection',L('Next connection result','下次连接结果'),[['success','Connected','成功'],['cancel','Cancelled','取消'],['missing','Wallet missing','无钱包'],['sdk','SDK unavailable','SDK 不可用'],['locked','Wallet locked','钱包锁定'],['network','Unsupported network','网络不支持']],F.connectionResult)}${select('provider',L('Wallet environment','钱包环境'),[['single','Single wallet','单钱包'],['multiple','Multiple wallets','多钱包选择'],['mobile','Mobile wallet','移动钱包']],F.providerMode)}${select('signature',L('Next signature result','下次签名结果'),[['success','Success','成功'],['cancel','Rejected','拒签'],['failed','Verification failed','验签失败'],['expired','Expired challenge','挑战过期'],['changed','Address changed','签名中切换地址'],['conflict','Address conflict','地址冲突'],['disabled','Disabled account','账号停用'],['slow','Wait for hardware wallet','硬件钱包等待']],F.signatureResult)}${F.busy==='sign'?btn('Complete pending signature','完成待定签名','demo','complete-sign'):''}${select('email-result',L('Email response','邮箱响应'),[['success','Success','成功'],['conflict','Already used','已占用'],['race','Conflict at verification','验证时并发占用'],['failed','Temporary failure','暂时失败']],F.emailResult)}<p class="login-caption">${L('Latest demo code','最新演示验证码')}: <b class="mono" id="f-demo-code">${F.latestCode}</b></p><div class="seg">${btn('Pass 60 seconds','推进 60 秒','demo','cooldown')}${btn('Expire code','验证码过期','demo','expire-code')}${btn('5 resend limit','重发达 5 次','demo','resend-limit')}${btn('10 daily limit','日发送达 10 次','demo','daily-limit')}</div>${select('save-result',L('Submit / save response','提交 / 保存响应'),[['success','Success','成功'],['failed','Failed','失败'],['unknown','Submission unknown','提交结果未知']],F.saveResult)}<div class="grp"><h5>${L('Account fixtures','账户样例')}</h5><div class="seg">${['draft','submitted','rejected','verified'].map(s=>btn(...({draft:['Draft','草稿'],submitted:['Under review','审核中'],rejected:['Rejected','已驳回'],verified:['Verified','已认证']}[s]),'fixture',s)).join('')}</div></div><div class="seg">${btn('Review: approve','审核返回：通过','demo','approve')}${btn('Review: reject','审核返回：驳回','demo','reject')}${btn('Session expired','会话到期','demo','expire')}${btn('Disable account','账号停用','demo','disable')}${btn('Restore account','恢复账号','demo','restore')}${btn('Disconnect provider','断开钱包','demo','disconnect')}${btn('Switch provider address','钱包切换地址','demo','switch-address')}</div><div class="seg">${btn('Account settings','账户设置','account')}${btn('Access and return demo','权限与回跳演示','demo','gate')}${btn('Invalid return','无效回跳','demo','invalid-return')}${btn('Loading','加载中','demo','loading')}${btn('Load failure','加载失败','demo','error')}${btn('Load ready','加载完成','demo','ready')}${btn('Template unavailable','模版不可用','demo','template-error')}${btn('Template loading','模版加载中','demo','template-loading')}${btn('Template ready','模版就绪','demo','template-ready')}${btn('Upload failure','上传失败','demo','upload-error')}${btn('Reset demo account','重置演示账户','demo','reset')}</div><p class="login-caption">${L('Replay attempts','原动作重执行次数')}: ${F.replayed}</p></section>`;}
@@ -285,11 +290,12 @@
       case 'change':open('change');break;
       case 'change-start':F.change=true;F.account.step=2;F.submitConsent=false;go('/funder/register');break;
       case 'history':F.historyVersion=Number(v);break;
+      case 'issue-field':F.account.step=2;go('/funder/register');setTimeout(()=>{const target=$('f-'+v);target?.scrollIntoView({block:'center'});target?.focus();},50);break;
       case 'gate':gate();break;
       case 'gate-next':F.returnTo='valid';go(F.account.status==='draft'?'/funder/register':'/funder/status');break;
       case 'pick-file':$('f-file')?.click();break;
       case 'upload':startUpload();break;
-      case 'remove-file':F.uploadVersion++;F.account.form.file='';F.account.form.fileSize=0;F.account.form.fileStatus='';F.upload='idle';persist();CF.toast(L('File deleted','文件已删除'));break;
+      case 'remove-file':if(F.account.status==='submitted'){CF.toast(L('Institution details are locked during review.','审核中机构资料不可修改。'));break;}F.uploadVersion++;F.account.form.file='';F.account.form.fileSize=0;F.account.form.fileStatus='';F.upload='idle';persist();CF.toast(L('File deleted','文件已删除'));break;
       case 'anchor':queueMicrotask(()=>$(v)?.scrollIntoView({block:'start'}));break;
       case 'fixture':fixture(v);break;
       case 'demo':demoAction(v);break;
@@ -337,6 +343,7 @@
   }
   document.addEventListener('input',e=>{
     const id=e.target.id;
+    if(['f-name','f-country','f-identifier','f-institutionType','f-registeredAddress','f-regulator','f-license','f-contact'].includes(id)&&F.account.status==='submitted'){CF.toast(L('Institution details are locked during review.','审核中机构资料不可修改。'));return;}
     if(id==='f-email'){F.emailInput=e.target.value;delete F.fieldErrors.email;}
     else if(id==='f-code')F.codeInput=e.target.value;
     else if(['f-name','f-country','f-identifier','f-institutionType','f-registeredAddress','f-regulator','f-license','f-contact'].includes(id)){F.account.form[id.slice(2)]=e.target.value;delete F.fieldErrors[id.slice(2)];persist();}
@@ -345,9 +352,10 @@
     const id=e.target.id,v=e.target.value;
     if(id==='f-consent')F.consent=e.target.checked;
     else if(id==='f-submit-consent')F.submitConsent=e.target.checked;
+    else if(id==='f-identifierType'){if(F.account.status==='submitted')return;F.account.form.identifierType=v;persist();}
     else if(id==='f-language')savePreference('lang',v);
     else if(id==='f-timezone')savePreference('tz',v);
-    else if(id==='f-file'){const file=e.target.files[0];if(file)startUpload(file);else return;}
+    else if(id==='f-file'){if(F.account.status==='submitted')return;const file=e.target.files[0];if(file)startUpload(file);else return;}
     else if(id.startsWith('f-demo-')){const key={'connection':'connectionResult','provider':'providerMode','signature':'signatureResult','email-result':'emailResult','save-result':'saveResult'}[id.slice(7)];if(key)F[key]=v;}
     else return;
     CF.render();queueMicrotask(()=>{$(id)?.focus({preventScroll:true});afterRender();});
@@ -374,4 +382,15 @@
   read();
   try{const prefs=JSON.parse(localStorage.getItem('hc_funder_preferences')||'null');if(prefs&&['en','zh'].includes(prefs.lang)&&typeof prefs.tz==='string'){new Intl.DateTimeFormat('en',{timeZone:prefs.tz});F.savedPreferences=prefs;S.lang=prefs.lang;}}catch(e){}
   CF.funder={dict,layers,content,action,connect,notices,afterRender,logout};
+  CF.funder.review={
+    get account(){return F.account;}, get state(){return F;}, persist,
+    seed:fixture, fields, response,
+    activate(){S.role='fund';F.connected=F.account.address;F.sessionUntil=Date.now()+4*3600000;response();},
+    decide(version,status,issues,additional){
+      const a=F.account;if(a.version!==version||a.status!=='submitted')return false;
+      a.status=status;a.reviewed=new Date().toISOString();a.issues=issues||[];a.additional=additional||'';a.reviewer='DEMO-OP-01';
+      F.notes.push(status==='verified'?['Your institution is verified. View your registration result.','机构认证已通过，可查看认证结果。']:['Registration rejected. View all reasons and update your details.','机构认证已驳回，请查看全部原因并修改资料。']);
+      F.downgrade=false;persist();response();return true;
+    }
+  };
 })(window.CF);

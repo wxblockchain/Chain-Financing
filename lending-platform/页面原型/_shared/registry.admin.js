@@ -10,6 +10,8 @@
   CF.NAV = CF.NAV || {};
 
   var pages = {
+    "P-L40": { navKey: "navInstitutionReview", ico: "▣", route: "/ops/institution-reviews" },
+    "P-L41": { navKey: "navInstitutionDetail", ico: "▣", route: "/ops/institution-reviews/detail" },
     "P-O06": { navKey: "navOverview", ico: "▤", route: "/ops/overview" },
     "P-O-AG-01": { navKey: "navAgreements", ico: "▧", route: "/ops/agreements" }
   };
@@ -20,7 +22,9 @@
     CF.ENTRY[id] = p.route;
   }
 
-  CF.NAV.admin = ["P-O06", "P-O-AG-01"];
+  CF.PAGES["P-L40"].permission = 5;
+  CF.PAGES["P-L41"].permission = 5;
+  CF.NAV.admin = ["P-O06", "P-O-AG-01", "P-L40"];
   // Account flows are registered, but never added as business sidebar items.
   var accountPages = [
     ['01', 'navOpsLogin', '/ops/login', 'focus'],

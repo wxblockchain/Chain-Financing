@@ -423,5 +423,5 @@
   readMemory();
   // 双击默认为游客壳；登录只有主动点击或受限操作才出现。
   if(!location.hash)location.hash='#/';
-  CF.boot();
+  if(!CF.deferBoot)CF.boot();
 })(window.CF);
