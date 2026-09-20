@@ -141,3 +141,23 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .modal:has(.cq-flow) .modal-f .btn{min-height:44px}
 @media(max-width:768px){.cq-grid,.cq-progress{grid-template-columns:1fr}.cq-dl{grid-template-columns:1fr;gap:var(--sp-1)}.cq-dl dd{margin-bottom:var(--sp-3)}.cq-difference{font-size:var(--fs-14)}.cq-progress{gap:var(--sp-2)}.cq-progress li{padding-top:var(--sp-2)}.modal:has(.cq-flow) .modal-f .btn{flex:1}.cq-amount{font-size:var(--fs-16)}}
 @media print{body.cq-printing> *:not(#layers){display:none!important}body.cq-printing .modal-mask{position:static;display:block;background:white}body.cq-printing .modal{max-width:none;max-height:none;border:0;box-shadow:none}body.cq-printing .modal-b{overflow:visible}body.cq-printing .modal-h,body.cq-printing .modal-f,body.cq-printing .cq-flow>*:not(.cq-section){display:none}body.cq-printing .cq-section .ls-row{display:none}}
+
+/* Token-based review keeps the existing modal and responsive table contract. */
+.modal:has(.ls-review-surface){max-width:1180px}
+.ls-review-filters{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:var(--sp-3);align-items:end}
+.ls-review-filters .field{margin:0}.ls-review-filters>.ls-row{grid-column:1/-1}
+.ls-token-list .tbl{table-layout:fixed;width:100%}
+.ls-token-list th:first-child{width:5%}.ls-token-list th:nth-child(2){width:23%}
+.ls-token-list th:nth-child(3){width:16%}.ls-token-list th:nth-child(4){width:25%}
+.ls-token-list th:nth-child(5){width:18%}.ls-token-list th:last-child{width:13%}
+.ls-token-list .tag{white-space:normal}.ls-token-list .cell-sub{margin-top:var(--sp-2)}
+.ls-token-actions{display:flex;flex-direction:column;gap:var(--sp-2)}
+.ls-token-actions .btn{white-space:normal;height:auto;min-height:var(--ctrl-h);padding:var(--sp-2)}
+.ls-review-selected{margin-right:auto;color:var(--muted);font-size:var(--fs-13)}
+.ls-reason{white-space:pre-wrap;margin:var(--sp-2) 0;color:var(--muted);font-size:var(--fs-12)}
+.modal:has(.ls-review-surface) .modal-f{flex-wrap:wrap}
+@media(max-width:768px){.ls-review-filters{grid-template-columns:1fr 1fr}.ls-token-list .tbl{table-layout:auto}.ls-token-list .cell-wrap{max-width:68%}.ls-token-actions{flex-direction:row;flex-wrap:wrap}.ls-token-list .ls-check{min-width:44px}.ls-review-selected{width:100%}}
+@media(max-width:414px){.ls-review-filters{grid-template-columns:1fr}}
+
+.ls-review-surface .cell-sub,.ls-application .cell-sub{color:var(--muted)}
+.ls-review-surface .tbl th{color:var(--muted);font-size:var(--fs-11)}
