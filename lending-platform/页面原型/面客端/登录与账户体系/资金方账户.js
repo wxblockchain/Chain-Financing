@@ -151,7 +151,7 @@
   function issuesHTML(view,locate=false){
     const issues=view.issues||[];
     if(!issues.length&&!view.additional)return L('Review details are unavailable. Please contact support.','审核原因暂不可用，请联系客服。');
-    return issues.map(i=>`<p><b>${esc(L(...i.label))}</b> · ${esc(L(i.en,i.zh))}${locate?(F.activeTemplate==='DEMO-2'&&i.key==='contact'?L(' · This field has changed',' · 该字段已调整'):link('Go to field','定位字段','issue-field',i.key)):''}</p>`).join('')+(view.additional?`<p>${esc(view.additional)}</p>`:'');
+    return issues.map(i=>`<p><b>${esc(L(...i.label))}</b> · ${esc(L(i.en,i.zh))}${locate?(F.activeTemplate==='DEMO-2'&&i.key==='contact'?L(' · This field has changed',' · 该字段已调整'):link('Go to field','定位字段','issue-field',i.key)):''}</p>`).join('')+(view.additional?`<p class="funder-reason-text">${esc(view.additional)}</p>`:'');
   }
   function statusPage(){
     const a=F.account;

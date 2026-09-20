@@ -19,7 +19,7 @@
   function canReview(){const a=selected();return allowed()&&a?.status==='submitted'&&(!A.version||A.version===a.version);}
   function expireSession(){A.session=false;A.sessionEpoch++;A.pending=null;A.busy=false;A.error='';S.layer=null;S.demo=false;}
   function go(page){S.layer=null;S.demo=false;S.st='default';A.error='';location.hash='#'+page;CF.render();}
-  function open(key){CF.openLayer('modal','rv-'+key);queueMicrotask(focusLayer);}
+  function open(key){CF.openLayer('modal','rv-'+key);queueMicrotask(()=>{focusLayer();if(key==='reject')$('rv-reason')?.focus();});}
   function note(){return A.error?CF.note('red',E(A.error)):'';}
   function title(en,zh,desc=''){return `<div class="page-head"><div><h1 class="page-title">${L(en,zh)}</h1>${desc?`<p class="page-desc">${desc}</p>`:''}</div>${CF.tag('neutral',L('Demonstration data','演示数据'))}</div>`;}
   function kv(data){return `<dl class="rv-kv">${data.map(x=>`<div ${x[0]==='Registered address'?'class="rv-wide"':''}><dt>${L(x[0],x[1])}</dt><dd>${E(String(x[2]||'—'))}</dd></div>`).join('')}</dl>`;}
@@ -42,7 +42,7 @@
     return `<div class="review-wrap">${title('Institution certification','资金方机构认证审核',L('Review submitted institution information and supporting materials.','核对机构资料与提交材料，处理认证申请。'))}<section class="card">${filters}${body}</section></div>`;
   }
   function localDay(t){const p=new Intl.DateTimeFormat('en-CA',{timeZone:S.tz,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(t));return ['year','month','day'].map(k=>p.find(x=>x.type===k).value).join('-');}
-  function problemList(v){return(v.issues||[]).map(i=>`<div class="rv-history"><b>${E(L(...i.label))}</b><p>${E(L(i.en,i.zh))}</p></div>`).join('')+(v.additional?`<p>${E(v.additional)}</p>`:'');}
+  function problemList(v){return(v.issues||[]).map(i=>`<div class="rv-history"><b>${E(L(...i.label))}</b><p>${E(L(i.en,i.zh))}</p></div>`).join('')+(v.additional?`<p class="rv-reason-text">${E(v.additional)}</p>`:'');}
   function detail(){
     if(!allowed())return signedOut();
     if(S.st==='loading')return CF.skelTable(6);
@@ -62,9 +62,7 @@
   }
   function ensureWrite(){if(!canReview()){A.error=allowed()?L('This version has changed or already has a decision. Review the current result.','申请版本已变化或已出具结论，请查看当前结果。'):L('Your session has ended. Sign in again before reviewing.','登录已失效，请重新登录后再审核。');A.pending=null;A.busy=false;S.layer=null;return false;}return true;}
   function begin(decision){if(A.pending&&A.response==='unknown'){open('unknown');return;}if(!ensureWrite())return;A.error='';A.pending={id:A.selected,version:selected().version,decision};if(decision==='verified')open('confirm');else{A.issues=[];A.additional='';A.rejectError=false;open('reject');}}
-  function availableTargets(){return targets.filter(t=>snapshot()?.template!=='DEMO-2'||t[0]!=='contact');}
-  function optionalEmpty(key){const v=snapshot();return ['regulator','license','contact'].includes(key)&&!(key==='regulator'&&v?.template==='DEMO-2')&&!String(v?.form?.[key]||'').trim();}
-  function validReasons(){return A.issues.length>0&&A.issues.every(i=>availableTargets().some(t=>t[0]===i.key)&&i.category&&!(i.category==='incomplete'&&optionalEmpty(i.key))&&i.en.trim()&&i.zh.trim());}
+  function validReasons(){return !!A.additional.trim();}
   function confirm(){
     if(A.busy||!A.pending)return;
     if(!ensureWrite())return;
@@ -90,13 +88,13 @@
   function finish(){
     if(!A.pending||!ensureWrite())return;
     if((A.duplicate||A.response==='duplicate'||hasDuplicate(selected().submittedForm||selected().form,A.selected))&&A.pending.decision==='verified'){A.error=L('This institution is already registered. Verify the institution identifier before proceeding.','该机构已在平台注册，请核实机构标识后处理。');S.layer=null;A.pending=null;CF.render();return;}
-    const done=apply(A.pending.decision,A.issues,A.additional);A.pending=null;S.layer=null;A.error='';CF.render();if(done)CF.toast(L('Review decision saved.','审核结论已保存。'));
+    const done=apply(A.pending.decision,[],A.pending.decision==='rejected'?A.additional.trim():'');A.pending=null;S.layer=null;A.error='';CF.render();if(done)CF.toast(L('Review decision saved.','审核结论已保存。'));
   }
-  function rejectionForm(){return {title:L('Reject application','驳回申请'),html:`<p>${L('Select the affected fields and explain how to correct each one.','选择存在问题的字段，逐项说明修改要求。')}</p>${A.rejectError?CF.note('red',L('Select at least one field and complete its category and both language descriptions.','请至少选择一个问题项，填写原因分类及中英文修改要求。')):''}${availableTargets().map(t=>{const i=A.issues.find(i=>i.key===t[0]);return `<section class="rv-issue"><label><input type="checkbox" data-rv-target="${t[0]}" ${i?'checked':''}> ${L(t[1],t[2])}</label>${i?`${optionalEmpty(t[0])?CF.note('accent',L('This field is optional. Leaving it blank is not missing information.','此项为选填，未填写不属于资料缺项。')):''}<div class="field"><label for="rv-cat-${t[0]}">${L('Reason category *','原因分类 *')}</label><select id="rv-cat-${t[0]}" data-rv-field="category" data-key="${t[0]}" class="inp"><option value="">${L('Select a category','请选择')}</option>${[['mismatch','Information mismatch','信息不一致'],['unclear','Unreadable document','材料不清晰'],['incomplete','Incomplete information','信息不完整']].map(c=>`<option value="${c[0]}" ${i.category===c[0]?'selected':''} ${c[0]==='incomplete'&&optionalEmpty(t[0])?'disabled':''}>${L(c[1],c[2])}</option>`).join('')}</select></div><div class="field"><label for="rv-zh-${t[0]}">${L('Correction required · Chinese *','原因及修改要求 · 中文 *')}</label><textarea class="inp" id="rv-zh-${t[0]}" data-rv-field="zh" data-key="${t[0]}">${E(i.zh)}</textarea></div><div class="field"><label for="rv-en-${t[0]}">${L('Correction required · English *','原因及修改要求 · 英文 *')}</label><textarea class="inp" id="rv-en-${t[0]}" data-rv-field="en" data-key="${t[0]}">${E(i.en)}</textarea></div>`:''}</section>`;}).join('')}<div class="field"><label for="rv-additional">${L('Additional note (visible to applicant)','补充说明（申请人可见）')}</label><textarea class="inp" id="rv-additional">${E(A.additional)}</textarea></div>`,foot:btn('Cancel','取消','cancel')+btn('Preview reasons','核对驳回内容','preview-reject','','primary')};}
+  function rejectionForm(){return {title:L('Reject application','驳回申请'),html:`<div class="field rv-rejection"><label for="rv-reason">${L('Rejection reason *','驳回原因 *')}</label><textarea class="inp" id="rv-reason" rows="5" required aria-invalid="${A.rejectError}" aria-describedby="rv-reason-help${A.rejectError?' rv-reason-error':''}" placeholder="${L('Explain why the application is rejected and what needs to change.','请填写驳回原因及需要修改的内容。')}">${E(A.additional)}</textarea><p id="rv-reason-help" class="hint">${L('The applicant will see this reason.','申请人可查看此原因。')}</p>${A.rejectError?`<p id="rv-reason-error" class="err-msg" role="alert">${L('Enter a rejection reason.','请填写驳回原因。')}</p>`:''}</div>`,foot:btn('Cancel','取消','cancel')+btn('Review rejection','核对驳回内容','preview-reject','','primary')};}
   const layers={
     'rv-sign-in':()=>({title:L('Operations sign-in · simulation','运营登录 · 演示'),html:`<p>${L('This prototype simulates returning after operations sign-in. No real credentials are requested.','此原型模拟完成运营登录后的返回，不收集真实账号密码。')}</p>`,foot:btn('Cancel','取消','cancel')+btn('Simulate successful sign-in','模拟登录成功','signed-in','','primary')}),
     'rv-reject':rejectionForm,
-    'rv-confirm':()=>({title:L(A.pending?.decision==='verified'?'Approve this application?':'Confirm rejection?',A.pending?.decision==='verified'?'确认通过认证？':'确认驳回申请？'),html:`<p><b>${A.selected} · V${A.pending?.version}</b></p>${A.pending?.decision==='verified'?CF.note('accent',L('The applicant will become verified and receive the review result.','通过后，该资金方将获得已认证状态并收到审核结果。')):`<p>${L('The applicant will see all reasons below and may edit and resubmit.','申请人将看到以下全部原因，可修改后重新提交。')}</p>${problemList({issues:A.issues,additional:A.additional})}`}${A.busy?CF.note('accent',L('Saving decision…','正在保存审核结论…')):''}`,foot:btn('Cancel','取消','cancel','','',A.busy)+btn(A.busy?'Saving…':'Confirm',A.busy?'正在保存…':'确认','confirm','','primary',A.busy)}),
+    'rv-confirm':()=>({title:L(A.pending?.decision==='verified'?'Approve this application?':'Confirm rejection?',A.pending?.decision==='verified'?'确认通过认证？':'确认驳回申请？'),html:`<p><b>${A.selected} · V${A.pending?.version}</b></p>${A.pending?.decision==='verified'?CF.note('accent',L('The applicant will become verified and receive the review result.','通过后，该资金方将获得已认证状态并收到审核结果。')):`<p>${L('The applicant will see this reason and may edit and resubmit.','申请人将看到以下原因，可修改后重新提交。')}</p>${problemList({additional:A.additional.trim()})}`}${A.busy?CF.note('accent',L('Saving decision…','正在保存审核结论…')):''}`,foot:(A.pending?.decision==='rejected'?btn('Edit reason','返回修改','edit-reason','','',A.busy):btn('Cancel','取消','cancel','','',A.busy))+btn(A.busy?'Saving…':'Confirm',A.busy?'正在保存…':'确认','confirm','','primary',A.busy)}),
     'rv-unknown':()=>({title:L('Review result not confirmed','审核结果暂未确认'),html:CF.note('warn',L('Check the current application state before sending another decision.','请先查询当前申请状态，避免重复提交结论。')),foot:btn('Check current result','查询当前结果','resolve','','primary')}),
     'rv-material':()=>{
       if(!allowed())return{title:L('Sign in to continue','请先完成运营登录'),html:signedOut(),foot:btn('Close','关闭','cancel')};
@@ -126,6 +124,7 @@
       case 'approve':begin('verified');break;
       case 'reject':begin('rejected');break;
       case 'preview-reject':if(!ensureWrite())break;A.rejectError=!validReasons();open(A.rejectError?'reject':'confirm');break;
+      case 'edit-reason':if(!A.busy&&ensureWrite())open('reject');break;
       case 'confirm':confirm();break;
       case 'resolve':finish();break;
       case 'cancel':if(!A.busy){A.pending=null;CF.closeLayer();}break;
@@ -182,14 +181,12 @@
     if(el.id==='rv-query')A.filter.q=el.value;
     if(el.id==='rv-from')A.filter.from=el.value;
     if(el.id==='rv-to')A.filter.to=el.value;
-    if(el.id==='rv-additional')A.additional=el.value;
-    if(el.dataset.rvField){const i=A.issues.find(i=>i.key===el.dataset.key);if(i)i[el.dataset.rvField]=el.value;}
+    if(el.id==='rv-reason')A.additional=el.value;
   });
   document.addEventListener('change',e=>{
     const el=e.target;
     if(el.id==='rv-state'){A.filter.state=el.value;A.page=1;}
     else if(el.id==='rv-response')A.response=el.value;
-    else if(el.dataset.rvTarget){const k=el.dataset.rvTarget;if(el.checked)A.issues.push({key:k,label:label(k),category:'',en:'',zh:''});else A.issues=A.issues.filter(i=>i.key!==k);}
     else return;
     CF.render();queueMicrotask(afterRender);
   });
