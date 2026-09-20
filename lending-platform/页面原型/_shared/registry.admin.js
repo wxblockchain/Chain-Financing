@@ -25,8 +25,6 @@
     CF.ENTRY[id] = p.route;
   }
 
-  CF.PAGES["P-L40"].permission = 5;
-  CF.PAGES["P-L41"].permission = 5;
   CF.NAV.admin = ["P-O06", "P-O-AG-01", "P-L40"];
   // Account flows are registered, but never added as business sidebar items.
   var accountPages = [
