@@ -11,17 +11,17 @@
 
   var pages = {
     "P-L40": { navKey: "navInstitutionReview", ico: "▣", route: "/ops/institution-reviews" },
-    "P-L41": { navKey: "navInstitutionDetail", ico: "▣", route: "/ops/institution-reviews/detail" },
+    "P-L41": { navKey: "navInstitutionDetail", parent: "P-L40", ico: "▣", route: "/ops/institution-reviews/detail" },
     "P-O06": { navKey: "navOverview", ico: "▤", route: "/ops/overview" },
     "P-O-AG-01": { navKey: "navAgreements", ico: "▧", route: "/ops/agreements" },
-    "P-O-AG-02": { navKey: "navAgreementDetail", route: "/ops/agreements/detail" },
-    "P-O-AG-03": { navKey: "navAgreementEdit", route: "/ops/agreements/edit" },
-    "P-O-AG-04": { navKey: "navAgreementVersion", route: "/ops/agreements/version" }
+    "P-O-AG-02": { navKey: "navAgreementDetail", parent: "P-O-AG-01", route: "/ops/agreements/detail" },
+    "P-O-AG-03": { navKey: "navAgreementEdit", parent: "P-O-AG-02", route: "/ops/agreements/edit" },
+    "P-O-AG-04": { navKey: "navAgreementVersion", parent: "P-O-AG-02", route: "/ops/agreements/version" }
   };
 
   for (var id in pages) {
     var p = pages[id];
-    CF.PAGES[id] = { end: "admin", layout: "app", navKey: p.navKey, ico: p.ico };
+    CF.PAGES[id] = { end: "admin", layout: "app", navKey: p.navKey, parent: p.parent, ico: p.ico };
     CF.ENTRY[id] = p.route;
   }
 

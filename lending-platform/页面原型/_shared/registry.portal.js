@@ -24,12 +24,12 @@
     /* 我的控制台。登录后的个人数据聚合页。 */
     "P-MC-01": { layout: "portal", navKey: "navConsole", route: "/console", auth: true },
     "P-F-MC-01": { layout: "portal", crumbKey: "navNotifications", route: "/notifications", auth: true, retainList: true },
-    "P-F-MC-02": { layout: "portal", crumbKey: "navNotification", route: "/notification", auth: true, retainList: true }
+    "P-F-MC-02": { layout: "portal", crumbKey: "navNotification", parent: "P-F-MC-01", route: "/notification", auth: true, retainList: true }
   };
 
   for (var id in pages) {
     var p = pages[id];
-    CF.PAGES[id] = { end: "asset", layout: p.layout, navKey: p.navKey, crumbKey: p.crumbKey, retainList: p.retainList, auth: !!p.auth };
+    CF.PAGES[id] = { end: "asset", layout: p.layout, navKey: p.navKey, crumbKey: p.crumbKey, parent: p.parent, retainList: p.retainList, auth: !!p.auth };
     CF.ENTRY[id] = p.route;
   }
 

@@ -98,7 +98,6 @@ if(S.page===P.reset&&!recovery)jump(P.forgot);
 S.tz=read('hc.ops.timezone')||S.tz;
 }
 function afterRender(){document.querySelectorAll('.sidebar .brand-sub').forEach(el=>el.textContent=L('Operations','运营管理'));document.querySelectorAll('#anav').forEach(el=>el.setAttribute('aria-label',L('Main navigation','主导航')));if($('focusTools')&&S.page===P.first)$('focusTools').innerHTML+=button('ops-logout','Sign out','退出登录',false);
-if(S.page===P.account)$('acrumb').innerHTML=`<a class="crumb-link" href="#${R(P.overview)}">${L('Overview','总览')}</a><span>/</span><span class="crumb-cur">${L('Account settings','账户设置')}</span>`;
 document.querySelectorAll('#app,#focus').forEach(el=>el.inert=!!S.layer);
 }
 function demoButton(act,en,zh,value=''){return `<button class="btn sm" data-act="${act}" data-v="${value}">${L(en,zh)}</button>`}

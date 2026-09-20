@@ -13,7 +13,7 @@
   /* ------------------------------------------------------------ 页面登记
      列表页已在 registry.portal.js 登记；详情页按登记表注释由本模块追加。
      详情页不进顶栏导航：它由列表行与外部分享链接带出。 */
-  CF.PAGES[DETAIL] = { end: "asset", layout: "portal", crumbKey: "crumbToken", auth: false };
+  CF.PAGES[DETAIL] = { end: "asset", layout: "portal", crumbKey: "crumbToken", parent: LIST, auth: false };
   CF.ENTRY[DETAIL] = "/assets/" + AM.TOKENS[0].no;
 
   /* 可分享视图：条件 + 已加载条数 + 行锚点/偏移 + 内外滚动位置。

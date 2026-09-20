@@ -309,14 +309,37 @@
       var sub = $("subwrap");
       if (p.layout === "site") { sub.hidden = true; return; }
       sub.hidden = false;
-      $("crumb").innerHTML =
-        '<a class="crumb-link" href="#/">' + esc(t("navHome")) + "</a><span>/</span>" +
-        '<span class="crumb-cur">' + esc(t(p.navKey || p.crumbKey)) + "</span>";
-    } else {
-      $("acrumb").innerHTML =
-        '<span>' + L("Operations", "运营端") + "</span><span>/</span>" +
-        '<span class="crumb-cur">' + esc(t(p.navKey || p.crumbKey)) + "</span>";
     }
+    // 使用明确的页面父级，不依赖浏览历史；独立模块以可用导航的首项为根。
+    var root = defaultPage(), chain = [S.page], seen = {};
+    seen[S.page] = true;
+    var parent = p.parent;
+    while (parent && CF.PAGES[parent] && CF.PAGES[parent].end === S.end && !seen[parent]) {
+      chain.unshift(parent); seen[parent] = true; parent = CF.PAGES[parent].parent;
+    }
+    if (root && !seen[root]) chain.unshift(root);
+    function label(id) {
+      var page = CF.PAGES[id];
+      return t(page.crumbKey || page.navKey);
+    }
+    function href(id) {
+      var route = M && M.breadcrumbRoute ? M.breadcrumbRoute(id) : null;
+      return "#" + (route || CF.ENTRY[id]);
+    }
+    var up = chain.length > 1 ? chain[chain.length - 2] : null;
+    var back = up ? '<a class="crumb-link crumb-back" href="' + esc(href(up)) + '" aria-label="' +
+      esc(L("Back to ", "返回") + label(up)) + '"><span aria-hidden="true">←</span><span>' +
+      L("Back", "返回上级") + '</span></a>' : '';
+    var items = chain.map(function (id, i) {
+      var current = i === chain.length - 1;
+      return '<li class="crumb-item' + (current ? ' is-current' : '') + '">' +
+        (i ? '<span class="crumb-sep" aria-hidden="true">›</span>' : '') +
+        (current ? '<span class="crumb-cur" aria-current="page">' + esc(label(id)) + '</span>' :
+          '<a class="crumb-link" href="' + esc(href(id)) + '">' + esc(label(id)) + '</a>') + '</li>';
+    }).join('');
+    $(S.end === "asset" ? "crumb" : "acrumb").innerHTML =
+      '<nav class="breadcrumb" aria-label="' + L("Breadcrumb", "面包屑导航") + '">' + back +
+      '<ol class="crumb-list">' + items + '</ol></nav>';
   }
 
   /* ------------------------------------------------------------ 浮层 */

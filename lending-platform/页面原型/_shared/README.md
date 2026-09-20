@@ -45,11 +45,18 @@
 | `content(pageId)` | 返回该页内容区 HTML |
 | `layers` | `{ key: fn }` 抽屉与弹窗内容表 |
 | `onAct(act, value, event)` | 模块自己的点击动作；返回 `true` 表示已处理 |
+| `breadcrumbRoute(pageId)` | 可选：返回父级页面的模块内路由（不含 `#`），保留所选记录、筛选及列表状态；默认使用 `CF.ENTRY[pageId]` |
 | `allowNav(pageId)` | 可选：在登记表内按模块范围与查询权限过滤导航，不自行生成菜单 |
 | `adminContext()` | 可选：返回 `{name, subtitle, hideNotifications}`，声明实际操作员上下文与未接入的消息入口 |
 | `demoOnly` + `demo()` | 可选：独立模块只使用自己的默认关闭演示面板，不展示无关部署单元切换 |
 
 公共层提供的片段：`CF.tag` / `CF.note` / `CF.empty` / `CF.skelTable` / `CF.surface`（六种状态表面）/ `CF.toast` / `CF.openLayer` / `CF.closeLayer` / `CF.fmtDate` / `CF.fmtTime` / `CF.fmtAmt` / `CF.esc` / `CF.L`。模块不得重新实现其中任何一项。
+
+## 面包屑与上级返回
+
+详情与流程页面在 `CF.PAGES[pageId].parent` 声明真实父页面 ID；不登记成新增菜单。共享壳层根据父级链渲染面包屑，以当前部署单元可用导航首项为根；使用明确路由，直接打开深链也能返回。已有查询参数优先沿用 `CF.ENTRY`，需要记录 ID 或视图参数时由 `breadcrumbRoute(pageId)` 返回。返回继续经过模块既有路由守卫，不调用 `history.back()`；模块不得重绘公共面包屑。
+
+祖先使用可聚焦链接，当前页使用 `aria-current="page"` 非链接文字；分隔符对读屏隐藏。窄屏只收起较远祖先，保留直接上级与当前页，长标题可换行，不裁切返回入口。首页及居中登录页不增加面包屑。
 
 ## 资产广场连续追加接入
 

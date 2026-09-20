@@ -3,8 +3,8 @@
   'use strict';
   const S=CF.S,D=CF.LS,L=CF.L,E=CF.esc,Q=CF.CQ;
   const LIST='P-LS-01',DETAIL='P-LS-02',NEW='P-LS-03';
-  CF.PAGES[DETAIL]={end:'asset',layout:'portal',crumbKey:'lsDetail'};
-  CF.PAGES[NEW]={end:'asset',layout:'portal',crumbKey:'lsNew',auth:true};
+  CF.PAGES[DETAIL]={end:'asset',layout:'portal',crumbKey:'lsDetail',parent:LIST};
+  CF.PAGES[NEW]={end:'asset',layout:'portal',crumbKey:'lsNew',parent:LIST,auth:true};
   CF.ENTRY[DETAIL]='/project/'+D.projects[0].id;CF.ENTRY[NEW]='/project/new';
   let selection=[],name='',kind='',error='',amount='',busy=false,appId=null,operation='deposit',pages={tokens:1,demands:1,select:1},filter={},pendingAction=null;
   let outcome='success',executionGate='normal',submitFail=false,refocus=null,fromConsole=false;
