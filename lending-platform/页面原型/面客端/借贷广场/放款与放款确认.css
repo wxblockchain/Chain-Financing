@@ -79,3 +79,8 @@
 
 .ln-business-detail{display:grid;gap:var(--sp-3)}
 .ln-business-detail h3{margin:0}
+.ln-drawer[data-view="confirm"]>.dl,.ln-drawer[data-view="record"]>.dl{margin:0}
+.ln-drawer .field:has([aria-invalid="true"]) .inp{border-color:var(--danger)}
+.ln-drawer .ln-error:empty{display:none}
+.drawer:has(.ln-drawer) .drawer-f>.btn:first-child{margin-right:auto}
+@media(max-width:640px){.drawer:has(.ln-drawer) .drawer-f{display:grid;grid-template-columns:1fr 1fr}.drawer:has(.ln-drawer) .drawer-f>.ln-row{grid-column:1/-1;order:2}.drawer:has(.ln-drawer) .drawer-f>.btn{width:100%;margin:0}.ln-files-read li{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center}}
