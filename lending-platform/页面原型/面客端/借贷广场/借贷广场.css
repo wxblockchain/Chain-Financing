@@ -159,6 +159,45 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-file-actions .btn{min-height:36px;padding:var(--sp-2) var(--sp-3)}
 .cq-credit-history{border-top:1px solid var(--border);padding:var(--sp-4) 0}
 .cq-credit-history .cq-dl{margin:var(--sp-3) 0}
+.ls-financing-row{cursor:pointer}
+.ls-financing-row:hover td{background:var(--card-2)}
+.ls-financing-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ls-demand-link{color:var(--accent);font-weight:500;overflow-wrap:anywhere}
+.cq-operation-status{margin-bottom:var(--sp-3)}
+.cq-next-step{color:var(--muted);line-height:1.7;margin:var(--sp-3) 0 var(--sp-4)}
+.ls-action-panel>.btn{width:100%;white-space:normal;height:auto;min-height:44px}
+.modal:has(.cq-request-detail){max-width:920px}
+.cq-request-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
+.cq-request-head h2{font-size:var(--fs-24);margin:var(--sp-2) 0;overflow-wrap:anywhere}
+.cq-request-head .tag{white-space:normal;flex-shrink:0}
+.cq-detail-columns{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6)}
+.cq-detail-columns>.cq-section:first-child{margin-top:var(--sp-5);padding-top:var(--sp-5);border-top:1px solid var(--border)}
+.cq-detail-columns .cq-dl{grid-template-columns:minmax(90px,.85fr) minmax(0,1.5fr);gap:var(--sp-3)}
+.cq-detail-columns .cq-dl dd{margin:0;overflow-wrap:anywhere}
+.modal:has(.cq-request-detail) .modal-h[tabindex="-1"]{outline:none}
+.cq-sign-status{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-4);list-style:none;padding:0}
+.cq-sign-status li{display:flex;flex-direction:column;gap:var(--sp-3);align-items:flex-start}
+.cq-quote-history{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
+.cq-quote-history article{padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);min-width:0}
+.cq-quote-history article[data-selected=true]{border-color:var(--accent);background:var(--accent-soft)}
+.cq-quote-history p{overflow-wrap:anywhere}
+.cq-credit-reference{border-top:1px solid var(--border);margin-top:var(--sp-5)}
+.cq-demo-panel{width:410px;max-height:80dvh}
+.cq-guide h3{font-size:var(--fs-16);margin:0 0 var(--sp-4)}
+.cq-demo-current{background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-4);margin-bottom:var(--sp-4)}
+.cq-demo-current>strong{display:block;margin-top:var(--sp-2);font-size:var(--fs-16)}
+.cq-demo-current p{margin:var(--sp-2) 0;overflow-wrap:anywhere}
+.cq-demo-current .btn{width:100%;margin-top:var(--sp-3)}
+.cq-demo-group{border-top:1px solid var(--border);padding:var(--sp-2) 0}
+.cq-demo-group>summary{cursor:pointer;min-height:44px;display:list-item;align-content:center;color:var(--text);font-weight:500}
+.cq-demo-controls{display:flex;gap:var(--sp-2);flex-wrap:wrap;padding:var(--sp-3) 0}
+.cq-demo-controls .field,.cq-demo-controls .grp,.cq-demo-controls>.ls-check{width:100%;min-width:0}
+.cq-demo-controls .inp{width:100%;min-width:0}
+.cq-demo-controls .btn,.cq-journey .btn{height:auto;min-height:44px;white-space:normal;text-align:left}
+.cq-journey{list-style:none;margin:0;padding:0;display:grid;gap:var(--sp-2)}
+.cq-journey .btn{width:100%;justify-content:flex-start}
+.cq-journey [aria-current=step] .btn{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+@media(max-width:768px){.cq-detail-columns,.cq-quote-history,.cq-sign-status{grid-template-columns:1fr}.cq-detail-columns{gap:0}.cq-detail-columns .cq-dl{grid-template-columns:1fr;gap:var(--sp-1)}.cq-detail-columns .cq-dl dd{margin-bottom:var(--sp-3)}.cq-request-head{flex-wrap:wrap}.cq-request-head h2{font-size:var(--fs-19)}.cq-demo-panel{width:auto}.cq-sign-status li{flex-direction:row;align-items:center}}
 .cq-discard{border:1px solid var(--border);padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);margin-bottom:var(--sp-5)}
 .cq-discard p{margin:var(--sp-2) 0 var(--sp-3)}
 .cq-flow .field .hint{margin:var(--sp-2) 0 0}
