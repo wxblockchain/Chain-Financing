@@ -12,6 +12,8 @@
   var pages = {
     "P-O20": { navKey: "navOpsMessages", route: "/ops/notifications" },
     "P-O21": { navKey: "navOpsMessageDetail", parent: "P-O20", route: "/ops/notification" },
+    "P-O-PR-01": { navKey: "navPledgeReviews", ico: "▤", route: "/ops/pledge-reviews" },
+    "P-O-PR-02": { navKey: "navPledgeReviewDetail", parent: "P-O-PR-01", route: "/ops/pledge-reviews/detail" },
     "P-L40": { navKey: "navInstitutionReview", ico: "▣", route: "/ops/institution-reviews" },
     "P-L41": { navKey: "navInstitutionDetail", parent: "P-L40", ico: "▣", route: "/ops/institution-reviews/detail" },
     "P-O06": { navKey: "navOverview", ico: "▤", route: "/ops/overview" },
@@ -28,6 +30,8 @@
   }
 
   CF.NAV.admin = ["P-O06", "P-O-AG-01", "P-L40"];
+  // Independent review artifacts expose only modules they actually load.
+  if (document.documentElement.dataset.module === "pledge-review") CF.NAV.admin.push("P-O-PR-01");
   // Account flows are registered, but never added as business sidebar items.
   var accountPages = [
     ['01', 'navOpsLogin', '/ops/login', 'focus'],

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-end="admin" data-module="pledge-review"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pledge reviews · Harbour Credit</title>
+<link rel="stylesheet" href="../../_shared/tokens.css">
+<link rel="stylesheet" href="../../_shared/base.css">
+<style>
+.pr-stack{display:grid;gap:var(--sp-5);align-content:start}
+.pr-row{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
+.pr-meta{display:block;color:var(--muted);font-size:var(--fs-12);margin-top:var(--sp-1);overflow-wrap:anywhere}
+.pr-title{display:flex;align-items:start;justify-content:space-between;gap:var(--sp-4);margin-bottom:var(--sp-5)}
+.pr-title h1{font-size:var(--fs-24);margin:0 0 var(--sp-2)}
+.pr-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:var(--sp-5);align-items:start}
+.pr-rail{position:sticky;top:90px}
+.pr-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-4);margin-bottom:var(--sp-5)}
+.pr-metric{padding:var(--sp-5)}
+.pr-metric strong{display:block;font-size:var(--fs-28);font-family:var(--mono);margin:var(--sp-2) 0}
+.pr-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4);padding:var(--sp-5);border-bottom:1px solid var(--border)}
+.pr-filters .field{min-width:0;max-width:none}
+.pr-filters .pr-search{grid-column:span 2}
+.pr-actions{display:flex;align-items:end;justify-content:flex-end;gap:var(--sp-2)}
+.pr-table{table-layout:fixed;width:100%}
+.pr-table thead th{white-space:normal;color:var(--muted)}
+.pr-table tbody td{overflow-wrap:anywhere;font-size:var(--fs-12)}
+.pr-table .col-act{position:sticky;right:0;background:var(--card);width:65px}
+.pr-table .tag{white-space:normal;text-align:left;line-height:1.5;font-size:var(--fs-11)}
+.pr-table .pr-num{text-align:right}
+.pr-table th:nth-child(1){width:18%}.pr-table th:nth-child(2){width:16%}.pr-table th:nth-child(3){width:11%}.pr-table th:nth-child(4){width:16%}.pr-table th:nth-child(5){width:14%}.pr-table th:nth-child(6){width:17%}
+.pr-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);margin:0}
+.pr-kv dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
+.pr-kv dd{margin:0;overflow-wrap:anywhere}.pr-wide{grid-column:1/-1}
+.pr-h2{font-size:var(--fs-16);margin:0 0 var(--sp-4)}
+.pr-section{padding:var(--sp-5)}
+.pr-event{padding:var(--sp-4) 0;border-bottom:1px solid var(--border)}
+.pr-event:last-child{border:0}.pr-event p{margin:var(--sp-2) 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.pr-body .modal{max-width:680px}.pr-form{display:grid;gap:var(--sp-4)}
+.pr-form textarea{min-height:90px;resize:vertical;width:100%}
+.pr-form .field{max-width:none}.pr-form input[type=checkbox]{accent-color:var(--accent)}
+.pr-error{color:var(--danger);font-size:var(--fs-12);white-space:pre-wrap;overflow-wrap:anywhere}
+.pr-file{padding:var(--sp-3);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:var(--sp-2);overflow-wrap:anywhere}
+.pr-upload:focus-within{outline:2px solid var(--accent);outline-offset:2px}.pr-file input{max-width:100%}.pr-confirm{white-space:pre-wrap;padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);overflow-wrap:anywhere}
+.pr-progress{width:100%;accent-color:var(--accent)}
+.pr-body .demo-panel{max-height:calc(100vh - 110px);overflow:auto}
+.pr-demo{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-5)}
+.pr-preview{width:100%;height:300px;border:1px solid var(--border);object-fit:contain}
+.pr-table caption{text-align:left;padding:var(--sp-4);font-weight:600}
+@media (max-width:1350px){.pr-grid{grid-template-columns:minmax(0,1fr) 270px}.pr-filters{gap:var(--sp-3)}.pr-table td,.pr-table th{padding-left:var(--sp-2);padding-right:var(--sp-2)}}
+</style></head>
+<body class="pr-body">
+<div id="portal" hidden></div>
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">HC</span><div><div class="brand-name">Harbour Credit</div><div class="brand-sub">Operations</div></div></div>
+    <nav class="nav" id="anav" aria-label="Main navigation"></nav><div class="side-foot" id="asidefoot"></div>
+  </aside>
+  <div class="main"><div class="topbar"><div class="crumbbar-in" id="acrumb"></div><div class="topbar-right" id="atools"></div></div><main class="content" id="acontent"></main></div>
+</div>
+<div id="layers"></div><div class="toasts" id="toasts" aria-live="polite"></div>
+<button class="demo-btn" id="demoBtn" type="button"></button><aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
+<script src="../../_shared/registry.admin.js"></script>
+<script src="../../_shared/shell.js"></script>
+<script src="演示数据.js"></script>
+<script src="代币质押审核.js"></script>
+</body></html>
