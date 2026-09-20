@@ -19,7 +19,7 @@
   const dict = {en:{navHome:'Home',navAssets:'Asset marketplace',navPlaza:'Lending marketplace',navConsole:'My console'},
     zh:{navHome:'首页',navAssets:'资产广场',navPlaza:'借贷广场',navConsole:'我的控制台'}};
   Object.entries(pages).forEach(([id,p])=>{
-    CF.PAGES[id]={end:'asset',layout:p[0],navKey:id,auth:id==='P-L12'};
+    CF.PAGES[id]={end:'asset',layout:p[0],navKey:id,auth:id==='P-L12',parent:p[0]==='portal'?'P-F51':undefined};
     CF.ENTRY[id]=p[1];dict.en[id]=p[2];dict.zh[id]=p[3];
   });
   const D = {
@@ -38,8 +38,8 @@
   }
   function link(en,zh,act,value='') {return `<button type="button" class="btn-link" data-act="${act}" data-v="${esc(value)}">${L(en,zh)}</button>`;}
   function go(route) {S.menu=null;S.layer=null;if(location.hash==='#'+route)CF.render();else location.hash='#'+route;}
-  function later(fn,ms=950){clearTimeout(D.timer);const version=++D.timerVersion;D.timer=setTimeout(()=>{if(version===D.timerVersion)fn();},ms);}
-  function cancelPending(){clearTimeout(D.timer);D.timerVersion++;D.pending=false;D.switchScheduled=false;}
+  function later(fn,ms=950){clearTimeout(D.timer);const version=++D.timerVersion;D.timerRoute=location.hash;D.timer=setTimeout(()=>{if(version===D.timerVersion&&D.timerRoute===location.hash)fn();},ms);}
+  function cancelPending(){clearTimeout(D.timer);D.timerVersion++;D.timerRoute=null;D.pending=false;D.switchScheduled=false;if(D.gateState==='pending')D.gateState='idle';if(D.preferences==='pending')D.preferences='idle';}
   function clearMemory(){D.lastRole=null;try{localStorage.removeItem('lp_last_role');localStorage.removeItem('lp_last_role_at');}catch(e){}}
   function readMemory(){
     try{
@@ -102,7 +102,16 @@
   }
   function open(key,data){
     if(!S.layer){const a=document.activeElement;D.focusBack=a&&a.getAttribute?{act:a.getAttribute('data-act'),value:a.getAttribute('data-v'),id:a.id}:null;}
-    CF.openLayer('modal',key,data);
+    const under=key==='leave'&&['role','guide'].includes(S.layer?.key)?S.layer:null;
+    const opener=document.activeElement;
+    CF.openLayer('modal',key,data,under);
+    if(under)S.layer.returnFocus={act:opener?.dataset.act,value:opener?.dataset.v};
+  }
+  function returnToGuide(){
+    if(S.layer?.key!=='leave'||!S.layer.under)return false;
+    const focus=S.layer.returnFocus;S.layer=S.layer.under;CF.render();
+    queueMicrotask(()=>Array.from(document.querySelectorAll('#layers [data-act]')).find(x=>x.dataset.act===focus?.act&&x.dataset.v===focus?.value)?.focus({preventScroll:true}));
+    return true;
   }
   function notices(){
     if(S.role==='fund'&&CF.funder){CF.funder.notices();return;}
@@ -151,20 +160,19 @@
     else if(state==='error')identity=CF.empty(L('Account information could not load','账户信息加载失败'),L('Try loading it again.','请重新加载。'),btn('Retry','重试','login-account-retry'));
     else {
       const fields=[['User ID','用户 ID','DEMO-USER-001'],...(!D.missing?[['Company ID','企业 ID','DEMO-ORG-001'],['Wallet address','钱包地址','0x1111111111111111111111111111111111111111'],['Email','邮箱','demo@example.test']]:[])];
-      identity=`<dl class="login-fields">${fields.map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd class="mono">${esc(f[2])}</dd></div>`).join('')}</dl>`;
+      identity=`<dl class="login-fields login-identity-fields">${fields.map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd class="mono">${esc(f[2])}</dd></div>`).join('')}</dl>`;
     }
     return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Account settings','账户设置')}</h1><p class="page-desc">${L('Manage your preferences and view your identity information.','管理偏好设置，查看身份信息。')}</p></div></div>
-      <div class="login-account-grid"><section class="card"><div class="card-head">${L('Identity information','身份信息')}</div><div class="card-b">
-      ${CF.note('warn',L('Provisional field set · subject to confirmation by the asset trust platform. Not an acceptance baseline.','字段暂定，待资产可信平台确认；不作为验收依据。'))}
+      <div class="detail-stack"><section class="card detail-section"><div class="card-head"><h2>${L('Identity information','身份信息')}</h2></div><div class="card-b">
       <p class="login-caption">${L('From the asset trust platform. These details are maintained there.','来自资产可信平台。这些信息由资产可信平台维护。')}</p>${identity}
-      <div class="login-agreement-row"><span>${L('Verification','实名认证')}</span>${CF.tag(D.level==='L3'?'ok':'warn',D.level==='L3'?L('Verified','已认证'):L('Not verified','未认证'))}</div>
-      <div class="login-actions">${link('Manage on asset trust platform ↗','前往资产可信平台修改 ↗','login-leave','account')}</div>${demoStamp()}</div></section>
-      <div class="login-stack"><section class="card"><div class="card-head">${L('Preferences','偏好设置')}</div><div class="card-b login-stack">
-      <div class="field"><label for="login-language">${L('Language preference','语言偏好')}</label><select class="inp" id="login-language"><option value="en" ${D.preferredLang==='en'?'selected':''}>English</option><option value="zh" ${D.preferredLang==='zh'?'selected':''}>简体中文</option></select></div>
-      <label class="login-check"><input id="login-notify" type="checkbox" ${D.notification?'checked':''}>${L('Receive account notifications','接收账户通知')}</label>
+      <div class="login-agreement-row"><span>${L('Verification','实名认证')}</span><div class="detail-actions login-verification">${CF.tag(D.level==='L3'?'ok':'warn',D.level==='L3'?L('Verified','已认证'):L('Not verified','未认证'))}${D.level!=='L3'?link('Complete verification ↗','前往完成认证 ↗','login-leave','verify'):''}</div></div>
+      <div class="detail-actions">${link('Manage on asset trust platform ↗','前往资产可信平台修改 ↗','login-leave','account')}</div></div></section>
+      <section class="card detail-section"><div class="card-head"><h2>${L('Preferences','偏好设置')}</h2></div><div class="card-b login-stack">
+      <div class="field login-preference-field"><label for="login-language">${L('Language preference','语言偏好')}</label><select class="inp" id="login-language" ${D.preferences==='pending'?'disabled':''}><option value="en" ${D.preferredLang==='en'?'selected':''}>English</option><option value="zh" ${D.preferredLang==='zh'?'selected':''}>简体中文</option></select></div>
+      <label class="login-check"><input id="login-notify" type="checkbox" ${D.notification?'checked':''} ${D.preferences==='pending'?'disabled':''}>${L('Receive account notifications','接收账户通知')}</label>
       ${D.preferences==='failed'?CF.note('red',L('Preferences could not be saved. Try again.','偏好设置保存失败，请重试。')):''}
-      <button class="btn primary" data-act="login-save-prefs" type="button" ${D.preferences==='pending'?'disabled aria-busy="true"':''}>${D.preferences==='pending'?L('Saving…','正在保存…'):L('Save preferences','保存偏好')}</button></div></section>
-      <section class="card"><div class="card-b"><b>${L('Sign-in','登录状态')}</b><p class="login-caption">${L('Signing out here keeps you signed in on the asset trust platform.','退出本平台不会退出资产可信平台。')}</p>${btn('Sign out','退出登录','login-signout')}</div></section></div></div></div>`;
+      <div><button class="btn primary" data-act="login-save-prefs" type="button" ${D.preferences==='pending'?'disabled aria-busy="true"':''}>${D.preferences==='pending'?L('Saving…','正在保存…'):L('Save preferences','保存偏好')}</button></div></div></section>
+      <section class="card detail-section"><div class="card-b login-session"><div><h2>${L('Sign-in','登录状态')}</h2><p class="login-caption">${L('Signing out here keeps you signed in on the asset trust platform.','退出本平台不会退出资产可信平台。')}</p></div>${btn('Sign out','退出登录','login-signout')}</div></section></div>${demoStamp()}</div>`;
   }
   function gatePage(){
     const allowed=S.role==='asset'&&D.level==='L3';
@@ -178,6 +186,7 @@
       </div></section>${D.sessionMessage?CF.note('warn',L('You signed out on the asset trust platform. Your sign-in here has also ended.','你已在资产可信平台登出，本平台登录同时结束。')):''}</div>`;
   }
   function content(id){
+    if(id==='P-L12'&&S.role==='fund'){queueMicrotask(()=>go('/funder/account'));return '';}
     if(CF.funder){const own=CF.funder.content(id);if(own!==undefined){queueMicrotask(postRender);return own;}}
     // 受限会话只有协议、协议正文与退出可达。路由守卫不依赖画不画入口。
     if(D.restricted&&id!=='P-L11'){queueMicrotask(()=>go('/auth/agreements'));return '';}
@@ -229,6 +238,8 @@
     if(S.role!=='asset'){D.reviewMessage=L('Funder actions are handed over to WS-349.','资金方操作交接至 WS-349。');S.demo=true;CF.render();return;}
     if(D.level!=='L3'){open('guide');return;}
     D.gateState='pending';CF.render();later(()=>{
+      if(S.role!=='asset'||D.restricted){D.gateState='idle';CF.render();return;}
+      if(D.level!=='L3'){D.gateState='idle';open('guide');return;}
       if(D.verificationResult==='failed')D.gateState='failed';
       else if(D.verificationResult==='unverified'){D.level='L0';D.downgraded=true;D.gateState='idle';open('guide');}
       else D.gateState='ready';
@@ -274,11 +285,12 @@
         if(!D.accepted||D.submit==='pending')break;
         D.submit='pending';later(()=>{if(D.submitResult==='failed'){D.submit='failed';CF.render();}else{D.agreed=true;finishLanding();}});break;
       case 'login-load-agreements':D.submit='loading-list';later(()=>{D.submit='idle';CF.render();});break;
-      case 'login-save-prefs':
-        if(D.preferences==='pending')break;
+      case 'login-save-prefs':{
+        if(S.role!=='asset'||D.restricted||D.preferences==='pending')break;
+        const notification=D.notification,language=D.preferredLang;
         D.preferences='pending';later(()=>{if(D.submitResult==='failed'){D.preferences='failed';CF.render();}else{
-          D.savedNotification=D.notification;D.savedLang=D.preferredLang;S.lang=D.preferredLang;D.preferences='idle';CF.render();CF.toast(L('Preferences saved.','偏好设置已保存。'));
-        }});break;
+          D.savedNotification=notification;D.savedLang=language;S.lang=language;D.preferences='idle';CF.render();CF.toast(L('Preferences saved.','偏好设置已保存。'));
+        }});break;}
       case 'login-resolve':(D.resolved||(D.resolved=[])).push(v);break;
       case 'login-handoff':
         D.reviewMessage=L('This destination belongs to the '+v+' module; its pages are outside this delivery.','此入口交接至 '+v+' 模块，页面不在本次交付范围内。');S.demo=true;break;
@@ -358,7 +370,7 @@
     else document.querySelector('#focus .brand').setAttribute('href','#/');
     demoPanel();
     if(CF.funder)CF.funder.afterRender();
-    const dialog=document.querySelector('#layers [role="dialog"]');
+    const dialog=document.querySelector('#layers > .modal-mask [role="dialog"], #layers > [role="dialog"]');
     if(dialog){
       if(S.layer.key==='role')dialog.classList.add('login-role-dialog');
       ['portal','focus','demoPanel','demoBtn'].forEach(id=>$(id).inert=true);
@@ -388,6 +400,7 @@
       if(a==='login-notifications'){e.preventDefault();e.stopImmediatePropagation();open('notification');return;}
       // 防止点击对话框非按钮区域被底座解释为遮罩关闭。
       if(a==='closelayer'&&el.classList.contains('modal-mask')&&e.target.closest('.modal')){e.stopImmediatePropagation();return;}
+      if(a==='closelayer'&&returnToGuide()){e.preventDefault();e.stopImmediatePropagation();return;}
     }
     const nav=e.target.closest('#nav a, .crumb-link');
     if(nav&&['#/assets','#/marketplace','#/console'].includes(nav.getAttribute('href'))){
@@ -408,7 +421,8 @@
     CF.render();queueMicrotask(()=>$(id)?.focus({preventScroll:true}));
   });
   document.addEventListener('keydown',e=>{
-    const dialog=document.querySelector('#layers [role="dialog"]');
+    if(e.key==='Escape'&&returnToGuide()){e.preventDefault();e.stopImmediatePropagation();return;}
+    const dialog=document.querySelector('#layers > .modal-mask [role="dialog"], #layers > [role="dialog"]');
     if(dialog&&e.key==='Tab'){
       const nodes=Array.from(dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select')).filter(x=>x.getClientRects().length);
       if(!nodes.length)return;const first=nodes[0],last=nodes[nodes.length-1];
@@ -418,7 +432,7 @@
   },true);
   window.addEventListener('hashchange',()=>{
     if(D.restricted&&location.hash!=='#/auth/agreements'){location.hash='#/auth/agreements';}
-    if(D.pending&&location.hash!=='#/auth/return')cancelPending();
+    if(D.timerRoute&&D.timerRoute!==location.hash)cancelPending();
   });
   readMemory();
   // 双击默认为游客壳；登录只有主动点击或受限操作才出现。

@@ -28,7 +28,11 @@
 .login-check{display:flex;align-items:center;gap:var(--sp-3);min-height:44px;font-size:var(--fs-14);cursor:pointer}
 .login-check input{width:20px;height:20px;flex:none;accent-color:var(--accent)}
 .login-account{max-width:1040px;margin:auto}
-.login-account-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:var(--sp-5)}
+.login-identity-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--sp-6)}
+.login-preference-field{max-width:480px}
+.login-verification.detail-actions{margin-top:0;align-items:center}
+.login-session{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-5);flex-wrap:wrap}
+.login-session p{margin-bottom:0}
 .login-fields{margin:0}
 .login-fields div{padding:var(--sp-4) 0;border-bottom:1px solid var(--border-dash)}
 .login-fields dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-2)}
@@ -59,7 +63,7 @@
 .login-public-row p{margin:0;color:var(--muted)}
 .login-prototype .focus-foot{padding-bottom:var(--sp-10)}
 @media(max-width:760px){
-  .login-choices,.login-account-grid{grid-template-columns:minmax(0,1fr)}
+  .login-choices,.login-identity-fields{grid-template-columns:minmax(0,1fr)}
   .login-choice{padding:var(--sp-4);gap:var(--sp-3)}
   .login-choice p{flex:auto}
   .login-heading{margin-bottom:var(--sp-5)}
