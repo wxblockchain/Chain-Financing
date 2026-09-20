@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="../../_shared/tokens.css">
 <link rel="stylesheet" href="../../_shared/base.css">
 <link rel="stylesheet" href="借贷广场.css">
+<link rel="stylesheet" href="../资产广场/资产广场.css">
 <link rel="stylesheet" href="放款与放款确认.css">
 </head>
 <body>
@@ -14,7 +15,7 @@
 <!-- 面客端顶栏骨架：沿用公共运行时要求的挂载点，不重建导航。 -->
 <div class="portal" id="portal" hidden>
   <header class="portal-head">
-    <a class="brand" href="#/marketplace">
+    <a class="brand" href="#/assets">
       <span class="brand-mark" aria-hidden="true">HC</span>
       <span>
         <span class="brand-name">Harbour Credit</span>
@@ -57,9 +58,12 @@
 
 <script src="../../_shared/registry.portal.js"></script>
 <script src="../../_shared/shell.js"></script>
-<script src="演示数据.js"></script>
-<script src="授信报价.js"></script>
 <script>CF.deferBoot=true;</script>
+<script src="../资产广场/演示数据.js"></script>
+<script src="演示数据.js"></script>
+<script src="../资产广场/项目演示接入.js"></script>
+<script src="../资产广场/资产广场.js"></script>
+<script src="授信报价.js"></script>
 <script src="借贷广场.js"></script>
 <script src="放款与放款确认.js"></script>
 </body>
