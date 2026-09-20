@@ -45,14 +45,16 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-demo-mark{font-size:var(--fs-12);color:var(--muted)}
 .ls-table .pgbtn,.ls-check,.ls-history summary{min-height:44px}
 .ls-market-table{table-layout:fixed}
-.ls-market-table th:first-child{width:19%}
-.ls-market-table th:nth-child(2){width:15%}
-.ls-market-table th:nth-child(3){width:7%}
-.ls-market-table th:nth-child(4){width:8%}
-.ls-market-table th:nth-child(5){width:10%}
-.ls-market-table th:nth-child(6){width:13%}
-.ls-market-table th:nth-child(7){width:17%}
-.ls-market-table th.col-act{width:11%}
+.ls-market-table th:first-child{width:25%}
+.ls-market-table th:nth-child(2){width:20%}
+.ls-market-table th:nth-child(3){width:19%}
+.ls-market-table th:nth-child(4){width:7%}
+.ls-market-table th:nth-child(5){width:7%}
+.ls-market-table th:nth-child(6){width:10%}
+.ls-market-table th:nth-child(7){width:12%}
+.ls-project-row{cursor:pointer}
+.ls-project-row:hover td{background:var(--card-2)}
+.ls-project-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .ls-market-table td{overflow-wrap:anywhere}
 .ls-market-table .tag{white-space:normal}
 .ls-request{display:flex;gap:var(--sp-2);align-items:center}
@@ -75,6 +77,25 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-action-rail .ls-step[data-current=true]{border-color:var(--accent)}
 .ls-detail-main .ls-table{table-layout:fixed}
 .ls-detail-main .ls-table .btn{white-space:normal;padding:var(--sp-2);height:auto;min-height:44px}
+.ls-workspace{height:var(--ls-workspace-height,560px);min-height:360px;grid-template-columns:minmax(0,1fr) 320px;align-items:stretch}
+.ls-workspace .ls-detail-main{height:100%;overflow:auto;overscroll-behavior:contain;padding-right:var(--sp-2);padding-bottom:var(--sp-3);scrollbar-gutter:stable}
+.ls-workspace .ls-detail-main>*,.ls-operations>*{flex-shrink:0}
+.ls-workspace .ls-action-rail{position:static;height:100%;overflow:hidden}
+.ls-operations{display:flex;flex-direction:column;height:100%;min-height:0}
+.ls-operations .card-head{padding-bottom:var(--sp-3)}
+.ls-operations .ls-subheading{margin:0}
+.ls-tabs{display:flex;padding:0 var(--sp-4);border-bottom:1px solid var(--border);gap:var(--sp-2)}
+.ls-tabs [role=tab]{flex:1;min-height:44px;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font:inherit;cursor:pointer;padding:var(--sp-2)}
+.ls-tabs [aria-selected=true]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.ls-operations .ls-action-panel{overflow:auto;overscroll-behavior:contain;flex:1;min-height:0}
+.ls-hash-row{display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-top:var(--sp-1)}
+.ls-hash,.ls-explorer{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;font-size:var(--fs-12)}
+.ls-hash:hover{text-decoration:underline}
+.ls-explorer{border-radius:var(--radius-sm)}
+.ls-explorer:hover{background:var(--card-2)}
+.ls-detail-main .ls-table th:first-child{width:24%}
+@media(min-width:769px) and (max-width:1100px){.ls-workspace{grid-template-columns:minmax(0,1fr) 280px}.ls-detail-main .ls-table{min-width:650px}}
+@media(max-width:768px){.ls-workspace{display:flex;flex-direction:column;gap:var(--sp-3);height:var(--ls-workspace-height,620px);min-height:480px}.ls-workspace .ls-action-rail{order:-1;height:auto;flex:0 0 auto;max-height:230px}.ls-operations .card-head{display:none}.ls-operations .ls-action-panel{max-height:174px;padding:var(--sp-3)}.ls-action-panel>.ls-row{grid-template-columns:1fr 1fr;gap:var(--sp-2)}.ls-action-rail .btn{margin:0;white-space:normal;height:auto;min-height:44px}.ls-workspace .ls-detail-main{flex:1;min-height:180px;height:auto}.ls-detail-main .ls-table th:first-child{width:auto}.ls-hash-row{flex-wrap:nowrap}.ls-stats .v{font-size:var(--fs-16)}}
 @media(max-width:1100px){.ls-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:768px){.ls-stack .pager .total,.ls-form .pager .total{flex-basis:100%}.ls-grid,.ls-fields,.ls-steps{grid-template-columns:1fr}.ls-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-table td{flex-wrap:wrap}.ls-table td:before{max-width:45%;white-space:normal}.ls-table td>*{max-width:100%}.ls-range{width:100%}.ls-actions .btn{flex:1}.ls-row .push{margin-left:0}.ls-step{padding-bottom:var(--sp-3)}.ls-primary-filters .field{max-width:none;flex-basis:100%}.ls-primary-filters .acts{width:100%;margin:0}.ls-primary-filters .acts .btn{flex:1}.ls-market-table td.col-act{position:static}.ls-market-table td .cell-wrap{min-width:0;max-width:70%}.ls-row-actions{flex-wrap:wrap}.ls-detail-head>.tok-mark{display:none}}
 </style>
