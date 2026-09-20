@@ -169,12 +169,12 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 
 /* Token-based review keeps the existing modal and responsive table contract. */
 .modal:has(.ls-review-surface){max-width:1180px}
-.ls-review-filters{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:var(--sp-3);align-items:end}
-.ls-review-filters .field{margin:0}.ls-review-filters>.ls-row{grid-column:1/-1}
+.ls-review-filters{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:var(--sp-3);align-items:end}
+.ls-review-filters .field{margin:0}.ls-review-filter-actions{justify-content:flex-end;justify-self:end}
 .ls-token-list .tbl{table-layout:fixed;width:100%}
-.ls-token-list th:first-child{width:6%}.ls-token-list th:nth-child(2){width:26%}
-.ls-token-list th:nth-child(3){width:19%}.ls-token-list th:nth-child(4){width:29%}
-.ls-token-list th:nth-child(5){width:20%}
+.ls-token-list th:first-child{width:6%}.ls-token-list th:nth-child(2){width:24%}
+.ls-token-list th:nth-child(3){width:10%}.ls-token-list th:nth-child(4){width:18%}
+.ls-token-list th:nth-child(5){width:20%}.ls-token-list th:nth-child(6){width:22%}
 .ls-token-link{min-height:44px;white-space:normal;text-align:left}
 .ls-token-list .tag{white-space:normal}.ls-token-list .cell-sub{margin-top:var(--sp-2)}
 .ls-token-actions{display:flex;flex-direction:column;gap:var(--sp-2)}
