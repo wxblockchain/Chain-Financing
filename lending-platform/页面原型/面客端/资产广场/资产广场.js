@@ -21,6 +21,7 @@
   function hashPath() { return location.hash.replace(/^#/, ""); }
   function isList() { return /^\/assets(\?|$)/.test(hashPath()); }
   var load = null, timer = 0, restoreFrame = 0, restoring = false;
+  var intentFrame = 0, touchY = null, restoreListFocus = false;
   var failNext = false, demoLimit = 52, hits = [];
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   function number(value, fallback, max, precise) {
@@ -67,7 +68,10 @@
     if (row) { v.anchor = row.getAttribute("data-v"); v.offset = Math.max(0, top - row.getBoundingClientRect().top); }
     replaceView(v);
   }
-  function cancelLoad() { clearTimeout(timer); timer = 0; load = null; }
+  function cancelLoad() {
+    clearTimeout(timer); timer = 0; load = null;
+    cancelAnimationFrame(intentFrame); intentFrame = 0; touchY = null; restoreListFocus = false;
+  }
   function syncEntry() {
     var h = hashPath();
     if (/^\/assets\/[^/?#]+(?:\?|$)/.test(h)) {
@@ -105,7 +109,7 @@
     rememberPosition();
     var owner = load, failing = failNext;
     failNext = false; owner.phase = "append";
-    CF.render();
+    renderBatch();
     timer = setTimeout(function () {
       timer = 0;
       if (load !== owner || !isList()) return;
@@ -113,16 +117,27 @@
       owner.phase = failing ? "error" : "idle";
       if (!failing) owner.shown = Math.min(owner.total, owner.shown + CF.PAGE_SIZE);
       var v = readView(); v.loaded = owner.shown; replaceView(v);
-      CF.render();
+      renderBatch();
     }, 600);
+  }
+  function renderBatch() {
+    var box = document.getElementById("am-listbox");
+    var foot = box && box.querySelector(".loadmore"), footHeight = foot ? foot.getBoundingClientRect().height : 0;
+    restoreListFocus = !!box && (document.activeElement === box || !!box.querySelector(".loadmore :focus"));
+    CF.render();
+    // 加载提示不能缩短旧尾部，否则底部 scrollTop 会先被浏览器夹小。
+    var nextFoot = document.querySelector("#am-listbox .loadmore");
+    if (load && load.phase === "append" && nextFoot) nextFoot.style.minHeight = footHeight + "px";
   }
   function tail(total) {
     if (load.phase === "append") return '<div class="loadmore" role="status" aria-live="polite">' + L("Loading more…", "正在加载更多…") + '</div>';
     if (load.phase === "error") return '<div class="loadmore" role="alert">' + L("Could not load more. Your items are still here.", "加载失败，已显示内容保留。") +
       '<button class="btn" data-act="am-more" type="button">' + L("Retry", "重试") + '</button></div>';
     S.shown = load.shown;
-    // 复用公共尾部外观，异步状态与滚动触发由本模块管理，避免同步哨兵越过请求状态。
-    return CF.moreFoot(total).replace('data-act="more"', 'data-act="am-more"');
+    // 正常批次只由内嵌下滑触发；失败保留明确重试，不自动循环失败请求。
+    if (load.shown >= total) return CF.moreFoot(total);
+    return '<div class="loadmore" role="status">' + L("Scroll down to load more", "下滑自动加载更多") +
+      '<span class="tiny">' + L("Showing " + load.shown + " of " + total, "已显示 " + load.shown + " / " + total + " 条") + '</span></div>';
   }
   function afterList(v) {
     restoring = true; S.toTop = false;
@@ -131,6 +146,8 @@
       if (!isList()) { restoring = false; return; }
       var box = document.getElementById("am-listbox");
       if (box) {
+        if (restoreListFocus) box.focus({ preventScroll: true });
+        restoreListFocus = false;
         box.scrollTop = v.scroll;
         var row = Array.from(box.querySelectorAll("tbody tr")).find(function (r) { return r.getAttribute("data-v") === v.anchor; });
         if (row && v.scroll) box.scrollTop += row.getBoundingClientRect().top - box.getBoundingClientRect().top + v.offset;
@@ -155,11 +172,36 @@
       '<button class="btn" data-act="am-fail">' + L("Fail next batch", "下一批失败") + '</button>' +
       [7, 20, 52].map(function (n) { return '<button class="btn" data-act="am-size" data-v="' + n + '">' + L(n + " sample items", n + " 条样例") + '</button>'; }).join("") + '</div>');
   }
+  function autoAppend(box) {
+    if (!isList() || restoring || !box || box !== document.getElementById("am-listbox")) return;
+    if (box.scrollHeight - box.clientHeight - box.scrollTop < 80 && load && load.phase === "idle") appendBatch();
+  }
+  // 恢复本身不追加；用户在已恢复的底部继续下滑，即使位置没变也能加载。
+  function scrollIntent(e) {
+    var box = e.target.closest && e.target.closest("#am-listbox");
+    if (!box || intentFrame) return;
+    intentFrame = requestAnimationFrame(function () { intentFrame = 0; autoAppend(box); });
+  }
+  document.addEventListener("wheel", function (e) { if (e.deltaY > 0) scrollIntent(e); }, { passive: true });
+  document.addEventListener("keydown", function (e) {
+    if (e.target.id === "am-listbox" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey &&
+        ["ArrowDown", "PageDown", "End", " "].indexOf(e.key) >= 0) scrollIntent(e);
+  });
+  document.addEventListener("touchstart", function (e) {
+    touchY = e.touches.length === 1 && e.target.closest("#am-listbox") ? e.touches[0].clientY : null;
+  }, { passive: true });
+  document.addEventListener("touchmove", function (e) {
+    if (e.touches.length !== 1) { touchY = null; return; }
+    var y = e.touches[0].clientY;
+    if (touchY !== null && y < touchY) scrollIntent(e);
+    touchY = y;
+  }, { passive: true });
   document.addEventListener("scroll", function (e) {
     if (!isList() || restoring) return;
-    rememberPosition();
     var box = document.getElementById("am-listbox");
-    if (box && e.target === box && box.scrollTop > 0 && box.scrollHeight - box.clientHeight - box.scrollTop < 80 && load && load.phase === "idle") appendBatch();
+    var down = box && e.target === box && box.scrollTop > readView().scroll;
+    rememberPosition();
+    if (down) autoAppend(box);
   }, true);
   window.addEventListener("pagehide", rememberPosition);
 
