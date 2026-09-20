@@ -179,7 +179,7 @@
     if(value==='fromConsole'){fromConsole=true;try{sessionStorage.setItem('hc-ls-origin','console');}catch(_){}goto(p.id);}
     if(value==='deniedWrite')CF.toast(txt(errors.permission));D.sweep();D.save();
   }
-  CF.define({id:'lending-marketplace',dict:{en:{navHome:'Home',navAssets:'Asset marketplace',navPlaza:'Lending marketplace',navConsole:'My console',lsDetail:'Financing project',lsNew:'Create project'},zh:{navHome:'首页',navAssets:'资产广场',navPlaza:'借贷广场',navConsole:'我的控制台',lsDetail:'融资项目详情',lsNew:'创建融资项目'}},layers:Object.assign(layers,Q?Q.layers:{}),beforeRender:saveDetail,afterRender:restoreDetail,onBeforeAct(act,v,e){if(Q&&Q.beforeAct(act,e))return true;if(act==='closelayer'){if(e.type==='click'&&e.target.closest('[data-stop]')&&e.target.closest('[data-act]')?.classList.contains('modal-mask'))return false;if(busy)return true;if(S.layer?.key==='review'){CF.closeLayer();setTimeout(()=>document.querySelector('[data-act=ls-review]')?.focus({preventScroll:true}),0);return true;}if(reviewReturn&&S.layer?.key!=='review'){returnToReview();return true;}}return false;},content(id){D.sweep();if(Q)Q.sweep();setTimeout(enhance,0);if(id===NEW)return newPage();if(id===DETAIL)return detailPage();return listPage();},onAct(act,v){
+  CF.define(CF.LSView={id:'lending-marketplace',dict:{en:{navHome:'Home',navAssets:'Asset marketplace',navPlaza:'Lending marketplace',navConsole:'My console',lsDetail:'Financing project',lsNew:'Create project'},zh:{navHome:'首页',navAssets:'资产广场',navPlaza:'借贷广场',navConsole:'我的控制台',lsDetail:'融资项目详情',lsNew:'创建融资项目'}},layers:Object.assign(layers,Q?Q.layers:{}),beforeRender:saveDetail,afterRender:restoreDetail,onBeforeAct(act,v,e){if(Q&&Q.beforeAct(act,e))return true;if(act==='closelayer'){if(e.type==='click'&&e.target.closest('[data-stop]')&&e.target.closest('[data-act]')?.classList.contains('modal-mask'))return false;if(busy)return true;if(S.layer?.key==='review'){CF.closeLayer();setTimeout(()=>document.querySelector('[data-act=ls-review]')?.focus({preventScroll:true}),0);return true;}if(reviewReturn&&S.layer?.key!=='review'){returnToReview();return true;}}return false;},content(id){D.sweep();if(Q)Q.sweep();setTimeout(enhance,0);if(id===NEW)return newPage();if(id===DETAIL)return detailPage();return listPage();},onAct(act,v){
     if(Q&&Q.onAct(act,v))return true;
     const p=project();
     try{
@@ -218,12 +218,14 @@
       if(act==='ls-cancel-confirm'){D.cancelApplication(D.applications.find(a=>a.id===appId));returnToReview();return true;}
       if(act==='ls-copy'){copyHash(v);return true;}
       if(act==='ls-quote'){const q=D.project(v);if(!D.actions(q).quote){CF.toast(quoteReason(q));return true;}CF.openLayer('modal','handoff','quote');return true;}
+      if(act==='ls-handoff'&&v==='funding'&&!CF.L7){const ids=['FP-DEMO-001','FP-DEMO-002','FP-DEMO-007'],i=ids.indexOf(p?.id);if(i>=0&&document.querySelector('script[src]')){location.href='../放款与放款确认/放款与放款确认.html#/deal/FD-DEMO-00'+(i+1);return true;}}
       if(act==='ls-handoff'){CF.openLayer('modal','handoff',v);return true;}
       if(act==='ls-demo-project'){const id=document.getElementById('ls-demo-project').value;S.demo=false;S.st='default';goto(id);return true;}
       if(act==='ls-demo-event'){externalEvent(v);return true;}
     }catch(ex){showError(ex);if(!S.layer)CF.toast(error);return true;}
     return false;
   }});
+  CF.LSView.footer=footer;
   document.addEventListener('input',e=>{if(e.target.id==='ls-name')name=e.target.value;if(e.target.id==='ls-amount')amount=e.target.value;});
   document.addEventListener('change',e=>{
     const el=e.target;if(el.id==='ls-kind'){kind=el.value;selection=[];pages.select=1;refocus=el.id;CF.render();}
@@ -248,5 +250,5 @@
   function deepAction(){if(!pendingAction)return;const action=pendingAction;pendingAction=null;const p=project();if(Q&&['quote','quote_confirm'].includes(action)){Q.deepAction(action);return;}if(!p||!D.mine(p))return;if(action==='pledge')openPledge();else if(action==='publish')openPublish();else if(action==='withdraw'||action==='redeem')openRelease();else if(action==='enter_pool'){const a=D.applications.find(a=>a.project===p.id&&a.state==='approved');if(a)beginDeposit(a.id);else CF.toast(txt(errors.approvalChanged));}}
   // The timer only updates simulated deadline outcomes. It never performs network work.
   setInterval(()=>{if(D.sweep())CF.render();},1000);
-  if(!path()||path()==='/')location.hash='#/marketplace';syncRoute();if(/^\/marketplace(?:\?|$)/.test(path())){listRoute=path();filter=readFilters(listRoute);}pendingAction=new URLSearchParams(path().split('?')[1]||'').get('action');CF.boot();setTimeout(()=>{deepAction();window.scrollTo(0,0);},0);
+  if(!path()||path()==='/')location.hash='#/marketplace';syncRoute();if(/^\/marketplace(?:\?|$)/.test(path())){listRoute=path();filter=readFilters(listRoute);}pendingAction=new URLSearchParams(path().split('?')[1]||'').get('action');if(!CF.deferBoot)CF.boot();setTimeout(()=>{deepAction();window.scrollTo(0,0);},0);
 })(window.CF);

@@ -329,10 +329,10 @@
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2600);
   };
   var layerOpener = null;
-  CF.openLayer = function (type, key, data) {
+  CF.openLayer = function (type, key, data, under) {
     var active = document.activeElement;
     layerOpener = active && {id:active.id,act:active.getAttribute("data-act"),value:active.getAttribute("data-v")};
-    S.layer = { type: type, key: key, data: data }; render(); };
+    S.layer = { type: type, key: key, data: data, under: under }; render(); };
   CF.closeLayer = function () {
     S.layer = null; render();
     var el = layerOpener && (layerOpener.id ? $(layerOpener.id) : Array.from(document.querySelectorAll("[data-act]")).find(function(node) {
@@ -345,10 +345,11 @@
   function renderLayer() {
     var host = $("layers");
     if (!S.layer) { host.innerHTML = ""; return; }
-    var body = M && M.layers && M.layers[S.layer.key] ? M.layers[S.layer.key](S.layer.data) : null;
-    if (!body) { host.innerHTML = ""; return; }
-    if (S.layer.type === "drawer") {
-      host.innerHTML = '<div class="scrim" data-act="closelayer"></div>' +
+    function markup(layer) {
+    var body = M && M.layers && M.layers[layer.key] ? M.layers[layer.key](layer.data) : null;
+    if (!body) return "";
+    if (layer.type === "drawer") {
+      return '<div class="scrim" data-act="closelayer"></div>' +
         '<aside class="drawer" role="dialog" aria-modal="true" aria-label="' + esc(body.title) + '">' +
         '<div class="drawer-h"><b>' + esc(body.title) + '</b>' +
         '<button class="btn ghost sm" type="button" data-act="closelayer" style="margin-left:auto" aria-label="' +
@@ -356,13 +357,15 @@
         '<div class="drawer-b">' + body.html + "</div>" +
         (body.foot ? '<div class="drawer-f">' + body.foot + "</div>" : "") + "</aside>";
     } else {
-      host.innerHTML = '<div class="modal-mask" data-act="closelayer">' +
+      return '<div class="modal-mask" data-act="closelayer">' +
         '<div class="modal" role="dialog" aria-modal="true" aria-label="' + esc(body.title) + '" data-stop="1">' +
         '<div class="modal-h">' + esc(body.title) + "</div>" +
         '<div class="modal-b">' + body.html + "</div>" +
         '<div class="modal-f">' + (body.foot || "") + "</div></div></div>";
     }
-    var first = host.querySelector("button, a, input");
+    }
+    host.innerHTML = (S.layer.under ? '<div inert aria-hidden="true">' + markup(S.layer.under) + '</div>' : '') + markup(S.layer);
+    var first = host.lastElementChild && host.lastElementChild.querySelector("button, a, input, select, textarea");
     if (first) first.focus();
   }
 
@@ -607,11 +610,11 @@
 
   function onKey(e) {
     if (e.key === "Tab" && S.layer) {
-      var nodes = Array.from($("layers").querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select,[tabindex="0"]'));
+      var nodes = Array.from($("layers").querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select,textarea,[tabindex="0"]')).filter(function(node) { return !node.closest('[inert]') && node.getClientRects().length; });
       if (M && M.reviewToolsInLayer) { nodes = nodes.concat(Array.from(document.querySelectorAll('#demoBtn, #demoPanel:not([hidden]) button:not(:disabled)'))); }
       var first = nodes[0], last = nodes[nodes.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      if (first && e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (first && !e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
     if (e.key === "Escape") {
       if (S.layer) { if (M && M.onBeforeAct && M.onBeforeAct("closelayer", null, e)) return; CF.closeLayer(); return; }
