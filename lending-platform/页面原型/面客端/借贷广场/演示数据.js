@@ -77,7 +77,7 @@
       if(a.state==='review'&&D.now()>=Date.parse(a.submitted)+2*DAY){a.state='timeout';a.reason='reviewTimeout';a.finished=D.reviewDeadline(a);a.reviewState='timeout';D.releaseApplication(a);D.log(D.project(a.project),'reviewTimeout',a.id);changed=true;}
       if(a.state==='approved'&&D.now()>=Date.parse(D.approvalDeadline(a))){a.state='expired';D.releaseApplication(a);D.log(D.project(a.project),'approvalExpired',a.id);changed=true;}
     });
-    D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const n=D.numbers(p);if(!n.fly&&!p.balance){p.state='closed';p.closeReason='expiry';D.releasePool(p);}D.log(p,'projectExpired');changed=true;}});
+    D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const n=D.numbers(p);if(!n.fly&&!p.balance&&!CF.L8?.hasUnsettled(p)){p.state='closed';p.closeReason='expiry';D.releasePool(p);}D.log(p,'projectExpired');changed=true;}});
     if(changed)D.save();return changed;
   };
   D.submit = (p, ids, name) => {
