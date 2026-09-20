@@ -8,7 +8,15 @@
 <link rel="stylesheet" href="../../_shared/base.css">
 <link rel="stylesheet" href="../../面客端/登录与账户体系/登录与账户体系.css">
 <style>
-.review-wrap .rv-grid{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(260px,1fr);gap:var(--sp-5);align-items:start}
+.review-wrap .rv-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-5);align-items:start}
+.review-wrap .rv-grid.has-actions{grid-template-columns:minmax(0,1fr) 240px}
+.review-wrap .rv-operation{position:sticky;top:calc(68px + var(--sp-5))}
+.review-wrap .rv-actions{display:grid;gap:var(--sp-3)}
+.review-wrap .rv-version-history{margin-top:var(--sp-5)}
+.review-wrap .rv-version-history h2{margin-bottom:0}
+.review-wrap .rv-version-table{width:100%;table-layout:fixed}
+.review-wrap .rv-version-table .col-act{width:120px}
+.review-wrap .rv-version-table td{white-space:normal;overflow-wrap:anywhere}
 .review-wrap .rv-stack{display:grid;gap:var(--sp-5)}
 .review-wrap .rv-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);margin:0}
 .review-wrap dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-2)}
@@ -19,13 +27,11 @@
 .review-wrap .rv-table td{white-space:normal;overflow-wrap:anywhere}
 .review-wrap .rv-table .col-act{width:80px}
 .review-wrap .rv-table th:nth-child(1){width:16%}
-.review-wrap .rv-table th:nth-child(2){width:24%}
-.review-wrap .rv-table th:nth-child(3){width:7%}
-.review-wrap .rv-table th:nth-child(5){width:13%}
+.review-wrap .rv-table th:nth-child(2){width:28%}
+.review-wrap .rv-table th:nth-child(4){width:15%}
 .review-wrap .rv-filters{display:grid;grid-template-columns:1fr 2fr 1.2fr 1.2fr auto;align-items:end;gap:var(--sp-4)}
 .review-wrap .rv-filters .field{min-width:0;max-width:none}
-.review-wrap .rv-foot,.review-wrap .rv-actions{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-4);flex-wrap:wrap}
-.review-wrap .rv-actions{padding:var(--sp-4) 0;margin-top:var(--sp-4);border-top:1px solid var(--border)}
+.review-wrap .rv-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-4);flex-wrap:wrap}
 .review-wrap .rv-doc{display:flex;gap:var(--sp-4);align-items:center;padding:var(--sp-4);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
 .review-wrap .rv-doc>div{flex:1;min-width:0;overflow-wrap:anywhere}
 .review-wrap .rv-history{border-top:1px solid var(--border);padding:var(--sp-4) 0}

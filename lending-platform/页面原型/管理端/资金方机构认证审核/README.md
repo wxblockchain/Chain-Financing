@@ -6,6 +6,7 @@ Stage 4 · existing-system adaptation / console。用户评论 `360399c8-9891-43
 
 ## 继承与维护
 
+- 根据用户评论 `5ca15d12-8aaf-4365-b9da-9bbe0a7fa20d` 修订：审核列表不再展示版本；详情左侧集中展示资料与结论，右侧仅保留审核操作，版本历史改为页面最下方的全宽表格。旧版、已处理和只读权限隐藏操作栏；从底部切换版本后返回详情顶部。沿用已有一次性交付和入库授权。
 - 仓库 `wxblockchain/Chain-Financing`，目标 `cly2.0.0`。起始头 `0dd8c7e`，开发期间同步至 `2b72db9`（含运营账户公共层接入）；实际读取的样板/内容源最新提交为 `5c6ad85`。旧分支未修改。
 - 运营列表继承 `_shared/样板/底座样板.html` 与 `sample-pages.js` 的协议管理台账；详情继承公共 card / key-value / 状态 / 弹层，按本 PRD 使用独立详情路由。无批量审核或额外统计卡。
 - 两端共用 `_shared/tokens.css`、`base.css`、`shell.js`。测得主色 `#1D4ED8`、底色 `#F7F8FB`、管理端控件高 36px、卡片圆角 12px、控件圆角 9px；取值始终引用公共 token。
