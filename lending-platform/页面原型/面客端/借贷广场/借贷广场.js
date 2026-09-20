@@ -104,7 +104,7 @@
   function demandTable(p){
     if(!p.demands.length)return CF.empty(L('No financing requests yet','尚未发布融资需求'),'');
     const tail=pager('demands',p.demands.length),list=[...p.demands].reverse().slice((pages.demands-1)*5,pages.demands*5);
-    return dataTable([L('Request ID','需求编号'),L('Amount / currency','融资金额 / 币种'),L('Status','状态'),L('Annual rate','年化利率'),L('Institution / quoted at','机构名称 / 报价时间')],list.map(d=>['<span class="ls-demand-link">'+E(d.id)+' ↗</span>',usd(d.amount),tag(d.state)+(d.reason?small(txt(reasons[d.reason])):''),d.rate?E(d.rate)+' %':'—',d.institution?E(txt(d.institution))+small(time(d.quoteAt)):'—']),list.map(d=>' class="ls-financing-row" tabindex="0" data-act="cq-request" data-v="'+E(d.id)+'" aria-label="'+L('Open financing details ','打开融资详情 ')+E(d.id)+'"'))+tail;
+    return dataTable([L('Request ID','需求编号'),L('Amount / currency','融资金额 / 币种'),L('Request status','需求状态'),L('Disbursement progress','放款进度'),L('Annual rate','年化利率'),L('Institution / quoted at','机构名称 / 报价时间')],list.map(d=>['<span class="ls-demand-link">'+E(d.id)+' ↗</span>',usd(d.amount),tag(d.state)+(d.reason?small(txt(reasons[d.reason])):''),(CF.L7?(()=>{const q=Q.data().quotes.filter(q=>q.demand===d.id&&Q.related(q)).at(-1),x=CF.L7.find(q);return x?CF.L7.label(x):'—';})():'—'),d.rate?E(d.rate)+' %':'—',d.institution?E(txt(d.institution))+small(time(d.quoteAt)):'—']),list.map(d=>' class="ls-financing-row" tabindex="0" data-act="cq-request" data-v="'+E(d.id)+'" aria-label="'+L('Open financing details ','打开融资详情 ')+E(d.id)+'"'))+tail;
   }
   const applicationAmount=a=>a.tokens.reduce((sum,id)=>sum+(D.token(id)?.value||0),0);
   function actionableApplications(p){return D.mine(p)?D.applications.filter(a=>a.project===p.id&&D.eligible(a)):[];}
@@ -280,7 +280,6 @@
       if(act==='ls-cancel-confirm'){D.cancelApplication(D.applications.find(a=>a.id===appId));returnToReview();return true;}
       if(act==='ls-copy'){copyHash(v);return true;}
       if(act==='ls-quote'){const q=D.project(v);if(!D.actions(q).quote){CF.toast(quoteReason(q));return true;}CF.openLayer('modal','handoff','quote');return true;}
-      if(act==='ls-handoff'&&v==='funding'&&!CF.L7){const ids=['FP-DEMO-001','FP-DEMO-002','FP-DEMO-007'],i=ids.indexOf(p?.id);if(i>=0&&document.querySelector('script[src]')){location.href='../放款与放款确认/放款与放款确认.html#/deal/FD-DEMO-00'+(i+1);return true;}}
       if(act==='ls-handoff'){CF.openLayer('modal','handoff',v);return true;}
       if(act==='ls-demo-project'){const id=document.getElementById('ls-demo-project').value;S.demo=false;S.st='default';goto(id);return true;}
       if(act==='ls-demo-event'){externalEvent(v);return true;}
