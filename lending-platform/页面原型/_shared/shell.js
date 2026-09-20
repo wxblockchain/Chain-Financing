@@ -281,9 +281,7 @@
   function renderPortalTools() {
     var html = (N.allowed() ? bell(N.unread()) : "") + langDd();
     if (S.role === "guest") {
-      html += '<button class="btn ghost sm" type="button" data-act="signin">' + L("Sign in", "登录") + "</button>" +
-              '<button class="btn primary sm" type="button" data-act="toast" data-v="apply">' +
-              L("Apply to join", "申请入驻") + "</button>";
+      html += '<button class="btn primary sm" type="button" data-act="signin">' + L("Sign in", "登录") + "</button>";
     } else {
       html += accountDd();
     }

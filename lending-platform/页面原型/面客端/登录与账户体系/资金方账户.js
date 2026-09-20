@@ -142,7 +142,7 @@
     if(S.role!=='fund'){CF.setCompletion([]);return;}
     const s=F.account.status;
     const text={draft:['Complete your institution registration to unlock funding actions.','完成机构注册并通过审核后即可出资。'],submitted:['Your registration is under review.','你的机构注册正在审核中。'],rejected:['Your registration needs changes. Review the reason and submit again.','你的注册需要修改，请查看原因并重新提交。']};
-    const items=s==='verified'?[]:[{priority:2,text:L(...text[s]),label:s==='draft'?L('Complete now','去完成注册'):L('View progress','查看进度'),act:s==='draft'?'f-register':'f-status'}];
+    const items=s==='verified'?[]:[{priority:2,text:L(...text[s]),label:s==='draft'?L('Apply to join','申请入驻'):L('View progress','查看进度'),act:s==='draft'?'f-register':'f-status'}];
     if(F.connected!==F.account.address)items.unshift({priority:1,text:F.connected?L('The connected wallet differs from your signed-in account.','当前钱包地址与登录账号不一致。'):L('Wallet disconnected. You remain signed in.','钱包已断开，你仍处于登录状态。'),label:F.connected?L('Sign in with this address','用该地址重新登录'):L('Connect wallet','连接钱包'),act:F.connected?'f-new-address':'f-connect-auth'});
     CF.setCompletion(items);
   }
@@ -304,7 +304,7 @@
     const panel=$('demoPanel');if(S.demo&&!panel.querySelector('.funder-demo'))panel.insertAdjacentHTML('afterbegin',demo());
     if(S.page==='P-L01'&&F.entryError&&!$('f-entry-error'))$('focusContent').insertAdjacentHTML('beforeend',`<p id="f-entry-error" class="note red" role="alert">${L(...F.entryError)}</p>`);
     if(S.role==='fund'){
-      document.querySelectorAll('[data-v="inst"]').forEach(e=>{e.hidden=false;e.dataset.act='f-status';});
+      document.querySelectorAll('[data-v="inst"]').forEach(e=>{e.hidden=false;e.dataset.act=F.account.status==='draft'?'f-register':'f-status';e.textContent=F.account.status==='draft'?L('Apply to join','申请入驻'):L('Institution','机构信息');});
       document.querySelectorAll('[data-act="login-notifications"]').forEach(e=>e.dataset.act='f-notifications');
     }
     const dialog=document.querySelector('#layers [role="dialog"]');if(dialog){if(S.layer?.key.startsWith('f-'))F.layerOpen=true;['portal','focus','demoPanel','demoBtn'].forEach(id=>$(id).inert=true);}

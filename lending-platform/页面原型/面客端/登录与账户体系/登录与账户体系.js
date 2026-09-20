@@ -75,7 +75,7 @@
     const iconF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 8h18 M15 12h6v5h-6z"/></svg>';
     return `<div class="login-choices">
       <section class="login-choice"><span class="login-choice-icon">${iconA}</span><h2>${L('Asset party','资产方')}</h2>
-      <p>${L("I hold receivables and want to raise financing. You'll sign in on the asset trust platform.",'我持有应收账款，想发起融资。将前往资产可信平台登录。')}</p>
+      <p>${L("I hold assets and want to raise financing. You'll sign in on the asset trust platform.",'我持有资产，想发起融资。将前往资产可信平台登录。')}</p>
       ${btn('Authorize with asset trust platform','第三方授权（资产方）','login-choose','asset_party','primary')}</section>
       <section class="login-choice"><span class="login-choice-icon">${iconF}</span><h2>${L('Funder','资金方')}</h2>
       <p>${L('I provide capital and want to invest. Connect your wallet and sign to get started.','我提供资金，想参与出资。连接钱包并签名即可开始。')}</p>
@@ -377,6 +377,10 @@
   document.addEventListener('click',e=>{
     const el=e.target.closest('[data-act]');
     if(el){const a=el.dataset.act;
+      // 受限融资按钮只打开身份/补全引导，不执行业务；先于公共禁用动作守卫处理。
+      if(a==='login-gate'&&el.getAttribute('aria-disabled')==='true'){
+        e.preventDefault();e.stopImmediatePropagation();gate();CF.render();return;
+      }
       if(a==='login-start'||a==='signin'){
         e.preventDefault();e.stopImmediatePropagation();D.origin=CF.ENTRY[S.page]||'/';D.originAction='';D.returnResult='none';D.entryError='';go('/login');return;
       }
