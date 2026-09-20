@@ -326,10 +326,6 @@
       var route = M && M.breadcrumbRoute ? M.breadcrumbRoute(id) : null;
       return "#" + (route || CF.ENTRY[id]);
     }
-    var up = chain.length > 1 ? chain[chain.length - 2] : null;
-    var back = up ? '<a class="crumb-link crumb-back" href="' + esc(href(up)) + '" aria-label="' +
-      esc(L("Back to ", "返回") + label(up)) + '"><span aria-hidden="true">←</span><span>' +
-      L("Back", "返回上级") + '</span></a>' : '';
     var items = chain.map(function (id, i) {
       var current = i === chain.length - 1;
       return '<li class="crumb-item' + (current ? ' is-current' : '') + '">' +
@@ -337,8 +333,15 @@
         (current ? '<span class="crumb-cur" aria-current="page">' + esc(label(id)) + '</span>' :
           '<a class="crumb-link" href="' + esc(href(id)) + '">' + esc(label(id)) + '</a>') + '</li>';
     }).join('');
-    $(S.end === "asset" ? "crumb" : "acrumb").innerHTML =
-      '<nav class="breadcrumb" aria-label="' + L("Breadcrumb", "面包屑导航") + '">' + back +
+    var crumb = $(S.end === "asset" ? "crumb" : "acrumb");
+    if (S.end === "admin") {
+      // 内容重绘后挂在页面内；兼容仍将挂载点放在顶栏的旧模块模板。
+      if (!crumb) { crumb = document.createElement("div"); crumb.id = "acrumb"; }
+      crumb.className = "crumbbar-in";
+      $("acontent").prepend(crumb);
+    }
+    crumb.innerHTML =
+      '<nav class="breadcrumb" aria-label="' + L("Breadcrumb", "面包屑导航") + '">' +
       '<ol class="crumb-list">' + items + '</ol></nav>';
   }
 
@@ -523,8 +526,6 @@
     } else {
       renderAdminNav(); renderAdminTools();
     }
-    renderCrumb();
-
     var host = S.end === "asset" ? $("content") : $("acontent");
     var p = CF.PAGES[S.page] || {};
     /* 内置列表区是整段重绘的，重绘前记下它滚到哪、重绘后放回去；
@@ -532,6 +533,7 @@
     var prevBox = host.querySelector(".listbox");
     var keepScroll = prevBox ? prevBox.scrollTop : 0;
     host.innerHTML = M && M.content ? M.content(S.page) : "";
+    renderCrumb();
     var nextBox = host.querySelector(".listbox");
     if (nextBox && keepScroll && !S.toTop) nextBox.scrollTop = keepScroll;
     /* 官网层用整幅容器，不套 1560px 内容区的内边距。 */

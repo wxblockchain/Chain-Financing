@@ -251,11 +251,10 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .breadcrumb{display:flex;align-items:center;gap:var(--sp-3);min-width:0;width:100%;font-size:var(--fs-13);padding:var(--sp-1) 0}
 .crumb-list{display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--sp-2);list-style:none;margin:0;padding:0;min-width:0}
 .crumb-item{display:flex;align-items:center;gap:var(--sp-2);min-width:0;max-width:100%}
-.crumb-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;color:var(--muted);border-radius:var(--radius-sm);overflow-wrap:anywhere}
-.crumb-back{flex:none;gap:var(--sp-2);padding:0 var(--sp-2);border:1px solid var(--border);background:var(--bg-elev);white-space:nowrap}
+.crumb-link{display:inline-flex;align-items:center;justify-content:flex-start;min-height:44px;min-width:44px;color:var(--muted);border-radius:var(--radius-sm);overflow-wrap:anywhere}
 .crumb-sep{color:var(--faint);flex:none}
 .crumb-cur{color:var(--text);font-weight:600;overflow-wrap:anywhere}
-@media (hover:hover){.crumb-link:hover{color:var(--accent);text-decoration:underline;text-underline-offset:4px}.crumb-back:hover{background:var(--accent-soft);text-decoration:none}}
+@media (hover:hover){.crumb-link:hover{color:var(--accent);text-decoration:underline;text-underline-offset:4px}}
 .crumb-link:active{color:var(--accent-strong)}
 @media(max-width:600px){
   .breadcrumb{gap:var(--sp-2)}
@@ -374,8 +373,8 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .main{display:flex;flex-direction:column;min-width:0}
 .topbar{display:flex;align-items:center;gap:14px;padding:13px var(--sp-6);border-bottom:1px solid var(--border);
   background:var(--bg-elev);position:sticky;top:0;z-index:calc(var(--z-sticky) - 20)}
-.topbar .crumbbar-in{display:flex;align-items:center;gap:8px;font-size:var(--fs-12);color:var(--faint);
-  flex-wrap:wrap;min-width:0}
+.content > .crumbbar-in{min-width:0;margin-bottom:var(--sp-4);color:var(--muted)}
+.content > .crumbbar-in .breadcrumb{padding:0;min-height:44px}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:var(--sp-2)}
 .content{padding:var(--sp-6) var(--sp-6) var(--sp-9);width:100%;background:var(--bg);flex:1}
 
