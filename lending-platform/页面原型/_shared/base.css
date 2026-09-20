@@ -617,3 +617,34 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
   .nc-message-heading{gap:var(--sp-3)}
   .nc-message-foot{gap:var(--sp-1);flex-direction:column;align-items:flex-start}
 }
+
+/* Operations notification reading surface: same message components, console density. */
+.om-inbox .nc-head{margin-bottom:var(--sp-6)}
+.om-head-action{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-2)}
+.om-filter{display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border)}
+.om-filter .nc-status-options button{min-height:var(--ctrl-h);font-size:var(--fs-13)}
+.om-inbox .nc-message-link{padding:var(--sp-5) var(--sp-6)}
+.om-inbox .nc-message-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--fs-14)}
+.om-inbox .nc-summary{-webkit-line-clamp:1;font-size:var(--fs-13);line-height:1.6}
+.om-inbox .nc-message-foot{margin-top:var(--sp-2)}
+.om-expired .nc-message-title{color:var(--muted)}
+.om-pagination{padding:var(--sp-4) var(--sp-6);display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;font-size:var(--fs-12);color:var(--muted)}
+.om-pagination nav{display:flex;gap:var(--sp-2);align-items:center;margin-left:auto}
+.om-pagination [aria-current=page]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-border)}
+.om-pagination label{display:flex;align-items:center;gap:var(--sp-2)}
+.om-pagination select{width:76px}
+.om-reading .card-b{padding:var(--sp-7)}
+.om-reading h1{font-size:var(--fs-24);line-height:1.5;overflow-wrap:anywhere;max-width:70ch}
+.om-reading .nc-body{font-size:var(--fs-14);min-height:130px}
+.om-validity{margin-top:var(--sp-6);background:var(--card-2);color:var(--muted);border-color:var(--border)}
+.om-panel-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4)}
+.ops-notification .nc-preview .nc-message-title{font-size:var(--fs-13);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ops-notification .nc-preview .nc-summary{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;font-size:var(--fs-12);margin-top:var(--sp-2)}
+.ops-notification .nc-preview .nc-message-foot{font-size:var(--fs-12)}
+.ops-notification .nc-preview .nc-read-state{min-width:50px}
+.ops-notification .nc-panel .tbl-empty{padding:var(--sp-7) var(--sp-5)}
+.om-record{display:grid;grid-template-columns:140px 1fr;gap:var(--sp-5)}
+.om-record dt{color:var(--muted)}
+.om-record dd{margin:0}
+.ops-notification .badge[hidden]{display:none}
+.ops-notification .sidebar .brand-name,.ops-notification .sidebar .brand-sub{display:block;white-space:nowrap}

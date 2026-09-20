@@ -1,0 +1,70 @@
+/* Module compositions; tokens/components remain in the shared layer. */
+.ops-account .focus-card{max-width:480px}
+.ops-flow h1{font-size:var(--fs-24);margin:0 0 var(--sp-2)}
+.ops-eyebrow{color:var(--muted);font-size:var(--fs-12);margin:0 0 var(--sp-3)}
+.ops-sub{color:var(--muted);margin:0 0 var(--sp-6);font-size:var(--fs-13)}
+.ops-form{display:flex;flex-direction:column;gap:var(--sp-4)}
+.ops-form .field{gap:var(--sp-2)}
+.ops-code-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-2);align-items:center}
+.ops-code-row .btn{white-space:nowrap;padding-inline:var(--sp-3)}
+.ops-secret{position:relative}
+.ops-secret input{padding-right:48px}
+.ops-secret button{position:absolute;right:0;top:0;bottom:0;width:44px;display:grid;place-items:center;color:var(--muted);border-radius:var(--radius-sm)}
+.ops-secret button:hover{color:var(--accent)}
+.ops-secret button:active{color:var(--text)}
+.ops-secret svg{width:20px;height:20px}
+.ops-error{min-height:1.5em;font-size:var(--fs-12);color:var(--danger)}
+.ops-actions{display:flex;gap:var(--sp-3);justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:var(--sp-4)}
+.ops-rules{display:grid;gap:var(--sp-1);list-style:none;padding:0;margin:0;font-size:var(--fs-12);color:var(--muted)}
+.ops-rules .met{color:var(--ok)}
+.ops-rules li:before{content:'○';display:inline-block;width:20px}
+.ops-rules .met:before{content:'✓'}
+.ops-feedback:empty{display:none}
+.ops-feedback{padding:var(--sp-3);border:1px solid var(--danger-border);background:var(--danger-bg);color:var(--danger);border-radius:var(--radius-sm);font-size:var(--fs-13)}
+.ops-step{display:flex;gap:var(--sp-2);margin:0 0 var(--sp-5);font-size:var(--fs-12);color:var(--muted)}
+.ops-step strong{color:var(--accent)}
+.ops-account .toasts{top:var(--sp-6);bottom:auto}
+.ops-tabs{display:flex;gap:var(--sp-6);margin-bottom:var(--sp-5);border-bottom:1px solid var(--border)}
+.ops-tabs button{padding:var(--sp-3) 0;font-weight:600;color:var(--muted)}
+.ops-tabs button[aria-current=true]{color:var(--accent);border-bottom:2px solid var(--accent)}
+.ops-settings{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,1fr);gap:var(--sp-6);align-items:start}
+.ops-section{scroll-margin-top:90px}
+.ops-section h2{font-size:var(--fs-16);margin:0;padding:var(--sp-5);border-bottom:1px solid var(--border)}
+.ops-details{margin:0;padding:0 var(--sp-5)}
+.ops-details>div{display:grid;grid-template-columns:140px minmax(0,1fr) auto;gap:var(--sp-4);padding:var(--sp-4) 0;border-bottom:1px solid var(--row-line);align-items:start}
+.ops-details>div:last-child{border:0}
+.ops-details dt{color:var(--muted)}
+.ops-details dd{margin:0;overflow-wrap:anywhere}
+.ops-permissions{list-style:none;margin:var(--sp-1) 0 0;padding:0}
+.ops-permissions li{padding:var(--sp-1) 0;color:var(--muted);font-size:var(--fs-12)}
+.ops-preferences{padding:var(--sp-5);display:grid;gap:var(--sp-5)}
+.ops-sample{font-size:var(--fs-12);color:var(--muted);margin:var(--sp-4) 0 0}
+.ops-account .dd-list{max-width:calc(100vw - 32px)}
+.ops-account .op-name{white-space:normal;overflow-wrap:anywhere}
+.ops-account-email{padding:var(--sp-3);max-width:300px;overflow-wrap:anywhere;font-size:var(--fs-12)}
+.ops-account .demo-panel{max-height:75vh;overflow:auto}
+.ops-demo-actions{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin:var(--sp-3) 0}
+.ops-demo-actions button{white-space:normal;height:auto;min-height:var(--ctrl-h)}
+.ops-captcha{width:100%;accent-color:var(--accent);margin:var(--sp-4) 0}
+.ops-account .modal .ops-form{color:var(--text)}
+.ops-account .hint{color:var(--muted)}
+@media(max-width:1050px){.ops-settings{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:767px){
+ .ops-account .app{grid-template-columns:minmax(0,1fr)}
+ .ops-account .sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border)}
+ .ops-account .sidebar .brand,.ops-account .side-foot{display:none}
+ .ops-account .nav{padding:var(--sp-2) var(--sp-4)}
+ .ops-account .nav-group{display:none}
+ .ops-account .topbar{padding:var(--sp-3) var(--sp-4);flex-wrap:wrap}
+ .ops-account .content{padding:var(--sp-5) var(--sp-4)}
+ .ops-account .topbar-right{margin-left:auto}
+ .ops-account .btn,.ops-account .inp,.ops-account .dd-btn{min-height:44px;height:auto}
+ .ops-account .inp{height:44px}
+ .ops-account .btn-link{min-height:44px}
+ .ops-details>div{grid-template-columns:100px minmax(0,1fr);gap:var(--sp-2)}
+ .ops-details>div>.btn-link{grid-column:2;justify-self:start}
+ .ops-account .focus-head{flex-wrap:wrap}
+ .ops-account .focus-main{padding:var(--sp-5) var(--sp-3)}
+ .ops-account .modal-f{flex-wrap:wrap}
+ .ops-account .demo-btn{max-width:calc(100vw - 32px)}
+}

@@ -10,6 +10,8 @@
   CF.NAV = CF.NAV || {};
 
   var pages = {
+    "P-O20": { navKey: "navOpsMessages", route: "/ops/notifications" },
+    "P-O21": { navKey: "navOpsMessageDetail", parent: "P-O20", route: "/ops/notification" },
     "P-L40": { navKey: "navInstitutionReview", ico: "▣", route: "/ops/institution-reviews" },
     "P-L41": { navKey: "navInstitutionDetail", parent: "P-L40", ico: "▣", route: "/ops/institution-reviews/detail" },
     "P-O06": { navKey: "navOverview", ico: "▤", route: "/ops/overview" },
