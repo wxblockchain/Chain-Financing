@@ -132,6 +132,17 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-progress{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:0;margin:var(--sp-5) 0;gap:var(--sp-3)}
 .cq-progress li{border-top:2px solid var(--border);padding-top:var(--sp-3)}
 .cq-progress [aria-current=step]{color:var(--accent);border-color:var(--accent);font-weight:600}
+.cq-progress [data-complete=true]{border-color:var(--ok);color:var(--ok)}
+.cq-response-head{display:flex;justify-content:space-between;gap:var(--sp-5);flex-wrap:wrap;padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
+.cq-response-head>div{display:flex;flex-direction:column;gap:var(--sp-2);min-width:0}
+.cq-response-head strong{font-size:var(--fs-16);overflow-wrap:anywhere}
+.cq-account-group{border:0;padding:0;margin:0 0 var(--sp-5);min-width:0}
+.cq-account-group legend{padding:0;margin-bottom:var(--sp-3);font-size:var(--fs-13);font-weight:600;color:var(--muted)}
+.cq-copy-fallback{margin-top:var(--sp-4);padding:var(--sp-4);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.cq-copy-fallback label{display:block;margin-bottom:var(--sp-3)}
+.cq-copy-fallback .btn{margin-top:var(--sp-3)}
+.cq-check:has(#cq-error){flex-wrap:wrap}.cq-check #cq-error{flex-basis:100%}
+.modal:has(.cq-flow) .modal-h[tabindex="-1"]:focus{outline:none}
 .cq-files{list-style:none;padding:0}.cq-files li{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-3) 0;border-bottom:1px solid var(--border)}
 .cq-files span{overflow-wrap:anywhere;min-width:0}.cq-copy{height:400px}
 .cq-flow{color:var(--text)}.cq-flow .note{margin-top:var(--sp-4)}
@@ -172,7 +183,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-financing-progress [data-state=done],.cq-financing-progress [data-state=current]{color:var(--accent)}
 .cq-financing-progress [data-state=done]:before,.cq-financing-progress [data-state=current]:before{background:var(--accent)}
 .cq-financing-progress [data-state=done] .cq-step-dot{background:var(--accent-soft);border-color:var(--accent)}
-.cq-financing-progress [data-state=current] .cq-step-dot{background:var(--accent);border-color:var(--accent);color:white}
+.cq-financing-progress [data-state=current] .cq-step-dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .cq-financing-progress [aria-current=step]{font-weight:600}
 .cq-history-table{table-layout:fixed;width:100%}
 .cq-history-table th:first-child{width:22%}.cq-history-table th:nth-child(2){width:19%}.cq-history-table th:nth-child(3){width:10%}.cq-history-table th:nth-child(4){width:18%}.cq-history-table th:nth-child(5){width:21%}.cq-history-table th:last-child{width:10%}
@@ -217,6 +228,8 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-discard{border:1px solid var(--border);padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);margin-bottom:var(--sp-5)}
 .cq-discard p{margin:var(--sp-2) 0 var(--sp-3)}
 .cq-flow .field .hint{margin:var(--sp-2) 0 0}
+@media(max-width:600px){.modal:has(.cq-flow) .modal-f:has(.btn:nth-child(3)) .btn{flex:1 1 calc(50% - var(--sp-2))}}
+@media print{body.cq-printing .cq-copy-fallback{display:none}}
 .cq-flow [aria-invalid=true]{outline:1px solid var(--red);outline-offset:1px}
 @media(max-width:600px){.cq-agreement-files li{align-items:stretch;flex-direction:column}.cq-file-actions .btn{min-height:44px}.cq-upload-head{align-items:flex-start}.cq-credit-metrics .cq-dl{grid-template-columns:1fr 1fr}.cq-credit-metrics .cq-dl dd{text-align:right}}
 @media(max-width:768px){.cq-grid,.cq-progress{grid-template-columns:1fr}.cq-dl{grid-template-columns:1fr;gap:var(--sp-1)}.cq-dl dd{margin-bottom:var(--sp-3)}.cq-difference{font-size:var(--fs-14)}.cq-progress{gap:var(--sp-2)}.cq-progress li{padding-top:var(--sp-2)}.modal:has(.cq-flow) .modal-f .btn{flex:1}.cq-amount{font-size:var(--fs-16)}}
