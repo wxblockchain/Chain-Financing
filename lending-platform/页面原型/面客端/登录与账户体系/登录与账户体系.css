@@ -130,6 +130,12 @@
 .funder-status-action{border-top:3px solid var(--danger)}
 .funder-status-action .btn.primary{min-width:220px}
 .funder-status-stack > .funder-stamp{margin:0}
+.funder-validation{display:block;margin-block:var(--sp-5)}
+.funder-validation ul{margin:var(--sp-3) 0 0;padding:0;list-style:none}
+.funder-validation li{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;border-top:1px solid var(--border)}
+.funder-validation li span{font-size:var(--fs-13)}
+.funder-validation .btn-link{flex:none;text-align:left}
+#f-material{scroll-margin-top:120px}
 .funder-history{margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--border)}
 .funder-history summary{cursor:pointer;color:var(--text);width:fit-content;padding:var(--sp-2) 0}
 .funder-history summary:hover{color:var(--accent)}
