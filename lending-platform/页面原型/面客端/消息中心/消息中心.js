@@ -5,6 +5,8 @@
   const stateNames={active:['In progress','进行中'],pending:['Action required','待处理'],complete:['Completed','已完成'],failed:['Failed','已失败']};
   const stateColors={active:'accent',pending:'warn',complete:'ok',failed:'danger'};
   let view=null,previousRole=null,restore=false,renderedDetail=null,preflight=null,preflightTimer=null;
+  let frame=null,positioning=false,detailTop=true,returnFocus=false;
+  const defaultScrollRestoration=history.scrollRestoration;
   let busy=false,moreError=false,failMore=false,failRead=false,readError=false,refreshFail=false,readTimer=null;
   let timer=null,refreshes=0,detailFailure=false,landingDenied=false;
   const storageKey='harbour-notification-demo-v1';
@@ -49,10 +51,33 @@
   function matches(r,f){return (!f.cat||category(r)===f.cat)&&(!f.status||(f.status==='read')===r.read);}
   function ensureView(){
     const f=filters(),key=S.role+'|'+f.cat+'|'+f.status;
-    if(!view||view.key!==key)view={key,f,ids:N.visible().filter(r=>matches(r,f)).map(r=>r.id),shown:20,scroll:0,window:0,hash:location.hash};
+    if(!view||view.key!==key)view={key,f,ids:N.visible().filter(r=>matches(r,f)).map(r=>r.id),shown:20,window:0,anchor:null,focus:null,hash:location.hash};
     return view;
   }
-  function snapshot(){if(!view)return;const box=document.getElementById('nc-list');if(box){view.scroll=box.scrollTop;view.window=window.scrollY;}}
+  function snapshot(){
+    if(!view||positioning||path()!=='/notifications')return;
+    const box=document.getElementById('nc-list');if(!box)return;
+    view.window=window.scrollY;
+    const header=document.querySelector('.portal-head'),toolbar=document.querySelector('.nc-filters');
+    const edge=(header?.offsetHeight||0)+(window.innerWidth>900?(toolbar?.offsetHeight||0):0);
+    const row=[...box.querySelectorAll('.nc-row')].find(el=>el.getBoundingClientRect().bottom>edge);
+    view.anchor=row&&view.window>0?{id:row.dataset.id,top:row.getBoundingClientRect().top}:null;
+  }
+  function headerOffset(){document.querySelector('.nc-layout')?.style.setProperty('--nc-header-height',(document.querySelector('.portal-head')?.offsetHeight||68)+'px');}
+  function restorePosition(top=false){
+    cancelAnimationFrame(frame);positioning=true;
+    const current=view,focus=returnFocus;returnFocus=false;
+    frame=requestAnimationFrame(()=>{
+      headerOffset();
+      if(top)window.scrollTo(0,0);
+      else if(current){
+        const row=current.anchor&&[...document.querySelectorAll('.nc-row')].find(el=>el.dataset.id===current.anchor.id);
+        window.scrollTo(0,row?window.scrollY+row.getBoundingClientRect().top-current.anchor.top:current.window);
+        if(focus&&current.focus)[...document.querySelectorAll('.nc-row')].find(el=>el.dataset.id===current.focus)?.querySelector('.nc-title')?.focus({preventScroll:true});
+      }
+      positioning=false;snapshot();
+    });
+  }
   function resetView(){view=null;moreError=false;readError=false;S.toTop=true;}
   function newMessages(){
     if(!view)return;
@@ -66,24 +91,24 @@
   function listRow(r){return '<article class="nc-row" data-id="'+E(r.id)+'" data-unread="'+!r.read+'"><div class="nc-row-main">'+meta(r)+
     '<a class="nc-title" href="#/notification?id='+encodeURIComponent(r.id)+'">'+E(template(r,'title'))+'</a>'+
     (r.progress?progress(r):'<p class="nc-summary">'+E(template(r,'body'))+'</p>')+'</div><div class="nc-row-aside"><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time>'+
-    (!r.read?btn('nc-read',L('Mark as read','标为已读'),r.id,busy?'disabled':''):'<span class="tiny">'+L('Read','已读')+'</span>')+'</div></article>';}
+    (!r.read?btn('nc-read',L('Mark as read','标为已读'),r.id,busy?'disabled':''):'<span class="tiny nc-read-label">'+L('Read','已读')+'</span>')+'</div></article>';}
   function renderList(){
     const v=ensureView(),all=N.visible(),rows=rowsInView(),count=all.filter(r=>matches(r,v.f)&&!r.read).length;
     const cats=[...new Set(all.map(category))];
     const opt=(value,label,cur)=>'<option value="'+E(value)+'" '+(value===cur?'selected':'')+'>'+E(label)+'</option>';
     const filter='<div class="nc-filters"><div class="field"><label for="nc-category">'+L('Category','分类')+'</label><select class="inp" id="nc-category">'+opt('',L('All','全部'),v.f.cat)+cats.map(c=>opt(c,catName(c),v.f.cat)).join('')+'</select></div>'+
-      '<div class="field"><label for="nc-status">'+L('Status','状态')+'</label><select class="inp" id="nc-status">'+[['',L('All','全部')],['unread',L('Unread','未读')],['read',L('Read','已读')]].map(o=>opt(o[0],o[1],v.f.status)).join('')+'</select></div><span class="nc-count">'+L(rows.length+' messages',rows.length+' 条消息')+'</span></div>';
+      '<div class="field"><label for="nc-status">'+L('Status','状态')+'</label><select class="inp" id="nc-status">'+[['',L('All','全部')],['unread',L('Unread','未读')],['read',L('Read','已读')]].map(o=>opt(o[0],o[1],v.f.status)).join('')+'</select></div><span class="nc-count">'+L(rows.length+' messages',rows.length+' 条消息')+'</span>'+btn('nc-all',L('Mark all as read','全部已读'),'',(!count||busy||S.st!=='default')?'disabled':'')+'</div>';
     let body=stateSurface();
     if(!body){
       if(!rows.length)body=v.f.cat||v.f.status?CF.empty(L('No messages match the current filter','当前筛选下没有消息'),'',btn('nc-clear',L('Clear filters','清除筛选'))):CF.empty(L('You have no messages yet','还没有任何消息'),'','');
       else body=rows.slice(0,v.shown).map(listRow).join('')+'<div class="loadmore">'+
         (moreError?'<span role="alert">'+L('Failed to load. Please try again','加载失败，请重试')+'</span>':'')+
         (v.shown<rows.length?btn('nc-more',busy?L('Loading…','加载中…'):L('Load more','加载更多'),'',busy?'disabled':''):'<span>'+L('No more messages','没有更多了')+'</span>')+
-        '<span class="tiny" role="status">'+L('Showing '+Math.min(v.shown,rows.length)+' of '+rows.length,'已显示 '+Math.min(v.shown,rows.length)+' / '+rows.length+' 条')+'</span></div>';
+        '<span class="tiny" role="status">'+L('Showing '+Math.min(v.shown,rows.length)+' of '+rows.length,'已显示 '+Math.min(v.shown,rows.length)+' / '+rows.length+' 条')+'</span>'+btn('nc-top',L('Back to filters','返回筛选'))+'</div>';
     }
-    return '<div class="nc-layout"><div class="nc-head"><div><h1 class="page-title">'+L('Notifications','消息中心')+'</h1><p class="page-sub">'+L('Your updates, in one place.','在这里查看与你有关的最新动态。')+'</p></div>'+btn('nc-all',L('Mark all as read','全部已读'),'',(!count||busy||S.st!=='default')?'disabled':'')+'</div><section class="card">'+filter+
+    return '<div class="nc-layout"><div class="nc-head"><div><h1 class="page-title">'+L('Notifications','消息中心')+'</h1><p class="page-sub">'+L('Your updates, in one place.','在这里查看与你有关的最新动态。')+'</p></div></div>'+filter+'<section class="nc-feed">'+
       (readError?'<div class="nc-feedback">'+CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。'))+'</div>':'')+
-      '<div class="listbox nc-list" id="nc-list" tabindex="0" aria-label="'+L('Messages','消息列表')+'">'+body+'</div></section></div>';
+      '<div class="nc-list" id="nc-list" aria-label="'+L('Messages','消息列表')+'">'+body+'</div></section></div>';
   }
   function lookup(){return N.visible().find(r=>r.id===query().get('id'));}
   function backLink(){return '<a class="btn-link nc-back" href="'+E(view?view.hash:'#/notifications')+'">← '+L('Back to list','返回列表')+'</a>';}
@@ -154,14 +179,18 @@
       if(N.allowed()&&S.page===DETAIL&&renderedDetail){
         const r=lookup();if(r&&!r.read&&!readError){if(failRead){failRead=false;readError=true;queueMicrotask(()=>CF.render());}else{N.markRead([r.id]);document.querySelectorAll('.nc-detail .nc-meta').forEach((node,i)=>{if(i===0)node.outerHTML=meta(r);});}}
       }
-      if(S.page===LIST&&view){const box=document.getElementById('nc-list');if(box)box.scrollTop=view.scroll;if(restore){window.scrollTo(0,view.window);restore=false;}}
+      if(S.page===LIST||S.page===DETAIL)history.scrollRestoration='manual';
+      else history.scrollRestoration=defaultScrollRestoration;
+      if(S.page===LIST&&view){headerOffset();const top=S.toTop&&!restore;S.toTop=false;restorePosition(top);restore=false;}
+      if(S.page===DETAIL&&detailTop){S.toTop=false;detailTop=false;restorePosition(true);}
       if(CF.renderFooter&&(S.page===LIST||S.page===DETAIL))CF.renderFooter();
     },
-    onRoute(from,to){snapshot();if(from===DETAIL&&to===LIST)restore=true;if(to!==DETAIL){clearTimeout(preflightTimer);preflight=null;}},
+    onRoute(from,to){if(from===DETAIL&&to===LIST){restore=true;returnFocus=true;}if(to===DETAIL)detailTop=true;if(to!==DETAIL){clearTimeout(preflightTimer);preflight=null;}},
     content(page){const guard=CF.authSurface();if(guard)return '<div class="card nc-layout">'+guard+'</div>';if(S.st==='denied')return CF.empty(L('Complete your account setup','请先完成账户必办事项'),L('Complete the required steps to continue.','完成必办事项后即可继续。'),btn('prerequisite',L('Continue setup','继续完善')));return page===LIST?renderList():renderDetail();},
     layers:{'nc-confirm':()=>{const data=S.layer.data;return {title:L('Mark all as read?','确认全部已读？'),html:'<p>'+L(data.ids.length+' message(s) under the current filter will be marked as read.','将把当前筛选下的 '+data.ids.length+' 条消息标为已读。')+'</p><p><b>'+L('Category: ','分类：')+'</b>'+E(data.cat)+'<br><b>'+L('Status: ','状态：')+'</b>'+E(data.status)+'</p>'+(readError?CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。')):''),foot:btn('closelayer',L('Cancel','取消'),'',busy?'disabled':'')+btn('nc-confirm',busy?L('Saving…','正在处理…'):L('Confirm','确认'),'',busy?'disabled':'')};}},
     onBeforeAct(act){if(act==='closelayer'&&busy)return true;if(act==='clearfilter'&&(S.page===LIST||S.page===DETAIL)){resetView();S.st='default';location.hash='#/notifications';return true;}if(act==='st'){detailFailure=false;readError=false;resetView();}return false;},
     onAct(act,v){
+      if(act==='nc-top'){window.scrollTo(0,0);document.getElementById('nc-category')?.focus({preventScroll:true});snapshot();return true;}
       if(act==='nc-clear'){resetView();S.st='default';location.hash='#/notifications';return true;}
       if(act==='nc-more'){if(busy)return true;busy=true;moreError=false;const owner=S.role,key=view.key;setTimeout(()=>{busy=false;if(owner!==S.role||!view||view.key!==key)return;if(failMore){failMore=false;moreError=true;}else view.shown+=20;CF.render();},450);return true;}
       if(act==='nc-read'){mark([v]);return true;}
@@ -191,6 +220,9 @@
       return false;
     }
   });
+  window.addEventListener('scroll',snapshot,{passive:true});
+  window.addEventListener('resize',headerOffset);
+  document.addEventListener('click',e=>{const link=e.target.closest('.nc-title');if(link&&view){snapshot();view.focus=link.closest('.nc-row').dataset.id;}},true);
   document.addEventListener('change',e=>{
     if(!['nc-category','nc-status'].includes(e.target.id))return;
     const cat=document.getElementById('nc-category').value,status=document.getElementById('nc-status').value,q=new URLSearchParams();
