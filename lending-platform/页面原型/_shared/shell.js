@@ -294,11 +294,12 @@
       $("asidefoot").innerHTML = M.adminIdentity ? M.adminIdentity() : '';
       return;
     }
-    $("atools").innerHTML = langDd() + bell(2);
+    var context = M && M.adminContext ? M.adminContext() : null;
+    $("atools").innerHTML = langDd() + (context && context.hideNotifications ? "" : bell(2));
     $("asidefoot").innerHTML =
       '<div class="op-row"><span class="op-avatar">OP</span><div style="min-width:0">' +
-      '<div class="op-name">' + L("Operations admin", "运营管理员") + "</div>" +
-      '<div class="op-role">' + L("Signed in", "已登录") + "</div></div></div>";
+      '<div class="op-name">' + esc(context ? context.name : L("Operations admin", "运营管理员")) + "</div>" +
+      '<div class="op-role">' + esc(context ? context.subtitle : L("Signed in", "已登录")) + "</div></div></div>";
   }
 
   /* ------------------------------------------------------------ 面包屑 */
@@ -344,6 +345,8 @@
 
   function renderLayer() {
     var host = $("layers");
+    ["app", "portal", "focus"].forEach(function(id) { if ($(id)) $(id).inert = !!S.layer; });
+    ["demoBtn", "demoPanel"].forEach(function(id) { if ($(id)) $(id).inert = !!S.layer && !(M && M.reviewToolsInLayer); });
     if (!S.layer) { host.innerHTML = ""; return; }
     function markup(layer) {
     var body = M && M.layers && M.layers[layer.key] ? M.layers[layer.key](layer.data) : null;
@@ -380,8 +383,9 @@
   function renderDemo() {
     $("demoBtn").textContent = S.demo ? L("Close demo tools", "关闭演示工具") : L("Demo tools", "演示工具");
     var panel = $("demoPanel");
-    panel.hidden = !S.demo;
-    if (!S.demo) return;
+    $("demoBtn").hidden = !!S.layer && !(M && M.reviewToolsInLayer);
+    panel.hidden = !S.demo || !!S.layer && !(M && M.reviewToolsInLayer);
+    if (panel.hidden) return;
     if (M && M.demoOnly) { panel.innerHTML = M.demo(); return; }
     var roles = S.end === "admin"
       ? [["ops", L("Operations admin", "运营管理员")]]
@@ -610,7 +614,7 @@
 
   function onKey(e) {
     if (e.key === "Tab" && S.layer) {
-      var nodes = Array.from($("layers").querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select,textarea,[tabindex="0"]')).filter(function(node) { return !node.closest('[inert]') && node.getClientRects().length; });
+      var nodes = Array.from($("layers").querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')).filter(function(node) { return !node.closest('[inert]') && node.getClientRects().length; });
       if (M && M.reviewToolsInLayer) { nodes = nodes.concat(Array.from(document.querySelectorAll('#demoBtn, #demoPanel:not([hidden]) button:not(:disabled)'))); }
       var first = nodes[0], last = nodes[nodes.length - 1];
       if (first && e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }

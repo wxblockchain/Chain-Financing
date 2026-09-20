@@ -45,6 +45,9 @@
 | `content(pageId)` | 返回该页内容区 HTML |
 | `layers` | `{ key: fn }` 抽屉与弹窗内容表 |
 | `onAct(act, value, event)` | 模块自己的点击动作；返回 `true` 表示已处理 |
+| `allowNav(pageId)` | 可选：在登记表内按模块范围与查询权限过滤导航，不自行生成菜单 |
+| `adminContext()` | 可选：返回 `{name, subtitle, hideNotifications}`，声明实际操作员上下文与未接入的消息入口 |
+| `demoOnly` + `demo()` | 可选：独立模块只使用自己的默认关闭演示面板，不展示无关部署单元切换 |
 
 公共层提供的片段：`CF.tag` / `CF.note` / `CF.empty` / `CF.skelTable` / `CF.surface`（六种状态表面）/ `CF.toast` / `CF.openLayer` / `CF.closeLayer` / `CF.fmtDate` / `CF.fmtTime` / `CF.fmtAmt` / `CF.esc` / `CF.L`。模块不得重新实现其中任何一项。
 

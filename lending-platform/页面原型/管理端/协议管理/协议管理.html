@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en" data-end="admin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agreements · Harbour Credit</title>
+<link rel="stylesheet" href="../../_shared/tokens.css">
+<link rel="stylesheet" href="../../_shared/base.css">
+<style>
+/* Agreements: module compositions, inherited app shell and canonical tokens. */
+.ag-stack{display:grid;gap:var(--sp-5);align-content:start}
+.ag-row{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
+.ag-sub{display:block;font-size:var(--fs-11);color:var(--muted);margin-top:var(--sp-1);overflow-wrap:anywhere}
+.ag-wrap{overflow-wrap:anywhere;white-space:normal}
+.ag-table{table-layout:fixed}
+.ag-table th,.ag-table td{overflow-wrap:anywhere}
+.ag-table th.col-act,.ag-table td.col-act{position:sticky;right:0;background:var(--card);width:68px}
+.ag-table thead th{white-space:normal;color:var(--muted)}
+.ag-table td{font-size:var(--fs-12)}
+.ag-table .tag{padding:3px 6px}
+.ag-filter{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;align-items:start}
+.ag-filter .field{max-width:none}
+.ag-filter details{position:relative}
+.ag-filter summary{list-style:none;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.ag-filter summary::after{content:'⌄'}
+.ag-options{position:absolute;z-index:var(--z-sticky);background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow-lg);padding:var(--sp-3);border-radius:var(--radius-sm);min-width:100%;display:grid;gap:var(--sp-2)}
+.ag-options label{white-space:nowrap;display:flex;gap:var(--sp-2);align-items:center}
+.ag-dates{grid-column:1/4;display:flex;align-items:end;gap:var(--sp-3)}
+.ag-dates .field{flex:1;max-width:240px}
+.ag-filter .acts{align-self:end}
+.ag-tabs{display:flex;gap:var(--sp-6);border-bottom:1px solid var(--border);margin-bottom:var(--sp-5)}
+.ag-tabs button{padding:var(--sp-3) 0;color:var(--muted);border-bottom:2px solid transparent;font-weight:600}
+.ag-tabs button[aria-current="page"]{color:var(--accent);border-color:var(--accent)}
+.ag-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6);align-items:start}
+.ag-summary{background:var(--accent-soft);border:1px solid var(--accent-border);border-radius:var(--radius);padding:var(--sp-5)}
+.ag-summary h2,.ag-heading{font-size:var(--fs-16);margin:0 0 var(--sp-3);font-weight:650}
+.ag-history{padding:var(--sp-5);border-bottom:1px solid var(--border)}
+.ag-history:last-child{border-bottom:0}
+.ag-history.ag-active{background:var(--accent-soft)}
+.ag-history-top{display:flex;align-items:center;gap:var(--sp-3)}
+.ag-history-top .ag-row{margin-left:auto;justify-content:flex-end}
+.ag-history-meta{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:var(--sp-4);margin-top:var(--sp-4);font-size:var(--fs-12)}
+.ag-history-meta b{display:block;color:var(--muted);font-weight:500;font-size:var(--fs-11);margin-bottom:var(--sp-1)}
+.ag-form{align-items:start;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,1fr);gap:var(--sp-5)}
+.ag-upload{border:1px dashed var(--border-strong);padding:var(--sp-7) var(--sp-5);text-align:center;border-radius:var(--radius);background:var(--card-2)}
+.ag-upload p{margin:var(--sp-3) 0;color:var(--muted)}
+.ag-file{padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:var(--sp-4);overflow-wrap:anywhere}
+.ag-editor textarea{height:160px;resize:vertical;padding:var(--sp-3)}
+.ag-editor .field{margin-bottom:var(--sp-5)}
+.ag-editor input[type=checkbox],.ag-editor input[type=radio]{accent-color:var(--accent)}
+.ag-actions{padding:var(--sp-4) 0;display:flex;justify-content:flex-end;gap:var(--sp-3)}
+.ag-error{min-height:1.5em;font-size:var(--fs-12);color:var(--danger);margin-top:var(--sp-2)}
+.ag-timeline{margin:0;padding:0;list-style:none}
+.ag-timeline li{padding:var(--sp-5);border-bottom:1px solid var(--border)}
+.ag-timeline li:last-child{border-bottom:0}
+.ag-timeline p{margin:var(--sp-2) 0}
+.ag-preview{width:100%;height:330px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:var(--sp-4);background:var(--card-2)}
+.ag-paper{height:auto;min-height:260px;padding:var(--sp-6);background:var(--card);color:var(--text)}
+.ag-paper h3{font-size:var(--fs-16);margin:var(--sp-6) 0 var(--sp-4)}
+.ag-progress{width:100%;accent-color:var(--accent)}
+.ag-access{padding:var(--sp-3);background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border);border-radius:var(--radius-sm);margin-bottom:var(--sp-4)}
+.ag-dim{color:var(--muted)}
+.ag-editor [disabled]{cursor:not-allowed;opacity:.65}
+.ag-table .cell-sub,.ag-stack .dl dt{color:var(--muted)}
+.ag-back{margin-bottom:var(--sp-4)}
+</style>
+</head>
+<body>
+<div id="portal" hidden></div>
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">HC</span><div><div class="brand-name">Harbour Credit</div><div class="brand-sub">Operations</div></div></div>
+    <nav class="nav" id="anav" aria-label="Main navigation"></nav><div class="side-foot" id="asidefoot"></div>
+  </aside>
+  <div class="main"><div class="topbar"><div class="crumbbar-in" id="acrumb"></div><div class="topbar-right" id="atools"></div></div><main class="content" id="acontent"></main></div>
+</div>
+<div id="layers"></div><div class="toasts" id="toasts" aria-live="polite"></div>
+<button class="demo-btn" id="demoBtn" type="button"></button><aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
+<script src="../../_shared/registry.admin.js"></script>
+<script src="../../_shared/shell.js"></script>
+<script src="演示数据.js"></script>
+<script src="协议管理.js"></script>
+</body>
+</html>
