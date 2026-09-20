@@ -21,4 +21,18 @@
   }
 
   CF.NAV.admin = ["P-O06", "P-O-AG-01"];
+  // Account flows are registered, but never added as business sidebar items.
+  var accountPages = [
+    ['01', 'navOpsLogin', '/ops/login', 'focus'],
+    ['03', 'navOpsFirst', '/ops/first-password', 'focus'],
+    ['04', 'navOpsForgot', '/ops/forgot-password', 'focus'],
+    ['05', 'navOpsReset', '/ops/reset-password', 'focus'],
+    ['06', 'navOpsAccount', '/ops/account', 'app'],
+    ['07', 'navOverview', '/ops/account-overview', 'app']
+  ];
+  accountPages.forEach(function (p) {
+    var id = 'P-O-AL-' + p[0];
+    CF.PAGES[id] = { end: 'admin', layout: p[3], navKey: p[1], ico: '▤' };
+    CF.ENTRY[id] = p[2];
+  });
 })(window.CF = window.CF || {});

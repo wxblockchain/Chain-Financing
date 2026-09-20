@@ -175,14 +175,14 @@
     if (S.st === "denied") {
       return CF.empty(
         L("You do not have access to this view", "你没有查看该视图的权限"),
-        L("This view is limited to the entity that owns the record. Public fields stay visible on the marketplace.",
+        opts.deniedDesc || L("This view is limited to the entity that owns the record. Public fields stay visible on the marketplace.",
           "该视图仅对记录所属主体开放。广场上的公开字段不受影响。"),
         '<button class="btn" type="button" data-act="go" data-v="' + esc(opts.backTo || "/") + '">' +
-        L("Back to the marketplace", "返回广场") + "</button>");
+        (opts.backLabel || L("Back to the marketplace", "返回广场")) + "</button>");
     }
     if (S.st === "error") {
       return CF.empty(
-        L("Could not load this list", "列表加载失败"),
+        opts.errorTitle || L("Could not load this list", "列表加载失败"),
         L("The request did not complete. Retry, or come back in a moment.", "请求没有完成。可以重试，或稍后再来。"),
         '<button class="btn primary" type="button" data-act="retry">' + L("Retry", "重试") + "</button>");
     }
@@ -200,7 +200,7 @@
   function resetList() { S.shown = CF.PAGE_SIZE; S.pageNo = 1; S.toTop = true; }
   CF.resetList = resetList;
 
-  function navItems() { return (CF.NAV[S.end] || []).filter(function (id) { return CF.PAGES[id]; }); }
+  function navItems() { return (CF.NAV[S.end] || []).filter(function (id) { return CF.PAGES[id] && (!M || !M.allowNav || M.allowNav(id)); }); }
 
   function renderPortalNav() {
     var html = navItems().map(function (id) {
@@ -289,6 +289,11 @@
   }
 
   function renderAdminTools() {
+    if (M && M.adminTools) {
+      $("atools").innerHTML = (M.adminNotifications ? M.adminNotifications() : '') + langDd() + M.adminTools();
+      $("asidefoot").innerHTML = M.adminIdentity ? M.adminIdentity() : '';
+      return;
+    }
     $("atools").innerHTML = langDd() + bell(2);
     $("asidefoot").innerHTML =
       '<div class="op-row"><span class="op-avatar">OP</span><div style="min-width:0">' +
@@ -374,6 +379,7 @@
     var panel = $("demoPanel");
     panel.hidden = !S.demo;
     if (!S.demo) return;
+    if (M && M.demoOnly) { panel.innerHTML = M.demo(); return; }
     var roles = S.end === "admin"
       ? [["ops", L("Operations admin", "运营管理员")]]
       : [["limited", L("Restricted session", "受限会话")], ["guest", L("Signed out", "未登录访客")], ["asset", L("Asset holder", "资产方")], ["fund", L("Funder", "资金方")]];
@@ -462,6 +468,7 @@
     $("portal").hidden = true; $("app").hidden = true; focus.hidden = false;
     $("focusTools").innerHTML = langDd();
     $("focusContent").innerHTML = M && M.content ? M.content(S.page) : '';
+    if (M && M.afterRender) M.afterRender();
     renderLayer(); renderDemo();
     document.title = t(p.navKey || p.crumbKey) + ' · Harbour Credit';
   }
@@ -600,7 +607,8 @@
 
   function onKey(e) {
     if (e.key === "Tab" && S.layer) {
-      var nodes = Array.from($("layers").querySelectorAll('button:not(:disabled),a[href],input,select,[tabindex="0"]'));
+      var nodes = Array.from($("layers").querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select,[tabindex="0"]'));
+      if (M && M.reviewToolsInLayer) { nodes = nodes.concat(Array.from(document.querySelectorAll('#demoBtn, #demoPanel:not([hidden]) button:not(:disabled)'))); }
       var first = nodes[0], last = nodes[nodes.length - 1];
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
