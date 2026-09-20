@@ -34,9 +34,15 @@
     return '<section class="nc-progress"><h2>'+E(tr(p.name))+'</h2>'+(p.number?'<div class="nc-meta"><span class="mono">'+E(p.number)+'</span>'+btn('nc-copy',L('Copy','复制'),p.number)+'</div>':'')+line+'</section>';
   }
   function readLabel(r){return r.read?L('Read','已读'):L('Unread','未读');}
-  function meta(r){return '<div class="nc-meta">'+(!r.read?'<span class="nc-dot" aria-hidden="true"></span>':'')+'<span>'+readLabel(r)+'</span><span aria-hidden="true">·</span><span>'+E(catName(category(r)))+'</span>'+ (N.expired(r)?CF.tag('gray',L('Expired','已过期')):'')+'</div>';}
+  function readBadge(r){return '<span class="nc-read-state '+(r.read?'is-read':'is-unread')+'">'+readLabel(r)+'</span>';}
+  function meta(r){return '<div class="nc-meta">'+readBadge(r)+'<span>'+E(catName(category(r)))+'</span>'+ (N.expired(r)?'<span>'+L('Expired','已过期')+'</span>':'')+'</div>';}
+  function summary(r){
+    if(!r.progress)return E(template(r,'body'));
+    const p=r.progress,st=stateNames[p.state];
+    return [tr(p.node),st?L(...st):'',p.step!=null&&p.total!=null?L('Step '+p.step+'/'+p.total,'第 '+p.step+'/'+p.total+' 步'):''].filter(Boolean).map(E).join(' · ');
+  }
   N.rows=D.rows;
-  N.preview=r=>meta(r)+'<span class="nc-preview-title">'+E(template(r,'title'))+'</span>'+progress(r)+'<time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time>';
+  N.preview=r=>'<span class="nc-preview-heading"><span class="nc-preview-title">'+E(template(r,'title'))+'</span>'+readBadge(r)+'</span><span class="nc-preview-summary">'+summary(r)+'</span><span class="nc-meta">'+E(catName(category(r)))+(N.expired(r)?' · '+L('Expired','已过期'):'')+'</span><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time>';
   function saveRead(ids){
     try{
       const saved=JSON.parse(localStorage.getItem(storageKey)||'{}');
@@ -86,18 +92,19 @@
   }
   function rowsInView(){const v=ensureView(),map=new Map(N.visible().map(r=>[r.id,r]));return v.ids.map(id=>map.get(id)).filter(Boolean);}
   function stateSurface(){
+    if(S.st==='loading')return '<div class="nc-skeleton" role="status" aria-label="'+L('Loading messages','正在加载消息')+'">'+Array.from({length:4},()=>'<div class="nc-skeleton-row" aria-hidden="true"><span class="skel"></span><span class="skel"></span><span class="skel"></span></div>').join('')+'</div>';
     return CF.surface({emptyTitle:L('You have no messages yet','还没有任何消息'),emptyDesc:'',skelRows:5});
   }
-  function listRow(r){return '<article class="nc-row" data-id="'+E(r.id)+'" data-unread="'+!r.read+'"><div class="nc-row-main">'+meta(r)+
-    '<a class="nc-title" href="#/notification?id='+encodeURIComponent(r.id)+'">'+E(template(r,'title'))+'</a>'+
-    (r.progress?progress(r):'<p class="nc-summary">'+E(template(r,'body'))+'</p>')+'</div><div class="nc-row-aside"><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time>'+
-    (!r.read?btn('nc-read',L('Mark as read','标为已读'),r.id,busy?'disabled':''):'<span class="tiny nc-read-label">'+L('Read','已读')+'</span>')+'</div></article>';}
+  function listRow(r){return '<article class="nc-row" data-id="'+E(r.id)+'" data-unread="'+!r.read+'"><a class="nc-title nc-message-link" href="#/notification?id='+encodeURIComponent(r.id)+'">'+
+    '<span class="nc-message-heading"><span class="nc-message-title">'+E(template(r,'title'))+'</span>'+readBadge(r)+'</span>'+
+    (summary(r)?'<span class="nc-summary">'+summary(r)+'</span>':'')+
+    '<span class="nc-message-foot"><span class="nc-message-category">'+E(catName(category(r)))+(N.expired(r)?' · '+L('Expired','已过期'):'')+'</span><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time></span></a></article>';}
   function renderList(){
     const v=ensureView(),all=N.visible(),rows=rowsInView(),count=all.filter(r=>matches(r,v.f)&&!r.read).length;
     const cats=[...new Set(all.map(category))];
     const opt=(value,label,cur)=>'<option value="'+E(value)+'" '+(value===cur?'selected':'')+'>'+E(label)+'</option>';
-    const filter='<div class="nc-filters"><div class="field"><label for="nc-category">'+L('Category','分类')+'</label><select class="inp" id="nc-category">'+opt('',L('All','全部'),v.f.cat)+cats.map(c=>opt(c,catName(c),v.f.cat)).join('')+'</select></div>'+
-      '<div class="field"><label for="nc-status">'+L('Status','状态')+'</label><select class="inp" id="nc-status">'+[['',L('All','全部')],['unread',L('Unread','未读')],['read',L('Read','已读')]].map(o=>opt(o[0],o[1],v.f.status)).join('')+'</select></div><span class="nc-count">'+L(rows.length+' messages',rows.length+' 条消息')+'</span>'+btn('nc-all',L('Mark all as read','全部已读'),'',(!count||busy||S.st!=='default')?'disabled':'')+'</div>';
+    const filter='<div class="nc-filters nc-inbox-filters"><div class="nc-status-options" role="group" aria-label="'+L('Message status','消息状态')+'">'+[['',L('All messages','全部消息')],['unread',L('Unread','未读')],['read',L('Read','已读')]].map(o=>'<button type="button" data-act="nc-status" data-v="'+o[0]+'" aria-pressed="'+(v.f.status===o[0])+'">'+o[1]+'</button>').join('')+'</div>'+
+      '<div class="nc-category-field"><label for="nc-category">'+L('Category','分类')+'</label><select class="inp" id="nc-category">'+opt('',L('All categories','全部分类'),v.f.cat)+cats.map(c=>opt(c,catName(c),v.f.cat)).join('')+'</select></div>'+btn('nc-all',L('Mark all as read','全部已读'),'',(!count||busy||S.st!=='default')?'disabled':'')+'</div>';
     let body=stateSurface();
     if(!body){
       if(!rows.length)body=v.f.cat||v.f.status?CF.empty(L('No messages match the current filter','当前筛选下没有消息'),'',btn('nc-clear',L('Clear filters','清除筛选'))):CF.empty(L('You have no messages yet','还没有任何消息'),'','');
@@ -106,7 +113,7 @@
         (v.shown<rows.length?btn('nc-more',busy?L('Loading…','加载中…'):L('Load more','加载更多'),'',busy?'disabled':''):'<span>'+L('No more messages','没有更多了')+'</span>')+
         '<span class="tiny" role="status">'+L('Showing '+Math.min(v.shown,rows.length)+' of '+rows.length,'已显示 '+Math.min(v.shown,rows.length)+' / '+rows.length+' 条')+'</span>'+btn('nc-top',L('Back to filters','返回筛选'))+'</div>';
     }
-    return '<div class="nc-layout"><div class="nc-head"><div><h1 class="page-title">'+L('Notifications','消息中心')+'</h1><p class="page-sub">'+L('Your updates, in one place.','在这里查看与你有关的最新动态。')+'</p></div></div>'+filter+'<section class="nc-feed">'+
+    return '<div class="nc-layout nc-inbox"><div class="nc-head"><h1 class="page-title">'+L('Notifications','消息中心')+'</h1><p class="page-sub">'+L('Account updates and business progress','账户动态与业务进展')+'</p></div>'+filter+'<div class="nc-result-count" role="status">'+L(rows.length+' messages',rows.length+' 条消息')+'</div><section class="nc-feed">'+
       (readError?'<div class="nc-feedback">'+CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。'))+'</div>':'')+
       '<div class="nc-list" id="nc-list" aria-label="'+L('Messages','消息列表')+'">'+body+'</div></section></div>';
   }
@@ -136,7 +143,7 @@
     const reason={deleted:L('The related item has been deleted','相关内容已被删除'),changed:L('The status of the related item has changed','相关内容的状态已变化'),denied:L('You do not have permission to view this item','你当前没有查看该内容的权限')}[check];
     const title=E(template(r,'title')),body=E(template(r,'body'));
     renderedDetail=r.id;
-    return '<div class="nc-detail">'+back+'<article class="card"><div class="card-b">'+meta(r)+'<h1>'+title+'</h1><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time>'+progress(r,true)+'<div class="nc-body">'+body+'</div>'+
+    return '<div class="nc-detail nc-reading">'+back+'<article class="card"><div class="card-b"><h1>'+title+'</h1><div class="nc-reading-meta">'+meta(r)+'<time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time></div>'+progress(r,true)+'<div class="nc-body">'+body+'</div>'+
       (reason?'<div id="nc-reason" tabindex="0">'+CF.note('warn',reason)+'</div>':'')+
       (readError?CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。'))+btn('nc-read',L('Retry','重试'),r.id):'')+
       '<div class="nc-actions">'+(target?btn('nc-jump',check==='pending'?L('Checking…','正在检查…'):L('View related item','查看相关内容'),r.id,(reason?'aria-disabled="true" aria-describedby="nc-reason"':check==='pending'?'disabled':'')):'')+
@@ -190,6 +197,7 @@
     layers:{'nc-confirm':()=>{const data=S.layer.data;return {title:L('Mark all as read?','确认全部已读？'),html:'<p>'+L(data.ids.length+' message(s) under the current filter will be marked as read.','将把当前筛选下的 '+data.ids.length+' 条消息标为已读。')+'</p><p><b>'+L('Category: ','分类：')+'</b>'+E(data.cat)+'<br><b>'+L('Status: ','状态：')+'</b>'+E(data.status)+'</p>'+(readError?CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。')):''),foot:btn('closelayer',L('Cancel','取消'),'',busy?'disabled':'')+btn('nc-confirm',busy?L('Saving…','正在处理…'):L('Confirm','确认'),'',busy?'disabled':'')};}},
     onBeforeAct(act){if(act==='closelayer'&&busy)return true;if(act==='clearfilter'&&(S.page===LIST||S.page===DETAIL)){resetView();S.st='default';location.hash='#/notifications';return true;}if(act==='st'){detailFailure=false;readError=false;resetView();}return false;},
     onAct(act,v){
+      if(act==='nc-status'){if(filters().status===v)return true;const q=query();if(v)q.set('status',v);else q.delete('status');resetView();location.hash='#/notifications'+(q.size?'?'+q:'');return true;}
       if(act==='nc-top'){window.scrollTo(0,0);document.getElementById('nc-category')?.focus({preventScroll:true});snapshot();return true;}
       if(act==='nc-clear'){resetView();S.st='default';location.hash='#/notifications';return true;}
       if(act==='nc-more'){if(busy)return true;busy=true;moreError=false;const owner=S.role,key=view.key;setTimeout(()=>{busy=false;if(owner!==S.role||!view||view.key!==key)return;if(failMore){failMore=false;moreError=true;}else view.shown+=20;CF.render();},450);return true;}
@@ -224,8 +232,8 @@
   window.addEventListener('resize',headerOffset);
   document.addEventListener('click',e=>{const link=e.target.closest('.nc-title');if(link&&view){snapshot();view.focus=link.closest('.nc-row').dataset.id;}},true);
   document.addEventListener('change',e=>{
-    if(!['nc-category','nc-status'].includes(e.target.id))return;
-    const cat=document.getElementById('nc-category').value,status=document.getElementById('nc-status').value,q=new URLSearchParams();
+    if(e.target.id!=='nc-category')return;
+    const cat=e.target.value,status=filters().status,q=new URLSearchParams();
     if(cat)q.set('category',cat);if(status)q.set('status',status);resetView();location.hash='#/notifications'+(q.size?'?'+q:'');
   });
   window.addEventListener('storage',e=>{if(e.key===storageKey&&N.allowed()){loadRead();CF.render();}});

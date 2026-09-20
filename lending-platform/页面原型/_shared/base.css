@@ -555,3 +555,54 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
   .nc-list .loadmore{flex-direction:column;align-items:stretch;text-align:center}
   .nc-list .loadmore [data-act="nc-top"]{margin:0}
 }
+
+/* 消息阅读层次：标题 → 摘要 → 分类/时间；状态只占一个固定位置。 */
+.nc-inbox .nc-head{margin-bottom:var(--sp-5)}
+.nc-inbox .page-sub{color:var(--muted);margin-top:var(--sp-2)}
+.nc-inbox-filters{align-items:center;gap:var(--sp-4);padding:var(--sp-3) 0}
+.nc-status-options{display:flex;gap:var(--sp-1);padding:var(--sp-1);background:var(--gray-bg);border-radius:var(--radius-sm)}
+.nc-status-options button{min-height:44px;padding:0 var(--sp-4);border-radius:var(--radius-xs);font-size:var(--fs-14);color:var(--muted);white-space:nowrap}
+.nc-status-options button[aria-pressed="true"]{background:var(--card);box-shadow:var(--shadow);color:var(--accent);font-weight:600}
+.nc-status-options button:hover{color:var(--accent)}
+.nc-status-options button:active{background:var(--accent-soft)}
+.nc-category-field{display:flex;align-items:center;gap:var(--sp-2);margin-left:auto;font-size:var(--fs-13);color:var(--muted)}
+.nc-category-field label{white-space:nowrap}
+.nc-category-field select{width:190px;max-width:100%}
+.nc-result-count{padding:var(--sp-4) 0 var(--sp-3);color:var(--muted);font-size:var(--fs-12)}
+.nc-inbox .nc-feed{margin-top:0}
+.nc-inbox .nc-row{display:block;padding:0;background:var(--card);border-bottom:1px solid var(--border)}
+.nc-inbox .nc-message-link{display:block;margin:0;padding:var(--sp-6) var(--sp-7);color:var(--text);font-size:var(--fs-body);font-weight:400;text-decoration:none}
+.nc-message-heading{display:flex;align-items:flex-start;gap:var(--sp-5);justify-content:space-between}
+.nc-message-title{font-size:var(--fs-16);font-weight:600;line-height:1.5;overflow-wrap:anywhere;min-width:0}
+.nc-read-state{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-1);min-width:62px;min-height:24px;padding:0 var(--sp-2);border-radius:var(--radius-pill);font-size:var(--fs-12);font-weight:400;line-height:1.5;white-space:nowrap;flex-shrink:0}
+.nc-read-state.is-unread{color:var(--accent);background:var(--accent-soft)}
+.nc-read-state.is-read{color:var(--muted);background:var(--gray-bg)}
+.nc-inbox .nc-summary{display:-webkit-box;margin:var(--sp-2) 0 0;line-height:1.7;font-size:var(--fs-14);font-weight:400;overflow-wrap:anywhere}
+.nc-message-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-3);font-size:var(--fs-12);color:var(--muted);flex-wrap:wrap}
+.nc-message-category{font-weight:400}
+.nc-inbox .nc-message-link:hover{background:var(--row-hover);text-decoration:none}
+.nc-inbox .nc-message-link:hover .nc-message-title{color:var(--accent)}
+.nc-inbox .nc-message-link:active{background:var(--card-hover)}
+.nc-inbox .nc-message-link:focus-visible{outline:2px solid var(--accent);outline-offset:-3px;border-radius:var(--radius-xs);background:var(--row-hover)}
+.nc-inbox .nc-row[data-unread="false"] .nc-message-title{font-weight:500}
+.nc-reading h1{margin:0 0 var(--sp-4)}
+.nc-reading-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-3);padding-bottom:var(--sp-6);border-bottom:1px solid var(--border)}
+.nc-reading .nc-body{max-width:70ch}
+.nc-preview-heading{display:flex;align-items:flex-start;gap:var(--sp-3);justify-content:space-between}
+.nc-preview-heading .nc-preview-title{margin:0;font-size:var(--fs-14)}
+.nc-preview-summary{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--muted);font-size:var(--fs-13);margin:var(--sp-2) 0;overflow-wrap:anywhere}
+.nc-skeleton-row{display:grid;gap:var(--sp-4);padding:var(--sp-6) var(--sp-7);border-bottom:1px solid var(--border)}
+.nc-skeleton-row .skel:nth-child(1){width:45%;height:var(--sp-5)}
+.nc-skeleton-row .skel:nth-child(2){width:80%}
+.nc-skeleton-row .skel:nth-child(3){width:30%}
+@media(max-width:900px){
+  .nc-inbox-filters{row-gap:var(--sp-3);align-items:flex-end}
+  .nc-status-options{width:100%}
+  .nc-status-options button{flex:1;padding:0 var(--sp-3)}
+  .nc-category-field{display:block;margin:0;flex:1;min-width:0}
+  .nc-category-field label{display:block;margin-bottom:var(--sp-1)}
+  .nc-category-field select{width:100%;min-width:0}
+  .nc-inbox .nc-message-link{padding:var(--sp-5)}
+  .nc-message-heading{gap:var(--sp-3)}
+  .nc-message-foot{gap:var(--sp-1);flex-direction:column;align-items:flex-start}
+}
