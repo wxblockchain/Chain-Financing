@@ -141,14 +141,14 @@
     const current=a.status;
     const reason=issuesHTML(view);
     const feedback=view.status==='rejected'
-      ? `<section class="card funder-status-action"><div class="card-b"><h2>${L('Your registration needs changes','注册资料需要修改')}</h2>${CF.note('red',reason)}${!hist&&current==='rejected'?`<div class="login-actions">${btn('Edit and resubmit','修改并重新提交','register','','primary')}</div>`:''}</div></section>`
-      : view.status==='submitted'?CF.note('accent',`<b>${L('Submitted → Platform review → Decision','已提交 → 平台审核中 → 出具结论')}</b><p>${L('Under review. Institution details are locked until a decision is available. Check progress or contact support.','审核中，机构资料在结论出具前不可修改。可查看进度或联系客服。')}</p>`):'';
+      ? `<section class="card funder-status-action"><div class="card-b"><h2>${L('Your registration needs changes','注册资料需要修改')}</h2>${CF.note('red',reason)}${!hist&&current==='rejected'?`<div class="login-actions">${btn('Edit and resubmit','修改并重新提交','register','','primary')}${link('Contact support','联系客服','support')}</div>`:''}</div></section>`
+      : view.status==='submitted'?CF.note('accent',`<b>${L('Under review','审核中')}</b><p>${L('Institution details are locked until a review decision is available.','机构资料在审核结论出具前不可修改。')}</p>${!hist?link('Refresh status','刷新状态','refresh'):''}`):'';
     return `<div class="funder-wrap"><div class="page-head"><div><h1 class="page-title">${L('Registration status','注册状态')}</h1><p class="page-desc">${hist?L('Historical submission — read only','历史提交 · 只读'):L('View your institution details and verification status.','查看机构资料及认证状态。')}</p></div>${tag(view.status)}</div>
       ${F.downgrade?CF.note('warn',L('Your details are being reviewed again. Funding actions are unavailable until approval.','机构资料正在重新审核，审核通过前暂不可发起出资等操作。')):''}
       <div class="funder-status-stack">${feedback}
-        <section class="card" id="f-submission-summary"><div class="card-b"><h2>${L('Submission information','提交信息')}</h2>${details([['Application','申请编号','DEMO-REG-001'],['Submission version','提交版本',String(view.version)],['Template','资料模版',view.template||'DEMO-1'],['Submitted','提交时间',time(view.submitted)],['Review decision','审核结论时间',time(view.reviewed)],['Contact email at submission','提交时联系邮箱',view.snapshotEmail||a.email]],true)}${hist?`<div class="login-actions">${btn('Return to current version','返回当前版本','history','0')}</div>`:''}</div></section>
+        <section class="card" id="f-submission-summary"><div class="card-b"><h2>${L('Submission information','提交信息')}</h2>${details([['Application','申请编号','DEMO-REG-001'],['Submission version','提交版本',String(view.version)],['Template','资料模版',view.template||'DEMO-1'],['Submitted','提交时间',time(view.submitted)],['Review decision','审核结论时间',time(view.reviewed)],['Contact email at submission','提交时联系邮箱',view.snapshotEmail||a.email]],true)}${a.history.length?`<details class="funder-history"><summary>${L('Submission history','历史提交')} · ${a.history.length}</summary><div class="funder-line">${a.history.map(h=>link('Version '+h.version+' · '+status(h.status),'版本 '+h.version+' · '+status(h.status),'history',String(h.version))).join('')}</div></details>`:''}${hist?`<div class="login-actions">${btn('Return to current version','返回当前版本','history','0')}</div>`:''}</div></section>
         <section class="card" id="f-institution-summary"><div class="card-b"><h2>${L('Institution details','机构资料')}</h2>${details((view.fields||fields()),true)}${!hist&&current==='verified'?`<div class="login-actions">${btn('Update institution details','变更机构资料','change','','primary')}</div>`:''}</div></section>
-        <div class="funder-status-footer">${a.history.length>0?`<div class="funder-line">${a.history.map(h=>link('Version '+h.version,'版本 '+h.version,'history',String(h.version))).join('')}</div>`:''}<div class="funder-line">${link('Refresh status','刷新状态','refresh')}${link('Contact support','联系客服','support')}${link('Account settings','账户设置','account')}</div>${stamp()}</div>
+        ${stamp()}
       </div></div>`;
   }
 
@@ -165,7 +165,7 @@
     if(['P-L21','P-L22','P-L23'].includes(id)&&S.role!=='fund')return `<div class="funder-wrap">${CF.empty(L('Sign in to view your account','登录后查看账户'),L('You can still browse public information.','你仍可浏览公开信息。'),btn('Sign in','登录','login','','primary')+btn('Back to home','返回首页','browse'))}</div>`;
     notices();
     if(F.load==='loading')return `<div class="funder-wrap" role="status">${CF.skelTable(5)}</div>`;
-    if(F.load==='error')return CF.empty(L('Unable to load account information','账户信息加载失败'),L('Your saved information is retained.','已保存信息会保留。'),btn('Retry','重试','load-retry','','primary'));
+    if(F.load==='error')return CF.empty(L('Unable to load account information','账户信息加载失败'),L('Your saved information is retained.','已保存信息会保留。'),btn('Retry','重试','load-retry','','primary')+(id==='P-L22'?link('Contact support','联系客服','support'):''));
     return ({'P-L20':signPage,'P-L21':registration,'P-L22':statusPage,'P-L23':accountPage,'DEMO-F-GATE':gatePage}[id])();
   }
   function notices(){
@@ -276,7 +276,7 @@
       case 'submit':submit();break;
       case 'confirm-submit':commitSubmit();break;
       case 'resolve-submit':if(F.pendingSubmission)completeSubmit();break;
-      case 'refresh':F.load='loading';later(()=>{F.load='ready';response();});break;
+      case 'refresh':F.load='loading';later(()=>{F.load='ready';response();CF.toast(L('Status refreshed.','状态已刷新。'));});break;
       case 'load-retry':F.load='loading';later(()=>{F.load='ready';});break;
       case 'template-retry':F.template='loading';later(()=>{F.template='ready';});break;
       case 'change-email':changeEmail();break;
