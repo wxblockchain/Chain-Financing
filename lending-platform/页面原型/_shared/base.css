@@ -647,3 +647,20 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .om-record dd{margin:0}
 .ops-notification .badge[hidden]{display:none}
 .ops-notification .sidebar .brand-name,.ops-notification .sidebar .brand-sub{display:block;white-space:nowrap}
+/* 独立详情组合：模块显式接入，不改变既有业务布局。 */
+.detail-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,300px);gap:var(--sp-6);align-items:start}
+.detail-stack{display:grid;gap:var(--sp-6);min-width:0}
+.detail-section{scroll-margin-top:110px;min-width:0}
+.detail-section h2,.detail-rail h2{margin:0;font-size:var(--fs-body)}
+.detail-section .card-body{padding:var(--card-pad)}
+.detail-section .dl{margin:0}
+.detail-section .dl dd{overflow-wrap:anywhere}
+.detail-rail{display:grid;gap:var(--sp-5);position:sticky;top:90px;min-width:0}
+.detail-index{display:grid;padding:var(--sp-3);gap:var(--sp-1)}
+.detail-index .btn{justify-content:flex-start;border-color:transparent;background:transparent;white-space:normal;text-align:left}
+.detail-index .btn:hover{background:var(--bg);color:var(--accent)}
+.detail-record{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);flex-wrap:wrap}
+.detail-actions{display:flex;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-5)}
+.detail-rail .btn{max-width:100%;white-space:normal}
+.sample-list .tbl td:first-child{overflow-wrap:anywhere}
+@media(max-width:900px){.detail-layout{grid-template-columns:minmax(0,1fr)}.detail-rail{position:static}.detail-index{display:flex;flex-wrap:wrap}.detail-section{scroll-margin-top:140px}}

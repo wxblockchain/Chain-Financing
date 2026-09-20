@@ -656,6 +656,10 @@
     var previous = M;
     if (previous && mod.pages) {
       var content = mod.content, action = mod.onAct;
+      var breadcrumb = mod.breadcrumbRoute;
+      mod.breadcrumbRoute = function (id) {
+        return (breadcrumb && breadcrumb(id)) || (previous.breadcrumbRoute && previous.breadcrumbRoute(id));
+      };
       mod.content = function (page) { return mod.pages.indexOf(page) >= 0 ? content(page) : previous.content(page); };
       mod.onAct = function (act,v,e) { return (action && action(act,v,e)) || (previous.onAct && previous.onAct(act,v,e)); };
       mod.layers = Object.assign({}, previous.layers, mod.layers);

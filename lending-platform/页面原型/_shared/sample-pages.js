@@ -1,3 +1,147 @@
+/* WS-347：承载与关联样板。沿用底座/消息组合入口，不接管业务模块自身路由。 */
+(function (CF) {
+  'use strict';
+  CF.makeRelationSample = function (requests, assets) {
+    const S = CF.S, L = CF.L, E = CF.esc;
+    const LIST = 'P-LS-01', CONSOLE = 'P-MC-01', PROJECT = 'SAMPLE-PROJECT', RECORD = 'SAMPLE-RECORD', TOKEN = 'SAMPLE-TOKEN';
+    const projects = requests.map((r, i) => ({id: 'S-PJ-' + String(i + 1).padStart(3, '0'), request: r,
+      token: assets.find(t => t.holder[0] === r.holder[0] && t.ps === 'pledged')}));
+    CF.PAGES[PROJECT] = {end:'asset', layout:'portal', crumbKey:'sampleProject', parent:LIST};
+    CF.PAGES[RECORD] = {end:'asset', layout:'portal', crumbKey:'sampleRecord', parent:CONSOLE, auth:true};
+    CF.PAGES[TOKEN] = {end:'asset', layout:'portal', crumbKey:'sampleToken', parent:PROJECT};
+    CF.ENTRY[TOKEN] = '/sample/token';
+    CF.ENTRY[PROJECT] = '/sample/project'; CF.ENTRY[RECORD] = '/sample/record';
+    const dict = {en:{sampleProject:'Project details',sampleRecord:'Record details',sampleToken:'Token details'},zh:{sampleProject:'项目详情',sampleRecord:'记录详情',sampleToken:'代币详情'}};
+    const params = () => new URLSearchParams(location.hash.split('?')[1] || '');
+    const num = (q, k, max, fallback=0) => Math.floor(Math.max(0, Math.min(max, Number(q.get(k)) || fallback)));
+    const route = (path, q) => path + (q.toString() ? '?' + q : '');
+    const allowed = value => /^\/(?:console|marketplace|sample\/record|sample\/project|sample\/token)(?:\?|$)/.test(value || '') ? value : '/marketplace';
+    const current = () => location.hash.slice(1);
+    const find = () => projects.find(p => p.id === params().get('id'));
+    const mine = p => S.role === 'asset' ? p.request.holder[0] === 'Asset Holder A' : S.role === 'fund' && ['disbursing','repaying'].includes(p.request.st);
+    const name = p => L('Receivables financing · ', '应收账款融资 · ') + L(p.request.holder[0],p.request.holder[1]);
+    const button = (act,label,value='',primary=false) => '<button type="button" class="btn'+(primary?' primary':'')+'" data-act="'+act+'" data-v="'+E(value)+'">'+label+'</button>';
+    const link = (path,label,primary=false) => '<a class="btn'+(primary?' primary':'')+'" href="#'+E(path)+'" data-act="sample-follow" data-v="'+E(path)+'">'+label+'</a>';
+    const status = p => CF.tag(p.request.st==='repaying'?'ok':'accent', L({quoting:'Receiving quotes',review:'Under review',disbursing:'Disbursing',repaying:'Repaying'}[p.request.st], {quoting:'报价中',review:'审核中',disbursing:'放款中',repaying:'还款中'}[p.request.st]));
+    const fields = rows => '<dl class="dl">'+rows.map(r=>'<dt>'+r[0]+'</dt><dd>'+r[1]+'</dd>').join('')+'</dl>';
+    const card = (title,body,id='') => '<section class="card detail-section"'+(id?' id="'+id+'"':'')+'><h2 class="card-head">'+title+'</h2><div class="card-body">'+body+'</div></section>';
+    const projectFields = p => fields([[L('Project ID','项目编号'),E(p.id)],[L('Asset holder','资产方企业'),E(L(...p.request.holder))],[L('Current request','当前需求'),E(p.request.id)],[L('Requested amount','需求金额'),CF.fmtAmt(p.request.amt,p.request.ccy)],[L('Tenor','期限'),p.request.tenor+L(' days',' 天')]]);
+    const recordFields = p => fields([[L('Request ID','需求编号'),E(p.request.id)],[L('Amount','金额'),CF.fmtAmt(p.request.amt,p.request.ccy)],[L('Tenor','期限'),p.request.tenor+L(' days',' 天')],[L('Indicative annual rate','参考年化'),E(p.request.rate)+' %'],[L('Updated','更新时间'),CF.fmtTime(p.request.at)]]);
+    let restoredHash = null;
+    let detailHash = null;
+    function restoreDetail() {
+      if(detailHash===location.hash)return;
+      detailHash=location.hash;restoredHash=null;
+      const hash=location.hash,y=num(params(),'y',100000);
+      requestAnimationFrame(()=>{if(hash!==location.hash)return;document.querySelector('#content h1')?.focus({preventScroll:true});window.scrollTo(0,y);});
+    }
+    function restoreList() {
+      detailHash=null;
+      if (restoredHash === location.hash) return;
+      restoredHash = location.hash;
+      const q = params(), hash = location.hash;
+      S.shown = num(q,'shown',100,20); S.pageNo = Math.max(1,num(q,'page',100,1));
+      requestAnimationFrame(() => {
+        if (hash !== location.hash) return;
+        const box = document.querySelector('.sample-list');
+        if (box) box.scrollTop = num(q,'scroll',100000);
+        window.scrollTo(0,num(q,'outer',100000));
+        const focus = document.getElementById(q.get('focus'));
+        if (focus) focus.focus({preventScroll:true});
+      });
+    }
+    function captureList(id) {
+      const q = params(), box = document.querySelector('.sample-list');
+      q.set('shown', S.shown); q.set('page', S.pageNo); q.set('scroll',box?.scrollTop || 0); q.set('outer',window.scrollY); q.set('focus','sample-row-'+id);
+      const saved = route(S.page===CONSOLE?'/console':'/marketplace', q);
+      history.replaceState(null,'','#'+saved); restoredHash = null;
+      return saved;
+    }
+    function destination(path,p,from) { return route(path,new URLSearchParams({id:p.id,from:allowed(from)})); }
+    function head(title,desc,side='') { return '<div class="page-head"><div><h1 class="page-title" tabindex="-1">'+title+'</h1><p class="page-desc">'+desc+'</p></div><div class="page-actions">'+side+'</div></div>'; }
+    function list(consoleMode) {
+      restoreList();
+      const legacy=projects.find(p=>p.request.id===params().get('object'));
+      if(!consoleMode&&params().get('panel')==='detail'&&legacy) location.hash='#'+destination('/sample/project',legacy,'/marketplace');
+      if(consoleMode && !['asset','fund'].includes(S.role)) return CF.empty(L('Sign in to view your console','登录后查看我的控制台'), L('View activity associated with your account.','查看与你的账户有关的业务记录。'),button('signin',L('Sign in','登录'),'',true));
+      const q=params(), keyword=q.get('q')||'', currency=q.get('ccy')||'';
+      const all=projects.filter(p=>!consoleMode||mine(p));
+      const rows=all.filter(p=>(!currency||p.request.ccy===currency)&&(!keyword||(p.id+' '+p.request.id+' '+p.request.holder.join(' ')).toLowerCase().includes(keyword.toLowerCase())));
+      if(consoleMode) S.pageNo=Math.min(S.pageNo,Math.max(1,Math.ceil(rows.length/5)));
+      const shown=consoleMode?rows.slice((S.pageNo-1)*5,S.pageNo*5):rows.slice(0,S.shown);
+      const alt=CF.surface({emptyTitle:L('No records yet','暂无记录'),emptyDesc:L('New records will appear here.','有新记录后会显示在这里。')});
+      const filters='<div class="filters"><div class="field"><label for="sample-q">'+L('Project, request or asset holder','项目、需求或资产方')+'</label><input class="inp" id="sample-q" type="search" value="'+E(keyword)+'"></div><div class="field"><label for="sample-currency">'+L('Currency','币种')+'</label><select id="sample-currency" class="inp"><option value="">'+L('All','全部')+'</option>'+['USD','EUR'].map(c=>'<option'+(c===currency?' selected':'')+'>'+c+'</option>').join('')+'</select></div><div class="acts">'+button('sample-reset',L('Reset','重置'))+button('sample-search',L('Search','查询'),'',true)+'</div></div>';
+      const labels=[consoleMode?L('Request','融资需求'):L('Financing project','融资项目'),L('Asset holder','资产方企业'),L('Requested amount','需求金额'),L('Status','状态'),L('Actions','操作')];
+      const table='<div class="tablewrap '+(consoleMode?'':'listbox listbox-contained sample-list')+'" tabindex="0" role="region" aria-label="'+L('Records','记录列表')+'"><table class="tbl resp"><thead><tr>'+labels.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+shown.map(p=>'<tr>'+[
+        '<a class="actlink" id="sample-row-'+p.id+'" href="#'+E(destination(consoleMode?'/sample/record':'/sample/project',p,current()))+'" data-act="sample-open" data-v="'+p.id+'">'+E(consoleMode?p.request.id:p.id)+'</a>',E(L(...p.request.holder)),CF.fmtAmt(p.request.amt,p.request.ccy),status(p),button('sample-preview',L('Quick view','速览'),p.id)
+      ].map((v,i)=>'<td data-label="'+labels[i]+'">'+v+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(consoleMode?'':CF.moreFoot(rows.length))+'</div>';
+      return head(consoleMode?L('My console','我的控制台'):L('Lending marketplace','借贷广场'),consoleMode?L('Your financing activity','与你有关的融资业务'):L('Explore financing projects and current requests','查看融资项目及当前需求'))+'<section class="card">'+filters+(alt||(rows.length?table+(consoleMode?CF.pagerFoot(rows.length,5):''):CF.empty(L('No matching records','筛选无结果'),L('Try a different keyword or clear your filters.','更换关键词或清空筛选。'),button('sample-reset-confirm',L('Clear filters','清空筛选')))))+'</section>';
+    }
+    function detail(record) {
+      restoreDetail();
+      const p=find();
+      if(record && (!p||!mine(p))) return CF.empty(L('Record unavailable','记录不可用'),L('Sign in with an account associated with this record.','请使用与该记录有关的账户登录。'),link('/console',L('My console','我的控制台')));
+      if(!p) return CF.empty(L('Project unavailable','项目不可用'),L('The link may be invalid.','链接可能已失效。'),link('/marketplace',L('Lending marketplace','借贷广场')));
+      const alt=CF.surface({emptyTitle:L('No details available','暂无详情'),emptyDesc:L('No information is available for this record.','当前记录暂无可展示资料。')});
+      if(alt) return head(record?L('Record details','记录详情'):L('Project details','项目详情'),E(p.id))+alt;
+      const origin=allowed(params().get('from')), fromRecord=origin.startsWith('/sample/record?');
+      if(record) return head(L('Financing request','融资需求')+' · '+E(p.request.id),E(name(p)),status(p))+
+        '<div class="detail-stack">'+card(L('Request information','需求信息'),recordFields(p))+card(L('Associated project','关联项目'),projectFields(p)+'<div class="detail-actions">'+link(destination('/sample/project',p,current()),L('Open in lending marketplace','前往借贷广场'),true)+'</div>')+'</div>';
+      const token=p.token;
+      const tokenList=token?'<table class="tbl resp"><thead><tr><th>'+L('Token','代币')+'</th><th>'+L('Quantity','数量')+'</th><th>'+L('Value','价值')+'</th></tr></thead><tbody><tr><td data-label="'+L('Token','代币')+'"><a class="actlink mono" data-act="sample-follow" data-v="'+E(destination('/sample/token',p,current()))+'" href="#'+E(destination('/sample/token',p,current()))+'">'+E(token.no)+'</a><div class="cell-sub">'+E(token.name)+'</div></td><td data-label="'+L('Quantity','数量')+'">'+CF.fmtAmt(token.qty)+L(' tokens',' 枚')+'</td><td data-label="'+L('Value','价值')+'">'+CF.fmtAmt(token.val,'USD')+'</td></tr></tbody></table>':CF.empty(L('No collateral records','暂无质押代币'),'');
+      return head(E(name(p)),E(p.id),status(p))+'<div class="detail-layout"><div class="detail-stack">'+
+        card(L('Project information','项目资料'),projectFields(p),'sample-overview')+
+        card(L('Pledged tokens','质押代币清单'),tokenList,'sample-tokens')+
+        card(L('Financing requests','融资信息清单'),'<div class="detail-record"><div><b class="mono">'+E(p.request.id)+'</b><p>'+CF.fmtAmt(p.request.amt,p.request.ccy)+'</p>'+status(p)+'</div>'+button('sample-preview',L('Quick view','速览'),p.id)+'</div>','sample-history')+
+        '</div><aside class="detail-rail"><section class="card"><h2 class="card-head">'+L('On this page','本页内容')+'</h2><nav class="detail-index" aria-label="'+L('Page sections','页内目录')+'">'+[['sample-overview',L('Project information','项目资料')],['sample-tokens',L('Pledged tokens','质押代币清单')],['sample-history',L('Financing requests','融资信息清单')]].map(x=>button('sample-section',x[1],x[0])).join('')+'</nav></section>'+
+        (fromRecord?card(L('My console','我的控制台'),'<p>'+E(p.request.id)+'</p>'+link(origin,L('Back to record','返回该记录'),true)):mine(p)?card(L('My console','我的控制台'),link(destination('/sample/record',p,'/console'),L('View my record','查看我的记录'))):'')+'</aside></div>';
+    }
+    const layers={samplePreview:id=>{const p=projects.find(p=>p.id===id);if(!p)return null;return {title:L('Request quick view','需求速览')+' · '+p.request.id,html:status(p)+recordFields(p),foot:button('closelayer',L('Close','关闭'))+button('sample-preview-open',L('Open project details','查看项目详情'),p.id,true)};},sampleReset:()=>({title:L('Clear filters?','清空筛选条件？'),html:'<p>'+L('The full list will be shown from the beginning.','将显示全部记录，并回到列表起点。')+'</p>',foot:button('closelayer',L('Cancel','取消'))+button('sample-reset-confirm',L('Clear filters','清空筛选'),'',true)})};
+    function action(act,v) {
+      if(!act.startsWith('sample-'))return false;
+      const p=projects.find(p=>p.id===v);
+      if(act==='sample-follow') {
+        const target=allowed(v), q=new URLSearchParams(target.split('?')[1]||'');
+        if(q.get('from')===current()) {
+          const source=params();source.set('y',window.scrollY);
+          const saved=route(current().split('?')[0],source);
+          history.replaceState(null,'','#'+saved);q.set('from',saved);
+        }
+        location.hash='#'+route(target.split('?')[0],q);return true;
+      }
+      if(act==='sample-request') {const target=projects.find(p=>p.request.id===v);if(target)location.hash='#'+destination('/sample/project',target,'/marketplace');return true;}
+      if(act==='sample-search'||act==='sample-reset-confirm') {
+        const q=new URLSearchParams();
+        if(act==='sample-search'){q.set('q',document.getElementById('sample-q').value.trim());q.set('ccy',document.getElementById('sample-currency').value);}
+        S.layer=null;S.st='default';S.pageNo=1;S.shown=20;
+        restoredHash=null;location.hash='#'+route(S.page===CONSOLE?'/console':'/marketplace',q);
+      } else if(act==='sample-reset') CF.openLayer('modal','sampleReset');
+      else if(act==='sample-preview') CF.openLayer('drawer','samplePreview',v);
+      else if(act==='sample-section') {document.getElementById(v)?.scrollIntoView({block:'start',behavior:'instant'});}
+      else if(act==='sample-open'||act==='sample-preview-open') {
+        if(!p)return true;
+        const from=[LIST,CONSOLE].includes(S.page)?captureList(v):current();
+        S.layer=null;location.hash='#'+destination(act==='sample-open'&&S.page===CONSOLE?'/sample/record':'/sample/project',p,from);
+      }
+      return true;
+    }
+    function breadcrumb(id) {
+      const q=params(), from=allowed(q.get('from'));
+      if(S.page===TOKEN&&id===PROJECT)return from.startsWith('/sample/project?')?from:'/sample/project?id='+E(q.get('id'));
+      if(S.page===RECORD&&id===CONSOLE)return from.startsWith('/console')?from:'/console';
+      if(S.page===PROJECT&&id===LIST)return from.startsWith('/marketplace')?from:'/marketplace';
+      return null;
+    }
+    function tokenDetail() {
+      restoreDetail();
+      const p=find(),t=p?.token;
+      if(!t)return CF.empty(L('Token unavailable','代币不可用'),'');
+      return head(E(t.name),E(t.no))+card(L('Token information','代币信息'),fields([[L('Token number','代币编号'),E(t.no)],[L('Holder','持有人'),E(L(...t.holder))],[L('Quantity','数量'),CF.fmtAmt(t.qty)+L(' tokens',' 枚')],[L('Value','价值'),CF.fmtAmt(t.val,'USD')],[L('Receivable term','应收账款账期'),CF.fmtDate(t.from)+' – '+CF.fmtDate(t.to)]]));
+    }
+    return {dict,layers,action,breadcrumb,content:page=>page===LIST?list(false):page===CONSOLE?list(true):page===PROJECT?detail(false):page===RECORD?detail(true):page===TOKEN?tokenDetail():null};
+  };
+})(window.CF);
+
 (function (CF) {
   var L = CF.L, esc = CF.esc, S = CF.S, tag = CF.tag;
   if(document.getElementById("focus")) {
@@ -362,99 +506,6 @@
     return list;
   }
 
-  function pagePlaza() {
-    var guest = S.role === "guest";
-    var alt = CF.surface({
-      skelRows: 5,
-      emptyTitle: L("No open financing requests", "暂无在招标的融资需求"),
-      emptyDesc: L("Published requests appear here. Drafts are not listed.", "已发布的需求会出现在这里，草稿不进入广场。")
-    });
-    var head = '<div class="page-head"><div>' +
-      '<h1 class="page-title">' + L("Lending marketplace", "借贷广场") + "</h1>" +
-      '<p class="page-desc">' + L(
-        "Financing requests backed by pledged receivable pools.",
-        "由已质押应收账款池支撑的融资需求。") + "</p></div>" +
-      (guest ? "" : '<div class="page-actions"><button class="btn primary" type="button" data-act="toast" data-v="new">' +
-        L("Publish a request", "发布融资需求") + "</button></div>") +
-      "</div>";
-
-    var guestNote = guest
-      ? CF.note("accent", "<div>" + L(
-          "Everything on this page is public. Sign in to act on it.",
-          "本页信息全量公开，登录后即可操作。") +
-          ' <button class="btn-link" type="button" data-act="signin">' + L("Sign in", "登录") +
-          '<span class="ar" aria-hidden="true">&rarr;</span></button></div>') + '<div style="height:var(--sp-5)"></div>'
-      : "";
-
-    var table = '<div class="tablewrap listbox"><table class="tbl resp"><thead><tr>' +
-      "<th>" + L("Request", "需求") + "</th>" + sortTh("amt", L("Amount", "金额")) +
-      "<th>" + L("Tenor", "期限") + "</th><th>" + L("Rate", "年化") + "</th>" +
-      "<th>" + L("Pledged token", "质押代币") + "</th><th>" + L("Status", "状态") + "</th>" +
-      sortTh("at", L("Updated", "更新")) + '<th class="col-act">' + L("Actions", "操作") + "</th>" +
-      "</tr></thead><tbody>" +
-      sortedRequests().slice(0, S.shown).map(reqRow).join("") +
-      "</tbody></table>" + CF.moreFoot(REQUESTS.length) + "</div>";
-
-    return head + guestNote +
-      '<div class="card"><div class="filters">' +
-      '<div class="field"><label for="p-ccy">' + L("Currency", "币种") + "</label>" +
-      '<select class="inp" id="p-ccy"><option>' + L("All", "全部") + "</option><option>USD</option><option>EUR</option></select></div>" +
-      '<div class="field"><label for="p-tenor">' + L("Tenor", "期限") + "</label>" +
-      '<select class="inp" id="p-tenor"><option>' + L("All", "全部") + "</option><option>60</option><option>90</option><option>120</option></select></div>" +
-      '<div class="field"><label for="p-kw">' + L("Keyword", "关键词") + "</label>" +
-      '<input class="inp" id="p-kw" type="search" placeholder="' + L("Request ID or holder", "需求编号或资产方") + '"></div>' +
-      '<div class="acts"><button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
-      '<button class="btn primary" type="button" data-act="clearfilter">' + L("Search", "查询") + "</button></div>" +
-      "</div>" + (alt || table) + "</div>";
-  }
-
-  /* ====================== 我的控制台 ==================================== */
-  function pageConsole() {
-    if (S.role === "guest") {
-      return '<div class="card"><div class="tbl-empty"><b>' +
-        L("Sign in to open your console", "登录后查看你的控制台") + "</b>" +
-        L("The console shows only your own requests, quotes and repayment schedule.",
-          "控制台只展示属于你自己的需求、报价与还款计划。") +
-        '<div><button class="btn primary" type="button" data-act="signin" style="margin-top:var(--sp-4)">' +
-        L("Sign in", "登录") + "</button></div></div></div>";
-    }
-    var alt = CF.surface({
-      skelRows: 4, backTo: "/marketplace",
-      emptyTitle: L("Nothing here yet", "暂无记录"),
-      emptyDesc: L("Your requests appear here once you publish one.", "发布融资需求后会出现在这里。")
-    });
-    var mine = REQUESTS.filter(function (r) { return r.holder[0] === "Asset Holder A"; });
-    var SIZE = 5, from = (S.pageNo - 1) * SIZE;
-    var rows = mine.slice(from, from + SIZE).map(function (r) {
-      return "<tr>" +
-        '<td data-label="' + L("Request", "需求") + '"><span class="mono cell-main">' + esc(r.id) + "</span></td>" +
-        '<td data-label="' + L("Amount", "金额") + '" class="num">' + CF.fmtAmt(r.amt, r.ccy) + "</td>" +
-        '<td data-label="' + L("Status", "状态") + '">' + stTag(r.st) + "</td>" +
-        '<td data-label="' + L("Updated", "更新") + '" class="tiny">' + CF.fmtTime(r.at) + "</td>" +
-        '<td class="col-act"><a class="actlink" href="#/marketplace" data-act="detail" data-v="' + esc(r.id) + '">' +
-        L("View", "查看") + "</a></td></tr>";
-    }).join("");
-    var pager = CF.pagerFoot(mine.length, SIZE);
-
-    return '<div class="page-head"><div>' +
-      '<h1 class="page-title">' + L("My console", "我的控制台") + "</h1>" +
-      '<p class="page-desc">' + L("A read-only summary of your own activity.", "你自己业务的只读汇总。") + "</p></div></div>" +
-      '<div class="stat-row" style="margin-bottom:var(--sp-6)">' +
-      '<div class="stat"><div class="k">' + L("Active requests", "进行中的需求") + '</div><div class="v">2</div>' +
-      '<div class="n">' + L("1 receiving quotes", "其中 1 条报价中") + "</div></div>" +
-      '<div class="stat"><div class="k">' + L("Pledged value", "质押金额") + '</div><div class="v">' +
-      CF.fmtAmt(1250000, "USD") + '</div><div class="n">' + L("1 pool", "1 个资产池") + "</div></div>" +
-      '<div class="stat"><div class="k">' + L("Next repayment", "下一期还款") + '</div><div class="v">' +
-      CF.fmtAmt(158400, "USD") + '</div><div class="n">' + CF.fmtDate("2026-10-08T00:00:00") + "</div></div>" +
-      "</div>" +
-      '<div class="card"><div class="card-head">' + L("My financing requests", "我的融资需求") + "</div>" +
-      (alt || '<div class="tablewrap"><table class="tbl resp"><thead><tr><th>' +
-        L("Request", "需求") + "</th><th>" + L("Amount", "金额") + "</th><th>" + L("Status", "状态") +
-        "</th><th>" + L("Updated", "更新") + '</th><th class="col-act">' + L("Actions", "操作") +
-        "</th></tr></thead><tbody>" + rows + "</tbody></table></div>" + pager) +
-      "</div>";
-  }
-
   /* ====================== 管理端：总览 ================================== */
   function pageOverview() {
     var alt = CF.surface({
@@ -532,33 +583,6 @@
 
   /* ====================== 抽屉 ========================================== */
   var layers = {
-    reqDetail: function (id) {
-      var r = REQUESTS.filter(function (x) { return x.id === id; })[0];
-      if (!r) return null;
-      var guest = S.role === "guest";
-      var canQuote = !guest && S.role === "fund" && r.st === "quoting";
-      return {
-        title: L("Financing request", "融资需求") + " · " + r.id,
-        html: '<div style="margin-bottom:var(--sp-5)">' + stTag(r.st) + "</div>" +
-          '<dl class="dl">' +
-          "<dt>" + L("Requested by", "发起方") + "</dt><dd>" + esc(nm(r.holder)) + "</dd>" +
-          "<dt>" + L("Amount", "金额") + '</dt><dd class="num">' + CF.fmtAmt(r.amt, r.ccy) + "</dd>" +
-          "<dt>" + L("Tenor", "期限") + "</dt><dd>" + r.tenor + L(" days", " 天") + "</dd>" +
-          "<dt>" + L("Indicative rate", "参考年化") + '</dt><dd class="num">' + esc(r.rate) + " %</dd>" +
-          "<dt>" + L("Pledged token", "质押代币") + '</dt><dd><span class="hash">' + esc(r.token) + "</span></dd>" +
-          "<dt>" + L("Last updated", "最后更新") + "</dt><dd>" + CF.fmtTime(r.at) + "</dd>" +
-          "</dl>" +
-          (guest ? '<div style="margin-top:var(--sp-6)">' + CF.note("accent",
-            "<div>" + L("Everything here is public. Sign in to act on it.", "此处信息全量公开，登录后即可操作。") +
-            "</div>") + "</div>" : ""),
-        foot: guest
-          ? '<button class="btn primary" type="button" data-act="signin">' + L("Sign in", "登录") + "</button>"
-          : '<button class="btn" type="button" data-act="closelayer">' + L("Close", "关闭") + "</button>" +
-            '<button class="btn primary" type="button"' + (canQuote ? ' data-act="quote" data-v="' + esc(r.id) + '"' :
-              ' aria-disabled="true" title="' + esc(L("Quoting is limited to funder accounts on requests that are receiving quotes.",
-              "仅资金方账号可对报价中的需求提交报价。")) + '"') + ">" + L("Submit a quote", "提交报价") + "</button>"
-      };
-    },
     agDetail: function (code) {
       var a = AGREEMENTS.filter(function (x) { return x.code === code; })[0];
       if (!a) return null;
@@ -597,8 +621,13 @@
   }
 
   /* ====================== 模块接入 ====================================== */
+  var relations = CF.makeRelationSample(REQUESTS, ASSETS);
+  // 样板不展示尚未组合装载的业务入口，避免裸文案键与空页面。
+  CF.NAV.admin = (CF.NAV.admin || []).filter(function(id) { return id === "P-O06" || id === "P-O-AG-01"; });
+  Object.assign(dict.en, relations.dict.en); Object.assign(dict.zh, relations.dict.zh);
+  Object.assign(layers, relations.layers);
   var PAGE_FN = {
-    "P-F51": pageHome, "P-F-AM-01": pageAssets, "P-LS-01": pagePlaza, "P-MC-01": pageConsole,
+    "P-F51": pageHome, "P-F-AM-01": pageAssets,
     "P-O06": pageOverview, "P-O-AG-01": pageAgreements
   };
 
@@ -607,20 +636,18 @@
     id: "lending-baseline",
     dict: dict,
     layers: layers,
+    breadcrumbRoute: relations.breadcrumb,
     content: function (page) {
       renderFoot();
+      var related = relations.content(page);
+      if (related !== null) return related;
       if (page === "DEMO-FOCUS") return '<h1 class="page-title">' + L('Centered card', '居中卡片') + '</h1><p class="page-desc">' + L('A focused task with lightweight tools.', '聚焦单一任务，保留轻量工具。') + '</p><p><a class="btn" href="#/">' + L('Back to sample', '返回样板') + '</a></p>';
-      // 目标页自行处理承载单元；未知锚点与未知对象不打开抽屉。
-      var q = new URLSearchParams(location.hash.split("?")[1] || "");
-      if (page === "P-LS-01" && q.get("panel") === "detail" && REQUESTS.some(function(r){ return r.id === q.get("object"); })) {
-        if (CF.lastSampleTarget !== location.hash) S.layer = {type:"drawer",key:"reqDetail",data:q.get("object")};
-        CF.lastSampleTarget = location.hash;
-      } else CF.lastSampleTarget = null;
       var fn = PAGE_FN[page];
       return fn ? fn() : "";
     },
     onAct: function (act, v) {
-      if (act === "detail") { CF.openLayer("drawer", "reqDetail", v); return true; }
+      if (relations.action(act, v)) return true;
+      if (act === "detail") { return relations.action("sample-request", v); }
       if (act === "agdetail") { CF.openLayer("drawer", "agDetail", v); return true; }
       if (act === "sort") {
         if (S.sort === v) { S.sortDir = S.sortDir === "asc" ? "desc" : "asc"; }
@@ -638,11 +665,7 @@
         }
         return true;
       }
-      if (act === "quote") {
-        CF.closeLayer();
-        CF.toast(L("Quote submitted — demonstration only.", "报价已提交 —— 仅为演示。"));
-        return true;
-      }
+      if (act === "quote") { return relations.action("sample-request", v); }
       return false;
     }
   });
