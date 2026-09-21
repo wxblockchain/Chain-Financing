@@ -107,14 +107,16 @@
     else if(A.activityState==='error')body=`<p role="alert">${L('Activity could not be loaded.','操作记录读取失败。')}</p>${b('Retry','重试','activity-retry')}`;
     else {
       const seen=new Set(),events=A.activityState==='empty'?[]:r.events.filter(e=>{const id=e.id||JSON.stringify([e.at,e.title,e.actor]);if(seen.has(id))return false;seen.add(id);return true;}).map((e,i)=>({...e,order:i})).sort((a,b)=>(b.at||0)-(a.at||0)||a.order-b.order);
-      body=!events.length?`<p class="pr-meta">${L('No activity yet.','暂无操作记录。')}</p>`:`<div class="tablewrap"><table class="tbl"><thead><tr><th>${L('Event','事件 / 进度')}</th><th>${L('Time','发生时间')}</th><th>${L('Actor','操作者')}</th><th>${L('Result / evidence','结果 / 凭据')}</th></tr></thead><tbody>${events.map(e=>{
+      body=!events.length?`<p class="pr-meta">${L('No activity yet.','暂无操作记录。')}</p>`:`<ol class="pr-timeline" aria-label="${L('Application activity, newest first','本笔操作记录，最新在前')}">${events.map(e=>{
         const fields=[];
         if(e.execution){fields.push([L('Initiated','发起时间'),e.started?time(e.started):L('To be verified','待核实')],[L('Completed','完成时间'),e.completed?time(e.completed):L('No result yet','尚无结果')],[L('Actual fee','实际费用'),e.fee==null?L('Fee under verification','费用待核实'):E(e.fee+' '+e.feeCurrency)]);}
         const files=e.files?.length?e.files.map(f=>E(f.name)).join('<br>')+'<br>'+link('View agreement files','查看协议文件','evidence',''):'';
         const evidence=e.tx?E(e.tx)+' '+link('Copy','复制','copy',e.tx):files||L('None','无');
         const extra=e.text||fields.length||e.tx||files;
-        return `<tr data-event-id="${E(e.id||e.order)}"><td><strong>${E(txt(e.title))}</strong></td><td>${e.at?time(e.at):L('To be verified','待核实')}</td><td>${e.actor?E(txt(e.actor)):L('To be verified','待核实')}</td><td>${E(txt(e.result||['Recorded','已记录']))}${extra?`<details><summary>${L('View details','查看详情')}</summary>${e.text?`<p>${E(txt(e.text))}</p>`:''}${kv(fields)}<p><span class="pr-meta">${L('Evidence','凭据')}</span>${evidence}</p>${e.execution?`<p class="pr-meta">${L('Incurred fees are not refunded, including failed executions.','已产生的费用不退，包含执行失败的费用。')}</p>`:''}</details>`:`<span class="pr-meta">${L('Evidence: none','凭据：无')}</span>`}</td></tr>`;
-      }).join('')}</tbody></table></div>`;
+        const tone=({'Approved':'ok','Execution succeeded':'ok','Rejected':'danger','Execution failed':'danger','Failure reported':'danger','Pre-check invalidated':'danger','Review timed out':'danger','Reconciliation discrepancy':'warn','Result under verification':'warn','Initiation window expired':'warn'})[e.title[0]]||'neutral';
+        const occurred=e.at?`<time datetime="${E(new Date(e.at).toISOString())}">${time(e.at)}</time>`:`<span>${L('Time: to be verified','发生时间：待核实')}</span>`;
+        return `<li class="pr-event" data-event-id="${E(e.id||e.order)}" data-tone="${tone}"><h3>${E(txt(e.title))}</h3><div class="pr-event-meta"><span>${e.actor?E(txt(e.actor)):L('Actor: to be verified','操作者：待核实')}</span>${occurred}</div><p class="pr-event-result">${E(txt(e.result||['Recorded','已记录']))}</p>${extra?`<details><summary aria-label="${E(L('View details: ','查看详情：')+txt(e.title))}">${L('View details','查看详情')}</summary><div class="pr-event-detail">${e.text?`<p>${E(txt(e.text))}</p>`:''}${kv([...fields,[L('Evidence','凭据'),evidence,!e.execution]])}${e.execution?`<p class="pr-meta pr-disclosure">${L('Incurred fees are not refunded, including failed executions.','已产生的费用不退，包含执行失败的费用。')}</p>`:''}</div></details>`:`<span class="pr-meta">${L('Evidence: none','凭据：无')}</span>`}</li>`;
+      }).join('')}</ol>`;
     }
     return `<section class="card pr-section pr-activity" id="pr-activity" tabindex="-1" aria-labelledby="pr-activity-title">${heading}${body}</section>`;
   }
