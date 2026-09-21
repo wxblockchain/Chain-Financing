@@ -62,7 +62,8 @@
     function list(consoleMode) {
       restoreList();
       const legacy=projects.find(p=>p.request.id===params().get('object'));
-      if(!consoleMode&&params().get('panel')==='detail'&&legacy) location.hash='#'+destination('/sample/project',legacy,'/marketplace');
+      // 兼容旧消息深链时替换中转页，避免后退到中转页后再次被送回详情。
+      if(!consoleMode&&params().get('panel')==='detail'&&legacy) location.replace('#'+destination('/sample/project',legacy,'/marketplace'));
       if(consoleMode && !['asset','fund'].includes(S.role)) return CF.empty(L('Sign in to view your console','登录后查看我的控制台'), L('View activity associated with your account.','查看与你的账户有关的业务记录。'),button('signin',L('Sign in','登录'),'',true));
       const q=params(), keyword=q.get('q')||'', currency=q.get('ccy')||'';
       const all=projects.filter(p=>!consoleMode||mine(p));

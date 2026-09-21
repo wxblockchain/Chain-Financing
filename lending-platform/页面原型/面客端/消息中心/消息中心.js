@@ -177,6 +177,7 @@
   }
   CF.define({id:'portal-notifications',pages:[LIST,DETAIL],
     dict:{en:{navNotifications:'Notifications',navNotification:'Message details'},zh:{navNotifications:'消息中心',navNotification:'消息详情'}},demo,
+    breadcrumbRoute(id){return id===LIST&&view?view.hash.slice(1):null;},
     beforeRender(){
       snapshot();renderedDetail=null;
       if(previousRole!==S.role){resetView();preflight=null;clearTimeout(preflightTimer);clearTimeout(readTimer);busy=false;S.layer=null;previousRole=S.role;schedule();}
@@ -239,6 +240,6 @@
   window.addEventListener('storage',e=>{if(e.key===storageKey&&N.allowed()){loadRead();CF.render();}});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();schedule();});
   window.addEventListener('pagehide',()=>{clearInterval(timer);clearTimeout(preflightTimer);clearTimeout(readTimer);});
-  if(CF.notificationLanding){if(!location.hash)location.hash='#/notifications';S.role='asset';}
+  if(CF.notificationLanding){if(!location.hash)location.hash='#/assets';S.role='asset';}
   CF.boot();
 })(window.CF);
