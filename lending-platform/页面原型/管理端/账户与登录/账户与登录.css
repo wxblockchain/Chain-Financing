@@ -1,5 +1,6 @@
 /* Module compositions; tokens/components remain in the shared layer. */
 .ops-account .focus-card{max-width:480px}
+.ops-account .sidebar .brand-name,.ops-account .sidebar .brand-sub{display:block;white-space:nowrap}
 .ops-flow h1{font-size:var(--fs-24);margin:0 0 var(--sp-2)}
 .ops-eyebrow{color:var(--muted);font-size:var(--fs-12);margin:0 0 var(--sp-3)}
 .ops-sub{color:var(--muted);margin:0 0 var(--sp-6);font-size:var(--fs-13)}
@@ -14,6 +15,7 @@
 .ops-secret button:active{color:var(--text)}
 .ops-secret svg{width:20px;height:20px}
 .ops-error{min-height:1.5em;font-size:var(--fs-12);color:var(--danger)}
+.ops-error:empty{display:none}
 .ops-actions{display:flex;gap:var(--sp-3);justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:var(--sp-4)}
 .ops-rules{display:grid;gap:var(--sp-1);list-style:none;padding:0;margin:0;font-size:var(--fs-12);color:var(--muted)}
 .ops-rules .met{color:var(--ok)}
