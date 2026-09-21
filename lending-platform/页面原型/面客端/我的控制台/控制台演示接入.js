@@ -37,3 +37,21 @@
     db.consolePeriods=12;Q.save();
   };
 })(window.CF);
+
+/* Complete the known demo snapshot, including tokens never linked to a project.
+ * This fixture migration is not a fallback for missing production data. */
+(function(CF){
+  const D=CF.LS,DAY=86400000,iso=n=>new Date(n).toISOString();
+  if(!D.token('TK-MC-UNLINKED-VOID')){
+    ['free','pending','failed','released'].forEach((pledge,i)=>D.tokens.push({
+      id:i?'TK-MC-UNLINKED-'+pledge.toUpperCase():'TK-MC-UNLINKED-VOID',owner:'entity-demo-a',
+      kind:'ar',units:2+i,symbol:'AR-DEMO',value:80000+i*10000,valid:i!==0,pool:null,pledge,
+      buyer:['Demo Buyer A','演示买方 A'],from:'2026-07-01',due:'2027-06-30',issued:iso(D.now()-(i+1)*DAY)
+    }));
+  }
+  D.tokens.filter(t=>t.owner==='entity-demo-a'&&/^TK-(DEMO-|FREE-|MC-)/.test(t.id)).forEach((t,i)=>{
+    if(!t.issued)t.issued=iso(D.now()-(i+3)*DAY);
+    if(!t.tx)t.tx='0x'+Array.from(t.id).map(c=>c.charCodeAt(0).toString(16)).join('').padStart(64,'0');
+  });
+  D.save();
+})(window.CF);
