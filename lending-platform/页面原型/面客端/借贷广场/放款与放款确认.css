@@ -84,3 +84,11 @@
 .ln-drawer .ln-error:empty{display:none}
 .drawer:has(.ln-drawer) .drawer-f>.btn:first-child{margin-right:auto}
 @media(max-width:640px){.drawer:has(.ln-drawer) .drawer-f{display:grid;grid-template-columns:1fr 1fr}.drawer:has(.ln-drawer) .drawer-f>.ln-row{grid-column:1/-1;order:2}.drawer:has(.ln-drawer) .drawer-f>.btn{width:100%;margin:0}.ln-files-read li{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center}}
+
+/* WS-351: one business drawer and a five-row disbursement record list. */
+.ln-list{min-width:850px}.ln-list td{vertical-align:top}.ln-record-row{cursor:pointer}.ln-record-row:hover{background:var(--card-2)}.ln-record-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ln-pagination{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding-top:var(--sp-3);flex-wrap:wrap}
+.ln-detail-hero{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);padding-bottom:var(--sp-4);border-bottom:1px solid var(--border)}.ln-detail-hero p{margin:0 0 var(--sp-2)}
+.ln-agreements{min-width:560px}.ln-agreements .btn-link{white-space:normal;text-align:left;overflow-wrap:anywhere}.ln-agreements td .hint{display:block}
+.drawer:has(.ln-confirm){width:760px;max-width:100vw}.ln-drawer[data-view=detail] .dl .btn{height:auto;min-height:32px;padding:var(--sp-1) var(--sp-2)}
+@media(max-width:640px){.ln-list{min-width:0}.ln-detail-hero{align-items:flex-start;flex-direction:column}.ln-detail-hero .ln-amount{font-size:var(--fs-19)}.ln-agreements{min-width:0}.ln-drawer .card-b{padding:var(--sp-3)}.ln-drawer .ln-row .btn{white-space:normal;height:auto;min-height:40px}}
