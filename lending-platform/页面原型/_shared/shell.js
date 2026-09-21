@@ -329,8 +329,9 @@
       if (p.layout === "site") { sub.hidden = true; return; }
       sub.hidden = false;
     }
-    // 使用明确的页面父级，不依赖浏览历史；独立模块以可用导航的首项为根。
-    var root = defaultPage(), chain = [S.page], seen = {};
+    // 面客端仅展示真实父级；默认落地页不代表其他一级入口的父页面。
+    // 管理端沿用可用模块根页，不依赖浏览历史。
+    var root = S.end === "admin" ? defaultPage() : null, chain = [S.page], seen = {};
     seen[S.page] = true;
     var parent = p.parent;
     while (parent && CF.PAGES[parent] && CF.PAGES[parent].end === S.end && !seen[parent]) {

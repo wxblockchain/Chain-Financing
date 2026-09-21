@@ -19,7 +19,7 @@
   const dict = {en:{navAssets:'Asset marketplace',navPlaza:'Lending marketplace',navConsole:'My console'},
     zh:{navAssets:'资产广场',navPlaza:'借贷广场',navConsole:'我的控制台'}};
   Object.entries(pages).forEach(([id,p])=>{
-    CF.PAGES[id]={end:'asset',layout:p[0],navKey:id,auth:id==='P-L12',parent:p[0]==='portal'?'P-F-AM-01':undefined};
+    CF.PAGES[id]={end:'asset',layout:p[0],navKey:id,auth:id==='P-L12'};
     CF.ENTRY[id]=p[1];dict.en[id]=p[2];dict.zh[id]=p[3];
   });
   const D = {
