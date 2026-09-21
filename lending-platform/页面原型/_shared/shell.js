@@ -276,13 +276,14 @@
     var who = S.role === "fund" ? L("Funder", "资金方") : L("Asset holder", "资产方");
     var identity = CF.portalAccount() || {};
     var address = typeof identity.walletAddress === "string" ? identity.walletAddress.trim() : "";
-    var label = address ? (address.length > 12 ? address.slice(0, 6) + "…" + address.slice(-4) : address) : L("Account", "账户");
+    var label = address ? (address.length > 10 ? address.slice(0, 6) + "…" + address.slice(-4) : address) : L("My account", "我的账户");
     var open = S.menu === "acct";
     var list = open
       ? '<div class="dd-list" id="portal-account-menu" role="menu" aria-label="' + L("Account menu", "账户菜单") + '">' +
         '<div class="portal-account-role">' + esc(who) + "</div>" +
+        (address ? '<div class="portal-account-full">' + esc(address) + '</div>' : '') +
         '<button type="button" role="menuitem" data-act="toast" data-v="acct">' + L("Account settings", "账户设置") + "</button>" +
-        '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + (S.role === "fund" ? L("User information", "用户信息") : L("Institution", "机构信息")) + "</button>" +
+        '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + (S.role === "fund" ? L("User information", "用户信息") : L("Company information", "企业信息")) + "</button>" +
         (N.allowed() && N.preview ? '<button type="button" role="menuitem" data-act="go" data-v="/notifications">' + L("Notifications", "消息中心") + '</button>' : '') +
         '<div class="dd-sep"></div>' +
         '<button type="button" role="menuitem" data-act="signout">' + L("Sign out", "退出登录") + "</button>" +
@@ -291,7 +292,7 @@
     return '<div class="dd portal-account"><button class="dd-btn" type="button" data-act="menu" data-v="acct" ' +
       'aria-haspopup="menu" aria-controls="portal-account-menu" aria-expanded="' + open + '" title="' + esc(address || label) + '" aria-label="' +
       esc(L("Account menu", "账户菜单") + (address ? " · " + address : "")) + '"><span' + (address ? ' class="portal-account-address"' : '') + '>' +
-      esc(label) + "</span>" + ICON.caret + "</button>" + list + "</div>";
+      esc(label) + "</span>" + ICON.caret + "</button>" + (!open && address ? '<span class="portal-account-hint" role="tooltip">' + esc(address) + '</span>' : '') + list + "</div>";
   }
 
   function renderPortalTools() {
@@ -621,7 +622,7 @@
     if (act === "prerequisite") { CF.toast(L("Account setup handoff — demonstration only.", "账户必办事项交接 —— 仅演示。")); return; }
     if (act === "completion-fold") { completionFolded = !completionFolded; e.preventDefault(); renderCompletion(); return; }
     if (act === "completion-list") { completionListOpen = !completionListOpen; e.preventDefault(); renderCompletion(); return; }
-    if (act === "menu") { S.menu = S.menu === v ? null : v; e.preventDefault(); render(); return; }
+    if (act === "menu") { clearTimeout(accountHoverTimer);S.menu = v === "acct" && accountHoverOpened ? "acct" : S.menu === v ? null : v; accountHoverOpened=false;if(v==='acct')accountHoverSuppressed=true; e.preventDefault(); render(); if(v==='acct')document.querySelector('#portal-account-menu [role="menuitem"]')?.focus(); return; }
     if (act === "lang") { S.lang = v; S.menu = null; e.preventDefault(); render(); return; }
     if (act === "end") {
       S.end = v; S.role = v === "admin" ? "ops" : "guest"; S.st = "default"; S.layer = null;
@@ -668,12 +669,27 @@
       else if (first && !e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
     if (e.key === "Escape") {
+      clearTimeout(accountHoverTimer);accountHoverOpened=false;accountHoverSuppressed=true;
       if (S.layer) { if (M && M.onBeforeAct && M.onBeforeAct("closelayer", null, e)) return; CF.closeLayer(); return; }
       if (S.menu) { var menu = S.menu; S.menu = null; render(); var btn = document.querySelector('[data-act="menu"][data-v="' + menu + '"]'); if(btn) btn.focus(); }
     }
   }
 
   /* ------------------------------------------------------------ 启动 */
+  var accountHoverTimer, accountHoverOpened=false, accountHoverSuppressed=false;
+  document.addEventListener('pointermove',function(e){if(!e.target.closest('.portal-account'))accountHoverSuppressed=false;});
+  document.addEventListener('pointerover',function(e){
+    var target=e.target.closest('.portal-account');
+    if(!target || e.pointerType==='touch' || target.contains(e.relatedTarget) || accountHoverSuppressed)return;
+    clearTimeout(accountHoverTimer);
+    accountHoverTimer=setTimeout(function(){if(document.querySelector('.portal-account:hover') && !S.layer && S.menu!=='acct'){S.menu='acct';accountHoverOpened=true;render();}},180);
+  });
+  document.addEventListener('pointerout',function(e){
+    var target=e.target.closest('.portal-account');
+    if(!target || target.contains(e.relatedTarget))return;
+    clearTimeout(accountHoverTimer);
+    accountHoverTimer=setTimeout(function(){var current=document.querySelector('.portal-account');if(current && !current.matches(':hover')){accountHoverSuppressed=false;if(S.menu==='acct' && !current.contains(document.activeElement)){S.menu=null;accountHoverOpened=false;render();}}},180);
+  });
   CF.define = function (mod) {
     var previous = M;
     if (previous && mod.pages) {

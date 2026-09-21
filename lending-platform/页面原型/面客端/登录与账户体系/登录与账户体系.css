@@ -14,8 +14,6 @@
   border-radius:var(--radius-sm);background:var(--bg-elev);color:var(--accent)}
 .login-choice-icon svg{width:24px;height:24px}
 .login-bottom{margin-top:var(--sp-6);text-align:center;color:var(--muted);font-size:var(--fs-13)}
-.login-memory{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);flex-wrap:wrap;
-  margin-bottom:var(--sp-3);padding:var(--sp-3);border-bottom:1px solid var(--border)}
 .login-flow{max-width:560px;margin:auto}
 .login-flow .page-title{margin-bottom:var(--sp-3)}
 .login-flow p{color:var(--muted)}
@@ -31,8 +29,6 @@
 .login-identity-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--sp-6)}
 .login-preference-field{max-width:480px}
 .login-verification.detail-actions{margin-top:0;align-items:center}
-.login-session{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-5);flex-wrap:wrap}
-.login-session p{margin-bottom:0}
 .login-fields{margin:0}
 .login-fields div{padding:var(--sp-4) 0;border-bottom:1px solid var(--border-dash)}
 .login-fields dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-2)}

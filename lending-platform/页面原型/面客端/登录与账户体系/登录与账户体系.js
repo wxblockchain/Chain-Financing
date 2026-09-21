@@ -12,6 +12,7 @@
     'P-L10':['focus','/auth/return','Completing sign-in','正在完成登录'],
     'P-L11':['focus','/auth/agreements','Review agreements','确认协议'],
     'P-L12':['portal','/account','Account settings','账户设置'],
+    'P-L14':['portal','/account/company','Company information','企业信息'],
     'P-L13':['focus','/auth/retry','Account setup interrupted','账户建立未完成'],
     // 本模块内的演示落点，绝不占用 P-MC-01 或登记成正式业务页。
     'DEMO-L-GATE':['portal','/demo/login/financing','Financing entry · demo','融资入口 · 演示页']
@@ -19,40 +20,71 @@
   const dict = {en:{navAssets:'Asset marketplace',navPlaza:'Lending marketplace',navConsole:'My console'},
     zh:{navAssets:'资产广场',navPlaza:'借贷广场',navConsole:'我的控制台'}};
   Object.entries(pages).forEach(([id,p])=>{
-    CF.PAGES[id]={end:'asset',layout:p[0],navKey:id,auth:id==='P-L12'};
+    CF.PAGES[id]={end:'asset',layout:p[0],navKey:id,auth:['P-L12','P-L14'].includes(id)};
     CF.ENTRY[id]=p[1];dict.en[id]=p[2];dict.zh[id]=p[3];
   });
+  CF.PAGES['P-L14'].parent='P-F-AM-01';
   const D = {
-    level:'L0', restricted:false, agreed:false, accepted:false, submit:'idle', preferences:'idle',
+    level:'L0', restricted:false, agreed:false, accepted:false, submit:'idle',
     notification:true, savedNotification:true, preferredLang:'en', savedLang:'en',
     entryError:'', handoff:'', missing:false, rejected:false, downgraded:false,
     extraNotices:false, accountState:'default', ssoResult:'first', returnResult:'fallback',
     verificationResult:'verified', submitResult:'success', source:'B', replay:false,
     origin:'/assets', originAction:'', accountChanged:false, pending:false, gateState:'idle',
     sessionMessage:'', timer:0, timerVersion:0, reviewMessage:'', focusBack:null,
-    lastRole:null, memoryDisabled:false, switchScheduled:false
+    personalState:'idle', companyState:'idle', switchScheduled:false,
+    preferenceState:{language:'idle',notification:'idle'}, preferenceEpoch:0,
+    profileVariant:1, profileOptionalMissing:false, profileReads:{}, profileReadRoute:'', profileEpoch:0, companyOrigin:'/assets'
   };
   const $=id=>document.getElementById(id);
   const assetWallet='0x1111111111111111111111111111111111111111';
-  CF.portalAccount=()=>({walletAddress:S.role==='fund' ? CF.funder?.review.account.address||'' : S.role==='asset'&&!D.missing ? assetWallet : ''});
+  const assetProfile=()=>({userId:'DEMO-USER-00'+D.profileVariant,companyId:D.missing?'':'DEMO-ORG-00'+D.profileVariant,
+    wallet:D.missing?'':D.profileVariant===1?assetWallet:'0x2222222222222222222222222222222222222222',email:D.missing?'':'demo'+D.profileVariant+'@example.test'});
+  CF.portalAccount=()=>({walletAddress:S.role==='fund' ? CF.funder?.review.account.address||'' : S.role==='asset' ? assetProfile().wallet : ''});
   function btn(en,zh,act,value='',kind='') {
     return `<button type="button" class="btn ${kind}" data-act="${act}" data-v="${esc(value)}">${L(en,zh)}</button>`;
   }
   function link(en,zh,act,value='') {return `<button type="button" class="btn-link" data-act="${act}" data-v="${esc(value)}">${L(en,zh)}</button>`;}
   function go(route) {if(route==='/')route='/assets';S.menu=null;S.layer=null;if(location.hash==='#'+route)CF.render();else location.hash='#'+route;}
   function later(fn,ms=950){clearTimeout(D.timer);const version=++D.timerVersion;D.timerRoute=location.hash;D.timer=setTimeout(()=>{if(version===D.timerVersion&&D.timerRoute===location.hash)fn();},ms);}
-  function cancelPending(){clearTimeout(D.timer);D.timerVersion++;D.timerRoute=null;D.pending=false;D.switchScheduled=false;if(D.gateState==='pending')D.gateState='idle';if(D.preferences==='pending')D.preferences='idle';}
-  function clearMemory(){D.lastRole=null;try{localStorage.removeItem('lp_last_role');localStorage.removeItem('lp_last_role_at');}catch(e){}}
-  function readMemory(){
-    try{
-      const role=localStorage.getItem('lp_last_role'), at=Number(localStorage.getItem('lp_last_role_at'));
-      if(!['asset_party','funder'].includes(role)||!at||Date.now()-at>=90*86400000||at>Date.now()){clearMemory();return;}
-      D.lastRole=role;
-    }catch(e){D.lastRole=null;}
+  function cancelPending(){clearTimeout(D.timer);D.timerVersion++;D.timerRoute=null;D.pending=false;D.switchScheduled=false;if(D.gateState==='pending')D.gateState='idle';cancelPreferences();cancelProfileReads();}
+  function clearMemory(){try{localStorage.removeItem('lp_last_role');localStorage.removeItem('lp_last_role_at');}catch(e){}}
+  function cancelPreferences(){D.preferenceEpoch++;D.notification=D.savedNotification;D.preferredLang=D.savedLang;D.preferenceState={language:'idle',notification:'idle'};}
+  function loadPreferences(){
+    cancelPreferences();let prefs={};try{prefs=JSON.parse(localStorage.getItem('lp_asset_preferences_'+assetProfile().userId)||'{}')||{};}catch(e){}
+    D.savedLang=['en','zh'].includes(prefs.language)?prefs.language:S.lang;D.preferredLang=D.savedLang;
+    D.savedNotification=typeof prefs.notification==='boolean'?prefs.notification:true;D.notification=D.savedNotification;S.lang=D.savedLang;
   }
-  function remember(role){
-    D.lastRole=null;if(D.memoryDisabled)return;
-    try{localStorage.setItem('lp_last_role',role);localStorage.setItem('lp_last_role_at',String(Date.now()));D.lastRole=role;}catch(e){}
+  function savePreference(key,value){
+    if(S.role!=='asset'||D.restricted||S.page!=='P-L12'||D.preferenceState[key]==='pending')return;
+    if(key==='language'&&!['en','zh'].includes(value)||key==='notification'&&typeof value!=='boolean')return;
+    const old=key==='language'?D.savedLang:D.savedNotification;if(value===old)return;
+    if(key==='language')D.preferredLang=value;else D.notification=value;
+    D.preferenceState[key]='pending';const epoch=D.preferenceEpoch,user=assetProfile().userId,route=location.hash;
+    setTimeout(()=>{
+      if(epoch!==D.preferenceEpoch||S.role!=='asset'||D.restricted||assetProfile().userId!==user||location.hash!==route)return;
+      try{
+        if(D.submitResult==='failed')throw Error('simulated');
+        const prefs={language:D.savedLang,notification:D.savedNotification,[key]:value};
+        localStorage.setItem('lp_asset_preferences_'+user,JSON.stringify(prefs));
+        if(key==='language'){D.savedLang=value;S.lang=value;}else D.savedNotification=value;
+        D.preferenceState[key]='saved';
+      }catch(e){if(key==='language')D.preferredLang=old;else D.notification=old;D.preferenceState[key]='failed';}
+      CF.render();queueMicrotask(()=>$(key==='language'?'login-language':'login-notify')?.focus({preventScroll:true}));
+    },650);
+  }
+  function preferenceFeedback(key){const state=D.preferenceState[key];return `<p class="login-caption" role="${state==='failed'?'alert':'status'}">${state==='pending'?L('Saving…','正在保存…'):state==='saved'?L('Preferences saved','偏好设置已保存'):state==='failed'?L('Could not save. Select your preference again','保存失败，请重新选择'):''}</p>`;}
+  function cancelProfileReads(){D.profileEpoch++;Object.values(D.profileReads).forEach(clearTimeout);D.profileReads={};['accountState','personalState','companyState'].forEach(k=>{if(D[k]==='loading')D[k]='idle';});}
+  function profileBody(key,body,emptyText){
+    if(D[key]==='idle'){
+      D[key]='loading';const epoch=D.profileEpoch,user=assetProfile().userId,route=location.hash;
+      D.profileReadRoute=route;
+      D.profileReads[key]=setTimeout(()=>{if(epoch!==D.profileEpoch||user!==assetProfile().userId||S.role!=='asset'||D.restricted||route!==location.hash)return;D[key]='default';CF.render();},450);
+    }
+    if(D[key]==='loading')return `<div role="status" aria-label="${L('Loading information','正在读取资料')}">${CF.skelTable(2)}</div>`;
+    if(D[key]==='error')return CF.empty(L('Could not load '+(key==='companyState'?'company':key==='personalState'?'personal':'account')+' information',key==='companyState'?'企业信息加载失败':key==='personalState'?'个人信息加载失败':'账户信息加载失败'),'',btn('Retry','重试','login-profile-retry',key));
+    if(D[key]==='empty'||D.missing&&key!=='accountState')return CF.empty(L(...emptyText),'','');
+    return body;
   }
   function resetSession(){
     cancelPending();S.role='guest';S.layer=null;S.menu=null;D.restricted=false;D.accepted=false;
@@ -64,7 +96,7 @@
     const dirty=D.notification!==D.savedNotification||D.preferredLang!==D.savedLang;
     resetSession();D.sessionMessage=kind==='upstream'?L('You signed out on the asset trust platform. Your sign-in here has also ended.','你已在资产可信平台登出，本平台登录同时结束。'):'';
     CF.render();
-    const text={logout:L('Signed out.','已退出登录。'),expiry:L('Your sign-in has expired. You can sign in again to continue.','登录已过期，可重新登录继续。'),
+    const text={logout:L('Signed out here. You remain signed in on the asset trust platform.','已退出本平台，资产可信平台仍保持登录。'),expiry:L('Your sign-in has expired. You can sign in again to continue.','登录已过期，可重新登录继续。'),
       blocked:L('This account is currently unavailable. Contact support on the asset trust platform. Reference: HC-204.','账户暂不可用，请联系资产可信平台客服。参考码：HC-204。')};
     if(text[kind])CF.toast(text[kind]);
     if(kind==='blocked')supportLink();
@@ -84,10 +116,9 @@
       ${btn('Connect wallet','连接钱包（资金方）','login-choose','funder','primary')}</section></div>`;
   }
   function rolePage(){
-    const role=D.lastRole==='asset_party'?L('Asset party','资产方'):L('Funder','资金方');
     return `<div class="login-heading"><h1>${L('Choose your role','选择你的身份')}</h1><p>${L('So we can show you the right features and flows','为你展示对应的功能与流程')}</p></div>
       ${choices()}${D.entryError?`<p class="note red" role="alert">${entryError()}</p>`:''}
-      <div class="login-bottom">${D.lastRole?`<div class="login-memory"><span>${L(`Last time you chose "${role}"`,`上次你选择了「${role}」`)}</span>${link('Continue as '+role,'直接继续','login-choose',D.lastRole)}</div>`:''}
+      <div class="login-bottom">
       ${link('Keep browsing as a guest','以游客身份继续浏览','login-guest')}</div>`;
   }
   function entryError(){
@@ -95,7 +126,7 @@
       L('The asset trust platform is unavailable. Try again later or keep browsing.','资产可信平台暂时无法连接，请稍后重试或继续浏览。');
   }
   function choose(role){
-    D.entryError='';D.sessionMessage='';remember(role);
+    D.entryError='';D.sessionMessage='';
     if(role==='asset_party')open('leave','login');
     else if(CF.funder){CF.funder.connect('entry');}
     else {
@@ -146,27 +177,32 @@
     {name:['Platform agreement · example','平台服务协议 · 示例'],version:'DEMO-1',text:['This is a demonstration document for reviewing the agreement interaction. It does not grant rights or create obligations.','本内容仅用于评审协议交互，不授予权利，不产生义务。']},
     {name:['Privacy notice · example','隐私告知 · 示例'],version:'DEMO-1',text:['This prototype does not submit personal information. The production agreement collection is supplied by agreement management.','本原型不提交个人信息。正式协议集合由协议管理提供。']}
   ];
+  function identityFields(fields){return `<dl class="login-fields login-identity-fields">${fields.filter(f=>f[2]!==''&&f[2]!=null).map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd>${esc(f[2])}</dd></div>`).join('')}</dl>`;}
+  function sourceLink(view=false){return `<div class="detail-actions">${link(view?'View on the asset trust platform ↗':'Update on the asset trust platform ↗',view?'前往资产可信平台查看 ↗':'前往资产可信平台修改 ↗','login-leave',view?'company':'account')}</div>`;}
+  function personalFields(){return identityFields([
+    ['Name','姓名',D.profileVariant===1?'演示用户甲':'演示用户乙'],['English name','英文姓名',D.profileOptionalMissing?'':D.profileVariant===1?'Demo Person A':'Demo Person B'],
+    ['Nationality','国籍',L('China','中国')],['Document type','证件类型',L('Passport','护照')]
+  ]);}
   function accountPage(){
-    if(S.role==='guest')return unavailable();
-    const state=D.accountState;
-    let identity;
-    if(state==='loading')identity=CF.skelTable(4);
-    else if(state==='error')identity=CF.empty(L('Account information could not load','账户信息加载失败'),L('Try loading it again.','请重新加载。'),btn('Retry','重试','login-account-retry'));
-    else {
-      const fields=[['User ID','用户 ID','DEMO-USER-001'],...(!D.missing?[['Company ID','企业 ID','DEMO-ORG-001'],['Wallet address','钱包地址',assetWallet],['Email','邮箱','demo@example.test']]:[])];
-      identity=`<dl class="login-fields login-identity-fields">${fields.map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd class="mono">${esc(f[2])}</dd></div>`).join('')}</dl>`;
-    }
-    return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Account settings','账户设置')}</h1><p class="page-desc">${L('Manage your preferences and view your identity information.','管理偏好设置，查看身份信息。')}</p></div></div>
-      <div class="detail-stack"><section class="card detail-section"><div class="card-head"><h2>${L('Identity information','身份信息')}</h2></div><div class="card-b">
-      <p class="login-caption">${L('From the asset trust platform. These details are maintained there.','来自资产可信平台。这些信息由资产可信平台维护。')}</p>${identity}
-      <div class="login-agreement-row"><span>${L('Verification','实名认证')}</span><div class="detail-actions login-verification">${CF.tag(D.level==='L3'?'ok':'warn',D.level==='L3'?L('Verified','已认证'):L('Not verified','未认证'))}${D.level!=='L3'?link('Complete verification ↗','前往完成认证 ↗','login-leave','verify'):''}</div></div>
-      <div class="detail-actions">${link('Manage on asset trust platform ↗','前往资产可信平台修改 ↗','login-leave','account')}</div></div></section>
+    if(S.role!=='asset')return unavailable();
+    const profile=assetProfile();
+    const identity=profileBody('accountState',identityFields([['User ID','用户 ID',profile.userId],['Company ID','企业 ID',profile.companyId],['Wallet address','钱包地址',profile.wallet],['Email','邮箱',profile.email]]),['No account information available','暂无账户信息']);
+    const personal=profileBody('personalState',personalFields(),['No personal verification information available','暂无个人认证信息']);
+    return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Account settings','账户设置')}</h1><p class="page-desc">${L('View your information and manage your preferences.','查看账户资料，管理偏好设置。')}</p></div></div>
+      <p class="login-caption">${L('This information is maintained by the asset trust platform.','这些信息由资产可信平台维护。')}</p>
+      <div class="detail-stack"><section class="card detail-section"><div class="card-head"><h2>${L('Account information','账户信息')}</h2></div><div class="card-b">${identity}
+      <div class="login-agreement-row"><span>${L('Verification','实名认证')}</span><div class="detail-actions login-verification">${CF.tag(D.level==='L3'?'ok':'warn',D.level==='L3'?L('Verified','已认证'):L('Not verified','未认证'))}${D.level!=='L3'?link('Complete verification ↗','前往完成认证 ↗','login-leave','verify'):''}</div></div>${sourceLink()}</div></section>
+      <section class="card detail-section"><div class="card-head"><h2>${L('Personal information','个人信息')}</h2></div><div class="card-b">${personal}${sourceLink()}</div></section>
       <section class="card detail-section"><div class="card-head"><h2>${L('Preferences','偏好设置')}</h2></div><div class="card-b login-stack">
-      <div class="field login-preference-field"><label for="login-language">${L('Language preference','语言偏好')}</label><select class="inp" id="login-language" ${D.preferences==='pending'?'disabled':''}><option value="en" ${D.preferredLang==='en'?'selected':''}>English</option><option value="zh" ${D.preferredLang==='zh'?'selected':''}>简体中文</option></select></div>
-      <label class="login-check"><input id="login-notify" type="checkbox" ${D.notification?'checked':''} ${D.preferences==='pending'?'disabled':''}>${L('Receive account notifications','接收账户通知')}</label>
-      ${D.preferences==='failed'?CF.note('red',L('Preferences could not be saved. Try again.','偏好设置保存失败，请重试。')):''}
-      <div><button class="btn primary" data-act="login-save-prefs" type="button" ${D.preferences==='pending'?'disabled aria-busy="true"':''}>${D.preferences==='pending'?L('Saving…','正在保存…'):L('Save preferences','保存偏好')}</button></div></div></section>
-      <section class="card detail-section"><div class="card-b login-session"><div><h2>${L('Sign-in','登录状态')}</h2><p class="login-caption">${L('Signing out here keeps you signed in on the asset trust platform.','退出本平台不会退出资产可信平台。')}</p></div>${btn('Sign out','退出登录','login-signout')}</div></section></div>${demoStamp()}</div>`;
+      <div class="field login-preference-field"><label for="login-language">${L('Language preference','语言偏好')}</label><select class="inp" id="login-language" aria-describedby="login-language-feedback" ${D.preferenceState.language==='pending'?'disabled aria-busy="true"':''}><option value="en" ${D.preferredLang==='en'?'selected':''}>English</option><option value="zh" ${D.preferredLang==='zh'?'selected':''}>简体中文</option></select><div id="login-language-feedback">${preferenceFeedback('language')}</div></div>
+      <div><label class="login-check"><input id="login-notify" type="checkbox" aria-describedby="login-notify-feedback" ${D.notification?'checked':''} ${D.preferenceState.notification==='pending'?'disabled aria-busy="true"':''}>${L('Receive account notifications','接收账户通知')}</label><div id="login-notify-feedback">${preferenceFeedback('notification')}</div></div>
+      </div></section></div>${demoStamp()}</div>`;
+  }
+  function companyPage(){
+    if(S.role!=='asset')return unavailable();
+    const profile=assetProfile();
+    const info=identityFields([['Company ID','企业 ID',profile.companyId],['Company name','企业名称',D.profileVariant===1?'演示企业甲':'演示企业乙'],['English company name','企业英文名称',D.profileOptionalMissing?'':D.profileVariant===1?'Demo Company A':'Demo Company B'],['Country or region of incorporation','企业注册地',L('Hong Kong, China','中国香港')],['Registered address','注册地址',L('Demonstration address · Unit A, Demo Building, Hong Kong','演示地址 · 中国香港示例大厦 A 室')],['Company Registration Number (CR)','公司注册编号（CR）','DEMO-CR-00'+D.profileVariant],['Business Registration Number (BR)','商业登记号码（BR）',D.profileOptionalMissing?'':'DEMO-BR-00'+D.profileVariant],['Relationship to company','与企业关系',L('Authorized representative','授权代表')]]);
+    return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Company information','企业信息')}</h1><p class="page-desc">${L('This information is maintained by the asset trust platform.','这些信息由资产可信平台维护。')}</p></div></div><section class="card detail-section"><div class="card-head"><h2>${L('Company details','企业基本信息')}</h2></div><div class="card-b">${profileBody('companyState',info,['No company verification information available','暂无企业认证信息'])}${sourceLink(true)}</div></section>${demoStamp()}</div>`;
   }
   function gatePage(){
     const allowed=S.role==='asset'&&D.level==='L3';
@@ -180,6 +216,8 @@
       </div></section>${D.sessionMessage?CF.note('warn',L('You signed out on the asset trust platform. Your sign-in here has also ended.','你已在资产可信平台登出，本平台登录同时结束。')):''}</div>`;
   }
   function content(id){
+    syncIdentity();
+    if(id==='P-L14'&&S.role==='fund'){queueMicrotask(()=>{go('/assets');CF.toast(L('This page is not available for your current role','该页面不适用于当前身份'));});return '';}
     if(id==='P-L12'&&S.role==='fund'){queueMicrotask(()=>go('/funder/account'));return '';}
     if(CF.funder){const own=CF.funder.content(id);if(own!==undefined){queueMicrotask(postRender);return own;}}
     // 受限会话只有协议、协议正文与退出可达。路由守卫不依赖画不画入口。
@@ -194,6 +232,7 @@
       case 'P-L10':return `<div class="login-flow login-center"><div class="login-status-icon" aria-hidden="true">↻</div><h1 class="page-title">${L('Completing your sign-in','正在完成登录')}</h1><p role="status" aria-live="polite">${L('Please wait while we prepare your account.','正在准备你的账户，请稍候。')}</p>${CF.skelTable(2)}<div class="login-bottom">${link('Cancel and keep browsing','取消并继续浏览','login-exit')}</div></div>`;
       case 'P-L11':return agreementPage();
       case 'P-L12':return accountPage();
+      case 'P-L14':return companyPage();
       case 'P-L13':return `<div class="login-flow"><div class="login-status-icon" aria-hidden="true">!</div><h1 class="page-title">${L('Account setup was interrupted','账户建立未完成')}</h1><p>${L('Your identity was confirmed, but we could not finish setting up your account. Please retry.','身份已确认，但账户暂未建立完成，请重试。')}</p><p class="mono">HC-241</p><div class="login-actions">${btn('Retry','重试','login-sso-retry','','primary')}${btn('Keep browsing as a guest','以游客身份继续浏览','login-exit')}</div></div>`;
       case 'DEMO-L-GATE':return gatePage();
       case 'P-L02':queueMicrotask(()=>go('/assets'));return '';
@@ -224,6 +263,7 @@
       if(D.ssoResult==='shadow'){S.role='guest';go('/auth/retry');return;}
       D.accountChanged=S.role==='asset';S.role='asset';D.level=D.ssoResult==='verified'?'L3':'L0';
       D.missing=D.ssoResult==='missing';
+      cancelProfileReads();D.accountState=D.personalState=D.companyState='idle';
       if(D.ssoResult==='first'){
         D.restricted=true;D.agreed=false;go('/auth/agreements');
       }else{D.agreed=true;finishLanding();}
@@ -271,7 +311,8 @@
       case 'login-sso-retry':sso();break;
       case 'login-account':go(S.role==='fund'?'/funder/account':'/account');break;
       case 'login-signout':endSession('logout');break;
-      case 'login-account-retry':D.accountState='loading';later(()=>{D.accountState='default';CF.render();});break;
+      case 'login-profile-retry':if(['accountState','personalState','companyState'].includes(v))D[v]='idle';break;
+      case 'login-company':{const parent=pages[S.page]?'P-F-AM-01':S.page;CF.PAGES['P-L14'].parent=parent;D.companyOrigin=pages[S.page]?'/assets':location.hash.slice(1);D.companyState='idle';go('/account/company');break;}
       case 'login-support':open('support');break;
       case 'login-agreement':open('agreement',v);break;
       case 'login-download':{
@@ -282,12 +323,6 @@
         if(!D.accepted||D.submit==='pending')break;
         D.submit='pending';later(()=>{if(D.submitResult==='failed'){D.submit='failed';CF.render();}else{D.agreed=true;finishLanding();}});break;
       case 'login-load-agreements':D.submit='loading-list';later(()=>{D.submit='idle';CF.render();});break;
-      case 'login-save-prefs':{
-        if(S.role!=='asset'||D.restricted||D.preferences==='pending')break;
-        const notification=D.notification,language=D.preferredLang;
-        D.preferences='pending';later(()=>{if(D.submitResult==='failed'){D.preferences='failed';CF.render();}else{
-          D.savedNotification=notification;D.savedLang=language;S.lang=language;D.preferences='idle';CF.render();CF.toast(L('Preferences saved.','偏好设置已保存。'));
-        }});break;}
       case 'login-resolve':(D.resolved||(D.resolved=[])).push(v);break;
       case 'login-handoff':
         D.reviewMessage=L('This destination belongs to the '+v+' module; its pages are outside this delivery.','此入口交接至 '+v+' 模块，页面不在本次交付范围内。');S.demo=true;break;
@@ -326,14 +361,21 @@
       case 'account-error':D.accountState='error';go('/account');break;
       case 'account-ready':D.accountState='default';go('/account');break;
       case 'agreement-error':S.role='asset';D.restricted=true;D.submit='list-error';go('/auth/agreements');S.demo=false;break;
-      case 'memory-off':D.memoryDisabled=!D.memoryDisabled;D.lastRole=null;break;
-      case 'memory-expired':clearMemory();break;
+      case 'profile-other':cancelPending();D.profileVariant=D.profileVariant===1?2:1;D.missing=false;break;
+      case 'profile-optional':D.profileOptionalMissing=!D.profileOptionalMissing;break;
+      case 'profile-write':CF.toast(L('This information is read-only. Update it on the asset trust platform.','这些资料为只读，请前往资产可信平台修改。'));break;
+      case 'personal-empty':D.personalState='empty';go('/account');break;
+      case 'personal-error':D.personalState='error';go('/account');break;
+      case 'personal-ready':D.personalState='idle';go('/account');break;
+      case 'company-empty':D.companyState='empty';go('/account/company');break;
+      case 'company-error':D.companyState='error';go('/account/company');break;
+      case 'company-ready':D.companyState='idle';go('/account/company');break;
     }
   }
   function options(id,title,values,selected){return `<div class="field"><label for="${id}">${title}</label><select class="inp" id="${id}">${values.map(a=>`<option value="${a[0]}" ${selected===a[0]?'selected':''}>${L(a[1],a[2])}</option>`).join('')}</select></div>`;}
   function demoPanel(){
     if(!S.demo)return;
-    $('demoPanel').innerHTML=`<div class="grp"><h5>${L('Review tools · simulation only','评审工具 · 仅模拟')}</h5><p class="login-caption">${L('No real authorization, wallet, backend session or security enforcement. External pages are not reproduced.','不执行真实授权、钱包、服务端会话或安全校验，不复刻外部页面。')}</p>
+    $('demoPanel').innerHTML=`<div class="grp"><h5>${L('Review tools · simulation only','评审工具 · 仅模拟')}</h5><p class="login-caption">${L('Simulated data only. Upstream profile fields and notification preferences are provisional; no real SSO integration.','仅模拟资料。上游基本信息字段与通知偏好仍暂定，未进行真实 SSO 联调。')}</p>
       ${D.reviewMessage?CF.note('accent',esc(D.reviewMessage)):''}
       ${D.handoff==='wallet'?`<div class="seg">${btn('Cancel wallet request','钱包取消','login-demo','wallet-cancel')}${btn('No wallet available','钱包不可用','login-demo','wallet-missing')}${btn('Connection succeeded','连接成功','login-demo','wallet-connected')}</div>`:''}
       ${D.handoff==='asset'?`<div class="seg">${btn('Simulate return','模拟返回','login-demo','return')}${btn('Platform unreachable','授权中心不可达','login-demo','asset-unavailable')}${btn('Abandon and return','放弃并返回','login-demo','asset-cancel')}</div>`:''}</div>
@@ -346,10 +388,12 @@
       ${options('demo-submit',L('Save result','保存结果'),[['success','Success','成功'],['failed','Failure · allow retry','失败 · 可重试']],D.submitResult)}
       <div class="grp"><h5>${L('Session invalidation','会话失效')}</h5><div class="seg">${btn('Expired','到期','login-demo','expiry')}${btn('Upstream logout','上游登出','login-demo','upstream')}${btn('Account unavailable','主体不可用','login-demo','blocked')}</div></div>
       <div class="grp"><h5>${L('Verification and reminders','认证与提示条')}</h5><div class="seg">${btn('Downgrade','认证降级','login-demo','downgrade')}${btn('Refresh: verified','刷新为已认证','login-demo','refresh')}${btn('Unknown status','未知状态','login-demo','invalid-status')}${btn('Toggle rejected copy','切换驳回文案','login-demo','rejected')}${btn('Reminder queue','提示条队列','login-demo','notice-queue')}</div></div>
-      <div class="grp"><h5>${L('Account and agreement states','账户与协议状态')}</h5><div class="seg">${btn('Account loading','账户加载中','login-demo','account-loading')}${btn('Account load failed','账户加载失败','login-demo','account-error')}${btn('Account ready','账户正常','login-demo','account-ready')}${btn('Toggle missing fields','切换字段缺失','login-demo','missing')}${btn('Agreement load failed','协议加载失败','login-demo','agreement-error')}</div></div>
-      <div class="grp"><h5>${L('Entry and fallback','入口与兜底')}</h5><div class="seg">${btn('Main flow unavailable','主干不可继续','login-demo','main-failure')}${btn('Return fallback','回跳兜底','login-demo','fallback')}${btn('Storage unavailable','存储不可用','login-demo','memory-off')}${btn('Memory expired','身份记忆到期','login-demo','memory-expired')}</div></div>`;
+      <div class="grp"><h5>${L('Account and agreement states','账户与协议状态')}</h5><div class="seg">${btn('Account loading','账户加载中','login-demo','account-loading')}${btn('Account load failed','账户加载失败','login-demo','account-error')}${btn('Account ready','账户正常','login-demo','account-ready')}${btn('Toggle missing fields','切换字段缺失','login-demo','missing')}${btn('Agreement load failed','协议加载失败','login-demo','agreement-error')}${btn('Personal: empty','个人资料为空','login-demo','personal-empty')}${btn('Personal: error','个人资料失败','login-demo','personal-error')}${btn('Personal: ready','个人资料重新读取','login-demo','personal-ready')}${btn('Company: empty','企业资料为空','login-demo','company-empty')}${btn('Company: error','企业资料失败','login-demo','company-error')}${btn('Company: ready','企业资料重新读取','login-demo','company-ready')}${btn('Different account','模拟另一账户','login-demo','profile-other')}${btn('Optional fields absent','可选字段缺失','login-demo','profile-optional')}${btn('Attempt read-only update','尝试修改只读资料','login-demo','profile-write')}</div></div>
+      <div class="grp"><h5>${L('Entry and fallback','入口与兜底')}</h5><div class="seg">${btn('Main flow unavailable','主干不可继续','login-demo','main-failure')}${btn('Return fallback','回跳兜底','login-demo','fallback')}</div></div>`;
   }
-  let priorLayer=false, renderedPage=null;
+  let priorLayer=false, renderedPage=null,identityKey='';
+  function syncIdentity(){const key=S.role==='asset'?assetProfile().userId:S.role;if(key===identityKey)return;identityKey=key;cancelPending();D.accountState=D.personalState=D.companyState='idle';if(S.role==='asset')loadPreferences();}
+
   function postRender(){
     if(renderedPage!==S.page){if(pages[S.page]||/^P-L2|^DEMO-F-/.test(S.page))window.scrollTo(0,0);renderedPage=S.page;}
     const foot=$('foot');if(pages[S.page]||/^P-L2|^DEMO-F-/.test(S.page))foot.innerHTML=`<div class="ft-in"><div class="ft-mark">Harbour Credit</div><p class="ft-tag">${L('Receivables and financing, connected.','连接应收账款与融资需求。')}</p><div class="ft-links">${link('About','平台介绍','login-handoff','about')}${link('FAQ','常见问题','login-handoff','faq')}${link('Agreements','协议','login-handoff','agreement')}</div><div class="ft-meta">${L('Lending platform','借贷平台')}</div></div>`;
@@ -361,7 +405,7 @@
       const v=x.dataset.v;if(v==='apply')x.dataset.act='login-start';
       else if(v==='acct')x.dataset.act='login-account';
       else if(v==='notify')x.dataset.act='login-notifications';
-      else if(v==='inst')x.hidden=true;
+      else if(v==='inst'&&S.role==='asset')x.dataset.act='login-company';
     });
     const badge=document.querySelector('#tools .badge');if(badge&&!CF.portalConnected){if(D.downgraded)badge.textContent='1';else badge.remove();}
     if(D.restricted){document.querySelector('#focus .brand').removeAttribute('href');}
@@ -383,9 +427,11 @@
   }
   if(CF.funder){Object.assign(dict.en,CF.funder.dict.en);Object.assign(dict.zh,CF.funder.dict.zh);Object.assign(layers,CF.funder.layers);}
   CF.define(CF.AccountView={id:'login-account',dict,content,layers,onAct:action,
+    breadcrumbRoute(id){return S.page==='P-L14'&&id===CF.PAGES['P-L14'].parent?D.companyOrigin:null;},
     // 组合只承接已有页面：资产广场及其既有项目链接保持单一实现。
     ...(CF.AM ? {pages:[...Object.keys(pages),'P-L20','P-L21','P-L22','P-L23','DEMO-F-GATE',...(!CF.MC?['P-MC-01']:[])],
       beforeRender(){
+        syncIdentity();
         if(D.restricted&&S.page!=='P-L11'){S.page='P-L11';go('/auth/agreements');}
         notices();queueMicrotask(postRender);
         CF.LSView?.beforeRender?.();
@@ -418,8 +464,8 @@
   document.addEventListener('change',e=>{
     const id=e.target.id,v=e.target.value;
     if(id==='login-consent')D.accepted=e.target.checked;
-    else if(id==='login-language')D.preferredLang=v;
-    else if(id==='login-notify')D.notification=e.target.checked;
+    else if(id==='login-language')savePreference('language',v);
+    else if(id==='login-notify')savePreference('notification',e.target.checked);
     else if(id==='demo-sso')D.ssoResult=v;
     else if(id==='demo-return')D.returnResult=v;
     else if(id==='demo-source')D.source=v;
@@ -441,8 +487,10 @@
   window.addEventListener('hashchange',()=>{
     if(D.restricted&&location.hash!=='#/auth/agreements'){location.hash='#/auth/agreements';}
     if(D.timerRoute&&D.timerRoute!==location.hash)cancelPending();
+    if(location.hash!=='#/account')cancelPreferences();
+    if(D.profileReadRoute!==location.hash)cancelProfileReads();
   });
-  readMemory();
+  clearMemory();
   // 双击默认为游客壳；登录只有主动点击或受限操作才出现。
   if(!location.hash&&!CF.deferBoot)location.hash='#/assets';
   if(!CF.deferBoot)CF.boot();
