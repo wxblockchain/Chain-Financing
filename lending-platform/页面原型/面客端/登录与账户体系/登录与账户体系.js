@@ -33,6 +33,8 @@
     lastRole:null, memoryDisabled:false, switchScheduled:false
   };
   const $=id=>document.getElementById(id);
+  const assetWallet='0x1111111111111111111111111111111111111111';
+  CF.portalAccount=()=>({walletAddress:S.role==='fund' ? CF.funder?.review.account.address||'' : S.role==='asset'&&!D.missing ? assetWallet : ''});
   function btn(en,zh,act,value='',kind='') {
     return `<button type="button" class="btn ${kind}" data-act="${act}" data-v="${esc(value)}">${L(en,zh)}</button>`;
   }
@@ -151,7 +153,7 @@
     if(state==='loading')identity=CF.skelTable(4);
     else if(state==='error')identity=CF.empty(L('Account information could not load','账户信息加载失败'),L('Try loading it again.','请重新加载。'),btn('Retry','重试','login-account-retry'));
     else {
-      const fields=[['User ID','用户 ID','DEMO-USER-001'],...(!D.missing?[['Company ID','企业 ID','DEMO-ORG-001'],['Wallet address','钱包地址','0x1111111111111111111111111111111111111111'],['Email','邮箱','demo@example.test']]:[])];
+      const fields=[['User ID','用户 ID','DEMO-USER-001'],...(!D.missing?[['Company ID','企业 ID','DEMO-ORG-001'],['Wallet address','钱包地址',assetWallet],['Email','邮箱','demo@example.test']]:[])];
       identity=`<dl class="login-fields login-identity-fields">${fields.map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd class="mono">${esc(f[2])}</dd></div>`).join('')}</dl>`;
     }
     return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Account settings','账户设置')}</h1><p class="page-desc">${L('Manage your preferences and view your identity information.','管理偏好设置，查看身份信息。')}</p></div></div>

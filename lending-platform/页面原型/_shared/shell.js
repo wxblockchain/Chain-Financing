@@ -35,6 +35,12 @@
   };
   CF.S = S;
 
+  // 独立原型沿用登录样例的钱包；登录宿主覆盖此函数，返回当前登录账号的地址。
+  // 仅展示，不读取钱包插件，不建立会话；宿主返回空地址时不可回退为演示地址。
+  CF.portalAccount = function () {
+    return { walletAddress: "0x1111111111111111111111111111111111111111" };
+  };
+
   /* 面客消息快照属于壳层。未接入数据的模块为空池，不编造未读数。 */
   var N = CF.notifications = { rows: [], panelState: "default", preview: null };
   N.allowed = function () { return S.end === "asset" && (S.role === "asset" || S.role === "fund"); };
@@ -268,11 +274,13 @@
 
   function accountDd() {
     var who = S.role === "fund" ? L("Funder", "资金方") : L("Asset holder", "资产方");
-    var initials = S.role === "fund" ? "F" : "A";
+    var identity = CF.portalAccount() || {};
+    var address = typeof identity.walletAddress === "string" ? identity.walletAddress.trim() : "";
+    var label = address ? (address.length > 12 ? address.slice(0, 6) + "…" + address.slice(-4) : address) : L("Account", "账户");
     var open = S.menu === "acct";
     var list = open
-      ? '<div class="dd-list" role="menu">' +
-        '<div class="dd-head">' + esc(who) + "</div>" +
+      ? '<div class="dd-list" id="portal-account-menu" role="menu" aria-label="' + L("Account menu", "账户菜单") + '">' +
+        '<div class="portal-account-role">' + esc(who) + "</div>" +
         '<button type="button" role="menuitem" data-act="toast" data-v="acct">' + L("Account settings", "账户设置") + "</button>" +
         '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + (S.role === "fund" ? L("User information", "用户信息") : L("Institution", "机构信息")) + "</button>" +
         (N.allowed() && N.preview ? '<button type="button" role="menuitem" data-act="go" data-v="/notifications">' + L("Notifications", "消息中心") + '</button>' : '') +
@@ -280,9 +288,10 @@
         '<button type="button" role="menuitem" data-act="signout">' + L("Sign out", "退出登录") + "</button>" +
         "</div>"
       : "";
-    return '<div class="dd"><button class="dd-btn" type="button" data-act="menu" data-v="acct" ' +
-      'aria-haspopup="menu" aria-expanded="' + open + '"><span class="op-avatar xs">' +
-      initials + "</span><span>" + esc(who) + "</span>" + ICON.caret + "</button>" + list + "</div>";
+    return '<div class="dd portal-account"><button class="dd-btn" type="button" data-act="menu" data-v="acct" ' +
+      'aria-haspopup="menu" aria-controls="portal-account-menu" aria-expanded="' + open + '" title="' + esc(address || label) + '" aria-label="' +
+      esc(L("Account menu", "账户菜单") + (address ? " · " + address : "")) + '"><span' + (address ? ' class="portal-account-address"' : '') + '>' +
+      esc(label) + "</span>" + ICON.caret + "</button>" + list + "</div>";
   }
 
   function renderPortalTools() {

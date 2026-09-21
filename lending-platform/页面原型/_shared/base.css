@@ -84,6 +84,8 @@ img,svg{max-width:100%}
 .dd-list button[aria-current="true"]{color:var(--accent);font-weight:640;background:var(--accent-soft)}
 .dd-head{padding:8px 10px 6px;font-size:var(--fs-10);letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
 .dd-sep{height:1px;background:var(--border);margin:5px 0}
+.portal-account-address{font-family:var(--mono);white-space:nowrap}
+.portal-account-role{padding:var(--sp-3);border-bottom:1px solid var(--border);font-weight:600;color:var(--text)}
 
 /* ============================== 标记与状态 ================================= */
 .tag{display:inline-flex;align-items:center;gap:6px;border-radius:var(--radius-pill);
