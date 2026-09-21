@@ -132,12 +132,14 @@
     if(e.application){const a=D.applications.find(a=>a.id===e.application);if(!D.executions.some(x=>x.application===a.id&&x.state==='processing'))a.state='recorded';}
     D.log(p,result==='success'?'executionSuccess':'executionFailed',e.id);D.recompute(p);D.save();
   };
-  D.publish = (p, amount, edit) => {
+  D.publish = (p, amount, edit, referenceCurrencies) => {
     D.sweep();const a=D.actions(p),n=D.numbers(p),current=D.current(p);
     if(!D.mine(p))throw Error('permission');if(edit?!a.edit:!a.publish)throw Error('publishChanged');
     const max=n.free+(edit?current.amount:0);if(!Number.isFinite(amount)||amount<=0||Math.abs(Math.round(amount*100)-amount*100)>1e-6||amount>max)throw Error('amount');
-    if(edit)current.amount=amount;
-    else{const at=D.iso();p.demands.push({id:p.id+'-'+String(p.demands.length+1).padStart(2,'0'),amount,state:'open',at});p.state='raising';if(!p.published){p.published=at;const expiry=new Date(at);expiry.setUTCFullYear(expiry.getUTCFullYear()+1);p.expires=expiry.toISOString();}}
+    if(!Array.isArray(referenceCurrencies)||!referenceCurrencies.length||referenceCurrencies.some(c=>!['USD','USDT','USDC'].includes(c)))throw Error('referenceCurrencies');
+    const preferences=[...new Set(referenceCurrencies)];
+    if(edit){current.amount=amount;current.referenceCurrencies=preferences;}
+    else{const at=D.iso();p.demands.push({id:p.id+'-'+String(p.demands.length+1).padStart(2,'0'),amount,referenceCurrencies:preferences,state:'open',at});p.state='raising';if(!p.published){p.published=at;const expiry=new Date(at);expiry.setUTCFullYear(expiry.getUTCFullYear()+1);p.expires=expiry.toISOString();}}
     D.log(p,edit?'amountEdited':'published');D.save();
   };
   D.endDemand = p => {const a=D.actions(p);if(!a.edit)throw Error('demandChanged');const d=D.current(p);d.state='ended';d.reason='withdrawn';D.recompute(p);D.log(p,'demandWithdrawn',d.id);D.save();};
