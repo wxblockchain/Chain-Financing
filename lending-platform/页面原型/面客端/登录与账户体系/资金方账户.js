@@ -292,7 +292,7 @@
       case 'agreements':CF.openLayer('modal','agreement','0');break;
       case 'account':go('/funder/account');break;
       case 'status':F.historyVersion=0;go('/funder/status');break;
-      case 'register':F.historyVersion=0;F.submitConsent=false;F.change=false;go('/funder/register');break;
+      case 'register':F.historyVersion=0;F.submitConsent=false;F.change=false;if(F.account.status==='rejected')F.account.step=F.account.email?2:1;go('/funder/register');break;
       case 'step':if(F.account.status==='submitted'){go('/funder/status');break;}if(Number(v)===3&&!F.account.email){F.account.step=1;F.error=['Verify your contact email before reviewing your submission.','请先验证联系邮箱，再确认提交。'];break;}F.account.step=Number(v);F.error=null;persist();break;
       case 'send':send();break;
       case 'verify':verify();break;
