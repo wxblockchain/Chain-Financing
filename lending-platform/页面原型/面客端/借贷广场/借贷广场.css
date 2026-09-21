@@ -275,3 +275,10 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-detail-main .card-head .ls-subheading{margin:0}
 @media(max-width:768px){.drawer:has(.ls-flow),.drawer:has(.cq-flow){width:100vw}.ls-flow .ls-review-filters{grid-template-columns:1fr 1fr}.drawer:has(.ls-flow) .drawer-h b,.drawer:has(.cq-flow) .drawer-h b{overflow-wrap:anywhere}}
 @media(max-width:414px){.ls-flow .ls-review-filters{grid-template-columns:1fr}}
+.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){width:min(920px,100%);max-width:920px;max-height:calc(100dvh - 48px)}
+.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-h{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border)}
+.ls-modal-close{margin-left:auto;flex-shrink:0;font-size:var(--fs-24)}
+.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-b{color:var(--text);padding:var(--sp-5) var(--sp-6);min-height:0;overscroll-behavior:contain}
+.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-f{border-top:1px solid var(--border);padding:var(--sp-4) var(--sp-6);flex-wrap:wrap;flex-shrink:0}
+.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-f .btn{white-space:normal;height:auto;min-height:44px}
+@media(max-width:640px){.modal-mask:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){padding:var(--sp-2)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){width:100%;max-height:calc(100dvh - 16px)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) :is(.modal-h,.modal-b,.modal-f){padding:var(--sp-3)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-f .btn{flex:1}}
