@@ -30,6 +30,21 @@
     if(a.version&&a.status!=='draft'&&!a.records.some(r=>r.sequence===a.version))a.records.push(recordOf(a));
   }
   function recordDecision(a){normalizeRecords(a);const index=a.records.findIndex(r=>r.sequence===a.version);if(index>=0)a.records[index]=recordOf(a);if(a.status==='verified')a.boundIdentity=identity(a.submittedForm||a.form);}
+  function reviewEvents(records){
+    const ordered=records.slice().sort((a,b)=>a.sequence-b.sequence);
+    return ordered.flatMap((record,index)=>{
+      const previous=ordered[index-1];
+      const label=previous?.status==='rejected'?['Resubmitted after changes','修改后提交']:previous?.status==='verified'?['Updated details submitted','变更资料提交']:record.sequence===1?['Application submitted','提交申请']:['Application resubmitted','再次提交'];
+      const events=[{kind:'submission',label,actor:record.submitter,at:record.submitted,record}];
+      if(record.reviewed&&['verified','rejected'].includes(record.status))events.push({kind:record.status,label:record.status==='verified'?['Application approved','审核通过']:['Application rejected','审核驳回'],actor:record.reviewer,at:record.reviewed,record});
+      return events;
+    });
+  }
+  function reviewTimeline(records,operations=false){
+    const events=reviewEvents(records);
+    if(!events.length)return `<p class="login-caption">${L('No submission or review activity yet.','暂无提交与审核记录。')}</p>`;
+    return `<ol class="certification-timeline" aria-label="${L('Submission and review activity, earliest first','提交与审核过程，按时间正序')}">${events.map(event=>`<li class="certification-event" data-event="${event.kind}"><div class="certification-event-head"><strong>${L(...event.label)}</strong>${event.kind==='submission'&&event.record.status==='submitted'?CF.tag('warn',L('Awaiting review','待审核')):''}</div><div class="certification-event-meta"><span>${event.kind==='submission'?`${L('Funder','资金方')} · ${esc(event.actor||'—')}`:operations?`${L('Operations','运营人员')} · ${esc(event.actor||'—')}`:L('Operations review','运营审核')}</span><time datetime="${esc(event.at||'')}">${time(event.at)}</time></div>${event.kind==='rejected'?`<div class="certification-event-reason"><b>${L('Rejection reason','驳回原因')}</b>${issuesHTML(event.record)}</div>`:''}</li>`).join('')}</ol>`;
+  }
   function read(){try{F.accounts=JSON.parse(localStorage.getItem('hc_funder_demo')||'{}');Object.values(F.accounts).forEach(normalizeRecords);S.lang=localStorage.getItem('hc_funder_language')||S.lang;}catch(e){F.accounts={};}}
   function persist(){normalizeRecords(F.account);F.account.notes=F.notes;try{F.accounts[F.account.address]=F.account;localStorage.setItem('hc_funder_demo',JSON.stringify(F.accounts));F.storageFailed=false;return true;}catch(e){F.storageFailed=true;return false;}}
   function hydrate(a){F.account=F.accounts[a]?JSON.parse(JSON.stringify(F.accounts[a])):blank();F.account.form={...blank().form,...F.account.form};F.account.address=a;normalizeRecords(F.account);F.notes=F.account.notes||[];F.pendingSubmission=!!F.account.pending;F.downgrade=!!F.account.reviewPending;F.change=false;F.submitConsent=false;F.emailFlow=false;F.otp=null;F.fieldErrors={};F.emailInput=F.account.email;F.upload=F.account.form.file?(F.account.form.fileStatus||'done'):'idle';if(F.upload==='loading'){F.upload='failed';F.account.form.fileStatus='failed';}}
@@ -174,7 +189,7 @@
       ${F.downgrade?CF.note('warn',L('Your details are being reviewed again. Funding actions are unavailable until approval.','机构资料正在重新审核，审核通过前暂不可发起出资等操作。')):''}
       <div class="funder-status-stack">${feedback}
         <section class="card" id="f-submission-summary"><div class="card-b"><h2>${L('Submission information','提交信息')}</h2>${details([['Application','申请编号','DEMO-REG-001'],['Template','资料模版',a.template||'DEMO-1'],['Submitted','提交时间',time(a.submitted)],['Review decision','审核结论时间',time(a.reviewed)],['Contact email at submission','提交时联系邮箱',a.snapshotEmail||a.email]],true)}
-        <details class="funder-history"><summary>${L('Review records','审核记录')} · ${a.records.length}</summary>${a.records.slice().reverse().map(h=>`<article class="funder-review-record">${tag(h.status)}${details([['Submitted by','提交人',h.submitter],['Submitted','提交时间',time(h.submitted)],['Reviewed','审核时间',time(h.reviewed)]],true)}${h.status==='rejected'?`<h3>${L('Rejection reason','驳回原因')}</h3>${issuesHTML(h)}`:''}</article>`).join('')}</details></div></section>
+        <details class="funder-history"><summary>${L('Submission and review activity','提交与审核记录')} · ${reviewEvents(a.records).length}</summary>${reviewTimeline(a.records)}</details></div></section>
         <section class="card" id="f-institution-summary"><div class="card-b"><h2>${L('Institution details','机构资料')}</h2>${details((view.fields||[]),true)}${a.status==='verified'?`<div class="login-actions">${btn('Update institution details','变更机构资料','change','','primary')}</div>`:''}</div></section>
         ${stamp()}
       </div></div>`;
@@ -415,7 +430,7 @@
   CF.funder={dict,layers,content,action,connect,notices,afterRender,logout};
   CF.funder.review={
     get account(){return F.account;}, get state(){return F;}, persist,
-    seed:fixture, fields, response, identity, recordOf, normalizeRecords, recordDecision,
+    seed:fixture, fields, response, identity, recordOf, normalizeRecords, recordDecision, reviewTimeline,
     activate(){S.role='fund';F.connected=F.account.address;F.sessionUntil=Date.now()+4*3600000;response();},
     decide(version,status,issues,additional){
       const a=F.account;if(a.version!==version||a.status!=='submitted')return false;

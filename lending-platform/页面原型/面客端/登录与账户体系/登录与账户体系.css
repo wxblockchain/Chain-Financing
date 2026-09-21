@@ -149,8 +149,15 @@
 
 .funder-reason-text{white-space:pre-wrap;overflow-wrap:anywhere}
 
-/* Review metadata is separate from current institution materials. */
-.funder-review-record{padding:var(--sp-5) 0;border-top:1px solid var(--border)}
-.funder-review-record:first-of-type{margin-top:var(--sp-4)}
-.funder-review-record h3{font-size:var(--fs-14);margin:var(--sp-4) 0 var(--sp-2)}
-.funder-review-record .tag{margin-bottom:var(--sp-3)}
+/* Both ends share the action timeline; only operations receives reviewer identity. */
+.certification-timeline{list-style:none;margin:var(--sp-5) 0 0;padding:0}
+.certification-event{position:relative;margin:0 0 0 5px;padding:0 0 var(--sp-6) var(--sp-5);border-left:1px solid var(--border)}
+.certification-event:last-child{padding-bottom:0;border-left-color:transparent}
+.certification-event:before{content:"";position:absolute;left:-5px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.certification-event[data-event="verified"]:before{background:var(--ok)}
+.certification-event[data-event="rejected"]:before{background:var(--danger)}
+.certification-event-head{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-3)}
+.certification-event-meta{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-5);margin-top:var(--sp-2);font-size:var(--fs-12);color:var(--muted);overflow-wrap:anywhere}
+.certification-event-reason{margin-top:var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);overflow-wrap:anywhere}
+.certification-event-reason>b{font-size:var(--fs-12);color:var(--muted)}
+.certification-event-reason p{margin:var(--sp-2) 0 0}
