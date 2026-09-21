@@ -12,11 +12,14 @@
 .review-wrap .rv-grid.has-actions{grid-template-columns:minmax(0,1fr) 240px}
 .review-wrap .rv-operation{position:sticky;top:calc(68px + var(--sp-5))}
 .review-wrap .rv-actions{display:grid;gap:var(--sp-3)}
-.review-wrap .rv-version-history{margin-top:var(--sp-5)}
-.review-wrap .rv-version-history h2{margin-bottom:0}
-.review-wrap .rv-version-table{width:100%;table-layout:fixed}
-.review-wrap .rv-version-table .col-act{width:120px}
-.review-wrap .rv-version-table td{white-space:normal;overflow-wrap:anywhere}
+.review-wrap .rv-review-records{margin-top:var(--sp-5)}
+.review-wrap .rv-review-records h2{margin-bottom:0}
+.review-wrap .rv-record-table{width:100%;table-layout:fixed}
+.review-wrap .rv-record-table th:last-child{width:30%}
+.review-wrap .rv-record-table th:nth-child(5){width:12%}
+.review-wrap .rv-record-table .rv-history{border:0;padding:0}
+.review-wrap .rv-record-table p{margin:0}
+.review-wrap .rv-record-table td{white-space:normal;overflow-wrap:anywhere}
 .review-wrap .rv-stack{gap:var(--sp-5)}
 .review-wrap .rv-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);margin:0}
 .review-wrap .rv-kv .rv-wide{grid-column:1/-1}

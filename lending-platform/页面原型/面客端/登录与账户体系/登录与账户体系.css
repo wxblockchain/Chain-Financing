@@ -148,3 +148,9 @@
 @media(max-width:600px){.funder-detail-grid{grid-template-columns:minmax(0,1fr)}.funder-steps button{flex-direction:column;gap:var(--sp-2);padding:var(--sp-2);text-align:center}.funder-code{grid-template-columns:minmax(0,1fr)}.funder-wrap .card-b{padding:var(--sp-4)}.funder-actions .btn{font-size:var(--fs-12);padding-inline:var(--sp-3)}}
 
 .funder-reason-text{white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* Review metadata is separate from current institution materials. */
+.funder-review-record{padding:var(--sp-5) 0;border-top:1px solid var(--border)}
+.funder-review-record:first-of-type{margin-top:var(--sp-4)}
+.funder-review-record h3{font-size:var(--fs-14);margin:var(--sp-4) 0 var(--sp-2)}
+.funder-review-record .tag{margin-bottom:var(--sp-3)}
