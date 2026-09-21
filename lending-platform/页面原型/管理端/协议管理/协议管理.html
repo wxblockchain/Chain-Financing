@@ -29,8 +29,8 @@
 .ag-dates .field{flex:1;max-width:240px}
 .ag-filter .acts{align-self:end}
 .ag-tabs{display:flex;gap:var(--sp-6);border-bottom:1px solid var(--border);margin-bottom:var(--sp-5)}
-.ag-tabs button{padding:var(--sp-3) 0;color:var(--muted);border-bottom:2px solid transparent;font-weight:600}
-.ag-tabs button[aria-current="page"]{color:var(--accent);border-color:var(--accent)}
+.ag-tabs button{padding:var(--sp-3) 0;color:var(--muted);border-bottom:2px solid transparent;font-weight:600;white-space:nowrap}
+.ag-tabs button[aria-selected="true"]{color:var(--accent);border-color:var(--accent)}
 .ag-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6);align-items:start}
 .ag-summary{background:var(--accent-soft);border:1px solid var(--accent-border);border-radius:var(--radius);padding:var(--sp-5)}
 .ag-summary h2,.ag-heading{font-size:var(--fs-16);margin:0 0 var(--sp-3);font-weight:650}
@@ -49,7 +49,7 @@
 .ag-editor .field{margin-bottom:var(--sp-5)}
 .ag-editor input[type=checkbox],.ag-editor input[type=radio]{accent-color:var(--accent)}
 .ag-actions{padding:var(--sp-4) 0;display:flex;justify-content:flex-end;gap:var(--sp-3)}
-.ag-error{min-height:1.5em;font-size:var(--fs-12);color:var(--danger);margin-top:var(--sp-2)}
+.ag-error{font-size:var(--fs-12);color:var(--danger);margin-top:var(--sp-2)}
 .ag-timeline{margin:0;padding:0;list-style:none}
 .ag-timeline li{padding:var(--sp-5);border-bottom:1px solid var(--border)}
 .ag-timeline li:last-child{border-bottom:0}
@@ -62,7 +62,13 @@
 .ag-dim{color:var(--muted)}
 .ag-editor [disabled]{cursor:not-allowed;opacity:.65}
 .ag-table .cell-sub,.ag-stack .dl dt{color:var(--muted)}
-.ag-back{margin-bottom:var(--sp-4)}
+.ag-error:empty{display:none}
+.ag-grid>*,.ag-form>*,.ag-history-meta>*{min-width:0}
+.ag-stack .dl dd{overflow-wrap:anywhere}
+.ag-table .ag-zone{display:block;font-size:var(--fs-11);white-space:nowrap}
+.ag-table th button{font:inherit;color:inherit}
+/* Keep review controls outside the business canvas and its fixed action column. */
+#demoBtn{left:var(--sp-4);right:auto;bottom:88px}
 </style>
 </head>
 <body>
