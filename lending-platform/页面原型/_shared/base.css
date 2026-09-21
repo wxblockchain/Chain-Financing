@@ -679,7 +679,8 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .file-row{display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-3);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:var(--sp-2)}
 .file-row-info{flex:1;min-width:0;overflow-wrap:anywhere}
 .file-row-info strong{display:block;font-size:var(--fs-12);font-weight:600}
-.file-row-status,.file-row-error{display:block;font-size:var(--fs-12);margin-top:var(--sp-1);color:var(--muted)}
+.file-row-meta,.file-row-status,.file-row-error{display:block;font-size:var(--fs-12);margin-top:var(--sp-1);color:var(--muted)}
 .file-row-error{color:var(--danger)}
 .file-row-actions{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-1);flex:none;margin-left:auto;white-space:nowrap}
 .file-row-info progress{display:block;width:100%;margin-top:var(--sp-2);accent-color:var(--accent)}
+@media(max-width:600px){.file-row{flex-wrap:wrap}.file-row-info{flex-basis:100%}.file-row-actions{flex-wrap:wrap}}

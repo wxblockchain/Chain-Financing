@@ -40,7 +40,7 @@
   function writeListRoute(){history.replaceState(null,'','#'+listRoute());routeKey=location.hash;}
   function open(key){CF.openLayer('modal','rv-'+key);queueMicrotask(()=>{focusLayer();if(key==='reject')$('rv-reason')?.focus();});}
   function cancelReview(){
-    const decision=A.pending?.decision;A.pending=null;CF.closeLayer();
+    const decision=A.pending?.decision,material=S.layer?.key==='rv-material';A.pending=null;CF.closeLayer();if(material)requestAnimationFrame(()=>document.querySelector('[data-act="rv-material"]')?.focus({preventScroll:true}));
     if(decision)requestAnimationFrame(()=>document.querySelector(`[data-act="rv-${decision==='verified'?'approve':'reject'}"]`)?.focus({preventScroll:true}));
   }
   function note(){return A.error?CF.note('red',E(A.error)):'';}
@@ -76,7 +76,7 @@
       ${note()}
       <div class="rv-grid ${reviewable?'has-actions':''}"><div class="detail-stack rv-stack"><section class="card"><div class="card-b"><h2>${L('Submission','提交信息')} ${tag(v.status)}</h2>${kv([['Funder account','资金方账号',A.selected==='DEMO-REG-001'?'DEMO-FUNDER':'DEMO-FUNDER-'+A.selected.slice(-3)],['Template version','模版版本',v.template||'DEMO-1'],['Submitted','提交时间',time(v.submitted)],['Decision time','结论时间',time(v.reviewed)],['Current account contact email','当前账户联系邮箱',a.email],['Contact email at submission','提交时账户联系邮箱',v.snapshotEmail],['Wallet address','钱包地址',a.address]])}</div></section>
       <section class="card"><div class="card-b"><h2>${L('Institution information','机构资料')}</h2>${kv(fields.filter(x=>x[0]!=='Institution document'))}</div></section>
-      <section class="card"><div class="card-b"><h2>${L('Supporting materials','提交材料')}</h2><div class="rv-doc"><span class="funder-file-icon" aria-hidden="true">▤</span><div><b>${E(v.form?.file||fields.find(x=>x[0]==='Institution document')?.[2]||'institution-demo.pdf')}</b><div class="rv-meta">${L('Institution document','机构证明材料')}${v.form?.fileSize?' · '+E(v.form.fileSize>=1048576?(v.form.fileSize/1048576).toFixed(1)+' MB':Math.ceil(v.form.fileSize/1024)+' KB'):''}</div></div>${btn('View material','查看材料','material')}</div></div></section>
+      <section class="card"><div class="card-b"><h2>${L('Supporting materials','提交材料')}</h2>${CF.fileRow({key:'institution-current',name:v.form?.file||'—',meta:L('Institution document','机构证明材料')+(v.form?.fileSize?' · '+(v.form.fileSize>=1048576?(v.form.fileSize/1048576).toFixed(1)+' MB':Math.ceil(v.form.fileSize/1024)+' KB'):''),state:'ready',status:L('Uploaded','已上传'),previewable:R.materialPreviewable(v.form),preview:{act:'rv-material'},download:{act:'rv-material-download'}})}</div></section>
       ${v.status==='rejected'?`<section class="card"><div class="card-b"><h2>${L('Rejection reasons','驳回原因')}</h2>${problemList(v)}</div></section>`:''}
       <section class="card"><div class="card-b"><h2>${L('Review decision','审核结论')}</h2>${v.reviewed?kv([['Decision','结论',name(v.status)],['Decided by','操作人',v.reviewer||'DEMO-OP-01'],['Decision time','结论时间',time(v.reviewed)]]):`<p class="rv-meta">${L('No decision yet','尚未出具结论')}</p>`}
       ${reviewable?'':CF.note('accent',L('This submission has a final decision and is read only.','本次提交已出具结论，仅可查看。'))}</div></section></div>
@@ -124,9 +124,8 @@
       if(!allowed())return{title:L('Sign in to continue','请先完成运营登录'),html:signedOut(),foot:btn('Close','关闭','cancel')};
       const v=snapshot();if(!v)return {title:L('Materials unavailable','资料不可用'),html:L('Open the current application to view its materials.','请进入当前申请查看资料。'),foot:btn('Close','关闭','cancel')};
       if(A.material==='loading')return{title:L('Opening material','正在读取材料'),html:CF.skelTable(3),foot:btn('Close','关闭','cancel')};
-      if(A.material==='error')return{title:L('Material unavailable','材料暂不可读'),html:CF.note('red',L('The uploaded material could not be loaded. This does not mean it is missing.','已上传材料暂时加载失败，不代表申请人未上传。')),foot:btn('Close','关闭','cancel')+btn('Retry','重试','material-retry','','primary')};
-      if(v.form?.file&&v.form.file!=='institution-demo.pdf')return{title:L('Material preview unavailable','原件预览不可用'),html:CF.note('warn',L('The original file cannot be opened here. Please retry later.','此处暂时无法打开材料原件，请稍后重试。')),foot:btn('Close','关闭','cancel')+btn('Retry','重试','material-retry')};
-      return{title:L('Institution document','机构证明材料'),html:`<p>${E(A.selected)} · ${E(v.form?.file||'institution-demo.pdf')}</p><div class="rv-preview"><h2>${L('Demonstration document','演示材料')}</h2><p>${L('Institution registration extract','机构登记信息摘要')}</p><dl>${(v.fields||[]).slice(0,5).map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd>${E(f[2])}</dd></div>`).join('')}</dl></div>`,foot:btn('Close','关闭','cancel')};
+      if(A.material==='error')return{title:L('Material unavailable','材料暂不可读'),html:CF.note('red',L('The uploaded material could not be loaded. This does not mean it is missing.','已上传材料暂时加载失败，不代表申请人未上传。')),foot:btn('Close','关闭','cancel')+btn('Retry','重试','material-retry')+btn('Download','下载','material-download')};
+      return{title:L('Preview','预览'),html:R.materialPreview(v.form,v.fields),foot:btn('Close','关闭','cancel')+btn('Download','下载','material-download')};
     }
   };
   function demo(){return `<section class="rv-demo"><h5>${L('Certification review · demo tools','机构认证审核 · 演示工具')}</h5><p>${L('Local demonstration data. No real document, email or review service is contacted.','本地演示数据，不连接真实材料、邮件或审核服务。')}</p><div>${btn('Operations','运营端','ops')}${btn('Applicant','资金方本人','applicant')}</div><label for="rv-response">${L('Next review response','下次审核响应')}</label><select id="rv-response" class="inp">${[['success','Success','成功'],['failed','Failed','失败'],['unknown','Unknown result','结果未知'],['duplicate','Duplicate institution','通过时查重冲突'],['stale','Already processed','他人已处理'],['session','Session expired','登录失效']].map(o=>`<option value="${o[0]}" ${A.response===o[0]?'selected':''}>${L(o[1],o[2])}</option>`).join('')}</select><div class="seg">${btn('Expire operations session','运营登录失效','expire-session')}${btn('Material failure','材料加载失败','material-fail')}${btn('Duplicate on submit','提交时机构重复','duplicate')}${btn('5 submits / 24 hours','24 小时已提交 5 次','limit')}${btn('Hypothetical template upgrade','假设模版升级','template-upgrade')}${btn('Clear submit constraints','恢复提交条件','clear-constraints')}${btn('Attempt stale write','尝试旧页面处置','attempt')}${btn('Reset review dataset','重置审核样例','seed')}</div><p>${L('Use Applicant to follow the same application through resubmission. Existing funder tools remain available below.','点击资金方本人可查看同一申请并重提；下方保留既有资金方工具。')}</p></section>`;}
@@ -154,6 +153,7 @@
       case 'resolve':finish();break;
       case 'cancel':if(!A.busy)cancelReview();break;
       case 'material':if(allowed())open('material');else {S.layer=null;CF.toast(L('Sign in again to view materials.','请重新登录后查看材料。'));}break;
+      case 'material-download':if(allowed()&&!A.legacyLink&&snapshot())R.downloadMaterial(snapshot().form);else CF.toast(L('Sign in again to download materials.','请重新登录后下载材料。'));break;
       case 'material-retry':A.material='loading';CF.render();setTimeout(()=>{A.material='ready';CF.render();},500);break;
       case 'material-fail':A.material='error';S.demo=false;break;
       case 'expire-session':expireSession();break;
