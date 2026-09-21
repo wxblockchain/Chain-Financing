@@ -672,3 +672,12 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .admin-account .dd-list{min-width:220px;top:calc(100% + var(--sp-2))}
 .admin-account-role{padding:var(--sp-3);border-bottom:1px solid var(--border);font-weight:600;color:var(--text)}
 .admin-notifications .nc-message-title{min-width:0}
+
+/* Uploaded file row: opt-in, no changes to existing module file layouts. */
+.file-row{display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-3);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:var(--sp-2)}
+.file-row-info{flex:1;min-width:0;overflow-wrap:anywhere}
+.file-row-info strong{display:block;font-size:var(--fs-12);font-weight:600}
+.file-row-status,.file-row-error{display:block;font-size:var(--fs-12);margin-top:var(--sp-1);color:var(--muted)}
+.file-row-error{color:var(--danger)}
+.file-row-actions{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-1);flex:none;margin-left:auto;white-space:nowrap}
+.file-row-info progress{display:block;width:100%;margin-top:var(--sp-2);accent-color:var(--accent)}
