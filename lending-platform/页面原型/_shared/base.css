@@ -86,7 +86,6 @@ img,svg{max-width:100%}
 .dd-sep{height:1px;background:var(--border);margin:5px 0}
 .portal-account-address{font-family:var(--mono);white-space:nowrap}
 .portal-account-role{padding:var(--sp-3);border-bottom:1px solid var(--border);font-weight:600;color:var(--text)}
-.portal-account-full{padding:var(--sp-3);font-family:var(--mono);font-size:var(--fs-12);overflow-wrap:anywhere;border-bottom:1px solid var(--border)}
 .portal-account-hint{display:none;position:absolute;right:0;top:100%;width:320px;max-width:80vw;padding:var(--sp-3);border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:var(--radius);box-shadow:var(--shadow);font-family:var(--mono);font-size:var(--fs-12);overflow-wrap:anywhere;z-index:30}
 .portal-account > .dd-btn:focus-visible + .portal-account-hint{display:block}
 

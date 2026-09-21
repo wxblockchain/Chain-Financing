@@ -281,7 +281,6 @@
     var list = open
       ? '<div class="dd-list" id="portal-account-menu" role="menu" aria-label="' + L("Account menu", "账户菜单") + '">' +
         '<div class="portal-account-role">' + esc(who) + "</div>" +
-        (address ? '<div class="portal-account-full">' + esc(address) + '</div>' : '') +
         '<button type="button" role="menuitem" data-act="toast" data-v="acct">' + L("Account settings", "账户设置") + "</button>" +
         '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + (S.role === "fund" ? L("User information", "用户信息") : L("Company information", "企业信息")) + "</button>" +
         (N.allowed() && N.preview ? '<button type="button" role="menuitem" data-act="go" data-v="/notifications">' + L("Notifications", "消息中心") + '</button>' : '') +
