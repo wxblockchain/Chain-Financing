@@ -118,7 +118,6 @@
       '<div class="nc-list" id="nc-list" aria-label="'+L('Messages','消息列表')+'">'+body+'</div></section></div>';
   }
   function lookup(){return N.visible().find(r=>r.id===query().get('id'));}
-  function backLink(){return '<a class="btn-link nc-back" href="'+E(view?view.hash:'#/notifications')+'">← '+L('Back to list','返回列表')+'</a>';}
   function targetOf(r){return !N.expired(r)&&D.types[r.biz]&&D.types[r.biz].mode!=='none'?D.types[r.biz]:null;}
   function startPreflight(r){
     if(preflight&&preflight.id===r.id)return;
@@ -134,20 +133,19 @@
     }
   }
   function renderDetail(){
-    const back=backLink(),r=lookup();renderedDetail=null;
-    if(S.st==='loading')return back+CF.skelTable(4);
-    if(S.st==='error'||detailFailure)return back+CF.empty(L('Failed to load. Please try again','加载失败，请重试'),'',btn('nc-detail-retry',L('Retry','重试')));
-    if(!r)return back+CF.empty(L('Message not found','消息不存在'),'','');
+    const r=lookup();renderedDetail=null;
+    if(S.st==='loading')return CF.skelTable(4);
+    if(S.st==='error'||detailFailure)return CF.empty(L('Failed to load. Please try again','加载失败，请重试'),'',btn('nc-detail-retry',L('Retry','重试')));
+    if(!r)return CF.empty(L('Message not found','消息不存在'),'','');
     startPreflight(r);
     const target=targetOf(r),check=preflight.status;
     const reason={deleted:L('The related item has been deleted','相关内容已被删除'),changed:L('The status of the related item has changed','相关内容的状态已变化'),denied:L('You do not have permission to view this item','你当前没有查看该内容的权限')}[check];
     const title=E(template(r,'title')),body=E(template(r,'body'));
     renderedDetail=r.id;
-    return '<div class="nc-detail nc-reading">'+back+'<article class="card"><div class="card-b"><h1>'+title+'</h1><div class="nc-reading-meta">'+meta(r)+'<time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time></div>'+progress(r,true)+'<div class="nc-body">'+body+'</div>'+
+    return '<div class="nc-detail nc-reading"><article class="card"><div class="card-b"><h1>'+title+'</h1><div class="nc-reading-meta">'+meta(r)+'<time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time></div>'+progress(r,true)+'<div class="nc-body">'+body+'</div>'+
       (reason?'<div id="nc-reason" tabindex="0">'+CF.note('warn',reason)+'</div>':'')+
       (readError?CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。'))+btn('nc-read',L('Retry','重试'),r.id):'')+
-      '<div class="nc-actions">'+(target?btn('nc-jump',check==='pending'?L('Checking…','正在检查…'):L('View related item','查看相关内容'),r.id,(reason?'aria-disabled="true" aria-describedby="nc-reason"':check==='pending'?'disabled':'')):'')+
-      '<a class="btn" href="'+E(view?view.hash:'#/notifications')+'">'+L('Back to list','返回列表')+'</a></div></div></article></div>';
+      (target?'<div class="nc-actions">'+btn('nc-jump',check==='pending'?L('Checking…','正在检查…'):L('View related item','查看相关内容'),r.id,(reason?'aria-disabled="true" aria-describedby="nc-reason"':check==='pending'?'disabled':''))+'</div>':'')+'</div></article></div>';
   }
   function mark(ids){
     if(busy||!N.allowed())return;

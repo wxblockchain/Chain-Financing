@@ -43,7 +43,6 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
   .am-detail .dl dt.wide-k{grid-column:1}
   .am-detail .dl dd.wide{grid-column:2 / -1}
 }
-.am-back{margin-bottom:var(--sp-4)}
 .am-ov-top{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
 .am-mark{width:48px;height:48px;border-radius:var(--radius-sm);font-size:var(--fs-14)}
 .am-ov .page-title{font-size:var(--fs-24)}

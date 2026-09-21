@@ -539,15 +539,12 @@
     var t = null;
     AM.TOKENS.forEach(function (x) { if (x.no === no) t = x; });
 
-    var back = '<a class="btn-link am-back" href="#' + esc(CF.ENTRY[LIST]) + '">' +
-      '<span aria-hidden="true">←</span>' + L("Back to the asset marketplace", "返回资产广场") + "</a>";
-
     /* 编号不存在与格式非法返回同一结果，不暴露编号是否存在。 */
     if (!t) {
-      return back + '<div class="card am-detail">' + CF.empty(
+      return '<div class="card am-detail">' + CF.empty(
         L("Content not found", "内容不存在"),
         L("This address does not point to a token on the marketplace.", "该地址没有对应的代币。"),
-        '<a class="btn" href="#' + esc(CF.ENTRY[LIST]) + '">' + L("Back to the asset marketplace", "返回资产广场") + "</a>"
+        ""
       ) + "</div>";
     }
 
@@ -606,7 +603,7 @@
       (S.role === "guest" ? L("Apply to join", "申请入驻") : L("Go to the lending marketplace", "前往借贷广场")) +
       "</button></div></section>";
 
-    return back + '<div class="am-detail">' + overview + info + origin + attest + holdingTable(t) + cta + "</div>";
+    return '<div class="am-detail">' + overview + info + origin + attest + holdingTable(t) + cta + "</div>";
   }
 
   /* ------------------------------------------------------------ 页脚 */
