@@ -324,20 +324,23 @@
   /* ------------------------------------------------------------ 面包屑 */
   function renderCrumb() {
     var p = CF.PAGES[S.page] || {};
-    if (S.end === "asset") {
-      var sub = $("subwrap");
-      if (p.layout === "site") { sub.hidden = true; return; }
-      sub.hidden = false;
-    }
-    // 面客端仅展示真实父级；默认落地页不代表其他一级入口的父页面。
-    // 管理端沿用可用模块根页，不依赖浏览历史。
-    var root = S.end === "admin" ? defaultPage() : null, chain = [S.page], seen = {};
+    // 两端只展示真实父级；默认落地页不代表其他一级入口的父页面。
+    var chain = [S.page], seen = {};
     seen[S.page] = true;
     var parent = p.parent;
     while (parent && CF.PAGES[parent] && CF.PAGES[parent].end === S.end && !seen[parent]) {
       chain.unshift(parent); seen[parent] = true; parent = CF.PAGES[parent].parent;
     }
-    if (root && !seen[root]) chain.unshift(root);
+    var crumb = $(S.end === "asset" ? "crumb" : "acrumb");
+    var visible = p.layout !== "site" && chain.length > 1;
+    if (S.end === "asset") $("subwrap").hidden = !visible;
+    if (!visible) {
+      if (crumb) {
+        if (S.end === "admin") crumb.remove();
+        else crumb.innerHTML = "";
+      }
+      return;
+    }
     function label(id) {
       var page = CF.PAGES[id];
       return t(page.crumbKey || page.navKey);
@@ -353,7 +356,6 @@
         (current ? '<span class="crumb-cur" aria-current="page">' + esc(label(id)) + '</span>' :
           '<a class="crumb-link" href="' + esc(href(id)) + '">' + esc(label(id)) + '</a>') + '</li>';
     }).join('');
-    var crumb = $(S.end === "asset" ? "crumb" : "acrumb");
     if (S.end === "admin") {
       // 内容重绘后挂在页面内；兼容仍将挂载点放在顶栏的旧模块模板。
       if (!crumb) { crumb = document.createElement("div"); crumb.id = "acrumb"; }
