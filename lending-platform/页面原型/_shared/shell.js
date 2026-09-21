@@ -298,6 +298,10 @@
   function renderAdminTools() {
     // Account information lives in the top account menu and account settings.
     if ($("asidefoot")) { $("asidefoot").innerHTML = ''; $("asidefoot").hidden = true; }
+    if (CF.AdminMenu) {
+      $("atools").innerHTML = (CF.opsNotifications ? CF.opsNotifications.bell() : "") + langDd() + CF.AdminMenu.tools(M);
+      return;
+    }
     if (M && M.adminTools) {
       $("atools").innerHTML = (M.adminNotifications ? M.adminNotifications() : '') + langDd() + M.adminTools();
       return;
@@ -305,6 +309,8 @@
     var context = M && M.adminContext ? M.adminContext() : null;
     $("atools").innerHTML = langDd() + (context && context.hideNotifications ? "" : bell(2)) + (CF.AdminMenu ? CF.AdminMenu.tools() : '');
   }
+
+  CF.refreshAdminTools = renderAdminTools;
 
   /* ------------------------------------------------------------ 面包屑 */
   function renderCrumb() {

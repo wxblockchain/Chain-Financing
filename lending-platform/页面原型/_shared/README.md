@@ -13,7 +13,9 @@
 | 公共运行时（i18n / 路由 / 导航 / Toast / 弹层宿主 / 演示工具） | [`shell.js`](shell.js) |
 | 面客端页面登记与导航 | [`registry.portal.js`](registry.portal.js) |
 | 管理端页面登记 | [`registry.admin.js`](registry.admin.js) |
-| 管理端共享菜单、顺序、标签、目标文件与查询权限编号 | [`admin-menu.js`](admin-menu.js) |
+| 管理端共享菜单、目标文件、查询权限编号及邮箱账户菜单 | [`admin-menu.js`](admin-menu.js) |
+| 管理端消息铃铛、预览、未读数量与已读状态 | [`admin-notifications.js`](admin-notifications.js) |
+| 管理端消息虚构记录与分类 | [`admin-message-data.js`](admin-message-data.js) |
 | 语义、约束、禁止用法、可访问性 | [`design-system/`](design-system/README.md) |
 | 四种 shell 与状态表面的母版 | [`样板/底座样板.html`](样板/底座样板.html) |
 
@@ -37,7 +39,7 @@
 <script>/* CF.define({ id, dict, layers, content, onAct }) + CF.boot()，不重建导航 */</script>
 ```
 
-管理端业务模块加载 `registry.admin.js`、`shell.js`，然后加载 `admin-menu.js`，最后加载业务脚本。根元素通过 `data-admin-module` 标识当前模块；需要同时演示两端时两张登记表都加载，面客菜单保持原样。
+管理端业务模块依次加载 `registry.admin.js`、`shell.js`、`admin-menu.js`、`admin-message-data.js`、`admin-notifications.js`，最后加载业务脚本。根元素通过 `data-admin-module` 标识当前模块；需要同时演示两端时两张登记表都加载，面客菜单保持原样。
 
 ## 管理端共享菜单（2026-09-21）
 
@@ -46,6 +48,16 @@
 实际接入：`管理端/账户与登录/`、`资金方机构认证审核/`、`代币质押审核/`、`消息通知/`、`协议管理/`。模块不再通过覆盖 `CF.NAV.admin` 来裁剪整个菜单；现有 `allowNav` 继续提供本模块的查询权限判断及路由根，账户模块按 `CF.opsAuth.can` 过滤共享入口。其他独立业务原型的演示身份与权限仍由各自模块控制，本次未合并认证状态或授权数据。源码跨模块通过真实相对 HTML 链接跳转；离开协议未保存草稿仍需确认，审核编辑中的跳转保持阻断。
 
 管理端导出自动读取同一清单，内联全部五个目标源文件。`admin-bundle.js` 仅用于单文件导出中的文档切换、计时器清理与历史导航，不引入第二份业务实现或评审选择器。原型文件间切换遵循整页加载语义：未持久化的演示身份、临时状态会重新初始化，账户入口可能要求重新登录；真实统一会话需后端接入。后续更新菜单或模块源码后重新运行 `export.py` 即可。
+
+### 共享消息与账户工具（WS-360 修订）
+
+上述五模块的顶栏统一由公共壳层组合：消息铃铛 → 语言 → 邮箱地址。`admin-menu.js` 维护账户菜单；悬浮、点击或键盘打开后显示只读角色，管理员显示“管理员”，运营专员仍显示其实际角色。身份优先读取账户宿主；独立业务原型读取上次演示邮箱，首次使用 `operator@example.com`。该邮箱快照仅用于展示，不提供认证或业务授权。
+
+`admin-notifications.js` 是铃铛、最近 10 条预览、未读角标与已读标记的唯一实现。消息列表及详情通过 `CF.opsNotifications` 使用同一记录池与已读存储；记录和分类保存在 `hc.ops.message-pool.v1`，已读状态继续按邮箱存放于 `hc.ops.messages.v1.*`。同一浏览器存储范围内跨模块、刷新及多标签同步；真实跨设备消息由后端接入。展开预览不标记已读，成功读取详情后才更新，零条隐藏角标，超过 99 条显示 `99+`。
+
+模块可用 `configure` 提供本模块权限与失败演示，用 `replaceRows` 更新演示记录，不自建铃铛或复制消息数据。`CF.refreshAdminTools()` 只更新顶栏，不重绘正文，避免悬浮菜单、预览及计数刷新丢失表单内容；跨模块消息入口同样经过 `beforeAdminNavigate` 离开保护。账户或消息权限不可用时相应入口隐藏。登录、首登和找回页沿用 focus 布局。
+
+修订后须重新导出 HTML：旧附件是静态快照，不会随共享源码更新。本次修订附件内联全部五个最新模块，可直接检查跨模块消息及账户菜单。
 
 模块接口：
 
@@ -58,7 +70,8 @@
 | `onAct(act, value, event)` | 模块自己的点击动作；返回 `true` 表示已处理 |
 | `breadcrumbRoute(pageId)` | 可选：返回父级页面的模块内路由（不含 `#`），保留所选记录、筛选及列表状态；默认使用 `CF.ENTRY[pageId]` |
 | `allowNav(pageId)` | 可选：在登记表内按模块范围与查询权限过滤导航，不自行生成菜单 |
-| `adminContext()` | 可选：返回 `{name, subtitle, hideNotifications}`，声明实际操作员上下文与未接入的消息入口 |
+| `adminContext()` | 可选：共享管理端返回 `{email, role, signedIn}` 的必要覆盖项；省略时读取账户宿主或展示快照。历史样板的 `name / subtitle / hideNotifications` 仅用于旧壳层回退，不控制已接入共享层的消息入口 |
+| `beforeAdminNavigate(proceed)` | 可选：跨模块跳转前校验未保存编辑或进行中操作，允许离开时调用 `proceed()` |
 | `demoOnly` + `demo()` | 可选：独立模块只使用自己的默认关闭演示面板，不展示无关部署单元切换 |
 
 公共层提供的片段：`CF.tag` / `CF.note` / `CF.empty` / `CF.skelTable` / `CF.surface`（六种状态表面）/ `CF.toast` / `CF.openLayer` / `CF.closeLayer` / `CF.fmtDate` / `CF.fmtTime` / `CF.fmtAmt` / `CF.esc` / `CF.L`。模块不得重新实现其中任何一项。

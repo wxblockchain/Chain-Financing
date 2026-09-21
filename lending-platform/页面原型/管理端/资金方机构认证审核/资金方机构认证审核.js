@@ -183,7 +183,6 @@
       if(S.demo&&!document.querySelector('.rv-demo'))$('demoPanel').insertAdjacentHTML('afterbegin',demo());
       if(S.end==='admin'){
         document.querySelector('#demoPanel [data-act="st"][data-v="denied"]')?.remove();
-        document.querySelector('#atools .bell')?.remove();
         const role=document.querySelector('.op-role');if(role)role.textContent=L(A.session?'Operations':'Signed out',A.session?'运营人员':'未登录');
       }
       if(S.end==='asset'){
@@ -233,6 +232,8 @@
   },true);
   CF.define({id:'institution-review',pages:['P-L40','P-L41'],dict:{en:{navGroupOps:'Operations',navInstitutionReview:'Institution review',navInstitutionDetail:'Application details'},zh:{navGroupOps:'运营管理',navInstitutionReview:'机构认证审核',navInstitutionDetail:'申请详情'}},
     content:page=>page==='P-L40'?list():detail(),layers,onAct:action,demo,
+    adminContext:()=>({signedIn:A.session,role:'admin'}),
+    beforeAdminNavigate(proceed){if(A.busy||A.pending){CF.toast(L('Finish or cancel the current review first.','请先完成或取消当前审核。'));return}proceed()},
     breadcrumbRoute:id=>id==='P-L40'?listRoute(A.selected):null,
     onRoute(){A.pending=null;A.busy=false;A.error='';},
     allowNav:id=>S.end!=='admin'||id==='P-L40',
