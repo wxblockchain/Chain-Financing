@@ -175,7 +175,7 @@
       action('normal','Valid deep link','正常深链')+action('guest','Signed-out deep link','未登录深链')+action('denied','Restricted deep link','无权限深链')+action('unknown','Unknown deep link','未知深链')+
       action('landing','Deny next landing','下次落地重判权失败')+'</div><p class="tiny">'+L('Local demonstration data. Refresh attempts: ','本地演示数据。刷新次数：')+refreshes+'</p></div>';
   }
-  CF.define({id:'portal-notifications',pages:[LIST,DETAIL],
+  CF.define(CF.NCView={id:'portal-notifications',pages:[LIST,DETAIL],
     dict:{en:{navNotifications:'Notifications',navNotification:'Message details'},zh:{navNotifications:'消息中心',navNotification:'消息详情'}},demo,
     breadcrumbRoute(id){return id===LIST&&view?view.hash.slice(1):null;},
     beforeRender(){
@@ -207,7 +207,7 @@
       if(act==='nc-confirm'){mark(S.layer.data.ids);return true;}
       if(act==='nc-detail-retry'){detailFailure=false;S.st='default';readError=false;return true;}
       if(act==='nc-copy'){if(navigator.clipboard)navigator.clipboard.writeText(v).then(()=>CF.toast(L('Copied','已复制'))).catch(()=>CF.toast(L('Select the reference to copy it.','请选中编号后复制。')));else CF.toast(L('Select the reference to copy it.','请选中编号后复制。'));return true;}
-      if(act==='nc-jump'){const r=lookup(),t=r&&targetOf(r);if(!t||preflight.status==='pending')return true;if(landingDenied){landingDenied=false;S.role='limited';return true;}CF.enterPage(t.target,t.mode==='object'?{object:r.objectId,panel:t.panel||''}:null);return true;}
+      if(act==='nc-jump'){const r=lookup(),t=r&&targetOf(r);if(!t||preflight.status==='pending')return true;if(landingDenied){landingDenied=false;S.role='limited';return true;}if(CF.openNotificationTarget)CF.openNotificationTarget(t,r);else CF.enterPage(t.target,t.mode==='object'?{object:r.objectId,panel:t.panel||''}:null);return true;}
       if(act==='nc-demo'){
         const first=D.rows.find(r=>r.owner==='asset'&&r.progress).id;
         if(v==='reset'){Object.assign(D,JSON.parse(initialData));N.rows=D.rows;try{localStorage.removeItem(storageKey);}catch(e){}resetView();S.role='asset';S.st='default';N.panelState='default';refreshFail=failRead=failMore=detailFailure=readError=landingDenied=false;location.hash='#/notifications';}
@@ -241,5 +241,5 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();schedule();});
   window.addEventListener('pagehide',()=>{clearInterval(timer);clearTimeout(preflightTimer);clearTimeout(readTimer);});
   if(CF.notificationLanding){if(!location.hash)location.hash='#/assets';S.role='asset';}
-  CF.boot();
+  if(!CF.portalConnected)CF.boot();
 })(window.CF);

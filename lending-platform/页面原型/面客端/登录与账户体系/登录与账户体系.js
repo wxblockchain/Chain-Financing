@@ -205,8 +205,10 @@
     if(D.returnResult==='valid'&&D.originAction==='financing'){
       D.replay=true;go('/demo/login/financing');queueMicrotask(()=>gate());
     }else{
-      go('/');
-      if(D.returnResult!=='none')CF.toast(L('We have returned you to the asset marketplace.','已为你回到资产广场。'));
+      if(!CF.resumePortalTarget?.()){
+        go('/');
+        if(D.returnResult!=='none')CF.toast(L('We have returned you to the asset marketplace.','已为你回到资产广场。'));
+      }
     }
     if(D.accountChanged){CF.toast(L('You are now signed in with the returning account.','已切换为本次授权返回的账户。'));D.accountChanged=false;}
   }
@@ -302,7 +304,7 @@
       case 'L0':D.level='L0';break;
       case 'L3':D.level='L3';D.downgraded=false;break;
       case 'gate':go('/demo/login/financing');S.demo=false;break;
-      case 'sso':D.origin=CF.ENTRY[S.page]||'/';sso();break;
+      case 'sso':if(!/^#\/(login|auth)(?:[/?]|$)/.test(location.hash)){D.origin=CF.ENTRY[S.page]||'/';if(CF.portalConnected)CF.portalLoginReturn=location.hash;}sso();break;
       case 'return':sso();break;
       case 'wallet-cancel':D.handoff='';D.entryError='';S.demo=false;go('/login');break;
       case 'wallet-missing':D.handoff='';D.entryError='wallet';S.demo=false;go('/login');break;
@@ -361,10 +363,10 @@
       else if(v==='notify')x.dataset.act='login-notifications';
       else if(v==='inst')x.hidden=true;
     });
-    const badge=document.querySelector('#tools .badge');if(badge){if(D.downgraded)badge.textContent='1';else badge.remove();}
+    const badge=document.querySelector('#tools .badge');if(badge&&!CF.portalConnected){if(D.downgraded)badge.textContent='1';else badge.remove();}
     if(D.restricted){document.querySelector('#focus .brand').removeAttribute('href');}
     else document.querySelector('#focus .brand').setAttribute('href','#/assets');
-    demoPanel();
+    if(!CF.portalConnected||pages[S.page]||/^P-L2|^DEMO-F-/.test(S.page))demoPanel();
     if(CF.funder)CF.funder.afterRender();
     const dialog=document.querySelector('#layers > .modal-mask [role="dialog"], #layers > [role="dialog"]');
     if(dialog){
@@ -380,16 +382,16 @@
     priorLayer=!!dialog;
   }
   if(CF.funder){Object.assign(dict.en,CF.funder.dict.en);Object.assign(dict.zh,CF.funder.dict.zh);Object.assign(layers,CF.funder.layers);}
-  CF.define({id:'login-account',dict,content,layers,onAct:action,
+  CF.define(CF.AccountView={id:'login-account',dict,content,layers,onAct:action,
     // 组合只承接已有页面：资产广场及其既有项目链接保持单一实现。
-    ...(CF.AM ? {pages:[...Object.keys(pages),'P-L20','P-L21','P-L22','P-L23','DEMO-F-GATE','P-MC-01'],
+    ...(CF.AM ? {pages:[...Object.keys(pages),'P-L20','P-L21','P-L22','P-L23','DEMO-F-GATE',...(!CF.MC?['P-MC-01']:[])],
       beforeRender(){
         if(D.restricted&&S.page!=='P-L11'){S.page='P-L11';go('/auth/agreements');}
         notices();queueMicrotask(postRender);
-        if(/^\/(project|marketplace)(?:[/?]|$)/.test(location.hash.slice(1)))CF.LSView?.beforeRender?.();
+        CF.LSView?.beforeRender?.();
       },
-      afterRender(){if(/^\/(project|marketplace)(?:[/?]|$)/.test(location.hash.slice(1)))CF.LSView?.afterRender?.();},
-      onBeforeAct(act,v,e){if(/^\/(project|marketplace)(?:[/?]|$)/.test(location.hash.slice(1)))return CF.LSView?.onBeforeAct?.(act,v,e);}
+      afterRender(){CF.LSView?.afterRender?.();},
+      onBeforeAct(act,v,e){return CF.LSView?.onBeforeAct?.(act,v,e);}
     }: {})});
   // 登录域优先接管底座的样例登录/退出动作；路由与浮层仍使用 CF。
   document.addEventListener('click',e=>{
@@ -400,16 +402,16 @@
         e.preventDefault();e.stopImmediatePropagation();gate();CF.render();return;
       }
       if(a==='login-start'||a==='signin'||(CF.AM&&a==='deeplink'&&el.dataset.v==='cta'&&S.role==='guest')){
-        e.preventDefault();e.stopImmediatePropagation();D.origin=CF.ENTRY[S.page]||'/';D.originAction='';D.returnResult='none';D.entryError='';go('/login');return;
+        e.preventDefault();e.stopImmediatePropagation();D.origin=CF.ENTRY[S.page]||'/';if(CF.portalConnected)CF.portalLoginReturn=location.hash;D.originAction='';D.returnResult='none';D.entryError='';go('/login');return;
       }
       if(a==='signout'){e.preventDefault();e.stopImmediatePropagation();if(S.role==='fund'&&CF.funder)CF.funder.logout();else endSession('logout');return;}
-      if(a==='login-notifications'){e.preventDefault();e.stopImmediatePropagation();open('notification');return;}
+      if(a==='login-notifications'){e.preventDefault();e.stopImmediatePropagation();if(CF.portalConnected)go('/notifications');else open('notification');return;}
       // 防止点击对话框非按钮区域被底座解释为遮罩关闭。
       if(a==='closelayer'&&el.classList.contains('modal-mask')&&e.target.closest('.modal')){e.stopImmediatePropagation();return;}
       if(a==='closelayer'&&returnToGuide()){e.preventDefault();e.stopImmediatePropagation();return;}
     }
     const nav=e.target.closest('#nav a, .crumb-link');
-    if(nav&&(CF.AM?['#/console']:['#/assets','#/marketplace','#/console']).includes(nav.getAttribute('href'))){
+    if(nav&&!CF.MC&&(CF.AM?['#/console']:['#/assets','#/marketplace','#/console']).includes(nav.getAttribute('href'))){
       e.preventDefault();e.stopImmediatePropagation();D.reviewMessage=L('This business page is delivered by its owning module.','此业务页由对应模块交付。');S.demo=true;CF.render();
     }
   },true);

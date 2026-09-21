@@ -37,6 +37,18 @@ def main():
             if not resource.is_relative_to(root):
                 raise ValueError("Only local prototype resources may be inlined: %s" % resource)
             content = resource.read_text(encoding="utf-8")
+            if resource.name == 'portal-entry.js':
+                resources = json.loads(re.search(r'const resources = (\{.*?\});', content, re.S).group(1))
+                chunks = []
+                for kind, wrapper in [('styles', 'style'), ('scripts', 'script')]:
+                    for filename in resources[kind]:
+                        dependency = (resource.parent / filename).resolve()
+                        if not dependency.is_relative_to(root):
+                            raise ValueError('Portal dependency outside prototype root')
+                        body = dependency.read_text(encoding='utf-8')
+                        body = re.sub(r'</' + wrapper, lambda m: '<\\/' + m[0][2:], body, flags=re.I)
+                        chunks.append('<%s>\n%s\n</%s>' % (wrapper, body, wrapper))
+                return '\n'.join(chunks)
             content = re.sub(r"</" + tag, lambda m: "<\\/" + m[0][2:], content, flags=re.I)
             return "<%s>\n%s\n</%s>" % (tag, content, tag)
 

@@ -118,7 +118,7 @@
       if(F.first){F.notes.push(['Your account has been created.','你的账号已创建。']);persist();}
       if(F.returnTo==='valid'){go('/demo/funder/action');later(gate,30);}
       else if(F.returnTo==='invalid'){go('/');CF.toast(L('We have returned you to the asset marketplace.','已为你回到资产广场。'));}
-      else go(F.first?'/funder/register':'/');return;
+      else if(F.first)go('/funder/register');else if(!CF.resumePortalTarget?.())go('/');return;
     }
     if(purpose==='email')open('email');else CF.render();
   }
@@ -301,7 +301,7 @@
     switch(key){
       case 'back-role':F.generation++;F.connected='';F.consent=false;F.busy='';F.signState='A';S.role='guest';go('/login');break;
       case 'guest':S.role='guest';go('/');break;
-      case 'browse':persist();go('/');break;
+      case 'browse':persist();if(!CF.resumePortalTarget?.())go('/');break;
       case 'login':go('/login');break;
       case 'reconnect':connect('reconnect');break;
       case 'connect-auth':connect('auth');break;
@@ -379,7 +379,7 @@
     }
   }
   function afterRender(){
-    const panel=$('demoPanel');if(S.demo&&!panel.querySelector('.funder-demo'))panel.insertAdjacentHTML('afterbegin',demo());
+    const panel=$('demoPanel');if(S.demo&&(!CF.portalConnected||/^P-L|^DEMO-F-/.test(S.page))&&!panel.querySelector('.funder-demo'))panel.insertAdjacentHTML('afterbegin',demo());
     if(S.page==='P-L01'&&F.entryError&&!$('f-entry-error'))$('focusContent').insertAdjacentHTML('beforeend',`<p id="f-entry-error" class="note red" role="alert">${L(...F.entryError)}</p>`);
     if(S.role==='fund'){
       document.querySelectorAll('[data-v="inst"]').forEach(e=>{e.hidden=false;e.dataset.act=F.account.status==='draft'?'f-register':'f-status';e.textContent=L('User information','用户信息');});
@@ -415,6 +415,7 @@
     const key=S.layer?.key;
     if(a.dataset.act==='closelayer'&&key?.startsWith('f-')&&!(a.classList.contains('modal-mask')&&e.target.closest('.modal'))){e.preventDefault();e.stopImmediatePropagation();cancelLayer(key);return;}
     if(a.dataset.act==='lang'){$('toasts').innerHTML='';try{localStorage.setItem('hc_funder_language',a.dataset.v);}catch(e){}}
+    if(a.dataset.act==='f-notifications'&&CF.portalConnected){e.preventDefault();e.stopImmediatePropagation();go('/notifications');return;}
     if(a.dataset.act==='f-notifications'){e.preventDefault();e.stopImmediatePropagation();CF.openLayer('modal','f-notices');queueMicrotask(afterRender);}
   },true);
   function cancelLayer(key){if(key==='f-connect')connectionDone(true);else if(key==='f-signature')signatureDone(true);else if(key==='f-email'){action('f-close-email');}else if(key==='f-submit'&&F.busy==='submit'){CF.toast(L('Submission is in progress. Please wait.','正在提交，请稍候。'));}else CF.closeLayer();}

@@ -4,8 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Notifications · Harbour Credit</title>
-<link rel="stylesheet" href="../../_shared/tokens.css">
-<link rel="stylesheet" href="../../_shared/base.css">
 
 </head>
 <body>
@@ -49,16 +47,16 @@
   </div>
 </div>
 
+<div class="focus" id="focus" hidden>
+  <header class="focus-head"><a class="brand" href="#/assets"><span class="brand-mark" aria-hidden="true">HC</span><span class="brand-name">Harbour Credit</span></a><div class="focus-tools" id="focusTools"></div></header>
+  <main class="focus-main"><div class="focus-card" id="focusContent"></div></main>
+  <footer class="focus-foot">Harbour Credit</footer>
+</div>
 <div id="layers"></div>
 <div class="toasts" id="toasts"></div>
 <button class="demo-btn" id="demoBtn" type="button"></button>
 <aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
 
-<script src="../../_shared/registry.portal.js"></script>
-<script src="../../_shared/shell.js"></script>
-<script>CF.deferBoot = true; CF.notificationLanding = true;</script>
-<script src="../../_shared/sample-pages.js"></script>
-<script src="演示数据.js"></script>
-<script src="消息中心.js"></script>
+<script src="../../_shared/portal-entry.js"></script>
 </body>
 </html>

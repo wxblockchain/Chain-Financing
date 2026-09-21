@@ -133,5 +133,5 @@
   Q.data().quotes.forEach(q=>q.l8?.periods.forEach(p=>{serial=Math.max(serial,Number(p.id?.slice(-6))||0,Number(p.record?.id?.slice(-6))||0);}));
   CF.L8={build,initial,panel,available,hasUnsettled:p=>available(p).some(x=>!quote(x.id).l8?.settledAt),ensure,scenario,get selected(){return selected;},get seq(){return seq;},get now(){return now();},get events(){return events;},open};
   setInterval(()=>{sweep();if(['rp-confirm','rp-record'].includes(S.layer?.key))CF.render();},60000);
-  window.addEventListener('hashchange',()=>setTimeout(deepLink,30));ensure();CF.render();setTimeout(deepLink,40);
+  window.addEventListener('hashchange',()=>setTimeout(deepLink,30));ensure();if(!CF.portalConnected)CF.render();setTimeout(deepLink,40);
 })(window.CF);

@@ -170,5 +170,5 @@
   function summary(q){const old=d()?.id,result=summaryBody(q);if(old)choose(old);return result;}
   function panel(p,progress){const old=d()?.id,result=panelBody(p,progress);if(old)choose(old);return result;}
   CF.L7={get deals(){ensure();return deals;},get selected(){return selected;},scenario,go,can,now,validate,summary,panel,find,label,get form(){return form;},get busy(){return busy;}};
-  CF.boot();setTimeout(applyDeepLink,0);
+  if(!CF.portalConnected)CF.boot();setTimeout(applyDeepLink,0);
 })(window.CF);
