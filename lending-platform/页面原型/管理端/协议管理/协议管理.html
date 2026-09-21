@@ -31,18 +31,9 @@
 .ag-tabs{display:flex;gap:var(--sp-6);border-bottom:1px solid var(--border);margin-bottom:var(--sp-5)}
 .ag-tabs button{padding:var(--sp-3) 0;color:var(--muted);border-bottom:2px solid transparent;font-weight:600;white-space:nowrap}
 .ag-tabs button[aria-selected="true"]{color:var(--accent);border-color:var(--accent)}
-.ag-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6);align-items:start}
-.ag-summary{background:var(--accent-soft);border:1px solid var(--accent-border);border-radius:var(--radius);padding:var(--sp-5)}
-.ag-summary h2,.ag-heading{font-size:var(--fs-16);margin:0 0 var(--sp-3);font-weight:650}
-.ag-history{padding:var(--sp-5);border-bottom:1px solid var(--border)}
-.ag-history:last-child{border-bottom:0}
-.ag-history.ag-active{background:var(--accent-soft)}
-.ag-history-top{display:flex;align-items:center;gap:var(--sp-3)}
-.ag-history-top .ag-row{margin-left:auto;justify-content:flex-end}
-.ag-history-meta{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:var(--sp-4);margin-top:var(--sp-4);font-size:var(--fs-12)}
-.ag-history-meta b{display:block;color:var(--muted);font-weight:500;font-size:var(--fs-11);margin-bottom:var(--sp-1)}
 .ag-form{align-items:start;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,1fr);gap:var(--sp-5)}
 .ag-upload{border:1px dashed var(--border-strong);padding:var(--sp-7) var(--sp-5);text-align:center;border-radius:var(--radius);background:var(--card-2)}
+.ag-upload .file-row{text-align:left}
 .ag-upload p{margin:var(--sp-3) 0;color:var(--muted)}
 .ag-file{padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:var(--sp-4);overflow-wrap:anywhere}
 .ag-editor textarea{height:160px;resize:vertical;padding:var(--sp-3)}
@@ -50,10 +41,6 @@
 .ag-editor input[type=checkbox],.ag-editor input[type=radio]{accent-color:var(--accent)}
 .ag-actions{padding:var(--sp-4) 0;display:flex;justify-content:flex-end;gap:var(--sp-3)}
 .ag-error{font-size:var(--fs-12);color:var(--danger);margin-top:var(--sp-2)}
-.ag-timeline{margin:0;padding:0;list-style:none}
-.ag-timeline li{padding:var(--sp-5);border-bottom:1px solid var(--border)}
-.ag-timeline li:last-child{border-bottom:0}
-.ag-timeline p{margin:var(--sp-2) 0}
 .ag-preview{width:100%;height:330px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:var(--sp-4);background:var(--card-2)}
 .ag-paper{height:auto;min-height:260px;padding:var(--sp-6);background:var(--card);color:var(--text)}
 .ag-paper h3{font-size:var(--fs-16);margin:var(--sp-6) 0 var(--sp-4)}
@@ -63,12 +50,32 @@
 .ag-editor [disabled]{cursor:not-allowed;opacity:.65}
 .ag-table .cell-sub,.ag-stack .dl dt{color:var(--muted)}
 .ag-error:empty{display:none}
-.ag-grid>*,.ag-form>*,.ag-history-meta>*{min-width:0}
+.ag-form>*{min-width:0}
 .ag-stack .dl dd{overflow-wrap:anywhere}
 .ag-table .ag-zone{display:block;font-size:var(--fs-11);white-space:nowrap}
 .ag-table th button{font:inherit;color:inherit}
 /* Keep review controls outside the business canvas and its fixed action column. */
 #demoBtn{left:var(--sp-4);right:auto;bottom:88px}
+.ag-versions{table-layout:fixed}
+.ag-versions th:nth-child(1){width:14%}
+.ag-versions th:nth-child(2){width:20%}
+.ag-versions th:nth-child(3){width:36%}
+.ag-versions th:nth-child(4){width:30%}
+.ag-versions .ag-active td{background:var(--accent-soft)}
+.ag-versions .ag-row{gap:var(--sp-4)}
+.ag-versions td,.ag-activity td{vertical-align:top;overflow-wrap:anywhere}
+.ag-activity{table-layout:fixed}
+.ag-activity th{white-space:normal}
+.ag-log-summary{text-align:left;white-space:normal;line-height:1.6}
+.ag-log-detail .ag-changes{margin:var(--sp-3) 0}
+.ag-log-detail{padding-top:var(--sp-3)}
+.ag-changes{table-layout:fixed;width:100%;font-size:var(--fs-12)}
+.ag-changes th,.ag-changes td{white-space:normal;overflow-wrap:anywhere;vertical-align:top}
+.ag-changes th:first-child{width:25%}
+.ag-changes tbody th{text-align:left;color:var(--muted);font-weight:500}
+.ag-definition{margin-top:var(--sp-4)}
+.ag-actions>span:first-child{margin-right:auto}
+.ag-stack .hash{overflow-wrap:anywhere;word-break:break-all}
 </style>
 </head>
 <body>
@@ -87,6 +94,7 @@
 <script src="../../_shared/admin-menu.js"></script>
 <script src="../../_shared/admin-message-data.js"></script>
 <script src="../../_shared/admin-notifications.js"></script>
+<script src="../../_shared/file-row.js"></script>
 <script src="演示数据.js"></script>
 <script src="协议管理.js"></script>
 </body>
