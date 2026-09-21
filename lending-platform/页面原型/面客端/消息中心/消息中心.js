@@ -25,13 +25,15 @@
     if(!raw)return part==='title'?L('Notification','通知'):'';
     return raw.replace(/\{([a-z_]+)\}/g,(_,k)=>r.vars&&r.vars[k]!=null?r.vars[k]:'').replace(/[^\S\n]{2,}/g,' ').trim();
   }
-  function progress(r,detail=false){
+  function progress(r){
     const p=r.progress;if(!p)return '';
     const st=stateNames[p.state];
-    let line='<div class="nc-progress-line"><span>'+E(tr(p.node))+'</span>'+(st?CF.tag(stateColors[p.state],L(...st)):'')+
-      (p.step!=null&&p.total!=null?'<span class="tiny">'+L('Step '+p.step+'/'+p.total,'第 '+p.step+'/'+p.total+' 步')+'</span>':'')+'</div>';
-    if(!detail)return line;
-    return '<section class="nc-progress"><h2>'+E(tr(p.name))+'</h2>'+(p.number?'<div class="nc-meta"><span class="mono">'+E(p.number)+'</span>'+btn('nc-copy',L('Copy','复制'),p.number)+'</div>':'')+line+'</section>';
+    const copyLabel=L('Copy reference','复制业务编号');
+    return '<section class="nc-progress" aria-labelledby="nc-business-name"><div class="nc-business-head"><h2 id="nc-business-name">'+E(tr(p.name))+'</h2>'+
+      (st?CF.tag(stateColors[p.state],L(...st)):'')+'</div>'+
+      (p.number?'<div class="nc-reference"><span>'+L('Reference','业务编号')+'</span><span class="mono">'+E(p.number)+'</span><button type="button" class="nc-copy" data-act="nc-copy" data-v="'+E(p.number)+'" aria-label="'+copyLabel+'" title="'+copyLabel+'"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div>':'')+
+      '<dl class="nc-stage"><div><dt>'+L('Current step','当前环节')+'</dt><dd>'+E(tr(p.node))+'</dd></div>'+
+      (p.step!=null&&p.total!=null?'<div><dt>'+L('Progress','办理进度')+'</dt><dd>'+L('Step '+p.step+' of '+p.total,'第 '+p.step+' / '+p.total+' 步')+'</dd></div>':'')+'</dl></section>';
   }
   function readLabel(r){return r.read?L('Read','已读'):L('Unread','未读');}
   function readBadge(r){return '<span class="nc-read-state '+(r.read?'is-read':'is-unread')+'">'+readLabel(r)+'</span>';}
@@ -142,10 +144,10 @@
     const reason={deleted:L('The related item has been deleted','相关内容已被删除'),changed:L('The status of the related item has changed','相关内容的状态已变化'),denied:L('You do not have permission to view this item','你当前没有查看该内容的权限')}[check];
     const title=E(template(r,'title')),body=E(template(r,'body'));
     renderedDetail=r.id;
-    return '<div class="nc-detail nc-reading"><article class="card"><div class="card-b"><h1>'+title+'</h1><div class="nc-reading-meta">'+meta(r)+'<time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time></div>'+progress(r,true)+'<div class="nc-body">'+body+'</div>'+
-      (reason?'<div id="nc-reason" tabindex="0">'+CF.note('warn',reason)+'</div>':'')+
-      (readError?CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。'))+btn('nc-read',L('Retry','重试'),r.id):'')+
-      (target?'<div class="nc-actions">'+btn('nc-jump',check==='pending'?L('Checking…','正在检查…'):L('View related item','查看相关内容'),r.id,(reason?'aria-disabled="true" aria-describedby="nc-reason"':check==='pending'?'disabled':''))+'</div>':'')+'</div></article></div>';
+    return '<div class="nc-detail nc-reading"><article class="card"><div class="card-b"><h1>'+title+'</h1><div class="nc-reading-meta">'+meta(r)+'<time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time></div>'+
+      (readError?'<div class="nc-read-feedback" role="alert"><span>'+L('Could not mark as read. Try again.','标为已读失败，请重试。')+'</span>'+btn('nc-read',L('Retry','重试'),r.id,busy?'disabled':'')+'</div>':'')+
+      (body?'<div class="nc-body">'+body+'</div>':'')+progress(r)+
+      (target?'<footer class="nc-actions">'+(reason?'<p id="nc-reason" tabindex="0">'+reason+'</p>':'')+btn('nc-jump',check==='pending'?L('Checking…','正在检查…'):L('View related item','查看相关内容'),r.id,(reason?'aria-disabled="true" aria-describedby="nc-reason"':check==='pending'?'disabled':''))+'</footer>':'')+'</div></article></div>';
   }
   function mark(ids){
     if(busy||!N.allowed())return;
