@@ -8,11 +8,13 @@
   let seed=CF.pledgeSeed();
   const A={rows:seed.rows,now:seed.now,clock:Date.now(),filter:fDefault(),editFilter:fDefault(),page:1,sort:'submitted',dir:1,
     filtersOpen:false,tab:'overview',role:'review',response:'success',upload:'success',preview:'success',view:'default',draft:null,busy:false,error:'',selected:null,events:[],epoch:0};
+  let routeKey=null,restoreContext=false;
+  const positions=new Map();
   const now=()=>A.now+(Date.now()-A.clock),txt=x=>Array.isArray(x)?L(x[0],x[1]):x;
   const time=t=>t?CF.fmtTime(t):'—',money=v=>v==null?L('To be verified','待核实'):CF.fmtAmt(v)+' USD';
   const owner=r=>L('Demo Asset '+r.owner,'示例资产企业 '+r.owner),project=r=>L('Demo project '+r.project,'示例融资项目 '+r.project);
   const b=(en,zh,act,value='',cls='',disabled=false)=>`<button type="button" class="btn ${cls}" data-act="pr-${act}" data-v="${E(value)}" ${disabled?'disabled':''}>${L(en,zh)}</button>`;
-  const link=(en,zh,act,value)=>`<button type="button" class="actlink" data-act="pr-${act}" data-v="${E(value)}">${L(en,zh)}</button>`;
+  const link=(en,zh,act,value)=>act==='view'?`<a class="actlink" href="#${E(detailRoute(value,'overview',S.page===D?A.selected:''))}" data-act="pr-view" data-v="${E(value)}">${L(en,zh)}</a>`:`<button type="button" class="actlink" data-act="pr-${act}" data-v="${E(value)}">${L(en,zh)}</button>`;
   const badge=r=>CF.tag(status[r.status][2],txt(status[r.status]));
   const field=(label,html)=>`<div class="field"><label for="${(html.match(/id="([^"]+)/)||[])[1]||''}">${label}</label>${html}</div>`;
   const input=(id,v,type='text')=>`<input class="inp" id="${id}" type="${type}" value="${E(v)}">`;
@@ -27,8 +29,46 @@
   const duration=ms=>{const m=Math.max(0,Math.floor(ms/60000));return m<60?`${m} ${L('min','分钟')}`:m<1440?`${Math.floor(m/60)} ${L('h','小时')}`:`${Math.floor(m/1440)} ${L('d','天')} ${Math.floor(m%1440/60)} ${L('h','小时')}`;};
   function event(r,title,text='',actor=['System','系统']){r.events.unshift({at:now(),title,text,actor});}
   function expire(){A.rows.forEach(r=>{if(r.status==='pending'&&now()>=r.deadline){r.status='timeout';r.ended=r.deadline;r.events.unshift({at:r.deadline,title:['Review timed out','审核超时'],actor:['System','系统'],text:['No review completed within 48 hours. Application hold released; no execution fees.','48 小时未完成审核，申请占用已释放，本次未执行、零费用。']});A.events.push({id:r.id,event:'timeout'});}});}
-  function visit(id){if(A.draft&&(A.draft.files.length||A.draft.reason||A.draft.remark)){A.next=id;open('discard');return;}navigate(id);}
-  function navigate(id){A.tab='overview';A.draft=null;A.error='';S.layer=null;A.view='default';A.selected=id;location.hash='#'+ROOT+(id?'/detail?id='+encodeURIComponent(id):'');CF.render();}
+  function params(){return new URLSearchParams({...A.filter,page:String(A.page),sort:A.sort,dir:String(A.dir)});}
+  function queueRoute(){return ROOT+'?'+params();}
+  function detailRoute(id,tab='overview',source=''){
+    const p=params();p.set('id',id);p.set('tab',tab);if(source&&source!==id)p.set('source',source);return ROOT+'/detail?'+p;
+  }
+  function remember(){
+    const el=document.activeElement;
+    positions.set(location.hash,{y:window.scrollY,act:el?.dataset.act,value:el?.dataset.v});
+  }
+  function syncContext(){
+    if(routeKey===location.hash)return;
+    routeKey=location.hash;const p=new URLSearchParams(location.hash.split('?')[1]||'');
+    const f=fDefault();for(const k of Object.keys(f))if(p.has(k))f[k]=p.get(k);
+    if(f.status&&!status[f.status])f.status='pending';if(f.follow&&!follows[f.follow])f.follow='';
+    for(const k of ['from','to'])if(!/^\d{4}-\d{2}-\d{2}$/.test(f[k]))f[k]='';
+    A.filter=f;A.editFilter={...f};A.page=Math.max(1,parseInt(p.get('page'),10)||1);
+    A.sort=['submitted','waiting','value','deadline'].includes(p.get('sort'))?p.get('sort'):'submitted';A.dir=p.get('dir')==='-1'?-1:1;
+    A.selected=p.get('id');A.tab=['overview','related','activity'].includes(p.get('tab'))?p.get('tab'):'overview';
+    A.source=p.get('source');if(!A.rows.some(r=>r.id===A.source)||A.source===A.selected)A.source='';
+  }
+  function saveContext(){
+    const next=S.page===D?detailRoute(A.selected,A.tab,A.source):queueRoute();
+    history.replaceState(null,'','#'+next);routeKey=location.hash;
+  }
+  function navigateRoute(route){remember();A.epoch++;A.busy=false;A.draft=null;A.error='';S.layer=null;A.view='default';location.hash='#'+route;}
+  function visit(id){
+    const target=id?detailRoute(id,'overview',S.page===D?A.selected:''):queueRoute();
+    if(A.draft&&(A.draft.files.length||A.draft.reason||A.draft.remark)){A.next=target;open('discard');return;}
+    navigateRoute(target);
+  }
+  function navigate(id){navigateRoute(id?detailRoute(id):queueRoute());}
+  function restoreView(){
+    if(!restoreContext)return;restoreContext=false;
+    requestAnimationFrame(()=>{
+      if(S.layer)return;
+      const saved=positions.get(location.hash);
+      if(saved){window.scrollTo(0,saved.y);const target=[...document.querySelectorAll('[data-act]')].find(el=>el.dataset.act===saved.act&&el.dataset.v===saved.value);if(target)target.focus({preventScroll:true});else document.getElementById('pr-f-q')?.focus({preventScroll:true});}
+      else window.scrollTo(0,0);
+    });
+  }
   function open(key){CF.openLayer('modal','pr-'+key);}
   function identity(r){return `<div class="pr-confirm">${E(r.id)} · ${E(r.token)}<span class="pr-meta">${E(r.batch)} · ${E(project(r))}</span></div>`;}
   function deny(){A.error=['This action is unavailable with the current account, permissions or record status.','当前账号、权限或记录状态不允许此操作。'];A.busy=false;A.draft=null;S.layer=null;CF.render();CF.toast(txt(A.error));}
@@ -67,10 +107,10 @@
       section('Related applications','相关申请',`<p class="pr-meta">${L('Same project and asset holder.','同项目、同资产方的申请。')}</p>${related.length?`<div class="tablewrap"><table class="tbl pr-table pr-related"><thead><tr><th>${L('Application / token','单笔 / 代币')}</th><th>${L('Batch / submitted','批次 / 提交时间')}</th><th>${L('Review status','审核状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${related.map(x=>`<tr><td><strong class="mono">${E(x.id)}</strong><span class="pr-meta mono">${E(x.token)}</span>${x.previous?`<span class="pr-meta">${L('Reapplication of ','再次申请自 ')}${E(x.previous)}</span>`:''}</td><td>${E(x.batch)}<span class="pr-meta">${time(x.submitted)}</span></td><td>${badge(x)}</td><td class="col-act">${link('View','查看','view',x.id)}</td></tr>`).join('')}</tbody></table></div>`:note(L('No related applications.','暂无相关申请。'))}`);
     const activity=section('Activity','本笔记录',r.events.slice().sort((a,b)=>b.at-a.at).map(e=>`<div class="pr-event"><b>${E(txt(e.title))}</b><span class="pr-meta">${time(e.at)} · ${E(txt(e.actor))}</span>${e.text?`<p>${E(txt(e.text))}</p>`:''}</div>`).join(''));
     const tabs=[['overview',L('Overview','概览')],['related',L('Linked applications','关联申请')],['activity',L('Activity','操作记录')]];
-    return title(E(r.id),E(r.token))+(A.draft?'':error())+
+    return (A.source?`<div class="pr-origin"><a class="actlink" href="#${E(detailRoute(A.source,'related'))}" data-act="pr-origin">${L('Return to ','返回来源申请 ')}${E(A.source)}</a></div>`:'')+title(E(r.id),E(r.token))+(A.draft?'':error())+
       `<div class="card pr-detail-summary"><div><span class="pr-meta">${L('Review status','审核状态')}</span>${badge(r)}</div><div><span class="pr-meta">${L('Token value','代币价值')}</span><strong class="pr-value mono">${money(r.value)}</strong></div><div><span class="pr-meta">${L('Review deadline','审核截止')}</span><strong>${time(r.deadline)}</strong></div></div>`+
       (r.status==='timeout'?note(L('Review timed out. Application hold released; no on-chain operation or fee occurred.','审核超时，申请占用已释放；未发生链上操作或费用。')):'')+
-      `<div class="pr-grid"><div class="pr-detail-main"><div class="pr-tabs" role="tablist" aria-label="${L('Application sections','申请详情分区')}">${tabs.map(([k,label])=>`<button type="button" role="tab" id="pr-tab-${k}" aria-selected="${A.tab===k}" aria-controls="pr-detail-panel" tabindex="${A.tab===k?0:-1}" data-act="pr-tab" data-v="${k}">${label}</button>`).join('')}</div><div id="pr-detail-panel" role="tabpanel" tabindex="0" aria-labelledby="pr-tab-${A.tab}" class="pr-stack">${A.tab==='overview'?overview:A.tab==='related'?associations:activity}</div></div>
+      `<div class="pr-grid"><div class="pr-detail-main"><div class="pr-tabs" role="tablist" aria-label="${L('Application sections','申请详情分区')}">${tabs.map(([k,label])=>`<button type="button" role="tab" id="pr-tab-${k}" aria-selected="${A.tab===k}" aria-controls="pr-detail-panel" tabindex="${A.tab===k?0:-1}" data-act="pr-tab" data-v="${k}">${label}</button>`).join('')}</div><div id="pr-detail-panel" role="tabpanel" tabindex="0" aria-labelledby="pr-tab-${A.tab}" class="detail-stack pr-stack">${A.tab==='overview'?overview:A.tab==='related'?associations:activity}</div></div>
       <aside class="pr-stack pr-rail">${section('Review application','审核处理',`<p class="pr-meta">${permission}</p>${r.status==='pending'?`<div class="pr-rail-time"><span class="pr-meta">${L('Time remaining','剩余审核时间')}</span><strong>${duration(r.deadline-now())}</strong><span class="pr-meta">${L('Waiting','已等待')} ${duration(now()-r.submitted)}</span></div>`:`<p class="pr-meta">${L('Review waiting','审核等待')} · ${duration((r.decisionAt||r.ended)-r.submitted)}</p>`}${A.role==='review'?`<div class="pr-stack">${b('Approve application','通过申请','approve','','primary',!canWrite(r))}${b('Reject application','驳回申请','reject','','',!canWrite(r))}</div>`:''}${r.status==='pending'?`<p class="pr-meta pr-disclosure">${L('Approval does not mean the pledge has succeeded.','审核通过不等于质押成功。')}</p>`:''}`)}${r.status==='approved'?section('After approval','审核后续',`<div class="pr-follow">${CF.tag('gray',txt(follows[r.follow]))}</div>`+kv([[L('Deposit deadline','入池截止'),time(r.entryDeadline),true],...(r.started&&!r.completed?[[L('Execution waiting','执行等待'),duration(now()-r.started),true]]:[])])):''}</aside></div>`;
   }
   function execution(r){return section('Follow-up','后续情况',kv([[L('Pre-check','入池前复核'),r.follow==='invalid'?L('Failed · project is closed','不通过 · 项目已终结'):['ready','expired'].includes(r.follow)?L('Not checked','未复核'):L('Passed','通过')],[L('Execution','执行情况'),txt(follows[r.follow])],[L('Initiated','发起时间'),time(r.started)],[L('Completed','完成时间'),time(r.completed)],[L('Actual fee','实际费用'),r.started?(r.fee==null?L('Fee under verification','费用待核实'):r.fee+' '+r.feeCurrency):L('Not executed · no fee','未执行 · 零费用')],[L('Evidence','执行凭据'),r.tx?`${E(r.tx)} ${link('Copy','复制','copy',r.tx)}`:'—'],[L('Reason','原因'),r.executionReason?E(txt(r.executionReason)):'—',true]])+(r.started?`<p class="pr-meta">${L('Fees already incurred are not refunded, including failed executions.','已产生的费用不退，包含执行失败的费用。')}</p>`:''));}
@@ -87,12 +127,12 @@
   function finalReason(d){return d.reason.trim();}
   function applyDecision(r,d,other=false){if(r.status!=='pending')return false;r.status=d.mode==='approve'?'approved':'rejected';r.decisionAt=now();r.operator=other?['Demo operator Chen','示例审核员陈']:['Demo operator Lin','示例审核员林'];r.reviewId=r.id.replace('PR','RV');r.reason=d.mode==='reject'?finalReason(d):'';r.category=d.category;r.remark=d.remark;r.files=d.mode==='approve'?d.files.map(f=>({...f})):[];r.entryDeadline=d.mode==='approve'?now()+7*86400000:null;r.follow=d.mode==='approve'?'ready':'none';event(r,status[r.status],r.reason,r.operator);A.events.push({id:r.id,event:r.status});return true;}
   function submit(){expire();const d=A.draft,r=row();if(A.busy)return;if(!d||d.id!==r?.id||!canWrite(r))return deny();if(!validate()){open('edit');return;}A.busy=true;A.error='';CF.render();const epoch=A.epoch,response=A.response;
-    setTimeout(()=>{if(epoch!==A.epoch)return;expire();A.busy=false;if(!canWrite(r))return deny();
+    setTimeout(()=>{if(epoch!==A.epoch||A.draft!==d)return;expire();A.busy=false;if(!canWrite(r))return deny();
       if(response==='fail'){A.error=['Could not save the decision. Your inputs are preserved.','结论保存失败，已保留输入，请重试。'];open('edit');return;}
       if(response==='withdraw'){r.status='withdrawn';r.ended=now();event(r,['Withdrawn by asset holder','资产方已撤回']);A.draft=null;S.layer=null;A.error=['The asset holder withdrew this application. No decision was saved.','资产方已撤回本笔，未保存审核结论。'];CF.render();return;}
       if(response==='concurrent'){applyDecision(r,{...d,mode:'reject',reason:L('Materials require further verification by the applicant.','申请材料尚需资产方进一步核实后重新提交。'),files:[]},true);A.draft=null;S.layer=null;A.error=['Another reviewer has decided this application. The current result is shown.','本笔已由其他审核员处理，已显示当前结论、审核人及时间。'];CF.render();return;}
       if(response==='unknown'){A.uncertain={id:r.id,d:{...d}};A.draft=null;S.layer=null;A.error=['Decision result is being confirmed. Check the current result before proceeding.','结论结果待确认，请查询当前结果后再操作。'];CF.render();return;}
-      applyDecision(r,d);A.tab='overview';A.draft=null;S.layer=null;A.response='success';CF.render();CF.toast(L('Decision saved for this application.','本笔审核结论已保存。'));
+      applyDecision(r,d);A.tab='overview';saveContext();A.draft=null;S.layer=null;A.response='success';CF.render();CF.toast(L('Decision saved for this application.','本笔审核结论已保存。'));
     },650);
   }
   function editLayer(){const d=A.draft,r=row();if(!d||!r)return {title:L('Unavailable','不可用'),html:'',foot:b('Close','关闭','cancel')};
@@ -115,16 +155,16 @@
   function demo(){return `<h3>${L('Review tools','演示工具')}</h3><p class="pr-meta">${L('Local demonstration only. No real submission or transfer.','仅本地演示，不产生真实提交或转移。')}</p><div class="pr-demo">${field(L('Permission','权限'),select('pr-role',A.role,[['review',L('Query + review','查询＋处置')],['read',L('Query only','仅查询')],['none',L('No access','无权限')],['writeonly',L('Review without query','仅处置无查询')],['expired',L('Session expired','登录失效')]]))}${field(L('Page state','页面状态'),select('pr-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载')],['empty',L('Empty','空数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')],['denied',L('Access denied','无权限')]]))}${field(L('Submit response','提交反馈'),select('pr-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['unknown',L('Uncertain result','结果待确认')],['concurrent',L('Another reviewer wins','同笔已被他人审核')],['withdraw',L('Withdrawn before save','提交前资产方撤回')]]))}${field(L('Upload response','上传反馈'),select('pr-upload-state',A.upload,[['success',L('Success','成功')],['fail',L('Failure','失败')]]))}${field(L('Attachment response','附件反馈'),select('pr-preview-state',A.preview,[['success',L('Success','成功')],['fail',L('Preview fails','预览失败')],['missing',L('File unavailable','文件不可得')]]))}</div><div class="pr-demo">${b('47 h 59 min','47 小时 59 分','clock','before')}${b('At 48 h','恰满 48 小时','clock','deadline')}${b('Simulate expired-page write','模拟旧页越权提交','forbidden')}${b('Reset demonstration','重置演示','restart')}</div><h4>${L('Outcome events','结果事件')}</h4><p class="pr-meta">${A.events.map(e=>E(e.id+' · '+e.event)).join('<br>')||L('None','暂无')}</p>`;}
   function content(page){expire();S.st=A.view;if(!canRead())return title(L('Pledge reviews','代币质押审核'),'')+CF.empty(L('Access unavailable','无法访问'),A.role==='expired'?L('Your session has expired.','登录已失效。'):L('Query permission is required. Contact the platform administrator.','需要查询权限，请联系平台建设方。'),'');
     let out=page===D?detail():queue();if(A.uncertain)out=note(L('A submitted decision is awaiting confirmation. Do not submit another decision.','已提交结论的结果待确认，请勿重复裁定。')+' '+b('Check current result','查询当前结果','resolve'))+out;return out;}
-  function onAct(act,v){if(!act.startsWith('pr-')){if(act==='retry'){A.view='default';A.error='';CF.render();return true;}if(act==='clearfilter'){resetFilter();return true;}return false;}act=act.slice(3);
-    if(act==='view')visit(v);else if(act==='back')visit(null);else if(act==='page'){A.page=+v;CF.render();}
-    else if(act==='search'){const f={...A.editFilter};if(f.from&&f.to&&f.from>f.to){A.filtersOpen=true;A.error=['Start date must not be later than end date.','开始日期不得晚于结束日期。'];CF.render();return true;}A.error='';A.filtersOpen=false;A.filter=f;A.page=1;A.view='default';CF.render();}
-    else if(act==='filters'){A.filtersOpen=!A.filtersOpen;CF.render();document.querySelector('[data-act=pr-filters]')?.focus();}else if(act==='tab'){A.tab=v;CF.render();document.getElementById('pr-tab-'+v)?.focus();}else if(act==='reset')resetFilter();else if(act==='sort'){A.dir=A.sort===v?-A.dir:1;A.sort=v;CF.render();}
+  function onAct(act,v,e){if(e&&(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)&&['pr-view','pr-origin'].includes(act))return false;if(!act.startsWith('pr-')){if(act==='retry'){A.view='default';A.error='';CF.render();return true;}if(act==='clearfilter'){resetFilter();return true;}return false;}act=act.slice(3);
+    if(act==='origin')navigateRoute(detailRoute(A.source,'related'));else if(act==='view')visit(v);else if(act==='back')visit(null);else if(act==='page'){A.page=+v;saveContext();CF.render();window.scrollTo(0,0);}
+    else if(act==='search'){const f={...A.editFilter};if(f.from&&f.to&&f.from>f.to){A.filtersOpen=true;A.error=['Start date must not be later than end date.','开始日期不得晚于结束日期。'];CF.render();return true;}A.error='';A.filtersOpen=false;A.filter=f;A.page=1;A.view='default';saveContext();CF.render();}
+    else if(act==='filters'){A.filtersOpen=!A.filtersOpen;CF.render();document.querySelector('[data-act=pr-filters]')?.focus();}else if(act==='tab'){A.tab=v;saveContext();CF.render();document.getElementById('pr-tab-'+v)?.focus();}else if(act==='reset')resetFilter();else if(act==='sort'){A.dir=A.sort===v?-A.dir:1;A.sort=v;saveContext();CF.render();}
     else if(act==='approve'||act==='reject'){if(A.uncertain?.id===row()?.id){CF.toast(L('Check the pending result first.','请先查询待确认结果。'));return true;}start(act);}
     else if(act==='confirm'){expire();if(!canWrite(row()))deny();else if(validate())open('confirm');else{CF.render();document.getElementById(A.draft.mode==='reject'?'pr-reason':'pr-upload')?.focus();}}
     else if(act==='edit')open('edit');else if(act==='submit')submit();
     else if(act==='remove'){A.draft.files.splice(+v,1);A.error='';CF.render();}
     else if(act==='cancel'){A.next=undefined;if(A.draft&&(A.draft.files.length||A.draft.reason||A.draft.remark))open('discard');else{A.draft=null;CF.closeLayer();}}
-    else if(act==='keep')open('edit');else if(act==='discard'){A.draft=null;A.error='';if(A.next!==undefined){const target=A.next;A.next=undefined;navigate(target);}else CF.closeLayer();}
+    else if(act==='keep')open('edit');else if(act==='discard'){A.draft=null;A.error='';if(A.next!==undefined){const target=A.next;A.next=undefined;navigateRoute(target);}else CF.closeLayer();}
     else if(act==='close')CF.closeLayer();else if(act==='preview'){if(!canRead())deny();else{A.previewIndex=+v;open('preview');}}else if(act==='download')download(+v);
     else if(act==='copy'){navigator.clipboard?.writeText(v).then(()=>CF.toast(L('Copied','已复制'))).catch(()=>CF.toast(L('Copy the visible value manually.','请手动复制显示值。')));}
     else if(act==='clock'){const r=row()||A.rows.find(x=>x.status==='pending');if(r){A.now=r.deadline-(v==='before'?60000:0);A.clock=Date.now();expire();CF.render();}}
@@ -133,22 +173,28 @@
     else if(act==='restart'){A.epoch++;seed=CF.pledgeSeed();A.rows=seed.rows;A.now=seed.now;A.clock=Date.now();A.draft=null;A.uncertain=null;A.busy=false;A.role='review';A.response='success';A.upload='success';A.preview='success';A.events=[];resetFilter();navigate(null);}
     return true;
   }
-  function resetFilter(){A.filter=fDefault();A.editFilter=fDefault();A.filtersOpen=false;A.page=1;A.sort='submitted';A.dir=1;A.error='';A.view='default';CF.render();}
+  function resetFilter(){A.filter=fDefault();A.editFilter=fDefault();A.filtersOpen=false;A.page=1;A.sort='submitted';A.dir=1;A.error='';A.view='default';if(S.page===Q)saveContext();CF.render();}
   function onInput(e){const el=e.target,id=el.id;if(id.startsWith('pr-f-')){A.editFilter[id.slice(5)]=el.value;return;}if(A.draft){if(id==='pr-reason')A.draft.reason=el.value;if(id==='pr-remark')A.draft.remark=el.value;if(id==='pr-category')A.draft.category=el.value;if(id==='pr-ack')A.draft.ack=el.checked;if(id==='pr-reason'||id==='pr-remark'){const count=el.parentElement.querySelector('.pr-meta');if(count)count.textContent=Array.from(el.value.trim()).length+' / '+(id==='pr-reason'?'500':'200');el.setAttribute('aria-invalid','false');}}}
   document.addEventListener('submit',e=>{if(e.target.id==='pr-filter-form'){e.preventDefault();onAct('pr-search','');}});
   document.addEventListener('keydown',e=>{if(e.target.matches('[role=tab][data-act=pr-tab]')&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const tabs=['overview','related','activity'],i=tabs.indexOf(A.tab);onAct('pr-tab',tabs[e.key==='Home'?0:e.key==='End'?2:(i+(e.key==='ArrowRight'?1:2))%3]);}});
   document.addEventListener('input',onInput);
-  document.addEventListener('change',e=>{onInput(e);const el=e.target,id=el.id;if(id==='pr-order'){const [sort,dir]=el.value.split(':');A.sort=sort;A.dir=+dir;CF.render();}
+  document.addEventListener('change',e=>{onInput(e);const el=e.target,id=el.id;if(id==='pr-order'){const [sort,dir]=el.value.split(':');A.sort=sort;A.dir=+dir;saveContext();CF.render();}
     if(['pr-role','pr-view','pr-response','pr-upload-state','pr-preview-state'].includes(id)){const key={'pr-role':'role','pr-view':'view','pr-response':'response','pr-upload-state':'upload','pr-preview-state':'preview'}[id];A[key]=el.value;A.error='';if(key==='role'){A.epoch++;A.busy=false;S.layer=null;A.draft=null;}CF.render();}
     if(id==='pr-upload'&&A.draft){const d=A.draft,files=Array.from(el.files);A.error='';if(files.length+d.files.length>5){A.error=['At most 5 files per application.','每笔最多 5 个文件。'];CF.render();return;}
       files.forEach(f=>{const typeOK=['application/pdf','image/jpeg','image/png'].includes(f.type),extOK=/\.(pdf|jpe?g|png)$/i.test(f.name);if(!typeOK||!extOK||f.size>10*1024*1024||!f.size){A.error=[f.name+': use a non-empty PDF/JPG/PNG up to 10 MB.',f.name+'：请选择非空 PDF/JPG/PNG，单个不超过 10 MB。'];return;}const file={id:crypto.randomUUID(),name:f.name,type:f.type,size:f.size,state:'uploading',url:URL.createObjectURL(f)};d.files.push(file);setTimeout(()=>{file.state=A.upload==='fail'?'failed':'ready';if(A.draft===d)CF.render();},550);});CF.render();}
   });
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('a[href^="#"]');
+    if(!a||a.hasAttribute('data-act')||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
+    if(A.draft){e.preventDefault();A.next=a.hash.slice(1);open('discard');return;}
+    remember();
+  },true);
   const dict={en:{navGroupOps:'Operations',navPledgeReviews:'Pledge reviews',navPledgeReviewDetail:'Application detail'},zh:{navGroupOps:'运营管理',navPledgeReviews:'质押审核',navPledgeReviewDetail:'单笔审核详情'}};
   CF.define({id:'pledge-review',dict,content,layers,onAct,demoOnly:true,demo,
     allowNav:id=>id===Q&&canRead(),adminContext:()=>({name:L('Demo operator Lin','示例审核员林'),subtitle:A.role==='review'?L('Query + review','查询＋处置'):L('Restricted access','受限权限'),hideNotifications:true}),
-    breadcrumbRoute:()=>ROOT,beforeRender(){S.toTop=false;const url=new URLSearchParams(location.hash.split('?')[1]||'');if(S.page===D)A.selected=url.get('id');},
+    breadcrumbRoute:id=>id===Q?queueRoute():null,beforeRender(){S.toTop=false;syncContext();},afterRender:restoreView,
     onBeforeAct(act,v,e){if(act==='retry'||act==='clearfilter'){onAct(act,v);return true;}if(act==='closelayer'&&e?.type==='click'&&e.target.closest('[data-stop]'))return false;if(act==='closelayer'&&A.busy)return true;if(act==='closelayer'&&A.draft){onAct('pr-cancel','');return true;}return false;},
-    onRoute(){A.tab='overview';A.draft=null;A.error='';A.view='default';requestAnimationFrame(()=>window.scrollTo(0,0));},
+    onRoute(){A.epoch++;A.busy=false;A.draft=null;A.error='';A.view='default';restoreContext=true;},
   });
   S.end='admin';S.role='ops';if(!location.hash.startsWith('#'+ROOT))history.replaceState(null,'','#'+ROOT);CF.boot();
   setInterval(()=>{const previous=A.rows.filter(r=>r.status==='pending').length;expire();if(previous!==A.rows.filter(r=>r.status==='pending').length)CF.render();},1000);
