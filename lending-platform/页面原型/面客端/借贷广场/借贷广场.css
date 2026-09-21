@@ -22,6 +22,7 @@
 .ls-step .btn{white-space:normal;height:auto;min-height:44px}
 .ls-table th{white-space:normal}
 .ls-table td{overflow-wrap:anywhere}
+.ls-detail-main .ls-table .tag{max-width:100%;white-space:normal;line-height:1.5}
 .ls-table .ls-select-cell{width:70px}
 .ls-history summary{cursor:pointer;min-height:44px;padding:var(--sp-3) 0;color:var(--accent)}
 .ls-error{margin-top:var(--sp-3)}
@@ -240,9 +241,12 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-review-filters{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:var(--sp-3);align-items:end}
 .ls-review-filters .field{margin:0}.ls-review-filter-actions{justify-content:flex-end;justify-self:end}
 .ls-token-list .tbl{table-layout:fixed;width:100%}
-.ls-token-list th:first-child{width:6%}.ls-token-list th:nth-child(2){width:24%}
-.ls-token-list th:nth-child(3){width:10%}.ls-token-list th:nth-child(4){width:18%}
-.ls-token-list th:nth-child(5){width:20%}.ls-token-list th:nth-child(6){width:22%}
+.ls-token-list th:first-child{width:5%}.ls-token-list th:nth-child(2){width:20%}
+.ls-token-list th:nth-child(3){width:9%}.ls-token-list th:nth-child(4){width:16%}
+.ls-token-list th:nth-child(5){width:17%}.ls-token-list th:nth-child(6){width:19%}.ls-token-list th:nth-child(7){width:14%}
+.ls-agreement-link{min-height:44px;text-align:start;white-space:normal;overflow-wrap:anywhere}
+#ls-pledged-tokens{scroll-margin-top:90px;outline:none}
+#ls-pledged-tokens:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
 .ls-token-link{min-height:44px;white-space:normal;text-align:left}
 .ls-token-list .tag{white-space:normal}.ls-token-list .cell-sub{margin-top:var(--sp-2)}
 .ls-token-actions{display:flex;flex-direction:column;gap:var(--sp-2)}
