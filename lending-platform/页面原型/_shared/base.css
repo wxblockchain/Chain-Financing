@@ -78,9 +78,9 @@ img,svg{max-width:100%}
 .dd-list{position:absolute;right:0;top:calc(100% + 6px);min-width:170px;background:var(--bg-elev);
   border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);
   padding:5px;z-index:var(--z-sticky);animation:rise var(--dur-fast) var(--ease-out)}
-.dd-list button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:8px 10px;
+.dd-list button,.dd-list a{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:8px 10px;
   border-radius:var(--radius-xs);font-size:var(--fs-13);color:var(--text)}
-.dd-list button:hover{background:var(--card-hover)}
+.dd-list button:hover,.dd-list a:hover{background:var(--card-hover)}
 .dd-list button[aria-current="true"]{color:var(--accent);font-weight:640;background:var(--accent-soft)}
 .dd-head{padding:8px 10px 6px;font-size:var(--fs-10);letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
 .dd-sep{height:1px;background:var(--border);margin:5px 0}
@@ -353,6 +353,7 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .sidebar{background:var(--bg-elev);border-right:1px solid var(--border);display:flex;flex-direction:column;
   position:sticky;top:0;height:100vh}
 .sidebar .brand{padding:18px 18px 15px;border-bottom:1px solid var(--border)}
+.sidebar .brand-name,.sidebar .brand-sub{display:block}
 .nav{padding:var(--sp-3) 12px;flex:1;overflow-y:auto}
 .nav-group{font-size:var(--fs-10);letter-spacing:.07em;text-transform:uppercase;color:var(--faint);
   padding:var(--sp-4) 10px 6px;font-weight:650}

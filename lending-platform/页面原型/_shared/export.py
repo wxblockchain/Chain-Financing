@@ -12,6 +12,7 @@
 from pathlib import Path
 import argparse
 import re
+import json
 
 
 def main():
@@ -28,21 +29,40 @@ def main():
         parser.error("source must be an HTML file under the prototype root")
     if output.is_relative_to(root):
         parser.error("export outside the prototype tree to keep generated copies out of source")
-    html = source.read_text(encoding="utf-8")
+    def standalone(source):
+        html = source.read_text(encoding="utf-8")
 
-    def inline(match, tag):
-        resource = (source.parent / match.group(1)).resolve()
-        if not resource.is_relative_to(root):
-            raise ValueError("Only local prototype resources may be inlined: %s" % resource)
-        content = resource.read_text(encoding="utf-8")
-        # 演示数据里可能出现 </script 这样的序列，转义后再内联。
-        content = re.sub(r"</" + tag, lambda m: "<\\/" + m[0][2:], content, flags=re.I)
-        return "<%s>\n%s\n</%s>" % (tag, content, tag)
+        def inline(match, tag):
+            resource = (source.parent / match.group(1)).resolve()
+            if not resource.is_relative_to(root):
+                raise ValueError("Only local prototype resources may be inlined: %s" % resource)
+            content = resource.read_text(encoding="utf-8")
+            content = re.sub(r"</" + tag, lambda m: "<\\/" + m[0][2:], content, flags=re.I)
+            return "<%s>\n%s\n</%s>" % (tag, content, tag)
 
-    html = re.sub(r'<link rel="stylesheet" href="([^"]+)">', lambda m: inline(m, "style"), html)
-    html = re.sub(r'<script src="([^"]+)"></script>', lambda m: inline(m, "script"), html)
-    if re.search(r'<(?:script\b[^>]*\bsrc=|link\b[^>]*\bhref=)', html, re.I):
-        raise ValueError("Unresolved script or stylesheet dependency")
+        html = re.sub(r'<link rel="stylesheet" href="([^"]+)">', lambda m: inline(m, "style"), html)
+        html = re.sub(r'<script src="([^"]+)"></script>', lambda m: inline(m, "script"), html)
+        if re.search(r'<(?:script\b[^>]*\bsrc=|link\b[^>]*\bhref=)', html, re.I):
+            raise ValueError("Unresolved script or stylesheet dependency")
+        return html
+
+    html = standalone(source)
+    if 'data-admin-module=' in html:
+        # Source files keep normal relative links. Offline delivery includes every
+        # destination from the same menu contract, with no copied business runtime.
+        menu = (root / '_shared/admin-menu.js').read_text(encoding='utf-8')
+        entries = json.loads(re.search(r'const entries = (\[.*?\]);', menu, re.S).group(1))
+        documents = {}
+        for entry in entries:
+            filename = entry['file']
+            if filename not in documents:
+                document = standalone(root / '管理端' / filename)
+                bootstrap = '<script>window.AdminPrototypeBundle.install();</script>'
+                documents[filename] = document.replace('<head>', '<head>' + bootstrap, 1)
+        payload = json.dumps({'documents': documents, 'initial': str(source.relative_to(root / '管理端')),
+                              'entries': entries}, ensure_ascii=False).replace('<', '\\u003c')
+        runtime = (root / '_shared/admin-bundle.js').read_text(encoding='utf-8')
+        html = '<!doctype html><html><head><meta charset="utf-8"><title>Harbour Credit</title></head><body><script>\n' + runtime.replace('window.__ADMIN_BUNDLE_PAYLOAD__', payload) + '\n</script></body></html>'
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(html, encoding="utf-8")

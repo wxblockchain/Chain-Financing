@@ -190,7 +190,7 @@
     remember();
   },true);
   const dict={en:{navGroupOps:'Operations',navPledgeReviews:'Pledge reviews',navPledgeReviewDetail:'Application detail'},zh:{navGroupOps:'运营管理',navPledgeReviews:'质押审核',navPledgeReviewDetail:'单笔审核详情'}};
-  CF.define({id:'pledge-review',dict,content,layers,onAct,demoOnly:true,demo,
+  CF.define({id:'pledge-review',beforeAdminNavigate(proceed){if(A.busy||A.draft){CF.toast(L('Finish or cancel the current review first.','请先完成或取消当前审核。'));return}remember();proceed()},dict,content,layers,onAct,demoOnly:true,demo,
     allowNav:id=>id===Q&&canRead(),adminContext:()=>({name:L('Demo operator Lin','示例审核员林'),subtitle:A.role==='review'?L('Query + review','查询＋处置'):L('Restricted access','受限权限'),hideNotifications:true}),
     breadcrumbRoute:id=>id===Q?queueRoute():null,beforeRender(){S.toTop=false;syncContext();},afterRender:restoreView,
     onBeforeAct(act,v,e){if(act==='retry'||act==='clearfilter'){onAct(act,v);return true;}if(act==='closelayer'&&e?.type==='click'&&e.target.closest('[data-stop]'))return false;if(act==='closelayer'&&A.busy)return true;if(act==='closelayer'&&A.draft){onAct('pr-cancel','');return true;}return false;},

@@ -2,7 +2,7 @@
    registry.admin.js — 借贷平台 · 管理端（运营管理平台）页面登记表与导航
    代币域的 P-O-TC-* / P-O-TI-* / P-O-FX-* / P-O-DS-* 已随代币发行平台移交，
    本登记表不再登记它们；P-O-DS-* 的定义方仍是资产平台，这里只是取消本平台登记。
-   资金方机构认证审核、代币质押审核、消息通知的导航位由各自模块登记，本文件不代填。
+   本文件登记页面与父级。当前管理端业务菜单统一由 admin-menu.js 维护。
    ========================================================================== */
 (function (CF) {
   CF.PAGES = CF.PAGES || {};
@@ -29,9 +29,8 @@
     CF.ENTRY[id] = p.route;
   }
 
+  // Historical base sample only; all five business entries load admin-menu.js.
   CF.NAV.admin = ["P-O06", "P-O-AG-01", "P-L40"];
-  // Independent review artifacts expose only modules they actually load.
-  if (document.documentElement.dataset.module === "pledge-review") CF.NAV.admin.push("P-O-PR-01");
   // Account flows are registered, but never added as business sidebar items.
   var accountPages = [
     ['01', 'navOpsLogin', '/ops/login', 'focus'],

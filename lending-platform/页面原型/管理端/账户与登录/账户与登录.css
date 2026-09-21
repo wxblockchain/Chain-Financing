@@ -72,7 +72,7 @@
 .ops-account .modal .ops-form{color:var(--text)}
 .ops-account .hint{color:var(--muted)}
 @media(max-width:767px){
- .ops-account .app{grid-template-columns:minmax(0,1fr)}
+ .ops-account .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr}
  .ops-account .sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border)}
  .ops-account .sidebar .brand,.ops-account .side-foot{display:none}
  .ops-account .nav{padding:var(--sp-2) var(--sp-4)}

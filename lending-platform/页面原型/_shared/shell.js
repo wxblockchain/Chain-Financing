@@ -213,6 +213,12 @@
   }
 
   function renderAdminNav() {
+    if (CF.AdminMenu) {
+      $("anav").innerHTML = CF.AdminMenu.render(M);
+      $("anav").setAttribute("aria-label", L("Main navigation", "主导航"));
+      document.querySelectorAll('.sidebar .brand-sub').forEach(function(el){el.textContent=L('Operations','运营管理');});
+      return;
+    }
     var html = '<div class="nav-group">' + esc(t("navGroupOps")) + "</div>";
     html += navItems().map(function (id) {
       var p = CF.PAGES[id];
@@ -290,17 +296,14 @@
   }
 
   function renderAdminTools() {
+    // Account information lives in the top account menu and account settings.
+    if ($("asidefoot")) { $("asidefoot").innerHTML = ''; $("asidefoot").hidden = true; }
     if (M && M.adminTools) {
       $("atools").innerHTML = (M.adminNotifications ? M.adminNotifications() : '') + langDd() + M.adminTools();
-      $("asidefoot").innerHTML = M.adminIdentity ? M.adminIdentity() : '';
       return;
     }
     var context = M && M.adminContext ? M.adminContext() : null;
-    $("atools").innerHTML = langDd() + (context && context.hideNotifications ? "" : bell(2));
-    $("asidefoot").innerHTML =
-      '<div class="op-row"><span class="op-avatar">OP</span><div style="min-width:0">' +
-      '<div class="op-name">' + esc(context ? context.name : L("Operations admin", "运营管理员")) + "</div>" +
-      '<div class="op-role">' + esc(context ? context.subtitle : L("Signed in", "已登录")) + "</div></div></div>";
+    $("atools").innerHTML = langDd() + (context && context.hideNotifications ? "" : bell(2)) + (CF.AdminMenu ? CF.AdminMenu.tools() : '');
   }
 
   /* ------------------------------------------------------------ 面包屑 */
