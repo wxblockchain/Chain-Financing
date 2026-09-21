@@ -27,3 +27,8 @@ table.tbl.rp-plan thead th{white-space:normal;overflow-wrap:anywhere;letter-spac
 .rp-pagination{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-4)}
 .rp-pagination>div{display:flex;align-items:center;gap:var(--sp-2)}
 @media(max-width:640px){.rp-list-filters{flex-wrap:wrap}.rp-list-filters>.inp{max-width:none;flex-basis:100%}.rp-list-filters>.btn:first-of-type{margin-left:auto}.rp-pagination{align-items:flex-start;flex-direction:column}.rp-pagination>div{align-self:flex-end}.rp-history-item{align-items:flex-start;flex-wrap:wrap}.drawer:has(.rp-confirm){width:100vw}}
+.rp-inline-plan{min-width:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:var(--sp-2) 0}
+.rp-inline-plan[open]{padding-bottom:var(--sp-4)}
+.rp-panel .field,.rp-panel select{min-width:0;max-width:100%;width:100%}
+.modal-mask:has(.rp-drawer){grid-template-columns:minmax(0,1fr)}
+.modal:has(.rp-drawer){min-width:0}
