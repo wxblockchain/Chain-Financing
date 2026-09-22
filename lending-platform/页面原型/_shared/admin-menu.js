@@ -48,7 +48,9 @@
   entries.forEach(e=>CF.review.register(e.page,{
     group:['Operations modules','管理端模块'],label:e.label,visible:()=>allowed(e),
     navigate(){
+      // Keep the review tool open across the full-page load into another module file.
       if(window.AdminPrototypeBundle)window.AdminPrototypeBundle.reviewOpen=true;
+      else if(!local(e))try{localStorage.setItem(CF.REVIEW_OPEN,'1')}catch(_){}
       go(e.key);
     }
   }));

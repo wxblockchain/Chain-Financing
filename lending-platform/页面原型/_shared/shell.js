@@ -429,6 +429,7 @@
   }
 
   /* Shared review navigation. Page adapters own fixtures; the shell never seeds business data. */
+  var REVIEW_OPEN = CF.REVIEW_OPEN = 'hc.review-open';
   var reviewPages = {}, reviewActive = null, reviewObserver = null;
   var reviewSearch = '', reviewMore = false, reviewFocus = '';
   var reviewNames = {
@@ -446,6 +447,11 @@
       return typeof state === 'string' ? {id: state, label: reviewNames[state] || [state, state], group: 'feedback'} : state;
     });
   }
+  function reviewRoute(id, config) {
+    if (config.navigate) return true;
+    try { return (typeof config.route === 'function' ? config.route() : config.route || CF.ENTRY[id]) || null; }
+    catch (error) { return null; }
+  }
   function reviewClear() {
     if (reviewActive && reviewPages[reviewActive]) {
       var config = reviewPages[reviewActive];
@@ -462,6 +468,7 @@
     if (S.layer) return;
     var proceed = function () {
       reviewClear();
+      if (value === 'default' && config.reset) config.reset();
       reviewActive = id; S.menu = null;
       if (config.set) config.set(value); else S.st = value;
       S.demo = true; render();
@@ -495,7 +502,10 @@
       var label = reviewText(config.label) || t(page.navKey || page.crumbKey);
       if (query && id !== current && (id + ' ' + label).toLocaleLowerCase().indexOf(query) < 0) return;
       var group = reviewText(config.group) || L('Pages', '页面');
-      (groups[group] || (groups[group] = [])).push('<option value="' + esc(id) + '"' + (id === current ? ' selected' : '') + '>' + esc(label + ' · ' + id) + '</option>');
+      var openable = id === current || !!reviewRoute(id, config);
+      (groups[group] || (groups[group] = [])).push('<option value="' + esc(id) + '"' + (id === current ? ' selected' : '') +
+        (openable ? '' : ' disabled') + '>' +
+        esc(label + ' · ' + id + (openable ? '' : ' · ' + L('open from its list', '需先从列表进入'))) + '</option>');
     });
     return (!current ? '<option value="">' + L('Choose a page', '选择页面') + '</option>' : '') + Object.keys(groups).map(function (key) {
       return '<optgroup label="' + esc(key) + '">' + groups[key].join('') + '</optgroup>';
@@ -853,6 +863,7 @@
 
   CF.boot = function () {
     if (window.AdminPrototypeBundle?.reviewOpen) { S.demo = true; window.AdminPrototypeBundle.reviewOpen = false; }
+    try { if (localStorage.getItem(REVIEW_OPEN) === '1') { S.demo = true; localStorage.removeItem(REVIEW_OPEN); } } catch (error) {}
     S.tz = resolveTz();
     syncRoute(true);
     document.addEventListener("click", onClick);
