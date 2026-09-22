@@ -494,6 +494,44 @@
     else if (S.end === 'admin' && CF.AdminMenu) CF.AdminMenu.beforeLeave(proceed);
     else proceed();
   }
+  /* Sign-in state is the first review axis on the customer-facing unit: pick who is looking,
+     then the page, then that page's state. Operations identity comes from its real sign-in. */
+  var reviewIdentities = [
+    {id: 'guest', label: ['Signed out visitor', '未登录访客'], group: ['Signed out', '未登录']},
+    {id: 'asset', label: ['Asset holder', '资产方'], group: ['Signed in', '已登录']},
+    {id: 'fund', label: ['Funder', '资金方'], group: ['Signed in', '已登录']},
+    {id: 'limited', label: ['Restricted session', '受限会话'], group: ['Signed in', '已登录']}
+  ];
+  function reviewIdentityShown() { return S.end !== 'admin'; }
+  function reviewIdentityOptions() {
+    var groups = {};
+    reviewIdentities.forEach(function (identity) {
+      var group = reviewText(identity.group);
+      (groups[group] || (groups[group] = [])).push('<option value="' + esc(identity.id) + '"' +
+        (identity.id === S.role ? ' selected' : '') + '>' + esc(reviewText(identity.label)) + '</option>');
+    });
+    return Object.keys(groups).map(function (group) {
+      return '<optgroup label="' + esc(group) + '">' + groups[group].join('') + '</optgroup>';
+    }).join('');
+  }
+  function reviewIdentityGo(value) {
+    if (!reviewIdentityShown() || S.layer || !reviewIdentities.some(function (identity) { return identity.id === value; })) return;
+    var config = reviewPages[reviewCurrent()];
+    var proceed = function () {
+      reviewClear();
+      S.role = value; S.menu = null; S.layer = null; S.st = 'default'; S.demo = true;
+      reviewSearch = ''; reviewFocus = 'review-identity';
+      resetList();
+      var id = reviewCurrent(), next = reviewPages[id];
+      // Stay on the page under the new identity when it can still be opened; otherwise land on its entry.
+      var reachable = next && (!next.visible || next.visible()) && !!reviewRoute(id, next) &&
+        !(CF.PAGES[id] && CF.PAGES[id].auth && value === 'guest');
+      var entry = reachable ? null : CF.ENTRY[defaultPage()];
+      if (entry && location.hash !== '#' + entry) { location.hash = '#' + entry; return; }
+      render();
+    };
+    if (config && config.beforeChange) config.beforeChange(proceed); else proceed();
+  }
   function reviewOptions() {
     var groups = {}, current = reviewCurrent(), query = reviewSearch.toLocaleLowerCase().trim();
     Object.keys(reviewPages).forEach(function (id) {
@@ -528,9 +566,11 @@
     var retainedFocus = header.contains(document.activeElement) && document.activeElement.id;
     if (panel.firstElementChild !== header) panel.prepend(header);
     // Legacy whole-page selectors move to the canonical state control, without duplicating them.
-    more.querySelectorAll('[data-act="ops-state"], [data-act="ag-state"], [data-act="om-scene"]').forEach(function (button) {
+    var legacy = '[data-act="ops-state"], [data-act="ag-state"], [data-act="om-scene"]' +
+      (reviewIdentityShown() ? ', [data-act="role"]' : '');
+    more.querySelectorAll(legacy).forEach(function (button) {
       var group = button.parentElement;
-      if (group && Array.from(group.children).every(function (child) { return child.matches('[data-act="ops-state"], [data-act="ag-state"], [data-act="om-scene"]'); })) {
+      if (group && Array.from(group.children).every(function (child) { return child.matches(legacy); })) {
         if (group.previousElementSibling?.tagName === 'H5') group.previousElementSibling.hidden = true;
         group.hidden = true;
       }
@@ -547,11 +587,14 @@
     });
     var live = config && !states.some(function (state) { return state.id === value; });
     var active = document.activeElement, focusId = retainedFocus || (header.contains(active) && active.id);
+    var step = reviewIdentityShown() ? 1 : 0;
     header.innerHTML = '<div class="review-heading"><strong>' + L('Prototype review', '原型评审') + '</strong><span>' + L('Simulation only', '仅模拟') + '</span></div>' +
+      (reviewIdentityShown() ? '<label for="review-identity">' + L('1 · Sign-in state', '1 · 登录状态') + '</label>' +
+        '<select class="inp" id="review-identity"' + (S.layer ? ' disabled' : '') + '>' + reviewIdentityOptions() + '</select>' : '') +
       '<label for="review-search">' + L('Find a page', '查找页面') + '</label><input class="inp" id="review-search" type="search" value="' + esc(reviewSearch) + '" placeholder="' + L('Page name or ID', '页面名称或编号') + '">' +
-      '<label for="review-page">' + L('1 · Page', '1 · 页面') + '</label><select class="inp" id="review-page"' + (S.layer ? ' disabled' : '') + '>' + reviewOptions() + '</select>' +
+      '<label for="review-page">' + (step + 1) + L(' · Page', ' · 页面') + '</label><select class="inp" id="review-page"' + (S.layer ? ' disabled' : '') + '>' + reviewOptions() + '</select>' +
       (config && config.step ? '<p class="review-step">' + esc(L('Current step: ', '当前步骤：') + config.step()) + '</p>' : '') +
-      '<label for="review-state">' + L('2 · State', '2 · 状态') + '</label><select class="inp" id="review-state"' + (!states.length || S.layer ? ' disabled' : '') + '>' +
+      '<label for="review-state">' + (step + 2) + L(' · State', ' · 状态') + '</label><select class="inp" id="review-state"' + (!states.length || S.layer ? ' disabled' : '') + '>' +
       (live ? '<option value="" selected disabled>' + L('Current flow', '当前流程状态') + '</option>' : '') +
       (!states.length ? '<option>' + L('Follow the page flow', '通过页面流程触发') + '</option>' : Object.keys(groups).map(function (group) { return '<optgroup label="' + esc(group) + '">' + groups[group].join('') + '</optgroup>'; }).join('')) + '</select>' +
       '<button class="btn" type="button" data-act="review-reset"' + (!config || S.layer ? ' disabled' : '') + '>' + L('Restore default', '恢复默认') + '</button>';
@@ -577,6 +620,7 @@
     reviewSearch = event.target.value; $('review-page').innerHTML = reviewOptions();
   });
   document.addEventListener('change', function (event) {
+    if (event.target.id === 'review-identity') reviewIdentityGo(event.target.value);
     if (event.target.id === 'review-page') reviewGo(event.target.value);
     if (event.target.id === 'review-state') reviewApply(event.target.value);
   });
