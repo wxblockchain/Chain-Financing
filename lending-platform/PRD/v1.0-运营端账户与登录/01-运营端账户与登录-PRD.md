@@ -21,7 +21,7 @@
 | --- | --- |
 | [运营端协议管理](../v1.0-运营端协议管理/01-运营端协议管理-PRD.md)（WS-384） | 协议当前内容、工作版本、历史版本与操作记录的业务规则；本模块只定义其读取准入 |
 | [运营端消息通知](../v1.0-运营端消息通知/v1.0-运营端消息通知-PRD.md)（WS-360） | 运营端站内消息的页面、未读语义与可见范围；本模块只定义发什么、何时发 |
-| [资金方机构认证审核](../v2.0-资金方机构认证审核/01-资金方机构认证审核-PRD.md)（WS-358）、[代币质押审核](../v1.0-代币质押审核/v1.0-代币质押审核-PRD.md)（WS-359） | 各审核动作的业务规则；本模块只登记其为可授权项 |
+| [资金方机构认证审核](../v2.0-资金方机构认证审核/01-资金方机构认证审核-PRD.md)（WS-358）、[代币质押审核](../v1.0-代币质押审核/01-代币质押审核-PRD.md)（WS-382） | 各审核动作的业务规则；本模块只登记其为可授权项 |
 | 三平台共享国际化基线 | 语言、时区、时间、数字、金额、链上地址与哈希、文案与脱敏口径；落盘位置见 [`Q-AL-01`](#q-al-01) |
 | 运营端登录基线 `cly-V1.0.0` @ [`ea56882`](https://github.com/wxblockchain/Chain-Financing/blob/ea56882a2d5c3680ed7220b9e1feb2a0d8fcb652/financial-service-platform/prd/v1.0-账户与登录/v1.0-账户与登录-PRD.md) | 登录、找回、账户设置与会话的业务规则出处；本模块按独立部署重新收口，不追认其编号 |
 | 资产可信平台[《安全与风控》§12.3](https://github.com/wxblockchain/Chain-Financing/blob/ea56882a2d5c3680ed7220b9e1feb2a0d8fcb652/asset-platform/prd/v1.0-账户与登录/04-安全与风控.md)、[《验收标准》§18.11](https://github.com/wxblockchain/Chain-Financing/blob/ea56882a2d5c3680ed7220b9e1feb2a0d8fcb652/asset-platform/prd/v1.0-账户与登录/06-验收标准.md)、[参数基线 §19.2](https://github.com/wxblockchain/Chain-Financing/blob/ea56882a2d5c3680ed7220b9e1feb2a0d8fcb652/asset-platform/prd/v1.0-账户与登录/v1.0-账户与登录-PRD.md) | 发码前滑块校验及其交互、有效性与限频的原文依据；该平台的验证码登录、旧邮箱验证、改邮箱后退出等其他规则不自动引入本运营端 |
