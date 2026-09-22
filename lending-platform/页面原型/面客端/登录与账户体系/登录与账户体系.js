@@ -375,7 +375,7 @@
   function options(id,title,values,selected){return `<div class="field"><label for="${id}">${title}</label><select class="inp" id="${id}">${values.map(a=>`<option value="${a[0]}" ${selected===a[0]?'selected':''}>${L(a[1],a[2])}</option>`).join('')}</select></div>`;}
   function demoPanel(){
     if(!S.demo)return;
-    $('demoPanel').innerHTML=`<div class="grp"><h5>${L('Review tools · simulation only','评审工具 · 仅模拟')}</h5><p class="login-caption">${L('Simulated data only. Upstream profile fields and notification preferences are provisional; no real SSO integration.','仅模拟资料。上游基本信息字段与通知偏好仍暂定，未进行真实 SSO 联调。')}</p>
+    CF.review.setTools(`<div class="grp"><h5>${L('Review tools · simulation only','评审工具 · 仅模拟')}</h5><p class="login-caption">${L('Simulated data only. Upstream profile fields and notification preferences are provisional; no real SSO integration.','仅模拟资料。上游基本信息字段与通知偏好仍暂定，未进行真实 SSO 联调。')}</p>
       ${D.reviewMessage?CF.note('accent',esc(D.reviewMessage)):''}
       ${D.handoff==='wallet'?`<div class="seg">${btn('Cancel wallet request','钱包取消','login-demo','wallet-cancel')}${btn('No wallet available','钱包不可用','login-demo','wallet-missing')}${btn('Connection succeeded','连接成功','login-demo','wallet-connected')}</div>`:''}
       ${D.handoff==='asset'?`<div class="seg">${btn('Simulate return','模拟返回','login-demo','return')}${btn('Platform unreachable','授权中心不可达','login-demo','asset-unavailable')}${btn('Abandon and return','放弃并返回','login-demo','asset-cancel')}</div>`:''}</div>
@@ -389,7 +389,7 @@
       <div class="grp"><h5>${L('Session invalidation','会话失效')}</h5><div class="seg">${btn('Expired','到期','login-demo','expiry')}${btn('Upstream logout','上游登出','login-demo','upstream')}${btn('Account unavailable','主体不可用','login-demo','blocked')}</div></div>
       <div class="grp"><h5>${L('Verification and reminders','认证与提示条')}</h5><div class="seg">${btn('Downgrade','认证降级','login-demo','downgrade')}${btn('Refresh: verified','刷新为已认证','login-demo','refresh')}${btn('Unknown status','未知状态','login-demo','invalid-status')}${btn('Toggle rejected copy','切换驳回文案','login-demo','rejected')}${btn('Reminder queue','提示条队列','login-demo','notice-queue')}</div></div>
       <div class="grp"><h5>${L('Account and agreement states','账户与协议状态')}</h5><div class="seg">${btn('Account loading','账户加载中','login-demo','account-loading')}${btn('Account load failed','账户加载失败','login-demo','account-error')}${btn('Account ready','账户正常','login-demo','account-ready')}${btn('Toggle missing fields','切换字段缺失','login-demo','missing')}${btn('Agreement load failed','协议加载失败','login-demo','agreement-error')}${btn('Personal: empty','个人资料为空','login-demo','personal-empty')}${btn('Personal: error','个人资料失败','login-demo','personal-error')}${btn('Personal: ready','个人资料重新读取','login-demo','personal-ready')}${btn('Company: empty','企业资料为空','login-demo','company-empty')}${btn('Company: error','企业资料失败','login-demo','company-error')}${btn('Company: ready','企业资料重新读取','login-demo','company-ready')}${btn('Different account','模拟另一账户','login-demo','profile-other')}${btn('Optional fields absent','可选字段缺失','login-demo','profile-optional')}${btn('Attempt read-only update','尝试修改只读资料','login-demo','profile-write')}</div></div>
-      <div class="grp"><h5>${L('Entry and fallback','入口与兜底')}</h5><div class="seg">${btn('Main flow unavailable','主干不可继续','login-demo','main-failure')}${btn('Return fallback','回跳兜底','login-demo','fallback')}</div></div>`;
+      <div class="grp"><h5>${L('Entry and fallback','入口与兜底')}</h5><div class="seg">${btn('Main flow unavailable','主干不可继续','login-demo','main-failure')}${btn('Return fallback','回跳兜底','login-demo','fallback')}</div></div>`);
   }
   let priorLayer=false, renderedPage=null,identityKey='';
   function syncIdentity(){const key=S.role==='asset'?assetProfile().userId:S.role;if(key===identityKey)return;identityKey=key;cancelPending();D.accountState=D.personalState=D.companyState='idle';if(S.role==='asset')loadPreferences();}
@@ -426,6 +426,22 @@
     priorLayer=!!dialog;
   }
   if(CF.funder){Object.assign(dict.en,CF.funder.dict.en);Object.assign(dict.zh,CF.funder.dict.zh);Object.assign(layers,CF.funder.layers);}
+
+  CF.review.register('P-L01',{
+    group:['Sign-in and account','登录与账户'],aliases:['P-L03','P-L04','P-L10','P-L13'],
+    states:[{id:'default',label:['Default','默认'],group:'feedback'},{id:'wallet',label:['Wallet unavailable','钱包不可用'],group:'feedback'},{id:'asset',label:['Authorization center unavailable','授权中心不可达'],group:'feedback'}],
+    get:()=>S.page==='P-L01'?(D.entryError||'default'):'flow',set(value){D.entryError=value==='default'?'':value;if(S.page!=='P-L01')go('/login');},
+    reset(){D.entryError='';D.handoff='';},route:'/login'
+  });
+  CF.review.register('P-L11',{group:['Sign-in and account','登录与账户'],states:['default'],route:'/auth/agreements'});
+  ['P-L12','P-L14'].forEach(id=>CF.review.register(id,{
+    group:['Asset holder account','资产方账户'],
+    states:()=>S.role==='asset'?['default','loading','empty','error']:['default'],
+    get:()=>id==='P-L12'?(D.accountState==='loading'?'loading':D.personalState==='idle'||D.personalState==='ready'?'default':D.personalState):(D.companyState==='idle'||D.companyState==='ready'?'default':D.companyState),
+    set(value){cancelPending();if(id==='P-L12'){D.accountState=value==='loading'?'loading':'default';D.personalState=value==='default'?'idle':value;}else D.companyState=value==='default'?'idle':value;},
+    reset(){cancelPending();D.accountState='default';D.personalState=D.companyState='idle';}
+  }));
+
   CF.define(CF.AccountView={id:'login-account',dict,content,layers,onAct:action,
     breadcrumbRoute(id){return S.page==='P-L14'&&id===CF.PAGES['P-L14'].parent?D.companyOrigin:null;},
     // 组合只承接已有页面：资产广场及其既有项目链接保持单一实现。

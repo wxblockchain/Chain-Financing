@@ -139,7 +139,7 @@
       if(!t)return CF.empty(L('Token unavailable','代币不可用'),'');
       return head(E(t.name),E(t.no))+card(L('Token information','代币信息'),fields([[L('Token number','代币编号'),E(t.no)],[L('Holder','持有人'),E(L(...t.holder))],[L('Quantity','数量'),CF.fmtAmt(t.qty)+L(' tokens',' 枚')],[L('Value','价值'),CF.fmtAmt(t.val,'USD')],[L('Receivable term','应收账款账期'),CF.fmtDate(t.from)+' – '+CF.fmtDate(t.to)]]));
     }
-    return {dict,layers,action,breadcrumb,content:page=>page===LIST?list(false):page===CONSOLE?list(true):page===PROJECT?detail(false):page===RECORD?detail(true):page===TOKEN?tokenDetail():null};
+    return {dict,layers,action,breadcrumb,reviewRoute:id=>{if(![PROJECT,RECORD,TOKEN].includes(id))return CF.ENTRY[id];const p=projects.find(p=>id===RECORD?mine(p):id===TOKEN?!!p.token:true);return p?CF.ENTRY[id]+'?id='+encodeURIComponent(p.id):null;},content:page=>page===LIST?list(false):page===CONSOLE?list(true):page===PROJECT?detail(false):page===RECORD?detail(true):page===TOKEN?tokenDetail():null};
   };
 })(window.CF);
 
@@ -633,6 +633,13 @@
   };
 
   CF.renderFooter = renderFoot;
+
+  ['P-F-AM-01','P-LS-01','P-MC-01','P-O06','P-O-AG-01','DEMO-FOCUS','SAMPLE-PROJECT','SAMPLE-RECORD','SAMPLE-TOKEN'].forEach(id=>CF.review.register(id,{
+    group:CF.PAGES[id].end==='admin'?['Operations samples','管理端样板']:['Customer samples','面客端样板'],
+    route:()=>relations.reviewRoute(id),
+    states:['DEMO-FOCUS','SAMPLE-TOKEN'].includes(id)?['default']:['SAMPLE-PROJECT','SAMPLE-RECORD'].includes(id)?['default','loading','empty','error','denied']:['default','loading','empty','noresult','error','denied']
+  }));
+
   CF.define({
     id: "lending-baseline",
     dict: dict,

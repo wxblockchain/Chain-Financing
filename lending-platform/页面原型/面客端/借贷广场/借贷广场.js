@@ -263,6 +263,15 @@
     if(value==='fromConsole'){fromConsole=true;try{sessionStorage.setItem('hc-ls-origin','console');}catch(_){}goto(p.id);}
     if(value==='deniedWrite')CF.toast(txt(errors.permission));D.sweep();D.save();
   }
+
+  [LIST,DETAIL,NEW].forEach(id=>CF.review.register(id, {
+    group:['Lending marketplace','借贷广场'],
+    states:id===LIST?['default','loading','empty','noresult','error','denied']:['default','loading','empty','error','denied'],
+    route:()=>id===LIST?'/marketplace':id===NEW?'/project/new':'/project/'+D.projects.find(p=>p.state!=='draft').id,
+    beforeChange(proceed){if(busy||S.layer){CF.toast(L('Finish or cancel the current operation first.','请先完成或取消当前操作。'));return;}proceed();},
+    reset(){S.st='default';reviewLoad='default';agreementFail=false;submitFail=false;}
+  }));
+
   CF.define(CF.LSView={id:'lending-marketplace',pages:[LIST,DETAIL,NEW],breadcrumbRoute:id=>id===LIST?CF.ENTRY[LIST]:null,dict:{en:{navHome:'Home',navAssets:'Asset marketplace',navPlaza:'Lending marketplace',navConsole:'My console',lsDetail:'Financing project',lsNew:'Create project'},zh:{navHome:'首页',navAssets:'资产广场',navPlaza:'借贷广场',navConsole:'我的控制台',lsDetail:'融资项目详情',lsNew:'创建融资项目'}},layers:Object.assign(layers,Q?Q.layers:{}),beforeRender:saveDetail,afterRender:restoreDetail,onBeforeAct(act,v,e){if(Q&&Q.beforeAct(act,e))return true;if(act==='closelayer'&&ownLayer()){if(busy)return true;if(S.layer.key==='discard'){S.layer=discardLayer.layer;flowRestore=discardLayer;discardLayer=null;return true;}requestClose();return true;}return false;},content(id){D.sweep();if(Q)Q.sweep();setTimeout(enhance,0);if(id===NEW)return newPage();if(id===DETAIL)return detailPage();return listPage();},onAct(act,v){
     if(Q&&Q.onAct(act,v))return true;
     const p=project();

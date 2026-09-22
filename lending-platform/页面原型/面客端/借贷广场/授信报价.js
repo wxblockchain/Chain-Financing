@@ -249,7 +249,8 @@
   }
   Q.organizeTools=()=>{
     const panel=document.getElementById('demoPanel');if(!S.demo||panel.querySelector('.cq-guide'))return;
-    const step=journeyStage(),p=pNow(),d=p&&D.current(p),old=document.createElement('div');while(panel.firstChild)old.append(panel.firstChild);
+    const host=panel.querySelector(':scope > .review-more > .review-more-body')||panel;
+    const step=journeyStage(),p=pNow(),d=p&&D.current(p),old=document.createElement('div');while(host.firstChild)old.append(host.firstChild);
     const root=document.createElement('div');root.className='cq-guide';
     root.innerHTML='<h3>'+L('Financing walkthrough','融资流程演示')+'</h3><div class="cq-demo-current"><span class="hint">'+L('Current stage','当前环节')+'</span><strong>'+(step+1)+'. '+L(...journeyLabels[step])+'</strong><p>'+L('Acting as: ','当前身份：')+L({asset:'Asset holder',fund:'Funder',guest:'Guest'}[S.role]||'Operations',{asset:'资产方',fund:'资金方',guest:'游客'}[S.role]||'运营端')+'</p><p class="hint">'+L('Next actor: ','下一步操作方：')+([0,3].includes(step)?L('Asset holder','资产方'):(step===4&&CF.L7?.deals.some(x=>x.project===p?.id&&x.state==='waiting')?L('Asset holder','资产方'):L('Funder','资金方')))+'</p><p class="mono hint">'+E(p?.id||L('No project selected','尚未选择项目'))+(d?' · '+requestState(d):'')+'</p>'+B('journey-continue','Continue this stage','办理当前环节','',true)+'</div><details class="cq-demo-group"><summary>'+L('Jump to a stage · resets example','选择流程起点 · 重置示例')+'</summary><p class="hint">'+L('Each start point resets demonstration data and sets the required identity.','切换起点会重置示例数据，并切换到该环节的操作身份。')+'</p><ol class="cq-journey">'+journeyLabels.map((x,i)=>'<li'+(i===step?' aria-current="step"':'')+'>'+B('journey',String(i+1)+'. '+x[0],String(i+1)+'. '+x[1],String(i))+'</li>').join('')+'</ol></details>';
     function group(en,zh,selectors){const box=document.createElement('details');box.className='cq-demo-group';box.innerHTML='<summary>'+L(en,zh)+'</summary><div class="cq-demo-controls"></div>';const target=box.lastElementChild;selectors.forEach(selector=>old.querySelectorAll(selector).forEach(node=>{const control=node.matches('input,select')?node.closest('.field,.ls-check')||node:node.matches('[data-act=cq-event]')?node.closest('p'):node;target.append(control);}));if(target.childNodes.length)root.append(box);}
@@ -260,7 +261,7 @@
     group('5 · Disbursement and receipt scenarios','5 · 放款与确认场景',['.ln-demo']);
     group('Permissions & notification events','权限与通知事件',['[data-act=cq-demo][data-v=other]','[data-act=cq-demo][data-v=denied]','[data-act=ls-demo-event][data-v=deniedWrite]','[data-act=ls-demo-event][data-v=fromConsole]','[data-act=ls-pledge-notifications]','[data-act=cq-event]']);
     root.insertAdjacentHTML('beforeend','<p class="why">'+L('Local demonstration only. Close this panel to use the product. Disbursement continues in the same project.','仅本地演示；关闭工具后可操作产品页面。放款在当前项目中继续办理。')+'</p>');
-    old.querySelectorAll('[data-act=ls-demo-event][data-v=reset]').forEach(x=>root.append(x));panel.append(root);panel.classList.add('cq-demo-panel');
+    old.querySelectorAll('[data-act=ls-demo-event][data-v=reset]').forEach(x=>root.append(x));host.append(root);panel.classList.add('cq-demo-panel');
   };
 
   Q.layers={'cq-flow':()=>{if(S.layer)S.layer.type=flow.stage==='request'&&!flow.result?'drawer':'modal';const p=pFlow(),q=qFlow(),c=p&&credit(p);let title='',html='',foot=B('close','Cancel','取消');const loading=busy?note('Submitting…','正在提交…'):'';if(['intent','credit','quote','confirm'].includes(flow.stage)&&!creditWritable())return {title:L('Access unavailable','无法办理'),html:note('Your identity changed. Close and reopen with the correct account.','身份已变化，请关闭后以正确账号重新办理。','warn'),foot:B('close','Close','关闭')};

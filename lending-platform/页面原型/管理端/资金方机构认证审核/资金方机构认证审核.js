@@ -128,6 +128,15 @@
       return{title:L('Preview','预览'),html:R.materialPreview(v.form,v.fields),foot:btn('Close','关闭','cancel')+btn('Download','下载','material-download')};
     }
   };
+
+  ['P-L40','P-L41'].forEach(id=>CF.review.register(id,{
+    group:['Institution review','机构认证审核'],
+    states:id==='P-L40'?['default','loading','empty','noresult','error']:['default','loading','error'],
+    route:()=>id==='P-L40'?'/ops/institution-reviews':detailRoute(rows()[0]?.id||'DEMO-REG-001'),
+    reset(){S.st='default';A.material='ready';A.response='success';A.error='';},
+    beforeChange(proceed){if(A.busy||A.pending){CF.toast(L('Finish or cancel the review first.','请先完成或取消审核。'));return;}proceed();}
+  }));
+
   function demo(){return `<section class="rv-demo"><h5>${L('Certification review · demo tools','机构认证审核 · 演示工具')}</h5><p>${L('Local demonstration data. No real document, email or review service is contacted.','本地演示数据，不连接真实材料、邮件或审核服务。')}</p><div>${btn('Operations','运营端','ops')}${btn('Applicant','资金方本人','applicant')}</div><label for="rv-response">${L('Next review response','下次审核响应')}</label><select id="rv-response" class="inp">${[['success','Success','成功'],['failed','Failed','失败'],['unknown','Unknown result','结果未知'],['duplicate','Duplicate institution','通过时查重冲突'],['stale','Already processed','他人已处理'],['session','Session expired','登录失效']].map(o=>`<option value="${o[0]}" ${A.response===o[0]?'selected':''}>${L(o[1],o[2])}</option>`).join('')}</select><div class="seg">${btn('Expire operations session','运营登录失效','expire-session')}${btn('Material failure','材料加载失败','material-fail')}${btn('Duplicate on submit','提交时机构重复','duplicate')}${btn('5 submits / 24 hours','24 小时已提交 5 次','limit')}${btn('Hypothetical template upgrade','假设模版升级','template-upgrade')}${btn('Clear submit constraints','恢复提交条件','clear-constraints')}${btn('Attempt stale write','尝试旧页面处置','attempt')}${btn('Reset review dataset','重置审核样例','seed')}</div><p>${L('Use Applicant to follow the same application through resubmission. Existing funder tools remain available below.','点击资金方本人可查看同一申请并重提；下方保留既有资金方工具。')}</p></section>`;}
   function seed(){
     R.state.activeTemplate='DEMO-1';R.seed('submitted');const a=R.account;a.version=2;a.submitted='2026-09-18T02:30:00Z';a.form.name='Demo Institution A';a.form.identifier='DEMO-REG-100';a.submittedFields=R.fields();a.submittedForm=copy(a.form);a.accountId='DEMO-FUNDER';a.records=[{sequence:1,submitter:a.accountId,status:'rejected',submitted:'2026-09-16T01:00:00Z',reviewed:'2026-09-17T03:00:00Z',reviewer:'DEMO-OP-02',additional:'登记号与材料不一致，请核对并填写完整编号。',issues:[]},R.recordOf(a)];delete a.history;delete a.boundIdentity;a.issues=[];a.additional='';a.successTimes=[];a.template='DEMO-1';R.persist();

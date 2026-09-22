@@ -44,6 +44,14 @@
     render(mod){module=mod;return '<div class="nav-group">'+CF.L('Operations','运营管理')+'</div>'+entries.filter(e=>e.sidebar&&allowed(e)).map(e=>link(e,'nav-item')).join('')},
     tools(mod){if(mod)module=mod;if(!can(14))return '';const user=identity(),expanded=CF.S.menu==='shared-account';return `<div class="dd admin-account"><button id="admin-account-trigger" class="dd-btn" data-act="admin-account" aria-haspopup="menu" aria-controls="admin-account-menu" aria-expanded="${expanded}" title="${CF.esc(user.email)}"><span class="admin-account-email">${CF.esc(user.email)}</span> ${CF.ICON.caret}</button>${expanded?`<div class="dd-list" id="admin-account-menu" role="menu" aria-label="${CF.L('Account menu','账户菜单')}"><div class="admin-account-role">${CF.esc(user.role==='specialist'?CF.L('Operations specialist','运营专员'):CF.L('Administrator','管理员'))}</div>${this.link('messages')}${this.link('settings')}<button role="menuitem" data-act="admin-logout">${CF.L('Sign out','退出登录')}</button></div>`:''}</div>`}
   };
+  // Cross-document page entries use the existing navigation and permission guards.
+  entries.forEach(e=>CF.review.register(e.page,{
+    group:['Operations modules','管理端模块'],label:e.label,visible:()=>allowed(e),
+    navigate(){
+      if(window.AdminPrototypeBundle)window.AdminPrototypeBundle.reviewOpen=true;
+      go(e.key);
+    }
+  }));
   CF.NAV.admin=entries.filter(e=>e.sidebar).map(e=>e.page);
   if(CF.S){try{CF.S.lang=localStorage.getItem('hc.ops.language')||CF.S.lang}catch(_){}}
   document.addEventListener('click',event=>{

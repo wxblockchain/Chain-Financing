@@ -316,6 +316,14 @@ function act(action,v,e){if(!action.startsWith('ag-'))return false;let a=current
  default:return false;
  }return true;
 }
+
+Object.values(P).forEach(id=>CF.review.register(id,{
+  group:['Agreements','协议管理'],states:id===P.list?['default','loading','empty','noresult','error','denied']:['default','loading','error','denied'],
+  route:()=>{if(id===P.list)return '/ops/agreements';const a=id===P.edit?(target(current())?current():db.agreements.find(a=>target(a))):(current()||db.agreements[0]);if(!a)return null;const v=id===P.edit?target(a):a.versions[0];return route(id,{id:a.id,v:v?.n});},
+  reset(){S.st='default';failure='';previewFailed=false;activityState='default';},
+  beforeChange(proceed){CF.AdminMenu.beforeLeave(proceed);}
+}));
+
 CF.define({id:'operations-agreements',beforeAdminNavigate(proceed){if(busy||uploading){CF.toast(L('Wait for the current operation to finish.','请等待当前操作完成。'));return}if(dirty){pending={kind:'leave',a:current()?.id,navigate:proceed};CF.openLayer('modal','agConfirm');return}remember();proceed()},dict:{en:{navAgreements:'Agreements',navGroupOps:'Operations',navAgreementDetail:'Agreement details',navAgreementEdit:'Update agreement',navAgreementVersion:'Version details'},zh:{navAgreements:'协议管理',navGroupOps:'运营管理',navAgreementDetail:'协议详情',navAgreementEdit:'更新协议',navAgreementVersion:'版本详情'}},breadcrumbRoute:id=>id===P.list?(viewHash||listHash()).replace(/^#/,''):id===P.detail?route(P.detail,{tab:S.page===P.version?'history':tab}).slice(1):null,allowNav:id=>id===P.list&&canQuery(),adminContext:()=>({name:L('Operations personnel','运营人员'),subtitle:L('Demonstration data','演示数据'),hideNotifications:true}),demoOnly:true,demo,content:renderContent,beforeRender,afterRender,onBeforeAct:beforeAct,onAct:act,layers:{agWorkPreview:workPreviewLayer,agAuditFile:auditLayer,agConfirm:confirmLayer},onRoute:(prev,next)=>{if(prev===P.edit&&next!==P.edit){work=null;errors={};}routeChanged=true;oldHash=location.hash;}});
 // Guard before the shared router renders a destination, including browser Back.
 window.addEventListener('hashchange',e=>{

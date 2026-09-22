@@ -175,6 +175,15 @@
       action('normal','Valid deep link','正常深链')+action('guest','Signed-out deep link','未登录深链')+action('denied','Restricted deep link','无权限深链')+action('unknown','Unknown deep link','未知深链')+
       action('landing','Deny next landing','下次落地重判权失败')+'</div><p class="tiny">'+L('Local demonstration data. Refresh attempts: ','本地演示数据。刷新次数：')+refreshes+'</p></div>';
   }
+
+  [LIST,DETAIL].forEach(id=>CF.review.register(id,{
+    group:['Notifications','消息中心'],
+    states:()=>!N.allowed()?['default']:id===LIST?['default','loading','empty','noresult','error','denied']:['default','loading','error','denied'],
+    route:()=>id===LIST?'/notifications':N.visible()[0]?'/notification?id='+encodeURIComponent(N.visible()[0].id):null,
+    set(value){resetView();detailFailure=readError=false;S.st=value;},
+    reset(){detailFailure=readError=failRead=failMore=refreshFail=landingDenied=false;S.st='default';}
+  }));
+
   CF.define(CF.NCView={id:'portal-notifications',pages:[LIST,DETAIL],
     dict:{en:{navNotifications:'Notifications',navNotification:'Message details'},zh:{navNotifications:'消息中心',navNotification:'消息详情'}},demo,
     breadcrumbRoute(id){return id===LIST&&view?view.hash.slice(1):null;},

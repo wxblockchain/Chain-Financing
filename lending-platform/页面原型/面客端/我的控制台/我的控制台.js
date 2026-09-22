@@ -226,6 +226,19 @@
  }
  function backBanner(){const back=safeRoute(params().get('mcReturn'));return back&&allowed()?'<div class="mc-return"><span>'+L('Opened from My console','来自我的控制台')+'</span>'+b('return',back.split('?')[0]==='#/console'?L('Return to console list','返回控制台列表'):L('Return to console details','返回控制台详情'),back)+'</div>':'';}
  function reviewTools(){return '<div class="grp"><h5>'+L('Console review states','控制台核验状态')+'</h5>'+[['normal','Normal','正常'],['loading','Detail loading','详情加载中'],['error','Detail error','详情加载失败'],['stale','Action expired','动作失效'],['stats','Summary error','单项统计失败'],['tokens-error','Token snapshot error','代币读取失败'],['association-error','Association error','关联读取失败'],['plan-error','Plan unavailable','还款计划加载失败'],['session','Session expired','登录失效']].map(([v,en,zh])=>b('scenario',L(en,zh),v)).join('')+'<p class="hint">'+L('Fixtures are shared with the marketplace; no real payment is made.','演示数据与广场共用；不发起真实付款。')+'</p></div>';}
+
+ CF.review.register('P-MC-01',{group:['My console','我的控制台'],route:'/console',
+   states:()=>allowed()?['default','loading','empty','noresult','error','denied']:['default'],
+   reset(){S.st='default';statsError=tokenError=associationError=planError=false;}});
+ kinds.forEach((k,i)=>CF.review.register('P-MC-0'+(i+2),{
+   group:['My console · details','我的控制台 · 详情'],visible:()=>tabs().includes(k),
+   states:()=>allowed()?['default','loading','error','denied']:['default'],
+   route:()=>{const r=normalized(k)[0];return r?detailHref(k,r.id):null;},
+   get:()=>S.st==='denied'?'denied':detailState==='normal'?'default':detailState,
+   set(value){S.st=value==='denied'?'denied':'default';detailState=['loading','error'].includes(value)?value:'normal';},
+   reset(){S.st='default';detailState='normal';statsError=tokenError=associationError=planError=false;}
+ }));
+
  const mod={...old,id:'my-console-v13',pages:['P-MC-01',...kinds.map((_,i)=>'P-MC-0'+(i+2))],dict,
    content(id){if(id==='P-MC-01')return listing();const i=kinds.findIndex((_,i)=>id==='P-MC-0'+(i+2));return detail(kinds[i]);},
    breadcrumbRoute(id){return id==='P-MC-01'?listRoute(path().split('/')[2]||tabs()[0]).slice(1):old.breadcrumbRoute?.(id);},

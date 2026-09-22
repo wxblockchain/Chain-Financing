@@ -228,6 +228,16 @@
     remember();
   },true);
   const dict={en:{navGroupOps:'Operations',navPledgeReviews:'Pledge reviews',navPledgeReviewDetail:'Application detail'},zh:{navGroupOps:'运营管理',navPledgeReviews:'质押审核',navPledgeReviewDetail:'单笔审核详情'}};
+
+  [Q,D].forEach(id=>CF.review.register(id,{
+    group:['Pledge reviews','代币质押审核'],
+    states:id===Q?['default','loading','empty','noresult','error','denied']:['default','loading','error','denied'],
+    route:()=>id===Q?ROOT:detailRoute(A.rows[0].id),
+    get:()=>A.view,set(value){A.view=value;S.st=value;},
+    reset(){A.view='default';S.st='default';A.response=A.upload=A.preview='success';A.activityState='default';},
+    beforeChange(proceed){CF.AdminMenu.beforeLeave(proceed);}
+  }));
+
   CF.define({id:'pledge-review',beforeAdminNavigate(proceed){if(A.busy||A.draft){CF.toast(L('Finish or cancel the current review first.','请先完成或取消当前审核。'));return}remember();proceed()},dict,content,layers,onAct,demoOnly:true,demo,
     allowNav:id=>id===Q&&canRead(),adminContext:()=>({name:L('Demo operator Lin','示例审核员林'),subtitle:A.role==='review'?L('Query + review','查询＋处置'):L('Restricted access','受限权限'),hideNotifications:true}),
     breadcrumbRoute:id=>id===Q?queueRoute():null,beforeRender(){S.toTop=false;syncContext();},afterRender:restoreView,

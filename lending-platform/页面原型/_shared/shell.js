@@ -428,9 +428,153 @@
     }).join("") + "</div>";
   }
 
+  /* Shared review navigation. Page adapters own fixtures; the shell never seeds business data. */
+  var reviewPages = {}, reviewActive = null, reviewObserver = null;
+  var reviewSearch = '', reviewMore = false, reviewFocus = '';
+  var reviewNames = {
+    default: ['Default', '默认'], loading: ['Loading', '加载中'], empty: ['Empty', '空数据'],
+    noresult: ['No results', '筛选无结果'], error: ['Load failed', '加载失败'], denied: ['No access', '无权限']
+  };
+  function reviewText(value) { return Array.isArray(value) ? L(value[0], value[1]) : value; }
+  function reviewCurrent() {
+    return Object.keys(reviewPages).find(function (id) {
+      return id === S.page || (reviewPages[id].aliases || []).indexOf(S.page) >= 0;
+    });
+  }
+  function reviewStates(config) {
+    return (typeof config.states === 'function' ? config.states() : config.states || ['default']).map(function (state) {
+      return typeof state === 'string' ? {id: state, label: reviewNames[state] || [state, state], group: 'feedback'} : state;
+    });
+  }
+  function reviewClear() {
+    if (reviewActive && reviewPages[reviewActive]) {
+      var config = reviewPages[reviewActive];
+      if (config.reset) config.reset(); else S.st = 'default';
+    }
+    reviewActive = null;
+  }
+  function reviewSync() {
+    if (reviewActive && reviewActive !== reviewCurrent()) reviewClear();
+  }
+  function reviewApply(value) {
+    var id = reviewCurrent(), config = reviewPages[id];
+    if (!config || !reviewStates(config).some(function (state) { return state.id === value; })) return;
+    if (S.layer) return;
+    var proceed = function () {
+      reviewClear();
+      reviewActive = id; S.menu = null;
+      if (config.set) config.set(value); else S.st = value;
+      S.demo = true; render();
+      queueMicrotask(function () { decorateReview(); $('review-state')?.focus({preventScroll:true}); });
+    };
+    if (config.beforeChange) config.beforeChange(proceed); else proceed();
+  }
+  function reviewGo(id) {
+    var config = reviewPages[id];
+    if (!config || !CF.PAGES[id] || CF.PAGES[id].end !== S.end || S.layer) return;
+    var proceed = function () {
+      reviewClear(); S.st = 'default'; S.menu = null; reviewSearch = ''; reviewMore = false; reviewFocus = 'review-page';
+      if (config.navigate) { config.navigate(); return; }
+      if (config.reset) config.reset();
+      var route = typeof config.route === 'function' ? config.route() : config.route || CF.ENTRY[id];
+      if (!route) { CF.toast(L('Open a record from its list first.', '请先从列表选择一条记录。')); decorateReview(); return; }
+      if (config.enter) config.enter();
+      if (location.hash !== '#' + route.replace(/^#/, '')) location.hash = '#' + route.replace(/^#/, '');
+      else render();
+    };
+    var current = reviewPages[reviewCurrent()];
+    if (current && current.beforeChange) current.beforeChange(proceed);
+    else if (S.end === 'admin' && CF.AdminMenu) CF.AdminMenu.beforeLeave(proceed);
+    else proceed();
+  }
+  function reviewOptions() {
+    var groups = {}, current = reviewCurrent(), query = reviewSearch.toLocaleLowerCase().trim();
+    Object.keys(reviewPages).forEach(function (id) {
+      var config = reviewPages[id], page = CF.PAGES[id];
+      if (!page || page.end !== S.end || config.visible && !config.visible()) return;
+      var label = reviewText(config.label) || t(page.navKey || page.crumbKey);
+      if (query && id !== current && (id + ' ' + label).toLocaleLowerCase().indexOf(query) < 0) return;
+      var group = reviewText(config.group) || L('Pages', '页面');
+      (groups[group] || (groups[group] = [])).push('<option value="' + esc(id) + '"' + (id === current ? ' selected' : '') + '>' + esc(label + ' · ' + id) + '</option>');
+    });
+    return (!current ? '<option value="">' + L('Choose a page', '选择页面') + '</option>' : '') + Object.keys(groups).map(function (key) {
+      return '<optgroup label="' + esc(key) + '">' + groups[key].join('') + '</optgroup>';
+    }).join('');
+  }
+  function decorateReview() {
+    var panel = $('demoPanel');
+    if (!panel || panel.hidden) return;
+    if (reviewObserver) reviewObserver.disconnect();
+    var header = panel.querySelector(':scope > .review-switcher');
+    var more = panel.querySelector(':scope > .review-more');
+    if (!header) { header = document.createElement('section'); header.className = 'review-switcher'; panel.prepend(header); }
+    if (!more) {
+      more = document.createElement('details'); more.className = 'review-more'; more.open = reviewMore;
+      var summary = document.createElement('summary'); summary.textContent = L('More simulations', '更多模拟'); more.append(summary);
+      var body = document.createElement('div'); body.className = 'review-more-body'; more.append(body); panel.append(more);
+      more.addEventListener('toggle', function () { reviewMore = more.open; });
+    }
+    Array.from(panel.childNodes).forEach(function (node) { if (node !== header && node !== more) more.lastElementChild.append(node); });
+    var retainedFocus = header.contains(document.activeElement) && document.activeElement.id;
+    if (panel.firstElementChild !== header) panel.prepend(header);
+    // Legacy whole-page selectors move to the canonical state control, without duplicating them.
+    more.querySelectorAll('[data-act="ops-state"], [data-act="ag-state"], [data-act="om-scene"]').forEach(function (button) {
+      var group = button.parentElement;
+      if (group && Array.from(group.children).every(function (child) { return child.matches('[data-act="ops-state"], [data-act="ag-state"], [data-act="om-scene"]'); })) {
+        if (group.previousElementSibling?.tagName === 'H5') group.previousElementSibling.hidden = true;
+        group.hidden = true;
+      }
+    });
+    var legacyState = more.querySelector('#pr-view');
+    if (legacyState) legacyState.closest('.field').hidden = true;
+    var current = reviewCurrent(), config = reviewPages[current];
+    var states = config ? reviewStates(config) : [];
+    var value = config ? (config.get ? config.get() : S.st) : '';
+    var groups = {}, groupLabels = {feedback: L('Interface feedback', '界面反馈'), business: L('Business states', '业务状态'), step: L('Flow steps', '流程步骤')};
+    states.forEach(function (state) {
+      var group = groupLabels[state.group] || reviewText(state.group) || groupLabels.feedback;
+      (groups[group] || (groups[group] = [])).push('<option value="' + esc(state.id) + '"' + (state.id === value ? ' selected' : '') + '>' + esc(reviewText(state.label)) + '</option>');
+    });
+    var live = config && !states.some(function (state) { return state.id === value; });
+    var active = document.activeElement, focusId = retainedFocus || (header.contains(active) && active.id);
+    header.innerHTML = '<div class="review-heading"><strong>' + L('Prototype review', '原型评审') + '</strong><span>' + L('Simulation only', '仅模拟') + '</span></div>' +
+      '<label for="review-search">' + L('Find a page', '查找页面') + '</label><input class="inp" id="review-search" type="search" value="' + esc(reviewSearch) + '" placeholder="' + L('Page name or ID', '页面名称或编号') + '">' +
+      '<label for="review-page">' + L('1 · Page', '1 · 页面') + '</label><select class="inp" id="review-page"' + (S.layer ? ' disabled' : '') + '>' + reviewOptions() + '</select>' +
+      (config && config.step ? '<p class="review-step">' + esc(L('Current step: ', '当前步骤：') + config.step()) + '</p>' : '') +
+      '<label for="review-state">' + L('2 · State', '2 · 状态') + '</label><select class="inp" id="review-state"' + (!states.length || S.layer ? ' disabled' : '') + '>' +
+      (live ? '<option value="" selected disabled>' + L('Current flow', '当前流程状态') + '</option>' : '') +
+      (!states.length ? '<option>' + L('Follow the page flow', '通过页面流程触发') + '</option>' : Object.keys(groups).map(function (group) { return '<optgroup label="' + esc(group) + '">' + groups[group].join('') + '</optgroup>'; }).join('')) + '</select>' +
+      '<button class="btn" type="button" data-act="review-reset"' + (!config || S.layer ? ' disabled' : '') + '>' + L('Restore default', '恢复默认') + '</button>';
+    if (reviewFocus || focusId) { $(reviewFocus || focusId)?.focus({preventScroll:true}); reviewFocus = ''; }
+    if (reviewObserver) reviewObserver.observe(panel, {childList:true});
+  }
+  CF.review = {
+    register: function (id, config) { reviewPages[id] = config; },
+    setTools: function (html) {
+      var panel = $('demoPanel');
+      var host = panel.querySelector(':scope > .review-more > .review-more-body') || panel;
+      host.innerHTML = html;
+    },
+    pages: reviewPages, current: reviewCurrent, refresh: decorateReview
+  };
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && S.demo && !S.layer && event.target.closest('#demoPanel')) {
+      event.preventDefault(); event.stopImmediatePropagation(); S.demo = false; renderDemo(); $('demoBtn').focus();
+    }
+  }, true);
+  document.addEventListener('input', function (event) {
+    if (event.target.id !== 'review-search') return;
+    reviewSearch = event.target.value; $('review-page').innerHTML = reviewOptions();
+  });
+  document.addEventListener('change', function (event) {
+    if (event.target.id === 'review-page') reviewGo(event.target.value);
+    if (event.target.id === 'review-state') reviewApply(event.target.value);
+  });
+
   function renderDemo() {
     $("demoBtn").textContent = S.demo ? L("Close demo tools", "关闭演示工具") : L("Demo tools", "演示工具");
     var panel = $("demoPanel");
+    $("demoBtn").setAttribute("aria-expanded", String(S.demo));
     $("demoBtn").hidden = !!S.layer && !(M && M.reviewToolsInLayer);
     panel.hidden = !S.demo || !!S.layer && !(M && M.reviewToolsInLayer);
     if (panel.hidden) return;
@@ -442,10 +586,6 @@
       '<div class="grp"><h5>' + L("Deployment unit", "部署单元") + "</h5>" +
       seg("end", S.end, [["asset", L("Customer-facing", "面客端")], ["admin", L("Operations console", "管理端")]]) + "</div>" +
       '<div class="grp"><h5>' + L("Identity", "身份") + "</h5>" + seg("role", S.role, roles) + "</div>" +
-      '<div class="grp"><h5>' + L("Page state", "页面状态") + "</h5>" +
-      seg("st", S.st, [["default", L("Default", "默认")], ["loading", L("Loading", "加载中")],
-        ["empty", L("Empty", "空数据")], ["noresult", L("No results", "筛选无结果")],
-        ["error", L("Load failed", "加载失败")], ["denied", L("No access", "无权限")]]) + "</div>" +
       '<p class="why">' + L(
         "These switches exist for review only. They are not part of the product: the two deployment units ship separately and a visitor never switches identity in place.",
         "这些开关只为评审存在，不是产品功能：两个部署单元分开上线，访客也不会在页面里就地切换身份。") + "</p>" + (M && M.demo ? M.demo() : "");
@@ -531,8 +671,10 @@
   /* ------------------------------------------------------------ 渲染 */
   function render() {
     var active = document.activeElement;
+    if (!reviewFocus && active?.closest('.review-switcher') && active.id) reviewFocus = active.id;
     var focusKey = active && active.id;
     var focusAct = active && active.getAttribute("data-act"), focusV = active && active.getAttribute("data-v");
+    reviewSync();
     if (M && M.beforeRender) M.beforeRender();
     if (!N.allowed() && S.menu === "notifications") S.menu = null;
     document.documentElement.setAttribute("data-end", S.end);
@@ -629,7 +771,8 @@
     }
     if (act === "role") { S.role = v; S.menu = null; S.layer = null; resetList(); render(); return; }
     if (act === "st") { S.st = v; S.layer = null; resetList(); render(); return; }
-    if (act === "demo") { S.demo = !S.demo; render(); return; }
+    if (act === "review-reset") { reviewApply("default"); return; }
+    if (act === "demo") { S.demo = !S.demo; render(); if (!S.demo) $("demoBtn").focus(); return; }
     if (act === "closelayer") {
       if (el.hasAttribute("data-stop") || (el.classList.contains("modal-mask") && e.target.closest("[data-stop]"))) return;
       CF.closeLayer(); return;
@@ -709,6 +852,7 @@
   };
 
   CF.boot = function () {
+    if (window.AdminPrototypeBundle?.reviewOpen) { S.demo = true; window.AdminPrototypeBundle.reviewOpen = false; }
     S.tz = resolveTz();
     syncRoute(true);
     document.addEventListener("click", onClick);
@@ -725,6 +869,9 @@
       render();
     });
     $("demoBtn").setAttribute("data-act", "demo");
+    $("demoBtn").setAttribute("aria-controls", "demoPanel");
+    reviewObserver = new MutationObserver(decorateReview);
+    reviewObserver.observe($("demoPanel"), {childList:true});
     render();
   };
 })(window.CF = window.CF || {});

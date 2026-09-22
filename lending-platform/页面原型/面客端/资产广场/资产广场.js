@@ -632,6 +632,12 @@
   var refocus = null;
 
   CF.renderFooter = renderFoot;
+
+  CF.review.register(LIST, {group:['Assets','资产广场'], states:['default','loading','empty','noresult','error','denied'],
+    route:'/assets', set(value){cancelLoad();S.st=value;}, reset(){cancelLoad();failNext=false;S.st='default';}});
+  CF.review.register(DETAIL, {group:['Assets','资产广场'], states:['default','denied'],
+    route:()=>'/assets/'+AM.TOKENS[0].no});
+
   CF.define({
     id: "portal-asset-marketplace",
     pages: [LIST, DETAIL],

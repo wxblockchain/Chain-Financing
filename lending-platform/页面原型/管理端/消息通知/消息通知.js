@@ -81,6 +81,15 @@ if(k==='reset'){rows=D.seed();for(const r of rows)put(identity()+'.'+r.id,'');fa
 return false;
 }
 N.configure({blocked:()=>revoked,visible,from:()=>S.page===P?hash():backHash,failPanel(){const failed=fault==='panel';if(failed)fault='';return failed},onRows(value){rows=value}});
+
+CF.review.register(P,{group:['Notifications','消息中心'],route:LIST,states:()=>allowed()?['default','loading','empty','noresult','error']:['default'],
+  get:()=>scene,set(value){scene=value;listCache=null;},reset(){scene='default';fault='';pageError=false;listCache=null;}
+});
+CF.review.register(PD,{group:['Notifications','消息中心'],route:()=>visible()[0]?detailURL(visible()[0].id):null,
+  states:()=>allowed()?['default','loading','error']:['default'],get:()=>detailState==='ready'?'default':detailState,
+  set(value){epoch++;detailState=value==='default'?'ready':value;},reset(){epoch++;detailState='ready';fault='';}
+});
+
 const module={...A,id:'ops-messages',reviewToolsInLayer:false,dict:{en:{...A.dict.en,navOpsMessages:'Notifications',navOpsMessageDetail:'Notification details'},zh:{...A.dict.zh,navOpsMessages:'消息中心',navOpsMessageDetail:'消息详情'}},demo,breadcrumbRoute:id=>id===P?backHash.slice(1):null,content:id=>id===P?list():id===PD?detail():(id==='P-O-AL-06'&&allowed()&&safeMessage(params().get('from'))?`<a class="nc-back" id="om-source" href="${E(safeMessage(params().get('from')))}">← ${L('Return to notification','返回原消息')}</a>`:'')+A.content(id),beforeRender,afterRender,layers:{...A.layers,'om-batch':batchLayer,'om-target':id=>({title:L('Application preview','申请速览'),html:`<p class="ops-sample">${L('Demonstration record','演示业务记录')}</p><dl class="om-record"><dt>${L('Application reference','申请编号')}</dt><dd>${E(rows.find(r=>r.id===id)?.ref||'DEMO-0001')}</dd><dt>${L('Institution','机构名称')}</dt><dd>${L('Demo Institution A','演示机构 A')}</dd><dt>${L('Status','状态')}</dt><dd>${L('Pending review','待审核')}</dd></dl>`,foot:B('target-close','Back to message','返回消息')})},onBeforeAct(act,v,e){if(batchBusy)return true;if(act==='om-target-close'){CF.closeLayer();return true}if(act==='ops-notifications'&&revoked)return true;return A.onBeforeAct(act,v,e)},onAct:(a,v,e)=>{const handled=act(a,v,e);if(handled&&['om-detail-demo','om-overflow','om-incoming','om-new','om-reset'].includes(a))N.replaceRows(rows);return handled||A.onAct(a,v,e)},onRoute(prev,next){if(prev===P)saveContext();epoch++;batchBusy=false;batch=null;pageBusy=false;detailKey='';detailState='';if(next===P){activeListHash='';restore=false}if(next===PD)requestAnimationFrame(()=>window.scrollTo(0,0));A.onRoute(prev,next)}};
 CF.define(module);CF.opsAuth.seedDemo();S.end='admin';S.role='ops';
 if(!location.hash||location.hash==='#/')location.hash='#'+LIST;
