@@ -207,7 +207,14 @@
   function resetList() { S.shown = CF.PAGE_SIZE; S.pageNo = 1; S.toTop = true; }
   CF.resetList = resetList;
 
-  function navItems() { return (CF.NAV[S.end] || []).filter(function (id) { return CF.PAGES[id] && (!M || !M.allowNav || M.allowNav(id)); }); }
+  /* 未登录访客看不到需要登录的导航入口；页面本身仍可由深链或评审目录打开，展示其登录引导。 */
+  function navItems() {
+    return (CF.NAV[S.end] || []).filter(function (id) {
+      if (!CF.PAGES[id]) return false;
+      if (CF.PAGES[id].auth && S.end === "asset" && S.role === "guest") return false;
+      return !M || !M.allowNav || M.allowNav(id);
+    });
+  }
 
   function renderPortalNav() {
     var html = navItems().map(function (id) {
