@@ -4,8 +4,10 @@
  */
 (function (CF) {
   'use strict';
-  const KEY = CF.LSStorageKey || 'hc-ws351-demo-v2', DAY = 86400000;
+  const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
+  /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
+  D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
   D.now = () => Date.now() + D.offset;
   D.iso = () => new Date(D.now()).toISOString();
   D.save = () => { try { localStorage.setItem(KEY, JSON.stringify({projects:D.projects,tokens:D.tokens,applications:D.applications,executions:D.executions,events:D.events,offset:D.offset,serial:D.serial})); } catch (_) {} };
@@ -26,6 +28,7 @@
   D.quoteFee = id => { const t=D.token(id);return {amount:t.feeEstimate??0.0004,currency:t.feeCurrency||'ETH'}; };
   D.agreement = a => ({id:'AGR-'+a.id,name:['Pledge agreement · '+a.id,'质押协议 · '+a.id]});
   D.normalize = () => {
+    D.projects.forEach(p=>{if(!p.kind)p.kind='ar';if(!p.spv)p.spv=D.SPV;});
     D.applications=D.applications.flatMap(a=>a.tokens.map((id,i)=>{
       const row={...a,id:a.tokens.length>1?a.id+'-'+(i+1):a.id,batch:a.batch||a.id,tokens:[id]};
       row.reviewState=a.reviewState||(['approved','executing','recorded','expired','void'].includes(a.state)?'approved':a.state);
@@ -53,8 +56,9 @@
       close:mine&&!terminal,canClose:mine&&!terminal&&!n.fly&&!p.balance&&!['locked','financing'].includes(p.state),
       quote:CF.S.role==='fund'&&current&&current.state==='open'&&!terminal&&!p.expired&&n.grade==='surplus'};
   };
-  D.candidates = () => D.tokens.filter(t => t.owner==='entity-demo-a'&&t.kind==='ar'&&t.valid&&t.pledge==='free'&&!t.frozen);
-  D.selectable = t => t && t.owner==='entity-demo-a'&&t.valid&&t.kind==='ar'&&t.pledge==='free'&&!t.pending&&!t.application&&!t.frozen;
+  D.kinds = () => [...new Set(D.tokens.filter(t => t.owner==='entity-demo-a').map(t => t.kind))];
+  D.candidates = p => D.tokens.filter(t => t.owner==='entity-demo-a'&&t.kind===(p?.kind||'ar')&&t.valid&&t.pledge==='free'&&!t.frozen);
+  D.selectable = (t,p) => t && t.owner==='entity-demo-a'&&t.valid&&t.kind===(p?.kind||'ar')&&t.pledge==='free'&&!t.pending&&!t.application&&!t.frozen;
   D.releaseApplication = a => a.tokens.forEach(id => { const t=D.token(id);if(t.application===a.id)t.application=null; });
   D.recompute = p => {
     let n=D.numbers(p);
@@ -80,12 +84,19 @@
     D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const n=D.numbers(p);if(!n.fly&&!p.balance&&!CF.L8?.hasUnsettled(p)){p.state='closed';p.closeReason='expiry';D.releasePool(p);}D.log(p,'projectExpired');changed=true;}});
     if(changed)D.save();return changed;
   };
-  D.submit = (p, ids, name) => {
-    if(CF.S.role!=='asset'||p&&!D.mine(p))throw Error('permission');
-    if(p&&D.terminal(p))throw Error('closed');
-    if(!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!D.selectable(D.token(id))))throw Error('selectionChanged');
-    if(!p){if(!name.trim()||[...name.trim()].length>60)throw Error('name');p={id:'FP-DEMO-'+(++D.serial),name:[name.trim(),name.trim()],owner:'entity-demo-a',state:'draft',balance:0,demands:[],created:D.iso(),published:null,expires:null};D.projects.unshift(p);D.log(p,'created');}
-    const batch='PA-DEMO-'+(++D.serial),submitted=D.iso(),type=p.demands.length||D.applications.some(a=>a.project===p.id)?'additional':'initial';
+  D.create = (name, kind) => {
+    if(CF.S.role!=='asset')throw Error('permission');
+    const title=(name||'').trim();
+    if(!title||[...title].length>60)throw Error('name');
+    if(!D.kinds().includes(kind))throw Error('kind');
+    const p={id:'FP-DEMO-'+(++D.serial),name:[title,title],owner:'entity-demo-a',kind,spv:D.SPV,state:'draft',balance:0,demands:[],created:D.iso(),published:null,expires:null};
+    D.projects.unshift(p);D.log(p,'created');D.save();return p;
+  };
+  D.submit = (p, ids) => {
+    if(CF.S.role!=='asset'||!p||!D.mine(p))throw Error('permission');
+    if(D.terminal(p))throw Error('closed');
+    if(!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!D.selectable(D.token(id),p)))throw Error('selectionChanged');
+    const batch='PA-DEMO-'+(++D.serial),submitted=D.iso(),type=D.numbers(p).valid.length?'additional':'initial';
     ids.forEach(id=>{const a={id:'RV-DEMO-'+(++D.serial),batch,project:p.id,type,tokens:[id],state:'review',reviewState:'review',submitted,decided:null};D.applications.push(a);D.token(id).application=a.id;D.log(p,'submitted',a.id);});
     D.save();return p;
   };
@@ -147,7 +158,7 @@
   D.seed = () => {
     D.projects=[];D.tokens=[];D.applications=[];D.executions=[];D.events=[];D.offset=0;D.serial=100;
     for(let i=1;i<=24;i++){
-      const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],published:new Date(D.now()-i*DAY).toISOString(),expires:new Date(D.now()+(365-i)*DAY).toISOString(),quotes:i===3?1:0};
+      const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',kind:'ar',spv:D.SPV,state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],published:new Date(D.now()-i*DAY).toISOString(),expires:new Date(D.now()+(365-i)*DAY).toISOString(),quotes:i===3?1:0};
       if(i!==5&&i!==6)p.demands.push({id:p.id+'-01',amount:i===4?500000:300000,state:i===4?'funded':i===3?'quoted':'open',at:p.published,tenorDays:i===3?90:i===4?120:null,rate:i===3?'6.40':i===4?'6.80':null,institution:i===3?['Demo Capital','演示资金机构']:null,quoteAt:i===3?p.published:null});
       D.projects.push(p);
       for(let j=1;j<=7;j++){const released=[5,6].includes(i);const value=j===7?100000:150000;
