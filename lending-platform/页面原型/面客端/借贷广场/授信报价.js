@@ -141,7 +141,9 @@
   const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:S.tz||'UTC',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(D.now()));
   function anniversary(years){const n=new Date(day()+'T12:00:00Z');n.setUTCFullYear(n.getUTCFullYear()+years);return n.toISOString().slice(0,10);}
   function reset(){db={quotes:[],credits:[],serial:10,lastAccounts:{},events:[]};const p=D.project('FP-DEMO-003'),d=p&&D.current(p);if(d?.state==='quoted'){const at=Date.parse(d.quoteAt);db.quotes.push({id:'FB-DEMO-0001',project:p.id,owner:p.owner,demand:d.id,amount:d.amount,ccy:'USD',rate:'6.40',settlement:d.amount,fx:{value:1,version:'FX-DEMO-001',at,source:['Lending platform · demo','借贷平台 · 演示']},at,end:at+168*H,state:'waiting',fund:'fund-a',repay:p.expires,progress:{account:{},step:1,confirmed:false,viewed:false,declared:false,uploads:[]}});d.institution=['Demo Capital A','演示资金机构 A'];}db.credits.push({id:'CR-DEMO-0001',owner:'entity-demo-a',fund:'fund-a',total:1500000,principal:100000,expires:anniversary(1),first:D.iso(),history:[]});save();}
-  try{db=JSON.parse(localStorage.getItem(KEY));if(!db?.quotes)reset();}catch(_){reset();}
+  try{db=CF.LSReseeded?null:JSON.parse(localStorage.getItem(KEY));if(!db?.quotes)reset();}catch(_){reset();}
+  // 项目已不存在的报价无法渲染，直接丢弃，避免整页在启动时崩掉。
+  if(db?.quotes){const kept=db.quotes.filter(q=>D.project(q.project));if(kept.length!==db.quotes.length){db.quotes=kept;save();}}
   // Correct legacy demo provenance without recalculating any accepted quote snapshot.
   db.quotes.forEach(q=>[q.fx,q.l7?.fx].filter(Boolean).forEach(fx=>{if(fx.version?.startsWith('FX-DEMO-')&&fx.source?.[0]==='Token issuance platform · demo')fx.source=['Lending platform · demo','借贷平台 · 演示'];}));
   Q.data=()=>db;

@@ -5,12 +5,14 @@
 (function (CF) {
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
+  /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
+  const SCHEMA = 'ws374-1';
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
   /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
   D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
   D.now = () => Date.now() + D.offset;
   D.iso = () => new Date(D.now()).toISOString();
-  D.save = () => { try { localStorage.setItem(KEY, JSON.stringify({projects:D.projects,tokens:D.tokens,applications:D.applications,executions:D.executions,events:D.events,offset:D.offset,serial:D.serial})); } catch (_) {} };
+  D.save = () => { try { localStorage.setItem(KEY, JSON.stringify({schema:SCHEMA,projects:D.projects,tokens:D.tokens,applications:D.applications,executions:D.executions,events:D.events,offset:D.offset,serial:D.serial})); } catch (_) {} };
   D.project = id => D.projects.find(p => p.id === id);
   D.token = id => D.tokens.find(t => t.id === id);
   D.mine = p => CF.S.role === 'asset' && p && p.owner === 'entity-demo-a';
@@ -171,6 +173,10 @@
     const pending=D.applications[2];pending.state=pending.reviewState='review';pending.decided=pending.approvedAt=pending.deadline=pending.agreement=pending.reviewer=null;
     D.applications.forEach(a=>D.log(D.project(a.project),a.state==='approved'?'approved':'submitted',a.id));D.save();
   };
-  try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved&&Array.isArray(saved.projects)&&saved.projects.length)Object.assign(D,saved);else D.seed();}catch(_){D.seed();}
+  try{
+    const saved=JSON.parse(localStorage.getItem(KEY));
+    if(saved&&saved.schema===SCHEMA&&Array.isArray(saved.projects)&&saved.projects.length){Object.assign(D,saved);delete D.schema;}
+    else {CF.LSReseeded=true;D.seed();}
+  }catch(_){CF.LSReseeded=true;D.seed();}
   D.normalize();D.sweep();
 })(window.CF);
