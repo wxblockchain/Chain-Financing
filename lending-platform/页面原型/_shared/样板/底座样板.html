@@ -68,5 +68,20 @@
 <script src="../sample-pages.js"></script>
 <script src="../../面客端/消息中心/演示数据.js"></script>
 <script src="../../面客端/消息中心/消息中心.js"></script>
+
+<!-- 共享运行时缺失时的兜底提示：整份原型依赖 _shared/ 下的样式与脚本，单独复制出的 HTML 无法运行。 -->
+<script>
+if (!window.CF) {
+  var notice = document.createElement('div');
+  notice.style.cssText = 'max-width:40rem;margin:14vh auto;padding:24px;border:1px solid #d5d9e0;border-radius:12px;' +
+    'font:14px/1.7 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;color:#1d2330;background:#fff';
+  notice.innerHTML = '<strong style="display:block;font-size:16px;margin-bottom:8px">原型未能加载 · Prototype could not load</strong>' +
+    '请从完整的「页面原型」目录打开本文件：共享样式与脚本在 _shared/ 下，单独复制出来的 HTML 打不开。' +
+    '需要单独发送的评审件请用 _shared/export.py 导出单文件版本。' +
+    '<br><br>Open this file from the complete prototype folder — the shared styles and scripts live in _shared/, ' +
+    'so a copied-out HTML cannot run. Use _shared/export.py to produce a self-contained review build.';
+  document.body.appendChild(notice);
+}
+</script>
 </body>
 </html>
