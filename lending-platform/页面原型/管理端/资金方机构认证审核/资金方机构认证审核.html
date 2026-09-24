@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="../../_shared/tokens.css">
 <link rel="stylesheet" href="../../_shared/base.css">
 <link rel="stylesheet" href="../../面客端/登录与账户体系/登录与账户体系.css">
+<link rel="stylesheet" href="../账户与登录/账户与登录.css">
 <style>
 .review-wrap .rv-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-5);align-items:start}
 .review-wrap .rv-grid.has-actions{grid-template-columns:minmax(0,1fr) 240px}
@@ -44,7 +45,7 @@
 .review-prototype .rv-demo label{display:block;margin:var(--sp-3) 0 var(--sp-2)}
 </style>
 </head>
-<body class="login-prototype review-prototype">
+<body class="login-prototype review-prototype ops-account">
 
 <!-- 面客端：官网顶栏骨架。官网层与工作区共用同一根顶栏，只有内容区节奏不同。 -->
 <div class="portal" id="portal" hidden>
@@ -110,6 +111,8 @@
 <script src="../../_shared/admin-notifications.js"></script>
 <script src="../../面客端/登录与账户体系/资金方账户.js"></script>
 <script src="../../面客端/登录与账户体系/登录与账户体系.js"></script>
+<script>CF.deferOpsBoot=true;</script>
+<script src="../账户与登录/账户与登录.js"></script>
 <script src="资金方机构认证审核.js"></script>
 
 <!-- 共享运行时缺失时的兜底提示：整份原型依赖 _shared/ 下的样式与脚本，单独复制出的 HTML 无法运行。 -->

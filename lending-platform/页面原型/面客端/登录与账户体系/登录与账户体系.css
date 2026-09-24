@@ -110,6 +110,8 @@
 .funder-field-label{font-size:var(--fs-13);font-weight:600}
 .funder-upload{background:var(--card-2);padding:var(--sp-5)}
 .funder-upload-empty,.funder-file-row{display:flex;align-items:center;gap:var(--sp-4)}
+.funder-upload .file-row:first-of-type{margin-top:0}
+.funder-upload-add{margin-top:var(--sp-4)}
 .funder-upload-empty>div{flex:1}
 .funder-upload-empty p{margin:var(--sp-1) 0 0}
 .funder-file-icon{display:grid;place-items:center;width:44px;height:44px;flex:none;background:var(--accent-soft);color:var(--accent);border-radius:var(--radius-sm);font-size:var(--fs-24)}
