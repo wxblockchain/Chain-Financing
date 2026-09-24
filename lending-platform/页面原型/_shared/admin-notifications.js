@@ -2,7 +2,7 @@
 (function(CF){
   'use strict';
   const D=CF.opsMessageDemo, S=CF.S, L=CF.L, E=CF.esc;
-  const DATA='hc.ops.message-pool.v1', READ='hc.ops.messages.v1.';
+  const DATA='hc.ops.message-pool.v2', READ='hc.ops.messages.v1.';
   const memory=new Map();
   let provider={},panel='closed',request=0,preview=[],currentReader='',refreshTimer=null;
   const read=key=>{try{return localStorage.getItem(key)}catch(_){return memory.get(key)||null}};

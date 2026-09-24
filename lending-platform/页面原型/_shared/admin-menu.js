@@ -41,7 +41,8 @@
   CF.AdminMenu={entries,go,can,identity,readIdentity,context:()=>module?.adminContext?.()||{},closeAccount:close,
     beforeLeave(proceed){if(module?.beforeAdminNavigate)module.beforeAdminNavigate(proceed);else proceed()},
     messageLink(id,from=''){const e=entries.find(e=>e.key==='messages');const q=new URLSearchParams({id});if(from)q.set('from',from);const route='/ops/notification?'+q;return {href:href(e,route),route}},
-    destination(key){const e=entries.find(e=>e.key===key);return e?{href:href(e),route:e.route}:null},
+    /* route 可选：跨模块目标带定位参数时传入，仍走同一份导航与权限守卫。 */
+    destination(key,route){const e=entries.find(e=>e.key===key);if(!e)return null;const to=route||e.route;return {href:href(e,to),route:to}},
     link:key=>{const e=entries.find(e=>e.key===key);return e&&allowed(e)?link(e,'','menuitem'):''},
     render(mod){module=mod;return '<div class="nav-group">'+CF.L('Operations','运营管理')+'</div>'+entries.filter(e=>e.sidebar&&allowed(e)).map(e=>link(e,'nav-item')).join('')},
     tools(mod){if(mod)module=mod;if(!can(14))return '';const user=identity(),expanded=CF.S.menu==='shared-account';return `<div class="dd admin-account"><button id="admin-account-trigger" class="dd-btn" data-act="admin-account" aria-haspopup="menu" aria-controls="admin-account-menu" aria-expanded="${expanded}" title="${CF.esc(user.email)}"><span class="admin-account-email">${CF.esc(user.email)}</span> ${CF.ICON.caret}</button>${expanded?`<div class="dd-list" id="admin-account-menu" role="menu" aria-label="${CF.L('Account menu','账户菜单')}"><div class="admin-account-role">${CF.esc(user.role==='specialist'?CF.L('Operations specialist','运营专员'):CF.L('Administrator','管理员'))}</div>${this.link('messages')}${this.link('settings')}<button role="menuitem" data-act="admin-logout">${CF.L('Sign out','退出登录')}</button></div>`:''}</div>`}
