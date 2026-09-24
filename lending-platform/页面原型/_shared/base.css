@@ -45,6 +45,12 @@ img,svg{max-width:100%}
 .btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
 .btn.ghost:hover{background:var(--card-hover);color:var(--text)}
 .btn.sm{height:var(--ctrl-h-sm);padding:0 12px;font-size:var(--fs-12)}
+/* 纯图标按钮：复制、放大等重复出现的功能不再写文字，靠图标 + 可访问名。 */
+.btn.icon{width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);min-height:0;padding:0;border-radius:var(--radius-sm);flex:none}
+.btn.icon svg{width:15px;height:15px}
+.btn.icon.bare{border-color:transparent;background:transparent;color:var(--faint)}
+.btn.icon.bare:hover{background:var(--card-hover);color:var(--accent)}
+.copy-pair{display:inline-flex;align-items:center;gap:4px;min-width:0;overflow-wrap:anywhere}
 .btn.block{width:100%}
 .btn[disabled],.btn[aria-disabled="true"]{opacity:.55;cursor:not-allowed;pointer-events:none}
 .btn .spinner{width:14px;height:14px;border-radius:var(--radius-pill);flex:none;
@@ -173,6 +179,18 @@ img,svg{max-width:100%}
   border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);transform:translateY(-2px) rotate(45deg)}
 .filterbar select.inp[data-on="1"]{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent);font-weight:600}
 .filterbar .fb:has(select[data-on="1"])>svg,.filterbar .fb:has(select[data-on="1"])::after{color:var(--accent);border-color:var(--accent)}
+.filterbar .fb-btn{height:var(--ctrl-h-sm);border-radius:var(--radius-pill);padding:0 16px 0 32px;width:auto;
+  min-width:0;font-size:var(--fs-13);background:var(--bg-elev);text-align:left;cursor:pointer;color:var(--text)}
+.filterbar .fb-btn[data-on="1"]{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.filterbar .fb-menu:has(.fb-btn[data-on="1"])>svg{color:var(--accent)}
+.fb-panel{position:absolute;top:calc(100% + 6px);left:0;z-index:var(--z-sticky);min-width:200px;max-height:320px;overflow:auto;
+  background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-soft);padding:var(--sp-2)}
+.fb-opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-xs);
+  font-size:var(--fs-13);cursor:pointer;min-height:36px}
+.fb-opt:hover{background:var(--card-hover)}
+.fb-opt input{width:16px;height:16px;flex:none;accent-color:var(--accent)}
+.fb-panel-acts{display:flex;gap:var(--sp-2);padding:var(--sp-2) 10px 4px;border-top:1px solid var(--border);margin-top:var(--sp-1)}
+.fb-panel-acts .btn{flex:1;height:var(--ctrl-h-sm);min-height:0;padding:0 10px;font-size:var(--fs-12)}
 .filterbar .fb-q{position:relative;flex:1 1 240px;min-width:180px;display:inline-flex;align-items:center}
 .filterbar .fb-q>svg{position:absolute;left:12px;width:15px;height:15px;pointer-events:none;color:var(--faint)}
 .filterbar .fb-q .inp{height:var(--ctrl-h-sm);border-radius:var(--radius-pill);padding-left:34px;width:100%}
@@ -189,6 +207,7 @@ body.list-full .portal-main>*:not(.listzone),body.list-full .portal-head{visibil
 .list-full-bar{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-2) var(--card-pad);
   border-bottom:1px solid var(--border);font-size:var(--fs-12);color:var(--muted)}
 .list-full-bar .btn{margin-left:auto;height:var(--ctrl-h-sm);min-height:0;padding:0 14px;border-radius:var(--radius-pill)}
+.list-full-bar .btn.icon{padding:0;width:var(--ctrl-h-sm);border-radius:var(--radius-sm)}
 
 /* 环形占比图：与表格并排，数字仍由旁边的表格给出。 */
 .chart-split{display:grid;grid-template-columns:minmax(200px,260px) minmax(0,1fr);gap:var(--sp-6);align-items:center}

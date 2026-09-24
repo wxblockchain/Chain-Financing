@@ -17,7 +17,7 @@
  const b=(a,t,v='',primary=false,off=false)=>'<button type="button" class="btn'+(primary?' primary':'')+'" data-act="mc-'+a+'" data-v="'+E(v)+'"'+(off?' disabled':'')+'>'+E(t)+'</button>';
  const link=(a,t,v='',extra='')=>a==='detail'&&!extra.includes('disabled')?'<a class="actlink" href="'+E(detailHref(...v.split('|')))+'" data-act="mc-detail" data-v="'+E(v)+'" '+extra+'>'+E(t)+'</a>':'<button type="button" class="actlink" data-act="mc-'+a+'" data-v="'+E(v)+'" '+extra+'>'+E(t)+'</button>';
  const dl=rows=>'<dl class="dl">'+rows.filter(Boolean).map(([k,v])=>'<dt>'+E(k)+'</dt><dd>'+v+'</dd>').join('')+'</dl>';
- const copy=v=>v==null||v===''?'—':'<span class="mono">'+E(v)+'</span> '+link('copy',L('Copy','复制'),v);
+ const copy=v=>v==null||v===''?'—':'<span class="copy-pair"><span class="mono">'+E(v)+'</span>'+CF.copyBtn('mc-copy',v,L('Copy','复制'))+'</span>';
  const tabs=()=>S.role==='fund'?['quotes','credits','loans','repayments']:['tokens','projects','credits','loans','repayments'];
  const allowed=()=>['asset','fund'].includes(S.role);
  const path=()=>location.hash.slice(1).split('?')[0];
@@ -64,14 +64,17 @@
    });
    return related.filter(q=>k==='quotes'||q.l7).map(q=>{const x=q.l7;return {...q,q,deal:x,status:x?({pending:'pending',waiting:'confirming',confirmed:q.l8?.settledAt?'settled':'repaying',settled:'settled',terminated:'terminated'}[x.state]):({waiting:'waiting',rejected:'rejected',expired:'quoteExpired',terminated:'terminated'}[q.state]||q.state),request:q.demand,acceptedAt:q.done||null,at:k==='loans'?q.done:q.at,deadline:x?.state==='waiting'?Date.parse(x.record.at)+168*H:q.state==='waiting'?q.end:null};});
  }
+ /* 每个筛选项可多选，取值按逗号串保存；空串代表不限。 */
+ const picks=value=>String(value||'').split(',').filter(Boolean);
+ const within=(value,candidate)=>{const l=picks(value);return !l.length||l.includes(String(candidate));};
  function matches(r,v){
    const repayment=v.tab==='repayments';
-   return (!v.filter||(v.filter==='generating'?r.planState==='generating':r.status===v.filter))&&
-     (!v.project||r.project===v.project)&&
+   return (!v.filter||picks(v.filter).some(f=>f==='generating'?r.planState==='generating':r.status===f))&&
+     within(v.project,r.project)&&
      (!v.query||[r.id,r.request,r.deal?.record?.id].includes(v.query.trim()))&&
-     (!v.periodState||repayment&&r.periods.some(p=>p.status===v.periodState))&&
-     (!v.confirmLate||repayment&&(r.confirmLate?'yes':'no')===v.confirmLate)&&
-     (!v.secondary||(v.tab==='tokens'?(r.pledged?'pledged':'unpledged'):v.tab==='projects'?r.n.grade:repayment?(r.overdue?'yes':'no'):(r.status==='confirming'&&r.deadline<=now()?'yes':'no'))===v.secondary);
+     (!v.periodState||repayment&&r.periods.some(p=>within(v.periodState,p.status)))&&
+     (!v.confirmLate||repayment&&within(v.confirmLate,r.confirmLate?'yes':'no'))&&
+     within(v.secondary,v.tab==='tokens'?(r.pledged?'pledged':'unpledged'):v.tab==='projects'?r.n.grade:repayment?(r.overdue?'yes':'no'):(r.status==='confirming'&&r.deadline<=now()?'yes':'no'));
  }
  function filtered(){const v=view();let rows=S.st==='empty'?[]:normalized(v.tab);rows=rows.filter(r=>matches(r,v));
    if(S.st==='noresult')return [];
@@ -121,14 +124,15 @@
  }
  const filterOptions={tokens:['valid','void'],projects:['draft','raising','locked','financing','closed','settled'],credits:['effective','expired'],loans:['pending','confirming','repaying','settled','terminated'],repayments:['repaying','settled','generating'],quotes:['waiting','rejected','quoteExpired','pending','confirming','repaying','settled','terminated']};
  function select(key,title,options,value){return CF.filterSelect('mc-'+key,title,options,value,'');}
- function filters(){const v=view(),all=['',L('All','全部')];let h=select('filter',v.tab==='tokens'?L('Token status','代币状态'):v.tab==='projects'?L('Project status','项目状态'):L('Status','状态'),[all,...filterOptions[v.tab].map(k=>[k,status(k)])],v.filter);
+ function pick(key,title,options,value){return CF.filterMenu('mc-'+key,title,options.filter(o=>o[0]!==''),picks(value));}
+ function filters(){const v=view(),all=['',L('All','全部')];let h=pick('filter',v.tab==='tokens'?L('Token status','代币状态'):v.tab==='projects'?L('Project status','项目状态'):L('Status','状态'),[all,...filterOptions[v.tab].map(k=>[k,status(k)])],v.filter);
    const sec=v.tab==='tokens'?['pledged','unpledged']:v.tab==='projects'?['surplus','balanced','short']:['loans','repayments'].includes(v.tab)?['yes','no']:[];
-   if(sec.length)h+=select('secondary',v.tab==='tokens'?L('Pledge status','质押状态'):v.tab==='projects'?L('Coverage','质押覆盖状态'):v.tab==='loans'?L('Confirmation overdue','确认是否超期'):L('Repayment overdue','还款是否逾期'),[all,...sec.map(k=>[k,k==='yes'?L('Yes','是'):k==='no'?L('No','否'):status(k)])],v.secondary);
-   if(v.tab==='tokens')h+=select('project',L('Project','所属融资项目'),[all,...normalized('projects').map(p=>[p.id,text(p.name)])],v.project);
+   if(sec.length)h+=pick('secondary',v.tab==='tokens'?L('Pledge status','质押状态'):v.tab==='projects'?L('Coverage','质押覆盖状态'):v.tab==='loans'?L('Confirmation overdue','确认是否超期'):L('Repayment overdue','还款是否逾期'),[all,...sec.map(k=>[k,k==='yes'?L('Yes','是'):k==='no'?L('No','否'):status(k)])],v.secondary);
+   if(v.tab==='tokens')h+=pick('project',L('Project','所属融资项目'),[all,...normalized('projects').map(p=>[p.id,text(p.name)])],v.project);
    const sorts=v.tab==='tokens'?[['newest',L('Issued · newest first','签发时间倒序')],['value-asc',L('Value · ascending','价值升序')],['value-desc',L('Value · descending','价值降序')],['due-asc',L('Due · earliest','到期日升序')]]:v.tab==='credits'?[['available-asc',L('Available credit · ascending','可用授信升序')],['available-desc',L('Available credit · descending','可用授信降序')]]:v.tab==='repayments'?[['newest',L('Receipt confirmed · newest first','到账确认时间倒序')],['due-asc',L('Current due date · earliest','本期应还日升序')]]:[['newest',L('Newest first','时间倒序')],['oldest',L('Oldest first','时间升序')],['remaining',L('Time remaining · shortest','剩余时限升序')]];
-   if(v.tab==='repayments')h+=select('periodState',L('Contains instalments','包含期次状态'),[all,...['due','repayConfirming','settled'].map(k=>[k,status(k)])],v.periodState)+select('confirmLate',L('Confirmation overdue','含确认超期期次'),[all,['yes',L('Yes','是')],['no',L('No','否')]],v.confirmLate);
+   if(v.tab==='repayments')h+=pick('periodState',L('Contains instalments','包含期次状态'),[all,...['due','repayConfirming','settled'].map(k=>[k,status(k)])],v.periodState)+pick('confirmLate',L('Confirmation overdue','含确认超期期次'),[all,['yes',L('Yes','是')],['no',L('No','否')]],v.confirmLate);
    if(['loans','repayments'].includes(v.tab))h+=CF.filterSearch('mc-query',L('Application / business / disbursement','融资申请 / 业务 / 放款编号'),v.query);
-   return '<div class="filterbar">'+h+'<div class="fb-acts">'+select('sort',L('Sort','排序'),sorts,v.sort)+(['loans','repayments'].includes(v.tab)?b('search',L('Search','查询')):'')+b('clear',L('Reset filters','清空筛选'))+'</div></div>'+(Object.keys(v).some(k=>['filter','secondary','project','query','periodState','confirmLate'].includes(k)&&v[k])?'<div class="mc-filter-note" role="status">'+L('Filtered by: ','已按以下条件过滤：')+E([v.filter&&status(v.filter),v.secondary&&(v.secondary==='yes'?L('Overdue','逾期'):v.secondary==='no'?L('Not overdue','未逾期'):status(v.secondary)),v.periodState&&status(v.periodState),v.confirmLate&&L('Confirmation deadline','确认时限'),v.query,v.project].filter(Boolean).join(' · '))+'</div>':'');
+   return '<div class="filterbar">'+h+'<div class="fb-acts">'+select('sort',L('Sort','排序'),sorts,v.sort)+(['loans','repayments'].includes(v.tab)?b('search',L('Search','查询')):'')+b('clear',L('Reset filters','清空筛选'))+'</div></div>'+(Object.keys(v).some(k=>['filter','secondary','project','query','periodState','confirmLate'].includes(k)&&v[k])?'<div class="mc-filter-note" role="status">'+L('Filtered by: ','已按以下条件过滤：')+E([picks(v.filter).map(status).join(' / '),picks(v.secondary).map(k=>k==='yes'?L('Overdue','逾期'):k==='no'?L('Not overdue','未逾期'):status(k)).join(' / '),picks(v.periodState).map(status).join(' / '),v.confirmLate&&L('Confirmation deadline','确认时限'),v.query,picks(v.project).join(' / ')].filter(Boolean).join(' · '))+'</div>':'');
  }
  function columns(k){return {
    tokens:[[L('Token','代币编号'),'id'],[L('Quantity','数量'),'num'],[L('Value (USD)','价值（USD）'),'num'],[L('Token status','代币状态'),''],[L('Pledge status','质押状态'),''],[L('Receivable due','应收账款到期日'),''],[L('Project','所属项目'),'']],
@@ -170,7 +174,7 @@
    return dl([['name',L('Account name','户名')],['iban',L('Account number','账号')],['bank',L('Bank','开户行')],['swift','SWIFT / BIC'],['country',L('Country / region','国家／地区')]].map(([k,t])=>[t,k==='iban'&&a?.[k]?L('Hidden · verify in marketplace','已隐藏 · 请到广场核对'):E(a?.[k]||'—')]));
  }
  function evidence(record,ccy){if(!record)return '';const f=record.form||record,files=f.files||[];
-   return dl([[L('Supporting files','凭证／补充材料'),files.length?files.length+L(' files · view in marketplace',' 份 · 到广场查看'):L('No files provided','未提供文件')],ccy!=='USD'&&[L('Transaction hash','交易哈希'),f.hash?'<span class="mono">'+E(f.hash.slice(0,10)+'…'+f.hash.slice(-8))+'</span> '+link('copy',L('Copy full hash','复制完整哈希'),f.hash):'—'],ccy!=='USD'&&[L('Network','链'),'ETH · ERC-20']]);
+   return dl([[L('Supporting files','凭证／补充材料'),files.length?files.length+L(' files · view in marketplace',' 份 · 到广场查看'):L('No files provided','未提供文件')],ccy!=='USD'&&[L('Transaction hash','交易哈希'),f.hash?'<span class="copy-pair"><span class="mono">'+E(f.hash.slice(0,10)+'…'+f.hash.slice(-8))+'</span>'+CF.copyBtn('mc-copy',f.hash,L('Copy full hash','复制完整哈希'))+'</span>':'—'],ccy!=='USD'&&[L('Network','链'),'ETH · ERC-20']]);
  }
  function periodFacts(r,p){return dl([[L('Instalment ID','期次编号'),copy(p.id)],[L('Principal due','应还本金'),money(p.principal)],[L('Interest due','应还利息'),money(p.interest)],[L('Total due','应还合计'),money(p.total)],[L('Settlement amount','结算金额'),money(p.settlement,r.q.ccy)],[L('Accrual period','计息区间'),date(p.from)+' → '+date(p.due)],[L('Accrual days','计息天数'),p.days],[L('Payment window opens','还款入口开启时间'),time(p.open)],[L('Overdue days','逾期天数'),p.overdue+(p.record?L(' · frozen at submission',' · 提交后冻结'):'')],p.record&&[L('Record ID','还款记录编号'),copy(p.record.id)],p.record&&[L('Repaid at','还款时间'),time(p.record.paidAt)],p.record&&[L('Submitted at','提交时间'),time(p.record.at)],p.deadline&&[L('Confirmation deadline','还款确认截止'),time(p.deadline)],p.deadline&&[L('Time remaining','确认剩余时限'),countdown(p)],p.record&&[L('Confirmed at','还款确认时间'),time(p.record.confirmedAt)],p.record&&[L('Repayment nature','还款性质'),p.record.overdue?L('Overdue repayment','逾期还款'):L('Normal repayment','正常还款')],p.record&&[L('Note','备注'),E(p.record.note||'—')]])+evidence(p.record,r.q.ccy);}
  function repaymentSections(r){
@@ -253,12 +257,15 @@
      if(focusAfter){const key=focusAfter;focusAfter='';setTimeout(()=>document.getElementById('mc-'+key)?.focus({preventScroll:true}),0);}
    },
    demo(){return (old.demo?.()||'')+reviewTools();},
-   onAct(a,v,e){if(!a.startsWith('mc-'))return old.onAct?.(a,v,e)||false;
+   onAct(a,v,e){
+     if(a==='filter-set'&&String(v).startsWith('mc-')){const [group,mode]=String(v).split('|'),field=group.slice(3);
+       setView({[field]:mode==='all'?Array.from(document.querySelectorAll('[data-filter="'+group+'"]')).map(b=>b.value).join(','):'',page:1});return true;}
+     if(!a.startsWith('mc-'))return old.onAct?.(a,v,e)||false;
      const key=a.slice(3);
      if(key==='detail'){const [k,id]=v.split('|');goDetail(k,id);}
      if(key==='jump'){const [k,id]=v.split('|');jump(k,id);}
      if(key==='tab'){returnNotice=false;setView({tab:v,filter:'',secondary:'',project:'',query:'',periodState:'',confirmLate:'',sort:v==='credits'?'available-asc':'newest',page:1});}
-     if(key==='clear'){S.st='default';returnNotice=false;setView({filter:'',secondary:'',project:'',query:'',periodState:'',confirmLate:'',page:1});}
+     if(key==='clear'){S.st='default';returnNotice=false;S.menu=null;setView({filter:'',secondary:'',project:'',query:'',periodState:'',confirmLate:'',page:1});}
      if(key==='search')setView({query:document.getElementById('mc-query').value.trim(),page:1});
 
      if(key==='page')setView({page:Math.max(1,+v)});
@@ -274,7 +281,14 @@
  };
  CF.define(CF.LSView=mod);
  const composed=mod.content;mod.content=id=>(id==='P-LS-01'||id==='P-LS-02'?backBanner():'')+composed(id);
- document.addEventListener('change',e=>{if(e.target.id==='mc-targetProject'&&path().startsWith('/console/')){const q=params();q.set('targetProject',e.target.value);history.replaceState(null,'','#'+path()+'?'+q);CF.render();document.getElementById('mc-targetProject')?.focus();return;}if(path()!=='/console'||!e.target.id.startsWith('mc-'))return;const k=e.target.id.slice(3);if(['filter','secondary','project','sort','size','periodState','confirmLate'].includes(k))setView({[k]:k==='size'?+e.target.value:e.target.value,page:1});});
+ document.addEventListener('change',e=>{
+   const group=e.target.dataset.filter;
+   if(group&&group.startsWith('mc-')&&path()==='/console'){
+     const key=group.slice(3);
+     setView({[key]:Array.from(document.querySelectorAll('[data-filter="'+group+'"]')).filter(b=>b.checked).map(b=>b.value).join(','),page:1});
+     return;
+   }
+   if(e.target.id==='mc-targetProject'&&path().startsWith('/console/')){const q=params();q.set('targetProject',e.target.value);history.replaceState(null,'','#'+path()+'?'+q);CF.render();document.getElementById('mc-targetProject')?.focus();return;}if(path()!=='/console'||!e.target.id.startsWith('mc-'))return;const k=e.target.id.slice(3);if(['filter','secondary','project','sort','size','periodState','confirmLate'].includes(k))setView({[k]:k==='size'?+e.target.value:e.target.value,page:1});});
  document.addEventListener('click',e=>{
    const chapter=e.target.closest('[data-act=mc-section]');if(chapter){e.preventDefault();e.stopImmediatePropagation();mod.onAct('mc-section',chapter.dataset.v,e);syncChapters();return;}
    if(e.target.closest('a[data-act=mc-detail]')&&(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)){e.stopImmediatePropagation();return;}

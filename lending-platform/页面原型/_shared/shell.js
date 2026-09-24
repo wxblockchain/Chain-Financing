@@ -123,7 +123,9 @@
     search: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7.1" cy="7.1" r="4.3"/><path d="M10.4 10.4 14 14"/></svg>',
     chain: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.4 3.7 8.2 8 10.8l4.3-2.6L8 1.4Zm0 10.8L3.7 9.6 8 14.6l4.3-5L8 12.2Z"/></svg>',
     expand: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 2H2v4M10 14h4v-4M14 6V2h-4M2 10v4h4"/></svg>',
-    pool: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 2.2 14 5 8 7.8 2 5l6-2.8Z"/><path d="M2 8.4 8 11.2l6-2.8M2 11.6 8 14.4l6-2.8"/></svg>'
+    pool: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 2.2 14 5 8 7.8 2 5l6-2.8Z"/><path d="M2 8.4 8 11.2l6-2.8M2 11.6 8 14.4l6-2.8"/></svg>',
+    copy: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5.4" y="5.4" width="8.2" height="8.2" rx="2"/><path d="M10.6 5.4V4.4a2 2 0 0 0-2-2H4.4a2 2 0 0 0-2 2v4.2a2 2 0 0 0 2 2h1"/></svg>',
+    external: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9.2 2.6H13.4V6.8M13.4 2.6 7.6 8.4M11.2 9.6v3.2a1 1 0 0 1-1 1H3.2a1 1 0 0 1-1-1V5.8a1 1 0 0 1 1-1h3.2"/></svg>'
   };
   CF.ICON = ICON;
 
@@ -149,6 +151,24 @@
           esc(o[0] === '' ? label + '：' + o[1] : o[1]) + '</option>';
       }).join('') + '</select></span>';
   };
+  /* 多选筛选：未选时药丸只显示字段名；选中后显示已选数量，面板里勾选，全选或清空回到不限。 */
+  CF.filterMenu = function (id, label, options, selected) {
+    selected = selected || [];
+    var open = S.menu === 'filter:' + id, n = selected.length;
+    var panel = open ? '<div class="fb-panel" role="group" aria-label="' + esc(label) + '">' +
+      options.map(function (o) {
+        return '<label class="fb-opt"><input type="checkbox" id="' + esc(id + '-' + o[0]) + '" data-filter="' + esc(id) +
+          '" value="' + esc(o[0]) + '"' + (selected.indexOf(o[0]) >= 0 ? ' checked' : '') + '><span>' + esc(o[1]) + '</span></label>';
+      }).join('') +
+      '<div class="fb-panel-acts">' +
+      '<button type="button" class="btn sm" data-act="filter-set" data-v="' + esc(id) + '|all">' + L('Select all', '全选') + '</button>' +
+      '<button type="button" class="btn sm" data-act="filter-set" data-v="' + esc(id) + '|none">' + L('Clear', '清空') + '</button>' +
+      '</div></div>' : '';
+    return '<span class="fb fb-menu">' + ICON.funnel +
+      '<button type="button" class="inp fb-btn" id="' + esc(id) + '" data-act="menu" data-v="filter:' + esc(id) + '"' +
+      ' aria-haspopup="true" aria-expanded="' + open + '"' + (n ? ' data-on="1"' : '') + '>' +
+      esc(n ? label + ' · ' + n : label) + '</button>' + panel + '</span>';
+  };
   CF.filterSearch = function (id, placeholder, value) {
     return '<span class="fb-q">' + ICON.search +
       '<input class="inp" id="' + esc(id) + '" type="search" value="' + esc(value || '') +
@@ -167,6 +187,16 @@
       '<g transform="rotate(-90 70 70)"><circle class="track" cx="70" cy="70" r="' + r + '"></circle>' + arcs + '</g>' +
       '<text class="donut-center" x="70" y="70" text-anchor="middle">' + esc(center.value) + '</text>' +
       '<text class="donut-cap" x="70" y="88" text-anchor="middle">' + esc(center.label) + '</text></svg>';
+  };
+  /* 复制、放大这类反复出现的功能统一用图标按钮，可访问名仍是完整说明。 */
+  CF.copyBtn = function (act, value, label, extra) {
+    label = label || L('Copy', '复制');
+    return '<button class="btn icon bare" type="button" data-act="' + esc(act) + '" data-v="' + esc(value) + '"' +
+      (extra || '') + ' title="' + esc(label) + '" aria-label="' + esc(label) + '">' + ICON.copy + '</button>';
+  };
+  CF.linkOut = function (href, label) {
+    return '<a class="btn icon bare" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" title="' +
+      esc(label) + '" aria-label="' + esc(label) + '">' + ICON.external + '</a>';
   };
   CF.note = function (kind, html) {
     var role = kind === "red" ? ' role="alert"' : "";
@@ -856,7 +886,7 @@
   function onClick(e) {
     var el = e.target.closest("[data-act]");
     if (!el) {
-      if (S.menu) { S.menu = null; render(); }
+      if (S.menu && !e.target.closest(".fb-panel")) { S.menu = null; render(); }
       return;
     }
     var act = el.getAttribute("data-act"), v = el.getAttribute("data-v");
@@ -970,7 +1000,10 @@
       if (M && M.onRoute) M.onRoute(prevPage, id);
       if (id && CF.PAGES[id]) {
         if (CF.PAGES[id].end !== S.end) { S.end = CF.PAGES[id].end; S.role = S.end === "admin" ? "ops" : S.role; }
-        S.page = id; S.menu = null; S.layer = null; S.st = "default"; S.sort = "at"; S.sortDir = "desc"; S.listFull = false;
+        /* 同一页面内改筛选只是改查询串，打开的筛选面板不该被关掉。 */
+        var samePage = S.page === id;
+        S.page = id; if (!samePage) { S.menu = null; S.listFull = false; }
+        S.layer = null; S.st = "default"; S.sort = "at"; S.sortDir = "desc";
         if (!(CF.PAGES[id].retainList && CF.PAGES[prevPage] && CF.PAGES[prevPage].retainList)) resetList();
       } else { syncRoute(true); }
       render();

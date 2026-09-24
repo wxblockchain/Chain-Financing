@@ -79,13 +79,13 @@
     select('ls-expiry','Expiry','有效期临近程度',[all,['7','Within 7 days','7 天内'],['30','Within 30 days','30 天内'],['expired','Expired','已到期']],filter.expiry||'')+
     select('ls-coverage','Coverage shortfall','是否覆盖不足',[all,['yes','Yes','是'],['no','No','否']],filter.coverage||'')+
     '<div class="ls-row">'+btn('ls-filter',L('Apply filters','筛选'),'',true)+btn('ls-clear',L('Reset','重置'))+'</div></div>';}
-  function filters(){const all=['',L('All','全部')];
-    const fs=(id,label,opts,cur)=>CF.filterSelect(id,label,[all,...opts],cur||'','');
+  function filters(){
+    const fm=(id,label,opts,cur)=>CF.filterMenu(id,label,opts,String(cur||'').split(',').filter(Boolean));
     return '<div class="filterbar ls-primary-filters">'+
-    fs('ls-currency',L('Currency','币种'),[['USD','USD']],filter.currency)+
-    fs('ls-tenor',L('Tenor','期限'),[['60',L('60 days','60 天')],['90',L('90 days','90 天')],['120',L('120 days','120 天')]],filter.tenor)+
-    fs('ls-status',L('Project status','项目状态'),['raising','locked','financing','closed','settled'].map(k=>[k,txt(stateNames[k])]),filter.status)+
-    fs('ls-quote',L('Open for quotes','可报价'),[['yes',L('Yes','是')],['no',L('No','否')]],filter.quote)+
+    fm('ls-currency',L('Currency','币种'),[['USD','USD']],filter.currency)+
+    fm('ls-tenor',L('Tenor','期限'),[['60',L('60 days','60 天')],['90',L('90 days','90 天')],['120',L('120 days','120 天')]],filter.tenor)+
+    fm('ls-status',L('Project status','项目状态'),['raising','locked','financing','closed','settled'].map(k=>[k,txt(stateNames[k])]),filter.status)+
+    fm('ls-quote',L('Open for quotes','可报价'),[['yes',L('Yes','是')],['no',L('No','否')]],filter.quote)+
     CF.filterSearch('ls-keyword',L('Project, request ID or holder','项目、需求编号或资产方'),filter.keyword||'')+
     '<div class="fb-acts">'+
     CF.filterSelect('ls-sort',L('Sort by','排序'),[['newest',L('Updated: newest first','更新时间倒序')],['oldest',L('Updated: oldest first','更新时间正序')],['amount',L('Demand: high to low','需求金额从高到低')],['value',L('Pool value: high to low','池内资产价值从高到低')]],filter.sort||'newest','')+
@@ -95,11 +95,12 @@
   function matching(){return D.projects.filter(p=>p.state!=='draft'||Q&&Q.hasHistory(p)).filter(p=>{
     const n=D.numbers(p),d=D.current(p),amount=d?d.amount:0,open=Q?Q.quoteAvailable(p):d&&d.state==='open'&&!p.expired&&n.grade==='surplus';
     const info=requestInfo(p);
-    if(filter.currency&&info.currency!==filter.currency||filter.tenor&&String(info.tenor)!==filter.tenor)return false;
+    const within=(sel,value)=>{const l=String(sel||'').split(',').filter(Boolean);return !l.length||l.includes(String(value));};
+    if(!within(filter.currency,info.currency)||!within(filter.tenor,info.tenor))return false;
     if(filter.keyword&&!([p.id,info.d?.id,...p.name,owner(p)].join(' ').toLowerCase().includes(filter.keyword.trim().toLowerCase())))return false;
-    if(filter.status&&p.state!==filter.status)return false;
+    if(!within(filter.status,p.state))return false;
     if(filter.vmin&&n.value<+filter.vmin||filter.vmax&&n.value>+filter.vmax||filter.amin&&amount<+filter.amin||filter.amax&&amount>+filter.amax)return false;
-    if(filter.quote&&(filter.quote==='yes')!==!!open)return false;
+    if(!within(filter.quote,open?'yes':'no'))return false;
     if(filter.coverage&&(filter.coverage==='yes')!==(n.grade==='short'))return false;
     if(filter.expiry==='expired'&&!p.expired)return false;
     if(['7','30'].includes(filter.expiry)&&(Date.parse(p.expires)-D.now()>+filter.expiry*86400000||p.expired))return false;
@@ -132,7 +133,7 @@
       '</div>';
   }
   function listPage(){const rows=matching();let content=CF.surface({emptyTitle:L('No financing projects yet','暂无融资项目'),emptyDesc:L('Published projects will appear here.','融资项目发布后会出现在这里。'),backTo:'/marketplace'});if(content===null)content=rows.length?listFullBar(rows.length)+'<div class="tablewrap listbox listbox-contained ls-market-zone" tabindex="0" role="region" aria-label="'+L('Financing projects','融资项目列表')+'"><table class="tbl resp ls-market-table">'+listHead()+'<tbody>'+rows.slice(0,S.shown).map(projectRow).join('')+'</tbody></table>'+CF.moreFoot(rows.length)+'</div>':CF.empty(L('No results match these filters','筛选无结果'),L('Try widening or clearing the filters.','请放宽筛选条件或清空筛选。'),btn('ls-clear',L('Clear filters','清空筛选')));return '<div class="page-head"><div><h1 class="page-title">'+L('Lending marketplace','借贷广场')+'</h1><p class="page-desc">'+L('Explore project collateral pools and their current financing requests.','查看融资项目的质押池与资产方当前融资需求。')+'</p></div>'+(S.role==='asset'?'<div class="page-actions">'+btn('ls-new',L('Create project','创建融资项目'),'',true)+'</div>':'')+'</div>'+guestNotice()+marketStats(rows)+'<section class="card listzone">'+filters()+content+'</section>';}
-  function listFullBar(total){return '<div class="list-full-bar"><span>'+E(L('Showing ','共 ')+total+L(' projects',' 个融资项目'))+'</span><button class="btn" type="button" id="ls-full" data-act="list-full" data-v="ls-full" aria-pressed="'+!!S.listFull+'">'+CF.ICON.expand+' '+(S.listFull?L('Exit full window','退出放大'):L('Expand to window','放大到整窗'))+'</button></div>';}
+  function listFullBar(total){return '<div class="list-full-bar"><span>'+E(L('Showing ','共 ')+total+L(' projects',' 个融资项目'))+'</span><button class="btn icon" type="button" id="ls-full" data-act="list-full" data-v="ls-full" aria-pressed="'+!!S.listFull+'" title="'+E(S.listFull?L('Exit full window','退出放大'):L('Expand to window','放大到整窗'))+'" aria-label="'+E(S.listFull?L('Exit full window','退出放大'):L('Expand to window','放大到整窗'))+'">'+(S.listFull?CF.ICON.close:CF.ICON.expand)+'</button></div>';}
   function stats(p){const n=D.numbers(p),d=D.current(p);
     const money=v=>'<span class="u">USD</span>'+CF.fmtAmt(v);
     const cells=[
@@ -159,7 +160,7 @@
     const pct=v=>total?(v/total*100).toFixed(1)+'%':'—';
     const rows=parts.map(x=>'<tr><td><span class="legend-dot" data-tone="'+x.tone+'" aria-hidden="true"></span>'+x.label+'</td><td class="num nw">'+usd(x.value)+'</td><td class="num">'+x.count+'</td><td class="num">'+pct(x.value)+'</td></tr>').join('');
     return '<div class="chart-split ls-pool-chart">'+
-      CF.donut(parts,{value:pct(counted),label:L('Counted towards coverage','计入覆盖')},L('Collateral pool composition','质押池构成'))+
+      CF.donut(parts,{value:pct(counted),label:L('Counted','计入覆盖')},L('Collateral pool composition','质押池构成'))+
       '<table class="tbl ls-legend-table"><thead><tr><th scope="col">'+L('Pool composition','池内构成')+'</th><th scope="col" class="num">'+L('Value','价值')+'</th><th scope="col" class="num">'+L('Tokens','张数')+'</th><th scope="col" class="num">'+L('Share','占比')+'</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   }
   function demandTable(p){
@@ -359,7 +360,10 @@
       if(act==='ls-create'){createProject();return true;}
       if(act==='ls-detail'){pages.tokens=pages.demands=1;goto(v);return true;}
       if(act==='ls-sort-column'){filter.sort=v==='newest'&&(!filter.sort||filter.sort==='newest')?'oldest':v;writeFilters();return true;}
-      if(act==='ls-filter'){['currency','tenor','keyword','type','vmin','vmax','amin','amax','status','quote','expiry','coverage','sort'].forEach(k=>filter[k]=document.getElementById('ls-'+k).value);writeFilters();return true;}
+      if(act==='ls-filter'){['keyword','type','vmin','vmax','amin','amax','expiry','coverage','sort'].forEach(k=>{const el=document.getElementById('ls-'+k);if(el)filter[k]=el.value;});writeFilters();return true;}
+      if(act==='filter-set'){const [id,mode]=String(v).split('|'),key=id.replace('ls-','');
+        filter[key]=mode==='all'?Array.from(document.querySelectorAll('[data-filter="'+id+'"]')).map(b=>b.value).join(','):'';
+        refocus=id;writeFilters();return true;}
       if(act==='ls-clear'){filter={};S.st='default';writeFilters();return true;}
       if(act==='ls-page'){const [k,n]=v.split(':');pages[k]=Math.max(1,+n);return true;}
       if(act==='ls-pledge'){openPledge();return true;}
@@ -411,6 +415,11 @@
   document.addEventListener('toggle',e=>{if(e.target.dataset.record){if(e.target.open)expandedRecords.add(e.target.dataset.record);else expandedRecords.delete(e.target.dataset.record);}},true);
   document.addEventListener('input',e=>{if(e.target.id==='ls-name')name=e.target.value;if(e.target.id==='ls-amount')amount=e.target.value;});
   document.addEventListener('change',e=>{
+    if(e.target.dataset.filter&&e.target.dataset.filter.startsWith('ls-')){
+      const id=e.target.dataset.filter,key=id.replace('ls-','');
+      filter[key]=Array.from(document.querySelectorAll('[data-filter="'+id+'"]')).filter(b=>b.checked).map(b=>b.value).join(',');
+      refocus=e.target.id;writeFilters();return;
+    }
     if(e.target.dataset.lsReference){referenceCurrencies=['USD','USDT','USDC'].filter(c=>document.getElementById('ls-reference-'+c)?.checked);error='';}
     const el=e.target;if(el.id==='ls-kind'){kind=el.value;selection=[];pages.select=1;refocus=el.id;CF.render();}
     if(el.dataset.depositToken){const id=el.dataset.depositToken;if(D.eligible(D.latest(project(),id)))selection=el.checked?[...new Set([...selection,id])]:selection.filter(x=>x!==id);CF.render();setTimeout(()=>document.querySelector('[data-deposit-token="'+id+'"]')?.focus({preventScroll:true}),0);}

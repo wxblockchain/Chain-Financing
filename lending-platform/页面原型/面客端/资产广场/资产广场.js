@@ -280,8 +280,7 @@
   function shortHash(h) { return h ? h.slice(0, 10) + "…" + h.slice(-8) : ""; }
 
   function copyBtn(value, label) {
-    return '<button class="btn-link sm" type="button" data-act="copy" data-v="' + esc(value) +
-      '" data-k="' + esc(label) + '">' + L("Copy", "复制") + "</button>";
+    return CF.copyBtn("copy", value, L("Copy ", "复制") + label, ' data-k="' + esc(label) + '"');
   }
 
   async function copyValue(value) {
@@ -297,7 +296,8 @@
   function cents(value) { return Math.round(value * 100); }
   function sum(rows, key) { return rows.reduce(function (n, t) { return n + cents(t[key]); }, 0) / 100; }
   function quantity(value) { return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-  var holdingMode = "unavailable", holdingLoad = null, holdingTimer = 0;
+  /* 持有地址由发行平台同步，默认就有数据；其他响应情况留在评审工具里切换。 */
+  var holdingMode = "sample", holdingLoad = null, holdingTimer = 0;
   function resetHoldings() { clearTimeout(holdingTimer); holdingLoad = null; }
   function holdingTable(t) {
     var key = t.no + ":" + holdingMode;
@@ -334,7 +334,8 @@
           data.rows.map(function (r) {
             var project = !r.pledged ? dash() : r.project.draft ? L("The financing project is not public yet", "所属融资项目尚未公开") :
               '<a class="btn-link" href="#/project/' + esc(r.project.id) + '" data-act="am-project" data-v="' + esc(r.project.id) + '">' + esc(nm(r.project.name)) + '</a>';
-            var values = ['<button class="btn-link mono am-address" data-act="am-address-copy" data-v="' + esc(r.address) + '" aria-label="' + esc(L("Copy address: ", "复制地址：") + r.address) + '">' + esc(r.address.slice(0, 6) + "…" + r.address.slice(-4)) + '</button>', quantity(r.qty) + L(" tokens", " 枚"), CF.fmtAmt(r.value, "USD"), CF.tag(r.pledged ? "accent" : "", r.pledged ? L("Pledged", "已质押") : L("Not pledged", "未质押")), project];
+            var values = ['<span class="copy-pair"><span class="mono am-address">' + esc(r.address.slice(0, 6) + "…" + r.address.slice(-4)) + '</span>' +
+              CF.copyBtn("am-address-copy", r.address, L("Copy address", "复制地址")) + '</span>', quantity(r.qty) + L(" tokens", " 枚"), CF.fmtAmt(r.value, "USD"), CF.tag(r.pledged ? "accent" : "", r.pledged ? L("Pledged", "已质押") : L("Not pledged", "未质押")), project];
             return '<tr>' + values.map(function (v, i) { return '<td data-label="' + esc(heads[i]) + '"><div class="cell-wrap">' + v + '</div></td>'; }).join("") + '</tr>';
           }).join("") + '</tbody></table></div>';
       }
@@ -344,8 +345,7 @@
 
   /* 区块浏览器外链：唯一的新窗口；链接旁常驻未核验标注。 */
   function explorer(hash) {
-    return '<a class="btn-link sm" href="' + esc(AM.EXPLORER_TX + hash) + '" target="_blank" rel="noopener noreferrer">' +
-      L("Block explorer", "区块浏览器") + '<span class="ar" aria-hidden="true">↗</span></a>';
+    return CF.linkOut(AM.EXPLORER_TX + hash, L("Open block explorer", "在区块浏览器打开"));
   }
   function notVerified() {
     return '<p class="tiny am-caveat">' +
@@ -359,11 +359,14 @@
   }
 
   /* ------------------------------------------------------------ 筛选与排序 */
+  /* 每个筛选项都可多选，URL 里按逗号串存；空串代表不限。 */
+  function list(value) { return value ? String(value).split(",").filter(Boolean) : []; }
+  function anyOf(value, candidate) { var l = list(value); return !l.length || l.indexOf(candidate) >= 0; }
   function match(t, v) {
-    if (v.ts && t.ts !== v.ts) return false;
-    if (v.ps && (pledgeOf(t).on ? "pledged" : "unpledged") !== v.ps) return false;
-    if (v.kind && v.kind !== "ar") return false;
-    if (v.holder && String(t.holder) !== v.holder) return false;
+    if (!anyOf(v.ts, t.ts)) return false;
+    if (!anyOf(v.ps, pledgeOf(t).on ? "pledged" : "unpledged")) return false;
+    if (!anyOf(v.kind, "ar")) return false;
+    if (!anyOf(v.holder, String(t.holder))) return false;
     if (v.q) {
       var k = v.q.trim().toLowerCase();
       var hay = [t.no, AM.HOLDERS[t.holder][0], AM.HOLDERS[t.holder][1], t.mintTx].join(" ").toLowerCase();
@@ -406,8 +409,9 @@
     var rows = S.st === "noresult" ? [] : sortRows(base.filter(function (t) { return match(t, v); }), v);
 
     var total = rows.length;
-    var value = sum(rows, "val"), amount = sum(rows, "qty");
-    var voids = sum(rows.filter(function (t) { return t.ts === "void"; }), "qty");
+    /* 汇总只计有效代币：失效代币仍在列表里，但不进数量与价值合计。 */
+    var live = rows.filter(function (t) { return t.ts !== "void"; });
+    var value = sum(live, "val"), amount = sum(live, "qty");
 
     ensureLoad(v, total);
     afterList(v);
@@ -415,46 +419,33 @@
     var head = '<div class="page-head"><div>' +
       '<h1 class="page-title">' + L("Asset marketplace", "资产广场") + "</h1>" +
       '<p class="page-desc">' + L(
-        "Every token listed on the platform, with its underlying receivable and on-chain record. Read-only, open to everyone.",
-        "平台上的全部代币及其底层应收账款与链上记录。只读，对所有人开放。") + "</p></div></div>";
+        "Every token listed on the platform, with its underlying receivable and on-chain record.",
+        "平台上的全部代币及其底层应收账款与链上记录。") + "</p></div></div>";
 
     /* 头部汇总：含已失效代币；空态显示 0，不隐藏整块。
        汇总与列表同批到达，因此加载中时汇总也处在加载中，不先出数再出表。 */
     var wait = S.st === "loading" || (S.st === "default" && load.phase === "initial");
     function statV(html) { return wait ? '<div class="v"><span class="skel am-skel-v"></span></div>' : '<div class="v">' + html + "</div>"; }
     var summary = '<div class="stat-strip am-summary">' +
-      '<div class="s"><div class="k">' + L("Tokens", "代币数量") +
+      '<div class="s"><div class="k">' + L("Valid tokens", "有效代币数量") +
         CF.icoChip(AM.CHAIN, {glyph: CF.ICON.chain, hue: 3, small: true}) + "</div>" +
         statV(quantity(amount)) +
-        '<div class="n">' + L("tokens", "枚") + "</div></div>" +
-      '<div class="s" data-tone="accent"><div class="k">' + L("Token value", "代币价值") + "</div>" +
+        '<div class="n">' + L("tokens · void tokens excluded", "枚 · 不含已失效代币") + "</div></div>" +
+      '<div class="s" data-tone="accent"><div class="k">' + L("Valid token value", "有效代币价值") + "</div>" +
         statV('<span class="u">USD</span>' + CF.fmtAmt(value)) +
-        '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + "</div></div>" +
-      '<div class="s"' + (voids ? ' data-tone="warn"' : '') + '><div class="k">' + L("Of which void", "其中失效") + "</div>" +
-        statV(quantity(voids)) +
-        '<div class="n">' + L("tokens · included above", "枚 · 已计入上方合计") + "</div></div></div>";
+        '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + "</div></div></div>";
 
     var holders = AM.HOLDERS.map(function (h, i) { return [String(i), nm(h)]; });
-    function fSel(id, key, label, options, cur) {
-      return CF.filterSelect(id, label, [["", L("All", "全部")]].concat(options), cur, ' data-f="' + key + '"');
-    }
-    var sortOpts = [];
-    [["at", L("Minted at", "铸造时间")], ["val", L("Token value", "代币价值")], ["due", L("Due date", "到期日")]].forEach(function (item) {
-      ["desc", "asc"].forEach(function (dir) {
-        sortOpts.push([item[0] + ":" + dir, item[1] + " · " + (dir === "asc" ? L("Ascending", "升序") : L("Descending", "降序"))]);
-      });
-    });
     var filters = '<div class="filterbar">' +
-      fSel("am-ts", "ts", L("Token status", "代币状态"),
-        [["valid", L("Valid", "有效")], ["void", L("Void", "失效")]], v.ts) +
-      fSel("am-ps", "ps", L("Pledge status", "质押状态"),
-        [["unpledged", L("Not pledged", "未质押")], ["pledged", L("Pledged", "已质押")]], v.ps) +
-      fSel("am-kind", "kind", L("Token type", "代币类型"), [["ar", tokenKind()]], v.kind) +
-      fSel("am-holder", "holder", L("Asset originator", "资产方企业"), holders, v.holder) +
+      CF.filterMenu("am-ts", L("Token status", "代币状态"),
+        [["valid", L("Valid", "有效")], ["void", L("Void", "失效")]], list(v.ts)) +
+      CF.filterMenu("am-ps", L("Pledge status", "质押状态"),
+        [["unpledged", L("Not pledged", "未质押")], ["pledged", L("Pledged", "已质押")]], list(v.ps)) +
+      CF.filterMenu("am-kind", L("Token type", "代币类型"), [["ar", tokenKind()]], list(v.kind)) +
+      CF.filterMenu("am-holder", L("Asset originator", "资产方企业"), holders, list(v.holder)) +
       CF.filterSearch("am-q", L("Token ID, asset originator or minting transaction hash",
                                 "代币编号、资产方企业名或铸造交易哈希"), v.q) +
       '<div class="fb-acts">' +
-      CF.filterSelect("am-order", L("Sort by", "排序"), sortOpts, v.sort + ":" + v.dir, "") +
       '<button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
       '<button class="btn primary" type="button" data-act="am-search">' + L("Search", "查询") + "</button>" +
       "</div></div>";
@@ -509,8 +500,10 @@
   function fullBar(total) {
     return '<div class="list-full-bar"><span>' +
       esc(L("Showing ", "共 ") + total + L(" tokens", " 条代币")) + "</span>" +
-      '<button class="btn" type="button" id="am-full" data-act="list-full" data-v="am-full" aria-pressed="' + !!S.listFull + '">' +
-      CF.ICON.expand + " " + (S.listFull ? L("Exit full window", "退出放大") : L("Expand to window", "放大到整窗")) + "</button></div>";
+      '<button class="btn icon" type="button" id="am-full" data-act="list-full" data-v="am-full" aria-pressed="' + !!S.listFull +
+      '" title="' + esc(S.listFull ? L("Exit full window", "退出放大") : L("Expand to window", "放大到整窗")) +
+      '" aria-label="' + esc(S.listFull ? L("Exit full window", "退出放大") : L("Expand to window", "放大到整窗")) + '">' +
+      (S.listFull ? CF.ICON.close : CF.ICON.expand) + "</button></div>";
   }
 
   function listRow(t) {
@@ -740,7 +733,7 @@
     var act = el.getAttribute("data-act"), value = el.getAttribute("data-v");
     rememberPosition();
     if (act === "st") { cancelLoad(); return; }
-    if (act.indexOf("am-") !== 0 && act !== "clearfilter" && act !== "retry") return;
+    if (act.indexOf("am-") !== 0 && act !== "clearfilter" && act !== "retry" && act !== "filter-set") return;
     e.preventDefault(); e.stopImmediatePropagation();
     var v = readView();
     if (act === "am-copy") copyValue(value);
@@ -758,15 +751,29 @@
     } else if (act === "am-search") {
       v.q = document.getElementById("am-q").value.trim(); refocus = "am-q"; writeView(v);
     } else if (act === "clearfilter") {
-      v.ts = v.ps = v.kind = v.holder = v.q = ""; writeView(v);
+      v.ts = v.ps = v.kind = v.holder = v.q = ""; S.menu = null; writeView(v);
+    } else if (act === "filter-set") {
+      var parts = String(value).split("|"), key = {"am-ts": "ts", "am-ps": "ps", "am-kind": "kind", "am-holder": "holder"}[parts[0]];
+      if (!key) return;
+      v[key] = parts[1] === "all" ? "" : "";
+      if (parts[1] === "all") {
+        var boxes = Array.from(document.querySelectorAll('[data-filter="' + parts[0] + '"]'));
+        v[key] = boxes.map(function (b) { return b.value; }).join(",");
+      }
+      refocus = parts[0]; writeView(v);
     } else if (act === "retry") { cancelLoad(); S.st = "default"; CF.render(); }
   }, true);
   document.addEventListener("change", function (e) {
     var el = e.target;
     if (!isList() || !el.closest("#content")) return;
     var v = readView();
-    if (el.id === "am-order") { var order = el.value.split(":"); v.sort = order[0]; v.dir = order[1]; }
-    else if (el.getAttribute("data-f")) v[el.getAttribute("data-f")] = el.value;
+    var group = el.getAttribute("data-filter");
+    if (group) {
+      var key = {"am-ts": "ts", "am-ps": "ps", "am-kind": "kind", "am-holder": "holder"}[group];
+      if (!key) return;
+      v[key] = Array.from(document.querySelectorAll('[data-filter="' + group + '"]'))
+        .filter(function (b) { return b.checked; }).map(function (b) { return b.value; }).join(",");
+    } else if (el.getAttribute("data-f")) v[el.getAttribute("data-f")] = el.value;
     else return;
     refocus = el.id; writeView(v);
   });

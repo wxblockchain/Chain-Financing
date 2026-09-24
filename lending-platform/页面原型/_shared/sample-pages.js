@@ -395,8 +395,7 @@
       '<td data-label="' + L("Token", "代币") + '">' + tokCell(a.name.slice(-2), a.name) + "</td>" +
       '<td data-label="' + L("Token number", "代币编号") + '"><div class="cell-wrap">' +
         '<span class="mono nw">' + esc(a.no) + "</span>" +
-        '<button class="btn-link sm" type="button" data-act="copy" data-v="' + esc(a.no) + '">' +
-        L("Copy", "复制") + "</button></div></td>" +
+        CF.copyBtn("copy", a.no, L("Copy token number", "复制代币编号")) + "</div></td>" +
       '<td data-label="' + L("Asset holder", "资产方企业") + '">' + esc(nm(a.holder)) + "</td>" +
       '<td data-label="' + L("Token type", "代币类型") + '">' + L("Receivables", "应收账款类") + "</td>" +
       '<td data-label="' + L("Token quantity", "代币数量") + '" class="num">' + a.qty.toFixed(2) + "</td>" +

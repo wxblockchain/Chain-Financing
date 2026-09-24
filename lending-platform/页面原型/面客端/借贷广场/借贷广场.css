@@ -292,9 +292,13 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 @media(max-width:640px){.modal-mask:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){padding:var(--sp-2)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){width:100%;max-height:calc(100dvh - 16px)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) :is(.modal-h,.modal-b,.modal-f){padding:var(--sp-3)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-f .btn{flex:1}}
 
 /* Section labels locate content; all four lists remain in document flow. */
-.ls-section-nav{position:sticky;top:var(--ls-section-top,80px);z-index:2;display:flex;gap:var(--sp-2);overflow-x:auto;background:var(--surface,#fff);border:1px solid var(--border);border-radius:var(--r,8px);padding:4px;box-shadow:var(--shadow)}
-.ls-section-nav button{flex:1 0 auto;min-height:44px;border:0;border-radius:4px;background:transparent;color:var(--muted);padding:8px 12px;font:inherit;cursor:pointer;white-space:nowrap}
-.ls-section-nav button[aria-current]{color:var(--accent);background:var(--accent-soft,#edf5f5);font-weight:600}
+/* 分区导航采用与控制台一致的下划线页签：不做盒子，不用背景块。 */
+.ls-section-nav{position:sticky;top:var(--ls-section-top,80px);z-index:2;display:flex;gap:var(--sp-6);overflow-x:auto;
+  background:var(--bg);border-bottom:1px solid var(--border);padding:0}
+.ls-section-nav button{flex:0 0 auto;min-height:48px;border:0;border-bottom:2px solid transparent;background:transparent;
+  color:var(--muted);padding:var(--sp-3) 0;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.ls-section-nav button:hover{color:var(--text)}
+.ls-section-nav button[aria-current]{color:var(--accent);border-bottom-color:var(--accent)}
 .ls-section-nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .ls-detail-main>:is(#ls-pledged-tokens,#ls-applications,#ls-disbursements,#ls-repayments){scroll-margin-top:calc(var(--ls-section-top,80px) + 74px)}
 .ls-reference-currencies{border:0;padding:0;margin:0}.ls-reference-currencies legend{margin-bottom:12px;font-weight:600}.ls-reference-currencies label{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin-right:24px;cursor:pointer}

@@ -155,6 +155,21 @@
     TK20260903000415: { complete: true, rows: [{ address: "0x3333333333333333333333333333333333333415", qty: 1120000, value: 1120000, pledged: true, project: PROJECTS[2] }] },
     TK20260818000361: { complete: true, rows: [{ address: "0x1111111111111111111111111111111111111147", qty: 2040000, value: 2040000, pledged: false, project: null }] }
   };
+  /* 发行平台会把每张代币的持有地址、持有数量与价值传过来：为每张尚未单独编写的代币
+     补一条同源记录，地址按代币编号推导，仍是虚构演示数据。 */
+  (function () {
+    TOKENS.forEach(function (t, i) {
+      if (AM.HOLDING_SAMPLES[t.no]) return;
+      var pledged = !!(t.pl && t.pl.st === "PS-2" && t.pl.chain === "ok" && t.pl.project);
+      AM.HOLDING_SAMPLES[t.no] = { complete: true, rows: [{
+        address: "0x" + hex(4100 + i * 13, 40),
+        qty: t.qty, value: t.val,
+        pledged: pledged,
+        project: pledged ? t.pl.project : null
+      }] };
+    });
+  })();
+
   AM.PROJECTS = PROJECTS;
   AM.TOKENS = TOKENS;
   AM.BUYERS = BUYERS;
