@@ -1,35 +1,19 @@
-/* L7: contract comparison and transaction forms on the existing portal. */
+/* L7: disbursement recording, account selection and receipt confirmation on the existing portal. */
+.ln-counterparty{margin:0;color:var(--muted);font-size:var(--fs-13)}
 .ln-stack{display:flex;flex-direction:column;gap:var(--sp-4)}
 .ln-drawer[data-view=confirm] .dl{margin:0}
-.ln-counterparty,.ln-confirm-deadline{margin:0;color:var(--muted);font-size:var(--fs-13)}
 .ln-row{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap}
 .ln-between{justify-content:space-between}
 .ln-heading{font-size:var(--fs-16);margin:0}
 .ln-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4)}
 .ln-grid>*{min-width:0}
 .ln-full{grid-column:1/-1}
-.ln-detail .dl{grid-template-columns:160px minmax(0,1fr)}
-.ln-detail .dl dt,.ln-drawer .dl dt{color:var(--muted)}
+.ln-drawer .dl dt{color:var(--muted)}
 .ln-drawer .dl{grid-template-columns:130px minmax(0,1fr);gap:var(--sp-2) var(--sp-3)}
 .drawer:has(.ln-drawer){width:760px;max-width:100vw}
 .drawer:has(.ln-drawer) .drawer-f{flex-wrap:wrap;justify-content:space-between}
 .drawer:has(.ln-drawer) .drawer-h b{font-size:var(--fs-14)}
 .modal:has(.ln-confirm){max-width:560px}
-.ln-compare{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--sp-4)}
-.ln-compare>section{min-width:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
-.ln-compare-head{padding:var(--sp-3);border-bottom:1px solid var(--border);background:var(--card-2)}
-.ln-compare-head h3{font-size:var(--fs-14);margin:0 0 var(--sp-2)}
-.ln-paper-scroll{height:340px;overflow:auto;background:var(--card-2);padding:var(--sp-3)}
-.ln-paper{background:var(--card);border:1px solid var(--border);padding:var(--sp-4);min-height:390px;font-size:var(--fs-12);overflow-wrap:anywhere}
-.ln-paper h4{text-align:center;font-size:var(--fs-16);margin:var(--sp-2) 0 var(--sp-4)}
-.ln-paper p{margin:var(--sp-3) 0}
-.ln-paper .ln-contract-amount{font-family:var(--mono);font-size:var(--fs-19);display:block;margin-top:var(--sp-2)}
-.ln-paper[data-zoom="large"]{width:600px;font-size:var(--fs-16)}
-.ln-terms{height:340px;overflow:auto;padding:var(--sp-3)}
-.ln-terms dl{margin:0;display:grid;gap:var(--sp-3)}
-.ln-terms dt{font-size:var(--fs-12);color:var(--muted)}
-.ln-terms dd{font-size:var(--fs-13);margin:var(--sp-1) 0 0;overflow-wrap:anywhere}
-.ln-terms .ln-summary-amount{font-family:var(--mono);font-size:var(--fs-19)}
 .ln-document{display:block;width:100%;height:340px;border:0;object-fit:contain;background:var(--card-2)}
 .ln-small{font-size:var(--fs-12);color:var(--muted)}
 .ln-drawer textarea.inp{min-height:88px;padding:var(--sp-3);resize:vertical}
@@ -43,20 +27,8 @@
 .ln-step-track{display:grid;gap:var(--sp-3);margin:var(--sp-4) 0}
 .ln-step-track>div{padding-left:var(--sp-3);border-left:2px solid var(--border)}
 .ln-step-track [aria-current="step"]{border-color:var(--accent);color:var(--accent)}
-.ln-detail .ls-steps{grid-template-columns:1fr;gap:var(--sp-2)}
-.ln-detail .ls-step{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:var(--sp-2);border-top:0;border-left:2px solid var(--border);padding:var(--sp-2) 0 var(--sp-2) var(--sp-3)}
-.ln-detail .ls-step[data-current=true]{border-left-color:var(--accent)}
-.ln-detail .ls-step h3{margin:0;overflow-wrap:anywhere}
-.ln-detail .portal-rail{min-width:0}
-.ln-detail .portal-rail .ln-stack{gap:var(--sp-2)}
-.ln-detail .portal-rail .card-b>p{margin:0}
-.ln-detail .portal-rail .ls-step{padding-top:var(--sp-1);padding-bottom:var(--sp-1)}
-.ln-detail .portal-rail .ln-step-track{margin:var(--sp-2) 0}
 .drawer:has(.ln-drawer) .drawer-h .btn{min-width:44px;min-height:44px}
-.ln-detail .ls-tabs{padding:0 var(--sp-3);gap:var(--sp-1)}
-.ln-detail .ls-tabs button{padding:var(--sp-2) var(--sp-1)}
 .ln-drawer>p{margin:0}
-.ln-drawer .ln-compare-head .inp{height:44px}
 .ln-record-table{table-layout:fixed}
 .ln-record-table td{overflow-wrap:anywhere}
 .ln-record-table .col-act{position:sticky;right:0;background:var(--card);width:140px}
@@ -70,14 +42,12 @@
 .ln-demo .btn{margin:var(--sp-1);height:auto;min-height:44px;white-space:normal}
 .ln-demo label{display:block;margin:var(--sp-2) 0}
 .ln-demo select{width:100%}
-.ln-tools-mark{font-size:var(--fs-12);color:var(--muted)}
 .ln-drawer .btn-link{min-height:44px}
-.ln-drawer :focus-visible,.ln-detail :focus-visible{outline:2px solid var(--text);outline-offset:2px}
+.ln-drawer :focus-visible{outline:2px solid var(--text);outline-offset:2px}
 .ln-files-read{margin:0;padding:0;list-style:none}
 .ln-files-read li{padding:var(--sp-2) 0;overflow-wrap:anywhere}
-@media(max-width:900px){.ln-detail .portal-cols{grid-template-columns:minmax(0,1fr)}.ln-detail .portal-rail{position:static}.ln-detail .ls-steps{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.drawer:has(.ln-drawer){width:100vw}.ln-compare,.ln-grid{grid-template-columns:1fr}.ln-compare{gap:var(--sp-3)}.ln-terms{height:auto;max-height:420px}.ln-drawer .dl,.ln-detail .dl{grid-template-columns:1fr;gap:var(--sp-1)}.ln-drawer .dl dd,.ln-detail .dl dd{margin-bottom:var(--sp-3)}.drawer:has(.ln-drawer) .drawer-b{padding:var(--sp-4)}.drawer:has(.ln-drawer) .drawer-f{padding:var(--sp-3);gap:var(--sp-2)}.drawer:has(.ln-drawer) .drawer-f .ln-row{gap:var(--sp-1)}.drawer:has(.ln-drawer) .drawer-f .btn{padding:0 var(--sp-2);font-size:var(--fs-12)}.ln-detail .ls-steps{grid-template-columns:1fr}.ln-record-table .col-act{position:static;width:auto}}
-@media(prefers-reduced-motion:reduce){.ln-detail *,.ln-drawer *{animation:none!important;transition:none!important}}
+@media(max-width:640px){.drawer:has(.ln-drawer){width:100vw}.ln-grid{grid-template-columns:1fr}.ln-drawer .dl{grid-template-columns:1fr;gap:var(--sp-1)}.ln-drawer .dl dd{margin-bottom:var(--sp-3)}.drawer:has(.ln-drawer) .drawer-b{padding:var(--sp-4)}.drawer:has(.ln-drawer) .drawer-f{padding:var(--sp-3);gap:var(--sp-2)}.drawer:has(.ln-drawer) .drawer-f .ln-row{gap:var(--sp-1)}.drawer:has(.ln-drawer) .drawer-f .btn{padding:0 var(--sp-2);font-size:var(--fs-12)}.ln-record-table .col-act{position:static;width:auto}}
+@media(prefers-reduced-motion:reduce){.ln-drawer *{animation:none!important;transition:none!important}}
 
 .ln-business-detail{display:grid;gap:var(--sp-3)}
 .ln-business-detail h3{margin:0}
@@ -94,3 +64,7 @@
 .ln-agreements{min-width:560px}.ln-agreements .btn-link{white-space:normal;text-align:left;overflow-wrap:anywhere}.ln-agreements td .hint{display:block}
 .drawer:has(.ln-confirm){width:760px;max-width:100vw}.ln-drawer[data-view=detail] .dl .btn{height:auto;min-height:32px;padding:var(--sp-1) var(--sp-2)}
 @media(max-width:640px){.ln-list{min-width:0}.ln-detail-hero{align-items:flex-start;flex-direction:column}.ln-detail-hero .ln-amount{font-size:var(--fs-19)}.ln-agreements{min-width:0}.ln-drawer .card-b{padding:var(--sp-3)}.ln-drawer .ln-row .btn{white-space:normal;height:auto;min-height:40px}}
+
+/* WS-376: the repayment account chooser reuses the quote module's account component. */
+.ln-drawer .cq-account-detail .dl{margin:0}
+.ln-drawer .cq-account-option{min-height:44px}

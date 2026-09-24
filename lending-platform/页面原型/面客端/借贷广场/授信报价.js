@@ -1,12 +1,10 @@
 /* L6 · extends the L5 project, shared shell and overlay; offline demonstration only. */
 (function(CF){
   'use strict';
-  const D=CF.LS,S=CF.S,L=CF.L,E=CF.esc,H=3600000,KEY='hc-ws375-v2';
+  const D=CF.LS,S=CF.S,L=CF.L,E=CF.esc,H=3600000,KEY='hc-ws376-v1';
   const Q=CF.CQ={};
   ['P-LS-04','P-LS-05','P-LS-06'].forEach(id=>CF.PAGES[id]={end:'asset',layout:'portal',parent:'P-LS-02',presentation:'drawer'});
   let db,flow={},busy=false,problem='',problemCopy=['',''],invalid='',fault='normal',fund='fund-a',accountScene='ready',focusBack=null;
-  /* 接受环节已不收取合同文件；files 与 Q.file 暂留给放款册的合同版本展示，待其本轮修订一并清理。 */
-  const files=new Map();
   const creditFiles=new Map();
   let companyState='complete',lastView='',pendingUI=null,returnTarget=null,originScroll=0;
   const detailSteps=new Map();
@@ -147,7 +145,14 @@
     {id:'EA-DEMO-F02',owner:'entity-demo-a',kind:'fiat',ccy:'USD',label:['Hong Kong collection account','香港收款账户'],addressCountry:'HK',addressCity:'Hong Kong',addressLine:'8 Example Road, Central',iban:'HK00DEMO0000000002',bank:'Demo Bank (HK)',bankCity:'Hong Kong',bankCountry:'HK',swift:'',at},
     {id:'EA-DEMO-C01',owner:'entity-demo-a',kind:'crypto',chain:'ETH',label:['ETH receiving address','ETH 收款地址'],address:'0x00000000000000000000000000000000000000a1',primary:true,at},
     {id:'EA-DEMO-C02',owner:'entity-demo-a',kind:'crypto',chain:'TRON',label:['TRON receiving address','TRON 收款地址'],address:'TDemo0000000000000000000000000000a1',at},
-    {id:'EA-DEMO-F03',owner:'entity-demo-b',kind:'fiat',ccy:'USD',label:['Main receiving account','主收款账户'],addressCountry:'SG',addressCity:'Singapore',addressLine:'20 Example Avenue',iban:'SG64DEMO0000000003',bank:'Demo Bank Limited',bankCity:'Singapore',bankCountry:'SG',swift:'DEMOSGSG',primary:true,at}
+    {id:'EA-DEMO-F03',owner:'entity-demo-b',kind:'fiat',ccy:'USD',label:['Main receiving account','主收款账户'],addressCountry:'SG',addressCity:'Singapore',addressLine:'20 Example Avenue',iban:'SG64DEMO0000000003',bank:'Demo Bank Limited',bankCity:'Singapore',bankCountry:'SG',swift:'DEMOSGSG',primary:true,at},
+    /* 资金方同样在企业账户模块维护账户；放款登记时从中选用将来的还款收款账户。 */
+    {id:'EA-DEMO-R01',owner:'fund-a',kind:'fiat',ccy:'USD',label:['Singapore repayment account','新加坡还款收款账户'],addressCountry:'SG',addressCity:'Singapore',addressLine:'1 Example Quay, #20-05',iban:'SG64DEMO0000001001',bank:'Demo Capital Bank',bankCity:'Singapore',bankCountry:'SG',swift:'DEMOCPSG',primary:true,at},
+    {id:'EA-DEMO-R02',owner:'fund-a',kind:'fiat',ccy:'USD',label:['London repayment account','伦敦还款收款账户'],addressCountry:'GB',addressCity:'London',addressLine:'12 Example Street',iban:'GB00DEMO0000001002',bank:'Demo Capital Bank (UK)',bankCity:'London',bankCountry:'GB',swift:'',at},
+    {id:'EA-DEMO-R03',owner:'fund-a',kind:'crypto',chain:'ETH',label:['ETH repayment address','ETH 还款收款地址'],address:'0x00000000000000000000000000000000000000b1',primary:true,at},
+    {id:'EA-DEMO-R04',owner:'fund-a',kind:'crypto',chain:'TRON',label:['TRON repayment address','TRON 还款收款地址'],address:'TDemo0000000000000000000000000000b2',at},
+    {id:'EA-DEMO-R05',owner:'fund-b',kind:'fiat',ccy:'USD',label:['Main repayment account','主还款收款账户'],addressCountry:'HK',addressCity:'Hong Kong',addressLine:'9 Example Road, Central',iban:'HK00DEMO0000001003',bank:'Demo Capital Bank (HK)',bankCity:'Hong Kong',bankCountry:'HK',swift:'DEMOCPHK',primary:true,at},
+    {id:'EA-DEMO-R06',owner:'fund-b',kind:'crypto',chain:'ETH',label:['ETH repayment address','ETH 还款收款地址'],address:'0x00000000000000000000000000000000000000b3',primary:true,at}
   ];}
   const accountKind=ccy=>ccy==='USD'?'fiat':'crypto';
   const fiatKeys=['label','addressCountry','addressCity','addressLine','iban','bank','bankCity','bankCountry','swift'];
@@ -172,7 +177,13 @@
   // Correct legacy demo provenance without recalculating any accepted quote snapshot.
   db.quotes.forEach(q=>[q.fx,q.l7?.fx].filter(Boolean).forEach(fx=>{if(fx.version?.startsWith('FX-DEMO-')&&fx.source?.[0]==='Token issuance platform · demo')fx.source=['Lending platform · demo','借贷平台 · 演示'];}));
   Q.data=()=>db;
-  Q.related=q=>!!q&&related(q);Q.file=id=>files.get(id);Q.save=save;Q.startJourney=step=>journeyStart(step);
+  Q.related=q=>!!q&&related(q);Q.save=save;Q.startJourney=step=>journeyStart(step);
+  /* 账户目录与授信协议文件由本模块保管；放款册只读消费同一份，不另建第二套字段。 */
+  Q.accounts=(owner,kind)=>(db.accounts||[]).filter(a=>a.owner===owner&&a.kind===kind);
+  Q.accountRows=accountRows;Q.accountName=accountName;Q.accountMissing=missingFields;Q.accountSnapshot=accountSnapshot;Q.accountLabels=accountFieldLabels;
+  Q.accountKey=a=>a.kind==='crypto'?E(a.chain)+' · <span class="mono">'+maskAddress(a.address)+'</span>':E(a.bank)+' · <span class="mono">'+maskTail(a.iban)+'</span>';
+  Q.agreements=(owner,fundId)=>db.credits.filter(c=>c.owner===owner&&(!fundId||c.fund===fundId)).flatMap(c=>(c.history||[]).flatMap(h=>(h.agreements||[]).map(f=>({credit:c.id,file:f,available:creditFiles.has(f.id)}))));
+  Q.creditFile=id=>creditFiles.get(id);
   Q.hasHistory=p=>db.quotes.some(q=>q.project===p.id);
   Q.quoteAvailable=p=>{const n=D.numbers(p),d=D.current(p);return !!(d?.state==='open'&&!D.terminal(p)&&!p.expired&&n.limit>=p.balance+n.fly);};
   const originalActions=D.actions;D.actions=p=>({...originalActions(p),quote:S.role==='fund'&&Q.quoteAvailable(p)});
