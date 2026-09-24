@@ -179,10 +179,13 @@
     if (!panel || document.getElementById("am-demo")) return;
     if (curTokenNo()) {
       panel.insertAdjacentHTML("beforeend", '<div class="grp" id="am-demo"><h5>' + L("Holding data · fictional samples", "持有资料 · 虚构样例") + '</h5>' +
-        [["sample", L("Single-address sample", "单地址样例")], ["loading", L("Loading", "加载中")], ["error", L("Load failed", "加载失败")], ["empty", L("Complete empty set", "完整空集合")], ["missing", L("Missing fields", "字段缺失")], ["conflict", L("Conflicting relations", "关系冲突")], ["unavailable", L("Unavailable", "资料不可用")]].map(function (x) {
+        [["sample", L("Single-address sample", "单地址样例")], ["loading", L("Loading", "加载中")], ["error", L("Load failed", "加载失败")],
+         ["empty", L("Complete empty set", "完整空集合")], ["zero", L("Zero-balance historical address", "零余额历史地址")],
+         ["missing", L("Missing fields", "字段缺失")], ["conflict", L("Relation does not check out", "关系核对不上")],
+         ["multi", L("More than one current address", "多个当前地址")], ["unavailable", L("Unavailable", "资料不可用")]].map(function (x) {
           return '<button class="btn" data-act="am-holding-state" data-v="' + x[0] + '">' + x[1] + '</button>';
         }).join("") + '<h5>' + L("Open a sample", "打开样例") + '</h5>' +
-        Object.keys(AM.HOLDING_SAMPLES).map(function (no) { return '<button class="btn" data-act="am-holding-token" data-v="' + no + '">' + no + '</button>'; }).join("") + '</div>');
+        AM.SHOWCASE.map(function (no) { return '<button class="btn" data-act="am-holding-token" data-v="' + no + '">' + no + '</button>'; }).join("") + '</div>');
       return;
     }
     panel.insertAdjacentHTML("beforeend", '<div class="grp" id="am-demo"><h5>' + L("Asset list demonstration", "资产列表演示") + '</h5>' +
@@ -247,16 +250,16 @@
   function buyerName(t) { return nm(AM.BUYERS[t.buyer]); }
   /* 代币名称未下发时展示合约名称，不自造符号。 */
   function tokenName(t) { return t.name || nm(AM.CONTRACT.name); }
-  function tokenKind() { return L("Receivables", "应收账款类"); }
+  /* 代币标准与底层资产类型合并后的单一取值；本期配置表只有一行。 */
+  function tokenKind() { return nm(AM.TOKEN_TYPE); }
   /* 没有 logo 时的首字母块：资产方字母 + 编号末位，整列不会长成一个样。 */
   function markText(t) { return AM.HOLDERS[t.holder][0].slice(-1) + t.no.slice(-1); }
   function dash() { return '<span class="faint">—</span>'; }
 
-  /* 代币状态取上游同步数据；质押状态取本平台质押记录，链上过程态只参与
-     收敛、不出现在页面上。 */
+  /* 代币状态取上游同步数据；质押状态只看一件事——代币当前是否在项目质押合约内。
+     质押审核结论、上链过程态和解押过程态都只参与收敛，不出现在页面上。 */
   function pledgeOf(t) {
-    var p = t.pl;
-    if (p && p.st === "PS-2" && p.chain === "ok") return { on: true, project: p.project };
+    if (AM.inPledgeContract(t)) return { on: true, project: t.pl.project };
     return { on: false, project: null };
   }
   function tsTag(t) {
@@ -272,9 +275,10 @@
   }
   function psWhy(t) {
     var p = pledgeOf(t);
-    if (!p.on) return L("No active pledge on this token", "该代币当前没有生效的质押");
-    if (p.project.draft) return L("The financing project is not public yet", "所属融资项目尚未公开");
-    return L("Counted in " + p.project.id, "已计入 " + p.project.id);
+    if (!p.on) return L("Not held in any pledge contract", "该代币当前不在任何质押合约内");
+    if (p.project.draft) return L("Held in a pledge contract; the financing project is not public yet",
+                                  "代币在质押合约内，所属融资项目尚未公开");
+    return L("Held in the pledge contract of " + p.project.id, "代币在 " + p.project.id + " 的质押合约内");
   }
 
   function shortHash(h) { return h ? h.slice(0, 10) + "…" + h.slice(-8) : ""; }
@@ -313,12 +317,21 @@
     if (holdingLoad.phase === "loading") body = '<div role="status" aria-live="polite">' + CF.skelTable(2) + '</div>';
     else if (holdingMode === "error") body = '<div role="alert">' + CF.empty(L("Could not load holding information", "持有信息加载失败"), "",
       '<button class="btn" data-act="am-holding-retry">' + L("Retry", "重试") + '</button>') + '</div>';
-    else if (holdingMode === "empty") body = CF.empty(L("No holding addresses", "暂无持有地址"), "", "");
     else {
       var data = AM.HOLDING_SAMPLES[t.no];
-      if (holdingMode === "missing" && data) data = { complete: true, rows: data.rows.map(function (r) { return Object.assign({}, r, { qty: null }); }) };
-      if (holdingMode === "conflict" && data) data = { complete: true, rows: data.rows.concat(data.rows) };
-      var valid = ["sample", "missing", "conflict"].indexOf(holdingMode) >= 0 && data && data.complete === true && Array.isArray(data.rows) && data.rows.length === 1;
+      /* 异常响应都由评审工具制造，演示数据本身不预置一份对不上的资料。
+         空集合、零余额历史地址、字段缺失、关系对不上、当前多地址，最终都收敛为
+         「持有信息暂不可用」：不填 0、不造地址、也不说成正常的「暂无持有地址」。 */
+      if (data) {
+        if (holdingMode === "empty") data = { complete: true, rows: [] };
+        if (holdingMode === "zero") data = { complete: true, rows: data.rows.map(function (r) { return Object.assign({}, r, { qty: 0, value: 0 }); }) };
+        if (holdingMode === "missing") data = { complete: true, rows: data.rows.map(function (r) { return Object.assign({}, r, { qty: null }); }) };
+        if (holdingMode === "conflict") data = { complete: true, rows: data.rows.map(function (r) { return Object.assign({}, r, { pledged: !r.pledged }); }) };
+        if (holdingMode === "multi") data = { complete: true, rows: data.rows.concat(data.rows.map(function (r) {
+          return Object.assign({}, r, { address: r.address.slice(0, 24) + "d1f0a7b39c5e42" + r.address.slice(38) });
+        })) };
+      }
+      var valid = holdingMode !== "unavailable" && data && data.complete === true && Array.isArray(data.rows) && data.rows.length === 1;
       if (valid) valid = data.rows.every(function (r) {
         if (!r || typeof r !== "object") return false;
         var p = pledgeOf(t);
@@ -392,6 +405,29 @@
       '<span class="ar" aria-hidden="true">' + (cur && v.dir === "asc" ? "↑" : "↓") + "</span></button></th>";
   }
 
+  /* 排序：账期到期日不在列表信息项里，没有可点的表头，所以排序单独给一个控件，
+     三种依据和方向都从这里选；两个可见列的表头按钮与它同步。 */
+  var SORT_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">' +
+    '<path d="M4.6 2.8v10.4M2.4 10.8l2.2 2.4 2.2-2.4M11.4 13.2V2.8M9.2 5.2l2.2-2.4 2.2 2.4"/></svg>';
+  function sortField(v) {
+    var opts = [
+      ["at:desc", L("Minted at · newest first", "铸造时间 · 新到旧")],
+      ["at:asc", L("Minted at · oldest first", "铸造时间 · 旧到新")],
+      ["val:desc", L("Token value · high to low", "代币价值 · 高到低")],
+      ["val:asc", L("Token value · low to high", "代币价值 · 低到高")],
+      ["due:asc", L("Receivable due date · soonest first", "账期到期日 · 近到远")],
+      ["due:desc", L("Receivable due date · latest first", "账期到期日 · 远到近")]
+    ];
+    var cur = v.sort + ":" + v.dir, label = L("Sort", "排序"), sep = L("Sort: ", "排序：");
+    return '<span class="fb">' + SORT_ICON +
+      '<select class="inp" id="am-sort" data-sort="1" aria-label="' + esc(label) + '"' +
+      (cur === "at:desc" ? "" : ' data-on="1"') + ">" +
+      opts.map(function (o) {
+        return '<option value="' + o[0] + '"' + (o[0] === cur ? " selected" : "") + ">" +
+          esc(sep + o[1]) + "</option>";
+      }).join("") + "</select></span>";
+  }
+
   function selField(id, key, label, opts, cur) {
     var o = '<option value="">' + esc(L("All", "全部")) + "</option>";
     opts.forEach(function (p) {
@@ -409,9 +445,10 @@
     var rows = S.st === "noresult" ? [] : sortRows(base.filter(function (t) { return match(t, v); }), v);
 
     var total = rows.length;
-    /* 汇总只计有效代币：失效代币仍在列表里，但不进数量与价值合计。 */
-    var live = rows.filter(function (t) { return t.ts !== "void"; });
-    var value = sum(live, "val"), amount = sum(live, "qty");
+    /* 汇总按当前筛选与搜索的匹配全集求和，各笔各计一次，含失效代币；
+       「其中失效」是代币数量的子集，不是第三个独立来源。 */
+    var amount = sum(rows, "qty"), value = sum(rows, "val");
+    var voidAmount = sum(rows.filter(function (t) { return t.ts === "void"; }), "qty");
 
     ensureLoad(v, total);
     afterList(v);
@@ -425,15 +462,22 @@
     /* 头部汇总：含已失效代币；空态显示 0，不隐藏整块。
        汇总与列表同批到达，因此加载中时汇总也处在加载中，不先出数再出表。 */
     var wait = S.st === "loading" || (S.st === "default" && load.phase === "initial");
-    function statV(html) { return wait ? '<div class="v"><span class="skel am-skel-v"></span></div>' : '<div class="v">' + html + "</div>"; }
+    function statV(html) {
+      if (wait) return '<div class="v"><span class="skel am-skel-v"></span></div>';
+      // 首批没读到就没有可信的合计：给横线，不拿上一次的数字冒充当前结果。
+      if (S.st === "error") return '<div class="v">' + dash() + "</div>";
+      return '<div class="v">' + html + "</div>";
+    }
     var summary = '<div class="stat-strip am-summary">' +
-      '<div class="s"><div class="k">' + L("Valid tokens", "有效代币数量") +
-        CF.icoChip(AM.CHAIN, {glyph: CF.ICON.chain, hue: 3, small: true}) + "</div>" +
+      '<div class="s"><div class="k">' + L("Token amount", "代币数量") + "</div>" +
         statV(quantity(amount)) +
-        '<div class="n">' + L("tokens · void tokens excluded", "枚 · 不含已失效代币") + "</div></div>" +
-      '<div class="s" data-tone="accent"><div class="k">' + L("Valid token value", "有效代币价值") + "</div>" +
+        '<div class="n">' + L("tokens · void tokens included", "枚 · 含已失效代币") + "</div></div>" +
+      '<div class="s" data-tone="accent"><div class="k">' + L("Token value", "代币价值") + "</div>" +
         statV('<span class="u">USD</span>' + CF.fmtAmt(value)) +
-        '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + "</div></div></div>";
+        '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + "</div></div>" +
+      '<div class="s" data-tone="warn"><div class="k">' + L("Of which void", "其中失效") + "</div>" +
+        statV(quantity(voidAmount)) +
+        '<div class="n">' + L("tokens · part of the amount above", "枚 · 代币数量的子集") + "</div></div></div>";
 
     var holders = AM.HOLDERS.map(function (h, i) { return [String(i), nm(h)]; });
     var filters = '<div class="filterbar">' +
@@ -443,6 +487,7 @@
         [["unpledged", L("Not pledged", "未质押")], ["pledged", L("Pledged", "已质押")]], list(v.ps)) +
       CF.filterMenu("am-kind", L("Token type", "代币类型"), [["ar", tokenKind()]], list(v.kind)) +
       CF.filterMenu("am-holder", L("Asset originator", "资产方企业"), holders, list(v.holder)) +
+      sortField(v) +
       CF.filterSearch("am-q", L("Token ID, holder or hash", "代币编号、企业或哈希"), v.q,
                       L("Token ID, asset originator or minting transaction hash", "代币编号、资产方企业名或铸造交易哈希")) +
       '<div class="fb-acts">' +
@@ -474,7 +519,6 @@
         L("Token list", "代币列表") + '"><table class="tbl resp am-tbl"><thead><tr>' +
         '<th scope="col">' + L("Token", "代币") + "</th>" +
         '<th scope="col">' + L("Token ID", "代币编号") + "</th>" +
-        '<th scope="col">' + L("Chain", "所属链") + "</th>" +
         '<th scope="col">' + L("Asset originator", "资产方企业") + "</th>" +
         '<th scope="col">' + L("Token type", "代币类型") + "</th>" +
         '<th scope="col">' + L("Token amount", "代币数量") + "</th>" +
@@ -515,10 +559,9 @@
       '<td data-label="' + esc(L("Token ID", "代币编号")) + '"><div class="cell-wrap">' +
         '<button class="btn-link mono am-id" type="button" data-act="am-copy" data-v="' + esc(t.no) + '" aria-label="' +
         esc(L("Copy token ID: ", "复制代币编号：") + t.no) + '" title="' + L("Copy token ID", "复制代币编号") + '">' + esc(t.no) + "</button></div></td>" +
-      '<td data-label="' + esc(L("Chain", "所属链")) + '">' + CF.icoChip(AM.CHAIN, {glyph: CF.ICON.chain, hue: 3, small: true}) + "</td>" +
       '<td data-label="' + esc(L("Asset originator", "资产方企业")) + '">' + esc(holderName(t)) + "</td>" +
       '<td data-label="' + esc(L("Token type", "代币类型")) + '">' + esc(tokenKind()) + "</td>" +
-      '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="num">' + t.qty.toFixed(2) + L(" tokens", " 枚") + "</td>" +
+      '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="num">' + quantity(t.qty) + L(" tokens", " 枚") + "</td>" +
       '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="num nw am-val">' +
         CF.icoChip("USD", {hue: 1, small: true, iconOnly: true}) + '<span class="am-val-n">' + CF.fmtAmt(t.val, "USD") + "</span></td>" +
       '<td data-label="' + esc(L("Token status", "代币状态")) + '">' + tsTag(t) + "</td>" +
@@ -570,13 +613,15 @@
       "</div></div></section>";
 
     var info = section(L("Token information", "代币信息"), dl([
-      [L("Token amount", "代币数量"), '<span class="num">' + t.qty.toFixed(2) + L(" tokens", " 枚") + "</span>"],
+      [L("Token amount", "代币数量"), '<span class="num">' + quantity(t.qty) + L(" tokens", " 枚") + "</span>"],
       [L("Token value", "代币价值"), '<span class="num">' + CF.fmtAmt(t.val, "USD") + "</span>"],
       [L("Token type", "代币类型"), esc(tokenKind())],
-      [L("Chain", "所属链"), esc(AM.CHAIN)],
-      [L("Token contract", "所属合约"), esc(nm(AM.CONTRACT.name)) +
+      /* 发行合约地址是链上查验的必要事实，完整展示、不缩略。 */
+      [L("Token contract", "代币发行合约"), esc(nm(AM.CONTRACT.name)) +
         '<div class="am-addr"><span class="mono">' + esc(AM.CONTRACT.addr) + "</span>" +
-        copyBtn(AM.CONTRACT.addr, L("Contract address", "合约地址")) + "</div>", true],
+        copyBtn(AM.CONTRACT.addr, L("Token contract address", "代币发行合约地址")) + "</div>", true],
+      /* 质押链只读，与企业账户的结算收款链是两个概念，不合用一个「链」字段。 */
+      [L("Pledge chain", "质押链"), CF.icoChip(AM.CHAIN, {glyph: CF.ICON.chain, hue: 3, small: true})],
       [L("Minting transaction hash", "铸造交易哈希"), hashRow(t.mintTx), true],
       [L("Minted at", "铸造时间"), CF.fmtTime(t.at)]
     ]));
@@ -602,12 +647,19 @@
       [L("Attested at", "存证时间"), a.at ? CF.fmtTime(a.at) : dash()]
     ]));
 
+    /* 详情唯一的引导入口，游客与登录态都有，文案按身份变化；不遮挡上面任何公开信息。 */
+    var ctaCopy = S.role === "guest"
+      ? [L("Become a funder and finance receivables like this one.", "成为资金方，参与此类资产融资。"),
+         L("Sign in or apply to join", "登录或申请入驻")]
+      : S.role === "signed"
+        ? [L("Choose your role in My console to take part in financing receivables like this one.",
+             "在我的控制台选择角色后，即可参与此类资产的融资业务。"),
+           L("Go to my console", "前往我的控制台")]
+        : [L("Browse financing projects backed by receivables like this one.", "前往借贷广场，查看此类资产的融资项目。"),
+           L("Go to the lending marketplace", "前往借贷广场")];
     var cta = '<section class="card am-sec am-cta"><div class="card-b">' +
-      "<p>" + (S.role === "guest"
-        ? L("Become a funder and finance receivables like this one.", "成为资金方，参与此类资产融资。")
-        : L("Browse financing projects backed by receivables like this one.", "前往借贷广场，查看此类资产的融资项目。")) + "</p>" +
-      '<button class="btn primary" type="button" data-act="deeplink" data-v="cta">' +
-      (S.role === "guest" ? L("Apply to join", "申请入驻") : L("Go to the lending marketplace", "前往借贷广场")) +
+      "<p>" + ctaCopy[0] + "</p>" +
+      '<button class="btn primary" type="button" data-act="deeplink" data-v="cta">' + ctaCopy[1] +
       "</button></div></section>";
 
     return '<div class="am-detail">' + overview + info + origin + attest + holdingTable(t) + cta + "</div>";
@@ -684,9 +736,14 @@
       }
       if (act === "deeplink") {
         if (v === "cta") {
+          if (S.role === "signed") {
+            if (CF.PAGES["P-MC-01"]) { location.hash = "#/console"; return true; }
+            CF.toast(L("Role selection runs in My console, outside this prototype.", "角色选择在我的控制台完成，不在本原型范围内。"));
+            return true;
+          }
           if (S.role !== "guest" && CF.LSView) { location.hash = "#/marketplace"; return true; }
           CF.toast(S.role === "guest"
-            ? L("Sign-up runs in the account module, outside this prototype.", "申请入驻属账号模块，不在本原型范围内。")
+            ? L("Sign-in and sign-up run in the account module, outside this prototype.", "登录与入驻属账号模块，不在本原型范围内。")
             : L("Opens the lending marketplace, which is outside this prototype.", "该入口指向借贷广场，不在本原型范围内。"));
         } else if (/^S-FP-/.test(String(v))) {
           CF.toast(L("Opens this financing request in the lending marketplace, which is outside this prototype.",
@@ -764,6 +821,10 @@
       if (!key) return;
       v[key] = Array.from(document.querySelectorAll('[data-filter="' + group + '"]'))
         .filter(function (b) { return b.checked; }).map(function (b) { return b.value; }).join(",");
+    } else if (el.getAttribute("data-sort")) {
+      var pair = String(el.value).split(":");
+      v.sort = ["at", "val", "due"].indexOf(pair[0]) >= 0 ? pair[0] : "at";
+      v.dir = pair[1] === "asc" ? "asc" : "desc";
     } else if (el.getAttribute("data-f")) v[el.getAttribute("data-f")] = el.value;
     else return;
     refocus = el.id; writeView(v);

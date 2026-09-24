@@ -9,7 +9,7 @@
       balance: 0, published: published, expires: "2027-09-01T00:00:00Z",
       demands: index ? [] : [{ id: p.id + "-01", amount: 100000, state: "open", at: published }] });
   });
-  AM.TOKENS.filter(function (t) { return t.pl && t.pl.st === "PS-2" && t.pl.chain === "ok" && !t.pl.project.draft; }).forEach(function (t) {
+  AM.TOKENS.filter(function (t) { return AM.inPledgeContract(t) && !t.pl.project.draft; }).forEach(function (t) {
     D.tokens = D.tokens.filter(function (x) { return x.id !== t.no; });
     D.tokens.push({ id: t.no, owner: "entity-demo-b", kind: "ar", units: t.qty, symbol: "AR-DEMO", value: t.val,
       valid: t.ts === "valid", pool: t.pl.project.id, pledge: "pledged", buyer: AM.BUYERS[t.buyer], due: t.to, from: t.from, tx: t.mintTx });
