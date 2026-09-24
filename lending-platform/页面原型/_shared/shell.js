@@ -159,20 +159,17 @@
       options.map(function (o) {
         return '<label class="fb-opt"><input type="checkbox" id="' + esc(id + '-' + o[0]) + '" data-filter="' + esc(id) +
           '" value="' + esc(o[0]) + '"' + (selected.indexOf(o[0]) >= 0 ? ' checked' : '') + '><span>' + esc(o[1]) + '</span></label>';
-      }).join('') +
-      '<div class="fb-panel-acts">' +
-      '<button type="button" class="btn sm" data-act="filter-set" data-v="' + esc(id) + '|all">' + L('Select all', '全选') + '</button>' +
-      '<button type="button" class="btn sm" data-act="filter-set" data-v="' + esc(id) + '|none">' + L('Clear', '清空') + '</button>' +
-      '</div></div>' : '';
+      }).join('') + '</div>' : '';
     return '<span class="fb fb-menu">' + ICON.funnel +
       '<button type="button" class="inp fb-btn" id="' + esc(id) + '" data-act="menu" data-v="filter:' + esc(id) + '"' +
       ' aria-haspopup="true" aria-expanded="' + open + '"' + (n ? ' data-on="1"' : '') + '>' +
       esc(n ? label + ' · ' + n : label) + '</button>' + panel + '</span>';
   };
-  CF.filterSearch = function (id, placeholder, value) {
+  CF.filterSearch = function (id, placeholder, value, fullLabel) {
     return '<span class="fb-q">' + ICON.search +
       '<input class="inp" id="' + esc(id) + '" type="search" value="' + esc(value || '') +
-      '" placeholder="' + esc(placeholder) + '" aria-label="' + esc(placeholder) + '"></span>';
+      '" placeholder="' + esc(placeholder) + '" title="' + esc(fullLabel || placeholder) +
+      '" aria-label="' + esc(fullLabel || placeholder) + '"></span>';
   };
   /* 环形占比图：数值由旁边的表格给出，图形只负责比例。 */
   CF.donut = function (parts, center, caption) {

@@ -443,8 +443,8 @@
         [["unpledged", L("Not pledged", "未质押")], ["pledged", L("Pledged", "已质押")]], list(v.ps)) +
       CF.filterMenu("am-kind", L("Token type", "代币类型"), [["ar", tokenKind()]], list(v.kind)) +
       CF.filterMenu("am-holder", L("Asset originator", "资产方企业"), holders, list(v.holder)) +
-      CF.filterSearch("am-q", L("Token ID, asset originator or minting transaction hash",
-                                "代币编号、资产方企业名或铸造交易哈希"), v.q) +
+      CF.filterSearch("am-q", L("Token ID, holder or hash", "代币编号、企业或哈希"), v.q,
+                      L("Token ID, asset originator or minting transaction hash", "代币编号、资产方企业名或铸造交易哈希")) +
       '<div class="fb-acts">' +
       '<button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
       '<button class="btn primary" type="button" data-act="am-search">' + L("Search", "查询") + "</button>" +
@@ -733,7 +733,7 @@
     var act = el.getAttribute("data-act"), value = el.getAttribute("data-v");
     rememberPosition();
     if (act === "st") { cancelLoad(); return; }
-    if (act.indexOf("am-") !== 0 && act !== "clearfilter" && act !== "retry" && act !== "filter-set") return;
+    if (act.indexOf("am-") !== 0 && act !== "clearfilter" && act !== "retry") return;
     e.preventDefault(); e.stopImmediatePropagation();
     var v = readView();
     if (act === "am-copy") copyValue(value);
@@ -752,15 +752,6 @@
       v.q = document.getElementById("am-q").value.trim(); refocus = "am-q"; writeView(v);
     } else if (act === "clearfilter") {
       v.ts = v.ps = v.kind = v.holder = v.q = ""; S.menu = null; writeView(v);
-    } else if (act === "filter-set") {
-      var parts = String(value).split("|"), key = {"am-ts": "ts", "am-ps": "ps", "am-kind": "kind", "am-holder": "holder"}[parts[0]];
-      if (!key) return;
-      v[key] = parts[1] === "all" ? "" : "";
-      if (parts[1] === "all") {
-        var boxes = Array.from(document.querySelectorAll('[data-filter="' + parts[0] + '"]'));
-        v[key] = boxes.map(function (b) { return b.value; }).join(",");
-      }
-      refocus = parts[0]; writeView(v);
     } else if (act === "retry") { cancelLoad(); S.st = "default"; CF.render(); }
   }, true);
   document.addEventListener("change", function (e) {

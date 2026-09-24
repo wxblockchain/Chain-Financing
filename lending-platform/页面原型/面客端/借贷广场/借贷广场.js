@@ -94,7 +94,8 @@
     fm('ls-tenor',L('Tenor','期限'),[['60',L('60 days','60 天')],['90',L('90 days','90 天')],['120',L('120 days','120 天')]],filter.tenor)+
     fm('ls-status',L('Project status','项目状态'),['raising','locked','financing','closed','settled'].map(k=>[k,txt(stateNames[k])]),filter.status)+
     fm('ls-quote',L('Open for quotes','可报价'),[['yes',L('Yes','是')],['no',L('No','否')]],filter.quote)+
-    CF.filterSearch('ls-keyword',L('Project, request ID or holder','项目、需求编号或资产方'),filter.keyword||'')+
+    CF.filterSearch('ls-keyword',L('Project, request or holder','项目、需求或资产方'),filter.keyword||'',
+      L('Project name, request ID or asset holder','融资项目、需求编号或资产方企业'))+
     '<div class="fb-acts">'+
     btn('ls-clear',L('Reset','重置'))+btn('ls-filter',L('Search','查询'),'',true)+'</div></div>'+
     '<details class="ls-more-filters"'+(advancedOpen||['type','coverage','vmin','vmax','amin','amax'].some(k=>filter[k])||/^filter:ls-(type|coverage)$/.test(S.menu||'')?' open':'')+'><summary>'+L('More filters','更多筛选')+'</summary>'+advancedFilters()+'</details>';}
@@ -367,9 +368,6 @@
       if(act==='ls-detail'){pages.tokens=pages.demands=1;goto(v);return true;}
       if(act==='ls-sort-column'){filter.sort=v==='newest'&&(!filter.sort||filter.sort==='newest')?'oldest':v;writeFilters();return true;}
       if(act==='ls-filter'){['keyword','vmin','vmax','amin','amax'].forEach(k=>{const el=document.getElementById('ls-'+k);if(el)filter[k]=el.value;});writeFilters();return true;}
-      if(act==='filter-set'){const [id,mode]=String(v).split('|'),key=id.replace('ls-','');
-        filter[key]=mode==='all'?Array.from(document.querySelectorAll('[data-filter="'+id+'"]')).map(b=>b.value).join(','):'';
-        refocus=id;writeFilters();return true;}
       if(act==='ls-clear'){filter={};S.st='default';writeFilters();return true;}
       if(act==='ls-page'){const [k,n]=v.split(':');pages[k]=Math.max(1,+n);return true;}
       if(act==='ls-pledge'){openPledge();return true;}

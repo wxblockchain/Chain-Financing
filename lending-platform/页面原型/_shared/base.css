@@ -189,12 +189,13 @@ img,svg{max-width:100%}
   font-size:var(--fs-13);cursor:pointer;min-height:36px}
 .fb-opt:hover{background:var(--card-hover)}
 .fb-opt input{width:16px;height:16px;flex:none;accent-color:var(--accent)}
-.fb-panel-acts{display:flex;gap:var(--sp-2);padding:var(--sp-2) 10px 4px;border-top:1px solid var(--border);margin-top:var(--sp-1)}
-.fb-panel-acts .btn{flex:1;height:var(--ctrl-h-sm);min-height:0;padding:0 10px;font-size:var(--fs-12)}
 /* 搜索框不拉通整行：固定一个够用的宽度，靠右与操作区放在一起。 */
 .filterbar .fb-q{position:relative;flex:0 1 228px;min-width:168px;margin-left:auto;display:inline-flex;align-items:center}
 .filterbar .fb-q>svg{position:absolute;left:12px;width:15px;height:15px;pointer-events:none;color:var(--faint)}
-.filterbar .fb-q .inp{height:var(--ctrl-h-sm);border-radius:var(--radius-pill);padding-left:34px;width:100%}
+.filterbar .fb-q .inp{height:var(--ctrl-h-sm);border-radius:var(--radius-pill);padding-left:34px;width:100%;
+  text-overflow:ellipsis}
+/* 放不下的提示语与输入值以省略号收尾，不在中间硬切。 */
+.filterbar .fb-q .inp::placeholder{text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
 .filterbar .fb-acts{margin-left:var(--sp-2);display:flex;gap:var(--sp-2);align-items:center}
 .filterbar .fb-q+.fb-acts{margin-left:var(--sp-2)}
 .filterbar .fb-acts .btn{height:var(--ctrl-h-sm);min-height:0;padding:0 14px;border-radius:var(--radius-pill)}

@@ -132,7 +132,7 @@
    /* 排序选择器已按用户要求全局移除；以下取值只用于各页签的默认排序。 */
    const sorts=v.tab==='tokens'?[['newest',L('Issued · newest first','签发时间倒序')],['value-asc',L('Value · ascending','价值升序')],['value-desc',L('Value · descending','价值降序')],['due-asc',L('Due · earliest','到期日升序')]]:v.tab==='credits'?[['available-asc',L('Available credit · ascending','可用授信升序')],['available-desc',L('Available credit · descending','可用授信降序')]]:v.tab==='repayments'?[['newest',L('Receipt confirmed · newest first','到账确认时间倒序')],['due-asc',L('Current due date · earliest','本期应还日升序')]]:[['newest',L('Newest first','时间倒序')],['oldest',L('Oldest first','时间升序')],['remaining',L('Time remaining · shortest','剩余时限升序')]];
    if(v.tab==='repayments')h+=pick('periodState',L('Contains instalments','包含期次状态'),[all,...['due','repayConfirming','settled'].map(k=>[k,status(k)])],v.periodState)+pick('confirmLate',L('Confirmation overdue','含确认超期期次'),[all,['yes',L('Yes','是')],['no',L('No','否')]],v.confirmLate);
-   if(['loans','repayments'].includes(v.tab))h+=CF.filterSearch('mc-query',L('Application / business / disbursement','融资申请 / 业务 / 放款编号'),v.query);
+   if(['loans','repayments'].includes(v.tab))h+=CF.filterSearch('mc-query',L('Reference number','完整编号'),v.query,L('Application, business or disbursement number','融资申请 / 业务 / 放款编号'));
    return '<div class="filterbar">'+h+'<div class="fb-acts">'+(['loans','repayments'].includes(v.tab)?b('search',L('Search','查询')):'')+b('clear',L('Reset filters','清空筛选'))+'</div></div>'+(Object.keys(v).some(k=>['filter','secondary','project','query','periodState','confirmLate'].includes(k)&&v[k])?'<div class="mc-filter-note" role="status">'+L('Filtered by: ','已按以下条件过滤：')+E([picks(v.filter).map(status).join(' / '),picks(v.secondary).map(k=>k==='yes'?L('Overdue','逾期'):k==='no'?L('Not overdue','未逾期'):status(k)).join(' / '),picks(v.periodState).map(status).join(' / '),v.confirmLate&&L('Confirmation deadline','确认时限'),v.query,picks(v.project).join(' / ')].filter(Boolean).join(' · '))+'</div>':'');
  }
  function columns(k){return {
@@ -259,8 +259,6 @@
    },
    demo(){return (old.demo?.()||'')+reviewTools();},
    onAct(a,v,e){
-     if(a==='filter-set'&&String(v).startsWith('mc-')){const [group,mode]=String(v).split('|'),field=group.slice(3);
-       setView({[field]:mode==='all'?Array.from(document.querySelectorAll('[data-filter="'+group+'"]')).map(b=>b.value).join(','):'',page:1});return true;}
      if(!a.startsWith('mc-'))return old.onAct?.(a,v,e)||false;
      const key=a.slice(3);
      if(key==='detail'){const [k,id]=v.split('|');goDetail(k,id);}
