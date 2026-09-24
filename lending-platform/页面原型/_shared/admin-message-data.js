@@ -7,7 +7,8 @@ const T=(en,zh)=>({en,zh});
 /* 目标指向仓库内既有的管理端演示记录，权限项沿各目标模块的交付配置。 */
 const agreementVersion=(id,n,permission)=>({to:'agreements',route:'/ops/agreements/version?id='+id+'&v='+n+'&tab=history',permission,
  records:{route:'/ops/agreements/detail?id='+id+'&tab=basic',permission:16}});
-const agreementDetail=(id,permission)=>({to:'agreements',route:'/ops/agreements/detail?id='+id+'&tab=history',permission,
+/* 生效失败的目标是协议详情的基本信息：待生效版本与当前仍生效版本在此同屏可得，且不依赖历史版本读取权限。 */
+const agreementDetail=(id,permission)=>({to:'agreements',route:'/ops/agreements/detail?id='+id+'&tab=basic',permission,
  records:{route:'/ops/agreements/detail?id='+id+'&tab=basic',permission:16}});
 const application=id=>({to:'institution',route:'/ops/institution-reviews/detail?state=submitted&q=&from=&to=&page=1&application='+id,permission:5});
 
