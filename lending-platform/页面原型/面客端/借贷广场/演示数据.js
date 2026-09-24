@@ -6,10 +6,18 @@
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
-  const SCHEMA = 'ws374-1';
+  const SCHEMA = 'ws374-2';
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
   /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
   D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
+  /* 平台统一钱包同样在代码层面维护；部署 gas 由管理端承担，资产方不签名不付费。 */
+  D.WALLET = '0xA17C4f1b0d9E2a7C5b83Df6e21904aB7cD35e082';
+  /* 运营配置的代币类型：代币标准与底层资产类型合并成一个字段，本期只有一行。 */
+  D.TYPES = [{id:'erc20-ar',label:['ERC-20-Receivables','ERC-20-应收账款'],maxRate:0.8,maxTerm:12}];
+  D.type = id => D.TYPES.find(x=>x.id===id) || D.TYPES[0];
+  D.REPAY = ['Quarterly interest, principal at maturity','按季付息、到期还本付息'];
+  D.SETTLE = [['USD','USD'],['USDT','USDT'],['USDC','USDC']];
+  D.PLEDGE_CHAIN = 'ETH';
   D.now = () => Date.now() + D.offset;
   D.iso = () => new Date(D.now()).toISOString();
   D.save = () => { try { localStorage.setItem(KEY, JSON.stringify({schema:SCHEMA,projects:D.projects,tokens:D.tokens,applications:D.applications,executions:D.executions,events:D.events,offset:D.offset,serial:D.serial})); } catch (_) {} };
@@ -21,46 +29,70 @@
     const a=D.applications.find(a=>a.id===ref), e=D.executions.find(e=>e.id===ref);
     const application=a?.id||e?.application||null, token=a?.tokens[0]||e?.token||null;
     if(application&&D.events.some(x=>x.key===key&&x.ref===ref))return;
-    D.events.unshift({project:p.id,key,ref:ref||'',application,token,at:key==='reviewTimeout'?D.reviewDeadline(a):D.iso()});
+    D.events.unshift({project:p.id,key,ref:ref||'',application,token,at:D.iso()});
   };
-  D.reviewDeadline = a => new Date(Date.parse(a.submitted)+2*DAY).toISOString();
-  D.approvalDeadline = a => a.deadline || (a.approvedAt?new Date(Date.parse(a.approvedAt)+7*DAY).toISOString():null);
-  D.latest = (p,id) => [...D.applications].reverse().find(a=>a.project===p.id&&a.tokens.includes(id)&&['review','approved','executing'].includes(a.state)) || [...D.applications].reverse().find(a=>a.project===p.id&&a.tokens.includes(id));
-  D.eligible = a => { const t=a&&D.token(a.tokens[0]),p=a&&D.project(a.project);return !!(a&&D.mine(p)&&a.state==='approved'&&D.now()<Date.parse(D.approvalDeadline(a))&&!D.terminal(p)&&t&&t.owner===p.owner&&t.kind==='ar'&&t.valid&&!t.frozen&&!t.pending&&t.pledge==='free'&&t.application===a.id); };
+  D.latest = (p,id) => [...D.applications].reverse().find(a=>a.project===p.id&&a.tokens.includes(id)&&['review','approved','rejected'].includes(a.state)) || [...D.applications].reverse().find(a=>a.project===p.id&&a.tokens.includes(id));
   D.quoteFee = id => { const t=D.token(id);return {amount:t.feeEstimate??0.0004,currency:t.feeCurrency||'ETH'}; };
   D.agreement = a => ({id:'AGR-'+a.id,name:['Pledge agreement · '+a.id,'质押协议 · '+a.id]});
   D.normalize = () => {
-    D.projects.forEach(p=>{if(!p.kind)p.kind='ar';if(!p.spv)p.spv=D.SPV;});
+    D.projects.forEach(p=>{
+      if(!p.kind||p.kind==='ar')p.kind='erc20-ar';
+      if(!p.spv)p.spv=D.SPV;
+      if(!p.rate)p.rate=D.type(p.kind).maxRate;
+      if(!p.term)p.term=12;
+      if(!p.settle)p.settle=['USD'];
+      if(p.state==='draft')p.state='available';
+    });
+    D.tokens.forEach(t=>{if(t.kind==='ar')t.kind='erc20-ar';});
     D.applications=D.applications.flatMap(a=>a.tokens.map((id,i)=>{
       const row={...a,id:a.tokens.length>1?a.id+'-'+(i+1):a.id,batch:a.batch||a.id,tokens:[id]};
-      row.reviewState=a.reviewState||(['approved','executing','recorded','expired','void'].includes(a.state)?'approved':a.state);
-      if(row.reviewState==='approved'){row.approvedAt=a.approvedAt||a.decided;row.deadline=D.approvalDeadline(row);row.reviewer=a.reviewer||['Demo reviewer '+(i+1),'演示审核员 '+(i+1)];row.agreement=a.agreement||D.agreement(row);}
+      row.reviewState=a.reviewState||a.state;
+      if(row.reviewState==='approved'){row.approvedAt=a.approvedAt||a.decided;row.reviewer=a.reviewer||['Demo reviewer '+(i+1),'演示审核员 '+(i+1)];row.agreement=a.agreement||D.agreement(row);}
       if(row.reviewState==='rejected')row.reviewer=a.reviewer||['Demo reviewer','演示审核员'];
       const t=D.token(id);if(t?.application===a.id)t.application=row.id;
       D.executions.filter(e=>e.application===a.id&&e.token===id).forEach(e=>e.application=row.id);
       return row;
     }));
+    /* 每张在合约内的代币都要有一条逐笔审核记录：老档与播种数据按已通过补齐。 */
+    D.projects.forEach(pr=>{
+      D.tokens.filter(t=>t.pool===pr.id&&t.pledge==='pledged').forEach(t=>{
+        if(D.applications.some(a=>a.project===pr.id&&a.tokens.includes(t.id)&&['review','approved','rejected'].includes(a.state)))return;
+        const at=pr.published||pr.created||D.iso();
+        const a={id:'RV-SEED-'+t.id,batch:'PA-SEED-'+pr.id,project:pr.id,tokens:[t.id],state:'approved',reviewState:'approved',
+          submitted:at,decided:at,approvedAt:at,reviewer:['Demo reviewer','演示审核员']};
+        a.agreement=D.agreement(a);D.applications.push(a);t.application=a.id;
+      });
+    });
   };
+  /* 代币在合约内 = 已质押；是否计入有效质押额另看逐笔审核结论。 */
+  D.appOf = (p,t) => D.applications.filter(a=>a.project===p.id&&a.tokens.includes(t.id)&&['review','approved','rejected'].includes(a.state)).at(-1);
   D.numbers = p => {
+    const rate = p.rate || 0.8;
     const pool = D.tokens.filter(t => t.pool === p.id && t.pledge === 'pledged');
-    const valid = pool.filter(t => t.valid && !t.frozen && !t.pending);
+    const total = pool.reduce((v,t) => v+t.value,0);
+    const valid = pool.filter(t => D.appOf(p,t)?.state==='approved' && t.valid && !t.frozen && !t.pending);
+    const waiting = pool.filter(t => ['review','rejected'].includes(D.appOf(p,t)?.state));
     const value = valid.reduce((v,t) => v+t.value,0);
+    const pendingValue = waiting.reduce((v,t) => v+t.value,0);
     const fly = p.demands.filter(d => ['open','quoted','funding'].includes(d.state)).reduce((v,d) => v+d.amount,0);
-    const limit = value*0.8, free = Math.max(0,limit-p.balance-fly);
-    return {pool,valid,value,fly,limit,free,withdraw:free/0.8,gap:Math.max(0,p.balance-limit),grade:limit<p.balance?'short':free>0?'surplus':'balanced'};
+    const limit = value*rate, free = Math.max(0,limit-p.balance-fly);
+    return {rate,pool,total,valid,value,waiting,pendingValue,fly,limit,free,withdraw:free/rate,
+      gap:Math.max(0,p.balance-limit),grade:limit<p.balance?'short':free>0?'surplus':'balanced'};
   };
   D.current = p => p.demands.find(d => ['open','quoted','funding'].includes(d.state));
   D.actions = p => {
     const n=D.numbers(p), current=D.current(p), mine=D.mine(p), terminal=D.terminal(p);
     const releasable=D.tokens.filter(t => (t.pool===p.id || t.releasedFrom===p.id) && !t.pending && !t.frozen && (t.pledge==='released'||t.pledge==='pledged'&&(!t.valid||t.value<=n.withdraw)));
-    return {mine,pledge:mine&&!terminal,publish:mine&&!terminal&&!p.expired&&!current&&n.free>0,
+    const live=!terminal&&!['review','returned'].includes(p.state);
+    return {mine,review:p.state==='review',returned:p.state==='returned',live,
+      pledge:mine&&live,publish:mine&&live&&!p.expired&&!current&&n.value>0&&n.free>0,
       edit:mine&&current&&current.state==='open'&&!p.expired,withdraw:mine&&releasable.length>0,
       close:mine&&!terminal,canClose:mine&&!terminal&&!n.fly&&!p.balance&&!['locked','financing'].includes(p.state),
       quote:CF.S.role==='fund'&&current&&current.state==='open'&&!terminal&&!p.expired&&n.grade==='surplus'};
   };
-  D.kinds = () => [...new Set(D.tokens.filter(t => t.owner==='entity-demo-a').map(t => t.kind))];
-  D.candidates = p => D.tokens.filter(t => t.owner==='entity-demo-a'&&t.kind===(p?.kind||'ar')&&t.valid&&t.pledge==='free'&&!t.frozen);
-  D.selectable = (t,p) => t && t.owner==='entity-demo-a'&&t.valid&&t.kind===(p?.kind||'ar')&&t.pledge==='free'&&!t.pending&&!t.application&&!t.frozen;
+  D.kinds = () => D.TYPES.filter(x=>D.tokens.some(t=>t.owner==='entity-demo-a'&&t.kind===x.id)).map(x=>x.id);
+  D.candidates = p => D.tokens.filter(t => t.owner==='entity-demo-a'&&t.kind===(p?.kind||'erc20-ar')&&t.valid&&t.pledge==='free'&&!t.frozen);
+  D.selectable = (t,p) => t && t.owner==='entity-demo-a'&&t.valid&&t.kind===(p?.kind||'erc20-ar')&&t.pledge==='free'&&!t.pending&&!t.application&&!t.frozen;
   D.releaseApplication = a => a.tokens.forEach(id => { const t=D.token(id);if(t.application===a.id)t.application=null; });
   D.recompute = p => {
     let n=D.numbers(p);
@@ -69,7 +101,7 @@
         d.state='ended';d.reason='coverage';d.quoteState='ended';D.log(p,'demandVoided',d.id);n=D.numbers(p);
       }
     });
-    if(!D.terminal(p)&&!D.current(p))p.state=p.balance?'financing':'draft';
+    if(!D.terminal(p)&&!D.current(p)&&!['review','returned'].includes(p.state))p.state=p.balance?'financing':'available';
     if(n.grade!==p.grade){ if(n.grade==='short'||p.grade==='short')D.log(p,n.grade==='short'?'coverageShort':'coverageRestored'); p.grade=n.grade;p.coverageAt=D.iso(); }
   };
   D.releasePool = p => {
@@ -79,70 +111,86 @@
   };
   D.sweep = () => {
     let changed=false;
-    D.applications.forEach(a=>{
-      if(a.state==='review'&&D.now()>=Date.parse(a.submitted)+2*DAY){a.state='timeout';a.reason='reviewTimeout';a.finished=D.reviewDeadline(a);a.reviewState='timeout';D.releaseApplication(a);D.log(D.project(a.project),'reviewTimeout',a.id);changed=true;}
-      if(a.state==='approved'&&D.now()>=Date.parse(D.approvalDeadline(a))){a.state='expired';D.releaseApplication(a);D.log(D.project(a.project),'approvalExpired',a.id);changed=true;}
-    });
+    /* 本模块不再有任何倒计时类时限：审核不因等待自动改变结论。 */
     D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const n=D.numbers(p);if(!n.fly&&!p.balance&&!CF.L8?.hasUnsettled(p)){p.state='closed';p.closeReason='expiry';D.releasePool(p);}D.log(p,'projectExpired');changed=true;}});
     if(changed)D.save();return changed;
   };
-  D.create = (name, kind) => {
+  /* 创建即提交审核：不勾代币、不上链、不签名、不收费。 */
+  D.createProject = (form, project) => {
     if(CF.S.role!=='asset')throw Error('permission');
-    const title=(name||'').trim();
+    const title=(form.name||'').trim();
     if(!title||[...title].length>60)throw Error('name');
-    if(!D.kinds().includes(kind))throw Error('kind');
-    const p={id:'FP-DEMO-'+(++D.serial),name:[title,title],owner:'entity-demo-a',kind,spv:D.SPV,state:'draft',balance:0,demands:[],created:D.iso(),published:null,expires:null};
+    if(!D.kinds().includes(form.kind))throw Error('kind');
+    const cfg=D.type(form.kind);
+    const rate=Number(form.rate);
+    if(!(rate>0&&rate<=cfg.maxRate*100))throw Error('rate');
+    const term=Number(form.term);
+    if(!Number.isInteger(term)||term<3||term>cfg.maxTerm)throw Error('term');
+    if(!form.settle||!form.settle.length)throw Error('settle');
+    if(project){
+      if(project.state!=='returned')throw Error('reviewChanged');
+      Object.assign(project,{name:[title,title],kind:form.kind,rate:rate/100,term,settle:[...form.settle],state:'review',reviewReason:null});
+      D.log(project,'projectSubmitted');D.save();return project;
+    }
+    const created=D.iso();
+    const p={id:'FP-DEMO-'+(++D.serial),name:[title,title],owner:'entity-demo-a',kind:form.kind,rate:rate/100,term,
+      settle:[...form.settle],spv:D.SPV,repay:D.REPAY,contract:null,state:'review',balance:0,demands:[],
+      created,published:null,expires:new Date(Date.parse(created)+term*30*DAY).toISOString()};
     D.projects.unshift(p);D.log(p,'created');D.save();return p;
   };
-  D.submit = (p, ids) => {
-    if(CF.S.role!=='asset'||!p||!D.mine(p))throw Error('permission');
-    if(D.terminal(p))throw Error('closed');
-    if(!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!D.selectable(D.token(id),p)))throw Error('selectionChanged');
-    const batch='PA-DEMO-'+(++D.serial),submitted=D.iso(),type=D.numbers(p).valid.length?'additional':'initial';
-    ids.forEach(id=>{const a={id:'RV-DEMO-'+(++D.serial),batch,project:p.id,type,tokens:[id],state:'review',reviewState:'review',submitted,decided:null};D.applications.push(a);D.token(id).application=a.id;D.log(p,'submitted',a.id);});
-    D.save();return p;
+  /* 审核与部署是同一步：部署成功即通过，同时产生合约地址。 */
+  D.decideProject = (p, outcome, reason) => {
+    if(p.state!=='review')throw Error('reviewChanged');
+    if(outcome==='approve'){
+      p.state='available';p.reviewReason=null;
+      p.contract='0x'+(D.serial+7).toString(16).padStart(40,'0');
+      D.log(p,'projectApproved');
+    } else if(outcome==='deployFailed'){ D.log(p,'deployFailed'); }
+    else { p.state='returned';p.reviewReason=reason||['The submitted project details need a correction.','提交的创建信息需要修正后再提交。'];D.log(p,'projectReturned'); }
+    D.save();return true;
   };
+
   D.review = (p, outcome, id) => {
-    D.sweep(); const a=id?D.applications.find(a=>a.id===id&&a.project===p.id):[...D.applications].reverse().find(a=>a.project===p.id&&a.state==='review');if(!a||a.state!=='review')return false;
-    a.state=outcome==='approve'?'approved':'rejected';a.reviewState=a.state;a.decided=D.iso();a.reviewer=['Demo reviewer '+(++D.serial),'演示审核员 '+D.serial];
-    if(a.state==='approved'){a.approvedAt=a.decided;a.deadline=new Date(Date.parse(a.approvedAt)+7*DAY).toISOString();a.agreement=D.agreement(a);}
-    else {a.reason='rejected';D.releaseApplication(a);}D.log(p,a.state,a.id);D.save();return true;
+    const a=id?D.applications.find(a=>a.id===id&&a.project===p.id):[...D.applications].reverse().find(a=>a.project===p.id&&a.state==='review');
+    if(!a||a.state!=='review')return false;
+    a.state=outcome==='approve'?'approved':'rejected';a.reviewState=a.state;a.decided=D.iso();
+    a.reviewer=['Demo reviewer '+(++D.serial),'演示审核员 '+D.serial];
+    if(a.state==='approved'){a.approvedAt=a.decided;a.agreement=D.agreement(a);}
+    else a.reason='rejected';
+    D.log(p,a.state,a.id);D.recompute(p);D.save();return true;
   };
-  D.cancelApplication = a => {D.sweep();if(!D.mine(D.project(a.project))||a.state!=='review')throw Error('reviewChanged');a.state='withdrawn';a.reviewState='withdrawn';a.finished=D.iso();D.releaseApplication(a);D.log(D.project(a.project),'applicationWithdrawn',a.id);D.save();};
-  D.recheck = a => {
-    D.sweep();if(!a||!D.mine(D.project(a.project)))throw Error('permission');
-    if(a.state!=='approved')throw Error('approvalChanged');
-    if(!D.eligible(a)){
-      a.state='void';a.reason='recheck';D.releaseApplication(a);D.log(D.project(a.project),'recheckFailed',a.id);D.save();throw Error('recheck');
-    }
-  };
+  D.cancelApplication = a => {if(!D.mine(D.project(a.project))||a.state!=='review')throw Error('reviewChanged');a.state='withdrawn';a.reviewState='withdrawn';a.finished=D.iso();D.log(D.project(a.project),'applicationWithdrawn',a.id);D.save();};
   D.execute = (p, kind, ids, appId) => {
     if(!D.mine(p))throw Error('permission');
     if(kind==='deposit'){
-      D.sweep();if(!ids.length||new Set(ids).size!==ids.length)throw Error('selectionChanged');
-      const rows=ids.map(id=>D.latest(p,id));if(rows.some(a=>!D.eligible(a)))throw Error('selectionChanged');
-      rows.forEach(a=>{a.state='executing';D.releaseApplication(a);});
+      if(!D.actions(p).pledge)throw Error('closed');
+      if(!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!D.selectable(D.token(id),p)))throw Error('selectionChanged');
     }
     else {
       const n=D.numbers(p);if(!ids.length||ids.some(id=>{const t=D.token(id);return !t||t.owner!==p.owner||t.frozen||t.pending||!(t.pool===p.id&&t.pledge==='pledged'||t.releasedFrom===p.id&&t.pledge==='released');}))throw Error('selectionChanged');
-      const amount=ids.map(D.token).filter(t=>t.pledge==='pledged'&&t.valid).reduce((v,t)=>v+t.value,0);if(amount>n.withdraw)throw Error('withdrawLimit');
+      const amount=ids.map(D.token).filter(t=>t.pledge==='pledged'&&t.valid&&D.appOf(p,t)?.state==='approved').reduce((v,t)=>v+t.value,0);if(amount>n.withdraw)throw Error('withdrawLimit');
     }
-    ids.forEach(id=>{const t=D.token(id);const actualKind=kind==='deposit'?'deposit':t.pledge==='released'?'redeem':'withdraw';const e={id:'EX-DEMO-'+(++D.serial),project:p.id,token:id,application:kind==='deposit'?D.latest(p,id).id:null,kind:actualKind,state:'processing',at:D.iso(),fee:null,feeCurrency:D.quoteFee(id).currency};D.executions.push(e);t.pending=e.id;D.log(p,'executionStarted',e.id);});D.save();
+    ids.forEach(id=>{const t=D.token(id);const actualKind=kind==='deposit'?'deposit':t.pledge==='released'?'redeem':'withdraw';const e={id:'EX-DEMO-'+(++D.serial),project:p.id,token:id,application:kind==='deposit'?null:D.appOf(p,t)?.id||null,kind:actualKind,state:'processing',at:D.iso(),fee:null,feeCurrency:D.quoteFee(id).currency};D.executions.push(e);t.pending=e.id;D.log(p,'executionStarted',e.id);});D.save();
   };
   D.result = (e, result) => {
     const t=D.token(e.token),p=D.project(e.project);
     if(e.state!=='processing'&&result==='late'){t.frozen=true;e.late=true;e.conflictAt=D.iso();D.log(p,'reconciliation',e.id);D.recompute(p);D.save();return;}
     if(e.state!=='processing'||!['success','failure','noFee'].includes(result))return;
     const a=D.applications.find(a=>a.id===e.application);
-    if(e.kind==='deposit'&&(D.terminal(p)||D.now()>=Date.parse(D.approvalDeadline(a)))){e.observedResult=result;e.observedAt=D.iso();e.fee=result==='noFee'?0:D.quoteFee(e.token).amount;e.boundary=true;D.save();return;}
+    if(e.kind==='deposit'&&D.terminal(p)){e.observedResult=result;e.observedAt=D.iso();e.fee=result==='noFee'?0:D.quoteFee(e.token).amount;e.boundary=true;D.save();return;}
     e.state=result;e.done=D.iso();e.fee=result==='noFee'?0:D.quoteFee(e.token).amount;
     t.pending=null;
     if(e.kind==='deposit'){
-      if(result==='success'){t.pledge=D.terminal(p)?'released':'pledged';t.pool=D.terminal(p)?null:p.id;if(D.terminal(p))t.releasedFrom=p.id;t.tx='0x'+String(D.serial+1).padStart(64,'0');}
+      if(result==='success'){
+        t.pledge='pledged';t.pool=p.id;t.tx='0x'+String(D.serial+1).padStart(64,'0');
+        /* 进入合约即计入待审质押额，等逐笔审核裁定后才转入有效质押额。 */
+        const a2={id:'RV-DEMO-'+(++D.serial),batch:'PA-DEMO-'+p.id,project:p.id,tokens:[t.id],
+          state:'review',reviewState:'review',submitted:D.iso(),decided:null};
+        D.applications.push(a2);t.application=a2.id;D.log(p,'onChain',a2.id);
+      }
       else {t.pledge='free';t.pool=null;}
-    }else if(result==='success'){t.pledge='free';t.pool=null;t.releasedFrom=null;}
+    }else if(result==='success'){const a3=D.appOf(p,t);if(a3&&['review','rejected'].includes(a3.state)){a3.state='withdrawn';a3.reviewState='withdrawn';a3.finished=D.iso();}t.pledge='free';t.pool=null;t.releasedFrom=null;t.application=null;}
     else if(D.terminal(p)){t.pledge='released';t.pool=null;t.releasedFrom=p.id;}
-    if(e.application){const a=D.applications.find(a=>a.id===e.application);if(!D.executions.some(x=>x.application===a.id&&x.state==='processing'))a.state='recorded';}
     D.log(p,result==='success'?'executionSuccess':'executionFailed',e.id);D.recompute(p);D.save();
   };
   D.publish = (p, amount, edit, referenceCurrencies) => {
@@ -160,16 +208,16 @@
   D.seed = () => {
     D.projects=[];D.tokens=[];D.applications=[];D.executions=[];D.events=[];D.offset=0;D.serial=100;
     for(let i=1;i<=24;i++){
-      const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',kind:'ar',spv:D.SPV,state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],published:new Date(D.now()-i*DAY).toISOString(),expires:new Date(D.now()+(365-i)*DAY).toISOString(),quotes:i===3?1:0};
+      const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',kind:'erc20-ar',rate:0.8,term:12,settle:['USD'],repay:D.REPAY,contract:'0x'+(i*31+7).toString(16).padStart(40,'0'),spv:D.SPV,state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],published:new Date(D.now()-i*DAY).toISOString(),expires:new Date(D.now()+(365-i)*DAY).toISOString(),quotes:i===3?1:0};
       if(i!==5&&i!==6)p.demands.push({id:p.id+'-01',amount:i===4?500000:300000,state:i===4?'funded':i===3?'quoted':'open',at:p.published,tenorDays:i===3?90:i===4?120:null,rate:i===3?'6.40':i===4?'6.80':null,institution:i===3?['Demo Capital','演示资金机构']:null,quoteAt:i===3?p.published:null});
       D.projects.push(p);
       for(let j=1;j<=7;j++){const released=[5,6].includes(i);const value=j===7?100000:150000;
-        D.tokens.push({id:'TK-DEMO-'+i+'-'+j,owner:p.owner,kind:'ar',units:1,symbol:'AR-DEMO',value,valid:i===4?j<=3:j!==7,pool:released?null:p.id,releasedFrom:released?p.id:null,pledge:released?'released':'pledged',buyer:['Demo Buyer '+j,'演示买方 '+j],due:'2027-01-20',from:'2026-07-20',tx:'0x'+(i*10+j).toString(16).padStart(64,'0')});}
+        D.tokens.push({id:'TK-DEMO-'+i+'-'+j,owner:p.owner,kind:'erc20-ar',units:1,symbol:'AR-DEMO',value,valid:i===4?j<=3:j!==7,pool:released?null:p.id,releasedFrom:released?p.id:null,pledge:released?'released':'pledged',buyer:['Demo Buyer '+j,'演示买方 '+j],due:'2027-01-20',from:'2026-07-20',tx:'0x'+(i*10+j).toString(16).padStart(64,'0')});}
       p.grade=D.numbers(p).grade;p.coverageAt=p.published;
     }
-    for(let i=1;i<=12;i++)D.tokens.push({id:'TK-FREE-'+String(i).padStart(2,'0'),owner:'entity-demo-a',kind:'ar',units:1,symbol:'AR-DEMO',value:[300000,300000,400000][(i-1)%3],valid:true,pool:null,pledge:'free',buyer:['Demo Buyer '+i,'演示买方 '+i],due:'2027-03-18',from:'2026-09-18'});
+    for(let i=1;i<=12;i++)D.tokens.push({id:'TK-FREE-'+String(i).padStart(2,'0'),owner:'entity-demo-a',kind:'erc20-ar',units:1,symbol:'AR-DEMO',value:[300000,300000,400000][(i-1)%3],valid:true,pool:null,pledge:'free',buyer:['Demo Buyer '+i,'演示买方 '+i],due:'2027-03-18',from:'2026-09-18'});
     const a={id:'PA-DEMO-001',project:D.projects[0].id,type:'additional',tokens:D.tokens.filter(t=>t.id.startsWith('TK-FREE')).slice(0,3).map(t=>t.id),state:'approved',submitted:new Date(D.now()-DAY).toISOString(),decided:new Date(D.now()-3600000).toISOString()};D.applications.push(a);a.tokens.forEach(id=>D.token(id).application=a.id);D.normalize();
-    D.applications[1].batch='PA-DEMO-002';D.applications[1].approvedAt=new Date(D.now()-1800000).toISOString();D.applications[1].decided=D.applications[1].approvedAt;D.applications[1].deadline=new Date(D.now()+7*DAY-1800000).toISOString();
+    D.applications[1].batch='PA-DEMO-002';D.applications[1].approvedAt=new Date(D.now()-1800000).toISOString();D.applications[1].decided=D.applications[1].approvedAt;
     const pending=D.applications[2];pending.state=pending.reviewState='review';pending.decided=pending.approvedAt=pending.deadline=pending.agreement=pending.reviewer=null;
     D.applications.forEach(a=>D.log(D.project(a.project),a.state==='approved'?'approved':'submitted',a.id));D.save();
   };

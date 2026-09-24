@@ -1,7 +1,9 @@
 
 .ls-stack{display:flex;flex-direction:column;gap:var(--sp-5)}
 .ls-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6)}
-.ls-stats{grid-template-columns:repeat(5,minmax(0,1fr))}
+.ls-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--sp-5)}
+@media(max-width:1180px){.ls-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.ls-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .ls-stats .v{font-size:var(--fs-19);overflow-wrap:anywhere}
 .ls-row{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
 .ls-row .push{margin-left:auto}

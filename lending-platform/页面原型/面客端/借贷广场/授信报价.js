@@ -198,7 +198,7 @@
   function openRequest(id,options={}){
     const {selected,onReturn}=typeof options==='string'?{selected:options}:options;
     const p=pNow(),d=p?.demands.find(d=>d.id===id);
-    if(!d||p.state==='draft'&&!D.mine(p)){CF.toast(L('Request unavailable.','需求不存在或无权查看。'));return;}
+    if(!d||['review','returned','available'].includes(p.state)&&!D.mine(p)){CF.toast(L('Request unavailable.','需求不存在或无权查看。'));return;}
     rememberTrigger('cq-request');flow={project:p.id,demand:id,historyOpen:selected,onReturn};refreshRequest();open('request');
   }
   Q.openRequest=openRequest;Q.institution=institution;Q.currentQuote=(p,did)=>requestQuotes(p,did).find(x=>['waiting','funding','funded','terminated'].includes(x.state));
