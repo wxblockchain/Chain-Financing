@@ -18,6 +18,7 @@
 | 管理端共享菜单、目标文件、查询权限编号及邮箱账户菜单 | [`admin-menu.js`](admin-menu.js) |
 | 管理端消息铃铛、预览、未读数量与已读状态 | [`admin-notifications.js`](admin-notifications.js) |
 | 管理端消息虚构记录与分类 | [`admin-message-data.js`](admin-message-data.js) |
+| 滑块（拼图）人机校验 | [`puzzle.js`](puzzle.js) + `base.css` 的 `.cf-puzzle` |
 | 语义、约束、禁止用法、可访问性 | [`design-system/`](design-system/README.md) |
 | 四种 shell 与状态表面的母版 | [`样板/底座样板.html`](样板/底座样板.html) |
 

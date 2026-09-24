@@ -835,3 +835,28 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .file-row-actions{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-1);flex:none;margin-left:auto;white-space:nowrap}
 .file-row-info progress{display:block;width:100%;margin-top:var(--sp-2);accent-color:var(--accent)}
 @media(max-width:600px){.file-row{flex-wrap:wrap}.file-row-info{flex-basis:100%}.file-row-actions{flex-wrap:wrap}}
+
+/* Slider verification: opt-in, shared by any flow that must gate an action behind a human check. */
+.cf-puzzle{display:grid;gap:var(--sp-3)}
+.cf-puzzle-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
+.cf-puzzle-head label{font-weight:600;color:var(--text)}
+.cf-puzzle-head .btn{min-width:36px;font-size:var(--fs-16)}
+.cf-puzzle-scene{display:block;width:100%;border-radius:var(--radius-sm);border:1px solid var(--border)}
+.cf-puzzle-placeholder{aspect-ratio:320/156;display:grid;place-items:center;background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.cf-puzzle-placeholder .spinner{width:20px;height:20px;border:2px solid var(--accent);border-top-color:transparent;border-radius:var(--radius-pill);animation:spin 620ms linear infinite}
+.cf-puzzle-track{padding:var(--sp-1);border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--track)}
+.cf-puzzle-slider{display:block;appearance:none;width:100%;height:44px;margin:0;background:transparent;cursor:grab;touch-action:none}
+.cf-puzzle-slider:active{cursor:grabbing}
+.cf-puzzle-slider::-webkit-slider-thumb{appearance:none;width:44px;height:44px;border:2px solid var(--accent);border-radius:var(--radius-xs);background:linear-gradient(var(--accent),var(--accent)) 17px center/2px 14px no-repeat,linear-gradient(var(--accent),var(--accent)) 23px center/2px 14px no-repeat,var(--bg-elev);box-shadow:var(--shadow)}
+.cf-puzzle-slider::-moz-range-thumb{width:40px;height:40px;border:2px solid var(--accent);border-radius:var(--radius-xs);background:linear-gradient(var(--accent),var(--accent)) 15px center/2px 14px no-repeat,linear-gradient(var(--accent),var(--accent)) 21px center/2px 14px no-repeat,var(--bg-elev)}
+.cf-puzzle-slider:disabled{cursor:default;opacity:.65}
+.cf-puzzle-status{margin:0;min-height:1.5em;font-weight:600;font-size:var(--fs-13);color:var(--text)}
+.cf-puzzle .login-caption{margin:0}
+.cf-puzzle[data-status=passed] .cf-puzzle-track{background:var(--ok-bg);border-color:var(--ok)}
+.cf-puzzle[data-status=passed] .cf-puzzle-status{color:var(--ok)}
+.cf-puzzle[data-status=failed] .cf-puzzle-track{background:var(--danger-bg);border-color:var(--danger)}
+.cf-puzzle[data-status=failed] .cf-puzzle-slider{animation:cf-puzzle-shake var(--dur-slow) var(--ease-in-out)}
+.cf-puzzle[data-status=failed] .cf-puzzle-status,.cf-puzzle[data-status=load-error] .cf-puzzle-status{color:var(--danger)}
+.cf-puzzle[data-status=cooldown] .cf-puzzle-track{background:var(--gray-bg)}
+@keyframes cf-puzzle-shake{25%,75%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+@media(prefers-reduced-motion:reduce){.cf-puzzle[data-status=failed] .cf-puzzle-slider{animation:none}}

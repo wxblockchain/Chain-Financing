@@ -69,17 +69,13 @@
   .login-flow .login-actions>.btn{max-width:100%;font-size:var(--fs-12);padding-inline:var(--sp-2)}
 }
 
-/* 资金方：沿用登录域与公共组件，仅增加步骤、核对和账户分组。 */
+/* 资金方：沿用登录域与公共组件，仅增加填写流程、核对和账户分组。 */
 .funder-wrap{max-width:1080px;margin:auto}
 .funder-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:var(--sp-6);align-items:start}
 .funder-form{display:flex;flex-direction:column;gap:var(--sp-5)}
-.funder-steps{display:flex;gap:var(--sp-2);list-style:none;margin:0 0 var(--sp-6);padding:0}
-.funder-steps li{flex:1;min-width:0}
-.funder-steps button{width:100%;display:flex;gap:var(--sp-3);align-items:center;padding:var(--sp-3);min-height:44px;text-align:left;border-bottom:2px solid var(--border);color:var(--muted);font-size:var(--fs-13)}
-.funder-steps [aria-current="step"]{border-color:var(--accent);color:var(--accent);font-weight:650}
-.funder-steps .step-num{display:grid;place-items:center;background:var(--gray-bg);border-radius:var(--radius-pill);width:28px;height:28px;flex:none}
-.funder-steps [aria-current="step"] .step-num{background:var(--accent-soft);color:var(--accent)}
 .funder-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--sp-6)}
+.funder-readiness{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:var(--sp-5)}
+.funder-readiness div:last-child{border-bottom:1px solid var(--border)}
 .funder-detail-heading{margin-top:var(--sp-6)!important}
 .funder-line{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap}
 .funder-line .field{flex:1;min-width:160px}
@@ -91,6 +87,7 @@
 .funder-tabs{display:flex;gap:var(--sp-5);border-bottom:1px solid var(--border);margin-bottom:var(--sp-6)}
 .funder-tabs a{min-height:44px;display:flex;align-items:center;font-size:var(--fs-14);font-weight:600}
 .funder-section{scroll-margin-top:110px;margin-bottom:var(--sp-6)}
+.funder-grid>div>.funder-section:last-child{margin-bottom:0}
 .funder-section .field{max-width:520px}
 .funder-code{display:grid;grid-template-columns:minmax(120px,1fr) auto;gap:var(--sp-3);align-items:end}
 .funder-code button{max-width:100%}
@@ -108,11 +105,6 @@
 .funder-demo{border-top:1px solid var(--border);margin-top:var(--sp-6);padding-top:var(--sp-5)}
 .funder-demo label{display:block;font-size:var(--fs-12);margin-top:var(--sp-3)}
 .funder-demo .seg{gap:var(--sp-2)}
-.funder-sign-actions{justify-content:center}
-.funder-consent{display:flex;align-items:center;gap:var(--sp-3);margin-top:var(--sp-4);min-height:44px;font-size:var(--fs-14)}
-.funder-consent input{width:20px;height:20px;accent-color:var(--accent);flex:none}
-.funder-consent label{cursor:pointer}
-.funder-consent .btn-link{font-size:inherit}
 .funder-field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5)}
 .funder-field-wide{grid-column:1/-1}
 .funder-field-label{font-size:var(--fs-13);font-weight:600}
@@ -141,7 +133,7 @@
 .funder-history summary:hover{color:var(--accent)}
 .funder-history[open] > .funder-line{margin-top:var(--sp-3)}
 @media(max-width:900px){.funder-grid{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:600px){.funder-detail-grid{grid-template-columns:minmax(0,1fr)}.funder-steps button{flex-direction:column;gap:var(--sp-2);padding:var(--sp-2);text-align:center}.funder-code{grid-template-columns:minmax(0,1fr)}.funder-wrap .card-b{padding:var(--sp-4)}.funder-actions .btn{font-size:var(--fs-12);padding-inline:var(--sp-3)}}
+@media(max-width:600px){.funder-detail-grid{grid-template-columns:minmax(0,1fr)}.funder-code{grid-template-columns:minmax(0,1fr)}.funder-wrap .card-b{padding:var(--sp-4)}.funder-actions .btn{font-size:var(--fs-12);padding-inline:var(--sp-3)}}
 
 .funder-reason-text{white-space:pre-wrap;overflow-wrap:anywhere}
 

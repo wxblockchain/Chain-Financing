@@ -582,7 +582,7 @@
   CF.define(CF.AccountView={id:'login-account',dict,content,layers,onAct:action,
     breadcrumbRoute(id){return S.page==='P-L14'&&id===CF.PAGES['P-L14'].parent?D.companyOrigin:null;},
     // 组合只承接已有页面：资产广场及其既有项目链接保持单一实现。
-    ...(CF.AM ? {pages:[...Object.keys(pages),'P-L20','P-L21','P-L22','P-L23','DEMO-F-GATE',...(!CF.MC?['P-MC-01']:[])],
+    ...(CF.AM ? {pages:[...Object.keys(pages),'P-L21','P-L22','P-L23','DEMO-F-GATE',...(!CF.MC?['P-MC-01']:[])],
       beforeRender(){
         syncIdentity();notices();queueMicrotask(postRender);
         CF.LSView?.beforeRender?.();
