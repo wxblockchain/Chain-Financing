@@ -15,7 +15,8 @@
 .mc-table .mc-object{font-weight:650;color:var(--ink);text-align:left}.mc-table .mc-object:hover{color:var(--accent)}
 .mc-table .mc-actions{min-width:125px;max-width:190px}.mc-table .mc-actions .actlink{min-height:44px;display:flex;align-items:center;white-space:normal;text-align:left}
 .mc-table .mc-indicator{display:block;font-size:var(--fs-12);margin-top:var(--sp-1);color:var(--warn)}
-.mc-warning{color:var(--warn)}.mc-root .pager{gap:var(--sp-3)}.mc-root .pager select{width:80px}
+.mc-table td .tag{max-width:100%}
+.mc-root .pager{gap:var(--sp-3)}.mc-root .pager select{width:80px}
 .mc-root .actlink:focus-visible,.mc-root [tabindex="0"]:focus-visible,.mc-root button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .mc-detail-meta{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap;margin-top:var(--sp-2)}
 .mc-detail-meta .mono{overflow-wrap:anywhere}.mc-detail-meta button{font-size:var(--fs-12)}
@@ -44,6 +45,10 @@
 .mc-period-body{padding:var(--sp-6) var(--sp-3)}.mc-history{margin:var(--sp-5) 0;padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
 .mc-history summary{cursor:pointer;min-height:36px;font-weight:600}.mc-history .mc-record{margin-top:var(--sp-4)!important}
 .mc-root .detail-section .dl{grid-template-columns:minmax(135px,32%) minmax(0,1fr)}
+/* 同一分区内连续的字段组之间留出分隔，避免两组栅格贴在一起读成一组。 */
+.mc-root .detail-section .dl+.dl,.mc-root .detail-section .dl+.note,.mc-root .detail-section .dl+h3,.mc-root .mc-record .dl+.actlink{margin-top:var(--sp-5)}
+.mc-root .mc-record .actlink+.actlink{margin-left:var(--sp-5)}
+.mc-root .detail-section .dl+.mc-small,.mc-root .detail-section .note+.mc-small{margin-top:var(--sp-3)}
 .mc-root .detail-section h3{font-size:var(--fs-14);margin:0 0 var(--sp-3)}
 .mc-root .detail-actions .btn{justify-content:center;min-height:44px;height:auto;text-align:left}
 .mc-root .mc-record{padding-top:var(--sp-5);margin-top:var(--sp-5);border-top:1px solid var(--border)}
