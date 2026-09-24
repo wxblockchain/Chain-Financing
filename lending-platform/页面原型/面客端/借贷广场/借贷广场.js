@@ -27,7 +27,7 @@
   const expandedRecords=new Set();let reviewScroll=0;
   const currentTab=()=>actionTabs[project()?.id]||(S.role==='fund'?'financing':'global');
   let listRoute='/marketplace';
-  function readFilters(route){const q=new URLSearchParams(route.split('?')[1]||'');const v={};['currency','tenor','keyword','type','vmin','vmax','amin','amax','status','quote','expiry','coverage','sort'].forEach(k=>{if(q.has(k))v[k]=q.get(k);});return v;}
+  function readFilters(route){const q=new URLSearchParams(route.split('?')[1]||'');const v={};['currency','tenor','keyword','type','vmin','vmax','amin','amax','status','quote','coverage','sort'].forEach(k=>{if(q.has(k))v[k]=q.get(k);});return v;}
   function savePosition(){const box=document.querySelector('#content .listbox');if(S.page===LIST&&box)viewCache[listRoute]={shown:S.shown,top:box.scrollTop,y:window.scrollY,focus:document.activeElement?.closest('.ls-project-row')?.dataset.v||viewCache[listRoute]?.focus||''};}
   // A local list snapshot also survives refresh and opening a detail in a new context.
   function listSnapshot(){savePosition();const c=viewCache[listRoute]||{},q=new URLSearchParams(listRoute.split('?')[1]||'');[['shown',c.shown],['scroll',c.top],['pageScroll',c.y],['focus',c.focus]].forEach(([k,v])=>{if(v)q.set(k,v);else q.delete(k);});return '/marketplace'+(q.size?'?'+q:'');}
@@ -76,7 +76,6 @@
     select('ls-type','Asset type','资产类型',[all,['ar','Receivables','应收账款']],filter.type||'')+
     '<div class="field"><label>'+L('Pool asset value (USD)','池内资产价值（USD）')+'</label><div class="ls-range"><input aria-label="'+L('Minimum pool value','池值下限')+'" class="inp" id="ls-vmin" type="number" min="0" value="'+E(filter.vmin||'')+'"><input aria-label="'+L('Maximum pool value','池值上限')+'" class="inp" id="ls-vmax" type="number" min="0" value="'+E(filter.vmax||'')+'"></div></div>'+
     '<div class="field"><label>'+L('Demand amount (USD)','需求金额（USD）')+'</label><div class="ls-range"><input aria-label="'+L('Minimum demand','需求下限')+'" class="inp" id="ls-amin" type="number" min="0" value="'+E(filter.amin||'')+'"><input aria-label="'+L('Maximum demand','需求上限')+'" class="inp" id="ls-amax" type="number" min="0" value="'+E(filter.amax||'')+'"></div></div>'+
-    select('ls-expiry','Expiry','有效期临近程度',[all,['7','Within 7 days','7 天内'],['30','Within 30 days','30 天内'],['expired','Expired','已到期']],filter.expiry||'')+
     select('ls-coverage','Coverage shortfall','是否覆盖不足',[all,['yes','Yes','是'],['no','No','否']],filter.coverage||'')+
     '<div class="ls-row">'+btn('ls-filter',L('Apply filters','筛选'),'',true)+btn('ls-clear',L('Reset','重置'))+'</div></div>';}
   function filters(){
@@ -88,7 +87,6 @@
     fm('ls-quote',L('Open for quotes','可报价'),[['yes',L('Yes','是')],['no',L('No','否')]],filter.quote)+
     CF.filterSearch('ls-keyword',L('Project, request ID or holder','项目、需求编号或资产方'),filter.keyword||'')+
     '<div class="fb-acts">'+
-    CF.filterSelect('ls-sort',L('Sort by','排序'),[['newest',L('Updated: newest first','更新时间倒序')],['oldest',L('Updated: oldest first','更新时间正序')],['amount',L('Demand: high to low','需求金额从高到低')],['value',L('Pool value: high to low','池内资产价值从高到低')]],filter.sort||'newest','')+
     btn('ls-clear',L('Reset','重置'))+btn('ls-filter',L('Search','查询'),'',true)+'</div></div>'+
     '<details class="ls-more-filters"'+(Object.keys(filter).some(k=>!['currency','tenor','keyword','sort','status','quote'].includes(k)&&filter[k])?' open':'')+'><summary>'+L('More filters','更多筛选')+'</summary>'+advancedFilters()+'</details>';}
   function requestInfo(p){const d=D.current(p);return {d,amount:d?d.amount:null,currency:'USD',tenor:d?.tenorDays,rate:d?.rate,updated:D.events.find(e=>e.project===p.id)?.at||d?.at||p.published};}
@@ -102,8 +100,6 @@
     if(filter.vmin&&n.value<+filter.vmin||filter.vmax&&n.value>+filter.vmax||filter.amin&&amount<+filter.amin||filter.amax&&amount>+filter.amax)return false;
     if(!within(filter.quote,open?'yes':'no'))return false;
     if(filter.coverage&&(filter.coverage==='yes')!==(n.grade==='short'))return false;
-    if(filter.expiry==='expired'&&!p.expired)return false;
-    if(['7','30'].includes(filter.expiry)&&(Date.parse(p.expires)-D.now()>+filter.expiry*86400000||p.expired))return false;
     return true;
   }).sort((a,b)=>filter.sort==='value'?D.numbers(b).value-D.numbers(a).value:filter.sort==='amount'?((D.current(b)||{}).amount||0)-((D.current(a)||{}).amount||0):(filter.sort==='oldest'?1:-1)*(Date.parse(requestInfo(a).updated)-Date.parse(requestInfo(b).updated)));}
   function quoteReason(p){const n=D.numbers(p),d=D.current(p);return S.role==='asset'?L('Asset holders cannot submit quotes.','资产方不可提交报价。'):n.grade==='short'?L('Coverage shortfall','覆盖不足'):p.expired?L('Project term expired','项目已到期'):d&&d.state==='quoted'?L('An active quote already exists','已有在途报价'):L('This request is not open for quotes','当前需求不可报价');}
@@ -360,7 +356,7 @@
       if(act==='ls-create'){createProject();return true;}
       if(act==='ls-detail'){pages.tokens=pages.demands=1;goto(v);return true;}
       if(act==='ls-sort-column'){filter.sort=v==='newest'&&(!filter.sort||filter.sort==='newest')?'oldest':v;writeFilters();return true;}
-      if(act==='ls-filter'){['keyword','type','vmin','vmax','amin','amax','expiry','coverage','sort'].forEach(k=>{const el=document.getElementById('ls-'+k);if(el)filter[k]=el.value;});writeFilters();return true;}
+      if(act==='ls-filter'){['keyword','type','vmin','vmax','amin','amax','coverage'].forEach(k=>{const el=document.getElementById('ls-'+k);if(el)filter[k]=el.value;});writeFilters();return true;}
       if(act==='filter-set'){const [id,mode]=String(v).split('|'),key=id.replace('ls-','');
         filter[key]=mode==='all'?Array.from(document.querySelectorAll('[data-filter="'+id+'"]')).map(b=>b.value).join(','):'';
         refocus=id;writeFilters();return true;}

@@ -179,7 +179,7 @@ img,svg{max-width:100%}
   border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);transform:translateY(-2px) rotate(45deg)}
 .filterbar select.inp[data-on="1"]{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent);font-weight:600}
 .filterbar .fb:has(select[data-on="1"])>svg,.filterbar .fb:has(select[data-on="1"])::after{color:var(--accent);border-color:var(--accent)}
-.filterbar .fb-btn{height:var(--ctrl-h-sm);border-radius:var(--radius-pill);padding:0 16px 0 32px;width:auto;
+.filterbar .fb-btn{height:var(--ctrl-h-sm);border-radius:var(--radius-pill);padding:0 30px 0 32px;width:auto;
   min-width:0;font-size:var(--fs-13);background:var(--bg-elev);text-align:left;cursor:pointer;color:var(--text)}
 .filterbar .fb-btn[data-on="1"]{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent);font-weight:600}
 .filterbar .fb-menu:has(.fb-btn[data-on="1"])>svg{color:var(--accent)}
@@ -191,10 +191,12 @@ img,svg{max-width:100%}
 .fb-opt input{width:16px;height:16px;flex:none;accent-color:var(--accent)}
 .fb-panel-acts{display:flex;gap:var(--sp-2);padding:var(--sp-2) 10px 4px;border-top:1px solid var(--border);margin-top:var(--sp-1)}
 .fb-panel-acts .btn{flex:1;height:var(--ctrl-h-sm);min-height:0;padding:0 10px;font-size:var(--fs-12)}
-.filterbar .fb-q{position:relative;flex:1 1 240px;min-width:180px;display:inline-flex;align-items:center}
+/* 搜索框不拉通整行：固定一个够用的宽度，靠右与操作区放在一起。 */
+.filterbar .fb-q{position:relative;flex:0 1 228px;min-width:168px;margin-left:auto;display:inline-flex;align-items:center}
 .filterbar .fb-q>svg{position:absolute;left:12px;width:15px;height:15px;pointer-events:none;color:var(--faint)}
 .filterbar .fb-q .inp{height:var(--ctrl-h-sm);border-radius:var(--radius-pill);padding-left:34px;width:100%}
-.filterbar .fb-acts{margin-left:auto;display:flex;gap:var(--sp-2);align-items:center}
+.filterbar .fb-acts{margin-left:var(--sp-2);display:flex;gap:var(--sp-2);align-items:center}
+.filterbar .fb-q+.fb-acts{margin-left:var(--sp-2)}
 .filterbar .fb-acts .btn{height:var(--ctrl-h-sm);min-height:0;padding:0 14px;border-radius:var(--radius-pill)}
 .filterbar .fb-label{font-size:var(--fs-12);color:var(--faint);font-weight:600}
 
@@ -581,6 +583,7 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
   .mini-row .lead-col{flex-basis:100%}
   .mini-row .val{text-align:left}
   .mini-row .val .v{font-size:var(--fs-13)}
+  .filterbar .fb-q{flex-basis:100%;margin-left:0}
   .filters .field{max-width:none;flex-basis:100%}
   .filters .acts{margin-left:0;width:100%}
   .filters .acts .btn{flex:1}
