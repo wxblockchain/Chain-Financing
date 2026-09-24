@@ -47,6 +47,21 @@
     email:D.missing?'':'demo'+D.profileVariant+'@example.test'});
   CF.portalAccount=()=>({walletAddress:S.role==='fund'?CF.funder?.review.account.address||'':
     ['asset','signed'].includes(S.role)?D.address||registered:''});
+  /* 当前身份的业务资格由主干一处判定；企业账户等模块读取本函数，不各自维护一套判定。
+     返回值始终带补齐引导，调用方要演示未认证界面时只改 verified，不另写一套引导文案。
+     与其他面客模块一致：演示身份即已认证身份，只有本模块记录到降级、驳回或未通过的注册才判未认证。 */
+  CF.portalEligible=()=>{
+    if(S.role==='fund'){
+      const a=CF.funder?.review.account||{};
+      const pending=a.exists&&a.status!=='verified';
+      return {verified:!a.disabled&&!pending,
+        act:a.status==='draft'||!a.exists?'f-register':'f-status',value:'',
+        label:a.status==='draft'||!a.exists?['Go to institution registration','去完成机构注册']:['View review progress','查看审核进度']};
+    }
+    if(S.role==='asset')return {verified:!D.downgraded&&!D.rejected,
+      act:'login-leave',value:'verify',label:['Complete verification ↗','前往完成实名认证 ↗']};
+    return {verified:false};
+  };
 
   function btn(en,zh,act,value='',kind='',disabled=false) {
     return `<button type="button" class="btn ${kind}" data-act="${act}" data-v="${esc(value)}" ${disabled?'disabled':''}>${L(en,zh)}</button>`;
@@ -436,8 +451,7 @@
       case 'login-signout':endSession('logout');break;
       case 'login-profile-retry':if(['accountState','personalState','companyState'].includes(v))D[v]='idle';break;
       case 'login-company':{const parent=pages[S.page]?'P-F-AM-01':S.page;CF.PAGES['P-L14'].parent=parent;D.companyOrigin=pages[S.page]?'/assets':location.hash.slice(1);D.companyState='idle';go('/account/company');break;}
-      case 'login-enterprise-account':
-        D.reviewMessage=L('Payout and funding accounts are delivered by the enterprise account module.','收款 / 出资账户由企业账户模块交付。');S.demo=true;S.menu=null;break;
+      case 'login-enterprise-account':S.menu=null;go(CF.ENTRY['P-F-EA-01']);break;
       case 'login-support':open('support');break;
       case 'login-resolve':(D.resolved||(D.resolved=[])).push(v);break;
       case 'login-handoff':

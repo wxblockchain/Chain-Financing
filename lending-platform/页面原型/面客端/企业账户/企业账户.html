@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" data-end="asset">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enterprise accounts · Harbour Credit</title>
+</head>
+<body>
+
+<!-- 面客端顶栏骨架：沿用公共运行时要求的挂载点，不重建导航。 -->
+<div class="portal" id="portal" hidden>
+  <header class="portal-head">
+    <a class="brand" href="#/assets">
+      <span class="brand-mark" aria-hidden="true">HC</span>
+      <span>
+        <span class="brand-name">Harbour Credit</span>
+        <span class="brand-sub">Lending</span>
+      </span>
+    </a>
+    <nav class="portal-nav" id="nav" aria-label="Main navigation"></nav>
+    <div class="portal-tools" id="tools"></div>
+  </header>
+  <div class="portal-sub" id="subwrap"><div class="portal-sub-in" id="crumb"></div></div>
+  <main class="portal-main"><div class="portal-wrap" id="content"></div></main>
+  <footer class="site-foot" id="foot"></footer>
+</div>
+
+<!-- 管理端骨架：本模块不登记管理端页面，这里只保留公共运行时要求的挂载点。 -->
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">HC</span>
+      <span>
+        <span class="brand-name">Harbour Credit</span>
+        <span class="brand-sub">Operations</span>
+      </span>
+    </div>
+    <nav class="nav" id="anav" aria-label="Main navigation"></nav>
+    <div class="side-foot" id="asidefoot"></div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-right" id="atools"></div>
+    </div>
+    <div class="content" id="acontent"><div class="crumbbar-in" id="acrumb"></div></div>
+  </div>
+</div>
+
+<div class="focus" id="focus" hidden>
+  <header class="focus-head"><a class="brand" href="#/assets"><span class="brand-mark" aria-hidden="true">HC</span><span class="brand-name">Harbour Credit</span></a><div class="focus-tools" id="focusTools"></div></header>
+  <main class="focus-main"><div class="focus-card" id="focusContent"></div></main>
+  <footer class="focus-foot">Harbour Credit</footer>
+</div>
+<div id="layers"></div>
+<div class="toasts" id="toasts"></div>
+<button class="demo-btn" id="demoBtn" type="button"></button>
+<aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
+
+<script src="../../_shared/portal-entry.js"></script>
+
+<!-- 共享运行时缺失时的兜底提示：整份原型依赖 _shared/ 下的样式与脚本，单独复制出的 HTML 无法运行。 -->
+<script>
+if (!window.CF) {
+  var notice = document.createElement('div');
+  notice.style.cssText = 'max-width:40rem;margin:14vh auto;padding:24px;border:1px solid #d5d9e0;border-radius:12px;' +
+    'font:14px/1.7 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;color:#1d2330;background:#fff';
+  notice.innerHTML = '<strong style="display:block;font-size:16px;margin-bottom:8px">原型未能加载 · Prototype could not load</strong>' +
+    '请从完整的「页面原型」目录打开本文件：共享样式与脚本在 _shared/ 下，单独复制出来的 HTML 打不开。' +
+    '需要单独发送的评审件请用 _shared/export.py 导出单文件版本。' +
+    '<br><br>Open this file from the complete prototype folder — the shared styles and scripts live in _shared/, ' +
+    'so a copied-out HTML cannot run. Use _shared/export.py to produce a self-contained review build.';
+  document.body.appendChild(notice);
+}
+</script>
+</body>
+</html>

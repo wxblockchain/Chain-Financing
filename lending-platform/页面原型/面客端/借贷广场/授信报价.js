@@ -4,7 +4,7 @@
   const D=CF.LS,S=CF.S,L=CF.L,E=CF.esc,H=3600000,KEY='hc-ws376-v1';
   const Q=CF.CQ={};
   ['P-LS-04','P-LS-05','P-LS-06'].forEach(id=>CF.PAGES[id]={end:'asset',layout:'portal',parent:'P-LS-02',presentation:'drawer'});
-  let db,flow={},busy=false,problem='',problemCopy=['',''],invalid='',fault='normal',fund='fund-a',accountScene='ready',focusBack=null;
+  let db,flow={},pendingSelection='',busy=false,problem='',problemCopy=['',''],invalid='',fault='normal',fund='fund-a',accountScene='ready',focusBack=null;
   const creditFiles=new Map();
   let companyState='complete',lastView='',pendingUI=null,returnTarget=null,originScroll=0;
   const detailSteps=new Map();
@@ -45,7 +45,7 @@
     if(flow.previewURL)URL.revokeObjectURL(flow.previewURL);flow={};lastView='';pendingUI=null;save();CF.closeLayer();
     const target=returnTarget;setTimeout(()=>{window.scrollTo(0,originScroll);(findControl(document,target)||document.querySelector('[data-act="'+focusBack+'"]'))?.focus({preventScroll:true});},0);
   }
-  function draftDirty(){return creditDirty()||(['quote','confirm'].includes(editingStage())&&!!(flow.ccy||flow.rate))||editingStage()==='reject'&&!!flow.reason?.trim()||['respond','accounts'].includes(editingStage())&&flow.responseCheckpoint!==JSON.stringify(qFlow()?.progress);}
+  function draftDirty(){return creditDirty()||(['quote','confirm'].includes(editingStage())&&!!(flow.ccy||flow.rate))||editingStage()==='reject'&&!!flow.reason?.trim()||editingStage()==='respond'&&flow.responseCheckpoint!==JSON.stringify(qFlow()?.progress);}
   function requestClose(destination='close'){if(flow.stage==='discard'){flow.stage=flow.discard.stage;flow.discard=false;flow.restoreStep=true;CF.render();return;}if(draftDirty()){flow.discard={stage:flow.stage,destination};flow.stage='discard';CF.render();}else if(destination==='request')returnRequest();else closeFlow();}
   function returnRequest(){const p=pFlow(),demand=flow.returnRequest?.demand||flow.demand||qFlow()?.demand||D.current(p)?.id,back=flow.returnRequest;flow={project:p.id,demand,stage:'request',onReturn:flow.onReturn,selected:back?.selected,restoreRequest:back?.top||0,restoreStep:true};problem='';invalid='';refreshRequest();}
   function refreshRequest(){const q=requestQuotes(pFlow(),flow.demand).find(x=>['waiting','funding','funded','terminated'].includes(x.state));flow.quote=q?.id;flow.selected=q?.id;}
@@ -139,49 +139,36 @@
   const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch(_){}D.save();};
   const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:S.tz||'UTC',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(D.now()));
   function anniversary(years){const n=new Date(day()+'T12:00:00Z');n.setUTCFullYear(n.getUTCFullYear()+years);return n.toISOString().slice(0,10);}
-  /* 收款账户由企业账户模块维护；该模块页面尚未建成，这里只提供本笔选用所需的演示目录，办理内只读不新增。 */
-  function seedAccounts(){const at=D.iso();return [
-    {id:'EA-DEMO-F01',owner:'entity-demo-a',kind:'fiat',ccy:'USD',label:['Singapore operating account','新加坡收款账户'],addressCountry:'SG',addressCity:'Singapore',addressLine:'18 Example Avenue, #08-01',iban:'SG64DEMO0000000001',bank:'Demo Bank Limited',bankCity:'Singapore',bankCountry:'SG',swift:'DEMOSGSG',primary:true,at},
-    {id:'EA-DEMO-F02',owner:'entity-demo-a',kind:'fiat',ccy:'USD',label:['Hong Kong collection account','香港收款账户'],addressCountry:'HK',addressCity:'Hong Kong',addressLine:'8 Example Road, Central',iban:'HK00DEMO0000000002',bank:'Demo Bank (HK)',bankCity:'Hong Kong',bankCountry:'HK',swift:'',at},
-    {id:'EA-DEMO-C01',owner:'entity-demo-a',kind:'crypto',chain:'ETH',label:['ETH receiving address','ETH 收款地址'],address:'0x00000000000000000000000000000000000000a1',primary:true,at},
-    {id:'EA-DEMO-C02',owner:'entity-demo-a',kind:'crypto',chain:'TRON',label:['TRON receiving address','TRON 收款地址'],address:'TDemo0000000000000000000000000000a1',at},
-    {id:'EA-DEMO-F03',owner:'entity-demo-b',kind:'fiat',ccy:'USD',label:['Main receiving account','主收款账户'],addressCountry:'SG',addressCity:'Singapore',addressLine:'20 Example Avenue',iban:'SG64DEMO0000000003',bank:'Demo Bank Limited',bankCity:'Singapore',bankCountry:'SG',swift:'DEMOSGSG',primary:true,at},
-    /* 资金方同样在企业账户模块维护账户；放款登记时从中选用将来的还款收款账户。 */
-    {id:'EA-DEMO-R01',owner:'fund-a',kind:'fiat',ccy:'USD',label:['Singapore repayment account','新加坡还款收款账户'],addressCountry:'SG',addressCity:'Singapore',addressLine:'1 Example Quay, #20-05',iban:'SG64DEMO0000001001',bank:'Demo Capital Bank',bankCity:'Singapore',bankCountry:'SG',swift:'DEMOCPSG',primary:true,at},
-    {id:'EA-DEMO-R02',owner:'fund-a',kind:'fiat',ccy:'USD',label:['London repayment account','伦敦还款收款账户'],addressCountry:'GB',addressCity:'London',addressLine:'12 Example Street',iban:'GB00DEMO0000001002',bank:'Demo Capital Bank (UK)',bankCity:'London',bankCountry:'GB',swift:'',at},
-    {id:'EA-DEMO-R03',owner:'fund-a',kind:'crypto',chain:'ETH',label:['ETH repayment address','ETH 还款收款地址'],address:'0x00000000000000000000000000000000000000b1',primary:true,at},
-    {id:'EA-DEMO-R04',owner:'fund-a',kind:'crypto',chain:'TRON',label:['TRON repayment address','TRON 还款收款地址'],address:'TDemo0000000000000000000000000000b2',at},
-    {id:'EA-DEMO-R05',owner:'fund-b',kind:'fiat',ccy:'USD',label:['Main repayment account','主还款收款账户'],addressCountry:'HK',addressCity:'Hong Kong',addressLine:'9 Example Road, Central',iban:'HK00DEMO0000001003',bank:'Demo Capital Bank (HK)',bankCity:'Hong Kong',bankCountry:'HK',swift:'DEMOCPHK',primary:true,at},
-    {id:'EA-DEMO-R06',owner:'fund-b',kind:'crypto',chain:'ETH',label:['ETH repayment address','ETH 还款收款地址'],address:'0x00000000000000000000000000000000000000b3',primary:true,at}
-  ];}
+  /* 账户目录归企业账户模块（CF.EA）保管，本模块只读取与选用，不另建一份字段与校验。 */
+  const EA=CF.EA;
   const accountKind=ccy=>ccy==='USD'?'fiat':'crypto';
-  const fiatKeys=['label','addressCountry','addressCity','addressLine','iban','bank','bankCity','bankCountry','swift'];
-  const accountFieldLabels={label:['Account name','账户备注名'],addressCountry:['Beneficiary country / region','收款人国家 / 地区'],addressCity:['Beneficiary city','收款人城市'],addressLine:['Beneficiary street address','收款人详细地址'],iban:['Account number / IBAN','账号 / IBAN'],bank:['Beneficiary bank','收款行名称'],bankCity:['Bank city','收款行城市'],bankCountry:['Bank country / region','收款行国家 / 地区'],swift:['SWIFT / BIC','SWIFT / BIC'],chain:['Settlement chain','结算收款链'],address:['Receiving address','收款地址']};
-  const accountName=a=>Array.isArray(a.label)?E(L(...a.label)):E(a.label||'');
-  const regionName=code=>{if(!code)return '—';try{return E(new Intl.DisplayNames([S.lang==='zh'?'zh-CN':'en'],{type:'region'}).of(code));}catch(_){return E(code);}};
-  const missingFields=a=>a.kind==='crypto'?(a.address?[]:['address']):fiatKeys.filter(k=>!String(a[k]||'').trim());
-  const accountsFor=q=>accountScene==='empty'?[]:(db.accounts||[]).filter(a=>a.owner===q.owner&&a.kind===accountKind(q.ccy));
+  const accountFieldLabels=EA.labels;
+  const accountName=EA.name;
+  const missingFields=EA.missing;
+  const accountsFor=q=>accountScene==='empty'?[]:EA.accounts(q.owner,accountKind(q.ccy));
   const accountById=(q,id)=>accountsFor(q).find(a=>a.id===id);
-  const maskTail=v=>{const s=String(v||'');return s.length<=4?E(s):'•••• '+E(s.slice(-4));};
-  const maskAddress=v=>{const s=String(v||'');return s.length<=14?E(s):E(s.slice(0,6))+'…'+E(s.slice(-4));};
-  const accountSnapshot=a=>({...a,country:a.bankCountry});
-  function accountRows(a,full=true){
-    if(a.kind==='crypto')return [[L(...accountFieldLabels.chain),E(a.chain)],[L(...accountFieldLabels.address),'<span class="mono">'+(full?E(a.address):maskAddress(a.address))+'</span>'],[L('Tokens accepted','可接收代币'),'USDT / USDC']];
-    const rows=[[L(...accountFieldLabels.label),accountName(a)],[L(...accountFieldLabels.iban),'<span class="mono">'+(full?E(a.iban):maskTail(a.iban))+'</span>'],[L(...accountFieldLabels.bank),E(a.bank)]];
-    if(full)rows.push([L(...accountFieldLabels.addressCountry),regionName(a.addressCountry)],[L(...accountFieldLabels.addressCity),E(a.addressCity)],[L(...accountFieldLabels.addressLine),E(a.addressLine)],[L(...accountFieldLabels.bankCity),E(a.bankCity)],[L(...accountFieldLabels.bankCountry),regionName(a.bankCountry)],[L(...accountFieldLabels.swift),E(a.swift)||'—'],[L('Intermediary bank','中转行信息'),a.interSwift?E([a.interSwift,a.interName,a.interAccount].filter(Boolean).join(' · ')):L('Not provided','未填写')]);
-    return rows;}
-  function reset(){db={quotes:[],credits:[],accounts:seedAccounts(),serial:10,lastAccounts:{},events:[]};const p=D.project('FP-DEMO-003'),d=p&&D.current(p);if(d?.state==='quoted'){const at=Date.parse(d.quoteAt);db.quotes.push({id:'FB-DEMO-0001',project:p.id,owner:p.owner,demand:d.id,amount:d.amount,ccy:'USD',rate:'6.40',settlement:d.amount,fx:{value:1,version:'FX-DEMO-001',at,source:['Lending platform · demo','借贷平台 · 演示']},at,state:'waiting',fund:'fund-a',repay:p.expires,progress:{selected:'',account:null,step:1,confirmed:false,viewed:false}});d.institution=['Demo Capital A','演示资金机构 A'];}db.credits.push({id:'CR-DEMO-0001',owner:'entity-demo-a',fund:'fund-a',total:1500000,principal:100000,expires:anniversary(1),first:D.iso(),history:[]});save();}
+  const maskTail=EA.maskTail,maskAddress=EA.maskAddress;
+  const accountSnapshot=EA.snapshot;
+  const accountRows=EA.rows;
+  const accountStamp=a=>a?JSON.stringify(accountSnapshot(a)):'';
+  function reset(){db={quotes:[],credits:[],serial:10,lastAccounts:{},events:[]};const p=D.project('FP-DEMO-003'),d=p&&D.current(p);if(d?.state==='quoted'){const at=Date.parse(d.quoteAt);db.quotes.push({id:'FB-DEMO-0001',project:p.id,owner:p.owner,demand:d.id,amount:d.amount,ccy:'USD',rate:'6.40',settlement:d.amount,fx:{value:1,version:'FX-DEMO-001',at,source:['Lending platform · demo','借贷平台 · 演示']},at,state:'waiting',fund:'fund-a',repay:p.expires,progress:{selected:'',account:null,step:1,confirmed:false,viewed:false}});d.institution=['Demo Capital A','演示资金机构 A'];}db.credits.push({id:'CR-DEMO-0001',owner:'entity-demo-a',fund:'fund-a',total:1500000,principal:100000,expires:anniversary(1),first:D.iso(),history:[]});save();}
   try{db=CF.LSReseeded?null:JSON.parse(localStorage.getItem(KEY));if(!db?.quotes)reset();}catch(_){reset();}
+  // 旧版本把账户目录存在本模块里；企业账户模块建成后只保留一份，这里丢弃旧副本。
+  if(db&&db.accounts){delete db.accounts;save();}
   // 项目已不存在的报价无法渲染，直接丢弃，避免整页在启动时崩掉。
   if(db?.quotes){const kept=db.quotes.filter(q=>D.project(q.project));if(kept.length!==db.quotes.length){db.quotes=kept;save();}}
   // Correct legacy demo provenance without recalculating any accepted quote snapshot.
   db.quotes.forEach(q=>[q.fx,q.l7?.fx].filter(Boolean).forEach(fx=>{if(fx.version?.startsWith('FX-DEMO-')&&fx.source?.[0]==='Token issuance platform · demo')fx.source=['Lending platform · demo','借贷平台 · 演示'];}));
   Q.data=()=>db;
   Q.related=q=>!!q&&related(q);Q.save=save;Q.startJourney=step=>journeyStart(step);
-  /* 账户目录与授信协议文件由本模块保管；放款册只读消费同一份，不另建第二套字段。 */
-  Q.accounts=(owner,kind)=>(db.accounts||[]).filter(a=>a.owner===owner&&a.kind===kind);
+  /* 从企业账户登记完账户后回到原办理的原位置；本笔已填内容随 progress 保留。 */
+  Q.resumeSelection=id=>{const q=db.quotes.find(x=>x.id===(id||pendingSelection));pendingSelection='';
+    if(!q||q.state!=='waiting'||S.role!=='asset'||!related(q)){CF.toast(L('That business is no longer awaiting your confirmation.','原办理已不在待确认状态。'));return;}
+    beginReview(q);CF.render();};
+  /* 账户目录由企业账户模块保管，这里只把同一份转给放款与控制台；授信协议文件仍由本模块保管。 */
+  Q.accounts=EA.accounts;
   Q.accountRows=accountRows;Q.accountName=accountName;Q.accountMissing=missingFields;Q.accountSnapshot=accountSnapshot;Q.accountLabels=accountFieldLabels;
-  Q.accountKey=a=>a.kind==='crypto'?E(a.chain)+' · <span class="mono">'+maskAddress(a.address)+'</span>':E(a.bank)+' · <span class="mono">'+maskTail(a.iban)+'</span>';
+  Q.accountKey=EA.key;
   Q.agreements=(owner,fundId)=>db.credits.filter(c=>c.owner===owner&&(!fundId||c.fund===fundId)).flatMap(c=>(c.history||[]).flatMap(h=>(h.agreements||[]).map(f=>({credit:c.id,file:f,available:creditFiles.has(f.id)}))));
   Q.creditFile=id=>creditFiles.get(id);
   Q.hasHistory=p=>db.quotes.some(q=>q.project===p.id);
@@ -218,9 +205,14 @@
   /* 优先沿用本笔已选，其次本企业最近一次成功接受的同类账户，再次企业账户的默认账户；确认勾选一律不预勾。 */
   function suggestAccount(q){
     const list=accountsFor(q).filter(a=>!missingFields(a).length);
-    if(q.progress.selected&&list.some(a=>a.id===q.progress.selected))return;
+    const picked=q.progress.selected?list.find(a=>a.id===q.progress.selected):null;
+    if(picked&&(!q.progress.stamp||q.progress.stamp===accountStamp(picked))){q.progress.stamp=accountStamp(picked);q.progress.lost='';return;}
+    /* 已选账户被改动或删除时要求重新选用：不静默换一个，也不拿默认账户顶替。 */
+    if(q.progress.selected){q.progress.lost=picked?'changed':'removed';q.progress.selected='';q.progress.stamp='';q.progress.confirmed=false;save();return;}
+    q.progress.lost='';
     const last=db.lastAccounts[q.owner+'|'+accountKind(q.ccy)];
-    q.progress.selected=(list.find(a=>a.id===last)||list.find(a=>a.primary)||list[0])?.id||'';
+    const next=list.find(a=>a.id===last)||list.find(a=>a.primary)||list[0];
+    q.progress.selected=next?.id||'';q.progress.stamp=accountStamp(next);
     q.progress.confirmed=false;save();
   }
   function beginReview(q){Q.sweep();if(!q||!related(q)||S.role!=='asset'){CF.toast(L('You cannot respond to this quote.','您无权处理该报价。'));return;}if(q.state!=='waiting'){CF.toast(status(q)+' · '+reason(q));return;}const back=flow.stage==='request'?{demand:flow.demand,selected:flow.selected,top:document.querySelector('.drawer-b,.modal-b')?.scrollTop||0}:{demand:q.demand,selected:q.id,top:0};suggestAccount(q);rememberTrigger('ls-handoff');flow={project:q.project,quote:q.id,demand:q.demand,returnRequest:back,onReturn:flow.onReturn,responseCheckpoint:JSON.stringify(q.progress)};open('respond');}
@@ -238,7 +230,11 @@
     const list=accountsFor(q);
     if(!list.length)return '<div id="cq-account" tabindex="-1">'+note(kind==='fiat'?'Your company has no USD receiving account yet. Add one in Company accounts, then come back to this business.':'Your company has no '+q.ccy+' receiving address yet. Add one in Company accounts, then come back to this business.',kind==='fiat'?'本企业尚未维护 USD 法币收款账户，请先在企业账户登记，再回到本笔选用。':'本企业尚未登记数币收款地址，请先在企业账户登记，再回到本笔选用。','warn')+B('accounts-module','Go to company accounts','前往企业账户')+'</div>'+fees(q);
     const picked=accountById(q,q.progress.selected);
-    const options='<div id="cq-account" tabindex="-1"><fieldset class="cq-account-fieldset"><legend class="sr-only">'+L('Receiving account for this business','本笔收款账户')+'</legend><ul class="cq-account-list">'+list.map(a=>{const miss=missingFields(a),key=a.kind==='crypto'?E(a.chain)+' · <span class="mono">'+maskAddress(a.address)+'</span>':E(a.bank)+' · <span class="mono">'+maskTail(a.iban)+'</span>';
+    const lost=q.progress.lost?note(q.progress.lost==='removed'
+      ?'The account you had selected has been deleted. Select an account for this business again.'
+      :'The account you had selected has changed. Select an account for this business again.',
+      q.progress.lost==='removed'?'先前选定的账户已删除，请重新选用本笔收款账户。':'先前选定的账户已变更，请重新选用本笔收款账户。','warn'):'';
+    const options='<div id="cq-account" tabindex="-1">'+lost+'<fieldset class="cq-account-fieldset"><legend class="sr-only">'+L('Receiving account for this business','本笔收款账户')+'</legend><ul class="cq-account-list">'+list.map(a=>{const miss=missingFields(a),key=a.kind==='crypto'?E(a.chain)+' · <span class="mono">'+maskAddress(a.address)+'</span>':E(a.bank)+' · <span class="mono">'+maskTail(a.iban)+'</span>';
       return '<li><label class="cq-account-option"><input type="radio" name="cq-account-choice" value="'+E(a.id)+'" data-cq-account="'+E(a.id)+'"'+(picked?.id===a.id?' checked':'')+(miss.length?' disabled':'')+'><span class="cq-account-body"><b>'+accountName(a)+'</b>'+(a.primary?CF.tag('',L('Default','默认账户')):'')+'<span class="hint">'+key+'</span>'+(miss.length?'<span class="cq-account-off">'+L('Missing: ','缺少：')+miss.map(k=>L(...accountFieldLabels[k])).join(L(', ','、'))+L(' · complete it in Company accounts',' · 请在企业账户补齐')+'</span>':'')+'</span></label></li>';}).join('')+'</ul></fieldset></div>';
     const detail=picked?'<div class="cq-account-detail">'+dl(accountRows(picked))+(picked.kind==='crypto'?'<p class="hint">'+L('The chain and address come from this account and cannot be changed here.','链与地址随所选账户带出，本笔不可修改。')+'</p>':'')+'</div>':'';
     return '<p class="hint">'+L('This account receives the disbursement for this business.','本账户用于接收本笔放款。')+'</p>'+options+detail+check('confirmed','I confirm this receiving account for this financing business.','我确认本笔融资使用以上收款账户。',q.progress.confirmed)+fees(q);
@@ -325,7 +321,7 @@
   };
 
   Q.layers={'cq-flow':()=>{if(S.layer)S.layer.type=flow.stage==='request'&&!flow.result?'drawer':'modal';const p=pFlow(),q=qFlow(),c=p&&credit(p);let title='',html='',foot=B('close','Cancel','取消');const loading=busy?note('Submitting…','正在提交…'):'';if(['intent','credit','quote','confirm'].includes(flow.stage)&&!creditWritable())return {title:L('Access unavailable','无法办理'),html:note('Your identity changed. Close and reopen with the correct account.','身份已变化，请关闭后以正确账号重新办理。','warn'),foot:B('close','Close','关闭')};
-    if(['respond','reject','accounts'].includes(flow.stage)&&(!q||S.role!=='asset'||!related(q)))return {title:L('Access unavailable','无法办理'),html:note('You cannot respond to this quote.','您无权处理该报价。','warn'),foot:B('close','Close','关闭')};
+    if(['respond','reject'].includes(flow.stage)&&(!q||S.role!=='asset'||!related(q)))return {title:L('Access unavailable','无法办理'),html:note('You cannot respond to this quote.','您无权处理该报价。','warn'),foot:B('close','Close','关闭')};
     if(flow.stage==='request'){title=L('Financing request details','融资申请详情');html='<div class="cq-request-detail">'+requestView()+'</div>';foot=B('close','Close','关闭');}
     if(flow.stage==='intent'){title=L('Credit required before quoting','报价前需核定授信');html=flow.mode==='new'?note('No credit limit has been established for this asset holder. Continue to establish one?','尚未对本资产方核定授信，是否现在核定？'):flow.mode==='renew'?note('The credit expired on '+date(c.expires)+'. Continue to reassess?','原授信已于 '+date(c.expires)+' 到期，是否重新核定？'):difference(p)+note('Increase the credit limit to cover this quote?','是否追加授信额度以覆盖本次报价？');html='<p class="cq-company-name">'+company(p)+'</p>'+html;html+='<p>'+L('Continue opens the credit form. Cancel returns to the project.','确认后进入额度编辑，取消返回项目。')+'</p>';foot=B('cancel-request','Cancel','取消')+B('intent','Continue','确认','',true);}
     if(flow.stage==='credit'){title=L('Credit before quotation','报价前核定授信');html=creditEditor();foot=B('cancel-request','Cancel','取消')+B('save-credit','Save credit','保存授信','',true,busy||flow.discard);}
@@ -334,7 +330,6 @@
     if(flow.stage==='reject'){title=L('Reject this quote','拒绝融资报价');html=dl([[L('Financing business ID','融资业务编号'),q.id],[L('Amount','融资金额'),usd(q.amount)]])+note('The reason is visible to the quoting institution. This quote will end; its in-flight credit will be released.','拒绝原因对报价机构可见；本笔报价终结并释放在途报价金额。','warn')+'<div class="field"><label for="cq-reason">'+L('Reason (1–200 characters) *','拒绝原因（1～200 字）*')+'</label><textarea class="inp" id="cq-reason" aria-required="true" data-cq-field="reason" maxlength="200">'+E(flow.reason||'')+'</textarea></div>';foot=B('back-response','Back','返回')+B('reject-confirm','Confirm rejection','确认拒绝','',true,busy);}
     if(flow.stage==='history'){title=L('Financing quote','融资报价');html=CF.tag(q.state==='rejected'||q.state==='expired'?'warn':'',status(q))+lockInfo(q)+terms(q)+(q.done?dl([[L('Result time','处理时间'),time(q.done)],[L('Reason','原因'),['rejected','terminated'].includes(q.state)&&!related(q)?'—':reason(q)||'—']]):'');if(related(q)&&['funding','funded','terminated'].includes(q.state)&&q.progress.account)html+=section(L('Receiving account for this business','本笔收款账户'),dl(accountRows(q.progress.account,false))+'<p class="hint">'+L('Full account details are available to the paying party in the disbursement record.','完整账户资料在放款办理中对付款当事方可见。')+'</p>');if(CF.L7&&['funding','funded','terminated'].includes(q.state)&&related(q))html+=B('disbursement','View disbursement','查看融资放款',q.id);foot=(flow.returnRequest?B('return-request','Back to financing details','返回融资详情'):'')+B('close','Close','关闭');}
     if(flow.stage==='unavailable'){title=L('Unable to continue','当前无法继续');html=note('No new quote was created. Any credit already established remains effective.','未生成新报价；已成功核定的授信仍然生效。','warn');foot=B('close','Back to project','返回项目详情');}
-    if(flow.stage==='accounts'){title=L('Company accounts','企业账户');html=note('Receiving accounts are added and maintained in Company accounts. Register the account there, then come back to this business and select it.','收款账户在企业账户模块登记与维护，登记完成后回到本笔选用。','warn')+'<p class="hint">'+L('The company accounts module is not part of this prototype yet.','本原型尚未接入企业账户模块页面。')+'</p>';foot=B('back-response','Back','返回');}
     if(flow.stage==='credit-details'){const record=db.credits.find(c=>c.id===flow.creditId&&creditRelated(c));title=L('Credit details','授信详情');html=record?section(L('Company information','企业基本信息'),companyView())+dl([[L('Institution','授信机构'),institution(record.fund)],[L('Credit ID','授信编号'),record.id],[L('Total credit','总授信'),usd(record.total)],[L('Credit used','已用授信'),usd(record.principal+used(record))],[L('Credit valid until','授信有效期至'),date(record.expires)]])+creditHistory(record):note('Credit unavailable.','无权查看该授信。','warn');foot=B('read-back','Back','返回');}
     if(flow.stage==='estimated'){const item=db.quotes.find(x=>x.id===flow.estimatedQuote);title=L('Estimated repayment plan','预计还款计划');html=item?(CF.L8?.initial({...item,state:'waiting'})||note('The estimated plan is unavailable.','预计计划暂不可用。')):note('Business unavailable.','融资业务已不可用。');foot=B('read-back','Back','返回');}
     if(flow.stage==='file-preview'){title=flow.previewName;html='<iframe title="'+E(flow.previewName)+'" src="'+E(flow.previewURL)+'" style="width:100%;height:65vh;border:0"></iframe>';foot=B('read-back','Back','返回');}
@@ -384,8 +379,10 @@
     if(act==='reject'&&stillWaiting(q)){flow.reason='';flow.stage='reject';}
     if(act==='back-response'){flow.stage='respond';flow.restoreStep=true;}
     if(act==='reject-confirm'&&stillWaiting(q)){if(!flow.reason?.trim()||[...flow.reason.trim()].length>200)failure('Enter a reason of 1–200 characters.','请输入 1～200 字拒绝原因。','reason');else asyncAction(()=>{if(stillWaiting(q)){finish(q,'rejected',flow.reason.trim());returnRequest();flow.result=L('Quote rejected.','报价已拒绝。');}});}
-    if(act==='accept'&&stillWaiting(q)){if(!q.progress.viewed){q.progress.step=2;failure('Read the terms summary before accepting.','请先查看商务条款摘要。');}else if(accountValid(q))asyncAction(()=>{if(!stillWaiting(q))return;const a=accountById(q,q.progress.selected);if(!a||missingFields(a).length||fault==='accountChanged'){fault='normal';q.progress.step=1;q.progress.confirmed=false;failure('This receiving account has changed. Select an account again before accepting.','所选收款账户已变更，请重新选用后再接受。','account');return;}q.progress.account=accountSnapshot(a);db.lastAccounts[q.owner+'|'+accountKind(q.ccy)]=a.id;finish(q,'funding','');returnRequest();flow.result=L('Quote accepted. View the corresponding disbursement when ready.','报价已接受，可查看对应融资放款。');});}
-    if(act==='accounts-module')flow.stage='accounts';
+    if(act==='accept'&&stillWaiting(q)){if(!q.progress.viewed){q.progress.step=2;failure('Read the terms summary before accepting.','请先查看商务条款摘要。');}else if(accountValid(q))asyncAction(()=>{if(!stillWaiting(q))return;const a=accountById(q,q.progress.selected);if(!a||missingFields(a).length||fault==='accountChanged'||q.progress.stamp&&accountStamp(a)!==q.progress.stamp){fault='normal';q.progress.step=1;q.progress.confirmed=false;q.progress.lost=a?'changed':'removed';q.progress.selected='';q.progress.stamp='';failure('This receiving account has changed. Select an account again before accepting.','所选收款账户已变更，请重新选用后再接受。','account');return;}q.progress.account=accountSnapshot(a);db.lastAccounts[q.owner+'|'+accountKind(q.ccy)]=a.id;finish(q,'funding','');returnRequest();flow.result=L('Quote accepted. View the corresponding disbursement when ready.','报价已接受，可查看对应融资放款。');});}
+    if(act==='accounts-module'){const back=location.hash.replace(/^#/,'')||'/marketplace';
+      pendingSelection=q?.id||'';
+      location.hash='#'+CF.ENTRY['P-F-EA-01']+'?'+new URLSearchParams({return:back,from:'quote',business:pendingSelection});}
     if(act==='account-retry'){accountScene='loading';const draft=flow;setTimeout(()=>{if(flow!==draft)return;accountScene='ready';const target=qFlow();if(target)suggestAccount(target);CF.render();},650);}
     if(act==='pledge'){CF.closeLayer();setTimeout(()=>document.querySelector('[data-act=ls-tab][data-v=global]')?.click(),0);}
     if(act==='copy')copySummary();
@@ -408,7 +405,7 @@
     save();
   }
   document.addEventListener('input',e=>{const el=e.target,k=el.dataset.cqField;if(!k)return;invalid='';problem='';el.removeAttribute('aria-invalid');el.removeAttribute('aria-describedby');document.getElementById('cq-error')?.remove();flow[k]=el.value;if(k==='total'&&flow.mode==='increase'){const a=document.getElementById('cq-adjusted');if(a)a.textContent=L('Adjusted limit: ','调整后额度：')+usd(credit(pFlow()).total+Number(el.value||0));}});
-  document.addEventListener('change',e=>{const el=e.target;if(el.closest('.cq-flow'))rememberUI();if(el.id==='cq-agreements'){pickAgreements([...el.files]);return;}if(el.id==='cq-company-state'){companyState=el.value;return;}if(el.id==='cq-account-scene'){accountScene=el.value;const q=qFlow();if(q&&accountScene==='ready')suggestAccount(q);else if(q){q.progress.selected='';q.progress.confirmed=false;}save();CF.render();return;}if(el.id==='cq-ccy'){flow.ccy=el.value;flow.fx=null;CF.render();return;}if(el.id==='cq-fault'){fault=el.value;return;}if(el.dataset.cqAccount){const q=qFlow();if(q){problem='';invalid='';q.progress.selected=el.value;q.progress.confirmed=false;save();CF.render();}return;}if(el.dataset.cqCheck){const q=qFlow();if(q){q.progress[el.dataset.cqCheck]=el.checked;problem='';invalid='';save();}}});
+  document.addEventListener('change',e=>{const el=e.target;if(el.closest('.cq-flow'))rememberUI();if(el.id==='cq-agreements'){pickAgreements([...el.files]);return;}if(el.id==='cq-company-state'){companyState=el.value;return;}if(el.id==='cq-account-scene'){accountScene=el.value;const q=qFlow();if(q&&accountScene==='ready')suggestAccount(q);else if(q){q.progress.selected='';q.progress.confirmed=false;}save();CF.render();return;}if(el.id==='cq-ccy'){flow.ccy=el.value;flow.fx=null;CF.render();return;}if(el.id==='cq-fault'){fault=el.value;return;}if(el.dataset.cqAccount){const q=qFlow();if(q){problem='';invalid='';q.progress.selected=el.value;q.progress.stamp=accountStamp(accountById(q,el.value));q.progress.lost='';q.progress.confirmed=false;save();CF.render();}return;}if(el.dataset.cqCheck){const q=qFlow();if(q){q.progress[el.dataset.cqCheck]=el.checked;problem='';invalid='';save();}}});
   document.addEventListener('keydown',e=>{const dialog=document.querySelector('.drawer:has(.cq-flow)');if(!dialog||e.key!=='Tab')return;const els=[...dialog.querySelectorAll('button:not(:disabled),input:not(:disabled),select,textarea,summary,a[href]')].filter(x=>x.getClientRects().length),first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}});
   Q.beforeAct=(act,event)=>{if(act!=='closelayer'||S.layer?.key!=='cq-flow')return false;if(event?.type==='click'&&event.target.closest('[data-stop]'))return false;if(busy)return true;requestClose();return true;};
   Q.deepAction=action=>{const p=pNow();if(!p)return;const params=new URLSearchParams(location.hash.split('?')[1]||''),business=params.get('business')||params.get('quote'),request=params.get('request')||params.get('application');

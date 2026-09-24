@@ -16,6 +16,7 @@
   let submitFailure=false,uploadFailure=false,planWaiting=true,commitGate='normal',coverageRead='ready',accountScene='ready';
   let relatedReturn=null,detailReturn=null,discardReturn=null,dirty=false,resultText='',tablePages={};
   let savedScroll=0,lastRole=S.role,lastLayer=null,lastFocus=null;
+  let accountsTrip=null,L7resume=null;
   let origin=null,fileReturn=null,confirmationReturn=null,pendingRestore=null,activeDraft='',lastHash=location.hash,epoch=0,errorFocus=null;
   const drafts=new Map();
   const control=el=>el?{id:el.id,act:el.dataset.act,value:el.dataset.v}:null;
@@ -79,7 +80,8 @@
     const list=repayList();
     if(!list.length)return '<div id="ln-repayAccount" tabindex="-1">'+CF.note('warn',d().ccy==='USD'?L('Your company has no USD receiving account yet. Register one in Company accounts, then come back to this business.','本企业尚未登记 USD 法币收款账户，请先在企业账户登记，再回到本笔选用。'):L('Your company has no digital-currency receiving address yet. Register one in Company accounts, then come back to this business.','本企业尚未登记数币收款地址，请先在企业账户登记，再回到本笔选用。'))+b('ln-accounts-module',L('Go to company accounts','前往企业账户'))+'</div>';
     const picked=repayPick();
-    return '<div id="ln-repayAccount" tabindex="-1"><fieldset class="cq-account-fieldset"><legend class="sr-only">'+L('Repayment receiving account for this business','本笔还款收款账户')+'</legend><ul class="cq-account-list">'+list.map(a=>{const miss=Q.accountMissing(a);
+    const lost=form.repayAccount&&!picked?CF.note('warn',L('The account you had selected is no longer available. Select an account for this business again.','先前选定的账户已变更或已删除，请重新选用本笔还款收款账户。')):'';
+    return '<div id="ln-repayAccount" tabindex="-1">'+lost+'<fieldset class="cq-account-fieldset"><legend class="sr-only">'+L('Repayment receiving account for this business','本笔还款收款账户')+'</legend><ul class="cq-account-list">'+list.map(a=>{const miss=Q.accountMissing(a);
       return '<li><label class="cq-account-option"><input type="radio" name="ln-account-choice" value="'+E(a.id)+'" data-ln-account="'+E(a.id)+'"'+(picked?.id===a.id?' checked':'')+(miss.length?' disabled':'')+'><span class="cq-account-body"><b>'+Q.accountName(a)+'</b>'+(a.primary?CF.tag('',L('Default','默认账户')):'')+'<span class="hint">'+Q.accountKey(a)+'</span>'+(miss.length?'<span class="cq-account-off">'+L('Missing: ','缺少：')+miss.map(k=>L(...Q.accountLabels[k])).join(L(', ','、'))+L(' · complete it in Company accounts',' · 请在企业账户补齐')+'</span>':'')+'</span></label></li>';}).join('')+'</ul></fieldset>'+(picked?'<div class="cq-account-detail">'+rows(Q.accountRows(picked))+'</div>':'')+'<span class="err-msg ln-error" role="alert" id="ln-repayAccount-err">'+E(errors.repayAccount||'')+'</span><p class="ln-small">'+L('Receiving accounts are maintained in Company accounts; they cannot be added or edited here.','收款账户在企业账户模块维护，本次办理内不新增、不编辑。')+'</p></div>';
   }
   function explorer(hash){const spec=chainSpec();return spec.explorer?CF.linkOut(spec.explorer(hash),L('Open transaction in block explorer','在区块浏览器查看交易')):'';}
@@ -194,7 +196,6 @@
     S.role=value==='pending'?'fund':'asset';syncProjects();go(selected);}
   function notificationBody(r){const x=deals[r.deal];return '<div class="ln-stack"><h2 class="ln-heading">'+tr(eventNames[r.kind])+'</h2><p class="mono">'+E(x.request)+' · '+E(x.id)+'</p><p>'+time(r.at)+'</p>'+(r.kind==='submit'?'<p>'+L('Check the receipt yourself, then confirm in this business.','请自行核实到账后，在本笔业务中确认。')+'</p>':'')+(r.kind==='confirm'?'<p>'+L('Receipt confirmed. ','已确认到账。')+(x.plan==='waiting'?L('Repayment plan is being generated.','还款计划生成中。'):L('Handed over to repayment.','已交接还款模块。'))+'</p>':'')+b('ln-notification-go',L('View business','查看业务'),r.id,true)+'</div>';}
   const layers={'ln-detail':detail,'ln-discard':discardBody,'ln-pay':()=>draw('pay'),'ln-confirm':()=>draw('confirm'),'ln-confirmation':confirmBody,
-    'ln-accounts':()=>({title:L('Company accounts','企业账户'),html:'<div class="ln-drawer ln-stack">'+CF.note('warn',L('Receiving accounts are registered and maintained in Company accounts. Register the account there, then come back to this business and select it.','收款账户在企业账户模块登记与维护，登记完成后回到本笔选用。'))+'<p class="hint">'+L('The company accounts module is not part of this prototype yet.','本原型尚未接入企业账户模块页面。')+'</p></div>',foot:b('ln-accounts-back',L('Back','返回'),'',true)}),
     'ln-file':f=>({title:f.name,html:'<div class="ln-drawer ln-confirm">'+preview(f)+'</div>',foot:b('ln-file-back',L('Back to record','返回记录'))})};
   function preview(f){if(!f.url)return CF.empty(L('Local file unavailable','本地文件不可用'),L('The file content is not retained after this page is reloaded.','重新打开页面后，文件内容不保留。'));return f.type.startsWith('image/')?'<img class="ln-document" src="'+E(f.url)+'" alt="'+E(f.name)+'">':'<object class="ln-document" data="'+E(f.url)+'" type="application/pdf"><p>'+L('Preview is not supported in this browser. Download the original file.','此浏览器不支持预览，请下载原件。')+'</p></object>';}
   function onAct(act,v){if(act.startsWith('ln-')&&(busy||uploadBusy))return true;if(act==='ls-handoff'&&v==='funding'){ensure();const p=location.hash.match(/project\/([^?]+)/),i=deals.findIndex(x=>x.project===p?.[1]&&['pending','waiting'].includes(x.state));if(i>=0){selected=i;const kind=can('pay')?'pay':can('confirm')?'confirm':'';if(kind)open(kind);else openDetail(d().id);return true;}return false;}
@@ -212,8 +213,8 @@
     else if(act==='ln-remove'){const [key,i]=v.split(':');form[key].splice(+i,1);dirty=true;}
     else if(act==='ln-coverage-retry'){coverageRead='ready';CF.toast(L('Collateral check reloaded.','额度校验已重新读取。'));}
     else if(act==='ln-account-retry'){accountScene='ready';CF.toast(L('Receiving accounts reloaded.','收款账户已重新读取。'));}
-    else if(act==='ln-accounts-module'){origin=origin||rememberLayer();detailReturn=rememberLayer();CF.openLayer('modal','ln-accounts');}
-    else if(act==='ln-accounts-back')backDetail();
+    else if(act==='ln-accounts-module'){const back=location.hash;accountsTrip={back,deal:d().id};
+      location.hash='#'+CF.ENTRY['P-F-EA-01']+'?'+new URLSearchParams({return:back.replace(/^#/,''),from:'loan',business:d().id});}
     else if(act==='ln-project'){location.hash='#/project/'+d().project;}
     else if(act==='ln-go')go(+v);else if(act==='ln-scenario')scenario(v);
     else if(act==='ln-file-preview'||act==='ln-file-download'){if(!party())denied();else{const f=d().record?.form.files?.[+v];if(f){if(act==='ln-file-download')download(f.url,f.name);else{fileReturn=rememberLayer();CF.openLayer(S.layer?.type||'drawer','ln-file',f);}}}}
@@ -231,7 +232,10 @@
   Object.assign(V.layers,layers,{'ln-events':()=>({title:L('Notification events','通知事件'),html:N.rows.filter(r=>r.kind&&deals[r.deal]&&Q.related(Q.data().quotes.find(q=>q.id===deals[r.deal].id))&&r.owner===S.role).map(notificationBody).join('')||L('No events','暂无事件'),foot:b('closelayer',L('Close','关闭'))})});
   V.onAct=(act,v)=>onAct(act,v)||originalAct(act,v);
   V.beforeRender=()=>{originalBefore?.();ensure();const el=document.querySelector('#layers .drawer-b,#layers .modal-b');if(el)savedScroll=el.scrollTop;lastFocus=control(document.activeElement);
-    if(S.role!==lastRole||location.hash!==lastHash||(activeDraft&&!party())||((busy||uploadBusy)&&!S.layer?.key.startsWith('ln-'))){invalidate();if(S.layer?.key.startsWith('ln-'))S.layer=null;lastRole=S.role;lastHash=location.hash;}
+    if(S.role!==lastRole||location.hash!==lastHash||(activeDraft&&!party())||((busy||uploadBusy)&&!S.layer?.key.startsWith('ln-'))){
+      const trip=accountsTrip&&S.role===lastRole&&[accountsTrip.back,'#'+CF.ENTRY['P-F-EA-01']].some(h=>location.hash===h||location.hash.startsWith(h+'?'));
+      if(!trip){invalidate();accountsTrip=null;}
+      if(S.layer?.key.startsWith('ln-'))S.layer=null;lastRole=S.role;lastHash=location.hash;}
   };
   V.afterRender=()=>{originalAfter?.();};
   V.demo=demo;
@@ -308,6 +312,11 @@
       primary:can('pay')?b('ln-operate',L('Record disbursement','登记放款'),x.id,true):can('confirm')?b('ln-operate',L('Confirm receipt','确认到账'),x.id,true):'',secondary:''};}
   function summary(q){const old=d()?.id,result=summaryBody(q);if(old)choose(old);return result;}
   function panel(p,progress){const old=d()?.id,result=panelBody(p,progress);if(old)choose(old);return result;}
-  CF.L7={get deals(){ensure();return deals;},get selected(){return selected;},scenario,go,can,now,validate,summary,panel,find,label,recordTable,openDetail,get form(){return form;},get busy(){return busy;}};
+  /* 登记完账户后回到本笔放款办理的原位置；本笔已填内容在往返期间保留。 */
+  L7resume=id=>{ensure();const target=id||accountsTrip?.deal;accountsTrip=null;
+    const i=deals.findIndex(x=>x.id===target);
+    if(i<0){CF.toast(L('That business is no longer available.','原办理已不可用。'));return;}
+    selected=i;if(can('pay'))open('pay');else openDetail(d().id);CF.render();};
+  CF.L7={resumeAccounts:(...a)=>L7resume(...a),get deals(){ensure();return deals;},get selected(){return selected;},scenario,go,can,now,validate,summary,panel,find,label,recordTable,openDetail,get form(){return form;},get busy(){return busy;}};
   if(!CF.portalConnected)CF.boot();setTimeout(applyDeepLink,0);
 })(window.CF);
