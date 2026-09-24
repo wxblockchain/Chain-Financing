@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en" data-end="admin" data-admin-module="contracts" data-module="contract-management"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contract management · Harbour Credit</title>
+<link rel="stylesheet" href="../../_shared/tokens.css">
+<link rel="stylesheet" href="../../_shared/base.css">
+<link rel="stylesheet" href="../账户与登录/账户与登录.css">
+<style>
+.cm-stack{display:grid;gap:var(--sp-5);align-content:start}
+.cm-meta{display:block;color:var(--muted);font-size:var(--fs-12);margin-top:var(--sp-1);overflow-wrap:anywhere}
+.cm-title{display:flex;align-items:start;justify-content:space-between;gap:var(--sp-4);margin-bottom:var(--sp-4)}
+.cm-title h1{font-size:var(--fs-24);margin:0 0 var(--sp-2)}
+.cm-views{display:flex;gap:var(--sp-6);border-bottom:1px solid var(--border);margin-bottom:var(--sp-5)}
+.cm-views .cm-view{padding:var(--sp-3) 0;border-bottom:2px solid transparent;color:var(--muted);font-weight:600;text-decoration:none}
+.cm-views .cm-view:hover{color:var(--accent)}
+.cm-views .cm-view[aria-current=page]{color:var(--accent);border-bottom-color:var(--accent)}
+.cm-views .cm-view:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-xs)}
+.cm-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:var(--sp-5);align-items:start}
+.cm-rail{position:sticky;top:calc(68px + var(--sp-5))}
+.cm-detail-main{min-width:0}
+.cm-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-4);margin-bottom:var(--sp-3)}
+.cm-metric{padding:var(--sp-5)}
+.cm-metric strong{display:block;font-size:var(--fs-28);font-family:var(--mono);margin:var(--sp-2) 0}
+.cm-metrics+.cm-meta{margin-bottom:var(--sp-5)}
+.cm-filter-wrap{padding:var(--sp-5);border-bottom:1px solid var(--border)}
+.cm-filter-bar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(170px,230px) auto;gap:var(--sp-4);align-items:end}
+.cm-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-4);padding-top:var(--sp-5);margin-top:var(--sp-5);border-top:1px solid var(--border)}
+.cm-filters[hidden]{display:none}
+.cm-filter-wrap .field{min-width:0;max-width:none}
+.cm-applied{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-4)}
+.cm-actions{display:flex;align-items:end;justify-content:flex-end;gap:var(--sp-2)}
+.cm-list-tools{display:flex;justify-content:flex-end;padding:var(--sp-3) var(--sp-5)}
+.cm-list-tools .field{display:flex;flex-direction:row;align-items:center;gap:var(--sp-3);max-width:none;margin:0}
+.cm-list-tools label{margin:0;white-space:nowrap}.cm-list-tools .inp{width:auto}
+.cm-table{table-layout:fixed;width:100%}
+.cm-table thead th{white-space:normal;color:var(--muted)}
+.cm-table tbody td{overflow-wrap:anywhere;font-size:var(--fs-12)}
+.cm-table .col-act{position:sticky;right:0;background:var(--card);width:70px;text-align:right}
+.cm-table .tag{white-space:normal;text-align:left;line-height:1.5;font-size:var(--fs-11)}
+.cm-table thead th button{border:0;background:none;margin:0;padding:0;font:inherit;color:inherit;letter-spacing:inherit;text-align:left;white-space:normal;cursor:pointer}
+.cm-table thead th button:hover{color:var(--accent)}
+.cm-table thead th button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--radius-xs)}
+.cm-queue-table th:nth-child(1){width:17%}.cm-queue-table th:nth-child(2){width:14%}.cm-queue-table th:nth-child(3){width:12%}
+.cm-queue-table th:nth-child(4){width:16%}.cm-queue-table th:nth-child(5){width:9%}.cm-queue-table th:nth-child(6){width:11%}
+.cm-queue-table th:nth-child(7){width:16%}
+.cm-ledger-table th:nth-child(1){width:19%}.cm-ledger-table th:nth-child(2){width:15%}.cm-ledger-table th:nth-child(3){width:23%}
+.cm-ledger-table th:nth-child(4){width:15%}.cm-ledger-table th:nth-child(5){width:13%}.cm-ledger-table th:nth-child(6){width:11%}
+.cm-detail-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-5);padding:var(--sp-5);margin-bottom:var(--sp-5)}
+.cm-detail-summary .cm-meta{margin:0 0 var(--sp-2)}
+.cm-value{font-size:var(--fs-19)}
+.cm-h2{font-size:var(--fs-16);margin:0 0 var(--sp-4)}
+.cm-section{padding:var(--sp-5)}
+.cm-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);margin:0}
+.cm-kv dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
+.cm-kv dd{margin:0;overflow-wrap:anywhere}
+.cm-kv dd .tag{margin-left:var(--sp-2)}
+.cm-wide{grid-column:1/-1}
+.cm-section .note{margin-top:var(--sp-4)}
+.cm-quote{white-space:pre-wrap;padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);overflow-wrap:anywhere}
+.cm-failure{margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--border)}
+.cm-failure h3{font-size:var(--fs-14);margin:0 0 var(--sp-3)}
+.cm-rail-time{padding:var(--sp-4) 0;margin-bottom:var(--sp-4);border-bottom:1px solid var(--border)}
+.cm-rail-time strong{display:block;font-size:var(--fs-24);font-variant-numeric:tabular-nums;margin:var(--sp-1) 0}
+.cm-disclosure{margin-top:var(--sp-4)}
+.cm-activity{scroll-margin-top:90px}
+.cm-timeline{list-style:none;margin:var(--sp-5) 0 0;padding:0}
+.cm-event{position:relative;margin:0 0 0 5px;padding:0 0 var(--sp-6) var(--sp-5);border-left:1px solid var(--border);overflow-wrap:anywhere}
+.cm-event:last-child{padding-bottom:0;border-left-color:transparent}
+.cm-event:before{content:"";position:absolute;left:-5px;top:5px;width:9px;height:9px;border-radius:var(--radius-pill);background:var(--accent)}
+.cm-event[data-tone=ok]:before{background:var(--ok)}
+.cm-event[data-tone=danger]:before{background:var(--danger)}
+.cm-event[data-tone=warn]:before{background:var(--warn)}
+.cm-event[data-tone=gray]:before{background:var(--border-strong)}
+.cm-event h3{font-size:var(--fs-14);margin:0;font-weight:600}
+.cm-event-meta{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-5);margin-top:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
+.cm-event-result{margin:var(--sp-2) 0 0;font-size:var(--fs-13)}
+.cm-activity details{margin-top:var(--sp-3)}
+.cm-activity summary{color:var(--accent);cursor:pointer;font-size:var(--fs-12);width:fit-content}
+.cm-activity summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-sm)}
+.cm-event-detail{margin-top:var(--sp-3);padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
+.cm-event-detail>p{white-space:pre-wrap;margin:0 0 var(--sp-4);font-size:var(--fs-13)}
+.cm-event-detail .cm-kv{gap:var(--sp-4)}
+.cm-event-detail dd{font-size:var(--fs-13)}
+.cm-body .modal{max-width:680px}
+.cm-form{display:grid;gap:var(--sp-4)}
+.cm-form textarea{min-height:110px;resize:vertical;width:100%}
+.cm-form .field{max-width:none}
+.cm-form fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:var(--sp-4)}
+.cm-form input[type=checkbox]{accent-color:var(--accent)}
+.cm-ack{display:flex;gap:var(--sp-3);align-items:start;font-size:var(--fs-13);line-height:1.6}
+.cm-ack input{margin-top:3px;flex:none}
+.cm-error{color:var(--danger);font-size:var(--fs-12);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.cm-body .demo-panel{max-height:calc(100vh - 110px);overflow:auto}
+.cm-demo{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-5)}
+.cm-demo-actions{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)}
+@media (max-width:1400px){
+  .cm-grid{grid-template-columns:minmax(0,1fr) 288px}
+  .cm-detail-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
+  .cm-filters{gap:var(--sp-3)}
+  .cm-table td,.cm-table th{padding-left:var(--sp-2);padding-right:var(--sp-2)}
+}
+</style></head>
+<body class="cm-body ops-account">
+<div id="portal" hidden></div>
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">HC</span><div><div class="brand-name">Harbour Credit</div><div class="brand-sub">Operations</div></div></div>
+    <nav class="nav" id="anav" aria-label="Main navigation"></nav><div class="side-foot" id="asidefoot"></div>
+  </aside>
+  <div class="main"><div class="topbar"><div class="topbar-right" id="atools"></div></div><main class="content" id="acontent"><div class="crumbbar-in" id="acrumb"></div></main></div>
+</div>
+<!-- focus：共享运营登录与改密页的骨架，仅品牌与语言工具。 -->
+<div class="focus" id="focus" hidden>
+  <header class="focus-head"><div class="brand"><span class="brand-mark" aria-hidden="true">HC</span><span class="brand-name">Harbour Credit</span></div><div class="focus-tools" id="focusTools"></div></header>
+  <main class="focus-main"><div class="focus-card" id="focusContent"></div></main>
+  <footer class="focus-foot">Harbour Credit</footer>
+</div>
+
+<div id="layers"></div><div class="toasts" id="toasts" aria-live="polite"></div>
+<button class="demo-btn" id="demoBtn" type="button"></button><aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
+<script src="../../_shared/registry.admin.js"></script>
+<script src="../../_shared/shell.js"></script>
+<script src="../../_shared/admin-menu.js"></script>
+<script src="../../_shared/admin-message-data.js"></script>
+<script src="../../_shared/admin-notifications.js"></script>
+<script src="../../_shared/puzzle.js"></script>
+<script>CF.deferOpsBoot=true;</script>
+<script src="../账户与登录/账户与登录.js"></script>
+<script src="演示数据.js"></script>
+<script src="合约管理.js"></script>
+
+<!-- 共享运行时缺失时的兜底提示：整份原型依赖 _shared/ 下的样式与脚本，单独复制出的 HTML 无法运行。 -->
+<script>
+if (!window.CF) {
+  var notice = document.createElement('div');
+  notice.style.cssText = 'max-width:40rem;margin:14vh auto;padding:24px;border:1px solid #d5d9e0;border-radius:12px;' +
+    'font:14px/1.7 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;color:#1d2330;background:#fff';
+  notice.innerHTML = '<strong style="display:block;font-size:16px;margin-bottom:8px">原型未能加载 · Prototype could not load</strong>' +
+    '请从完整的「页面原型」目录打开本文件：共享样式与脚本在 _shared/ 下，单独复制出来的 HTML 打不开。' +
+    '需要单独发送的评审件请用 _shared/export.py 导出单文件版本。' +
+    '<br><br>Open this file from the complete prototype folder — the shared styles and scripts live in _shared/, ' +
+    'so a copied-out HTML cannot run. Use _shared/export.py to produce a self-contained review build.';
+  document.body.appendChild(notice);
+}
+</script>
+</body></html>

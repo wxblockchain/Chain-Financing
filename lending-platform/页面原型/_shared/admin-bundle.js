@@ -6,7 +6,7 @@
   const nativeTimeout=window.setTimeout.bind(window),nativeInterval=window.setInterval.bind(window);
   const timers=new Set(),intervals=new Set();
   let current=bundle.initial;
-  function owner(route){return bundle.entries.find(e=>route.startsWith(e.route))?.file||
+  function owner(route){return bundle.entries.find(e=>(e.routes||[e.route]).some(r=>route.startsWith(r)))?.file||
     (route.startsWith('/ops/notification')?'消息通知/消息通知.html':bundle.initial)}
   function open(file,route,replace=false){
     if(!bundle.documents[file])return;
