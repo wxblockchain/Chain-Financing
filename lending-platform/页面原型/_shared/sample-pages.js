@@ -71,7 +71,10 @@
       if(consoleMode) S.pageNo=Math.min(S.pageNo,Math.max(1,Math.ceil(rows.length/5)));
       const shown=consoleMode?rows.slice((S.pageNo-1)*5,S.pageNo*5):rows.slice(0,S.shown);
       const alt=CF.surface({emptyTitle:L('No records yet','暂无记录'),emptyDesc:L('New records will appear here.','有新记录后会显示在这里。')});
-      const filters='<div class="filters"><div class="field"><label for="sample-q">'+L('Project, request or asset holder','项目、需求或资产方')+'</label><input class="inp" id="sample-q" type="search" value="'+E(keyword)+'"></div><div class="field"><label for="sample-currency">'+L('Currency','币种')+'</label><select id="sample-currency" class="inp"><option value="">'+L('All','全部')+'</option>'+['USD','EUR'].map(c=>'<option'+(c===currency?' selected':'')+'>'+c+'</option>').join('')+'</select></div><div class="acts">'+button('sample-reset',L('Reset','重置'))+button('sample-search',L('Search','查询'),'',true)+'</div></div>';
+      const filters='<div class="filterbar">'+
+        CF.filterSelect('sample-currency',L('Currency','币种'),[['',L('All','全部')],['USD','USD'],['EUR','EUR']],currency,'')+
+        CF.filterSearch('sample-q',L('Project, request or asset holder','项目、需求或资产方'),keyword)+
+        '<div class="fb-acts">'+button('sample-reset',L('Reset','重置'))+button('sample-search',L('Search','查询'),'',true)+'</div></div>';
       const labels=[consoleMode?L('Request','融资需求'):L('Financing project','融资项目'),L('Asset holder','资产方企业'),L('Requested amount','需求金额'),L('Status','状态'),L('Actions','操作')];
       const table='<div class="tablewrap '+(consoleMode?'':'listbox listbox-contained sample-list')+'" tabindex="0" role="region" aria-label="'+L('Records','记录列表')+'"><table class="tbl resp"><thead><tr>'+labels.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+shown.map(p=>'<tr>'+[
         '<a class="actlink" id="sample-row-'+p.id+'" href="#'+E(destination(consoleMode?'/sample/record':'/sample/project',p,current()))+'" data-act="sample-open" data-v="'+p.id+'">'+E(consoleMode?p.request.id:p.id)+'</a>',E(L(...p.request.holder)),CF.fmtAmt(p.request.amt,p.request.ccy),status(p),button('sample-preview',L('Quick view','速览'),p.id)
@@ -436,23 +439,17 @@
       '</div><p class="sum-note">' +
       L("Converted at each issuance-time FX rate.", "按各笔签发时汇率折算。") + "</p>";
 
-    var filters = '<div class="filters">' +
-      '<div class="field"><label for="a-ts">' + L("Token status", "代币状态") + "</label>" +
-      '<select class="inp" id="a-ts"><option>' + L("All", "全部") + "</option><option>" +
-        L("Valid", "有效") + "</option><option>" + L("Void", "失效") + "</option></select></div>" +
-      '<div class="field"><label for="a-ps">' + L("Pledge status", "质押状态") + "</label>" +
-      '<select class="inp" id="a-ps"><option>' + L("All", "全部") + "</option><option>" +
-        L("Pledged", "已质押") + "</option><option>" + L("Not pledged", "未质押") + "</select></div>" +
-      '<div class="field"><label for="a-kind">' + L("Token type", "代币类型") + "</label>" +
-      '<select class="inp" id="a-kind"><option>' + L("All", "全部") + "</option><option>" +
-        L("Receivables", "应收账款类") + "</option></select></div>" +
-      '<div class="field"><label for="a-holder">' + L("Asset holder", "资产方企业") + "</label>" +
-      '<select class="inp" id="a-holder"><option>' + L("All", "全部") + "</option><option>" +
-        L("Asset Holder A", "资产方 A") + "</option><option>" + L("Asset Holder B", "资产方 B") + "</select></div>" +
-      '<div class="field"><label for="a-kw">' + L("Search", "搜索") + "</label>" +
-      '<input class="inp" id="a-kw" type="search" placeholder="' +
-        L("Token number, holder or minting hash", "代币编号、资产方企业名或铸造交易哈希") + '"></div>' +
-      '<div class="acts"><button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
+    var filters = '<div class="filterbar">' +
+      CF.filterSelect("a-ts", L("Token status", "代币状态"),
+        [["", L("All", "全部")], ["valid", L("Valid", "有效")], ["void", L("Void", "失效")]], "", "") +
+      CF.filterSelect("a-ps", L("Pledge status", "质押状态"),
+        [["", L("All", "全部")], ["pledged", L("Pledged", "已质押")], ["unpledged", L("Not pledged", "未质押")]], "", "") +
+      CF.filterSelect("a-kind", L("Token type", "代币类型"),
+        [["", L("All", "全部")], ["ar", L("Receivables", "应收账款类")]], "", "") +
+      CF.filterSelect("a-holder", L("Asset holder", "资产方企业"),
+        [["", L("All", "全部")], ["a", L("Asset Holder A", "资产方 A")], ["b", L("Asset Holder B", "资产方 B")]], "", "") +
+      CF.filterSearch("a-kw", L("Token number, holder or minting hash", "代币编号、资产方企业名或铸造交易哈希"), "") +
+      '<div class="fb-acts"><button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
       '<button class="btn primary" type="button" data-act="clearfilter">' + L("Search", "查询") + "</button></div>" +
       "</div>";
 
@@ -565,14 +562,11 @@
       '</p></div><div class="page-actions">' +
       '<button class="btn primary" type="button" data-act="toast" data-v="newver">' +
       L("New version", "新建版本") + "</button></div></div>" +
-      '<div class="card"><div class="filters">' +
-      '<div class="field"><label for="a-st">' + L("Status", "状态") + "</label>" +
-      '<select class="inp" id="a-st"><option>' + L("All", "全部") + "</option><option>" +
-      L("Effective", "生效中") + "</option><option>" + L("Takes effect later", "待生效") + "</option><option>" +
-      L("Archived", "已归档") + "</option></select></div>" +
-      '<div class="field"><label for="a-kw">' + L("Keyword", "关键词") + "</label>" +
-      '<input class="inp" id="a-kw" type="search" placeholder="' + L("Code or name", "编码或名称") + '"></div>' +
-      '<div class="acts"><button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button></div>" +
+      '<div class="card"><div class="filterbar">' +
+      CF.filterSelect("a-st", L("Status", "状态"),
+        [["", L("All", "全部")], ["effective", L("Effective", "生效中")], ["later", L("Takes effect later", "待生效")], ["archived", L("Archived", "已归档")]], "", "") +
+      CF.filterSearch("a-kw", L("Code or name", "编码或名称"), "") +
+      '<div class="fb-acts"><button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button></div>" +
       "</div>" +
       (alt || '<div class="tablewrap"><table class="tbl"><thead><tr><th>' + L("Code", "编码") +
         "</th><th>" + L("Agreement", "协议") + "</th><th>" + L("Version", "版本") + "</th><th>" +

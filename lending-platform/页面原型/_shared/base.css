@@ -199,13 +199,16 @@ img,svg{max-width:100%}
 .filterbar .fb-q+.fb-acts{margin-left:var(--sp-2)}
 .filterbar .fb-acts .btn{height:var(--ctrl-h-sm);min-height:0;padding:0 14px;border-radius:var(--radius-pill)}
 .filterbar .fb-label{font-size:var(--fs-12);color:var(--faint);font-weight:600}
+.filterbar .fb-range{display:inline-flex;align-items:center;gap:8px}
+.filterbar .fb-range .inp{height:var(--ctrl-h-sm);border-radius:var(--radius-pill);width:104px;padding:0 12px;font-size:var(--fs-13)}
+.filterbar .fb-dash{color:var(--faint)}
 
-/* 列表放大到整窗：评审长列表时把内嵌列表铺满窗口，Esc 或再次点击还原。 */
+/* 列表放大到整窗：整块列表以浮层铺满窗口，页面其余内容留在下面，Esc 或再次点击还原。 */
+body.list-full{overflow:hidden}
 body.list-full .listzone{position:fixed;inset:0;z-index:var(--z-mask);margin:0;border-radius:0;
-  display:flex;flex-direction:column;overflow:hidden;box-shadow:none}
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:none;background:var(--bg-elev)}
 body.list-full .listzone .listbox{max-height:none;flex:1 1 auto;min-height:0}
-body.list-full .listzone .filterbar{flex:none}
-body.list-full .portal-main>*:not(.listzone),body.list-full .portal-head{visibility:hidden}
+body.list-full .listzone .filterbar,body.list-full .listzone .list-full-bar{flex:none}
 .list-full-bar{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-2) var(--card-pad);
   border-bottom:1px solid var(--border);font-size:var(--fs-12);color:var(--muted)}
 .list-full-bar .btn{margin-left:auto;height:var(--ctrl-h-sm);min-height:0;padding:0 14px;border-radius:var(--radius-pill)}
@@ -362,6 +365,21 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
   .crumb-item:nth-last-child(2) .crumb-sep{display:none}
 }
 .portal-main{flex:1;min-width:0;background:var(--bg)}
+/* 面客端面向欧美与香港的机构读者：平面化表面、克制的分隔线、字距更开的小标签，
+   数字与表格是主角，装饰性阴影和圆角收敛。管理端密度不受影响。 */
+[data-end="asset"] .card{box-shadow:none}
+[data-end="asset"] .page-head{margin-bottom:var(--sp-5)}
+[data-end="asset"] .page-title{font-size:var(--fs-28);font-weight:680;letter-spacing:-.025em}
+[data-end="asset"] .page-desc{font-size:var(--fs-14);color:var(--muted);margin-top:8px}
+[data-end="asset"] .stat-strip .k{font-size:var(--fs-11);letter-spacing:.07em;text-transform:uppercase}
+[data-end="asset"] .stat-strip{gap:var(--sp-5) var(--sp-7)}
+[data-end="asset"] .stat-strip .v{font-size:var(--fs-28);letter-spacing:-.03em}
+[data-end="asset"] .stat-strip .v .u{font-size:var(--fs-13)}
+[data-end="asset"] .stat-strip .n{font-size:var(--fs-12);color:var(--faint)}
+[data-end="asset"] table.tbl thead th{background:transparent;letter-spacing:.08em;padding-top:14px;padding-bottom:14px}
+[data-end="asset"] table.tbl tbody td{border-bottom-color:var(--border-dash)}
+[data-end="asset"] .card-head{font-size:var(--fs-14);font-weight:660;letter-spacing:-.01em}
+
 .portal-wrap{max-width:1560px;margin:0 auto;width:100%;padding:var(--sp-7) var(--sp-6) var(--sp-9)}
 .portal-cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:var(--sp-6);align-items:start}
 .portal-rail{position:sticky;top:96px;display:flex;flex-direction:column;gap:var(--sp-4);min-width:0}

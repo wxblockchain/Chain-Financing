@@ -72,12 +72,21 @@
       return row;
     }))+tail;
   }
-  function advancedFilters(){const all=['','All','全部'];return '<div class="ls-fields">'+
-    select('ls-type','Asset type','资产类型',[all,['ar','Receivables','应收账款']],filter.type||'')+
-    '<div class="field"><label>'+L('Pool asset value (USD)','池内资产价值（USD）')+'</label><div class="ls-range"><input aria-label="'+L('Minimum pool value','池值下限')+'" class="inp" id="ls-vmin" type="number" min="0" value="'+E(filter.vmin||'')+'"><input aria-label="'+L('Maximum pool value','池值上限')+'" class="inp" id="ls-vmax" type="number" min="0" value="'+E(filter.vmax||'')+'"></div></div>'+
-    '<div class="field"><label>'+L('Demand amount (USD)','需求金额（USD）')+'</label><div class="ls-range"><input aria-label="'+L('Minimum demand','需求下限')+'" class="inp" id="ls-amin" type="number" min="0" value="'+E(filter.amin||'')+'"><input aria-label="'+L('Maximum demand','需求上限')+'" class="inp" id="ls-amax" type="number" min="0" value="'+E(filter.amax||'')+'"></div></div>'+
-    select('ls-coverage','Coverage shortfall','是否覆盖不足',[all,['yes','Yes','是'],['no','No','否']],filter.coverage||'')+
-    '<div class="ls-row">'+btn('ls-filter',L('Apply filters','筛选'),'',true)+btn('ls-clear',L('Reset','重置'))+'</div></div>';}
+  /* 更多筛选与主筛选条同一套控件：多选药丸 + 紧凑区间输入，不再各带一套标签字段和按钮。 */
+  let advancedOpen=false;
+  document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('ls-more-filters'))advancedOpen=e.target.open;},true);
+  function advancedFilters(){
+    const fm=(id,label,opts,cur)=>CF.filterMenu(id,label,opts,String(cur||'').split(',').filter(Boolean));
+    const range=(label,minId,maxId,minV,maxV)=>'<span class="fb-range"><span class="fb-label">'+label+'</span>'+
+      '<input class="inp" id="'+minId+'" type="number" min="0" inputmode="numeric" placeholder="'+L('Min','最小')+'" aria-label="'+label+' · '+L('minimum','最小')+'" value="'+E(minV||'')+'">'+
+      '<span class="fb-dash" aria-hidden="true">–</span>'+
+      '<input class="inp" id="'+maxId+'" type="number" min="0" inputmode="numeric" placeholder="'+L('Max','最大')+'" aria-label="'+label+' · '+L('maximum','最大')+'" value="'+E(maxV||'')+'"></span>';
+    return '<div class="filterbar ls-advanced-filters">'+
+      fm('ls-type',L('Asset type','资产类型'),[['ar',L('Receivables','应收账款')]],filter.type)+
+      fm('ls-coverage',L('Coverage shortfall','覆盖不足'),[['yes',L('Yes','是')],['no',L('No','否')]],filter.coverage)+
+      range(L('Pool value (USD)','池内资产价值（USD）'),'ls-vmin','ls-vmax',filter.vmin,filter.vmax)+
+      range(L('Requested amount (USD)','需求金额（USD）'),'ls-amin','ls-amax',filter.amin,filter.amax)+
+      '<div class="fb-acts">'+btn('ls-filter',L('Apply','应用'),'',true)+'</div></div>';}
   function filters(){
     const fm=(id,label,opts,cur)=>CF.filterMenu(id,label,opts,String(cur||'').split(',').filter(Boolean));
     return '<div class="filterbar ls-primary-filters">'+
@@ -88,7 +97,7 @@
     CF.filterSearch('ls-keyword',L('Project, request ID or holder','项目、需求编号或资产方'),filter.keyword||'')+
     '<div class="fb-acts">'+
     btn('ls-clear',L('Reset','重置'))+btn('ls-filter',L('Search','查询'),'',true)+'</div></div>'+
-    '<details class="ls-more-filters"'+(Object.keys(filter).some(k=>!['currency','tenor','keyword','sort','status','quote'].includes(k)&&filter[k])?' open':'')+'><summary>'+L('More filters','更多筛选')+'</summary>'+advancedFilters()+'</details>';}
+    '<details class="ls-more-filters"'+(advancedOpen||['type','coverage','vmin','vmax','amin','amax'].some(k=>filter[k])||/^filter:ls-(type|coverage)$/.test(S.menu||'')?' open':'')+'><summary>'+L('More filters','更多筛选')+'</summary>'+advancedFilters()+'</details>';}
   function requestInfo(p){const d=D.current(p);return {d,amount:d?d.amount:null,currency:'USD',tenor:d?.tenorDays,rate:d?.rate,updated:D.events.find(e=>e.project===p.id)?.at||d?.at||p.published};}
   function matching(){return D.projects.filter(p=>p.state!=='draft'||Q&&Q.hasHistory(p)).filter(p=>{
     const n=D.numbers(p),d=D.current(p),amount=d?d.amount:0,open=Q?Q.quoteAvailable(p):d&&d.state==='open'&&!p.expired&&n.grade==='surplus';
@@ -97,9 +106,10 @@
     if(!within(filter.currency,info.currency)||!within(filter.tenor,info.tenor))return false;
     if(filter.keyword&&!([p.id,info.d?.id,...p.name,owner(p)].join(' ').toLowerCase().includes(filter.keyword.trim().toLowerCase())))return false;
     if(!within(filter.status,p.state))return false;
+    if(!within(filter.type,'ar'))return false;
     if(filter.vmin&&n.value<+filter.vmin||filter.vmax&&n.value>+filter.vmax||filter.amin&&amount<+filter.amin||filter.amax&&amount>+filter.amax)return false;
     if(!within(filter.quote,open?'yes':'no'))return false;
-    if(filter.coverage&&(filter.coverage==='yes')!==(n.grade==='short'))return false;
+    if(!within(filter.coverage,n.grade==='short'?'yes':'no'))return false;
     return true;
   }).sort((a,b)=>filter.sort==='value'?D.numbers(b).value-D.numbers(a).value:filter.sort==='amount'?((D.current(b)||{}).amount||0)-((D.current(a)||{}).amount||0):(filter.sort==='oldest'?1:-1)*(Date.parse(requestInfo(a).updated)-Date.parse(requestInfo(b).updated)));}
   function quoteReason(p){const n=D.numbers(p),d=D.current(p);return S.role==='asset'?L('Asset holders cannot submit quotes.','资产方不可提交报价。'):n.grade==='short'?L('Coverage shortfall','覆盖不足'):p.expired?L('Project term expired','项目已到期'):d&&d.state==='quoted'?L('An active quote already exists','已有在途报价'):L('This request is not open for quotes','当前需求不可报价');}
@@ -356,7 +366,7 @@
       if(act==='ls-create'){createProject();return true;}
       if(act==='ls-detail'){pages.tokens=pages.demands=1;goto(v);return true;}
       if(act==='ls-sort-column'){filter.sort=v==='newest'&&(!filter.sort||filter.sort==='newest')?'oldest':v;writeFilters();return true;}
-      if(act==='ls-filter'){['keyword','type','vmin','vmax','amin','amax','coverage'].forEach(k=>{const el=document.getElementById('ls-'+k);if(el)filter[k]=el.value;});writeFilters();return true;}
+      if(act==='ls-filter'){['keyword','vmin','vmax','amin','amax'].forEach(k=>{const el=document.getElementById('ls-'+k);if(el)filter[k]=el.value;});writeFilters();return true;}
       if(act==='filter-set'){const [id,mode]=String(v).split('|'),key=id.replace('ls-','');
         filter[key]=mode==='all'?Array.from(document.querySelectorAll('[data-filter="'+id+'"]')).map(b=>b.value).join(','):'';
         refocus=id;writeFilters();return true;}
