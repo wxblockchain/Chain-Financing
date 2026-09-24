@@ -221,13 +221,14 @@
     const historyView='<details class="ls-history"'+(flow.historyOpen?' open':'')+'><summary>'+L('Quote history','报价历史记录')+' · '+history.length+'</summary>'+(history.length?history.map(x=>'<details class="ls-history" data-history-quote="'+E(x.id)+'"'+(flow.historyOpen===x.id?' open':'')+'><summary>'+institution(x.fund)+' · '+E(x.id)+' · '+status(x)+'</summary>'+dl([[L('Quoted at','报价时间'),time(x.at)],[L('Result time','处理时间'),x.done?time(x.done):'—'],[L('Reason','终结原因'),x.state==='expired'||related(x)?reason(x)||'—':'—']])+currentQuoteView(x)+'</details>').join(''):'<p class="muted">'+L('No historical quotes.','暂无历史报价。')+'</p>')+'</details>';
     return (flow.result?note(flow.result,flow.result,'ok'):'')+overview+section(L('Request information','融资申请资料'),request)+section(L('Current quote','当前报价'),currentQuoteView(q))+(creditSummary?section(L('Credit summary','授信摘要'),creditSummary):'')+historyView+section(L('Financing agreements','协议信息'),requestAgreements(list));
   }
-  function financingProgress(p){
+  /* 融资流程的节点模型：操作区左侧竖轴据此画节点，不再单独画横向进度条。 */
+  Q.financeSteps=p=>{
     const d=D.current(p)||p.demands.at(-1),ended=d?.state==='ended';
     const stage=!d?0:{open:1,quoted:2,funding:3,funded:4}[d.state]??0;
-    return '<ol class="cq-financing-progress" aria-label="'+L('Financing progress','融资进度')+'">'+[['Request','发布需求'],['Quote','机构报价'],['Confirm','确认签署'],['Funding','融资放款']].map((x,i)=>'<li data-state="'+(ended?'inactive':i<stage?'done':i===stage?'current':'next')+'"'+(!ended&&(i===stage||stage===4&&i===3)?' aria-current="step"':'')+'><span class="cq-step-dot" aria-hidden="true">'+(!ended&&i<stage?'✓':i+1)+'</span><span>'+L(...x)+'</span></li>').join('')+'</ol>'+(ended?'<p class="hint">'+L('This request has ended.','本笔融资需求已结束。')+'</p>':'');
-  }
+    return {ended,stage,labels:[['Publish request','发布融资需求'],['Institution quote','机构报价'],['Confirm and sign','确认报价与签署'],['Disbursement','融资放款']]};
+  };
   Q.financePanel=p=>{
-    const ln=CF.L7?.panel(p,financingProgress(p));if(ln)return ln;
+    const ln=CF.L7?.panel(p,'');if(ln)return ln;
     const d=D.current(p),last=d||p.demands.at(-1),q=d&&active(p),a=D.actions(p);let action='',secondary='',hint='';
     if(!d){hint=a.mine&&!D.numbers(p).value?L('This project has no valid collateral. Complete a token pledge before publishing a financing request.','本项目暂无有效质押，请先完成代币质押后再发布。'):L('Publish a request to receive financing quotes.','发布需求后，资金机构可为本企业报价。');if(a.mine)action='<button class="btn primary" data-act="ls-publish"'+(!a.publish?' disabled':'')+'>'+L('Publish financing request','发布融资需求')+'</button>';}
     else if(d.state==='open'){hint=a.mine?L('Waiting for a funder to quote.','等待资金机构报价。'):L('Check credit and submit terms for this request.','核对授信后，为本笔需求提交报价。');action=a.mine?'<button class="btn primary" data-act="ls-publish"'+(!a.edit?' disabled':'')+'>'+L('Edit amount','修改融资金额')+'</button>':'<button class="btn primary" data-act="ls-quote" data-v="'+E(p.id)+'"'+(!a.quote?' disabled':'')+'>'+L('Quote now','立即报价')+'</button>';if(a.mine)secondary='<button class="btn" data-act="ls-end-demand"'+(!a.edit?' disabled':'')+'>'+L('Withdraw request','撤下需求')+'</button>';}
@@ -235,7 +236,7 @@
     else {hint=L('The quote has been accepted; disbursement is next.','报价已接受，下一步办理放款。');action='<button class="btn primary" data-act="ls-handoff" data-v="funding">'+L('View disbursement','查看放款')+'</button>';}
     if(d?.state==='open'&&!a.mine){if(S.role!=='fund'){action='';hint=L('Only funders may submit a quote. You can view this request and its history.','仅资金方可提交报价；您可查看本笔需求与历史。');}else if(!a.quote)hint=p.expired?L('The project has expired. New quotes are unavailable.','项目已到期，当前不可新增报价。'):L('Collateral coverage is insufficient. Await an updated request.','当前质押覆盖不足，请等待资产方更新需求。');}
     if(!d&&p.balance){hint=L('View the financing record for this project.','查看本项目已完成的融资记录。');action='';}
-    return {body:financingProgress(p)+'<div class="cq-operation-status">'+CF.tag('',d?requestState(d):p.balance?L('Disbursed','已放款'):L('No active request','暂无进行中需求'))+'</div>'+(d?'<div class="ls-operation-amount mono">'+usd(d.amount)+'</div>':'')+(q?'<p>'+institution(q.fund)+' · <b>'+q.rate+'%</b></p>'+countdown(q):'')+'<p class="cq-next-step">'+hint+'</p>',primary:action,secondary};
+    return {body:'<div class="cq-operation-status">'+CF.tag('',d?requestState(d):p.balance?L('Disbursed','已放款'):L('No active request','暂无进行中需求'))+'</div>'+(d?'<div class="ls-operation-amount mono">'+usd(d.amount)+'</div>':'')+(q?'<p>'+institution(q.fund)+' · <b>'+q.rate+'%</b></p>'+countdown(q):'')+'<p class="cq-next-step">'+hint+'</p>',primary:action,secondary};
   };
 
   const journeyLabels=[['Publish request','发布融资需求'],['Establish credit','核定授信'],['Submit quote','提交融资报价'],['Respond & sign','确认报价与签署'],['Disbursement','办理放款']];

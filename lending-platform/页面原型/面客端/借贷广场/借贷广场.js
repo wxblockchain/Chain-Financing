@@ -22,10 +22,9 @@
   const small=s=>'<div class="cell-sub">'+s+'</div>';
   const err=()=>error?'<div class="ls-error" role="alert">'+note(error,'danger')+'</div>':'';
   const path=()=>location.hash.replace(/^#/,'');
-  const viewCache={},detailCache={},actionTabs={};
+  const viewCache={},detailCache={},actionTabs={},actionNodes={};
   let reviewReturn=false,focusReview=false,railExpanded=false;
   const expandedRecords=new Set();let reviewScroll=0;
-  const currentTab=()=>actionTabs[project()?.id]||(S.role==='fund'?'financing':'global');
   let listRoute='/marketplace';
   function readFilters(route){const q=new URLSearchParams(route.split('?')[1]||'');const v={};['currency','tenor','keyword','type','vmin','vmax','amin','amax','status','quote','coverage','sort'].forEach(k=>{if(q.has(k))v[k]=q.get(k);});return v;}
   function savePosition(){const box=document.querySelector('#content .listbox');if(S.page===LIST&&box)viewCache[listRoute]={shown:S.shown,top:box.scrollTop,y:window.scrollY,focus:document.activeElement?.closest('.ls-project-row')?.dataset.v||viewCache[listRoute]?.focus||''};}
@@ -179,30 +178,97 @@
   function actionableApplications(p){return D.mine(p)?D.applications.filter(a=>a.project===p.id&&D.eligible(a)):[];}
   function todoBadge(count){return count?'<span class="ls-todo" aria-label="'+L(count+' to do',count+' 项待办')+'">'+count+'</span>':'';}
   function operationMetric(title,value){return '<div class="ls-operation-metric"><span class="muted">'+title+'</span><b class="mono">'+value+'</b></div>';}
-  function actions(p){const a=D.actions(p),n=D.numbers(p),d=D.current(p),tab=currentTab(),todo=actionableApplications(p).length;
+  /* 三条流程：一次只展开一条。有线性进度的画节点轴，没有的只摆固定操作。 */
+  const flowOrder=['global','financing','repay'];
+  const flowNames={global:['Collateral','质押流程'],financing:['Financing','融资流程'],repay:['Repayment','还款流程']};
+  function repaySteps(p){
+    const avail=CF.L8?.available(p)||[];
+    const stage=!avail.length?0:CF.L8?.hasUnsettled?.(p)?1:3;
+    return {ended:false,stage,labels:[['Repayment plan','生成还款计划'],['Submit repayment','提交本期还款'],['Funder confirms','资金方确认到账'],['Settled','结清']]};
+  }
+  function flowSteps(p,key){return key==='financing'?(Q?Q.financeSteps(p):null):key==='repay'?repaySteps(p):null;}
+  function flowTodo(p,key){
+    const a=D.actions(p),d=D.current(p);
+    if(key==='global')return actionableApplications(p).length;
+    if(key==='financing')return a.mine&&d?.state==='quoted'?1:0;
+    return a.mine&&p.balance?1:0;
+  }
+  function flowSummary(p,key){
+    const n=D.numbers(p),d=D.current(p);
+    if(key==='global')return L('Eligible collateral ','有效质押价值 ')+usd(n.value);
+    if(key==='financing')return d?label(d.state):p.balance?L('Disbursed','已放款'):L('No active request','暂无进行中需求');
+    return p.balance?L('Outstanding ','已融资余额 ')+usd(p.balance):L('Starts after disbursement is confirmed','放款到账后生成还款计划');
+  }
+  function openFlow(p){
+    const chosen=actionTabs[p.id];
+    if(chosen&&flowOrder.includes(chosen))return chosen;
+    if(S.role==='fund')return 'financing';
+    return ['financing','repay','global'].find(k=>flowTodo(p,k))||'global';
+  }
+  /* 节点只画点，名称靠悬停浮窗；轴上不写第几步。 */
+  function flowAxis(p,key,steps){
+    const sel=Number(actionNodes[p.id+':'+key]??steps.stage);
+    return '<div class="ls-flow-axis" role="tablist" aria-label="'+L('Flow steps','流程节点')+'">'+steps.labels.map((s,i)=>{
+      const state=steps.ended?'':i<steps.stage?'done':i===steps.stage?'now':'';
+      const name=txt(s);
+      return '<button type="button" class="ls-flow-node'+(state?' '+state:'')+'" role="tab" data-act="ls-node" data-v="'+key+':'+i+'"'
+        +' aria-selected="'+(i===sel)+'" tabindex="'+(i===sel?0:-1)+'"><span class="ls-node-pt"></span>'
+        +'<span class="ls-node-tip">'+E(name)+'</span></button>';
+    }).join('')+'</div>';
+  }
+  /* 已完成 / 未开始的环节：不编造内容，只说明并把人带到对应清单。 */
+  function stepBrief(p,key,steps,i){
+    const name=txt(steps.labels[i]),anchor=key==='financing'?(i>=3?'ls-disbursements':'ls-applications'):'ls-repayments';
+    const done=i<steps.stage;
+    return '<h3>'+E(name)+CF.tag('',done?L('Completed','已完成'):L('Not started','未开始'))+'</h3>'
+      +'<p class="ls-flow-note">'+(done?L('This step is finished. Its records are in the list below.','本环节已完成，结果在下方清单中。')
+        :L('This step has not started yet.','本环节尚未开始。'))+'</p>'
+      +'<div class="ls-flow-do">'+(done?btn('ls-locate',L('View records','查看记录'),anchor):'')+btn('ls-node',L('Back to current step','回到当前环节'),key+':'+steps.stage)+'</div>';
+  }
+  function pledgeBody(p){
+    const a=D.actions(p),n=D.numbers(p),todo=actionableApplications(p).length;
     const active=D.applications.filter(x=>x.project===p.id&&['review','approved','executing'].includes(x.state)).sort((x,y)=>Date.parse(y.submitted)-Date.parse(x.submitted));
-    let body='',primary='',secondary='';
-    if(tab==='repay'&&CF.L8?.available(p).length){const panel=CF.L8.panel(p);body=panel.body;primary=panel.primary;secondary=panel.secondary;}else if(S.role==='guest'){body='<h3>'+L('Continue with this project','办理本项目业务')+'</h3><p class="muted">'+L('Sign in to view actions available to your company.','登录后查看本企业可办理的业务。')+'</p>';primary=btn('signin',L('Sign in now','立即登录'),'',true);}
-    else if(tab==='global'){
-      if(a.mine){
-        body='<section class="ls-op-section"><h3>'+L('Collateral management','质押管理')+'</h3>'+operationMetric(L('Withdrawal limit','可撤回额度'),usd(n.withdraw))+'</section>';
-        if(active.length)body+='<section class="ls-op-section"><div class="ls-row"><h3>'+L('Pledge progress','质押进度')+'</h3><span class="muted">'+L(active.length+' in progress',active.length+' 笔进行中')+'</span></div><div class="ls-app-preview">'+active.slice(0,3).map(x=>'<div><span class="mono">'+E(x.tokens[0])+'</span>'+tag(x.state)+'</div>').join('')+'</div></section>';
-        else body+='<p class="muted">'+L('No pledge applications in progress.','暂无进行中的质押申请。')+'</p>';
-        body+='<div class="ls-secondary-actions">'+btn('ls-review',L('Pledge review & confirmation','质押审核与确认'))+btn('ls-release',L('Release collateral','解除质押'),'',false,!a.withdraw)+'</div>';
-        if(p.l8ReleasePending)body+=note(L('Collateral release result is not yet available. Collection is unavailable until release is confirmed.','质押释放结果暂未取得，确认已释放前暂不可提取。'));else if(D.terminal(p))body+='<p class="hint">'+L('Collect released tokens to return them to the original holding address. Blockchain fees apply.','已释放代币需自行提取至原持有地址，提取将产生链上费用。')+'</p>';
-        body+='<div class="ls-op-danger">'+btn('ls-close',L('Close project','关闭项目'),'',false,!a.close)+'</div>';
-        primary=todo?btn('ls-review',L('Review pending tokens','处理待入池代币')+todoBadge(todo),'',true):btn(D.terminal(p)?'ls-release':'ls-pledge',D.terminal(p)?L('Collect collateral','提取已释放代币'):pledgeLabel(p),'',true,D.terminal(p)?!a.withdraw:!a.pledge);
-        if(todo)secondary=btn('ls-pledge',pledgeLabel(p),'',false,!a.pledge);
-      }else body='<h3>'+L('Collateral overview','质押概览')+'</h3>'+operationMetric(L('Pledged amount','质押额度'),usd(n.value))+'<p class="muted">'+L('Collateral is managed by the asset holder. Select Financing to view the current request.','质押由资产方管理，可在「融资」中查看当前需求。')+'</p>';
-    }else if(tab==='financing'){
-      const panel=Q.financePanel(p);body=panel.body;primary=panel.primary;secondary=panel.secondary;
-    }else{
-      body='<h3>'+L('Repayment overview','还款概览')+'</h3>'+operationMetric(L('Outstanding financing','已融资余额'),usd(p.balance));
-      if(p.balance){body+=select('ls-repay','Financing request','需求编号',p.demands.filter(x=>x.state==='funded').map(x=>[x.id,x.id,x.id]))+'<p class="muted">'+L('No repayment recorded.','暂无还款记录。')+'</p>';if(a.mine)primary=btn('ls-handoff',L('Repay now','立即还款'),'repay',true);}
-      else body+='<p class="muted">'+L('No repayment due.','暂无待还款业务。')+'</p>';
-    }
-    const tabs=[['global','Collateral','质押',todo],['financing','Financing','融资',a.mine&&d?.state==='quoted'?1:0],['repay','Repayment','还款',0]];
-    return '<section class="card ls-operations" data-expanded="'+railExpanded+'"><div class="ls-operations-head"><h2>'+L('Project actions','项目操作')+'</h2><button type="button" class="ls-rail-toggle" data-act="ls-rail-toggle" aria-expanded="'+railExpanded+'" aria-controls="ls-action-panel">'+(railExpanded?L('Collapse','收起'):L('Expand','展开'))+'</button></div><div class="ls-tabs" role="tablist" aria-label="'+L('Action categories','操作分类')+'">'+tabs.map(t=>'<button type="button" id="ls-tab-'+t[0]+'" role="tab" data-act="ls-tab" data-v="'+t[0]+'" aria-selected="'+(tab===t[0])+'" aria-controls="ls-action-panel" tabindex="'+(tab===t[0]?0:-1)+'">'+L(t[1],t[2])+todoBadge(t[3])+'</button>').join('')+'</div><div class="ls-action-panel" id="ls-action-panel" role="tabpanel" aria-labelledby="ls-tab-'+tab+'" tabindex="0">'+body+'</div>'+((primary||secondary)?'<div class="ls-action-footer">'+primary+secondary+'</div>':'')+'</section>';
+    if(!a.mine)return '<h3>'+L('Collateral overview','质押概览')+'</h3>'+operationMetric(L('Pledged amount','质押额度'),usd(n.value))+'<p class="muted">'+L('Collateral is managed by the asset holder.','质押由资产方管理。')+'</p>';
+    let body='<div class="ls-flow-stats"><div><span class="k">'+L('Eligible collateral value','有效质押价值')+'</span><span class="v">'+usd(n.value)+'</span></div>'
+      +'<div><span class="k">'+L('Withdrawal limit','可撤回额度')+'</span><span class="v">'+usd(n.withdraw)+'</span></div></div>';
+    if(active.length)body+='<div class="ls-app-preview">'+active.slice(0,3).map(x=>'<div><span class="mono">'+E(x.tokens[0])+'</span>'+tag(x.state)+'</div>').join('')+'</div>';
+    if(p.l8ReleasePending)body+=note(L('Collateral release result is not yet available. Collection is unavailable until release is confirmed.','质押释放结果暂未取得，确认已释放前暂不可提取。'));
+    body+='<div class="ls-flow-grid">'
+      +btn(todo?'ls-review':'ls-pledge',todo?L('Review pending tokens','处理待入池代币')+todoBadge(todo):pledgeLabel(p),'',true,todo?false:!a.pledge)
+      +btn('ls-review',L('Pledge review & confirmation','质押审核与确认'))
+      +btn('ls-release',L('Release collateral','解除质押'),'',false,!a.withdraw)
+      +(D.terminal(p)?btn('ls-release',L('Collect released tokens','提取已释放代币'),'',false,!a.withdraw):btn('ls-close',L('Close project','关闭项目'),'',false,!a.close)).replace('class="btn','class="btn wide')
+      +'</div>';
+    return body;
+  }
+  function flowPane(p,key){
+    const steps=flowSteps(p,key);
+    if(S.role==='guest')return {plain:true,html:'<h3>'+L('Continue with this project','办理本项目业务')+'</h3><p class="muted">'+L('Sign in to view actions available to your company.','登录后查看本企业可办理的业务。')+'</p><div class="ls-flow-do">'+btn('signin',L('Sign in now','立即登录'),'',true)+'</div>'};
+    if(key==='global')return {plain:true,html:pledgeBody(p)};
+    const sel=Number(actionNodes[p.id+':'+key]??steps.stage);
+    if(sel!==steps.stage)return {plain:false,axis:flowAxis(p,key,steps),html:stepBrief(p,key,steps,sel)};
+    const panel=key==='financing'?Q.financePanel(p):(CF.L8?.available(p).length?CF.L8.panel(p):null);
+    let html;
+    if(panel)html=panel.body+((panel.primary||panel.secondary)?'<div class="ls-flow-do">'+panel.primary+panel.secondary+'</div>':'');
+    else html='<h3>'+L('Repayment plan','生成还款计划')+'</h3><p class="ls-flow-note">'+L('No disbursement has been confirmed for this project, so no repayment plan exists yet.','本项目还没有放款到账，还款计划尚未生成。')+'</p>';
+    return {plain:false,axis:flowAxis(p,key,steps),html};
+  }
+  function actions(p){
+    const open=openFlow(p),todoAll=flowOrder.reduce((t,k)=>t+flowTodo(p,k),0);
+    const sections=flowOrder.map(key=>{
+      const on=key===open,todo=flowTodo(p,key),pane=on?flowPane(p,key):null;
+      return '<section class="ls-flow" data-open="'+on+'">'
+        +'<button type="button" class="ls-flow-bar" data-act="ls-tab" data-v="'+key+'" id="ls-tab-'+key+'" aria-expanded="'+on+'">'
+        +'<span class="t"><b>'+txt(flowNames[key])+'</b><span>'+E(flowSummary(p,key))+'</span></span>'
+        +(todo?'<span class="ls-flow-flag">'+L('Action needed','待你处理')+'</span>':'')
+        +'<span class="ls-flow-car" aria-hidden="true">'+(on?'▲':'▼')+'</span></button>'
+        +(on?'<div class="ls-flow-open'+(pane.plain?' plain':'')+'">'+(pane.plain?'':pane.axis)+'<div class="ls-flow-info">'+pane.html+'</div></div>':'')
+        +'</section>';
+    }).join('');
+    return '<section class="card ls-operations" data-expanded="'+railExpanded+'"><div class="ls-operations-head"><h2>'+L('Project actions','项目办理')+'</h2>'
+      +(todoAll?'<span class="ls-flow-todo"><i aria-hidden="true"></i>'+L(todoAll+' to handle',todoAll+' 项待你处理')+'</span>':'')
+      +'<button type="button" class="ls-rail-toggle" data-act="ls-rail-toggle" aria-expanded="'+railExpanded+'" aria-controls="ls-flows">'+(railExpanded?L('Collapse','收起'):L('Expand','展开'))+'</button></div>'
+      +'<div class="ls-flows" id="ls-flows">'+sections+'</div></section>';
   }
   function waitLine(start,days){const elapsed=Math.max(0,Math.floor((D.now()-Date.parse(start))/60000));return '<p class="hint">'+L('Waiting: ','已等待：')+Math.floor(elapsed/60)+L(' h ',' 小时 ')+(elapsed%60)+L(' min.',' 分钟。')+(days?L(' Review deadline: ',' 审核截止：')+time(new Date(Date.parse(start)+days*86400000).toISOString()):'')+'</p>';}
   function resultRows(p,application){const list=D.executions.filter(e=>e.project===p.id&&(application===undefined||e.application===application));if(!list.length)return '';return card(L('Per-token execution results','逐张执行结果'),dataTable([L('Token / operation','代币 / 操作'),L('Result','执行结果'),L('Blockchain fee','链上费用'),L('Next step','下一步')],[...list].reverse().map(e=>{
@@ -327,8 +393,8 @@
   function footer(){document.getElementById('foot').innerHTML='<div class="ft-in"><p class="ft-mark">Harbour Credit</p><p class="ft-tag">'+L('Cross-border receivables financing on tokenised assets.','基于代币化资产的跨境应收账款融资。')+'</p><nav class="ft-links">'+['Terms','Privacy','Risk disclosure','Contact'].map((t,i)=>'<a href="#" data-act="ls-handoff">'+L(t,['服务协议','隐私声明','风险揭示','联系我们'][i])+'</a>').join('')+'</nav><div class="ft-meta"><span>'+L('Demonstration data — no real companies, amounts or transactions','演示数据 —— 非真实企业、金额或链上交易')+'</span><span>'+E(S.tz||'UTC')+'</span></div></div>';}
   function tools(){if(!S.demo)return;const el=document.getElementById('demoPanel');if(el.querySelector('.ls-review,.cq-guide'))return;const end=el.querySelector('.grp');if(end)end.remove();let box=document.createElement('div');box.className='ls-review';box.innerHTML=select('ls-demo-record','Project record list','项目清单',[['tokens','Pledged tokens','质押代币'],['applications','Applications','融资申请'],['disbursements','Disbursements','融资放款'],['repayments','Repayments','还款信息']],'tokens')+select('ls-demo-record-state','List loading state','清单读取状态',[['default','Default','正常'],['loading','Loading','加载中'],['error','Failed','读取失败']],'default')+'<h5>'+L('External events · review only','外部事件 · 仅供评审')+'</h5>'+select('ls-demo-project','Open project','打开项目',D.projects.filter(p=>p.state!=='draft'||D.mine(p)).map(p=>[p.id,p.name[0],p.name[1]]),project()?.id||D.projects[0].id)+btn('ls-demo-project',L('Open','打开'))+select('ls-demo-application','Review one application','审核单笔', [['','Latest pending','最近待审笔'],...D.applications.filter(a=>a.project===(project()?.id||D.projects[0].id)&&a.state==='review').map(a=>[a.id,a.tokens[0]+' · '+a.id,a.tokens[0]+' · '+a.id])],demoApplication)+'<div class="ls-block ls-row">'+btn('ls-demo-event',L('Approve','审核通过'),'approve')+btn('ls-demo-event',L('Reject','驳回'),'reject')+btn('ls-demo-event',L('+2 days','推进 2 天'),'twoDays')+btn('ls-demo-event',L('+8 days','推进 8 天'),'eightDays')+'</div>'+select('ls-outcome','Execution result','执行结果',[['success','All return success','逐张成功'],['mixed','Two success, one failure','2 成 1 败'],['failure','Execution failed · charged','执行失败 · 已产生费用'],['noFee','Execution failed · no fee','执行失败 · 零费用'],['wait','Await results','等待回写']],outcome)+btn('ls-demo-event',L('Return results','回写结果'),'results')+select('ls-gate','Next execution attempt','下次发起执行',[['normal','Available','正常'],['feeChange','One fee changes at confirmation','确认时一张费用变化'],['expiryChange','One deadline passes at confirmation','确认时一张到期'],['unavailable','Execution entry unavailable','执行入口不可用'],['nogas','Insufficient fee balance','费用余额不足'],['recheck','Recheck failed','复核不通过']],executionGate)+'<div class="ls-row">'+btn('ls-demo-event',L('Late success','迟到成功回写'),'late')+btn('ls-demo-event',L('Token expires','代币失效'),'expire')+btn('ls-demo-event',L('Amount changes','额度变化'),'amountChange')+btn('ls-demo-event',L('Permission rejection','越权写入反馈'),'deniedWrite')+btn('ls-demo-event',L('From my console','从控制台进入'),'fromConsole')+'</div>'+select('ls-review-load','Token list state','代币清单状态',[['default','Default','默认'],['loading','Loading','加载中'],['empty','Empty','空数据'],['error','Load failed','加载失败']],reviewLoad)+'<label class="ls-check"><input type="checkbox" id="ls-agreement-fail" '+(agreementFail?'checked':'')+'>'+L('Agreement load failure','协议读取失败')+'</label>'+btn('ls-pledge-notifications',L('Pledge notification preview','质押通知预览'))+'<label class="ls-check"><input id="ls-submit-fail" type="checkbox" '+(submitFail?'checked':'')+'>'+L('Submission failure','提交失败')+'</label><p class="why">'+L('Simulated events and fees. Wallet/signature hosting and real cross-platform connections are not implemented. +2 days advances the demo clock; the deadline check runs automatically.','演示事件与费用，未实现钱包签名及真实跨平台连接。推进 2 天只改变演示时钟，到期判定自动运行。')+'</p>'+btn('ls-demo-event',L('Reset demonstration','重置演示数据'),'reset');el.appendChild(box);}
   async function copyHash(value){try{if(navigator.clipboard)await navigator.clipboard.writeText(value);else{const input=document.createElement('textarea');input.value=value;input.style.position='fixed';input.style.opacity='0';document.body.appendChild(input);input.select();const ok=document.execCommand('copy');input.remove();if(!ok)throw Error('copy');}CF.toast(L('Hash copied.','哈希已复制。'));}catch(_){CF.openLayer('drawer','copy',value);}}
-  function saveDetail(){if(S.layer&&['review','fees','execute','tokenHistory','agreement','cancelApp','pledgeNotifications'].includes(S.layer.key)&&!D.mine(project())){S.layer=null;selection=[];}const panel=document.querySelector('.ls-action-panel');if(panel)detailCache[panel.dataset.project+':'+panel.dataset.tab]=panel.scrollTop;if(S.layer?.key==='review'){document.querySelectorAll('[data-record]').forEach(el=>{if(el.open)expandedRecords.add(el.dataset.record);else expandedRecords.delete(el.dataset.record);});reviewScroll=document.querySelector('#layers .drawer-b, #layers .modal-b')?.scrollTop||0;}}
-  function restoreDetail(){const panel=document.querySelector('.ls-action-panel'),p=project();if(panel&&p){panel.dataset.project=p.id;panel.dataset.tab=currentTab();panel.scrollTop=detailCache[p.id+':'+currentTab()]||0;}sizeWorkspace();if(flowRestore){const previous=flowRestore;flowRestore=null;setTimeout(()=>{const body=document.querySelector('#layers .drawer-b, #layers .modal-b');if(body)body.scrollTop=previous.top;restoreControl(previous.focus);},0);}}
+  function saveDetail(){if(S.layer&&['review','fees','execute','tokenHistory','agreement','cancelApp','pledgeNotifications'].includes(S.layer.key)&&!D.mine(project())){S.layer=null;selection=[];}const panel=document.querySelector('.ls-flow-open');if(panel)detailCache[panel.dataset.project+':'+panel.dataset.tab]=panel.scrollTop;if(S.layer?.key==='review'){document.querySelectorAll('[data-record]').forEach(el=>{if(el.open)expandedRecords.add(el.dataset.record);else expandedRecords.delete(el.dataset.record);});reviewScroll=document.querySelector('#layers .drawer-b, #layers .modal-b')?.scrollTop||0;}}
+  function restoreDetail(){const panel=document.querySelector('.ls-flow-open'),p=project();if(panel&&p){const k=openFlow(p);panel.dataset.project=p.id;panel.dataset.tab=k;panel.scrollTop=detailCache[p.id+':'+k]||0;}sizeWorkspace();if(flowRestore){const previous=flowRestore;flowRestore=null;setTimeout(()=>{const body=document.querySelector('#layers .drawer-b, #layers .modal-b');if(body)body.scrollTop=previous.top;restoreControl(previous.focus);},0);}}
   function sizeWorkspace(){const box=document.querySelector('.ls-workspace');if(!box)return;const top=(document.querySelector('.portal-head')?.getBoundingClientRect().height||68)+12;box.style.setProperty('--ls-rail-top',top+'px');const rail=box.querySelector('.ls-action-rail');const anchorTop=top+(window.innerWidth<=900&&rail?rail.getBoundingClientRect().height+8:0);box.style.setProperty('--ls-section-top',anchorTop+'px');syncSectionNavigation();if(rail)box.style.setProperty('--ls-rail-room',Math.max(190,window.innerHeight-top-16)+'px');}
   window.addEventListener('resize',sizeWorkspace);
   let scrollFrame=false;window.addEventListener('scroll',()=>{if(!scrollFrame){scrollFrame=true;requestAnimationFrame(()=>{sizeWorkspace();scrollFrame=false;});}},{passive:true});
@@ -360,7 +426,9 @@
       if(act==='ls-continue-edit'){if(discardLayer){S.layer=discardLayer.layer;flowRestore=discardLayer;discardLayer=null;}return true;}
       if(act==='ls-discard'){closeFlow();return true;}
       if(act==='ls-rail-toggle'){railExpanded=!railExpanded;return true;}
-      if(act==='ls-tab'){actionTabs[p.id]=v;railExpanded=true;refocus='ls-tab-'+v;return true;}
+      if(act==='ls-tab'){actionTabs[p.id]=actionTabs[p.id]===v?'':v;railExpanded=true;refocus='ls-tab-'+v;return true;}
+      if(act==='ls-node'){const[key,i]=v.split(':');actionNodes[p.id+':'+key]=Number(i);return true;}
+      if(act==='ls-locate'){locateRecord(v);return true;}
       if(act==='ls-review'){if(guarded(p)){clearSelection();reviewReturn=false;reviewScroll=0;open('review');}return true;}
       if(act==='ls-list'){S.layer=null;location.hash='#'+CF.ENTRY[LIST];return true;}
       if(act==='ls-new'){if(S.role!=='asset')throw Error('permission');selection=[];name='';kind='';error='';pages.select=1;location.hash='#/project/new';return true;}
@@ -441,7 +509,7 @@
   });
   document.addEventListener('keydown',e=>{
     if(e.target.matches('.ls-project-row,.ls-financing-row')&&['Enter',' '].includes(e.key)){e.preventDefault();e.target.click();return;}
-    if(e.target.matches('.ls-tabs [role=tab]')&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const tabs=[...document.querySelectorAll('.ls-tabs [role=tab]')],i=tabs.indexOf(e.target),next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length;tabs[next].click();return;}
+    if(e.target.matches('.ls-flow-axis [role=tab]')&&['ArrowUp','ArrowDown','Home','End'].includes(e.key)){e.preventDefault();const axis=e.target.closest('.ls-flow-axis'),tabs=[...axis.querySelectorAll('[role=tab]')],i=tabs.indexOf(e.target),next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowDown'?1:tabs.length-1))%tabs.length;tabs[next].click();return;}
     if(e.key==='Enter'&&e.target.id==='ls-keyword'){e.preventDefault();document.querySelector('[data-act=\"ls-filter\"]').click();return;}
     const dialog=document.querySelector('#layers [role="dialog"]');if(!dialog)return;
     if(e.key==='Escape'&&busy){e.stopImmediatePropagation();return;}

@@ -81,15 +81,72 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-workspace .ls-detail-main{min-width:0;overflow:visible;height:auto}
 .ls-workspace .ls-action-rail{position:sticky;top:var(--ls-rail-top,80px);align-self:start;min-height:0}
 .ls-operations{display:flex;flex-direction:column;max-height:var(--ls-rail-room,calc(100dvh - var(--ls-rail-top,80px) - 20px));min-height:0;overflow:hidden}
-.ls-operations-head{display:flex;align-items:center;justify-content:space-between;padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border);background:var(--card-2)}
+
+.ls-operations-head{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border);background:var(--card-2)}
 .ls-operations-head h2{font-size:var(--fs-14);margin:0}
 .ls-rail-toggle{display:none;background:none;border:0;color:var(--accent);font:inherit;min-height:44px;cursor:pointer}
-.ls-tabs{display:flex;padding:0 var(--sp-4);border-bottom:1px solid var(--border);gap:var(--sp-2);flex-shrink:0}
-.ls-tabs [role=tab]{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);flex:1;min-height:48px;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font:inherit;cursor:pointer;padding:var(--sp-2)}
-.ls-tabs [aria-selected=true]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
-.ls-operations-head,.ls-action-footer{flex-shrink:0}
-.ls-operations .ls-action-panel{overflow-y:auto;overscroll-behavior:contain;padding:var(--sp-5);min-height:0;flex:1}
-.ls-action-panel h3{font-size:var(--fs-14);margin:0 0 var(--sp-3);color:var(--text)}
+/* 三条流程手风琴：标题常驻，只有展开那条的内容在自己那块滚。 */
+.ls-flows{flex:1;min-height:0;display:flex;flex-direction:column}
+.ls-flow{flex:none;display:flex;flex-direction:column;min-height:0}
+.ls-flow[data-open=true]{flex:0 1 auto}
+.ls-flow+.ls-flow{border-top:1px solid var(--border)}
+.ls-flow-bar{flex:none;display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:12px var(--sp-5);background:none;border:0;font:inherit;cursor:pointer;
+  transition:background var(--dur-fast) var(--ease-out)}
+.ls-flow-bar:hover{background:var(--row-hover)}
+.ls-flow[data-open=true]>.ls-flow-bar{background:var(--card-2)}
+.ls-flow-bar .t{flex:1;min-width:0}
+.ls-flow-bar .t b{display:block;font-size:var(--fs-13);font-weight:660;letter-spacing:-.01em;color:var(--text)}
+.ls-flow-bar .t span{display:block;font-size:var(--fs-11);color:var(--faint);margin-top:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ls-flow-car{color:var(--faint);font-size:10px;flex:none}
+.ls-flow-flag{flex:none;font-size:var(--fs-11);font-weight:620;border-radius:var(--radius-pill);padding:2px 9px;
+  white-space:nowrap;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-border)}
+.ls-flow-todo{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-11);color:var(--accent);margin-left:auto}
+.ls-flow-todo i{width:6px;height:6px;border-radius:var(--radius-pill);background:var(--accent)}
+
+/* 展开体：有进度 = 左节点轴 + 右信息；没有进度只留一栏。 */
+.ls-flow-open{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  display:grid;grid-template-columns:54px minmax(0,1fr);border-top:1px solid var(--border)}
+.ls-flow-open.plain{grid-template-columns:minmax(0,1fr)}
+.ls-flow-axis{border-right:1px solid var(--border);background:var(--card-2);padding:var(--sp-5) 0;position:relative}
+.ls-flow-node{position:relative;display:block;width:100%;height:40px;border:0;background:none;padding:0;cursor:pointer}
+.ls-flow-node::before{content:"";position:absolute;left:27px;top:0;bottom:0;width:2px;
+  background:var(--border);transform:translateX(-50%)}
+.ls-flow-node:first-child::before{top:50%}
+.ls-flow-node:last-child::before{bottom:50%}
+.ls-node-pt{position:absolute;left:27px;top:50%;transform:translate(-50%,-50%);width:13px;height:13px;
+  border-radius:var(--radius-pill);border:2px solid var(--border-strong);background:var(--card-2);z-index:1}
+.ls-flow-node.done .ls-node-pt{background:var(--ok);border-color:var(--ok)}
+.ls-flow-node.done::before{background:var(--ok-border)}
+.ls-flow-node.now .ls-node-pt{background:var(--accent);border-color:var(--accent)}
+.ls-flow-node[aria-selected=true] .ls-node-pt{box-shadow:0 0 0 4px var(--accent-soft);border-color:var(--accent)}
+.ls-flow-node[aria-selected=true]::after{content:"";position:absolute;left:0;top:4px;bottom:4px;width:2px;
+  background:var(--accent);border-radius:0 2px 2px 0}
+/* 名称不常驻，悬停或键盘聚焦时才出浮窗 */
+.ls-node-tip{position:absolute;left:42px;top:50%;transform:translateY(-50%);white-space:nowrap;z-index:var(--z-sticky);
+  background:var(--text);color:var(--bg-elev);font-size:var(--fs-11);line-height:1.5;padding:5px 10px;
+  border-radius:var(--radius-xs);box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;
+  transition:opacity var(--dur-fast) var(--ease-out)}
+.ls-node-tip::before{content:"";position:absolute;left:-4px;top:50%;margin-top:-4px;
+  border:4px solid transparent;border-right-color:var(--text)}
+.ls-flow-node:hover .ls-node-tip,.ls-flow-node:focus-visible .ls-node-tip{opacity:1}
+@media(prefers-reduced-motion:reduce){.ls-node-tip{transition:none}}
+
+/* 信息与按钮同一页：按钮跟在内容后面，不另起固定底栏。 */
+.ls-flow-info{min-width:0;padding:var(--sp-4) var(--sp-5) var(--sp-5)}
+.ls-flow-info h3{font-size:var(--fs-16);margin:0 0 var(--sp-3);color:var(--text);letter-spacing:-.01em}
+.ls-flow-note{font-size:var(--fs-12);color:var(--muted);line-height:1.7;margin:0}
+.ls-flow-do{display:flex;align-items:center;gap:var(--sp-2);margin-top:var(--sp-5);flex-wrap:wrap}
+.ls-flow-do .btn.primary{box-shadow:0 1px 2px rgba(29,78,216,.28)}
+.ls-flow-stats{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-5)}
+.ls-flow-stats>div{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:10px 12px}
+.ls-flow-stats .k{display:block;font-size:var(--fs-11);color:var(--faint)}
+.ls-flow-stats .v{display:block;font-size:var(--fs-14);font-weight:660;margin-top:3px;font-variant-numeric:tabular-nums}
+.ls-flow-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin-top:var(--sp-5)}
+.ls-flow-grid .btn{width:100%;white-space:normal;height:auto;min-height:44px}
+.ls-flow-grid .btn.primary,.ls-flow-grid .btn.wide{grid-column:1 / -1}
+.ls-flow-info h3 .tag{margin-left:8px;vertical-align:2px}
 .ls-op-section+.ls-op-section{padding-top:var(--sp-5);margin-top:var(--sp-5);border-top:1px solid var(--border)}
 .ls-op-section .ls-row h3{margin:0}.ls-op-section .ls-row{justify-content:space-between;font-size:var(--fs-12)}
 .ls-operation-metric{display:flex;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap;margin:var(--sp-3) 0;font-size:var(--fs-12)}
@@ -99,8 +156,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-secondary-actions{display:grid;gap:var(--sp-3);margin-top:var(--sp-5)}
 .ls-op-danger{border-top:1px solid var(--border);margin-top:var(--sp-5);padding-top:var(--sp-3)}
 .ls-op-danger .btn{background:none;border-color:transparent;color:var(--muted);padding-left:0}
-.ls-action-footer{display:flex;flex-direction:column;gap:var(--sp-2);padding:var(--sp-4) var(--sp-5);border-top:1px solid var(--border);background:var(--card)}
-.ls-action-footer .btn{width:100%;white-space:normal;min-height:44px;height:auto;padding:var(--sp-3);gap:var(--sp-2)}
 .ls-todo{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:var(--radius-sm);background:var(--accent-soft);color:var(--accent);font-size:var(--fs-11);font-weight:600}
 .btn.primary .ls-todo{background:var(--card);color:var(--accent)}
 .ls-flow-progress{display:grid;grid-template-columns:repeat(4,1fr);list-style:none;padding:0;gap:var(--sp-2);margin:var(--sp-5) 0;color:var(--muted);font-size:var(--fs-11)}
@@ -121,7 +176,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-explorer:hover{background:var(--card-2)}
 .ls-detail-main .ls-table th:first-child{width:24%}
 @media(min-width:901px) and (max-width:1180px){.ls-workspace{grid-template-columns:minmax(0,1fr) 320px}.ls-detail-main .ls-table{min-width:620px}}
-@media(max-width:900px){.ls-workspace{display:flex;flex-direction:column;gap:var(--sp-5)}.ls-workspace .ls-action-rail{order:-1;width:100%;z-index:2}.ls-workspace .ls-detail-main{width:100%}.ls-operations{max-height:min(52dvh,420px,var(--ls-rail-room,420px));box-shadow:var(--shadow)}.ls-operations-head{padding:0 var(--sp-4)}.ls-rail-toggle{display:block}.ls-operations:not([data-expanded=true]) .ls-action-panel{display:none}.ls-action-footer{flex-direction:row;padding:var(--sp-3)}.ls-action-footer .btn{flex:1}.ls-secondary-actions{grid-template-columns:1fr 1fr}.ls-detail-main .ls-table th:first-child{width:auto}.ls-hash-row{flex-wrap:nowrap}.ls-stats .v{font-size:var(--fs-16)}}
+@media(max-width:900px){.ls-workspace{display:flex;flex-direction:column;gap:var(--sp-5)}.ls-workspace .ls-action-rail{order:-1;width:100%;z-index:2}.ls-workspace .ls-detail-main{width:100%}.ls-operations{max-height:min(52dvh,420px,var(--ls-rail-room,420px));box-shadow:var(--shadow)}.ls-operations-head{padding:0 var(--sp-4)}.ls-rail-toggle{display:block}.ls-operations:not([data-expanded=true]) .ls-flows{display:none}.ls-flow-grid{grid-template-columns:1fr 1fr}.ls-secondary-actions{grid-template-columns:1fr 1fr}.ls-detail-main .ls-table th:first-child{width:auto}.ls-hash-row{flex-wrap:nowrap}.ls-stats .v{font-size:var(--fs-16)}}
 @media(max-width:600px){.ls-application-summary{grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-3)}.ls-application-action{grid-column:1/-1}.ls-application-action:empty{display:none}.ls-application-action .btn{width:100%}.ls-application-details>summary{flex-wrap:wrap}.ls-application-details>summary .mono{width:100%;margin:0}.ls-operation-metric{font-size:var(--fs-12)}}
 @media(max-width:1100px){.ls-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:768px){.ls-stack .pager .total,.ls-form .pager .total{flex-basis:100%}.ls-grid,.ls-fields,.ls-steps{grid-template-columns:1fr}.ls-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-table td{flex-wrap:wrap}.ls-table td:before{max-width:45%;white-space:normal}.ls-table td>*{max-width:100%}.ls-range{width:100%}.ls-actions .btn{flex:1}.ls-row .push{margin-left:0}.ls-step{padding-bottom:var(--sp-3)}.ls-primary-filters .field{max-width:none;flex-basis:100%}.ls-primary-filters .acts{width:100%;margin:0}.ls-primary-filters .acts .btn{flex:1}.ls-market-table td.col-act{position:static}.ls-market-table td .cell-wrap{min-width:0;max-width:70%}.ls-row-actions{flex-wrap:wrap}.ls-detail-head>.tok-mark{display:none}}
@@ -205,7 +260,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
   table.tbl.resp.cq-history-table td .cell-wrap{flex:1;align-items:flex-end}
 }
 .cq-next-step{color:var(--muted);line-height:1.7;margin:var(--sp-3) 0 var(--sp-4)}
-.ls-action-panel>.btn{width:100%;white-space:normal;height:auto;min-height:44px}
 .modal:has(.cq-request-detail){max-width:920px}
 .cq-request-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
 .cq-request-head h2{font-size:var(--fs-24);margin:var(--sp-2) 0;overflow-wrap:anywhere}
