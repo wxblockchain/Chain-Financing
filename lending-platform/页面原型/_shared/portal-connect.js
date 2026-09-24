@@ -20,15 +20,25 @@
     if (act === 'ls-handoff' && value === 'console') { S.layer = null; location.hash = '#/console'; return true; }
     return action(act, value, event);
   };
-  CF.openNotificationTarget = (target, record) => {
-    if (target.mode === 'object' && target.target === 'lending:P-LS-01') {
-      const project = CF.LS.project(record.objectId);
-      if (!project || project.state === 'draft' && !CF.LS.mine(project)) {
-        CF.toast(CF.L('This project is no longer available.', '该项目已不可用。')); return;
-      }
+  /* 消息的原对象定位：项目类落项目详情并带返回入口，报价落原申请的报价历史，
+     放款与还款落控制台的只读详情及原期次；控制台不因此获得办理入口。 */
+  const CONSOLE = {loan: 'loans', repayment: 'repayments'};
+  const unavailable = () => CF.toast(CF.L('The related content is unavailable.', '相关内容暂不可访问。'));
+  CF.openNotificationTarget = (target) => {
+    if (!target) return;
+    if (target.mode !== 'object') { CF.enterPage(target.target, null); return; }
+    if (target.kind === 'project' || target.kind === 'quote') {
+      const project = CF.LS.project(target.kind === 'project' ? target.id : target.project);
+      if (!project || project.state === 'draft' && !CF.LS.mine(project)) { unavailable(); return; }
+      const params = {messageReturn: location.hash};
+      if (target.kind === 'quote') params.business = target.id;
       CF.AM.returnDetail = null;
-      location.hash = '#/project/' + encodeURIComponent(project.id) + '?' + new URLSearchParams({messageReturn: location.hash});
-    } else CF.enterPage(target.target, target.mode === 'object' ? {object: record.objectId, panel: target.panel || ''} : null);
+      location.hash = '#/project/' + encodeURIComponent(project.id) + '?' + new URLSearchParams(params);
+      return;
+    }
+    const params = new URLSearchParams({id: target.id});
+    if (target.period) params.set('period', target.period);
+    location.hash = '#/console/' + (CONSOLE[target.kind] || 'loans') + '?' + params;
   };
   CF.resumePortalTarget = () => {
     const target = CF.portalLoginReturn; CF.portalLoginReturn = '';

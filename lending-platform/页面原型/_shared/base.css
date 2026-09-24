@@ -771,6 +771,24 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
   .nc-message-foot{gap:var(--sp-1);flex-direction:column;align-items:flex-start}
 }
 
+/* 逐期对照：来源要求逐项对照的通知在同一封信内完整给出，缺一侧留空。 */
+.nc-compare{margin-top:var(--sp-7);padding-top:var(--sp-6);border-top:1px solid var(--border)}
+.nc-compare h2{font-size:var(--fs-16);margin:0 0 var(--sp-4)}
+.nc-compare-grid{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:clip}
+.nc-compare-row{display:grid;grid-template-columns:minmax(72px,1fr) 2fr 2fr;gap:var(--sp-4);
+  padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--row-line);align-items:baseline}
+.nc-compare-row:last-child{border-bottom:0}
+.nc-compare-head{background:var(--gray-bg);font-size:var(--fs-12);color:var(--muted)}
+.nc-compare-row [role="rowheader"]{font-weight:600;font-size:var(--fs-13)}
+.nc-compare-row [role="cell"]{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:var(--fs-13)}
+.nc-cell-date{color:var(--muted)}
+.nc-cell-amt{overflow-wrap:anywhere}
+.nc-cell-sub{display:block;color:var(--muted);font-size:var(--fs-12)}
+.nc-cell-none{color:var(--muted)}
+@media(max-width:600px){
+  .nc-compare-row{grid-template-columns:minmax(56px,1fr) 1fr 1fr;gap:var(--sp-3)}
+}
+
 /* Operations notification reading surface: same message components, console density. */
 .om-inbox .nc-head{margin-bottom:var(--sp-6)}
 .om-head-action{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-2)}
