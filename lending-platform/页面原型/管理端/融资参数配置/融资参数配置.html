@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" data-end="admin" data-admin-module="parameters" data-module="financing-parameters"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Financing parameters · Harbour Credit</title>
+<link rel="stylesheet" href="../../_shared/tokens.css">
+<link rel="stylesheet" href="../../_shared/base.css">
+<link rel="stylesheet" href="../账户与登录/账户与登录.css">
+<style>
+.fc-stack{display:grid;gap:var(--sp-5);align-content:start}
+.fc-meta{display:block;color:var(--muted);font-size:var(--fs-12);margin-top:var(--sp-1);overflow-wrap:anywhere}
+.fc-title{display:flex;align-items:start;justify-content:space-between;gap:var(--sp-4);margin-bottom:var(--sp-4)}
+.fc-title h1{font-size:var(--fs-24);margin:0 0 var(--sp-2)}
+.fc-title .fc-meta{margin-top:0}
+.fc-filter-wrap{padding:var(--sp-5);border-bottom:1px solid var(--border)}
+.fc-filter-bar{display:grid;grid-template-columns:minmax(240px,1fr) minmax(170px,230px) auto;gap:var(--sp-4);align-items:end}
+.fc-filter-wrap .field{min-width:0;max-width:none}
+.fc-actions{display:flex;align-items:end;justify-content:flex-end;gap:var(--sp-2)}
+.fc-applied{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-4)}
+.fc-list-tools{display:flex;justify-content:flex-end;gap:var(--sp-5);padding:var(--sp-3) var(--sp-5)}
+.fc-list-tools .field{display:flex;flex-direction:row;align-items:center;gap:var(--sp-3);max-width:none;margin:0}
+.fc-list-tools label{margin:0;white-space:nowrap}.fc-list-tools .inp{width:auto}
+.fc-table{table-layout:fixed;width:100%}
+table.tbl.fc-table thead th{white-space:normal}
+table.tbl.fc-table thead th.sortable button{white-space:normal;text-align:left}
+.fc-table tbody td{overflow-wrap:anywhere;font-size:var(--fs-12)}
+.fc-table .tag{white-space:normal;text-align:left;line-height:1.5}
+.fc-table .col-act{position:sticky;right:0;background:var(--card);width:84px;text-align:right;white-space:normal}
+.fc-list-table th:nth-child(1){width:22%}.fc-list-table th:nth-child(2){width:12%}.fc-list-table th:nth-child(3){width:13%}
+.fc-list-table th:nth-child(4){width:15%}.fc-list-table th:nth-child(5){width:19%}.fc-list-table th:nth-child(6){width:19%}
+.fc-log-table th:nth-child(1){width:23%}.fc-log-table th:nth-child(2){width:21%}.fc-log-table th:nth-child(3){width:21%}
+.fc-log-table th:nth-child(4){width:21%}.fc-log-table th:nth-child(5){width:14%}
+.fc-h2{font-size:var(--fs-16);margin:0 0 var(--sp-4)}
+.fc-section{padding:var(--sp-5)}
+.fc-section-head{display:flex;align-items:start;justify-content:space-between;gap:var(--sp-4);margin-bottom:var(--sp-4)}
+.fc-section-head .fc-h2{margin:0}
+.fc-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-5);margin:0}
+.fc-kv dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
+.fc-kv dd{margin:0;overflow-wrap:anywhere;font-size:var(--fs-16)}
+.fc-kv dd.fc-strong{font-size:var(--fs-24);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.fc-kv dd small{display:block;font-size:var(--fs-12);color:var(--muted);font-family:var(--sans);margin-top:var(--sp-1)}
+.fc-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5)}
+.fc-form .field{max-width:none}
+.fc-form .inp{max-width:240px}
+.fc-form .fc-readonly{grid-column:1/-1;margin-bottom:var(--sp-1)}
+.fc-form fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);grid-column:1/-1}
+.fc-wide{grid-column:1/-1}
+.fc-readonly{padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);overflow-wrap:anywhere}
+.fc-readonly strong{font-family:var(--mono)}
+.fc-error{color:var(--danger);font-size:var(--fs-12);white-space:pre-wrap;overflow-wrap:anywhere;margin:var(--sp-2) 0 0}
+.fc-formfoot{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap;grid-column:1/-1;padding-top:var(--sp-4);border-top:1px solid var(--border)}
+.fc-diff{display:grid;gap:var(--sp-3);margin:var(--sp-4) 0}
+.fc-diff-row{padding:var(--sp-3) var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
+.fc-diff-row b{display:block;font-weight:600;font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
+.fc-diff-vals{display:flex;align-items:baseline;gap:var(--sp-3);font-variant-numeric:tabular-nums}
+.fc-diff-vals .fc-before{color:var(--muted);font-size:var(--fs-16)}
+.fc-diff-vals .fc-arrow{color:var(--faint)}
+.fc-diff-vals strong{font-size:var(--fs-19);font-weight:650}
+.fc-body .modal{max-width:640px}
+.fc-body .demo-panel{max-height:calc(100vh - 110px);overflow:auto}
+.fc-demo{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-5)}
+.fc-demo-actions{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)}
+@media (max-width:1400px){
+  .fc-kv{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
+  .fc-form,.fc-form fieldset{grid-template-columns:minmax(0,1fr)}
+  .fc-table td,.fc-table th{padding-left:var(--sp-2);padding-right:var(--sp-2)}
+}
+</style></head>
+<body class="fc-body ops-account">
+<div id="portal" hidden></div>
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">HC</span><div><div class="brand-name">Harbour Credit</div><div class="brand-sub">Operations</div></div></div>
+    <nav class="nav" id="anav" aria-label="Main navigation"></nav><div class="side-foot" id="asidefoot"></div>
+  </aside>
+  <div class="main"><div class="topbar"><div class="topbar-right" id="atools"></div></div><main class="content" id="acontent"><div class="crumbbar-in" id="acrumb"></div></main></div>
+</div>
+<!-- focus：共享运营登录与改密页的骨架，仅品牌与语言工具。 -->
+<div class="focus" id="focus" hidden>
+  <header class="focus-head"><div class="brand"><span class="brand-mark" aria-hidden="true">HC</span><span class="brand-name">Harbour Credit</span></div><div class="focus-tools" id="focusTools"></div></header>
+  <main class="focus-main"><div class="focus-card" id="focusContent"></div></main>
+  <footer class="focus-foot">Harbour Credit</footer>
+</div>
+
+<div id="layers"></div><div class="toasts" id="toasts" aria-live="polite"></div>
+<button class="demo-btn" id="demoBtn" type="button"></button><aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
+<script src="../../_shared/registry.admin.js"></script>
+<script src="../../_shared/shell.js"></script>
+<script src="../../_shared/admin-menu.js"></script>
+<script src="../../_shared/admin-message-data.js"></script>
+<script src="../../_shared/admin-notifications.js"></script>
+<script src="../../_shared/puzzle.js"></script>
+<script>CF.deferOpsBoot=true;</script>
+<script src="../账户与登录/账户与登录.js"></script>
+<script src="演示数据.js"></script>
+<script src="融资参数配置.js"></script>
+
+<!-- 共享运行时缺失时的兜底提示：整份原型依赖 _shared/ 下的样式与脚本，单独复制出的 HTML 无法运行。 -->
+<script>
+if (!window.CF) {
+  var notice = document.createElement('div');
+  notice.style.cssText = 'max-width:40rem;margin:14vh auto;padding:24px;border:1px solid #d5d9e0;border-radius:12px;' +
+    'font:14px/1.7 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;color:#1d2330;background:#fff';
+  notice.innerHTML = '<strong style="display:block;font-size:16px;margin-bottom:8px">原型未能加载 · Prototype could not load</strong>' +
+    '请从完整的「页面原型」目录打开本文件：共享样式与脚本在 _shared/ 下，单独复制出来的 HTML 打不开。' +
+    '需要单独发送的评审件请用 _shared/export.py 导出单文件版本。' +
+    '<br><br>Open this file from the complete prototype folder — the shared styles and scripts live in _shared/, ' +
+    'so a copied-out HTML cannot run. Use _shared/export.py to produce a self-contained review build.';
+  document.body.appendChild(notice);
+}
+</script>
+</body></html>
