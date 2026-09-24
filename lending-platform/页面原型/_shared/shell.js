@@ -66,6 +66,12 @@
   };
   CF.authSurface = function () {
     if (N.allowed()) return null;
+    /* 登录未绑定角色已经登录，不再提示登录，按不适用当前身份处理。 */
+    if (S.role === "signed") {
+      return CF.empty(L("This page is not available for your current role", "该页面不适用于当前身份"),
+        L("You can continue exploring public information.", "你可以继续浏览公开信息。"),
+        '<button class="btn primary" data-act="go" data-v="/assets">' + L("Back to assets", "返回资产广场") + '</button>');
+    }
     return CF.empty(S.role === "limited" ? L("Complete your account setup", "请先完成账户必办事项") : L("Sign in to view your messages", "登录后查看消息"),
       S.role === "limited" ? L("Complete the required steps for your account to continue.", "完成账户必办事项后即可继续。") : L("After signing in, you will return to this page.", "登录后将返回当前页面。"),
       '<button class="btn primary" data-act="' + (S.role === "limited" ? "prerequisite" : "signin") + '">' +
@@ -276,11 +282,11 @@
   function resetList() { S.shown = CF.PAGE_SIZE; S.pageNo = 1; S.toTop = true; }
   CF.resetList = resetList;
 
-  /* 未登录访客看不到需要登录的导航入口；页面本身仍可由深链或评审目录打开，展示其登录引导。 */
+  /* 未登录访客与登录未绑定角色看不到需要登录的导航入口；页面本身仍可由深链或评审目录打开，展示其引导。 */
   function navItems() {
     return (CF.NAV[S.end] || []).filter(function (id) {
       if (!CF.PAGES[id]) return false;
-      if (CF.PAGES[id].auth && S.end === "asset" && S.role === "guest") return false;
+      if (CF.PAGES[id].auth && S.end === "asset" && (S.role === "guest" || S.role === "signed")) return false;
       return !M || !M.allowNav || M.allowNav(id);
     });
   }
@@ -348,19 +354,24 @@
       (unread ? '<span class="badge" aria-hidden="true">' + count + '</span>' : '') + '</button>' + panel + '</div>';
   }
 
+  /* 已绑定角色显示当前角色与账户事项；登录未绑定角色只有登录地址标识与退出。 */
   function accountDd() {
+    var unbound = S.role === "signed";
     var who = S.role === "fund" ? L("Funder", "资金方") : L("Asset holder", "资产方");
     var identity = CF.portalAccount() || {};
     var address = typeof identity.walletAddress === "string" ? identity.walletAddress.trim() : "";
     var label = address ? (address.length > 10 ? address.slice(0, 6) + "…" + address.slice(-4) : address) : L("My account", "我的账户");
     var open = S.menu === "acct";
+    var items = unbound ? "" :
+      '<div class="portal-account-role">' + esc(who) + "</div>" +
+      '<button type="button" role="menuitem" data-act="toast" data-v="acct">' + L("Account settings", "账户设置") + "</button>" +
+      '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + (S.role === "fund" ? L("User information", "用户信息") : L("Company information", "企业信息")) + "</button>" +
+      '<button type="button" role="menuitem" data-act="toast" data-v="entacct">' + L("Enterprise accounts", "企业账户") + "</button>" +
+      (N.allowed() && N.preview ? '<button type="button" role="menuitem" data-act="go" data-v="/notifications">' + L("Notifications", "消息中心") + '</button>' : '') +
+      '<div class="dd-sep"></div>';
     var list = open
       ? '<div class="dd-list" id="portal-account-menu" role="menu" aria-label="' + L("Account menu", "账户菜单") + '">' +
-        '<div class="portal-account-role">' + esc(who) + "</div>" +
-        '<button type="button" role="menuitem" data-act="toast" data-v="acct">' + L("Account settings", "账户设置") + "</button>" +
-        '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + (S.role === "fund" ? L("User information", "用户信息") : L("Company information", "企业信息")) + "</button>" +
-        (N.allowed() && N.preview ? '<button type="button" role="menuitem" data-act="go" data-v="/notifications">' + L("Notifications", "消息中心") + '</button>' : '') +
-        '<div class="dd-sep"></div>' +
+        items +
         '<button type="button" role="menuitem" data-act="signout">' + L("Sign out", "退出登录") + "</button>" +
         "</div>"
       : "";
@@ -574,9 +585,9 @@
      then the page, then that page's state. Operations identity comes from its real sign-in. */
   var reviewIdentities = [
     {id: 'guest', label: ['Signed out visitor', '未登录访客'], group: ['Signed out', '未登录']},
+    {id: 'signed', label: ['Signed in · no role bound', '登录未绑定角色'], group: ['Signed in', '已登录']},
     {id: 'asset', label: ['Asset holder', '资产方'], group: ['Signed in', '已登录']},
-    {id: 'fund', label: ['Funder', '资金方'], group: ['Signed in', '已登录']},
-    {id: 'limited', label: ['Restricted session', '受限会话'], group: ['Signed in', '已登录']}
+    {id: 'fund', label: ['Funder', '资金方'], group: ['Signed in', '已登录']}
   ];
   function reviewIdentityShown() { return S.end !== 'admin'; }
   function reviewIdentityOptions() {
@@ -601,7 +612,7 @@
       var id = reviewCurrent(), next = reviewPages[id];
       // Stay on the page under the new identity when it can still be opened; otherwise land on its entry.
       var reachable = next && (!next.visible || next.visible()) && !!reviewRoute(id, next) &&
-        !(CF.PAGES[id] && CF.PAGES[id].auth && value === 'guest');
+        !(CF.PAGES[id] && CF.PAGES[id].auth && (value === 'guest' || value === 'signed'));
       var entry = reachable ? null : CF.ENTRY[defaultPage()];
       if (entry && location.hash !== '#' + entry) { location.hash = '#' + entry; return; }
       render();
@@ -711,7 +722,7 @@
     if (M && M.demoOnly) { panel.innerHTML = M.demo(); return; }
     var roles = S.end === "admin"
       ? [["ops", L("Operations admin", "运营管理员")]]
-      : [["limited", L("Restricted session", "受限会话")], ["guest", L("Signed out", "未登录访客")], ["asset", L("Asset holder", "资产方")], ["fund", L("Funder", "资金方")]];
+      : [["guest", L("Signed out", "未登录访客")], ["signed", L("Signed in · no role bound", "登录未绑定角色")], ["asset", L("Asset holder", "资产方")], ["fund", L("Funder", "资金方")]];
     panel.innerHTML =
       '<div class="grp"><h5>' + L("Deployment unit", "部署单元") + "</h5>" +
       seg("end", S.end, [["asset", L("Customer-facing", "面客端")], ["admin", L("Operations console", "管理端")]]) + "</div>" +

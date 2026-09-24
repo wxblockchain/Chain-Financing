@@ -185,7 +185,7 @@
     if(F.pendingSubmission)return pendingPage();
     if(a.status==='submitted'){queueMicrotask(()=>go('/funder/status'));return '';}
     if(a.status==='verified'&&!F.change){queueMicrotask(()=>go('/funder/status'));return '';}
-    let body=a.step===1?emailStep():a.step===2?institution():`<h2>${L('Review and submit','核对并提交')}</h2>${details([['Contact email','联系邮箱',a.email||L('Not verified','未验证')],...fields().filter(f=>f[0]!=='Institution document')],true)}${materialRow(a.form,'draft')}${!a.email?CF.note('red',L('Verify your contact email before submitting.','提交前请先验证联系邮箱。'))+link('Go to contact email','前往联系邮箱','step','1'):''}${validationSummary()}${agreementCheck('f-submit-consent',F.submitConsent)}${error()}`;
+    let body=a.step===1?emailStep():a.step===2?institution():`<h2>${L('Review and submit','核对并提交')}</h2>${details([['Contact email','联系邮箱',a.email||L('Not verified','未验证')],...fields().filter(f=>f[0]!=='Institution document')],true)}${materialRow(a.form,'draft')}${!a.email?CF.note('red',L('Verify your contact email before submitting.','提交前请先验证联系邮箱。'))+link('Go to contact email','前往联系邮箱','step','1'):''}${validationSummary()}${error()}`;
     return `<div class="funder-wrap">${head(F.change?'Update institution details':'Institution registration',F.change?'变更机构资料':'机构注册',L('Complete your registration to unlock funding actions.','完成机构认证后即可使用出资功能。'))}<div class="funder-grid"><section class="card"><div class="card-b"><ol class="funder-steps">${[['Contact email','联系邮箱'],['Institution','机构资料'],['Review','确认提交']].map((x,i)=>`<li><button data-act="f-step" data-v="${i+1}" ${a.step===i+1?'aria-current="step"':''}><span class="step-num">${(i===0&&a.email)||(i===1&&!Object.keys(institutionErrors()).length)?'✓':i+1}</span>${L(...x)}</button></li>`).join('')}</ol>${body}<div class="funder-actions">${a.step>1?btn('Back','上一步','step',String(a.step-1)):link('Continue browsing','稍后完成，继续浏览','browse')}${a.step<3?btn('Continue','下一步','step',String(a.step+1),a.step===1&&!a.email?'':'primary'):btn(F.busy==='submit'?'Submitting…':'Submit registration',F.busy==='submit'?'正在提交…':'提交注册','submit','','primary',!F.submitConsent||!!F.busy)}</div><p class="login-caption" role="status">${F.storageFailed?L('Draft could not be saved on this device. Keep this page open.','当前设备无法保存草稿，请暂勿关闭页面。'):L('Draft saved on this device','草稿已保存在当前设备')}</p></div></section><aside class="funder-summary"><h2>${F.first?L('Your account is ready','账号已创建'):L('Your account','你的账号')}</h2>${wallet()}${details([['Created','创建时间',time(a.created)]])}<p>${walletCare()}</p>${F.change?CF.note('warn',L('After submission, your institution will be reviewed again. Funding actions will be unavailable during review.','提交后将重新进入审核，期间恢复为未认证权限。')):''}${link('Account settings','账户设置','account')}${stamp()}</aside></div></div>`;
   }
 
@@ -224,7 +224,9 @@
     // 公共 boot 会推断时区；在首次内容渲染时恢复已保存的用户选择。
     if(F.savedPreferences&&!F.preferencesRestored){S.lang=F.savedPreferences.lang;S.tz=F.savedPreferences.tz;F.preferencesRestored=true;}
     if(!pages[id])return undefined;
-    if(['P-L21','P-L22','P-L23'].includes(id)&&S.role!=='fund')return `<div class="funder-wrap">${CF.empty(L('Sign in to view your account','登录后查看账户'),L('You can still browse public information.','你仍可浏览公开信息。'),btn('Sign in','登录','login','','primary')+btn('Back to assets','返回资产广场','browse'))}</div>`;
+    // 登录已统一到主干钱包登录；本模块不再自持登录签名页。
+    if(id==='P-L20'){queueMicrotask(()=>{if(location.hash==='#/funder/sign')location.hash='#/login';});return '';}
+    if(['P-L21','P-L22','P-L23'].includes(id)&&S.role!=='fund'&&!(id==='P-L21'&&S.role==='signed'))return `<div class="funder-wrap">${CF.empty(L('Sign in to view your account','登录后查看账户'),L('You can still browse public information.','你仍可浏览公开信息。'),btn('Sign in','登录','login','','primary')+btn('Back to assets','返回资产广场','browse'))}</div>`;
     notices();
     if(F.load==='loading')return `<div class="funder-wrap" role="status">${CF.skelTable(5)}</div>`;
     if(F.load==='error')return CF.empty(L('Unable to load account information','账户信息加载失败'),L('Your saved information is retained.','已保存信息会保留。'),btn('Retry','重试','load-retry','','primary')+(id==='P-L22'?link('Contact support','联系客服','support'):''));
@@ -275,7 +277,7 @@
     F.fieldErrors={};if(CF.funder.review.beforeSubmit){const message=CF.funder.review.beforeSubmit(F.account);if(message){F.error=message;return false;}}if(!F.account.email){F.error=['Verify your contact email first.','请先验证联系邮箱。'];return false;}
     F.fieldErrors=institutionErrors();
     if(Object.keys(F.fieldErrors).length){queueMicrotask(()=>$('f-validation')?.focus());return false;}
-    return F.submitConsent;
+    return true;
   }
   function submit(){if(F.pendingSubmission){open('unknown');return;}if(F.account.status==='submitted'||F.busy||!canSubmit())return;open('submit');}
   function commitSubmit(){
@@ -286,7 +288,9 @@
     });
   }
   function completeSubmit(){
-    const a=F.account;if(a.status==='submitted')return;const pending=a.pending;F.notes.push(['Your registration has been submitted.','注册资料已提交。']);
+    const a=F.account;if(a.status==='submitted')return;const pending=a.pending;
+    // 提交申请时才建立资金方账户并绑定角色。
+    if(S.role!=='fund'){S.role='fund';F.sessionUntil=Date.now()+4*3600000;a.exists=true;a.created=a.created||new Date().toISOString();}F.notes.push(['Your registration has been submitted.','注册资料已提交。']);
     normalizeRecords(a);
     F.downgrade=a.status==='verified';a.reviewPending=F.downgrade;if(F.downgrade)F.notes.push(['Your institution details need review again. Funding actions are unavailable until approval.','机构资料需要重新审核，通过前暂不可发起出资操作。']);a.version++;a.status='submitted';a.submitted=pending?.submitted||new Date().toISOString();a.reviewed=null;a.snapshotEmail=pending?.email||a.email;a.submittedFields=pending?.fields||fields();a.submittedForm=pending?.form||JSON.parse(JSON.stringify(a.form));a.form=JSON.parse(JSON.stringify(a.submittedForm));delete a.pending;a.issues=[];a.additional='';a.reviewer='';a.template=pending?.template||F.activeTemplate||'DEMO-1';a.successTimes=[...(a.successTimes||[]),Date.now()];F.change=false;F.pendingSubmission=false;F.submitConsent=false;persist();response();go('/funder/status');CF.toast(L('Registration submitted.','注册已提交。'));
   }
@@ -328,7 +332,7 @@
   function action(act,v){
     if(!act.startsWith('f-'))return false;
     const key=act.slice(2);
-    if(['send','verify','change-email','reauth','submit','confirm-submit','resolve-submit','upload','remove-file','save-prefs','step','change','change-start','pick-file','material-preview','material-download'].includes(key)&&(S.role!=='fund'||F.account.disabled||Date.now()>F.sessionUntil)){if(S.role==='fund')logout(true);else go('/login');return true;}
+    if(['send','verify','change-email','reauth','submit','confirm-submit','resolve-submit','upload','remove-file','save-prefs','step','change','change-start','pick-file','material-preview','material-download'].includes(key)&&(!['fund','signed'].includes(S.role)||F.account.disabled||Date.now()>F.sessionUntil)){if(S.role==='fund')logout(true);else go('/login');return true;}
     if(F.pendingSubmission&&['step','issue-field','change','change-start','upload','remove-file','pick-file','confirm-submit'].includes(key)){go('/funder/register');return true;}
     if(F.account.status==='submitted'&&['pick-file','upload','remove-file'].includes(key)){CF.toast(L('Institution details are locked during review.','审核中机构资料不可修改。'));return true;}
     switch(key){
@@ -466,7 +470,14 @@
   },1000);
   read();
   try{const prefs=JSON.parse(localStorage.getItem('hc_funder_preferences')||'null');if(prefs&&['en','zh'].includes(prefs.lang)&&typeof prefs.tz==='string'){new Intl.DateTimeFormat('en',{timeZone:prefs.tz});F.savedPreferences=prefs;S.lang=prefs.lang;}}catch(e){}
-  CF.funder={dict,layers,content,action,connect,notices,afterRender,logout};
+  /* 主干分流入口：登录未绑定角色触发资金方动作时直接进入入驻流程，角色留待提交时绑定。 */
+  function onboard(address){
+    F.generation++;F.busy='';F.error=null;F.entryError=null;F.otp=null;F.emailFlow=false;F.fieldErrors={};
+    F.connected=address||F.connected||F.account.address;hydrate(F.connected);
+    F.account.step=1;F.submitConsent=false;F.change=false;F.load='ready';F.sessionUntil=Date.now()+4*3600000;
+    response();go('/funder/register');
+  }
+  CF.funder={dict,layers,content,action,connect,notices,afterRender,logout,onboard};
   CF.funder.review={
     get account(){return F.account;}, get state(){return F;}, persist,
     seed:fixture, fields, response, identity, recordOf, normalizeRecords, recordDecision, reviewTimeline, materialPreviewable, materialPreview, downloadMaterial,
