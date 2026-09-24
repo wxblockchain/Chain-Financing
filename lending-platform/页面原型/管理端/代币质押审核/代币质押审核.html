@@ -2,6 +2,7 @@
 <html lang="en" data-end="admin" data-admin-module="pledge" data-module="pledge-review"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pledge reviews · Harbour Credit</title>
 <link rel="stylesheet" href="../../_shared/tokens.css">
 <link rel="stylesheet" href="../../_shared/base.css">
+<link rel="stylesheet" href="../账户与登录/账户与登录.css">
 <style>
 .pr-stack{display:grid;gap:var(--sp-5);align-content:start}
 .pr-row{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
@@ -30,7 +31,7 @@
 .pr-table .col-act{position:sticky;right:0;background:var(--card);width:70px;text-align:right}
 .pr-table .tag{white-space:normal;text-align:left;line-height:1.5;font-size:var(--fs-11)}
 .pr-table .pr-num{text-align:right}
-.pr-queue-table th:nth-child(1){width:19%}.pr-queue-table th:nth-child(2){width:13%}.pr-queue-table th:nth-child(3){width:13%}.pr-queue-table th:nth-child(4){width:13%;text-align:right}.pr-queue-table th:nth-child(5){width:20%}.pr-queue-table th:nth-child(6){width:14%}
+.pr-queue-table th:nth-child(1){width:20%}.pr-queue-table th:nth-child(2){width:14%}.pr-queue-table th:nth-child(3){width:8%}.pr-queue-table th:nth-child(4){width:12%;text-align:right}.pr-queue-table th:nth-child(5){width:16%}.pr-queue-table th:nth-child(6){width:10%}.pr-queue-table th:nth-child(7){width:15%}
 .pr-table:not(.pr-queue-table) th:first-child{width:30%}
 .pr-detail-summary{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:var(--sp-6);padding:var(--sp-5);margin-bottom:var(--sp-5)}
 .pr-detail-summary .pr-meta{margin:0 0 var(--sp-2)}.pr-value{font-size:var(--fs-19)}
@@ -41,7 +42,8 @@
 .pr-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .pr-rail-time{padding:var(--sp-4) 0;margin-bottom:var(--sp-4);border-bottom:1px solid var(--border)}
 .pr-rail-time strong{font-size:var(--fs-24);font-variant-numeric:tabular-nums}
-.pr-disclosure{margin-top:var(--sp-4)}.pr-follow{margin-bottom:var(--sp-4)}
+.pr-disclosure{margin-top:var(--sp-4)}
+.pr-demo-actions{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)}
 .pr-evidence{margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--border)}.pr-evidence h3{font-size:var(--fs-14);margin:0 0 var(--sp-3)}
 .pr-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);margin:0}
 .pr-kv dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
@@ -76,7 +78,7 @@
 .pr-table caption{text-align:left;padding:var(--sp-4);font-weight:600}
 @media (max-width:1350px){.pr-grid{grid-template-columns:minmax(0,1fr) 270px}.pr-filters{gap:var(--sp-3)}.pr-table td,.pr-table th{padding-left:var(--sp-2);padding-right:var(--sp-2)}}
 </style></head>
-<body class="pr-body">
+<body class="pr-body ops-account">
 <div id="portal" hidden></div>
 <div class="app" id="app" hidden>
   <aside class="sidebar">
@@ -85,6 +87,13 @@
   </aside>
   <div class="main"><div class="topbar"><div class="topbar-right" id="atools"></div></div><main class="content" id="acontent"><div class="crumbbar-in" id="acrumb"></div></main></div>
 </div>
+<!-- focus：共享运营登录与改密页的骨架，仅品牌与语言工具。 -->
+<div class="focus" id="focus" hidden>
+  <header class="focus-head"><div class="brand"><span class="brand-mark" aria-hidden="true">HC</span><span class="brand-name">Harbour Credit</span></div><div class="focus-tools" id="focusTools"></div></header>
+  <main class="focus-main"><div class="focus-card" id="focusContent"></div></main>
+  <footer class="focus-foot">Harbour Credit</footer>
+</div>
+
 <div id="layers"></div><div class="toasts" id="toasts" aria-live="polite"></div>
 <button class="demo-btn" id="demoBtn" type="button"></button><aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
 <script src="../../_shared/registry.admin.js"></script>
@@ -93,6 +102,9 @@
 <script src="../../_shared/admin-menu.js"></script>
 <script src="../../_shared/admin-message-data.js"></script>
 <script src="../../_shared/admin-notifications.js"></script>
+<script src="../../_shared/puzzle.js"></script>
+<script>CF.deferOpsBoot=true;</script>
+<script src="../账户与登录/账户与登录.js"></script>
 <script src="演示数据.js"></script>
 <script src="代币质押审核.js"></script>
 
