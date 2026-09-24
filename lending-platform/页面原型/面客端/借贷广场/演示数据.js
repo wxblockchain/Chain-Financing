@@ -98,7 +98,7 @@
     let n=D.numbers(p);
     [...p.demands].reverse().forEach(d => {
       if (['open','quoted'].includes(d.state) && n.limit < p.balance+n.fly) {
-        d.state='ended';d.reason='coverage';d.quoteState='ended';D.log(p,'demandVoided',d.id);n=D.numbers(p);
+        d.state='ended';d.reason='coverage';d.endedAt=D.iso();d.quoteState='ended';D.log(p,'demandVoided',d.id);n=D.numbers(p);
       }
     });
     if(!D.terminal(p)&&!D.current(p)&&!['review','returned'].includes(p.state))p.state=p.balance?'financing':'available';
@@ -112,7 +112,7 @@
   D.sweep = () => {
     let changed=false;
     /* 本模块不再有任何倒计时类时限：审核不因等待自动改变结论。 */
-    D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const n=D.numbers(p);if(!n.fly&&!p.balance&&!CF.L8?.hasUnsettled(p)){p.state='closed';p.closeReason='expiry';D.releasePool(p);}D.log(p,'projectExpired');changed=true;}});
+    D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const d=D.current(p);if(d&&['open','quoted'].includes(d.state)){d.state='ended';d.reason='expiry';d.endedAt=D.iso();d.quoteState='ended';D.log(p,'demandVoided',d.id);}const n=D.numbers(p);if(!n.fly&&!p.balance&&!CF.L8?.hasUnsettled(p)){p.state='closed';p.closeReason='expiry';D.releasePool(p);}D.log(p,'projectExpired');changed=true;}});
     if(changed)D.save();return changed;
   };
   /* 创建即提交审核：不勾代币、不上链、不签名、不收费。 */
@@ -203,7 +203,7 @@
     else{const at=D.iso();p.demands.push({id:p.id+'-'+String(p.demands.length+1).padStart(2,'0'),amount,referenceCurrencies:preferences,state:'open',at});p.state='raising';if(!p.published){p.published=at;const expiry=new Date(at);expiry.setUTCFullYear(expiry.getUTCFullYear()+1);p.expires=expiry.toISOString();}}
     D.log(p,edit?'amountEdited':'published');D.save();
   };
-  D.endDemand = p => {const a=D.actions(p);if(!a.edit)throw Error('demandChanged');const d=D.current(p);d.state='ended';d.reason='withdrawn';D.recompute(p);D.log(p,'demandWithdrawn',d.id);D.save();};
+  D.endDemand = p => {const a=D.actions(p);if(!a.edit)throw Error('demandChanged');const d=D.current(p);d.state='ended';d.reason='withdrawn';d.endedAt=D.iso();D.recompute(p);D.log(p,'demandWithdrawn',d.id);D.save();};
   D.close = p => {if(!D.actions(p).canClose)throw Error('cannotClose');p.state='closed';p.closeReason='owner';D.releasePool(p);D.log(p,'closed');D.save();};
   D.seed = () => {
     D.projects=[];D.tokens=[];D.applications=[];D.executions=[];D.events=[];D.offset=0;D.serial=100;
