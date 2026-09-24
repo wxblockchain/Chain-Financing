@@ -118,13 +118,55 @@
     globe: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M1.8 8h12.4M8 1.8c1.7 1.8 2.6 3.9 2.6 6.2S9.7 12.4 8 14.2C6.3 12.4 5.4 10.3 5.4 8S6.3 3.6 8 1.8z"/></svg>',
     bell: '<svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 6.6a4 4 0 118 0c0 3 .9 4.2 1.4 4.7H2.6C3.1 10.8 4 9.6 4 6.6z"/><path d="M6.6 13.6a1.6 1.6 0 002.8 0"/></svg>',
     caret: '<svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 4l3 3 3-3"/></svg>',
-    close: '<svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>'
+    close: '<svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>',
+    funnel: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2.6 4h10.8M4.6 8h6.8M6.6 12h2.8"/></svg>',
+    search: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7.1" cy="7.1" r="4.3"/><path d="M10.4 10.4 14 14"/></svg>',
+    chain: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.4 3.7 8.2 8 10.8l4.3-2.6L8 1.4Zm0 10.8L3.7 9.6 8 14.6l4.3-5L8 12.2Z"/></svg>',
+    expand: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 2H2v4M10 14h4v-4M14 6V2h-4M2 10v4h4"/></svg>',
+    pool: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 2.2 14 5 8 7.8 2 5l6-2.8Z"/><path d="M2 8.4 8 11.2l6-2.8M2 11.6 8 14.4l6-2.8"/></svg>'
   };
   CF.ICON = ICON;
 
   /* ------------------------------------------------------------ 公共片段 */
   CF.tag = function (kind, text) {
     return '<span class="tag ' + kind + '"><span class="dot"></span>' + esc(text) + "</span>";
+  };
+  /* 资产标识：代币、币种与所属链在文字前统一带标记，两个广场共用一套。 */
+  var CCY_GLYPH = {USD: '$', EUR: '\u20AC', JPY: '\u00A5', CNY: '\u00A5', USDT: '\u20AE', USDC: '$'};
+  CF.icoChip = function (label, opts) {
+    opts = opts || {};
+    var glyph = opts.glyph || CCY_GLYPH[label] || esc(String(label).slice(0, 2).toUpperCase());
+    return '<span class="ico-chip' + (opts.small ? ' sm' : '') + '"' + (opts.iconOnly ? ' title="' + esc(label) + '"' : '') + '>' +
+      '<span class="ico"' + (opts.hue ? ' data-hue="' + esc(String(opts.hue)) + '"' : '') + ' aria-hidden="true">' + glyph + '</span>' +
+      (opts.iconOnly ? '<span class="sr-only">' + esc(label) + '</span>' : '<span>' + esc(label) + '</span>') + '</span>';
+  };
+  CF.filterSelect = function (id, label, options, current, attrs) {
+    return '<span class="fb">' + ICON.funnel +
+      '<select class="inp" id="' + esc(id) + '"' + (attrs || '') + ' aria-label="' + esc(label) + '"' +
+      (current ? ' data-on="1"' : '') + '>' +
+      options.map(function (o) {
+        return '<option value="' + esc(o[0]) + '"' + (o[0] === current ? ' selected' : '') + '>' +
+          esc(o[0] === '' ? label + '：' + o[1] : o[1]) + '</option>';
+      }).join('') + '</select></span>';
+  };
+  CF.filterSearch = function (id, placeholder, value) {
+    return '<span class="fb-q">' + ICON.search +
+      '<input class="inp" id="' + esc(id) + '" type="search" value="' + esc(value || '') +
+      '" placeholder="' + esc(placeholder) + '" aria-label="' + esc(placeholder) + '"></span>';
+  };
+  /* 环形占比图：数值由旁边的表格给出，图形只负责比例。 */
+  CF.donut = function (parts, center, caption) {
+    var total = parts.reduce(function (n, p) { return n + Math.max(0, p.value); }, 0);
+    var r = 54, c = 2 * Math.PI * r, at = 0;
+    var arcs = total ? parts.filter(function (p) { return p.value > 0; }).map(function (p) {
+      var len = c * (p.value / total), dash = '<circle class="seg" data-tone="' + esc(p.tone) + '" cx="70" cy="70" r="' + r +
+        '" stroke-dasharray="' + len.toFixed(2) + ' ' + (c - len).toFixed(2) + '" stroke-dashoffset="' + (-at).toFixed(2) + '"></circle>';
+      at += len; return dash;
+    }).join('') : '';
+    return '<svg class="donut" viewBox="0 0 140 140" role="img" aria-label="' + esc(caption) + '">' +
+      '<g transform="rotate(-90 70 70)"><circle class="track" cx="70" cy="70" r="' + r + '"></circle>' + arcs + '</g>' +
+      '<text class="donut-center" x="70" y="70" text-anchor="middle">' + esc(center.value) + '</text>' +
+      '<text class="donut-cap" x="70" y="88" text-anchor="middle">' + esc(center.label) + '</text></svg>';
   };
   CF.note = function (kind, html) {
     var role = kind === "red" ? ' role="alert"' : "";
@@ -739,6 +781,7 @@
     if (M && M.beforeRender) M.beforeRender();
     if (!N.allowed() && S.menu === "notifications") S.menu = null;
     document.documentElement.setAttribute("data-end", S.end);
+    document.body.classList.toggle("list-full", !!S.listFull);
     document.documentElement.setAttribute("lang", S.lang === "en" ? "en" : "zh-CN");
     if ((CF.PAGES[S.page] || {}).layout === "focus") { renderFocus(); return; }
     if ($("focus")) $("focus").hidden = true;
@@ -832,6 +875,7 @@
     }
     if (act === "role") { S.role = v; S.menu = null; S.layer = null; resetList(); render(); return; }
     if (act === "st") { S.st = v; S.layer = null; resetList(); render(); return; }
+    if (act === "list-full") { S.listFull = !S.listFull; S.menu = null; render(); queueMicrotask(function () { $(v)?.focus({preventScroll:true}); }); return; }
     if (act === "review-reset") { reviewApply("default"); return; }
     if (act === "demo") { S.demo = !S.demo; render(); if (!S.demo) $("demoBtn").focus(); return; }
     if (act === "closelayer") {
@@ -874,6 +918,7 @@
     if (e.key === "Escape") {
       clearTimeout(accountHoverTimer);accountHoverOpened=false;accountHoverSuppressed=true;
       if (S.layer) { if (M && M.onBeforeAct && M.onBeforeAct("closelayer", null, e)) return; CF.closeLayer(); return; }
+      if (S.listFull && !S.menu) { S.listFull = false; render(); document.querySelector('[data-act="list-full"]')?.focus({preventScroll:true}); return; }
       if (S.menu) { var menu = S.menu; S.menu = null; render(); var btn = document.querySelector('[data-act="menu"][data-v="' + menu + '"]'); if(btn) btn.focus(); }
     }
   }
@@ -925,7 +970,7 @@
       if (M && M.onRoute) M.onRoute(prevPage, id);
       if (id && CF.PAGES[id]) {
         if (CF.PAGES[id].end !== S.end) { S.end = CF.PAGES[id].end; S.role = S.end === "admin" ? "ops" : S.role; }
-        S.page = id; S.menu = null; S.layer = null; S.st = "default"; S.sort = "at"; S.sortDir = "desc";
+        S.page = id; S.menu = null; S.layer = null; S.st = "default"; S.sort = "at"; S.sortDir = "desc"; S.listFull = false;
         if (!(CF.PAGES[id].retainList && CF.PAGES[prevPage] && CF.PAGES[prevPage].retainList)) resetList();
       } else { syncRoute(true); }
       render();

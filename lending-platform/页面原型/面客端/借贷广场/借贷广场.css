@@ -300,3 +300,14 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-reference-currencies{border:0;padding:0;margin:0}.ls-reference-currencies legend{margin-bottom:12px;font-weight:600}.ls-reference-currencies label{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin-right:24px;cursor:pointer}
 .rp-progress{padding:12px 0}.rp-progress-status{font-weight:600;margin:0 0 12px}.rp-progress ol{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0;margin:0;list-style:none}.rp-progress li{display:flex;gap:8px;align-items:flex-start}.rp-progress li div{min-width:0}.rp-progress li b,.rp-progress li .hint{display:block}.rp-progress-dot{border:1px solid var(--border);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;flex-shrink:0;color:var(--muted)}.rp-progress [data-complete=true] .rp-progress-dot,.rp-progress [aria-current] .rp-progress-dot{color:var(--accent);border-color:var(--accent)}.rp-selected-reference{overflow-wrap:anywhere}
 @media(max-width:480px){.rp-progress ol{grid-template-columns:1fr}.ls-section-nav button{font-size:13px;padding:8px}.ls-section-nav{gap:0}.ls-workspace .ls-action-rail{z-index:3}}
+
+/* 广场列表：筛选压缩为一行后，列表本身至少占半屏；放大态由公共 .listzone 接管。 */
+.ls-market-zone{min-height:min(52vh,540px)}
+.ls-amt{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.ls-project-name .ico-chip{font-weight:660;color:var(--text)}
+.ls-more-filters{border-top:1px solid var(--border)}
+
+/* 质押池构成：图表与清单同卡片，窄屏改为上下堆叠（公共 .chart-split 负责断点）。 */
+.ls-pool-chart{padding:var(--sp-2) 0 var(--sp-5);border-bottom:1px solid var(--border);margin-bottom:var(--sp-4)}
+.ls-legend-table{font-size:var(--fs-13)}
+.ls-legend-table td:first-child{display:flex;align-items:center}

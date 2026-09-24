@@ -135,6 +135,77 @@ img,svg{max-width:100%}
   font-weight:640;letter-spacing:-.02em;margin-top:6px}
 .stat .n{font-size:var(--fs-12);color:var(--muted);margin-top:4px}
 
+/* 统计条：平台与项目级数字不装进一个个卡片盒子，用标签、字号与留白分层。 */
+.stat-strip{display:flex;flex-wrap:wrap;gap:var(--sp-5) var(--sp-8);padding:var(--sp-2) 0 var(--sp-5)}
+.stat-strip .s{min-width:140px}
+.stat-strip .k{display:flex;align-items:center;gap:6px;font-size:var(--fs-12);color:var(--faint);font-weight:600}
+.stat-strip .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-28);
+  font-weight:660;letter-spacing:-.02em;line-height:1.15;margin-top:6px;color:var(--text)}
+.stat-strip .v .u{font-family:var(--sans);font-size:var(--fs-14);font-weight:600;color:var(--faint);margin-right:6px}
+.stat-strip .n{font-size:var(--fs-12);color:var(--muted);margin-top:4px}
+.stat-strip .s[data-tone="accent"] .v{color:var(--accent)}
+.stat-strip .s[data-tone="pos"] .v{color:var(--pos)}
+.stat-strip .s[data-tone="warn"] .v{color:var(--warn)}
+.stat-strip .skel{display:inline-block;width:8ch;height:1em;vertical-align:-.12em}
+
+/* 资产标识：代币、币种与所属链在文字前带同一套图形标记。 */
+.ico-chip{display:inline-flex;align-items:center;gap:7px;font-weight:600;white-space:nowrap}
+.ico-chip .ico{width:20px;height:20px;border-radius:var(--radius-pill);flex:none;display:grid;place-items:center;
+  font-size:var(--fs-10);font-weight:700;border:1px solid var(--gray-border);background:var(--gray-bg);color:var(--gray-fg)}
+.ico-chip .ico svg{width:12px;height:12px}
+.ico-chip .ico[data-hue="1"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-border)}
+.ico-chip .ico[data-hue="2"]{background:var(--pos-soft);color:var(--pos);border-color:var(--pos)}
+.ico-chip .ico[data-hue="3"]{background:var(--violet-bg);color:var(--violet);border-color:var(--violet-border)}
+.ico-chip .ico[data-hue="4"]{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-border)}
+.ico-chip.sm{font-size:var(--fs-12)}
+.ico-chip.sm .ico{width:16px;height:16px}
+.ico-chip.sm .ico svg{width:10px;height:10px}
+
+/* 紧凑筛选条：触发器成行排列，不给每个筛选项留一行标签。 */
+.filterbar{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;
+  padding:var(--sp-3) var(--card-pad);border-bottom:1px solid var(--border)}
+.filterbar .fb{position:relative;display:inline-flex;align-items:center}
+.filterbar .fb>svg{position:absolute;left:11px;width:14px;height:14px;pointer-events:none;color:var(--faint)}
+.filterbar select.inp{height:var(--ctrl-h-sm);border-radius:var(--radius-pill);padding:0 30px 0 32px;
+  width:auto;min-width:126px;font-size:var(--fs-13);background:var(--bg-elev);
+  appearance:none;-webkit-appearance:none}
+.filterbar .fb::after{content:"";position:absolute;right:13px;width:6px;height:6px;pointer-events:none;
+  border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);transform:translateY(-2px) rotate(45deg)}
+.filterbar select.inp[data-on="1"]{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.filterbar .fb:has(select[data-on="1"])>svg,.filterbar .fb:has(select[data-on="1"])::after{color:var(--accent);border-color:var(--accent)}
+.filterbar .fb-q{position:relative;flex:1 1 240px;min-width:180px;display:inline-flex;align-items:center}
+.filterbar .fb-q>svg{position:absolute;left:12px;width:15px;height:15px;pointer-events:none;color:var(--faint)}
+.filterbar .fb-q .inp{height:var(--ctrl-h-sm);border-radius:var(--radius-pill);padding-left:34px;width:100%}
+.filterbar .fb-acts{margin-left:auto;display:flex;gap:var(--sp-2);align-items:center}
+.filterbar .fb-acts .btn{height:var(--ctrl-h-sm);min-height:0;padding:0 14px;border-radius:var(--radius-pill)}
+.filterbar .fb-label{font-size:var(--fs-12);color:var(--faint);font-weight:600}
+
+/* 列表放大到整窗：评审长列表时把内嵌列表铺满窗口，Esc 或再次点击还原。 */
+body.list-full .listzone{position:fixed;inset:0;z-index:var(--z-mask);margin:0;border-radius:0;
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:none}
+body.list-full .listzone .listbox{max-height:none;flex:1 1 auto;min-height:0}
+body.list-full .listzone .filterbar{flex:none}
+body.list-full .portal-main>*:not(.listzone),body.list-full .portal-head{visibility:hidden}
+.list-full-bar{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-2) var(--card-pad);
+  border-bottom:1px solid var(--border);font-size:var(--fs-12);color:var(--muted)}
+.list-full-bar .btn{margin-left:auto;height:var(--ctrl-h-sm);min-height:0;padding:0 14px;border-radius:var(--radius-pill)}
+
+/* 环形占比图：与表格并排，数字仍由旁边的表格给出。 */
+.chart-split{display:grid;grid-template-columns:minmax(200px,260px) minmax(0,1fr);gap:var(--sp-6);align-items:center}
+.donut{display:block;width:100%;max-width:220px;margin-inline:auto}
+.donut circle{fill:none;stroke-width:16}
+.donut .track{stroke:var(--track)}
+.donut .seg[data-tone="accent"]{stroke:var(--accent)}
+.donut .seg[data-tone="warn"]{stroke:var(--warn)}
+.donut .seg[data-tone="gray"]{stroke:var(--border-strong)}
+.donut-center{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:660;fill:var(--text);font-size:19px}
+.donut-cap{fill:var(--faint);font-size:var(--fs-11);font-family:var(--sans)}
+.legend-dot{width:10px;height:10px;border-radius:var(--radius-pill);display:inline-block;margin-right:8px;flex:none}
+.legend-dot[data-tone="accent"]{background:var(--accent)}
+.legend-dot[data-tone="warn"]{background:var(--warn)}
+.legend-dot[data-tone="gray"]{background:var(--border-strong)}
+@media (max-width:900px){.chart-split{grid-template-columns:minmax(0,1fr)}}
+
 .dl{display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:10px var(--sp-5);font-size:var(--fs-13)}
 .dl dt{color:var(--faint);font-weight:600;margin:0}
 .dl dd{margin:0;overflow-wrap:anywhere}

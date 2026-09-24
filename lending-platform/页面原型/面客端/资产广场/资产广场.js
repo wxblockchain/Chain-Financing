@@ -422,39 +422,42 @@
        汇总与列表同批到达，因此加载中时汇总也处在加载中，不先出数再出表。 */
     var wait = S.st === "loading" || (S.st === "default" && load.phase === "initial");
     function statV(html) { return wait ? '<div class="v"><span class="skel am-skel-v"></span></div>' : '<div class="v">' + html + "</div>"; }
-    var summary = '<div class="stat-row am-summary">' +
-      '<div class="stat"><div class="k">' + L("Tokens", "代币数量") + "</div>" +
+    var summary = '<div class="stat-strip am-summary">' +
+      '<div class="s"><div class="k">' + L("Tokens", "代币数量") +
+        CF.icoChip(AM.CHAIN, {glyph: CF.ICON.chain, hue: 3, small: true}) + "</div>" +
         statV(quantity(amount)) +
         '<div class="n">' + L("tokens", "枚") + "</div></div>" +
-      '<div class="stat"><div class="k">' + L("Token value", "代币价值") + "</div>" +
-        statV(CF.fmtAmt(value, "USD")) +
+      '<div class="s" data-tone="accent"><div class="k">' + L("Token value", "代币价值") + "</div>" +
+        statV('<span class="u">USD</span>' + CF.fmtAmt(value)) +
         '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + "</div></div>" +
-      '<div class="stat"><div class="k">' + L("Of which void", "其中失效") + "</div>" +
+      '<div class="s"' + (voids ? ' data-tone="warn"' : '') + '><div class="k">' + L("Of which void", "其中失效") + "</div>" +
         statV(quantity(voids)) +
-        '<div class="n">' + L("tokens", "枚") + "</div></div></div>" +
-      '<p class="sum-note">' + L(
-        "Token amount and token value include void tokens.",
-        "代币数量与代币价值含已失效代币。") + "</p>";
+        '<div class="n">' + L("tokens · included above", "枚 · 已计入上方合计") + "</div></div></div>";
 
     var holders = AM.HOLDERS.map(function (h, i) { return [String(i), nm(h)]; });
-    var filters = '<div class="filters">' +
-      selField("am-ts", "ts", L("Token status", "代币状态"),
+    function fSel(id, key, label, options, cur) {
+      return CF.filterSelect(id, label, [["", L("All", "全部")]].concat(options), cur, ' data-f="' + key + '"');
+    }
+    var sortOpts = [];
+    [["at", L("Minted at", "铸造时间")], ["val", L("Token value", "代币价值")], ["due", L("Due date", "到期日")]].forEach(function (item) {
+      ["desc", "asc"].forEach(function (dir) {
+        sortOpts.push([item[0] + ":" + dir, item[1] + " · " + (dir === "asc" ? L("Ascending", "升序") : L("Descending", "降序"))]);
+      });
+    });
+    var filters = '<div class="filterbar">' +
+      fSel("am-ts", "ts", L("Token status", "代币状态"),
         [["valid", L("Valid", "有效")], ["void", L("Void", "失效")]], v.ts) +
-      selField("am-ps", "ps", L("Pledge status", "质押状态"),
+      fSel("am-ps", "ps", L("Pledge status", "质押状态"),
         [["unpledged", L("Not pledged", "未质押")], ["pledged", L("Pledged", "已质押")]], v.ps) +
-      selField("am-kind", "kind", L("Token type", "代币类型"), [["ar", tokenKind()]], v.kind) +
-      selField("am-holder", "holder", L("Asset originator", "资产方企业"), holders, v.holder) +
-      '<div class="field am-q"><label for="am-q">' + L("Search", "搜索") + "</label>" +
-      '<input class="inp" id="am-q" type="search" value="' + esc(v.q) + '" placeholder="' +
-      esc(L("Token ID, asset originator or minting transaction hash",
-            "代币编号、资产方企业名或铸造交易哈希")) + '"></div>' +
-      '<div class="acts">' +
+      fSel("am-kind", "kind", L("Token type", "代币类型"), [["ar", tokenKind()]], v.kind) +
+      fSel("am-holder", "holder", L("Asset originator", "资产方企业"), holders, v.holder) +
+      CF.filterSearch("am-q", L("Token ID, asset originator or minting transaction hash",
+                                "代币编号、资产方企业名或铸造交易哈希"), v.q) +
+      '<div class="fb-acts">' +
+      CF.filterSelect("am-order", L("Sort by", "排序"), sortOpts, v.sort + ":" + v.dir, "") +
       '<button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
       '<button class="btn primary" type="button" data-act="am-search">' + L("Search", "查询") + "</button>" +
-      "</div>" + '<div class="field am-order"><label for="am-order">' + L("Sort by", "排序") + '</label><select class="inp" id="am-order">' +
-      [["at", L("Minted at", "铸造时间")], ["val", L("Token value", "代币价值")], ["due", L("Due date", "到期日")]].map(function (item) {
-        return ["desc", "asc"].map(function (dir) { var key = item[0] + ":" + dir; return '<option value="' + key + '"' + (key === v.sort + ":" + v.dir ? ' selected' : '') + '>' + item[1] + ' · ' + (dir === "asc" ? L("Ascending", "升序") : L("Descending", "降序")) + '</option>'; }).join("");
-      }).join("") + '</select></div></div>';
+      "</div></div>";
 
     var body;
     var alt = CF.surface({
@@ -476,10 +479,11 @@
             L("Tokens appear here as soon as they are synced from the issuance platform.",
               "代币从代币发行平台同步过来后即出现在这里。"), "");
     } else {
-      body = '<div class="tablewrap listbox listbox-contained" id="am-listbox" role="region" tabindex="0" aria-label="' +
+      body = fullBar(total) + '<div class="tablewrap listbox listbox-contained am-tbl-zone" id="am-listbox" role="region" tabindex="0" aria-label="' +
         L("Token list", "代币列表") + '"><table class="tbl resp am-tbl"><thead><tr>' +
         '<th scope="col">' + L("Token", "代币") + "</th>" +
         '<th scope="col">' + L("Token ID", "代币编号") + "</th>" +
+        '<th scope="col">' + L("Chain", "所属链") + "</th>" +
         '<th scope="col">' + L("Asset originator", "资产方企业") + "</th>" +
         '<th scope="col">' + L("Token type", "代币类型") + "</th>" +
         '<th scope="col">' + L("Token amount", "代币数量") + "</th>" +
@@ -497,8 +501,16 @@
                           "请求有点频繁。浏览不受影响，广场对数据拉取频次有限制。")) + '<div class="am-gap"></div>'
       : "";
 
-    return head + summary + '<div class="am-gap"></div>' + limit +
-      '<div class="card">' + filters + body + "</div>";
+    return head + summary + limit +
+      '<div class="card listzone">' + filters + body + "</div>";
+  }
+
+  /* 列表可放大到整窗，便于连续核对长列表；再次点击或 Esc 还原。 */
+  function fullBar(total) {
+    return '<div class="list-full-bar"><span>' +
+      esc(L("Showing ", "共 ") + total + L(" tokens", " 条代币")) + "</span>" +
+      '<button class="btn" type="button" id="am-full" data-act="list-full" data-v="am-full" aria-pressed="' + !!S.listFull + '">' +
+      CF.ICON.expand + " " + (S.listFull ? L("Exit full window", "退出放大") : L("Expand to window", "放大到整窗")) + "</button></div>";
   }
 
   function listRow(t) {
@@ -510,10 +522,12 @@
       '<td data-label="' + esc(L("Token ID", "代币编号")) + '"><div class="cell-wrap">' +
         '<button class="btn-link mono am-id" type="button" data-act="am-copy" data-v="' + esc(t.no) + '" aria-label="' +
         esc(L("Copy token ID: ", "复制代币编号：") + t.no) + '" title="' + L("Copy token ID", "复制代币编号") + '">' + esc(t.no) + "</button></div></td>" +
+      '<td data-label="' + esc(L("Chain", "所属链")) + '">' + CF.icoChip(AM.CHAIN, {glyph: CF.ICON.chain, hue: 3, small: true}) + "</td>" +
       '<td data-label="' + esc(L("Asset originator", "资产方企业")) + '">' + esc(holderName(t)) + "</td>" +
       '<td data-label="' + esc(L("Token type", "代币类型")) + '">' + esc(tokenKind()) + "</td>" +
       '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="num">' + t.qty.toFixed(2) + L(" tokens", " 枚") + "</td>" +
-      '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="num nw">' + CF.fmtAmt(t.val, "USD") + "</td>" +
+      '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="num nw am-val">' +
+        CF.icoChip("USD", {hue: 1, small: true, iconOnly: true}) + '<span class="am-val-n">' + CF.fmtAmt(t.val, "USD") + "</span></td>" +
       '<td data-label="' + esc(L("Token status", "代币状态")) + '">' + tsTag(t) + "</td>" +
       '<td data-label="' + esc(L("Pledge status", "质押状态")) + '">' + psTag(t) + "</td>" +
       '<td data-label="' + esc(L("Minted at", "铸造时间")) + '" class="tiny am-at">' + CF.fmtTime(t.at) + "</td>" +
