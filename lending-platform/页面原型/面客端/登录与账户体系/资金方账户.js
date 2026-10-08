@@ -20,14 +20,14 @@
     emailStage:'auth',connectionOrigin:'auth',signPurpose:'email',signatureResult:'success',connectionResult:'success',
     saveResult:'success',emailResult:'success',template:'ready',load:'ready',upload:'idle',providerMode:'single',
     sessionUntil:0,returnTo:'',replayed:0,gate:'idle',contract:null,signatureStarted:0,challenge:0,
-    uploadVersion:0,uploadFault:false,replaceTarget:'',reviewCheck:'',preferenceState:'',savedPreferences:null,storageFailed:false,downgrade:false,latestCode:'123456',sends:{},pendingSubmission:false,emailFlow:false,notes:[],generation:0,layerOpen:false,focusBack:null};
+    uploadVersion:0,uploadFault:false,noticeFault:false,replaceTarget:'',reviewCheck:'',preferenceState:'',savedPreferences:null,storageFailed:false,downgrade:false,latestCode:'123456',sends:{},pendingSubmission:false,emailFlow:false,notes:[],generation:0,layerOpen:false,focusBack:null};
   /* 机构证明材料是一个多份文件集合：逐件保留名称、大小与上传结果；旧演示数据的单文件字段读取时并入集合。 */
   let fileSeq=0;
   const fileId=()=>'doc-'+(++fileSeq);
   function normalizeForm(form){
     if(!form)return form;
     if(!Array.isArray(form.files))form.files=form.file?[{id:fileId(),name:form.file,size:form.fileSize||0,status:form.fileStatus==='loading'?'failed':(form.fileStatus||'done'),demo:!!form.fileDemo}]:[];
-    form.files=form.files.filter(f=>f&&f.name).map(f=>({id:f.id||fileId(),name:f.name,size:f.size||0,status:['done','failed','uploading'].includes(f.status)?f.status:'done',demo:!!f.demo}));
+    form.files=form.files.filter(f=>f&&f.name).map(f=>({id:f.id||fileId(),name:f.name,size:f.size||0,status:['done','failed','uploading'].includes(f.status)?f.status:'done',demo:!!f.demo,at:f.at||''}));
     delete form.file;delete form.fileSize;delete form.fileStatus;delete form.fileDemo;
     return form;
   }
@@ -131,7 +131,7 @@
   function materialPreviewable(file){return file?.status==='done'&&/\.(pdf|png|jpe?g|webp)$/i.test(file.name||'');}
   function docRow(file,source,editable){
     return CF.fileRow({key:'institution-'+source+'-'+file.id,name:file.name,
-      meta:L('Institution supporting documents','机构证明材料')+' · '+(file.size?fileSize(file.size):L('Size unavailable','大小未记录')),
+      meta:L('Institution supporting documents','机构证明材料')+' · '+(file.size?fileSize(file.size):L('Size unavailable','大小未记录'))+(file.status==='done'&&file.at?' · '+L('uploaded','上传于')+' '+time(file.at):''),
       state:file.status==='done'?'ready':file.status==='uploading'?'uploading':'failed',status:docStatus(file),
       previewable:materialPreviewable(file),preview:{act:'f-material-preview',value:source+'::'+file.id},download:{act:'f-material-download',value:source+'::'+file.id},
       disabled:!!F.busy||F.pendingSubmission,error:file.status==='failed'?L('Retry, replace or remove this file.','请重试、替换或移除该文件。'):'',
@@ -162,7 +162,7 @@
   function runUpload(file){
     const token=++F.uploadVersion;file.token=token;file.status='uploading';
     later(()=>{if(file.token!==token||!docs(F.account.form).includes(file))return;
-      if(F.uploadFault||F.saveResult==='failed'){F.uploadFault=false;file.status='failed';}else file.status='done';});
+      if(F.uploadFault||F.saveResult==='failed'){F.uploadFault=false;file.status='failed';file.at='';}else {file.status='done';file.at=new Date().toISOString();}});
   }
   function startUpload(list,replaceId){
     if(F.account.status==='submitted'||F.pendingSubmission)return;
@@ -267,6 +267,28 @@
     if(!issues.length&&!view.additional)return L('Review details are unavailable. Please contact support.','审核原因暂不可用，请联系客服。');
     // Legacy field reasons remain readable text; only form validation links to controls.
     return issues.map(i=>`<p class="funder-reason-text">${Array.isArray(i.label)?`<b>${esc(L(...i.label))}</b> · `:''}${esc(L(i.en,i.zh)||i.en||i.zh||'')}</p>`).join('')+(view.additional?`<p class="funder-reason-text">${esc(view.additional)}</p>`:'');
+  }
+  /* EV-L60 / EV-L61：本模块唯一触发的审核结果站内信。只存事实，文案与时间在读取时按当前语言和时区生成。 */
+  function decisionNotice(a){
+    if(F.noticeFault){F.noticeFault=false;F.notes.push({undelivered:true});return;}
+    F.notes.push({event:a.status==='verified'?'approved':'rejected',application:'DEMO-REG-001',submitted:a.submitted,reviewed:a.reviewed});
+  }
+  function noticeCopy(n){
+    const id=n.application,sent=time(n.submitted),decided=time(n.reviewed);
+    return n.event==='approved'
+      ? {title:L('Institution verification approved','机构认证审核通过'),
+         body:L('The institution details submitted for application '+id+' at '+sent+' were approved at '+decided+'. View the record of this review. Your current verification status and available actions are shown on the verification results page.',
+                '申请 '+id+' 于 '+sent+' 提交的机构认证资料，已于 '+decided+' 审核通过。请查看本次审核记录；当前认证状态及可办理业务以认证结果页为准。'),
+         action:L('View review result','查看审核结果')}
+      : {title:L('Institution verification rejected','机构认证审核未通过'),
+         body:L('The institution details submitted for application '+id+' at '+sent+' were rejected at '+decided+'. View the reason for this review and your current application status. If the application is still rejected, you can update the details and submit again.',
+                '申请 '+id+' 于 '+sent+' 提交的机构认证资料，已于 '+decided+' 审核驳回。请查看本次驳回原因及当前申请状态；如当前仍为已驳回，可修改资料后重新提交。'),
+         action:L('View rejection reason','查看驳回原因')};
+  }
+  function noticeRow(n){
+    if(n&&n.undelivered)return `<div class="funder-notice"><div><b>${L('A review result notice could not be delivered','有一条审核结果通知未送达')}</b><p>${L('The review decision has taken effect. Open your registration status to see the current result.','审核结论已生效，可在注册状态查看当前结果。')}</p></div>${link('View registration status','查看注册状态','status')}</div>`;
+    if(n&&n.event){const c=noticeCopy(n);return `<div class="funder-notice"><div><b>${esc(c.title)}</b><p class="funder-reason-text">${esc(c.body)}</p></div>${link(c.action,c.action,'status')}</div>`;}
+    return `<div class="funder-notice"><div>${esc(L(...n))}</div>${link('View registration','查看注册状态','status')}</div>`;
   }
   function statusPage(){
     const a=F.account;
@@ -383,7 +405,7 @@
   function changeEmail(){F.emailFlow=true;F.error=null;F.fieldErrors={};F.otp=null;F.emailInput='';F.codeInput='';F.emailStage=Date.now()<F.reauthUntil?'edit':'auth';open('email');}
   function fixture(s){
     F.generation++;F.busy='';F.error=null;F.otp=null;F.connected=address;hydrate(address);const a=F.account;a.exists=true;a.created=a.created||new Date().toISOString();a.disabled=false;delete a.pending;F.pendingSubmission=false;a.reviewPending=false;F.downgrade=false;F.reauthUntil=0;
-    if(s!=='draft'){a.email=a.email||'finance@example.test';a.emailVerified=a.emailVerified||new Date().toISOString();a.form={name:'Demo Institution',country:'Demo jurisdiction',identifierType:'REG_NO',identifier:'DEMO-REG-100',institutionType:'Demo financial institution',registeredAddress:'Demo registered address',regulator:'',license:'',contact:'contact@example.test',files:[{id:fileId(),name:'institution-registration-demo.pdf',size:204800,status:'done',demo:true},{id:fileId(),name:'institution-licence-demo.pdf',size:96256,status:'done',demo:true}]};a.submitted=a.submitted||new Date().toISOString();a.version=Math.max(1,a.version);a.snapshotEmail=a.email;a.submittedFields=fields();a.submittedForm=JSON.parse(JSON.stringify(a.form));a.template=F.activeTemplate||'DEMO-1';}
+    if(s!=='draft'){a.email=a.email||'finance@example.test';a.emailVerified=a.emailVerified||new Date().toISOString();a.form={name:'Demo Institution',country:'Demo jurisdiction',identifierType:'REG_NO',identifier:'DEMO-REG-100',institutionType:'Demo financial institution',registeredAddress:'Demo registered address',regulator:'',license:'',contact:'contact@example.test',files:[{id:fileId(),name:'institution-registration-demo.pdf',size:204800,status:'done',demo:true,at:'2026-09-18T02:24:00Z'},{id:fileId(),name:'institution-licence-demo.pdf',size:96256,status:'done',demo:true,at:'2026-09-18T02:26:00Z'}]};a.submitted=a.submitted||new Date().toISOString();a.version=Math.max(1,a.version);a.snapshotEmail=a.email;a.submittedFields=fields();a.submittedForm=JSON.parse(JSON.stringify(a.form));a.template=F.activeTemplate||'DEMO-1';}
     a.records=[];delete a.boundIdentity;a.status=s;a.issues=[];a.additional=s==='rejected'?demoReason():'';a.reviewed=['verified','rejected'].includes(s)?new Date().toISOString():null;a.reviewer=a.reviewed?'DEMO-OP-01':'';recordDecision(a);S.role='fund';F.sessionUntil=Date.now()+4*3600000;F.load='ready';persist();response();S.demo=false;go(s==='draft'?'/funder/register':'/funder/status');
   }
 
@@ -480,7 +502,7 @@
       case 'puzzle-error':CF.puzzle.failNextLoad();break;
       case 'approve':case 'reject':
         if(F.account.status!=='submitted'){CF.toast(L('Only a submitted application can receive a review result.','仅已提交申请可接收审核结果。'));break;}
-        F.account.status=v==='approve'?'verified':'rejected';F.account.issues=[];F.account.additional=v==='reject'?demoReason():'';F.account.reviewed=new Date().toISOString();F.account.reviewer='DEMO-OP-01';recordDecision(F.account);F.account.reviewPending=false;F.downgrade=false;F.notes.push(v==='approve'?['Your institution is verified.','机构审核已通过。']:['Your registration needs changes.','机构注册需要修改。']);persist();response();S.demo=false;
+        F.account.status=v==='approve'?'verified':'rejected';F.account.issues=[];F.account.additional=v==='reject'?demoReason():'';F.account.reviewed=new Date().toISOString();F.account.reviewer='DEMO-OP-01';recordDecision(F.account);F.account.reviewPending=false;F.downgrade=false;decisionNotice(F.account);persist();response();S.demo=false;
         if(v==='approve'&&F.returnTo==='valid'){go('/demo/funder/action');later(gate,30);}else go('/funder/status');break;
       case 'expire':S.demo=false;logout(true);break;
       case 'disable':F.account.disabled=true;persist();logout();CF.toast(L('Your account has been disabled.','你的账号已停用。'));break;
@@ -542,7 +564,7 @@
   function materialFile(value){const [source,id]=String(value||'').split('::');return docs(materialSource(source)).find(f=>f.id===id);}
   function materialFields(value){const source=String(value||'').split('::')[0];return source==='draft'?fields():source==='pending'?F.account.pending?.fields:F.account.submittedFields;}
   layers['f-material']=value=>({title:L('Preview','预览'),html:signedIn()&&!F.account.disabled?materialPreview(materialFile(value),materialFields(value)):CF.note('warn',L('Sign in to view this file.','请登录后查看文件。')),foot:btn('Close','关闭','close')+btn('Download','下载','material-download',value)});
-  layers['f-notices']=()=>({title:L('Account notifications','账户通知'),html:F.notes.length?F.notes.map(n=>`<div class="login-agreement-row">${esc(L(...n))}${link('View registration','查看注册状态','status')}</div>`).join(''):CF.empty(L('No new notifications','暂无新通知'),'',''),foot:btn('Close','关闭','close')});
+  layers['f-notices']=()=>({title:L('Account notifications','账户通知'),html:F.notes.length?F.notes.map(noticeRow).join(''):CF.empty(L('No new notifications','暂无新通知'),'',''),foot:btn('Close','关闭','close')});
   window.addEventListener('hashchange',()=>{
     if(F.emailFlow){F.generation++;F.emailFlow=false;F.busy='';F.otp=null;}
     if(CF.puzzle.active())CF.puzzle.stop();
@@ -570,7 +592,7 @@
     decide(version,status,issues,additional){
       const a=F.account;if(a.version!==version||a.status!=='submitted')return false;
       a.status=status;a.reviewed=new Date().toISOString();a.issues=issues||[];a.additional=additional||'';a.reviewer='DEMO-OP-01';recordDecision(a);
-      F.notes.push(status==='verified'?['Your institution is verified. View your registration result.','机构认证已通过，可查看认证结果。']:['Registration rejected. View all reasons and update your details.','机构认证已驳回，请查看全部原因并修改资料。']);
+      decisionNotice(a);
       F.downgrade=false;a.reviewPending=false;persist();response();return true;
     }
   };
