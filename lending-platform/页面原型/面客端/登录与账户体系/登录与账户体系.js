@@ -286,7 +286,6 @@
 
   /* ---------------------------------------------------------------- 账户与企业信息 */
   function identityFields(fields){return `<dl class="login-fields login-identity-fields">${fields.filter(f=>f[2]!==''&&f[2]!=null).map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd>${esc(f[2])}</dd></div>`).join('')}</dl>`;}
-  function sourceLink(view=false){return `<div class="detail-actions">${link(view?'View on the asset trust platform ↗':'Update on the asset trust platform ↗',view?'前往资产可信平台查看 ↗':'前往资产可信平台修改 ↗','login-leave',view?'company':'account')}</div>`;}
   function unavailable(){
     return (D.sessionMessage?CF.note('warn',esc(D.sessionMessage)):'')+
       CF.empty(L('This page is not available for your current role','该页面不适用于当前身份'),L('You can continue exploring public information.','你可以继续浏览公开信息。'),btn('Back to assets','返回资产广场','login-home'));
@@ -305,19 +304,19 @@
     ]),['No account information available','暂无账户信息']);
     const personal=profileBody('personalState',personalFields(),['No personal verification information available','暂无个人认证信息']);
     return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Account settings','账户设置')}</h1><p class="page-desc">${L('View your information and manage your preferences.','查看账户资料，管理偏好设置。')}</p></div></div>
-      <p class="login-caption">${L('This information is maintained by the asset trust platform.','这些信息由资产可信平台维护。')}</p>
+      <p class="login-caption">${L('These details are synced from the token issuance platform and are read-only.','这些资料从代币发行平台同步，仅供查看。')}</p>
       <div class="detail-stack"><section class="card detail-section"><div class="card-head"><h2>${L('Account information','账户信息')}</h2></div><div class="card-b">${identity}
-      <div class="login-row"><span>${L('Verification','实名认证')}</span><div class="detail-actions login-verification">${CF.tag(D.level==='L3'?'ok':D.rejected?'danger':'warn',D.rejected?L('Not approved','认证未通过'):D.level==='L3'?L('Verified','已认证'):L('Not verified','未认证'))}${D.level!=='L3'?link('Complete verification ↗','前往完成认证 ↗','login-leave','verify'):''}</div></div>${sourceLink()}</div></section>
-      <section class="card detail-section"><div class="card-head"><h2>${L('Personal information','个人信息')}</h2></div><div class="card-b">${personal}${sourceLink()}</div></section>
+      <div class="login-row"><span>${L('Verification','实名认证')}</span><div class="detail-actions login-verification">${CF.tag(D.level==='L3'?'ok':D.rejected?'danger':'warn',D.rejected?L('Not approved','认证未通过'):D.level==='L3'?L('Verified','已认证'):L('Not verified','未认证'))}${D.level!=='L3'?link('Complete verification ↗','前往完成认证 ↗','login-leave','verify'):''}</div></div></div></section>
+      <section class="card detail-section"><div class="card-head"><h2>${L('Personal information','个人信息')}</h2></div><div class="card-b">${personal}</div></section>
       <section class="card detail-section"><div class="card-head"><h2>${L('Preferences','偏好设置')}</h2></div><div class="card-b login-stack">
       <div class="field login-preference-field"><label for="login-language">${L('Language preference','语言偏好')}</label><select class="inp" id="login-language" aria-describedby="login-language-feedback" ${D.preferenceState.language==='pending'?'disabled aria-busy="true"':''}><option value="en" ${D.preferredLang==='en'?'selected':''}>English</option><option value="zh" ${D.preferredLang==='zh'?'selected':''}>简体中文</option></select><div id="login-language-feedback">${preferenceFeedback()}</div></div>
       <p class="login-caption">${L('Critical notifications, including verification changes, are always received.','认证等关键通知始终接收。')}</p>
       </div></section></div>${demoStamp()}</div>`;
   }
   const companyGuidance={
-    none:['Complete your company information on the asset trust platform.','请前往资产可信平台完善企业信息。'],
-    pending:['Check your verification status on the asset trust platform.','请前往资产可信平台查看认证状态。'],
-    verified:['This information is read-only. Update it on the asset trust platform.','资料只读不可修改，如需修改请前往资产可信平台。']
+    none:['No company information is linked to this account.','当前账户暂无关联企业信息。'],
+    pending:['Company verification is not complete. Synced details are read-only.','企业认证尚未完成，同步资料仅供查看。'],
+    verified:['These company details are read-only.','企业资料仅供查看。']
   };
   function companyPage(){
     if(S.role!=='asset')return unavailable();
@@ -331,10 +330,10 @@
       ['Company Registration Number (CR)','公司注册编号（CR）','DEMO-CR-'+D.profileVariant+'0001'],
       ['Relationship to the company','与企业的关系',L('Authorised representative','授权代表')]
     ]);
-    return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Company information','企业信息')}</h1><p class="page-desc">${L('This information is maintained by the asset trust platform.','这些信息由资产可信平台维护。')}</p></div></div>
+    return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Company information','企业信息')}</h1><p class="page-desc">${L('These details are synced from the token issuance platform and are read-only.','这些资料从代币发行平台同步，仅供查看。')}</p></div></div>
       <section class="card detail-section"><div class="card-head"><h2>${L('Company details','企业基本信息')}</h2></div><div class="card-b">${profileBody('companyState',info,['No company verification information available','暂无企业认证信息'])}
       <p class="login-caption">${L(...companyGuidance[D.companyCase])}</p>
-      ${sourceLink(D.companyCase!=='verified')}</div></section>${demoStamp()}</div>`;
+      </div></section>${demoStamp()}</div>`;
   }
 
   /* ---------------------------------------------------------------- 演示落点 */
@@ -495,7 +494,7 @@
       case 'account-ready':D.accountState='default';go('/account');break;
       case 'profile-other':cancelPending();D.profileVariant=D.profileVariant===1?2:1;D.missing=false;break;
       case 'profile-optional':D.profileOptionalMissing=!D.profileOptionalMissing;break;
-      case 'profile-write':CF.toast(L('This information is read-only. Update it on the asset trust platform.','这些资料为只读，请前往资产可信平台修改。'));break;
+      case 'profile-write':CF.toast(L('These details are read-only and cannot be edited here.','这些资料仅供查看，不提供修改入口。'));break;
       case 'personal-empty':D.personalState='empty';go('/account');break;
       case 'personal-error':D.personalState='error';go('/account');break;
       case 'personal-ready':D.personalState='idle';go('/account');break;

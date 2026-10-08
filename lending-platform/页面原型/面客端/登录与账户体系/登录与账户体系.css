@@ -179,3 +179,17 @@
 .funder-copy-fallback:not([hidden]){display:block;margin-top:var(--sp-3);font-size:var(--fs-12);color:var(--muted)}
 .funder-registration .funder-readiness>div{border-bottom:0}
 @media(max-width:760px){.funder-registration-form{padding:0 var(--sp-4)}.funder-registration-section{padding:var(--sp-5) 0}.funder-field-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Email verification is a short dialog; the institution form stays in place. */
+.funder-email-entry{display:flex;align-items:flex-end;gap:var(--sp-3);max-width:640px}
+.funder-email-entry>.field{flex:1;min-width:0}
+.funder-email-entry>.btn{flex:none}
+.funder-email-verified{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-3)}
+.funder-email-verified>strong{overflow-wrap:anywhere;min-width:0}
+.funder-email-destination{margin:0;overflow-wrap:anywhere}
+.funder-email-destination>strong{display:block;margin-top:var(--sp-2)}
+.funder-email-code #f-code{font-family:var(--mono);font-size:var(--fs-24);letter-spacing:.3em;max-width:320px;min-height:56px}
+.funder-email-code .login-caption{margin:0}
+.funder-email-code [role="status"]:empty{display:none}
+.funder-email-code .btn-link:disabled{color:var(--muted);cursor:not-allowed}
+@media(max-width:600px){.funder-email-entry{align-items:stretch;flex-direction:column}.funder-email-entry>.btn{align-self:flex-start}}
