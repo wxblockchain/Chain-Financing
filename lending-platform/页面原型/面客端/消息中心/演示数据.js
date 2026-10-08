@@ -143,8 +143,8 @@
           '你方机构 {institution_name} 的融资申请 {demand_id}、融资业务 {business_id}、放款 {disbursement_id}，第 {installment_no} 期（计划 {schedule_id}）已于 {confirmed_at} 确认收到还款；全部期次已结清，本笔业务于 {settled_at} 结清。本笔未偿本金及对应项目融资余额、授信占用额已归零，不代表其他业务占用归零。请查看本笔结果及项目质押状态；项目业务释放须满足项目关闭或结清条件，已释放代币仍需资产方从「解除质押—提取已释放」入口自行提取并自付 gas，不代表已回到钱包。')},
       'verification.asset.revoked':{
         title:pair('Verification status changed','实名认证状态已变更'),
-        body:pair('Your verification status changed. At the time of this change, access to submitting financing applications became unavailable. You can still browse the platform. Visit the Asset Trust Platform to check your current verification status.',
-          '你的实名认证状态已变更，本次变更使发起融资申请权限暂不可用。你仍可浏览平台。请前往资产可信平台查看当前认证状态。')},
+        body:pair('Your verification status changed. At the time of this change, access to submitting financing applications became unavailable. You can still browse the platform. Visit the token issuance platform to check your current verification status.',
+          '你的实名认证状态已变更，本次变更使发起融资申请权限暂不可用。你仍可浏览平台。请前往代币发行平台查看当前认证状态。')},
       'verification.funder.approved':{
         title:pair('Institution verification approved','机构认证审核通过'),
         body:pair('The institution details submitted for application {application_number} at {submitted_time} were approved at {reviewed_time}. View the record of this review. Your current verification status and available actions are shown on the verification results page.',
