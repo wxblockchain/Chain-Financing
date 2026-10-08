@@ -33,7 +33,7 @@
 .login-preference-field{max-width:480px}
 .login-verification.detail-actions{margin-top:0;align-items:center}
 .login-fields{margin:0}
-.login-fields div{padding:var(--sp-4) 0;border-bottom:1px solid var(--border-dash)}
+.login-fields>div{padding:var(--sp-4) 0;border-bottom:1px solid var(--border-dash)}
 .login-fields dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-2)}
 .login-fields dd{margin:0;overflow-wrap:anywhere}
 .login-caption{font-size:var(--fs-12);color:var(--muted)}
@@ -156,3 +156,26 @@
 .certification-event-reason{margin-top:var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);overflow-wrap:anywhere}
 .certification-event-reason>b{font-size:var(--fs-12);color:var(--muted)}
 .certification-event-reason p{margin:var(--sp-2) 0 0}
+
+/* WS-372: continuous registration sections and adjacent copy / full-address controls. */
+.funder-registration{max-width:960px}
+.funder-registration-form{padding:0 var(--sp-7)}
+.funder-registration-section{padding:var(--sp-7) 0;border-bottom:1px solid var(--border);scroll-margin-top:110px}
+.funder-registration-section:last-child{border-bottom:0}
+.funder-registration-section>.login-caption{margin-top:0}
+.funder-registration-section>.funder-form{max-width:560px}
+.funder-registration-section>.funder-form>[data-act="f-verify"]{align-self:flex-start}
+#registration-institution>.funder-form{max-width:none}
+.funder-registration .funder-actions{justify-content:flex-end}
+.funder-registration .funder-actions>.btn.primary{min-width:160px}
+.funder-wallet{display:inline-flex;align-items:center;gap:var(--sp-1);max-width:100%}
+.funder-wallet .btn.icon{width:44px;height:44px;flex:none}
+.funder-address{position:relative;min-width:0}
+.funder-address summary{display:flex;align-items:center;min-height:44px;cursor:pointer;list-style:none;width:fit-content}
+.funder-address summary::-webkit-details-marker{display:none}
+.funder-address summary:hover{background:var(--card-hover)}
+.funder-address[open] summary{border-color:var(--accent)}
+.funder-wallet .funder-address-full{position:absolute;z-index:var(--z-sticky);top:calc(100% + var(--sp-1));left:0;width:min(400px,70vw);padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);box-shadow:var(--shadow-soft);overflow-wrap:anywhere;user-select:text;font-size:var(--fs-13)}
+.funder-copy-fallback:not([hidden]){display:block;margin-top:var(--sp-3);font-size:var(--fs-12);color:var(--muted)}
+.funder-registration .funder-readiness>div{border-bottom:0}
+@media(max-width:760px){.funder-registration-form{padding:0 var(--sp-4)}.funder-registration-section{padding:var(--sp-5) 0}.funder-field-grid{grid-template-columns:minmax(0,1fr)}}
