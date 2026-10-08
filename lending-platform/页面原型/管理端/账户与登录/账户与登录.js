@@ -5,7 +5,7 @@
 const S=CF.S, L=CF.L, esc=CF.esc, $=id=>document.getElementById(id);
 const P={login:'P-O-AL-01',first:'P-O-AL-03',forgot:'P-O-AL-04',reset:'P-O-AL-05',account:'P-O-AL-06',overview:'P-O-AL-07'};
 const R=id=>CF.ENTRY[id];
-const fresh=()=>({email:'operator@example.com',name:['Demo Operator','演示操作员'],role:'specialist',first:true,expired:false,password:'Start1234',initial:'Start1234',fail:0,lockUntil:0,lockTier:0,lastLock:0,created:'2026-09-18T02:00:00Z',lastLogin:null});
+const fresh=()=>({email:'operator@example.com',name:['Demo Operator','演示操作员'],role:'admin',first:true,expired:false,password:'Start1234',initial:'Start1234',fail:0,lockUntil:0,lockTier:0,lastLock:0,created:'2026-09-18T02:00:00Z',lastLogin:null});
 let a=fresh(), session=false, V={}, E={}, notice=null, busy=false, mode='',verifiedUntil=0, recovery=false, code=null,seq=0,sendHistory=[],sendPurpose='',pending=null,showLock=false,returnTo=P.overview,accountTab='info',failNext='',events=[],sessionEnd=0,lastActivity=0,warned=false,asyncVersion=0;
 const visible={};
 const read=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
@@ -22,35 +22,34 @@ CF.puzzle.configure({store:'hc.ops.puzzle.v1',hintAfter:3,coolAfter:5,coolMs:600
  help:['If you cannot complete verification, contact your platform provider or operations support.','如无法完成验证，请联系平台建设方或运维获取帮助。'],
  guard:()=>CF.S.layer?.key==='ops-captcha'});
 S.end='admin'; S.lang=read('hc.ops.language')||'en';
-const role=()=>a.role==='admin'?L('Operations Administrator','运营管理员'):L('Operations Specialist','运营专员');
-/* 功能权限项：编号、业务名称与两个预置角色的默认值取自本册 PRD 第 2.5 节。
-   fixed 固定开通 · on 默认开通 · off 默认关闭（交付时按职责配置）· never 不授予该角色。
-   needs 表示该项须配套的查询项（D-AL-34 协议、D-AL-35 项目审核与融资参数）。
-   账户设置不展示权限清单（D-AL-24）；下面的清单只服务于入口收敛与越权判定。 */
+const role=()=>L('Operations Administrator','运营管理员');
+/* 本期运营端只有「运营管理员」一个角色，所有运营账号权限一致（用户 2026-10-08 口径）。
+   功能权限项清单保留为交付配置与后期新增角色时的授权单位：编号与业务名称取自本册 PRD 第 2.5 节，
+   core 为与岗位无关的通用项，needs 表示该项须配套的查询项（D-AL-34 协议、D-AL-35 项目审核与融资参数）。
+   账户设置不展示权限清单（D-AL-24）。 */
 const PERMISSIONS=[
- {n:5,en:'View funder certification applications',zh:'资金方机构认证申请查询',admin:'fixed',spec:'off'},
- {n:6,en:'Decide funder certification applications',zh:'资金方机构认证审核处置',admin:'fixed',spec:'off'},
- {n:7,en:'View token pledge applications',zh:'代币质押申请查询',admin:'fixed',spec:'off'},
- {n:8,en:'Decide token pledge applications',zh:'代币质押审核处置',admin:'fixed',spec:'off'},
- {n:9,en:'View agreement content and working versions',zh:'协议当前内容与工作版本查询',admin:'fixed',spec:'off'},
- {n:10,en:'Maintain agreement content and versions',zh:'协议内容与版本维护',admin:'fixed',spec:'off',needs:9},
- {n:11,en:'Publish agreement versions',zh:'协议版本发布',admin:'fixed',spec:'off',needs:9},
- {n:12,en:'View operations messages',zh:'运营端消息查看',admin:'fixed',spec:'on'},
- {n:13,en:'Query operations business data',zh:'运营业务数据查询',admin:'fixed',spec:'on'},
- {n:14,en:'Personal account settings',zh:'本人账户设置',admin:'fixed',spec:'fixed'},
- {n:15,en:'Read agreement version history',zh:'协议历史版本读取',admin:'fixed',spec:'never'},
- {n:16,en:'View agreement activity records',zh:'协议操作记录查看',admin:'fixed',spec:'fixed'},
- {n:17,en:'View financing project reviews',zh:'融资项目审核查询',admin:'fixed',spec:'off'},
- {n:18,en:'Decide project reviews and contract deployment',zh:'融资项目审核与合约部署处置',admin:'fixed',spec:'off',needs:17},
- {n:19,en:'View financing parameters',zh:'融资参数查询',admin:'fixed',spec:'off'},
- {n:20,en:'Maintain financing parameters',zh:'融资参数维护',admin:'fixed',spec:'off',needs:19}
+ {n:5,en:'View funder certification applications',zh:'资金方机构认证申请查询'},
+ {n:6,en:'Decide funder certification applications',zh:'资金方机构认证审核处置'},
+ {n:7,en:'View token pledge applications',zh:'代币质押申请查询'},
+ {n:8,en:'Decide token pledge applications',zh:'代币质押审核处置'},
+ {n:9,en:'View agreement content and working versions',zh:'协议当前内容与工作版本查询'},
+ {n:10,en:'Maintain agreement content and versions',zh:'协议内容与版本维护',needs:9},
+ {n:11,en:'Publish agreement versions',zh:'协议版本发布',needs:9},
+ {n:12,en:'View operations messages',zh:'运营端消息查看',core:true},
+ {n:13,en:'Query operations business data',zh:'运营业务数据查询',core:true},
+ {n:14,en:'Personal account settings',zh:'本人账户设置',core:true},
+ {n:15,en:'Read agreement version history',zh:'协议历史版本读取'},
+ {n:16,en:'View agreement activity records',zh:'协议操作记录查看',core:true},
+ {n:17,en:'View financing project reviews',zh:'融资项目审核查询'},
+ {n:18,en:'Decide project reviews and contract deployment',zh:'融资项目审核与合约部署处置',needs:17},
+ {n:19,en:'View financing parameters',zh:'融资参数查询'},
+ {n:20,en:'Maintain financing parameters',zh:'融资参数维护',needs:19}
 ];
 const item=n=>PERMISSIONS.find(p=>p.n===n);
-const level=p=>a.role==='admin'?p.admin:p.spec;
-let grants=delivered('specialist');
-/* 建设方交付的初始授权：固定开通与默认开通为开，其余按职责配置。 */
-function delivered(role){const m={};PERMISSIONS.forEach(p=>{const v=role==='admin'?p.admin:p.spec;m[p.n]=v==='fixed'||v==='on'});return m}
-function held(n){const p=item(n);if(!p)return false;const v=level(p);return v==='never'?false:v==='fixed'?true:!!grants[n]}
+/* 本期交付全部开通；preview 只在评审工具里使用，预演后期新增角色时未开通业务权限的入口收敛与拒绝反馈。 */
+let preview=false, grants=delivered(false);
+function delivered(limited){const m={};PERMISSIONS.forEach(p=>{m[p.n]=limited?!!p.core:true});return m}
+function held(n){return !!item(n)&&!!grants[n]}
 function usable(){return !!session&&!a.first&&!locked()}
 function can(n){const p=item(n);if(!p||!usable())return false;if(n===12&&CF.opsNotifications?.blocked)return false;
  return held(n)&&(!p.needs||held(p.needs))}
@@ -148,7 +147,7 @@ function afterRender(){document.querySelectorAll('.sidebar .brand-sub').forEach(
 document.querySelectorAll('#app,#focus').forEach(el=>el.inert=!!S.layer);
 }
 function demoButton(act,en,zh,value=''){return `<button class="btn sm" data-act="${act}" data-v="${value}">${L(en,zh)}</button>`}
-function demo(){return `<h5>${L('Local demonstration · fictional data','本地演示 · 虚构数据')}</h5><p class="hint">${L('Use the buttons below to load a fictional account. Credentials are filled only in the sign-in form. No real emails are sent.','以下按钮载入演示账号，凭据仅填入登录表单，不发送真实邮件。')}</p><div class="ops-demo-actions">${demoButton('ops-seed','First sign-in','首次登录','first')}${demoButton('ops-seed','Administrator','运营管理员','admin')}${demoButton('ops-seed','Specialist','运营专员','specialist')}${demoButton('ops-seed','Expired initial password','初始密码过期','expired')}${demoButton('ops-seed','Locked · 10 seconds left','锁定剩余 10 秒','locked')}</div><h5>${L('Next request','下次请求')}</h5><div class="ops-demo-actions">${demoButton('ops-puzzle-fault','Puzzle image fails','拼图加载失败')}${demoButton('ops-fault','Verification expires','滑块结果过期','ticket-expired')}${demoButton('ops-fault','Request source changes','请求来源改变','ticket-source')}${demoButton('ops-device',source.device?'Disable device identification':'Restore device identification',source.device?'设备识别不可用':'恢复设备识别')}${demoButton('ops-fault','Timeout','请求超时','network')}${demoButton('ops-fault','Email delivery fails','验证码发送失败','mail')}${demoButton('ops-fault','Rate limited','发送限频','rate')}${demoButton('ops-fault','Email taken at submit','提交时邮箱被占用','taken')}${demoButton('ops-fault','Security notice fails','安全通知失败','notice')}</div><p class="hint">${L('Pending fault: ','待触发异常：')}${esc(failNext||'—')}</p><h5>${L('Verification and session','验证与会话')}</h5><div class="ops-demo-actions">${demoButton('ops-fill-code','Fill demo code','填入演示验证码')}${demoButton('ops-expire-code','Expire code','验证码过期')}${demoButton('ops-expire-auth','Expire reauthentication','再认证过期')}${demoButton('ops-session-warning','Session expiry warning','会话到期提醒')}${demoButton('ops-session-expire','Session invalidated','会话失效')}${[6,8,15,18,20].map(n=>demoButton('ops-probe','Try: '+item(n).en,'尝试：'+item(n).zh,String(n))).join('')}</div>${code?`<p class="hint">${L('Demo code','演示验证码')} (${esc(code.target)}): <strong>${code.value}</strong> · ${esc(code.purpose)}</p>`:''}<h5>${L('Delivered permissions','交付的功能权限')}</h5><p class="hint">${L('The platform provider delivers this configuration; the product has no authorisation screen and the account page never lists permissions. Administrators hold every business permission in this release.','该配置由平台建设方交付：产品内没有授权界面，账户设置也不展示权限清单；管理员固定拥有本期全部业务权限。')}</p><div class="ops-demo-actions">${PERMISSIONS.map(p=>{const v=level(p),on=held(p.n);return `<button class="btn sm" data-act="ops-grant" data-v="${p.n}" aria-pressed="${on}" ${v==='fixed'||v==='never'?'disabled':''}>${L(p.en,p.zh)} · ${v==='fixed'?L('fixed','固定开通'):v==='never'?L('not granted','不授予'):on?L('on','已开通'):L('off','未开通')}</button>`}).join('')}</div><h5>${L('Account page','账户页')}</h5><div class="ops-demo-actions">${['default','loading','error','denied'].map(v=>demoButton('ops-state',({default:'Default',loading:'Loading',error:'Load failed',denied:'No access'})[v],({default:'默认',loading:'加载中',error:'加载失败',denied:'无权限'})[v],v)).join('')}</div><p class="hint">${L('Simulated notification events: ','模拟通知事件：')}${events.length}</p>${events.map(e=>`<p class="hint">${esc(e.event)} · ${esc(String(e.to))} · ${CF.fmtTime(e.at)}</p>`).join('')}`}
+function demo(){return `<h5>${L('Local demonstration · fictional data','本地演示 · 虚构数据')}</h5><p class="hint">${L('Use the buttons below to load a fictional account. Credentials are filled only in the sign-in form. No real emails are sent.','以下按钮载入演示账号，凭据仅填入登录表单，不发送真实邮件。')}</p><div class="ops-demo-actions">${demoButton('ops-seed','First sign-in','首次登录','first')}${demoButton('ops-seed','Administrator','运营管理员','admin')}${demoButton('ops-seed','Expired initial password','初始密码过期','expired')}${demoButton('ops-seed','Locked · 10 seconds left','锁定剩余 10 秒','locked')}</div><h5>${L('Next request','下次请求')}</h5><div class="ops-demo-actions">${demoButton('ops-puzzle-fault','Puzzle image fails','拼图加载失败')}${demoButton('ops-fault','Verification expires','滑块结果过期','ticket-expired')}${demoButton('ops-fault','Request source changes','请求来源改变','ticket-source')}${demoButton('ops-device',source.device?'Disable device identification':'Restore device identification',source.device?'设备识别不可用':'恢复设备识别')}${demoButton('ops-fault','Timeout','请求超时','network')}${demoButton('ops-fault','Email delivery fails','验证码发送失败','mail')}${demoButton('ops-fault','Rate limited','发送限频','rate')}${demoButton('ops-fault','Email taken at submit','提交时邮箱被占用','taken')}${demoButton('ops-fault','Security notice fails','安全通知失败','notice')}</div><p class="hint">${L('Pending fault: ','待触发异常：')}${esc(failNext||'—')}</p><h5>${L('Verification and session','验证与会话')}</h5><div class="ops-demo-actions">${demoButton('ops-fill-code','Fill demo code','填入演示验证码')}${demoButton('ops-expire-code','Expire code','验证码过期')}${demoButton('ops-expire-auth','Expire reauthentication','再认证过期')}${demoButton('ops-session-warning','Session expiry warning','会话到期提醒')}${demoButton('ops-session-expire','Session invalidated','会话失效')}${[6,8,15,18,20].map(n=>demoButton('ops-probe','Try: '+item(n).en,'尝试：'+item(n).zh,String(n))).join('')}</div>${code?`<p class="hint">${L('Demo code','演示验证码')} (${esc(code.target)}): <strong>${code.value}</strong> · ${esc(code.purpose)}</p>`:''}<h5>${L('Later roles · preview','后期角色扩展 · 预览')}</h5><p class="hint">${L('This release has one role: every operations account is an administrator and holds the same permissions. The switches below only rehearse how entries converge and actions are refused once later roles arrive; they are not a product feature, and the account page never lists permissions.','本期只有运营管理员一个角色，所有运营账号权限一致。下面的开关只用于预演后期新增角色后的入口收敛与动作拒绝，不是本期产品功能；账户设置也不展示权限清单。')}</p><div class="ops-demo-actions">${demoButton('ops-preview','This release · all granted','本期 · 全部开通','all')}${demoButton('ops-preview','Later role · core permissions only','后期角色 · 仅通用权限','limited')}</div><div class="ops-demo-actions">${PERMISSIONS.map(p=>{const on=held(p.n);return `<button class="btn sm" data-act="ops-grant" data-v="${p.n}" aria-pressed="${on}">${L(p.en,p.zh)} · ${on?L('granted','已开通'):L('not granted','未开通')}</button>`}).join('')}</div><h5>${L('Account page','账户页')}</h5><div class="ops-demo-actions">${['default','loading','error','denied'].map(v=>demoButton('ops-state',({default:'Default',loading:'Loading',error:'Load failed',denied:'No access'})[v],({default:'默认',loading:'加载中',error:'加载失败',denied:'无权限'})[v],v)).join('')}</div><p class="hint">${L('Simulated notification events: ','模拟通知事件：')}${events.length}</p>${events.map(e=>`<p class="hint">${esc(e.event)} · ${esc(String(e.to))} · ${CF.fmtTime(e.at)}</p>`).join('')}`}
 
 
 CF.review.register(P.login,{group:['Sign-in','登录'],states:['default',{id:'locked',label:['Account locked','账户锁定'],group:'business'}],
@@ -179,7 +178,7 @@ onAct(act,v){
  if(act==='ops-cancel-captcha'){cancelPuzzle();return true}
  if(act==='ops-tab'){accountTab=v;queueMicrotask(()=>{const section=$('ops-'+v);section?.focus({preventScroll:true});section?.scrollIntoView({block:'start'})});return true}
  if(act==='ops-renew'){sessionEnd=Date.now()+7200000;lastActivity=Date.now();warned=false;CF.closeLayer();return true}
- if(act==='ops-seed'){asyncVersion++;busy=false;a=fresh();if(v==='admin'||v==='specialist'||v==='locked'){a.first=false;a.password='Harbour123';a.role=v==='admin'?'admin':'specialist'}grants=delivered(a.role);a.expired=v==='expired';if(v==='locked'){a.lockUntil=Date.now()+10000;a.lockTier=1}expire(null,false);returnTo=P.overview;V.email=a.email;V.password=a.password;V.recoveryEmail=a.email;showLock=false;sendHistory=[];CF.puzzle.reset();mailFailures={};source.device='demo-device';saveGate();failNext='';events=[];return true}
+ if(act==='ops-seed'){asyncVersion++;busy=false;a=fresh();if(v==='admin'||v==='locked'){a.first=false;a.password='Harbour123'}preview=false;grants=delivered(false);a.expired=v==='expired';if(v==='locked'){a.lockUntil=Date.now()+10000;a.lockTier=1}expire(null,false);returnTo=P.overview;V.email=a.email;V.password=a.password;V.recoveryEmail=a.email;showLock=false;sendHistory=[];CF.puzzle.reset();mailFailures={};source.device='demo-device';saveGate();failNext='';events=[];return true}
  if(act==='ops-fault'){failNext=v;return true}
  if(act==='ops-puzzle-fault'){CF.puzzle.failNextLoad();CF.toast(L('The next puzzle will fail to load.','下一次拼图将加载失败。'));return true}
  if(act==='ops-device'){source.device=source.device?null:'demo-device';return true}
@@ -192,7 +191,8 @@ onAct(act,v){
   CF.toast(can(n)?L('Permission granted. The action itself belongs to its business module.','权限校验通过，动作本身由对应业务模块承接。')
    :p.needs&&held(n)&&!held(p.needs)?L('Blocked: this action also requires '+item(p.needs).en+'. Ask your platform provider to correct the delivered configuration.','动作被拒绝：还需配套'+item(p.needs).zh+'，请联系平台建设方修正交付配置。')
    :L('You do not have permission to perform this action.','您没有执行此操作的权限。'));return true}
- if(act==='ops-grant'){const n=Number(v),p=item(n);if(level(p)==='fixed'||level(p)==='never')return true;grants[n]=!grants[n];return true}
+ if(act==='ops-grant'){grants[Number(v)]=!grants[Number(v)];preview=true;return true}
+ if(act==='ops-preview'){preview=v==='limited';grants=delivered(preview);return true}
  if(act==='ops-state'){S.st=v;return true}
  return false;
 },onRoute(prev,id){if(S.layer?.key==='ops-captcha'){CF.puzzle.stop();ticket=null;S.layer=null}capture();E={};notice=null;if(!session&&[P.account,P.overview].includes(id))returnTo=id;if(prev===P.first&&!session)returnTo=P.overview;}
@@ -215,7 +215,7 @@ document.addEventListener('change',e=>{if(e.target.id==='ops-language'){S.lang=e
 window.addEventListener('storage',e=>{if(e.key===gateKey){loadGate();refreshSendButtons()}if(e.key==='hc.ops.invalidate'&&session){expire(msg('Session ended on another tab. Sign in again.','其他标签页已退出登录，请重新登录。'),false);CF.render()}});
 /* held 只读暴露“交付配置里是否勾了这一项”，供业务模块区分“未开通”与“已开通但缺配套查询权限”；
    功能权限项清单仍只在本模块维护，业务模块不另建一份。 */
-CF.opsAuth={can,held,seedDemo(role='admin'){asyncVersion++;busy=false;a=fresh();a.email=CF.AdminMenu?.readIdentity().email||a.email;a.role=role;grants=delivered(role);a.first=false;a.password='Harbour123';session=true;sessionEnd=Date.now()+7200000;lastActivity=Date.now();warned=false;clean();},getIdentity:()=>({email:a.email,name:text(a.name),role:a.role,permissions:PERMISSIONS.filter(p=>can(p.n)).map(p=>'PM-AL-'+String(p.n).padStart(2,'0')),language:S.lang,timezone:S.tz})};
+CF.opsAuth={can,held,seedDemo(kind='admin'){asyncVersion++;busy=false;a=fresh();a.email=CF.AdminMenu?.readIdentity().email||a.email;preview=kind!=='admin';grants=delivered(preview);a.first=false;a.password='Harbour123';session=true;sessionEnd=Date.now()+7200000;lastActivity=Date.now();warned=false;clean();},getIdentity:()=>({email:a.email,name:text(a.name),role:a.role,permissions:PERMISSIONS.filter(p=>can(p.n)).map(p=>'PM-AL-'+String(p.n).padStart(2,'0')),language:S.lang,timezone:S.tz})};
 if(!CF.deferOpsBoot&&!Object.values(P).some(id=>location.hash.split('?')[0]==='#'+R(id)))location.hash='#'+R(P.login);
 if(!CF.deferOpsBoot)CF.boot();
 setInterval(()=>{refreshSendButtons();if(a.lockUntil&&a.lockUntil<=Date.now()){a.lockUntil=0;a.fail=0;showLock=false;capture();CF.render()}if($('lockText'))$('lockText').textContent=lockCopy();if(session){if(Date.now()>=sessionEnd||Date.now()-lastActivity>=1800000){returnTo=S.page===P.account?P.account:P.overview;expire(msg('Your session expired. Please sign in again.','登录已到期，请重新登录。'));CF.render()}else if(sessionEnd-Date.now()<60000&&!warned&&!S.layer){warned=true;capture();CF.openLayer('modal','ops-session')}}},1000);
