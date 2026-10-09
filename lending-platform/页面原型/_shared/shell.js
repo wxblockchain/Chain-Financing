@@ -107,10 +107,17 @@
     var y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
     return S.lang === "en" ? (MO[m] + " " + day + ", " + y) : (y + " 年 " + (m + 1) + " 月 " + day + " 日");
   };
+  /* 时刻按当前展示时区换算并标注该时区；业务日期沿既有口径，不随展示时区改写。 */
   CF.fmtTime = function (iso) {
     var d = new Date(iso);
     if (isNaN(d)) return esc(iso);
     var hh = ("0" + d.getHours()).slice(-2), mm = ("0" + d.getMinutes()).slice(-2);
+    try {
+      var parts = {};
+      new Intl.DateTimeFormat("en-US", { timeZone: S.tz, hour: "2-digit", minute: "2-digit", hour12: false })
+        .formatToParts(d).forEach(function (part) { parts[part.type] = part.value; });
+      if (parts.hour) { hh = parts.hour === "24" ? "00" : parts.hour; mm = parts.minute; }
+    } catch (e) { /* 无效时区沿用本地时刻，不阻断展示 */ }
     return CF.fmtDate(iso) + (S.lang === "en" ? ", " : " ") + hh + ":" + mm + " (" + S.tz + ")";
   };
   /* 金额：三位分隔 + 币种前置，不做汇率换算（国际化基线 5）。 */

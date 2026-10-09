@@ -33,7 +33,8 @@
     accountState:'default', personalState:'idle', companyState:'idle',
     companyCase:'verified', profileVariant:1, profileOptionalMissing:false,
     profileReads:{}, profileReadRoute:'', profileEpoch:0, companyOrigin:'/assets',
-    preferredLang:'en', savedLang:'en', preferenceState:{language:'idle'}, preferenceEpoch:0,
+    preferredLang:'en', savedLang:'en', preferredTz:'', savedTz:'',
+    preferenceState:{language:'idle',timezone:'idle'}, preferenceEpoch:0,
     origin:'/assets', originAction:'', returnResult:'fallback',
     walletResult:'ok', signResult:'ok', matchOverride:'auto', verificationResult:'verified',
     submitResult:'success', addressMoved:false, decidedAt:'',
@@ -74,28 +75,51 @@
   function demoStamp(){return `<p class="login-demo-stamp">${L('Demonstration data','演示数据')}</p>`;}
 
   /* ---------------------------------------------------------------- 偏好 */
-  function cancelPreferences(){D.preferenceEpoch++;D.preferredLang=D.savedLang;D.preferenceState={language:'idle'};}
+  /* 语言与时区两项各自改选即保存、各自给反馈；时区只换时间展示，不改业务时间与先后。 */
+  const prefFields={language:{id:'login-language',state:'preferredLang',saved:'savedLang'},
+    timezone:{id:'login-timezone',state:'preferredTz',saved:'savedTz'}};
+  function validTz(zone){
+    if(typeof zone!=='string'||!zone)return false;
+    try{new Intl.DateTimeFormat('en',{timeZone:zone});return true;}catch(e){return false;}
+  }
+  function browserTz(){
+    try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';}catch(e){return 'UTC';}
+  }
+  function zoneOptions(){
+    return Array.from(new Set([D.preferredTz||S.tz||'UTC','UTC','Asia/Shanghai','Asia/Hong_Kong','Asia/Singapore','Europe/London','America/New_York']));
+  }
+  function cancelPreferences(){
+    D.preferenceEpoch++;D.preferredLang=D.savedLang;D.preferredTz=D.savedTz;
+    D.preferenceState={language:'idle',timezone:'idle'};
+  }
   function loadPreferences(){
     cancelPreferences();let prefs={};try{prefs=JSON.parse(localStorage.getItem('lp_asset_preferences_'+boundAccount().userId)||'{}')||{};}catch(e){}
     D.savedLang=['en','zh'].includes(prefs.language)?prefs.language:S.lang;D.preferredLang=D.savedLang;S.lang=D.savedLang;
+    // 首次建立本平台账户时取浏览器时区（推断失败用 UTC）；此后只用已保存值，不自动覆盖。
+    D.savedTz=validTz(prefs.timezone)?prefs.timezone:browserTz();D.preferredTz=D.savedTz;S.tz=D.savedTz;
   }
-  function savePreference(value){
-    if(S.role!=='asset'||S.page!=='P-L12'||D.preferenceState.language==='pending')return;
-    if(!['en','zh'].includes(value)||value===D.savedLang)return;
-    D.preferredLang=value;D.preferenceState.language='pending';
+  function savePreference(key,value){
+    const field=prefFields[key];
+    if(!field||S.role!=='asset'||S.page!=='P-L12'||D.preferenceState[key]==='pending')return;
+    const valid=key==='language'?['en','zh'].includes(value):validTz(value);
+    if(!valid||value===D[field.saved])return;
+    D[field.state]=value;D.preferenceState[key]='pending';
     const epoch=D.preferenceEpoch,user=boundAccount().userId,route=location.hash;
     setTimeout(()=>{
       if(epoch!==D.preferenceEpoch||S.role!=='asset'||boundAccount().userId!==user||location.hash!==route)return;
       try{
         if(D.submitResult==='failed')throw Error('simulated');
-        localStorage.setItem('lp_asset_preferences_'+user,JSON.stringify({language:value}));
-        D.savedLang=value;S.lang=value;D.preferenceState.language='saved';
-      }catch(e){D.preferredLang=D.savedLang;D.preferenceState.language='failed';}
-      CF.render();queueMicrotask(()=>$('login-language')?.focus({preventScroll:true}));
+        const next={language:D.savedLang,timezone:D.savedTz};next[key==='language'?'language':'timezone']=value;
+        localStorage.setItem('lp_asset_preferences_'+user,JSON.stringify(next));
+        D[field.saved]=value;
+        if(key==='language')S.lang=value;else S.tz=value;
+        D.preferenceState[key]='saved';
+      }catch(e){D[field.state]=D[field.saved];D.preferenceState[key]='failed';}
+      CF.render();queueMicrotask(()=>$(field.id)?.focus({preventScroll:true}));
     },650);
   }
-  function preferenceFeedback(){
-    const state=D.preferenceState.language;
+  function preferenceFeedback(key){
+    const state=D.preferenceState[key];
     return `<p class="login-caption" role="${state==='failed'?'alert':'status'}">${state==='pending'?L('Saving…','正在保存…'):
       state==='saved'?L('Preferences saved','偏好设置已保存'):state==='failed'?L('Could not save. Select your preference again','保存失败，请重新选择'):''}</p>`;
   }
@@ -319,7 +343,9 @@
       <div class="login-row"><span>${L('Verification','实名认证')}</span><div class="detail-actions login-verification">${CF.tag(D.level==='L3'?'ok':D.rejected?'danger':'warn',D.rejected?L('Not approved','认证未通过'):D.level==='L3'?L('Verified','已认证'):L('Not verified','未认证'))}${D.level!=='L3'?link('Complete verification ↗','前往完成认证 ↗','login-leave','verify'):''}</div></div></div></section>
       <section class="card detail-section"><div class="card-head"><h2>${L('Personal information','个人信息')}</h2></div><div class="card-b">${personal}</div></section>
       <section class="card detail-section"><div class="card-head"><h2>${L('Preferences','偏好设置')}</h2></div><div class="card-b login-stack">
-      <div class="field login-preference-field"><label for="login-language">${L('Language preference','语言偏好')}</label><select class="inp" id="login-language" aria-describedby="login-language-feedback" ${D.preferenceState.language==='pending'?'disabled aria-busy="true"':''}><option value="en" ${D.preferredLang==='en'?'selected':''}>English</option><option value="zh" ${D.preferredLang==='zh'?'selected':''}>简体中文</option></select><div id="login-language-feedback">${preferenceFeedback()}</div></div>
+      <div class="field login-preference-field"><label for="login-language">${L('Language','语言')}</label><select class="inp" id="login-language" aria-describedby="login-language-feedback" ${D.preferenceState.language==='pending'?'disabled aria-busy="true"':''}><option value="en" ${D.preferredLang==='en'?'selected':''}>English</option><option value="zh" ${D.preferredLang==='zh'?'selected':''}>简体中文</option></select><div id="login-language-feedback">${preferenceFeedback('language')}</div></div>
+      <div class="field login-preference-field"><label for="login-timezone">${L('Time zone','时区')}</label><select class="inp" id="login-timezone" aria-describedby="login-timezone-feedback" ${D.preferenceState.timezone==='pending'?'disabled aria-busy="true"':''}>${zoneOptions().map(zone=>`<option value="${esc(zone)}" ${D.preferredTz===zone?'selected':''}>${esc(zone)}</option>`).join('')}</select><div id="login-timezone-feedback">${preferenceFeedback('timezone')}</div>
+      <p class="login-caption">${L('Times are shown in this time zone. The underlying business times do not change.','时间按该时区展示，业务时间本身不变。')}</p></div>
       <p class="login-caption">${L('Critical notifications, including verification changes, are always received.','认证等关键通知始终接收。')}</p>
       </div></section></div>${demoStamp()}</div>`;
   }
@@ -643,7 +669,8 @@
   },true);
   document.addEventListener('change',e=>{
     const id=e.target.id,v=e.target.value;
-    if(id==='login-language')savePreference(v);
+    if(id==='login-language')savePreference('language',v);
+    else if(id==='login-timezone')savePreference('timezone',v);
     else if(id==='demo-wallet')D.walletResult=v;
     else if(id==='demo-match')D.matchOverride=v;
     else if(id==='demo-verify')D.verificationResult=v;
