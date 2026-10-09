@@ -9,7 +9,7 @@
     'P-L10':['focus','/auth/return','Matching your account','正在匹配账户'],
     'P-L13':['focus','/auth/retry','Account setup interrupted','账户建立未完成'],
     'P-L04':['focus','/login/unavailable','Unable to continue','暂时无法继续'],
-    'P-L12':['portal','/account','Account settings','账户设置'],
+    'P-L12':['portal','/account','User information','用户信息'],
     'P-L14':['portal','/account/company','Company information','企业信息'],
     // 本模块内的演示落点，绝不占用 P-MC-01 或登记成正式业务页。
     'DEMO-L-GATE':['portal','/demo/login/actions','Business actions · demo','业务动作 · 演示页']
@@ -337,7 +337,7 @@
       ['User ID','用户 ID',account.userId],['Company ID','企业 ID',account.companyId],['Email','邮箱',account.email]
     ]),['No account information available','暂无账户信息']);
     const personal=profileBody('personalState',personalFields(),['No personal verification information available','暂无个人认证信息']);
-    return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Account settings','账户设置')}</h1><p class="page-desc">${L('View your information and manage your preferences.','查看账户资料，管理偏好设置。')}</p></div></div>
+    return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('User information','用户信息')}</h1><p class="page-desc">${L('View your information and manage your preferences.','查看账户资料，管理偏好设置。')}</p></div></div>
       <p class="login-caption">${L('These details are synced from the token issuance platform and are read-only.','这些资料从代币发行平台同步，仅供查看。')}</p>
       <div class="detail-stack"><section class="card detail-section"><div class="card-head"><h2>${L('Account information','账户信息')}</h2></div><div class="card-b">${identity}
       <div class="login-row"><span>${L('Verification','实名认证')}</span><div class="detail-actions login-verification">${CF.tag(D.level==='L3'?'ok':D.rejected?'danger':'warn',D.rejected?L('Not approved','认证未通过'):D.level==='L3'?L('Verified','已认证'):L('Not verified','未认证'))}${D.level!=='L3'?link('Complete verification ↗','前往完成认证 ↗','login-leave','verify'):''}</div></div></div></section>

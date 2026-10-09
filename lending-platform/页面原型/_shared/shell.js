@@ -371,10 +371,10 @@
     var open = S.menu === "acct";
     var items = unbound ? "" :
       '<div class="portal-account-role">' + esc(who) + "</div>" +
-      '<button type="button" role="menuitem" data-act="toast" data-v="acct">' + L("Account settings", "账户设置") + "</button>" +
+      '<button type="button" role="menuitem" data-act="toast" data-v="acct">' + L("User information", "用户信息") + "</button>" +
       '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + (S.role === "fund" ? L("Institution information", "机构信息") : L("Company information", "企业信息")) + "</button>" +
       '<button type="button" role="menuitem" data-act="toast" data-v="entacct">' + L("Institution accounts", "机构账户") + "</button>" +
-      (N.allowed() && N.preview ? '<button type="button" role="menuitem" data-act="go" data-v="/notifications">' + L("Notifications", "消息中心") + '</button>' : '') +
+      '<button type="button" role="menuitem" data-act="' + (N.preview ? "go" : "toast") + '" data-v="' + (N.preview ? "/notifications" : "notify") + '">' + L("Messages", "消息中心") + "</button>" +
       '<div class="dd-sep"></div>';
     var list = open
       ? '<div class="dd-list" id="portal-account-menu" role="menu" aria-label="' + L("Account menu", "账户菜单") + '">' +
