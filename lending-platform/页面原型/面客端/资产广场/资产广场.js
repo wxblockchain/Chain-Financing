@@ -620,7 +620,7 @@
       [L("Token contract", "代币发行合约"), esc(nm(AM.CONTRACT.name)) +
         '<div class="am-addr"><span class="mono">' + esc(AM.CONTRACT.addr) + "</span>" +
         copyBtn(AM.CONTRACT.addr, L("Token contract address", "代币发行合约地址")) + "</div>", true],
-      /* 质押链只读，与企业账户的结算收款链是两个概念，不合用一个「链」字段。 */
+      /* 质押链只读，与机构账户的结算收款链是两个概念，不合用一个「链」字段。 */
       [L("Pledge chain", "质押链"), CF.icoChip(AM.CHAIN, {glyph: CF.ICON.chain, hue: 3, small: true})],
       [L("Minting transaction hash", "铸造交易哈希"), hashRow(t.mintTx), true],
       [L("Minted at", "铸造时间"), CF.fmtTime(t.at)]

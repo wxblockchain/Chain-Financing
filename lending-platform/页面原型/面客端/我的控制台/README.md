@@ -28,7 +28,7 @@ python3 _shared/export.py --source 面客端/我的控制台/我的控制台.htm
 | 待办呈现 | 收敛为待我还款、已逾期待我还款、待我确认三类；“已超期待我确认”及其筛选项撤除 |
 | 还款录入开放 | 开启时点直接取期次 `open`（应还日 00:00 UTC），列表“开启于”与详情“还款入口开启时间”同源，不再自行提前三日 |
 | 放款段 | 仅资金方提交放款 → 资产方确认到账两步。盖章件版本、要求重传、暂不放款、终止时间与原因全部移除；放款展示状态固定为待放款／待放款确认／已放款，还款中与已结清只在还款视图表达 |
-| 收款账户 | 两侧账户改为读取企业账户快照，复用报价模块导出的 `CF.CQ.accounts / accountRows / accountName / accountMissing / accountSnapshot / accountKey / accountLabels` 与 `.cq-account-*` 口径；不再有收款人名称／户名字段 |
+| 收款账户 | 两侧账户改为读取机构账户快照，复用报价模块导出的 `CF.CQ.accounts / accountRows / accountName / accountMissing / accountSnapshot / accountKey / accountLabels` 与 `.cq-account-*` 口径；不再有收款人名称／户名字段 |
 | 交易标识 | 字段名为交易标识，链取所选收款账户带出的结算收款链。ETH 给 etherscan 外链，TRON 只给复制；两种都固定说明“平台未核验该交易” |
 | 项目指标 | 改用总质押额、待审质押额、有效质押额、本轮融资需求、已融资余额、项目质押率六项，数值一律走 `D.numbers(p)`；需追加资产价值按项目质押率换算，不再写死 80%。项目概况补齐代币类型、项目期限、还款方式、参考结算币种（`p.settle`）、质押合约地址与 SPV |
 | 授信协议 | 放款详情按非必填呈现有无与最近提交时间，缺失只说明“本笔未提供” |

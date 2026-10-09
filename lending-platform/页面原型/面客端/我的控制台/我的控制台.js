@@ -169,7 +169,7 @@
  function section(id,title,body){return {id,title,html:'<section class="card detail-section" id="'+id+'" tabindex="-1"><div class="card-head"><h2>'+E(title)+'</h2></div><div class="card-body">'+body+'</div></section>'};}
  function refs(r){return dl([[L('Business ID','融资业务编号'),copy(r.business||r.id)],[L('Application ID','融资申请编号'),copy(r.request||r.demand)],[L('Project','所属融资项目'),E(text(D.project(r.project)?.name))+'<br>'+copy(r.project)],[L('Asset holder','资产方'),E(owner(r.owner||r.q.owner))],[L('Funder','资金方'),E(fund(r.fund||r.q.fund))]]);}
  function terms(q){return dl([[L('Financing amount','融资金额'),money(q.amount)],[L('Agreed disbursement amount','约定放款金额'),money(q.settlement,q.ccy)],[L('Annual interest rate','年化利率'),E(q.rate)+'%'],[L('Final repayment date','最终还款日'),date(q.repay)],[L('Exchange rate','汇率'),'1 '+E(q.ccy)+' = '+E(q.fx.value)+' USD'],[L('Rate source','汇率来源'),E(text(q.fx.source))],[L('Rate snapshot','汇率快照时间'),time(q.fx.at)],[L('Snapshot version','汇率版本'),E(q.fx.version)]]);}
- /* 两侧收款账户都在企业账户模块维护后于办理中选用，控制台只读脱敏；字段与组件直接复用报价模块导出的共享访问器。 */
+ /* 两侧收款账户都在机构账户模块维护后于办理中选用，控制台只读脱敏；字段与组件直接复用报价模块导出的共享访问器。 */
  const accountRows=a=>a.kind==='crypto'?[[L(...Q.accountLabels.label),Q.accountName(a)],...Q.accountRows(a,false)]:Q.accountRows(a,false);
  function account(a,missing){
    if(!a)return '<p class="mc-small">'+E(missing)+'</p>';

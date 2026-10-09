@@ -1,4 +1,4 @@
-/* 企业账户（面客 · 资产方与资金方双侧）。继承面客端 portal 壳层与公共组件，
+/* 机构账户（面客 · 资产方与资金方双侧）。继承面客端 portal 壳层与公共组件，
    本模块只提供总览页内容、账户维护抽屉与确认弹窗；导航、路由、浮层宿主仍由 _shared/shell.js 提供。
    账户目录在 ./演示数据.js（CF.EA），报价、放款、还款与控制台读取同一份，不另建第二套。
    钱包、签名、服务端校验与投递均为本地演示，不发网络请求。 */
@@ -8,7 +8,7 @@
   const PAGE='P-F-EA-01',ROUTE='/account/receiving';
   CF.PAGES[PAGE]={end:'asset',layout:'portal',navKey:'navEnterpriseAccounts',auth:true};
   CF.ENTRY[PAGE]=ROUTE;
-  const dict={en:{navEnterpriseAccounts:'Enterprise accounts'},zh:{navEnterpriseAccounts:'企业账户'}};
+  const dict={en:{navEnterpriseAccounts:'Institution accounts'},zh:{navEnterpriseAccounts:'机构账户'}};
 
   /* scene 为整页读取状态；unverified 模拟尚未取得业务资格；sign / save 为下次请求响应。 */
   const V={scene:'ready',unverified:false,flow:null,busy:'',problem:'',pending:null,
@@ -29,7 +29,7 @@
 
   /* ------------------------------------------------------------------ 总览 */
   function head(){
-    return '<div class="page-head"><div><h1 class="page-title">'+L('Enterprise accounts','企业账户')+'</h1>'+
+    return '<div class="page-head"><div><h1 class="page-title">'+L('Institution accounts','机构账户')+'</h1>'+
       '<p class="page-desc">'+L('Register the accounts that receive money for your company. Business workflows select from these accounts.',
         '登记本企业的收款账户；办理业务时从这里已登记的账户中选用。')+'</p></div>'+
       '<div class="page-actions">'+CF.tag('',L('Demonstration data','演示数据'))+'</div></div>';
@@ -41,17 +41,17 @@
       '本企业完成认证后即可登记收款账户。')+'</p><p>'+L('Until then this page does not show or return any account.',
       '在此之前，本页不展示也不返回任何账户。')+'</p>'+(act?'<div class="detail-actions">'+act+'</div>':'')+'</div>');
   }
-  /* 未登录与登录未绑定角色都取不到本企业账户；这里给本页的引导，不套用消息中心文案。 */
+  /* 未登录与登录未绑定角色都取不到本机构账户；这里给本页的引导，不套用消息中心文案。 */
   function accessSurface(){
     if(S.role==='signed')return CF.empty(L('This page is not available for your current role','该页面不适用于当前身份'),
-      L('Enterprise accounts belong to an asset holder or funder account.','企业账户属于已绑定角色的资产方或资金方账号。'),
+      L('Institution accounts belong to an asset holder or funder account.','机构账户属于已绑定角色的资产方或资金方账号。'),
       '<button class="btn primary" type="button" data-act="go" data-v="/assets">'+L('Back to assets','返回资产广场')+'</button>');
-    return CF.empty(L('Sign in to view your enterprise accounts','登录后查看本企业收款账户'),
+    return CF.empty(L('Sign in to view your institution accounts','登录后查看本企业收款账户'),
       L('After signing in, you will return to this page.','登录后将返回当前页面。'),
       '<button class="btn primary" type="button" data-act="signin">'+L('Sign in','登录')+'</button>');
   }
   function loadError(){
-    return CF.empty(L('Your accounts are temporarily unavailable','暂时无法读取本企业账户'),
+    return CF.empty(L('Your accounts are temporarily unavailable','暂时无法读取本机构账户'),
       L('This is not a sign that no account is registered. Retry, or come back in a moment.','这不表示尚未登记账户。请重试，或稍后再来。'),
       '<button class="btn primary" type="button" data-act="ea-reload">'+L('Retry','重试')+'</button>');
   }
@@ -467,7 +467,7 @@
   setTimeout(readReturn,0);
 
   /* ------------------------------------------------------------------ 评审工具 */
-  CF.review.register(PAGE,{group:['Enterprise accounts','企业账户'],route:ROUTE,
+  CF.review.register(PAGE,{group:['Institution accounts','机构账户'],route:ROUTE,
     states:[ 'default',
       {id:'unverified',label:['Not verified yet','尚未取得认证资格'],group:'business'},
       'loading','empty','error'],
@@ -479,7 +479,7 @@
     '<select class="inp" id="'+id+'">'+options.map(o=>'<option value="'+o[0]+'"'+(current===o[0]?' selected':'')+'>'+
       L(o[1],o[2])+'</option>').join('')+'</select></div>';
   function tools(){
-    return '<section class="ea-demo"><h5>'+L('Enterprise account simulations','企业账户模拟')+'</h5>'+
+    return '<section class="ea-demo"><h5>'+L('Institution account simulations','机构账户模拟')+'</h5>'+
       '<p class="hint">'+L('Local simulation only. No wallet, chain or backend is contacted; the platform does not verify that an account is real or reachable. Signature outcomes are chosen in the simulated wallet dialog.',
         '仅本地模拟：不调用钱包、链上接口或后端；平台不验证账户真实性与汇路可达性。签名结果在模拟钱包对话框内选择。')+'</p>'+
       select('ea-save-result',L('Next save / delete response','下次保存 / 删除响应'),

@@ -47,7 +47,7 @@
     email:D.missing?'':'demo'+D.profileVariant+'@example.test'});
   CF.portalAccount=()=>({walletAddress:S.role==='fund'?CF.funder?.review.account.address||'':
     ['asset','signed'].includes(S.role)?D.address||registered:''});
-  /* 当前身份的业务资格由主干一处判定；企业账户等模块读取本函数，不各自维护一套判定。
+  /* 当前身份的业务资格由主干一处判定；机构账户等模块读取本函数，不各自维护一套判定。
      返回值始终带补齐引导，调用方要演示未认证界面时只改 verified，不另写一套引导文案。
      与其他面客模块一致：演示身份即已认证身份，只有本模块记录到降级、驳回或未通过的注册才判未认证。 */
   CF.portalEligible=()=>{

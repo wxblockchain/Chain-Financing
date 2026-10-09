@@ -6,7 +6,7 @@
   if(db.consoleExamples===15)return;
   const now=D.now(),iso=n=>new Date(n).toISOString();
   D.tokens.filter(t=>t.owner==='entity-demo-a'&&!t.issued).forEach((t,i)=>{t.issued=iso(now-(i+3)*DAY);});
-  /* 两侧收款账户都取企业账户目录里的演示账户快照，本文件不另建账户字段。 */
+  /* 两侧收款账户都取机构账户目录里的演示账户快照，本文件不另建账户字段。 */
   const pick=(owner,kind,chain)=>{const list=Q.accounts(owner,kind).filter(a=>!Q.accountMissing(a).length);
     return Q.accountSnapshot(list.find(a=>!chain||a.chain===chain)||list[0]);};
   const payee=(ccy,chain)=>pick('fund-a',ccy==='USD'?'fiat':'crypto',chain);

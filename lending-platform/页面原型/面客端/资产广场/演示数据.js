@@ -11,7 +11,7 @@
     name: ["HC Receivables Token", "HC 应收账款代币"],
     addr: "0x7a41c9f0b2d85e6431cc0a9e7f2b5d8e31047ca6"
   };
-  /* 质押链：代币与质押合约所在链。结算收款链属企业账户模块，不在本模块出现。 */
+  /* 质押链：代币与质押合约所在链。结算收款链属机构账户模块，不在本模块出现。 */
   AM.CHAIN = "ETH";
   AM.CHAIN_ID = "1";
   AM.EXPLORER_TX = "https://etherscan.io/tx/";

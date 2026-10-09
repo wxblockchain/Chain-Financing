@@ -139,7 +139,7 @@
   const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch(_){}D.save();};
   const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:S.tz||'UTC',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(D.now()));
   function anniversary(years){const n=new Date(day()+'T12:00:00Z');n.setUTCFullYear(n.getUTCFullYear()+years);return n.toISOString().slice(0,10);}
-  /* 账户目录归企业账户模块（CF.EA）保管，本模块只读取与选用，不另建一份字段与校验。 */
+  /* 账户目录归机构账户模块（CF.EA）保管，本模块只读取与选用，不另建一份字段与校验。 */
   const EA=CF.EA;
   const accountKind=ccy=>ccy==='USD'?'fiat':'crypto';
   const accountFieldLabels=EA.labels;
@@ -153,7 +153,7 @@
   const accountStamp=a=>a?JSON.stringify(accountSnapshot(a)):'';
   function reset(){db={quotes:[],credits:[],serial:10,lastAccounts:{},events:[]};const p=D.project('FP-DEMO-003'),d=p&&D.current(p);if(d?.state==='quoted'){const at=Date.parse(d.quoteAt);db.quotes.push({id:'FB-DEMO-0001',project:p.id,owner:p.owner,demand:d.id,amount:d.amount,ccy:'USD',rate:'6.40',settlement:d.amount,fx:{value:1,version:'FX-DEMO-001',at,source:['Lending platform · demo','借贷平台 · 演示']},at,state:'waiting',fund:'fund-a',repay:p.expires,progress:{selected:'',account:null,step:1,confirmed:false,viewed:false}});d.institution=['Demo Capital A','演示资金机构 A'];}db.credits.push({id:'CR-DEMO-0001',owner:'entity-demo-a',fund:'fund-a',total:1500000,principal:100000,expires:anniversary(1),first:D.iso(),history:[]});save();}
   try{db=CF.LSReseeded?null:JSON.parse(localStorage.getItem(KEY));if(!db?.quotes)reset();}catch(_){reset();}
-  // 旧版本把账户目录存在本模块里；企业账户模块建成后只保留一份，这里丢弃旧副本。
+  // 旧版本把账户目录存在本模块里；机构账户模块建成后只保留一份，这里丢弃旧副本。
   if(db&&db.accounts){delete db.accounts;save();}
   // 项目已不存在的报价无法渲染，直接丢弃，避免整页在启动时崩掉。
   if(db?.quotes){const kept=db.quotes.filter(q=>D.project(q.project));if(kept.length!==db.quotes.length){db.quotes=kept;save();}}
@@ -161,11 +161,11 @@
   db.quotes.forEach(q=>[q.fx,q.l7?.fx].filter(Boolean).forEach(fx=>{if(fx.version?.startsWith('FX-DEMO-')&&fx.source?.[0]==='Token issuance platform · demo')fx.source=['Lending platform · demo','借贷平台 · 演示'];}));
   Q.data=()=>db;
   Q.related=q=>!!q&&related(q);Q.save=save;Q.startJourney=step=>journeyStart(step);
-  /* 从企业账户登记完账户后回到原办理的原位置；本笔已填内容随 progress 保留。 */
+  /* 从机构账户登记完账户后回到原办理的原位置；本笔已填内容随 progress 保留。 */
   Q.resumeSelection=id=>{const q=db.quotes.find(x=>x.id===(id||pendingSelection));pendingSelection='';
     if(!q||q.state!=='waiting'||S.role!=='asset'||!related(q)){CF.toast(L('That business is no longer awaiting your confirmation.','原办理已不在待确认状态。'));return;}
     beginReview(q);CF.render();};
-  /* 账户目录由企业账户模块保管，这里只把同一份转给放款与控制台；授信协议文件仍由本模块保管。 */
+  /* 账户目录由机构账户模块保管，这里只把同一份转给放款与控制台；授信协议文件仍由本模块保管。 */
   Q.accounts=EA.accounts;
   Q.accountRows=accountRows;Q.accountName=accountName;Q.accountMissing=missingFields;Q.accountSnapshot=accountSnapshot;Q.accountLabels=accountFieldLabels;
   Q.accountKey=EA.key;
@@ -202,7 +202,7 @@
   function creditForm(m){const p=pFlow(),c=credit(p);flow.mode=m;flow.stage='credit';flow.total=m==='renew'?String(c.total):'';flow.expires=m==='increase'?c.expires:anniversary(1);flow.remark='';flow.agreements=[];flow.creditSaved=false;flow.discard=false;flow.initial={total:flow.total,expires:flow.expires};if(companyState==='loading')retryCompany();}
   function open(stage){problem='';invalid='';lastView='';flow.stage=stage;CF.openLayer('drawer','cq-flow');}
   function startQuote(p){const back=flow.stage==='request'?{demand:flow.demand,selected:flow.selected,top:document.querySelector('.drawer-b,.modal-b')?.scrollTop||0}:null;rememberTrigger('ls-quote');flow={project:p.id,demand:D.current(p)?.id,returnRequest:back,onReturn:flow.onReturn,fund,ccy:'',rate:'',stage:'quote'};if(!canQuote(p)||!checkCoverage(p)){CF.toast(problem);return;}flow.mode=mode(p);rememberTrigger('ls-quote');open(flow.mode==='quote'?'quote':'intent');if(flow.mode==='quote'&&companyState==='loading')retryCompany();}
-  /* 优先沿用本笔已选，其次本企业最近一次成功接受的同类账户，再次企业账户的默认账户；确认勾选一律不预勾。 */
+  /* 优先沿用本笔已选，其次本企业最近一次成功接受的同类账户，再次机构账户的默认账户；确认勾选一律不预勾。 */
   function suggestAccount(q){
     const list=accountsFor(q).filter(a=>!missingFields(a).length);
     const picked=q.progress.selected?list.find(a=>a.id===q.progress.selected):null;
@@ -228,14 +228,14 @@
     if(accountScene==='loading')return '<div id="cq-account" tabindex="-1" role="status" class="cq-company-state">'+L('Loading your company receiving accounts…','正在加载本企业收款账户…')+'</div>'+fees(q);
     if(accountScene==='error')return '<div id="cq-account" tabindex="-1">'+note('Your receiving accounts could not be loaded just now. Retry before continuing.','暂时无法读取本企业收款账户，请重试后再继续。','warn')+B('account-retry','Retry','重新加载')+'</div>'+fees(q);
     const list=accountsFor(q);
-    if(!list.length)return '<div id="cq-account" tabindex="-1">'+note(kind==='fiat'?'Your company has no USD receiving account yet. Add one in Company accounts, then come back to this business.':'Your company has no '+q.ccy+' receiving address yet. Add one in Company accounts, then come back to this business.',kind==='fiat'?'本企业尚未维护 USD 法币收款账户，请先在企业账户登记，再回到本笔选用。':'本企业尚未登记数币收款地址，请先在企业账户登记，再回到本笔选用。','warn')+B('accounts-module','Go to company accounts','前往企业账户')+'</div>'+fees(q);
+    if(!list.length)return '<div id="cq-account" tabindex="-1">'+note(kind==='fiat'?'Your company has no USD receiving account yet. Add one in Company accounts, then come back to this business.':'Your company has no '+q.ccy+' receiving address yet. Add one in Company accounts, then come back to this business.',kind==='fiat'?'本企业尚未维护 USD 法币收款账户，请先在机构账户登记，再回到本笔选用。':'本企业尚未登记数币收款地址，请先在机构账户登记，再回到本笔选用。','warn')+B('accounts-module','Go to company accounts','前往机构账户')+'</div>'+fees(q);
     const picked=accountById(q,q.progress.selected);
     const lost=q.progress.lost?note(q.progress.lost==='removed'
       ?'The account you had selected has been deleted. Select an account for this business again.'
       :'The account you had selected has changed. Select an account for this business again.',
       q.progress.lost==='removed'?'先前选定的账户已删除，请重新选用本笔收款账户。':'先前选定的账户已变更，请重新选用本笔收款账户。','warn'):'';
     const options='<div id="cq-account" tabindex="-1">'+lost+'<fieldset class="cq-account-fieldset"><legend class="sr-only">'+L('Receiving account for this business','本笔收款账户')+'</legend><ul class="cq-account-list">'+list.map(a=>{const miss=missingFields(a),key=a.kind==='crypto'?E(a.chain)+' · <span class="mono">'+maskAddress(a.address)+'</span>':E(a.bank)+' · <span class="mono">'+maskTail(a.iban)+'</span>';
-      return '<li><label class="cq-account-option"><input type="radio" name="cq-account-choice" value="'+E(a.id)+'" data-cq-account="'+E(a.id)+'"'+(picked?.id===a.id?' checked':'')+(miss.length?' disabled':'')+'><span class="cq-account-body"><b>'+accountName(a)+'</b>'+(a.primary?CF.tag('',L('Default','默认账户')):'')+'<span class="hint">'+key+'</span>'+(miss.length?'<span class="cq-account-off">'+L('Missing: ','缺少：')+miss.map(k=>L(...accountFieldLabels[k])).join(L(', ','、'))+L(' · complete it in Company accounts',' · 请在企业账户补齐')+'</span>':'')+'</span></label></li>';}).join('')+'</ul></fieldset></div>';
+      return '<li><label class="cq-account-option"><input type="radio" name="cq-account-choice" value="'+E(a.id)+'" data-cq-account="'+E(a.id)+'"'+(picked?.id===a.id?' checked':'')+(miss.length?' disabled':'')+'><span class="cq-account-body"><b>'+accountName(a)+'</b>'+(a.primary?CF.tag('',L('Default','默认账户')):'')+'<span class="hint">'+key+'</span>'+(miss.length?'<span class="cq-account-off">'+L('Missing: ','缺少：')+miss.map(k=>L(...accountFieldLabels[k])).join(L(', ','、'))+L(' · complete it in Company accounts',' · 请在机构账户补齐')+'</span>':'')+'</span></label></li>';}).join('')+'</ul></fieldset></div>';
     const detail=picked?'<div class="cq-account-detail">'+dl(accountRows(picked))+(picked.kind==='crypto'?'<p class="hint">'+L('The chain and address come from this account and cannot be changed here.','链与地址随所选账户带出，本笔不可修改。')+'</p>':'')+'</div>':'';
     return '<p class="hint">'+L('This account receives the disbursement for this business.','本账户用于接收本笔放款。')+'</p>'+options+detail+check('confirmed','I confirm this receiving account for this financing business.','我确认本笔融资使用以上收款账户。',q.progress.confirmed)+fees(q);
   }
@@ -338,11 +338,11 @@
   function accountValid(q){
     if(['loading','error'].includes(accountScene))return failure('Your receiving accounts are temporarily unavailable. Retry before continuing.','收款账户暂时不可读取，请重试后再继续。','account');
     const list=accountsFor(q);
-    if(!list.length)return failure(q.ccy==='USD'?'Add a USD receiving account in Company accounts first.':'Add a '+q.ccy+' receiving address in Company accounts first.',q.ccy==='USD'?'请先在企业账户登记 USD 法币收款账户。':'请先在企业账户登记数币收款地址。','account');
+    if(!list.length)return failure(q.ccy==='USD'?'Add a USD receiving account in Company accounts first.':'Add a '+q.ccy+' receiving address in Company accounts first.',q.ccy==='USD'?'请先在机构账户登记 USD 法币收款账户。':'请先在机构账户登记数币收款地址。','account');
     const a=accountById(q,q.progress.selected);
     if(!a)return failure('Choose the receiving account for this business.','请选择本笔收款账户。','account');
     const miss=missingFields(a);
-    if(miss.length)return failure('This account is missing '+miss.map(k=>accountFieldLabels[k][0]).join(', ')+'. Complete it in Company accounts.','该账户缺少'+miss.map(k=>accountFieldLabels[k][1]).join('、')+'，请先在企业账户补齐。','account');
+    if(miss.length)return failure('This account is missing '+miss.map(k=>accountFieldLabels[k][0]).join(', ')+'. Complete it in Company accounts.','该账户缺少'+miss.map(k=>accountFieldLabels[k][1]).join('、')+'，请先在机构账户补齐。','account');
     if(!q.progress.confirmed)return failure('Confirm this receiving account for this business.','请显式确认本笔收款账户。','confirmed');
     return true;}
   function quoteValid(){if(!canQuote(pFlow()))return false;if(!['USD','USDT','USDC'].includes(flow.ccy))return failure('Choose a settlement currency.','请选择结算币种。','ccy');if(!/^\d+(\.\d{1,2})?$/.test(flow.rate)||+flow.rate<=0||+flow.rate>100)return failure('Enter an annual rate above 0 and at most 100, with up to 2 decimal places.','请输入大于 0、不超过 100 且最多两位小数的年化利率。','rate');if(fault==='fxUnavailable'||!flow.fx)return failure('Exchange rate temporarily unavailable. Retry later.','汇率暂不可用，请稍后重试。');const settlement=D.current(pFlow()).amount/flow.fx.value;if(Math.abs(settlement*100-Math.round(settlement*100))>0.000001)return failure('The settlement amount cannot be confirmed at this time. Retry after settlement details are available.','当前暂无法确认结算金额，请待结算资料完整后重试。');return true;}
