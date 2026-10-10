@@ -68,10 +68,10 @@ def main():
         for entry in entries:
             filename = entry['file']
             if filename not in documents:
-                document = standalone(root / '管理端' / filename)
+                document = standalone(root / '运营端' / filename)
                 bootstrap = '<script>window.AdminPrototypeBundle.install();</script>'
                 documents[filename] = document.replace('<head>', '<head>' + bootstrap, 1)
-        payload = json.dumps({'documents': documents, 'initial': str(source.relative_to(root / '管理端')),
+        payload = json.dumps({'documents': documents, 'initial': str(source.relative_to(root / '运营端')),
                               'entries': entries}, ensure_ascii=False).replace('<', '\\u003c')
         runtime = (root / '_shared/admin-bundle.js').read_text(encoding='utf-8')
         html = '<!doctype html><html><head><meta charset="utf-8"><title>Harbour Credit</title></head><body><script>\n' + runtime.replace('window.__ADMIN_BUNDLE_PAYLOAD__', payload) + '\n</script></body></html>'

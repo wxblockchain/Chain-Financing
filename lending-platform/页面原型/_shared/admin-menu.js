@@ -3,14 +3,14 @@
 (function(CF){
   'use strict';
   const entries = [
-    {"key":"account","page":"P-O-AL-07","route":"/ops/account-overview","file":"账户与登录/账户与登录.html","label":["Overview","总览"],"icon":"▤","permission":14,"sidebar":true},
-    {"key":"institution","page":"P-L40","route":"/ops/institution-reviews","file":"资金方机构认证审核/资金方机构认证审核.html","label":["Institution review","机构认证审核"],"icon":"▣","permission":[5,6],"sidebar":true},
-    {"key":"pledge","page":"P-O-PR-01","route":"/ops/pledge-reviews","file":"代币质押审核/代币质押审核.html","label":["Pledge reviews","代币质押审核"],"icon":"▤","permission":[7,8],"sidebar":true},
-    {"key":"contracts","page":"P-O-CM-01","pages":["P-O-CM-01","P-O-CM-02","P-O-CM-03"],"routes":["/ops/contract-reviews","/ops/contract-ledger"],"route":"/ops/contract-reviews","file":"合约管理/合约管理.html","label":["Contract management","合约管理"],"icon":"▦","permission":[17,18],"reachable":[17,18],"sidebar":true},
-    {"key":"agreements","page":"P-O-AG-01","route":"/ops/agreements","file":"协议管理/协议管理.html","label":["Agreements","协议管理"],"icon":"▧","permission":[9,16],"sidebar":true},
-    {"key":"parameters","page":"P-O-FC-01","pages":["P-O-FC-01","P-O-FC-02","P-O-FC-03"],"route":"/ops/financing-parameters","file":"融资参数配置/融资参数配置.html","label":["Financing parameters","融资参数配置"],"icon":"▩","permission":[19,20],"reachable":[19,20],"sidebar":true},
-    {"key":"messages","page":"P-O20","route":"/ops/notifications","file":"消息通知/消息通知.html","label":["Notifications","消息中心"],"permission":12,"sidebar":false},
-    {"key":"settings","page":"P-O-AL-06","route":"/ops/account","file":"账户与登录/账户与登录.html","label":["Account settings","账户设置"],"permission":14,"sidebar":false}
+    {"key":"account","page":"P-O-AL-07","route":"/ops/account-overview","file":"01-账户与登录/账户与登录.html","label":["Overview","总览"],"icon":"▤","permission":14,"sidebar":true},
+    {"key":"institution","page":"P-L40","route":"/ops/institution-reviews","file":"05-资金方机构认证审核/资金方机构认证审核.html","label":["Institution review","机构认证审核"],"icon":"▣","permission":[5,6],"sidebar":true},
+    {"key":"pledge","page":"P-O-PR-01","route":"/ops/pledge-reviews","file":"06-代币质押审核/代币质押审核.html","label":["Pledge reviews","代币质押审核"],"icon":"▤","permission":[7,8],"sidebar":true},
+    {"key":"contracts","page":"P-O-CM-01","pages":["P-O-CM-01","P-O-CM-02","P-O-CM-03"],"routes":["/ops/contract-reviews","/ops/contract-ledger"],"route":"/ops/contract-reviews","file":"04-合约管理/合约管理.html","label":["Contract management","合约管理"],"icon":"▦","permission":[17,18],"reachable":[17,18],"sidebar":true},
+    {"key":"agreements","page":"P-O-AG-01","route":"/ops/agreements","file":"03-协议管理/协议管理.html","label":["Agreements","协议管理"],"icon":"▧","permission":[9,16],"sidebar":true},
+    {"key":"parameters","page":"P-O-FC-01","pages":["P-O-FC-01","P-O-FC-02","P-O-FC-03"],"route":"/ops/financing-parameters","file":"02-融资参数配置/融资参数配置.html","label":["Financing parameters","融资参数配置"],"icon":"▩","permission":[19,20],"reachable":[19,20],"sidebar":true},
+    {"key":"messages","page":"P-O20","route":"/ops/notifications","file":"07-消息通知/消息通知.html","label":["Notifications","消息中心"],"permission":12,"sidebar":false},
+    {"key":"settings","page":"P-O-AL-06","route":"/ops/account","file":"01-账户与登录/账户与登录.html","label":["Account settings","账户设置"],"permission":14,"sidebar":false}
   ];
   const current=()=>document.documentElement.dataset.adminModule;
   const local=e=>e.key===current()||(['account','messages'].includes(current())&&['account','settings'].includes(e.key));
@@ -54,7 +54,7 @@
   };
   // Cross-document page entries use the existing navigation and permission guards.
   entries.forEach(e=>CF.review.register(e.page,{
-    group:['Operations modules','管理端模块'],label:e.label,visible:()=>allowed(e),
+    group:['Operations modules','运营端模块'],label:e.label,visible:()=>allowed(e),
     navigate(){
       // Keep the review tool open across the full-page load into another module file.
       if(window.AdminPrototypeBundle)window.AdminPrototypeBundle.reviewOpen=true;

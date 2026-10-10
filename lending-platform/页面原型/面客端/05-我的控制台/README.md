@@ -17,7 +17,7 @@
 单文件附件由公共导出器生成，不手工维护内联副本。在 `lending-platform/页面原型/` 执行：
 
 ```sh
-python3 _shared/export.py --source 面客端/我的控制台/我的控制台.html --output /tmp/我的控制台.html
+python3 _shared/export.py --source 面客端/05-我的控制台/我的控制台.html --output /tmp/我的控制台.html
 ```
 
 ## 本轮按现行正文调整

@@ -400,7 +400,7 @@
         :`<div class="cm-stack">${b('Approve and deploy the contract','通过并部署合约','approve','','primary',!canApprove(r),canApprove(r)?'':txt(['Unavailable with the current project status or entity information.','当前项目状态或主体信息不允许此操作。']))}${b('Return to the asset holder','退回资产方','return','','',!canAct(r))}</div>`;
     }
     const hint=openForAction(r)
-      ?`<p class="cm-meta cm-disclosure">${L('Approving initiates the deployment from the platform wallet. Operations do not sign and pay nothing; the gas is borne by the operations side.','提交通过即由平台统一钱包发起部署，运营人员不签名、不付费，gas 由管理端承担。')}</p>`:'';
+      ?`<p class="cm-meta cm-disclosure">${L('Approving initiates the deployment from the platform wallet. Operations do not sign and pay nothing; the gas is borne by the operations side.','提交通过即由平台统一钱包发起部署，运营人员不签名、不付费，gas 由运营端承担。')}</p>`:'';
     return section('Review actions','审核处理',`<p class="cm-meta">${permission}</p>${waiting}${actions}${hint}`);
   }
   function detail(){

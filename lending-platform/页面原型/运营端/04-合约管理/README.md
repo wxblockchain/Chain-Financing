@@ -4,7 +4,7 @@
 
 ## 打开与源码
 
-直接打开 `合约管理.html`，默认英文，可切中文。沿用当前 app 壳层、管理端统一导航、`tokens.css`、`base.css`、`shell.js`、`registry.admin.js`、公共详情栈、状态表面与导出器；不新增第二套 token，不自建菜单或账户组件。
+直接打开 `合约管理.html`，默认英文，可切中文。沿用当前 app 壳层、运营端统一导航、`tokens.css`、`base.css`、`shell.js`、`registry.admin.js`、公共详情栈、状态表面与导出器；不新增第二套 token，不自建菜单或账户组件。
 
 - `合约管理.html`：模块布局与局部组合样式。
 - `合约管理.js`：队列、台账、独立详情、通过 / 退回 / 再次发起办理、操作记录与状态交互。
@@ -14,7 +14,7 @@
 单文件评审件由现行导出器生成，生成件不回存源码目录：
 
 ```bash
-python3 _shared/export.py --source 管理端/合约管理/合约管理.html --output ../借贷平台-运营端合约管理-页面原型.html
+python3 _shared/export.py --source 运营端/04-合约管理/合约管理.html --output ../借贷平台-运营端合约管理-页面原型.html
 ```
 
 ## 页面组合

@@ -560,7 +560,7 @@
   });
   document.addEventListener('click',e=>{
     if(CF.AM && ![LIST,DETAIL,NEW].includes(S.page))return;
-    savePosition();const a=e.target.closest('a');if(a&&!(CF.AM&&a.getAttribute('href')==='#/assets')&&['#/','#/assets','#/console'].includes(a.getAttribute('href'))){e.preventDefault();if(a.getAttribute('href')==='#/assets'&&document.querySelector('script[src]')){location.href='../资产广场/资产广场.html#/assets';return;}CF.openLayer('modal','handoff',a.getAttribute('href')==='#/console'?'console':'other');}
+    savePosition();const a=e.target.closest('a');if(a&&!(CF.AM&&a.getAttribute('href')==='#/assets')&&['#/','#/assets','#/console'].includes(a.getAttribute('href'))){e.preventDefault();if(a.getAttribute('href')==='#/assets'&&document.querySelector('script[src]')){location.href='../03-资产广场/资产广场.html#/assets';return;}CF.openLayer('modal','handoff',a.getAttribute('href')==='#/console'?'console':'other');}
     const el=e.target.closest('[data-act]');if(el&&el.dataset.act==='clearfilter')filter={};
     if(el&&el.dataset.act==='role'){reviewReturn=false;S.layer=null;error='';selection=[];}
     if(el&&el.dataset.act==='closelayer'&&busy){e.stopImmediatePropagation();return;}

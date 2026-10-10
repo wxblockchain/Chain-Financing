@@ -7,7 +7,7 @@
   const timers=new Set(),intervals=new Set();
   let current=bundle.initial;
   function owner(route){return bundle.entries.find(e=>(e.routes||[e.route]).some(r=>route.startsWith(r)))?.file||
-    (route.startsWith('/ops/notification')?'消息通知/消息通知.html':bundle.initial)}
+    (route.startsWith('/ops/notification')?'07-消息通知/消息通知.html':bundle.initial)}
   function open(file,route,replace=false){
     if(!bundle.documents[file])return;
     timers.forEach(clearTimeout);intervals.forEach(clearInterval);timers.clear();intervals.clear();

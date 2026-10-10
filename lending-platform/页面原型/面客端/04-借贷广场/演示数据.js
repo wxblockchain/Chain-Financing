@@ -10,7 +10,7 @@
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
   /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
   D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
-  /* 平台统一钱包同样在代码层面维护；部署 gas 由管理端承担，资产方不签名不付费。 */
+  /* 平台统一钱包同样在代码层面维护；部署 gas 由运营端承担，资产方不签名不付费。 */
   D.WALLET = '0xA17C4f1b0d9E2a7C5b83Df6e21904aB7cD35e082';
   /* 运营配置的代币类型：代币标准与底层资产类型合并成一个字段，本期只有一行。 */
   D.TYPES = [{id:'erc20-ar',label:['ERC-20-Receivables','ERC-20-应收账款'],maxRate:0.8,maxTerm:12}];

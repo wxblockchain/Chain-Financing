@@ -20,7 +20,7 @@ WS-384 · existing-system adaptation / console。接续 WS-383 的 `db1f0e3`，�
 
 ## 继承与覆盖
 
-视觉口径读取 `_shared/design-system/管理端组件规范.md`、`详情与跨页关联基线.md`、`文件上传与展示组件规范.md`，复用 `tokens.css`、`base.css`、`账户与登录.css`、`shell.js`、`registry.admin.js`、`admin-menu.js`、`admin-message-data.js`、`admin-notifications.js`、`puzzle.js`、`file-row.js` 与导出器。主色 `--accent`、背景 `--bg`、238px 侧栏、36px 控件、9px 控件圆角、12px 卡片圆角、24px 画布边距均沿用共享定义；本轮未修改共享样式与壳层实现。
+视觉口径读取 `_shared/design-system/运营端组件规范.md`、`详情与跨页关联基线.md`、`文件上传与展示组件规范.md`，复用 `tokens.css`、`base.css`、`账户与登录.css`、`shell.js`、`registry.admin.js`、`admin-menu.js`、`admin-message-data.js`、`admin-notifications.js`、`puzzle.js`、`file-row.js` 与导出器。主色 `--accent`、背景 `--bg`、238px 侧栏、36px 控件、9px 控件圆角、12px 卡片圆角、24px 画布边距均沿用共享定义；本轮未修改共享样式与壳层实现。
 
 `_shared/admin-message-data.js` 只改了一处：定时生效失败的目标由协议详情的版本历史改为基本信息——待生效版本与当前仍生效版本在基本信息同屏可得，且不依赖仅管理员的历史版本读取权。路由 `/ops/agreements/version?id=…&v=…&tab=history`、`/ops/agreements/detail?id=…&tab=basic` 与演示协议 `DEMO-SERVICE`／`DEMO-PRIVACY`／`DEMO-FIRST` 未变。`_shared/账户与登录`（运营端账户与登录模块）只增加只读的 `CF.opsAuth.held(n)`，用于区分“未开通”与“已开通但缺配套查询权限”，权限项清单仍只在该模块维护。
 
@@ -60,5 +60,5 @@ WS-384 · existing-system adaptation / console。接续 WS-383 的 `db1f0e3`，�
 在仓库根目录执行：
 
 ```bash
-python3 lending-platform/页面原型/_shared/export.py --source lending-platform/页面原型/管理端/协议管理/协议管理.html --output ../deliverables/跨境链融-运营端协议管理.html
+python3 lending-platform/页面原型/_shared/export.py --source lending-platform/页面原型/运营端/03-协议管理/协议管理.html --output ../deliverables/跨境链融-运营端协议管理.html
 ```

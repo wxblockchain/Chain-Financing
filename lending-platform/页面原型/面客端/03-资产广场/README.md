@@ -67,7 +67,7 @@
 ```bash
 cd lending-platform/页面原型
 python3 _shared/export.py \
-  --source 面客端/资产广场/资产广场.html \
+  --source 面客端/03-资产广场/资产广场.html \
   --output ../../../deliverables/借贷平台-资产广场-原型.html
 ```
 
@@ -88,8 +88,8 @@ python3 _shared/export.py \
 | `_shared/tokens.css` / `base.css` | `d199040` / `eed8881` |
 | `_shared/shell.js` / `registry.portal.js` | `83c9b3b` / `65a22f2` |
 | `_shared/design-system/面客工作区组件规范.md` | `83c9b3b` |
-| `面客端/登录与账户体系/登录与账户体系.js` | `83c9b3b` |
-| `面客端/登录与账户体系/资金方账户.js` / `登录与账户体系.html` | `4cd04af` |
+| `面客端/01-登录与账户体系/登录与账户体系.js` | `83c9b3b` |
+| `面客端/01-登录与账户体系/资金方账户.js` / `登录与账户体系.html` | `4cd04af` |
 
 - 数量单位统一为「枚」，汇总代币笔数、含失效及筛选全集统计口径不变；列表与详情数量保持两位小数。
 - 桌面九列与窄屏九字段摘要卡共用同一个行模板，仅移除 `L-AM-09` 展示。已有「到期日」排序能力保留，通过全断点排序选择框访问，不擅自撤销 `AC-AM-28`；本轮不扩充其他资产类型。

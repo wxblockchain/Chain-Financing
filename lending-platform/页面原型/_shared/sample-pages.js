@@ -503,7 +503,7 @@
     return list;
   }
 
-  /* ====================== 管理端：总览 ================================== */
+  /* ====================== 运营端：总览 ================================== */
   function pageOverview() {
     var alt = CF.surface({
       skelRows: 4,
@@ -535,7 +535,7 @@
       "</div>";
   }
 
-  /* ====================== 管理端：协议管理 ============================== */
+  /* ====================== 运营端：协议管理 ============================== */
   function pageAgreements() {
     var alt = CF.surface({
       skelRows: 4,
@@ -628,7 +628,7 @@
   CF.renderFooter = renderFoot;
 
   ['P-F-AM-01','P-LS-01','P-MC-01','P-O06','P-O-AG-01','DEMO-FOCUS','SAMPLE-PROJECT','SAMPLE-RECORD','SAMPLE-TOKEN'].forEach(id=>CF.review.register(id,{
-    group:CF.PAGES[id].end==='admin'?['Operations samples','管理端样板']:['Customer samples','面客端样板'],
+    group:CF.PAGES[id].end==='admin'?['Operations samples','运营端样板']:['Customer samples','面客端样板'],
     route:()=>relations.reviewRoute(id),
     states:['DEMO-FOCUS','SAMPLE-TOKEN'].includes(id)?['default']:['SAMPLE-PROJECT','SAMPLE-RECORD'].includes(id)?['default','loading','empty','error','denied']:['default','loading','empty','noresult','error','denied']
   }));

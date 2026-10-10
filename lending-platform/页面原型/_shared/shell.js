@@ -1,6 +1,6 @@
 /* ==========================================================================
    shell.js — 借贷平台原型公共运行时（本平台唯一来源）
-   面客端与管理端共用：i18n、状态、hash 路由、导航与面包屑渲染、顶栏/侧栏工具区、
+   面客端与运营端共用：i18n、状态、hash 路由、导航与面包屑渲染、顶栏/侧栏工具区、
    官网与控制台两种外壳骨架、Toast、Modal / Drawer 宿主、演示工具。
 
    模块只提供自己的页面、文案、演示数据与状态，然后调用：
@@ -20,7 +20,7 @@
   var S = {
     lang: "en",              // 默认英文；不读浏览器语言（国际化基线 3.1）
     tz: null,                // 按浏览器推断，推断失败兜底 UTC
-    end: "asset",            // asset = 面客端 · admin = 管理端
+    end: "asset",            // asset = 面客端 · admin = 运营端
     role: "guest",           // guest / asset / fund / ops
     page: null,
     st: "default",           // 演示状态：default/loading/empty/noresult/error/denied
@@ -732,7 +732,7 @@
       : [["guest", L("Signed out", "未登录访客")], ["signed", L("Signed in · no role bound", "登录未绑定角色")], ["asset", L("Asset holder", "资产方")], ["fund", L("Funder", "资金方")]];
     panel.innerHTML =
       '<div class="grp"><h5>' + L("Deployment unit", "部署单元") + "</h5>" +
-      seg("end", S.end, [["asset", L("Customer-facing", "面客端")], ["admin", L("Operations console", "管理端")]]) + "</div>" +
+      seg("end", S.end, [["asset", L("Customer-facing", "面客端")], ["admin", L("Operations console", "运营端")]]) + "</div>" +
       '<div class="grp"><h5>' + L("Identity", "身份") + "</h5>" + seg("role", S.role, roles) + "</div>" +
       '<p class="why">' + L(
         "These switches exist for review only. They are not part of the product: the two deployment units ship separately and a visitor never switches identity in place.",

@@ -49,7 +49,7 @@
       events:[
         ev(now-30*H,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
         ev(now-21*H,'approve-init',['Approved · deployment initiated','审核通过 · 已发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],LIN,
-          {text:['Submitted by the reviewer. The platform wallet initiates the deployment and the operations side bears the gas.','审核人提交通过，由平台统一钱包发起部署，gas 由管理端承担。']}),
+          {text:['Submitted by the reviewer. The platform wallet initiates the deployment and the operations side bears the gas.','审核人提交通过，由平台统一钱包发起部署，gas 由运营端承担。']}),
         ev(now-20*H,'deploy-fail',['Deployment failed','部署失败'],['Deployment in progress → Pending review','部署处理中 → 待审核'],SYSTEM,
           {chain:true,gas:0.0132,gasCcy:'ETH',proof:proof('021'),text:FAIL_GAS,
            next:['No conclusion was formed. The asset holder is not notified and still sees the project as pending review.','未形成结论，不通知资产方，面客侧仍显示项目待审核。']})]});

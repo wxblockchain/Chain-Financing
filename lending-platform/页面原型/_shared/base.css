@@ -1,7 +1,7 @@
 /* Hallmark · macrostructure: ecosystem-index · theme: harbour-credit-lending · genre: modern-minimal */
 /* ==========================================================================
    base.css — 借贷平台原型公共组件与整页骨架
-   四种整页骨架：site（官网层）/ portal（面客顶栏）/ app（管理端侧栏）/ focus（居中卡片）。
+   四种整页骨架：site（官网层）/ portal（面客顶栏）/ app（运营端侧栏）/ focus（居中卡片）。
    模块只写自己的页面、文案、演示数据与状态，不在模块内重定义 token 或复制公共组件。
    ========================================================================== */
 
@@ -367,7 +367,7 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 }
 .portal-main{flex:1;min-width:0;background:var(--bg)}
 /* 面客端面向欧美与香港的机构读者：平面化表面、克制的分隔线、字距更开的小标签，
-   数字与表格是主角，装饰性阴影和圆角收敛。管理端密度不受影响。 */
+   数字与表格是主角，装饰性阴影和圆角收敛。运营端密度不受影响。 */
 [data-end="asset"] .card{box-shadow:none}
 [data-end="asset"] .page-head{margin-bottom:var(--sp-5)}
 [data-end="asset"] .page-title{font-size:var(--fs-28);font-weight:680;letter-spacing:-.025em}
@@ -466,7 +466,7 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .site-foot .ft-meta{margin-top:var(--sp-6);padding-top:var(--sp-4);border-top:1px solid var(--border);
   font-size:var(--fs-11);color:var(--faint);display:flex;gap:var(--sp-4);flex-wrap:wrap}
 
-/* ============================== 管理端侧栏骨架 ============================= */
+/* ============================== 运营端侧栏骨架 ============================= */
 .app{display:grid;grid-template-columns:238px 1fr;min-height:100%}
 .app[hidden]{display:none}
 .sidebar{background:var(--bg-elev);border-right:1px solid var(--border);display:flex;flex-direction:column;

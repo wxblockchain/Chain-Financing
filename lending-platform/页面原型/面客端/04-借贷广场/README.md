@@ -103,7 +103,7 @@
 
 浏览器核验：Chromium，中文界面，1280 / 1440 / 1920 及 390 窄屏；覆盖创建页默认、校验失败、无可选类型、无权限四态，空池详情页，首笔质押发起与提交确认，逐笔审核后批量确认入池，入池处理中与成功后的入口与发布态切换。无横向溢出、无控制台报错。未验证真实链上执行、真实通知投递及其他浏览器。
 
-管理端「代币质押审核」的申请类型筛选仍写作「建池首笔」，属该模块范围，本次未改。
+运营端「代币质押审核」的申请类型筛选仍写作「建池首笔」，属该模块范围，本次未改。
 
 ## 2026-09-21 · 十项反馈合并修订（当前约定）
 
@@ -203,7 +203,7 @@
 
 ```sh
 python3 lending-platform/页面原型/_shared/export.py \
-  --source lending-platform/页面原型/面客端/借贷广场/借贷广场.html \
+  --source lending-platform/页面原型/面客端/04-借贷广场/借贷广场.html \
   --output ../deliverables/WS-354-还款计划与还款确认.html
 ```
 
@@ -245,7 +245,7 @@ python3 lending-platform/页面原型/_shared/export.py \
 
 ```sh
 python3 lending-platform/页面原型/_shared/export.py \
-  --source lending-platform/页面原型/面客端/借贷广场/借贷广场.html \
+  --source lending-platform/页面原型/面客端/04-借贷广场/借贷广场.html \
   --output /tmp/WS-352-授信报价与接受拒绝-关联优化.html
 ```
 
@@ -265,7 +265,7 @@ python3 lending-platform/页面原型/_shared/export.py \
 
 ```sh
 python3 lending-platform/页面原型/_shared/export.py \
-  --source lending-platform/页面原型/面客端/借贷广场/借贷广场.html \
+  --source lending-platform/页面原型/面客端/04-借贷广场/借贷广场.html \
   --output /tmp/借贷广场-入口与关联优化.html
 ```
 
@@ -299,7 +299,7 @@ python3 lending-platform/页面原型/_shared/export.py \
 
 ```sh
 python3 lending-platform/页面原型/_shared/export.py \
-  --source lending-platform/页面原型/面客端/借贷广场/借贷广场.html \
+  --source lending-platform/页面原型/面客端/04-借贷广场/借贷广场.html \
   --output /tmp/借贷平台-融资报价至放款确认-原型.html
 ```
 
@@ -315,7 +315,7 @@ python3 lending-platform/页面原型/_shared/export.py \
 
 ```sh
 python3 lending-platform/页面原型/_shared/export.py \
-  --source lending-platform/页面原型/面客端/借贷广场/借贷广场.html \
+  --source lending-platform/页面原型/面客端/04-借贷广场/借贷广场.html \
   --output /tmp/借贷平台-融资进度与报价记录-原型.html
 ```
 
@@ -331,7 +331,7 @@ Chromium 实际核验源码和内联附件：清单鼠标/键盘入口与返回�
 
 ```sh
 python3 lending-platform/页面原型/_shared/export.py \
-  --source lending-platform/页面原型/面客端/借贷广场/借贷广场.html \
+  --source lending-platform/页面原型/面客端/04-借贷广场/借贷广场.html \
   --output /tmp/借贷平台-融资详情与流程演示-原型.html
 ```
 
@@ -435,7 +435,7 @@ Stage 4 交付；`existing-system adaptation` / `console`，待定细项保留�
 
 ```sh
 python3 lending-platform/页面原型/_shared/export.py \
-  --source lending-platform/页面原型/面客端/借贷广场/借贷广场.html \
+  --source lending-platform/页面原型/面客端/04-借贷广场/借贷广场.html \
   --output /tmp/借贷平台-授信报价与接受拒绝-原型.html
 ```
 
@@ -479,7 +479,7 @@ Stage 4 · `existing-system adaptation` / `console`。用户“直接输出页�
 
 ```sh
 python3 lending-platform/页面原型/_shared/export.py \
-  --source lending-platform/页面原型/面客端/借贷广场/借贷广场.html \
+  --source lending-platform/页面原型/面客端/04-借贷广场/借贷广场.html \
   --output /tmp/借贷广场-项目与操作修订.html
 ```
 
@@ -510,6 +510,6 @@ python3 lending-platform/页面原型/_shared/export.py \
 
 ```sh
 python3 lending-platform/页面原型/_shared/export.py \
-  --source lending-platform/页面原型/面客端/借贷广场/借贷广场.html \
+  --source lending-platform/页面原型/面客端/04-借贷广场/借贷广场.html \
   --output /tmp/借贷平台-授信报价与接受拒绝-V1.1-原型.html
 ```
