@@ -253,6 +253,9 @@
 
   /* ------------------------------------------------------------------ 校验与保存 */
   const REQUIRED=()=>L('This field is required.','该项为必填。');
+  const TOO_LONG=k=>k==='iban'?L('Use '+EA.TEXT_MAX+' characters or fewer, not counting spaces.','不超过 '+EA.TEXT_MAX+' 个字符（不计空格）。')
+    :L('Use '+EA.TEXT_MAX+' characters or fewer.','不超过 '+EA.TEXT_MAX+' 个字符。');
+  const LIMITED=['label','iban','bank'];
   const addressError=chain=>chain==='ETH'?L('That isn\'t a valid ETH address. It should start with 0x followed by 40 hexadecimal characters.',
     '这不是一个有效的 ETH 地址，应以 0x 开头并包含 40 位十六进制字符。'):L('That isn\'t a valid TRON address. It should start with T.','这不是一个有效的 TRON 地址，应以 T 开头。');
   function validateFiat(){
@@ -260,6 +263,7 @@
     EA.fiatRequired.forEach(k=>{
       if(k==='ccys'){if(!(f.form.ccys||[]).length)e.ccys=L('Select at least one currency.','请至少选择一个币种。');}
       else if(!val(k).trim())e[k]=k.endsWith('Country')?L('Select a country or region.','请选择国家或地区。'):REQUIRED();});
+    LIMITED.forEach(k=>{if(!e[k]&&EA.tooLong(k,val(k)))e[k]=TOO_LONG(k);});
     if(val('swift').trim()&&!EA.swiftValid(val('swift')))e.swift=L('Enter 8 or 11 letters and digits.','请输入 8 位或 11 位字母数字。');
     f.errors=e;
     if(Object.keys(e).length)return false;
@@ -276,7 +280,7 @@
     const address=val('address').trim();
     if(!address)e.address=REQUIRED();
     else if(f.form.chain&&!EA.addressValid(f.form.chain,address))e.address=addressError(f.form.chain);
-    if(!val('label').trim())e.label=REQUIRED();
+    if(!val('label').trim())e.label=REQUIRED();else if(EA.tooLong('label',val('label')))e.label=TOO_LONG('label');
     f.errors=e;
     if(Object.keys(e).length)return false;
     const dup=EA.duplicateCrypto(owner(),f.form.chain,address);
@@ -437,7 +441,7 @@
       case 'back':{const f=F();f.step=1;f.problem='';f.errors={};f.duplicate='';f.focus='ea-f-address';break;}
       case 'next':{const f=F();if(validateAddress()){f.errors={};f.step=2;f.focus='';}break;}
       case 'save':{const f=F();
-        if(f.kind==='crypto'){if(!val('label').trim()){f.errors={label:REQUIRED()};break;}
+        if(f.kind==='crypto'){if(!val('label').trim()||EA.tooLong('label',val('label'))){f.errors={label:val('label').trim()?TOO_LONG('label'):REQUIRED()};break;}
           f.errors={};later(()=>{EA.update(f.id,{label:val('label').trim()});V.flow=null;CF.closeLayer();CF.toast(L('Changes saved.','修改已保存。'));});break;}
         if(f.conflict&&!f.ack)f.ack=true;
         if(validateFiat())later(commitFiat);

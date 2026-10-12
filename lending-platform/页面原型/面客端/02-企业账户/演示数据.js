@@ -117,8 +117,13 @@
     return chain==='ETH'?/^0x[0-9a-fA-F]{40}$/.test(s):chain==='TRON'?/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(s):false;};
   EA.duplicateFiat=(owner,iban,swift,exceptId)=>EA.accounts(owner,'fiat').find(a=>a.id!==exceptId&&
     EA.compact(a.iban)===EA.compact(iban)&&EA.compact(a.swift)===EA.compact(swift))||null;
-  EA.duplicateCrypto=(owner,chain,address)=>EA.accounts(owner,'crypto').find(a=>a.chain===chain&&
-    String(a.address||'').trim().toLowerCase()===String(address||'').trim().toLowerCase())||null;
+  /* ETH 地址不区分大小写；TRON 地址区分大小写，按原样比较。 */
+  const sameAddress=(chain,x,y)=>{x=String(x||'').trim();y=String(y||'').trim();return chain==='ETH'?x.toLowerCase()===y.toLowerCase():x===y;};
+  EA.duplicateCrypto=(owner,chain,address)=>EA.accounts(owner,'crypto').find(a=>a.chain===chain&&sameAddress(chain,a.address,address))||null;
+  /* 由用户自由填写的文本字段暂定最多 100 个字符（按字符计）；账号 / IBAN 去除空格后计数。地址类字段不限长度与字符种类。 */
+  EA.TEXT_MAX=100;
+  EA.textLength=(k,v)=>[...(k==='iban'?EA.compact(v):String(v||'').trim())].length;
+  EA.tooLong=(k,v)=>EA.textLength(k,v)>EA.TEXT_MAX;
   /* 备注名在本企业内不要求唯一，重名只提示可能混淆，不阻断。 */
   EA.sameName=(owner,name,exceptId)=>{const n=String(name||'').trim().toLowerCase();
     return !!n&&EA.all(owner).some(a=>a.id!==exceptId&&EA.plainName(a).trim().toLowerCase()===n);};
