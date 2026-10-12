@@ -42,7 +42,7 @@
   };
   CF.resumePortalTarget = () => {
     const target = CF.portalLoginReturn; CF.portalLoginReturn = '';
-    if (!/^#\/(assets|marketplace|project|console|notifications|notification)(?:[/?]|$)/.test(target || '') || /[<>]/.test(target)) return false;
+    if (!/^#\/(assets|marketplace|project|console|notifications|notification|company-accounts)(?:[/?]|$)/.test(target || '') || /[<>]/.test(target)) return false;
     S.layer = null; S.menu = null; location.hash = target; return true;
   };
   CF.MCSeedPeriods?.();

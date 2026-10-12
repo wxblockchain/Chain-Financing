@@ -255,6 +255,15 @@ body.list-full .listzone .filterbar,body.list-full .listzone .list-full-bar{flex
   color:var(--accent);font-weight:640}
 .pgbtn[disabled]{opacity:.45;cursor:not-allowed}
 
+/* ============================== 卡片内 Tab ================================= */
+/* 卡片顶部的分类切换：标签在左、本 Tab 的主动作在右；选中项用主色下划线，不靠颜色单独表达（aria-selected）。 */
+.card-tabs{display:flex;align-items:flex-end;gap:var(--sp-5);padding:0 var(--card-pad);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.card-tabs [role="tab"]{display:inline-flex;align-items:center;gap:var(--sp-2);min-height:52px;padding:0 var(--sp-1);
+  border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--muted);font-weight:600}
+.card-tabs [role="tab"]:hover{color:var(--text)}
+.card-tabs [role="tab"][aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.card-tabs [role="tab"]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:var(--radius-xs)}
+
 /* ============================== 数据表 ==================================== */
 .tablewrap{overflow-x:auto}
 

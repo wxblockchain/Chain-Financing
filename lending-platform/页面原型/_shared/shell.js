@@ -120,6 +120,17 @@
     } catch (e) { /* 无效时区沿用本地时刻，不阻断展示 */ }
     return CF.fmtDate(iso) + (S.lang === "en" ? ", " : " ") + hh + ":" + mm + " (" + S.tz + ")";
   };
+  /* 紧凑时刻：yyyy-MM-dd HH:mm，按当前展示时区换算，不随语言改变格式；时区由调用方在表头或值后标注。 */
+  CF.fmtStamp = function (iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return String(iso == null ? "" : iso);
+    try {
+      var p = {};
+      new Intl.DateTimeFormat("en-CA", { timeZone: S.tz || "UTC", year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+      return p.year + "-" + p.month + "-" + p.day + " " + (p.hour === "24" ? "00" : p.hour) + ":" + p.minute;
+    } catch (e) { return d.toISOString().slice(0, 16).replace("T", " "); }
+  };
   /* 金额：三位分隔 + 币种前置，不做汇率换算（国际化基线 5）。 */
   CF.fmtAmt = function (n, ccy) {
     var s = Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -373,7 +384,7 @@
       '<div class="portal-account-role">' + esc(who) + "</div>" +
       '<button type="button" role="menuitem" data-act="toast" data-v="acct">' + L("User information", "用户信息") + "</button>" +
       '<button type="button" role="menuitem" data-act="toast" data-v="inst">' + (S.role === "fund" ? L("Institution information", "机构信息") : L("Company information", "企业信息")) + "</button>" +
-      '<button type="button" role="menuitem" data-act="toast" data-v="entacct">' + L("Institution accounts", "机构账户") + "</button>" +
+      '<button type="button" role="menuitem" data-act="toast" data-v="entacct">' + (S.role === "fund" ? L("Institution accounts", "机构账户") : L("Company accounts", "企业账户")) + "</button>" +
       '<button type="button" role="menuitem" data-act="' + (N.preview ? "go" : "toast") + '" data-v="' + (N.preview ? "/notifications" : "notify") + '">' + L("Messages", "消息中心") + "</button>" +
       '<div class="dd-sep"></div>';
     var list = open
