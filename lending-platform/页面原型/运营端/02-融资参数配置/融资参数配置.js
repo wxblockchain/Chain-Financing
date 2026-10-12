@@ -12,10 +12,12 @@
   const SIZES=[20,50,100];
   /* 最长项目期限的 3 个月～1 年由面客侧项目期限规则确认，配置值不得越出该区间。 */
   const TERM={min:3,max:12};
+  /* 最高质押率已裁定（2026-10-09）：大于 0、不超过 100%、最多两位小数；超出两位如实拒绝，不替用户取整。 */
+  const RATIO={max:100,decimals:2};
 
   const fDefault=()=>({q:'',status:''});
   const seed=CF.parameterSeed();
-  const A={rows:seed.rows,bounds:CF.parameterBounds[0],
+  const A={rows:seed.rows,justSaved:null,
     filter:fDefault(),edit:fDefault(),sort:'name',dir:1,page:1,size:SIZES[0],
     selected:null,draft:null,busy:false,error:'',errorAction:'',fieldErrors:{},validated:{},
     view:'default',logState:'default',logShown:CF.PAGE_SIZE,response:'success',epoch:0};
@@ -24,7 +26,7 @@
 
   const txt=x=>Array.isArray(x)?L(x[0],x[1]):x;
   const time=t=>t?CF.fmtTime(t):'—';
-  const ratioText=v=>v==null?'—':String(v)+'%';
+  const ratioText=v=>v==null?'—':Number(v).toFixed(RATIO.decimals)+'%';
   const termText=v=>v==null?'—':v+' '+L(v===1?'month':'months','个月');
   const person=v=>v||'—';
   const configured=r=>!!r&&r.maxRatio!=null&&r.maxTermMonths!=null;
@@ -33,9 +35,7 @@
   const live=()=>A.rows.filter(r=>!r.removed);
   const statusTag=r=>configured(r)?CF.tag('ok',L('Configured','已配置')):CF.tag('warn',L('Not configured','未配置'));
 
-  const boundsText=()=>{const b=A.bounds;
-    return L(b.min+'% – '+b.max+'%, '+(b.decimals?'up to '+b.decimals+' decimal place'+(b.decimals>1?'s':''):'whole numbers'),
-      b.min+'% ～ '+b.max+'%，'+(b.decimals?'最多 '+b.decimals+' 位小数':'整数'));};
+  const boundsText=()=>L('over 0%, up to 100%, at most 2 decimal places','大于 0，最高 100%，最多两位小数');
   const termBoundsText=()=>L(TERM.min+' – '+TERM.max+' whole months',TERM.min+' ～ '+TERM.max+' 的整数月');
 
   const b=(en,zh,act,value='',cls='',disabled=false,title='')=>`<button type="button" class="btn ${cls}" data-act="fc-${act}" data-v="${E(value)}" ${title?`title="${E(title)}"`:''} ${disabled?'disabled':''}>${L(en,zh)}</button>`;
@@ -154,14 +154,14 @@
   }
   function pager(total){
     const pages=Math.max(1,Math.ceil(total/A.size));
-    return `<div class="pager"><span class="total">${L('Total','共')} ${total} ${L(total===1?'token type':'token types','个代币类型')}</span>${
+    return `<div class="pager"><span class="total">${L('Total','共')} ${total} ${L(total===1?'token type':'token types','个代币类型')}</span><span class="fc-size">${field(L('Per page','每页'),select('fc-size',A.size,SIZES.map(n=>[n,String(n)])))}</span>${
       b('Previous','上一页','page',String(A.page-1),'sm',A.page===1)}<span>${A.page} / ${pages}</span>${
       b('Next','下一页','page',String(A.page+1),'sm',A.page===pages)}</div>`;
   }
   function listPage(){
     const blocked=gate();
     const head=title(L('Financing parameters','融资参数配置'),
-      L('One row is one token type. Token types are supplied upstream by token issuance and synchronisation; a token type that is not configured cannot be used to create a financing project.','一行对应一个代币类型。代币类型由代币发行与同步提供；未配置的代币类型暂不可用于创建融资项目。'));
+      L('Caps on the pledge ratio and project term an asset holder can fill in, by token type. Token types are supplied by token issuance and synchronisation.','按代币类型维护资产方创建融资项目时可填的质押率与期限上限。代币类型由代币发行与同步提供。'));
     if(blocked)return head+blocked;
     const state=A.view==='default'?null:surface({
       emptyTitle:L('No token types yet','暂无代币类型'),
@@ -170,6 +170,12 @@
     const pages=Math.max(1,Math.ceil(found.length/A.size));
     if(A.page>pages)A.page=pages;
     const rows=found.slice((A.page-1)*A.size,A.page*A.size);
+    /* 未配置的代币类型须让运营一眼察觉：列表上方给出数量并可一键只看未配置。 */
+    const unset=live().filter(r=>!configured(r)).length;
+    const cue=!state&&unset&&A.filter.status!=='unset'
+      ?`<div class="fc-cue" role="status">${CF.tag('warn',L('Not configured','未配置'))}<span>${L(unset+' token type'+(unset>1?'s are':' is')+' not configured yet and cannot be used to create a financing project.','有 '+unset+' 个代币类型尚未配置，暂不可用于创建融资项目。')}</span>${b('Show not configured only','只看未配置','only-unset','','sm')}</div>`:'';
+    const actions=r=>`<a class="actlink" href="#${E(detailRoute(r.id))}" data-act="fc-view" data-v="${E(r.id)}" aria-label="${E(L('View ','查看')+r.name)}">${L('View','查看')}</a>`
+      +(canMaintain()?`<a class="actlink" href="#${E(editRoute(r.id))}" data-act="fc-edit" data-v="${E(r.id)}" aria-label="${E((configured(r)?L('Maintain ','维护'):L('Configure ','配置'))+r.name)}">${configured(r)?L('Maintain','维护'):L('Configure','配置')}</a>`:'');
     /* 上游暂无代币类型与筛选无匹配是两种结果，分别表达。 */
     const table=state||(!live().length
       ?CF.empty(L('No token types yet','暂无代币类型'),
@@ -184,10 +190,9 @@
         +`<th scope="col">${L('Configuration status','配置状态')}</th>`
         +sortHead('updatedAt','Last updated','最近更新时间')
         +`<th scope="col">${L('Updated by','最近更新人')}</th><th scope="col" class="col-act">${L('Action','操作')}</th></tr></thead><tbody>`
-        +rows.map(r=>`<tr><td><strong class="mono">${E(r.name)}</strong></td><td>${E(ratioText(r.maxRatio))}</td><td>${E(termText(r.maxTermMonths))}</td><td>${statusTag(r)}</td><td>${time(r.updatedAt)}</td><td>${E(person(r.updatedBy))}</td><td class="col-act"><a class="actlink" href="#${E(detailRoute(r.id))}" data-act="fc-view" data-v="${E(r.id)}">${L('View','查看')}</a></td></tr>`).join('')
+        +rows.map(r=>`<tr${configured(r)?'':' class="fc-row-unset"'}><td><strong class="mono">${E(r.name)}</strong></td><td>${E(ratioText(r.maxRatio))}</td><td>${E(termText(r.maxTermMonths))}</td><td>${statusTag(r)}</td><td>${time(r.updatedAt)}</td><td>${E(person(r.updatedBy))}</td><td class="col-act">${actions(r)}</td></tr>`).join('')
         +`</tbody></table></div>${pager(found.length)}`);
-    return head+`<section class="card">${filters()}<div class="fc-list-tools">${
-      field(L('Per page','每页条数'),select('fc-size',A.size,SIZES.map(n=>[n,String(n)])))}</div>${table}</section>`;
+    return head+`<section class="card">${filters()}${cue}${table}</section>`;
   }
 
   /* ------------------------------------------------------------ 参数变更记录 */
@@ -208,7 +213,7 @@
       body=!records.length
         ?`<p class="fc-meta">${L('No parameter changes recorded yet.','尚无参数变更记录。')}</p>`
         :`<div class="tablewrap"><table class="tbl fc-table fc-log-table"><thead><tr><th scope="col">${L('Occurred at','发生时间')}</th><th scope="col">${L('Operator','操作人')}</th><th scope="col">${L('Maximum pledge ratio','最高质押率')}</th><th scope="col">${L('Maximum project term','最长项目期限')}</th><th scope="col">${L('Result','本次结果')}</th></tr></thead><tbody>${
-          shown.map(x=>`<tr><td>${time(x.at)}</td><td>${E(x.by)}</td><td>${change(ratioText(x.before.ratio),ratioText(x.after.ratio))}</td><td>${change(termText(x.before.term),termText(x.after.term))}</td><td>${CF.tag('ok',L('Saved','保存成功'))}</td></tr>`).join('')
+          shown.map(x=>`<tr${x.id===A.justSaved?' class="fc-row-new"':''}><td>${time(x.at)}${x.id===A.justSaved?CF.tag('accent',L('Just saved','本次保存')):''}</td><td>${E(x.by)}</td><td>${change(ratioText(x.before.ratio),ratioText(x.after.ratio))}</td><td>${change(termText(x.before.term),termText(x.after.term))}</td><td>${CF.tag('ok',L('Saved','保存成功'))}</td></tr>`).join('')
           }</tbody></table></div>`
           +(records.length>shown.length
             ?`<div class="loadmore">${b('Load more','加载更多','log-more')}<span class="tiny" role="status">${L('Showing '+shown.length+' of '+records.length,'已显示 '+shown.length+' / '+records.length+' 条')}</span></div>`
@@ -232,7 +237,7 @@
       ?`<span class="fc-meta">${L('View access only. This account does not hold the financing parameter maintenance permission.','当前仅有融资参数查询权限，不能维护参数。')}</span>`
       :r.removed
         ?`<span class="fc-meta">${L('Maintenance is unavailable for a token type that is no longer supplied upstream.','该代币类型已被上游移出，不提供参数维护。')}</span>`
-        :`<a class="btn primary" href="#${E(editRoute(r.id))}" data-act="fc-edit" data-v="${E(r.id)}">${L('Maintain parameters','维护参数')}</a>`;
+        :`<a class="btn primary" href="#${E(editRoute(r.id))}" data-act="fc-edit" data-v="${E(r.id)}">${configured(r)?L('Maintain parameters','维护参数'):L('Configure parameters','配置参数')}</a>`;
     const current=section('Current parameters','当前参数',kv([
       [L('Token type','代币类型'),`<strong class="mono">${E(r.name)}</strong><small>${L('Supplied upstream and read-only here.','由上游供给，本模块只读。')}</small>`],
       [L('Maximum pledge ratio','最高质押率'),E(ratioText(r.maxRatio)),'strong'],
@@ -251,21 +256,24 @@
   }
 
   /* ------------------------------------------------------------ 参数维护 */
-  const dirty=()=>!!A.draft&&(A.draft.ratio!==A.draft.loadedRatio||A.draft.term!==A.draft.loadedTerm);
+  /* 改动按取值比较：把 70 改写成 70.00 不算改动，避免为同一个值走一次确认。 */
+  const sameRatio=(a,b)=>{const x=parseRatio(a),y=parseRatio(b);return x.code||y.code?String(a).trim()===String(b).trim():x.value===y.value;};
+  const changed=key=>!!A.draft&&(key==='ratio'?!sameRatio(A.draft.ratio,A.draft.loadedRatio):A.draft.term!==A.draft.loadedTerm);
+  const dirty=()=>changed('ratio')||changed('term');
   function loadDraft(r){
-    A.draft={id:r.id,
-      ratio:r.maxRatio==null?'':String(r.maxRatio),term:r.maxTermMonths==null?'':String(r.maxTermMonths),
-      loadedRatio:r.maxRatio==null?'':String(r.maxRatio),loadedTerm:r.maxTermMonths==null?'':String(r.maxTermMonths),
-      wasConfigured:configured(r)};
-    A.fieldErrors={};A.error='';A.errorAction='';
+    const ratio=r.maxRatio==null?'':Number(r.maxRatio).toFixed(RATIO.decimals),term=r.maxTermMonths==null?'':String(r.maxTermMonths);
+    A.draft={id:r.id,ratio,term,loadedRatio:ratio,loadedTerm:term,wasConfigured:configured(r)};
+    A.fieldErrors={};A.validated={};A.error='';A.errorAction='';
   }
   function parseRatio(raw){
-    const s=String(raw==null?'':raw).trim().replace(/%$/,'').trim();
+    const s=String(raw==null?'':raw).trim().replace(/\s*%$/,'').trim();
     if(!s)return {code:'required'};
+    if(/^-\s*\d+(\.\d+)?$/.test(s))return {code:'positive'};
     if(!/^\d+(\.\d+)?$/.test(s))return {code:'format'};
     const value=Number(s);
-    if(value<A.bounds.min||value>A.bounds.max)return {code:'range'};
-    if((s.split('.')[1]||'').length>A.bounds.decimals)return {code:'decimals'};
+    if(value<=0)return {code:'positive'};
+    if(value>RATIO.max)return {code:'max'};
+    if((s.split('.')[1]||'').length>RATIO.decimals)return {code:'decimals'};
     return {value};
   }
   function parseTerm(raw){
@@ -276,30 +284,43 @@
     if(value<TERM.min||value>TERM.max)return {code:'range'};
     return {value};
   }
+  /* 四类拒绝各有自己的说明，并都给出当前允许范围。 */
   function ratioMessage(code){
-    const range=L('Allowed range: ','当前允许范围：')+boundsText();
-    if(code==='required')return L('Enter the maximum pledge ratio. ','请填写最高质押率。')+range;
-    if(code==='format')return L('The maximum pledge ratio must be a number. ','最高质押率须填写数字。')+range;
-    if(code==='decimals')return (A.bounds.decimals
-      ?L('The maximum pledge ratio takes at most '+A.bounds.decimals+' decimal place'+(A.bounds.decimals>1?'s':'')+'. ','最高质押率最多保留 '+A.bounds.decimals+' 位小数。')
-      :L('The maximum pledge ratio must be a whole number. ','最高质押率须为整数。'))+range;
-    return L('The maximum pledge ratio is outside the allowed range. ','最高质押率超出允许取值范围。')+range;
+    const range=L(' Allowed: ',' 允许范围：')+boundsText()+L('.','。');
+    if(code==='required')return L('Enter the maximum pledge ratio.','请填写最高质押率。')+range;
+    if(code==='format')return L('Enter a number, for example 70 or 69.50.','请填写数字，例如 70 或 69.50。')+range;
+    if(code==='positive')return L('The maximum pledge ratio must be greater than 0.','最高质押率须大于 0。')+range;
+    if(code==='max')return L('The maximum pledge ratio cannot exceed 100%.','最高质押率不能超过 100%。')+range;
+    return L('Use at most 2 decimal places; the value is not rounded for you.','最多保留两位小数，系统不会替你四舍五入。')+range;
   }
   function termMessage(code){
-    const range=L('Allowed range: ','允许取值范围：')+termBoundsText();
-    if(code==='required')return L('Enter the maximum project term. ','请填写最长项目期限。')+range;
-    if(code==='format')return L('The maximum project term must be a whole number of months. ','最长项目期限须为整数月。')+range;
-    return L('The maximum project term is outside the allowed range. ','最长项目期限超出允许取值范围。')+range;
+    const range=L(' Allowed: ',' 允许范围：')+termBoundsText()+L('.','。');
+    if(code==='required')return L('Choose the maximum project term.','请选择最长项目期限。')+range;
+    if(code==='format')return L('The maximum project term must be a whole number of months.','最长项目期限须为整数月。')+range;
+    return L('The maximum project term is outside the allowed range.','最长项目期限超出允许取值范围。')+range;
+  }
+  function checkField(key){
+    const res=key==='ratio'?parseRatio(A.draft.ratio):parseTerm(A.draft.term);
+    A.validated[key]=A.draft[key];
+    if(res.code)A.fieldErrors[key]=key==='ratio'?ratioMessage(res.code):termMessage(res.code);else delete A.fieldErrors[key];
+    return res;
   }
   function validate(){
-    const ratio=parseRatio(A.draft.ratio),term=parseTerm(A.draft.term);
-    A.fieldErrors={};A.validated={ratio:A.draft.ratio,term:A.draft.term};
-    if(ratio.code)A.fieldErrors.ratio=ratioMessage(ratio.code);
-    if(term.code)A.fieldErrors.term=termMessage(term.code);
+    A.fieldErrors={};A.validated={};
+    const ratio=checkField('ratio'),term=checkField('term');
     return A.fieldErrors.ratio||A.fieldErrors.term?null:{ratio:ratio.value,term:term.value};
   }
   function fieldError(key){
     return A.fieldErrors[key]?`<p class="fc-error" id="fc-${key}-error" role="alert">${E(A.fieldErrors[key])}</p>`:`<p class="fc-error" id="fc-${key}-error"></p>`;
+  }
+  /* 失焦即校验并就地更新该项，不重绘整页，避免打断键盘焦点。 */
+  function paintField(key){
+    const el=$('fc-'+key),slot=$('fc-'+key+'-error'),mark=$('fc-'+key+'-changed');
+    if(el)el.setAttribute('aria-invalid',String(!!A.fieldErrors[key]));
+    if(slot){slot.textContent=A.fieldErrors[key]||'';slot.setAttribute('role',A.fieldErrors[key]?'alert':'none');}
+    if(mark)mark.hidden=!changed(key);
+    const save=document.querySelector('#fc-form button[type="submit"]');
+    if(save){save.disabled=A.busy||!dirty();save.title=dirty()?'':txt(['Change at least one parameter before saving.','两项参数均未改动，无需保存。']);}
   }
   function editPage(){
     const blocked=gate();
@@ -318,26 +339,29 @@
         b('Back to the parameters','返回参数详情','back'));
     if(!A.draft||A.draft.id!==r.id)loadDraft(r);
     const d=A.draft;
-    const target=`<div class="fc-readonly"><span class="fc-meta">${L('Editing','办理对象')}</span><strong>${E(r.name)}</strong><span class="fc-meta">${statusTag(r)} · ${L('Last updated','最近更新时间')} ${time(r.updatedAt)} · ${L('Updated by','最近更新人')} ${E(person(r.updatedBy))}</span></div>`;
-    const form=`<form id="fc-form" class="fc-form">${target}<fieldset ${A.busy?'disabled':''}>${
-      field(L('Maximum pledge ratio','最高质押率'),
-        input('fc-ratio',d.ratio,'text','inputmode="decimal" autocomplete="off" aria-describedby="fc-ratio-hint fc-ratio-error" aria-invalid="'+(!!A.fieldErrors.ratio)+'"'),
-        `<span class="fc-meta" id="fc-ratio-hint">${L('Per cent. Allowed range: ','百分比。当前允许范围：')}${boundsText()}${L(' · Current value: ',' · 当前取值：')}${E(ratioText(r.maxRatio))}</span>`+fieldError('ratio'))}${
-      field(L('Maximum project term','最长项目期限'),
-        input('fc-term',d.term,'text','inputmode="numeric" autocomplete="off" aria-describedby="fc-term-hint fc-term-error" aria-invalid="'+(!!A.fieldErrors.term)+'"'),
-        `<span class="fc-meta" id="fc-term-hint">${L('Whole months. Allowed range: ','整数月。允许取值范围：')}${termBoundsText()}${L(' · Current value: ',' · 当前取值：')}${E(termText(r.maxTermMonths))}</span>`+fieldError('term'))}
-      </fieldset><div class="fc-formfoot">${
-        `<button type="submit" class="btn primary" ${A.busy||!dirty()?'disabled':''} ${dirty()?'':`title="${E(txt(['Change at least one parameter before saving.','两项参数均未改动，无需保存。']))}"`}>${L('Save','保存')}</button>`}${
+    const mark=key=>`<span class="tag accent fc-changed" id="fc-${key}-changed" ${changed(key)?'':'hidden'}><span class="dot"></span>${L('Changed','已修改')}</span>`;
+    const current=(v)=>`<span class="fc-current">${L('Current: ','当前：')}${E(v)}</span>`;
+    const terms=[['',L('Choose…','请选择')],...Array.from({length:TERM.max-TERM.min+1},(_,i)=>{const n=TERM.min+i;return [String(n),termText(n)];})];
+    const form=`<form id="fc-form" class="fc-form" novalidate><fieldset ${A.busy?'disabled':''}>
+        <div class="field"><div class="fc-label"><label for="fc-ratio">${L('Maximum pledge ratio','最高质押率')}</label>${mark('ratio')}</div>
+          <div class="fc-affix"><input class="inp" id="fc-ratio" type="text" value="${E(d.ratio)}" inputmode="decimal" autocomplete="off" placeholder="${L('e.g. 70.00','如 70.00')}" aria-describedby="fc-ratio-hint fc-ratio-error" aria-invalid="${!!A.fieldErrors.ratio}"><span aria-hidden="true">%</span></div>
+          <span class="fc-meta" id="fc-ratio-hint">${boundsText()}${r.maxRatio!=null?' · '+current(ratioText(r.maxRatio)):''}</span>${fieldError('ratio')}</div>
+        <div class="field"><div class="fc-label"><label for="fc-term">${L('Maximum project term','最长项目期限')}</label>${mark('term')}</div>
+          ${select('fc-term',d.term,terms).replace('<select class="inp"','<select class="inp" aria-describedby="fc-term-hint fc-term-error" aria-invalid="'+(!!A.fieldErrors.term)+'"')}
+          <span class="fc-meta" id="fc-term-hint">${termBoundsText()}${r.maxTermMonths!=null?' · '+current(termText(r.maxTermMonths)):''}</span>${fieldError('term')}</div>
+      </fieldset>
+      <div class="fc-wide">${error()}</div>
+      <div class="fc-formfoot"><button type="submit" class="btn primary" ${A.busy||!dirty()?'disabled':''} title="${dirty()?'':E(txt(['Change at least one parameter before saving.','两项参数均未改动，无需保存。']))}">${L('Save','保存')}</button>${
         b('Cancel','取消','cancel','','',A.busy)}${
-        b('Reload the current values','重新取数','reload','','',A.busy)}${
-        A.busy?`<span role="status">${L('Submitting…','正在提交…')}</span>`:''}</div>
-      <div class="fc-wide">${error()}</div></form>`;
-    return title(L('Maintain parameters','参数维护'),L('One token type at a time. Saving takes effect immediately and applies only to financing projects created after the save.','一次维护一个代币类型。保存即时生效，只作用于此后创建的融资项目。'))
-      +`<div class="detail-stack fc-stack">${section('Parameters','参数取值',form)}</div>`;
+        A.busy?`<span role="status">${L('Submitting…','正在提交…')}</span>`:`<span class="fc-meta fc-foot-note">${L('Takes effect on save, for financing projects created afterwards only.','保存即生效，仅作用于此后创建的融资项目。')}</span>`}</div></form>`;
+    const head=`<div class="fc-section-head"><h2 class="fc-h2">${configured(r)?L('Maintain parameters','维护参数'):L('Configure parameters','配置参数')}</h2>${statusTag(r)}</div>`;
+    return title(E(r.name),L('One token type at a time. Fill in both parameters; the token type itself is supplied upstream and cannot be changed here.','一次维护一个代币类型，两项参数需同时填写；代币类型由上游供给，此处不可修改。'))
+      +`<div class="detail-stack fc-stack"><section class="card fc-section fc-editing">${head}${form}</section>${changeLog(r)}</div>`;
   }
 
   /* ------------------------------------------------------------ 保存确认与提交 */
   function diffRow(label,before,after){
+    if(before===after)return `<div class="fc-diff-row fc-diff-same"><b>${label}</b><div class="fc-diff-vals"><strong>${E(after)}</strong><span class="fc-meta">${L('unchanged','未变')}</span></div></div>`;
     return `<div class="fc-diff-row"><b>${label}</b><div class="fc-diff-vals"><span class="fc-before"><span class="sr-only">${L('Before this save: ','变更前：')}</span>${E(before)}</span><span class="fc-arrow" aria-hidden="true">→</span><strong><span class="sr-only">${L('After this save: ','本次保存后：')}</span>${E(after)}</strong></div></div>`;
   }
   const layers={
@@ -345,11 +369,11 @@
       const r=row(),d=A.draft,next=d&&d.pending;
       if(!r||!next)return {title:L('Confirm the save','确认保存'),html:'',foot:b('Close','关闭','cancel')};
       return {title:L('Confirm the save','确认保存'),
-        html:`<div class="fc-readonly"><span class="fc-meta">${L('Token type','代币类型')}</span><strong>${E(r.name)}</strong></div>
+        html:`<div class="fc-readonly"><span class="fc-meta">${L('Token type','代币类型')}</span><strong>${E(r.name)}</strong>${d.wasConfigured?'':`<span class="fc-meta">${L('First configuration: once saved, this token type can be used to create financing projects.','首次配置：保存后该代币类型即可用于创建融资项目。')}</span>`}</div>
           <div class="fc-diff">${diffRow(L('Maximum pledge ratio','最高质押率'),ratioText(r.maxRatio),ratioText(next.ratio))}${diffRow(L('Maximum project term','最长项目期限'),termText(r.maxTermMonths),termText(next.term))}</div>
           <p class="fc-meta">${L('The new values take effect immediately and apply only to financing projects created after this save. Projects already created keep the values locked at creation and are not changed, re-checked or reopened.','新取值保存后立即生效，仅对此后新建的融资项目生效；已创建项目沿用其创建时锁定的取值，不被改写、不需整改。')}</p>
           ${A.busy?`<p role="status">${L('Submitting…','正在提交…')}</p>`:''}`,
-        foot:b('Back','返回修改','edit','','',A.busy)+b('Confirm the save','确认保存','submit','','primary',A.busy)};
+        foot:b('Back','返回修改','edit-back','','',A.busy)+b('Confirm the save','确认保存','submit','','primary',A.busy)};
     },
     'fc-discard':()=>({title:L('Discard unsaved input?','放弃未提交内容？'),
       html:CF.note('',L('The parameters you typed have not been saved. Leaving now discards them; the saved parameters do not change.','填写的参数尚未保存。现在离开将放弃本次输入，已保存的参数不变。')),
@@ -396,11 +420,11 @@
       if(response==='concurrent'){
         /* 他人先行修改：本次基于旧值的提交被拒，对方的保存正常留痕。 */
         const before={ratio:r.maxRatio,term:r.maxTermMonths};
-        r.maxRatio=A.bounds.decimals?Math.min(A.bounds.max,A.bounds.min+9.5):Math.min(A.bounds.max,A.bounds.min+63);
+        r.maxRatio=r.maxRatio===68.5?66:68.5;
         r.maxTermMonths=r.maxTermMonths===TERM.max?TERM.max-3:TERM.max;
-        r.records.unshift({id:'fc-other-'+Date.now(),at:Date.now(),by:'ch***@example.invalid',
+        r.records.unshift({id:'fc-other-'+Date.now(),at:Date.now(),by:'ch***@example.com',
           before,after:{ratio:r.maxRatio,term:r.maxTermMonths},result:'success'});
-        r.updatedAt=Date.now();r.updatedBy='ch***@example.invalid';
+        r.updatedAt=Date.now();r.updatedBy='ch***@example.com';
         S.layer=null;
         A.error=['Another operator saved this token type first, so your submission was based on outdated values and has been refused. Reload the current values before editing again.','该代币类型的参数已被他人先行修改，本次提交基于旧值，已被拒绝。请重新取数后再修改。'];
         A.errorAction='reload';CF.render();return;
@@ -414,6 +438,7 @@
       const before={ratio:r.maxRatio,term:r.maxTermMonths};
       r.maxRatio=next.ratio;r.maxTermMonths=next.term;
       record(r,before,{ratio:next.ratio,term:next.term});
+      A.justSaved=r.records[0].id;
       A.draft=null;S.layer=null;A.logShown=CF.PAGE_SIZE;
       navigateRoute(detailRoute(r.id));
       CF.toast(L('Parameters saved. They apply to financing projects created from now on.','参数已保存，自此后创建的融资项目起生效。'));
@@ -442,8 +467,6 @@
       <div class="fc-demo-actions">${b('Upstream adds a token type','上游新增一个代币类型','add-token','','',!!extra)}${
         removals.map(r=>b('Upstream removes '+r.name,'上游移出「'+r.name+'」','remove-token',r.id)).join('')}${
         b('Restore the default supply','恢复默认供给','restore-tokens')}</div>
-      <h4>${L('Pledge ratio bounds · not yet decided','最高质押率取值边界 · 尚未裁定')}</h4><p class="fc-meta">${L('The upper and lower bounds and the number of decimal places have not been decided. The options below are placeholders used to demonstrate the out-of-range refusal and the allowed-range message; none of them is a delivery commitment.','取值上下限与小数位数尚未裁定。以下选项只是占位取值，用于演示越界拒绝与允许范围提示，都不构成上线口径。')}</p>
-      <div class="fc-demo">${field(L('Placeholder bounds','占位取值边界'),select('fc-bounds',A.bounds.key,CF.parameterBounds.map(x=>[x.key,x.min+'% ～ '+x.max+'%, '+(x.decimals?x.decimals+(S.lang==='en'?' dp':' 位小数'):(S.lang==='en'?'integer':'整数'))])))}</div>
       <h4>${L('Session','会话')}</h4><div class="fc-demo-actions">${b('Expire the operations session','运营登录失效','expire-session')}${b('Reset demonstration','重置演示','restart')}</div>`;
   }
 
@@ -474,6 +497,7 @@
     else if(act==='page'){A.page=Math.max(1,Number(v));saveContext();CF.render();window.scrollTo(0,0);}
     else if(act==='search'){A.filter={...A.edit};A.page=1;A.error='';A.view='default';saveContext();CF.render();}
     else if(act==='reset')resetFilter();
+    else if(act==='only-unset'){A.filter={...A.filter,status:'unset'};A.edit={...A.filter};A.page=1;saveContext();CF.render();}
     else if(act==='sort'){A.dir=A.sort===v?-A.dir:1;A.sort=v;A.page=1;saveContext();CF.render();}
     else if(act==='log-more'){A.logShown+=CF.PAGE_SIZE;CF.render();}
     else if(act==='log-retry'){A.logState='default';CF.render();$('fc-log')?.focus({preventScroll:true});}
@@ -506,29 +530,22 @@
       const fresh=CF.parameterSeed();
       A.epoch++;A.rows=fresh.rows;A.draft=null;A.busy=false;A.error='';A.errorAction='';A.fieldErrors={};
       A.logShown=CF.PAGE_SIZE;A.logState='default';A.view='default';
-      if(act==='restart'){A.response='success';A.bounds=CF.parameterBounds[0];grant('admin');}
+      if(act==='restart'){A.response='success';A.justSaved=null;grant('admin');}
       A.selected=A.rows[0].id;resetFilter();navigateRoute(listRoute());
     }
     else return false;
     return true;
   }
-  /* 错误只在取值真的被改动后就地清除：提交时输入框仍持有焦点，
-     重绘会让浏览器对已移除的输入补发一次 change，不能把刚给出的校验结果抹掉。 */
-  function clearFieldError(key,value){
-    if(!A.fieldErrors[key]||value===A.validated[key])return;
-    delete A.fieldErrors[key];
-    $('fc-'+key)?.setAttribute('aria-invalid','false');
-    const slot=$('fc-'+key+'-error');
-    if(slot)slot.textContent='';
-  }
-  function onInput(e){
+  /* 输入中只清除过期的错误，失焦或选定后再按该项重新校验；
+     提交时浏览器会对被重绘移除的输入补发 change，取值未变时不抹掉刚给出的校验结果。 */
+  function onInput(e,settle){
     if(A.busy||!A.draft)return;
-    const id=e.target.id,value=e.target.value;
-    if(id==='fc-ratio'){A.draft.ratio=value;clearFieldError('ratio',value);}
-    else if(id==='fc-term'){A.draft.term=value;clearFieldError('term',value);}
-    else return;
-    const save=document.querySelector('#fc-form button[type="submit"]');
-    if(save)save.disabled=!dirty();
+    const id=e.target.id,key=id==='fc-ratio'?'ratio':id==='fc-term'?'term':null;
+    if(!key)return;
+    A.draft[key]=e.target.value;
+    if(settle){if(A.draft[key]!==A.validated[key]&&(A.draft[key].trim()||A.fieldErrors[key]))checkField(key);}
+    else if(A.fieldErrors[key]&&A.draft[key]!==A.validated[key])delete A.fieldErrors[key];
+    paintField(key);
   }
   document.addEventListener('submit',e=>{
     if(e.target.id==='fc-filter-form'){e.preventDefault();onAct('fc-search','');}
@@ -536,8 +553,9 @@
   });
   document.addEventListener('input',e=>{
     if(e.target.id==='fc-f-q')A.edit.q=e.target.value;
-    onInput(e);
+    if(e.target.id==='fc-ratio')onInput(e,false);
   });
+  document.addEventListener('focusout',e=>{if(e.target.id==='fc-ratio'&&e.target.isConnected)onInput(e,true);});
   document.addEventListener('change',e=>{
     const id=e.target.id,value=e.target.value;
     if(id==='fc-f-status'){A.edit.status=value;return;}
@@ -545,8 +563,7 @@
     if(id==='fc-view'){A.view=value;A.error='';CF.render();return;}
     if(id==='fc-log-state'){A.logState=value;A.logShown=CF.PAGE_SIZE;CF.render();return;}
     if(id==='fc-response'){A.response=value;return;}
-    if(id==='fc-bounds'){A.bounds=CF.parameterBounds.find(x=>x.key===value)||A.bounds;A.fieldErrors={};CF.render();return;}
-    onInput(e);
+    if(id==='fc-term')onInput(e,true);
   });
   document.addEventListener('click',e=>{
     const a=e.target.closest('a[href^="#"]');
@@ -630,6 +647,7 @@
     onRoute(prev,id){
       A.epoch++;A.busy=false;A.error='';A.errorAction='';A.fieldErrors={};A.view='default';
       A.logShown=CF.PAGE_SIZE;restoreContext=true;
+      if(prev===DETAIL&&id!==DETAIL)A.justSaved=null;
       if(id!==EDIT)A.draft=null;
       if(OPS_PAGES.includes(id)||OPS_PAGES.includes(prev))OPS.onRoute(prev,id);
     }

@@ -9,8 +9,8 @@
   const LI='li***@example.com';
 
   /* 两项参数的历次取值，按时间正序；每一项都对应一次保存成功。 */
-  const HISTORY=[[60,6],[62,6],[62,9],[65,9],[63,9],[66,9],[66,12],[64,12],[68,12],[68,9],[70,9],[67,9],
-    [67,12],[69,12],[71,12],[71,9],[66,9],[66,12],[72,12],[68,12],[68,10],[70,10],[70,12]];
+  const HISTORY=[[60,6],[62.5,6],[62.5,9],[65,9],[63.75,9],[66,9],[66,12],[64,12],[68,12],[68,9],[70,9],[67.5,9],
+    [67.5,12],[69,12],[71.25,12],[71.25,9],[66,9],[66,12],[72,12],[68,12],[68,10],[70,10],[70,12]];
 
   function token(id,extra){
     return Object.assign({id,name:id,maxRatio:null,maxTermMonths:null,
@@ -38,11 +38,4 @@
   CF.parameterNewToken=()=>token(TRC);
   CF.parameterTokenNames={erc:ERC,trc:TRC};
 
-  /* 最高质押率的取值上下限与小数位数尚未裁定。以下三组只是占位取值，
-     用于演示「超范围拒绝并给出当前允许范围」这一行为，不构成上线口径。 */
-  CF.parameterBounds=[
-    {key:'a',min:1,max:100,decimals:0},
-    {key:'b',min:10,max:80,decimals:1},
-    {key:'c',min:50,max:95,decimals:2}
-  ];
 })(window.CF=window.CF||{});
