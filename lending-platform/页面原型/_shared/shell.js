@@ -515,7 +515,9 @@
     } else {
       return '<div class="modal-mask" data-act="closelayer">' +
         '<div class="modal" role="dialog" aria-modal="true" aria-label="' + esc(body.title) + '" data-stop="1">' +
-        '<div class="modal-h">' + esc(body.title) + "</div>" +
+        /* body.dismiss 为真时标题栏带关闭按钮（国际产品对话框的常规形态）；不传则保持原样。 */
+        '<div class="modal-h' + (body.dismiss ? ' has-x' : '') + '">' + (body.dismiss ? '<span>' + esc(body.title) + '</span><button class="btn ghost sm modal-x" type="button" data-act="closelayer" aria-label="' +
+          L("Close", "关闭") + '">' + ICON.close + '</button>' : esc(body.title)) + "</div>" +
         '<div class="modal-b">' + body.html + "</div>" +
         '<div class="modal-f">' + (body.foot || "") + "</div></div></div>";
     }
