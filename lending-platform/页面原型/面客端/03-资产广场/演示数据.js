@@ -49,30 +49,36 @@
 
   /* 本平台质押事实（权威在本平台），两根轴都不进页面：
      hold —— 代币与项目质押合约的当前关系
-       in       代币在质押合约内
-       exiting  自助解押已发起，链上转出尚未成功（代币仍在合约内）
-       pending  质押上链处理中
-       failed   质押上链失败
-       out      解押转出完成
+       in        代币在质押合约内，仍属该项目
+       exiting   解押或撤回已发起，链上转出尚未成功（代币仍在合约内，仍属该项目）
+       released  项目关闭或结清后业务已释放，代币尚未提取（仍在合约内，已不属该项目）
+       pending   质押上链处理中
+       failed    质押上链失败
+       out       解押、撤回或提取转出完成
      review —— 质押审核结论：pending / approved / rejected。
        审核结论不改变对外的二元展示，只用来演示"已质押不等于已通过审核"。 */
   var PROJECTS = [
-    { id: "S-FP-26090107", name: ["Receivables pool 26090107", "融资项目 26090107"], draft: false },
-    { id: "S-FP-26082804", name: ["Receivables pool 26082804", "融资项目 26082804"], draft: false },
-    { id: "S-FP-26091502", name: ["Receivables pool 26091502", "融资项目 26091502"], draft: true }
+    { id: "S-FP-26090107", name: ["Receivables pool 26090107", "融资项目 26090107"], published: true },
+    { id: "S-FP-26082804", name: ["Receivables pool 26082804", "融资项目 26082804"], published: true },
+    { id: "S-FP-26091502", name: ["Receivables pool 26091502", "融资项目 26091502"], published: false }
   ];
 
-  /* 对外二元收敛的唯一判定：代币当前是否在项目质押合约内。 */
-  AM.inPledgeContract = function (t) {
+  /* 对外二元收敛的唯一判定：代币在项目质押合约内且仍属该项目才是已质押；
+     业务已释放、尚未提取的代币虽仍在合约内，对外是未质押。 */
+  AM.isPledged = function (t) {
     var p = t && t.pl;
     return !!(p && p.project && (p.hold === "in" || p.hold === "exiting"));
+  };
+  /* 当前持有地址是否为质押合约地址：已质押与业务释放待提取两种情形。 */
+  AM.inPledgeContract = function (t) {
+    return AM.isPledged(t) || !!(t && t.pl && t.pl.project && t.pl.hold === "released");
   };
 
   var TOKENS = [];
 
   /* —— 手写的几条，覆盖详情页与列表上要看清的分支 —— */
   TOKENS.push({
-    no: "TK20260612000147", name: "HC-AR-2606", holder: 0, buyer: 0,
+    no: "TK20260612000147", logo: { shape: 0, hue: 1 }, name: "HC-AR-2606", holder: 0, buyer: 0,
     qty: 1250000.25, val: 1250000.25, ts: "valid",
     pl: { hold: "in", review: "approved", project: PROJECTS[0] },
     from: "2026-06-12", to: "2026-09-10", at: "2026-06-12T10:20:00",
@@ -82,7 +88,7 @@
   });
   /* 失效 + 已质押：两个标签同时出现是正确的。 */
   TOKENS.push({
-    no: "TK20260220000092", name: "HC-AR-2602", holder: 1, buyer: 1,
+    no: "TK20260220000092", logo: { shape: 1, hue: 2 }, name: "HC-AR-2602", holder: 1, buyer: 1,
     qty: 460000.75, val: 460000.75, ts: "void",
     pl: { hold: "in", review: "approved", project: PROJECTS[1] },
     from: "2026-02-20", to: "2026-05-21", at: "2026-02-20T11:15:00",
@@ -90,9 +96,9 @@
     mintTx: txHash(92),
     attest: { hash: "0x" + hex(9092, 64), tx: txHash(2092), block: 20874155, at: "2026-02-19T20:02:00" }
   });
-  /* 在质押合约内、质押审核尚未通过，且所属融资项目还是草稿：给已质押标签，不给项目名与深链。 */
+  /* 在质押合约内、质押审核尚未通过，所属融资项目已通过审核但尚未发布：给已质押标签，不给项目名与入口。 */
   TOKENS.push({
-    no: "TK20260903000415", name: "HC-AR-2609", holder: 2, buyer: 2,
+    no: "TK20260903000415", logo: { shape: 2, hue: 3 }, name: "HC-AR-2609", holder: 2, buyer: 2,
     qty: 1120000, val: 1120000, ts: "valid",
     pl: { hold: "in", review: "pending", project: PROJECTS[2] },
     from: "2026-09-03", to: "2027-01-01", at: "2026-09-03T08:30:00",
@@ -102,7 +108,7 @@
   });
   /* 质押审核已驳回、尚未解押：代币仍在质押合约内，对外仍是已质押。 */
   TOKENS.push({
-    no: "TK20260728000534", name: "HC-AR-2607B", holder: 1, buyer: 3,
+    no: "TK20260728000534", logo: { shape: 3, hue: 4 }, name: "HC-AR-2607B", holder: 1, buyer: 3,
     qty: 735000.5, val: 735000.5, ts: "valid",
     pl: { hold: "in", review: "rejected", project: PROJECTS[0] },
     from: "2026-07-28", to: "2026-12-24", at: "2026-07-28T14:06:00",
@@ -112,7 +118,7 @@
   });
   /* 自助解押已发起、链上转出尚未成功：代币物理上仍在质押合约内，仍按已质押与当前项目展示。 */
   TOKENS.push({
-    no: "TK20260509000276", name: "HC-AR-2605", holder: 3, buyer: 4,
+    no: "TK20260509000276", logo: { shape: 1, hue: 1 }, name: "HC-AR-2605", holder: 3, buyer: 4,
     qty: 980000, val: 980000, ts: "valid",
     pl: { hold: "exiting", review: "approved", project: PROJECTS[1] },
     from: "2026-05-09", to: "2026-11-05", at: "2026-05-09T09:48:00",
@@ -122,7 +128,7 @@
   });
   /* 质押上链处理中：代币还不在质押合约内，对外是未质押。 */
   TOKENS.push({
-    no: "TK20260705000288", name: "HC-AR-2607", holder: 3, buyer: 3,
+    no: "TK20260705000288", logo: { shape: 2, hue: 4 }, name: "HC-AR-2607", holder: 3, buyer: 3,
     qty: 860000, val: 860000, ts: "valid",
     pl: { hold: "pending", review: null, project: PROJECTS[0] },
     from: "2026-07-05", to: "2026-11-02", at: "2026-07-05T09:05:00",
@@ -130,9 +136,9 @@
     mintTx: txHash(288),
     attest: { hash: "0x" + hex(9288, 64), tx: txHash(2288), block: 21551904, at: "2026-07-04T23:28:00" }
   });
-  /* 代币名称未下发：该列展示合约名称，不自造符号。解押转出已完成，对外是未质押。 */
+  /* 代币名称与标识图都未下发：名称展示合约名称，不自造符号或标识。解押转出已完成，对外是未质押。 */
   TOKENS.push({
-    no: "TK20260818000361", name: "", holder: 4, buyer: 4,
+    no: "TK20260818000361", logo: null, name: "", holder: 4, buyer: 4,
     qty: 2040000, val: 2040000, ts: "valid",
     pl: { hold: "out", review: "approved", project: PROJECTS[1] },
     from: "2026-08-18", to: "2026-10-17", at: "2026-08-18T16:40:00",
@@ -142,7 +148,7 @@
   });
   /* 已同步的链上存证缺项：该区块按字段显示“—”，不隐藏整块。质押上链失败，对外是未质押。 */
   TOKENS.push({
-    no: "TK20260416000203", name: "HC-AR-2604", holder: 5, buyer: 0,
+    no: "TK20260416000203", logo: { shape: 0, hue: 3 }, name: "HC-AR-2604", holder: 5, buyer: 0,
     qty: 640000, val: 640000, ts: "valid",
     pl: { hold: "failed", review: null, project: PROJECTS[1] },
     from: "2026-04-16", to: "2026-10-14", at: "2026-04-16T13:52:00",
@@ -160,12 +166,14 @@
       var qty = 180 + (i % 17) * 95;
       var pl = i % 3 === 0
         ? { hold: "in", review: i % 6 === 3 ? "pending" : "approved", project: PROJECTS[i % 2] }
-        : (i % 7 === 2 ? { hold: "out", review: "approved", project: PROJECTS[1] }
-                       : { hold: "none", review: null, project: null });
+        : (i % 7 === 2 ? { hold: "released", review: "approved", project: PROJECTS[1] }
+          : (i % 7 === 5 ? { hold: "out", review: "approved", project: PROJECTS[1] }
+                         : { hold: "none", review: null, project: null }));
       var ccy = ["USD", "EUR", "USD", "JPY"][i % 4];
       TOKENS.push({
         no: "TK2026" + pad(mo, 2) + pad(day, 2) + pad(seq, 6),
         name: "HC-AR-26" + pad(mo, 2) + "-" + pad(i + 1, 2),
+        logo: i % 5 === 4 ? null : { shape: i % 4, hue: (i % 4) + 1 },
         holder: i % AM.HOLDERS.length, buyer: i % BUYERS.length,
         qty: qty * 1000, val: qty * 1000,
         ts: i % 11 === 0 ? "void" : "valid",
@@ -196,21 +204,23 @@
   AM.HOLDING_SAMPLES = {};
   (function () {
     TOKENS.forEach(function (t, i) {
-      var inContract = AM.inPledgeContract(t);
+      var pledged = AM.isPledged(t);
       AM.HOLDING_SAMPLES[t.no] = { complete: true, rows: [{
-        address: inContract ? PLEDGE_CONTRACT[t.pl.project.id] : "0x" + hex(4100 + i * 13, 40),
+        address: AM.inPledgeContract(t) ? PLEDGE_CONTRACT[t.pl.project.id] : "0x" + hex(4100 + i * 13, 40),
         qty: t.qty, value: t.val,
-        pledged: inContract,
-        project: inContract ? t.pl.project : null
+        pledged: pledged,
+        project: pledged ? t.pl.project : null
       }] };
     });
   })();
 
-  /* 评审工具里可直接打开的几张代币：覆盖已质押、草稿项目、审核驳回未解押、
-     自助解押转出中和未质押五种落点，其余代币从列表进入。 */
+  /* 评审工具里可直接打开的几张代币：覆盖已质押、项目尚未发布、审核驳回未解押、
+     解押转出中、业务释放待提取和转出完成六种落点，其余代币从列表进入。 */
   AM.SHOWCASE = [
     "TK20260612000147", "TK20260903000415", "TK20260728000534",
-    "TK20260509000276", "TK20260818000361"
+    "TK20260509000276",
+    TOKENS.filter(function (t) { return t.pl.hold === "released"; })[0].no,
+    "TK20260818000361"
   ];
 
   AM.PROJECTS = PROJECTS;

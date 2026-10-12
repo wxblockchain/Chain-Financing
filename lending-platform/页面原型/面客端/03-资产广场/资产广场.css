@@ -3,8 +3,13 @@
 .stat-strip .v .am-skel-v{display:block;width:7ch;height:22px;margin:4px 0 2px}
 /* 列表至少占半屏：筛选与汇总压缩后，代币列表本身是这页的主体。 */
 .am-tbl-zone .listbox{min-height:min(52vh,540px)}
-.am-val{white-space:nowrap}
-.am-val .am-val-n{margin-left:8px;font-weight:660;color:var(--text)}
+.am-val{font-weight:660;color:var(--text)}
+/* 数量与价值右对齐，便于逐行比大小；表头与取值同侧。 */
+table.tbl.am-tbl th.am-r,table.tbl.am-tbl td.am-r{text-align:right}
+table.tbl.am-tbl th.sortable.am-r button{margin-left:auto;justify-content:flex-end}
+/* 代币标识图：上游图片位，24px；未配置时保留同宽空位，名称仍对齐。 */
+.am-logo,.am-logo-slot{width:24px;height:24px;flex:none}
+.am-logo svg{width:14px;height:14px}
 
 /* 列表：九列在 1280 下要能全部落在内容区里，不横向截断。
    英文列名比中文长得多，本表的表头允许折行；取值、字号与配色仍取公共组件。 */
@@ -16,8 +21,10 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
 .am-tbl .am-id{font-size:var(--fs-11);color:var(--accent);min-height:44px;user-select:text}
 .am-tbl tr[data-act="am-open"]{cursor:pointer}
 .am-tbl tr[data-act="am-open"]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.am-tbl .am-at{min-width:112px;max-width:146px;white-space:normal}
-.am-tbl .tok-name{max-width:118px}
+.am-tbl .am-at{color:var(--muted)}
+.am-th-l{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px}
+.am-tz{display:block;text-transform:none;letter-spacing:0;font-weight:500}
+.am-tbl .tok-name{max-width:140px}
 
 /* 九列在平板宽度提前采用公共 .resp 的同一单元格卡片组合；
    只作用于本模块，不改变公共滚动断点（900px）或其他表格。 */
@@ -47,26 +54,23 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
   .am-detail .dl dd.wide{grid-column:2 / -1}
 }
 .am-ov-top{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
-.am-mark{width:48px;height:48px;border-radius:var(--radius-sm);font-size:var(--fs-14)}
+.am-mark{width:48px;height:48px;border-radius:var(--radius-sm)}
+.am-mark svg{width:26px;height:26px}
 .am-ov .page-title{font-size:var(--fs-24)}
 .am-ov-no{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:4px}
 .am-ov-tags{display:flex;gap:var(--sp-8);flex-wrap:wrap;margin-top:var(--sp-5);
   padding-top:var(--sp-5);border-top:1px solid var(--border-dash)}
 .am-ov-tag{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .am-hash{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
-.am-addr{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:4px}
+.am-long{display:flex;flex-direction:column;gap:4px;min-width:0}
+.am-addr{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
 .am-addr .mono{font-size:var(--fs-11);overflow-wrap:anywhere}
 .am-caveat{margin:5px 0 0}
-.am-cta .card-b{display:flex;align-items:center;gap:var(--sp-5);flex-wrap:wrap}
-.am-cta p{margin:0;font-weight:620}
-.am-cta .btn{margin-left:auto}
-.am-holdings .am-address{min-height:44px}
-.am-holdings td:nth-child(2),.am-holdings td:nth-child(3){font-variant-numeric:tabular-nums}
-.am-holding-demo{padding:var(--sp-3) var(--sp-5);margin:0}
+.am-holdings .copy-pair{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.am-holdings td:nth-child(2),.am-holdings td:nth-child(3){font-family:var(--mono);font-variant-numeric:tabular-nums}
 
 @media (max-width:768px){
   .am-tbl .am-at{max-width:none}
-  .am-cta .btn{margin-left:0;width:100%}
 }
 /* 手机详情按字段上下阅读，避免长标签挤碎金额、时间与地址。 */
 @media (max-width:600px){
@@ -74,3 +78,6 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
   .am-detail .dl dd{margin-bottom:var(--sp-4)}
   .am-detail .dl dd:last-child{margin-bottom:0}
 }
+
+/* 五个筛选/排序项加搜索与两个按钮在 1280 英文下仍排成一行：搜索框收窄，完整提示在 title 与读屏名称里。 */
+.am-filters .fb-q{flex:0 1 176px;min-width:150px}
