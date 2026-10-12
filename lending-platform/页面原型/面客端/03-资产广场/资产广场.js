@@ -137,9 +137,10 @@
       '<button class="btn" data-act="am-more" type="button">' + L("Retry", "重试") + '</button></div>';
     S.shown = load.shown;
     // 正常批次只由内嵌下滑触发；失败保留明确重试，不自动循环失败请求。
-    if (load.shown >= total) return CF.moreFoot(total);
+    /* 一条记录是一笔代币（可含多枚），计数单位用「笔」，不与数量单位「枚」混淆。 */
+    if (load.shown >= total) return '<div class="loadmore done">' + L("End of list · " + total + (total === 1 ? " record" : " records"), "已到末尾 · 共 " + total + " 笔") + "</div>";
     return '<div class="loadmore" role="status">' + L("Scroll down to load more", "下滑自动加载更多") +
-      '<span class="tiny">' + L("Showing " + load.shown + " of " + total, "已显示 " + load.shown + " / " + total + " 条") + '</span></div>';
+      '<span class="tiny">' + L("Showing " + load.shown + " of " + total + " records", "已显示 " + load.shown + " / " + total + " 笔") + '</span></div>';
   }
   function afterList(v) {
     restoring = true; S.toTop = false;
@@ -190,7 +191,7 @@
     }
     panel.insertAdjacentHTML("beforeend", '<div class="grp" id="am-demo"><h5>' + L("Asset list demonstration", "资产列表演示") + '</h5>' +
       '<button class="btn" data-act="am-fail">' + L("Fail next batch", "下一批失败") + '</button>' +
-      [7, 20, 52].map(function (n) { return '<button class="btn" data-act="am-size" data-v="' + n + '">' + L(n + " sample items", n + " 条样例") + '</button>'; }).join("") + '</div>');
+      [7, 20, 52].map(function (n) { return '<button class="btn" data-act="am-size" data-v="' + n + '">' + L(n + " sample records", n + " 笔样例") + '</button>'; }).join("") + '</div>');
   }
   function autoAppend(box) {
     if (!isList() || restoring || !box || box !== document.getElementById("am-listbox")) return;
@@ -566,7 +567,7 @@
   /* 列表可放大到整窗，便于连续核对长列表；再次点击或 Esc 还原。 */
   function fullBar(total) {
     return '<div class="list-full-bar"><span>' +
-      esc(L("Showing ", "共 ") + total + L(" tokens", " 条代币")) + "</span>" +
+      esc(L(total + (total === 1 ? " token record" : " token records"), "共 " + total + " 笔代币")) + "</span>" +
       '<button class="btn icon" type="button" id="am-full" data-act="list-full" data-v="am-full" aria-pressed="' + !!S.listFull +
       '" title="' + esc(S.listFull ? L("Exit full window", "退出放大") : L("Expand to window", "放大到整窗")) +
       '" aria-label="' + esc(S.listFull ? L("Exit full window", "退出放大") : L("Expand to window", "放大到整窗")) + '">' +
