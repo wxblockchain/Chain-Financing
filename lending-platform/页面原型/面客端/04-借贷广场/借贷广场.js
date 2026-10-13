@@ -36,7 +36,7 @@
   const err=()=>error?'<div class="ls-error" role="alert">'+note(error,'danger')+'</div>':'';
   const path=()=>location.hash.replace(/^#/,'');
   const viewCache={},detailCache={},actionTabs={},actionNodes={};
-  let reviewReturn=false,focusReview=false,railExpanded=false,unboundHint=false,tokenView='list';
+  let reviewReturn=false,focusReview=false,railExpanded=false,unboundHint=false,tokenView='chart';
   const expandedRecords=new Set();let reviewScroll=0;
   let listRoute='/marketplace';
   function readFilters(route){const q=new URLSearchParams(route.split('?')[1]||'');const v={};['currency','tenor','keyword','type','vmin','vmax','amin','amax','status','quote','coverage','sort'].forEach(k=>{if(q.has(k))v[k]=q.get(k);});return v;}
@@ -173,20 +173,20 @@
   }
   function listPage(){const rows=matching();let content=CF.surface({emptyTitle:L('No financing projects yet','暂无融资项目'),emptyDesc:L('Published projects will appear here.','融资项目发布后会出现在这里。'),backTo:'/marketplace'});const counted=content===null;if(content===null)content=rows.length?'<div class="tablewrap listbox listbox-contained ls-market-zone" tabindex="0" role="region" aria-label="'+L('Financing projects','融资项目列表')+'"><table class="tbl resp ls-market-table">'+listHead()+'<tbody>'+rows.slice(0,S.shown).map(projectRow).join('')+'</tbody></table>'+CF.moreFoot(rows.length)+'</div>':CF.empty(L('No results match these filters','筛选无结果'),L('Try widening or clearing the filters.','请放宽筛选条件或清空筛选。'),btn('ls-clear',L('Clear filters','清空筛选')));return '<div class="page-head"><div><h1 class="page-title">'+L('Lending marketplace','借贷广场')+'</h1><p class="page-desc">'+L('Explore project collateral pools and their current financing requests.','查看融资项目的质押池与资产方当前融资需求。')+'</p></div>'+(['asset','signed'].includes(S.role)?'<div class="page-actions">'+btn('ls-new',L('Create financing project','创建融资项目'),'',true)+'</div>':'')+'</div>'+unboundNotice()+marketStats(rows)+'<section class="card listzone">'+filters(counted?rows.length:null)+content+'</section>';}
   function fullButton(){return '<button class="btn icon" type="button" id="ls-full" data-act="list-full" data-v="ls-full" aria-pressed="'+!!S.listFull+'" title="'+E(S.listFull?L('Exit full window','退出放大'):L('Expand to window','放大到整窗'))+'" aria-label="'+E(S.listFull?L('Exit full window','退出放大'):L('Expand to window','放大到整窗'))+'">'+(S.listFull?CF.ICON.close:CF.ICON.expand)+'</button>';}
-  /* 额度六项：常驻四项是判断融资的核心数字，总质押额与待审质押额收进可展开的明细；数字不折行。 */
+  /* 额度六项：沿用原有的开放式数字条（不加卡片框），常驻四项核心数字、整行不折断；总质押额与待审明细收进下方的折叠行。 */
   function stats(p){const n=D.numbers(p),d=D.current(p);
     const parts=tokenParts(p),reviewPart=parts.find(x=>x.key==='review'),rejectedPart=parts.find(x=>x.key==='rejected');
-    const cell=(k,v,tone,extra)=>'<div class="ls-stat"'+(tone?' data-tone="'+tone+'"':'')+'><span class="k">'+k+'</span><b class="v">'+v+'</b>'+(extra||'')+'</div>';
-    const unit=' <span class="u">USD</span>';
-    const core='<div class="ls-stats">'
-      +cell(L('Eligible pledge amount','有效质押额')+unit,CF.fmtAmt(n.limit),'accent')
-      +cell(L('Current request','本轮融资需求')+unit,d?CF.fmtAmt(d.amount):'—','',d?'<span class="ls-stat-tag">'+tag(d.state)+'</span>':'')
-      +cell(L('Outstanding financing','已融资余额')+unit,CF.fmtAmt(p.balance),p.balance?'pos':'')
-      +cell(L('Project pledge rate','项目质押率'),(Math.round(n.rate*10000)/100)+'%')
+    const money=v=>'<span class="u">USD</span>'+CF.fmtAmt(v);
+    const cell=(k,v,note,tone)=>'<div class="s"'+(tone?' data-tone="'+tone+'"':'')+'><div class="k">'+k+'</div><div class="v">'+v+'</div>'+(note?'<div class="n">'+note+'</div>':'')+'</div>';
+    const core='<div class="stat-strip ls-stats">'
+      +cell(L('Eligible pledge amount','有效质押额'),money(n.limit),'','accent')
+      +cell(L('Current request','本轮融资需求'),d?money(d.amount):'—',d?tag(d.state):L('No active request','暂无需求'))
+      +cell(L('Outstanding financing','已融资余额'),money(p.balance),L('not yet repaid','尚未偿还'),p.balance?'pos':'')
+      +cell(L('Project pledge rate','项目质押率'),(Math.round(n.rate*10000)/100)+'%',L('locked at creation','创建时锁定'))
       +'</div>';
-    const line=(k,v,sub)=>'<div class="ls-more-row"><span class="k">'+k+'</span><span class="v mono">'+v+'</span>'+(sub?'<span class="sub">'+sub+'</span>':'')+'</div>';
+    const line=(k,v,sub)=>'<div class="ls-more-row"><span class="k">'+k+'</span><span class="v mono">'+v+'</span><span class="sub">'+(sub||'')+'</span></div>';
     const pending=n.waiting.length;
-    const more='<details class="ls-stat-more"><summary><span>'+L('Total pledged value','总质押额')+'</span><b class="mono">'+usd(n.total)+'</b><span class="muted">'+L(n.pool.length+' tokens in the contract','合约内 '+n.pool.length+' 张')+'</span>'+(pending?'<span class="ls-stat-flag">'+L(pending+' pending review',pending+' 张待审')+'</span>':'')+'<span class="ls-stat-car" aria-hidden="true"></span></summary>'
+    const more='<details class="ls-stat-more"><summary>'+L('Total pledged value ','总质押额 ')+'<b class="mono">'+usd(n.total)+'</b><span>·</span><span>'+L(n.pool.length+' tokens in the contract','合约内 '+n.pool.length+' 张')+'</span>'+(pending?'<span>·</span><span class="ls-stat-flag">'+L(pending+' pending review',pending+' 张待审')+'</span>':'')+'<span class="ls-stat-car" aria-hidden="true"></span></summary>'
       +'<div class="ls-more-body">'
       +line(L('Pending review value','待审质押额'),usd(n.pendingValue))
       +line(L('· Awaiting review','· 审核中'),usd(reviewPart?reviewPart.value:0),L((reviewPart?reviewPart.count:0)+' tokens',(reviewPart?reviewPart.count:0)+' 张'))
@@ -212,7 +212,7 @@
     return '<div class="ls-composition">'+ring(parts,total,{value:pct(n.value),label:L('Eligible','有效占比')},L('Composition of tokens in the pledge contract','质押合约内代币构成'))
       +'<div class="ls-comp-side"><div class="ls-comp-total"><span class="muted">'+L('Total pledged value','总质押额')+'</span><b class="mono">'+usd(total)+'</b></div><ul class="ls-comp-list">'+rows+'</ul></div></div>';
   }
-  function tokenViewTabs(){return '<div class="ls-text-tabs" role="tablist" aria-label="'+L('Pledged token view','质押代币视图')+'">'+[['list','List','列表'],['chart','Composition','构成']].map(([k,en,zh])=>'<button type="button" role="tab" data-act="ls-token-view" data-v="'+k+'" aria-selected="'+(tokenView===k)+'">'+L(en,zh)+'</button>').join('')+'</div>';}
+  function tokenViewTabs(){return '<div class="ls-text-tabs" role="tablist" aria-label="'+L('Pledged token view','质押代币视图')+'">'+[['chart','Chart','图表'],['list','List','列表']].map(([k,en,zh])=>'<button type="button" role="tab" data-act="ls-token-view" data-v="'+k+'" aria-selected="'+(tokenView===k)+'">'+L(en,zh)+'</button>').join('')+'</div>';}
   function demandTable(p){
     if(!p.demands.length)return CF.empty(L('No financing applications yet','尚未发布融资申请'),'');
     const tail=pager('demands',p.demands.length),list=[...p.demands].sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).slice((pages.demands-1)*5,pages.demands*5);
