@@ -95,7 +95,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-row-actions .actlink{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
 .ls-market-table th.col-act,.ls-market-table td.col-act{position:sticky;right:0;background:var(--card)}
 .ls-market-table th.col-act{background:var(--card-2);z-index:2}
-.ls-more-filters>summary{cursor:pointer;color:var(--muted);font-size:var(--fs-12);min-height:44px;padding:var(--sp-3) var(--card-pad);border-bottom:1px solid var(--border)}
 .ls-detail-head{display:flex;gap:var(--sp-4);align-items:flex-start}
 .ls-detail-head>div{min-width:0}
 .ls-detail-head .hint{margin-top:0}
@@ -369,7 +368,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-market-zone{min-height:min(52vh,540px)}
 .ls-amt{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .ls-project-name .ico-chip{font-weight:660;color:var(--text)}
-.ls-more-filters{border-top:1px solid var(--border)}
 
 /* 质押代币清单：列表 / 构成两个视图用文字页签切换，与分区导航同一语言。 */
 .ls-card-head{gap:var(--sp-4)}
@@ -446,10 +444,21 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-unbound .note>span{flex:1}
 .ls-unbound:focus{outline:none}
 .ls-unbound-close{flex:none}
-/* 列表排序：总质押额不是列，统一放在列表顶部。 */
-.list-full-bar .ls-sort{margin-left:auto;display:inline-flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-12);color:var(--faint)}
-.list-full-bar .ls-sort .inp{height:var(--ctrl-h-sm);width:auto;min-width:0;border-radius:var(--radius-pill);padding:0 28px 0 12px;font-size:var(--fs-12)}
-.list-full-bar .ls-sort+.btn{margin-left:var(--sp-3)}
+/* 列表工具条：筛选、更多筛选开关、搜索与查询在前，结果数、排序、放大收在右端，一行放下；窄时整组换行。 */
+.ls-toolbar{flex-wrap:wrap;row-gap:var(--sp-2)}
+.ls-more-toggle{display:inline-flex;align-items:center;gap:6px;height:var(--ctrl-h-sm);padding:0 12px;border:1px dashed var(--border-strong);border-radius:var(--radius-pill);background:var(--bg-elev);color:var(--muted);font:inherit;font-size:var(--fs-13);cursor:pointer;white-space:nowrap}
+.ls-more-toggle:hover{color:var(--text);border-color:var(--faint)}
+.ls-more-toggle[aria-expanded="true"]{border-style:solid;border-color:var(--accent-border);color:var(--accent);background:var(--accent-soft)}
+.ls-more-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ls-more-count{min-width:18px;height:18px;padding:0 5px;border-radius:var(--radius-pill);background:var(--accent);color:var(--on-accent);font-size:var(--fs-11);font-weight:700;display:inline-grid;place-items:center}
+.ls-more-car{width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translateY(-2px)}
+.ls-more-toggle[aria-expanded="true"] .ls-more-car{transform:rotate(-135deg) translateY(-1px)}
+.ls-toolbar-end{display:inline-flex;align-items:center;gap:var(--sp-2);margin-left:var(--sp-2);padding-left:var(--sp-3);border-left:1px solid var(--border)}
+.ls-total{font-size:var(--fs-12);color:var(--faint);white-space:nowrap}
+.ls-toolbar .ls-sort select.inp{min-width:0;padding:0 28px 0 12px;font-size:var(--fs-12)}
+.ls-toolbar .fb-q{flex-basis:200px;min-width:150px}
+.ls-toolbar .btn.icon{height:var(--ctrl-h-sm);width:var(--ctrl-h-sm);min-height:0;padding:0;border-radius:var(--radius-sm)}
+.ls-more-panel{border-top:1px dashed var(--border);flex:none}
 
 /* 签名并发起质押：顶部告知吸顶，随勾选更新；下方只列可选代币。 */
 .ls-pledge-notice{position:sticky;top:calc(-1 * var(--sp-5));z-index:1;display:grid;gap:var(--sp-3);padding:var(--sp-4);border:1px solid var(--hash-border);border-radius:var(--radius);background:var(--bg-elev);box-shadow:var(--shadow)}
