@@ -163,22 +163,22 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-flow-info{min-width:0;padding:var(--sp-4) var(--sp-5) var(--sp-5)}
 .ls-flow-info h3{font-size:var(--fs-16);margin:0 0 var(--sp-3);color:var(--text);letter-spacing:-.01em}
 .ls-flow-note{font-size:var(--fs-12);color:var(--muted);line-height:1.7;margin:0}
-.ls-flow-do{display:flex;align-items:center;gap:var(--sp-2);margin-top:var(--sp-5);flex-wrap:wrap}
-.ls-flow-do .btn.primary{box-shadow:0 1px 2px rgba(29,78,216,.28)}
-.ls-flow-stats{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-5)}
-.ls-flow-stats>div{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2);padding:10px 12px}
-.ls-flow-stats .k{display:block;font-size:var(--fs-11);color:var(--faint)}
-.ls-flow-stats .v{display:block;font-size:var(--fs-14);font-weight:660;margin-top:3px;font-variant-numeric:tabular-nums}
-.ls-flow-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin-top:var(--sp-5)}
-.ls-flow-grid .btn{width:100%;white-space:normal;height:auto;min-height:44px}
-.ls-flow-grid .btn.primary,.ls-flow-grid .btn.wide{grid-column:1 / -1}
+/* 办理区动作：整宽纵向堆叠，主操作实心在上，次操作描边，低频操作退到文字级；不可用时原因紧贴按钮下方。 */
+.ls-flow-do,.ls-actions-stack{display:grid;gap:var(--sp-2);margin-top:var(--sp-4)}
+.ls-flow-do .btn,.ls-actions-stack .btn{width:100%;height:40px;min-height:40px;border-radius:var(--radius-sm);justify-content:center}
+.ls-flow-do .btn:not(.primary),.ls-actions-stack .btn:not(.primary){background:var(--card);border-color:var(--border-strong)}
+.ls-actions-more{display:flex;justify-content:center;margin-top:var(--sp-2)}
+.ls-actions-more .ls-quiet{color:var(--faint);font-weight:600;border:0;background:none}
+.ls-actions-more .ls-quiet:hover:not(:disabled){color:var(--danger)}
+.ls-flow-alert{display:flex;gap:var(--sp-2);align-items:flex-start;padding:10px 12px;border-radius:var(--radius-sm);background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);font-size:var(--fs-12);line-height:1.6}
+.cq-why{margin:2px 0 0;font-size:var(--fs-11);color:var(--faint);line-height:1.6;text-align:center}
+.cq-next-round{display:grid;gap:2px;margin-top:var(--sp-2);padding-top:var(--sp-3);border-top:1px dashed var(--border-dash)}
+.cq-quote-line{margin:0 0 var(--sp-2);font-size:var(--fs-13)}
 .ls-flow-info h3 .tag{margin-left:8px;vertical-align:2px}
 .ls-op-section+.ls-op-section{padding-top:var(--sp-5);margin-top:var(--sp-5);border-top:1px solid var(--border)}
 .ls-op-section .ls-row h3{margin:0}.ls-op-section .ls-row{justify-content:space-between;font-size:var(--fs-12)}
 .ls-operation-metric{display:flex;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap;margin:var(--sp-3) 0;font-size:var(--fs-12)}
 .ls-operation-amount{font-size:var(--fs-19);font-weight:600;margin:var(--sp-4) 0}
-.ls-app-preview{margin-top:var(--sp-3)}.ls-app-preview>div{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2);padding:var(--sp-3) 0;font-size:var(--fs-12)}
-.ls-app-preview .tag{white-space:normal;text-align:right}
 .ls-secondary-actions{display:grid;gap:var(--sp-3);margin-top:var(--sp-5)}
 .ls-op-danger{border-top:1px solid var(--border);margin-top:var(--sp-5);padding-top:var(--sp-3)}
 .ls-op-danger .btn{background:none;border-color:transparent;color:var(--muted);padding-left:0}
@@ -274,7 +274,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-financing-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .ls-demand-link{color:var(--accent);font-weight:500;overflow-wrap:anywhere}
 .cq-operation-status{margin-bottom:var(--sp-3)}
-.cq-next-step{color:var(--muted);line-height:1.7;margin:var(--sp-3) 0 var(--sp-4)}
+.cq-next-step{color:var(--muted);font-size:var(--fs-13);line-height:1.7;margin:var(--sp-3) 0 0}
 .modal:has(.cq-request-detail){max-width:920px}
 .cq-request-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
 .cq-request-head h2{font-size:var(--fs-24);margin:var(--sp-2) 0;overflow-wrap:anywhere}
@@ -450,3 +450,35 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .list-full-bar .ls-sort{margin-left:auto;display:inline-flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-12);color:var(--faint)}
 .list-full-bar .ls-sort .inp{height:var(--ctrl-h-sm);width:auto;min-width:0;border-radius:var(--radius-pill);padding:0 28px 0 12px;font-size:var(--fs-12)}
 .list-full-bar .ls-sort+.btn{margin-left:var(--sp-3)}
+
+/* 签名并发起质押：顶部告知吸顶，随勾选更新；下方只列可选代币。 */
+.ls-pledge-notice{position:sticky;top:calc(-1 * var(--sp-5));z-index:1;display:grid;gap:var(--sp-3);padding:var(--sp-4);border:1px solid var(--hash-border);border-radius:var(--radius);background:var(--bg-elev);box-shadow:var(--shadow)}
+.ls-pledge-notice p{margin:0;font-size:var(--fs-12);color:var(--muted);line-height:1.7}
+.ls-pledge-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+.ls-pledge-sum .k{display:block;font-size:var(--fs-11);color:var(--faint);font-weight:600}
+.ls-pledge-sum .v{display:block;margin-top:2px;font-size:var(--fs-14);color:var(--text);white-space:nowrap}
+.ls-pledge-to{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;padding:6px 10px;border-radius:var(--radius-xs);background:var(--hash-bg);font-size:var(--fs-12)}
+.ls-pledge-to .mono{color:var(--hash-text);overflow-wrap:anywhere;min-width:0;flex:1}
+.ls-pick td,.ls-pick th{vertical-align:middle;padding-top:10px;padding-bottom:10px}
+.ls-pick .ls-pick-check{width:44px}
+.ls-pick-row{cursor:pointer}
+.ls-pick-row.on{background:var(--accent-soft)}
+@media(max-width:640px){.ls-pledge-sum{grid-template-columns:1fr 1fr}}
+/* 质押代币清单筛选：本企业资产方可见，选择即生效。 */
+.ls-token-filters{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-bottom:var(--sp-3)}
+.ls-mini{display:inline-flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-12);color:var(--faint)}
+.ls-mini .inp{height:var(--ctrl-h-sm);width:auto;min-width:0;border-radius:var(--radius-pill);padding:0 12px;font-size:var(--fs-12)}
+.ls-mini-search .inp{width:180px}
+.ls-token-row{cursor:pointer}
+.ls-token-row:hover{background:var(--row-hover)}
+.ls-token-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ls-token-id .cell-sub{display:block}
+/* 代币详情：只读分节。 */
+.ls-detail-sec h3{font-size:var(--fs-13);margin:0 0 var(--sp-2);color:var(--text)}
+.ls-dl{display:grid;gap:0;margin:0}
+.ls-dl>div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:var(--sp-3);padding:7px 0;border-bottom:1px dashed var(--border-dash);font-size:var(--fs-13)}
+.ls-dl dt{color:var(--faint);font-size:var(--fs-12)}
+.ls-dl dd{margin:0;color:var(--text);min-width:0}
+.ls-break{overflow-wrap:anywhere}
+.ls-going{display:flex;gap:var(--sp-3);align-items:flex-start;margin:0;font-size:var(--fs-13);color:var(--muted)}
+.ls-going .tag{flex:none}

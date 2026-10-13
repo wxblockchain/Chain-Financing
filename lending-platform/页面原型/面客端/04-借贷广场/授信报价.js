@@ -275,21 +275,35 @@
     return (flow.result?note(flow.result,flow.result,'ok'):'')+overview+section(L('Request information','融资申请资料'),request)+section(L('Current quote','当前报价'),currentQuoteView(q))+(creditSummary?section(L('Credit summary','授信摘要'),creditSummary):'')+historyView+section(L('Agreement files','协议文件'),requestAgreements(p));
   }
   /* 融资流程的节点模型：操作区左侧竖轴据此画节点，不再单独画横向进度条。 */
+  /* 轴只表示当前这一轮：没有进行中的需求时停在「发布」，上一轮的结果在项目记录里。 */
   Q.financeSteps=p=>{
-    const d=D.current(p)||p.demands.at(-1),ended=d?.state==='ended';
-    const stage=!d?0:{open:1,quoted:2,funding:3,funded:4}[d.state]??0;
-    return {ended,stage,labels:[['Publish request','发布融资需求'],['Institution quote','机构报价'],['Confirm quote','确认报价'],['Disbursement','融资放款']]};
+    const d=D.current(p);
+    const stage=!d?0:{open:1,quoted:2,funding:3}[d.state]??0;
+    return {ended:false,stage,labels:[['Publish request','发布融资需求'],['Institution quote','机构报价'],['Confirm quote','确认报价'],['Disbursement','融资放款']]};
   };
+  /* 发布入口按当前事实呈现：能发布就给主按钮，不能发布时按钮保留为不可用并就近写明原因。 */
+  function publishGate(p){
+    const n=D.numbers(p),d=D.current(p);
+    if(D.terminal(p))return null;
+    if(d&&d.state==='funding')return L('A new round can be published once this round\'s disbursement is confirmed.','本轮放款确认后才能发布新一轮。');
+    if(['review','returned'].includes(p.state))return L('Available once the project is approved.','项目审核通过后可发布。');
+    if(!n.value)return L('This project has no valid collateral. Complete a token pledge before publishing.','本项目暂无有效质押，请先完成代币质押后再发布。');
+    if(p.expired)return L('The project has expired. New rounds cannot be published.','项目已到期，不能发布新一轮。');
+    if(n.grade==='short')return L('Coverage shortfall. Add collateral before publishing.','覆盖不足，补足质押后才能发布。');
+    if(n.free<=0)return L('The available amount is 0, so a new round cannot be published.','可融金额为 0，暂不能发布新一轮。');
+    return '';
+  }
+  const publishButton=(p,label,reason)=>'<button class="btn primary" data-act="ls-publish"'+(reason?' disabled aria-describedby="cq-publish-why"':'')+'>'+label+'</button>'+(reason?'<p class="cq-why" id="cq-publish-why">'+reason+'</p>':'');
   Q.financePanel=p=>{
-    const ln=CF.L7?.panel(p,'');if(ln)return ln;
-    const d=D.current(p),last=d||p.demands.at(-1),q=d&&active(p),a=D.actions(p);let action='',secondary='',hint='';
-    if(!d){hint=a.mine&&!D.numbers(p).value?L('This project has no valid collateral. Complete a token pledge before publishing a financing request.','本项目暂无有效质押，请先完成代币质押后再发布。'):L('Publish a request to receive financing quotes.','发布需求后，资金机构可为本企业报价。');if(a.mine)action='<button class="btn primary" data-act="ls-publish"'+(!a.publish?' disabled':'')+'>'+L('Publish financing request','发布融资需求')+'</button>';}
+    const a=D.actions(p),again=p.demands.length>0,newLabel=again?L('Publish a new round','发布新一轮融资需求'):L('Publish financing request','发布融资需求');
+    const ln=CF.L7?.panel(p,'');if(ln){if(a.mine&&!D.terminal(p))ln.secondary=(ln.secondary||'')+'<div class="cq-next-round">'+publishButton(p,newLabel,publishGate(p)).replace('btn primary','btn')+'</div>';return ln;}
+    const d=D.current(p),q=d&&active(p);let action='',secondary='',hint='';
+    if(!d){const gate=a.mine?publishGate(p):null;hint=!a.mine?(again?L('No active request. Earlier rounds are in the project records.','暂无进行中需求，往轮记录见项目记录。'):L('No financing request has been published yet.','资产方尚未发布融资需求。')):D.terminal(p)?L('The project has ended. No new rounds can be published.','项目已终结，不再发布新需求。'):gate?'':again?L('The previous round has ended. You can publish a new round now.','上一轮已结束，可直接发布新一轮。'):L('Publish a request to receive financing quotes.','发布需求后，资金机构可为本企业报价。');if(a.mine&&gate!==null)action=publishButton(p,newLabel,gate);}
     else if(d.state==='open'){hint=a.mine?L('Waiting for a funder to quote.','等待资金机构报价。'):L('Check credit and submit terms for this request.','核对授信后，为本笔需求提交报价。');action=a.mine?'<button class="btn primary" data-act="ls-publish"'+(!a.edit?' disabled':'')+'>'+L('Edit amount','修改融资金额')+'</button>':'<button class="btn primary" data-act="ls-quote" data-v="'+E(p.id)+'"'+(!a.quote?' disabled':'')+'>'+L('Quote now','立即报价')+'</button>';if(a.mine)secondary='<button class="btn" data-act="ls-end-demand"'+(!a.edit?' disabled':'')+'>'+L('Withdraw request','撤下需求')+'</button>';}
     else if(d.state==='quoted'){hint=a.mine?L('Review the terms, then accept or reject.','核对条款后，接受或拒绝报价。'):L('Waiting for the asset holder to respond.','等待资产方确认报价。');if(a.mine)action='<button class="btn primary" data-act="ls-handoff" data-v="quote">'+L('Review and respond','确认 / 拒绝报价')+'</button>';}
     else {hint=L('The quote has been accepted; disbursement is next.','报价已接受，下一步办理放款。');action='<button class="btn primary" data-act="ls-handoff" data-v="funding">'+L('View disbursement','查看放款')+'</button>';}
     if(d?.state==='open'&&!a.mine){if(S.role!=='fund'){action='';hint=L('Only funders may submit a quote. You can view this request and its history.','仅资金方可提交报价；您可查看本笔需求与历史。');}else if(!a.quote)hint=p.expired?L('The project has expired. New quotes are unavailable.','项目已到期，当前不可新增报价。'):L('Collateral coverage is insufficient. Await an updated request.','当前质押覆盖不足，请等待资产方更新需求。');}
-    if(!d&&p.balance){hint=L('View the financing record for this project.','查看本项目已完成的融资记录。');action='';}
-    return {body:'<div class="cq-operation-status">'+CF.tag('',d?requestState(d):p.balance?L('Disbursed','已放款'):L('No active request','暂无进行中需求'))+'</div>'+(d?'<div class="ls-operation-amount mono">'+usd(d.amount)+'</div>':'')+(q?'<p>'+institution(q.fund)+' · <b>'+q.rate+'%</b></p>'+lockInfo(q):'')+'<p class="cq-next-step">'+hint+'</p>',primary:action,secondary};
+    return {body:'<div class="cq-operation-status">'+CF.tag('',d?requestState(d):L('No active request','暂无进行中需求'))+'</div>'+(q?'<p class="cq-quote-line">'+institution(q.fund)+' · <b>'+q.rate+'%</b></p>'+lockInfo(q):'')+(hint?'<p class="cq-next-step">'+hint+'</p>':''),primary:action,secondary};
   };
 
   const journeyLabels=[['Publish request','发布融资需求'],['Establish credit','核定授信'],['Submit quote','提交融资报价'],['Respond to quote','确认报价'],['Disbursement','办理放款']];
