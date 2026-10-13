@@ -6,7 +6,7 @@
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
-  const SCHEMA = 'ws374-2';
+  const SCHEMA = 'ws397-1';
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
   /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
   D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
@@ -20,8 +20,39 @@
   D.PLEDGE_CHAIN = 'ETH';
   D.now = () => Date.now() + D.offset;
   D.iso = () => new Date(D.now()).toISOString();
+  /* 项目期限按 UTC 业务日期选到期日：加 N 个月取目标月同日，目标月没有该日取月末。 */
+  D.today = () => D.iso().slice(0,10);
+  D.addDays = (day, n) => new Date(Date.parse(day+'T00:00:00Z')+n*DAY).toISOString().slice(0,10);
+  D.addMonths = (day, n) => {
+    const [y,m,d]=day.split('-').map(Number),first=new Date(Date.UTC(y,m-1+n,1));
+    const last=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,0)).getUTCDate();
+    return new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth(),Math.min(d,last))).toISOString().slice(0,10);
+  };
+  /* 可选到期日：创建日 + 3 个月 ～ 创建日 + 最长项目期限（≤ 12 个月），且晚于当天。退回重提沿用原创建日与创建时锁定的上限。 */
+  D.termRange = (kindId, project) => {
+    const start=project?project.created.slice(0,10):D.today();
+    const cap=project?project.termCap:D.type(kindId).maxTerm;
+    if(!cap)return {start,none:true};
+    const min=[D.addMonths(start,3),D.addDays(D.today(),1)].sort().at(-1),max=D.addMonths(start,Math.min(cap,12));
+    return {start,cap,min,max,empty:min>max};
+  };
+  D.endOf = day => new Date(Date.parse(day+'T00:00:00Z')+DAY).toISOString();
+  /* 外部演示接入的项目可能缺少本模块字段：按同一口径补齐，页面不出现 undefined。 */
+  D.fill = p => {
+    if(!p)return p;
+    if(!p.kind||p.kind==='ar')p.kind='erc20-ar';
+    if(!p.spv)p.spv=D.SPV;
+    if(!p.rate)p.rate=D.type(p.kind).maxRate;
+    if(!p.settle)p.settle=['USD'];
+    if(!p.created)p.created=p.published||D.iso();
+    if(!p.termCap)p.termCap=D.type(p.kind).maxTerm;
+    if(!p.expiry){p.expiry=p.expires?p.expires.slice(0,10):D.addMonths(p.created.slice(0,10),p.term||12);p.expires=D.endOf(p.expiry);}
+    if(p.contract&&!p.deployedAt)p.deployedAt=p.created;
+    if(!p.contract)p.deployedAt=null;
+    return p;
+  };
   D.save = () => { try { localStorage.setItem(KEY, JSON.stringify({schema:SCHEMA,projects:D.projects,tokens:D.tokens,applications:D.applications,executions:D.executions,events:D.events,offset:D.offset,serial:D.serial})); } catch (_) {} };
-  D.project = id => D.projects.find(p => p.id === id);
+  D.project = id => D.fill(D.projects.find(p => p.id === id));
   D.token = id => D.tokens.find(t => t.id === id);
   D.mine = p => CF.S.role === 'asset' && p && p.owner === 'entity-demo-a';
   D.terminal = p => ['closed','settled'].includes(p.state);
@@ -36,11 +67,7 @@
   D.agreement = a => ({id:'AGR-'+a.id,name:['Pledge agreement · '+a.id,'质押协议 · '+a.id]});
   D.normalize = () => {
     D.projects.forEach(p=>{
-      if(!p.kind||p.kind==='ar')p.kind='erc20-ar';
-      if(!p.spv)p.spv=D.SPV;
-      if(!p.rate)p.rate=D.type(p.kind).maxRate;
-      if(!p.term)p.term=12;
-      if(!p.settle)p.settle=['USD'];
+      D.fill(p);
       if(p.state==='draft')p.state='available';
     });
     D.tokens.forEach(t=>{if(t.kind==='ar')t.kind='erc20-ar';});
@@ -123,19 +150,21 @@
     if(!D.kinds().includes(form.kind))throw Error('kind');
     const cfg=D.type(form.kind);
     const rate=Number(form.rate);
-    if(!(rate>0&&rate<=cfg.maxRate*100))throw Error('rate');
-    const term=Number(form.term);
-    if(!Number.isInteger(term)||term<3||term>cfg.maxTerm)throw Error('term');
+    if(!/^\d+(\.\d{1,2})?$/.test(String(form.rate).trim())||!(rate>0&&rate<=cfg.maxRate*100))throw Error('rate');
+    /* 提交时按当刻条件复核到期日：范围外一律拒绝。 */
+    const range=D.termRange(form.kind,project);
+    if(range.none)throw Error('termCap');
+    if(!form.expiry||range.empty||form.expiry<range.min||form.expiry>range.max)throw Error('expiry');
     if(!form.settle||!form.settle.length)throw Error('settle');
     if(project){
       if(project.state!=='returned')throw Error('reviewChanged');
-      Object.assign(project,{name:[title,title],kind:form.kind,rate:rate/100,term,settle:[...form.settle],state:'review',reviewReason:null});
+      Object.assign(project,{name:[title,title],kind:form.kind,rate:rate/100,expiry:form.expiry,expires:D.endOf(form.expiry),settle:[...form.settle],state:'review',reviewReason:null});
       D.log(project,'projectSubmitted');D.save();return project;
     }
     const created=D.iso();
-    const p={id:'FP-DEMO-'+(++D.serial),name:[title,title],owner:'entity-demo-a',kind:form.kind,rate:rate/100,term,
-      settle:[...form.settle],spv:D.SPV,repay:D.REPAY,contract:null,state:'review',balance:0,demands:[],
-      created,published:null,expires:new Date(Date.parse(created)+term*30*DAY).toISOString()};
+    const p={id:'FP-DEMO-'+(++D.serial),name:[title,title],owner:'entity-demo-a',kind:form.kind,rate:rate/100,termCap:cfg.maxTerm,
+      settle:[...form.settle],spv:D.SPV,repay:D.REPAY,contract:null,deployedAt:null,state:'review',balance:0,demands:[],
+      created,published:null,expiry:form.expiry,expires:D.endOf(form.expiry)};
     D.projects.unshift(p);D.log(p,'created');D.save();return p;
   };
   /* 审核与部署是同一步：部署成功即通过，同时产生合约地址。 */
@@ -143,7 +172,7 @@
     if(p.state!=='review')throw Error('reviewChanged');
     if(outcome==='approve'){
       p.state='available';p.reviewReason=null;
-      p.contract='0x'+(D.serial+7).toString(16).padStart(40,'0');
+      p.contract='0x'+(D.serial+7).toString(16).padStart(40,'0');p.deployedAt=D.iso();
       D.log(p,'projectApproved');
     } else if(outcome==='deployFailed'){ D.log(p,'deployFailed'); }
     else { p.state='returned';p.reviewReason=reason||['The submitted project details need a correction.','提交的创建信息需要修正后再提交。'];D.log(p,'projectReturned'); }
@@ -200,7 +229,7 @@
     if(!Array.isArray(referenceCurrencies)||!referenceCurrencies.length||referenceCurrencies.some(c=>!['USD','USDT','USDC'].includes(c)))throw Error('referenceCurrencies');
     const preferences=[...new Set(referenceCurrencies)];
     if(edit){current.amount=amount;current.referenceCurrencies=preferences;}
-    else{const at=D.iso();p.demands.push({id:p.id+'-'+String(p.demands.length+1).padStart(2,'0'),amount,referenceCurrencies:preferences,state:'open',at});p.state='raising';if(!p.published){p.published=at;const expiry=new Date(at);expiry.setUTCFullYear(expiry.getUTCFullYear()+1);p.expires=expiry.toISOString();}}
+    else{const at=D.iso();p.demands.push({id:p.id+'-'+String(p.demands.length+1).padStart(2,'0'),amount,referenceCurrencies:preferences,state:'open',at});p.state='raising';if(!p.published)p.published=at;}
     D.log(p,edit?'amountEdited':'published');D.save();
   };
   D.endDemand = p => {const a=D.actions(p);if(!a.edit)throw Error('demandChanged');const d=D.current(p);d.state='ended';d.reason='withdrawn';d.endedAt=D.iso();D.recompute(p);D.log(p,'demandWithdrawn',d.id);D.save();};
@@ -208,7 +237,8 @@
   D.seed = () => {
     D.projects=[];D.tokens=[];D.applications=[];D.executions=[];D.events=[];D.offset=0;D.serial=100;
     for(let i=1;i<=24;i++){
-      const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',kind:'erc20-ar',rate:0.8,term:12,settle:['USD'],repay:D.REPAY,contract:'0x'+(i*31+7).toString(16).padStart(40,'0'),spv:D.SPV,state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],published:new Date(D.now()-i*DAY).toISOString(),expires:new Date(D.now()+(365-i)*DAY).toISOString(),quotes:i===3?1:0};
+      const created=new Date(D.now()-(i+2)*DAY).toISOString(),expiry=D.addMonths(created.slice(0,10),[12,9,6][i%3]);
+      const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',kind:'erc20-ar',rate:0.8,termCap:12,settle:['USD'],repay:D.REPAY,contract:'0x'+(i*31+7).toString(16).padStart(40,'0'),deployedAt:new Date(Date.parse(created)+3*3600000).toISOString(),spv:D.SPV,state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],created,published:new Date(D.now()-i*DAY).toISOString(),expiry,expires:D.endOf(expiry),quotes:i===3?1:0};
       if(i!==5&&i!==6)p.demands.push({id:p.id+'-01',amount:i===4?500000:300000,state:i===4?'funded':i===3?'quoted':'open',at:p.published,tenorDays:i===3?90:i===4?120:null,rate:i===3?'6.40':i===4?'6.80':null,institution:i===3?['Demo Capital','演示资金机构']:null,quoteAt:i===3?p.published:null});
       D.projects.push(p);
       for(let j=1;j<=7;j++){const released=[5,6].includes(i);const value=j===7?100000:150000;

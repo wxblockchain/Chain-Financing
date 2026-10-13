@@ -1,10 +1,34 @@
 
 .ls-stack{display:flex;flex-direction:column;gap:var(--sp-5)}
 .ls-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6)}
-.ls-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--sp-5)}
-@media(max-width:1180px){.ls-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:700px){.ls-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.ls-stats .v{font-size:var(--fs-19);overflow-wrap:anywhere}
+/* 项目额度：常驻四项核心数字 + 可展开明细。单位并入标签，数值整行不折断，空间不够时整格换行。 */
+.ls-figures{border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
+.ls-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:0}
+.ls-stat{display:flex;flex-direction:column;gap:6px;min-width:0;padding:var(--sp-4) var(--sp-5);border-left:1px solid var(--row-line)}
+.ls-stat:first-child{border-left:0}
+.ls-stat .k{font-size:var(--fs-12);color:var(--faint);font-weight:600;white-space:nowrap}
+.ls-stat .k .u{font-weight:500;color:var(--faint)}
+.ls-stat .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-19);font-weight:660;color:var(--text);white-space:nowrap;letter-spacing:-.01em}
+.ls-stat[data-tone="accent"] .v{color:var(--accent)}
+.ls-stat[data-tone="pos"] .v{color:var(--pos)}
+.ls-stat-tag .tag{font-size:var(--fs-11)}
+.ls-stat-more{border-top:1px solid var(--row-line)}
+.ls-stat-more>summary{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;min-height:44px;padding:var(--sp-2) var(--sp-5);cursor:pointer;list-style:none;font-size:var(--fs-12);color:var(--muted)}
+.ls-stat-more>summary::-webkit-details-marker{display:none}
+.ls-stat-more>summary b{font-size:var(--fs-13);color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ls-stat-more>summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:var(--radius)}
+.ls-stat-flag{color:var(--violet);background:var(--violet-bg);border:1px solid var(--violet-border);border-radius:var(--radius-pill);padding:1px 8px;font-size:var(--fs-11);font-weight:600}
+.ls-stat-car{margin-left:auto;width:8px;height:8px;border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);transform:rotate(45deg) translateY(-2px)}
+.ls-stat-more[open] .ls-stat-car{transform:rotate(-135deg) translateY(-2px)}
+.ls-more-body{display:grid;gap:2px;padding:0 var(--sp-5) var(--sp-4)}
+.ls-more-row{display:grid;grid-template-columns:minmax(0,1fr) auto 72px;gap:var(--sp-4);align-items:baseline;padding:6px 0;border-top:1px dashed var(--border-dash);font-size:var(--fs-12);color:var(--muted)}
+.ls-more-row .v{color:var(--text);white-space:nowrap;text-align:right}
+.ls-more-row .sub{color:var(--faint);text-align:right}
+/* 摘要字段：一行四项，窄屏自动换行。 */
+.ls-meta{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-7);margin:var(--sp-4) 0 0}
+.ls-meta>div{min-width:0}
+.ls-meta dt{font-size:var(--fs-11);color:var(--faint);font-weight:600}
+.ls-meta dd{margin:2px 0 0;font-size:var(--fs-13);color:var(--text)}
 .ls-row{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
 .ls-row .push{margin-left:auto}
 .ls-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4);padding:var(--card-pad)}
@@ -162,7 +186,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .btn.primary .ls-todo{background:var(--card);color:var(--accent)}
 .ls-flow-progress{display:grid;grid-template-columns:repeat(4,1fr);list-style:none;padding:0;gap:var(--sp-2);margin:var(--sp-5) 0;color:var(--muted);font-size:var(--fs-11)}
 .ls-flow-progress li{border-top:2px solid var(--border);padding-top:var(--sp-2)}.ls-flow-progress [aria-current=step]{border-color:var(--accent);color:var(--accent)}
-.ls-pool-summary{font-size:var(--fs-12);color:var(--muted);margin:0}
 .ls-review-group h3{font-size:var(--fs-14);color:var(--text);margin:0 0 var(--sp-3)}
 .ls-application{border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-4);margin-bottom:var(--sp-3)}
 .ls-application-summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:var(--sp-4);align-items:center;color:var(--text)}
@@ -180,8 +203,8 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 @media(min-width:901px) and (max-width:1180px){.ls-workspace{grid-template-columns:minmax(0,1fr) 320px}.ls-detail-main .ls-table{min-width:620px}}
 @media(max-width:900px){.ls-workspace{display:flex;flex-direction:column;gap:var(--sp-5)}.ls-workspace .ls-action-rail{order:-1;width:100%;z-index:2}.ls-workspace .ls-detail-main{width:100%}.ls-operations{max-height:min(52dvh,420px,var(--ls-rail-room,420px));box-shadow:var(--shadow)}.ls-operations-head{padding:0 var(--sp-4)}.ls-rail-toggle{display:block}.ls-operations:not([data-expanded=true]) .ls-flows{display:none}.ls-flow-grid{grid-template-columns:1fr 1fr}.ls-secondary-actions{grid-template-columns:1fr 1fr}.ls-detail-main .ls-table th:first-child{width:auto}.ls-hash-row{flex-wrap:nowrap}.ls-stats .v{font-size:var(--fs-16)}}
 @media(max-width:600px){.ls-application-summary{grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-3)}.ls-application-action{grid-column:1/-1}.ls-application-action:empty{display:none}.ls-application-action .btn{width:100%}.ls-application-details>summary{flex-wrap:wrap}.ls-application-details>summary .mono{width:100%;margin:0}.ls-operation-metric{font-size:var(--fs-12)}}
-@media(max-width:1100px){.ls-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:768px){.ls-stack .pager .total,.ls-form .pager .total{flex-basis:100%}.ls-grid,.ls-fields,.ls-steps{grid-template-columns:1fr}.ls-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-table td{flex-wrap:wrap}.ls-table td:before{max-width:45%;white-space:normal}.ls-table td>*{max-width:100%}.ls-range{width:100%}.ls-actions .btn{flex:1}.ls-row .push{margin-left:0}.ls-step{padding-bottom:var(--sp-3)}.ls-primary-filters .field{max-width:none;flex-basis:100%}.ls-primary-filters .acts{width:100%;margin:0}.ls-primary-filters .acts .btn{flex:1}.ls-market-table td.col-act{position:static}.ls-market-table td .cell-wrap{min-width:0;max-width:70%}.ls-row-actions{flex-wrap:wrap}.ls-detail-head>.tok-mark{display:none}}
+@media(max-width:1100px){.ls-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:768px){.ls-stack .pager .total,.ls-form .pager .total{flex-basis:100%}.ls-grid,.ls-fields,.ls-steps{grid-template-columns:1fr}.ls-table td{flex-wrap:wrap}.ls-table td:before{max-width:45%;white-space:normal}.ls-table td>*{max-width:100%}.ls-range{width:100%}.ls-actions .btn{flex:1}.ls-row .push{margin-left:0}.ls-step{padding-bottom:var(--sp-3)}.ls-primary-filters .field{max-width:none;flex-basis:100%}.ls-primary-filters .acts{width:100%;margin:0}.ls-primary-filters .acts .btn{flex:1}.ls-market-table td.col-act{position:static}.ls-market-table td .cell-wrap{min-width:0;max-width:70%}.ls-row-actions{flex-wrap:wrap}.ls-detail-head>.tok-mark{display:none}}
 /* L6 flow composition; visual values inherit the platform tokens. */
 .cq-section{border-top:1px solid var(--border);margin-top:var(--sp-5);padding-top:var(--sp-5)}
 .cq-section:first-child{border-top:0;margin-top:0;padding-top:0}
@@ -330,13 +353,13 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 @media(max-width:640px){.modal-mask:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){padding:var(--sp-2)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){width:100%;max-height:calc(100dvh - 16px)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) :is(.modal-h,.modal-b,.modal-f){padding:var(--sp-3)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-f .btn{flex:1}}
 
 /* Section labels locate content; all four lists remain in document flow. */
-/* 分区导航采用与控制台一致的下划线页签：不做盒子，不用背景块。 */
+/* 分区导航只用文字：无边框、无下划线，当前项以主色与字重区分；吸顶时用页面底色衬底，不画分隔线。 */
 .ls-section-nav{position:sticky;top:var(--ls-section-top,80px);z-index:2;display:flex;gap:var(--sp-6);overflow-x:auto;
-  background:var(--bg);border-bottom:1px solid var(--border);padding:0}
-.ls-section-nav button{flex:0 0 auto;min-height:48px;border:0;border-bottom:2px solid transparent;background:transparent;
-  color:var(--muted);padding:var(--sp-3) 0;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+  background:var(--bg);border:0;padding:0}
+.ls-section-nav button{flex:0 0 auto;min-height:44px;border:0;background:transparent;
+  color:var(--faint);padding:var(--sp-2) 0;font:inherit;font-size:var(--fs-14);font-weight:600;cursor:pointer;white-space:nowrap}
 .ls-section-nav button:hover{color:var(--text)}
-.ls-section-nav button[aria-current]{color:var(--accent);border-bottom-color:var(--accent)}
+.ls-section-nav button[aria-current]{color:var(--accent);font-weight:700}
 .ls-section-nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .ls-detail-main>:is(#ls-pledged-tokens,#ls-applications,#ls-disbursements,#ls-repayments){scroll-margin-top:calc(var(--ls-section-top,80px) + 74px)}
 .rp-progress{padding:12px 0}.rp-progress-status{font-weight:600;margin:0 0 12px}.rp-progress ol{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0;margin:0;list-style:none}.rp-progress li{display:flex;gap:8px;align-items:flex-start}.rp-progress li div{min-width:0}.rp-progress li b,.rp-progress li .hint{display:block}.rp-progress-dot{border:1px solid var(--border);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;flex-shrink:0;color:var(--muted)}.rp-progress [data-complete=true] .rp-progress-dot,.rp-progress [aria-current] .rp-progress-dot{color:var(--accent);border-color:var(--accent)}.rp-selected-reference{overflow-wrap:anywhere}
@@ -348,7 +371,82 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-project-name .ico-chip{font-weight:660;color:var(--text)}
 .ls-more-filters{border-top:1px solid var(--border)}
 
-/* 质押池构成：图表与清单同卡片，窄屏改为上下堆叠（公共 .chart-split 负责断点）。 */
-.ls-pool-chart{padding:var(--sp-2) 0 var(--sp-5);border-bottom:1px solid var(--border);margin-bottom:var(--sp-4)}
-.ls-legend-table{font-size:var(--fs-13)}
-.ls-legend-table td:first-child{display:flex;align-items:center}
+/* 质押代币清单：列表 / 构成两个视图用文字页签切换，与分区导航同一语言。 */
+.ls-card-head{gap:var(--sp-4)}
+.ls-text-tabs{display:flex;gap:var(--sp-5);margin-left:auto}
+.ls-text-tabs button{border:0;background:none;padding:var(--sp-1) 0;min-height:32px;font:inherit;font-size:var(--fs-13);font-weight:600;color:var(--faint);cursor:pointer}
+.ls-text-tabs button:hover{color:var(--text)}
+.ls-text-tabs button[aria-selected="true"]{color:var(--accent);font-weight:700}
+.ls-text-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--radius-xs)}
+/* 构成视图：分段环 + 六边形代币标记 + 占比条，五类合计即总质押额。 */
+.ls-composition{display:grid;grid-template-columns:minmax(180px,236px) minmax(0,1fr);gap:var(--sp-7);align-items:center;padding:var(--sp-3) 0 var(--sp-2)}
+.ls-ring{display:block;width:100%;max-width:236px;margin-inline:auto}
+.ls-ring circle{fill:none}
+.ls-ring .halo{stroke:var(--border-dash);stroke-width:1;stroke-dasharray:2 4}
+.ls-ring .track{stroke:var(--track);stroke-width:12}
+.ls-ring .seg{stroke-width:12;stroke-linecap:butt}
+.ls-ring .seg[data-tone="accent"]{stroke:var(--accent)}
+.ls-ring .seg[data-tone="violet"]{stroke:var(--violet)}
+.ls-ring .seg[data-tone="warn"]{stroke:var(--warn)}
+.ls-ring .seg[data-tone="gray"]{stroke:var(--border-strong)}
+.ls-ring .seg[data-tone="danger"]{stroke:var(--danger)}
+.ls-ring-v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;fill:var(--text);font-size:var(--fs-24)}
+.ls-ring-k{fill:var(--faint);font-size:var(--fs-11);font-family:var(--sans)}
+.ls-comp-total{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-4);padding-bottom:var(--sp-3);border-bottom:1px solid var(--row-line);font-size:var(--fs-12)}
+.ls-comp-total b{font-size:var(--fs-16);white-space:nowrap}
+.ls-comp-list{list-style:none;margin:0;padding:0}
+.ls-comp-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;grid-template-areas:"hex name val" "hex bar pct";gap:4px var(--sp-3);align-items:center;padding:var(--sp-3) 0;border-bottom:1px dashed var(--border-dash)}
+.ls-comp-row:last-child{border-bottom:0}
+.ls-comp-row .ls-hex{grid-area:hex;width:22px;height:22px}
+.ls-comp-name{grid-area:name;display:flex;gap:var(--sp-2);align-items:baseline;font-size:var(--fs-13);color:var(--text);font-weight:600;min-width:0}
+.ls-comp-name .muted{font-size:var(--fs-11);font-weight:500}
+.ls-comp-val{grid-area:val;font-size:var(--fs-13);white-space:nowrap;text-align:right}
+.ls-comp-bar{grid-area:bar;height:4px;border-radius:var(--radius-pill);background:var(--track);overflow:hidden}
+.ls-comp-bar i{display:block;height:100%;border-radius:inherit;background:var(--border-strong)}
+.ls-comp-bar i[data-tone="accent"]{background:var(--accent)}
+.ls-comp-bar i[data-tone="violet"]{background:var(--violet)}
+.ls-comp-bar i[data-tone="warn"]{background:var(--warn)}
+.ls-comp-bar i[data-tone="danger"]{background:var(--danger)}
+.ls-comp-pct{grid-area:pct;font-size:var(--fs-11);color:var(--faint);text-align:right}
+@media(max-width:700px){.ls-composition{grid-template-columns:1fr;gap:var(--sp-4)}.ls-ring{max-width:200px}}
+/* 六边形代币标记：描边 + 内核，按状态取语义色。 */
+.ls-hex{width:18px;height:18px;flex:none}
+.ls-hex path{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.4;stroke-linejoin:round}
+.ls-hex .core{fill:var(--accent);stroke:none;opacity:.55}
+.ls-hex[data-tone="violet"] path{fill:var(--violet-bg);stroke:var(--violet)}.ls-hex[data-tone="violet"] .core{fill:var(--violet)}
+.ls-hex[data-tone="warn"] path{fill:var(--warn-bg);stroke:var(--warn)}.ls-hex[data-tone="warn"] .core{fill:var(--warn)}
+.ls-hex[data-tone="gray"] path{fill:var(--gray-bg);stroke:var(--border-strong)}.ls-hex[data-tone="gray"] .core{fill:var(--faint)}
+.ls-hex[data-tone="danger"] path{fill:var(--danger-bg);stroke:var(--danger)}.ls-hex[data-tone="danger"] .core{fill:var(--danger)}
+.ls-token-id{display:inline-flex;align-items:center;gap:var(--sp-2)}
+/* 本项目质押合约：右栏常驻，完整地址可复制，平台未核验单独标出。 */
+.ls-contract-card{margin-bottom:12px;padding:var(--sp-4) var(--sp-5)}
+.ls-contract-top{display:flex;align-items:center;gap:var(--sp-2);min-height:32px}
+.ls-contract-k{font-size:var(--fs-12);font-weight:660;color:var(--text)}
+.ls-contract-tools{margin-left:auto;display:inline-flex;gap:2px}
+.ls-contract-full{margin:var(--sp-2) 0 0;font-size:var(--fs-11);color:var(--hash-text);background:var(--hash-bg);border-radius:var(--radius-xs);padding:6px 8px;overflow-wrap:anywhere;line-height:1.5}
+.ls-unverified{flex:none;font-size:var(--fs-11);color:var(--faint);border:1px dashed var(--border-strong);border-radius:var(--radius-pill);padding:0 8px}
+.ls-contract-addr{display:flex;align-items:center;gap:2px;margin:var(--sp-2) 0 0}
+.ls-contract-addr .mono{flex:1;min-width:0;font-size:var(--fs-12);color:var(--hash-text);overflow-wrap:anywhere;line-height:1.5}
+.ls-contract-meta{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);flex-wrap:wrap;margin:var(--sp-2) 0 0;font-size:var(--fs-11);color:var(--faint)}
+.ls-contract-wait{margin:var(--sp-2) 0 0;font-size:var(--fs-12);color:var(--muted)}
+.ls-target{border:1px solid var(--hash-border);background:var(--hash-bg);border-radius:var(--radius-sm);padding:var(--sp-3) var(--sp-4)}
+.ls-target>.muted{font-size:var(--fs-12);font-weight:600}
+.ls-target .hint{margin:2px 0 0}
+.ls-layer-contract{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin:0 0 var(--sp-4);padding:var(--sp-2) var(--sp-3);border-radius:var(--radius-sm);background:var(--card-2);font-size:var(--fs-12)}
+.ls-layer-contract .mono{color:var(--hash-text);overflow-wrap:anywhere;min-width:0}
+/* 创建页：项目期限 = 只读起始日 ～ 日期选择的到期日。 */
+.ls-term{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
+.ls-term-start{display:inline-flex;align-items:center;height:var(--ctrl-h,40px);padding:0 12px;border-radius:var(--radius-sm);background:var(--card-2);border:1px solid var(--border);font-size:var(--fs-13);color:var(--muted)}
+.ls-term-sep{color:var(--faint)}
+.ls-term .inp{width:auto;min-width:200px}
+.ls-hint-warn{color:var(--warn)}
+/* 未绑定角色点创建：就地文案提示。 */
+.ls-unbound{margin:calc(-1 * var(--sp-2)) 0 var(--sp-4)}
+.ls-unbound .note{align-items:center}
+.ls-unbound .note>span{flex:1}
+.ls-unbound:focus{outline:none}
+.ls-unbound-close{flex:none}
+/* 列表排序：总质押额不是列，统一放在列表顶部。 */
+.list-full-bar .ls-sort{margin-left:auto;display:inline-flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-12);color:var(--faint)}
+.list-full-bar .ls-sort .inp{height:var(--ctrl-h-sm);width:auto;min-width:0;border-radius:var(--radius-pill);padding:0 28px 0 12px;font-size:var(--fs-12)}
+.list-full-bar .ls-sort+.btn{margin-left:var(--sp-3)}
