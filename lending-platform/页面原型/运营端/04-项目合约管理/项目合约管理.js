@@ -384,8 +384,8 @@
       +(started?'':`<p class="cm-meta">${L('The deployment has not been initiated. A successful deployment produces this project’s single pledge contract address.','尚未发起部署；部署成功后将产生本项目唯一的质押合约地址。')}</p>`)
       +`<p class="cm-meta">${L('Read-only on-chain facts written back with the real result. Operations do not sign, pay gas, maintain the platform wallet or edit the contract address.','随真实结果回写的只读链上事实。运营端不签名、不代付 gas、不维护平台钱包、不可编辑合约地址。')}</p>`
       +(r.deploy==='failed'?`<div class="cm-failure"><h3>${L('Last deployment attempt','最近一次部署尝试')}</h3>${fail}${note(L('A failed deployment is not a review conclusion. The project is back to pending review, the asset holder is not notified and the project term is not restarted.','部署失败不是审核结论：项目已回到待审核，未通知资产方，项目期限起算点不变。'),'warn')}</div>`:'')
-      +(r.deploy==='unknown'?note(L('No confirmed on-chain result for this deployment. The known facts are kept, the result is not assumed, no new attempt is started and no decision is changed. Contact the platform provider to check the chain and the configuration.','本次部署尚无确定的链上结果。已发生事实原样保留，不推定结果、不重复发起、不自动改判；请联系平台建设方核实链上与配置。'),'warn'):'')
-      +(r.deploy==='processing'?note(L('The deployment is in progress and no conclusion has been formed yet. The asset holder still sees the project as pending review and cannot pledge tokens.','部署处理中，尚未形成结论。资产方仍看到项目待审核，暂不能发起代币质押。'),'accent'):''));
+      +(r.deploy==='unknown'?note(L('No confirmed on-chain result for this deployment. The known facts are kept, the result is not assumed, no new attempt is started and no decision is changed; the asset holder cannot close the project until the result is written back. Contact the platform provider to check the chain and the configuration.','本次部署尚无确定的链上结果。已发生事实原样保留，不推定结果、不重复发起、不自动改判，资产方在结果回写前也不能关闭项目；请联系平台建设方核实链上与配置。'),'warn'):'')
+      +(r.deploy==='processing'?note(L('The deployment is in progress and no conclusion has been formed yet. The asset holder still sees the project as pending review and can neither pledge tokens nor close the project.','部署处理中，尚未形成结论。资产方仍看到项目待审核，暂不能发起代币质押，也不能关闭项目。'),'accent'):''));
   }
   function actionCard(r){
     const permission=!canDecide()
@@ -671,7 +671,12 @@
     }
     else if(act==='close'){
       const r=row();
-      if(r&&!r.closed&&['pending','deploying','returned'].includes(r.review)){
+      /* 部署处理中（含结果待核实）资产方不能关闭：关闭被拒，审核轴与项目都不变。 */
+      if(r&&!r.closed&&r.review==='deploying'){
+        CF.toast(L('The asset holder’s close request was refused: the contract is being deployed. Nothing changed.','资产方关闭被拒：合约正在部署，暂不可关闭，审核轴与项目均未变化。'));
+        return true;
+      }
+      if(r&&!r.closed&&['pending','returned'].includes(r.review)){
         r.closed=true;
         event(r,'close',['Project closed by the asset holder','资产方关闭项目'],[REVIEW[r.review][0]+' · project closed',REVIEW[r.review][1]+' · 项目已关闭'],
           {actor:['Asset holder','资产方'],
