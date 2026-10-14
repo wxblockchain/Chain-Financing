@@ -109,7 +109,8 @@
   D.current = p => p.demands.find(d => ['open','quoted','funding'].includes(d.state));
   D.actions = p => {
     const n=D.numbers(p), current=D.current(p), mine=D.mine(p), terminal=D.terminal(p);
-    const releasable=D.tokens.filter(t => (t.pool===p.id || t.releasedFrom===p.id) && !t.pending && !t.frozen && (t.pledge==='released'||t.pledge==='pledged'&&(!t.valid||t.value<=n.withdraw)));
+    /* 可撤回上限只约束已通过审核的有效抵押物；待审、已驳回、已失效、待提取的代币任何时候都可办理。 */
+    const releasable=D.tokens.filter(t => (t.pool===p.id || t.releasedFrom===p.id) && !t.pending && !t.frozen && (t.pledge==='released'||t.pledge==='pledged'&&(!(t.valid&&D.appOf(p,t)?.state==='approved')||t.value<=n.withdraw)));
     const live=!terminal&&!['review','returned'].includes(p.state);
     return {mine,review:p.state==='review',returned:p.state==='returned',live,
       pledge:mine&&live,publish:mine&&live&&!p.expired&&!current&&n.value>0&&n.free>0,

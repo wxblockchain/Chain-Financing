@@ -904,3 +904,5 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
   .ls-pledge .ls-pick,.ls-release .ls-pick{min-width:600px}
   .ls-pledge .ls-pick .ls-token-id,.ls-release .ls-pick .ls-token-id{white-space:nowrap}
 }
+.ls-pledge-notice .ls-release-frequent{margin:0;padding:6px 10px;border-radius:var(--radius-xs);background:var(--warn-bg);color:var(--warn);font-size:var(--fs-12)}
+.ls-pledge-notice .ls-release-over{margin:0;color:var(--danger);font-size:var(--fs-12)}
