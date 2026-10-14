@@ -25,6 +25,7 @@
     const ev=(at,kind,title,result,actor,extra)=>Object.assign(
       {id:'demo-ev-'+(++eventSeq),at,kind,title,result,actor},extra||{});
 
+    /* termMonths 只用于生成演示到期日；界面按「生效日～到期日」呈现项目期限。 */
     function add(o){
       const n=String(rows.length+1).padStart(3,'0');
       rows.push(Object.assign({
@@ -48,7 +49,7 @@
       contract:{address:null,startedAt:now-21*H,at:null,proof:proof('021'),gas:0.0132,gasCcy:'ETH',from:WALLET},
       events:[
         ev(now-30*H,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
-        ev(now-21*H,'approve-init',['Approved · deployment initiated','审核通过 · 已发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],LIN,
+        ev(now-21*H,'approve-init',['Approval submitted · deployment initiated','提交通过并发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],LIN,
           {text:['Submitted by the reviewer. The platform wallet initiates the deployment and the operations side bears the gas.','审核人提交通过，由平台统一钱包发起部署，gas 由运营端承担。']}),
         ev(now-20*H,'deploy-fail',['Deployment failed','部署失败'],['Deployment in progress → Pending review','部署处理中 → 待审核'],SYSTEM,
           {chain:true,gas:0.0132,gasCcy:'ETH',proof:proof('021'),text:FAIL_GAS,
@@ -74,8 +75,8 @@
           {text:REASON_CCY,notice:['Project review returned','项目审核退回']}),
         ev(now-9*D,'resubmit',['Resubmitted after revision','资产方修改后重新提交'],['Returned → Pending review · submission 2','已退回 → 待审核 · 第 2 次提交'],HOLDER,
           {text:['Same project number and the same project term start date; resubmission does not create a second project.','项目编号不变、项目期限起算点不变，重新提交不产生第二个项目。']}),
-        ev(now-8*D-40*MIN,'approve-init',['Approved · deployment initiated','审核通过 · 已发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],LIN),
-        ev(now-8*D,'deploy-ok',['Deployment succeeded · review approved','部署成功 · 审核通过'],['Deployment in progress → Approved','部署处理中 → 已通过'],SYSTEM,
+        ev(now-8*D-40*MIN,'approve-init',['Approval submitted · deployment initiated','提交通过并发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],LIN),
+        ev(now-8*D,'deploy-ok',['Deployment succeeded (review approved)','部署成功（即审核通过）'],['Deployment in progress → Approved','部署处理中 → 已通过'],SYSTEM,
           {chain:true,gas:0.0186,gasCcy:'ETH',proof:proof('041'),address:addr('C004'),
            text:['The pledge contract for this project was deployed. The project is now open and the asset holder can pledge tokens.','本项目质押合约已部署，项目转为可用，资产方可发起代币质押。'],
            notice:['Project review approved','项目审核通过']})]});
@@ -86,7 +87,7 @@
       contract:{address:null,startedAt:now-12*MIN,at:null,proof:proof('051'),gas:null,gasCcy:'ETH',from:WALLET},
       events:[
         ev(now-5*H,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
-        ev(now-12*MIN,'approve-init',['Approved · deployment initiated','审核通过 · 已发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],LIN,
+        ev(now-12*MIN,'approve-init',['Approval submitted · deployment initiated','提交通过并发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],LIN,
           {chain:true,gas:null,gasCcy:'ETH',proof:proof('051'),
            text:['Awaiting the real on-chain result. No conclusion has been formed and the asset holder has not been notified.','等待真实链上结果。尚未形成结论，也未向资产方发送任何消息。']})]});
 
@@ -96,7 +97,7 @@
       contract:{address:null,startedAt:now-3*D,at:null,proof:proof('061'),gas:null,gasCcy:'ETH',from:WALLET},
       events:[
         ev(now-4*D,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
-        ev(now-3*D,'approve-init',['Approved · deployment initiated','审核通过 · 已发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],CHEN),
+        ev(now-3*D,'approve-init',['Approval submitted · deployment initiated','提交通过并发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],CHEN),
         ev(now-2*D,'deploy-unknown',['Deployment result to be verified','部署结果待核实'],['No confirmed on-chain result','尚无确定的链上结果'],SYSTEM,
           {chain:true,gas:null,gasCcy:'ETH',proof:proof('061'),
            text:['No confirmed result has been received for this deployment. The known evidence is kept as is; the result is not assumed to be a success or a failure.','本次部署尚未收到确定结果，已知链上凭证原样保留，不推定为成功或失败。'],
@@ -122,7 +123,7 @@
         ev(now-15*D,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
         ev(now-14*D,'return',['Returned for revision','审核退回'],['Pending review → Returned','待审核 → 已退回'],LIN,
           {text:REASON_RATIO,notice:['Project review returned','项目审核退回']}),
-        ev(now-13*D,'close',['Project closed by the asset holder','资产方关闭项目'],['Returned → Closed','已退回 → 已关闭'],HOLDER,
+        ev(now-13*D,'close',['Project closed by the asset holder','资产方关闭项目'],['Returned · project closed','已退回 · 项目已关闭'],HOLDER,
           {text:['The asset holder closed the project. Operations has no entry to close or reopen a project.','资产方主动关闭项目；运营端没有关闭与恢复入口。']})]});
 
     /* 009 近 7 日内通过：部署 gas 未提供，标待核实、不填 0。 */
@@ -132,8 +133,8 @@
       contract:{address:addr('C009'),startedAt:now-2*D-25*MIN,at:now-2*D,proof:proof('091'),gas:null,gasCcy:'ETH',from:WALLET},
       events:[
         ev(now-3*D,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
-        ev(now-2*D-25*MIN,'approve-init',['Approved · deployment initiated','审核通过 · 已发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],CHEN),
-        ev(now-2*D,'deploy-ok',['Deployment succeeded · review approved','部署成功 · 审核通过'],['Deployment in progress → Approved','部署处理中 → 已通过'],SYSTEM,
+        ev(now-2*D-25*MIN,'approve-init',['Approval submitted · deployment initiated','提交通过并发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],CHEN),
+        ev(now-2*D,'deploy-ok',['Deployment succeeded (review approved)','部署成功（即审核通过）'],['Deployment in progress → Approved','部署处理中 → 已通过'],SYSTEM,
           {chain:true,gas:null,gasCcy:'ETH',proof:proof('091'),address:addr('C009'),
            text:['The pledge contract for this project was deployed. The actual gas has not been reported back yet.','本项目质押合约已部署，实际 gas 尚未回写。'],
            notice:['Project review approved','项目审核通过']})]});
@@ -143,15 +144,15 @@
       createdAt:now-9*H,submittedAt:now-8*H,
       events:[ev(now-8*H,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER)]});
 
-    /* 011 更早通过的项目：台账按部署时点倒序时排在末位。 */
+    /* 011 更早通过的项目：台账按合约部署完成时间倒序时排在末位。 */
     add({key:'11',owner:'B',entity:'DEMO-ENTITY-B',ratio:0.58,termMonths:9,
       createdAt:now-24*D,submittedAt:now-22*D,review:'approved',deploy:'success',
       reviewer:LIN,decisionAt:now-20*D,
       contract:{address:addr('C011'),startedAt:now-20*D-35*MIN,at:now-20*D,proof:proof('111'),gas:0.0207,gasCcy:'ETH',from:WALLET},
       events:[
         ev(now-22*D,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
-        ev(now-20*D-35*MIN,'approve-init',['Approved · deployment initiated','审核通过 · 已发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],LIN),
-        ev(now-20*D,'deploy-ok',['Deployment succeeded · review approved','部署成功 · 审核通过'],['Deployment in progress → Approved','部署处理中 → 已通过'],SYSTEM,
+        ev(now-20*D-35*MIN,'approve-init',['Approval submitted · deployment initiated','提交通过并发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],LIN),
+        ev(now-20*D,'deploy-ok',['Deployment succeeded (review approved)','部署成功（即审核通过）'],['Deployment in progress → Approved','部署处理中 → 已通过'],SYSTEM,
           {chain:true,gas:0.0207,gasCcy:'ETH',proof:proof('111'),address:addr('C011'),
            notice:['Project review approved','项目审核通过']})]});
 
