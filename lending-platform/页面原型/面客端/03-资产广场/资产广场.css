@@ -79,9 +79,6 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
   .am-detail .dl dd:last-child{margin-bottom:0}
 }
 
-/* 五个筛选/排序项加搜索与两个按钮在 1280 英文下仍排成一行：搜索框收窄，完整提示在 title 与读屏名称里。 */
-.am-filters .fb-q{flex:0 1 176px;min-width:150px}
-
 /* WS-385 · follow the shared international Web3 baseline without changing
    the nine-field list, contained scrolling or full-width token detail. */
 .am-summary .v{font-weight:500}
@@ -92,4 +89,100 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
 .am-tbl .am-val{font-weight:500}
 @media (min-width:769px) and (max-width:1200px){
   table.tbl.am-tbl tbody td::before{font-size:var(--fs-12);color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0}
+}
+
+/* WS-373 · 2026-10-14: inherit the latest lending marketplace rhythm.
+   Layout belongs to this module; colour, type, controls and shadows use canonical tokens. */
+.am-market-page .page-title,.am-detail .am-ov .page-title{font-size:var(--fs-28);font-weight:600;line-height:1.3;letter-spacing:-.025em}
+.am-market-page .page-head{margin-bottom:var(--sp-6)}
+.am-market-page .am-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-6);padding:0 0 var(--sp-7)}
+.am-market-page .am-summary .s{min-width:0}
+.am-market-page .am-summary .v{margin-top:var(--sp-2);color:var(--text);white-space:nowrap}
+.am-market-page .am-summary .s[data-tone="accent"] .v{color:var(--accent)}
+.am-market-page .am-summary .s[data-tone="warn"] .v{color:var(--text)}
+.am-market-page .am-summary .n{line-height:1.6}
+.am-market-page .listzone{border-radius:var(--radius-lg);box-shadow:var(--shadow-soft)}
+.am-filters{padding:var(--sp-4) var(--sp-5);gap:var(--sp-2)}
+.am-filter-options{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;min-width:0;max-width:100%}
+.am-filters .fb-q{flex:1 1 180px;min-width:140px}
+.am-toolbar-end{display:inline-flex;align-items:center;gap:var(--sp-2);padding-left:var(--sp-2);border-left:1px solid var(--border)}
+.am-total{font-size:var(--fs-12);color:var(--muted);white-space:nowrap}
+.am-toolbar-end .btn.icon{height:var(--ctrl-h-sm);min-height:var(--ctrl-h-sm);width:var(--ctrl-h-sm);padding:0;border-radius:var(--radius-sm);flex:none}
+.am-tbl-zone{min-height:min(52vh,540px)}
+table.tbl.am-tbl{table-layout:fixed}
+.am-tbl th:nth-child(1){width:14%}
+.am-tbl th:nth-child(2){width:13%}
+.am-tbl th:nth-child(3){width:8%}
+.am-tbl th:nth-child(4){width:11%}
+.am-tbl th:nth-child(5){width:12%}
+.am-tbl th:nth-child(6){width:13%}
+.am-tbl th:nth-child(7){width:7%}
+.am-tbl th:nth-child(8){width:10%}
+.am-tbl th:nth-child(9){width:12%}
+table.tbl.am-tbl thead th{padding-block:var(--sp-3);color:var(--muted)}
+table.tbl.am-tbl th.sortable button{padding-block:var(--sp-3);align-items:center}
+table.tbl.am-tbl th.sortable.am-r .am-th-l{align-items:flex-end}
+table.tbl.am-tbl tbody td{padding-block:var(--sp-4);line-height:1.5;overflow-wrap:anywhere}
+.am-tbl .am-id{font-size:var(--fs-12);white-space:nowrap}
+.am-tbl .tok-name{font-weight:600;white-space:normal;overflow:visible;text-overflow:clip;max-width:none}
+.am-tbl .am-logo[data-hue]{background:var(--hash-bg);color:var(--hash-text);border-color:var(--hash-border)}
+.am-number{display:flex;flex-direction:column;align-items:flex-end}
+.am-number .num{font-weight:500;overflow-wrap:anywhere}
+.am-number .cell-sub{margin-top:var(--sp-2);color:var(--muted);font-family:var(--sans);font-size:var(--fs-12)}
+.am-tbl .tag{font-size:var(--fs-11);font-weight:500;line-height:1.5;max-width:100%}
+.am-stamp{font-size:var(--fs-12);line-height:1.6;color:var(--muted);white-space:normal;overflow-wrap:normal}
+.am-tz{color:var(--muted);font-size:var(--fs-11);font-weight:400;overflow-wrap:anywhere}
+.am-detail{gap:var(--sp-6)}
+.am-detail .am-sec{border-radius:var(--radius-lg);box-shadow:none}
+.am-detail .am-ov{background:transparent;border:0}
+.am-detail .am-ov>.card-b{padding:var(--sp-2) 0 var(--sp-4)}
+.am-detail .am-ov-no{color:var(--muted);margin-top:var(--sp-2);font-size:var(--fs-13)}
+.am-detail .am-ov-tags{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top-color:var(--border)}
+.am-detail .am-ov-tag .tiny,.am-detail .am-caveat{font-size:var(--fs-12);color:var(--muted);line-height:1.7}
+.am-sec .card-head{padding:var(--sp-5) var(--sp-6)}
+.am-sec .card-head h2{margin:0;font-size:var(--fs-16);font-weight:600;line-height:1.5}
+.am-sec .card-b{padding:var(--sp-5) var(--sp-6)}
+.am-detail .dl{margin:0;gap:var(--sp-4) var(--sp-6)}
+.am-detail .dl dt{font-weight:400}
+.am-detail .am-addr .mono{font-size:var(--fs-12)}
+.am-holdings th:nth-child(2),.am-holdings th:nth-child(3),.am-holdings td:nth-child(2),.am-holdings td:nth-child(3){text-align:right}
+.am-holdings td:nth-child(2) .cell-wrap,.am-holdings td:nth-child(3) .cell-wrap{align-items:flex-end}
+.am-holdings thead th{white-space:normal}
+
+/* Give search and result tools a stable second row before labels become cramped. */
+@media (min-width:769px) and (max-width:1399px){
+  .am-filter-options{flex-basis:100%}
+}
+@media (max-width:1200px){
+  .am-tbl .am-id{white-space:normal;overflow-wrap:anywhere}
+  table.tbl.am-tbl tbody td{align-items:flex-start}
+  .am-tbl .am-number{align-items:flex-end}
+  .am-tbl .tok{justify-content:flex-end}
+  .am-tbl .tok-name{min-width:0}
+}
+@media (max-width:768px){
+  .am-filters{padding:var(--sp-4)}
+  .am-filter-options{flex-basis:100%;width:100%}
+  .am-filters .fb-q{flex-basis:100%;width:100%;margin-left:0}
+  .am-filters .fb-acts{margin-left:0}
+  .am-toolbar-end{margin-left:auto}
+  .am-filter-options .fb{max-width:100%}
+  .am-filter-options .fb-btn,.am-filter-options select.inp{max-width:100%;white-space:normal;height:auto;min-height:var(--ctrl-h-sm)}
+  .am-tbl td::before{max-width:44%;white-space:normal}
+  .am-tbl td>*{min-width:0;max-width:100%}
+  .am-holdings td:nth-child(2),.am-holdings td:nth-child(3){text-align:left}
+  .am-holdings td:nth-child(2) .cell-wrap,.am-holdings td:nth-child(3) .cell-wrap{align-items:flex-start}
+}
+@media (max-width:600px){
+  .am-market-page .page-title,.am-detail .am-ov .page-title{font-size:var(--fs-24)}
+  .am-market-page .am-summary{grid-template-columns:minmax(0,1fr);row-gap:var(--sp-5);padding-bottom:var(--sp-6)}
+  .am-market-page .am-summary .v{font-size:var(--fs-19);white-space:normal;overflow-wrap:anywhere}
+  .am-detail{gap:var(--sp-5)}
+  .am-sec .card-head,.am-sec .card-b{padding:var(--sp-4)}
+  .am-detail .dl{gap:var(--sp-2)}
+  .am-detail .am-ov-top{align-items:flex-start}
+  .am-detail .am-ov-id{min-width:0}
+}
+@media (pointer:coarse){
+  .am-toolbar-end .btn.icon{height:var(--ctrl-h);min-height:var(--ctrl-h);min-width:var(--ctrl-h)}
 }

@@ -378,7 +378,7 @@
           }).join("") + '</tbody></table></div>';
       }
     }
-    return '<section class="card am-sec" id="am-holdings"><div class="card-head">' + title + '</div>' + body + '</section>';
+    return '<section class="card am-sec" id="am-holdings"><div class="card-head"><h2>' + title + '</h2></div>' + body + '</section>';
   }
 
   /* 区块浏览器外链：唯一的新窗口；链接旁常驻未核验标注。 */
@@ -506,20 +506,20 @@
         '<div class="n">' + L("tokens · part of the amount above", "枚 · 代币数量的子集") + "</div></div></div>";
 
     var holders = AM.HOLDERS.map(function (h, i) { return [String(i), nm(h)]; });
-    var filters = '<div class="filterbar am-filters">' +
+    var filters = '<div class="filterbar am-filters"><div class="am-filter-options">' +
       CF.filterMenu("am-ts", L("Token status", "代币状态"),
         [["valid", L("Valid", "有效")], ["void", L("Void", "失效")]], list(v.ts)) +
       CF.filterMenu("am-ps", L("Pledge status", "质押状态"),
         [["unpledged", L("Not pledged", "未质押")], ["pledged", L("Pledged", "已质押")]], list(v.ps)) +
       CF.filterMenu("am-kind", L("Token type", "代币类型"), [["ar", tokenKind()]], list(v.kind)) +
       CF.filterMenu("am-holder", L("Asset originator", "资产方企业"), holders, list(v.holder)) +
-      sortField(v) +
+      sortField(v) + '</div>' +
       CF.filterSearch("am-q", L("Token ID, originator or hash", "代币编号、资产方或哈希"), v.q,
                       L("Token ID, asset originator or minting transaction hash", "代币编号、资产方企业名或铸造交易哈希")) +
       '<div class="fb-acts">' +
       '<button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
       '<button class="btn primary" type="button" data-act="am-search">' + L("Search", "查询") + "</button>" +
-      "</div></div>";
+      '</div>' + fullBar(wait || S.st === "error" ? null : total) + '</div>';
 
     var body;
     var alt = CF.surface({
@@ -539,7 +539,7 @@
         : CF.empty(L("No tokens yet", "暂无代币"),
             L("Tokens appear here once they are synced to the platform.", "代币同步到平台后会显示在这里。"), "");
     } else {
-      body = fullBar(total) + '<div class="tablewrap listbox listbox-contained am-tbl-zone" id="am-listbox" role="region" tabindex="0" aria-label="' +
+      body = '<div class="tablewrap listbox listbox-contained am-tbl-zone" id="am-listbox" role="region" tabindex="0" aria-label="' +
         L("Token list", "代币列表") + '"><table class="tbl resp am-tbl"><thead><tr>' +
         '<th scope="col">' + L("Token", "代币") + "</th>" +
         '<th scope="col">' + L("Token ID", "代币编号") + "</th>" +
@@ -560,14 +560,14 @@
                           "操作较频繁，请稍后再筛选或搜索；已显示的内容不受影响。")) + '<div class="am-gap"></div>'
       : "";
 
-    return head + summary + limit +
-      '<div class="card listzone">' + filters + body + "</div>";
+    return '<div class="am-market-page">' + head + summary + limit +
+      '<div class="card listzone">' + filters + body + '</div></div>';
   }
 
   /* 列表可放大到整窗，便于连续核对长列表；再次点击或 Esc 还原。 */
   function fullBar(total) {
-    return '<div class="list-full-bar"><span>' +
-      esc(L(total + (total === 1 ? " token record" : " token records"), "共 " + total + " 笔代币")) + "</span>" +
+    return '<div class="am-toolbar-end">' + (total === null ? '' : '<span class="am-total" role="status">' +
+      esc(L(total + (total === 1 ? " record" : " records"), "共 " + total + " 笔")) + '</span>') +
       '<button class="btn icon" type="button" id="am-full" data-act="list-full" data-v="am-full" aria-pressed="' + !!S.listFull +
       '" title="' + esc(S.listFull ? L("Exit full window", "退出放大") : L("Expand to window", "放大到整窗")) +
       '" aria-label="' + esc(S.listFull ? L("Exit full window", "退出放大") : L("Expand to window", "放大到整窗")) + '">' +
@@ -584,17 +584,19 @@
         esc(L("Copy token ID: ", "复制代币编号：") + t.no) + '" title="' + L("Copy token ID", "复制代币编号") + '">' + esc(t.no) + "</button></div></td>" +
       '<td data-label="' + esc(L("Asset originator", "资产方企业")) + '">' + esc(holderName(t)) + "</td>" +
       '<td data-label="' + esc(L("Token type", "代币类型")) + '">' + esc(tokenKind()) + "</td>" +
-      '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="num nw am-r">' + quantity(t.qty) + L(" tokens", " 枚") + "</td>" +
-      '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="num nw am-r am-val">' + CF.fmtAmt(t.val, "USD") + "</td>" +
+      '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="am-r"><div class="cell-wrap am-number"><span class="num">' + quantity(t.qty) +
+        '</span><span class="cell-sub">' + L("tokens", "枚") + '</span></div></td>' +
+      '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="am-r"><div class="cell-wrap am-number"><span class="num am-val">' + CF.fmtAmt(t.val) +
+        '</span><span class="cell-sub">USD</span></div></td>' +
       '<td data-label="' + esc(L("Token status", "代币状态")) + '">' + tsTag(t) + "</td>" +
       '<td data-label="' + esc(L("Pledge status", "质押状态")) + '">' + psTag(t) + "</td>" +
-      '<td data-label="' + esc(L("Minted at", "铸造时间")) + '" class="num nw am-at">' + stamp(t.at) + "</td>" +
+      '<td data-label="' + esc(L("Minted at", "铸造时间")) + '" class="am-at"><span class="am-stamp">' + stamp(t.at) + '</span></td>' +
       "</tr>";
   }
 
   /* ------------------------------------------------------------ 详情页 */
   function section(title, inner) {
-    return '<section class="card am-sec"><div class="card-head">' + esc(title) + "</div>" +
+    return '<section class="card am-sec"><div class="card-head"><h2>' + esc(title) + "</h2></div>" +
       '<div class="card-b">' + inner + "</div></section>";
   }
   /* 第三个元素为 true 的字段占整行：合约地址与两个哈希在半行里读不完。 */
