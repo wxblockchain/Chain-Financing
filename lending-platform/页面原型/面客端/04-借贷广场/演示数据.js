@@ -115,7 +115,7 @@
     return {mine,review:p.state==='review',returned:p.state==='returned',live,
       pledge:mine&&live,publish:mine&&live&&!p.expired&&!current&&n.value>0&&n.free>0,
       edit:mine&&current&&current.state==='open'&&!p.expired,withdraw:mine&&releasable.length>0,
-      close:mine&&!terminal,canClose:mine&&!terminal&&!n.fly&&!p.balance&&!['locked','financing'].includes(p.state),
+      close:mine&&!terminal,canClose:mine&&!terminal&&!p.deploying&&!n.fly&&!p.balance&&!['locked','financing'].includes(p.state),
       quote:CF.S.role==='fund'&&current&&current.state==='open'&&!terminal&&!p.expired&&n.grade==='surplus'};
   };
   D.kinds = () => D.TYPES.filter(x=>D.tokens.some(t=>t.owner==='entity-demo-a'&&t.kind===x.id)).map(x=>x.id);
@@ -169,8 +169,12 @@
     D.projects.unshift(p);D.log(p,'created');D.save();return p;
   };
   /* 审核与部署是同一步：部署成功即通过，同时产生合约地址。 */
+  /* 运营提交通过后合约部署进行中（含结果待核实）：资产方看到的仍是待审核，但暂不可关闭；回写后按结果处理。 */
   D.decideProject = (p, outcome, reason) => {
     if(p.state!=='review')throw Error('reviewChanged');
+    if(outcome==='submit'){if(p.deploying)throw Error('reviewChanged');p.deploying=true;D.save();return true;}
+    if(outcome==='return'&&p.deploying)throw Error('reviewChanged');
+    p.deploying=false;
     if(outcome==='approve'){
       p.state='available';p.reviewReason=null;
       p.contract='0x'+(D.serial+7).toString(16).padStart(40,'0');p.deployedAt=D.iso();
@@ -234,7 +238,7 @@
     D.log(p,edit?'amountEdited':'published');D.save();
   };
   D.endDemand = p => {const a=D.actions(p);if(!a.edit)throw Error('demandChanged');const d=D.current(p);d.state='ended';d.reason='withdrawn';d.endedAt=D.iso();D.recompute(p);D.log(p,'demandWithdrawn',d.id);D.save();};
-  D.close = p => {if(!D.actions(p).canClose)throw Error('cannotClose');p.state='closed';p.closeReason='owner';D.releasePool(p);D.log(p,'closed');D.save();};
+  D.close = p => {if(p.deploying)throw Error('deploying');if(!D.actions(p).canClose)throw Error('cannotClose');p.state='closed';p.closeReason='owner';D.releasePool(p);D.log(p,'closed');D.save();};
   D.seed = () => {
     D.projects=[];D.tokens=[];D.applications=[];D.executions=[];D.events=[];D.offset=0;D.serial=100;
     for(let i=1;i<=24;i++){

@@ -485,13 +485,13 @@
         CF.render();return;
       }
       if(response==='closed'){
+        /* 与资产方关闭同时发生、关闭先生效：本次办理就地拒绝，不形成结论、不发起部署。 */
         r.closed=true;
-        event(r,'close',['Project closed by the asset holder','资产方关闭项目'],['Left the review queue','已离开待审队列'],
+        event(r,'close',['Project closed by the asset holder','资产方关闭项目'],[REVIEW[r.review][0]+' · project closed',REVIEW[r.review][1]+' · 项目已关闭'],
           {actor:['Asset holder','资产方'],
-           text:['The asset holder closed the project before the submission took effect, so no conclusion was saved.','资产方在本次提交生效前关闭了项目，本次未保存任何结论。']});
-        A.draft=null;S.layer=null;
-        A.error=['The asset holder closed this project. No conclusion was saved and no deployment was started.','资产方已关闭该项目，未保存结论、未发起部署。'];
-        CF.render();return;
+           text:['The close took effect before this submission, so the approval did not stand and no deployment was started.','资产方的关闭先于本次提交生效，本次通过未成立，未发起部署。']});
+        A.error=['Project closed: the asset holder’s close took effect first. This approval did not stand and no deployment was started.','项目已关闭：资产方的关闭先生效，本次通过未成立，未发起部署。'];
+        open(d.mode==='return'?'return':'approve');return;
       }
       if(d.mode==='return'){
         applyReturn(r,[A.draft.reason.trim(),A.draft.reason.trim()]);
@@ -556,14 +556,14 @@
     const ack=L('I understand: the platform wallet will deploy this project’s pledge contract. A successful deployment is the approval itself, the project and the contract match one to one, and the conclusion cannot be withdrawn.','我已知悉：提交后将由平台统一钱包发起本项目质押合约部署，部署成功即审核通过，项目与合约一一对应且不可撤销。');
     return {title:again?L('Start the deployment again','再次发起部署'):L('Approve and deploy the contract','通过并部署合约'),
       html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${failure}${facts}<label class="cm-ack"><input id="cm-ack" type="checkbox" ${d.ack?'checked':''}> ${ack}</label></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
-      foot:b('Cancel','取消','cancel','','',A.busy)+b(again?'Start the deployment again':'Approve and deploy',again?'再次发起部署':'通过并部署合约','submit','','primary',A.busy)};
+      foot:b('Cancel','取消','cancel','','',A.busy)+b(again?'Start the deployment again':'Approve and deploy',again?'再次发起部署':'通过并部署合约','submit','','primary',A.busy||r.closed)};
   }
   function returnLayer(){
     const d=A.draft,r=row();
     if(!d||!r)return {title:L('Unavailable','不可用'),html:'',foot:b('Close','关闭','cancel')};
     return {title:L('Return to the asset holder','退回资产方'),
       html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${field(L('Reason shown to the asset holder','向资产方展示的原因'),`<textarea class="inp" id="cm-reason" aria-invalid="${!!A.error}" aria-describedby="cm-form-error">${E(d.reason)}</textarea><span class="cm-meta">${Array.from(d.reason.trim()).length} / 500 · ${L('Minimum 10 characters','至少 10 字')}</span>`)}</fieldset><div id="cm-form-error">${error()}</div></div>`,
-      foot:b('Cancel','取消','cancel','','',A.busy)+b('Review the reason','核对原因','confirm','','primary',A.busy)};
+      foot:b('Cancel','取消','cancel','','',A.busy)+b('Review the reason','核对原因','confirm','','primary',A.busy||r.closed)};
   }
   const layers={
     'cm-approve':approveLayer,
@@ -590,7 +590,7 @@
     const r=row(),processing=r?.deploy==='processing';
     return `<h3>${L('Project contracts · demo tools','项目合约管理 · 演示工具')}</h3><p class="cm-meta">${L('Local demonstration only. No wallet, deployment, chain write-back or message service is contacted.','仅本地演示：不连接钱包、不发起部署、不读写链上结果，也不投递真实站内信。')}</p>
       <h4>${L('Account configuration · later-role preview','账号配置 · 后期角色预演')}</h4><p class="cm-meta">${L('This release has one role: the operations administrator holds both permissions.','本期只有运营管理员一个角色，固定具备两项权限。')}</p><div class="cm-demo-actions">${b('Administrator','运营管理员','grant','admin')}${b('Later role · no access','后期角色 · 未开通本模块','grant','none')}${b('Later role · query only','后期角色 · 仅开通审核查询','grant','query')}${b('Later role · decision only','后期角色 · 仅开通审核处置','grant','decide')}${b('Later role · query + decision','后期角色 · 查询＋处置','grant','full')}</div>
-      <div class="cm-demo">${field(L('Page state','页面状态'),select('cm-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','空数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}${field(L('Submit response','提交反馈'),select('cm-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['concurrent',L('Another reviewer wins','已被他人裁定')],['closed',L('Closed by the asset holder first','提交前资产方已关闭项目')]]))}${field(L('Activity state','操作记录状态'),select('cm-activity-state',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','加载失败')]]))}${field(L('Parameter configuration','融资参数配置'),select('cm-config',A.config.available?'on':'off',[['on',L('Readable','可读')],['off',L('Unavailable · to be verified','不可读 · 标待核实')]]))}</div>
+      <div class="cm-demo">${field(L('Page state','页面状态'),select('cm-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','空数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}${field(L('Submit response','提交反馈'),select('cm-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['concurrent',L('Another reviewer wins','已被他人裁定')],['closed',L('Asset holder’s close takes effect first','资产方关闭先于本次提交生效')]]))}${field(L('Activity state','操作记录状态'),select('cm-activity-state',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','加载失败')]]))}${field(L('Parameter configuration','融资参数配置'),select('cm-config',A.config.available?'on':'off',[['on',L('Readable','可读')],['off',L('Unavailable · to be verified','不可读 · 标待核实')]]))}</div>
       <h4>${L('On-chain write-back for this project','本项目的链上回写')}</h4><div class="cm-demo-actions">${b('Deployment succeeds','部署成功回写','chain-success','','',!processing)}${b('Deployment fails','部署失败回写','chain-failed','','',!processing)}${b('Result to be verified','结果待核实','chain-unknown','','',!processing)}${b('Replay the latest event','重放最新事件','replay','','',!r)}</div>
       <h4>${L('Asset holder actions','资产方动作')}</h4><div class="cm-demo-actions">${b('Revise and resubmit','修改后重新提交','resubmit','','',!r||r.review!=='returned'||r.closed)}${b('Close the project','关闭项目','close','','',!r||r.closed||!['pending','deploying','returned'].includes(r.review))}${b('Expire operations session','运营登录失效','expire-session')}${b('Reset demonstration','重置演示','restart')}</div>
       <h4>${L('Messages sent to asset holders','已发送的面客站内信')}</h4><p class="cm-meta">${A.notices.map(n=>E(n.id+' · '+txt(n.kind))).join('<br>')||L('None','暂无')}</p>
