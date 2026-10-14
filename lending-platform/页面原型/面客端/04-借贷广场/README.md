@@ -1,5 +1,9 @@
 # 借贷广场 · 融资项目、代币质押、授信报价与放款确认
 
+## 2026-10-14 · WS-397「覆盖」改称「质押」（当前约定）
+
+依据 `cly-v3.0.0` 提交 `3950d8f` 的术语更名，显示文案统一为：质押情况（Pledge sufficiency）、质押充足 / 持平 / 不足（Pledge surplus / balanced / shortfall）、质押缺口（Pledge gap）、计入 / 不计入有效质押（Counts toward eligible pledged value）、质押不足提醒（Pledge shortfall alert）。借贷广场、授信报价、我的控制台与面客消息中心演示文案同步；内部变量名、筛选键与通知事件代码（如 `financing.project.coverage_shortfall`）不变。「以覆盖本次报价」这类动词用法保留。发布环节常驻的可融金额已被接受（Q-LS-14），保持现状。
+
 ## 2026-10-14 · WS-385 承接 WS-397 V5（当前视觉与解押约定）
 
 按用户“参考397对整个借贷平台的页面进行优化调整，直接入库”授权，在现有原型架构中合入 V5 的原生 CSS / JS 与授信摘要差异，并接入[全平台视觉基线](../../_shared/design-system/国际化Web3视觉基线.md)。不引入评审附件里的强制登录入口。

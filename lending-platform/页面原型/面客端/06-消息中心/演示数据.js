@@ -54,7 +54,7 @@
       'financing.pledge.review_approved':{
         title:pair('Pledge approved','质押审核通过'),
         body:pair('The pledge of token {token_id} in project {project_name} ({project_id}) was approved at {approved_at} and now counts toward the eligible borrowing limit. No further confirmation is required; you may publish or amend a financing request within the current limit.',
-          '项目 {project_name}（{project_id}）的代币 {token_id} 本笔质押已于 {approved_at} 审核通过，自此计入有效质押额并参与覆盖判断。无需再做确认，可按当前额度发布或修改融资需求。')},
+          '项目 {project_name}（{project_id}）的代币 {token_id} 本笔质押已于 {approved_at} 审核通过，自此计入有效质押额并参与质押情况判断。无需再做确认，可按当前额度发布或修改融资需求。')},
       'financing.pledge.review_rejected':{
         title:pair('Pledge rejected','本笔质押未通过审核'),
         body:pair('The pledge of token {token_id} in project {project_name} ({project_id}) was rejected. Reason: {reason}. The token remains in the project’s pledge contract and still counts toward the pledged-pending-review amount. Release it yourself to retrieve it; you may then pledge again subject to current eligibility. Other tokens retain their own outcomes.',
@@ -62,32 +62,32 @@
       /* T-LS-04A / 04B / 04C：同一失败事件按费用事实择一，费用未知不写 0。 */
       'financing.pledge.execution_failed':{
         title:pair('Deposit execution failed','入池执行失败'),
-        body:pair('Deposit execution {action_id} for token {token_id} in project {project_name} ({project_id}) failed. Reason: {reason}. {fee_sentence} The token was not deposited and does not count toward coverage. Once no reservation remains, you may reapply subject to current eligibility; fees must be confirmed again.',
-          '项目 {project_name}（{project_id}）的代币 {token_id} 本次入池执行 {action_id} 失败。原因：{reason}。{fee_sentence}该笔未成功入池、不计入覆盖，确认无占用后可按当前资格重新申请；再次操作须重新确认费用。')},
+        body:pair('Deposit execution {action_id} for token {token_id} in project {project_name} ({project_id}) failed. Reason: {reason}. {fee_sentence} The token was not deposited and does not count toward eligible pledged value. Once no reservation remains, you may reapply subject to current eligibility; fees must be confirmed again.',
+          '项目 {project_name}（{project_id}）的代币 {token_id} 本次入池执行 {action_id} 失败。原因：{reason}。{fee_sentence}该笔未成功入池、不计入有效质押，确认无占用后可按当前资格重新申请；再次操作须重新确认费用。')},
       'financing.demand.coverage_invalidated':{
-        title:pair('Financing request invalidated','融资需求因覆盖不足失效'),
-        body:pair('Financing request {demand_id} in project {project_name} ({project_id}) was automatically invalidated due to insufficient coverage. Pending offers for that request were also invalidated. The original record is retained. A new request may be published once current eligibility requirements are met, with no cooldown period.',
-          '项目 {project_name}（{project_id}）的融资申请 {demand_id} 已因覆盖不足自动失效，该轮在途报价同时失效。原记录保留；满足当前发布资格后可重新发布新的融资申请，无需等待冷却期。')},
+        title:pair('Financing request invalidated','融资需求因质押不足失效'),
+        body:pair('Financing request {demand_id} in project {project_name} ({project_id}) was automatically invalidated due to a pledge shortfall. Pending offers for that request were also invalidated. The original record is retained. A new request may be published once current eligibility requirements are met, with no cooldown period.',
+          '项目 {project_name}（{project_id}）的融资申请 {demand_id} 已因质押不足自动失效，该轮在途报价同时失效。原记录保留；满足当前发布资格后可重新发布新的融资申请，无需等待冷却期。')},
       'financing.demand.coverage_invalidated@fund':{
         title:pair('Financing request for your offer invalidated','报价所属融资需求已失效'),
-        body:pair('Financing request {demand_id} in project {project_name} ({project_id}) was automatically invalidated due to insufficient coverage. Your pending offer for that request was also invalidated. Review the original request’s current outcome; do not continue under that offer.',
-          '项目 {project_name}（{project_id}）的融资申请 {demand_id} 已因覆盖不足自动失效，你方在该轮的在途报价同时失效。请查看原申请的当前结果，不要按原报价继续办理。')},
+        body:pair('Financing request {demand_id} in project {project_name} ({project_id}) was automatically invalidated due to a pledge shortfall. Your pending offer for that request was also invalidated. Review the original request’s current outcome; do not continue under that offer.',
+          '项目 {project_name}（{project_id}）的融资申请 {demand_id} 已因质押不足自动失效，你方在该轮的在途报价同时失效。请查看原申请的当前结果，不要按原报价继续办理。')},
       'financing.project.coverage_shortfall':{
-        title:pair('Project coverage shortfall','项目出现覆盖不足'),
-        body:pair('Project {project_name} ({project_id}) had a coverage shortfall at {occurred_at}. The shortfall was {shortfall} USD, requiring additional assets valued at {additional_value} USD. Additional pledges by the asset originator require review; submission has no immediate effect. Coverage is updated after successful deposit.',
-          '项目 {project_name}（{project_id}）于 {occurred_at} 出现覆盖不足，覆盖缺口 {shortfall} USD，需追加资产价值 {additional_value} USD。资产方追加质押须先经审核，提交不即时生效，成功入池后按实际覆盖更新。')},
+        title:pair('Project pledge shortfall','项目出现质押不足'),
+        body:pair('Project {project_name} ({project_id}) had a pledge shortfall at {occurred_at}. The pledge gap was {shortfall} USD, requiring additional assets valued at {additional_value} USD. Additional pledges by the asset originator require review; submission has no immediate effect. Pledge sufficiency is updated after successful deposit.',
+          '项目 {project_name}（{project_id}）于 {occurred_at} 出现质押不足，质押缺口 {shortfall} USD，需追加资产价值 {additional_value} USD。资产方追加质押须先经审核，提交不即时生效，成功入池后按实际质押情况更新。')},
       'financing.project.coverage_restored':{
-        title:pair('Coverage shortfall resolved','本轮覆盖不足已解除'),
-        body:pair('The current coverage shortfall for project {project_name} ({project_id}) was resolved at {occurred_at}. Check the project’s current coverage. Resolution of this alert does not mean the financing debt has been settled.',
-          '项目 {project_name}（{project_id}）的本轮覆盖不足已于 {occurred_at} 解除。请以项目当前覆盖情况为准；解除提醒不代表融资债务已结清。')},
+        title:pair('Pledge shortfall resolved','本轮质押不足已解除'),
+        body:pair('The current pledge shortfall for project {project_name} ({project_id}) was resolved at {occurred_at}. Check the project’s current pledge sufficiency. Resolution of this alert does not mean the financing debt has been settled.',
+          '项目 {project_name}（{project_id}）的本轮质押不足已于 {occurred_at} 解除。请以项目当前质押情况为准；解除提醒不代表融资债务已结清。')},
       'financing.project.expiry_reminder':{
         title:pair('Project expires in 7 days','项目距有效期届满还有 7 天'),
         body:pair('Project {project_name} ({project_id}) expires at {expires_at}. There are 7 days remaining as of this notification. New financing will not be available after expiry; existing business continues under its current status.',
           '项目 {project_name}（{project_id}）将于 {expires_at} 届满有效期。当前距离届满还有 7 天；到期后不能新增融资，存量业务仍按其当前状态办理。')},
       'financing.quote.submitted':{
         title:pair('Financing offer received','收到融资报价'),
-        body:pair('{institution_name} submitted an offer for financing request {demand_id}, financing reference {business_id}, with a financing amount of {amount_usd} USD. The offer has no expiry date and stays open until you accept or reject it. Review the terms and decide. If the underlying financing request ends because the project is closed, the project term expires, or collateral coverage falls short, this offer lapses with it.',
-          '融资申请 {demand_id} 收到 {institution_name} 的报价，融资业务编号 {business_id}，融资金额 {amount_usd} USD。该报价没有有效期，在您接受或拒绝之前一直有效；请查看条款并决定接受或拒绝。若所属融资需求因项目关闭、项目到期或池内覆盖不足而终结，本笔报价将同时失效。')},
+        body:pair('{institution_name} submitted an offer for financing request {demand_id}, financing reference {business_id}, with a financing amount of {amount_usd} USD. The offer has no expiry date and stays open until you accept or reject it. Review the terms and decide. If the underlying financing request ends because the project is closed, the project term expires, or a pledge shortfall occurs, this offer lapses with it.',
+          '融资申请 {demand_id} 收到 {institution_name} 的报价，融资业务编号 {business_id}，融资金额 {amount_usd} USD。该报价没有有效期，在您接受或拒绝之前一直有效；请查看条款并决定接受或拒绝。若所属融资需求因项目关闭、项目到期或质押不足而终结，本笔报价将同时失效。')},
       'financing.quote.accepted':{
         title:pair('Financing offer accepted','融资报价已接受'),
         body:pair('Your offer for financing request {demand_id}, financing reference {business_id}, was accepted at {accepted_at} and entered the pending-disbursement stage. Proceed with disbursement from this financing record under the current process. Acceptance does not mean the loan has been disbursed.',
@@ -202,8 +202,8 @@
     reviewReturned:pair('Returned for revision','已退回'),
     executionFailed:pair('Execution failed','执行失败'),
     demandEnded:pair('Financing request ended','需求已终结'),
-    coverageShort:pair('Coverage shortfall','覆盖不足'),
-    coverageOk:pair('Coverage restored','覆盖已恢复'),
+    coverageShort:pair('Pledge shortfall','质押不足'),
+    coverageOk:pair('Pledge shortfall resolved','质押不足已解除'),
     projectExpiring:pair('Final term window','有效期最后窗口')
   };
   let serial=0;
