@@ -117,7 +117,7 @@
 .funder-notice>div{min-width:0}
 .funder-notice p{margin:var(--sp-2) 0 0}
 .funder-notice .btn-link{flex:none;white-space:nowrap}
-.funder-upload-empty>div{flex:1}
+.funder-upload-empty>div{flex:1;min-width:0}
 .funder-upload-empty p{margin:var(--sp-1) 0 0}
 .funder-file-icon{display:grid;place-items:center;width:44px;height:44px;flex:none;background:var(--accent-soft);color:var(--accent);border-radius:var(--radius-sm);font-size:var(--fs-24)}
 .funder-file-meta{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0}
@@ -193,3 +193,9 @@
 .funder-email-code [role="status"]:empty{display:none}
 .funder-email-code .btn-link:disabled{color:var(--muted);cursor:not-allowed}
 @media(max-width:600px){.funder-email-entry{align-items:stretch;flex-direction:column}.funder-email-entry>.btn{align-self:flex-start}}
+
+/* WS-385 · long English document labels keep the file action in the viewport. */
+@media(max-width:600px){
+  .funder-upload-empty{display:grid;grid-template-columns:var(--ctrl-h) minmax(0,1fr);align-items:start}
+  .funder-upload-empty>.btn{grid-column:1/-1;justify-self:start}
+}

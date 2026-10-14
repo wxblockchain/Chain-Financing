@@ -111,14 +111,20 @@
   CF.fmtTime = function (iso) {
     var d = new Date(iso);
     if (isNaN(d)) return esc(iso);
-    var hh = ("0" + d.getHours()).slice(-2), mm = ("0" + d.getMinutes()).slice(-2);
+    var tz = S.tz || "UTC", parts = {};
+    var options = { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false };
+    var formatter;
     try {
-      var parts = {};
-      new Intl.DateTimeFormat("en-US", { timeZone: S.tz, hour: "2-digit", minute: "2-digit", hour12: false })
-        .formatToParts(d).forEach(function (part) { parts[part.type] = part.value; });
-      if (parts.hour) { hh = parts.hour === "24" ? "00" : parts.hour; mm = parts.minute; }
-    } catch (e) { /* 无效时区沿用本地时刻，不阻断展示 */ }
-    return CF.fmtDate(iso) + (S.lang === "en" ? ", " : " ") + hh + ":" + mm + " (" + S.tz + ")";
+      formatter = new Intl.DateTimeFormat("en-US", options);
+    } catch (e) {
+      tz = options.timeZone = "UTC";
+      formatter = new Intl.DateTimeFormat("en-US", options);
+    }
+    formatter.formatToParts(d).forEach(function (part) { parts[part.type] = part.value; });
+    var date = S.lang === "en" ? MO[Number(parts.month) - 1] + " " + Number(parts.day) + ", " + parts.year
+      : parts.year + " 年 " + Number(parts.month) + " 月 " + Number(parts.day) + " 日";
+    return date + (S.lang === "en" ? ", " : " ") + (parts.hour === "24" ? "00" : parts.hour) + ":" + parts.minute + " (" + tz + ")";
   };
   /* 紧凑时刻：yyyy-MM-dd HH:mm，按当前展示时区换算，不随语言改变格式；时区由调用方在表头或值后标注。 */
   CF.fmtStamp = function (iso) {

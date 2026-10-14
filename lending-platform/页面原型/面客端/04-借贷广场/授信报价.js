@@ -294,6 +294,43 @@
     return '';
   }
   const publishButton=(p,label,reason)=>'<button class="btn primary" data-act="ls-publish"'+(reason?' disabled aria-describedby="cq-publish-why"':'')+'>'+label+'</button>'+(reason?'<p class="cq-why" id="cq-publish-why">'+reason+'</p>':'');
+  /* Facts belong to the selected stage. Private quote/payment facts keep their
+     original party boundary; future stages never borrow another stage's data. */
+  Q.financeSummary=(p,stage)=>{
+    const d=D.current(p),last=[...p.demands].reverse().sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).at(0);
+    const facts=rows=>'<dl class="cq-round-facts">'+rows.map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+value+'</dd></div>').join('')+'</dl>';
+    const amount=(label,value)=>'<span class="cq-round-label">'+label+'</span><p class="cq-round-amount mono">'+value+'</p>';
+    const box=body=>'<section class="cq-round-summary" data-stage="'+stage+'">'+body+'</section>';
+    const none=text=>'<p class="cq-stage-empty">'+text+'</p>';
+    if(stage===0){
+      if(d)return box(amount(L('Published request amount','已发布需求金额'),usd(d.amount))+facts([
+        [L('Request ID','需求编号'),'<span class="mono">'+E(d.id)+'</span>'],
+        [L('Published','发布时间'),time(d.at)],
+        [L('Request status','需求状态'),E(requestState(d))]]));
+      return box((D.mine(p)?amount(L('Available financing amount','当前可融金额'),usd(D.numbers(p).free)):'')+facts([[L('Reference currencies','参考结算币种'),E((p.settle||[]).join(' / '))||'—'],[L('Project expiry','项目到期日'),date(p.expires)]])
+        +(last?'<details class="cq-previous-round"><summary><span>'+L('Previous request','上一轮需求')+'</span><b class="mono">'+usd(last.amount)+'</b><span class="cq-previous-car" aria-hidden="true">⌄</span></summary>'+facts([[L('Request ID','需求编号'),'<span class="mono">'+E(last.id)+'</span>'],[L('Published','发布时间'),time(last.at)],[L('Result','需求结果'),E(requestState(last))]])+'</details>':''));
+    }
+    if(!d)return none(L('This round has not been published yet.','本轮尚未发布融资需求。'));
+    if(stage===1){
+      const rows=[[L('Request ID','需求编号'),'<span class="mono">'+E(d.id)+'</span>'],[L('Request status','需求状态'),E(requestState(d))],[L('Reference currencies','参考结算币种'),E((p.settle||[]).join(' / '))||'—']];
+      if(S.role==='fund'){const c=credit(p);if(c)rows.push([L('Your available credit','本机构可用授信'),usd(available(c))]);}
+      return box(amount(L('Financing request amount','融资需求金额'),usd(d.amount))+facts(rows));
+    }
+    const q=Q.currentQuote(p,d.id);
+    if(stage===2){
+      if(!q)return none(L('No quote is available for confirmation yet.','尚无可确认的机构报价。'));
+      if(!related(q))return none(L('Quote terms are visible only to the financing parties.','报价条款仅融资双方可见。'));
+      return box(amount(L('Quoted settlement amount','报价结算金额'),CF.fmtAmt(q.settlement)+' '+E(q.ccy))+facts([
+        [L('Funder','报价机构'),institution(q.fund)],[L('Annual rate','年化利率'),E(q.rate)+'%'],
+        [L('Final repayment date','最终还款日'),date(q.repay)],[L('Business ID','融资业务编号'),'<span class="mono">'+E(q.id)+'</span>']]));
+    }
+    const x=q&&CF.L7?.find(q);
+    if(!x)return none(L('No disbursement business exists for this round yet.','本轮尚未形成放款业务。'));
+    if(!related(q))return none(L('Disbursement information is visible only to the financing parties.','放款信息仅融资双方可见。'));
+    // The active disbursement module supplies its own amount, status and receipt facts.
+    if(d.state==='funding')return '';
+    return box(amount(L('Agreed disbursement amount','约定放款金额'),CF.fmtAmt(x.settlement)+' '+E(x.ccy))+facts([[L('Business ID','融资业务编号'),'<span class="mono">'+E(x.id)+'</span>'],[L('Disbursement status','放款状态'),CF.L7.label(x)]]));
+  };
   Q.financePanel=p=>{
     const a=D.actions(p),again=p.demands.length>0,newLabel=again?L('Publish a new round','发布新一轮融资需求'):L('Publish financing request','发布融资需求');
     const ln=CF.L7?.panel(p,'');if(ln){if(a.mine&&!D.terminal(p))ln.secondary=(ln.secondary||'')+'<div class="cq-next-round">'+publishButton(p,newLabel,publishGate(p)).replace('btn primary','btn')+'</div>';return ln;}
@@ -303,7 +340,7 @@
     else if(d.state==='quoted'){hint=a.mine?L('Review the terms, then accept or reject.','核对条款后，接受或拒绝报价。'):L('Waiting for the asset holder to respond.','等待资产方确认报价。');if(a.mine)action='<button class="btn primary" data-act="ls-handoff" data-v="quote">'+L('Review and respond','确认 / 拒绝报价')+'</button>';}
     else {hint=L('The quote has been accepted; disbursement is next.','报价已接受，下一步办理放款。');action='<button class="btn primary" data-act="ls-handoff" data-v="funding">'+L('View disbursement','查看放款')+'</button>';}
     if(d?.state==='open'&&!a.mine){if(S.role!=='fund'){action='';hint=L('Only funders may submit a quote. You can view this request and its history.','仅资金方可提交报价；您可查看本笔需求与历史。');}else if(!a.quote)hint=p.expired?L('The project has expired. New quotes are unavailable.','项目已到期，当前不可新增报价。'):L('Collateral coverage is insufficient. Await an updated request.','当前质押覆盖不足，请等待资产方更新需求。');}
-    return {body:'<div class="cq-operation-status">'+CF.tag('',d?requestState(d):L('No active request','暂无进行中需求'))+'</div>'+(q?'<p class="cq-quote-line">'+institution(q.fund)+' · <b>'+q.rate+'%</b></p>'+lockInfo(q):'')+(hint?'<p class="cq-next-step">'+hint+'</p>':''),primary:action,secondary};
+    return {body:(q&&related(q)?lockInfo(q):'')+(hint?'<p class="cq-next-step">'+hint+'</p>':''),primary:action,secondary};
   };
 
   const journeyLabels=[['Publish request','发布融资需求'],['Establish credit','核定授信'],['Submit quote','提交融资报价'],['Respond to quote','确认报价'],['Disbursement','办理放款']];

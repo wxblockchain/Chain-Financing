@@ -81,3 +81,15 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
 
 /* 五个筛选/排序项加搜索与两个按钮在 1280 英文下仍排成一行：搜索框收窄，完整提示在 title 与读屏名称里。 */
 .am-filters .fb-q{flex:0 1 176px;min-width:150px}
+
+/* WS-385 · follow the shared international Web3 baseline without changing
+   the nine-field list, contained scrolling or full-width token detail. */
+.am-summary .v{font-weight:500}
+.am-detail .am-ov-tags{gap:var(--sp-5) var(--sp-7)}
+.am-detail .am-ov-tag{min-width:0;max-width:100%}
+.am-detail .am-hash{gap:var(--sp-2)}
+.am-tbl .tok-name{font-weight:500}
+.am-tbl .am-val{font-weight:500}
+@media (min-width:769px) and (max-width:1200px){
+  table.tbl.am-tbl tbody td::before{font-size:var(--fs-12);color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0}
+}

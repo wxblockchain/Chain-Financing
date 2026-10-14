@@ -12,7 +12,7 @@
 .mc-table th{font-size:var(--fs-12);text-transform:none;letter-spacing:0;white-space:normal!important}
 .mc-table td{font-size:var(--fs-13);vertical-align:middle}.mc-table td:first-child{min-width:155px}.mc-table td.num{white-space:nowrap}
 .mc-table tr[data-id]{cursor:pointer}.mc-table tr[data-id]:hover td{background:var(--accent-soft)}
-.mc-table .mc-object{font-weight:650;color:var(--ink);text-align:left}.mc-table .mc-object:hover{color:var(--accent)}
+.mc-table .mc-object{font-weight:650;color:var(--text);text-align:left}.mc-table .mc-object:hover{color:var(--accent)}
 .mc-table .mc-actions{min-width:125px;max-width:190px}.mc-table .mc-actions .actlink{min-height:44px;display:flex;align-items:center;white-space:normal;text-align:left}
 .mc-table .mc-indicator{display:block;font-size:var(--fs-12);margin-top:var(--sp-1);color:var(--warn)}
 .mc-table td .tag{max-width:100%}
@@ -67,3 +67,10 @@
 }
 @media(max-width:600px){.mc-chapters{padding:0 var(--sp-3);gap:var(--sp-4)}.mc-quick-actions{width:100%}.mc-quick-actions .btn{flex:1 1 140px}.mc-current-amount strong{font-size:var(--fs-19)}.mc-assets{display:grid;gap:var(--sp-4)}.mc-assets>div+div{border-left:0;border-top:1px solid var(--border);padding:var(--sp-4) 0 0}.mc-summary{gap:var(--sp-5)}.mc-tabs{gap:0;display:grid;grid-template-columns:1fr 1fr}.mc-tabs button{text-align:left;font-size:var(--fs-13)}.mc-root .filters .field{max-width:none;flex-basis:100%}.mc-root .detail-section .dl{grid-template-columns:1fr;gap:var(--sp-1)}.mc-root .dl dd{margin-bottom:var(--sp-3)}.mc-root .pager{flex-wrap:wrap}.mc-root .pager .total{flex-basis:100%}.mc-return{flex-wrap:wrap}.mc-caption{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.mc-root *{scroll-behavior:auto!important}}
+
+/* WS-385 · apply the shared money, label and action hierarchy to read-only views. */
+.mc-assets b,.mc-current-amount strong{font-weight:500;font-variant-numeric:tabular-nums;color:var(--text)}
+.mc-table .mc-object{font-weight:500}
+.mc-table td.num{text-align:right}
+.mc-caption{line-height:1.6;flex-wrap:wrap}
+@media(max-width:1100px){.mc-root .mc-table td.num{text-align:right}}
