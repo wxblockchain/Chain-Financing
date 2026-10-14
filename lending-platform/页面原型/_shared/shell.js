@@ -545,6 +545,8 @@
   var REVIEW_OPEN = CF.REVIEW_OPEN = 'hc.review-open';
   var reviewPages = {}, reviewActive = null, reviewObserver = null;
   var reviewSearch = '', reviewMore = false, reviewFocus = '';
+  var reviewModule = '', reviewFeedback = false, reviewPending = null, reviewScene = null;
+  var reviewAutoClose = true;
   var reviewNames = {
     default: ['Default', '默认'], loading: ['Loading', '加载中'], empty: ['Empty', '空数据'],
     noresult: ['No results', '筛选无结果'], error: ['Load failed', '加载失败'], denied: ['No access', '无权限']
@@ -560,6 +562,58 @@
       return typeof state === 'string' ? {id: state, label: reviewNames[state] || [state, state], group: 'feedback'} : state;
     });
   }
+  function reviewLabel(id) {
+    var c = reviewPages[id], p = CF.PAGES[id], key = p.navKey || p.crumbKey;
+    return c.label || [DICT.en[key] || key || id, DICT.zh[key] || key || id];
+  }
+  function reviewScenarios(config) {
+    return (typeof config.scenarios === 'function' ? config.scenarios() : config.scenarios || []);
+  }
+  function reviewListed(id) {
+    var c = reviewPages[id], p = CF.PAGES[id];
+    return p && p.end === S.end && (!c.visible || c.visible());
+  }
+  function reviewGroup(id) { return reviewPages[id].group || ['Pages', '页面']; }
+  function reviewGroupKey(id) { var g = reviewGroup(id); return Array.isArray(g) ? g[0] : g; }
+  function reviewModuleOptions() {
+    var groups = {};
+    Object.keys(reviewPages).filter(reviewListed).forEach(function (id) { groups[reviewGroupKey(id)] = reviewGroup(id); });
+    if (!groups[reviewModule]) reviewModule = '';
+    return '<option value="">' + L('All modules', '全部模块') + '</option>' + Object.keys(groups).map(function (key) {
+      return '<option value="' + esc(key) + '"' + (reviewModule === key ? ' selected' : '') + '>' + esc(reviewText(groups[key])) + '</option>';
+    }).join('');
+  }
+  function reviewChoice(id, item, kind) {
+    var disabled = S.layer || item.available === false;
+    var selected = id === reviewCurrent() && (kind === 'scene' ? reviewScene && reviewScene.page === id && reviewScene.id === item.id :
+      !reviewScene && (reviewPages[id].get ? reviewPages[id].get() : S.st) === item.id);
+    return '<button type="button" class="review-choice" data-review-page="' + esc(id) + '" data-review-' + kind + '="' + esc(item.id) + '"' +
+      (disabled ? ' disabled' : '') + ' aria-pressed="' + !!selected + '"><strong>' + esc(reviewText(item.label)) + '</strong>' +
+      '<span>' + esc(reviewText(item.description) || (item.available === false ? L('No matching record for this identity', '当前身份下没有对应记录') :
+        kind === 'scene' ? L('Open an existing demonstration record', '定位现有演示记录') : L('Show this page state', '展示此页面状态'))) + '</span></button>';
+  }
+  function reviewSearchResults() {
+    var query = reviewSearch.toLocaleLowerCase().trim(), matches = [];
+    if (!query) return '';
+    var words = query.split(/\s+/);
+    Object.keys(reviewPages).filter(reviewListed).forEach(function (id) {
+      if (reviewModule && reviewGroupKey(id) !== reviewModule) return;
+      var c = reviewPages[id], label = reviewLabel(id), group = reviewGroup(id);
+      var base = [id, label, group].flat().join(' ');
+      var items = [{id:'default', label:label, description:group, kind:'state', available:!!reviewRoute(id,c)}]
+        .concat(reviewScenarios(c).map(function (s) { return Object.assign({kind:'scene'},s); }))
+        .concat(reviewStates(c).filter(function (s) { return s.id !== 'default'; }).map(function (s) { return Object.assign({kind:'state'},s); }));
+      items.forEach(function (item) {
+        var text = [base, item.label, item.description, item.id].flat().join(' ').toLocaleLowerCase();
+        if (words.every(function (word) { return text.indexOf(word) >= 0; })) matches.push({page:id,item:item});
+      });
+    });
+    return '<div class="review-result-count" role="status">' + L(matches.length + ' matches', '找到 ' + matches.length + ' 项') + '</div>' +
+      (matches.length ? matches.slice(0,40).map(function (match) {
+        return '<div class="review-result"><small>' + esc(reviewText(reviewLabel(match.page))) + '</small>' + reviewChoice(match.page,match.item,match.item.kind) + '</div>';
+      }).join('') : '<p class="review-step">' + L('Try a page, business state or ID in English or Chinese.', '可尝试中英文页面名、业务状态或编号。') + '</p>') +
+      (matches.length > 40 ? '<p class="review-step">' + L('Showing the first 40; narrow the search or choose a module.', '显示前 40 项，请增加关键词或选择模块。') + '</p>' : '');
+  }
   function reviewRoute(id, config) {
     if (config.navigate) return true;
     try { return (typeof config.route === 'function' ? config.route() : config.route || CF.ENTRY[id]) || null; }
@@ -571,16 +625,34 @@
       if (config.reset) config.reset(); else S.st = 'default';
     }
     reviewActive = null;
+    reviewScene = null;
   }
   function reviewSync() {
     if (reviewActive && reviewActive !== reviewCurrent()) reviewClear();
+    if (reviewScene && reviewScene.route !== location.hash) reviewScene = null;
+    if (reviewPending && reviewPending.page !== reviewCurrent()) reviewPending = null;
+    if (reviewPending && reviewPending.page === reviewCurrent()) {
+      var pending = reviewPending, config = reviewPages[pending.page]; reviewPending = null;
+      if (pending.scene) {
+        var scene = reviewScenarios(config).find(function (s) { return s.id === pending.scene; });
+        if (scene && scene.available !== false) {
+          if (scene.enter) scene.enter();
+          reviewScene = {page:pending.page, id:scene.id, route:location.hash};
+        }
+      } else if (pending.state) {
+        if (config.set) config.set(pending.state); else S.st = pending.state;
+      }
+      reviewActive = pending.page;
+      queueMicrotask(function () { if ($('demoPanel')) $('demoPanel').scrollTop = 0; });
+      if (reviewAutoClose) { S.demo = false; queueMicrotask(function () { $('demoBtn')?.focus({preventScroll:true}); }); }
+    }
   }
   function reviewApply(value) {
     var id = reviewCurrent(), config = reviewPages[id];
     if (!config || !reviewStates(config).some(function (state) { return state.id === value; })) return;
     if (S.layer) return;
     var proceed = function () {
-      reviewClear();
+      reviewClear(); reviewPending = null;
       if (value === 'default' && config.reset) config.reset();
       reviewActive = id; S.menu = null;
       if (config.set) config.set(value); else S.st = value;
@@ -589,16 +661,24 @@
     };
     if (config.beforeChange) config.beforeChange(proceed); else proceed();
   }
-  function reviewGo(id) {
+  function reviewGo(id, selection) {
     var config = reviewPages[id];
     if (!config || !CF.PAGES[id] || CF.PAGES[id].end !== S.end || S.layer) return;
+    if (selection && selection.state && !reviewStates(config).some(function (s) { return s.id === selection.state; })) return;
+    if (selection && selection.scene && !reviewScenarios(config).some(function (s) { return s.id === selection.scene && s.available !== false; })) return;
     var proceed = function () {
       reviewClear(); S.st = 'default'; S.menu = null; reviewSearch = ''; reviewMore = false; reviewFocus = 'review-page';
+      queueMicrotask(function () { if ($('demoPanel')) $('demoPanel').scrollTop = 0; });
+      reviewPending = null;
       if (config.navigate) { config.navigate(); return; }
       if (config.reset) config.reset();
-      var route = typeof config.route === 'function' ? config.route() : config.route || CF.ENTRY[id];
+      var scene = selection && selection.scene && reviewScenarios(config).find(function (s) { return s.id === selection.scene; });
+      if (scene && scene.available === false) return;
+      var route = scene && scene.route ? (typeof scene.route === 'function' ? scene.route() : scene.route) :
+        (typeof config.route === 'function' ? config.route() : config.route || CF.ENTRY[id]);
       if (!route) { CF.toast(L('Open a record from its list first.', '请先从列表选择一条记录。')); decorateReview(); return; }
       if (config.enter) config.enter();
+      if (selection) reviewPending = Object.assign({page:id},selection);
       if (location.hash !== '#' + route.replace(/^#/, '')) location.hash = '#' + route.replace(/^#/, '');
       else render();
     };
@@ -651,7 +731,7 @@
       var config = reviewPages[id], page = CF.PAGES[id];
       if (!page || page.end !== S.end || config.visible && !config.visible()) return;
       var label = reviewText(config.label) || t(page.navKey || page.crumbKey);
-      if (query && id !== current && (id + ' ' + label).toLocaleLowerCase().indexOf(query) < 0) return;
+      if (reviewModule && id !== current && reviewGroupKey(id) !== reviewModule) return;
       var group = reviewText(config.group) || L('Pages', '页面');
       var openable = id === current || !!reviewRoute(id, config);
       (groups[group] || (groups[group] = [])).push('<option value="' + esc(id) + '"' + (id === current ? ' selected' : '') +
@@ -671,9 +751,9 @@
     if (!header) { header = document.createElement('section'); header.className = 'review-switcher'; panel.prepend(header); }
     if (!more) {
       more = document.createElement('details'); more.className = 'review-more'; more.open = reviewMore;
-      var summary = document.createElement('summary'); summary.textContent = L('More simulations', '更多模拟'); more.append(summary);
+      var summary = document.createElement('summary'); summary.textContent = L('Advanced simulations', '高级模拟与外部事件'); more.append(summary);
       var body = document.createElement('div'); body.className = 'review-more-body'; more.append(body); panel.append(more);
-      more.addEventListener('toggle', function () { reviewMore = more.open; });
+      more.addEventListener('toggle', function () { if (more.isConnected) reviewMore = more.open; });
     }
     Array.from(panel.childNodes).forEach(function (node) { if (node !== header && node !== more) more.lastElementChild.append(node); });
     var retainedFocus = header.contains(document.activeElement) && document.activeElement.id;
@@ -694,24 +774,38 @@
     var states = config ? reviewStates(config) : [];
     var value = config ? (config.get ? config.get() : S.st) : '';
     var groups = {}, groupLabels = {feedback: L('Interface feedback', '界面反馈'), business: L('Business states', '业务状态'), step: L('Flow steps', '流程步骤')};
-    states.forEach(function (state) {
-      var group = groupLabels[state.group] || reviewText(state.group) || groupLabels.feedback;
+    states.filter(function (state) { return state.id === 'denied' || !['business','step'].includes(state.group); }).forEach(function (state) {
+      var group = state.id === 'denied' ? groupLabels.feedback : groupLabels[state.group] || reviewText(state.group) || groupLabels.feedback;
       (groups[group] || (groups[group] = [])).push('<option value="' + esc(state.id) + '"' + (state.id === value ? ' selected' : '') + '>' + esc(reviewText(state.label)) + '</option>');
     });
-    var live = config && !states.some(function (state) { return state.id === value; });
+    var live = config && !states.some(function (state) { return state.id === value && (state.id === 'denied' || !['business','step'].includes(state.group)); });
     var active = document.activeElement, focusId = retainedFocus || (header.contains(active) && active.id);
     var step = reviewIdentityShown() ? 1 : 0;
-    header.innerHTML = '<div class="review-heading"><strong>' + L('Prototype review', '原型评审') + '</strong><span>' + L('Simulation only', '仅模拟') + '</span></div>' +
+    var business = states.filter(function (state) { return state.id !== 'denied' && ['business','step'].includes(state.group); });
+    var scenes = config ? reviewScenarios(config) : [];
+    var selectedScene = reviewScene && reviewScene.page === current && scenes.find(function (s) { return s.id === reviewScene.id; });
+    header.innerHTML = '<div class="review-heading"><strong>' + L('Pages & scenarios', '页面与业务场景') + '</strong><button class="btn ghost sm" type="button" data-act="demo">' + L('Close', '收起') + '</button></div>' +
       (reviewIdentityShown() ? '<label for="review-identity">' + L('1 · Sign-in state', '1 · 登录状态') + '</label>' +
         '<select class="inp" id="review-identity"' + (S.layer ? ' disabled' : '') + '>' + reviewIdentityOptions() + '</select>' : '') +
-      '<label for="review-search">' + L('Find a page', '查找页面') + '</label><input class="inp" id="review-search" type="search" value="' + esc(reviewSearch) + '" placeholder="' + L('Page name or ID', '页面名称或编号') + '">' +
+      '<label for="review-search">' + L('Find a page or business state', '查找页面或业务状态') + '</label><input class="inp" id="review-search" type="search" value="' + esc(reviewSearch) + '" placeholder="' + L('e.g. repayment / 还款 / P-LS-02', '例如：待放款、还款、P-LS-02') + '" aria-controls="review-results">' +
+      '<div class="review-results" id="review-results"' + (reviewSearch.trim() ? '' : ' hidden') + '>' + reviewSearchResults() + '</div>' +
+      '<label class="review-auto"><input type="checkbox" id="review-auto-close"' + (reviewAutoClose ? ' checked' : '') + '> ' + L('Close tools after locating a scenario', '定位场景后收起工具，查看完整页面') + '</label>' +
+      '<label for="review-module">' + L('Module', '模块') + '</label><select class="inp" id="review-module"' + (S.layer ? ' disabled' : '') + '>' + reviewModuleOptions() + '</select>' +
       '<label for="review-page">' + (step + 1) + L(' · Page', ' · 页面') + '</label><select class="inp" id="review-page"' + (S.layer ? ' disabled' : '') + '>' + reviewOptions() + '</select>' +
+      (current ? '<div class="review-location" role="status"><span>' + L('Viewing', '当前页面') + '</span><strong>' + esc(reviewText(reviewLabel(current))) + '</strong><small>' + esc(reviewText(reviewGroup(current))) + ' · ' + esc(S.page) + '</small>' +
+        (selectedScene ? '<small>' + esc(L('Located example: ', '已定位样例：') + reviewText(selectedScene.label)) + '</small>' : '') + '</div>' : '') +
+      (S.layer ? '<p class="review-step">' + L('Finish or cancel the open dialog before changing pages or states.', '请先完成或取消当前弹层，再切换页面或状态。') + '</p>' : '') +
       (config && config.step ? '<p class="review-step">' + esc(L('Current step: ', '当前步骤：') + config.step()) + '</p>' : '') +
-      '<label for="review-state">' + (step + 2) + L(' · State', ' · 状态') + '</label><select class="inp" id="review-state"' + (!states.length || S.layer ? ' disabled' : '') + '>' +
+      '<div class="review-business"><strong class="review-section-title">' + L('Business scenarios', '业务场景') + '</strong>' +
+        (scenes.length || business.length ? scenes.map(function (scene) { return reviewChoice(current,scene,'scene'); }).join('') + business.map(function (state) { return reviewChoice(current,state,'state'); }).join('') :
+          '<p class="review-step">' + L('This page has no separate business preset. Use the page or the feedback options below.', '此页暂无独立业务预设，可直接操作页面或选择下方界面反馈。') + '</p>') + '</div>' +
+      '<details class="review-feedback"' + (reviewFeedback ? ' open' : '') + '><summary>' + L('Interface feedback', '界面反馈（加载、空数据、失败等）') + '</summary>' +
+      '<label for="review-state">' + L('Page feedback state', '页面反馈状态') + '</label><select class="inp" id="review-state"' + (!states.length || S.layer ? ' disabled' : '') + '>' +
       (live ? '<option value="" selected disabled>' + L('Current flow', '当前流程状态') + '</option>' : '') +
-      (!states.length ? '<option>' + L('Follow the page flow', '通过页面流程触发') + '</option>' : Object.keys(groups).map(function (group) { return '<optgroup label="' + esc(group) + '">' + groups[group].join('') + '</optgroup>'; }).join('')) + '</select>' +
+      (!states.length ? '<option>' + L('Follow the page flow', '通过页面流程触发') + '</option>' : Object.keys(groups).map(function (group) { return '<optgroup label="' + esc(group) + '">' + groups[group].join('') + '</optgroup>'; }).join('')) + '</select></details>' +
       '<button class="btn" type="button" data-act="review-reset"' + (!config || S.layer ? ' disabled' : '') + '>' + L('Restore default', '恢复默认') + '</button>';
     if (reviewFocus || focusId) { $(reviewFocus || focusId)?.focus({preventScroll:true}); reviewFocus = ''; }
+    header.querySelector('.review-feedback').addEventListener('toggle', function (event) { if (event.target.isConnected) reviewFeedback = event.target.open; });
     if (reviewObserver) reviewObserver.observe(panel, {childList:true});
   }
   CF.review = {
@@ -730,11 +824,22 @@
   }, true);
   document.addEventListener('input', function (event) {
     if (event.target.id !== 'review-search') return;
-    reviewSearch = event.target.value; $('review-page').innerHTML = reviewOptions();
+    reviewSearch = event.target.value;
+    $('review-results').hidden = !reviewSearch.trim(); $('review-results').innerHTML = reviewSearchResults();
   });
+  document.addEventListener('click', function (event) {
+    var summary = event.target.closest('.review-feedback > summary');
+    if (summary) reviewFeedback = !summary.parentElement.open;
+    var button = event.target.closest('[data-review-page]');
+    if (!button || button.disabled || !button.closest('#demoPanel')) return;
+    event.preventDefault(); event.stopImmediatePropagation();
+    reviewGo(button.dataset.reviewPage, button.hasAttribute('data-review-scene') ? {scene:button.dataset.reviewScene} : {state:button.dataset.reviewState});
+  }, true);
   document.addEventListener('change', function (event) {
     if (event.target.id === 'review-identity') reviewIdentityGo(event.target.value);
     if (event.target.id === 'review-page') reviewGo(event.target.value);
+    if (event.target.id === 'review-module') { reviewModule = event.target.value; $('review-page').innerHTML = reviewOptions(); $('review-results').innerHTML = reviewSearchResults(); }
+    if (event.target.id === 'review-auto-close') reviewAutoClose = event.target.checked;
     if (event.target.id === 'review-state') reviewApply(event.target.value);
   });
 

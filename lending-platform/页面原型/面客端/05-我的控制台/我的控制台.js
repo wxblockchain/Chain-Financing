@@ -253,10 +253,12 @@
  function reviewTools(){return '<div class="grp"><h5>'+L('Console partial faults','控制台局部故障')+'</h5>'+[['stats','Summary error','单项统计失败'],['tokens-error','Token snapshot error','代币读取失败'],['association-error','Association error','关联读取失败'],['plan-error','Plan unavailable','还款计划加载失败'],['session','Session expired','登录失效']].map(([v,en,zh])=>b('scenario',L(en,zh),v)).join('')+'<p class="hint">'+L('Fixtures are shared with the marketplace; no real payment is made.','演示数据与广场共用；不发起真实付款。')+'</p></div>';}
 
  CF.review.register('P-MC-01',{group:['My console','我的控制台'],route:'/console',
+   scenarios:()=>allowed()?tabs().map(k=>({id:k,label:names[k],route:'/console?tab='+k,description:['Open this record category','定位此类业务清单']})):[],
    states:()=>allowed()?['default','loading','empty','noresult','error','denied']:['default'],
    reset(){S.st='default';statsError=tokenError=associationError=planError=false;}});
  kinds.forEach((k,i)=>CF.review.register('P-MC-0'+(i+2),{
    group:['My console · details','我的控制台 · 详情'],visible:()=>tabs().includes(k),
+   scenarios:()=>allowed()?[...new Set(normalized(k).map(r=>r.status))].map(st=>{const r=normalized(k).find(r=>r.status===st);return {id:st,label:labels[st]||[st,st],route:r?detailHref(k,r.id):null,available:!!r,description:[text(titles[k])+' · '+r.id,text(titles[k])+' · '+r.id]};}):[],
    states:()=>allowed()?['default','loading','error',{id:'stale',label:['Action expired','动作失效'],group:'business'},'denied']:['default'],
    route:()=>{const r=normalized(k)[0];return r?detailHref(k,r.id):null;},
    get:()=>S.st==='denied'?'denied':detailState==='normal'?'default':detailState,

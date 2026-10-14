@@ -732,6 +732,10 @@
    [DT,['Project review detail','项目审核详情'],['default','loading','error',DENIED]]].forEach(([id,label,states])=>{
     CF.review.register(id,{
       group:['Project contracts','项目合约管理'],label,states,
+      scenarios:()=>id!==DT?[]:[
+        ...Object.keys(REVIEW).map(st=>({id:'review-'+st,label:REVIEW[st].slice(0,2),row:A.rows.find(r=>r.review===st)})),
+        ...['failed','unknown','success'].map(st=>({id:'deploy-'+st,label:DEPLOY[st].slice(0,2),row:A.rows.find(r=>r.deploy===st)}))
+      ].map(s=>({id:s.id,label:s.label,available:canQuery()&&!!s.row,route:s.row?detailRoute(s.row.id,'queue'):null,description:s.row?['Existing project · '+s.row.id,'已有项目 · '+s.row.id]:['No matching project','暂无对应项目']})),
       route:()=>id===Q?ROOT:id===LG?LEDGER:detailRoute(A.rows[0].id,'queue'),
       get:()=>canQuery()?A.view:'denied',
       set(value){

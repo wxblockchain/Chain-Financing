@@ -647,6 +647,7 @@
   const DENIED={id:'denied',label:['No access','无权限'],group:'business'};
   [Q,D].forEach(id=>CF.review.register(id,{
     group:['Pledge reviews','代币质押审核'],
+    scenarios:()=>id!==D?[]:Object.keys(status).map(st=>{const r=A.rows.find(r=>r.status===st);return {id:st,label:status[st].slice(0,2),available:canQuery()&&!!r,route:r?detailRoute(r.id):null,description:r?['Existing application · '+r.id,'已有申请 · '+r.id]:['No matching application','暂无对应申请']};}),
     states:id===Q?['default','loading','empty','noresult','error',DENIED]:['default','loading','error',DENIED],
     route:()=>id===Q?ROOT:detailRoute(A.rows[0].id),
     get:()=>canQuery()?A.view:'denied',

@@ -533,6 +533,7 @@
 
   /* ------------------------------------------------------------------ 评审工具 */
   CF.review.register(PAGE,{group:['Company accounts','企业账户'],route:ROUTE,
+    scenarios:()=>['asset','fund'].includes(S.role)?KINDS.map(k=>({id:k,label:k==='fiat'?['Bank accounts','法币账户']:['Crypto accounts','数币账户'],route:ROUTE+'?type='+k,description:['Open the existing account category','定位已有账户分类']})):[],
     states:['default',{id:'unverified',label:['Not verified yet','尚未取得认证资格'],group:'business'},'loading','empty','error'],
     get:()=>V.unverified?'unverified':V.scene==='ready'?'default':V.scene,
     set(value){V.unverified=value==='unverified';V.scene=['loading','empty','error'].includes(value)?value:'ready';},

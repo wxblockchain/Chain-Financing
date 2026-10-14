@@ -701,6 +701,7 @@
   CF.review.register(LIST, {group:['Assets','资产广场'], states:['default','loading','empty','noresult','error','denied'],
     route:'/assets', set(value){cancelLoad();S.st=value;}, reset(){cancelLoad();failNext=false;S.st='default';}});
   CF.review.register(DETAIL, {group:['Assets','资产广场'], states:['default','denied'],
+    scenarios:()=>[['valid',['Valid token','有效代币']],['void',['Void token','失效代币']]].map(([st,label])=>{const row=AM.TOKENS.find(r=>r.ts===st);return {id:st,label,available:!!row,route:row?'/assets/'+row.no:null,description:['Read-only token details','查看已有代币详情']};}),
     route:()=>'/assets/'+AM.TOKENS[0].no});
 
   CF.define({

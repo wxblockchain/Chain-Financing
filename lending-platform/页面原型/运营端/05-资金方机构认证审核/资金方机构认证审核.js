@@ -152,6 +152,7 @@
   ['P-L40','P-L41'].forEach(id=>CF.review.register(id,{
     group:['Institution review','机构认证审核'],
     states:id==='P-L40'?['default','loading','empty','noresult','error',DENIED]:['default','loading','error',DENIED],
+    scenarios:()=>id!=='P-L41'?[]:['submitted','verified','rejected'].map(st=>{const r=rows().find(r=>r.status===st);return {id:st,label:{submitted:['Pending review','待审核'],verified:['Approved','已通过'],rejected:['Rejected','已驳回']}[st],available:allowed()&&!!r,route:r?detailRoute(r.id):null,description:r?['Existing application · '+r.id,'已有申请 · '+r.id]:['No matching application','暂无对应申请']};}),
     route:()=>id==='P-L40'?'/ops/institution-reviews':detailRoute(rows()[0]?.id||'DEMO-REG-001'),
     get:()=>canRead()?S.st:'denied',
     set(value){if(value==='denied'){grant('none');S.st='default';return;}if(!canRead())grant('admin');S.st=value;},

@@ -133,6 +133,7 @@ return false;
 N.configure({blocked:()=>revoked,visible,from:()=>S.page===P?hash():backHash,failPanel(){const failed=fault==='panel';if(failed)fault='';return failed},onRows(value){rows=value}});
 
 CF.review.register(P,{group:['Notifications','消息中心'],route:LIST,states:()=>allowed()?['default','loading','empty','noresult','error']:['default'],
+  scenarios:()=>allowed()?['unread','read'].map(st=>({id:st,label:st==='unread'?['Unread notifications','未读消息']:['Read notifications','已读消息'],route:LIST+'?status='+st,description:['Filter existing notifications','筛选已有消息']})):[],
   get:()=>scene,set(value){scene=value;listCache=null;},reset(){scene='default';fault='';pageError=false;listCache=null;}
 });
 CF.review.register(PD,{group:['Notifications','消息中心'],route:()=>visible()[0]?detailURL(visible()[0].id):null,

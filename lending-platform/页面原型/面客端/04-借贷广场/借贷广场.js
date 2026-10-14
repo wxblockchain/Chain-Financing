@@ -642,6 +642,23 @@
 
   [LIST,DETAIL,NEW].forEach(id=>CF.review.register(id, {
     group:['Lending marketplace','借贷广场'],
+    scenarios:()=>id!==DETAIL?[]:[
+      ['collateral',['Collateral overview','质押概览'],'global',p=>!D.terminal(p)],
+      ['publish',['Ready to publish a request','待发布融资需求'],'financing',p=>!D.current(p)&&D.actions(p).publish],
+      ['quotes',['Awaiting quotes','待机构报价'],'financing',p=>D.current(p)?.state==='open'],
+      ['respond',['Awaiting quote confirmation','待确认报价'],'financing',p=>D.current(p)?.state==='quoted'],
+      ['disburse',['Awaiting disbursement','待放款'],'financing',p=>Q?.data().quotes.some(q=>q.project===p.id&&q.l7?.state==='pending')],
+      ['receipt',['Awaiting receipt confirmation','待放款确认'],'financing',p=>Q?.data().quotes.some(q=>q.project===p.id&&q.l7?.state==='waiting')],
+      ['repaying',['Repayment in progress','还款中'],'repay',p=>Q?.data().quotes.some(q=>q.project===p.id&&q.l8&&!q.l8.settledAt)],
+      ['settled',['Financing settled','已结清'],'global',p=>p.state==='settled'],
+      ['closed',['Project closed','项目已关闭'],'global',p=>p.state==='closed']
+    ].map(([key,label,tab,match])=>{
+      const p=D.projects.find(p=>(S.role!=='asset'||D.mine(p))&&match(p));
+      const privateStage=['respond','disburse','receipt','repaying'].includes(key),allowed=!privateStage||['asset','fund'].includes(S.role);
+      return {id:key,label,available:!!p&&allowed,route:p?'/project/'+p.id:null,
+        description:!allowed?['Choose an asset holder or funder identity','请先选择资产方或资金方身份']:p?['Existing project · '+p.id,'已有项目 · '+p.id]:['No matching project; use the existing flow to create one','暂无对应项目，可通过既有业务流程产生'],
+        enter(){if(p){actionTabs[p.id]=tab;railExpanded=true;delete actionNodes[p.id+':'+tab];}}};
+    }),
     states:id===LIST?['default','loading','empty','noresult','error','denied']:['default','loading','empty','error','denied'],
     route:()=>id===LIST?'/marketplace':id===NEW?'/project/new':'/project/'+D.projects.find(p=>!['review','returned','available'].includes(p.state)).id,
     beforeChange(proceed){if(busy||S.layer){CF.toast(L('Finish or cancel the current operation first.','请先完成或取消当前操作。'));return;}proceed();},

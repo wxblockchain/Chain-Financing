@@ -421,6 +421,7 @@ function act(action,v,e){if(!action.startsWith('ag-'))return false;let a=current
 
 Object.values(P).forEach(id=>CF.review.register(id,{
   group:['Agreements','协议管理'],states:id===P.list?['default','loading','empty','noresult','error','denied']:['default','loading','error','denied'],
+  scenarios:()=>id!==P.detail?[]:[['active',['Effective version','生效版本']],['scheduled',['Scheduled release','待定时生效']],['draft',['Draft version','草稿版本']],['archived',['Archived version','已归档版本']]].map(([st,label])=>{const a=db.agreements.find(a=>a.versions.some(v=>v.state===st));return {id:st,label,available:canHistory()&&!!a,route:a?route(P.detail,{id:a.id,tab:'history'}):null,description:canHistory()?['Locate this agreement in version history','定位此协议的版本历史']:['Version-history permission required','当前账号缺少版本历史读取权限']};}),
   route:()=>{if(id===P.list)return '/ops/agreements';const a=id===P.edit?(target(current())?current():db.agreements.find(a=>target(a))):(current()||db.agreements[0]);if(!a)return null;const v=id===P.edit?target(a):a.versions[0];return route(id,{id:a.id,v:v?.n});},
   reset(){S.st='default';failure='';previewFailed=false;activityState='default';},
   beforeChange(proceed){CF.AdminMenu.beforeLeave(proceed);}

@@ -244,6 +244,7 @@
 
   [LIST,DETAIL].forEach(id=>CF.review.register(id,{
     group:['Notifications','消息中心'],
+    scenarios:()=>id===LIST&&N.allowed()?['unread','read'].map(st=>({id:st,label:st==='unread'?['Unread notifications','未读消息']:['Read notifications','已读消息'],route:'/notifications?status='+st,description:['Filter existing notifications; read markers are not reset','筛选已有消息，不重置已读标记']})):[],
     states:()=>!N.allowed()?['default']:id===LIST?['default','loading','empty','noresult','error','denied']:['default','loading','error','denied'],
     route:()=>id===LIST?'/notifications':N.visible()[0]?'/notification?id='+encodeURIComponent(N.visible()[0].id):null,
     set(value){resetView();detailFailure=readError=false;S.st=value;},
