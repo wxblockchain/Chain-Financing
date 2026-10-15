@@ -32,10 +32,20 @@
   const stamp=iso=>iso?'<span class="num">'+E(CF.fmtStamp(iso))+'</span> <span class="muted">('+zone()+')</span>':'—';
   const copyable=(shown,value,label,cls='mono')=>'<span class="copy-pair"><span class="'+cls+'">'+E(shown)+'</span>'+
     CF.copyBtn('ea-copy',value,label)+'</span>';
-  /* 复用共享币种 / 网络图形，代码始终保留；图标只辅助识别，不表示核验结果。 */
-  const currencyTags=a=>{const c=EA.currencies(a);return c.length?'<span class="ea-ccy-list">'+c.map(x=>'<span class="ea-ccy" title="'+E(EA.currencyName(x))+'">'+CF.market.currency(x)+'</span>').join('')+'</span>':'<span class="faint">—</span>';};
-  const tokenTags=()=>'<span class="ea-ccy-list">'+EA.TOKENS.map(c=>CF.market.currency(c)).join('')+'</span>';
-  const networkTag=code=>'<span class="ea-network">'+CF.market.currency(code)+'</span>';
+  /* 本模块图形来自已内嵌的 CC0 图库；不改变目录、币种顺序或选择默认值。 */
+  const assetLabel=code=>'<span class="ea-asset-label" title="'+E(EA.currencyName(code))+'">'+CF.eaAssetIcon(code)+'<span>'+E(code)+'</span></span>';
+  function assetTags(c,compact=false){
+    if(!c.length)return '<span class="faint">—</span>';
+    const all='<span class="ea-ccy-list">'+c.map(assetLabel).join('')+'</span>';
+    if(!compact)return all;
+    const label=L('View all currencies: ','查看全部币种：')+c.join(', ');
+    return '<details class="ea-currency-peek"><summary aria-label="'+E(label)+'" title="'+E(c.map(x=>x+' · '+EA.currencyName(x)).join(', '))+'">'+
+      '<span class="ea-icon-stack">'+c.slice(0,2).map(x=>CF.eaAssetIcon(x)).join('')+(c.length>2?'<span class="ea-more-icon" aria-hidden="true">+</span>':'')+'</span></summary>'+
+      '<div class="ea-currency-reveal">'+all+'</div></details>';
+  }
+  const currencyTags=(a,compact=false)=>assetTags(EA.currencies(a),compact);
+  const tokenTags=(compact=false)=>assetTags(EA.TOKENS,compact);
+  const networkTag=code=>'<span class="ea-network">'+assetLabel(code)+'</span>';
   const kindIcon=kind=>'<svg class="ea-kind-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
     (kind==='fiat'?'<path d="m3 9 9-5 9 5H3ZM5 11v7m5-7v7m4-7v7m5-7v7M3 21h18"/>':'<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18m-4 4h4v4h-4a2 2 0 0 1 0-4Z"/>')+'</svg>';
   const kindName=k=>k==='fiat'?L('Fiat accounts','法币账户'):L('Crypto accounts','数币账户');
@@ -115,7 +125,7 @@
       /* 账户列：备注名为主标识，下方是平台带出的账户名称。 */
       rows.map(a=>'<tr><td data-label="'+h[0]+'"><div class="cell-wrap"><span class="cell-main">'+EA.name(a)+'</span><span class="cell-sub">'+(EA.holderName(a)||'—')+'</span>'+incomplete(a)+'</div></td>'+
         '<td data-label="'+h[1]+'">'+(a.accountType?'<span class="ea-type">'+E(EA.typeName(a))+'</span>':'<span class="faint">—</span>')+'</td>'+
-        '<td data-label="'+h[2]+'">'+currencyTags(a)+'</td>'+
+        '<td data-label="'+h[2]+'">'+currencyTags(a,true)+'</td>'+
         '<td data-label="'+h[3]+'"><div class="cell-wrap"><span>'+E(a.bank)+'</span><span class="cell-sub">'+E(a.bankCity||'')+'</span></div></td>'+
         '<td data-label="'+h[4]+'" class="nw"><span class="mono">'+EA.maskTail(EA.compact(a.iban))+'</span></td>'+
         '<td data-label="'+h[5]+'" class="nw">'+(a.swift?'<span class="mono">'+E(a.swift)+'</span>':'<span class="faint">—</span>')+'</td>'+
@@ -128,7 +138,7 @@
       rows.map(a=>'<tr><td data-label="'+h[0]+'"><span class="cell-main">'+EA.name(a)+'</span></td>'+
         '<td data-label="'+h[1]+'">'+networkTag(a.chain)+'</td>'+
         '<td data-label="'+h[2]+'" class="nw"><span class="mono">'+EA.maskAddress(a.address)+'</span></td>'+
-        '<td data-label="'+h[3]+'">'+tokenTags()+'</td>'+
+        '<td data-label="'+h[3]+'">'+tokenTags(true)+'</td>'+
         '<td data-label="'+L('Added','登记时间')+'" class="nw muted"><span class="num">'+E(CF.fmtStamp(a.at))+'</span></td>'+actions(a)+'</tr>').join('')+'</tbody></table>';
   }
   function panel(){
@@ -180,7 +190,7 @@
   /* 账户类型：单选、必选、不预选；只作标注。 */
   function typeField(){
     const v=F().form.accountType;
-    return '<fieldset class="ea-chains ea-full" aria-describedby="ea-f-accountType-err"'+(err('accountType')?' aria-invalid="true"':'')+'><legend>'+L(...EA.labels.accountType)+'</legend>'+
+    return '<fieldset class="ea-chains ea-types ea-full" aria-describedby="ea-f-accountType-err"'+(err('accountType')?' aria-invalid="true"':'')+'><legend>'+L(...EA.labels.accountType)+'</legend>'+
       '<div class="ea-chain-row">'+EA.ACCOUNT_TYPES.map(t=>'<label class="ea-chain"><input type="radio" name="ea-type" value="'+t.id+'" data-ea-type="'+t.id+'"'+(v===t.id?' checked':'')+
         '><span><b>'+L(...t.label)+'</b></span></label>').join('')+'</div>'+
       '<span class="err-msg" id="ea-f-accountType-err" role="alert">'+E(err('accountType'))+'</span></fieldset>';
@@ -188,7 +198,7 @@
   /* 账户名称：平台按本企业当前名称带出，只读。 */
   function holderField(){
     const a=F().id?EA.byId(F().id):null,name=a&&a.holder?a.holder:EA.companyName();
-    return '<div class="field ea-full"><span class="field-label">'+L(...EA.labels.holder)+'</span>'+
+    return '<div class="field"><span class="field-label">'+L(...EA.labels.holder)+'</span>'+
       '<span class="field-static" aria-readonly="true">'+(name?E(L(...name)):'—')+'</span>'+
       '<span class="hint">'+L('Your company\'s current name. It can\'t be edited.','本企业当前名称，不可修改。')+'</span></div>';
   }
@@ -198,9 +208,9 @@
     return '<fieldset class="ea-ccys ea-full" aria-describedby="ea-f-ccys-hint ea-f-ccys-err"'+(err('ccys')?' aria-invalid="true"':'')+'>'+
       '<legend>'+L(...EA.labels.ccy)+'</legend>'+
       '<span class="hint" id="ea-f-ccys-hint">'+L('Select every currency this account supports. This is a label for your reference; the platform doesn\'t check it.',
-        '勾选这个账户支持的币种。仅作标注，方便你核对，平台不核验。')+'</span>'+
+        '选择这个账户支持的币种。仅作标注，方便你核对，平台不核验。')+'</span>'+
       '<div class="ea-chips">'+EA.CURRENCIES.concat(picked.filter(c=>!EA.CURRENCIES.includes(c))).map(c=>'<label class="ea-chip" title="'+E(EA.currencyName(c))+'"><input type="checkbox" data-ea-ccy="'+c+'"'+
-        (picked.includes(c)?' checked':'')+' aria-label="'+E(c+' · '+EA.currencyName(c))+'"><span class="ea-chip-body">'+CF.market.currency(c)+'<span class="ea-currency-name">'+E(EA.currencyName(c))+'</span></span></label>').join('')+'</div>'+
+        (picked.includes(c)?' checked':'')+' aria-label="'+E(c+' · '+EA.currencyName(c))+'"><span class="ea-chip-body">'+assetLabel(c)+'</span></label>').join('')+'</div>'+
       '<span class="err-msg" id="ea-f-ccys-err" role="alert">'+E(err('ccys'))+'</span></fieldset>';
   }
   const group=(heading,html,extra='')=>'<fieldset class="ea-group"><legend>'+heading+'</legend>'+extra+'<div class="ea-grid">'+html+'</div></fieldset>';
@@ -209,8 +219,8 @@
   function fiatForm(){
     const f=F();
     return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+
-      group(L('Account','账户信息'),typeField()+holderField()+field('label',true)+currencyField())+
-      group(L('Bank details','开户行信息'),field('bank',true)+field('iban')+field('swift')+field('bankCity',true))+
+      group(L('Account','账户信息'),typeField()+holderField()+field('label')+currencyField())+
+      group(L('Bank details','开户行信息'),field('bank')+field('bankCity')+field('iban')+field('swift'))+
       (f.duplicate?notice('warn','<div class="ea-notice-row"><span>'+L('An account with this account number and SWIFT / BIC is already saved.',
         '已登记过相同账号与 SWIFT / BIC 的账户。')+'</span>'+b('view','View it','查看该账户',f.duplicate)+'</div>'):'')+'</div>';
   }
@@ -230,8 +240,8 @@
         L('Exchange deposit addresses, third-party custodial addresses and contract addresses that can\'t sign are not supported.',
           '交易所充值地址、第三方托管地址以及无法签名的合约地址都无法登记。')+'</div>')+
       '<fieldset class="ea-chains" aria-describedby="ea-f-chain-err"><legend>'+L('Network','结算收款链')+'</legend>'+
-        '<div class="ea-chain-row">'+EA.CHAINS.map(c=>'<label class="ea-chain"><input type="radio" name="ea-chain" value="'+c+'" data-ea-chain="'+c+'"'+
-          (f.form.chain===c?' checked':'')+'><span>'+networkTag(c)+'<span class="hint">'+L(...CHAIN_HINT[c])+'</span></span></label>').join('')+'</div>'+
+        '<div class="ea-chain-row">'+EA.CHAINS.map(c=>'<label class="ea-chain ea-network-choice" title="'+E(L(...CHAIN_HINT[c]))+'"><input type="radio" name="ea-chain" value="'+c+'" data-ea-chain="'+c+'" aria-label="'+E(c+' · '+L(...CHAIN_HINT[c]))+'"'+
+          (f.form.chain===c?' checked':'')+'><span>'+networkTag(c)+'</span></label>').join('')+'</div>'+
         '<span class="hint">'+L('The network and address can\'t be changed after the account is saved.','链和地址一经登记不可修改。')+'</span>'+
         '<span class="err-msg" id="ea-f-chain-err" role="alert">'+E(err('chain'))+'</span></fieldset>'+
       '<div class="ea-grid">'+field('address',true,f.form.chain==='ETH'?'0x…':f.form.chain==='TRON'?'T…':'')+field('label',true)+'</div>'+
