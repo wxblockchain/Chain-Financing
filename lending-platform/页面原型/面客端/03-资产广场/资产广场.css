@@ -220,7 +220,11 @@ body.list-full:has(.am-market-page)::before{content:"";position:fixed;inset:0;z-
 .am-detail .dl dt{font-size:var(--fs-12);font-weight:400;color:var(--muted);line-height:1.6}
 .am-detail .dl dd{font-size:var(--fs-14);font-weight:400;color:var(--text);line-height:1.6;min-width:0}
 .am-detail .dl dd :is(.num,.mk-money,.mk-money-number,.mk-network,.mk-currency,b,strong){font-size:inherit;font-weight:400;color:inherit}
-.am-detail .dl dd .mk-money-unit{font-size:inherit;color:var(--muted);letter-spacing:0}
+/* 金额与数量：数字随字段 14px，币种代码 / 单位小一号（11px）放在数字后，图标在最前。 */
+.am-detail .mk-money-unit{font-size:var(--fs-11);color:var(--muted);letter-spacing:.02em}
+.am-detail .mk-money{align-items:baseline;gap:0 var(--sp-1)}
+.am-detail .mk-money>.mk-coin{width:18px;height:18px;align-self:center;margin-right:var(--sp-1)}
+.am-holdings .mk-money{justify-content:flex-end}
 .am-detail .dl dd :is(.num,.mk-money-number){font-family:var(--numeric,var(--sans));font-variant-numeric:tabular-nums}
 .am-detail .am-addr .mono,.am-detail .am-hash .hash{font-size:var(--fs-12)}
 .am-detail .am-caveat{margin-top:var(--sp-1)}

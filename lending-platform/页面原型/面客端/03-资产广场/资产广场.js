@@ -310,6 +310,12 @@
   function cents(value) { return Math.round(value * 100); }
   function sum(rows, key) { return rows.reduce(function (n, t) { return n + cents(t[key]); }, 0) / 100; }
   function quantity(value) { return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  /* 详情里的金额统一为「币种图标 + 数字 + 小字号币种代码」；数量同样是「数字 + 小字号单位」，不带图标。 */
+  function money(value, ccy) { return CF.market.amount(value, ccy, { icon: true }); }
+  function qty(value) {
+    return '<span class="mk-money am-qty"><span class="mk-money-number">' + quantity(value) +
+      '</span><span class="mk-money-unit">' + L("tokens", "枚") + "</span></span>";
+  }
   /* 持有方：代币发行平台给出当前全部持有方，借贷平台给出质押记录，两者按代币编号核对后逐个展示。
      默认就有数据；加载中、读取失败和各类核对不上的情形留在评审工具里切换。 */
   var holdingMode = "sample", holdingLoad = null, holdingTimer = 0;
@@ -377,7 +383,7 @@
               '<a class="btn-link" href="#/project/' + esc(r.project.id) + '" data-act="am-project" data-v="' + esc(r.project.id) + '">' + esc(nm(r.project.name)) + '</a>';
             var values = ['<span class="copy-pair"><span class="mono am-address" title="' + esc(r.address) + '">' + esc(r.address.slice(0, 6) + "…" + r.address.slice(-4)) + '</span>' +
               CF.copyBtn("am-address-copy", r.address, L("Copy holder address", "复制持有方地址")) + '</span>',
-              quantity(r.qty) + L(" tokens", " 枚"), CF.market.amount(r.value, "USD"),
+              qty(r.qty), money(r.value, "USD"),
               CF.tag(r.pledged ? "accent" : "", r.pledged ? L("Pledged", "已质押") : L("Not pledged", "未质押")), project];
             return '<tr>' + values.map(function (v, i) { return '<td data-label="' + esc(heads[i]) + '"><div class="cell-wrap">' + v + '</div></td>'; }).join("") + '</tr>';
           }).join("") + '</tbody></table></div>';
@@ -639,8 +645,8 @@
     var info = section(L("Token information", "代币信息"), dl([
       [L("Issuer", "发行方"), esc(issuerName(t))],
       [L("Token type", "代币类型"), esc(tokenKind())],
-      [L("Token amount", "代币数量"), '<span class="num">' + quantity(t.qty) + L(" tokens", " 枚") + "</span>"],
-      [L("Token value", "代币价值"), '<span class="num">' + CF.fmtAmt(t.val, "USD") + "</span>"],
+      [L("Token amount", "代币数量"), qty(t.qty)],
+      [L("Token value", "代币价值"), money(t.val, "USD")],
       /* 铸造链：代币铸造所在的链，只读。 */
       [L("Minting chain", "铸造链"), CF.market.network(AM.CHAIN)],
       [L("Minted at", "铸造时间"), stampTz(t.at)],
@@ -654,7 +660,7 @@
     var origin = section(L("Basic information", "基础资料信息"), dl([
       [L("Seller", "卖方企业名"), esc(sellerName(t))],
       [L("Buyer", "买方企业名"), esc(buyerName(t))],
-      [L("Receivable amount", "应收账款金额"), '<span class="num">' + CF.fmtAmt(t.recvAmt, t.recvCcy) + "</span>"],
+      [L("Receivable amount", "应收账款金额"), money(t.recvAmt, t.recvCcy)],
       [L("Underlying receivable term", "底层应收账款账期"), esc(t.from) + " – " + esc(t.to)],
       [L("Trade type", "贸易类型"), esc(nm(AM.TRADES[t.trade]))],
       [L("Settlement method", "结算方式"), esc(nm(AM.SETTLES[t.settle]))]
