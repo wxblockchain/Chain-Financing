@@ -2,7 +2,7 @@
 (function(CF){
   'use strict';
   const D=CF.opsMessageDemo, S=CF.S, L=CF.L, E=CF.esc;
-  const DATA='hc.ops.message-pool.v2', READ='hc.ops.messages.v1.';
+  const DATA='hc.ops.message-pool.v3', READ='hc.ops.messages.v1.';
   const memory=new Map();
   let provider={},panel='closed',request=0,preview=[],currentReader='',refreshTimer=null;
   const read=key=>{try{return localStorage.getItem(key)}catch(_){return memory.get(key)||null}};
@@ -22,7 +22,7 @@
   function closePanel(focus=false){request++;panel='closed';preview=[];refresh();if(focus)document.getElementById('om-bell')?.focus({preventScroll:true})}
   function label(r){return `<span class="nc-read-state ${isRead(r)?'is-read':'is-unread'}">${isRead(r)?L('Read','已读'):L('Unread','未读')}</span>`}
   function row(r){
-    const title=text(r.title)||L('Notification','消息');
+    const title=text(r.title)||L('Notification','通知');
     const target=CF.AdminMenu.messageLink(r.id,provider.from?.()||'');
     return `<a class="nc-preview" id="om-preview-${E(r.id)}" href="${E(target.href)}" data-admin-destination="messages" data-admin-route="${E(target.route)}"><div class="nc-message-heading"><span class="nc-message-title" title="${E(title)}">${E(title)}</span>${label(r)}</div><p class="nc-summary">${E(text(r.title)?text(r.summary):'')}</p><div class="nc-message-foot"><span>${E(text(D.categories[r.category])||L('Other','其他'))}${expired(r)?' · '+L('Expired','已过期'):''}</span><time title="${E(absolute(r.at))}">${E(relative(r.at))}</time></div></a>`;
   }

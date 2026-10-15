@@ -813,28 +813,31 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .om-inbox .nc-summary{-webkit-line-clamp:1;font-size:var(--fs-13);line-height:1.6}
 .om-inbox .nc-message-foot{margin-top:var(--sp-2)}
 .om-expired .nc-message-title{color:var(--muted)}
-.om-pagination{padding:var(--sp-4) var(--sp-6);display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;font-size:var(--fs-12);color:var(--muted)}
-.om-pagination nav{display:flex;gap:var(--sp-2);align-items:center;margin-left:auto}
-.om-pagination [aria-current=page]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-border)}
-.om-pagination label{display:flex;align-items:center;gap:var(--sp-2)}
-.om-pagination select{width:76px}
+.om-inbox .om-loadmore{flex-direction:row;justify-content:center;gap:var(--sp-4);padding:var(--sp-5) var(--sp-6);font-size:var(--fs-13);color:var(--muted)}
+.om-more-error{color:var(--danger)}
+.om-more-end{color:var(--faint);font-size:var(--fs-12)}
+.om-expired-label{color:var(--muted)}
+.om-reference{display:inline-flex;align-items:center;gap:var(--sp-1);min-width:0}
+.om-reference .mono{overflow-wrap:anywhere}
+.om-reference .btn.icon{width:28px;height:28px}
+.om-reading .nc-read-feedback{margin:var(--sp-5) 0 0}
 .om-reading .card-b{padding:var(--sp-7);min-height:340px;display:flex;flex-direction:column}
 .om-reading h1{font-size:var(--fs-24);line-height:1.5;overflow-wrap:anywhere;max-width:70ch}
 .om-reading .nc-body{font-size:var(--fs-14);margin:var(--sp-7) 0 0}
-.om-reading .nc-actions{margin-top:auto}
-.om-validity{margin-top:var(--sp-6);background:var(--card-2);color:var(--muted);border-color:var(--border)}
+.om-reading .nc-actions{margin-top:auto;padding-top:var(--sp-6);border-top:0}
 .om-panel-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4)}
 .admin-notifications .nc-preview .nc-message-title{font-size:var(--fs-13);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .admin-notifications .nc-preview .nc-summary{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;font-size:var(--fs-12);margin-top:var(--sp-2)}
 .admin-notifications .nc-preview .nc-message-foot{font-size:var(--fs-12)}
 .admin-notifications .nc-preview .nc-read-state{min-width:50px}
 .admin-notifications .nc-panel .tbl-empty{padding:var(--sp-7) var(--sp-5)}
-.om-record{display:grid;grid-template-columns:auto 1fr;gap:var(--sp-3) var(--sp-6);margin:0}
+.om-record{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:var(--sp-3) var(--sp-6);margin:0}
 .om-record dt{color:var(--muted)}
 .om-record dd{margin:0}
 .om-relation{margin-top:var(--sp-6);padding:var(--sp-5) var(--sp-6);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:var(--fs-13)}
 .om-relation h2{margin:0 0 var(--sp-4);font-size:var(--fs-13);font-weight:600;color:var(--muted);letter-spacing:.02em}
 .om-target-note{margin:var(--sp-5) 0 0;color:var(--muted);font-size:var(--fs-13);line-height:1.7;max-width:70ch}
+.om-target-note + .nc-actions{padding-top:var(--sp-4)}
 .om-reading .nc-actions [aria-disabled="true"]{opacity:.65;cursor:default}
 .admin-notifications .badge[hidden]{display:none}
 .ops-notification .sidebar .brand-name,.ops-notification .sidebar .brand-sub{display:block;white-space:nowrap}
