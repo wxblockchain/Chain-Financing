@@ -906,3 +906,16 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 }
 .ls-pledge-notice .ls-release-frequent{margin:0;padding:6px 10px;border-radius:var(--radius-xs);background:var(--warn-bg);color:var(--warn);font-size:var(--fs-12)}
 .ls-pledge-notice .ls-release-over{margin:0;color:var(--danger);font-size:var(--fs-12)}
+/* 质押不足：已通过审核的代币列在最后、不可勾选，状态下方注明原因。 */
+.ls-pick-row.held{cursor:not-allowed}
+.ls-pick-row.held td{color:var(--faint)}
+.ls-pick-row.held .cell-sub{display:block;color:var(--warn);font-size:var(--fs-11)}
+.ls-pledge-notice .ls-release-held{margin:0;padding:8px 10px;border-radius:var(--radius-xs);background:var(--warn-bg);color:var(--warn);font-size:var(--fs-12);line-height:1.6}
+/* 登录未绑定角色的项目详情：只有基本信息，其余以一块说明与申请入口代替。 */
+.ls-detail-basic .ls-meta{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-7);margin:var(--sp-4) 0 0}
+.ls-detail-basic .ls-meta dt{font-size:var(--fs-11);color:var(--faint);font-weight:600}
+.ls-detail-basic .ls-meta dd{margin:2px 0 0;font-size:var(--fs-13);color:var(--text)}
+.ls-funder-only{display:flex;flex-direction:column;align-items:center;gap:var(--sp-3);padding:var(--sp-7) var(--sp-6);text-align:center}
+.ls-funder-only h2{margin:0;font-size:var(--fs-16);color:var(--text)}
+.ls-funder-only-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent)}
+.ls-funder-only-ico svg{width:22px;height:22px}

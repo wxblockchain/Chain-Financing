@@ -40,7 +40,7 @@
   function template(r,part){
     if(r.missing)return part==='title'?L('Notification','通知'):'';
     if(part==='body'&&r.literal)return r.literal;
-    const set=D.templates[r.biz]||D.templates[kindOf(r.biz)],pair=set&&set[part];
+    const set=(r.tpl&&D.templates[r.tpl])||D.templates[r.biz]||D.templates[kindOf(r.biz)],pair=set&&set[part];
     let raw=r.onlyZh&&pair?pair.zh:tr(pair);
     if(!raw)return part==='title'?L('Notification','通知'):'';
     return raw.replace(/\{([a-z0-9_]+)\}/g,(_,key)=>{

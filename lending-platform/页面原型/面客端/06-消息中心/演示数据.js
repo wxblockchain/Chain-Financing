@@ -62,10 +62,19 @@
         body:pair('The pledge of token {token_id} in project {project_name} ({project_id}) was rejected. Reason: {reason}. The token remains in the project’s pledge contract and still counts toward the pledged-pending-review amount. Release it yourself to retrieve it; you may then pledge again subject to current eligibility. Other tokens retain their own outcomes.',
           '项目 {project_name}（{project_id}）的代币 {token_id} 本笔质押未通过。原因：{reason}。该代币仍在本项目质押合约内并计入待审质押额，请自助解押取回；取回后可按当前资格重新发起。其他代币按各自结果处理。')},
       /* T-LS-04A / 04B / 04C：同一失败事件按费用事实择一，费用未知不写 0。 */
+      /* 链上操作失败按操作分三种模板（质押上链 / 解押 / 提取），gas 事实与重新发起的条件以变量带入。 */
       'financing.pledge.execution_failed':{
-        title:pair('Deposit execution failed','入池执行失败'),
-        body:pair('Deposit execution {action_id} for token {token_id} in project {project_name} ({project_id}) failed. Reason: {reason}. {fee_sentence} The token was not deposited and does not count toward eligible pledged value. Once no reservation remains, you may reapply subject to current eligibility; fees must be confirmed again.',
-          '项目 {project_name}（{project_id}）的代币 {token_id} 本次入池执行 {action_id} 失败。原因：{reason}。{fee_sentence}该笔未成功入池、不计入有效质押，确认无占用后可按当前资格重新申请；再次操作须重新确认费用。')},
+        title:pair('Pledge failed','质押上链失败'),
+        body:pair('On-chain pledge {action_id} for token {token_id} in project {project_name} ({project_id}) failed. Reason: {reason}. {gas_sentence} The token did not enter the pledge contract and does not count toward any amount. Once no reservation remains, you may pledge again subject to current eligibility; {retry}',
+          '项目 {project_name}（{project_id}）的代币 {token_id} 本次质押上链 {action_id} 失败。原因：{reason}。{gas_sentence}该代币未进入质押合约，不计入任何额度；无占用后可按当前资格重新发起，重新发起{retry}')},
+      'financing.pledge.execution_failed:release':{
+        title:pair('Release failed','解押失败'),
+        body:pair('Release {action_id} for token {token_id} in project {project_name} ({project_id}) failed. Reason: {reason}. {gas_sentence} The token remains in the project\'s pledge contract; for eligible collateral, the provisional deduction has been reversed. You may try again subject to current eligibility; {retry}',
+          '项目 {project_name}（{project_id}）的代币 {token_id} 本次解押 {action_id} 失败。原因：{reason}。{gas_sentence}代币仍在本项目质押合约内；如为有效抵押物，本次预扣已撤销。可按当前资格重新发起，{retry}')},
+      'financing.pledge.execution_failed:collect':{
+        title:pair('Collection failed','提取失败'),
+        body:pair('Collection {action_id} for token {token_id} in project {project_name} ({project_id}) failed. Reason: {reason}. {gas_sentence} The token remains released and awaiting collection; this does not restore the project reservation. You may collect again; {retry}',
+          '项目 {project_name}（{project_id}）的代币 {token_id} 本次提取 {action_id} 失败。原因：{reason}。{gas_sentence}代币仍为已释放待提取，不恢复项目占用；可重新提取，{retry}')},
       'financing.demand.coverage_invalidated':{
         title:pair('Financing request invalidated','融资需求因质押不足失效'),
         body:pair('Financing request {demand_id} in project {project_name} ({project_id}) was automatically invalidated due to a pledge shortfall. Pending offers for that request were also invalidated. The original record is retained. A new request may be published once current eligibility requirements are met, with no cooldown period.',
@@ -225,15 +234,16 @@
           business:business(p.name,t.id)});
       });
       if(pi===2){
-        const fees=[['A',pair('The deposit transaction was rejected by the pledge contract.','质押合约拒绝了本次入池交易。'),'0.0041','ETH'],
-          ['B',pair('The token was already reserved by another application when this deposit executed.','入池执行时该代币已被另一笔申请预占。'),null,null],
-          ['C',pair('The chain returned a definitive failure for this deposit.','链上对本次入池返回了确定的失败结果。'),'pending',null]];
-        fees.forEach(([tag,reason,fee,ccy],i)=>{
-          const sentence=fee===null?pair('No execution fees were incurred for this operation.','本次未产生执行费用。')
-            :fee==='pending'?pair('The actual execution fees are pending verification; this does not mean no fees were incurred. Any incurred fees remain payable by the asset originator and are not refunded.','本次实际执行费用待核实，不代表未产生费用；如已产生，仍由资产方承担且不退回。')
-            :pair('This operation incurred fees of '+fee+' '+ccy+', payable by the asset originator. Incurred fees are not refunded.','本次已产生费用 '+fee+' '+ccy+'，由资产方承担，已产生的费用不退回。');
-          push({owner:'asset',biz:'financing.pledge.execution_failed',category:'progress',objectKind:'project',objectId:p.id,
-            at:tick(126+i*4),vars:{...vars,token_id:'TK-DEMO-'+(pi+1)+'-'+(i+1),action_id:'EX-DEMO-'+p.id.slice(-3)+'-'+tag,reason,fee_sentence:sentence},
+        const fees=[['A','',pair('The pledge contract rejected this on-chain pledge','质押合约拒绝了本次质押上链交易'),'0.0041','ETH'],
+          ['B',':release',pair('The chain returned a definitive failure for this release','链上对本次解押返回了确定的失败结果'),null,null],
+          ['C',':release',pair('The release transaction was not confirmed on chain','本次解押交易未在链上确认'),'pending',null]];
+        fees.forEach(([tag,op,reason,fee,ccy],i)=>{
+          const sentence=fee===null?pair('No gas was incurred for this operation.','本次未产生 gas。')
+            :fee==='pending'?pair('The actual gas is pending verification; this does not mean none was incurred. Any incurred gas is payable by the asset originator and not refunded.','本次实际 gas 待核实，不代表未产生；如已产生，由资产方承担且不退回。')
+            :pair('This operation incurred gas of '+fee+' '+ccy+', payable by the asset originator and not refunded.','本次已产生 gas '+fee+' '+ccy+'，由资产方承担，不退回。');
+          const retry=fee&&fee!=='pending'?pair('a new attempt requires a new signature and new gas.','需要再次签名并另付 gas。'):pair('a new attempt requires a new signature.','需要再次签名。');
+          push({owner:'asset',biz:'financing.pledge.execution_failed',tpl:op?'financing.pledge.execution_failed'+op:'',category:'progress',objectKind:'project',objectId:p.id,
+            at:tick(126+i*4),vars:{...vars,token_id:'TK-DEMO-'+(pi+1)+'-'+(i+1),action_id:'EX-DEMO-'+p.id.slice(-3)+'-'+tag,reason,gas_sentence:sentence,retry},
             business:business(p.name,'EX-DEMO-'+p.id.slice(-3)+'-'+tag)});
         });
       }

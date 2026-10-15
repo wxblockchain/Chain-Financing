@@ -37,7 +37,7 @@
   const err=()=>error?'<div class="ls-error" role="alert">'+note(error,'danger')+'</div>':'';
   const path=()=>location.hash.replace(/^#/,'');
   const viewCache={},detailCache={},actionTabs={},actionNodes={};
-  let reviewReturn=false,focusReview=false,railExpanded=false,unboundHint=false,tokenView='list';
+  let reviewReturn=false,focusReview=false,railExpanded=false,tokenView='list';
   const expandedRecords=new Set();let reviewScroll=0;
   let listRoute='/marketplace';
   function readFilters(route){const q=new URLSearchParams(route.split('?')[1]||'');const v={};['currency','tenor','keyword','type','vmin','vmax','amin','amax','status','quote','coverage','sort'].forEach(k=>{if(q.has(k))v[k]=q.get(k);});return v;}
@@ -56,8 +56,6 @@
   function pledgeLabel(p){return p&&D.numbers(p).valid.length?L('Add collateral','追加质押'):L('Start token pledge','发起代币质押');}
   /* 上链前一次讲清：本次发生链上操作、需本人签名、gas 自担且失败不退。 */
   function chainNotice(){return note(L('This sends an on-chain transfer to the project pledge contract. You sign it yourself; gas is paid by your company and is not refunded if the transfer fails.','本次向本项目质押合约发起链上转入，需你本人签名；gas 由本企业承担，上链失败已产生的 gas 同样不退。'),'warn');}
-  /* 登录未绑定角色点「创建融资项目」：只在原处给出注册引导文案，不跳转、不离站。 */
-  function unboundNotice(){if(S.role!=='signed'||!unboundHint)return '';return '<div class="ls-unbound" id="ls-unbound-focus" tabindex="-1" role="status">'+CF.note('accent','<span>'+L('To create a financing project, register and complete company verification on the Asset Trust Platform, then sign in again.','创建融资项目需先在资产可信平台完成注册与企业认证，完成后重新登录即可创建。')+'</span><button type="button" class="btn ghost sm ls-unbound-close" data-act="ls-unbound-close" aria-label="'+L('Dismiss','关闭提示')+'">×</button>')+'</div>';}
   function pager(key,count){const total=Math.max(1,Math.ceil(count/5));pages[key]=Math.min(pages[key]||1,total);return '<div class="pager"><span class="total">'+L(count+(count===1?' item':' items')+' · 5 per page','共 '+count+' 条 · 每页 5 条')+'</span>'+btn('ls-page','←',key+':'+(pages[key]-1),false,pages[key]===1)+'<span>'+pages[key]+' / '+total+'</span>'+btn('ls-page','→',key+':'+(pages[key]+1),false,pages[key]===total)+'</div>';}
   function field(id,en,zh,value='',type='text',extra=''){return '<div class="field"><label for="'+id+'">'+L(en,zh)+'</label><input class="inp" id="'+id+'" type="'+type+'" value="'+E(value)+'" '+extra+'></div>';}
   function select(id,en,zh,opts,value='',extra=''){return '<div class="field"><label for="'+id+'">'+L(en,zh)+'</label><select class="inp" id="'+id+'" '+extra+'>'+opts.map(o=>'<option value="'+o[0]+'"'+(o[0]===value?' selected':'')+(o[3]?' disabled':'')+'>'+L(o[1],o[2])+'</option>').join('')+'</select></div>';}
@@ -176,7 +174,7 @@
     let content=CF.surface({emptyTitle:L('No financing projects yet','暂无融资项目'),emptyDesc:L('Published projects will appear here.','融资项目发布后会出现在这里。'),backTo:'/marketplace'});
     const counted=content===null;
     if(content===null)content=rows.length?'<div class="tablewrap listbox listbox-contained ls-market-zone" tabindex="0" role="region" aria-label="'+L('Financing projects','融资项目列表')+'"><table class="tbl resp ls-market-table">'+listHead()+'<tbody>'+rows.slice(0,S.shown).map(projectRow).join('')+'</tbody></table>'+CF.moreFoot(rows.length)+'</div>':CF.empty(L('No results match these filters','筛选无结果'),L('Try widening or clearing the filters.','请放宽筛选条件或清空筛选。'),btn('ls-clear',L('Clear filters','清空筛选')));
-    return '<div class="ls-market-page"><div class="page-head"><div><h1 class="page-title">'+L('Lending marketplace','借贷广场')+'</h1><p class="page-desc">'+L('Real assets. On-chain collateral. Find your next financing opportunity.','以真实资产为基础，查看质押池与融资机会。')+'</p></div>'+(['asset','signed'].includes(S.role)?'<div class="page-actions">'+btn('ls-new',L('Create financing project','创建融资项目'),'',true)+'</div>':'')+'</div>'+unboundNotice()+marketStats(rows,S.st!=='loading'&&S.st!=='error'&&S.st!=='denied')+'<section class="card listzone" data-view="'+marketView+'">'+filters(counted?rows.length:null)+'<div class="mk-result-head"><h2>'+CF.market.icon('asset')+L('Financing pools','融资项目')+'</h2><div class="mk-result-tools">'+CF.market.views(marketView,'ls-view')+'<span class="ls-total">'+(counted?L(rows.length+' projects','共 '+rows.length+' 个'):'')+'</span>'+fullButton()+'</div></div>'+content+'</section></div>';
+    return '<div class="ls-market-page"><div class="page-head"><div><h1 class="page-title">'+L('Lending marketplace','借贷广场')+'</h1><p class="page-desc">'+L('Real assets. On-chain collateral. Find your next financing opportunity.','以真实资产为基础，查看质押池与融资机会。')+'</p></div>'+(S.role==='asset'?'<div class="page-actions">'+btn('ls-new',L('Create financing project','创建融资项目'),'',true)+'</div>':'')+'</div>'+marketStats(rows,S.st!=='loading'&&S.st!=='error'&&S.st!=='denied')+'<section class="card listzone" data-view="'+marketView+'">'+filters(counted?rows.length:null)+'<div class="mk-result-head"><h2>'+CF.market.icon('asset')+L('Financing pools','融资项目')+'</h2><div class="mk-result-tools">'+CF.market.views(marketView,'ls-view')+'<span class="ls-total">'+(counted?L(rows.length+' projects','共 '+rows.length+' 个'):'')+'</span>'+fullButton()+'</div></div>'+content+'</section></div>';
   }
   function fullButton(){return '<button class="btn icon" type="button" id="ls-full" data-act="list-full" data-v="ls-full" aria-pressed="'+!!S.listFull+'" title="'+E(S.listFull?L('Exit full window','退出放大'):L('Expand to window','放大到整窗'))+'" aria-label="'+E(S.listFull?L('Exit full window','退出放大'):L('Expand to window','放大到整窗'))+'">'+(S.listFull?CF.ICON.close:CF.ICON.expand)+'</button>';}
   /* 额度六项：沿用原有的开放式数字条（不加卡片框），常驻四项核心数字、整行不折断；总质押额与待审明细收进下方的折叠行。 */
@@ -375,7 +373,7 @@
   function waitText(start){const m=Math.max(0,Math.floor((D.now()-Date.parse(start))/60000));return L('Waiting ','已等待 ')+(m>=1440?Math.floor(m/1440)+L(' d ',' 天 '):'')+Math.floor(m%1440/60)+L(' h ',' 小时 ')+(m%60)+L(' min',' 分钟');}
   /* 代币详情：只读，无办理动作。代币信息对所有可见方；审核、上链事实、去向与历史只对本企业资产方。 */
   function tokenDetail(id){
-    const p=project(),t=D.token(id),mine=D.mine(p);
+    const p=project(),t=D.token(id),mine=D.mine(p);if(S.role==='signed')return publicMissing();
     if(!p||!t||!(t.pool===p.id||t.releasedFrom===p.id||mine&&(tokenGoing(p,t)))) return publicMissing();
     const inPool=t.pool===p.id,counted=inPool&&tokenState(p,t)==='valid';
     const dl=rows=>'<dl class="ls-dl">'+rows.map(([k,v])=>'<div><dt>'+k+'</dt><dd>'+v+'</dd></div>').join('')+'</dl>';
@@ -450,7 +448,14 @@
   }
   document.addEventListener('click',e=>{document.querySelectorAll('.ls-detail :is(.mk-contract-inline,.ls-stat-more)[open]').forEach(el=>{if(!el.contains(e.target))el.open=false;});});
   document.addEventListener('keydown',e=>{if(e.key!=='Escape'||S.layer)return;const open=document.querySelector('.ls-detail :is(.mk-contract-inline,.ls-stat-more)[open]');if(open){open.open=false;open.querySelector('summary')?.focus({preventScroll:true});e.preventDefault();}});
-  function detailPage(){const p=project();if(!p||['review','returned','available'].includes(p.state)&&!D.mine(p)&&!(Q&&Q.hasHistory(p)))return publicMissing();const n=D.numbers(p);let surface=CF.surface({emptyTitle:L('No project data','暂无项目数据'),emptyDesc:'',backTo:'/marketplace'});if(surface!==null)return surface;
+  /* 登录未绑定角色：只看项目基本信息，其余区域统一说明仅供资金方查看并给出申请入口。 */
+  function basicDetail(p){
+    const row=(k,v)=>'<div><dt>'+k+'</dt><dd>'+v+'</dd></div>';
+    return '<div class="ls-stack ls-detail ls-detail-basic"><div class="ls-detail-head"><span class="tok-mark" aria-hidden="true">AR</span><div><div class="ls-row"><h1 class="page-title">'+E(txt(p.name))+'</h1><span class="mk-title-tags">'+tag(p.state)+'</span></div>'
+      +'<dl class="ls-meta">'+row(L('Project ID','项目编号'),'<span class="mono">'+E(p.id)+'</span>')+row(L('Asset holder','资产方企业'),E(owner(p)))+row(L('Token type','代币类型'),E(kindLabel(p.kind)))+row(L('Project term','项目期限'),termText(p))+'</dl></div></div>'
+      +'<section class="card ls-funder-only" aria-labelledby="ls-funder-only-title"><span class="ls-funder-only-ico" aria-hidden="true">'+CF.market.icon('shield')+'</span><h2 id="ls-funder-only-title">'+L('The following information is available to funders only','以下信息仅供资金方查看')+'</h2>'+btn('ls-fund-apply',L('Apply to become a funder','申请成为资金方'),'',true)+'</section></div>';
+  }
+  function detailPage(){const p=project();if(!p||['review','returned','available'].includes(p.state)&&!D.mine(p)&&!(Q&&Q.hasHistory(p)))return publicMissing();if(S.role==='signed'){const s0=CF.surface({emptyTitle:L('No project data','暂无项目数据'),emptyDesc:'',backTo:'/marketplace'});return s0!==null?s0:basicDetail(p);}const n=D.numbers(p);let surface=CF.surface({emptyTitle:L('No project data','暂无项目数据'),emptyDesc:'',backTo:'/marketplace'});if(surface!==null)return surface;
     let warning='';if(n.gap)warning=note(L('Pledge gap: ','质押缺口：')+usd(n.gap)+L(' · Additional asset value required: ',' · 需追加资产价值：')+usd(n.gap/n.rate)+L('. Additional collateral must land on chain and pass review before it counts; landing on chain alone does not resolve the shortfall.','。追加质押须先上链再经审核通过才计入有效质押额，上链成功不即时生效。')+'<br>'+L('Triggered: ','触发时间：')+time(p.coverageAt),'warn');
     if(p.state==='review'&&D.mine(p))warning+=note(L('This project is under review. The pledge contract is deployed once it is approved; you cannot pledge or publish yet.','本项目正在审核，通过后由平台部署质押合约；此前不能质押，也不能发布融资需求。'));
     if(p.state==='returned'&&D.mine(p))warning+=note(L('Returned: ','审核退回：')+E(txt(p.reviewReason||['',''])) +' '+btn('ls-amend',L('Amend and resubmit','修改并重新提交'),p.id),'warn');
@@ -560,6 +565,8 @@
     finally{busy=false;CF.render();}
   }
   /* Release uses one selection/signing surface, matching the pledge contract. */
+  /* 质押水位：项目质押不足时，已通过审核的代币（有效抵押物与已失效）一律不能转出；待审、已驳回照常可取回。 */
+  const waterHeld=(p,t)=>D.waterLocked(p)&&t.pledge==='pledged'&&D.appOf(p,t)?.state==='approved';
   function releaseCandidates(p){return D.tokens.filter(t=>t.owner===p.owner&&!t.frozen&&!t.pending&&(t.pool===p.id&&t.pledge==='pledged'||t.releasedFrom===p.id&&t.pledge==='released')).sort((a,b)=>b.value-a.value||a.id.localeCompare(b.id));}
   function releaseValue(p){return selection.map(D.token).filter(t=>t&&t.pledge==='pledged'&&t.valid&&D.appOf(p,t)?.state==='approved').reduce((v,t)=>v+t.value,0);}
   function releaseNotice(p){
@@ -571,7 +578,7 @@
       +cell(L('Selected','已选'),L(chosen.length+(chosen.length===1?' token':' tokens'),chosen.length+' 张'))+cell(L('Issued value','签发价值合计'),usd(total))+cell(L('Estimated gas','预估 gas'),gasText)+'</div>'
       +'<div class="ls-pledge-to"><span class="muted">'+L('Target pledge contract','目标质押合约')+' · '+E(D.PLEDGE_CHAIN)+'</span><span class="mono">'+E(p.contract||'—')+'</span>'+(p.contract?copyIcon(p.contract,L('Copy pledge contract address','复制质押合约地址')):'')+'</div>'
       +'<p>'+L('Tokens return to their original holding address; the destination cannot be changed. You sign in your wallet. Your company pays gas; incurred gas is not refunded if execution fails. Withdrawing a pending token ends its review.','代币转回质押前的原持有地址，不能更改目的地址。需你本人在钱包签名，gas 由本企业承担，执行失败已产生的 gas 不退；撤回待审代币将终结该笔审核。')+'</p>'
-      +(!D.terminal(p)?releaseLimit(p):'')+'</section>';
+      +(D.waterLocked(p)?'<p class="ls-release-held" role="note">'+L('During a pledge shortfall, approved tokens cannot be transferred out. Tokens under review or rejected can still be retrieved.','质押不足时已通过审核的代币暂不能转出；待审、已驳回的代币仍可取回。')+'</p>':!D.terminal(p)?releaseLimit(p):'')+'</section>';
   }
   /* 拟撤回有效抵押物价值与可撤回上限实时对照；超出时同时给出差额与两条出路。 */
   function releaseLimit(p){
@@ -583,12 +590,12 @@
   function frequentNotice(p){const recent=D.executions.filter(e=>e.project===p.id&&D.now()-Date.parse(e.at)<86400000).length;return recent>5?'<p class="ls-release-frequent">'+L('You have started '+recent+' on-chain operations for this project in the last 24 hours. Frequent operations cost more gas; consider selecting tokens together.','本项目 24 小时内已发起 '+recent+' 次链上操作，频繁操作会产生较多 gas，建议合并勾选后一次办理。')+'</p>':'';}
   function releasePicker(p){
     const list=releaseCandidates(p);if(!list.length)return CF.empty(L('No tokens available to release or collect','暂无可解除或提取的代币'),'');
-    const all=list.every(t=>selection.includes(t.id));
+    const open=list.filter(t=>!waterHeld(p,t)),all=open.length>0&&open.every(t=>selection.includes(t.id));
     return '<div class="tablewrap"><table class="tbl ls-pick ls-release-pick"><thead><tr><th scope="col" class="ls-pick-check"><label class="ls-check"><input type="checkbox" data-release-all="1"'+(all?' checked':'')+(busy?' disabled':'')+' aria-label="'+L('Select all','全选')+'"></label></th><th scope="col">'+L('Token','代币')+'</th><th scope="col" class="num">'+L('Issued value','签发价值')+'</th><th scope="col">'+L('Current status','当前状态')+'</th><th scope="col" class="num">'+L('Est. gas','预估 gas')+'</th></tr></thead><tbody>'
-      +list.map(t=>{const on=selection.includes(t.id),f=D.quoteFee(t.id),state=tokenState(p,t);return '<tr class="ls-pick-row'+(on?' on':'')+'"><td class="ls-pick-check"><label class="ls-check"><input type="checkbox" data-token="'+E(t.id)+'"'+(on?' checked':'')+(busy?' disabled':'')+' aria-label="'+L('Select ','选择 ')+E(t.id)+'"></label></td><td><span class="ls-token-id">'+hexMark(tokenTones[state]||'accent')+'<span class="mono">'+E(t.id)+'</span></span></td><td class="num">'+usd(t.value)+'</td><td>'+E(txt(tokenNames[state]))+'</td><td class="num">'+Number(f.amount).toFixed(6)+' '+E(f.currency)+'</td></tr>';}).join('')+'</tbody></table></div>';
+      +[...open,...list.filter(t=>waterHeld(p,t))].map(t=>{const on=selection.includes(t.id),f=D.quoteFee(t.id),state=tokenState(p,t),held=waterHeld(p,t);return '<tr class="ls-pick-row'+(on?' on':'')+(held?' held':'')+'"><td class="ls-pick-check"><label class="ls-check"><input type="checkbox" data-token="'+E(t.id)+'"'+(on?' checked':'')+(busy||held?' disabled':'')+' aria-label="'+L('Select ','选择 ')+E(t.id)+'"></label></td><td><span class="ls-token-id">'+hexMark(tokenTones[state]||'accent')+'<span class="mono">'+E(t.id)+'</span></span></td><td class="num">'+usd(t.value)+'</td><td>'+E(txt(tokenNames[state]))+(held?'<span class="cell-sub">'+L('Cannot be transferred out during a pledge shortfall','质押不足，暂不能转出')+'</span>':'')+'</td><td class="num">'+Number(f.amount).toFixed(6)+' '+E(f.currency)+'</td></tr>';}).join('')+'</tbody></table></div>';
   }
   function validateRelease(p){
-    const candidates=new Set(releaseCandidates(p).map(t=>t.id)),changes=[];
+    const candidates=new Set(releaseCandidates(p).filter(t=>!waterHeld(p,t)).map(t=>t.id)),changes=[];
     selection.forEach(id=>{const old=feeQuote.find(f=>f.id===id);if(!candidates.has(id)){changes.push(id+' · '+L('No longer available for this operation.','已不可办理本次操作。'));return;}const fee=D.quoteFee(id);if(!old||old.amount!==fee.amount||old.currency!==fee.currency)changes.push(id+' · '+L('Estimated gas changed.','预估 gas 已更新。'));});
     if(changes.length){selection=selection.filter(id=>candidates.has(id));feeQuote=feeSnapshot();confirmationChanges=changes;error='';return false;}
     if(releaseValue(p)>D.numbers(p).withdraw){error=txt(errors.withdrawLimit);return false;}
@@ -690,8 +697,8 @@
       if(act==='ls-locate'){locateRecord(v);return true;}
       if(act==='ls-review'){if(guarded(p)){clearSelection();reviewReturn=false;reviewScroll=0;open('review');}return true;}
       if(act==='ls-list'){S.layer=null;location.hash='#'+CF.ENTRY[LIST];return true;}
-      if(act==='ls-new'){if(S.role==='signed'){unboundHint=true;refocus='ls-unbound-focus';return true;}if(S.role!=='asset')throw Error('permission');selection=[];name='';kind='';rate='';expiry='';settle=[];editing=null;error='';pages.select=1;location.hash='#/project/new';return true;}
-      if(act==='ls-unbound-close'){unboundHint=false;setTimeout(()=>document.querySelector('[data-act="ls-new"]')?.focus({preventScroll:true}),0);return true;}
+      if(act==='ls-new'){if(S.role!=='asset')throw Error('permission');selection=[];name='';kind='';rate='';expiry='';settle=[];editing=null;error='';pages.select=1;location.hash='#/project/new';return true;}
+      if(act==='ls-fund-apply'){S.layer=null;if(CF.funder?.onboard)CF.funder.onboard();else CF.openLayer('modal','handoff','fund');return true;}
       if(act==='ls-view'){marketView=v==='table'?'table':'cards';setTimeout(()=>document.querySelector('.mk-views [data-v="'+marketView+'"]')?.focus({preventScroll:true}),0);return true;}
       if(act==='ls-chart-status'){filter.status=filter.status===v?'':v;writeFilters();return true;}
       if(act==='ls-token-view'){const y=window.scrollY;tokenView=v;requestAnimationFrame(()=>{document.querySelector('[data-act="ls-token-view"][data-v="'+v+'"]')?.focus({preventScroll:true});window.scrollTo({top:y,behavior:'instant'});});return true;}
@@ -773,7 +780,7 @@
     if(el.dataset.depositToken){const id=el.dataset.depositToken;if(D.selectable(D.token(id),project()))selection=el.checked?[...new Set([...selection,id])]:selection.filter(x=>x!==id);CF.render();setTimeout(()=>document.querySelector('[data-deposit-token="'+id+'"]')?.focus({preventScroll:true}),0);}
     if(el.id==='ls-demo-record-state'){const id=document.getElementById('ls-demo-record').value;recordLoads[id]=el.value;CF.render();}if(el.id==='ls-review-load')reviewLoad=el.value;if(el.id==='ls-demo-application')demoApplication=el.value;if(el.id==='ls-agreement-fail')agreementFail=el.checked;
     if(el.dataset.tokenAll){selection=el.checked?pledgeCandidates(project()).map(t=>t.id):[];if(S.layer?.key==='pledge'){feeQuote=feeSnapshot();confirmationChanges=[];}CF.render();setTimeout(()=>document.querySelector('[data-token-all]')?.focus(),0);}
-    if(el.dataset.releaseAll){selection=el.checked?releaseCandidates(project()).map(t=>t.id):[];feeQuote=feeSnapshot();confirmationChanges=[];error='';CF.render();setTimeout(()=>document.querySelector('[data-release-all]')?.focus(),0);}
+    if(el.dataset.releaseAll){selection=el.checked?releaseCandidates(project()).filter(t=>!waterHeld(project(),t)).map(t=>t.id):[];feeQuote=feeSnapshot();confirmationChanges=[];error='';CF.render();setTimeout(()=>document.querySelector('[data-release-all]')?.focus(),0);}
     if(el.dataset.token){const id=el.dataset.token;selection=el.checked?[...new Set([...selection,id])]:selection.filter(x=>x!==id);if(['pledge','release'].includes(S.layer?.key)){feeQuote=feeSnapshot();confirmationChanges=[];error='';}CF.render();setTimeout(()=>document.querySelector('[data-token="'+id+'"]')?.focus(),0);}
     if(['ls-tf-state','ls-tf-going','ls-tf-keyword'].includes(el.id)){tokenFilter[el.id.slice(6)]=el.value;pages.tokens=1;refocus=el.id;CF.render();}
     if(el.id==='ls-outcome')outcome=el.value;if(el.id==='ls-gate')executionGate=el.value;if(el.id==='ls-submit-fail')submitFail=el.checked;if(el.id==='ls-close-race')closeRace=el.checked;
@@ -783,7 +790,7 @@
     if(CF.AM && ![LIST,DETAIL,NEW].includes(S.page))return;
     savePosition();const a=e.target.closest('a');if(a&&!(CF.AM&&a.getAttribute('href')==='#/assets')&&['#/','#/assets','#/console'].includes(a.getAttribute('href'))){e.preventDefault();if(a.getAttribute('href')==='#/assets'&&document.querySelector('script[src]')){location.href='../03-资产广场/资产广场.html#/assets';return;}CF.openLayer('modal','handoff',a.getAttribute('href')==='#/console'?'console':'other');}
     const el=e.target.closest('[data-act]');if(el&&el.dataset.act==='clearfilter')filter={};
-    if(el&&el.dataset.act==='role'){reviewReturn=false;S.layer=null;error='';selection=[];unboundHint=false;}
+    if(el&&el.dataset.act==='role'){reviewReturn=false;S.layer=null;error='';selection=[];}
     if(el&&el.dataset.act==='closelayer'&&busy){e.stopImmediatePropagation();return;}
   });
   /* 勾选行：点整行即勾选，弹层会拦截冒泡，所以在捕获阶段处理。 */
@@ -795,7 +802,7 @@
     const dialog=document.querySelector('#layers [role="dialog"]');if(!dialog)return;
     if(e.key==='Escape'&&busy){e.stopImmediatePropagation();return;}
   });
-  window.addEventListener('hashchange',()=>{if(CF.AM && !/^\/(project|marketplace)(?:[/?]|$)/.test(path()))return;savePosition();clearSelection();S.layer=null;unboundHint=false;reviewReturn=false;railExpanded=false;reviewScroll=0;expandedRecords.clear();syncRoute();error='';pages.tokens=pages.demands=1;const isList=/^\/marketplace(?:\?|$)/.test(path());if(isList){listRoute=path();filter=readFilters(listRoute);}pendingAction=new URLSearchParams(path().split('?')[1]||'').get('action');setTimeout(()=>{if(isList)restorePosition();else{deepAction();window.scrollTo(0,0);}},0);});
+  window.addEventListener('hashchange',()=>{if(CF.AM && !/^\/(project|marketplace)(?:[/?]|$)/.test(path()))return;savePosition();clearSelection();S.layer=null;reviewReturn=false;railExpanded=false;reviewScroll=0;expandedRecords.clear();syncRoute();error='';pages.tokens=pages.demands=1;const isList=/^\/marketplace(?:\?|$)/.test(path());if(isList){listRoute=path();filter=readFilters(listRoute);}pendingAction=new URLSearchParams(path().split('?')[1]||'').get('action');setTimeout(()=>{if(isList)restorePosition();else{deepAction();window.scrollTo(0,0);}},0);});
   function deepAction(){if(!pendingAction)return;const action=pendingAction;pendingAction=null;const p=project();if(Q&&['quote','quote_confirm'].includes(action)){Q.deepAction(action);return;}if(!p||!D.mine(p))return;if(action==='pledge')openPledge();else if(action==='publish')openPublish();else if(action==='withdraw'||action==='redeem')openRelease();else if(action==='enter_pool'){clearSelection();const ref=new URLSearchParams(path().split('?')[1]||'').get('application'),a=D.applications.find(a=>a.project===p.id&&a.id===ref);if(a){historyToken=a.tokens[0];open('tokenHistory','drawer');}}else if(action==='token'){const id=new URLSearchParams(path().split('?')[1]||'').get('token');if(id){historyToken=id;open('tokenHistory','drawer');}}}
   // The timer only updates simulated deadline outcomes. It never performs network work.
   setInterval(()=>{if(D.sweep())CF.render();},1000);
