@@ -11,7 +11,7 @@
  const nm=k=>k==='credits'&&S.role==='fund'?L('Credit summary','授信汇总'):text(names[k]);
  const status=k=>text(labels[k]||[k,k]);
  const badge=k=>CF.tag(['valid','settled','effective','surplus'].includes(k)?'ok':k==='short'?'warn':['confirming','repayConfirming','waiting','pending','generating'].includes(k)?'accent':'',status(k));
- const money=(n,c='USD')=>n==null?'—':CF.fmtAmt(n)+' '+E(c);
+ const money=(n,c='USD')=>n==null?'—':'<span class="mc-money"><span class="mc-number">'+CF.fmtAmt(n)+'</span> <span class="mc-unit">'+E(c)+'</span></span>';
  const time=n=>n==null||!Number.isFinite(new Date(n).getTime())?'—':CF.fmtTime(new Date(n).toISOString());
  const date=n=>n?CF.fmtDate(typeof n==='number'?new Date(n).toISOString():n):'—';
  const small=s=>'<div class="mc-small">'+s+'</div>';
@@ -122,8 +122,8 @@
    if(S.role==='asset'&&(tokenError||!Array.isArray(D.tokens)))assets='<section class="card mc-assets">'+CF.empty(L('Token summary unavailable','代币统计暂不可用'),reloadHint(),'')+'</section>';
    let holdings='';
    if(S.role==='asset'&&!assets){
-     holdings=stat(L('All tokens','全部代币'),tokens.length+L(' tokens',' 张'),money(sum(tokens,'value')))+
-       stat(L('Of which pledged','其中已质押'),pledged.length+L(' tokens',' 张'),money(sum(pledged,'value'))+(voids.length?' · '+L('void ','已失效 ')+voids.length+L(' tokens',' 张')+L(' excluded',' 不计入有效质押'):''));
+     holdings=stat(L('All tokens','全部代币'),tokens.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',money(sum(tokens,'value')))+
+       stat(L('Of which pledged','其中已质押'),pledged.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',money(sum(pledged,'value'))+(voids.length?' · '+L('void ','已失效 ')+voids.length+L(' tokens',' 张')+L(' excluded',' 不计入有效质押'):''));
    }
    return assets+'<div class="stat-strip mc-summary">'+holdings+(statsError?stat(L('Total credit','总授信额度'),'—',E(reloadHint())):stat(L('Total credit','总授信额度'),money(sum(credits,'total'))))+stat(L('Financed balance','已融额度'),money(sum(credits,'principal')))+stat(L('Available credit','剩余可用授信'),money(sum(credits,'available')),L('Subject to assessment when publishing a request.','实际可融金额以发布需求时核定结果为准。'))+'</div>';
  }

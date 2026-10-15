@@ -1005,3 +1005,91 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 .review-auto input{width:18px;height:18px;flex:none;accent-color:var(--accent)}
 .review-feedback:focus-visible,.review-feedback>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:600px){.demo-panel{left:var(--sp-2);right:var(--sp-2);width:auto;max-width:none;padding:var(--sp-4)}.review-results{max-height:240px}.review-business{grid-template-columns:minmax(0,1fr)}}
+
+/* WS-403 · approved marketplace presentation extended to both product ends.
+   Presentation only: keep native shells, table loading, permissions and actions. */
+[data-end] body{font-size:var(--ui-field-value);line-height:1.6}
+[data-end] :is(.num,.mono){font-variant-numeric:lining-nums tabular-nums;letter-spacing:0}
+[data-end] .brand-mark{border-radius:var(--radius-xs);transform:rotate(-7deg)}
+[data-end] .brand-name{font-size:var(--fs-16);font-weight:650;letter-spacing:-.025em}
+[data-end] .brand-sub{color:var(--muted);letter-spacing:.03em}
+[data-end] .portal-head{gap:var(--sp-7);padding-inline:var(--sp-7)}
+[data-end] .portal-wrap{padding:var(--sp-8) var(--sp-7) var(--sp-9)}
+[data-end] .topbar{min-height:68px;padding-block:var(--sp-3)}
+[data-end] .content{padding-top:var(--sp-7)}
+[data-end] :is(.portal-nav .nav-item,.sidebar .nav-item){font-size:var(--ui-field-value);font-weight:500;border-radius:var(--radius-xs)}
+[data-end] :is(.portal-nav .nav-item,.sidebar .nav-item)[aria-current="page"]{font-weight:600}
+[data-end] :is(.content,.portal-wrap) h1{font-size:var(--ui-page-title);font-weight:600;line-height:1.3;letter-spacing:-.025em}
+[data-end] .page-head{margin-bottom:var(--sp-5);gap:var(--sp-4)}
+[data-end] .page-desc{font-size:var(--ui-field-value);margin-top:var(--sp-2)}
+[data-end] .focus-main h1{font-size:var(--fs-24);font-weight:600;letter-spacing:-.025em}
+[data-end] .card{border-radius:var(--radius-sm);box-shadow:none}
+[data-end] .card-head{padding:var(--sp-5) var(--card-pad);font-size:var(--ui-section-title)}
+[data-end] .card-head :is(h2,h3){font-size:var(--ui-section-title);font-weight:600;margin:0;letter-spacing:-.015em;line-height:1.5}
+[data-end] :is(.detail-section,.detail-rail) h2{font-size:var(--ui-section-title)}
+[data-end] .btn{border-radius:var(--radius-xs);font-size:var(--ui-field-value);font-weight:550;box-shadow:none}
+[data-end] .btn.sm{font-size:var(--ui-field-label)}
+[data-end] .btn.icon{font-size:var(--ui-field-label)}
+[data-end] .field :is(.inp,.field-static){font-size:var(--ui-field-value)}
+[data-end] .inp{border-radius:var(--radius-xs);background:var(--card-2)}
+[data-end] :is(.field>label,.field>.field-label){font-size:var(--ui-field-label);font-weight:500;color:var(--muted)}
+[data-end] :is(.fc-label label,.funder-field-label,.nc-category-field label){font-size:var(--ui-field-label);font-weight:500;color:var(--muted)}
+[data-end] .tag{border:0;border-radius:var(--radius-xs);padding:var(--sp-1) var(--sp-2);font-size:var(--fs-11);font-weight:500;line-height:1.5}
+[data-end] :is(.modal-h,.drawer-h){font-size:var(--ui-section-title);font-weight:600}
+[data-end] :is(.modal-b,.drawer-b){font-size:var(--ui-field-value)}
+[data-end] .dl{font-size:var(--ui-field-value);gap:var(--sp-3) var(--sp-5)}
+[data-end] .dl dt{font-size:var(--ui-field-label);font-weight:400;color:var(--muted)}
+[data-end] .dl dd{font-size:var(--ui-field-value)}
+[data-end] .dl dd :is(.num,.mono){font-size:inherit}
+[data-end] table.tbl tbody td{font-size:var(--ui-row-value);line-height:1.6}
+[data-end] table.tbl thead th{font-size:var(--ui-field-label);font-weight:500;letter-spacing:0;text-transform:none;padding-block:var(--sp-3)}
+[data-end] .cell-sub{font-size:var(--ui-field-label);color:var(--muted)}
+[data-end] .filterbar{gap:var(--sp-2);padding-block:var(--sp-2)}
+[data-end] .filterbar :is(select.inp,.fb-btn,.fb-q .inp),
+[data-end] .filterbar .fb-acts .btn{height:var(--ctrl-h-sm);min-height:var(--ctrl-h-sm);border-radius:var(--radius-xs);font-size:var(--ui-field-label);background:var(--card);border-color:var(--border-strong)}
+[data-end] .filterbar .fb-acts .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+[data-end] :is(.card-tabs [role="tab"],.mc-tabs button){min-height:48px;font-size:var(--ui-row-value);font-weight:500}
+[data-end] :is(.stat .v,.stat-strip .v){font-size:var(--ui-stat-size);font-weight:500;line-height:1.4;letter-spacing:-.02em}
+[data-end] .stat-strip{gap:var(--sp-4) var(--sp-7);padding-bottom:var(--sp-5)}
+[data-end] :is(.stat .k,.stat-strip .k){font-size:var(--ui-field-label);font-weight:400}
+[data-end] .stat-strip .v .u{font-size:var(--fs-11);font-weight:400}
+
+/* Non-marketplace customer surfaces share the same hierarchy, not a new shell. */
+[data-end="asset"] :is(.login-fields,.nc-stage) dt{font-size:var(--ui-field-label);font-weight:400;color:var(--muted)}
+[data-end="asset"] :is(.login-fields,.nc-stage) dd{font-size:var(--ui-field-value)}
+[data-end="asset"] :is(.funder-wrap,.login-public) h2{font-size:var(--ui-section-title);font-weight:600}
+[data-end="asset"] :is(.ea-group>legend,.ea-view-section h3){font-size:var(--ui-section-title);font-weight:600}
+[data-end="asset"] .mc-assets b,[data-end="asset"] .mc-current-amount strong{font-size:var(--ui-stat-size);font-weight:500}
+[data-end="asset"] .mc-assets{gap:var(--sp-6)}
+[data-end="asset"] .mc-chapters{border:0;border-bottom:1px solid var(--border);border-radius:0;box-shadow:none;background:var(--bg);padding-inline:0;gap:var(--sp-5)}
+[data-end="asset"] .mc-chapters button{font-size:var(--ui-field-label);min-height:44px;border-bottom-width:2px}
+
+/* Shared operations roles override historical module-specific size drift. */
+[data-end="admin"] .content :is(.fc-kv,.cm-kv,.pr-kv,.rv-kv,.ops-details,.om-record) dt{font-size:var(--ui-field-label);font-weight:400;color:var(--muted)}
+[data-end="admin"] .content :is(.fc-kv,.cm-kv,.pr-kv,.rv-kv,.ops-details,.om-record) dd{font-size:var(--ui-field-value);line-height:1.6}
+[data-end="admin"] :is(.cm-value,.pr-value){font-size:var(--ui-field-value)}
+[data-end="admin"] :is(.cm-metric,.pr-metric){padding:var(--sp-4) var(--sp-5)}
+[data-end="admin"] :is(.cm-metric,.pr-metric) strong{font-size:var(--ui-stat-size);font-weight:500;line-height:1.4}
+[data-end="admin"] :is(.cm-rail-time,.pr-rail-time) strong{font-size:var(--ui-field-value);font-weight:500}
+[data-end="admin"] :is(.fc-filter-wrap,.cm-filter-wrap,.pr-filter-wrap){padding:var(--sp-4) var(--sp-5)}
+[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.cm-filters,.pr-filter-bar,.pr-filters,.rv-filters) .inp{height:var(--ctrl-h-sm);font-size:var(--ui-field-label);background:var(--card);border-color:var(--border-strong)}
+[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.pr-filter-bar,.rv-filters) .btn{height:var(--ctrl-h-sm);font-size:var(--ui-field-label)}
+[data-end="admin"] .fc-diff-vals :is(strong,.fc-before){font-size:var(--ui-field-value)}
+[data-end="admin"] :is(.cm-rail,.pr-rail)>.card,[data-end="admin"] .rv-operation{border-color:var(--accent-border);border-top:3px solid var(--accent)}
+[data-end="admin"] :is(.cm-rail,.pr-rail,.rv-operation) h2{color:var(--accent);font-size:var(--ui-section-title);font-weight:600}
+[data-end] .nc-inbox .nc-message-title{font-size:var(--ui-section-title);font-weight:550}
+[data-end] .nc-inbox .nc-summary{font-size:var(--ui-field-value);line-height:1.6}
+[data-end] .nc-inbox .nc-message-link{padding:var(--sp-5) var(--sp-6)}
+[data-end] .nc-detail h1{font-size:var(--fs-24);letter-spacing:-.015em;line-height:1.4}
+[data-end] .nc-detail .nc-body{font-size:var(--ui-field-value);line-height:1.9}
+
+@media(max-width:900px){
+  [data-end] .portal-head{height:auto;padding:var(--sp-3) var(--sp-4);gap:var(--sp-3)}
+  [data-end] .portal-wrap{padding:var(--sp-6) var(--sp-4) var(--sp-8)}
+}
+@media(max-width:600px){
+  [data-end] :is(.card-head,.nc-inbox .nc-message-link){padding-inline:var(--sp-4)}
+  [data-end] .card-b{padding:var(--sp-4)}
+  [data-end] :is(.modal-h,.modal-b,.modal-f,.drawer-h,.drawer-b,.drawer-f){padding-inline:var(--sp-4)}
+  [data-end] .filterbar :is(select.inp,.fb-btn,.fb-q .inp),[data-end] .filterbar .fb-acts .btn{height:var(--ctrl-h);min-height:var(--ctrl-h)}
+}

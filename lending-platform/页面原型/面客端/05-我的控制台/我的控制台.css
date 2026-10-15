@@ -74,3 +74,12 @@
 .mc-table td.num{text-align:right}
 .mc-caption{line-height:1.6;flex-wrap:wrap}
 @media(max-width:1100px){.mc-root .mc-table td.num{text-align:right}}
+
+/* WS-403 · the shared filter selector also appears outside a filterbar here. */
+.mc-quick-actions .fb{display:block;position:relative;min-width:220px;max-width:360px;flex:1 1 220px}
+.mc-quick-actions .fb>svg{position:absolute;left:var(--sp-3);top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);pointer-events:none}
+.mc-quick-actions .fb>.inp{padding-left:var(--sp-7);text-overflow:ellipsis}
+.mc-money{font-variant-numeric:lining-nums tabular-nums}
+.mc-money .mc-unit,.mc-summary .mc-count-unit{font-size:var(--fs-11);font-weight:400;color:var(--muted);letter-spacing:0}
+.mc-money .mc-number{overflow-wrap:anywhere}
+@media(max-width:600px){.mc-quick-actions .fb{min-width:0;max-width:none;flex-basis:100%}}

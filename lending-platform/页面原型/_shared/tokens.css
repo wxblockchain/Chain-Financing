@@ -1,13 +1,14 @@
 /* ==========================================================================
    tokens.css — 借贷平台原型设计 token（本平台唯一来源）
-   面客端与运营端共用同一份取值；两端差异只落在 [data-end] 覆盖的密度与正文字号上。
+   面客端与运营端共用同一份视觉取值；密度按组件角色区分，不再按端区分字体。
    组件层与模块层不得出现字面色值、字号或时长，一律引用这里的具名 token。
    ========================================================================== */
 :root{
   /* —— 字体 —— */
-  --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --sans:"Geist Review","Noto Sans SC Review",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
   --display:var(--sans);
-  --mono:"SF Mono","JetBrains Mono","Roboto Mono",ui-monospace,Menlo,Consolas,monospace;
+  --mono:var(--sans);
+  --numeric:var(--sans);
 
   /* —— 面与描边 —— */
   --bg:#F7F8FB;
@@ -58,15 +59,15 @@
   --hash-border:rgba(29,78,216,.18);
 
   /* —— 阴影 · 遮罩 · 圆角 · 轨道 —— */
-  --shadow:0 1px 2px rgba(13,21,38,.05),0 1px 3px rgba(13,21,38,.06);
-  --shadow-soft:0 2px 6px rgba(13,21,38,.04),0 12px 32px -14px rgba(13,21,38,.14);
+  --shadow:none;
+  --shadow-soft:none;
   --shadow-lg:0 12px 28px rgba(13,21,38,.12);
   --overlay:rgba(13,21,38,.44);
   --track:#EDF0F5;
-  --radius-lg:16px;
-  --radius:12px;
-  --radius-sm:9px;
-  --radius-xs:7px;
+  --radius-lg:12px;
+  --radius:10px;
+  --radius-sm:8px;
+  --radius-xs:6px;
   --radius-pill:999px;
 
   /* —— 字号阶梯（32 / 40 两档只给官网层的展示标题）—— */
@@ -94,26 +95,23 @@
   --ease-in-out:cubic-bezier(.65,0,.35,1);
   --dur-fast:120ms; --dur-base:200ms; --dur-slow:320ms;
 
-  /* —— 密度（默认 = 运营端控制台密度）—— */
-  --ctrl-h:36px;
-  --ctrl-h-sm:28px;
-  --field-gap:13px;
-  --card-pad:16px;
-  --cell-pad-y:12px;
-  --fs-body:13.5px;
-  --lh-body:1.5;
-}
-
-/* 面客端：官网密度。两端的差异只在这六个值上，不是两套色板。 */
-[data-end="asset"]{
+  /* —— WS-403 双端组件规格：普通表单 / 操作与紧凑筛选分开 —— */
   --ctrl-h:44px;
-  --ctrl-h-sm:34px;
-  --field-gap:18px;
-  --card-pad:22px;
+  --ctrl-h-sm:36px;
+  --field-gap:16px;
+  --card-pad:24px;
   --cell-pad-y:16px;
-  --fs-body:15px;
+  --fs-body:14px;
   --lh-body:1.6;
+  --ui-page-title:var(--fs-28);
+  --ui-section-title:var(--fs-16);
+  --ui-field-value:var(--fs-14);
+  --ui-field-label:var(--fs-12);
+  --ui-row-value:var(--fs-13);
+  --ui-stat-size:22px;
 }
+@media(min-width:901px) and (max-width:1300px){:root{--ui-stat-size:20px}}
+@media(max-width:768px){:root{--ui-page-title:var(--fs-24)}}
 
 /* WS-403: user-authorized replacement of the marketplace visual baseline.
    Only active on marketplace pages; palette has one canonical source. */
@@ -139,8 +137,7 @@
   --list-h:clamp(440px,60vh,760px);
 }
 
-/* WS-403 typography study. Font subsets are local, SIL OFL licensed.
-   Opt-in only; the default prototype typography remains unchanged. */
+/* WS-403 approved typography. Both ends use local, SIL OFL licensed subsets. */
 @font-face{
   font-family:"Geist Review";font-style:normal;font-weight:100 900;font-display:swap;
   src:url("fonts/Geist-review.woff2") format("woff2");
@@ -161,11 +158,11 @@
 
 /* WS-403 density and stable record surfaces, shared by both marketplaces. */
 :root[data-market-redesign]{
-  --market-stat-size:22px;--market-detail-stat-size:var(--market-stat-size);
+  --market-stat-size:var(--ui-stat-size);--market-detail-stat-size:var(--market-stat-size);
   --market-token-h:420px;--market-record-h:308px;--market-info-h:192px;
   --market-rail-w:400px;--market-popover-h:360px;
-  --market-field-value:var(--fs-14);--market-field-label:var(--fs-12);
-  --market-row-value:var(--fs-13);--market-section-title:var(--fs-16);
+  --market-field-value:var(--ui-field-value);--market-field-label:var(--ui-field-label);
+  --market-row-value:var(--ui-row-value);--market-section-title:var(--ui-section-title);
 }
 @media(max-width:900px){:root[data-market-redesign]{--market-info-h:288px}}
 @media(max-width:360px){:root[data-market-redesign]{--market-info-h:336px}}
