@@ -105,14 +105,16 @@
     return '<td class="col-act" data-label="">'+link('view','View','查看',a.id,n)+link('edit','Edit','修改',a.id,n)+link('remove','Delete','删除',a.id,n)+'</td>';
   }
   function fiatTable(rows){
-    const h=[L('Account nickname','账户备注名'),L('Currencies','账户币种'),L('Bank','开户行'),L('Account number / IBAN','账号 / IBAN'),L('SWIFT / BIC','SWIFT / BIC')];
+    const h=[L('Account','账户'),L('Account type','账户类型'),L('Currencies','账户币种'),L('Bank','开户行'),L('Account number / IBAN','账号 / IBAN'),L('SWIFT / BIC','SWIFT / BIC')];
     return '<table class="tbl resp ea-table"><thead><tr>'+h.map(x=>'<th scope="col">'+x+'</th>').join('')+
       '<th scope="col">'+L('Added','登记时间')+'<span class="ea-th-zone">'+zone()+'</span></th><th scope="col" class="col-act"><span class="sr-only">'+L('Actions','操作')+'</span></th></tr></thead><tbody>'+
-      rows.map(a=>'<tr><td data-label="'+h[0]+'"><div class="cell-wrap"><span class="cell-main">'+EA.name(a)+'</span>'+incomplete(a)+'</div></td>'+
-        '<td data-label="'+h[1]+'">'+currencyTags(a)+'</td>'+
-        '<td data-label="'+h[2]+'"><div class="cell-wrap"><span>'+E(a.bank)+'</span><span class="cell-sub">'+E([a.bankCity,EA.regionName(a.bankCountry)].filter(Boolean).join(', '))+'</span></div></td>'+
-        '<td data-label="'+h[3]+'" class="nw"><span class="mono">'+EA.maskTail(EA.compact(a.iban))+'</span></td>'+
-        '<td data-label="'+h[4]+'" class="nw">'+(a.swift?'<span class="mono">'+E(a.swift)+'</span>':'<span class="faint">—</span>')+'</td>'+
+      /* 账户列：备注名为主标识，下方是平台带出的账户名称。 */
+      rows.map(a=>'<tr><td data-label="'+h[0]+'"><div class="cell-wrap"><span class="cell-main">'+EA.name(a)+'</span><span class="cell-sub">'+(EA.holderName(a)||'—')+'</span>'+incomplete(a)+'</div></td>'+
+        '<td data-label="'+h[1]+'">'+(a.accountType?'<span class="ea-type">'+E(EA.typeName(a))+'</span>':'<span class="faint">—</span>')+'</td>'+
+        '<td data-label="'+h[2]+'">'+currencyTags(a)+'</td>'+
+        '<td data-label="'+h[3]+'"><div class="cell-wrap"><span>'+E(a.bank)+'</span><span class="cell-sub">'+E(a.bankCity||'')+'</span></div></td>'+
+        '<td data-label="'+h[4]+'" class="nw"><span class="mono">'+EA.maskTail(EA.compact(a.iban))+'</span></td>'+
+        '<td data-label="'+h[5]+'" class="nw">'+(a.swift?'<span class="mono">'+E(a.swift)+'</span>':'<span class="faint">—</span>')+'</td>'+
         '<td data-label="'+L('Added','登记时间')+'" class="nw muted"><span class="num">'+E(CF.fmtStamp(a.at))+'</span></td>'+actions(a)+'</tr>').join('')+'</tbody></table>';
   }
   function cryptoTable(rows){
@@ -141,21 +143,21 @@
   }
 
   /* ------------------------------------------------------------------ 表单 */
-  const blankFiat=()=>({label:'',ccys:[],addressCountry:'',addressCity:'',addressLine:'',iban:'',bank:'',bankCity:'',bankCountry:'',swift:''});
+  const blankFiat=()=>({accountType:'',label:'',ccys:[],iban:'',bank:'',bankCity:'',swift:''});
   const fromAccount=a=>a.kind==='crypto'?{label:EA.plainName(a),chain:a.chain,address:a.address}
-    :Object.assign(blankFiat(),{label:EA.plainName(a),ccys:EA.currencies(a).slice(),addressCountry:a.addressCountry||'',addressCity:a.addressCity||'',
-      addressLine:a.addressLine||'',iban:a.iban||'',bank:a.bank||'',bankCity:a.bankCity||'',bankCountry:a.bankCountry||'',swift:a.swift||''});
+    :Object.assign(blankFiat(),{accountType:a.accountType||'',label:EA.plainName(a),ccys:EA.currencies(a).slice(),iban:a.iban||'',bank:a.bank||'',
+      bankCity:a.bankCity||'',swift:a.swift||''});
   const F=()=>V.flow;
   const val=k=>String(F().form[k]||'');
   const err=k=>F().errors[k]||'';
   const required=k=>EA.fiatRequired.includes(k)||k==='address';
   /* 输入属性按国际化表单惯例给出：地址字段带 autocomplete，代码类关闭拼写检查并转大写。 */
   const INPUT={
-    label:'autocomplete="off"',addressCity:'autocomplete="section-holder address-level2"',addressLine:'autocomplete="section-holder street-address"',
+    label:'autocomplete="off"',
     iban:'autocomplete="off" spellcheck="false" autocapitalize="characters"',bank:'autocomplete="off"',bankCity:'autocomplete="off"',
     swift:'autocomplete="off" spellcheck="false" autocapitalize="characters" maxlength="14"',
     address:'autocomplete="off" spellcheck="false" autocapitalize="off"'};
-  const HINT={iban:['Enter it as your bank shows it. Spaces are ignored.','按开户行提供的写法填写，空格会被忽略。'],
+  const HINT={bankCity:['The city where the bank branch is located.','开户行所在城市。'],iban:['Enter it as your bank shows it. Spaces are ignored.','按开户行提供的写法填写，空格会被忽略。'],
     swift:['8 or 11 letters and digits.','8 位或 11 位字母数字。']};
   const CHAIN_HINT={ETH:['Ethereum · starts with 0x','以太坊 · 以 0x 开头'],TRON:['TRON · starts with T','波场 · 以 T 开头']};
   const ADDRESS_HINT={'':['Choose a network first.','请先选择链。'],ETH:['0x followed by 40 hexadecimal characters.','0x 开头，后接 40 位十六进制字符。'],
@@ -171,14 +173,20 @@
       (hint?'<span class="hint" id="'+id+'-hint">'+L(...hint)+'</span>':'')+extraHint+
       '<span class="err-msg" id="'+id+'-err" role="alert">'+E(err(k))+'</span></div>';
   }
-  function regionField(k){
-    const id='ea-f-'+k;
-    return '<div class="field"><label for="'+id+'">'+L(...EA.labels[k])+'</label>'+
-      '<select class="inp" id="'+id+'" data-ea-field="'+k+'"'+(k==='addressCountry'?' autocomplete="section-holder country"':' autocomplete="off"')+
-      ' aria-required="true"'+(err(k)?' aria-invalid="true"':'')+' aria-describedby="'+id+'-err">'+
-      '<option value="">'+L('Select a country or region','请选择国家或地区')+'</option>'+
-      EA.regions().map(c=>'<option value="'+c+'"'+(val(k)===c?' selected':'')+'>'+E(EA.regionName(c))+'</option>').join('')+'</select>'+
-      '<span class="err-msg" id="'+id+'-err" role="alert">'+E(err(k))+'</span></div>';
+  /* 账户类型：单选、必选、不预选；只作标注。 */
+  function typeField(){
+    const v=F().form.accountType;
+    return '<fieldset class="ea-chains ea-full" aria-describedby="ea-f-accountType-err"'+(err('accountType')?' aria-invalid="true"':'')+'><legend>'+L(...EA.labels.accountType)+'</legend>'+
+      '<div class="ea-chain-row">'+EA.ACCOUNT_TYPES.map(t=>'<label class="ea-chain"><input type="radio" name="ea-type" value="'+t.id+'" data-ea-type="'+t.id+'"'+(v===t.id?' checked':'')+
+        '><span><b>'+L(...t.label)+'</b></span></label>').join('')+'</div>'+
+      '<span class="err-msg" id="ea-f-accountType-err" role="alert">'+E(err('accountType'))+'</span></fieldset>';
+  }
+  /* 账户名称：平台按本企业当前名称带出，只读。 */
+  function holderField(){
+    const a=F().id?EA.byId(F().id):null,name=a&&a.holder?a.holder:EA.companyName();
+    return '<div class="field ea-full"><span class="field-label">'+L(...EA.labels.holder)+'</span>'+
+      '<span class="field-static" aria-readonly="true">'+(name?E(L(...name)):'—')+'</span>'+
+      '<span class="hint">'+L('Your company\'s current name. It can\'t be edited.','本企业当前名称，不可修改。')+'</span></div>';
   }
   /* 账户币种：多选标注，选项取平台拟定的法币清单；不核验、不参与业务匹配。 */
   function currencyField(){
@@ -187,7 +195,7 @@
       '<legend>'+L(...EA.labels.ccy)+'</legend>'+
       '<span class="hint" id="ea-f-ccys-hint">'+L('Select every currency this account supports. This is a label for your reference; the platform doesn\'t check it.',
         '勾选这个账户支持的币种。仅作标注，方便你核对，平台不核验。')+'</span>'+
-      '<div class="ea-chips">'+EA.CURRENCIES.map(c=>'<label class="ea-chip" title="'+E(EA.currencyName(c))+'"><input type="checkbox" data-ea-ccy="'+c+'"'+
+      '<div class="ea-chips">'+EA.CURRENCIES.concat(picked.filter(c=>!EA.CURRENCIES.includes(c))).map(c=>'<label class="ea-chip" title="'+E(EA.currencyName(c))+'"><input type="checkbox" data-ea-ccy="'+c+'"'+
         (picked.includes(c)?' checked':'')+' aria-label="'+E(c+' · '+EA.currencyName(c))+'"><span>'+c+'</span></label>').join('')+'</div>'+
       '<span class="err-msg" id="ea-f-ccys-err" role="alert">'+E(err('ccys'))+'</span></fieldset>';
   }
@@ -197,12 +205,8 @@
   function fiatForm(){
     const f=F();
     return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+
-      group(L('Account','账户信息'),field('label',true)+currencyField())+
-      group(L('Bank details','开户行信息'),field('bank',true)+field('iban')+field('swift')+field('bankCity')+regionField('bankCountry'))+
-      group(L('Account holder address','账户持有人地址'),regionField('addressCountry')+field('addressCity')+field('addressLine',true),
-        '<p class="hint">'+L('Your company\'s address as your bank has it on record.','开户行登记的本企业地址。')+'</p>')+
-      (f.conflict?notice('warn',L('The bank country / region doesn\'t match the country in the SWIFT / BIC code. If both are correct, select Save anyway.',
-        '开户行国家 / 地区与 SWIFT / BIC 中的国家代码不一致。确认两者都正确时，点「确认并保存」继续。')):'')+
+      group(L('Account','账户信息'),typeField()+holderField()+field('label',true)+currencyField())+
+      group(L('Bank details','开户行信息'),field('bank',true)+field('iban')+field('swift')+field('bankCity',true))+
       (f.duplicate?notice('warn','<div class="ea-notice-row"><span>'+L('An account with this account number and SWIFT / BIC is already saved.',
         '已登记过相同账号与 SWIFT / BIC 的账户。')+'</span>'+b('view','View it','查看该账户',f.duplicate)+'</div>'):'')+'</div>';
   }
@@ -245,8 +249,8 @@
     const f=F(),busy=V.busy==='save';
     const cancel=b('close','Cancel','取消','',false,busy);
     if(f.kind==='fiat'||f.mode==='edit')
-      return cancel+b('save',busy?'Saving…':f.conflict?'Save anyway':f.mode==='edit'?'Save changes':'Add account',
-        busy?'正在保存…':f.conflict?'确认并保存':f.mode==='edit'?'保存修改':'登记账户','',true,busy);
+      return cancel+b('save',busy?'Saving…':f.mode==='edit'?'Save changes':'Add account',
+        busy?'正在保存…':f.mode==='edit'?'保存修改':'登记账户','',true,busy);
     if(f.step===1)return cancel+b('next','Continue','下一步','',true);
     return b('back','Back','上一步','',false,busy)+b('sign',busy?'Waiting for wallet…':'Sign in wallet',busy?'等待钱包签名…':'在钱包中签名','',true,busy);
   }
@@ -262,16 +266,15 @@
     const f=F(),e={};
     EA.fiatRequired.forEach(k=>{
       if(k==='ccys'){if(!(f.form.ccys||[]).length)e.ccys=L('Select at least one currency.','请至少选择一个币种。');}
-      else if(!val(k).trim())e[k]=k.endsWith('Country')?L('Select a country or region.','请选择国家或地区。'):REQUIRED();});
+      else if(k==='accountType'){if(!f.form.accountType)e.accountType=L('Select an account type.','请选择账户类型。');}
+      else if(!val(k).trim())e[k]=REQUIRED();});
     LIMITED.forEach(k=>{if(!e[k]&&EA.tooLong(k,val(k)))e[k]=TOO_LONG(k);});
     if(val('swift').trim()&&!EA.swiftValid(val('swift')))e.swift=L('Enter 8 or 11 letters and digits.','请输入 8 位或 11 位字母数字。');
     f.errors=e;
     if(Object.keys(e).length)return false;
     const dup=EA.duplicateFiat(owner(),val('iban'),val('swift'),f.id);
     f.duplicate=dup?dup.id:'';
-    if(dup)return false;
-    f.conflict=!!(EA.swiftCountry(val('swift'))&&val('bankCountry')&&EA.swiftCountry(val('swift'))!==val('bankCountry'))&&!f.ack;
-    return !f.conflict;
+    return !dup;
   }
   /* 选链与填地址同一环节：未选链或地址不符所选链格式都不能进入签名。 */
   function validateAddress(){
@@ -299,9 +302,10 @@
   }
   function commitFiat(){
     const f=F(),form=f.form,t=k=>String(form[k]||'').trim();
-    const patch={label:t('label'),ccys:EA.CURRENCIES.filter(c=>form.ccys.includes(c)),addressCountry:form.addressCountry,addressCity:t('addressCity'),
-      addressLine:t('addressLine'),iban:EA.compact(form.iban),bank:t('bank'),bankCity:t('bankCity'),bankCountry:form.bankCountry,swift:EA.compact(form.swift)};
-    if(f.mode==='edit')EA.update(f.id,patch);else EA.add(Object.assign({kind:'fiat'},patch));
+    const patch={accountType:form.accountType,label:t('label'),ccys:EA.CURRENCIES.filter(c=>form.ccys.includes(c)).concat(form.ccys.filter(c=>!EA.CURRENCIES.includes(c))),
+      iban:EA.compact(form.iban),bank:t('bank'),bankCity:t('bankCity'),swift:EA.compact(form.swift)};
+    if(f.mode==='edit')EA.update(f.id,patch);
+    else{const name=EA.companyName();if(!name){V.flow=null;S.layer={type:'modal',key:'ea-noname'};CF.render();return;}EA.add(Object.assign({kind:'fiat',holder:name},patch));}
     V.flow=null;CF.closeLayer();
     CF.toast(f.mode==='edit'?L('Changes saved.','修改已保存。'):L('Fiat account added.','法币账户已登记。'));
   }
@@ -338,12 +342,12 @@
         [L(...EA.labels.tokens),EA.tokens()]])+
       section(L('Wallet address','数币地址'),[[L(...EA.labels.address),copyable(a.address,a.address,L('Copy address','复制地址'),'hash ea-break')],
         [L(...EA.labels.ownership),CF.tag('ok',L('Confirmed by signature','已签名确认'))]])+section(L('Record','记录'),times);
-    return section(L('Account','账户信息'),[[L(...EA.labels.label),EA.name(a)],[L(...EA.labels.ccy),currencyTags(a)]])+
+    return section(L('Account','账户信息'),[[L(...EA.labels.label),EA.name(a)],[L(...EA.labels.holder),EA.holderName(a)||'—'],
+        [L(...EA.labels.accountType),a.accountType?E(EA.typeName(a)):'<span class="faint">—</span>'],[L(...EA.labels.ccy),currencyTags(a)]])+
       section(L('Bank details','开户行信息'),[[L(...EA.labels.bank),E(a.bank)],
         [L(...EA.labels.iban),copyable(EA.groupIban(a.iban),EA.compact(a.iban),L('Copy account number','复制账号'))],
         [L(...EA.labels.swift),a.swift?copyable(a.swift,a.swift,L('Copy SWIFT / BIC','复制 SWIFT / BIC')):'<span class="faint">—</span>'],
-        [L(...EA.labels.bankAddress),E([a.bankCity,EA.regionName(a.bankCountry)].filter(Boolean).join(', '))||'—']])+
-      section(L('Account holder address','账户持有人地址'),[[L('Address','地址'),E([a.addressLine,a.addressCity,EA.regionName(a.addressCountry)].filter(Boolean).join(', '))||'—']])+
+        [L(...EA.labels.bankCity),E(a.bankCity||'')||'—']])+
       section(L('Record','记录'),times);
   }
   const gone=()=>({title:L('Account','账户'),html:CF.note('warn',L('This account has been deleted.','该账户已删除。')),foot:b('close','Close','关闭'),dismiss:true});
@@ -372,6 +376,10 @@
         '<div class="ea-sim"><span class="ea-sim-label">'+L('Simulate · review only','模拟 · 仅评审')+'</span>'+
           b('wallet','Signed by another address','用其他地址签名','mismatch')+b('wallet','Wallet unavailable','钱包不可用','unavailable')+'</div></div>',
       foot:b('wallet','Decline','拒绝','rejected')+b('wallet','Sign','签名','ok',true)};},
+    'ea-noname':()=>({title:L('Can\'t add a fiat account right now','暂时无法新增法币账户'),dismiss:true,
+      html:'<div class="ea-confirm"><p>'+L('We can\'t get your company name at the moment, so a fiat account can\'t be added yet. Please try again later. You can still add a crypto account.',
+        '暂时无法取得本企业名称，因此还不能新增法币账户，请稍后重试。新增数币账户不受影响。')+'</p></div>',
+      foot:b('close','Close','关闭')+b('add','Try again','重试','fiat',true)}),
     'ea-discard':()=>({title:L('Discard changes?','放弃填写内容？'),
       html:'<div class="ea-confirm"><p>'+L('What you\'ve entered won\'t be saved.','已填写的内容不会保存。')+'</p></div>',
       foot:b('discard-keep','Keep editing','继续编辑')+danger('discard-drop','Discard','放弃','')}),
@@ -385,12 +393,12 @@
     const host=[...document.querySelectorAll('#layers .modal')].pop();if(!host||!host.querySelector('.ea-form'))return;
     const body=host.querySelector('.modal-b'),heading=host.querySelector('.modal-h');if(heading)heading.tabIndex=-1;
     const first=Object.keys(f.errors||{})[0];
-    const target=first&&(first==='ccys'?host.querySelector('[data-ea-ccy]'):first==='chain'?host.querySelector('[data-ea-chain]'):document.getElementById('ea-f-'+first));
+    const target=first&&(first==='ccys'?host.querySelector('[data-ea-ccy]'):first==='accountType'?host.querySelector('[data-ea-type]'):first==='chain'?host.querySelector('[data-ea-chain]'):document.getElementById('ea-f-'+first));
     if(target){target.focus({preventScroll:true});target.scrollIntoView({block:'center',behavior:'auto'});return;}
     /* 打开或换步时的初始焦点保留到用户开始输入，避免同一次操作里的第二次重绘把焦点移走。 */
     if(f.focus){const el=document.getElementById(f.focus);if(el){el.focus({preventScroll:true});return;}}
     const note=host.querySelector('.ea-form > .ea-notice:last-child, .ea-form > .ea-notice:first-child');
-    if(note&&(f.conflict||f.duplicate||f.problem)){note.tabIndex=-1;note.focus({preventScroll:true});if(body)note.scrollIntoView({block:'nearest'});return;}
+    if(note&&(f.duplicate||f.problem)){note.tabIndex=-1;note.focus({preventScroll:true});if(body)note.scrollIntoView({block:'nearest'});return;}
     if(heading)heading.focus({preventScroll:true});
   }
 
@@ -399,7 +407,7 @@
     const a=id?EA.byId(id):null;
     V.flow={kind,mode,id:id||'',step:kind==='crypto'&&mode==='new'?1:0,
       form:a?fromAccount(a):kind==='fiat'?blankFiat():{chain:'',label:'',address:''},
-      errors:{},dirty:false,ack:false,conflict:false,duplicate:'',problem:'',focus:kind==='fiat'||mode==='edit'?'ea-f-label':'',sameName:false};
+      errors:{},dirty:false,duplicate:'',problem:'',focus:mode==='edit'?'ea-f-label':'',sameName:false};
     V.problem='';CF.openLayer('modal','ea-form');
   }
   const dirty=()=>{const f=F();return !!f&&(f.dirty||f.kind==='crypto'&&f.mode==='new'&&!!(f.form.chain||f.form.address||f.form.label));};
@@ -424,7 +432,7 @@
     switch(key){
       case 'tab':if(KINDS.includes(v)&&v!==tab())setTab(v);break;
       case 'reload':V.scene='loading';{const token=++V.epoch;setTimeout(()=>{if(token===V.epoch){V.scene='ready';CF.render();}},600);}break;
-      case 'add':openForm(v,'new');break;
+      case 'add':if(v==='fiat'&&!EA.companyName()){V.flow=null;CF.openLayer('modal','ea-noname');break;}openForm(v,'new');break;
       case 'view':if(S.layer?.key==='ea-form')V.flow=null;CF.openLayer('drawer','ea-view',v);break;
       case 'edit':{const a=EA.byId(v);if(!a){CF.toast(L('This account has been deleted.','该账户已删除。'));break;}openForm(a.kind,'edit',v);break;}
       case 'remove':V.problem='';CF.openLayer('modal','ea-remove',v);break;
@@ -443,7 +451,6 @@
       case 'save':{const f=F();
         if(f.kind==='crypto'){if(!val('label').trim()||EA.tooLong('label',val('label'))){f.errors={label:val('label').trim()?TOO_LONG('label'):REQUIRED()};break;}
           f.errors={};later(()=>{EA.update(f.id,{label:val('label').trim()});V.flow=null;CF.closeLayer();CF.toast(L('Changes saved.','修改已保存。'));});break;}
-        if(f.conflict&&!f.ack)f.ack=true;
         if(validateFiat())later(commitFiat);
         break;}
       case 'sign':V.pending=S.layer;CF.openLayer('modal','ea-wallet',null,V.pending);break;
@@ -471,9 +478,10 @@
     if(el.dataset.eaField&&f){const k=el.dataset.eaField;
       if(k==='swift')el.value=EA.compact(el.value);
       f.form[k]=el.value;f.dirty=true;
-      if(['swift','bankCountry'].includes(k)){f.conflict=false;f.ack=false;}
       if(k==='label'){f.sameName=EA.sameName(owner(),el.value,f.id);const slot=document.querySelector('[data-ea-namehint]');if(slot)slot.textContent=f.sameName?L(...NAME_HINT):'';}
       return;}
+    if(el.dataset.eaType&&f){f.form.accountType=el.dataset.eaType;f.dirty=true;
+      if(f.errors.accountType){delete f.errors.accountType;const s=document.getElementById('ea-f-accountType-err');if(s)s.textContent='';}return;}
     if(el.dataset.eaCcy&&f){const set=new Set(f.form.ccys||[]);el.checked?set.add(el.dataset.eaCcy):set.delete(el.dataset.eaCcy);
       f.form.ccys=EA.CURRENCIES.filter(c=>set.has(c));f.dirty=true;
       if(f.form.ccys.length&&f.errors.ccys){delete f.errors.ccys;const s=document.getElementById('ea-f-ccys-err');if(s)s.textContent='';}
@@ -488,6 +496,7 @@
       else if(f.errors.address&&addr){delete f.errors.address;setSlot('ea-f-address','',false);}
       return;}
     if(el.id==='ea-save-result'){V.saveResult=el.value;return;}
+    if(el.id==='ea-name-state'){EA.setNameUnavailable(el.value==='missing');CF.render();return;}
   });
   /* Tab 列表按 WAI-ARIA：左右方向键切换并选中，Home / End 到首尾。 */
   document.addEventListener('keydown',e=>{
@@ -546,9 +555,13 @@
       '<p class="hint">'+L('Local simulation only. No wallet, chain or backend is contacted. Signature outcomes are chosen in the simulated wallet dialog.',
         '仅本地模拟：不调用钱包、链上接口或后端。签名结果在模拟钱包对话框内选择。')+'</p>'+
       select('ea-save-result',L('Next save / delete response','下次保存 / 删除响应'),[['success','Success','成功'],['failed','Failed','失败']],V.saveResult)+
-      '<div class="seg">'+b('demo','Reset demonstration accounts','重置演示账户','reseed')+'</div></section>';
+      select('ea-name-state',L('Company name','企业名称'),[['ok','Available','可取得'],['missing','Unavailable','取不到']],EA.companyName()?'ok':'missing')+
+      '<div class="seg">'+b('demo','Simulate a company name change','模拟企业名称变更','rename')+b('demo','Reset demonstration accounts','重置演示账户','reseed')+'</div></section>';
   }
   function demoAction(v){
+    if(v==='rename'){const o=owner(),cur=EA.companyName(o)||[o,o];
+      EA.renameCompany(o,cur[0].endsWith(' Holdings')?[cur[0].replace(/ Holdings$/,''),cur[1].replace(/控股$/,'')]:[cur[0]+' Holdings',cur[1]+'控股']);
+      CF.toast(L('Company name changed. Fiat accounts now show the new name.','企业名称已变更，法币账户已显示新名称。'));return;}
     if(v==='reseed'){EA.reseed();V.flow=null;V.scene='ready';S.layer=null;S.demo=false;CF.toast(L('Demonstration accounts restored.','演示账户已恢复。'));}
   }
   const host=CF.LSView,priorDemo=host&&host.demo;

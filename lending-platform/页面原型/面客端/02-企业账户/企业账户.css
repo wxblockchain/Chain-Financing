@@ -138,3 +138,8 @@
   .ea-tabs [role="tab"]{font-size:var(--fs-12);gap:var(--sp-1);padding-inline:0;min-width:0}
   .ea-tabs .ea-count{min-width:18px;padding-inline:var(--sp-1)}
 }
+
+/* 账户类型：中性文字标签，只作标注 */
+.ea-type{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:var(--radius-xs);background:var(--gray-bg);
+  color:var(--gray-fg);font-size:var(--fs-12);font-weight:600;white-space:nowrap}
+.ea-chains[aria-invalid="true"] .ea-chain{border-color:var(--danger)}

@@ -65,10 +65,10 @@
   /* 资产方收款账户在 L6 接受环节选定，本册只读承接企业账户模块的字段。 */
   function assetAccount(readOnly=false,compact=false){const a=d().account,EA=CF.EA,lb=k=>L(...EA.labels[k]);if(!a||!a.id&&!a.iban&&!a.address)return '<p class="hint">'+L('The receiving account for this business is unavailable. Check this business before recording a payment.','本笔收款账户暂不可读取，请先核对本笔资料再登记放款。')+'</p>';
     if(a.kind==='crypto'||d().ccy!=='USD')return rows([[lb('label'),EA.name(a)],[lb('chain'),E(chainOf())],[lb('address'),'<span class="copy-pair"><span class="hash">'+E(a.address||'')+'</span>'+(readOnly?'':CF.copyBtn('ln-copy',a.address||'',L('Copy address','复制地址')))+'</span>']]);
-    const full=[[lb('label'),EA.name(a)],[lb('iban'),'<span class="copy-pair"><span class="mono">'+E(EA.groupIban(a.iban)||'—')+'</span>'+(readOnly?'':CF.copyBtn('ln-copy',EA.compact(a.iban),L('Copy account number','复制账号')))+'</span>'],[lb('bank'),E(a.bank||'—')]];
+    const full=[[lb('label'),EA.name(a)],[lb('holder'),EA.holderName(a)||'—'],[lb('accountType'),E(EA.typeName(a))||'—'],[lb('iban'),'<span class="copy-pair"><span class="mono">'+E(EA.groupIban(a.iban)||'—')+'</span>'+(readOnly?'':CF.copyBtn('ln-copy',EA.compact(a.iban),L('Copy account number','复制账号')))+'</span>'],[lb('bank'),E(a.bank||'—')]];
     if(compact)return rows(full);
-    /* 账户币种只作标注，供付款方核对，不参与任何判断。 */
-    return rows(full.concat([[lb('ccy'),EA.currencyText(a)],[lb('holderAddress'),E([a.addressLine,a.addressCity,EA.regionName(a.addressCountry)].filter(Boolean).join(', ')||'—')],[lb('bankAddress'),E([a.bankCity,EA.regionName(a.bankCountry||a.country)].filter(Boolean).join(', ')||'—')],[lb('swift'),E(a.swift||'—')]]));}
+    /* 账户名称、账户类型与账户币种只作展示，供付款方核对，不参与任何判断。 */
+    return rows(full.concat([[lb('ccy'),EA.currencyText(a)],[lb('bankCity'),E(a.bankCity||'—')],[lb('swift'),E(a.swift||'—')]]));}
   /* 资金方还款收款账户：本企业已登记账户中选用，办理内不新增、不编辑、不手输。 */
   const repayKind=()=>d().ccy==='USD'?'fiat':'crypto';
   const repayList=()=>accountScene==='empty'?[]:(Q.accounts?Q.accounts(d().fund,repayKind()):[]);
