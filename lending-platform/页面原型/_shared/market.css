@@ -363,7 +363,7 @@
   [data-market-redesign] .mk-overview .mk-chart-head{display:none}
 }
 @media(max-width:900px){
-  :root[data-market-redesign]{--market-info-h:200px;--market-token-h:480px;--market-record-h:360px}
+  :root[data-market-redesign]{--market-token-h:480px;--market-record-h:360px}
   [data-market-redesign] .ls-detail .ls-workspace{display:flex;gap:var(--sp-4)}
   [data-market-redesign] .ls-detail .ls-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)}
   .mk-project-info-body{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -411,7 +411,7 @@
 [data-market-redesign] .mk-money-exact{position:absolute;z-index:8;left:0;top:calc(100% + var(--sp-2));width:max-content;max-width:calc(100vw - var(--sp-8));padding:var(--sp-3) var(--sp-4);background:var(--card);border:1px solid var(--border-strong);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);color:var(--text);font-size:var(--fs-16)}
 [data-market-redesign] .mk-money-exact>span:first-child{display:block;font-size:var(--fs-11);font-family:var(--sans);font-weight:400;color:var(--muted);margin-bottom:var(--sp-1)}
 [data-market-redesign] .stat-strip .s:last-child .mk-money-exact{left:auto;right:0}
-[data-market-redesign] .listzone .mk-money{font-size:var(--fs-13);justify-content:flex-end}
+[data-market-redesign] .listzone .mk-money{font-size:var(--market-row-value);justify-content:flex-end}
 [data-market-redesign] .listzone[data-view="cards"] .mk-money{font-size:var(--type-card-number,var(--fs-22));justify-content:flex-start}
 [data-market-redesign] .ls-detail .ls-stats .mk-money{max-width:100%}
 @media(max-width:414px){
@@ -480,4 +480,29 @@
   [data-market-redesign] .ls-detail-main .ls-token-table{min-width:0}
   [data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(3) .cell-wrap{align-items:flex-start}
   .mk-project-global-actions .btn{min-height:44px;padding-inline:var(--sp-3);font-size:var(--fs-12)}
+}
+
+/* WS-403 typography audit: the same semantic role uses the same scale. */
+[data-market-redesign] :is(.am-detail .am-ov,.ls-form) .page-title{font-size:var(--fs-28);line-height:1.3}
+[data-market-redesign] :is(.am-detail,.ls-form,.ls-detail .mk-project-info) .card-head h2,
+[data-market-redesign] .ls-detail .mk-fixed-panel .ls-subheading{font-size:var(--market-section-title)}
+[data-market-redesign] :is(.am-detail .dl,.ls-flow .dl,.cq-flow .dl,.ln-drawer .dl,.ln-confirm .dl,.rp-drawer .dl,.rp-confirm .dl),
+[data-market-redesign] .ls-token-detail .ls-dl>div{font-size:var(--market-field-value);line-height:1.6}
+[data-market-redesign] :is(.am-detail .dl,.ls-flow .dl,.cq-flow .dl,.ln-drawer .dl,.ln-confirm .dl,.rp-drawer .dl,.rp-confirm .dl,.ls-token-detail .ls-dl) dt{font-size:var(--market-field-label);font-weight:400;line-height:1.5}
+[data-market-redesign] :is(.am-detail .dl,.ls-flow .dl,.cq-flow .dl,.ln-drawer .dl,.ln-confirm .dl,.rp-drawer .dl,.rp-confirm .dl,.ls-token-detail .ls-dl) dd{font-size:var(--market-field-value)}
+[data-market-redesign] .mk-project-info-body dt{font-size:var(--market-field-label);line-height:1.4}
+[data-market-redesign] .mk-project-info-body dd{font-size:var(--market-field-value);line-height:1.5}
+[data-market-redesign] .cq-round-facts dt{font-size:var(--market-field-label)}
+[data-market-redesign] .cq-round-facts dd{font-size:var(--market-field-value)}
+[data-market-redesign] .ls-form :is(.field-label,.field>label,.ls-term-label){font-size:var(--market-field-label)}
+[data-market-redesign] .ls-form :is(.inp,.field-static,.ls-term-start){font-size:var(--market-field-value)}
+[data-market-redesign] :is(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .field :is(.inp,.field-static){font-size:var(--market-field-value)}
+[data-market-redesign] :is(.am-stamp,.ls-stamp){font-size:inherit}
+[data-market-redesign] :is(.listzone,.ls-token-table) .mk-network{font-size:inherit}
+[data-market-redesign] .listzone[data-view="cards"] tbody td::before,
+[data-market-redesign] .listzone[data-view="cards"] tbody td.mk-network-cell::before{font-size:var(--market-field-label)}
+[data-market-redesign] :is(.cq-round-amount,.cq-request-head h2,.ln-amount,.rp-amount){font-size:var(--market-stat-size);font-weight:500;line-height:1.4}
+[data-market-redesign] .rp-detail-heading>b{font-size:var(--market-section-title)}
+@media(max-width:768px){
+  [data-market-redesign] :is(.am-detail .am-ov,.ls-form,.am-market-page,.ls-market-page) .page-title{font-size:var(--fs-24)}
 }

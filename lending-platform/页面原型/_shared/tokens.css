@@ -162,9 +162,13 @@
 /* WS-403 density and stable record surfaces, shared by both marketplaces. */
 :root[data-market-redesign]{
   --market-stat-size:22px;--market-detail-stat-size:var(--market-stat-size);
-  --market-token-h:420px;--market-record-h:308px;--market-info-h:168px;
+  --market-token-h:420px;--market-record-h:308px;--market-info-h:192px;
   --market-rail-w:400px;--market-popover-h:360px;
+  --market-field-value:var(--fs-14);--market-field-label:var(--fs-12);
+  --market-row-value:var(--fs-13);--market-section-title:var(--fs-16);
 }
+@media(max-width:900px){:root[data-market-redesign]{--market-info-h:288px}}
+@media(max-width:360px){:root[data-market-redesign]{--market-info-h:336px}}
 
 /* WS-403 blue/white review variant: inherit the original canonical palette.
    Keep the rebuilt layout scale without duplicating either module's styles. */
