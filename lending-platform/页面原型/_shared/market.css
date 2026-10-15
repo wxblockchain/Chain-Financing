@@ -134,7 +134,8 @@
 [data-market-redesign] .am-detail .am-ov-tags{border:0;padding-top:var(--sp-4);gap:var(--sp-6)}
 [data-market-redesign] .am-detail .dl{font-size:var(--fs-14);row-gap:var(--sp-5)}
 [data-market-redesign] .am-detail .dl dt{color:var(--muted);font-weight:400;font-size:var(--fs-12)}
-[data-market-redesign] .am-detail .num{font-size:var(--fs-19)}
+/* Ordinary detail values share one size; .num selects numeric styling only. */
+[data-market-redesign] .am-detail .num{font-size:inherit}
 .mk-token-story{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-4);margin-bottom:var(--sp-6)}
 .mk-token-story>div{padding:var(--sp-4);border-left:1px solid var(--border);display:flex;gap:var(--sp-3);align-items:flex-start}
 .mk-token-story>div:first-child{border-left:0;padding-left:0}
