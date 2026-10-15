@@ -89,7 +89,7 @@
     if(body)return E(body.split('\n').map(s=>s.trim()).filter(Boolean)[0]||'');
     return r.business?E(tr(r.business.name)):'';
   }
-  N.preview=r=>'<span class="nc-preview-heading"><span class="nc-preview-title">'+E(template(r,'title'))+'</span>'+readBadge(r)+'</span>'+businessContext(r)+'<span class="nc-preview-summary">'+summary(r)+'</span><span class="nc-meta">'+E(catName(category(r)))+(N.expired(r)?' · '+L('Expired','已过期'):'')+'</span><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time>';
+  N.preview=r=>'<span class="nc-preview-heading"><span class="nc-preview-title">'+E(template(r,'title'))+'</span>'+readBadge(r)+'</span>'+businessContext(r)+'<span class="nc-preview-summary">'+summary(r)+'</span><span class="nc-meta">'+E(catName(category(r)))+(N.expired(r)?' · '+L('Expired','已过期'):'')+'</span><time class="nc-time" datetime="'+r.at+'" title="'+E(CF.fmtTime(r.at))+'">'+CF.relTime(r.at)+'</time>';
   function saveRead(ids){
     try{
       const saved=JSON.parse(localStorage.getItem(storageKey)||'{}');
@@ -145,7 +145,7 @@
   function listRow(r){return '<article class="nc-row" data-id="'+E(r.id)+'" data-unread="'+!r.read+'"><a class="nc-title nc-message-link" href="#/notification?id='+encodeURIComponent(r.id)+'">'+
     '<span class="nc-message-heading"><span class="nc-message-title">'+E(template(r,'title'))+'</span>'+readBadge(r)+'</span>'+businessContext(r)+
     (summary(r)?'<span class="nc-summary">'+summary(r)+'</span>':'')+
-    '<span class="nc-message-foot"><span class="nc-message-category">'+E(catName(category(r)))+(N.expired(r)?' · '+L('Expired','已过期'):'')+'</span><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time></span></a></article>';}
+    '<span class="nc-message-foot"><span class="nc-message-category">'+E(catName(category(r)))+(N.expired(r)?' · '+L('Expired','已过期'):'')+'</span><time class="nc-time" datetime="'+r.at+'" title="'+E(CF.fmtTime(r.at))+'">'+CF.relTime(r.at)+'</time></span></a></article>';}
   function renderList(){
     const v=ensureView(),all=N.visible(),rows=rowsInView(),count=all.filter(r=>matches(r,v.f)&&!r.read).length;
     const cats=[...new Set(all.map(category))];
@@ -215,8 +215,9 @@
     return '<div class="nc-detail nc-reading"><article class="card"><div class="card-b"><h1>'+title+'</h1><div class="nc-reading-meta">'+meta(r)+'<time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time></div>'+
       (readError?'<div class="nc-read-feedback" role="alert"><span>'+L('Could not mark as read. Try again.','标为已读失败，请重试。')+'</span>'+btn('nc-read',L('Retry','重试'),r.id,busy?'disabled':'')+'</div>':'')+
       (body?'<div class="nc-body">'+body+'</div>':'')+comparison(r)+businessInfo(r)+
-      (target?'<footer class="nc-actions">'+(reason?'<p id="nc-reason" tabindex="0">'+reason+'</p>':'')+
-        btn('nc-jump',label,r.id,gone?'aria-disabled="true" aria-describedby="nc-reason"':check==='pending'?'disabled':changed?'aria-describedby="nc-reason"':'')+'</footer>':'')+
+      /* 不可前往时只说明“相关内容暂不可访问”，不放点不动的按钮（与运营端一致）。 */
+      (target?'<footer class="nc-actions">'+(reason?'<p id="nc-reason">'+reason+'</p>':'')+
+        (gone?'':btn('nc-jump',label,r.id,check==='pending'?'disabled':changed?'aria-describedby="nc-reason"':''))+'</footer>':'')+
       '</div></article></div>';
   }
   function mark(ids){

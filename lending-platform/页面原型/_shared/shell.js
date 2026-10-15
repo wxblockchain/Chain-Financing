@@ -107,6 +107,16 @@
     var y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
     return S.lang === "en" ? (MO[m] + " " + day + ", " + y) : (y + " 年 " + (m + 1) + " 月 " + day + " 日");
   };
+  /* 消息列表与预览：24 小时内用相对时间，更早的用完整时刻；详情页始终用完整时刻。两端消息中心共用。 */
+  CF.relTime = function (iso) {
+    var t = Date.parse(iso);
+    if (isNaN(t)) return CF.fmtTime(iso);
+    var m = Math.max(0, Math.floor((Date.now() - t) / 60000)), h = Math.floor(m / 60);
+    if (m < 1) return L("Just now", "刚刚");
+    if (m < 60) return L(m + (m === 1 ? " minute ago" : " minutes ago"), m + " 分钟前");
+    if (m < 1440) return L(h + (h === 1 ? " hour ago" : " hours ago"), h + " 小时前");
+    return CF.fmtTime(iso);
+  };
   /* 时刻按当前展示时区换算并标注该时区；业务日期沿既有口径，不随展示时区改写。 */
   CF.fmtTime = function (iso) {
     var d = new Date(iso);

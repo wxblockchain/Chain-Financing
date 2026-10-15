@@ -17,7 +17,7 @@
   const unread=()=>visible().filter(r=>!expired(r)&&!isRead(r));
   const text=o=>o?(o[S.lang]||o.en||''):'';
   function absolute(at){try{return new Intl.DateTimeFormat(S.lang==='en'?'en-US':'zh-CN',{timeZone:S.tz,year:'numeric',month:S.lang==='en'?'short':'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(at))+' ('+S.tz+')'}catch(_){return new Date(at).toISOString()+' (UTC)'}}
-  function relative(at){const m=Math.max(0,Math.floor((Date.now()-Date.parse(at))/60000)),h=Math.floor(m/60);return m<1?L('Just now','刚刚'):m<60?L(m+(m===1?' minute ago':' minutes ago'),m+' 分钟前'):m<1440?L(h+(h===1?' hour ago':' hours ago'),h+' 小时前'):absolute(at)}
+  const relative=at=>CF.relTime(at);
   function refresh(){CF.refreshAdminTools?.()}
   function closePanel(focus=false){request++;panel='closed';preview=[];refresh();if(focus)document.getElementById('om-bell')?.focus({preventScroll:true})}
   function label(r){return `<span class="nc-read-state ${isRead(r)?'is-read':'is-unread'}">${isRead(r)?L('Read','已读'):L('Unread','未读')}</span>`}

@@ -728,13 +728,15 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 }
 
 /* 消息阅读层次：标题 → 摘要 → 分类/时间；状态只占一个固定位置。 */
-.nc-inbox:not(.om-inbox) .nc-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--sp-2) var(--sp-4);margin-bottom:var(--sp-5)}
-.nc-inbox:not(.om-inbox) .nc-head>div{display:contents}
-.nc-inbox:not(.om-inbox) .nc-head h1{grid-column:1;grid-row:1}
-.nc-inbox:not(.om-inbox) .nc-head .page-sub{grid-column:1 / -1;grid-row:2;margin:0}
-.nc-inbox .nc-head>[data-act="nc-all"]{background:transparent;border-color:transparent;color:var(--muted);font-weight:500}
-.nc-inbox:not(.om-inbox) .nc-head>[data-act="nc-all"]{grid-column:2;grid-row:1}
-.nc-inbox .nc-head>[data-act="nc-all"]:hover:not(:disabled){background:var(--card-hover);color:var(--accent)}
+.nc-inbox .nc-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--sp-2) var(--sp-4);margin-bottom:var(--sp-5)}
+.nc-inbox .nc-head>div{display:contents}
+.nc-inbox .nc-head h1{grid-column:1;grid-row:1}
+.nc-inbox .nc-head .page-sub{grid-column:1 / -1;grid-row:2;margin:0}
+.nc-inbox .nc-head:has(.nc-all-hint) .page-sub{grid-column:1}
+.nc-inbox .nc-head>:is([data-act="nc-all"],[data-act="om-batch"]){background:transparent;border-color:transparent;color:var(--muted);font-weight:500}
+.nc-inbox .nc-head>:is([data-act="nc-all"],[data-act="om-batch"]){grid-column:2;grid-row:1}
+.nc-inbox .nc-head>.nc-all-hint{grid-column:2;grid-row:2;justify-self:end;color:var(--faint);font-size:var(--fs-12)}
+.nc-inbox .nc-head>:is([data-act="nc-all"],[data-act="om-batch"]):hover:not(:disabled){background:var(--card-hover);color:var(--accent)}
 .nc-inbox .page-sub{color:var(--muted);margin-top:var(--sp-2)}
 .nc-inbox-filters{align-items:center;gap:var(--sp-6);padding:0 var(--sp-6);background:var(--card)}
 .nc-status-options{display:flex;gap:var(--sp-1);padding:var(--sp-1);background:var(--gray-bg);border-radius:var(--radius-sm)}
@@ -808,8 +810,8 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .nc-cell-sub{display:block;color:var(--muted);font-size:var(--fs-12)}
 .nc-cell-none{color:var(--muted)}
 @media(max-width:600px){
-  .nc-inbox:not(.om-inbox) .nc-head{gap:var(--sp-2)}
-  .nc-inbox .nc-head>[data-act="nc-all"]{margin-left:auto;padding-inline:var(--sp-2)}
+  .nc-inbox .nc-head{gap:var(--sp-2)}
+  .nc-inbox .nc-head>:is([data-act="nc-all"],[data-act="om-batch"]){margin-left:auto;padding-inline:var(--sp-2)}
   .nc-inbox-filters{gap:0}
   .nc-inbox-filters .nc-status-options{flex-basis:100%;gap:var(--sp-6)}
   .nc-inbox-filters .nc-status-options button{flex:0 0 auto;min-height:var(--ctrl-h)}
@@ -822,17 +824,9 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
   .nc-reading .nc-compare-row [role="cell"]::before{content:attr(data-label);font-size:var(--ui-field-label);color:var(--muted);margin-bottom:var(--sp-1)}
 }
 
-/* Operations notification reading surface: same message components, console density. */
-.om-inbox .nc-head{margin-bottom:var(--sp-6)}
-.om-head-action{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-2)}
-.om-filter{display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border)}
-.om-filter .nc-status-options button{min-height:var(--ctrl-h);font-size:var(--fs-13)}
-.om-inbox .nc-message-link{padding:var(--sp-5) var(--sp-6)}
-.om-inbox .nc-message-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--fs-14)}
-.om-inbox .nc-summary{-webkit-line-clamp:1;font-size:var(--fs-13);line-height:1.6}
-.om-inbox .nc-message-foot{margin-top:var(--sp-2)}
+/* Operations notifications share the customer inbox list; only the console-specific pieces live here. */
+.om-inbox .nc-filters{top:var(--om-topbar-height,69px)}
 .om-expired .nc-message-title{color:var(--muted)}
-.om-inbox .om-loadmore{flex-direction:row;justify-content:center;gap:var(--sp-4);padding:var(--sp-5) var(--sp-6);font-size:var(--fs-13);color:var(--muted)}
 .om-more-error{color:var(--danger)}
 .om-more-end{color:var(--faint);font-size:var(--fs-12)}
 .om-expired-label{color:var(--muted)}
