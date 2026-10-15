@@ -325,10 +325,10 @@
 .mk-project-info-body>div{min-width:0}
 .mk-project-info-body dt{font-size:var(--fs-11);color:var(--muted);line-height:1.5}
 .mk-project-info-body dd{font-size:var(--fs-12);color:var(--text);line-height:1.6;margin:var(--sp-1) 0 0;overflow-wrap:anywhere}
-[data-market-redesign] .ls-detail .ls-section-nav{position:static;min-height:36px;gap:var(--sp-5);padding:0;border-bottom:1px solid var(--border);z-index:auto}
+[data-market-redesign] .ls-detail .ls-section-nav{position:sticky;top:var(--ls-section-top,80px);flex-shrink:0;min-height:36px;gap:var(--sp-5);padding:0;border-bottom:1px solid var(--border);background:var(--bg);z-index:calc(var(--z-sticky) - 1)}
 [data-market-redesign] .ls-detail .ls-section-nav button{min-height:36px;font-size:var(--fs-12)}
 [data-market-redesign] .ls-detail .mk-fixed-panel{height:var(--market-record-h);padding:0;border:0;overflow-anchor:none}
-[data-market-redesign] .ls-detail .mk-fixed-panel{scroll-margin-top:calc(var(--ls-rail-top,80px) + var(--sp-4))}
+[data-market-redesign] .ls-detail .ls-detail-main>:is(#ls-pledged-tokens,#ls-applications,#ls-disbursements,#ls-repayments){scroll-margin-top:calc(var(--ls-section-top,80px) + var(--ls-section-height,36px) + var(--sp-4))}
 [data-market-redesign] .ls-detail #ls-pledged-tokens{height:var(--market-token-h)}
 [data-market-redesign] .ls-detail .mk-fixed-panel>.card{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
 [data-market-redesign] .ls-detail .mk-fixed-panel>.card>.card-head{padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--border);flex:none;min-height:52px;gap:var(--sp-3)}
@@ -382,6 +382,7 @@
   [data-market-redesign] .mk-views button{height:40px;width:40px}
   [data-market-redesign] .mk-overview .mk-legend button{min-height:44px}
   [data-market-redesign] .ls-detail .ls-detail-head .page-title{font-size:var(--fs-24)}
+  [data-market-redesign] .ls-detail .ls-section-nav button{min-height:44px}
   [data-market-redesign] .ls-detail .mk-fixed-panel>.card>.card-head{flex-wrap:wrap}
   .mk-contract-popover{position:fixed;left:var(--sp-4);right:var(--sp-4);top:25vh;width:auto;max-width:none;max-height:60vh;overflow:auto}
   [data-market-redesign] .ls-detail .ls-stat-more .ls-more-body{width:100%}
