@@ -9,7 +9,7 @@
   const D=CF.NCData={
     categories:{
       progress:pair('Business progress','业务办理进度'),
-      reminder:pair('Business alerts','业务提醒'),
+      reminder:pair('Business reminders','业务提醒'),
       account:pair('Account security','账户安全'),
       compliance:pair('Verification & compliance','认证与合规')
     },
@@ -40,7 +40,9 @@
       'verification.funder.rejected':{mode:'page',target:'lending:P-L22'},
       'verification.funder.paused':{mode:'page',target:'lending:P-L22'},
       'account.email.changed':{mode:'page',target:'lending:P-L23'},
-      'account.access.restored':{mode:'page',target:'lending:P-L23'}
+      'account.access.restored':{mode:'page',target:'lending:P-L23'},
+      /* 演示：来源把打开后去向设为“不跳转”的类型。 */
+      'demo.notice.no_target':{mode:'none'}
     },
     templates:{
       'financing.project.review_approved':{
@@ -170,6 +172,9 @@
         title:pair('Settlement netting record available','收到一条结算净额记录'),
         body:pair('A settlement netting record was created for project {project_name} ({project_id}). Review the record in the project details.',
           '项目 {project_name}（{project_id}）已生成一条结算净额记录。请在项目详情查看该记录。')},
+      'demo.notice.no_target':{
+        title:pair('Demonstration notice','演示告知'),
+        body:pair('This demonstration message has no linked page.','这是一条没有关联页面的演示消息。')},
       /* 增量接入演示：零改框架接入一个本模块此前没有的虚构业务类型。 */
       'demo.extension.received':{
         title:pair('New demonstration message {reference}','新增演示消息 {reference}'),
@@ -185,35 +190,16 @@
   const money=n=>Number(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
   const fundName=id=>id==='fund-b'?pair('Demo Capital B','演示资金机构 B'):pair('Demo Capital A','演示资金机构 A');
   const now=()=>CF.L8?.now||CF.L7?.now?.()||CF.LS?.now?.()||Date.now();
-  const nodes={
-    quoteWaiting:pair('Awaiting acceptance','待接受'),
-    quoteRejected:pair('Rejected','已拒绝'),
-    pendingLoan:pair('Awaiting disbursement','待放款'),
-    confirming:pair('Awaiting receipt confirmation','待放款确认'),
-    disbursed:pair('Disbursed','已放款'),
-    repaying:pair('Repaying','还款中'),
-    planGenerating:pair('Plan generating','计划生成中'),
-    due:pair('Pending repayment','待还款'),
-    repayConfirming:pair('Awaiting repayment confirmation','待还款确认'),
-    periodSettled:pair('Installment settled','本期已结清'),
-    settled:pair('Settled','已结清'),
-    reviewApproved:pair('Review approved','审核通过'),
-    reviewRejected:pair('Review not approved','审核未通过'),
-    reviewReturned:pair('Returned for revision','已退回'),
-    executionFailed:pair('Execution failed','执行失败'),
-    demandEnded:pair('Financing request ended','需求已终结'),
-    coverageShort:pair('Pledge shortfall','质押不足'),
-    coverageOk:pair('Pledge shortfall resolved','质押不足已解除'),
-    projectExpiring:pair('Final term window','有效期最后窗口')
-  };
   let serial=0;
   function push(row){
     row.platform=row.platform||'lending';row.end='asset';
     row.id=row.id||('nc-'+row.owner+'-'+(++serial));
+    row.fact=row.fact||[row.owner,row.biz,row.objectId||'',row.period||'',row.at].join('|');
     D.rows.push(row);
     return row;
   }
-  const business=(name,number,node,state,extra)=>Object.assign({name,number,node,state},extra||{});
+  /* 来源提供的原业务名称与编号；本期没有来源发送办理进度节点或步序。 */
+  const business=(name,number)=>({name,number});
 
   /* ---------------------------------------------------------- 资产方消息 */
   function seedAsset(){
@@ -225,10 +211,10 @@
       const vars={project_name:p.name,project_id:p.id};
       if(pi===1)push({owner:'asset',biz:'financing.project.review_returned',category:'progress',objectKind:'project',objectId:p.id,
         at:tick(226+pi*6),vars:{...vars,reason:pair('The pledge rate in the project details exceeds the rate registered for this token type.','创建信息中的质押率超过该代币类型的登记上限。')},
-        business:business(p.name,p.id,nodes.reviewReturned,'failed')});
+        business:business(p.name,p.id)});
       push({owner:'asset',biz:'financing.project.review_approved',category:'progress',objectKind:'project',objectId:p.id,
         at:tick(220+pi*6),vars:{...vars,approved_at:tick(220+pi*6),contract_address:p.contract},
-        business:business(p.name,p.id,nodes.reviewApproved,'complete')});
+        business:business(p.name,p.id)});
       /* 逐笔质押审核结果：每张在合约内的代币一条，驳回只覆盖一张。 */
       d.tokens.filter(t=>t.pool===p.id&&t.pledge==='pledged').forEach((t,ti)=>{
         const rejected=pi===1&&ti===2,when=tick(pi+ti*slots);
@@ -236,7 +222,7 @@
           category:'progress',objectKind:'project',objectId:p.id,at:when,
           vars:rejected?{...vars,token_id:t.id,reason:pair('The buyer confirmation attached to this receivable is not the version on record.','本张应收账款附带的买方确认函与备案版本不一致。')}
             :{...vars,token_id:t.id,approved_at:when},
-          business:business(p.name,t.id,rejected?nodes.reviewRejected:nodes.reviewApproved,rejected?'failed':'complete')});
+          business:business(p.name,t.id)});
       });
       if(pi===2){
         const fees=[['A',pair('The deposit transaction was rejected by the pledge contract.','质押合约拒绝了本次入池交易。'),'0.0041','ETH'],
@@ -248,27 +234,27 @@
             :pair('This operation incurred fees of '+fee+' '+ccy+', payable by the asset originator. Incurred fees are not refunded.','本次已产生费用 '+fee+' '+ccy+'，由资产方承担，已产生的费用不退回。');
           push({owner:'asset',biz:'financing.pledge.execution_failed',category:'progress',objectKind:'project',objectId:p.id,
             at:tick(126+i*4),vars:{...vars,token_id:'TK-DEMO-'+(pi+1)+'-'+(i+1),action_id:'EX-DEMO-'+p.id.slice(-3)+'-'+tag,reason,fee_sentence:sentence},
-            business:business(p.name,'EX-DEMO-'+p.id.slice(-3)+'-'+tag,nodes.executionFailed,'failed')});
+            business:business(p.name,'EX-DEMO-'+p.id.slice(-3)+'-'+tag)});
         });
       }
       if(pi%3===0){
         const shortfall=45000+pi*5000;
         push({owner:'asset',biz:'financing.project.coverage_shortfall',category:'reminder',objectKind:'project',objectId:p.id,
           at:tick(96+pi*7),vars:{...vars,occurred_at:tick(96+pi*7),shortfall:money(shortfall),additional_value:money(shortfall*1.25)},
-          business:business(p.name,p.id,nodes.coverageShort,'pending')});
+          business:business(p.name,p.id)});
         push({owner:'asset',biz:'financing.project.coverage_restored',category:'reminder',objectKind:'project',objectId:p.id,
           at:tick(88+pi*7),vars:{...vars,occurred_at:tick(88+pi*7)},
-          business:business(p.name,p.id,nodes.coverageOk,'complete')});
+          business:business(p.name,p.id)});
       }
       if(pi===3)['asset','fund'].forEach(who=>push({owner:who,
         biz:who==='fund'?'financing.demand.coverage_invalidated@fund':'financing.demand.coverage_invalidated',
         category:'progress',objectKind:'project',objectId:p.id,at:tick(74),vars:{...vars,demand_id:p.id+'-01'},
-        business:business(p.name,p.id+'-01',nodes.demandEnded,'failed')}));
+        business:business(p.name,p.id+'-01')}));
       /* 届满前 7 天的提醒节点已经过去才存在这条消息，不预生成未来事件。 */
       if(p.expires&&Date.parse(p.expires)-7*DAY<=now())
         push({owner:'asset',biz:'financing.project.expiry_reminder',category:'reminder',objectKind:'project',objectId:p.id,
           at:iso(Date.parse(p.expires)-7*DAY),vars:{...vars,expires_at:p.expires},
-          business:business(p.name,p.id,nodes.projectExpiring,'active')});
+          business:business(p.name,p.id)});
     });
     /* 报价、放款、还款：按 CF.CQ / CF.L7 / CF.L8 的现行演示业务生成。 */
     let gapShown=false;
@@ -279,13 +265,11 @@
       if(['waiting','funding','funded','rejected'].includes(x.state))
         push({owner:'asset',biz:'financing.quote.submitted',category:'progress',objectKind:'quote',objectId:x.id,objectProject:x.project,
           at:iso(x.at),vars:{...ids,institution_name:inst,amount_usd:money(x.amount)},
-          business:business(p.name,x.id,x.state==='waiting'?nodes.quoteWaiting:x.state==='rejected'?nodes.quoteRejected:nodes.pendingLoan,
-            x.state==='waiting'?'pending':x.state==='rejected'?'failed':'active')});
+          business:business(p.name,x.id)});
       if(deal&&deal.record)
         push({owner:'asset',biz:'financing.disbursement.submitted',category:'progress',objectKind:'loan',objectId:x.id,objectProject:x.project,
           at:deal.record.at,vars:{...ids,institution_name:inst,submitted_at:deal.record.at,disbursement_id:deal.record.id,amount:money(deal.amount),currency:deal.ccy},
-          business:business(p.name,deal.record.id,deal.state==='waiting'?nodes.confirming:nodes.disbursed,deal.state==='waiting'?'pending':'complete',
-            {step:1,total:2})});
+          business:business(p.name,deal.record.id)});
       if(plan){
         /* 预计起息日按报价时点估算，实际起息日按到账确认日。其中一笔演示业务保留两者
            相差一个季度的情形，用于呈现只有一侧有条目的对照行。 */
@@ -298,7 +282,7 @@
             planned_count:planned.length,actual_count:plan.periods.length},
           installments:{ccy:deal.ccy,planned:planned.map(r=>({seq:r.seq,due:r.due,total:r.total,settlement:r.settlement})),
             actual:plan.periods.map(r=>({seq:r.seq,due:r.due,total:r.total,settlement:r.settlement,id:r.id}))},
-          business:business(p.name,x.id,plan.settledAt?nodes.settled:nodes.repaying,plan.settledAt?'complete':'active')});
+          business:business(p.name,x.id)});
         plan.periods.forEach(pd=>{
           const ref={...base,installment_no:pd.seq,schedule_id:pd.id,due_date:pd.due,usd_total:money(pd.total),
             settlement_amount:money(pd.settlement),currency:deal.ccy};
@@ -306,18 +290,18 @@
           if(pd.state==='due'&&Date.parse(pd.due)-3*DAY<=now())
             push({owner:'asset',biz:'financing.repayment.due_soon',category:'reminder',objectKind:'repayment',objectId:x.id,objectProject:x.project,period:pd.id,
               at:iso(Date.parse(pd.due)-3*DAY),vars:{...ref,recording_opens_at:pd.due+'T00:00:00Z'},
-              business:business(p.name,pd.id,nodes.due,'active')});
+              business:business(p.name,pd.id)});
           if(over>0&&pd.state!=='settled')
             push({owner:'asset',biz:'financing.repayment.overdue',category:'reminder',objectKind:'repayment',objectId:x.id,objectProject:x.project,period:pd.id,
               at:pd.record?pd.record.at:iso(Date.parse(pd.due)+DAY),
               vars:{...ref,overdue_as_of:pd.record?pd.record.at:iso(Date.parse(pd.due)+DAY),overdue_days:over},
-              business:business(p.name,pd.id,nodes.due,'pending')});
+              business:business(p.name,pd.id)});
           if(pd.state==='settled'&&pd.record&&pd.record.confirmedAt){
             const last=plan.settledAt&&pd.seq===plan.periods.length;
             push({owner:'asset',biz:last?'financing.deal.settled':'financing.repayment.confirmed',category:'progress',
               objectKind:'repayment',objectId:x.id,objectProject:x.project,period:pd.id,at:pd.record.confirmedAt,
               vars:{...ref,confirmed_at:pd.record.confirmedAt,settled_at:plan.settledAt||pd.record.confirmedAt},
-              business:business(p.name,pd.id,last?nodes.settled:nodes.periodSettled,'complete')});
+              business:business(p.name,pd.id)});
           }
         });
       }
@@ -335,21 +319,21 @@
       if(['funding','funded'].includes(x.state))
         push({owner:'fund',biz:'financing.quote.accepted',category:'progress',objectKind:'loan',objectId:x.id,objectProject:x.project,
           at:iso(x.done||x.at),vars:{...ids,accepted_at:iso(x.done||x.at)},
-          business:business(p.name,x.id,deal&&deal.state!=='pending'?nodes.confirming:nodes.pendingLoan,deal&&deal.state!=='pending'?'active':'pending')});
+          business:business(p.name,x.id)});
       if(x.state==='rejected')
         push({owner:'fund',biz:'financing.quote.rejected',category:'progress',objectKind:'quote',objectId:x.id,objectProject:x.project,
           at:iso(x.done||x.at),vars:{...ids,rejected_at:iso(x.done||x.at),
             reason:x.reason||pair('Terms do not match current needs','融资条款不符合当前需求')},
-          business:business(p.name,x.id,nodes.quoteRejected,'failed')});
+          business:business(p.name,x.id)});
       if(x.state==='expired')
         push({owner:'fund',biz:'financing.demand.coverage_invalidated@fund',category:'progress',objectKind:'project',objectId:x.project,
           at:iso(x.done||x.at),vars:{project_name:p.name,project_id:p.id,demand_id:x.demand},
-          business:business(p.name,x.demand,nodes.demandEnded,'failed')});
+          business:business(p.name,x.demand)});
       if(deal&&deal.confirmedAt)
         push({owner:'fund',biz:plan?'financing.deal.confirmed':'financing.deal.confirmed@generating',category:'progress',
           objectKind:'repayment',objectId:x.id,objectProject:x.project,at:deal.confirmedAt,
           vars:{...ids,disbursement_id:deal.record.id,confirmed_at:deal.confirmedAt},
-          business:business(p.name,deal.record.id,plan?nodes.repaying:nodes.planGenerating,'active',{step:2,total:2})});
+          business:business(p.name,deal.record.id)});
       if(plan){
         const base={...ids,disbursement_id:deal.record.id,institution_name:inst};
         plan.periods.forEach(pd=>{
@@ -359,15 +343,15 @@
           if(pd.state==='pending'&&pd.record)
             push({owner:'fund',biz:'financing.repayment.submitted',category:'progress',objectKind:'repayment',objectId:x.id,objectProject:x.project,period:pd.id,
               at:pd.record.at,vars:{...ref,submitted_at:pd.record.at},
-              business:business(p.name,pd.id,nodes.repayConfirming,'pending')});
+              business:business(p.name,pd.id)});
           if(over>0&&pd.state==='due')
             push({owner:'fund',biz:'financing.repayment.overdue@fund',category:'reminder',objectKind:'repayment',objectId:x.id,objectProject:x.project,period:pd.id,
               at:iso(Date.parse(pd.due)+DAY),vars:{...ref,overdue_as_of:iso(Date.parse(pd.due)+DAY),overdue_days:over},
-              business:business(p.name,pd.id,nodes.due,'active')});
+              business:business(p.name,pd.id)});
           if(pd.state==='settled'&&pd.record&&pd.record.confirmedAt&&plan.settledAt&&pd.seq===plan.periods.length)
             push({owner:'fund',biz:'financing.deal.settled@fund',category:'progress',objectKind:'repayment',objectId:x.id,objectProject:x.project,period:pd.id,
               at:pd.record.confirmedAt,vars:{...ref,confirmed_at:pd.record.confirmedAt,settled_at:plan.settledAt},
-              business:business(p.name,pd.id,nodes.settled,'complete')});
+              business:business(p.name,pd.id)});
         });
       }
     });
@@ -375,10 +359,10 @@
       const at=Date.parse(p.published||iso(now()))+40*H,shortfall=38000+i*4000;
       push({owner:'fund',biz:'financing.project.coverage_shortfall',category:'reminder',objectKind:'project',objectId:p.id,
         at:iso(at),vars:{project_name:p.name,project_id:p.id,occurred_at:iso(at),shortfall:money(shortfall),additional_value:money(shortfall*1.25)},
-        business:business(p.name,p.id,nodes.coverageShort,'active')});
+        business:business(p.name,p.id)});
       if(i%2===0)push({owner:'fund',biz:'financing.project.coverage_restored',category:'reminder',objectKind:'project',objectId:p.id,
         at:iso(at+20*H),vars:{project_name:p.name,project_id:p.id,occurred_at:iso(at+20*H)},
-        business:business(p.name,p.id,nodes.coverageOk,'complete')});
+        business:business(p.name,p.id)});
     });
     const app='FA-DEMO-0007',submitted=iso(now()-9*DAY),reviewed=iso(now()-8*DAY);
     push({owner:'fund',biz:'verification.funder.approved',category:'compliance',at:reviewed,
@@ -399,16 +383,14 @@
     push({...base,id:'nc-fixture-expired',at:at(120),read:false,expires:'2026-01-01T00:00:00Z'});
     push({...base,id:'nc-fixture-missing-template',biz:'financing.unknown.event',category:'progress',at:at(121),read:false,missing:true,business:null});
     push({...base,id:'nc-fixture-zh-only',at:at(122),read:false,onlyZh:true});
-    push({...base,id:'nc-fixture-unregistered-type',biz:'financing.settlement.netting_prepared',category:'progress',at:at(123),read:false,
-      business:{...base.business,node:{en:'Awaiting registration',zh:'类型待登记'},state:'active'}});
+    push({...base,id:'nc-fixture-unregistered-type',biz:'financing.settlement.netting_prepared',category:'progress',at:at(123),read:false});
     push({...base,id:'nc-fixture-unregistered-category',category:'treasury',at:at(124),read:false});
     push({...base,id:'nc-fixture-plain-text',at:at(125),read:false,
       literal:'<script>alert("demo")</script>\nPlain text <b>only</b> / 仅作为纯文本展示'});
-    push({...base,id:'nc-fixture-unknown-state',at:at(126),read:false,business:{...base.business,state:'unknown'}});
-    push({...base,id:'nc-fixture-no-step',at:at(127),read:false,business:{...base.business,number:null,step:null,total:null}});
+    push({...base,id:'nc-fixture-no-reference',at:at(127),read:false,business:{...base.business,number:null}});
     push({...base,id:'nc-fixture-denied-target',at:at(128),read:false,check:'denied'});
     push({...base,id:'nc-fixture-timeout-target',at:at(129),read:false,check:'timeout'});
-    push({...base,id:'nc-fixture-no-target',biz:'verification.asset.revoked',category:'compliance',at:at(130),read:false,
+    push({...base,id:'nc-fixture-no-target',biz:'demo.notice.no_target',category:'account',at:at(130),read:false,
       objectKind:null,objectId:null,objectProject:null,period:null,vars:{},business:null});
     /* 不属于本池：错端与他人消息不可见、不计未读、不可深链。 */
     D.rows.push({...base,id:'nc-fixture-foreign-platform',platform:'token'});
@@ -420,14 +402,14 @@
   function seedStandalone(){
     const project=pair('Demonstration project','演示项目');
     const cases=[
-      ['financing.project.review_approved','progress',nodes.reviewApproved,'complete',i=>({project_name:project,project_id:'FP-DEMO-'+i,approved_at:iso(now()-i*H),contract_address:'0x'+String(i).padStart(40,'0')})],
-      ['financing.quote.submitted','progress',nodes.quoteWaiting,'pending',i=>({demand_id:'FP-DEMO-'+i+'-01',business_id:'FB-DEMO-'+i,institution_name:fundName('fund-a'),amount_usd:money(240000+i*1000)})],
-      ['financing.project.coverage_shortfall','reminder',nodes.coverageShort,'active',i=>({project_name:project,project_id:'FP-DEMO-'+i,occurred_at:iso(now()-i*H),shortfall:money(40000+i*500),additional_value:money(50000+i*625)})],
-      ['verification.asset.revoked','compliance',null,null,()=>({})]
+      ['financing.project.review_approved','progress',i=>({project_name:project,project_id:'FP-DEMO-'+i,approved_at:iso(now()-i*H),contract_address:'0x'+String(i).padStart(40,'0')})],
+      ['financing.quote.submitted','progress',i=>({demand_id:'FP-DEMO-'+i+'-01',business_id:'FB-DEMO-'+i,institution_name:fundName('fund-a'),amount_usd:money(240000+i*1000)})],
+      ['financing.project.coverage_shortfall','reminder',i=>({project_name:project,project_id:'FP-DEMO-'+i,occurred_at:iso(now()-i*H),shortfall:money(40000+i*500),additional_value:money(50000+i*625)})],
+      ['verification.asset.revoked','compliance',()=>({})]
     ];
-    for(let i=1;i<=8;i++)cases.forEach(([biz,category,node,state,vars],k)=>push({
+    for(let i=1;i<=8;i++)cases.forEach(([biz,category,vars],k)=>push({
       owner:'asset',biz,category,at:iso(now()-((i-1)*cases.length+k)*3*H),vars:vars(i),
-      business:node?business(project,'FB-DEMO-'+i,node,state):null}));
+      business:category==='compliance'?null:business(project,'FB-DEMO-'+i)}));
   }
   let seeded=false;
   D.ensure=function(){
@@ -442,6 +424,16 @@
     D.rows.forEach((r,i)=>{if(r.read===undefined)r.read=i%7===6;});
     D.rows.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
     return D;
+  };
+  /* 演示投递：同一收件人的同一事实只保留一条，新事实追加为未读。 */
+  D.deliver=function(row){
+    D.ensure();
+    const fact=[row.owner,row.biz,row.objectId||'',row.period||'',row.at].join('|');
+    const same=D.rows.find(r=>r.fact===fact);
+    if(same)return {added:false,row:same};
+    const fresh={...row,id:'nc-'+row.owner+'-live-'+(++serial),fact,read:false};
+    D.rows.unshift(fresh);
+    return {added:true,row:fresh};
   };
   D.addType=function(){
     D.ensure();

@@ -2,9 +2,6 @@
   'use strict';
   const S=CF.S,N=CF.notifications,D=CF.NCData,L=CF.L,E=CF.esc;
   const LIST='P-F-MC-01',DETAIL='P-F-MC-02';
-  /* 进度四态封闭，来源给出未知或非法值时降级为普通消息，不假装成功。 */
-  const stateNames={active:['In progress','进行中'],pending:['Action required','待用户处理'],complete:['Completed','已完成'],failed:['Failed','已失败']};
-  const stateColors={active:'accent',pending:'warn',complete:'ok',failed:'danger'};
   let view=null,previousRole=null,restore=false,renderedDetail=null,preflight=null,preflightTimer=null;
   let frame=null,positioning=false,detailTop=true,returnFocus=false;
   const defaultScrollRestoration=history.scrollRestoration;
@@ -21,10 +18,17 @@
     :(v&&typeof v==='object'?String(v[S.lang]||v.en||v.zh||''):(v==null?'':String(v)));
   /* 时刻按展示时区标注，业务日期按 UTC 日期显示；切换语言重算格式，事实值不变。 */
   const STAMP=/(_at|_time|_as_of)$/,DATEKEY=/_date$/;
+  /* 业务日期按 UTC 日历日呈现，不随展示时区前后漂移一天。 */
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function utcDate(s){
+    const m=/^(\d{4})-(\d\d)-(\d\d)/.exec(String(s||''));if(!m)return E(s);
+    const y=+m[1],mo=+m[2],d=+m[3];
+    return S.lang==='en'?MONTHS[mo-1]+' '+d+', '+y:y+' 年 '+mo+' 月 '+d+' 日';
+  }
   function varText(key,value){
     const raw=typeof value==='string'?value:'';
     if(STAMP.test(key)&&/^\d{4}-\d\d-\d\dT/.test(raw))return CF.fmtTime(raw);
-    if(DATEKEY.test(key)&&/^\d{4}-\d\d-\d\d/.test(raw))return CF.fmtDate(raw);
+    if(DATEKEY.test(key)&&/^\d{4}-\d\d-\d\d/.test(raw))return utcDate(raw);
     return tr(value);
   }
   const btn=(act,text,value='',extra='')=>'<button type="button" class="btn'+(['nc-jump','nc-confirm'].includes(act)?' primary':'')+'" data-act="'+act+'" data-v="'+E(value)+'" '+extra+'>'+text+'</button>';
@@ -44,16 +48,14 @@
       return value==null?'':varText(key,value);
     }).replace(/[^\S\n]{2,}/g,' ').trim();
   }
+  /* 来源提供的原业务名称与编号；编号可复制，缺项不补位。 */
   function businessInfo(r){
-    const b=r.business;if(!b)return '';
-    const st=stateNames[b.state],number=b.number?String(b.number):'';
-    const step=b.step!=null&&b.total!=null&&b.step>0&&b.total>0&&b.step<=b.total;
-    return '<section class="nc-progress" aria-labelledby="nc-business-name"><div class="nc-business-head"><h2 id="nc-business-name">'+E(tr(b.name))+'</h2>'+
-      (st?CF.tag(stateColors[b.state],L(...st)):'')+'</div>'+
+    const b=r.business;if(!b||!tr(b.name)&&!b.number)return '';
+    const number=b.number?String(b.number):'';
+    return '<section class="nc-progress" aria-labelledby="nc-business-name"><div class="nc-business-head"><h2 id="nc-business-name">'+
+      E(tr(b.name)||L('Related business','相关业务'))+'</h2></div>'+
       (number?'<div class="nc-reference"><span>'+L('Reference','业务编号')+'</span><span class="mono">'+E(number)+'</span>'+
-        CF.copyBtn('nc-copy',number,L('Copy reference','复制业务编号'))+'</div>':'')+
-      '<dl class="nc-stage"><div><dt>'+L('Current step','当前环节')+'</dt><dd>'+E(tr(b.node))+'</dd></div>'+
-      (step?'<div><dt>'+L('Progress','办理进度')+'</dt><dd>'+L('Step '+b.step+' of '+b.total,'第 '+b.step+' / '+b.total+' 步')+'</dd></div>':'')+'</dl></section>';
+        CF.copyBtn('nc-copy',number,L('Copy reference','复制业务编号'))+'</div>':'')+'</section>';
   }
   /* 逐期对照在同一封消息内完整给出，两侧缺项按来源留空，不截断、不拆成多封。 */
   function comparison(r){
@@ -61,7 +63,7 @@
     const rows=new Map();
     (set.planned||[]).forEach(p=>rows.set(p.seq,{seq:p.seq,planned:p}));
     set.actual.forEach(p=>rows.set(p.seq,Object.assign(rows.get(p.seq)||{seq:p.seq},{actual:p})));
-    const cell=p=>p?'<span class="nc-cell-date">'+CF.fmtDate(p.due)+'</span><span class="nc-cell-amt mono">'+CF.fmtAmt(p.total,'USD')+
+    const cell=p=>p?'<span class="nc-cell-date">'+utcDate(p.due)+'</span><span class="nc-cell-amt mono">'+CF.fmtAmt(p.total,'USD')+
       (set.ccy&&set.ccy!=='USD'?'<span class="nc-cell-sub">'+CF.fmtAmt(p.settlement,set.ccy)+'</span>':'')+'</span>':'<span class="nc-cell-none">—</span>';
     return '<section class="nc-compare"><h2>'+L('Installment comparison','逐期对照')+'</h2>'+
       '<div class="nc-compare-grid" role="table" aria-label="'+L('Estimated and finalized installments','预计与定稿逐期对照')+'">'+
@@ -78,9 +80,7 @@
   function summary(r){
     const body=template(r,'body');
     if(body)return E(body.split('\n').map(s=>s.trim()).filter(Boolean)[0]||'');
-    const b=r.business;if(!b)return '';
-    const st=stateNames[b.state];
-    return [tr(b.node),st?L(...st):''].filter(Boolean).map(E).join(' · ');
+    return r.business?E(tr(r.business.name)):'';
   }
   N.preview=r=>'<span class="nc-preview-heading"><span class="nc-preview-title">'+E(template(r,'title'))+'</span>'+readBadge(r)+'</span><span class="nc-preview-summary">'+summary(r)+'</span><span class="nc-meta">'+E(catName(category(r)))+(N.expired(r)?' · '+L('Expired','已过期'):'')+'</span><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time>';
   function saveRead(ids){
@@ -151,9 +151,9 @@
       else body=rows.slice(0,v.shown).map(listRow).join('')+'<div class="loadmore">'+
         (moreError?'<span role="alert">'+L('Failed to load. Please try again','加载失败，请重试')+'</span>':'')+
         (v.shown<rows.length?btn('nc-more',busy?L('Loading…','加载中…'):L('Load more','加载更多'),'',busy?'disabled':''):'<span>'+L('No more messages','没有更多了')+'</span>')+
-        '<span class="tiny" role="status">'+L('Showing '+Math.min(v.shown,rows.length)+' of '+rows.length,'已显示 '+Math.min(v.shown,rows.length)+' / '+rows.length+' 条')+'</span>'+btn('nc-top',L('Back to filters','返回筛选'))+'</div>';
+btn('nc-top',L('Back to filters','返回筛选'))+'</div>';
     }
-    return '<div class="nc-layout nc-inbox"><div class="nc-head"><h1 class="page-title">'+L('Notifications','消息中心')+'</h1><p class="page-sub">'+L('Account updates and business progress','账户动态与业务进展')+'</p></div>'+filter+'<div class="nc-result-count" role="status">'+L(rows.length+' messages',rows.length+' 条消息')+'</div><section class="nc-feed">'+
+    return '<div class="nc-layout nc-inbox"><div class="nc-head"><h1 class="page-title">'+L('Notifications','消息中心')+'</h1><p class="page-sub">'+L('Account updates and business progress','账户动态与业务进展')+'</p></div>'+filter+'<section class="nc-feed">'+
       (readError?'<div class="nc-feedback">'+CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。'))+'</div>':'')+
       '<div class="nc-list" id="nc-list" aria-label="'+L('Messages','消息列表')+'">'+body+'</div></section></div>';
   }
@@ -161,7 +161,8 @@
   /* 进入详情才检查业务目标：期次或放款尚未产生时回落到仍可读的原对象，
      不存在或无权统一给同一不可用说明，不泄露其存在性。 */
   function resolve(r){
-    const type=!N.expired(r)&&D.types[kindOf(r.biz)];
+    /* 消息过期只影响未读计数，原业务能否查看与办理仍按原业务当前状态判断。 */
+    const type=D.types[kindOf(r.biz)];
     if(!type||type.mode==='none')return null;
     if(type.mode==='page')return {mode:'page',target:type.target,status:'ok'};
     /* 来源没有给出原对象时按无跳转处理：保留正文，不提供伪业务入口。 */
@@ -234,7 +235,7 @@
       action('reset','Reset demo','重置演示')+action('new','Add a new business type','追加新业务类型')+action('empty','Empty inbox','空消息池')+
       action('many','99+ unread','99+ 未读')+action('panel-loading','Panel loading','面板加载中')+action('panel-error','Panel failure','面板失败')+
       action('more-fail','Next load fails','下次加载更多失败')+action('read-fail','Next read fails','下次已读操作失败')+action('refresh-fail','Refresh fails','刷新失败保留角标')+
-      action('refresh','Refresh now','立即刷新')+action('expire','Expire session','会话失效')+action('detail-fail','Detail request fails','详情请求失败')+
+      action('refresh','Refresh now','立即刷新')+action('arrive','A new message arrives','新消息到达')+action('duplicate','Same fact delivered again','同一事实重复送达')+action('expire','Expire session','会话失效')+action('detail-fail','Detail request fails','详情请求失败')+
       action('normal','Valid deep link','正常深链')+action('plan','Schedule comparison','逐期对照消息')+action('degraded','Degraded content','内容降级消息')+
       action('unavailable','Unavailable target','目标不可访问')+action('superseded','Action no longer applies','原动作已不适用')+
       action('guest','Signed-out deep link','未登录深链')+action('denied','Restricted deep link','无权限深链')+action('unknown','Unknown deep link','未知深链')+
@@ -295,6 +296,16 @@
       if(act==='nc-demo'){
         if(v==='reset'){Object.assign(D,JSON.parse(snapshotData));N.rows=D.rows;try{localStorage.removeItem(storageKey);}catch(e){}resetView();S.role='asset';S.st='default';N.panelState='default';refreshFail=failRead=failMore=detailFailure=readError=landingDenied=false;location.hash='#/notifications';}
         if(v==='new'){D.addType();N.rows=D.rows;newMessages();}
+        if(v==='arrive'||v==='duplicate'){
+          const pool=N.visible().filter(r=>r.business&&!String(r.id).startsWith('nc-fixture'));
+          const src=v==='arrive'?pool[0]:pool.find(r=>r.read)||pool[0];
+          if(src){
+            const sample=v==='arrive'?{...src,at:new Date().toISOString(),fact:null}:{...src};
+            const result=D.deliver(sample);N.rows=D.rows;
+            if(result.added)newMessages();
+            CF.toast(result.added?L('A new message arrived — demo.','新消息已到达 —— 演示。'):L('Already received — no new message, order and read state unchanged.','同一事实已收到：未新增消息，顺序与已读状态不变。'));
+          }
+        }
         if(v==='empty'){N.rows=[];resetView();S.st='default';location.hash='#/notifications';}
         if(v==='many'){N.rows=D.rows;N.visible().forEach(r=>r.read=false);resetView();S.st='default';location.hash='#/notifications';}
         if(v==='panel-loading'||v==='panel-error'){N.panelState=v==='panel-loading'?'loading':'error';S.menu='notifications';}
