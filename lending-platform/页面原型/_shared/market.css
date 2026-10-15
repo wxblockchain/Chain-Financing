@@ -393,6 +393,33 @@
 .mk-network{display:inline-flex;align-items:center;gap:var(--sp-2);font-family:var(--sans);font-size:var(--fs-12);line-height:1.4;white-space:nowrap;color:var(--text)}
 .mk-network[data-network="ETH"] .mk-coin{color:var(--violet);background:var(--violet-bg);border-color:var(--violet-border)}
 .mk-network[data-network="TRON"] .mk-coin{color:var(--danger);background:var(--danger-bg);border-color:var(--danger-border)}
+/* Money is read as a value with a quiet, explicit unit. Repeated rows omit icons. */
+[data-market-redesign] .mk-money{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:0 var(--sp-1);max-width:100%;vertical-align:baseline;line-height:1.4;letter-spacing:0}
+[data-market-redesign] .mk-money-number{font-family:var(--numeric,var(--mono));font-weight:500;font-variant-numeric:lining-nums tabular-nums;letter-spacing:-.015em;white-space:nowrap}
+[data-market-redesign] .mk-money-unit{font-family:var(--sans);font-size:var(--fs-11);font-weight:450;letter-spacing:.02em;color:var(--muted);white-space:nowrap}
+[data-market-redesign] .mk-money>.mk-coin{align-self:center;color:var(--muted);background:var(--card);border-color:var(--border);margin-right:var(--sp-1)}
+[data-market-redesign] .mk-overview .stat-strip .s:first-child .mk-money>.mk-coin{color:var(--muted);background:var(--card);border-color:var(--border)}
+[data-market-redesign] .mk-money-peek{position:relative;max-width:100%;font-size:inherit}
+[data-market-redesign] .mk-money-peek>summary{display:flex;align-items:center;gap:var(--sp-2);list-style:none;cursor:pointer;border-radius:var(--radius-xs)}
+[data-market-redesign] .mk-money-peek>summary::-webkit-details-marker{display:none}
+[data-market-redesign] .mk-money-peek>summary::after{content:"";width:5px;height:5px;flex:none;border-right:1px solid var(--muted);border-bottom:1px solid var(--muted);transform:rotate(45deg);margin-top:calc(-1 * var(--sp-1))}
+[data-market-redesign] .mk-money-peek[open]>summary::after{transform:rotate(225deg);margin-top:var(--sp-1)}
+[data-market-redesign] .mk-money-peek>summary:hover .mk-money-number{color:var(--accent)}
+[data-market-redesign] .mk-money-peek>summary:focus-visible{outline:2px solid var(--accent);outline-offset:var(--sp-1)}
+[data-market-redesign] .mk-money-exact{position:absolute;z-index:8;left:0;top:calc(100% + var(--sp-2));width:max-content;max-width:calc(100vw - var(--sp-8));padding:var(--sp-3) var(--sp-4);background:var(--card);border:1px solid var(--border-strong);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);color:var(--text);font-size:var(--fs-16)}
+[data-market-redesign] .mk-money-exact>span:first-child{display:block;font-size:var(--fs-11);font-family:var(--sans);font-weight:400;color:var(--muted);margin-bottom:var(--sp-1)}
+[data-market-redesign] .stat-strip .s:last-child .mk-money-exact{left:auto;right:0}
+[data-market-redesign] .listzone .mk-money{font-size:var(--fs-13);justify-content:flex-end}
+[data-market-redesign] .listzone[data-view="cards"] .mk-money{font-size:var(--type-card-number,var(--fs-22));justify-content:flex-start}
+[data-market-redesign] .ls-detail .ls-stats .mk-money{max-width:100%}
+@media(max-width:414px){
+  [data-market-redesign] .listzone[data-view="cards"] :is(.am-tbl td:nth-child(6),.am-tbl td:nth-child(7),.ls-market-table td:nth-child(4),.ls-market-table td:nth-child(5)){grid-column:1 / -1;text-align:left}
+  [data-market-redesign] .listzone[data-view="cards"] :is(.am-tbl td:nth-child(6),.am-tbl td:nth-child(7),.ls-market-table td:nth-child(4),.ls-market-table td:nth-child(5)) .cell-wrap{align-items:flex-start}
+}
+@media(max-width:360px){
+  [data-market-redesign] .mk-overview .stat-strip{grid-template-columns:minmax(0,1fr)}
+  [data-market-redesign] .stat-strip .s:last-child .mk-money-exact{left:0;right:auto}
+}
 [data-market-redesign] .am-summary .s:nth-child(3) .v{color:var(--warn)}
 [data-market-redesign] .ls-market-stats .s:nth-child(3) .v,[data-market-redesign] .ls-detail .ls-stats .s:nth-child(3) .v{color:var(--info)}
 [data-market-redesign] .am-market-page .am-tbl th:nth-child(1){width:9%}

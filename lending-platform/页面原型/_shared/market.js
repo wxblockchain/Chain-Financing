@@ -22,6 +22,27 @@
     if (!shapes[code]) return E(code);
     return '<span class="mk-currency" data-currency="'+E(code)+'"><span class="mk-coin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+shapes[code]+'</svg></span><span>'+E(code)+'</span></span>';
   }
+  // Amounts have one reading order. Currency-only labels keep currency().
+  // Compact notation is reserved for aggregate overviews, never transactions.
+  function amountText(text,code,withIcon) {
+    const coin=withIcon&&shapes[code]?'<span class="mk-coin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+shapes[code]+'</svg></span>':'';
+    return '<span class="mk-money" data-currency="'+E(code)+'">'+coin+'<span class="mk-money-number">'+E(text)+'</span><span class="mk-money-unit">'+E(code)+'</span></span>';
+  }
+  function amount(value, code, options) {
+    const opts=options||{}, n=Number(value);
+    if(value==null||!Number.isFinite(n))return '—';
+    code=String(code||'USD').toUpperCase();
+    const full=CF.fmtAmt(n), units=[[1e9,'B'],[1e6,'M'],[1e3,'K']];
+    let display=full;
+    if(opts.compact){
+      const unit=units.find(([scale])=>Math.abs(n)>=scale || (Math.abs(n)>=scale/1000 && Number((Math.abs(n)/(scale/1000)).toFixed(2))>=1000));
+      if(unit)display=(n/unit[0]).toFixed(2)+unit[1];
+    }
+    const markup=amountText(display,code,opts.icon);
+    if(!opts.compact)return markup;
+    const label=L('Full amount','完整金额');
+    return '<details class="mk-money-peek"><summary title="'+E(full+' '+code)+'" aria-label="'+E(full+' '+code+' · '+label)+'">'+markup+'</summary><div class="mk-money-exact"><span>'+label+'</span>'+amount(n,code)+'</div></details>';
+  }
   function network(code) {
     code=String(code).toUpperCase();
     const name={ETH:'Ethereum',TRON:'TRON'}[code]||code;
@@ -52,12 +73,12 @@
     const summary = parts.map(p=>p.label+': '+CF.fmtAmt(p.value)+' '+(suffix||'')).join('; ');
     return '<section class="mk-distribution"><div class="mk-chart-head"><h2>'+icon('chart')+E(title)+'</h2><span>'+L('Current results','当前结果')+'</span></div><div class="mk-stackbar" role="img" aria-label="'+E(title+'. '+summary)+'">'+parts.map(p=>'<span data-tone="'+p.tone+'" style="flex-grow:'+Math.max(0,p.value)+'" title="'+E(p.label)+': '+(total?(p.value/total*100).toFixed(1):'0.0')+'%"></span>').join('')+'</div><div class="mk-legend">'+parts.map(p=>'<button type="button" data-act="'+action+'" data-v="'+p.key+'" aria-pressed="'+(selected===p.key)+'" aria-label="'+E(L('Filter: ','筛选：')+p.label)+'"><i data-tone="'+p.tone+'" aria-hidden="true"></i><span>'+E(p.label)+'</span><b class="mono">'+(total?(p.value/total*100).toFixed(1):'0.0')+'%</b></button>').join('')+'</div></section>';
   }
-  CF.market = {currency, network, icon, views, distribution};
+  CF.market = {currency, amount, network, icon, views, distribution};
 
   // Currency decoration is restricted to the rebuilt pages and their dialogs.
   // It only adds presentation to text, never changes input values or formatting.
   let queued=false;
-  const pattern=/\b(USD|EUR|JPY|CNY|GBP|USDT|USDC|ETH|TRON)\b/g;
+  const pattern=/(-?\d[\d,]*(?:\.\d+)?)\s+(USD|EUR|JPY|CNY|GBP|USDT|USDC|ETH|TRON)\b|\b(USD|EUR|JPY|CNY|GBP|USDT|USDC|ETH|TRON)\b/g;
   function decorate() {
     queued=false;
     const active=/^#\/(assets|marketplace|project)(?:\/|\?|$)/.test(location.hash);
@@ -83,7 +104,7 @@
       const nodes=[];
       while(walker.nextNode()) {
         const n=walker.currentNode, parent=n.parentElement;
-        if(!parent||parent.closest('.mk-currency,.mk-network,.ico-chip,svg,script,style,textarea,select,option,.hash,.sr-only,[contenteditable],.mk-coin'))continue;
+        if(!parent||parent.closest('.mk-currency,.mk-money,.mk-network,.ico-chip,svg,script,style,textarea,select,option,.hash,.sr-only,[contenteditable],.mk-coin'))continue;
         pattern.lastIndex=0;
         if(pattern.test(n.nodeValue))nodes.push(n);
       }
@@ -92,7 +113,8 @@
         pattern.lastIndex=0;
         for(const m of text.matchAll(pattern)){
           fragment.append(document.createTextNode(text.slice(start,m.index)));
-          const holder=document.createElement('template');holder.innerHTML=currency(m[0]);
+          // Preserve the literal numeric string, including six-decimal gas fees.
+          const holder=document.createElement('template');holder.innerHTML=m[1]?amountText(m[1],m[2],false):currency(m[3]);
           fragment.append(holder.content);start=m.index+m[0].length;
         }
         fragment.append(document.createTextNode(text.slice(start)));n.replaceWith(fragment);
@@ -105,4 +127,11 @@
   function observe(){['content','layers'].forEach(id=>{const node=document.getElementById(id);if(node)observer.observe(node,{childList:true,subtree:true});});}
   observe();schedule();window.addEventListener('hashchange',schedule);
   document.addEventListener('change',e=>{if(e.target.matches('select'))schedule();});
+  document.addEventListener('click',e=>{
+    document.querySelectorAll('.mk-money-peek[open]').forEach(p=>{if(!p.contains(e.target))p.open=false;});
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Escape')return;
+    document.querySelectorAll('.mk-money-peek[open]').forEach(p=>{p.open=false;if(p.contains(document.activeElement))p.querySelector('summary').focus({preventScroll:true});});
+  });
 })(window.CF);

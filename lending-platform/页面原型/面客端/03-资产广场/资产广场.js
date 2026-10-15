@@ -496,7 +496,7 @@
     }
     var summary = '<div class="mk-overview"><div class="stat-strip am-summary">' +
       '<div class="s"><div class="k">' + L("Token value", "代币价值") + '</div>' +
-      statV(CF.market.currency("USD") + '<span>' + CF.fmtAmt(value) + '</span>') +
+      statV(CF.market.amount(value,"USD",{compact:true,icon:true})) +
       '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + '</div></div>' +
       '<div class="s"><div class="k">' + L("Token amount", "代币数量") + '</div>' + statV(quantity(amount)) +
       '<div class="n">' + L("tokens · void tokens included", "枚 · 含已失效代币") + '</div></div>' +
@@ -591,8 +591,7 @@
       '<td data-label="' + esc(L("Token type", "代币类型")) + '">' + esc(tokenKind()) + "</td>" +
       '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="am-r"><div class="cell-wrap am-number"><span class="num">' + quantity(t.qty) +
         '</span><span class="cell-sub">' + L("tokens", "枚") + '</span></div></td>' +
-      '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="am-r"><div class="cell-wrap am-number"><span class="num am-val">' + CF.fmtAmt(t.val) +
-        '</span><span class="cell-sub">USD</span></div></td>' +
+      '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="am-r"><div class="cell-wrap am-number">' + CF.market.amount(t.val,"USD") + '</div></td>' +
       '<td data-label="' + esc(L("Token status", "代币状态")) + '">' + tsTag(t) + "</td>" +
       '<td data-label="' + esc(L("Pledge status", "质押状态")) + '">' + psTag(t) + "</td>" +
       '<td data-label="' + esc(L("Minted at", "铸造时间")) + '" class="am-at"><span class="am-stamp">' + stamp(t.at) + '</span></td>' +
@@ -642,7 +641,7 @@
 
     var info = section(L("Token information", "代币信息"), dl([
       [L("Token amount", "代币数量"), '<span class="num">' + quantity(t.qty) + L(" tokens", " 枚") + "</span>"],
-      [L("Token value", "代币价值"), '<span class="num">' + CF.fmtAmt(t.val, "USD") + "</span>"],
+      [L("Token value", "代币价值"), CF.market.amount(t.val,"USD")],
       [L("Token type", "代币类型"), esc(tokenKind())],
       /* 质押链只读，与机构账户的结算收款链是两个概念，不合用一个「链」字段。 */
       [L("Pledge chain", "质押链"), CF.icoChip(AM.CHAIN, {glyph: CF.ICON.chain, hue: 3, small: true})],

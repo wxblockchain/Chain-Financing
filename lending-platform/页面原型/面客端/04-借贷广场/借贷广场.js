@@ -148,7 +148,7 @@
   function quoteReason(p){const n=D.numbers(p),d=D.current(p);return S.role==='asset'?L('Asset holders cannot submit quotes.','资产方不可提交报价。'):n.grade==='short'?L('Pledge shortfall','质押不足'):p.expired?L('Project term expired','项目已到期'):d&&d.state==='quoted'?L('An active quote already exists','已有在途报价'):L('This request is not open for quotes','当前需求不可报价');}
   function listColumns(){return [L('Network','网络'),L('Financing project','融资项目'),L('Asset holder','资产方企业'),L('Eligible borrowing limit','有效质押额'),L('Current request','当前融资需求'),L('Pledge sufficiency','质押情况'),L('Project status','项目状态'),L('Published','发布时间')];}
   function projectRow(p){const n=D.numbers(p),r=requestInfo(p),heads=listColumns();
-    const money=v=>'<span class="ls-amt"><b class="mono">'+CF.fmtAmt(v)+'</b>'+CF.market.currency('USD')+'</span>';
+    const money=v=>CF.market.amount(v,'USD');
     const demand=r.d?money(r.amount)+small(tag(r.d.state)):'<span class="muted">'+L('No active request','暂无融资需求')+'</span>';
     const coverage=tag(n.grade)+(n.grade==='short'?small(L('Shortfall ','缺口 ')+usd(n.gap)):'');
     const hue=n.grade==='short'?4:n.grade==='surplus'?2:1;
@@ -165,9 +165,9 @@
     const demand=open.reduce((n,p)=>n+(D.current(p).amount||0),0),pool=rows.reduce((n,p)=>n+D.numbers(p).limit,0),outstanding=rows.reduce((n,p)=>n+(p.balance||0),0);
     const cell=(k,v,note)=>'<div class="s"><div class="k">'+k+'</div><div class="v">'+(available?v:'—')+'</div><div class="n">'+note+'</div></div>';
     const stats='<div class="stat-strip ls-market-stats">'+
-      cell(L('Amount awaiting quotes','待报价需求金额'),CF.market.currency('USD')+'<span>'+CF.fmtAmt(demand)+'</span>',L(open.length+' requests awaiting quotes',open.length+' 笔待报价需求'))+
-      cell(L('Eligible borrowing limit','有效质押额'),CF.fmtAmt(pool),CF.market.currency('USD'))+
-      cell(L('Outstanding financing','已融资余额'),CF.fmtAmt(outstanding),CF.market.currency('USD'))+'</div>';
+      cell(L('Amount awaiting quotes','待报价需求金额'),CF.market.amount(demand,'USD',{compact:true,icon:true}),L(open.length+' requests awaiting quotes',open.length+' 笔待报价需求'))+
+      cell(L('Eligible borrowing limit','有效质押额'),CF.market.amount(pool,'USD',{compact:true,icon:true}),'')+
+      cell(L('Outstanding financing','已融资余额'),CF.market.amount(outstanding,'USD',{compact:true,icon:true}),'')+'</div>';
     const parts=[['raising','Fundraising','募集中','accent'],['locked','Locked','已锁定','violet'],['financing','Financing','融资中','info'],['closed','Closed','已关闭','muted'],['settled','Settled','已结清','warn']].map(x=>({key:x[0],label:L(x[1],x[2]),value:rows.filter(p=>p.state===x[0]).length,tone:x[3]}));
     return '<div class="mk-overview">'+stats+(available?CF.market.distribution(L('Projects by status','项目状态分布'),parts,'ls-chart-status',filter.status,L('projects','个项目')):'<div class="mk-distribution muted">'+L('Composition unavailable','构成暂不可用')+'</div>')+'</div>';
   }
@@ -182,7 +182,7 @@
   /* 额度六项：沿用原有的开放式数字条（不加卡片框），常驻四项核心数字、整行不折断；总质押额与待审明细收进下方的折叠行。 */
   function stats(p){const n=D.numbers(p),d=D.current(p);
     const parts=tokenParts(p),reviewPart=parts.find(x=>x.key==='review'),rejectedPart=parts.find(x=>x.key==='rejected');
-    const money=v=>'<span class="u">USD</span>'+CF.fmtAmt(v);
+    const money=v=>CF.market.amount(v,'USD');
     const cell=(k,v,note,tone)=>'<div class="s"'+(tone?' data-tone="'+tone+'"':'')+'><div class="k">'+k+'</div><div class="v">'+v+'</div>'+(note?'<div class="n">'+note+'</div>':'')+'</div>';
     const core='<div class="stat-strip ls-stats">'
       +cell(L('Eligible borrowing limit','有效质押额'),money(n.limit),'','accent')
