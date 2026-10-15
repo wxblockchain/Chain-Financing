@@ -11,9 +11,12 @@
       balance: 0, published: published, expiry: "2027-08-28", expires: D.endOf("2027-08-28"),
       demands: index ? [] : [{ id: p.id + "-01", amount: 100000, state: "open", at: published }] }));
   });
-  AM.TOKENS.filter(function (t) { return AM.isPledged(t) && t.pl.project.published; }).forEach(function (t) {
+  /* 有已质押持有方、且所属项目已发布的代币，放进借贷演示模型的对应项目，供「所属融资项目」跳转。 */
+  AM.TOKENS.forEach(function (t) {
+    var rec = (AM.PLEDGES[t.no] || []).filter(function (r) { return (r.state === "in" || r.state === "exiting") && r.project.published; })[0];
+    if (!rec) return;
     D.tokens = D.tokens.filter(function (x) { return x.id !== t.no; });
     D.tokens.push({ id: t.no, owner: "entity-demo-b", kind: "ar", units: t.qty, symbol: "AR-DEMO", value: t.val,
-      valid: t.ts === "valid", pool: t.pl.project.id, pledge: "pledged", buyer: AM.BUYERS[t.buyer], due: t.to, from: t.from, tx: t.mintTx });
+      valid: t.ts === "valid", pool: rec.project.id, pledge: "pledged", buyer: AM.BUYERS[t.buyer], due: t.to, from: t.from, tx: t.mintTx });
   });
 })(window.CF);

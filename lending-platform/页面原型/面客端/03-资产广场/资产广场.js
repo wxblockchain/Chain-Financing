@@ -31,9 +31,9 @@
   function readView() {
     var h = isList() ? hashPath() : CF.ENTRY[LIST] || "/assets";
     var q = new URLSearchParams(h.split("?")[1] || "");
-    var v = { ts: "", ps: "", kind: "", holder: "", q: "", sort: "at", dir: "desc",
+    var v = { ts: "", kind: "", issuer: "", q: "", sort: "at", dir: "desc",
       loaded: 20, scroll: 0, outer: 0, anchor: "", offset: 0 };
-    ["ts", "ps", "kind", "holder", "q", "sort", "dir", "anchor"].forEach(function (key) {
+    ["ts", "kind", "issuer", "q", "sort", "dir", "anchor"].forEach(function (key) {
       if (q.has(key)) v[key] = q.get(key);
     });
     if (["at", "val", "due"].indexOf(v.sort) < 0) v.sort = "at";
@@ -46,7 +46,7 @@
   }
   function viewHash(v) {
     var q = new URLSearchParams();
-    ["ts", "ps", "kind", "holder", "q"].forEach(function (key) { if (v[key]) q.set(key, v[key]); });
+    ["ts", "kind", "issuer", "q"].forEach(function (key) { if (v[key]) q.set(key, v[key]); });
     if (v.sort !== "at" || v.dir !== "desc") { q.set("sort", v.sort); q.set("dir", v.dir); }
     if (v.loaded > 20) q.set("loaded", v.loaded);
     ["scroll", "outer", "offset"].forEach(function (key) { if (v[key]) q.set(key, key === "offset" ? Math.round(v[key] * 1000) / 1000 : Math.round(v[key])); });
@@ -179,11 +179,11 @@
     var panel = document.getElementById("demoPanel");
     if (!panel || document.getElementById("am-demo")) return;
     if (curTokenNo()) {
-      panel.insertAdjacentHTML("beforeend", '<div class="grp" id="am-demo"><h5>' + L("Holding data · fictional samples", "持有资料 · 虚构样例") + '</h5>' +
-        [["sample", L("Single-address sample", "单地址样例")], ["loading", L("Loading", "加载中")], ["error", L("Load failed", "加载失败")],
-         ["empty", L("Complete empty set", "完整空集合")], ["zero", L("Zero-balance historical address", "零余额历史地址")],
-         ["missing", L("Missing fields", "字段缺失")], ["conflict", L("Relation does not check out", "关系核对不上")],
-         ["multi", L("More than one current address", "多个当前地址")], ["unavailable", L("Unavailable", "资料不可用")]].map(function (x) {
+      panel.insertAdjacentHTML("beforeend", '<div class="grp" id="am-demo"><h5>' + L("Holders · fictional responses", "持有方 · 虚构响应") + '</h5>' +
+        [["sample", L("Normal", "正常")], ["loading", L("Loading", "加载中")], ["error", L("Load failed", "读取失败")],
+         ["empty", L("No holders", "持有方为空")], ["zero", L("Zero-balance addresses only", "只有零余额地址")],
+         ["mismatch", L("Total ≠ token amount", "合计≠代币数量")], ["missing", L("Holder missing address", "持有方缺地址")],
+         ["conflict", L("Pledge record mismatch", "质押记录核对不上")], ["unavailable", L("Unavailable", "资料不可用")]].map(function (x) {
           return '<button class="btn" data-act="am-holding-state" data-v="' + x[0] + '">' + x[1] + '</button>';
         }).join("") + '<h5>' + L("Open a sample", "打开样例") + '</h5>' +
         AM.SHOWCASE.map(function (no) { return '<button class="btn" data-act="am-holding-token" data-v="' + no + '">' + no + '</button>'; }).join("") + '</div>');
@@ -226,7 +226,7 @@
   }, true);
   window.addEventListener("pagehide", rememberPosition);
 
-  function hasFilter(v) { return !!(v.ts || v.ps || v.kind || v.holder || v.q); }
+  function hasFilter(v) { return !!(v.ts || v.kind || v.issuer || v.q); }
   function tokenNoFromPath(path) {
     var m = path.match(/^\/assets\/([^/?#]+)(?:\?|$)/);
     if (!m) return null;
@@ -247,7 +247,8 @@
   };
 
   function nm(pair) { return L(pair[0], pair[1]); }
-  function holderName(t) { return nm(AM.HOLDERS[t.holder]); }
+  function issuerName(t) { return nm(AM.ISSUERS[t.issuer]); }
+  function sellerName(t) { return nm(AM.SELLERS[t.seller]); }
   function buyerName(t) { return nm(AM.BUYERS[t.buyer]); }
   /* 代币名称未下发时展示合约名称，不自造符号。 */
   function tokenName(t) { return t.name || nm(AM.CONTRACT.name); }
@@ -282,30 +283,14 @@
   function stampTz(iso) { return '<span class="num">' + stamp(iso) + '</span> <span class="muted">(' + esc(tzName()) + ")</span>"; }
   function dash() { return '<span class="faint">—</span>'; }
 
-  /* 代币状态取上游同步数据；质押状态只看一件事——代币是否在项目质押合约内且仍属该项目。
-     质押审核结论、上链过程态、解押过程态和业务释放都只参与收敛，不出现在页面上。 */
-  function pledgeOf(t) {
-    if (AM.isPledged(t)) return { on: true, project: t.pl.project };
-    return { on: false, project: null };
-  }
   function tsTag(t) {
     return t.ts === "valid" ? CF.tag("ok", L("Valid", "有效")) : CF.tag("", L("Void", "失效"));
-  }
-  function psTag(t) {
-    return pledgeOf(t).on ? CF.tag("accent", L("Pledged", "已质押")) : CF.tag("", L("Not pledged", "未质押"));
   }
   function tsWhy(t) {
     return t.ts === "valid"
       ? L("Underlying receivable falls due on " + t.to, "对应应收账款于 " + t.to + " 到期")
       : L("Underlying receivable matured on " + t.to, "对应应收账款已于 " + t.to + " 到期");
   }
-  function psWhy(t) {
-    var p = pledgeOf(t);
-    if (!p.on) return L("Not pledged to any financing project", "当前未质押于任何融资项目");
-    if (!p.project.published) return L("The financing project is not public yet", "所属融资项目尚未公开");
-    return L("Pledged to " + nm(p.project.name), "质押于" + nm(p.project.name));
-  }
-
   function shortHash(h) { return h ? h.slice(0, 10) + "…" + h.slice(-8) : ""; }
 
   function copyBtn(value, label) {
@@ -325,9 +310,48 @@
   function cents(value) { return Math.round(value * 100); }
   function sum(rows, key) { return rows.reduce(function (n, t) { return n + cents(t[key]); }, 0) / 100; }
   function quantity(value) { return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-  /* 持有地址由发行平台同步，默认就有数据；其他响应情况留在评审工具里切换。 */
+  /* 持有方：代币发行平台给出当前全部持有方，借贷平台给出质押记录，两者按代币编号核对后逐个展示。
+     默认就有数据；加载中、读取失败和各类核对不上的情形留在评审工具里切换。 */
   var holdingMode = "sample", holdingLoad = null, holdingTimer = 0;
   function resetHoldings() { clearTimeout(holdingTimer); holdingLoad = null; }
+  var CONTRACTS = Object.keys(AM.PLEDGE_CONTRACT).map(function (k) { return AM.PLEDGE_CONTRACT[k].toLowerCase(); });
+  /* 返回核对后的持有方行；任一项核对不上返回 null，整块按「持有方信息暂不可用」处理。 */
+  function holderRows(t) {
+    var rows = (AM.HOLDINGS[t.no] || []).map(function (r) { return Object.assign({}, r); });
+    var pledges = (AM.PLEDGES[t.no] || []).map(function (r) { return Object.assign({}, r); });
+    if (holdingMode === "unavailable") return null;
+    if (holdingMode === "empty") rows = [];
+    if (holdingMode === "zero") rows = rows.map(function (r) { return Object.assign(r, { qty: 0 }); });
+    if (holdingMode === "mismatch" && rows.length) rows[rows.length - 1].qty = Math.round(rows[rows.length - 1].qty * 50) / 100;
+    if (holdingMode === "missing" && rows.length) rows[0].address = "";
+    if (holdingMode === "conflict") {
+      if (pledges.length) pledges.pop();
+      else if (rows.length) rows[0].address = AM.PLEDGE_CONTRACT[AM.PROJECTS[0].id];
+    }
+    var live = rows.filter(function (r) { return typeof r.qty === "number" && r.qty > 0; });
+    if (!live.length || live.length !== rows.length) return null;
+    var seen = {};
+    for (var k = 0; k < rows.length; k++) {
+      var a = String(rows[k].address || "").toLowerCase();
+      if (!/^0x[0-9a-f]{40}$/.test(a) || seen[a]) return null;
+      seen[a] = true;
+    }
+    if (cents(sum(rows, "qty")) !== cents(t.qty)) return null;
+    var out = [];
+    for (k = 0; k < rows.length; k++) {
+      var addr = rows[k].address.toLowerCase();
+      var rec = pledges.filter(function (p) { return p.contract.toLowerCase() === addr; })[0];
+      /* 合约地址持有却无质押记录，或有记录而合约不在持有方中，都核对不上。 */
+      if (CONTRACTS.indexOf(addr) >= 0 && !rec) return null;
+      var pledged = !!rec && (rec.state === "in" || rec.state === "exiting");
+      out.push({ address: rows[k].address, qty: rows[k].qty,
+        value: Math.round(rows[k].qty * t.val / t.qty * 100) / 100,
+        pledged: pledged, project: pledged ? rec.project : null });
+    }
+    if (pledges.some(function (p) { return !seen[p.contract.toLowerCase()]; })) return null;
+    /* 排列：持有数量从多到少，同量按地址，同一条件下顺序稳定。 */
+    return out.sort(function (x, y) { return y.qty - x.qty || (x.address > y.address ? 1 : -1); });
+  }
   function holdingTable(t) {
     var key = t.no + ":" + holdingMode;
     if (!holdingLoad || holdingLoad.key !== key) {
@@ -338,42 +362,23 @@
         var y = scrollY; CF.render(); requestAnimationFrame(function () { window.scrollTo(0, y); });
       }, 400);
     }
-    var title = L("Token holding addresses", "代币持有地址"), body;
+    var title = L("Holders", "持有方"), body;
     if (holdingLoad.phase === "loading") body = '<div role="status" aria-live="polite">' + CF.skelTable(2) + '</div>';
-    else if (holdingMode === "error") body = '<div role="alert">' + CF.empty(L("Could not load holding information", "持有信息加载失败"), "",
+    else if (holdingMode === "error") body = '<div role="alert">' + CF.empty(L("Could not load holders", "持有方信息加载失败"), "",
       '<button class="btn" data-act="am-holding-retry">' + L("Retry", "重试") + '</button>') + '</div>';
     else {
-      var data = AM.HOLDING_SAMPLES[t.no];
-      /* 异常响应都由评审工具制造，演示数据本身不预置一份对不上的资料。
-         空集合、零余额历史地址、字段缺失、关系对不上、当前多地址，最终都收敛为
-         「持有信息暂不可用」：不填 0、不造地址、也不说成正常的「暂无持有地址」。 */
-      if (data) {
-        if (holdingMode === "empty") data = { complete: true, rows: [] };
-        if (holdingMode === "zero") data = { complete: true, rows: data.rows.map(function (r) { return Object.assign({}, r, { qty: 0, value: 0 }); }) };
-        if (holdingMode === "missing") data = { complete: true, rows: data.rows.map(function (r) { return Object.assign({}, r, { qty: null }); }) };
-        if (holdingMode === "conflict") data = { complete: true, rows: data.rows.map(function (r) { return Object.assign({}, r, { pledged: !r.pledged }); }) };
-        if (holdingMode === "multi") data = { complete: true, rows: data.rows.concat(data.rows.map(function (r) {
-          return Object.assign({}, r, { address: r.address.slice(0, 24) + "d1f0a7b39c5e42" + r.address.slice(38) });
-        })) };
-      }
-      var valid = holdingMode !== "unavailable" && data && data.complete === true && Array.isArray(data.rows) && data.rows.length === 1;
-      if (valid) valid = data.rows.every(function (r) {
-        if (!r || typeof r !== "object") return false;
-        var p = pledgeOf(t);
-        return /^0x[0-9a-fA-F]{40}$/.test(r.address) && typeof r.qty === "number" && Number.isFinite(r.qty) && r.qty > 0 &&
-          typeof r.value === "number" && Number.isFinite(r.value) && r.value >= 0 && typeof r.pledged === "boolean" &&
-          r.pledged === p.on && (r.pledged ? r.project && p.project && r.project.id === p.project.id && r.project.published === p.project.published &&
-            (!r.project.published || Array.isArray(r.project.name) && r.project.name.length === 2 && r.project.name.every(function (n) { return typeof n === "string" && n.trim(); })) : r.project === null);
-      }) && cents(sum(data.rows, "qty")) === cents(t.qty) && cents(sum(data.rows, "value")) === cents(t.val);
-      if (!valid) body = CF.empty(L("Holding information is temporarily unavailable", "持有信息暂不可用"), "", "");
+      var rows = holderRows(t);
+      if (!rows) body = CF.empty(L("Holder information is temporarily unavailable", "持有方信息暂不可用"), "", "");
       else {
-        var heads = [L("Address", "地址"), L("Holding amount", "持有数量"), L("Corresponding value", "对应价值"), L("Pledge status", "质押状态"), L("Financing project", "所属融资项目")];
+        var heads = [L("Holder", "持有方"), L("Holding amount", "持有数量"), L("Corresponding value", "对应价值"), L("Pledge status", "质押状态"), L("Financing project", "所属融资项目")];
         body = '<div class="tablewrap"><table class="tbl resp am-holdings"><thead><tr>' + heads.map(function (h) { return '<th scope="col">' + h + '</th>'; }).join("") + '</tr></thead><tbody>' +
-          data.rows.map(function (r) {
+          rows.map(function (r) {
             var project = !r.pledged ? dash() : !r.project.published ? '<span class="muted">' + L("Not public yet", "所属融资项目尚未公开") + "</span>" :
               '<a class="btn-link" href="#/project/' + esc(r.project.id) + '" data-act="am-project" data-v="' + esc(r.project.id) + '">' + esc(nm(r.project.name)) + '</a>';
-            var values = ['<span class="copy-pair"><span class="mono am-address">' + esc(r.address.slice(0, 6) + "…" + r.address.slice(-4)) + '</span>' +
-              CF.copyBtn("am-address-copy", r.address, L("Copy address", "复制地址")) + '</span>', quantity(r.qty) + L(" tokens", " 枚"), CF.fmtAmt(r.value, "USD"), CF.tag(r.pledged ? "accent" : "", r.pledged ? L("Pledged", "已质押") : L("Not pledged", "未质押")), project];
+            var values = ['<span class="copy-pair"><span class="mono am-address" title="' + esc(r.address) + '">' + esc(r.address.slice(0, 6) + "…" + r.address.slice(-4)) + '</span>' +
+              CF.copyBtn("am-address-copy", r.address, L("Copy holder address", "复制持有方地址")) + '</span>',
+              quantity(r.qty) + L(" tokens", " 枚"), CF.fmtAmt(r.value, "USD"),
+              CF.tag(r.pledged ? "accent" : "", r.pledged ? L("Pledged", "已质押") : L("Not pledged", "未质押")), project];
             return '<tr>' + values.map(function (v, i) { return '<td data-label="' + esc(heads[i]) + '"><div class="cell-wrap">' + v + '</div></td>'; }).join("") + '</tr>';
           }).join("") + '</tbody></table></div>';
       }
@@ -402,12 +407,11 @@
   function anyOf(value, candidate) { var l = list(value); return !l.length || l.indexOf(candidate) >= 0; }
   function match(t, v) {
     if (!anyOf(v.ts, t.ts)) return false;
-    if (!anyOf(v.ps, pledgeOf(t).on ? "pledged" : "unpledged")) return false;
     if (!anyOf(v.kind, "ar")) return false;
-    if (!anyOf(v.holder, String(t.holder))) return false;
+    if (!anyOf(v.issuer, String(t.issuer))) return false;
     if (v.q) {
       var k = v.q.trim().toLowerCase();
-      var hay = [t.no, AM.HOLDERS[t.holder][0], AM.HOLDERS[t.holder][1], t.mintTx].join(" ").toLowerCase();
+      var hay = [t.no, AM.ISSUERS[t.issuer][0], AM.ISSUERS[t.issuer][1], t.mintTx].join(" ").toLowerCase();
       if (hay.indexOf(k) < 0) return false;
     }
     return true;
@@ -507,17 +511,15 @@
         {key:'void',label:L('Void','失效'),value:voidAmount,tone:'muted'}
       ], 'am-chart-status', v.ts, L('tokens','枚'))) + '</div>';
 
-    var holders = AM.HOLDERS.map(function (h, i) { return [String(i), nm(h)]; });
+    var issuers = AM.ISSUERS.map(function (h, i) { return [String(i), nm(h)]; });
     var filters = '<div class="filterbar am-filters"><div class="am-filter-options">' +
       CF.filterMenu("am-ts", L("Token status", "代币状态"),
         [["valid", L("Valid", "有效")], ["void", L("Void", "失效")]], list(v.ts)) +
-      CF.filterMenu("am-ps", L("Pledge status", "质押状态"),
-        [["unpledged", L("Not pledged", "未质押")], ["pledged", L("Pledged", "已质押")]], list(v.ps)) +
       CF.filterMenu("am-kind", L("Token type", "代币类型"), [["ar", tokenKind()]], list(v.kind)) +
-      CF.filterMenu("am-holder", L("Asset originator", "资产方企业"), holders, list(v.holder)) +
+      CF.filterMenu("am-issuer", L("Issuer", "发行方"), issuers, list(v.issuer)) +
       sortField(v) + '</div>' +
-      CF.filterSearch("am-q", L("Token ID, originator or hash", "代币编号、资产方或哈希"), v.q,
-                      L("Token ID, asset originator or minting transaction hash", "代币编号、资产方企业名或铸造交易哈希")) +
+      CF.filterSearch("am-q", L("Token ID, issuer or hash", "代币编号、发行方或哈希"), v.q,
+                      L("Token ID, issuer name or minting transaction hash", "代币编号、发行方名称或铸造交易哈希")) +
       '<div class="fb-acts">' +
       '<button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
       '<button class="btn primary" type="button" data-act="am-search">' + L("Search", "查询") + "</button>" +
@@ -546,12 +548,11 @@
         '<th scope="col" class="mk-network-col">' + L("Network", "网络") + "</th>" +
         '<th scope="col">' + L("Token", "代币") + "</th>" +
         '<th scope="col">' + L("Token ID", "代币编号") + "</th>" +
-        '<th scope="col">' + L("Asset originator", "资产方企业") + "</th>" +
+        '<th scope="col">' + L("Issuer", "发行方") + "</th>" +
         '<th scope="col">' + L("Token type", "代币类型") + "</th>" +
         '<th scope="col" class="am-r">' + L("Token amount", "代币数量") + "</th>" +
         sortTh("val", L("Token value", "代币价值"), "am-r") +
         '<th scope="col">' + L("Token status", "代币状态") + "</th>" +
-        '<th scope="col">' + L("Pledge status", "质押状态") + "</th>" +
         sortTh("at", L("Minted at", "铸造时间"), "", '<span class="am-tz">' + esc(tzName()) + "</span>") +
         "</tr></thead><tbody>" +
         rows.slice(0, load.shown).map(listRow).join("") +
@@ -587,13 +588,12 @@
       '<td data-label="' + esc(L("Token ID", "代币编号")) + '"><div class="cell-wrap">' +
         '<button class="btn-link mono am-id" type="button" data-act="am-copy" data-v="' + esc(t.no) + '" aria-label="' +
         esc(L("Copy token ID: ", "复制代币编号：") + t.no) + '" title="' + L("Copy token ID", "复制代币编号") + '">' + esc(t.no) + "</button></div></td>" +
-      '<td data-label="' + esc(L("Asset originator", "资产方企业")) + '">' + esc(holderName(t)) + "</td>" +
+      '<td data-label="' + esc(L("Issuer", "发行方")) + '">' + esc(issuerName(t)) + "</td>" +
       '<td data-label="' + esc(L("Token type", "代币类型")) + '">' + esc(tokenKind()) + "</td>" +
       '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="am-r"><div class="cell-wrap am-number"><span class="num">' + quantity(t.qty) +
         '</span><span class="cell-sub">' + L("tokens", "枚") + '</span></div></td>' +
       '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="am-r"><div class="cell-wrap am-number">' + CF.market.amount(t.val,"USD") + '</div></td>' +
       '<td data-label="' + esc(L("Token status", "代币状态")) + '">' + tsTag(t) + "</td>" +
-      '<td data-label="' + esc(L("Pledge status", "质押状态")) + '">' + psTag(t) + "</td>" +
       '<td data-label="' + esc(L("Minted at", "铸造时间")) + '" class="am-at"><span class="am-stamp">' + stamp(t.at) + '</span></td>' +
       "</tr>";
   }
@@ -626,7 +626,6 @@
       ) + "</div>";
     }
 
-    var p = pledgeOf(t);
     var mark = tokenLogo(t, "am-mark");
 
     var overview = '<section class="card am-sec am-ov"><div class="card-b">' +
@@ -636,15 +635,15 @@
         copyBtn(t.no, L("Token ID", "代币编号")) + "</div></div></div>" +
       '<div class="am-ov-tags">' +
         '<div class="am-ov-tag">' + tsTag(t) + '<span class="tiny">' + esc(tsWhy(t)) + "</span></div>" +
-        '<div class="am-ov-tag">' + psTag(t) + '<span class="tiny">' + esc(psWhy(t)) + "</span></div>" +
       "</div></div></section>";
 
     var info = section(L("Token information", "代币信息"), dl([
+      [L("Issuer", "发行方"), esc(issuerName(t))],
+      [L("Token type", "代币类型"), esc(tokenKind())],
       [L("Token amount", "代币数量"), '<span class="num">' + quantity(t.qty) + L(" tokens", " 枚") + "</span>"],
       [L("Token value", "代币价值"), CF.market.amount(t.val,"USD")],
-      [L("Token type", "代币类型"), esc(tokenKind())],
-      /* 质押链只读，与机构账户的结算收款链是两个概念，不合用一个「链」字段。 */
-      [L("Pledge chain", "质押链"), CF.icoChip(AM.CHAIN, {glyph: CF.ICON.chain, hue: 3, small: true})],
+      /* 铸造链：代币铸造所在的链，只读。 */
+      [L("Minting chain", "铸造链"), CF.market.network(AM.CHAIN)],
       [L("Minted at", "铸造时间"), stampTz(t.at)],
       [L("Token contract", "代币发行合约"), '<div class="am-long"><span>' + esc(nm(AM.CONTRACT.name)) + "</span>" +
         /* 发行合约地址是链上查验的必要事实，完整展示、不缩略。 */
@@ -653,8 +652,8 @@
       [L("Minting transaction hash", "铸造交易哈希"), hashRow(t.mintTx), true]
     ]));
 
-    var origin = section(L("Underlying receivable", "原始资料信息"), dl([
-      [L("Asset originator", "资产方企业名"), esc(holderName(t))],
+    var origin = section(L("Basic information", "基础资料信息"), dl([
+      [L("Seller", "卖方企业名"), esc(sellerName(t))],
       [L("Buyer", "买方企业名"), esc(buyerName(t))],
       [L("Receivable amount", "应收账款金额"), '<span class="num">' + CF.fmtAmt(t.recvAmt, t.recvCcy) + "</span>"],
       [L("Underlying receivable term", "底层应收账款账期"), esc(t.from) + " – " + esc(t.to)],
@@ -675,7 +674,7 @@
     ]));
 
     var story = '<div class="mk-token-story">' +
-      '<div>' + CF.market.icon('asset') + '<span><b>' + L('Underlying receivable','底层应收账款') + '</b><small>' + esc(holderName(t)) + '</small></span></div>' +
+      '<div>' + CF.market.icon('asset') + '<span><b>' + L('Issuer','发行方') + '</b><small>' + esc(issuerName(t)) + '</small></span></div>' +
       '<div>' + CF.market.icon('clock') + '<span><b>' + L('Receivable term','应收账款账期') + '</b><small>' + esc(t.from) + ' – ' + esc(t.to) + '</small></span></div>' +
       '<div>' + CF.market.icon('shield') + '<span><b>' + L('On-chain record','链上记录') + '</b><small>' + CF.market.currency(AM.CHAIN) + ' · ' + L('Verify the transaction independently','请自行核验交易') + '</small></span></div></div>';
     return '<div class="am-detail">' + overview + story + info + origin + attest + holdingTable(t) + "</div>";
@@ -817,7 +816,7 @@
     } else if (act === "am-search") {
       v.q = document.getElementById("am-q").value.trim(); refocus = "am-q"; writeView(v);
     } else if (act === "clearfilter") {
-      v.ts = v.ps = v.kind = v.holder = v.q = ""; S.menu = null; writeView(v);
+      v.ts = v.kind = v.issuer = v.q = ""; S.menu = null; writeView(v);
     } else if (act === "retry") { cancelLoad(); S.st = "default"; CF.render(); }
   }, true);
   document.addEventListener("change", function (e) {
@@ -826,7 +825,7 @@
     var v = readView();
     var group = el.getAttribute("data-filter");
     if (group) {
-      var key = {"am-ts": "ts", "am-ps": "ps", "am-kind": "kind", "am-holder": "holder"}[group];
+      var key = {"am-ts": "ts", "am-kind": "kind", "am-issuer": "issuer"}[group];
       if (!key) return;
       v[key] = Array.from(document.querySelectorAll('[data-filter="' + group + '"]'))
         .filter(function (b) { return b.checked; }).map(function (b) { return b.value; }).join(",");

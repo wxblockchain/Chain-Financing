@@ -113,8 +113,8 @@
 [data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(4)::before,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(5)::before{flex:none}
 [data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(6),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(7){padding-block:var(--sp-3)}
 [data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(6) .num,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(7) .num{font-size:var(--fs-19);font-weight:450;color:var(--text)}
-[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(8)::before,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(9)::before{display:none}
-[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(10){grid-column:1 / -1;border-top:1px solid var(--border);padding-top:var(--sp-3);display:flex;justify-content:space-between;gap:var(--sp-3)}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(8)::before{display:none}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(9){grid-column:1 / -1;border-top:1px solid var(--border);padding-top:var(--sp-3);display:flex;justify-content:space-between;gap:var(--sp-3)}
 [data-market-redesign] .listzone[data-view="cards"] .am-id{min-height:32px;font-size:var(--fs-11)}
 [data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(3){grid-column:1 / -1}
 [data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(3)::before{display:none}
@@ -424,16 +424,15 @@
 }
 [data-market-redesign] .am-summary .s:nth-child(3) .v{color:var(--warn)}
 [data-market-redesign] .ls-market-stats .s:nth-child(3) .v,[data-market-redesign] .ls-detail .ls-stats .s:nth-child(3) .v{color:var(--info)}
-[data-market-redesign] .am-market-page .am-tbl th:nth-child(1){width:9%}
-[data-market-redesign] .am-market-page .am-tbl th:nth-child(2){width:12%}
-[data-market-redesign] .am-market-page .am-tbl th:nth-child(3){width:12%}
-[data-market-redesign] .am-market-page .am-tbl th:nth-child(4){width:8%}
-[data-market-redesign] .am-market-page .am-tbl th:nth-child(5){width:9%}
-[data-market-redesign] .am-market-page .am-tbl th:nth-child(6){width:10%}
-[data-market-redesign] .am-market-page .am-tbl th:nth-child(7){width:12%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(1){width:10%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(2){width:14%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(3){width:13%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(4){width:9%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(5){width:10%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(6){width:11%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(7){width:13%}
 [data-market-redesign] .am-market-page .am-tbl th:nth-child(8){width:7%}
-[data-market-redesign] .am-market-page .am-tbl th:nth-child(9){width:9%}
-[data-market-redesign] .am-market-page .am-tbl th:nth-child(10){width:12%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(9){width:13%}
 [data-market-redesign] .ls-market-page .ls-market-table th:nth-child(1){width:10%}
 [data-market-redesign] .ls-market-page .ls-market-table th:nth-child(2){width:18%}
 [data-market-redesign] .ls-market-page .ls-market-table th:nth-child(3){width:14%}
