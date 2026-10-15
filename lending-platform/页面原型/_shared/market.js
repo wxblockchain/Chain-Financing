@@ -2,6 +2,10 @@
 (function (CF) {
   'use strict';
   const E = CF.esc, L = CF.L;
+  // Approved WS-403 defaults. Explicit export overrides remain available.
+  const documentRoot = document.documentElement;
+  if (!documentRoot.hasAttribute('data-market-tone')) documentRoot.dataset.marketTone = 'blue';
+  if (!documentRoot.hasAttribute('data-market-type')) documentRoot.dataset.marketType = 'refined';
   const shapes = {
     USD: '<path d="M15 7.5c-1-1-2.1-1.5-3.8-1.5-2 0-3.5 1.1-3.5 2.8 0 4 8 1.8 8 6 0 1.8-1.7 3.2-4 3.2-1.8 0-3.3-.6-4.7-2M12 4v16"/>',
     EUR: '<path d="M17 6.3a6.6 6.6 0 1 0 0 11.4M5 10h10M5 14h9"/>',
@@ -30,6 +34,7 @@
       asset:'<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
       chart:'<path d="M4 4v16h16M8 15l4-6 4 3 4-7"/>',
       clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      chain:'<path d="m10 13 4-4M8 15l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 9l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/>',
       shield:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Zm-4 9 3 3 5-6"/>'
     };
     return '<svg class="mk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[name]||paths.asset)+'</svg>';

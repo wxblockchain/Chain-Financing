@@ -13,12 +13,17 @@ from pathlib import Path
 import argparse
 import re
 import json
+import base64
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--market-tone", choices=("dark", "blue"),
+                        help="Optional marketplace review palette; all variants share the same source")
+    parser.add_argument("--market-type", choices=("refined",),
+                        help="Opt-in typography review using locally embedded font subsets")
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent,
                         help="原型根目录，默认为 _shared/ 的上一级（页面原型/）")
     args = parser.parse_args()
@@ -29,6 +34,14 @@ def main():
         parser.error("source must be an HTML file under the prototype root")
     if output.is_relative_to(root):
         parser.error("export outside the prototype tree to keep generated copies out of source")
+    def inline_fonts(content, stylesheet):
+        def embed(match):
+            font = (stylesheet.parent / match.group(1)).resolve()
+            if not font.is_relative_to(root):
+                raise ValueError("Font outside prototype root")
+            return 'url("data:font/woff2;base64,' + base64.b64encode(font.read_bytes()).decode('ascii') + '")'
+        return re.sub(r'url\("([^"\n]+\.woff2)"\)', embed, content)
+
     def standalone(source):
         html = source.read_text(encoding="utf-8")
 
@@ -37,6 +50,8 @@ def main():
             if not resource.is_relative_to(root):
                 raise ValueError("Only local prototype resources may be inlined: %s" % resource)
             content = resource.read_text(encoding="utf-8")
+            if tag == 'style':
+                content = inline_fonts(content, resource)
             if resource.name == 'portal-entry.js':
                 resources = json.loads(re.search(r'const resources = (\{.*?\});', content, re.S).group(1))
                 chunks = []
@@ -46,6 +61,8 @@ def main():
                         if not dependency.is_relative_to(root):
                             raise ValueError('Portal dependency outside prototype root')
                         body = dependency.read_text(encoding='utf-8')
+                        if kind == 'styles':
+                            body = inline_fonts(body, dependency)
                         body = re.sub(r'</' + wrapper, lambda m: '<\\/' + m[0][2:], body, flags=re.I)
                         chunks.append('<%s>\n%s\n</%s>' % (wrapper, body, wrapper))
                 return '\n'.join(chunks)
@@ -76,6 +93,18 @@ def main():
         runtime = (root / '_shared/admin-bundle.js').read_text(encoding='utf-8')
         html = '<!doctype html><html><head><meta charset="utf-8"><title>Harbour Credit</title></head><body><script>\n' + runtime.replace('window.__ADMIN_BUNDLE_PAYLOAD__', payload) + '\n</script></body></html>'
 
+    if args.market_tone:
+        html = re.sub(r'(<html\b[^>]*)(>)',
+                      lambda m: m.group(1) + ' data-market-tone="' + args.market_tone + '"' + m.group(2),
+                      html, count=1, flags=re.I)
+    if args.market_type:
+        html = re.sub(r'(<html\b[^>]*)(>)',
+                      lambda m: m.group(1) + ' data-market-type="' + args.market_type + '"' + m.group(2),
+                      html, count=1, flags=re.I)
+    if 'data:font/woff2;base64,' in html:
+        licenses = '\n\n'.join(p.read_text(encoding='utf-8')
+                               for p in sorted((root / '_shared/fonts').glob('*-OFL.txt')))
+        html += '\n<script type="text/plain" id="embedded-font-licenses">\n' + licenses.replace('</script', '<\\/script') + '\n</script>\n'
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(html, encoding="utf-8")
     print("Exported %s (%d bytes)" % (output, output.stat().st_size))

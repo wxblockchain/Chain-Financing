@@ -117,7 +117,7 @@
 
 /* WS-403: user-authorized replacement of the marketplace visual baseline.
    Only active on marketplace pages; palette has one canonical source. */
-:root[data-market-redesign]{
+:root[data-market-redesign]:not([data-market-tone="blue"]){
   --bg:#0C100F; --bg-elev:#171E1B; --card:#141B18; --card-2:#1A231E;
   --card-hover:#1A241F; --border:#2B3630; --border-strong:#43534A;
   --border-dash:#2B3630; --row-line:#2B3630; --row-hover:#1C2821;
@@ -134,6 +134,43 @@
   --hash-text:#B6EF8A; --hash-bg:#22351E; --hash-border:#536E3D;
   --shadow:none; --shadow-soft:none; --shadow-lg:0 12px 40px #00000066;
   --overlay:#000000B3; --track:#2B3630;
+  --radius-lg:12px; --radius:10px; --radius-sm:8px; --radius-xs:6px;
+  --fs-36:36px; --fs-48:48px;
+  --list-h:clamp(440px,60vh,760px);
+}
+
+/* WS-403 typography study. Font subsets are local, SIL OFL licensed.
+   Opt-in only; the default prototype typography remains unchanged. */
+@font-face{
+  font-family:"Geist Review";font-style:normal;font-weight:100 900;font-display:swap;
+  src:url("fonts/Geist-review.woff2") format("woff2");
+}
+@font-face{
+  font-family:"Noto Sans SC Review";font-style:normal;font-weight:100 900;font-display:swap;
+  src:url("fonts/NotoSansSC-review.woff2") format("woff2");
+}
+:root[data-market-redesign][data-market-type="refined"]{
+  --sans:"Geist Review","Noto Sans SC Review",sans-serif;
+  --display:var(--sans);
+  --mono:var(--sans);
+  --numeric:var(--sans);
+  --type-title:34px;--type-major:46px;--type-number:24px;
+  --type-card-number:22px;--type-body:14px;--type-note:13px;
+  --type-control:13px;--type-name:15px;
+}
+
+/* WS-403 density and stable record surfaces, shared by both marketplaces. */
+:root[data-market-redesign]{
+  --market-stat-size:22px;--market-detail-stat-size:19px;
+  --market-token-h:420px;--market-record-h:308px;--market-info-h:168px;
+  --market-rail-w:400px;--market-popover-h:360px;
+}
+
+/* WS-403 blue/white review variant: inherit the original canonical palette.
+   Keep the rebuilt layout scale without duplicating either module's styles. */
+:root[data-market-redesign][data-market-tone="blue"]{
+  --info:#0369A1; --info-bg:#F0F9FF; --info-border:#7DD3FC;
+  --shadow:none; --shadow-soft:none;
   --radius-lg:12px; --radius:10px; --radius-sm:8px; --radius-xs:6px;
   --fs-36:36px; --fs-48:48px;
   --list-h:clamp(440px,60vh,760px);
