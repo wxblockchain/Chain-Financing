@@ -39,9 +39,8 @@
     const all='<span class="ea-ccy-list">'+c.map(assetLabel).join('')+'</span>';
     if(!compact)return all;
     const label=L('View all currencies: ','查看全部币种：')+c.join(', ');
-    return '<details class="ea-currency-peek"><summary aria-label="'+E(label)+'" title="'+E(c.map(x=>x+' · '+EA.currencyName(x)).join(', '))+'">'+
-      '<span class="ea-icon-stack">'+c.slice(0,2).map(x=>CF.eaAssetIcon(x)).join('')+(c.length>2?'<span class="ea-more-icon" aria-hidden="true">+</span>':'')+'</span></summary>'+
-      '<div class="ea-currency-reveal">'+all+'</div></details>';
+    return '<button type="button" class="ea-currency-peek" aria-label="'+E(label)+'" data-ea-currencies="'+E(JSON.stringify(c))+'">'+
+      '<span class="ea-icon-stack">'+c.slice(0,2).map(x=>CF.eaAssetIcon(x)).join('')+(c.length>2?'<span class="ea-more-icon" aria-hidden="true">+</span>':'')+'</span></button>';
   }
   const currencyTags=(a,compact=false)=>assetTags(EA.currencies(a),compact);
   const tokenTags=(compact=false)=>assetTags(EA.TOKENS,compact);
@@ -49,6 +48,56 @@
   const kindIcon=kind=>'<svg class="ea-kind-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
     (kind==='fiat'?'<path d="m3 9 9-5 9 5H3ZM5 11v7m5-7v7m4-7v7m5-7v7M3 21h18"/>':'<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18m-4 4h4v4h-4a2 2 0 0 1 0-4Z"/>')+'</svg>';
   const kindName=k=>k==='fiat'?L('Fiat accounts','法币账户'):L('Crypto accounts','数币账户');
+
+  /* 浮窗挂在 body / top layer，避开表格滚动与卡片裁切；只展示，不改变行高或业务状态。 */
+  let currencyAnchor=null,currencyTip=null,currencyTimer=0;
+  function hideCurrencyTip(){
+    clearTimeout(currencyTimer);
+    if(currencyTip){if(currencyTip.hidePopover&&currencyTip.matches(':popover-open'))currencyTip.hidePopover();currencyTip.hidden=true;}
+    currencyAnchor?.removeAttribute('aria-describedby');currencyAnchor=null;
+  }
+  function placeCurrencyTip(){
+    if(!currencyAnchor)return;
+    if(!currencyAnchor.isConnected){hideCurrencyTip();return;}
+    const r=currencyAnchor.getBoundingClientRect(),w=currencyTip.offsetWidth,h=currencyTip.offsetHeight;
+    if(r.bottom<0||r.top>innerHeight){hideCurrencyTip();return;}
+    currencyTip.style.left=Math.max(12,Math.min(r.left,innerWidth-w-12))+'px';
+    currencyTip.style.top=Math.max(12,r.bottom+8+h<=innerHeight-12?r.bottom+8:r.top-h-8)+'px';
+  }
+  function showCurrencyTip(anchor){
+    clearTimeout(currencyTimer);
+    if(currencyAnchor!==anchor)hideCurrencyTip();
+    if(!currencyTip){currencyTip=document.createElement('div');currencyTip.id='ea-currency-tooltip';
+      currencyTip.className='ea-currency-tooltip';currencyTip.setAttribute('role','tooltip');currencyTip.setAttribute('popover','manual');
+      document.body.appendChild(currencyTip);}
+    currencyAnchor=anchor;currencyTip.innerHTML=assetTags(JSON.parse(anchor.dataset.eaCurrencies));currencyTip.hidden=false;
+    if(currencyTip.showPopover&&!currencyTip.matches(':popover-open'))currencyTip.showPopover();
+    anchor.setAttribute('aria-describedby',currencyTip.id);placeCurrencyTip();
+  }
+  const tipTarget=target=>target?.closest?.('.ea-currency-peek');
+  document.addEventListener('pointerover',e=>{
+    if(e.pointerType==='touch')return;
+    const anchor=tipTarget(e.target);
+    if(anchor&&!anchor.contains(e.relatedTarget))showCurrencyTip(anchor);
+    if(currencyTip?.contains(e.target))clearTimeout(currencyTimer);
+  });
+  document.addEventListener('pointerout',e=>{
+    if(!currencyAnchor||!(currencyAnchor.contains(e.target)||currencyTip.contains(e.target)))return;
+    if(currencyAnchor.contains(e.relatedTarget)||currencyTip.contains(e.relatedTarget))return;
+    currencyTimer=setTimeout(()=>{if(document.activeElement!==currencyAnchor)hideCurrencyTip();},140);
+  });
+  document.addEventListener('focusin',e=>{const anchor=tipTarget(e.target);if(anchor)showCurrencyTip(anchor);});
+  document.addEventListener('focusout',e=>{if(e.target===currencyAnchor)hideCurrencyTip();});
+  document.addEventListener('click',e=>{
+    const anchor=tipTarget(e.target);
+    if(anchor){showCurrencyTip(anchor);return;}
+    if(currencyAnchor&&!currencyTip.contains(e.target))hideCurrencyTip();
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&currencyAnchor){hideCurrencyTip();e.preventDefault();e.stopImmediatePropagation();}
+  },true);
+  window.addEventListener('scroll',placeCurrencyTip,true);
+  window.addEventListener('resize',placeCurrencyTip);
 
   /* ------------------------------------------------------------------ 视图参数：Tab 与回流目标写在 query 里，刷新与分享可恢复 */
   function query(){return new URLSearchParams(location.hash.split('?')[1]||'');}
@@ -147,6 +196,7 @@
       (rows.length?'<div class="tablewrap">'+(k==='fiat'?fiatTable(rows):cryptoTable(rows))+'</div>':empty(k))+'</div>';
   }
   function page(){
+    hideCurrencyTip();
     CF.PAGES[PAGE].navKey=S.role==='fund'?'navInstitutionAccounts':'navCompanyAccounts';
     if(!['asset','fund'].includes(S.role))return head()+accessSurface();
     const e=eligible();
@@ -542,6 +592,7 @@
   });
   /* 离开本页即丢弃未提交内容：本模块不设草稿。 */
   window.addEventListener('hashchange',()=>{
+    hideCurrencyTip();
     if(S.layer&&String(S.layer.key||'').startsWith('ea-')){V.flow=null;V.pending=null;CF.closeLayer();}
     readReturn();
   });
