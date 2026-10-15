@@ -840,7 +840,7 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .om-reference .mono{overflow-wrap:anywhere}
 .om-reference .btn.icon{width:28px;height:28px}
 .om-reading .nc-read-feedback{margin:var(--sp-5) 0 0}
-.om-reading .card-b{padding:var(--sp-7);min-height:340px;display:flex;flex-direction:column}
+.om-reading .card-b{padding:var(--sp-7);display:flex;flex-direction:column}
 .om-reading h1{font-size:var(--fs-24);line-height:1.5;overflow-wrap:anywhere;max-width:70ch}
 .om-reading .nc-body{font-size:var(--fs-14);margin:var(--sp-7) 0 0}
 .om-reading .nc-actions{margin-top:auto;padding-top:var(--sp-6);border-top:0}
@@ -850,13 +850,10 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .admin-notifications .nc-preview .nc-message-foot{font-size:var(--fs-12)}
 .admin-notifications .nc-preview .nc-read-state{min-width:50px}
 .admin-notifications .nc-panel .tbl-empty{padding:var(--sp-7) var(--sp-5)}
-.om-record{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:var(--sp-3) var(--sp-6);margin:0}
-.om-record dt{color:var(--muted)}
-.om-record dd{margin:0}
-.om-relation{margin-top:var(--sp-6);padding:var(--sp-5) var(--sp-6);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:var(--fs-13)}
-.om-relation h2{margin:0 0 var(--sp-4);font-size:var(--fs-13);font-weight:600;color:var(--muted);letter-spacing:.02em}
-.om-target-note{margin:var(--sp-5) 0 0;color:var(--muted);font-size:var(--fs-13);line-height:1.7;max-width:70ch}
-.om-target-note + .nc-actions{padding-top:var(--sp-4)}
+.om-business{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-3);margin:var(--sp-6) 0 0;padding-top:var(--sp-5);border-top:1px solid var(--border);font-size:var(--fs-13);color:var(--muted);min-width:0}
+.om-business-name{color:var(--text);font-weight:500;overflow-wrap:anywhere;min-width:0}
+.om-reading .om-target{justify-content:flex-end;gap:var(--sp-5)}
+.om-reading .om-target p{flex:1 1 240px;margin:0;color:var(--muted);font-size:var(--fs-13);line-height:1.7}
 .om-reading .nc-actions [aria-disabled="true"]{opacity:.65;cursor:default}
 .admin-notifications .badge[hidden]{display:none}
 .ops-notification .sidebar .brand-name,.ops-notification .sidebar .brand-sub{display:block;white-space:nowrap}
@@ -1088,8 +1085,8 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 [data-end="asset"] .mc-chapters button{font-size:var(--ui-field-label);min-height:44px;border-bottom-width:2px}
 
 /* Shared operations roles override historical module-specific size drift. */
-[data-end="admin"] .content :is(.fc-kv,.cm-kv,.pr-kv,.rv-kv,.ops-details,.om-record) dt{font-size:var(--ui-field-label);font-weight:400;color:var(--muted)}
-[data-end="admin"] .content :is(.fc-kv,.cm-kv,.pr-kv,.rv-kv,.ops-details,.om-record) dd{font-size:var(--ui-field-value);line-height:1.6}
+[data-end="admin"] .content :is(.fc-kv,.cm-kv,.pr-kv,.rv-kv,.ops-details) dt{font-size:var(--ui-field-label);font-weight:400;color:var(--muted)}
+[data-end="admin"] .content :is(.fc-kv,.cm-kv,.pr-kv,.rv-kv,.ops-details) dd{font-size:var(--ui-field-value);line-height:1.6}
 [data-end="admin"] :is(.cm-value,.pr-value){font-size:var(--ui-field-value)}
 [data-end="admin"] :is(.cm-metric,.pr-metric){padding:var(--sp-4) var(--sp-5)}
 [data-end="admin"] :is(.cm-metric,.pr-metric) strong{font-size:var(--ui-stat-size);font-weight:500;line-height:1.4}
