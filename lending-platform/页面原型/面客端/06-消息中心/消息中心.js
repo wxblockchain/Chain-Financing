@@ -49,6 +49,13 @@
     }).replace(/[^\S\n]{2,}/g,' ').trim();
   }
   /* 来源提供的原业务名称与编号；编号可复制，缺项不补位。 */
+  function businessContext(r){
+    const b=r.business;if(!b)return '';
+    const name=tr(b.name),number=b.number?String(b.number):'';
+    if(!name&&!number)return '';
+    return '<span class="nc-context">'+(name?'<span class="nc-context-name">'+E(name)+'</span>':'')+
+      (number?'<span class="nc-context-reference">'+E(number)+'</span>':'')+'</span>';
+  }
   function businessInfo(r){
     const b=r.business;if(!b||!tr(b.name)&&!b.number)return '';
     const number=b.number?String(b.number):'';
@@ -71,7 +78,7 @@
       '<span role="columnheader">'+L('Estimated','预计')+'</span><span role="columnheader">'+L('Finalized','定稿')+'</span></div>'+
       [...rows.values()].sort((a,b)=>a.seq-b.seq).map(row=>'<div class="nc-compare-row" role="row">'+
         '<span role="rowheader">'+L('No. '+row.seq,'第 '+row.seq+' 期')+'</span>'+
-        '<span role="cell">'+cell(row.planned)+'</span><span role="cell">'+cell(row.actual)+'</span></div>').join('')+
+        '<span role="cell" data-label="'+L('Estimated','预计')+'">'+cell(row.planned)+'</span><span role="cell" data-label="'+L('Finalized','定稿')+'">'+cell(row.actual)+'</span></div>').join('')+
       '</div></section>';
   }
   function readLabel(r){return r.read?L('Read','已读'):L('Unread','未读');}
@@ -82,7 +89,7 @@
     if(body)return E(body.split('\n').map(s=>s.trim()).filter(Boolean)[0]||'');
     return r.business?E(tr(r.business.name)):'';
   }
-  N.preview=r=>'<span class="nc-preview-heading"><span class="nc-preview-title">'+E(template(r,'title'))+'</span>'+readBadge(r)+'</span><span class="nc-preview-summary">'+summary(r)+'</span><span class="nc-meta">'+E(catName(category(r)))+(N.expired(r)?' · '+L('Expired','已过期'):'')+'</span><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time>';
+  N.preview=r=>'<span class="nc-preview-heading"><span class="nc-preview-title">'+E(template(r,'title'))+'</span>'+readBadge(r)+'</span>'+businessContext(r)+'<span class="nc-preview-summary">'+summary(r)+'</span><span class="nc-meta">'+E(catName(category(r)))+(N.expired(r)?' · '+L('Expired','已过期'):'')+'</span><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time>';
   function saveRead(ids){
     try{
       const saved=JSON.parse(localStorage.getItem(storageKey)||'{}');
@@ -136,22 +143,21 @@
     return CF.surface({emptyTitle:L('You have no messages yet','还没有任何消息'),emptyDesc:'',skelRows:5});
   }
   function listRow(r){return '<article class="nc-row" data-id="'+E(r.id)+'" data-unread="'+!r.read+'"><a class="nc-title nc-message-link" href="#/notification?id='+encodeURIComponent(r.id)+'">'+
-    '<span class="nc-message-heading"><span class="nc-message-title">'+E(template(r,'title'))+'</span>'+readBadge(r)+'</span>'+
+    '<span class="nc-message-heading"><span class="nc-message-title">'+E(template(r,'title'))+'</span>'+readBadge(r)+'</span>'+businessContext(r)+
     (summary(r)?'<span class="nc-summary">'+summary(r)+'</span>':'')+
     '<span class="nc-message-foot"><span class="nc-message-category">'+E(catName(category(r)))+(N.expired(r)?' · '+L('Expired','已过期'):'')+'</span><time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time></span></a></article>';}
   function renderList(){
     const v=ensureView(),all=N.visible(),rows=rowsInView(),count=all.filter(r=>matches(r,v.f)&&!r.read).length;
     const cats=[...new Set(all.map(category))];
-    const opt=(value,label,cur)=>'<option value="'+E(value)+'" '+(value===cur?'selected':'')+'>'+E(label)+'</option>';
+    const opt=(value,label,cur)=>'<option value="'+E(value)+'" '+(value===cur?'selected':'')+'>'+E(L('Category: ','分类：')+label)+'</option>';
     const filter='<div class="nc-filters nc-inbox-filters"><div class="nc-status-options" role="group" aria-label="'+L('Message status','消息状态')+'">'+[['',L('All','全部')],['unread',L('Unread','未读')],['read',L('Read','已读')]].map(o=>'<button type="button" data-act="nc-status" data-v="'+o[0]+'" aria-pressed="'+(v.f.status===o[0])+'">'+o[1]+'</button>').join('')+'</div>'+
-      '<div class="nc-category-field"><label for="nc-category">'+L('Category','分类')+'</label><select class="inp" id="nc-category">'+opt('',L('All categories','全部分类'),v.f.cat)+cats.map(c=>opt(c,catName(c),v.f.cat)).join('')+'</select></div>'+btn('nc-all',L('Mark all as read','全部已读'),'',(!count||busy||S.st!=='default')?'disabled':'')+'</div>';
+      '<div class="nc-category-field"><label class="sr-only" for="nc-category">'+L('Category','分类')+'</label><select class="inp" id="nc-category">'+opt('',L('All categories','全部分类'),v.f.cat)+cats.map(c=>opt(c,catName(c),v.f.cat)).join('')+'</select></div>'+btn('nc-all',L('Mark all as read','全部已读'),'',(!count||busy||S.st!=='default')?'disabled':'')+'</div>';
     let body=stateSurface();
     if(!body){
       if(!rows.length)body=v.f.cat||v.f.status?CF.empty(L('No messages match the current filter','当前筛选下没有消息'),'',btn('nc-clear',L('Clear filters','清除筛选'))):CF.empty(L('You have no messages yet','还没有任何消息'),'','');
       else body=rows.slice(0,v.shown).map(listRow).join('')+'<div class="loadmore">'+
         (moreError?'<span role="alert">'+L('Failed to load. Please try again','加载失败，请重试')+'</span>':'')+
-        (v.shown<rows.length?btn('nc-more',busy?L('Loading…','加载中…'):L('Load more','加载更多'),'',busy?'disabled':''):'<span>'+L('No more messages','没有更多了')+'</span>')+
-btn('nc-top',L('Back to filters','返回筛选'))+'</div>';
+        (v.shown<rows.length?btn('nc-more',busy?L('Loading…','加载中…'):L('Load more','加载更多'),'',busy?'disabled':''):'<span>'+L('No more messages','没有更多了')+'</span>')+'</div>';
     }
     return '<div class="nc-layout nc-inbox"><div class="nc-head"><h1 class="page-title">'+L('Notifications','消息中心')+'</h1><p class="page-sub">'+L('Account updates and business progress','账户动态与业务进展')+'</p></div>'+filter+'<section class="nc-feed">'+
       (readError?'<div class="nc-feedback">'+CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。'))+'</div>':'')+
@@ -277,7 +283,6 @@ btn('nc-top',L('Back to filters','返回筛选'))+'</div>';
     onBeforeAct(act){if(act==='closelayer'&&busy)return true;if(act==='clearfilter'&&(S.page===LIST||S.page===DETAIL)){resetView();S.st='default';location.hash='#/notifications';return true;}if(act==='st'){detailFailure=false;readError=false;resetView();}return false;},
     onAct(act,v){
       if(act==='nc-status'){if(filters().status===v)return true;const q=query();if(v)q.set('status',v);else q.delete('status');resetView();location.hash='#/notifications'+(q.size?'?'+q:'');return true;}
-      if(act==='nc-top'){window.scrollTo(0,0);document.getElementById('nc-category')?.focus({preventScroll:true});snapshot();return true;}
       if(act==='nc-clear'){resetView();S.st='default';location.hash='#/notifications';return true;}
       if(act==='nc-more'){if(busy)return true;busy=true;moreError=false;const owner=S.role,key=view.key;setTimeout(()=>{busy=false;if(owner!==S.role||!view||view.key!==key)return;if(failMore){failMore=false;moreError=true;}else view.shown+=20;CF.render();},450);return true;}
       if(act==='nc-read'){mark([v]);return true;}
