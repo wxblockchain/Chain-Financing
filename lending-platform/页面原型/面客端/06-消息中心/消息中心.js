@@ -151,7 +151,7 @@
     const cats=[...new Set(all.map(category))];
     const opt=(value,label,cur)=>'<option value="'+E(value)+'" '+(value===cur?'selected':'')+'>'+E(L('Category: ','分类：')+label)+'</option>';
     const filter='<div class="nc-filters nc-inbox-filters"><div class="nc-status-options" role="group" aria-label="'+L('Message status','消息状态')+'">'+[['',L('All','全部')],['unread',L('Unread','未读')],['read',L('Read','已读')]].map(o=>'<button type="button" data-act="nc-status" data-v="'+o[0]+'" aria-pressed="'+(v.f.status===o[0])+'">'+o[1]+'</button>').join('')+'</div>'+
-      '<div class="nc-category-field"><label class="sr-only" for="nc-category">'+L('Category','分类')+'</label><select class="inp" id="nc-category">'+opt('',L('All categories','全部分类'),v.f.cat)+cats.map(c=>opt(c,catName(c),v.f.cat)).join('')+'</select></div>'+btn('nc-all',L('Mark all as read','全部已读'),'',(!count||busy||S.st!=='default')?'disabled':'')+'</div>';
+      '<div class="nc-category-field"><label class="sr-only" for="nc-category">'+L('Category','分类')+'</label><select class="inp" id="nc-category">'+opt('',L('All categories','全部分类'),v.f.cat)+cats.map(c=>opt(c,catName(c),v.f.cat)).join('')+'</select></div></div>';
     let body=stateSurface();
     if(!body){
       if(!rows.length)body=v.f.cat||v.f.status?CF.empty(L('No messages match the current filter','当前筛选下没有消息'),'',btn('nc-clear',L('Clear filters','清除筛选'))):CF.empty(L('You have no messages yet','还没有任何消息'),'','');
@@ -159,7 +159,7 @@
         (moreError?'<span role="alert">'+L('Failed to load. Please try again','加载失败，请重试')+'</span>':'')+
         (v.shown<rows.length?btn('nc-more',busy?L('Loading…','加载中…'):L('Load more','加载更多'),'',busy?'disabled':''):'<span>'+L('No more messages','没有更多了')+'</span>')+'</div>';
     }
-    return '<div class="nc-layout nc-inbox"><div class="nc-head"><h1 class="page-title">'+L('Notifications','消息中心')+'</h1><p class="page-sub">'+L('Account updates and business progress','账户动态与业务进展')+'</p></div>'+filter+'<section class="nc-feed">'+
+    return '<div class="nc-layout nc-inbox"><div class="nc-head"><div><h1 class="page-title">'+L('Notifications','消息中心')+'</h1><p class="page-sub">'+L('Account updates and business progress','账户动态与业务进展')+'</p></div>'+btn('nc-all',L('Mark all as read','全部已读'),'',(!count||busy||S.st!=='default')?'disabled':'')+'</div><section class="nc-feed">'+filter+
       (readError?'<div class="nc-feedback">'+CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。'))+'</div>':'')+
       '<div class="nc-list" id="nc-list" aria-label="'+L('Messages','消息列表')+'">'+body+'</div></section></div>';
   }
