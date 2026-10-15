@@ -22,6 +22,11 @@
     if (!shapes[code]) return E(code);
     return '<span class="mk-currency" data-currency="'+E(code)+'"><span class="mk-coin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+shapes[code]+'</svg></span><span>'+E(code)+'</span></span>';
   }
+  function network(code) {
+    code=String(code).toUpperCase();
+    const name={ETH:'Ethereum',TRON:'TRON'}[code]||code;
+    return '<span class="mk-network" data-network="'+E(code)+'"><span class="mk-coin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(shapes[code]||'')+'</svg></span><span>'+E(name)+'</span></span>';
+  }
   const oldChip = CF.icoChip;
   CF.icoChip = function (label, opts) {
     return shapes[label] ? currency(label) : oldChip(label, opts);
@@ -47,7 +52,7 @@
     const summary = parts.map(p=>p.label+': '+CF.fmtAmt(p.value)+' '+(suffix||'')).join('; ');
     return '<section class="mk-distribution"><div class="mk-chart-head"><h2>'+icon('chart')+E(title)+'</h2><span>'+L('Current results','当前结果')+'</span></div><div class="mk-stackbar" role="img" aria-label="'+E(title+'. '+summary)+'">'+parts.map(p=>'<span data-tone="'+p.tone+'" style="flex-grow:'+Math.max(0,p.value)+'" title="'+E(p.label)+': '+(total?(p.value/total*100).toFixed(1):'0.0')+'%"></span>').join('')+'</div><div class="mk-legend">'+parts.map(p=>'<button type="button" data-act="'+action+'" data-v="'+p.key+'" aria-pressed="'+(selected===p.key)+'" aria-label="'+E(L('Filter: ','筛选：')+p.label)+'"><i data-tone="'+p.tone+'" aria-hidden="true"></i><span>'+E(p.label)+'</span><b class="mono">'+(total?(p.value/total*100).toFixed(1):'0.0')+'%</b></button>').join('')+'</div></section>';
   }
-  CF.market = {currency, icon, views, distribution};
+  CF.market = {currency, network, icon, views, distribution};
 
   // Currency decoration is restricted to the rebuilt pages and their dialogs.
   // It only adds presentation to text, never changes input values or formatting.
@@ -78,7 +83,7 @@
       const nodes=[];
       while(walker.nextNode()) {
         const n=walker.currentNode, parent=n.parentElement;
-        if(!parent||parent.closest('.mk-currency,.ico-chip,svg,script,style,textarea,select,option,.hash,.sr-only,[contenteditable],.mk-coin'))continue;
+        if(!parent||parent.closest('.mk-currency,.mk-network,.ico-chip,svg,script,style,textarea,select,option,.hash,.sr-only,[contenteditable],.mk-coin'))continue;
         pattern.lastIndex=0;
         if(pattern.test(n.nodeValue))nodes.push(n);
       }

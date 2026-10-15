@@ -435,7 +435,7 @@
       pendingSelection=q?.id||'';
       location.hash='#'+CF.ENTRY['P-F-EA-01']+'?'+new URLSearchParams({return:back,from:'quote',business:pendingSelection});}
     if(act==='account-retry'){accountScene='loading';const draft=flow;setTimeout(()=>{if(flow!==draft)return;accountScene='ready';const target=qFlow();if(target)suggestAccount(target);CF.render();},650);}
-    if(act==='pledge'){CF.closeLayer();setTimeout(()=>document.querySelector('[data-act=ls-tab][data-v=global]')?.click(),0);}
+    if(act==='pledge'){CF.closeLayer();setTimeout(()=>document.querySelector('.mk-collateral-actions [data-act=ls-pledge]')?.click(),0);}
     if(act==='copy')copySummary();
     if(act==='print'){document.body.classList.add('cq-printing');window.print();document.body.classList.remove('cq-printing');}
     if(act==='event'){const target=db.quotes.find(x=>x.id===v);if(target){S.demo=false;location.hash='#/project/'+target.project;setTimeout(()=>{if(target.state==='waiting'&&S.role==='asset')beginReview(target);else openRequest(target.demand,{selected:target.id});},100);}}

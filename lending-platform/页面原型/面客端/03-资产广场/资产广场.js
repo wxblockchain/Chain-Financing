@@ -479,7 +479,7 @@
     ensureLoad(v, total);
     afterList(v);
 
-    var head = '<div class="mk-identity">' + CF.market.currency(AM.CHAIN) + '<span>' + esc(tokenKind()) + '</span><span>' + L('Demonstration data', '演示数据') + '</span></div><div class="page-head"><div>' +
+    var head = '<div class="page-head"><div>' +
       '<h1 class="page-title">' + L("Asset marketplace", "资产广场") + "</h1>" +
       '<p class="page-desc">' + L(
         "Receivables, tokenized. Explore the assets behind each on-chain record.",
@@ -543,6 +543,7 @@
     } else {
       body = '<div class="tablewrap listbox listbox-contained am-tbl-zone" id="am-listbox" role="region" tabindex="0" aria-label="' +
         L("Token list", "代币列表") + '"><table class="tbl resp am-tbl"><thead><tr>' +
+        '<th scope="col" class="mk-network-col">' + L("Network", "网络") + "</th>" +
         '<th scope="col">' + L("Token", "代币") + "</th>" +
         '<th scope="col">' + L("Token ID", "代币编号") + "</th>" +
         '<th scope="col">' + L("Asset originator", "资产方企业") + "</th>" +
@@ -580,7 +581,8 @@
   function listRow(t) {
     var mark = tokenLogo(t);
     return '<tr tabindex="0" aria-label="' + esc(L("Open token details: ", "打开代币详情：") + t.no) + '" data-act="am-open" data-v="' + esc(t.no) + '">' +
-      '<td data-label="' + esc(L("Token", "代币")) + '"><div class="tok">' + mark +
+      '<td class="mk-network-cell" data-label="' + esc(L("Network", "网络")) + '">' + CF.market.network(AM.CHAIN) + '</td>' +
+      '<td class="mk-item-cell" data-label="' + esc(L("Token", "代币")) + '"><div class="tok">' + mark +
         '<span class="tok-name">' + esc(tokenName(t)) + "</span></div></td>" +
       '<td data-label="' + esc(L("Token ID", "代币编号")) + '"><div class="cell-wrap">' +
         '<button class="btn-link mono am-id" type="button" data-act="am-copy" data-v="' + esc(t.no) + '" aria-label="' +

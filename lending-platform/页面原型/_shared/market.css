@@ -105,25 +105,25 @@
 [data-market-redesign] .listzone[data-view="cards"] tbody tr:hover{background:var(--card-hover);border-color:var(--accent-border)}
 [data-market-redesign] .listzone[data-view="cards"] tbody td{display:block;padding:0;margin:0;border:0;text-align:left!important;background:transparent;min-width:0;overflow-wrap:anywhere;font-size:var(--fs-12);width:auto}
 [data-market-redesign] .listzone[data-view="cards"] tbody td::before{content:attr(data-label);display:block;color:var(--muted);font-size:var(--fs-11);font-weight:400;letter-spacing:0;text-transform:none;margin-bottom:var(--sp-1)}
-[data-market-redesign] .listzone[data-view="cards"] tbody td:first-child{grid-column:1 / -1;padding-bottom:var(--sp-3);border-bottom:1px solid var(--border)}
-[data-market-redesign] .listzone[data-view="cards"] tbody td:first-child::before{display:none}
+[data-market-redesign] .listzone[data-view="cards"] tbody td.mk-item-cell{grid-column:1 / -1;padding-bottom:var(--sp-3);border-bottom:1px solid var(--border)}
+[data-market-redesign] .listzone[data-view="cards"] tbody td.mk-item-cell::before{display:none}
 [data-market-redesign] .listzone[data-view="cards"] .tok-name{max-width:none}
 [data-market-redesign] .listzone[data-view="cards"] .cell-wrap>*{text-align:left}
-[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(2),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(3),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(4){grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3)}
-[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(3)::before,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(4)::before{flex:none}
-[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(5),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(6){padding-block:var(--sp-3)}
-[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(5) .num,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(6) .num{font-size:var(--fs-19);font-weight:450;color:var(--text)}
-[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(7)::before,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(8)::before{display:none}
-[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(9){grid-column:1 / -1;border-top:1px solid var(--border);padding-top:var(--sp-3);display:flex;justify-content:space-between;gap:var(--sp-3)}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(3),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(4),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(5){grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3)}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(4)::before,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(5)::before{flex:none}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(6),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(7){padding-block:var(--sp-3)}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(6) .num,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(7) .num{font-size:var(--fs-19);font-weight:450;color:var(--text)}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(8)::before,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(9)::before{display:none}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(10){grid-column:1 / -1;border-top:1px solid var(--border);padding-top:var(--sp-3);display:flex;justify-content:space-between;gap:var(--sp-3)}
 [data-market-redesign] .listzone[data-view="cards"] .am-id{min-height:32px;font-size:var(--fs-11)}
-[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(2){grid-column:1 / -1}
-[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(2)::before{display:none}
-[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(3),[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(4){padding-block:var(--sp-3)}
+[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(3){grid-column:1 / -1}
+[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(3)::before{display:none}
+[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(4),[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(5){padding-block:var(--sp-3)}
 [data-market-redesign] .listzone[data-view="cards"] .ls-amt{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-1)}
 [data-market-redesign] .listzone[data-view="cards"] .ls-amt b{font-size:var(--fs-19);font-weight:450}
-[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(4) .cell-sub{margin-top:var(--sp-2)}
-[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(5)::before,[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(6)::before{display:none}
-[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(7){grid-column:1 / -1;border-top:1px solid var(--border);padding-top:var(--sp-3);display:flex;justify-content:space-between;gap:var(--sp-3)}
+[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(5) .cell-sub{margin-top:var(--sp-2)}
+[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(6)::before,[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(7)::before{display:none}
+[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(8){grid-column:1 / -1;border-top:1px solid var(--border);padding-top:var(--sp-3);display:flex;justify-content:space-between;gap:var(--sp-3)}
 /* Details use a reading rail and purposeful visuals, rather than field-card repetition. */
 [data-market-redesign] .am-detail{gap:var(--sp-5)}
 [data-market-redesign] .am-ov{background:transparent;border:0}
@@ -226,31 +226,31 @@
 }
 
 /* Opt-in typography delta: shared by both marketplaces and their native flows. */
-[data-market-redesign][data-market-type="refined"] body{font-synthesis:none;line-height:1.55}
-[data-market-redesign][data-market-type="refined"] .page-title{font-family:var(--display);font-size:var(--type-title);font-weight:600;line-height:1.25;letter-spacing:-.025em}
-[data-market-redesign][data-market-type="refined"]:lang(zh-CN) .page-title{letter-spacing:0;line-height:1.4}
-[data-market-redesign][data-market-type="refined"] .page-desc{font-size:var(--type-body);line-height:1.7}
-[data-market-redesign][data-market-type="refined"] .brand-name{letter-spacing:-.025em;font-weight:650}
-[data-market-redesign][data-market-type="refined"] .portal-nav a,[data-market-redesign][data-market-type="refined"] .btn{font-size:var(--type-body);font-weight:550;letter-spacing:0}
-[data-market-redesign][data-market-type="refined"] .num,[data-market-redesign][data-market-type="refined"] .stat-strip .v,[data-market-redesign][data-market-type="refined"] .ls-stats .v,[data-market-redesign][data-market-type="refined"] .ls-amt b,[data-market-redesign][data-market-type="refined"] .ls-ring-v{font-family:var(--numeric);font-variant-numeric:lining-nums tabular-nums;letter-spacing:-.015em;font-weight:500}
-[data-market-redesign][data-market-type="refined"] .mk-overview .stat-strip .v{font-size:var(--type-number);line-height:1.35;font-weight:500;letter-spacing:-.015em}
-[data-market-redesign][data-market-type="refined"] .mk-overview .stat-strip .s:first-child .v{font-size:var(--type-major);line-height:1.2;font-weight:500;letter-spacing:-.025em}
-[data-market-redesign][data-market-type="refined"] .mk-overview .stat-strip .k{font-size:var(--type-body);line-height:1.5}
-[data-market-redesign][data-market-type="refined"] .mk-overview .stat-strip .n{font-size:var(--type-note);line-height:1.6}
-[data-market-redesign][data-market-type="refined"] .mk-identity,[data-market-redesign][data-market-type="refined"] .mk-legend button,[data-market-redesign][data-market-type="refined"] .mk-legend b{font-size:var(--type-note)}
-[data-market-redesign][data-market-type="refined"] .mk-chart-head h2,[data-market-redesign][data-market-type="refined"] .mk-result-head h2{font-size:var(--type-name);font-weight:550}
-[data-market-redesign][data-market-type="refined"] .filterbar .fb-btn,[data-market-redesign][data-market-type="refined"] .filterbar select.inp,[data-market-redesign][data-market-type="refined"] .filterbar .fb-q .inp{font-size:var(--type-control);font-weight:400}
-[data-market-redesign][data-market-type="refined"] .tok-name,[data-market-redesign][data-market-type="refined"] .ls-project-name{font-size:var(--type-name);font-weight:600;letter-spacing:-.01em}
-[data-market-redesign][data-market-type="refined"] .tbl td,[data-market-redesign][data-market-type="refined"] .tbl thead th,[data-market-redesign][data-market-type="refined"] .cell-sub{font-size:var(--type-note);line-height:1.55}
-[data-market-redesign][data-market-type="refined"] .listzone[data-view="cards"] tbody td,[data-market-redesign][data-market-type="refined"] .listzone[data-view="cards"] tbody td::before{font-size:var(--type-note);line-height:1.55}
-[data-market-redesign][data-market-type="refined"] .listzone[data-view="cards"] .am-tbl td:nth-child(5) .num,[data-market-redesign][data-market-type="refined"] .listzone[data-view="cards"] .am-tbl td:nth-child(6) .num,[data-market-redesign][data-market-type="refined"] .listzone[data-view="cards"] .ls-amt b{font-size:var(--type-card-number);font-weight:500;line-height:1.35;letter-spacing:-.015em}
-[data-market-redesign][data-market-type="refined"] .am-id,[data-market-redesign][data-market-type="refined"] .listzone[data-view="cards"] .am-id{font-size:var(--type-note);font-weight:400;letter-spacing:.01em}
-[data-market-redesign][data-market-type="refined"] .tag{font-size:var(--type-note);font-weight:500}
-[data-market-redesign][data-market-type="refined"]:lang(zh-CN) .tok-name,[data-market-redesign][data-market-type="refined"]:lang(zh-CN) .ls-project-name{letter-spacing:0}
+[data-market-redesign]:where([data-market-type="refined"]) body{font-synthesis:none;line-height:1.55}
+[data-market-redesign]:where([data-market-type="refined"]) .page-title{font-family:var(--display);font-size:var(--type-title);font-weight:600;line-height:1.25;letter-spacing:-.025em}
+[data-market-redesign]:where([data-market-type="refined"]):lang(zh-CN) .page-title{letter-spacing:0;line-height:1.4}
+[data-market-redesign]:where([data-market-type="refined"]) .page-desc{font-size:var(--type-body);line-height:1.7}
+[data-market-redesign]:where([data-market-type="refined"]) .brand-name{letter-spacing:-.025em;font-weight:650}
+[data-market-redesign]:where([data-market-type="refined"]) .portal-nav a,[data-market-redesign]:where([data-market-type="refined"]) .btn{font-size:var(--type-body);font-weight:550;letter-spacing:0}
+[data-market-redesign]:where([data-market-type="refined"]) .num,[data-market-redesign]:where([data-market-type="refined"]) .stat-strip .v,[data-market-redesign]:where([data-market-type="refined"]) .ls-stats .v,[data-market-redesign]:where([data-market-type="refined"]) .ls-amt b,[data-market-redesign]:where([data-market-type="refined"]) .ls-ring-v{font-family:var(--numeric);font-variant-numeric:lining-nums tabular-nums;letter-spacing:-.015em;font-weight:500}
+[data-market-redesign]:where([data-market-type="refined"]) .mk-overview .stat-strip .v{font-size:var(--type-number);line-height:1.35;font-weight:500;letter-spacing:-.015em}
+[data-market-redesign]:where([data-market-type="refined"]) .mk-overview .stat-strip .s:first-child .v{font-size:var(--type-major);line-height:1.2;font-weight:500;letter-spacing:-.025em}
+[data-market-redesign]:where([data-market-type="refined"]) .mk-overview .stat-strip .k{font-size:var(--type-body);line-height:1.5}
+[data-market-redesign]:where([data-market-type="refined"]) .mk-overview .stat-strip .n{font-size:var(--type-note);line-height:1.6}
+[data-market-redesign]:where([data-market-type="refined"]) .mk-identity,[data-market-redesign]:where([data-market-type="refined"]) .mk-legend button,[data-market-redesign]:where([data-market-type="refined"]) .mk-legend b{font-size:var(--type-note)}
+[data-market-redesign]:where([data-market-type="refined"]) .mk-chart-head h2,[data-market-redesign]:where([data-market-type="refined"]) .mk-result-head h2{font-size:var(--type-name);font-weight:550}
+[data-market-redesign]:where([data-market-type="refined"]) .filterbar .fb-btn,[data-market-redesign]:where([data-market-type="refined"]) .filterbar select.inp,[data-market-redesign]:where([data-market-type="refined"]) .filterbar .fb-q .inp{font-size:var(--type-control);font-weight:400}
+[data-market-redesign]:where([data-market-type="refined"]) .tok-name,[data-market-redesign]:where([data-market-type="refined"]) .ls-project-name{font-size:var(--type-name);font-weight:600;letter-spacing:-.01em}
+[data-market-redesign]:where([data-market-type="refined"]) .tbl td,[data-market-redesign]:where([data-market-type="refined"]) .tbl thead th,[data-market-redesign]:where([data-market-type="refined"]) .cell-sub{font-size:var(--type-note);line-height:1.55}
+[data-market-redesign]:where([data-market-type="refined"]) .listzone[data-view="cards"] tbody td,[data-market-redesign]:where([data-market-type="refined"]) .listzone[data-view="cards"] tbody td::before{font-size:var(--type-note);line-height:1.55}
+[data-market-redesign]:where([data-market-type="refined"]) .listzone[data-view="cards"] .am-tbl td:nth-child(6) .num,[data-market-redesign]:where([data-market-type="refined"]) .listzone[data-view="cards"] .am-tbl td:nth-child(7) .num,[data-market-redesign]:where([data-market-type="refined"]) .listzone[data-view="cards"] .ls-amt b{font-size:var(--type-card-number);font-weight:500;line-height:1.35;letter-spacing:-.015em}
+[data-market-redesign]:where([data-market-type="refined"]) .am-id,[data-market-redesign]:where([data-market-type="refined"]) .listzone[data-view="cards"] .am-id{font-size:var(--type-note);font-weight:400;letter-spacing:.01em}
+[data-market-redesign]:where([data-market-type="refined"]) .tag{font-size:var(--type-note);font-weight:500}
+[data-market-redesign]:where([data-market-type="refined"]):lang(zh-CN) .tok-name,[data-market-redesign]:where([data-market-type="refined"]):lang(zh-CN) .ls-project-name{letter-spacing:0}
 @media(max-width:768px){
-  :root[data-market-redesign][data-market-type="refined"]{--type-title:28px;--type-major:32px;--type-number:22px;--type-card-number:20px}
+  :root[data-market-redesign]:where([data-market-type="refined"]){--type-title:28px;--type-major:32px;--type-number:22px;--type-card-number:20px}
 }
-@media(max-width:360px){:root[data-market-redesign][data-market-type="refined"]{--type-major:26px;--type-number:20px}}
+@media(max-width:360px){:root[data-market-redesign]:where([data-market-type="refined"]){--type-major:26px;--type-number:20px}}
 
 /* WS-403 refinement: the registry is primary; summaries are a reading aid. */
 [data-market-redesign] .portal-head{height:68px}
@@ -350,7 +350,7 @@
 [data-market-redesign] .ls-detail .ls-operations .btn.primary{min-height:44px;font-size:var(--fs-14)}
 
 @media(min-width:901px) and (max-width:1300px){
-  :root[data-market-redesign]{--market-rail-w:370px;--market-stat-size:20px;--market-detail-stat-size:16px}
+  :root[data-market-redesign]{--market-rail-w:370px;--market-stat-size:20px}
   [data-market-redesign] .mk-overview{grid-template-columns:minmax(0,2.4fr) minmax(0,1fr)}
   [data-market-redesign] .mk-overview .mk-legend{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
@@ -377,7 +377,7 @@
   [data-market-redesign] .mk-overview .stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
   [data-market-redesign] .mk-overview .stat-strip .s:first-child{grid-column:1 / -1}
   [data-market-redesign] .mk-overview{gap:var(--sp-3)}
-  [data-market-redesign] .mk-overview .stat-strip .s:first-child .v{font-size:var(--fs-24)}
+  [data-market-redesign] .mk-overview .stat-strip .s:first-child .v{font-size:var(--market-stat-size)}
   [data-market-redesign] .filterbar :is(select.inp,.fb-btn,.fb-q .inp),[data-market-redesign] .filterbar .fb-acts .btn{height:44px;min-height:44px}
   [data-market-redesign] .mk-views button{height:40px;width:40px}
   [data-market-redesign] .mk-overview .mk-legend button{min-height:44px}
@@ -387,4 +387,68 @@
   [data-market-redesign] .ls-detail .ls-stat-more .ls-more-body{width:100%}
   [data-market-redesign] .ls-detail .ls-more-row{grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-2)}
   [data-market-redesign] .ls-detail .ls-more-row .sub{grid-column:1 / -1;text-align:left}
+}
+
+/* WS-403 follow-up: consistent statistics, explicit row networks and direct collateral actions. */
+.mk-network{display:inline-flex;align-items:center;gap:var(--sp-2);font-family:var(--sans);font-size:var(--fs-12);line-height:1.4;white-space:nowrap;color:var(--text)}
+.mk-network[data-network="ETH"] .mk-coin{color:var(--violet);background:var(--violet-bg);border-color:var(--violet-border)}
+.mk-network[data-network="TRON"] .mk-coin{color:var(--danger);background:var(--danger-bg);border-color:var(--danger-border)}
+[data-market-redesign] .am-summary .s:nth-child(3) .v{color:var(--warn)}
+[data-market-redesign] .ls-market-stats .s:nth-child(3) .v,[data-market-redesign] .ls-detail .ls-stats .s:nth-child(3) .v{color:var(--info)}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(1){width:9%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(2){width:12%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(3){width:12%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(4){width:8%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(5){width:9%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(6){width:10%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(7){width:12%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(8){width:7%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(9){width:9%}
+[data-market-redesign] .am-market-page .am-tbl th:nth-child(10){width:12%}
+[data-market-redesign] .ls-market-page .ls-market-table th:nth-child(1){width:10%}
+[data-market-redesign] .ls-market-page .ls-market-table th:nth-child(2){width:18%}
+[data-market-redesign] .ls-market-page .ls-market-table th:nth-child(3){width:14%}
+[data-market-redesign] .ls-market-page .ls-market-table th:nth-child(4){width:14%}
+[data-market-redesign] .ls-market-page .ls-market-table th:nth-child(5){width:15%}
+[data-market-redesign] .ls-market-page .ls-market-table th:nth-child(6){width:12%}
+[data-market-redesign] .ls-market-page .ls-market-table th:nth-child(7){width:8%}
+[data-market-redesign] .ls-market-page .ls-market-table th:nth-child(8){width:9%}
+[data-market-redesign] .listzone[data-view="cards"] tbody td.mk-network-cell{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:0;border:0}
+[data-market-redesign] .listzone[data-view="cards"] tbody td.mk-network-cell::before{margin:0;font-size:var(--fs-11)}
+[data-market-redesign] .listzone[data-view="cards"] tbody td.mk-item-cell{grid-column:1 / -1;padding-bottom:var(--sp-3);border-bottom:1px solid var(--border)}
+[data-market-redesign] .listzone[data-view="cards"] tbody td.mk-item-cell::before{display:none}
+[data-market-redesign] .ls-detail-main .ls-token-table{min-width:860px}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td){padding-inline:var(--sp-2)}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(1){width:11%}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(2){width:21%;text-align:left}
+[data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(2) .cell-wrap{align-items:flex-start}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(3){width:18%;text-align:right}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(7)) :is(th,td):nth-child(4){width:9%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(7)) :is(th,td):nth-child(5){width:13%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(7)) :is(th,td):nth-child(6),[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(7)) :is(th,td):nth-child(7){width:14%}
+[data-market-redesign] .ls-detail-main .ls-token-table .tag{overflow-wrap:normal;word-break:normal}
+[data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(3) .cell-wrap{align-items:flex-end}
+[data-market-redesign] .ls-detail .ls-token-filters{padding:0 0 var(--sp-3);gap:var(--sp-2);margin:0}
+[data-market-redesign] .ls-detail .ls-token-filters .fb-q{flex:1 1 150px;min-width:120px}
+[data-market-redesign] .ls-detail .ls-token-filters .fb select.inp{min-width:0;max-width:100%}
+.mk-project-global-actions{margin-left:auto;align-self:flex-start;flex:none}
+[data-market-redesign] .ls-detail .ls-detail-head>.mk-project-global-actions{flex:0 0 auto;margin-left:auto}
+[data-market-redesign] .ls-detail .ls-detail-head>div:not(.mk-project-global-actions){flex:1;min-width:0}
+.mk-project-global-actions .btn{color:var(--muted);background:var(--card)}
+.mk-project-global-actions .btn:hover:not(:disabled){color:var(--danger);border-color:var(--danger-border);background:var(--danger-bg)}
+.mk-collateral-actions{display:flex;flex-direction:column;flex:none;padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border);gap:var(--sp-2)}
+[data-market-redesign] .ls-detail .mk-collateral-actions .ls-pledge-action-group{order:-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2);padding:0}
+[data-market-redesign] .ls-detail .mk-collateral-actions .ls-pledge-action-group:has(>.btn:only-child){grid-template-columns:1fr}
+[data-market-redesign] .ls-detail .mk-collateral-actions .btn{width:100%;min-height:44px;height:auto;white-space:normal;line-height:1.4;font-size:var(--fs-13)}
+.mk-collateral-actions .ls-flow-note{margin:0;font-size:var(--fs-12)}
+@media(max-width:900px){
+  [data-market-redesign] .ls-detail .ls-operations{max-height:none}
+  [data-market-redesign] .ls-detail .ls-flow-open{max-height:var(--market-popover-h)}
+}
+@media(max-width:768px){
+  [data-market-redesign] .ls-detail .ls-token-filters .fb-q{flex-basis:100%;margin-left:0}
+  [data-market-redesign] .ls-detail-main .ls-token-table :is(th,td){width:auto!important;text-align:left!important}
+  [data-market-redesign] .ls-detail-main .ls-token-table{min-width:0}
+  [data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(3) .cell-wrap{align-items:flex-start}
+  .mk-project-global-actions .btn{min-height:44px;padding-inline:var(--sp-3);font-size:var(--fs-12)}
 }
