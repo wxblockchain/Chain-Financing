@@ -22,7 +22,7 @@
   function isList() { return /^\/assets(\?|$)/.test(hashPath()); }
   var load = null, timer = 0, restoreFrame = 0, restoring = false;
   var intentFrame = 0, touchY = null, restoreListFocus = false, returnFocus = null;
-  var failNext = false, demoLimit = 52, hits = [];
+  var failNext = false, demoLimit = 52, hits = [], marketView = "cards";
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   function number(value, fallback, max, precise) {
     var n = Number(value);
@@ -479,11 +479,11 @@
     ensureLoad(v, total);
     afterList(v);
 
-    var head = '<div class="page-head"><div>' +
+    var head = '<div class="mk-identity">' + CF.market.currency(AM.CHAIN) + '<span>' + esc(tokenKind()) + '</span><span>' + L('Demonstration data', '演示数据') + '</span></div><div class="page-head"><div>' +
       '<h1 class="page-title">' + L("Asset marketplace", "资产广场") + "</h1>" +
       '<p class="page-desc">' + L(
-        "All tokens on the platform, with their underlying receivables, on-chain records and pledge status.",
-        "查看平台全部代币的底层应收账款、链上凭证与质押去向。") + "</p></div></div>";
+        "Receivables, tokenized. Explore the assets behind each on-chain record.",
+        "查看代币背后的应收账款与链上事实。") + "</p></div></div>";
 
     /* 头部汇总：含已失效代币；空态显示 0，不隐藏整块。
        汇总与列表同批到达，因此加载中时汇总也处在加载中，不先出数再出表。 */
@@ -494,16 +494,18 @@
       if (S.st === "error") return '<div class="v">' + dash() + "</div>";
       return '<div class="v">' + html + "</div>";
     }
-    var summary = '<div class="stat-strip am-summary">' +
-      '<div class="s"><div class="k">' + L("Token amount", "代币数量") + "</div>" +
-        statV(quantity(amount)) +
-        '<div class="n">' + L("tokens · void tokens included", "枚 · 含已失效代币") + "</div></div>" +
-      '<div class="s" data-tone="accent"><div class="k">' + L("Token value", "代币价值") + "</div>" +
-        statV('<span class="u">USD</span>' + CF.fmtAmt(value)) +
-        '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + "</div></div>" +
-      '<div class="s" data-tone="warn"><div class="k">' + L("Of which void", "其中失效") + "</div>" +
-        statV(quantity(voidAmount)) +
-        '<div class="n">' + L("tokens · part of the amount above", "枚 · 代币数量的子集") + "</div></div></div>";
+    var summary = '<div class="mk-overview"><div class="stat-strip am-summary">' +
+      '<div class="s"><div class="k">' + L("Token value", "代币价值") + '</div>' +
+      statV(CF.market.currency("USD") + '<span>' + CF.fmtAmt(value) + '</span>') +
+      '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + '</div></div>' +
+      '<div class="s"><div class="k">' + L("Token amount", "代币数量") + '</div>' + statV(quantity(amount)) +
+      '<div class="n">' + L("tokens · void tokens included", "枚 · 含已失效代币") + '</div></div>' +
+      '<div class="s"><div class="k">' + L("Of which void", "其中失效") + '</div>' + statV(quantity(voidAmount)) +
+      '<div class="n">' + L("tokens · part of the amount above", "枚 · 代币数量的子集") + '</div></div></div>' +
+      (wait ? '<div class="mk-distribution">' + CF.skelTable(2) + '</div>' : S.st === 'error' ? '<div class="mk-distribution muted">' + L('Composition unavailable', '构成暂不可用') + '</div>' : CF.market.distribution(L('Token validity by amount', '代币数量构成'), [
+        {key:'valid',label:L('Valid','有效'),value:Math.max(0,amount-voidAmount),tone:'accent'},
+        {key:'void',label:L('Void','失效'),value:voidAmount,tone:'muted'}
+      ], 'am-chart-status', v.ts, L('tokens','枚'))) + '</div>';
 
     var holders = AM.HOLDERS.map(function (h, i) { return [String(i), nm(h)]; });
     var filters = '<div class="filterbar am-filters"><div class="am-filter-options">' +
@@ -519,7 +521,7 @@
       '<div class="fb-acts">' +
       '<button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
       '<button class="btn primary" type="button" data-act="am-search">' + L("Search", "查询") + "</button>" +
-      '</div>' + fullBar(wait || S.st === "error" ? null : total) + '</div>';
+      '</div></div>';
 
     var body;
     var alt = CF.surface({
@@ -561,7 +563,8 @@
       : "";
 
     return '<div class="am-market-page">' + head + summary + limit +
-      '<div class="card listzone">' + filters + body + '</div></div>';
+      '<div class="card listzone" data-view="' + marketView + '">' + filters +
+      '<div class="mk-result-head"><h2>' + CF.market.icon('asset') + L('Token registry', '代币清单') + '</h2><div class="mk-result-tools">' + CF.market.views(marketView, 'am-view') + fullBar(wait || S.st === "error" ? null : total) + '</div></div>' + body + '</div></div>';
   }
 
   /* 列表可放大到整窗，便于连续核对长列表；再次点击或 Esc 还原。 */
@@ -670,7 +673,11 @@
       [L("Attestation transaction hash", "链上存证交易哈希"), hashRow(a.tx), true]
     ]));
 
-    return '<div class="am-detail">' + overview + info + origin + attest + holdingTable(t) + "</div>";
+    var story = '<div class="mk-token-story">' +
+      '<div>' + CF.market.icon('asset') + '<span><b>' + L('Underlying receivable','底层应收账款') + '</b><small>' + esc(holderName(t)) + '</small></span></div>' +
+      '<div>' + CF.market.icon('clock') + '<span><b>' + L('Receivable term','应收账款账期') + '</b><small>' + esc(t.from) + ' – ' + esc(t.to) + '</small></span></div>' +
+      '<div>' + CF.market.icon('shield') + '<span><b>' + L('On-chain record','链上记录') + '</b><small>' + CF.market.currency(AM.CHAIN) + ' · ' + L('Verify the transaction independently','请自行核验交易') + '</small></span></div></div>';
+    return '<div class="am-detail">' + overview + story + info + origin + attest + holdingTable(t) + "</div>";
   }
 
   /* ------------------------------------------------------------ 页脚 */
@@ -792,7 +799,9 @@
     if (act.indexOf("am-") !== 0 && act !== "clearfilter" && act !== "retry") return;
     e.preventDefault(); e.stopImmediatePropagation();
     var v = readView();
-    if (act === "am-copy") copyValue(value);
+    if (act === "am-view") { marketView = value === 'table' ? 'table' : 'cards'; CF.render(); requestAnimationFrame(function(){document.querySelector('.mk-views [data-v="'+marketView+'"]')?.focus({preventScroll:true});}); }
+    else if (act === "am-chart-status") { v.ts = v.ts === value ? '' : value; writeView(v); }
+    else if (act === "am-copy") copyValue(value);
     else if (act === "am-open") {
       cancelLoad();
       CF.ENTRY[DETAIL] = "/assets/" + value + "?return=" + encodeURIComponent(CF.ENTRY[LIST]);

@@ -114,3 +114,27 @@
   --fs-body:15px;
   --lh-body:1.6;
 }
+
+/* WS-403: user-authorized replacement of the marketplace visual baseline.
+   Only active on marketplace pages; palette has one canonical source. */
+:root[data-market-redesign]{
+  --bg:#0C100F; --bg-elev:#171E1B; --card:#141B18; --card-2:#1A231E;
+  --card-hover:#1A241F; --border:#2B3630; --border-strong:#43534A;
+  --border-dash:#2B3630; --row-line:#2B3630; --row-hover:#1C2821;
+  --text:#F1F5ED; --muted:#B0BDB5; --faint:#92A59A; --on-accent:#112018;
+  --control-border:#70887A;
+  --accent:#B6EF8A; --accent-strong:#CBF7A9; --accent-soft:#22351E; --accent-border:#536E3D;
+  --ok:#A9E5B5; --ok-bg:#1B3223; --ok-border:#41624A;
+  --warn:#F1C779; --warn-bg:#382D1C; --warn-border:#77613B;
+  --danger:#FFADAA; --danger-bg:#3A2525; --danger-border:#784C4C;
+  --gray-bg:#253029; --gray-fg:#BAC8C0; --gray-border:#43534A;
+  --violet:#C1B9ED; --violet-bg:#2C283B; --violet-border:#655F80;
+  --pos:#A9E5B5; --pos-soft:#1B3223;
+  --info:#A5C7FA; --info-bg:#202D40; --info-border:#536B8A;
+  --hash-text:#B6EF8A; --hash-bg:#22351E; --hash-border:#536E3D;
+  --shadow:none; --shadow-soft:none; --shadow-lg:0 12px 40px #00000066;
+  --overlay:#000000B3; --track:#2B3630;
+  --radius-lg:12px; --radius:10px; --radius-sm:8px; --radius-xs:6px;
+  --fs-36:36px; --fs-48:48px;
+  --list-h:clamp(440px,60vh,760px);
+}
