@@ -136,12 +136,6 @@
 [data-market-redesign] .am-detail .dl dt{color:var(--muted);font-weight:400;font-size:var(--fs-12)}
 /* Ordinary detail values share one size; .num selects numeric styling only. */
 [data-market-redesign] .am-detail .num{font-size:inherit}
-.mk-token-story{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-4);margin-bottom:var(--sp-6)}
-.mk-token-story>div{padding:var(--sp-4);border-left:1px solid var(--border);display:flex;gap:var(--sp-3);align-items:flex-start}
-.mk-token-story>div:first-child{border-left:0;padding-left:0}
-.mk-token-story svg{color:var(--accent)}
-.mk-token-story b{display:block;font-size:var(--fs-13);font-weight:500;margin-bottom:var(--sp-2)}
-.mk-token-story small{display:block;font-size:var(--fs-12);color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
 [data-market-redesign] .ls-detail-head{padding-bottom:var(--sp-6);border-bottom:1px solid var(--border-strong)}
 [data-market-redesign] .ls-detail-head .tok-mark{height:56px;width:56px;font-size:var(--fs-16)}
 [data-market-redesign] .ls-meta{gap:var(--sp-5) var(--sp-7)}
@@ -204,9 +198,6 @@
   [data-market-redesign] .listzone[data-view="cards"] tbody tr{padding:var(--sp-4)}
   [data-market-redesign] .card-b{padding:var(--sp-4)}
   [data-market-redesign] .card-head{padding:var(--sp-4)}
-  .mk-token-story{grid-template-columns:minmax(0,1fr);gap:0}
-  .mk-token-story>div{border:0;border-top:1px solid var(--border);padding:var(--sp-4) 0}
-  .mk-token-story>div:first-child{border-top:0}
   [data-market-redesign] .ls-stats .v{font-size:var(--fs-19)}
   [data-market-redesign] .ls-form .card-b{display:flex;gap:var(--sp-4)}
   [data-market-redesign] .ls-form .field+.hint{align-self:flex-start}
@@ -505,3 +496,15 @@
 @media(max-width:768px){
   [data-market-redesign] :is(.am-detail .am-ov,.ls-form,.am-market-page,.ls-market-page) .page-title{font-size:var(--fs-24)}
 }
+
+/* 币种与网络图标改用全平台统一图库（_shared/asset-icons.js）：原图自带圆形底色，
+   不再叠加徽章底色和描边，各处只按容器尺寸缩放。 */
+.mk-coin.mk-coin-art,
+[data-market-redesign] .mk-money>.mk-coin.mk-coin-art,
+.mk-overview .stat-strip .s:first-child .mk-coin.mk-coin-art,
+[data-market-redesign] .mk-overview .stat-strip .s:first-child .mk-money>.mk-coin.mk-coin-art{background:none;border:0;padding:0;color:inherit;overflow:hidden}
+.mk-coin.mk-coin-art svg,
+[data-market-redesign] .mk-overview .stat-strip .s:first-child .mk-coin.mk-coin-art svg,
+.mk-overview .stat-strip .s:first-child .mk-coin.mk-coin-art svg{width:100%;height:100%}
+.cf-asset-icon{display:inline-flex;width:20px;height:20px;flex:none;border-radius:var(--radius-pill);overflow:hidden}
+.cf-asset-icon svg{display:block;width:100%;height:100%}

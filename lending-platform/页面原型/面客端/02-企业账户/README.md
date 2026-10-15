@@ -72,6 +72,16 @@ python3 _shared/export.py --source 面客端/02-企业账户/企业账户.html -
 
 共享层变更后，旧的离线附件须重新导出。
 
+
+## 2026-10-15 · 币种图标改由全平台共享图库提供
+
+承接资产广场 WS-373 用户评论 `68e782ea` 第 1 点：数币图标保留，法币图标改用更贴合本平台蓝白底色的圆形国旗图标，并统一应用于全平台。原本模块私有的 `币种图标.js` 移入共享层 `_shared/asset-icons.js`，加载顺序在 `market.js` 之前；本模块调用名 `CF.eaAssetIcon` 不变，CSS 未改。
+
+- 法币 USD / EUR / GBP / JPY / CNY：[HatScripts/circle-flags](https://github.com/HatScripts/circle-flags) 固定版本 `379588b5da95482d6bbf10bd45644a35b0609ea6`，MIT 许可证全文随文件携带。
+- 数币与网络 ETH / TRON / USDT / USDC：仍为 spothq/cryptocurrency-icons `1a63530` 的 CC0 原图，图形未变。
+
+下文历史记录中“本模块私有 `币种图标.js`”“法币取 spothq usd/eur/gbp”的描述以本节为准。
+
 ## 视觉适配（2026-10-15）
 
 本轮为 `existing-system adaptation`，面向资产方 / 资金方的面客工作区。现行视觉承接 `351ff04`，本次仅调整清单币种浮窗，沿用现行蓝白 token、本地字体及共享壳层；未改业务字段、数据目录、权限、校验条件、流程或 PRD。

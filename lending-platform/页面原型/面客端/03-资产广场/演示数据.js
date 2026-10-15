@@ -13,8 +13,9 @@
   };
   /* 铸造链：代币铸造所在的链。持有方地址、发行合约地址和铸造交易哈希都在这条链上。 */
   AM.CHAIN = "ETH";
-  AM.CHAIN_ID = "1";
   AM.EXPLORER_TX = "https://etherscan.io/tx/";
+  /* 各链的区块浏览器交易页前缀：铸造交易按铸造链，存证交易按存证所在链。 */
+  AM.EXPLORERS = { ETH: "https://etherscan.io/tx/", TRON: "https://tronscan.org/#/transaction/" };
   /* 代币标准与底层资产类型合并后的单一取值；本期配置表只有这一行。 */
   AM.TOKEN_TYPE = ["ERC-20-Receivables", "ERC-20-应收账款"];
 
@@ -200,6 +201,9 @@
         : [[q, null]], 4100 + i * 13);
     }
   })();
+
+  /* 链上存证所在的链：资产可信平台本期在 Ethereum 上存证。 */
+  TOKENS.forEach(function (t) { t.attest.chain = "ETH"; });
 
   /* 评审工具里可直接打开的几笔代币：部分质押、分属两个项目、项目尚未发布、解押转出中、
      业务释放待提取、两个企业地址分持、失效但持有方已质押。 */

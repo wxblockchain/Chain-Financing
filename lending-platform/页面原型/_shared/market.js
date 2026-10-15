@@ -17,16 +17,24 @@
     ETH: '<path d="m12 2-6 10 6 3.6 6-3.6L12 2Zm0 15.1L6 13.6l6 8.4 6-8.4-6 3.5Z" fill="currentColor" stroke="none"/>',
     TRON: '<path d="m4 3 16 4-10 14L4 3Zm0 0 10 8 6-4M10 21l4-10L4 3"/>'
   };
+  // Coins come from the platform's single icon source (_shared/asset-icons.js);
+  // the line glyphs above remain only as a fallback when that file is absent.
+  function coin(code) {
+    const art=CF.assetIconSvg&&CF.assetIconSvg(code);
+    if(art)return '<span class="mk-coin mk-coin-art" aria-hidden="true">'+art+'</span>';
+    return shapes[code]?'<span class="mk-coin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+shapes[code]+'</svg></span>':'';
+  }
   function currency(code) {
     code = String(code).toUpperCase();
-    if (!shapes[code]) return E(code);
-    return '<span class="mk-currency" data-currency="'+E(code)+'"><span class="mk-coin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+shapes[code]+'</svg></span><span>'+E(code)+'</span></span>';
+    const mark=coin(code);
+    if (!mark) return E(code);
+    return '<span class="mk-currency" data-currency="'+E(code)+'">'+mark+'<span>'+E(code)+'</span></span>';
   }
   // Amounts have one reading order. Currency-only labels keep currency().
   // Compact notation is reserved for aggregate overviews, never transactions.
   function amountText(text,code,withIcon) {
-    const coin=withIcon&&shapes[code]?'<span class="mk-coin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+shapes[code]+'</svg></span>':'';
-    return '<span class="mk-money" data-currency="'+E(code)+'">'+coin+'<span class="mk-money-number">'+E(text)+'</span><span class="mk-money-unit">'+E(code)+'</span></span>';
+    const mark=withIcon?coin(code):'';
+    return '<span class="mk-money" data-currency="'+E(code)+'">'+mark+'<span class="mk-money-number">'+E(text)+'</span><span class="mk-money-unit">'+E(code)+'</span></span>';
   }
   function amount(value, code, options) {
     const opts=options||{}, n=Number(value);
@@ -46,11 +54,11 @@
   function network(code) {
     code=String(code).toUpperCase();
     const name={ETH:'Ethereum',TRON:'TRON'}[code]||code;
-    return '<span class="mk-network" data-network="'+E(code)+'"><span class="mk-coin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(shapes[code]||'')+'</svg></span><span>'+E(name)+'</span></span>';
+    return '<span class="mk-network" data-network="'+E(code)+'">'+coin(code)+'<span>'+E(name)+'</span></span>';
   }
   const oldChip = CF.icoChip;
   CF.icoChip = function (label, opts) {
-    return shapes[label] ? currency(label) : oldChip(label, opts);
+    return (shapes[label] || (CF.assetIconSvg && CF.assetIconSvg(label))) ? currency(label) : oldChip(label, opts);
   };
   function icon(name) {
     const paths = {

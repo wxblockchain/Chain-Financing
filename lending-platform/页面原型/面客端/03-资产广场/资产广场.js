@@ -377,7 +377,7 @@
               '<a class="btn-link" href="#/project/' + esc(r.project.id) + '" data-act="am-project" data-v="' + esc(r.project.id) + '">' + esc(nm(r.project.name)) + '</a>';
             var values = ['<span class="copy-pair"><span class="mono am-address" title="' + esc(r.address) + '">' + esc(r.address.slice(0, 6) + "…" + r.address.slice(-4)) + '</span>' +
               CF.copyBtn("am-address-copy", r.address, L("Copy holder address", "复制持有方地址")) + '</span>',
-              quantity(r.qty) + L(" tokens", " 枚"), CF.fmtAmt(r.value, "USD"),
+              quantity(r.qty) + L(" tokens", " 枚"), CF.market.amount(r.value, "USD"),
               CF.tag(r.pledged ? "accent" : "", r.pledged ? L("Pledged", "已质押") : L("Not pledged", "未质押")), project];
             return '<tr>' + values.map(function (v, i) { return '<td data-label="' + esc(heads[i]) + '"><div class="cell-wrap">' + v + '</div></td>'; }).join("") + '</tr>';
           }).join("") + '</tbody></table></div>';
@@ -387,18 +387,18 @@
   }
 
   /* 区块浏览器外链：唯一的新窗口；链接旁常驻未核验标注。 */
-  function explorer(hash) {
-    return CF.linkOut(AM.EXPLORER_TX + hash, L("Open block explorer", "在区块浏览器打开"));
+  function explorer(hash, chain) {
+    return CF.linkOut((AM.EXPLORERS[chain || AM.CHAIN] || AM.EXPLORER_TX) + hash, L("Open block explorer", "在区块浏览器打开"));
   }
   function notVerified() {
     return '<p class="tiny am-caveat">' +
       L("Not verified by the platform; link provided for your own checking.",
         "平台未核验该交易，链接仅供自行查验。") + "</p>";
   }
-  function hashRow(hash) {
+  function hashRow(hash, chain) {
     if (!hash) return dash();
     return '<div class="am-hash"><span class="hash">' + esc(shortHash(hash)) + "</span>" +
-      copyBtn(hash, L("Transaction hash", "交易哈希")) + explorer(hash) + "</div>" + notVerified();
+      copyBtn(hash, L("Transaction hash", "交易哈希")) + explorer(hash, chain) + "</div>" + notVerified();
   }
 
   /* ------------------------------------------------------------ 筛选与排序 */
@@ -549,11 +549,11 @@
         '<th scope="col">' + L("Token", "代币") + "</th>" +
         '<th scope="col">' + L("Token ID", "代币编号") + "</th>" +
         '<th scope="col">' + L("Issuer", "发行方") + "</th>" +
-        '<th scope="col">' + L("Token type", "代币类型") + "</th>" +
+        '<th scope="col" class="am-col-x">' + L("Token type", "代币类型") + "</th>" +
         '<th scope="col" class="am-r">' + L("Token amount", "代币数量") + "</th>" +
         sortTh("val", L("Token value", "代币价值"), "am-r") +
         '<th scope="col">' + L("Token status", "代币状态") + "</th>" +
-        sortTh("at", L("Minted at", "铸造时间"), "", '<span class="am-tz">' + esc(tzName()) + "</span>") +
+        sortTh("at", L("Minted at", "铸造时间"), "am-col-x", '<span class="am-tz">' + esc(tzName()) + "</span>") +
         "</tr></thead><tbody>" +
         rows.slice(0, load.shown).map(listRow).join("") +
         "</tbody></table>" + tail(total) + "</div>";
@@ -565,7 +565,7 @@
       : "";
 
     return '<div class="am-market-page">' + head + summary + limit +
-      '<div class="card listzone" data-view="' + marketView + '">' + filters +
+      '<div class="card listzone" data-view="' + marketView + '" data-density="' + (S.listFull ? "full" : "core") + '">' + filters +
       '<div class="mk-result-head"><h2>' + CF.market.icon('asset') + L('Token registry', '代币清单') + '</h2><div class="mk-result-tools">' + CF.market.views(marketView, 'am-view') + fullBar(wait || S.st === "error" ? null : total) + '</div></div>' + body + '</div></div>';
   }
 
@@ -574,8 +574,8 @@
     return '<div class="am-toolbar-end">' + (total === null ? '' : '<span class="am-total" role="status">' +
       esc(L(total + (total === 1 ? " record" : " records"), "共 " + total + " 笔")) + '</span>') +
       '<button class="btn icon" type="button" id="am-full" data-act="list-full" data-v="am-full" aria-pressed="' + !!S.listFull +
-      '" title="' + esc(S.listFull ? L("Exit full window", "退出放大") : L("Expand to window", "放大到整窗")) +
-      '" aria-label="' + esc(S.listFull ? L("Exit full window", "退出放大") : L("Expand to window", "放大到整窗")) + '">' +
+      '" title="' + esc(S.listFull ? L("Back to the compact list", "收起，回到精简列表") : L("Expand to show all fields", "放大，查看全部信息")) +
+      '" aria-label="' + esc(S.listFull ? L("Back to the compact list", "收起，回到精简列表") : L("Expand to show all fields", "放大，查看全部信息")) + '">' +
       (S.listFull ? CF.ICON.close : CF.ICON.expand) + "</button></div>";
   }
 
@@ -589,12 +589,12 @@
         '<button class="btn-link mono am-id" type="button" data-act="am-copy" data-v="' + esc(t.no) + '" aria-label="' +
         esc(L("Copy token ID: ", "复制代币编号：") + t.no) + '" title="' + L("Copy token ID", "复制代币编号") + '">' + esc(t.no) + "</button></div></td>" +
       '<td data-label="' + esc(L("Issuer", "发行方")) + '">' + esc(issuerName(t)) + "</td>" +
-      '<td data-label="' + esc(L("Token type", "代币类型")) + '">' + esc(tokenKind()) + "</td>" +
+      '<td class="am-col-x" data-label="' + esc(L("Token type", "代币类型")) + '">' + esc(tokenKind()) + "</td>" +
       '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="am-r"><div class="cell-wrap am-number"><span class="num">' + quantity(t.qty) +
         '</span><span class="cell-sub">' + L("tokens", "枚") + '</span></div></td>' +
       '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="am-r"><div class="cell-wrap am-number">' + CF.market.amount(t.val,"USD") + '</div></td>' +
       '<td data-label="' + esc(L("Token status", "代币状态")) + '">' + tsTag(t) + "</td>" +
-      '<td data-label="' + esc(L("Minted at", "铸造时间")) + '" class="am-at"><span class="am-stamp">' + stamp(t.at) + '</span></td>' +
+      '<td data-label="' + esc(L("Minted at", "铸造时间")) + '" class="am-at am-col-x"><span class="am-stamp">' + stamp(t.at) + '</span></td>' +
       "</tr>";
   }
 
@@ -628,28 +628,27 @@
 
     var mark = tokenLogo(t, "am-mark");
 
-    var overview = '<section class="card am-sec am-ov"><div class="card-b">' +
-      '<div class="am-ov-top">' + mark + '<div class="am-ov-id">' +
-        '<h1 class="page-title">' + esc(tokenName(t)) + "</h1>" +
-        '<div class="am-ov-no"><span class="mono">' + esc(t.no) + "</span>" +
-        copyBtn(t.no, L("Token ID", "代币编号")) + "</div></div></div>" +
-      '<div class="am-ov-tags">' +
-        '<div class="am-ov-tag">' + tsTag(t) + '<span class="tiny">' + esc(tsWhy(t)) + "</span></div>" +
+    /* 顶部只做身份识别：标识图、名称与代币状态同一行，编号与状态依据合为一行；
+       发行方、账期、链等事实只在下方分区出现一次，不在顶部重复摘要。 */
+    var overview = '<section class="am-ov"><div class="am-ov-top">' + mark + '<div class="am-ov-id">' +
+        '<div class="am-ov-title"><h1 class="page-title">' + esc(tokenName(t)) + "</h1>" + tsTag(t) + "</div>" +
+        '<div class="am-ov-meta"><span class="am-ov-no"><span class="mono">' + esc(t.no) + "</span>" +
+        copyBtn(t.no, L("Token ID", "代币编号")) + '</span><span class="am-ov-why">' + esc(tsWhy(t)) + "</span></div>" +
       "</div></div></section>";
 
     var info = section(L("Token information", "代币信息"), dl([
       [L("Issuer", "发行方"), esc(issuerName(t))],
       [L("Token type", "代币类型"), esc(tokenKind())],
       [L("Token amount", "代币数量"), '<span class="num">' + quantity(t.qty) + L(" tokens", " 枚") + "</span>"],
-      [L("Token value", "代币价值"), CF.market.amount(t.val,"USD")],
+      [L("Token value", "代币价值"), '<span class="num">' + CF.fmtAmt(t.val, "USD") + "</span>"],
       /* 铸造链：代币铸造所在的链，只读。 */
       [L("Minting chain", "铸造链"), CF.market.network(AM.CHAIN)],
       [L("Minted at", "铸造时间"), stampTz(t.at)],
       [L("Token contract", "代币发行合约"), '<div class="am-long"><span>' + esc(nm(AM.CONTRACT.name)) + "</span>" +
         /* 发行合约地址是链上查验的必要事实，完整展示、不缩略。 */
         '<span class="am-addr"><span class="mono">' + esc(AM.CONTRACT.addr) + "</span>" +
-        copyBtn(AM.CONTRACT.addr, L("Token contract address", "代币发行合约地址")) + "</span></div>", true],
-      [L("Minting transaction hash", "铸造交易哈希"), hashRow(t.mintTx), true]
+        copyBtn(AM.CONTRACT.addr, L("Token contract address", "代币发行合约地址")) + "</span></div>"],
+      [L("Minting transaction hash", "铸造交易哈希"), hashRow(t.mintTx)]
     ]));
 
     var origin = section(L("Basic information", "基础资料信息"), dl([
@@ -662,22 +661,19 @@
     ]));
 
     var a = t.attest || {};
+    /* 存证所在链给链名，不给链 ID；存证交易按这条链打开区块浏览器。 */
     var attest = section(L("On-chain attestation", "链上存证"), dl([
+      [L("Attestation chain", "存证链"), a.chain ? CF.market.network(a.chain) : dash()],
       [L("Block height", "区块高度"), a.block ? '<span class="num">' + a.block + "</span>" : dash()],
-      [L("Chain ID", "链 ID"), '<span class="num">' + esc(AM.CHAIN_ID) + "</span>"],
       [L("Attested at", "存证时间"), a.at ? stampTz(a.at) : dash()],
       [L("Attestation hash", "存证哈希"), a.hash
         ? '<div class="am-hash"><span class="hash">' + esc(shortHash(a.hash)) + "</span>" +
           copyBtn(a.hash, L("Attestation hash", "存证哈希")) + "</div>"
-        : dash(), true],
-      [L("Attestation transaction hash", "链上存证交易哈希"), hashRow(a.tx), true]
+        : dash()],
+      [L("Attestation transaction hash", "链上存证交易哈希"), hashRow(a.tx, a.chain)]
     ]));
 
-    var story = '<div class="mk-token-story">' +
-      '<div>' + CF.market.icon('asset') + '<span><b>' + L('Issuer','发行方') + '</b><small>' + esc(issuerName(t)) + '</small></span></div>' +
-      '<div>' + CF.market.icon('clock') + '<span><b>' + L('Receivable term','应收账款账期') + '</b><small>' + esc(t.from) + ' – ' + esc(t.to) + '</small></span></div>' +
-      '<div>' + CF.market.icon('shield') + '<span><b>' + L('On-chain record','链上记录') + '</b><small>' + CF.market.currency(AM.CHAIN) + ' · ' + L('Verify the transaction independently','请自行核验交易') + '</small></span></div></div>';
-    return '<div class="am-detail">' + overview + story + info + origin + attest + holdingTable(t) + "</div>";
+    return '<div class="am-detail">' + overview + info + origin + attest + holdingTable(t) + "</div>";
   }
 
   /* ------------------------------------------------------------ 页脚 */
