@@ -24,7 +24,7 @@
     return V.unverified?Object.assign({},e,{verified:false}):e;
   };
   const b=(act,en,zh,v='',primary=false,off=false)=>'<button type="button" class="btn'+(primary?' primary':'')+
-    '" data-act="ea-'+act+'" data-v="'+E(v)+'"'+(off?' disabled':'')+'>'+L(en,zh)+'</button>';
+    '" data-act="ea-'+act+'" data-v="'+E(v)+'"'+(off?' disabled':'')+'>'+(act==='add'?'<span class="ea-plus" aria-hidden="true">+</span>':'')+L(en,zh)+'</button>';
   const link=(act,en,zh,v,label)=>'<button type="button" class="actlink" data-act="ea-'+act+'" data-v="'+E(v)+'" aria-label="'+
     E(L(en,zh)+' · '+label)+'">'+L(en,zh)+'</button>';
   const dl=rows=>'<dl class="dl ea-dl">'+rows.map(r=>'<dt>'+r[0]+'</dt><dd>'+r[1]+'</dd>').join('')+'</dl>';
@@ -32,8 +32,12 @@
   const stamp=iso=>iso?'<span class="num">'+E(CF.fmtStamp(iso))+'</span> <span class="muted">('+zone()+')</span>':'—';
   const copyable=(shown,value,label,cls='mono')=>'<span class="copy-pair"><span class="'+cls+'">'+E(shown)+'</span>'+
     CF.copyBtn('ea-copy',value,label)+'</span>';
-  /* 账户币种只作标注：以中性小标签并列展示，不表示核验结果。 */
-  const currencyTags=a=>{const c=EA.currencies(a);return c.length?'<span class="ea-ccy-list">'+c.map(x=>'<span class="ea-ccy" title="'+E(EA.currencyName(x))+'">'+E(x)+'</span>').join('')+'</span>':'<span class="faint">—</span>';};
+  /* 复用共享币种 / 网络图形，代码始终保留；图标只辅助识别，不表示核验结果。 */
+  const currencyTags=a=>{const c=EA.currencies(a);return c.length?'<span class="ea-ccy-list">'+c.map(x=>'<span class="ea-ccy" title="'+E(EA.currencyName(x))+'">'+CF.market.currency(x)+'</span>').join('')+'</span>':'<span class="faint">—</span>';};
+  const tokenTags=()=>'<span class="ea-ccy-list">'+EA.TOKENS.map(c=>CF.market.currency(c)).join('')+'</span>';
+  const networkTag=code=>'<span class="ea-network">'+CF.market.currency(code)+'</span>';
+  const kindIcon=kind=>'<svg class="ea-kind-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
+    (kind==='fiat'?'<path d="m3 9 9-5 9 5H3ZM5 11v7m5-7v7m4-7v7m5-7v7M3 21h18"/>':'<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18m-4 4h4v4h-4a2 2 0 0 1 0-4Z"/>')+'</svg>';
   const kindName=k=>k==='fiat'?L('Fiat accounts','法币账户'):L('Crypto accounts','数币账户');
 
   /* ------------------------------------------------------------------ 视图参数：Tab 与回流目标写在 query 里，刷新与分享可恢复 */
@@ -84,7 +88,7 @@
     const current=tab();
     return '<div class="card-tabs ea-tabs" role="tablist" aria-label="'+L('Account types','账户类别')+'">'+
       KINDS.map(k=>'<button type="button" role="tab" id="ea-tab-'+k+'" aria-controls="ea-panel" aria-selected="'+(k===current)+'" tabindex="'+(k===current?0:-1)+
-        '" data-act="ea-tab" data-v="'+k+'">'+kindName(k)+' <span class="ea-count">'+list(k).length+'</span></button>').join('')+
+        '" data-act="ea-tab" data-v="'+k+'">'+kindIcon(k)+kindName(k)+' <span class="ea-count">'+list(k).length+'</span></button>').join('')+
       '<div class="ea-tab-actions">'+(list(current).length?b('add',current==='fiat'?'Add fiat account':'Add crypto account',
         current==='fiat'?'新增法币账户':'新增数币账户',current,true):'')+'</div></div>';
   }
@@ -122,9 +126,9 @@
     return '<table class="tbl resp ea-table"><thead><tr>'+h.map(x=>'<th scope="col">'+x+'</th>').join('')+
       '<th scope="col">'+L('Added','登记时间')+'<span class="ea-th-zone">'+zone()+'</span></th><th scope="col" class="col-act"><span class="sr-only">'+L('Actions','操作')+'</span></th></tr></thead><tbody>'+
       rows.map(a=>'<tr><td data-label="'+h[0]+'"><span class="cell-main">'+EA.name(a)+'</span></td>'+
-        '<td data-label="'+h[1]+'">'+CF.tag('accent',a.chain)+'</td>'+
+        '<td data-label="'+h[1]+'">'+networkTag(a.chain)+'</td>'+
         '<td data-label="'+h[2]+'" class="nw"><span class="mono">'+EA.maskAddress(a.address)+'</span></td>'+
-        '<td data-label="'+h[3]+'" class="nw">'+EA.tokens()+'</td>'+
+        '<td data-label="'+h[3]+'">'+tokenTags()+'</td>'+
         '<td data-label="'+L('Added','登记时间')+'" class="nw muted"><span class="num">'+E(CF.fmtStamp(a.at))+'</span></td>'+actions(a)+'</tr>').join('')+'</tbody></table>';
   }
   function panel(){
@@ -196,7 +200,7 @@
       '<span class="hint" id="ea-f-ccys-hint">'+L('Select every currency this account supports. This is a label for your reference; the platform doesn\'t check it.',
         '勾选这个账户支持的币种。仅作标注，方便你核对，平台不核验。')+'</span>'+
       '<div class="ea-chips">'+EA.CURRENCIES.concat(picked.filter(c=>!EA.CURRENCIES.includes(c))).map(c=>'<label class="ea-chip" title="'+E(EA.currencyName(c))+'"><input type="checkbox" data-ea-ccy="'+c+'"'+
-        (picked.includes(c)?' checked':'')+' aria-label="'+E(c+' · '+EA.currencyName(c))+'"><span>'+c+'</span></label>').join('')+'</div>'+
+        (picked.includes(c)?' checked':'')+' aria-label="'+E(c+' · '+EA.currencyName(c))+'"><span class="ea-chip-body">'+CF.market.currency(c)+'<span class="ea-currency-name">'+E(EA.currencyName(c))+'</span></span></label>').join('')+'</div>'+
       '<span class="err-msg" id="ea-f-ccys-err" role="alert">'+E(err('ccys'))+'</span></fieldset>';
   }
   const group=(heading,html,extra='')=>'<fieldset class="ea-group"><legend>'+heading+'</legend>'+extra+'<div class="ea-grid">'+html+'</div></fieldset>';
@@ -218,7 +222,7 @@
     const f=F();
     if(f.mode==='edit')return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+
       '<div class="ea-grid">'+field('label',true)+'</div>'+
-      '<div class="ea-chosen">'+dl([[L(...EA.labels.chain),CF.tag('accent',f.form.chain)],[L(...EA.labels.address),'<span class="mono ea-break">'+E(f.form.address)+'</span>']])+'</div>'+
+      '<div class="ea-chosen">'+dl([[L(...EA.labels.chain),networkTag(f.form.chain)],[L(...EA.labels.address),'<span class="mono ea-break">'+E(f.form.address)+'</span>']])+'</div>'+
       '<p class="hint">'+L('The network and address can\'t be changed. To use a different address, add a new crypto account and verify it, then delete this one if you no longer need it.',
         '结算收款链与数币地址登记后不可修改。要换地址，请新增一个数币账户并完成签名，再按需删除本账户。')+'</p></div>';
     if(f.step===1)return '<div class="ea-form">'+steps(1)+
@@ -227,14 +231,14 @@
           '交易所充值地址、第三方托管地址以及无法签名的合约地址都无法登记。')+'</div>')+
       '<fieldset class="ea-chains" aria-describedby="ea-f-chain-err"><legend>'+L('Network','结算收款链')+'</legend>'+
         '<div class="ea-chain-row">'+EA.CHAINS.map(c=>'<label class="ea-chain"><input type="radio" name="ea-chain" value="'+c+'" data-ea-chain="'+c+'"'+
-          (f.form.chain===c?' checked':'')+'><span><b>'+c+'</b><span class="hint">'+L(...CHAIN_HINT[c])+'</span></span></label>').join('')+'</div>'+
+          (f.form.chain===c?' checked':'')+'><span>'+networkTag(c)+'<span class="hint">'+L(...CHAIN_HINT[c])+'</span></span></label>').join('')+'</div>'+
         '<span class="hint">'+L('The network and address can\'t be changed after the account is saved.','链和地址一经登记不可修改。')+'</span>'+
         '<span class="err-msg" id="ea-f-chain-err" role="alert">'+E(err('chain'))+'</span></fieldset>'+
       '<div class="ea-grid">'+field('address',true,f.form.chain==='ETH'?'0x…':f.form.chain==='TRON'?'T…':'')+field('label',true)+'</div>'+
       (f.duplicate?notice('warn','<div class="ea-notice-row"><span>'+L('This address is already saved for your company.','这个地址已经在本企业登记过了。')+'</span>'+
         b('view','View it','查看该账户',f.duplicate)+'</div>'):'')+'</div>';
     return '<div class="ea-form">'+steps(2)+
-      '<div class="ea-chosen">'+dl([[L(...EA.labels.label),E(f.form.label)],[L(...EA.labels.chain),CF.tag('accent',f.form.chain)],
+      '<div class="ea-chosen">'+dl([[L(...EA.labels.label),E(f.form.label)],[L(...EA.labels.chain),networkTag(f.form.chain)],
         [L(...EA.labels.address),'<span class="mono ea-break">'+E(f.form.address)+'</span>']])+'</div>'+
       '<p class="ea-lead">'+L('Sign a message with this address in your wallet to confirm you own it. This doesn\'t send a transaction, change how you sign in, or switch your login wallet.',
         '请用这个地址在钱包中签名，确认它归你所有。此次签名不会发起交易，不会改变你的登录方式，也不会更换登录钱包。')+'</p>'+
@@ -338,8 +342,8 @@
   function viewSections(a){
     const section=(h,rows)=>'<section class="ea-view-section"><h3>'+h+'</h3>'+dl(rows)+'</section>';
     const times=[[L('Added','登记时间'),stamp(a.at)]].concat(a.updated?[[L('Last updated','最近修改'),stamp(a.updated)]]:[]);
-    if(a.kind==='crypto')return section(L('Account','账户信息'),[[L(...EA.labels.label),EA.name(a)],[L(...EA.labels.chain),CF.tag('accent',a.chain)],
-        [L(...EA.labels.tokens),EA.tokens()]])+
+    if(a.kind==='crypto')return section(L('Account','账户信息'),[[L(...EA.labels.label),EA.name(a)],[L(...EA.labels.chain),networkTag(a.chain)],
+        [L(...EA.labels.tokens),tokenTags()]])+
       section(L('Wallet address','数币地址'),[[L(...EA.labels.address),copyable(a.address,a.address,L('Copy address','复制地址'),'hash ea-break')],
         [L(...EA.labels.ownership),CF.tag('ok',L('Confirmed by signature','已签名确认'))]])+section(L('Record','记录'),times);
     return section(L('Account','账户信息'),[[L(...EA.labels.label),EA.name(a)],[L(...EA.labels.holder),EA.holderName(a)||'—'],
@@ -370,7 +374,7 @@
           '<ul class="ea-consequences">'+items.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+(V.problem?CF.note('red',E(V.problem)):'')+'</div>',
         foot:b('close','Cancel','取消','',false,V.busy==='remove')+danger('remove-confirm',V.busy==='remove'?'Deleting…':'Delete account',V.busy==='remove'?'正在删除…':'删除账户',a.id,V.busy==='remove')};},
     'ea-wallet':()=>{const f=F();return {title:L('Signature request','签名请求'),dismiss:true,
-      html:'<div class="ea-wallet"><div class="ea-wallet-head">'+CF.tag('accent',f?.form.chain||'')+'<span>'+L('Verify address ownership','确认地址所有权')+'</span></div>'+
+      html:'<div class="ea-wallet"><div class="ea-wallet-head">'+networkTag(f?.form.chain||'')+'<span>'+L('Verify address ownership','确认地址所有权')+'</span></div>'+
         '<div class="ea-wallet-box"><span class="hint">'+L('Signing address','签名地址')+'</span><span class="mono ea-break">'+E(f?.form.address||'')+'</span></div>'+
         '<p class="hint">'+L('Signing proves you control this address. It doesn\'t send a transaction or cost a network fee.','签名只证明你控制这个地址，不会发起交易，也不产生链上费用。')+'</p>'+
         '<div class="ea-sim"><span class="ea-sim-label">'+L('Simulate · review only','模拟 · 仅评审')+'</span>'+
@@ -481,10 +485,10 @@
       if(k==='label'){f.sameName=EA.sameName(owner(),el.value,f.id);const slot=document.querySelector('[data-ea-namehint]');if(slot)slot.textContent=f.sameName?L(...NAME_HINT):'';}
       return;}
     if(el.dataset.eaType&&f){f.form.accountType=el.dataset.eaType;f.dirty=true;
-      if(f.errors.accountType){delete f.errors.accountType;const s=document.getElementById('ea-f-accountType-err');if(s)s.textContent='';}return;}
+      if(f.errors.accountType){delete f.errors.accountType;el.closest('fieldset').removeAttribute('aria-invalid');const s=document.getElementById('ea-f-accountType-err');if(s)s.textContent='';}return;}
     if(el.dataset.eaCcy&&f){const set=new Set(f.form.ccys||[]);el.checked?set.add(el.dataset.eaCcy):set.delete(el.dataset.eaCcy);
       f.form.ccys=EA.CURRENCIES.filter(c=>set.has(c));f.dirty=true;
-      if(f.form.ccys.length&&f.errors.ccys){delete f.errors.ccys;const s=document.getElementById('ea-f-ccys-err');if(s)s.textContent='';}
+      if(f.form.ccys.length&&f.errors.ccys){delete f.errors.ccys;el.closest('fieldset').removeAttribute('aria-invalid');const s=document.getElementById('ea-f-ccys-err');if(s)s.textContent='';}
       return;}
     /* 改选链：已填地址保留，按新链重新校验并就地更新提示，不整体重绘。 */
     if(el.dataset.eaChain&&f){f.form.chain=el.dataset.eaChain;f.dirty=true;delete f.errors.chain;f.duplicate='';
