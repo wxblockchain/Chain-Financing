@@ -6,7 +6,7 @@
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
-  const SCHEMA = 'ws397-3';
+  const SCHEMA = 'ws397-4';
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
   /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
   D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
@@ -106,12 +106,12 @@
     return {rate,pool,total,valid,value,waiting,pendingValue,fly,limit,free,withdraw:free/rate,
       gap:Math.max(0,p.balance-limit),grade:limit<p.balance?'short':free>0?'surplus':'balanced'};
   };
-  /* 质押水位：有效质押额低于项目融资余额即为质押不足，项目终态后不再判断。 */
-  D.waterLocked = p => !D.terminal(p) && D.numbers(p).limit < p.balance;
+  /* 质押水位：有效质押额 < 项目融资余额 + 项目在途金额即为不安全，恰好相等仍算安全；项目终态后不再判断。 */
+  D.waterLocked = p => {if(D.terminal(p))return false;const n=D.numbers(p);return n.limit < p.balance + n.fly;};
   D.current = p => p.demands.find(d => ['open','quoted','funding'].includes(d.state));
   D.actions = p => {
     const n=D.numbers(p), current=D.current(p), mine=D.mine(p), terminal=D.terminal(p);
-    /* 可撤回上限只约束已通过审核的有效抵押物；质押不足时已通过审核的代币（含已失效）一律不能转出，待审、已驳回、待提取照常可办理。 */
+    /* 可撤回上限只约束已通过审核的有效抵押物；水位不安全时已通过审核的代币（含已失效）一律不能转出，待审、已驳回、待提取照常可办理。 */
     const releasable=D.tokens.filter(t => {if((t.pool!==p.id&&t.releasedFrom!==p.id)||t.pending||t.frozen)return false;if(t.pledge==='released')return true;if(t.pledge!=='pledged')return false;const approved=D.appOf(p,t)?.state==='approved';if(approved&&D.waterLocked(p))return false;return !(approved&&t.valid)||t.value<=n.withdraw;});
     const live=!terminal&&!['review','returned'].includes(p.state);
     return {mine,review:p.state==='review',returned:p.state==='returned',live,
@@ -256,9 +256,11 @@
     const a={id:'PA-DEMO-001',project:D.projects[0].id,type:'additional',tokens:D.tokens.filter(t=>t.id.startsWith('TK-FREE')).slice(0,3).map(t=>t.id),state:'approved',submitted:new Date(D.now()-DAY).toISOString(),decided:new Date(D.now()-3600000).toISOString()};D.applications.push(a);a.tokens.forEach(id=>D.token(id).application=a.id);D.normalize();
     D.applications[1].batch='PA-DEMO-002';D.applications[1].approvedAt=new Date(D.now()-1800000).toISOString();D.applications[1].decided=D.applications[1].approvedAt;
     const pending=D.applications[2];pending.state=pending.reviewState='review';pending.decided=pending.approvedAt=pending.deadline=pending.agreement=pending.reviewer=null;
-    /* 质押不足演示：FP-DEMO-004 合约内同时有有效抵押物、已失效、待审、已驳回四类代币。 */
-    [['TK-DEMO-4-5','review'],['TK-DEMO-4-6','rejected']].forEach(([id,st])=>{const t=D.token(id),x=D.applications.find(r=>r.project==='FP-DEMO-004'&&r.tokens[0]===id);if(!t||!x)return;t.valid=true;
+    /* 水位演示，两个项目合约内都有有效抵押物、已失效、待审、已驳回四类代币：
+       FP-DEMO-004 质押不足；FP-DEMO-007 质押持平但水位不安全（有效质押额覆盖融资余额，却低于融资余额 + 一笔已接受待放款的在途）。 */
+    [['FP-DEMO-004','TK-DEMO-4-5','review'],['FP-DEMO-004','TK-DEMO-4-6','rejected'],['FP-DEMO-007','TK-DEMO-7-5','review'],['FP-DEMO-007','TK-DEMO-7-6','rejected']].forEach(([pid,id,st])=>{const t=D.token(id),x=D.applications.find(r=>r.project===pid&&r.tokens[0]===id);if(!t||!x)return;t.valid=true;
       x.state=x.reviewState=st;x.approvedAt=null;x.agreement=null;if(st==='review'){x.decided=null;x.reviewer=null;}else x.reason='rejected';});
+    {const p7=D.project('FP-DEMO-007');if(p7){p7.balance=400000;p7.state='locked';const d=p7.demands[0];if(d)Object.assign(d,{amount:200000,state:'funding',tenorDays:90,rate:'6.20',institution:['Demo Capital','演示资金机构'],quoteAt:d.at});p7.grade=D.numbers(p7).grade;}}
     D.applications.forEach(a=>D.log(D.project(a.project),a.state==='approved'?'approved':'submitted',a.id));D.save();
   };
   try{

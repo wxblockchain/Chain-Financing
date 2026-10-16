@@ -565,7 +565,7 @@
     finally{busy=false;CF.render();}
   }
   /* Release uses one selection/signing surface, matching the pledge contract. */
-  /* 质押水位：项目质押不足时，已通过审核的代币（有效抵押物与已失效）一律不能转出；待审、已驳回照常可取回。 */
+  /* 质押水位：有效质押额低于项目融资余额 + 项目在途金额时，已通过审核的代币（有效抵押物与已失效）一律不能转出；待审、已驳回照常可取回。 */
   const waterHeld=(p,t)=>D.waterLocked(p)&&t.pledge==='pledged'&&D.appOf(p,t)?.state==='approved';
   function releaseCandidates(p){return D.tokens.filter(t=>t.owner===p.owner&&!t.frozen&&!t.pending&&(t.pool===p.id&&t.pledge==='pledged'||t.releasedFrom===p.id&&t.pledge==='released')).sort((a,b)=>b.value-a.value||a.id.localeCompare(b.id));}
   function releaseValue(p){return selection.map(D.token).filter(t=>t&&t.pledge==='pledged'&&t.valid&&D.appOf(p,t)?.state==='approved').reduce((v,t)=>v+t.value,0);}
@@ -578,7 +578,7 @@
       +cell(L('Selected','已选'),L(chosen.length+(chosen.length===1?' token':' tokens'),chosen.length+' 张'))+cell(L('Issued value','签发价值合计'),usd(total))+cell(L('Estimated gas','预估 gas'),gasText)+'</div>'
       +'<div class="ls-pledge-to"><span class="muted">'+L('Target pledge contract','目标质押合约')+' · '+E(D.PLEDGE_CHAIN)+'</span><span class="mono">'+E(p.contract||'—')+'</span>'+(p.contract?copyIcon(p.contract,L('Copy pledge contract address','复制质押合约地址')):'')+'</div>'
       +'<p>'+L('Tokens return to their original holding address; the destination cannot be changed. You sign in your wallet. Your company pays gas; incurred gas is not refunded if execution fails. Withdrawing a pending token ends its review.','代币转回质押前的原持有地址，不能更改目的地址。需你本人在钱包签名，gas 由本企业承担，执行失败已产生的 gas 不退；撤回待审代币将终结该笔审核。')+'</p>'
-      +(D.waterLocked(p)?'<p class="ls-release-held" role="note">'+L('During a pledge shortfall, approved tokens cannot be transferred out. Tokens under review or rejected can still be retrieved.','质押不足时已通过审核的代币暂不能转出；待审、已驳回的代币仍可取回。')+'</p>':!D.terminal(p)?releaseLimit(p):'')+'</section>';
+      +(D.waterLocked(p)?'<p class="ls-release-held" role="note">'+L('While the pledge water level is unsafe, approved tokens cannot be transferred out. Tokens under review or rejected can still be retrieved.','水位不安全时已通过审核的代币暂不能转出；待审、已驳回的代币仍可取回。')+'</p>':!D.terminal(p)?releaseLimit(p):'')+'</section>';
   }
   /* 拟撤回有效抵押物价值与可撤回上限实时对照；超出时同时给出差额与两条出路。 */
   function releaseLimit(p){
@@ -592,7 +592,7 @@
     const list=releaseCandidates(p);if(!list.length)return CF.empty(L('No tokens available to release or collect','暂无可解除或提取的代币'),'');
     const open=list.filter(t=>!waterHeld(p,t)),all=open.length>0&&open.every(t=>selection.includes(t.id));
     return '<div class="tablewrap"><table class="tbl ls-pick ls-release-pick"><thead><tr><th scope="col" class="ls-pick-check"><label class="ls-check"><input type="checkbox" data-release-all="1"'+(all?' checked':'')+(busy?' disabled':'')+' aria-label="'+L('Select all','全选')+'"></label></th><th scope="col">'+L('Token','代币')+'</th><th scope="col" class="num">'+L('Issued value','签发价值')+'</th><th scope="col">'+L('Current status','当前状态')+'</th><th scope="col" class="num">'+L('Est. gas','预估 gas')+'</th></tr></thead><tbody>'
-      +[...open,...list.filter(t=>waterHeld(p,t))].map(t=>{const on=selection.includes(t.id),f=D.quoteFee(t.id),state=tokenState(p,t),held=waterHeld(p,t);return '<tr class="ls-pick-row'+(on?' on':'')+(held?' held':'')+'"><td class="ls-pick-check"><label class="ls-check"><input type="checkbox" data-token="'+E(t.id)+'"'+(on?' checked':'')+(busy||held?' disabled':'')+' aria-label="'+L('Select ','选择 ')+E(t.id)+'"></label></td><td><span class="ls-token-id">'+hexMark(tokenTones[state]||'accent')+'<span class="mono">'+E(t.id)+'</span></span></td><td class="num">'+usd(t.value)+'</td><td>'+E(txt(tokenNames[state]))+(held?'<span class="cell-sub">'+L('Cannot be transferred out during a pledge shortfall','质押不足，暂不能转出')+'</span>':'')+'</td><td class="num">'+Number(f.amount).toFixed(6)+' '+E(f.currency)+'</td></tr>';}).join('')+'</tbody></table></div>';
+      +[...open,...list.filter(t=>waterHeld(p,t))].map(t=>{const on=selection.includes(t.id),f=D.quoteFee(t.id),state=tokenState(p,t),held=waterHeld(p,t);return '<tr class="ls-pick-row'+(on?' on':'')+(held?' held':'')+'"><td class="ls-pick-check"><label class="ls-check"><input type="checkbox" data-token="'+E(t.id)+'"'+(on?' checked':'')+(busy||held?' disabled':'')+' aria-label="'+L('Select ','选择 ')+E(t.id)+'"></label></td><td><span class="ls-token-id">'+hexMark(tokenTones[state]||'accent')+'<span class="mono">'+E(t.id)+'</span></span></td><td class="num">'+usd(t.value)+'</td><td>'+E(txt(tokenNames[state]))+(held?'<span class="cell-sub">'+L('Cannot be transferred out while the pledge water level is unsafe','水位不安全，暂不能转出')+'</span>':'')+'</td><td class="num">'+Number(f.amount).toFixed(6)+' '+E(f.currency)+'</td></tr>';}).join('')+'</tbody></table></div>';
   }
   function validateRelease(p){
     const candidates=new Set(releaseCandidates(p).filter(t=>!waterHeld(p,t)).map(t=>t.id)),changes=[];
