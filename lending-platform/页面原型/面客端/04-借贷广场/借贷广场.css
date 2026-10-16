@@ -956,3 +956,12 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 /* 清单是弹窗主体：行距收紧，一屏多看几份；整行可点，桌面端勾选框热区收至 32px */
 .modal .ls-pick tbody td{padding-top:6px;padding-bottom:6px;height:auto}
 @media(pointer:fine){.modal .ls-pick .ls-pick-check .ls-check{min-height:32px;min-width:32px}}
+
+/* WS-397 最终核验：统计六项的后两项同行常驻；清单 Hash 列；链上异常提示；待提取 / 待解押提示 */
+.ls-stat-line{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin:0;min-height:32px;font-size:var(--fs-12);color:var(--muted)}
+.ls-stat-line b{font-size:var(--fs-12);font-weight:500;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ls-hash-cell{display:inline-flex;align-items:center;gap:var(--sp-1);white-space:nowrap}
+.ls-hash-cell .mono{font-size:var(--fs-12);color:var(--hash-text)}
+.ls-verify{display:block;color:var(--warn);font-size:var(--fs-11)}
+.ls-flow-alert-note{display:block;margin-top:var(--sp-1);font-size:var(--fs-12);color:var(--muted);font-weight:400}
+.ls-release-due{flex-direction:column;gap:0}

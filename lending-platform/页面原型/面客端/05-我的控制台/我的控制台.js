@@ -92,7 +92,7 @@
  function destinations(k,r){
    if(associationError)return {projects:[],reason:L('Project associations unavailable. Reload this URL in your browser.','关联项目暂不可用，请使用浏览器刷新当前网址。')};
    const ids=[...new Set(k==='credits'?Q.data().quotes.filter(q=>q.owner===r.owner&&q.fund===r.fund&&party(q)).map(q=>q.project):(k==='tokens'?r.projects:[k==='projects'?r.id:r.project]).filter(Boolean))];
-   const projects=ids.map(id=>D.project(id)).filter(p=>p&&(p.state!=='draft'||D.mine(p)||Q.hasHistory(p)));
+   const projects=ids.map(id=>D.project(id)).filter(p=>p&&(D.mine(p)||!!p.published));
    return {projects,reason:!ids.length?L('No associated financing project','暂无关联融资项目'):!projects.length?L('No accessible associated project','暂无可访问关联项目'):''};
  }
  function destination(k,r){const d=destinations(k,r);return d.projects.length===1?d.projects[0]:d.projects.find(p=>p.id===params().get('targetProject'));}

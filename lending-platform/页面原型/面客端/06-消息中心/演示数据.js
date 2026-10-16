@@ -83,6 +83,15 @@
         title:pair('Financing request for your offer invalidated','报价所属融资需求已失效'),
         body:pair('Financing request {demand_id} in project {project_name} ({project_id}) was automatically invalidated due to a pledge shortfall. Your pending offer for that request was also invalidated. Review the original request’s current outcome; do not continue under that offer.',
           '项目 {project_name}（{project_id}）的融资申请 {demand_id} 已因质押不足自动失效，你方在该轮的在途报价同时失效。请查看原申请的当前结果，不要按原报价继续办理。')},
+      /* T-LS-05C / 05D：项目到期时当前轮终结，与自动失效同一类型，按原因择模板。 */
+      'financing.demand.coverage_invalidated:expiry':{
+        title:pair('Financing request ended at project expiry','融资需求因项目到期终结'),
+        body:pair('Project {project_name} ({project_id}) expired at {expires_at}, so financing request {demand_id} has ended. Pending offers for that request were also invalidated. The original record is retained. No new request can be published after expiry; existing business continues under its current status.',
+          '项目 {project_name}（{project_id}）已于 {expires_at} 到期，融资申请 {demand_id} 随之终结，该轮在途报价同时失效。原记录保留；到期后不能再发布新的融资申请，存量业务按其当前状态办理。')},
+      'financing.demand.coverage_invalidated@fund:expiry':{
+        title:pair('Financing request for your offer ended','报价所属融资需求已终结'),
+        body:pair('Project {project_name} ({project_id}) expired at {expires_at}, so financing request {demand_id} has ended. Your pending offer for that request was also invalidated. Review the original request’s current outcome; do not continue under that offer.',
+          '项目 {project_name}（{project_id}）已于 {expires_at} 到期，融资申请 {demand_id} 随之终结，你方在该轮的在途报价同时失效。请查看原申请的当前结果，不要按原报价继续办理。')},
       'financing.project.coverage_shortfall':{
         title:pair('Project pledge shortfall','项目出现质押不足'),
         body:pair('Project {project_name} ({project_id}) had a pledge shortfall at {occurred_at}. The pledge gap was {shortfall} USD, requiring additional assets valued at {additional_value} USD. Additional pledges by the asset originator require review; submission has no immediate effect. Pledge sufficiency is updated after successful deposit.',
@@ -260,6 +269,9 @@
         biz:who==='fund'?'financing.demand.coverage_invalidated@fund':'financing.demand.coverage_invalidated',
         category:'progress',objectKind:'project',objectId:p.id,at:tick(74),vars:{...vars,demand_id:p.id+'-01'},
         business:business(p.name,p.id+'-01')}));
+      /* 到期终结：当前轮因项目到期终结时，资产方收到 T-LS-05C；有在途报价的资金方收到 T-LS-05D。 */
+      p.demands.filter(x=>x.state==='ended'&&x.reason==='expiry').forEach(x=>push({owner:'asset',biz:'financing.demand.coverage_invalidated',tpl:'financing.demand.coverage_invalidated:expiry',
+        category:'progress',objectKind:'project',objectId:p.id,at:x.endedAt||p.expires,vars:{...vars,demand_id:x.id,expires_at:p.expires},business:business(p.name,x.id)}));
       /* 届满前 7 天的提醒节点已经过去才存在这条消息，不预生成未来事件。 */
       if(p.expires&&Date.parse(p.expires)-7*DAY<=now())
         push({owner:'asset',biz:'financing.project.expiry_reminder',category:'reminder',objectKind:'project',objectId:p.id,
@@ -336,8 +348,8 @@
             reason:x.reason||pair('Terms do not match current needs','融资条款不符合当前需求')},
           business:business(p.name,x.id)});
       if(x.state==='expired')
-        push({owner:'fund',biz:'financing.demand.coverage_invalidated@fund',category:'progress',objectKind:'project',objectId:x.project,
-          at:iso(x.done||x.at),vars:{project_name:p.name,project_id:p.id,demand_id:x.demand},
+        push({owner:'fund',biz:'financing.demand.coverage_invalidated@fund',tpl:x.reason==='expiry'?'financing.demand.coverage_invalidated@fund:expiry':'',category:'progress',objectKind:'project',objectId:x.project,
+          at:iso(x.done||x.at),vars:{project_name:p.name,project_id:p.id,demand_id:x.demand,expires_at:p.expires},
           business:business(p.name,x.demand)});
       if(deal&&deal.confirmedAt)
         push({owner:'fund',biz:plan?'financing.deal.confirmed':'financing.deal.confirmed@generating',category:'progress',
