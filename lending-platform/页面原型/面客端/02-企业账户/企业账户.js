@@ -217,6 +217,7 @@
   const required=k=>EA.fiatRequired.includes(k)||k==='address';
   const requiredMark='<span class="ea-required" aria-hidden="true">*</span>';
   const requiredGroup=()=>requiredMark+'<span class="sr-only">'+L(' (Required)','（必填）')+'</span>';
+  const requiredHint=()=>'<p class="ea-required-key"><span aria-hidden="true">*</span>'+L('Required','必填')+'</p>';
   /* 输入属性按国际化表单惯例给出：地址字段带 autocomplete，代码类关闭拼写检查并转大写。 */
   const INPUT={
     label:'autocomplete="off"',
@@ -233,7 +234,7 @@
   function field(k,full=false,placeholder=''){
     const id='ea-f-'+k,hint=k==='address'?ADDRESS_HINT[F().form.chain||'']:HINT[k];
     const extraHint=k==='label'?'<span class="hint" id="'+id+'-hint" data-ea-namehint>'+(F().sameName?L(...NAME_HINT):'')+'</span>':'';
-    return '<div class="field'+(full?' ea-full':'')+'"><label for="'+id+'">'+L(...EA.labels[k])+(required(k)?requiredMark:'')+'</label>'+
+    return '<div class="field'+(full?' ea-full':'')+'"><label for="'+id+'">'+(required(k)?requiredMark:'')+L(...EA.labels[k])+'</label>'+
       '<input class="inp" id="'+id+'" data-ea-field="'+k+'" type="text" value="'+E(val(k))+'"'+(placeholder?' placeholder="'+E(placeholder)+'"':'')+
       (required(k)?' aria-required="true"':'')+(err(k)?' aria-invalid="true"':'')+' aria-describedby="'+id+'-err'+(hint||extraHint?' '+id+'-hint':'')+'" '+(INPUT[k]||'')+'>'+
       (hint?'<span class="hint" id="'+id+'-hint">'+L(...hint)+'</span>':'')+extraHint+
@@ -242,7 +243,7 @@
   /* 账户类型：单选、必选、不预选；只作标注。 */
   function typeField(){
     const v=F().form.accountType;
-    return '<fieldset class="ea-chains ea-types ea-full" aria-describedby="ea-f-accountType-err"'+(err('accountType')?' aria-invalid="true"':'')+'><legend>'+L(...EA.labels.accountType)+requiredGroup()+'</legend>'+
+    return '<fieldset class="ea-chains ea-types ea-full" aria-describedby="ea-f-accountType-err"'+(err('accountType')?' aria-invalid="true"':'')+'><legend>'+requiredGroup()+L(...EA.labels.accountType)+'</legend>'+
       '<div class="ea-chain-row">'+EA.ACCOUNT_TYPES.map(t=>'<label class="ea-chain"><input type="radio" name="ea-type" value="'+t.id+'" data-ea-type="'+t.id+'"'+(v===t.id?' checked':'')+
         '><span><b>'+L(...t.label)+'</b></span></label>').join('')+'</div>'+
       '<span class="err-msg" id="ea-f-accountType-err" role="alert">'+E(err('accountType'))+'</span></fieldset>';
@@ -258,7 +259,7 @@
   function currencyField(){
     const picked=F().form.ccys||[];
     return '<fieldset class="ea-ccys ea-full" aria-describedby="ea-f-ccys-hint ea-f-ccys-err"'+(err('ccys')?' aria-invalid="true"':'')+'>'+
-      '<legend>'+L(...EA.labels.ccy)+requiredGroup()+'</legend>'+
+      '<legend>'+requiredGroup()+L(...EA.labels.ccy)+'</legend>'+
       '<span class="hint" id="ea-f-ccys-hint">'+L('Select every currency this account supports. This is a label for your reference; the platform doesn\'t check it.',
         '选择这个账户支持的币种。仅作标注，方便你核对，平台不核验。')+'</span>'+
       '<div class="ea-chips">'+EA.CURRENCIES.concat(picked.filter(c=>!EA.CURRENCIES.includes(c))).map(c=>'<label class="ea-chip" title="'+E(EA.currencyName(c))+'"><input type="checkbox" data-ea-ccy="'+c+'"'+
@@ -270,7 +271,7 @@
 
   function fiatForm(){
     const f=F();
-    return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+
+    return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+requiredHint()+
       group(L('Account','账户信息'),typeField()+holderField()+field('label')+currencyField())+
       group(L('Bank details','开户行信息'),field('bank')+field('bankCity')+field('iban')+field('swift'))+
       (f.duplicate?notice('warn','<div class="ea-notice-row"><span>'+L('An account with this account number and SWIFT / BIC is already saved.',
@@ -282,16 +283,16 @@
   }
   function cryptoForm(){
     const f=F();
-    if(f.mode==='edit')return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+
+    if(f.mode==='edit')return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+requiredHint()+
       '<div class="ea-grid">'+field('label',true)+'</div>'+
       '<div class="ea-chosen">'+dl([[L(...EA.labels.chain),networkTag(f.form.chain)],[L(...EA.labels.address),'<span class="mono ea-break">'+E(f.form.address)+'</span>']])+'</div>'+
       '<p class="hint">'+L('The network and address can\'t be changed. To use a different address, add a new crypto account and verify it, then delete this one if you no longer need it.',
         '结算收款链与数币地址登记后不可修改。要换地址，请新增一个数币账户并完成签名，再按需删除本账户。')+'</p></div>';
-    if(f.step===1)return '<div class="ea-form">'+steps(1)+
+    if(f.step===1)return '<div class="ea-form">'+steps(1)+requiredHint()+
       notice('warn','<div><b>'+L('Only add an address you can sign with.','只能登记你能签名的地址。')+'</b> '+
         L('Exchange deposit addresses, third-party custodial addresses and contract addresses that can\'t sign are not supported.',
           '交易所充值地址、第三方托管地址以及无法签名的合约地址都无法登记。')+'</div>')+
-      '<fieldset class="ea-chains" aria-describedby="ea-f-chain-err"><legend>'+L('Network','结算收款链')+requiredGroup()+'</legend>'+
+      '<fieldset class="ea-chains" aria-describedby="ea-f-chain-err"><legend>'+requiredGroup()+L('Network','结算收款链')+'</legend>'+
         '<div class="ea-chain-row">'+EA.CHAINS.map(c=>'<label class="ea-chain ea-network-choice" title="'+E(L(...CHAIN_HINT[c]))+'"><input type="radio" name="ea-chain" value="'+c+'" data-ea-chain="'+c+'" aria-label="'+E(c+' · '+L(...CHAIN_HINT[c]))+'"'+
           (f.form.chain===c?' checked':'')+'><span>'+networkTag(c)+'</span></label>').join('')+'</div>'+
         '<span class="hint">'+L('The network and address can\'t be changed after the account is saved.','链和地址一经登记不可修改。')+'</span>'+

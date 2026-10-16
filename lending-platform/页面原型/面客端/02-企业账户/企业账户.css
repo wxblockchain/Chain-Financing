@@ -65,7 +65,9 @@
 .ea-form .inp:not([readonly]):not(:disabled){background:var(--card)}
 .ea-form :is(.field-static,.inp[readonly]){background:var(--card-2);border:1px dashed var(--border-strong);color:var(--text);cursor:default}
 .ea-form .inp:disabled{background:var(--gray-bg);border:1px solid var(--border);color:var(--faint);cursor:not-allowed;opacity:1}
-.ea-required{display:inline-block;margin-left:var(--sp-1);color:var(--danger);font-weight:600}
+.ea-required{display:inline-block;margin-inline-end:var(--sp-1);color:var(--danger);font-weight:600}
+.ea-required-key{display:flex;justify-content:flex-end;align-items:baseline;gap:var(--sp-1);margin:0;color:var(--muted);font-size:var(--fs-11)}
+.ea-required-key>span{color:var(--danger);font-weight:600}
 .ea-readonly-label{display:inline-block;margin-left:var(--sp-2);padding:0 var(--sp-1);border-radius:var(--radius-xs);
   background:var(--gray-bg);color:var(--muted);font-size:var(--fs-11);font-weight:500;line-height:1.6}
 .ea-form .err-msg:empty,.ea-form .hint:empty,.ea-drawer .hint:empty{display:none}
