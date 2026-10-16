@@ -221,7 +221,7 @@
   function queueFilters(){
     const f=A.queue.edit,applied=A.queue.filter;
     const extra=['deploy','owner','token','from','to'],count=extra.filter(k=>applied[k]).length;
-    const labels={deploy:L('Deployment','部署情况'),owner:L('Asset holder','资产方企业'),token:L('Token type','代币类型'),
+    const labels={deploy:L('Deployment','部署情况'),owner:L('Project publisher','项目发布方'),token:L('Token type','代币类型'),
       from:L('Submitted from','提交开始日期'),to:L('Submitted through','提交结束日期')};
     const values={deploy:applied.deploy?txt(DEPLOY[applied.deploy]):'',owner:applied.owner?ownerName({owner:applied.owner}):'',token:applied.token};
     return `<form id="cm-filter-form" class="cm-filter-wrap"><div class="cm-filter-bar">${field(L('Search projects','搜索项目'),`<input class="inp" id="cm-f-q" value="${E(f.q)}" placeholder="${L('Project number, project name, company or contract address','项目编号、项目名称、企业名称或质押合约地址')}">`)}${field(L('Review status','审核轴'),select('cm-f-review',f.review,[['',L('All','全部')],...Object.entries(REVIEW).map(([k,v])=>[k,txt(v)])]))}<div class="cm-actions"><button type="button" class="btn" data-act="cm-filters" aria-expanded="${A.queue.open}" aria-controls="cm-advanced">${L('Filters','筛选条件')}${count?' ('+count+')':''} <span aria-hidden="true">${A.queue.open?'⌃':'⌄'}</span></button>${b('Reset','重置','reset')}<button type="submit" class="btn primary">${L('Search','查询')}</button></div></div>
@@ -254,7 +254,7 @@
     const rows=found.slice((A.queue.page-1)*CF.PAGE_SIZE,A.queue.page*CF.PAGE_SIZE);
     const table=state||(!found.length
       ?CF.empty(L('No projects found','暂无符合条件的项目'),L('Change the filters or return to the pending reviews.','调整筛选条件，或返回待审核队列。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap"><table class="tbl cm-table cm-queue-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Asset holder / token type','资产方企业 / 代币类型')}</th><th>${L('Pledge ratio / term','项目质押率 / 项目期限')}</th><th aria-sort="${A.queue.sort==='submittedAt'?(A.queue.dir===1?'ascending':'descending'):'none'}">${sortButton('submittedAt','Submitted','本次提交时间')}</th><th aria-sort="${A.queue.sort==='waiting'?(A.queue.dir===1?'ascending':'descending'):'none'}">${sortButton('waiting','Waiting','已等待时长')}</th><th>${L('Review status','审核轴')}</th><th>${L('Deployment / contract address','部署执行状态 / 质押合约地址')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}<span class="cm-meta">${E(r.tokenType)}</span></td><td>${pct(r.ratio)}<span class="cm-meta">${E(utcDay(r.createdAt))} ～<br>${E(utcDay(expiry(r)))} (UTC)</span></td><td>${time(r.submittedAt)}<span class="cm-meta">${E(submission(r.seq))}</span></td><td>${duration(waited(r))}</td><td>${reviewBadge(r)}</td><td>${deployBadge(r)}${r.contract?.address?`<span class="cm-meta mono">${E(r.contract.address.slice(0,10))}…${E(r.contract.address.slice(-8))}</span>`:''}</td><td class="col-act">${viewLink(r.id,'queue')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.queue)}`);
+      :`<div class="tablewrap"><table class="tbl cm-table cm-queue-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher / token type','项目发布方 / 代币类型')}</th><th>${L('Pledge ratio / term','项目质押率 / 项目期限')}</th><th aria-sort="${A.queue.sort==='submittedAt'?(A.queue.dir===1?'ascending':'descending'):'none'}">${sortButton('submittedAt','Submitted','本次提交时间')}</th><th aria-sort="${A.queue.sort==='waiting'?(A.queue.dir===1?'ascending':'descending'):'none'}">${sortButton('waiting','Waiting','已等待时长')}</th><th>${L('Review status','审核轴')}</th><th>${L('Deployment / contract address','部署执行状态 / 质押合约地址')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}<span class="cm-meta">${E(r.tokenType)}</span></td><td>${pct(r.ratio)}<span class="cm-meta">${E(utcDay(r.createdAt))} ～<br>${E(utcDay(expiry(r)))} (UTC)</span></td><td>${time(r.submittedAt)}<span class="cm-meta">${E(submission(r.seq))}</span></td><td>${duration(waited(r))}</td><td>${reviewBadge(r)}</td><td>${deployBadge(r)}${r.contract?.address?`<span class="cm-meta mono">${E(r.contract.address.slice(0,10))}…${E(r.contract.address.slice(-8))}</span>`:''}</td><td class="col-act">${viewLink(r.id,'queue')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.queue)}`);
     return title(L('Project reviews','项目审核队列'),L('One record is one financing project; a resubmission after a return stays on the same record.','一条记录对应一个融资项目；退回后重新提交仍是同一条记录。'))
       +views('queue')+metrics
       +`<section class="card">${queueFilters()}<div class="cm-list-tools">${field(L('Sort by','排序'),select('cm-order',A.queue.sort+':'+A.queue.dir,[['submittedAt:1',L('Submitted · oldest first','本次提交时间 · 最早优先')],['submittedAt:-1',L('Submitted · newest first','本次提交时间 · 最新优先')],['waiting:-1',L('Waiting · longest first','已等待时长 · 最长优先')],['waiting:1',L('Waiting · shortest first','已等待时长 · 最短优先')]]))}</div><div class="cm-section" ${A.error?'':'hidden'}>${error()}</div>${table}</section>`;
@@ -271,7 +271,7 @@
   function ledgerFilters(){
     const f=A.ledger.edit,applied=A.ledger.filter;
     const extra=['owner','token','from','to'],count=extra.filter(k=>applied[k]).length;
-    const labels={owner:L('Asset holder','资产方企业'),token:L('Token type','代币类型'),
+    const labels={owner:L('Project publisher','项目发布方'),token:L('Token type','代币类型'),
       from:L('Deployment completed from','合约部署完成开始日期'),to:L('Deployment completed through','合约部署完成结束日期')};
     const values={owner:applied.owner?ownerName({owner:applied.owner}):'',token:applied.token};
     return `<form id="cm-filter-form" class="cm-filter-wrap"><div class="cm-filter-bar">${field(L('Search contracts','搜索合约'),`<input class="inp" id="cm-f-q" value="${E(f.q)}" placeholder="${L('Project number, project name or contract address','项目编号、项目名称或质押合约地址')}">`)}${field(labels.owner,select('cm-f-owner',f.owner,ownerOptions()))}<div class="cm-actions"><button type="button" class="btn" data-act="cm-filters" aria-expanded="${A.ledger.open}" aria-controls="cm-advanced">${L('Filters','筛选条件')}${count?' ('+count+')':''} <span aria-hidden="true">${A.ledger.open?'⌃':'⌄'}</span></button>${b('Reset','重置','reset')}<button type="submit" class="btn primary">${L('Search','查询')}</button></div></div>
@@ -296,7 +296,7 @@
     const rows=found.slice((A.ledger.page-1)*CF.PAGE_SIZE,A.ledger.page*CF.PAGE_SIZE);
     const table=state||(!found.length
       ?CF.empty(L('No contracts found','暂无符合条件的合约'),L('Change the filters or clear them to see every deployed contract.','调整或清空筛选条件，查看全部已部署合约。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap"><table class="tbl cm-table cm-ledger-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Asset holder / token type','资产方企业 / 代币类型')}</th><th>${L('Pledge contract address / chain','质押合约地址 / 质押链')}</th><th aria-sort="${A.ledger.dir===1?'ascending':'descending'}"><button data-act="cm-sort" data-v="deployedAt">${L('Contract deployment completed at','合约部署完成时间')} ${A.ledger.dir===1?'↑':'↓'}</button></th><th>${L('Reviewer','审核人')}</th><th>${L('Project status','项目当前状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}<span class="cm-meta">${E(r.tokenType)}</span></td><td>${addressValue(r.contract.address,L('address','地址'))}<span class="cm-meta">${L('Pledge chain','质押链')} ETH</span></td><td>${time(deployedAt(r))}</td><td>${r.reviewer?E(txt(r.reviewer)):unknown()}</td><td>${projectState(r)}</td><td class="col-act">${viewLink(r.id,'ledger')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.ledger)}`);
+      :`<div class="tablewrap"><table class="tbl cm-table cm-ledger-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher / token type','项目发布方 / 代币类型')}</th><th>${L('Pledge contract address / chain','质押合约地址 / 质押链')}</th><th aria-sort="${A.ledger.dir===1?'ascending':'descending'}"><button data-act="cm-sort" data-v="deployedAt">${L('Contract deployment completed at','合约部署完成时间')} ${A.ledger.dir===1?'↑':'↓'}</button></th><th>${L('Reviewer','审核人')}</th><th>${L('Project status','项目当前状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}<span class="cm-meta">${E(r.tokenType)}</span></td><td>${addressValue(r.contract.address,L('address','地址'))}<span class="cm-meta">${L('Pledge chain','质押链')} ETH</span></td><td>${time(deployedAt(r))}</td><td>${r.reviewer?E(txt(r.reviewer)):unknown()}</td><td>${projectState(r)}</td><td class="col-act">${viewLink(r.id,'ledger')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.ledger)}`);
     return title(L('Pledge contract ledger','质押合约台账'),L('One project, one deployed pledge contract. Read-only: the platform does not verify the address on chain.','一个项目对应一份已部署的质押合约；只读，平台不做链上核验。'))
       +views('ledger')+`<section class="card">${ledgerFilters()}${table}</section>`;
   }
@@ -333,6 +333,7 @@
   /* ---------------------------------------------------------------- 审核详情 */
   function createdInfo(r){
     return section('Project details under review','创建信息核对',kv([
+      [L('Blockchain network','区块链网络'),L('Ethereum','以太坊')+`<span class="cm-meta">${L('Fixed for this release; locked at creation.','本期固定，创建时锁定。')}</span>`],
       [L('Project name','项目名称'),E(projectName(r))],
       [L('Token type','代币类型'),E(r.tokenType)],
       [L('Project pledge ratio','项目质押率'),pct(r.ratio)],
@@ -348,8 +349,8 @@
     const termGap=c.available&&expiry(r)>addMonths(r.createdAt,c.maxTermMonths);
     const current=v=>c.available?v:unknown();
     const gap=CF.tag('warn',L('Differs from the locked value','与锁定值不一致'));
-    return section('Asset holder and parameter context','资产方与参数上下文',kv([
-      [L('Company name','企业名称'),E(ownerName(r))],
+    return section('Project publisher and parameter context','项目发布方与参数上下文',kv([
+      [L('Project publisher','项目发布方'),E(ownerName(r))+`<span class="cm-meta">${L('The asset holder company that created this project.','创建本项目的资产方企业。')}</span>`],
       [L('Stable entity identifier','稳定主体标识'),r.entity?`<span class="mono">${E(r.entity)}</span>`:CF.tag('warn',unknown())],
       [L('Pledge ratio · locked at creation','项目质押率 · 创建时锁定'),pct(r.ratio)],
       [L('Maximum pledge ratio · current configuration','最高质押率 · 当前配置'),current(pct(c.maxRatio))+(ratioGap?gap:'')],
@@ -548,7 +549,7 @@
       [L('Preferred settlement currency','参考结算币种'),E(r.settleCcy)],
       [L('Repayment method','还款方式'),txt(REPAYMENT)],
       [L('SPV name','SPV机构名称'),`<span class="mono">${E(r.spv)}</span>`],
-      [L('Company name / entity','企业名称 / 稳定主体标识'),E(ownerName(r))+' · '+(r.entity?`<span class="mono">${E(r.entity)}</span>`:unknown()),true],
+      [L('Project publisher / entity','项目发布方 / 稳定主体标识'),E(ownerName(r))+' · '+(r.entity?`<span class="mono">${E(r.entity)}</span>`:unknown()),true],
       [L('Maximum pledge ratio · current configuration','最高质押率 · 当前配置'),A.config.available?pct(A.config.maxRatio):unknown()],
       [L('Maximum project term · current configuration','最长项目期限 · 当前配置'),A.config.available?months(A.config.maxTermMonths):unknown()]
     ]);
