@@ -186,11 +186,11 @@
         b('Reset filters','重置筛选','reset'))
       :`<div class="tablewrap"><table class="tbl fc-table fc-list-table"><thead><tr>`
         +sortHead('name','Token type','代币类型')
-        +`<th scope="col">${L('Maximum pledge ratio','最高质押率')}</th><th scope="col">${L('Maximum project term','最长项目期限')}</th>`
+        +`<th scope="col" class="fc-number">${L('Maximum pledge ratio','最高质押率')}</th><th scope="col" class="fc-number">${L('Maximum project term','最长项目期限')}</th>`
         +`<th scope="col">${L('Configuration status','配置状态')}</th>`
         +sortHead('updatedAt','Last updated','最近更新时间')
         +`<th scope="col">${L('Updated by','最近更新人')}</th><th scope="col" class="col-act">${L('Action','操作')}</th></tr></thead><tbody>`
-        +rows.map(r=>`<tr${configured(r)?'':' class="fc-row-unset"'}><td><strong class="mono">${E(r.name)}</strong></td><td>${E(ratioText(r.maxRatio))}</td><td>${E(termText(r.maxTermMonths))}</td><td>${statusTag(r)}</td><td>${time(r.updatedAt)}</td><td>${E(person(r.updatedBy))}</td><td class="col-act">${actions(r)}</td></tr>`).join('')
+        +rows.map(r=>`<tr${configured(r)?'':' class="fc-row-unset"'}><td><strong class="cell-main">${E(r.name)}</strong></td><td class="fc-number">${E(ratioText(r.maxRatio))}</td><td class="fc-number">${E(termText(r.maxTermMonths))}</td><td>${statusTag(r)}</td><td>${time(r.updatedAt)}</td><td>${E(person(r.updatedBy))}</td><td class="col-act">${actions(r)}</td></tr>`).join('')
         +`</tbody></table></div>${pager(found.length)}`);
     return head+`<section class="card">${filters()}${cue}${table}</section>`;
   }
@@ -199,7 +199,7 @@
   /* 变更前后同值时只给一个取值并标注未变，避免「70% → 70%」读成改过一次。 */
   const change=(before,after)=>before===after
     ?`<strong>${E(after)}</strong><span class="fc-meta">${L('unchanged','未变')}</span>`
-    :`${E(before)} → <strong>${E(after)}</strong>`;
+    :`<span class="fc-change-before">${E(before)} → </span><strong>${E(after)}</strong>`;
   function changeLog(r){
     const heading=`<h2 class="fc-h2" id="fc-log-title">${L('Parameter change history','参数变更记录')}</h2>`;
     const intro=`<p class="fc-meta">${L('Every successful save of this token type, newest first. All operations accounts see the same records.','本代币类型每一次保存成功的记录，按发生时间倒序；不按本人经办过滤。')}</p>`;
@@ -212,8 +212,8 @@
       const shown=records.slice(0,A.logShown);
       body=!records.length
         ?`<p class="fc-meta">${L('No parameter changes recorded yet.','尚无参数变更记录。')}</p>`
-        :`<div class="tablewrap"><table class="tbl fc-table fc-log-table"><thead><tr><th scope="col">${L('Occurred at','发生时间')}</th><th scope="col">${L('Operator','操作人')}</th><th scope="col">${L('Maximum pledge ratio','最高质押率')}</th><th scope="col">${L('Maximum project term','最长项目期限')}</th><th scope="col">${L('Result','本次结果')}</th></tr></thead><tbody>${
-          shown.map(x=>`<tr${x.id===A.justSaved?' class="fc-row-new"':''}><td>${time(x.at)}${x.id===A.justSaved?CF.tag('accent',L('Just saved','本次保存')):''}</td><td>${E(x.by)}</td><td>${change(ratioText(x.before.ratio),ratioText(x.after.ratio))}</td><td>${change(termText(x.before.term),termText(x.after.term))}</td><td>${CF.tag('ok',L('Saved','保存成功'))}</td></tr>`).join('')
+        :`<div class="tablewrap"><table class="tbl fc-table fc-log-table"><thead><tr><th scope="col">${L('Occurred at','发生时间')}</th><th scope="col">${L('Operator','操作人')}</th><th scope="col" class="fc-number">${L('Maximum pledge ratio','最高质押率')}</th><th scope="col" class="fc-number">${L('Maximum project term','最长项目期限')}</th><th scope="col">${L('Result','本次结果')}</th></tr></thead><tbody>${
+          shown.map(x=>`<tr${x.id===A.justSaved?' class="fc-row-new"':''}><td>${time(x.at)}${x.id===A.justSaved?CF.tag('accent',L('Just saved','本次保存')):''}</td><td>${E(x.by)}</td><td class="fc-number">${change(ratioText(x.before.ratio),ratioText(x.after.ratio))}</td><td class="fc-number">${change(termText(x.before.term),termText(x.after.term))}</td><td>${CF.tag('ok',L('Saved','保存成功'))}</td></tr>`).join('')
           }</tbody></table></div>`
           +(records.length>shown.length
             ?`<div class="loadmore">${b('Load more','加载更多','log-more')}<span class="tiny" role="status">${L('Showing '+shown.length+' of '+records.length,'已显示 '+shown.length+' / '+records.length+' 条')}</span></div>`
@@ -345,10 +345,10 @@
     const form=`<form id="fc-form" class="fc-form" novalidate><fieldset ${A.busy?'disabled':''}>
         <div class="field"><div class="fc-label"><label for="fc-ratio">${L('Maximum pledge ratio','最高质押率')}</label>${mark('ratio')}</div>
           <div class="fc-affix"><input class="inp" id="fc-ratio" type="text" value="${E(d.ratio)}" inputmode="decimal" autocomplete="off" placeholder="${L('e.g. 70.00','如 70.00')}" aria-describedby="fc-ratio-hint fc-ratio-error" aria-invalid="${!!A.fieldErrors.ratio}"><span aria-hidden="true">%</span></div>
-          <span class="fc-meta" id="fc-ratio-hint">${boundsText()}${r.maxRatio!=null?' · '+current(ratioText(r.maxRatio)):''}</span>${fieldError('ratio')}</div>
+          <span class="fc-meta" id="fc-ratio-hint">${boundsText()}${r.maxRatio!=null?' '+current(ratioText(r.maxRatio)):''}</span>${fieldError('ratio')}</div>
         <div class="field"><div class="fc-label"><label for="fc-term">${L('Maximum project term','最长项目期限')}</label>${mark('term')}</div>
           ${select('fc-term',d.term,terms).replace('<select class="inp"','<select class="inp" aria-describedby="fc-term-hint fc-term-error" aria-invalid="'+(!!A.fieldErrors.term)+'"')}
-          <span class="fc-meta" id="fc-term-hint">${termBoundsText()}${r.maxTermMonths!=null?' · '+current(termText(r.maxTermMonths)):''}</span>${fieldError('term')}</div>
+          <span class="fc-meta" id="fc-term-hint">${termBoundsText()}${r.maxTermMonths!=null?' '+current(termText(r.maxTermMonths)):''}</span>${fieldError('term')}</div>
       </fieldset>
       <div class="fc-wide">${error()}</div>
       <div class="fc-formfoot"><button type="submit" class="btn primary" ${A.busy||!dirty()?'disabled':''} title="${dirty()?'':E(txt(['Change at least one parameter before saving.','两项参数均未改动，无需保存。']))}">${L('Save','保存')}</button>${
