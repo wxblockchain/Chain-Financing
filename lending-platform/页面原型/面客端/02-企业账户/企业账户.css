@@ -1,5 +1,5 @@
 /* 企业账户 · 本页增量。整页骨架、卡片、卡片内 Tab（.card-tabs）、表格（.tbl.resp）、表单控件、抽屉与对话框
-   都取 _shared/base.css；本模块币种 / 链图形来自内嵌 CC0 图库。这里只组合本模块清单、选择组及详情。 */
+   都取 _shared/base.css；币种 / 链图形与资产广场共用 _shared/asset-icons.js（MIT / CC0）。这里只组合本模块清单、选择组及详情。 */
 
 /* —— 总览 —— */
 .ea-card{overflow:hidden}
