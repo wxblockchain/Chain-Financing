@@ -52,7 +52,7 @@
 | 事件 | 本平台确认上游登记的钱包地址与已绑定的登录钱包不再一致，账户被标记“钱包待重新确认”并冻结资金类动作。须已有本平台资产方账户及有效绑定；上游删除或撤回该字段可见权限不属于本事件 |
 | 发送时点 | 标记与冻结生效时产生，不等用户下次登录或点击受限操作。若在登录后核对时才获知变更，届时发送，不虚构此前送达 |
 | 收件人 | 被标记的本平台资产方账户本人。不按钱包、邮箱、企业或上游原始账号归消息；同一人的资金方账户、同企业其他账户、运营均不接收 |
-| 正文须说明 | 当前状态、被冻结的业务范围、两条解除出路（到资产可信平台把登记地址改回原地址，下次核对一致即自动解除；或确实改用新钱包时按全新用户重新登录、选择角色并完成授权关联）。不展示完整地址原文以外的敏感信息，不猜测变更原因 |
+| 正文须说明 | 当前状态、被冻结的业务范围、两条解除出路（到资产可信平台把登记地址改回原地址，下次核对一致即自动解除；或确实改用新钱包时按全新用户重新登录并完成授权关联）。不展示完整地址原文以外的敏感信息，不猜测变更原因 |
 | 离线与失败 | 冻结与状态标记不等待投递，投递失败不回滚冻结；补送仍是同一事件，消息可见时效沿消息中心 |
 | 同次变化重复出现 | 重复告知、多标签、刷新、重登和补送均只一条；不改事件时间或排序、不置顶、不增加未读数、不将已读恢复未读 |
 | 解除与再次发生 | 地址改回一致或该账户不再处于待确认状态后不再发新消息，常驻提醒同时消失，历史消息与已读状态保留；此后再次发生地址变更属于新事件，单独保留消息与已读状态 |
@@ -77,7 +77,7 @@
 | 内容 | 简体中文 | English |
 | --- | --- | --- |
 | 标题 | 钱包地址待重新确认 | Wallet address needs reconfirmation |
-| 正文 | 你在资产可信平台登记的钱包地址已变更，本平台账户已暂停发起融资、签署协议等资金类操作，浏览和查看本人信息不受影响。请到资产可信平台把地址改回原钱包；如果你确实改用了新钱包，请用新钱包重新登录并完成角色选择与授权关联。 | The wallet address registered on the Asset Trust Platform has changed. Financial actions such as submitting financing applications and signing agreements are paused on your account; browsing and viewing your own information are not affected. Restore the previous address on the Asset Trust Platform, or, if you have genuinely switched wallets, sign in with the new wallet and complete role selection and authorization again. |
+| 正文 | 你在资产可信平台登记的钱包地址已变更，本平台账户已暂停发起融资、签署协议等资金类操作，浏览和查看本人信息不受影响。请到资产可信平台把地址改回原钱包；如果你确实改用了新钱包，请用新钱包重新登录并完成授权关联。 | The wallet address registered on the Asset Trust Platform has changed. Financial actions such as submitting financing applications and signing agreements are paused on your account; browsing and viewing your own information are not affected. Restore the previous address on the Asset Trust Platform, or, if you have genuinely switched wallets, sign in with the new wallet and complete authorization again. |
 | 操作用语 | 查看账户 | View account |
 
 中英正文动态变量均为空；时间和已读状态沿消息中心，不拼入未经确认的上游变更时间。标题/正文为纯文本，不带证件号、联系方式、钱包、材料或内部失败原因，不猜哪一项被驳回。历史消息按当前语言展示，翻译缺失按消息框架回落，不显示模板键。
