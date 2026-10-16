@@ -70,9 +70,9 @@
       buyer:['Demo Buyer A','演示买方 A'],from:'2026-07-01',due:'2027-06-30',issued:iso(D.now()-(i+1)*DAY)
     }));
   }
-  D.tokens.filter(t=>t.owner==='entity-demo-a'&&/^TK-(DEMO-|FREE-|MC-)/.test(t.id)).forEach((t,i)=>{
+  D.tokens.filter(t=>t.owner==='entity-demo-a'&&/^TK-(DEMO-|FREE-|MC-|MH-)/.test(t.id)).forEach((t,i)=>{
     if(!t.issued)t.issued=iso(D.now()-(i+3)*DAY);
-    if(!t.tx)t.tx='0x'+Array.from(t.id).map(c=>c.charCodeAt(0).toString(16)).join('').padStart(64,'0');
+    if(!t.tx)t.tx='0x'+Array.from(t.no||t.id).map(c=>c.charCodeAt(0).toString(16)).join('').padStart(64,'0').slice(-64);
   });
   D.save();
 })(window.CF);
