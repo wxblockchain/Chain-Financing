@@ -939,3 +939,20 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-lock{font-size:var(--fs-11);color:var(--faint);border:1px dashed var(--border-strong);border-radius:var(--radius-pill);padding:0 8px}
 .ls-unfinished{margin:var(--sp-2) 0 0;padding-left:var(--sp-5)}
 .ls-unfinished li{margin:2px 0}
+
+/* WS-397 签名弹窗一页完成：选择代币占主体，签名条与主动作同在底部 */
+.modal-f:has(.ls-sign-bar){align-items:center}
+.ls-sign-bar{flex:1 1 380px;min-width:0;display:grid;gap:2px;margin-right:auto}
+.ls-sign-bar p{margin:0}
+.ls-sign-sum{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-5);font-size:var(--fs-13);color:var(--muted)}
+.ls-sign-sum b{color:var(--text);font-size:var(--fs-14);font-weight:600}
+.ls-sign-note{font-size:var(--fs-12);color:var(--faint);line-height:1.6}
+.ls-sign-cond,.ls-sign-bar .ls-release-limit{font-size:var(--fs-12);color:var(--text);line-height:1.6}
+.ls-sign-cond{color:var(--warn)}
+.ls-sign-bar .ls-release-limit{padding:0;border:0}
+.ls-sign-bar .ls-release-over{font-size:var(--fs-12);color:var(--danger)}
+.ls-pick-note{margin:0;padding:8px 10px;border-radius:var(--radius-xs);background:var(--warn-bg);color:var(--warn);font-size:var(--fs-12);line-height:1.6}
+@media(max-width:640px){.ls-sign-bar{flex-basis:100%}.ls-sign-sum{gap:2px var(--sp-3)}}
+/* 清单是弹窗主体：行距收紧，一屏多看几份；整行可点，桌面端勾选框热区收至 32px */
+.modal .ls-pick tbody td{padding-top:6px;padding-bottom:6px;height:auto}
+@media(pointer:fine){.modal .ls-pick .ls-pick-check .ls-check{min-height:32px;min-width:32px}}
