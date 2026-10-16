@@ -60,7 +60,14 @@
 .modal:has(.ea-form) .modal-f .btn{height:var(--ctrl-h-sm);font-size:var(--fs-13)}
 .ea-form{--ctrl-h:36px;--ui-field-value:var(--fs-13);display:grid;gap:var(--sp-5);min-width:0}
 .ea-form .hint{font-size:var(--fs-11);line-height:1.5}
-.ea-form .field-static{background:var(--card-2)}
+/* 可填为白底实线框；只读为浅灰虚线框并标注文字；禁用为更深灰底、弱边界及禁止指针。
+   仅作用于账户填写表单，不改变任何字段的 readonly / disabled 条件。 */
+.ea-form .inp:not([readonly]):not(:disabled){background:var(--card)}
+.ea-form :is(.field-static,.inp[readonly]){background:var(--card-2);border:1px dashed var(--border-strong);color:var(--text);cursor:default}
+.ea-form .inp:disabled{background:var(--gray-bg);border:1px solid var(--border);color:var(--faint);cursor:not-allowed;opacity:1}
+.ea-required{display:inline-block;margin-left:var(--sp-1);color:var(--danger);font-weight:600}
+.ea-readonly-label{display:inline-block;margin-left:var(--sp-2);padding:0 var(--sp-1);border-radius:var(--radius-xs);
+  background:var(--gray-bg);color:var(--muted);font-size:var(--fs-11);font-weight:500;line-height:1.6}
 .ea-form .err-msg:empty,.ea-form .hint:empty,.ea-drawer .hint:empty{display:none}
 .ea-notice .note{margin:0}
 .ea-notice-row{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;width:100%}
