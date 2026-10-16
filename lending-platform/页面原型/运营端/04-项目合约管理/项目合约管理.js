@@ -352,12 +352,12 @@
     return section('Project publisher and parameter context','项目发布方与参数上下文',kv([
       [L('Project publisher','项目发布方'),E(ownerName(r))+`<span class="cm-meta">${L('The asset holder company that created this project.','创建本项目的资产方企业。')}</span>`],
       [L('Stable entity identifier','稳定主体标识'),r.entity?`<span class="mono">${E(r.entity)}</span>`:CF.tag('warn',unknown())],
-      [L('Pledge ratio · locked at creation','项目质押率 · 创建时锁定'),pct(r.ratio)],
+      [L('Pledge ratio · latest submission','项目质押率 · 最近一次提交'),pct(r.ratio)],
       [L('Maximum pledge ratio · current configuration','最高质押率 · 当前配置'),current(pct(c.maxRatio))+(ratioGap?gap:'')],
-      [L('Project term · locked at creation','项目期限 · 创建时锁定'),E(termRange(r))],
+      [L('Project term · latest submission','项目期限 · 最近一次提交'),E(termRange(r))],
       [L('Maximum project term · current configuration','最长项目期限 · 当前配置'),current(months(c.maxTermMonths))+(termGap?gap:'')],
       [L('Configuration read at','配置取数时点'),c.available?time(c.readAt):unknown(),true]
-    ])+`<p class="cm-meta">${L('The review is checked against the values locked when the project was created. The current configuration is background reference only.','核对基准是项目创建时锁定的值；当前配置仅作背景参考。')}</p>`
+    ])+`<p class="cm-meta">${L('The review is checked against the snapshot of the latest submission. On resubmission after a return the pledge ratio is re-checked against the maximum at that time; both values are locked once the contract is deployed. The current configuration is background reference only.','核对基准是最近一次提交的快照；退回重提时项目质押率按当时的最高质押率重新校验，合约部署后锁定。当前配置仅作背景参考。')}</p>`
       +(r.entity?'':note(L('The stable entity identifier for this asset holder is not available, so the ownership cannot be confirmed. Approval is unavailable until it is verified; the project can still be returned.','该资产方的稳定主体标识暂不可得，归属无法确认。核实前不能提交通过，仍可提交退回。'),'warn'))
       +((ratioGap||termGap)?note(L('The locked values stay unchanged and stay valid. A lower current limit does not make this project non-compliant, does not block the submission and does not create any remediation task.','锁定值保持不变且继续有效。当前上限调低不使该项目违规，不拦截提交，也不产生整改待办。'),'accent'):'')
       +(c.available?'':note(L('The current financing parameter configuration could not be read. It is marked to be verified and does not block the review.','当前融资参数配置暂不可读，已标为待核实，不阻断本次审核。'),'warn')));

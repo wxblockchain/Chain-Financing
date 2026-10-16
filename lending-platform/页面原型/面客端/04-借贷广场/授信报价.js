@@ -182,7 +182,7 @@
   const field=(key,en,zh,value='',type='text',extra='')=>'<div class="field"><label for="cq-'+key+'">'+L(en,zh)+'</label><input class="inp" id="cq-'+key+'" data-cq-field="'+key+'" type="'+type+'"'+(en.includes('*')?' aria-required="true"':'')+' value="'+E(value)+'" '+extra+(invalid===key?' aria-invalid="true" aria-describedby="cq-error"':'')+'></div>';
   const check=(key,en,zh,on)=>'<label class="cq-check"><input type="checkbox" id="cq-'+key+'" data-cq-check="'+key+'" '+(on?'checked':'')+'>'+L(en,zh)+'</label>';
   const status=q=>L({waiting:'Awaiting acceptance',funding:'Accepted',funded:'Accepted',terminated:'Accepted · business terminated',rejected:'Rejected',expired:'Quote invalidated'}[q.state],{waiting:'待接受',funding:'已接受',funded:'已接受',terminated:'已接受 · 业务已终止',rejected:'已拒绝',expired:'报价已失效'}[q.state]);
-  const demandEnded={coverage:['Financing request ended · pledge shortfall','所属融资需求终结 · 质押不足'],expiry:['Financing request ended · project term ended','所属融资需求终结 · 项目到期'],closed:['Financing request ended · project closed','所属融资需求终结 · 项目关闭'],withdrawn:['Financing request ended · withdrawn by the asset holder','所属融资需求终结 · 资产方撤下']};
+  const demandEnded={coverage:['Financing request ended · automatically invalidated, pledge water level insufficient','所属融资需求终结 · 自动失效·质押水位不足'],expiry:['Financing request ended · project term ended','所属融资需求终结 · 项目到期'],closed:['Financing request ended · project closed','所属融资需求终结 · 项目关闭'],withdrawn:['Financing request ended · withdrawn by the asset holder','所属融资需求终结 · 资产方撤下']};
   const reason=q=>q.state==='expired'?L(...(demandEnded[q.reason]||['Financing request ended','所属融资需求终结'])):E(q.reason||'');
   /* 报价没有有效期：只说明锁定起始与已锁定时长，不出现截止时刻或剩余时间。 */
   function lockInfo(q){if(q.state!=='waiting')return '';const hours=Math.floor((D.now()-q.at)/H);return '<div class="cq-clock"><span>'+L('Lock started: ','锁定起始：')+time(q.at)+'</span><span>'+L('Locked for ','已锁定 ')+hours+L(' h',' 小时')+'</span></div>';}
@@ -191,7 +191,7 @@
   const fees=q=>note('You bear cross-border remittance, intermediary and receiving fees. The received amount will be lower; principal remains '+usd(q.amount)+'.','跨境汇出、中转、入账手续费由您承担；到账金额会少于融资金额，但偿还本金仍按融资金额 '+usd(q.amount)+' 计算。','warn');
   function notify(q,event){const recipients=event==='submitted'?['asset']:[q.fund];recipients.forEach(who=>{if(!db.events.some(e=>e.quote===q.id&&e.event===event&&e.who===who))db.events.push({quote:q.id,event,who,at:D.now()});});}
   function finish(q,state,why,at=D.now()){if(q.state!=='waiting')return;const p=D.project(q.project),d=p.demands.find(d=>d.id===q.demand);q.state=state;q.reason=why;q.done=at;if(state==='funding'){d.state='funding';p.state='financing';}else if(d.state==='quoted'){d.state='open';d.institution=null;d.quoteAt=null;d.rate=null;d.tenorDays=null;p.state='raising';}if(state!=='expired')notify(q,state==='rejected'?'rejected':'accepted');save();}
-  /* 唯一的系统性终结：L5 判定本轮需求终结（项目关闭 / 项目到期 / 质押不足），L6 同事件把待接受报价置为已失效。 */
+  /* 唯一的系统性终结：L5 判定本轮需求终结（项目关闭 / 项目到期 / 质押水位不足自动失效），L6 同事件把待接受报价置为已失效。 */
   Q.sweep=()=>{let changed=false;db.quotes.filter(q=>q.state==='waiting').forEach(q=>{const p=D.project(q.project),d=p?.demands.find(d=>d.id===q.demand);if(d&&d.state==='ended'){finish(q,'expired',d.reason||'coverage',d.endedAt?Date.parse(d.endedAt):D.now());changed=true;}});return changed;};
   const originalRecompute=D.recompute;D.recompute=p=>{originalRecompute(p);Q.sweep();};
   const originalSeed=D.seed;D.seed=()=>{originalSeed();reset();};

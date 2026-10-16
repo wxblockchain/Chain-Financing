@@ -6,7 +6,7 @@
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
-  const SCHEMA = 'ws397-7';
+  const SCHEMA = 'ws397-8';
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
   /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
   D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
@@ -123,7 +123,7 @@
     return {mine,review:p.state==='review',returned:p.state==='returned',live,
       pledge:mine&&live,publish:mine&&live&&!p.expired&&!current&&n.value>0&&n.free>0,
       edit:mine&&current&&current.state==='open'&&!p.expired,withdraw:mine&&releasable.length>0,
-      close:mine&&!terminal,canClose:mine&&!terminal&&!p.deploying&&!D.unfinished(p).length,
+      close:mine&&!terminal&&!p.expired,canClose:mine&&!terminal&&!p.expired&&!p.deploying&&!D.unfinished(p).length,
       quote:CF.S.role==='fund'&&current&&current.state==='open'&&!terminal&&!p.expired&&n.grade==='surplus'};
   };
   D.kinds = () => D.TYPES.filter(x=>D.tokens.some(t=>t.owner==='entity-demo-a'&&t.kind===x.id)).map(x=>x.id);
@@ -137,7 +137,7 @@
         d.state='ended';d.reason='coverage';d.endedAt=D.iso();d.quoteState='ended';D.log(p,'demandVoided',d.id);n=D.numbers(p);
       }
     });
-    if(!D.terminal(p)&&!D.current(p)&&!['review','returned'].includes(p.state))p.state=p.balance?'financing':'available';
+    if(!D.terminal(p)&&!D.current(p)&&!['review','returned'].includes(p.state))p.state=p.balance||CF.L8?.hasUnsettled?.(p)||p.demands.some(d=>d.state==='funding')?'financing':'available';
     if(n.grade!==p.grade){ if(n.grade==='short'||p.grade==='short')D.log(p,n.grade==='short'?'coverageShort':'coverageRestored'); p.grade=n.grade;p.coverageAt=D.iso(); }
   };
   /* 未处理完成的业务：待确认的报价、待放款 / 待放款确认、未结清（含逾期）、处理中的链上操作。任一存在时不能关闭、不转已结清、不整池释放。 */
@@ -149,6 +149,14 @@
     if(D.executions.some(e=>e.project===p.id&&e.state==='processing')||D.tokens.some(t=>(t.pool===p.id||t.releasedFrom===p.id)&&t.pending))out.push('processing');
     return out;
   };
+  /* 到期自动终结（Q-LS-22）：到期且没有未处理完成的业务时终结——有过成交的转已结清，从未成交的转已关闭（有效期到期）；两者都整池释放。
+     到期时仍有业务的，最后一项处理完成时按同一规则终结。未到期时全部结清只回到可用。 */
+  D.hadDeal = p => p.demands.some(d=>['funding','funded'].includes(d.state))||(CF.CQ?.data?.().quotes||[]).some(q=>q.project===p.id&&['funding','funded'].includes(q.state));
+  D.autoEnd = p => {
+    if(!p||!p.expired||D.terminal(p)||['review','returned'].includes(p.state)||D.unfinished(p).length)return false;
+    if(D.hadDeal(p))p.state='settled';else{p.state='closed';p.closeReason='expiry';}
+    D.releasePool(p);D.log(p,p.state==='settled'?'settled':'closed');return true;
+  };
   /* 终态整池释放：已通过审核的份额转为已释放待提取；仍待审核的按默认不通过处理，留在合约内由资产方自助解押。 */
   D.releasePool = p => {
     D.applications.filter(a=>a.project===p.id&&a.state==='review').forEach(a=>{a.state=a.reviewState='rejected';a.reason='projectEnded';a.decided=D.iso();a.reviewer=['System','系统'];});
@@ -159,7 +167,7 @@
   D.sweep = () => {
     let changed=false;
     /* 本模块不再有任何倒计时类时限：审核不因等待自动改变结论。 */
-    D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const d=D.current(p);if(d&&['open','quoted'].includes(d.state)){d.state='ended';d.reason='expiry';d.endedAt=D.iso();d.quoteState='ended';D.log(p,'demandExpired',d.id);}if(!D.terminal(p)){D.recompute(p);if(!D.unfinished(p).length){p.state='closed';p.closeReason='expiry';D.releasePool(p);}}D.log(p,'projectExpired');changed=true;}});
+    D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const d=D.current(p);if(d&&['open','quoted'].includes(d.state)){d.state='ended';d.reason='expiry';d.endedAt=D.iso();d.quoteState='ended';D.log(p,'demandExpired',d.id);}if(!D.terminal(p))D.recompute(p);D.log(p,'projectExpired');changed=true;}if(D.autoEnd(p))changed=true;});
     if(changed)D.save();return changed;
   };
   /* 创建即提交审核：不勾代币、不上链、不签名、不收费。 */
@@ -271,6 +279,9 @@
       const created=new Date(D.now()-(i+2)*DAY).toISOString(),expiry=D.addMonths(created.slice(0,10),[12,9,6][i%3]);
       const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',kind:'erc20-ar',rate:0.8,termCap:12,settle:['USD'],repay:D.REPAY,contract:'0x'+(i*31+7).toString(16).padStart(40,'0'),deployedAt:new Date(Date.parse(created)+3*3600000).toISOString(),spv:D.SPV,state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],created,published:new Date(D.now()-i*DAY).toISOString(),expiry,expires:D.endOf(expiry),quotes:i===3?1:0};
       if(i!==5&&i!==6)p.demands.push({id:p.id+'-01',amount:i===4?500000:300000,state:i===4?'funded':i===3?'quoted':'open',at:p.published,tenorDays:i===3?90:i===4?120:null,rate:i===3?'6.40':i===4?'6.80':null,institution:i===3?['Demo Capital','演示资金机构']:null,quoteAt:i===3?p.published:null});
+      /* 已结清示例按 Q-LS-22 是到期后自动终结的项目。 */
+      if(i===5){p.expiry=D.addDays(D.today(),-1);p.expires=D.endOf(p.expiry);p.expired=true;}
+      if(i===6)p.closeReason='owner';
       D.projects.push(p);
       for(let j=1;j<=7;j++){const released=[5,6].includes(i);const value=j===7?100000:150000;
         D.tokens.push({id:'TK-DEMO-'+i+'-'+j,owner:p.owner,kind:'erc20-ar',units:1,symbol:'AR-DEMO',value,valid:i===4?j<=3:j!==7,pool:released?null:p.id,releasedFrom:released?p.id:null,pledge:released?'released':'pledged',buyer:['Demo Buyer '+j,'演示买方 '+j],due:'2027-01-20',from:'2026-07-20',tx:'0x'+(i*10+j).toString(16).padStart(64,'0')});}

@@ -76,13 +76,13 @@
         body:pair('Collection {action_id} for token {token_id} in project {project_name} ({project_id}) failed. Reason: {reason}. {gas_sentence} The token remains released and awaiting collection; this does not restore the project reservation. You may collect again; {retry}',
           '项目 {project_name}（{project_id}）的代币 {token_id} 本次提取 {action_id} 失败。原因：{reason}。{gas_sentence}代币仍为已释放待提取，不恢复项目占用；可重新提取，{retry}')},
       'financing.demand.coverage_invalidated':{
-        title:pair('Financing request invalidated','融资需求因质押不足失效'),
-        body:pair('Financing request {demand_id} in project {project_name} ({project_id}) was automatically invalidated due to a pledge shortfall. Pending offers for that request were also invalidated. The original record is retained. A new request may be published once current eligibility requirements are met, with no cooldown period.',
-          '项目 {project_name}（{project_id}）的融资申请 {demand_id} 已因质押不足自动失效，该轮在途报价同时失效。原记录保留；满足当前发布资格后可重新发布新的融资申请，无需等待冷却期。')},
+        title:pair('Financing request invalidated','融资需求因质押水位不足失效'),
+        body:pair('Financing request {demand_id} in project {project_name} ({project_id}) was automatically invalidated because the eligible borrowing limit no longer covered the outstanding principal and amounts in progress. Pending offers for that request were also invalidated. The original record is retained. A new request may be published once current eligibility requirements are met, with no cooldown period.',
+          '项目 {project_name}（{project_id}）的融资申请 {demand_id} 已因质押水位不足自动失效，该轮在途报价同时失效。原记录保留；满足当前发布资格后可重新发布新的融资申请，无需等待冷却期。')},
       'financing.demand.coverage_invalidated@fund':{
         title:pair('Financing request for your offer invalidated','报价所属融资需求已失效'),
-        body:pair('Financing request {demand_id} in project {project_name} ({project_id}) was automatically invalidated due to a pledge shortfall. Your pending offer for that request was also invalidated. Review the original request’s current outcome; do not continue under that offer.',
-          '项目 {project_name}（{project_id}）的融资申请 {demand_id} 已因质押不足自动失效，你方在该轮的在途报价同时失效。请查看原申请的当前结果，不要按原报价继续办理。')},
+        body:pair('Financing request {demand_id} in project {project_name} ({project_id}) was automatically invalidated because the eligible borrowing limit no longer covered the outstanding principal and amounts in progress. Your pending offer for that request was also invalidated. Review the original request’s current outcome; do not continue under that offer.',
+          '项目 {project_name}（{project_id}）的融资申请 {demand_id} 已因质押水位不足自动失效，你方在该轮的在途报价同时失效。请查看原申请的当前结果，不要按原报价继续办理。')},
       /* T-LS-05C / 05D：项目到期时当前轮终结，与自动失效同一类型，按原因择模板。 */
       'financing.demand.coverage_invalidated:expiry':{
         title:pair('Financing request ended at project expiry','融资需求因项目到期终结'),
@@ -102,8 +102,8 @@
           '项目 {project_name}（{project_id}）的本轮质押不足已于 {occurred_at} 解除。请以项目当前质押情况为准；解除提醒不代表融资债务已结清。')},
       'financing.project.expiry_reminder':{
         title:pair('Project expires in 7 days','项目距有效期届满还有 7 天'),
-        body:pair('Project {project_name} ({project_id}) expires at {expires_at}. There are 7 days remaining as of this notification. New financing will not be available after expiry; existing business continues under its current status.',
-          '项目 {project_name}（{project_id}）将于 {expires_at} 届满有效期。当前距离届满还有 7 天；到期后不能新增融资，存量业务仍按其当前状态办理。')},
+        body:pair('Project {project_name} ({project_id}) expires at {expires_at}. There were 7 days remaining when this notification was sent. New financing will not be available after expiry; existing business continues under its current status. If no business is still outstanding at expiry, the project ends automatically and its pledged tokens are released for collection.',
+          '项目 {project_name}（{project_id}）将于 {expires_at} 届满有效期。通知发出时距离届满还有 7 天；到期后不能新增融资，存量业务仍按其当前状态办理；届时没有未处理完成的业务的，项目将自动终结并整池释放，之后可提取代币。')},
       'financing.quote.submitted':{
         title:pair('Financing offer received','收到融资报价'),
         body:pair('{institution_name} submitted an offer for financing request {demand_id}, financing reference {business_id}, with a financing amount of {amount_usd} USD. The offer has no expiry date and stays open until you accept or reject it. Review the terms and decide. If the underlying financing request ends because the project is closed, the project term expires, or a pledge shortfall occurs, this offer lapses with it.',

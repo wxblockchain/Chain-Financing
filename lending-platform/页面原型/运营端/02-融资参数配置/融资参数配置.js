@@ -371,7 +371,7 @@
       return {title:L('Confirm the save','确认保存'),
         html:`<div class="fc-readonly"><span class="fc-meta">${L('Token type','代币类型')}</span><strong>${E(r.name)}</strong>${d.wasConfigured?'':`<span class="fc-meta">${L('First configuration: once saved, this token type can be used to create financing projects.','首次配置：保存后该代币类型即可用于创建融资项目。')}</span>`}</div>
           <div class="fc-diff">${diffRow(L('Maximum pledge ratio','最高质押率'),ratioText(r.maxRatio),ratioText(next.ratio))}${diffRow(L('Maximum project term','最长项目期限'),termText(r.maxTermMonths),termText(next.term))}</div>
-          <p class="fc-meta">${L('The new values take effect immediately and apply only to financing projects created after this save. Projects already created keep the values locked at creation and are not changed, re-checked or reopened.','新取值保存后立即生效，仅对此后新建的融资项目生效；已创建项目沿用其创建时锁定的取值，不被改写、不需整改。')}</p>
+          <p class="fc-meta">${L('The new values take effect immediately and apply only to financing projects created after this save. Deployed projects keep their locked values and are not changed, re-checked or reopened; a returned project resubmitted later is re-checked against the maximum pledge ratio at that time.','新取值保存后立即生效，仅对此后新建的融资项目生效；已部署项目沿用其锁定值，不被改写、不需整改；退回后重提的项目按重提当时的最高质押率重新校验。')}</p>
           ${A.busy?`<p role="status">${L('Submitting…','正在提交…')}</p>`:''}`,
         foot:b('Back','返回修改','edit-back','','',A.busy)+b('Confirm the save','确认保存','submit','','primary',A.busy)};
     },

@@ -270,7 +270,7 @@
         [L('Project term','项目期限'),p.termMonths+' '+L('months','个月')],
         [L('Term starts','期限起算点'),time(p.createdAt)],
         [L('Valid until','有效期至'),time(p.createdAt+p.termMonths*30*86400000)]
-      ])+`<p class="pr-meta">${L('Locked when the project was created; this module does not configure or adjust them.','项目创建时锁定的只读事实，本模块不配置、不调整。')}</p>`)
+      ])+`<p class="pr-meta">${L('Locked, read-only project facts (the pledge ratio is locked when the contract is deployed); this module does not configure or adjust them.','已锁定的只读事实（项目质押率于合约部署时锁定），本模块不配置、不调整。')}</p>`)
       +section('Token facts','本张代币事实',kv([
         [L('Token identifier','代币编号'),`<span class="mono">${E(r.token)}</span>`],
         [L('Quantity / currency','数量 / 币种'),r.amount==null?unknown():CF.fmtAmt(r.amount)+' '+r.tokenCcy],

@@ -103,7 +103,7 @@
            text:['No confirmed result has been received for this deployment. The known evidence is kept as is; the result is not assumed to be a success or a failure.','本次部署尚未收到确定结果，已知链上凭证原样保留，不推定为成功或失败。'],
            next:['Contact the platform provider to check the chain and the configuration. The platform does not retry, re-judge or roll back on its own.','请联系平台建设方核实链上与配置；平台不自动重试、不自动改判、不自动回滚。']})]});
 
-    /* 007 第 3 次提交，创建时锁定的质押率高于当前配置上限：并列展示差异，不自动拦截、不自动退回。 */
+    /* 007 第 3 次提交，最近一次提交的质押率高于当前配置上限：并列展示差异，不自动拦截、不自动退回。 */
     add({key:'07',ratio:0.75,termMonths:12,createdAt:now-22*D,submittedAt:now-2*H,seq:3,
       events:[
         ev(now-22*D,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
