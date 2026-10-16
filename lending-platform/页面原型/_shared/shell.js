@@ -17,11 +17,14 @@
   "use strict";
 
   /* ---------------------------------------------------------------- 状态 */
+  /* 面客端身份在同一标签页内跨刷新、跨模块页面沿用：各模块是独立 HTML，不沿用就会在跳页后回到访客。 */
+  var ROLE_KEY = 'hc.portal-role', PORTAL_ROLES = ['guest', 'signed', 'asset', 'fund'];
+  function savedRole() { try { var v = sessionStorage.getItem(ROLE_KEY); return PORTAL_ROLES.indexOf(v) >= 0 ? v : 'guest'; } catch (e) { return 'guest'; } }
   var S = {
     lang: "en",              // 默认英文；不读浏览器语言（国际化基线 3.1）
     tz: null,                // 按浏览器推断，推断失败兜底 UTC
     end: "asset",            // asset = 面客端 · admin = 运营端
-    role: "guest",           // guest / asset / fund / ops
+    role: savedRole(),       // guest / signed / asset / fund / ops
     page: null,
     st: "default",           // 演示状态：default/loading/empty/noresult/error/denied
     sort: "at",              // 当前排序键；列表默认按时间倒序
@@ -957,6 +960,7 @@
     var focusKey = active && active.id;
     var focusAct = active && active.getAttribute("data-act"), focusV = active && active.getAttribute("data-v");
     reviewSync();
+    if (S.end === "asset" && PORTAL_ROLES.indexOf(S.role) >= 0) { try { sessionStorage.setItem(ROLE_KEY, S.role); } catch (e) {} }
     if (M && M.beforeRender) M.beforeRender();
     if (!N.allowed() && S.menu === "notifications") S.menu = null;
     document.documentElement.setAttribute("data-end", S.end);
