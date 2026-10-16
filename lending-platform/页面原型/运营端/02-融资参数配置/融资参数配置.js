@@ -342,7 +342,7 @@
     const mark=key=>`<span class="tag accent fc-changed" id="fc-${key}-changed" ${changed(key)?'':'hidden'}><span class="dot"></span>${L('Changed','已修改')}</span>`;
     const current=(v)=>`<span class="fc-current">${L('Current: ','当前：')}${E(v)}</span>`;
     const terms=[['',L('Choose…','请选择')],...Array.from({length:TERM.max-TERM.min+1},(_,i)=>{const n=TERM.min+i;return [String(n),termText(n)];})];
-    const form=`<form id="fc-form" class="fc-form" novalidate>${CF.requiredHint()}<fieldset ${A.busy?'disabled':''}>
+    const form=`<form id="fc-form" class="fc-form" novalidate><fieldset ${A.busy?'disabled':''}>
         <div class="field"><div class="fc-label"><label for="fc-ratio">${CF.fieldLabel(L('Maximum pledge ratio','最高质押率'),true)}</label>${mark('ratio')}</div>
           <div class="fc-affix"><input class="inp" aria-required="true" id="fc-ratio" type="text" value="${E(d.ratio)}" inputmode="decimal" autocomplete="off" placeholder="${L('e.g. 70.00','如 70.00')}" aria-describedby="fc-ratio-hint fc-ratio-error" aria-invalid="${!!A.fieldErrors.ratio}"><span aria-hidden="true">%</span></div>
           <span class="fc-meta" id="fc-ratio-hint">${boundsText()}${r.maxRatio!=null?' · '+current(ratioText(r.maxRatio)):''}</span>${fieldError('ratio')}</div>

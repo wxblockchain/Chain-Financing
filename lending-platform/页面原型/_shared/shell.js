@@ -95,7 +95,7 @@
   function $(id) { return document.getElementById(id); }
   CF.esc = esc; CF.L = L; CF.t = t;
 
-  /* 表单呈现：只生成标签 / 说明，不参与 required 校验、值、权限或提交。 */
+  /* 表单呈现：只生成字段标签 / 只读标识，不参与 required 校验、值、权限或提交。 */
   CF.readOnlyBadge = function () {
     return '<span class="field-readonly-label">' + L('Read only', '只读') + '</span>';
   };
@@ -104,9 +104,6 @@
     if (required === undefined) required = /\*\s*$/.test(text);
     return (required ? '<span class="required-mark" aria-hidden="true">*</span><span class="sr-only">' + L('Required: ', '必填：') + '</span>' : '') +
       esc(text.replace(/\s*\*\s*$/, '')) + (readonly ? CF.readOnlyBadge() : '');
-  };
-  CF.requiredHint = function () {
-    return '<p class="form-required-key"><span aria-hidden="true">*</span>' + L('Required', '必填') + '</p>';
   };
 
   function resolveTz() {

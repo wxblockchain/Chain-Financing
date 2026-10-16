@@ -217,7 +217,6 @@
   const required=k=>EA.fiatRequired.includes(k)||k==='address';
   const requiredMark='<span class="ea-required" aria-hidden="true">*</span>';
   const requiredGroup=()=>requiredMark+'<span class="sr-only">'+L(' (Required)','（必填）')+'</span>';
-  const requiredHint=()=>'<p class="ea-required-key"><span aria-hidden="true">*</span>'+L('Required','必填')+'</p>';
   /* 输入属性按国际化表单惯例给出：地址字段带 autocomplete，代码类关闭拼写检查并转大写。 */
   const INPUT={
     label:'autocomplete="off"',
@@ -271,7 +270,7 @@
 
   function fiatForm(){
     const f=F();
-    return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+requiredHint()+
+    return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+
       group(L('Account','账户信息'),typeField()+holderField()+field('label')+currencyField())+
       group(L('Bank details','开户行信息'),field('bank')+field('bankCity')+field('iban')+field('swift'))+
       (f.duplicate?notice('warn','<div class="ea-notice-row"><span>'+L('An account with this account number and SWIFT / BIC is already saved.',
@@ -283,12 +282,12 @@
   }
   function cryptoForm(){
     const f=F();
-    if(f.mode==='edit')return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+requiredHint()+
+    if(f.mode==='edit')return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+
       '<div class="ea-grid">'+field('label',true)+'</div>'+
       '<div class="ea-chosen">'+dl([[L(...EA.labels.chain),networkTag(f.form.chain)],[L(...EA.labels.address),'<span class="mono ea-break">'+E(f.form.address)+'</span>']])+'</div>'+
       '<p class="hint">'+L('The network and address can\'t be changed. To use a different address, add a new crypto account and verify it, then delete this one if you no longer need it.',
         '结算收款链与数币地址登记后不可修改。要换地址，请新增一个数币账户并完成签名，再按需删除本账户。')+'</p></div>';
-    if(f.step===1)return '<div class="ea-form">'+steps(1)+requiredHint()+
+    if(f.step===1)return '<div class="ea-form">'+steps(1)+
       notice('warn','<div><b>'+L('Only add an address you can sign with.','只能登记你能签名的地址。')+'</b> '+
         L('Exchange deposit addresses, third-party custodial addresses and contract addresses that can\'t sign are not supported.',
           '交易所充值地址、第三方托管地址以及无法签名的合约地址都无法登记。')+'</div>')+

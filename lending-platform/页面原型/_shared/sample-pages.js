@@ -642,7 +642,7 @@
       renderFoot();
       var related = relations.content(page);
       if (related !== null) return related;
-      if (page === "DEMO-FOCUS") return '<h1 class="page-title">' + L('Centered card', '居中卡片') + '</h1><p class="page-desc">' + L('A focused task with lightweight tools.', '聚焦单一任务，保留轻量工具。') + '</p>' + CF.requiredHint() +
+      if (page === "DEMO-FOCUS") return '<h1 class="page-title">' + L('Centered card', '居中卡片') + '</h1><p class="page-desc">' + L('A focused task with lightweight tools.', '聚焦单一任务，保留轻量工具。') + '</p>' +
         '<div class="sample-form-fields"><div class="field"><label for="sample-editable">' + CF.fieldLabel(L('Text input', '文本输入'),true) + '</label><input class="inp" id="sample-editable" aria-required="true" placeholder="' + L('Enter a value', '请输入内容') + '"></div>' +
         '<div class="field"><label for="sample-readonly">' + CF.fieldLabel(L('Account name', '账户名称'),false,true) + '</label><input class="inp" id="sample-readonly" readonly value="' + L('Demonstration company', '演示企业') + '"></div>' +
         '<div class="field"><label for="sample-disabled">' + L('Unavailable input', '暂不可填写') + '</label><input class="inp" id="sample-disabled" disabled value="' + L('Unavailable', '暂不可用') + '" aria-describedby="sample-disabled-help"><p class="hint" id="sample-disabled-help">' + L('Disabled state example.', '禁用状态示例。') + '</p></div></div><p><a class="btn" href="#/">' + L('Back to sample', '返回样板') + '</a></p>';

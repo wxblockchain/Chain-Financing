@@ -1051,8 +1051,6 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 [data-end] .inp:focus-visible{border-color:var(--accent)}
 [data-end] .inp[aria-invalid="true"]{border-color:var(--danger)}
 .required-mark{display:inline-block;margin-inline-end:var(--sp-1);color:var(--danger);font-weight:600}
-.form-required-key{display:flex;justify-content:flex-end;align-items:baseline;gap:var(--sp-1);margin:0 0 var(--sp-3);color:var(--muted);font-size:var(--fs-11)}
-.form-required-key>span{color:var(--danger);font-weight:600}
 .field-readonly-label{display:inline-block;margin-inline-start:var(--sp-2);padding:0 var(--sp-1);border-radius:var(--radius-xs);background:var(--gray-bg);color:var(--muted);font-size:var(--fs-11);font-weight:500;line-height:1.6}
 [data-end] :is(.field>label,.field>.field-label){font-size:var(--ui-field-label);font-weight:500;color:var(--muted)}
 [data-end] :is(.fc-label label,.funder-field-label,.nc-category-field label){font-size:var(--ui-field-label);font-weight:500;color:var(--muted)}

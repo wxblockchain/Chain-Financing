@@ -105,7 +105,7 @@
   function paymentForm(){const spec=chainSpec();
     return '<div class="ln-stack">'+card(L('Accepted commercial terms','本笔已接受商务条款'),terms())
       +card(L('Asset holder’s receiving account','资产方收款账户'),assetAccount())
-      +card(L('Disbursement record','放款记录'),CF.requiredHint()+'<p class="ln-amount">'+amt(d().settlement,d().ccy)+'</p><div class="ln-grid">'+field('paidAt',L('Paid at *','发放时间 *'),'datetime-local','required')
+      +card(L('Disbursement record','放款记录'),'<p class="ln-amount">'+amt(d().settlement,d().ccy)+'</p><div class="ln-grid">'+field('paidAt',L('Paid at *','发放时间 *'),'datetime-local','required')
       +(d().ccy==='USD'?upload('files',L('Transfer receipt','放款凭证'),true)
         :field('hash',L('Transaction ID *','交易标识 *'),'text','required autocomplete="off"',L('On ','本笔结算收款链 ')+E(chainOf())+L(': ','：')+tr(spec.hint))+'<div class="field"><label>'+L('Settlement chain','结算收款链')+'</label><p>'+E(chainOf())+'</p><p class="ln-small">'+L('Taken from the receiving account selected by the asset holder.','由资产方所选收款账户带出。')+'</p></div>'+upload('files',L('Supplementary documents','补充材料')))
       +'<div class="field ln-full"><label for="ln-note">'+L('Note (optional)','放款备注（选填）')+'</label><textarea class="inp" id="ln-note" data-ln-field="note" maxlength="200">'+E(form.note||'')+'</textarea><span class="err-msg">'+E(errors.note||'')+'</span></div></div>')
