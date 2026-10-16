@@ -749,7 +749,7 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .nc-inbox-filters .nc-status-options button[aria-pressed="true"]{background:transparent;border-bottom-color:var(--accent);box-shadow:none;color:var(--accent)}
 .nc-inbox-filters .nc-status-options button:focus-visible{outline-offset:-4px}
 .nc-category-field{min-width:0;padding:var(--sp-2) 0}
-[data-end] .nc-category-field select{width:280px;max-width:100%;min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm);font-size:var(--ui-row-value);border-color:transparent;background:var(--card-2);cursor:pointer}
+[data-end] .nc-category-field select{width:280px;max-width:100%;min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm);font-size:var(--ui-row-value);border-color:var(--control-border);background:var(--card);cursor:pointer}
 .nc-category-field select:hover{background:var(--card-hover)}
 .nc-category-field select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .nc-inbox .nc-feed{margin-top:0}
@@ -758,13 +758,16 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .nc-message-heading{display:flex;align-items:flex-start;gap:var(--sp-5);justify-content:space-between}
 .nc-message-title{font-size:var(--fs-16);font-weight:600;line-height:1.5;overflow-wrap:anywhere;min-width:0}
 .nc-context{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--sp-1) var(--sp-3);margin-top:var(--sp-2);font-size:var(--ui-row-value);line-height:1.6;min-width:0}
+.nc-inbox .nc-context{margin-top:var(--sp-1)}
 .nc-context-name{color:var(--text);font-weight:500;overflow-wrap:anywhere;min-width:0}
 .nc-context-reference{color:var(--muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0}
 .nc-read-state{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-1);min-width:62px;min-height:24px;padding:0 var(--sp-2);border-radius:var(--radius-pill);font-size:var(--fs-12);font-weight:400;line-height:1.5;white-space:nowrap;flex-shrink:0}
 .nc-read-state.is-unread{color:var(--accent);background:var(--accent-soft)}
 .nc-read-state.is-read{color:var(--muted);background:var(--gray-bg)}
-.nc-inbox .nc-summary{display:-webkit-box;margin:var(--sp-2) 0 0;line-height:1.7;font-size:var(--fs-14);font-weight:400;overflow-wrap:anywhere}
+.nc-inbox .nc-summary{display:-webkit-box;margin:var(--sp-1) 0 0;line-height:1.7;font-size:var(--fs-14);font-weight:400;overflow-wrap:anywhere}
 .nc-message-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-3);font-size:var(--fs-12);color:var(--muted);flex-wrap:wrap}
+.nc-inbox .nc-message-foot{margin-top:var(--sp-2)}
+.nc-inbox .nc-message-foot time{font-variant-numeric:tabular-nums}
 .nc-message-category{font-weight:400}
 .nc-inbox .nc-message-link:hover{background:var(--row-hover);text-decoration:none}
 .nc-inbox .nc-message-link:hover .nc-message-title{color:var(--accent)}
@@ -826,29 +829,40 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 
 /* Operations notifications share the customer inbox list; only the console-specific pieces live here. */
 .om-inbox .nc-filters{top:var(--om-topbar-height,69px)}
+.om-inbox .nc-message-link{scroll-margin-top:calc(var(--om-topbar-height,69px) + var(--om-filter-height,56px) + var(--sp-3))}
 .om-expired .nc-message-title{color:var(--muted)}
 .om-more-error{color:var(--danger)}
 .om-more-end{color:var(--faint);font-size:var(--fs-12)}
 .om-expired-label{color:var(--muted)}
 .om-reference{display:inline-flex;align-items:center;gap:var(--sp-1);min-width:0}
 .om-reference .mono{overflow-wrap:anywhere}
-.om-reference .btn.icon{width:28px;height:28px}
+.om-reference .btn.icon{width:var(--ctrl-h);height:var(--ctrl-h)}
 .om-reading .nc-read-feedback{margin:var(--sp-5) 0 0}
 .om-reading .card-b{padding:var(--sp-7);display:flex;flex-direction:column}
 .om-reading h1{font-size:var(--fs-24);line-height:1.5;overflow-wrap:anywhere;max-width:70ch}
 .om-reading .nc-body{font-size:var(--fs-14);margin:var(--sp-7) 0 0}
-.om-reading .nc-actions{margin-top:auto;padding-top:var(--sp-6);border-top:0}
+.om-reading .nc-actions{margin:0;padding:0;border-top:0}
 .om-panel-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4)}
 .admin-notifications .nc-preview .nc-message-title{font-size:var(--fs-13);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .admin-notifications .nc-preview .nc-summary{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;font-size:var(--fs-12);margin-top:var(--sp-2)}
 .admin-notifications .nc-preview .nc-message-foot{font-size:var(--fs-12)}
 .admin-notifications .nc-preview .nc-read-state{min-width:50px}
 .admin-notifications .nc-panel .tbl-empty{padding:var(--sp-7) var(--sp-5)}
-.om-business{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-3);margin:var(--sp-6) 0 0;padding-top:var(--sp-5);border-top:1px solid var(--border);font-size:var(--fs-13);color:var(--muted);min-width:0}
+.om-related{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-4) var(--sp-6);margin-top:var(--sp-7);padding-top:var(--sp-5);border-top:1px solid var(--border)}
+.om-business{display:flex;flex:1;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-3);margin:0;font-size:var(--fs-13);color:var(--muted);min-width:0}
 .om-business-name{color:var(--text);font-weight:500;overflow-wrap:anywhere;min-width:0}
-.om-reading .om-target{justify-content:flex-end;gap:var(--sp-5)}
+.om-reading .om-target{justify-content:flex-end;gap:var(--sp-5);margin-left:auto}
+.om-reading .om-target:has(p){flex:1 0 100%}
 .om-reading .om-target p{flex:1 1 240px;margin:0;color:var(--muted);font-size:var(--fs-13);line-height:1.7}
 .om-reading .nc-actions [aria-disabled="true"]{opacity:.65;cursor:default}
+@media(max-width:600px){
+  .om-inbox .nc-head{grid-template-columns:minmax(0,1fr)}
+  .om-inbox .nc-head>:is([data-act="om-batch"],.nc-all-hint){grid-column:1;grid-row:auto;justify-self:start}
+  .om-inbox .nc-head .page-sub{grid-column:1}
+  .om-inbox .nc-head>.nc-all-hint{justify-self:start}
+  .om-reading .om-target{flex-basis:100%}
+  .om-reading .om-target .btn{width:100%}
+}
 .admin-notifications .badge[hidden]{display:none}
 .ops-notification .sidebar .brand-name,.ops-notification .sidebar .brand-sub{display:block;white-space:nowrap}
 /* 独立详情组合：模块显式接入，不改变既有业务布局。 */
@@ -1097,10 +1111,11 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 [data-end="admin"] .fc-diff-vals :is(strong,.fc-before){font-size:var(--ui-field-value)}
 [data-end="admin"] :is(.cm-rail,.pr-rail)>.card,[data-end="admin"] .rv-operation{border-color:var(--accent-border);border-top:3px solid var(--accent)}
 [data-end="admin"] :is(.cm-rail,.pr-rail,.rv-operation) h2{color:var(--accent);font-size:var(--ui-section-title);font-weight:600}
-[data-end] .nc-inbox .nc-message-title{font-size:var(--ui-section-title);font-weight:550}
+[data-end] .nc-inbox .nc-message-title{font-size:var(--ui-section-title);font-weight:600}
+[data-end] .nc-inbox .nc-row[data-unread="false"] .nc-message-title{font-weight:500}
 [data-end] .nc-inbox .nc-summary{font-size:var(--ui-field-value);line-height:1.6}
-[data-end] .nc-inbox .nc-message-link{padding:var(--sp-5) var(--sp-6)}
-[data-end] .nc-detail h1{font-size:var(--fs-24);letter-spacing:-.015em;line-height:1.4}
+[data-end] .nc-inbox .nc-message-link{padding:var(--sp-4) var(--sp-6)}
+[data-end] :is(.nc-detail,.om-reading) h1{font-size:var(--fs-24);letter-spacing:-.015em;line-height:1.4}
 [data-end] .nc-detail .nc-body{font-size:var(--ui-field-value);line-height:1.9}
 
 @media(max-width:900px){
