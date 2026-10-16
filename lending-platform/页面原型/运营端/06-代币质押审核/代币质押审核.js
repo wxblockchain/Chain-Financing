@@ -19,7 +19,7 @@
   const categories=[['Ownership or entity in question','代币归属或主体存疑'],['Underlying receivable issue','底层应收账款存在问题'],
     ['Token does not match project','代币与目标项目不匹配'],['Incomplete or inconsistent materials','申请材料不完整或不一致'],
     ['Other','其他']];
-  const fDefault=()=>({status:'pending',owner:'',project:'',type:'',from:'',to:'',q:'',hold:''});
+  const fDefault=()=>({status:'pending',owner:'',project:'',type:'',from:'',to:'',q:'',hold:'',auth:''});
   let seed=CF.pledgeSeed();
   const A={rows:seed.rows,projects:seed.projects,now:seed.now,clock:Date.now(),
     filter:fDefault(),editFilter:fDefault(),page:1,sort:'onchainAt',dir:1,filtersOpen:false,tab:'overview',
@@ -37,6 +37,13 @@
   const b=(en,zh,act,value='',cls='',disabled=false)=>`<button type="button" class="btn ${cls}" data-act="pr-${act}" data-v="${E(value)}" ${disabled?'disabled':''}>${L(en,zh)}</button>`;
   const link=(en,zh,act,value)=>act==='view'?`<a class="actlink" href="#${E(detailRoute(value,'overview',S.page===D?A.selected:''))}" data-act="pr-view" data-v="${E(value)}">${L(en,zh)}</a>`:`<button type="button" class="actlink" data-act="pr-${act}" data-v="${E(value)}">${L(en,zh)}</button>`;
   const badge=r=>CF.tag(status[r.status][2],txt(status[r.status]));
+  /* 解冻授权状态：通过时运营连接平台统一钱包签名，授权上链成功才算通过；处理中与待核实时本张暂不可裁定。 */
+  const AUTH={none:['Not initiated','未发起','gray'],processing:['Authorization in progress','授权处理中','accent'],
+    failed:['Authorization failed','授权失败','danger'],unknown:['Result to be verified','结果待核实','warn'],success:['Authorized','授权成功','ok']};
+  const authOf=r=>r?.auth||'none';
+  const authBusy=r=>['processing','unknown'].includes(authOf(r));
+  const authBadge=r=>authOf(r)==='none'?'':CF.tag(AUTH[authOf(r)][2],L('Unfreeze · ','解冻授权 · ')+txt(AUTH[authOf(r)]));
+  const ME=['Demo Operator','演示操作员'];
   const holdTone=r=>r.follow==='effective'?'ok':r.follow==='released'?'gray':r.follow==='awaiting-release'?'warn':r.follow==='releasing'?'accent':'gray';
   const holdBadge=r=>CF.tag(holdTone(r),txt(follows[r.follow]))+(r.flag?CF.tag('warn',txt(flags[r.flag])):'');
   const field=(label,html)=>`<div class="field"><label for="${(html.match(/id="([^"]+)/)||[])[1]||''}">${CF.fieldLabel(label)}</label>${html}</div>`;
@@ -54,7 +61,7 @@
   const canDecide=()=>!!CF.opsAuth&&CF.opsAuth.can(7)&&CF.opsAuth.can(8);
   const decideOnly=()=>!!CF.opsAuth&&!CF.opsAuth.can(7)&&CF.opsAuth.can(8);
   const allowed=()=>S.end==='admin'&&signedIn()&&canQuery();
-  const canWrite=r=>allowed()&&canDecide()&&r?.status==='pending'&&A.uncertain?.id!==r.id;
+  const canWrite=r=>allowed()&&canDecide()&&r?.status==='pending'&&!authBusy(r)&&A.uncertain?.id!==r.id;
   /* 已等待时长（N-PR-02）：事实陈述，不是期限；人工结论或撤回生效即停止计时。 */
   const endedAt=r=>r.decisionAt||(r.status==='withdrawn'?r.release?.completedAt:null);
   const waited=r=>(endedAt(r)||now())-r.onchainAt;
@@ -78,6 +85,7 @@
     const f=fDefault();for(const k of Object.keys(f))if(p.has(k))f[k]=p.get(k);
     if(f.status&&!status[f.status])f.status='pending';
     if(f.hold&&!holdFilters[f.hold])f.hold='';
+    if(f.auth&&!AUTH[f.auth])f.auth='';
     for(const k of ['from','to'])if(!/^\d{4}-\d{2}-\d{2}$/.test(f[k]))f[k]='';
     A.filter=f;A.editFilter={...f};A.page=Math.max(1,parseInt(p.get('page'),10)||1);
     A.sort=['onchainAt','waiting','value'].includes(p.get('sort'))?p.get('sort'):'onchainAt';A.dir=p.get('dir')==='-1'?-1:1;
@@ -133,19 +141,19 @@
     return A.rows.filter(r=>(!f.owner||r.owner===f.owner)&&(!f.project||r.project===f.project)&&(!f.type||r.type===f.type)
       &&(!f.from||inDay(r.onchainAt,f.from))&&(!f.to||inDay(r.onchainAt,f.to,true))
       &&(!f.q||[r.id,r.batch,r.token,owner(r)].join(' ').toLowerCase().includes(f.q.trim().toLowerCase()))
-      &&(ignoreState||((!f.status||r.status===f.status)&&(!f.hold||matchHold(r,f.hold)))));
+      &&(ignoreState||((!f.status||r.status===f.status)&&(!f.hold||matchHold(r,f.hold))&&(!f.auth||authOf(r)===f.auth))));
   }
   function utcDayStart(t,back=0){const d=new Date(t);return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-back);}
   function filters(){
     const f=A.editFilter,applied=A.filter;
-    const extra=['owner','project','type','from','to','hold'],count=extra.filter(k=>applied[k]).length;
+    const extra=['owner','project','type','from','to','hold','auth'],count=extra.filter(k=>applied[k]).length;
     const labels={owner:L('Asset holder','资产方'),project:L('Project','目标项目'),type:L('Application type','申请类型'),
-      from:L('On-chain from','上链开始日期'),to:L('On-chain through','上链结束日期'),hold:L('Holding','留存情况')};
+      from:L('On-chain from','上链开始日期'),to:L('On-chain through','上链结束日期'),hold:L('Holding','留存情况'),auth:L('Unfreeze authorization','解冻授权状态')};
     const values={owner:applied.owner?owner({owner:applied.owner}):'',project:applied.project?project({project:applied.project}):'',
       type:applied.type==='first'?L('Initial pledge','首笔质押'):L('Additional pledge','追加质押'),
-      hold:applied.hold?txt(holdFilters[applied.hold]):''};
+      hold:applied.hold?txt(holdFilters[applied.hold]):'',auth:applied.auth?txt(AUTH[applied.auth]):''};
     return `<form id="pr-filter-form" class="pr-filter-wrap"><div class="pr-filter-bar">${field(L('Search applications','搜索申请'),`<input class="inp" id="pr-f-q" value="${E(f.q)}" placeholder="${L('Application, token, batch or company','单笔标识、代币编号、批次编号或企业名')}">`)}${field(L('Review status','审核状态'),select('pr-f-status',f.status,[['',L('All','全部')],...Object.entries(status).map(([k,v])=>[k,txt(v)])]))}<div class="pr-actions"><button type="button" class="btn" data-act="pr-filters" aria-expanded="${A.filtersOpen}" aria-controls="pr-advanced">${L('Filters','筛选条件')}${count?' ('+count+')':''} <span aria-hidden="true">${A.filtersOpen?'⌃':'⌄'}</span></button>${b('Reset','重置','reset')}<button type="submit" class="btn primary">${L('Search','查询')}</button></div></div>
-      <div id="pr-advanced" class="pr-filters" ${A.filtersOpen?'':'hidden'}>${field(labels.owner,select('pr-f-owner',f.owner,[['',L('All','全部')],['A',L('Demo Asset A','示例资产企业 A')],['B',L('Demo Asset B','示例资产企业 B')]]))}${field(labels.project,select('pr-f-project',f.project,[['',L('All','全部')],['01',L('Demo project 01','示例融资项目 01')],['02',L('Demo project 02','示例融资项目 02')]]))}${field(labels.type,select('pr-f-type',f.type,[['',L('All','全部')],['first',L('Initial pledge','首笔质押')],['add',L('Additional pledge','追加质押')]]))}${field(labels.from,input('pr-f-from',f.from,'date'))}${field(labels.to,input('pr-f-to',f.to,'date'))}${field(labels.hold,select('pr-f-hold',f.hold,[['',L('All','全部')],...Object.entries(holdFilters).map(([k,v])=>[k,txt(v)])]))}</div>
+      <div id="pr-advanced" class="pr-filters" ${A.filtersOpen?'':'hidden'}>${field(labels.owner,select('pr-f-owner',f.owner,[['',L('All','全部')],['A',L('Demo Asset A','示例资产企业 A')],['B',L('Demo Asset B','示例资产企业 B')]]))}${field(labels.project,select('pr-f-project',f.project,[['',L('All','全部')],['01',L('Demo project 01','示例融资项目 01')],['02',L('Demo project 02','示例融资项目 02')]]))}${field(labels.type,select('pr-f-type',f.type,[['',L('All','全部')],['first',L('Initial pledge','首笔质押')],['add',L('Additional pledge','追加质押')]]))}${field(labels.from,input('pr-f-from',f.from,'date'))}${field(labels.to,input('pr-f-to',f.to,'date'))}${field(labels.hold,select('pr-f-hold',f.hold,[['',L('All','全部')],...Object.entries(holdFilters).map(([k,v])=>[k,txt(v)])]))}${field(labels.auth,select('pr-f-auth',f.auth,[['',L('All','全部')],...['none','processing','failed','unknown','success'].map(k=>[k,txt(AUTH[k])])]))}</div>
       <p class="pr-meta">${L('On-chain dates are filtered by UTC calendar day.','上链时间区间按 UTC 自然日判定。')}</p>
       ${count?`<div class="pr-applied" aria-label="${L('Applied filters','已应用筛选')}">${extra.filter(k=>applied[k]).map(k=>CF.tag('gray',E(labels[k]+': '+(values[k]||applied[k])))).join('')}</div>`:''}</form>`;
   }
@@ -157,7 +165,7 @@
     const counts=[scope.filter(r=>r.status==='pending').length,
       scope.filter(r=>r.status==='rejected'&&r.follow!=='released').length,
       scope.filter(r=>['approved','rejected'].includes(r.status)&&r.decisionAt>=start).length];
-    const metrics=`<div class="pr-metrics">${[['Pending review','待审核'],['Rejected · awaiting release','已驳回待解押'],['Decided · last 7 UTC days','近 7 个自然日人工审结']].map((x,i)=>`<div class="card pr-metric"><span>${txt(x)}</span><strong>${['loading','error'].includes(A.view)?'—':A.view==='empty'?0:counts[i]}</strong><span class="pr-meta">${L('applications','笔')}</span></div>`).join('')}</div><p class="pr-meta">${L('Summary uses the asset holder, project, type, on-chain dates and keyword filters. Review status and holding filters do not change it.','统计应用资产方、目标项目、申请类型、上链时间及关键词条件，不受审核状态与留存情况筛选影响。')}</p>`;
+    const metrics=`<div class="pr-metrics">${[['Pending review','待审核'],['Rejected · awaiting release','已驳回待解押'],['Decided · last 7 UTC days','近 7 个自然日人工审结']].map((x,i)=>`<div class="card pr-metric"><span>${txt(x)}</span><strong>${['loading','error'].includes(A.view)?'—':A.view==='empty'?0:counts[i]}</strong><span class="pr-meta">${L('applications','笔')}</span></div>`).join('')}</div><p class="pr-meta">${L('Summary uses the asset holder, project, type, on-chain dates and keyword filters. Review status, holding and unfreeze authorization filters do not change it; pending review includes applications whose authorization is in progress, failed or to be verified.','统计应用资产方、目标项目、申请类型、上链时间及关键词条件，不受审核状态、留存情况与解冻授权状态筛选影响；待审核含解冻授权处理中、授权失败与结果待核实的笔。')}</p>`;
     const state=A.view==='default'?null:surface();
     let found=filtered();
     found.sort((a,c)=>{
@@ -169,7 +177,7 @@
     if(A.page>pages){A.page=pages;A.error=['The previous page is empty; showing the last available page.','原页已无记录，已返回最后有效页。'];}
     const table=state||(!found.length
       ?CF.empty(L('No applications found','暂无符合条件的申请'),L('Change the filters or return to pending reviews.','调整筛选条件，或返回待审核队列。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap"><table class="tbl pr-table pr-queue-table"><thead><tr><th>${L('Application / token / batch','单笔 / 代币 / 批次')}</th><th>${L('Asset holder / project','资产方 / 目标项目')}</th><th>${L('Type','申请类型')}</th><th aria-sort="${A.sort==='value'?(A.dir===1?'ascending':'descending'):'none'}">${sortButton('value','Token value (USD)','代币价值（USD）')}</th><th aria-sort="${A.sort==='onchainAt'?(A.dir===1?'ascending':'descending'):'none'}">${sortButton('onchainAt','On-chain time','上链时间')}</th><th>${L('Review status','审核状态')}</th><th>${L('Holding','留存情况')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${found.slice((A.page-1)*CF.PAGE_SIZE,A.page*CF.PAGE_SIZE).map(r=>`<tr><td><strong class="mono">${r.id}</strong><span class="pr-meta mono">${r.token}</span><span class="pr-meta mono">${r.batch}</span></td><td>${E(owner(r))}<span class="pr-meta">${E(project(r))}</span></td><td>${r.type==='first'?L('Initial pledge','首笔质押'):L('Additional pledge','追加质押')}</td><td class="pr-num mono">${r.value==null?unknown():CF.fmtAmt(r.value)}</td><td>${time(r.onchainAt)}<span class="pr-meta">${L('Waiting','已等待')} ${duration(waited(r))}</span></td><td>${badge(r)}</td><td>${holdBadge(r)}</td><td class="col-act">${link('View','查看','view',r.id)}</td></tr>`).join('')}</tbody></table></div><div class="pager"><span class="total">${L('Total','共')} ${found.length} ${L(found.length===1?'application':'applications','笔')} · ${CF.PAGE_SIZE} ${L('per page','笔／页')}</span>${b('Previous','上一页','page',A.page-1,'sm',A.page===1)}<span>${A.page} / ${pages}</span>${b('Next','下一页','page',A.page+1,'sm',A.page===pages)}</div>`);
+      :`<div class="tablewrap"><table class="tbl pr-table pr-queue-table"><thead><tr><th>${L('Application / token / batch','单笔 / 代币 / 批次')}</th><th>${L('Asset holder / project','资产方 / 目标项目')}</th><th>${L('Type','申请类型')}</th><th aria-sort="${A.sort==='value'?(A.dir===1?'ascending':'descending'):'none'}">${sortButton('value','Token value (USD)','代币价值（USD）')}</th><th aria-sort="${A.sort==='onchainAt'?(A.dir===1?'ascending':'descending'):'none'}">${sortButton('onchainAt','On-chain time','上链时间')}</th><th>${L('Review status / unfreeze','审核状态 / 解冻授权')}</th><th>${L('Holding','留存情况')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${found.slice((A.page-1)*CF.PAGE_SIZE,A.page*CF.PAGE_SIZE).map(r=>`<tr><td><strong class="mono">${r.id}</strong><span class="pr-meta mono">${r.token}</span><span class="pr-meta mono">${r.batch}</span></td><td>${E(owner(r))}<span class="pr-meta">${E(project(r))}</span></td><td>${r.type==='first'?L('Initial pledge','首笔质押'):L('Additional pledge','追加质押')}</td><td class="pr-num mono">${r.value==null?unknown():CF.fmtAmt(r.value)}</td><td>${time(r.onchainAt)}<span class="pr-meta">${L('Waiting','已等待')} ${duration(waited(r))}</span></td><td>${badge(r)}${authOf(r)==='none'?'':`<span class="pr-meta">${authBadge(r)}</span>`}</td><td>${holdBadge(r)}</td><td class="col-act">${link('View','查看','view',r.id)}</td></tr>`).join('')}</tbody></table></div><div class="pager"><span class="total">${L('Total','共')} ${found.length} ${L(found.length===1?'application':'applications','笔')} · ${CF.PAGE_SIZE} ${L('per page','笔／页')}</span>${b('Previous','上一页','page',A.page-1,'sm',A.page===1)}<span>${A.page} / ${pages}</span>${b('Next','下一页','page',A.page+1,'sm',A.page===pages)}</div>`);
     return title(L('Pledge reviews','代币质押审核'),L('One record is one token pledge application that has been transferred on chain.','一条记录对应一笔已上链成功的代币质押申请。'))
       +metrics+`<section class="card">${filters()}<div class="pr-list-tools">${field(L('Sort by','排序'),select('pr-order',A.sort+':'+A.dir,[['onchainAt:1',L('On-chain time · oldest first','上链时间 · 最早优先')],['onchainAt:-1',L('On-chain time · newest first','上链时间 · 最新优先')],['waiting:-1',L('Waiting · longest first','已等待时长 · 最长优先')],['waiting:1',L('Waiting · shortest first','已等待时长 · 最短优先')],['value:-1',L('Token value · highest first','代币价值 · 从高到低')],['value:1',L('Token value · lowest first','代币价值 · 从低到高')]]))}</div><div class="pr-section" ${A.error?'':'hidden'}>${error()}</div>${table}</section>`;
   }
@@ -227,11 +235,12 @@
         const fields=[];
         if(e.chain){
           fields.push([L('Gas','gas'),gasValue(e.gas,e.gasCcy)]);
-          fields.push([L('Pledge chain evidence','质押链上凭证'),e.proof?proofValue(e.proof,L('evidence','凭证')):L('None yet','暂无')]);
+          fields.push([e.auth?L('Authorization transaction evidence','解冻授权交易凭证'):L('Pledge chain evidence','质押链上凭证'),e.proof?proofValue(e.proof,L('evidence','凭证')):L('None yet','暂无')]);
         }
+        if(e.signer)fields.push([L('Signed with','签名钱包'),proofValue(e.signer,L('address','地址'))+`<span class="pr-meta">${L('Platform wallet','平台统一钱包')}</span>`,true]);
         const files=e.files?.length?e.files.map(f=>E(f.name)).join('<br>')+'<br>'+link('View agreement files','查看协议文件','evidence',''):'';
         if(files)fields.push([L('Agreements','协议凭据'),files,true]);
-        const tone=({'Approved':'ok','Release succeeded':'ok','Rejected':'danger','Release failed':'danger',
+        const tone=({'Approved':'ok','Unfreeze authorized · approved':'ok','Unfreeze authorization failed':'danger','Unfreeze result to be verified':'warn','Release succeeded':'ok','Rejected':'danger','Release failed':'danger',
           'Reconciliation discrepancy':'warn','Release result to be verified':'warn'})[e.title[0]]||'neutral';
         const occurred=e.at?`<time datetime="${E(new Date(e.at).toISOString())}">${time(e.at)}</time>`:`<span>${L('Time: to be verified','发生时间：待核实')}</span>`;
         const extra=e.text||e.next||fields.length;
@@ -287,7 +296,7 @@
         [L('On-chain time','上链时点'),time(r.onchainAt)],
         [L('Gas for this transfer','本次上链 gas'),gasValue(r.gas,r.gasCcy)],
         [L('Pledge chain evidence','质押链上凭证'),proofValue(r.proof,L('evidence','凭证')),true]
-      ])+`<p class="pr-meta">${L('Read-only facts. Operations do not sign, pay gas, or initiate or cancel any on-chain action; the platform does not verify them on chain.','只读事实。运营人员不签名、不代付 gas、不发起或撤销任何链上动作；平台不做链上核验。')}</p>`+supportNote(r))
+      ])+`<p class="pr-meta">${L('Read-only facts. The only on-chain action on the operations side is the unfreeze authorization signed with the platform wallet at approval; operations never sign for the asset holder or pay their gas. The platform does not verify these facts on chain.','只读事实。运营端唯一的链上动作是通过时连接平台统一钱包签名的解冻授权；不代资产方签名、不代付其 gas。平台不做链上核验。')}</p>`+supportNote(r))
       +decisionCard(r)+activity(r);
 
     const batchTab=section('Batch context','批次上下文',
@@ -298,7 +307,7 @@
     const tabs=[['overview',L('Overview','概览')],['related',L('Linked applications','关联申请')]];
     return (A.source?`<div class="pr-origin"><a class="actlink" href="#${E(detailRoute(A.source,'related'))}" data-act="pr-origin">${L('Return to ','返回来源申请 ')}${E(A.source)}</a></div>`:'')
       +title(E(r.id),E(r.token))+(A.draft?'':error())
-      +`<div class="card pr-detail-summary"><div><span class="pr-meta">${L('Review status','审核状态')}</span>${badge(r)}</div><div><span class="pr-meta">${L('Token value','代币价值')}</span><strong class="pr-value mono">${money(r.value)}</strong></div><div><span class="pr-meta">${L('Current position','本笔当前去向')}</span>${holdBadge(r)}</div></div>`
+      +`<div class="card pr-detail-summary"><div><span class="pr-meta">${L('Review status','审核状态')}</span>${badge(r)}${authOf(r)==='none'?'':`<span class="pr-meta">${authBadge(r)}</span>`}</div><div><span class="pr-meta">${L('Token value','代币价值')}</span><strong class="pr-value mono">${money(r.value)}</strong></div><div><span class="pr-meta">${L('Current position','本笔当前去向')}</span>${holdBadge(r)}</div></div>`
       +`<div class="pr-grid"><div class="pr-detail-main"><div class="pr-tabs" role="tablist" aria-label="${L('Application sections','申请详情分区')}">${tabs.map(([k,label])=>`<button type="button" role="tab" id="pr-tab-${k}" aria-selected="${A.tab===k}" aria-controls="pr-detail-panel" tabindex="${A.tab===k?0:-1}" data-act="pr-tab" data-v="${k}">${label}</button>`).join('')}</div><div id="pr-detail-panel" role="tabpanel" tabindex="0" aria-labelledby="pr-tab-${A.tab}" class="detail-stack pr-stack">${A.tab==='overview'?overview:batchTab}</div></div>
       <aside class="pr-stack pr-rail">${reviewCard(r)}</aside></div>`;
   }
@@ -320,21 +329,26 @@
     const permission=!canDecide()
       ?L('View access only. This account does not hold the pledge decision permission.','当前仅有代币质押申请查询权限，不能处置。')
       :r.status!=='pending'?L('This review has ended. The record is read-only.','本笔审核已结束，记录只读。')
+      :authOf(r)==='processing'?L('Unfreeze authorization in progress. The approval stands only once it succeeds on chain; this application cannot be decided meanwhile, and the asset holder cannot withdraw it.','解冻授权处理中：授权上链成功才算通过，本笔暂不可裁定；资产方此时也不能撤回。')
+      :authOf(r)==='unknown'?L('Unfreeze authorization result to be verified. It is not assumed to be a success or a failure and cannot be signed again; it is handled by the real result once written back.','解冻授权结果待核实：不推定成功或失败，不能重复签名；真实结果回写后按结果处理。')
+      :authOf(r)==='failed'?L('The last unfreeze authorization failed, so this application is not approved. Sign again or reject it instead.','最近一次解冻授权失败，本笔未通过；可再次签名授权，或改为驳回。')
       :L('Record your offline decision for this token.','请维护本笔线下审核结论。');
+    const failure=authOf(r)==='failed'&&r.authFail?`<div class="pr-auth-fail">${kv([[L('Failure reason','授权失败原因'),`<div class="pr-confirm">${E(txt(r.authFail.reason))}</div>`,true],[L('Failed at','失败时点'),time(r.authFail.at)],[L('Gas spent','已消耗 gas'),gasValue(r.authFail.gas,r.authFail.gasCcy)]])}</div>`:'';
     const waiting=`<div class="pr-rail-time"><span class="pr-meta">${L(endedAt(r)?'Waited until the decision':'Waiting so far',endedAt(r)?'审结前等待时长':'已等待时长')}</span><strong>${duration(waited(r))}</strong><span class="pr-meta">${L('A statement of fact, not a deadline: the review has no time limit.','事实陈述，不是期限：审核不设时效。')}</span></div>`;
-    const actions=canDecide()?`<div class="pr-stack">${b('Approve this application','通过本笔申请','approve','','primary',!writable)}${b('Reject this application','驳回本笔申请','reject','','',!writable)}</div>`:'';
+    const actions=canDecide()?`<div class="pr-stack">${b(authOf(r)==='failed'?'Sign the unfreeze again':'Approve this application',authOf(r)==='failed'?'再次签名解冻授权':'通过本笔申请','approve','','primary',!writable)}${b('Reject this application','驳回本笔申请','reject','','',!writable)}</div>`:'';
     const hint=r.status==='pending'
-      ?`<p class="pr-meta pr-disclosure">${L('Approval does not trigger any on-chain action and charges no platform fee.','通过不触发任何链上动作，也不产生平台费用。')}</p>`
+      ?`<p class="pr-meta pr-disclosure">${L('Approval needs an unfreeze authorization signed with the platform wallet and stands only once it succeeds on chain. The gas is borne by the platform wallet; no platform fee is charged.','通过需连接平台统一钱包签名解冻授权，授权上链成功才算通过；gas 由平台统一钱包承担，不向资产方收取平台费用。')}</p>`
       :r.status==='rejected'&&r.follow!=='released'
         ?`<p class="pr-meta pr-disclosure">${L('The token stays in the pledge contract until the asset holder releases it; operations have no release entry.','代币在资产方自助解押成功前持续留在质押合约内，运营端没有解押入口。')}</p>`:'';
-    return section('Review actions','审核处理',`<p class="pr-meta">${permission}</p>${waiting}${actions}${hint}`);
+    return section('Review actions','审核处理',`<p class="pr-meta">${permission}</p>${failure}${waiting}${actions}${hint}`);
   }
 
   /* ---------------------------------------------------------------- 办理 */
   function identity(r){return `<div class="pr-confirm">${E(r.id)} · ${E(r.token)}<span class="pr-meta">${E(r.batch)} · ${E(project(r))}</span></div>`;}
   function start(mode){
     if(!canWrite(row()))return deny();
-    A.draft={id:row().id,mode,files:[],reason:'',category:'',remark:'',ack:false};A.error='';open('edit');
+    const kept=mode==='approve'&&row().authDraft;
+    A.draft={id:row().id,mode,files:kept?kept.files.map(f=>({...f})):[],reason:'',category:'',remark:kept?kept.remark:'',ack:false};A.error='';open('edit');
   }
   function validate(){
     const d=A.draft;if(!d)return false;A.error='';
@@ -352,20 +366,21 @@
   function applyDecision(r,d,other=false){
     if(r.status!=='pending')return false;
     r.status=d.mode==='approve'?'approved':'rejected';
-    r.decisionAt=now();r.operator=other?['Demo operator Chen','示例审核员陈']:['Demo operator Lin','示例审核员林'];
+    r.decisionAt=now();r.operator=other?['Demo operator Chen','示例审核员陈']:(d.mode==='approve'?(r.authSigner||ME):ME);
     r.reviewId=r.id.replace('PR','RV');r.snapshot=r.value;
     r.reason=d.mode==='reject'?d.reason.trim():'';r.category=d.category;r.remark=d.remark;
     r.files=d.mode==='approve'?d.files.map(f=>({...f})):[];
     r.effective=d.mode==='approve'?r.valid:r.effective;
     r.follow=d.mode==='approve'?'effective':'awaiting-release';
-    event(r,d.mode==='approve'?['Approved','审核通过']:['Rejected','审核驳回'],
+    if(d.mode==='approve')r.auth='success';
+    event(r,d.mode==='approve'?['Unfreeze authorized · approved','解冻授权成功 · 审核通过']:['Rejected','审核驳回'],
       d.mode==='approve'?['Pending review → Approved','待审核 → 通过']:['Pending review → Rejected','待审核 → 驳回'],
-      {actor:r.operator,files:r.files.map(f=>({name:f.name})),
+      {actor:d.mode==='approve'?['System','系统']:r.operator,files:r.files.map(f=>({name:f.name})),auth:d.mode==='approve',chain:d.mode==='approve',gas:d.mode==='approve'?0.0011:undefined,gasCcy:'ETH',proof:d.mode==='approve'?r.authProof:undefined,
        text:d.mode==='approve'
-         ?(r.valid?['Moved out of the pledged pending review and counted in the eligible pledged value; the eligible borrowing limit has been recalculated. No platform fee, no on-chain action.','已从待审质押额转出并计入有效质押价值，有效质押额随之重算。未产生平台费用，未触发链上动作。']
+         ?(r.valid?['The unfreeze authorization succeeded on chain. Moved out of the pledged pending review and counted in the eligible pledged value; the eligible borrowing limit has been recalculated. No platform fee.','解冻授权上链成功，已从待审质押额转出并计入有效质押价值，有效质押额随之重算；未产生平台费用。']
            :['Moved out of the pledged pending review. The underlying asset is invalid, so the token is not counted in the eligible pledged value; the approval stands.','已从待审质押额转出。底层资产已失效，该张未计入有效质押价值，审核结论仍为通过。'])
          :r.reason,
-       next:d.mode==='reject'?['The token stays in the pledge contract. The asset holder releases it and bears the gas.','代币仍在质押合约内，由资产方自助解押，gas 自担。']:null});
+       next:d.mode==='reject'?['The token stays in the pledge contract. The asset holder releases it and bears the gas.','代币仍在质押合约内，由资产方自助解押，gas 自担。']:['Approval notice sent to the asset holder.','已向资产方发送通过通知。']});
     A.events.push({id:r.id,event:r.status});
     return true;
   }
@@ -373,6 +388,7 @@
     const d=A.draft,r=row();
     if(A.busy)return;
     if(!d||d.id!==r?.id||!canWrite(r))return deny();
+    if(d.mode==='approve'&&!d.signed)return deny();
     if(!validate()){open('edit');return;}
     A.busy=true;A.error='';CF.render();
     const epoch=A.epoch,response=A.response;
@@ -380,15 +396,16 @@
       if(epoch!==A.epoch||A.draft!==d)return;
       A.busy=false;
       if(!canWrite(r))return deny();
-      if(response==='fail'){A.error=['Could not save the decision. Your inputs are preserved.','结论保存失败，已保留输入，请重试。'];open('edit');return;}
+      if(response==='fail'){d.signed=false;A.error=['Could not save the decision. Your inputs are preserved.','结论保存失败，已保留输入，请重试。'];open('edit');return;}
       if(response==='withdraw'){
+        /* 资产方撤回与运营签名同时发生、撤回先生效：本次授权不发起。 */
         r.status='withdrawn';r.follow='released';
         r.release={startedAt:now()-600000,completedAt:now(),gas:0.0017,gasCcy:'ETH',proof:null,result:'success'};
         event(r,['Release succeeded','解押成功'],['Pending review → Withdrawn · hold released','待审核 → 已撤回 · 占用解除'],
           {actor:['Asset holder','资产方'],chain:true,gas:0.0017,gasCcy:'ETH',
            text:['The asset holder released the token while it was still pending, so no decision was saved.','资产方在待审期间自助解押成功，本次未保存审核结论。']});
         A.draft=null;S.layer=null;
-        A.error=['The asset holder withdrew this application. No decision was saved.','资产方已撤回本笔，未保存审核结论。'];
+        A.error=d.mode==='approve'?['The asset holder’s withdrawal took effect first, so this unfreeze authorization was not started and no decision was saved.','资产方的撤回先生效，本次解冻授权未发起，未保存审核结论。']:['The asset holder withdrew this application. No decision was saved.','资产方已撤回本笔，未保存审核结论。'];
         CF.render();return;
       }
       if(response==='concurrent'){
@@ -402,9 +419,42 @@
         A.error=['Decision result is being confirmed. Check the current result before proceeding.','结论结果待确认，请查询当前结果后再操作。'];
         CF.render();return;
       }
+      if(d.mode==='approve'){
+        beginAuth(r,d);A.tab='overview';saveContext();A.draft=null;S.layer=null;A.response='success';
+        CF.render();CF.toast(L('Signed and submitted. The unfreeze authorization is in progress.','已签名提交，解冻授权处理中。'));return;
+      }
       applyDecision(r,d);A.tab='overview';saveContext();A.draft=null;S.layer=null;A.response='success';
       CF.render();CF.toast(L('Decision saved for this application.','本笔审核结论已保存。'));
     },650);
+  }
+  /* 签名提交后进入解冻授权处理中：仍是待审核，不计入有效质押额、不发通知，暂不可裁定。 */
+  function beginAuth(r,d){
+    r.auth='processing';r.authSigner=ME;r.authFail=null;r.authProof='0xDEMO'+'0'.repeat(58)+'A1';
+    r.authDraft={files:d.files.map(f=>({...f})),remark:d.remark};
+    event(r,['Unfreeze authorization signed','解冻授权已签名提交'],['Pending review · authorization in progress','待审核 · 解冻授权处理中'],
+      {actor:ME,signer:CF.opsWallet.platform,auth:true,chain:true,gas:null,gasCcy:'ETH',proof:r.authProof,
+       text:['Signed with the platform wallet. The approval stands only once the authorization succeeds on chain; the token is not yet counted in the eligible pledged value and no notice is sent.','已用平台统一钱包签名提交。授权上链成功才算通过；本张暂不计入有效质押额，也不发送通知。']});
+  }
+  /* 授权结果回写：成功即通过；失败回到可裁定的待审核；长期无结果标待核实。 */
+  function authResult(kind){
+    const r=row();if(!r||!authBusy(r)||r.status!=='pending')return;
+    if(kind==='success'){
+      const kept=r.authDraft||{files:[],remark:''};
+      applyDecision(r,{mode:'approve',files:kept.files,remark:kept.remark,reason:'',category:''});
+      CF.toast(L('Unfreeze authorized on chain. The application is approved and the notice was sent.','解冻授权上链成功，本笔已通过并发送通知。'));
+    }else if(kind==='failed'){
+      r.auth='failed';
+      r.authFail={at:now(),gas:0.0008,gasCcy:'ETH',proof:r.authProof,reason:['The unfreeze authorization was rejected on chain: the platform wallet did not have enough balance for the gas.','解冻授权交易在链上被拒绝：平台统一钱包余额不足以支付 gas。']};
+      event(r,['Unfreeze authorization failed','解冻授权失败'],['Authorization in progress → Pending review','授权处理中 → 待审核'],
+        {auth:true,chain:true,gas:r.authFail.gas,gasCcy:'ETH',proof:r.authProof,text:r.authFail.reason,
+         next:['Not approved and the asset holder is not notified. The agreements and note are kept; sign again or reject instead.','不算通过，不通知资产方；协议与备注已保留，可再次签名或改为驳回。']});
+    }else{
+      r.auth='unknown';
+      event(r,['Unfreeze result to be verified','解冻授权结果待核实'],['No confirmed on-chain result','尚无确定的链上结果'],
+        {auth:true,chain:true,gas:null,gasCcy:'ETH',proof:r.authProof,
+         text:['No confirmed result yet. It is not counted as approved, not assumed to have failed, and cannot be signed again.','尚无确定结果：不算通过，不推定失败，也不能重复签名。']});
+    }
+    CF.render();
   }
   function editLayer(){
     const d=A.draft,r=row();
@@ -413,12 +463,12 @@
       [L('Current position','本笔当前去向'),holdBadge(r)],[L('Pledge chain evidence','质押链上凭证'),proofValue(r.proof,L('evidence','凭证')),true]]);
     const docs=d.files.map((f,i)=>uploadedFile(f,'draft:'+i,f.state==='ready'?L('Ready','已就绪'):f.state==='uploading'?L('Uploading…','上传中…'):L('Upload failed — remove and retry','上传失败，请移除后重试'),true)).join('');
     const body=d.mode==='approve'
-      ?`${facts}${field(L('Pledge agreements *','质押协议 *'),`<label class="btn pr-upload" for="pr-upload">${L('Upload agreements','上传协议')}<input class="sr-only" id="pr-upload" aria-required="true" type="file" accept="application/pdf,image/jpeg,image/png" multiple></label>`)}<span class="pr-meta">${L('PDF / JPG / PNG · 1–5 files · up to 10 MB each','PDF / JPG / PNG · 1～5 个 · 每个不超过 10 MB')}</span>${docs}${field(L('Internal note (optional)','内部备注（选填）'),`<textarea class="inp" id="pr-remark" aria-invalid="${!!A.error&&Array.from(d.remark).length>200}">${E(d.remark)}</textarea><span class="pr-meta">${Array.from(d.remark).length} / 200</span>`)}<label><input id="pr-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel('',true)}${L('I understand: this token moves out of the pledged pending review, the lending platform decides whether it counts in the eligible pledged value, no platform fee arises and no on-chain action is triggered.','我已知悉：该张将从待审质押额转出，是否计入有效质押价值由借贷平台按有效性判定；本次不产生平台费用，也不触发任何链上动作。')}</label>`
+      ?`${facts}${field(L('Pledge agreements *','质押协议 *'),`<label class="btn pr-upload" for="pr-upload">${L('Upload agreements','上传协议')}<input class="sr-only" id="pr-upload" aria-required="true" type="file" accept="application/pdf,image/jpeg,image/png" multiple></label>`)}<span class="pr-meta">${L('PDF / JPG / PNG · 1–5 files · up to 10 MB each','PDF / JPG / PNG · 1～5 个 · 每个不超过 10 MB')}</span>${docs}${field(L('Internal note (optional)','内部备注（选填）'),`<textarea class="inp" id="pr-remark" aria-invalid="${!!A.error&&Array.from(d.remark).length>200}">${E(d.remark)}</textarea><span class="pr-meta">${Array.from(d.remark).length} / 200</span>`)}<label><input id="pr-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel('',true)}${L('I understand: once the unfreeze authorization succeeds on chain, this token moves out of the pledged pending review and the lending platform decides whether it counts in the eligible pledged value. The decision cannot be changed and no platform fee is charged.','我已知悉：解冻授权上链成功后，该张从待审质押额转出，是否计入有效质押价值由借贷平台按有效性判定；结论不可修改，不向资产方收取平台费用。')}</label><p class="pr-meta">${L('Next, connect the platform wallet and sign the unfreeze authorization. Only the platform wallet address can sign; its gas is borne by the platform wallet.','下一步连接平台统一钱包签名解冻授权；只有平台统一钱包地址可以签名，gas 由平台统一钱包承担。')}</p>`
       :`${facts}${field(L('Category (optional)','归类（选填）'),select('pr-category',d.category,[['',L('Not selected','未选择')],...categories.map((x,i)=>[String(i),txt(x)])]))}${field(L('Reason shown to the asset holder *','向资产方展示的原因 *'),`<textarea class="inp" id="pr-reason" aria-required="true" aria-invalid="${!!A.error}" aria-describedby="pr-form-error">${E(d.reason)}</textarea><span class="pr-meta">${Array.from(d.reason.trim()).length} / 500 · ${L('Minimum 10 characters','至少 10 字')}</span>`)}`;
     return {title:d.mode==='approve'?L('Approve this application','通过本笔申请'):L('Reject this application','驳回本笔申请'),
       html:`<div class="pr-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${body}</fieldset><div id="pr-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Saving decision…','正在保存结论…')+'</p>':''}</div>`,
       foot:b('Cancel','取消','cancel','','',A.busy)+(d.mode==='approve'
-        ?b('Approve this application','通过本笔申请','submit','','primary',A.busy)
+        ?b('Connect wallet and sign the unfreeze','连接平台统一钱包，签名解冻授权','sign','','primary',A.busy)
         :b('Review decision','核对结论','confirm','','primary',A.busy))};
   }
   const layers={
@@ -482,9 +532,10 @@
   function demo(){
     if(OPS_PAGES.includes(S.page))return OPS.demo();
     const r=row();
-    return `<h3>${L('Pledge review · demo tools','代币质押审核 · 演示工具')}</h3><p class="pr-meta">${L('Local demonstration only. No signature, transfer, file service or notification is contacted.','仅本地演示：不签名、不转移代币，也不连接真实文件或消息服务。')}</p>
+    return `<h3>${L('Pledge review · demo tools','代币质押审核 · 演示工具')}</h3><p class="pr-meta">${L('Local demonstration only. Wallet connection and signing, transfers, files and notifications are all simulated.','仅本地演示：钱包连接与签名、代币转移、文件与消息服务均为模拟。')}</p>
       <h4>${L('Delivered account configuration','交付的账号配置')}</h4><div class="pr-demo-actions">${b('Administrator','运营管理员','grant','admin')}${b('Later role · no pledge access','后期角色 · 未开通本模块','grant','none')}${b('Later role · query only','后期角色 · 仅开通申请查询','grant','query')}${b('Later role · decision only','后期角色 · 仅开通审核处置','grant','decide')}${b('Later role · query + decision','后期角色 · 查询＋处置','grant','full')}</div>
-      <div class="pr-demo">${field(L('Page state','页面状态'),select('pr-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','空数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}${field(L('Submit response','提交反馈'),select('pr-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['unknown',L('Uncertain result','结果待确认')],['concurrent',L('Another reviewer wins','同笔已被他人裁定')],['withdraw',L('Withdrawn before save','提交前资产方已撤回')]]))}${field(L('Upload response','上传反馈'),select('pr-upload-state',A.upload,[['success',L('Success','成功')],['fail',L('Failure','失败')]]))}${field(L('Attachment response','附件反馈'),select('pr-preview-state',A.preview,[['success',L('Success','成功')],['fail',L('Preview fails','预览失败')],['missing',L('File unavailable','文件不可得')],['unsupported',L('Preview unsupported','不支持预览')],['downloadfail',L('Download fails','下载失败')]]))}${field(L('Activity state','操作记录状态'),select('pr-activity-state',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','加载失败')]]))}</div>
+      <div class="pr-demo">${field(L('Page state','页面状态'),select('pr-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','空数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}${field(L('Submit response','提交反馈'),select('pr-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['unknown',L('Uncertain result','结果待确认')],['concurrent',L('Another reviewer wins','同笔已被他人裁定')],['withdraw',L('Asset holder’s withdrawal takes effect first','资产方撤回先于本次签名生效')]]))}${field(L('Upload response','上传反馈'),select('pr-upload-state',A.upload,[['success',L('Success','成功')],['fail',L('Failure','失败')]]))}${field(L('Attachment response','附件反馈'),select('pr-preview-state',A.preview,[['success',L('Success','成功')],['fail',L('Preview fails','预览失败')],['missing',L('File unavailable','文件不可得')],['unsupported',L('Preview unsupported','不支持预览')],['downloadfail',L('Download fails','下载失败')]]))}${field(L('Activity state','操作记录状态'),select('pr-activity-state',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','加载失败')]]))}</div>
+      <h4>${L('Unfreeze authorization write-back','解冻授权回写')}</h4><div class="pr-demo-actions">${b('Authorization succeeds','授权上链成功','auth-success','','',!r||!authBusy(r))}${b('Authorization fails','授权上链失败','auth-failed','','',!r||!authBusy(r))}${b('Result to be verified','结果待核实','auth-unknown','','',!r||authOf(r)!=='processing')}${b('Asset holder withdraws','资产方发起撤回','holder-withdraw','','',!r||r.status!=='pending')}</div>
       <h4>${L('On-chain events for this application','本笔链上事件')}</h4><div class="pr-demo-actions">${b('Asset holder initiates the release','资产方发起自助解押','release-start','','',!r||!['awaiting-release'].includes(r.follow))}${b('Release succeeds','解押成功回写','release-success','','',!r||r.follow!=='releasing'||r.flag==='difference')}${b('Release fails','解押失败回写','release-fail','','',!r||r.follow!=='releasing'||r.flag==='difference')}${b('Delayed conflicting result','接收迟到冲突结果','late-conflict','','',!r||r.flag!=='verify')}${b('Expire operations session','运营登录失效','expire-session')}${b('Replay latest event','重放最新事件','replay-event','','',!r)}${b('Reset demonstration','重置演示','restart')}</div>
       <h4>${L('Outcome events','结果事件')}</h4><p class="pr-meta">${A.events.map(e=>E(e.id+' · '+e.event)).join('<br>')||L('None','暂无')}</p>`;
   }
@@ -492,6 +543,7 @@
   /* ---------------------------------------------------------------- 动作 */
   function onAct(act,v,e){
     if(e&&(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)&&['pr-view','pr-origin'].includes(act))return false;
+    if(act.startsWith('ow-'))return CF.opsWallet.onAct(act,v);
     if(!act.startsWith('pr-')){
       if(act==='retry'){A.view='default';A.error='';CF.render();return true;}
       if(act==='clearfilter'){resetFilter();return true;}
@@ -516,6 +568,34 @@
     else if(act==='approve'||act==='reject'){
       if(A.uncertain?.id===row()?.id){CF.toast(L('Check the pending result first.','请先查询待确认结果。'));return true;}
       start(act);
+    }
+    else if(act==='sign'){
+      /* 连接平台统一钱包 → 核对地址 → 签名解冻授权；取消、地址不符、钱包不可用、拒签或签名失败都不产生结论，已填材料保留。 */
+      const d=A.draft,r=row();
+      if(!d||d.id!==r?.id||!canWrite(r)){deny();return true;}
+      if(!validate()){open('edit');return true;}
+      A.error='';
+      CF.opsWallet.start({
+        purpose:['Sign the unfreeze authorization for '+r.id+' ('+r.token+').','签名解冻授权：'+r.id+'（'+r.token+'）。'],
+        detail:['Signing submits the approval. It stands only once the authorization succeeds on chain.','签名即提交通过；授权上链成功才算通过。'],
+        onSigned:()=>{d.signed=true;open('edit');submit();},
+        onAbort:k=>{d.signed=false;A.error=CF.opsWallet.abortText(k);open('edit');}
+      });
+    }
+    else if(act==='auth-success')authResult('success');
+    else if(act==='auth-failed')authResult('failed');
+    else if(act==='auth-unknown')authResult('unknown');
+    else if(act==='holder-withdraw'){
+      /* 资产方发起待审撤回：解冻授权处理中或待核实时被拒；授权先生效则撤回被拒。 */
+      const r=row();
+      if(!r||r.status!=='pending')return true;
+      if(authBusy(r)){CF.toast(L('The asset holder’s withdrawal was refused: the unfreeze authorization is in progress. Nothing changed.','资产方撤回被拒：解冻授权处理中，暂不可撤回，审核状态与本笔均未变化。'));return true;}
+      r.status='withdrawn';r.follow='released';
+      r.release={startedAt:now()-600000,completedAt:now(),gas:0.0017,gasCcy:'ETH',proof:null,result:'success'};
+      event(r,['Release succeeded','解押成功'],['Pending review → Withdrawn · hold released','待审核 → 已撤回 · 占用解除'],
+        {actor:['Asset holder','资产方'],chain:true,gas:0.0017,gasCcy:'ETH',
+         text:['The asset holder released the token while it was still pending.','资产方在待审期间自助解押成功。']});
+      CF.render();
     }
     else if(act==='confirm'){
       if(!canWrite(row()))deny();
@@ -672,7 +752,7 @@
         ?note(L('A submitted decision is awaiting confirmation. Do not submit another decision.','已提交结论的结果待确认，请勿重复裁定。')+' '+b('Check current result','查询当前结果','resolve'))+out
         :out;
     },
-    layers:{...OPS.layers,...layers},
+    layers:{...OPS.layers,...layers,...CF.opsWallet.layers},
     onAct:(act,v,e)=>onAct(act,v,e)||OPS.onAct(act,v,e),
     beforeAdminNavigate(proceed){if(A.busy||A.draft){CF.toast(L('Finish or cancel the current review first.','请先完成或取消当前审核。'));return;}remember();proceed();},
     allowNav:id=>[Q,D].includes(id)?allowed():OPS_PAGES.includes(id),
@@ -682,6 +762,7 @@
       if(act==='closelayer'&&e?.type==='click'&&e.target.closest('[data-stop]'))return false;
       if(act==='closelayer'&&A.busy)return true;
       if(act==='closelayer'&&S.layer?.key==='pr-preview'){closePreview();return true;}
+      if(act==='closelayer'&&CF.opsWallet.closing())return true;
       if(act==='closelayer'&&A.draft){onAct('pr-cancel','');return true;}
       return OPS.onBeforeAct(act,v,e);
     },

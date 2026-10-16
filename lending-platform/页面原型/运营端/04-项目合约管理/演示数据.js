@@ -7,7 +7,7 @@
   const HOLDER=['Asset holder','资产方'],SYSTEM=['System','系统'];
   const addr=tail=>'0xDEMO'+'0'.repeat(32)+tail;          // 42 字符，演示地址
   const proof=tail=>'0xDEMO'+'0'.repeat(58)+tail;         // 66 字符，演示链上凭证
-  /* 平台统一钱包：取值在代码层面维护、随版本发布，平台内没有维护、配置或切换入口。 */
+  /* 平台统一钱包：地址在代码层面写死、随版本发布，平台内没有维护、配置或切换入口；部署由运营人员连接该钱包签名。 */
   const WALLET=addr('W001');
   const TOKEN='ERC-20-应收账款';                            // 代币类型本期只有一个取值
 
@@ -50,7 +50,7 @@
       events:[
         ev(now-30*H,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
         ev(now-21*H,'approve-init',['Approval submitted · deployment initiated','提交通过并发起部署'],['Pending review → Deployment in progress','待审核 → 部署处理中'],LIN,
-          {text:['Submitted by the reviewer. The platform wallet initiates the deployment and the operations side bears the gas.','审核人提交通过，由平台统一钱包发起部署，gas 由运营端承担。']}),
+          {text:['The reviewer signed with the platform wallet and submitted the approval; the platform wallet bears the gas.','审核人连接平台统一钱包签名并提交通过，gas 由平台统一钱包承担。']}),
         ev(now-20*H,'deploy-fail',['Deployment failed','部署失败'],['Deployment in progress → Pending review','部署处理中 → 待审核'],SYSTEM,
           {chain:true,gas:0.0132,gasCcy:'ETH',proof:proof('021'),text:FAIL_GAS,
            next:['No conclusion was formed. The asset holder is not notified and still sees the project as pending review.','未形成结论，不通知资产方，面客侧仍显示项目待审核。']})]});

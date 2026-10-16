@@ -1,7 +1,7 @@
 /* WS-387 · 项目合约管理（运营端）：项目审核队列、项目审核详情、质押合约台账。
    会话与功能权限读运营端账户与登录一处登记（CF.opsAuth）：
    PM-AL-17 融资项目审核查询、PM-AL-18 融资项目审核与合约部署处置。
-   业务数据、部署结果与站内信投递均为本地演示，不连接钱包、链上或消息服务。 */
+   业务数据、钱包签名、部署结果与站内信投递均为本地演示，不连接真实钱包、链上或消息服务。 */
 (function(CF){
   'use strict';
   const S=CF.S,L=CF.L,E=CF.esc,OPS=CF.opsAccountModule,$=id=>document.getElementById(id);
@@ -326,6 +326,7 @@
             fields.push([L('Deployment transaction evidence','部署交易凭证'),e.proof?addressValue(e.proof,L('evidence','凭证')):L('None yet','暂无')]);
             if(e.address)fields.push([L('Pledge contract address','质押合约地址'),addressValue(e.address,L('address','地址')),true]);
           }
+          if(e.signer)fields.push([L('Signed with','签名钱包'),addressValue(e.signer,L('address','地址'))+`<span class="cm-meta">${L('Platform wallet','平台统一钱包')}</span>`,true]);
           if(e.notice)fields.push([L('Message sent to the asset holder','已向资产方发送站内信'),E(txt(e.notice)),true]);
           const occurred=e.at?`<time datetime="${E(new Date(e.at).toISOString())}">${time(e.at)}</time>`:`<span>${L('Time: to be verified','发生时间：待核实')}</span>`;
           const extra=e.text||e.next||fields.length;
@@ -398,7 +399,7 @@
     ]):'';
     return section('Pledge contract and deployment facts','质押合约与部署事实',kv(items)
       +(started?'':`<p class="cm-meta">${L('The deployment has not been initiated. A successful deployment produces this project’s single pledge contract address.','尚未发起部署；部署成功后将产生本项目唯一的质押合约地址。')}</p>`)
-      +`<p class="cm-meta">${L('Read-only on-chain facts written back with the real result. Operations do not sign, pay gas, maintain the platform wallet or edit the contract address.','随真实结果回写的只读链上事实。运营端不签名、不代付 gas、不维护平台钱包、不可编辑合约地址。')}</p>`
+      +`<p class="cm-meta">${L('Read-only on-chain facts written back with the real result. Deployments are signed by an operator with the platform wallet, which also bears the gas; operations cannot maintain the platform wallet or edit the contract address.','随真实结果回写的只读链上事实。部署由运营人员连接平台统一钱包签名发起，gas 由平台统一钱包承担；运营端不能维护平台钱包，也不可编辑合约地址。')}</p>`
       +(r.deploy==='failed'?`<div class="cm-failure"><h3>${L('Last deployment attempt','最近一次部署尝试')}</h3>${fail}${note(L('A failed deployment is not a review conclusion. The project is back to pending review, the asset holder is not notified and the project term is not restarted.','部署失败不是审核结论：项目已回到待审核，未通知资产方，项目期限起算点不变。'),'warn')}</div>`:'')
       +(r.deploy==='unknown'?note(L('No confirmed on-chain result for this deployment. The known facts are kept, the result is not assumed, no new attempt is started and no decision is changed; the asset holder cannot close the project until the result is written back. Contact the platform provider to check the chain and the configuration.','本次部署尚无确定的链上结果。已发生事实原样保留，不推定结果、不重复发起、不自动改判，资产方在结果回写前也不能关闭项目；请联系平台建设方核实链上与配置。'),'warn'):'')
       +(r.expiryPassed&&!r.closed?note(L('The valid-until date has passed during deployment. The project is handled by the result once it is written back.','部署处理中已跨过有效期至，部署结果回写后按结果处理。'),'warn'):'')
@@ -422,7 +423,7 @@
         :`<div class="cm-stack">${b('Approve and deploy the contract','通过并部署合约','approve','','primary',!canApprove(r),canApprove(r)?'':txt(['Unavailable with the current project status or entity information.','当前项目状态或主体信息不允许此操作。']))}${b('Return to the asset holder','退回资产方','return','','',!canAct(r))}</div>`;
     }
     const hint=openForAction(r)
-      ?`<p class="cm-meta cm-disclosure">${L('Approving initiates the deployment from the platform wallet. Operations do not sign and pay nothing; the gas is borne by the operations side.','提交通过即由平台统一钱包发起部署，运营人员不签名、不付费，gas 由运营端承担。')}</p>`:'';
+      ?`<p class="cm-meta cm-disclosure">${L('Approving needs a signature with the platform wallet to deploy the contract. The gas is borne by the platform wallet; you pay nothing personally.','通过需连接平台统一钱包签名部署合约；gas 由平台统一钱包承担，运营人员个人不付费。')}</p>`:'';
     return section('Review actions','审核处理',`<p class="cm-meta">${permission}</p>${waiting}${actions}${hint}`);
   }
   /* 每次结论的审核人与结论时间；通过的结论时间即合约部署完成时间。 */
@@ -462,13 +463,14 @@
   function beginDeploy(r,again){
     r.review='deploying';r.deploy='processing';
     r.contract={address:null,startedAt:now(),at:null,proof:'0xDEMO'+'0'.repeat(58)+'77',gas:null,gasCcy:'ETH',from:A.wallet};
+    r.signedBy=['Demo Operator','演示操作员'];
     event(r,again?'redeploy':'approve-init',
       again?['Deployment started again','再次发起部署']:['Approval submitted · deployment initiated','提交通过并发起部署'],
       ['Pending review → Deployment in progress','待审核 → 部署处理中'],
-      {actor:['Demo reviewer Lin','示例审核员林'],chain:true,gas:null,gasCcy:'ETH',
+      {actor:r.signedBy,signer:A.wallet,chain:true,gas:null,gasCcy:'ETH',
        text:again
          ?['A new deployment attempt reuses the same project number and the same review record. Earlier attempts stay in the activity.','新的部署尝试复用同一项目编号与同一条审核记录，历次尝试保留在操作记录中。']
-         :['Initiated by the platform wallet. No conclusion has been formed yet and the asset holder has not been notified.','由平台统一钱包发起。尚未形成结论，也未向资产方发送任何消息。']});
+         :['Signed with the platform wallet and submitted. No conclusion has been formed yet and the asset holder has not been notified.','已用平台统一钱包签名并提交。尚未形成结论，也未向资产方发送任何消息。']});
   }
   function applyReturn(r,reason,other){
     r.review='returned';r.deploy='none';r.decisionAt=now();
@@ -483,6 +485,7 @@
     const d=A.draft,r=row();
     if(A.busy)return;
     if(!d||d.id!==r?.id)return deny();
+    if(d.mode!=='return'&&!d.signed)return deny();
     if(d.mode==='return'?!canAct(r):!canApprove(r))return deny();
     if(!validate()){open(d.mode==='return'?'return':'approve');return;}
     A.busy=true;A.error='';CF.render();
@@ -492,6 +495,7 @@
       A.busy=false;
       if(d.mode==='return'?!canAct(r):!canApprove(r))return deny();
       if(response==='fail'){
+        d.signed=false;
         A.error=['The submission could not be saved. Your input is preserved.','提交未能保存，已保留输入，请重试。'];
         open(d.mode==='return'?'return':'approve');return;
       }
@@ -533,7 +537,7 @@
     if(kind==='success'){
       const address='0xDEMO'+'0'.repeat(32)+'C0'+r.key;
       r.deploy='success';r.review='approved';r.decisionAt=now();
-      r.reviewer=r.reviewer||['Demo reviewer Lin','示例审核员林'];
+      r.reviewer=r.signedBy||r.reviewer||['Demo Operator','演示操作员'];
       r.contract=Object.assign(r.contract||{},{address,at:now(),gas:0.0193,gasCcy:'ETH'});
       r.fail=null;
       event(r,'deploy-ok',['Deployment succeeded (review approved)','部署成功（即审核通过）'],['Deployment in progress → Approved','部署处理中 → 已通过'],
@@ -578,10 +582,10 @@
       [L('Maximum project term · current configuration','最长项目期限 · 当前配置'),A.config.available?months(A.config.maxTermMonths):unknown()]
     ]);
     const failure=again&&r.fail?note(L('The last attempt failed: ','最近一次部署失败：')+txt(r.fail.reason),'warn'):'';
-    const ack=L('I understand: the platform wallet will deploy this project’s pledge contract. A successful deployment is the approval itself, the project and the contract match one to one, and the conclusion cannot be withdrawn.','我已知悉：提交后将由平台统一钱包发起本项目质押合约部署，部署成功即审核通过，项目与合约一一对应且不可撤销。');
+    const ack=L('I understand: signing deploys this project’s pledge contract with the platform wallet. A successful deployment is the approval itself, the project and the contract match one to one, and the conclusion cannot be withdrawn.','我已知悉：签名后将以平台统一钱包部署本项目质押合约，部署成功即审核通过，项目与合约一一对应且不可撤销。');
     return {title:again?L('Start the deployment again','再次发起部署'):L('Approve and deploy the contract','通过并部署合约'),
-      html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${failure}${facts}<label class="cm-ack"><input id="cm-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel(ack,true)}</label></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
-      foot:b('Cancel','取消','cancel','','',A.busy)+b(again?'Start the deployment again':'Approve and deploy',again?'再次发起部署':'通过并部署合约','submit','','primary',A.busy||r.closed)};
+      html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${failure}${facts}<label class="cm-ack"><input id="cm-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel(ack,true)}</label><p class="cm-meta">${L('Next, connect the platform wallet and sign. Only the platform wallet address can sign; its gas is borne by the platform wallet.','下一步连接平台统一钱包签名；只有平台统一钱包地址可以签名，gas 由平台统一钱包承担。')}</p></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
+      foot:b('Cancel','取消','cancel','','',A.busy)+b(again?'Connect wallet and sign the redeployment':'Connect wallet and sign the deployment',again?'连接平台统一钱包，签名再次部署':'连接平台统一钱包，签名部署','sign','','primary',A.busy||r.closed)};
   }
   function returnLayer(){
     const d=A.draft,r=row();
@@ -613,7 +617,7 @@
   function demo(){
     if(OPS_PAGES.includes(S.page))return OPS.demo();
     const r=row(),processing=r?.deploy==='processing';
-    return `<h3>${L('Project contracts · demo tools','项目合约管理 · 演示工具')}</h3><p class="cm-meta">${L('Local demonstration only. No wallet, deployment, chain write-back or message service is contacted.','仅本地演示：不连接钱包、不发起部署、不读写链上结果，也不投递真实站内信。')}</p>
+    return `<h3>${L('Project contracts · demo tools','项目合约管理 · 演示工具')}</h3><p class="cm-meta">${L('Local demonstration only. Wallet connection and signing, deployment, chain write-back and messages are all simulated.','仅本地演示：钱包连接与签名、部署、链上回写与站内信均为模拟。')}</p>
       <h4>${L('Account configuration · later-role preview','账号配置 · 后期角色预演')}</h4><p class="cm-meta">${L('This release has one role: the operations administrator holds both permissions.','本期只有运营管理员一个角色，固定具备两项权限。')}</p><div class="cm-demo-actions">${b('Administrator','运营管理员','grant','admin')}${b('Later role · no access','后期角色 · 未开通本模块','grant','none')}${b('Later role · query only','后期角色 · 仅开通审核查询','grant','query')}${b('Later role · decision only','后期角色 · 仅开通审核处置','grant','decide')}${b('Later role · query + decision','后期角色 · 查询＋处置','grant','full')}</div>
       <div class="cm-demo">${field(L('Page state','页面状态'),select('cm-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','空数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}${field(L('Submit response','提交反馈'),select('cm-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['concurrent',L('Another reviewer wins','已被他人裁定')],['closed',L('Asset holder’s close takes effect first','资产方关闭先于本次提交生效')],['expired',L('Project has expired at submission','提交时项目已到期')]]))}${field(L('Activity state','操作记录状态'),select('cm-activity-state',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','加载失败')]]))}${field(L('Parameter configuration','融资参数配置'),select('cm-config',A.config.available?'on':'off',[['on',L('Readable','可读')],['off',L('Unavailable · to be verified','不可读 · 标待核实')]]))}</div>
       <h4>${L('On-chain write-back for this project','本项目的链上回写')}</h4><div class="cm-demo-actions">${b('Deployment succeeds','部署成功回写','chain-success','','',!processing)}${b('Deployment fails','部署失败回写','chain-failed','','',!processing)}${b('Result to be verified','结果待核实','chain-unknown','','',!processing)}${b('Replay the latest event','重放最新事件','replay','','',!r)}</div>
@@ -634,6 +638,7 @@
   }
   function onAct(act,v,e){
     if(e&&(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)&&['cm-view','cm-go'].includes(act))return false;
+    if(act.startsWith('ow-'))return CF.opsWallet.onAct(act,v);
     if(!act.startsWith('cm-')){
       if(act==='retry'){A.view='default';A.error='';CF.render();return true;}
       if(act==='clearfilter'){resetFilter();return true;}
@@ -659,6 +664,20 @@
       saveContext();CF.render();
     }
     else if(act==='approve'||act==='return'||act==='redeploy')start(act);
+    else if(act==='sign'){
+      /* 连接平台统一钱包 → 核对地址 → 签名部署；取消、地址不符、钱包不可用、拒签或签名失败都不产生结论。 */
+      const d=A.draft,r=row();
+      if(!d||d.id!==r?.id||!canApprove(r))return deny(),true;
+      if(!validate()){open('approve');$('cm-ack')?.focus();return true;}
+      const again=d.mode==='redeploy';
+      A.error='';
+      CF.opsWallet.start({
+        purpose:again?['Sign the redeployment of the pledge contract for '+r.id+'.','签名再次部署 '+r.id+' 的质押合约。']:['Sign the deployment of the pledge contract for '+r.id+'.','签名部署 '+r.id+' 的质押合约。'],
+        detail:['Signing submits the approval. The review is approved only when the deployment succeeds.','签名即提交通过；部署成功才形成审核通过。'],
+        onSigned:()=>{d.signed=true;open('approve');submit();},
+        onAbort:k=>{d.signed=false;A.error=CF.opsWallet.abortText(k);open('approve');}
+      });
+    }
     else if(act==='confirm'){
       if(!canAct(row()))deny();
       else if(validate())open('return-confirm');
@@ -793,7 +812,7 @@
       if(OPS_PAGES.includes(page))return OPS.content(page);
       return page===DT?detail():page===LG?ledger():queue();
     },
-    layers:{...OPS.layers,...layers},
+    layers:{...OPS.layers,...layers,...CF.opsWallet.layers},
     onAct:(act,v,e)=>onAct(act,v,e)||OPS.onAct(act,v,e),
     beforeAdminNavigate(proceed){
       if(A.busy||(A.draft&&(A.draft.reason||'').trim())){CF.toast(L('Finish or cancel the current review first.','请先完成或取消当前审核办理。'));return;}
@@ -805,6 +824,7 @@
       if(act==='retry'||act==='clearfilter'){onAct(act,v);return true;}
       if(act==='closelayer'&&e?.type==='click'&&e.target.closest('[data-stop]'))return false;
       if(act==='closelayer'&&A.busy)return true;
+      if(act==='closelayer'&&CF.opsWallet.closing())return true;
       if(act==='closelayer'&&A.draft){onAct('cm-cancel','');return true;}
       return OPS.onBeforeAct(act,v,e);
     },

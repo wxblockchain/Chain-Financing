@@ -222,11 +222,22 @@
   D.review = (p, outcome, id) => {
     const a=id?D.applications.find(a=>a.id===id&&a.project===p.id):[...D.applications].reverse().find(a=>a.project===p.id&&a.state==='review');
     if(!a||a.state!=='review')return false;
-    a.state=outcome==='approve'?'approved':'rejected';a.reviewState=a.state;a.decided=D.iso();
+    a.state=outcome==='approve'?'approved':'rejected';a.reviewState=a.state;a.decided=D.iso();a.authorizing=false;
     a.reviewer=['Demo reviewer '+(++D.serial),'演示审核员 '+D.serial];
     if(a.state==='approved'){a.approvedAt=a.decided;a.agreement=D.agreement(a);}
     else a.reason='rejected';
     D.log(p,a.state,a.id);D.recompute(p);D.save();return true;
+  };
+  /* D-LS-73：运营已签名解冻授权、结果未回写时，本张仍显示待审核但不能撤回；授权成功即通过，失败恢复可撤回。 */
+  D.authorize = (p, id) => {
+    const a=id?D.applications.find(a=>a.id===id&&a.project===p.id):[...D.applications].reverse().find(a=>a.project===p.id&&a.state==='review'&&!a.authorizing);
+    if(!a||a.state!=='review'||a.authorizing)return false;
+    a.authorizing=true;D.log(p,'authorizationStarted',a.id);D.save();return true;
+  };
+  D.authFail = (p, id) => {
+    const a=id?D.applications.find(a=>a.id===id&&a.project===p.id):[...D.applications].reverse().find(a=>a.project===p.id&&a.state==='review'&&a.authorizing);
+    if(!a||!a.authorizing)return false;
+    a.authorizing=false;D.log(p,'authorizationFailed',a.id);D.save();return true;
   };
   D.cancelApplication = a => {if(!D.mine(D.project(a.project))||a.state!=='review')throw Error('reviewChanged');a.state='withdrawn';a.reviewState='withdrawn';a.finished=D.iso();D.log(D.project(a.project),'applicationWithdrawn',a.id);D.save();};
   D.execute = (p, kind, ids, appId) => {
@@ -236,6 +247,7 @@
       if(!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!D.selectable(D.token(id),p)))throw Error('selectionChanged');
     }
     else {
+      if(ids.some(id=>{const t=D.token(id),a=t&&D.appOf(p,t);return t&&t.pledge==='pledged'&&a?.state==='review'&&a.authorizing;}))throw Error('authorizing');
       const n=D.numbers(p);if(!ids.length||ids.some(id=>{const t=D.token(id);return !t||t.owner!==p.owner||t.frozen||t.pending||!(t.pool===p.id&&t.pledge==='pledged'||t.releasedFrom===p.id&&t.pledge==='released');}))throw Error('selectionChanged');
       const amount=ids.map(D.token).filter(t=>t.pledge==='pledged'&&t.valid&&D.appOf(p,t)?.state==='approved').reduce((v,t)=>v+t.value,0);if(amount>n.withdraw)throw Error('withdrawLimit');
     }

@@ -26,7 +26,7 @@
 .pr-list-tools label{margin:0;white-space:nowrap}.pr-list-tools .inp{width:auto}
 .pr-actions{display:flex;align-items:end;justify-content:flex-end;gap:var(--sp-2)}
 .pr-table{table-layout:fixed;width:100%}
-.pr-table thead th{white-space:normal;color:var(--muted)}
+table.pr-table thead th{white-space:normal;color:var(--muted)}
 .pr-table tbody td{overflow-wrap:anywhere;font-size:var(--fs-12)}
 .pr-table .col-act{position:sticky;right:0;background:var(--card);width:70px;text-align:right}
 .pr-table .tag{white-space:normal;text-align:left;line-height:1.5;font-size:var(--fs-11)}
@@ -71,6 +71,9 @@
 .pr-error{color:var(--danger);font-size:var(--fs-12);white-space:pre-wrap;overflow-wrap:anywhere}
 .pr-form fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:var(--sp-4)}
 .pr-upload:focus-within{outline:2px solid var(--accent);outline-offset:2px}.pr-confirm{white-space:pre-wrap;padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);overflow-wrap:anywhere}
+.pr-auth-fail{margin:var(--sp-3) 0;padding:var(--sp-3);border-radius:var(--radius-sm);background:var(--danger-bg)}
+.pr-auth-fail .pr-kv{grid-template-columns:1fr;gap:var(--sp-3)}
+.pr-auth-fail .pr-confirm{background:var(--card)}
 .pr-progress{width:100%;accent-color:var(--accent)}
 .pr-body .demo-panel{max-height:calc(100vh - 110px);overflow:auto}
 .pr-demo{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-5)}
@@ -98,6 +101,7 @@
 <button class="demo-btn" id="demoBtn" type="button"></button><aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
 <script src="../../_shared/registry.admin.js"></script>
 <script src="../../_shared/shell.js"></script>
+<script src="../../_shared/ops-wallet.js"></script>
 <script src="../../_shared/file-row.js"></script>
 <script src="../../_shared/admin-menu.js"></script>
 <script src="../../_shared/admin-message-data.js"></script>
