@@ -1,6 +1,7 @@
 /* 运营端平台统一钱包签名（本地演示）：连接钱包 → 核对地址 → 签名。
    项目合约管理的部署签名与代币质押审核的通过签名（链上执行解冻）共用这一份；不连接真实钱包，也不是登录方式。
-   模块负责把 layers 并入自己的弹层表、把 ow-* 动作交给 onAct，并在 onSigned / onAbort 里回到自己的办理弹窗。 */
+   模块负责把 layers 并入自己的弹层表、把 ow-* 动作交给 onAct，并在 onSigned / onAbort 里回到自己的办理弹窗。
+   start({showGasNotice:false}) 仅省略签名页的费用承担说明；默认展示，签名与费用规则不变。 */
 (function(CF){
   'use strict';
   const L=CF.L,E=CF.esc;
@@ -32,7 +33,7 @@
     'ow-sign':()=>({title:L('Wallet signature · simulation','钱包签名 · 演示'),
       html:`<div class="ow-flow"><p>${E(txt(job?.purpose||''))}</p>
         <dl class="ow-kv"><div><dt>${L('Signing address','签名地址')}</dt><dd class="mono">${E(short(PLATFORM))}</dd></div>
-        <div><dt>${L('Gas','gas')}</dt><dd>${L('Borne by the platform wallet; operations staff pay nothing personally.','由平台统一钱包承担，运营人员个人不付费。')}</dd></div></dl>
+        ${job?.showGasNotice===false?'':`<div><dt>${L('Gas','gas')}</dt><dd>${L('Borne by the platform wallet; operations staff pay nothing personally.','由平台统一钱包承担，运营人员个人不付费。')}</dd></div>`}</dl>
         ${job?.detail?`<p class="ow-meta">${E(txt(job.detail))}</p>`:''}</div>`,
       foot:btn('Decline signature','拒绝签名','ow-sign','rejected','ghost')+btn('Signature fails','签名失败','ow-sign','failed','ghost')+btn('Confirm signature','确认签名','ow-sign','ok','primary')})
   };
