@@ -153,6 +153,11 @@
      到期时仍有业务的，最后一项处理完成时按同一规则终结。未到期时全部结清只回到可用。 */
   D.hadDeal = p => p.demands.some(d=>['funding','funded'].includes(d.state))||(CF.CQ?.data?.().quotes||[]).some(q=>q.project===p.id&&['funding','funded'].includes(q.state));
   D.autoEnd = p => {
+    /* D-LS-72：待审核或已退回到期自动关闭（有效期到期）；合约部署进行中跨过有效期至的，等回写后再处理。 */
+    if(p&&p.expired&&['review','returned'].includes(p.state)){
+      if(p.deploying)return false;
+      p.state='closed';p.closeReason='expiry';D.releasePool(p);D.log(p,'closed');return true;
+    }
     if(!p||!p.expired||D.terminal(p)||['review','returned'].includes(p.state)||D.unfinished(p).length)return false;
     if(D.hadDeal(p))p.state='settled';else{p.state='closed';p.closeReason='expiry';}
     D.releasePool(p);D.log(p,p.state==='settled'?'settled':'closed');return true;
@@ -199,7 +204,8 @@
   /* 运营提交通过后合约部署进行中（含结果待核实）：资产方看到的仍是待审核，但暂不可关闭；回写后按结果处理。 */
   D.decideProject = (p, outcome, reason) => {
     if(p.state!=='review')throw Error('reviewChanged');
-    if(outcome==='submit'){if(p.deploying)throw Error('reviewChanged');p.deploying=true;D.save();return true;}
+    if(outcome==='submit'){if(p.deploying)throw Error('reviewChanged');if(p.expired)throw Error('projectExpired');p.deploying=true;D.save();return true;}
+    if(outcome==='approve'&&p.expired&&!p.deploying)throw Error('projectExpired');
     if(outcome==='return'&&p.deploying)throw Error('reviewChanged');
     p.deploying=false;
     if(outcome==='approve'){
@@ -208,6 +214,8 @@
       D.log(p,'projectApproved');
     } else if(outcome==='deployFailed'){ D.log(p,'deployFailed'); }
     else { p.state='returned';p.reviewReason=reason||['The submitted project details need a correction.','提交的创建信息需要修正后再提交。'];D.log(p,'projectReturned'); }
+    /* 部署进行中跨过有效期至：成功即通过、随后按可用状态到期终结；失败随即关闭。 */
+    D.autoEnd(p);
     D.save();return true;
   };
 

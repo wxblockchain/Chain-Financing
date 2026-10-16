@@ -43,6 +43,7 @@
   const utcDay=t=>CF.fmtDate(new Date(t).toISOString().slice(0,10)+'T12:00:00Z');
   const expiry=r=>addMonths(r.createdAt,r.termMonths);
   const termRange=r=>utcDay(r.createdAt)+' ～ '+utcDay(expiry(r))+' (UTC)';
+  const isExpired=r=>now()>=expiry(r);
   const months=n=>n+' '+L(n===1?'month':'months','个月');
   const submission=n=>L('Submission '+n,'第 '+n+' 次提交');
   const ownerName=r=>{const o=OWNERS.find(x=>x[0]===r.owner);return o?txt(o[1]):r.owner;};
@@ -60,7 +61,11 @@
   const error=()=>A.error?`<p class="cm-error" role="alert">${E(txt(A.error))}</p>`:'';
   const kv=items=>`<dl class="cm-kv">${items.map(([label,value,wide])=>`<div ${wide?'class="cm-wide"':''}><dt>${label}</dt><dd>${value==null?'—':value}</dd></div>`).join('')}</dl>`;
   const section=(en,zh,html,extra='')=>`<section class="card cm-section"${extra}><h2 class="cm-h2">${L(en,zh)}</h2>${html}</section>`;
-  const reviewBadge=r=>CF.tag(REVIEW[r.review][2],txt(REVIEW[r.review]))+(r.closed?CF.tag('gray',L('Project closed','项目已关闭')):'');
+  /* 项目已关闭是叠加标记，同时展示关闭原因：资产方主动关闭或有效期到期。 */
+  const CLOSE_REASON={owner:['closed by the asset holder','资产方主动关闭'],expired:['valid-until date reached','有效期到期']};
+  const closeReason=r=>txt(CLOSE_REASON[r.closeReason||'owner']);
+  const closedTag=r=>CF.tag('gray',L('Project closed · ','项目已关闭 · ')+closeReason(r));
+  const reviewBadge=r=>CF.tag(REVIEW[r.review][2],txt(REVIEW[r.review]))+(r.closed?closedTag(r):'');
   const deployBadge=r=>CF.tag(DEPLOY[r.deploy][2],txt(DEPLOY[r.deploy]));
 
   /* 功能权限只在运营端账户与登录一处登记；本册按正文分查询岗与处置岗。 */
@@ -76,7 +81,7 @@
   const canApprove=r=>canAct(r)&&!!r.entity;
 
   /* 已等待时长：事实陈述，不是期限；结论生效或项目关闭即停止计时。 */
-  const endedAt=r=>r.closed?r.events.find(e=>e.kind==='close')?.at:(['approved','returned'].includes(r.review)?r.decisionAt:null);
+  const endedAt=r=>r.closed?r.events.find(e=>['close','expire-close'].includes(e.kind))?.at:(['approved','returned'].includes(r.review)?r.decisionAt:null);
   const waited=r=>(endedAt(r)||now())-r.submittedAt;
   function duration(ms){
     const m=Math.max(0,Math.floor(ms/60000));
@@ -280,7 +285,7 @@
       ${appliedTags(labels,values,applied,extra)}</form>`;
   }
   function projectState(r){
-    return r.closed?CF.tag('gray',L('Closed','已关闭'))
+    return r.closed?CF.tag('gray',L('Closed · ','已关闭 · ')+closeReason(r))
       :r.review==='approved'?CF.tag('ok',L('Open · empty pool','可用 · 空池'))
       :r.review==='returned'?CF.tag('danger',L('Returned','已退回')):CF.tag('warn',L('Pending review','待审核'));
   }
@@ -296,13 +301,13 @@
     const rows=found.slice((A.ledger.page-1)*CF.PAGE_SIZE,A.ledger.page*CF.PAGE_SIZE);
     const table=state||(!found.length
       ?CF.empty(L('No contracts found','暂无符合条件的合约'),L('Change the filters or clear them to see every deployed contract.','调整或清空筛选条件，查看全部已部署合约。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap"><table class="tbl cm-table cm-ledger-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher / token type','项目发布方 / 代币类型')}</th><th>${L('Pledge contract address / chain','质押合约地址 / 质押链')}</th><th aria-sort="${A.ledger.dir===1?'ascending':'descending'}"><button data-act="cm-sort" data-v="deployedAt">${L('Contract deployment completed at','合约部署完成时间')} ${A.ledger.dir===1?'↑':'↓'}</button></th><th>${L('Reviewer','审核人')}</th><th>${L('Project status','项目当前状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}<span class="cm-meta">${E(r.tokenType)}</span></td><td>${addressValue(r.contract.address,L('address','地址'))}<span class="cm-meta">${L('Pledge chain','质押链')} ETH</span></td><td>${time(deployedAt(r))}</td><td>${r.reviewer?E(txt(r.reviewer)):unknown()}</td><td>${projectState(r)}</td><td class="col-act">${viewLink(r.id,'ledger')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.ledger)}`);
+      :`<div class="tablewrap"><table class="tbl cm-table cm-ledger-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher / token type','项目发布方 / 代币类型')}</th><th>${L('Pledge contract address / blockchain network','质押合约地址 / 区块链网络')}</th><th aria-sort="${A.ledger.dir===1?'ascending':'descending'}"><button data-act="cm-sort" data-v="deployedAt">${L('Contract deployment completed at','合约部署完成时间')} ${A.ledger.dir===1?'↑':'↓'}</button></th><th>${L('Reviewer','审核人')}</th><th>${L('Project status','项目当前状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}<span class="cm-meta">${E(r.tokenType)}</span></td><td>${addressValue(r.contract.address,L('address','地址'))}<span class="cm-meta">${L('Ethereum','以太坊')}</span></td><td>${time(deployedAt(r))}</td><td>${r.reviewer?E(txt(r.reviewer)):unknown()}</td><td>${projectState(r)}</td><td class="col-act">${viewLink(r.id,'ledger')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.ledger)}`);
     return title(L('Pledge contract ledger','质押合约台账'),L('One project, one deployed pledge contract. Read-only: the platform does not verify the address on chain.','一个项目对应一份已部署的质押合约；只读，平台不做链上核验。'))
       +views('ledger')+`<section class="card">${ledgerFilters()}${table}</section>`;
   }
 
   /* ---------------------------------------------------------------- 操作记录 */
-  const TONE={'deploy-ok':'ok','return':'danger','deploy-fail':'danger','deploy-unknown':'warn','close':'gray'};
+  const TONE={'deploy-ok':'ok','return':'danger','deploy-fail':'danger','deploy-unknown':'warn','close':'gray','expire-close':'gray'};
   function activity(r){
     const heading=`<h2 class="cm-h2" id="cm-activity-title">${L('Activity','操作记录')}</h2><p class="cm-meta">${L('The only source of this project’s submissions, decisions and deployment attempts, newest first.','本项目全部提交、结论与部署尝试的唯一来源，按发生时间倒序。')}</p>`;
     let body;
@@ -362,11 +367,21 @@
       +((ratioGap||termGap)?note(L('The locked values stay unchanged and stay valid. A lower current limit does not make this project non-compliant, does not block the submission and does not create any remediation task.','锁定值保持不变且继续有效。当前上限调低不使该项目违规，不拦截提交，也不产生整改待办。'),'accent'):'')
       +(c.available?'':note(L('The current financing parameter configuration could not be read. It is marked to be verified and does not block the review.','当前融资参数配置暂不可读，已标为待核实，不阻断本次审核。'),'warn')));
   }
+  /* 待审核或已退回到达有效期至时自动关闭；部署处理中跨过有效期至的，等回写后按结果处理。 */
+  function closeOnExpiry(r){
+    if(r.closed)return;
+    const before=REVIEW[r.review];
+    r.closed=true;r.closeReason='expired';r.expiryPassed=false;
+    event(r,'expire-close',['Project closed on expiry','项目到期自动关闭'],[before[0]+' · project closed',before[1]+' · 项目已关闭'],
+      {text:r.review==='approved'
+        ?['The project had reached its valid-until date with no business, so it ended right after the approval.','项目已到达有效期至且没有存续业务，审核通过后随即自动终结为已关闭。']
+        :['The project reached its valid-until date without a conclusion. It can no longer be decided or deployed.','项目到达有效期至仍未得出结论，已自动关闭，不能再裁定或部署。']});
+  }
   function deployCard(r){
     const c=r.contract;
     const started=r.deploy!=='none';
     const items=[
-      [L('Pledge chain','质押链'),'ETH'],
+      [L('Blockchain network','区块链网络'),L('Ethereum','以太坊')],
       [L('Deployment execution status','部署执行状态'),deployBadge(r)],
       ...(started?[
         [L('Pledge contract address','质押合约地址'),c?.address?addressValue(c.address,L('address','地址')):L('Not produced yet','尚未产生'),true],
@@ -386,12 +401,13 @@
       +`<p class="cm-meta">${L('Read-only on-chain facts written back with the real result. Operations do not sign, pay gas, maintain the platform wallet or edit the contract address.','随真实结果回写的只读链上事实。运营端不签名、不代付 gas、不维护平台钱包、不可编辑合约地址。')}</p>`
       +(r.deploy==='failed'?`<div class="cm-failure"><h3>${L('Last deployment attempt','最近一次部署尝试')}</h3>${fail}${note(L('A failed deployment is not a review conclusion. The project is back to pending review, the asset holder is not notified and the project term is not restarted.','部署失败不是审核结论：项目已回到待审核，未通知资产方，项目期限起算点不变。'),'warn')}</div>`:'')
       +(r.deploy==='unknown'?note(L('No confirmed on-chain result for this deployment. The known facts are kept, the result is not assumed, no new attempt is started and no decision is changed; the asset holder cannot close the project until the result is written back. Contact the platform provider to check the chain and the configuration.','本次部署尚无确定的链上结果。已发生事实原样保留，不推定结果、不重复发起、不自动改判，资产方在结果回写前也不能关闭项目；请联系平台建设方核实链上与配置。'),'warn'):'')
+      +(r.expiryPassed&&!r.closed?note(L('The valid-until date has passed during deployment. The project is handled by the result once it is written back.','部署处理中已跨过有效期至，部署结果回写后按结果处理。'),'warn'):'')
       +(r.deploy==='processing'?note(L('The deployment is in progress and no conclusion has been formed yet. The asset holder still sees the project as pending review and can neither pledge tokens nor close the project.','部署处理中，尚未形成结论。资产方仍看到项目待审核，暂不能发起代币质押，也不能关闭项目。'),'accent'):''));
   }
   function actionCard(r){
     const permission=!canDecide()
       ?L('View access only. This account does not hold the project review and contract deployment permission.','当前仅有融资项目审核查询权限，不能处置。')
-      :r.closed?L('The asset holder closed this project. It can no longer be decided; the record stays readable.','资产方已关闭该项目，不可再裁定，记录仍可只读回看。')
+      :r.closed?(r.closeReason==='expired'?L('The project reached its valid-until date and was closed automatically. It can no longer be decided or deployed; the record stays readable.','项目已到达有效期至并自动关闭，不能再裁定或部署，记录仍可只读回看。'):L('The asset holder closed this project. It can no longer be decided; the record stays readable.','资产方已关闭该项目，不可再裁定，记录仍可只读回看。'))
       :r.review==='approved'?L('The deployment succeeded and the review is approved. The conclusion is final: it cannot be withdrawn, re-judged or deployed a second time.','部署成功、审核已通过。结论终态：不可撤销、不可改判、不再部署第二份合约。')
       :r.review==='returned'?L('This project was returned. The asset holder can revise the details and resubmit.','本项目已退回，由资产方修改创建信息后重新提交。')
       :r.deploy==='processing'?L('A deployment is in progress. No second submission is accepted until the real on-chain result arrives.','本项目正在部署处理中，真实链上结果返回前不接受第二次提交。')
@@ -485,9 +501,15 @@
         A.error=['Another reviewer has decided this project. The current conclusion is shown.','本项目已由其他审核员裁定，已显示当前结论、审核人及时间。'];
         CF.render();return;
       }
+      if(response==='expired'||isExpired(r)){
+        /* 提交时项目已到期：就地拒绝，不形成结论、不发起部署。 */
+        closeOnExpiry(r);
+        A.error=['Project expired: it reached its valid-until date and was closed automatically. This submission did not stand and no deployment was started.','项目已到期：已到达有效期至并自动关闭，本次提交未成立，未发起部署。'];
+        open(d.mode==='return'?'return':'approve');return;
+      }
       if(response==='closed'){
         /* 与资产方关闭同时发生、关闭先生效：本次办理就地拒绝，不形成结论、不发起部署。 */
-        r.closed=true;
+        r.closed=true;r.closeReason='owner';
         event(r,'close',['Project closed by the asset holder','资产方关闭项目'],[REVIEW[r.review][0]+' · project closed',REVIEW[r.review][1]+' · 项目已关闭'],
           {actor:['Asset holder','资产方'],
            text:['The close took effect before this submission, so the approval did not stand and no deployment was started.','资产方的关闭先于本次提交生效，本次通过未成立，未发起部署。']});
@@ -519,6 +541,7 @@
          text:['The pledge contract for this project was deployed. The project is now open and the asset holder can pledge tokens; pledging requires the holder’s signature and the gas is payable by the holder.','本项目质押合约已部署，项目转为可用，资产方可发起代币质押；质押需其本人签名，gas 自担。'],
          notice:['Project review approved','项目审核通过']});
       A.notices.push({id:r.id,kind:['Project review approved','项目审核通过']});
+      if(r.expiryPassed)closeOnExpiry(r);
     }else if(kind==='failed'){
       const reason=['The deployment transaction was rejected on chain: the platform wallet did not have enough balance to cover the gas for this transaction.','部署交易在链上被拒绝：平台统一钱包余额不足以支付本次交易的 gas。'];
       r.deploy='failed';r.review='pending';
@@ -527,6 +550,7 @@
       event(r,'deploy-fail',['Deployment failed','部署失败'],['Deployment in progress → Pending review','部署处理中 → 待审核'],
         {chain:true,gas:0.0041,gasCcy:'ETH',proof:r.contract.proof,text:reason,
          next:['No conclusion was formed. The asset holder is not notified and still sees the project as pending review. A manager with the decision permission can start the deployment again.','未形成结论，不通知资产方，面客侧仍显示项目待审核；由有处置权限的管理人员再次发起部署。']});
+      if(r.expiryPassed)closeOnExpiry(r);
     }else{
       r.deploy='unknown';
       event(r,'deploy-unknown',['Deployment result to be verified','部署结果待核实'],['No confirmed on-chain result','尚无确定的链上结果'],
@@ -591,8 +615,9 @@
     const r=row(),processing=r?.deploy==='processing';
     return `<h3>${L('Project contracts · demo tools','项目合约管理 · 演示工具')}</h3><p class="cm-meta">${L('Local demonstration only. No wallet, deployment, chain write-back or message service is contacted.','仅本地演示：不连接钱包、不发起部署、不读写链上结果，也不投递真实站内信。')}</p>
       <h4>${L('Account configuration · later-role preview','账号配置 · 后期角色预演')}</h4><p class="cm-meta">${L('This release has one role: the operations administrator holds both permissions.','本期只有运营管理员一个角色，固定具备两项权限。')}</p><div class="cm-demo-actions">${b('Administrator','运营管理员','grant','admin')}${b('Later role · no access','后期角色 · 未开通本模块','grant','none')}${b('Later role · query only','后期角色 · 仅开通审核查询','grant','query')}${b('Later role · decision only','后期角色 · 仅开通审核处置','grant','decide')}${b('Later role · query + decision','后期角色 · 查询＋处置','grant','full')}</div>
-      <div class="cm-demo">${field(L('Page state','页面状态'),select('cm-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','空数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}${field(L('Submit response','提交反馈'),select('cm-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['concurrent',L('Another reviewer wins','已被他人裁定')],['closed',L('Asset holder’s close takes effect first','资产方关闭先于本次提交生效')]]))}${field(L('Activity state','操作记录状态'),select('cm-activity-state',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','加载失败')]]))}${field(L('Parameter configuration','融资参数配置'),select('cm-config',A.config.available?'on':'off',[['on',L('Readable','可读')],['off',L('Unavailable · to be verified','不可读 · 标待核实')]]))}</div>
+      <div class="cm-demo">${field(L('Page state','页面状态'),select('cm-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','空数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}${field(L('Submit response','提交反馈'),select('cm-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['concurrent',L('Another reviewer wins','已被他人裁定')],['closed',L('Asset holder’s close takes effect first','资产方关闭先于本次提交生效')],['expired',L('Project has expired at submission','提交时项目已到期')]]))}${field(L('Activity state','操作记录状态'),select('cm-activity-state',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','加载失败')]]))}${field(L('Parameter configuration','融资参数配置'),select('cm-config',A.config.available?'on':'off',[['on',L('Readable','可读')],['off',L('Unavailable · to be verified','不可读 · 标待核实')]]))}</div>
       <h4>${L('On-chain write-back for this project','本项目的链上回写')}</h4><div class="cm-demo-actions">${b('Deployment succeeds','部署成功回写','chain-success','','',!processing)}${b('Deployment fails','部署失败回写','chain-failed','','',!processing)}${b('Result to be verified','结果待核实','chain-unknown','','',!processing)}${b('Replay the latest event','重放最新事件','replay','','',!r)}</div>
+      <h4>${L('Valid-until date','项目有效期')}</h4><div class="cm-demo-actions">${b('Reach the valid-until date','到达有效期至','expire','','',!r||r.closed||r.expiryPassed||!['pending','deploying','returned'].includes(r.review))}</div>${r?.expiryPassed?`<p class="cm-meta">${L('The valid-until date has passed during deployment. Write back a result to see how it is handled.','部署处理中已跨过有效期至，回写部署结果即可看到按结果处理。')}</p>`:''}
       <h4>${L('Asset holder actions','资产方动作')}</h4><div class="cm-demo-actions">${b('Revise and resubmit','修改后重新提交','resubmit','','',!r||r.review!=='returned'||r.closed)}${b('Close the project','关闭项目','close','','',!r||r.closed||!['pending','deploying','returned'].includes(r.review))}${b('Expire operations session','运营登录失效','expire-session')}${b('Reset demonstration','重置演示','restart')}</div>
       <h4>${L('Messages sent to asset holders','已发送的面客站内信')}</h4><p class="cm-meta">${A.notices.map(n=>E(n.id+' · '+txt(n.kind))).join('<br>')||L('None','暂无')}</p>
       <p class="cm-meta">${L('Signature or deployment failure, a new attempt and a result to be verified send no message at all.','签名或部署失败、再次发起与结果待核实都不发送任何消息。')}</p>`;
@@ -670,6 +695,14 @@
         CF.render();
       }
     }
+    else if(act==='expire'){
+      const r=row();
+      if(r&&!r.closed){
+        if(r.review==='deploying'){r.expiryPassed=true;CF.toast(L('The valid-until date passed during deployment. The project stays as it is until the result is written back.','部署处理中跨过有效期至：项目暂不关闭，等部署结果回写后按结果处理。'));}
+        else if(['pending','returned'].includes(r.review))closeOnExpiry(r);
+        CF.render();
+      }
+    }
     else if(act==='close'){
       const r=row();
       /* 部署处理中（含结果待核实）资产方不能关闭：关闭被拒，审核轴与项目都不变。 */
@@ -678,7 +711,7 @@
         return true;
       }
       if(r&&!r.closed&&['pending','returned'].includes(r.review)){
-        r.closed=true;
+        r.closed=true;r.closeReason='owner';
         event(r,'close',['Project closed by the asset holder','资产方关闭项目'],[REVIEW[r.review][0]+' · project closed',REVIEW[r.review][1]+' · 项目已关闭'],
           {actor:['Asset holder','资产方'],
            text:['Operations has no entry to close or reopen a project. The record stays readable with the query permission.','运营端没有关闭与恢复入口；有查询权限时记录仍可只读回看。']});

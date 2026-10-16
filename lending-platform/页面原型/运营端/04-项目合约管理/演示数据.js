@@ -117,7 +117,7 @@
 
     /* 008 资产方在已退回期间主动关闭项目：离开待审队列、不可裁定，历史仍只读可查。 */
     add({key:'08',owner:'B',entity:'DEMO-ENTITY-B',ratio:0.50,termMonths:3,
-      createdAt:now-16*D,submittedAt:now-15*D,review:'returned',closed:true,
+      createdAt:now-16*D,submittedAt:now-15*D,review:'returned',closed:true,closeReason:'owner',
       reviewer:LIN,decisionAt:now-14*D,returnReason:REASON_RATIO,
       events:[
         ev(now-15*D,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
@@ -155,6 +155,17 @@
         ev(now-20*D,'deploy-ok',['Deployment succeeded (review approved)','部署成功（即审核通过）'],['Deployment in progress → Approved','部署处理中 → 已通过'],SYSTEM,
           {chain:true,gas:0.0207,gasCcy:'ETH',proof:proof('111'),address:addr('C011'),
            notice:['Project review approved','项目审核通过']})]});
+
+    /* 012 已退回后未重提，到达有效期至自动关闭：关闭原因为有效期到期，离开默认队列，只读。 */
+    {const created=now-100*D,exp=(()=>{const d=new Date(created);return Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+3,d.getUTCDate());})();
+    add({key:'12',owner:'A',ratio:0.60,termMonths:3,createdAt:created,submittedAt:created+H,
+      review:'returned',closed:true,closeReason:'expired',reviewer:CHEN,decisionAt:created+3*D,returnReason:REASON_NAME,
+      events:[
+        ev(created+H,'submit',['Submitted for review','提交审核'],['Project pending review · submission 1','项目待审核 · 第 1 次提交'],HOLDER),
+        ev(created+3*D,'return',['Returned for revision','审核退回'],['Pending review → Returned','待审核 → 已退回'],CHEN,
+          {text:REASON_NAME,notice:['Project review returned','项目审核退回']}),
+        ev(exp,'expire-close',['Project closed on expiry','项目到期自动关闭'],['Returned · project closed','已退回 · 项目已关闭'],SYSTEM,
+          {text:['The project reached its valid-until date without a conclusion. It can no longer be decided or deployed.','项目到达有效期至仍未得出结论，已自动关闭，不能再裁定或部署。']})]});}
 
     return {
       rows,now,wallet:WALLET,tokenType:TOKEN,
