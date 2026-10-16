@@ -20,6 +20,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--entry-route", help="Offline customer review entry, e.g. /marketplace; explicit hash links still win")
     parser.add_argument("--market-tone", choices=("dark", "blue"),
                         help="Optional marketplace review palette; all variants share the same source")
     parser.add_argument("--market-type", choices=("refined",),
@@ -27,6 +28,10 @@ def main():
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent,
                         help="原型根目录，默认为 _shared/ 的上一级（页面原型/）")
     args = parser.parse_args()
+    if args.entry_route and not re.fullmatch(r"/[A-Za-z0-9_/?=&%.,:+-]*", args.entry_route):
+        parser.error("entry-route must be a local customer hash route")
+    if args.entry_route and args.entry_route.startswith('//'):
+        parser.error("entry-route must be a local customer hash route")
 
     root = args.root.resolve()
     source, output = args.source.resolve(), args.output.resolve()
@@ -76,6 +81,13 @@ def main():
         return html
 
     html = standalone(source)
+    if args.entry_route:
+        if 'data-admin-module=' in html:
+            parser.error("entry-route is only supported by customer prototypes")
+        # Review entry only: leave the source router, role and deep links intact.
+        route = json.dumps('#' + args.entry_route)
+        bootstrap = '<script>if(!location.hash)history.replaceState(null,"",' + route + ');</script>'
+        html = html.replace('<head>', '<head>' + bootstrap, 1)
     if 'data-admin-module=' in html:
         # Source files keep normal relative links. Offline delivery includes every
         # destination from the same menu contract, with no copied business runtime.

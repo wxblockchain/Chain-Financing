@@ -945,8 +945,8 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-sign-bar{flex:1 1 380px;min-width:0;display:grid;gap:2px;margin-right:auto}
 .ls-sign-bar p{margin:0}
 .ls-sign-sum{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-5);font-size:var(--fs-13);color:var(--muted)}
-.ls-sign-sum b{color:var(--text);font-size:var(--fs-14);font-weight:600}
-.ls-sign-note{font-size:var(--fs-12);color:var(--faint);line-height:1.6}
+.ls-sign-sum b{color:var(--text);font-size:var(--fs-14);font-weight:500}
+.ls-sign-note{font-size:var(--fs-12);color:var(--muted);line-height:1.6}
 .ls-sign-cond,.ls-sign-bar .ls-release-limit{font-size:var(--fs-12);color:var(--text);line-height:1.6}
 .ls-sign-cond{color:var(--warn)}
 .ls-sign-bar .ls-release-limit{padding:0;border:0}

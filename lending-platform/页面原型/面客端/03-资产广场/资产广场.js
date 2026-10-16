@@ -142,14 +142,8 @@
     return '<div class="loadmore" role="status">' + L("Scroll down to load more", "下滑自动加载更多") +
       '<span class="tiny">' + L("Showing " + load.shown + " of " + total + " records", "已显示 " + load.shown + " / " + total + " 笔") + '</span></div>';
   }
-  /* 放大态的列表高度要扣掉顶栏；顶栏在窄屏会折行，所以按实际高度取值。 */
-  function syncHead() {
-    var head = document.querySelector("#portal .portal-head");
-    if (head) document.documentElement.style.setProperty("--am-head", head.offsetHeight + "px");
-  }
-  window.addEventListener("resize", syncHead);
   function afterList(v) {
-    syncHead();
+    CF.market.syncListHead();
     restoring = true; S.toTop = false;
     cancelAnimationFrame(restoreFrame);
     restoreFrame = requestAnimationFrame(function () {
@@ -578,8 +572,8 @@
       : "";
 
     return '<div class="am-market-page">' + head + summary + limit +
-      '<div class="card listzone" data-view="' + marketView + '" data-density="' + (S.listFull ? "full" : "core") + '">' + filters +
-      '<div class="mk-result-head"><h2>' + CF.market.icon('asset') + L('Token registry', '代币清单') + '</h2><div class="mk-result-tools">' + CF.market.views(marketView, 'am-view') + fullBar(wait || S.st === "error" ? null : total) + '</div></div>' + body + '</div></div>';
+      CF.market.listFrame({view:marketView,filters:filters,title:L('Token registry','代币清单'),viewAction:'am-view',
+        tools:fullBar(wait || S.st === "error" ? null : total),content:body}) + '</div>';
   }
 
   /* 列表可放大到整窗，便于连续核对长列表；再次点击或 Esc 还原。 */

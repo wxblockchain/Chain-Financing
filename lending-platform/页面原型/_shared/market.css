@@ -79,9 +79,19 @@
 .mk-result-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);padding:var(--sp-4) 0 var(--sp-5)}
 .mk-result-head h2{margin:0;font-size:var(--fs-16);font-weight:500;display:flex;gap:var(--sp-2);align-items:center}
 .mk-result-tools{display:flex;align-items:center;gap:var(--sp-3)}
-.mk-result-head .am-toolbar-end,.mk-result-head .ls-toolbar-end{border:0;padding:0}
+.mk-result-head .am-toolbar-end,.mk-result-head .ls-toolbar-end{display:flex;align-items:center;gap:var(--sp-3);border:0;padding:0}
 .mk-result-head .am-total,.mk-result-head .ls-total{color:var(--muted)}
 .am-market-page .listzone,.ls-market-page .listzone{border:0;box-shadow:none;background:transparent;overflow:visible}
+/* One list frame: core/full density and in-page expansion are shared by both marketplaces. */
+[data-market-redesign] .mk-list-frame[data-view][data-density="core"] .tbl :is(th,td):is(.am-col-x,.ls-col-x){display:none}
+body.list-full:has(.mk-list-frame) .portal-wrap{max-width:none;padding:var(--sp-5) var(--sp-7)}
+body.list-full:has(.mk-list-frame) :is(#foot,.portal-sub,.ls-demo-mark){display:none}
+body.list-full :is(.am-market-page,.ls-market-page)>:not(.mk-list-frame){display:none}
+body.list-full .mk-list-frame{position:relative;inset:auto;z-index:auto;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none;padding:0;height:calc(100dvh - var(--market-list-head,68px) - 2 * var(--sp-5))}
+@media(max-width:768px){
+  body.list-full:has(.mk-list-frame) .portal-wrap{padding:var(--sp-4)}
+  body.list-full .mk-list-frame{height:calc(100dvh - var(--market-list-head,68px) - 2 * var(--sp-4))}
+}
 .am-market-page .am-filters .am-toolbar-end,.ls-market-page .ls-toolbar .ls-toolbar-end{display:none}
 [data-market-redesign] .listbox-contained{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card)}
 [data-market-redesign] .am-tbl-zone,[data-market-redesign] .ls-market-zone{height:var(--list-h);min-height:var(--list-h)}
@@ -103,6 +113,7 @@
 [data-market-redesign] .listzone[data-view="cards"] tbody{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-4)}
 [data-market-redesign] .listzone[data-view="cards"] tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3) var(--sp-4);padding:var(--sp-5);margin:0;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);align-content:start;position:relative}
 [data-market-redesign] .listzone[data-view="cards"] tbody tr:hover{background:var(--card-hover);border-color:var(--accent-border)}
+[data-market-redesign] .listzone[data-view="cards"] .tbl tbody tr:hover td{background:transparent}
 [data-market-redesign] .listzone[data-view="cards"] tbody td{display:block;padding:0;margin:0;border:0;text-align:left!important;background:transparent;min-width:0;overflow-wrap:anywhere;font-size:var(--fs-12);width:auto}
 [data-market-redesign] .listzone[data-view="cards"] tbody td::before{content:attr(data-label);display:block;color:var(--muted);font-size:var(--fs-11);font-weight:400;letter-spacing:0;text-transform:none;margin-bottom:var(--sp-1)}
 [data-market-redesign] .listzone[data-view="cards"] tbody td.mk-item-cell{grid-column:1 / -1;padding-bottom:var(--sp-3);border-bottom:1px solid var(--border)}
@@ -135,6 +146,8 @@
 [data-market-redesign] .listzone[data-view="cards"] .ls-amt{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-1)}
 [data-market-redesign] .listzone[data-view="cards"] .ls-amt b{font-size:var(--fs-19);font-weight:450}
 [data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(5) .cell-sub{margin-top:var(--sp-1)}
+[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(6) .cell-sub{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--sp-1)}
+[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(6) .mk-money{font-size:var(--market-row-value)}
 [data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(6),[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(7){border-top:1px solid var(--row-line);padding-top:var(--sp-3)}
 [data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(6)::before,[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(7)::before{display:none}
 [data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(7){margin-left:calc(-1 * var(--sp-4));padding-left:var(--sp-4)}
@@ -457,17 +470,32 @@
 [data-market-redesign] .listzone[data-view="cards"] tbody td.mk-network-cell::before{margin:0;font-size:var(--fs-11)}
 [data-market-redesign] .listzone[data-view="cards"] tbody td.mk-item-cell{grid-column:1 / -1;padding-bottom:var(--sp-3);border-bottom:1px solid var(--border)}
 [data-market-redesign] .listzone[data-view="cards"] tbody td.mk-item-cell::before{display:none}
-[data-market-redesign] .ls-detail-main .ls-token-table{min-width:860px}
+[data-market-redesign] .ls-detail-main .tablewrap:has(>.ls-token-table){overflow:auto}
+[data-market-redesign] .ls-detail-main .ls-token-table{min-width:1040px}
 [data-market-redesign] .ls-detail-main .ls-token-table :is(th,td){padding-inline:var(--sp-2)}
-[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(1){width:11%}
-[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(2){width:21%;text-align:left}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(1){width:10%}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(2){width:19%;text-align:left}
 [data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(2) .cell-wrap{align-items:flex-start}
-[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(3){width:18%;text-align:right}
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(7)) :is(th,td):nth-child(4){width:9%}
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(7)) :is(th,td):nth-child(5){width:13%}
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(7)) :is(th,td):nth-child(6),[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(7)) :is(th,td):nth-child(7){width:14%}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(3){width:18%;text-align:left}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(4){width:13%;text-align:right}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(5){width:13%}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(6){width:11%}
+[data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(7){width:16%}
+/* Own projects have two additional, permission-controlled columns. Give all nine
+   real widths; the former seven-column percentages squeezed Review/Status to zero. */
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)){min-width:1280px}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(1){width:9%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(2){width:16%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(3){width:15%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(4),
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(5){width:11%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(6),
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(8){width:8%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(7){width:12%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(9){width:10%}
 [data-market-redesign] .ls-detail-main .ls-token-table .tag{overflow-wrap:normal;word-break:normal}
-[data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(3) .cell-wrap{align-items:flex-end}
+[data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(3) .cell-wrap{align-items:flex-start}
+[data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(4) .cell-wrap{align-items:flex-end}
 [data-market-redesign] .ls-detail .ls-token-filters{padding:0 0 var(--sp-3);gap:var(--sp-2);margin:0}
 [data-market-redesign] .ls-detail .ls-token-filters .fb-q{flex:1 1 150px;min-width:120px}
 [data-market-redesign] .ls-detail .ls-token-filters .fb select.inp{min-width:0;max-width:100%}
@@ -488,8 +516,8 @@
 @media(max-width:768px){
   [data-market-redesign] .ls-detail .ls-token-filters .fb-q{flex-basis:100%;margin-left:0}
   [data-market-redesign] .ls-detail-main .ls-token-table :is(th,td){width:auto!important;text-align:left!important}
-  [data-market-redesign] .ls-detail-main .ls-token-table{min-width:0}
-  [data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(3) .cell-wrap{align-items:flex-start}
+  [data-market-redesign] .ls-detail-main .ls-token-table,[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)){min-width:0}
+  [data-market-redesign] .ls-detail-main .ls-token-table :is(td:nth-child(3),td:nth-child(4)) .cell-wrap{align-items:flex-start}
   .mk-project-global-actions .btn{min-height:44px;padding-inline:var(--sp-3);font-size:var(--fs-12)}
 }
 

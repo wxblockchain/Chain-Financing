@@ -76,12 +76,25 @@
   function views(view, action) {
     return '<div class="mk-views" role="group" aria-label="'+L('Result layout','结果布局')+'">'+[['cards','grid','Cards','卡片'],['table','list','Table','表格']].map(x=>'<button type="button" data-act="'+action+'" data-v="'+x[0]+'" aria-pressed="'+(view===x[0])+'" title="'+L(x[2],x[3])+'" aria-label="'+L(x[2],x[3])+'">'+icon(x[1])+'</button>').join('')+'</div>';
   }
+  // Both marketplaces use the same filter → results toolbar → scroll area.
+  // Columns and domain actions stay in their owning modules.
+  function listFrame(options) {
+    return '<section class="card listzone mk-list-frame" data-view="'+E(options.view)+'" data-density="'+(CF.S.listFull?'full':'core')+'">'+
+      options.filters+'<div class="mk-result-head"><h2>'+icon('asset')+options.title+'</h2><div class="mk-result-tools">'+
+      views(options.view,options.viewAction)+options.tools+'</div></div>'+options.content+'</section>';
+  }
+  function syncListHead() {
+    const head=document.querySelector('#portal .portal-head');
+    if(head)document.documentElement.style.setProperty('--market-list-head',head.offsetHeight+'px');
+  }
+  window.addEventListener('resize',syncListHead);
+  if(document.fonts)document.fonts.ready.then(syncListHead);
   function distribution(title, parts, action, selected, suffix) {
     const total = parts.reduce((n,p)=>n+p.value,0);
     const summary = parts.map(p=>p.label+': '+CF.fmtAmt(p.value)+' '+(suffix||'')).join('; ');
     return '<section class="mk-distribution"><div class="mk-chart-head"><h2>'+icon('chart')+E(title)+'</h2><span>'+L('Current results','当前结果')+'</span></div><div class="mk-stackbar" role="img" aria-label="'+E(title+'. '+summary)+'">'+parts.map(p=>'<span data-tone="'+p.tone+'" style="flex-grow:'+Math.max(0,p.value)+'" title="'+E(p.label)+': '+(total?(p.value/total*100).toFixed(1):'0.0')+'%"></span>').join('')+'</div><div class="mk-legend">'+parts.map(p=>'<button type="button" data-act="'+action+'" data-v="'+p.key+'" aria-pressed="'+(selected===p.key)+'" aria-label="'+E(L('Filter: ','筛选：')+p.label)+'"><i data-tone="'+p.tone+'" aria-hidden="true"></i><span>'+E(p.label)+'</span><b class="mono">'+(total?(p.value/total*100).toFixed(1):'0.0')+'%</b></button>').join('')+'</div></section>';
   }
-  CF.market = {currency, amount, network, icon, views, distribution};
+  CF.market = {currency, amount, network, icon, views, listFrame, syncListHead, distribution};
 
   // Currency decoration is restricted to the rebuilt pages and their dialogs.
   // It only adds presentation to text, never changes input values or formatting.
@@ -92,6 +105,7 @@
     const active=/^#\/(assets|marketplace|project)(?:\/|\?|$)/.test(location.hash);
     document.documentElement.toggleAttribute('data-market-redesign',active);
     if (!active) return;
+    syncListHead();
     observer.disconnect();
     ['content','layers'].forEach(id=>{
       const root=document.getElementById(id);
