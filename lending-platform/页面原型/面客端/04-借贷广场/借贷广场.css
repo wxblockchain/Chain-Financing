@@ -912,10 +912,21 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-pick-row.held .cell-sub{display:block;color:var(--warn);font-size:var(--fs-11)}
 .ls-pledge-notice .ls-release-held{margin:0;padding:8px 10px;border-radius:var(--radius-xs);background:var(--warn-bg);color:var(--warn);font-size:var(--fs-12);line-height:1.6}
 /* 登录未绑定角色的项目详情：只有基本信息，其余以一块说明与申请入口代替。 */
-.ls-detail-basic .ls-meta{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-7);margin:var(--sp-4) 0 0}
-.ls-detail-basic .ls-meta dt{font-size:var(--fs-11);color:var(--faint);font-weight:600}
-.ls-detail-basic .ls-meta dd{margin:2px 0 0;font-size:var(--fs-13);color:var(--text)}
 .ls-funder-only{display:flex;flex-direction:column;align-items:center;gap:var(--sp-3);padding:var(--sp-7) var(--sp-6);text-align:center}
 .ls-funder-only h2{margin:0;font-size:var(--fs-16);color:var(--text)}
 .ls-funder-only-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent)}
 .ls-funder-only-ico svg{width:22px;height:22px}
+/* 项目信息与基本信息：与资产广场详情同一阅读方式——每组「标签 | 值」成对，桌面两栏等宽、标签 136px，窄屏上下排。 */
+[data-market-redesign] .ls-detail .mk-project-info-body.ls-facts,.ls-facts{display:grid;grid-template-columns:minmax(0,1fr);gap:0 var(--sp-6);margin:0;padding:var(--sp-1) var(--sp-4)}
+@media (min-width:1100px){[data-market-redesign] .ls-detail .mk-project-info-body.ls-facts,.ls-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-fact:nth-child(2){border-top:0}}
+.ls-fact{display:grid;grid-template-columns:136px minmax(0,1fr);gap:var(--sp-4);align-items:start;min-width:0;padding-block:var(--sp-3);border-top:1px solid var(--row-line)}
+.ls-fact:first-child{border-top:0}
+.ls-fact dt{font-size:var(--fs-12);font-weight:400;color:var(--muted);line-height:1.6}
+.ls-fact dd{margin:0;font-size:var(--fs-14);color:var(--text);line-height:1.6;min-width:0;overflow-wrap:anywhere}
+@media (max-width:600px){.ls-fact{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}}
+.ls-basic-card .card-head h2{font-size:var(--fs-14);font-weight:600;margin:0}
+.ls-project-id{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.ls-project-id .btn.icon{width:24px;height:24px;min-height:0}
+/* 项目信息卡按内容取高度，字段组不在卡内滚动；四个记录模块的固定高度不变。 */
+[data-market-redesign] .ls-workspace .ls-detail-main .mk-project-info.card{height:auto}
+[data-market-redesign] .ls-workspace .ls-detail-main .mk-project-info .mk-project-info-body.ls-facts{overflow:visible;flex:none}
