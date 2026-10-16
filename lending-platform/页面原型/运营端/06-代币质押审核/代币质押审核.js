@@ -44,7 +44,7 @@
   const authBusy=r=>['processing','unknown'].includes(authOf(r));
   /* 撤回解押中暂不可裁定（D-PR-40）：资产方已发起待审撤回、解押尚无结果，仍是待审核。 */
   const withdrawing=r=>r?.status==='pending'&&r.follow==='releasing';
-  const terminalProject=r=>A.projects[r?.project]?.status==='closed';
+  const terminalProject=r=>['closed','settled'].includes(A.projects[r?.project]?.status);
   const progressTag=r=>r?.status!=='pending'?'':withdrawing(r)?CF.tag('accent',L('Withdrawal in progress · cannot be decided','撤回解押处理中 · 暂不可裁定')):authOf(r)==='processing'?CF.tag('accent',L('Approval in progress','通过处理中')):authOf(r)==='unknown'?CF.tag('warn',L('Result to be verified','结果待核实')):'';
   const sourceText=r=>r?.source&&['approved','rejected'].includes(r.status)?txt(sources[r.source]):'';
   const ME=['Demo Operator','演示操作员'];
@@ -260,7 +260,7 @@
         if(e.signer)fields.push([L('Signed with','签名钱包'),proofValue(e.signer,L('address','地址'))+`<span class="pr-meta">${L('Platform wallet','平台统一钱包')}</span>`,true]);
         const files=e.files?.length?e.files.map(f=>E(f.name)).join('<br>')+'<br>'+link('View agreement files','查看协议文件','evidence',''):'';
         if(files)fields.push([L('Agreements','协议凭据'),files,true]);
-        const tone=({'Approved':'ok','Approval not completed':'danger','Approval result to be verified':'warn','Release succeeded':'ok','Rejected':'danger','Release failed':'danger',
+        const tone=({'Approved':'ok','Approval not completed':'danger','Approval result to be verified':'warn','Release succeeded':'ok','Rejected':'danger','Rejected by default at project end':'danger','Release failed':'danger',
           'Reconciliation discrepancy':'warn','Release result to be verified':'warn'})[e.title[0]]||'neutral';
         const occurred=e.at?`<time datetime="${E(new Date(e.at).toISOString())}">${time(e.at)}</time>`:`<span>${L('Time: to be verified','发生时间：待核实')}</span>`;
         const extra=e.text||e.next||fields.length;
@@ -287,7 +287,7 @@
     const overview=section('Application overview','申请概览',facts([
         [L('Asset holder','资产方'),E(owner(r))+`<span class="pr-meta mono">DEMO-ENTITY-${r.owner}</span>`],
         [L('Target project','目标项目'),E(project(r))+`<span class="pr-meta mono">${E(p.id)}</span>`],
-        [L('Project status','项目状态'),p.status==='closed'?L('Closed','已关闭')+`<span class="pr-meta">${L('Closure reason: ','关闭原因：')}${E(txt(p.closeReason))} · ${time(p.closedAt)}</span>`:L('Open · reviewed and deployed','可用 · 已通过审核并完成合约部署')],
+        [L('Project status','项目状态'),p.status==='settled'?L('Settled','已结清')+`<span class="pr-meta">${time(p.closedAt)}</span>`:p.status==='closed'?L('Closed','已关闭')+`<span class="pr-meta">${L('Closure reason: ','关闭原因：')}${E(txt(p.closeReason))} · ${time(p.closedAt)}</span>`:L('Open · reviewed and deployed','可用 · 已通过审核并完成合约部署')],
         [L('Application type','申请类型'),r.type==='first'?L('Initial pledge','首笔质押'):L('Additional pledge','追加质押')],
         [L('Submission batch','提交批次编号'),`<span class="mono">${E(r.batch)}</span>`],
         [L('Submitted','提交时间'),time(r.onchainAt)],
@@ -462,18 +462,27 @@
   }
   /* 所属项目进入终态（D-PR-41）：仍待审核的张由系统默认不通过，发送驳回通知，份额仍须资产方自助解押。
      通过处理中或通过结果待核实时项目不会进入终态。 */
-  function enterTerminal(key,quiet){
-    const p=A.projects[key];
-    if(!p||p.status==='closed')return false;
+  /* 终态与系统原因：已关闭（带出关闭原因：资产方主动关闭 / 有效期到期）或已结清。 */
+  const TERMINAL={
+    owner:{status:'closed',closeReason:['Closed by the asset holder','资产方主动关闭'],
+      reason:['The project has been closed, so this unreviewed pledge is rejected by default. Project closure reason: closed by the asset holder.','所属项目已关闭，未审核的质押默认不通过。项目关闭原因：资产方主动关闭。']},
+    expiry:{status:'closed',closeReason:['Valid-until date reached','有效期到期'],
+      reason:['The project has been closed, so this unreviewed pledge is rejected by default. Project closure reason: valid-until date reached.','所属项目已关闭，未审核的质押默认不通过。项目关闭原因：有效期到期。']},
+    settled:{status:'settled',closeReason:null,
+      reason:['The project has been settled, so this unreviewed pledge is rejected by default.','所属项目已结清，未审核的质押默认不通过。']}
+  };
+  function enterTerminal(key,quiet,kind='owner'){
+    const p=A.projects[key],T=TERMINAL[kind]||TERMINAL.owner;
+    if(!p||['closed','settled'].includes(p.status))return false;
     const open=A.rows.filter(x=>x.project===key&&x.status==='pending');
     if(open.some(authBusy)){if(!quiet)CF.toast(L('This project still has an approval being executed on chain, so it cannot reach a final state yet.','本项目仍有通过处理中或结果待核实的链上操作，暂不会进入终态。'));return false;}
-    p.status='closed';p.closedAt=now();p.closeReason=['Closed by the asset holder','资产方主动关闭'];
-    const reason=['The project has been closed, so this unreviewed pledge is rejected by default. Project closure reason: closed by the asset holder.','所属项目已关闭，未审核的质押默认不通过。项目关闭原因：资产方主动关闭。'];
+    p.status=T.status;p.closedAt=now();p.closeReason=T.closeReason;
+    const reason=T.reason;
     open.forEach(x=>{
       x.status='rejected';x.source='terminal';x.decisionAt=p.closedAt;x.operator=['System','系统'];x.reviewId=x.id.replace('PR','RV');
       x.reason=reason;x.category='';x.remark='';x.files=[];
       if(x.follow!=='releasing')x.follow='awaiting-release';
-      event(x,['Rejected by default on project closure','项目终态默认不通过'],['Pending review → Rejected','待审核 → 驳回'],
+      event(x,['Rejected by default at project end','项目终态默认不通过'],['Pending review → Rejected','待审核 → 驳回'],
         {actor:['System','系统'],text:reason,
          next:['The rejection notice was sent to the asset holder with this reason. The share stays in the pledge contract until the asset holder releases it.','已向资产方发送质押审核驳回通知，原因同上。份额仍在合约内，由资产方自助解押取回。']});
       A.events.push({id:x.id,event:L('rejected by default · rejection notice sent','项目终态默认不通过 · 已发送驳回通知')});
@@ -583,7 +592,7 @@
       <h4>${L('Delivered account configuration','交付的账号配置')}</h4><div class="pr-demo-actions">${b('Administrator','运营管理员','grant','admin')}${b('Later role · no pledge access','后期角色 · 未开通本模块','grant','none')}${b('Later role · query only','后期角色 · 仅开通申请查询','grant','query')}${b('Later role · decision only','后期角色 · 仅开通审核处置','grant','decide')}${b('Later role · query + decision','后期角色 · 查询＋处置','grant','full')}</div>
       <div class="pr-demo">${field(L('Page state','页面状态'),select('pr-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','空数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}${field(L('Submit response','提交反馈'),select('pr-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['unknown',L('Uncertain result','结果待确认')],['concurrent',L('Another reviewer wins','同张已被他人裁定')],['withdraw',L('Asset holder’s withdrawal takes effect first','资产方撤回先于本次提交生效')],['terminal',L('Project reaches a final state first','所属项目先进入终态')]]))}${field(L('Upload response','上传反馈'),select('pr-upload-state',A.upload,[['success',L('Success','成功')],['fail',L('Failure','失败')]]))}${field(L('Attachment response','附件反馈'),select('pr-preview-state',A.preview,[['success',L('Success','成功')],['fail',L('Preview fails','预览失败')],['missing',L('File unavailable','文件不可得')],['unsupported',L('Preview unsupported','不支持预览')],['downloadfail',L('Download fails','下载失败')]]))}${field(L('Activity state','操作记录状态'),select('pr-activity-state',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','加载失败')]]))}</div>
       <h4>${L('Approval on-chain write-back','通过的链上执行回写')}</h4><div class="pr-demo-actions">${b('Execution succeeds','链上执行成功','auth-success','','',!r||!authBusy(r))}${b('Execution fails','链上执行失败','auth-failed','','',!r||!authBusy(r))}${b('Result to be verified','结果待核实','auth-unknown','','',!r||authOf(r)!=='processing')}${b('Asset holder withdraws','资产方发起撤回','holder-withdraw','','',!r||r.status!=='pending'||withdrawing(r))}</div>
-      <h4>${L('Project state','所属项目状态')}</h4><div class="pr-demo-actions">${b('Project is closed','所属项目进入终态（已关闭）','project-terminal','','',!r||terminalProject(r))}</div>
+      <h4>${L('Project state','所属项目状态')}</h4><div class="pr-demo-actions">${b('Closed by the asset holder','所属项目已关闭 · 资产方主动关闭','project-terminal','owner','',!r||terminalProject(r))+b('Closed on expiry','所属项目已关闭 · 有效期到期','project-terminal','expiry','',!r||terminalProject(r))+b('Project settled','所属项目已结清','project-terminal','settled','',!r||terminalProject(r))}</div>
       <h4>${L('On-chain events for this application','本张链上事件')}</h4><div class="pr-demo-actions">${b('Asset holder initiates the release','资产方发起自助解押','release-start','','',!r||!['awaiting-release'].includes(r.follow))}${b('Release succeeds','解押成功回写','release-success','','',!r||r.follow!=='releasing'||r.flag==='difference')}${b('Release fails','解押失败回写','release-fail','','',!r||r.follow!=='releasing'||r.flag==='difference')}${b('Release result unknown','解押结果待核实','release-unknown','','',!r||r.follow!=='releasing'||!!r.flag)}${b('Delayed conflicting result','接收迟到冲突结果','late-conflict','','',!r||r.flag!=='verify')}${b('Expire operations session','运营登录失效','expire-session')}${b('Replay latest event','重放最新事件','replay-event','','',!r)}${b('Reset demonstration','重置演示','restart')}</div>
       <h4>${L('Outcome events','结果事件')}</h4><p class="pr-meta">${A.events.map(e=>E(e.id+' · '+e.event)).join('<br>')||L('None','暂无')}</p>`;
   }
@@ -640,7 +649,7 @@
       if(authBusy(r)){CF.toast(L('The asset holder’s withdrawal was refused: the approval is in progress. Nothing changed.','资产方撤回被拒：本张通过处理中，暂不可撤回，审核状态与本张均未变化。'));return true;}
       startWithdrawal(r);CF.render();
     }
-    else if(act==='project-terminal'){const r=row();if(r&&enterTerminal(r.project))CF.render();}
+    else if(act==='project-terminal'){const r=row();if(r&&enterTerminal(r.project,false,v||'owner'))CF.render();}
     else if(act==='confirm'){
       if(!canWrite(row()))deny();
       else if(validate()){if(A.draft.mode==='approve')submit();else open('confirm');}

@@ -146,7 +146,8 @@
     if(p.demands.some(d=>d.state==='quoted'))out.push('quoted');
     if(p.demands.some(d=>d.state==='funding'))out.push('funding');
     if(p.balance>0||CF.L8?.hasUnsettled?.(p))out.push('unsettled');
-    if(D.executions.some(e=>e.project===p.id&&e.state==='processing')||D.tokens.some(t=>(t.pool===p.id||t.releasedFrom===p.id)&&t.pending))out.push('processing');
+    /* 运营已提交通过、链上执行未回写的待审张也是处理中的链上操作：项目此时不会进入终态。 */
+    if(D.executions.some(e=>e.project===p.id&&e.state==='processing')||D.tokens.some(t=>(t.pool===p.id||t.releasedFrom===p.id)&&t.pending)||D.applications.some(a=>a.project===p.id&&a.state==='review'&&a.authorizing))out.push('processing');
     return out;
   };
   /* 到期自动终结（Q-LS-22）：到期且没有未处理完成的业务时终结——有过成交的转已结清，从未成交的转已关闭（有效期到期）；两者都整池释放。
@@ -164,7 +165,12 @@
   };
   /* 终态整池释放：已通过审核的份额转为已释放待提取；仍待审核的按默认不通过处理，留在合约内由资产方自助解押。 */
   D.releasePool = p => {
-    D.applications.filter(a=>a.project===p.id&&a.state==='review').forEach(a=>{a.state=a.reviewState='rejected';a.reason='projectEnded';a.decided=D.iso();a.reviewer=['System','系统'];});
+    /* 项目终态时仍待审的张默认不通过（系统结论）：原因写明已关闭（带出关闭原因）或已结清，并发送质押审核驳回通知。 */
+    const closeWhy=p.closeReason==='expiry'?['valid-until date reached','有效期到期']:['closed by the asset holder','资产方主动关闭'];
+    const terminalWhy=p.state==='settled'
+      ?['The project has been settled, so this unreviewed pledge is rejected by default.','所属项目已结清，未审核的质押默认不通过。']
+      :['The project has been closed, so this unreviewed pledge is rejected by default. Project closure reason: '+closeWhy[0]+'.','所属项目已关闭，未审核的质押默认不通过。项目关闭原因：'+closeWhy[1]+'。'];
+    D.applications.filter(a=>a.project===p.id&&a.state==='review').forEach(a=>{a.state=a.reviewState='rejected';a.source='terminal';a.reason='terminal';a.reasonText=terminalWhy;a.decided=D.iso();a.reviewer=['System','系统'];a.authorizing=false;D.log(p,'rejected',a.id);});
     D.tokens.filter(t=>t.pool===p.id&&t.pledge==='pledged'&&!t.pending&&D.appOf(p,t)?.state!=='rejected').forEach(t=>{t.pool=null;t.pledge='released';t.releasedFrom=p.id;});
     D.applications.filter(a=>a.project===p.id&&a.state==='approved').forEach(a=>{a.state='void';a.reason='closed';a.finished=D.iso();D.releaseApplication(a);});
     D.log(p,'businessRelease');
@@ -273,7 +279,7 @@
         D.applications.push(a2);t.application=a2.id;D.log(p,'onChain',a2.id);
       }
       else {t.pledge='free';t.pool=null;}
-    }else if(result==='success'){const a3=D.appOf(p,t);if(a3&&['review','rejected'].includes(a3.state)){a3.state='withdrawn';a3.reviewState='withdrawn';a3.finished=D.iso();}t.pledge='free';t.pool=null;t.releasedFrom=null;t.application=null;}
+    }else if(result==='success'){const a3=D.appOf(p,t);if(a3&&['review','rejected'].includes(a3.state)&&a3.source!=='terminal'){a3.state='withdrawn';a3.reviewState='withdrawn';a3.finished=D.iso();}t.pledge='free';t.pool=null;t.releasedFrom=null;t.application=null;}
     /* 终态时转出失败：关闭时因处理中未随整池释放的已通过份额补记为已释放待提取；被默认不通过的已驳回份额仍待自助解押。 */
     else if(D.terminal(p)&&t.pledge==='pledged'&&D.appOf(p,t)?.state!=='rejected'){t.pledge='released';t.pool=null;t.releasedFrom=p.id;}
     D.log(p,result==='success'?'executionSuccess':'executionFailed',e.id);D.recompute(p);D.save();

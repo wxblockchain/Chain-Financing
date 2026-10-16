@@ -152,7 +152,7 @@
            ?['Executed on chain, so the share is unfrozen. Moved out of the pledged pending review and counted in the eligible pledged value; the eligible borrowing limit has been recalculated. No platform fee.','链上执行成功（即解冻成功），已从待审质押额转出并计入有效质押价值，有效质押额随之重算；未产生平台费用。']
            :['Moved out of the pledged pending review. The lending platform found the underlying asset invalid, so the token is not counted in the eligible pledged value; the approval stands.','已从待审质押额转出。借贷平台判定底层资产已失效，该张未计入有效质押价值，审核结论仍为通过。']});
 
-      if(r.status==='rejected'&&r.source==='terminal')push('terminal',r.decisionAt,['Rejected by default on project closure','项目终态默认不通过'],
+      if(r.status==='rejected'&&r.source==='terminal')push('terminal',r.decisionAt,['Rejected by default at project end','项目终态默认不通过'],
         ['Pending review → Rejected','待审核 → 驳回'],
         {actor:SYSTEM,text:r.reason,
          next:['The rejection notice was sent to the asset holder with this reason. The share stays in the pledge contract until the asset holder releases it.','已向资产方发送质押审核驳回通知，原因同上。份额仍在合约内，由资产方自助解押取回。']});
