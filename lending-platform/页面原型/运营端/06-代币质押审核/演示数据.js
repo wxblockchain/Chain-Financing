@@ -1,6 +1,7 @@
 /* Demonstration fixtures only. No requests, signatures, transfers or real business data.
    链路：资产方以持有地址签名把代币转入质押合约 → 上链成功才形成一笔待审申请 →
-   运营逐笔审核（无时效）→ 驳回或待审撤回后由资产方自助解押。 */
+   运营逐张审核（无时效）→ 驳回或待审撤回后由资产方自助解押。
+   一张＝本企业一个持有地址上某笔代币的全部数量（质押份额）；同一提交批次的份额来自同一持有地址。 */
 (function(CF){
   const OPERATOR_LIN=['Demo operator Lin','示例审核员林'];
   const OPERATOR_CHEN=['Demo operator Chen','示例审核员陈'];
@@ -18,10 +19,10 @@
       rows.push(Object.assign({
         id:'DEMO-PR-'+n,token:'DEMO-TK-'+n,batch:'PA-DEMO-001',owner:'A',project:'01',type:'first',
         value:180000,tokenCcy:'DEMOTK',term:90,buyer:'DEMO-BUYER-1',valid:true,
-        chain:'ETH',contract:addr('C001'),holder:addr('A'+n),proof:proof(n+'1'),gas:0.0021,gasCcy:'ETH',
+        chain:'ETH',contract:addr('C001'),holder:null,proof:proof(n+'1'),gas:0.0021,gasCcy:'ETH',
         onchainAt:now-6*H,status:'pending',follow:'pending',flag:'',
         decisionAt:null,operator:null,reviewId:null,reason:'',category:'',remark:'',files:[],snapshot:null,
-        effective:true,release:null,previous:null
+        effective:true,excluded:null,source:null,release:null,previous:null
       },o));
       return rows[rows.length-1];
     }
@@ -38,12 +39,13 @@
     /* 待审期间资产方自行撤回并解押成功 → 已撤回，无人工结论。 */
     add({token:'DEMO-TK-004',batch:'PA-DEMO-002',type:'add',onchainAt:now-5*D,status:'withdrawn',follow:'released',
       value:150000,proof:proof('041'),
-      release:{startedAt:now-4*D,completedAt:now-4*D+900000,gas:0.0018,gasCcy:'ETH',proof:proof('042'),result:'success'}});
+      release:{kind:'withdraw',startedAt:now-4*D,completedAt:now-4*D+900000,gas:0.0018,gasCcy:'ETH',proof:proof('042'),result:'success'}});
 
     /* 通过但底层资产已失效：审核通过是计入有效质押价值的必要条件而非充分条件（D-PR-15）。 */
     add({token:'DEMO-TK-005',batch:'PA-DEMO-003',owner:'B',project:'02',onchainAt:now-2*D,status:'approved',
       follow:'effective',decisionAt:now-26*H,operator:OPERATOR_LIN,files:agreement(),snapshot:210000,
-      value:210000,buyer:'DEMO-BUYER-2',valid:false,effective:false,proof:proof('051')});
+      value:210000,buyer:'DEMO-BUYER-2',valid:false,effective:false,follow:'excluded',
+      excluded:['The token is invalid','代币已失效'],proof:proof('051')});
     /* 驳回后资产方已发起自助解押，尚无结果。 */
     add({token:'DEMO-TK-006',batch:'PA-DEMO-003',owner:'B',project:'02',onchainAt:now-2*D,status:'rejected',
       follow:'releasing',decisionAt:now-25*H,operator:OPERATOR_LIN,category:'0',value:88000,
@@ -83,7 +85,6 @@
       add({token:'DEMO-TK-'+String(i).padStart(3,'0'),batch:'PA-DEMO-'+String(group).padStart(3,'0'),
         owner,project,type:i%4?'add':'first',value:95000+i*4500,
         term:[60,90,120][i%3],buyer:'DEMO-BUYER-'+(i%3+1),onchainAt:now-(2+i)*H,proof:proof(String(i)+'1'),
-        holder:addr('A'+String(i).padStart(3,'0')),
         status:decided?'approved':'pending',follow:decided?'effective':'pending',
         decisionAt:decided?now-(1+i%5)*H:null,operator:decided?OPERATOR_LIN:null,
         files:decided?agreement():[],snapshot:decided?95000+i*4500:null});
@@ -98,7 +99,30 @@
     add({token:'DEMO-TK-038',batch:'PA-DEMO-020',owner:'A',project:'01',type:'add',onchainAt:now-30*H,value:118000,proof:proof('381'),
       auth:'processing',authDraft:{files:agreement(),remark:''},authSignedAt:now-25*60000,authProof:proof('382')});
 
+    /* 同一笔代币在两个持有地址上各算一张，互不合并。 */
+    add({token:'DEMO-TK-012',batch:'PA-DEMO-021',owner:'A',project:'02',type:'add',onchainAt:now-8*H,value:61000,
+      holder:addr('B021'),proof:proof('391')});
+    /* 待审撤回已发起、解押尚无结果：仍是待审核，暂不可裁定（D-PR-40）。 */
+    add({token:'DEMO-TK-040',batch:'PA-DEMO-022',owner:'A',project:'01',type:'add',onchainAt:now-20*H,value:99000,
+      follow:'releasing',proof:proof('401'),
+      release:{kind:'withdraw',startedAt:now-40*60000,completedAt:null,gas:0.0014,gasCcy:'ETH',proof:null,result:'processing'}});
+    /* 所属项目 03 已进入终态：仍待审核的张由系统默认不通过（D-PR-41），份额仍须资产方自助解押。 */
+    const closedAt=now-2*D;
+    const terminalReason=['The project has been closed, so this unreviewed pledge is rejected by default. Project closure reason: closed by the asset holder.',
+      '所属项目已关闭，未审核的质押默认不通过。项目关闭原因：资产方主动关闭。'];
+    add({token:'DEMO-TK-041',batch:'PA-DEMO-023',owner:'B',project:'03',type:'first',onchainAt:now-9*D,value:128000,
+      status:'approved',follow:'effective',decisionAt:now-8*D,operator:OPERATOR_LIN,files:agreement(),snapshot:128000,proof:proof('411')});
+    add({token:'DEMO-TK-042',batch:'PA-DEMO-023',owner:'B',project:'03',type:'first',onchainAt:now-9*D,value:87000,
+      status:'rejected',source:'terminal',follow:'awaiting-release',decisionAt:closedAt,operator:SYSTEM,reason:terminalReason,proof:proof('421')});
+    add({token:'DEMO-TK-043',batch:'PA-DEMO-023',owner:'B',project:'03',type:'first',onchainAt:now-9*D,value:93000,
+      status:'rejected',source:'terminal',follow:'releasing',decisionAt:closedAt,operator:SYSTEM,reason:terminalReason,proof:proof('431'),
+      release:{kind:'withdraw',startedAt:closedAt-3*H,completedAt:null,gas:0.0013,gasCcy:'ETH',proof:null,result:'processing'}});
+
+    const batchHolder={};
     rows.forEach(r=>{
+      /* 同一批次共用一个持有地址；单独指定的保留。 */
+      if(!r.holder)r.holder=batchHolder[r.batch]||(batchHolder[r.batch]=addr('H'+r.batch.slice(-3)));
+      if(r.decisionAt&&!r.source)r.source='manual';
       /* 数量按代币符号计，与 USD 代币价值是两个量，不互相顶替。 */
       r.amount=r.value==null?null:Math.round(r.value/75);
       if(r.decisionAt)r.reviewId=r.id.replace('PR','RV');
@@ -128,14 +152,21 @@
            ?['Executed on chain, so the share is unfrozen. Moved out of the pledged pending review and counted in the eligible pledged value; the eligible borrowing limit has been recalculated. No platform fee.','链上执行成功（即解冻成功），已从待审质押额转出并计入有效质押价值，有效质押额随之重算；未产生平台费用。']
            :['Moved out of the pledged pending review. The lending platform found the underlying asset invalid, so the token is not counted in the eligible pledged value; the approval stands.','已从待审质押额转出。借贷平台判定底层资产已失效，该张未计入有效质押价值，审核结论仍为通过。']});
 
-      if(r.status==='rejected')push('review',r.decisionAt,['Rejected','审核驳回'],
+      if(r.status==='rejected'&&r.source==='terminal')push('terminal',r.decisionAt,['Rejected by default on project closure','项目终态默认不通过'],
+        ['Pending review → Rejected','待审核 → 驳回'],
+        {actor:SYSTEM,text:r.reason,
+         next:['The rejection notice was sent to the asset holder with this reason. The share stays in the pledge contract until the asset holder releases it.','已向资产方发送质押审核驳回通知，原因同上。份额仍在合约内，由资产方自助解押取回。']});
+      if(r.status==='rejected'&&r.source!=='terminal')push('review',r.decisionAt,['Rejected','审核驳回'],
         ['Pending review → Rejected','待审核 → 驳回'],
         {actor:r.operator,text:r.reason,
          next:['The token stays in the pledge contract and is counted in the released-pending part of the pledged pending review. The asset holder releases it and bears the gas.','代币仍在质押合约内，计入待审质押额的已驳回分项；由资产方自助解押，gas 自担。']});
 
       const rel=r.release;
       if(rel){
-        push('release-start',rel.startedAt,['Self-service release initiated','自助解押已发起'],
+        if(rel.kind==='withdraw')push('release-start',rel.startedAt,['Withdrawal initiated','待审撤回发起'],
+          ['Pending review · withdrawal in progress','待审核 · 撤回解押处理中'],{actor:HOLDER,chain:true,gas:rel.gas,gasCcy:rel.gasCcy,proof:null,
+           text:['The asset holder is releasing this share while it is still pending. It cannot be decided until the release has a result.','资产方在待审期间自助解押取回本张；解押有结果前暂不可裁定。']});
+        else push('release-start',rel.startedAt,['Self-service release initiated','自助解押已发起'],
           ['Release in progress','解押处理中'],{actor:HOLDER,chain:true,gas:rel.gas,gasCcy:rel.gasCcy,proof:null,
            text:['Initiated by the asset holder with the holding address. Operations cannot initiate, retry or cancel it.','由资产方以持有地址签名发起，运营端无发起、重试或撤销入口。']});
         if(rel.result==='success')push('release-done',rel.completedAt,['Release succeeded','解押成功'],
@@ -161,7 +192,9 @@
 
     const projects={
       '01':{id:'DEMO-PJ-01',ratio:0.7,termMonths:9,createdAt:now-60*D,status:'open'},
-      '02':{id:'DEMO-PJ-02',ratio:0.65,termMonths:12,createdAt:now-120*D,status:'open'}
+      '02':{id:'DEMO-PJ-02',ratio:0.65,termMonths:12,createdAt:now-120*D,status:'open'},
+      '03':{id:'DEMO-PJ-03',ratio:0.6,termMonths:6,createdAt:now-90*D,status:'closed',closedAt,
+        closeReason:['Closed by the asset holder','资产方主动关闭']}
     };
     return {now,rows,projects};
   };
