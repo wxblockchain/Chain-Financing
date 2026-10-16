@@ -163,8 +163,8 @@
           '你方机构 {institution_name} 的融资申请 {demand_id}、融资业务 {business_id}、放款 {disbursement_id}，第 {installment_no} 期（计划 {schedule_id}）已于 {confirmed_at} 确认收到还款；全部期次已结清，本笔业务于 {settled_at} 结清。本笔未偿本金及对应项目融资余额、授信占用额已归零，不代表其他业务占用归零。请查看本笔结果及项目质押状态；项目业务释放须满足项目关闭或结清条件，已释放代币仍需资产方从「解除质押—提取已释放」入口自行提取并自付 gas，不代表已回到钱包。')},
       'verification.asset.revoked':{
         title:pair('Verification status changed','实名认证状态已变更'),
-        body:pair('Your verification status changed. At the time of this change, access to submitting financing applications became unavailable. You can still browse the platform. Visit the token issuance platform to check your current verification status.',
-          '你的实名认证状态已变更，本次变更使发起融资申请权限暂不可用。你仍可浏览平台。请前往代币发行平台查看当前认证状态。')},
+        body:pair('Your verification status changed. At the time of this change, access to submitting financing applications became unavailable. You can still browse the platform. Visit the Asset Trust Platform to check your current verification status.',
+          '你的实名认证状态已变更，本次变更使发起融资申请权限暂不可用。你仍可浏览平台。请前往资产可信平台查看当前认证状态。')},
       'verification.funder.approved':{
         title:pair('Institution verification approved','机构认证审核通过'),
         body:pair('The institution details submitted for application {application_number} at {submitted_time} were approved at {reviewed_time}. View the record of this review. Your current verification status and available actions are shown on the verification results page.',
@@ -444,7 +444,9 @@
     D.rows=D.rows.filter(r=>!Number.isFinite(Date.parse(r.at))||Date.parse(r.at)<=until);
     /* 每 7 条留 1 条已读，其余未读；本地已读记录载入后覆盖该初值。 */
     D.rows.forEach((r,i)=>{if(r.read===undefined)r.read=i%7===6;});
-    D.rows.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+    /* 列表按消息创建时间从新到旧；at 是业务发生时间，只用于展示。预置消息按发生即送达处理，创建时间取发生时间。 */
+    D.rows.forEach(r=>{if(!r.created)r.created=r.at;});
+    D.rows.sort((a,b)=>String(b.created).localeCompare(String(a.created)));
     return D;
   };
   /* 演示投递：同一收件人的同一事实只保留一条，新事实追加为未读。 */
@@ -453,7 +455,7 @@
     const fact=[row.owner,row.biz,row.objectId||'',row.period||'',row.at].join('|');
     const same=D.rows.find(r=>r.fact===fact);
     if(same)return {added:false,row:same};
-    const fresh={...row,id:'nc-'+row.owner+'-live-'+(++serial),fact,read:false};
+    const fresh={...row,created:row.created||new Date().toISOString(),id:'nc-'+row.owner+'-live-'+(++serial),fact,read:false};
     D.rows.unshift(fresh);
     return {added:true,row:fresh};
   };

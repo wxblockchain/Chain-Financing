@@ -50,7 +50,11 @@
   N.visible = function () {
     return N.allowed() ? N.rows.filter(function (r) {
       return r.platform === "lending" && r.end === "asset" && r.owner === S.role;
-    }).sort(function (a,b) { return b.at.localeCompare(a.at) || b.id.localeCompare(a.id); }) : [];
+    }).sort(function (a,b) {
+      /* 按消息创建时间从新到旧；at 是业务发生时间，只用于展示。 */
+      var x = b.created || b.at, y = a.created || a.at;
+      return x.localeCompare(y) || b.id.localeCompare(a.id);
+    }) : [];
   };
   N.expired = function (r) { return !!r.expires && Date.parse(r.expires) <= Date.now(); };
   N.unread = function () { return N.visible().filter(function (r) { return !r.read && !N.expired(r); }).length; };

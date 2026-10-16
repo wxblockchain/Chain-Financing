@@ -242,7 +242,7 @@
       action('reset','Reset demo','重置演示')+action('new','Add a new business type','追加新业务类型')+action('empty','Empty inbox','空消息池')+
       action('many','99+ unread','99+ 未读')+action('panel-loading','Panel loading','面板加载中')+action('panel-error','Panel failure','面板失败')+
       action('more-fail','Next load fails','下次加载更多失败')+action('read-fail','Next read fails','下次已读操作失败')+action('refresh-fail','Refresh fails','刷新失败保留角标')+
-      action('refresh','Refresh now','立即刷新')+action('arrive','A new message arrives','新消息到达')+action('duplicate','Same fact delivered again','同一事实重复送达')+action('expire','Expire session','会话失效')+action('detail-fail','Detail request fails','详情请求失败')+
+      action('refresh','Refresh now','立即刷新')+action('arrive','A new message arrives','新消息到达')+action('late','Late time-triggered message','到点消息晚到')+action('duplicate','Same fact delivered again','同一事实重复送达')+action('expire','Expire session','会话失效')+action('detail-fail','Detail request fails','详情请求失败')+
       action('normal','Valid deep link','正常深链')+action('plan','Schedule comparison','逐期对照消息')+action('degraded','Degraded content','内容降级消息')+
       action('unavailable','Unavailable target','目标不可访问')+action('superseded','Action no longer applies','原动作已不适用')+
       action('guest','Signed-out deep link','未登录深链')+action('denied','Restricted deep link','无权限深链')+action('unknown','Unknown deep link','未知深链')+
@@ -302,11 +302,13 @@
       if(act==='nc-demo'){
         if(v==='reset'){Object.assign(D,JSON.parse(snapshotData));N.rows=D.rows;try{localStorage.removeItem(storageKey);}catch(e){}resetView();S.role='asset';S.st='default';N.panelState='default';refreshFail=failRead=failMore=detailFailure=readError=landingDenied=false;location.hash='#/notifications';}
         if(v==='new'){D.addType();N.rows=D.rows;newMessages();}
-        if(v==='arrive'||v==='duplicate'){
+        if(v==='arrive'||v==='late'||v==='duplicate'){
           const pool=N.visible().filter(r=>r.business&&!String(r.id).startsWith('nc-fixture'));
-          const src=v==='arrive'?pool[0]:pool.find(r=>r.read)||pool[0];
+          const src=v==='arrive'?pool[0]:v==='late'?pool.find(r=>r.category==='reminder')||pool[0]:pool.find(r=>r.read)||pool[0];
           if(src){
-            const sample=v==='arrive'?{...src,at:new Date().toISOString(),fact:null}:{...src};
+            /* 到点消息晚到：业务发生在 5 分钟前，消息此刻才创建；按创建时间排在最前，展示的仍是发生时间。 */
+            const late=new Date(Date.now()-5*60000).toISOString();
+            const sample=v==='arrive'?{...src,at:new Date().toISOString(),created:null,fact:null}:v==='late'?{...src,at:late,created:null,fact:null}:{...src};
             const result=D.deliver(sample);N.rows=D.rows;
             if(result.added)newMessages();
             CF.toast(result.added?L('A new message arrived — demo.','新消息已到达 —— 演示。'):L('Already received — no new message, order and read state unchanged.','同一事实已收到：未新增消息，顺序与已读状态不变。'));

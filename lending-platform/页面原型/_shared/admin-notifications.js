@@ -12,7 +12,7 @@
   const identity=()=>CF.AdminMenu.identity().email;
   const allowed=()=>CF.AdminMenu.can(12)&&!N.blocked;
   const expired=r=>!!r.expires&&Date.parse(r.expires)<=Date.now();
-  const visible=()=>allowed()?(provider.visible?provider.visible():records.filter(r=>r.platform==='lending'&&r.end==='admin'&&(!r.owner||r.owner===identity())).sort((a,b)=>b.at.localeCompare(a.at)||b.id.localeCompare(a.id))):[];
+  const visible=()=>allowed()?(provider.visible?provider.visible():records.filter(r=>r.platform==='lending'&&r.end==='admin'&&(!r.owner||r.owner===identity())).sort((a,b)=>(b.created||b.at).localeCompare(a.created||a.at)||b.id.localeCompare(a.id))):[];
   const isRead=r=>r.initialRead||Date.parse(r.at)<Date.parse('2026-09-18T02:00:00Z')||read(READ+identity()+'.'+r.id)==='read';
   const unread=()=>visible().filter(r=>!expired(r)&&!isRead(r));
   const text=o=>o?(o[S.lang]||o.en||''):'';
