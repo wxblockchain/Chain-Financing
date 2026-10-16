@@ -12,16 +12,10 @@
 .review-wrap .rv-reject-btn{color:var(--danger);border-color:var(--danger-border);background:var(--card)}
 .review-wrap .rv-reject-btn:hover{background:var(--danger-bg);border-color:var(--danger)}
 .review-wrap .rv-review-records{margin-top:var(--sp-5)}
-.review-wrap .rv-stack{gap:var(--sp-5);min-width:0;container:rv-facts / inline-size}
+.review-wrap .rv-stack{gap:var(--sp-5);min-width:0}
 .review-wrap .rv-section-head{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);padding:var(--sp-4) var(--card-pad);border-bottom:1px solid var(--border)}
 .review-wrap h2{font-size:var(--ui-section-title);font-weight:600;line-height:1.5;margin:0}
-.review-wrap .card-b:has(>.rv-kv){padding-block:var(--sp-2)}
-.review-wrap .rv-kv{display:grid;grid-template-columns:minmax(0,1fr);gap:0 var(--sp-6);margin:0}
-.review-wrap .rv-kv>div{display:grid;grid-template-columns:136px minmax(0,1fr);gap:var(--sp-4);align-items:start;min-width:0;padding:var(--sp-3) 0;border-top:1px solid var(--row-line)}
-.review-wrap .rv-kv>div:first-child{border-top:0}
-.review-wrap .rv-kv .rv-wide{grid-column:1/-1}
-.review-wrap dt{font-size:var(--ui-field-label);color:var(--muted);margin:0;line-height:1.6}
-.review-wrap dd{margin:0;font-size:var(--ui-field-value);line-height:1.6;overflow-wrap:anywhere}
+.review-wrap .card-b:has(>.ops-facts-region){padding-block:var(--sp-2)}
 .review-wrap .rv-meta{font-size:var(--ui-field-label);color:var(--muted);line-height:1.6}
 .review-wrap .rv-entity-name{font-weight:500;color:var(--text)}
 .review-wrap .rv-table{table-layout:fixed;width:100%}
@@ -61,14 +55,6 @@
 .review-prototype .rv-demo{border-top:1px solid var(--border);padding-top:var(--sp-4);margin-top:var(--sp-4)}
 .review-prototype .rv-demo .btn{margin-bottom:var(--sp-2)}
 .review-prototype .rv-demo label{display:block;margin:var(--sp-3) 0 var(--sp-2)}
-/* Match the customer fact rows by available content width, accounting for the review rail. */
-@container rv-facts (min-width:810px){
-  .review-wrap .rv-kv{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .review-wrap .rv-kv>div:nth-child(2){border-top:0}
-}
-@container rv-facts (max-width:480px){
-  .review-wrap .rv-kv>div{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
-}
 @media(max-width:1200px){
   .review-wrap .rv-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
   .review-wrap .rv-filters .acts{grid-column:1/-1;justify-content:flex-end}

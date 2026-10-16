@@ -1098,6 +1098,31 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 [data-end="asset"] .mc-chapters{border:0;border-bottom:1px solid var(--border);border-radius:0;box-shadow:none;background:var(--bg);padding-inline:0;gap:var(--sp-5)}
 [data-end="asset"] .mc-chapters button{font-size:var(--ui-field-label);min-height:44px;border-bottom-width:2px}
 
+/* Operations detail facts: explicit opt-in; forms, timelines and dialogs keep their own layout.
+   Query the padded content width: 762 + 48 = the approved 810px review main column. */
+[data-end="admin"] .ops-facts-region{container:ops-facts / inline-size;min-width:0}
+[data-end="admin"] .ops-facts-region>.ops-facts{display:grid;grid-template-columns:minmax(0,1fr);gap:0 var(--sp-6);margin:0;padding:0}
+[data-end="admin"] .ops-facts-region>.ops-facts>div{display:grid;grid-template-columns:136px minmax(0,1fr);gap:var(--sp-4);align-items:start;min-width:0;padding:var(--sp-3) 0;border:0;border-top:1px solid var(--row-line)}
+[data-end="admin"] .ops-facts-region>.ops-facts>div:first-child{border-top:0}
+[data-end="admin"] .ops-facts-region>.ops-facts>.ops-fact-wide{grid-column:1/-1}
+[data-end="admin"] .ops-facts-region>.ops-facts dt{margin:0;color:var(--muted);font-size:var(--ui-field-label);font-weight:400;line-height:1.6;overflow-wrap:anywhere}
+[data-end="admin"] .ops-facts-region>.ops-facts dd{margin:0;min-width:0;font-size:var(--ui-field-value);line-height:1.6;overflow-wrap:anywhere}
+[data-end="admin"] .ops-facts-region>.ops-facts-actions>div{grid-template-columns:136px minmax(0,1fr) auto}
+[data-end="admin"] .ops-facts-body{padding:var(--sp-2) var(--card-pad)}
+@container ops-facts (min-width:762px){
+  [data-end="admin"] .ops-facts-region>.ops-facts:not(.ops-facts-single){grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-end="admin"] .ops-facts-region>.ops-facts:not(.ops-facts-single)>div:first-child:not(.ops-fact-wide)+div:not(.ops-fact-wide){border-top:0}
+}
+@container ops-facts (max-width:432px){
+  [data-end="admin"] .ops-facts-region>.ops-facts>div{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
+  [data-end="admin"] .ops-facts-region>.ops-facts-actions>div>.btn-link{grid-column:1;justify-self:start}
+}
+@media(max-width:600px){[data-end="admin"] .ops-facts-body{padding-inline:var(--sp-4)}}
+@media(max-width:1100px){
+  [data-end="admin"] :is(.cm-grid,.pr-grid):has(.ops-facts-region){grid-template-columns:minmax(0,1fr)}
+  [data-end="admin"] :is(.cm-grid,.pr-grid):has(.ops-facts-region)>:is(.cm-rail,.pr-rail){position:static}
+}
+
 /* Shared operations roles override historical module-specific size drift. */
 [data-end="admin"] .content :is(.fc-kv,.cm-kv,.pr-kv,.rv-kv,.ops-details) dt{font-size:var(--ui-field-label);font-weight:400;color:var(--muted)}
 [data-end="admin"] .content :is(.fc-kv,.cm-kv,.pr-kv,.rv-kv,.ops-details) dd{font-size:var(--ui-field-value);line-height:1.6}

@@ -59,7 +59,8 @@
   const select=(id,value,options)=>`<select class="inp" id="${id}">${options.map(([v,label])=>`<option value="${E(v)}" ${v===value?'selected':''}>${E(label)}</option>`).join('')}</select>`;
   const note=(s,type='')=>CF.note(type,s);
   const error=()=>A.error?`<p class="cm-error" role="alert">${E(txt(A.error))}</p>`:'';
-  const kv=items=>`<dl class="cm-kv">${items.map(([label,value,wide])=>`<div ${wide?'class="cm-wide"':''}><dt>${label}</dt><dd>${value==null?'—':value}</dd></div>`).join('')}</dl>`;
+  const kv=(items,detail=false)=>`${detail?'<div class="ops-facts-region">':''}<dl class="cm-kv ${detail?'ops-facts':''}">${items.map(([label,value,wide])=>`<div${wide?` class="cm-wide${detail?' ops-fact-wide':''}"`:''}><dt>${label}</dt><dd>${value==null?'—':value}</dd></div>`).join('')}</dl>${detail?'</div>':''}`;
+  const facts=items=>kv(items,true);
   const section=(en,zh,html,extra='')=>`<section class="card cm-section"${extra}><h2 class="cm-h2">${L(en,zh)}</h2>${html}</section>`;
   /* 项目已关闭是叠加标记，同时展示关闭原因：资产方主动关闭或有效期到期。 */
   const CLOSE_REASON={owner:['closed by the asset holder','资产方主动关闭'],expired:['valid-until date reached','有效期到期']};
@@ -338,7 +339,7 @@
 
   /* ---------------------------------------------------------------- 审核详情 */
   function createdInfo(r){
-    return section('Project details under review','创建信息核对',kv([
+    return section('Project details under review','创建信息核对',facts([
       [L('Blockchain network','区块链网络'),L('Ethereum','以太坊')+`<span class="cm-meta">${L('Fixed for this release; locked at creation.','本期固定，创建时锁定。')}</span>`],
       [L('Project name','项目名称'),E(projectName(r))],
       [L('Token type','代币类型'),E(r.tokenType)],
@@ -355,7 +356,7 @@
     const termGap=c.available&&expiry(r)>addMonths(r.createdAt,c.maxTermMonths);
     const current=v=>c.available?v:unknown();
     const gap=CF.tag('warn',L('Differs from the locked value','与锁定值不一致'));
-    return section('Project publisher and parameter context','项目发布方与参数上下文',kv([
+    return section('Project publisher and parameter context','项目发布方与参数上下文',facts([
       [L('Project publisher','项目发布方'),E(ownerName(r))+`<span class="cm-meta">${L('The asset holder company that created this project.','创建本项目的资产方企业。')}</span>`],
       [L('Stable entity identifier','稳定主体标识'),r.entity?`<span class="mono">${E(r.entity)}</span>`:CF.tag('warn',unknown())],
       [L('Pledge ratio · latest submission','项目质押率 · 最近一次提交'),pct(r.ratio)],
@@ -392,12 +393,12 @@
       ]:[]),
       [L('Deployment initiated by','部署发起地址'),addressValue(A.wallet,L('address','地址')),true]
     ];
-    const fail=r.fail?kv([
+    const fail=r.fail?facts([
       [L('Failure reason','部署失败原因'),`<div class="cm-quote">${E(txt(r.fail.reason))}</div>`,true],
       [L('Failed at','失败时点'),time(r.fail.at)],
       [L('Gas already spent','已消耗 gas'),gasValue(r.fail.gas,r.fail.gasCcy)]
     ]):'';
-    return section('Pledge contract and deployment facts','质押合约与部署事实',kv(items)
+    return section('Pledge contract and deployment facts','质押合约与部署事实',facts(items)
       +(started?'':`<p class="cm-meta">${L('The deployment has not been initiated. A successful deployment produces this project’s single pledge contract address.','尚未发起部署；部署成功后将产生本项目唯一的质押合约地址。')}</p>`)
       +`<p class="cm-meta">${L('Read-only on-chain facts written back with the real result. Deployments are signed by an operator with the platform wallet, which also bears the gas; operations cannot maintain the platform wallet or edit the contract address.','随真实结果回写的只读链上事实。部署由运营人员连接平台统一钱包签名发起，gas 由平台统一钱包承担；运营端不能维护平台钱包，也不可编辑合约地址。')}</p>`
       +(r.deploy==='failed'?`<div class="cm-failure"><h3>${L('Last deployment attempt','最近一次部署尝试')}</h3>${fail}${note(L('A failed deployment is not a review conclusion. The project is back to pending review, the asset holder is not notified and the project term is not restarted.','部署失败不是审核结论：项目已回到待审核，未通知资产方，项目期限起算点不变。'),'warn')}</div>`:'')

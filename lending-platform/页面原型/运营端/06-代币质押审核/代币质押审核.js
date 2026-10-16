@@ -51,7 +51,8 @@
   const select=(id,value,options)=>`<select class="inp" id="${id}">${options.map(([v,label])=>`<option value="${E(v)}" ${v===value?'selected':''}>${E(label)}</option>`).join('')}</select>`;
   const note=(s,type='')=>CF.note(type,s);
   const error=()=>A.error?`<p class="pr-error" role="alert">${E(txt(A.error))}</p>`:'';
-  const kv=items=>`<dl class="pr-kv">${items.map(([label,value,wide])=>`<div ${wide?'class="pr-wide"':''}><dt>${label}</dt><dd>${value??'—'}</dd></div>`).join('')}</dl>`;
+  const kv=(items,detail=false)=>`${detail?'<div class="ops-facts-region">':''}<dl class="pr-kv ${detail?'ops-facts':''}">${items.map(([label,value,wide])=>`<div${wide?` class="pr-wide${detail?' ops-fact-wide':''}"`:''}><dt>${label}</dt><dd>${value??'—'}</dd></div>`).join('')}</dl>${detail?'</div>':''}`;
+  const facts=items=>kv(items,true);
   const section=(en,zh,html)=>`<section class="card pr-section"><h2 class="pr-h2">${L(en,zh)}</h2>${html}</section>`;
   const row=()=>A.rows.find(r=>r.id===A.selected);
 
@@ -264,7 +265,7 @@
     const holdSummary=[['awaiting-release',follows['awaiting-release']],['releasing',follows.releasing],['released',follows.released]]
       .map(([k,label])=>txt(label)+' '+batch.filter(x=>x.follow===k).length).join(' · ');
 
-    const overview=section('Application overview','申请概览',kv([
+    const overview=section('Application overview','申请概览',facts([
         [L('Asset holder','资产方'),E(owner(r))+`<span class="pr-meta mono">DEMO-ENTITY-${r.owner}</span>`],
         [L('Target project','目标项目'),E(project(r))+`<span class="pr-meta mono">${E(p.id)}</span>`],
         [L('Project status','项目状态'),L('Open · reviewed and deployed','可用 · 已通过审核并完成合约部署')],
@@ -274,13 +275,13 @@
         [L(endedAt(r)?'Waited until the decision':'Waiting so far',endedAt(r)?'审结前等待时长':'已等待时长'),duration(waited(r))],
         [L('Amount attribution','额度归属'),quotaLine(r),true]
       ]))
-      +section('Project parameters','项目参数',kv([
+      +section('Project parameters','项目参数',facts([
         [L('Project pledge ratio','项目质押率'),(p.ratio*100).toFixed(0)+'%'],
         [L('Project term','项目期限'),p.termMonths+' '+L('months','个月')],
         [L('Term starts','期限起算点'),time(p.createdAt)],
         [L('Valid until','有效期至'),time(p.createdAt+p.termMonths*30*86400000)]
       ])+`<p class="pr-meta">${L('Locked, read-only project facts (the pledge ratio is locked when the contract is deployed); this module does not configure or adjust them.','已锁定的只读事实（项目质押率于合约部署时锁定），本模块不配置、不调整。')}</p>`)
-      +section('Token facts','本张代币事实',kv([
+      +section('Token facts','本张代币事实',facts([
         [L('Token identifier','代币编号'),`<span class="mono">${E(r.token)}</span>`],
         [L('Quantity / currency','数量 / 币种'),r.amount==null?unknown():CF.fmtAmt(r.amount)+' '+r.tokenCcy],
         [L('Token value','代币价值'),money(r.value)],
@@ -288,7 +289,7 @@
         [L('Buyer','买方企业'),r.buyer?E(r.buyer):unknown()],
         [L('Validity','有效性'),r.valid?L('Valid','有效'):L('Invalid','已失效')]
       ]))
-      +section('Pledge chain facts','质押链上事实',kv([
+      +section('Pledge chain facts','质押链上事实',facts([
         [L('Pledge chain','质押链'),'ETH'],
         [L('Current position','本笔当前去向'),holdBadge(r)],
         [L('Pledge contract address','质押合约地址'),proofValue(r.contract,L('address','地址')),true],
@@ -313,7 +314,7 @@
   }
   function decisionCard(r){
     if(!['approved','rejected'].includes(r.status))return '';
-    return section('Decision and evidence','审核结论与凭据',kv([
+    return section('Decision and evidence','审核结论与凭据',facts([
         [L('Decision','结论'),txt(status[r.status])],
         [L('Reviewer','审核人'),txt(r.operator)],
         [L('Decision time','结论时间'),time(r.decisionAt)],

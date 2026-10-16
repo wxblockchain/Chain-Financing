@@ -42,7 +42,7 @@
   const field=(label,html,extra='')=>`<div class="field"><label for="${(html.match(/id="([^"]+)/)||[])[1]||''}">${label}</label>${html}${extra}</div>`;
   const input=(id,v,type='text',attrs='')=>`<input class="inp" id="${id}" type="${type}" value="${E(v)}" ${attrs}>`;
   const select=(id,value,options)=>`<select class="inp" id="${id}">${options.map(([v,label])=>`<option value="${E(v)}" ${String(v)===String(value)?'selected':''}>${E(label)}</option>`).join('')}</select>`;
-  const kv=items=>`<dl class="fc-kv">${items.map(([label,value,cls])=>`<div${cls==='wide'?' class="fc-wide"':''}><dt>${label}</dt><dd${cls==='strong'?' class="fc-strong"':''}>${value==null?'—':value}</dd></div>`).join('')}</dl>`;
+  const kv=items=>`<div class="ops-facts-region"><dl class="fc-kv ops-facts">${items.map(([label,value,cls])=>`<div${cls==='wide'?' class="fc-wide ops-fact-wide"':''}><dt>${label}</dt><dd${cls==='strong'?' class="fc-strong"':''}>${value==null?'—':value}</dd></div>`).join('')}</dl></div>`;
   const section=(en,zh,html,head='')=>`<section class="card fc-section"><div class="fc-section-head"><h2 class="fc-h2">${L(en,zh)}</h2>${head}</div>${html}</section>`;
   const error=()=>A.error?`<p class="fc-error" role="alert">${E(txt(A.error))}${A.errorAction==='reload'?' ':''}</p>${A.errorAction==='reload'?b('Reload the current values','重新取数','reload'):''}${A.errorAction==='back'?b('Back to the parameter list','返回融资参数列表','back'):''}`:'';
 

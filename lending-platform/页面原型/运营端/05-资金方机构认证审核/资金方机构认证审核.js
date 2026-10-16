@@ -50,7 +50,7 @@
   }
   function note(){return A.error?CF.note('red',E(A.error)):'';}
   function title(en,zh,desc=''){return `<div class="page-head"><div><h1 class="page-title">${L(en,zh)}</h1>${desc?`<p class="page-desc">${desc}</p>`:''}</div>${CF.tag('neutral',L('Demonstration data','演示数据'))}</div>`;}
-  function kv(data){return `<dl class="rv-kv">${data.map(x=>`<div ${['registeredAddress','wide'].includes(x[3])?'class="rv-wide"':''}><dt>${L(x[0],x[1])}</dt><dd>${E(R.fieldValue(x))}</dd></div>`).join('')}</dl>`;}
+  function kv(data){return `<div class="ops-facts-region"><dl class="rv-kv ops-facts">${data.map(x=>`<div ${['registeredAddress','wide'].includes(x[3])?'class="rv-wide ops-fact-wide"':''}><dt>${L(x[0],x[1])}</dt><dd>${E(R.fieldValue(x))}</dd></div>`).join('')}</dl></div>`;}
   function tableTime(value){
     if(!value)return '—';
     const formatted=time(value),suffix=' ('+S.tz+')';
