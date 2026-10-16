@@ -452,8 +452,9 @@
     const r=row();
     if(!r)return CF.empty(L('Project unavailable','项目不可用'),L('Return to the review queue.','请返回项目审核队列。'),b('Back','返回','back'));
     if(A.view!=='default')return title(E(r.id),'')+surface({});
-    const summary=`<div class="card cm-detail-summary"><div><span class="cm-meta">${L('Review status','审核轴')}</span>${reviewBadge(r)}${conclusion(r)}</div><div><span class="cm-meta">${L('Deployment execution status','部署执行状态')}</span>${deployBadge(r)}</div><div><span class="cm-meta">${L('This submission','本次提交')}</span><strong class="cm-value">${E(submission(r.seq))}</strong><span class="cm-meta">${time(r.submittedAt)}</span></div><div><span class="cm-meta">${L('Project status for the asset holder','面客项目状态')}</span>${projectState(r)}</div></div>`;
-    return title(E(r.id),E(projectName(r)))+(A.draft?'':error())+summary
+    const heading=`<header class="cm-detail-heading"><h1>${E(r.id)}</h1><p class="cm-detail-name">${E(projectName(r))}</p>${CF.tag('gray',L('Demonstration data','演示数据'))}</header>`;
+    const summary=`<dl class="cm-detail-summary"><div><dt>${L('Review status','审核轴')}</dt><dd>${reviewBadge(r)}${conclusion(r)}</dd></div><div><dt>${L('Deployment execution status','部署执行状态')}</dt><dd>${deployBadge(r)}</dd></div><div><dt>${L('This submission','本次提交')}</dt><dd><strong class="cm-value">${E(submission(r.seq))}</strong><span class="cm-meta">${time(r.submittedAt)}</span></dd></div><div><dt>${L('Project status for the asset holder','面客项目状态')}</dt><dd>${projectState(r)}</dd></div></dl>`;
+    return heading+(A.draft?'':error())+summary
       +`<div class="cm-grid"><div class="cm-detail-main"><div class="detail-stack cm-stack">${createdInfo(r)}${contextCard(r)}${deployCard(r)}${activity(r)}</div></div><aside class="cm-stack cm-rail">${actionCard(r)}</aside></div>`;
   }
 
