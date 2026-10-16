@@ -4,7 +4,7 @@
 .login-heading{text-align:center;margin-bottom:var(--sp-7)}
 .login-heading h1{margin:0 0 var(--sp-2);font-size:var(--fs-28);letter-spacing:-.02em}
 .login-heading p{margin:0;color:var(--muted)}
-.login-steps{list-style:none;margin:var(--sp-6) 0 var(--sp-4);padding:0;display:flex;flex-direction:column;gap:var(--sp-3)}
+.login-steps{list-style:none;margin:var(--sp-6) 0 var(--sp-4);padding:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
 .login-steps li{display:flex;align-items:center;gap:var(--sp-3);color:var(--muted);font-size:var(--fs-14)}
 .login-steps [aria-current="step"]{color:var(--text);font-weight:650}
 .login-step-num{display:grid;place-items:center;width:26px;height:26px;flex:none;border-radius:var(--radius-pill);
@@ -18,9 +18,13 @@
 .login-address .mono{font-size:var(--fs-13)}
 .login-bottom{margin-top:var(--sp-6);text-align:center;color:var(--muted);font-size:var(--fs-13)}
 .login-flow{max-width:560px;margin:auto}
+.focus-card:has(.login-flow){max-width:520px}
 .login-flow .page-title{margin-bottom:var(--sp-3)}
 .login-flow p{color:var(--muted)}
 .login-actions{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap;margin-top:var(--sp-6)}
+.login-flow>.login-actions{flex-direction:column;align-items:stretch;gap:var(--sp-2)}
+.login-flow>.login-actions>.btn-link{justify-content:center;text-align:center}
+.login-flow>.login-demo-stamp{text-align:center;margin-top:var(--sp-4)}
 .login-stack{display:flex;flex-direction:column;gap:var(--sp-5)}
 .login-center{text-align:center}
 .login-status-icon{font-size:var(--fs-28);color:var(--accent);margin-bottom:var(--sp-4)}
@@ -30,7 +34,28 @@
 .login-check input{width:20px;height:20px;flex:none;accent-color:var(--accent)}
 .login-account{max-width:1040px;margin:auto}
 .login-identity-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--sp-6)}
-.login-preference-field{max-width:480px}
+.login-profile{overflow:hidden}
+.login-profile-source{margin:0;padding:var(--sp-4) var(--card-pad);background:var(--card-2);border-bottom:1px solid var(--border);font-size:var(--ui-field-label);color:var(--muted)}
+.login-profile-section{display:grid;grid-template-columns:160px minmax(0,1fr);gap:var(--sp-7);padding:var(--card-pad);border-bottom:1px solid var(--border)}
+.login-profile-section:last-child{border-bottom:0}
+.login-profile-section>h2{margin:var(--sp-3) 0 0;font-size:var(--ui-section-title);font-weight:600;line-height:1.5}
+.login-profile-body{min-width:0}
+.login-profile .login-identity-fields>div{padding:var(--sp-3) 0}
+.login-profile .login-identity-fields dt{margin-bottom:var(--sp-1)}
+.login-profile .login-account-fields{grid-template-columns:minmax(0,1fr)}
+.login-profile .login-account-fields>div{display:grid;grid-template-columns:160px minmax(0,1fr);gap:var(--sp-4);align-items:baseline}
+.login-profile .login-account-fields dt{margin:0}
+.login-profile .login-row{display:grid;grid-template-columns:160px minmax(0,1fr);gap:var(--sp-4);padding:var(--sp-3) 0 0;border:0}
+.login-profile .login-row>span{font-size:var(--ui-field-label);color:var(--muted)}
+.login-profile .login-row .login-verification{margin-right:auto}
+.login-preferences{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5) var(--sp-6);padding-top:var(--sp-3)}
+.login-preference-field{min-width:0;max-width:480px}
+.login-preference-field [id$="-feedback"]{min-height:var(--sp-6)}
+.login-preference-field [role]{margin:var(--sp-1) 0 0}
+.login-preference-field [role="alert"]{color:var(--danger)}
+.login-preference-field [role="status"]:not(:empty){color:var(--muted)}
+.login-preference-field>.login-caption{margin:var(--sp-2) 0 0}
+.login-notification-policy{margin:var(--sp-5) 0 0;padding-top:var(--sp-4);border-top:1px solid var(--border-dash)}
 .login-verification.detail-actions{margin-top:0;align-items:center}
 .login-fields{margin:0}
 .login-fields>div{padding:var(--sp-4) 0;border-bottom:1px solid var(--border-dash)}
@@ -60,13 +85,24 @@
 .login-public-row h2{margin:0 0 var(--sp-2);font-size:var(--fs-19)}
 .login-public-row p{margin:0;color:var(--muted)}
 .login-prototype .focus-foot{padding-bottom:var(--sp-10)}
+@media(max-width:900px){
+  .login-profile-section{grid-template-columns:minmax(0,1fr);gap:var(--sp-3)}
+  .login-profile-section>h2{margin:0}
+}
 @media(max-width:760px){
   .login-identity-fields{grid-template-columns:minmax(0,1fr)}
   .login-heading{margin-bottom:var(--sp-5)}
   .login-heading h1{font-size:var(--fs-24)}
   .login-prototype .modal-b{padding-inline:var(--sp-4)}
   .login-prototype .modal-h,.login-prototype .modal-f{padding-inline:var(--sp-4)}
-  .login-flow .login-actions>.btn{max-width:100%;font-size:var(--fs-12);padding-inline:var(--sp-2)}
+  .login-flow .login-actions>.btn{max-width:100%;padding-inline:var(--sp-3)}
+}
+@media(max-width:600px){
+  .login-profile-section{padding:var(--sp-5) var(--sp-4)}
+  .login-profile-source{padding:var(--sp-4)}
+  .login-profile .login-account-fields>div{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
+  .login-profile .login-row{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
+  .login-preferences{grid-template-columns:minmax(0,1fr);gap:var(--sp-4)}
 }
 
 /* 资金方：沿用登录域与公共组件，仅增加填写流程、核对和账户分组。 */

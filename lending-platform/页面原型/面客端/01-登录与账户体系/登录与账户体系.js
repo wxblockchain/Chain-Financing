@@ -147,10 +147,10 @@
     CF.resetCompletion();
   }
   const endText={
-    logout:['Signed out here. Signing out here does not sign you out of the token issuance platform.','已退出本平台。退出本平台不会退出代币发行平台。'],
+    logout:['Signed out here. Signing out here does not sign you out of the asset trust platform.','已退出本平台。退出本平台不会退出资产可信平台。'],
     expiry:['Your sign-in has expired. You can sign in again to continue.','登录已过期，可重新登录继续。'],
-    blocked:['This account is currently unavailable. Contact support on the token issuance platform. Reference: HC-204.','账户暂不可用，请联系代币发行平台客服。参考码：HC-204。'],
-    'wallet-change':['The wallet address registered on the token issuance platform has changed. Please sign in again.','代币发行平台登记的钱包地址已变更，请重新登录。']
+    blocked:['This account is currently unavailable. Contact support on the asset trust platform. Reference: HC-204.','账户暂不可用，请联系资产可信平台客服。参考码：HC-204。'],
+    'wallet-change':['The wallet address registered on the asset trust platform has changed. Please sign in again.','资产可信平台登记的钱包地址已变更，请重新登录。']
   };
   function endSession(kind){
     const dirty=D.preferredLang!==D.savedLang;
@@ -177,7 +177,7 @@
   function loginPage(){
     const held=D.originAction?CF.note('accent',L('We kept your action: ','已保留你的操作：')+L(...actionCopy[D.originAction])+L('. It continues after you sign in.','。登录后继续。')):'';
     const errors={
-      wallet:['No wallet is available. Install or enable a compatible browser wallet, then try again.','未检测到可用钱包。请安装或启用兼容的浏览器钱包后重试。'],
+      wallet:['MetaMask is unavailable. Install or enable the MetaMask browser extension, then try again.','未检测到 MetaMask。请安装或启用 MetaMask 浏览器插件后重试。'],
       cancel:['You cancelled the wallet connection. You can connect again or keep browsing.','你取消了钱包连接，可重新连接或继续浏览。'],
       'sign-rejected':['You declined the signature, so you are not signed in. You can try again or keep browsing.','你拒绝了签名，未建立登录。可重试或继续浏览。'],
       'sign-failed':['The signature could not be verified. You are not signed in. Please try again.','签名验证失败，未建立登录，请重试。'],
@@ -193,7 +193,7 @@
         <li${D.stage==='connect'?' aria-current="step"':''}><span class="login-step-num">2</span>${L('Choose the address to sign in with','选择登录地址')}</li>
         <li${D.stage==='sign'?' aria-current="step"':''}><span class="login-step-num">3</span>${L('Sign the login message','完成消息签名')}</li>
       </ol>
-      <p class="login-caption">${L('Ethereum (ETH) wallets only in this release.','本期仅支持以太坊（ETH）链钱包。')}</p>
+      <p class="login-caption">${L('Use the MetaMask desktop browser extension on Ethereum (ETH).','请使用桌面浏览器的 MetaMask 插件，登录链为以太坊（ETH）。')}</p>
       ${D.loginError?CF.note('red',L(...errors[D.loginError])):''}
       <div class="login-actions">${retry?btn('Try again','重试','login-retry-pull','','primary'):btn('Connect wallet','连接钱包','login-connect','','primary')}${link('Keep browsing','继续浏览','login-exit')}</div>
       ${demoStamp()}</div>`;
@@ -232,7 +232,7 @@
     const moved=D.addressMoved&&D.address===registered;
     if(override==='moved'||override==='auto'&&moved){
       S.role='signed';D.level='L0';
-      landing(L('The registration for this address changed on the token issuance platform. Please sign in with the new address.','该地址在代币发行平台的登记已变更，请使用新地址登录。'));return;
+      landing(L('The registration for this address changed on the asset trust platform. Please sign in with the new address.','该地址在资产可信平台的登记已变更，请使用新地址登录。'));return;
     }
     const hit=override==='hit'||override==='auto'&&!moved&&[registered,renewed].includes(D.address);
     if(hit){
@@ -306,8 +306,8 @@
     if(S.role==='fund'&&CF.funder){CF.funder.notices();return;}
     if(S.role!=='asset'){CF.setCompletion([]);return;}
     const items=[];
-    if(D.rejected)items.push({priority:1,text:L('Your verification was not approved. Review the reasons on the token issuance platform and resubmit.','你的实名认证未通过，请前往代币发行平台查看原因并重新提交。'),label:L('Complete now','立即前往'),act:'login-leave',value:'verify'});
-    else if(D.level!=='L3')items.push({priority:2,text:L('Complete identity verification on the token issuance platform to unlock financing.','在代币发行平台完成实名认证后即可使用融资功能。'),label:L('Complete now','立即前往'),act:'login-leave',value:'verify'});
+    if(D.rejected)items.push({priority:1,text:L('Your verification was not approved. Review the reasons on the asset trust platform and resubmit.','你的实名认证未通过，请前往资产可信平台查看原因并重新提交。'),label:L('Complete now','立即前往'),act:'login-leave',value:'verify'});
+    else if(D.level!=='L3')items.push({priority:2,text:L('Complete identity verification on the asset trust platform to unlock financing.','在资产可信平台完成实名认证后即可使用融资功能。'),label:L('Complete now','立即前往'),act:'login-leave',value:'verify'});
     if(D.downgraded)items.push({priority:4,text:L('Your verification status has changed; financing features are temporarily unavailable.','你的实名认证状态已变更，融资相关功能暂时不可用。'),label:L('View status','查看状态'),act:'login-account'});
     // 纯组件样例队列，不借此定义业务文案。
     if(D.extraNotices){
@@ -318,7 +318,7 @@
   }
 
   /* ---------------------------------------------------------------- 账户与企业信息 */
-  function identityFields(fields){return `<dl class="login-fields login-identity-fields">${fields.filter(f=>f[2]!==''&&f[2]!=null).map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd>${esc(f[2])}</dd></div>`).join('')}</dl>`;}
+  function identityFields(fields,variant=''){return `<dl class="login-fields login-identity-fields ${variant}">${fields.filter(f=>f[2]!==''&&f[2]!=null).map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd>${esc(f[2])}</dd></div>`).join('')}</dl>`;}
   function unavailable(){
     return (D.sessionMessage?CF.note('warn',esc(D.sessionMessage)):'')+
       CF.empty(L('This page is not available for your current role','该页面不适用于当前身份'),L('You can continue exploring public information.','你可以继续浏览公开信息。'),btn('Back to assets','返回资产广场','login-home'));
@@ -335,18 +335,18 @@
       ["This session's role",'本次判定结果',L('Asset provider','资产方')],
       ['Retrieved at','本次调取时间',D.decidedAt?CF.fmtTime(D.decidedAt):'—'],
       ['User ID','用户 ID',account.userId],['Company ID','企业 ID',account.companyId],['Email','邮箱',account.email]
-    ]),['No account information available','暂无账户信息']);
+    ],'login-account-fields'),['No account information available','暂无账户信息']);
     const personal=profileBody('personalState',personalFields(),['No personal verification information available','暂无个人认证信息']);
     return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('User information','用户信息')}</h1><p class="page-desc">${L('View your information and manage your preferences.','查看账户资料，管理偏好设置。')}</p></div></div>
-      <p class="login-caption">${L('These details are synced from the token issuance platform and are read-only.','这些资料从代币发行平台同步，仅供查看。')}</p>
-      <div class="detail-stack"><section class="card detail-section"><div class="card-head"><h2>${L('Account information','账户信息')}</h2></div><div class="card-b">${identity}
+      <div class="card login-profile"><p class="login-profile-source">${L('These details are synced from the asset trust platform and are read-only.','这些资料从资产可信平台同步，仅供查看。')}</p>
+      <section class="login-profile-section" aria-labelledby="login-account-heading"><h2 id="login-account-heading">${L('Account information','账户信息')}</h2><div class="login-profile-body">${identity}
       <div class="login-row"><span>${L('Verification','实名认证')}</span><div class="detail-actions login-verification">${CF.tag(D.level==='L3'?'ok':D.rejected?'danger':'warn',D.rejected?L('Not approved','认证未通过'):D.level==='L3'?L('Verified','已认证'):L('Not verified','未认证'))}${D.level!=='L3'?link('Complete verification ↗','前往完成认证 ↗','login-leave','verify'):''}</div></div></div></section>
-      <section class="card detail-section"><div class="card-head"><h2>${L('Personal information','个人信息')}</h2></div><div class="card-b">${personal}</div></section>
-      <section class="card detail-section"><div class="card-head"><h2>${L('Preferences','偏好设置')}</h2></div><div class="card-b login-stack">
+      <section class="login-profile-section" aria-labelledby="login-personal-heading"><h2 id="login-personal-heading">${L('Personal information','个人信息')}</h2><div class="login-profile-body">${personal}</div></section>
+      <section class="login-profile-section" aria-labelledby="login-preferences-heading"><h2 id="login-preferences-heading">${L('Preferences','偏好设置')}</h2><div class="login-profile-body"><div class="login-preferences">
       <div class="field login-preference-field"><label for="login-language">${L('Language','语言')}</label><select class="inp" id="login-language" aria-describedby="login-language-feedback" ${D.preferenceState.language==='pending'?'disabled aria-busy="true"':''}><option value="en" ${D.preferredLang==='en'?'selected':''}>English</option><option value="zh" ${D.preferredLang==='zh'?'selected':''}>简体中文</option></select><div id="login-language-feedback">${preferenceFeedback('language')}</div></div>
       <div class="field login-preference-field"><label for="login-timezone">${L('Time zone','时区')}</label><select class="inp" id="login-timezone" aria-describedby="login-timezone-feedback" ${D.preferenceState.timezone==='pending'?'disabled aria-busy="true"':''}>${zoneOptions().map(zone=>`<option value="${esc(zone)}" ${D.preferredTz===zone?'selected':''}>${esc(zone)}</option>`).join('')}</select><div id="login-timezone-feedback">${preferenceFeedback('timezone')}</div>
       <p class="login-caption">${L('Times are shown in this time zone. The underlying business times do not change.','时间按该时区展示，业务时间本身不变。')}</p></div>
-      <p class="login-caption">${L('Critical notifications, including verification changes, are always received.','认证等关键通知始终接收。')}</p>
+      </div><p class="login-caption login-notification-policy">${L('Critical notifications, including verification changes, are always received.','认证等关键通知始终接收。')}</p>
       </div></section></div>${demoStamp()}</div>`;
   }
   const companyGuidance={
@@ -366,10 +366,10 @@
       ['Company Registration Number (CR)','公司注册编号（CR）','DEMO-CR-'+D.profileVariant+'0001'],
       ['Relationship to the company','与企业的关系',L('Authorised representative','授权代表')]
     ]);
-    return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Company information','企业信息')}</h1><p class="page-desc">${L('These details are synced from the token issuance platform and are read-only.','这些资料从代币发行平台同步，仅供查看。')}</p></div></div>
-      <section class="card detail-section"><div class="card-head"><h2>${L('Company details','企业基本信息')}</h2></div><div class="card-b">${profileBody('companyState',info,['No company verification information available','暂无企业认证信息'])}
+    return `<div class="login-account"><div class="page-head"><div><h1 class="page-title">${L('Company information','企业信息')}</h1><p class="page-desc">${L('These details are synced from the asset trust platform and are read-only.','这些资料从资产可信平台同步，仅供查看。')}</p></div></div>
+      <div class="card login-profile"><section class="login-profile-section" aria-labelledby="login-company-heading"><h2 id="login-company-heading">${L('Company details','企业基本信息')}</h2><div class="login-profile-body">${profileBody('companyState',info,['No company verification information available','暂无企业认证信息'])}
       <p class="login-caption">${L(...companyGuidance[D.companyCase])}</p>
-      </div></section>${demoStamp()}</div>`;
+      </div></section></div>${demoStamp()}</div>`;
   }
 
   /* ---------------------------------------------------------------- 演示落点 */
@@ -383,7 +383,7 @@
     const roleTag=S.role==='guest'?L('Guest','游客'):S.role==='signed'?L('Signed in · no role bound','已登录未绑定角色'):
       S.role==='fund'?L('Funder','资金方'):D.level==='L3'?L('Verified asset holder','已认证资产方'):L('Asset holder · not verified','未认证资产方');
     const assetReason=S.role==='guest'?L('Sign in to continue.','登录后继续。'):
-      S.role==='signed'?L('This requires registration and verification on the token issuance platform.','该功能需要先在代币发行平台完成注册与认证。'):
+      S.role==='signed'?L('This requires registration and verification on the asset trust platform.','该功能需要先在资产可信平台完成注册与认证。'):
       S.role==='fund'?L('This action is for asset holders.','该动作面向资产方。'):
       L('Complete identity verification to use financing.','完成实名认证后可使用融资功能。');
     const fundReason=S.role==='guest'?L('Sign in to continue.','登录后继续。'):
@@ -408,7 +408,7 @@
     switch(id){
       case 'P-L01':return loginPage();
       case 'P-L04':return `<div class="login-flow"><div class="login-status-icon" aria-hidden="true">!</div><h1 class="page-title">${L('Unable to continue right now','暂时无法继续')}</h1><p>${L('Please try again or keep browsing. Reference: HC-100.','请重试或继续浏览。参考码：HC-100。')}</p><div class="login-actions">${btn('Try again','重试','login-start','','primary')}${btn('Keep browsing','继续浏览','login-exit')}</div></div>`;
-      case 'P-L10':return `<div class="login-flow login-center"><div class="login-status-icon" aria-hidden="true">↻</div><h1 class="page-title">${L('Matching your account','正在匹配账户')}</h1><p role="status" aria-live="polite">${L('Signature verified. We are checking this address against the token issuance platform.','签名已验证，正在用该地址与代币发行平台的同步数据匹配。')}</p>${CF.skelTable(2)}<div class="login-bottom">${link('Keep browsing','继续浏览','login-exit')}</div></div>`;
+      case 'P-L10':return `<div class="login-flow login-center"><div class="login-status-icon" aria-hidden="true">↻</div><h1 class="page-title">${L('Matching your account','正在匹配账户')}</h1><p role="status" aria-live="polite">${L('Signature verified. We are checking this address against the asset trust platform.','签名已验证，正在用该地址与资产可信平台的同步数据匹配。')}</p>${CF.skelTable(2)}<div class="login-bottom">${link('Keep browsing','继续浏览','login-exit')}</div></div>`;
       case 'P-L13':return `<div class="login-flow"><div class="login-status-icon" aria-hidden="true">!</div><h1 class="page-title">${L('Account setup was interrupted','账户建立未完成')}</h1><p>${L('Your address was matched, but we could not finish setting up your account. Please retry.','地址已匹配，但账户暂未建立完成，请重试。')}</p><p class="mono">HC-241</p><div class="login-actions">${btn('Retry','重试','login-retry-account','','primary')}${btn('Keep browsing','继续浏览','login-exit')}</div></div>`;
       case 'P-L12':return accountPage();
       case 'P-L14':return companyPage();
@@ -445,22 +445,22 @@
         <p class="login-caption">${L('This message does not send a transaction or authorize assets.','本次签名不会发起交易或授权资产。')}</p>`,
       foot:btn('Decline signature','拒绝签名','login-sign','rejected','ghost')+btn('Signature verification fails','签名验证失败','login-sign','failed','ghost')+btn('Confirm signature','确认签名','login-sign','ok','primary')}),
     leave:(purpose)=>({title:L('You are leaving the lending platform','即将离开借贷平台'),
-      html:`<p>${L('You will be redirected to the token issuance platform to continue.','我们将带你前往「代币发行平台」继续操作。')}</p><p><b>${L('Token issuance platform','代币发行平台')}</b></p>`,
+      html:`<p>${L('You will be redirected to the asset trust platform to continue.','我们将带你前往「资产可信平台」继续操作。')}</p><p><b>${L('Asset trust platform','资产可信平台')}</b></p>`,
       foot:btn('Cancel','返回','closelayer','','ghost')+btn('Continue','继续前往','login-depart',purpose,'primary')}),
-    upstream:()=>({title:L('Register on the token issuance platform','前往代币发行平台注册'),
-      html:`<p>${L('This requires registration and verification on the token issuance platform.','该功能需要先在代币发行平台完成注册与认证。')}</p>`,
-      foot:btn('Cancel','返回','closelayer','','ghost')+btn('Go to token issuance platform','前往代币发行平台','login-leave','register','primary')}),
+    upstream:()=>({title:L('Register on the asset trust platform','前往资产可信平台注册'),
+      html:`<p>${L('This requires registration and verification on the asset trust platform.','该功能需要先在资产可信平台完成注册与认证。')}</p>`,
+      foot:btn('Cancel','返回','closelayer','','ghost')+btn('Go to asset trust platform','前往资产可信平台','login-leave','register','primary')}),
     guide:()=>({title:L('Complete identity verification','完成实名认证'),
-      html:`<p>${D.rejected?L('Your verification was not approved. Review the reasons on the token issuance platform and resubmit.','你的实名认证未通过，请前往代币发行平台查看原因并重新提交。'):L('Complete identity verification on the token issuance platform to submit a financing request.','在代币发行平台完成实名认证后即可发起融资申请。')}</p>`,
-      foot:btn('Cancel','返回','closelayer','','ghost')+btn('Go to token issuance platform','前往代币发行平台','login-leave','verify','primary')}),
+      html:`<p>${D.rejected?L('Your verification was not approved. Review the reasons on the asset trust platform and resubmit.','你的实名认证未通过，请前往资产可信平台查看原因并重新提交。'):L('Complete identity verification on the asset trust platform to submit a financing request.','在资产可信平台完成实名认证后即可发起融资申请。')}</p>`,
+      foot:btn('Cancel','返回','closelayer','','ghost')+btn('Go to asset trust platform','前往资产可信平台','login-leave','verify','primary')}),
     'role-mismatch':()=>({title:L('Not available for this account','该动作不适用于当前账户'),
       html:`<p>${L('One wallet address maps to one role only. Sign in with the wallet of the other role to use this action.','一个钱包地址只对应一个角色，请用另一角色的钱包登录后使用该动作。')}</p>`,
       foot:btn('Close','关闭','closelayer','','primary')}),
     notification:()=>({title:L('Account notification','账户通知'),
       html:`<p>${D.downgraded?L('Your verification status has changed; financing features are temporarily unavailable.','你的实名认证状态已变更，融资相关功能暂时不可用。'):L('No new notifications.','暂无新通知。')}</p>${demoStamp()}`,
       foot:btn('Close','关闭','closelayer')}),
-    support:()=>({title:L('Token issuance platform support','代币发行平台客服'),
-      html:`<p>${L('Please contact support through the token issuance platform and provide reference HC-204.','请通过代币发行平台联系客服，并提供参考码 HC-204。')}</p>`,
+    support:()=>({title:L('Asset trust platform support','资产可信平台客服'),
+      html:`<p>${L('Please contact support through the asset trust platform and provide reference HC-204.','请通过资产可信平台联系客服，并提供参考码 HC-204。')}</p>`,
       foot:btn('Close','关闭','closelayer')})
   };
 
@@ -482,7 +482,7 @@
       case 'login-leave':open('leave',v||'verify');break;
       case 'login-depart':
         S.layer=null;D.handoff='asset';S.demo=true;
-        D.reviewMessage=L('External handoff: token issuance platform. The destination is not configured; simulate the outcome below.','已到代币发行平台离站边界；目标域名尚未登记，可在下方模拟结果。');break;
+        D.reviewMessage=L('External handoff: asset trust platform. The destination is not configured; simulate the outcome below.','已到资产可信平台离站边界；目标域名尚未登记，可在下方模拟结果。');break;
       case 'login-action':triggerAction(v);break;
       case 'login-account':go(S.role==='fund'?'/funder/account':'/account');break;
       case 'login-signout':endSession('logout');break;
@@ -516,8 +516,8 @@
         CF.toast(L('Upstream registration changed. It is discovered at the next retrieval — after the next sign-in, or before a key action.','上游登记已变更，将在下一次调取时发现：下次登录成功后，或关键动作前。'));break;
       case 'address-restored':D.addressMoved=false;CF.toast(L('Upstream registration restored.','上游登记已恢复。'));break;
       case 'upstream-logout':
-        CF.toast(S.role==='guest'?L('You signed out on the token issuance platform.','你已在代币发行平台登出。'):
-          L('You signed out on the token issuance platform. Your sign-in here continues.','你已在代币发行平台登出，本平台登录继续有效。'));break;
+        CF.toast(S.role==='guest'?L('You signed out on the asset trust platform.','你已在资产可信平台登出。'):
+          L('You signed out on the asset trust platform. Your sign-in here continues.','你已在资产可信平台登出，本平台登录继续有效。'));break;
       case 'expiry':S.demo=false;endSession('expiry');break;
       case 'blocked':S.demo=false;endSession('blocked');break;
       case 'downgrade':if(S.role==='asset'){D.level='L0';D.downgraded=true;}S.demo=false;break;
