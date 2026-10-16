@@ -48,7 +48,7 @@
 .login-profile .login-row{display:grid;grid-template-columns:160px minmax(0,1fr);gap:var(--sp-4);padding:var(--sp-3) 0 0;border:0}
 .login-profile .login-row>span{font-size:var(--ui-field-label);color:var(--muted)}
 .login-profile .login-row .login-verification{margin-right:auto}
-.login-preferences{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5) var(--sp-6);padding-top:var(--sp-3)}
+.login-preferences{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-5);padding-top:var(--sp-3)}
 .login-preference-field{min-width:0;max-width:480px}
 .login-preference-field [id$="-feedback"]{min-height:var(--sp-6)}
 .login-preference-field [role]{margin:var(--sp-1) 0 0}
@@ -102,7 +102,7 @@
   .login-profile-source{padding:var(--sp-4)}
   .login-profile .login-account-fields>div{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
   .login-profile .login-row{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
-  .login-preferences{grid-template-columns:minmax(0,1fr);gap:var(--sp-4)}
+  .login-preferences{gap:var(--sp-4)}
 }
 
 /* 资金方：沿用登录域与公共组件，仅增加填写流程、核对和账户分组。 */
