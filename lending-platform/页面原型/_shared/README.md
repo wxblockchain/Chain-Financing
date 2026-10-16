@@ -23,7 +23,7 @@
 | 运营端消息铃铛、预览、未读数量与已读状态 | [`admin-notifications.js`](admin-notifications.js) |
 | 运营端消息虚构记录与分类 | [`admin-message-data.js`](admin-message-data.js) |
 | 滑块（拼图）人机校验（两端唯一实现） | [`puzzle.js`](puzzle.js) + `base.css` 的 `.cf-puzzle` |
-| 运营端连接平台统一钱包签名（部署签名与解冻授权共用，本地演示） | [`ops-wallet.js`](ops-wallet.js) + `base.css` 的 `.ow-*` |
+| 运营端连接平台统一钱包签名（部署签名与代币质押通过签名共用，本地演示） | [`ops-wallet.js`](ops-wallet.js) + `base.css` 的 `.ow-*` |
 | 语义、约束、禁止用法、可访问性 | [`design-system/`](design-system/README.md) |
 | 四种 shell 与状态表面的母版 | [`样板/底座样板.html`](样板/底座样板.html) |
 

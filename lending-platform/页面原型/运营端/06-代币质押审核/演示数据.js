@@ -89,12 +89,12 @@
         files:decided?agreement():[],snapshot:decided?95000+i*4500:null});
     }
 
-    /* 解冻授权（用户 2026-10-16 裁定）：运营连接平台统一钱包签名，上链成功才算通过。
-       一张授权失败、回到可裁定的待审核；一张授权处理中、暂不可裁定，资产方也不能撤回。 */
+    /* 通过的链上执行（用户 2026-10-16 裁定）：运营连接平台统一钱包签名提交，链上执行成功即审核通过（即解冻成功）。
+       一张上次通过未成功、回到可裁定的待审核；一张通过处理中、暂不可裁定，资产方也不能撤回。 */
     add({token:'DEMO-TK-037',batch:'PA-DEMO-020',owner:'A',project:'01',type:'add',onchainAt:now-30*H,value:142000,proof:proof('371'),
       auth:'failed',authDraft:{files:agreement(),remark:''},
       authFail:{at:now-3*H,signedAt:now-4*H,gas:0.0009,gasCcy:'ETH',proof:proof('372'),
-        reason:['The unfreeze authorization was rejected on chain: the transaction ran out of gas before it completed.','解冻授权交易在链上被拒绝：交易在完成前 gas 耗尽。']}});
+        reason:['The approval transaction was rejected on chain: it ran out of gas before it completed.','通过的链上执行被拒绝：交易在完成前 gas 耗尽。']}});
     add({token:'DEMO-TK-038',batch:'PA-DEMO-020',owner:'A',project:'01',type:'add',onchainAt:now-30*H,value:118000,proof:proof('381'),
       auth:'processing',authDraft:{files:agreement(),remark:''},authSignedAt:now-25*60000,authProof:proof('382')});
 
@@ -111,21 +111,21 @@
         {actor:HOLDER,chain:true,gas:r.gas,gasCcy:r.gasCcy,proof:r.proof,
          text:['The token is counted in the total pledged value and in the pledged pending review, and is not yet counted in the eligible borrowing limit.','该张已计入总质押额与待审质押额，尚未计入有效质押额。']});
       if(r.auth==='failed'){
-        push('auth-sign',r.authFail.signedAt,['Unfreeze authorization signed','解冻授权已签名提交'],['Pending review · authorization in progress','待审核 · 解冻授权处理中'],
-          {auth:true,actor:OPERATOR_LIN,signer:WALLET,text:['Signed with the platform wallet. The approval stands only once the authorization succeeds on chain.','已用平台统一钱包签名提交，授权上链成功才算通过。']});
-        push('auth-fail',r.authFail.at,['Unfreeze authorization failed','解冻授权失败'],['Authorization in progress → Pending review','授权处理中 → 待审核'],
+        push('auth-sign',r.authFail.signedAt,['Approval submitted','提交通过'],['Pending review · approval in progress','待审核 · 通过处理中'],
+          {auth:true,actor:OPERATOR_LIN,signer:WALLET,text:['Signed with the platform wallet. The approval stands only once it is executed on chain.','已用平台统一钱包签名提交，链上执行成功才算通过。']});
+        push('auth-fail',r.authFail.at,['Approval not completed','通过未成功'],['Approval in progress → Pending review','通过处理中 → 待审核'],
           {auth:true,chain:true,gas:r.authFail.gas,gasCcy:r.authFail.gasCcy,proof:r.authFail.proof,text:r.authFail.reason,
-           next:['Not approved and the asset holder is not notified. The agreements and note are kept; sign again or reject instead.','不算通过，不通知资产方；协议与备注已保留，可再次签名或改为驳回。']});
+           next:['Not approved and the asset holder is not notified. The agreements and note are kept; submit the approval again or reject instead.','不算通过，不通知资产方；协议与备注已保留，可再次提交通过或改为驳回。']});
       }
-      if(r.auth==='processing')push('auth-sign',r.authSignedAt,['Unfreeze authorization signed','解冻授权已签名提交'],['Pending review · authorization in progress','待审核 · 解冻授权处理中'],
+      if(r.auth==='processing')push('auth-sign',r.authSignedAt,['Approval submitted','提交通过'],['Pending review · approval in progress','待审核 · 通过处理中'],
         {auth:true,actor:OPERATOR_LIN,signer:WALLET,chain:true,gas:null,gasCcy:'ETH',proof:r.authProof,
-         text:['Signed with the platform wallet. The approval stands only once the authorization succeeds on chain; the token is not yet counted in the eligible pledged value and no notice is sent.','已用平台统一钱包签名提交。授权上链成功才算通过；本张暂不计入有效质押额，也不发送通知。']});
+         text:['Signed with the platform wallet. The approval stands only once it is executed on chain; the token is not yet counted in the eligible pledged value and no notice is sent.','已用平台统一钱包签名提交。链上执行成功才算通过；本张暂不计入有效质押额，也不发送通知。']});
 
-      if(r.status==='approved')push('review',r.decisionAt,['Unfreeze authorized · approved','解冻授权成功 · 审核通过'],
+      if(r.status==='approved')push('review',r.decisionAt,['Approved','审核通过'],
         ['Pending review → Approved','待审核 → 通过'],
         {actor:r.operator,files:r.files.map(f=>({name:f.name})),
          text:r.effective
-           ?['The unfreeze authorization succeeded on chain. Moved out of the pledged pending review and counted in the eligible pledged value; the eligible borrowing limit has been recalculated. No platform fee.','解冻授权上链成功，已从待审质押额转出并计入有效质押价值，有效质押额随之重算；未产生平台费用。']
+           ?['Executed on chain, so the share is unfrozen. Moved out of the pledged pending review and counted in the eligible pledged value; the eligible borrowing limit has been recalculated. No platform fee.','链上执行成功（即解冻成功），已从待审质押额转出并计入有效质押价值，有效质押额随之重算；未产生平台费用。']
            :['Moved out of the pledged pending review. The lending platform found the underlying asset invalid, so the token is not counted in the eligible pledged value; the approval stands.','已从待审质押额转出。借贷平台判定底层资产已失效，该张未计入有效质押价值，审核结论仍为通过。']});
 
       if(r.status==='rejected')push('review',r.decisionAt,['Rejected','审核驳回'],
