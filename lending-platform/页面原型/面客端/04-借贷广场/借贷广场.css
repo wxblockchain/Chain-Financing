@@ -934,3 +934,8 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-pick th,.ls-pick td,.ls-pick td *{white-space:nowrap}
 .ls-pick th,.ls-pick td{padding-inline:var(--sp-2)}
 .ls-pick td .mono{font-size:var(--fs-12)}
+/* 创建页：区块链网络为第一项，本期固定以太坊。 */
+.ls-network{display:inline-flex;align-items:center;gap:var(--sp-3)}
+.ls-lock{font-size:var(--fs-11);color:var(--faint);border:1px dashed var(--border-strong);border-radius:var(--radius-pill);padding:0 8px}
+.ls-unfinished{margin:var(--sp-2) 0 0;padding-left:var(--sp-5)}
+.ls-unfinished li{margin:2px 0}
