@@ -49,13 +49,15 @@
 .login-profile .login-row>span{font-size:var(--ui-field-label);color:var(--muted)}
 .login-profile .login-row .login-verification{margin-right:auto}
 .login-preferences{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-5);padding-top:var(--sp-3)}
-.login-preference-field{min-width:0;max-width:480px}
+.login-preference-field{min-width:0;max-width:280px}
+.login-preference-field .inp{height:var(--ctrl-h-sm);min-height:var(--ctrl-h-sm)}
 .login-preference-field [id$="-feedback"]{min-height:var(--sp-6)}
 .login-preference-field [role]{margin:var(--sp-1) 0 0}
 .login-preference-field [role="alert"]{color:var(--danger)}
 .login-preference-field [role="status"]:not(:empty){color:var(--muted)}
 .login-preference-field>.login-caption{margin:var(--sp-2) 0 0}
 .login-notification-policy{margin:var(--sp-5) 0 0;padding-top:var(--sp-4);border-top:1px solid var(--border-dash)}
+@media(pointer:coarse){.login-preference-field .inp{height:var(--ctrl-h);min-height:var(--ctrl-h)}}
 .login-verification.detail-actions{margin-top:0;align-items:center}
 .login-fields{margin:0}
 .login-fields>div{padding:var(--sp-4) 0;border-bottom:1px solid var(--border-dash)}
