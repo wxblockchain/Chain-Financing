@@ -620,8 +620,7 @@
   /* 第三个元素为 true 的字段占整行：合约地址与两个哈希在半行里读不完。 */
   function dl(pairs) {
     return "<dl class=\"dl\">" + pairs.map(function (p) {
-      return "<dt" + (p[2] ? ' class="wide-k"' : "") + ">" + esc(p[0]) + "</dt>" +
-        "<dd" + (p[2] ? ' class="wide"' : "") + ">" + p[1] + "</dd>";
+      return '<div class="am-fact' + (p[2] ? ' wide' : '') + '"><dt>' + esc(p[0]) + '</dt><dd>' + p[1] + '</dd></div>';
     }).join("") + "</dl>";
   }
 

@@ -47,11 +47,13 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
 
 /* 详情：单列分区，按访客的判断路径从上往下读。 */
 .am-detail{width:100%;min-width:0;display:flex;flex-direction:column;gap:var(--sp-5)}
-/* 宽屏下每行放两组字段，窄屏回到一组一行；标签与取值仍是公共组件的 .dl。 */
+/* 每个标签和值组成一个语义字段组；两栏等宽，长内容不挤乱相邻字段的阅读顺序。 */
+.am-fact{display:grid;grid-template-columns:136px minmax(0,1fr);gap:var(--sp-4);align-items:start;
+  min-width:0;padding-block:var(--sp-3);border-top:1px solid var(--row-line)}
+.am-fact:first-child{border-top:0}
+.am-fact.wide{grid-column:1 / -1}
 @media (min-width:1100px){
-  .am-detail .dl{grid-template-columns:minmax(110px,auto) minmax(0,1fr) minmax(110px,auto) minmax(0,1fr)}
-  .am-detail .dl dt.wide-k{grid-column:1}
-  .am-detail .dl dd.wide{grid-column:2 / -1}
+  .am-fact:nth-child(2){border-top:0}
 }
 .am-ov-top{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
 .am-mark{width:48px;height:48px;border-radius:var(--radius-sm)}
@@ -74,9 +76,7 @@ table.tbl.am-tbl tbody td{padding-left:10px;padding-right:10px}
 }
 /* 手机详情按字段上下阅读，避免长标签挤碎金额、时间与地址。 */
 @media (max-width:600px){
-  .am-detail .dl{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
-  .am-detail .dl dd{margin-bottom:var(--sp-4)}
-  .am-detail .dl dd:last-child{margin-bottom:0}
+  .am-fact{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
 }
 
 /* WS-385 · follow the shared international Web3 baseline without changing
@@ -122,7 +122,7 @@ table.tbl.am-tbl{table-layout:fixed}
 table.tbl.am-tbl thead th{padding-block:var(--sp-3);color:var(--muted)}
 table.tbl.am-tbl th.sortable button{padding-block:var(--sp-3);align-items:center}
 table.tbl.am-tbl th.sortable.am-r .am-th-l{align-items:flex-end}
-table.tbl.am-tbl tbody td{padding-block:var(--sp-4);line-height:1.5;overflow-wrap:anywhere}
+table.tbl.am-tbl tbody td{padding-block:var(--sp-3);line-height:1.5;overflow-wrap:anywhere}
 .am-tbl .am-id{font-size:var(--fs-12);white-space:nowrap}
 .am-tbl .tok-name{font-weight:600;white-space:normal;overflow:visible;text-overflow:clip;max-width:none}
 .am-tbl .am-logo[data-hue]{background:var(--hash-bg);color:var(--hash-text);border-color:var(--hash-border)}
@@ -139,20 +139,18 @@ table.tbl.am-tbl tbody td{padding-block:var(--sp-4);line-height:1.5;overflow-wra
 .am-detail .am-ov-no{color:var(--muted);margin-top:var(--sp-2);font-size:var(--fs-13)}
 .am-detail .am-ov-tags{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top-color:var(--border)}
 .am-detail .am-ov-tag .tiny,.am-detail .am-caveat{font-size:var(--fs-12);color:var(--muted);line-height:1.7}
-.am-sec .card-head{padding:var(--sp-5) var(--sp-6)}
+.am-sec .card-head{padding:var(--sp-4) var(--sp-6)}
 .am-sec .card-head h2{margin:0;font-size:var(--fs-16);font-weight:600;line-height:1.5}
-.am-sec .card-b{padding:var(--sp-5) var(--sp-6)}
-.am-detail .dl{margin:0;gap:var(--sp-4) var(--sp-6)}
+.am-sec .card-b{padding:var(--sp-2) var(--sp-6)}
+.am-detail .dl{margin:0;grid-template-columns:minmax(0,1fr);gap:0 var(--sp-6)}
+@media (min-width:1100px){.am-detail .dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .am-detail .dl dt{font-weight:400}
 .am-detail .am-addr .mono{font-size:var(--fs-12)}
 .am-holdings th:nth-child(2),.am-holdings th:nth-child(3),.am-holdings td:nth-child(2),.am-holdings td:nth-child(3){text-align:right}
 .am-holdings td:nth-child(2) .cell-wrap,.am-holdings td:nth-child(3) .cell-wrap{align-items:flex-end}
 .am-holdings thead th{white-space:normal}
 
-/* Give search and result tools a stable second row before labels become cramped. */
-@media (min-width:769px) and (max-width:1399px){
-  .am-filter-options{flex-basis:100%}
-}
+/* Three filters plus sorting fit at desktop widths; wrap by available space. */
 @media (max-width:1200px){
   .am-tbl .am-id{white-space:normal;overflow-wrap:anywhere}
   table.tbl.am-tbl tbody td{align-items:flex-start}
@@ -178,8 +176,8 @@ table.tbl.am-tbl tbody td{padding-block:var(--sp-4);line-height:1.5;overflow-wra
   .am-market-page .am-summary{grid-template-columns:minmax(0,1fr);row-gap:var(--sp-5);padding-bottom:var(--sp-6)}
   .am-market-page .am-summary .v{font-size:var(--fs-19);white-space:normal;overflow-wrap:anywhere}
   .am-detail{gap:var(--sp-5)}
-  .am-sec .card-head,.am-sec .card-b{padding:var(--sp-4)}
-  .am-detail .dl{gap:var(--sp-2)}
+  .am-sec .card-head{padding:var(--sp-4)}
+  .am-sec .card-b{padding:var(--sp-2) var(--sp-4)}
   .am-detail .am-ov-top{align-items:flex-start}
   .am-detail .am-ov-id{min-width:0}
 }
@@ -216,10 +214,7 @@ body.list-full .am-market-page .listzone{position:relative;inset:auto;z-index:au
 .am-detail .am-ov-meta .am-ov-why{position:relative;padding-left:var(--sp-4)}
 .am-detail .am-ov-meta .am-ov-why::before{content:"";position:absolute;left:0;top:50%;width:1px;height:12px;margin-top:-6px;background:var(--border)}
 
-/* 分区字段：左右两栏等宽、标签同宽，长值也收在各自半栏内，左右对齐成网格。 */
-@media (min-width:1100px){
-  .am-detail .dl{grid-template-columns:136px minmax(0,1fr) 136px minmax(0,1fr)}
-}
+/* 字段组沿用两栏等宽与 136px 标签；轻行线只划分已有字段，不新增信息容器。 */
 /* 字号字重统一：标签 12 / 400 muted，取值 14 / 400 正文色；数字只换等宽字形，不加粗不放大。 */
 .am-detail .dl dt{font-size:var(--fs-12);font-weight:400;color:var(--muted);line-height:1.6}
 .am-detail .dl dd{font-size:var(--fs-14);font-weight:400;color:var(--text);line-height:1.6;min-width:0}

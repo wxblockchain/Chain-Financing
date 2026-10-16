@@ -111,11 +111,21 @@
 [data-market-redesign] .listzone[data-view="cards"] .cell-wrap>*{text-align:left}
 [data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(3),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(4),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(5){grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3)}
 [data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(4)::before,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(5)::before{flex:none}
-[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(6),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(7){padding-block:var(--sp-3)}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl tbody tr{row-gap:var(--sp-2);container-type:inline-size}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td.mk-item-cell{padding-bottom:var(--sp-2)}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl .am-number{align-items:flex-start}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(6),[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(7){padding-block:var(--sp-2)}
 [data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(6) .num,[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(7) .num{font-size:var(--fs-19);font-weight:450;color:var(--text)}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(8){grid-column:1 / -1;border-top:1px solid var(--row-line);padding-top:var(--sp-3)}
 [data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(8)::before{display:none}
 [data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(9){grid-column:1 / -1;border-top:1px solid var(--border);padding-top:var(--sp-3);display:flex;justify-content:space-between;gap:var(--sp-3)}
-[data-market-redesign] .listzone[data-view="cards"] .am-id{min-height:32px;font-size:var(--fs-11)}
+/* A narrow card gives complete long amounts their own row, without smaller type. */
+@container (max-width:360px){
+  [data-market-redesign] .listzone[data-view="cards"] .am-tbl :is(td:nth-child(6),td:nth-child(7)){grid-column:1 / -1}
+}
+[data-market-redesign] .am-market-page .am-id{color:var(--hash-text)}
+[data-market-redesign] .listzone[data-view="cards"] .am-id{min-height:32px;font-size:var(--market-row-value)}
+[data-market-redesign] .am-market-page .listzone[data-view="table"] .am-tbl tbody td{padding-block:var(--sp-3)}
 [data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(3){grid-column:1 / -1}
 [data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(3)::before{display:none}
 [data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(4),[data-market-redesign] .listzone[data-view="cards"] .ls-market-table td:nth-child(5){padding-block:var(--sp-3)}
@@ -132,7 +142,9 @@
 [data-market-redesign] .am-mark{width:64px;height:64px;background:var(--accent-soft);border:1px solid var(--accent-border)}
 [data-market-redesign] .am-ov .page-title{font-size:var(--fs-36)}
 [data-market-redesign] .am-detail .am-ov-tags{border:0;padding-top:var(--sp-4);gap:var(--sp-6)}
-[data-market-redesign] .am-detail .dl{font-size:var(--fs-14);row-gap:var(--sp-5)}
+[data-market-redesign] .am-detail .dl{font-size:var(--fs-14);row-gap:0}
+[data-market-redesign] .am-detail .am-sec .card-head{padding-block:var(--sp-4)}
+[data-market-redesign] .am-detail .am-sec .card-b{padding-block:var(--sp-2)}
 [data-market-redesign] .am-detail .dl dt{color:var(--muted);font-weight:400;font-size:var(--fs-12)}
 /* Ordinary detail values share one size; .num selects numeric styling only. */
 [data-market-redesign] .am-detail .num{font-size:inherit}
