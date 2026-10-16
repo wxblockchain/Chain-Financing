@@ -92,7 +92,12 @@
     A.dir=p.get('dir')==='-1'?-1:1;
     A.page=Math.max(1,Number(p.get('page'))||1);
     A.size=SIZES.includes(Number(p.get('size')))?Number(p.get('size')):SIZES[0];
-    const token=p.get('token');
+    selectFromHash();
+  }
+  /* 详情与维护页以地址里的 token 为准，重绘时同步当前选择，已移除的条目也保持原地址可读。 */
+  function selectFromHash(){
+    if(S.page!==DETAIL&&S.page!==EDIT)return;
+    const token=new URLSearchParams(location.hash.split('?')[1]||'').get('token');
     if(token&&rowOf(token))A.selected=token;
   }
   function saveContext(){
@@ -483,6 +488,13 @@
     if(!r)return;
     loadDraft(r);CF.render();CF.toast(L('The current values have been reloaded.','已重新取数。'));
   }
+  /* 开发新增的条目两项参数为空、以未配置出现；同名条目被移除后再新增，按新的未配置条目处理，不恢复旧值，旧记录保留。 */
+  function addDemoToken(){
+    const old=rowOf(CF.parameterTokenNames.trc);
+    if(!old)A.rows.push(CF.parameterNewToken());
+    else if(old.removed)Object.assign(old,{removed:false,maxRatio:null,maxTermMonths:null,updatedAt:null,updatedBy:null});
+    A.domainNew=true;
+  }
   function onAct(act,v,e){
     if(e&&(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)&&['fc-view','fc-edit'].includes(act))return false;
     if(!act.startsWith('fc-')){
@@ -524,13 +536,7 @@
       A.domainNew=true;CF.render();
       CF.toast(L(CF.parameterTokenNames.trc+' now exists in the token domain. Developers have not added it, so the parameter list is unchanged.',CF.parameterTokenNames.trc+' 已出现在代币域；开发尚未新增，融资参数列表不变。'));
     }
-    else if(act==='add-token'){
-      /* 开发新增的条目两项参数为空、以未配置出现；同名条目被移除后再新增，按新的未配置条目处理，不恢复旧值，旧记录保留。 */
-      const old=rowOf(CF.parameterTokenNames.trc);
-      if(!old)A.rows.push(CF.parameterNewToken());
-      else if(old.removed)Object.assign(old,{removed:false,maxRatio:null,maxTermMonths:null,updatedAt:null,updatedBy:null});
-      A.domainNew=true;CF.render();
-    }
+    else if(act==='add-token'){addDemoToken();CF.render();}
     else if(act==='remove-token'){
       const r=rowOf(v);
       if(r){r.removed=true;if(A.draft&&A.draft.id===v)A.draft=null;
@@ -584,6 +590,7 @@
   },true);
 
   /* ------------------------------------------------------------ 评审目录 */
+  const reviewTarget=()=>A.selected&&rowOf(A.selected)&&!rowOf(A.selected).removed?A.selected:(live()[0]||{}).id;
   const DENIED={id:'denied',label:['No access','无权限'],group:'business'};
   const UNSET={id:'unset',label:['Not configured','未配置'],group:'business'};
   [[LIST,['Financing parameter list','融资参数列表'],['default','loading','empty','noresult','error',DENIED]],
@@ -591,19 +598,21 @@
    [EDIT,['Maintain parameters','参数维护'],['default',UNSET,DENIED]]].forEach(([id,label,states])=>{
     CF.review.register(id,{
       group:['Financing parameters','融资参数配置'],label,states,
+      /* route 只计算目标、不改当前选择：评审目录每次重绘都会调用它，
+         写回 A.selected 会让已移除条目的详情被换成另一个条目，页面与地址不再一致。 */
       route:()=>{
-        const target=A.selected&&rowOf(A.selected)&&!rowOf(A.selected).removed?A.selected:(live()[0]||{}).id;
         if(id===LIST)return ROOT;
-        if(!target)return null;
-        A.selected=target;
-        return id===DETAIL?detailRoute(target):editRoute(target);
+        const target=reviewTarget();
+        return !target?null:id===DETAIL?detailRoute(target):editRoute(target);
       },
+      enter(){if(id!==LIST){const target=reviewTarget();if(target)A.selected=target;}},
       get:()=>!canQuery()?'denied':(id!==LIST&&!configured(row())?'unset':A.view),
       set(value){
         if(value==='denied'){grant('none');A.view='default';S.st='default';return;}
         if(!canQuery())grant(id===EDIT?'full':'admin');
         if(value==='unset'){
-          if(!A.rows.some(r=>r.id===CF.parameterTokenNames.trc))A.rows.push(CF.parameterNewToken());
+          const t=rowOf(CF.parameterTokenNames.trc);
+          if(!t||t.removed||configured(t)){if(t&&configured(t))t.removed=true;addDemoToken();}
           A.selected=CF.parameterTokenNames.trc;A.draft=null;A.view='default';S.st='default';
           navigateRoute(id===EDIT?editRoute(A.selected):detailRoute(A.selected));
           return;
@@ -645,7 +654,7 @@
       return OPS.onBeforeAct(act,v,e);
     },
     beforeRender(){
-      S.toTop=false;syncContext();
+      S.toTop=false;syncContext();selectFromHash();
       const signed=signedIn();
       if(signed&&PAGES.includes(S.page))lastHash=location.hash;
       if(!signed&&wasSigned){A.draft=null;A.busy=false;S.layer=null;if(onModule)returnHash=lastHash;}
