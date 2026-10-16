@@ -81,7 +81,12 @@
     try{await navigator.clipboard.writeText(value);CF.toast(L('Address copied','地址已复制'));}
     catch(e){if(!element?.isConnected)return;const disclosure=element.querySelector('details');disclosure.open=true;element.querySelector('.funder-copy-fallback').hidden=false;}
   }
-  function head(en,zh,desc=''){return `<div class="page-head"><div><h1 class="page-title">${L(en,zh)}</h1>${desc?`<p class="page-desc">${desc}</p>`:''}</div>${S.role==='fund'?tag():''}</div>`;}
+  function head(en,zh,desc=''){return `<div class="page-head"><div><h1 class="page-title">${L(en,zh)}</h1>${desc?`<p class="page-desc">${desc}</p>`:''}</div></div>`;}
+  /* 与资产方用户中心同一骨架：单张资料卡、左列分区标题、右侧内容；事实行为标签 / 值对齐。 */
+  function profile(sections){return `<div class="card login-profile funder-profile">${sections.filter(Boolean).join('')}</div>`;}
+  function section(id,en,zh,body,required=false){return `<section class="login-profile-section" ${id?`id="${id}"`:''} aria-labelledby="${id||'f-sec-'+en.replace(/\W+/g,'-').toLowerCase()}-title"><h2 id="${id||'f-sec-'+en.replace(/\W+/g,'-').toLowerCase()}-title">${required?CF.fieldLabel(L(en,zh),true):L(en,zh)}</h2><div class="login-profile-body">${body}</div></section>`;}
+  function facts(rows){return `<dl class="login-fields login-identity-fields login-account-fields">${rows.map(r=>`<div><dt>${L(r[0],r[1])}</dt><dd>${r[2]}</dd></div>`).join('')}</dl>`;}
+  function profileFields(items){return `<dl class="login-fields login-identity-fields">${items.map(r=>`<div ${r[3]==='registeredAddress'?'class="funder-field-wide"':''}><dt>${L(r[0],r[1])}</dt><dd>${esc(r[3]?fieldValue(r):String(r[2]||'—'))}</dd></div>`).join('')}</dl>`;}
   function later(fn,delay=650){const generation=F.generation;setTimeout(()=>{if(generation===F.generation){fn();CF.render();queueMicrotask(afterRender);}},delay);}
   /* 连接钱包只服务于修改联系邮箱的本人再认证；登录连接由主干承担。 */
   function connect(origin='auth'){
@@ -224,7 +229,10 @@
   function validationSummary(){const keys=Object.keys(F.fieldErrors).filter(k=>fieldNames[k]);return keys.length?`<section class="note red funder-validation" role="alert" tabindex="-1" id="f-validation"><b>${L('Check the following before submitting','提交前请检查以下项目')}</b><ul>${keys.map(k=>`<li>${link(...fieldNames[k],'issue-field',k)}<span>${L(...F.fieldErrors[k])}</span></li>`).join('')}</ul></section>`:'';}
   function pendingPage(){
     const p=F.account.pending;
-    return `<div class="funder-wrap">${head('Confirming submission','确认提交结果',L('Your registration status stays unchanged until the result is confirmed.','提交结果确认前，当前注册状态保持不变。'))}<section class="card"><div class="card-b">${CF.note('warn',L('The submission result is not confirmed. Check its status before editing or submitting again.','提交结果尚未确认，请先查询结果，再继续编辑或提交。'))}${error()}<div class="login-actions">${btn(F.busy==='query'?'Checking…':'Check current status',F.busy==='query'?'正在查询…':'查询当前状态','resolve-submit','','primary',!!F.busy)}${link('Continue browsing','继续浏览','browse')}</div>${F.storageFailed?CF.note('warn',L('This device could not save the pending submission. Keep this page open while checking the result.','当前设备无法保存待确认提交，请保留此页并查询结果。')):''}${p?`<h2 class="funder-detail-heading">${L('Submitted details','本次提交资料')}</h2>${details([['Account contact email at submission','提交时账户联系邮箱',p.email],...p.fields.filter(notDocuments)],true)}${materialList(p.form,'pending')}`:''}</div></section>${stamp()}</div>`;
+    return `<div class="login-account funder-wrap">${head('Confirming submission','确认提交结果',L('Your registration status stays unchanged until the result is confirmed.','提交结果确认前，当前注册状态保持不变。'))}${profile([
+      section('f-pending-result','Submission result','提交结果',`${CF.note('warn',L('The submission result is not confirmed. Check its status before editing or submitting again.','提交结果尚未确认，请先查询结果，再继续编辑或提交。'))}${error()}<div class="funder-review-actions">${btn(F.busy==='query'?'Checking…':'Check current status',F.busy==='query'?'正在查询…':'查询当前状态','resolve-submit','','primary',!!F.busy)}${link('Continue browsing','继续浏览','browse')}</div>${F.storageFailed?CF.note('warn',L('This device could not save the pending submission. Keep this page open while checking the result.','当前设备无法保存待确认提交，请保留此页并查询结果。')):''}`),
+      p?section('f-pending-details','Submitted details','本次提交资料',`${profileFields([['Account contact email at submission','提交时账户联系邮箱',p.email],...p.fields.filter(notDocuments)])}<p class="funder-subhead">${L('Institution supporting documents','机构证明材料')}</p>${materialList(p.form,'pending')}`):''
+    ])}${stamp()}</div>`;
   }
 
   function submitTimes(){return (F.account.successTimes||[]).filter(t=>Date.now()-t<86400000).sort((x,y)=>x-y);}
@@ -263,16 +271,15 @@
     if(a.status==='submitted'){queueMicrotask(()=>go('/funder/status'));return '';}
     if(a.status==='verified'&&!F.change){queueMicrotask(()=>go('/funder/status'));return '';}
     F.inFlow=true;
-    const sections=[['registration-email','Contact email','联系邮箱',emailSection()],
-      ['registration-institution','Financial institution details','金融机构资料',institution()],
-      ['registration-materials','Institution supporting documents *','机构证明材料 *',uploadArea()],
-      ['registration-submit','Review and submit','核对并提交',submitSection()]];
-    return `<div class="funder-wrap funder-registration">${head(F.change?'Update institution details':'Institution registration',F.change?'变更机构资料':'机构注册',L('Complete the sections below and submit them together for review.','请填写以下信息，完成后统一提交审核。'))}
+    return `<div class="login-account funder-wrap funder-registration">${head(F.change?'Update institution details':'Institution registration',F.change?'变更机构资料':'机构注册',L('Complete the sections below and submit them together for review.','请填写以下信息，完成后统一提交审核。'))}
       ${F.change?CF.note('warn',L('After submission, your institution will be reviewed again. Funding actions will be unavailable during review.','提交后将重新进入审核，期间恢复为未认证权限。')):''}
-      <div class="card funder-registration-form">
-        <section class="funder-registration-section" aria-labelledby="registration-wallet-title"><h2 id="registration-wallet-title">${L('Signed-in wallet','当前登录钱包')}</h2><div class="funder-section-body">${wallet()}<p class="login-caption">${walletCare()}</p></div></section>
-        ${sections.map(x=>`<section class="funder-registration-section" id="${x[0]}" aria-labelledby="${x[0]}-title"><h2 id="${x[0]}-title">${CF.fieldLabel(L(x[1],x[2]))}</h2><div class="funder-section-body">${x[3]}</div></section>`).join('')}
-      </div>${stamp()}</div>`;
+      ${profile([
+        section('registration-wallet','Signed-in wallet','当前登录钱包',`${wallet()}<p class="login-caption">${walletCare()}</p>`),
+        section('registration-email','Contact email','联系邮箱',emailSection()),
+        section('registration-institution','Financial institution details','金融机构资料',institution()),
+        section('registration-materials','Institution supporting documents','机构证明材料',uploadArea(),true),
+        section('registration-submit','Review and submit','核对并提交',submitSection())
+      ])}${stamp()}</div>`;
   }
 
   const demoReason=()=>L('The submitted number does not match the document.\nCheck and correct the full number.','提交编号与证明材料不一致。\n请核对并填写完整编号。');
@@ -305,45 +312,42 @@
     if(n&&n.event){const c=noticeCopy(n);return `<div class="funder-notice"><div><b>${esc(c.title)}</b><p class="funder-reason-text">${esc(c.body)}</p></div>${link(c.action,c.action,'status')}</div>`;}
     return `<div class="funder-notice"><div>${esc(L(...n))}</div>${link('View application status','查看申请状态','status')}</div>`;
   }
+  function reviewBody(a){
+    const view={...a,fields:a.submittedFields};
+    const state=facts([['Registration status','注册状态',tag(a.status)]]);
+    if(a.status==='rejected')return `${state}<div class="funder-review"><p class="funder-review-title">${L('Your registration needs changes','注册资料需要修改')}</p>${CF.note('red',issuesHTML(view))}<div class="funder-review-actions">${btn('Edit and resubmit','修改并重新提交','register','','primary')}${link('Contact support','联系客服','support')}</div></div>`;
+    if(a.status==='submitted')return `${state}<div class="funder-review"><p class="login-caption">${L('Institution details are locked until a review decision is available.','机构资料在审核结论出具前不可修改。')}</p><div class="funder-review-actions">${btn(F.reviewCheck==='loading'?'Checking…':'Check the review result',F.reviewCheck==='loading'?'正在查询…':'查询审核结果','check-review','','',F.reviewCheck==='loading')}${link('Contact support','联系客服','support')}</div>${F.reviewCheck==='loading'?`<p class="login-caption" role="status">${L('Checking the current review result…','正在查询当前审核结果…')}</p>`:F.reviewCheck==='failed'?`<p class="funder-error" role="alert">${L('The review result could not be retrieved. Your application is unchanged; please retry.','暂时无法获取审核结果，申请状态未改变，请重试。')}</p>`:F.reviewCheck==='done'?`<p class="login-caption" role="status">${L('No decision yet. This application is still under review.','尚未出具结论，本次申请仍在审核中。')}</p>`:''}</div>`;
+    return `${state}<div class="funder-review"><div class="funder-review-actions">${btn('Update institution details','变更机构资料','change','','primary')}</div></div>`;
+  }
   function statusPage(){
     const a=F.account;
     if(new URLSearchParams(location.hash.split('?')[1]||'').has('version'))return CF.empty(L('Historical materials unavailable','不再提供历史资料'),L('Open your current submission to view its details and review records.','请进入当前提交查看资料及审核记录。'),btn('View current submission','查看当前提交','status','','primary'));
-    if(a.status==='draft')return `<div class="funder-wrap">${head('Application status and review records','申请状态与审核记录')}${CF.empty(L('No registration submitted','尚未提交注册'),L('Complete your email and institution details to send your registration for review.','完成邮箱验证并填写机构资料后，即可提交审核。'),btn('Go to registration','去完成注册','register','','primary'))}</div>`;
+    const title=['Application status and review records','申请状态与审核记录'],desc=L('View your institution details and verification status.','查看机构资料及认证状态。');
+    if(a.status==='draft')return `<div class="login-account funder-wrap funder-status">${head(...title,desc)}<div class="card login-profile funder-profile">${CF.empty(L('No registration submitted','尚未提交注册'),L('Complete your email and institution details to send your registration for review.','完成邮箱验证并填写机构资料后，即可提交审核。'),btn('Go to registration','去完成注册','register','','primary'))}</div></div>`;
     const view={...a,fields:a.submittedFields};
-    const feedback=a.status==='rejected'
-      ? `<section class="card funder-status-action"><div class="card-b"><h2>${L('Your registration needs changes','注册资料需要修改')}</h2>${CF.note('red',issuesHTML(view))}<div class="login-actions">${btn('Edit and resubmit','修改并重新提交','register','','primary')}${link('Contact support','联系客服','support')}</div></div></section>`
-      : a.status==='submitted'?CF.note('accent',`<b>${L('Under review','审核中')}</b><p>${L('Institution details are locked until a review decision is available.','机构资料在审核结论出具前不可修改。')}</p><div class="login-actions">${btn(F.reviewCheck==='loading'?'Checking…':'Check the review result',F.reviewCheck==='loading'?'正在查询…':'查询审核结果','check-review','','',F.reviewCheck==='loading')}${link('Contact support','联系客服','support')}</div>${F.reviewCheck==='loading'?`<p class="login-caption" role="status">${L('Checking the current review result…','正在查询当前审核结果…')}</p>`:F.reviewCheck==='failed'?`<p class="funder-error" role="alert">${L('The review result could not be retrieved. Your application is unchanged; please retry.','暂时无法获取审核结果，申请状态未改变，请重试。')}</p>`:F.reviewCheck==='done'?`<p class="login-caption" role="status">${L('No decision yet. This application is still under review.','尚未出具结论，本次申请仍在审核中。')}</p>`:''}`):'';
-    return `<div class="funder-wrap funder-status"><div class="page-head"><div><h1 class="page-title">${L('Application status and review records','申请状态与审核记录')}</h1><p class="page-desc">${L('View your institution details and verification status.','查看机构资料及认证状态。')}</p></div>${tag(a.status)}</div>
+    return `<div class="login-account funder-wrap funder-status">${head(...title,desc)}
       ${F.downgrade?CF.note('warn',L('Your details are being reviewed again. Funding actions are unavailable until approval.','机构资料正在重新审核，审核通过前暂不可发起出资等操作。')):''}
-      <div class="funder-status-stack">${feedback}
-        <section class="card" id="f-submission-summary"><div class="card-b"><h2>${L('Submission information','提交信息')}</h2>${details([['Application','申请编号','DEMO-REG-001'],['Submitted','提交时间',time(a.submitted)],['Review decision','审核结论时间',time(a.reviewed)],['Account contact email at submission','提交时账户联系邮箱',a.snapshotEmail||a.email]],true)}
-        <details class="funder-history"><summary>${L('Submission and review activity','提交与审核记录')} · ${reviewEvents(a.records).length}</summary>${reviewTimeline(a.records)}</details></div></section>
-        <section class="card" id="f-institution-summary"><div class="card-b"><h2>${L('Institution details','机构资料')}</h2>${details((view.fields||[]).filter(notDocuments),true)}${materialList(a.submittedForm,'current')}${a.status==='verified'?`<div class="login-actions">${btn('Update institution details','变更机构资料','change','','primary')}</div>`:''}</div></section>
-        ${stamp()}
-      </div></div>`;
+      ${profile([
+        section('f-review-result','Application status','申请状态',reviewBody(a)),
+        section('f-submission-summary','Submission information','提交信息',`${facts([['Application','申请编号',esc('DEMO-REG-001')],['Submitted','提交时间',time(a.submitted)],['Review decision','审核结论时间',time(a.reviewed)],['Account contact email at submission','提交时账户联系邮箱',esc(a.snapshotEmail||a.email)]])}<details class="funder-history"><summary>${L('Submission and review activity','提交与审核记录')} · ${reviewEvents(a.records).length}</summary>${reviewTimeline(a.records)}</details>`),
+        section('f-institution-summary','Institution details','机构资料',`${profileFields((view.fields||[]).filter(notDocuments))}<p class="funder-subhead">${L('Institution supporting documents','机构证明材料')}</p>${materialList(a.submittedForm,'current')}`)
+      ])}${stamp()}</div>`;
   }
 
   function accountPage(){
     const zones=Array.from(new Set([S.tz||'UTC','UTC','Asia/Shanghai','Asia/Hong_Kong','Asia/Singapore','Europe/London','America/New_York']));
-    return `<div class="funder-wrap funder-account">
-      <div class="page-head"><div><h1 class="page-title">${L('User information','用户信息')}</h1><p class="page-desc">${L('Manage your contact details and preferences.','管理联系方式与偏好设置。')}</p></div></div>
-      <section class="card funder-section" id="account-information"><div class="card-b">
-        <h2>${L('Account information','账号信息')}</h2>
-        <dl class="login-fields">
-          <div><dt>${L('Wallet address','钱包地址')}</dt><dd>${wallet(F.account.address,true)}<p class="login-caption">${walletCare()}</p></dd></div>
-          <div><dt>${L('Contact email','联系邮箱')}</dt><dd><div class="funder-line"><b>${esc(F.account.email)||L('Not set','未填写')}</b>${link('Change','修改','change-email')}</div><p class="login-caption">${emailCare()}</p></dd></div>
-          <div><dt>${L('Account status','账号状态')}</dt><dd>${CF.tag('ok',L('Active','正常'))}</dd></div>
-          <div><dt>${L('Registration status','注册状态')}</dt><dd>${tag()}</dd></div>
-        </dl>
-      </div></section>
-      <section class="card funder-section" id="account-preferences"><div class="card-b">
-        <h2>${L('Preferences','偏好信息')}</h2>
-        <div class="funder-preference-grid">
-          <div class="field"><label for="f-language">${L('Language','语言')}</label><select class="inp" id="f-language"><option value="en" ${S.lang==='en'?'selected':''}>English</option><option value="zh" ${S.lang==='zh'?'selected':''}>简体中文</option></select></div>
-          <div class="field"><label for="f-timezone">${L('Time zone','时区')}</label><select class="inp" id="f-timezone">${zones.map(z=>`<option ${z===S.tz?'selected':''}>${esc(z)}</option>`).join('')}</select></div>
-        </div>
-        ${preferenceFeedback()}<p class="login-caption funder-preference-notice">${L('Security and verification notices are always delivered.','安全、认证等关键通知始终接收。')}</p>
-      </div></section>${stamp()}</div>`;
+    return `<div class="login-account funder-wrap funder-account">${head('User information','用户信息',L('Manage your contact details and preferences.','管理联系方式与偏好设置。'))}${profile([
+      section('account-information','Account information','账户信息',facts([
+        ['Wallet address','钱包地址',`${wallet(F.account.address,true)}<p class="login-caption">${walletCare()}</p>`],
+        ['Contact email','联系邮箱',`<div class="funder-line"><b>${esc(F.account.email)||L('Not set','未填写')}</b>${link('Change','修改','change-email')}</div><p class="login-caption">${emailCare()}</p>`],
+        ['Account status','账号状态',CF.tag('ok',L('Active','正常'))],
+        ['Registration status','注册状态',tag()]
+      ])),
+      section('account-preferences','Preferences','偏好设置',`<div class="login-preferences">
+        <div class="field login-preference-field"><label for="f-language">${L('Language','语言')}</label><select class="inp" id="f-language"><option value="en" ${S.lang==='en'?'selected':''}>English</option><option value="zh" ${S.lang==='zh'?'selected':''}>简体中文</option></select></div>
+        <div class="field login-preference-field"><label for="f-timezone">${L('Time zone','时区')}</label><select class="inp" id="f-timezone">${zones.map(z=>`<option ${z===S.tz?'selected':''}>${esc(z)}</option>`).join('')}</select></div>
+      </div>${preferenceFeedback()}<p class="login-caption login-notification-policy">${L('Security and verification notices are always delivered.','安全、认证等关键通知始终接收。')}</p>`)
+    ])}${stamp()}</div>`;
   }
   function gate(){response();F.replayed++;if(F.contract.session_state!=='authenticated'){F.returnTo='valid';go('/login');return;}if(F.contract.completeness_level!=='L3'){F.gate='blocked';open('gate');return;}F.gate='pending';CF.render();later(()=>{response();if(F.contract.session_state!=='authenticated'||F.contract.completeness_level!=='L3'){F.gate='blocked';open('gate');return;}F.gate=F.saveResult==='failed'?'failed':'ready';});}
   function gatePage(){return `<div class="funder-wrap">${head('Funding access','出资权限',L('Demonstration data','演示数据'))}<section class="card"><div class="card-b"><h2>${L('Continue to funding','继续出资')}</h2><p>${L('Your registration must be approved before you can take funding actions.','机构注册审核通过后，即可发起出资等操作。')}</p>${btn(F.gate==='pending'?'Checking…':'Continue to funding',F.gate==='pending'?'正在确认…':'继续出资','gate','','primary',F.gate==='pending')}${F.gate==='ready'?CF.note('accent',L('Registration eligibility confirmed. Continue in the funding workflow.','机构认证资格已确认，可继续进入出资流程。')):''}${F.gate==='failed'?CF.note('red',L('Eligibility could not be confirmed. Please retry.','资格确认失败，请重试。')):''}</div></section></div>`;}

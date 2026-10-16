@@ -108,7 +108,7 @@
 }
 
 /* 资金方：沿用登录域与公共组件，仅增加填写流程、核对和账户分组。 */
-.funder-wrap{max-width:1080px;margin:auto}
+.funder-wrap{max-width:1040px;margin:auto}
 .funder-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:var(--sp-6);align-items:start}
 .funder-form{display:flex;flex-direction:column;gap:var(--sp-5)}
 .funder-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--sp-6)}
@@ -118,10 +118,8 @@
 .funder-line{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap}
 .funder-line .field{flex:1;min-width:160px}
 .funder-summary{padding:var(--sp-5);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius)}
-.funder-summary h2,.funder-wrap h2{font-size:var(--ui-section-title);margin:0 0 var(--sp-4)}
+.funder-summary h2,.funder-wrap .card-b>h2{font-size:var(--ui-section-title);margin:0 0 var(--sp-4)}
 .funder-summary p{font-size:var(--fs-13);color:var(--muted)}
-.funder-wrap .login-fields dd{font-size:var(--fs-14)}
-.funder-wrap .login-fields div:last-child{border-bottom:0}
 .funder-tabs{display:flex;gap:var(--sp-5);border-bottom:1px solid var(--border);margin-bottom:var(--sp-6)}
 .funder-tabs a{min-height:44px;display:flex;align-items:center;font-size:var(--fs-14);font-weight:600}
 .funder-section{scroll-margin-top:110px;margin-bottom:var(--sp-6)}
@@ -163,10 +161,6 @@
 .funder-file-meta>span{font-size:var(--fs-12);color:var(--muted)}
 .funder-file-meta>.funder-error{color:var(--danger)}
 .funder-file-actions{display:flex;align-items:center;gap:var(--sp-4);margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--border)}
-.funder-status-stack{display:flex;flex-direction:column;gap:var(--sp-4)}
-.funder-status-action{border-inline-start:4px solid var(--danger)}
-.funder-status-action .btn.primary{min-width:220px}
-.funder-status-stack > .funder-stamp{margin:0}
 .funder-validation{display:block;margin-block:var(--sp-5)}
 .funder-validation ul{margin:var(--sp-3) 0 0;padding:0;list-style:none}
 .funder-validation li{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;border-top:1px solid var(--border)}
@@ -196,16 +190,22 @@
 .certification-event-reason>b{font-size:var(--fs-12);color:var(--muted)}
 .certification-event-reason p{margin:var(--sp-2) 0 0}
 
-/* WS-372: continuous registration sections and adjacent copy / full-address controls. */
-.funder-registration{max-width:1080px}
-.funder-registration-form{padding:0 var(--sp-7)}
-.funder-registration-section{display:grid;grid-template-columns:176px minmax(0,1fr);gap:var(--sp-7);align-items:start;padding:var(--sp-6) 0;border-bottom:1px solid var(--border);scroll-margin-top:110px}
-.funder-registration-section:last-child{border-bottom:0}
-.funder-registration-section>h2{margin:var(--sp-2) 0 0;line-height:1.6}
-.funder-section-body{min-width:0}
-.funder-section-body>.note{display:block}
-.funder-section-body>.login-caption:first-child{margin-top:0}
-.funder-section-body>.login-caption:last-child{margin-bottom:0}
+/* WS-372 layout: the three funder pages use the asset user-center profile card (.login-profile). */
+.funder-profile .login-profile-section{scroll-margin-top:110px}
+.funder-profile .login-profile-body>.note{display:block}
+.funder-profile .login-profile-body>.login-caption:first-child{margin-top:0}
+.funder-profile .login-profile-body>:last-child{margin-bottom:0}
+.funder-profile .login-account-fields dd>.login-caption{max-width:640px;margin:var(--sp-2) 0 0}
+.funder-profile .login-account-fields .funder-line>b{overflow-wrap:anywhere;min-width:0;font-weight:550}
+.funder-profile .login-identity-fields>.funder-field-wide{grid-column:1/-1}
+.funder-subhead{margin:var(--sp-5) 0 var(--sp-2);font-size:var(--ui-field-label);color:var(--muted)}
+.funder-review{margin-top:var(--sp-4)}
+.funder-review-title{margin:0 0 var(--sp-3);font-weight:600;color:var(--text)}
+.funder-review>.note{display:block;margin:0}
+.funder-review>.login-caption:first-child{margin-top:0}
+.funder-review-actions{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3) var(--sp-5);margin-top:var(--sp-4)}
+.funder-review-actions>.btn.primary{min-width:180px}
+.funder-status .funder-history{margin-top:var(--sp-4);padding-top:0;border-top:0}
 .funder-registration .funder-actions{justify-content:flex-end}
 .funder-registration .funder-actions>.btn.primary{min-width:160px}
 .funder-wallet{display:inline-flex;align-items:center;gap:var(--sp-1);max-width:100%}
@@ -219,8 +219,7 @@
 .funder-copy-fallback:not([hidden]){display:block;margin-top:var(--sp-3);font-size:var(--fs-12);color:var(--muted)}
 .funder-registration .funder-readiness{padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-xs);gap:var(--sp-4)}
 .funder-registration .funder-readiness>div{border:0;padding:0}
-@media(max-width:900px){.funder-registration-section{grid-template-columns:minmax(0,1fr);gap:var(--sp-4)}.funder-registration-section>h2{margin:0}}
-@media(max-width:760px){.funder-registration-form{padding:0 var(--sp-4)}.funder-registration-section{padding:var(--sp-5) 0}.funder-field-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){.funder-field-grid{grid-template-columns:minmax(0,1fr)}}
 
 /* Email verification is a short dialog; the institution form stays in place. */
 .funder-email-entry{display:flex;align-items:flex-end;gap:var(--sp-3);max-width:640px}
@@ -239,26 +238,11 @@
 .funder-email-code .btn-link:disabled{color:var(--muted);cursor:not-allowed}
 @media(max-width:600px){.funder-email-entry{align-items:stretch;flex-direction:column}.funder-email-entry>.btn{align-self:flex-start}}
 
-/* WS-372 UI: account facts, review panels and confirmation share one reading rhythm. */
-.funder-wrap>.page-head>.tag{margin-inline-start:auto;margin-top:var(--sp-2)}
-.funder-status :is(#f-submission-summary,#f-institution-summary) .card-b>h2,
-.funder-account .card-b>h2{padding-bottom:var(--sp-4);border-bottom:1px solid var(--border);margin-bottom:0}
-.funder-status .funder-detail-grid{column-gap:var(--sp-7)}
-.funder-status-stack>.note{display:block;margin:0}
-.funder-status-stack>.note>p{margin:var(--sp-2) 0 0}
-.funder-status .funder-status-action .note{display:block;margin-bottom:0}
-.funder-status :is(.funder-status-action,.funder-status-stack>.note) .login-actions{margin-top:var(--sp-4)}
-.funder-account .funder-section{margin-bottom:var(--sp-4)}
-.funder-account .login-fields>div{display:grid;grid-template-columns:160px minmax(0,1fr);gap:var(--sp-6);align-items:baseline;padding:var(--sp-5) 0}
-.funder-account .login-fields dt{margin:0}
-.funder-account .login-fields dd>.login-caption{max-width:640px;margin:var(--sp-2) 0 0}
-.funder-account .funder-line>b{overflow-wrap:anywhere;min-width:0;font-weight:550}
-.funder-preference-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);max-width:720px;padding-top:var(--sp-5)}
-.funder-account .funder-preference-notice{margin:var(--sp-4) 0 0}
+/* WS-372 UI: confirmation dialog keeps its reading width. */
 .modal:has([data-act="f-confirm-submit"]){max-width:760px}
 @media(max-width:600px){
-  .funder-account .login-fields>div{grid-template-columns:minmax(0,1fr);gap:var(--sp-2);padding:var(--sp-4) 0}
-  .funder-preference-grid{grid-template-columns:minmax(0,1fr)}
+  .funder-review-actions{align-items:stretch;flex-direction:column}
+  .funder-review-actions>.btn{width:100%}
   .funder-registration .funder-readiness{grid-template-columns:minmax(0,1fr);gap:var(--sp-3)}
   .funder-registration .funder-readiness>div{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
   .funder-registration .funder-readiness dt{margin:0}
