@@ -191,12 +191,16 @@ table.tbl.am-tbl tbody td{padding-block:var(--sp-4);line-height:1.5;overflow-wra
 /* 列表默认只放核心信息；放大后补出代币类型与铸造时间，卡片与表格同一规则。 */
 [data-market-redesign] .am-market-page .listzone[data-density="core"] .am-tbl :is(th,td).am-col-x,
 .am-market-page .listzone[data-density="core"] .am-col-x{display:none}
-/* 放大不铺满整屏：四周留白、最宽 1440px 居中，背后加遮罩，Esc 或再次点击收起。 */
-body.list-full .am-market-page .listzone{inset:var(--sp-7) max(var(--sp-7),calc((100vw - 1440px) / 2));
-  border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--bg);box-shadow:var(--shadow-lg);padding:0 var(--sp-6) var(--sp-5)}
-body.list-full:has(.am-market-page)::before{content:"";position:fixed;inset:0;z-index:calc(var(--z-mask) - 1);background:var(--overlay)}
+/* 放大是当前页面内的展开，不是弹窗：顶栏保留，页头、汇总和页脚收起，列表在顶栏下方占满整页高度，
+   内容区放宽到整页宽，两侧留白 --sp-7；不加遮罩、不加浮层阴影。Esc 或再次点击收起。 */
+body.list-full:has(.am-market-page) .portal-wrap{max-width:none;padding:var(--sp-5) var(--sp-7)}
+body.list-full:has(.am-market-page) :is(#foot,.portal-sub){display:none}
+body.list-full .am-market-page>:not(.listzone){display:none}
+body.list-full .am-market-page .listzone{position:relative;inset:auto;z-index:auto;margin:0;border:0;border-radius:0;
+  background:transparent;box-shadow:none;padding:0;height:calc(100dvh - var(--am-head, 68px) - 2 * var(--sp-5))}
 @media (max-width:768px){
-  body.list-full .am-market-page .listzone{inset:var(--sp-4);padding:0 var(--sp-4) var(--sp-4)}
+  body.list-full:has(.am-market-page) .portal-wrap{padding:var(--sp-4)}
+  body.list-full .am-market-page .listzone{height:calc(100dvh - var(--am-head, 68px) - 2 * var(--sp-4))}
 }
 
 /* 详情顶部：标识图、名称与代币状态一行，编号与状态依据一行，不再叠摘要条。 */

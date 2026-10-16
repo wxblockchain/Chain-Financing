@@ -142,7 +142,14 @@
     return '<div class="loadmore" role="status">' + L("Scroll down to load more", "下滑自动加载更多") +
       '<span class="tiny">' + L("Showing " + load.shown + " of " + total + " records", "已显示 " + load.shown + " / " + total + " 笔") + '</span></div>';
   }
+  /* 放大态的列表高度要扣掉顶栏；顶栏在窄屏会折行，所以按实际高度取值。 */
+  function syncHead() {
+    var head = document.querySelector("#portal .portal-head");
+    if (head) document.documentElement.style.setProperty("--am-head", head.offsetHeight + "px");
+  }
+  window.addEventListener("resize", syncHead);
   function afterList(v) {
+    syncHead();
     restoring = true; S.toTop = false;
     cancelAnimationFrame(restoreFrame);
     restoreFrame = requestAnimationFrame(function () {
@@ -556,7 +563,7 @@
         '<th scope="col">' + L("Token ID", "代币编号") + "</th>" +
         '<th scope="col">' + L("Issuer", "发行方") + "</th>" +
         '<th scope="col" class="am-col-x">' + L("Token type", "代币类型") + "</th>" +
-        '<th scope="col" class="am-r">' + L("Token amount", "代币数量") + "</th>" +
+        '<th scope="col" class="am-r">' + L("Token amount (tokens)", "代币数量（枚）") + "</th>" +
         sortTh("val", L("Token value", "代币价值"), "am-r") +
         '<th scope="col">' + L("Token status", "代币状态") + "</th>" +
         sortTh("at", L("Minted at", "铸造时间"), "am-col-x", '<span class="am-tz">' + esc(tzName()) + "</span>") +
@@ -596,8 +603,9 @@
         esc(L("Copy token ID: ", "复制代币编号：") + t.no) + '" title="' + L("Copy token ID", "复制代币编号") + '">' + esc(t.no) + "</button></div></td>" +
       '<td data-label="' + esc(L("Issuer", "发行方")) + '">' + esc(issuerName(t)) + "</td>" +
       '<td class="am-col-x" data-label="' + esc(L("Token type", "代币类型")) + '">' + esc(tokenKind()) + "</td>" +
-      '<td data-label="' + esc(L("Token amount", "代币数量")) + '" class="am-r"><div class="cell-wrap am-number"><span class="num">' + quantity(t.qty) +
-        '</span><span class="cell-sub">' + L("tokens", "枚") + '</span></div></td>' +
+      /* 单位「枚」写在表头和卡片字段名里，单元格只给数字。 */
+      '<td data-label="' + esc(L("Token amount (tokens)", "代币数量（枚）")) + '" class="am-r"><div class="cell-wrap am-number"><span class="num">' + quantity(t.qty) +
+        '</span></div></td>' +
       '<td data-label="' + esc(L("Token value", "代币价值")) + '" class="am-r"><div class="cell-wrap am-number">' + CF.market.amount(t.val,"USD") + '</div></td>' +
       '<td data-label="' + esc(L("Token status", "代币状态")) + '">' + tsTag(t) + "</td>" +
       '<td data-label="' + esc(L("Minted at", "铸造时间")) + '" class="am-at am-col-x"><span class="am-stamp">' + stamp(t.at) + '</span></td>' +
