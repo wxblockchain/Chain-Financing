@@ -457,7 +457,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 /* 签名并发起质押：顶部告知吸顶，随勾选更新；下方只列可选代币。 */
 .ls-pledge-notice{position:sticky;top:calc(-1 * var(--sp-5));z-index:1;display:grid;gap:var(--sp-3);padding:var(--sp-4);border:1px solid var(--hash-border);border-radius:var(--radius);background:var(--bg-elev);box-shadow:var(--shadow)}
 .ls-pledge-notice p{margin:0;font-size:var(--fs-12);color:var(--muted);line-height:1.7}
-.ls-pledge-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+.ls-pledge-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-3)}
 .ls-pledge-sum .k{display:block;font-size:var(--fs-11);color:var(--faint);font-weight:600}
 .ls-pledge-sum .v{display:block;margin-top:2px;font-size:var(--fs-14);color:var(--text);white-space:nowrap}
 .ls-pledge-to{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;padding:6px 10px;border-radius:var(--radius-xs);background:var(--hash-bg);font-size:var(--fs-12)}
@@ -930,3 +930,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 /* 项目信息卡按内容取高度，字段组不在卡内滚动；四个记录模块的固定高度不变。 */
 [data-market-redesign] .ls-workspace .ls-detail-main .mk-project-info.card{height:auto}
 [data-market-redesign] .ls-workspace .ls-detail-main .mk-project-info .mk-project-info-body.ls-facts{overflow:visible;flex:none}
+/* 质押份额勾选表：字段较多，单元格不折行，宽度不够时表格在弹层内横向滚动。 */
+.ls-pick th,.ls-pick td,.ls-pick td *{white-space:nowrap}
+.ls-pick th,.ls-pick td{padding-inline:var(--sp-2)}
+.ls-pick td .mono{font-size:var(--fs-12)}

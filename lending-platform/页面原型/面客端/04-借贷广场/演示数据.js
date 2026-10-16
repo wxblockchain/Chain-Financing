@@ -6,7 +6,7 @@
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
-  const SCHEMA = 'ws397-4';
+  const SCHEMA = 'ws397-5';
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
   /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
   D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
@@ -108,6 +108,12 @@
   };
   /* 质押水位：有效质押额 < 项目融资余额 + 项目在途金额即为不安全，恰好相等仍算安全；项目终态后不再判断。 */
   D.waterLocked = p => {if(D.terminal(p))return false;const n=D.numbers(p);return n.limit < p.balance + n.fly;};
+  /* 质押份额：本企业一个持有地址上持有的某笔代币的全部数量，是质押、审核、解押与提取的最小单位。
+     D.tokens 的每条记录即一份份额；no 为代币编号，holder 为持有地址，units 为持有数量，value 为份额价值。 */
+  D.HOLDERS = {'entity-demo-a':['0x2a71c0d4e9b38f15a6c27d90e4b1f83c5d6a9e21','0x2b84f1a3c6d90e27b5a48c13f9e06d72a1c5b384'],'entity-demo-b':['0x3c95e2b4d7a01f38c6b59d24a0f17e83b2d6c495']};
+  D.tokenNo = t => t ? (t.no || t.id) : '';
+  D.holderOf = t => t ? (t.holder || (D.HOLDERS[t.owner] || [''])[0]) : '';
+  D.shareValue = (units, tokenUnits, tokenValue) => Math.round(units * tokenValue / tokenUnits * 100) / 100;
   D.current = p => p.demands.find(d => ['open','quoted','funding'].includes(d.state));
   D.actions = p => {
     const n=D.numbers(p), current=D.current(p), mine=D.mine(p), terminal=D.terminal(p);
@@ -252,10 +258,19 @@
         D.tokens.push({id:'TK-DEMO-'+i+'-'+j,owner:p.owner,kind:'erc20-ar',units:1,symbol:'AR-DEMO',value,valid:i===4?j<=3:j!==7,pool:released?null:p.id,releasedFrom:released?p.id:null,pledge:released?'released':'pledged',buyer:['Demo Buyer '+j,'演示买方 '+j],due:'2027-01-20',from:'2026-07-20',tx:'0x'+(i*10+j).toString(16).padStart(64,'0')});}
       p.grade=D.numbers(p).grade;p.coverageAt=p.published;
     }
+    /* 多持有方演示：两笔代币各由本企业两个地址与另一企业分持；份额价值 = 持有数量 × 代币价值 ÷ 代币数量。 */
+    const A=D.HOLDERS['entity-demo-a'],B=D.HOLDERS['entity-demo-b'][0];
+    [['TK-MH-2610-01',1000000,1200000,[[A[0],'entity-demo-a',400000,'FP-DEMO-001'],[A[1],'entity-demo-a',350000,'FP-DEMO-002'],[B,'entity-demo-b',250000,'FP-DEMO-008']]],
+     ['TK-MH-2610-02',600000,600000,[[A[0],'entity-demo-a',300000,null],[A[1],'entity-demo-a',200000,null],[B,'entity-demo-b',100000,null]]]].forEach(([no,total,worth,shares],k)=>{
+      shares.forEach(([holder,owner,units,pool],j)=>D.tokens.push({id:no+'#'+(j+1),no,holder,owner,kind:'erc20-ar',units,tokenUnits:total,tokenValue:worth,symbol:'AR-DEMO',value:D.shareValue(units,total,worth),valid:true,
+        pool,pledge:pool?'pledged':'free',buyer:['Demo Buyer '+(k+3),'演示买方 '+(k+3)],due:'2027-04-20',from:'2026-10-02',tx:pool?'0x'+(900+k*10+j).toString(16).padStart(64,'0'):undefined}));
+    });
     for(let i=1;i<=12;i++)D.tokens.push({id:'TK-FREE-'+String(i).padStart(2,'0'),owner:'entity-demo-a',kind:'erc20-ar',units:1,symbol:'AR-DEMO',value:[300000,300000,400000][(i-1)%3],valid:true,pool:null,pledge:'free',buyer:['Demo Buyer '+i,'演示买方 '+i],due:'2027-03-18',from:'2026-09-18'});
     const a={id:'PA-DEMO-001',project:D.projects[0].id,type:'additional',tokens:D.tokens.filter(t=>t.id.startsWith('TK-FREE')).slice(0,3).map(t=>t.id),state:'approved',submitted:new Date(D.now()-DAY).toISOString(),decided:new Date(D.now()-3600000).toISOString()};D.applications.push(a);a.tokens.forEach(id=>D.token(id).application=a.id);D.normalize();
     D.applications[1].batch='PA-DEMO-002';D.applications[1].approvedAt=new Date(D.now()-1800000).toISOString();D.applications[1].decided=D.applications[1].approvedAt;
     const pending=D.applications[2];pending.state=pending.reviewState='review';pending.decided=pending.approvedAt=pending.deadline=pending.agreement=pending.reviewer=null;
+    /* 多持有方份额最近上链，排在质押代币清单前面，便于查看。 */
+    D.applications.filter(x=>x.tokens.some(id=>id.startsWith('TK-MH-'))).forEach(x=>{const at=new Date(D.now()-6*3600000).toISOString();x.submitted=at;x.decided=at;x.approvedAt=at;});
     /* 水位演示，两个项目合约内都有有效抵押物、已失效、待审、已驳回四类代币：
        FP-DEMO-004 质押不足；FP-DEMO-007 质押持平但水位不安全（有效质押额覆盖融资余额，却低于融资余额 + 一笔已接受待放款的在途）。 */
     [['FP-DEMO-004','TK-DEMO-4-5','review'],['FP-DEMO-004','TK-DEMO-4-6','rejected'],['FP-DEMO-007','TK-DEMO-7-5','review'],['FP-DEMO-007','TK-DEMO-7-6','rejected']].forEach(([pid,id,st])=>{const t=D.token(id),x=D.applications.find(r=>r.project===pid&&r.tokens[0]===id);if(!t||!x)return;t.valid=true;
