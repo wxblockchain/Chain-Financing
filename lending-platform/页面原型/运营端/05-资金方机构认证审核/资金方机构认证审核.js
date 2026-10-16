@@ -28,7 +28,7 @@
   function contextParams(){return new URLSearchParams({state:A.filter.state,q:A.filter.q,from:A.filter.from,to:A.filter.to,page:String(A.page)});}
   function listRoute(row=''){const p=contextParams();if(row)p.set('row',row);return '/ops/institution-reviews?'+p;}
   function detailRoute(id){const p=contextParams();p.set('application',id);return '/ops/institution-reviews/detail?'+p;}
-  function routeLink(en,zh,act,value,route){return `<a class="btn-link" href="#${E(route)}" data-act="rv-${act}" data-v="${E(value)}">${L(en,zh)}</a>`;}
+  function routeLink(en,zh,act,value,route){return `<a class="btn-link" href="#${E(route)}" data-act="rv-${act}" data-v="${E(value)}" ${act==='view'?`aria-label="${E(L('View application '+value,'查看申请 '+value))}"`:''}>${L(en,zh)}</a>`;}
   function syncContext(){
     if(routeKey===location.hash)return;
     const previous=routeKey;routeKey=location.hash;
@@ -51,6 +51,13 @@
   function note(){return A.error?CF.note('red',E(A.error)):'';}
   function title(en,zh,desc=''){return `<div class="page-head"><div><h1 class="page-title">${L(en,zh)}</h1>${desc?`<p class="page-desc">${desc}</p>`:''}</div>${CF.tag('neutral',L('Demonstration data','演示数据'))}</div>`;}
   function kv(data){return `<dl class="rv-kv">${data.map(x=>`<div ${['registeredAddress','wide'].includes(x[3])?'class="rv-wide"':''}><dt>${L(x[0],x[1])}</dt><dd>${E(R.fieldValue(x))}</dd></div>`).join('')}</dl>`;}
+  function tableTime(value){
+    if(!value)return '—';
+    const formatted=time(value),suffix=' ('+S.tz+')';
+    return `<time class="rv-time" datetime="${E(value)}">${formatted.endsWith(suffix)?E(formatted.slice(0,-suffix.length))+`<span class="rv-meta">${E(suffix.trim())}</span>`:E(formatted)}</time>`;
+  }
+  function sectionHead(en,zh,extra=''){return `<div class="rv-section-head"><h2>${L(en,zh)}</h2>${extra}</div>`;}
+  function decisionContext(){return `<dl class="rv-dialog-context"><div><dt>${L('Application','申请编号')}</dt><dd>${E(A.selected)}</dd></div><div><dt>${L('Submitted','提交时间')}</dt><dd>${time(selected()?.submitted)}</dd></div></dl>`;}
   function size(bytes){return bytes>=1048576?(bytes/1048576).toFixed(1)+' MB':Math.max(1,Math.ceil(bytes/1024))+' KB';}
   /* 本次提交的全部材料逐件列出，单件读取失败只影响该件。 */
   function materials(form){
@@ -80,7 +87,7 @@
     else if(S.st==='empty'||S.st==='noresult'||!found.length)body=CF.empty(L(S.st==='empty'?'No submitted applications':'No matching applications',S.st==='empty'?'暂无已提交申请':'没有符合条件的申请'),L('Try clearing your filters.','可清除筛选后查看。'),btn('Clear filters','清除筛选','reset'));
     else {
       const pages=Math.ceil(found.length/5);A.page=Math.min(A.page,pages);
-      body=`<div class="tablewrap"><table class="tbl rv-table"><thead><tr>${[['Application','申请编号'],['Institution','机构标识 / 名称'],['Submitted ↑','提交时间 ↑'],['Status','状态'],['Decision time','结论时间'],['Action','操作']].map((h,i)=>`<th ${i===5?'class="col-act"':''} ${i===2?'aria-sort="ascending"':''}>${L(...h)}</th>`).join('')}</tr></thead><tbody>${found.slice((A.page-1)*5,A.page*5).map(a=>{const f=a.submittedForm||a.form;return `<tr><td class="mono">${a.id}</td><td><b>${E(f.name)}</b><div class="rv-meta mono">${E(f.identifier)}</div></td><td class="rv-meta">${time(a.submitted)}</td><td>${tag(a.status)}</td><td class="rv-meta">${time(a.reviewed)}</td><td class="col-act">${routeLink('View','查看','view',a.id,detailRoute(a.id))}</td></tr>`;}).join('')}</tbody></table></div><div class="rv-foot"><span class="rv-meta">${L(`${found.length} applications`,`${found.length} 条申请`)}</span><div>${btn('Previous','上一页','page',String(A.page-1),'',A.page===1)} <span class="rv-meta">${A.page} / ${pages}</span> ${btn('Next','下一页','page',String(A.page+1),'',A.page===pages)}</div></div>`;
+      body=`<div class="tablewrap"><table class="tbl rv-table"><thead><tr>${[['Application','申请编号'],['Institution','机构标识 / 名称'],['Submitted ↑','提交时间 ↑'],['Status','状态'],['Decision time','结论时间'],['Action','操作']].map((h,i)=>`<th ${i===5?'class="col-act"':''} ${i===2?'aria-sort="ascending"':''}>${L(...h)}</th>`).join('')}</tr></thead><tbody>${found.slice((A.page-1)*5,A.page*5).map(a=>{const f=a.submittedForm||a.form;return `<tr><td class="mono">${a.id}</td><td><span class="rv-entity-name">${E(f.name)}</span><div class="rv-meta mono">${E(f.identifier)}</div></td><td>${tableTime(a.submitted)}</td><td>${tag(a.status)}</td><td>${tableTime(a.reviewed)}</td><td class="col-act">${routeLink('View','查看','view',a.id,detailRoute(a.id))}</td></tr>`;}).join('')}</tbody></table></div><div class="rv-foot"><span class="rv-meta">${L(`${found.length} applications`,`${found.length} 条申请`)}</span><div class="rv-pagination">${btn('Previous','上一页','page',String(A.page-1),'',A.page===1)} <span class="rv-meta">${A.page} / ${pages}</span> ${btn('Next','下一页','page',String(A.page+1),'',A.page===pages)}</div></div>`;
     }
     return `<div class="review-wrap">${title('Institution certification','资金方机构认证审核',L('Review submitted institution information and supporting materials.','核对机构资料与提交材料，处理认证申请。'))}<section class="card">${filters}${body}</section></div>`;
   }
@@ -92,16 +99,16 @@
     if(S.st==='error')return fail('Application could not be loaded','申请详情加载失败',L('Materials are temporarily unavailable. Please retry.','资料暂不可读，请重试。'));
     const a=selected(),v=snapshot();if(A.legacyLink)return CF.empty(L('Historical materials unavailable','不再提供历史资料'),L('Open the current application to view its latest submission and review records.','请进入当前申请查看最新提交资料及审核记录。'),a?routeLink('Open current application','查看当前申请','view',A.selected,detailRoute(A.selected)):btn('Back to list','返回列表','back'));if(!a||!v)return CF.empty(L('Application not found','未找到该申请'),' ',btn('Back to list','返回列表','back'));
     const fields=v.fields||a.submittedFields||[],reviewable=canReview();
-    return `<div class="review-wrap">${title('Application details','机构认证申请详情',E(A.selected))}
+    return `<div class="review-wrap">${title('Application details','机构认证申请详情',E(A.selected)+' · '+E(v.form.name))}
       ${note()}
-      <div class="rv-grid ${reviewable?'has-actions':''}"><div class="detail-stack rv-stack"><section class="card"><div class="card-b"><h2>${L('Submission','提交信息')} ${tag(v.status)}</h2>${kv([['Funder account','资金方账号',A.selected==='DEMO-REG-001'?'DEMO-FUNDER':'DEMO-FUNDER-'+A.selected.slice(-3)],['Submitted','提交时间',time(v.submitted)],['Decision time','结论时间',time(v.reviewed)],['Current account contact email','当前账户联系邮箱',a.email],['Account contact email at submission','提交时账户联系邮箱',v.snapshotEmail],['Wallet address','钱包地址',a.address,'wide']])}</div></section>
-      <section class="card"><div class="card-b"><h2>${L('Institution information','机构资料')}</h2>${kv(fields.filter(R.notDocuments))}</div></section>
-      <section class="card"><div class="card-b"><h2>${L('Supporting materials','提交材料')} <span class="rv-meta">${L(R.docs(v.form).length+' files',R.docs(v.form).length+' 份')}</span></h2>${materials(v.form)}</div></section>
-      ${v.status==='rejected'?`<section class="card"><div class="card-b"><h2>${L('Rejection reasons','驳回原因')}</h2>${problemList(v)}</div></section>`:''}
-      <section class="card"><div class="card-b"><h2>${L('Review decision','审核结论')}</h2>${v.reviewed?kv([['Decision','结论',name(v.status)],['Decided by','操作人',v.reviewer||'DEMO-OP-01'],['Decision time','结论时间',time(v.reviewed)]]):`<p class="rv-meta">${L('No decision yet','尚未出具结论')}</p>`}
+      <div class="rv-grid ${reviewable?'has-actions':''}"><div class="detail-stack rv-stack"><section class="card">${sectionHead('Submission','提交信息',tag(v.status))}<div class="card-b">${kv([['Funder account','资金方账号',A.selected==='DEMO-REG-001'?'DEMO-FUNDER':'DEMO-FUNDER-'+A.selected.slice(-3)],['Submitted','提交时间',time(v.submitted)],['Current account contact email','当前账户联系邮箱',a.email],['Account contact email at submission','提交时账户联系邮箱',v.snapshotEmail],['Decision time','结论时间',time(v.reviewed)],['Wallet address','钱包地址',a.address,'wide']])}</div></section>
+      <section class="card">${sectionHead('Institution information','机构资料')}<div class="card-b">${kv(fields.filter(R.notDocuments))}</div></section>
+      <section class="card">${sectionHead('Supporting materials','提交材料',`<span class="rv-meta">${L(R.docs(v.form).length+' files',R.docs(v.form).length+' 份')}</span>`)}<div class="card-b">${materials(v.form)}</div></section>
+      ${v.status==='rejected'?`<section class="card">${sectionHead('Rejection reasons','驳回原因')}<div class="card-b">${problemList(v)}</div></section>`:''}
+      <section class="card rv-decision">${sectionHead('Review decision','审核结论')}<div class="card-b">${v.reviewed?kv([['Decision','结论',name(v.status)],['Decided by','操作人',v.reviewer||'DEMO-OP-01'],['Decision time','结论时间',time(v.reviewed)]]):`<p class="rv-meta">${L('No decision yet','尚未出具结论')}</p>`}
       ${reviewable?'':CF.note('accent',L('This submission has a final decision and is read only.','本次提交已出具结论，仅可查看。'))}</div></section></div>
-      ${reviewable?`<aside class="card rv-operation" aria-labelledby="rv-operation-title"><div class="card-b"><h2 id="rv-operation-title">${L('Review actions','审核操作')}</h2><div class="rv-actions">${btn('Approve','通过','approve','','primary')}${btn('Reject','驳回','reject')}</div></div></aside>`:''}</div>
-      <section class="card rv-review-records" aria-labelledby="rv-history-title"><div class="card-b"><h2 id="rv-history-title">${L('Submission and review activity','提交与审核记录')}</h2>${R.reviewTimeline(a.records,true)}</div></section></div>`;
+      ${reviewable?`<aside class="card rv-operation" aria-labelledby="rv-operation-title"><div class="card-b"><h2 id="rv-operation-title">${L('Review actions','审核操作')}</h2><p class="rv-meta"><span class="rv-operation-id">${E(A.selected)}</span>${time(v.submitted)}</p><div class="rv-actions">${btn('Approve','通过','approve','','primary')}${btn('Reject','驳回','reject','','rv-reject-btn')}</div></div></aside>`:''}</div>
+      <section class="card rv-review-records" aria-labelledby="rv-history-title"><div class="rv-section-head"><h2 id="rv-history-title">${L('Submission and review activity','提交与审核记录')}</h2></div><div class="card-b">${R.reviewTimeline(a.records,true)}</div></section></div>`;
 
   }
   function ensureWrite(){if(!canReview()){A.error=allowed()?L('This submission has changed or already has a decision. Review the current result.','申请已重新提交或已出具结论，请查看当前结果。'):signedIn()?L('This account can no longer review institution applications.','当前账号已不能处置机构认证申请。'):L('Your session has ended. Sign in again before reviewing.','登录已失效，请重新登录后再审核。');A.pending=null;A.busy=false;S.layer=null;return false;}return true;}
@@ -134,10 +141,10 @@
     if((A.duplicate||A.response==='duplicate'||hasDuplicate(selected().submittedForm||selected().form,A.selected))&&A.pending.decision==='verified'){A.error=L('This institution is already registered. Verify the institution identifier before proceeding.','该机构已在平台注册，请核实机构标识后处理。');S.layer=null;A.pending=null;CF.render();return;}
     const done=apply(A.pending.decision,[],A.pending.decision==='rejected'?A.additional.trim():'');A.pending=null;S.layer=null;A.error='';CF.render();if(done)CF.toast(L('Review decision saved.','审核结论已保存。'));
   }
-  function rejectionForm(){return {title:L('Reject application','驳回申请'),html:`<p class="rv-meta">${E(A.selected)} · ${L('Submitted','提交时间')} ${time(selected()?.submitted)}</p><div class="field rv-rejection"><label for="rv-reason">${CF.fieldLabel(L('Rejection reason *','驳回原因 *'))}</label><textarea class="inp" id="rv-reason" rows="5" required aria-invalid="${A.rejectError}" aria-describedby="rv-reason-help${A.rejectError?' rv-reason-error':''}" placeholder="${L('Explain why the application is rejected and what needs to change.','请填写驳回原因及需要修改的内容。')}" ${A.busy?'readonly':''}>${E(A.additional)}</textarea><p id="rv-reason-help" class="hint">${L('The applicant will see this reason and may edit and resubmit.','申请人将看到此原因，可修改后重新提交。')}</p>${A.rejectError?`<p id="rv-reason-error" class="err-msg" role="alert">${L('Enter a rejection reason.','请填写驳回原因。')}</p>`:''}</div>${A.busy?CF.note('accent',L('Saving decision…','正在保存审核结论…')):''}`,foot:btn('Cancel','取消','cancel','','',A.busy)+btn(A.busy?'Saving…':'Confirm rejection',A.busy?'正在保存…':'确认驳回','confirm','','primary',A.busy)};}
+  function rejectionForm(){return {title:L('Reject application','驳回申请'),html:`${decisionContext()}<div class="field rv-rejection"><label for="rv-reason">${CF.fieldLabel(L('Rejection reason *','驳回原因 *'))}</label><textarea class="inp" id="rv-reason" rows="5" required aria-invalid="${A.rejectError}" aria-describedby="rv-reason-help${A.rejectError?' rv-reason-error':''}" placeholder="${L('Explain why the application is rejected and what needs to change.','请填写驳回原因及需要修改的内容。')}" ${A.busy?'readonly':''}>${E(A.additional)}</textarea><p id="rv-reason-help" class="hint">${L('The applicant will see this reason and may edit and resubmit.','申请人将看到此原因，可修改后重新提交。')}</p>${A.rejectError?`<p id="rv-reason-error" class="err-msg" role="alert">${L('Enter a rejection reason.','请填写驳回原因。')}</p>`:''}</div>${A.busy?CF.note('accent',L('Saving decision…','正在保存审核结论…')):''}`,foot:btn('Cancel','取消','cancel','','',A.busy)+btn(A.busy?'Saving…':'Confirm rejection',A.busy?'正在保存…':'确认驳回','confirm','','danger',A.busy)};}
   const layers={
     'rv-reject':rejectionForm,
-    'rv-confirm':()=>({title:L('Approve this application?','确认通过认证？'),html:`<p><b>${E(A.selected)}</b></p>${kv([['Submitted','提交时间',time(selected()?.submitted)]])}${CF.note('accent',L('The applicant will become verified and receive the review result.','通过后，该资金方将获得已认证状态并收到审核结果。'))}${A.busy?CF.note('accent',L('Saving decision…','正在保存审核结论…')):''}`,foot:btn('Cancel','取消','cancel','','',A.busy)+btn(A.busy?'Saving…':'Confirm',A.busy?'正在保存…':'确认','confirm','','primary',A.busy)}),
+    'rv-confirm':()=>({title:L('Approve this application?','确认通过认证？'),html:`${decisionContext()}${CF.note('accent',L('The applicant will become verified and receive the review result.','通过后，该资金方将获得已认证状态并收到审核结果。'))}${A.busy?CF.note('accent',L('Saving decision…','正在保存审核结论…')):''}`,foot:btn('Cancel','取消','cancel','','',A.busy)+btn(A.busy?'Saving…':'Confirm',A.busy?'正在保存…':'确认','confirm','','primary',A.busy)}),
     'rv-unknown':()=>({title:L('Review result not confirmed','审核结果暂未确认'),html:CF.note('warn',L('Check the current application state before sending another decision.','请先查询当前申请状态，避免重复提交结论。')),foot:btn('Check current result','查询当前结果','resolve','','primary')}),
     'rv-material':()=>{
       if(!allowed())return{title:L('Sign in to continue','请先完成运营登录'),html:gate(),foot:btn('Close','关闭','cancel')};
@@ -260,11 +267,13 @@
     else return;
     CF.render();queueMicrotask(afterRender);
   });
-  document.addEventListener('keydown',e=>{
+  // Review dialogs own their keyboard cycle before imported account-dialog handlers.
+  window.addEventListener('keydown',e=>{
     if(!S.layer?.key.startsWith('rv-'))return;
     if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(S.layer?.key==='rv-unknown')return;if(!A.busy)cancelReview();return;}
     if(e.key==='Tab'){
-      const nodes=[...document.querySelectorAll('#layers button:not(:disabled),#layers input,#layers select,#layers textarea')].filter(x=>x.getClientRects().length),first=nodes[0],last=nodes.at(-1);
+      e.stopImmediatePropagation();
+      const nodes=[...document.querySelectorAll('#layers button:not(:disabled),#layers input:not(:disabled),#layers select:not(:disabled),#layers textarea:not(:disabled),#layers a[href]')].filter(x=>x.getClientRects().length),first=nodes[0],last=nodes.at(-1);
       if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}
     }
   },true);
