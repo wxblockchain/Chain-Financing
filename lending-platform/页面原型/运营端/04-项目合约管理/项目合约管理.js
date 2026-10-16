@@ -54,7 +54,7 @@
 
   const b=(en,zh,act,value='',cls='',disabled=false,title='')=>`<button type="button" class="btn ${cls}" data-act="cm-${act}" data-v="${E(value)}" ${title?`title="${E(title)}"`:''} ${disabled?'disabled':''}>${L(en,zh)}</button>`;
   const viewLink=(id,src)=>`<a class="actlink" href="#${E(detailRoute(id,src))}" data-act="cm-view" data-v="${E(id)}">${L('View','查看')}</a>`;
-  const field=(label,html)=>`<div class="field"><label for="${(html.match(/id="([^"]+)/)||[])[1]||''}">${label}</label>${html}</div>`;
+  const field=(label,html)=>`<div class="field"><label for="${(html.match(/id="([^"]+)/)||[])[1]||''}">${CF.fieldLabel(label)}</label>${html}</div>`;
   const input=(id,v,type='text')=>`<input class="inp" id="${id}" type="${type}" value="${E(v)}">`;
   const select=(id,value,options)=>`<select class="inp" id="${id}">${options.map(([v,label])=>`<option value="${E(v)}" ${v===value?'selected':''}>${E(label)}</option>`).join('')}</select>`;
   const note=(s,type='')=>CF.note(type,s);
@@ -580,14 +580,14 @@
     const failure=again&&r.fail?note(L('The last attempt failed: ','最近一次部署失败：')+txt(r.fail.reason),'warn'):'';
     const ack=L('I understand: the platform wallet will deploy this project’s pledge contract. A successful deployment is the approval itself, the project and the contract match one to one, and the conclusion cannot be withdrawn.','我已知悉：提交后将由平台统一钱包发起本项目质押合约部署，部署成功即审核通过，项目与合约一一对应且不可撤销。');
     return {title:again?L('Start the deployment again','再次发起部署'):L('Approve and deploy the contract','通过并部署合约'),
-      html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${failure}${facts}<label class="cm-ack"><input id="cm-ack" type="checkbox" ${d.ack?'checked':''}> ${ack}</label></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
+      html:`<div class="cm-form">${identity(r)}${CF.requiredHint()}<fieldset ${A.busy?'disabled':''}>${failure}${facts}<label class="cm-ack"><input id="cm-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel(ack,true)}</label></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
       foot:b('Cancel','取消','cancel','','',A.busy)+b(again?'Start the deployment again':'Approve and deploy',again?'再次发起部署':'通过并部署合约','submit','','primary',A.busy||r.closed)};
   }
   function returnLayer(){
     const d=A.draft,r=row();
     if(!d||!r)return {title:L('Unavailable','不可用'),html:'',foot:b('Close','关闭','cancel')};
     return {title:L('Return to the asset holder','退回资产方'),
-      html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${field(L('Reason shown to the asset holder','向资产方展示的原因'),`<textarea class="inp" id="cm-reason" aria-invalid="${!!A.error}" aria-describedby="cm-form-error">${E(d.reason)}</textarea><span class="cm-meta">${Array.from(d.reason.trim()).length} / 500 · ${L('Minimum 10 characters','至少 10 字')}</span>`)}</fieldset><div id="cm-form-error">${error()}</div></div>`,
+      html:`<div class="cm-form">${identity(r)}${CF.requiredHint()}<fieldset ${A.busy?'disabled':''}>${field(L('Reason shown to the asset holder *','向资产方展示的原因 *'),`<textarea class="inp" id="cm-reason" aria-required="true" aria-invalid="${!!A.error}" aria-describedby="cm-form-error">${E(d.reason)}</textarea><span class="cm-meta">${Array.from(d.reason.trim()).length} / 500 · ${L('Minimum 10 characters','至少 10 字')}</span>`)}</fieldset><div id="cm-form-error">${error()}</div></div>`,
       foot:b('Cancel','取消','cancel','','',A.busy)+b('Review the reason','核对原因','confirm','','primary',A.busy||r.closed)};
   }
   const layers={

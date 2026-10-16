@@ -75,9 +75,9 @@ img,svg{max-width:100%}
   transition:border-color var(--dur-fast) var(--ease-out)}
 .inp:hover{border-color:var(--faint)}
 .inp[aria-invalid="true"]{border-color:var(--danger)}
-/* 表单内的只读事实：与输入框同高同基线，用下沉底色与浅描边表明不可编辑。 */
-.field-static{display:flex;align-items:center;min-height:var(--ctrl-h);border:1px solid var(--border);
-  border-radius:var(--radius-sm);background:var(--gray-bg);padding:0 12px;
+/* §4.2 表单内只读事实：次级底、虚线；普通详情事实继续使用 dl / 文本。 */
+.field-static{display:flex;align-items:center;min-height:var(--ctrl-h);border:1px dashed var(--border-strong);
+  border-radius:var(--radius-sm);background:var(--card-2);padding:0 12px;cursor:default;
   font-size:var(--fs-13);color:var(--text);margin:0}
 .err-msg{font-size:var(--fs-12);color:var(--danger)}
 .hint{font-size:var(--fs-12);color:var(--faint)}
@@ -931,7 +931,7 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .inp:hover{border-color:var(--muted)}
 .inp:focus{border-color:var(--accent)}
 .inp[aria-invalid="true"]{border-color:var(--danger)}
-.inp:disabled{background:var(--card-2);color:var(--muted);cursor:not-allowed}
+.inp:disabled{background:var(--gray-bg);border:1px solid var(--border);color:var(--faint);cursor:not-allowed;opacity:1}
 .field>label,.field>.field-label{color:var(--muted);font-weight:500;line-height:1.5}
 .hint,.cell-sub,.sum-note{color:var(--muted);line-height:1.6}
 .num,.mono,.stat .v,.stat-strip .v{font-variant-numeric:tabular-nums}
@@ -1045,7 +1045,15 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 [data-end] .btn.sm{font-size:var(--ui-field-label)}
 [data-end] .btn.icon{font-size:var(--ui-field-label)}
 [data-end] .field :is(.inp,.field-static){font-size:var(--ui-field-value)}
-[data-end] .inp{border-radius:var(--radius-xs);background:var(--card-2)}
+[data-end] .inp{border-radius:var(--radius-xs);background:var(--card)}
+[data-end] .inp[readonly]{background:var(--card-2);border:1px dashed var(--border-strong);color:var(--text);cursor:default}
+[data-end] .inp:disabled{background:var(--gray-bg);border:1px solid var(--border);color:var(--faint);cursor:not-allowed;opacity:1}
+[data-end] .inp:focus-visible{border-color:var(--accent)}
+[data-end] .inp[aria-invalid="true"]{border-color:var(--danger)}
+.required-mark{display:inline-block;margin-inline-end:var(--sp-1);color:var(--danger);font-weight:600}
+.form-required-key{display:flex;justify-content:flex-end;align-items:baseline;gap:var(--sp-1);margin:0 0 var(--sp-3);color:var(--muted);font-size:var(--fs-11)}
+.form-required-key>span{color:var(--danger);font-weight:600}
+.field-readonly-label{display:inline-block;margin-inline-start:var(--sp-2);padding:0 var(--sp-1);border-radius:var(--radius-xs);background:var(--gray-bg);color:var(--muted);font-size:var(--fs-11);font-weight:500;line-height:1.6}
 [data-end] :is(.field>label,.field>.field-label){font-size:var(--ui-field-label);font-weight:500;color:var(--muted)}
 [data-end] :is(.fc-label label,.funder-field-label,.nc-category-field label){font-size:var(--ui-field-label);font-weight:500;color:var(--muted)}
 [data-end] .tag{border:0;border-radius:var(--radius-xs);padding:var(--sp-1) var(--sp-2);font-size:var(--fs-11);font-weight:500;line-height:1.5}

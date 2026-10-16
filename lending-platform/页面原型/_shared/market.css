@@ -26,10 +26,10 @@
 [data-market-redesign] .btn.primary{color:var(--on-accent);background:var(--accent);border-color:var(--accent)}
 [data-market-redesign] .btn.primary:hover{background:var(--accent-strong)}
 [data-market-redesign] .filterbar{padding:var(--sp-4) 0;gap:var(--sp-2);border:0;background:transparent}
-[data-market-redesign] .filterbar select.inp,[data-market-redesign] .filterbar .fb-btn,[data-market-redesign] .filterbar .fb-q .inp{border-radius:var(--radius-xs);background:var(--card);border-color:var(--border-strong);height:var(--ctrl-h);font-size:var(--fs-12)}
+[data-market-redesign] .filterbar select.inp,[data-market-redesign] .filterbar .fb-btn,[data-market-redesign] .filterbar .fb-q .inp{border-radius:var(--radius-xs);border-color:var(--border-strong);height:var(--ctrl-h);font-size:var(--fs-12)}
 [data-market-redesign] .filterbar .fb-acts .btn{border-radius:var(--radius-xs);height:var(--ctrl-h);min-height:var(--ctrl-h)}
 [data-market-redesign] .fb-panel{border-color:var(--border-strong)}
-[data-market-redesign] .inp{background:var(--card-2);border-color:var(--control-border)}
+[data-market-redesign] .inp:not([readonly]):not(:disabled){background:var(--card)}
 [data-market-redesign] .modal,[data-market-redesign] .drawer{background:var(--card);border-color:var(--border-strong);animation:mk-panel-in var(--dur-base) var(--ease-out)}
 [data-market-redesign] .modal-b,[data-market-redesign] .drawer-b{color:var(--text)}
 [data-market-redesign] .ft-in{color:var(--muted)}
