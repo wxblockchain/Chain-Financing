@@ -17,7 +17,7 @@
 
   const fDefault=()=>({q:'',status:''});
   const seed=CF.parameterSeed();
-  const A={rows:seed.rows,justSaved:null,
+  const A={rows:seed.rows,justSaved:null,domainNew:false,
     filter:fDefault(),edit:fDefault(),sort:'name',dir:1,page:1,size:SIZES[0],
     selected:null,draft:null,busy:false,error:'',errorAction:'',fieldErrors:{},validated:{},
     view:'default',logState:'default',logShown:CF.PAGE_SIZE,response:'success',epoch:0};
@@ -161,11 +161,11 @@
   function listPage(){
     const blocked=gate();
     const head=title(L('Financing parameters','融资参数配置'),
-      L('Caps on the pledge ratio and project term an asset holder can fill in, by token type. Token types are supplied by token issuance and synchronisation.','按代币类型维护资产方创建融资项目时可填的质押率与期限上限。代币类型由代币发行与同步提供。'));
+      L('Caps on the pledge ratio and project term an asset holder can fill in, by token type. Token types are added and removed by developers on the backend; this page only maintains their parameters.','按代币类型维护资产方创建融资项目时可填的质押率与期限上限。代币类型由开发在后端新增或移除，此处只维护参数。'));
     if(blocked)return head+blocked;
     const state=A.view==='default'?null:surface({
       emptyTitle:L('No token types yet','暂无代币类型'),
-      emptyDesc:L('Token types are provided by token issuance and synchronisation. They appear here once the upstream supplies them.','代币类型由代币发行与同步提供，上游供给后将出现在此。')});
+      emptyDesc:L('Token types are added by developers on the backend. A newly added token type appears here as not configured. Contact your developers if one is missing.','代币类型由开发在后端新增，新增后以「未配置」出现在这里。如缺少代币类型，请联系开发。')});
     const found=sortRows(scope());
     const pages=Math.max(1,Math.ceil(found.length/A.size));
     if(A.page>pages)A.page=pages;
@@ -176,10 +176,10 @@
       ?`<div class="fc-cue" role="status">${CF.tag('warn',L('Not configured','未配置'))}<span>${L(unset+' token type'+(unset>1?'s are':' is')+' not configured yet and cannot be used to create a financing project.','有 '+unset+' 个代币类型尚未配置，暂不可用于创建融资项目。')}</span>${b('Show not configured only','只看未配置','only-unset','','sm')}</div>`:'';
     const actions=r=>`<a class="actlink" href="#${E(detailRoute(r.id))}" data-act="fc-view" data-v="${E(r.id)}" aria-label="${E(L('View ','查看')+r.name)}">${L('View','查看')}</a>`
       +(canMaintain()?`<a class="actlink" href="#${E(editRoute(r.id))}" data-act="fc-edit" data-v="${E(r.id)}" aria-label="${E((configured(r)?L('Maintain ','维护'):L('Configure ','配置'))+r.name)}">${configured(r)?L('Maintain','维护'):L('Configure','配置')}</a>`:'');
-    /* 上游暂无代币类型与筛选无匹配是两种结果，分别表达。 */
+    /* 开发尚未新增任何代币类型与筛选无匹配是两种结果，分别表达；两处都不提供新增入口。 */
     const table=state||(!live().length
       ?CF.empty(L('No token types yet','暂无代币类型'),
-        L('Token types are provided by token issuance and synchronisation. They appear here once the upstream supplies them.','代币类型由代币发行与同步提供，上游供给后将出现在此。'),'')
+        L('Token types are added by developers on the backend. A newly added token type appears here as not configured. Contact your developers if one is missing.','代币类型由开发在后端新增，新增后以「未配置」出现在这里。如缺少代币类型，请联系开发。'),'')
       :!found.length
       ?CF.empty(L('No token types match these filters','没有符合条件的代币类型'),
         L('Change the keyword or the configuration status, or clear the filters.','请调整关键词或配置状态，或清空筛选条件。'),
@@ -231,15 +231,15 @@
       +CF.empty(L('Token type unavailable','代币类型不可用'),L('Open a token type from the parameter list.','请从融资参数列表中选择一个代币类型。'),b('Back to the parameter list','返回融资参数列表','back'));
     if(A.view!=='default')return title(E(r.name),'')+surface({});
     const retired=r.removed
-      ?CF.note('warn',L('This token type is no longer supplied upstream. It is not offered when a financing project is created and its parameters can no longer be maintained. The change history below stays readable.','该代币类型已不在上游供给的有效取值内：不再供给创建融资项目，参数也不能再维护。以下参数变更记录保留可追溯。'))
+      ?CF.note('warn',L('Developers have removed this token type on the backend. It can no longer be used to create a financing project and its parameters can no longer be maintained. Projects already created keep their locked values, and the change history below stays readable.','该代币类型已由开发在后端移除：不再用于创建融资项目，参数也不能再维护。已创建的项目仍按其锁定值运行，不受影响；以下参数变更记录保留可查。'))
       :'';
     const maintain=!canMaintain()
       ?`<span class="fc-meta">${L('View access only. This account does not hold the financing parameter maintenance permission.','当前仅有融资参数查询权限，不能维护参数。')}</span>`
       :r.removed
-        ?`<span class="fc-meta">${L('Maintenance is unavailable for a token type that is no longer supplied upstream.','该代币类型已被上游移出，不提供参数维护。')}</span>`
+        ?`<span class="fc-meta">${L('This token type has been removed, so its parameters cannot be maintained.','该代币类型已移除，不提供参数维护。')}</span>`
         :`<a class="btn primary" href="#${E(editRoute(r.id))}" data-act="fc-edit" data-v="${E(r.id)}">${configured(r)?L('Maintain parameters','维护参数'):L('Configure parameters','配置参数')}</a>`;
     const current=section('Current parameters','当前参数',kv([
-      [L('Token type','代币类型'),`<strong class="mono">${E(r.name)}</strong><small>${L('Supplied upstream and read-only here.','由上游供给，本模块只读。')}</small>`],
+      [L('Token type','代币类型'),`<strong class="mono">${E(r.name)}</strong><small>${L('Added by developers on the backend; read-only here.','由开发在后端新增，此处不可修改。')}</small>`],
       [L('Maximum pledge ratio','最高质押率'),E(ratioText(r.maxRatio)),'strong'],
       [L('Maximum project term','最长项目期限'),E(termText(r.maxTermMonths)),'strong'],
       [L('Configuration status','配置状态'),statusTag(r)],
@@ -247,7 +247,7 @@
       [L('Updated by','最近更新人'),E(person(r.updatedBy))]
     ]),maintain);
     return title(E(r.name),r.removed
-      ?L('No longer supplied upstream. The parameters below are kept for reference only.','已不在上游供给的有效取值内，以下内容仅供追溯。')
+      ?L('Removed by developers. The details below are kept for reference only.','已由开发移除，以下内容仅供查阅。')
       :configured(r)
       ?L('These values cap what an asset holder can fill in when a financing project is created after the last save.','以下取值是保存成功之后创建融资项目时的自填上限。')
       :L('Not configured yet. This token type cannot be used to create a financing project until both parameters are saved.','尚未配置。两项参数保存前，该代币类型不可用于创建融资项目。'))
@@ -329,7 +329,7 @@
     if(!r||r.removed)return title(L('Maintain parameters','参数维护'),'')
       +(A.error?`<div class="card fc-section">${error()}</div>`:'')
       +CF.empty(L('Token type unavailable','代币类型不可用'),
-        L('This token type is no longer supplied upstream, so its parameters cannot be maintained.','该代币类型已不在上游供给的有效取值内，不能维护其参数。'),
+        L('Developers have removed this token type on the backend, so its parameters cannot be maintained. Projects already created are not affected.','该代币类型已由开发在后端移除，不能再维护其参数；已创建的项目不受影响。'),
         b('Back to the parameter list','返回融资参数列表','back'));
     if(!canMaintain())return title(L('Maintain parameters','参数维护'),'')
       +CF.empty(maintainOnly()?L('Parameter access is incomplete','参数权限配置不完整'):L('No maintenance permission','无维护权限'),
@@ -355,7 +355,7 @@
         b('Cancel','取消','cancel','','',A.busy)}${
         A.busy?`<span role="status">${L('Submitting…','正在提交…')}</span>`:`<span class="fc-meta fc-foot-note">${L('Takes effect on save, for financing projects created afterwards only.','保存即生效，仅作用于此后创建的融资项目。')}</span>`}</div></form>`;
     const head=`<div class="fc-section-head"><h2 class="fc-h2">${configured(r)?L('Maintain parameters','维护参数'):L('Configure parameters','配置参数')}</h2>${statusTag(r)}</div>`;
-    return title(E(r.name),L('One token type at a time. Fill in both parameters; the token type itself is supplied upstream and cannot be changed here.','一次维护一个代币类型，两项参数需同时填写；代币类型由上游供给，此处不可修改。'))
+    return title(E(r.name),L('One token type at a time. Fill in both parameters; the token type itself cannot be changed here.','一次维护一个代币类型，两项参数需同时填写；代币类型不可在此修改。'))
       +`<div class="detail-stack fc-stack"><section class="card fc-section fc-editing">${head}${form}</section>${changeLog(r)}</div>`;
   }
 
@@ -431,7 +431,7 @@
       }
       if(response==='removed'){
         r.removed=true;S.layer=null;A.draft=null;
-        A.error=['This token type was removed from the upstream values while you were editing. Nothing was saved.','该代币类型在办理期间已被上游移出有效取值，本次未写入任何参数。'];
+        A.error=['Developers removed this token type on the backend while you were editing. Nothing was saved; projects already created are not affected.','该代币类型在办理期间已由开发在后端移除，本次未保存任何参数；已创建的项目不受影响。'];
         A.errorAction='back';CF.render();return;
       }
       /* 保存成功：两项参数整体采用新值，并留下一条变更记录。 */
@@ -462,11 +462,13 @@
       <h4>${L('Delivered account configuration','交付的账号配置')}</h4><div class="fc-demo-actions">${b('Administrator','运营管理员','grant','admin')}${b('Later role · no access','后期角色 · 未开通本模块','grant','none')}${b('Later role · query only','后期角色 · 仅开通参数查询','grant','query')}${b('Later role · maintenance only','后期角色 · 仅开通参数维护','grant','maintain')}${b('Later role · query + maintenance','后期角色 · 查询＋维护','grant','full')}</div>
       <div class="fc-demo">${field(L('Page state','页面状态'),select('fc-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty · no token types','空数据 · 暂无代币类型')],['error',L('Load failed','读取失败')]]))}${
         field(L('Change history state','参数变更记录状态'),select('fc-log-state',A.logState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('No records','尚无记录')],['error',L('Load failed','读取失败')],['expired',L('Session expired','登录失效')]]))}${
-        field(L('Save response','保存反馈'),select('fc-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['unknown',L('Result unknown','结果未知')],['concurrent',L('Another operator saved first','已被他人先行修改')],['removed',L('Token type removed upstream','代币类型已被上游移出')]]))}</div>
-      <h4>${L('Upstream token type supply','上游代币类型供给')}</h4><p class="fc-meta">${L('This release supplies one token type. Operations cannot add, rename, merge or delete a token type in the product; the buttons below simulate the upstream changing what it supplies.','本期上游只供给一个代币类型。产品内没有新增、改名、合并或删除入口；以下按钮模拟上游供给本身发生变化。')}</p>
-      <div class="fc-demo-actions">${b('Upstream adds a token type','上游新增一个代币类型','add-token','','',!!extra)}${
-        removals.map(r=>b('Upstream removes '+r.name,'上游移出「'+r.name+'」','remove-token',r.id)).join('')}${
-        b('Restore the default supply','恢复默认供给','restore-tokens')}</div>
+        field(L('Save response','保存反馈'),select('fc-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['unknown',L('Result unknown','结果未知')],['concurrent',L('Another operator saved first','已被他人先行修改')],['removed',L('Removed by developers meanwhile','办理期间被开发移除')]]))}</div>
+      <h4>${L('Token type entries · backend operations','代币类型条目 · 开发后端操作')}</h4><p class="fc-meta">${L('Token type entries are added and removed only by developers on the backend; issuing and syncing a token never adds one. Operations has no add or delete entry. The buttons below only simulate the results.','代币类型条目只由开发在后端新增或移除；代币发行与同步不会自动新增。运营端没有新增或删除入口，以下按钮只模拟结果。')}</p>
+      <p class="fc-meta">${L('Token types in the token domain: ','代币域中的代币类型：')}${E([CF.parameterTokenNames.erc].concat(A.domainNew?[CF.parameterTokenNames.trc]:[]).join(L(', ','、')))}<br>${L('Entries in the parameter list: ','融资参数列表中的条目：')}${E(removals.map(r=>r.name).join(L(', ','、'))||L('none','无'))}</p>
+      <div class="fc-demo-actions">${b('Token sync brings a new type','代币同步出现新类型','sync-token','','',A.domainNew||(!!extra&&!extra.removed))}${
+        b('Developers add '+CF.parameterTokenNames.trc,'开发新增「'+CF.parameterTokenNames.trc+'」','add-token','','',!!extra&&!extra.removed)}${
+        removals.map(r=>b('Developers remove '+r.name,'开发移除「'+r.name+'」','remove-token',r.id)).join('')}${
+        b('Restore the default entries','恢复默认条目','restore-tokens')}</div>
       <h4>${L('Session','会话')}</h4><div class="fc-demo-actions">${b('Expire the operations session','运营登录失效','expire-session')}${b('Reset demonstration','重置演示','restart')}</div>`;
   }
 
@@ -517,19 +519,28 @@
     }
     else if(act==='grant'){grant(v);S.demo=false;window.scrollTo(0,0);navigateRoute(S.page===LIST?listRoute():detailRoute(A.selected));}
     else if(act==='expire-session'){A.draft=null;A.busy=false;S.layer=null;S.demo=false;OPS.onAct('ops-session-expire');CF.render();}
+    else if(act==='sync-token'){
+      /* 代币域出现新类型不会带出融资参数条目：列表保持不变，直到开发在后端新增。 */
+      A.domainNew=true;CF.render();
+      CF.toast(L(CF.parameterTokenNames.trc+' now exists in the token domain. Developers have not added it, so the parameter list is unchanged.',CF.parameterTokenNames.trc+' 已出现在代币域；开发尚未新增，融资参数列表不变。'));
+    }
     else if(act==='add-token'){
-      if(!A.rows.some(r=>r.id===CF.parameterTokenNames.trc))A.rows.push(CF.parameterNewToken());
-      CF.render();
+      /* 开发新增的条目两项参数为空、以未配置出现；同名条目被移除后再新增，按新的未配置条目处理，不恢复旧值，旧记录保留。 */
+      const old=rowOf(CF.parameterTokenNames.trc);
+      if(!old)A.rows.push(CF.parameterNewToken());
+      else if(old.removed)Object.assign(old,{removed:false,maxRatio:null,maxTermMonths:null,updatedAt:null,updatedBy:null});
+      A.domainNew=true;CF.render();
     }
     else if(act==='remove-token'){
       const r=rowOf(v);
-      if(r){r.removed=true;if(A.draft&&A.draft.id===v)A.draft=null;}
+      if(r){r.removed=true;if(A.draft&&A.draft.id===v)A.draft=null;
+        CF.toast(L('Developers removed '+r.name+'. Projects already created are not affected; its change history is kept.','开发已移除「'+r.name+'」；已创建的项目不受影响，变更记录保留。'));}
       CF.render();
     }
     else if(act==='restart'||act==='restore-tokens'){
       const fresh=CF.parameterSeed();
       A.epoch++;A.rows=fresh.rows;A.draft=null;A.busy=false;A.error='';A.errorAction='';A.fieldErrors={};
-      A.logShown=CF.PAGE_SIZE;A.logState='default';A.view='default';
+      A.logShown=CF.PAGE_SIZE;A.logState='default';A.view='default';A.domainNew=false;
       if(act==='restart'){A.response='success';A.justSaved=null;grant('admin');}
       A.selected=A.rows[0].id;resetFilter();navigateRoute(listRoute());
     }
