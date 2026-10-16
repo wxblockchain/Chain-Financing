@@ -414,8 +414,8 @@
   function validateDeposit(){
     const p=project(),changes=[];
     selection.forEach(id=>{const t=D.token(id),old=feeQuote.find(f=>f.id===id);
-      if(!D.selectable(t,p)){changes.push(id+' · '+L('No longer eligible for pledge.','已不可质押。'));return;}
-      const fee=D.quoteFee(id);if(!old||old.amount!==fee.amount||old.currency!==fee.currency)changes.push(id+' · '+L('Estimated gas changed.','预估 gas 已更新。'));
+      if(!D.selectable(t,p)){changes.push(D.tokenNo(D.token(id))+' · '+L('No longer eligible for pledge.','已不可质押。'));return;}
+      const fee=D.quoteFee(id);if(!old||old.amount!==fee.amount||old.currency!==fee.currency)changes.push(D.tokenNo(D.token(id))+' · '+L('Estimated gas changed.','预估 gas 已更新。'));
     });
     if(changes.length){selection=selection.filter(id=>D.selectable(D.token(id),p));feeQuote=feeSnapshot();confirmationChanges=changes;error='';return false;}
     return selection.length>0;
@@ -542,7 +542,9 @@
   function openRelease(){const p=project();if(!guarded(p))return;if(!D.actions(p).withdraw){CF.toast(L('Current withdrawable limit: ','当前可撤回上限：')+usd(D.numbers(p).withdraw));return;}selection=[];feeQuote=[];confirmationChanges=[];operation='release';pages.select=1;open('release');}
   function beginDeposit(){if(!guarded(project())||!selection.length)return;operation='deposit';feeQuote=feeSnapshot();confirmationChanges=[];open('fees');validateDeposit();}
   /* 质押办理：勾选与签名同一步。顶部告知随勾选即时更新，签名前一直可见。 */
-  function pledgeCandidates(p){return D.tokens.filter(t=>D.selectable(t,p)).sort((a,b)=>b.value-a.value||a.id.localeCompare(b.id));}
+  /* 可质押份额按持有地址分组；一次签名只能包含同一持有地址的份额。 */
+  function pledgeCandidates(p){return D.tokens.filter(t=>D.selectable(t,p)).sort((a,b)=>D.holderOf(a).localeCompare(D.holderOf(b))||b.value-a.value||a.id.localeCompare(b.id));}
+  const signAddress=()=>selection.length?D.holderOf(D.token(selection[0])):'';
   function pledgeNotice(p){
     const chosen=selection.map(D.token).filter(Boolean),total=chosen.reduce((v,t)=>v+t.value,0);
     const gas={};chosen.forEach(t=>{const f=D.quoteFee(t.id);gas[f.currency]=(gas[f.currency]||0)+f.amount;});
@@ -550,15 +552,16 @@
     const cell=(k,v)=>'<div><span class="k">'+k+'</span><b class="v mono">'+v+'</b></div>';
     return '<section class="ls-pledge-notice" role="status" aria-live="polite">'
       +'<div class="ls-pledge-sum">'+cell(L('Selected','已选'),L(chosen.length+(chosen.length===1?' share':' shares'),chosen.length+' 份'))+cell(L('Holding quantity','持有数量'),shareQty(chosen))+cell(L('Share value','份额价值合计'),usd(total))+cell(L('Estimated gas','预估 gas'),gasText)+'</div>'
+      +'<div class="ls-pledge-to"><span class="muted">'+L('Signing address','签名地址')+'</span><span class="mono">'+E(signAddress()||'—')+'</span><span class="hint">'+L('One signature covers shares at one address only.','一次签名只能包含同一持有地址的份额。')+'</span></div>'
       +'<div class="ls-pledge-to"><span class="muted">'+L('To pledge contract','转入质押合约')+' · '+E(D.PLEDGE_CHAIN)+'</span><span class="mono">'+E(p.contract||'—')+'</span>'+(p.contract?copyIcon(p.contract,L('Copy pledge contract address','复制质押合约地址')):'')+'</div>'
       +'<p>'+L('You sign this yourself in your wallet. Gas is paid by your company and is not refunded if the transfer fails. Once on chain, tokens count towards Pledged pending review; each counts towards the Eligible borrowing limit, and can support a financing request, only after it passes the platform\'s review.','需你本人在钱包中签名；gas 由本企业承担，上链失败已产生的 gas 不退。上链成功后先计入待审质押额，经平台逐份审核通过后才计入有效质押额、可用于发布融资需求。')+'</p></section>';
   }
   function pledgePicker(p){
     const list=pledgeCandidates(p);
     if(!list.length)return CF.empty(L('No tokens available to pledge','暂无可质押的代币'),L('Tokens issued to your company appear here once synced.','本企业代币同步后会出现在这里。'));
-    const all=list.every(t=>selection.includes(t.id));
-    return '<div class="tablewrap"><table class="tbl ls-pick"><thead><tr><th scope="col" class="ls-pick-check"><label class="ls-check"><input type="checkbox" data-token-all="1"'+(all?' checked':'')+' aria-label="'+L('Select all','全选')+'"></label></th><th scope="col">'+L('Token','代币')+'</th><th scope="col">'+L('Holding address','持有地址')+'</th><th scope="col" class="num">'+L('Holding quantity','持有数量')+'</th><th scope="col" class="num">'+L('Share value','份额价值')+'</th><th scope="col">'+L('Receivable due','账期到期')+'</th><th scope="col">'+L('Buyer','买方企业')+'</th><th scope="col">'+L('Validity','有效性')+'</th><th scope="col" class="num">'+L('Est. gas','预估 gas')+'</th></tr></thead><tbody>'
-      +list.map(t=>{const on=selection.includes(t.id),f=D.quoteFee(t.id);return '<tr class="ls-pick-row'+(on?' on':'')+'"><td class="ls-pick-check"><label class="ls-check"><input type="checkbox" data-token="'+E(t.id)+'"'+(on?' checked':'')+' aria-label="'+L('Select ','选择 ')+E(D.tokenNo(t))+' · '+E(D.holderOf(t))+'"></label></td><td><span class="ls-token-id">'+hexMark('accent')+'<span class="mono">'+E(D.tokenNo(t))+'</span></span></td><td><span class="mono" title="'+E(D.holderOf(t))+'">'+E(shortAddr(D.holderOf(t)))+'</span></td><td class="num">'+qty(t)+'</td><td class="num">'+usd(t.value)+'</td><td class="mono">'+E(String(t.due||'').slice(0,10)||'—')+'</td><td>'+E(txt(t.buyer))+'</td><td>'+(t.valid?L('Valid','有效'):L('Expired','已失效'))+'</td><td class="num">'+Number(f.amount).toFixed(6)+' '+E(f.currency)+'</td></tr>';}).join('')
+    const addr=signAddress()||D.holderOf(list[0]),group=list.filter(t=>D.holderOf(t)===addr),all=group.every(t=>selection.includes(t.id));
+    return '<div class="tablewrap"><table class="tbl ls-pick"><thead><tr><th scope="col" class="ls-pick-check"><label class="ls-check"><input type="checkbox" data-token-all="1"'+(all?' checked':'')+' aria-label="'+L('Select all shares at this address','全选本地址的份额')+'"></label></th><th scope="col">'+L('Token','代币')+'</th><th scope="col">'+L('Holding address','持有地址')+'</th><th scope="col" class="num">'+L('Holding quantity','持有数量')+'</th><th scope="col" class="num">'+L('Share value','份额价值')+'</th><th scope="col">'+L('Receivable due','账期到期')+'</th><th scope="col">'+L('Buyer','买方企业')+'</th><th scope="col">'+L('Validity','有效性')+'</th><th scope="col" class="num">'+L('Est. gas','预估 gas')+'</th></tr></thead><tbody>'
+      +list.map(t=>{const on=selection.includes(t.id),f=D.quoteFee(t.id),other=!!signAddress()&&D.holderOf(t)!==signAddress();return '<tr class="ls-pick-row'+(on?' on':'')+(other?' held':'')+'"><td class="ls-pick-check"><label class="ls-check"><input type="checkbox" data-token="'+E(t.id)+'"'+(on?' checked':'')+(other?' disabled':'')+' aria-label="'+L('Select ','选择 ')+E(D.tokenNo(t))+' · '+E(D.holderOf(t))+'"></label></td><td><span class="ls-token-id">'+hexMark('accent')+'<span class="mono">'+E(D.tokenNo(t))+'</span></span></td><td><span class="mono" title="'+E(D.holderOf(t))+'">'+E(shortAddr(D.holderOf(t)))+'</span>'+(other?'<span class="cell-sub">'+L('Another address · sign separately','其他地址 · 需另行签名')+'</span>':'')+'</td><td class="num">'+qty(t)+'</td><td class="num">'+usd(t.value)+'</td><td class="mono">'+E(String(t.due||'').slice(0,10)||'—')+'</td><td>'+E(txt(t.buyer))+'</td><td>'+(t.valid?L('Valid','有效'):L('Expired','已失效'))+'</td><td class="num">'+Number(f.amount).toFixed(6)+' '+E(f.currency)+'</td></tr>';}).join('')
       +'</tbody></table></div>';
   }
   async function signPledge(){
@@ -606,7 +609,7 @@
   }
   function validateRelease(p){
     const candidates=new Set(releaseCandidates(p).filter(t=>!waterHeld(p,t)).map(t=>t.id)),changes=[];
-    selection.forEach(id=>{const old=feeQuote.find(f=>f.id===id);if(!candidates.has(id)){changes.push(id+' · '+L('No longer available for this operation.','已不可办理本次操作。'));return;}const fee=D.quoteFee(id);if(!old||old.amount!==fee.amount||old.currency!==fee.currency)changes.push(id+' · '+L('Estimated gas changed.','预估 gas 已更新。'));});
+    selection.forEach(id=>{const old=feeQuote.find(f=>f.id===id);if(!candidates.has(id)){changes.push(D.tokenNo(D.token(id))+' · '+L('No longer available for this operation.','已不可办理本次操作。'));return;}const fee=D.quoteFee(id);if(!old||old.amount!==fee.amount||old.currency!==fee.currency)changes.push(D.tokenNo(D.token(id))+' · '+L('Estimated gas changed.','预估 gas 已更新。'));});
     if(changes.length){selection=selection.filter(id=>candidates.has(id));feeQuote=feeSnapshot();confirmationChanges=changes;error='';return false;}
     if(releaseValue(p)>D.numbers(p).withdraw){error=txt(errors.withdrawLimit);return false;}
     return selection.length>0&&new Set(selection).size===selection.length;
@@ -789,7 +792,7 @@
     if(el.dataset.settle){const c=el.dataset.settle;settle=el.checked?[...new Set([...settle,c])]:settle.filter(x=>x!==c);}
     if(el.dataset.depositToken){const id=el.dataset.depositToken;if(D.selectable(D.token(id),project()))selection=el.checked?[...new Set([...selection,id])]:selection.filter(x=>x!==id);CF.render();setTimeout(()=>document.querySelector('[data-deposit-token="'+id+'"]')?.focus({preventScroll:true}),0);}
     if(el.id==='ls-demo-record-state'){const id=document.getElementById('ls-demo-record').value;recordLoads[id]=el.value;CF.render();}if(el.id==='ls-review-load')reviewLoad=el.value;if(el.id==='ls-demo-application')demoApplication=el.value;if(el.id==='ls-agreement-fail')agreementFail=el.checked;
-    if(el.dataset.tokenAll){selection=el.checked?pledgeCandidates(project()).map(t=>t.id):[];if(S.layer?.key==='pledge'){feeQuote=feeSnapshot();confirmationChanges=[];}CF.render();setTimeout(()=>document.querySelector('[data-token-all]')?.focus(),0);}
+    if(el.dataset.tokenAll){const list=pledgeCandidates(project()),addr=signAddress()||D.holderOf(list[0]);selection=el.checked?list.filter(t=>D.holderOf(t)===addr).map(t=>t.id):[];if(S.layer?.key==='pledge'){feeQuote=feeSnapshot();confirmationChanges=[];}CF.render();setTimeout(()=>document.querySelector('[data-token-all]')?.focus(),0);}
     if(el.dataset.releaseAll){selection=el.checked?releaseCandidates(project()).filter(t=>!waterHeld(project(),t)).map(t=>t.id):[];feeQuote=feeSnapshot();confirmationChanges=[];error='';CF.render();setTimeout(()=>document.querySelector('[data-release-all]')?.focus(),0);}
     if(el.dataset.token){const id=el.dataset.token;selection=el.checked?[...new Set([...selection,id])]:selection.filter(x=>x!==id);if(['pledge','release'].includes(S.layer?.key)){feeQuote=feeSnapshot();confirmationChanges=[];error='';}CF.render();setTimeout(()=>document.querySelector('[data-token="'+id+'"]')?.focus(),0);}
     if(['ls-tf-state','ls-tf-going','ls-tf-keyword'].includes(el.id)){tokenFilter[el.id.slice(6)]=el.value;pages.tokens=1;refocus=el.id;CF.render();}
