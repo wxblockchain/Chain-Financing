@@ -393,8 +393,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-section-nav button[aria-current]{color:var(--accent);font-weight:700}
 .ls-section-nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .ls-detail-main>:is(#ls-pledged-tokens,#ls-applications,#ls-disbursements,#ls-repayments){scroll-margin-top:calc(var(--ls-section-top,80px) + 74px)}
-.rp-progress{padding:12px 0}.rp-progress-status{font-weight:600;margin:0 0 12px}.rp-progress ol{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0;margin:0;list-style:none}.rp-progress li{display:flex;gap:8px;align-items:flex-start}.rp-progress li div{min-width:0}.rp-progress li b,.rp-progress li .hint{display:block}.rp-progress-dot{border:1px solid var(--border);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;flex-shrink:0;color:var(--muted)}.rp-progress [data-complete=true] .rp-progress-dot,.rp-progress [aria-current] .rp-progress-dot{color:var(--accent);border-color:var(--accent)}.rp-selected-reference{overflow-wrap:anywhere}
-@media(max-width:480px){.rp-progress ol{grid-template-columns:1fr}.ls-section-nav button{font-size:13px;padding:8px}.ls-section-nav{gap:0}.ls-workspace .ls-action-rail{z-index:3}}
+@media(max-width:480px){.ls-section-nav button{font-size:13px;padding:8px}.ls-section-nav{gap:0}.ls-workspace .ls-action-rail{z-index:3}}
 
 /* 广场列表：筛选压缩为一行后，列表本身至少占半屏；放大态由公共 .listzone 接管。 */
 .ls-market-zone{min-height:min(52vh,540px)}
