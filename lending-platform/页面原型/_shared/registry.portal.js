@@ -32,8 +32,8 @@
     CF.ENTRY[id] = p.route;
   }
 
-  /* 首页为公开介绍入口；旧模块仍默认进入资产广场，首页 HTML 自带 /home 入口。
+  /* 首页只由左侧品牌图标进入，不占主导航；首页 HTML 自带 /home 入口。
      用户信息与企业／机构信息挂账号下拉，不占主导航位；
      流程页与详情页由列表或深链带出，同样不占导航位。 */
-  CF.NAV.asset = ["P-HOME-01", "P-F-AM-01", "P-LS-01", "P-MC-01"];
+  CF.NAV.asset = ["P-F-AM-01", "P-LS-01", "P-MC-01"];
 })(window.CF = window.CF || {});

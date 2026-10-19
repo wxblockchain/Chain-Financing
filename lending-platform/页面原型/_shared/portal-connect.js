@@ -3,7 +3,7 @@
   'use strict';
   const N = CF.NCView, A = CF.AccountView, S = CF.S;
   const before = N.beforeRender, after = N.afterRender, guard = N.onBeforeAct, action = N.onAct, demo = N.demo;
-  N.beforeRender = () => { A.beforeRender?.(); before?.(); };
+  N.beforeRender = () => { CF.Home?.beforeRender(); A.beforeRender?.(); before?.(); };
   N.afterRender = () => {
     A.afterRender?.(); after?.();
     const q = new URLSearchParams(location.hash.split('?')[1] || ''), back = q.get('messageReturn');

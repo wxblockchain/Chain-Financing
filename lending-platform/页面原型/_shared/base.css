@@ -1040,6 +1040,8 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 [data-end] body{font-size:var(--ui-field-value);line-height:1.6}
 [data-end] :is(.num,.mono){font-variant-numeric:lining-nums tabular-nums;letter-spacing:0}
 [data-end] .brand-mark{border-radius:var(--radius-xs);transform:rotate(-7deg)}
+[data-end] .portal-head .brand-mark.brand-home{width:28px;height:28px;transform:none;background:transparent;color:var(--accent)}
+[data-end] .portal-head .brand-home svg{width:28px;height:28px}
 [data-end] .brand-name{font-size:var(--fs-16);font-weight:650;letter-spacing:-.025em}
 [data-end] .brand-sub{color:var(--muted);letter-spacing:.03em}
 [data-end] .portal-head{gap:var(--sp-7);padding-inline:var(--sp-7)}

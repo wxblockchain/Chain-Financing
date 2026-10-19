@@ -113,6 +113,28 @@
 @media(min-width:901px) and (max-width:1300px){:root{--ui-stat-size:20px}}
 @media(max-width:768px){:root{--ui-page-title:var(--fs-24)}}
 
+/* WS-432: user-requested first-version homepage. Names are scoped to this public surface. */
+.hc-home{
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;--font-mono:var(--font-sans);
+  --bg-base:#F7F8FA;--bg-subtle:#F1F3F6;--bg-surface:#FFFFFF;--bg-surface-hover:#F5F7FA;
+  --bg-elevated:#FFFFFF;--bg-input:#F5F7FA;--border:#E4E7EC;--border-strong:#CDD2DA;
+  --text-primary:#0F1724;--text-secondary:#4B5565;--text-tertiary:#667085;
+  --accent:#2F6BEA;--accent-hover:#4A80F0;--accent-active:#2459C9;--accent-subtle:rgba(47,107,234,.10);--accent-fg:#FFFFFF;
+  --positive:#067647;--warning:#B54708;--negative:#D92D41;--info-subtle:rgba(47,107,234,.10);
+  --brand-eth:#627EEA;--brand-base:#0000FF;--logo-fg:#FFFFFF;
+  --shadow-popover:0 12px 32px rgba(15,23,36,.12);
+  --text-hero:clamp(40px,5.2vw,72px);--leading-hero:1.05;--duration-reveal:640ms;
+  --text-h1:28px;--leading-h1:36px;--text-h2:20px;--leading-h2:28px;
+  --text-h3:16px;--leading-h3:24px;--text-body:14px;--leading-body:22px;
+  --text-small:13px;--leading-small:20px;--text-caption:12px;--leading-caption:16px;
+  --weight-medium:500;--weight-semibold:600;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-16:64px;
+  --radius:8px;--radius-sm:6px;--radius-lg:12px;--radius-full:9999px;--content-max-width-wide:1440px;--page-gutter:var(--space-8);--control-height-lg:48px;
+  --home-screen-h:calc(100dvh - var(--home-header-h,68px));--z-header:50;
+  --duration-base:200ms;--duration-slow:320ms;--ease:cubic-bezier(.16,1,.3,1);
+}
+@media(max-width:768px){.hc-home{--page-gutter:var(--space-4)}}
+
 /* WS-403: user-authorized replacement of the marketplace visual baseline.
    Only active on marketplace pages; palette has one canonical source. */
 :root[data-market-redesign]:not([data-market-tone="blue"]){

@@ -187,6 +187,8 @@
     external: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9.2 2.6H13.4V6.8M13.4 2.6 7.6 8.4M11.2 9.6v3.2a1 1 0 0 1-1 1H3.2a1 1 0 0 1-1-1V5.8a1 1 0 0 1 1-1h3.2"/></svg>'
   };
   CF.ICON = ICON;
+  // WS-432: the original Harbour Credit mark is the customer homepage entry.
+  ICON.homeBrand = '<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="currentColor"/><path d="M6.5 17.5c2.4 0 2.4-2 4.8-2s2.4 2 4.8 2 2.4-2 4.8-2M6.5 12c2.4 0 2.4-2 4.8-2s2.4 2 4.8 2 2.4-2 4.8-2" fill="none" style="stroke:var(--on-accent)" stroke-width="2" stroke-linecap="round"/></svg>';
 
   /* ------------------------------------------------------------ 公共片段 */
   CF.tag = function (kind, text) {
@@ -345,6 +347,17 @@
   }
 
   function renderPortalNav() {
+    if (CF.PAGES['P-HOME-01']) {
+      var brand = document.querySelector('.portal-head .brand');
+      if (brand) {
+        brand.href = '#/home';
+        brand.setAttribute('aria-label', 'Harbour Credit · ' + L('Home', '首页'));
+        var mark = brand.querySelector('.brand-mark');
+        if (mark) { mark.innerHTML = ICON.homeBrand; mark.classList.add('brand-home'); }
+        var sub = brand.querySelector('.brand-sub');
+        if (sub) sub.textContent = '港湾';
+      }
+    }
     var html = navItems().map(function (id) {
       var p = CF.PAGES[id];
       var cur = id === S.page ? ' aria-current="page"' : "";
