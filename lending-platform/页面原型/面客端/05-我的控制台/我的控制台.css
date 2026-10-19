@@ -44,7 +44,11 @@
 .mc-period[open] summary{background:var(--accent-soft)}.mc-period[open] .mc-expand{transform:rotate(45deg)}
 .mc-period-body{padding:var(--sp-6) var(--sp-3)}.mc-history{margin:var(--sp-5) 0;padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
 .mc-history summary{cursor:pointer;min-height:36px;font-weight:600}.mc-history .mc-record{margin-top:var(--sp-4)!important}
-.mc-root .detail-section .dl{grid-template-columns:minmax(135px,32%) minmax(0,1fr)}
+.mc-root .detail-section .mc-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5) var(--sp-7)}
+.mc-fact{min-width:0}.mc-root .mc-fact dt{font-size:var(--fs-12);margin-bottom:var(--sp-1)}
+.mc-root .mc-fact dd{font-size:var(--fs-14);line-height:1.6}
+.mc-account-brief{overflow-wrap:anywhere;line-height:1.6}
+.mc-scope{margin:0 0 var(--sp-5)}
 /* 同一分区内连续的字段组之间留出分隔，避免两组栅格贴在一起读成一组。 */
 .mc-root .detail-section .dl+.dl,.mc-root .detail-section .dl+.note,.mc-root .detail-section .dl+h3,.mc-root .mc-record .dl+.actlink{margin-top:var(--sp-5)}
 .mc-root .mc-record .actlink+.actlink{margin-left:var(--sp-5)}
@@ -65,7 +69,7 @@
  .mc-root .mc-table td>div{min-width:0;max-width:64%;overflow-wrap:anywhere;text-align:right}
  .mc-root .mc-table .mc-object{text-align:right}.mc-root .mc-table .mc-actions .actlink{display:inline-flex;margin-left:var(--sp-3)}
 }
-@media(max-width:600px){.mc-chapters{padding:0 var(--sp-3);gap:var(--sp-4)}.mc-quick-actions{width:100%}.mc-quick-actions .btn{flex:1 1 140px}.mc-current-amount strong{font-size:var(--fs-19)}.mc-assets{display:grid;gap:var(--sp-4)}.mc-assets>div+div{border-left:0;border-top:1px solid var(--border);padding:var(--sp-4) 0 0}.mc-summary{gap:var(--sp-5)}.mc-tabs{gap:0;display:grid;grid-template-columns:1fr 1fr}.mc-tabs button{text-align:left;font-size:var(--fs-13)}.mc-root .filters .field{max-width:none;flex-basis:100%}.mc-root .detail-section .dl{grid-template-columns:1fr;gap:var(--sp-1)}.mc-root .dl dd{margin-bottom:var(--sp-3)}.mc-root .pager{flex-wrap:wrap}.mc-root .pager .total{flex-basis:100%}.mc-return{flex-wrap:wrap}.mc-caption{align-items:flex-start;flex-direction:column}}
+@media(max-width:600px){.mc-chapters{padding:0 var(--sp-3);gap:var(--sp-4)}.mc-quick-actions{width:100%}.mc-quick-actions .btn{flex:1 1 140px}.mc-current-amount strong{font-size:var(--fs-19)}.mc-assets{display:grid;gap:var(--sp-4)}.mc-assets>div+div{border-left:0;border-top:1px solid var(--border);padding:var(--sp-4) 0 0}.mc-summary{gap:var(--sp-5)}.mc-tabs{gap:0;display:grid;grid-template-columns:1fr 1fr}.mc-tabs button{text-align:left;font-size:var(--fs-13)}.mc-root .filters .field{max-width:none;flex-basis:100%}.mc-root .detail-section .mc-facts{grid-template-columns:1fr;gap:var(--sp-4)}.mc-root .pager{flex-wrap:wrap}.mc-root .pager .total{flex-basis:100%}.mc-return{flex-wrap:wrap}.mc-caption{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.mc-root *{scroll-behavior:auto!important}}
 
 /* WS-385 · apply the shared money, label and action hierarchy to read-only views. */
