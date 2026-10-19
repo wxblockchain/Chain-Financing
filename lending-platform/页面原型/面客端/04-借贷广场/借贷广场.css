@@ -209,10 +209,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-clock .tag{white-space:normal}.cq-clock span{overflow-wrap:anywhere}
 .cq-check{display:flex;align-items:flex-start;gap:var(--sp-3);min-height:44px;padding:var(--sp-3) 0;color:var(--text)}
 .cq-check input{width:18px;height:18px;flex:none;accent-color:var(--accent);margin-top:2px}
-.cq-progress{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));padding:0;margin:var(--sp-5) 0;gap:var(--sp-3)}
-.cq-progress li{border-top:2px solid var(--border);padding-top:var(--sp-3)}
-.cq-progress [aria-current=step]{color:var(--accent);border-color:var(--accent);font-weight:600}
-.cq-progress [data-complete=true]{border-color:var(--ok);color:var(--ok)}
 .cq-response-head{display:flex;justify-content:space-between;gap:var(--sp-5);flex-wrap:wrap;padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
 .cq-response-head>div{display:flex;flex-direction:column;gap:var(--sp-2);min-width:0}
 .cq-response-head strong{font-size:var(--fs-16);overflow-wrap:anywhere}
@@ -228,7 +224,13 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-account-body b{overflow-wrap:anywhere}
 .cq-account-body .tag{align-self:flex-start}
 .cq-account-off{color:var(--danger);font-size:var(--fs-12);overflow-wrap:anywhere}
-.cq-account-detail{margin-top:var(--sp-4);padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
+.cq-account-detail{margin-top:var(--sp-3)}
+.cq-account-detail[open]{padding:var(--sp-3) var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
+.cq-accept-confirm:not(:empty){margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--border)}
+#cq-summary .cq-dl,.cq-request-detail .cq-dl{grid-template-columns:minmax(96px,.7fr) minmax(0,1fr) minmax(96px,.7fr) minmax(0,1fr);column-gap:var(--sp-5)}
+@media(max-width:768px){#cq-summary .cq-dl,.cq-request-detail .cq-dl{grid-template-columns:1fr}}
+.cq-quote-history .is-selected td{background:var(--accent-soft)}
+.cq-quote-history td.mono{white-space:nowrap}
 .cq-account-detail .cq-dl{margin:0}
 .cq-copy-fallback{margin-top:var(--sp-4);padding:var(--sp-4);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
 .cq-copy-fallback label{display:block;margin-bottom:var(--sp-3)}
@@ -239,15 +241,13 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-files span{overflow-wrap:anywhere;min-width:0}.cq-copy{height:400px}
 .cq-flow{color:var(--text)}.cq-flow .note{margin-top:var(--sp-4)}
 .cq-flow textarea{height:120px;resize:vertical}.cq-flow .inp{min-width:0;width:100%}
-.cq-difference{font-size:var(--fs-16);color:var(--text);overflow-wrap:anywhere}
 .modal:has(.cq-flow){max-width:760px}.modal:has(.cq-flow) .modal-f{flex-wrap:wrap}
 .modal:has(.cq-flow) .modal-f .btn{min-height:44px;height:auto;white-space:normal;padding:var(--sp-3) var(--sp-4)}
 .cq-company{display:flex;flex-direction:column;gap:var(--sp-1);margin-bottom:var(--sp-3)}
-.cq-company strong,.cq-company-name{font-size:var(--fs-16);color:var(--text);overflow-wrap:anywhere}
+.cq-company strong{font-size:var(--fs-16);color:var(--text);overflow-wrap:anywhere}
 .cq-mode{margin-bottom:var(--sp-4)}
 .cq-mode .tag{white-space:normal}
 .cq-company-state{padding:var(--sp-3) 0;min-height:60px}
-.cq-credit-metrics{background:var(--card-2);padding:var(--sp-3) var(--sp-4);border-radius:var(--radius-sm)}
 .cq-adjusted{font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;margin:0 0 var(--sp-4)}
 .cq-upload-head{display:flex;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap;align-items:center}
 .cq-upload-head label{font-weight:600}
@@ -295,8 +295,8 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 @media(max-width:600px){.modal:has(.cq-flow) .modal-f:has(.btn:nth-child(3)) .btn{flex:1 1 calc(50% - var(--sp-2))}}
 @media print{body.cq-printing .cq-copy-fallback{display:none}}
 .cq-flow [aria-invalid=true]{outline:1px solid var(--danger);outline-offset:1px}
-@media(max-width:600px){.cq-agreement-files li{align-items:stretch;flex-direction:column}.cq-file-actions .btn{min-height:44px}.cq-upload-head{align-items:flex-start}.cq-credit-metrics .cq-dl{grid-template-columns:1fr 1fr}.cq-credit-metrics .cq-dl dd{text-align:right}}
-@media(max-width:768px){.cq-grid,.cq-progress{grid-template-columns:1fr}.cq-dl{grid-template-columns:1fr;gap:var(--sp-1)}.cq-dl dd{margin-bottom:var(--sp-3)}.cq-difference{font-size:var(--fs-14)}.cq-progress{gap:var(--sp-2)}.cq-progress li{padding-top:var(--sp-2)}.modal:has(.cq-flow) .modal-f .btn{flex:1}}
+@media(max-width:600px){.cq-agreement-files li{align-items:stretch;flex-direction:column}.cq-file-actions .btn{min-height:44px}.cq-upload-head{align-items:flex-start}}
+@media(max-width:768px){.cq-grid{grid-template-columns:1fr}.cq-dl{grid-template-columns:1fr;gap:var(--sp-1)}.cq-dl dd{margin-bottom:var(--sp-3)}.modal:has(.cq-flow) .modal-f .btn{flex:1}}
 @media print{body.cq-printing> *:not(#layers){display:none!important}body.cq-printing .modal-mask{position:static;display:block;background:white}body.cq-printing .modal{max-width:none;max-height:none;border:0;box-shadow:none}body.cq-printing .modal-b{overflow:visible}body.cq-printing .modal-h,body.cq-printing .modal-f,body.cq-printing .cq-flow>*:not(.cq-section){display:none}body.cq-printing .cq-section .ls-row{display:none}}
 
 /* Token-based review keeps the existing modal and responsive table contract. */
