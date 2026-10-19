@@ -306,7 +306,7 @@
   var STEPS = [
     [["Asset onboarding", "资产上架"], ["Tokenised receivables arrive from the issuance platform.", "已确权的应收账款由代币发行平台上架。"]],
     [["Pool and pledge", "建池与质押"], ["The holder pools an asset and pledges it against a financing request.", "资产方建池，并将其质押给一笔融资需求。"]],
-    [["Credit and quote", "授信与报价"], ["Funders assess the request and submit a quote.", "资金方核定授信并提交报价。"]],
+    [["Credit and quote", "授信与报价"], ["Funders check their credit and submit a quote.", "资金方核验授信并提交报价。"]],
     [["Disbursement", "放款"], ["The accepted quote becomes a deal and the funder disburses.", "接受报价后成交，资金方放款。"]],
     [["Repayment", "还款"], ["Repayments run to schedule; settlement releases the pledge.", "按计划还款；结清后释放质押。"]]
   ];
