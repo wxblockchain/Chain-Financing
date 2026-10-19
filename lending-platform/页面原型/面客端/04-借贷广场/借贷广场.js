@@ -279,14 +279,14 @@
     const sel=steps?pickedNode(p,key,steps):0;
     const heading=key==='financing'?'<h3 class="ls-stage-title" data-stage="'+sel+'">'+E(txt(steps.labels[sel]))+(sel!==steps.stage?CF.tag('',sel<steps.stage?L('Completed','已完成'):L('Not started','未开始')):'')+'</h3>':'';
     const summary=key==='financing'&&Q.financeSummary?Q.financeSummary(p,sel):'';
-    if(S.role==='guest')return {plain:true,html:heading+summary+(key==='financing'?'':'<h3>'+L('Continue with this project','办理本项目业务')+'</h3>')+'<p class="muted">'+L('Sign in to view actions available to your company.','登录后查看本企业可办理的业务。')+'</p><div class="ls-flow-do">'+btn('signin',L('Sign in now','立即登录'),'',true)+'</div>'};
+    if(S.role==='guest')return {plain:true,html:heading+summary+(key==='financing'?'':'<h3>'+L('Continue with this project','办理本项目业务')+'</h3>')+(Q?.turn?Q.turn('blocked',L('Sign in to take part in this project','登录后才能办理本项目业务'),L('After signing in you will see what your company can do here.','登录后可查看本企业在此可办理的业务。')):'<p class="muted">'+L('Sign in to view actions available to your company.','登录后查看本企业可办理的业务。')+'</p>')+'<div class="ls-flow-do">'+btn('signin',L('Sign in now','立即登录'),'',true)+'</div>'};
     if(key==='global')return {plain:true,html:pledgeBody(p)};
     if(sel!==steps.stage)return {plain:false,axis:flowAxis(p,key,steps),html:heading+summary+stepBrief(p,key,steps,sel)};
     const panel=key==='financing'?Q.financePanel(p):(CF.L8?.available(p).length?CF.L8.panel(p):null);
     let html;
     if(panel)html=panel.body+((panel.primary||panel.secondary)?'<div class="ls-flow-do">'+panel.primary+panel.secondary+'</div>':'');
     else html='<h3>'+L('Repayment plan','生成还款计划')+'</h3><p class="ls-flow-note">'+L('No disbursement has been confirmed for this project, so no repayment plan exists yet.','本项目还没有放款到账，还款计划尚未生成。')+'</p>';
-    return {plain:false,axis:flowAxis(p,key,steps),html:heading+summary+html};
+    return {plain:false,axis:flowAxis(p,key,steps),html:heading+(panel&&panel.turn||'')+summary+html};
   }
   function actions(p){
     const open=openFlow(p),todoAll=actionableApplications(p).length+flowOrder.reduce((t,k)=>t+flowTodo(p,k),0);

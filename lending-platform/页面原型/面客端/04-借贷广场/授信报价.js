@@ -275,7 +275,7 @@
   Q.openRequest=openRequest;Q.institution=institution;Q.currentQuote=(p,did)=>requestQuotes(p,did).find(x=>['waiting','funding','funded','terminated'].includes(x.state));
   function currentQuoteView(q){
     if(!q)return note('No current quote.','暂无当前报价。');
-    if(!related(q)&&!(S.role==='asset'&&D.mine(D.project(q.project))))return '<div class="ls-row"><b>'+institution(q.fund)+'</b>'+CF.tag(q.state==='waiting'?'accent':'',status(q))+'</div><p class="hint">'+L('Quote terms are visible only to the financing parties.','报价条款仅本笔双方可见。')+'</p>';
+    if(!related(q)&&!(S.role==='asset'&&D.mine(D.project(q.project))))return '<div class="ls-row"><b>'+institution(q.fund)+'</b>'+CF.tag(q.state==='waiting'?'accent':'',status(q))+'</div>'+note('Quote terms are visible only to the asset holder and the quoting institution. You can quote only if this quote is rejected and the request reopens.','报价条款仅本笔资产方与报价机构可见；该报价被拒绝、需求回到待报价后，你才可以报价。');
     return '<div class="ls-row"><b>'+institution(q.fund)+'</b>'+CF.tag(q.state==='waiting'?'accent':'',status(q))+'</div>'+dl([[L('Settlement amount','结算币种与金额'),'<span class="mono">'+CF.fmtAmt(q.settlement)+' '+E(q.ccy)+'</span>'],[L('Annual rate','年化利率'),E(q.rate)+'%']])+lockInfo(q)+'<details class="ls-history"><summary>'+L('Full terms','完整条款')+'</summary>'+dl([[L('Financing business ID','融资业务编号'),'<span class="mono">'+E(q.id)+'</span>'],[L('Financing amount','融资金额'),usd(q.amount)],[L('Repayment type','还款类型'),L('Quarterly interest; principal and remaining interest at maturity','按季付息；到期还本付息')],[L('Final repayment date','最终还款日'),date(q.repay)],[L('Quoted at','报价时间'),time(q.at)]])+snapshot(q)+(CF.L8?.initial({...q,state:'waiting'})||'')+'</details>';
   }
   function requestAgreements(p){
@@ -353,16 +353,48 @@
     if(d.state==='funding')return '';
     return box(amount(L('Agreed disbursement amount','约定放款金额'),CF.fmtAmt(x.settlement)+' '+E(x.ccy))+facts([[L('Business ID','融资业务编号'),'<span class="mono">'+E(x.id)+'</span>'],[L('Disbursement status','放款状态'),CF.L7.label(x)]]));
   };
+  /* 进入办理区第一眼就知道：轮到你做什么 / 在等谁 / 为什么现在不能操作。 */
+  const turnLabels={you:['Your turn','轮到你'],wait:['Waiting','等待对方'],blocked:['Not available now','当前不能操作']};
+  const turn=Q.turn=(kind,title,detail='',id='')=>'<div class="cq-turn" data-kind="'+kind+'" role="status"'+(id?' id="'+id+'"':'')+'><span class="cq-turn-label">'+L(...turnLabels[kind])+'</span><b>'+title+'</b>'+(detail?'<p>'+detail+'</p>':'')+'</div>';
+  /* 放款阶段的首行提示：按本笔放款状态说明轮到谁；资产方另说明为何暂不能发布新一轮。 */
+  function disbursementTurn(p,gate){
+    const q=db.quotes.find(x=>x.project===p.id&&x.state==='funding'),x=q&&CF.L7?.find(q);
+    if(!x||!related(q))return '';
+    const fund=S.role==='fund',why=gate?' '+gate:'',id=gate?'cq-publish-why':'';
+    if(x.state==='pending')return fund?turn('you',L('Record the disbursement for this business','登记本笔放款'),L('Check the accepted terms and the receiving account, then record the actual payment.','核对已接受的条款与收款账户后，登记实际放款。'))
+      :turn('wait',L('Waiting for the funder to record the disbursement','等待资金方登记放款'),L('Once it is recorded, you check the receipt and confirm it.','放款登记后，由你核对到账并确认。')+why,id);
+    if(x.state==='waiting')return fund?turn('wait',L('Waiting for the asset holder to confirm receipt','等待资产方确认到账'),L('Nothing is needed from you until receipt is confirmed.','到账确认前你无需操作。'))
+      :turn('you',L('Confirm whether the funds have arrived','核对并确认是否已到账'),L('Confirm only after checking the actual receipt.','请核实实际到账后再确认。')+why,id);
+    return '';
+  }
   Q.financePanel=p=>{
     const a=D.actions(p),again=p.demands.length>0,newLabel=again?L('Publish a new round','发布新一轮融资需求'):L('Publish financing request','发布融资需求');
-    const ln=CF.L7?.panel(p,'');if(ln){if(a.mine&&!D.terminal(p))ln.secondary=(ln.secondary||'')+'<div class="cq-next-round">'+publishButton(p,newLabel,publishGate(p)).replace('btn primary','btn')+'</div>';return ln;}
-    const d=D.current(p),q=d&&active(p);let action='',secondary='',hint='';
-    if(!d){const gate=a.mine?publishGate(p):null;hint=!a.mine?(again?L('No active request. Earlier rounds are in the project records.','暂无进行中需求，往轮记录见项目记录。'):L('No financing request has been published yet.','资产方尚未发布融资需求。')):D.terminal(p)?L('The project has ended. No new rounds can be published.','项目已终结，不再发布新需求。'):gate?'':again?L('The previous round has ended. You can publish a new round now.','上一轮已结束，可直接发布新一轮。'):L('Publish a request to receive financing quotes.','发布需求后，资金机构可为本企业报价。');if(a.mine&&gate!==null)action=publishButton(p,newLabel,gate);}
-    else if(d.state==='open'){hint=a.mine?L('Waiting for a funder to quote.','等待资金机构报价。'):L('Check credit and submit terms for this request.','核对授信后，为本笔需求提交报价。');action=a.mine?'':(a.quote?'<button class="btn primary" data-act="ls-quote" data-v="'+E(p.id)+'">'+L('Quote now','立即报价')+'</button>':'');if(a.mine&&a.edit)secondary='<button class="btn" data-act="ls-publish">'+L('Edit amount','修改融资金额')+'</button><button class="btn" data-act="ls-end-demand">'+L('Withdraw request','撤下需求')+'</button>';}
-    else if(d.state==='quoted'){hint=a.mine?L('Review the terms, then accept or reject.','核对条款后，接受或拒绝报价。'):q&&!related(q)?L('Quoted by '+institution(q.fund)+'. Waiting for the asset holder to respond.','本轮已由'+institution(q.fund)+'报价，等待资产方确认。'):L('Waiting for the asset holder to respond.','等待资产方确认报价。');if(a.mine){action='<button class="btn primary" data-act="ls-handoff" data-v="quote">'+L('Review and respond','确认 / 拒绝报价')+'</button>';}}
-    else {hint=L('The quote has been accepted; disbursement is next.','报价已接受，下一步办理放款。');action='<button class="btn primary" data-act="ls-handoff" data-v="funding">'+L('View disbursement','查看放款')+'</button>';}
-    if(d?.state==='open'&&!a.mine){if(S.role!=='fund'){action='';hint=L('Only funders may submit a quote. You can view this request and its history.','仅资金方可提交报价；您可查看本笔需求与历史。');}else if(!a.quote)hint=p.expired?L('The project has expired. New quotes are unavailable.','项目已到期，当前不可新增报价。'):L('The pledge water level is unsafe, so this request cannot be quoted now.','当前质押水位不安全，暂不可报价。');}
-    return {body:(q&&related(q)?lockInfo(q):'')+(hint?'<p class="cq-next-step">'+hint+'</p>':''),primary:action,secondary};
+    const ln=CF.L7?.panel(p,'');if(ln){const gate=a.mine&&!D.terminal(p)?publishGate(p):null;if(gate!==null)ln.secondary=(ln.secondary||'')+'<div class="cq-next-round">'+publishButton(p,newLabel,gate).replace('btn primary','btn').replace(/<p class="cq-why"[^>]*>.*?<\/p>/,'')+'</div>';ln.turn=disbursementTurn(p,gate);return ln;}
+    const d=D.current(p),q=d&&active(p);let action='',secondary='',t='';
+    if(!d){
+      if(a.mine){const gate=publishGate(p);
+        if(gate===null)t=turn('blocked',L('The project has ended','项目已终结'),L('No new financing rounds can be published.','不再发布新一轮融资需求。'));
+        else if(gate)t=turn('blocked',L('You cannot publish a request yet','暂不能发布融资需求'),gate,'cq-publish-why');
+        else t=turn('you',again?L('Publish a new round','发布新一轮融资需求'):L('Publish a financing request','发布融资需求'),L('Once published, funders can quote on it.','发布后，资金机构可为本企业报价。'));
+        if(gate!==null)action=publishButton(p,newLabel,gate).replace(/<p class="cq-why"[^>]*>.*?<\/p>/,'');}
+      else t=turn('wait',L('No active financing request','暂无进行中的融资需求'),again?L('Earlier rounds are in the project records. You can quote after the asset holder publishes a new one.','往轮记录见项目记录；资产方发布新一轮后才可报价。'):L('You can quote after the asset holder publishes a request.','资产方发布融资需求后才可报价。'));
+    }
+    else if(d.state==='open'){
+      if(a.mine){t=turn('wait',L('Waiting for a funder to quote','等待资金机构报价'),a.edit?L('Meanwhile you can edit the amount or withdraw the request.','期间你可以修改融资金额或撤下需求。'):'');
+        if(a.edit)secondary='<button class="btn" data-act="ls-publish">'+L('Edit amount','修改融资金额')+'</button><button class="btn" data-act="ls-end-demand">'+L('Withdraw request','撤下需求')+'</button>';}
+      else if(S.role!=='fund')t=turn('blocked',L('Only funders can quote','仅资金方可以报价'),L('You can view this request and its records.','你可以查看本笔需求与相关记录。'));
+      else if(!a.quote)t=turn('blocked',L('You cannot quote on this request now','当前不能为本轮需求报价'),p.expired?L('The project term has ended.','项目已到期。'):L('The pledge water level is unsafe. Quotes reopen when the asset holder restores it.','质押水位不安全，资产方补足质押后才可报价。'));
+      else if(!certified())t=turn('blocked',funderStatus()==='submitted'?L('Your institution verification is under review','你的机构认证正在审核中'):L('Your institution verification was not approved','你的机构认证未通过'),L('You can quote once verification is approved. Quote now shows the next step.','认证通过后才能报价；点“立即报价”可查看下一步。'));
+      else t=turn('you',L('You can quote on this request','可以为本轮需求报价'),L('Quote now checks your credit first; if it is not enough you can grant credit on the spot.','点“立即报价”先核验授信，不足时可当场办理企业授信。'));
+      if(!a.mine&&a.quote&&S.role==='fund')action='<button class="btn primary" data-act="ls-quote" data-v="'+E(p.id)+'">'+L('Quote now','立即报价')+'</button>';
+    }
+    else if(d.state==='quoted'){
+      if(a.mine){t=turn('you',L('Review the quote, then accept or reject','收到报价，请核对后接受或拒绝'),L('To edit the amount or withdraw the request, reject this quote first.','如需修改金额或撤下需求，须先拒绝本笔报价。'));action='<button class="btn primary" data-act="ls-handoff" data-v="quote">'+L('Review and respond','确认 / 拒绝报价')+'</button>';}
+      else if(q&&related(q))t=turn('wait',L('Waiting for the asset holder to respond','等待资产方确认报价'),L('Your quote cannot be changed or withdrawn. It ends only if the asset holder rejects it or the request ends.','你的报价不能修改或撤回，只有资产方拒绝或所属需求终结才会退出。'));
+      else t=turn('blocked',L('Already quoted by '+(q?institution(q.fund):'another institution'),'本轮已由'+(q?institution(q.fund):'其他机构')+'报价'),L('You can quote only if the asset holder rejects that quote and the request reopens.','资产方拒绝该报价、需求回到待报价后，你才可以报价。'));
+    }
+    else{t=turn(a.mine||q&&related(q)?'you':'wait',L('The quote has been accepted','报价已接受'),L('Disbursement is next.','下一步办理放款。'));if(a.mine||q&&related(q))action='<button class="btn primary" data-act="ls-handoff" data-v="funding">'+L('View disbursement','查看放款')+'</button>';}
+    return {turn:t,body:(q&&related(q)?lockInfo(q):''),primary:action,secondary};
   };
 
   const journeyLabels=[['Publish request','发布融资需求'],['Corporate credit','企业授信'],['Submit quote','提交融资报价'],['Respond to quote','确认报价'],['Disbursement','办理放款']];
