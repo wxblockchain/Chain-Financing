@@ -181,7 +181,7 @@
   /* 账户目录由企业账户模块保管，这里只把同一份转给放款与控制台；授信协议文件仍由本模块保管。 */
   Q.accounts=EA.accounts;
   Q.accountRows=accountRows;Q.accountName=accountName;Q.accountMissing=missingFields;Q.accountSnapshot=accountSnapshot;Q.accountLabels=accountFieldLabels;
-  Q.accountKey=EA.key;
+  Q.accountKey=EA.key;Q.accountBrief=a=>accountBrief(a);Q.accountTail=a=>accountTail(a);
   Q.agreements=(owner,fundId)=>db.credits.filter(c=>c.owner===owner&&(!fundId||c.fund===fundId)).flatMap(c=>(c.history||[]).flatMap(h=>(h.agreements||[]).map(f=>({credit:c.id,file:f,available:creditFiles.has(f.id)}))));
   Q.creditFile=id=>creditFiles.get(id);
   Q.hasHistory=p=>db.quotes.some(q=>q.project===p.id);
@@ -363,6 +363,9 @@
     const q=db.quotes.find(x=>x.project===p.id&&x.state==='funding'),x=q&&CF.L7?.find(q);
     if(!x||!related(q))return '';
     const fund=S.role==='fund',why=gate?' '+gate:'',id=gate?'cq-publish-why':'';
+    /* 质押水位不安全或额度结论不可用时，资金方没有可提交的动作，双方都看到明确原因。 */
+    const blocked=x.state==='pending'&&CF.L7.gate(x)!=='ok'?CF.L7.gateText(x,!fund):null;
+    if(blocked)return turn('blocked',blocked.title,blocked.detail+(fund?'':why),id);
     if(x.state==='pending')return fund?''
       :turn('wait',L('Waiting for the funder to record the disbursement','等待资金方登记放款'),L('Once it is recorded, you check the receipt and confirm it.','放款登记后，由你核对到账并确认。')+why,id);
     if(x.state==='waiting')return fund?turn('wait',L('Waiting for the asset holder to confirm receipt','等待资产方确认到账'),L('Nothing is needed from you until receipt is confirmed.','到账确认前你无需操作。'))

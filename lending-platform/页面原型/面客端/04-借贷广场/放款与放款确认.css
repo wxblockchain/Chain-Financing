@@ -68,3 +68,19 @@
 /* WS-376: the repayment account chooser reuses the quote module's account component. */
 .ln-drawer .cq-account-detail .dl{margin:0}
 .ln-drawer .cq-account-option{min-height:44px}
+
+/* WS-376 (cly-4.0.0): two-step status in the detail, collapsed extras, one-page disbursement. */
+.ln-steps{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.ln-steps>div{display:flex;flex-direction:column;gap:2px;padding:var(--sp-2) var(--sp-3);border-top:3px solid var(--border);background:var(--card-2);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+.ln-steps>div b{font-size:var(--fs-13)}
+.ln-steps>div span{font-size:var(--fs-12);color:var(--muted)}
+.ln-steps>[data-state=done]{border-top-color:var(--ok)}
+.ln-steps>[data-state=turn]{border-top-color:var(--accent)}
+.ln-steps>[data-state=turn] span{color:var(--accent);font-weight:600}
+.ln-steps>[data-state=wait]{border-top-color:var(--muted)}
+.ln-more{margin-top:var(--sp-3)}
+.ln-more .dl{margin-top:var(--sp-2)}
+.ln-pay-head p{margin:0}
+.ln-drawer .cq-turn{margin:0}
+.ln-support .copy-pair{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
+@media(max-width:640px){.ln-steps{grid-template-columns:1fr}}
