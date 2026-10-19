@@ -18,7 +18,9 @@
   samples.forEach(([state,ccy,chain],i)=>{
     const id='FP-MC-'+String(i+1).padStart(3,'0'),business='FB-MC-'+String(i+1).padStart(4,'0'),request=id+'-01';
     if(D.project(id))return;
-    const confirmed=state==='confirmed',amount=240000,start=now-(i===2?280:i===6?500:confirmed?92:state==='waiting'?8:2)*DAY,end=start+370*DAY;
+    const confirmed=state==='confirmed',amount=240000,start=now-(i===2?280:i===6?500:confirmed?92:state==='waiting'?8:2)*DAY;
+    /* 项目期限取创建日 + 12 个月（D-LS-66 上限，含端点）；到期即还款日。 */
+    const end=Date.parse(D.addMonths(iso(start-DAY).slice(0,10),12)+'T12:00:00.000Z');
     /* 项目质押率由资产方创建时自填并终身锁定，演示数据刻意不统一成 80%。 */
     const rate=[0.8,0.75,0.8,0.7,0.8,0.8,0.8,0.8][i];
     const p={id,name:[['Trade receivables','Export settlement','Quarterly working capital','Cross-border inventory','Completed negotiation','Confirmed receipt','Completed financing','Digital settlement financing'][i],['贸易应收账款','出口结算融资','季度营运资金','跨境备货融资','历史协商项目','到账待生成计划','历史结清融资','数币结算融资'][i]],owner:'entity-demo-a',kind:'erc20-ar',rate,term:12,settle:[ccy],repay:D.REPAY,spv:D.SPV,contract:'0x'+String(i+1).padStart(40,'0'),state:state==='rejected'?'raising':'financing',balance:confirmed?amount:0,published:iso(start),created:iso(start-DAY),expires:iso(end),demands:[{id:request,amount,state:confirmed?'funded':state==='rejected'?'open':'funding',at:iso(start),tenorDays:370,rate:'6.40',institution:['Demo Capital A','演示资金机构 A'],quoteAt:iso(start)}]};

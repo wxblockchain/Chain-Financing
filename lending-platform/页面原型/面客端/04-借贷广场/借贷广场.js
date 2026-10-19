@@ -74,12 +74,18 @@
   function hexMark(tone){return '<svg class="ls-hex" data-tone="'+tone+'" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z"/><path class="core" d="M12 8l3.5 2v4L12 16l-3.5-2v-4z"/></svg>';}
   /* 更多筛选与主筛选条同一套控件：多选药丸即时生效，区间输入随「查询」一起提交，不另设应用按钮。 */
   let advancedOpen=false,marketView='cards';
+  /* 区间下限大于上限时不执行筛选：保留已生效的条件，原样回显本次输入并提示调整。 */
+  let rangeError='',rangeDraft=null;
   function advancedFilters(){
     const fm=(id,label,opts,cur)=>CF.filterMenu(id,label,opts,String(cur||'').split(',').filter(Boolean));
-    const range=(label,minId,maxId,minV,maxV)=>'<span class="fb-range"><span class="fb-label">'+label+'</span>'+
-      '<input class="inp" id="'+minId+'" type="number" min="0" inputmode="numeric" placeholder="'+L('Min','最小')+'" aria-label="'+label+' · '+L('minimum','最小')+'" value="'+E(minV||'')+'">'+
+    const range=(label,minId,maxId,minV,maxV)=>{const key=minId.slice(3,4),bad=rangeError===key,errId=minId+'-error';
+      if(rangeDraft){minV=rangeDraft[minId.slice(3)];maxV=rangeDraft[maxId.slice(3)];}
+      const inv=bad?' aria-invalid="true" aria-describedby="'+errId+'"':'';
+      return '<span class="fb-range'+(bad?' is-invalid':'')+'"><span class="fb-label">'+label+'</span>'+
+      '<input class="inp" id="'+minId+'" type="number" min="0" inputmode="numeric" placeholder="'+L('Min','最小')+'" aria-label="'+label+' · '+L('minimum','最小')+'" value="'+E(minV||'')+'"'+inv+'>'+
       '<span class="fb-dash" aria-hidden="true">–</span>'+
-      '<input class="inp" id="'+maxId+'" type="number" min="0" inputmode="numeric" placeholder="'+L('Max','最大')+'" aria-label="'+label+' · '+L('maximum','最大')+'" value="'+E(maxV||'')+'"></span>';
+      '<input class="inp" id="'+maxId+'" type="number" min="0" inputmode="numeric" placeholder="'+L('Max','最大')+'" aria-label="'+label+' · '+L('maximum','最大')+'" value="'+E(maxV||'')+'"'+inv+'>'+
+      (bad?'<span class="fb-range-error" id="'+errId+'" role="alert">'+L('The minimum is greater than the maximum. Adjust it and search again.','下限大于上限，请调整后再查询。')+'</span>':'')+'</span>';};
     return '<div class="filterbar ls-advanced-filters">'+
       fm('ls-type',L('Token type','代币类型'),D.TYPES.map(x=>[x.id,txt(x.label)]),filter.type)+
       fm('ls-coverage',L('Pledge shortfall','质押不足'),[['yes',L('Yes','是')],['no',L('No','否')]],filter.coverage)+
@@ -122,6 +128,7 @@
     if(filter.keyword&&!([p.id,info.d?.id,...p.name,owner(p)].join(' ').toLowerCase().includes(filter.keyword.trim().toLowerCase())))return false;
     if(!within(filter.status,p.state))return false;
     if(!within(filter.type,p.kind))return false;
+    if((filter.amin||filter.amax)&&!d)return false;
     if(filter.vmin&&n.limit<+filter.vmin||filter.vmax&&n.limit>+filter.vmax||filter.amin&&amount<+filter.amin||filter.amax&&amount>+filter.amax)return false;
     if(!within(filter.quote,open?'yes':'no'))return false;
     if(!within(filter.coverage,n.grade==='short'?'yes':'no'))return false;
@@ -141,16 +148,16 @@
   function listHead(){return '<thead><tr>'+listColumns().map((h,i)=>'<th scope="col" class="'+(i===0?'mk-network-col':i===7?'ls-col-x':[3,4].includes(i)?'ls-num':'')+'">'+h+(i===7?'<span class="ls-table-tz">'+E(S.tz||'UTC')+'</span>':'')+'</th>').join('')+'</tr></thead>';}
   /* 排序只有三种：发布时间倒序（默认）、需求金额、有效质押额；不按列表不展示的量排序。 */
   function sortControl(){const cur=['amount','limit'].includes(filter.sort)?filter.sort:'newest';return '<span class="fb ls-sort"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4.6 2.8v10.4M2.4 10.8l2.2 2.4 2.2-2.4M11.4 13.2V2.8M9.2 5.2l2.2-2.4 2.2 2.4"/></svg><select class="inp" id="ls-sort" aria-label="'+L('Sort','排序')+'"'+(cur!=='newest'?' data-on="1"':'')+'>'+[['newest','Newest first','最新发布'],['amount','Largest request','需求金额最高'],['limit','Largest eligible borrowing limit','有效质押额最高']].map(o=>'<option value="'+o[0]+'"'+(o[0]===cur?' selected':'')+'>'+L(o[1],o[2])+'</option>').join('')+'</select></span>';}
-  /* 广场汇总：按当前筛选结果实时合计，数字全部来自演示数据，不额外引入口径。 */
+  /* 广场汇总：按当前筛选结果实时合计，数字全部来自演示数据，不额外引入口径。
+     已融资余额属于项目统计，按项目详情可见范围（F-LS-82）不对所有身份公开，概览不做合计。 */
   function marketStats(rows,available){
     const open=rows.filter(p=>{const d=D.current(p);return d&&d.state==='open';});
-    const demand=open.reduce((n,p)=>n+(D.current(p).amount||0),0),pool=rows.reduce((n,p)=>n+D.numbers(p).limit,0),outstanding=rows.reduce((n,p)=>n+(p.balance||0),0);
+    const demand=open.reduce((n,p)=>n+(D.current(p).amount||0),0),pool=rows.reduce((n,p)=>n+D.numbers(p).limit,0);
     const cell=(k,v,note)=>'<div class="s"><div class="k">'+k+'</div><div class="v">'+(available?v:'—')+'</div><div class="n">'+note+'</div></div>';
     const stats='<div class="stat-strip ls-market-stats">'+
       cell(L('Amount awaiting quotes','待报价需求金额'),CF.market.amount(demand,'USD',{compact:true,icon:true}),L(open.length+' requests awaiting quotes',open.length+' 笔待报价需求'))+
-      cell(L('Eligible borrowing limit','有效质押额'),CF.market.amount(pool,'USD',{compact:true,icon:true}),'')+
-      cell(L('Outstanding financing','已融资余额'),CF.market.amount(outstanding,'USD',{compact:true,icon:true}),'')+'</div>';
-    const parts=[['raising','Fundraising','募集中','accent'],['locked','Locked','已锁定','violet'],['financing','Financing','融资中','info'],['closed','Closed','已关闭','muted'],['settled','Settled','已结清','warn']].map(x=>({key:x[0],label:L(x[1],x[2]),value:rows.filter(p=>p.state===x[0]).length,tone:x[3]}));
+      cell(L('Eligible borrowing limit','有效质押额'),CF.market.amount(pool,'USD',{compact:true,icon:true}),'')+'</div>';
+    const parts=[['available','Available','可用','ok'],['raising','Fundraising','募集中','accent'],['locked','Locked','已锁定','violet'],['financing','Financing','融资中','info'],['closed','Closed','已关闭','muted'],['settled','Settled','已结清','warn']].map(x=>({key:x[0],label:L(x[1],x[2]),value:rows.filter(p=>p.state===x[0]).length,tone:x[3]}));
     return '<div class="mk-overview">'+stats+(available?CF.market.distribution(L('Projects by status','项目状态分布'),parts,'ls-chart-status',filter.status,L('projects','个项目')):'<div class="mk-distribution muted">'+L('Composition unavailable','构成暂不可用')+'</div>')+'</div>';
   }
   function listPage(){
@@ -677,8 +684,11 @@
       if(act==='ls-create'){createProject();return true;}
       if(act==='ls-detail'){pages.tokens=pages.demands=1;goto(v);return true;}
       if(act==='ls-sort-column'){filter.sort=v==='newest'&&(!filter.sort||filter.sort==='newest')?'oldest':v;writeFilters();return true;}
-      if(act==='ls-filter'){['keyword','vmin','vmax','amin','amax'].forEach(k=>{const el=document.getElementById('ls-'+k);if(el)filter[k]=el.value;});writeFilters();return true;}
-      if(act==='ls-clear'){filter={};S.st='default';writeFilters();return true;}
+      if(act==='ls-filter'){const next={};['keyword','vmin','vmax','amin','amax'].forEach(k=>{const el=document.getElementById('ls-'+k);next[k]=el?el.value:filter[k];});
+        const over=[['v','vmin','vmax'],['a','amin','amax']].find(([,a,b])=>next[a]!==''&&next[a]!=null&&next[b]!==''&&next[b]!=null&&+next[a]>+next[b]);
+        if(over){rangeError=over[0];rangeDraft=next;advancedOpen=true;refocus='ls-'+over[1];return true;}
+        rangeError='';rangeDraft=null;Object.assign(filter,next);writeFilters();return true;}
+      if(act==='ls-clear'){filter={};rangeError='';rangeDraft=null;S.st='default';writeFilters();return true;}
       if(act==='ls-page'){const [k,n]=v.split(':');pages[k]=Math.max(1,+n);return true;}
       if(act==='ls-pledge'){openPledge();return true;}
       if(act==='ls-sign-pledge'){signPledge();return true;}

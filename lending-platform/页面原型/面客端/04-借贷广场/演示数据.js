@@ -306,7 +306,9 @@
       const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',kind:'erc20-ar',rate:0.8,termCap:12,settle:['USD'],repay:D.REPAY,contract:'0x'+(i*31+7).toString(16).padStart(40,'0'),deployedAt:new Date(Date.parse(created)+3*3600000).toISOString(),spv:D.SPV,state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],created,published:new Date(D.now()-i*DAY).toISOString(),expiry,expires:D.endOf(expiry),quotes:i===3?1:0};
       if(i!==5&&i!==6)p.demands.push({id:p.id+'-01',amount:i===4?500000:300000,state:i===4?'funded':i===3?'quoted':'open',at:p.published,tenorDays:i===3?90:i===4?120:null,rate:i===3?'6.40':i===4?'6.80':null,institution:i===3?['Demo Capital','演示资金机构']:null,quoteAt:i===3?p.published:null});
       /* 已结清示例按 Q-LS-22 是到期后自动终结的项目。 */
-      if(i===5){p.expiry=D.addDays(D.today(),-1);p.expires=D.endOf(p.expiry);p.expired=true;}
+      if(i===5){p.expiry=D.addDays(D.today(),-1);p.expires=D.endOf(p.expiry);p.expired=true;
+        /* 项目期限须在 3 个月～1 年内（D-LS-66）：创建日取到期日前 6 个月，发布与部署时间随之落在期限内。 */
+        p.created=D.addMonths(p.expiry,-6)+'T02:00:00.000Z';p.deployedAt=new Date(Date.parse(p.created)+3*3600000).toISOString();}
       if(i===6)p.closeReason='owner';
       D.projects.push(p);
       for(let j=1;j<=7;j++){const released=[5,6].includes(i);const value=j===7?100000:150000;
