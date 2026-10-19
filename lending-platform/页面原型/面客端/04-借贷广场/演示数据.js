@@ -54,7 +54,9 @@
   D.save = () => { try { localStorage.setItem(KEY, JSON.stringify({schema:SCHEMA,projects:D.projects,tokens:D.tokens,applications:D.applications,executions:D.executions,events:D.events,offset:D.offset,serial:D.serial})); } catch (_) {} };
   D.project = id => D.fill(D.projects.find(p => p.id === id));
   D.token = id => D.tokens.find(t => t.id === id);
-  D.mine = p => CF.S.role === 'asset' && p && p.owner === 'entity-demo-a';
+  /* 当前演示身份代表的资产方企业；演示视角可切换到另一家企业查看同一项目。 */
+  D.me = () => (CF.S.party && CF.S.party.asset) || 'entity-demo-a';
+  D.mine = p => CF.S.role === 'asset' && p && p.owner === D.me();
   D.terminal = p => ['closed','settled'].includes(p.state);
   D.log = (p, key, ref) => {
     const a=D.applications.find(a=>a.id===ref), e=D.executions.find(e=>e.id===ref);
@@ -118,9 +120,9 @@
       close:mine&&!terminal,canClose:mine&&!terminal&&!p.deploying&&!n.fly&&!p.balance&&!['locked','financing'].includes(p.state),
       quote:CF.S.role==='fund'&&current&&current.state==='open'&&!terminal&&!p.expired&&n.grade==='surplus'};
   };
-  D.kinds = () => D.TYPES.filter(x=>D.tokens.some(t=>t.owner==='entity-demo-a'&&t.kind===x.id)).map(x=>x.id);
-  D.candidates = p => D.tokens.filter(t => t.owner==='entity-demo-a'&&t.kind===(p?.kind||'erc20-ar')&&t.valid&&t.pledge==='free'&&!t.frozen);
-  D.selectable = (t,p) => t && t.owner==='entity-demo-a'&&t.valid&&t.kind===(p?.kind||'erc20-ar')&&t.pledge==='free'&&!t.pending&&!t.application&&!t.frozen;
+  D.kinds = () => D.TYPES.filter(x=>D.tokens.some(t=>t.owner===D.me()&&t.kind===x.id)).map(x=>x.id);
+  D.candidates = p => D.tokens.filter(t => t.owner===D.me()&&t.kind===(p?.kind||'erc20-ar')&&t.valid&&t.pledge==='free'&&!t.frozen);
+  D.selectable = (t,p) => t && t.owner===D.me()&&t.valid&&t.kind===(p?.kind||'erc20-ar')&&t.pledge==='free'&&!t.pending&&!t.application&&!t.frozen;
   D.releaseApplication = a => a.tokens.forEach(id => { const t=D.token(id);if(t.application===a.id)t.application=null; });
   D.recompute = p => {
     let n=D.numbers(p);
@@ -163,7 +165,7 @@
       D.log(project,'projectSubmitted');D.save();return project;
     }
     const created=D.iso();
-    const p={id:'FP-DEMO-'+(++D.serial),name:[title,title],owner:'entity-demo-a',kind:form.kind,rate:rate/100,termCap:cfg.maxTerm,
+    const p={id:'FP-DEMO-'+(++D.serial),name:[title,title],owner:D.me(),kind:form.kind,rate:rate/100,termCap:cfg.maxTerm,
       settle:[...form.settle],spv:D.SPV,repay:D.REPAY,contract:null,deployedAt:null,state:'review',balance:0,demands:[],
       created,published:null,expiry:form.expiry,expires:D.endOf(form.expiry)};
     D.projects.unshift(p);D.log(p,'created');D.save();return p;

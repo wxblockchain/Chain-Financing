@@ -1005,3 +1005,81 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 .review-auto input{width:18px;height:18px;flex:none;accent-color:var(--accent)}
 .review-feedback:focus-visible,.review-feedback>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:600px){.demo-panel{left:var(--sp-2);right:var(--sp-2);width:auto;max-width:none;padding:var(--sp-4)}.review-results{max-height:240px}.review-business{grid-template-columns:minmax(0,1fr)}}
+
+/* WS-385 · 演示条：停靠在页面底部，不遮右侧操作栏；第一行切视角，第二行切本页状态。 */
+body.demo-open{padding-bottom:calc(var(--dock-h,128px) + var(--sp-4))}
+.demo-panel.demo-dock{left:0;right:0;bottom:0;width:auto;max-width:none;max-height:none;overflow:visible;
+  padding:0;border:0;border-top:1px solid var(--border-strong);border-radius:0;box-shadow:var(--shadow-lg);
+  background:var(--bg-elev);animation:none}
+.demo-dock>.review-switcher{display:grid;gap:8px;max-width:1560px;margin:0 auto;padding:10px var(--sp-6) 12px;border:0}
+.demo-dock .dock-top{display:flex;align-items:center;gap:var(--sp-2);min-width:0}
+.demo-dock .dock-badge{flex:none;font-size:var(--fs-10);font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-border);border-radius:var(--radius-pill);padding:2px 8px}
+.demo-dock .dock-where{display:flex;align-items:baseline;gap:10px;min-width:0;flex:1 1 auto;overflow:hidden}
+.demo-dock .dock-where strong{font-size:var(--fs-13);font-weight:650;white-space:nowrap}
+.demo-dock .dock-where small{font-size:var(--fs-12);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.demo-dock .dock-top .btn{margin:0;height:var(--ctrl-h-sm);min-height:0;padding:0 12px;font-size:var(--fs-12);flex:none}
+.demo-dock .dock-top .btn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.demo-dock .dock-top .btn.icon{width:var(--ctrl-h-sm);padding:0}
+.demo-dock .dock-top .review-step{white-space:nowrap}
+.demo-dock .dock-row{display:flex;align-items:center;gap:var(--sp-3);min-width:0}
+.demo-dock .dock-label{flex:none;min-width:84px;font-size:var(--fs-11);font-weight:650;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--faint);white-space:nowrap;align-self:flex-start;padding-top:9px}
+.demo-dock .dock-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0;padding:2px}
+.demo-dock .dock-group-label{flex:none;font-size:var(--fs-11);color:var(--faint);margin:0 2px 0 4px}
+.demo-dock .dock-sep{flex:none;width:1px;height:18px;background:var(--border);margin:0 6px}
+.demo-chip{flex:none;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;
+  border:1px solid var(--border-strong);border-radius:var(--radius-pill);background:var(--bg-elev);
+  color:var(--text);font-size:var(--fs-12);font-weight:560;white-space:nowrap;cursor:pointer;
+  transition:background var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out)}
+.demo-chip:hover:not(:disabled):not([aria-pressed="true"]){border-color:var(--accent-border);background:var(--accent-soft)}
+.demo-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.demo-chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--on-accent)}
+.demo-chip.quiet[aria-pressed="true"]{background:var(--text);border-color:var(--text);color:var(--on-accent)}
+.demo-chip:disabled{color:var(--faint);background:var(--card-2);border-style:dashed;cursor:not-allowed}
+.demo-chip small{font-size:var(--fs-11);font-weight:500;color:var(--faint)}
+.demo-chip[aria-pressed="true"] small{color:var(--on-accent)}
+.demo-chip .tag{font-size:var(--fs-11);font-weight:600;line-height:1;padding:3px 7px;border-radius:var(--radius-pill);
+  background:var(--gray-bg);color:var(--gray-fg)}
+.demo-chip .tag[data-tone="key"]{background:var(--ok-bg);color:var(--ok)}
+.demo-chip .tag[data-tone="warn"]{background:var(--warn-bg);color:var(--warn)}
+.demo-chip[aria-pressed="true"] .tag{background:var(--bg-elev);color:var(--accent)}
+.demo-dock .dock-pop{position:absolute;bottom:calc(100% + 8px);right:var(--sp-6);width:min(460px,calc(100vw - 32px));
+  max-height:min(68vh,620px);overflow-y:auto;overscroll-behavior:contain;background:var(--bg-elev);
+  border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:var(--sp-4);
+  display:grid;gap:var(--sp-3);align-content:start}
+.demo-dock .dock-pop[hidden]{display:none}
+.demo-dock .dock-pop .inp{width:100%;min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm)}
+.demo-dock .dock-pop-head strong{font-size:var(--fs-13)}
+.demo-dock .review-results{max-height:none;overflow:visible;padding:0}
+.demo-dock .dir-group{display:grid;gap:2px}
+.demo-dock .dir-group+.dir-group{margin-top:var(--sp-2)}
+.demo-dock .dir-group h6{margin:0 0 4px;font-size:var(--fs-11);letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:650}
+.demo-dock .dir-item{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);width:100%;
+  min-height:34px;padding:6px 10px;border:0;border-radius:var(--radius-xs);background:transparent;text-align:left;
+  font-size:var(--fs-13);color:var(--text);cursor:pointer}
+.demo-dock .dir-item small{font-size:var(--fs-11);color:var(--faint);font-family:var(--mono)}
+.demo-dock .dir-item:hover:not(:disabled){background:var(--accent-soft)}
+.demo-dock .dir-item[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.demo-dock .dir-item:disabled{color:var(--faint);cursor:not-allowed}
+.demo-dock .dir-item:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.demo-dock .review-choice{padding:8px 10px;min-height:0}
+.demo-dock .review-more-body{padding-top:0}
+@media (max-width:900px){
+  .demo-dock>.review-switcher{padding:8px var(--sp-3) 10px}
+  .demo-dock .dock-row{flex-direction:column;align-items:stretch;gap:4px}
+  .demo-dock .dock-label{width:auto}
+  .demo-dock .dock-top{flex-wrap:wrap}
+  /* 第一行：标识、位置、关闭；第二行：切换页面、更多模拟、恢复默认。 */
+  .demo-dock .dock-badge{order:0}
+  .demo-dock .dock-where{order:1;flex:1 1 calc(100% - 120px)}
+  .demo-dock .dock-top .btn.icon{order:2}
+  .demo-dock .dock-top .btn.sm,.demo-dock .dock-top .review-step{order:3}
+  .demo-dock .dock-pop{left:var(--sp-2);right:var(--sp-2);width:auto;max-height:calc(100dvh - var(--dock-h,240px) - var(--sp-6))}
+  /* 窄屏每行横向滑动，演示条保持三行高度，不吃掉整屏。 */
+  .demo-dock .dock-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;padding-bottom:4px}
+  .demo-dock .dock-chips::-webkit-scrollbar{display:none}
+  .demo-dock .dock-label{padding-top:0}
+  .demo-dock .dock-where small.mono{display:none}
+}
+@media (prefers-reduced-motion:reduce){.demo-chip{transition:none}}
