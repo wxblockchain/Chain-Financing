@@ -16,9 +16,9 @@
 .ag-table{table-layout:fixed}
 .ag-table th,.ag-table td{overflow-wrap:anywhere}
 .ag-table th.col-act,.ag-table td.col-act{position:sticky;right:0;background:var(--card);width:68px}
-.ag-table thead th{white-space:normal;color:var(--muted)}
+[data-end="admin"] table.ag-table thead th{white-space:normal;color:var(--muted)}
 .ag-table td{font-size:var(--fs-12)}
-.ag-table .tag{padding:3px 6px}
+.ag-table td .tag{padding:3px 6px;white-space:nowrap}
 .ag-filter{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;align-items:start}
 .ag-filter .field{max-width:none}
 .ag-filter details{position:relative}
@@ -66,7 +66,8 @@
 .ag-versions .ag-row{gap:var(--sp-4)}
 .ag-versions td,.ag-activity td{vertical-align:top;overflow-wrap:anywhere}
 .ag-activity{table-layout:fixed}
-.ag-activity th{white-space:normal}
+[data-end="admin"] table.ag-activity thead th{white-space:normal}
+.ag-activity .tag{white-space:nowrap}
 .ag-log-summary{text-align:left;white-space:normal;line-height:1.6}
 .ag-log-detail .ag-changes{margin:var(--sp-3) 0}
 .ag-log-detail{padding-top:var(--sp-3)}
