@@ -6,7 +6,7 @@
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
-  const SCHEMA = 'ws397-8';
+  const SCHEMA = 'ws397-9';
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
   /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
   D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
