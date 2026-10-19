@@ -118,7 +118,7 @@ table.cm-table thead th{white-space:normal;color:var(--muted);vertical-align:mid
 .cm-ack input{margin-top:var(--sp-1);flex:none;width:var(--sp-4);height:var(--sp-4)}
 .cm-ack:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 .cm-error{color:var(--danger);font-size:var(--fs-12);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
-.cm-body .demo-panel{max-height:calc(100vh - 110px);overflow:auto}
+.cm-body .demo-panel:not(.demo-dock){max-height:calc(100vh - 110px);overflow:auto}
 .cm-demo{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-5)}
 .cm-demo-actions{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)}
 @media (max-width:1400px){

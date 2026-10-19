@@ -43,7 +43,7 @@
 .ops-account .dd-list{max-width:calc(100vw - 32px)}
 .ops-account .op-name{white-space:normal;overflow-wrap:anywhere}
 .ops-account-email{padding:var(--sp-3);max-width:300px;overflow-wrap:anywhere;font-size:var(--fs-12)}
-.ops-account .demo-panel{max-height:75vh;overflow:auto}
+.ops-account .demo-panel:not(.demo-dock){max-height:75vh;overflow:auto}
 .ops-demo-actions{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin:var(--sp-3) 0}
 .ops-demo-actions button{white-space:normal;height:auto;min-height:var(--ctrl-h)}
 .ops-account .modal .ops-form{color:var(--text)}

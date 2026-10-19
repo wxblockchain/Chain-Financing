@@ -25,6 +25,7 @@
     tz: null,                // 按浏览器推断，推断失败兜底 UTC
     end: "asset",            // asset = 面客端 · admin = 运营端
     role: savedRole(),       // guest / signed / asset / fund / ops
+    party: { asset: "entity-demo-a", fund: "fund-a" }, // 演示身份对应的资产方企业 / 资金机构，仅演示视角使用
     page: null,
     st: "default",           // 演示状态：default/loading/empty/noresult/error/denied
     sort: "at",              // 当前排序键；列表默认按时间倒序
@@ -574,7 +575,7 @@
   var reviewPages = {}, reviewActive = null, reviewObserver = null;
   var reviewSearch = '', reviewMore = false, reviewFocus = '';
   var reviewModule = '', reviewFeedback = false, reviewPending = null, reviewScene = null;
-  var reviewAutoClose = true;
+  var reviewAutoClose = false;
   var reviewNames = {
     default: ['Default', '默认'], loading: ['Loading', '加载中'], empty: ['Empty', '空数据'],
     noresult: ['No results', '筛选无结果'], error: ['Load failed', '加载失败'], denied: ['No access', '无权限']
@@ -656,6 +657,7 @@
     reviewScene = null;
   }
   function reviewSync() {
+    reviewPartyGuard();
     if (reviewActive && reviewActive !== reviewCurrent()) reviewClear();
     if (reviewScene && reviewScene.route !== location.hash) reviewScene = null;
     if (reviewPending && reviewPending.page !== reviewCurrent()) reviewPending = null;
@@ -685,7 +687,7 @@
       reviewActive = id; S.menu = null;
       if (config.set) config.set(value); else S.st = value;
       S.demo = true; render();
-      queueMicrotask(function () { decorateReview(); $('review-state')?.focus({preventScroll:true}); });
+      queueMicrotask(function () { decorateReview(); $('review-f-' + value)?.focus({preventScroll:true}); });
     };
     if (config.beforeChange) config.beforeChange(proceed); else proceed();
   }
@@ -695,7 +697,7 @@
     if (selection && selection.state && !reviewStates(config).some(function (s) { return s.id === selection.state; })) return;
     if (selection && selection.scene && !reviewScenarios(config).some(function (s) { return s.id === selection.scene && s.available !== false; })) return;
     var proceed = function () {
-      reviewClear(); S.st = 'default'; S.menu = null; reviewSearch = ''; reviewMore = false; reviewFocus = 'review-page';
+      reviewClear(); S.st = 'default'; S.menu = null; reviewSearch = ''; reviewMore = false;
       queueMicrotask(function () { if ($('demoPanel')) $('demoPanel').scrollTop = 0; });
       reviewPending = null;
       if (config.navigate) { config.navigate(); return; }
@@ -715,125 +717,205 @@
     else if (S.end === 'admin' && CF.AdminMenu) CF.AdminMenu.beforeLeave(proceed);
     else proceed();
   }
-  /* Sign-in state is the first review axis on the customer-facing unit: pick who is looking,
-     then the page, then that page's state. Operations identity comes from its real sign-in. */
-  var reviewIdentities = [
-    {id: 'guest', label: ['Signed out visitor', '未登录访客'], group: ['Signed out', '未登录']},
-    {id: 'signed', label: ['Signed in · no role bound', '登录未绑定角色'], group: ['Signed in', '已登录']},
-    {id: 'asset', label: ['Asset holder', '资产方'], group: ['Signed in', '已登录']},
-    {id: 'fund', label: ['Funder', '资金方'], group: ['Signed in', '已登录']}
+  /* ---------------------------------------------------------- 演示条
+     底部常驻的演示条：第一行切换“谁在看”（视角），第二行切换“当前页的状态”。
+     视角始终停留在当前页面与当前对象上，便于同一项目在项目方、当前报价方、其他资金方之间来回对照；
+     页面目录与模块的高级模拟收进弹层，不再占据演示主路径。 */
+  var DEFAULT_PARTY = { asset: 'entity-demo-a', fund: 'fund-a' };
+  var reviewPerspectives = [
+    {id: 'guest', role: 'guest', group: ['Signed out', '未登录'], label: ['Visitor', '访客']},
+    {id: 'signed', role: 'signed', group: ['Signed in', '已登录'], label: ['No role bound', '未绑定角色']},
+    {id: 'asset-a', role: 'asset', party: {asset: 'entity-demo-a'}, group: ['Asset holder', '资产方'], label: ['Demo Asset Company A', '演示资产企业 A'], short: ['Company A', '企业 A']},
+    {id: 'asset-b', role: 'asset', party: {asset: 'entity-demo-b'}, group: ['Asset holder', '资产方'], label: ['Demo Asset Company B', '演示资产企业 B'], short: ['Company B', '企业 B'], multi: true},
+    {id: 'fund-a', role: 'fund', party: {fund: 'fund-a'}, group: ['Funder', '资金方'], label: ['Demo Capital A', '演示资金机构 A'], short: ['Capital A', '机构 A']},
+    {id: 'fund-b', role: 'fund', party: {fund: 'fund-b'}, group: ['Funder', '资金方'], label: ['Demo Capital B', '演示资金机构 B'], short: ['Capital B', '机构 B'], multi: true}
   ];
+  var reviewPop = '', reviewPartyNotice = false;
   function reviewIdentityShown() { return S.end !== 'admin'; }
-  function reviewIdentityOptions() {
-    var groups = {};
-    reviewIdentities.forEach(function (identity) {
-      var group = reviewText(identity.group);
-      (groups[group] || (groups[group] = [])).push('<option value="' + esc(identity.id) + '"' +
-        (identity.id === S.role ? ' selected' : '') + '>' + esc(reviewText(identity.label)) + '</option>');
-    });
-    return Object.keys(groups).map(function (group) {
-      return '<optgroup label="' + esc(group) + '">' + groups[group].join('') + '</optgroup>';
-    }).join('');
+  function perspectiveNow() {
+    var party = S.party || DEFAULT_PARTY;
+    if (S.role === 'asset') return party.asset === 'entity-demo-b' ? 'asset-b' : 'asset-a';
+    if (S.role === 'fund') return party.fund === 'fund-b' ? 'fund-b' : 'fund-a';
+    return S.role === 'signed' ? 'signed' : 'guest';
   }
-  function reviewIdentityGo(value) {
-    if (!reviewIdentityShown() || S.layer || !reviewIdentities.some(function (identity) { return identity.id === value; })) return;
+  /* 第二家企业只在区分企业的页面开放；其余页面按默认企业呈现，避免展示出不成立的数据组合。 */
+  function perspectiveAllowed(item, config) { return !item.multi || !!(config && config.parties); }
+  function reviewPartyGuard() {
+    if (!reviewIdentityShown()) return;
+    var item = reviewPerspectives.find(function (x) { return x.id === perspectiveNow(); });
     var config = reviewPages[reviewCurrent()];
+    if (item && item.multi && config && !config.parties) {
+      S.party = Object.assign({}, DEFAULT_PARTY);
+      reviewPartyNotice = true;
+    }
+  }
+  function reviewPerspectiveGo(id) {
+    var item = reviewPerspectives.find(function (x) { return x.id === id; });
+    var config = reviewPages[reviewCurrent()];
+    if (!item || S.layer || !reviewIdentityShown() || !perspectiveAllowed(item, config)) return;
     var proceed = function () {
       reviewClear();
-      S.role = value; S.menu = null; S.layer = null; S.st = 'default'; S.demo = true;
-      reviewSearch = ''; reviewFocus = 'review-identity';
+      S.role = item.role; S.party = Object.assign({}, DEFAULT_PARTY, item.party || {});
+      S.menu = null; S.layer = null; S.st = 'default'; S.demo = true;
+      reviewFocus = 'review-p-' + id;
       resetList();
-      var id = reviewCurrent(), next = reviewPages[id];
-      // Stay on the page under the new identity when it can still be opened; otherwise land on its entry.
-      var reachable = next && (!next.visible || next.visible()) && !!reviewRoute(id, next) &&
-        !(CF.PAGES[id] && CF.PAGES[id].auth && (value === 'guest' || value === 'signed'));
+      var cur = reviewCurrent(), next = reviewPages[cur];
+      // 新视角仍能打开当前页就留在原页；否则落到该身份的默认入口。
+      var reachable = next && (!next.visible || next.visible()) && !!reviewRoute(cur, next) &&
+        !(CF.PAGES[cur] && CF.PAGES[cur].auth && (item.role === 'guest' || item.role === 'signed'));
       var entry = reachable ? null : CF.ENTRY[defaultPage()];
       if (entry && location.hash !== '#' + entry) { location.hash = '#' + entry; return; }
       render();
     };
     if (config && config.beforeChange) config.beforeChange(proceed); else proceed();
   }
-  function reviewOptions() {
-    var groups = {}, current = reviewCurrent(), query = reviewSearch.toLocaleLowerCase().trim();
-    Object.keys(reviewPages).forEach(function (id) {
-      var config = reviewPages[id], page = CF.PAGES[id];
-      if (!page || page.end !== S.end || config.visible && !config.visible()) return;
-      var label = reviewText(config.label) || t(page.navKey || page.crumbKey);
-      if (reviewModule && id !== current && reviewGroupKey(id) !== reviewModule) return;
-      var group = reviewText(config.group) || L('Pages', '页面');
-      var openable = id === current || !!reviewRoute(id, config);
-      (groups[group] || (groups[group] = [])).push('<option value="' + esc(id) + '"' + (id === current ? ' selected' : '') +
-        (openable ? '' : ' disabled') + '>' +
-        esc(label + ' · ' + id + (openable ? '' : ' · ' + L('open from its list', '需先从列表进入'))) + '</option>');
+  function reviewHashPath(route) { return String(route || '').replace(/^#/, '').split('?')[0]; }
+  function reviewTag(tag) {
+    if (!tag) return '';
+    return '<span class="tag"' + (tag.tone ? ' data-tone="' + esc(tag.tone) + '"' : '') + '>' + esc(reviewText(tag.label)) + '</span>';
+  }
+  function reviewPerspectiveRow(config) {
+    var now = perspectiveNow(), groups = [];
+    reviewPerspectives.forEach(function (item) {
+      var key = reviewText(item.group), last = groups[groups.length - 1];
+      if (!last || last.key !== key) groups.push(last = {key: key, items: []});
+      last.items.push(item);
     });
-    return (!current ? '<option value="">' + L('Choose a page', '选择页面') + '</option>' : '') + Object.keys(groups).map(function (key) {
-      return '<optgroup label="' + esc(key) + '">' + groups[key].join('') + '</optgroup>';
-    }).join('');
+    return '<div class="dock-row" role="group" aria-label="' + L('Who is viewing', '视角') + '"><span class="dock-label">' + L('Viewing as', '视角') + '</span>' +
+      '<div class="dock-chips">' + groups.map(function (group, gi) {
+        return (gi ? '<span class="dock-sep" aria-hidden="true"></span>' : '') +
+          (group.items.length > 1 || group.items[0].party ? '<span class="dock-group-label">' + esc(group.key) + '</span>' : '') +
+          group.items.map(function (item) {
+            var allowed = perspectiveAllowed(item, config);
+            var tag = allowed && config && config.perspective ? config.perspective(item.id) : null;
+            var full = reviewText(item.label) + (tag ? ' · ' + reviewText(tag.label) : '');
+            return '<button type="button" class="demo-chip" id="review-p-' + item.id + '" data-review-perspective="' + item.id + '"' +
+              ' aria-pressed="' + (item.id === now) + '"' + (allowed && !S.layer ? '' : ' disabled') +
+              ' aria-label="' + esc(full) + '" title="' + esc(allowed ? full : L('This page does not distinguish companies', '此页面不区分企业')) + '">' +
+              esc(reviewText(item.short || item.label)) + reviewTag(tag) + '</button>';
+          }).join('');
+      }).join('') + '</div></div>';
+  }
+  function reviewStateRow(current, config) {
+    if (!config) return '<div class="dock-row"><span class="dock-label">' + L('State', '状态') + '</span><p class="review-step">' +
+      L('This page has no registered states.', '此页面未登记演示状态。') + '</p></div>';
+    var states = reviewStates(config), scenes = reviewScenarios(config);
+    var value = config.get ? config.get() : S.st;
+    var feedback = states.filter(function (s) { return s.id === 'denied' || !['business', 'step'].includes(s.group); });
+    var business = states.filter(function (s) { return s.id !== 'denied' && ['business', 'step'].includes(s.group); });
+    var hereFull = location.hash.replace(/^#/, '');
+    var sceneChips = scenes.map(function (scene) {
+      // 适配器能判断“当前对象是否就处在该状态”时以它为准；否则按完整路由（含查询参数）比对。
+      var full = String(scene.route || '').replace(/^#/, '');
+      var onThis = typeof scene.current === 'boolean' ? scene.current : !!full && full === hereFull;
+      var picked = reviewScene && reviewScene.page === current && reviewScene.id === scene.id;
+      var disabled = S.layer || scene.available === false;
+      var note = scene.available === false ? L('none', '无记录') : onThis ? L('current', '当前') : (scene.sample || '');
+      return '<button type="button" class="demo-chip" id="review-s-' + esc(scene.id) + '" data-review-page="' + esc(current) + '" data-review-scene="' + esc(scene.id) + '"' +
+        ' aria-pressed="' + !!(picked || onThis) + '"' + (disabled ? ' disabled' : '') +
+        ' title="' + esc(reviewText(scene.description) || '') + '">' + esc(reviewText(scene.label)) +
+        (note ? '<small>' + esc(note) + '</small>' : '') + '</button>';
+    });
+    var businessChips = business.map(function (state) {
+      return '<button type="button" class="demo-chip" data-review-page="' + esc(current) + '" data-review-state="' + esc(state.id) + '"' +
+        ' aria-pressed="' + (!reviewScene && value === state.id) + '"' + (S.layer ? ' disabled' : '') + '>' + esc(reviewText(state.label)) + '</button>';
+    });
+    var feedbackChips = feedback.map(function (state) {
+      var on = !reviewScene && (value === state.id || state.id === 'default' && !feedback.some(function (s) { return s.id === value; }) && !business.some(function (s) { return s.id === value; }));
+      return '<button type="button" class="demo-chip quiet" id="review-f-' + esc(state.id) + '" data-review-feedback="' + esc(state.id) + '"' +
+        ' aria-pressed="' + !!on + '"' + (S.layer ? ' disabled' : '') + '>' + esc(reviewText(state.label)) + '</button>';
+    });
+    var bizAll = sceneChips.concat(businessChips);
+    return '<div class="dock-row" role="group" aria-label="' + L('Page state', '本页状态') + '"><span class="dock-label">' + L('Page state', '本页状态') + '</span>' +
+      '<div class="dock-chips">' +
+      (bizAll.length ? '<span class="dock-group-label">' + L('Business', '业务') + '</span>' + bizAll.join('') + '<span class="dock-sep" aria-hidden="true"></span>' : '') +
+      (feedbackChips.length ? '<span class="dock-group-label">' + L('Display', '显示') + '</span>' + feedbackChips.join('') : '') +
+      '</div></div>';
+  }
+  function reviewDirectory() {
+    if (reviewSearch.trim()) return '<div class="review-results" id="review-results">' + reviewSearchResults() + '</div>';
+    var groups = [], current = reviewCurrent();
+    Object.keys(reviewPages).filter(reviewListed).forEach(function (id) {
+      var key = reviewText(reviewGroup(id)), last = groups.find(function (g) { return g.key === key; });
+      if (!last) groups.push(last = {key: key, ids: []});
+      last.ids.push(id);
+    });
+    return '<div class="review-results" id="review-results">' + groups.map(function (g) {
+      return '<div class="dir-group"><h6>' + esc(g.key) + '</h6>' + g.ids.map(function (id) {
+        var openable = id === current || !!reviewRoute(id, reviewPages[id]);
+        return '<button type="button" class="dir-item" data-review-page="' + esc(id) + '" data-review-state="default"' +
+          (id === current ? ' aria-current="page"' : '') + (openable && !S.layer ? '' : ' disabled') + '>' +
+          '<span>' + esc(reviewText(reviewLabel(id))) + '</span><small>' + esc(openable ? id : L('open from its list', '需先从列表进入')) + '</small></button>';
+      }).join('') + '</div>';
+    }).join('') + '</div>';
   }
   function decorateReview() {
     var panel = $('demoPanel');
     if (!panel || panel.hidden) return;
     if (reviewObserver) reviewObserver.disconnect();
+    panel.classList.add('demo-dock');
     var header = panel.querySelector(':scope > .review-switcher');
     var more = panel.querySelector(':scope > .review-more');
     if (!header) { header = document.createElement('section'); header.className = 'review-switcher'; panel.prepend(header); }
     if (!more) {
-      more = document.createElement('details'); more.className = 'review-more'; more.open = reviewMore;
-      var summary = document.createElement('summary'); summary.textContent = L('Advanced simulations', '高级模拟与外部事件'); more.append(summary);
-      var body = document.createElement('div'); body.className = 'review-more-body'; more.append(body); panel.append(more);
-      more.addEventListener('toggle', function () { if (more.isConnected) reviewMore = more.open; });
+      more = document.createElement('section'); more.className = 'review-more dock-pop'; more.id = 'review-more';
+      more.setAttribute('aria-label', L('Advanced simulations', '高级模拟与外部事件'));
+      more.innerHTML = '<div class="dock-pop-head"><strong>' + L('Advanced simulations', '高级模拟与外部事件') + '</strong></div><div class="review-more-body"></div>';
+      panel.append(more);
     }
-    Array.from(panel.childNodes).forEach(function (node) { if (node !== header && node !== more) more.lastElementChild.append(node); });
+    var body = more.querySelector('.review-more-body');
+    Array.from(panel.childNodes).forEach(function (node) { if (node !== header && node !== more) body.append(node); });
     var retainedFocus = header.contains(document.activeElement) && document.activeElement.id;
     if (panel.firstElementChild !== header) panel.prepend(header);
-    // Legacy whole-page selectors move to the canonical state control, without duplicating them.
+    // 旧的整页选择器、身份开关与部署单元开关由演示条接管，不在高级模拟里重复出现。
     var legacy = '[data-act="ops-state"], [data-act="ag-state"], [data-act="om-scene"]' +
       (reviewIdentityShown() ? ', [data-act="role"]' : '');
-    more.querySelectorAll(legacy).forEach(function (button) {
+    body.querySelectorAll(legacy).forEach(function (button) {
       var group = button.parentElement;
       if (group && Array.from(group.children).every(function (child) { return child.matches(legacy); })) {
         if (group.previousElementSibling?.tagName === 'H5') group.previousElementSibling.hidden = true;
         group.hidden = true;
       }
     });
-    var legacyState = more.querySelector('#pr-view');
+    var legacyState = body.querySelector('#pr-view');
     if (legacyState) legacyState.closest('.field').hidden = true;
+    var hasMore = Array.from(body.children).some(function (el) { return !el.hidden && el.textContent.trim(); });
+    more.hidden = reviewPop !== 'more' || !hasMore;
     var current = reviewCurrent(), config = reviewPages[current];
-    var states = config ? reviewStates(config) : [];
-    var value = config ? (config.get ? config.get() : S.st) : '';
-    var groups = {}, groupLabels = {feedback: L('Interface feedback', '界面反馈'), business: L('Business states', '业务状态'), step: L('Flow steps', '流程步骤')};
-    states.filter(function (state) { return state.id === 'denied' || !['business','step'].includes(state.group); }).forEach(function (state) {
-      var group = state.id === 'denied' ? groupLabels.feedback : groupLabels[state.group] || reviewText(state.group) || groupLabels.feedback;
-      (groups[group] || (groups[group] = [])).push('<option value="' + esc(state.id) + '"' + (state.id === value ? ' selected' : '') + '>' + esc(reviewText(state.label)) + '</option>');
-    });
-    var live = config && !states.some(function (state) { return state.id === value && (state.id === 'denied' || !['business','step'].includes(state.group)); });
+    var subject = config && config.subject ? config.subject() : null;
     var active = document.activeElement, focusId = retainedFocus || (header.contains(active) && active.id);
-    var step = reviewIdentityShown() ? 1 : 0;
-    var business = states.filter(function (state) { return state.id !== 'denied' && ['business','step'].includes(state.group); });
-    var scenes = config ? reviewScenarios(config) : [];
-    var selectedScene = reviewScene && reviewScene.page === current && scenes.find(function (s) { return s.id === reviewScene.id; });
-    header.innerHTML = '<div class="review-heading"><strong>' + L('Pages & scenarios', '页面与业务场景') + '</strong><button class="btn ghost sm" type="button" data-act="demo">' + L('Close', '收起') + '</button></div>' +
-      (reviewIdentityShown() ? '<label for="review-identity">' + L('1 · Sign-in state', '1 · 登录状态') + '</label>' +
-        '<select class="inp" id="review-identity"' + (S.layer ? ' disabled' : '') + '>' + reviewIdentityOptions() + '</select>' : '') +
-      '<label for="review-search">' + L('Find a page or business state', '查找页面或业务状态') + '</label><input class="inp" id="review-search" type="search" value="' + esc(reviewSearch) + '" placeholder="' + L('e.g. repayment / 还款 / P-LS-02', '例如：待放款、还款、P-LS-02') + '" aria-controls="review-results">' +
-      '<div class="review-results" id="review-results"' + (reviewSearch.trim() ? '' : ' hidden') + '>' + reviewSearchResults() + '</div>' +
-      '<label class="review-auto"><input type="checkbox" id="review-auto-close"' + (reviewAutoClose ? ' checked' : '') + '> ' + L('Close tools after locating a scenario', '定位场景后收起工具，查看完整页面') + '</label>' +
-      '<label for="review-module">' + L('Module', '模块') + '</label><select class="inp" id="review-module"' + (S.layer ? ' disabled' : '') + '>' + reviewModuleOptions() + '</select>' +
-      '<label for="review-page">' + (step + 1) + L(' · Page', ' · 页面') + '</label><select class="inp" id="review-page"' + (S.layer ? ' disabled' : '') + '>' + reviewOptions() + '</select>' +
-      (current ? '<div class="review-location" role="status"><span>' + L('Viewing', '当前页面') + '</span><strong>' + esc(reviewText(reviewLabel(current))) + '</strong><small>' + esc(reviewText(reviewGroup(current))) + ' · ' + esc(S.page) + '</small>' +
-        (selectedScene ? '<small>' + esc(L('Located example: ', '已定位样例：') + reviewText(selectedScene.label)) + '</small>' : '') + '</div>' : '') +
-      (S.layer ? '<p class="review-step">' + L('Finish or cancel the open dialog before changing pages or states.', '请先完成或取消当前弹层，再切换页面或状态。') + '</p>' : '') +
-      (config && config.step ? '<p class="review-step">' + esc(L('Current step: ', '当前步骤：') + config.step()) + '</p>' : '') +
-      '<div class="review-business"><strong class="review-section-title">' + L('Business scenarios', '业务场景') + '</strong>' +
-        (scenes.length || business.length ? scenes.map(function (scene) { return reviewChoice(current,scene,'scene'); }).join('') + business.map(function (state) { return reviewChoice(current,state,'state'); }).join('') :
-          '<p class="review-step">' + L('This page has no separate business preset. Use the page or the feedback options below.', '此页暂无独立业务预设，可直接操作页面或选择下方界面反馈。') + '</p>') + '</div>' +
-      '<details class="review-feedback"' + (reviewFeedback ? ' open' : '') + '><summary>' + L('Interface feedback', '界面反馈（加载、空数据、失败等）') + '</summary>' +
-      '<label for="review-state">' + L('Page feedback state', '页面反馈状态') + '</label><select class="inp" id="review-state"' + (!states.length || S.layer ? ' disabled' : '') + '>' +
-      (live ? '<option value="" selected disabled>' + L('Current flow', '当前流程状态') + '</option>' : '') +
-      (!states.length ? '<option>' + L('Follow the page flow', '通过页面流程触发') + '</option>' : Object.keys(groups).map(function (group) { return '<optgroup label="' + esc(group) + '">' + groups[group].join('') + '</optgroup>'; }).join('')) + '</select></details>' +
-      '<button class="btn" type="button" data-act="review-reset"' + (!config || S.layer ? ' disabled' : '') + '>' + L('Restore default', '恢复默认') + '</button>';
+    header.innerHTML =
+      '<div class="dock-top">' +
+        '<span class="dock-badge">' + L('Demo', '演示') + '</span>' +
+        '<div class="dock-where" role="status"><strong>' + esc(current ? reviewText(reviewLabel(current)) : L('Unregistered page', '未登记页面')) + '</strong>' +
+          (subject ? '<small>' + esc(reviewText(subject)) + '</small>' : '') +
+          (current ? '<small class="mono">' + esc(current) + '</small>' : '') + '</div>' +
+        (S.layer ? '<span class="review-step">' + L('Finish or cancel the open dialog first.', '请先完成或取消当前弹层。') + '</span>' : '') +
+        (reviewPartyNotice ? '<span class="review-step">' + L('This page uses the default companies.', '此页面按默认企业展示。') + '</span>' : '') +
+        '<button type="button" class="btn sm' + (reviewPop === 'pages' ? ' on' : '') + '" id="review-pages-btn" data-review-pop="pages" aria-expanded="' + (reviewPop === 'pages') + '" aria-controls="review-pages">' + L('Pages', '切换页面') + '</button>' +
+        (hasMore ? '<button type="button" class="btn sm' + (reviewPop === 'more' ? ' on' : '') + '" id="review-more-btn" data-review-pop="more" aria-expanded="' + (reviewPop === 'more') + '" aria-controls="review-more">' + L('More simulations', '更多模拟') + '</button>' : '') +
+        '<button type="button" class="btn sm" data-act="review-reset"' + (!config || S.layer ? ' disabled' : '') + '>' + L('Restore default', '恢复默认') + '</button>' +
+        '<button type="button" class="btn icon bare" data-act="demo" aria-label="' + L('Close demo tools', '关闭演示工具') + '" title="' + L('Close demo tools', '关闭演示工具') + '">' + ICON.close + '</button>' +
+      '</div>' +
+      (reviewIdentityShown() ? reviewPerspectiveRow(config) : '') +
+      reviewStateRow(current, config) +
+      '<section class="dock-pop dock-pages" id="review-pages"' + (reviewPop === 'pages' ? '' : ' hidden') + ' aria-label="' + L('Pages', '切换页面') + '">' +
+        '<label class="sr-only" for="review-search">' + L('Find a page or business state', '查找页面或业务状态') + '</label>' +
+        '<input class="inp" id="review-search" type="search" value="' + esc(reviewSearch) + '" placeholder="' + L('Search pages or states', '搜索页面或状态') + '">' +
+        reviewDirectory() +
+      '</section>';
+    reviewPartyNotice = false;
+    // 横向滑动的行里，让已选中的视角 / 状态始终露在可视范围内。
+    header.querySelectorAll('.dock-chips').forEach(function (row) {
+      var chip = row.querySelector('[aria-pressed="true"]');
+      if (!chip || row.scrollWidth <= row.clientWidth) return;
+      var r = row.getBoundingClientRect(), c = chip.getBoundingClientRect();
+      if (c.left < r.left || c.right > r.right) row.scrollLeft += c.left - r.left - (r.width - c.width) / 2;
+    });
     if (reviewFocus || focusId) { $(reviewFocus || focusId)?.focus({preventScroll:true}); reviewFocus = ''; }
-    header.querySelector('.review-feedback').addEventListener('toggle', function (event) { if (event.target.isConnected) reviewFeedback = event.target.open; });
+    // 演示条打开时，页面底部让出同样高度，避免挡住最后一屏内容。
+    document.documentElement.style.setProperty('--dock-h', Math.ceil(header.getBoundingClientRect().height) + 'px');
+    document.body.classList.add('demo-open');
     if (reviewObserver) reviewObserver.observe(panel, {childList:true});
   }
   CF.review = {
@@ -843,41 +925,64 @@
       var host = panel.querySelector(':scope > .review-more > .review-more-body') || panel;
       host.innerHTML = html;
     },
-    pages: reviewPages, current: reviewCurrent, refresh: decorateReview
+    pages: reviewPages, current: reviewCurrent, refresh: decorateReview,
+    perspective: perspectiveNow
   };
+  function reviewClose(focusButton) {
+    S.demo = false; reviewPop = ''; renderDemo();
+    if (focusButton) $('demoBtn').focus();
+  }
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && S.demo && !S.layer && event.target.closest('#demoPanel')) {
-      event.preventDefault(); event.stopImmediatePropagation(); S.demo = false; renderDemo(); $('demoBtn').focus();
-    }
+    if (event.key !== 'Escape' || !S.demo || S.layer || !event.target.closest('#demoPanel')) return;
+    event.preventDefault(); event.stopImmediatePropagation();
+    if (reviewPop) { var back = reviewPop === 'pages' ? 'review-pages-btn' : 'review-more-btn'; reviewPop = ''; decorateReview(); $(back)?.focus(); return; }
+    reviewClose(true);
   }, true);
   document.addEventListener('input', function (event) {
     if (event.target.id !== 'review-search') return;
     reviewSearch = event.target.value;
-    $('review-results').hidden = !reviewSearch.trim(); $('review-results').innerHTML = reviewSearchResults();
+    var host = $('review-results'); if (host) host.outerHTML = reviewDirectory();
   });
   document.addEventListener('click', function (event) {
-    var summary = event.target.closest('.review-feedback > summary');
-    if (summary) reviewFeedback = !summary.parentElement.open;
+    if (!event.target.closest('#demoPanel')) {
+      if (reviewPop && S.demo) { reviewPop = ''; decorateReview(); }
+      return;
+    }
+    var pop = event.target.closest('[data-review-pop]');
+    if (pop) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      reviewPop = reviewPop === pop.dataset.reviewPop ? '' : pop.dataset.reviewPop;
+      reviewFocus = reviewPop === 'pages' ? 'review-search' : pop.id;
+      decorateReview(); return;
+    }
+    var perspective = event.target.closest('[data-review-perspective]');
+    if (perspective) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      if (!perspective.disabled) reviewPerspectiveGo(perspective.dataset.reviewPerspective);
+      return;
+    }
+    var feedback = event.target.closest('[data-review-feedback]');
+    if (feedback) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      if (!feedback.disabled) { reviewFocus = ''; reviewApply(feedback.dataset.reviewFeedback); }
+      return;
+    }
     var button = event.target.closest('[data-review-page]');
-    if (!button || button.disabled || !button.closest('#demoPanel')) return;
+    if (!button || button.disabled) return;
     event.preventDefault(); event.stopImmediatePropagation();
+    if (button.classList.contains('dir-item')) { reviewPop = ''; reviewFocus = ''; }
+    else reviewFocus = button.id;
     reviewGo(button.dataset.reviewPage, button.hasAttribute('data-review-scene') ? {scene:button.dataset.reviewScene} : {state:button.dataset.reviewState});
   }, true);
-  document.addEventListener('change', function (event) {
-    if (event.target.id === 'review-identity') reviewIdentityGo(event.target.value);
-    if (event.target.id === 'review-page') reviewGo(event.target.value);
-    if (event.target.id === 'review-module') { reviewModule = event.target.value; $('review-page').innerHTML = reviewOptions(); $('review-results').innerHTML = reviewSearchResults(); }
-    if (event.target.id === 'review-auto-close') reviewAutoClose = event.target.checked;
-    if (event.target.id === 'review-state') reviewApply(event.target.value);
-  });
 
   function renderDemo() {
     $("demoBtn").textContent = S.demo ? L("Close demo tools", "关闭演示工具") : L("Demo tools", "演示工具");
     var panel = $("demoPanel");
     $("demoBtn").setAttribute("aria-expanded", String(S.demo));
-    $("demoBtn").hidden = !!S.layer && !(M && M.reviewToolsInLayer);
     panel.hidden = !S.demo || !!S.layer && !(M && M.reviewToolsInLayer);
-    if (panel.hidden) return;
+    /* 演示条展开时由条内的关闭按钮收起，浮动入口让位，避免两个入口重叠。 */
+    $("demoBtn").hidden = !!S.layer && !(M && M.reviewToolsInLayer) || !panel.hidden;
+    if (panel.hidden) { document.body.classList.remove("demo-open"); return; }
     if (M && M.demoOnly) { panel.innerHTML = M.demo(); return; }
     var roles = S.end === "admin"
       ? [["ops", L("Operations admin", "运营管理员")]]

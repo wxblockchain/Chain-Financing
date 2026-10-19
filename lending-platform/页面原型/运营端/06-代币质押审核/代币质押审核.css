@@ -103,7 +103,7 @@ table.pr-table thead th{white-space:normal;color:var(--muted)}
 .pr-form fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:var(--sp-4)}
 .pr-upload:focus-within{outline:2px solid var(--accent);outline-offset:2px}.pr-confirm{white-space:pre-wrap;padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);overflow-wrap:anywhere}
 .pr-progress{width:100%;accent-color:var(--accent)}
-.pr-body .demo-panel{max-height:calc(100vh - 110px);overflow:auto}
+.pr-body .demo-panel:not(.demo-dock){max-height:calc(100vh - 110px);overflow:auto}
 .pr-demo{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-5)}
 .pr-preview{width:100%;height:300px;border:1px solid var(--border);object-fit:contain}
 .pr-table caption{text-align:left;padding:var(--sp-4);font-weight:600}

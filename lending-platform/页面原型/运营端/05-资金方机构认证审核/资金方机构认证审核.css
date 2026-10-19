@@ -51,7 +51,7 @@
 .review-prototype .rv-preview{padding:var(--sp-6);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius)}
 .review-prototype .rv-preview dl div{padding:var(--sp-3) 0;border-bottom:1px solid var(--border)}
 .review-prototype .rv-preview dd{margin:var(--sp-2) 0;overflow-wrap:anywhere}
-.review-prototype .demo-panel{max-height:calc(100svh - 110px);overflow:auto}
+.review-prototype .demo-panel:not(.demo-dock){max-height:calc(100svh - 110px);overflow:auto}
 .review-prototype .rv-demo{border-top:1px solid var(--border);padding-top:var(--sp-4);margin-top:var(--sp-4)}
 .review-prototype .rv-demo .btn{margin-bottom:var(--sp-2)}
 .review-prototype .rv-demo label{display:block;margin:var(--sp-3) 0 var(--sp-2)}

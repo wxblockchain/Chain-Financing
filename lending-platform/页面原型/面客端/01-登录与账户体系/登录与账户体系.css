@@ -80,9 +80,9 @@
 .login-prototype .bell{width:44px;height:44px}
 .login-prototype .bell .badge{right:0;top:0}
 .login-prototype .dd-btn,.login-prototype .btn.sm,.login-prototype .demo-btn{min-height:44px}
-.login-prototype .demo-panel{max-height:calc(100svh - 110px);overflow:auto;width:min(420px,calc(100% - 32px))}
-.login-prototype .demo-panel select{margin-bottom:var(--sp-3)}
-.login-prototype .demo-panel .btn{height:auto;min-height:44px;white-space:normal;text-align:left}
+.login-prototype .demo-panel:not(.demo-dock){max-height:calc(100svh - 110px);overflow:auto;width:min(420px,calc(100% - 32px))}
+.login-prototype .demo-panel .review-more-body select{margin-bottom:var(--sp-3)}
+.login-prototype .demo-panel .review-more-body .btn{height:auto;min-height:44px;white-space:normal;text-align:left}
 .login-prototype .demo-panel .seg{flex-wrap:wrap}
 .login-limit{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:44px;
   padding:var(--sp-3) var(--sp-4);border:1px solid var(--border-strong);border-radius:var(--radius-sm);

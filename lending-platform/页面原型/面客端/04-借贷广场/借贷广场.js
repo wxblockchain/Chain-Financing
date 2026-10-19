@@ -635,8 +635,25 @@
     if(value==='deniedWrite')CF.toast(txt(errors.permission));D.sweep();D.save();
   }
 
+  /* 演示条的视角标签：同一项目对不同企业意味着什么——项目方、当前报价方、出资方、曾报价、其他资金方。 */
+  const OWNERS={'asset-a':'entity-demo-a','asset-b':'entity-demo-b'},FUNDS={'fund-a':'fund-a','fund-b':'fund-b'};
+  function perspectiveTag(key){
+    const p=project();if(!p)return null;
+    if(OWNERS[key])return p.owner===OWNERS[key]?{label:['Project owner','项目方'],tone:'key'}:{label:['Not the owner','非项目方']};
+    if(!FUNDS[key]||!Q)return null;
+    const mine=Q.data().quotes.filter(q=>q.project===p.id&&q.fund===FUNDS[key]);
+    if(mine.some(q=>q.state==='waiting'))return {label:['Current quote','当前报价方'],tone:'key'};
+    if(mine.some(q=>q.l7||['funding','funded'].includes(q.state)))return {label:['Financing funder','出资方'],tone:'key'};
+    if(mine.length)return {label:['Earlier quote','曾报价'],tone:'warn'};
+    // 已有机构在报价或出资时，其余机构是“其他资金方”；尚无机构参与时为“未报价”。
+    const engaged=Q.data().quotes.some(q=>q.project===p.id&&(q.state==='waiting'||q.l7||['funding','funded'].includes(q.state)));
+    return engaged?{label:['Other funder','其他资金方']}:{label:['Not quoted','未报价']};
+  }
   [LIST,DETAIL,NEW].forEach(id=>CF.review.register(id, {
     group:['Lending marketplace','借贷广场'],
+    parties:true,
+    subject:()=>{const p=id===DETAIL&&project();return p?[txt(p.name)+' · '+p.id+' · '+owner(p),txt(p.name)+' · '+p.id+' · '+owner(p)]:null;},
+    perspective:key=>id===DETAIL?perspectiveTag(key):null,
     scenarios:()=>id!==DETAIL?[]:[
       ['collateral',['Collateral overview','质押概览'],'global',p=>!D.terminal(p)],
       ['publish',['Ready to publish a request','待发布融资需求'],'financing',p=>!D.current(p)&&D.actions(p).publish],
@@ -647,11 +664,13 @@
       ['repaying',['Repayment in progress','还款中'],'repay',p=>Q?.data().quotes.some(q=>q.project===p.id&&q.l8&&!q.l8.settledAt)],
       ['settled',['Financing settled','已结清'],'global',p=>p.state==='settled'],
       ['closed',['Project closed','项目已关闭'],'global',p=>p.state==='closed']
-    ].map(([key,label,tab,match])=>{
-      const p=D.projects.find(p=>(S.role!=='asset'||D.mine(p))&&match(p));
-      const privateStage=['respond','disburse','receipt','repaying'].includes(key),allowed=!privateStage||['asset','fund'].includes(S.role);
-      return {id:key,label,available:!!p&&allowed,route:p?'/project/'+p.id:null,
-        description:!allowed?['Choose an asset holder or funder identity','请先选择资产方或资金方身份']:p?['Existing project · '+p.id,'已有项目 · '+p.id]:['No matching project; use the existing flow to create one','暂无对应项目，可通过既有业务流程产生'],
+    ].map(([key,label,tab,match],i,all)=>{
+      /* 当前项目已处在该阶段时就地展示；否则打开处在该阶段的示例项目，视角保持不变。
+         “质押概览”是通用入口，不算阶段；当前阶段取项目命中的最靠后的一个。 */
+      const here=project(),p=here&&match(here)?here:D.projects.find(match);
+      const stageHere=here?all.map(x=>x[0]).filter((k,j)=>k!=='collateral'&&all[j][3](here)).pop():null;
+      return {id:key,label,available:!!p,route:p?'/project/'+p.id:null,current:!!p&&p===here&&key===stageHere,sample:p&&p!==here?p.id:'',
+        description:p?['Demonstration project · '+p.id,'演示项目 · '+p.id]:['No demonstration project is in this stage','暂无处于该阶段的演示项目'],
         enter(){if(p){actionTabs[p.id]=tab;railExpanded=true;delete actionNodes[p.id+':'+tab];}}};
     }),
     states:id===LIST?['default','loading','empty','noresult','error','denied']:['default','loading','empty','error','denied'],
