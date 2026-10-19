@@ -6,9 +6,9 @@
   const PAGE='P-LS-02';
   const tr=p=>L(p[0],p[1]),amt=(n,c='USD')=>CF.fmtAmt(n)+' '+c;
   const b=(act,title,v='',primary=false,disabled=false)=>'<button type="button" class="btn'+(primary?' primary':'')+'" data-act="'+act+'" data-v="'+E(v)+'"'+(disabled?' disabled':'')+'>'+title+'</button>';
-  const card=(title,body)=>'<section class="card"><div class="card-head"><h2 class="ln-heading">'+title+'</h2></div><div class="card-b">'+body+'</div></section>';
+  const card=(title,body)=>'<section class="ln-section"><h2 class="ln-heading">'+title+'</h2><div class="ln-section-body">'+body+'</div></section>';
   const extra=(full,shown)=>full.filter(([k,v])=>!shown.some(([a,b])=>a===k&&b===v));
-  const rows=data=>'<dl class="dl">'+data.map(([k,v])=>'<dt>'+k+'</dt><dd>'+v+'</dd>').join('')+'</dl>';
+  const rows=(data,variant='')=>'<dl class="dl ln-facts '+variant+'">'+data.map(([k,v])=>'<div class="ln-fact"><dt>'+k+'</dt><dd>'+v+'</dd></div>').join('')+'</dl>';
   const field=(key,title,type='text',extra='',hint='')=>'<div class="field"><label for="ln-'+key+'">'+CF.fieldLabel(title)+'</label><input class="inp" id="ln-'+key+'" data-ln-field="'+key+'" type="'+type+'" value="'+E(form[key]||'')+'" '+extra+' aria-describedby="ln-'+key+'-err"'+(errors[key]?' aria-invalid="true"':'')+'>'+(hint?'<p class="ln-small" id="ln-'+key+'-hint">'+hint+'</p>':'')+'<span class="err-msg ln-error" role="alert" id="ln-'+key+'-err">'+E(errors[key]||'')+'</span></div>';
   /* 交易标识按本笔结算收款链分别校验；两条链都按链给查验入口，取不到入口时只保留复制。浏览器地址为演示取值。 */
   const CHAINS={ETH:{test:v=>/^0x[0-9a-fA-F]{64}$/.test(v),hint:['0x followed by 64 hexadecimal characters','0x 后接 64 位十六进制字符'],explorer:h=>'https://etherscan.io/tx/'+h},
@@ -112,7 +112,7 @@
       :[[L('Record number','放款记录编号'),E(r.id)],[L('Currency / amount','币种 / 金额'),amt(d().settlement,d().ccy)],[L('Paid at · entered by funder','发放时间 · 资金方填写'),time(r.form.paidAt)],[L('Submitted at · platform recorded','提交时间 · 平台记录'),time(r.at)],[L('Confirmed at','确认时间'),time(d().confirmedAt)],[L('Submitted by','提交人及企业主体'),L('Demo employee F · Demo Capital Company','演示员工 F · 演示资金企业')]];
     const evidence=!party()?'':(d().ccy==='USD'?readFiles(r.form.files||[],L('Transfer receipt','放款凭证'),readOnly):transaction(r.form.hash,readOnly)+(compact?'':readFiles(r.form.files||[],L('Supplementary documents','补充材料'),readOnly)));
     const note=r.form.note?rows([[L('Note','放款备注'),E(r.form.note)]]):'';
-    return '<div class="ln-stack">'+rows(head)+note+evidence+'</div>';}
+    return '<div class="ln-stack">'+rows(head,compact?'ln-receipt-facts':'')+note+evidence+'</div>';}
   function readFiles(files,title,readOnly=false){return '<div><h3 class="ln-heading">'+title+'</h3>'+(files.length?'<ul class="ln-files-read">'+files.map((f,i)=>'<li>'+(!f.url?E(f.name)+'<span class="hint">'+L('Local file unavailable','本地文件不可用')+'</span>':readOnly?'<a href="'+E(f.url)+'" download="'+E(f.name)+'">'+E(f.name)+'</a>':E(f.name)+' '+b('ln-file-preview',L('Preview','预览'),i)+b('ln-file-download',L('Download','下载'),i))+'</li>').join('')+'</ul>':'<p class="ln-small">'+L('No files','暂无文件')+'</p>')+'</div>';}
   function history(){const list=d().history;return list.length?'<ol class="ln-history">'+list.map(x=>'<li><b>'+tr(eventNames[x.kind])+'</b><span class="ln-small">'+time(x.at)+(party()?' · '+E(tr(x.by)):'')+'</span></li>').join('')+'</ol>':CF.empty(L('No disbursement activity yet','暂无放款操作记录'),L('The quote has been accepted.','报价已接受。'));}
   /* 授信协议为非必填；缺失时只说明本笔未提供，不显示待上传或待审核。 */
