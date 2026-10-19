@@ -93,8 +93,8 @@
     const moreOpen=advancedOpen||/^filter:ls-(type|coverage)$/.test(S.menu||'');
     return '<div class="filterbar ls-primary-filters ls-toolbar">'+
     fm('ls-currency',L('Currency','币种'),[['USD','USD']],filter.currency)+
-    fm('ls-tenor',L('Tenor','期限'),[['60',L('60 days','60 天')],['90',L('90 days','90 天')],['120',L('120 days','120 天')]],filter.tenor)+
-    fm('ls-status',L('Project status','项目状态'),['raising','locked','financing','closed','settled'].map(k=>[k,txt(stateNames[k])]),filter.status)+
+    fm('ls-tenor',L('Project term','项目期限'),TERM_BANDS.map(([k,en,zh])=>[k,L(en,zh)]),filter.tenor)+
+    fm('ls-status',L('Project status','项目状态'),['available','raising','locked','financing','closed','settled'].map(k=>[k,txt(stateNames[k])]),filter.status)+
     fm('ls-quote',L('Open for quotes','可报价'),[['yes',L('Yes','是')],['no',L('No','否')]],filter.quote)+
     sortControl()+
     '<button type="button" class="ls-more-toggle" data-act="ls-more" aria-expanded="'+moreOpen+'" aria-controls="ls-more-panel">'+L('More','更多筛选')+(moreCount?'<span class="ls-more-count">'+moreCount+'</span>':'')+'<span class="ls-more-car" aria-hidden="true"></span></button>'+
@@ -104,13 +104,21 @@
     btn('ls-clear',L('Reset','重置'))+btn('ls-filter',L('Search','查询'),'',true)+'</div>'+
     '</div>'+
     (moreOpen?'<div class="ls-more-panel" id="ls-more-panel">'+advancedFilters()+'</div>':'');}
+  /* 期限筛选按项目期限（生效日～到期日，3～12 个月）分档，右端含：6 个月整归 3～6 档。
+     “加 N 个月”与到期日规则一致：取目标月同一天，没有这一天取该月最后一天；按 UTC 业务日期比较。 */
+  const TERM_BANDS=[['3-6','3–6 months','3～6 个月'],['6-9','Over 6 – 9 months','6 个月以上～9 个月'],['9-12','Over 9 months – 1 year','9 个月以上～1 年']];
+  function termBand(p){const s=new Date(p.created),e=new Date(p.expiry);if(!Number.isFinite(+s)||!Number.isFinite(+e))return '';
+    const end=Date.UTC(e.getUTCFullYear(),e.getUTCMonth(),e.getUTCDate());
+    const plus=n=>{const y=s.getUTCFullYear(),m=s.getUTCMonth()+n,last=new Date(Date.UTC(y,m+1,0)).getUTCDate();return Date.UTC(y,m,Math.min(s.getUTCDate(),last));};
+    return end<=plus(6)?'3-6':end<=plus(9)?'6-9':'9-12';}
   function requestInfo(p){const d=D.current(p);return {d,amount:d?d.amount:null,currency:'USD',tenor:d?.tenorDays,rate:d?.rate,updated:D.events.find(e=>e.project===p.id)?.at||d?.at||p.published};}
   /* 是否在广场出现只看是否发布过：发布过的项目撤下后回到可用仍在列表中。 */
   function matching(){return D.projects.filter(p=>!!p.published).filter(p=>{
     const n=D.numbers(p),d=D.current(p),amount=d?d.amount:0,open=Q?Q.quoteAvailable(p):d&&d.state==='open'&&!p.expired&&n.grade==='surplus';
     const info=requestInfo(p);
     const within=(sel,value)=>{const l=String(sel||'').split(',').filter(Boolean);return !l.length||l.includes(String(value));};
-    if(!within(filter.currency,info.currency)||!within(filter.tenor,info.tenor))return false;
+    const terms=String(filter.tenor||'').split(',').filter(k=>TERM_BANDS.some(b=>b[0]===k)).join(',');
+    if(!within(filter.currency,info.currency)||!within(terms,termBand(p)))return false;
     if(filter.keyword&&!([p.id,info.d?.id,...p.name,owner(p)].join(' ').toLowerCase().includes(filter.keyword.trim().toLowerCase())))return false;
     if(!within(filter.status,p.state))return false;
     if(!within(filter.type,p.kind))return false;
