@@ -403,7 +403,7 @@ body.list-full .mk-list-frame{position:relative;inset:auto;z-index:auto;margin:0
   [data-market-redesign] .mk-overview{gap:var(--sp-3)}
   [data-market-redesign] .mk-overview .stat-strip .s:first-child .v{font-size:var(--market-stat-size)}
   [data-market-redesign] .filterbar :is(select.inp,.fb-btn,.fb-q .inp),[data-market-redesign] .filterbar .fb-acts .btn{height:44px;min-height:44px}
-  [data-market-redesign] .mk-views button{height:40px;width:40px}
+  [data-market-redesign] .mk-views button{height:var(--ctrl-h);width:var(--ctrl-h)}
   [data-market-redesign] .mk-overview .mk-legend button{min-height:44px}
   [data-market-redesign] .ls-detail .ls-detail-head .page-title{font-size:var(--fs-24)}
   [data-market-redesign] .ls-detail .ls-section-nav button{min-height:44px}
@@ -412,6 +412,10 @@ body.list-full .mk-list-frame{position:relative;inset:auto;z-index:auto;margin:0
   [data-market-redesign] .ls-detail .ls-stat-more .ls-more-body{width:100%}
   [data-market-redesign] .ls-detail .ls-more-row{grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-2)}
   [data-market-redesign] .ls-detail .ls-more-row .sub{grid-column:1 / -1;text-align:left}
+}
+
+@media(pointer:coarse){
+  .mk-views button{min-height:var(--ctrl-h);min-width:var(--ctrl-h)}
 }
 
 /* WS-403 follow-up: consistent statistics, explicit row networks and direct collateral actions. */

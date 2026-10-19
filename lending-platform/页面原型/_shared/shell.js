@@ -1162,6 +1162,18 @@
     syncRoute(true);
     document.addEventListener("click", onClick);
     document.addEventListener("keydown", onKey);
+    // Only reveal the focused link inside the horizontal nav; keep page scroll unchanged.
+    $("nav")?.addEventListener("focusin", function (event) {
+      var item = event.target.closest(".nav-item");
+      if (!item) return;
+      var nav = event.currentTarget, bounds = nav.getBoundingClientRect();
+      var rect = item.getBoundingClientRect(), style = getComputedStyle(nav);
+      // Navigation padding also reserves space for the 2px outline + 2px offset.
+      var left = bounds.left + parseFloat(style.paddingLeft);
+      var right = bounds.right - parseFloat(style.paddingRight);
+      if (rect.left < left) nav.scrollLeft += rect.left - left;
+      else if (rect.right > right) nav.scrollLeft += rect.right - right;
+    });
     window.addEventListener("hashchange", function () {
       var prevPage = S.page;
       var id = pageFromHash();

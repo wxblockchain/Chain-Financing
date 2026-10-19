@@ -353,7 +353,7 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .portal-head{position:sticky;top:0;z-index:var(--z-sticky);display:flex;align-items:center;gap:var(--sp-6);
   padding:0 var(--sp-6);min-height:68px;background:var(--bg-elev);border-bottom:1px solid var(--border)}
 .portal-nav{display:flex;align-items:center;gap:var(--sp-1);flex:1;min-width:0;overflow-x:auto;
-  scrollbar-width:none}
+  padding:var(--sp-1);scrollbar-width:none}
 .portal-nav::-webkit-scrollbar{display:none}
 .portal-nav .nav-item{width:auto;flex:none;padding:8px 14px;border-radius:var(--radius-sm);
   font-size:var(--fs-13);font-weight:620;color:var(--muted);white-space:nowrap;
@@ -999,6 +999,7 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 }
 @media(pointer:coarse){
   .btn.sm,.btn.icon,.dd-btn,.pgbtn,.actlink{min-height:var(--ctrl-h);min-width:var(--ctrl-h)}
+  .portal-nav .nav-item{min-height:var(--ctrl-h);min-width:var(--ctrl-h)}
   [data-end] .nc-category-field select{min-height:var(--ctrl-h);height:var(--ctrl-h)}
 }
 @media(prefers-reduced-motion:reduce){
