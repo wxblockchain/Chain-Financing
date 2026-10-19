@@ -13,6 +13,7 @@
       link.textContent = CF.L('Return to message', '返回消息详情'); row.append(link);
       document.getElementById('content').prepend(row);
     }
+    CF.Home?.afterRender();
   };
   N.onBeforeAct = (act, value, event) => A.onBeforeAct?.(act, value, event) || guard?.(act, value, event);
   N.demo = () => /^#\/notification/.test(location.hash) ? demo() : CF.LSView.demo?.() || '';
@@ -42,7 +43,7 @@
   };
   CF.resumePortalTarget = () => {
     const target = CF.portalLoginReturn; CF.portalLoginReturn = '';
-    if (!/^#\/(assets|marketplace|project|console|notifications|notification|company-accounts)(?:[/?]|$)/.test(target || '') || /[<>]/.test(target)) return false;
+    if (!/^#\/(home|assets|marketplace|project|console|notifications|notification|company-accounts)(?:[/?]|$)/.test(target || '') || /[<>]/.test(target)) return false;
     S.layer = null; S.menu = null; location.hash = target; return true;
   };
   CF.MCSeedPeriods?.();

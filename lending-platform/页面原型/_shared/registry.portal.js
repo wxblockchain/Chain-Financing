@@ -10,6 +10,8 @@
   CF.NAV = CF.NAV || {};
 
   var pages = {
+    /* WS-432: public homepage requested again; existing /assets entry stays valid. */
+    "P-HOME-01": { layout: "site", navKey: "navHome", route: "/home" },
     /* 资产广场（已上架代币只读域）。编号取 PRD《资产广场 · 已上架代币只读域》的
        面客子段 P-F-AM-01；模块字母 AM = Asset Marketplace。
        只有列表页进顶栏导航，代币详情页 P-F-AM-02 由该模块在自己的文件里追加登记。 */
@@ -30,7 +32,8 @@
     CF.ENTRY[id] = p.route;
   }
 
-  /* 顶栏主导航三项；资产广场为默认入口，旧根路径由壳层归一。用户信息与企业／机构信息挂账号下拉，不占主导航位；
+  /* 首页为公开介绍入口；旧模块仍默认进入资产广场，首页 HTML 自带 /home 入口。
+     用户信息与企业／机构信息挂账号下拉，不占主导航位；
      流程页与详情页由列表或深链带出，同样不占导航位。 */
-  CF.NAV.asset = ["P-F-AM-01", "P-LS-01", "P-MC-01"];
+  CF.NAV.asset = ["P-HOME-01", "P-F-AM-01", "P-LS-01", "P-MC-01"];
 })(window.CF = window.CF || {});
