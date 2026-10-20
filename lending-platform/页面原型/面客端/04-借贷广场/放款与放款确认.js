@@ -21,16 +21,15 @@
   let savedScroll=0,lastRole=S.role,lastLayer=null,lastFocus=null;
   let accountsTrip=null,L7resume=null;
   let origin=null,fileReturn=null,confirmationReturn=null,pendingRestore=null,activeDraft='',lastHash=location.hash,epoch=0,errorFocus=null;
-  const drafts=new Map();
+  const drafts=new Map(),revealed=new Set();
   const control=el=>el?{id:el.id,act:el.dataset.act,value:el.dataset.v}:null;
   function findControl(root,target){return target?.id?root.querySelector('#'+CSS.escape(target.id)):[...root.querySelectorAll('[data-act]')].find(el=>el.dataset.act===target?.act&&el.dataset.v===target?.value);}
   function rememberLayer(){return {layer:S.layer?{...S.layer}:null,top:document.querySelector('#layers .drawer-b,#layers .modal-b')?.scrollTop||0,focus:control(document.activeElement)};}
   function restoreLayer(context){pendingRestore=context;if(context?.layer)CF.openLayer(context.layer.type,context.layer.key,context.layer.data,context.layer.under);else CF.closeLayer();}
   function closeBusiness(){relatedReturn=null;dirty=false;detailReturn=null;discardReturn=null;const previous=origin?.layer?{...origin,layer:null}:origin;origin=null;fileReturn=null;confirmationReturn=null;confirm=null;errors={};restoreLayer(previous);}
-  function cancelConfirmation(){if(busy||!confirm)return;confirm=null;errors.submit='';restoreLayer(confirmationReturn);confirmationReturn=null;}
   function session(){return {epoch,deal:d(),hash:location.hash,role:S.role,form,layer:S.layer?.key};}
   function isCurrent(x){return x.epoch===epoch&&x.deal===d()&&x.hash===location.hash&&x.role===S.role&&x.form===form&&x.layer===S.layer?.key&&party();}
-  function invalidate(){dirty=false;resultText='';detailReturn=null;discardReturn=null;epoch++;busy=false;uploadBusy=false;form={};errors={};confirm=null;origin=null;fileReturn=null;confirmationReturn=null;pendingRestore=null;activeDraft='';drafts.clear();}
+  function invalidate(){dirty=false;resultText='';detailReturn=null;discardReturn=null;epoch++;busy=false;uploadBusy=false;form={};errors={};confirm=null;origin=null;fileReturn=null;confirmationReturn=null;pendingRestore=null;activeDraft='';drafts.clear();revealed.clear();}
   function focusError(key){errorFocus=key;CF.render();}
 
   const now=()=>D.now()+offset,iso=()=>new Date(now()).toISOString(),d=()=>deals[selected];
@@ -71,6 +70,14 @@
   function terms(){const q=Q.data().quotes.find(q=>q.id===d().id);
     return rows([[L('Financing amount','融资金额'),'<span class="mono">'+amt(d().amount)+'</span>'],[L('Settlement currency / amount','结算币种 / 金额'),amt(d().settlement,d().ccy)],[L('Annual interest rate','年化利率'),E(d().rate)+'%'],[L('Repayment type','还款类型'),L('Quarterly interest; principal and remaining interest at maturity','按季付息；到期还本付息')],[L('Final repayment date','最终还款日'),q?.repay?CF.fmtDate(q.repay):'—'],[L('Funder / asset holder','报价机构 / 资产方'),E(funder())+' / '+E(borrower())]])
       +'<details class="ls-history ln-more"><summary>'+L('Full terms','完整条款')+'</summary>'+rows([[L('Quoted exchange rate','报价折算比值'),'1 '+d().ccy+' = '+d().fx.value+' USD'],[L('Rate effective at','折算生效时间'),time(new Date(d().fx.at).toISOString())],[L('Rate source / version','折算依据 / 版本'),E(tr(d().fx.source))+' · '+E(d().fx.version)],[L('Quoted at','报价时间'),time(new Date(d().at).toISOString())],[L('Accepted at','接受时间'),time(new Date(d().acceptedAt).toISOString())]])+'</details>';}
+  /* 账号与地址默认脱敏；融资双方在每个脱敏处都能查看完整值并复制，非当事方没有这个操作。 */
+  function accountView(a,key,withMore=true){const EA=CF.EA,crypto=a.kind==='crypto',numLabel=L(...EA.labels[crypto?'address':'iban']),id=d().id+':'+key,open=revealed.has(id);
+    const full=crypto?a.address||'':EA.groupIban(a.iban)||'',copy=crypto?a.address||'':EA.compact(a.iban)||'';
+    const cell='<span class="copy-pair ln-reveal"><span class="mono">'+(open?E(full):crypto?EA.maskAddress(a.address):EA.maskTail(EA.compact(a.iban)))+'</span>'+(open?CF.copyBtn('ln-copy',copy,crypto?L('Copy address','复制地址'):L('Copy account number','复制账号')):'')
+      +(party()?'<button type="button" class="btn-link" data-act="ln-reveal" data-v="'+E(key)+'" aria-pressed="'+open+'">'+(open?L('Hide','隐藏'):crypto?L('Show full address','查看完整地址'):L('Show full account number','查看完整账号'))+'</button>':'')+'</span>';
+    const brief=Q.accountRows(a,false).map(([k,v])=>k===numLabel?[k,cell]:[k,v]);
+    const rest=withMore?Q.accountRows(a,true).filter(([k,v])=>k!==numLabel&&!brief.some(([x,y])=>x===k&&y===v)):[];
+    return rows(brief)+(rest.length?'<details class="ls-history ln-more"><summary>'+L('View account details','查看账户详情')+'</summary>'+rows(rest)+'</details>':'');}
   /* 资产方收款账户在 L6 接受环节选定，本册只读承接企业账户模块的字段。 */
   /* 资产方收款账户在接受报价时选定，本模块只读沿用。付款方办理时给完整值与复制；只读处给脱敏摘要，完整信息按需展开。 */
   function assetAccount(mode='detail'){const a=d().account;if(!a||!a.id&&!a.iban&&!a.address)return CF.note('warn',L('The receiving account for this business cannot be read right now. Retry before recording a payment.','本笔收款账户暂时无法读取，请重试后再登记放款。'));
@@ -78,9 +85,8 @@
       const key=a.kind==='crypto'?[[lb('label'),EA.name(a)],[lb('chain'),E(chainOf())],[lb('address'),pair(a.address||'',a.address||'',L('Copy address','复制地址'))]]
         :[[lb('label'),EA.name(a)],[lb('iban'),pair(EA.groupIban(a.iban)||'—',EA.compact(a.iban),L('Copy account number','复制账号'))],[lb('bank'),E(a.bank||'—')],[lb('swift'),a.swift?pair(a.swift,a.swift,L('Copy SWIFT / BIC','复制 SWIFT / BIC')):'—']];
       const more=extra(Q.accountRows(a,true),key.map(([k])=>[k,'']).concat(key)).filter(([k])=>!key.some(([a])=>a===k));return rows(key)+(more.length?'<details class="ls-history ln-more"><summary>'+L('View account details','查看账户详情')+'</summary>'+rows(more)+'</details>':'');}
-    const brief=Q.accountRows(a,false),more=extra(Q.accountRows(a,true),brief);return rows(brief)+(mode==='detail'&&more.length?'<details class="ls-history ln-more"><summary>'+L('View account details','查看账户详情')+'</summary>'+rows(more)+'</details>':'');}
-  /* 资金方还款收款账户：本企业已登记账户中选用，办理内不新增、不编辑、不手输。 */
-  /* 资金方还款收款账户：从本机构已登记账户中逐笔选用，不预先带出；数币只能选与本笔结算收款链相同的账户。 */
+    return accountView(a,'asset',mode==='detail');}
+  /* 资金方收款账户（将来收还款）：从本机构已登记账户中逐笔选用，不预先带出；数币只能选与本笔结算收款链相同的账户。 */
   const repayKind=()=>d().ccy==='USD'?'fiat':'crypto';
   const allRepay=()=>accountScene==='empty'?[]:(Q.accounts?Q.accounts(d().fund,repayKind()):[]);
   const sameChain=a=>repayKind()==='fiat'||a.chain===chainOf();
@@ -88,7 +94,7 @@
   const repayPick=()=>repayList().find(a=>a.id===form.repayAccount);
   const accountLine=a=>Q.accountName(a).replace(/<[^>]+>/g,'')+' · '+Q.accountBrief(a);
   function repayAccount(){const a=d().record?.account;if(!a)return '<p class="hint">'+L('Pending the funder’s submission.','待资金方提交。')+'</p>';
-    const brief=Q.accountRows(a,false),more=extra(Q.accountRows(a,true),brief);return rows(brief)+(more.length?'<details class="ls-history ln-more"><summary>'+L('View account details','查看账户详情')+'</summary>'+rows(more)+'</details>':'');}
+    return accountView(a,'repay');}
   function accountChooser(){
     if(accountScene==='loading')return '<div id="ln-repayAccount" tabindex="-1" role="status" class="ln-small">'+L('Loading your institution accounts…','正在加载本机构账户…')+'</div>';
     if(accountScene==='error')return '<div id="ln-repayAccount" tabindex="-1">'+CF.note('warn',L('Your accounts could not be read just now. Retry before submitting.','暂时无法读取本机构账户，请重试后再提交。'))+b('ln-account-retry',L('Retry','重新加载'))+'</div>';
@@ -100,7 +106,7 @@
     const picked=repayPick();
     const lost=errors.accountLost?CF.note('warn',E(errors.accountLost)):'';
     const option=a=>{const miss=Q.accountMissing(a);return '<option value="'+E(a.id)+'" data-icons="'+E(Q.accountIcons?Q.accountIcons(a):'')+'"'+(picked?.id===a.id?' selected':'')+(miss.length?' disabled':'')+'>'+E(accountLine(a))+(miss.length?L(' (missing ',' （缺少')+miss.map(k=>L(...Q.accountLabels[k])).join(L(', ','、'))+L(')','）'):'')+'</option>';};
-    return '<div class="field" id="ln-repayAccount" tabindex="-1">'+lost+'<label for="ln-account-select">'+CF.fieldLabel(L('Repayment receiving account','还款收款账户'),true)+'</label><select id="ln-account-select" class="inp" aria-required="true" data-ln-account="1" data-icon-select aria-describedby="ln-repayAccount-err"'+(errors.repayAccount?' aria-invalid="true"':'')+'><option value="">'+L('Select the account for future repayments','请选择本笔将来的还款收款账户')+'</option>'+list.map(option).join('')+'</select>'
+    return '<div class="field" id="ln-repayAccount" tabindex="-1">'+lost+'<label for="ln-account-select">'+CF.fieldLabel(L('Funder’s receiving account','资金方收款账户'),true)+'</label><select id="ln-account-select" class="inp" aria-required="true" data-ln-account="1" data-icon-select aria-describedby="ln-repayAccount-err"'+(errors.repayAccount?' aria-invalid="true"':'')+'><option value="">'+L('Select the account for future repayments','请选择用于将来收还款的账户')+'</option>'+list.map(option).join('')+'</select>'
       +'<span class="err-msg ln-error" role="alert" id="ln-repayAccount-err">'+E(errors.repayAccount||'')+'</span>'
       +(list.some(a=>Q.accountMissing(a).length)?'<p class="hint">'+L('Accounts with missing details cannot be used; complete them in Institution accounts.','信息不完整的账户不可选，请先在机构账户补齐。')+'</p>':'')
       +(picked?'<details class="ls-history ln-more"><summary>'+L('View account details','查看账户详情')+'</summary>'+rows(Q.accountRows(picked,true))+'</details>':'')+'</div>';
@@ -121,7 +127,7 @@
     return '<div class="tablewrap"><table class="tbl resp ln-agreements"><thead><tr>'+[L('File','协议文件'),L('Type','类型'),L('File status','文件状态')].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>'+list.map(x=>'<tr><td data-label="'+L('File','协议文件')+'"><button class="btn-link" data-act="ln-agreement-download" data-v="'+E(x.file.id)+'"'+(x.available?'':' disabled')+'>'+E(x.file.name)+'</button></td><td data-label="'+L('Type','类型')+'">'+L('Credit agreement','授信协议')+' · <span class="mono">'+E(x.credit)+'</span></td><td data-label="'+L('File status','文件状态')+'">'+(x.available?L('Available','可下载'):L('Local file unavailable','本地文件不可用'))+'</td></tr>').join('')+'</tbody></table></div><p class="hint">'+L('Financing contracts are signed offline and are not held on the platform.','融资合同由双方线下签署，不在平台保管。')+'</p>';}
   function plan(){const ready=CF.L8?(CF.L8.ensure(),!!Q.data().quotes.find(q=>q.id===d().id)?.l8):d().plan!=='waiting';return '<p class="ln-small">'+(ready?L('The repayment schedule is available under Repayment information.','还款计划已可在还款信息中查看。'):L('Repayment schedule is being generated.','还款计划生成中。'))+'</p>';}
   function upload(key,title,required=false){const files=form[key]||[];return '<div class="field ln-full"><label for="ln-'+key+'">'+CF.fieldLabel(title,required)+'</label><div class="ln-upload"><input type="file" id="ln-'+key+'"'+(required?' aria-required="true"':'')+' data-ln-upload="'+key+'" accept=".pdf,.jpg,.jpeg,.png" multiple aria-describedby="ln-'+key+'-err"><p class="ln-small">PDF / JPG / PNG · '+L('Up to 5 files, 10 MB each','最多 5 个文件，单文件不超过 10 MB')+'</p>'+files.map((f,i)=>'<div class="ln-file"><span>'+E(f.name)+'</span>'+b('ln-remove',L('Remove','移除'),key+':'+i)+'</div>').join('')+'</div><span class="err-msg ln-error" role="alert" id="ln-'+key+'-err">'+E(errors[key]||'')+'</span>'+(uploadBusy?'<span role="status">'+L('Uploading…','上传中…')+'</span>':'')+'</div>';}
-  /* 一页完成：已接受条款与收款账户只读在上，填写放款记录，最后选还款收款账户。 */
+  /* 一页完成：已接受条款与资产方收款账户只读在上，填写放款记录，最后选资金方收款账户。 */
   function paymentForm(){const spec=chainSpec();
     return '<div class="ln-stack"><div class="ln-pay-head"><p class="hint">'+L('Amount to disburse','本笔放款金额')+'</p><p class="ln-amount">'+amt(d().settlement,d().ccy)+'</p></div>'
       +'<div class="ln-pay-layout"><div class="ln-pay-reference">'+card(L('Accepted commercial terms','本笔已接受商务条款'),terms())
@@ -130,20 +136,16 @@
       +(d().ccy==='USD'?upload('files',L('Transfer receipt','转账凭证'),true)
         :field('hash',L('Transaction ID *','交易标识 *'),'text','required aria-required="true" autocomplete="off"',chainOf()+L(': ','：')+tr(spec.hint))+'<div class="field"><span class="field-label">'+L('Settlement chain','结算收款链')+'</span><p class="mono">'+E(chainOf())+'</p></div>'+upload('files',L('Supplementary documents (optional)','补充材料（选填）')))
       +'<div class="field ln-full"><label for="ln-note">'+L('Note (optional)','放款备注（选填）')+'</label><textarea class="inp" id="ln-note" data-ln-field="note" maxlength="200">'+E(form.note||'')+'</textarea><span class="err-msg">'+E(errors.note||'')+'</span></div></div>')
-      +card(L('Your repayment receiving account','资金方还款收款账户'),accountChooser())+'</div></div></div>';}
+      +card(L('Funder’s receiving account','资金方收款账户'),'<p class="ln-small">'+L('For future repayments of this business.','用于接收本笔将来的还款。')+'</p>'+accountChooser())+'</div></div></div>';}
   const fee=()=>CF.note('accent','<div class="ln-fee">'+L('The amount received will be less than the financing amount (cross-border fees are borne by you). Your repayment principal remains ','到账金额会少于融资金额（跨境手续费由您承担）；您需要偿还的本金仍按融资金额 ')+amt(d().amount)+L('.',' 计算。')+'</div>');
   function draw(key){if(!can(key==='pay'?'pay':key==='confirm'?'confirm':'read'))return {title:L('Access denied','无访问权限'),html:CF.empty(L('Access denied','无访问权限'),''),foot:b('ln-back',L('Close','关闭'))};let body='',foot='';
     /* 不能提交时只说明原因，不放置置灰的提交按钮。 */
-    if(key==='pay'){body='<div class="ln-stack">'+coverage()+paymentForm()+'</div>';foot=gate()==='ok'?b('ln-pay-ask',L('Submit disbursement','提交放款'),'',true,busy||uploadBusy):'';}
-    if(key==='confirm'){body='<div class="ln-receipt-layout"><div class="ln-receipt-record ln-stack"><p class="ln-counterparty">'+L('Paid by: ','付款方：')+E(funder())+'</p>'+record(false,true)+'</div><div class="ln-receipt-account">'+card(L('Receiving account for this payment','本次收款账户'),assetAccount('confirm'))+'</div></div>'+fee()+support();foot=b('ln-confirm-ask',L('Confirm receipt','确认到账'),'',true,busy);}
+    if(key==='pay'){const a=repayPick();body='<div class="ln-stack">'+coverage()+paymentForm()+(gate()==='ok'?CF.note('',(a?'<p><b>'+L('Future repayments go to: ','将来还款打入：')+'</b>'+Q.accountName(a)+' <span class="mono">('+E(Q.accountTail(a))+')</span>'+(a.kind==='crypto'?' · '+E(a.chain):'')+'</p>':'')+'<p>'+L('The record and the selected receiving account cannot be edited or withdrawn after submission. The platform does not verify payment authenticity. No countdown starts — when the asset holder confirms is agreed between you offline.','提交后，放款记录与所选资金方收款账户不可修改、不可撤回。平台不核验付款真实性。提交不启动任何倒计时，资产方何时确认由双方线下商定。')+'</p>'):'')+'</div>';foot=gate()==='ok'?b('ln-pay-ask',busy?L('Submitting…','提交中…'):L('Submit disbursement','提交放款'),'',true,busy||uploadBusy):'';}
+    if(key==='confirm'){body='<div class="ln-receipt-layout"><div class="ln-receipt-record ln-stack"><p class="ln-counterparty">'+L('Paid by: ','付款方：')+E(funder())+'</p>'+record(false,true)+'</div><div class="ln-receipt-account">'+card(L('Asset holder’s receiving account','资产方收款账户'),assetAccount('confirm'))+'</div></div>'+fee()+CF.note('',L('Confirm only after you have checked that the funds actually arrived. The platform has not verified this payment. Confirmation cannot be undone and moves the business into repayment. If the funds have not arrived, just close this page.','请在自行核实款项实际到账后再确认。平台未核验付款；确认后不可撤销，并进入还款。尚未到账时直接关闭即可。'))+support();foot=b('ln-confirm-ask',busy?L('Confirming…','确认中…'):L('Confirm receipt','确认到账'),'',true,busy);}
     if(errors.submit)body=CF.note('red',E(errors.submit))+body;
     foot=b('ln-back',foot?L('Cancel','取消'):L('Close','关闭'),'',false,busy||uploadBusy)+foot;
     return {title:(key==='pay'?L('Record disbursement','登记放款'):L('Confirm receipt','确认到账'))+' · '+(S.role==='fund'?borrower():funder()),html:'<div class="ln-drawer ln-stack" data-view="'+key+'">'+body+'</div>',foot};
   }
-  function confirmBody(){const kind=confirm.kind,a=kind==='pay'?repayPick():null;
-    return {title:kind==='pay'?L('Submit this disbursement record?','确认提交放款记录？'):L('Confirm that funds have arrived?','确认款项已实际到账？'),html:'<div class="ln-drawer ln-confirm ln-stack"><p>'+E(S.role==='fund'?borrower():funder())+'</p><div class="ln-amount">'+amt(d().settlement,d().ccy)+'</div>'
-      +(a?rows([[L('Future repayments go to','将来还款打入'),Q.accountName(a)+' <span class="mono">('+E(Q.accountTail(a))+')</span>'+(a.kind==='crypto'?' · '+E(a.chain):'')]]):'')
-      +CF.note('',kind==='pay'?L('The record and the repayment receiving account cannot be edited or withdrawn after submission. The platform does not verify payment authenticity. No countdown starts — when the asset holder confirms is agreed between you offline.','放款记录与所选还款收款账户提交后不可修改、不可撤回。平台不核验付款真实性。提交不启动任何倒计时，资产方何时确认由双方线下商定。'):L('I have verified that the funds have actually arrived. The platform does not verify receipt. This confirmation cannot be undone and moves the business into repayment.','本人已自行核实款项实际到账；平台未核验。确认后不可撤销，并进入还款。'))+(kind==='confirm'?fee():'')+(errors.submit?CF.note('red',E(errors.submit)):'')+'</div>',foot:b('ln-confirm-back',L('Cancel','取消'),'',false,busy)+b('ln-commit',busy?L('Submitting…','提交中…'):L('Confirm','确认'),'',true,busy)};}
   function validate(){errors={};
     if(!form.paidAt||isNaN(Date.parse(form.paidAt)))errors.paidAt=L('Enter the payment time.','请填写发放时间。');
     else if(Date.parse(form.paidAt)>now())errors.paidAt=L('Payment time cannot be later than the submission time.','发放时间不得晚于提交时刻。');
@@ -152,7 +154,7 @@
     if([...(form.note||'')].length>200)errors.note=L('Use no more than 200 characters.','备注不得超过 200 字。');
     if(accountScene==='loading'||accountScene==='error')errors.repayAccount=L('Your accounts could not be read. Retry before submitting.','暂时无法读取本机构账户，请重试后再提交。');
     else if(!repayList().length)errors.repayAccount=repayKind()==='crypto'?L('Add a crypto account on '+chainOf()+' in Institution accounts first.','请先在机构账户登记 '+chainOf()+' 上的数币账户。'):L('Add a USD fiat account in Institution accounts first.','请先在机构账户登记 USD 法币账户。');
-    else if(!repayPick())errors.repayAccount=L('Select the account that will receive repayments for this business.','请选用本笔将来的还款收款账户。');
+    else if(!repayPick())errors.repayAccount=L('Select the funder’s receiving account for future repayments.','请选用资金方收款账户（用于将来收还款）。');
     else if(Q.accountMissing(repayPick()).length)errors.repayAccount=L('This account is incomplete. Complete it in Institution accounts or choose another.','该账户信息不完整，请在机构账户补齐或改选其他账户。');
     return !Object.keys(errors).length;}
   function open(key){
@@ -165,21 +167,22 @@
   function ask(kind){
     if(!can(kind)){denied();return;}
     if(kind==='pay'){if(gate()!=='ok')return;if(!validate()){focusError(Object.keys(errors)[0]==='repayAccount'?'account-select':Object.keys(errors)[0]);return;}}
-    confirmationReturn=rememberLayer();confirm={kind,drawer:S.layer.key};errors.submit='';CF.openLayer('modal','ln-confirmation');
+    /* 点击即提交，不再叠加二次确认；后果告知已在办理页内始终可见。 */
+    confirm={kind,drawer:S.layer.key};errors.submit='';commit();
   }
   async function commit(){if(busy)return;const kind=confirm?.kind,target=session();if(!kind||!can(kind)){denied();return;}busy=true;errors.submit='';CF.render();await new Promise(r=>setTimeout(r,550));if(!isCurrent(target))return;
-    if(submitFailure){busy=false;errors.submit=L('Submission failed. Your entries are preserved; please retry.','提交失败，已保留填写内容，请重试。');CF.render();return;}
+    if(submitFailure){busy=false;confirm=null;errors.submit=L('Submission failed. Your entries are preserved; please retry.','提交失败，已保留填写内容，请重试。');CF.render();return;}
     if(kind==='pay'&&commitGate==='coverage'){D.tokens.filter(t=>t.pool===d().project).forEach(t=>t.valid=false);ensure();busy=false;confirm=null;S.layer={type:'modal',key:'ln-pay'};errors.submit=L('The eligible pledge amount has fallen. No record was submitted. Ask the asset holder to add collateral.','有效质押额已下降，本次未提交记录，请资产方追加质押。');CF.render();return;}
     if(kind==='pay'&&commitGate==='unknown'){coverageRead='error';busy=false;confirm=null;S.layer={type:'modal',key:'ln-pay'};errors.submit=L('The collateral check is temporarily unavailable. No record was submitted; retry when it recovers.','暂时无法完成额度校验，本次未提交记录，请恢复后重试。');CF.render();return;}
-    /* 提交时再校验所选还款收款账户：已变更或不在本笔结算收款链上都不成立，退回重新选用。 */
-    if(kind==='pay'&&(commitGate==='accountChanged'||commitGate==='otherChain')){const changed=commitGate==='accountChanged';commitGate='normal';busy=false;confirm=null;form.repayAccount='';errors={accountLost:changed?L('The account you selected has changed. No record was submitted; select the repayment account again.','所选账户已变更，本次未提交，请重新选用还款收款账户。'):L('That account is not on this business\u2019s settlement chain ('+chainOf()+'). No record was submitted; select an account on '+chainOf()+'.','所选数币账户不在本笔结算收款链（'+chainOf()+'）上，本次未提交，请选用该链上的数币账户。')};S.layer={type:'modal',key:'ln-pay'};errorFocus='account-select';CF.render();return;}
+    /* 提交时再校验所选资金方收款账户：已变更或不在本笔结算收款链上都不成立，退回重新选用。 */
+    if(kind==='pay'&&(commitGate==='accountChanged'||commitGate==='otherChain')){const changed=commitGate==='accountChanged';commitGate='normal';busy=false;confirm=null;form.repayAccount='';errors={accountLost:changed?L('The account you selected has changed. No record was submitted; select the funder’s receiving account again.','所选账户已变更，本次未提交，请重新选用资金方收款账户。'):L('That account is not on this business\u2019s settlement chain ('+chainOf()+'). No record was submitted; select an account on '+chainOf()+'.','所选数币账户不在本笔结算收款链（'+chainOf()+'）上，本次未提交，请选用该链上的数币账户。')};S.layer={type:'modal',key:'ln-pay'};errorFocus='account-select';CF.render();return;}
     if(commitGate==='stale'){busy=false;confirm=null;S.layer=null;CF.toast(L('This entry is no longer available. Review the current business.','原入口已失效，请查看当前业务。'));CF.render();return;}
     if(!can(kind)){busy=false;confirm=null;S.layer=null;CF.toast(L('The business has changed. Review the current result.','业务状态已变化，请查看当前结果。'));CF.render();return;}
     if(kind==='pay'){if(gate()!=='ok'||!validate()){busy=false;confirm=null;S.layer={type:'modal',key:'ln-pay'};CF.render();return;}const stamp=iso(),picked=repayPick();
       d().record={id:'LN'+stamp.slice(0,10).replaceAll('-','')+String(++serial).padStart(6,'0'),at:stamp,account:Q.accountSnapshot(picked),form:{...form,paidAt:new Date(form.paidAt).toISOString(),files:[...(form.files||[])]}};
       d().state='waiting';addHistory('submit');emit('submit',['asset'],'confirm');}
     if(kind==='confirm'){d().state='confirmed';d().confirmedAt=iso();d().plan=planWaiting?'waiting':'handoff';addHistory('confirm');emit('confirm',['fund']);}
-    syncProjects();busy=false;confirm=null;drafts.delete(activeDraft);activeDraft='';form={};dirty=false;resultText=kind==='pay'?L('Disbursement submitted. Waiting for the asset holder to confirm receipt.','放款已提交，等待资产方确认到账。'):(planWaiting?L('Receipt confirmed. The repayment schedule is being generated.','到账已确认，还款计划生成中。'):L('Receipt confirmed. The business is now in repayment.','到账已确认，本笔进入还款。'));CF.openLayer('drawer','ln-detail');CF.toast(kind==='pay'?L('Record submitted. Awaiting receipt confirmation.','放款记录已提交，等待资产方确认到账。'):L('Receipt confirmed.','已确认到账。'));}
+    syncProjects();busy=false;confirm=null;drafts.delete(activeDraft);activeDraft='';form={};dirty=false;resultText='';/* 成功后结束本次办理，回到来源并刷新本笔记录与办理入口，不自动打开详情。 */closeBusiness();CF.toast(kind==='pay'?L('Record submitted. Awaiting receipt confirmation.','放款记录已提交，等待资产方确认到账。'):L('Receipt confirmed.','已确认到账。'));}
   async function addFiles(key,list){if(busy||uploadBusy||!can('pay'))return;const target=session(),chosen=[...list],existing=form[key]||[];errors[key]='';if(existing.length+chosen.length>5){errors[key]=L('A maximum of 5 files is allowed.','最多上传 5 个文件。');CF.render();return;}const valid=[];for(const f of chosen){if(!/\.(pdf|jpe?g|png)$/i.test(f.name)||!['application/pdf','image/jpeg','image/png'].includes(f.type)){errors[key]=L('Only PDF, JPG and PNG files are supported.','仅支持 PDF、JPG、PNG 文件。');continue;}if(!f.size||f.size>10*1024*1024){errors[key]=f.size?L('Each file must be 10 MB or smaller.','单文件不得超过 10 MB。'):L('The file is empty. Choose a valid file.','文件为空，请选择有效文件。');continue;}valid.push(f);}uploadBusy=true;CF.render();await new Promise(r=>setTimeout(r,350));if(!isCurrent(target))return;uploadBusy=false;if(uploadFailure){errors[key]=L('Upload failed. Existing files are preserved. Select the file to retry.','上传失败，已有文件已保留，请重新选择文件重试。');}else{form[key]=existing.concat(valid.map(f=>({name:f.name,type:f.type,url:URL.createObjectURL(f),size:f.size})));dirty=true;}CF.render();}
   async function copy(value){if(!party()){denied();return;}try{await navigator.clipboard.writeText(value);CF.toast(L('Copied.','已复制。'));}catch(_){const a=document.createElement('textarea');a.value=value;a.style.position='fixed';document.body.append(a);a.select();let ok=false;try{ok=document.execCommand('copy');}catch(_){}a.remove();CF.toast(ok?L('Copied.','已复制。'):L('Copy is unavailable. Select the visible text and copy manually.','自动复制不可用，请选中文本手动复制。'));}}
   function download(url,name){if(!url)return;if(!party()){denied();return;}const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();}
@@ -217,7 +220,7 @@
     if(value==='confirmed'){x.state='confirmed';x.confirmedAt=iso();addHistory('confirm');emit('confirm',['fund']);}
     S.role=value==='pending'?'fund':'asset';syncProjects();go(selected);}
   function notificationBody(r){const x=deals[r.deal];return '<div class="ln-stack"><h2 class="ln-heading">'+tr(eventNames[r.kind])+'</h2><p class="mono">'+E(x.request)+' · '+E(x.id)+'</p><p>'+time(r.at)+'</p>'+(r.kind==='submit'?'<p>'+L('Check the receipt yourself, then confirm in this business.','请自行核实到账后，在本笔业务中确认。')+'</p>':'')+(r.kind==='confirm'?'<p>'+L('Receipt confirmed. ','已确认到账。')+(x.plan==='waiting'?L('Repayment plan is being generated.','还款计划生成中。'):L('Handed over to repayment.','已交接还款模块。'))+'</p>':'')+b('ln-notification-go',L('View business','查看业务'),r.id,true)+'</div>';}
-  const layers={'ln-detail':detail,'ln-discard':discardBody,'ln-pay':()=>draw('pay'),'ln-confirm':()=>draw('confirm'),'ln-confirmation':confirmBody,
+  const layers={'ln-detail':detail,'ln-discard':discardBody,'ln-pay':()=>draw('pay'),'ln-confirm':()=>draw('confirm'),
     'ln-file':f=>({title:f.name,html:'<div class="ln-drawer ln-confirm">'+preview(f)+'</div>',foot:b('ln-file-back',L('Back to record','返回记录'))})};
   function preview(f){if(!f.url)return CF.empty(L('Local file unavailable','本地文件不可用'),L('The file content is not retained after this page is reloaded.','重新打开页面后，文件内容不保留。'));return f.type.startsWith('image/')?'<img class="ln-document" src="'+E(f.url)+'" alt="'+E(f.name)+'">':'<object class="ln-document" data="'+E(f.url)+'" type="application/pdf"><p>'+L('Preview is not supported in this browser. Download the original file.','此浏览器不支持预览，请下载原件。')+'</p></object>';}
   function onAct(act,v){if(act.startsWith('ln-')&&(busy||uploadBusy))return true;if(act==='ls-handoff'&&v==='funding'){ensure();const p=location.hash.match(/project\/([^?]+)/),i=deals.findIndex(x=>x.project===p?.[1]&&['pending','waiting'].includes(x.state));if(i>=0){selected=i;const kind=can('pay')?'pay':can('confirm')?'confirm':'';if(kind)open(kind);else openDetail(d().id);return true;}return false;}
@@ -230,8 +233,9 @@
     else if(act==='ln-associated-request'){if(CF.CQ.openRequest){const context=rememberLayer(),id=d().id;CF.CQ.openRequest(d().request,{selected:id,onReturn:()=>{choose(id);restoreLayer(context);}});}}
     else if(act==='ln-agreement-download'){if(!party())denied();else{const file=Q.creditFile?.(v);if(file)download(URL.createObjectURL(file),file.name);else CF.toast(L('The local file is unavailable.','本地文件不可用。'));}}
     else if(act==='ln-operate'){if(choose(v)){const kind=can('pay')?'pay':can('confirm')?'confirm':'';if(kind)open(kind);else openDetail(v);}}
-    else if(act==='ln-open')open(v);else if(act==='ln-pay-ask')ask('pay');else if(act==='ln-confirm-ask')ask('confirm');else if(act==='ln-commit')commit();else if(act==='ln-confirm-back')cancelConfirmation();else if(act==='ln-back')requestClose();
+    else if(act==='ln-open')open(v);else if(act==='ln-pay-ask')ask('pay');else if(act==='ln-confirm-ask')ask('confirm');else if(act==='ln-commit')commit();else if(act==='ln-back')requestClose();
     else if(act==='ln-copy')copy(v);
+    else if(act==='ln-reveal'){if(!party())denied();else{const id=d().id+':'+v;if(revealed.has(id))revealed.delete(id);else revealed.add(id);}}
     else if(act==='ln-remove'){const [key,i]=v.split(':');form[key].splice(+i,1);dirty=true;}
     else if(act==='ln-coverage-retry'){coverageRead='ready';CF.toast(L('Collateral check reloaded.','额度校验已重新读取。'));}
     else if(act==='ln-account-retry'){accountScene='ready';CF.toast(L('Receiving accounts reloaded.','收款账户已重新读取。'));}
@@ -312,8 +316,7 @@
     const heads=[L('Application / business','融资申请 / 业务'),L('Funder','报价机构'),L('Disbursement amount','放款金额'),L('Disbursement number','放款编号'),L('Status','状态'),L('Submitted / confirmed','提交 / 确认时间')];
     const own=x=>Q.related(Q.data().quotes.find(q=>q.id===x.id)),hidden='<span class="hint">'+L('Parties only','仅本笔双方可见')+'</span>';
     return '<div class="tablewrap"><table class="tbl resp ln-list"><thead><tr>'+heads.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+list.slice((page-1)*5,page*5).map(x=>'<tr class="ln-record-row" data-act="ln-business" data-v="'+E(x.id)+'" tabindex="0" role="button" aria-label="'+E(L('View disbursement ','查看放款业务 ')+x.id)+'">'+[E(x.request)+'<br><span class="hint mono">'+E(x.id)+'</span>',E(x.fund==='fund-b'?L('Demo Capital B','演示资金机构 B'):L('Demo Capital A','演示资金机构 A')),own(x)?amt(x.settlement,x.ccy)+(!x.record?'<br><span class="hint">'+L('Agreed amount','约定放款金额')+'</span>':''):hidden,x.record?'<span class="mono">'+E(x.record.id)+'</span>':'<span class="hint">'+L('No disbursement record submitted yet','尚未提交放款记录')+'</span>',CF.tag(['confirmed','settled'].includes(x.state)?'ok':'',label(x)),own(x)?(x.record?time(x.record.at):L('Not submitted','未提交'))+'<br><span class="hint">'+(x.confirmedAt?time(x.confirmedAt):L('Not confirmed','未确认'))+'</span>':hidden].map((cell,i)=>'<td data-label="'+heads[i]+'">'+cell+'</td>').join('')+'</tr>').join('')+'</tbody></table></div><div class="ln-pagination"><span class="hint">'+list.length+L(' businesses · 5 per page',' 笔业务 · 每页 5 条')+'</span><div class="ln-row">'+b('ln-page',L('Previous','上一页'),p.id+':'+(page-1),false,page===1)+'<span>'+page+' / '+pages+'</span>'+b('ln-page',L('Next','下一页'),p.id+':'+(page+1),false,page===pages)+'</div></div>';}
-  /* 详情按 PRD 顺序一次完整给出：放款信息、资金方还款收款账户、资产方放款收款账户、商务条款、协议文件。 */
-  /* 详情按顺序一次给全：放款信息、资金方还款收款账户、资产方放款收款账户、商务条款、协议文件；非当事资金方只见编号、报价机构与状态。 */
+    /* 详情按顺序一次给全：放款信息、资金方收款账户、资产方收款账户、商务条款、协议文件；非当事资金方只见编号、报价机构与状态。 */
   function detail(){const x=d();if(!x)return {title:L('Unavailable','业务不可用'),html:CF.empty(L('Business unavailable','业务不可用'),'')};
     const done=['confirmed','settled'].includes(x.state),mine=r=>S.role===r;
     const step=(label,state)=>'<div data-state="'+state+'"'+(state==='turn'||state==='wait'?' aria-current="step"':'')+'><b>'+label+'</b><span>'+({done:L('Done','已完成'),turn:L('Your turn','轮到您'),wait:L('Waiting for the other party','等待对方'),next:L('Not started','未开始')}[state])+'</span></div>';
@@ -325,8 +328,8 @@
     const hero='<div class="ln-detail-hero"><div><p class="hint">'+(r?L('Disbursement amount','放款金额'):L('Agreed disbursement amount','约定放款金额'))+'</p><div class="ln-amount">'+amt(x.settlement,x.ccy)+'</div></div>'+CF.tag(done?'ok':'',label(x))+'</div>'+steps;
     const body=hero+(x.state==='waiting'?pendingNote():'')
       +card(L('Disbursement information','放款信息'),info)
-      +card(L('Funder’s repayment receiving account','资金方还款收款账户'),'<p class="ln-small">'+L('For future repayments of this business.','用于接收本笔将来的还款。')+'</p>'+repayAccount())
-      +card(L('Asset holder’s receiving account','资产方放款收款账户'),'<p class="ln-small">'+L('Receives this disbursement.','用于接收本笔放款。')+'</p>'+assetAccount('detail'))
+      +card(L('Funder’s receiving account','资金方收款账户'),'<p class="ln-small">'+L('For future repayments of this business.','用于接收本笔将来的还款。')+'</p>'+repayAccount())
+      +card(L('Asset holder’s receiving account','资产方收款账户'),'<p class="ln-small">'+L('Receives this disbursement.','用于接收本笔放款。')+'</p>'+assetAccount('detail'))
       +card(L('Accepted commercial terms','本笔已接受商务条款'),terms())
       +card(L('Agreement files','协议文件'),agreements())
       +(done?plan():'')+(x.state==='waiting'?support():'');
