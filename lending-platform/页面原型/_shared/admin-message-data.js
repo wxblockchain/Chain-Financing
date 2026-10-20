@@ -57,16 +57,16 @@ CF.opsMessageDemo={
   {category:'alert',target:agreementDetail('DEMO-SERVICE',9),
    title:T('Scheduled release failed for Service agreement version 3','服务协议 第 3 版 定时生效失败'),
    summary:T('Version 3 did not take effect. Version 2 remains the effective content.','第 3 版未能生效，当前仍以第 2 版为生效内容。'),
-   body:T('The scheduled release for Service agreement version 3 did not complete.\n\nVersion 2 remains the effective agreement content. Open the agreement to check the pending version and decide how to continue.',
-          '服务协议 第 3 版 的定时发布未能执行完成。\n\n当前仍以第 2 版为生效协议内容。可进入该协议查看待生效版本并决定后续处理。'),
+   body:T('The scheduled release for Service agreement version 3 did not complete.\n\nVersion 2 remains the effective agreement content. Version 3 will try again at the next 24:00. Open the agreement to check the pending version and decide how to continue.',
+          '服务协议 第 3 版 的定时发布未能执行完成。\n\n当前仍以第 2 版为生效协议内容，第 3 版将在下一个 24:00 再次生效。可进入该协议查看待生效版本并决定后续处理。'),
    business:{name:T('Service agreement · version 3','服务协议 第 3 版')}},
 
-  /* 待生效计划撤销告警 · 全体运营 · 目标为被撤销的待生效版本 */
-  {category:'alert',target:agreementVersion('DEMO-FIRST',1,9),
-   title:T('Scheduled plan withdrawn for First release agreement version 1','首版协议 第 1 版 待生效计划已撤销'),
-   summary:T('The confirmed release plan for version 1 was withdrawn.','该版本已确认的定时生效计划被撤销。'),
-   body:T('The confirmed release plan for First release agreement version 1 was withdrawn.\n\nNo version of this agreement took effect from this plan. Open the version to review its current state.',
-          '首版协议 第 1 版 已确认的定时生效计划被撤销。\n\n本次计划未使任何版本生效。可进入该版本查看当前状态。'),
+  /* 待生效计划撤销告警 · 全体运营 · 被撤销的版本已移除，目标为该协议的协议详情 */
+  {category:'alert',target:agreementDetail('DEMO-FIRST',9),
+   title:T('Scheduled activation of First release agreement version 1 was cancelled','首版协议 第 1 版 的定时生效已撤销'),
+   summary:T('Version 1 and its file were removed before taking effect.','第 1 版及其文件已在生效前移除。'),
+   body:T('Demo operator · op***@example.invalid cancelled First release agreement version 1, which was scheduled for the next 24:00.\n\nThe version and its file were removed. No version of this agreement took effect from it. Open the agreement to review its current state.',
+          '演示运营人员 · op***@example.invalid 撤销了首版协议 第 1 版，该版本原定于下一个 24:00 生效。\n\n该版本及其文件已移除，未使任何版本生效。可进入该协议查看当前状态。'),
    business:{name:T('First release agreement · version 1','首版协议 第 1 版')}},
 
   /* 定时生效成功告警（较早）· 目标版本现已成为历史版本，按历史版本读取判权 */
