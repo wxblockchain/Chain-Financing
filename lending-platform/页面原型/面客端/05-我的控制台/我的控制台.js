@@ -109,8 +109,8 @@
    navigate('#/project/'+encodeURIComponent(p.id)+'?'+q);
  }
  function controls(k,r){const d=destinations(k,r),target=destination(k,r);
-   return (d.projects.length>1?select('targetProject',L('Associated financing project','关联融资项目'),[['',L('Select a project','请选择项目')],...d.projects.map(p=>[p.id,text(p.name)+' · '+p.id])],target?.id||''):'')+
-     b('jump',L('Go to lending marketplace','前往借贷广场'),k+'|'+r.id,true,!target)+(d.reason?'<p class="mc-small" role="status">'+E(d.reason)+'</p>':'');
+   return (d.projects.length>1?'<div class="mc-project-field"><label for="mc-targetProject">'+L('Associated financing project','关联融资项目')+'</label>'+select('targetProject',L('Associated financing project','关联融资项目'),[['',L('Select a project','请选择项目')],...d.projects.map(p=>[p.id,text(p.name)+' · '+p.id])],target?.id||'')+'</div>':'')+
+     b('jump',L('Go to lending marketplace','前往借贷广场'),k+'|'+r.id,false,!target)+(d.reason?'<p class="mc-small" role="status">'+E(d.reason)+'</p>':'');
  }
  const reloadHint=()=>L('Reload this URL in your browser to try again.','请使用浏览器刷新当前网址重试。');
  function tokenSnapshot(){
@@ -131,29 +131,38 @@
  function summary(){
    if(S.st==='loading')return CF.skelTable(2);
    const empty=S.st==='empty',tokens=empty?[]:normalized('tokens'),credits=empty?[]:normalized('credits'),sum=(rs,k)=>rs.reduce((n,r)=>n+(+r[k]||0),0),pledged=tokens.filter(r=>r.pledged),voids=pledged.filter(r=>!r.valid);
-   /* 代币与授信合并成一条统计条：同一层信息不再拆成卡片盒子。 */
+   /* One overview surface, grouped by token position and credit/financing facts. */
    let assets='';
-   if(S.role==='asset'&&(tokenError||!Array.isArray(D.tokens)))assets='<section class="card mc-assets">'+CF.empty(L('Token summary unavailable','代币统计暂不可用'),reloadHint(),'')+'</section>';
+   if(S.role==='asset'&&(tokenError||!Array.isArray(D.tokens)))assets='<div class="mc-assets">'+CF.empty(L('Token summary unavailable','代币统计暂不可用'),reloadHint(),'')+'</div>';
    let holdings='';
    if(S.role==='asset'&&!assets){
      holdings=stat(L('All tokens','全部代币'),tokens.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',money(sum(tokens,'value')))+
        stat(L('Of which pledged','其中已质押'),pledged.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',money(sum(pledged,'value'))+' · '+L('void ','其中已失效 ')+voids.length+L(' tokens',' 张')+' · '+money(sum(voids,'value'))+L(' excluded',' 不计入有效质押'));
    }
-   return assets+'<div class="stat-strip mc-summary'+(holdings?' mc-summary--asset':'')+'">'+holdings+(statsError?stat(L('Total credit','总授信额度'),'—',E(reloadHint())):stat(L('Total credit','总授信额度'),money(sum(credits,'total')),credits.length+L(' facilities',' 笔授信')))+stat(L('Financed balance','已融额度'),money(empty?0:S.role==='asset'?sum(normalized('projects'),'balance'):sum(credits,'principal')),(empty?0:normalized('repayments').filter(r=>r.status!=='settled').length)+L(' unsettled businesses',' 笔未结清业务'))+stat(L('Available credit','剩余可用授信'),money(sum(credits,'available')),L('Subject to assessment when publishing a request.','实际可融金额以发布需求时核定结果为准。'))+'</div>'+(S.role==='asset'?'<p class="mc-small mc-scope">'+L('Token values use the exchange rate at issuance. Whole-token figures do not represent your currently available holdings or financing capacity.','代币价值按各笔签发时汇率折算；整笔代币统计不代表本企业当前可用份额或可融额度。')+'</p>':'');
+   return '<section class="card mc-overview" aria-label="'+L('Company overview','企业概览')+'"><div class="mc-overview-body">'+
+     (S.role==='asset'?'<div class="mc-overview-group mc-token-group"><h2>'+L('Token overview','代币概览')+'</h2>'+(assets||'<div class="stat-strip mc-summary mc-token-metrics">'+holdings+'</div>')+'</div>':'')+
+     '<div class="mc-overview-group mc-credit-group"><h2>'+L('Credit and financing','授信与融资')+'</h2><div class="stat-strip mc-summary">'+(statsError?stat(L('Total credit','总授信额度'),'—',E(reloadHint())):stat(L('Total credit','总授信额度'),money(sum(credits,'total')),credits.length+L(' facilities',' 笔授信')))+stat(L('Financed balance','已融额度'),money(empty?0:S.role==='asset'?sum(normalized('projects'),'balance'):sum(credits,'principal')),(empty?0:normalized('repayments').filter(r=>r.status!=='settled').length)+L(' unsettled businesses',' 笔未结清业务'))+stat(L('Available credit','剩余可用授信'),money(sum(credits,'available')),L('Subject to assessment when publishing a request.','实际可融金额以发布需求时核定结果为准。'))+'</div></div></div>'+(S.role==='asset'?'<p class="mc-small mc-scope">'+L('Token values use the exchange rate at issuance. Whole-token figures do not represent your currently available holdings or financing capacity.','代币价值按各笔签发时汇率折算；整笔代币统计不代表本企业当前可用份额或可融额度。')+'</p>':'')+ '</section>';
  }
  const filterOptions={tokens:['valid','void'],projects:['review','returned','available','raising','locked','financing','closed','settled'],credits:['effective','expired'],loans:['pending','confirming','funded'],repayments:['repaying','settled','generating'],quotes:['waiting','rejected','quoteEnded','pending','confirming','repaying','settled']};
  function select(key,title,options,value){return CF.filterSelect('mc-'+key,title,options,value,'');}
- function pick(key,title,options,value){return CF.filterMenu('mc-'+key,title,options.filter(o=>o[0]!==''),picks(value));}
+ // Keep the shared menu and its events; only the visible field/value presentation changes.
+ function filterField(key,title,html,extra=''){return '<div class="mc-filter-field '+extra+'"><label id="mc-label-'+key+'" for="mc-'+key+'">'+E(title)+'</label>'+html+'</div>';}
+ function pick(key,title,options,value){
+   const chosen=picks(value),caption=!chosen.length?L('All','全部'):chosen.length===1?(options.find(o=>o[0]===chosen[0])?.[1]||chosen[0]):L(chosen.length+' selected','已选 '+chosen.length+' 项');
+   const menu=CF.filterMenu('mc-'+key,title,options.filter(o=>o[0]!==''),chosen)
+     .replace(/(<button\b[^>]*)(>)[\s\S]*?(<\/button>)/,(_,open,close,end)=>open+' title="'+E(caption)+'" aria-labelledby="mc-label-'+key+' mc-value-'+key+'"'+close+'<span id="mc-value-'+key+'">'+E(caption)+'</span>'+end);
+   return filterField(key,title,menu);
+ }
  function filters(){const v=view(),all=['',L('All','全部')];let h=pick('filter',v.tab==='tokens'?L('Token status','代币状态'):v.tab==='projects'?L('Project status','项目状态'):L('Status','状态'),[all,...filterOptions[v.tab].map(k=>[k,status(k)])],v.filter);
    const sec=v.tab==='tokens'?['pledged','unpledged']:v.tab==='projects'?['surplus','balanced','short']:v.tab==='repayments'?['yes','no']:[];
    if(sec.length)h+=pick('secondary',v.tab==='tokens'?L('Pledge status','质押状态'):v.tab==='projects'?L('Pledge sufficiency','质押情况'):L('Repayment overdue','还款是否逾期'),[all,...sec.map(k=>[k,k==='yes'?L('Yes','是'):k==='no'?L('No','否'):status(k)])],v.secondary);
    if(['tokens','projects'].includes(v.tab))h+=pick('tokenType',L('Token type','代币类型'),[['erc20-ar',text(D.type('erc20-ar').label)]],v.tokenType);
    if(v.tab==='tokens')h+=pick('project',L('Project','所属融资项目'),[all,...normalized('projects').map(p=>[p.id,text(p.name)])],v.project);
    if(v.tab==='repayments')h+=pick('periodState',L('Contains instalments','包含期次状态'),[all,...['due','repayConfirming','settled'].map(k=>[k,status(k)])],v.periodState);
-   if(['loans','repayments'].includes(v.tab))h+=CF.filterSearch('mc-query',L('Reference number','完整编号'),v.query,L('Application, business or disbursement number','融资申请 / 业务 / 放款编号'));
+   if(['loans','repayments'].includes(v.tab))h+=filterField('query',L('Reference number','完整编号'),CF.filterSearch('mc-query',L('Enter a complete reference','输入完整编号'),v.query,L('Application, business or disbursement number','融资申请 / 业务 / 放款编号')),'mc-filter-search');
    const sorts=v.tab==='tokens'?[['newest',L('Newest issuance','签发时间倒序')],['value-asc',L('Value: low to high','价值升序')],['value-desc',L('Value: high to low','价值降序')],['due-asc',L('Due date: earliest','到期日升序')],['due-desc',L('Due date: latest','到期日降序')]]:v.tab==='repayments'?[['newest',L('Newest receipt confirmation','到账确认时间倒序')],['due-asc',L('Due date: earliest','应还日升序')],['due-desc',L('Due date: latest','应还日降序')]]:v.tab==='credits'?[['available-asc',L('Available credit: low to high','可用授信升序')],['available-desc',L('Available credit: high to low','可用授信降序')]]:[['newest',L('Newest first','时间倒序')]];
-   h+=select('sort',L('Sort','排序'),sorts,v.sort);
-   return '<div class="filterbar">'+h+'<div class="fb-acts">'+(['loans','repayments'].includes(v.tab)?b('search',L('Search','查询')):'')+b('clear',L('Reset filters','清空筛选'))+'</div></div>'+(Object.keys(v).some(k=>['filter','secondary','project','query','periodState','tokenType'].includes(k)&&v[k])?'<div class="mc-filter-note" role="status">'+L('Filtered by: ','已按以下条件过滤：')+E([v.tokenType?text(D.type('erc20-ar').label):'',picks(v.filter).map(status).join(' / '),picks(v.secondary).map(k=>k==='yes'?L('Overdue','逾期'):k==='no'?L('Not overdue','未逾期'):status(k)).join(' / '),picks(v.periodState).map(status).join(' / '),v.query,picks(v.project).join(' / ')].filter(Boolean).join(' · '))+'</div>':'');
+   h+=filterField('sort',L('Sort','排序'),CF.filterSelect('mc-sort',L('Sort','排序'),sorts,v.sort,' title="'+E(sorts.find(o=>o[0]===v.sort)?.[1]||'')+'"'),'mc-filter-sort');
+   return '<div class="filterbar mc-filters">'+h+'<div class="fb-acts mc-filter-actions">'+(['loans','repayments'].includes(v.tab)?b('search',L('Search','查询'),'',true):'')+b('clear',L('Reset filters','清空筛选'))+'</div></div>'+(Object.keys(v).some(k=>['filter','secondary','project','query','periodState','tokenType'].includes(k)&&v[k])?'<div class="mc-filter-note" role="status">'+L('Filtered by: ','已按以下条件过滤：')+E([v.tokenType?text(D.type('erc20-ar').label):'',picks(v.filter).map(status).join(' / '),picks(v.secondary).map(k=>k==='yes'?L('Overdue','逾期'):k==='no'?L('Not overdue','未逾期'):status(k)).join(' / '),picks(v.periodState).map(status).join(' / '),v.query,picks(v.project).join(' / ')].filter(Boolean).join(' · '))+'</div>':'');
  }
  function columns(k){return {
    tokens:[[L('Token','代币编号'),'id'],[L('Quantity','数量'),'num'],[L('Value (USD)','价值（USD）'),'num'],[L('Token status','代币状态'),''],[L('Pledge status','质押状态'),''],[L('Receivable due','应收账款到期日'),''],[L('Project','所属项目'),'']],
@@ -271,7 +280,7 @@
    const sections=details(k,r),amount=k==='tokens'?r.value:k==='projects'?r.balance:k==='credits'?r.available:k==='repayments'?r.deal.principalBalance:r.amount;
    const metric=k==='tokens'?L('Token value','代币价值'):k==='projects'?L('Financed balance','已融资余额'):k==='credits'?L('Available credit','可用授信'):k==='repayments'?L('Outstanding principal','未偿本金'):L('Financing amount','融资金额');
    const second=k==='repayments'?stat(L('Disbursed amount','放款金额'),money(r.deal.settlement,r.q.ccy)):k==='projects'?stat(L('Eligible pledge amount','有效质押额'),money(r.n.limit)):k==='credits'?stat(L('Credit limit','授信额度'),money(r.total)):k==='tokens'?stat(L('Receivable due','应收账款到期日'),date(r.due)):stat(r.deal?.record?L('Disbursed amount','放款金额'):L('Agreed disbursement amount','约定放款金额'),money(r.settlement,r.ccy));
-   return '<div class="mc-root mc-detail"><div class="page-head"><div><h1 class="page-title" tabindex="-1">'+E(text(titles[k]))+'</h1><div class="mc-detail-meta">'+copy(k==='repayments'?r.request:r.id)+badge(k==='loans'?r.fdState:r.status)+'</div></div><div class="mc-quick-actions" aria-label="'+L('Project navigation','项目导航')+'">'+controls(k,r)+'</div></div>'+(detailState==='stale'?CF.note('warn',L('The business state changed. The previous action is no longer available.','业务状态已变化，原操作已不可用。')):'')+'<div class="stat-strip mc-detail-metrics">'+stat(metric,money(amount))+second+'</div><nav class="mc-chapters" aria-label="'+L('On this page','本页章节')+'">'+sections.map((x,i)=>'<button type="button" data-act="mc-section" data-v="'+x.id+'"'+(!i?' aria-current="location"':'')+'>'+E(x.title)+'</button>').join('')+'</nav><div class="detail-stack">'+sections.map(x=>x.html).join('')+'</div></div>';
+   return '<div class="mc-root mc-detail"><section class="card mc-detail-overview"><div class="page-head"><div><h1 class="page-title" tabindex="-1">'+E(text(titles[k]))+'</h1><div class="mc-detail-meta">'+copy(k==='repayments'?r.request:r.id)+badge(k==='loans'?r.fdState:r.status)+'</div></div><div class="mc-quick-actions" aria-label="'+L('Project navigation','项目导航')+'">'+controls(k,r)+'</div></div>'+(detailState==='stale'?CF.note('warn',L('The business state changed. The previous action is no longer available.','业务状态已变化，原操作已不可用。')):'')+'<div class="stat-strip mc-detail-metrics">'+stat(metric,money(amount))+second+'</div></section><nav class="mc-chapters" aria-label="'+L('On this page','本页章节')+'">'+sections.map((x,i)=>'<button type="button" data-act="mc-section" data-v="'+x.id+'"'+(!i?' aria-current="location"':'')+'>'+E(x.title)+'</button>').join('')+'</nav><div class="detail-stack">'+sections.map(x=>x.html).join('')+'</div></div>';
  }
  // Reading bridge: only original source readers, no action deep links.
  function sourceTarget(){
@@ -334,7 +343,7 @@
    breadcrumbRoute(id){return id==='P-MC-01'?listRoute(path().split('/')[2]||tabs()[0]).slice(1):old.breadcrumbRoute?.(id);},
    beforeRender(){old.beforeRender?.();if(lastRole!==S.role+'|'+JSON.stringify(S.party)){S.layer=null;lastRole=S.role+'|'+JSON.stringify(S.party);detailState='normal';copyValue='';sourceOpened='';}},
    // Measure before the first target scroll: a wrapped portal header is taller on narrow screens.
-   afterRender(){old.afterRender?.();queueSourceReading();requestAnimationFrame(syncChapters);const current=location.hash;if(current!==lastHash){lastHash=current;if(path().startsWith('/console')){const q=params();restoring=true;setTimeout(()=>{syncChapters();window.scrollTo(0,Math.max(0,+q.get('y')||0));const box=document.getElementById('mc-list');if(box)box.scrollTop=Math.max(0,+q.get('scroll')||0);const id=q.get('focus');if(id)document.querySelector('[data-id="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});else document.querySelector('.mc-root .page-title')?.focus({preventScroll:true});if(!q.has('y')){const k=path().split('/')[2],r=k==='repayments'&&find(k,q.get('id')),p=r&&selectedPeriod(r);const el=p?document.getElementById('mc-period-'+p.id):q.get('application')?document.getElementById('mc-application-'+q.get('application')):null;el?.scrollIntoView({block:'start'});}restoring=false;syncChapters();},0);}}
+   afterRender(){old.afterRender?.();queueSourceReading();requestAnimationFrame(()=>{syncConsoleNav();syncChapters();});const current=location.hash;if(current!==lastHash){lastHash=current;if(path().startsWith('/console')){const q=params();restoring=true;setTimeout(()=>{syncChapters();window.scrollTo(0,Math.max(0,+q.get('y')||0));const box=document.getElementById('mc-list');if(box)box.scrollTop=Math.max(0,+q.get('scroll')||0);const id=q.get('focus');if(id)document.querySelector('[data-id="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});else document.querySelector('.mc-root .page-title')?.focus({preventScroll:true});if(!q.has('y')){const k=path().split('/')[2],r=k==='repayments'&&find(k,q.get('id')),p=r&&selectedPeriod(r);const el=p?document.getElementById('mc-period-'+p.id):q.get('application')?document.getElementById('mc-application-'+q.get('application')):null;el?.scrollIntoView({block:'start'});}restoring=false;syncChapters();},0);}}
      if(focusAfter){const key=focusAfter;focusAfter='';setTimeout(()=>document.getElementById('mc-'+key)?.focus({preventScroll:true}),0);}
    },
    demo(){return (old.demo?.()||'')+reviewTools();},
@@ -383,6 +392,15 @@ if(e.target.matches('.mc-table tr[data-id]')&&['Enter',' '].includes(e.key)){e.p
  window.addEventListener('hashchange',()=>{if(!restoring&&path().startsWith('/console'))detailState='normal';});
 
  let chapterFrame=0,chapterTarget='';
+ // Keep the console entry visible when the shared header uses a horizontal nav.
+ function syncConsoleNav(){
+   if(!document.querySelector('.mc-root'))return;
+   const nav=document.querySelector('.portal-nav'),entry=nav?.querySelector('a[href="#/console"]');
+   if(!entry||nav.scrollWidth<=nav.clientWidth)return;
+   const box=nav.getBoundingClientRect(),item=entry.getBoundingClientRect();
+   if(item.right>box.right)nav.scrollLeft+=item.right-box.right;
+   else if(item.left<box.left)nav.scrollLeft+=item.left-box.left;
+ }
  function syncChapters(){
    const root=document.querySelector('.mc-detail'),nav=root?.querySelector('.mc-chapters');if(!nav)return;
    const header=document.querySelector('.portal-head');root.style.setProperty('--mc-head',Math.ceil(header?.getBoundingClientRect().height||0)+'px');root.style.setProperty('--mc-chapters-height',Math.ceil(nav.getBoundingClientRect().height)+'px');
@@ -393,7 +411,7 @@ if(e.target.matches('.mc-table tr[data-id]')&&['Enter',' '].includes(e.key)){e.p
    nav.querySelectorAll('button').forEach(b=>{if(b.dataset.v===active?.id)b.setAttribute('aria-current','location');else b.removeAttribute('aria-current');});
  }
  function scheduleChapters(){if(chapterFrame)return;chapterFrame=requestAnimationFrame(()=>{chapterFrame=0;syncChapters();});}
- window.addEventListener('scroll',scheduleChapters,{passive:true});window.addEventListener('resize',()=>{chapterTarget='';scheduleChapters();});
+ window.addEventListener('scroll',scheduleChapters,{passive:true});window.addEventListener('resize',()=>{chapterTarget='';syncConsoleNav();scheduleChapters();});
  window.addEventListener('wheel',()=>{chapterTarget='';},{passive:true});window.addEventListener('touchmove',()=>{chapterTarget='';},{passive:true});
  window.addEventListener('pointerdown',e=>{if(e.target===document.documentElement||e.target===document.body)chapterTarget='';});
  window.addEventListener('keydown',e=>{if(['PageDown','PageUp','ArrowDown','ArrowUp','Home','End',' '].includes(e.key)&&!e.target.closest('.mc-chapters'))chapterTarget='';});
