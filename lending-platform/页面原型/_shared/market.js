@@ -150,6 +150,8 @@
      option can carry its currency or network icon (<option data-icons="USDT"> / "ETH"). */
   let refocus='';
   const iconsOf=o=>(o.dataset.icons||'').split(',').map(c=>c.trim().toUpperCase()).filter(Boolean).map(coin).join('');
+  const optionText=o=>'<span class="mk-iselect-text"><span class="mk-iselect-label">'+E(o.dataset.label||o.textContent)+'</span>'+(o.dataset.detail?'<span class="mk-iselect-detail">'+E(o.dataset.detail)+'</span>':'')+(o.dataset.reason?'<span class="mk-iselect-reason">'+E(o.dataset.reason)+'</span>':'')+'</span>';
+  const optionIcons=o=>{const icons=iconsOf(o);return icons?'<span class="mk-iselect-icons" aria-hidden="true">'+icons+'</span>':'';};
   function enhanceIconSelects(root){
     root.querySelectorAll('select[data-icon-select]').forEach(sel=>{
       if(!sel.id)return;
@@ -157,21 +159,22 @@
       if(!wrap){wrap=document.createElement('div');wrap.className='mk-iselect';sel.replaceWith(wrap);wrap.append(sel);}
       sel.classList.add('mk-iselect-native');sel.tabIndex=-1;sel.setAttribute('aria-hidden','true');
       const opts=[...sel.options],cur=sel.options[sel.selectedIndex];
-      const sig=JSON.stringify([sel.value,sel.disabled,CF.S.lang,opts.map(o=>[o.value,o.textContent,o.disabled,o.dataset.icons||''])]);
+      const sig=JSON.stringify([sel.value,sel.disabled,CF.S.lang,opts.map(o=>[o.value,o.textContent,o.disabled,o.dataset.icons||'',o.dataset.label||'',o.dataset.detail||'',o.dataset.reason||''])]);
       let btn=wrap.querySelector('.mk-iselect-btn');
       if(wrap.dataset.sig!==sig||!btn){
         wrap.dataset.sig=sig;wrap.querySelector('.mk-iselect-btn')?.remove();wrap.querySelector('.mk-iselect-list')?.remove();
-        const label=document.querySelector('label[for="'+CSS.escape(sel.id)+'"]');
+        const label=document.querySelector('label[for="'+CSS.escape(sel.id)+'"],label[for="'+CSS.escape(sel.id)+'-btn"]');
         if(label){label.id=label.id||sel.id+'-label';label.htmlFor=sel.id+'-btn';}
         btn=document.createElement('button');btn.type='button';btn.className='inp mk-iselect-btn';btn.id=sel.id+'-btn';
         btn.setAttribute('role','combobox');btn.setAttribute('aria-haspopup','listbox');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-controls',sel.id+'-list');
         if(label)btn.setAttribute('aria-labelledby',label.id+' '+btn.id);
         btn.disabled=sel.disabled;
         const filled=cur&&cur.value!=='';
-        btn.innerHTML='<span class="mk-iselect-value">'+(filled?iconsOf(cur):'')+'<span'+(filled?'':' class="mk-iselect-placeholder"')+'>'+E(cur?cur.textContent:'')+'</span></span><span class="mk-iselect-caret" aria-hidden="true"></span>';
+        btn.classList.toggle('mk-iselect-rich',!!(filled&&cur.dataset.detail));
+        btn.innerHTML='<span class="mk-iselect-value">'+(filled?optionIcons(cur)+optionText(cur):'<span class="mk-iselect-placeholder">'+E(cur?cur.textContent:'')+'</span>')+'</span><span class="mk-iselect-caret" aria-hidden="true"></span>';
         const list=document.createElement('ul');list.className='mk-iselect-list';list.id=sel.id+'-list';list.setAttribute('role','listbox');list.hidden=true;
         if(label)list.setAttribute('aria-labelledby',label.id);
-        list.innerHTML=opts.map((o,i)=>o.value===''?'':'<li role="option" id="'+sel.id+'-opt-'+i+'" data-index="'+i+'" aria-selected="'+(i===sel.selectedIndex)+'"'+(o.disabled?' aria-disabled="true"':'')+'>'+iconsOf(o)+'<span>'+E(o.textContent)+'</span></li>').join('');
+        list.innerHTML=opts.map((o,i)=>o.value===''?'':'<li role="option" id="'+sel.id+'-opt-'+i+'" data-index="'+i+'" aria-selected="'+(i===sel.selectedIndex)+'"'+(o.disabled?' aria-disabled="true"':'')+'>'+optionIcons(o)+optionText(o)+'<span class="mk-iselect-check" aria-hidden="true">'+(i===sel.selectedIndex?'✓':'')+'</span></li>').join('');
         wrap.append(btn,list);
       }
       ['aria-invalid','aria-describedby','aria-required'].forEach(a=>sel.hasAttribute(a)?btn.setAttribute(a,sel.getAttribute(a)):btn.removeAttribute(a));
@@ -180,16 +183,17 @@
   }
   const openList=()=>document.querySelector('.mk-iselect-btn[aria-expanded="true"]');
   function setActive(btn,li){const list=document.getElementById(btn.getAttribute('aria-controls'));list.querySelectorAll('[data-active]').forEach(x=>x.removeAttribute('data-active'));
-    if(li){li.dataset.active='true';btn.setAttribute('aria-activedescendant',li.id);li.scrollIntoView({block:'nearest'});}else btn.removeAttribute('aria-activedescendant');}
+    if(li){li.dataset.active='true';btn.setAttribute('aria-activedescendant',li.id);const row=li.getBoundingClientRect(),box=list.getBoundingClientRect();if(row.top<box.top)list.scrollTop-=box.top-row.top;else if(row.bottom>box.bottom)list.scrollTop+=row.bottom-box.bottom;}else btn.removeAttribute('aria-activedescendant');}
   function toggle(btn,open){const list=document.getElementById(btn.getAttribute('aria-controls'));if(!list)return;
     if(open){const other=openList();if(other&&other!==btn)toggle(other,false);
-      list.hidden=false;btn.setAttribute('aria-expanded','true');const wrap=btn.closest('.mk-iselect');wrap.classList.remove('up');
+      list.hidden=false;list.style.maxHeight='';btn.setAttribute('aria-expanded','true');const wrap=btn.closest('.mk-iselect');wrap.classList.remove('up');
       const scroller=btn.closest('.modal-b,.drawer-b')||document.documentElement,box=scroller.getBoundingClientRect(),r=btn.getBoundingClientRect();
-      if(r.bottom+list.offsetHeight+8>Math.min(box.bottom,innerHeight)&&r.top-list.offsetHeight-8>Math.max(box.top,0))wrap.classList.add('up');
+      const below=Math.max(0,Math.min(box.bottom,innerHeight)-r.bottom-8),above=Math.max(0,r.top-Math.max(box.top,0)-8),up=below<list.offsetHeight&&above>below;
+      wrap.classList.toggle('up',up);list.style.maxHeight=Math.min(264,up?above:below)+'px';
       setActive(btn,list.querySelector('[aria-selected="true"]:not([aria-disabled])')||list.querySelector('li:not([aria-disabled])'));}
     else{list.hidden=true;btn.setAttribute('aria-expanded','false');setActive(btn,null);}}
   function choose(btn,li){if(!li||li.hasAttribute('aria-disabled'))return;const sel=btn.closest('.mk-iselect').querySelector('select');
-    toggle(btn,false);if(sel.selectedIndex===+li.dataset.index)return;sel.selectedIndex=+li.dataset.index;refocus=sel.id;
+    toggle(btn,false);btn.focus({preventScroll:true});if(sel.selectedIndex===+li.dataset.index)return;sel.selectedIndex=+li.dataset.index;refocus=sel.id;
     sel.dispatchEvent(new Event('input',{bubbles:true}));sel.dispatchEvent(new Event('change',{bubbles:true}));schedule();}
   window.addEventListener('click',e=>{
     const btn=e.target.closest('.mk-iselect-btn'),li=e.target.closest('.mk-iselect-list li');
