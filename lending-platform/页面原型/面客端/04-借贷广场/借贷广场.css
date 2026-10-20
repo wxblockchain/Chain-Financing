@@ -94,6 +94,12 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-detail-head .hint{margin-top:0}
 .ls-detail-tags{margin-top:var(--sp-3)}
 .ls-detail-main{min-width:0}
+/* Project record controls: quiet reset and low-frequency close keep the task primary. */
+.ls-detail .mk-project-global-actions .btn{border-color:transparent;background:transparent;font-weight:500}
+.ls-detail .mk-project-global-actions .btn:hover:not(:disabled){border-color:var(--danger-border);background:var(--danger-bg)}
+.ls-detail .ls-token-filters [data-act=ls-tf-reset]{border-color:transparent;background:transparent;color:var(--muted);font-weight:500}
+.ls-detail .ls-token-filters [data-act=ls-tf-reset]:hover{color:var(--text);background:var(--card-hover)}
+
 .ls-detail-main .ls-table{table-layout:fixed}
 .ls-detail-main .ls-table .btn{white-space:normal;padding:var(--sp-2);height:auto;min-height:44px}
 .ls-workspace{grid-template-columns:minmax(0,1fr) 360px;align-items:start}
