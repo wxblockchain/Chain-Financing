@@ -19,7 +19,8 @@
   const fresh=db.consoleExamples!==15;
   D.tokens.filter(t=>t.owner==='entity-demo-a'&&!t.issued).forEach((t,i)=>{t.issued=iso(now-(i+3)*DAY);});
   let occupied=0,changed=false;
-  const samples=[['pending','USD'],['waiting','USD'],['confirmed','USD'],['confirmed','USDT','TRON'],['rejected','USD'],['confirmed','USD'],['confirmed','USD'],['confirmed','USDC','ETH']];
+  /* 9～12 号是数币的待放款 / 待放款确认样例（ETH、TRON 各一套），供演示条按结算方式切换。 */
+  const samples=[['pending','USD'],['waiting','USD'],['confirmed','USD'],['confirmed','USDT','TRON'],['rejected','USD'],['confirmed','USD'],['confirmed','USD'],['confirmed','USDC','ETH'],['pending','USDT','ETH'],['pending','USDT','TRON'],['waiting','USDC','ETH'],['waiting','USDT','TRON']];
   samples.forEach(([state,ccy,chain],i)=>{
     const id='FP-MC-'+String(i+1).padStart(3,'0'),business='FB-MC-'+String(i+1).padStart(4,'0'),request=id+'-01';
     if(D.project(id)&&db.quotes.some(q=>q.id===business))return;
@@ -28,8 +29,8 @@
     /* 项目期限取创建日 + 12 个月（D-LS-66 上限，含端点）；到期即还款日。 */
     const end=Date.parse(D.addMonths(iso(start-DAY).slice(0,10),12)+'T12:00:00.000Z');
     /* 项目质押率由资产方创建时自填并终身锁定，演示数据刻意不统一成 80%。 */
-    const rate=[0.8,0.75,0.8,0.7,0.8,0.8,0.8,0.8][i];
-    const p={id,name:[['Trade receivables','Export settlement','Quarterly working capital','Cross-border inventory','Completed negotiation','Confirmed receipt','Completed financing','Digital settlement financing'][i],['贸易应收账款','出口结算融资','季度营运资金','跨境备货融资','历史协商项目','到账待生成计划','历史结清融资','数币结算融资'][i]],owner:'entity-demo-a',kind:'erc20-ar',rate,term:12,settle:[ccy],repay:D.REPAY,spv:D.SPV,contract:'0x'+String(i+1).padStart(40,'0'),state:state==='rejected'?'raising':'financing',balance:confirmed?amount:0,published:iso(start),created:iso(start-DAY),expires:iso(end),demands:[{id:request,amount,state:confirmed?'funded':state==='rejected'?'open':'funding',at:iso(start),tenorDays:370,rate:'6.40',institution:['Demo Capital A','演示资金机构 A'],quoteAt:iso(start)}]};
+    const rate=[0.8,0.75,0.8,0.7,0.8,0.8,0.8,0.8,0.8,0.75,0.8,0.7][i];
+    const p={id,name:[['Trade receivables','Export settlement','Quarterly working capital','Cross-border inventory','Completed negotiation','Confirmed receipt','Completed financing','Digital settlement financing','Stablecoin supplier payments','TRON trade settlement','Stablecoin export financing','TRON inventory financing'][i],['贸易应收账款','出口结算融资','季度营运资金','跨境备货融资','历史协商项目','到账待生成计划','历史结清融资','数币结算融资','稳定币供应商付款','TRON 贸易结算','稳定币出口融资','TRON 备货融资'][i]],owner:'entity-demo-a',kind:'erc20-ar',rate,term:12,settle:[ccy],repay:D.REPAY,spv:D.SPV,contract:'0x'+String(i+1).padStart(40,'0'),state:state==='rejected'?'raising':'financing',balance:confirmed?amount:0,published:iso(start),created:iso(start-DAY),expires:iso(end),demands:[{id:request,amount,state:confirmed?'funded':state==='rejected'?'open':'funding',at:iso(start),tenorDays:370,rate:'6.40',institution:['Demo Capital A','演示资金机构 A'],quoteAt:iso(start)}]};
     D.projects.push(p);
     if(confirmed)occupied+=amount;
     for(let j=1;j<=3;j++)if(!D.token('TK-MC-'+(i+1)+'-'+j))D.tokens.push({id:'TK-MC-'+(i+1)+'-'+j,owner:p.owner,kind:'erc20-ar',units:1,symbol:'AR-DEMO',value:150000,valid:true,pool:id,pledge:'pledged',buyer:['Demo Buyer '+j,'演示买方 '+j],due:iso(end+30*DAY).slice(0,10),from:iso(start-DAY).slice(0,10),issued:iso(start-DAY)});
@@ -46,7 +47,9 @@
   });
   /* 已确认到账的演示业务占用同一条授信；额度随占用同步放宽，避免出现已用额超过总额的假数据。 */
   const own=db.credits.find(c=>c.owner==='entity-demo-a'&&c.fund==='fund-a');
-  if(own&&fresh){own.principal+=occupied;own.total=Math.max(own.total,own.principal+1300000);}
+  if(own&&fresh)own.principal+=occupied;
+  /* 待放款 / 待放款确认样例同样占用在途报价金额；总额始终留出余量，不出现可用授信为负的假数据。 */
+  if(own&&(fresh||changed)){const fly=db.quotes.filter(q=>q.owner===own.owner&&q.fund===own.fund&&['waiting','funding'].includes(q.state)).reduce((n,q)=>n+q.amount,0);own.total=Math.max(own.total,own.principal+fly+1000000);}
   if(!changed&&!fresh)return;
   /* 新增项目的逐笔质押审核结论按“已通过”补齐，否则有效质押额要等下一次载入才成立。 */
   D.normalize();D.save();

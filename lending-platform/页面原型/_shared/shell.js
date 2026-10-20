@@ -869,10 +869,19 @@
       return '<button type="button" class="demo-chip quiet" id="review-f-' + esc(state.id) + '" data-review-feedback="' + esc(state.id) + '"' +
         ' aria-pressed="' + !!on + '"' + (S.layer ? ' disabled' : '') + '>' + esc(reviewText(state.label)) + '</button>';
     });
+    /* 可选的“同一阶段的另一种取值”（如结算方式）：页面自行登记 variants，未登记的页面不出现这一组。 */
+    var variant = typeof config.variants === 'function' ? config.variants() : config.variants;
+    var variantChips = variant && variant.options && variant.options.length ? variant.options.map(function (o) {
+      return '<button type="button" class="demo-chip" id="review-v-' + esc(o.id) + '" data-review-variant="' + esc(o.id) + '"' +
+        ' aria-pressed="' + !!o.current + '"' + (S.layer || o.available === false ? ' disabled' : '') +
+        (o.description ? ' title="' + esc(reviewText(o.description)) + '"' : '') + '>' + esc(reviewText(o.label)) +
+        (o.note ? '<small>' + esc(reviewText(o.note)) + '</small>' : '') + '</button>';
+    }) : [];
     var bizAll = sceneChips.concat(businessChips);
     return '<div class="dock-row" role="group" aria-label="' + L('Page state', '本页状态') + '"><span class="dock-label">' + L('Page state', '本页状态') + '</span>' +
       '<div class="dock-chips">' +
       (bizAll.length ? '<span class="dock-group-label">' + L('Business', '业务') + '</span>' + bizAll.join('') + '<span class="dock-sep" aria-hidden="true"></span>' : '') +
+      (variantChips.length ? '<span class="dock-group-label">' + esc(reviewText(variant.label)) + '</span>' + variantChips.join('') + '<span class="dock-sep" aria-hidden="true"></span>' : '') +
       (feedbackChips.length ? '<span class="dock-group-label">' + L('Display', '显示') + '</span>' + feedbackChips.join('') : '') +
       '</div></div>';
   }
@@ -1003,6 +1012,16 @@
     if (perspective) {
       event.preventDefault(); event.stopImmediatePropagation();
       if (!perspective.disabled) reviewPerspectiveGo(perspective.dataset.reviewPerspective);
+      return;
+    }
+    var variantBtn = event.target.closest('[data-review-variant]');
+    if (variantBtn) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      var vconfig = reviewPages[reviewCurrent()], vset = vconfig && (typeof vconfig.variants === 'function' ? vconfig.variants() : vconfig.variants);
+      if (!variantBtn.disabled && vset && vset.pick) {
+        var vid = variantBtn.id, go = function () { vset.pick(variantBtn.dataset.reviewVariant); render(); queueMicrotask(function () { decorateReview(); $(vid)?.focus({preventScroll:true}); }); };
+        if (vconfig.beforeChange) vconfig.beforeChange(go); else go();
+      }
       return;
     }
     var feedback = event.target.closest('[data-review-feedback]');
