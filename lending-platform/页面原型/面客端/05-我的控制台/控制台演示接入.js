@@ -14,23 +14,30 @@
      样例逐笔补齐：项目或报价任一缺失（演示条重置、流程演示重新播种、旧本地存档）都按原样例恢复，已存在的不动。 */
   /* 法币放款凭证没有真实文件，标记为演示文件，由放款模块在打开时生成演示 PDF。 */
   const demoReceipt=()=>[{name:'demonstration-transfer-receipt.pdf',type:'application/pdf',demo:true}];
+  /* 授信占用额与逐笔未偿本金同源：演示授信的占用额取本授信下已到账、未结清业务的未偿本金合计，使用记录与汇总一致。 */
+  function reconcile(){
+    const own=Q.data().credits.find(c=>c.owner==='entity-demo-a'&&c.fund==='fund-a');if(!own)return false;
+    const v=Math.round(Q.data().quotes.filter(q=>q.owner===own.owner&&q.fund===own.fund&&q.l7?.state==='confirmed').reduce((n,q)=>n+(+q.l7.principalBalance||0),0)*100)/100;
+    if(own.principal===v)return false;own.principal=v;return true;
+  }
   function restore(){
   db=Q.data();now=D.now();
-  const fresh=db.consoleExamples!==15;
+  const fresh=db.consoleExamples!==16;
   D.tokens.filter(t=>t.owner==='entity-demo-a'&&!t.issued).forEach((t,i)=>{t.issued=iso(now-(i+3)*DAY);});
   let occupied=0,changed=false;
-  /* 9～12 号是数币的待放款 / 待放款确认样例（ETH、TRON 各一套），供演示条按结算方式切换。 */
-  const samples=[['pending','USD'],['waiting','USD'],['confirmed','USD'],['confirmed','USDT','TRON'],['rejected','USD'],['confirmed','USD'],['confirmed','USD'],['confirmed','USDC','ETH'],['pending','USDT','ETH'],['pending','USDT','TRON'],['waiting','USDC','ETH'],['waiting','USDT','TRON']];
+  /* 9～12 号是数币的待放款 / 待放款确认样例（ETH、TRON 各一套），供演示条按结算方式切换。
+     13 号首期已到应还日且未提交，用于资产方“还款”待办与已逾期排序。 */
+  const samples=[['pending','USD'],['waiting','USD'],['confirmed','USD'],['confirmed','USDT','TRON'],['rejected','USD'],['confirmed','USD'],['confirmed','USD'],['confirmed','USDC','ETH'],['pending','USDT','ETH'],['pending','USDT','TRON'],['waiting','USDC','ETH'],['waiting','USDT','TRON'],['confirmed','USD']];
   samples.forEach(([state,ccy,chain],i)=>{
     const id='FP-MC-'+String(i+1).padStart(3,'0'),business='FB-MC-'+String(i+1).padStart(4,'0'),request=id+'-01';
     if(D.project(id)&&db.quotes.some(q=>q.id===business))return;
     changed=true;const old=D.project(id);if(old)D.projects.splice(D.projects.indexOf(old),1);
-    const confirmed=state==='confirmed',amount=240000,start=now-(i===2?280:i===6?500:confirmed?92:state==='waiting'?8:2)*DAY;
+    const confirmed=state==='confirmed',amount=240000,start=now-(i===2?280:i===6?500:i===12?95:confirmed?92:state==='waiting'?8:2)*DAY;
     /* 项目期限取创建日 + 12 个月（D-LS-66 上限，含端点）；到期即还款日。 */
     const end=Date.parse(D.addMonths(iso(start-DAY).slice(0,10),12)+'T12:00:00.000Z');
     /* 项目质押率由资产方创建时自填并终身锁定，演示数据刻意不统一成 80%。 */
-    const rate=[0.8,0.75,0.8,0.7,0.8,0.8,0.8,0.8,0.8,0.75,0.8,0.7][i];
-    const p={id,name:[['Trade receivables','Export settlement','Quarterly working capital','Cross-border inventory','Completed negotiation','Confirmed receipt','Completed financing','Digital settlement financing','Stablecoin supplier payments','TRON trade settlement','Stablecoin export financing','TRON inventory financing'][i],['贸易应收账款','出口结算融资','季度营运资金','跨境备货融资','历史协商项目','到账待生成计划','历史结清融资','数币结算融资','稳定币供应商付款','TRON 贸易结算','稳定币出口融资','TRON 备货融资'][i]],owner:'entity-demo-a',kind:'erc20-ar',rate,term:12,settle:[ccy],repay:D.REPAY,spv:D.SPV,contract:'0x'+String(i+1).padStart(40,'0'),state:state==='rejected'?'raising':'financing',balance:confirmed?amount:0,published:iso(start),created:iso(start-DAY),expires:iso(end),demands:[{id:request,amount,state:confirmed?'funded':state==='rejected'?'open':'funding',at:iso(start),tenorDays:370,rate:'6.40',institution:['Demo Capital A','演示资金机构 A'],quoteAt:iso(start)}]};
+    const rate=[0.8,0.75,0.8,0.7,0.8,0.8,0.8,0.8,0.8,0.75,0.8,0.7,0.8][i];
+    const p={id,name:[['Trade receivables','Export settlement','Quarterly working capital','Cross-border inventory','Completed negotiation','Confirmed receipt','Completed financing','Digital settlement financing','Stablecoin supplier payments','TRON trade settlement','Stablecoin export financing','TRON inventory financing','Coastal freight receivables'][i],['贸易应收账款','出口结算融资','季度营运资金','跨境备货融资','历史协商项目','到账待生成计划','历史结清融资','数币结算融资','稳定币供应商付款','TRON 贸易结算','稳定币出口融资','TRON 备货融资','沿海运费应收'][i]],owner:'entity-demo-a',kind:'erc20-ar',rate,term:12,settle:[ccy],repay:D.REPAY,spv:D.SPV,contract:'0x'+String(i+1).padStart(40,'0'),state:state==='rejected'?'raising':'financing',balance:confirmed?amount:0,published:iso(start),created:iso(start-DAY),expires:iso(end),demands:[{id:request,amount,state:confirmed?'funded':state==='rejected'?'open':'funding',at:iso(start),tenorDays:370,rate:'6.40',institution:['Demo Capital A','演示资金机构 A'],quoteAt:iso(start)}]};
     D.projects.push(p);
     if(confirmed)occupied+=amount;
     for(let j=1;j<=3;j++)if(!D.token('TK-MC-'+(i+1)+'-'+j))D.tokens.push({id:'TK-MC-'+(i+1)+'-'+j,owner:p.owner,kind:'erc20-ar',units:1,symbol:'AR-DEMO',value:150000,valid:true,pool:id,pledge:'pledged',buyer:['Demo Buyer '+j,'演示买方 '+j],due:iso(end+30*DAY).slice(0,10),from:iso(start-DAY).slice(0,10),issued:iso(start-DAY)});
@@ -50,17 +57,17 @@
   if(own&&fresh)own.principal+=occupied;
   /* 待放款 / 待放款确认样例同样占用在途报价金额；总额始终留出余量，不出现可用授信为负的假数据。 */
   if(own&&(fresh||changed)){const fly=db.quotes.filter(q=>q.owner===own.owner&&q.fund===own.fund&&['waiting','funding'].includes(q.state)).reduce((n,q)=>n+q.amount,0);own.total=Math.max(own.total,own.principal+fly+1000000);}
-  if(!changed&&!fresh)return;
+  if(!changed&&!fresh){if(reconcile())Q.save();return;}
   /* 新增项目的逐笔质押审核结论按“已通过”补齐，否则有效质押额要等下一次载入才成立。 */
   D.normalize();D.save();
-  db.consoleExamples=15;delete db.consolePeriods;Q.save();
+  db.consoleExamples=16;delete db.consolePeriods;reconcile();Q.save();
   }
   restore();
   /* 演示条与流程演示会整体重新播种借贷数据；播种后立即补回这些样例，不必刷新页面。 */
   const seed=D.seed;D.seed=()=>{seed();restore();CF.MCSeedPeriods?.();};
   CF.MCRestore=restore;
   CF.MCSeedPeriods=function(){
-    db=Q.data();now=D.now();if(db.consolePeriods===15)return;
+    db=Q.data();now=D.now();if(db.consolePeriods===16){if(reconcile())Q.save();return;}
     CF.L8.ensure();
     const q=db.quotes.find(q=>q.id==='FB-MC-0003');
     q?.l8?.periods.slice(0,2).forEach((p,i)=>{const at=now-(i?1:9)*DAY;p.state='pending';p.record={id:'RM-MC-00'+(i+1),paidAt:iso(at-H),at:iso(at),overdue:Math.max(0,Math.floor((at-Date.parse(p.due))/DAY)),confirmedAt:null,by:'Demo employee A · Demo Asset Company A',note:'',hash:txFor(q.l7.record.account),files:[],account:q.l7.record.account};});
@@ -72,7 +79,7 @@
     if(ep&&ep.state==='due'){const at=now-3*H;ep.state='pending';ep.record={id:'RM-MC-ETH-1',paidAt:iso(at-H),at:iso(at),overdue:Math.max(0,Math.floor((at-Date.parse(ep.due))/DAY)),confirmedAt:null,by:'Demo employee A · Demo Asset Company A',note:'',hash:txFor(eth.l7.record.account),files:[],account:eth.l7.record.account};}
     const settled=db.quotes.find(q=>q.id==='FB-MC-0007');
     if(settled?.l8){settled.l8.periods.forEach((p,i)=>{p.state='settled';p.record={id:'RM-MC-SETTLED-'+i,paidAt:iso(Date.parse(p.due)),at:iso(Date.parse(p.due)),confirmedAt:iso(Date.parse(p.due)+H),overdue:0,hash:txFor(settled.l7.record.account),files:[],account:settled.l7.record.account};});settled.l8.settledAt=settled.l8.periods.at(-1).record.confirmedAt;settled.l7.state='settled';settled.l7.principalBalance=settled.l7.creditUsed=0;const project=D.project(settled.project);project.balance=0;project.state='settled';}
-    db.consolePeriods=15;Q.save();
+    db.consolePeriods=16;reconcile();Q.save();
   };
 })(window.CF);
 
