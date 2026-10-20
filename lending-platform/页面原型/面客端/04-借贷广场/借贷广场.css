@@ -241,20 +241,16 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-account-off{color:var(--danger);font-size:var(--fs-12);overflow-wrap:anywhere}
 .cq-account-detail{margin-top:var(--sp-3)}
 .cq-account-detail[open]{padding:var(--sp-3) var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
-.cq-accept-confirm:not(:empty){margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--border)}
 #cq-summary .cq-dl{grid-template-columns:repeat(3,minmax(0,1fr))}
 .cq-request-detail .cq-dl{grid-template-columns:repeat(2,minmax(0,1fr))}
 .cq-flow[data-cq-stage=quote]>.cq-section:first-child .cq-dl{grid-template-columns:repeat(3,minmax(0,1fr))}
 .cq-quote-history .is-selected td{background:var(--accent-soft)}
 .cq-quote-history td.mono{white-space:nowrap}
 .cq-account-detail .cq-dl{margin:0}
-.cq-copy-fallback{margin-top:var(--sp-4);padding:var(--sp-4);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
-.cq-copy-fallback label{display:block;margin-bottom:var(--sp-3)}
-.cq-copy-fallback .btn{margin-top:var(--sp-3)}
 .cq-check:has(#cq-error){flex-wrap:wrap}.cq-check #cq-error{flex-basis:100%}
 .modal:has(.cq-flow) .modal-h[tabindex="-1"]:focus{outline:none}
 .cq-files{list-style:none;padding:0}.cq-files li{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-3) 0;border-bottom:1px solid var(--border)}
-.cq-files span{overflow-wrap:anywhere;min-width:0}.cq-copy{height:400px}
+.cq-files span{overflow-wrap:anywhere;min-width:0}
 .cq-flow{color:var(--text)}.cq-flow .note{margin-top:var(--sp-4)}
 .cq-note-content{flex:1;min-width:0;overflow-wrap:anywhere}
 .cq-flow textarea{height:120px;resize:vertical}.cq-flow .inp{min-width:0;width:100%}
@@ -318,7 +314,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-discard p{margin:var(--sp-2) 0 var(--sp-3)}
 .cq-flow .field .hint{margin:var(--sp-2) 0 0}
 @media(max-width:600px){.modal:has(.cq-flow) .modal-f:has(.btn:nth-child(3)) .btn{flex:1 1 calc(50% - var(--sp-2))}}
-@media print{body.cq-printing .cq-copy-fallback{display:none}}
 .cq-flow [aria-invalid=true]{outline:1px solid var(--danger);outline-offset:1px}
 @media(max-width:600px){.cq-agreement-files li{align-items:stretch;flex-direction:column}.cq-file-actions .btn{min-height:44px}.cq-upload-head{align-items:flex-start}}
 /* Stage hooks change presentation only; the business flow remains in L6. */
@@ -333,15 +328,11 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .modal:has(.cq-flow[data-cq-stage=respond]) .modal-f [data-act=cq-reject]{margin-right:auto;border-color:transparent;background:transparent;color:var(--danger)}
 .modal:has(.cq-flow[data-cq-stage]) .modal-f .btn:not(.primary):hover{background:var(--card-hover);color:var(--text)}
 .modal:has(.cq-flow[data-cq-stage=respond]) .modal-f [data-act=cq-reject]:hover{color:var(--danger);background:var(--danger-bg)}
-.cq-accept-confirm:not(:empty){padding:var(--sp-4);background:var(--accent-soft);border:1px solid var(--accent-border);border-radius:var(--radius-sm)}
-.cq-accept-confirm .cq-check{padding:0;align-items:center;font-size:var(--ui-field-value)}
-.cq-accept-confirm .cq-check input{margin:0}
 .cq-credit-summary+.cq-credit-summary{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--row-line)}
 .cq-credit-summary>b{font-weight:500}
 @media(max-width:768px){.cq-grid{grid-template-columns:1fr}.cq-dl,#cq-summary .cq-dl,.cq-request-detail .cq-dl,.cq-flow[data-cq-stage=quote]>.cq-section:first-child .cq-dl{grid-template-columns:repeat(2,minmax(0,1fr))}.cq-response-head{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.cq-response-head>.cq-response-pledge{grid-column:1/-1;flex-direction:row;align-items:center;gap:var(--sp-3)}.modal:has(.cq-flow) .modal-f .btn{flex:1}}
-@media(max-width:560px){.cq-dl,#cq-summary .cq-dl,.cq-request-detail .cq-dl,.cq-flow[data-cq-stage=quote]>.cq-section:first-child .cq-dl{grid-template-columns:minmax(0,1fr)}.cq-response-head{grid-template-columns:minmax(0,1fr);padding:var(--sp-4);gap:var(--sp-4)}.cq-response-pledge{grid-column:auto}.cq-response-pricing strong{font-size:var(--fs-19)}.cq-accept-confirm:not(:empty){padding:var(--sp-3)}.modal:has(.cq-flow[data-cq-stage=respond]) .modal-f{display:grid;grid-template-columns:1fr 1fr}.modal:has(.cq-flow[data-cq-stage=respond]) .modal-f [data-act=cq-accept]{grid-column:1/-1}.modal:has(.cq-flow[data-cq-stage=respond]) .modal-f [data-act=cq-reject]{margin-right:0}}
+@media(max-width:560px){.cq-dl,#cq-summary .cq-dl,.cq-request-detail .cq-dl,.cq-flow[data-cq-stage=quote]>.cq-section:first-child .cq-dl{grid-template-columns:minmax(0,1fr)}.cq-response-head{grid-template-columns:minmax(0,1fr);padding:var(--sp-4);gap:var(--sp-4)}.cq-response-pledge{grid-column:auto}.cq-response-pricing strong{font-size:var(--fs-19)}.modal:has(.cq-flow[data-cq-stage=respond]) .modal-f{display:grid;grid-template-columns:1fr 1fr}.modal:has(.cq-flow[data-cq-stage=respond]) .modal-f [data-act=cq-accept]{grid-column:1/-1}.modal:has(.cq-flow[data-cq-stage=respond]) .modal-f [data-act=cq-reject]{margin-right:0}}
 
-@media print{body.cq-printing> *:not(#layers){display:none!important}body.cq-printing .modal-mask{position:static;display:block;background:white}body.cq-printing .modal{max-width:none;max-height:none;border:0;box-shadow:none}body.cq-printing .modal-b{overflow:visible}body.cq-printing .modal-h,body.cq-printing .modal-f,body.cq-printing .cq-flow>*:not(.cq-section){display:none}body.cq-printing .cq-section .ls-row{display:none}}
 
 /* Token-based review keeps the existing modal and responsive table contract. */
 .modal:has(.ls-review-surface){max-width:1180px}
