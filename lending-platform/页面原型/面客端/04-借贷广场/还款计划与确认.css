@@ -103,16 +103,18 @@ table.tbl.rp-plan thead th:nth-child(6){width:11%}
 [data-market-redesign] .ls-detail #ls-repayments{height:auto}
 [data-market-redesign] .ls-detail #ls-repayments>.card{height:auto}
 [data-market-redesign] .ls-detail #ls-repayments>.card>.card-b{flex:none;overflow:visible;scrollbar-gutter:auto;padding:0}
-.rp-list-filters{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-4);border-bottom:1px solid var(--border);margin:0}
-.rp-query{display:flex;align-items:center;flex:1;max-width:560px;min-width:0;padding:var(--sp-1);border:1px solid var(--control-border);border-radius:var(--radius-xs);background:var(--card);gap:var(--sp-2)}
-.rp-query>svg{width:var(--sp-4);height:var(--sp-4);flex-shrink:0;margin-left:var(--sp-2);color:var(--muted)}
-.rp-query>.inp{flex:1;width:0;min-width:0;min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm);padding:0;border:0;box-shadow:none;background:transparent}
-.rp-query:focus-within{outline:2px solid var(--accent);outline-offset:2px}
-.rp-query>.inp:focus-visible{outline:none}
+.rp-list-filters{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--border);margin:0}
+.rp-query{position:relative;display:flex;align-items:center;flex:1;max-width:560px;min-width:0;padding:0;border:0;background:transparent;gap:var(--sp-2)}
+.rp-query>svg{position:absolute;left:var(--sp-3);width:var(--sp-4);height:var(--sp-4);pointer-events:none;color:var(--muted)}
+.rp-query>.inp{flex:1;width:0;min-width:0;min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm);padding:0 var(--sp-3) 0 var(--sp-8);border:1px solid var(--control-border);border-radius:var(--radius-xs);box-shadow:none;background:var(--card)}
+.rp-query>.inp:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ls-detail .rp-query>[data-act=rp-table-filter]{min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm);border-color:transparent;background:var(--accent-soft);color:var(--accent);padding-inline:var(--sp-4)}
 .rp-query>[data-act=rp-table-filter]:hover{background:var(--accent);color:var(--on-accent)}
 .ls-detail .rp-list-filters>[data-act=rp-table-reset]{border-color:transparent;background:transparent;color:var(--muted);min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm)}
 .rp-list-filters>[data-act=rp-table-reset]:hover{color:var(--text);background:var(--card-hover)}
+@media(max-width:600px),(pointer:coarse){
+  .ls-detail .rp-list-filters :is(.inp,.btn){height:var(--ctrl-h);min-height:var(--ctrl-h)}
+}
 .rp-record-scroll{overflow-x:auto;max-width:100%;padding:0 var(--sp-4)}
 .rp-record-table{table-layout:fixed;min-width:0;width:100%}
 .rp-record-table th,.rp-record-table td{vertical-align:top;white-space:normal;overflow-wrap:anywhere}

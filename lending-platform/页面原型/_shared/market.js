@@ -81,7 +81,7 @@
   function listFrame(options) {
     return '<section class="card listzone mk-list-frame" data-view="'+E(options.view)+'" data-density="'+(CF.S.listFull?'full':'core')+'">'+
       '<div class="mk-filter-surface">'+options.filters+'</div><div class="mk-result-head"><h2>'+icon('asset')+options.title+'</h2><div class="mk-result-tools">'+
-      (options.sort||'')+views(options.view,options.viewAction)+options.tools+'</div></div>'+options.content+'</section>';
+      views(options.view,options.viewAction)+options.tools+'</div></div>'+options.content+'</section>';
   }
   function syncListHead() {
     const head=document.querySelector('#portal .portal-head');

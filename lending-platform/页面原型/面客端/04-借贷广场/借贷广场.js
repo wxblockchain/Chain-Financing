@@ -92,22 +92,23 @@
       range(L('Eligible borrowing limit (USD)','有效质押额（USD）'),'ls-vmin','ls-vmax',filter.vmin,filter.vmax)+
       range(L('Financing request (USD)','融资需求金额（USD）'),'ls-amin','ls-amax',filter.amin,filter.amax)+
       '</div>';}
-  /* 条件与搜索分组；排序由共享结果工具条承载，字段、即时筛选与查询规则不变。 */
+  /* 条件、排序、更多与搜索共用紧凑横向布局；更多条件只在展开时占空间。 */
   function filters(total){
     const fm=(id,label,opts,cur)=>CF.filterMenu(id,label,opts,String(cur||'').split(',').filter(Boolean));
     const moreKeys=['type','coverage','vmin','vmax','amin','amax'],moreCount=moreKeys.filter(k=>filter[k]).length;
     const moreOpen=advancedOpen||/^filter:ls-(type|coverage)$/.test(S.menu||'');
-    return '<div class="filterbar ls-primary-filters ls-toolbar"><div class="mk-filter-options">'+
+    return '<div class="filterbar ls-primary-filters ls-toolbar">'+
     fm('ls-currency',L('Currency','币种'),[['USD','USD']],filter.currency)+
     fm('ls-tenor',L('Project term','项目期限'),TERM_BANDS.map(([k,en,zh])=>[k,L(en,zh)]),filter.tenor)+
     fm('ls-status',L('Project status','项目状态'),['available','raising','locked','financing','closed','settled'].map(k=>[k,txt(stateNames[k])]),filter.status)+
     fm('ls-quote',L('Open for quotes','可报价'),[['yes',L('Yes','是')],['no',L('No','否')]],filter.quote)+
-    '</div><div class="mk-filter-query">'+CF.filterSearch('ls-keyword',L('Project, request or publisher','项目、需求或发布方'),filter.keyword||'',
-      L('Project name, request ID or project publisher','融资项目、需求编号或项目发布方'))+
+    sortControl()+
     '<button type="button" class="ls-more-toggle" data-act="ls-more" aria-expanded="'+moreOpen+'" aria-controls="ls-more-panel">'+L('More','更多筛选')+(moreCount?'<span class="ls-more-count">'+moreCount+'</span>':'')+'<span class="ls-more-car" aria-hidden="true"></span></button>'+
+    CF.filterSearch('ls-keyword',L('Project, request or publisher','项目、需求或发布方'),filter.keyword||'',
+      L('Project name, request ID or project publisher','融资项目、需求编号或项目发布方'))+
     '<div class="fb-acts">'+
     btn('ls-clear',L('Reset','重置'))+btn('ls-filter',L('Search','查询'),'',true)+'</div>'+
-    '</div></div>'+
+    '</div>'+
     (moreOpen?'<div class="ls-more-panel" id="ls-more-panel">'+advancedFilters()+'</div>':'');}
   /* 期限筛选按项目期限（生效日～到期日，3～12 个月）分档，右端含：6 个月整归 3～6 档。
      “加 N 个月”与到期日规则一致：取目标月同一天，没有这一天取该月最后一天；按 UTC 业务日期比较。 */
@@ -164,7 +165,7 @@
     let content=CF.surface({emptyTitle:L('No financing projects yet','暂无融资项目'),emptyDesc:L('Published projects will appear here.','融资项目发布后会出现在这里。'),backTo:'/marketplace'});
     const counted=content===null;
     if(content===null)content=rows.length?'<div class="tablewrap listbox listbox-contained ls-market-zone" tabindex="0" role="region" aria-label="'+L('Financing projects','融资项目列表')+'"><table class="tbl resp ls-market-table">'+listHead()+'<tbody>'+rows.slice(0,S.shown).map(projectRow).join('')+'</tbody></table>'+CF.moreFoot(rows.length)+'</div>':CF.empty(L('No results match these filters','筛选无结果'),L('Try widening or clearing the filters.','请放宽筛选条件或清空筛选。'),btn('ls-clear',L('Clear filters','清空筛选')));
-    return '<div class="ls-market-page"><div class="page-head"><div><h1 class="page-title">'+L('Lending marketplace','借贷广场')+'</h1><p class="page-desc">'+L('Real assets. On-chain collateral. Find your next financing opportunity.','以真实资产为基础，查看质押池与融资机会。')+'</p></div>'+(S.role==='asset'?'<div class="page-actions">'+btn('ls-new',L('Create financing project','创建融资项目'),'',true)+'</div>':'')+'</div>'+marketStats(rows,S.st!=='loading'&&S.st!=='error'&&S.st!=='denied')+CF.market.listFrame({view:marketView,filters:filters(counted?rows.length:null),sort:sortControl(),title:L('Financing pools','融资项目'),viewAction:'ls-view',tools:'<div class="ls-toolbar-end"><span class="ls-total" role="status">'+(counted?L(rows.length+' projects','共 '+rows.length+' 个'):'')+'</span>'+fullButton()+'</div>',content:content})+'</div>';
+    return '<div class="ls-market-page"><div class="page-head"><div><h1 class="page-title">'+L('Lending marketplace','借贷广场')+'</h1><p class="page-desc">'+L('Real assets. On-chain collateral. Find your next financing opportunity.','以真实资产为基础，查看质押池与融资机会。')+'</p></div>'+(S.role==='asset'?'<div class="page-actions">'+btn('ls-new',L('Create financing project','创建融资项目'),'',true)+'</div>':'')+'</div>'+marketStats(rows,S.st!=='loading'&&S.st!=='error'&&S.st!=='denied')+CF.market.listFrame({view:marketView,filters:filters(counted?rows.length:null),title:L('Financing pools','融资项目'),viewAction:'ls-view',tools:'<div class="ls-toolbar-end"><span class="ls-total" role="status">'+(counted?L(rows.length+' projects','共 '+rows.length+' 个'):'')+'</span>'+fullButton()+'</div>',content:content})+'</div>';
   }
   function fullButton(){const text=S.listFull?L('Back to the compact list','收起，回到精简列表'):L('Expand to show all fields','放大，查看全部信息');return '<button class="btn icon" type="button" id="ls-full" data-act="list-full" data-v="ls-full" aria-pressed="'+!!S.listFull+'" title="'+E(text)+'" aria-label="'+E(text)+'">'+(S.listFull?CF.ICON.close:CF.ICON.expand)+'</button>';}
   /* 额度六项：沿用原有的开放式数字条（不加卡片框），常驻四项核心数字、整行不折断；总质押额与待审明细收进下方的折叠行。 */

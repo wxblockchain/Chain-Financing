@@ -32,7 +32,7 @@
 .review-wrap .rv-table .rv-meta{margin-top:var(--sp-1)}
 .review-wrap .rv-time{display:block;color:var(--text);font-variant-numeric:tabular-nums}
 .review-wrap .rv-time .rv-meta{display:block;margin-top:var(--sp-1)}
-.review-wrap .rv-filters{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(220px,1.7fr) repeat(2,minmax(170px,1fr)) auto;align-items:end;gap:var(--sp-4);padding:var(--card-pad)}
+.review-wrap .rv-filters{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(220px,1.7fr) repeat(2,minmax(170px,1fr)) auto;align-items:end;gap:var(--sp-2) var(--sp-3);padding:var(--sp-3) var(--sp-4)}
 .review-wrap .rv-filters .field{min-width:0;max-width:none}
 .review-wrap .rv-filters .acts{margin:0;gap:var(--sp-2);flex-wrap:nowrap}
 .review-wrap .rv-filters .inp{width:100%;min-width:0}

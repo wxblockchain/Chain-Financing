@@ -1085,6 +1085,12 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 [data-end] .filterbar :is(select.inp,.fb-btn,.fb-q .inp),
 [data-end] .filterbar .fb-acts .btn{height:var(--ctrl-h-sm);min-height:var(--ctrl-h-sm);border-radius:var(--radius-xs);font-size:var(--ui-field-label);background:var(--card);border-color:var(--border-strong)}
 [data-end] .filterbar .fb-acts .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+[data-end] .filterbar .fb-menu>svg{display:none}
+[data-end] .filterbar .fb-menu .fb-btn{padding-inline-start:var(--sp-3);background:var(--card-2);border-color:transparent;font-weight:400}
+[data-end] .filterbar .fb-menu .fb-btn:hover{background:var(--card-hover)}
+[data-end] .filterbar .fb-menu .fb-btn[data-on="1"]{background:var(--accent-soft);border-color:var(--accent-border);color:var(--accent);font-weight:500}
+[data-end] .filterbar .fb-acts .btn:not(.primary){background:transparent;border-color:transparent;color:var(--muted)}
+[data-end] .filterbar .fb-acts .btn:not(.primary):hover{background:var(--card-hover);color:var(--text)}
 [data-end] :is(.card-tabs [role="tab"],.mc-tabs button){min-height:48px;font-size:var(--ui-row-value);font-weight:500}
 [data-end] :is(.stat .v,.stat-strip .v){font-size:var(--ui-stat-size);font-weight:500;line-height:1.4;letter-spacing:-.02em}
 [data-end] .stat-strip{gap:var(--sp-4) var(--sp-7);padding-bottom:var(--sp-5)}
@@ -1133,9 +1139,11 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 [data-end="admin"] :is(.cm-metric,.pr-metric){padding:var(--sp-4) var(--sp-5)}
 [data-end="admin"] :is(.cm-metric,.pr-metric) strong{font-size:var(--ui-stat-size);font-weight:500;line-height:1.4}
 [data-end="admin"] :is(.cm-rail-time,.pr-rail-time) strong{font-size:var(--ui-field-value);font-weight:500}
-[data-end="admin"] :is(.fc-filter-wrap,.cm-filter-wrap,.pr-filter-wrap){padding:var(--sp-4) var(--sp-5)}
+[data-end="admin"] :is(.fc-filter-wrap,.cm-filter-wrap,.pr-filter-wrap){padding:var(--sp-3) var(--sp-4)}
 [data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.cm-filters,.pr-filter-bar,.pr-filters,.rv-filters) .inp{height:var(--ctrl-h-sm);font-size:var(--ui-field-label);background:var(--card);border-color:var(--border-strong)}
 [data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.pr-filter-bar,.rv-filters) .btn{height:var(--ctrl-h-sm);font-size:var(--ui-field-label)}
+[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-toolbar,.pr-toolbar,.rv-filters) .acts .btn:not(.primary){border-color:transparent;background:transparent;color:var(--muted)}
+[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-toolbar,.pr-toolbar,.rv-filters) .acts .btn:not(.primary):hover{background:var(--card-hover);color:var(--text)}
 [data-end="admin"] .fc-diff-vals :is(strong,.fc-before){font-size:var(--ui-field-value)}
 [data-end="admin"] :is(.cm-rail,.pr-rail)>.card,[data-end="admin"] .rv-operation{border-color:var(--accent-border);border-top:3px solid var(--accent)}
 [data-end="admin"] :is(.cm-rail,.pr-rail,.rv-operation) h2{color:var(--accent);font-size:var(--ui-section-title);font-weight:600}
@@ -1155,6 +1163,10 @@ table.tbl th.num,table.tbl td.num{text-align:right}
   [data-end] .card-b{padding:var(--sp-4)}
   [data-end] :is(.modal-h,.modal-b,.modal-f,.drawer-h,.drawer-b,.drawer-f){padding-inline:var(--sp-4)}
   [data-end] .filterbar :is(select.inp,.fb-btn,.fb-q .inp),[data-end] .filterbar .fb-acts .btn{height:var(--ctrl-h);min-height:var(--ctrl-h)}
+}
+@media(pointer:coarse){
+  [data-end] .filterbar :is(select.inp,.fb-btn,.fb-q .inp),[data-end] .filterbar .fb-acts .btn,
+  [data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.cm-filters,.pr-filter-bar,.pr-filters,.rv-filters) :is(.inp,.btn){height:var(--ctrl-h);min-height:var(--ctrl-h)}
 }
 
 /* —— 运营端平台统一钱包签名（ops-wallet.js，项目合约管理与代币质押审核共用）—— */

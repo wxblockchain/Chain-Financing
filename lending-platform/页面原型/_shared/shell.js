@@ -232,6 +232,23 @@
       '" placeholder="' + esc(placeholder) + '" title="' + esc(fullLabel || placeholder) +
       '" aria-label="' + esc(fullLabel || placeholder) + '"></span>';
   };
+  // Compact filters can wrap near either viewport edge. Keep the existing
+  // checkbox menu inside the viewport without changing its owner or events.
+  var filterMenuFrame = 0;
+  function fitFilterMenus() {
+    cancelAnimationFrame(filterMenuFrame);
+    filterMenuFrame = requestAnimationFrame(function () {
+      document.querySelectorAll('.filterbar .fb-panel').forEach(function (panel) {
+        panel.style.maxWidth = Math.max(0, window.innerWidth - 32) + 'px';
+        panel.style.marginLeft = '0px';
+        var rect = panel.getBoundingClientRect(), shift = Math.min(0, window.innerWidth - 16 - rect.right);
+        if (rect.left + shift < 16) shift = 16 - rect.left;
+        panel.style.marginLeft = shift + 'px';
+      });
+    });
+  }
+  window.addEventListener('resize', fitFilterMenus);
+  if (document.fonts) document.fonts.ready.then(fitFilterMenus);
   /* 环形占比图：数值由旁边的表格给出，图形只负责比例。 */
   CF.donut = function (parts, center, caption) {
     var total = parts.reduce(function (n, p) { return n + Math.max(0, p.value); }, 0);
@@ -1131,6 +1148,7 @@
     if (S.end === "asset") renderPortalTools();
     renderLayer();
     renderDemo();
+    fitFilterMenus();
     if (!S.layer && active && !document.contains(active)) {
       var replacement = focusKey && $(focusKey);
       if (!replacement && focusAct) replacement = Array.from(document.querySelectorAll("[data-act]")).find(function (el) {
