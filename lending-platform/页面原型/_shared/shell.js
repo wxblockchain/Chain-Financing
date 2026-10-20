@@ -184,6 +184,8 @@
     expand: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 2H2v4M10 14h4v-4M14 6V2h-4M2 10v4h4"/></svg>',
     pool: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 2.2 14 5 8 7.8 2 5l6-2.8Z"/><path d="M2 8.4 8 11.2l6-2.8M2 11.6 8 14.4l6-2.8"/></svg>',
     copy: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5.4" y="5.4" width="8.2" height="8.2" rx="2"/><path d="M10.6 5.4V4.4a2 2 0 0 0-2-2H4.4a2 2 0 0 0-2 2v4.2a2 2 0 0 0 2 2h1"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    eyeOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 3 18 18M10.6 5.1 12 5c6.4 0 10 7 10 7a20 20 0 0 1-3.3 4.1M6.1 6.1A21 21 0 0 0 2 12s3.6 7 10 7a11 11 0 0 0 5.9-1.8M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>',
     external: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9.2 2.6H13.4V6.8M13.4 2.6 7.6 8.4M11.2 9.6v3.2a1 1 0 0 1-1 1H3.2a1 1 0 0 1-1-1V5.8a1 1 0 0 1 1-1h3.2"/></svg>'
   };
   CF.ICON = ICON;

@@ -29,7 +29,7 @@
 :is(.modal,.drawer):has(.ln-drawer) :is(.modal-f,.drawer-f)>.btn:not(.primary):hover{background:var(--card-hover);color:var(--text)}
 
 /* A section is one task group, rather than a card inside another card. */
-.ln-section{border-top:1px solid var(--border);padding-top:var(--sp-5)}
+.ln-section{min-width:0;border-top:1px solid var(--border);padding-top:var(--sp-5)}
 .ln-section-body{margin-top:var(--sp-4);min-width:0}
 .ln-section-body>.ln-small:first-child{margin:0 0 var(--sp-3)}
 .ln-section-body>.dl+div{margin-top:var(--sp-5)}
@@ -41,6 +41,15 @@
 .ln-fact:has(.hash){grid-column:1/-1}
 .ln-drawer .copy-pair{flex-wrap:wrap;max-width:100%;gap:var(--sp-2)}
 .ln-drawer .copy-pair>:is(.mono,.hash){min-width:0;overflow-wrap:anywhere}
+/* Account values keep their own wrapping column; reveal and copy remain distinct. */
+.ln-drawer .copy-pair.ln-reveal,.ln-pay-reference .copy-pair{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:var(--sp-2);width:100%}
+.ln-reveal .ln-account-value,.ln-pay-reference .copy-pair>.mono{flex:1;min-width:0;padding-block:var(--sp-2);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ln-reveal-controls{display:inline-flex;align-items:center;gap:var(--sp-1);min-width:calc(2 * var(--ctrl-h-sm) + var(--sp-1));flex:none}
+.ln-drawer :is(.ln-reveal-controls,.ln-pay-reference .copy-pair)>.btn{display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);min-height:var(--ctrl-h-sm);padding:0;color:var(--muted);border-color:transparent;background:transparent}
+.ln-drawer :is(.ln-reveal-controls,.ln-pay-reference .copy-pair)>.btn svg{width:18px;height:18px;flex:none}
+.ln-drawer :is(.ln-reveal-controls,.ln-pay-reference .copy-pair)>.btn:hover{color:var(--accent);background:var(--accent-soft)}
+.ln-drawer .ln-visibility-toggle[aria-pressed=true]{color:var(--accent);background:var(--accent-soft)}
+.ln-drawer .ln-reveal-controls .btn:active{background:var(--card-hover)}
 .ln-drawer .dl+.dl{margin-top:var(--sp-4)}
 .ln-drawer .ln-more{margin-top:var(--sp-3)}
 .ln-more .dl.ln-facts{margin-top:var(--sp-2)}
@@ -55,7 +64,7 @@
 .ln-pay-head p{margin:0}
 .ln-pay-head .ln-amount{margin:0}
 .ln-pay-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:var(--sp-7);align-items:start}
-.ln-pay-reference,.ln-pay-entry{display:grid;gap:var(--sp-6);min-width:0}
+.ln-pay-reference,.ln-pay-entry{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-6);min-width:0}
 .ln-pay-reference{padding-right:var(--sp-6);border-right:1px solid var(--border)}
 :is(.ln-pay-reference,.ln-pay-entry)>.ln-section:first-child{border-top:0;padding-top:0}
 .ln-pay-entry .ln-grid{grid-template-columns:minmax(0,1fr)}
@@ -110,6 +119,9 @@
 .ln-support{border-top:1px solid var(--border);padding-top:var(--sp-4)}
 .ln-support p{margin:var(--sp-2) 0}
 .ln-support .copy-pair{display:flex}
+.ln-submit-copy{flex:1;min-width:0}
+.ln-submit-copy p{margin:0}
+.ln-submit-copy p+p{margin-top:var(--sp-2)}
 
 /* Existing project list and operation-panel consumers. No column or action changes. */
 .ln-record-table{table-layout:fixed}
@@ -165,4 +177,5 @@
   :is(.modal,.drawer):has(.ln-drawer) :is(.modal-f,.drawer-f)>[data-act=ln-back],
   .modal:has(.ln-confirm) .modal-f>[data-act=ln-confirm-back]{margin-right:0}
 }
+@media(max-width:768px),(pointer:coarse){.ln-drawer :is(.ln-reveal-controls,.ln-pay-reference .copy-pair)>.btn{width:var(--ctrl-h);height:var(--ctrl-h);min-height:var(--ctrl-h)}.ln-reveal-controls{min-width:calc(2 * var(--ctrl-h) + var(--sp-1))}}
 @media(prefers-reduced-motion:reduce){.ln-drawer *{animation:none!important;transition:none!important}}
