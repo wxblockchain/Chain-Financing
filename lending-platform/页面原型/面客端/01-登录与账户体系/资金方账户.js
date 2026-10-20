@@ -468,10 +468,14 @@
   }
   function resolveSubmission(){if(!F.pendingSubmission||F.busy)return;F.busy='query';F.error=null;later(()=>{F.busy='';if(F.queryResult==='failed'){F.error=['Unable to confirm the result. Please retry.','暂时无法确认结果，请重试。'];return;}if(F.queryResult==='absent'){F.pendingSubmission=false;delete F.account.pending;persist();go('/funder/register');F.error=['No submission was received. Your details are retained; you can submit again.','尚未收到本次提交，资料已保留，可重新提交。'];return;}completeSubmit();});}
   function changeEmail(){F.emailMode='change';F.emailFlow=true;F.emailGeneration++;F.error=null;F.fieldErrors={};F.emailInput='';F.codeInput='';F.emailRetry=false;F.autoCodeAttempt='';F.emailStage=Date.now()<F.reauthUntil?'edit':'auth';F.emailFocus=F.emailStage==='edit'?'email':'';open('email');}
-  function fixture(s){
-    F.generation++;F.busy='';F.error=null;F.otp=null;F.connected=address;hydrate(address);const a=F.account;a.exists=true;a.created=a.created||new Date().toISOString();a.disabled=false;delete a.pending;F.pendingSubmission=false;a.reviewPending=false;F.downgrade=false;F.reauthUntil=0;
+  function fixture(s,options={}){
+    F.generation++;F.busy='';F.error=null;F.otp=null;F.connected=address;
+    if(options.preset){F.account=blank();F.notes=[];}else hydrate(address);
+    const a=F.account;a.exists=true;a.created=a.created||new Date().toISOString();a.disabled=false;delete a.pending;F.pendingSubmission=false;a.reviewPending=false;F.downgrade=false;F.reauthUntil=0;
     if(s!=='draft'){a.email=a.email||'finance@example.test';a.emailVerified=a.emailVerified||new Date().toISOString();a.form={name:'Demo Institution',country:'Demo jurisdiction',identifierType:'REG_NO',identifier:'DEMO-REG-100',institutionType:'Demo financial institution',registeredAddress:'Demo registered address',regulator:'',license:'',contact:'contact@example.test',files:[{id:fileId(),name:'institution-registration-demo.pdf',size:204800,status:'done',demo:true,at:'2026-09-18T02:24:00Z'},{id:fileId(),name:'institution-licence-demo.pdf',size:96256,status:'done',demo:true,at:'2026-09-18T02:26:00Z'}]};a.submitted=a.submitted||new Date().toISOString();a.version=Math.max(1,a.version);a.snapshotEmail=a.email;a.submittedFields=fields();a.submittedForm=JSON.parse(JSON.stringify(a.form));a.template=F.activeTemplate||'DEMO-1';}
-    a.records=[];delete a.boundIdentity;a.status=s;a.issues=[];a.additional=s==='rejected'?demoReason():'';a.reviewed=['verified','rejected'].includes(s)?new Date().toISOString():null;a.reviewer=a.reviewed?'DEMO-OP-01':'';recordDecision(a);S.role='fund';F.sessionUntil=Date.now()+4*3600000;F.load='ready';persist();response();S.demo=false;go(s==='draft'?'/funder/register':'/funder/status');
+    a.records=[];delete a.boundIdentity;a.status=s;a.issues=[];a.additional=s==='rejected'?demoReason():'';a.reviewed=['verified','rejected'].includes(s)?new Date().toISOString():null;a.reviewer=a.reviewed?'DEMO-OP-01':'';recordDecision(a);S.role='fund';F.sessionUntil=Date.now()+4*3600000;F.load='ready';
+    if(!options.preset)persist();response();
+    if(!options.preset){S.demo=false;go(s==='draft'?'/funder/register':'/funder/status');}
   }
 
   Object.keys(pages).filter(id=>!id.startsWith('DEMO-')).forEach(id=>CF.review.register(id,{
@@ -670,6 +674,16 @@
   CF.funder.review={
     get account(){return F.account;}, get state(){return F;}, persist,
     seed:fixture, fields, fieldsFrom, fieldValue, notDocuments, docs, docRow, materialList, response, identity, recordOf, normalizeRecords, recordDecision, reviewTimeline, materialPreviewable, materialPreview, downloadMaterial, normalizeForm, identifierTypeName,
+    prepareIdentity(role){
+      // 视角预设只在内存中建立，不覆盖已保存的注册申请；同时废弃旧异步响应。
+      F.generation++;F.emailGeneration++;F.busy='';F.error=null;F.otp=null;
+      F.emailFlow=false;F.inFlow=false;F.change=false;F.fieldErrors={};F.reviewBusiness='';
+      F.load='ready';F.template='ready';F.reviewCheck='';F.pendingSubmission=false;
+      F.downgrade=false;F.reauthUntil=0;F.returnTo='';F.gate='idle';F.emailCompleted=false;
+      F.emailInput='';F.codeInput='';F.emailEntryError=null;F.emailFocus='';F.emailRetry=false;
+      F.sessionUntil=0;F.connected='';F.notes=[];F.account=blank();
+      if(role==='fund')fixture('verified',{preset:true});else response();
+    },
     activate(){S.role='fund';F.connected=F.account.address;F.sessionUntil=Date.now()+4*3600000;response();},
     decide(version,status,issues,additional){
       const a=F.account;if(a.version!==version||a.status!=='submitted')return false;

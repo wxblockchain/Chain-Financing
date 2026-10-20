@@ -50,16 +50,15 @@
     ['asset','signed'].includes(S.role)?D.address||registered:''});
   /* 当前身份的业务资格由主干一处判定；企业账户等模块读取本函数，不各自维护一套判定。
      返回值始终带补齐引导，调用方要演示未认证界面时只改 verified，不另写一套引导文案。
-     与其他面客模块一致：演示身份即已认证身份，只有本模块记录到降级、驳回或未通过的注册才判未认证。 */
+     演示条由 prepareIdentity 建立已认证样例；业务资格始终读取账户事实。 */
   CF.portalEligible=()=>{
     if(S.role==='fund'){
       const a=CF.funder?.review.account||{};
-      const pending=a.exists&&a.status!=='verified';
-      return {verified:!a.disabled&&!pending,
+      return {verified:!!a.exists&&!a.disabled&&a.status==='verified',
         act:a.status==='draft'||!a.exists?'f-register':'f-status',value:'',
         label:a.status==='draft'||!a.exists?['Go to institution registration','去完成机构注册']:['View review progress','查看审核进度']};
     }
-    if(S.role==='asset')return {verified:!D.downgraded&&!D.rejected,
+    if(S.role==='asset')return {verified:D.level==='L3'&&!D.downgraded&&!D.rejected,
       act:'login-leave',value:'verify',label:['Complete verification ↗','前往完成实名认证 ↗']};
     return {verified:false};
   };
@@ -504,7 +503,7 @@
     switch(v){
       case 'guest':resetSession();D.sessionMessage='';break;
       case 'signed':cancelPending();S.role='signed';D.address=unregistered;D.level='L0';D.sessionMessage='';break;
-      case 'asset':cancelPending();S.role='asset';D.address=registered;D.sessionMessage='';loadPreferences();break;
+      case 'asset':S.role='asset';CF.review.prepareIdentity('asset');loadPreferences();break;
       case 'L0':D.level='L0';break;
       case 'L3':D.level='L3';D.downgraded=false;D.rejected=false;break;
       case 'gate':go('/demo/login/actions');S.demo=false;break;
@@ -572,6 +571,18 @@
     if(S.role==='asset'){if(!D.address)D.address=registered;loadPreferences();}
     if(S.role==='signed'&&!D.address)D.address=unregistered;
   }
+  CF.review.prepareIdentity=role=>{
+    cancelPending();identityKey='';CF.resetCompletion();
+    Object.assign(D,{stage:'',loginError:'',address:role==='asset'?registered:role==='signed'?unregistered:'',
+      level:role==='asset'?'L3':'L0',downgraded:false,rejected:false,missing:false,
+      companyCase:'verified',profileVariant:1,profileOptionalMissing:false,
+      accountState:'default',personalState:'idle',companyState:'idle',verificationResult:'verified',
+      addressMoved:false,sessionMessage:'',landingMessage:'',reviewMessage:'',handoff:'',
+      extraNotices:false,resolved:[],pendingTrigger:'',gateState:'idle'});
+    CF.funder?.review.prepareIdentity(role);
+  };
+  // 同标签页重开模块时，保存的角色仍代表默认演示账户，而非空白注册账户。
+  if(['asset','fund'].includes(S.role))CF.review.prepareIdentity(S.role);
   function postRender(){
     if(D.pendingTrigger&&!S.layer){const kind=D.pendingTrigger;D.pendingTrigger='';setTimeout(()=>triggerAction(kind),0);}
     if(renderedPage!==S.page){if(pages[S.page]||/^P-L2|^DEMO-F-/.test(S.page))window.scrollTo(0,0);renderedPage=S.page;}

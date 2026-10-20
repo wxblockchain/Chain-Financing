@@ -145,7 +145,7 @@
   const related=q=>S.role==='asset'&&D.mine(D.project(q.project))||S.role==='fund'&&q.fund===F();
   /* 只有已认证的资金方可以授信与报价；审核中或已驳回的看得到入口，触达时给出认证引导。 */
   const funderStatus=()=>CF.funder?.review?.account?.status||'verified';
-  const certified=()=>S.role==='fund'&&funderStatus()==='verified';
+  const certified=()=>S.role==='fund'&&(CF.portalEligible?CF.portalEligible().verified:funderStatus()==='verified');
   const credit=p=>db.credits.filter(c=>c.owner===p.owner&&c.fund===F()).sort((a,b)=>Date.parse(a.first)-Date.parse(b.first))[0];
   const used=c=>db.quotes.filter(q=>q.owner===c.owner&&q.fund===c.fund&&['waiting','funding'].includes(q.state)).reduce((n,q)=>n+q.amount,0);
   const available=c=>c?Math.max(0,c.total-c.principal-used(c)):0;

@@ -769,6 +769,8 @@
     var proceed = function () {
       reviewClear();
       S.role = item.role; S.party = Object.assign({}, DEFAULT_PARTY, item.party || {});
+      // 登录模块同步演示账户的注册、认证和会话；不改真实登录或业务数据库。
+      if (CF.review.prepareIdentity) CF.review.prepareIdentity(item.role);
       S.menu = null; S.layer = null; S.st = 'default'; S.demo = true;
       reviewFocus = 'review-p-' + id;
       resetList();
