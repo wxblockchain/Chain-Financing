@@ -1,6 +1,6 @@
-# 跨境链融 · cly2.0.0
+# 跨境链融
 
-本分支是三平台重划分后的目录骨架。资产平台与金融服务平台拆分为三个相互独立的平台，各自持有自己的 PRD、页面原型、原型底座与设计规范，平台之间通过 API 接口交互。
+当前项目工作分支为 `cly-4.0.0`。三个平台各自持有 PRD、页面原型、原型底座与设计规范，平台之间通过 API 接口交互；各目录入口说明指向本分支现行文件。
 
 ## 三平台导航
 
@@ -14,7 +14,7 @@
 
 ## 原型底座与设计规范：各平台自持
 
-`cly-V1.0.0` 上的原型是跨平台引用的——三个平台的原型共用 `asset-platform/prototypes/_shared/` 的 token、公共组件与壳层运行时，设计规范共用顶层 `docs/design-system/`。三平台独立部署后这条引用链不成立，因此本分支上**每个平台自持一份**：
+每个平台自持原型底座，位于本平台目录下：
 
 ```
 <平台目录>/页面原型/_shared/
@@ -26,15 +26,12 @@
 
 底座与设计规范一律落在 `页面原型/_shared/` 之下，**不为它们另开第三个子目录**，也不在分支根放公共的 `docs/`。各平台的底座相互独立，不跨平台相对路径引用。
 
-## 参考基线
+## 当前资料与维护
 
-`cly-V1.0.0` 是**只读参考基线**，现状按原有的 `asset-platform/` 与 `financial-service-platform/` 结构存放：
+需求与页面从上方平台入口进入。借贷平台的现行资料为：
 
-- PRD：`asset-platform/prd/`、`financial-service-platform/prd/`
-- 原型：`asset-platform/prototypes/`、`financial-service-platform/prototypes/`
-- 组件与设计规范：`docs/design-system/`
-- 通知契约：`docs/notification-contract/`
+- [PRD 目录](lending-platform/PRD/README.md)：模块正文、流程、消息通知与验收索引。
+- [页面原型](lending-platform/页面原型/README.md)：面客、运营模块及本地运行方式。
+- [组件与设计规范](lending-platform/页面原型/_shared/design-system/README.md)：当前组件规则与唯一实现来源。
 
-各平台的模块清单，以及每个模块对应的 `cly-V1.0.0` 参考路径，见三个平台入口 issue（WS-344 资产可信平台 / WS-345 代币发行平台 / WS-346 借贷平台）。
-
-`cly-V1.0.0` 保持不动，本分支不复制、不搬动其上的任何文件；重构后的产出提交到本分支。
+维护时读取目标分支最新源码与已确认需求，组件修改同步相关规范。历史分支和旧评审附件用于追溯；独立 HTML 交付件从现行源文件导出，不回存为第二份维护源。
