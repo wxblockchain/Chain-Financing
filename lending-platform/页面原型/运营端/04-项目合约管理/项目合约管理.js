@@ -242,13 +242,13 @@
     const labels={deploy:L('Deployment','部署情况'),owner:L('Project publisher','项目发布方'),token:L('Token type','代币类型'),
       from:L('Submitted from','提交开始日期'),to:L('Submitted through','提交结束日期')};
     const values={deploy:applied.deploy?txt(DEPLOY[applied.deploy]):'',owner:applied.owner?ownerName({owner:applied.owner}):'',token:applied.token};
-    return `<form id="cm-filter-form" class="cm-filter-wrap"><div class="filterbar cm-toolbar">
-      ${CF.filterSelect('cm-f-review',L('Review status','审核轴'),[['',L('All','全部')],...Object.entries(REVIEW).map(([k,v])=>[k,txt(v)])],f.review)}
+    return `<form id="cm-filter-form" class="cm-filter-wrap"><div class="filterbar ops-filterbar cm-toolbar">
+      ${CF.opsFilterSelect('cm-f-review',L('Review status','审核轴'),[['',L('All','全部')],...Object.entries(REVIEW).map(([k,v])=>[k,txt(v)])],f.review)}
       ${sortControl()}
       <button type="button" class="btn" data-act="cm-filters" aria-expanded="${A.queue.open}" aria-controls="cm-advanced">${L('More filters','更多筛选')}${count?' ('+count+')':''} <span aria-hidden="true">${A.queue.open?'⌃':'⌄'}</span></button>
-      ${CF.filterSearch('cm-f-q',L('Search projects','搜索项目'),f.q,L('Project number, project name, company or contract address','项目编号、项目名称、企业名称或质押合约地址'))}
+      ${CF.filterSearch('cm-f-q',L('Search projects','搜索项目'),f.q,L('Project number, project name, company or contract address','项目编号、项目名称、企业名称或质押合约地址'), 'ops-filter-query')}
       <div class="fb-acts">${b('Reset','重置','reset')}<button type="submit" class="btn primary">${L('Search','查询')}</button></div></div>
-      <div id="cm-advanced" class="cm-filters" ${A.queue.open?'':'hidden'}>${field(labels.deploy,select('cm-f-deploy',f.deploy,[['',L('All','全部')],...Object.entries(DEPLOY).map(([k,v])=>[k,txt(v)])]))}${field(labels.owner,select('cm-f-owner',f.owner,ownerOptions()))}${field(labels.token,select('cm-f-token',f.token,tokenOptions()))}${field(labels.from+' (UTC)',input('cm-f-from',f.from,'date'))}${field(labels.to+' (UTC)',input('cm-f-to',f.to,'date'))}</div>
+      <div id="cm-advanced" class="cm-filters ops-filter-fields" ${A.queue.open?'':'hidden'}>${field(labels.deploy,select('cm-f-deploy',f.deploy,[['',L('All','全部')],...Object.entries(DEPLOY).map(([k,v])=>[k,txt(v)])]))}${field(labels.owner,select('cm-f-owner',f.owner,ownerOptions()))}${field(labels.token,select('cm-f-token',f.token,tokenOptions()))}${field(labels.from+' (UTC)',input('cm-f-from',f.from,'date'))}${field(labels.to+' (UTC)',input('cm-f-to',f.to,'date'))}</div>
       ${appliedTags(labels,values,applied,extra)}</form>`;
   }
   function sortButton(k,en,zh){
@@ -295,12 +295,12 @@
     const labels={owner:L('Project publisher','项目发布方'),token:L('Token type','代币类型'),
       from:L('Deployment completed from','合约部署完成开始日期'),to:L('Deployment completed through','合约部署完成结束日期')};
     const values={owner:applied.owner?ownerName({owner:applied.owner}):'',token:applied.token};
-    return `<form id="cm-filter-form" class="cm-filter-wrap"><div class="filterbar cm-toolbar">
-      ${CF.filterSelect('cm-f-owner',labels.owner,ownerOptions(),f.owner)}
+    return `<form id="cm-filter-form" class="cm-filter-wrap"><div class="filterbar ops-filterbar cm-toolbar">
+      ${CF.opsFilterSelect('cm-f-owner',labels.owner,ownerOptions(),f.owner)}
       <button type="button" class="btn" data-act="cm-filters" aria-expanded="${A.ledger.open}" aria-controls="cm-advanced">${L('More filters','更多筛选')}${count?' ('+count+')':''} <span aria-hidden="true">${A.ledger.open?'⌃':'⌄'}</span></button>
-      ${CF.filterSearch('cm-f-q',L('Search contracts','搜索合约'),f.q,L('Project number, project name or contract address','项目编号、项目名称或质押合约地址'))}
+      ${CF.filterSearch('cm-f-q',L('Search contracts','搜索合约'),f.q,L('Project number, project name or contract address','项目编号、项目名称或质押合约地址'), 'ops-filter-query')}
       <div class="fb-acts">${b('Reset','重置','reset')}<button type="submit" class="btn primary">${L('Search','查询')}</button></div></div>
-      <div id="cm-advanced" class="cm-filters" ${A.ledger.open?'':'hidden'}>${field(labels.token,select('cm-f-token',f.token,tokenOptions()))}${field(labels.from+' (UTC)',input('cm-f-from',f.from,'date'))}${field(labels.to+' (UTC)',input('cm-f-to',f.to,'date'))}</div>
+      <div id="cm-advanced" class="cm-filters ops-filter-fields" ${A.ledger.open?'':'hidden'}>${field(labels.token,select('cm-f-token',f.token,tokenOptions()))}${field(labels.from+' (UTC)',input('cm-f-from',f.from,'date'))}${field(labels.to+' (UTC)',input('cm-f-to',f.to,'date'))}</div>
       ${appliedTags(labels,values,applied,extra)}</form>`;
   }
   function projectState(r){

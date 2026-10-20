@@ -146,10 +146,10 @@
     const tags=[];
     if(applied.q)tags.push(CF.tag('gray',L('Keyword','关键词')+': '+applied.q));
     if(applied.status)tags.push(CF.tag('gray',L('Configuration status','配置状态')+': '+(applied.status==='set'?L('Configured','已配置'):L('Not configured','未配置'))));
-    return `<form id="fc-filter-form" class="fc-filter-wrap"><div class="fc-filter-bar">${
-      field(L('Search token types','搜索代币类型'),`<input class="inp" id="fc-f-q" value="${E(f.q)}" placeholder="${L('Token type name','代币类型名称')}">`)}${
-      field(L('Configuration status','配置状态'),select('fc-f-status',f.status,statuses))}<div class="fc-actions">${
-      b('Reset','重置','reset')}<button type="submit" class="btn primary">${L('Search','查询')}</button></div></div>${
+    return `<form id="fc-filter-form" class="fc-filter-wrap"><div class="filterbar ops-filterbar fc-filter-bar">${
+      CF.opsFilterSelect('fc-f-status',L('Configuration status','配置状态'),statuses,f.status)}${
+      CF.filterSearch('fc-f-q',L('Token type name','代币类型名称'),f.q,L('Search token types','搜索代币类型'), 'ops-filter-query')}
+      <div class="fb-acts">${b('Reset','重置','reset')}<button type="submit" class="btn primary">${L('Search','查询')}</button></div></div>${
       tags.length?`<div class="fc-applied" aria-label="${L('Applied filters','已应用筛选')}">${tags.join('')}</div>`:''}</form>`;
   }
   function pager(total){

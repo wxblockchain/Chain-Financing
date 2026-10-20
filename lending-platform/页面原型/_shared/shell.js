@@ -212,6 +212,18 @@
           esc(o[0] === '' ? label + '：' + o[1] : o[1]) + '</option>';
       }).join('') + '</select></span>';
   };
+  /* Operations use a visible label/value pair; IDs, options and native select events stay local. */
+  CF.opsFilterSelect = function (id, label, options, current) {
+    return '<div class="ops-filter-select"' + (current && current !== 'all' ? ' data-on="1"' : '') + '>' +
+      '<label for="' + esc(id) + '">' + esc(label) + '</label>' +
+      '<select class="inp" id="' + esc(id) + '">' + options.map(function (o) {
+        return '<option value="' + esc(o[0]) + '"' + (o[0] === current ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
+      }).join('') + '</select></div>';
+  };
+  document.addEventListener('change', function (event) {
+    var select = event.target.closest('.ops-filter-select>select');
+    if (select) select.parentElement.dataset.on = select.value && select.value !== 'all' ? '1' : '0';
+  });
   /* 多选筛选：未选时药丸只显示字段名；选中后显示已选数量，面板里勾选，全选或清空回到不限。 */
   CF.filterMenu = function (id, label, options, selected) {
     selected = selected || [];
@@ -226,8 +238,8 @@
       ' aria-haspopup="true" aria-expanded="' + open + '"' + (n ? ' data-on="1"' : '') + '>' +
       esc(n ? label + ' · ' + n : label) + '</button>' + panel + '</span>';
   };
-  CF.filterSearch = function (id, placeholder, value, fullLabel) {
-    return '<span class="fb-q">' + ICON.search +
+  CF.filterSearch = function (id, placeholder, value, fullLabel, className) {
+    return '<span class="fb-q' + (className ? ' ' + esc(className) : '') + '">' + ICON.search +
       '<input class="inp" id="' + esc(id) + '" type="search" value="' + esc(value || '') +
       '" placeholder="' + esc(placeholder) + '" title="' + esc(fullLabel || placeholder) +
       '" aria-label="' + esc(fullLabel || placeholder) + '"></span>';
