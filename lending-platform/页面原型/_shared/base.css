@@ -1200,7 +1200,7 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 @media(max-width:600px),(pointer:coarse){
   [data-end="admin"] .ops-filterbar :is(.inp,.btn),
   [data-end="admin"] .ops-filter-fields :is(.inp,.pr-check,.ag-options label){height:var(--ctrl-h);min-height:var(--ctrl-h)}
-  [data-end="admin"] .ops-filterbar .ops-filter-select>select.inp{height:calc(var(--ctrl-h) - 2px);min-height:0}
+  [data-end="admin"] .ops-filterbar .ops-filter-select>select.inp{height:var(--ctrl-h);min-height:var(--ctrl-h)}
 }
 @media(pointer:coarse){
   [data-end] .filterbar :is(select.inp,.fb-btn,.fb-q .inp),[data-end] .filterbar .fb-acts .btn,
