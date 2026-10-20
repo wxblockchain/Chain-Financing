@@ -361,7 +361,9 @@
   /* 放款阶段的首行提示：按本笔放款状态说明轮到谁；资产方另说明为何暂不能发布新一轮。 */
   function disbursementTurn(p,gate){
     const q=db.quotes.find(x=>x.project===p.id&&x.state==='funding'),x=q&&CF.L7?.find(q);
-    if(!x||!related(q))return '';
+    if(!x)return '';
+    /* 非本笔当事的资金方在放款阶段无可办理动作：说明本轮已由哪家机构出资，放款信息只对双方开放。 */
+    if(!related(q))return S.role==='fund'?turn('wait',L('This round is being funded by ','本轮已由 ')+institution(q.fund)+L('',' 出资'),L('Disbursement details are visible only to the two parties of this business.','放款信息仅本笔双方可见。')):'';
     const fund=S.role==='fund',why=gate?' '+gate:'',id=gate?'cq-publish-why':'';
     /* 质押水位不安全或额度结论不可用时，资金方没有可提交的动作，双方都看到明确原因。 */
     const blocked=x.state==='pending'&&CF.L7.gate(x)!=='ok'?CF.L7.gateText(x,!fund):null;

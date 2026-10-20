@@ -661,6 +661,7 @@
       ['respond',['Awaiting quote confirmation','待确认报价'],'financing',p=>D.current(p)?.state==='quoted'],
       ['disburse',['Awaiting disbursement','待放款'],'financing',p=>Q?.data().quotes.some(q=>q.project===p.id&&q.l7?.state==='pending')],
       ['receipt',['Awaiting receipt confirmation','待放款确认'],'financing',p=>Q?.data().quotes.some(q=>q.project===p.id&&q.l7?.state==='waiting')],
+      ['disbursed',['Disbursed','已放款'],'financing',p=>Q?.data().quotes.some(q=>q.project===p.id&&q.l7?.state==='confirmed')],
       ['repaying',['Repayment in progress','还款中'],'repay',p=>Q?.data().quotes.some(q=>q.project===p.id&&q.l8&&!q.l8.settledAt)],
       ['settled',['Financing settled','已结清'],'global',p=>p.state==='settled'],
       ['closed',['Project closed','项目已关闭'],'global',p=>p.state==='closed']
