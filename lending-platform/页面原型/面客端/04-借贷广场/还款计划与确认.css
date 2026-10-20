@@ -117,18 +117,8 @@
 [data-market-redesign] .ls-detail #ls-repayments{height:auto}
 [data-market-redesign] .ls-detail #ls-repayments>.card{height:auto}
 [data-market-redesign] .ls-detail #ls-repayments>.card>.card-b{flex:none;overflow:visible;scrollbar-gutter:auto;padding:0}
-.rp-list-filters{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--border);margin:0}
-.rp-query{position:relative;display:flex;align-items:center;flex:1;max-width:560px;min-width:0;padding:0;border:0;background:transparent;gap:var(--sp-2)}
-.rp-query>svg{position:absolute;left:var(--sp-3);width:var(--sp-4);height:var(--sp-4);pointer-events:none;color:var(--muted)}
-.rp-query>.inp{flex:1;width:0;min-width:0;min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm);padding:0 var(--sp-3) 0 var(--sp-8);border:1px solid var(--control-border);border-radius:var(--radius-xs);box-shadow:none;background:var(--card)}
-.rp-query>.inp:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.ls-detail .rp-query>[data-act=rp-table-filter]{min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm);border-color:transparent;background:var(--accent-soft);color:var(--accent);padding-inline:var(--sp-4)}
-.rp-query>[data-act=rp-table-filter]:hover{background:var(--accent);color:var(--on-accent)}
-.ls-detail .rp-list-filters>[data-act=rp-table-reset]{border-color:transparent;background:transparent;color:var(--muted);min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm)}
-.rp-list-filters>[data-act=rp-table-reset]:hover{color:var(--text);background:var(--card-hover)}
-@media(max-width:600px),(pointer:coarse){
-  .ls-detail .rp-list-filters :is(.inp,.btn){height:var(--ctrl-h);min-height:var(--ctrl-h)}
-}
+/* Filters reuse the token-list filter bar; only the inset follows this card's edge-to-edge table. */
+[data-market-redesign] .ls-detail .ls-token-filters.rp-list-filters{padding:var(--sp-3) var(--sp-4)}
 .rp-record-scroll{overflow-x:auto;max-width:100%;padding:0 var(--sp-4)}
 .rp-record-table{table-layout:fixed;min-width:0;width:100%}
 .rp-record-table th,.rp-record-table td{vertical-align:top;white-space:normal;overflow-wrap:anywhere}
@@ -149,38 +139,14 @@
 .rp-pagination .btn{min-height:var(--ctrl-h-sm);height:var(--ctrl-h-sm);border-color:var(--border);font-weight:500}
 .rp-pagination>div{display:flex;align-items:center;gap:var(--sp-2)}
 
-/* The action stays reachable while only repayment information scrolls. */
-[data-market-redesign] .ls-detail .ls-flow[data-flow=repay][data-open=true]>.ls-flow-bar{box-shadow:none;background:var(--card)}
-[data-market-redesign] .ls-detail .ls-flow[data-flow=repay][data-open=true]>.ls-flow-bar .t b{color:var(--text)}
-.ls-flow[data-flow=repay][data-open=true]{flex:1}
-.ls-flow[data-flow=repay] .ls-flow-open{display:flex;flex-direction:column;overflow:hidden}
-.ls-flow[data-flow=repay] .ls-flow-axis{display:flex;flex:none;border:0;border-bottom:1px solid var(--border);background:var(--card);padding:var(--sp-1) var(--sp-4)}
-.ls-flow[data-flow=repay] .ls-flow-node{flex:1;height:var(--ctrl-h-sm);min-width:var(--ctrl-h)}
-.ls-flow[data-flow=repay] .ls-flow-node::before{left:0;right:0;top:50%;bottom:auto;width:auto;height:1px;transform:none}
-.ls-flow[data-flow=repay] .ls-flow-node:first-child::before{left:50%}
-.ls-flow[data-flow=repay] .ls-flow-node:last-child::before{right:50%}
-.ls-flow[data-flow=repay] .ls-node-pt{left:50%}
-.ls-flow[data-flow=repay] .ls-flow-node::after{display:none}
-.ls-flow[data-flow=repay] .ls-node-tip{top:100%;left:50%;transform:translateX(-50%)}
-.ls-flow[data-flow=repay] .ls-node-tip::before{display:none}
-.ls-flow[data-flow=repay] .ls-flow-node:first-child .ls-node-tip{left:0;transform:none}
-.ls-flow[data-flow=repay] .ls-flow-node:last-child .ls-node-tip{left:auto;right:0;transform:none}
-[data-market-redesign] .ls-detail .ls-flow[data-flow=repay] .ls-flow-info{min-height:0;overflow:auto;padding:var(--sp-4);flex:1;overscroll-behavior:contain}
-.ls-flow[data-flow=repay] .ls-flow-foot{flex:none;padding:var(--sp-3) var(--sp-4);border-top:1px solid var(--border);background:var(--card)}
-.ls-flow[data-flow=repay] .ls-flow-foot .ls-flow-do{margin:0}
-.ls-flow[data-flow=repay] .ls-flow-foot .btn{border-radius:var(--radius-xs);min-height:var(--ctrl-h);height:auto;white-space:normal}
+/* Repayment panel content; the rail framework (vertical nodes, inline action, whole-panel scroll) is shared with the financing flow. */
 .rp-panel .rp-period{padding-bottom:var(--sp-4)}
 .rp-panel .rp-period .rp-period-date{grid-column:1/-1;grid-row:3;text-align:left}
 .rp-panel .rp-period>.rp-amount{font-size:var(--fs-24)}
 .rp-panel .rp-progress{padding:0}
-[data-market-redesign] .ls-detail .ls-operations:has(.ls-flow[data-flow=repay][data-open=true]){height:var(--rp-rail-room);max-height:var(--rp-rail-room);border:1px solid var(--border);box-shadow:none}
-[data-market-redesign] .ls-detail .ls-operations:has(.ls-flow[data-flow=repay][data-open=true]) .ls-operations-head{background:var(--card)}
-[data-market-redesign] .ls-detail .ls-operations:has(.ls-flow[data-flow=repay][data-open=true]) .ls-operations-head h2{font-size:var(--ui-section-title);color:var(--text)}
-.ls-detail .ls-flow[data-flow=repay] .ls-flow-foot .ls-flow-do{display:grid;margin:0}
-.ls-detail .ls-flow[data-flow=repay] .ls-flow-foot .btn{width:100%;font-size:var(--ui-field-value);justify-content:center}
-.ls-detail .ls-flow[data-flow=repay] .ls-flow-bar .t .mk-money{display:inline-flex;align-items:baseline;gap:var(--sp-1);margin:0}
-.ls-detail .ls-flow[data-flow=repay] .ls-flow-bar .t .mk-money>span{display:inline;margin:0;line-height:inherit}
-.ls-detail .ls-flow[data-flow=repay] .ls-flow-bar:focus:not(:focus-visible){outline:none}
+.ls-detail .ls-flow[data-flow=repay]>.ls-flow-bar .t .mk-money{display:inline-flex;align-items:baseline;gap:var(--sp-1);margin:0}
+.ls-detail .ls-flow[data-flow=repay]>.ls-flow-bar .t .mk-money>span{display:inline;margin:0;line-height:inherit}
+.ls-detail .ls-flow[data-flow=repay]>.ls-flow-bar:focus:not(:focus-visible){outline:none}
 
 /* Account review and data entry share one desktop row; source order is unchanged. */
 .rp-entry-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.45fr);gap:var(--sp-6);min-width:0}
@@ -215,13 +181,7 @@ input#rp-files::file-selector-button:hover{background:var(--card-hover)}
   .rp-entry-layout>.rp-section+.rp-section{border-left:0;border-top:1px solid var(--border);padding:var(--sp-5) 0 0}
 }
 @media(max-width:900px),(pointer:coarse){
-  .ls-detail .rp-list-filters .btn,.rp-query>.inp,.rp-pagination .btn{min-height:var(--ctrl-h);height:auto}
-}
-@media(max-width:900px){
-  [data-market-redesign] .ls-detail .ls-operations:has(.ls-flow[data-flow=repay][data-open=true]){height:auto;max-height:none}
-  [data-market-redesign] .ls-detail .ls-flow[data-flow=repay] .ls-flow-open{max-height:none;overflow:visible}
-  [data-market-redesign] .ls-detail .ls-flow[data-flow=repay] .ls-flow-info{overflow:visible;flex:none}
-  .ls-flow[data-flow=repay] .ls-flow-node{min-height:var(--ctrl-h)}
+  .rp-pagination .btn{min-height:var(--ctrl-h);height:auto}
 }
 @media(max-width:640px){
   .drawer:has(.rp-drawer),.drawer:has(.rp-confirm){width:100vw}
@@ -232,9 +192,7 @@ input#rp-files::file-selector-button:hover{background:var(--card-hover)}
   .rp-inst-k{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal;font-size:var(--ui-field-label);color:var(--muted)}
   .rp-inst-cell .tag{align-self:flex-start}
   .rp-plan-facts .dl{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .rp-list-filters{padding:var(--sp-3);gap:var(--sp-1)}
-  .rp-query{max-width:none;gap:var(--sp-1)}
-  .ls-detail .rp-query>[data-act=rp-table-filter]{padding-inline:var(--sp-2)}
+  [data-market-redesign] .ls-detail .ls-token-filters.rp-list-filters{padding:var(--sp-3)}
   .rp-record-scroll{padding-inline:var(--sp-3)}
   .rp-pagination{align-items:flex-start;flex-direction:column}
   .rp-pagination>div{align-self:flex-end}
