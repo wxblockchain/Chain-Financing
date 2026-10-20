@@ -409,11 +409,12 @@ body.list-full .mk-list-frame{position:relative;inset:auto;z-index:auto;margin:0
 [data-market-redesign] .ls-detail .ls-comp-row{padding-block:var(--sp-3)}
 [data-market-redesign] .ls-detail .ls-token-filters{padding:0 0 var(--sp-3)}
 [data-market-redesign] .ls-detail .ls-action-rail{min-width:0}
-[data-market-redesign] .ls-detail .ls-operations{border:1px solid var(--border);box-shadow:none;background:var(--card);border-radius:var(--radius-sm)}
-[data-market-redesign] .ls-detail .ls-operations-head{background:var(--card);padding:var(--sp-4) var(--sp-5)}
-[data-market-redesign] .ls-detail .ls-operations-head h2{color:var(--text);font-size:var(--ui-section-title);font-weight:600}
-[data-market-redesign] .ls-detail .ls-flow[data-open=true]>.ls-flow-bar{background:var(--card-2);box-shadow:none}
-[data-market-redesign] .ls-detail .ls-flow[data-open=true]>.ls-flow-bar .t b{color:var(--text)}
+[data-market-redesign] .ls-detail .ls-operations{border:1px solid var(--accent-border);border-top:4px solid var(--accent);box-shadow:var(--shadow-soft);background:var(--card);border-radius:var(--radius-sm)}
+/* 项目办理区是详情页唯一的办理入口：蓝色边界、顶边与标题浅蓝底把它和只读记录区分开，当前展开的流程同样以浅蓝底和左侧色条标示；内容区保持白底，主按钮仍是最强的蓝色。 */
+[data-market-redesign] .ls-detail .ls-operations-head{background:var(--accent-soft);padding:var(--sp-4) var(--sp-5);gap:var(--sp-3)}
+[data-market-redesign] .ls-detail .ls-operations-head h2{color:var(--accent);font-size:var(--fs-19);font-weight:650}
+[data-market-redesign] .ls-detail .ls-flow[data-open=true]>.ls-flow-bar{background:var(--accent-soft);box-shadow:inset 3px 0 var(--accent)}
+[data-market-redesign] .ls-detail .ls-flow[data-open=true]>.ls-flow-bar .t b{color:var(--accent)}
 [data-market-redesign] .ls-detail .ls-flow-info{padding:var(--sp-5)}
 [data-market-redesign] .ls-detail .ls-pledge-action-group{align-items:stretch}
 [data-market-redesign] .ls-detail .ls-operations .btn.primary{min-height:44px;font-size:var(--fs-14)}
