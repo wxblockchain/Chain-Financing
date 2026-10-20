@@ -10,7 +10,7 @@ const OPS=CF.opsAccountModule;
 const OPS_PAGES=['P-O-AL-01','P-O-AL-03','P-O-AL-04','P-O-AL-05','P-O-AL-06','P-O-AL-07'];
 const S=CF.S, L=(en,zh)=>{translations.set(en,[en,zh]);translations.set(zh,[en,zh]);return CF.L(en,zh);}, esc=CF.esc, $=id=>document.getElementById(id), clone=x=>JSON.parse(JSON.stringify(x));
 const E=value=>translations.has(value)?CF.L(...translations.get(value)):value;
-const STORE='hc-operations-agreements-v13', VIEW=STORE+'-view';
+const STORE='hc-operations-agreements-v14', VIEW=STORE+'-view';
 const P={list:'P-O-AG-01',detail:'P-O-AG-02',edit:'P-O-AG-03',version:'P-O-AG-04'};
 /* 生效日界按推荐取 UTC 24:00（Q-O-AG-12）：上传当天结束的那一刻；展示按本人时区换算。 */
 const boundary=(t=Date.now())=>{const d=new Date(t);return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)).toISOString();};
@@ -20,12 +20,14 @@ const tag=s=>CF.tag(({active:'ok',scheduled:'warn',cancelled:'gray',offline:'dan
 let db,work=null,dirty=false,busy=false,uploading=false,errors={},failure='',previewFailed=false,tab='basic',pending=null,oldHash='',viewHash='';
 let bulk=false,returnHash='',lastHash='',onModule=false,wasSigned=false;
 try{bulk=sessionStorage.getItem(STORE+'-bulk')==='true';}catch(e){}
-let filters={q:'',types:[],uses:[],states:[],from:'',to:'',sort:'default',dir:'desc',page:1,size:20},inputFilters=clone(filters);
+/* 协议列表与操作进度均固定每页 20 条，无条数切换（Q-O-AG-11 裁定）。 */
+const PAGE_SIZE=20;
+let filters={q:'',states:[],page:1},inputFilters=clone(filters);
 try{filters=Object.assign(filters,JSON.parse(sessionStorage.getItem(VIEW)||'{}'));inputFilters=clone(filters);}catch(e){}
 function seed(){
  /* 演示时刻：已生效、已归档版本取固定历史时点；待生效版本按当前时刻取最近的 UTC 24:00。 */
  const day=Date.parse(boundary())-86400000,at='2026-09-18T02:00:00Z';
- const vers=(n,state,file,extra={},t=state==='archived'?'2026-09-11T02:00:00Z':at)=>Object.assign({n,state,file:Object.assign(clone(AG_FILES[file]),{uploaded:t}),note:['Updated agreement content','更新协议内容'],reagree:false,plan:state==='scheduled'?boundary():null,at:t,effective:state==='active'?'2026-09-19T00:00:00Z':state==='archived'?'2026-09-12T00:00:00Z':null,archived:state==='archived'?'2026-09-19T00:00:00Z':null,revision:1,failed:false},extra);
+ const vers=(n,state,file,extra={},t=state==='archived'?'2026-09-11T02:00:00Z':at)=>Object.assign({n,state,file:Object.assign(clone(AG_FILES[file]),{uploaded:t}),note:['Updated agreement content','更新协议内容'],plan:state==='scheduled'?boundary():null,at:t,effective:state==='active'?'2026-09-19T00:00:00Z':state==='archived'?'2026-09-12T00:00:00Z':null,archived:state==='archived'?'2026-09-19T00:00:00Z':null,revision:1,failed:false},extra);
  const pendingAt=new Date(Math.max(Date.now()-3600000,day)).toISOString(),failedAt=new Date(day-3*3600000).toISOString();
  const a=(id,name,type,uses,versions,extra={})=>Object.assign({id,name,type,uses,formats:['PDF'],maxMB:5,online:true,description:['Terms used in the indicated customer journeys.','用于以下业务环节的条款。'],versions,next:Math.max(0,...versions.map(v=>v.n))+1,updated:'2026-09-18T02:00:00Z',logs:[]},extra);
  return {agreements:[
@@ -58,7 +60,7 @@ const params=()=>new URLSearchParams(location.hash.split('?')[1]||'');
 const current=()=>params().has('id')?db.agreements.find(a=>a.id===params().get('id')):(S.page===P.list?db.agreements[0]:null);
 const target=a=>scheduled(a);
 const operator=()=>L('Demo operator · op***@example.invalid','演示运营人员 · op***@example.invalid');
-let activityState='default',activityPage=1,activitySize=20,expandedLog=null;
+let activityState='default',activityPage=1,expandedLog=null;
 const scheduled=a=>a?.versions.find(v=>v.state==='scheduled');
 const active=a=>a?.versions.find(v=>v.state==='active');
 const state=a=>!a.online?'offline':active(a)?'active':scheduled(a)?'scheduled':'unpublished';
@@ -91,14 +93,12 @@ const useNames={registration:['Registration','注册'],financing:['Financing req
 function log(a,action,n,summary,actor='operator',extra={}){a.logs.unshift(Object.assign({at:now(),action,n,summary,actor,identity:actor==='system'?null:['Demo operator · op***@example.invalid','演示运营人员 · op***@example.invalid'],result:'success',region:actor==='system'?null:['Shanghai','上海']},extra));a.updated=now();}
 function heading(title,desc,actions=''){return `<div class="page-head ag-heading"><div><h1 class="page-title">${esc(title)}</h1>${desc?`<p class="page-desc">${desc}</p>`:''}</div><div class="page-actions">${CF.tag('gray',L('Demo data','演示数据'))}${actions}</div></div>`;}
 // Route state is browse-only: identifiers never grant query or write permission.
-const defaults=()=>({q:'',types:[],uses:[],states:[],from:'',to:'',sort:'default',dir:'desc',page:1,size:20});
+const defaults=()=>({q:'',states:[],page:1});
 function cleanView(value){
  const v=value&&typeof value==='object'?value:{},d=defaults();
  d.q=typeof v.q==='string'?v.q:'';
- for(const [k,allowed] of Object.entries({types:Object.keys(typeNames),uses:Object.keys(useNames),states:['active','scheduled','unpublished','offline']}))d[k]=Array.isArray(v[k])?v[k].filter(x=>allowed.includes(x)):[];
- for(const k of ['from','to'])d[k]=typeof v[k]==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v[k])?v[k]:'';
- d.sort=['default','versions','effective'].includes(v.sort)?v.sort:'default';d.dir=v.dir==='asc'?'asc':'desc';
- d.page=Number.isSafeInteger(Number(v.page))?Math.max(1,Number(v.page)):1;d.size=[20,50,100].includes(Number(v.size))?Number(v.size):20;return d;
+ d.states=Array.isArray(v.states)?v.states.filter(x=>['active','scheduled','unpublished','offline'].includes(x)):[];
+ d.page=Number.isSafeInteger(Number(v.page))?Math.max(1,Number(v.page)):1;return d;
 }
 filters=cleanView(filters);inputFilters=clone(filters);
 function readView(raw){try{return cleanView(JSON.parse(raw));}catch(e){return defaults();}}
@@ -106,11 +106,11 @@ function listHash(){return '#'+CF.ENTRY[P.list]+'?view='+encodeURIComponent(JSON
 function route(page,extra={}){return '#'+CF.ENTRY[page]+'?'+new URLSearchParams(Object.assign({id:params().get('id')||current()?.id||'',tab,view:JSON.stringify(filters)},extra));}
 function navigate(page,a=current(),extra={}){location.hash=page===P.list?(viewHash||listHash()):route(page,Object.assign({id:a?.id||''},extra));}
 function saveView(){filters=cleanView(filters);try{sessionStorage.setItem(VIEW,JSON.stringify(filters));}catch(e){}viewHash=listHash();if(S.page===P.list&&location.hash!==viewHash)location.hash=viewHash;}
-let routeChanged=true,tabFocus=false,toActivity=false,moreFilters=false,filterToggleFocus=false;
+let routeChanged=true,tabFocus=false,toActivity=false;
 const positions=new Map();
 function remember(hash=oldHash){if(!hash)return;const active=document.activeElement;const item={y:window.scrollY,focus:active?.id||''};positions.set(hash,item);try{sessionStorage.setItem(VIEW+'-position:'+hash,JSON.stringify(item));}catch(e){}}
 function position(hash){try{return positions.get(hash)||JSON.parse(sessionStorage.getItem(VIEW+'-position:'+hash)||'null');}catch(e){return null;}}
-function resetFilter(){filters={q:'',types:[],uses:[],states:[],from:'',to:'',sort:'default',dir:'desc',page:1,size:20};inputFilters=clone(filters);S.st='default';saveView();}
+function resetFilter(){filters=defaults();inputFilters=clone(filters);S.st='default';saveView();}
 /* 拒绝访问与业务空结果分开；拒绝内容读取时不探测或披露目标对象。 */
 function noAccess(){
  const back=B('accessBack','Back to account','返回账户');
@@ -138,24 +138,22 @@ function multiselect(key,label,options,compact=false){let values=inputFilters[ke
 function appliedFilters(){
  const values=[];
  if(filters.q)values.push(L('Search','搜索')+' · '+filters.q);
- for(const [key,name,options] of [['types',L('Type','协议类型'),typeNames],['uses',L('Touchpoints','适用业务环节'),useNames],['states',L('Status','协议状态'),labels]])if(filters[key].length)values.push(name+' · '+filters[key].map(k=>txt(options[k])).join(' / '));
- if(filters.from)values.push(L('Updated from','更新开始日期')+' · '+filters.from+' ('+S.tz+')');
- if(filters.to)values.push(L('Updated through','更新结束日期')+' · '+filters.to+' ('+S.tz+')');
+ if(filters.states.length)values.push(L('Status','协议状态')+' · '+filters.states.map(k=>txt(labels[k])).join(' / '));
  return values.length?`<div class="ag-applied"><span>${L('Applied filters','已应用筛选')}</span>${values.map(v=>CF.tag('gray',esc(v))).join('')}</div>`:'';
 }
-function matches(a){let q=filters.q.trim().toLowerCase();return (!q||[...a.name,a.id].some(t=>t.toLowerCase().includes(q)))&&(!filters.types.length||filters.types.includes(a.type))&&(!filters.uses.length||a.uses.some(u=>filters.uses.includes(u)))&&(!filters.states.length||filters.states.includes(state(a)))&&(!filters.from||new Date(a.updated)>=new Date(filters.from+'T00:00:00'))&&(!filters.to||new Date(a.updated)<=new Date(filters.to+'T23:59:59.999'));}
+function matches(a){let q=filters.q.trim().toLowerCase();return (!q||[...a.name,a.id].some(t=>t.toLowerCase().includes(q)))&&(!filters.states.length||filters.states.includes(state(a)));}
 function listPage(){
  const head=heading(L('Agreements','协议管理'),L('Manage content and versions of system-preset agreements.','维护系统预置协议的内容与版本。'));
  if(!canQuery()||S.st==='denied')return head+stateSurface();
- const fs=`<div class="ag-filter"><div class="filterbar ops-filterbar ag-toolbar"><div class="ag-status">${multiselect('states',L('Agreement status','协议状态'),Object.fromEntries(['active','scheduled','unpublished','offline'].map(k=>[k,labels[k]])),true)}</div><button type="button" class="btn" id="ag-more" data-act="ag-filters" aria-expanded="${moreFilters}" aria-controls="ag-more-filters">${L('More filters','更多筛选')}${filters.types.length||filters.uses.length||filters.from||filters.to?' · '+[!!filters.types.length,!!filters.uses.length,!!filters.from,!!filters.to].filter(Boolean).length:''} <span aria-hidden="true">${moreFilters?'⌃':'⌄'}</span></button><div class="fb-q ops-filter-query"><label class="sr-only" for="ag-q">${L('Agreement name or code','协议名称或标识')}</label><input class="inp" id="ag-q" type="search" data-filter="q" placeholder="${L('Search name or code','搜索协议名称或标识')}" value="${esc(inputFilters.q)}"></div><div class="fb-acts">${B('reset','Reset','重置')}${B('query','Search','查询','',true)}</div></div><div class="ag-more-filters ops-filter-fields" id="ag-more-filters"${moreFilters?'':' hidden'}>${multiselect('types',L('Agreement type','协议类型'),typeNames)}${multiselect('uses',L('Applicable business touchpoints','适用业务环节'),useNames)}<div class="field"><label for="ag-from">${L('Updated from','更新开始日期')} (${esc(S.tz)})</label><input class="inp" type="date" id="ag-from" data-filter="from" value="${esc(inputFilters.from)}"></div><div class="field"><label for="ag-to">${L('Updated through','更新结束日期')}</label><input class="inp" type="date" id="ag-to" data-filter="to" value="${esc(inputFilters.to)}"></div></div></div>${appliedFilters()}`;
+ const fs=`<div class="ag-filter"><div class="filterbar ops-filterbar ag-toolbar"><div class="ag-status">${multiselect('states',L('Agreement status','协议状态'),Object.fromEntries(['active','scheduled','unpublished','offline'].map(k=>[k,labels[k]])),true)}</div><div class="fb-q ops-filter-query"><label class="sr-only" for="ag-q">${L('Agreement name or code','协议名称或标识')}</label><input class="inp" id="ag-q" type="search" data-filter="q" placeholder="${L('Search name or code','搜索协议名称或标识')}" value="${esc(inputFilters.q)}"></div><div class="fb-acts">${B('reset','Reset','重置')}${B('query','Search','查询','',true)}</div></div></div>${appliedFilters()}`;
+ /* 固定顺序：默认排序值，再按最近更新从新到旧；不提供排序切换。 */
  let rows=(bulk?Array.from({length:47},(_,i)=>{let a=clone(db.agreements[i%db.agreements.length]);a.id+='-'+(i+1);a.baseId=db.agreements[i%db.agreements.length].id;return a;}):db.agreements).filter(matches);
- if(filters.sort!=='default')rows.sort((a,b)=>{let x=filters.sort==='versions'?a.versions.length:new Date(active(a)?.effective||0).getTime(),y=filters.sort==='versions'?b.versions.filter(v=>v.state!=='draft').length:new Date(active(b)?.effective||0).getTime();return (x-y)*(filters.dir==='asc'?1:-1);});
- if(filters.sort==='default')rows.sort((a,b)=>(a.order||0)-(b.order||0)||new Date(b.updated)-new Date(a.updated));
- let total=['empty','noresult'].includes(S.st)?0:rows.length,maxPage=Math.max(1,Math.ceil(total/filters.size));filters.page=Math.min(filters.page,maxPage);
+ rows.sort((a,b)=>(a.order||0)-(b.order||0)||new Date(b.updated)-new Date(a.updated));
+ let total=['empty','noresult'].includes(S.st)?0:rows.length,maxPage=Math.max(1,Math.ceil(total/PAGE_SIZE));filters.page=Math.min(filters.page,maxPage);
  let surf=stateSurface()||(!rows.length?CF.empty(L('No agreements match these filters','没有符合条件的协议'),L('Try different filters.','请调整筛选条件。'),B('reset','Reset filters','重置筛选')):null);
- const sortHeader=(key,en,zh)=>`<th aria-sort="${filters.sort===key?(filters.dir==='asc'?'ascending':'descending'):'none'}"><button data-act="ag-sort" data-v="${key}">${L(en,zh)} ${filters.sort===key?(filters.dir==='asc'?'↑':'↓'):'↕'}</button></th>`;
- const table=`<div class="tablewrap" tabindex="0" role="region" aria-label="${L('Agreement ledger','协议台账')}"><table class="tbl ag-table"><colgroup><col style="width:16%"><col style="width:10%"><col style="width:13%"><col style="width:13%"><col style="width:11%"><col style="width:7.5%"><col style="width:12%"><col style="width:11%"><col style="width:6.5%"></colgroup><thead><tr><th>${L('Agreement name / code','协议名称 / 标识')}</th><th>${L('Agreement type','协议类型')}</th><th>${L('Applicable business touchpoints','适用业务环节')}</th><th>${L('Current version','当前生效版本')}</th>${sortHeader('effective','Effective at','生效时间')}${sortHeader('versions','Versions','版本数')}<th>${L('Agreement status','协议状态')}</th><th>${L('Updated','最近更新')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.slice((filters.page-1)*filters.size,filters.page*filters.size).map(a=>{let v=active(a),s=scheduled(a);return `<tr><td><span class="cell-main">${esc(txt(a.name))}</span><span class="ag-sub mono">${esc(a.id)}</span></td><td>${esc(txt(typeNames[a.type]))}</td><td>${a.uses.slice(0,3).map(u=>esc(txt(useNames[u]))).join('<br>')}${a.uses.length>3?`<details><summary class="actlink">+${a.uses.length-3}</summary>${a.uses.slice(3).map(u=>esc(txt(useNames[u]))).join('<br>')}</details>`:''}</td><td>${v?'v'+v.n:'—'}${s?`<span class="ag-sub">${L('Scheduled','待生效')} v${s.n}<br>${time(s.plan)}</span>`:''}</td><td>${time(v?.effective)}</td><td class="num">${a.versions.length}</td><td>${tag(state(a))}</td><td>${time(a.updated)}</td><td class="col-act">${link('detail','View','查看',a.baseId||a.id,false,'',a.id)}</td></tr>`;}).join('')}</tbody></table></div>`;
- return head+`<div class="card">${fs}${surf||table}<div class="pager"><span class="total">${L(total+' agreements','共 '+total+' 份协议')}</span><label for="ag-size">${L('Rows','每页')}</label><select class="inp" id="ag-size" style="width:80px">${[20,50,100].map(n=>`<option${n===filters.size?' selected':''}>${n}</option>`).join('')}</select>${B('page','Previous','上一页',filters.page-1,false,filters.page===1)}<span>${filters.page} / ${maxPage}</span>${B('page','Next','下一页',filters.page+1,false,filters.page===maxPage)}</div></div>`;
+ const versionCell=(v,at,extra='')=>v?`<span class="mono">v${v.n}</span><span class="ag-sub">${time(at)}</span>${extra}`:'—';
+ const table=`<div class="tablewrap" tabindex="0" role="region" aria-label="${L('Agreement ledger','协议台账')}"><table class="tbl ag-table"><colgroup><col style="width:22%"><col style="width:9%"><col style="width:17%"><col style="width:18%"><col style="width:11%"><col style="width:16%"><col style="width:7%"></colgroup><thead><tr><th>${L('Agreement name / code','协议名称 / 标识')}</th><th>${L('Agreement type','协议类型')}</th><th>${L('Current version / effective at','当前生效版本 / 生效时间')}</th><th>${L('Pending version / takes effect','待生效版本 / 生效时间')}</th><th>${L('Agreement status','协议状态')}</th><th>${L('Updated','最近更新')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.slice((filters.page-1)*PAGE_SIZE,filters.page*PAGE_SIZE).map(a=>{let v=active(a),s=scheduled(a);return `<tr><td><span class="cell-main">${esc(txt(a.name))}</span><span class="ag-sub mono">${esc(a.id)}</span></td><td>${esc(txt(typeNames[a.type]))}</td><td>${versionCell(v,v?.effective)}</td><td>${versionCell(s,s?.plan,s?.failed?`<span class="ag-error">${L('Last activation failed','上次生效失败')}</span>`:'')}</td><td>${tag(state(a))}</td><td>${time(a.updated)}</td><td class="col-act">${link('detail','View','查看',a.baseId||a.id,false,'',a.id)}</td></tr>`;}).join('')}</tbody></table></div>`;
+ return head+`<div class="card">${fs}${surf||table}<div class="pager"><span class="total">${L(total+' agreements','共 '+total+' 份协议')}</span>${B('page','Previous','上一页',filters.page-1,false,filters.page===1)}<span>${filters.page} / ${maxPage}</span>${B('page','Next','下一页',filters.page+1,false,filters.page===maxPage)}</div></div>`;
 }
 function versionActions(a,v){return `<a class="actlink" id="ag-version-${v.n}" href="${esc(route(P.version,{v:v.n,tab:'history'}))}">${L('View','查看')}</a>`+link('download','Download agreement','下载协议',v.n);}
 /* 当前生效版本与待生效版本的只读查询入口，不另立信息域；历史版本入口只在版本历史内。 */
@@ -164,10 +162,9 @@ function workingVersions(a){
  if(!rows.length)return '';
  return `<div class="ops-facts-region ag-working"><dl class="dl ops-facts">${rows.map(([v,label])=>fact(esc(label),`<span class="mono">v${v.n}</span> <a class="actlink" href="${esc(route(P.version,{v:v.n,tab:'basic'}))}">${L('View','查看')}</a>${v.state==='scheduled'?`<span class="ag-sub">${L('Takes effect','生效时间')} ${time(v.plan)}</span>${v.failed?`<span class="ag-error">${L('Last activation failed','上次生效失败')}</span>`:''}`:''}`)).join('')}</dl></div>`;
 }
-/* 覆盖上传的留痕只记文件名、说明与标记的变化；不含文件内容指纹或可取文件的入口。 */
+/* 覆盖上传的留痕只记文件名与说明的变化；不含文件内容指纹或可取文件的入口。 */
 function changeRows(before,after){
- const yn=x=>txt(x?['Yes','是']:['No','否']);
- const rows=[['File','文件',before.file||'—',after.file||'—',true],['Change note','变更说明',txt(before.note)||'—',txt(after.note)||'—'],['Re-consent flag','需重新同意标记',yn(before.reagree),yn(after.reagree)]].filter(r=>r[4]||r[2]!==r[3]);
+ const rows=[['File','文件',before.file||'—',after.file||'—',true],['Change note','变更说明',txt(before.note)||'—',txt(after.note)||'—']].filter(r=>r[4]||r[2]!==r[3]);
  return `<div class="tablewrap"><table class="tbl ag-changes"><thead><tr><th>${L('Change','变更项')}</th><th>${L('Before','覆盖前')}</th><th>${L('After','覆盖后')}</th></tr></thead><tbody>${rows.map(r=>`<tr><th>${L(r[0],r[1])}</th><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function activity(a){
@@ -176,8 +173,8 @@ function activity(a){
  else if(activityState==='error')body=CF.empty(L('Activity could not be loaded','操作进度加载失败'),L('Try again. Agreement information is still available.','请重试，协议定义仍可查看。'),B('activityRetry','Retry','重试'));
  else if(activityState==='loading')body=`<div class="card-b" role="status">${L('Loading activity…','正在加载操作进度…')}</div>`;
  else {
- const records=activityState==='empty'?[]:a.logs.slice().sort((x,y)=>new Date(y.at)-new Date(x.at));const pages=Math.max(1,Math.ceil(records.length/activitySize));activityPage=Math.min(activityPage,pages);
- body=records.length?`<div class="tablewrap"><table class="tbl ag-activity"><colgroup><col style="width:16%"><col style="width:9%"><col style="width:19%"><col style="width:18%"><col style="width:11%"><col style="width:27%"></colgroup><thead><tr>${[['Activity type','操作类型'],['Related version','关联版本'],['Operator','操作人'],['Time','操作时间'],['Result','结果'],['Summary','变更摘要']].map(x=>`<th>${L(...x)}</th>`).join('')}</tr></thead><tbody>${records.slice((activityPage-1)*activitySize,activityPage*activitySize).map(r=>`<tr><td>${esc(txt(r.action))}</td><td class="mono">${r.n?'v'+r.n:'—'}</td><td>${r.actor==='system'?L('System','系统'):esc(txt(r.identity)||operator())}</td><td>${time(r.at)}</td><td>${CF.tag(r.result==='failed'?'danger':'ok',r.result==='failed'?L('Failed','失败'):L('Success','成功'))}</td><td><button class="actlink ag-log-summary" id="ag-log-${a.logs.indexOf(r)}" data-act="ag-logToggle" data-v="${a.logs.indexOf(r)}" aria-expanded="${expandedLog===a.logs.indexOf(r)}">${esc(txt(r.summary))}${r.when?' '+time(r.when):''}</button></td></tr>${expandedLog===a.logs.indexOf(r)?`<tr><td colspan="6"><div class="ag-log-detail">${r.region?`<p>${L('Region','地区')} · ${esc(txt(r.region))}</p>`:''}${r.reason?`<p>${L('Reason','原因')} · ${esc(txt(r.reason))}</p>`:''}${r.before?changeRows(r.before,r.after):''}</div></td></tr>`:''}`).join('')}</tbody></table></div><div class="pager"><span class="total">${L(records.length+' records','共 '+records.length+' 条记录')}</span><label for="ag-activity-size">${L('Rows','每页')}</label><select class="inp" id="ag-activity-size" style="width:80px">${[20,50,100].map(n=>`<option${n===activitySize?' selected':''}>${n}</option>`).join('')}</select>${B('activityPage','Previous','上一页',activityPage-1,false,activityPage===1)}<span>${activityPage} / ${pages}</span>${B('activityPage','Next','下一页',activityPage+1,false,activityPage===pages)}</div>`:CF.empty(L('No activity yet','暂无操作记录'),'','');
+ const records=activityState==='empty'?[]:a.logs.slice().sort((x,y)=>new Date(y.at)-new Date(x.at));const pages=Math.max(1,Math.ceil(records.length/PAGE_SIZE));activityPage=Math.min(activityPage,pages);
+ body=records.length?`<div class="tablewrap"><table class="tbl ag-activity"><colgroup><col style="width:16%"><col style="width:9%"><col style="width:19%"><col style="width:18%"><col style="width:11%"><col style="width:27%"></colgroup><thead><tr>${[['Activity type','操作类型'],['Related version','关联版本'],['Operator','操作人'],['Time','操作时间'],['Result','结果'],['Summary','变更摘要']].map(x=>`<th>${L(...x)}</th>`).join('')}</tr></thead><tbody>${records.slice((activityPage-1)*PAGE_SIZE,activityPage*PAGE_SIZE).map(r=>`<tr><td>${esc(txt(r.action))}</td><td class="mono">${r.n?'v'+r.n:'—'}</td><td>${r.actor==='system'?L('System','系统'):esc(txt(r.identity)||operator())}</td><td>${time(r.at)}</td><td>${CF.tag(r.result==='failed'?'danger':'ok',r.result==='failed'?L('Failed','失败'):L('Success','成功'))}</td><td><button class="actlink ag-log-summary" id="ag-log-${a.logs.indexOf(r)}" data-act="ag-logToggle" data-v="${a.logs.indexOf(r)}" aria-expanded="${expandedLog===a.id+':'+a.logs.indexOf(r)}">${esc(txt(r.summary))}${r.when?' '+time(r.when):''}</button></td></tr>${expandedLog===a.id+':'+a.logs.indexOf(r)?`<tr><td colspan="6"><div class="ag-log-detail">${r.region?`<p>${L('Region','地区')} · ${esc(txt(r.region))}</p>`:''}${r.reason?`<p>${L('Reason','原因')} · ${esc(txt(r.reason))}</p>`:''}${r.before?changeRows(r.before,r.after):''}</div></td></tr>`:''}`).join('')}</tbody></table></div><div class="pager"><span class="total">${L(records.length+' records','共 '+records.length+' 条记录')}</span>${B('activityPage','Previous','上一页',activityPage-1,false,activityPage===1)}<span>${activityPage} / ${pages}</span>${B('activityPage','Next','下一页',activityPage+1,false,activityPage===pages)}</div>`:CF.empty(L('No activity yet','暂无操作记录'),'','');
  }
  return `<section class="card" id="ag-activity"><div class="card-head">${L('Activity','操作进度')}</div>${body}</section>`;
 }
@@ -196,10 +193,10 @@ function startEdit(){
  const a=current();if(!a||!canQuery()||!a.online||!(canUpload()||(canPublish()&&scheduled(a)))){deny('upload',a);return;}
  work=null;dirty=false;errors={};navigate(P.edit,a,{v:''});
 }
-/* 本次办理只保存在页面内：所选文件、可选的变更说明与需重新同意标记；提交前不改变任何版本。 */
-function freshWork(a){const p=scheduled(a);return {a:a.id,file:null,note:p?txt(p.note):'',reagree:p?!!p.reagree:false};}
+/* 本次办理只保存在页面内：所选文件与可选的变更说明；提交前不改变任何版本。 */
+function freshWork(a){const p=scheduled(a);return {a:a.id,file:null,note:p?txt(p.note):''};}
 /* 只有已选文件或改过说明、标记才算未提交内容；移除文件后若无其他改动，可直接离开。 */
-function syncDirty(){const a=current();if(!work||!a){dirty=false;return;}const f=freshWork(a);dirty=!!work.file||work.note!==f.note||work.reagree!==f.reagree;}
+function syncDirty(){const a=current();if(!work||!a){dirty=false;return;}const f=freshWork(a);dirty=!!work.file||work.note!==f.note;}
 function editor(){
  const a=current(),back=B('detail','Back to agreement','返回协议',a?.id);
  if(!canQuery()||S.st!=='default')return heading(L('Update agreement','更新协议'),'')+stateSurface();
@@ -213,7 +210,7 @@ function editor(){
   :L('v'+p.n+' takes effect at '+CF.fmtTime(p.plan)+'. Uploading a new file replaces its file; the version and effective time stay the same.','v'+p.n+' 将于 '+CF.fmtTime(p.plan)+' 生效。上传新文件将覆盖它的文件，版本号与生效时间不变。')):'';
  const pendingFile=p?`<div class="ag-pending"><p class="ag-sub ag-file-caption">${L('Pending file','待生效文件')} · v${p.n}</p>${CF.fileRow({key:'agreement-pending',name:p.file.name,state:'ready',meta:size(p.file)+' · '+p.file.format,status:L('Uploaded ','上传于 ')+CF.fmtTime(p.file.uploaded),previewable:!!Object.values(AG_FILES).find(f=>f.hash===p.file.hash),preview:{act:'ag-previewPending'},download:{act:'ag-download',value:p.n}})}</div>`:'';
  const zone=up?`${p?`<p class="ag-sub ag-file-caption">${L('New file','新文件')}</p>`:''}<div id="ag-upload" class="ag-upload${w.file?' has-file':''}" tabindex="0" role="group" aria-label="${L('Choose agreement file','选择协议文件')}" aria-describedby="ag-file-error">${w.file?CF.fileRow({key:'agreement-new',name:w.file.name,state:busy?'uploading':'ready',meta:size(w.file)+' · '+w.file.format,status:busy?L('Uploading…','正在上传…'):L('Not uploaded yet','尚未上传'),replace:{act:'ag-chooseFile'},remove:{act:'ag-removeFile'},disabled:busy||uploading}):'<b>'+L('Drop a file here','将文件拖放到此处')+'</b>'}<p>${L('One file','单个文件')} · ${a.formats.join(' / ')} · ${L('Up to ','不超过 ')}${a.maxMB} MB</p><input type="file" id="ag-file" class="sr-only" accept="${a.formats.map(f=>'.'+f.toLowerCase()).join(',')}"${locked?' disabled':''}>${!w.file?`<label class="btn" for="ag-file">${L('Choose file','选择文件')}</label>`:''}${uploading?`<p role="status">${L('Checking file…','正在检查文件…')}</p>`:''}</div>`:'';
- return `<div class="ag-editor">${heading(L('Update agreement','更新协议'),desc)}${notice}<div class="ag-form"><section class="card"><div class="card-head"><h2>${CF.fieldLabel(L('Agreement file','协议文件'),up)}</h2></div><div class="card-b">${pendingFile}${zone}<div id="ag-file-error" class="ag-error" role="alert">${esc(E(errors.file)||'')}</div></div></section><section class="card"><div class="card-head"><h2>${L('Release settings','发布设置')}</h2></div><div class="card-b"><dl class="dl ag-release">${kv(L('Version','版本号'),`<span class="mono">v${p?p.n:a.next}</span> · ${p?L('Overwrites the pending version','覆盖待生效版本'):L('New version','新版本')}`)}${kv(L('Takes effect','生效时间'),`${time(at)}<span class="ag-sub">${L('Daily at 24:00 UTC','每天 UTC 24:00 生效')}</span>`)}${kv(L('Current effective version','当前生效版本'),`<span class="mono">${live?'v'+live.n:'—'}</span>`)}</dl><div class="field"><label for="ag-note">${L('Change note (optional)','变更说明（选填）')}</label><textarea id="ag-note" class="inp" aria-invalid="${!!errors.note}" aria-describedby="ag-count ag-note-error"${locked?' disabled':''}>${esc(w.note)}</textarea><span class="ag-sub" id="ag-count">${Array.from(w.note).length} / 500</span><span class="ag-error" id="ag-note-error">${esc(E(errors.note)||'')}</span></div><div class="ag-setting-flag"><label class="ag-row"><input id="ag-reagree" type="checkbox" aria-describedby="ag-reagree-hint"${w.reagree?' checked':''}${locked?' disabled':''}>${L('Re-consent flag','需重新同意标记')}</label><p class="ag-sub" id="ag-reagree-hint">${L('Stores the flag only. No user prompt or notification is sent.','仅保留标记，不触发用户弹窗或通知。')}</p></div></div></section></div><div class="ag-error" id="ag-submit-error" role="alert">${esc(E(errors.submit)||'')}</div><div class="ag-actions">${B('back','Cancel editing','取消编辑','',false,busy||uploading)}${p?B('cancel','Cancel scheduled version','撤销待生效',p.n,false,!revoke||busy||uploading):''}${B('upload',busy?'Uploading…':'Upload',busy?'上传中…':'上传','',true,!up||!w.file||busy||uploading,up&&!w.file?L('Choose a file first','请先选择文件'):'')}</div></div>`;
+ return `<div class="ag-editor">${heading(L('Update agreement','更新协议'),desc)}${notice}<div class="ag-form"><section class="card"><div class="card-head"><h2>${CF.fieldLabel(L('Agreement file','协议文件'),up)}</h2></div><div class="card-b">${pendingFile}${zone}<div id="ag-file-error" class="ag-error" role="alert">${esc(E(errors.file)||'')}</div></div></section><section class="card"><div class="card-head"><h2>${L('Release settings','发布设置')}</h2></div><div class="card-b"><dl class="dl ag-release">${kv(L('Version','版本号'),`<span class="mono">v${p?p.n:a.next}</span> · ${p?L('Overwrites the pending version','覆盖待生效版本'):L('New version','新版本')}`)}${kv(L('Takes effect','生效时间'),`${time(at)}<span class="ag-sub">${L('Daily at 24:00 UTC','每天 UTC 24:00 生效')}</span>`)}${kv(L('Current effective version','当前生效版本'),`<span class="mono">${live?'v'+live.n:'—'}</span>`)}</dl><div class="field"><label for="ag-note">${L('Change note (optional)','变更说明（选填）')}</label><textarea id="ag-note" class="inp" aria-invalid="${!!errors.note}" aria-describedby="ag-count ag-note-error"${locked?' disabled':''}>${esc(w.note)}</textarea><span class="ag-sub" id="ag-count">${Array.from(w.note).length} / 500</span><span class="ag-error" id="ag-note-error">${esc(E(errors.note)||'')}</span></div></div></section></div><div class="ag-error" id="ag-submit-error" role="alert">${esc(E(errors.submit)||'')}</div><div class="ag-actions">${B('back','Cancel editing','取消编辑','',false,busy||uploading)}${p?B('cancel','Cancel scheduled version','撤销待生效',p.n,false,!revoke||busy||uploading):''}${B('upload',busy?'Uploading…':'Upload',busy?'上传中…':'上传','',true,!up||!w.file||busy||uploading,up&&!w.file?L('Choose a file first','请先选择文件'):'')}</div></div>`;
 }
 function focusError(){setTimeout(()=>{let id=errors.file?'ag-upload':errors.note?'ag-note':'ag-submit-error';$(id)?.focus();},0);}
 function delayed(fn){busy=true;CF.render();setTimeout(()=>{busy=false;fn();CF.render();},550);}
@@ -231,11 +228,11 @@ function submitUpload(){
   if(failure==='submit'){failure='';errors.submit=L('Upload failed. The pending and effective versions are unchanged. Your file is retained; try again.','上传失败，待生效版本与当前生效版本均未改变，已选文件保留，请重试。');focusError();return;}
   const file=Object.assign({},w.file,{uploaded:now()}),p=scheduled(a);let v;
   if(p){
-   const before={file:p.file.name,note:clone(p.note),reagree:!!p.reagree};
-   Object.assign(p,{file,note:w.note,reagree:w.reagree,at:now()});p.revision++;v=p;
-   log(a,['Overwrite upload','覆盖上传'],p.n,[before.file+' → '+file.name,before.file+' → '+file.name],'operator',{before,after:{file:file.name,note:w.note,reagree:w.reagree}});
+   const before={file:p.file.name,note:clone(p.note)};
+   Object.assign(p,{file,note:w.note,at:now()});p.revision++;v=p;
+   log(a,['Overwrite upload','覆盖上传'],p.n,[before.file+' → '+file.name,before.file+' → '+file.name],'operator',{before,after:{file:file.name,note:w.note}});
   }else{
-   v={n:a.next++,state:'scheduled',file,note:w.note,reagree:w.reagree,plan:boundary(),at:now(),effective:null,archived:null,revision:1,failed:false};a.versions.push(v);
+   v={n:a.next++,state:'scheduled',file,note:w.note,plan:boundary(),at:now(),effective:null,archived:null,revision:1,failed:false};a.versions.push(v);
    log(a,['Upload','上传'],v.n,[file.name+'; takes effect',file.name+'，生效时间'],'operator',{when:v.plan});
   }
   persist();work=null;dirty=false;errors={};tab='basic';activityPage=1;activityState='default';navigate(P.detail,a,{tab:'basic',v:''});
@@ -289,7 +286,7 @@ function versionPage(){
  const when=isScheduled?fact(L('Scheduled to take effect','计划生效时间'),time(v.plan)+(v.failed?`<span class="ag-error">${L('Last activation failed','上次生效失败')}</span>`:''))
   :cancelled?fact(L('Originally scheduled for','原计划生效时间'),time(v.plan))
   :fact(L('Effective at','实际生效时间'),time(v.effective));
- return head+`<div class="ag-stack"><section class="card"><div class="card-head ag-section-head"><h2>${L('Version information','版本信息')}</h2>${canRecords()?link('toActivity','Who uploaded, overwrote or cancelled it: see Activity','上传、覆盖与撤销的人员及时间见操作进度'):''}</div><div class="card-b"><div class="ops-facts-region"><dl class="dl ops-facts">${fact(L('Agreement','所属协议'),esc(txt(a.name)))}${fact(L('Agreement code','协议标识'),esc(a.id))}${fact(L('Version ID','版本标识'),esc(a.id)+'-v'+v.n)}${fact(L('File','文件名称'),esc(v.file.name))}${fact(L('Format / size','格式 / 大小'),v.file.format+' · '+size(v.file))}${fact(L('Uploaded','上传时间'),time(v.file.uploaded))}${when}${fact(L('Archived at','归档时间'),time(v.archived))}${cancelled?fact(L('Cancelled at','取消时间'),time(v.cancelledAt))+fact(L('Cancellation reason','取消原因'),esc(txt(v.cancelReason))||'—'):''}${fact(L('Change note','变更说明'),esc(txt(v.note))||'—')}${fact(L('Re-consent flag','需重新同意标记'),v.reagree?L('Yes','是'):L('No','否'))}${fact(L('Content fingerprint','文件内容指纹'),`<span class="hash">${esc(v.file.hash)}</span>${link('copy','Copy','复制',v.file.hash)}<span class="ag-sub">${isScheduled?L('Not yet effective; can be overwritten before it takes effect.','尚未生效，生效前可被覆盖。'):L('Fixed once effective.','生效后固定。')}</span>`,true)}</dl></div></div></section><section class="card"><div class="card-head"><h2>${L('Agreement file','协议文件')}</h2></div><div class="card-b">${CF.fileRow({key:a.id+'-v'+v.n,name:v.file.name,state:'ready',meta:v.file.format+' · '+size(v.file),status:txt(labels[v.state]),download:{act:'ag-download',value:v.n}})}${filePreview(v.file)}</div></section><div>${back}</div></div>`;
+ return head+`<div class="ag-stack"><section class="card"><div class="card-head ag-section-head"><h2>${L('Version information','版本信息')}</h2>${canRecords()?link('toActivity','Who uploaded, overwrote or cancelled it: see Activity','上传、覆盖与撤销的人员及时间见操作进度'):''}</div><div class="card-b"><div class="ops-facts-region"><dl class="dl ops-facts">${fact(L('Agreement','所属协议'),esc(txt(a.name)))}${fact(L('Agreement code','协议标识'),esc(a.id))}${fact(L('Version ID','版本标识'),esc(a.id)+'-v'+v.n)}${fact(L('File','文件名称'),esc(v.file.name))}${fact(L('Format / size','格式 / 大小'),v.file.format+' · '+size(v.file))}${fact(L('Uploaded','上传时间'),time(v.file.uploaded))}${when}${fact(L('Archived at','归档时间'),time(v.archived))}${cancelled?fact(L('Cancelled at','取消时间'),time(v.cancelledAt))+fact(L('Cancellation reason','取消原因'),esc(txt(v.cancelReason))||'—'):''}${fact(L('Change note','变更说明'),esc(txt(v.note))||'—')}${fact(L('Content fingerprint','文件内容指纹'),`<span class="hash">${esc(v.file.hash)}</span>${link('copy','Copy','复制',v.file.hash)}<span class="ag-sub">${isScheduled?L('Not yet effective; can be overwritten before it takes effect.','尚未生效，生效前可被覆盖。'):L('Fixed once effective.','生效后固定。')}</span>`,true)}</dl></div></div></section><section class="card"><div class="card-head"><h2>${L('Agreement file','协议文件')}</h2></div><div class="card-b">${CF.fileRow({key:a.id+'-v'+v.n,name:v.file.name,state:'ready',meta:v.file.format+' · '+size(v.file),status:txt(labels[v.state]),download:{act:'ag-download',value:v.n}})}${filePreview(v.file)}</div></section><div>${back}</div></div>`;
 }
 function workPreviewLayer(){const p=scheduled(current());return {title:L('Agreement file preview','协议文件预览'),html:canQuery()?filePreview(p?.file):CF.empty(L('Access denied','无权限'),'',''),foot:B('close','Close','关闭')};}
 /* 选择文件只在本页检查与读取，点“上传”才提交；检查失败不影响已有版本。 */
@@ -346,20 +343,16 @@ function beforeRender(){
 }
 function afterRender(){
  OPS.afterRender();
- if(filterToggleFocus){filterToggleFocus=false;$('ag-more')?.focus({preventScroll:true});}
  if(routeChanged){routeChanged=false;const hash=location.hash,at=position(hash),focusTab=tabFocus;tabFocus=false;requestAnimationFrame(()=>{if(location.hash!==hash)return;S.toTop=false;window.scrollTo(0,at?.y||0);if(toActivity){toActivity=false;const log=$('ag-activity');if(log){log.scrollIntoView({block:'start'});log.querySelector('.card-head')?.setAttribute('tabindex','-1');log.querySelector('.card-head')?.focus({preventScroll:true});return;}}const el=focusTab?$('ag-tab-'+tab):(at?.focus?$(at.focus):null);if(el)el.focus({preventScroll:true});else if(S.page===P.list&&at)$('ag-q')?.focus({preventScroll:true});});}
  document.querySelectorAll('[role="tab"]').forEach(el=>el.addEventListener('keydown',e=>{const tabs=[...document.querySelectorAll('[role="tab"]')],i=tabs.indexOf(el);let n;if(e.key==='ArrowRight')n=(i+1)%tabs.length;else if(e.key==='ArrowLeft')n=(i+tabs.length-1)%tabs.length;else if(e.key==='Home')n=0;else if(e.key==='End')n=tabs.length-1;else return;e.preventDefault();act('ag-tab',tabs[n].dataset.v);CF.render();}));
  document.querySelectorAll('.ag-filter details').forEach(el=>{el.addEventListener('toggle',()=>{if(el.open){document.querySelectorAll('.ag-filter details').forEach(other=>{if(other!==el)other.open=false;});fitFilterOptions();}});el.addEventListener('keydown',e=>{if(e.key==='Escape'){el.open=false;el.querySelector('summary').focus();e.stopPropagation();}});});
  document.querySelectorAll('[data-filter]').forEach(el=>el.addEventListener('change',()=>{let key=el.dataset.filter;if(el.type==='checkbox'){inputFilters[key]=Array.from(document.querySelectorAll(`[data-filter="${key}"]:checked`)).map(x=>x.value);const count=inputFilters[key].length;$('ag-value-'+key).textContent=count?L(count+' selected','已选 '+count+' 项'):L('All','全部');$('ag-value-'+key).closest('summary').dataset.on=count?'1':'0';}else inputFilters[key]=el.value;}));
  $('ag-q')?.addEventListener('input',e=>inputFilters.q=e.target.value);
  $('ag-q')?.addEventListener('keydown',e=>{if(e.key==='Enter'){act('ag-query');CF.render();}});
- $('ag-activity-size')?.addEventListener('change',e=>{activitySize=Number(e.target.value);activityPage=1;CF.render();});
- $('ag-size')?.addEventListener('change',e=>{filters.size=Number(e.target.value);filters.page=1;saveView();CF.render();});
  $('ag-file')?.addEventListener('change',e=>upload(e.target.files));
  const drop=$('ag-upload');if(drop){drop.addEventListener('dragover',e=>e.preventDefault());drop.addEventListener('drop',e=>{e.preventDefault();upload(e.dataTransfer.files);});drop.addEventListener('keydown',e=>{if(e.target===drop&&(e.key==='Enter'||e.key===' ')){e.preventDefault();$('ag-file').click();}});}
  $('ag-note')?.addEventListener('input',e=>{work.note=e.target.value;syncDirty();$('ag-count').textContent=Array.from(work.note).length+' / 500';if(errors.note&&Array.from(work.note).length<=500){errors.note='';$('ag-note-error').textContent='';$('ag-note').setAttribute('aria-invalid','false');}});
  $('ag-note')?.addEventListener('blur',()=>{if(Array.from(work.note).length>500){errors.note=L('Use no more than 500 characters.','变更说明不得超过 500 字符。');$('ag-note-error').textContent=errors.note;$('ag-note').setAttribute('aria-invalid','true');}});
- $('ag-reagree')?.addEventListener('change',e=>{work.reagree=e.target.checked;syncDirty();});
 }
 function beforeAct(action,value,e){if(busy||uploading){if(action==='closelayer'||action==='ag-close'||action.startsWith('ag-')||action==='lang'||action==='menu'){return true;}}
  if(action==='closelayer'&&e?.target.closest('[data-stop]')&&!e.target.closest('button'))return false;
@@ -368,10 +361,8 @@ function beforeAct(action,value,e){if(busy||uploading){if(action==='closelayer'|
  return false;}
 function act(action,v,e){if(!action.startsWith('ag-'))return false;let a=current();let kind=action.slice(3);
  switch(kind){
- case 'filters':moreFilters=!moreFilters;filterToggleFocus=true;break;
- case 'query':if(inputFilters.from&&inputFilters.to&&inputFilters.from>inputFilters.to){CF.toast(L('End date must be on or after start date.','结束日期不能早于开始日期。'));break;}filters=Object.assign(clone(inputFilters),{page:1});S.st='default';saveView();break;
+ case 'query':filters=Object.assign(clone(inputFilters),{page:1});S.st='default';saveView();break;
  case 'reset':resetFilter();break;
- case 'sort':filters.dir=filters.sort===v&&filters.dir==='desc'?'asc':'desc';filters.sort=v;saveView();break;
  case 'page':filters.page=Number(v);saveView();break;
  case 'list':if(dirty){pending={kind:'leave',a:a.id,target:viewHash||listHash()};CF.openLayer('modal','agConfirm');}else navigate(P.list);break;
  case 'detail':if(dirty){pending={kind:'leave',a:a.id,target:route(P.detail,{tab:'basic',v:''})};CF.openLayer('modal','agConfirm');}else{tab='basic';work=null;errors={};navigate(P.detail,db.agreements.find(x=>x.id===v)||a,{tab:'basic',v:''});}break;
@@ -396,19 +387,19 @@ function act(action,v,e){if(!action.startsWith('ag-'))return false;let a=current
  case 'missingQuery':OPS.onAct('ops-preview','all');OPS.onAct('ops-grant','9');S.st='default';work=null;dirty=false;errors={};break;
  case 'grant':OPS.onAct('ops-grant',v);S.st='default';work=null;dirty=false;errors={};if(tab==='history'&&!canHistory())tab='basic';break;
  case 'expire':OPS.onAct('ops-session-expire');break;
- case 'logToggle':expandedLog=expandedLog===Number(v)?null:Number(v);break;
+ case 'logToggle':{const key=a.id+':'+Number(v);expandedLog=expandedLog===key?null:key;}break;
  case 'activityPage':activityPage=Number(v);break;
  case 'activityRetry':activityState='default';break;
  case 'activityState':activityState=v;S.demo=false;break;
  case 'attempt':if(!deny('upload',a))CF.toast(L('Upload permission is granted.','当前具有上传权限。'));break;
  case 'state':S.st=v;S.demo=false;break;
  case 'failure':failure=v;CF.toast(L('Next-operation setting updated','已设置下次操作结果'));break;
- case 'otherUpload':if(!a||!a.online){CF.toast(L('Open an online agreement first.','请先打开已上线的协议。'));break;}{const p=scheduled(a),file=Object.assign(clone(AG_FILES['demo-4']),{uploaded:now()}),identity=['Demo operator B · ob***@example.invalid','演示运营人员 B · ob***@example.invalid'];if(p){const before={file:p.file.name,note:clone(p.note),reagree:!!p.reagree};p.file=file;p.revision++;log(a,['Overwrite upload','覆盖上传'],p.n,[before.file+' → '+file.name,before.file+' → '+file.name],'operator',{identity,before,after:{file:file.name,note:p.note,reagree:!!p.reagree}});}else{const nv={n:a.next++,state:'scheduled',file,note:'',reagree:false,plan:boundary(),at:now(),effective:null,archived:null,revision:1,failed:false};a.versions.push(nv);log(a,['Upload','上传'],nv.n,[file.name+'; takes effect',file.name+'，生效时间'],'operator',{identity,when:nv.plan});}persist();CF.toast(L('Another operator uploaded a file to this agreement.','已模拟其他运营人员先上传。'));}break;
+ case 'otherUpload':if(!a||!a.online){CF.toast(L('Open an online agreement first.','请先打开已上线的协议。'));break;}{const p=scheduled(a),file=Object.assign(clone(AG_FILES['demo-4']),{uploaded:now()}),identity=['Demo operator B · ob***@example.invalid','演示运营人员 B · ob***@example.invalid'];if(p){const before={file:p.file.name,note:clone(p.note)};p.file=file;p.revision++;log(a,['Overwrite upload','覆盖上传'],p.n,[before.file+' → '+file.name,before.file+' → '+file.name],'operator',{identity,before,after:{file:file.name,note:p.note}});}else{const nv={n:a.next++,state:'scheduled',file,note:'',plan:boundary(),at:now(),effective:null,archived:null,revision:1,failed:false};a.versions.push(nv);log(a,['Upload','上传'],nv.n,[file.name+'; takes effect',file.name+'，生效时间'],'operator',{identity,when:nv.plan});}persist();CF.toast(L('Another operator uploaded a file to this agreement.','已模拟其他运营人员先上传。'));}break;
  case 'previewFail':previewFailed=true;CF.toast(L('The next preview will fail.','下次预览将显示失败。'));break;
  case 'retryPreview':previewFailed=false;break;
  case 'settle':case 'settleFail':if(!scheduled(a))CF.toast(L('Open an agreement with a pending version.','请先打开有待生效版本的协议。'));else {settle(a,kind==='settleFail');CF.toast(L('Scheduled result updated','已更新定时处理结果'));}break;
  case 'bulk':bulk=!bulk;try{sessionStorage.setItem(STORE+'-bulk',String(bulk));}catch(e){}filters.page=1;saveView();break;
- case 'resetData':db=seed();persist();work=null;dirty=false;errors={};failure='';bulk=false;CF.opsAuth.seedDemo('admin');try{sessionStorage.removeItem(STORE+'-bulk');}catch(e){}S.st='default';previewFailed=false;tab='basic';activityState='default';activityPage=1;activitySize=20;resetFilter();navigate(P.list);CF.toast(L('Demo data reset','演示数据已重置'));break;
+ case 'resetData':db=seed();persist();work=null;dirty=false;errors={};failure='';bulk=false;CF.opsAuth.seedDemo('admin');try{sessionStorage.removeItem(STORE+'-bulk');}catch(e){}S.st='default';previewFailed=false;tab='basic';activityState='default';activityPage=1;resetFilter();navigate(P.list);CF.toast(L('Demo data reset','演示数据已重置'));break;
  default:return false;
  }return true;
 }

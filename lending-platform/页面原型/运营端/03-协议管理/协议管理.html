@@ -19,7 +19,6 @@
 .ag-table th,.ag-table td{overflow-wrap:anywhere}
 .ag-table th.col-act,.ag-table td.col-act{position:sticky;right:0;background:var(--card);width:68px}
 [data-end="admin"] table.ag-table thead th{white-space:normal;overflow-wrap:normal;word-break:normal;color:var(--muted)}
-.ag-table .num{text-align:right}
 .ag-table .ag-sub{font-size:var(--ui-field-label)}
 .ag-table .tag{white-space:nowrap;text-align:left}
 /* Same shared filterbar composition as Project contracts; values and query semantics stay local. */
@@ -40,8 +39,6 @@
 .ag-options label:hover{background:var(--card-hover)}
 .ag-options input{accent-color:var(--accent)}
 .ag-filter details[open]>summary{border-color:var(--accent)}
-.ag-more-filters .field>details{min-width:120px;max-width:100%}
-.ag-more-filters .field>details>.inp{width:100%}
 @media(max-width:600px),(pointer:coarse){
   [data-end="admin"] .ag-toolbar .ag-status summary{height:var(--ctrl-h);min-height:var(--ctrl-h)}
   .ag-options label{min-height:var(--ctrl-h)}
@@ -62,10 +59,6 @@
 .ag-editor textarea{height:144px;resize:vertical;padding:var(--sp-3)}
 .ag-editor .field{margin-bottom:var(--sp-5)}
 .ag-editor .field:last-child{margin-bottom:0}
-.ag-setting-flag{padding-top:var(--sp-5);border-top:1px solid var(--row-line)}
-.ag-setting-flag .ag-row{gap:var(--sp-2)}
-.ag-setting-flag p{margin:var(--sp-2) 0 0}
-.ag-setting-flag input{margin:0;width:var(--sp-4);height:var(--sp-4)}
 .ag-editor .ag-release{margin:0 0 var(--sp-5);padding-bottom:var(--sp-4);border-bottom:1px solid var(--row-line)}
 .ag-pending{margin-bottom:var(--sp-5)}
 .ag-editor>.note{margin-bottom:var(--sp-5)}
@@ -85,8 +78,6 @@
 .ag-form>*{min-width:0}
 .ag-stack .dl dd{overflow-wrap:anywhere}
 .ag-table .ag-zone{display:block;font-size:var(--fs-11);white-space:nowrap}
-.ag-table th button{font:inherit;color:inherit;text-align:left;white-space:normal}
-.ag-table th button:hover{color:var(--accent)}
 .ag-table .actlink{display:inline-flex;align-items:center;min-height:var(--ctrl-h-sm);padding-inline:var(--sp-2);border-radius:var(--radius-xs)}
 .ag-table .actlink:hover{background:var(--accent-soft)}
 /* Keep review controls outside the business canvas and its fixed action column. */
