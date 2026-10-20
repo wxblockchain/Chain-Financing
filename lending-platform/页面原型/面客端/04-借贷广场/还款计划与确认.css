@@ -132,10 +132,13 @@
 .rp-record-scroll{overflow-x:auto;max-width:100%;padding:0 var(--sp-4)}
 .rp-record-table{table-layout:fixed;min-width:0;width:100%}
 .rp-record-table th,.rp-record-table td{vertical-align:top;white-space:normal;overflow-wrap:anywhere}
-.rp-record-table th:first-child{width:20%}
-.rp-record-table th:nth-child(2){width:21%}
-.rp-record-table th.rp-num{width:27%}
-.rp-record-table:has(th.rp-num) th:nth-child(3){width:18%}
+.rp-record-table th.rp-col-request{width:19%}
+.rp-record-table th.rp-col-loan{width:19%}
+.rp-record-table th.rp-col-funder{width:13%}
+.rp-record-table th.rp-col-time{width:22%}
+.rp-record-table th.rp-col-amount{width:15%}
+.rp-record-table th.rp-col-status{width:12%}
+.rp-record-table[data-private=false] th{width:25%}
 .rp-record-table .rp-num{text-align:right}
 .rp-list-late{color:var(--warn);font-size:var(--ui-field-label);margin-top:var(--sp-1)}
 .rp-record-table .hint{margin-top:var(--sp-1)}

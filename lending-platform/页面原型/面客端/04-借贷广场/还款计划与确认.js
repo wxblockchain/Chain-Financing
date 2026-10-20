@@ -111,24 +111,25 @@
     if(!listViews.has(project.id))listViews.set(project.id,{query:'',state:'',overdue:'',page:1});
     const view=listViews.get(project.id),all=available(project).filter(x=>(!view.state||stateOf(x)===view.state)&&(!view.overdue||(businessOverdue(x).length?'yes':'no')===view.overdue)&&[x.request,x.id,x.record?.id,funder(x)].some(v=>String(v||'').toLowerCase().includes(view.query.toLowerCase()))).sort((a,b)=>Date.parse(b.confirmedAt)-Date.parse(a.confirmedAt)||b.id.localeCompare(a.id)),pages=Math.max(1,Math.ceil(all.length/5));
     view.page=Math.min(view.page,pages);
-    const rows=all.slice((view.page-1)*5,view.page*5),heads=[L('Application / business','融资申请 / 业务'),L('Disbursement no.','放款编号'),L('Funder','出资机构'),...(privateColumns?[L('Current instalment','本期应还')]:[]),L('Status','状态')];
-    const cell=(label,html,cls='')=>'<td data-label="'+E(label)+'"'+(cls?' class="'+cls+'"':'')+'><div class="rp-cell-value">'+html+'</div></td>';
-    /* 一笔一行：标识两列与放款清单同构；本期应还合并期次、应还日、开放与逾期；状态列给业务状态、逾期提示与待确认期次。 */
-    const current=(x,p8,p)=>{if(!party(x))return '<span class="hint">'+L('Parties only','仅本笔双方可见')+'</span>';if(!p8)return '<span class="hint">—</span>';if(!p)return '<span class="hint">'+L('No instalments awaiting repayment','暂无待还期次')+'</span>';const late=overdue(p);
-      return '<b class="mono">'+amount(p.settlement,x.ccy)+'</b><div class="hint">'+L('Instalment ','第 ')+p.seq+' / '+p8.periods.length+L('',' 期')+' · '+date(p.due)+'</div>'+(x.ccy==='USD'?'':'<div class="hint">'+L('Total ','合计 ')+amount(p.total)+'</div>')+(now()<openAt(p)?'<div class="hint">'+L('Opens ','开放于 ')+time(iso(openAt(p)))+'</div>':'')+(late?'<div class="rp-list-late">'+L('Overdue ','逾期 ')+late+L(' days',' 天')+'</div>':'');};
+    const rows=all.slice((view.page-1)*5,view.page*5),heads=[[L('Application / business','融资申请 / 业务'),'rp-col-request'],[L('Disbursement no.','放款编号'),'rp-col-loan'],[L('Funder','出资机构'),'rp-col-funder'],...(privateColumns?[[L('Repayment time','还款时间'),'rp-col-time'],[L('Current instalment','本期应还'),'rp-col-amount rp-num']]:[]),[L('Status','状态'),'rp-col-status']];
+    const cell=(i,html)=>'<td data-label="'+E(heads[i][0])+'" class="'+heads[i][1]+'"><div class="rp-cell-value">'+html+'</div></td>';
+    /* 一笔一行：还款时间承接应还日、期次与入口开放时刻；本期应还只展示金额；逾期归状态。沿用同一期次选取与双方隐私范围。 */
+    const privateEmpty=(x,p8,p)=>!party(x)?L('Parties only','仅本笔双方可见'):!p8?'—':!p?L('No instalments awaiting repayment','暂无待还期次'):'';
+    const current=(x,p8,p)=>{const empty=privateEmpty(x,p8,p);return empty?'<span class="hint">'+empty+'</span>':'<b class="mono">'+amount(p.settlement,x.ccy)+'</b>'+(x.ccy==='USD'?'':'<div class="hint">'+L('Total ','合计 ')+amount(p.total)+'</div>');};
+    const repaymentTime=(x,p8,p)=>{const empty=privateEmpty(x,p8,p);return empty?'<span class="hint">'+empty+'</span>':'<span>'+date(p.due)+'</span><div class="hint">'+L('Due date (UTC) · instalment ','应还日（UTC）· 第 ')+p.seq+' / '+p8.periods.length+L('',' 期')+'</div>'+(now()<openAt(p)?'<div class="hint">'+L('Opens ','开放于 ')+time(iso(openAt(p)))+'</div>':'');};
     const content=rows.map(x=>{
       const p8=quote(x.id)?.l8,p=p8?.periods.filter(p=>p.state==='due').sort((a,b)=>a.due.localeCompare(b.due)||a.seq-b.seq)[0],pending=p8?.periods.filter(p=>p.state==='pending')||[];
       return '<tr data-act="rp-detail" data-v="'+E(x.id)+'" tabindex="0" role="button" aria-label="'+L('View repayment ','查看还款 ')+E(x.request)+'">'
-        +cell(heads[0],'<strong>'+E(x.request)+'</strong><div class="hint mono">'+E(x.id)+'</div>')
-        +cell(heads[1],'<span class="mono">'+E(x.record.id)+'</span>')
-        +cell(heads[2],E(funder(x)))
-        +(privateColumns?cell(heads[3],current(x,p8,p),'rp-num'):'')
-        +cell(heads.at(-1),repaymentState(x)+overdueBadge(x)+(party(x)&&pending.length?'<div class="hint">'+L('Instalment ','第 ')+pending.map(p=>p.seq).join(L(', ','、'))+L(' awaiting confirmation',' 期待还款确认')+'</div>':''))+'</tr>';
+        +cell(0,'<strong>'+E(x.request)+'</strong><div class="hint mono">'+E(x.id)+'</div>')
+        +cell(1,'<span class="mono">'+E(x.record.id)+'</span>')
+        +cell(2,E(funder(x)))
+        +(privateColumns?cell(3,repaymentTime(x,p8,p))+cell(4,current(x,p8,p)):'')
+        +cell(heads.length-1,repaymentState(x)+overdueBadge(x)+(party(x)&&p&&overdue(p)?'<div class="rp-list-late">'+L('Overdue ','逾期 ')+overdue(p)+L(' days',' 天')+'</div>':'')+(party(x)&&pending.length?'<div class="hint">'+L('Instalment ','第 ')+pending.map(p=>p.seq).join(L(', ','、'))+L(' awaiting confirmation',' 期待还款确认')+'</div>':''))+'</tr>';
     }).join('');
     /* 筛选与项目内代币清单同构：条件下拉即时生效，编号搜索回车或离开输入框后生效，重置为轻操作。 */
     const filtered=!!(view.query||view.state||view.overdue);
     return '<div class="filterbar ls-token-filters rp-list-filters" role="search" data-rp-project="'+E(project.id)+'" aria-label="'+L('Filter repayments','筛选还款业务')+'">'+CF.filterSelect('rp-tf-state',L('Business status','业务状态'),[['',L('All','全部')],['generating',L('Plan generating','计划生成中')],['repaying',L('Repaying','还款中')],['settled',L('Settled','已结清')]],view.state)+CF.filterSelect('rp-tf-overdue',L('Overdue','逾期'),[['',L('All','全部')],['yes',L('Overdue · unsettled','逾期 · 未结清')],['no',L('Not overdue','无逾期')]],view.overdue)+CF.filterSearch('rp-tf-keyword',L('Application / business / disbursement no.','申请 / 业务 / 放款编号'),view.query,L('Search application, business or disbursement number','搜索融资申请、业务或放款编号'))+'<div class="fb-acts">'+b('table-reset',L('Reset','重置'),project.id)+'</div></div>'
-      +'<div class="rp-record-scroll"><table class="tbl rp-record-table"><thead><tr>'+heads.map(h=>'<th scope="col"'+(privateColumns&&h===heads[3]?' class="rp-num"':'')+'>'+h+'</th>').join('')+'</tr></thead><tbody>'+content+'</tbody></table></div>'
+      +'<div class="rp-record-scroll"><table class="tbl rp-record-table" data-private="'+privateColumns+'"><thead><tr>'+heads.map(([label,cls])=>'<th scope="col" class="'+cls+'">'+label+'</th>').join('')+'</tr></thead><tbody>'+content+'</tbody></table></div>'
       +(!rows.length?CF.empty(L('No repayment information','暂无还款信息'),filtered?L('No repayments match these filters. Adjust or reset them.','没有符合条件的还款业务，请调整或重置筛选。'):L('Confirmed disbursements appear here, including plans being generated.','确认到账后可查看还款计划和办理还款。')):'')
       +'<div class="rp-pagination"><span class="hint">'+all.length+L(' businesses',' 笔业务')+' · '+L('5 per page','每页 5 条')+'</span><div>'+b('table-page',L('Previous','上一页'),project.id+'|'+(view.page-1),false,view.page===1)+' <span>'+view.page+' / '+pages+'</span> '+b('table-page',L('Next','下一页'),project.id+'|'+(view.page+1),false,view.page===pages)+'</div></div>';
   }
