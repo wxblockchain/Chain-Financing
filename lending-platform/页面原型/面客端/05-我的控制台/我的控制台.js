@@ -227,7 +227,7 @@
      const relevant=r.periods.filter(p=>p.id===r.current?.id||p.state==='pending'||p.state!=='settled'&&p.overdue>0||p.id===selected?.id);
      add('mc-periods',L('Instalments to review','相关期次'),(r.overdue?CF.note('warn',L('Overdue instalments remain unsettled. Submitted instalments await the funder; their overdue days stay frozen.','存在尚未结清的逾期期次；已提交期次待资金方确认，逾期天数保持冻结。')):'')+(selected?CF.note('',L('Reading selected instalment: ','当前选定原期次：')+E(selected.id)):'')+relevant.map(p=>'<article class="mc-record" data-selected="'+(selected?.id===p.id)+'" id="mc-period-'+E(p.id)+'"><div class="mc-record-head"><b>'+L('Instalment ','第 ')+p.seq+L('',' 期')+'</b>'+badge(p.status)+'</div>'+periodFacts(r,p)+(within(match,p.status)&&match?'<p class="mc-small">'+L('Matches the list filter','匹配列表期次筛选')+'</p>':'')+b('period',selected?.id===p.id?L('Selected for reading','已选定阅读'):L('Select this instalment','选择此期阅读'),p.id,false,selected?.id===p.id)+'</article>').join('')+(r.pending.length?'<p class="mc-small">'+L('Confirmation has no deadline. Submission does not confirm receipt.','确认没有时限，提交不代表已确认到账。')+'</p>':'')+'<p class="mc-small">'+L('Read the complete schedule and historical records in the lending marketplace.','完整计划及其他未来、历史期次请前往借贷广场阅读。')+'</p>');
    }
-   add('mc-account',L('Funder’s repayment receiving account','资金方还款收款账户'),account(r.deal.record.account,L('Awaiting submission by the funder','待资金方提交')));
+   add('mc-account',L('Funder’s receiving account','资金方收款账户'),account(r.deal.record.account,L('Awaiting submission by the funder','待资金方提交')));
    return out;
  }
  function details(k,r){
@@ -262,7 +262,7 @@
        add('mc-progress',L('Disbursement progress','放款进展'),dl([[L('Accepted at','接受报价时间'),time(r.acceptedAt)],[L('Funder registers disbursement','资金方登记放款'),x.record?time(x.record.at):L('Not submitted','未提交')],[L('Asset holder confirms receipt','资产方确认到账'),x.confirmedAt?time(x.confirmedAt):L('Not confirmed','未确认')],[L('Disbursement record','放款记录编号'),x.record?copy(x.record.id):L('No disbursement record yet','尚无放款记录')],[L('Current handler','当前处理方'),r.fdState==='pending'?L('Funder','资金方'):r.fdState==='confirming'?L('Asset holder','资产方'):L('No current disbursement action','无当前放款办理')]]));
        add('mc-agreement',L('Credit agreement','授信协议'),agreements(x.owner,x.fund));
        add('mc-asset-account',L('Asset holder’s disbursement receiving account','资产方放款收款账户'),account(x.account,L('No receiving account on record','暂无收款账户记录')));
-       add('mc-account',L('Funder’s repayment receiving account','资金方还款收款账户'),account(x.record?.account,L('Awaiting submission by the funder','待资金方提交')));
+       add('mc-account',L('Funder’s receiving account','资金方收款账户'),account(x.record?.account,L('Awaiting submission by the funder','待资金方提交')));
        if(x.state==='waiting')add('mc-waiting',L('Awaiting receipt confirmation','等待到账确认'),CF.note('',L('Confirmation has no deadline. The repayment schedule is not generated, in-flight amounts stay occupied and collateral is not released until receipt is confirmed. If funds have not arrived, leave the business unconfirmed and contact the counterparty or platform support.','确认没有时限。确认前还款计划不生成，在途金额继续占用，质押不释放。尚未到账请保持未确认，并联系对方或平台客服人员。')));
        if(['confirmed','settled'].includes(x.state))add('mc-related',L('Related repayment','关联还款业务'),link('detail',L('View repayment summary','查看同笔还款摘要'),'repayments|'+r.id));
      }
