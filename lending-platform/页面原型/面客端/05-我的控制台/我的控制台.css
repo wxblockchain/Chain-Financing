@@ -5,6 +5,12 @@
 .mc-summary .s{min-width:0}.mc-summary .v{overflow-wrap:anywhere}
 .mc-summary .k{min-height:1.6em}.mc-summary .n{max-width:32ch}
 .mc-summary .mc-count-unit{margin-left:var(--sp-1)}
+/* Marketplace palette and shared currency artwork; counts and dates keep their own units. */
+.mc-root .stat-strip .s[data-tone=info] .v{color:var(--info,var(--accent-strong))}
+.mc-root .stat-strip .s[data-tone=pos] .v{color:var(--ok)}
+.mc-stat-money{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:0 var(--sp-1);max-width:100%;vertical-align:baseline}
+.mc-stat-money .cf-asset-icon{align-self:center;margin-inline-end:var(--sp-1)}
+.mc-summary .n .cf-asset-icon{width:14px;height:14px}
 .mc-root .page-title:focus{outline:none}
 .mc-assets{display:flex;gap:var(--sp-7);padding:var(--card-pad);margin-bottom:var(--sp-4);align-items:center;flex-wrap:wrap}
 .mc-assets>div+div{border-left:1px solid var(--border);padding-left:var(--sp-7)}
