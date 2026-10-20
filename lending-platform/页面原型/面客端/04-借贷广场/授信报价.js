@@ -42,6 +42,8 @@
   }
   function draftDirty(){return creditDirty()||(['quote','confirm'].includes(editingStage())&&!!(flow.ccy||flow.rate))||editingStage()==='reject'&&!!flow.reason?.trim()||editingStage()==='respond'&&flow.responseCheckpoint!==JSON.stringify(qFlow()?.progress);}
   function requestClose(destination='close'){if(flow.stage==='discard'){flow.stage=flow.discard.stage;flow.discard=false;flow.restoreStep=true;CF.render();return;}if(draftDirty()){flow.discard={stage:flow.stage,destination};flow.stage='discard';CF.render();}else if(destination==='request')returnRequest();else closeFlow();}
+  /* 接受或拒绝成功后不自动打开详情：从办理区进入的关闭并留在原处；从融资申请详情进入的回到该详情。 */
+  function settled(message){if(flow.returnRequest){returnRequest();flow.result=message;}else{closeFlow();CF.toast(message);}}
   function returnRequest(){const p=pFlow(),demand=flow.returnRequest?.demand||flow.demand||qFlow()?.demand||D.current(p)?.id,back=flow.returnRequest;flow={project:p.id,demand,stage:'request',onReturn:flow.onReturn,selected:back?.selected,restoreRequest:back?.top||0,restoreStep:true};problem='';invalid='';refreshRequest();}
   function refreshRequest(){const q=requestQuotes(pFlow(),flow.demand).find(x=>['waiting','funding','funded','terminated'].includes(x.state));flow.quote=q?.id;flow.selected=q?.id;}
   function visit(stage){flow.readBack={stage:flow.stage,previous:flow.readBack};flow.stage=stage;}
@@ -220,7 +222,7 @@
     q.progress.selected=next?.id||'';q.progress.stamp=accountStamp(next);
     q.progress.confirmed=false;save();
   }
-  function beginReview(q){Q.sweep();if(!q||!related(q)||S.role!=='asset'){CF.toast(L('You cannot respond to this quote.','您无权处理该报价。'));return;}if(q.state!=='waiting'){CF.toast(status(q)+' · '+reason(q));return;}const back=flow.stage==='request'?{demand:flow.demand,selected:flow.selected,top:document.querySelector('.drawer-b,.modal-b')?.scrollTop||0}:{demand:q.demand,selected:q.id,top:0};suggestAccount(q);rememberTrigger('ls-handoff');flow={project:q.project,quote:q.id,demand:q.demand,returnRequest:back,onReturn:flow.onReturn,responseCheckpoint:JSON.stringify(q.progress)};open('respond');}
+  function beginReview(q){Q.sweep();if(!q||!related(q)||S.role!=='asset'){CF.toast(L('You cannot respond to this quote.','您无权处理该报价。'));return;}if(q.state!=='waiting'){CF.toast(status(q)+' · '+reason(q));return;}const back=flow.stage==='request'?{demand:flow.demand,selected:flow.selected,top:document.querySelector('.drawer-b,.modal-b')?.scrollTop||0}:null;suggestAccount(q);rememberTrigger('ls-handoff');flow={project:q.project,quote:q.id,demand:q.demand,returnRequest:back,onReturn:flow.onReturn,responseCheckpoint:JSON.stringify(q.progress)};open('respond');}
   function creditInfo(p){const c=credit(p);return c?dl([[L('Credit ID','授信编号'),E(c.id)],[L('Credit limit','授信额度'),usd(c.total)],[L('Outstanding principal','授信占用额'),usd(c.principal)],[L('In-flight quotes','在途报价金额'),usd(used(c))],[L('Total credit used','授信已用额'),usd(c.principal+used(c))],[L('Available credit','可用授信'),usd(available(c))],[L('Valid until','有效期至'),date(c.expires)],[L('First credit granted','首次授信时间'),time(c.first)]]):'';}
   function preview(){if(!flow.ccy)return '';if(fault==='fxUnavailable')return note('Exchange rate temporarily unavailable. Retry later.','汇率暂不可用，请稍后重试。','red');if(!flow.fx)flow.fx={value:1,at:D.now(),source:['Lending platform · demo','借贷平台 · 演示'],version:'FX-DEMO-'+(db.serial+1)};const q={ccy:flow.ccy,fx:flow.fx};return dl([[L('Settlement amount','结算金额'),CF.fmtAmt(D.current(pFlow()).amount/flow.fx.value)+' '+flow.ccy]])+snapshot(q,true);}
   function quoteView(){const p=pFlow(),d=D.current(p),c=credit(p);
@@ -292,7 +294,7 @@
   Q.financeSteps=p=>{
     const d=D.current(p);
     const stage=!d?0:{open:1,quoted:2,funding:3}[d.state]??0;
-    return {ended:false,stage,labels:[['Publish request','发布融资需求'],['Institution quote','机构报价'],['Confirm and sign','确认签署'],['Disbursement','融资放款']]};
+    return {ended:false,stage,labels:[['Publish request','发布融资需求'],['Institution quote','机构报价'],['Confirm quote','确认报价'],['Disbursement','融资放款']]};
   };
   /* 发布入口按当前事实呈现：能发布就给主按钮，不能发布时按钮保留为不可用并就近写明原因。 */
   function publishGate(p){
@@ -471,8 +473,8 @@
     if(act==='respond')beginReview(db.quotes.find(q=>q.id===v));
     if(act==='reject'&&stillWaiting(q)){flow.reason='';flow.stage='reject';}
     if(act==='back-response'){flow.stage='respond';flow.restoreStep=true;}
-    if(act==='reject-confirm'&&stillWaiting(q)){if(!flow.reason?.trim()||[...flow.reason.trim()].length>200)failure('Enter a reason of 1–200 characters.','请输入 1～200 字拒绝原因。','reason');else asyncAction(()=>{if(stillWaiting(q)){finish(q,'rejected',flow.reason.trim());returnRequest();flow.result=L('Quote rejected.','报价已拒绝。');}});}
-    if(act==='accept'&&stillWaiting(q)){if(accountValid(q))asyncAction(()=>{if(!stillWaiting(q))return;const a=accountById(q,q.progress.selected);if(!a||missingFields(a).length||fault==='accountChanged'||q.progress.stamp&&accountStamp(a)!==q.progress.stamp){fault='normal';q.progress.confirmed=false;q.progress.lost=a?'changed':'removed';q.progress.selected='';q.progress.stamp='';failure('This receiving account has changed. Select an account again before accepting.','所选收款账户已变更，请重新选用后再接受。','account');return;}q.progress.account=accountSnapshot(a);db.lastAccounts[q.owner+'|'+accountKind(q.ccy)]=a.id;finish(q,'funding','');returnRequest();flow.result=L('Quote accepted. View the corresponding disbursement when ready.','报价已接受，可查看对应融资放款。');});}
+    if(act==='reject-confirm'&&stillWaiting(q)){if(!flow.reason?.trim()||[...flow.reason.trim()].length>200)failure('Enter a reason of 1–200 characters.','请输入 1～200 字拒绝原因。','reason');else asyncAction(()=>{if(stillWaiting(q)){finish(q,'rejected',flow.reason.trim());settled(L('Quote rejected.','报价已拒绝。'));}});}
+    if(act==='accept'&&stillWaiting(q)){if(accountValid(q))asyncAction(()=>{if(!stillWaiting(q))return;const a=accountById(q,q.progress.selected);if(!a||missingFields(a).length||fault==='accountChanged'||q.progress.stamp&&accountStamp(a)!==q.progress.stamp){fault='normal';q.progress.confirmed=false;q.progress.lost=a?'changed':'removed';q.progress.selected='';q.progress.stamp='';failure('This receiving account has changed. Select an account again before accepting.','所选收款账户已变更，请重新选用后再接受。','account');return;}q.progress.account=accountSnapshot(a);db.lastAccounts[q.owner+'|'+accountKind(q.ccy)]=a.id;finish(q,'funding','');settled(L('Quote accepted.','报价已接受。'));});}
     if(act==='accounts-module'){const back=location.hash.replace(/^#/,'')||'/marketplace';
       pendingSelection=q?.id||'';
       location.hash='#'+CF.ENTRY['P-F-EA-01']+'?'+new URLSearchParams({return:back,from:'quote',business:pendingSelection});}
