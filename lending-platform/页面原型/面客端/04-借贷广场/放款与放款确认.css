@@ -16,10 +16,11 @@
 .ln-error{min-height:18px;margin-top:var(--sp-1)}
 
 /* Keep host scroll and focus behavior. The final confirmation is deliberately compact. */
-.modal:has(.ln-drawer[data-view=pay]){width:min(880px,100%);max-width:880px}
-.modal:has(.ln-drawer[data-view=confirm]){width:min(760px,100%);max-width:760px}
+.modal:has(.ln-drawer[data-view=pay]){width:min(1080px,100%);max-width:1080px}
+.modal:has(.ln-drawer[data-view=confirm]){width:min(960px,100%);max-width:960px}
 .modal:has(.ln-confirm){width:min(560px,100%);max-width:560px}
 .drawer:has(.ln-drawer){width:880px;max-width:100vw}
+.modal:has(.ln-drawer) .modal-h[tabindex="-1"]:focus,.drawer:has(.ln-drawer) .drawer-h b[tabindex="-1"]:focus{outline:none}
 :is(.modal,.drawer):has(.ln-drawer) :is(.ls-modal-close,.drawer-h>.btn){display:grid;place-items:center;min-width:var(--ctrl-h);width:var(--ctrl-h);min-height:var(--ctrl-h);height:var(--ctrl-h);padding:0;font-size:var(--fs-24)}
 :is(.modal,.drawer):has(.ln-drawer) :is(.modal-f,.drawer-f){gap:var(--sp-3);flex-wrap:wrap;justify-content:flex-end}
 :is(.modal,.drawer):has(.ln-drawer) :is(.modal-f,.drawer-f)>.btn{min-height:var(--ctrl-h);height:auto;padding:var(--sp-3) var(--sp-4);white-space:normal}
@@ -50,9 +51,20 @@
 
 /* Amount and progress form the scan anchor; ordinary values keep field typography. */
 .ln-amount{font-family:var(--numeric);font-size:var(--ui-stat-size);font-weight:600;line-height:1.5;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.ln-pay-head{padding:var(--sp-4) var(--sp-5);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.ln-pay-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4);padding:var(--sp-4) var(--sp-5);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm)}
 .ln-pay-head p{margin:0}
-.ln-pay-head .ln-amount{margin-top:var(--sp-2)}
+.ln-pay-head .ln-amount{margin:0}
+.ln-pay-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:var(--sp-7);align-items:start}
+.ln-pay-reference,.ln-pay-entry{display:grid;gap:var(--sp-6);min-width:0}
+.ln-pay-reference{padding-right:var(--sp-6);border-right:1px solid var(--border)}
+:is(.ln-pay-reference,.ln-pay-entry)>.ln-section:first-child{border-top:0;padding-top:0}
+.ln-pay-entry .ln-grid{grid-template-columns:minmax(0,1fr)}
+.ln-receipt-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:var(--sp-7);align-items:start}
+.ln-receipt-layout>*{min-width:0}
+.ln-receipt-account{padding-left:var(--sp-6);border-left:1px solid var(--border)}
+.ln-receipt-account>.ln-section{border-top:0;padding-top:0}
+.ln-receipt-account .dl.ln-facts{grid-template-columns:minmax(0,1fr)}
+.ln-receipt-record .ln-receipt-facts{padding-bottom:var(--sp-4)}
 .ln-detail-hero{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4)}
 .ln-detail-hero p{margin:0 0 var(--sp-2)}
 .ln-detail-hero .tag{flex-shrink:0}
@@ -87,6 +99,8 @@
 .ln-file [data-act=ln-remove]{color:var(--danger);border-color:transparent;background:transparent}
 .ln-files-read{margin:0;padding:0;list-style:none}
 .ln-files-read li{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);padding:var(--sp-2) 0;overflow-wrap:anywhere}
+.ln-files-read .btn,.ln-business-detail [data-act=ln-business]{background:transparent;border-color:transparent;color:var(--accent);padding-inline:var(--sp-2)}
+.ln-files-read .btn:hover,.ln-business-detail [data-act=ln-business]:hover{background:var(--accent-soft);border-color:transparent}
 .ln-document{display:block;width:100%;height:340px;border:0;object-fit:contain;background:var(--card-2)}
 .ln-history{padding:0;list-style:none;margin:0}
 .ln-history li{padding:var(--sp-3) 0;border-bottom:1px solid var(--border)}
@@ -103,10 +117,16 @@
 .ln-record-table .col-act{position:sticky;right:0;background:var(--card);width:140px}
 .ln-list{min-width:850px}
 .ln-list td{vertical-align:top}
+.ln-list :is(th,td):nth-child(3){text-align:right;font-variant-numeric:tabular-nums}
+.ln-list td:first-child{font-weight:500}
+.ln-list td:first-child .hint{font-weight:400}
 .ln-record-row{cursor:pointer}
 .ln-record-row:hover{background:var(--card-2)}
 .ln-record-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .ln-pagination{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding-top:var(--sp-3);flex-wrap:wrap}
+.ln-pagination .btn{min-height:var(--ctrl-h-sm);height:auto;border-color:transparent;background:transparent;font-size:var(--ui-field-label);padding:var(--sp-2) var(--sp-3)}
+.ln-pagination .btn:hover:not(:disabled){background:var(--card-hover)}
+.ln-pagination .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ln-agreements{min-width:560px}
 .ln-agreements .btn-link{white-space:normal;text-align:left;overflow-wrap:anywhere}
 .ln-agreements td .hint{display:block}
@@ -121,6 +141,13 @@
 .ln-demo label{display:block;margin:var(--sp-2) 0}
 .ln-demo select{width:100%}
 
+@media(max-width:900px){
+  .ln-pay-layout,.ln-receipt-layout{grid-template-columns:minmax(0,1fr);gap:var(--sp-6)}
+  .ln-pay-reference{border-right:0;padding-right:0}
+  .ln-pay-entry{border-top:1px solid var(--border);padding-top:var(--sp-5)}
+  .ln-receipt-account{border-left:0;padding-left:0;border-top:1px solid var(--border);padding-top:var(--sp-5)}
+  .ln-receipt-account .dl.ln-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 @media(max-width:640px){
   .drawer:has(.ln-drawer){width:100vw}
   .ln-grid{grid-template-columns:minmax(0,1fr)}
@@ -128,9 +155,10 @@
   .ln-record-table .col-act{position:static;width:auto}
   .ln-drawer .ln-row .btn{white-space:normal;height:auto;min-height:var(--ctrl-h)}
   .ln-pay-head{padding:var(--sp-4)}
+  .ln-pagination .btn{min-height:var(--ctrl-h)}
 }
 @media(max-width:560px){
-  .ln-drawer .dl.ln-facts{grid-template-columns:minmax(0,1fr)}
+  .ln-drawer .dl.ln-facts,.ln-receipt-account .dl.ln-facts{grid-template-columns:minmax(0,1fr)}
   .ln-steps{grid-template-columns:minmax(0,1fr);gap:0}
   .ln-detail-hero{align-items:flex-start;flex-wrap:wrap}
   :is(.modal,.drawer):has(.ln-drawer) :is(.modal-f,.drawer-f)>.btn{flex:1;min-width:0}

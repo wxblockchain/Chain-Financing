@@ -519,18 +519,18 @@
       ], 'am-chart-status', v.ts, L('tokens','枚'))) + '</div>';
 
     var issuers = AM.ISSUERS.map(function (h, i) { return [String(i), nm(h)]; });
-    var filters = '<div class="filterbar am-filters"><div class="am-filter-options">' +
+    var filters = '<div class="filterbar am-filters"><div class="am-filter-options mk-filter-options">' +
       CF.filterMenu("am-ts", L("Token status", "代币状态"),
         [["valid", L("Valid", "有效")], ["void", L("Void", "失效")]], list(v.ts)) +
       CF.filterMenu("am-kind", L("Token type", "代币类型"), [["ar", tokenKind()]], list(v.kind)) +
       CF.filterMenu("am-issuer", L("Issuer", "发行方"), issuers, list(v.issuer)) +
-      sortField(v) + '</div>' +
+      '</div><div class="mk-filter-query">' +
       CF.filterSearch("am-q", L("Token ID, issuer or hash", "代币编号、发行方或哈希"), v.q,
                       L("Token ID, issuer name or minting transaction hash", "代币编号、发行方名称或铸造交易哈希")) +
       '<div class="fb-acts">' +
       '<button class="btn" type="button" data-act="clearfilter">' + L("Reset", "重置") + "</button>" +
       '<button class="btn primary" type="button" data-act="am-search">' + L("Search", "查询") + "</button>" +
-      '</div></div>';
+      '</div></div></div>';
 
     var body;
     var alt = CF.surface({
@@ -573,7 +573,7 @@
 
     return '<div class="am-market-page">' + head + summary + limit +
       CF.market.listFrame({view:marketView,filters:filters,title:L('Token registry','代币清单'),viewAction:'am-view',
-        tools:fullBar(wait || S.st === "error" ? null : total),content:body}) + '</div>';
+        sort:sortField(v),tools:fullBar(wait || S.st === "error" ? null : total),content:body}) + '</div>';
   }
 
   /* 列表可放大到整窗，便于连续核对长列表；再次点击或 Esc 还原。 */

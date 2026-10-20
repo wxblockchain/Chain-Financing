@@ -124,18 +124,18 @@
   /* 一页完成：已接受条款与收款账户只读在上，填写放款记录，最后选还款收款账户。 */
   function paymentForm(){const spec=chainSpec();
     return '<div class="ln-stack"><div class="ln-pay-head"><p class="hint">'+L('Amount to disburse','本笔放款金额')+'</p><p class="ln-amount">'+amt(d().settlement,d().ccy)+'</p></div>'
-      +card(L('Accepted commercial terms','本笔已接受商务条款'),terms())
+      +'<div class="ln-pay-layout"><div class="ln-pay-reference">'+card(L('Accepted commercial terms','本笔已接受商务条款'),terms())
       +card(L('Asset holder’s receiving account','资产方收款账户'),assetAccount('pay'))
-      +card(L('Disbursement record','放款记录'),'<div class="ln-grid">'+field('paidAt',L('Paid at *','发放时间 *'),'datetime-local','required aria-required="true"')
+      +'</div><div class="ln-pay-entry">'+card(L('Disbursement record','放款记录'),'<div class="ln-grid">'+field('paidAt',L('Paid at *','发放时间 *'),'datetime-local','required aria-required="true"')
       +(d().ccy==='USD'?upload('files',L('Transfer receipt','转账凭证'),true)
         :field('hash',L('Transaction ID *','交易标识 *'),'text','required aria-required="true" autocomplete="off"',chainOf()+L(': ','：')+tr(spec.hint))+'<div class="field"><span class="field-label">'+L('Settlement chain','结算收款链')+'</span><p class="mono">'+E(chainOf())+'</p></div>'+upload('files',L('Supplementary documents (optional)','补充材料（选填）')))
       +'<div class="field ln-full"><label for="ln-note">'+L('Note (optional)','放款备注（选填）')+'</label><textarea class="inp" id="ln-note" data-ln-field="note" maxlength="200">'+E(form.note||'')+'</textarea><span class="err-msg">'+E(errors.note||'')+'</span></div></div>')
-      +card(L('Your repayment receiving account','资金方还款收款账户'),accountChooser())+'</div>';}
+      +card(L('Your repayment receiving account','资金方还款收款账户'),accountChooser())+'</div></div></div>';}
   const fee=()=>CF.note('accent','<div class="ln-fee">'+L('The amount received will be less than the financing amount (cross-border fees are borne by you). Your repayment principal remains ','到账金额会少于融资金额（跨境手续费由您承担）；您需要偿还的本金仍按融资金额 ')+amt(d().amount)+L('.',' 计算。')+'</div>');
   function draw(key){if(!can(key==='pay'?'pay':key==='confirm'?'confirm':'read'))return {title:L('Access denied','无访问权限'),html:CF.empty(L('Access denied','无访问权限'),''),foot:b('ln-back',L('Close','关闭'))};let body='',foot='';
     /* 不能提交时只说明原因，不放置置灰的提交按钮。 */
     if(key==='pay'){body='<div class="ln-stack">'+coverage()+paymentForm()+'</div>';foot=gate()==='ok'?b('ln-pay-ask',L('Submit disbursement','提交放款'),'',true,busy||uploadBusy):'';}
-    if(key==='confirm'){body='<p class="ln-counterparty">'+L('Paid by: ','付款方：')+E(funder())+'</p>'+record(false,true)+card(L('Receiving account for this payment','本次收款账户'),assetAccount('confirm'))+fee()+support();foot=b('ln-confirm-ask',L('Confirm receipt','确认到账'),'',true,busy);}
+    if(key==='confirm'){body='<div class="ln-receipt-layout"><div class="ln-receipt-record ln-stack"><p class="ln-counterparty">'+L('Paid by: ','付款方：')+E(funder())+'</p>'+record(false,true)+'</div><div class="ln-receipt-account">'+card(L('Receiving account for this payment','本次收款账户'),assetAccount('confirm'))+'</div></div>'+fee()+support();foot=b('ln-confirm-ask',L('Confirm receipt','确认到账'),'',true,busy);}
     if(errors.submit)body=CF.note('red',E(errors.submit))+body;
     foot=b('ln-back',foot?L('Cancel','取消'):L('Close','关闭'),'',false,busy||uploadBusy)+foot;
     return {title:(key==='pay'?L('Record disbursement','登记放款'):L('Confirm receipt','确认到账'))+' · '+(S.role==='fund'?borrower():funder()),html:'<div class="ln-drawer ln-stack" data-view="'+key+'">'+body+'</div>',foot};
@@ -290,7 +290,7 @@
     document.getElementById('portal').inert=!!dialog;document.getElementById('demoBtn').hidden=!!dialog;
     if(dialog&&layer?.startsWith('ln-')){
       const body=dialog.querySelector('.drawer-b,.modal-b'),heading=dialog.querySelector('.drawer-h b,.modal-h');
-      if(layer===lastLayer){if(body)body.scrollTop=savedScroll;findControl(dialog,lastFocus)?.focus({preventScroll:true});}
+      if(layer===lastLayer){if(body)body.scrollTop=savedScroll;const target=findControl(dialog,lastFocus)||heading;if(target){if(target===heading)target.tabIndex=-1;target.focus({preventScroll:true});}}
       else{if(body)body.scrollTop=0;if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}}
       if(busy||uploadBusy)dialog.querySelectorAll('input,textarea,select,button').forEach(el=>el.disabled=true);
       if(errorFocus){const target=document.getElementById('ln-'+errorFocus);target?.setAttribute('aria-invalid','true');target?.focus();target?.scrollIntoView({block:'center'});errorFocus=null;}

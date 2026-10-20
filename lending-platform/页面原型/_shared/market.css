@@ -81,6 +81,61 @@
 .mk-result-tools{display:flex;align-items:center;gap:var(--sp-3)}
 .mk-result-head .am-toolbar-end,.mk-result-head .ls-toolbar-end{display:flex;align-items:center;gap:var(--sp-3);border:0;padding:0}
 .mk-result-head .am-total,.mk-result-head .ls-total{color:var(--muted)}
+/* Shared list tools: conditions, query, then result ordering. Both marketplaces opt in
+   through listFrame; other portal filters and their business behavior are unaffected. */
+.mk-filter-surface{padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card)}
+[data-market-redesign] .mk-filter-surface>.filterbar{display:flex;flex-direction:column;align-items:stretch;padding:0;gap:0}
+.mk-filter-surface .mk-filter-options{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);min-width:0}
+.mk-filter-surface .mk-filter-options>.fb{max-width:100%;min-width:0}
+.mk-filter-surface .fb-menu>svg{display:none}
+[data-market-redesign] .mk-filter-surface .fb-menu .fb-btn{padding-left:var(--sp-3);background:var(--card-2);border-color:transparent;font-size:var(--ui-row-value);max-width:100%;white-space:normal;height:auto;min-height:var(--ctrl-h-sm);text-align:left}
+[data-market-redesign] .mk-filter-surface .fb-menu .fb-btn:hover{background:var(--card-hover);color:var(--text)}
+[data-market-redesign] .mk-filter-surface .fb-menu .fb-btn[data-on="1"]{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent)}
+.mk-filter-surface .ls-more-toggle{height:auto;min-height:var(--ctrl-h-sm);padding:var(--sp-2) var(--sp-3);border:1px solid transparent;border-radius:var(--radius-xs);background:var(--card-2);font-size:var(--ui-row-value)}
+.mk-filter-surface .ls-more-toggle:hover{background:var(--card-hover)}
+.mk-filter-surface .ls-more-toggle[aria-expanded=true]{background:var(--accent-soft);border-color:var(--accent-border)}
+.mk-filter-query{display:flex;align-items:center;gap:var(--sp-2);padding-top:var(--sp-3);margin-top:var(--sp-3);border-top:1px solid var(--row-line);min-width:0}
+[data-market-redesign] .mk-filter-surface .mk-filter-query .fb-q{flex:1;min-width:0;max-width:none;margin:0;width:auto}
+[data-market-redesign] .mk-filter-surface .mk-filter-query .fb-q .inp{height:var(--ctrl-h);font-size:var(--ui-field-value);border-color:var(--control-border)}
+[data-market-redesign] .mk-filter-query .fb-acts{margin:0;gap:var(--sp-2);flex:none}
+[data-market-redesign] .mk-filter-surface .mk-filter-query .fb-acts .btn{height:var(--ctrl-h);min-height:var(--ctrl-h);padding-inline:var(--sp-4);font-size:var(--ui-row-value)}
+[data-market-redesign] .mk-filter-query .fb-acts .btn:not(.primary){background:transparent;border-color:transparent;color:var(--muted)}
+[data-market-redesign] .mk-filter-query .fb-acts .btn:not(.primary):hover{background:var(--card-hover);color:var(--text)}
+.mk-filter-surface .ls-more-panel{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--border)}
+[data-market-redesign] .mk-filter-surface .ls-advanced-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4);padding:0;align-items:end}
+.mk-filter-surface .fb-range{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:var(--sp-2);min-width:0}
+.mk-filter-surface .fb-range>.fb-label{grid-column:1/-1;font-weight:400;color:var(--muted)}
+[data-market-redesign] .mk-filter-surface .fb-range>.inp{width:100%;min-width:0;border-radius:var(--radius-xs);border-color:var(--control-border)}
+.mk-filter-surface .fb-range-error{grid-column:1/-1}
+.mk-filter-surface .fb-panel{z-index:var(--z-sticky);box-shadow:var(--shadow-lg)}
+.mk-filter-surface :focus-visible,.mk-result-tools :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mk-result-tools>.fb{display:inline-flex;position:relative;align-items:center;min-width:0;max-width:100%}
+.mk-result-tools>.fb>svg{position:absolute;left:var(--sp-2);width:14px;height:14px;color:var(--muted);pointer-events:none}
+.mk-result-tools>.fb::after{content:"";position:absolute;right:var(--sp-3);width:6px;height:6px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg) translateY(-2px);pointer-events:none;color:var(--muted)}
+[data-market-redesign] .mk-result-tools>.fb select.inp{appearance:none;min-width:0;max-width:100%;height:var(--ctrl-h-sm);padding:0 var(--sp-7);border-color:transparent;background:transparent;font-size:var(--ui-field-label)}
+[data-market-redesign] .mk-result-tools>.fb select.inp:hover{background:var(--card-hover)}
+@media(max-width:900px){
+  [data-market-redesign] .mk-filter-surface .ls-advanced-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .mk-filter-surface{padding:var(--sp-3)}
+  .mk-filter-surface .mk-filter-options>.fb-menu{flex:1 1 calc(50% - var(--sp-2))}
+  [data-market-redesign] .mk-filter-surface .fb-menu .fb-btn{width:100%;min-height:var(--ctrl-h)}
+  [data-market-redesign] .mk-filter-surface .ls-more-toggle{min-height:var(--ctrl-h)}
+  .mk-filter-surface .fb-panel{min-width:0;width:min(264px,calc(100vw - var(--sp-8)));max-height:var(--market-popover-h)}
+  .mk-filter-options>.fb-menu:nth-of-type(even) .fb-panel{left:auto;right:0}
+  .mk-filter-query{flex-wrap:wrap}
+  [data-market-redesign] .mk-filter-surface .mk-filter-query .fb-q{flex-basis:100%}
+  [data-market-redesign] .mk-filter-query .fb-acts{width:auto;margin-left:auto;justify-content:flex-end}
+  .mk-result-head{flex-wrap:wrap}
+  .mk-result-tools{width:100%;flex-wrap:wrap;justify-content:flex-end;gap:var(--sp-2)}
+  .mk-result-tools>.fb{margin-right:auto}
+  [data-market-redesign] .mk-result-tools>.fb select.inp{height:var(--ctrl-h)}
+}
+@media(max-width:400px){
+  [data-market-redesign] .mk-filter-surface .ls-advanced-filters{grid-template-columns:minmax(0,1fr)}
+  .mk-filter-surface .ls-advanced-filters .fb-panel{left:0;right:auto}
+}
 .am-market-page .listzone,.ls-market-page .listzone{border:0;box-shadow:none;background:transparent;overflow:visible}
 /* One list frame: core/full density and in-page expansion are shared by both marketplaces. */
 [data-market-redesign] .mk-list-frame[data-view][data-density="core"] .tbl :is(th,td):is(.am-col-x,.ls-col-x){display:none}
@@ -91,6 +146,11 @@ body.list-full .mk-list-frame{position:relative;inset:auto;z-index:auto;margin:0
 @media(max-width:768px){
   body.list-full:has(.mk-list-frame) .portal-wrap{padding:var(--sp-4)}
   body.list-full .mk-list-frame{height:calc(100dvh - var(--market-list-head,68px) - 2 * var(--sp-4))}
+  /* Long advanced filters must never squeeze the expanded result list to zero.
+     The page can scroll in this narrow variant; menus remain outside clipping. */
+  body.list-full:has(.mk-list-frame .ls-more-panel){overflow:auto}
+  body.list-full .mk-list-frame:has(.ls-more-panel){height:auto;min-height:calc(100dvh - var(--market-list-head,68px) - 2 * var(--sp-4));overflow:visible}
+  body.list-full .mk-list-frame:has(.ls-more-panel) .listbox{flex:0 0 auto;height:var(--list-h);min-height:260px}
 }
 .am-market-page .am-filters .am-toolbar-end,.ls-market-page .ls-toolbar .ls-toolbar-end{display:none}
 [data-market-redesign] .listbox-contained{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card)}
@@ -364,11 +424,11 @@ body.list-full .mk-list-frame{position:relative;inset:auto;z-index:auto;margin:0
 [data-market-redesign] .ls-detail .ls-comp-row{padding-block:var(--sp-3)}
 [data-market-redesign] .ls-detail .ls-token-filters{padding:0 0 var(--sp-3)}
 [data-market-redesign] .ls-detail .ls-action-rail{min-width:0}
-[data-market-redesign] .ls-detail .ls-operations{border:1px solid var(--accent-border);border-top:4px solid var(--accent);box-shadow:var(--shadow-soft);background:var(--card);border-radius:var(--radius-sm)}
-[data-market-redesign] .ls-detail .ls-operations-head{background:var(--accent-soft);padding:var(--sp-4) var(--sp-5)}
-[data-market-redesign] .ls-detail .ls-operations-head h2{color:var(--accent);font-size:var(--fs-19);font-weight:650}
-[data-market-redesign] .ls-detail .ls-flow[data-open=true]>.ls-flow-bar{background:var(--accent-soft);box-shadow:inset 3px 0 var(--accent)}
-[data-market-redesign] .ls-detail .ls-flow[data-open=true]>.ls-flow-bar .t b{color:var(--accent)}
+[data-market-redesign] .ls-detail .ls-operations{border:1px solid var(--border);box-shadow:none;background:var(--card);border-radius:var(--radius-sm)}
+[data-market-redesign] .ls-detail .ls-operations-head{background:var(--card);padding:var(--sp-4) var(--sp-5)}
+[data-market-redesign] .ls-detail .ls-operations-head h2{color:var(--text);font-size:var(--ui-section-title);font-weight:600}
+[data-market-redesign] .ls-detail .ls-flow[data-open=true]>.ls-flow-bar{background:var(--card-2);box-shadow:none}
+[data-market-redesign] .ls-detail .ls-flow[data-open=true]>.ls-flow-bar .t b{color:var(--text)}
 [data-market-redesign] .ls-detail .ls-flow-info{padding:var(--sp-5)}
 [data-market-redesign] .ls-detail .ls-pledge-action-group{align-items:stretch}
 [data-market-redesign] .ls-detail .ls-operations .btn.primary{min-height:44px;font-size:var(--fs-14)}
@@ -501,6 +561,11 @@ body.list-full .mk-list-frame{position:relative;inset:auto;z-index:auto;margin:0
 [data-market-redesign] .ls-detail .ls-token-filters{padding:0 0 var(--sp-3);gap:var(--sp-2);margin:0}
 [data-market-redesign] .ls-detail .ls-token-filters .fb-q{flex:1 1 150px;min-width:120px}
 [data-market-redesign] .ls-detail .ls-token-filters .fb select.inp{min-width:0;max-width:100%}
+[data-market-redesign] .ls-detail .ls-token-filters .fb>svg{display:none}
+[data-market-redesign] .ls-detail .ls-token-filters .fb select.inp{padding-left:var(--sp-3);background:var(--card-2);border-color:transparent;font-size:var(--ui-row-value)}
+[data-market-redesign] .ls-detail .ls-token-filters .fb-q .inp{border-color:var(--control-border);font-size:var(--ui-field-value)}
+[data-market-redesign] .ls-detail .ls-token-filters .fb-acts .btn{background:transparent;border-color:transparent;color:var(--muted)}
+[data-market-redesign] .ls-detail .ls-token-filters .fb-acts .btn:hover{background:var(--card-hover);color:var(--text)}
 .mk-project-global-actions{margin-left:auto;align-self:flex-start;flex:none}
 [data-market-redesign] .ls-detail .ls-detail-head>.mk-project-global-actions{flex:0 0 auto;margin-left:auto}
 [data-market-redesign] .ls-detail .ls-detail-head>div:not(.mk-project-global-actions){flex:1;min-width:0}
