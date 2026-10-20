@@ -38,12 +38,13 @@
 .rp-overdue{color:var(--muted);font-size:var(--ui-field-label)}
 .rp-section+.rp-section{border-top:1px solid var(--border);padding-top:var(--sp-5)}
 /* Detail summary mirrors the disbursement detail: amount and status first, then the two steps. */
-.rp-summary{display:grid;gap:var(--sp-3);padding-bottom:var(--sp-5);border-bottom:1px solid var(--border)}
+.rp-summary{display:grid;gap:var(--sp-4);padding:var(--sp-4);border:1px solid var(--border);background:var(--card-2);border-radius:var(--radius-sm)}
 .rp-summary-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-3)}
 .rp-summary-head>div{min-width:0}
 .rp-summary-head p{margin:var(--sp-1) 0 0}
 .rp-summary-amount{font-size:var(--ui-stat-size);font-weight:600;line-height:1.4;margin-top:var(--sp-1);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .rp-summary .rp-progress{padding:0}
+.rp-summary .rp-progress-status{margin-bottom:var(--sp-2)}
 .rp-summary .dl{margin:0}
 .rp-summary-next{margin:0;padding-top:var(--sp-3);border-top:1px dashed var(--border);font-size:var(--ui-row-value);color:var(--muted)}
 .rp-section-lead{margin:calc(-1 * var(--sp-2)) 0 var(--sp-2)}
@@ -62,7 +63,11 @@
 .rp-fact dt{font-size:var(--ui-field-label);color:var(--muted);font-weight:400;line-height:1.6}
 .rp-fact dd{font-size:var(--ui-field-value);margin:0;line-height:1.6;overflow-wrap:anywhere;min-width:0}
 .rp-fact:has(.hash),.rp-fact:has(.ea-asset-group){grid-column:1/-1}
-.rp-drawer .ls-history>summary{padding-block:var(--sp-3);line-height:1.6;overflow-wrap:anywhere}
+.rp-drawer .ls-history>summary{position:relative;display:block;list-style:none;min-height:var(--ctrl-h);padding:var(--sp-3) var(--sp-6) var(--sp-3) 0;line-height:1.6;overflow-wrap:anywhere;color:var(--text);font-weight:500;cursor:pointer}
+.rp-drawer .ls-history>summary::-webkit-details-marker{display:none}
+.rp-drawer .ls-history>summary::after{content:"";position:absolute;right:var(--sp-2);top:50%;width:var(--sp-2);height:var(--sp-2);border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-70%) rotate(45deg)}
+.rp-drawer .ls-history[open]>summary::after{transform:translateY(-30%) rotate(225deg)}
+.rp-drawer .ls-history>summary:hover{color:var(--accent)}
 .rp-inline-plan{min-width:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:var(--sp-1) 0}
 .rp-inline-plan[open]{padding-bottom:var(--sp-4)}
 .rp-plan-title{margin-top:var(--sp-3);overflow-wrap:anywhere}
@@ -79,15 +84,18 @@
 .rp-progress-dot{border:1px solid var(--border-strong);border-radius:50%;width:var(--sp-6);height:var(--sp-6);display:grid;place-items:center;flex-shrink:0;color:var(--muted);font-size:var(--ui-field-label)}
 .rp-progress [data-complete=true] .rp-progress-dot{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
 .rp-progress [aria-current] .rp-progress-dot{color:var(--on-accent);border-color:var(--accent);background:var(--accent)}
+.rp-drawer>.rp-progress{padding:var(--sp-3) var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
 
 /* Estimate / comparison tables keep their own scroll. */
 .rp-plan-scroll{max-width:100%;overflow:auto;border:1px solid var(--border);border-radius:var(--radius-xs);max-height:420px}
 
 /* Instalment ledger: one row per instalment; the same instalment never repeats elsewhere in the drawer. */
-.rp-ledger{--rp-cols:minmax(0,.55fr) minmax(0,1.35fr) minmax(0,1fr) minmax(0,1.25fr) minmax(0,1.2fr) minmax(0,.6fr);display:grid;min-width:0;border:1px solid var(--border);border-radius:var(--radius-xs);font-variant-numeric:tabular-nums}
+.rp-ledger{--rp-cols:minmax(0,.5fr) minmax(0,1.45fr) minmax(0,1.1fr) minmax(0,1.25fr) minmax(0,1.05fr) minmax(0,.8fr);display:grid;min-width:0;border:1px solid var(--border);border-radius:var(--radius-xs);font-variant-numeric:tabular-nums}
 .rp-ledger[data-private=false]{--rp-cols:minmax(0,.8fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr)}
-.rp-ledger-head,.rp-inst>summary{display:grid;grid-template-columns:var(--rp-cols);gap:var(--sp-3);align-items:center;padding:var(--sp-3) var(--sp-8) var(--sp-3) var(--sp-4)}
+.rp-ledger-head,.rp-inst>summary{display:grid;grid-template-columns:var(--rp-cols);gap:var(--sp-2);align-items:center;padding:var(--sp-3) var(--sp-8) var(--sp-3) var(--sp-4)}
 .rp-ledger-head{background:var(--card-2);border-bottom:1px solid var(--border);font-size:var(--ui-field-label);color:var(--muted);line-height:1.5;border-radius:var(--radius-xs) var(--radius-xs) 0 0}
+/* Dense numeric headers keep the currency text without a decorative flag. */
+.rp-ledger-head .mk-coin,.rp-inst-k .mk-coin,.rp-ledger-total .mk-coin{display:none}
 .rp-num{text-align:right;justify-content:flex-end}
 .rp-inst+.rp-inst{border-top:1px solid var(--border)}
 .rp-inst>summary{position:relative;min-height:var(--ctrl-h);cursor:pointer;list-style:none;font-size:var(--ui-row-value);line-height:1.5}
@@ -99,6 +107,8 @@
 .rp-inst[aria-current]>summary{background:var(--accent-soft)}
 .rp-inst[aria-current]>summary::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
 .rp-inst-cell{display:flex;min-width:0;overflow-wrap:anywhere}
+.rp-inst-v{min-width:0}
+.rp-inst-cell.rp-num .mk-money{justify-content:flex-end}
 .rp-inst-cell b{font-weight:600}
 .rp-inst-cell .tag{white-space:normal}
 .rp-inst-k{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -122,15 +132,18 @@
 .rp-record-scroll{overflow-x:auto;max-width:100%;padding:0 var(--sp-4)}
 .rp-record-table{table-layout:fixed;min-width:0;width:100%}
 .rp-record-table th,.rp-record-table td{vertical-align:top;white-space:normal;overflow-wrap:anywhere}
-.rp-record-table th:first-child{width:22%}
-.rp-record-table th:nth-child(2){width:20%}
+.rp-record-table th:first-child{width:20%}
+.rp-record-table th:nth-child(2){width:21%}
 .rp-record-table th.rp-num{width:27%}
+.rp-record-table:has(th.rp-num) th:nth-child(3){width:18%}
 .rp-record-table .rp-num{text-align:right}
 .rp-list-late{color:var(--warn);font-size:var(--ui-field-label);margin-top:var(--sp-1)}
 .rp-record-table .hint{margin-top:var(--sp-1)}
 .rp-cell-value{min-width:0}
 .rp-cell-value>.tag{margin-bottom:var(--sp-1)}
 .rp-record-table td:first-child strong{font-weight:600}
+.ls-detail .rp-record-table tbody td{padding-block:var(--sp-4)}
+.rp-record-table .rp-cell-value>.hint{font-size:var(--ui-field-label);line-height:1.6}
 .rp-record-table td>.tag{margin-bottom:var(--sp-1)}
 .rp-record-table tbody tr{cursor:pointer}
 .rp-record-table tbody tr:hover{background:var(--accent-soft)}
@@ -153,6 +166,9 @@
 .rp-entry-layout>.rp-section{min-width:0}
 .rp-entry-layout>.rp-section+.rp-section{border-top:0;border-left:1px solid var(--border);padding:0 0 0 var(--sp-6)}
 .rp-entry-layout .dl,.rp-drawer .rp-entry-layout .rp-form-fields{grid-template-columns:minmax(0,1fr)}
+.rp-check-layout{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rp-drawer .rp-check-layout>.rp-section:last-child>.dl{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rp-check-layout .rp-fact:has(.ln-reveal){grid-column:1/-1}
 .rp-entry-layout .field label{line-height:1.6}
 .rp-fee-note{border-top:1px solid var(--border);padding-top:var(--sp-3)}
 
@@ -162,7 +178,8 @@
 .rp-form-fields>.field:has(:is(input[type=file],.field-static)){grid-column:1/-1}
 .rp-form-fields>.field:only-child{grid-column:1/-1}
 .rp-drawer .rp-form-fields+.field{margin-top:var(--field-gap)}
-.rp-drawer input[type=file]{max-width:100%;padding:var(--sp-3);border:1px dashed var(--control-border);border-radius:var(--radius-xs);background:var(--card)}
+.rp-drawer input[type=file]{max-width:100%;padding:var(--sp-3);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2)}
+.rp-drawer textarea#rp-note{min-height:96px;resize:vertical}
 .rp-file,.rp-files>div{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap;padding:var(--sp-3) 0;border-bottom:1px solid var(--border);overflow-wrap:anywhere}
 input#rp-files::file-selector-button{font:inherit;color:var(--text);background:var(--card-2);border:1px solid var(--border-strong);border-radius:var(--radius-xs);padding:var(--sp-2) var(--sp-3);margin-right:var(--sp-3);cursor:pointer}
 input#rp-files::file-selector-button:hover{background:var(--card-hover)}
@@ -210,7 +227,9 @@ input#rp-files::file-selector-button:hover{background:var(--card-hover)}
   .rp-record-table tr{border-bottom:1px solid var(--border)}
 }
 @media(max-width:560px){
-  .rp-drawer .dl,.rp-drawer .rp-facts-3 .dl,.rp-drawer .rp-form-fields{grid-template-columns:minmax(0,1fr)}
+  .rp-summary-head{display:grid;gap:var(--sp-2)}
+  .rp-summary-head>.tag{justify-self:start}
+  .rp-drawer .dl,.rp-drawer .rp-facts-3 .dl,.rp-drawer .rp-form-fields,.rp-drawer .rp-check-layout>.rp-section:last-child>.dl{grid-template-columns:minmax(0,1fr)}
   .rp-drawer .dl{gap:var(--sp-3)}
   .rp-period{grid-template-columns:minmax(0,1fr)}
   .rp-period .rp-period-date{grid-column:1;grid-row:3;text-align:left}
