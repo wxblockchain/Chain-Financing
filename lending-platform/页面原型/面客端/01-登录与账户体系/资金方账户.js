@@ -410,10 +410,11 @@
   }
   function reviewBody(a){
     const view={...a,fields:a.submittedFields};
-    const state=facts([['Registration status','注册状态',tag(a.status)]]);
-    if(a.status==='rejected')return `${state}<div class="funder-review"><p class="funder-review-title">${L('Your registration needs changes','注册资料需要修改')}</p>${CF.note('red',issuesHTML(view))}<div class="funder-review-actions">${btn('Edit and resubmit','修改并重新提交','register','','primary')}${link('Contact support','联系客服','support')}</div></div>`;
-    if(a.status==='submitted')return `${state}<div class="funder-review"><p class="login-caption">${L('Institution details are locked until a review decision is available.','机构资料在审核结论出具前不可修改。')}</p><div class="funder-review-actions">${btn(F.reviewCheck==='loading'?'Checking…':'Check the review result',F.reviewCheck==='loading'?'正在查询…':'查询审核结果','check-review','','',F.reviewCheck==='loading')}${link('Contact support','联系客服','support')}</div>${F.reviewCheck==='loading'?`<p class="login-caption" role="status">${L('Checking the current review result…','正在查询当前审核结果…')}</p>`:F.reviewCheck==='failed'?`<p class="funder-error" role="alert">${L('The review result could not be retrieved. Your application is unchanged; please retry.','暂时无法获取审核结果，申请状态未改变，请重试。')}</p>`:F.reviewCheck==='done'?`<p class="login-caption" role="status">${L('No decision yet. This application is still under review.','尚未出具结论，本次申请仍在审核中。')}</p>`:''}</div>`;
-    return `${state}<div class="funder-review"><div class="funder-review-actions">${btn('Update institution details','变更机构资料','change','','primary')}</div></div>`;
+    const state=`<dl class="funder-status-label"><dt>${L('Registration status','注册状态')}</dt><dd>${tag(a.status)}</dd></dl>`;
+    const heading=(copy,actions)=>`<div class="funder-review-heading"><div class="funder-review-overview">${state}${copy}</div><div class="funder-status-actions">${actions}</div></div>`;
+    if(a.status==='rejected')return `${heading(`<p class="funder-review-title">${L('Your registration needs changes','注册资料需要修改')}</p>`,btn('Edit and resubmit','修改并重新提交','register','','primary')+link('Contact support','联系客服','support'))}<div class="funder-review funder-review-reason" role="note" aria-labelledby="f-rejection-title"><h3 id="f-rejection-title">${L('Rejection reason','驳回原因')}</h3>${issuesHTML(view)}</div>`;
+    if(a.status==='submitted')return `${heading('',btn(F.reviewCheck==='loading'?'Checking…':'Check the review result',F.reviewCheck==='loading'?'正在查询…':'查询审核结果','check-review','','',F.reviewCheck==='loading')+link('Contact support','联系客服','support'))}<div class="funder-review"><p class="login-caption">${L('Institution details are locked until a review decision is available.','机构资料在审核结论出具前不可修改。')}</p>${F.reviewCheck==='loading'?`<p class="login-caption" role="status">${L('Checking the current review result…','正在查询当前审核结果…')}</p>`:F.reviewCheck==='failed'?`<p class="funder-error" role="alert">${L('The review result could not be retrieved. Your application is unchanged; please retry.','暂时无法获取审核结果，申请状态未改变，请重试。')}</p>`:F.reviewCheck==='done'?`<p class="login-caption" role="status">${L('No decision yet. This application is still under review.','尚未出具结论，本次申请仍在审核中。')}</p>`:''}</div>`;
+    return heading('',btn('Update institution details','变更机构资料','change','','primary'));
   }
   function statusPage(){
     const a=F.account;
@@ -421,12 +422,17 @@
     const title=['Application status and review records','申请状态与审核记录'],desc=L('View your institution details and verification status.','查看机构资料及认证状态。');
     if(a.status==='draft')return `<div class="login-account funder-wrap funder-status">${head(...title,desc)}<div class="card login-profile funder-profile">${CF.empty(L('No registration submitted','尚未提交注册'),L('Complete your email and institution details to send your registration for review.','完成邮箱验证并填写机构资料后，即可提交审核。'),btn('Go to registration','去完成注册','register','','primary'))}</div></div>`;
     const view={...a,fields:a.submittedFields};
+    const contactKeys=['contactName','contact','contactPhone'];
+    const institutionFields=(view.fields||[]).filter(notDocuments);
+    const contacts=institutionFields.filter(row=>contactKeys.includes(row[3]));
     return `<div class="login-account funder-wrap funder-status">${head(...title,desc)}
       ${F.downgrade?CF.note('warn',L('Your details are being reviewed again. Funding actions are unavailable until approval.','机构资料正在重新审核，审核通过前暂不可发起出资等操作。')):''}
       ${profile([
         section('f-review-result','Application status','申请状态',reviewBody(a)),
         section('f-submission-summary','Submission information','提交信息',`${facts([['Application','申请编号',esc('DEMO-REG-001')],['Submitted','提交时间',time(a.submitted)],['Review decision','审核结论时间',time(a.reviewed)],['Account contact email at submission','提交时账户联系邮箱',esc(a.snapshotEmail||a.email)]])}<details class="funder-history"><summary>${L('Submission and review activity','提交与审核记录')} · ${reviewEvents(a.records).length}</summary>${reviewTimeline(a.records)}</details>`),
-        section('f-institution-summary','Institution details','机构资料',`${profileFields((view.fields||[]).filter(notDocuments))}<p class="funder-subhead">${L('Institution supporting documents','机构证明材料')}</p>${materialList(a.submittedForm,'current')}`)
+        section('f-institution-summary','Institution details','机构资料',profileFields(institutionFields.filter(row=>!contactKeys.includes(row[3])))),
+        contacts.length?section('f-contact-summary','Business contact','业务联系人',profileFields(contacts)):'',
+        section('f-materials-summary','Supporting documents','机构证明材料',materialList(a.submittedForm,'current'))
       ])}${stamp()}</div>`;
   }
 

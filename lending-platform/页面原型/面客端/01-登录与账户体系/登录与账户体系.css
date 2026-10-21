@@ -205,13 +205,26 @@
 .funder-profile .login-account-fields dd>.login-caption{max-width:640px;margin:var(--sp-2) 0 0}
 .funder-profile .login-account-fields .funder-line>b{overflow-wrap:anywhere;min-width:0;font-weight:550}
 .funder-profile .login-identity-fields>.funder-field-wide{grid-column:1/-1}
+.funder-profile .login-account-fields>div:last-child{border-bottom:0}
 .funder-subhead{margin:var(--sp-5) 0 var(--sp-2);font-size:var(--ui-field-label);color:var(--muted)}
 .funder-review{margin-top:var(--sp-4)}
-.funder-review-title{margin:0 0 var(--sp-3);font-weight:600;color:var(--text)}
+.funder-review-title{margin:var(--sp-3) 0 0;font-size:var(--ui-section-title);font-weight:600;color:var(--text)}
 .funder-review>.note{display:block;margin:0}
 .funder-review>.login-caption:first-child{margin-top:0}
 .funder-review-actions{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3) var(--sp-5);margin-top:var(--sp-4)}
 .funder-review-actions>.btn.primary{min-width:180px}
+/* WS-443: status and actions share one heading; review reasons remain full-width below. */
+.funder-review-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4) var(--sp-6);flex-wrap:wrap}
+.funder-review-overview{flex:1 1 220px;min-width:0;padding-top:var(--sp-2)}
+.funder-status-label{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-3);margin:0;min-height:28px}
+.funder-status-label dt{font-size:var(--ui-field-label);color:var(--muted)}
+.funder-status-label dd{margin:0}
+.funder-status-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4);margin-left:auto}
+.funder-status-actions>.btn-link{min-height:var(--ctrl-h);padding-inline:var(--sp-2)}
+.funder-review-reason{padding:var(--sp-4);background:var(--danger-bg);border:1px solid var(--danger-border);border-left:3px solid var(--danger);border-radius:var(--radius-xs)}
+.funder-review-reason>h3{margin:0 0 var(--sp-2);font-size:var(--ui-field-label);font-weight:600;color:var(--danger)}
+.funder-review-reason>.funder-reason-text{margin:var(--sp-2) 0 0;color:var(--text);line-height:1.7}
+.funder-status #f-contact-summary .login-identity-fields>div:last-child{grid-column:1/-1}
 .funder-status .funder-history{margin-top:var(--sp-4);padding-top:0;border-top:0}
 .funder-registration .funder-actions{justify-content:flex-end}
 .funder-registration .funder-actions>.btn.primary{min-width:160px}
@@ -271,6 +284,10 @@
 .funder-registration .funder-email-destination{padding:var(--sp-3) var(--sp-4)}
 .funder-registration .funder-email-destination>strong{display:inline;margin:0 0 0 var(--sp-2)}
 .funder-registration .funder-email-code #f-code{font-size:var(--fs-19);min-height:48px}
+.funder-registration .funder-field-grid{gap:var(--sp-4)}
+.funder-registration>.note{margin-bottom:var(--sp-4)}
+.funder-registration .funder-upload:has(.file-row){padding:0;border-color:transparent;background:transparent}
+.funder-registration .funder-upload:has(.file-row).is-drop{background:var(--accent-soft);border-color:var(--accent)}
 .funder-phone-row{display:grid;grid-template-columns:minmax(180px,260px) minmax(0,1fr);gap:var(--sp-3)}
 .funder-dial{position:relative;min-width:0}
 .funder-dial-btn{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);width:100%;text-align:left;cursor:pointer}
@@ -279,7 +296,7 @@
 .funder-dial-caret{flex:none;width:7px;height:7px;margin-top:-3px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(45deg)}
 .funder-dial-btn[aria-expanded="true"] .funder-dial-caret{margin-top:3px;transform:rotate(-135deg)}
 .funder-dial-btn:disabled{cursor:not-allowed}
-.funder-dial-pop{position:absolute;left:0;top:calc(100% + var(--sp-1));z-index:40;width:min(340px,calc(100vw - 32px));padding:var(--sp-2);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-popover)}
+.funder-dial-pop{position:absolute;left:0;top:calc(100% + var(--sp-1));z-index:40;width:min(340px,calc(100vw - 32px));padding:var(--sp-2);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg)}
 .funder-dial-pop>.inp{width:100%}
 .funder-dial-list{list-style:none;margin:var(--sp-2) 0 0;padding:0;max-height:264px;overflow:auto;overscroll-behavior:contain}
 .funder-dial-list li{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);min-height:40px;padding:var(--sp-2) var(--sp-3);border-radius:var(--radius-xs);cursor:pointer;font-size:var(--ui-field-value);color:var(--text)}
@@ -294,7 +311,7 @@
 .funder-upload-add .login-caption{margin:0}
 .funder-upload-rejected{list-style:none;margin:var(--sp-3) 0 0;padding:0;display:grid;gap:var(--sp-1);font-size:var(--fs-12);color:var(--danger)}
 .funder-upload-rejected b{font-weight:600;overflow-wrap:anywhere}
-.funder-submit{padding:var(--sp-5) var(--card-pad)}
+.funder-submit{padding:var(--sp-5) var(--card-pad);background:var(--card-2)}
 .funder-submit>.note,.funder-submit>.funder-validation{display:block;margin:0 0 var(--sp-4)}
 .funder-submit-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-3) var(--sp-5)}
 .funder-readiness{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-5);margin:0;padding:0;list-style:none}
@@ -302,6 +319,9 @@
 .funder-registration .funder-submit .funder-actions{margin:0;align-items:center}
 .funder-submit>.login-caption{margin:var(--sp-3) 0 0}
 @media(max-width:600px){
+  .funder-review-overview{flex-basis:100%;padding-top:0}
+  .funder-status-actions{width:100%;justify-content:flex-start;margin-left:0}
+  .funder-status-actions>.btn{flex:1 1 auto}
   .funder-phone-row{grid-template-columns:minmax(0,1fr)}
   .funder-submit{padding:var(--sp-5) var(--sp-4)}
   .funder-submit-bar{align-items:stretch;flex-direction:column}
