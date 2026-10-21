@@ -7,7 +7,7 @@
 .review-wrap .rv-operation{position:sticky;top:calc(68px + var(--sp-5))}
 .review-wrap .rv-operation h2{margin-bottom:var(--sp-4)}
 .review-wrap .rv-operation .rv-meta{margin:0 0 var(--sp-4)}
-.review-wrap .rv-operation-id{display:block;color:var(--text);font-size:var(--ui-field-value);margin-bottom:var(--sp-1);overflow-wrap:anywhere}
+.review-wrap .rv-operation-name{display:block;color:var(--text);font-size:var(--ui-field-value);margin-bottom:var(--sp-1);overflow-wrap:anywhere}
 .review-wrap .rv-actions{display:grid;gap:var(--sp-3)}
 .review-wrap .rv-reject-btn{color:var(--danger);border-color:var(--danger-border);background:var(--card)}
 .review-wrap .rv-reject-btn:hover{background:var(--danger-bg);border-color:var(--danger)}

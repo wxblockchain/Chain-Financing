@@ -6,7 +6,7 @@
   const OPS_PAGES=['P-O-AL-01','P-O-AL-03','P-O-AL-04','P-O-AL-05','P-O-AL-06','P-O-AL-07'];
   const copy=x=>JSON.parse(JSON.stringify(x));
   const A={sessionEpoch:0,selected:'DEMO-REG-001',legacyLink:false,filter:{state:'submitted',q:'',from:'',to:''},page:1,error:'',busy:false,
-    response:'success',material:'ready',openFile:'',pending:null,issues:[],additional:'',rejectError:false,queryError:false,duplicate:false,limited:false,template:'ready',extras:[],audit:[]};
+    response:'success',material:'ready',openFile:'',pending:null,issues:[],additional:'',rejectError:false,queryError:false,duplicate:false,limited:false,extras:[],audit:[]};
   let routeKey=null,returnPosition=null,restoreList=false,returnHash='',lastHash='',onModule=false,wasSigned=false;
   const btn=(en,zh,act,v='',kind='',disabled=false)=>`<button type="button" class="btn ${kind}" data-act="rv-${act}" data-v="${E(v)}" ${disabled?'disabled':''}>${L(en,zh)}</button>`;
   const time=t=>t?CF.fmtTime(t):'—';
@@ -15,8 +15,8 @@
   function rows(){return [{...R.account,id:'DEMO-REG-001'},...A.extras].filter(a=>a.version>0&&a.status!=='draft');}
   function selected(){return A.selected==='DEMO-REG-001'?R.account:A.extras.find(a=>a.id===A.selected);}
   function snapshot(){const a=selected();return a&&!A.legacyLink?{...a,fields:a.submittedFields,form:a.submittedForm}:null;}
-  /* 功能权限只有运营端账户与登录一处登记：PM-AL-05 申请与材料查询、PM-AL-06 审核处置。
-     本册不分查询岗与处置岗，持 PM-AL-05 即可查看并处置；仅持 PM-AL-06 时按缺配套查询权限拒绝。 */
+  /* 本模块权限在本册定义：PM-AL-05 申请与材料查询、PM-AL-06 审核处置，本期运营管理员两项均具备。
+     会话与身份前提沿用共享运营账户；仅持 PM-AL-06 时按缺配套查询权限拒绝。 */
   const signedIn=()=>!!CF.opsAuth&&CF.opsAuth.can(14);
   const canRead=()=>!!CF.opsAuth&&CF.opsAuth.can(5);
   const decideOnly=()=>!!CF.opsAuth&&!CF.opsAuth.can(5)&&CF.opsAuth.can(6);
@@ -59,15 +59,20 @@
   function sectionHead(en,zh,extra=''){return `<div class="rv-section-head"><h2>${L(en,zh)}</h2>${extra}</div>`;}
   function decisionContext(){return `<dl class="rv-dialog-context"><div><dt>${L('Application','申请编号')}</dt><dd>${E(A.selected)}</dd></div><div><dt>${L('Submitted','提交时间')}</dt><dd>${time(selected()?.submitted)}</dd></div></dl>`;}
   function size(bytes){return bytes>=1048576?(bytes/1048576).toFixed(1)+' MB':Math.max(1,Math.ceil(bytes/1024))+' KB';}
-  /* 本次提交的全部材料逐件列出，单件读取失败只影响该件。 */
+  /* 运营端只展示本次成功提交的材料：逐件显示文件名、类型和大小，可预览 / 下载；不提供上传、替换或删除。 */
+  const submittedDocs=form=>R.docs(form).filter(file=>file.status==='done');
+  const fileType=name=>(/\.([a-z0-9]+)$/i.exec(name||'')||[])[1]?.toUpperCase()||'';
   function materials(form){
-    const files=R.docs(form);
+    const files=submittedDocs(form);
     if(!files.length)return `<p class="rv-meta">${L('This submission contains no files.','本次提交没有材料文件。')}</p>`;
     return files.map(file=>CF.fileRow({key:'institution-ops-'+file.id,name:file.name,
-      meta:L('Institution supporting documents','机构证明材料')+(file.size?' · '+size(file.size):'')+(file.status==='done'&&file.at?' · '+L('uploaded','上传于')+' '+time(file.at):''),
-      state:file.status==='done'?'ready':'failed',status:file.status==='done'?L('Uploaded','已上传'):L('Upload failed','上传失败'),
+      meta:[fileType(file.name),file.size?size(file.size):''].filter(Boolean).join(' · '),
+      state:'ready',status:L('Submitted','已提交'),
       previewable:R.materialPreviewable(file),preview:{act:'rv-material',value:file.id},download:{act:'rv-material-download',value:file.id}})).join('');
   }
+  /* 业务联系人信息随机构字段提交，与账户联系邮箱分开展示；模版变更前提交的资料缺项显示“—”。 */
+  const CONTACT_KEYS=['contactName','contact','contactPhone'];
+  const isContact=row=>CONTACT_KEYS.includes(row[3]);
   function openFile(){return R.docs(snapshot()?.form).find(f=>f.id===A.openFile);}
   function fail(en,zh,desc,act='retry'){return CF.empty(L(en,zh),desc,btn('Retry','重试',act,'','primary'));}
   function signedOut(){return CF.empty(L('Sign in to continue','请先完成运营登录'),L('Your session has ended. Sign in again to view the current application and materials.','登录已失效，请重新登录后查看当前申请与材料。'),btn('Sign in again','重新登录','sign-in','','primary'));}
@@ -106,14 +111,19 @@
     return `<div class="review-wrap">${title('Application details','机构认证申请详情',E(A.selected)+' · '+E(v.form.name))}
       ${note()}
       <div class="rv-grid ${reviewable?'has-actions':''}"><div class="detail-stack rv-stack"><section class="card">${sectionHead('Submission','提交信息',tag(v.status))}<div class="card-b">${kv([['Funder account','资金方账号',A.selected==='DEMO-REG-001'?'DEMO-FUNDER':'DEMO-FUNDER-'+A.selected.slice(-3)],['Submitted','提交时间',time(v.submitted)],['Current account contact email','当前账户联系邮箱',a.email],['Account contact email at submission','提交时账户联系邮箱',v.snapshotEmail],['Decision time','结论时间',time(v.reviewed)],['Wallet address','钱包地址',a.address,'wide']])}</div></section>
-      <section class="card">${sectionHead('Institution information','机构资料')}<div class="card-b">${kv(fields.filter(R.notDocuments))}</div></section>
-      <section class="card">${sectionHead('Supporting materials','提交材料',`<span class="rv-meta">${L(R.docs(v.form).length+' files',R.docs(v.form).length+' 份')}</span>`)}<div class="card-b">${materials(v.form)}</div></section>
+      <section class="card">${sectionHead('Institution information','机构资料')}<div class="card-b">${kv(fields.filter(row=>R.notDocuments(row)&&!isContact(row)))}</div></section>
+      <section class="card rv-contact">${sectionHead('Business contact','业务联系人')}<div class="card-b">${kv(contactRows(fields))}</div></section>
+      <section class="card">${sectionHead('Institution supporting documents','机构证明材料',`<span class="rv-meta">${L(submittedDocs(v.form).length+' files',submittedDocs(v.form).length+' 份')}</span>`)}<div class="card-b">${materials(v.form)}</div></section>
       ${v.status==='rejected'?`<section class="card">${sectionHead('Rejection reasons','驳回原因')}<div class="card-b">${problemList(v)}</div></section>`:''}
       <section class="card rv-decision">${sectionHead('Review decision','审核结论')}<div class="card-b">${v.reviewed?kv([['Decision','结论',name(v.status)],['Decided by','操作人',v.reviewer||'DEMO-OP-01'],['Decision time','结论时间',time(v.reviewed)]]):`<p class="rv-meta">${L('No decision yet','尚未出具结论')}</p>`}
       ${reviewable?'':CF.note('accent',L('This submission has a final decision and is read only.','本次提交已出具结论，仅可查看。'))}</div></section></div>
-      ${reviewable?`<aside class="card rv-operation" aria-labelledby="rv-operation-title"><div class="card-b"><h2 id="rv-operation-title">${L('Review actions','审核操作')}</h2><p class="rv-meta"><span class="rv-operation-id">${E(A.selected)}</span>${time(v.submitted)}</p><div class="rv-actions">${btn('Approve','通过','approve','','primary')}${btn('Reject','驳回','reject','','rv-reject-btn')}</div></div></aside>`:''}</div>
+      ${reviewable?`<aside class="card rv-operation" aria-labelledby="rv-operation-title"><div class="card-b"><h2 id="rv-operation-title">${L('Review actions','审核操作')}</h2><p class="rv-meta"><span class="rv-operation-name">${E(v.form.name||'—')}</span>${time(v.submitted)}</p><div class="rv-actions">${btn('Approve','通过','approve','','primary')}${btn('Reject','驳回','reject','','rv-reject-btn')}</div></div></aside>`:''}</div>
       <section class="card rv-review-records" aria-labelledby="rv-history-title"><div class="rv-section-head"><h2 id="rv-history-title">${L('Submission and review activity','提交与审核记录')}</h2></div><div class="card-b">${R.reviewTimeline(a.records,true)}</div></section></div>`;
 
+  }
+  function contactRows(fields){
+    const names={contactName:['Business contact name','业务联系人姓名',''],contact:['Business contact email','业务联系人邮箱',''],contactPhone:['Business contact phone','业务联系人电话',{region:'',phone:''}]};
+    return CONTACT_KEYS.map(key=>fields.find(row=>row[3]===key)||[...names[key],key]);
   }
   function ensureWrite(){if(!canReview()){A.error=allowed()?L('This submission has changed or already has a decision. Review the current result.','申请已重新提交或已出具结论，请查看当前结果。'):signedIn()?L('This account can no longer review institution applications.','当前账号已不能处置机构认证申请。'):L('Your session has ended. Sign in again before reviewing.','登录已失效，请重新登录后再审核。');A.pending=null;A.busy=false;S.layer=null;return false;}return true;}
   function begin(decision){if(A.pending&&A.response==='unknown'){open('unknown');return;}if(!ensureWrite())return;A.error='';A.pending={id:A.selected,version:selected().version,decision};if(decision==='verified')open('confirm');else{A.issues=[];A.additional='';A.rejectError=false;open('reject');}}
@@ -179,11 +189,18 @@
     if(mode==='decide')OPS.onAct('ops-grant','6');
     dropReview();
   }
-  function demo(){return `<section class="rv-demo"><h5>${L('Certification review · demo tools','机构认证审核 · 演示工具')}</h5><p>${L('Local demonstration data. No real document, email or review service is contacted.','本地演示数据，不连接真实材料、邮件或审核服务。')}</p><div>${btn('Operations','运营端','ops')}${btn('Applicant','资金方本人','applicant')}</div><label>${L('Delivered account configuration','交付的账号配置')}</label><div class="seg">${btn('Administrator','运营管理员','grant','admin')}${btn('Later role · no institution access','后期角色 · 未开通本模块','grant','none')}${btn('Later role · application query','后期角色 · 已开通申请查询','grant','read')}${btn('Later role · decision only','后期角色 · 仅开通审核处置','grant','decide')}${btn('Pending first password change · sign in','首登待改密 · 载入后登录','identity','first')}${btn('Account locked · sign in','账号锁定 · 载入后登录','identity','locked')}</div><label for="rv-response">${L('Next review response','下次审核响应')}</label><select id="rv-response" class="inp">${[['success','Success','成功'],['failed','Failed','失败'],['unknown','Unknown result','结果未知'],['duplicate','Duplicate institution','通过时查重冲突'],['stale','Already processed','他人已处理'],['session','Session expired','登录失效']].map(o=>`<option value="${o[0]}" ${A.response===o[0]?'selected':''}>${L(o[1],o[2])}</option>`).join('')}</select><div class="seg">${btn('Expire operations session','运营登录失效','expire-session')}${btn('Next file fails to load','下一次材料读取失败','material-fail')}${btn('Review notice fails to deliver','审核结果通知投递失败','notice-fail')}${btn('Duplicate on submit','提交时机构重复','duplicate')}${btn('5 submits / 24 hours','24 小时已提交 5 次','limit')}${btn('Hypothetical template upgrade','假设模版升级','template-upgrade')}${btn('Clear submit constraints','恢复提交条件','clear-constraints')}${btn('Attempt stale write','尝试旧页面处置','attempt')}${btn('Reset review dataset','重置审核样例','seed')}</div><p>${L('Use Applicant to follow the same application through resubmission. Existing funder tools remain available below.','点击资金方本人可查看同一申请并重提；下方保留既有资金方工具。')}</p></section>`;}
+  function demo(){return `<section class="rv-demo"><h5>${L('Certification review · demo tools','机构认证审核 · 演示工具')}</h5><p>${L('Local demonstration data. No real document, email or review service is contacted.','本地演示数据，不连接真实材料、邮件或审核服务。')}</p><div>${btn('Operations','运营端','ops')}${btn('Applicant','资金方本人','applicant')}</div><label>${L('Delivered account configuration','交付的账号配置')}</label><div class="seg">${btn('Administrator','运营管理员','grant','admin')}${btn('Later role · no institution access','后期角色 · 未开通本模块','grant','none')}${btn('Later role · application query','后期角色 · 已开通申请查询','grant','read')}${btn('Later role · decision only','后期角色 · 仅开通审核处置','grant','decide')}${btn('Pending first password change · sign in','首登待改密 · 载入后登录','identity','first')}${btn('Account locked · sign in','账号锁定 · 载入后登录','identity','locked')}</div><label for="rv-response">${L('Next review response','下次审核响应')}</label><select id="rv-response" class="inp">${[['success','Success','成功'],['failed','Failed','失败'],['unknown','Unknown result','结果未知'],['duplicate','Duplicate institution','通过时查重冲突'],['stale','Already processed','他人已处理'],['session','Session expired','登录失效']].map(o=>`<option value="${o[0]}" ${A.response===o[0]?'selected':''}>${L(o[1],o[2])}</option>`).join('')}</select><div class="seg">${btn('Expire operations session','运营登录失效','expire-session')}${btn('Next file fails to load','下一次材料读取失败','material-fail')}${btn('Review notice fails to deliver','审核结果通知投递失败','notice-fail')}${btn('Duplicate on submit','提交时机构重复','duplicate')}${btn('5 submits / 24 hours','24 小时已提交 5 次','limit')}${btn('Submitted before contact fields','模版变更前提交的资料','legacy-contact')}${btn('Clear submit constraints','恢复提交条件','clear-constraints')}${btn('Attempt stale write','尝试旧页面处置','attempt')}${btn('Reset review dataset','重置审核样例','seed')}</div><p>${L('Use Applicant to follow the same application through resubmission. Existing funder tools remain available below.','点击资金方本人可查看同一申请并重提；下方保留既有资金方工具。')}</p></section>`;}
+  const CONTACTS=[{contactName:'Demo Contact B',contact:'ops-b@example.test',dialRegion:'US',phone:'212 555 0101'},{contactName:'Demo Contact C',contact:'ops-c@example.test',dialRegion:'CA',phone:'416 555 0102'},{contactName:'Demo Contact D',contact:'ops-d@example.test',dialRegion:'SG',phone:'6123 4567'},{contactName:'Demo Contact E',contact:'ops-e@example.test',dialRegion:'GB',phone:'20 7946 0103'},{contactName:'Demo Contact F',contact:'ops-f@example.test',dialRegion:'HK',phone:'2100 0104'},{contactName:'',contact:'ops-g@example.test',dialRegion:'',phone:''},{contactName:'Demo Contact H',contact:'ops-h@example.test',dialRegion:'JP',phone:'3 1234 5678'}];
+  /* 演示：当前申请改为“模版变更前已提交”的资料（缺业务联系人姓名、电话），运营照常审核，资金方再次编辑时按普通缺项补齐。 */
+  function legacySubmission(){
+    const a=R.account;if(!a.submittedForm)return;
+    for(const form of [a.submittedForm,a.form])Object.assign(form,{contactName:'',dialRegion:'',phone:''});
+    a.submittedFields=R.fieldsFrom(a.submittedForm,'DEMO-1');R.persist();
+  }
   function seed(){
     R.state.activeTemplate='DEMO-1';R.seed('submitted');const a=R.account;a.version=2;a.submitted='2026-09-18T02:30:00Z';a.form.name='Demo Institution A';a.form.identifier='DEMO-REG-100';a.submittedFields=R.fields();a.submittedForm=copy(a.form);a.accountId='DEMO-FUNDER';a.records=[{sequence:1,submitter:a.accountId,status:'rejected',submitted:'2026-09-16T01:00:00Z',reviewed:'2026-09-17T03:00:00Z',reviewer:'DEMO-OP-02',additional:'登记号与材料不一致，请核对并填写完整编号。',issues:[]},R.recordOf(a)];delete a.history;delete a.boundIdentity;a.issues=[];a.additional='';a.successTimes=[];a.template='DEMO-1';R.persist();
-    A.extras=Array.from({length:7},(_,i)=>{const x=copy(a);x.id='DEMO-REG-'+String(i+2).padStart(3,'0');x.form.name='Demo Institution '+String.fromCharCode(66+i);x.form.identifier='DEMO-REG-'+(101+i);x.submittedForm=copy(x.form);x.submittedFields=R.fieldsFrom(x.submittedForm,'DEMO-1');x.version=1;x.accountId='DEMO-FUNDER-'+x.id.slice(-3);x.records=[];x.submitted=`2026-09-${String(18+i%2).padStart(2,'0')}T${String(3+i).padStart(2,'0')}:00:00Z`;x.status=i<5?'submitted':i===5?'verified':'rejected';x.reviewed=i>=5?'2026-09-20T01:00:00Z':null;x.reviewer=x.reviewed?'DEMO-OP-01':'';if(x.status==='rejected')x.additional=a.records[0].additional;R.recordDecision(x);return x;});
-    A.selected='DEMO-REG-001';A.legacyLink=false;A.pending=null;A.busy=false;A.response='success';A.sessionEpoch++;A.openFile='';A.template='ready';R.state.activeTemplate='DEMO-1';A.error='';A.material='ready';A.filter={state:'submitted',q:'',from:'',to:''};A.page=1;S.role='ops';S.end='admin';S.layer=null;S.demo=false;location.hash='#/ops/institution-reviews';
+    A.extras=Array.from({length:7},(_,i)=>{const x=copy(a);x.id='DEMO-REG-'+String(i+2).padStart(3,'0');x.form.name='Demo Institution '+String.fromCharCode(66+i);x.form.identifier='DEMO-REG-'+(101+i);Object.assign(x.form,CONTACTS[i]);x.submittedForm=copy(x.form);x.submittedFields=R.fieldsFrom(x.submittedForm,'DEMO-1');x.version=1;x.accountId='DEMO-FUNDER-'+x.id.slice(-3);x.records=[];x.submitted=`2026-09-${String(18+i%2).padStart(2,'0')}T${String(3+i).padStart(2,'0')}:00:00Z`;x.status=i<5?'submitted':i===5?'verified':'rejected';x.reviewed=i>=5?'2026-09-20T01:00:00Z':null;x.reviewer=x.reviewed?'DEMO-OP-01':'';if(x.status==='rejected')x.additional=a.records[0].additional;R.recordDecision(x);return x;});
+    A.selected='DEMO-REG-001';A.legacyLink=false;A.pending=null;A.busy=false;A.response='success';A.sessionEpoch++;A.openFile='';R.state.activeTemplate='DEMO-1';A.error='';A.material='ready';A.filter={state:'submitted',q:'',from:'',to:''};A.page=1;S.role='ops';S.end='admin';S.layer=null;S.demo=false;location.hash='#/ops/institution-reviews';
   }
   function action(act,v,e){
     if(e&&(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)&&['rv-view','rv-version'].includes(act))return false;
@@ -217,8 +234,8 @@
       case 'attempt':if(!ensureWrite())CF.toast(A.error);else begin('verified');S.demo=false;break;
       case 'duplicate':A.duplicate=true;S.demo=false;break;
       case 'limit':A.limited=true;A.limitUntil=Date.now()+3600000;S.demo=false;break;
-      case 'template-upgrade':A.template='upgraded';R.state.activeTemplate='DEMO-2';R.account.form.regulator='';R.persist();S.demo=false;break;
-      case 'clear-constraints':A.duplicate=false;A.limited=false;A.response='success';A.template='ready';R.state.activeTemplate='DEMO-1';R.state.saveResult='success';R.state.error=null;break;
+      case 'legacy-contact':legacySubmission();S.demo=false;break;
+      case 'clear-constraints':A.duplicate=false;A.limited=false;A.response='success';R.state.activeTemplate='DEMO-1';R.state.saveResult='success';R.state.error=null;break;
     }
     return true;
   }
@@ -227,7 +244,6 @@
     const recent=(a.successTimes||[]).filter(t=>Date.now()-t<86400000).sort();
     if(A.limited||recent.length>=5){const next=A.limited?A.limitUntil:recent[0]+86400000;return ['You can submit up to 5 times in 24 hours. Try again after '+time(next)+'.','24 小时内最多成功提交 5 次，可在 '+time(next)+' 后再次提交。'];}
     if(A.duplicate||hasDuplicate(a.form,'DEMO-REG-001'))return ['This institution is already registered. Contact support if you believe this is an error.','该机构已在平台注册，如有疑问请联系客服。'];
-    if(A.template==='upgraded'&&!a.form.regulator.trim())return ['Complete the newly required regulator field before submitting.','请补齐新增必填项：监管机构。'];
     return null;
   };
   function afterRender(){
@@ -237,9 +253,6 @@
       if(S.end==='asset'){
         CF.funder.afterRender();
         if(S.page==='P-L21'&&R.account.status==='rejected')for(const i of R.account.issues||[]){const input=$('f-'+i.key);if(input&&!input.parentElement.querySelector('.rv-field-reason'))input.insertAdjacentHTML('afterend',`<p class="funder-error rv-field-reason">${E(L(i.en,i.zh))}</p>`);}
-        if(S.page==='P-L21'&&A.template==='upgraded'){
-          const h=document.querySelector('.funder-grid .card-b');if(h&&!$('rv-template-note'))h.insertAdjacentHTML('afterbegin',`<p class="note warn" id="rv-template-note">${L('The template has changed. One new required field: regulator. Other details have been retained.','模版已调整，新增 1 项必填：监管机构。其他资料已保留。')}</p>`);
-        }
         if(S.page==='P-L21'&&(A.limited||(R.account.successTimes||[]).filter(t=>Date.now()-t<86400000).length>=5)){
           const b=document.querySelector('[data-act="f-submit"]');if(b){b.disabled=true;b.insertAdjacentHTML('beforebegin',`<p class="funder-error">${E(L(...R.beforeSubmit(R.account)))}</p>`);}
         }
