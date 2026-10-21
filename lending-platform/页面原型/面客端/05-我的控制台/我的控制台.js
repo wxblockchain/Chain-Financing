@@ -35,7 +35,7 @@
  const owner=id=>id==='entity-demo-a'?L('Demo Asset Company A','演示资产企业 A'):L('Demo Asset Company B','演示资产企业 B');
  const counter=q=>S.role==='asset'?fund(q.fund):owner(q.owner);
  let sourceOpened='',sourceFault='',associationScene='normal';
- let todoExpanded=false,todoError=false,usageError=false,usagePage=1,saveFailOnce=false,modify={},detailState='normal',planError=false,statsError=false,tokenError=false,associationError=false,focusAfter='',lastHash='',lastRole=S.role+'|'+JSON.stringify(S.party),restoring=false,copyValue='',returnNotice=false;
+ let pendingError=false,usageError=false,usagePage=1,saveFailOnce=false,modify={},detailState='normal',planError=false,statsError=false,tokenError=false,associationError=false,focusAfter='',lastHash='',lastRole=S.role+'|'+JSON.stringify(S.party),restoring=false,copyValue='',returnNotice=false;
  CF.PAGES['P-MC-01'].retainList=true;
  const dict={en:{},zh:{}};
  kinds.forEach((k,i)=>{const id='P-MC-0'+(i+2),key='mcDetail'+i;CF.PAGES[id]={end:'asset',layout:'portal',parent:'P-MC-01',crumbKey:key,auth:true,retainList:true};CF.ENTRY[id]='/console/'+k;dict.en[key]=titles[k][0];dict.zh[key]=titles[k][1];});
@@ -43,11 +43,11 @@
    if(!raw||raw.length>12000||!/^#\/console(?:\?|$|\/(tokens|projects|credits|loans|repayments|quotes)\?)/.test(raw))return '';
    const p=raw.slice(1).split('?')[0];if(p!=='/console'&&(!detail||!kinds.some(k=>p==='/console/'+k)))return '';
    const q=new URLSearchParams(raw.split('?')[1]||'');if(p!=='/console'&&!q.get('id'))return '';
-   const clean=new URLSearchParams();['tab','filter','secondary','project','sort','size','page','y','scroll','focus','id','period','application','query','periodState','targetProject','tokenType'].forEach(k=>{if(q.has(k))clean.set(k,q.get(k).slice(0,160));});
+   const clean=new URLSearchParams();['tab','pending','filter','secondary','project','sort','size','page','y','scroll','focus','id','period','application','query','periodState','targetProject','tokenType'].forEach(k=>{if(q.has(k))clean.set(k,q.get(k).slice(0,160));});
    if(detail&&q.has('list')){const list=safeRoute(q.get('list'),false);if(list)clean.set('list',list);}
    return '#'+p+(clean.size?'?'+clean:'');
  }
- function view(){const q=params(),tab=tabs().includes(q.get('tab'))?q.get('tab'):tabs()[0];return {tab,filter:q.get('filter')||'',secondary:q.get('secondary')||'',project:q.get('project')||'',tokenType:q.get('tokenType')||'',query:q.get('query')||'',periodState:q.get('periodState')||'',sort:q.get('sort')||(tab==='credits'?'available-asc':'newest'),size:[20,50,100].includes(+q.get('size'))?+q.get('size'):20,page:Math.min(100000,Math.max(1,parseInt(q.get('page'))||1))};}
+ function view(){const q=params(),tab=tabs().includes(q.get('tab'))?q.get('tab'):tabs()[0];return {tab,pending:pendingTabs().includes(tab)&&q.get('pending')==='1'?'1':'',filter:q.get('filter')||'',secondary:q.get('secondary')||'',project:q.get('project')||'',tokenType:q.get('tokenType')||'',query:q.get('query')||'',periodState:q.get('periodState')||'',sort:q.get('sort')||(tab==='credits'?'available-asc':'newest'),size:[20,50,100].includes(+q.get('size'))?+q.get('size'):20,page:Math.min(100000,Math.max(1,parseInt(q.get('page'))||1))};}
  function listRoute(k){return safeRoute(params().get('list'),false)||'#/console?tab='+k;}
  function detailHref(k,id){if(k==='projects'){const r=find(k,id),p=r&&D.project(r.id);if(p)return sourceHref(k,r,p,{back:location.hash});}return '#/console/'+k+'?'+new URLSearchParams({id,list:path()==='/console'?location.hash:listRoute(k)});}
  function snapshot(){
@@ -88,7 +88,7 @@
      (!v.periodState||repayment&&r.periods.some(p=>within(v.periodState,p.status)))&&
      within(v.secondary,v.tab==='tokens'?(r.pledged?'pledged':'unpledged'):v.tab==='projects'?r.n.grade:repayment?(r.overdue?'yes':'no'):'');
  }
- function filtered(){const v=view();let rows=S.st==='empty'?[]:normalized(v.tab);rows=rows.filter(r=>matches(r,v));
+ function filtered(){const v=view();let rows=S.st==='empty'?[]:normalized(v.tab);rows=rows.filter(r=>matches(r,v)&&(!v.pending||pendingError||pendingItems(v.tab,r).length));
    if(S.st==='noresult')return [];
    const value=r=>v.sort.startsWith('value')?r.value:v.sort.startsWith('available')?r.available:v.sort.startsWith('due')?(r.due?Date.parse(r.due):Infinity):Date.parse(r.at)||Number(r.at)||0;
    rows.sort((a,b)=>{const x=value(a),y=value(b);if(!Number.isFinite(x)||!Number.isFinite(y))return x===y?a.id.localeCompare(b.id):Number.isFinite(x)?-1:1;return (x===y?0:(x-y)*(v.sort==='newest'||v.sort.endsWith('desc')?-1:1))||a.id.localeCompare(b.id);});return rows;
@@ -168,7 +168,7 @@
    if(['loans','repayments'].includes(v.tab))h+=CF.filterSearch('mc-query',L('Reference number','完整编号'),v.query,L('Application, business or disbursement number','融资申请 / 业务 / 放款编号'));
    const sorts=v.tab==='tokens'?[['newest',L('Newest issuance','签发时间倒序')],['value-asc',L('Value: low to high','价值升序')],['value-desc',L('Value: high to low','价值降序')],['due-asc',L('Due date: earliest','到期日升序')],['due-desc',L('Due date: latest','到期日降序')]]:v.tab==='repayments'?[['newest',L('Newest receipt confirmation','到账确认时间倒序')],['due-asc',L('Due date: earliest','应还日升序')],['due-desc',L('Due date: latest','应还日降序')]]:v.tab==='credits'?[['available-asc',L('Available credit: low to high','可用授信升序')],['available-desc',L('Available credit: high to low','可用授信降序')]]:[['newest',L('Newest first','时间倒序')]];
    h+=select('sort',L('Sort','排序'),sorts,v.sort);
-   return '<div class="filterbar mc-filters">'+h+'<div class="fb-acts">'+(['loans','repayments'].includes(v.tab)?b('search',L('Search','查询'),'',true):'')+b('clear',L('Reset filters','清空筛选'))+'</div></div>'+(Object.keys(v).some(k=>['filter','secondary','project','query','periodState','tokenType'].includes(k)&&v[k])?'<div class="mc-filter-note" role="status">'+L('Filtered by: ','已按以下条件过滤：')+E([v.tokenType?text(D.type('erc20-ar').label):'',picks(v.filter).map(status).join(' / '),picks(v.secondary).map(k=>k==='yes'?L('Overdue','逾期'):k==='no'?L('Not overdue','未逾期'):status(k)).join(' / '),picks(v.periodState).map(status).join(' / '),v.query,picks(v.project).join(' / ')].filter(Boolean).join(' · '))+'</div>':'');
+   return '<div class="filterbar mc-filters">'+h+'<div class="fb-acts">'+pendingToggle(v)+(['loans','repayments'].includes(v.tab)?b('search',L('Search','查询'),'',true):'')+b('clear',L('Reset filters','清空筛选'))+'</div></div>'+(pendingError&&pendingTabs().includes(v.tab)?'<div class="mc-filter-note" role="status">'+L('Records awaiting your action are temporarily unavailable. ','待处理情况暂不可用，')+reloadHint()+'</div>':'')+(Object.keys(v).some(k=>FILTERS.includes(k)&&v[k]&&!(k==='pending'&&pendingError))?'<div class="mc-filter-note" role="status">'+L('Filtered by: ','已按以下条件过滤：')+E([v.pending&&!pendingError?L('Awaiting your action only','只看待处理'):'',v.tokenType?text(D.type('erc20-ar').label):'',picks(v.filter).map(status).join(' / '),picks(v.secondary).map(k=>k==='yes'?L('Overdue','逾期'):k==='no'?L('Not overdue','未逾期'):status(k)).join(' / '),picks(v.periodState).map(status).join(' / '),v.query,picks(v.project).join(' / ')].filter(Boolean).join(' · '))+'</div>':'');
  }
  function columns(k){return {
    tokens:[[L('Token','代币编号'),'id'],[L('Quantity','数量'),'num'],[L('Value (USD)','价值（USD）'),'num'],[L('Token status','代币状态'),''],[L('Pledge status','质押状态'),''],[L('Receivable due','应收账款到期日'),''],[L('Project','所属项目'),'']],
@@ -189,56 +189,58 @@
  }
  function table(){const v=view(),all=filtered(),count=Math.max(1,Math.ceil(all.length/v.size));if(v.page>count&&S.st!=='error'&&S.st!=='loading'&&!tokenError){v.page=count;const q=params();q.set('page',count);history.replaceState(null,'','#'+path()+'?'+q);}const rs=all.slice((v.page-1)*v.size,v.page*v.size),cols=columns(v.tab);
    if(S.st==='error'||v.tab==='tokens'&&(tokenError||!Array.isArray(D.tokens)))return CF.empty(L('List could not be loaded','列表加载失败'),L('Your filters have been preserved. ','已保留当前筛选条件。')+reloadHint(),'');
-   if(!all.length&&S.st!=='loading'&&S.st!=='noresult'&&!['filter','secondary','project','query','periodState','tokenType'].some(k=>v[k]))return CF.empty(v.tab==='tokens'?L('No displayable tokens for this company','本企业暂无可展示的代币'):v.tab==='projects'?L('No financing projects yet','尚未创建融资项目'):L('No records yet','暂无记录'),'','');
-   let body=S.st==='loading'?'<div role="status" aria-label="'+L('Loading','加载中')+'">'+CF.skelTable(5)+'</div>':(S.st==='error'||v.tab==='tokens'&&(tokenError||!Array.isArray(D.tokens)))?CF.empty(L('List could not be loaded','列表加载失败'),L('Your filters have been preserved. ','已保留当前筛选条件。')+reloadHint(),''):!rs.length?CF.empty(L(S.st==='empty'?'No records yet':'No matching records',S.st==='empty'?'暂无记录':'暂无符合条件的记录'),returnNotice?L('The latest record no longer matches these filters.','最新记录已不符合当前筛选条件。'):L('Try another filter or return later.','可调整筛选条件或稍后再查看。'),b('clear',L('Clear filters','清空筛选'))):'<div class="listbox" id="mc-list" tabindex="0" aria-label="'+E(nm(v.tab))+'"><table class="tbl mc-table" data-kind="'+v.tab+'"><thead><tr>'+[...cols,[L('Actions','操作'),'']].map(([t,kind])=>'<th scope="col" class="'+(kind||'')+'">'+E(t)+'</th>').join('')+'</tr></thead><tbody>'+rs.map(r=>'<tr data-id="'+E(r.id)+'" data-kind="'+v.tab+'" tabindex="0" aria-label="'+E(text(titles[v.tab])+' '+r.id)+'">'+rowValues(v.tab,r).map((c,i)=>'<td data-label="'+E(cols[i][0])+'" class="'+cols[i][1]+'"><div>'+c+'</div></td>').join('')+'<td data-label="'+L('Actions','操作')+'" class="mc-actions"><div>'+link('detail',L('View details','查看详情'),v.tab+'|'+r.id)+'</div></td></tr>').join('')+'</tbody></table></div>';
-   const focus=params().get('focus')||'',moved=focus&&!focus.startsWith('todo-')&&!all.some(r=>r.id===focus);
+   if(!all.length&&S.st!=='loading'&&S.st!=='noresult'&&!FILTERS.some(k=>v[k]))return CF.empty(v.tab==='tokens'?L('No displayable tokens for this company','本企业暂无可展示的代币'):v.tab==='projects'?L('No financing projects yet','尚未创建融资项目'):L('No records yet','暂无记录'),'','');
+   let body=S.st==='loading'?'<div role="status" aria-label="'+L('Loading','加载中')+'">'+CF.skelTable(5)+'</div>':(S.st==='error'||v.tab==='tokens'&&(tokenError||!Array.isArray(D.tokens)))?CF.empty(L('List could not be loaded','列表加载失败'),L('Your filters have been preserved. ','已保留当前筛选条件。')+reloadHint(),''):!rs.length&&v.pending&&!pendingError&&!FILTERS.some(k=>k!=='pending'&&v[k])&&S.st!=='empty'?CF.empty(L('No records awaiting your action','当前没有待处理记录'),returnNotice?L('The latest record no longer needs your action.','记录已更新，已无需我方处理。'):'',b('clear',L('Show all records','查看全部记录'))):!rs.length?CF.empty(L(S.st==='empty'?'No records yet':'No matching records',S.st==='empty'?'暂无记录':'暂无符合条件的记录'),returnNotice?L('The latest record no longer matches these filters.','最新记录已不符合当前筛选条件。'):L('Try another filter or return later.','可调整筛选条件或稍后再查看。'),b('clear',L('Clear filters','清空筛选'))):'<div class="listbox" id="mc-list" tabindex="0" aria-label="'+E(nm(v.tab))+'"><table class="tbl mc-table" data-kind="'+v.tab+'"><thead><tr>'+[...cols,[L('Actions','操作'),'']].map(([t,kind])=>'<th scope="col" class="'+(kind||'')+'">'+E(t)+'</th>').join('')+'</tr></thead><tbody>'+rs.map(r=>{const items=pendingError?[]:pendingItems(v.tab,r);return '<tr data-id="'+E(r.id)+'" data-kind="'+v.tab+'"'+(items.length?' data-pending="true"':'')+' tabindex="0" aria-label="'+E(text(titles[v.tab])+' '+r.id+(items.length?' · '+L('Awaiting your action','待我方处理'):''))+'">'+rowValues(v.tab,r).map((c,i)=>'<td data-label="'+E(cols[i][0])+'" class="'+cols[i][1]+'"><div>'+c+(i===0?pendingCue(items):'')+'</div></td>').join('')+'<td data-label="'+L('Actions','操作')+'" class="mc-actions"><div>'+(items.length?'<button type="button" class="actlink mc-pending-action" data-act="mc-pending" data-v="'+E(items[0].id)+'">'+E(items[0].action)+'</button>':'')+link('detail',L('View details','查看详情'),v.tab+'|'+r.id)+'</div></td></tr>';}).join('')+'</tbody></table></div>';
+   const focus=params().get('focus')||'',moved=focus&&all.length&&!all.some(r=>r.id===focus);
    return (moved?CF.note('',L('The updated record no longer matches these filters.','记录已更新，不再符合当前筛选条件。')+' '+b('clear',L('Clear filters','清空筛选'))):'')+'<div class="mc-caption"><span>'+E(nm(v.tab))+' · '+all.length+L(' records',' 条')+'</span><span>'+L('All amounts are in USD unless marked otherwise.','金额单位为 USD，其他币种另行标注。')+'</span></div>'+body+'<div class="pager"><span class="total">'+all.length+L(' records',' 条记录')+'</span><label for="mc-size">'+L('Rows per page','每页')+'</label><select class="inp" id="mc-size">'+[20,50,100].map(n=>'<option'+(n===v.size?' selected':'')+'>'+n+'</option>').join('')+'</select>'+b('page',L('Previous','上一页'),v.page-1,false,v.page<=1)+'<span>'+v.page+' / '+count+'</span>'+b('page',L('Next','下一页'),v.page+1,false,v.page>=count)+'</div>';
  }
  function gate(){if(S.role==='signed')return '<div class="mc-error">'+CF.empty(L('This page is not available for your current role','该页面不适用于当前身份'),L('You can continue exploring public information.','你可以继续浏览公开信息。'),'<button class="btn primary" data-act="go" data-v="/assets">'+L('Back to assets','返回资产广场')+'</button>')+'</div>';
   return '<div class="mc-error">'+CF.empty(L(S.role==='limited'?'Complete account setup':'Sign in to view your console',S.role==='limited'?'请先完成账户必办事项':'登录后查看我的控制台'),L('Your company information is available after sign-in.','登录后可查看本企业数据。'),'<button class="btn primary" data-act="signin">'+L('Sign in','登录')+'</button>')+'</div>';}
- /* 待办：只收本企业现在就能在借贷广场办理的事项，由业务事实即时得出；没有手动完成、忽略、归档或催办。 */
+ /* 待处理：本企业现在就能在借贷广场办理的事项，各归入唯一一条清单记录；由业务事实即时得出，没有独立待办、手动完成、忽略或催办。 */
+ const FILTERS=['pending','filter','secondary','project','query','periodState','tokenType'];
  const at=v=>typeof v==='number'?v:Date.parse(v)||0;
  const seq=p=>L('Instalment ','第 ')+p.seq+L('',' 期');
- function todos(){
-   if(!allowed()||S.st==='empty')return [];
-   const out=[],t=now(),add=x=>out.push(x),pname=id=>text(D.project(id)?.name);
-   if(S.role==='asset'){
-     Q.data().quotes.filter(q=>q.state==='waiting'&&D.mine(D.project(q.project))).forEach(q=>add({id:'quote-'+q.id,name:L('Confirm quote','确认报价'),object:pname(q.project),facts:[[L('Funder','报价机构'),E(fund(q.fund))],[L('Requested','融资需求金额'),money(q.amount)],[L('Annual rate','年化融资利率'),E(q.rate)+'%'],[L('Locked for','已锁定'),elapsed(t-q.at)]],at:at(q.at),go:['quotes',q.id]}));
-     normalized('loans').filter(r=>r.fdState==='confirming').forEach(r=>add({id:'receipt-'+r.id,name:L('Confirm receipt','确认到账'),object:pname(r.project),facts:[[L('Funder','资金方'),E(counter(r))],[L('Disbursement','放款金额'),money(r.settlement,r.ccy)],[L('Submitted at','提交时间'),time(r.deal.record?.at)],[L('Waiting for','已等待'),since(r.waiting)]],at:at(r.deal.record?.at),go:['loans',r.id]}));
-     normalized('repayments').forEach(r=>{
-       const p=r.periods.filter(p=>p.state==='due'&&t>=at(p.open)).sort((a,b)=>a.due.localeCompare(b.due)||a.seq-b.seq)[0];if(!p)return;
-       add({id:'repay-'+r.id,name:L('Repay','还款'),object:pname(r.project),overdue:p.overdue,facts:[[L('Funder','资金方'),E(counter(r.q))],[L('Instalment','期次'),seq(p)],[L('Due date','应还日'),date(p.due)],[L('Amount due','应还金额'),money(p.settlement,r.q.ccy)]],at:at(p.open),go:['repayments',r.id,p.id]});
-     });
-     normalized('projects').forEach(p=>{
-       const n=p.n,name=text(p.name),when=at(p.created),released=D.tokens.filter(x=>x.releasedFrom===p.id&&x.pledge==='released'),value=list=>money(list.reduce((a,x)=>a+x.value,0));
-       if(n.grade==='short')add({id:'pledge-'+p.id,name:L('Add collateral','追加质押'),object:name,facts:[[L('Pledge gap','质押缺口'),money(n.gap)],[L('Additional asset value','需追加资产价值'),money(n.rate?n.gap/n.rate:null)]],at:when,go:['projects',p.id]});
-       if(released.length)add({id:'extract-'+p.id,name:L('Withdraw tokens','提取代币'),object:name,facts:[[L('Tokens','张数'),released.length+L(' tokens',' 张')],[L('Amount','金额'),value(released)]],at:when,go:['projects',p.id]});
-       if(p.status==='returned')add({id:'resubmit-'+p.id,name:L('Revise and resubmit project','修改并重新提交项目'),object:name,facts:[[L('Project ID','项目编号'),'<span class="mono">'+E(p.id)+'</span>']],at:when,go:['projects',p.id]});
-     });
-   }else{
-     normalized('loans').filter(r=>r.fdState==='pending').forEach(r=>add({id:'disburse-'+r.id,name:L('Register disbursement','登记放款'),object:pname(r.project),facts:[[L('Asset holder','资产方'),E(counter(r))],[L('Disbursement','放款金额'),money(r.settlement,r.ccy)],[L('Accepted at','接受时间'),time(r.acceptedAt)],[L('Waiting for','已等待'),since(r.acceptedAt?t-r.acceptedAt:null)]],at:at(r.acceptedAt),go:['loans',r.id]}));
-     normalized('repayments').forEach(r=>r.pending.forEach(p=>add({id:'confirm-'+p.id,name:L('Confirm repayment received','确认收到还款'),object:pname(r.project),facts:[[L('Asset holder','资产方'),E(counter(r.q))],[L('Instalment','期次'),seq(p)],[L('Amount due','应还金额'),money(p.settlement,r.q.ccy)],[L('Submitted at','提交时间'),time(p.record.at)],p.overdue>0&&[L('Overdue (frozen)','逾期（已冻结）'),p.overdue+L(' days',' 天')]],at:at(p.record.at),go:['repayments',r.id,p.id]})));
-   }
-   /* 已逾期的还款在前、按逾期天数从多到少；其余按事项发生时间从早到晚。 */
-   return out.sort((a,b)=>((b.overdue||0)>0)-((a.overdue||0)>0)||(b.overdue||0)-(a.overdue||0)||a.at-b.at||a.id.localeCompare(b.id));
+ function pendingTabs(){return S.role==='asset'?['projects','loans','repayments']:S.role==='fund'?['loans','repayments']:[];}
+ function pendingItems(k,r){
+   if(!allowed()||S.st==='empty'||!pendingTabs().includes(k))return [];
+   const out=[],t=now(),add=(id,name,fact,when,go,extra={})=>out.push({id,name,action:extra.action||name,fact,at:at(when),go,overdue:extra.overdue||0});
+   if(k==='projects'){
+     const n=r.n,released=D.tokens.filter(x=>x.releasedFrom===r.id&&x.pledge==='released');
+     Q.data().quotes.filter(q=>q.state==='waiting'&&q.project===r.id).forEach(q=>add('quote-'+q.id,L('Confirm quote','确认报价'),L('Locked for ','已锁定 ')+elapsed(t-q.at),q.at,['quotes',q.id]));
+     if(n.grade==='short')add('pledge-'+r.id,L('Add collateral','追加质押'),L('Pledge gap ','质押缺口 ')+money(n.gap),r.created,['projects',r.id]);
+     if(released.length)add('extract-'+r.id,L('Withdraw tokens','提取代币'),released.length+L(' tokens · ',' 张 · ')+money(released.reduce((a,x)=>a+x.value,0)),r.created,['projects',r.id]);
+     if(r.status==='returned')add('resubmit-'+r.id,L('Revise and resubmit project','修改并重新提交项目'),'',r.created,['projects',r.id]);
+   }else if(k==='loans'){
+     if(S.role==='asset'&&r.fdState==='confirming')add('receipt-'+r.id,L('Confirm receipt','确认到账'),L('Waiting for ','已等待 ')+since(r.waiting),r.deal.record?.at,['loans',r.id]);
+     if(S.role==='fund'&&r.fdState==='pending')add('disburse-'+r.id,L('Register disbursement','登记放款'),L('Waiting for ','已等待 ')+since(r.acceptedAt?t-r.acceptedAt:null),r.acceptedAt,['loans',r.id]);
+   }else if(S.role==='asset'){
+     /* 指向本笔第一条已开放、尚未提交的待还款期次。 */
+     const p=r.periods.filter(p=>p.state==='due'&&t>=at(p.open)).sort((a,b)=>a.due.localeCompare(b.due)||a.seq-b.seq)[0];
+     if(p)add('repay-'+r.id,L('Repay','还款'),seq(p)+L(' · due ',' · 应还日 ')+date(p.due)+(p.overdue>0?L(' · overdue ',' · 已逾期 ')+p.overdue+L(' days',' 天'):''),p.open,['repayments',r.id,p.id],{overdue:p.overdue,action:L('Repay · ','还款·')+seq(p)});
+   }else r.pending.forEach(p=>add('confirm-'+p.id,L('Confirm repayment received','确认收到还款'),seq(p)+L(' · submitted ',' · 提交于 ')+time(p.record.at)+(p.overdue>0?L(' · overdue frozen at ',' · 逾期冻结 ')+p.overdue+L(' days',' 天'):''),p.record.at,['repayments',r.id,p.id],{overdue:p.overdue,action:L('Confirm repayment received · ','确认收到还款·')+seq(p)}));
+   /* 已逾期（含提交后冻结的逾期）在前、按天数从多到少；其余按事项发生时间从早到晚。 */
+   return out.sort((a,b)=>(b.overdue>0)-(a.overdue>0)||b.overdue-a.overdue||a.at-b.at||a.id.localeCompare(b.id));
  }
- // Only disclosure state lives here; todo membership, order and source navigation stay in todos().
- const todoFacts=new Set();
- document.addEventListener('toggle',e=>{
-   if(!e.target.matches?.('.mc-todo-record'))return;
-   if(e.target.open)todoFacts.add(e.target.dataset.todo);else todoFacts.delete(e.target.dataset.todo);
- },true);
- function todoPanel(){
-   const head=n=>'<div class="mc-todo-head"><h2 id="mc-todo" tabindex="-1">'+L('To-dos','待办')+(n==null?'':'<span class="mc-todo-count">'+n+'<span class="sr-only">'+L(' items',' 项')+'</span></span>')+'</h2><span class="mc-small">'+L('Handle them in the lending marketplace; they clear automatically.','在借贷广场办理，处理后自动消失。')+'</span></div>';
-   const wrap=html=>'<section class="mc-todo" aria-labelledby="mc-todo">'+html+'</section>';
-   if(S.st==='loading')return wrap(head(null)+'<div role="status" aria-label="'+L('Loading','加载中')+'">'+CF.skelTable(2)+'</div>');
-   if(todoError)return wrap(head(null)+'<p class="mc-todo-empty">'+L('To-dos are temporarily unavailable. ','待办暂不可用，')+reloadHint()+'</p>');
-   const list=todos(),focus=params().get('focus')||'',open=todoExpanded||list.findIndex(x=>'todo-'+x.id===focus)>=3,shown=open?list:list.slice(0,3);
-   if(!list.length)return wrap(head(0)+'<p class="mc-todo-empty">'+L('Nothing needs your company’s action right now.','暂无待处理事项')+'</p>');
-   return wrap(head(list.length)+'<ul class="mc-todo-list">'+shown.map(x=>'<li class="mc-todo-item"'+(x.overdue>0?' data-overdue="true"':'')+'><details class="mc-todo-record" data-todo="'+E(x.id)+'"'+(todoFacts.has(x.id)?' open':'')+'><summary><span class="mc-todo-main"><b>'+E(x.name)+'</b>'+(x.overdue>0?CF.tag('warn',L('Overdue ','已逾期 ')+x.overdue+L(' days',' 天')):'')+'<span class="mc-todo-object">'+E(x.object)+'</span></span><span class="sr-only">'+L(' · View facts',' · 查看事项事实')+'</span></summary><dl class="mc-todo-facts">'+x.facts.filter(Boolean).map(([k,v])=>'<div><dt>'+E(k)+'</dt><dd>'+v+'</dd></div>').join('')+'</dl></details><button type="button" class="actlink" data-act="mc-todo" data-v="'+E(x.id)+'" data-id="todo-'+E(x.id)+'" aria-label="'+E(x.name+' · '+x.object+' · '+L('Go to lending marketplace','前往借贷广场'))+'">'+L('Go to lending marketplace','前往借贷广场')+'</button></li>').join('')+'</ul>'+(list.length>3?'<div class="mc-todo-more">'+b('todo-more',open?L('Show fewer','收起'):L('Show all '+list.length,'显示全部 '+list.length+' 项'))+'</div>':''));
+ /* 分类标签上的数量是有待处理事项的记录数，按该分类全部记录计算，不随筛选、检索或分页变化。 */
+ function pendingCount(k){return pendingError?null:normalized(k).filter(r=>pendingItems(k,r).length).length;}
+ function pendingBadge(k){const n=pendingTabs().includes(k)?pendingCount(k):0;return n?'<span class="mc-pending-count">'+n+'<span class="sr-only">'+L(n>1?' records awaiting your action':' record awaiting your action',' 条待我方处理记录')+'</span></span>':'';}
+ function pendingToggle(v){
+   if(!pendingTabs().includes(v.tab))return '';
+   const n=pendingCount(v.tab);
+   return '<label class="mc-pending-toggle"'+(pendingError?' aria-disabled="true"':'')+'><input type="checkbox" id="mc-pending"'+(v.pending&&!pendingError?' checked':'')+(pendingError?' disabled':'')+'><span>'+L('Awaiting your action only','只看待处理')+'</span>'+(n==null?'':'<span class="mc-toggle-count">'+n+'</span>')+'</label>';
  }
- function overview(){return '<section class="card mc-overview" aria-label="'+L('Company overview and to-dos','企业概览与待办')+'"><section class="mc-capital" aria-labelledby="mc-capital-title"><h2 id="mc-capital-title">'+L('Company overview','企业概览')+'</h2>'+summary()+'</section>'+todoPanel()+'</section>';}
- function listing(){if(!allowed())return gate();if(S.st==='denied')return unavailable();const v=view();return '<div class="mc-root"><div class="page-head"><div><h1 class="page-title">'+L('My console','我的控制台')+'</h1><p class="page-desc">'+L('To-dos, balances, financing and repayment progress. Records and to-dos are shared by company; unread messages are personal.','查看待办、资金概览与融资还款进展。业务记录与待办按企业共享，消息未读数按个人统计。')+'</p></div><div class="page-actions">'+'</div></div>'+overview()+'<section class="card mc-ledger"><div class="mc-tabs" role="tablist" aria-label="'+L('Console records','控制台信息')+'">'+tabs().map(k=>'<button role="tab" aria-selected="'+(k===v.tab)+'" tabindex="'+(k===v.tab?0:-1)+'" data-act="mc-tab" data-v="'+k+'">'+E(nm(k))+'</button>').join('')+'</div><div role="tabpanel" aria-label="'+E(nm(v.tab))+'">'+filters()+table()+'</div></section></div>';}
+ function pendingCue(items){
+   if(!items.length)return '';
+   const x=items[0];
+   return '<div class="mc-pending-cue"'+(x.overdue>0?' data-overdue="true"':'')+'><b><span aria-hidden="true"></span>'+L('Awaiting your action','待我方处理')+' · '+E(x.name)+'</b>'+(x.fact?'<span>'+x.fact+'</span>':'')+
+     (items.length>1?'<details class="mc-pending-more"><summary>'+L(items.length+' items','共 '+items.length+' 项')+'</summary><ul>'+items.map(y=>'<li><b>'+E(y.name)+'</b>'+(y.fact?' · '+y.fact:'')+'</li>').join('')+'</ul></details>':'')+'</div>';
+ }
+ function pendingSection(k,r){
+   const items=pendingError?[]:pendingItems(k,r);if(!items.length)return '';
+   return '<div class="mc-pending-detail" role="status"><b>'+L('Awaiting your action','待我方处理')+(items.length>1?L(' · '+items.length+' items',' · 共 '+items.length+' 项'):'')+'</b><ul>'+items.map(y=>'<li><b>'+E(y.name)+'</b>'+(y.fact?' · '+y.fact:'')+'</li>').join('')+'</ul><p class="mc-small">'+L('Handle it from the project’s actions in the lending marketplace.','请在借贷广场该项目的办理入口处理。')+'</p></div>';
+ }
+ function overview(){return '<section class="card mc-overview" aria-labelledby="mc-capital-title"><h2 id="mc-capital-title">'+L('Company overview','企业概览')+'</h2>'+summary()+'</section>';}
+ function listing(){if(!allowed())return gate();if(S.st==='denied')return unavailable();const v=view();return '<div class="mc-root"><div class="page-head"><div><h1 class="page-title">'+L('My console','我的控制台')+'</h1><p class="page-desc">'+L('Records awaiting your action are marked in the lists. Records are shared by company; unread messages are personal.','清单中标出待我方处理的记录。业务记录按企业共享，消息未读数按个人统计。')+'</p></div><div class="page-actions">'+'</div></div>'+overview()+'<section class="card mc-ledger"><div class="mc-tabs" role="tablist" aria-label="'+L('Console records','控制台信息')+'">'+tabs().map(k=>'<button role="tab" aria-selected="'+(k===v.tab)+'" tabindex="'+(k===v.tab?0:-1)+'" data-act="mc-tab" data-v="'+k+'">'+E(nm(k))+pendingBadge(k)+'</button>').join('')+'</div><div role="tabpanel" aria-label="'+E(nm(v.tab))+'">'+filters()+table()+'</div></section></div>';}
  function unavailable(){const kind=path().split('/')[2],back=tabs().includes(kind)?'#/console?tab='+kind:'#/console';return '<div class="mc-root mc-error">'+CF.empty(L('Content unavailable','内容不存在或无权访问'),L('Return to your console to view available records.','请返回控制台查看可访问的记录。'),b('list',L('Back to console','返回我的控制台'),back))+'</div>';}
  function section(id,title,body){return {id,title,html:'<section class="card detail-section" id="'+id+'" tabindex="-1"><div class="card-head"><h2>'+E(title)+'</h2></div><div class="card-body">'+body+'</div></section>'};}
  /* 期次只给当前阅读需要的事实；完整计划、本息拆分、凭证与收款账户在借贷广场原笔阅读。 */
@@ -363,7 +365,7 @@
    /* 旧的控制台项目详情地址：改到借贷广场项目详情，已指定的原申请继续定位。 */
    if(k==='projects'){const p=D.project(r.id),back=listRoute('projects');setTimeout(()=>{if(path()==='/console/projects'&&params().get('id')===r.id)location.replace(location.href.split('#')[0]+sourceHref(k,r,p,{back,application:params().get('application')}));},0);return '<div class="mc-root mc-error" role="status">'+CF.skelTable(3)+'</div>';}
    const sections=details(k,r),h=head(k,r),chapters=sections.length>3;
-   return '<div class="mc-root mc-detail"><div class="page-head"><div><p class="mc-eyebrow">'+E(k==='credits'?nm('credits'):text(kindNames[k]))+'</p><h1 class="page-title" tabindex="-1">'+E(h.title)+'</h1><div class="mc-detail-meta">'+h.meta+'</div></div>'+(h.actions?'<div class="mc-quick-actions" aria-label="'+(k==='credits'?L('Credit actions','授信操作'):L('Project navigation','项目导航'))+'">'+h.actions+'</div>':'')+'</div>'+(detailState==='stale'?CF.note('warn',L('The business state changed. The previous action is no longer available.','业务状态已变化，原操作已不可用。')):'')+(k==='tokens'?'<div class="stat-strip mc-detail-metrics">'+stat(L('Token value','代币价值'),statMoney(r.value),'','accent')+stat(L('Receivable due','应收账款到期日'),date(r.due))+'</div>':'')+(chapters?'<nav class="mc-chapters" aria-label="'+L('On this page','本页章节')+'">'+sections.map((x,i)=>'<button type="button" data-act="mc-section" data-v="'+x.id+'"'+(!i?' aria-current="location"':'')+'>'+E(x.title)+'</button>').join('')+'</nav>':'')+'<div class="detail-stack">'+sections.map(x=>x.html).join('')+'</div></div>';
+   return '<div class="mc-root mc-detail"><div class="page-head"><div><p class="mc-eyebrow">'+E(k==='credits'?nm('credits'):text(kindNames[k]))+'</p><h1 class="page-title" tabindex="-1">'+E(h.title)+'</h1><div class="mc-detail-meta">'+h.meta+'</div></div>'+(h.actions?'<div class="mc-quick-actions" aria-label="'+(k==='credits'?L('Credit actions','授信操作'):L('Project navigation','项目导航'))+'">'+h.actions+'</div>':'')+'</div>'+(detailState==='stale'?CF.note('warn',L('The business state changed. The previous action is no longer available.','业务状态已变化，原操作已不可用。')):'')+pendingSection(k,r)+(k==='tokens'?'<div class="stat-strip mc-detail-metrics">'+stat(L('Token value','代币价值'),statMoney(r.value),'','accent')+stat(L('Receivable due','应收账款到期日'),date(r.due))+'</div>':'')+(chapters?'<nav class="mc-chapters" aria-label="'+L('On this page','本页章节')+'">'+sections.map((x,i)=>'<button type="button" data-act="mc-section" data-v="'+x.id+'"'+(!i?' aria-current="location"':'')+'>'+E(x.title)+'</button>').join('')+'</nav>':'')+'<div class="detail-stack">'+sections.map(x=>x.html).join('')+'</div></div>';
  }
  /* 修改授信：控制台唯一写入。生效中可追加额度或后延有效期至；已到期为重新授信。规则沿授信报价模块，不调低、冻结或删除。 */
  const today=()=>new Date(now()).toISOString().slice(0,10);
@@ -488,12 +490,12 @@
    const ids=[q.get('mcApplication'),q.get('mcObject'),q.get('mcPeriod'),q.get('mcRecord')].filter(Boolean);
    return '<div class="mc-return"><div><span>'+L('Opened from My console','来自我的控制台')+'</span>'+(sourceFault==='invalid'?'<p>'+L('Content does not exist or is not accessible.','内容不存在或无权访问。')+'</p>':sourceFault==='fallback'?'<p>'+L('Only this project could be opened. The original record has not been located.','当前仅到达同一项目，尚未定位原记录。')+'</p><div class="mc-small">'+E(ids.join(' · '))+'</div>':'<p class="mc-small">'+L('Read the original record here. To handle business, close the record and use the project’s existing actions.','在此阅读原记录；如需办理，请关闭记录并从项目既有入口选择。')+'</p>')+'</div>'+b('return',/^#\/console(\?|$)/.test(back)?L('Return to My console','返回我的控制台'):L('Return to console details','返回控制台详情'),back)+'</div>';
  }
- function reviewTools(){return '<div class="grp"><h5>'+L('Console partial faults','控制台局部故障')+'</h5>'+[['stats','Summary error','单项统计失败'],['tokens-error','Token snapshot error','代币读取失败'],['association-error','Association error','关联读取失败'],['association-none','No project association','无关联项目'],['association-denied','No accessible project','无可访问关联项目'],['association-unsupported','Project-only fallback','仅同项目定位降级'],['plan-error','Plan unavailable','还款计划加载失败'],['todo-error','To-dos unavailable','待办读取失败'],['usage-error','Credit usage records unavailable','授信使用记录读取失败'],['credit-save-fail','Next credit save fails','下次修改授信保存失败'],['session','Session expired','登录失效']].map(([v,en,zh])=>b('scenario',L(en,zh),v)).join('')+'<p class="hint">'+L('Fixtures are shared with the marketplace; no real payment is made.','演示数据与广场共用；不发起真实付款。')+'</p></div>';}
+ function reviewTools(){return '<div class="grp"><h5>'+L('Console partial faults','控制台局部故障')+'</h5>'+[['stats','Summary error','单项统计失败'],['tokens-error','Token snapshot error','代币读取失败'],['association-error','Association error','关联读取失败'],['association-none','No project association','无关联项目'],['association-denied','No accessible project','无可访问关联项目'],['association-unsupported','Project-only fallback','仅同项目定位降级'],['plan-error','Plan unavailable','还款计划加载失败'],['pending-error','Pending marks unavailable','待处理读取失败'],['usage-error','Credit usage records unavailable','授信使用记录读取失败'],['credit-save-fail','Next credit save fails','下次修改授信保存失败'],['session','Session expired','登录失效']].map(([v,en,zh])=>b('scenario',L(en,zh),v)).join('')+'<p class="hint">'+L('Fixtures are shared with the marketplace; no real payment is made.','演示数据与广场共用；不发起真实付款。')+'</p></div>';}
 
  CF.review.register('P-MC-01',{group:['My console','我的控制台'],route:'/console',parties:true,
    scenarios:()=>allowed()?tabs().map(k=>({id:k,label:names[k],route:'/console?tab='+k,description:['Open this record category','定位此类业务清单']})):[],
    states:()=>allowed()?['default','loading','empty','noresult','error','denied']:['default'],
-   reset(){S.st='default';statsError=tokenError=associationError=planError=todoError=usageError=false;associationScene='normal';}});
+   reset(){S.st='default';statsError=tokenError=associationError=planError=pendingError=usageError=false;associationScene='normal';}});
  kinds.forEach((k,i)=>CF.review.register('P-MC-0'+(i+2),{
    group:['My console · details','我的控制台 · 详情'],parties:true,visible:()=>k!=='projects'&&tabs().includes(k),
    scenarios:()=>allowed()?[...new Set(normalized(k).map(r=>r.status))].map(st=>{const r=normalized(k).find(r=>r.status===st);return {id:st,label:labels[st]||[st,st],route:r?detailHref(k,r.id):null,available:!!r,description:[text(titles[k])+' · '+r.id,text(titles[k])+' · '+r.id]};}):[],
@@ -501,7 +503,7 @@
    route:()=>{const r=normalized(k)[0];return r?detailHref(k,r.id):null;},
    get:()=>S.st==='denied'?'denied':detailState==='normal'?'default':detailState,
    set(value){S.st=value==='denied'?'denied':'default';detailState=['loading','error','stale'].includes(value)?value:'normal';},
-   reset(){S.st='default';detailState='normal';statsError=tokenError=associationError=planError=todoError=usageError=false;associationScene='normal';}
+   reset(){S.st='default';detailState='normal';statsError=tokenError=associationError=planError=pendingError=usageError=false;associationScene='normal';}
  }));
 
  const mod={...old,id:'my-console-v14',pages:['P-MC-01',...kinds.map((_,i)=>'P-MC-0'+(i+2))],dict,
@@ -509,7 +511,7 @@
    breadcrumbRoute(id){return id==='P-MC-01'?listRoute(path().split('/')[2]||tabs()[0]).slice(1):old.breadcrumbRoute?.(id);},
    beforeRender(){old.beforeRender?.();if(lastRole!==S.role+'|'+JSON.stringify(S.party)){S.layer=null;lastRole=S.role+'|'+JSON.stringify(S.party);detailState='normal';copyValue='';sourceOpened='';}},
    // Measure before the first target scroll: a wrapped portal header is taller on narrow screens.
-   afterRender(){old.afterRender?.();queueSourceReading();requestAnimationFrame(()=>{syncConsoleNav();syncChapters();});const current=location.hash;if(current!==lastHash){lastHash=current;if(path().startsWith('/console')){const q=params();restoring=true;setTimeout(()=>{syncChapters();window.scrollTo(0,Math.max(0,+q.get('y')||0));const box=document.getElementById('mc-list');if(box)box.scrollTop=Math.max(0,+q.get('scroll')||0);const id=q.get('focus');if(id)(document.querySelector('[data-id="'+CSS.escape(id)+'"]')||id.startsWith('todo-')&&document.getElementById('mc-todo'))?.focus({preventScroll:true});else document.querySelector('.mc-root .page-title')?.focus({preventScroll:true});if(!q.has('y')){const k=path().split('/')[2],r=k==='repayments'&&find(k,q.get('id')),p=r&&selectedPeriod(r);const el=p?document.getElementById('mc-period-'+p.id):q.get('application')?document.getElementById('mc-application-'+q.get('application')):null;el?.scrollIntoView({block:'start'});}restoring=false;syncChapters();},0);}}
+   afterRender(){old.afterRender?.();queueSourceReading();requestAnimationFrame(()=>{syncConsoleNav();syncChapters();});const current=location.hash;if(current!==lastHash){lastHash=current;if(path().startsWith('/console')){const q=params();restoring=true;setTimeout(()=>{syncChapters();window.scrollTo(0,Math.max(0,+q.get('y')||0));const box=document.getElementById('mc-list');if(box)box.scrollTop=Math.max(0,+q.get('scroll')||0);const id=q.get('focus');if(id)document.querySelector('[data-id="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});else document.querySelector('.mc-root .page-title')?.focus({preventScroll:true});if(!q.has('y')){const k=path().split('/')[2],r=k==='repayments'&&find(k,q.get('id')),p=r&&selectedPeriod(r);const el=p?document.getElementById('mc-period-'+p.id):q.get('application')?document.getElementById('mc-application-'+q.get('application')):null;el?.scrollIntoView({block:'start'});}restoring=false;syncChapters();},0);}}
      if(focusAfter){const key=focusAfter;focusAfter='';setTimeout(()=>document.getElementById('mc-'+key)?.focus({preventScroll:true}),0);}
    },
    demo(){return (old.demo?.()||'')+reviewTools();},
@@ -519,16 +521,15 @@
      if(key==='detail'){const [k,id]=v.split('|');goDetail(k,id);}
      if(key==='period'){const q=params();q.set('period',v);q.delete('y');navigate('#'+path()+'?'+q);}
      if(key==='jump'){const [k,id]=v.split('|');jump(k,id);}
-     if(key==='todo'){const x=todos().find(x=>x.id===v);if(x)openSource(x.go[0],x.go[1],{period:x.go[2]});else CF.render();}
-     if(key==='todo-more'){todoExpanded=!todoExpanded;CF.render();document.querySelector('[data-act=mc-todo-more]')?.focus();}
+     if(key==='pending'){const k=view().tab,x=normalized(k).flatMap(r=>pendingItems(k,r)).find(x=>x.id===v);if(x)openSource(x.go[0],x.go[1],{period:x.go[2]});else CF.render();}
      if(key==='usage-open'){const [k,id]=v.split('|');goDetail(k,id);}
      if(key==='usage-page'){usagePage=Math.max(1,+v);CF.render();document.getElementById('mc-usage')?.focus({preventScroll:true});}
      if(key==='modify')startModify(v);
      if(key==='cm-save')saveModify();
      if(key==='cm-cancel'){modify={};CF.closeLayer();}
      if(key==='cm-remove'){captureModify();modify.files=modify.files.filter(f=>f.id!==v);CF.render();document.getElementById('mc-cm-files')?.focus();}
-     if(key==='tab'){returnNotice=false;setView({tab:v,filter:'',secondary:'',project:'',tokenType:'',query:'',periodState:'',sort:v==='credits'?'available-asc':'newest',page:1});}
-     if(key==='clear'){S.st='default';returnNotice=false;S.menu=null;setView({filter:'',secondary:'',project:'',tokenType:'',query:'',periodState:'',page:1});}
+     if(key==='tab'){returnNotice=false;setView({tab:v,pending:'',filter:'',secondary:'',project:'',tokenType:'',query:'',periodState:'',sort:v==='credits'?'available-asc':'newest',page:1});}
+     if(key==='clear'){S.st='default';returnNotice=false;S.menu=null;setView({pending:'',filter:'',secondary:'',project:'',tokenType:'',query:'',periodState:'',page:1});}
      if(key==='search')setView({query:document.getElementById('mc-query').value.trim(),page:1});
 
      if(key==='page')setView({page:Math.max(1,+v)});
@@ -537,7 +538,7 @@
      if(key==='list'||key==='return'){returnNotice=key==='return';navigate(safeRoute(v)||'#/console');}
      if(key==='section'){chapterTarget=v;const el=document.getElementById(v);el?.focus({preventScroll:true});el?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
      if(key==='copy'){copyValue=v;const fallback=()=>CF.openLayer('modal','mc-copy');try{navigator.clipboard?.writeText(v).then(()=>CF.toast(L('Copied','已复制')),fallback)||fallback();}catch(_){fallback();}}
-     if(key==='scenario'){todoError=v==='todo-error';usageError=v==='usage-error';saveFailOnce=v==='credit-save-fail'||saveFailOnce&&v!=='session';planError=v==='plan-error';statsError=v==='stats';tokenError=v==='tokens-error';associationError=v==='association-error';detailState=['loading','error','stale'].includes(v)?v:'normal';if(v.startsWith('association-'))associationScene=v.slice(12);else associationScene='normal';if(v==='session'){S.role='guest';S.layer=null;S.demo=false;}CF.render();}
+     if(key==='scenario'){pendingError=v==='pending-error';usageError=v==='usage-error';saveFailOnce=v==='credit-save-fail'||saveFailOnce&&v!=='session';planError=v==='plan-error';statsError=v==='stats';tokenError=v==='tokens-error';associationError=v==='association-error';detailState=['loading','error','stale'].includes(v)?v:'normal';if(v.startsWith('association-'))associationScene=v.slice(12);else associationScene='normal';if(v==='session'){S.role='guest';S.layer=null;S.demo=false;}CF.render();}
      return true;
    },
    layers:{...old.layers,'mc-credit-modify':()=>modifyLayer(),'mc-source-unavailable':()=>({title:L('Content unavailable','内容不存在或无权访问'),html:'<p>'+L('Return to your console to view accessible records.','请返回控制台查看可访问记录。')+'</p>',foot:b('return',L('Return to console details','返回控制台详情'),safeRoute(params().get('mcReturn'))||'#/console')}),'mc-copy':()=>({title:L('Copy reference','复制编号'),html:'<input class="inp mc-copy-value" readonly value="'+E(copyValue)+'" aria-label="'+L('Reference number','完整编号')+'"><p>'+L('Select the text and copy it.','请选择文本后复制。')+'</p>',foot:'<button class="btn" data-act="closelayer">'+L('Close','关闭')+'</button>'})}
@@ -545,6 +546,7 @@
  CF.define(CF.LSView=mod);
  const composed=mod.content;mod.content=id=>(id==='P-LS-01'||id==='P-LS-02'?backBanner():'')+composed(id);
  document.addEventListener('change',e=>{
+   if(e.target.id==='mc-pending'&&path()==='/console'){returnNotice=false;setView({pending:e.target.checked?'1':'',page:1});return;}
    const group=e.target.dataset.filter;
    if(group&&group.startsWith('mc-')&&path()==='/console'){
      const key=group.slice(3);
@@ -557,7 +559,7 @@
    if(e.target.closest('a[data-act=mc-detail]')&&(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)){e.stopImmediatePropagation();return;}
    const nav=e.target.closest('#nav a,.brand');if(nav&&['#/assets','#/marketplace','#/console','#/'].includes(nav.getAttribute('href'))){e.preventDefault();e.stopImmediatePropagation();navigate(nav.getAttribute('href')==='#/'?'#/assets':nav.getAttribute('href'));return;}
    const period=e.target.closest('.mc-period summary');if(period){const u=params();u.set('period',period.dataset.period);history.replaceState(null,'','#'+path()+'?'+u);}
-   const row=e.target.closest('.mc-table tr[data-id]');if(row&&!e.target.closest('button,a,input,select'))goDetail(row.dataset.kind,row.dataset.id);
+   const row=e.target.closest('.mc-table tr[data-id]');if(row&&!e.target.closest('button,a,input,select,summary,details'))goDetail(row.dataset.kind,row.dataset.id);
  },true);
  document.addEventListener('keydown',e=>{if(e.target.id==='mc-query'&&e.key==='Enter'){e.preventDefault();setView({query:e.target.value.trim(),page:1});}
 if(e.target.matches('.mc-table tr[data-id]')&&['Enter',' '].includes(e.key)){e.preventDefault();goDetail(e.target.dataset.kind,e.target.dataset.id);}
