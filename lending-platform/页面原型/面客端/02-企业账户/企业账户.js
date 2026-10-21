@@ -113,7 +113,7 @@
 
   /* ------------------------------------------------------------------ 总览 */
   function head(){
-    return '<div class="page-head"><div><h1 class="page-title">'+E(title())+'</h1>'+
+    return '<div class="page-head ea-head"><div><h1 class="page-title">'+E(title())+'</h1>'+
       '<p class="page-desc">'+L('Your company\'s crypto and bank accounts. When you accept a quote or record a disbursement, you choose one of the accounts saved here.',
         '本企业自己的数币账户与法币账户。接受报价、登记放款时，从这里已登记的账户中选用。')+'</p></div>'+
       '<div class="page-actions">'+CF.tag('',L('Demonstration data','演示数据'))+'</div></div>';
@@ -171,7 +171,7 @@
   }
   function fiatTable(rows){
     const h=[L('Account','账户'),L('Account type','账户类型'),L('Currencies','账户币种'),L('Bank','开户行'),L('Account number / IBAN','账号 / IBAN'),L('SWIFT / BIC','SWIFT / BIC')];
-    return '<table class="tbl resp ea-table"><thead><tr>'+h.map(x=>'<th scope="col">'+x+'</th>').join('')+
+    return '<table class="tbl resp ea-table ea-table-fiat"><thead><tr>'+h.map(x=>'<th scope="col">'+x+'</th>').join('')+
       '<th scope="col">'+L('Added','登记时间')+'<span class="ea-th-zone">'+zone()+'</span></th><th scope="col" class="col-act"><span class="sr-only">'+L('Actions','操作')+'</span></th></tr></thead><tbody>'+
       /* 账户列：备注名为主标识，下方是平台带出的账户名称。 */
       rows.map(a=>'<tr><td data-label="'+h[0]+'"><div class="cell-wrap"><span class="cell-main">'+EA.name(a)+'</span><span class="cell-sub">'+(EA.holderName(a)||'—')+'</span>'+incomplete(a)+'</div></td>'+
@@ -184,7 +184,7 @@
   }
   function cryptoTable(rows){
     const h=[L('Account nickname','账户备注名'),L('Network','结算收款链'),L('Wallet address','数币地址'),L('Supported tokens','适用代币')];
-    return '<table class="tbl resp ea-table"><thead><tr>'+h.map(x=>'<th scope="col">'+x+'</th>').join('')+
+    return '<table class="tbl resp ea-table ea-table-crypto"><thead><tr>'+h.map(x=>'<th scope="col">'+x+'</th>').join('')+
       '<th scope="col">'+L('Added','登记时间')+'<span class="ea-th-zone">'+zone()+'</span></th><th scope="col" class="col-act"><span class="sr-only">'+L('Actions','操作')+'</span></th></tr></thead><tbody>'+
       rows.map(a=>'<tr><td data-label="'+h[0]+'"><span class="cell-main">'+EA.name(a)+'</span></td>'+
         '<td data-label="'+h[1]+'">'+networkTag(a.chain)+'</td>'+
