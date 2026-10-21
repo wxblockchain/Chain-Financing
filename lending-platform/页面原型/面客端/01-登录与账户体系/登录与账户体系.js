@@ -5,7 +5,7 @@
   'use strict';
   const S = CF.S, L = CF.L, esc = CF.esc;
   const pages = {
-    'P-L01':['focus','/login','Sign in with wallet','连接钱包登录'],
+    'P-L01':['focus','/login','Connect wallet','连接钱包'],
     'P-L10':['focus','/auth/return','Matching your account','正在匹配账户'],
     'P-L13':['focus','/auth/retry','Account setup interrupted','账户建立未完成'],
     'P-L04':['focus','/login/unavailable','Unable to continue','暂时无法继续'],
@@ -184,7 +184,7 @@
     };
     const retry=D.loginError==='pull-failed';
     return `<div class="login-flow">
-      <h1 class="page-title">${L('Sign in with wallet','连接钱包登录')}</h1>
+      <h1 class="page-title">${L('Connect wallet','连接钱包')}</h1>
       <p>${L("We'll ask you to connect a wallet and sign one login message. No transfer or spending approval is involved.",'我们会请求连接钱包并进行一次登录签名，不涉及转账或资金授权。')}</p>
       ${held}
       <ol class="login-steps">

@@ -125,7 +125,7 @@
       '<button class="btn primary" type="button" data-act="go" data-v="/assets">'+L('Back to assets','返回资产广场')+'</button>');
     return CF.empty(L('Sign in to view your accounts','登录后查看本企业账户'),
       L('After signing in, you will return to this page.','登录后将返回当前页面。'),
-      '<button class="btn primary" type="button" data-act="signin">'+L('Sign in','登录')+'</button>');
+      '<button class="btn primary" type="button" data-act="signin">'+L('Connect wallet','连接钱包')+'</button>');
   }
   function guidance(e){
     const act=e.act?'<button type="button" class="btn primary" data-act="'+E(e.act)+'" data-v="'+E(e.value||'')+'">'+

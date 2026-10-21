@@ -83,7 +83,7 @@
     return CF.empty(S.role === "limited" ? L("Complete your account setup", "请先完成账户必办事项") : L("Sign in to view your messages", "登录后查看消息"),
       S.role === "limited" ? L("Complete the required steps for your account to continue.", "完成账户必办事项后即可继续。") : L("After signing in, you will return to this page.", "登录后将返回当前页面。"),
       '<button class="btn primary" data-act="' + (S.role === "limited" ? "prerequisite" : "signin") + '">' +
-      (S.role === "limited" ? L("Continue setup", "继续完善") : L("Sign in", "登录")) + '</button>');
+      (S.role === "limited" ? L("Continue setup", "继续完善") : L("Connect wallet", "连接钱包")) + '</button>');
   };
 
   var M = null;              // 当前模块
@@ -481,7 +481,7 @@
   function renderPortalTools() {
     var html = (N.allowed() ? bell(N.unread()) : "") + langDd();
     if (S.role === "guest") {
-      html += '<button class="btn primary sm" type="button" data-act="signin">' + L("Sign in", "登录") + "</button>";
+      html += '<button class="btn primary sm" type="button" data-act="signin">' + L("Connect wallet", "连接钱包") + "</button>";
     } else {
       html += accountDd();
     }

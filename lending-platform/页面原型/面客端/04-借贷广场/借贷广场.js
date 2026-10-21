@@ -275,7 +275,7 @@
     const sel=steps?pickedNode(p,key,steps):0;
     const heading=key==='financing'?'<h3 class="ls-stage-title" data-stage="'+sel+'">'+E(txt(steps.labels[sel]))+(sel!==steps.stage?CF.tag('',sel<steps.stage?L('Completed','已完成'):L('Not started','未开始')):'')+'</h3>':'';
     const summary=key==='financing'&&Q.financeSummary?Q.financeSummary(p,sel):'';
-    if(S.role==='guest')return {plain:true,html:heading+summary+(key==='financing'?'':'<h3>'+L('Continue with this project','办理本项目业务')+'</h3>')+(Q?.turn?Q.turn('blocked',L('Sign in to take part in this project','登录后才能办理本项目业务'),L('After signing in you will see what your company can do here.','登录后可查看本企业在此可办理的业务。')):'<p class="muted">'+L('Sign in to view actions available to your company.','登录后查看本企业可办理的业务。')+'</p>')+'<div class="ls-flow-do">'+btn('signin',L('Sign in now','立即登录'),'',true)+'</div>'};
+    if(S.role==='guest')return {plain:true,html:heading+summary+(key==='financing'?'':'<h3>'+L('Continue with this project','办理本项目业务')+'</h3>')+(Q?.turn?Q.turn('blocked',L('Sign in to take part in this project','登录后才能办理本项目业务'),L('After signing in you will see what your company can do here.','登录后可查看本企业在此可办理的业务。')):'<p class="muted">'+L('Sign in to view actions available to your company.','登录后查看本企业可办理的业务。')+'</p>')+'<div class="ls-flow-do">'+btn('signin',L('Connect wallet','连接钱包'),'',true)+'</div>'};
     if(key==='global')return {plain:true,html:pledgeBody(p)};
     if(sel!==steps.stage)return {plain:false,axis:flowAxis(p,key,steps),html:heading+summary+stepBrief(p,key,steps,sel)};
     const panel=key==='financing'?Q.financePanel(p):(CF.L8?.available(p).length?CF.L8.panel(p):null);
@@ -420,7 +420,7 @@
   function detailScope(p){return S.role==='guest'?'guest':S.role==='signed'?'signed':S.role==='asset'&&!D.mine(p)?'other':'full';}
   function basicDetail(p,scope){
     const row=(k,v)=>'<div class="ls-fact"><dt>'+k+'</dt><dd>'+v+'</dd></div>';
-    const lock={guest:[L('Sign in to view the rest of this project','登录后可查看项目的其余信息'),btn('signin',L('Sign in now','立即登录'),'',true)],
+    const lock={guest:[L('Sign in to view the rest of this project','登录后可查看项目的其余信息'),btn('signin',L('Connect wallet','连接钱包'),'',true)],
       signed:[L('The following information is available to funders only','以下信息仅供资金方查看'),btn('ls-fund-apply',L('Apply to become a funder','申请成为资金方'),'',true)],
       other:[L('This is not your project, so its details are not available','非自身项目，无法查看'),'']}[scope];
     return '<div class="ls-stack ls-detail ls-detail-basic" data-scope="'+scope+'"><div class="ls-detail-head"><span class="tok-mark" aria-hidden="true">AR</span><div><div class="ls-row"><h1 class="page-title">'+E(txt(p.name))+'</h1><span class="mk-title-tags">'+projectTag(p)+'</span></div>'

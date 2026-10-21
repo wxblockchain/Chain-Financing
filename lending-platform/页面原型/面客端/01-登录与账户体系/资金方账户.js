@@ -457,7 +457,7 @@
     // 公共 boot 会推断时区；在首次内容渲染时恢复已保存的用户选择。
     if(F.savedPreferences&&!F.preferencesRestored){S.lang=F.savedPreferences.lang;S.tz=F.savedPreferences.tz;F.preferencesRestored=true;}
     if(!pages[id])return undefined;
-    if(['P-L21','P-L22','P-L23'].includes(id)&&S.role!=='fund'&&!(id==='P-L21'&&S.role==='signed'))return `<div class="funder-wrap">${CF.empty(L('Sign in to view your account','登录后查看账户'),L('You can still browse public information.','你仍可浏览公开信息。'),btn('Sign in','登录','login','','primary')+btn('Back to assets','返回资产广场','browse'))}</div>`;
+    if(['P-L21','P-L22','P-L23'].includes(id)&&S.role!=='fund'&&!(id==='P-L21'&&S.role==='signed'))return `<div class="funder-wrap">${CF.empty(L('Sign in to view your account','登录后查看账户'),L('You can still browse public information.','你仍可浏览公开信息。'),btn('Connect wallet','连接钱包','login','','primary')+btn('Back to assets','返回资产广场','browse'))}</div>`;
     notices();
     if(F.load==='loading')return `<div class="funder-wrap" role="status">${CF.skelTable(5)}</div>`;
     if(F.load==='error')return CF.empty(L('Unable to load account information','账户信息加载失败'),L('Your saved information is retained.','已保存信息会保留。'),btn('Retry','重试','load-retry','','primary')+(id==='P-L22'?link('Contact support','联系客服','support'):''));

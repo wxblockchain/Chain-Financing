@@ -64,7 +64,7 @@
       const legacy=projects.find(p=>p.request.id===params().get('object'));
       // 兼容旧消息深链时替换中转页，避免后退到中转页后再次被送回详情。
       if(!consoleMode&&params().get('panel')==='detail'&&legacy) location.replace('#'+destination('/sample/project',legacy,'/marketplace'));
-      if(consoleMode && !['asset','fund'].includes(S.role)) return CF.empty(L('Sign in to view your console','登录后查看我的控制台'), L('View activity associated with your account.','查看与你的账户有关的业务记录。'),button('signin',L('Sign in','登录'),'',true));
+      if(consoleMode && !['asset','fund'].includes(S.role)) return CF.empty(L('Sign in to view your console','登录后查看我的控制台'), L('View activity associated with your account.','查看与你的账户有关的业务记录。'),button('signin',L('Connect wallet','连接钱包'),'',true));
       const q=params(), keyword=q.get('q')||'', currency=q.get('ccy')||'';
       const all=projects.filter(p=>!consoleMode||mine(p));
       const rows=all.filter(p=>(!currency||p.request.ccy===currency)&&(!keyword||(p.id+' '+p.request.id+' '+p.request.holder.join(' ')).toLowerCase().includes(keyword.toLowerCase())));
@@ -357,7 +357,7 @@
       "<li>" + L("Compare quotes and accept one.", "比较报价并接受其中一个。") + "</li>" +
       "<li>" + L("Track disbursement and repayment in one place.", "在一处跟踪放款与还款。") + "</li>" +
       "</ul>" + (signedOut
-        ? '<button class="btn primary" type="button" data-act="signin">' + L("Sign in", "登录") + "</button>"
+        ? '<button class="btn primary" type="button" data-act="signin">' + L("Connect wallet", "连接钱包") + "</button>"
         : '<a class="btn primary" href="#/console">' + L("Go to my console", "进入我的控制台") + "</a>") +
       "</div>" +
       '<div class="path"><h3>' + L("For funders", "资金方") + "</h3><ul>" +
