@@ -1,0 +1,103 @@
+/* WS-453 · 模块组合样式；共享 token 与组件保持唯一来源。 */
+.fc-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-5);align-content:start}
+.fc-stack>.card{min-width:0}
+.fc-meta{display:block;color:var(--muted);font-size:var(--fs-12);margin-top:var(--sp-1);overflow-wrap:anywhere}
+.fc-title{display:flex;align-items:start;justify-content:space-between;gap:var(--sp-4);margin-bottom:var(--sp-4)}
+.fc-title h1{margin:0;overflow-wrap:anywhere}
+.fc-title>div{min-width:0}
+.fc-title:has(.fc-meta) h1{font-size:var(--fs-24)}
+.fc-title .fc-meta{margin-top:var(--sp-2);font-size:var(--fs-13)}
+.fc-title .fc-meta .mono{font-size:inherit}
+.fc-filter-wrap{padding:0;border-bottom:1px solid var(--border)}
+.fc-filter-bar{border-bottom:0}
+.fc-cue{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;padding:var(--sp-3) var(--sp-5);background:var(--warn-bg);border-bottom:1px solid var(--warn-border);font-size:var(--fs-13)}
+.fc-cue .btn{margin-left:auto}
+.pager .fc-size .field{display:flex;flex-direction:row;align-items:center;gap:var(--sp-2);max-width:none;margin:0}
+.pager .fc-size label{margin:0;white-space:nowrap;font-weight:400;color:var(--muted)}.pager .fc-size .inp{width:auto;min-height:0}
+.fc-pager .total{margin-right:0}
+.fc-pager .fc-size{margin-right:auto;margin-left:var(--sp-4)}
+.fc-pager .fc-size .inp{height:var(--ctrl-h-sm);font-size:var(--ui-row-value)}
+.fc-table tr.fc-row-unset td:first-child{box-shadow:inset 3px 0 0 var(--warn)}
+.fc-table tr.fc-row-new td{background:var(--accent-soft)}
+.fc-table tr.fc-row-new .tag{margin-left:var(--sp-2)}
+.fc-table .col-act .actlink{display:inline-flex;align-items:center;justify-content:center;min-height:var(--ctrl-h-sm);padding:0 var(--sp-2);font-weight:500}
+.fc-table .col-act .actlink+.actlink{margin-left:var(--sp-1)}
+.fc-table .actlink:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fc-table button.actlink{border:0;background:none;font-family:inherit;cursor:pointer}
+.fc-table{table-layout:fixed;width:100%}
+table.tbl.fc-table thead th{white-space:normal}
+table.tbl.fc-table thead th.sortable button{white-space:normal;text-align:left}
+.fc-table tbody td{overflow-wrap:anywhere;font-size:var(--ui-row-value)}
+.fc-table .fc-name{font-weight:500}
+.fc-table .fc-num{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.fc-table .fc-stamp{white-space:nowrap;font-variant-numeric:tabular-nums}
+.fc-table th .fc-meta{font-weight:400;letter-spacing:0}
+.fc-list-table{min-width:1000px}
+.fc-log-table{min-width:840px}
+.fc-table th.col-act,.fc-table td.col-act{width:128px}
+.fc-table td.fc-num{font-variant-numeric:tabular-nums}
+.fc-table td .fc-meta{margin-top:2px}
+.fc-table .tag{white-space:normal;text-align:left;line-height:1.5}
+.fc-table .col-act{position:sticky;right:0;background:var(--card);text-align:right;white-space:nowrap}
+.fc-list-table th:nth-child(1){width:22%}.fc-list-table th:nth-child(2){width:24%}
+.fc-list-table th:nth-child(3),.fc-list-table th:nth-child(4){width:14%}
+.fc-list-table th:nth-child(5){width:130px}
+.fc-log-table th:nth-child(1){width:22%}.fc-log-table th:nth-child(2){width:22%}
+.fc-log-table th:nth-child(3),.fc-log-table th:nth-child(4){width:21%}.fc-log-table th:nth-child(5){width:14%}
+.fc-log-table strong{font-weight:500}
+.fc-h2{font-size:var(--fs-16);margin:0}
+.fc-section{padding:var(--card-pad)}
+.fc-section-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);margin-bottom:var(--sp-4)}
+.fc-kv dd .fc-meta{display:inline;margin:0 0 0 var(--sp-2)}
+#fc-log .fc-h2{margin-bottom:var(--sp-4)}
+/* 参数维护弹窗：只读字段行回显组合，两项参数并排，错误紧随字段。 */
+.modal:has(.fc-modal){max-width:600px}
+.fc-modal{display:grid;gap:var(--sp-5)}
+.fc-subject{display:grid;grid-template-columns:minmax(0,1fr);gap:0;margin:0;padding:0}
+.fc-subject>div{display:grid;grid-template-columns:136px minmax(0,1fr);gap:var(--sp-4);padding:var(--sp-3) 0;border-bottom:1px solid var(--row-line)}
+.fc-subject dt{font-size:var(--ui-field-label);color:var(--muted);margin-bottom:var(--sp-1)}
+.fc-subject dd{margin:0;font-size:var(--ui-field-value);color:var(--text);overflow-wrap:anywhere}
+.fc-subject dd .fc-meta{margin-top:var(--sp-1)}
+.fc-form fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5) var(--sp-4)}
+.fc-form .field{max-width:none;margin:0;min-width:0}
+.fc-label{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;min-height:var(--sp-6);margin-bottom:var(--sp-2)}
+.fc-label label{margin:0}
+.fc-changed[hidden]{display:none}
+.fc-affix{position:relative}
+.fc-affix .inp{width:100%;padding-right:calc(var(--sp-4) + 1.4em);font-variant-numeric:tabular-nums}
+.fc-affix span{position:absolute;right:var(--sp-4);top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.fc-form select.inp{width:100%}
+.fc-error{color:var(--danger);font-size:var(--fs-12);white-space:pre-wrap;overflow-wrap:anywhere;margin:var(--sp-2) 0 0}
+.fc-error:empty{display:none}
+.fc-alert{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;padding:var(--sp-3) var(--sp-4);border:1px solid var(--danger-border);border-radius:var(--radius-xs);background:var(--danger-bg);color:var(--danger);font-size:var(--fs-13)}
+.fc-alert p{margin:0;flex:1 1 240px}
+.fc-busy{margin-right:auto;align-self:center;color:var(--muted);font-size:var(--fs-13)}
+.fc-diff{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
+.fc-diff-row{padding:var(--sp-3) var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-xs)}
+.fc-diff-row b{display:block;font-weight:500;font-size:var(--ui-field-label);color:var(--muted);margin-bottom:var(--sp-1)}
+.fc-diff-vals{display:flex;align-items:baseline;gap:var(--sp-3);font-variant-numeric:tabular-nums}
+.fc-diff-vals .fc-before{color:var(--muted);font-size:var(--fs-16)}
+.fc-diff-vals .fc-arrow{color:var(--faint)}
+.fc-diff-vals strong{font-size:var(--fs-19);font-weight:650;color:var(--text)}
+.fc-diff-same .fc-diff-vals strong{font-size:var(--fs-16);font-weight:600;color:var(--muted)}
+.fc-diff-vals .fc-meta{display:inline;margin:0}
+.fc-effects{margin:0;padding-left:1.2em;display:grid;gap:var(--sp-1);color:var(--text)}
+.fc-body .demo-panel:not(.demo-dock){max-height:calc(100vh - 110px);overflow:auto}
+.fc-demo{display:grid;gap:var(--sp-3);margin-bottom:var(--sp-5)}
+.fc-demo-actions{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)}
+@media (min-width:1200px){
+  .fc-filter-bar{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) auto}
+  .fc-body .fc-filter-bar .ops-filter-query{min-width:0;max-width:none;margin-left:0}
+}
+@media (max-width:900px){
+  .fc-pager{flex-wrap:wrap}
+  .fc-filter-bar .ops-filter-select{flex-wrap:wrap}
+}
+@media (max-width:600px){
+  .fc-form fieldset,.fc-diff{grid-template-columns:minmax(0,1fr)}
+  .fc-subject>div{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
+  .fc-section{padding:var(--sp-4)}
+  .fc-section-head{align-items:start;flex-wrap:wrap}
+  .fc-title{flex-wrap:wrap}
+}
+@media (pointer:coarse){.fc-table .col-act .actlink{min-height:var(--ctrl-h)}}
