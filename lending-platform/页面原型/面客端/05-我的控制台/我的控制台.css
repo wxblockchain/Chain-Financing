@@ -24,17 +24,17 @@
 .mc-table td{font-size:var(--fs-13);vertical-align:middle}.mc-table td:first-child{min-width:155px}.mc-table td.num{white-space:nowrap}
 .mc-table tr[data-id]{cursor:pointer}.mc-table tr[data-id]:hover td{background:var(--accent-soft)}
 .mc-table .mc-object{font-weight:500;color:var(--text);text-align:left}.mc-table .mc-object:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
-.mc-table .mc-actions{min-width:125px;max-width:190px}.mc-table .mc-actions .actlink{min-height:44px;display:flex;align-items:center;white-space:normal;text-align:left}
+.mc-table .mc-actions{min-width:160px;max-width:220px}.mc-table .mc-actions>div{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-1)}.mc-table .mc-actions .actlink{min-height:44px;display:flex;align-items:center;white-space:normal;text-align:left}
 .mc-table .mc-indicator{display:block;font-size:var(--fs-12);margin-top:var(--sp-1);color:var(--warn)}
 .mc-table td .tag{max-width:100%}
 .mc-root .mc-table[data-kind=repayments]{table-layout:fixed}
-.mc-table[data-kind=repayments] th:nth-child(1){width:17%}
-.mc-table[data-kind=repayments] th:nth-child(2){width:14%}
+.mc-table[data-kind=repayments] th:nth-child(1){width:20%}
+.mc-table[data-kind=repayments] th:nth-child(2){width:13%}
 .mc-table[data-kind=repayments] th:nth-child(3){width:12%}
-.mc-table[data-kind=repayments] th:nth-child(4){width:12%}
-.mc-table[data-kind=repayments] th:nth-child(5){width:22%}
-.mc-table[data-kind=repayments] th:nth-child(6){width:14%}
-.mc-table[data-kind=repayments] th:nth-child(7){width:9%}
+.mc-table[data-kind=repayments] th:nth-child(4){width:10%}
+.mc-table[data-kind=repayments] th:nth-child(5){width:19%}
+.mc-table[data-kind=repayments] th:nth-child(6){width:12%}
+.mc-table[data-kind=repayments] th:nth-child(7){width:14%}
 .mc-table[data-kind=repayments] td{overflow-wrap:anywhere;white-space:normal;min-width:0}
 .mc-table[data-kind=repayments] .mc-actions{min-width:0;max-width:none}
 .mc-table[data-kind=repayments] strong{font-weight:600}
@@ -92,7 +92,12 @@
  .mc-root .mc-table td{display:flex;justify-content:space-between;gap:var(--sp-4);padding:var(--sp-2);border:0;min-width:0;max-width:none;white-space:normal}
  .mc-root .mc-table td:before{content:attr(data-label);color:var(--muted);font-size:var(--fs-12);flex:0 0 34%;white-space:normal;text-align:left}
  .mc-root .mc-table td>div{min-width:0;max-width:64%;overflow-wrap:anywhere;text-align:right}
- .mc-root .mc-table .mc-object{text-align:right}.mc-root .mc-table .mc-actions .actlink{display:inline-flex;margin-left:var(--sp-3)}
+ .mc-root .mc-table .mc-object{text-align:right}
+ .mc-root .mc-table td.id,.mc-root .mc-table td.mc-actions{display:block;text-align:left}
+ .mc-root .mc-table td.id:before,.mc-root .mc-table td.mc-actions:before{display:block;margin-bottom:var(--sp-2)}
+ .mc-root .mc-table td.id>div,.mc-root .mc-table td.mc-actions>div{max-width:none;text-align:left}
+ .mc-root .mc-table td.id .mc-object{text-align:left}
+ .mc-root .mc-table .mc-actions>div{flex-direction:row;flex-wrap:wrap;align-items:center;gap:var(--sp-2)}
 }
 @media(max-width:600px){
  .mc-root .mc-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -115,9 +120,9 @@
 @media(max-width:600px){.mc-quick-actions .fb{min-width:0;max-width:none;flex-basis:100%}}
 
 /* WS-378 · to-dos, identity headers, credit usage and modify-credit dialog. Values come from shared tokens. */
-.mc-overview{padding:var(--card-pad) var(--card-pad) var(--sp-4);margin-bottom:var(--sp-6)}
+.mc-overview{padding:var(--card-pad);margin-bottom:var(--sp-6)}
 .mc-overview h2{margin:0;font-size:var(--ui-section-title);font-weight:600;line-height:1.5}
-.mc-overview .mc-scope{margin:0}
+.mc-overview .mc-scope{margin:0;padding-top:var(--sp-3);border-top:1px solid var(--border)}
 .mc-root .mc-overview .mc-summary--asset{grid-template-columns:repeat(5,minmax(0,1fr))}
 .mc-eyebrow{margin:0 0 var(--sp-1);font-size:var(--fs-12);font-weight:400;color:var(--muted)}
 .mc-meta-text{font-size:var(--fs-13);color:var(--muted);overflow-wrap:anywhere}
@@ -173,31 +178,39 @@
 .mc-root .mc-record-note{margin:calc(-1 * var(--sp-2)) 0 var(--sp-3)}
 
 /* WS-378 · records awaiting your action live in the lists: tab count, "awaiting only" toggle, row cue and named action. */
-.mc-tabs button{display:inline-flex;align-items:center;gap:var(--sp-2)}
-.mc-pending-count,.mc-toggle-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:var(--radius-pill);font-size:var(--fs-11);font-weight:500;font-variant-numeric:tabular-nums;background:var(--accent-soft);color:var(--accent)}
+.mc-tabs button{display:inline-flex;align-items:center;gap:var(--sp-2);text-align:left}
+.mc-pending-count,.mc-toggle-count{display:inline-flex;flex:none;align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 var(--sp-1);border-radius:var(--radius-pill);font-size:var(--fs-11);font-weight:500;font-variant-numeric:tabular-nums;background:var(--accent-soft);color:var(--accent)}
 .mc-toggle-count{background:var(--card-2);color:var(--muted)}
-.mc-pending-toggle{display:flex;align-items:center;gap:var(--sp-2);min-height:36px;color:var(--muted);font-size:var(--ui-field-label);cursor:pointer;white-space:nowrap;margin-inline-end:var(--sp-2)}
-.mc-pending-toggle input{appearance:auto;width:15px;height:15px;margin:0;accent-color:var(--accent)}
-.mc-pending-toggle:has(:checked){color:var(--accent)}
+.mc-pending-toggle{display:flex;align-items:center;gap:var(--sp-2);min-height:var(--ctrl-h-sm);padding:var(--sp-1) var(--sp-2);border:1px solid transparent;border-radius:var(--radius-xs);color:var(--muted);font-size:var(--ui-field-label);cursor:pointer;max-width:100%}
+.mc-pending-toggle input{appearance:auto;flex:none;width:16px;height:16px;margin:0;accent-color:var(--accent)}
+.mc-pending-toggle:hover{background:var(--card-2)}
+.mc-pending-toggle:has(:checked){color:var(--accent);background:var(--accent-soft);border-color:var(--accent-border)}
 .mc-pending-toggle:has(:checked) .mc-toggle-count{background:var(--accent-soft);color:var(--accent)}
-.mc-pending-toggle[aria-disabled=true]{cursor:not-allowed;opacity:.6}
+.mc-pending-toggle[aria-disabled=true]{cursor:not-allowed;color:var(--muted);background:var(--card-2)}
 .mc-pending-toggle:has(:focus-visible){outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-xs)}
-.mc-pending-cue{display:grid;gap:2px;margin-top:var(--sp-2);font-size:var(--fs-12);line-height:1.6;color:var(--muted);text-align:left}
-.mc-pending-cue>b{display:flex;align-items:center;gap:6px;color:var(--accent);font-weight:500}
+.mc-pending-cue{display:grid;gap:var(--sp-1);margin-top:var(--sp-3);font-size:var(--fs-12);line-height:1.6;color:var(--muted);text-align:left;overflow-wrap:anywhere}
+.mc-pending-cue>b{display:flex;align-items:baseline;gap:var(--sp-1);color:var(--accent);font-weight:500}
 .mc-pending-cue>b>span{width:5px;height:5px;background:currentColor;border-radius:50%;flex:none}
 .mc-pending-cue[data-overdue=true]>b{color:var(--warn)}
 .mc-pending-cue .mc-money .mc-unit{font-size:var(--fs-11)}
-.mc-pending-more summary{width:max-content;color:var(--accent);cursor:pointer}
+.mc-pending-more summary{width:fit-content;max-width:100%;min-height:32px;padding-block:var(--sp-1);color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .mc-pending-more summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--radius-xs)}
-.mc-pending-more ul{margin:var(--sp-1) 0 0;padding-inline-start:var(--sp-4)}
-.mc-table .mc-actions .mc-pending-action{font-weight:500}
+.mc-pending-more ul{margin:var(--sp-1) 0 0;padding:0;list-style:none}
+.mc-pending-more li{padding-block:var(--sp-2);border-top:1px solid var(--border)}
+.mc-pending-more li>b,.mc-pending-more li>span{display:block}
+.mc-table .mc-actions .mc-pending-action{min-height:44px;height:auto;max-width:100%;padding:var(--sp-2) var(--sp-3);color:var(--accent);border-color:var(--accent-border);font-size:var(--fs-12);line-height:1.5;white-space:normal;text-align:left;justify-content:flex-start;overflow-wrap:anywhere}
 .mc-table tr[data-pending=true] td:first-child{box-shadow:inset 2px 0 var(--accent)}
-.mc-pending-detail{margin-bottom:var(--sp-4);padding:var(--sp-3) var(--sp-4);border:1px solid var(--accent-border);border-radius:var(--radius-sm);background:var(--accent-soft);font-size:var(--fs-13)}
-.mc-pending-detail>b{color:var(--accent);font-weight:600}
-.mc-pending-detail ul{margin:var(--sp-2) 0 0;padding-inline-start:var(--sp-5)}
-.mc-pending-detail .mc-small{margin-top:var(--sp-2)}
+.mc-pending-detail{margin-bottom:var(--sp-4);padding:var(--sp-4) var(--card-pad);border:1px solid var(--border);border-inline-start:2px solid var(--accent);border-radius:var(--radius-sm);background:var(--card);font-size:var(--fs-13)}
+.mc-pending-detail h2{margin:0;font-size:var(--ui-section-title);line-height:1.5;font-weight:600;color:var(--text)}
+.mc-pending-detail ul{margin:var(--sp-3) 0 0;padding:0;list-style:none}
+.mc-pending-detail li{display:grid;grid-template-columns:minmax(160px,1fr) minmax(0,3fr);gap:var(--sp-2) var(--sp-5);padding-block:var(--sp-3);border-top:1px solid var(--border);overflow-wrap:anywhere}
+.mc-pending-detail li>b{font-weight:500;color:var(--accent)}
+.mc-pending-detail li>span{color:var(--muted)}
+.mc-pending-detail [data-overdue=true]>b{color:var(--warn)}
+.mc-pending-detail .mc-small{margin-top:var(--sp-3)}
 @media(max-width:1200px){.mc-root .mc-overview .mc-summary--asset{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:1100px){.mc-pending-cue{justify-items:end;text-align:right}.mc-table tr[data-pending=true] td:first-child{box-shadow:none}.mc-table tr[data-pending=true]{box-shadow:inset 2px 0 var(--accent)}}
+@media(max-width:1100px){.mc-table tr[data-pending=true] td:first-child{box-shadow:none}.mc-table tr[data-pending=true]{box-shadow:inset 2px 0 var(--accent)}}
 @media(max-width:900px){.mc-root .mc-overview .mc-summary--asset{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px),(pointer:coarse){.mc-pending-toggle{min-height:44px}}
+@media(max-width:600px){.mc-pending-detail{padding:var(--sp-4)}.mc-pending-detail li{grid-template-columns:1fr;gap:var(--sp-1)}}
+@media(max-width:600px),(pointer:coarse){.mc-pending-toggle{min-height:44px}.mc-pending-more summary{min-height:44px;padding-block:var(--sp-3)}}
 @media(max-width:360px){.mc-root .mc-overview .mc-summary--asset{grid-template-columns:1fr}}
