@@ -363,9 +363,9 @@
   function attachments(r){
     const bd=r.bundle;
     const link=!bd?blank:A.dlError
-      ?`<div class="ta-bundle-error">${CF.note('red',L('The download link is unavailable right now.','下载链接暂不可用。'))}${b('Retry','重试','download-retry')}</div>`
-      :`<div class="ta-bundle">${b('Download all attachments','下载全部附件','download','','',false)}<span class="ta-meta">${E(bd.name)} · ${L('Provided with ','随')}${E(submission(bd.seq))}${L('',' 提供')}</span></div>`;
-    return section('docs','Attachments','附件',facts([[L('Legal documents and supporting materials','法律协议文件与佐证材料'),link,true]],true));
+      ?`<div class="ta-bundle-error">${CF.note('red',L('Download failed.','下载失败。'))}${b('Retry','重试','download-retry')}</div>`
+      :`<div class="ta-bundle">${b('Download all attachments','下载全部附件','download','','',false)}<span class="ta-meta">${E(bd.name)} · ${L('Provided with ','随')}${E(submission(bd.seq))}${L(' · ',' 提供 · ')}${time(bd.at)}</span></div>`;
+    return section('docs','Attachment download','附件下载',facts([[L('Legal documents and supporting materials','法律协议文件与佐证材料'),link,true]],true));
   }
   const TONE={approve:'ok',return:'danger','callback-fail':'warn',expire:'gray',change:'accent',ack:'gray',update:'accent'};
   function activity(r){
@@ -434,7 +434,7 @@
     const inv=r.asset.invoices||[],next='DEMO-INV-'+r.key+String(inv.length+1).padStart(2,'0');
     const before=inv.length?inv.join(', '):'—';
     r.asset={...r.asset,invoices:[...inv,next]};r.updatedAt=now();
-    const oldBundle=r.bundle?.name||'—';r.bundle={name:'Attachments-'+r.id+'-submission-'+r.seq+'-v'+(r.events.filter(e=>e.kind==='update').length+2)+'.zip',seq:r.seq};
+    const oldBundle=r.bundle?.name||'—';r.bundle={name:'Attachments-'+r.id+'-submission-'+r.seq+'-v'+(r.events.filter(e=>e.kind==='update').length+2)+'.zip',seq:r.seq,at:now()};
     event(r,'update',['Materials updated','资料更新'],[`Pending review · submission ${r.seq}`,`待审核 · 第 ${r.seq} 次提交`],
       {actor:platformActor(r),text:note,diff:[[['Invoice numbers','发票号'],before,[...inv,next].join(', ')],[['Attachments','附件'],oldBundle,r.bundle.name]]});
   }
@@ -599,7 +599,7 @@
     else if(act==='push-update'&&r?.status==='pending'){pushUpdate(r,['The issuance platform pushed updated materials for this submission.','发行平台推送了本次提交的资料更新。']);CF.render();CF.toast(L('Materials updated; the submission number is unchanged.','资料已更新，提交序次不变。'));}
     else if(act==='push-resubmit'&&r?.status==='returned'){
       r.status='pending';r.seq+=1;r.submittedAt=now();r.updatedAt=null;
-      if(r.bundle)r.bundle={name:'Attachments-'+r.id+'-submission-'+r.seq+'.zip',seq:r.seq};
+      if(r.bundle)r.bundle={name:'Attachments-'+r.id+'-submission-'+r.seq+'.zip',seq:r.seq,at:now()};
       event(r,'resubmit',['Resubmitted after revision','重新提交'],[`Returned → Pending review · submission ${r.seq}`,`已退回 → 待审核 · 第 ${r.seq} 次提交`],
         {actor:platformActor(r)});
       CF.render();

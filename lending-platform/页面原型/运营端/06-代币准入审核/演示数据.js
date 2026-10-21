@@ -56,7 +56,7 @@
         decisions:[],dupes:[],changed:false,events:[]
       };
       Object.assign(r,o||{});
-      if(r.bundle&&!(o&&'bundle' in o))r.bundle={name:'Attachments-'+r.id+'-submission-'+r.seq+'.zip',seq:r.seq};
+      if(r.bundle&&!(o&&'bundle' in o))r.bundle={name:'Attachments-'+r.id+'-submission-'+r.seq+'.zip',seq:r.seq,at:r.updatedAt||r.submittedAt};
       if(!r.events.length)r.events=[submitEvent(r,r.submittedAt,1)];
       return r;
     }
@@ -105,7 +105,7 @@
     /* 09 已通过后发行平台推送资料变更：保持已通过，只标记提醒，可确认已知悉。 */
     {const r=base(9,{status:'approved',submittedAt:now-20*D,changed:true,
       asset:{...base(9).asset,terms:['Payment 150 days after invoice date','发票日后 150 天付款']}});
-     r.bundle={name:'Attachments-TA-009-submission-1-v2.zip',seq:1};
+     r.bundle={name:'Attachments-TA-009-submission-1-v2.zip',seq:1,at:now-2*D};
      r.decisions=[{result:'approved',at:now-19*D,reviewer:CHEN}];
      r.events=[submitEvent(r,now-20*D,1),approveEvent(now-19*D,CHEN),
        ev(now-2*D,'change',['Materials changed after approval','通过后资料变更'],['Approved · unchanged','已通过 · 准入状态不变'],platformActor('A'),
@@ -131,7 +131,7 @@
      r.decisions=[{result:'approved',at:now-29*D,reviewer:LIN}];r.events=[submitEvent(r,now-30*D,1),approveEvent(now-29*D,LIN)];rows.push(r);}
     /* 13 待审核期间发行平台推送资料更新：不增加提交序次，详情展示最新资料。 */
     {const r=base(13,{submittedAt:now-3*D,updatedAt:now-7*H});
-     r.bundle={name:'Attachments-TA-013-submission-1-v2.zip',seq:1};
+     r.bundle={name:'Attachments-TA-013-submission-1-v2.zip',seq:1,at:now-7*H};
      r.events=[submitEvent(r,now-3*D,1),ev(now-7*H,'update',['Materials updated','资料更新'],['Pending review · submission 1','待审核 · 第 1 次提交'],platformActor('A'),
        {diff:[[['Invoice numbers','发票号'],['DEMO-INV-1301'],['DEMO-INV-1301, DEMO-INV-1302']],[['Attachments','附件'],['Attachments-TA-013-submission-1.zip'],['Attachments-TA-013-submission-1-v2.zip']]]})];
      rows.push(r);}
