@@ -14,13 +14,13 @@
   };
   const dict={en:{},zh:{}};
   Object.entries(pages).forEach(([id,p])=>{CF.PAGES[id]={end:'asset',layout:p[0],navKey:id,auth:['P-L21','P-L22','P-L23'].includes(id)};CF.ENTRY[id]=p[1];dict.en[id]=p[2];dict.zh[id]=p[3];});
-  const blank=()=>({exists:false,address,created:null,email:'',status:'draft',disabled:false,form:{name:'',country:'',identifierType:'',identifier:'',institutionType:'',registeredAddress:'',regulator:'',license:'',contact:'',files:[]},submitted:null,reviewed:null,records:[],version:0});
+  const blank=()=>({exists:false,address,created:null,email:'',status:'draft',disabled:false,form:{name:'',country:'',identifierType:'',identifier:'',institutionType:'',registeredAddress:'',regulator:'',license:'',contactName:'',contact:'',dialRegion:'',phone:'',files:[]},submitted:null,reviewed:null,records:[],version:0});
   const F={account:blank(),accounts:{},connected:'',change:false,inFlow:false,
     busy:'',error:null,fieldErrors:{},otp:null,emailInput:'',codeInput:'',reauthUntil:0,
     emailEntryError:null,emailMode:'initial',emailGeneration:0,emailFocus:'',emailCompleted:false,emailRetry:false,autoCodeAttempt:'',puzzleReturn:'page',emailStage:'auth',connectionOrigin:'auth',signPurpose:'email',signatureResult:'success',connectionResult:'success',
     saveResult:'success',emailResult:'success',template:'ready',load:'ready',upload:'idle',providerMode:'single',
     sessionUntil:0,returnTo:'',replayed:0,gate:'idle',contract:null,signatureStarted:0,challenge:0,
-    uploadVersion:0,uploadFault:false,noticeFault:false,replaceTarget:'',reviewCheck:'',preferenceState:'',savedPreferences:null,storageFailed:false,downgrade:false,latestCode:'123456',sends:{},pendingSubmission:false,emailFlow:false,notes:[],generation:0,layerOpen:false,focusBack:null};
+    uploadVersion:0,uploadFault:false,uploadRejected:[],dialOpen:false,dialQuery:'',dialActive:'',submitError:null,noticeFault:false,replaceTarget:'',reviewCheck:'',preferenceState:'',savedPreferences:null,storageFailed:false,downgrade:false,latestCode:'123456',sends:{},pendingSubmission:false,emailFlow:false,notes:[],generation:0,layerOpen:false,focusBack:null};
   /* 机构证明材料是一个多份文件集合：逐件保留名称、大小与上传结果；旧演示数据的单文件字段读取时并入集合。 */
   let fileSeq=0;
   const fileId=()=>'doc-'+(++fileSeq);
@@ -75,13 +75,13 @@
   function status(s=F.account.status){return L(...({draft:['Registration not submitted','未提交'],submitted:['Under review','审核中'],rejected:['Rejected','已驳回'],verified:['Verified','已认证']}[s]));}
   function tag(s=F.account.status){return CF.tag(s==='verified'?'ok':s==='rejected'?'danger':'warn',status(s));}
   const walletCare=()=>L("This wallet is your only way to sign in, and it can't be changed after linking. Make sure you'll keep long-term access to it.",'该钱包是你唯一的登录方式，绑定后不可更换，请确保长期可访问。');
-  const emailCare=()=>L('Use a long-lived company mailbox. Avoid personal addresses or accounts tied to one employee — this is your only contact channel.','请使用长期有效的企业邮箱，避免使用个人邮箱或离职风险高的个人账号——它是你唯一的联系通道。');
+  const emailCare=()=>L('Use a long-lived company mailbox and verify it with an email code. Review results and account notices are available in the platform message center.','请使用长期有效的企业邮箱并完成验证码验证。审核结果与账号通知请在平台消息中心查看。');
   function wallet(a=F.account.address,explorer=false){return `<div class="funder-line"><div class="funder-wallet"><details class="funder-address"><summary class="hash" title="${esc(a)}" aria-label="${esc(L('View full wallet address: ','查看完整钱包地址：')+a)}">${esc(a.length>10?a.slice(0,6)+'…'+a.slice(-4):a)}</summary><div class="funder-address-full"><span class="mono">${esc(a)}</span><span class="funder-copy-fallback" role="status" hidden>${L('Automatic copy is unavailable. Select the full address above to copy it.','自动复制不可用，请选中上方完整地址手动复制。')}</span></div></details>${CF.copyBtn('f-copy',a,L('Copy wallet address','复制钱包地址'))}</div>${explorer?link('Block explorer ↗','区块浏览器 ↗','explorer',a):''}</div>`;}
   async function copyWallet(value,element){
     try{await navigator.clipboard.writeText(value);CF.toast(L('Address copied','地址已复制'));}
     catch(e){if(!element?.isConnected)return;const disclosure=element.querySelector('details');disclosure.open=true;element.querySelector('.funder-copy-fallback').hidden=false;}
   }
-  function head(en,zh,desc=''){return `<div class="page-head"><div><h1 class="page-title">${L(en,zh)}</h1>${desc?`<p class="page-desc">${desc}</p>`:''}</div></div>`;}
+  function head(en,zh,desc='',meta=''){return `<div class="page-head"><div><h1 class="page-title">${L(en,zh)}</h1>${desc?`<p class="page-desc">${desc}</p>`:''}${meta}</div></div>`;}
   /* 与资产方用户中心同一骨架：单张资料卡、左列分区标题、右侧内容；事实行为标签 / 值对齐。 */
   function profile(sections){return `<div class="card login-profile funder-profile">${sections.filter(Boolean).join('')}</div>`;}
   function section(id,en,zh,body,required=false){return `<section class="login-profile-section" ${id?`id="${id}"`:''} aria-labelledby="${id||'f-sec-'+en.replace(/\W+/g,'-').toLowerCase()}-title"><h2 id="${id||'f-sec-'+en.replace(/\W+/g,'-').toLowerCase()}-title">${required?CF.fieldLabel(L(en,zh),true):L(en,zh)}</h2><div class="login-profile-body">${body}</div></section>`;}
@@ -127,13 +127,57 @@
   /* 业务名称取自字段命名与术语对照表；标识类型存代码、显示业务全称，切换语言不改变取值。 */
   const identifierTypes={USCC:['Unified social credit code (USCC)','统一社会信用代码（USCC）'],LEI:['Legal entity identifier (LEI)','法人机构识别编码（LEI）'],REG_NO:['Business registration number (REG_NO)','商业登记号（REG_NO）']};
   const identifierTypeName=v=>identifierTypes[v]?L(...identifierTypes[v]):'';
+  /* 业务联系人信息：姓名、邮箱、电话（区号 + 号码）均为机构资料，随提交、审核和回显；模版调整不移除这三项。 */
   function fieldsFrom(form,template){
     const f=form||{};
-    return [['Legal entity name','机构名称',f.name,'name'],['Country of incorporation','注册国家或地区',f.country,'country'],['Entity identifier type','标识类型',f.identifierType||'','identifierType'],['Entity identifier','机构唯一标识',f.identifier,'identifier'],['Institution type','机构类型',f.institutionType||'—','institutionType'],['Registered office address','注册地址',f.registeredAddress||'—','registeredAddress'],['Regulatory authority','监管机构',f.regulator||'—','regulator'],['Financial licence number','金融牌照编号',f.license||'—','license'],['Business contact email','业务联系人邮箱',f.contact||'—','contact'],['Institution supporting documents','机构证明材料',docs(form).length,'files']]
-      .filter(x=>(template||F.activeTemplate)!=='DEMO-2'||x[3]!=='contact');
+    return [['Legal entity name','机构名称',f.name,'name'],['Country of incorporation','注册国家或地区',f.country,'country'],['Entity identifier type','标识类型',f.identifierType||'','identifierType'],['Entity identifier','机构唯一标识',f.identifier,'identifier'],['Institution type','机构类型',f.institutionType||'—','institutionType'],['Registered office address','注册地址',f.registeredAddress||'—','registeredAddress'],['Regulatory authority','监管机构',f.regulator||'—','regulator'],['Financial licence number','金融牌照编号',f.license||'—','license'],['Business contact name','业务联系人姓名',f.contactName||'—','contactName'],['Business contact email','业务联系人邮箱',f.contact||'—','contact'],['Business contact phone','业务联系人电话',{region:f.dialRegion||'',phone:f.phone||''},'contactPhone'],['Institution supporting documents','机构证明材料',docs(form).length,'files']];
   }
   function fields(){return fieldsFrom(F.account.form,F.activeTemplate);}
-  function fieldValue(row){return row[3]==='identifierType'?(identifierTypeName(row[2])||'—'):row[3]==='files'?L(row[2]+' files',row[2]+' 份'):String(row[2]||'—');}
+  function fieldValue(row){return row[3]==='contactPhone'?phoneText(row[2]):row[3]==='identifierType'?(identifierTypeName(row[2])||'—'):row[3]==='files'?L(row[2]+' files',row[2]+' 份'):String(row[2]||'—');}
+
+  /* 电话区号：已分配国际电话区号的国家和地区，名称按当前语言取浏览器区域名；共用区号的国家或地区分别列出，保存所选地区代码。 */
+  const DIAL=Object.fromEntries('AF93 AX358 AL355 DZ213 AS1 AD376 AO244 AI1 AG1 AR54 AM374 AW297 AU61 AT43 AZ994 BS1 BH973 BD880 BB1 BY375 BE32 BZ501 BJ229 BM1 BT975 BO591 BQ599 BA387 BW267 BR55 IO246 VG1 BN673 BG359 BF226 BI257 KH855 CM237 CA1 CV238 KY1 CF236 TD235 CL56 CN86 CX61 CC61 CO57 KM269 CG242 CD243 CK682 CR506 CI225 HR385 CU53 CW599 CY357 CZ420 DK45 DJ253 DM1 DO1 EC593 EG20 SV503 GQ240 ER291 EE372 SZ268 ET251 FK500 FO298 FJ679 FI358 FR33 GF594 PF689 GA241 GM220 GE995 DE49 GH233 GI350 GR30 GL299 GD1 GP590 GU1 GT502 GG44 GN224 GW245 GY592 HT509 VA39 HN504 HK852 HU36 IS354 IN91 ID62 IR98 IQ964 IE353 IM44 IL972 IT39 JM1 JP81 JE44 JO962 KZ7 KE254 KI686 KP850 KR82 XK383 KW965 KG996 LA856 LV371 LB961 LS266 LR231 LY218 LI423 LT370 LU352 MO853 MG261 MW265 MY60 MV960 ML223 MT356 MH692 MQ596 MR222 MU230 YT262 MX52 FM691 MD373 MC377 MN976 ME382 MS1 MA212 MZ258 MM95 NA264 NR674 NP977 NL31 NC687 NZ64 NI505 NE227 NG234 NU683 NF672 MK389 MP1 NO47 OM968 PK92 PW680 PS970 PA507 PG675 PY595 PE51 PH63 PL48 PT351 PR1 QA974 RE262 RO40 RU7 RW250 BL590 SH290 KN1 LC1 MF590 PM508 VC1 WS685 SM378 ST239 SA966 SN221 RS381 SC248 SL232 SG65 SX1 SK421 SI386 SB677 SO252 ZA27 SS211 ES34 LK94 SD249 SR597 SJ47 SE46 CH41 SY963 TW886 TJ992 TZ255 TH66 TL670 TG228 TK690 TO676 TT1 TN216 TR90 TM993 TC1 TV688 UG256 UA380 AE971 GB44 US1 UY598 UZ998 VU678 VE58 VN84 VI1 WF681 EH212 YE967 ZM260 ZW263'
+    .split(' ').map(x=>[x.slice(0,2),x.slice(2)]));
+  const regionNames={};
+  function regionName(code){const lang=S.lang==='zh'?'zh-CN':'en';try{regionNames[lang]=regionNames[lang]||new Intl.DisplayNames([lang],{type:'region'});return regionNames[lang].of(code)||code;}catch(e){return code;}}
+  const dialLabel=code=>DIAL[code]?regionName(code)+' +'+DIAL[code]:'';
+  function dialOptions(query=''){
+    const q=String(query).trim().toLocaleLowerCase().replace(/^\+/,'');
+    return Object.keys(DIAL).map(code=>({code,name:regionName(code),dial:DIAL[code]}))
+      .filter(o=>!q||o.name.toLocaleLowerCase().includes(q)||o.dial.startsWith(q)||o.code.toLowerCase()===q)
+      .sort((a,b)=>a.name.localeCompare(b.name,S.lang==='zh'?'zh-CN':'en'));
+  }
+  /* 号码去掉空格、连字符和括号后判定；本原型为部分国家或地区演示号码规则，其余按“仅数字且区号与号码合计不超过 15 位”判定。 */
+  const phoneDigits=v=>String(v||'').replace(/[\s\-()（）]/g,'');
+  const PHONE_RULES={CN:/^(?:1[3-9]\d{9}|0?(?:10|2\d|[3-9]\d{2})\d{7,8})$/,HK:/^[2-9]\d{7}$/,MO:/^[268]\d{7}$/,TW:/^0?[2-9]\d{7,8}$/,SG:/^[3689]\d{7}$/,GB:/^0?[1-9]\d{8,9}$/,JP:/^0?[1-9]\d{8,9}$/,AU:/^0?[2-478]\d{8}$/};
+  function phoneError(f){
+    const raw=String(f.phone||'').trim(),n=phoneDigits(raw);
+    if(!n)return ['Enter the phone number.','请填写电话号码。'];
+    if(!f.dialRegion)return ['Select the country or region code first.','请先选择区号。'];
+    if(/^(\+|00)/.test(n))return ['Enter the number without + or 00. The code is selected on the left.','号码不含国际拨号前缀，请去掉开头的 + 或 00。'];
+    if(!/^\d+$/.test(n))return ['Use digits only. Spaces, hyphens and brackets are allowed.','号码只能包含数字，可使用空格、连字符或括号分隔。'];
+    const rule=DIAL[f.dialRegion]==='1'?/^[2-9]\d{2}[2-9]\d{6}$/:PHONE_RULES[f.dialRegion];
+    if(rule&&!rule.test(n))return [`This number doesn't match the format for ${regionName(f.dialRegion)}.`,`号码与${regionName(f.dialRegion)}的号码格式不符，请检查位数。`];
+    if(!rule&&DIAL[f.dialRegion].length+n.length>15)return ['The code and number together cannot exceed 15 digits.','区号与号码合计不能超过 15 位。'];
+    return null;
+  }
+  function phoneText(v){
+    const n=phoneDigits(v&&v.phone);
+    if(!n||!DIAL[v.region])return '—';
+    return '+'+DIAL[v.region]+' '+n+L(' ('+regionName(v.region)+')','（'+regionName(v.region)+'）');
+  }
+  function contactErrors(f,only){
+    const errors={},name=String(f.contactName||'').trim(),mail=String(f.contact||'').trim();
+    if(!name)errors.contactName=['Enter the contact name.','请填写业务联系人姓名。'];
+    else if([...name].length>100)errors.contactName=['Use up to 100 characters.','姓名最多 100 个字符。'];
+    if(!mail)errors.contact=['Enter the contact email.','请填写业务联系人邮箱。'];
+    else if(!emailValid(mail))errors.contact=['Enter a valid email address (up to 254 characters).','请输入有效邮箱，最多 254 个字符。'];
+    if(!f.dialRegion)errors.dialRegion=['Select the country or region code.','请选择区号。'];
+    const phone=phoneError(f);
+    // 未选区号时号码处提示先选区号；整体校验时由区号项承担，避免同一原因出现两次。
+    if(phone&&(only==='phone'||f.dialRegion||!phoneDigits(f.phone)))errors.phone=phone;
+    return only?(errors[only]?{[only]:errors[only]}:{}):errors;
+  }
   const notDocuments=row=>!['files','Institution document','Institution supporting documents'].includes(row[3]||row[0]);
   function fileSize(size){return size>=1048576?(size/1048576).toFixed(1)+' MB':Math.max(1,Math.ceil(size/1024))+' KB';}
   function docStatus(file){return file.status==='done'?L('Uploaded','已上传'):file.status==='uploading'?L('Uploading…','正在上传…'):L('Upload failed','上传失败');}
@@ -165,7 +209,18 @@
   }
   function uploadArea(){
     const editable=!(F.account.status==='submitted'||F.pendingSubmission),files=docs(F.account.form);
-    return `<div class="field"><p class="login-caption">${L('Upload at least one readable file. Files are added, replaced and removed one by one.','至少上传一份可读取的文件，可逐件添加、替换或移除。')}</p><div class="funder-upload" id="f-material" tabindex="-1" ${F.fieldErrors.files?'aria-describedby="f-err-files"':''}><input id="f-file" type="file" aria-required="true" multiple hidden aria-label="${L('Select institution supporting documents','选择机构证明材料')}">${files.length?materialList(F.account.form,'draft',editable)+`<div class="funder-upload-add">${btn('Add file','添加文件','pick-file')}</div>`:`<div class="funder-upload-empty"><span class="funder-file-icon" aria-hidden="true">↑</span><div><strong>${L('Upload institution supporting documents','上传机构证明材料')}</strong><p class="login-caption">${L('Choose one or more files from your computer.','从电脑选择一份或多份需要提交的文件。')}</p></div>${btn('Choose files','选择文件','pick-file')}</div>`}${F.fieldErrors.files?`<p id="f-err-files" class="err-msg" role="alert">${L(...F.fieldErrors.files)}</p>`:''}</div></div>`;
+    const limits=L('PDF, JPG or PNG · up to 10 MB each · up to 10 files','PDF、JPG、PNG · 单个不超过 10MB · 最多 10 个');
+    const rejected=F.uploadRejected.length?`<ul class="funder-upload-rejected" role="alert">${F.uploadRejected.map(r=>`<li><b>${esc(r.name)}</b> · ${L(...r.reason)}</li>`).join('')}</ul>`:'';
+    return `<div class="field"><div class="funder-upload" id="f-material" tabindex="-1" data-drop="files" ${F.fieldErrors.files?'aria-describedby="f-err-files"':''}><input id="f-file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" aria-required="true" multiple hidden aria-label="${L('Select institution supporting documents','选择机构证明材料')}">${files.length?materialList(F.account.form,'draft',editable)+`<div class="funder-upload-add">${btn('Add file','添加文件','pick-file','','',files.length>=10)}<span class="login-caption">${limits}</span></div>`:`<div class="funder-upload-empty"><span class="funder-file-icon" aria-hidden="true">↑</span><div><strong>${L('Drop files here or choose from your computer','拖入文件，或从电脑选择')}</strong><p class="login-caption">${limits}</p></div>${btn('Choose files','选择文件','pick-file')}</div>`}${rejected}${F.fieldErrors.files?`<p id="f-err-files" class="err-msg" role="alert">${L(...F.fieldErrors.files)}</p>`:''}</div></div>`;
+  }
+  /* PDF / JPG / PNG、单个 ≤10MB、每次提交最多 10 个；超出限制的文件就地说明，不计入本次材料。 */
+  function acceptFiles(picked,slots){
+    F.uploadRejected=[];const ok=[];
+    picked.forEach(file=>{
+      const reason=!/\.(pdf|jpe?g|png)$/i.test(file.name||'')?['Only PDF, JPG or PNG files are accepted.','仅支持 PDF、JPG、PNG 文件。']:file.size>10*1048576?['The file is larger than 10 MB.','文件超过 10MB。']:ok.length>=slots?['Up to 10 files per submission.','每次提交最多 10 个文件。']:null;
+      if(reason)F.uploadRejected.push({name:file.name,reason});else ok.push(file);
+    });
+    return ok;
   }
   /* 逐件上传：新增不覆盖其他文件，替换只作用于指定文件，移除后迟到的结果不再回写。 */
   function runUpload(file){
@@ -176,11 +231,14 @@
   function startUpload(list,replaceId){
     if(F.account.status==='submitted'||F.pendingSubmission)return;
     delete F.fieldErrors.files;
-    const picked=list?Array.from(list):[];
+    const all=list?Array.from(list):[];
     if(replaceId){const target=docs(F.account.form).find(f=>f.id===replaceId);if(!target)return;
+      const picked=all.length?acceptFiles(all.slice(0,1),1):[];
+      if(all.length&&!picked.length)return;
       if(picked[0]){target.name=picked[0].name;target.size=picked[0].size;target.demo=false;}
       runUpload(target);return;}
-    if(!picked.length)return;
+    if(!all.length)return;
+    const picked=acceptFiles(all,Math.max(0,10-docs(F.account.form).length));
     picked.forEach(entry=>{const file={id:fileId(),name:entry.name,size:entry.size,status:'uploading',demo:false};F.account.form.files.push(file);runUpload(file);});
   }
   function preferenceFeedback(){return F.preferenceState?`<p class="${F.preferenceState==='failed'?'funder-error':'login-caption'}" role="${F.preferenceState==='failed'?'alert':'status'}">${F.preferenceState==='failed'?L('Could not save. Your previous preference is restored. Please select again to retry.','保存失败，已恢复原偏好，请重新选择后重试。'):L('Preferences saved','偏好已保存')}</p>`:'';}
@@ -190,8 +248,8 @@
     catch(e){F.preferenceState='failed';CF.toast(L('Preferences could not be saved. Please retry.','偏好保存失败，请重试。'));}
   }
   function details(items,grid=false){return `<dl class="login-fields ${grid?'funder-detail-grid':''}">${items.map(r=>`<div ${grid&&r[3]==='registeredAddress'?'class="funder-field-wide"':''}><dt>${L(r[0],r[1])}</dt><dd>${esc(r[3]?fieldValue(r):String(r[2]||'—'))}</dd></div>`).join('')}</dl>`;}
-  function input(key,en,zh,value,options='',describedBy=''){const errorId=F.fieldErrors[key]?'f-err-'+key:'',description=[describedBy,errorId].filter(Boolean).join(' ');return `<div class="field"><label for="f-${key}">${CF.fieldLabel(L(en,zh),en.endsWith('*')||['email','code'].includes(key))}</label><input class="inp" id="f-${key}" value="${esc(value||'')}" ${en.endsWith('*')||['email','code'].includes(key)?'aria-required="true"':''} ${options} ${errorId?'aria-invalid="true"':''} ${description?`aria-describedby="${description}"`:''}>${errorId?`<span class="err-msg" id="${errorId}" role="alert">${L(...F.fieldErrors[key])}</span>`:''}</div>`;}
-  function emailInputForm(){return `<div class="funder-email-entry">${input('email','Contact email','联系邮箱',F.emailInput,'type="email" maxlength="254" autocomplete="email" '+(F.busy?'disabled':''))}${btn('Verify email','验证邮箱','start-email','','',!!F.busy)}</div>`;}
+  function input(key,en,zh,value,options='',describedBy=''){const errorId=F.fieldErrors[key]?'f-err-'+key:'',description=[describedBy,errorId].filter(Boolean).join(' ');return `<div class="field" id="f-field-${key}"><label for="f-${key}">${CF.fieldLabel(L(en,zh),en.endsWith('*')||['email','code'].includes(key))}</label><input class="inp" id="f-${key}" value="${esc(value||'')}" ${en.endsWith('*')||['email','code'].includes(key)?'aria-required="true"':''} ${options} ${errorId?'aria-invalid="true"':''} ${description?`aria-describedby="${description}"`:''}>${errorId?`<span class="err-msg" id="${errorId}" role="alert">${L(...F.fieldErrors[key])}</span>`:''}</div>`;}
+  function emailInputForm(){return `<div class="funder-email-entry">${input('email','Account contact email','账户联系邮箱',F.emailInput,'type="email" maxlength="254" autocomplete="email" '+(F.busy?'disabled':''))}${btn('Send code','发送验证码','start-email','','',!!F.busy)}</div>`;}
   function codeForm(){return `<div class="funder-form funder-email-code">
     <p class="funder-email-destination">${L('Enter the code sent to','请输入发送至以下邮箱的验证码')}<strong>${esc(F.codeTarget||F.emailInput)}</strong></p>
     ${input('code','6-digit verification code','6 位验证码',F.codeInput,'inputmode="numeric" maxlength="6" autocomplete="one-time-code" '+(F.busy||F.otp?.email!==F.codeTarget?'disabled':''),'f-code-help')}
@@ -202,24 +260,64 @@
   </div>`;}
   function remaining(){const value=F.emailInput.trim().toLowerCase(),sent=(F.sends[value]||[]).at(-1);return sent?Math.max(0,Math.ceil((sent+60000-Date.now())/1000)):0;}
   function sendLabel(){return remaining()>0?L(`Resend in ${remaining()}s`,`${remaining()} 秒后重发`):F.busy==='send'?L('Sending…','正在发送…'):L(F.otp?'Resend code':'Send code',F.otp?'重新发送':'发送验证码');}
+  /* 首次验证在页面内完成：发码前仍过滑块，验证码直接在本区填写并自动核验，不再另开弹窗。 */
+  const inlineCode=()=>F.emailFlow&&F.emailMode==='initial'&&F.emailStage==='code'&&!F.account.email;
   function emailSection(){
     const a=F.account;
-    return `<p class="login-caption">${emailCare()}</p>${a.email
-      ? `<div class="funder-email-verified"><strong>${esc(a.email)}</strong>${CF.tag('ok',L('Verified','已验证'))}${link('Change','修改','change-email')}</div><p class="login-caption">${L('Verified at','验证时间')} ${time(a.emailVerified)}</p>`
-      : emailInputForm()+(F.emailEntryError?CF.note('red',L(...F.emailEntryError)):'' )}`;
+    if(a.email)return `<div class="funder-email-verified"><strong>${esc(a.email)}</strong>${CF.tag('ok',L('Verified','已验证'))}<span class="login-caption">${L('Verified at','验证于')} ${time(a.emailVerified)}</span>${link('Change','修改','change-email')}</div>`;
+    return `<p class="login-caption funder-section-hint">${emailCare()}</p>${inlineCode()?codeForm():emailInputForm()+(F.emailEntryError?`<p class="err-msg" role="alert">${L(...F.emailEntryError)}</p>`:'')}`;
   }
   function institution(){
     if(F.template==='error')return CF.empty(L('Institution details are unavailable','机构资料暂不可填写'),L('Please retry. Your saved details are retained.','请重试，已保存内容会保留。'),btn('Retry','重试','template-retry','','primary'));
     if(F.template==='loading')return CF.skelTable(4);
     const f=F.account.form;
-    return `${F.account.status==='rejected'?CF.note('warn',issuesHTML(F.account)):''}<div class="funder-form"><div class="funder-field-grid">${input('name','Legal entity name *','机构名称 *',f.name)}${input('country','Country of incorporation *','注册国家或地区 *',f.country)}<div class="field"><label for="f-identifierType">${CF.fieldLabel(L('Entity identifier type *','标识类型 *'))}</label><select class="inp" id="f-identifierType" aria-required="true" aria-invalid="${!!F.fieldErrors.identifierType}" ${F.fieldErrors.identifierType?'aria-describedby="f-err-identifierType"':''}><option value="">${L('Select an identifier type','请选择标识类型')}</option>${[['USCC','Unified social credit code (USCC) · Mainland China','统一社会信用代码（USCC）· 中国境内'],['LEI','Legal entity identifier (LEI) · preferred outside Mainland China','法人机构识别编码（LEI）· 境外优先'],['REG_NO','Business registration number (REG_NO) · with country of incorporation','商业登记号（REG_NO）· 注册国家或地区 + 编号']].map(o=>`<option value="${o[0]}" ${f.identifierType===o[0]?'selected':''}>${L(o[1],o[2])}</option>`).join('')}</select>${F.fieldErrors.identifierType?`<span class="err-msg" id="f-err-identifierType" role="alert">${L(...F.fieldErrors.identifierType)}</span>`:''}</div>${input('identifier','Entity identifier *','机构唯一标识 *',f.identifier)}${input('institutionType','Institution type *','机构类型 *',f.institutionType)}<div class="funder-field-wide">${input('registeredAddress','Registered office address *','注册地址 *',f.registeredAddress)}</div>${input('regulator',F.activeTemplate==='DEMO-2'?'Regulatory authority *':'Regulatory authority (optional)',F.activeTemplate==='DEMO-2'?'监管机构 *':'监管机构（选填）',f.regulator)}${input('license','Financial licence number (optional)','金融牌照编号（选填）',f.license)}${F.activeTemplate==='DEMO-2'?'':`<div class="funder-field-wide">${input('contact','Business contact email (optional)','业务联系人邮箱（选填）',f.contact,'type="email"')}</div>`}</div></div>`;
+    return `${F.account.status==='rejected'?CF.note('warn',issuesHTML(F.account)):''}<div class="funder-form"><div class="funder-field-grid">${input('name','Legal entity name *','机构名称 *',f.name)}${input('country','Country of incorporation *','注册国家或地区 *',f.country)}<div class="field"><label for="f-identifierType">${CF.fieldLabel(L('Entity identifier type *','标识类型 *'))}</label><select class="inp" id="f-identifierType" aria-required="true" aria-invalid="${!!F.fieldErrors.identifierType}" ${F.fieldErrors.identifierType?'aria-describedby="f-err-identifierType"':''}><option value="">${L('Select an identifier type','请选择标识类型')}</option>${[['USCC','Unified social credit code (USCC) · Mainland China','统一社会信用代码（USCC）· 中国境内'],['LEI','Legal entity identifier (LEI) · preferred outside Mainland China','法人机构识别编码（LEI）· 境外优先'],['REG_NO','Business registration number (REG_NO) · with country of incorporation','商业登记号（REG_NO）· 注册国家或地区 + 编号']].map(o=>`<option value="${o[0]}" ${f.identifierType===o[0]?'selected':''}>${L(o[1],o[2])}</option>`).join('')}</select>${F.fieldErrors.identifierType?`<span class="err-msg" id="f-err-identifierType" role="alert">${L(...F.fieldErrors.identifierType)}</span>`:''}</div>${input('identifier','Entity identifier *','机构唯一标识 *',f.identifier)}${input('institutionType','Institution type *','机构类型 *',f.institutionType)}${input('registeredAddress','Registered office address *','注册地址 *',f.registeredAddress)}${input('regulator',F.activeTemplate==='DEMO-2'?'Regulatory authority *':'Regulatory authority (optional)',F.activeTemplate==='DEMO-2'?'监管机构 *':'监管机构（选填）',f.regulator)}${input('license','Financial licence number (optional)','金融牌照编号（选填）',f.license)}</div></div>`;
+  }
+  /* 业务联系人：姓名、邮箱同行，电话为“区号 + 号码”组合控件；区号无默认值，选定后焦点进入号码。 */
+  function contactSection(){
+    if(F.template!=='ready')return '';
+    const f=F.account.form,legacy=F.account.status!=='draft'&&F.account.submittedForm&&!(F.account.submittedForm.contactName&&F.account.submittedForm.phone);
+    const dialErr=F.fieldErrors.dialRegion,phoneErr=F.fieldErrors.phone,described=[dialErr?'f-err-dialRegion':'',phoneErr?'f-err-phone':''].filter(Boolean).join(' ');
+    return `${legacy?`<p class="login-caption funder-section-hint">${L('Add the contact name and phone before submitting again.','再次提交前请补全联系人姓名和电话。')}</p>`:''}<div class="funder-field-grid">${input('contactName','Contact name *','姓名 *',f.contactName,'autocomplete="name"')}${input('contact','Contact email *','邮箱 *',f.contact,'type="email" autocomplete="email"')}
+      <div class="field funder-field-wide funder-phone" id="f-field-phone" role="group" aria-labelledby="f-phone-label"><span class="field-label" id="f-phone-label">${CF.fieldLabel(L('Phone','电话'),true)}</span>
+        <div class="funder-phone-row">${dialControl()}<input class="inp" id="f-phone" value="${esc(f.phone||'')}" inputmode="tel" autocomplete="tel-national" aria-required="true" aria-label="${esc(L('Phone number','电话号码'))}" ${phoneErr?'aria-invalid="true"':''} ${described?`aria-describedby="${described}"`:''} placeholder="${esc(L('Number without code','不含区号的号码'))}"></div>
+        ${dialErr?`<span class="err-msg" id="f-err-dialRegion" role="alert">${L(...dialErr)}</span>`:''}${phoneErr?`<span class="err-msg" id="f-err-phone" role="alert">${L(...phoneErr)}</span>`:''}
+      </div></div>`;
+  }
+  function dialControl(){
+    const code=F.account.form.dialRegion,err=F.fieldErrors.dialRegion;
+    return `<div class="funder-dial"><button type="button" class="inp funder-dial-btn" id="f-dial" data-act="f-dial-toggle" aria-haspopup="listbox" aria-expanded="${!!F.dialOpen}" aria-label="${esc(L('Country or region code','电话区号')+(code?'：'+dialLabel(code):''))}" title="${esc(dialLabel(code))}" ${err?'aria-invalid="true" aria-describedby="f-err-dialRegion"':''}><span class="${code?'funder-dial-value':'funder-dial-placeholder'}">${code?esc(dialLabel(code)):L('Code','请选择')}</span><span class="funder-dial-caret" aria-hidden="true"></span></button>
+      ${F.dialOpen?`<div class="funder-dial-pop"><input class="inp" id="f-dial-search" type="search" role="combobox" aria-expanded="true" aria-controls="f-dial-list" aria-autocomplete="list" autocomplete="off" value="${esc(F.dialQuery)}" aria-label="${esc(L('Search country, region or code','搜索国家或地区、区号'))}" placeholder="${esc(L('Search country, region or code','搜索国家或地区、区号'))}"><ul class="funder-dial-list" id="f-dial-list" role="listbox" aria-label="${esc(L('Country or region code','电话区号'))}">${dialList()}</ul></div>`:''}</div>`;
+  }
+  function dialList(){
+    const items=dialOptions(F.dialQuery),code=F.account.form.dialRegion;
+    if(!items.length)return `<li class="funder-dial-empty" role="presentation">${L('No matching country or region','没有匹配的国家或地区')}</li>`;
+    if(!items.some(o=>o.code===F.dialActive))F.dialActive=items[0].code;
+    return items.map(o=>`<li role="option" id="f-dial-opt-${o.code}" data-act="f-dial-pick" data-v="${o.code}" aria-selected="${o.code===code}" ${o.code===F.dialActive?'data-active="true"':''}><span>${esc(o.name)}</span><span class="funder-dial-code">+${o.dial}</span></li>`).join('');
+  }
+  function syncDialList(){
+    const list=$('f-dial-list'),search=$('f-dial-search');if(!list||!search)return;
+    list.innerHTML=dialList();const active=list.querySelector('[data-active]');
+    if(active){search.setAttribute('aria-activedescendant',active.id);active.scrollIntoView({block:'nearest'});}else search.removeAttribute('aria-activedescendant');
+  }
+  function openDial(open){
+    F.dialOpen=open;F.dialQuery='';F.dialActive=F.account.form.dialRegion||'';CF.render();
+    queueMicrotask(()=>{if(open){syncDialList();$('f-dial-search')?.focus({preventScroll:true});}else $('f-dial')?.focus({preventScroll:true});afterRender();});
+  }
+  function pickDial(code){
+    if(!DIAL[code]||F.account.status==='submitted'||F.pendingSubmission)return;
+    const f=F.account.form;f.dialRegion=code;F.dialOpen=false;delete F.fieldErrors.dialRegion;
+    if(phoneDigits(f.phone))Object.assign(F.fieldErrors,contactErrors(f,'phone'));
+    if(!contactErrors(f,'phone').phone)delete F.fieldErrors.phone;
+    CF.render();queueMicrotask(()=>{$('f-phone')?.focus({preventScroll:true});afterRender();});
   }
 
-  const fieldNames={name:['Legal entity name','机构名称'],country:['Country of incorporation','注册国家或地区'],identifierType:['Entity identifier type','标识类型'],identifier:['Entity identifier','机构唯一标识'],institutionType:['Institution type','机构类型'],registeredAddress:['Registered office address','注册地址'],regulator:['Regulatory authority','监管机构'],contact:['Business contact email','业务联系人邮箱'],files:['Institution supporting documents','机构证明材料'],template:['Institution form','机构资料表']};
+  const fieldNames={email:['Account contact email','账户联系邮箱'],name:['Legal entity name','机构名称'],country:['Country of incorporation','注册国家或地区'],identifierType:['Entity identifier type','标识类型'],identifier:['Entity identifier','机构唯一标识'],institutionType:['Institution type','机构类型'],registeredAddress:['Registered office address','注册地址'],regulator:['Regulatory authority','监管机构'],contactName:['Business contact name','业务联系人姓名'],contact:['Business contact email','业务联系人邮箱'],dialRegion:['Phone country or region code','电话区号'],phone:['Phone number','电话号码'],files:['Institution supporting documents','机构证明材料'],template:['Institution form','机构资料表']};
+  const requiredKeys=()=>['name','country','identifierType','identifier','institutionType','registeredAddress',...(F.activeTemplate==='DEMO-2'?['regulator']:[]),'contactName','contact','dialRegion','phone'];
   function institutionErrors(){
     const f=F.account.form,errors={};
-    ['name','country','identifierType','identifier','institutionType','registeredAddress',...(F.activeTemplate==='DEMO-2'?['regulator']:[])].forEach(k=>{if(!String(f[k]||'').trim())errors[k]=['Complete this field.','请填写此项。'];});
-    if(F.activeTemplate!=='DEMO-2'&&f.contact&&!emailValid(f.contact.trim()))errors.contact=['Enter a valid email.','请输入有效邮箱。'];
+    requiredKeys().slice(0,-4).forEach(k=>{if(!String(f[k]||'').trim())errors[k]=['Complete this field.','请填写此项。'];});
+    Object.assign(errors,contactErrors(f));
     if(!docs(f).length)errors.files=['Upload at least one institution supporting document.','请至少上传一份机构证明材料。'];
     else if(docsUploading(f))errors.files=['Wait for every upload to finish.','请等待全部材料上传完成。'];
     else if(docsFailed(f))errors.files=['Some files failed to upload. Retry, replace or remove them before submitting.','部分材料上传失败，请重试、替换或移除后再提交。'];
@@ -242,27 +340,23 @@
     return ['You have submitted 5 times in the past 24 hours. You can submit again after '+when+'. What you entered stays on this page.',
       '24 小时内已成功提交 5 次，可在 '+when+' 之后再次提交。本次填写的内容仍保留在本页。'];}
 
-  /* 完成度按当前必填项与真实上传状态计算。 */
+  /* 完成度按当前必填项与真实上传状态计算，压成提交栏内的一行状态。 */
   function readiness(){
-    const a=F.account;
-    const required=['name','country','identifierType','identifier','institutionType','registeredAddress',...(F.activeTemplate==='DEMO-2'?['regulator']:[])];
+    const a=F.account,required=requiredKeys();
     const filled=required.filter(k=>String(a.form[k]||'').trim()).length;
     const total=docs(a.form).length,ready=docsReady(a.form).length;
     const file=!total?['Not uploaded','未上传','warn']:docsUploading(a.form)?['Uploading…','正在上传…','warn']:docsFailed(a.form)?[(total-ready)+' failed',(total-ready)+' 份上传失败','danger']:[ready+' uploaded','已上传 '+ready+' 份','ok'];
-    return `<dl class="login-fields funder-detail-grid funder-readiness">
-      <div><dt>${L('Contact email','联系邮箱')}</dt><dd>${a.email?CF.tag('ok',L('Verified','已验证')):CF.tag('warn',L('Not verified','未验证'))}</dd></div>
-      <div><dt>${L('Required institution fields','机构必填项')}</dt><dd>${CF.tag(filled===required.length?'ok':'warn',filled+' / '+required.length)}</dd></div>
-      <div><dt>${L('Institution supporting documents','机构证明材料')}</dt><dd>${CF.tag(file[2],L(file[0],file[1]))}</dd></div></dl>`;
+    return `<ul class="funder-readiness" aria-label="${esc(L('Completion','填写进度'))}">
+      <li><span>${L('Account contact email','账户联系邮箱')}</span>${a.email?CF.tag('ok',L('Verified','已验证')):CF.tag('warn',L('Not verified','未验证'))}</li>
+      <li><span>${L('Required fields','必填项')}</span>${CF.tag(filled===required.length?'ok':'warn',filled+' / '+required.length)}</li>
+      <li><span>${L('Documents','证明材料')}</span>${CF.tag(file[2],L(file[0],file[1]))}</li></ul>`;
   }
   function submitSection(){
-    const a=F.account,limit=submitLimitCopy();
-    return `<p class="login-caption">${L('You confirm the details once more before the application is sent for review.','提交前会再确认一次本次申请的内容。')}</p>
-      ${readiness()}
-      ${a.email?'':`<p class="login-caption">${L('Verify your contact email before submitting.','提交前请先验证联系邮箱。')}</p>`}
-      ${limit?CF.note('warn',L(...limit)):''}
-      ${validationSummary()}${error()}
-      <div class="funder-actions">${link('Cancel and keep browsing','取消并继续浏览','browse')}${btn(F.busy==='submit'?'Submitting…':'Submit registration',F.busy==='submit'?'正在提交…':'提交注册','submit','','primary',!!F.busy||!!limit)}</div>
-      <p class="login-caption">${L('Nothing is saved until you submit. Leaving or cancelling discards what you entered.','提交后才会保存。取消或离开将放弃本次填写的内容。')}</p>`;
+    const limit=submitLimitCopy();
+    return `<div class="funder-submit" id="registration-submit">
+      ${limit?CF.note('warn',L(...limit)):''}${validationSummary()}${F.submitError?`<p class="note red" role="alert">${L(...F.submitError)}</p>`:''}
+      <div class="funder-submit-bar">${readiness()}<div class="funder-actions">${link('Cancel and keep browsing','取消并继续浏览','browse')}${btn(F.busy==='submit'?'Submitting…':'Submit registration',F.busy==='submit'?'正在提交…':'提交注册','submit','','primary',!!F.busy||!!limit)}</div></div>
+      <p class="login-caption">${L("You'll review everything once before it's sent. Nothing is saved until you submit; cancelling or leaving discards what you entered.",'提交前会请你核对一次。提交后才会保存，取消或离开将放弃本次填写的内容。')}</p></div>`;
   }
 
   function registration(){
@@ -271,14 +365,16 @@
     if(a.status==='submitted'){queueMicrotask(()=>go('/funder/status'));return '';}
     if(a.status==='verified'&&!F.change){queueMicrotask(()=>go('/funder/status'));return '';}
     F.inFlow=true;
-    return `<div class="login-account funder-wrap funder-registration">${head(F.change?'Update institution details':'Institution registration',F.change?'变更机构资料':'机构注册',L('Complete the sections below and submit them together for review.','请填写以下信息，完成后统一提交审核。'))}
-      ${F.change?CF.note('warn',L('After submission, your institution will be reviewed again. Funding actions will be unavailable during review.','提交后将重新进入审核，期间恢复为未认证权限。')):''}
+    /* 只需填写的内容占分区；当前登录钱包只读，收为页头下的一行。 */
+    const walletMeta=`<div class="funder-head-meta"><span class="funder-head-label">${L('Signed-in wallet','当前登录钱包')}</span>${wallet()}<span class="login-caption">${walletCare()}</span></div>`;
+    return `<div class="login-account funder-wrap funder-registration">${head(F.change?'Update institution details':'Institution registration',F.change?'变更机构资料':'机构注册',L('Complete the sections below and submit them together for review.','请填写以下信息，完成后统一提交审核。'),walletMeta)}
+      ${F.change?CF.note('warn',L('Your current verification stays valid while you edit. After you submit, your institution is reviewed again and funding actions are unavailable until approval.','编辑期间保留当前认证。提交后将重新审核，审核通过前暂停出资等认证业务。')):''}
       ${profile([
-        section('registration-wallet','Signed-in wallet','当前登录钱包',`${wallet()}<p class="login-caption">${walletCare()}</p>`),
-        section('registration-email','Contact email','联系邮箱',emailSection()),
-        section('registration-institution','Financial institution details','金融机构资料',institution()),
-        section('registration-materials','Institution supporting documents','机构证明材料',uploadArea(),true),
-        section('registration-submit','Review and submit','核对并提交',submitSection())
+        section('registration-email','Account contact email','账户联系邮箱',emailSection(),true),
+        section('registration-institution','Institution details','机构资料',institution()),
+        section('registration-contact','Business contact','业务联系人',contactSection()),
+        section('registration-materials','Supporting documents','机构证明材料',uploadArea(),true),
+        submitSection()
       ])}${stamp()}</div>`;
   }
 
@@ -339,7 +435,7 @@
     return `<div class="login-account funder-wrap funder-account">${head('User information','用户信息',L('Manage your contact details and preferences.','管理联系方式与偏好设置。'))}${profile([
       section('account-information','Account information','账户信息',facts([
         ['Wallet address','钱包地址',`${wallet(F.account.address,true)}<p class="login-caption">${walletCare()}</p>`],
-        ['Contact email','联系邮箱',`<div class="funder-line"><b>${esc(F.account.email)||L('Not set','未填写')}</b>${link('Change','修改','change-email')}</div><p class="login-caption">${emailCare()}</p>`],
+        ['Account contact email','账户联系邮箱',`<div class="funder-line"><b>${esc(F.account.email)||L('Not set','未填写')}</b>${link('Change','修改','change-email')}</div><p class="login-caption">${emailCare()}</p>`],
         ['Account status','账号状态',CF.tag('ok',L('Active','正常'))],
         ['Registration status','注册状态',tag()]
       ])),
@@ -375,7 +471,7 @@
   function discardDraft(){
     const a=F.account;F.uploadVersion++;
     a.form=normalizeForm({...blank().form,...JSON.parse(JSON.stringify(a.submittedForm||{}))});
-    F.fieldErrors={};F.error=null;F.change=false;F.inFlow=false;
+    F.fieldErrors={};F.error=null;F.submitError=null;F.uploadRejected=[];F.dialOpen=false;F.change=false;F.inFlow=false;
   }
   function emailValid(v){return v.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
   function emailTaken(value){return Object.values(F.accounts).some(a=>a.address!==F.account.address&&a.email?.trim().toLowerCase()===value);}
@@ -383,7 +479,7 @@
   function send(){
     if(F.account.email&&(!F.emailFlow||F.emailMode!=='change')){changeEmail();return;}
     if(!signedIn()||F.busy||!emailAuthorized())return;
-    const value=F.emailInput.trim().toLowerCase();F.emailInput=value;F.error=null;F.fieldErrors={};
+    const value=F.emailInput.trim().toLowerCase();F.emailInput=value;F.error=null;delete F.fieldErrors.email;delete F.fieldErrors.code;
     if(!emailValid(value)){F.fieldErrors.email=['Enter a valid email address (up to 254 characters).','请输入有效邮箱，最多 254 个字符。'];return;}
     if(value===F.account.email){F.error=['This is already your contact email.','这已经是你当前的联系邮箱。'];return;}
     if(F.emailResult==='conflict'||value==='taken@example.test'||emailTaken(value)){F.error=["This email address isn't available. Please use another one.",'该邮箱不可用，请更换。'];return;}
@@ -392,7 +488,7 @@
     const sends=(F.sends[value]||[]).filter(t=>Date.now()-t<86400000);
     if(sends.length>=10){F.error=['Too many codes requested for this email. Try again later.','该邮箱验证码发送次数已达上限，请稍后再试。'];return;}
     /* 每次获取或重发验证码前都要单独通过一次滑块验证，上一次通过不能代替本次。 */
-    F.puzzleReturn=S.layer?.key==='f-email'?F.emailStage:'page';
+    F.puzzleReturn=S.layer?.key==='f-email'?F.emailStage:inlineCode()?'inline':'page';
     if(!F.emailFlow){F.emailMode='initial';F.emailFlow=true;}
     F.codeTarget=value;F.emailRetry=false;CF.puzzle.start(dispatchCode);open('puzzle');
   }
@@ -408,10 +504,12 @@
     if(F.busy||!emailAuthorized())return;F.emailEntryError=null;
     const value=F.emailInput.trim().toLowerCase();
     if(F.otp?.valid&&F.otp.email===value&&Date.now()<F.otp.expires){
-      if(!F.emailFlow)F.emailMode='initial';F.emailFlow=true;F.emailStage='code';F.codeTarget=value;F.codeInput='';F.autoCodeAttempt='';F.error=null;F.emailRetry=false;F.emailFocus='code';open('email');return;
+      if(!F.emailFlow)F.emailMode='initial';F.emailFlow=true;F.emailStage='code';F.codeTarget=value;F.codeInput='';F.autoCodeAttempt='';F.error=null;F.emailRetry=false;F.emailFocus='code';showEmail();return;
     }
     send();if(!S.layer){F.emailEntryError=F.error;F.error=null;}
   }
+  /* 首次验证的验证码在页面内填写；修改邮箱仍在原弹窗中完成本人再认证。 */
+  function showEmail(){if(F.emailMode==='initial'){if(S.layer)CF.closeLayer();else CF.render();queueMicrotask(afterRender);}else open('email');}
   function closeEmail(){
     F.emailFlow=false;F.emailGeneration++;F.busy='';F.emailRetry=false;F.error=null;F.codeInput='';F.autoCodeAttempt='';F.emailFocus='';CF.puzzle.stop();CF.closeLayer();
   }
@@ -422,7 +520,7 @@
   }
   function dispatchCode(){
     const value=F.codeTarget;if(!value||!F.emailFlow||!emailAuthorized())return;
-    F.busy='send';F.emailStage='code';F.codeInput='';F.autoCodeAttempt='';F.emailRetry=false;open('email');
+    F.busy='send';F.emailStage='code';F.codeInput='';F.autoCodeAttempt='';F.emailRetry=false;showEmail();
     emailLater(()=>{
       F.busy='';if(F.emailResult==='failed'){F.error=['The code could not be sent. Please retry.','验证码发送失败，请重试。'];F.emailFocus='send';return;}
       const resends=F.otp?.email===value?F.otp.resends+1:0;
@@ -432,7 +530,7 @@
     });
   }
   function verify(){
-    if(!signedIn()||F.busy||!F.emailFlow||F.emailStage!=='code'||!emailAuthorized())return;F.error=null;F.fieldErrors={};F.emailRetry=false;
+    if(!signedIn()||F.busy||!F.emailFlow||F.emailStage!=='code'||!emailAuthorized())return;F.error=null;delete F.fieldErrors.code;F.emailRetry=false;
     const code=F.otp;
     if(!/^\d{6}$/.test(F.codeInput)){F.fieldErrors.code=['Enter the 6-digit code.','请输入 6 位数字验证码。'];return;}
     if(!code||!code.valid||Date.now()>code.expires){F.error=['This code is no longer valid. Please request a new one.','该验证码已失效，请重新获取。'];return;}
@@ -445,16 +543,16 @@
     });
   }
   function canSubmit(){
-    F.fieldErrors={};const limit=submitLimitCopy();if(limit){F.error=limit;return false;}
-    if(CF.funder.review.beforeSubmit){const message=CF.funder.review.beforeSubmit(F.account);if(message){F.error=message;return false;}}if(!F.account.email){F.error=['Verify your contact email first.','请先验证联系邮箱。'];return false;}
-    F.fieldErrors=institutionErrors();
+    F.fieldErrors={};F.submitError=null;const limit=submitLimitCopy();if(limit){F.submitError=limit;return false;}
+    if(CF.funder.review.beforeSubmit){const message=CF.funder.review.beforeSubmit(F.account);if(message){F.submitError=message;return false;}}
+    F.fieldErrors={...(F.account.email?{}:{email:['Verify this email before submitting.','提交前请先完成邮箱验证。']}),...institutionErrors()};
     if(Object.keys(F.fieldErrors).length){queueMicrotask(()=>$('f-validation')?.focus());return false;}
     return true;
   }
   function submit(){if(F.pendingSubmission){open('unknown');return;}if(F.account.status==='submitted'||F.busy||!canSubmit())return;open('submit');}
   function commitSubmit(){
-    if(F.busy||F.account.status==='submitted'||!canSubmit())return;F.busy='submit';F.error=null;F.account.pending={email:F.account.email,form:JSON.parse(JSON.stringify(F.account.form)),fields:fields(),template:F.activeTemplate||'DEMO-1',submitted:new Date().toISOString()};F.pendingSubmission=true;persist();
-    later(()=>{F.busy='';S.layer=null;if(F.saveResult==='failed'){F.pendingSubmission=false;delete F.account.pending;persist();F.error=['Registration could not be submitted. Your entries remain on this page. Please retry.','注册提交失败，本次填写仍保留在当前页面，请重试。'];return;}
+    if(F.busy||F.account.status==='submitted'||!canSubmit())return;F.busy='submit';F.error=null;F.submitError=null;F.account.pending={email:F.account.email,form:JSON.parse(JSON.stringify(F.account.form)),fields:fields(),template:F.activeTemplate||'DEMO-1',submitted:new Date().toISOString()};F.pendingSubmission=true;persist();
+    later(()=>{F.busy='';S.layer=null;if(F.saveResult==='failed'){F.pendingSubmission=false;delete F.account.pending;persist();F.submitError=['Registration could not be submitted. Your entries remain on this page. Please retry.','注册提交失败，本次填写仍保留在当前页面，请重试。'];return;}
       if(F.saveResult==='unknown'){F.pendingSubmission=true;F.error=['Submission result is not yet confirmed. Check your application status.','提交结果暂未确认，请查询当前申请状态。'];open('unknown');return;}
       completeSubmit();
     });
@@ -466,31 +564,51 @@
     normalizeRecords(a);
     F.downgrade=a.status==='verified';a.reviewPending=F.downgrade;if(F.downgrade)F.notes.push(['Your institution details need review again. Funding actions are unavailable until approval.','机构资料需要重新审核，通过前暂不可发起出资操作。']);a.version++;a.status='submitted';a.submitted=pending?.submitted||new Date().toISOString();a.reviewed=null;a.snapshotEmail=pending?.email||a.email;a.submittedFields=pending?.fields||fields();a.submittedForm=pending?.form||JSON.parse(JSON.stringify(a.form));a.form=JSON.parse(JSON.stringify(a.submittedForm));delete a.pending;a.issues=[];a.additional='';a.reviewer='';a.template=pending?.template||F.activeTemplate||'DEMO-1';a.successTimes=[...(a.successTimes||[]),Date.now()];F.change=false;F.pendingSubmission=false;persist();response();go('/funder/status');CF.toast(L('Registration submitted.','注册已提交。'));
   }
-  function resolveSubmission(){if(!F.pendingSubmission||F.busy)return;F.busy='query';F.error=null;later(()=>{F.busy='';if(F.queryResult==='failed'){F.error=['Unable to confirm the result. Please retry.','暂时无法确认结果，请重试。'];return;}if(F.queryResult==='absent'){F.pendingSubmission=false;delete F.account.pending;persist();go('/funder/register');F.error=['No submission was received. Your details are retained; you can submit again.','尚未收到本次提交，资料已保留，可重新提交。'];return;}completeSubmit();});}
-  function changeEmail(){F.emailMode='change';F.emailFlow=true;F.emailGeneration++;F.error=null;F.fieldErrors={};F.emailInput='';F.codeInput='';F.emailRetry=false;F.autoCodeAttempt='';F.emailStage=Date.now()<F.reauthUntil?'edit':'auth';F.emailFocus=F.emailStage==='edit'?'email':'';open('email');}
+  function resolveSubmission(){if(!F.pendingSubmission||F.busy)return;F.busy='query';F.error=null;later(()=>{F.busy='';if(F.queryResult==='failed'){F.error=['Unable to confirm the result. Please retry.','暂时无法确认结果，请重试。'];return;}if(F.queryResult==='absent'){F.pendingSubmission=false;delete F.account.pending;persist();go('/funder/register');F.submitError=['No submission was received. Your details are retained; you can submit again.','尚未收到本次提交，资料已保留，可重新提交。'];return;}completeSubmit();});}
+  function changeEmail(){F.emailMode='change';F.emailFlow=true;F.emailGeneration++;F.error=null;delete F.fieldErrors.email;delete F.fieldErrors.code;F.emailInput='';F.codeInput='';F.emailRetry=false;F.autoCodeAttempt='';F.emailStage=Date.now()<F.reauthUntil?'edit':'auth';F.emailFocus=F.emailStage==='edit'?'email':'';open('email');}
   function fixture(s,options={}){
     F.generation++;F.busy='';F.error=null;F.otp=null;F.connected=address;
     if(options.preset){F.account=blank();F.notes=[];}else hydrate(address);
     const a=F.account;a.exists=true;a.created=a.created||new Date().toISOString();a.disabled=false;delete a.pending;F.pendingSubmission=false;a.reviewPending=false;F.downgrade=false;F.reauthUntil=0;
-    if(s!=='draft'){a.email=a.email||'finance@example.test';a.emailVerified=a.emailVerified||new Date().toISOString();a.form={name:'Demo Institution',country:'Demo jurisdiction',identifierType:'REG_NO',identifier:'DEMO-REG-100',institutionType:'Demo financial institution',registeredAddress:'Demo registered address',regulator:'',license:'',contact:'contact@example.test',files:[{id:fileId(),name:'institution-registration-demo.pdf',size:204800,status:'done',demo:true,at:'2026-09-18T02:24:00Z'},{id:fileId(),name:'institution-licence-demo.pdf',size:96256,status:'done',demo:true,at:'2026-09-18T02:26:00Z'}]};a.submitted=a.submitted||new Date().toISOString();a.version=Math.max(1,a.version);a.snapshotEmail=a.email;a.submittedFields=fields();a.submittedForm=JSON.parse(JSON.stringify(a.form));a.template=F.activeTemplate||'DEMO-1';}
+    if(s!=='draft'){a.email=a.email||'finance@example.test';a.emailVerified=a.emailVerified||new Date().toISOString();a.form={name:'Demo Institution',country:'Demo jurisdiction',identifierType:'REG_NO',identifier:'DEMO-REG-100',institutionType:'Demo financial institution',registeredAddress:'Demo registered address',regulator:'',license:'',contactName:options.legacy?'':'Demo Contact',contact:'contact@example.test',dialRegion:options.legacy?'':'HK',phone:options.legacy?'':'2000 0000',files:[{id:fileId(),name:'institution-registration-demo.pdf',size:204800,status:'done',demo:true,at:'2026-09-18T02:24:00Z'},{id:fileId(),name:'institution-licence-demo.pdf',size:96256,status:'done',demo:true,at:'2026-09-18T02:26:00Z'}]};a.submitted=a.submitted||new Date().toISOString();a.version=Math.max(1,a.version);a.snapshotEmail=a.email;a.submittedFields=fields();a.submittedForm=JSON.parse(JSON.stringify(a.form));a.template=F.activeTemplate||'DEMO-1';}
     a.records=[];delete a.boundIdentity;a.status=s;a.issues=[];a.additional=s==='rejected'?demoReason():'';a.reviewed=['verified','rejected'].includes(s)?new Date().toISOString():null;a.reviewer=a.reviewed?'DEMO-OP-01':'';recordDecision(a);S.role='fund';F.sessionUntil=Date.now()+4*3600000;F.load='ready';
     if(!options.preset)persist();response();
-    if(!options.preset){S.demo=false;go(s==='draft'?'/funder/register':'/funder/status');}
+    if(!options.preset){S.demo=false;F.change=!!options.change;go(options.route||(s==='draft'?'/funder/register':'/funder/status'));}
+  }
+  /* 演示：未提交用户进入入驻流程；filled 预填一份可直接提交的演示资料（邮箱已验证、材料已上传）。 */
+  function onboardingFixture(filled){
+    F.generation++;F.emailGeneration++;F.busy='';F.error=null;F.submitError=null;F.otp=null;F.emailFlow=false;F.fieldErrors={};F.uploadRejected=[];F.pendingSubmission=false;F.change=false;
+    F.account=blank();F.notes=[];F.connected=address;S.role='signed';F.sessionUntil=Date.now()+4*3600000;F.load='ready';F.template='ready';F.emailInput='';
+    if(filled){const a=F.account;a.email='finance@example.test';a.emailVerified=new Date().toISOString();a.form={name:'Demo Institution',country:'Demo jurisdiction',identifierType:'REG_NO',identifier:'DEMO-REG-100',institutionType:'Demo financial institution',registeredAddress:'Demo registered address',regulator:'',license:'',contactName:'Demo Contact',contact:'contact@example.test',dialRegion:'HK',phone:'2000 0000',files:[{id:fileId(),name:'institution-registration-demo.pdf',size:204800,status:'done',demo:true,at:new Date().toISOString()}]};}
+    response();S.demo=false;go('/funder/register');
   }
 
   Object.keys(pages).filter(id=>!id.startsWith('DEMO-')).forEach(id=>CF.review.register(id,{
     group:['Funder account','资金方账户'],
-    states:()=>S.role!=='fund'?['default']:['default','loading','error',...(id==='P-L22'?[
+    states:()=>[...(S.role!=='fund'?['default']:['default','loading','error']),...(id==='P-L22'&&S.role==='fund'?[
       {id:'submitted',label:['Under review','审核中'],group:'business'},
       {id:'rejected',label:['Rejected','已驳回'],group:'business'},
-      {id:'verified',label:['Verified','已认证'],group:'business'}]:[])],
+      {id:'verified',label:['Verified','已认证'],group:'business'},
+      {id:'legacy',label:['Verified · submitted before contact fields','已认证 · 新增联系人前提交'],group:'business'}]:[]),...(id==='P-L21'?[
+      {id:'new',label:['First registration · blank','首次入驻 · 空白'],group:'business'},
+      {id:'filled',label:['First registration · ready to submit','首次入驻 · 已填写可提交'],group:'business'},
+      {id:'rejected-edit',label:['Rejected · edit and resubmit','已驳回 · 修改重提'],group:'business'},
+      {id:'change',label:['Verified · update details','已认证 · 变更资料'],group:'business'},
+      {id:'legacy-edit',label:['Rejected · add missing contact','已驳回 · 补齐联系人'],group:'business'}]:[])],
     get:()=>F.load==='ready'?(F.reviewBusiness||'default'):F.load,
-    set(value){if(['submitted','rejected','verified'].includes(value)){fixture(value);F.reviewBusiness=value;}else F.load=value==='default'?'ready':value;},
+    set(value){
+      if(['submitted','rejected','verified'].includes(value))fixture(value);
+      else if(value==='legacy')fixture('verified',{legacy:true});
+      else if(value==='new'||value==='filled')onboardingFixture(value==='filled');
+      else if(value==='rejected-edit'||value==='legacy-edit'){fixture('rejected',{legacy:value==='legacy-edit',route:'/funder/register'});}
+      else if(value==='change')fixture('verified',{route:'/funder/register',change:true});
+      else {F.load=value==='default'?'ready':value;F.reviewBusiness='';return;}
+      F.reviewBusiness=value;},
     reset(){F.load='ready';F.reviewBusiness='';}
 
   }));
 
-  function demo(){return `<section class="funder-demo"><h5>${L('Funder review tools','资金方评审工具')}</h5><p class="login-caption">${L('Local simulation only. No wallet, email or backend is contacted. Field definitions follow the current institution form. Material acceptance criteria and upload limits remain unspecified.','仅本地模拟，不调用钱包、邮件或后端。字段沿用当前机构资料表；证明材料判据及上传阈值尚未确定。')}</p>${select('connection',L('Next reconnection result','下次重新连接结果'),[['success','Connected','成功'],['cancel','Cancelled','取消'],['missing','Wallet missing','无钱包'],['sdk','SDK unavailable','SDK 不可用'],['locked','Wallet locked','钱包锁定']],F.connectionResult)}${select('provider',L('Wallet environment','钱包环境'),[['single','Single wallet','单钱包'],['multiple','Multiple wallets','多钱包选择'],['mobile','Mobile wallet','移动钱包']],F.providerMode)}${select('signature',L('Next signature result','下次签名结果'),[['success','Success','成功'],['cancel','Rejected','拒签'],['failed','Verification failed','验签失败'],['expired','Expired challenge','挑战过期'],['changed','Address changed','签名中切换地址'],['slow','Wait for hardware wallet','硬件钱包等待']],F.signatureResult)}${F.busy==='sign'?btn('Complete pending signature','完成待定签名','demo','complete-sign'):''}${select('email-result',L('Email response','邮箱响应'),[['success','Success','成功'],['conflict','Already used','已占用'],['race','Conflict at verification','验证时并发占用'],['failed','Temporary failure','暂时失败']],F.emailResult)}<p class="login-caption">${L('Latest demo code','最新演示验证码')}: <b class="mono" id="f-demo-code">${F.latestCode}</b></p><div class="seg">${btn('Pass 60 seconds','推进 60 秒','demo','cooldown')}${btn('Expire code','验证码过期','demo','expire-code')}${btn('5 resend limit','重发达 5 次','demo','resend-limit')}${btn('10 daily limit','日发送达 10 次','demo','daily-limit')}${btn('Puzzle fails to load','拼图加载失败','demo','puzzle-error')}</div>${select('query-result',L('Submission status response','提交查询响应'),[['success','Received','已收到'],['failed','Query failed','查询失败'],['absent','Not received','未收到']],F.queryResult||'success')}${select('save-result',L('Submit / save response','提交 / 保存响应'),[['success','Success','成功'],['failed','Failed','失败'],['unknown','Submission unknown','提交结果未知']],F.saveResult)}<div class="grp"><h5>${L('Account fixtures','账户样例')}</h5><div class="seg">${['draft','submitted','rejected','verified'].map(s=>btn(...({draft:['Not submitted','未提交'],submitted:['Under review','审核中'],rejected:['Rejected','已驳回'],verified:['Verified','已认证']}[s]),'fixture',s)).join('')}</div></div><div class="seg">${btn('Review: approve','审核返回：通过','demo','approve')}${btn('Review: reject','审核返回：驳回','demo','reject')}${btn('Session expired','会话到期','demo','expire')}${btn('Disable account','账号停用','demo','disable')}${btn('Restore account','恢复账号','demo','restore')}${btn('Disconnect provider','断开钱包','demo','disconnect')}${btn('Switch provider address','钱包切换地址','demo','switch-address')}</div><div class="seg">${btn('User information','用户信息','account')}${btn('Access and return demo','权限与回跳演示','demo','gate')}${btn('Invalid return','无效回跳','demo','invalid-return')}${btn('Loading','加载中','demo','loading')}${btn('Load failure','加载失败','demo','error')}${btn('Load ready','加载完成','demo','ready')}${btn('Template unavailable','模版不可用','demo','template-error')}${btn('Template loading','模版加载中','demo','template-loading')}${btn('Template ready','模版就绪','demo','template-ready')}${btn('Next upload fails','下次上传失败','demo','upload-error')}${btn('5 submissions in 24h','24 小时提交达 5 次','demo','submit-limit')}${btn('Reset demo account','重置演示账户','demo','reset')}</div><p class="login-caption">${L('Replay attempts','原动作重执行次数')}: ${F.replayed}</p></section>`;}
+  function demo(){return `<section class="funder-demo"><h5>${L('Funder review tools','资金方评审工具')}</h5><p class="login-caption">${L('Local simulation only. No wallet, email or backend is contacted. Phone formats are checked for a few sample regions; other regions use the 15-digit fallback.','仅本地模拟，不调用钱包、邮件或后端。电话号码仅对部分国家或地区演示格式规则，其余按 15 位上限判定。')}</p>${select('connection',L('Next reconnection result','下次重新连接结果'),[['success','Connected','成功'],['cancel','Cancelled','取消'],['missing','Wallet missing','无钱包'],['sdk','SDK unavailable','SDK 不可用'],['locked','Wallet locked','钱包锁定']],F.connectionResult)}${select('provider',L('Wallet environment','钱包环境'),[['single','Single wallet','单钱包'],['multiple','Multiple wallets','多钱包选择'],['mobile','Mobile wallet','移动钱包']],F.providerMode)}${select('signature',L('Next signature result','下次签名结果'),[['success','Success','成功'],['cancel','Rejected','拒签'],['failed','Verification failed','验签失败'],['expired','Expired challenge','挑战过期'],['changed','Address changed','签名中切换地址'],['slow','Wait for hardware wallet','硬件钱包等待']],F.signatureResult)}${F.busy==='sign'?btn('Complete pending signature','完成待定签名','demo','complete-sign'):''}${select('email-result',L('Email response','邮箱响应'),[['success','Success','成功'],['conflict','Already used','已占用'],['race','Conflict at verification','验证时并发占用'],['failed','Temporary failure','暂时失败']],F.emailResult)}<p class="login-caption">${L('Latest demo code','最新演示验证码')}: <b class="mono" id="f-demo-code">${F.latestCode}</b></p><div class="seg">${btn('Pass 60 seconds','推进 60 秒','demo','cooldown')}${btn('Expire code','验证码过期','demo','expire-code')}${btn('5 resend limit','重发达 5 次','demo','resend-limit')}${btn('10 daily limit','日发送达 10 次','demo','daily-limit')}${btn('Puzzle fails to load','拼图加载失败','demo','puzzle-error')}</div>${select('query-result',L('Submission status response','提交查询响应'),[['success','Received','已收到'],['failed','Query failed','查询失败'],['absent','Not received','未收到']],F.queryResult||'success')}${select('save-result',L('Submit / save response','提交 / 保存响应'),[['success','Success','成功'],['failed','Failed','失败'],['unknown','Submission unknown','提交结果未知']],F.saveResult)}<div class="grp"><h5>${L('Account fixtures','账户样例')}</h5><div class="seg">${['draft','submitted','rejected','verified'].map(s=>btn(...({draft:['Not submitted','未提交'],submitted:['Under review','审核中'],rejected:['Rejected','已驳回'],verified:['Verified','已认证']}[s]),'fixture',s)).join('')}${btn('Verified · no contact name or phone','已认证 · 缺联系人姓名电话','fixture','legacy')}</div></div><div class="seg">${btn('Review: approve','审核返回：通过','demo','approve')}${btn('Review: reject','审核返回：驳回','demo','reject')}${btn('Session expired','会话到期','demo','expire')}${btn('Disable account','账号停用','demo','disable')}${btn('Restore account','恢复账号','demo','restore')}${btn('Disconnect provider','断开钱包','demo','disconnect')}${btn('Switch provider address','钱包切换地址','demo','switch-address')}</div><div class="seg">${btn('User information','用户信息','account')}${btn('Access and return demo','权限与回跳演示','demo','gate')}${btn('Invalid return','无效回跳','demo','invalid-return')}${btn('Loading','加载中','demo','loading')}${btn('Load failure','加载失败','demo','error')}${btn('Load ready','加载完成','demo','ready')}${btn('Template unavailable','模版不可用','demo','template-error')}${btn('Template loading','模版加载中','demo','template-loading')}${btn('Template ready','模版就绪','demo','template-ready')}${btn('Next upload fails','下次上传失败','demo','upload-error')}${btn('5 submissions in 24h','24 小时提交达 5 次','demo','submit-limit')}${btn('Reset demo account','重置演示账户','demo','reset')}</div><p class="login-caption">${L('Replay attempts','原动作重执行次数')}: ${F.replayed}</p></section>`;}
   function select(key,title,values,value){return `<label for="f-demo-${key}">${title}</label><select id="f-demo-${key}" class="inp">${values.map(x=>`<option value="${x[0]}" ${x[0]===value?'selected':''}>${L(x[1],x[2])}</option>`).join('')}</select>`;}
   const layers={
     'f-connect':()=>({title:L('Wallet connection · simulation','钱包连接 · 演示'),html:`<p>${L('Simulate the response from your wallet.','模拟钱包返回的连接结果。')}</p>${F.providerMode==='multiple'?`<div class="funder-form">${btn('Demo wallet A','演示钱包 A','connect-done')}${btn('Demo wallet B','演示钱包 B','connect-other')}</div>`:F.providerMode==='mobile'?`<p>${L('Mobile wallet handoff (WalletConnect / deep link).','移动钱包连接交接（WalletConnect / 深链）。')}</p>`:''}`,foot:btn('Cancel','取消','cancel-connect')+(F.providerMode!=='multiple'?btn('Simulate connection','模拟连接成功','connect-done','','primary'):'')}),
@@ -501,8 +619,7 @@
     'f-unknown':()=>({title:L('Confirming submission','确认提交结果'),html:CF.note('warn',L('Check the result before editing or submitting again.','请先查询结果，再继续编辑或提交。'))+error(),foot:btn('Check current status','查询当前状态','resolve-submit','','primary')}),
     'f-gate':()=>({title:L(...({draft:['Complete your institution registration first','请先完成机构注册'],submitted:['Your registration is under review','你的注册正在审核中'],rejected:['Your registration needs changes','你的注册需要修改']}[F.account.status]||['Check your registration','查看注册状态'])),html:`<p>${L(...({draft:['Funding actions are available once your institution is verified. It takes one form and a review.','完成机构认证后即可发起出资等操作，只需填一次表并等待审核。'],submitted:['Review results will appear in the platform message center. Funding actions unlock after approval.','审核结果将在平台消息中心通知。审核通过后即可发起出资等操作。'],rejected:['Check the reason, update your information, and submit again.','查看驳回原因，修改后重新提交即可。']}[F.account.status]||['','']))}</p>`,foot:btn('Back','返回','close')+btn(F.account.status==='draft'?'Go to registration':'View progress',F.account.status==='draft'?'去完成注册':'查看进度','gate-next','','primary')}),
     'f-support':()=>({title:L('Contact support','联系客服'),html:`<p>${L('Support is temporarily unavailable. Please try again later.','客服渠道暂不可用，请稍后再试。')}</p>`,foot:btn('Close','关闭','close')}),
-    'f-explorer':a=>({title:L('Open block explorer','打开区块浏览器'),html:`<p>${L('Ethereum · demonstration address','Ethereum · 演示地址')}</p><p class="mono" style="overflow-wrap:anywhere">${esc(a)}</p>`,foot:btn('Cancel','取消','close')+`<a class="btn primary" href="https://etherscan.io/address/${esc(a)}" target="_blank" rel="noopener noreferrer">${L('Open explorer ↗','打开浏览器 ↗')}</a>`}),
-    'f-change':()=>({title:L('Update institution details','变更机构资料'),html:`<p>${L('Your current verification remains valid while editing. After submission, the details will be reviewed again and funding actions will be unavailable during review.','编辑期间保留当前认证。提交后将重新进入审核，期间恢复为未认证权限。')}</p>`,foot:btn('Cancel','取消','close')+btn('Continue editing','继续编辑','change-start','','primary')})
+    'f-explorer':a=>({title:L('Open block explorer','打开区块浏览器'),html:`<p>${L('Ethereum · demonstration address','Ethereum · 演示地址')}</p><p class="mono" style="overflow-wrap:anywhere">${esc(a)}</p>`,foot:btn('Cancel','取消','close')+`<a class="btn primary" href="https://etherscan.io/address/${esc(a)}" target="_blank" rel="noopener noreferrer">${L('Open explorer ↗','打开浏览器 ↗')}</a>`})
   };
   function action(act,v){
     if(!act.startsWith('f-'))return false;
@@ -519,7 +636,7 @@
       case 'cancel-connect':connectionDone(true);break;
       case 'signature-done':signatureDone();break;
       case 'cancel-sign':signatureDone(true);break;
-      case 'cancel-puzzle':CF.puzzle.stop();if(F.puzzleReturn==='page')closeEmail();else {F.emailStage=F.puzzleReturn;F.emailFocus=F.emailStage==='code'?'code':'email';open('email');}break;
+      case 'cancel-puzzle':CF.puzzle.stop();if(F.puzzleReturn==='inline')CF.closeLayer();else if(F.puzzleReturn==='page')closeEmail();else {F.emailStage=F.puzzleReturn;F.emailFocus=F.emailStage==='code'?'code':'email';open('email');}break;
       case 'new-address':F.generation++;F.busy='';S.role='guest';go('/login');break;
       case 'account':go('/funder/account');break;
       case 'status':go('/funder/status');break;
@@ -542,10 +659,9 @@
       case 'support':open('support');break;
       case 'copy':copyWallet(v,document.activeElement?.closest('.funder-wallet'));break;
       case 'explorer':open('explorer',v);break;
-      case 'change':open('change');break;
-      case 'change-start':F.change=true;F.error=null;go('/funder/register');break;
+      case 'change':case 'change-start':F.change=true;F.error=null;F.submitError=null;go('/funder/register');break;
       case 'history':CF.toast(L('Historical materials are no longer available. View the current submission and review records.','不再提供历史资料，请查看当前提交和审核记录。'));break;
-      case 'issue-field':go('/funder/register');setTimeout(()=>{const target=v==='files'?$('f-material'):v==='template'?$('f-name'):$('f-'+v);target?.scrollIntoView({block:'center'});target?.focus();},50);break;
+      case 'issue-field':go('/funder/register');setTimeout(()=>{const target=v==='files'?$('f-material'):v==='template'?$('f-name'):v==='dialRegion'?$('f-dial'):v==='email'&&!$('f-email')?($('f-code')||$('f-change-email')):$('f-'+v);target?.scrollIntoView({block:'center'});target?.focus();},50);break;
       case 'gate':gate();break;
       case 'gate-next':F.returnTo='valid';go(F.account.status==='draft'?'/funder/register':'/funder/status');break;
       case 'material-preview':if(materialPreviewable(materialFile(v)))open('material',v);break;
@@ -555,7 +671,9 @@
       case 'remove-file':{if(F.account.status==='submitted'){CF.toast(L('Institution details are locked during review.','审核中机构资料不可修改。'));break;}
         const list=docs(F.account.form),index=list.findIndex(f=>f.id===v);if(index<0)break;list[index].token=-1;list.splice(index,1);CF.toast(L('File removed','文件已移除'));break;}
       case 'anchor':queueMicrotask(()=>$(v)?.scrollIntoView({block:'start'}));break;
-      case 'fixture':fixture(v);break;
+      case 'dial-toggle':if(F.account.status==='submitted'||F.pendingSubmission)break;openDial(!F.dialOpen);return true;
+      case 'dial-pick':pickDial(v);return true;
+      case 'fixture':if(v==='legacy')fixture('verified',{legacy:true});else fixture(v);break;
       case 'demo':demoAction(v);break;
       default:return false;
     }
@@ -597,7 +715,7 @@
       document.querySelectorAll('[data-v="inst"]').forEach(e=>{e.hidden=false;e.dataset.act=F.account.status==='draft'?'f-register':'f-status';e.textContent=L('Institution information','机构信息');});
       document.querySelectorAll('[data-act="login-notifications"]').forEach(e=>e.dataset.act='f-notifications');
     }
-    if(S.layer?.key==='f-email'&&F.emailFocus){const id=F.emailFocus;F.emailFocus='';queueMicrotask(()=>$('f-'+id)?.focus({preventScroll:true}));}
+    if(F.emailFocus&&(S.layer?.key==='f-email'||(!S.layer&&inlineCode()))){const id=F.emailFocus;F.emailFocus='';queueMicrotask(()=>$('f-'+id)?.focus({preventScroll:true}));}
     if(F.emailCompleted&&!S.layer){F.emailCompleted=false;queueMicrotask(()=>{const target=F.emailMode==='initial'?Array.from(document.querySelectorAll('#registration-institution input')).find(el=>!el.value):null;(target||document.querySelector('[data-act="f-change-email"]'))?.focus({preventScroll:true});});}
     const dialog=document.querySelector('#layers [role="dialog"]');if(dialog){
       if(S.layer?.key==='f-submit'&&!F.layerOpen){dialog.tabIndex=-1;dialog.focus({preventScroll:true});dialog.querySelector('.modal-b').scrollTop=0;}
@@ -605,9 +723,11 @@
     }
     else {['portal','focus','demoPanel','demoBtn'].forEach(id=>$(id).inert=false);if(F.layerOpen){const back=F.focusBack;F.layerOpen=false;F.focusBack=null;queueMicrotask(()=>{const target=back&&(back.id?$(back.id):Array.from(document.querySelectorAll('[data-act]')).find(el=>el.dataset.act===back.act&&(el.dataset.v||'')===(back.value||'')&&el.getClientRects().length));target?.focus({preventScroll:true});});}}
   }
+  const FORM_INPUTS=['f-name','f-country','f-identifier','f-institutionType','f-registeredAddress','f-regulator','f-license','f-contactName','f-contact','f-phone'];
   document.addEventListener('input',e=>{
+    if(e.target.id==='f-dial-search'){F.dialQuery=e.target.value;F.dialActive='';syncDialList();return;}
     const id=e.target.id;
-    if(['f-name','f-country','f-identifier','f-institutionType','f-registeredAddress','f-regulator','f-license','f-contact'].includes(id)&&(F.account.status==='submitted'||F.pendingSubmission)){CF.toast(L('Institution details are locked during review.','审核中机构资料不可修改。'));return;}
+    if(FORM_INPUTS.includes(id)&&(F.account.status==='submitted'||F.pendingSubmission)){CF.toast(L('Institution details are locked during review.','审核中机构资料不可修改。'));return;}
     if(id==='f-email'){F.emailInput=e.target.value;F.emailEntryError=null;delete F.fieldErrors.email;}
     else if(id==='f-code'){
       F.codeInput=e.target.value.replace(/\D/g,'').slice(0,6);e.target.value=F.codeInput;delete F.fieldErrors.code;
@@ -615,8 +735,40 @@
       const attempt=String(F.otp?.sent)+':'+F.codeInput;
       if(F.emailFlow&&F.emailStage==='code'&&F.codeInput.length===6&&!F.busy&&F.autoCodeAttempt!==attempt){F.autoCodeAttempt=attempt;verify();CF.render();queueMicrotask(()=>{if(!F.busy){$('f-code')?.focus();$('f-code')?.select();}});}
     }
-    else if(['f-name','f-country','f-identifier','f-institutionType','f-registeredAddress','f-regulator','f-license','f-contact'].includes(id)){F.account.form[id.slice(2)]=e.target.value;delete F.fieldErrors[id.slice(2)];}
+    else if(FORM_INPUTS.includes(id)){F.account.form[id.slice(2)]=e.target.value;delete F.fieldErrors[id.slice(2)];}
   });
+  /* 联系人三项离开输入框即就地校验（空值留到提交时统一提示），号码规则随所选区号判定。 */
+  document.addEventListener('focusout',e=>{
+    const key={'f-contactName':'contactName','f-contact':'contact','f-phone':'phone'}[e.target.id];
+    if(!key||!F.inFlow||F.account.status==='submitted'||F.pendingSubmission||!String(e.target.value||'').trim())return;
+    const next=contactErrors(F.account.form,key)[key];
+    if(next)F.fieldErrors[key]=next;else delete F.fieldErrors[key];
+    patchFieldError(key);
+  });
+  /* 只更新该项的错误文字与 aria 状态，不整页重绘，避免吞掉随后点击的按钮。 */
+  function patchFieldError(key){
+    const control=$('f-'+key),host=$('f-field-'+key);if(!control||!host)return;
+    const id='f-err-'+key,error=F.fieldErrors[key];let node=$(id);
+    if(error){if(!node){node=document.createElement('span');node.className='err-msg';node.id=id;node.setAttribute('role','alert');host.appendChild(node);}node.textContent=L(...error);control.setAttribute('aria-invalid','true');}
+    else {node?.remove();control.removeAttribute('aria-invalid');}
+    const described=(control.getAttribute('aria-describedby')||'').split(' ').filter(x=>x&&x!==id);if(error)described.push(id);
+    if(described.length)control.setAttribute('aria-describedby',described.join(' '));else control.removeAttribute('aria-describedby');
+  }
+  ['dragenter','dragover'].forEach(type=>document.addEventListener(type,e=>{const zone=e.target.closest?.('[data-drop="files"]');if(!zone||!e.dataTransfer?.types?.includes('Files'))return;e.preventDefault();zone.classList.add('is-drop');}));
+  document.addEventListener('dragleave',e=>{const zone=e.target.closest?.('[data-drop="files"]');if(zone&&!zone.contains(e.relatedTarget))zone.classList.remove('is-drop');});
+  document.addEventListener('drop',e=>{const zone=e.target.closest?.('[data-drop="files"]');if(!zone)return;e.preventDefault();zone.classList.remove('is-drop');
+    if(!signedIn()||F.account.disabled||F.account.status==='submitted'||F.pendingSubmission||F.busy)return;const list=e.dataTransfer?.files;if(list&&list.length){startUpload(list);CF.render();queueMicrotask(afterRender);}});
+  document.addEventListener('keydown',e=>{
+    if(e.target.id==='f-dial'&&['ArrowDown','ArrowUp'].includes(e.key)&&!F.dialOpen){e.preventDefault();e.stopImmediatePropagation();openDial(true);return;}
+    if(e.target.id!=='f-dial-search')return;
+    const items=[...document.querySelectorAll('#f-dial-list [role="option"]')],at=items.findIndex(li=>li.dataset.v===F.dialActive);
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();e.stopImmediatePropagation();const next=items[Math.max(0,Math.min(items.length-1,at+(e.key==='ArrowDown'?1:-1)))];if(next){F.dialActive=next.dataset.v;syncDialList();}}
+    else if(e.key==='Home'||e.key==='End'){if(!items.length)return;e.preventDefault();F.dialActive=items[e.key==='Home'?0:items.length-1].dataset.v;syncDialList();}
+    else if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();if(F.dialActive)pickDial(F.dialActive);}
+    else if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();openDial(false);}
+    else if(e.key==='Tab'){F.dialOpen=false;CF.render();queueMicrotask(()=>{$(e.shiftKey?'f-dial':'f-phone')?.focus({preventScroll:true});afterRender();});e.preventDefault();}
+  },true);
+  document.addEventListener('pointerdown',e=>{if(!F.dialOpen||e.target.closest('.funder-dial'))return;F.dialOpen=false;document.querySelector('.funder-dial-pop')?.remove();$('f-dial')?.setAttribute('aria-expanded','false');},true);
   document.addEventListener('paste',e=>{
     if(e.target.id!=='f-code')return;
     const code=(e.clipboardData?.getData('text')||'').replace(/[\s-]/g,'');

@@ -238,7 +238,7 @@
         CF.funder.afterRender();
         if(S.page==='P-L21'&&R.account.status==='rejected')for(const i of R.account.issues||[]){const input=$('f-'+i.key);if(input&&!input.parentElement.querySelector('.rv-field-reason'))input.insertAdjacentHTML('afterend',`<p class="funder-error rv-field-reason">${E(L(i.en,i.zh))}</p>`);}
         if(S.page==='P-L21'&&A.template==='upgraded'){
-          const h=document.querySelector('.funder-grid .card-b');if(h&&!$('rv-template-note'))h.insertAdjacentHTML('afterbegin',`<p class="note warn" id="rv-template-note">${L('The template has changed. One new required field: regulator. Business contact email has been removed. Other details have been retained.','模版已调整，新增 1 项必填：监管机构；业务联系人邮箱已移除。其他资料已保留。')}</p>`);
+          const h=document.querySelector('.funder-grid .card-b');if(h&&!$('rv-template-note'))h.insertAdjacentHTML('afterbegin',`<p class="note warn" id="rv-template-note">${L('The template has changed. One new required field: regulator. Other details have been retained.','模版已调整，新增 1 项必填：监管机构。其他资料已保留。')}</p>`);
         }
         if(S.page==='P-L21'&&(A.limited||(R.account.successTimes||[]).filter(t=>Date.now()-t<86400000).length>=5)){
           const b=document.querySelector('[data-act="f-submit"]');if(b){b.disabled=true;b.insertAdjacentHTML('beforebegin',`<p class="funder-error">${E(L(...R.beforeSubmit(R.account)))}</p>`);}
