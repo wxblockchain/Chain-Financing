@@ -399,7 +399,8 @@
     if(r.status==='pending'&&r.tokenState==='expired')blockers.push(L('The token is invalid: the receivable was due on ','代币已失效：对应应收账款到期日 ')+E(r.asset.due||blank)+L('. It cannot be approved; it can still be returned.','，不能通过，可退回。'));
     if(r.status==='pending'&&peer)blockers.push(`${L('The same on-chain token is already approved: ','同一链上代币已有记录通过：')}${E(platformName(peer))} · <span class="mono">${E(peer.ptid)}</span>${L('. This record can only be returned. ','，本条只能退回。')}<a class="btn-link" href="#${E(detailRoute(peer.id))}" data-act="ta-view" data-v="${E(peer.id)}">${L('Open it','查看该记录')}</a>`);
     let actions='';
-    if(r.status==='pending'&&canDecide())actions=`<div class="ta-actions">${b('Approve','通过','approve','','primary',!canApprove(r))}${b('Return','退回','return','','ta-return-btn',!canAct(r))}</div>`;
+    const approving=A.busy&&A.draft?.mode==='approve'&&A.draft.id===r.id;
+    if(r.status==='pending'&&canDecide())actions=`<div class="ta-actions">${b(approving?'Submitting…':'Approve',approving?'正在提交…':'通过','approve','','primary',approving||!canApprove(r))}${b('Return','退回','return','','ta-return-btn',approving||!canAct(r))}</div>${approving?`<p class="ta-meta" role="status">${L('Submitting the approval…','正在提交通过…')}</p>`:''}`;
     else if(r.status==='approved'&&r.changed&&canDecide())actions=`<div class="ta-actions">${b('Acknowledge the change','确认已知悉变更','ack')}</div>`;
     else if(r.status==='pending')actions=`<p class="ta-meta">${L('View only with this account.','当前账号仅可查看。')}</p>`;
     return `<section class="card ta-section ta-rail-card" aria-label="${L('Review actions','审核办理')}">
@@ -422,19 +423,18 @@
   function identity(r){
     return `<div class="ta-quote"><strong class="mono">${E(r.ptid)}</strong> · ${E(txt(r.name))}<span class="ta-meta">${L('Token number ','代币编号 ')}<span class="mono">${E(r.tokenNo)}</span> · ${E(platformName(r))} · ${E(submission(r.seq))}</span></div>`;
   }
-  const neutral=()=>`<p class="ta-meta">${L('The information on this page is for the reviewer’s own judgement; the decision is made by the reviewer and recorded here.','本处信息供审核人线下判定参考，结论由审核人作出后在此维护。')}</p>`;
   const reasonLength=s=>Array.from((s||'').trim()).length;
   function start(mode){
     const r=row();
     if(mode==='approve'?!canApprove(r):!canAct(r))return deny();
     A.drafts[r.id]=A.drafts[r.id]||{reason:''};
-    A.draft={id:r.id,mode,ack:false,version:r.events.length};A.error='';
-    open(mode);
+    A.draft={id:r.id,mode,version:r.events.length};A.error='';
+    /* 用户 2026-10-21：点击通过即提交，不设确认步骤；退回填写原因后直接提交。 */
+    if(mode==='approve')submit();else open('return');
   }
   function validate(){
     const d=A.draft;if(!d)return false;A.error='';
     if(d.mode==='return'){const n=reasonLength(A.drafts[d.id].reason);if(n<10||n>500)A.error=['Enter a return reason of 10–500 characters.','退回原因需为 10～500 字。'];}
-    else if(!d.ack)A.error=['Confirm that you understand the effect of approval.','请确认知悉通过后的后果。'];
     return !A.error;
   }
   /* 待审核期间发行平台再次推送：不增加提交序次，详情展示最新资料。 */
@@ -458,8 +458,7 @@
   }
   function refuse(message,keepLayer){
     A.busy=false;A.error=message;
-    if(A.draft?.mode==='approve')A.draft.ack=false;
-    if(keepLayer){open(A.draft.mode==='return'?'return':'approve');return;}
+    if(keepLayer&&A.draft?.mode==='return'){open('return');return;}
     A.draft=null;S.layer=null;CF.render();window.scrollTo(0,0);
   }
   function submit(){
@@ -467,7 +466,7 @@
     if(A.busy)return;
     if(!d||d.id!==r?.id)return deny();
     if(d.mode==='approve'?!canApprove(r):!canAct(r))return deny();
-    if(!validate()){open(d.mode);return;}
+    if(!validate()){open('return');return;}
     A.busy=true;A.error='';CF.render();
     const epoch=A.epoch,response=A.response,reason=(A.drafts[r.id].reason||'').trim();
     setTimeout(()=>{
@@ -506,21 +505,13 @@
   }
 
   /* ---------------------------------------------------------------- 弹层 */
-  function approveLayer(){
-    const d=A.draft,r=row();
-    if(!d||!r)return {title:L('Unavailable','不可用'),html:'',foot:b('Close','关闭','cancel')};
-    const ack=L('I understand: once approved, this token is listed on the asset marketplace and the lending marketplace and can be pledged. This release does not allow withdrawing an approval.','我已知悉：通过后这笔代币将在资产广场与借贷广场展示并可被质押，本期不可撤销。');
-    return {title:L('Approve admission','通过准入'),
-      html:`<div class="ta-form">${identity(r)}${neutral()}<fieldset ${A.busy?'disabled':''}><label class="ta-ack"><input id="ta-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel(ack,true)}</label></fieldset><div id="ta-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
-      foot:b('Cancel','取消','cancel','','',A.busy)+b(A.busy?'Submitting…':'Approve',A.busy?'正在提交…':'确认通过','submit','','primary',A.busy)};
-  }
   function returnLayer(){
     const d=A.draft,r=row();
     if(!d||!r)return {title:L('Unavailable','不可用'),html:'',foot:b('Close','关闭','cancel')};
     const reason=A.drafts[r.id].reason;
     return {title:L('Return','退回'),
-      html:`<div class="ta-form">${identity(r)}${neutral()}<fieldset ${A.busy?'disabled':''}>${field(L('Return reason *','退回原因 *'),`<textarea class="inp" id="ta-reason" maxlength="600" aria-required="true" aria-invalid="${!!A.error}" aria-describedby="ta-form-error ta-count">${E(reason)}</textarea><span class="ta-meta" id="ta-count">${reasonLength(reason)} / 500</span>`)}</fieldset><div id="ta-form-error">${error()}</div></div>`,
-      foot:b('Cancel','取消','cancel','','',A.busy)+b('Preview the reason','预览退回原因','confirm','','primary',A.busy)};
+      html:`<div class="ta-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${field(L('Return reason *','退回原因 *'),`<textarea class="inp" id="ta-reason" maxlength="600" aria-required="true" aria-invalid="${!!A.error}" aria-describedby="ta-form-error ta-count">${E(reason)}</textarea><span class="ta-meta" id="ta-count">${reasonLength(reason)} / 500 · ${L('Sent to the issuance platform as written; cannot be edited afterwards','原样回传来源发行平台，提交后不可修改')}</span>`)}</fieldset><div id="ta-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
+      foot:b('Cancel','取消','cancel','','',A.busy)+b(A.busy?'Submitting…':'Return',A.busy?'正在提交…':'确认退回','submit','','primary',A.busy)};
   }
   function fileLayer(){
     const r=row(),f=r&&[...r.docs,...r.proofs].find(x=>x.id===A.file);
@@ -532,11 +523,7 @@
       foot:b('Close','关闭','file-close')+b('Download','下载','download',f.id,'primary')};
   }
   const layers={
-    'ta-approve':approveLayer,
     'ta-return':returnLayer,
-    'ta-return-confirm':()=>{const r=row();return {title:L('Confirm the return','确认退回'),
-      html:identity(r)+`<div class="ta-form"><div class="ta-quote ta-reason-preview">${E((A.drafts[r.id]?.reason||'').trim())}</div><p class="ta-meta">${L('The reason is sent back to the issuance platform exactly as written and cannot be edited afterwards.','退回原因将原样回传来源发行平台，提交后不可修改。')}</p><div id="ta-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
-      foot:b('Back to edit','返回修改','edit','','',A.busy)+b(A.busy?'Submitting…':'Confirm the return',A.busy?'正在提交…':'确认退回','submit','','primary',A.busy)};},
     'ta-ack':()=>({title:L('Acknowledge the change?','确认已知悉变更？'),
       html:`<p>${L('This clears the alert in the list. The token stays approved and the activity keeps who acknowledged it and when.','确认后清除清单中的提醒；准入状态不变，操作记录保留确认人与时间。')}</p>`,
       foot:b('Cancel','取消','cancel')+b('Acknowledge','确认已知悉','ack-confirm','','primary')}),
@@ -598,8 +585,6 @@
     else if(act==='reset')resetFilter();
     else if(act==='sort'){const st=A.list;st.dir=st.sort===v?-st.dir:(v==='value'||v==='waiting'?-1:1);st.sort=v;st.page=1;saveContext();CF.render();}
     else if(act==='approve'||act==='return')start(act);
-    else if(act==='confirm'){if(!canAct(r))deny();else if(validate())open('return-confirm');else{open('return');}}
-    else if(act==='edit'){A.error='';open('return');}
     else if(act==='submit')submit();
     else if(act==='cancel'){
       A.next=undefined;
@@ -666,10 +651,10 @@
       if(id==='ta-reason'){
         A.drafts[A.draft.id].reason=el.value;
         const count=$('ta-count');
-        if(count)count.textContent=reasonLength(el.value)+' / 500';
+        if(count)count.textContent=reasonLength(el.value)+' / 500 · '+L('Sent to the issuance platform as written; cannot be edited afterwards','原样回传来源发行平台，提交后不可修改');
         el.setAttribute('aria-invalid','false');
+        if(A.error){A.error='';const fe=$('ta-form-error');if(fe)fe.innerHTML='';}
       }
-      if(id==='ta-ack')A.draft.ack=el.checked;
     }
   }
   document.addEventListener('submit',e=>{if(e.target.id==='ta-filter-form'){e.preventDefault();onAct('ta-search','');}});
