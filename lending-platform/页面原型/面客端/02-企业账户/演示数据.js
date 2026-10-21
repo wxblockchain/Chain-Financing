@@ -4,7 +4,7 @@
    本文件只做本地演示：不连钱包、不发请求、不校验账户真实性。 */
 (function(CF){
   'use strict';
-  const S=CF.S,L=CF.L,E=CF.esc,KEY='hc-ws386-v4';
+  const S=CF.S,L=CF.L,E=CF.esc,KEY='hc-ws386-v5';
   const EA=CF.EA={};
   const now=()=>CF.LS?CF.LS.now():Date.now();
   const DAY=86400000;
@@ -12,33 +12,37 @@
   /* 演示用的企业 / 机构当前名称：资产方取资产可信平台同步的企业名称，资金方取审核通过的机构名称。 */
   const NAMES={'entity-demo-a':['Demo Asset Company A','演示资产企业 A'],'entity-demo-b':['Demo Asset Company B','演示资产企业 B'],
     'fund-a':['Demo Capital A','演示资金机构 A'],'fund-b':['Demo Capital B','演示资金机构 B']};
-  /* 演示目录：双方各有法币与数币账户，便于演示按币种与按链的选用范围。登记时间错开，列表顺序可见。 */
+  /* 演示目录：双方各有法币与数币账户，便于演示按币种的选用范围；数币账户当前都在以太坊网络。登记时间错开，列表顺序可见。 */
   function seed(){const t=n=>new Date(now()-n*DAY).toISOString();return [
     {id:'EA-DEMO-F01',owner:'entity-demo-a',kind:'fiat',accountType:'general',ccys:['USD','EUR'],label:['Singapore operating account','新加坡运营账户'],iban:'SG64DEMO0000000001',bank:'Demo Bank Limited',bankCity:'Singapore',swift:'DEMOSGSG',at:t(40)},
     {id:'EA-DEMO-F02',owner:'entity-demo-a',kind:'fiat',ccys:['USD'],label:['Hong Kong account','香港账户'],iban:'HK00DEMO0000000002',bank:'Demo Bank (HK)',bankCity:'Hong Kong',swift:'DEMOHKHH',at:t(12)},
     {id:'EA-DEMO-F04',owner:'entity-demo-a',kind:'fiat',accountType:'supervised',ccys:['USD','GBP'],label:['London supervised account','伦敦监管账户'],iban:'GB00DEMO0000000004',bank:'Demo Bank (UK)',bankCity:'London',swift:'DEMOGB2L',at:t(5)},
-    {id:'EA-DEMO-C01',owner:'entity-demo-a',kind:'crypto',chain:'ETH',label:['Treasury wallet (ETH)','资金钱包（ETH）'],address:'0x00000000000000000000000000000000000000a1',at:t(30)},
-    {id:'EA-DEMO-C02',owner:'entity-demo-a',kind:'crypto',chain:'TRON',label:['Treasury wallet (TRON)','资金钱包（TRON）'],address:'TDemoReceiveAddressAssetAAAAAAAAAA',at:t(9)},
+    {id:'EA-DEMO-C01',owner:'entity-demo-a',kind:'crypto',chain:'ETH',label:['Treasury wallet','资金钱包'],address:'0x00000000000000000000000000000000000000a1',at:t(30)},
+    {id:'EA-DEMO-C02',owner:'entity-demo-a',kind:'crypto',chain:'ETH',label:['Collection wallet','收款钱包'],address:'0x00000000000000000000000000000000000000a2',at:t(9)},
     {id:'EA-DEMO-F03',owner:'entity-demo-b',kind:'fiat',accountType:'general',ccys:['USD'],label:['Main account','主账户'],iban:'SG64DEMO0000000003',bank:'Demo Bank Limited',bankCity:'Singapore',swift:'DEMOSGSG',at:t(50)},
     {id:'EA-DEMO-R01',owner:'fund-a',kind:'fiat',accountType:'general',ccys:['USD','EUR'],label:['Singapore account','新加坡账户'],iban:'SG64DEMO0000001001',bank:'Demo Capital Bank',bankCity:'Singapore',swift:'DEMOCPSG',at:t(60)},
     {id:'EA-DEMO-R02',owner:'fund-a',kind:'fiat',accountType:'supervised',ccys:['USD','GBP','EUR'],label:['London account','伦敦账户'],iban:'GB00DEMO0000001002',bank:'Demo Capital Bank (UK)',bankCity:'London',swift:'DEMOCPGB',at:t(20)},
-    {id:'EA-DEMO-R03',owner:'fund-a',kind:'crypto',chain:'ETH',label:['Operations wallet (ETH)','运营钱包（ETH）'],address:'0x00000000000000000000000000000000000000b1',at:t(45)},
-    {id:'EA-DEMO-R04',owner:'fund-a',kind:'crypto',chain:'TRON',label:['Operations wallet (TRON)','运营钱包（TRON）'],address:'TDemoReceiveAddressFunderAAAAAAAAA',at:t(15)},
+    {id:'EA-DEMO-R03',owner:'fund-a',kind:'crypto',chain:'ETH',label:['Operations wallet','运营钱包'],address:'0x00000000000000000000000000000000000000b1',at:t(45)},
+    {id:'EA-DEMO-R04',owner:'fund-a',kind:'crypto',chain:'ETH',label:['Repayment wallet','还款钱包'],address:'0x00000000000000000000000000000000000000b2',at:t(15)},
     {id:'EA-DEMO-R05',owner:'fund-b',kind:'fiat',accountType:'general',ccys:['USD'],label:['Main account','主账户'],iban:'HK00DEMO0000001003',bank:'Demo Capital Bank (HK)',bankCity:'Hong Kong',swift:'DEMOCPHK',at:t(35)},
-    {id:'EA-DEMO-R06',owner:'fund-b',kind:'crypto',chain:'ETH',label:['Main wallet (ETH)','主钱包（ETH）'],address:'0x00000000000000000000000000000000000000b3',at:t(25)}
+    {id:'EA-DEMO-R06',owner:'fund-b',kind:'crypto',chain:'ETH',label:['Main wallet','主钱包'],address:'0x00000000000000000000000000000000000000b3',at:t(25)}
   ].map(a=>a.kind==='fiat'?Object.assign(a,{holder:NAMES[a.owner]}):a);}
 
   let db;
   const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch(_){}};
   function reset(){db={accounts:seed(),serial:0,names:JSON.parse(JSON.stringify(NAMES)),nameUnavailable:false};save();}
   try{db=CF.LSReseeded?null:JSON.parse(localStorage.getItem(KEY));if(!Array.isArray(db?.accounts))reset();}catch(_){reset();}
-  try{['hc-ws386-v1','hc-ws386-v2','hc-ws386-v3'].forEach(k=>localStorage.removeItem(k));}catch(_){}   /* 旧目录字段已变，丢弃 */
+  try{['hc-ws386-v1','hc-ws386-v2','hc-ws386-v3','hc-ws386-v4'].forEach(k=>localStorage.removeItem(k));}catch(_){}   /* 旧目录字段已变，丢弃 */
 
   /* 本期一个企业只有一个账号，该账号即唯一维护人；演示身份对应演示企业。 */
   EA.owner=()=>S.role==='fund'?'fund-a':'entity-demo-a';
   /* 模块与数据口径统一叫“企业账户”；面客展示名按侧区分：资产方“企业账户”、资金方“机构账户”。 */
   EA.title=()=>S.role==='fund'?['Institution accounts','机构账户']:['Company accounts','企业账户'];
-  EA.CHAINS=['ETH','TRON'];
+  /* 结算收款链当前仅以太坊，用户不选择；数据里保留链代码供业务按链匹配，界面一律展示网络全名，不展示 ETH 缩写，避免与 ETH 币混淆。 */
+  EA.CHAINS=['ETH'];
+  EA.CHAIN='ETH';
+  const CHAIN_NAMES={ETH:['Ethereum','以太坊']};
+  EA.chainName=c=>CHAIN_NAMES[c]?L(...CHAIN_NAMES[c]):String(c||'');
   EA.TOKENS=['USDT','USDC'];
   /* 账户币种只作标注：本期可选 USD、EUR、GBP（由平台维护、可调整），平台不核验，业务选用也不据此筛选。
      清单调整后，已登记账户原有的标注保持不变。 */
@@ -89,12 +93,12 @@
 
   /* 已提交的业务记录保存的是账户快照，随记录固定；本模块之后的修改与删除不回改快照。 */
   EA.snapshot=a=>JSON.parse(JSON.stringify(a));
-  EA.key=a=>a.kind==='crypto'?E(a.chain)+' · <span class="mono">'+EA.maskAddress(a.address)+'</span>'
+  EA.key=a=>a.kind==='crypto'?E(EA.chainName(a.chain))+' · <span class="mono">'+EA.maskAddress(a.address)+'</span>'
     :[EA.holderName(a),E(EA.typeName(a)),E(a.bank)+' · <span class="mono">'+EA.maskTail(EA.compact(a.iban))+'</span>',EA.currencies(a).length?EA.currencyText(a):''].filter(Boolean).join(' · ');
 
   /* 业务侧读取的字段行（报价、放款、还款、控制台共用）；full=false 为脱敏摘要。 */
   EA.rows=function(a,full=true){
-    if(a.kind==='crypto')return [[L(...EA.labels.chain),E(a.chain)],
+    if(a.kind==='crypto')return [[L(...EA.labels.chain),E(EA.chainName(a.chain))],
       [L(...EA.labels.address),'<span class="mono">'+(full?E(a.address):EA.maskAddress(a.address))+'</span>'],
       [L(...EA.labels.tokens),EA.tokens()]];
     const rows=[[L(...EA.labels.label),EA.name(a)],[L(...EA.labels.holder),EA.holderName(a)||'—'],[L(...EA.labels.accountType),E(EA.typeName(a))||'—'],
@@ -106,13 +110,13 @@
 
   /* —— 校验 —— */
   EA.swiftValid=v=>/^[A-Z0-9]{8}([A-Z0-9]{3})?$/.test(EA.compact(v));
-  EA.addressValid=(chain,v)=>{const s=String(v||'').trim();
-    return chain==='ETH'?/^0x[0-9a-fA-F]{40}$/.test(s):chain==='TRON'?/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(s):false;};
+  /* 以太坊地址：0x 加 40 位十六进制字符；其他网络格式的地址一律不通过。 */
+  EA.addressValid=v=>/^0x[0-9a-fA-F]{40}$/.test(String(v||'').trim());
   EA.duplicateFiat=(owner,iban,swift,exceptId)=>EA.accounts(owner,'fiat').find(a=>a.id!==exceptId&&
     EA.compact(a.iban)===EA.compact(iban)&&EA.compact(a.swift)===EA.compact(swift))||null;
-  /* ETH 地址不区分大小写；TRON 地址区分大小写，按原样比较。 */
-  const sameAddress=(chain,x,y)=>{x=String(x||'').trim();y=String(y||'').trim();return chain==='ETH'?x.toLowerCase()===y.toLowerCase():x===y;};
-  EA.duplicateCrypto=(owner,chain,address)=>EA.accounts(owner,'crypto').find(a=>a.chain===chain&&sameAddress(chain,a.address,address))||null;
+  /* 以太坊地址查重不区分大小写。 */
+  const sameAddress=(x,y)=>String(x||'').trim().toLowerCase()===String(y||'').trim().toLowerCase();
+  EA.duplicateCrypto=(owner,address)=>EA.accounts(owner,'crypto').find(a=>sameAddress(a.address,address))||null;
   /* 由用户自由填写的文本字段暂定最多 100 个字符（按字符计）；账号 / IBAN 去除空格后计数。地址类字段不限长度与字符种类。 */
   EA.TEXT_MAX=100;
   EA.textLength=(k,v)=>[...(k==='iban'?EA.compact(v):String(v||'').trim())].length;

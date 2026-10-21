@@ -11,7 +11,8 @@
   /* 文档标题与评审目录按侧取展示名：壳层读页面的字典键，这里在每次渲染时按当前身份切换。 */
   const dict={en:{navCompanyAccounts:'Company accounts',navInstitutionAccounts:'Institution accounts'},
     zh:{navCompanyAccounts:'企业账户',navInstitutionAccounts:'机构账户'}};
-  const KINDS=['fiat','crypto'];
+  /* 按用户指定：数币账户 Tab 在前、法币账户 Tab 在后；进入本页默认打开第一个 Tab。 */
+  const KINDS=['crypto','fiat'];
 
   /* scene：整页读取状态；unverified：模拟尚未取得业务资格；saveResult：下次保存／删除响应。 */
   const V={scene:'ready',unverified:false,flow:null,busy:'',problem:'',pending:null,
@@ -44,7 +45,8 @@
   }
   const currencyTags=(a,compact=false)=>assetTags(EA.currencies(a),compact);
   const tokenTags=(compact=false)=>assetTags(EA.TOKENS,compact);
-  const networkTag=code=>'<span class="ea-network">'+assetLabel(code)+'</span>';
+  /* 网络只展示全名（以太坊 / Ethereum），不展示 ETH 缩写，避免与 ETH 币混淆。 */
+  const networkTag=code=>'<span class="ea-network"><span class="ea-asset-label">'+CF.eaAssetIcon(code)+'<span>'+E(EA.chainName(code))+'</span></span></span>';
   const kindIcon=kind=>'<svg class="ea-kind-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
     (kind==='fiat'?'<path d="m3 9 9-5 9 5H3ZM5 11v7m5-7v7m4-7v7m5-7v7M3 21h18"/>':'<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18m-4 4h4v4h-4a2 2 0 0 1 0-4Z"/>')+'</svg>';
   const kindName=k=>k==='fiat'?L('Fiat accounts','法币账户'):L('Crypto accounts','数币账户');
@@ -101,9 +103,9 @@
 
   /* ------------------------------------------------------------------ 视图参数：Tab 与回流目标写在 query 里，刷新与分享可恢复 */
   function query(){return new URLSearchParams(location.hash.split('?')[1]||'');}
-  function tab(){const t=query().get('type');return KINDS.includes(t)?t:'fiat';}
+  function tab(){const t=query().get('type');return KINDS.includes(t)?t:KINDS[0];}
   function setTab(t){
-    const q=query();if(t==='fiat')q.delete('type');else q.set('type',t);
+    const q=query();if(t===KINDS[0])q.delete('type');else q.set('type',t);
     const s=q.toString();history.replaceState(null,'','#'+ROUTE+(s?'?'+s:''));
     CF.render();
     setTimeout(()=>document.querySelector('.ea-tabs [aria-selected="true"]')?.focus(),0);
@@ -112,8 +114,8 @@
   /* ------------------------------------------------------------------ 总览 */
   function head(){
     return '<div class="page-head"><div><h1 class="page-title">'+E(title())+'</h1>'+
-      '<p class="page-desc">'+L('Your company\'s bank and crypto accounts. When you accept a quote or record a disbursement, you choose one of the accounts saved here.',
-        '本企业自己的法币账户与数币账户。接受报价、登记放款时，从这里已登记的账户中选用。')+'</p></div>'+
+      '<p class="page-desc">'+L('Your company\'s crypto and bank accounts. When you accept a quote or record a disbursement, you choose one of the accounts saved here.',
+        '本企业自己的数币账户与法币账户。接受报价、登记放款时，从这里已登记的账户中选用。')+'</p></div>'+
       '<div class="page-actions">'+CF.tag('',L('Demonstration data','演示数据'))+'</div></div>';
   }
   /* 未登录与登录未绑定角色都取不到本企业账户；这里给本页的引导。 */
@@ -155,7 +157,7 @@
     return kind==='fiat'
       ? CF.empty(L('No fiat accounts yet','尚未登记法币账户'),L('Add a USD bank account to use it in USD transactions.','登记 USD 银行账户后，即可在 USD 结算的业务中选用。'),
           b('add','Add fiat account','新增法币账户','fiat',true))
-      : CF.empty(L('No crypto accounts yet','尚未登记数币账户'),L('Add a wallet address on ETH or TRON to use it in USDT and USDC transactions.','登记 ETH 或 TRON 上的地址后，即可在 USDT、USDC 结算的业务中选用。'),
+      : CF.empty(L('No crypto accounts yet','尚未登记数币账户'),L('Add an Ethereum address to use it in USDT and USDC transactions.','登记以太坊网络上的地址后，即可在 USDT、USDC 结算的业务中选用。'),
           b('add','Add crypto account','新增数币账户','crypto',true));
   }
   function incomplete(a){
@@ -224,14 +226,12 @@
     swift:'autocomplete="off" spellcheck="false" autocapitalize="characters" maxlength="14"',
     address:'autocomplete="off" spellcheck="false" autocapitalize="off"'};
   const HINT={bankCity:['The city where the bank branch is located.','开户行所在城市。'],iban:['Enter it as your bank shows it. Spaces are ignored.','按开户行提供的写法填写，空格会被忽略。'],
-    swift:['8 or 11 letters and digits.','8 位或 11 位字母数字。']};
-  const CHAIN_HINT={ETH:['Ethereum · starts with 0x','以太坊 · 以 0x 开头'],TRON:['TRON · starts with T','波场 · 以 T 开头']};
-  const ADDRESS_HINT={'':['Choose a network first.','请先选择链。'],ETH:['0x followed by 40 hexadecimal characters.','0x 开头，后接 40 位十六进制字符。'],
-    TRON:['Starts with T, 34 characters.','以 T 开头，共 34 位。']};
+    swift:['8 or 11 letters and digits.','8 位或 11 位字母数字。'],
+    address:['An Ethereum address: 0x followed by 40 hexadecimal characters. It can\'t be changed after the account is saved.','以太坊地址：0x 开头，后接 40 位十六进制字符；登记后不可修改。']};
   const NAME_HINT=['Another account already uses this nickname. You can keep it, but a distinct name is easier to tell apart.','已有账户使用相同的备注名。可以保留，但用不同的名称更容易区分。'];
 
   function field(k,full=false,placeholder=''){
-    const id='ea-f-'+k,hint=k==='address'?ADDRESS_HINT[F().form.chain||'']:HINT[k];
+    const id='ea-f-'+k,hint=HINT[k];
     const extraHint=k==='label'?'<span class="hint" id="'+id+'-hint" data-ea-namehint>'+(F().sameName?L(...NAME_HINT):'')+'</span>':'';
     return '<div class="field'+(full?' ea-full':'')+'"><label for="'+id+'">'+(required(k)?requiredMark:'')+L(...EA.labels[k])+'</label>'+
       '<input class="inp" id="'+id+'" data-ea-field="'+k+'" type="text" value="'+E(val(k))+'"'+(placeholder?' placeholder="'+E(placeholder)+'"':'')+
@@ -265,6 +265,11 @@
         (picked.includes(c)?' checked':'')+' aria-label="'+E(c+' · '+EA.currencyName(c))+'"><span class="ea-chip-body">'+assetLabel(c)+'</span></label>').join('')+'</div>'+
       '<span class="err-msg" id="ea-f-ccys-err" role="alert">'+E(err('ccys'))+'</span></fieldset>';
   }
+  /* 结算收款链：当前仅以太坊，平台固定带出，只读，用户不选择。 */
+  function networkField(){
+    return '<div class="field ea-full"><span class="field-label" id="ea-network-label">'+L(...EA.labels.chain)+'<span class="ea-readonly-label">'+L('Read only','只读')+'</span></span>'+
+      '<span class="field-static ea-network-static" role="textbox" aria-readonly="true" aria-labelledby="ea-network-label">'+networkTag(EA.CHAIN)+'</span></div>';
+  }
   const group=(heading,html,extra='')=>'<fieldset class="ea-group"><legend>'+heading+'</legend>'+extra+'<div class="ea-grid">'+html+'</div></fieldset>';
   const notice=(kind,html)=>'<div class="ea-notice">'+CF.note(kind,html)+'</div>';
 
@@ -277,7 +282,7 @@
         '已登记过相同账号与 SWIFT / BIC 的账户。')+'</span>'+b('view','View it','查看该账户',f.duplicate)+'</div>'):'')+'</div>';
   }
   function steps(step){
-    return '<ol class="ea-steps" aria-label="'+L('Progress','进度')+'">'+[[1,'Network & address','选择链并填写地址'],[2,'Verify ownership','签名确认地址所有权']]
+    return '<ol class="ea-steps" aria-label="'+L('Progress','进度')+'">'+[[1,'Address','填写地址'],[2,'Verify ownership','签名确认地址所有权']]
       .map(s=>'<li data-complete="'+(step>s[0])+'"'+(step===s[0]?' aria-current="step"':'')+'><span class="ea-step-no" aria-hidden="true">'+(step>s[0]?'✓':s[0])+'</span>'+L(s[1],s[2])+'</li>').join('')+'</ol>';
   }
   function cryptoForm(){
@@ -285,18 +290,13 @@
     if(f.mode==='edit')return '<div class="ea-form">'+(f.problem?notice('red',E(f.problem)):'')+
       '<div class="ea-grid">'+field('label',true)+'</div>'+
       '<div class="ea-chosen">'+dl([[L(...EA.labels.chain),networkTag(f.form.chain)],[L(...EA.labels.address),'<span class="mono ea-break">'+E(f.form.address)+'</span>']])+'</div>'+
-      '<p class="hint">'+L('The network and address can\'t be changed. To use a different address, add a new crypto account and verify it, then delete this one if you no longer need it.',
-        '结算收款链与数币地址登记后不可修改。要换地址，请新增一个数币账户并完成签名，再按需删除本账户。')+'</p></div>';
+      '<p class="hint">'+L('The address can\'t be changed. To use a different address, add a new crypto account and verify it, then delete this one if you no longer need it.',
+        '数币地址登记后不可修改。要换地址，请新增一个数币账户并完成签名，再按需删除本账户。')+'</p></div>';
     if(f.step===1)return '<div class="ea-form">'+steps(1)+
-      notice('warn','<div><b>'+L('Only add an address you can sign with.','只能登记你能签名的地址。')+'</b> '+
+      notice('warn','<div><b>'+L('Only Ethereum addresses are supported, and only ones you can sign with.','当前仅支持以太坊网络地址，且只能登记你能签名的地址。')+'</b> '+
         L('Exchange deposit addresses, third-party custodial addresses and contract addresses that can\'t sign are not supported.',
           '交易所充值地址、第三方托管地址以及无法签名的合约地址都无法登记。')+'</div>')+
-      '<fieldset class="ea-chains" aria-describedby="ea-f-chain-err"><legend>'+requiredGroup()+L('Network','结算收款链')+'</legend>'+
-        '<div class="ea-chain-row">'+EA.CHAINS.map(c=>'<label class="ea-chain ea-network-choice" title="'+E(L(...CHAIN_HINT[c]))+'"><input type="radio" name="ea-chain" value="'+c+'" data-ea-chain="'+c+'" aria-label="'+E(c+' · '+L(...CHAIN_HINT[c]))+'"'+
-          (f.form.chain===c?' checked':'')+'><span>'+networkTag(c)+'</span></label>').join('')+'</div>'+
-        '<span class="hint">'+L('The network and address can\'t be changed after the account is saved.','链和地址一经登记不可修改。')+'</span>'+
-        '<span class="err-msg" id="ea-f-chain-err" role="alert">'+E(err('chain'))+'</span></fieldset>'+
-      '<div class="ea-grid">'+field('address',true,f.form.chain==='ETH'?'0x…':f.form.chain==='TRON'?'T…':'')+field('label',true)+'</div>'+
+      '<div class="ea-grid">'+networkField()+field('address',true,'0x…')+field('label',true)+'</div>'+
       (f.duplicate?notice('warn','<div class="ea-notice-row"><span>'+L('This address is already saved for your company.','这个地址已经在本企业登记过了。')+'</span>'+
         b('view','View it','查看该账户',f.duplicate)+'</div>'):'')+'</div>';
     return '<div class="ea-form">'+steps(2)+
@@ -326,8 +326,8 @@
   const TOO_LONG=k=>k==='iban'?L('Use '+EA.TEXT_MAX+' characters or fewer, not counting spaces.','不超过 '+EA.TEXT_MAX+' 个字符（不计空格）。')
     :L('Use '+EA.TEXT_MAX+' characters or fewer.','不超过 '+EA.TEXT_MAX+' 个字符。');
   const LIMITED=['label','iban','bank'];
-  const addressError=chain=>chain==='ETH'?L('That isn\'t a valid ETH address. It should start with 0x followed by 40 hexadecimal characters.',
-    '这不是一个有效的 ETH 地址，应以 0x 开头并包含 40 位十六进制字符。'):L('That isn\'t a valid TRON address. It should start with T.','这不是一个有效的 TRON 地址，应以 T 开头。');
+  const addressError=()=>L('That isn\'t a valid Ethereum address. It should start with 0x followed by 40 hexadecimal characters.',
+    '这不是一个有效的以太坊地址，应以 0x 开头并包含 40 位十六进制字符。');
   function validateFiat(){
     const f=F(),e={};
     EA.fiatRequired.forEach(k=>{
@@ -342,17 +342,16 @@
     f.duplicate=dup?dup.id:'';
     return !dup;
   }
-  /* 选链与填地址同一环节：未选链或地址不符所选链格式都不能进入签名。 */
+  /* 结算收款链固定为以太坊：地址不符合以太坊格式（含其他网络格式）都不能进入签名。 */
   function validateAddress(){
     const f=F(),e={};
-    if(!f.form.chain)e.chain=L('Choose a network.','请选择结算收款链。');
     const address=val('address').trim();
     if(!address)e.address=REQUIRED();
-    else if(f.form.chain&&!EA.addressValid(f.form.chain,address))e.address=addressError(f.form.chain);
+    else if(!EA.addressValid(address))e.address=addressError();
     if(!val('label').trim())e.label=REQUIRED();else if(EA.tooLong('label',val('label')))e.label=TOO_LONG('label');
     f.errors=e;
     if(Object.keys(e).length)return false;
-    const dup=EA.duplicateCrypto(owner(),f.form.chain,address);
+    const dup=EA.duplicateCrypto(owner(),address);
     f.duplicate=dup?dup.id:'';
     return !dup;
   }
@@ -377,7 +376,7 @@
   }
   function commitAddress(){
     const f=F();
-    EA.add({kind:'crypto',chain:f.form.chain,label:f.form.label.trim(),address:f.form.address.trim(),ownership:'signed'});
+    EA.add({kind:'crypto',chain:EA.CHAIN,label:f.form.label.trim(),address:f.form.address.trim(),ownership:'signed'});
     V.flow=null;CF.closeLayer();
     if(tab()!=='crypto')setTab('crypto');
     CF.toast(L('Crypto account added.','数币账户已登记。'));
@@ -392,7 +391,8 @@
       V.busy='';
       if(r==='mismatch')f.problem=L('The signing address doesn\'t match the address you\'re adding. Please sign with that address.','签名的地址和你要登记的地址不是同一个，请用该地址签名。');
       else if(r==='rejected')f.problem=L('The signature wasn\'t completed, so the account wasn\'t saved. You can try again.','本次没有完成签名，账户尚未登记，你可以重试。');
-      else if(r==='unavailable')f.problem=L('Your wallet is unavailable or doesn\'t support this network. Reconnect it and try again.','钱包环境不可用或不支持该链，请重新连接后重试。');
+      else if(r==='unavailable')f.problem=L('Your wallet is unavailable. Reconnect it and try again.','钱包环境不可用，请重新连接钱包后重试。');
+      else if(r==='network')f.problem=L('Your wallet isn\'t on the Ethereum network. Switch to Ethereum in your wallet, then try again.','钱包当前不在以太坊网络，请在钱包中切换到以太坊网络后重试。');
       else {commitAddress();return;}
       CF.render();
     },550);
@@ -425,22 +425,22 @@
       return {title:EA.plainName(a),html:'<div class="ea-drawer">'+incomplete(a)+viewSections(a)+'</div>',
         foot:b('remove','Delete','删除',a.id)+b('close','Close','关闭')+b('edit','Edit','修改',a.id,true)};},
     'ea-remove':id=>{const a=EA.byId(id);if(!a)return gone();
-      const peers=EA.accounts(owner(),a.kind).filter(x=>x.id!==a.id&&!EA.missing(x).length&&(a.kind==='fiat'||x.chain===a.chain));
+      const peers=EA.accounts(owner(),a.kind).filter(x=>x.id!==a.id&&!EA.missing(x).length);
       const items=[L('It will no longer be available to select in transactions.','该账户不再出现在任何选用列表中。'),
         L('Transactions already submitted keep the account details they were submitted with.','已提交的业务记录保留当时的账户信息，不受影响。')];
       if(!peers.length)items.push(a.kind==='fiat'?L('This is your only usable fiat account. Until you add another, USD transactions can\'t be submitted.','删除后暂无可选法币账户，USD 结算的业务办理将无法提交，需要时可重新登记。')
-        :L('This is your only usable account on '+a.chain+'. Until you add another, transactions settled on '+a.chain+' can\'t be submitted.','删除后 '+a.chain+' 链暂无可选账户，相关业务办理将无法提交，需要时可重新登记。'));
+        :L('This is your only usable crypto account. Until you add another, USDT and USDC transactions can\'t be submitted.','删除后暂无可选的数币账户，USDT、USDC 结算的业务办理将无法提交，需要时可重新登记。'));
       items.push(a.kind==='crypto'?L('This can\'t be undone. To use this address again, you\'ll need to add it and sign again.','删除不可撤销；再次使用该地址需重新登记并签名。'):L('This can\'t be undone.','删除不可撤销。'));
       return {title:L('Delete account?','删除账户？'),dismiss:V.busy!=='remove',
         html:'<div class="ea-confirm"><div class="ea-confirm-target"><b>'+EA.name(a)+'</b><span class="hint">'+EA.key(a)+'</span></div>'+
           '<ul class="ea-consequences">'+items.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+(V.problem?CF.note('red',E(V.problem)):'')+'</div>',
         foot:b('close','Cancel','取消','',false,V.busy==='remove')+danger('remove-confirm',V.busy==='remove'?'Deleting…':'Delete account',V.busy==='remove'?'正在删除…':'删除账户',a.id,V.busy==='remove')};},
     'ea-wallet':()=>{const f=F();return {title:L('Signature request','签名请求'),dismiss:true,
-      html:'<div class="ea-wallet"><div class="ea-wallet-head">'+networkTag(f?.form.chain||'')+'<span>'+L('Verify address ownership','确认地址所有权')+'</span></div>'+
+      html:'<div class="ea-wallet"><div class="ea-wallet-head">'+networkTag(EA.CHAIN)+'<span>'+L('Verify address ownership','确认地址所有权')+'</span></div>'+
         '<div class="ea-wallet-box"><span class="hint">'+L('Signing address','签名地址')+'</span><span class="mono ea-break">'+E(f?.form.address||'')+'</span></div>'+
         '<p class="hint">'+L('Signing proves you control this address. It doesn\'t send a transaction or cost a network fee.','签名只证明你控制这个地址，不会发起交易，也不产生链上费用。')+'</p>'+
         '<div class="ea-sim"><span class="ea-sim-label">'+L('Simulate · review only','模拟 · 仅评审')+'</span>'+
-          b('wallet','Signed by another address','用其他地址签名','mismatch')+b('wallet','Wallet unavailable','钱包不可用','unavailable')+'</div></div>',
+          b('wallet','Signed by another address','用其他地址签名','mismatch')+b('wallet','Wallet not on Ethereum','钱包不在以太坊网络','network')+b('wallet','Wallet unavailable','钱包不可用','unavailable')+'</div></div>',
       foot:b('wallet','Decline','拒绝','rejected')+b('wallet','Sign','签名','ok',true)};},
     'ea-noname':()=>({title:L('Can\'t add a fiat account right now','暂时无法新增法币账户'),dismiss:true,
       html:'<div class="ea-confirm"><p>'+L('We can\'t get your company name at the moment, so a fiat account can\'t be added yet. Please try again later. You can still add a crypto account.',
@@ -459,7 +459,7 @@
     const host=[...document.querySelectorAll('#layers .modal')].pop();if(!host||!host.querySelector('.ea-form'))return;
     const body=host.querySelector('.modal-b'),heading=host.querySelector('.modal-h');if(heading)heading.tabIndex=-1;
     const first=Object.keys(f.errors||{})[0];
-    const target=first&&(first==='ccys'?host.querySelector('[data-ea-ccy]'):first==='accountType'?host.querySelector('[data-ea-type]'):first==='chain'?host.querySelector('[data-ea-chain]'):document.getElementById('ea-f-'+first));
+    const target=first&&(first==='ccys'?host.querySelector('[data-ea-ccy]'):first==='accountType'?host.querySelector('[data-ea-type]'):document.getElementById('ea-f-'+first));
     if(target){target.focus({preventScroll:true});target.scrollIntoView({block:'center',behavior:'auto'});return;}
     /* 打开或换步时的初始焦点保留到用户开始输入，避免同一次操作里的第二次重绘把焦点移走。 */
     if(f.focus){const el=document.getElementById(f.focus);if(el){el.focus({preventScroll:true});return;}}
@@ -472,11 +472,11 @@
   function openForm(kind,mode,id){
     const a=id?EA.byId(id):null;
     V.flow={kind,mode,id:id||'',step:kind==='crypto'&&mode==='new'?1:0,
-      form:a?fromAccount(a):kind==='fiat'?blankFiat():{chain:'',label:'',address:''},
+      form:a?fromAccount(a):kind==='fiat'?blankFiat():{chain:EA.CHAIN,label:'',address:''},
       errors:{},dirty:false,duplicate:'',problem:'',focus:mode==='edit'?'ea-f-label':'',sameName:false};
     V.problem='';CF.openLayer('modal','ea-form');
   }
-  const dirty=()=>{const f=F();return !!f&&(f.dirty||f.kind==='crypto'&&f.mode==='new'&&!!(f.form.chain||f.form.address||f.form.label));};
+  const dirty=()=>{const f=F();return !!f&&(f.dirty||f.kind==='crypto'&&f.mode==='new'&&!!(f.form.address||f.form.label));};
   function closeForm(){
     if(dirty()){V.pending=S.layer;CF.openLayer('modal','ea-discard',null,V.pending);return;}
     V.flow=null;CF.closeLayer();
@@ -551,15 +551,6 @@
     if(el.dataset.eaCcy&&f){const set=new Set(f.form.ccys||[]);el.checked?set.add(el.dataset.eaCcy):set.delete(el.dataset.eaCcy);
       f.form.ccys=EA.CURRENCIES.filter(c=>set.has(c));f.dirty=true;
       if(f.form.ccys.length&&f.errors.ccys){delete f.errors.ccys;el.closest('fieldset').removeAttribute('aria-invalid');const s=document.getElementById('ea-f-ccys-err');if(s)s.textContent='';}
-      return;}
-    /* 改选链：已填地址保留，按新链重新校验并就地更新提示，不整体重绘。 */
-    if(el.dataset.eaChain&&f){f.form.chain=el.dataset.eaChain;f.dirty=true;delete f.errors.chain;f.duplicate='';
-      const c=document.getElementById('ea-f-chain-err');if(c)c.textContent='';
-      const hint=document.getElementById('ea-f-address-hint');if(hint)hint.textContent=L(...ADDRESS_HINT[f.form.chain]);
-      const input=document.getElementById('ea-f-address');if(input)input.placeholder=f.form.chain==='ETH'?'0x…':'T…';
-      const addr=val('address').trim();
-      if(addr&&!EA.addressValid(f.form.chain,addr)){f.errors.address=addressError(f.form.chain);setSlot('ea-f-address',f.errors.address,true);}
-      else if(f.errors.address&&addr){delete f.errors.address;setSlot('ea-f-address','',false);}
       return;}
     if(el.id==='ea-save-result'){V.saveResult=el.value;return;}
     if(el.id==='ea-name-state'){EA.setNameUnavailable(el.value==='missing');CF.render();return;}
