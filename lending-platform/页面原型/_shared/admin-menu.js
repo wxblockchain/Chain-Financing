@@ -5,6 +5,7 @@
   const entries = [
     {"key":"account","page":"P-O-AL-07","route":"/ops/account-overview","file":"01-账户与登录/账户与登录.html","label":["Overview","总览"],"icon":"▤","permission":14,"sidebar":true},
     {"key":"institution","page":"P-L40","route":"/ops/institution-reviews","file":"05-资金方机构认证审核/资金方机构认证审核.html","label":["Institution review","机构认证审核"],"icon":"▣","permission":[5,6],"sidebar":true},
+    {"key":"tokens","page":"P-O-TA-01","pages":["P-O-TA-01","P-O-TA-02"],"route":"/ops/token-admissions","file":"06-代币准入审核/代币准入审核.html","label":["Token admission","代币准入审核"],"icon":"◈","permission":[21,22],"reachable":[21,22],"sidebar":true},
     {"key":"contracts","page":"P-O-CM-01","pages":["P-O-CM-01","P-O-CM-02","P-O-CM-03"],"routes":["/ops/contract-reviews","/ops/contract-ledger"],"route":"/ops/contract-reviews","file":"04-项目合约管理/项目合约管理.html","label":["Project contracts","项目合约管理"],"icon":"▦","permission":[17,18],"reachable":[17,18],"sidebar":true},
     {"key":"agreements","page":"P-O-AG-01","route":"/ops/agreements","file":"03-协议管理/协议管理.html","label":["Agreements","协议管理"],"icon":"▧","permission":9,"sidebar":true},
     {"key":"parameters","page":"P-O-FC-01","pages":["P-O-FC-01","P-O-FC-02","P-O-FC-03"],"route":"/ops/financing-parameters","file":"02-融资参数配置/融资参数配置.html","label":["Financing parameters","融资参数配置"],"icon":"▩","permission":[19,20],"reachable":[19,20],"sidebar":true},

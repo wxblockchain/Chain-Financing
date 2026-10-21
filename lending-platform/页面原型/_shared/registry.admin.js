@@ -20,6 +20,8 @@
     "P-O-FC-03": { navKey: "navParameterEdit", parent: "P-O-FC-02", route: "/ops/financing-parameters/edit" },
     "P-L40": { navKey: "navInstitutionReview", ico: "▣", route: "/ops/institution-reviews" },
     "P-L41": { navKey: "navInstitutionDetail", parent: "P-L40", ico: "▣", route: "/ops/institution-reviews/detail" },
+    "P-O-TA-01": { navKey: "navTokenAdmission", ico: "◈", route: "/ops/token-admissions" },
+    "P-O-TA-02": { navKey: "navTokenAdmissionDetail", parent: "P-O-TA-01", route: "/ops/token-admissions/detail" },
     "P-O06": { navKey: "navOverview", ico: "▤", route: "/ops/overview" },
     "P-O-AG-01": { navKey: "navAgreements", ico: "▧", route: "/ops/agreements" },
     "P-O-AG-02": { navKey: "navAgreementDetail", parent: "P-O-AG-01", route: "/ops/agreements/detail" },

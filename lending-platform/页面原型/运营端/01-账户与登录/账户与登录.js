@@ -41,7 +41,10 @@ const PERMISSIONS=[
  {n:17,en:'View financing project reviews',zh:'融资项目审核查询'},
  {n:18,en:'Decide project reviews and contract deployment',zh:'融资项目审核与合约部署处置',needs:17},
  {n:19,en:'View financing parameters',zh:'融资参数查询'},
- {n:20,en:'Maintain financing parameters',zh:'融资参数维护',needs:19}
+ {n:20,en:'Maintain financing parameters',zh:'融资参数维护',needs:19},
+ /* 代币准入审核自行定义的两项（WS-439 PRD 第 3 节）；n 只作原型内部键，code 为业务编号。 */
+ {n:21,code:'PM-TA-01',en:'View token admission reviews',zh:'代币准入审核查询'},
+ {n:22,code:'PM-TA-02',en:'Decide token admission',zh:'代币准入审核处置',needs:21}
 ];
 const item=n=>PERMISSIONS.find(p=>p.n===n);
 /* 本期交付全部开通；preview 只在评审工具里使用，预演后期新增角色时未开通业务权限的入口收敛与拒绝反馈。 */
@@ -213,7 +216,7 @@ document.addEventListener('change',e=>{if(e.target.id==='ops-language'){S.lang=e
 window.addEventListener('storage',e=>{if(e.key===gateKey){loadGate();refreshSendButtons()}if(e.key==='hc.ops.invalidate'&&session){expire(msg('Session ended on another tab. Sign in again.','其他标签页已退出登录，请重新登录。'),false);CF.render()}});
 /* held 只读暴露“交付配置里是否勾了这一项”，供业务模块区分“未开通”与“已开通但缺配套查询权限”；
    功能权限项清单仍只在本模块维护，业务模块不另建一份。 */
-CF.opsAuth={can,held,seedDemo(kind='admin'){asyncVersion++;busy=false;a=fresh();a.email=CF.AdminMenu?.readIdentity().email||a.email;preview=kind!=='admin';grants=delivered(preview);a.first=false;a.password='Harbour123';session=true;sessionEnd=Date.now()+7200000;lastActivity=Date.now();warned=false;clean();},getIdentity:()=>({email:a.email,name:text(a.name),role:a.role,permissions:PERMISSIONS.filter(p=>can(p.n)).map(p=>'PM-AL-'+String(p.n).padStart(2,'0')),language:S.lang,timezone:S.tz})};
+CF.opsAuth={can,held,seedDemo(kind='admin'){asyncVersion++;busy=false;a=fresh();a.email=CF.AdminMenu?.readIdentity().email||a.email;preview=kind!=='admin';grants=delivered(preview);a.first=false;a.password='Harbour123';session=true;sessionEnd=Date.now()+7200000;lastActivity=Date.now();warned=false;clean();},getIdentity:()=>({email:a.email,name:text(a.name),role:a.role,permissions:PERMISSIONS.filter(p=>can(p.n)).map(p=>p.code||'PM-AL-'+String(p.n).padStart(2,'0')),language:S.lang,timezone:S.tz})};
 if(!CF.deferOpsBoot&&!Object.values(P).some(id=>location.hash.split('?')[0]==='#'+R(id)))location.hash='#'+R(P.login);
 if(!CF.deferOpsBoot)CF.boot();
 setInterval(()=>{refreshSendButtons();if(a.lockUntil&&a.lockUntil<=Date.now()){a.lockUntil=0;a.fail=0;showLock=false;capture();CF.render()}if($('lockText'))$('lockText').textContent=lockCopy();if(session){if(Date.now()>=sessionEnd||Date.now()-lastActivity>=1800000){returnTo=S.page===P.account?P.account:P.overview;expire(msg('Your session expired. Please sign in again.','登录已到期，请重新登录。'));CF.render()}else if(sessionEnd-Date.now()<60000&&!warned&&!S.layer){warned=true;capture();CF.openLayer('modal','ops-session')}}},1000);
