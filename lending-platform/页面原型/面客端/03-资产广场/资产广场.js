@@ -407,7 +407,7 @@
           }).join("") + '</tbody></table></div>';
       }
     }
-    return '<section class="card am-sec" id="am-holdings"><div class="card-head"><h2>' + title + '</h2></div>' + body + '</section>';
+    return '<section class="card am-sec" id="am-holdings" tabindex="-1"><div class="card-head"><h2>' + title + '</h2></div>' + body + '</section>';
   }
 
   /* 区块浏览器外链：唯一的新窗口；链接旁常驻未核验标注。 */
@@ -508,10 +508,7 @@
     afterList(v);
 
     var head = '<div class="page-head"><div>' +
-      '<h1 class="page-title">' + L("Asset marketplace", "资产广场") + "</h1>" +
-      '<p class="page-desc">' + L(
-        "Receivables, tokenized. Explore the assets behind each on-chain record.",
-        "查看代币背后的应收账款与链上事实。") + "</p></div></div>";
+      '<h1 class="page-title">' + L("Asset marketplace", "资产广场") + "</h1></div></div>";
 
     /* 头部汇总：只统计有效代币；空态显示 0，不隐藏整块。
        汇总与列表同批到达，因此加载中时汇总也处在加载中，不先出数再出表。 */
@@ -523,11 +520,11 @@
       return '<div class="v">' + html + "</div>";
     }
     var summary = '<div class="mk-overview am-overview"><div class="stat-strip am-summary">' +
-      '<div class="s"><div class="k">' + L("Token value · valid tokens", "代币价值 · 有效代币") + '</div>' +
+      '<div class="s"><div class="k">' + L("Token value", "代币价值") + '</div>' +
       statV(CF.market.amount(value,"USD",{compact:true,icon:true})) +
       '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + '</div></div>' +
-      '<div class="s"><div class="k">' + L("Token amount · valid tokens", "代币数量 · 有效代币") + '</div>' + statV(quantity(amount)) +
-      '<div class="n">' + L("tokens", "枚") + '</div></div></div></div>';
+      '<div class="s"><div class="k">' + L("Token amount", "代币数量") + '</div>' + statV(qty(amount)) + '</div></div>' +
+      '<p class="am-summary-scope">' + L("Valid tokens only", "仅统计有效代币") + '</p></div>';
 
     var issuers = AM.ISSUERS.map(function (h, i) { return [String(i), nm(h)]; });
     var filters = '<div class="filterbar am-filters"><div class="am-filter-options">' +
@@ -623,6 +620,70 @@
       "</tr>";
   }
 
+  /* Chapters locate existing sections without changing the shareable detail route. */
+  var detailSections = [
+    ['am-token', 'Token information', '代币信息'],
+    ['am-origin', 'Basic information', '基础资料信息'],
+    ['am-attest', 'On-chain attestation', '链上存证'],
+    ['am-holdings', 'Holders', '持有方']
+  ];
+  function detailNavigation() {
+    return '<nav class="am-section-nav" aria-label="' + L('Token detail sections', '代币详情分区') + '">' +
+      detailSections.map(function (item, i) {
+        return '<button type="button" data-am-anchor="' + item[0] + '" aria-controls="' + item[0] + '"' +
+          (!i ? ' aria-current="location"' : '') + '>' + L(item[1], item[2]) + '</button>';
+      }).join('') + '</nav>';
+  }
+  function syncDetailNavigation() {
+    var nav = document.querySelector('.am-section-nav');
+    if (!nav) return;
+    var active = detailSections[0][0], edge = nav.getBoundingClientRect().bottom + 24;
+    detailSections.forEach(function (item) {
+      var section = document.getElementById(item[0]);
+      if (section && section.getBoundingClientRect().top <= edge) active = item[0];
+    });
+    if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) active = 'am-holdings';
+    nav.querySelectorAll('button').forEach(function (button) {
+      if (button.dataset.amAnchor === active) button.setAttribute('aria-current', 'location');
+      else button.removeAttribute('aria-current');
+    });
+    if (nav.dataset.active !== active) {
+      nav.dataset.active = active;
+      var button = nav.querySelector('[aria-current]'), rect = button.getBoundingClientRect(), bounds = nav.getBoundingClientRect();
+      if (rect.left < bounds.left) nav.scrollLeft -= bounds.left - rect.left;
+      else if (rect.right > bounds.right) nav.scrollLeft += rect.right - bounds.right;
+    }
+  }
+  var detailHeaderObserver;
+  function observeDetailHeader() {
+    if (!document.querySelector('.am-section-nav')) return;
+    var header = document.querySelector('.portal-head');
+    function measure() {
+      var detail = document.querySelector('.am-detail'), nav = document.querySelector('.am-section-nav');
+      if (!detail || !nav) return;
+      detail.style.setProperty('--am-header-h', header.getBoundingClientRect().height + 'px');
+      detail.style.setProperty('--am-nav-h', nav.getBoundingClientRect().height + 'px');
+      syncDetailNavigation();
+    }
+    if (!detailHeaderObserver) {
+      detailHeaderObserver = new ResizeObserver(measure);
+      detailHeaderObserver.observe(header);
+    }
+    measure();
+  }
+  window.addEventListener('scroll', syncDetailNavigation, {passive:true});
+  window.addEventListener('resize', function () { observeDetailHeader(); });
+  document.addEventListener('click', function (event) {
+    var button = event.target.closest('[data-am-anchor]');
+    if (!button) return;
+    event.preventDefault();
+    var target = document.getElementById(button.dataset.amAnchor);
+    if (!target) return;
+    target.scrollIntoView({block:'start', behavior:'instant'});
+    target.focus({preventScroll:true});
+    syncDetailNavigation();
+  });
+
   /* ------------------------------------------------------------ 详情页 */
   function pick(table, i) { return i == null || !table[i] ? dash() : esc(nm(table[i])); }
   /* 签发汇率按上游快照原值展示：1 原币 = 汇率 USD，并给出汇率生效时间。 */
@@ -631,8 +692,8 @@
     return '<div class="am-long"><span class="num">1 ' + esc(t.recvCcy) + " = " + esc(String(t.fx.rate)) + " USD</span>" +
       '<span class="muted">' + esc(L("Effective ", "生效时间 ")) + stampTz(t.fx.at) + "</span></div>";
   }
-  function section(title, inner) {
-    return '<section class="card am-sec"><div class="card-head"><h2>' + esc(title) + "</h2></div>" +
+  function section(title, inner, id) {
+    return '<section class="card am-sec"' + (id ? ' id="' + id + '" tabindex="-1"' : '') + '><div class="card-head"><h2>' + esc(title) + "</h2></div>" +
       '<div class="card-b">' + inner + "</div></section>";
   }
   /* 第三个元素为 true 的字段占整行：合约地址与两个哈希在半行里读不完。 */
@@ -643,7 +704,7 @@
   }
 
   function pageDetail() {
-    setTimeout(renderDemoExtras, 0);
+    setTimeout(function () { renderDemoExtras(); observeDetailHeader(); }, 0);
     var t = tokenById(curTokenId());
 
     /* 标识不存在、格式非法与尚未准入（待审核、已退回）返回同一结果，不透露三者差别。 */
@@ -667,7 +728,8 @@
 
     /* 两栏成对排布：发行方与注册地、价值与汇率、链与链 ID、合约与资产槽位各自相邻。 */
     var audit = AM.AUDIT;
-    var info = section(L("Token information", "代币信息"), dl([
+    var info = section(L("Token information", "代币信息"),
+      '<div class="am-field-group"><h3>' + L("Issuance & valuation", "发行与计价") + '</h3>' + dl([
       [L("Issuer", "发行方"), esc(issuerName(t))],
       [L("Issuer country or region", "发行方注册国家或地区"), pick(AM.COUNTRIES, t.issuerCountry)],
       [L("Issuance platform", "来源发行平台"), pick(AM.PLATFORMS, t.platform)],
@@ -676,6 +738,7 @@
       [L("Token value", "代币价值"), money(t.val, "USD")],
       [L("Issuance FX rate", "签发汇率"), fxRate(t)],
       [L("Token symbol", "代币符号"), t.symbol ? '<span class="mono">' + esc(t.symbol) + "</span>" : dash()],
+    ]) + '</div><div class="am-field-group"><h3>' + L("On-chain identifiers", "链上标识") + '</h3>' + dl([
       /* 铸造链：代币铸造所在的链，只读。 */
       [L("Minting chain", "铸造链"), network(AM.CHAIN)],
       [L("Chain ID", "链 ID"), '<span class="num">' + esc(String(AM.CHAIN_ID)) + "</span>"],
@@ -691,7 +754,7 @@
         '<span class="muted">' + esc(L("Report date ", "报告日期 ")) + '<span class="num">' + esc(audit.date) + "</span></span></div>"],
       [L("Minted at", "铸造时间"), stampTz(t.at)],
       [L("Minting transaction hash", "铸造交易哈希"), hashRow(t.mintTx)]
-    ]));
+    ]) + '</div>', 'am-token');
 
     var origin = section(L("Basic information", "基础资料信息"), dl([
       [L("Seller", "卖方企业名"), esc(sellerName(t))],
@@ -706,7 +769,7 @@
         '<div class="am-long"><span>' + esc(L("Confirmed", "已确权")) + "</span><span>" + stampTz(t.confirm.at) + "</span></div>"],
       [L("Assignment registration", "债权转让登记"), !t.registry ? dash() : !t.registry.done ? esc(L("Not registered", "未登记")) :
         esc(L("Registered", "已登记")) + " · " + esc(nm(AM.REGISTRIES[t.registry.agency]))]
-    ]));
+    ]), 'am-origin');
 
     var a = t.attest || {};
     /* 存证所在链给链名，不给链 ID；存证交易按这条链打开区块浏览器。 */
@@ -719,9 +782,9 @@
           copyBtn(a.hash, L("Attestation hash", "存证哈希")) + "</div>"
         : dash()],
       [L("Attestation transaction hash", "链上存证交易哈希"), hashRow(a.tx, a.chain)]
-    ]));
+    ]), 'am-attest');
 
-    return '<div class="am-detail">' + overview + info + origin + attest + holdingTable(t) + "</div>";
+    return '<div class="am-detail">' + overview + detailNavigation() + info + origin + attest + holdingTable(t) + "</div>";
   }
 
   /* ------------------------------------------------------------ 页脚 */
