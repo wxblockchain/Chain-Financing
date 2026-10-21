@@ -282,12 +282,19 @@
     const list=requestQuotes(p,d.id),q=list.find(x=>['waiting','funding','funded','terminated'].includes(x.state)),party=!q||related(q),history=list.filter(x=>x!==q&&related(x)),credits=party?db.credits.filter(c=>c.owner===p.owner&&creditRelated(c)):[];
     flow.quote=q?.id;
     const overview='<div class="cq-request-head"><div><span class="hint">'+L('Financing request','融资申请')+'</span><h2 class="mono">'+usd(d.amount)+'</h2><span class="mono hint">'+E(d.id)+'</span></div>'+CF.tag('',requestState(d))+'</div>';
-    const request=dl([[L('Project','所属项目'),E(L(...p.name))],[L('Asset holder','资产企业'),company(p)],[L('Reference settlement currency','参考结算币种'),(p.settle?.length?E(p.settle.join(' / ')):L('Not provided','未提供'))+'<div class="hint">'+L('For reference only; not a quote restriction.','仅供参考，不限制实际报价币种。')+'</div>'],[L('Published at','申请发布时间'),time(d.at)],[L('Final repayment date','最终还款日'),date(p.expires)]]);
+    /* 融资收款地址：本企业资产方可见完整值；资金方按该笔业务当事方读取，非当事方不可见。 */
+    const owner=S.role==='asset'&&D.mine(p),payee=d.payee&&(owner||q&&related(q))?'<span class="mono cq-break">'+E(d.payee.address)+'</span><div class="hint">'+E(L(...(d.payee.label||['',''])))+' · '+L('Ethereum','以太坊')+'</div>':null;
+    const request=dl([[L('Project','所属项目'),E(L(...p.name))],[L('Asset holder','资产企业'),company(p)],[L('Reference settlement currency','参考结算币种'),(p.settle?.length?E(p.settle.join(' / ')):L('Not provided','未提供'))],...(payee?[[L('Financing receiving address','融资收款地址'),payee]]:[]),[L('Published at','申请发布时间'),time(d.at)],[L('Final repayment date','最终还款日'),date(p.expires)]]);
+    /* 冻结信息：冻结质押价值与状态对能看到完整详情的身份可见；签名事实只对本企业资产方。 */
+    const f=D.freezeOf(p,d),freezeState={frozen:['Frozen','冻结中'],releasing:['Release processing','解除处理中'],released:['Released','已解除']}[f.state]||['Freeze processing','冻结处理中'];
+    const hash=h=>h?'<span class="mono cq-break">'+E(h)+'</span>':'—';
+    const freeze=dl([[L('Frozen pledge value','冻结质押价值'),usd(f.value)],[L('Freeze status','冻结状态'),CF.tag(f.state==='frozen'?'accent':'',L(...freezeState))+(owner&&d.edit?.state==='processing'?'<div class="hint">'+L('Amount change processing · ','改额冻结处理中 · ')+usd(d.edit.value)+'</div>':'')],[L('Frozen at','冻结时间'),time(f.done||f.at)],[L('Freeze proof','冻结凭证'),hash(f.tx)],...(f.state==='released'?[[L('Released at','解除时间'),time(f.releasedAt)],[L('Release proof','解除凭证'),hash(f.releaseTx)]]:[]),...(owner?[[L('Signed by','签名地址'),d.signer?'<span class="mono cq-break">'+E(d.signer)+'</span>':'—'],[L('Signed at','签名时间'),time(d.signedAt||d.at)]]:[])])
+      +(f.log?.length?'<details class="ls-history"><summary>'+L('Amount changes','改额记录')+' · '+f.log.length+'</summary>'+dl(f.log.map(x=>[time(x.done||x.at),usd(x.from)+' → '+usd(x.to)+' · '+L('freeze ','冻结 ')+usd(x.fromValue)+' → '+usd(x.toValue)+' · '+(x.state==='success'?L('Applied','已生效'):L('Failed · unchanged','未成功 · 保持原值'))])) +'</details>':'');
     const creditSummary=credits.map(c=>'<div class="cq-credit-summary"><b>'+institution(c.fund)+'</b>'+dl([[L('Total credit','总授信'),usd(c.total)],[L('Credit used','已用授信'),usd(c.principal+used(c))],[L('Available credit','可用授信'),usd(available(c))],[L('Valid until','有效期至'),date(c.expires)]])+'</div>').join('');
     /* 报价历史只给每笔关键信息与终结原因；资金方只看本机构自己的。 */
     const why=x=>x.state==='rejected'?(related(x)?E(x.reason||'—'):'—'):x.state==='expired'?reason(x):'—';
     const historyView='<details class="ls-history cq-quote-history"'+(flow.historyOpen?' open':'')+'><summary>'+L('Quote history','报价历史')+' · '+history.length+'</summary>'+(history.length?'<div class="tablewrap"><table class="tbl resp"><thead><tr>'+[L('Institution','报价机构'),L('Business ID','融资业务编号'),L('Quoted at','报价时间'),L('Currency / rate','结算币种 / 年化利率'),L('Result','终结结果'),L('Reason','原因')].map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+history.map(x=>'<tr data-history-quote="'+E(x.id)+'"'+(flow.historyOpen===x.id?' class="is-selected"':'')+'><td>'+institution(x.fund)+'</td><td class="mono">'+E(x.id)+'</td><td>'+time(x.at)+'</td><td>'+E(x.ccy)+' · '+E(x.rate)+'%</td><td>'+status(x)+'<div class="hint">'+(x.done?time(x.done):'—')+'</div></td><td>'+why(x)+'</td></tr>').join('')+'</tbody></table></div>':'<p class="muted">'+L('No historical quotes.','暂无历史报价。')+'</p>')+'</details>';
-    return (flow.result?note(flow.result,flow.result,'ok'):'')+overview+section(L('Request information','融资申请资料'),request)+section(L('Current quote','当前报价'),currentQuoteView(q))+(party?(creditSummary?section(L('Credit summary','授信摘要'),creditSummary):'')+historyView+section(L('Agreement files','协议文件'),requestAgreements(p)):'');
+    return (flow.result?note(flow.result,flow.result,'ok'):'')+overview+section(L('Request information','融资申请资料'),request)+section(L('Freeze','冻结信息'),freeze)+section(L('Current quote','当前报价'),currentQuoteView(q))+(party?(creditSummary?section(L('Credit summary','授信摘要'),creditSummary):'')+historyView+section(L('Agreement files','协议文件'),requestAgreements(p)):'');
   }
   /* 融资流程的节点模型：操作区左侧竖轴据此画节点，不再单独画横向进度条。 */
   /* 轴只表示当前这一轮：没有进行中的需求时停在「发布」，上一轮的结果在项目记录里。 */
@@ -302,6 +309,7 @@
     if(D.terminal(p))return null;
     if(d&&d.state==='funding')return L('A new round can be published once this round\'s disbursement is confirmed.','本轮放款确认后才能发布新一轮。');
     if(['review','returned'].includes(p.state))return L('Available once the project is approved.','项目审核通过后可发布。');
+    if(D.freezing(p))return L('The freeze for this round is still processing. You can act once its result is confirmed.','本轮冻结结果确定后才能办理。');
     if(!n.value)return L('This project has no valid collateral. Complete a token pledge before publishing.','本项目暂无有效质押，请先完成代币质押后再发布。');
     if(p.expired)return L('The project has expired. New rounds cannot be published.','项目已到期，不能发布新一轮。');
     if(n.grade==='short')return L('Pledge shortfall. Add collateral before publishing.','质押不足，补足质押后才能发布。');
@@ -377,7 +385,7 @@
       else t=turn('wait',L('No active financing request','暂无进行中的融资需求'),again?L('Earlier rounds are in the project records. You can quote after the asset holder publishes a new one.','往轮记录见项目记录；资产方发布新一轮后才可报价。'):L('You can quote after the asset holder publishes a request.','资产方发布融资需求后才可报价。'));
     }
     else if(d.state==='open'){
-      if(a.mine){if(!a.edit)t=turn('wait',L('Waiting for a funder to quote','等待资金机构报价'),L('The request cannot be changed right now.','当前不能修改或撤下本轮需求。'));
+      if(a.mine){if(!a.edit)t=turn('wait',L('Waiting for a funder to quote','等待资金机构报价'),a.freezing?L('The amount change is freezing on chain. You can edit or withdraw once the result is confirmed.','改额冻结处理中，结果确定后才能修改或撤下。'):L('The request cannot be changed right now.','当前不能修改或撤下本轮需求。'));
         if(a.edit)secondary='<button class="btn" data-act="ls-publish">'+L('Edit amount','修改融资金额')+'</button><button class="btn" data-act="ls-end-demand">'+L('Withdraw request','撤下需求')+'</button>';}
       else if(S.role!=='fund')t=turn('blocked',L('Only funders can quote','仅资金方可以报价'),L('You can view this request and its records.','你可以查看本笔需求与相关记录。'));
       else if(!a.quote)t=turn('blocked',L('You cannot quote on this request now','当前不能为本轮需求报价'),p.expired?L('The project term has ended.','项目已到期。'):L('The pledge water level is unsafe. Quotes reopen when the asset holder restores it.','质押水位不安全，资产方补足质押后才可报价。'));

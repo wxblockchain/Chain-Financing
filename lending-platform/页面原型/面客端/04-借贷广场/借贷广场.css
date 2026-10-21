@@ -816,7 +816,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-form{padding-block:var(--sp-2);gap:var(--sp-5)}
 .ls-form-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4)}
 .ls-form-head .page-title{margin:0}
-.ls-form-progress{margin:0;color:var(--muted);font-size:var(--fs-12);line-height:1.6}
 .ls-form .card-head{padding:var(--sp-5) var(--sp-6)}
 .ls-form .card-b{gap:var(--sp-5)}
 .ls-form .hint{font-size:var(--fs-12);line-height:1.7;color:var(--muted)}
@@ -830,10 +829,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-form .ls-term-start,.ls-form .ls-term .inp{display:flex;align-items:center;width:100%;min-width:0;height:var(--ctrl-h);padding-inline:var(--sp-3);font-size:var(--fs-13);line-height:1.5}
 .ls-form .ls-term-start{background:var(--card-2);color:var(--text);border-color:var(--border)}
 .ls-form .ls-term-field .hint{margin-top:var(--sp-2);margin-bottom:0}
-.ls-form .ls-readonly-terms{display:grid;gap:var(--sp-4);padding-top:var(--sp-5);border-top:1px solid var(--border)}
-.ls-form .ls-readonly-terms h2{font-size:var(--fs-14);font-weight:600;margin:0;color:var(--text)}
-.ls-form .ls-readonly-terms .field-static{padding:0;margin:0;border:0;background:transparent;border-radius:0;font-size:var(--fs-13);min-height:0;line-height:1.6}
-.ls-form .ls-readonly-terms .field-label{font-size:var(--fs-12);font-weight:400;margin-bottom:var(--sp-1)}
 .ls-form .ls-form-foot{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:var(--sp-4);padding-block:var(--sp-1)}
 .ls-form-foot>.hint{flex:1;max-width:440px}
 .ls-form-actions{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-2);flex:none}
@@ -1022,3 +1017,22 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .fb-range.is-invalid{flex-wrap:wrap}
 .fb-range.is-invalid .inp{border-color:var(--danger)}
 .fb-range-error{flex-basis:100%;color:var(--danger);font-size:var(--fs-12);line-height:1.5}
+
+/* WS-446 · 质押前的授权、发布签名与冻结、融资收款地址 */
+.ls-approval{display:grid;gap:var(--sp-2);padding-top:var(--sp-3);border-top:1px solid var(--row-line)}
+.ls-approval h3{margin:0;font-size:var(--fs-13);font-weight:600;color:var(--text)}
+.ls-approval-list{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.ls-approval-list li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2) var(--sp-4);padding:var(--sp-2) 0;border-bottom:1px solid var(--row-line);font-size:var(--fs-13)}
+.ls-approval-list li:last-child{border-bottom:0}
+.ls-approval-state{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-2);text-align:right}
+.ls-approval-state .cell-sub{margin:0}
+.ls-approval-ok{display:flex;align-items:center;gap:var(--sp-2);margin:0;padding-top:var(--sp-3);border-top:1px solid var(--row-line);font-size:var(--fs-13);color:var(--muted)}
+.ls-inline-fail{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2) var(--sp-3);padding:var(--sp-2) var(--sp-3);border:1px solid var(--warn-border);border-radius:var(--radius-sm);background:var(--warn-bg);color:var(--warn);font-size:var(--fs-12);line-height:1.6}
+.ls-inline-fail .btn{flex:none}
+.ls-publish-figs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);margin:0}
+.ls-publish-figs>div{padding:var(--sp-3);border-radius:var(--radius-sm);background:var(--card-2)}
+.ls-publish-figs dt{font-size:var(--fs-12);color:var(--muted)}
+.ls-publish-figs dd{margin:var(--sp-1) 0 0;font-size:var(--fs-14);color:var(--text);overflow-wrap:anywhere}
+.ls-payee-dl{margin-top:var(--sp-2)}
+.cq-break{overflow-wrap:anywhere}
+@media(max-width:560px){.ls-publish-figs{grid-template-columns:1fr}.ls-approval-state{text-align:left}}

@@ -6,18 +6,22 @@
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
-  const SCHEMA = 'ws382-10';
-  const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
-  /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
-  D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
-  /* 平台统一钱包同样在代码层面维护；部署 gas 由运营端承担，资产方不签名不付费。 */
-  D.WALLET = '0xA17C4f1b0d9E2a7C5b83Df6e21904aB7cD35e082';
-  /* 运营配置的代币类型：代币标准与底层资产类型合并成一个字段，本期只有一行。 */
-  D.TYPES = [{id:'erc20-ar',label:['ERC-20-Receivables','ERC-20-应收账款'],maxRate:0.8,maxTerm:12}];
+  const SCHEMA = 'ws446-1';
+  const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], approvals: [], offset: 0, serial: 100 };
+  /* 代币类型：代币标准与底层资产类型合并成一个字段。id 沿用旧值，控制台等模块按它引用。 */
+  D.TYPES = [{id:'erc20-ar',label:['ERC-3525-Receivables','ERC-3525-应收账款']}];
   D.type = id => D.TYPES.find(x=>x.id===id) || D.TYPES[0];
-  D.REPAY = ['Quarterly interest, principal at maturity','按季付息、到期还本付息'];
-  D.SETTLE = [['USD','USD'],['USDT','USDT'],['USDC','USDC']];
+  /* 组合 = 区块链网络 + 代币类型：融资参数与一套共用合约（质押、放款、还款各一份）都按组合给出。 */
   D.PLEDGE_CHAIN = 'ETH';
+  D.COMBOS = [{network:'ETH',kind:'erc20-ar',maxRate:0.8,maxTerm:12,pledge:'0x7d3E91a04c5B28f6A0e17C9d42b85F3a6c01E9b4'}];
+  D.combo = (kind, network) => D.COMBOS.find(c=>c.kind===kind&&c.network===(network||D.PLEDGE_CHAIN)) || null;
+  D.REPAY = ['Quarterly interest, principal at maturity','按季付息、到期还本付息'];
+  D.SETTLE = [['USDT','USDT'],['USDC','USDC']];
+  /* 一笔质押或释放交易可容纳的份数由研发按链上能力确定；演示取 8 份。 */
+  D.BATCH_MAX = 8;
+  /* 代币发行合约（演示）：授权记录在发行合约上，按“持有地址 + 质押合约”给出。 */
+  D.ISSUERS = ['0x51a0E3c7B94d28F6e1c05A7b3D9f82e4C6a1B07d','0x6c2F9b18D47e05A3c9B1f62E8d0a7C45b3E9d218','0x8e47C1a9F03b6D25e8A4c7B19f0D3e62A5c8b941'];
+  D.issuerOf = t => t ? (t.issuer || D.ISSUERS[0]) : '';
   D.now = () => Date.now() + D.offset;
   D.iso = () => new Date(D.now()).toISOString();
   /* 项目期限按 UTC 业务日期选到期日：加 N 个月取目标月同日，目标月没有该日取月末。 */
@@ -31,7 +35,7 @@
   /* 可选到期日：创建日 + 3 个月 ～ 创建日 + 最长项目期限（≤ 12 个月），且晚于当天。退回重提沿用原创建日与创建时锁定的上限。 */
   D.termRange = (kindId, project) => {
     const start=project?project.created.slice(0,10):D.today();
-    const cap=project?project.termCap:D.type(kindId).maxTerm;
+    const cap=project?project.termCap:D.combo(kindId)?.maxTerm;
     if(!cap)return {start,none:true};
     const min=[D.addMonths(start,3),D.addDays(D.today(),1)].sort().at(-1),max=D.addMonths(start,Math.min(cap,12));
     return {start,cap,min,max,empty:min>max};
@@ -41,17 +45,19 @@
   D.fill = p => {
     if(!p)return p;
     if(!p.kind||p.kind==='ar')p.kind='erc20-ar';
-    if(!p.spv)p.spv=D.SPV;
-    if(!p.rate)p.rate=D.type(p.kind).maxRate;
-    if(!p.settle)p.settle=['USD'];
+    delete p.spv;
+    const combo=D.combo(p.kind,p.network);
+    if(!p.rate)p.rate=combo?combo.maxRate:0.8;
+    p.settle=(p.settle||[]).filter(c=>c!=='USD');if(!p.settle.length)p.settle=['USDT'];
     if(!p.created)p.created=p.published||D.iso();
-    if(!p.termCap)p.termCap=D.type(p.kind).maxTerm;
+    if(!p.termCap)p.termCap=combo?combo.maxTerm:12;
+    if(!p.attempts)p.attempts=[];
     if(!p.expiry){p.expiry=p.expires?p.expires.slice(0,10):D.addMonths(p.created.slice(0,10),p.term||12);p.expires=D.endOf(p.expiry);}
     if(p.contract&&!p.deployedAt)p.deployedAt=p.created;
     if(!p.contract)p.deployedAt=null;
     return p;
   };
-  D.save = () => { try { localStorage.setItem(KEY, JSON.stringify({schema:SCHEMA,projects:D.projects,tokens:D.tokens,applications:D.applications,executions:D.executions,events:D.events,offset:D.offset,serial:D.serial})); } catch (_) {} };
+  D.save = () => { try { localStorage.setItem(KEY, JSON.stringify({schema:SCHEMA,projects:D.projects,tokens:D.tokens,applications:D.applications,executions:D.executions,events:D.events,approvals:D.approvals,offset:D.offset,serial:D.serial})); } catch (_) {} };
   D.project = id => D.fill(D.projects.find(p => p.id === id));
   D.token = id => D.tokens.find(t => t.id === id);
   /* 当前演示身份代表的资产方企业；演示视角可切换到另一家企业查看同一项目。 */
@@ -99,7 +105,9 @@
     const total = pool.reduce((v,t) => v+t.value,0);
     const valid = pool.filter(t => t.valid && !t.frozen && !t.pending);
     const value = valid.reduce((v,t) => v+t.value,0);
-    const fly = p.demands.filter(d => ['open','quoted','funding'].includes(d.state)).reduce((v,d) => v+d.amount,0);
+    /* 在途含发布或改额冻结处理中的预占：发布按本次金额，改额按新金额。 */
+    const fly = p.demands.filter(d => ['open','quoted','funding'].includes(d.state)).reduce((v,d) => v+(d.edit&&d.edit.state==='processing'?d.edit.amount:d.amount),0)
+      + (p.attempts||[]).filter(x=>x.state==='processing').reduce((v,x)=>v+x.amount,0);
     const limit = value*rate, free = Math.max(0,limit-p.balance-fly);
     return {rate,pool,total,valid,value,fly,limit,free,withdraw:free/rate,
       gap:Math.max(0,p.balance-limit),grade:limit<p.balance?'short':free>0?'surplus':'balanced'};
@@ -113,26 +121,59 @@
   D.holderOf = t => t ? (t.holder || (D.HOLDERS[t.owner] || [''])[0]) : '';
   D.shareValue = (units, tokenUnits, tokenValue) => Math.round(units * tokenValue / tokenUnits * 100) / 100;
   D.current = p => p.demands.find(d => ['open','quoted','funding'].includes(d.state));
+  /* 发布或改额的冻结处理中：发布尚未成立，不能再次发布、改额或撤下。 */
+  D.freezing = p => (p.attempts||[]).some(x=>x.state==='processing') || p.demands.some(d=>d.edit&&d.edit.state==='processing');
+  /* 本轮冻结：冻结质押价值 = 需求金额 ÷ 项目质押率；未成交终结即解除，成交后保留到该笔结清。 */
+  D.freezeOf = (p,d) => {
+    if(!d)return null;
+    if(!d.freeze)d.freeze={value:d.amount/p.rate,state:'frozen',at:d.at,done:d.at,tx:'0x'+(parseInt(String(d.id).replace(/\D/g,''),10)||7).toString(16).padStart(64,'f').slice(-64),log:[]};
+    if(d.state==='ended'&&d.freeze.state==='frozen'||D.terminal(p)&&d.freeze.state==='frozen'){d.freeze.state='released';d.freeze.releasedAt=d.endedAt||D.iso();d.freeze.releaseTx='0x'+String(d.freeze.tx).slice(4)+'e1';}
+    return d.freeze;
+  };
+  D.frozenValue = p => p.demands.map(d=>D.freezeOf(p,d)).filter(f=>f&&f.state==='frozen').reduce((v,f)=>v+f.value,0);
   D.actions = p => {
-    const n=D.numbers(p), current=D.current(p), mine=D.mine(p), terminal=D.terminal(p);
+    const n=D.numbers(p), current=D.current(p), mine=D.mine(p), terminal=D.terminal(p), freezing=D.freezing(p);
     /* 可撤回上限只约束有效抵押物；水位不安全时合约内的代币（含已失效）一律不能转出，已释放待提取照常可办理。 */
     const releasable=D.tokens.filter(t => {if((t.pool!==p.id&&t.releasedFrom!==p.id)||t.pending||t.frozen)return false;if(t.pledge==='released')return true;if(t.pledge!=='pledged')return false;if(D.waterLocked(p))return false;return !t.valid||t.value<=n.withdraw;});
     const live=!terminal&&!['review','returned'].includes(p.state);
     return {mine,review:p.state==='review',returned:p.state==='returned',live,
-      pledge:mine&&live,publish:mine&&live&&!p.expired&&!current&&n.value>0&&n.free>0,
-      edit:mine&&current&&current.state==='open'&&!p.expired,withdraw:mine&&releasable.length>0,
+      pledge:mine&&live,publish:mine&&live&&!p.expired&&!current&&!freezing&&n.value>0&&n.free>0,freezing,
+      edit:mine&&current&&current.state==='open'&&!p.expired&&!freezing,withdraw:mine&&releasable.length>0,
       close:mine&&!terminal&&!p.expired,canClose:mine&&!terminal&&!p.expired&&!p.deploying&&!D.unfinished(p).length,
       quote:CF.S.role==='fund'&&current&&current.state==='open'&&!terminal&&!p.expired&&n.grade==='surplus'};
   };
-  D.kinds = () => D.TYPES.filter(x=>D.tokens.some(t=>t.owner===D.me()&&t.kind===x.id)).map(x=>x.id);
-  D.candidates = p => D.tokens.filter(t => t.owner===D.me()&&t.kind===(p?.kind||'erc20-ar')&&t.valid&&t.pledge==='free'&&!t.frozen);
-  D.selectable = (t,p) => t && t.owner===D.me()&&t.valid&&t.kind===(p?.kind||'erc20-ar')&&t.pledge==='free'&&!t.pending&&!t.application&&!t.frozen;
+  /* 只有通过代币准入审核的代币进入本模块；待审核、已退回的在任何地方都不出现。 */
+  D.admitted = t => !!t && !['pending','returned'].includes(t.admission);
+  /* 创建时的代币类型候选：本企业在所选网络上持有该类型的已准入代币；组合是否已配置参数另行判断。 */
+  D.kinds = (network) => D.TYPES.filter(x=>D.tokens.some(t=>t.owner===D.me()&&D.admitted(t)&&t.kind===x.id)).map(x=>x.id);
+  D.selectable = (t,p) => t && t.owner===D.me()&&D.admitted(t)&&t.valid&&t.kind===(p?.kind||'erc20-ar')&&t.pledge==='free'&&!t.pending&&!t.application&&!t.frozen;
+  /* 授权按“持有地址 + 质押合约”给出，链上记录在各代币发行合约上：所选份额来自几个未授权的发行合约，就要授权几次。 */
+  D.approvalOf = (holder, contract, issuer) => [...D.approvals].reverse().find(a=>a.holder===holder&&a.contract===contract&&a.issuer===issuer);
+  D.approvalNeeds = (p, ids) => {
+    const tokens=ids.map(D.token).filter(Boolean),out=[];
+    tokens.forEach(t=>{const holder=D.holderOf(t),issuer=D.issuerOf(t);let row=out.find(x=>x.holder===holder&&x.issuer===issuer);if(!row){row={holder,issuer,count:0,record:D.approvalOf(holder,p.contract,issuer)};out.push(row);}row.count++;});
+    return out;
+  };
+  D.approvalsReady = (p, ids) => D.approvalNeeds(p, ids).every(x=>x.record&&x.record.state==='success');
+  D.APPROVE_FEE = 0.00021;
+  D.approve = (p, holder, issuer) => {
+    if(!D.mine(p))throw Error('permission');
+    const prior=D.approvalOf(holder,p.contract,issuer);if(prior&&['processing','success'].includes(prior.state))throw Error('approvalChanged');
+    const rec={id:'AP-DEMO-'+(++D.serial),holder,contract:p.contract,issuer,state:'processing',at:D.iso(),fee:null,feeCurrency:'ETH'};
+    D.approvals.push(rec);D.save();return rec;
+  };
+  D.approvalResult = (rec, result) => {
+    if(!rec||rec.state!=='processing')return;
+    rec.state=result==='success'?'success':'failure';rec.done=D.iso();rec.fee=result==='noFee'?0:D.APPROVE_FEE;
+    if(rec.state==='success')rec.tx='0x'+String(++D.serial).padStart(64,'a');
+    D.save();
+  };
   D.releaseApplication = a => a.tokens.forEach(id => { const t=D.token(id);if(t.application===a.id)t.application=null; });
   D.recompute = p => {
     let n=D.numbers(p);
     [...p.demands].reverse().forEach(d => {
       if (['open','quoted'].includes(d.state) && n.limit < p.balance+n.fly) {
-        d.state='ended';d.reason='coverage';d.endedAt=D.iso();d.quoteState='ended';D.log(p,'demandVoided',d.id);n=D.numbers(p);
+        d.state='ended';d.reason='coverage';d.endedAt=D.iso();d.quoteState='ended';D.freezeOf(p,d);D.log(p,'demandVoided',d.id);n=D.numbers(p);
       }
     });
     if(!D.terminal(p)&&!D.current(p)&&!['review','returned'].includes(p.state))p.state=p.balance||CF.L8?.hasUnsettled?.(p)||p.demands.some(d=>d.state==='funding')?'financing':'available';
@@ -144,14 +185,14 @@
     if(p.demands.some(d=>d.state==='quoted'))out.push('quoted');
     if(p.demands.some(d=>d.state==='funding'))out.push('funding');
     if(p.balance>0||CF.L8?.hasUnsettled?.(p))out.push('unsettled');
-    if(D.executions.some(e=>e.project===p.id&&e.state==='processing')||D.tokens.some(t=>(t.pool===p.id||t.releasedFrom===p.id)&&t.pending))out.push('processing');
+    if(D.executions.some(e=>e.project===p.id&&e.state==='processing')||D.tokens.some(t=>(t.pool===p.id||t.releasedFrom===p.id)&&t.pending)||D.freezing(p))out.push('processing');
     return out;
   };
   /* 到期自动终结（Q-LS-22）：到期且没有未处理完成的业务时终结——有过成交的转已结清，从未成交的转已关闭（有效期到期）；两者都整池释放。
      到期时仍有业务的，最后一项处理完成时按同一规则终结。未到期时全部结清只回到可用。 */
   D.hadDeal = p => p.demands.some(d=>['funding','funded'].includes(d.state))||(CF.CQ?.data?.().quotes||[]).some(q=>q.project===p.id&&['funding','funded'].includes(q.state));
   D.autoEnd = p => {
-    /* D-LS-72：待审核或已退回到期自动关闭（有效期到期）；合约部署进行中跨过有效期至的，等回写后再处理。 */
+    /* D-LS-72：待审核或已退回到期自动关闭（有效期到期）；合约配置进行中跨过有效期至的，等回写后再处理。 */
     if(p&&p.expired&&['review','returned'].includes(p.state)){
       if(p.deploying)return false;
       p.state='closed';p.closeReason='expiry';D.releasePool(p);D.log(p,'closed');return true;
@@ -169,7 +210,7 @@
   D.sweep = () => {
     let changed=false;
     /* 本模块没有任何倒计时类时限：项目审核与报价都不因等待自动改变结论。 */
-    D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const d=D.current(p);if(d&&['open','quoted'].includes(d.state)){d.state='ended';d.reason='expiry';d.endedAt=D.iso();d.quoteState='ended';D.log(p,'demandExpired',d.id);}if(!D.terminal(p))D.recompute(p);D.log(p,'projectExpired');changed=true;}if(D.autoEnd(p))changed=true;});
+    D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const d=D.current(p);if(d&&['open','quoted'].includes(d.state)){d.state='ended';d.reason='expiry';d.endedAt=D.iso();d.quoteState='ended';D.freezeOf(p,d);D.log(p,'demandExpired',d.id);}if(!D.terminal(p))D.recompute(p);D.log(p,'projectExpired');changed=true;}if(D.autoEnd(p))changed=true;});
     if(changed)D.save();return changed;
   };
   /* 创建即提交审核：不勾代币、不上链、不签名、不收费。 */
@@ -178,7 +219,7 @@
     const title=(form.name||'').trim();
     if(!title||[...title].length>60)throw Error('name');
     if(!D.kinds().includes(form.kind))throw Error('kind');
-    const cfg=D.type(form.kind);
+    const cfg=D.combo(form.kind);if(!cfg)throw Error('comboClosed');
     const rate=Number(form.rate);
     if(!/^\d+(\.\d{1,2})?$/.test(String(form.rate).trim())||!(rate>0&&rate<=cfg.maxRate*100))throw Error('rate');
     /* 提交时按当刻条件复核到期日：范围外一律拒绝。 */
@@ -193,12 +234,12 @@
     }
     const created=D.iso();
     const p={id:'FP-DEMO-'+(++D.serial),name:[title,title],owner:D.me(),kind:form.kind,rate:rate/100,termCap:cfg.maxTerm,
-      network:D.PLEDGE_CHAIN,settle:[...form.settle],spv:D.SPV,repay:D.REPAY,contract:null,deployedAt:null,state:'review',balance:0,demands:[],
+      network:D.PLEDGE_CHAIN,settle:[...form.settle],repay:D.REPAY,contract:null,deployedAt:null,state:'review',balance:0,demands:[],attempts:[],
       created,published:null,expiry:form.expiry,expires:D.endOf(form.expiry)};
     D.projects.unshift(p);D.log(p,'created');D.save();return p;
   };
-  /* 审核与部署是同一步：部署成功即通过，同时产生合约地址。 */
-  /* 运营提交通过后合约部署进行中（含结果待核实）：资产方看到的仍是待审核，但暂不可关闭；回写后按结果处理。 */
+  /* 审核与合约配置是同一步：运营选定本组合的共用合约，平台在链上配置成功即审核通过。deploying 表示配置处理中。 */
+  /* 配置进行中（含结果待核实）：资产方看到的仍是待审核，但暂不可关闭；回写后按结果处理。 */
   D.decideProject = (p, outcome, reason) => {
     if(p.state!=='review')throw Error('reviewChanged');
     if(outcome==='submit'){if(p.deploying)throw Error('reviewChanged');if(p.expired)throw Error('projectExpired');p.deploying=true;D.save();return true;}
@@ -207,20 +248,22 @@
     p.deploying=false;
     if(outcome==='approve'){
       p.state='available';p.reviewReason=null;
-      p.contract='0x'+(D.serial+7).toString(16).padStart(40,'0');p.deployedAt=D.iso();
+      p.contract=(D.combo(p.kind,p.network)||D.COMBOS[0]).pledge;p.deployedAt=D.iso();
       D.log(p,'projectApproved');
     } else if(outcome==='deployFailed'){ D.log(p,'deployFailed'); }
     else { p.state='returned';p.reviewReason=reason||['The submitted project details need a correction.','提交的创建信息需要修正后再提交。'];D.log(p,'projectReturned'); }
-    /* 部署进行中跨过有效期至：成功即通过、随后按可用状态到期终结；失败随即关闭。 */
+    /* 配置进行中跨过有效期至：成功即通过、随后按可用状态到期终结；失败随即关闭。 */
     D.autoEnd(p);
     D.save();return true;
   };
 
   D.execute = (p, kind, ids, appId) => {
     if(!D.mine(p))throw Error('permission');
+    if(ids.length>D.BATCH_MAX)throw Error('batchLimit');
     if(kind==='deposit'){
       if(!D.actions(p).pledge)throw Error('closed');
       if(!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!D.selectable(D.token(id),p)))throw Error('selectionChanged');
+      if(!D.approvalsReady(p,ids))throw Error('approvalRequired');
     }
     else {
       const n=D.numbers(p);if(!ids.length||ids.some(id=>{const t=D.token(id);return !t||t.owner!==p.owner||t.frozen||t.pending||!(t.pool===p.id&&t.pledge==='pledged'||t.releasedFrom===p.id&&t.pledge==='released');}))throw Error('selectionChanged');
@@ -233,7 +276,9 @@
   D.result = (e, result) => {
     const t=D.token(e.token),p=D.project(e.project);
     if(e.state!=='processing'&&result==='late'){t.frozen=true;e.late=true;e.conflictAt=D.iso();D.log(p,'reconciliation',e.id);D.recompute(p);D.save();return;}
-    if(e.state!=='processing'||!['success','failure','noFee'].includes(result))return;
+    if(e.state!=='processing'||!['success','failure','noFee','contract'].includes(result))return;
+    /* 质押合约判断不允许转出：交易执行失败，代币仍在合约内，已产生的 gas 不退。 */
+    if(result==='contract'){e.reason='contract';result='failure';}
     const a=D.applications.find(a=>a.id===e.application);
     if(e.kind==='deposit'&&D.terminal(p)){e.observedResult=result;e.observedAt=D.iso();e.fee=result==='noFee'?0:D.quoteFee(e.token).amount;e.boundary=true;D.save();return;}
     e.state=result;e.done=D.iso();e.fee=result==='noFee'?0:D.quoteFee(e.token).amount;
@@ -253,27 +298,49 @@
     else if(D.terminal(p)&&t.pledge==='pledged'){t.pledge='released';t.pool=null;t.releasedFrom=p.id;}
     D.log(p,result==='success'?'executionSuccess':'executionFailed',e.id);D.recompute(p);D.save();
   };
-  D.publish = (p, amount, edit, referenceCurrencies) => {
+  /* 发布与改额：资产方用登录钱包签名确认（不上链、无 gas），平台核验后由平台执行钱包发起冻结交易；冻结上链成功才算发布或改额成功。 */
+  D.publishStart = (p, amount, edit, payee, signer) => {
     D.sweep();const a=D.actions(p),n=D.numbers(p),current=D.current(p);
     if(!D.mine(p))throw Error('permission');if(edit?!a.edit:!a.publish)throw Error('publishChanged');
     const max=n.free+(edit?current.amount:0);if(!Number.isFinite(amount)||amount<=0||Math.abs(Math.round(amount*100)-amount*100)>1e-6||amount>max)throw Error('amount');
-    if(!Array.isArray(referenceCurrencies)||!referenceCurrencies.length||referenceCurrencies.some(c=>!['USD','USDT','USDC'].includes(c)))throw Error('referenceCurrencies');
-    const preferences=[...new Set(referenceCurrencies)];
-    if(edit){current.amount=amount;current.referenceCurrencies=preferences;}
-    else{const at=D.iso();p.demands.push({id:p.id+'-'+String(p.demands.length+1).padStart(2,'0'),amount,referenceCurrencies:preferences,state:'open',at});p.state='raising';if(!p.published)p.published=at;}
-    D.log(p,edit?'amountEdited':'published');D.save();
+    const value=amount/p.rate,at=D.iso();
+    if(edit){current.edit={amount,value,from:current.amount,fromValue:D.freezeOf(p,current).value,at,state:'processing',signer};}
+    else{if(!payee||payee.chain!=='ETH'||!payee.address)throw Error('payee');
+      p.attempts.push({id:'AT-DEMO-'+(++D.serial),amount,value,payee,signer,at,state:'processing'});}
+    D.log(p,edit?'editSigned':'publishSigned');D.save();
   };
-  D.endDemand = p => {const a=D.actions(p);if(!a.edit)throw Error('demandChanged');const d=D.current(p);d.state='ended';d.reason='withdrawn';d.endedAt=D.iso();D.recompute(p);D.log(p,'demandWithdrawn',d.id);D.save();};
+  /* 冻结结果回写：成功即发布（生成融资申请编号、待报价、借贷广场可见）或改额生效；失败不生成需求、预占释放，改额保持原值。 */
+  D.freezeResult = (p, result) => {
+    if(result==='wait')return false;
+    let changed=false;const ok=result==='success',tx=()=>'0x'+String(++D.serial).padStart(64,'c');
+    (p.attempts||[]).filter(x=>x.state==='processing').forEach(x=>{changed=true;
+      if(!ok){x.state='failed';x.done=D.iso();D.log(p,'freezeFailed',x.id);return;}
+      const at=D.iso(),hash=tx();
+      p.demands.push({id:p.id+'-'+String(p.demands.length+1).padStart(2,'0'),amount:x.amount,state:'open',at,payee:x.payee,signer:x.signer,signedAt:x.at,
+        freeze:{value:x.value,state:'frozen',at:x.at,done:at,tx:hash,log:[]}});
+      p.attempts=p.attempts.filter(y=>y!==x);p.state='raising';if(!p.published)p.published=at;D.log(p,'published');});
+    p.demands.filter(d=>d.edit&&d.edit.state==='processing').forEach(d=>{changed=true;const f=D.freezeOf(p,d),e=d.edit;
+      f.log.push({from:e.from,to:e.amount,fromValue:e.fromValue,toValue:e.value,at:e.at,done:D.iso(),state:ok?'success':'failed',tx:ok?tx():null});
+      if(ok){d.amount=e.amount;f.value=e.value;D.log(p,'amountEdited',d.id);}else D.log(p,'freezeFailed',d.id);
+      delete d.edit;});
+    if(changed){D.recompute(p);D.save();}
+    return changed;
+  };
+  D.endDemand = p => {const a=D.actions(p);if(!a.edit)throw Error('demandChanged');const d=D.current(p);d.state='ended';d.reason='withdrawn';d.endedAt=D.iso();D.freezeOf(p,d);D.recompute(p);D.log(p,'demandWithdrawn',d.id);D.save();};
   D.close = p => {if(p.deploying)throw Error('deploying');if(!D.actions(p).canClose)throw Error('cannotClose');
     /* 尚未收到报价的需求随项目关闭一并终结。 */
-    p.demands.filter(d=>d.state==='open').forEach(d=>{d.state='ended';d.reason='closed';d.endedAt=D.iso();d.quoteState='ended';D.log(p,'demandWithdrawn',d.id);});
+    p.demands.filter(d=>d.state==='open').forEach(d=>{d.state='ended';d.reason='closed';d.endedAt=D.iso();d.quoteState='ended';D.freezeOf(p,d);D.log(p,'demandWithdrawn',d.id);});
     p.state='closed';p.closeReason='owner';D.releasePool(p);D.log(p,'closed');D.save();};
   D.seed = () => {
-    D.projects=[];D.tokens=[];D.applications=[];D.executions=[];D.events=[];D.offset=0;D.serial=100;
+    D.projects=[];D.tokens=[];D.applications=[];D.executions=[];D.events=[];D.approvals=[];D.offset=0;D.serial=100;
+    /* 融资收款地址快照（演示）：取本企业在企业账户登记的以太坊数币账户，发布成功后随本轮固定。 */
+    const PAYEE={'entity-demo-a':{id:'EA-DEMO-C02',kind:'crypto',chain:'ETH',label:['Collection wallet','收款钱包'],address:'0x00000000000000000000000000000000000000a2'},
+      'entity-demo-b':{id:'EA-DEMO-C31',kind:'crypto',chain:'ETH',label:['Main wallet','主钱包'],address:'0x00000000000000000000000000000000000000c1'}};
+    const POOL=D.COMBOS[0].pledge;
     for(let i=1;i<=24;i++){
       const created=new Date(D.now()-(i+2)*DAY).toISOString(),expiry=D.addMonths(created.slice(0,10),[12,9,6][i%3]);
-      const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',kind:'erc20-ar',rate:0.8,termCap:12,settle:['USD'],repay:D.REPAY,contract:'0x'+(i*31+7).toString(16).padStart(40,'0'),deployedAt:new Date(Date.parse(created)+3*3600000).toISOString(),spv:D.SPV,state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],created,published:new Date(D.now()-i*DAY).toISOString(),expiry,expires:D.endOf(expiry),quotes:i===3?1:0};
-      if(i!==5&&i!==6)p.demands.push({id:p.id+'-01',amount:i===4?500000:300000,state:i===4?'funded':i===3?'quoted':'open',at:p.published,tenorDays:i===3?90:i===4?120:null,rate:i===3?'6.40':i===4?'6.80':null,institution:i===3?['Demo Capital','演示资金机构']:null,quoteAt:i===3?p.published:null});
+      const p={id:'FP-DEMO-'+String(i).padStart(3,'0'),name:['Receivables pool '+String(i).padStart(2,'0'),'应收账款资产池 '+String(i).padStart(2,'0')],owner:i<=7?'entity-demo-a':'entity-demo-b',kind:'erc20-ar',network:'ETH',rate:0.8,termCap:12,settle:i%2?['USDT','USDC']:['USDT'],repay:D.REPAY,contract:POOL,deployedAt:new Date(Date.parse(created)+3*3600000).toISOString(),attempts:[],state:i===3?'locked':i===4?'financing':i===5?'settled':i===6?'closed':'raising',balance:i===4?500000:0,demands:[],created,published:new Date(D.now()-i*DAY).toISOString(),expiry,expires:D.endOf(expiry),quotes:i===3?1:0};
+      if(i!==5&&i!==6)p.demands.push({id:p.id+'-01',amount:i===4?500000:300000,state:i===4?'funded':i===3?'quoted':'open',at:p.published,payee:PAYEE[p.owner],signedAt:p.published,tenorDays:i===3?90:i===4?120:null,rate:i===3?'6.40':i===4?'6.80':null,institution:i===3?['Demo Capital','演示资金机构']:null,quoteAt:i===3?p.published:null});
       /* 已结清示例按 Q-LS-22 是到期后自动终结的项目。 */
       if(i===5){p.expiry=D.addDays(D.today(),-1);p.expires=D.endOf(p.expiry);p.expired=true;
         /* 项目期限须在 3 个月～1 年内（D-LS-66）：创建日取到期日前 6 个月，发布与部署时间随之落在期限内。 */
@@ -281,17 +348,18 @@
       if(i===6)p.closeReason='owner';
       D.projects.push(p);
       for(let j=1;j<=7;j++){const released=[5,6].includes(i);const value=j===7?100000:150000;
-        D.tokens.push({id:'TK-DEMO-'+i+'-'+j,owner:p.owner,kind:'erc20-ar',units:1,symbol:'AR-DEMO',value,valid:i===4?j<=3:j!==7,pool:released?null:p.id,releasedFrom:released?p.id:null,pledge:released?'released':'pledged',buyer:['Demo Buyer '+j,'演示买方 '+j],due:'2027-01-20',from:'2026-07-20',tx:'0x'+(i*10+j).toString(16).padStart(64,'0')});}
+        D.tokens.push({id:'TK-DEMO-'+i+'-'+j,owner:p.owner,kind:'erc20-ar',issuer:D.ISSUERS[0],slot:String(1000+i*10+j),units:1,symbol:'AR-DEMO',value,valid:i===4?j<=3:j!==7,pool:released?null:p.id,releasedFrom:released?p.id:null,pledge:released?'released':'pledged',buyer:['Demo Buyer '+j,'演示买方 '+j],due:'2027-01-20',from:'2026-07-20',tx:'0x'+(i*10+j).toString(16).padStart(64,'0')});}
       p.grade=D.numbers(p).grade;p.coverageAt=p.published;
     }
     /* 多持有方演示：两笔代币各由本企业两个地址与另一企业分持；份额价值 = 持有数量 × 代币价值 ÷ 代币数量。 */
     const A=D.HOLDERS['entity-demo-a'],B=D.HOLDERS['entity-demo-b'][0];
     [['TK-MH-2610-01',1000000,1200000,[[A[0],'entity-demo-a',400000,'FP-DEMO-001'],[A[1],'entity-demo-a',350000,'FP-DEMO-002'],[B,'entity-demo-b',250000,'FP-DEMO-008']]],
      ['TK-MH-2610-02',600000,600000,[[A[0],'entity-demo-a',300000,null],[A[1],'entity-demo-a',200000,null],[B,'entity-demo-b',100000,null]]]].forEach(([no,total,worth,shares],k)=>{
-      shares.forEach(([holder,owner,units,pool],j)=>D.tokens.push({id:no+'#'+(j+1),no,holder,owner,kind:'erc20-ar',units,tokenUnits:total,tokenValue:worth,symbol:'AR-DEMO',value:D.shareValue(units,total,worth),valid:true,
+      shares.forEach(([holder,owner,units,pool],j)=>D.tokens.push({id:no+'#'+(j+1),no,holder,owner,kind:'erc20-ar',issuer:D.ISSUERS[k?2:0],slot:String(2610+k),units,tokenUnits:total,tokenValue:worth,symbol:'AR-DEMO',value:D.shareValue(units,total,worth),valid:true,
         pool,pledge:pool?'pledged':'free',buyer:['Demo Buyer '+(k+3),'演示买方 '+(k+3)],due:'2027-04-20',from:'2026-10-02',tx:pool?'0x'+(900+k*10+j).toString(16).padStart(64,'0'):undefined}));
     });
-    for(let i=1;i<=12;i++)D.tokens.push({id:'TK-FREE-'+String(i).padStart(2,'0'),owner:'entity-demo-a',kind:'erc20-ar',units:1,symbol:'AR-DEMO',value:[300000,300000,400000][(i-1)%3],valid:true,pool:null,pledge:'free',buyer:['Demo Buyer '+i,'演示买方 '+i],due:'2027-03-18',from:'2026-09-18'});
+    /* 可质押演示：1～6 号来自已对本质押合约授权的发行合约，7～10 号来自尚未授权的另一发行合约；11、12 号仍在代币准入审核中，不出现。 */
+    for(let i=1;i<=12;i++)D.tokens.push({id:'TK-FREE-'+String(i).padStart(2,'0'),owner:'entity-demo-a',kind:'erc20-ar',issuer:D.ISSUERS[i<=6?0:1],slot:String(3000+i),admission:i>10?'pending':'approved',units:1,symbol:'AR-DEMO',value:[300000,300000,400000][(i-1)%3],valid:true,pool:null,pledge:'free',buyer:['Demo Buyer '+i,'演示买方 '+i],due:'2027-03-18',from:'2026-09-18'});
     D.normalize();
     /* 多持有方份额按一次追加签名入池：同一提交批次，申请类型为追加。 */
     D.applications.filter(x=>x.tokens.some(id=>id.startsWith('TK-MH-'))).forEach(x=>{x.batch='PB-SEED-MH-'+x.project.slice(-3);x.type='additional';});
@@ -299,6 +367,9 @@
     D.applications.filter(x=>x.tokens.some(id=>id.startsWith('TK-MH-'))).forEach(x=>{x.submitted=new Date(D.now()-6*3600000).toISOString();});
     /* 水位演示：FP-DEMO-004 质押不足；FP-DEMO-007 质押持平但水位不安全（有效质押额覆盖融资余额，却低于融资余额 + 一笔已接受待放款的在途）。 */
     {const p7=D.project('FP-DEMO-007');if(p7){p7.balance=400000;p7.state='financing';const d=p7.demands[0];if(d)Object.assign(d,{amount:200000,state:'funding',tenorDays:90,rate:'6.20',institution:['Demo Capital','演示资金机构'],quoteAt:d.at});p7.grade=D.numbers(p7).grade;}}
+    /* 本企业两个持有地址此前已对共用质押合约授权首个发行合约。 */
+    A.forEach(holder=>D.approvals.push({id:'AP-SEED-'+holder.slice(-4),holder,contract:POOL,issuer:D.ISSUERS[0],state:'success',at:D.projects[0].deployedAt,done:D.projects[0].deployedAt,fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:'0x'+'ab'.repeat(32)}));
+    D.projects.forEach(p=>p.demands.forEach(d=>D.freezeOf(p,d)));
     D.applications.forEach(a=>D.log(D.project(a.project),'onChain',a.id));D.save();
   };
   try{
