@@ -119,6 +119,21 @@ table.tbl.am-tbl{table-layout:fixed}
 .am-tbl th:nth-child(7){width:7%}
 .am-tbl th:nth-child(8){width:10%}
 .am-tbl th:nth-child(9){width:12%}
+/* 放大态共十一列：按各列取值的实际宽度重新分配，状态标签与编号不折行；默认态沿用 market.css 的七列宽度。 */
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(1){width:9%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(2){width:14%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(3){width:12.5%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(4){width:6.5%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(5){width:8.5%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(6){width:8.5%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(7){width:10.5%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(8){width:6.5%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(9){width:8%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(10){width:9.5%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl th:nth-child(11){width:6%}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl :is(.tag,.am-slot,.am-id){white-space:nowrap}
+[data-market-redesign] .am-market-page .mk-list-frame[data-density="full"] .am-tbl .am-id{padding-inline:0}
+.am-tbl .am-slot{font-size:var(--fs-12)}
 table.tbl.am-tbl thead th{padding-block:var(--sp-3);color:var(--muted)}
 table.tbl.am-tbl th.sortable button{padding-block:var(--sp-3);align-items:center}
 table.tbl.am-tbl th.sortable.am-r .am-th-l{align-items:flex-end}
@@ -214,3 +229,14 @@ table.tbl.am-tbl tbody td{padding-block:var(--sp-3);line-height:1.5;overflow-wra
 .am-detail .dl dd :is(.num,.mk-money-number){font-family:var(--numeric,var(--sans));font-variant-numeric:tabular-nums}
 .am-detail .am-addr .mono,.am-detail .am-hash .hash{font-size:var(--fs-12)}
 .am-detail .am-caveat{margin-top:var(--sp-1)}
+
+/* 2026-10-21 · 汇总只剩两项有效代币合计：两项并排靠左，不再给构成图留栏。 */
+[data-market-redesign] .am-market-page .am-overview{grid-template-columns:minmax(0,1fr)}
+[data-market-redesign] .am-market-page .am-overview .stat-strip{grid-template-columns:repeat(2,minmax(0,max-content));column-gap:var(--sp-10)}
+@media (max-width:600px){
+  [data-market-redesign] .am-market-page .am-overview .stat-strip{grid-template-columns:minmax(0,1fr)}
+}
+/* 放大态卡片：代币发行合约与资产槽位与铸造时间同为整行「标签 · 取值」。 */
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl :is(td:nth-child(10),td:nth-child(11)){grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3)}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl :is(td:nth-child(10),td:nth-child(11))::before{flex:none;margin-bottom:0}
+[data-market-redesign] .listzone[data-view="cards"] .am-tbl td:nth-child(10) .am-id{min-height:0}

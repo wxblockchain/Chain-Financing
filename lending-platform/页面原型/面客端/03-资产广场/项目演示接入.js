@@ -13,7 +13,7 @@
   });
   /* 有已质押持有方、且所属项目已发布的代币，放进借贷演示模型的对应项目，供「所属融资项目」跳转。 */
   AM.TOKENS.forEach(function (t) {
-    var rec = (AM.PLEDGES[t.no] || []).filter(function (r) { return (r.state === "in" || r.state === "exiting") && r.project.published; })[0];
+    var rec = (AM.PLEDGES[t.pid] || []).filter(function (r) { return (r.state === "in" || r.state === "exiting") && r.project.published; })[0];
     if (!rec) return;
     D.tokens = D.tokens.filter(function (x) { return x.id !== t.no; });
     D.tokens.push({ id: t.no, owner: "entity-demo-b", kind: "ar", units: t.qty, symbol: "AR-DEMO", value: t.val,
