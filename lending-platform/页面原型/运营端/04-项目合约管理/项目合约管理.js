@@ -41,6 +41,9 @@
   const now=()=>A.now+(Date.now()-A.clock);
   const txt=x=>Array.isArray(x)?L(x[0],x[1]):x;
   const time=t=>t?CF.fmtTime(t):'—';
+  // Lists share a compact timestamp; the timezone remains visible in the column heading.
+  const listTime=t=>t?`<time class="cm-stamp" datetime="${E(new Date(t).toISOString())}" title="${E(CF.fmtTime(t))}">${E(CF.fmtStamp(t))}</time>`:'—';
+  const columnZone=()=>`<span class="cm-meta">${E(S.tz||'UTC')}</span>`;
   const unknown=()=>L('To be verified','待核实');
   const pct=v=>(v*100).toFixed(0)+'%';
   /* 项目期限：生效日（即创建日）～资产方选定的到期日，UTC 业务日期。 */
@@ -242,7 +245,7 @@
   const shortAddr=v=>v.slice(0,10)+'…'+v.slice(-8);
   function addressValue(value,label,empty){
     if(!value)return empty||unknown();
-    return `<span class="mono" title="${E(value)}">${E(shortAddr(value))}</span>${CF.copyBtn('cm-copy',value,L('Copy the full '+label,'复制完整'+label))}`;
+    return `<span class="cm-address"><span class="mono" title="${E(value)}">${E(shortAddr(value))}</span>${CF.copyBtn('cm-copy',value,L('Copy the full '+label,'复制完整'+label))}</span>`;
   }
   /* 三份合约一张小表：类别 / 合约地址，按需带执行结果与交易凭证。 */
   function contractTable(source,opts={}){
@@ -255,7 +258,7 @@
       if(opts.proofs)cells.push(`<td>${addressValue(opts.proofs[k],L('evidence','凭证'),opts.proofEmpty?txt(opts.proofEmpty):'')}</td>`);
       return `<tr>${cells.join('')}</tr>`;
     }).join('');
-    return `<div class="cm-ctable-wrap"><table class="tbl cm-ctable"><thead><tr>${head.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
+    return `<div class="cm-ctable-wrap" tabindex="0" role="region" aria-label="${L('Contract addresses and configuration results','合约地址与配置结果')}"><table class="tbl cm-ctable${opts.proofs?' cm-ctable-proofs':''}"><thead><tr>${head.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
   }
 
   /* ---------------------------------------------------------------- 项目审核队列 */
@@ -309,7 +312,7 @@
     const st=A.queue;
     const table=state||(!found.length
       ?CF.empty(L('No projects found','暂无符合条件的项目'),L('Change the filters or return to the pending reviews.','调整筛选条件，或返回待审核队列。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Project reviews table','项目审核队列表格')}"><table class="tbl cm-table cm-queue-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher / token type · network','项目发布方 / 代币类型 · 区块链网络')}</th><th>${L('Pledge ratio / term','项目质押率 / 项目期限')}</th><th aria-sort="${ariaSort(st.sort==='submittedAt',st.dir)}">${sortButton('submittedAt','Submitted','本次提交时间',st)}</th><th aria-sort="${ariaSort(st.sort==='waiting',st.dir)}">${sortButton('waiting','Waiting','已等待时长',st)}</th><th>${L('Review status','审核轴')}</th><th>${L('Configuration / pledge contract','配置执行状态 / 质押合约地址')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}<span class="cm-meta">${E(combo(r))}</span></td><td>${pct(r.ratio)}<span class="cm-meta">${E(utcDay(r.createdAt))} ～<br>${E(utcDay(expiry(r)))} (UTC)</span></td><td>${time(r.submittedAt)}<span class="cm-meta">${E(submission(r.seq))}</span></td><td>${duration(waited(r))}</td><td>${reviewBadge(r)}</td><td>${execBadge(r)}${r.exec==='success'?`<span class="cm-meta mono">${E(shortAddr(r.attempt.picks.pledge))}</span>`:''}</td><td class="col-act">${viewLink(r.id,'queue')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.queue,['projects','个项目'])}`);
+      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Project reviews table','项目审核队列表格')}"><table class="tbl cm-table cm-queue-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher / token type · network','项目发布方 / 代币类型 · 区块链网络')}</th><th>${L('Pledge ratio / term','项目质押率 / 项目期限')}</th><th aria-sort="${ariaSort(st.sort==='submittedAt',st.dir)}">${sortButton('submittedAt','Submitted','本次提交时间',st)}${columnZone()}</th><th aria-sort="${ariaSort(st.sort==='waiting',st.dir)}">${sortButton('waiting','Waiting','已等待时长',st)}</th><th>${L('Review status','审核轴')}</th><th>${L('Configuration / pledge contract','配置执行状态 / 质押合约地址')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}<span class="cm-meta">${E(combo(r))}</span></td><td>${pct(r.ratio)}<span class="cm-meta">${E(utcDay(r.createdAt))} ～<br>${E(utcDay(expiry(r)))} (UTC)</span></td><td>${listTime(r.submittedAt)}<span class="cm-meta">${E(submission(r.seq))}</span></td><td>${duration(waited(r))}</td><td>${reviewBadge(r)}</td><td>${execBadge(r)}${r.exec==='success'?`<span class="cm-meta mono">${E(shortAddr(r.attempt.picks.pledge))}</span>`:''}</td><td class="col-act">${viewLink(r.id,'queue')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.queue,['projects','个项目'])}`);
     return listHeading('queue')+metrics
       +`<section class="card">${queueFilters()}<div class="cm-section" ${A.error?'':'hidden'}>${error()}</div>${table}</section>`;
   }
@@ -339,7 +342,7 @@
     const st=A.ledger;
     const found=configured(set).sort((a,c)=>(configAt(a)-configAt(c))*st.dir||a.id.localeCompare(c.id));
     const body=!found.length?`<p class="cm-meta">${L('No project is configured on this set yet.','这套合约上暂无已配置项目。')}</p>`
-      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Configured projects','已配置项目')}"><table class="tbl cm-table cm-set-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher','项目发布方')}</th><th aria-sort="${ariaSort(true,st.dir)}">${sortButton('configuredAt','Configuration completed at','合约配置完成时间',st)}</th><th>${L('Reviewer','审核人')}</th><th>${L('Project status','项目当前状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${found.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}</td><td>${time(configAt(r))}</td><td>${r.reviewer?E(txt(r.reviewer)):unknown()}</td><td>${projectState(r)}</td><td class="col-act">${viewLink(r.id,'ledger')}</td></tr>`).join('')}</tbody></table></div>`;
+      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Configured projects','已配置项目')}"><table class="tbl cm-table cm-set-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher','项目发布方')}</th><th aria-sort="${ariaSort(true,st.dir)}">${sortButton('configuredAt','Configuration completed at','合约配置完成时间',st)}${columnZone()}</th><th>${L('Reviewer','审核人')}</th><th>${L('Project status','项目当前状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${found.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}</td><td>${listTime(configAt(r))}</td><td>${r.reviewer?E(txt(r.reviewer)):unknown()}</td><td>${projectState(r)}</td><td class="col-act">${viewLink(r.id,'ledger')}</td></tr>`).join('')}</tbody></table></div>`;
     return `<section class="card cm-section cm-set-panel" id="cm-set-panel" tabindex="-1" aria-labelledby="cm-set-title"><div class="cm-set-head"><h2 class="cm-h2" id="cm-set-title">${E(combo(set))} · ${L('Configured projects','已配置项目')} ${found.length}</h2>${b('Collapse','收起','set','','sm')}</div>${body}</section>`;
   }
   function ledger(){
