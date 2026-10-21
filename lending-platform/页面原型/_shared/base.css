@@ -1207,18 +1207,6 @@ table.tbl th.num,table.tbl td.num{text-align:right}
   [data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.cm-filters,.pr-filter-bar,.pr-filters,.rv-filters) :is(.inp,.btn){height:var(--ctrl-h);min-height:var(--ctrl-h)}
 }
 
-/* —— 运营端平台统一钱包签名（ops-wallet.js，项目合约管理的合约部署签名）—— */
-.ow-flow{display:grid;gap:var(--sp-3)}
-.ow-flow p{margin:0}
-.ow-meta{color:var(--muted);font-size:var(--fs-12)}
-.ow-address-list{display:grid;gap:var(--sp-2)}
-.ow-address{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);width:100%;padding:var(--sp-3) var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);color:var(--text);font:inherit;text-align:left;cursor:pointer}
-.ow-address:hover{border-color:var(--accent-border);background:var(--accent-soft)}
-.ow-address:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.ow-error{margin:0;color:var(--danger);font-size:var(--fs-12)}
-.ow-kv{display:grid;gap:var(--sp-3);margin:0}
-.ow-kv dt{color:var(--muted);font-size:var(--fs-12);margin-bottom:var(--sp-1)}
-.ow-kv dd{margin:0}
 /* WS-385 · 演示条：停靠在页面底部，不遮右侧操作栏；第一行切视角，第二行切本页状态。 */
 body.demo-open{padding-bottom:calc(var(--dock-h,128px) + var(--sp-4))}
 .demo-panel.demo-dock{left:0;right:0;bottom:0;width:auto;max-width:none;max-height:none;overflow:visible;
