@@ -67,9 +67,8 @@
 
   /* 两个来源，按代币编号核对，页面只展示核对后的结果：
      AM.HOLDINGS[编号] —— 代币发行平台给出的当前全部持有方：[{ address, qty }]
-     AM.PLEDGES[编号]  —— 借贷平台的质押记录：[{ contract, project, state, review }]
+     AM.PLEDGES[编号]  —— 借贷平台的质押记录：[{ contract, project, state }]
        state：in 在合约内仍属项目 · exiting 解押或撤回已发起、转出未成功 · released 项目关闭或结清后已业务释放、待提取
-       review：质押审核结论，只用来演示"已质押不等于已通过审核"，不进页面。
      质押上链处理中 / 失败、转出完成的代币仍在企业地址，没有合约持有方，也不留质押记录。 */
   AM.HOLDINGS = {};
   AM.PLEDGES = {};
@@ -81,7 +80,7 @@
       var where = x[1];
       var address = where ? PLEDGE_CONTRACT[where[0].id] : ent(seed + k * 31);
       AM.HOLDINGS[t.no].push({ address: address, qty: x[0] });
-      if (where) AM.PLEDGES[t.no].push({ contract: address, project: where[0], state: where[1], review: where[2] || "approved" });
+      if (where) AM.PLEDGES[t.no].push({ contract: address, project: where[0], state: where[1] });
     });
   }
 
@@ -107,7 +106,7 @@
     attest: { hash: "0x" + hex(9092, 64), tx: txHash(2092), block: 20874155, at: "2026-02-19T20:02:00" }
   });
   hold(TOKENS[TOKENS.length - 1], [[460000.75, [P1, "in"]]], 644);
-  /* 质押审核尚未通过、所属项目已通过审核但尚未发布：持有方已质押，只提示项目尚未公开。 */
+  /* 所属项目已通过审核但尚未发布：持有方已质押，只提示项目尚未公开。 */
   TOKENS.push({
     no: "TK20260903000415", logo: { shape: 2, hue: 3 }, name: "HC-AR-2609", issuer: 2, buyer: 2, seller: 2,
     qty: 1120000, val: 1120000, ts: "valid",
@@ -116,8 +115,8 @@
     mintTx: txHash(415),
     attest: { hash: "0x" + hex(9415, 64), tx: txHash(2415), block: 21702880, at: "2026-09-02T19:41:00" }
   });
-  hold(TOKENS[TOKENS.length - 1], [[1120000, [P2, "in", "pending"]]], 2905);
-  /* 两个持有方分属两个融资项目，其中一笔质押审核已驳回、尚未解押，仍是已质押。 */
+  hold(TOKENS[TOKENS.length - 1], [[1120000, [P2, "in"]]], 2905);
+  /* 两个持有方分属两个融资项目，两份均已质押。 */
   TOKENS.push({
     no: "TK20260728000534", logo: { shape: 3, hue: 4 }, name: "HC-AR-2607B", issuer: 1, buyer: 3, seller: 5,
     qty: 735000.5, val: 735000.5, ts: "valid",
@@ -126,7 +125,7 @@
     mintTx: txHash(534),
     attest: { hash: "0x" + hex(9534, 64), tx: txHash(2534), block: 21598420, at: "2026-07-27T18:33:00" }
   });
-  hold(TOKENS[TOKENS.length - 1], [[500000.5, [P0, "in", "rejected"]], [235000, [P1, "in"]]], 3738);
+  hold(TOKENS[TOKENS.length - 1], [[500000.5, [P0, "in"]], [235000, [P1, "in"]]], 3738);
   /* 解押已发起、链上转出尚未成功：仍在质押合约内并属该项目，已质押。 */
   TOKENS.push({
     no: "TK20260509000276", logo: { shape: 1, hue: 1 }, name: "HC-AR-2605", issuer: 3, buyer: 4, seller: 3,

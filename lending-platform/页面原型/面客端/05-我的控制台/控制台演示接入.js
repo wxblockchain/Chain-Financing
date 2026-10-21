@@ -58,7 +58,7 @@
   /* 待放款 / 待放款确认样例同样占用在途报价金额；总额始终留出余量，不出现可用授信为负的假数据。 */
   if(own&&(fresh||changed)){const fly=db.quotes.filter(q=>q.owner===own.owner&&q.fund===own.fund&&['waiting','funding'].includes(q.state)).reduce((n,q)=>n+q.amount,0);own.total=Math.max(own.total,own.principal+fly+1000000);}
   if(!changed&&!fresh){if(reconcile())Q.save();return;}
-  /* 新增项目的逐笔质押审核结论按“已通过”补齐，否则有效质押额要等下一次载入才成立。 */
+  /* 新增项目的合约内代币按“质押成功”补齐逐张记录，否则有效质押额要等下一次载入才成立。 */
   D.normalize();D.save();
   db.consoleExamples=16;delete db.consolePeriods;reconcile();Q.save();
   }

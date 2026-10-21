@@ -6,7 +6,7 @@
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
-  const SCHEMA = 'ws397-9';
+  const SCHEMA = 'ws382-10';
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], offset: 0, serial: 100 };
   /* SPV 机构名称是代码层面维护的平台默认值，随版本发布；平台内没有维护、配置或切换入口。 */
   D.SPV = ['Chain Financing SPV I', '链融平台 SPV 壹号'];
@@ -64,53 +64,49 @@
     if(application&&D.events.some(x=>x.key===key&&x.ref===ref))return;
     D.events.unshift({project:p.id,key,ref:ref||'',application,token,at:D.iso()});
   };
-  D.latest = (p,id) => [...D.applications].reverse().find(a=>a.project===p.id&&a.tokens.includes(id)&&['review','approved','rejected'].includes(a.state)) || [...D.applications].reverse().find(a=>a.project===p.id&&a.tokens.includes(id));
+  D.latest = (p,id) => [...D.applications].reverse().find(a=>a.project===p.id&&a.tokens.includes(id)&&a.state==='pledged') || [...D.applications].reverse().find(a=>a.project===p.id&&a.tokens.includes(id));
   D.quoteFee = id => { const t=D.token(id);return {amount:t.feeEstimate??0.0004,currency:t.feeCurrency||'ETH'}; };
-  D.agreement = a => ({id:'AGR-'+a.id,name:['Pledge agreement · '+a.id,'质押协议 · '+a.id]});
   D.normalize = () => {
     D.projects.forEach(p=>{
       D.fill(p);
       if(p.state==='draft')p.state='available';
     });
     D.tokens.forEach(t=>{if(t.kind==='ar')t.kind='erc20-ar';});
+    /* 逐张质押记录：一份份额一次上链成功一条。质押不经审核，旧存档的审核态一律视为已质押成功。 */
     D.applications=D.applications.flatMap(a=>a.tokens.map((id,i)=>{
       const row={...a,id:a.tokens.length>1?a.id+'-'+(i+1):a.id,batch:a.batch||a.id,tokens:[id]};
-      row.reviewState=a.reviewState||a.state;
-      if(row.reviewState==='approved'){row.approvedAt=a.approvedAt||a.decided;row.reviewer=a.reviewer||['Demo reviewer '+(i+1),'演示审核员 '+(i+1)];row.agreement=a.agreement||D.agreement(row);}
-      if(row.reviewState==='rejected')row.reviewer=a.reviewer||['Demo reviewer','演示审核员'];
+      if(['review','approved','rejected'].includes(row.state))row.state='pledged';
+      delete row.reviewState;delete row.reviewer;delete row.agreement;delete row.approvedAt;delete row.decided;delete row.reason;delete row.reasonText;delete row.source;delete row.authorizing;
       const t=D.token(id);if(t?.application===a.id)t.application=row.id;
       D.executions.filter(e=>e.application===a.id&&e.token===id).forEach(e=>e.application=row.id);
       return row;
     }));
-    /* 每张在合约内的代币都要有一条逐笔审核记录：老档与播种数据按已通过补齐。 */
+    /* 每张在合约内的代币都有一条质押成功记录：播种数据按已质押补齐。 */
     D.projects.forEach(pr=>{
       D.tokens.filter(t=>t.pool===pr.id&&t.pledge==='pledged').forEach(t=>{
-        if(D.applications.some(a=>a.project===pr.id&&a.tokens.includes(t.id)&&['review','approved','rejected'].includes(a.state)))return;
+        if(D.applications.some(a=>a.project===pr.id&&a.tokens.includes(t.id)&&a.state==='pledged'))return;
         const at=pr.published||pr.created||D.iso();
-        const a={id:'RV-SEED-'+t.id,batch:'PB-SEED-'+pr.id.slice(-3),type:'first',project:pr.id,tokens:[t.id],state:'approved',reviewState:'approved',
-          submitted:at,decided:at,approvedAt:at,reviewer:['Demo reviewer','演示审核员']};
-        a.agreement=D.agreement(a);D.applications.push(a);t.application=a.id;
+        const a={id:'PA-SEED-'+t.id,batch:'PB-SEED-'+pr.id.slice(-3),type:'first',project:pr.id,tokens:[t.id],state:'pledged',submitted:at};
+        D.applications.push(a);t.application=a.id;
       });
     });
   };
-  /* 代币在合约内 = 已质押；是否计入有效质押额另看逐笔审核结论。 */
-  D.appOf = (p,t) => D.applications.filter(a=>a.project===p.id&&a.tokens.includes(t.id)&&['review','approved','rejected'].includes(a.state)).at(-1);
+  /* 代币在合约内 = 已质押 = 质押成功；有效且无对账差异、未撤回预扣时计入有效质押额。 */
+  D.appOf = (p,t) => D.applications.filter(a=>a.project===p.id&&a.tokens.includes(t.id)&&a.state==='pledged').at(-1);
   D.numbers = p => {
     const rate = p.rate || 0.8;
     const pool = D.tokens.filter(t => t.pool === p.id && t.pledge === 'pledged');
     const total = pool.reduce((v,t) => v+t.value,0);
-    const valid = pool.filter(t => D.appOf(p,t)?.state==='approved' && t.valid && !t.frozen && !t.pending);
-    const waiting = pool.filter(t => ['review','rejected'].includes(D.appOf(p,t)?.state));
+    const valid = pool.filter(t => t.valid && !t.frozen && !t.pending);
     const value = valid.reduce((v,t) => v+t.value,0);
-    const pendingValue = waiting.reduce((v,t) => v+t.value,0);
     const fly = p.demands.filter(d => ['open','quoted','funding'].includes(d.state)).reduce((v,d) => v+d.amount,0);
     const limit = value*rate, free = Math.max(0,limit-p.balance-fly);
-    return {rate,pool,total,valid,value,waiting,pendingValue,fly,limit,free,withdraw:free/rate,
+    return {rate,pool,total,valid,value,fly,limit,free,withdraw:free/rate,
       gap:Math.max(0,p.balance-limit),grade:limit<p.balance?'short':free>0?'surplus':'balanced'};
   };
   /* 质押水位：有效质押额 < 项目融资余额 + 项目在途金额即为不安全，恰好相等仍算安全；项目终态后不再判断。 */
   D.waterLocked = p => {if(D.terminal(p))return false;const n=D.numbers(p);return n.limit < p.balance + n.fly;};
-  /* 质押份额：本企业一个持有地址上持有的某笔代币的全部数量，是质押、审核、解押与提取的最小单位。
+  /* 质押份额：本企业一个持有地址上持有的某笔代币的全部数量，是质押、解押与提取的最小单位。
      D.tokens 的每条记录即一份份额；no 为代币编号，holder 为持有地址，units 为持有数量，value 为份额价值。 */
   D.HOLDERS = {'entity-demo-a':['0x2a71c0d4e9b38f15a6c27d90e4b1f83c5d6a9e21','0x2b84f1a3c6d90e27b5a48c13f9e06d72a1c5b384'],'entity-demo-b':['0x3c95e2b4d7a01f38c6b59d24a0f17e83b2d6c495']};
   D.tokenNo = t => t ? (t.no || t.id) : '';
@@ -119,8 +115,8 @@
   D.current = p => p.demands.find(d => ['open','quoted','funding'].includes(d.state));
   D.actions = p => {
     const n=D.numbers(p), current=D.current(p), mine=D.mine(p), terminal=D.terminal(p);
-    /* 可撤回上限只约束已通过审核的有效抵押物；水位不安全时已通过审核的代币（含已失效）一律不能转出，待审、已驳回、待提取照常可办理。 */
-    const releasable=D.tokens.filter(t => {if((t.pool!==p.id&&t.releasedFrom!==p.id)||t.pending||t.frozen)return false;if(t.pledge==='released')return true;if(t.pledge!=='pledged')return false;const approved=D.appOf(p,t)?.state==='approved';if(approved&&D.waterLocked(p))return false;return !(approved&&t.valid)||t.value<=n.withdraw;});
+    /* 可撤回上限只约束有效抵押物；水位不安全时合约内的代币（含已失效）一律不能转出，已释放待提取照常可办理。 */
+    const releasable=D.tokens.filter(t => {if((t.pool!==p.id&&t.releasedFrom!==p.id)||t.pending||t.frozen)return false;if(t.pledge==='released')return true;if(t.pledge!=='pledged')return false;if(D.waterLocked(p))return false;return !t.valid||t.value<=n.withdraw;});
     const live=!terminal&&!['review','returned'].includes(p.state);
     return {mine,review:p.state==='review',returned:p.state==='returned',live,
       pledge:mine&&live,publish:mine&&live&&!p.expired&&!current&&n.value>0&&n.free>0,
@@ -148,8 +144,7 @@
     if(p.demands.some(d=>d.state==='quoted'))out.push('quoted');
     if(p.demands.some(d=>d.state==='funding'))out.push('funding');
     if(p.balance>0||CF.L8?.hasUnsettled?.(p))out.push('unsettled');
-    /* 运营已提交通过、链上执行未回写的待审张也是处理中的链上操作：项目此时不会进入终态。 */
-    if(D.executions.some(e=>e.project===p.id&&e.state==='processing')||D.tokens.some(t=>(t.pool===p.id||t.releasedFrom===p.id)&&t.pending)||D.applications.some(a=>a.project===p.id&&a.state==='review'&&a.authorizing))out.push('processing');
+    if(D.executions.some(e=>e.project===p.id&&e.state==='processing')||D.tokens.some(t=>(t.pool===p.id||t.releasedFrom===p.id)&&t.pending))out.push('processing');
     return out;
   };
   /* 到期自动终结（Q-LS-22）：到期且没有未处理完成的业务时终结——有过成交的转已结清，从未成交的转已关闭（有效期到期）；两者都整池释放。
@@ -165,21 +160,15 @@
     if(D.hadDeal(p))p.state='settled';else{p.state='closed';p.closeReason='expiry';}
     D.releasePool(p);D.log(p,p.state==='settled'?'settled':'closed');return true;
   };
-  /* 终态整池释放：已通过审核的份额转为已释放待提取；仍待审核的按默认不通过处理，留在合约内由资产方自助解押。 */
+  /* 终态整池释放：池内全部质押代币转为已释放待提取，由资产方签名提取。 */
   D.releasePool = p => {
-    /* 项目终态时仍待审的张默认不通过（系统结论）：原因写明已关闭（带出关闭原因）或已结清，并发送质押审核驳回通知。 */
-    const closeWhy=p.closeReason==='expiry'?['valid-until date reached','有效期到期']:['closed by the asset holder','资产方主动关闭'];
-    const terminalWhy=p.state==='settled'
-      ?['The project has been settled, so this unreviewed pledge is rejected by default.','所属项目已结清，未审核的质押默认不通过。']
-      :['The project has been closed, so this unreviewed pledge is rejected by default. Project closure reason: '+closeWhy[0]+'.','所属项目已关闭，未审核的质押默认不通过。项目关闭原因：'+closeWhy[1]+'。'];
-    D.applications.filter(a=>a.project===p.id&&a.state==='review').forEach(a=>{a.state=a.reviewState='rejected';a.source='terminal';a.reason='terminal';a.reasonText=terminalWhy;a.decided=D.iso();a.reviewer=['System','系统'];a.authorizing=false;D.log(p,'rejected',a.id);});
-    D.tokens.filter(t=>t.pool===p.id&&t.pledge==='pledged'&&!t.pending&&D.appOf(p,t)?.state!=='rejected').forEach(t=>{t.pool=null;t.pledge='released';t.releasedFrom=p.id;});
-    D.applications.filter(a=>a.project===p.id&&a.state==='approved').forEach(a=>{a.state='void';a.reason='closed';a.finished=D.iso();D.releaseApplication(a);});
+    D.tokens.filter(t=>t.pool===p.id&&t.pledge==='pledged'&&!t.pending).forEach(t=>{t.pool=null;t.pledge='released';t.releasedFrom=p.id;});
+    D.applications.filter(a=>a.project===p.id&&a.state==='pledged').forEach(a=>{a.state='void';a.reason='closed';a.finished=D.iso();D.releaseApplication(a);});
     D.log(p,'businessRelease');
   };
   D.sweep = () => {
     let changed=false;
-    /* 本模块不再有任何倒计时类时限：审核不因等待自动改变结论。 */
+    /* 本模块没有任何倒计时类时限：项目审核与报价都不因等待自动改变结论。 */
     D.projects.forEach(p=>{if(p.expires&&!p.expired&&D.now()>=Date.parse(p.expires)){p.expired=true;const d=D.current(p);if(d&&['open','quoted'].includes(d.state)){d.state='ended';d.reason='expiry';d.endedAt=D.iso();d.quoteState='ended';D.log(p,'demandExpired',d.id);}if(!D.terminal(p))D.recompute(p);D.log(p,'projectExpired');changed=true;}if(D.autoEnd(p))changed=true;});
     if(changed)D.save();return changed;
   };
@@ -227,27 +216,6 @@
     D.save();return true;
   };
 
-  D.review = (p, outcome, id) => {
-    const a=id?D.applications.find(a=>a.id===id&&a.project===p.id):[...D.applications].reverse().find(a=>a.project===p.id&&a.state==='review');
-    if(!a||a.state!=='review')return false;
-    a.state=outcome==='approve'?'approved':'rejected';a.reviewState=a.state;a.decided=D.iso();a.authorizing=false;
-    a.reviewer=['Demo reviewer '+(++D.serial),'演示审核员 '+D.serial];
-    if(a.state==='approved'){a.approvedAt=a.decided;a.agreement=D.agreement(a);}
-    else a.reason='rejected';
-    D.log(p,a.state,a.id);D.recompute(p);D.save();return true;
-  };
-  /* D-LS-73：运营已签名解冻授权、结果未回写时，本张仍显示待审核但不能撤回；授权成功即通过，失败恢复可撤回。 */
-  D.authorize = (p, id) => {
-    const a=id?D.applications.find(a=>a.id===id&&a.project===p.id):[...D.applications].reverse().find(a=>a.project===p.id&&a.state==='review'&&!a.authorizing);
-    if(!a||a.state!=='review'||a.authorizing)return false;
-    a.authorizing=true;D.log(p,'authorizationStarted',a.id);D.save();return true;
-  };
-  D.authFail = (p, id) => {
-    const a=id?D.applications.find(a=>a.id===id&&a.project===p.id):[...D.applications].reverse().find(a=>a.project===p.id&&a.state==='review'&&a.authorizing);
-    if(!a||!a.authorizing)return false;
-    a.authorizing=false;D.log(p,'authorizationFailed',a.id);D.save();return true;
-  };
-  D.cancelApplication = a => {if(!D.mine(D.project(a.project))||a.state!=='review')throw Error('reviewChanged');a.state='withdrawn';a.reviewState='withdrawn';a.finished=D.iso();D.log(D.project(a.project),'applicationWithdrawn',a.id);D.save();};
   D.execute = (p, kind, ids, appId) => {
     if(!D.mine(p))throw Error('permission');
     if(kind==='deposit'){
@@ -255,9 +223,8 @@
       if(!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!D.selectable(D.token(id),p)))throw Error('selectionChanged');
     }
     else {
-      if(ids.some(id=>{const t=D.token(id),a=t&&D.appOf(p,t);return t&&t.pledge==='pledged'&&a?.state==='review'&&a.authorizing;}))throw Error('authorizing');
       const n=D.numbers(p);if(!ids.length||ids.some(id=>{const t=D.token(id);return !t||t.owner!==p.owner||t.frozen||t.pending||!(t.pool===p.id&&t.pledge==='pledged'||t.releasedFrom===p.id&&t.pledge==='released');}))throw Error('selectionChanged');
-      const amount=ids.map(D.token).filter(t=>t.pledge==='pledged'&&t.valid&&D.appOf(p,t)?.state==='approved').reduce((v,t)=>v+t.value,0);if(amount>n.withdraw)throw Error('withdrawLimit');
+      const amount=ids.map(D.token).filter(t=>t.pledge==='pledged'&&t.valid).reduce((v,t)=>v+t.value,0);if(amount>n.withdraw)throw Error('withdrawLimit');
     }
     /* 一次签名一个提交批次编号；同批逐张各自回写。 */
     const batch='PB-'+String(++D.serial).padStart(6,'0');
@@ -274,16 +241,16 @@
     if(e.kind==='deposit'){
       if(result==='success'){
         t.pledge='pledged';t.pool=p.id;t.tx='0x'+String(D.serial+1).padStart(64,'0');
-        /* 进入合约即计入待审质押额，等逐笔审核裁定后才转入有效质押额。 */
+        /* 上链成功即质押成功：代币有效且无对账差异时立即计入有效质押额；不发站内信。 */
         /* 申请类型按上链成功时本项目是否已有有效质押派生，只用于展示与检索。 */
-        const a2={id:'RV-DEMO-'+(++D.serial),batch:e.batch||e.id,type:D.numbers(p).value>0?'additional':'first',project:p.id,tokens:[t.id],
-          state:'review',reviewState:'review',submitted:D.iso(),decided:null};
+        const type=D.numbers(p).value>0?'additional':'first';
+        const a2={id:'PA-DEMO-'+(++D.serial),batch:e.batch||e.id,type,project:p.id,tokens:[t.id],state:'pledged',submitted:D.iso()};
         D.applications.push(a2);t.application=a2.id;D.log(p,'onChain',a2.id);
       }
       else {t.pledge='free';t.pool=null;}
-    }else if(result==='success'){const a3=D.appOf(p,t);if(a3&&['review','rejected'].includes(a3.state)&&a3.source!=='terminal'){a3.state='withdrawn';a3.reviewState='withdrawn';a3.finished=D.iso();}t.pledge='free';t.pool=null;t.releasedFrom=null;t.application=null;}
-    /* 终态时转出失败：关闭时因处理中未随整池释放的已通过份额补记为已释放待提取；被默认不通过的已驳回份额仍待自助解押。 */
-    else if(D.terminal(p)&&t.pledge==='pledged'&&D.appOf(p,t)?.state!=='rejected'){t.pledge='released';t.pool=null;t.releasedFrom=p.id;}
+    }else if(result==='success'){const a3=D.appOf(p,t);if(a3){a3.state='withdrawn';a3.finished=D.iso();}t.pledge='free';t.pool=null;t.releasedFrom=null;t.application=null;}
+    /* 终态时转出失败：关闭时因处理中未随整池释放的份额补记为已释放待提取。 */
+    else if(D.terminal(p)&&t.pledge==='pledged'){t.pledge='released';t.pool=null;t.releasedFrom=p.id;}
     D.log(p,result==='success'?'executionSuccess':'executionFailed',e.id);D.recompute(p);D.save();
   };
   D.publish = (p, amount, edit, referenceCurrencies) => {
@@ -329,13 +296,10 @@
     /* 多持有方份额按一次追加签名入池：同一提交批次，申请类型为追加。 */
     D.applications.filter(x=>x.tokens.some(id=>id.startsWith('TK-MH-'))).forEach(x=>{x.batch='PB-SEED-MH-'+x.project.slice(-3);x.type='additional';});
     /* 多持有方份额最近上链，排在质押代币清单前面，便于查看。 */
-    D.applications.filter(x=>x.tokens.some(id=>id.startsWith('TK-MH-'))).forEach(x=>{const at=new Date(D.now()-6*3600000).toISOString();x.submitted=at;x.decided=at;x.approvedAt=at;});
-    /* 水位演示，两个项目合约内都有有效抵押物、已失效、待审、已驳回四类代币：
-       FP-DEMO-004 质押不足；FP-DEMO-007 质押持平但水位不安全（有效质押额覆盖融资余额，却低于融资余额 + 一笔已接受待放款的在途）。 */
-    [['FP-DEMO-004','TK-DEMO-4-5','review'],['FP-DEMO-004','TK-DEMO-4-6','rejected'],['FP-DEMO-007','TK-DEMO-7-5','review'],['FP-DEMO-007','TK-DEMO-7-6','rejected']].forEach(([pid,id,st])=>{const t=D.token(id),x=D.applications.find(r=>r.project===pid&&r.tokens[0]===id);if(!t||!x)return;t.valid=true;
-      x.state=x.reviewState=st;x.approvedAt=null;x.agreement=null;if(st==='review'){x.decided=null;x.reviewer=null;}else x.reason='rejected';});
+    D.applications.filter(x=>x.tokens.some(id=>id.startsWith('TK-MH-'))).forEach(x=>{x.submitted=new Date(D.now()-6*3600000).toISOString();});
+    /* 水位演示：FP-DEMO-004 质押不足；FP-DEMO-007 质押持平但水位不安全（有效质押额覆盖融资余额，却低于融资余额 + 一笔已接受待放款的在途）。 */
     {const p7=D.project('FP-DEMO-007');if(p7){p7.balance=400000;p7.state='financing';const d=p7.demands[0];if(d)Object.assign(d,{amount:200000,state:'funding',tenorDays:90,rate:'6.20',institution:['Demo Capital','演示资金机构'],quoteAt:d.at});p7.grade=D.numbers(p7).grade;}}
-    D.applications.forEach(a=>D.log(D.project(a.project),a.state==='approved'?'approved':'submitted',a.id));D.save();
+    D.applications.forEach(a=>D.log(D.project(a.project),'onChain',a.id));D.save();
   };
   try{
     const saved=JSON.parse(localStorage.getItem(KEY));

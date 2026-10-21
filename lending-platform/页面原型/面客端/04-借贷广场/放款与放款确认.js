@@ -63,7 +63,7 @@
   /* 提交放款前按当场结论复核质押水位；读取不到结论时不放行，也不当作不安全。 */
   const gate=x=>coverageRead==='error'?'unknown':(x||d()).short?'short':'ok';
   const gateText=(x,asset=false)=>{const g=gate(x);if(g==='unknown')return {title:L('The collateral check is temporarily unavailable','暂时无法完成额度校验'),detail:L('Disbursement cannot be submitted until the check recovers. This business stays readable.','校验恢复前不能提交放款，本笔资料照常可查看。')};
-    if(g==='short')return {title:asset?L('The funder cannot record the disbursement yet','资金方暂不能登记放款'):L('Pledge level is unsafe — disbursement cannot be submitted','质押水位不安全，暂不能提交放款'),detail:(asset?L('Add collateral to restore it. ','请追加质押以恢复。'):L('It restores once the asset holder adds collateral. ','资产方追加质押后恢复。'))+L('Added collateral must be pledged on chain and pass review before it counts towards the eligible borrowing limit; a successful on-chain pledge does not take effect immediately.','追加质押要先上链、再经审核通过才计入有效质押额，上链成功不即时生效。')};
+    if(g==='short')return {title:asset?L('The funder cannot record the disbursement yet','资金方暂不能登记放款'):L('Pledge level is unsafe — disbursement cannot be submitted','质押水位不安全，暂不能提交放款'),detail:(asset?L('Add collateral to restore it. ','请追加质押以恢复。'):L('It restores once the asset holder adds collateral. ','资产方追加质押后恢复。'))+L('Added collateral counts towards the eligible borrowing limit as soon as it is pledged on chain; tokens still processing on chain do not count.','追加质押上链成功即计入有效质押额，上链处理中不计入。')};
     return null;};
   function coverage(){const t=gateText();if(!t)return '';return Q.turn('blocked',t.title,t.detail,'ln-gate')+(gate()==='unknown'?'<div class="ln-row">'+b('ln-coverage-retry',L('Retry','重试'))+'</div>':'');}
   /* 商务条款常驻关键项，汇率依据与时间收进“完整条款”。编号已在放款信息中给出，这里不重复。 */

@@ -2,7 +2,8 @@
  * WS-379：演示消息按 L5 / L6 / L7 / L8、登录与机构认证各册的现行事件生成，
  * 读取 CF.LS / CF.CQ / CF.L7 / CF.L8 的演示事实，本文件不自建业务对象。
  * 本批废止的九类事件（质押审核超时、报价临期与到期、放款确认临期与超期、
- * 要求重传、放款前终止、还款确认临期与超期）不再出现，正文也不带任何业务时限。 */
+ * 要求重传、放款前终止、还款确认临期与超期）不再出现，正文也不带任何业务时限。
+ * 代币质押不经审核（2026-10-21）：质押审核通过 / 驳回两类事件取消，质押成功也不发站内信。 */
 (function(CF){
   'use strict';
   const pair=(en,zh)=>({en,zh});
@@ -17,8 +18,6 @@
     types:{
       'financing.project.review_approved':{mode:'object',kind:'project'},
       'financing.project.review_returned':{mode:'object',kind:'project'},
-      'financing.pledge.review_approved':{mode:'object',kind:'project'},
-      'financing.pledge.review_rejected':{mode:'object',kind:'project'},
       'financing.pledge.execution_failed':{mode:'object',kind:'project'},
       'financing.demand.coverage_invalidated':{mode:'object',kind:'project'},
       'financing.project.coverage_shortfall':{mode:'object',kind:'project'},
@@ -53,14 +52,6 @@
         title:pair('Financing project returned','融资项目审核退回'),
         body:pair('Project {project_name} ({project_id}) was returned for revision. Reason: {reason}. Update the project details and resubmit. The project term is not restarted and resubmission does not create a new project.',
           '项目 {project_name}（{project_id}）的审核结论为退回。原因：{reason}。请修改创建信息后重新提交；项目期限不会重新起算，重新提交不产生新的项目编号。')},
-      'financing.pledge.review_approved':{
-        title:pair('Pledge approved','质押审核通过'),
-        body:pair('The pledge of token {token_id} in project {project_name} ({project_id}) was approved at {approved_at} and now counts toward the eligible borrowing limit. No further confirmation is required; you may publish or amend a financing request within the current limit.',
-          '项目 {project_name}（{project_id}）的代币 {token_id} 本笔质押已于 {approved_at} 审核通过，自此计入有效质押额并参与质押情况判断。无需再做确认，可按当前额度发布或修改融资需求。')},
-      'financing.pledge.review_rejected':{
-        title:pair('Pledge rejected','本笔质押未通过审核'),
-        body:pair('The pledge of token {token_id} in project {project_name} ({project_id}) was rejected. Reason: {reason}. The token remains in the project’s pledge contract and still counts toward the pledged-pending-review amount. Release it yourself to retrieve it; you may then pledge again subject to current eligibility. Other tokens retain their own outcomes.',
-          '项目 {project_name}（{project_id}）的代币 {token_id} 本笔质押未通过。原因：{reason}。该代币仍在本项目质押合约内并计入待审质押额，请自助解押取回；取回后可按当前资格重新发起。其他代币按各自结果处理。')},
       /* T-LS-04A / 04B / 04C：同一失败事件按费用事实择一，费用未知不写 0。 */
       /* 链上操作失败按操作分三种模板（质押上链 / 解押 / 提取），gas 事实与重新发起的条件以变量带入。 */
       'financing.pledge.execution_failed':{
@@ -233,15 +224,6 @@
       push({owner:'asset',biz:'financing.project.review_approved',category:'progress',objectKind:'project',objectId:p.id,
         at:tick(220+pi*6),vars:{...vars,approved_at:tick(220+pi*6),contract_address:p.contract},
         business:business(p.name,p.id)});
-      /* 逐笔质押审核结果：每张在合约内的代币一条，驳回只覆盖一张。 */
-      d.tokens.filter(t=>t.pool===p.id&&t.pledge==='pledged').forEach((t,ti)=>{
-        const rejected=pi===1&&ti===2,when=tick(pi+ti*slots);
-        push({owner:'asset',biz:rejected?'financing.pledge.review_rejected':'financing.pledge.review_approved',
-          category:'progress',objectKind:'project',objectId:p.id,at:when,
-          vars:rejected?{...vars,token_id:t.id,reason:pair('The buyer confirmation attached to this receivable is not the version on record.','本张应收账款附带的买方确认函与备案版本不一致。')}
-            :{...vars,token_id:t.id,approved_at:when},
-          business:business(p.name,t.id)});
-      });
       if(pi===2){
         const fees=[['A','',pair('The pledge contract rejected this on-chain pledge','质押合约拒绝了本次质押上链交易'),'0.0041','ETH'],
           ['B',':release',pair('The chain returned a definitive failure for this release','链上对本次解押返回了确定的失败结果'),null,null],

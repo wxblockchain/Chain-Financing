@@ -1207,7 +1207,7 @@ table.tbl th.num,table.tbl td.num{text-align:right}
   [data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.cm-filters,.pr-filter-bar,.pr-filters,.rv-filters) :is(.inp,.btn){height:var(--ctrl-h);min-height:var(--ctrl-h)}
 }
 
-/* —— 运营端平台统一钱包签名（ops-wallet.js，项目合约管理与代币质押审核共用）—— */
+/* —— 运营端平台统一钱包签名（ops-wallet.js，项目合约管理的合约部署签名）—— */
 .ow-flow{display:grid;gap:var(--sp-3)}
 .ow-flow p{margin:0}
 .ow-meta{color:var(--muted);font-size:var(--fs-12)}

@@ -12,8 +12,6 @@
   var pages = {
     "P-O20": { navKey: "navOpsMessages", route: "/ops/notifications" },
     "P-O21": { navKey: "navOpsMessageDetail", parent: "P-O20", route: "/ops/notification" },
-    "P-O-PR-01": { navKey: "navPledgeReviews", ico: "▤", route: "/ops/pledge-reviews" },
-    "P-O-PR-02": { navKey: "navPledgeReviewDetail", parent: "P-O-PR-01", route: "/ops/pledge-reviews/detail" },
     "P-O-CM-01": { navKey: "navContractQueue", ico: "▦", route: "/ops/contract-reviews" },
     "P-O-CM-02": { navKey: "navContractDetail", parent: "P-O-CM-01", route: "/ops/contract-reviews/detail" },
     "P-O-CM-03": { navKey: "navContractLedger", ico: "▦", route: "/ops/contract-ledger" },

@@ -530,18 +530,16 @@ body.list-full .mk-list-frame{position:relative;inset:auto;z-index:auto;margin:0
 [data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(5){width:13%}
 [data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(6){width:11%}
 [data-market-redesign] .ls-detail-main .ls-token-table :is(th,td):nth-child(7){width:16%}
-/* Own projects have two additional, permission-controlled columns. Give all nine
-   real widths; the former seven-column percentages squeezed Review/Status to zero. */
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)){min-width:1280px}
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(1){width:9%}
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(2){width:16%}
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(3){width:15%}
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(4),
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(5){width:11%}
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(6),
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(8){width:8%}
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(7){width:12%}
-[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)) :is(th,td):nth-child(9){width:10%}
+/* 本企业资产方多一列「当前去向」（共八列）；资金方七列沿用上方宽度。 */
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(8)){min-width:1180px}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(8)) :is(th,td):nth-child(1){width:9%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(8)) :is(th,td):nth-child(2){width:17%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(8)) :is(th,td):nth-child(3){width:15%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(8)) :is(th,td):nth-child(4),
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(8)) :is(th,td):nth-child(5){width:12%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(8)) :is(th,td):nth-child(6){width:9%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(8)) :is(th,td):nth-child(7){width:12%}
+[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(8)) :is(th,td):nth-child(8){width:14%}
 [data-market-redesign] .ls-detail-main .ls-token-table .tag{overflow-wrap:normal;word-break:normal}
 [data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(3) .cell-wrap{align-items:flex-start}
 [data-market-redesign] .ls-detail-main .ls-token-table td:nth-child(4) .cell-wrap{align-items:flex-end}
@@ -570,7 +568,7 @@ body.list-full .mk-list-frame{position:relative;inset:auto;z-index:auto;margin:0
 @media(max-width:768px){
   [data-market-redesign] .ls-detail .ls-token-filters .fb-q{flex-basis:100%;margin-left:0}
   [data-market-redesign] .ls-detail-main .ls-token-table :is(th,td){width:auto!important;text-align:left!important}
-  [data-market-redesign] .ls-detail-main .ls-token-table,[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(9)){min-width:0}
+  [data-market-redesign] .ls-detail-main .ls-token-table,[data-market-redesign] .ls-detail-main .ls-token-table:has(th:nth-child(8)){min-width:0}
   [data-market-redesign] .ls-detail-main .ls-token-table :is(td:nth-child(3),td:nth-child(4)) .cell-wrap{align-items:flex-start}
   .mk-project-global-actions .btn{min-height:44px;padding-inline:var(--sp-3);font-size:var(--fs-12)}
 }

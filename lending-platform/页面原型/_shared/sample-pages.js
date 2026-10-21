@@ -22,7 +22,7 @@
     const name = p => L('Receivables financing · ', '应收账款融资 · ') + L(p.request.holder[0],p.request.holder[1]);
     const button = (act,label,value='',primary=false) => '<button type="button" class="btn'+(primary?' primary':'')+'" data-act="'+act+'" data-v="'+E(value)+'">'+label+'</button>';
     const link = (path,label,primary=false) => '<a class="btn'+(primary?' primary':'')+'" href="#'+E(path)+'" data-act="sample-follow" data-v="'+E(path)+'">'+label+'</a>';
-    const status = p => CF.tag(p.request.st==='repaying'?'ok':'accent', L({quoting:'Receiving quotes',review:'Under review',disbursing:'Disbursing',repaying:'Repaying'}[p.request.st], {quoting:'报价中',review:'审核中',disbursing:'放款中',repaying:'还款中'}[p.request.st]));
+    const status = p => CF.tag(p.request.st==='repaying'?'ok':'accent', L({quoting:'Receiving quotes',review:'Awaiting quote confirmation',disbursing:'Disbursing',repaying:'Repaying'}[p.request.st], {quoting:'报价中',review:'待确认报价',disbursing:'放款中',repaying:'还款中'}[p.request.st]));
     const fields = rows => '<dl class="dl">'+rows.map(r=>'<dt>'+r[0]+'</dt><dd>'+r[1]+'</dd>').join('')+'</dl>';
     const card = (title,body,id='') => '<section class="card detail-section"'+(id?' id="'+id+'"':'')+'><h2 class="card-head">'+title+'</h2><div class="card-body">'+body+'</div></section>';
     const projectFields = p => fields([[L('Project ID','项目编号'),E(p.id)],[L('Asset holder','资产方企业'),E(L(...p.request.holder))],[L('Current request','当前需求'),E(p.request.id)],[L('Requested amount','需求金额'),CF.fmtAmt(p.request.amt,p.request.ccy)],[L('Tenor','期限'),p.request.tenor+L(' days',' 天')]]);
@@ -243,7 +243,7 @@
     pledged: ["accent", ["Pledged", "已质押"]],
     unpledged: ["", ["Not pledged", "未质押"]],
     quoting: ["accent", ["Receiving quotes", "报价中"]],
-    review: ["warn", ["Pledge under review", "质押审核中"]],
+    review: ["warn", ["Awaiting quote confirmation", "待确认报价"]],
     disbursing: ["violet", ["Disbursing", "放款中"]],
     repaying: ["ok", ["Repaying", "还款中"]],
     effective: ["ok", ["Effective", "生效中"]],
@@ -524,7 +524,7 @@
       '<p class="page-desc">' + L("Operations workload across the lending platform.", "借贷平台运营侧的工作量概览。") +
       "</p></div></div>" +
       '<div class="stat-row" style="margin-bottom:var(--sp-6)">' +
-      '<div class="stat"><div class="k">' + L("Pledge reviews pending", "待审核质押") + '</div><div class="v">3</div></div>' +
+      '<div class="stat"><div class="k">' + L("Project reviews pending", "待审核项目") + '</div><div class="v">3</div></div>' +
       '<div class="stat"><div class="k">' + L("Funder applications", "资金方入驻申请") + '</div><div class="v">2</div></div>' +
       '<div class="stat"><div class="k">' + L("Agreements effective", "生效中的协议") + '</div><div class="v">2</div></div>' +
       "</div>" +
