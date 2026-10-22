@@ -590,6 +590,12 @@
   const STEPS={pledge:[['Select tokens','选择代币'],['Approve','授权签名'],['Sign transaction','交易签名']],release:[['Select tokens','选择代币'],['Sign','钱包签名']]};
   function stepper(key){return '<ol class="ls-steps" aria-label="'+L('Steps','办理步骤')+'">'+STEPS[key].map((x,i)=>'<li'+(i+1===step?' aria-current="step"':'')+(i+1<step?' class="done"':'')+'><span class="ls-step-n">'+(i+1)+'</span>'+txt(x)+'</li>').join('')+'</ol>';}
   function chosenSum(){const chosen=selection.map(D.token).filter(Boolean),total=chosen.reduce((v,t)=>v+t.value,0);return '<span>'+L('Selected','已选')+' <b class="mono">'+chosen.length+'</b>'+L(chosen.length===1?' share':' shares',' 份')+'</span><span>'+L('Share value','份额价值合计')+' <b class="mono">'+usd(total)+'</b></span>';}
+  /* 签名核对：金额是本次所选份额的价值展示，不改合约授权范围；目标地址始终取项目已配置的质押合约。 */
+  function pledgeSignFacts(p,approval=false){
+    const total=selection.map(D.token).filter(Boolean).reduce((v,t)=>v+t.value,0);
+    return '<dl class="ls-signing-facts">'+(approval?'<div class="ls-signing-amount"><dt>'+L('Approval amount','本次授权金额')+'<span class="ls-signing-caption">'+L('Total value of selected shares','所选份额价值合计')+'</span></dt><dd class="mono">'+usd(total)+'</dd></div>':'')
+      +'<div class="ls-signing-contract"><dt>'+L('Pledge contract','质押合约')+netChip(D.PLEDGE_CHAIN)+'</dt><dd><span class="mono ls-signing-address">'+E(p.contract)+'</span>'+copyIcon(p.contract,L('Copy pledge contract address','复制质押合约地址'))+'</dd></div></dl>';
+  }
   function stepBar(sum,gas,note,extra){return '<div class="ls-sign-bar" role="status" aria-live="polite"><p class="ls-sign-sum">'+(sum||'')+(gas?'<span>'+L('Estimated gas','预估 gas')+' <b class="mono">'+gas+'</b></span>':'')+'</p>'+(note?'<p class="ls-sign-note">'+note+'</p>':'')+(extra||'')+'</div>';}
   function txGas(){const gas={};selection.map(D.token).filter(Boolean).forEach(t=>{const f=D.quoteFee(t.id);gas[f.currency]=(gas[f.currency]||0)+f.amount;});return Object.entries(gas).map(([c,n])=>Number(n).toFixed(6)+' '+E(c)).join(' / ')||'—';}
   const approveGas=p=>(approvalTodo(p).length*D.APPROVE_FEE).toFixed(6)+' ETH';
@@ -597,7 +603,7 @@
   function approvalBlock(p){
     const needs=D.approvalNeeds(p,selection);
     const state=r=>!r?CF.tag('',L('Not approved','待授权')):r.state==='success'?CF.tag('ok',L('Approved','已授权')):r.state==='processing'?CF.tag('warn',L('Processing','授权处理中'))+small(waitText(r.at)):CF.tag('danger',L('Failed','授权失败'))+small(gasText(r));
-    return '<p class="ls-step-lead">'+L('Approval lets this project\'s pledge contract take tokens from this address until you revoke it.','授权允许本项目的质押合约调取该地址的代币，直到你自行撤销。')+'</p><ul class="ls-approval-list">'+needs.map(x=>'<li><span class="ls-approval-who"><span class="muted">'+L('Issuing contract','代币发行合约')+'</span> <span class="mono" title="'+E(x.issuer)+'">'+E(shortAddr(x.issuer))+'</span><span class="muted"> · '+L(x.count+(x.count===1?' share':' shares'),x.count+' 份')+'</span></span><span class="ls-approval-state">'+state(x.record)+'</span></li>').join('')+'</ul>';
+    return '<p class="ls-step-lead">'+L('Approval lets this pledge contract take all tokens at this address under the relevant issuing contracts, until you revoke it.','授权允许这份质押合约调取该地址在相应发行合约下的全部代币，直到你自行撤销。')+'</p><ul class="ls-approval-list">'+needs.map(x=>'<li><span class="ls-approval-who"><span class="muted">'+L('Issuing contract','代币发行合约')+'</span> <span class="mono" title="'+E(x.issuer)+'">'+E(shortAddr(x.issuer))+'</span><span class="muted"> · '+L(x.count+(x.count===1?' share':' shares'),x.count+' 份')+'</span></span><span class="ls-approval-state">'+state(x.record)+'</span></li>').join('')+'</ul>';
   }
   function pledgePicker(p){
     const list=pledgeCandidates(p);
@@ -699,9 +705,9 @@
       if(step===1)return {title:pledgeLabel(p),html:'<div class="ls-wide ls-stack ls-pledge">'+head+changes+pledgePicker(p)+err()+'</div>',foot:stepBar(chosenSum())+cancel+btn('ls-step-next',L('Next','下一步'),'',true,!selection.length)};
       if(step===2){const todo=approvalTodo(p),waiting=D.approvalNeeds(p,selection).some(x=>x.record?.state==='processing');
         const main=todo.length?btn('ls-approve',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Sign approval','签名授权')+(todo.length>1?L(' · '+todo.length+' left',' · 还需 '+todo.length+' 次'):''),'',true,busy||waiting):btn('ls-step-next',L('Next','下一步'),'',true,waiting);
-        return {title:pledgeLabel(p),html:'<div class="ls-medium ls-stack ls-pledge">'+head+approvalBlock(p)+err()+'</div>',foot:stepBar('',todo.length?approveGas(p):'')+back+main};}
-      return {title:pledgeLabel(p),html:'<div class="ls-medium ls-stack ls-pledge">'+head+'<p class="ls-step-summary">'+chosenSum()+'</p>'+changes+err()+'</div>',
-        foot:stepBar('',txGas(),L('Gas is paid by your company and is not refunded on failure. Once on chain, the pledge succeeds and counts toward the eligible pledge amount.','gas 由本企业承担、失败已产生的不退；上链成功即质押成功，计入有效质押额。'))+back+btn('ls-sign-pledge',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Sign and pledge','签名并发起质押'),'',true,busy||!selection.length)};},
+        return {title:pledgeLabel(p),html:'<div class="ls-medium ls-stack ls-pledge">'+head+pledgeSignFacts(p,true)+approvalBlock(p)+err()+'</div>',foot:stepBar('',todo.length?approveGas(p):'')+back+main};}
+      return {title:pledgeLabel(p),html:'<div class="ls-medium ls-stack ls-pledge">'+head+'<div class="ls-signing-review"><p class="ls-step-summary">'+chosenSum()+'</p>'+pledgeSignFacts(p)+'</div><p class="ls-step-lead">'+L('Signing initiates a transaction to transfer the selected tokens into the pledge contract above. They are pledged and count toward the eligible pledge amount once execution succeeds on chain.','本次签名将发起交易，把所选代币转入上方质押合约；链上执行成功即完成质押，并计入有效质押额。')+'</p>'+changes+err()+'</div>',
+        foot:stepBar('',txGas(),L('Gas is paid by your company and is not refunded on failure.','gas 由本企业承担，失败已产生的不退。'))+back+btn('ls-sign-pledge',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Sign and pledge','签名并发起质押'),'',true,busy||!selection.length)};},
     /* 发布 / 改额只放需求金额与融资收款地址；金额超出可融金额时才提示可融金额与差额。 */
     publish:()=>{const p=project(),d=D.current(p);
       return {title:d?L('Edit financing amount','修改融资需求金额'):L('Publish financing request','发布融资需求'),html:'<div class="ls-medium ls-stack ls-publish">'+field('ls-amount','Financing request (USDT) *','融资需求金额（USDT）*',amount,'text','inputmode="decimal" aria-describedby="ls-amount-over ls-amount-error" aria-invalid="'+!!(error||overBy(p))+'"')+'<p class="ls-amount-over" id="ls-amount-over" role="status">'+overText(p)+'</p>'+payeeField(p,d)+'<div id="ls-amount-error">'+err()+'</div></div>',

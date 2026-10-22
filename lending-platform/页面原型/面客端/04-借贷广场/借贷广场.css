@@ -1076,6 +1076,18 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-step-summary{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:var(--sp-4);padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2)}
 .ls-step-summary>span{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1);min-width:0}
 .ls-step-summary b{color:var(--text);font-size:var(--fs-16);font-weight:500;font-variant-numeric:tabular-nums}
+.ls-signing-facts,.ls-signing-review{margin:0;padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2)}
+.ls-signing-facts{display:grid;gap:var(--sp-4)}
+.ls-signing-facts dt{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);color:var(--muted);font-size:var(--fs-12);font-weight:400}
+.ls-signing-facts dd{margin:var(--sp-2) 0 0;min-width:0;color:var(--text);font-size:var(--fs-14);line-height:1.7}
+.ls-signing-caption{font-size:var(--fs-12);color:var(--muted)}
+.ls-signing-amount dd{font-size:var(--fs-19);font-weight:500;font-variant-numeric:tabular-nums}
+.ls-signing-amount+.ls-signing-contract{padding-top:var(--sp-3);border-top:1px solid var(--border)}
+.ls-signing-contract dd{display:flex;align-items:flex-start;gap:var(--sp-2)}
+.ls-signing-address{flex:1;min-width:0;overflow-wrap:anywhere;word-break:normal}
+.ls-signing-contract .btn.icon{flex:none;width:var(--ctrl-h);min-width:var(--ctrl-h);height:var(--ctrl-h);min-height:var(--ctrl-h)}
+.ls-signing-review .ls-step-summary{padding:0;border:0;background:none}
+.ls-signing-review .ls-signing-facts{margin-top:var(--sp-4);padding:var(--sp-3) 0 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none}
 .ls-amount-over{margin:calc(var(--sp-2) * -1) 0 0;font-size:var(--fs-12);color:var(--danger);line-height:1.6}
 .ls-amount-over:empty{display:none}
 .ls-publish .mk-iselect-icons{width:var(--sp-5);max-width:var(--sp-5)}
