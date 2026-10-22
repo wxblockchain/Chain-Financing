@@ -719,7 +719,7 @@
   function enhance(){const modal=document.querySelector('#layers .modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm)');if(modal&&!modal.querySelector('.ls-modal-close')){const close=document.createElement('button');close.className='btn ghost sm ls-modal-close';close.dataset.act='closelayer';close.type='button';close.setAttribute('aria-label',L('Close','关闭'));close.textContent='×';modal.querySelector('.modal-h')?.append(close);}if(CF.AM && ![LIST,DETAIL,NEW].includes(S.page))return;
     /* 详情里打开的只读详情与办理层同样带上本项目质押合约；签名确认层已在正文写明目标合约。放款各层不带：付款地址旁出现合约地址容易被误用作收款地址。 */
     const lp=S.page===DETAIL?project():null,layerBody=document.querySelector('#layers .drawer-b, #layers .modal-b');
-    if(lp&&lp.contract&&layerBody&&S.layer&&!['discard','copy','handoff','pledge','release','publish','fees','execute','tokenHistory'].includes(S.layer.key)&&!S.layer.key.startsWith('ln-')&&!S.layer.key.startsWith('rp-')&&!layerBody.querySelector('.ls-layer-contract'))layerBody.insertAdjacentHTML('afterbegin','<div class="ls-layer-contract"><span class="muted">'+L('Pledge contract','质押合约')+' · '+netName(D.PLEDGE_CHAIN)+'</span><span class="mono">'+E(lp.contract)+'</span>'+copyIcon(lp.contract,L('Copy pledge contract address','复制质押合约地址'))+'</div>');footer();tools();if(Q){Q.enhance();Q.organizeTools();}document.getElementById('portal').inert=!!S.layer;sizeWorkspace();if(focusReview&&S.layer?.key==='review'){const heading=document.querySelector('#layers .drawer-h, #layers .modal-h');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});document.querySelector('#layers .drawer-b, #layers .modal-b').scrollTop=0;}focusReview=false;}else if(S.layer?.key==='review'){const body=document.querySelector('#layers .drawer-b, #layers .modal-b');if(body)body.scrollTop=reviewScroll;}document.querySelectorAll('.nav-item').forEach(a=>{if(a.getAttribute('href')==='#/marketplace'&&[LIST,DETAIL,NEW].includes(S.page))a.setAttribute('aria-current','page');});if(!document.querySelector('.ls-demo-mark')){const el=document.createElement('p');el.className='ls-demo-mark';el.textContent=L('Demonstration data','演示数据');document.getElementById('content').prepend(el);}if(refocus){document.getElementById(refocus)?.focus({preventScroll:true});refocus=null;}sizeWorkspace();}
+    if(lp&&lp.contract&&layerBody&&S.layer&&!['discard','copy','handoff','pledge','release','publish','fees','execute','tokenHistory','cq-flow'].includes(S.layer.key)&&!S.layer.key.startsWith('ln-')&&!S.layer.key.startsWith('rp-')&&!layerBody.querySelector('.ls-layer-contract'))layerBody.insertAdjacentHTML('afterbegin','<div class="ls-layer-contract"><span class="muted">'+L('Pledge contract','质押合约')+' · '+netName(D.PLEDGE_CHAIN)+'</span><span class="mono">'+E(lp.contract)+'</span>'+copyIcon(lp.contract,L('Copy pledge contract address','复制质押合约地址'))+'</div>');footer();tools();if(Q){Q.enhance();Q.organizeTools();}document.getElementById('portal').inert=!!S.layer;sizeWorkspace();if(focusReview&&S.layer?.key==='review'){const heading=document.querySelector('#layers .drawer-h, #layers .modal-h');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});document.querySelector('#layers .drawer-b, #layers .modal-b').scrollTop=0;}focusReview=false;}else if(S.layer?.key==='review'){const body=document.querySelector('#layers .drawer-b, #layers .modal-b');if(body)body.scrollTop=reviewScroll;}document.querySelectorAll('.nav-item').forEach(a=>{if(a.getAttribute('href')==='#/marketplace'&&[LIST,DETAIL,NEW].includes(S.page))a.setAttribute('aria-current','page');});if(!document.querySelector('.ls-demo-mark')){const el=document.createElement('p');el.className='ls-demo-mark';el.textContent=L('Demonstration data','演示数据');document.getElementById('content').prepend(el);}if(refocus){document.getElementById(refocus)?.focus({preventScroll:true});refocus=null;}sizeWorkspace();}
   function externalEvent(value){const p=project()||D.projects[0];if(value==='reset'){reviewLoad='default';reviewFilter={};executionGate='normal';D.seed();S.layer=null;selection=[];location.hash='#/marketplace';return;}
     if(value==='twoDays'||value==='eightDays')D.offset+=(value==='twoDays'?2:8)*86400000;
     /* 一笔交易内的全部份额同成同败：同一提交批次取同一结果。 */
@@ -746,41 +746,20 @@
     const engaged=Q.data().quotes.some(q=>q.project===p.id&&(q.state==='waiting'||q.l7||['funding','funded'].includes(q.state)));
     return engaged?{label:['Other funder','其他资金方']}:{label:['Not quoted','未报价']};
   }
-  /* 演示条的结算方式切换：放款相关阶段按所选结算方式挑样例项目（法币 USD、数币 ETH、数币 TRON），不改业务数据。 */
-  let settleView='USD';
-  const SETTLE_VIEWS=[['USD',['Fiat · USD','法币 · USD']],['ETH',['Crypto · ETH','数币 · ETH']],['TRON',['Crypto · TRON','数币 · TRON']]];
-  const settleOfQuote=q=>q.l7?(q.l7.ccy==='USD'?'USD':(q.l7.account?.chain||'ETH')):null;
-  const stageQuote=(p,test)=>!!Q&&Q.data().quotes.some(q=>q.project===p.id&&test(q)&&settleOfQuote(q)===settleView);
-  const SETTLE_STAGES={disburse:['financing',q=>q.l7?.state==='pending'],receipt:['financing',q=>q.l7?.state==='waiting'],disbursed:['financing',q=>q.l7?.state==='confirmed'],repaying:['repay',q=>q.l8&&!q.l8.settledAt]};
-  /* 打开的是放款相关样例项目时，切换项跟随该项目的结算方式。 */
-  function syncSettle(){const here=project(),q=here&&Q?.data().quotes.find(q=>q.project===here.id&&q.l7);const v=q&&settleOfQuote(q);if(v)settleView=v;}
-  function settleVariants(){
-    if(!Q)return null;syncSettle();const here=project();
-    const stageHere=here?Object.keys(SETTLE_STAGES).filter(k=>Q.data().quotes.some(q=>q.project===here.id&&SETTLE_STAGES[k][1](q))).pop():null;
-    return {label:['Settlement','结算方式'],options:SETTLE_VIEWS.map(([k,label])=>({id:'settle-'+k,label,current:settleView===k,
-description:['Pick the sample project for the disbursement stages by settlement','放款相关阶段按此结算方式挑选样例项目']})),
-      pick(v){const k=v.replace(/^settle-/,'');if(!SETTLE_VIEWS.some(x=>x[0]===k))return;settleView=k;
-        /* 正处在放款相关阶段时，直接换到同一阶段、所选结算方式的样例项目。 */
-        if(!stageHere)return;const [tab,test]=SETTLE_STAGES[stageHere];
-        const target=D.projects.find(p=>Q.data().quotes.some(q=>q.project===p.id&&test(q)&&settleOfQuote(q)===k));
-        if(!target){CF.toast(L('No sample project in this stage uses that settlement.','该阶段暂无此结算方式的样例项目。'));return;}
-        if(target!==here){actionTabs[target.id]=tab;railExpanded=true;delete actionNodes[target.id+':'+tab];location.hash='#/project/'+target.id;}}};
-  }
+  /* 已放款、还款中的演示项目只取 Ethereum 链上放款的样例。 */
+  const onChain=(p,test)=>!!Q&&Q.data().quotes.some(q=>q.project===p.id&&q.ccy!=='USD'&&(q.l7?.account?.chain||'ETH')==='ETH'&&test(q));
   [LIST,DETAIL,NEW].forEach(id=>CF.review.register(id, {
     group:['Lending marketplace','借贷广场'],
     parties:true,
     subject:()=>{const p=id===DETAIL&&project();return p?[txt(p.name)+' · '+p.id+' · '+owner(p),txt(p.name)+' · '+p.id+' · '+owner(p)]:null;},
     perspective:key=>id===DETAIL?perspectiveTag(key):null,
-    variants:()=>id===DETAIL?settleVariants():null,
-    scenarios:()=>id!==DETAIL?[]:(syncSettle(),[
+    scenarios:()=>id!==DETAIL?[]:([
       ['collateral',['Collateral overview','质押概览'],'global',p=>!D.terminal(p)],
       ['publish',['Ready to publish a request','待发布融资需求'],'financing',p=>!D.current(p)&&D.actions(p).publish],
       ['quotes',['Awaiting quotes','待机构报价'],'financing',p=>D.current(p)?.state==='open'],
       ['respond',['Awaiting quote confirmation','待确认报价'],'financing',p=>D.current(p)?.state==='quoted'],
-      ['disburse',['Awaiting disbursement','待放款'],'financing',p=>stageQuote(p,q=>q.l7?.state==='pending')],
-      ['receipt',['Awaiting receipt confirmation','待放款确认'],'financing',p=>stageQuote(p,q=>q.l7?.state==='waiting')],
-      ['disbursed',['Disbursed','已放款'],'financing',p=>stageQuote(p,q=>q.l7?.state==='confirmed')],
-      ['repaying',['Repayment in progress','还款中'],'repay',p=>stageQuote(p,q=>q.l8&&!q.l8.settledAt)],
+      ['disbursed',['Disbursed','已放款'],'financing',p=>onChain(p,q=>q.l7?.state==='confirmed')],
+      ['repaying',['Repayment in progress','还款中'],'repay',p=>onChain(p,q=>q.l8&&!q.l8.settledAt)],
       ['settled',['Financing settled','已结清'],'global',p=>p.state==='settled'],
       ['closed',['Project closed','项目已关闭'],'global',p=>p.state==='closed']
     ].map(([key,label,tab,match],i,all)=>{
