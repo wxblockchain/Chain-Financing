@@ -23,8 +23,8 @@
   const day=v=>v?CF.fmtDate(v.slice(0,10)+'T12:00:00Z'):'—';
   const termText=p=>day(p.created)+' ～ '+day(p.expiry)+' (UTC)';
   const copyIcon=(value,labelText)=>CF.copyBtn('ls-copy',value,labelText);
-  /* 网络一律展示全名（以太坊），不用 ETH 缩写，避免与同名的币混淆。 */
-  const netName=c=>c==='ETH'?L('Ethereum','以太坊'):E(c);
+  /* 网络一律展示英文全名 Ethereum（中文界面同样不译），不用 ETH 缩写，避免与同名的币混淆。 */
+  const netName=c=>c==='ETH'?'Ethereum':E(c);
   const netChip=c=>CF.market.network(c).replace(/<span>[^<]*<\/span><\/span>$/,'<span>'+netName(c)+'</span></span>');
   /* 本项目质押合约：公开事实、完整地址可复制，平台不做链上核验；配置前只说明，不给占位地址。 */
   function contractBlock(p,compact){
@@ -475,7 +475,7 @@
     const networkField='<div class="field"><p class="field-label" id="ls-network-label">'+CF.fieldLabel(L('Blockchain network','区块链网络'),true)+'</p><p class="field-static ls-network" role="note" aria-labelledby="ls-network-label">'+netChip(D.PLEDGE_CHAIN)+'<span class="ls-lock">'+L('Fixed','不可更改')+'</span></p></div>';
     const nameField=field('ls-name','Project name *','项目名称 *',name,'text','maxlength="60" required aria-describedby="ls-name-help"')+'<p class="hint" id="ls-name-help">'+L('1–60 characters','1～60 字符')+'</p>';
     const typeHint=paramFail?'<div class="ls-inline-fail" role="alert"><span>'+L('Financing parameters could not be loaded, so the project cannot be submitted right now.','融资参数暂时读取失败，暂不可办理。')+'</span>'+btn('ls-param-retry',L('Retry','重试'))+'</div>'
-      :none?'<p class="hint ls-hint-warn">'+L('Your company has no tokens on Ethereum that have passed token admission review.','本企业在以太坊上暂无已通过准入审核的代币。')+'</p>'
+      :none?'<p class="hint ls-hint-warn">'+L('Your company has no tokens on Ethereum that have passed token admission review.','本企业在 Ethereum 上暂无已通过准入审核的代币。')+'</p>'
       :closed?'<p class="hint ls-hint-warn">'+L('This token type is not open for financing yet.','该代币类型暂未开放融资。')+'</p>':'';
     const typeField=select('ls-kind','Token type *','代币类型 *',options,kind,'required'+(none||closed||paramFail?' disabled':''))+typeHint;
     const ratioField=field('ls-rate','Pledge ratio (%) *','项目质押率（%）*',rate,'text','inputmode="decimal" required aria-describedby="ls-rate-help"')+'<p class="hint" id="ls-rate-help">'+(cfg?L('Up to '+(cfg.maxRate*100)+'%, at most 2 decimal places','最高 '+(cfg.maxRate*100)+'%，最多两位小数'):L('The limit appears after you choose a token type','选择代币类型后显示上限'))+'</p>';
@@ -505,7 +505,7 @@
   function openPublish(){const p=project();if(!guarded(p))return;const a=D.actions(p);if(!a.edit&&!a.publish){CF.toast(txt(errors.publishChanged));return;}
     /* 从企业账户登记完回到本次发布：已填金额保留，收款地址重新选。 */
     if(!publishDraft){amount=D.current(p)?String(D.current(p).amount):'';payeeId='';}publishDraft=false;payeeStamp='';publishInitial=publishSnapshot();open('publish');}
-  /* 融资收款地址：只列本企业在企业账户登记的以太坊数币账户；不设默认，不能手输，信息不完整的列出但不能选。 */
+  /* 融资收款地址：只列本企业在企业账户登记的 Ethereum 网络数币账户；不设默认，不能手输，信息不完整的列出但不能选。 */
   const EA=()=>CF.EA;
   function payeeAccounts(){return payeeScene==='empty'||!EA()?[]:EA().accounts(D.me(),'crypto').filter(a=>a.chain==='ETH');}
   const payeeSnap=a=>a?{id:a.id,kind:'crypto',chain:a.chain,label:a.label,address:a.address}:null;
@@ -515,7 +515,7 @@
     if(d)return '<div class="field">'+label+payeeView(d.payee)+'</div>';
     if(payeeScene==='error')return '<div class="field" id="ls-payee-wrap" tabindex="-1">'+label+'<div class="ls-inline-fail" role="alert"><span>'+L('Company accounts are temporarily unavailable.','企业账户暂时无法读取。')+'</span>'+btn('ls-payee-retry',L('Retry','重试'))+'</div></div>';
     const list=payeeAccounts();
-    if(!list.length)return '<div class="field" id="ls-payee-wrap" tabindex="-1">'+label+'<div class="ls-inline-fail"><span>'+L('Your company has not added an Ethereum crypto account yet. Add one, then come back; what you entered here is kept.','本企业尚未登记以太坊数币账户。登记后回到本次发布，已填内容保留。')+'</span>'+btn('ls-payee-register',L('Go to company accounts','前往企业账户'))+'</div></div>';
+    if(!list.length)return '<div class="field" id="ls-payee-wrap" tabindex="-1">'+label+'<div class="ls-inline-fail"><span>'+L('Your company has not added an Ethereum crypto account yet. Add one, then come back; what you entered here is kept.','本企业尚未登记 Ethereum 网络的数币账户。登记后回到本次发布，已填内容保留。')+'</span>'+btn('ls-payee-register',L('Go to company accounts','前往企业账户'))+'</div></div>';
     const miss=a=>EA().missing(a),picked=list.find(a=>a.id===payeeId&&!miss(a).length);
     const option=a=>{const m=miss(a);return '<option value="'+E(a.id)+'"'+(picked?.id===a.id?' selected':'')+(m.length?' disabled':'')+'>'+E(EA().plainName(a))+' · '+netName(a.chain)+' · '+E(String(a.address||'').slice(0,6)+'…'+String(a.address||'').slice(-4))+(m.length?L(' (missing wallet address)','（缺少数币地址）'):'')+'</option>';};
     return '<div class="field" id="ls-payee-wrap" tabindex="-1">'+label+'<select class="inp" id="ls-payee" aria-labelledby="ls-payee-label" aria-required="true"><option value="">'+L('Choose a receiving address','请选择融资收款地址')+'</option>'+list.map(option).join('')+'</select>'+(list.some(a=>miss(a).length)?'<p class="hint">'+L('Incomplete accounts cannot be chosen; complete them in Company accounts.','信息不完整的账户不能选，请到企业账户补齐。')+'</p>':'')+payeeView(payeeSnap(picked))+'</div>';

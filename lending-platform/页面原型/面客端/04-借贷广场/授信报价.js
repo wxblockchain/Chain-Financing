@@ -283,7 +283,7 @@
     flow.quote=q?.id;
     const overview='<div class="cq-request-head"><div><span class="hint">'+L('Financing request','融资申请')+'</span><h2 class="mono">'+usd(d.amount)+'</h2><span class="mono hint">'+E(d.id)+'</span></div>'+CF.tag('',requestState(d))+'</div>';
     /* 融资收款地址：本企业资产方可见完整值；资金方按该笔业务当事方读取，非当事方不可见。 */
-    const owner=S.role==='asset'&&D.mine(p),payee=d.payee&&(owner||q&&related(q))?'<span class="mono cq-break">'+E(d.payee.address)+'</span><div class="hint">'+E(L(...(d.payee.label||['',''])))+' · '+L('Ethereum','以太坊')+'</div>':null;
+    const owner=S.role==='asset'&&D.mine(p),payee=d.payee&&(owner||q&&related(q))?'<span class="mono cq-break">'+E(d.payee.address)+'</span><div class="hint">'+E(L(...(d.payee.label||['',''])))+' · Ethereum</div>':null;
     const request=dl([[L('Project','所属项目'),E(L(...p.name))],[L('Asset holder','资产企业'),company(p)],[L('Reference settlement currency','参考结算币种'),(p.settle?.length?E(p.settle.join(' / ')):L('Not provided','未提供'))],...(payee?[[L('Financing receiving address','融资收款地址'),payee]]:[]),[L('Published at','申请发布时间'),time(d.at)],[L('Final repayment date','最终还款日'),date(p.expires)]]);
     /* 冻结信息：冻结质押价值与状态对能看到完整详情的身份可见；签名事实只对本企业资产方。 */
     const f=D.freezeOf(p,d),freezeState={frozen:['Frozen','冻结中'],releasing:['Release processing','解除处理中'],released:['Released','已解除']}[f.state]||['Freeze processing','冻结处理中'];
