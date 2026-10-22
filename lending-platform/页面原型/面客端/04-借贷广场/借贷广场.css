@@ -983,7 +983,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-pick td .mono{font-size:var(--fs-12)}
 /* 创建页：区块链网络为第一项，本期固定 Ethereum。 */
 .ls-network{display:inline-flex;align-items:center;gap:var(--sp-3)}
-.ls-lock{font-size:var(--fs-12);color:var(--muted);border-left:1px solid var(--border-strong);padding-left:var(--sp-3)}
 .ls-unfinished{margin:var(--sp-2) 0 0;padding-left:var(--sp-5)}
 .ls-unfinished li{margin:2px 0}
 
@@ -1038,8 +1037,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-publish #ls-amount-error:empty{display:none}
 .ls-pledge .ls-pick-row.on td:first-child{box-shadow:inset 3px 0 var(--accent)}
 .ls-pledge .ls-pick input{accent-color:var(--accent)}
-.ls-approval{display:grid;gap:var(--sp-3);padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2)}
-.ls-approval h3{margin:0;font-size:var(--fs-14);font-weight:600;color:var(--text)}
 .ls-approval-list{list-style:none;margin:0;padding:0;display:grid;gap:0}
 .ls-approval-list li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:var(--sp-2) var(--sp-4);padding:var(--sp-3) 0;border-bottom:1px solid var(--border);font-size:var(--fs-13)}
 .ls-approval-list li:first-child{padding-top:0}
@@ -1047,31 +1044,38 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-approval-who{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-2);min-width:0}
 .ls-approval-state{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:var(--sp-1) var(--sp-2);text-align:right;min-width:0}
 .ls-approval-state .cell-sub{margin:0}
-.ls-approval-ok{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);margin:0;padding:var(--sp-3) var(--sp-4);border:1px solid var(--ok-border);border-radius:var(--radius-sm);background:var(--ok-bg);font-size:var(--fs-13);color:var(--ok)}
 .ls-inline-fail{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2) var(--sp-3);padding:var(--sp-2) var(--sp-3);border:1px solid var(--warn-border);border-radius:var(--radius-sm);background:var(--warn-bg);color:var(--warn);font-size:var(--fs-12);line-height:1.6}
 .ls-inline-fail .btn{flex:none}
-.ls-publish-figs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);margin:0;padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2)}
-.ls-publish-figs>div{min-width:0}
-.ls-publish-figs>div+div{padding-left:var(--sp-4);border-left:1px solid var(--border)}
-.ls-publish-figs dt{font-size:var(--fs-12);color:var(--muted)}
-.ls-publish-figs dd{margin:var(--sp-2) 0 0;font-size:var(--fs-19);font-weight:500;line-height:1.6;color:var(--text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.ls-payee-dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);margin:var(--sp-3) 0 0;padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2)}
-.ls-payee-dl>div{display:block;min-width:0;padding:0;border:0}
-.ls-payee-dl>div:last-child{grid-column:1/-1;padding-top:var(--sp-3);border-top:1px solid var(--border)}
-.ls-payee-dl dd{margin:var(--sp-1) 0 0;overflow-wrap:anywhere;line-height:1.7}
-.ls-payee-dl .ls-break{word-break:normal;overflow-wrap:anywhere}
-.ls-freeze-info>.cq-dl{padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2)}
-.ls-freeze-info>.cq-dl>.cq-fact:first-child dd{font-size:var(--fs-19);font-weight:500}
-.ls-freeze-info>.cq-dl>.cq-fact:has(.ls-freeze-proof,.ls-freeze-signer){grid-column:1/-1;padding-top:var(--sp-3);border-top:1px solid var(--border)}
-.ls-freeze-info .ls-history{border-top:1px solid var(--border);margin-top:var(--sp-4)}
-.ls-freeze-info .ls-history .cq-dl{grid-template-columns:minmax(0,1fr);margin:0}
-.ls-freeze-info .ls-history .cq-fact+.cq-fact{padding-top:var(--sp-3);border-top:1px solid var(--border)}
 .cq-break{overflow-wrap:anywhere}
 @media(max-width:560px){
-  .ls-publish-figs{grid-template-columns:minmax(0,1fr);gap:var(--sp-3)}
-  .ls-publish-figs>div+div{padding:var(--sp-3) 0 0;border-left:0;border-top:1px solid var(--border)}
   .ls-approval-list li{grid-template-columns:minmax(0,1fr)}
   .ls-approval-state{text-align:left;justify-content:flex-start}
-  .ls-payee-dl{grid-template-columns:minmax(0,1fr)}
-  .ls-payee-dl>div:last-child{grid-column:auto}
 }
+
+/* WS-446 · 分步办理、币种选中态、收款地址与操作记录 */
+/* 创建页标题收小：共享层 market.css 在后加载且选择器更具体，这里提高一级。 */
+:is([data-market-redesign],body) .ls-form .ls-form-head h1.page-title{font-size:var(--fs-19);font-weight:600;line-height:1.4}
+.ls-form{gap:var(--sp-4)}
+.ls-chips{gap:var(--sp-2)}
+.ls-chip{display:inline-flex;align-items:center;gap:var(--sp-2);min-height:40px;padding:0 var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);color:var(--text);font:inherit;font-size:var(--fs-13);cursor:pointer}
+.ls-chip:hover{border-color:var(--border-strong)}
+.ls-chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-strong)}
+.ls-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ls-steps{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-5);margin:0;padding:0;list-style:none;font-size:var(--fs-13);color:var(--muted)}
+.ls-steps li{display:flex;align-items:center;gap:var(--sp-2)}
+.ls-step-n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--border-strong);font-size:var(--fs-12);font-variant-numeric:tabular-nums}
+.ls-steps li[aria-current="step"]{color:var(--text);font-weight:600}
+.ls-steps li[aria-current="step"] .ls-step-n{border-color:var(--accent);background:var(--accent);color:var(--card)}
+.ls-steps li.done .ls-step-n{border-color:var(--accent);color:var(--accent)}
+.ls-step-lead,.ls-step-summary{margin:0;font-size:var(--fs-13);color:var(--muted);line-height:1.6}
+.ls-step-summary{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-5)}
+.ls-step-summary b{color:var(--text);font-weight:500}
+.ls-amount-over{margin:calc(var(--sp-2) * -1) 0 0;font-size:var(--fs-12);color:var(--danger);line-height:1.6}
+.ls-amount-over:empty{display:none}
+.ls-payee-static{display:flex;align-items:center;gap:var(--sp-3)}
+.ls-payee-static .mk-network{flex:none}
+.ls-payee-text{display:grid;gap:2px;min-width:0}
+.ls-payee-text b{font-weight:500}
+.ls-payee-text .mono{font-size:var(--fs-12);color:var(--muted)}
+.cq-op-hash{display:inline-flex;align-items:center;gap:var(--sp-1);min-width:0}
+.cq-ops td{vertical-align:top}
