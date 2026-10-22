@@ -249,6 +249,8 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-auth-state{display:grid;justify-items:end;gap:2px;max-width:100%;min-width:0;text-align:right}
 .cq-auth-state .hint{margin:0;max-width:420px}
 .cq-same{margin:var(--sp-3) 0 0}
+.cq-funded{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-3);margin:0 0 var(--sp-3)}
+.cq-funded b{font-size:var(--fs-14);font-weight:600}
 .modal:has(.cq-flow) .ls-sign-bar{flex-basis:100%}
 @media (max-width:640px){.cq-balance{grid-template-columns:1fr 1fr}.cq-auth-state{justify-items:start;text-align:left}}
 .cq-check:has(#cq-error){flex-wrap:wrap}.cq-check #cq-error{flex-basis:100%}
