@@ -175,6 +175,8 @@
   // 旧演示快照的来源统一为运营端汇率管理，不重算已锁定的金额。
   db.quotes.forEach(q=>[q.fx,q.l7?.fx].filter(Boolean).forEach(fx=>{if(fx.version?.startsWith('FX-DEMO-')&&/demo$/.test(fx.source?.[0]||''))fx.source=['Operations · Exchange rate management','运营端汇率管理'];}));
   Q.data=()=>db;
+  /* 链上放款记录由报价接受流程生成；沿用已存快照，不再生成独立的人工放款业务。 */
+  Q.disbursements=()=>db.quotes.map(q=>q.l7).filter(x=>x&&D.project(x.project));
   Q.related=q=>!!q&&related(q);Q.save=save;Q.startJourney=step=>journeyStart(step);
   /* 从机构账户登记完放款地址后回到原报价：已填内容保留，授权按链上事实重新判断。 */
   Q.resumeSelection=()=>{const draft=pendingDraft;pendingDraft=null;const p=draft&&D.project(draft.project);
@@ -307,8 +309,8 @@
     rememberTrigger('cq-request');flow={project:p.id,demand:id,historyOpen:selected,onReturn};refreshRequest();open('request');
   }
   Q.openRequest=openRequest;
-  /* 链上放款记录（接受即放款）：放款成功后才有。演示数据暂取放款模块现有的已放款记录，字段按授信报价与接受拒绝的定义展示。 */
-  Q.loanRecord=q=>{const x=q&&(q.l7||CF.L7?.find?.(q));if(!x||!['confirmed','settled'].includes(x.state)||!x.record)return null;
+  /* 链上放款记录（接受即放款）：放款成功后才有，直接读取本笔报价的链上记录。 */
+  Q.loanRecord=q=>{const x=q?.l7;if(!x||!['confirmed','settled'].includes(x.state)||!x.record)return null;
     const lender=q.lender?.address||(Q.accounts(x.fund,'crypto')||[]).find(a=>a.chain==='ETH')?.address||'';
     return {id:x.record.id,ccy:x.ccy,amount:x.settlement,lender,payee:x.account?.address||'',repay:q.repayTo||x.record.account,tx:x.record.form?.hash||'',at:x.confirmedAt||x.record.at};};Q.institution=institution;Q.currentQuote=(p,did)=>requestQuotes(p,did).find(x=>['waiting','funding','funded','terminated'].includes(x.state));
   /* 链上放款记录只对本笔资产方与报价机构展示；还款信息只引用编号，不重复这些明细。 */
@@ -441,6 +443,8 @@
     flow={};S.st='default';S.demo=true;location.hash='#/project/'+p.id;save();
     setTimeout(()=>{CF.LSView.onAct('ls-tab','financing');CF.render();},0);
   }
+  /* 还款场景的本地演示起点复用同一条链上放款完成逻辑。 */
+  Q.demoDisbursement=()=>{journeyStart('3');const q=active(D.project('FP-DEMO-003'));complete(q);save();return q.l7;};
   Q.organizeTools=()=>{
     const panel=document.getElementById('demoPanel');if(!S.demo||panel.querySelector('.cq-guide'))return;
     const host=panel.querySelector(':scope > .review-more > .review-more-body')||panel;

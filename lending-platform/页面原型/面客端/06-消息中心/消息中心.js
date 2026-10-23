@@ -9,7 +9,7 @@
   let timer=null,refreshes=0,detailFailure=false,landingDenied=false;
   const storageKey='hc-ws379-read-v1';
   let snapshotData=null,pool=null,poolReady=false;
-  /* 演示池由 CF.LS / CF.CQ / CF.L7 / CF.L8 的现行事实派生，首次读取时才播种。 */
+  /* 演示池由 CF.LS / CF.CQ / CF.L8 的现行事实派生，首次读取时才播种。 */
   Object.defineProperty(N,'rows',{configurable:true,
     get(){if(!poolReady){poolReady=true;D.ensure();loadRead();pool=D.rows;}return pool;},
     set(value){poolReady=true;pool=value;}});

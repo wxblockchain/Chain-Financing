@@ -387,13 +387,13 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-detail-main .card-head .ls-subheading{margin:0}
 @media(max-width:768px){.drawer:has(.ls-flow),.drawer:has(.cq-flow){width:100vw}.ls-flow .ls-review-filters{grid-template-columns:1fr 1fr}.drawer:has(.ls-flow) .drawer-h b,.drawer:has(.cq-flow) .drawer-h b{overflow-wrap:anywhere}}
 @media(max-width:414px){.ls-flow .ls-review-filters{grid-template-columns:1fr}}
-.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){width:min(920px,100%);max-width:920px;max-height:calc(100dvh - 48px)}
-.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-h{display:flex;align-items:center;gap:var(--sp-3);padding:var(--dialog-head-pad,var(--sp-4) var(--sp-6));border-bottom:1px solid var(--border)}
+.modal:has(.ls-flow,.cq-flow,.rp-drawer,.rp-confirm){width:min(920px,100%);max-width:920px;max-height:calc(100dvh - 48px)}
+.modal:has(.ls-flow,.cq-flow,.rp-drawer,.rp-confirm) .modal-h{display:flex;align-items:center;gap:var(--sp-3);padding:var(--dialog-head-pad,var(--sp-4) var(--sp-6));border-bottom:1px solid var(--border)}
 .ls-modal-close{margin-left:auto;flex-shrink:0}
-.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-b{color:var(--text);padding:var(--sp-5) var(--sp-6);min-height:0;overscroll-behavior:contain}
-.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-f{border-top:1px solid var(--border);padding:var(--dialog-foot-pad,var(--sp-4) var(--sp-6));flex-wrap:wrap;flex-shrink:0}
-.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-f .btn{white-space:normal;height:auto;min-height:44px}
-@media(max-width:640px){.modal-mask:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){padding:var(--sp-2)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){width:100%;max-height:calc(100dvh - 16px)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) :is(.modal-h,.modal-b,.modal-f){padding:var(--sp-3)}.modal:has(.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .modal-f .btn{flex:1}}
+.modal:has(.ls-flow,.cq-flow,.rp-drawer,.rp-confirm) .modal-b{color:var(--text);padding:var(--sp-5) var(--sp-6);min-height:0;overscroll-behavior:contain}
+.modal:has(.ls-flow,.cq-flow,.rp-drawer,.rp-confirm) .modal-f{border-top:1px solid var(--border);padding:var(--dialog-foot-pad,var(--sp-4) var(--sp-6));flex-wrap:wrap;flex-shrink:0}
+.modal:has(.ls-flow,.cq-flow,.rp-drawer,.rp-confirm) .modal-f .btn{white-space:normal;height:auto;min-height:44px}
+@media(max-width:640px){.modal-mask:has(.ls-flow,.cq-flow,.rp-drawer,.rp-confirm){padding:var(--sp-2)}.modal:has(.ls-flow,.cq-flow,.rp-drawer,.rp-confirm){width:100%;max-height:calc(100dvh - 16px)}.modal:has(.ls-flow,.cq-flow,.rp-drawer,.rp-confirm) :is(.modal-h,.modal-b,.modal-f){padding:var(--sp-3)}.modal:has(.ls-flow,.cq-flow,.rp-drawer,.rp-confirm) .modal-f .btn{flex:1}}
 
 /* Section labels locate content; all four lists remain in document flow. */
 /* 分区导航只用文字：无边框、无下划线，当前项以主色与字重区分；吸顶时用页面底色衬底，不画分隔线。 */
@@ -821,8 +821,8 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-detail-main .ls-table .tag{font-size:var(--fs-11);font-weight:500}
 .ls-detail-main .ls-token-table :is(th,td):nth-child(2),#ls-applications .ls-table :is(th,td):nth-child(2){text-align:right}
 .ls-detail-main .ls-token-table td:nth-child(2) .cell-wrap,#ls-applications .ls-table td:nth-child(2) .cell-wrap{align-items:flex-end}
-.ls-detail-main .ln-list :is(th,td):nth-child(3),.ls-detail-main .ln-list :is(th,td):nth-child(4),.ls-detail-main .rp-list :is(th,td):nth-child(2){text-align:right}
-.ls-detail-main .ln-list td:nth-child(3),.ls-detail-main .ln-list td:nth-child(4),.ls-detail-main .rp-list td:nth-child(2){font-family:var(--mono);font-variant-numeric:tabular-nums}
+.ls-detail-main .rp-list :is(th,td):nth-child(2){text-align:right}
+.ls-detail-main .rp-list td:nth-child(2){font-family:var(--mono);font-variant-numeric:tabular-nums}
 .ls-detail-main .pager{font-size:var(--fs-12);color:var(--muted)}
 
 /* WS-446：质押数量与代币标识分列，使用语义列类名，避免新增列后继承旧序号列宽 / 对齐。 */
@@ -892,22 +892,21 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 @media(pointer:coarse){.ls-form .ls-form-actions .btn{height:var(--ctrl-h);min-height:var(--ctrl-h)}}
 
 /* The same reading rhythm extends to project-related selection and business layers. */
-.modal-mask:has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){grid-template-columns:minmax(0,1fr)}
-.modal:has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm){animation:none;min-width:0}
+.modal-mask:has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.rp-drawer,.rp-confirm){grid-template-columns:minmax(0,1fr)}
+.modal:has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.rp-drawer,.rp-confirm){animation:none;min-width:0}
 :is(.ls-wide,.ls-medium,.ls-flow,.cq-flow){min-width:0}
 :is(.ls-wide,.ls-medium,.ls-flow,.cq-flow) .tablewrap{max-width:100%;overflow:auto}
 :is(.modal,.drawer) .rp-drawer{grid-template-columns:minmax(0,1fr)}
 :is(.modal,.drawer) .rp-drawer>*,:is(.modal,.drawer) .rp-drawer :is(.field,.inp){min-width:0;max-width:100%}
-:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .inp{border-color:var(--faint)}
-:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .inp:focus{border-color:var(--accent)}
-:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) .inp[aria-invalid=true]{border-color:var(--danger)}
-:is(.modal,.drawer) .ln-drawer .dl{grid-template-columns:minmax(180px,1fr) minmax(0,2fr)}
-:is(.modal,.drawer) :is(.ln-drawer,.rp-drawer) .dl dt{color:var(--muted);font-weight:400}
-:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) :is(.modal-h,.drawer-h){padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border);font-size:var(--fs-16);font-weight:600}
-:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) :is(.modal-b,.drawer-b){padding:var(--sp-5) var(--sp-6)}
-:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) :is(.modal-f,.drawer-f){padding:var(--sp-4) var(--sp-6);border-top:1px solid var(--border)}
-:is(.modal,.drawer) :is(.ls-wide,.ls-medium,.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) :is(.hint,.why,.cell-sub){color:var(--muted);font-size:var(--fs-12);line-height:1.7}
-:is(.modal,.drawer) :is(.ls-wide,.ls-medium,.ls-flow,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) table.tbl th{text-transform:none;letter-spacing:0;color:var(--muted);font-size:var(--fs-12);font-weight:500;line-height:1.5}
+:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.rp-drawer,.rp-confirm) .inp{border-color:var(--faint)}
+:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.rp-drawer,.rp-confirm) .inp:focus{border-color:var(--accent)}
+:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.rp-drawer,.rp-confirm) .inp[aria-invalid=true]{border-color:var(--danger)}
+:is(.modal,.drawer) .rp-drawer .dl dt{color:var(--muted);font-weight:400}
+:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.rp-drawer,.rp-confirm) :is(.modal-h,.drawer-h){padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border);font-size:var(--fs-16);font-weight:600}
+:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.rp-drawer,.rp-confirm) :is(.modal-b,.drawer-b){padding:var(--sp-5) var(--sp-6)}
+:is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.rp-drawer,.rp-confirm) :is(.modal-f,.drawer-f){padding:var(--sp-4) var(--sp-6);border-top:1px solid var(--border)}
+:is(.modal,.drawer) :is(.ls-wide,.ls-medium,.ls-flow,.cq-flow,.rp-drawer,.rp-confirm) :is(.hint,.why,.cell-sub){color:var(--muted);font-size:var(--fs-12);line-height:1.7}
+:is(.modal,.drawer) :is(.ls-wide,.ls-medium,.ls-flow,.cq-flow,.rp-drawer,.rp-confirm) table.tbl th{text-transform:none;letter-spacing:0;color:var(--muted);font-size:var(--fs-12);font-weight:500;line-height:1.5}
 .ls-pledge-notice{top:calc(-1 * var(--sp-5));gap:var(--sp-4);border-color:var(--border);box-shadow:none}
 .ls-pledge-notice .ls-pledge-sum .k{font-size:var(--fs-12);font-weight:400;color:var(--muted)}
 .ls-pledge-notice .ls-pledge-sum .v{font-size:var(--fs-16);font-weight:500;margin-top:var(--sp-1)}
@@ -948,7 +947,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
   .ls-market-page .ls-toolbar .ls-toolbar-end{margin-left:auto}
   .ls-detail-main .ls-token-table td:nth-child(2),#ls-applications .ls-table td:nth-child(2){text-align:left}
   .ls-detail-main .ls-token-table td:nth-child(2) .cell-wrap,#ls-applications .ls-table td:nth-child(2) .cell-wrap{align-items:flex-start}
-  .ls-detail-main .ln-list td:nth-child(3),.ls-detail-main .ln-list td:nth-child(4),.ls-detail-main .rp-list td:nth-child(2){text-align:left}
+  .ls-detail-main .rp-list td:nth-child(2){text-align:left}
 }
 @media(max-width:600px){
   .ls-detail .ls-stats,.ls-market-page .ls-market-stats{display:flex;flex-wrap:wrap}
@@ -971,7 +970,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
   .ls-market-page .ls-market-stats .k{font-size:var(--fs-11)}
   .ls-form .card-head,.ls-form .card-b{padding:var(--sp-4)}
   .ls-form .ls-term{gap:var(--sp-3)}
-  :is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.ln-drawer,.ln-confirm,.rp-drawer,.rp-confirm) :is(.modal-h,.drawer-h,.modal-b,.drawer-b,.modal-f,.drawer-f){padding:var(--sp-3)}
+  :is(.modal,.drawer):has(.ls-flow,.ls-wide,.ls-medium,.cq-flow,.rp-drawer,.rp-confirm) :is(.modal-h,.drawer-h,.modal-b,.drawer-b,.modal-f,.drawer-f){padding:var(--sp-3)}
   .ls-pledge-notice{top:calc(-1 * var(--sp-3))}
   .ls-pledge-notice .ls-pledge-sum{grid-template-columns:1fr}
   .ls-pledge-notice .ls-pledge-sum>div{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2)}
@@ -981,7 +980,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
   .ls-detail .ls-flow-do .btn,.ls-detail .ls-actions-stack .btn,.ls-detail .ls-pledge-action-group .btn.ls-quiet{min-height:var(--ctrl-h)}
 }
 @media(max-width:640px){
-  :is(.modal,.drawer) .ln-drawer .dl{grid-template-columns:minmax(0,1fr)}
 }
 @media(prefers-reduced-motion:reduce){
   .ls-detail .ls-flow-bar{transition:none}

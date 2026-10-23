@@ -58,7 +58,7 @@
  const allowed=()=>['asset','fund'].includes(S.role);
  const path=()=>location.hash.slice(1).split('?')[0];
  const params=()=>new URLSearchParams(location.hash.split('?')[1]||'');
- const now=()=>CF.L8?.now||CF.L7?.now()||D.now();
+ const now=()=>CF.L8?.now||D.now();
  const party=q=>Q.related(q);
  const fund=id=>id==='fund-b'?L('Demo Capital B','演示资金机构 B'):L('Demo Capital A','演示资金机构 A');
  const owner=id=>id==='entity-demo-a'?L('Demo Asset Company A','演示资产企业 A'):L('Demo Asset Company B','演示资产企业 B');
@@ -157,7 +157,6 @@
  }
  function normalized(k){
    if(!allowed())return [];
-   if(CF.L7)void CF.L7.deals;
    const related=Q.data().quotes.filter(party),ownProjects=D.projects.filter(p=>D.mine(p));
    if(k==='tokens')return tokenSnapshot();
    if(k==='projects')return S.role==='asset'?ownProjects.map(p=>({...p,project:p.id,status:p.state,n:D.numbers(p),amount:D.current(p)?.amount??null,at:p.created||p.published})):[];

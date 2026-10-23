@@ -1,6 +1,6 @@
 /* 非业务登记表。全部为虚构评审数据；接入方、业务规则及消息文案不构成上线登记。
- * WS-379：演示消息按 L5 / L6 / L7 / L8、登录与机构认证各册的现行事件生成，
- * 读取 CF.LS / CF.CQ / CF.L7 / CF.L8 的演示事实，本文件不自建业务对象。
+ * WS-379：演示消息按 L5 / L6 / L8、登录与机构认证各册的现行事件生成，
+ * 读取 CF.LS / CF.CQ / CF.L8 的演示事实，本文件不自建业务对象。
  * 本批废止的九类事件（质押审核超时、报价临期与到期、放款确认临期与超期、
  * 要求重传、放款前终止、还款确认临期与超期）不再出现，正文也不带任何业务时限。
  * 代币质押不经审核（2026-10-21）：质押审核通过 / 驳回两类事件取消，质押成功也不发站内信。 */
@@ -198,7 +198,7 @@
   const day=s=>String(s).slice(0,10);
   const money=n=>Number(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
   const fundName=id=>id==='fund-b'?pair('Demo Capital B','演示资金机构 B'):pair('Demo Capital A','演示资金机构 A');
-  const now=()=>CF.L8?.now||CF.L7?.now?.()||CF.LS?.now?.()||Date.now();
+  const now=()=>CF.L8?.now||CF.LS?.now?.()||Date.now();
   let serial=0;
   function push(row){
     row.platform=row.platform||'lending';row.end='asset';
@@ -260,7 +260,7 @@
           at:iso(Date.parse(p.expires)-7*DAY),vars:{...vars,expires_at:p.expires},
           business:business(p.name,p.id)});
     });
-    /* 报价、放款、还款：按 CF.CQ / CF.L7 / CF.L8 的现行演示业务生成。 */
+    /* 报价、放款、还款：按 CF.CQ / CF.L8 的现行演示业务生成。 */
     let gapShown=false;
     q.data().quotes.filter(x=>x.owner==='entity-demo-a').forEach(x=>{
       const p=d.project(x.project),inst=fundName(x.fund),plan=x.l8,deal=x.l7;

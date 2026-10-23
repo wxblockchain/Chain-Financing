@@ -18,8 +18,8 @@
   let serial=0,savedUI=null,externalReturn=null,accountsTrip=null,justSettled=null;
   const listViews=new Map(),openRows=new Map();
   let events=Q.data().repaymentEvents||(Q.data().repaymentEvents=[]);
-  const now=()=>clockOverride||CF.L7.now();
-  const quote=id=>Q.data().quotes.find(q=>q.id===id),deal=id=>CF.L7.deals.find(x=>x.id===(id||selected)),plan=()=>quote(selected)?.l8,period=()=>plan()?.periods.find(p=>p.seq===seq);
+  const now=()=>clockOverride||D.now();
+  const quote=id=>Q.data().quotes.find(q=>q.id===id),deal=id=>Q.disbursements().find(x=>x.id===(id||selected)),plan=()=>quote(selected)?.l8,period=()=>plan()?.periods.find(p=>p.seq===seq);
   const party=x=>!!x&&!!quote(x.id)&&Q.related(quote(x.id));
   const visible=x=>!!x&&(party(x)||S.role==='fund');
   const projectVisible=p=>!!p&&(S.role==='fund'||S.role==='asset'&&D.mine(p));
@@ -40,7 +40,7 @@
   /* 签名提交即冻结；链上未成功的回到待还款，按应到时点连续计算。 */
   const overdue=p=>p.state==='settled'?(p.record?.overdue||0):p.state==='pending'?(sub(p)?.overdue??lateNow(p)):lateNow(p);
   const confirmed=x=>!!x&&['confirmed','settled'].includes(x.state)&&x.record;
-  const available=p=>CF.L7.deals.filter(x=>x.project===p.id&&confirmed(x));
+  const available=p=>Q.disbursements().filter(x=>x.project===p.id&&confirmed(x));
   const processingOf=x=>(quote(x.id)?.l8?.periods||[]).find(p=>p.state==='pending');
   const approvalOf=x=>(quote(x.id)?.l8?.periods||[]).find(p=>p.state==='due'&&p.approval);
   const activeOf=x=>processingOf(x)||approvalOf(x);
@@ -59,7 +59,7 @@
   function event(kind,x,p,owners){owners.forEach(owner=>{const id=[kind,x.id,p?.id||'',owner].join('|');if(events.some(e=>e.id===id))return;events.push({id,kind,deal:x.id,seq:p?.seq,owner,at:iso(now())});Q.save();});}
   /* 定稿取放款成功时间：起息日为其 UTC 日期，计划定稿时间为该时点。 */
   function ensure(){events=Q.data().repaymentEvents||(Q.data().repaymentEvents=[]);let changed=false;
-    Q.data().quotes.forEach(q=>(q.l8?.periods||[]).forEach(p=>{if(p.open!==openAt(p)){p.open=openAt(p);changed=true;}}));CF.L7.deals.filter(confirmed).forEach(x=>{const q=quote(x.id);if(!q.l8&&x.plan!=='waiting'){
+    Q.data().quotes.forEach(q=>(q.l8?.periods||[]).forEach(p=>{if(p.open!==openAt(p)){p.open=openAt(p);changed=true;}}));Q.disbursements().filter(confirmed).forEach(x=>{const q=quote(x.id);if(!q.l8&&x.plan!=='waiting'){
     const start=day(Date.parse(x.confirmedAt||x.record.at)),end=day(Date.parse(q.repay));const periods=build(start,end,x.amount,x.rate,x.fx?.value);
     if(!periods.length)return;
     periods.forEach(p=>p.id='RP'+day(Date.parse(x.confirmedAt)).replaceAll('-','')+String(++serial).padStart(6,'0'));
@@ -209,7 +209,7 @@
   /* 精简办理面：仅本期、资金方、双方地址、实际授权与最终交易。 */
   function approvalAmount(from){
     if(!from)return need();
-    return round(need()+CF.L7.deals.filter(confirmed).reduce((sum,x)=>sum+(quote(x.id)?.l8?.periods||[]).reduce((n,p)=>{
+    return round(need()+Q.disbursements().filter(confirmed).reduce((sum,x)=>sum+(quote(x.id)?.l8?.periods||[]).reduce((n,p)=>{
       const a=p.state==='pending'?sub(p):p.approval;
       return n+(p!==period()&&a?.from?.address===from.address&&a.ccy===deal().ccy&&a.contract===repaymentContract()?(a.amount||0):0);
     },0),0));
@@ -311,7 +311,7 @@
     justSettled={deal:x.id,seq:p.seq};
     // L5 owns project terminal decisions. Do not equate zero principal with all instalments settled.
     D.recompute(project);D.autoEnd(project);Q.save();if(mine)CF.toast(L('Repayment completed on chain. Instalment '+p.seq+' is settled.','链上还款成功，第 '+p.seq+' 期已结清。'));CF.render();}
-  function sweep(){ensure();CF.L7.deals.filter(confirmed).forEach(x=>(quote(x.id).l8?.periods||[]).forEach(p=>{if(p.state!=='due')return;if(overdue(p))event('overdue',x,p,['asset','fund']);else if(now()>=remindAt(p))event('due',x,p,['asset']);}));}
+  function sweep(){ensure();Q.disbursements().filter(confirmed).forEach(x=>(quote(x.id).l8?.periods||[]).forEach(p=>{if(p.state!=='due')return;if(overdue(p))event('overdue',x,p,['asset','fund']);else if(now()>=remindAt(p))event('due',x,p,['asset']);}));}
   const names={final:['Repayment schedule finalized','还款计划已定稿'],due:['Repayment due soon','应还临近提醒'],overdue:['Repayment overdue','本期还款逾期'],done:['Instalment repaid','本期还款已完成'],arrived:['Instalment repayment received','本期还款已到账'],failed:['Instalment repayment not completed','本期还款未完成'],settled:['Financing business settled','本笔融资业务已结清']};
   function eventBody(){return events.filter(e=>e.owner===S.role&&names[e.kind]&&party(deal(e.deal))).map(e=>{const x=deal(e.deal),p8=quote(x.id).l8,p=p8?.periods.find(p=>p.seq===e.seq);return section(L(...names[e.kind]),'<p class="mono">'+E(x.request)+' · '+E(x.id)+(p?' · '+E(p.id):'')+'</p><p>'+time(e.at)+'</p>'+(e.kind==='final'&&p8?comparison(x):'')+b('event',L('View business','查看业务'),e.id));}).join('')||CF.empty(L('No notification events','暂无通知事件'),'');}
   function comparison(x){const p8=quote(x.id).l8,initial=build(day(x.at),p8.end,x.amount,x.rate,x.fx.value);return '<p>'+L('Expected / actual interest start: ','预计 / 实际起息日：')+date(day(x.at))+' / '+date(p8.start)+'</p><p>'+L('Expected / final instalments: ','预计 / 定稿期数：')+initial.length+' / '+p8.periods.length+'</p><div class="rp-plan-scroll"><table class="tbl"><thead><tr><th>'+L('Instalment','期次')+'</th><th>'+L('Expected date / USDT','预计日期 / USDT')+'</th><th>'+L('Final date / USDT','定稿日期 / USDT')+'</th></tr></thead><tbody>'+Array.from({length:Math.max(initial.length,p8.periods.length)},(_,i)=>'<tr><td>'+(i+1)+'</td><td>'+(initial[i]?date(initial[i].due)+' / '+CF.fmtAmt(initial[i].total):'—')+'</td><td>'+(p8.periods[i]?date(p8.periods[i].due)+' / '+CF.fmtAmt(p8.periods[i].total):'—')+'</td></tr>').join('')+'</tbody></table></div>';}
@@ -328,7 +328,7 @@
     +sel('rp-load',L('Drawer state','抽屉状态'),load,[['ready','Ready','正常'],['loading','Loading','加载中'],['error','Load failed','加载失败']])
     +'<label><input type="checkbox" id="rp-explorer"'+(!explorerReady?' checked':'')+'> '+L('Explorer unavailable','查验入口不可用')+'</label>'+b('events',L('Notification event preview','通知事件预览'))+b('denied-write',L('Attempt unauthorized action','尝试越权办理'))+'</div>';}
   function demoRecord(p,x,at=now()){const to=payee(x),from=CF.EA?.accounts(x.owner,'crypto').find(a=>a.chain==='ETH'&&!Q.accountMissing(a).length);return {id:'RM-DEMO-'+p.seq,at:iso(at-H),confirmedAt:iso(at),amount:p.settlement,ccy:x.ccy,from:from?Q.accountSnapshot(from):null,account:to?{...to}:null,hash:demoHash('r'+p.id),authHash:demoHash('a'+p.id),gas:'0.000910',authGas:'0.000910',repayGas:'0.001420',overdue:0,by:'Demo employee A · Demo Asset Company A'};}
-  function scenario(kind,{pay=false,result='success'}={}){epoch++;openRows.clear();busy=false;clockOverride=0;load='ready';explorerReady=true;accountRead='ready';fromScene='ready';balanceScene='enough';contractRead='ready';signScene='success';walletScene='ready';approvalRead='ready';form={from:''};events.length=0;justSettled=null;CF.L7.scenario('confirmed');const x=CF.L7.deals.find(confirmed),q=quote(x.id);selected=x.id;location.hash='#/project/'+x.project;delete q.l8;events=Q.data().repaymentEvents=[];x.plan=kind==='waiting'?'waiting':'handoff';
+  function scenario(kind,{pay=false,result='success'}={}){epoch++;openRows.clear();busy=false;clockOverride=0;load='ready';explorerReady=true;accountRead='ready';fromScene='ready';balanceScene='enough';contractRead='ready';signScene='success';walletScene='ready';approvalRead='ready';form={from:''};events.length=0;justSettled=null;const x=Q.demoDisbursement(),q=quote(x.id);selected=x.id;location.hash='#/project/'+x.project;delete q.l8;events=Q.data().repaymentEvents=[];x.plan=kind==='waiting'?'waiting':'handoff';
     /* 还款收款地址取报价时选定的 Ethereum 地址；结算币种只有 USDT、USDC，汇率快照默认 1。 */
     const ccy=kind==='USDC'?'USDC':'USDT',to=q.repayTo||Q.accounts(x.fund,'crypto').find(a=>a.chain==='ETH'&&!Q.accountMissing(a).length);
     x.ccy=q.ccy=ccy;x.fx=q.fx={...(q.fx||{}),value:1};x.settlement=q.settlement=x.amount;if(to)x.record.account=to.kind?Q.accountSnapshot(to):{...to};
@@ -393,6 +393,6 @@
   const actions=D.actions;D.actions=p=>{const a=actions(p);if(available(p).some(x=>!quote(x.id).l8?.settledAt))a.canClose=false;return a;};
   Q.data().quotes.forEach(q=>q.l8?.periods.forEach(p=>{serial=Math.max(serial,Number(p.id?.slice(-6))||0,Number(p.record?.id?.slice(-6))||0);}));
   CF.L8={build,initial,panel,available,recordTable,openDetail,resumeAccounts,hasUnsettled:p=>available(p).some(x=>!quote(x.id).l8?.settledAt),ensure,scenario,startDemo:(kind='USDT',result='success')=>scenario(kind,{pay:true,result}),get selected(){return selected;},get seq(){return seq;},get now(){return now();},get events(){return events;},open};
-  CF.L7.deals.filter(confirmed).forEach(x=>(quote(x.id)?.l8?.periods||[]).forEach(p=>{const a=p.approval,c=p.chain;if(a?.state==='processing'&&a.readyAt)setTimeout(()=>authResult(x,p),Math.max(0,a.readyAt-Date.now()));if(c?.state==='processing'&&c.readyAt)setTimeout(()=>settle(x,p,c.outcome),Math.max(0,c.readyAt-Date.now()));}));
+  Q.disbursements().filter(confirmed).forEach(x=>(quote(x.id)?.l8?.periods||[]).forEach(p=>{const a=p.approval,c=p.chain;if(a?.state==='processing'&&a.readyAt)setTimeout(()=>authResult(x,p),Math.max(0,a.readyAt-Date.now()));if(c?.state==='processing'&&c.readyAt)setTimeout(()=>settle(x,p,c.outcome),Math.max(0,c.readyAt-Date.now()));}));
   window.addEventListener('hashchange',()=>setTimeout(deepLink,30));ensure();if(!CF.portalConnected)CF.render();setTimeout(deepLink,40);
 })(window.CF);
