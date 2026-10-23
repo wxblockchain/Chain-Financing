@@ -399,7 +399,8 @@
     if(r.status==='pending'&&canDecide())actions=`<div class="ta-actions">${b(approving?'Submitting…':'Approve',approving?'正在提交…':'通过','approve','','primary',approving||!canApprove(r))}${b('Return','退回','return','','ta-return-btn',approving||!canAct(r))}</div>${approving?`<p class="ta-meta" role="status">${L('Submitting the approval…','正在提交通过…')}</p>`:''}`;
     else if(r.status==='approved'&&r.changed&&canDecide())actions=`<div class="ta-actions">${b('Acknowledge the change','确认已知悉变更','ack')}</div>`;
     else if(r.status==='pending')actions=`<p class="ta-meta">${L('View only with this account.','当前账号仅可查看。')}</p>`;
-    return `<section class="card ta-section ta-rail-card" aria-label="${L('Review actions','审核办理')}">
+    return `<section class="card ta-section ta-rail-card" aria-labelledby="ta-operation-title">
+      <h2 class="ta-h2" id="ta-operation-title">${L('Review actions','审核操作')}</h2>
       <dl class="ta-rail-id"><div><dt>${L('Platform token ID','平台代币标识')}</dt><dd class="mono">${E(r.ptid)}</dd></div><div><dt>${L('Token number','代币编号')}</dt><dd class="mono">${E(r.tokenNo)}</dd></div><div><dd class="ta-tags">${statusTag(r)}<span class="ta-meta ta-inline">${E(submission(r.seq))}</span></dd></div></dl>
       ${blockers.map(x=>`<div class="note warn"><p class="ta-note-text">${x}</p></div>`).join('')}${actions}</section>`;
   }

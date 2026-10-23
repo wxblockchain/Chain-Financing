@@ -21,7 +21,6 @@
     "P-L41": { navKey: "navInstitutionDetail", parent: "P-L40", ico: "▣", route: "/ops/institution-reviews/detail" },
     "P-O-TA-01": { navKey: "navTokenAdmission", ico: "◈", route: "/ops/token-admissions" },
     "P-O-TA-02": { navKey: "navTokenAdmissionDetail", parent: "P-O-TA-01", route: "/ops/token-admissions/detail" },
-    "P-O06": { navKey: "navOverview", ico: "▤", route: "/ops/overview" },
     "P-O-AG-01": { navKey: "navAgreements", ico: "▧", route: "/ops/agreements" },
     "P-O-AG-02": { navKey: "navAgreementDetail", parent: "P-O-AG-01", route: "/ops/agreements/detail" },
     "P-O-AG-03": { navKey: "navAgreementEdit", parent: "P-O-AG-02", route: "/ops/agreements/edit" },
@@ -34,8 +33,8 @@
     CF.ENTRY[id] = p.route;
   }
 
-  // Historical base sample only; all five business entries load admin-menu.js.
-  CF.NAV.admin = ["P-O06", "P-O-AG-01", "P-L40"];
+  // Every operations entry installs its current business navigation from admin-menu.js.
+  CF.NAV.admin = [];
   // Account flows are registered, but never added as business sidebar items.
   var accountPages = [
     ['01', 'navOpsLogin', '/ops/login', 'focus'],

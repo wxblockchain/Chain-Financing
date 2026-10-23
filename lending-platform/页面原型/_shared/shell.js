@@ -932,8 +932,6 @@
         group.hidden = true;
       }
     });
-    var legacyState = body.querySelector('#pr-view');
-    if (legacyState) legacyState.closest('.field').hidden = true;
     var hasMore = Array.from(body.children).some(function (el) { return !el.hidden && el.textContent.trim(); });
     more.hidden = reviewPop !== 'more' || !hasMore;
     var current = reviewCurrent(), config = reviewPages[current];

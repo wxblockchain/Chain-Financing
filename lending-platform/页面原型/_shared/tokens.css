@@ -113,6 +113,15 @@
 @media(min-width:901px) and (max-width:1300px){:root{--ui-stat-size:20px}}
 @media(max-width:768px){:root{--ui-page-title:var(--fs-24)}}
 
+/* Operations dialogs and account tabs inherit the same component dimensions. */
+[data-end="admin"]{
+  --ui-tab-h:48px;
+  --dialog-head-pad:var(--sp-4) var(--sp-6);
+  --dialog-foot-pad:var(--sp-4) var(--sp-6);
+  --dialog-foot-bg:var(--card-2);
+  --dialog-foot-radius:var(--radius-lg);
+}
+
 /* WS-438: customer business components only; the public homepage retains its own contract. */
 .portal-business{
   --ui-tab-h:48px;

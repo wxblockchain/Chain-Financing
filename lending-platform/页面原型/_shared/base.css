@@ -880,7 +880,6 @@ table.tbl tbody tr:hover td{background:var(--row-hover)}
 .detail-record{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);flex-wrap:wrap}
 .detail-actions{display:flex;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-5)}
 .detail-rail .btn{max-width:100%;white-space:normal}
-.sample-list .tbl td:first-child{overflow-wrap:anywhere}
 @media(max-width:900px){.detail-layout{grid-template-columns:minmax(0,1fr)}.detail-rail{position:static}.detail-index{display:flex;flex-wrap:wrap}.detail-section{scroll-margin-top:140px}}
 
 /* Shared account identity and hover/focus menu; no business-canvas rerender. */
@@ -1129,22 +1128,22 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 }
 @media(max-width:600px){[data-end="admin"] .ops-facts-body{padding-inline:var(--sp-4)}}
 @media(max-width:1100px){
-  [data-end="admin"] :is(.cm-grid,.pr-grid):has(.ops-facts-region){grid-template-columns:minmax(0,1fr)}
-  [data-end="admin"] :is(.cm-grid,.pr-grid):has(.ops-facts-region)>:is(.cm-rail,.pr-rail){position:static}
+  [data-end="admin"] .cm-grid:has(.ops-facts-region){grid-template-columns:minmax(0,1fr)}
+  [data-end="admin"] .cm-grid:has(.ops-facts-region)>.cm-rail{position:static}
 }
 
 /* Shared operations roles override historical module-specific size drift. */
-[data-end="admin"] .content :is(.fc-kv,.cm-kv,.pr-kv,.rv-kv,.ops-details) dt{font-size:var(--ui-field-label);font-weight:400;color:var(--muted)}
-[data-end="admin"] .content :is(.fc-kv,.cm-kv,.pr-kv,.rv-kv,.ops-details) dd{font-size:var(--ui-field-value);line-height:1.6}
-[data-end="admin"] :is(.cm-value,.pr-value){font-size:var(--ui-field-value)}
-[data-end="admin"] :is(.cm-metric,.pr-metric){padding:var(--sp-4) var(--sp-5)}
-[data-end="admin"] :is(.cm-metric,.pr-metric) strong{font-size:var(--ui-stat-size);font-weight:500;line-height:1.4}
-[data-end="admin"] :is(.cm-rail-time,.pr-rail-time) strong{font-size:var(--ui-field-value);font-weight:500}
-[data-end="admin"] :is(.fc-filter-wrap,.cm-filter-wrap,.pr-filter-wrap){padding:0}
-[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.cm-filters,.pr-filter-bar,.pr-filters,.rv-filters) .inp{height:var(--ctrl-h-sm);font-size:var(--ui-field-label);background:var(--card);border-color:var(--border-strong)}
-[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.pr-filter-bar,.rv-filters) .btn{height:var(--ctrl-h-sm);font-size:var(--ui-field-label)}
-[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-toolbar,.pr-toolbar,.rv-filters) .acts .btn:not(.primary){border-color:transparent;background:transparent;color:var(--muted)}
-[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-toolbar,.pr-toolbar,.rv-filters) .acts .btn:not(.primary):hover{background:var(--card-hover);color:var(--text)}
+[data-end="admin"] .content :is(.fc-kv,.cm-kv,.rv-kv,.ops-details) dt{font-size:var(--ui-field-label);font-weight:400;color:var(--muted)}
+[data-end="admin"] .content :is(.fc-kv,.cm-kv,.rv-kv,.ops-details) dd{font-size:var(--ui-field-value);line-height:1.6}
+[data-end="admin"] .cm-value{font-size:var(--ui-field-value)}
+[data-end="admin"] .cm-metric{padding:var(--sp-4) var(--sp-5)}
+[data-end="admin"] .cm-metric strong{font-size:var(--ui-stat-size);font-weight:500;line-height:1.4}
+[data-end="admin"] .cm-rail-time strong{font-size:var(--ui-field-value);font-weight:500}
+[data-end="admin"] :is(.fc-filter-wrap,.cm-filter-wrap){padding:0}
+[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.cm-filters,.rv-filters) .inp{height:var(--ctrl-h-sm);font-size:var(--ui-field-label);background:var(--card);border-color:var(--border-strong)}
+[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.rv-filters) .btn{height:var(--ctrl-h-sm);font-size:var(--ui-field-label)}
+[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-toolbar,.rv-filters) .acts .btn:not(.primary){border-color:transparent;background:transparent;color:var(--muted)}
+[data-end="admin"] :is(.filters,.fc-filter-bar,.cm-toolbar,.rv-filters) .acts .btn:not(.primary):hover{background:var(--card-hover);color:var(--text)}
 /* Operations list filters: opt-in composition, shared with every editable filter surface. */
 [data-end="admin"] .ops-filterbar{padding:var(--sp-2) var(--sp-4);gap:var(--sp-2);align-items:center}
 [data-end="admin"] .ops-filter-select{position:relative;display:inline-flex;align-items:center;gap:var(--sp-1);min-width:0;max-width:100%;border:1px solid transparent;border-radius:var(--radius-xs);background:var(--card-2)}
@@ -1172,8 +1171,8 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 [data-end="admin"] .ops-filter-fields .field>label{font-weight:400;white-space:nowrap}
 [data-end="admin"] .ops-filter-fields .inp{height:var(--ctrl-h-sm);min-height:var(--ctrl-h-sm);font-size:var(--ui-field-label);min-width:120px;width:auto;max-width:240px;border-color:var(--border-strong)}
 [data-end="admin"] .fc-diff-vals :is(strong,.fc-before){font-size:var(--ui-field-value)}
-[data-end="admin"] :is(.cm-rail,.pr-rail)>.card,[data-end="admin"] .rv-operation{border-color:var(--accent-border);border-top:3px solid var(--accent)}
-[data-end="admin"] :is(.cm-rail,.pr-rail,.rv-operation) h2{color:var(--accent);font-size:var(--ui-section-title);font-weight:600}
+[data-end="admin"] :is(.cm-rail,.ta-rail)>.card,[data-end="admin"] .rv-operation{border-color:var(--accent-border);border-top:3px solid var(--accent)}
+[data-end="admin"] :is(.cm-rail,.ta-rail,.rv-operation) h2{color:var(--accent);font-size:var(--ui-section-title);font-weight:600}
 [data-end] .nc-inbox .nc-message-title{font-size:var(--ui-section-title);font-weight:600}
 [data-end] .nc-inbox .nc-row[data-unread="false"] .nc-message-title{font-weight:500}
 [data-end] .nc-inbox .nc-summary{font-size:var(--ui-field-value);line-height:1.6}
@@ -1200,12 +1199,12 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 }
 @media(max-width:600px),(pointer:coarse){
   [data-end="admin"] .ops-filterbar :is(.inp,.btn),
-  [data-end="admin"] .ops-filter-fields :is(.inp,.pr-check,.ag-options label){height:var(--ctrl-h);min-height:var(--ctrl-h)}
+  [data-end="admin"] .ops-filter-fields :is(.inp,.ag-options label){height:var(--ctrl-h);min-height:var(--ctrl-h)}
   [data-end="admin"] .ops-filterbar .ops-filter-select>select.inp{height:var(--ctrl-h);min-height:var(--ctrl-h)}
 }
 @media(pointer:coarse){
   [data-end] .filterbar :is(select.inp,.fb-btn,.fb-q .inp),[data-end] .filterbar .fb-acts .btn,
-  [data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.cm-filters,.pr-filter-bar,.pr-filters,.rv-filters) :is(.inp,.btn){height:var(--ctrl-h);min-height:var(--ctrl-h)}
+  [data-end="admin"] :is(.filters,.fc-filter-bar,.cm-filter-bar,.cm-filters,.rv-filters) :is(.inp,.btn){height:var(--ctrl-h);min-height:var(--ctrl-h)}
 }
 
 /* WS-385 · 演示条：停靠在页面底部，不遮右侧操作栏；第一行切视角，第二行切本页状态。 */

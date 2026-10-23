@@ -173,6 +173,7 @@ table.cm-ctable td{font-size:var(--ui-row-value)}
 @media(max-width:700px){
   .cm-summary-row{align-items:start;flex-wrap:wrap}
   .cm-summary-help{margin-left:0}
+  .cm-summary-help p{left:0;right:auto;max-width:calc(100vw - 32px)}
   .cm-title{flex-wrap:wrap}
   .cm-detail-summary{grid-template-columns:minmax(0,1fr)}
   .cm-kv{grid-template-columns:minmax(0,1fr)}

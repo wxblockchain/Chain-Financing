@@ -27,8 +27,8 @@
 .ops-step strong{color:var(--accent)}
 .ops-account .toasts{top:var(--sp-6);bottom:auto}
 .ops-tabs{display:flex;gap:var(--sp-6);margin-bottom:var(--sp-5);border-bottom:1px solid var(--border)}
-.ops-tabs button{padding:var(--sp-3) 0;font-weight:600;color:var(--muted)}
-.ops-tabs button[aria-current=true]{color:var(--accent);border-bottom:2px solid var(--accent)}
+.ops-tabs button{min-height:var(--ui-tab-h,48px);padding:var(--sp-3) 0;font-size:var(--ui-row-value);font-weight:500;color:var(--muted)}
+.ops-tabs button[aria-current=true]{color:var(--accent);font-weight:600;border-bottom:2px solid var(--accent)}
 .ops-settings{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-6);align-items:start}
 .ops-section{scroll-margin-top:90px}
 .ops-section h2{font-size:var(--fs-16);margin:0;padding:var(--sp-5);border-bottom:1px solid var(--border)}
