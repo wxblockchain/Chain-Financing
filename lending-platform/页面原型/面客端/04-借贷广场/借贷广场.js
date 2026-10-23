@@ -221,6 +221,8 @@
   function todoBadge(count){return count?'<span class="ls-todo" aria-label="'+L(count+' to do',count+' 项待办')+'">'+count+'</span>':'';}
   /* 三条流程：一次只展开一条。有线性进度的画节点轴，没有的只摆固定操作。 */
   const flowOrder=['financing','repay'];
+  /* 还款办理仅属项目资产方；所有资金方（含出资方）从还款信息查看进展与结果。 */
+  const visibleFlows=p=>flowOrder.filter(key=>key!=='repay'||D.mine(p));
   const flowNames={global:['Collateral','质押流程'],financing:['Financing','融资流程'],repay:['Repayment','还款流程']};
   function repaySteps(p){
     const avail=CF.L8?.available(p)||[];
@@ -241,10 +243,10 @@
     return p.balance?L('Outstanding ','已融资余额 ')+usdt(p.balance):CF.L8?.available(p).length?(CF.L8.hasUnsettled(p)?L('Repaying','还款中'):L('All repayments settled','还款已全部结清')):L('Starts after a disbursement succeeds','放款成功后生成还款计划');
   }
   function openFlow(p){
-    const chosen=actionTabs[p.id];
-    if(chosen&&flowOrder.includes(chosen))return chosen;
+    const chosen=actionTabs[p.id],flows=visibleFlows(p);
+    if(chosen&&flows.includes(chosen))return chosen;
     if(S.role==='fund')return 'financing';
-    return flowOrder.find(k=>flowTodo(p,k))||'financing';
+    return flows.find(k=>flowTodo(p,k))||'financing';
   }
   /* 点选的历史节点只在同一环节内有效；环节一推进（如发布成功）就回到当前环节，不留回看状态。 */
   function pickedNode(p,key,steps){const pick=actionNodes[p.id+':'+key];return pick&&pick.at===steps.stage?pick.i:steps.stage;}
@@ -297,8 +299,8 @@
     return {plain:false,axis:flowAxis(p,key,steps),html:heading+(panel&&panel.turn||'')+summary+html};
   }
   function actions(p){
-    const open=openFlow(p),todoAll=flowOrder.reduce((t,k)=>t+flowTodo(p,k),0);
-    const sections=flowOrder.filter(key=>key!=='repay'||S.role!=='fund'||CF.L8?.available(p).some(x=>Q.related(Q.data().quotes.find(q=>q.id===x.id)))).map(key=>{
+    const flows=visibleFlows(p),open=openFlow(p),todoAll=flows.reduce((t,k)=>t+flowTodo(p,k),0);
+    const sections=flows.map(key=>{
       const on=key===open,todo=flowTodo(p,key),pane=on?flowPane(p,key):null;
       return '<section class="ls-flow" data-flow="'+key+'" data-open="'+on+'">'
         +'<button type="button" class="ls-flow-bar" data-act="ls-tab" data-v="'+key+'" id="ls-tab-'+key+'" aria-expanded="'+on+'">'
@@ -809,8 +811,8 @@
       if(act==='ls-continue-edit'){if(discardLayer){S.layer=discardLayer.layer;flowRestore=discardLayer;discardLayer=null;}return true;}
       if(act==='ls-discard'){closeFlow();return true;}
       if(act==='ls-rail-toggle'){railExpanded=!railExpanded;return true;}
-      if(act==='ls-tab'){actionTabs[p.id]=actionTabs[p.id]===v?'':v;railExpanded=true;refocus='ls-tab-'+v;return true;}
-      if(act==='ls-node'){const[key,i]=v.split(':');actionNodes[p.id+':'+key]={i:Number(i),at:flowSteps(p,key).stage};return true;}
+      if(act==='ls-tab'){if(!p||!visibleFlows(p).includes(v))return true;actionTabs[p.id]=actionTabs[p.id]===v?'':v;railExpanded=true;refocus='ls-tab-'+v;return true;}
+      if(act==='ls-node'){const[key,i]=v.split(':');if(!p||!visibleFlows(p).includes(key))return true;actionNodes[p.id+':'+key]={i:Number(i),at:flowSteps(p,key).stage};return true;}
       if(act==='ls-locate'){locateRecord(v);return true;}
       if(act==='ls-list'){S.layer=null;location.hash='#'+CF.ENTRY[LIST];return true;}
       if(act==='ls-new'){if(S.role!=='asset')throw Error('permission');selection=[];name='';kind='';rate='';expiry='';settle=[];editing=null;error='';pages.select=1;location.hash='#/project/new';return true;}
