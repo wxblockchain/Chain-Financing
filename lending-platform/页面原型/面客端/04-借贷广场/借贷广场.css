@@ -258,6 +258,20 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-review-addr>div{display:grid;align-content:start;gap:2px;min-width:0}
 .cq-review-addr b{font-weight:500}
 .cq-review-addr .mono{font-size:var(--fs-13)}
+/* 授信报价局部视觉约定（沿用共享字号、间距、色彩 token）：
+   报价核对：三个地址＋合约分两列，窄屏单列；完整资料为可选只读入口。
+   接受核对：收款签名地址与资金方出款地址并列，后者承载本笔币种当前余额。
+   查询中／失败为中性状态，不足为 danger＋明确文案，未知值不写作 0。
+   页脚保留金额、签名地址与当前余额；大段凭证默认折叠在详情。
+   以上只作用于 CQ，不改变报价第一步的余额弱提示和共享地址下拉。 */
+.cq-funding-balance{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--sp-1) var(--sp-2);margin-top:var(--sp-3);padding-top:var(--sp-3);border-top:1px solid var(--border);font-size:var(--fs-12);color:var(--muted)}
+.cq-funding-balance>b{grid-column:1/-1;grid-row:2;color:var(--text)}
+.cq-funding-balance .cq-linkbtn{padding:0;justify-self:end}
+.cq-funding-balance .cq-balance-short{grid-column:1/-1;margin:var(--sp-2) 0 0;color:var(--danger);font-size:var(--fs-13);line-height:1.6}
+.cq-terms-caption{margin:var(--sp-4) 0 0}
+.cq-read-link{margin:var(--sp-3) 0 0}
+.cq-read-link .cq-linkbtn{padding:0}
+.cq-confirmation .cq-dl{margin-top:var(--sp-4)}
 @media (max-width:640px){.cq-review-addr{grid-template-columns:1fr}}
 .cq-funded{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-3);margin:0 0 var(--sp-3)}
 .cq-funded b{font-size:var(--fs-14);font-weight:600}

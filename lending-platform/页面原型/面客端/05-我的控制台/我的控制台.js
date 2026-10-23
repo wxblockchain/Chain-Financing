@@ -64,7 +64,7 @@
  const owner=id=>id==='entity-demo-a'?L('Demo Asset Company A','演示资产企业 A'):L('Demo Asset Company B','演示资产企业 B');
  const counter=q=>S.role==='asset'?fund(q.fund):owner(q.owner);
  /* 放款合约按组合共用；地址为演示取值。预估 gas 同为演示值，以钱包实际估算为准。 */
- const LOAN_CONTRACT='0x3B6dA2c94E07f1a85D2c6E40b9F17a3C8e05D2a7',REVOKE_GAS='0.000046';
+ const LOAN_CONTRACT=Q.loanContract,REVOKE_GAS='0.000046';
  const SUPPORT=()=>L('On-chain result to be verified. Please contact platform support.','链上结果待核实，请联系平台客服人员。');
  let sourceOpened='',sourceFault='',associationScene='normal';
  let pendingError=false,usageError=false,usagePage=1,saveFailOnce=false,modify={},detailState='normal',planError=false,statsError=false,tokenError=false,associationError=false,approvalError=false,focusAfter='',lastHash='',lastRole=S.role+'|'+JSON.stringify(S.party),restoring=false,copyValue='',returnNotice=false;
@@ -114,7 +114,7 @@
    if(used)return 'used';
    return 'granted';
  }
- const offerRow=x=>({...x,offer:true,id:x.id,q:x,request:x.demand,business:null,status:'offerPending',signedAt:x.at,at:x.at,waited:now()-x.at,unknown:x.state==='unknown',approval:'granting',refs:[x.demand]});
+ const offerRow=x=>({...x,offer:true,id:x.id,q:x,request:x.demand,business:null,status:'offerPending',signedAt:x.at,at:x.at,waited:now()-x.at,unknown:x.state==='unknown',approval:x.auth?'granted':'granting',refs:[x.demand]});
  function quoteRow(q){
    const st=quoteStatus(q),c=chainOf(q),end=st==='waiting'||st==='disbursing'?now():(q.done||now());
    return {...q,q,deal:q.l7,request:q.demand,business:q.id,status:st,chainState:c,locked:Math.max(0,end-q.at),waited:c&&q.chain?.at?now()-q.chain.at:null,lastFail:q.state==='waiting'&&q.chain?.state==='failed',approval:q.lender?grantStatus(q.auth,st==='repaying'||st==='settled'||q.auth?.used):'',refs:[q.demand,q.id]};
@@ -130,7 +130,7 @@
  function approvalRows(){
    if(S.role==='fund'){
      const fromQuotes=Q.data().quotes.filter(q=>q.fund===Q.fund()&&q.lender&&q.auth).map(q=>{const r=quoteRow(q);return {id:q.id,type:'loan',q,address:q.lender.address,addressLabel:q.lender.label,contract:LOAN_CONTRACT,ccy:q.ccy,amount:q.settlement,project:q.project,request:q.demand,business:q.id,quote:r.status,status:r.approval,rec:q.auth,at:q.auth.at,signedAt:q.auth.at,refs:[q.demand,q.id]};});
-     const fromOffers=offers().filter(x=>x.fund===Q.fund()&&x.lender).map(x=>({id:x.id,type:'loan',q:x,offer:true,address:x.lender.address,addressLabel:x.lender.label,contract:LOAN_CONTRACT,ccy:x.ccy,amount:x.settlement,project:x.project,request:x.demand,business:null,quote:'offerPending',status:'granting',rec:null,at:x.at,signedAt:x.at,unknown:x.state==='unknown',refs:[x.demand]}));
+     const fromOffers=offers().filter(x=>x.fund===Q.fund()&&x.lender).map(x=>({id:x.id,type:'loan',q:x,offer:true,address:x.lender.address,addressLabel:x.lender.label,contract:LOAN_CONTRACT,ccy:x.ccy,amount:x.settlement,project:x.project,request:x.demand,business:null,quote:'offerPending',status:x.auth?'granted':'granting',rec:x.auth||null,at:x.at,signedAt:x.at,unknown:x.state==='unknown',refs:[x.demand]}));
      return [...fromOffers,...fromQuotes];
    }
    if(S.role!=='asset')return [];
@@ -537,6 +537,7 @@
      add('mc-result',L('Offer result','报价结果'),dl(quoteResultRows(r))+
        ((r.unknown||r.chainState==='unknown')?CF.note('warn',E(SUPPORT())):r.status==='disbursing'?'<p class="mc-small">'+L('Accepted by the asset holder.','资产方已接受。')+'</p>':r.lastFail?'<p class="mc-small">'+L('The last on-chain disbursement did not complete. The offer is still awaiting acceptance.','上次链上放款未完成，本笔仍待接受。')+'</p>':'')+
        (['repaying','settled'].includes(r.status)&&find('repayments',r.id)?'<p class="mc-links">'+link('detail',L('View repayment','查看同笔还款'),'repayments|'+r.id)+'</p>':''));
+     if(Q.confirmationView)add('mc-confirmation',L('Terms confirmation','报价条款确认'),Q.confirmationView(r.q));
      if(S.role==='fund'&&r.approval)add('mc-approval',L('On-chain approval for this offer','本笔链上授权'),'<div class="mc-inline-fact"><span>'+L('Status','链上授权状态')+'</span>'+badge(approvalError?'unreadable':r.approval)+(()=>{const x=find('approvals',r.id),c=x&&revocable(x);return c?'<span class="mc-small">'+E(c.ok?L('Revocable in the approval record','可在链上授权记录中撤销'):(c.short||c.reason))+'</span>':'';})()+link('detail',L('View approval record','查看链上授权记录'),'approvals|'+r.id)+'</div>');
    }else if(k==='approvals')return approvalSections(r);
    else return repaymentSections(r);
