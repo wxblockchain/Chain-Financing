@@ -217,13 +217,6 @@
 
 /* WS-450 · current-round on-chain facts, approvals list and the revoke surface. Values come from shared tokens. */
 .mc-table .mc-chain{display:block;margin-top:var(--sp-1);font-size:var(--fs-12);line-height:1.6;color:var(--accent);overflow-wrap:anywhere}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(1){width:19%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(2){width:16%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(3){width:14%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(4){width:11%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(5){width:11%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(6){width:16%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(7){width:13%}
 .mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]){table-layout:fixed}
 .mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]) td{overflow-wrap:anywhere;white-space:normal;min-width:0}
 .mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]) .mc-actions{min-width:0;max-width:none}
@@ -251,3 +244,29 @@
 .mc-revoke-block{margin-top:var(--sp-5);padding-top:var(--sp-5);border-top:1px solid var(--border)}
 .mc-revoke-block>.mc-small:first-child{margin:0}
 .mc-revoke-block .mc-revoke-act{margin-top:var(--sp-4)}
+
+/* WS-450 · compact overview figures with a full-amount drop-down; repayment list splits disbursement facts into columns. */
+.mc-money-peek{position:relative;display:inline-block;max-width:100%}
+.mc-money-peek>summary{display:inline-flex;align-items:center;gap:var(--sp-2);list-style:none;cursor:pointer;border-radius:var(--radius-xs)}
+.mc-money-peek>summary::-webkit-details-marker{display:none}
+.mc-money-peek>summary::after{content:"";width:5px;height:5px;flex:none;border-right:1px solid var(--muted);border-bottom:1px solid var(--muted);transform:rotate(45deg);margin-top:calc(-1 * var(--sp-1))}
+.mc-money-peek[open]>summary::after{transform:rotate(225deg);margin-top:var(--sp-1)}
+.mc-money-peek>summary:hover .mc-number{color:var(--accent)}
+.mc-money-peek>summary:focus-visible{outline:2px solid var(--accent);outline-offset:var(--sp-1)}
+.mc-money-exact{position:absolute;z-index:8;left:0;top:calc(100% + var(--sp-2));width:max-content;max-width:calc(100vw - var(--sp-8));padding:var(--sp-3) var(--sp-4);background:var(--card);border:1px solid var(--border-strong);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);color:var(--text);font-size:var(--fs-16);font-weight:400}
+.mc-money-exact>span:first-child{display:block;font-size:var(--fs-11);color:var(--muted);margin-bottom:var(--sp-1)}
+.mc-summary .s:last-child .mc-money-exact{left:auto;right:0}
+.mc-summary .n .mc-money-peek>summary{gap:var(--sp-1)}
+.mc-summary .n .mc-money-exact{font-size:var(--fs-14)}
+.mc-stat-sub{display:block;margin-top:var(--sp-1)}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(1){width:17%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(2){width:11%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(3){width:12%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(4){width:13%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(5){width:11%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(6){width:9%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(7){width:14%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(8){width:13%}
+.mc-project-list li>div{min-width:0}
+.mc-project-list li .btn{flex:none;min-height:36px;height:auto;white-space:nowrap}
+@media(max-width:600px),(pointer:coarse){.mc-project-list li .btn{min-height:44px}}

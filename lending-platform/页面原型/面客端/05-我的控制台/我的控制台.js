@@ -15,6 +15,14 @@
  const badge=k=>CF.tag(['valid','settled','effective','surplus'].includes(k)?'ok':['short','unreadable'].includes(k)?'warn':['waiting','offerPending','disbursing','repayPending','generating','granting','revoking'].includes(k)?'accent':'',status(k));
  const money=(n,c='USD',icon=false)=>n==null?'—':'<span class="mc-money'+(icon?' mc-stat-money':'')+'">'+(icon?CF.assetIcon(c):'')+'<span class="mc-number">'+CF.fmtAmt(n)+'</span> <span class="mc-unit">'+E(c)+'</span></span>';
  const statMoney=(n,c='USD')=>money(n,c,true);
+ /* 企业概览的统计金额缩写为 K / M / B，点开下拉读取完整金额；明细金额不缩写。 */
+ function compactMoney(n,c='USD',icon=true){
+   if(n==null||!Number.isFinite(+n))return '—';
+   const unit=[[1e9,'B'],[1e6,'M'],[1e3,'K']].find(([v])=>Math.abs(n)>=v);
+   if(!unit)return money(n,c,icon);
+   const short=(n/unit[0]).toFixed(2)+unit[1],full=CF.fmtAmt(n)+' '+c;
+   return '<details class="mc-money-peek"><summary title="'+E(full)+'" aria-label="'+E(full+' · '+L('Show full amount','查看完整金额'))+'"><span class="mc-money'+(icon?' mc-stat-money':'')+'">'+(icon?CF.assetIcon(c):'')+'<span class="mc-number">'+E(short)+'</span> <span class="mc-unit">'+E(c)+'</span></span></summary><div class="mc-money-exact"><span>'+L('Full amount','完整金额')+'</span>'+money(n,c)+'</div></details>';
+ }
  const time=n=>n==null||!Number.isFinite(new Date(n).getTime())?'—':CF.fmtTime(new Date(n).toISOString());
  const date=n=>n?CF.fmtDate(typeof n==='number'?new Date(n).toISOString():n):'—';
  const small=s=>'<div class="mc-small">'+s+'</div>';
@@ -219,10 +227,10 @@
    if(S.role==='asset'&&(tokenError||!Array.isArray(D.tokens)))assets='<section class="card mc-assets">'+CF.empty(L('Token summary unavailable','代币统计暂不可用'),reloadHint(),'')+'</section>';
    let holdings='';
    if(S.role==='asset'&&!assets){
-     holdings=stat(L('All tokens','全部代币'),tokens.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',statMoney(sum(tokens,'value')),'accent')+
-       stat(L('Of which pledged','其中已质押'),pledged.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',statMoney(sum(pledged,'value'))+' · '+L('void ','其中已失效 ')+voids.length+L(' tokens',' 张')+' · '+statMoney(sum(voids,'value'))+L(' excluded',' 不计入有效质押'),'info');
+     holdings=stat(L('All tokens','全部代币'),tokens.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',compactMoney(sum(tokens,'value'),'USD'),'accent')+
+       stat(L('Of which pledged','其中已质押'),pledged.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',compactMoney(sum(pledged,'value'),'USD')+'<span class="mc-stat-sub">'+L('Void ','其中已失效 ')+voids.length+L(' tokens · ',' 张 · ')+compactMoney(sum(voids,'value'),'USD')+'</span><span class="mc-stat-sub">'+L('Not counted toward eligible pledged value','不计入有效质押')+'</span>','info');
    }
-   return assets+'<div class="stat-strip mc-summary'+(holdings?' mc-summary--asset':'')+'">'+holdings+(statsError?stat(L('Total credit','总授信额度'),'—',E(reloadHint())):stat(L('Total credit','总授信额度'),statMoney(sum(credits,'total'),'USDT'),credits.length+L(' facilities',' 笔授信'),'accent'))+stat(L('Financed balance','已融额度'),statMoney(empty?0:S.role==='asset'?sum(normalized('projects'),'balance'):sum(credits,'principal'),'USDT'),(empty?0:normalized('repayments').filter(r=>r.status!=='settled').length)+L(' unsettled businesses',' 笔未结清业务'),'info')+stat(L('Available credit','剩余可用授信'),statMoney(sum(credits,'available'),'USDT'),L('Subject to assessment when publishing a request.','实际可融金额以发布需求时核定结果为准。'),'pos')+'</div>'+(S.role==='asset'?'<p class="mc-small mc-scope">'+L('Token values are summed at each token\'s issuance value. Whole-token figures do not represent your currently available holdings or financing capacity.','代币价值按各笔签发价值计；整笔代币统计不代表本企业当前可用份额或可融额度。')+'</p>':'');
+   return assets+'<div class="stat-strip mc-summary'+(holdings?' mc-summary--asset':'')+'">'+holdings+(statsError?stat(L('Total credit','总授信额度'),'—',E(reloadHint())):stat(L('Total credit','总授信额度'),compactMoney(sum(credits,'total'),'USDT'),credits.length+L(' facilities',' 笔授信'),'accent'))+stat(L('Financed balance','已融额度'),compactMoney(empty?0:S.role==='asset'?sum(normalized('projects'),'balance'):sum(credits,'principal'),'USDT'),(empty?0:normalized('repayments').filter(r=>r.status!=='settled').length)+L(' unsettled businesses',' 笔未结清业务'),'info')+stat(L('Available credit','剩余可用授信'),compactMoney(sum(credits,'available'),'USDT'),L('Subject to assessment when publishing a request.','实际可融金额以发布需求时核定结果为准。'),'pos')+'</div>'+(S.role==='asset'?'<p class="mc-small mc-scope">'+L('Token values are summed at each token\'s issuance value. Whole-token figures do not represent your currently available holdings or financing capacity.','代币价值按各笔签发价值计；整笔代币统计不代表本企业当前可用份额或可融额度。')+'</p>':'');
  }
  const filterOptions={tokens:['valid','void'],projects:['review','returned','available','raising','locked','financing','closed','settled'],credits:['effective','expired'],repayments:['repaying','settled','generating'],quotes:['offerPending','waiting','disbursing','rejected','quoteEnded','repaying','settled']};
  const approvalStates=()=>S.role==='fund'?['granting','granted','revoking','revoked','used']:['granting','granted','revoking','revoked'];
@@ -244,10 +252,10 @@
  }
  function columns(k){return {
    tokens:[[L('Token','代币编号'),'id'],[L('Quantity','数量'),'num'],[L('Value (USD)','价值（USD）'),'num'],[L('Token status','代币状态'),''],[L('Pledge status','质押状态'),''],[L('Receivable due','应收账款到期日'),''],[L('Project','所属项目'),'']],
-   projects:[[L('Project','融资项目'),'id'],[L('Status','项目状态'),''],[L('Current request (USDT)','当前融资需求（USDT）'),'num'],[L('Balance (USDT)','已融资余额（USDT）'),'num'],[L('Pledge sufficiency','质押情况'),''],[L('Project deadline','项目截止日'),'']],
+   projects:[[L('Project','融资项目'),'id'],[L('Status','项目状态'),''],[L('Current request','当前融资需求'),'num'],[L('Financed balance','已融资余额'),'num'],[L('Pledge sufficiency','质押情况'),''],[L('Project deadline','项目截止日'),'']],
    credits:[[L('Facility / counterparty','授信编号／对方企业'),'id'],[L('Credit limit (USDT)','授信额度（USDT）'),'num'],[L('Used (USDT)','已用授信（USDT）'),'num'],[L('Available (USDT)','可用授信（USDT）'),'num'],[L('Status','额度状态'),''],[L('Valid until','有效期至'),'']],
    quotes:[[L('Project / application','项目／融资申请'),'id'],[L('Asset holder','资产方'),''],[L('Requested (USDT)','融资需求（USDT）'),'num'],[L('Result / stage','报价结果／业务阶段'),''],[L('Time locked / waited','已锁定／已等待'),''],[L('Approval','链上授权'),'']],
-   repayments:[[L('Counterparty / project','对方／项目'),'id'],[L('Disbursement','放款信息'),''],[L('Current instalment','本期应还'),'num'],[L('Due date (UTC)','应还日（UTC）'),''],[L('Status','业务状态'),''],[L('Pending on-chain','还款上链确认中'),'']],
+   repayments:[[S.role==='asset'?L('Lending institution / project','放款机构／项目'):L('Asset holder / project','资产方／项目'),'id'],[L('Disbursed amount','放款金额'),'num'],[L('Disbursed on / ID','放款时间／编号'),''],[L('Current instalment','本期应还'),'num'],[L('Due date (UTC)','应还日（UTC）'),''],[L('Status','业务状态'),''],[L('Pending on-chain','还款上链确认中'),'']],
    approvals:S.role==='fund'?[[L('Approval address','授权地址'),'id'],[L('Approved contract','被授权合约'),''],[L('Scope','授权范围'),'num'],[L('Related business','关联业务'),''],[L('Status / approved at','状态／授权时间'),'']]:[[L('Approval address','授权地址'),'id'],[L('Pledge contract','被授权合约'),''],[L('Scope','授权范围'),''],[L('Projects using it','使用该合约的项目'),''],[L('Status / approved at','状态／授权时间'),'']]
  }[k];}
  /* 项目当前轮的链上处理中：只给事实与已等待时长，不是新的需求状态，期间不标待处理。 */
@@ -261,14 +269,15 @@
    if(k==='tokens')return [object(r.id),CF.fmtAmt(r.units),CF.fmtAmt(r.value),badge(r.status)+(!r.valid?small(L('Not counted toward eligible pledged value','不计入有效质押')):''),badge(r.pledged?'pledged':'unpledged'),date(r.due),destinations(k,r).projects.length?destinations(k,r).projects.map(p=>E(text(p.name))).join('<br>'):L('No accessible project','暂无可访问项目')];
    if(k==='projects'){
      const d=D.current(r),busy=(r.attempts||[]).find(x=>x.state==='processing'),quote=d&&Q.currentQuote?.(r,d.id),voids=D.tokens.filter(t=>t.pool===r.id&&t.pledge==='pledged'&&!t.valid);
-     const request=d?CF.fmtAmt(r.amount)+small(E(d.id))+small(status(d.state))+(['quoted','funding'].includes(d.state)&&quote?small(E(text(d.institution)||fund(quote.fund))+(quote.state==='waiting'?L(' · locked for ',' · 已锁定 ')+elapsed(now()-quote.at):'')):''):busy?CF.fmtAmt(busy.amount)+small(L('No application number yet','尚无融资申请编号')):'—'+small(L('No current request','暂无当前需求'));
-     return [object(text(r.name))+small(E(r.id)),badge(r.status)+(r.status==='closed'&&r.closeReason?small(E(r.closeReason==='expiry'?L('Term expired','有效期到期'):reasonText(r.closeReason))):''),request+roundChain(r,d),CF.fmtAmt(r.balance),badge(r.n.grade)+(r.n.gap?'<span class="mc-indicator">'+L('Pledge gap ','质押缺口 ')+money(r.n.gap,'USDT')+small(L('Additional asset value ','需追加资产价值 ')+money(r.n.rate?r.n.gap/r.n.rate:null))+'</span>':'')+(voids.length?small(L('Void ','已失效 ')+voids.length+L(' tokens · ',' 张 · ')+money(voids.reduce((n,t)=>n+t.value,0))):''),date(r.expires)];
+     const request=d?money(r.amount,'USDT')+small(E(d.id))+small(status(d.state))+(['quoted','funding'].includes(d.state)&&quote?small(E(text(d.institution)||fund(quote.fund))+(quote.state==='waiting'?L(' · locked for ',' · 已锁定 ')+elapsed(now()-quote.at):'')):''):busy?money(busy.amount,'USDT')+small(L('No application number yet','尚无融资申请编号')):'—'+small(L('No current request','暂无当前需求'));
+     return [object(text(r.name))+small(E(r.id)),badge(r.status)+(r.status==='closed'&&r.closeReason?small(E(r.closeReason==='expiry'?L('Term expired','有效期到期'):reasonText(r.closeReason))):''),request+roundChain(r,d),money(r.balance,'USDT'),badge(r.n.grade)+(r.n.gap?'<span class="mc-indicator">'+L('Pledge gap ','质押缺口 ')+money(r.n.gap,'USDT')+small(L('Additional asset value ','需追加资产价值 ')+money(r.n.rate?r.n.gap/r.n.rate:null))+'</span>':'')+(voids.length?small(L('Void ','已失效 ')+voids.length+L(' tokens · ',' 张 · ')+money(voids.reduce((n,t)=>n+t.value,0))):''),date(r.expires)];
    }
    if(k==='credits')return [object(r.id)+small(E(counter(r))),CF.fmtAmt(r.total),CF.fmtAmt(r.used),CF.fmtAmt(r.available),badge(r.status),date(r.expires)];
    if(k==='repayments'){
      const c=r.current,usdc=r.q.ccy!=='USDT';
      return [object(counter(r.q))+small(E(text(D.project(r.project)?.name)))+small('<span class="mono">'+E(r.request)+'</span>'),
-       money(r.loan.amount,r.loan.ccy)+(S.role==='asset'?small(E(fund(r.loan.fund))):'')+small(time(r.loan.at))+small('<span class="mono">'+E(r.loan.id)+'</span>'),
+       money(r.loan.amount,r.loan.ccy),
+       '<span title="'+E(time(r.loan.at))+'">'+date(r.loan.at)+'</span>'+small('<span class="mono">'+E(r.loan.id)+'</span>'),
        c?'<strong>'+money(c.settlement,r.q.ccy)+'</strong>'+small(L('Instalment ','第 ')+c.seq+L('',' 期')+(usdc?' · '+L('total due ','应还合计 ')+CF.fmtAmt(c.total)+' USDT':'')):r.plan?L('No instalments awaiting repayment','暂无待还期次'):'—'+small(status('generating')),
        c?date(c.due)+(c.overdue?small(L('Overdue ','已逾期 ')+c.overdue+L(' days',' 天')):now()<c.open?small(L('Opens ','开放于 ')+date(c.open)):''):'—',
        badge(r.status)+(r.overdue?small(L('Currently overdue','当前逾期')):''),
@@ -481,7 +490,7 @@
      revocable(r).ok&&[L('Estimated gas to revoke','撤销预估 gas'),'<span class="mono">'+REVOKE_GAS+' ETH</span>'+small(L('Paid by your company from the approval address','由本企业从授权地址支付'))]
    ])+'<div class="mc-revoke-block" id="mc-revoke">'+revokePanel(r)+'</div>');
    if(r.type==='loan')add('mc-related',L('Related business','关联业务'),dl([[L('Project','项目名称'),E(text(D.project(r.project)?.name))],[L('Application ID','融资申请编号'),copy(r.request)],[L('Business ID','融资业务编号'),r.business?copy(r.business):L('Not yet generated','尚未生成')],[L('Offer stage','本笔报价当前阶段'),badge(r.quote)]])+'<p class="mc-links">'+link('detail',L('View loan offer','查看本笔报价详情'),'quotes|'+r.id)+'</p>');
-   else add('mc-related',L('Projects using this pledge contract','使用这份质押合约的项目'),r.projects.length?'<ul class="mc-project-list">'+r.projects.map(p=>'<li><span>'+E(text(p.name))+'</span>'+copy(p.id)+'</li>').join('')+'</ul>':CF.empty(L('No projects of your company use this pledge contract','本企业暂无使用这份质押合约的项目'),''));
+   else{const d=destinations('approvals',r);add('mc-related',L('Projects using this pledge contract','使用这份质押合约的项目'),d.projects.length?'<ul class="mc-project-list">'+d.projects.map(p=>'<li><div><b>'+E(text(p.name))+'</b>'+small('<span class="mono">'+E(p.id)+'</span>')+'</div>'+b('open-project',L('View project','查看项目'),r.id+'|'+p.id,false,false,' aria-label="'+E(L('View project ','查看项目 ')+text(p.name))+'"')+'</li>').join('')+'</ul>':CF.empty(d.reason||L('No projects of your company use this pledge contract','本企业暂无使用这份质押合约的项目'),''));}
    add('mc-chain',L('On-chain records','链上记录'),dl([
      [L('Approval transaction','授权交易标识'),rec?.tx?copyMasked(rec.tx,maskTx,L('Copy transaction ID','复制交易标识')):r.status==='granting'?L('Processing','处理中'):'—'],
      [L('Approval gas','授权实际 gas'),rec?.gas?E(rec.gas)+' ETH':rec?.fee!=null?E(String(rec.fee))+' ETH':'—'],
@@ -529,7 +538,7 @@
    if(k==='tokens')return {title:r.id,meta:badge(r.status)+badge(r.pledged?'pledged':'unpledged')+CF.copyBtn('mc-copy',r.id,L('Copy token ID','复制代币编号')),actions:controls(k,r)};
    if(k==='credits')return {title:counter(r),meta:badge(r.status)+cls+L('Valid until ','有效期至 ')+date(r.expires)+end+copy(r.id),actions:modifyEntry(r)};
    if(k==='repayments')return {title:counter(r.q),meta:badge(r.status)+(r.overdue?CF.tag('warn',L('Currently overdue','当前逾期')):'')+cls+E(text(D.project(r.project)?.name))+end,actions:controls(k,r)};
-   if(k==='approvals')return {title:addrName(r)||maskAddr(r.address),meta:cls+(r.type==='loan'?L('Funding approval','放款授权'):L('Pledge approval','质押授权'))+' · '+L('contract ','被授权合约 ')+'<span class="mono">'+E(maskAddr(r.contract))+'</span>'+end+badge(approvalError?'unreadable':r.status),actions:r.type==='pledge'?controls(k,r):''};
+   if(k==='approvals')return {title:addrName(r)||maskAddr(r.address),meta:cls+(r.type==='loan'?L('Funding approval','放款授权'):L('Pledge approval','质押授权'))+' · '+L('contract ','被授权合约 ')+'<span class="mono">'+E(maskAddr(r.contract))+'</span>'+end+badge(approvalError?'unreadable':r.status),actions:''};
    return {title:text(D.project(r.project)?.name),meta:cls+E(owner(r.owner))+end+badge(r.status),actions:controls(k,r)};
  }
  function modifyEntry(r){
@@ -702,7 +711,7 @@
    breadcrumbRoute(id){return id==='P-MC-01'?listRoute(path().split('/')[2]||tabs()[0]).slice(1):old.breadcrumbRoute?.(id);},
    beforeRender(){old.beforeRender?.();if(lastRole!==S.role+'|'+JSON.stringify(S.party)){S.layer=null;lastRole=S.role+'|'+JSON.stringify(S.party);detailState='normal';copyValue='';sourceOpened='';revokeNotes={};}},
    // Measure before the first target scroll: a wrapped portal header is taller on narrow screens.
-   afterRender(){old.afterRender?.();queueSourceReading();requestAnimationFrame(()=>{syncConsoleNav();syncChapters();});const current=location.hash;if(current!==lastHash){lastHash=current;if(path().startsWith('/console')){const q=params();restoring=true;setTimeout(()=>{syncChapters();window.scrollTo(0,Math.max(0,+q.get('y')||0));const box=document.getElementById('mc-list');if(box)box.scrollTop=Math.max(0,+q.get('scroll')||0);const id=q.get('focus');if(id)document.querySelector('[data-id="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});else document.querySelector('.mc-root .page-title')?.focus({preventScroll:true});if(!q.has('y')){const k=path().split('/')[2],r=k==='repayments'&&find(k,q.get('id')),p=r&&selectedPeriod(r);const el=p?document.getElementById('mc-period-'+p.id):q.get('application')?document.getElementById('mc-application-'+q.get('application')):null;el?.scrollIntoView({block:'start'});}restoring=false;syncChapters();},0);}}
+   afterRender(){old.afterRender?.();queueSourceReading();syncCrumb();requestAnimationFrame(()=>{syncConsoleNav();syncChapters();});const current=location.hash;if(current!==lastHash){lastHash=current;if(path().startsWith('/console')){const q=params();restoring=true;setTimeout(()=>{syncChapters();window.scrollTo(0,Math.max(0,+q.get('y')||0));const box=document.getElementById('mc-list');if(box)box.scrollTop=Math.max(0,+q.get('scroll')||0);const id=q.get('focus');if(id)document.querySelector('[data-id="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});else document.querySelector('.mc-root .page-title')?.focus({preventScroll:true});if(!q.has('y')){const k=path().split('/')[2],r=k==='repayments'&&find(k,q.get('id')),p=r&&selectedPeriod(r);const el=p?document.getElementById('mc-period-'+p.id):q.get('application')?document.getElementById('mc-application-'+q.get('application')):null;el?.scrollIntoView({block:'start'});}restoring=false;syncChapters();},0);}}
      if(focusAfter){const key=focusAfter;focusAfter='';setTimeout(()=>document.getElementById('mc-'+key)?.focus({preventScroll:true}),0);}
    },
    demo(){return (old.demo?.()||'')+reviewTools();},
@@ -721,6 +730,7 @@
      if(key==='cm-remove'){captureModify();modify.files=modify.files.filter(f=>f.id!==v);CF.render();document.getElementById('mc-cm-files')?.focus();}
      if(key==='revoke-open'){revokeTarget=v;delete revokeNotes[v];CF.openLayer('modal','mc-revoke');}
      if(key==='revoke')revoke(v);
+     if(key==='open-project'){const [id,pid]=v.split('|'),r=find('approvals',id),p=r&&destinations('approvals',r).projects.find(x=>x.id===pid);if(p)navigate(sourceHref('approvals',r,p,{back:snapshot()}));else CF.toast(L('Content unavailable','内容不存在或无权访问'));}
      if(key==='tab'){returnNotice=false;setView({tab:v,pending:'',filter:'',secondary:'',project:'',address:'',tokenType:'',query:'',periodState:'',sort:v==='credits'?'available-asc':'newest',page:1});}
      if(key==='clear'){S.st='default';returnNotice=false;S.menu=null;setView({pending:'',filter:'',secondary:'',project:'',address:'',tokenType:'',query:'',periodState:'',page:1});}
      if(key==='search')setView({query:document.getElementById('mc-query').value.trim(),page:1});
@@ -734,6 +744,11 @@
    layers:{...old.layers,'mc-credit-modify':()=>modifyLayer(),'mc-revoke':()=>revokeLayer(),'mc-source-unavailable':()=>({title:L('Content unavailable','内容不存在或无权访问'),html:'<p>'+L('Return to your console to view accessible records.','请返回控制台查看可访问记录。')+'</p>',foot:b('return',L('Return to console details','返回控制台详情'),safeRoute(params().get('mcReturn'))||'#/console')}),'mc-copy':()=>({title:L('Copy reference','复制编号'),html:'<input class="inp mc-copy-value" readonly value="'+E(copyValue)+'" aria-label="'+L('Reference number','完整编号')+'"><p>'+L('Select the text and copy it.','请选择文本后复制。')+'</p>',foot:'<button class="btn" data-act="closelayer">'+L('Close','关闭')+'</button>'})}
  };
  CF.define(CF.LSView=mod);
+ /* 借贷广场的放款、还款演示脚本在本模块之后载入并接管 demo；控制台页面只给控制台自己的演示工具，借贷广场页面照旧。 */
+ let inheritedDemo=mod.demo;
+ Object.defineProperty(mod,'demo',{configurable:true,enumerable:true,
+   get(){const f=inheritedDemo;return ()=>path().startsWith('/console')?(old.demo?.()||'')+reviewTools():f();},
+   set(fn){inheritedDemo=fn;}});
  const composed=mod.content;mod.content=id=>(id==='P-LS-01'||id==='P-LS-02'?backBanner():'')+composed(id);
  document.addEventListener('change',e=>{
    if(e.target.id==='mc-revoke-scene'){revokeScene=e.target.value;return;}
@@ -760,6 +775,16 @@ if(e.target.matches('.mc-table tr[data-id]')&&['Enter',' '].includes(e.key)){e.p
 
  let chapterFrame=0,chapterTarget='';
  // Keep the console entry visible when the shared header uses a horizontal nav.
+ /* 面包屑跟随页面层级：我的控制台 › 列表分类 › 当前对象；分类返回原列表视图。 */
+ function syncCrumb(){
+   const k=path().split('/')[2],kind=k==='loans'?'repayments':k,crumb=document.getElementById('crumb');
+   if(!path().startsWith('/console/')||!kinds.includes(kind)||kind==='projects'||!crumb||!allowed())return;
+   const listed=safeRoute(params().get('list'),false),back=listed&&new URLSearchParams(listed.split('?')[1]||'').get('tab')===kind?listed:'#/console?tab='+kind;
+   const title=document.querySelector('.mc-detail .page-title')?.textContent||text(titles[kind]);
+   const item=(t,h,i)=>'<li class="crumb-item'+(h?'':' is-current')+'">'+(i?'<span class="crumb-sep" aria-hidden="true">›</span>':'')+(h?'<a class="crumb-link" href="'+E(h)+'">'+E(t)+'</a>':'<span class="crumb-cur" aria-current="page">'+E(t)+'</span>')+'</li>';
+   crumb.innerHTML='<nav class="breadcrumb" aria-label="'+L('Breadcrumb','面包屑导航')+'"><ol class="crumb-list">'+item(L('My console','我的控制台'),'#/console',0)+item(nm(kind),back,1)+item(title,'',2)+'</ol></nav>';
+   const wrap=document.getElementById('subwrap');if(wrap)wrap.hidden=false;
+ }
  function syncConsoleNav(){
    if(!document.querySelector('.mc-root'))return;
    const nav=document.querySelector('.portal-nav'),entry=nav?.querySelector('a[href="#/console"]');
