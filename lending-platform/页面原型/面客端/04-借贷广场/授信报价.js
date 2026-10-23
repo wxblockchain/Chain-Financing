@@ -253,11 +253,11 @@
   /* 余额为演示值：充足时远高于所需，不足时只够六成。 */
   const balanceOf=()=>balanceScene==='short'?Math.floor(need()*0.6):Math.max(5000000,need()*2);
   function preview(){if(!flow.ccy)return '';if(fault==='fxUnavailable')return note('The exchange rate cannot be confirmed right now. Retry later.','暂时无法确认本笔汇率，请稍后重试。','red');if(!flow.fx)flow.fx={value:1,at:D.now()-3*86400000,source:FXSRC,version:'FX-DEMO-'+(db.serial+1)};return dl([[L('Settlement amount','结算金额'),money(need(),flow.ccy)],[L('Exchange rate','汇率'),rateText({ccy:flow.ccy,fx:flow.fx})+'<div class="hint">'+L('Platform business rate · ','平台业务汇率 · ')+L(...flow.fx.source)+'</div>']]);}
-  /* 可选地址直接列在页面上：每项给备注名与地址，选中后不再展开账户详情。 */
+  /* 地址下拉复用共享组件：选项与选中值给网络、备注名和缩写地址。 */
   function addressPick(key,en,zh){
     const picked=lenderPick(key);
-    const option=a=>{const miss=missingFields(a).length;return '<label class="cq-addr-opt'+(miss?' is-off':'')+'"><input type="radio" id="cq-'+key+'-'+E(a.id)+'" name="cq-'+key+'" value="'+E(a.id)+'" data-cq-address="'+key+'"'+(picked?.id===a.id?' checked':'')+(miss?' disabled':'')+'><span class="cq-addr-text"><b>'+E(EA.plainName(a))+'</b><span class="mono cq-break">'+(miss?L('Missing wallet address','缺少数币地址'):E(a.address))+'</span></span></label>';};
-    return '<fieldset class="field cq-addr-pick" id="cq-'+key+'" tabindex="-1"><legend>'+CF.fieldLabel(L(en,zh))+'</legend><div class="cq-addr-list">'+lenderAccounts().map(option).join('')+'</div></fieldset>';
+    const option=a=>{const miss=missingFields(a).length,name=EA.plainName(a),detail=EA.chainName(a.chain)+' · '+accountTail(a),why=miss?L('Missing wallet address','缺少数币地址'):'';return '<option value="'+E(a.id)+'" data-icons="'+E(a.chain)+'" data-label="'+E(name)+'" data-detail="'+E(detail)+'" data-reason="'+E(why)+'"'+(picked?.id===a.id?' selected':'')+(miss?' disabled':'')+'>'+E(name+' · '+detail+(why?' · '+why:''))+'</option>';};
+    return '<div class="field" id="cq-'+key+'" tabindex="-1"><label for="cq-'+key+'-select">'+CF.fieldLabel(L(en,zh))+'</label><select id="cq-'+key+'-select" class="inp" aria-required="true" data-cq-address="'+key+'" data-icon-select><option value="">'+L(key==='lender'?'Choose a funding address':'Choose a repayment address',key==='lender'?'请选择放款地址':'请选择还款收款地址')+'</option>'+lenderAccounts().map(option).join('')+'</select></div>';
   }
   function balanceHint(){
     if(!flow.ccy||!flow.fx||!lenderPick('lender'))return '';
