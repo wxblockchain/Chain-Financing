@@ -17,7 +17,7 @@
 .drawer:has(.rp-drawer){width:760px;max-width:100vw}
 .modal-mask:has(.rp-drawer){grid-template-columns:minmax(0,1fr)}
 .modal:has(.rp-drawer){width:min(760px,100%);max-width:760px;min-width:0;max-height:100%}
-.modal:has(.rp-drawer[data-kind=pay]){width:min(960px,100%);max-width:960px}
+.modal:has(.rp-drawer[data-kind=pay]){width:min(680px,100%);max-width:680px}
 :is(.modal,.drawer):has(.rp-drawer) :is(.ls-modal-close,.drawer-h>.btn){display:grid;place-items:center;min-width:var(--ctrl-h);width:var(--ctrl-h);min-height:var(--ctrl-h);height:var(--ctrl-h);padding:0;font-size:var(--fs-24);flex-shrink:0}
 :is(.modal,.drawer):has(.rp-drawer) :is(.modal-h,.drawer-h b)[tabindex="-1"]:focus{outline:none}
 :is(.modal,.drawer):has(.rp-drawer) :is(.modal-f,.drawer-f){gap:var(--sp-3);flex-wrap:wrap;justify-content:flex-end}
@@ -153,20 +153,34 @@
 .ls-detail .ls-flow[data-flow=repay]>.ls-flow-bar .t .mk-money>span{display:inline;margin:0;line-height:inherit}
 .ls-detail .ls-flow[data-flow=repay]>.ls-flow-bar:focus:not(:focus-visible){outline:none}
 
-/* Repayment address review and paying-address choice share one desktop row; source order is unchanged. */
-.rp-entry-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-6);min-width:0}
-.rp-entry-layout>.rp-section{min-width:0}
-.rp-entry-layout>.rp-section+.rp-section{border-top:0;border-left:1px solid var(--border);padding:0 0 0 var(--sp-6)}
-.rp-entry-layout .dl{grid-template-columns:minmax(0,1fr)}
-.rp-entry-layout .cq-balance{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);margin:var(--sp-4) 0 0;padding-top:var(--sp-4);border-top:1px solid var(--border);font-variant-numeric:tabular-nums}
-.rp-entry-layout .cq-balance>div{min-width:0;display:grid;gap:var(--sp-1)}
-.rp-entry-layout .cq-balance dt{font-size:var(--ui-field-label);color:var(--muted);line-height:1.6}
-.rp-entry-layout .cq-balance dd{margin:0;font-size:var(--ui-field-value);line-height:1.6;overflow-wrap:anywhere}
-.rp-entry-layout .cq-balance>div:last-child{grid-column:1/-1}
-.rp-entry-layout .cq-balance-fail{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-3);font-size:var(--ui-field-label);color:var(--warn);line-height:1.7}
-.rp-entry-layout .field label{line-height:1.6}
-.rp-drawer .rp-address .mono{font-variant-ligatures:none;word-break:break-all}
-
+/* Compact payment review; account and schedule details remain in the read-only drawer. */
+.rp-pay{gap:var(--sp-4)}
+.rp-sign-steps{display:flex;gap:var(--sp-5);margin:0;padding:0 0 var(--sp-3);list-style:none;border-bottom:1px solid var(--border);font-size:var(--ui-field-label);color:var(--muted)}
+.rp-sign-steps [aria-current=step]{color:var(--accent);font-weight:600}
+.rp-pay-amount{padding-bottom:var(--sp-4);border-bottom:1px solid var(--border)}
+.rp-pay-amount .rp-row{justify-content:space-between;font-size:var(--ui-field-label)}
+.rp-pay-amount .rp-amount{font-size:var(--fs-24);margin:var(--sp-2) 0}
+.rp-pay-amount p{margin:0}
+.rp-pay-facts{display:grid;gap:var(--sp-4)}
+.rp-pay-facts>.dl{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-4);margin:0}
+.rp-pay .rp-fact{display:grid;grid-template-columns:145px minmax(0,1fr);gap:var(--sp-3);margin:0}
+.rp-pay .rp-fact dt,.rp-field-label{color:var(--muted);font-size:var(--ui-field-label);line-height:1.6}
+.rp-pay .rp-fact dd{margin:0;font-size:var(--ui-field-value)}
+.rp-pay-from{min-width:0;display:grid;gap:var(--sp-2)}
+.rp-pay-from .field>label{color:var(--muted);font-size:var(--ui-field-label);font-weight:400}
+.rp-pay-from .rp-address-line{font-size:var(--ui-field-label)}
+.rp-check-ok{font-size:var(--ui-field-label);color:var(--ok);margin:0}
+.rp-pay-transaction{padding-top:var(--sp-4);border-top:1px solid var(--border)}
+.rp-pay-transaction h3{font-size:var(--ui-field-label);font-weight:600;margin-bottom:var(--sp-2)}
+.rp-pay-transaction>.rp-address-line{font-size:var(--ui-field-label)}
+.rp-pay .rp-tx-link{font-size:var(--ui-field-label)}
+.rp-pay .rp-tx-link .hash{font-size:inherit}
+.rp-pay .cq-balance{display:flex;flex-wrap:wrap;gap:var(--sp-3);margin:var(--sp-2) 0;font-size:var(--ui-field-label)}
+.rp-pay .cq-balance dd{margin:0}
+.rp-pay .cq-balance dt{color:var(--muted)}
+.rp-pay .cq-balance-fail{font-size:var(--ui-field-label);color:var(--warn)}
+.modal:has(.rp-pay) .rp-sign-note{flex-basis:100%;font-size:var(--ui-field-label);color:var(--muted);line-height:1.65;padding-bottom:var(--sp-3);border-bottom:1px solid var(--border)}
+.modal:has(.rp-pay) .modal-f>[data-act=rp-inspect],.rp-attempt-actions>.btn{border:0;background:transparent;color:var(--muted);padding-inline:var(--sp-2);font-size:var(--ui-field-label)}
 /* Native controls, addresses with copy, on-chain status and pre-sign errors. */
 .rp-drawer .field{margin:0}
 .rp-drawer .field+.hint{margin-top:var(--sp-2)}
@@ -177,9 +191,6 @@
 .rp-fact:has(.rp-address-line){grid-column:1/-1}
 .rp-sign-error .note{margin:0}
 .rp-list-chain{color:var(--accent);font-size:var(--ui-field-label);margin-top:var(--sp-1)}
-.modal:has(.rp-drawer[data-kind=pay]) .ls-sign-bar{flex-basis:100%;margin:0;padding-bottom:var(--sp-3);border-bottom:1px solid var(--border);gap:var(--sp-2)}
-.modal:has(.rp-drawer[data-kind=pay]) .ls-sign-sum{gap:var(--sp-1) var(--sp-4)}
-.modal:has(.rp-drawer[data-kind=pay]) .ls-sign-note{color:var(--text)}
 .rp-panel .rp-business-current{font-size:var(--ui-field-label);margin:var(--sp-1) 0 0;overflow-wrap:anywhere}
 .rp-panel .field,.rp-panel select{min-width:0;max-width:100%;width:100%}
 .rp-panel .btn{max-width:100%}
@@ -191,10 +202,6 @@
 .rp-demo-options{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
 .rp-demo-options .btn{white-space:normal}
 
-@media(max-width:760px){
-  .rp-entry-layout{grid-template-columns:minmax(0,1fr);gap:var(--sp-5)}
-  .rp-entry-layout>.rp-section+.rp-section{border-left:0;border-top:1px solid var(--border);padding:var(--sp-5) 0 0}
-}
 @media(max-width:900px),(pointer:coarse){
   .rp-pagination .btn{min-height:var(--ctrl-h);height:auto}
 }
@@ -228,7 +235,12 @@
   .rp-summary-head{display:grid;gap:var(--sp-2)}
   .rp-summary-head>.tag{justify-self:start}
   .rp-drawer .dl,.rp-drawer .rp-facts-3 .dl{grid-template-columns:minmax(0,1fr)}
-  .rp-entry-layout .cq-balance{grid-template-columns:1fr 1fr}
+  .rp-pay .rp-fact{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
+  .rp-sign-steps{gap:var(--sp-3);flex-wrap:wrap}
+  .modal:has(.rp-pay) .modal-f{display:grid;grid-template-columns:auto minmax(0,1fr)}
+  .modal:has(.rp-pay) .modal-f .rp-sign-note{grid-column:1/-1}
+  .modal:has(.rp-pay) .modal-f>[data-act=rp-inspect]{justify-self:end}
+  .modal:has(.rp-pay) .modal-f>[data-act=rp-sign]{grid-column:1/-1;width:100%}
   .rp-drawer .dl{gap:var(--sp-3)}
   .rp-period{grid-template-columns:minmax(0,1fr)}
   .rp-period .rp-period-date{grid-column:1;grid-row:3;text-align:left}
