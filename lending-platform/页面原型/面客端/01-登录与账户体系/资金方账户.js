@@ -5,6 +5,14 @@
 (function(CF){
   'use strict';
   const S=CF.S,L=CF.L,esc=CF.esc,$=id=>document.getElementById(id);
+  // 本期固定客服邮箱。需求方尚未提供真实地址；示例值与标识集中维护，不读用户或运营配置。
+  const SUPPORT=Object.freeze({email:'support@example.test',example:true});
+  function supportEmail(inline=false){return `<span class="funder-support">${inline?'':`<span class="login-caption">${L('Support email','客服邮箱')}</span>`}<span class="funder-support-address">${esc(SUPPORT.email)}</span>${SUPPORT.example?`<span class="login-caption">${L('(example)','（示例）')}</span>`:''}${CF.copyBtn('f-copy-support',SUPPORT.email,L('Copy support email','复制客服邮箱'))}<span class="funder-support-fallback login-caption" role="status" hidden>${L('Automatic copy is unavailable. Select the full email above to copy it.','自动复制不可用，请选中上方完整邮箱手动复制。')}</span></span>`;}
+  async function copySupport(element){
+    try{await navigator.clipboard.writeText(SUPPORT.email);CF.toast(L('Support email copied','客服邮箱已复制'));}
+    catch(e){if(!element?.isConnected)return;element.querySelector('.funder-support-fallback').hidden=false;const range=document.createRange();range.selectNodeContents(element.querySelector('.funder-support-address'));const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);}
+  }
+  const supportBody=text=>esc(text).replace(esc(SUPPORT.email),supportEmail(true));
   const address='0x1111111111111111111111111111111111111111',other='0x2222222222222222222222222222222222222222';
   const pages={
     'P-L21':['portal','/funder/register','Institution registration','机构注册'],
@@ -18,7 +26,7 @@
   const F={account:blank(),accounts:{},connected:'',change:false,inFlow:false,
     busy:'',error:null,fieldErrors:{},otp:null,emailInput:'',codeInput:'',reauthUntil:0,
     emailEntryError:null,emailMode:'initial',emailGeneration:0,emailFocus:'',emailCompleted:false,emailRetry:false,autoCodeAttempt:'',puzzleReturn:'page',emailStage:'auth',connectionOrigin:'auth',signPurpose:'email',signatureResult:'success',connectionResult:'success',
-    saveResult:'success',emailResult:'success',template:'ready',load:'ready',upload:'idle',providerMode:'single',
+    saveResult:'success',emailResult:'success',template:'ready',load:'ready',upload:'idle',providerMode:'single',duplicateResult:false,
     sessionUntil:0,returnTo:'',replayed:0,gate:'idle',contract:null,signatureStarted:0,challenge:0,
     uploadVersion:0,uploadFault:false,uploadRejected:[],dialOpen:false,dialQuery:'',dialActive:'',submitError:null,noticeFault:false,replaceTarget:'',reviewCheck:'',preferenceState:'',savedPreferences:null,storageFailed:false,downgrade:false,latestCode:'123456',sends:{},pendingSubmission:false,emailFlow:false,notes:[],generation:0,layerOpen:false,focusBack:null};
   /* 机构证明材料是一个多份文件集合：逐件保留名称、大小与上传结果；旧演示数据的单文件字段读取时并入集合。 */
@@ -268,7 +276,7 @@
     return `<p class="login-caption funder-section-hint">${emailCare()}</p>${inlineCode()?codeForm():emailInputForm()+(F.emailEntryError?`<p class="err-msg" role="alert">${L(...F.emailEntryError)}</p>`:'')}`;
   }
   function institution(){
-    if(F.template==='error')return CF.empty(L('Institution details are unavailable','机构资料暂不可填写'),L('Please retry. Your saved details are retained.','请重试，已保存内容会保留。'),btn('Retry','重试','template-retry','','primary'));
+    if(F.template==='error')return `<p class="funder-error" role="alert">${L('Institution details are unavailable','机构资料暂不可填写')}</p><p class="login-caption">${L('Please retry. Your saved details are retained.','请重试，已保存内容会保留。')}</p><div class="funder-review-actions">${btn('Retry','重试','template-retry','','primary')}</div>${supportEmail()}`;
     if(F.template==='loading')return CF.skelTable(4);
     const f=F.account.form;
     return `${F.account.status==='rejected'?CF.note('warn',issuesHTML(F.account)):''}<div class="funder-form"><div class="funder-field-grid">${input('name','Legal entity name *','机构名称 *',f.name)}${input('country','Country of incorporation *','注册国家或地区 *',f.country)}<div class="field"><label for="f-identifierType">${CF.fieldLabel(L('Entity identifier type *','标识类型 *'))}</label><select class="inp" id="f-identifierType" aria-required="true" aria-invalid="${!!F.fieldErrors.identifierType}" ${F.fieldErrors.identifierType?'aria-describedby="f-err-identifierType"':''}><option value="">${L('Select an identifier type','请选择标识类型')}</option>${[['USCC','Unified social credit code (USCC) · Mainland China','统一社会信用代码（USCC）· 中国境内'],['LEI','Legal entity identifier (LEI) · preferred outside Mainland China','法人机构识别编码（LEI）· 境外优先'],['REG_NO','Business registration number (REG_NO) · with country of incorporation','商业登记号（REG_NO）· 注册国家或地区 + 编号']].map(o=>`<option value="${o[0]}" ${f.identifierType===o[0]?'selected':''}>${L(o[1],o[2])}</option>`).join('')}</select>${F.fieldErrors.identifierType?`<span class="err-msg" id="f-err-identifierType" role="alert">${L(...F.fieldErrors.identifierType)}</span>`:''}</div>${input('identifier','Entity identifier *','机构唯一标识 *',f.identifier)}${input('institutionType','Institution type *','机构类型 *',f.institutionType)}${input('registeredAddress','Registered office address *','注册地址 *',f.registeredAddress)}${input('regulator',F.activeTemplate==='DEMO-2'?'Regulatory authority *':'Regulatory authority (optional)',F.activeTemplate==='DEMO-2'?'监管机构 *':'监管机构（选填）',f.regulator)}${input('license','Financial licence number (optional)','金融牌照编号（选填）',f.license)}</div></div>`;
@@ -354,7 +362,7 @@
   function submitSection(){
     const limit=submitLimitCopy();
     return `<div class="funder-submit" id="registration-submit">
-      ${limit?CF.note('warn',L(...limit)):''}${validationSummary()}${F.submitError?`<p class="note red" role="alert">${L(...F.submitError)}</p>`:''}
+      ${limit?CF.note('warn',L(...limit)):''}${validationSummary()}${F.submitError?`<div class="note red funder-submit-error" role="alert"><p>${L(...F.submitError)}</p>${F.submitError[0].startsWith('This institution is already registered.')?supportEmail():''}</div>`:''}
       <div class="funder-submit-bar">${readiness()}<div class="funder-actions">${link('Cancel and keep browsing','取消并继续浏览','browse')}${btn(F.busy==='submit'?'Submitting…':'Submit registration',F.busy==='submit'?'正在提交…':'提交注册','submit','','primary',!!F.busy||!!limit)}</div></div>
       <p class="login-caption">${L("You'll review everything once before it's sent. Nothing is saved until you submit; cancelling or leaving discards what you entered.",'提交前会请你核对一次。提交后才会保存，取消或离开将放弃本次填写的内容。')}</p></div>`;
   }
@@ -372,7 +380,7 @@
       ${profile([
         section('registration-email','Account contact email','账户联系邮箱',emailSection(),true),
         section('registration-institution','Institution details','机构资料',institution()),
-        section('registration-contact','Business contact','业务联系人',contactSection()),
+        F.template==='ready'?section('registration-contact','Business contact','业务联系人',contactSection()):'',
         section('registration-materials','Supporting documents','机构证明材料',uploadArea(),true),
         submitSection()
       ])}${stamp()}</div>`;
@@ -392,6 +400,8 @@
     F.notes.push({event:a.status==='verified'?'approved':'rejected',application:'DEMO-REG-001',submitted:a.submitted,reviewed:a.reviewed});
   }
   function noticeCopy(n){
+    if(n.event==='email-changed')return {title:L('Contact email changed','联系邮箱已修改'),body:L('Your account contact email was changed. View the current email in account settings. If you did not make this change, email our support team at '+SUPPORT.email+'.','你的账户联系邮箱已修改。请在用户信息查看当前邮箱。如非本人操作，请发送邮件至平台客服邮箱 '+SUPPORT.email+' 反馈。'),action:L('View user information','查看用户信息')};
+    if(n.event==='account-disabled')return {title:L('Account disabled','账户已停用'),body:L('This account status change disabled your login access. Check the current account status. If you have questions, email our support team at '+SUPPORT.email+'.','本次账户状态变更已停用你的登录访问。请以当前账户状态为准；如有疑问，可发送邮件至平台客服邮箱 '+SUPPORT.email+'。'),action:L('View user information','查看用户信息')};
     const id=n.application,sent=time(n.submitted),decided=time(n.reviewed);
     return n.event==='approved'
       ? {title:L('Institution verification approved','机构认证审核通过'),
@@ -404,16 +414,17 @@
          action:L('View rejection reason','查看驳回原因')};
   }
   function noticeRow(n){
+    if(Array.isArray(n)&&n[0]==='Your contact email has been updated.')n={event:'email-changed'};
     if(n&&n.undelivered)return `<div class="funder-notice"><div><b>${L('A review result notice could not be delivered','有一条审核结果通知未送达')}</b><p>${L('The review decision has taken effect. Open your application status to see the current result.','审核结论已生效，可在申请状态与审核记录查看当前结果。')}</p></div>${link('View application status','查看申请状态','status')}</div>`;
-    if(n&&n.event){const c=noticeCopy(n);return `<div class="funder-notice"><div><b>${esc(c.title)}</b><p class="funder-reason-text">${esc(c.body)}</p></div>${link(c.action,c.action,'status')}</div>`;}
+    if(n&&n.event){const c=noticeCopy(n);return `<div class="funder-notice"><div><b>${esc(c.title)}</b><p class="funder-reason-text">${supportBody(c.body)}</p></div>${link(c.action,c.action,['email-changed','account-disabled'].includes(n.event)?'account':'status')}</div>`;}
     return `<div class="funder-notice"><div>${esc(L(...n))}</div>${link('View application status','查看申请状态','status')}</div>`;
   }
   function reviewBody(a){
     const view={...a,fields:a.submittedFields};
     const state=`<dl class="funder-status-label"><dt>${L('Registration status','注册状态')}</dt><dd>${tag(a.status)}</dd></dl>`;
     const heading=(copy,actions)=>`<div class="funder-review-heading"><div class="funder-review-overview">${state}${copy}</div><div class="funder-status-actions">${actions}</div></div>`;
-    if(a.status==='rejected')return `${heading(`<p class="funder-review-title">${L('Your registration needs changes','注册资料需要修改')}</p>`,btn('Edit and resubmit','修改并重新提交','register','','primary')+link('Contact support','联系客服','support'))}<div class="funder-review funder-review-reason" role="note" aria-labelledby="f-rejection-title"><h3 id="f-rejection-title">${L('Rejection reason','驳回原因')}</h3>${issuesHTML(view)}</div>`;
-    if(a.status==='submitted')return `${heading('',btn(F.reviewCheck==='loading'?'Checking…':'Check the review result',F.reviewCheck==='loading'?'正在查询…':'查询审核结果','check-review','','',F.reviewCheck==='loading')+link('Contact support','联系客服','support'))}<div class="funder-review"><p class="login-caption">${L('Institution details are locked until a review decision is available.','机构资料在审核结论出具前不可修改。')}</p>${F.reviewCheck==='loading'?`<p class="login-caption" role="status">${L('Checking the current review result…','正在查询当前审核结果…')}</p>`:F.reviewCheck==='failed'?`<p class="funder-error" role="alert">${L('The review result could not be retrieved. Your application is unchanged; please retry.','暂时无法获取审核结果，申请状态未改变，请重试。')}</p>`:F.reviewCheck==='done'?`<p class="login-caption" role="status">${L('No decision yet. This application is still under review.','尚未出具结论，本次申请仍在审核中。')}</p>`:''}</div>`;
+    if(a.status==='rejected')return `${heading(`<p class="funder-review-title">${L('Your registration needs changes','注册资料需要修改')}</p>`,btn('Edit and resubmit','修改并重新提交','register','','primary'))}<div class="funder-review funder-review-reason" role="note" aria-labelledby="f-rejection-title"><h3 id="f-rejection-title">${L('Rejection reason','驳回原因')}</h3>${issuesHTML(view)}</div>${supportEmail()}`;
+    if(a.status==='submitted')return `${heading('',btn(F.reviewCheck==='loading'?'Checking…':'Check the review result',F.reviewCheck==='loading'?'正在查询…':'查询审核结果','check-review','','',F.reviewCheck==='loading'))}<div class="funder-review"><p class="login-caption">${L('Institution details are locked until a review decision is available.','机构资料在审核结论出具前不可修改。')}</p>${F.reviewCheck==='loading'?`<p class="login-caption" role="status">${L('Checking the current review result…','正在查询当前审核结果…')}</p>`:F.reviewCheck==='failed'?`<p class="funder-error" role="alert">${L('The review result could not be retrieved. Your application is unchanged; please retry.','暂时无法获取审核结果，申请状态未改变，请重试。')}</p>`:F.reviewCheck==='done'?`<p class="login-caption" role="status">${L('No decision yet. This application is still under review.','尚未出具结论，本次申请仍在审核中。')}</p>`:''}</div>${supportEmail()}`;
     return heading('',btn('Update institution details','变更机构资料','change','','primary'));
   }
   function statusPage(){
@@ -460,7 +471,7 @@
     if(['P-L21','P-L22','P-L23'].includes(id)&&S.role!=='fund'&&!(id==='P-L21'&&S.role==='signed'))return `<div class="funder-wrap">${CF.empty(L('Sign in to view your account','登录后查看账户'),L('You can still browse public information.','你仍可浏览公开信息。'),btn('Connect wallet','连接钱包','login','','primary')+btn('Back to assets','返回资产广场','browse'))}</div>`;
     notices();
     if(F.load==='loading')return `<div class="funder-wrap" role="status">${CF.skelTable(5)}</div>`;
-    if(F.load==='error')return CF.empty(L('Unable to load account information','账户信息加载失败'),L('Your saved information is retained.','已保存信息会保留。'),btn('Retry','重试','load-retry','','primary')+(id==='P-L22'?link('Contact support','联系客服','support'):''));
+    if(F.load==='error')return `<div class="funder-wrap">${CF.empty(L('Unable to load account information','账户信息加载失败'),L('Your saved information is retained.','已保存信息会保留。'),btn('Retry','重试','load-retry','','primary'))}${supportEmail()}</div>`;
     return ({'P-L21':registration,'P-L22':statusPage,'P-L23':accountPage,'DEMO-F-GATE':gatePage}[id])();
   }
   function notices(){
@@ -545,11 +556,12 @@
     F.busy='verify';emailLater(()=>{
       F.busy='';if(!emailAuthorized())return;if(F.otp!==code||!code.valid||Date.now()>code.expires||F.emailInput.trim().toLowerCase()!==code.email){F.error=['The code or email changed. Please request a new code.','验证码或邮箱已变化，请重新获取验证码。'];return;}if(F.emailResult==='race'||emailTaken(code.email)){F.error=["This email address isn't available. Please use another one.",'该邮箱不可用，请更换。'];return;}
       if(F.emailResult==='failed'){F.error=['Email could not be saved. Please retry.','邮箱保存失败，请重试。'];F.emailRetry=true;return;}
-      const oldEmail=F.account.email,oldVerified=F.account.emailVerified;F.account.email=code.email;F.account.emailVerified=new Date().toISOString();if(!persist()){F.account.email=oldEmail;F.account.emailVerified=oldVerified;F.error=['Email could not be saved. Your previous email is unchanged. Please retry.','邮箱保存失败，原邮箱未变，请重试。'];F.emailRetry=true;return;}F.notes.push(oldEmail?['Your contact email has been updated.','联系邮箱已更新。']:['Your contact email has been verified.','联系邮箱已验证。']);F.emailFlow=false;F.emailCompleted=true;F.emailGeneration++;code.valid=false;F.otp=null;F.codeInput='';persist();S.layer=null;CF.toast(oldEmail?L('Your contact email has been updated.','联系邮箱已更新。'):L('Email verified. Continue with your institution details.','邮箱已验证，请继续填写机构资料。'));
+      const oldEmail=F.account.email,oldVerified=F.account.emailVerified;F.account.email=code.email;F.account.emailVerified=new Date().toISOString();if(!persist()){F.account.email=oldEmail;F.account.emailVerified=oldVerified;F.error=['Email could not be saved. Your previous email is unchanged. Please retry.','邮箱保存失败，原邮箱未变，请重试。'];F.emailRetry=true;return;}F.notes.push(oldEmail?{event:'email-changed'}:['Your contact email has been verified.','联系邮箱已验证。']);F.emailFlow=false;F.emailCompleted=true;F.emailGeneration++;code.valid=false;F.otp=null;F.codeInput='';persist();S.layer=null;CF.toast(oldEmail?L('Your contact email has been updated.','联系邮箱已更新。'):L('Email verified. Continue with your institution details.','邮箱已验证，请继续填写机构资料。'));
     });
   }
   function canSubmit(){
     F.fieldErrors={};F.submitError=null;const limit=submitLimitCopy();if(limit){F.submitError=limit;return false;}
+    if(F.duplicateResult){F.submitError=['This institution is already registered. Contact support if you believe this is an error.','该机构已在平台注册，如有疑问请联系客服。'];return false;}
     if(CF.funder.review.beforeSubmit){const message=CF.funder.review.beforeSubmit(F.account);if(message){F.submitError=message;return false;}}
     F.fieldErrors={...(F.account.email?{}:{email:['Verify this email before submitting.','提交前请先完成邮箱验证。']}),...institutionErrors()};
     if(Object.keys(F.fieldErrors).length){queueMicrotask(()=>$('f-validation')?.focus());return false;}
@@ -573,7 +585,7 @@
   function resolveSubmission(){if(!F.pendingSubmission||F.busy)return;F.busy='query';F.error=null;later(()=>{F.busy='';if(F.queryResult==='failed'){F.error=['Unable to confirm the result. Please retry.','暂时无法确认结果，请重试。'];return;}if(F.queryResult==='absent'){F.pendingSubmission=false;delete F.account.pending;persist();go('/funder/register');F.submitError=['No submission was received. Your details are retained; you can submit again.','尚未收到本次提交，资料已保留，可重新提交。'];return;}completeSubmit();});}
   function changeEmail(){F.emailMode='change';F.emailFlow=true;F.emailGeneration++;F.error=null;delete F.fieldErrors.email;delete F.fieldErrors.code;F.emailInput='';F.codeInput='';F.emailRetry=false;F.autoCodeAttempt='';F.emailStage=Date.now()<F.reauthUntil?'edit':'auth';F.emailFocus=F.emailStage==='edit'?'email':'';open('email');}
   function fixture(s,options={}){
-    F.generation++;F.busy='';F.error=null;F.otp=null;F.connected=address;
+    F.generation++;F.busy='';F.error=null;F.otp=null;F.connected=address;F.duplicateResult=false;F.submitError=null;F.template='ready';
     if(options.preset){F.account=blank();F.notes=[];}else hydrate(address);
     const a=F.account;a.exists=true;a.created=a.created||new Date().toISOString();a.disabled=false;delete a.pending;F.pendingSubmission=false;a.reviewPending=false;F.downgrade=false;F.reauthUntil=0;
     if(s!=='draft'){a.email=a.email||'finance@example.test';a.emailVerified=a.emailVerified||new Date().toISOString();a.form={name:'Demo Institution',country:'Demo jurisdiction',identifierType:'REG_NO',identifier:'DEMO-REG-100',institutionType:'Demo financial institution',registeredAddress:'Demo registered address',regulator:'',license:'',contactName:options.legacy?'':'Demo Contact',contact:'contact@example.test',dialRegion:options.legacy?'':'HK',phone:options.legacy?'':'2000 0000',files:[{id:fileId(),name:'institution-registration-demo.pdf',size:204800,status:'done',demo:true,at:'2026-09-18T02:24:00Z'},{id:fileId(),name:'institution-licence-demo.pdf',size:96256,status:'done',demo:true,at:'2026-09-18T02:26:00Z'}]};a.submitted=a.submitted||new Date().toISOString();a.version=Math.max(1,a.version);a.snapshotEmail=a.email;a.submittedFields=fields();a.submittedForm=JSON.parse(JSON.stringify(a.form));a.template=F.activeTemplate||'DEMO-1';}
@@ -584,7 +596,7 @@
   /* 演示：未提交用户进入入驻流程；filled 预填一份可直接提交的演示资料（邮箱已验证、材料已上传）。 */
   function onboardingFixture(filled){
     F.generation++;F.emailGeneration++;F.busy='';F.error=null;F.submitError=null;F.otp=null;F.emailFlow=false;F.fieldErrors={};F.uploadRejected=[];F.pendingSubmission=false;F.change=false;
-    F.account=blank();F.notes=[];F.connected=address;S.role='signed';F.sessionUntil=Date.now()+4*3600000;F.load='ready';F.template='ready';F.emailInput='';
+    F.account=blank();F.notes=[];F.connected=address;S.role='signed';F.sessionUntil=Date.now()+4*3600000;F.load='ready';F.template='ready';F.emailInput='';F.duplicateResult=false;
     if(filled){const a=F.account;a.email='finance@example.test';a.emailVerified=new Date().toISOString();a.form={name:'Demo Institution',country:'Demo jurisdiction',identifierType:'REG_NO',identifier:'DEMO-REG-100',institutionType:'Demo financial institution',registeredAddress:'Demo registered address',regulator:'',license:'',contactName:'Demo Contact',contact:'contact@example.test',dialRegion:'HK',phone:'2000 0000',files:[{id:fileId(),name:'institution-registration-demo.pdf',size:204800,status:'done',demo:true,at:new Date().toISOString()}]};}
     response();S.demo=false;go('/funder/register');
   }
@@ -600,7 +612,11 @@
       {id:'filled',label:['First registration · ready to submit','首次入驻 · 已填写可提交'],group:'business'},
       {id:'rejected-edit',label:['Rejected · edit and resubmit','已驳回 · 修改重提'],group:'business'},
       {id:'change',label:['Verified · update details','已认证 · 变更资料'],group:'business'},
-      {id:'legacy-edit',label:['Rejected · add missing contact','已驳回 · 补齐联系人'],group:'business'}]:[])],
+      {id:'legacy-edit',label:['Rejected · add missing contact','已驳回 · 补齐联系人'],group:'business'},
+      {id:'duplicate',label:['Institution already registered','该机构已在平台注册'],group:'business'},
+      {id:'template-error',label:['Institution form unavailable','机构资料模版加载失败'],group:'business'}]:[]),...(id==='P-L23'?[
+      {id:'email-notice',label:['Contact email changed · notice preview','联系邮箱修改 · 通知文案预览'],group:'business'},
+      {id:'disabled-notice',label:['Account disabled · notice preview only','账户停用 · 仅预览通知文案'],group:'business'}]:[])],
     get:()=>F.load==='ready'?(F.reviewBusiness||'default'):F.load,
     set(value){
       if(['submitted','rejected','verified'].includes(value))fixture(value);
@@ -608,9 +624,12 @@
       else if(value==='new'||value==='filled')onboardingFixture(value==='filled');
       else if(value==='rejected-edit'||value==='legacy-edit'){fixture('rejected',{legacy:value==='legacy-edit',route:'/funder/register'});}
       else if(value==='change')fixture('verified',{route:'/funder/register',change:true});
-      else {F.load=value==='default'?'ready':value;F.reviewBusiness='';return;}
+      else if(value==='duplicate'){onboardingFixture(true);F.duplicateResult=true;canSubmit();}
+      else if(value==='template-error'){onboardingFixture(true);F.template='error';}
+      else if(value==='email-notice'||value==='disabled-notice'){fixture('verified',{route:'/funder/account'});setTimeout(()=>{if(S.page==='P-L23'&&F.reviewBusiness===value){open('notice-preview',value==='email-notice'?'email-changed':'account-disabled');CF.render();}},60);}
+      else {F.load=value==='default'?'ready':value;F.template='ready';F.duplicateResult=false;F.submitError=null;F.reviewBusiness='';return;}
       F.reviewBusiness=value;},
-    reset(){F.load='ready';F.reviewBusiness='';}
+    reset(){F.load='ready';F.template='ready';F.duplicateResult=false;F.submitError=null;F.reviewBusiness='';}
 
   }));
 
@@ -624,7 +643,7 @@
     'f-puzzle':()=>({title:L('Security verification','安全验证'),html:CF.puzzle.body(),foot:btn('Cancel','取消','cancel-puzzle')}),
     'f-unknown':()=>({title:L('Confirming submission','确认提交结果'),html:CF.note('warn',L('Check the result before editing or submitting again.','请先查询结果，再继续编辑或提交。'))+error(),foot:btn('Check current status','查询当前状态','resolve-submit','','primary')}),
     'f-gate':()=>({title:L(...({draft:['Complete your institution registration first','请先完成机构注册'],submitted:['Your registration is under review','你的注册正在审核中'],rejected:['Your registration needs changes','你的注册需要修改']}[F.account.status]||['Check your registration','查看注册状态'])),html:`<p>${L(...({draft:['Funding actions are available once your institution is verified. It takes one form and a review.','完成机构认证后即可发起出资等操作，只需填一次表并等待审核。'],submitted:['Review results will appear in the platform message center. Funding actions unlock after approval.','审核结果将在平台消息中心通知。审核通过后即可发起出资等操作。'],rejected:['Check the reason, update your information, and submit again.','查看驳回原因，修改后重新提交即可。']}[F.account.status]||['','']))}</p>`,foot:btn('Back','返回','close')+btn(F.account.status==='draft'?'Go to registration':'View progress',F.account.status==='draft'?'去完成注册':'查看进度','gate-next','','primary')}),
-    'f-support':()=>({title:L('Contact support','联系客服'),html:`<p>${L('Support is temporarily unavailable. Please try again later.','客服渠道暂不可用，请稍后再试。')}</p>`,foot:btn('Close','关闭','close')}),
+    'f-support':()=>({title:L('Support email','客服邮箱'),html:supportEmail(),foot:btn('Close','关闭','close')}),
     'f-explorer':a=>({title:L('Open block explorer','打开区块浏览器'),html:`<p>${L('Ethereum · demonstration address','Ethereum · 演示地址')}</p><p class="mono" style="overflow-wrap:anywhere">${esc(a)}</p>`,foot:btn('Cancel','取消','close')+`<a class="btn primary" href="https://etherscan.io/address/${esc(a)}" target="_blank" rel="noopener noreferrer">${L('Open explorer ↗','打开浏览器 ↗')}</a>`})
   };
   function action(act,v){
@@ -796,6 +815,7 @@
     // 文件选择器返回前保留原 input，避免公共点击重绘丢失 change 事件。
     if(a.dataset.act==='f-pick-file'){e.preventDefault();e.stopImmediatePropagation();if(signedIn()&&!F.account.disabled&&F.account.status!=='submitted'&&!F.pendingSubmission&&!F.busy){F.replaceTarget=a.dataset.v||'';$('f-file')?.click();}return;}
     if(a.dataset.act==='f-copy'){e.preventDefault();e.stopImmediatePropagation();copyWallet(a.dataset.v,a.closest('.funder-wallet'));return;}
+    if(a.dataset.act==='f-copy-support'){e.preventDefault();e.stopImmediatePropagation();copySupport(a.closest('.funder-support'));return;}
     const key=S.layer?.key;
     if(a.dataset.act==='closelayer'&&key?.startsWith('f-')&&!(a.classList.contains('modal-mask')&&e.target.closest('.modal'))){e.preventDefault();e.stopImmediatePropagation();cancelLayer(key);return;}
     if(a.dataset.act==='lang'){$('toasts').innerHTML='';try{localStorage.setItem('hc_funder_language',a.dataset.v);}catch(e){}}
@@ -809,6 +829,7 @@
   function materialFields(value){const source=String(value||'').split('::')[0];return source==='draft'?fields():source==='pending'?F.account.pending?.fields:F.account.submittedFields;}
   layers['f-material']=value=>({title:L('Preview','预览'),html:signedIn()&&!F.account.disabled?materialPreview(materialFile(value),materialFields(value)):CF.note('warn',L('Sign in to view this file.','请登录后查看文件。')),foot:btn('Close','关闭','close')+btn('Download','下载','material-download',value)});
   layers['f-notices']=()=>({title:L('Account notifications','账户通知'),html:F.notes.length?F.notes.map(noticeRow).join(''):CF.empty(L('No new notifications','暂无新通知'),'',''),foot:btn('Close','关闭','close')});
+  layers['f-notice-preview']=event=>({title:L('Notification copy preview · simulation','通知文案预览 · 演示'),html:(event==='account-disabled'?`<p class="login-caption">${L('Preview only. Account disable and restore notifications are not sent in this release.','仅预览文案。本期账户停用与恢复不触发通知。')}</p>`:'')+`<div class="funder-notice"><div><b>${esc(noticeCopy({event}).title)}</b><p class="funder-reason-text">${supportBody(noticeCopy({event}).body)}</p></div></div>`,foot:btn('Close','关闭','close')});
   window.addEventListener('hashchange',()=>{
     if(F.emailFlow){F.generation++;F.emailFlow=false;F.busy='';F.otp=null;}
     if(CF.puzzle.active())CF.puzzle.stop();
@@ -829,6 +850,8 @@
     response();go('/funder/register');
   }
   CF.funder={dict,layers,content,action,connect,notices,afterRender,logout,onboard};
+  CF.funder.support={...SUPPORT,html:supportEmail,body:supportBody};
+  CF.funder.disabledAddress=a=>!!(F.account.address===a&&F.account.disabled||F.accounts[a]?.disabled);
   CF.funder.review={
     get account(){return F.account;}, get state(){return F;}, persist,
     seed:fixture, fields, fieldsFrom, fieldValue, notDocuments, docs, docRow, materialList, response, identity, recordOf, normalizeRecords, recordDecision, reviewTimeline, materialPreviewable, materialPreview, downloadMaterial, normalizeForm, identifierTypeName,

@@ -209,7 +209,7 @@
     const gone=check==='gone',changed=check==='changed';
     const reason=gone?L('The related content is unavailable','相关内容暂不可访问')
       :changed?L('This action is no longer available. View the original record','该操作已不适用，可查看原记录'):'';
-    const title=E(template(r,'title')),body=E(template(r,'body'));
+    const title=E(template(r,'title')),body=r.owner==='fund'&&r.biz==='account.email.changed'&&CF.funder?.support?CF.funder.support.body(template(r,'body')):E(template(r,'body'));
     renderedDetail=r.id;
     const label=check==='pending'?L('Checking…','正在检查…'):changed?L('View original record','查看原记录'):L('View related item','查看相关内容');
     return '<div class="nc-detail nc-reading"><article class="card"><div class="card-b"><h1>'+title+'</h1><div class="nc-reading-meta">'+meta(r)+'<time class="nc-time" datetime="'+r.at+'">'+CF.fmtTime(r.at)+'</time></div>'+

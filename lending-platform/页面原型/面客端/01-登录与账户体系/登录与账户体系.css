@@ -252,6 +252,14 @@
 .funder-status-label dd{margin:0}
 .funder-status-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4);margin-left:auto}
 .funder-status-actions>.btn-link{min-height:var(--ctrl-h);padding-inline:var(--sp-2)}
+/* WS-443: fixed support email is a compact fact, independent of primary review actions. */
+.funder-support{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2);max-width:100%;margin-top:var(--sp-3);vertical-align:middle}
+.funder-support-address{min-width:0;overflow-wrap:anywhere;color:var(--text);font-weight:500;user-select:text}
+.funder-support>.btn{flex:0 0 auto}
+.funder-support-fallback{flex-basis:100%}
+.funder-submit-error{display:block}
+.funder-submit-error>p{margin:0}
+.nc-body .funder-support,.funder-notice .funder-support{margin-top:0}
 .funder-review-reason{padding:var(--sp-4);background:var(--danger-bg);border:1px solid var(--danger-border);border-left:3px solid var(--danger);border-radius:var(--radius-xs)}
 .funder-review-reason>h3{margin:0 0 var(--sp-2);font-size:var(--ui-field-label);font-weight:600;color:var(--danger)}
 .funder-review-reason>.funder-reason-text{margin:var(--sp-2) 0 0;color:var(--text);line-height:1.7}

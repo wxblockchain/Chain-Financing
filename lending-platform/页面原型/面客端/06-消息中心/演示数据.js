@@ -170,8 +170,8 @@
           '申请 {application_number} 的资料变更已于 {submitted_time} 成功提交。本次提交使需要机构认证的业务权限暂不可用。请查看当前审核状态及对应提交记录。')},
       'account.email.changed':{
         title:pair('Contact email changed','联系邮箱已修改'),
-        body:pair('Your account contact email was changed. View the current email under User information. If you did not make this change, contact support through the platform’s existing support entry.',
-          '你的账户联系邮箱已修改。请在用户信息页查看当前邮箱。如非本人操作，请通过平台现有客服入口反馈。')},
+        body:pair('Your account contact email was changed. View the current email in account settings. If you did not make this change, email our support team at {support_email}.',
+          '你的账户联系邮箱已修改。请在用户信息查看当前邮箱。如非本人操作，请发送邮件至平台客服邮箱 {support_email} 反馈。')},
       'account.access.restored':{
         title:pair('Account restored','账户已恢复'),
         body:pair('This account status change restored your login access. Available business actions still depend on your current institution verification status.',
@@ -375,7 +375,7 @@
       vars:{application_number:'FA-DEMO-0006',submitted_time:iso(now()-23*DAY),reviewed_time:iso(now()-21*DAY)}});
     push({owner:'fund',biz:'verification.funder.paused',category:'compliance',at:iso(now()-24*DAY),
       vars:{application_number:'FA-DEMO-0006',submitted_time:iso(now()-24*DAY)}});
-    push({owner:'fund',biz:'account.email.changed',category:'account',at:iso(now()-4*DAY),vars:{}});
+    push({owner:'fund',biz:'account.email.changed',category:'account',at:iso(now()-4*DAY),vars:{support_email:CF.funder?.support.email||''}});
     push({owner:'fund',biz:'account.access.restored',category:'account',at:iso(now()-30*DAY),vars:{}});
   }
 

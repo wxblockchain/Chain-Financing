@@ -174,6 +174,7 @@
     funding:['Submit a funding quote','发起出资 / 授信报价']
   };
   function loginPage(){
+    if(D.loginError==='funder-disabled')return `<div class="login-flow"><h1 class="page-title">${L('Account disabled','账户已停用')}</h1><p>${L('This account has been disabled. Contact support to restore it.','该账号已被停用，请联系客服恢复。')}</p>${CF.funder.support.html()}<div class="login-actions">${link('Keep browsing','继续浏览','login-exit')}</div>${demoStamp()}</div>`;
     const held=D.originAction?CF.note('accent',L('We kept your action: ','已保留你的操作：')+L(...actionCopy[D.originAction])+L('. It continues after you sign in.','。登录后继续。')):'';
     const errors={
       wallet:['MetaMask is unavailable. Install or enable the MetaMask browser extension, then try again.','未检测到 MetaMask。请安装或启用 MetaMask 浏览器插件后重试。'],
@@ -209,6 +210,7 @@
   function signatureDone(result){
     S.layer=null;
     if(result!=='ok'){D.stage='';D.loginError=result==='rejected'?'sign-rejected':'sign-failed';go('/login');return;}
+    if(CF.funder?.disabledAddress(D.address)){cancelPending();S.role='guest';CF.resetCompletion();CF.funder.review.state.sessionUntil=0;CF.funder.review.response();D.stage='';D.loginError='funder-disabled';go('/login');return;}
     D.stage='matching';D.pending=true;go('/auth/return');
     later(()=>{D.pending=false;applyMatch();});
   }
@@ -625,9 +627,10 @@
       {id:'cancel',label:['Connection cancelled','连接取消'],group:'feedback'},
       {id:'sign-rejected',label:['Signature declined','拒绝签名'],group:'feedback'},
       {id:'sign-failed',label:['Signature verification failed','签名验证失败'],group:'feedback'},
-      {id:'pull-failed',label:['Retrieval failed · no role decided','调取失败 · 本次不判定角色'],group:'feedback'}],
+      {id:'pull-failed',label:['Retrieval failed · no role decided','调取失败 · 本次不判定角色'],group:'feedback'},
+      {id:'funder-disabled',label:['Funder account disabled · after signature','资金方账户已停用 · 签名后'],group:'business'}],
     get:()=>S.page==='P-L01'?(D.loginError||'default'):'flow',
-    set(value){D.loginError=value==='default'?'':value;if(S.page!=='P-L01')go('/login');},
+    set(value){if(value==='funder-disabled'){cancelPending();S.role='guest';CF.resetCompletion();CF.funder.review.state.sessionUntil=0;CF.funder.review.response();}D.loginError=value==='default'?'':value;if(S.page!=='P-L01')go('/login');},
     reset(){D.loginError='';D.handoff='';D.stage='';},route:'/login'
   });
   ['P-L12','P-L14'].forEach(id=>CF.review.register(id,{
