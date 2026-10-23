@@ -28,13 +28,6 @@
 .mc-table .mc-indicator{display:block;font-size:var(--fs-12);margin-top:var(--sp-1);color:var(--warn)}
 .mc-table td .tag{max-width:100%}
 .mc-root .mc-table[data-kind=repayments]{table-layout:fixed}
-.mc-table[data-kind=repayments] th:nth-child(1){width:20%}
-.mc-table[data-kind=repayments] th:nth-child(2){width:13%}
-.mc-table[data-kind=repayments] th:nth-child(3){width:12%}
-.mc-table[data-kind=repayments] th:nth-child(4){width:10%}
-.mc-table[data-kind=repayments] th:nth-child(5){width:19%}
-.mc-table[data-kind=repayments] th:nth-child(6){width:12%}
-.mc-table[data-kind=repayments] th:nth-child(7){width:14%}
 .mc-table[data-kind=repayments] td{overflow-wrap:anywhere;white-space:normal;min-width:0}
 .mc-table[data-kind=repayments] .mc-actions{min-width:0;max-width:none}
 .mc-table[data-kind=repayments] strong{font-weight:600}
@@ -211,7 +204,6 @@
 .mc-pending-more li>b,.mc-pending-more li>span{display:block}
 .mc-table .mc-pending-action{display:inline-flex;align-items:center;min-height:44px;height:auto;max-width:100%;padding:0;color:var(--warn);font:inherit;line-height:1.6;white-space:normal;text-align:left;overflow-wrap:anywhere}
 .mc-table .mc-pending-action:hover{text-decoration:underline;text-underline-offset:3px}
-.mc-table td.mc-task>div{display:flex;align-items:center;min-height:44px}
 
 .mc-table tr[data-pending=true] td:first-child{box-shadow:inset 2px 0 var(--accent)}
 .mc-pending-detail{margin-bottom:var(--sp-4);padding:var(--sp-4) var(--card-pad);border:1px solid var(--border);border-inline-start:2px solid var(--accent);border-radius:var(--radius-sm);background:var(--card);font-size:var(--fs-13)}
@@ -237,10 +229,10 @@
 .mc-table[data-kind=approvals] th:nth-child(1){width:18%}.mc-table[data-kind=approvals] th:nth-child(2){width:15%}
 .mc-table[data-kind=approvals] th:nth-child(3){width:16%}.mc-table[data-kind=approvals] th:nth-child(4){width:19%}
 .mc-table[data-kind=approvals] th:nth-child(5){width:17%}.mc-table[data-kind=approvals] th:nth-child(6){width:15%}
-.mc-table[data-kind=quotes] th:nth-child(1){width:21%}.mc-table[data-kind=quotes] th:nth-child(2){width:13%}
-.mc-table[data-kind=quotes] th:nth-child(3){width:14%}.mc-table[data-kind=quotes] th:nth-child(4){width:16%}
-.mc-table[data-kind=quotes] th:nth-child(5){width:13%}.mc-table[data-kind=quotes] th:nth-child(6){width:11%}
-.mc-table[data-kind=quotes] th:nth-child(7){width:12%}
+.mc-table[data-kind=quotes] th:nth-child(1){width:25%}.mc-table[data-kind=quotes] th:nth-child(2){width:16%}
+.mc-table[data-kind=quotes] th:nth-child(3){width:18%}.mc-table[data-kind=quotes] th:nth-child(4){width:17%}
+.mc-table[data-kind=quotes] th:nth-child(5){width:12%}.mc-table[data-kind=quotes] th:nth-child(6){width:12%}
+
 .mc-revoke-act{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-4);margin-top:var(--sp-5)}
 .mc-revoke-act .btn{min-height:44px;height:auto;white-space:normal}
 .mc-revoke-act .mc-small{margin:0;flex:1 1 240px}
@@ -272,32 +264,20 @@
 .mc-summary .s:last-child .mc-money-exact{left:auto;right:0}
 .mc-summary .n .mc-money-peek>summary{gap:var(--sp-1)}
 .mc-summary .n .mc-money-exact{font-size:var(--fs-14)}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(1){width:17%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(2){width:11%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(3){width:12%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(4){width:13%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(5){width:11%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(6){width:9%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(7){width:14%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(8){width:13%}
-.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(1){width:16%}
-.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(2){width:10%}
-.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(3){width:12%}
-.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(4){width:12%}
-.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(5){width:11%}
-.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(6){width:11%}
-.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(7){width:13%}
-.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(8){width:7%}
-.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(9){width:8%}
+/* Seven repayment columns for both roles; eligible repayment actions share the actions cell. */
+.mc-root .mc-table[data-kind=repayments] th:nth-child(1){width:20%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(2){width:12%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(3){width:15%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(4){width:15%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(5){width:12%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(6){width:10%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(7){width:16%}
 .mc-project-list li>div{min-width:0}
 .mc-project-list li .btn{flex:none;min-height:36px;height:auto;white-space:nowrap}
 @media(max-width:600px),(pointer:coarse){.mc-project-list li .btn{min-height:44px}}
 
 /* WS-450 · deeper pass: split request status from amount, quieter secondary facts, merged detail groups. */
 .mc-muted{color:var(--muted)}
-.mc-badge-link{display:inline-flex;border-radius:var(--radius-pill);text-decoration:none}
-.mc-badge-link:hover .tag{box-shadow:inset 0 0 0 1px var(--accent-border)}
-.mc-badge-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .mc-root .mc-table[data-kind=projects]{table-layout:fixed}
 .mc-table[data-kind=projects] th:nth-child(1){width:17%}.mc-table[data-kind=projects] th:nth-child(2){width:9%}
 .mc-table[data-kind=projects] th:nth-child(3){width:13%}.mc-table[data-kind=projects] th:nth-child(4){width:16%}
@@ -313,3 +293,5 @@
 .mc-inline-fact .actlink{margin-inline-start:auto}
 @media(max-width:900px){.mc-pair{grid-template-columns:1fr}.mc-pair>div+div{border-inline-start:0;padding-inline-start:0;border-top:1px solid var(--border);padding-top:var(--sp-5)}}
 @media(max-width:600px){.mc-root .mc-pair .mc-facts{grid-template-columns:1fr}}
+
+.mc-source-progress{margin-top:var(--sp-2);color:var(--accent);font-size:var(--fs-12);line-height:1.6}
