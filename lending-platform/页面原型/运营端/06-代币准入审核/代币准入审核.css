@@ -20,7 +20,7 @@
 .ta-filter-wrap .field{min-width:0;max-width:none;margin:0}
 .ta-applied{display:flex;gap:var(--sp-2);flex-wrap:wrap;padding:0 var(--sp-4) var(--sp-3)}
 .ta-list-note{padding:var(--sp-3) var(--sp-4) 0;display:grid;gap:var(--sp-2)}
-.ta-table{table-layout:fixed;width:100%;min-width:1312px}
+.ta-table{table-layout:fixed;width:100%;min-width:1320px}
 .ta-table-region:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 table.ta-table thead th{white-space:normal;color:var(--muted);vertical-align:middle}
 table.ta-table :is(th,td){padding-inline:var(--sp-3)}
@@ -34,11 +34,15 @@ table.ta-table :is(th,td){padding-inline:var(--sp-3)}
 .ta-table .actlink:hover{background:var(--accent-soft)}
 .ta-table .actlink:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ta-table .col-act{position:sticky;right:0;background:var(--card);width:72px;text-align:right;border-left:1px solid var(--row-line)}
-.ta-col-platform-id,.ta-col-token-no{width:160px}
+.ta-col-network{width:144px}.ta-col-identifiers{width:184px}
 .ta-col-name{width:200px}.ta-col-issuer{width:144px}.ta-col-standard{width:88px}
 .ta-col-value{width:132px}.ta-col-due{width:100px}.ta-col-submitted{width:140px}
 .ta-col-status{width:116px}.ta-col-action{width:72px}
 .ta-record-id{font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ta-network{display:inline-flex;align-items:center;gap:var(--sp-2);max-width:100%}
+.ta-network>span:last-child{min-width:0;overflow-wrap:anywhere}
+.ta-network-icon{display:inline-flex;width:var(--sp-5);height:var(--sp-5);flex:none;color:var(--muted)}
+.ta-network-icon svg{display:block;width:100%;height:100%}
 .ta-list-token{display:flex;align-items:flex-start;gap:var(--sp-2);min-width:0}
 .ta-list-token .ta-icon{width:var(--sp-6);height:var(--sp-6)}
 .ta-list-token-name{min-width:0;overflow-wrap:anywhere;line-height:1.6}
