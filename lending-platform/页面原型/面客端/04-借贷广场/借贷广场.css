@@ -838,6 +838,40 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-detail-main .ln-list td:nth-child(3),.ls-detail-main .ln-list td:nth-child(4),.ls-detail-main .rp-list td:nth-child(2){font-family:var(--mono);font-variant-numeric:tabular-nums}
 .ls-detail-main .pager{font-size:var(--fs-12);color:var(--muted)}
 
+/* WS-446：质押数量与代币标识分列，使用语义列类名，避免新增列后继承旧序号列宽 / 对齐。 */
+#ls-pledged-tokens .ls-token-table.ls-token-columns{min-width:1280px}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"]{min-width:1440px}
+#ls-pledged-tokens .ls-token-columns :is(th,td){width:auto;text-align:left}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-network{width:8%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-id{width:18%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-holder{width:14%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-quantity{width:15%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-value,#ls-pledged-tokens .ls-token-columns .ls-token-col-hash{width:13%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-validity{width:8%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-counted{width:11%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-id{width:15%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-holder{width:13%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-quantity{width:14%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] :is(.ls-token-col-value,.ls-token-col-hash){width:12%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-validity{width:7%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-counted{width:9%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-going{width:10%}
+#ls-pledged-tokens .ls-token-columns :is(.ls-token-col-quantity,.ls-token-col-value){text-align:right;font-variant-numeric:tabular-nums}
+#ls-pledged-tokens .ls-token-columns td .cell-wrap{align-items:flex-start}
+#ls-pledged-tokens .ls-token-columns td:is(.ls-token-col-quantity,.ls-token-col-value) .cell-wrap{align-items:flex-end}
+#ls-applications .tablewrap:has(>.ls-demand-table){overflow:auto}
+#ls-applications .ls-demand-table{min-width:1080px}
+#ls-applications .ls-demand-table th:first-child{width:20%}
+#ls-applications .ls-demand-table th:nth-child(2){width:16%}
+#ls-applications .ls-demand-table th:nth-child(3){width:12%}
+#ls-applications .ls-demand-table th:nth-child(4){width:16%}
+#ls-applications .ls-demand-table th:nth-child(5){width:17%}
+#ls-applications .ls-demand-table th:nth-child(6){width:19%}
+@media(max-width:768px){
+  #ls-pledged-tokens .ls-token-table.ls-token-columns,#ls-pledged-tokens .ls-token-columns[data-owner="true"],#ls-applications .ls-demand-table{min-width:0}
+  #ls-pledged-tokens .ls-token-columns td:is(.ls-token-col-quantity,.ls-token-col-value) .cell-wrap{align-items:flex-start}
+}
+
 /* Continuous creation form; labels never compete with their readonly values. */
 .ls-form{padding-block:var(--sp-2);gap:var(--sp-5)}
 .ls-form-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4)}

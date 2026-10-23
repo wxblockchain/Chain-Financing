@@ -63,7 +63,7 @@
   function pager(key,count){const total=Math.max(1,Math.ceil(count/5));pages[key]=Math.min(pages[key]||1,total);return '<div class="pager"><span class="total">'+L(count+(count===1?' item':' items')+' · 5 per page','共 '+count+' 条 · 每页 5 条')+'</span>'+btn('ls-page','←',key+':'+(pages[key]-1),false,pages[key]===1)+'<span>'+pages[key]+' / '+total+'</span>'+btn('ls-page','→',key+':'+(pages[key]+1),false,pages[key]===total)+'</div>';}
   function field(id,en,zh,value='',type='text',extra=''){return '<div class="field"><label for="'+id+'">'+CF.fieldLabel(L(en,zh))+'</label><input class="inp" id="'+id+'"'+(en.endsWith('*')?' aria-required="true"':'')+' type="'+type+'" value="'+E(value)+'" '+extra+'></div>';}
   function select(id,en,zh,opts,value='',extra=''){return '<div class="field"><label for="'+id+'">'+CF.fieldLabel(L(en,zh))+'</label><select class="inp" id="'+id+'"'+(en.endsWith('*')?' aria-required="true"':'')+' '+extra+'>'+opts.map(o=>'<option value="'+o[0]+'"'+(o[0]===value?' selected':'')+(o[3]?' disabled':'')+'>'+L(o[1],o[2])+'</option>').join('')+'</select></div>';}
-  function dataTable(heads,rows,rowAttrs=[]){return '<div class="tablewrap"><table class="tbl resp ls-table"><thead><tr>'+heads.map(h=>'<th scope="col">'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map((r,i)=>'<tr'+(rowAttrs[i]||'')+'>'+r.map((c,i)=>'<td data-label="'+E(heads[i])+'"><div class="cell-wrap">'+c+'</div></td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
+  function dataTable(heads,rows,rowAttrs=[],tableClass=''){return '<div class="tablewrap"><table class="tbl resp ls-table'+(tableClass?' '+E(tableClass):'')+'"><thead><tr>'+heads.map(h=>'<th scope="col">'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map((r,i)=>'<tr'+(rowAttrs[i]||'')+'>'+r.map((c,i)=>'<td data-label="'+E(heads[i])+'"><div class="cell-wrap">'+c+'</div></td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
   function latestExecution(p,t){return [...D.executions].reverse().find(e=>e.project===p.id&&e.token===t.id);}
   /* 合约内代币按有效性分三类，与总质押额、有效质押额同一口径。 */
   const tokenTones={valid:'accent',expired:'gray',frozen:'danger'};
@@ -210,12 +210,12 @@
     const rows=[...attempts.map(x=>({x,at:x.at})),...p.demands.map(d=>({d,at:d.at}))].sort((a,b)=>Date.parse(b.at)-Date.parse(a.at));
     const tail=pager('demands',rows.length),list=rows.slice((pages.demands-1)*5,pages.demands*5);
     const editing=d=>!D.mine(p)?'':d.edit?.state==='processing'?small(L('Amount change processing → ','改额处理中 → ')+usdt(d.edit.amount)):d.withdraw?.state==='processing'?small(L('Withdrawal processing','撤下处理中')):'';
-    return dataTable([L('Application ID','融资申请编号'),L('Amount / currency','申请金额 / 币种'),L('Application status','申请状态'),L('Institution / annual rate','机构 / 年化利率'),L('Published at','发布时间')+' ('+E(S.tz||'UTC')+')'],list.map(({x,d})=>{
-      if(x)return ['<span class="muted">—</span>','<span class="mono">'+usdt(x.amount)+'</span>',x.state==='processing'?CF.tag('warn',L('Publishing · freeze processing','发布处理中 · 冻结处理中'))+small(waitText(x.at)):CF.tag('danger',L('Not published · freeze failed','发布未成功 · 冻结失败')),'<span class="muted">—</span>',stampCell(x.at)];
-      /* 已放款的另给出放款编号与放款成功时间，只作识别；放款明细在融资申请详情查看。 */
-      const q=Q?.currentQuote(p,d.id),loan=d.state==='funded'&&q&&Q.loanRecord?.(q),loanNote=loan&&(D.mine(p)||Q.related(q))?small('<span class="mono">'+E(loan.id)+'</span> · '+stampCell(loan.at)):'';
-      return ['<span class="ls-demand-link">'+E(d.id)+' ↗</span>','<span class="mono">'+usdt(d.amount)+'</span>'+editing(d),tag(d.state)+(d.reason?small(txt(reasons[d.reason])):'')+loanNote,q?E(Q.institution(q.fund))+(Q.related(q)||D.mine(p)?small(q.rate+' %'):''):L('No active quote','暂无有效报价'),stampCell(d.at)];}),
-      list.map(({x,d})=>x?'':' class="ls-financing-row" tabindex="0" data-act="cq-request" data-v="'+E(d.id)+'" aria-label="'+L('Open application ','查看融资申请 ')+E(d.id)+'"'))+tail;
+    return dataTable([L('Application ID','融资申请编号'),L('Amount / currency','申请金额 / 币种'),L('Application status','申请状态'),L('Institution / annual rate','机构 / 年化利率'),L('Published at','发布时间')+' ('+E(S.tz||'UTC')+')',L('Disbursement information','放款信息')+' ('+E(S.tz||'UTC')+')'],list.map(({x,d})=>{
+      if(x)return ['<span class="muted">—</span>','<span class="mono">'+usdt(x.amount)+'</span>',x.state==='processing'?CF.tag('warn',L('Publishing · freeze processing','发布处理中 · 冻结处理中'))+small(waitText(x.at)):CF.tag('danger',L('Not published · freeze failed','发布未成功 · 冻结失败')),'<span class="muted">—</span>',stampCell(x.at),'<span class="muted">—</span>'];
+      /* 放款编号和成功时间独立成列；沿用本企业 / 本笔资金方的可见范围。 */
+      const q=Q?.currentQuote(p,d.id),loan=d.state==='funded'&&q&&Q.loanRecord?.(q),loanInfo=loan&&(D.mine(p)||Q.related(q))?'<span class="mono">'+E(loan.id)+'</span>'+small(stampCell(loan.at)):'<span class="muted">—</span>';
+      return ['<span class="ls-demand-link">'+E(d.id)+' ↗</span>','<span class="mono">'+usdt(d.amount)+'</span>'+editing(d),tag(d.state)+(d.reason?small(txt(reasons[d.reason])):''),q?E(Q.institution(q.fund))+(Q.related(q)||D.mine(p)?small(q.rate+' %'):''):L('No active quote','暂无有效报价'),stampCell(d.at),loanInfo];}),
+      list.map(({x,d})=>x?'':' class="ls-financing-row" tabindex="0" data-act="cq-request" data-v="'+E(d.id)+'" aria-label="'+L('Open application ','查看融资申请 ')+E(d.id)+'"'),'ls-demand-table')+tail;
   }
   const applicationAmount=a=>a.tokens.reduce((sum,id)=>sum+(D.token(id)?.value||0),0);
   function todoBadge(count){return count?'<span class="ls-todo" aria-label="'+L(count+' to do',count+' 项待办')+'">'+count+'</span>':'';}
@@ -348,17 +348,18 @@
     const gone=tokenFilter.going==='returned'?D.tokens.filter(t=>!inPool.includes(t)&&!onchain.includes(t)&&tokenGoing(p,t)==='returned'):[];
     return [...inPool,...onchain,...gone].filter(t=>(!tokenFilter.keyword||t.id.toLowerCase().includes(tokenFilter.keyword.trim().toLowerCase()))&&(!tokenFilter.going||tokenGoing(p,t)===tokenFilter.going)).sort((a,b)=>landedAt(p,b)-landedAt(p,a));
   }
-  /* 每行是一份质押份额：代币编号 + 该份的持有数量；同一笔代币的不同份额分别成行。 */
+  /* 每行是一份质押份额：代币编号与质押数量分列；同一笔代币的不同份额分别成行。 */
   const shortAddr=a=>a?a.slice(0,6)+'…'+a.slice(-4):'—';
   const qty=t=>CF.fmtAmt(t.units)+' '+E(t.symbol);
   function shareQty(list){const by={};list.forEach(t=>{by[t.symbol]=(by[t.symbol]||0)+t.units;});return Object.entries(by).map(([k,v])=>CF.fmtAmt(v)+' '+E(k)).join(' / ')||'—';}
-  function tokenCell(t){return '<span class="ls-token-id">'+hexMark(t.valid?'accent':'gray')+'<span><span class="mono">'+E(D.tokenNo(t))+'</span><span class="cell-sub">'+qty(t)+'</span></span></span>';}
+  function tokenCell(t){return '<span class="ls-token-id">'+hexMark(t.valid?'accent':'gray')+'<span class="mono">'+E(D.tokenNo(t))+'</span></span>';}
   function tokenList(p){
     const mine=D.mine(p),list=mine?ownTokens(p):D.tokens.filter(t=>t.pool===p.id&&t.pledge==='pledged'||t.releasedFrom===p.id&&t.pledge==='released').sort((a,b)=>landedAt(p,b)-landedAt(p,a));
     const options=names=>[['',L('All','全部')],...Object.entries(names).map(([k,v])=>[k,txt(v)])];
     const filters=mine?'<div class="filterbar ls-token-filters">'+CF.filterSelect('ls-tf-going',L('Current status','当前去向'),options(goingNames),tokenFilter.going||'')+CF.filterSearch('ls-tf-keyword',L('Token ID','代币编号'),tokenFilter.keyword||'',L('Token ID','代币编号'))+'<div class="fb-acts">'+btn('ls-tf-reset',L('Reset','重置'))+'</div></div>':'';
     if(!list.length)return filters+CF.empty(Object.values(tokenFilter).some(Boolean)&&mine?L('No matching tokens','筛选无结果'):L('No tokens in the contract','合约内暂无代币'),'');
-    const head=[L('Network','网络'),L('Token','代币'),L('Holding address','持有地址'),L('Share value','份额价值'),'Hash',L('Validity','有效性'),L('Counts toward eligible pledged value','计入有效质押')].concat(mine?[L('Current status','当前去向')]:[]);
+    const head=[L('Network','网络'),L('Token','代币'),L('Holding address','持有地址'),L('Pledged quantity','质押数量'),L('Share value','份额价值'),'Hash',L('Validity','有效性'),L('Counts toward eligible pledged value','计入有效质押')].concat(mine?[L('Current status','当前去向')]:[]);
+    const columns=['network','id','holder','quantity','value','hash','validity','counted',...(mine?['going']:[])];
     const tail=pager('tokens',list.length),start=(pages.tokens-1)*5;
     const rows=list.slice(start,start+5).map(t=>{
       const going=mine?tokenGoing(p,t):null,inPool=t.pool===p.id,held=inPool||t.releasedFrom===p.id&&t.pledge==='released',counted=inPool&&tokenState(p,t)==='valid';
@@ -366,11 +367,11 @@
       /* 本企业资产方逐张看到上链结果：处理中给已等待时长，失败给 gas 事实，异常只提示联系客服。 */
       const sub=!e?'':e.state==='processing'?waitText(e.at):['failure','noFee'].includes(e.state)?txt(opNames[e.kind])+L(' failed · ',' 失败 · ')+gasText(e):'';
       const hash=t.tx?'<span class="ls-hash-cell"><span class="mono" title="'+E(t.tx)+'">'+E(t.tx.slice(0,6)+'…'+t.tx.slice(-4))+'</span>'+copyIcon(t.tx,L('Copy transaction hash','复制交易 Hash'))+'</span>':'<span class="muted">—</span>';
-      const cells=[netChip(D.PLEDGE_CHAIN),tokenCell(t),'<span class="mono" title="'+E(D.holderOf(t))+'">'+E(shortAddr(D.holderOf(t)))+'</span>','<span class="mono">'+usd(t.value)+'</span>',hash,CF.tag(t.valid?'':'warn',t.valid?L('Valid','有效'):L('Expired','已失效')),held?CF.tag(counted?'ok':'',counted?L('Counted','计入'):L('Not counted','不计入')):'<span class="muted">—</span>'];
+      const cells=[netChip(D.PLEDGE_CHAIN),tokenCell(t),'<span class="mono" title="'+E(D.holderOf(t))+'">'+E(shortAddr(D.holderOf(t)))+'</span>','<span class="mono">'+qty(t)+'</span>','<span class="mono">'+usd(t.value)+'</span>',hash,CF.tag(t.valid?'':'warn',t.valid?L('Valid','有效'):L('Expired','已失效')),held?CF.tag(counted?'ok':'',counted?L('Counted','计入'):L('Not counted','不计入')):'<span class="muted">—</span>'];
       if(mine)cells.push(E(txt(goingNames[going]))+(sub?small(sub):'')+(verify?'<span class="cell-sub ls-verify">'+E(verify)+'</span>':''));
-      return '<tr class="ls-token-row" tabindex="0" data-act="ls-token-detail" data-v="'+E(t.id)+'" aria-label="'+L('Open token details ','查看代币详情 ')+E(D.tokenNo(t))+'">'+cells.map((c,i)=>'<td class="'+(i===0?'mk-network-cell':i===3?'ls-token-value':'')+'" data-label="'+E(head[i])+'"><div class="cell-wrap">'+c+'</div></td>').join('')+'</tr>';
+      return '<tr class="ls-token-row" tabindex="0" data-act="ls-token-detail" data-v="'+E(t.id)+'" aria-label="'+L('Open token details ','查看代币详情 ')+E(D.tokenNo(t))+'">'+cells.map((c,i)=>'<td class="ls-token-col-'+columns[i]+(i===0?' mk-network-cell':i===4?' ls-token-value':'')+'" data-label="'+E(head[i])+'"><div class="cell-wrap">'+c+'</div></td>').join('')+'</tr>';
     }).join('');
-    return filters+'<div class="tablewrap"><table class="tbl resp ls-table ls-token-table"><thead><tr>'+head.map(h=>'<th scope="col">'+h+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+tail;
+    return filters+'<div class="tablewrap"><table class="tbl resp ls-table ls-token-table ls-token-columns" data-owner="'+mine+'"><thead><tr>'+head.map((h,i)=>'<th scope="col" class="ls-token-col-'+columns[i]+'">'+h+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+tail;
   }
   function waitText(start){const m=Math.max(0,Math.floor((D.now()-Date.parse(start))/60000));return L('Waiting ','已等待 ')+(m>=1440?Math.floor(m/1440)+L(' d ',' 天 '):'')+Math.floor(m%1440/60)+L(' h ',' 小时 ')+(m%60)+L(' min',' 分钟');}
   /* 代币详情：只读，无办理动作。代币信息对所有可见方；上链事实、去向与历史只对本企业资产方。 */
