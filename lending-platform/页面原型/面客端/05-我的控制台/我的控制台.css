@@ -214,3 +214,40 @@
 @media(max-width:600px){.mc-pending-detail{padding:var(--sp-4)}.mc-pending-detail li{grid-template-columns:1fr;gap:var(--sp-1)}}
 @media(max-width:600px),(pointer:coarse){.mc-pending-toggle{min-height:44px}.mc-pending-more summary{min-height:44px;padding-block:var(--sp-3)}}
 @media(max-width:360px){.mc-root .mc-overview .mc-summary--asset{grid-template-columns:1fr}}
+
+/* WS-450 · current-round on-chain facts, approvals list and the revoke surface. Values come from shared tokens. */
+.mc-table .mc-chain{display:block;margin-top:var(--sp-1);font-size:var(--fs-12);line-height:1.6;color:var(--accent);overflow-wrap:anywhere}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(1){width:19%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(2){width:16%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(3){width:14%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(4){width:11%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(5){width:11%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(6){width:16%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(7){width:13%}
+.mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]){table-layout:fixed}
+.mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]) td{overflow-wrap:anywhere;white-space:normal;min-width:0}
+.mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]) .mc-actions{min-width:0;max-width:none}
+.mc-table[data-kind=approvals] th:nth-child(1){width:18%}.mc-table[data-kind=approvals] th:nth-child(2){width:15%}
+.mc-table[data-kind=approvals] th:nth-child(3){width:16%}.mc-table[data-kind=approvals] th:nth-child(4){width:19%}
+.mc-table[data-kind=approvals] th:nth-child(5){width:17%}.mc-table[data-kind=approvals] th:nth-child(6){width:15%}
+.mc-table[data-kind=quotes] th:nth-child(1){width:21%}.mc-table[data-kind=quotes] th:nth-child(2){width:13%}
+.mc-table[data-kind=quotes] th:nth-child(3){width:14%}.mc-table[data-kind=quotes] th:nth-child(4){width:16%}
+.mc-table[data-kind=quotes] th:nth-child(5){width:13%}.mc-table[data-kind=quotes] th:nth-child(6){width:11%}
+.mc-table[data-kind=quotes] th:nth-child(7){width:12%}
+.mc-revoke-act{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-4);margin-top:var(--sp-5)}
+.mc-revoke-act .btn{min-height:44px;height:auto;white-space:normal}
+.mc-revoke-act .mc-small{margin:0;flex:1 1 240px}
+.mc-root .detail-section .dl+.note,.mc-revoke .dl+.note{margin-top:var(--sp-4)}
+.mc-root .detail-section .note+.dl,.mc-revoke .note+.dl,.mc-revoke .note+.note,.mc-root .detail-section .note+.note{margin-top:var(--sp-4)}
+.modal:has(.mc-revoke){max-width:640px}
+.mc-revoke{display:grid;gap:0}
+.mc-revoke .mc-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4) var(--sp-5);padding:var(--sp-4);border-radius:var(--radius-xs);background:var(--card-2)}
+.mc-revoke .mc-fact dd{overflow-wrap:anywhere}
+@media(max-width:600px){.mc-revoke .mc-facts{grid-template-columns:1fr}}
+.mc-project-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 var(--sp-7)}
+.mc-project-list li{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);min-height:44px;padding-block:var(--sp-2);border-bottom:1px solid var(--border);font-size:var(--fs-14);overflow-wrap:anywhere}
+.mc-project-list .copy-pair{font-size:var(--fs-12);color:var(--muted)}
+@media(max-width:600px){.mc-project-list{grid-template-columns:1fr}}
+.mc-revoke-block{margin-top:var(--sp-5);padding-top:var(--sp-5);border-top:1px solid var(--border)}
+.mc-revoke-block>.mc-small:first-child{margin:0}
+.mc-revoke-block .mc-revoke-act{margin-top:var(--sp-4)}

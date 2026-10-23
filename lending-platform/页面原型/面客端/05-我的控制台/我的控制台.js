@@ -1,31 +1,35 @@
-/* WS-378. Read-only console on the current volumes: no business deadline anywhere, two-step disbursement,
- * company-account receiving snapshots and per-chain transaction identifiers. */
+/* WS-450. Read-only console on the on-chain flow: offer pending on-chain, accept = on-chain disbursement, on-chain repayment.
+ * Two writes only: modify credit and revoke an on-chain approval. No business deadline anywhere. */
 (function(CF){
  'use strict';
  const S=CF.S,D=CF.LS,Q=CF.CQ,L=CF.L,E=CF.esc,old=CF.LSView,H=3600000,DAY=24*H;
- const kinds=['tokens','projects','credits','loans','repayments','quotes'];
- const names={tokens:['Tokens','代币列表'],projects:['Financing projects','融资项目'],credits:['Credit facilities','授信明细'],loans:['Disbursements','融资放款信息'],repayments:['Repayments','还款信息'],quotes:['My quotes','我的报价']};
- const titles={tokens:['Token details','代币详情'],projects:['Project details','融资项目详情'],credits:['Credit details','授信详情'],loans:['Disbursement details','融资放款详情'],repayments:['Repayment details','还款业务详情'],quotes:['Quote details','报价详情']};
- const labels={review:['Pending review','待审核'],returned:['Returned','已退回'],available:['Available','可用'],valid:['Valid','有效'],void:['Void','失效'],pledged:['Pledged','已质押'],unpledged:['Not pledged','未质押'],draft:['Draft','草稿'],raising:['Fundraising','募集中'],locked:['Locked','已锁定'],financing:['Financing','融资中'],closed:['Closed','已关闭'],settled:['Settled','已结清'],surplus:['Pledge surplus','质押充足'],balanced:['Pledge balanced','质押持平'],short:['Pledge shortfall','质押不足'],effective:['Effective','生效中'],expired:['Expired','已到期'],pending:['Awaiting disbursement','待放款'],confirming:['Awaiting receipt confirmation','待放款确认'],repaying:['Repaying','还款中'],waiting:['Awaiting acceptance','待接受'],accepted:['Accepted','已接受'],rejected:['Rejected','已拒绝'],quoteEnded:['Quote invalidated','报价已失效'],due:['Pending repayment','待还款'],repayConfirming:['Awaiting repayment confirmation','待还款确认'],initial:['Initial plan','初始版'],final:['Final plan','定稿版'],generating:['Plan generating','计划生成中'],open:['Awaiting quotes','待报价'],quoted:['Awaiting quote confirmation','已报价待确认'],funding:['Funding','放款中'],funded:['Disbursed','已放款'],ended:['Invalidated / closed','已失效／已关闭']};
- const kindNames={tokens:['Token','代币'],projects:['Financing project','融资项目'],credits:['Credit facility','授信'],loans:['Disbursement','融资放款'],repayments:['Repayment','还款'],quotes:['Quote','报价']};
+ const kinds=['tokens','projects','credits','repayments','quotes','approvals'];
+ const pageIds={tokens:'P-MC-02',projects:'P-MC-03',credits:'P-MC-04',loans:'P-MC-05',repayments:'P-MC-06',quotes:'P-MC-07',approvals:'P-MC-08'};
+ const names={tokens:['Tokens','代币列表'],projects:['Financing projects','融资项目'],credits:['Credit facilities','授信明细'],repayments:['Repayments','还款信息'],quotes:['My loan offers','我的报价'],approvals:['Approvals','链上授权']};
+ const titles={tokens:['Token details','代币详情'],projects:['Project details','融资项目详情'],credits:['Credit details','授信详情'],loans:['Repayment details','还款业务详情'],repayments:['Repayment details','还款业务详情'],quotes:['Loan offer details','报价详情'],approvals:['Approval details','链上授权详情']};
+ const labels={review:['Pending review','待审核'],returned:['Returned','已退回'],available:['Available','可用'],valid:['Valid','有效'],void:['Void','失效'],pledged:['Pledged','已质押'],unpledged:['Not pledged','未质押'],draft:['Draft','草稿'],raising:['Fundraising','募集中'],locked:['Locked','已锁定'],financing:['Financing','融资中'],closed:['Closed','已关闭'],settled:['Settled','已结清'],surplus:['Pledge surplus','质押充足'],balanced:['Pledge balanced','质押持平'],short:['Pledge shortfall','质押不足'],effective:['Effective','生效中'],expired:['Expired','已到期'],repaying:['Repaying','还款中'],waiting:['Awaiting acceptance','待接受'],offerPending:['Offer pending on-chain','报价上链确认中'],disbursing:['Disbursement processing on chain','链上放款处理中'],accepted:['Accepted','已接受'],rejected:['Rejected','已拒绝'],quoteEnded:['Quote invalidated','报价已失效'],due:['Awaiting repayment','待还款'],repayPending:['Repayment pending on-chain','还款上链确认中'],generating:['Plan generating','计划生成中'],open:['Awaiting quotes','待报价'],quoted:['Awaiting quote confirmation','已报价待确认'],funding:['Funding','放款中'],funded:['Disbursed','已放款'],ended:['Invalidated / closed','已失效／已关闭'],granting:['Approval processing','授权处理中'],granted:['Approved','已授权'],revoking:['Revoking','撤销处理中'],revoked:['Revoked','已撤销'],used:['Used','已使用'],unreadable:['Status unavailable','状态暂不可用']};
+ const kindNames={tokens:['Token','代币'],projects:['Financing project','融资项目'],credits:['Credit facility','授信'],repayments:['Repayment','还款'],quotes:['Loan offer','报价'],approvals:['Approval','链上授权']};
  const text=a=>Array.isArray(a)?L(...a):a||'—';
  const nm=k=>k==='credits'&&S.role==='fund'?L('Credit summary','授信汇总'):text(names[k]);
  const status=k=>text(labels[k]||[k,k]);
- const badge=k=>CF.tag(['valid','settled','effective','surplus'].includes(k)?'ok':k==='short'?'warn':['confirming','repayConfirming','waiting','pending','generating'].includes(k)?'accent':'',status(k));
+ const badge=k=>CF.tag(['valid','settled','effective','surplus'].includes(k)?'ok':['short','unreadable'].includes(k)?'warn':['waiting','offerPending','disbursing','repayPending','generating','granting','revoking'].includes(k)?'accent':'',status(k));
  const money=(n,c='USD',icon=false)=>n==null?'—':'<span class="mc-money'+(icon?' mc-stat-money':'')+'">'+(icon?CF.assetIcon(c):'')+'<span class="mc-number">'+CF.fmtAmt(n)+'</span> <span class="mc-unit">'+E(c)+'</span></span>';
  const statMoney=(n,c='USD')=>money(n,c,true);
  const time=n=>n==null||!Number.isFinite(new Date(n).getTime())?'—':CF.fmtTime(new Date(n).toISOString());
  const date=n=>n?CF.fmtDate(typeof n==='number'?new Date(n).toISOString():n):'—';
  const small=s=>'<div class="mc-small">'+s+'</div>';
- /* 本批起控制台没有任何业务时限：等待只如实累计已过去的时长，不做截止时点、剩余时长、倒计时或超期表达。 */
+ /* 控制台没有任何业务时限：等待只如实累计已过去的时长，不做截止时点、剩余时长、倒计时或超期表达。 */
  const elapsed=ms=>{const v=Math.max(0,+ms||0),d=Math.floor(v/DAY),h=Math.floor(v/H);return d>=1?d+L(d>1?' days':' day',' 天'):h>=1?h+L(h>1?' hours':' hour',' 小时'):L('under an hour','不足 1 小时');};
  const since=ms=>ms==null?'—':elapsed(ms);
- /* 交易标识按本笔结算收款链取值；TRON 区块浏览器入口尚未裁定，只给复制与未核验说明，不放死链接。 */
- const b=(a,t,v='',primary=false,off=false)=>'<button type="button" class="btn'+(primary?' primary':'')+'" data-act="mc-'+a+'" data-v="'+E(v)+'"'+(off?' disabled':'')+'>'+E(t)+'</button>';
+ const b=(a,t,v='',primary=false,off=false,extra='')=>'<button type="button" class="btn'+(primary?' primary':'')+'" data-act="mc-'+a+'" data-v="'+E(v)+'"'+(off?' disabled':'')+extra+'>'+E(t)+'</button>';
  const link=(a,t,v='',extra='')=>a==='detail'&&!extra.includes('disabled')?'<a class="actlink" href="'+E(detailHref(...v.split('|')))+'" data-act="mc-detail" data-v="'+E(v)+'" '+extra+'>'+E(t)+'</a>':'<button type="button" class="actlink" data-act="mc-'+a+'" data-v="'+E(v)+'" '+extra+'>'+E(t)+'</button>';
  const dl=rows=>'<dl class="dl mc-facts">'+rows.filter(Boolean).map(([k,v])=>'<div class="mc-fact"><dt>'+E(k)+'</dt><dd>'+v+'</dd></div>').join('')+'</dl>';
  const copy=v=>v==null||v===''?'—':'<span class="copy-pair"><span class="mono">'+E(v)+'</span>'+CF.copyBtn('mc-copy',v,L('Copy','复制'))+'</span>';
- const tabs=()=>S.role==='fund'?['quotes','credits','loans','repayments']:['tokens','projects','credits','loans','repayments'];
+ /* 地址前 6 后 4、交易标识前 10 后 8；复制给出完整值。 */
+ const maskAddr=a=>a?a.slice(0,6)+'…'+a.slice(-4):'—';
+ const maskTx=h=>h?h.slice(0,10)+'…'+h.slice(-8):'—';
+ const copyMasked=(v,mask,label)=>v?'<span class="copy-pair"><span class="mono" title="'+E(v)+'">'+E(mask(v))+'</span>'+CF.copyBtn('mc-copy',v,label||L('Copy full value','复制完整值'))+'</span>':'—';
+ const tabs=()=>S.role==='fund'?['quotes','credits','repayments','approvals']:['tokens','projects','credits','repayments','approvals'];
  const allowed=()=>['asset','fund'].includes(S.role);
  const path=()=>location.hash.slice(1).split('?')[0];
  const params=()=>new URLSearchParams(location.hash.split('?')[1]||'');
@@ -34,20 +38,24 @@
  const fund=id=>id==='fund-b'?L('Demo Capital B','演示资金机构 B'):L('Demo Capital A','演示资金机构 A');
  const owner=id=>id==='entity-demo-a'?L('Demo Asset Company A','演示资产企业 A'):L('Demo Asset Company B','演示资产企业 B');
  const counter=q=>S.role==='asset'?fund(q.fund):owner(q.owner);
+ /* 放款合约按组合共用；地址为演示取值。预估 gas 同为演示值，以钱包实际估算为准。 */
+ const LOAN_CONTRACT='0x3B6dA2c94E07f1a85D2c6E40b9F17a3C8e05D2a7',REVOKE_GAS='0.000046';
+ const SUPPORT=()=>L('On-chain result to be verified. Please contact platform support.','链上结果待核实，请联系平台客服人员。');
  let sourceOpened='',sourceFault='',associationScene='normal';
- let pendingError=false,usageError=false,usagePage=1,saveFailOnce=false,modify={},detailState='normal',planError=false,statsError=false,tokenError=false,associationError=false,focusAfter='',lastHash='',lastRole=S.role+'|'+JSON.stringify(S.party),restoring=false,copyValue='',returnNotice=false;
+ let pendingError=false,usageError=false,usagePage=1,saveFailOnce=false,modify={},detailState='normal',planError=false,statsError=false,tokenError=false,associationError=false,approvalError=false,focusAfter='',lastHash='',lastRole=S.role+'|'+JSON.stringify(S.party),restoring=false,copyValue='',returnNotice=false;
+ let revokeScene='success',revokeBusy='',revokeTarget='',revokeNotes={};
  CF.PAGES['P-MC-01'].retainList=true;
  const dict={en:{},zh:{}};
- kinds.forEach((k,i)=>{const id='P-MC-0'+(i+2),key='mcDetail'+i;CF.PAGES[id]={end:'asset',layout:'portal',parent:'P-MC-01',crumbKey:key,auth:true,retainList:true};CF.ENTRY[id]='/console/'+k;dict.en[key]=titles[k][0];dict.zh[key]=titles[k][1];});
+ [...kinds,'loans'].forEach(k=>{const id=pageIds[k],key='mcDetail'+k;CF.PAGES[id]={end:'asset',layout:'portal',parent:'P-MC-01',crumbKey:key,auth:true,retainList:true};CF.ENTRY[id]='/console/'+k;dict.en[key]=titles[k][0];dict.zh[key]=titles[k][1];});
  function safeRoute(raw,detail=true){
-   if(!raw||raw.length>12000||!/^#\/console(?:\?|$|\/(tokens|projects|credits|loans|repayments|quotes)\?)/.test(raw))return '';
+   if(!raw||raw.length>12000||!/^#\/console(?:\?|$|\/(tokens|projects|credits|repayments|quotes|approvals)\?)/.test(raw))return '';
    const p=raw.slice(1).split('?')[0];if(p!=='/console'&&(!detail||!kinds.some(k=>p==='/console/'+k)))return '';
    const q=new URLSearchParams(raw.split('?')[1]||'');if(p!=='/console'&&!q.get('id'))return '';
-   const clean=new URLSearchParams();['tab','pending','filter','secondary','project','sort','size','page','y','scroll','focus','id','period','application','query','periodState','targetProject','tokenType'].forEach(k=>{if(q.has(k))clean.set(k,q.get(k).slice(0,160));});
+   const clean=new URLSearchParams();['tab','pending','filter','secondary','project','address','sort','size','page','y','scroll','focus','id','period','application','query','periodState','targetProject','tokenType'].forEach(k=>{if(q.has(k))clean.set(k,q.get(k).slice(0,160));});
    if(detail&&q.has('list')){const list=safeRoute(q.get('list'),false);if(list)clean.set('list',list);}
    return '#'+p+(clean.size?'?'+clean:'');
  }
- function view(){const q=params(),tab=tabs().includes(q.get('tab'))?q.get('tab'):tabs()[0];return {tab,pending:pendingTabs().includes(tab)&&q.get('pending')==='1'?'1':'',filter:q.get('filter')||'',secondary:q.get('secondary')||'',project:q.get('project')||'',tokenType:q.get('tokenType')||'',query:q.get('query')||'',periodState:q.get('periodState')||'',sort:q.get('sort')||(tab==='credits'?'available-asc':'newest'),size:[20,50,100].includes(+q.get('size'))?+q.get('size'):20,page:Math.min(100000,Math.max(1,parseInt(q.get('page'))||1))};}
+ function view(){const q=params(),tab=tabs().includes(q.get('tab'))?q.get('tab'):tabs()[0];return {tab,pending:pendingTabs().includes(tab)&&q.get('pending')==='1'?'1':'',filter:q.get('filter')||'',secondary:q.get('secondary')||'',project:q.get('project')||'',address:q.get('address')||'',tokenType:q.get('tokenType')||'',query:q.get('query')||'',periodState:q.get('periodState')||'',sort:q.get('sort')||(tab==='credits'?'available-asc':'newest'),size:[20,50,100].includes(+q.get('size'))?+q.get('size'):20,page:Math.min(100000,Math.max(1,parseInt(q.get('page'))||1))};}
  function listRoute(k){return safeRoute(params().get('list'),false)||'#/console?tab='+k;}
  function detailHref(k,id){if(k==='projects'){const r=find(k,id),p=r&&D.project(r.id);if(p)return sourceHref(k,r,p,{back:location.hash});}return '#/console/'+k+'?'+new URLSearchParams({id,list:path()==='/console'?location.hash:listRoute(k)});}
  function snapshot(){
@@ -57,34 +65,97 @@
  }
  function navigate(hash){S.layer=null;S.st='default';detailState='normal';location.hash=hash;}
  function goDetail(k,id){
-   /* 融资项目的详情就是借贷广场项目详情；资产方待接受的使用记录到借贷广场原申请。 */
+   /* 融资项目的详情就是借贷广场项目详情；资产方的在途报价使用记录到借贷广场原申请。 */
    if(k==='projects')return openSource('projects',id);
    if(k==='quotes-source')return openSource('quotes',id);
    let list=path()==='/console'?snapshot():listRoute(k);if(path()==='/console'){const q=new URLSearchParams(list.split('?')[1]||'');q.set('focus',id);list='#/console?'+q;}navigate('#/console/'+k+'?'+new URLSearchParams({id,list}));}
  function setView(patch){const v={...view(),...patch};focusAfter=Object.keys(patch)[0];navigate('#/console?'+new URLSearchParams(v));}
+
+ /* ---------- 业务事实：报价、链上放款、还款与链上授权都取借贷广场同一份演示数据，不另算口径 ---------- */
+ const holding=x=>['processing','unknown'].includes(x?.state);
+ const offers=()=>(Q.data().pending||[]).filter(x=>holding(x)&&party(x));
+ const chainOf=q=>['processing','unknown'].includes(q?.chain?.state)?q.chain.state:'';
+ function quoteStatus(q){
+   if(q.offer)return 'offerPending';
+   if(q.state==='waiting'||q.state==='funding')return chainOf(q)||q.state==='funding'?'disbursing':'waiting';
+   if(q.state==='funded'||q.state==='terminated'||q.l7)return q.l8?.settledAt||q.l7?.state==='settled'?'settled':'repaying';
+   return {rejected:'rejected',expired:'quoteEnded'}[q.state]||q.state;
+ }
+ /* 本笔链上授权状态：撤销上链成功（含平台外撤销）为已撤销；撤销处理中不能重复发起；放款成功即已使用。 */
+ function grantStatus(rec,used=false){
+   if(!rec)return '';
+   if(rec.revoked||rec.revoke?.state==='success')return 'revoked';
+   if(rec.revoke?.state==='processing')return 'revoking';
+   if(used)return 'used';
+   return 'granted';
+ }
+ const offerRow=x=>({...x,offer:true,id:x.id,q:x,request:x.demand,business:null,status:'offerPending',signedAt:x.at,at:x.at,waited:now()-x.at,unknown:x.state==='unknown',approval:'granting',refs:[x.demand]});
+ function quoteRow(q){
+   const st=quoteStatus(q),c=chainOf(q),end=st==='waiting'||st==='disbursing'?now():(q.done||now());
+   return {...q,q,deal:q.l7,request:q.demand,business:q.id,status:st,chainState:c,locked:Math.max(0,end-q.at),waited:c&&q.chain?.at?now()-q.chain.at:null,lastFail:q.state==='waiting'&&q.chain?.state==='failed',approval:q.lender?grantStatus(q.auth,st==='repaying'||st==='settled'||q.auth?.used):'',refs:[q.demand,q.id]};
+ }
+ function quoteRows(){return [...offers().map(offerRow),...Q.data().quotes.filter(party).map(quoteRow)];}
+ function lateDays(p){return Math.max(0,Math.floor((Date.parse(new Date(now()).toISOString().slice(0,10))-Date.parse(p.due))/DAY));}
+ function repaymentRow(q){
+   const deal=q.l7,plan=q.l8,periods=(plan?.periods||[]).map(p=>{const chain=p.chain||(p.state==='pending'?p.record:null);return {...p,status:p.state==='pending'?'repayPending':p.state==='settled'?'settled':'due',chain,unknown:chain?.state==='unknown',overdue:p.state==='settled'?(p.record?.overdue||0):p.state==='pending'?(chain?.overdue??lateDays(p)):lateDays(p),waiting:p.state==='pending'&&chain?now()-Date.parse(chain.at):null};});
+   const current=periods.filter(p=>p.state==='due').sort((a,b)=>a.due.localeCompare(b.due)||a.seq-b.seq)[0]||null,pending=periods.filter(p=>p.state==='pending');
+   const loan={id:deal.record.id,amount:deal.settlement,ccy:deal.ccy,at:deal.confirmedAt||deal.record.at,fund:q.fund};
+   return {id:q.id,business:q.id,project:q.project,request:q.demand,q,deal,plan,periods,current,pending,loan,status:plan?.settledAt||deal.state==='settled'?'settled':'repaying',planState:plan?'final':'generating',due:current?.due,at:loan.at,overdue:periods.some(p=>p.state!=='settled'&&p.overdue>0),amount:q.amount,refs:[q.demand,q.id,deal.record.id]};
+ }
+ function approvalRows(){
+   if(S.role==='fund'){
+     const fromQuotes=Q.data().quotes.filter(q=>q.fund===Q.fund()&&q.lender&&q.auth).map(q=>{const r=quoteRow(q);return {id:q.id,type:'loan',q,address:q.lender.address,addressLabel:q.lender.label,contract:LOAN_CONTRACT,ccy:q.ccy,amount:q.settlement,project:q.project,request:q.demand,business:q.id,quote:r.status,status:r.approval,rec:q.auth,at:q.auth.at,signedAt:q.auth.at,refs:[q.demand,q.id]};});
+     const fromOffers=offers().filter(x=>x.fund===Q.fund()&&x.lender).map(x=>({id:x.id,type:'loan',q:x,offer:true,address:x.lender.address,addressLabel:x.lender.label,contract:LOAN_CONTRACT,ccy:x.ccy,amount:x.settlement,project:x.project,request:x.demand,business:null,quote:'offerPending',status:'granting',rec:null,at:x.at,signedAt:x.at,unknown:x.state==='unknown',refs:[x.demand]}));
+     return [...fromOffers,...fromQuotes];
+   }
+   if(S.role!=='asset')return [];
+   /* 质押授权：持有地址 × 发行合约 × 质押合约一条；授权上链失败的没有授权，不列入；已撤销的记录保留供追溯。 */
+   const holders=D.HOLDERS[D.me()]||[];
+   return D.approvals.filter(a=>holders.includes(a.holder)&&['processing','success'].includes(a.state)).map(a=>({id:a.id,type:'pledge',address:a.holder,addressLabel:accountLabel(D.me(),a.holder),contract:a.contract,issuer:a.issuer,kind:D.type('erc20-ar').label,projects:D.projects.filter(p=>p.owner===D.me()&&p.contract===a.contract),status:a.state==='processing'?'granting':grantStatus(a),rec:a,at:a.done||a.at,signedAt:a.at,refs:[]}));
+ }
+ function accountLabel(who,address){const a=(Q.accounts(who,'crypto')||[]).find(x=>(x.address||'').toLowerCase()===String(address).toLowerCase());return a?Q.accountName?.(a)||a.label||'':'';}
+ const addrName=r=>r.addressLabel?(Array.isArray(r.addressLabel)?L(...r.addressLabel):r.addressLabel):'';
+ /* 能否撤销按最新事实判断：放款授权只有报价已拒绝或已失效可撤销；质押授权在该地址没有涉及该发行合约的质押上链处理中时可撤销。 */
+ function revocable(r){
+   if(approvalError)return {ok:false,reason:L('Approval status is temporarily unavailable, so it cannot be revoked now. Reload this URL in your browser to try again.','授权状态暂不可用，暂不能撤销。请使用浏览器刷新当前网址重试。')};
+   if(r.status==='revoking')return {ok:false,reason:L('A revocation is processing. It cannot be started again.','撤销处理中，不能重复发起。')};
+   if(r.status==='revoked')return {ok:false,reason:L('This approval has been revoked.','该授权已撤销。')};
+   if(r.status==='granting')return {ok:false,reason:L('Waiting for the approval result on chain.','等待授权上链结果。'),short:L('Awaiting approval result','等待授权上链结果')};
+   if(r.type==='loan'){
+     if(r.status==='used')return {ok:false,reason:L('The approval has been used for this disbursement.','授权已按本笔放款使用。'),short:L('Used for this disbursement','已按本笔放款使用')};
+     if(r.quote==='disbursing')return {ok:false,reason:L('The disbursement is being executed.','放款正在执行。'),short:L('Disbursement executing · not revocable','放款执行中，不能撤销')};
+     if(r.quote==='waiting')return {ok:false,reason:L('An offer awaiting acceptance cannot have its approval revoked. You can revoke it once the offer is rejected or its request is invalidated.','待接受的报价不能撤销放款授权，报价被拒绝或所属需求失效后才能撤销。'),short:L('Awaiting acceptance · not revocable yet','待接受，暂不能撤销')};
+     return ['rejected','quoteEnded'].includes(r.quote)?{ok:true}:{ok:false,reason:L('Not revocable for the current offer stage.','本笔报价当前阶段不能撤销。')};
+   }
+   const busy=D.tokens.some(t=>t.pending&&D.holderOf(t)===r.address&&D.issuerOf(t)===r.issuer&&(D.project(t.pool||t.releasedFrom)?.contract===r.contract));
+   return busy?{ok:false,reason:L('A pledge from this address under this issuing contract is processing on chain. Wait for the pledge result.','该地址有涉及该发行合约的质押上链处理中，请等待质押结果。'),short:L('Pledge processing · not revocable yet','质押上链处理中，暂不能撤销')}:{ok:true};
+ }
  function normalized(k){
    if(!allowed())return [];
    if(CF.L7)void CF.L7.deals;
    const related=Q.data().quotes.filter(party),ownProjects=D.projects.filter(p=>D.mine(p));
    if(k==='tokens')return tokenSnapshot();
    if(k==='projects')return S.role==='asset'?ownProjects.map(p=>({...p,project:p.id,status:p.state,n:D.numbers(p),amount:D.current(p)?.amount??null,at:p.created||p.published})):[];
-   if(k==='credits')return Q.data().credits.filter(c=>S.role==='asset'?c.owner===D.me():c.fund===Q.fund()).map(c=>{const transit=Q.data().quotes.filter(q=>q.owner===c.owner&&q.fund===c.fund&&['waiting','funding'].includes(q.state)).reduce((n,q)=>n+q.amount,0),expired=Date.parse(c.expires+'T23:59:59Z')<now();return {...c,status:expired?'expired':'effective',transit,available:Math.max(0,c.total-c.principal-transit),used:c.principal+transit,at:c.first};});
-   if(k==='repayments')return related.filter(q=>q.l7?.record&&['confirmed','settled'].includes(q.l7.state)).map(q=>{
-     const deal=q.l7,plan=q.l8,periods=(plan?.periods||[]).map(p=>({...p,status:p.state==='pending'?'repayConfirming':p.state==='settled'?'settled':'due',overdue:p.record?p.record.overdue:Math.max(0,Math.floor((Date.parse(new Date(now()).toISOString().slice(0,10))-Date.parse(p.due))/DAY)),waiting:p.state==='pending'&&p.record?now()-Date.parse(p.record.at):null}));
-     const current=periods.filter(p=>p.state==='due').sort((a,b)=>a.due.localeCompare(b.due)||a.seq-b.seq)[0]||null,pending=periods.filter(p=>p.state==='pending');
-     return {id:q.id,business:q.id,project:q.project,request:q.demand,q,deal,plan,periods,current,pending,status:plan?.settledAt?'settled':'repaying',planState:plan?'final':'generating',due:current?.due,at:deal.confirmedAt,overdue:periods.some(p=>p.state!=='settled'&&p.overdue>0),amount:q.amount};
-   });
-   return related.filter(q=>k==='quotes'||q.l7).map(q=>{const x=q.l7;return {...q,q,deal:x,status:x?({pending:'pending',waiting:'confirming',confirmed:q.l8?.settledAt?'settled':'repaying',settled:'settled'}[x.state]||'repaying'):({waiting:'waiting',rejected:'rejected',expired:'quoteEnded'}[q.state]||q.state),fdState:x?({pending:'pending',waiting:'confirming'}[x.state]||'funded'):null,request:q.demand,acceptedAt:q.done||null,at:k==='loans'?q.done:q.at,waiting:x?.state==='waiting'&&x.record?now()-Date.parse(x.record.at):null,locked:Math.max(0,(q.state==='waiting'?now():q.done||now())-q.at)};});
+   if(k==='credits')return Q.data().credits.filter(c=>S.role==='asset'?c.owner===D.me():c.fund===Q.fund()).map(c=>{
+     /* 在途报价金额含报价上链确认中的预占。 */
+     const transit=Q.data().quotes.filter(q=>q.owner===c.owner&&q.fund===c.fund&&['waiting','funding'].includes(q.state)).reduce((n,q)=>n+q.amount,0)+(Q.data().pending||[]).filter(x=>x.owner===c.owner&&x.fund===c.fund&&holding(x)).reduce((n,x)=>n+x.amount,0),expired=Date.parse(c.expires+'T23:59:59Z')<now();
+     return {...c,status:expired?'expired':'effective',transit,available:Math.max(0,c.total-c.principal-transit),used:c.principal+transit,at:c.first};});
+   if(k==='repayments')return related.filter(q=>q.l7?.record&&['confirmed','settled'].includes(q.l7.state)).map(repaymentRow);
+   if(k==='quotes')return quoteRows();
+   if(k==='approvals')return approvalRows();
+   return [];
  }
  /* 每个筛选项可多选，取值按逗号串保存；空串代表不限。 */
  const picks=value=>String(value||'').split(',').filter(Boolean);
  const within=(value,candidate)=>{const l=picks(value);return !l.length||l.includes(String(candidate));};
+ const searchable=k=>['repayments','quotes'].includes(k)||k==='approvals'&&S.role==='fund';
  function matches(r,v){
    const repayment=v.tab==='repayments';
    if(v.tokenType&&!within(v.tokenType,r.kind))return false;
-   return (!v.filter||picks(v.filter).some(f=>f==='generating'?r.planState==='generating':(v.tab==='loans'?r.fdState:r.status)===f))&&
-     (v.tab==='tokens'?!picks(v.project).length||picks(v.project).some(id=>r.projects.includes(id)):within(v.project,r.project))&&
-     (!v.query||[r.id,r.request,r.deal?.record?.id].includes(v.query.trim()))&&
+   if(v.tab==='approvals'&&!within(v.address,r.address))return false;
+   return (!v.filter||picks(v.filter).some(f=>f==='generating'?r.planState==='generating':(v.tab==='approvals'&&approvalError?'unreadable':r.status)===f))&&
+     (v.tab==='tokens'?!picks(v.project).length||picks(v.project).some(id=>r.projects.includes(id)):v.tab==='approvals'||within(v.project,r.project))&&
+     (!v.query||(r.refs||[r.id]).includes(v.query.trim()))&&
      (!v.periodState||repayment&&r.periods.some(p=>within(v.periodState,p.status)))&&
      within(v.secondary,v.tab==='tokens'?(r.pledged?'pledged':'unpledged'):v.tab==='projects'?r.n.grade:repayment?(r.overdue?'yes':'no'):'');
  }
@@ -96,10 +167,10 @@
  function find(k,id){return normalized(k).find(r=>r.id===id||(k==='repayments'&&r.periods.some(p=>p.id===id)));}
  function selectedPeriod(r){const id=params().get('period')||(params().get('id')!==r.id?params().get('id'):'');return id?r.periods.find(p=>p.id===id):null;}
  function destinations(k,r){
-   if(associationScene==='none')return {projects:[],reason:L('No associated financing project','暂无关联融资项目')};
-   if(associationScene==='denied')return {projects:[],reason:L('No accessible associated project','暂无可访问关联项目')};
+   if(associationScene==='none'&&k==='tokens')return {projects:[],reason:L('No associated financing project','暂无关联融资项目')};
+   if(associationScene==='denied'&&k==='tokens')return {projects:[],reason:L('No accessible associated project','暂无可访问关联项目')};
    if(associationError)return {projects:[],reason:L('Project associations unavailable. Reload this URL in your browser.','关联项目暂不可用，请使用浏览器刷新当前网址。')};
-   const ids=[...new Set(k==='credits'?Q.data().quotes.filter(q=>q.owner===r.owner&&q.fund===r.fund&&party(q)).map(q=>q.project):(k==='tokens'?r.projects:[k==='projects'?r.id:r.project]).filter(Boolean))];
+   const ids=[...new Set(k==='tokens'?r.projects:k==='approvals'?(r.projects||[]).map(p=>p.id).concat(r.project?[r.project]:[]):[k==='projects'?r.id:r.project].filter(Boolean))];
    const projects=ids.map(id=>D.project(id)).filter(p=>p&&(D.mine(p)||!!p.published));
    return {projects,reason:!ids.length?L('No associated financing project','暂无关联融资项目'):!projects.length?L('No accessible associated project','暂无可访问关联项目'):''};
  }
@@ -107,17 +178,16 @@
  function sourceHref(k,r,p,o={}){
    const q=new URLSearchParams({mcReturn:o.back||location.hash,mcKind:k,mcObject:r.id});
    if(associationScene==='unsupported')q.set('mcFallback','1');
-   const application=k==='projects'?o.application:r.request;
+   const application=k==='projects'?o.application:k==='approvals'?'':r.request;
    if(application)q.set('mcApplication',application);
    if(k==='repayments'&&o.period){q.set('mcPeriod',o.period.id);if(o.period.record)q.set('mcRecord',o.period.record.id);}
-   if(k==='loans'&&r.deal?.record)q.set('mcRecord',r.deal.record.id);
    return '#/project/'+encodeURIComponent(p.id)+'?'+q;
  }
  function jump(k,id){
    const r=find(k,id),p=r&&destination(k,r);if(!p){CF.toast(L('Select an accessible associated project.','请选择可访问的关联项目。'));CF.render();return;}
    navigate(sourceHref(k,r,p,{back:snapshot(),application:params().get('application'),period:selectedPeriod(r)}));
  }
- /* 待办、融资项目记录与授信使用记录的去向由记录本身确定，不需要再选项目。 */
+ /* 待处理、融资项目记录与授信使用记录的去向由记录本身确定，不需要再选项目。 */
  function openSource(k,id,o={}){
    const r=find(k,id),p=r&&D.project(k==='projects'?r.id:r.project);
    if(!r||!p||!destinations(k,r).projects.some(x=>x.id===p.id)){CF.toast(L('Content unavailable','内容不存在或无权访问'));return;}
@@ -125,7 +195,7 @@
  }
  function controls(k,r){const d=destinations(k,r),target=destination(k,r);
    return (d.projects.length>1?'<div class="mc-project-field"><label for="mc-targetProject">'+L('Associated financing project','关联融资项目')+'</label>'+select('targetProject',L('Associated financing project','关联融资项目'),[['',L('Select a project','请选择项目')],...d.projects.map(p=>[p.id,text(p.name)+' · '+p.id])],target?.id||'')+'</div>':'')+
-     b('jump',L('Go to lending marketplace','前往借贷广场'),k+'|'+r.id,true,!target)+(d.reason?'<p class="mc-small" role="status">'+E(d.reason)+'</p>':'');
+     b('jump',k==='approvals'?L('Open project in lending marketplace','查看关联项目'):L('Go to lending marketplace','前往借贷广场'),k+'|'+r.id,k!=='approvals',!target)+(d.reason?'<p class="mc-small" role="status">'+E(d.reason)+'</p>':'');
  }
  const reloadHint=()=>L('Reload this URL in your browser to try again.','请使用浏览器刷新当前网址重试。');
  function tokenSnapshot(){
@@ -141,12 +211,10 @@
  /* 需求终结原因与项目关闭原因按借贷广场口径展示；其余为来源原文。 */
  const reasonNames={withdrawn:['Withdrawn by asset holder','资产方撤下'],funded:['Deal concluded','成交'],closed:['Project closed','项目关闭'],expiry:['Project expired','项目到期'],coverage:['Automatically invalidated · pledge water level insufficient','自动失效·质押水位不足'],owner:['Closed by asset holder','资产方主动关闭']};
  const reasonText=v=>!v?'—':reasonNames[v]?L(...reasonNames[v]):String(v);
- const closeReasonText=v=>v==='expiry'?L('Term expired','有效期到期'):reasonText(v);
  function stat(title,value,note='',tone=''){return '<div class="s"'+(tone?' data-tone="'+tone+'"':'')+'><div class="k">'+E(title)+'</div><div class="v">'+value+'</div>'+(note?'<div class="n">'+note+'</div>':'')+'</div>';}
  function summary(){
    if(S.st==='loading')return CF.skelTable(2);
    const empty=S.st==='empty',tokens=empty?[]:normalized('tokens'),credits=empty?[]:normalized('credits'),sum=(rs,k)=>rs.reduce((n,r)=>n+(+r[k]||0),0),pledged=tokens.filter(r=>r.pledged),voids=pledged.filter(r=>!r.valid);
-   /* 代币与授信合并成一条统计条：同一层信息不再拆成卡片盒子。 */
    let assets='';
    if(S.role==='asset'&&(tokenError||!Array.isArray(D.tokens)))assets='<section class="card mc-assets">'+CF.empty(L('Token summary unavailable','代币统计暂不可用'),reloadHint(),'')+'</section>';
    let holdings='';
@@ -154,71 +222,107 @@
      holdings=stat(L('All tokens','全部代币'),tokens.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',statMoney(sum(tokens,'value')),'accent')+
        stat(L('Of which pledged','其中已质押'),pledged.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',statMoney(sum(pledged,'value'))+' · '+L('void ','其中已失效 ')+voids.length+L(' tokens',' 张')+' · '+statMoney(sum(voids,'value'))+L(' excluded',' 不计入有效质押'),'info');
    }
-   return assets+'<div class="stat-strip mc-summary'+(holdings?' mc-summary--asset':'')+'">'+holdings+(statsError?stat(L('Total credit','总授信额度'),'—',E(reloadHint())):stat(L('Total credit','总授信额度'),statMoney(sum(credits,'total')),credits.length+L(' facilities',' 笔授信'),'accent'))+stat(L('Financed balance','已融额度'),statMoney(empty?0:S.role==='asset'?sum(normalized('projects'),'balance'):sum(credits,'principal')),(empty?0:normalized('repayments').filter(r=>r.status!=='settled').length)+L(' unsettled businesses',' 笔未结清业务'),'info')+stat(L('Available credit','剩余可用授信'),statMoney(sum(credits,'available')),L('Subject to assessment when publishing a request.','实际可融金额以发布需求时核定结果为准。'),'pos')+'</div>'+(S.role==='asset'?'<p class="mc-small mc-scope">'+L('Token values use the exchange rate at issuance. Whole-token figures do not represent your currently available holdings or financing capacity.','代币价值按各笔签发时汇率折算；整笔代币统计不代表本企业当前可用份额或可融额度。')+'</p>':'');
+   return assets+'<div class="stat-strip mc-summary'+(holdings?' mc-summary--asset':'')+'">'+holdings+(statsError?stat(L('Total credit','总授信额度'),'—',E(reloadHint())):stat(L('Total credit','总授信额度'),statMoney(sum(credits,'total'),'USDT'),credits.length+L(' facilities',' 笔授信'),'accent'))+stat(L('Financed balance','已融额度'),statMoney(empty?0:S.role==='asset'?sum(normalized('projects'),'balance'):sum(credits,'principal'),'USDT'),(empty?0:normalized('repayments').filter(r=>r.status!=='settled').length)+L(' unsettled businesses',' 笔未结清业务'),'info')+stat(L('Available credit','剩余可用授信'),statMoney(sum(credits,'available'),'USDT'),L('Subject to assessment when publishing a request.','实际可融金额以发布需求时核定结果为准。'),'pos')+'</div>'+(S.role==='asset'?'<p class="mc-small mc-scope">'+L('Token values are summed at each token\'s issuance value. Whole-token figures do not represent your currently available holdings or financing capacity.','代币价值按各笔签发价值计；整笔代币统计不代表本企业当前可用份额或可融额度。')+'</p>':'');
  }
- const filterOptions={tokens:['valid','void'],projects:['review','returned','available','raising','locked','financing','closed','settled'],credits:['effective','expired'],loans:['pending','confirming','funded'],repayments:['repaying','settled','generating'],quotes:['waiting','rejected','quoteEnded','pending','confirming','repaying','settled']};
+ const filterOptions={tokens:['valid','void'],projects:['review','returned','available','raising','locked','financing','closed','settled'],credits:['effective','expired'],repayments:['repaying','settled','generating'],quotes:['offerPending','waiting','disbursing','rejected','quoteEnded','repaying','settled']};
+ const approvalStates=()=>S.role==='fund'?['granting','granted','revoking','revoked','used']:['granting','granted','revoking','revoked'];
  function select(key,title,options,value){return CF.filterSelect('mc-'+key,title,options,value,'');}
  function pick(key,title,options,value){return CF.filterMenu('mc-'+key,title,options.filter(o=>o[0]!==''),picks(value));}
- function filters(){const v=view(),all=['',L('All','全部')];let h=pick('filter',v.tab==='tokens'?L('Token status','代币状态'):v.tab==='projects'?L('Project status','项目状态'):L('Status','状态'),[all,...filterOptions[v.tab].map(k=>[k,status(k)])],v.filter);
+ function filters(){const v=view(),all=['',L('All','全部')];
+   let h=pick('filter',v.tab==='tokens'?L('Token status','代币状态'):v.tab==='projects'?L('Project status','项目状态'):v.tab==='approvals'?L('Approval status','链上授权状态'):L('Status','状态'),[all,...(v.tab==='approvals'?approvalStates():filterOptions[v.tab]).map(k=>[k,status(k)])],v.filter);
    const sec=v.tab==='tokens'?['pledged','unpledged']:v.tab==='projects'?['surplus','balanced','short']:v.tab==='repayments'?['yes','no']:[];
    if(sec.length)h+=pick('secondary',v.tab==='tokens'?L('Pledge status','质押状态'):v.tab==='projects'?L('Pledge sufficiency','质押情况'):L('Repayment overdue','还款是否逾期'),[all,...sec.map(k=>[k,k==='yes'?L('Yes','是'):k==='no'?L('No','否'):status(k)])],v.secondary);
    if(['tokens','projects'].includes(v.tab))h+=pick('tokenType',L('Token type','代币类型'),[['erc20-ar',text(D.type('erc20-ar').label)]],v.tokenType);
    if(v.tab==='tokens')h+=pick('project',L('Project','所属融资项目'),[all,...normalized('projects').map(p=>[p.id,text(p.name)])],v.project);
-   if(v.tab==='repayments')h+=pick('periodState',L('Contains instalments','包含期次状态'),[all,...['due','repayConfirming','settled'].map(k=>[k,status(k)])],v.periodState);
-   if(['loans','repayments'].includes(v.tab))h+=CF.filterSearch('mc-query',L('Reference number','完整编号'),v.query,L('Application, business or disbursement number','融资申请 / 业务 / 放款编号'));
-   const sorts=v.tab==='tokens'?[['newest',L('Newest issuance','签发时间倒序')],['value-asc',L('Value: low to high','价值升序')],['value-desc',L('Value: high to low','价值降序')],['due-asc',L('Due date: earliest','到期日升序')],['due-desc',L('Due date: latest','到期日降序')]]:v.tab==='repayments'?[['newest',L('Newest receipt confirmation','到账确认时间倒序')],['due-asc',L('Due date: earliest','应还日升序')],['due-desc',L('Due date: latest','应还日降序')]]:v.tab==='credits'?[['available-asc',L('Available credit: low to high','可用授信升序')],['available-desc',L('Available credit: high to low','可用授信降序')]]:[['newest',L('Newest first','时间倒序')]];
+   if(v.tab==='repayments')h+=pick('periodState',L('Contains instalments','包含期次状态'),[all,...['due','repayPending','settled'].map(k=>[k,status(k)])],v.periodState);
+   if(v.tab==='approvals'){const seen=new Map();normalized('approvals').forEach(r=>{if(!seen.has(r.address))seen.set(r.address,(addrName(r)?addrName(r)+' · ':'')+maskAddr(r.address));});h+=pick('address',L('Approval address','授权地址'),[...seen].map(([k,t])=>[k,t]),v.address);}
+   if(searchable(v.tab))h+=CF.filterSearch('mc-query',L('Reference number','完整编号'),v.query,v.tab==='repayments'?L('Application, business or disbursement number','融资申请 / 业务 / 放款编号'):L('Application or business number','融资申请 / 融资业务编号'));
+   const sorts=v.tab==='tokens'?[['newest',L('Newest issuance','签发时间倒序')],['value-asc',L('Value: low to high','价值升序')],['value-desc',L('Value: high to low','价值降序')],['due-asc',L('Due date: earliest','到期日升序')],['due-desc',L('Due date: latest','到期日降序')]]:v.tab==='repayments'?[['newest',L('Newest disbursement','放款成功时间倒序')],['due-asc',L('Due date: earliest','应还日升序')],['due-desc',L('Due date: latest','应还日降序')]]:v.tab==='credits'?[['available-asc',L('Available credit: low to high','可用授信升序')],['available-desc',L('Available credit: high to low','可用授信降序')]]:v.tab==='approvals'?[['newest',L('Newest approval','授权时间倒序')]]:v.tab==='quotes'?[['newest',L('Newest offer','报价时间倒序')]]:[['newest',L('Newest first','时间倒序')]];
    h+=select('sort',L('Sort','排序'),sorts,v.sort);
-   return '<div class="filterbar mc-filters">'+h+'<div class="fb-acts">'+pendingToggle(v)+(['loans','repayments'].includes(v.tab)?b('search',L('Search','查询'),'',true):'')+b('clear',L('Reset filters','清空筛选'))+'</div></div>'+(pendingError&&pendingTabs().includes(v.tab)?'<div class="mc-filter-note" role="status">'+L('Records awaiting your action are temporarily unavailable. ','待处理情况暂不可用，')+reloadHint()+'</div>':'')+(Object.keys(v).some(k=>FILTERS.includes(k)&&v[k]&&!(k==='pending'&&pendingError))?'<div class="mc-filter-note" role="status">'+L('Filtered by: ','已按以下条件过滤：')+E([v.pending&&!pendingError?L('Awaiting your action only','只看待处理'):'',v.tokenType?text(D.type('erc20-ar').label):'',picks(v.filter).map(status).join(' / '),picks(v.secondary).map(k=>k==='yes'?L('Overdue','逾期'):k==='no'?L('Not overdue','未逾期'):status(k)).join(' / '),picks(v.periodState).map(status).join(' / '),v.query,picks(v.project).join(' / ')].filter(Boolean).join(' · '))+'</div>':'');
+   const describe=[v.pending&&!pendingError?L('Awaiting your action only','只看待处理'):'',v.tokenType?text(D.type('erc20-ar').label):'',picks(v.filter).map(status).join(' / '),picks(v.secondary).map(k=>k==='yes'?L('Overdue','逾期'):k==='no'?L('Not overdue','未逾期'):status(k)).join(' / '),picks(v.periodState).map(status).join(' / '),v.query,picks(v.project).join(' / '),picks(v.address).map(maskAddr).join(' / ')].filter(Boolean).join(' · ');
+   return '<div class="filterbar mc-filters">'+h+'<div class="fb-acts">'+pendingToggle(v)+(searchable(v.tab)?b('search',L('Search','查询'),'',true):'')+b('clear',L('Reset filters','清空筛选'))+'</div></div>'+(pendingError&&pendingTabs().includes(v.tab)?'<div class="mc-filter-note" role="status">'+L('Records awaiting your action are temporarily unavailable. ','待处理情况暂不可用，')+reloadHint()+'</div>':'')+(Object.keys(v).some(k=>FILTERS.includes(k)&&v[k]&&!(k==='pending'&&pendingError))?'<div class="mc-filter-note" role="status">'+L('Filtered by: ','已按以下条件过滤：')+E(describe)+'</div>':'');
  }
  function columns(k){return {
    tokens:[[L('Token','代币编号'),'id'],[L('Quantity','数量'),'num'],[L('Value (USD)','价值（USD）'),'num'],[L('Token status','代币状态'),''],[L('Pledge status','质押状态'),''],[L('Receivable due','应收账款到期日'),''],[L('Project','所属项目'),'']],
-   projects:[[L('Project','融资项目'),'id'],[L('Status','项目状态'),''],[L('Requested (USD)','融资需求（USD）'),'num'],[L('Balance (USD)','已融资余额（USD）'),'num'],[L('Pledge sufficiency','质押情况'),''],[L('Project deadline','项目截止日'),'']],
-   credits:[[L('Facility / counterparty','授信编号／对方企业'),'id'],[L('Credit limit (USD)','授信额度（USD）'),'num'],[L('Used (USD)','已用授信（USD）'),'num'],[L('Available (USD)','可用授信（USD）'),'num'],[L('Status','额度状态'),''],[L('Valid until','有效期至'),'']],
-   loans:[[L('Application / business','融资申请／业务'),'id'],[L('Counterparty','对方企业'),''],[L('Project','所属项目'),''],[L('Disbursement amount','放款金额'),'num'],[L('Status / actor','业务状态／处理方'),''],[L('Accepted at','接受时间'),'']],
-   quotes:[[L('Business / application','融资业务／融资申请编号'),'id'],[L('Project','所属项目'),''],[L('Asset holder','资产方'),''],[L('Amount (USD)','融资金额（USD）'),'num'],[L('Status','业务状态'),''],[L('Time locked','已锁定时长'),'']],
-   repayments:[[L('Application / funder','融资申请／出资机构'),'id'],[L('Current instalment','本期应还'),'num'],[L('Due date','应还日'),''],[L('Business / plan','业务／计划'),''],[L('Pending confirmations','待确认情况'),''],[L('Receipt confirmed','到账确认时间'),'']]
+   projects:[[L('Project','融资项目'),'id'],[L('Status','项目状态'),''],[L('Current request (USDT)','当前融资需求（USDT）'),'num'],[L('Balance (USDT)','已融资余额（USDT）'),'num'],[L('Pledge sufficiency','质押情况'),''],[L('Project deadline','项目截止日'),'']],
+   credits:[[L('Facility / counterparty','授信编号／对方企业'),'id'],[L('Credit limit (USDT)','授信额度（USDT）'),'num'],[L('Used (USDT)','已用授信（USDT）'),'num'],[L('Available (USDT)','可用授信（USDT）'),'num'],[L('Status','额度状态'),''],[L('Valid until','有效期至'),'']],
+   quotes:[[L('Project / application','项目／融资申请'),'id'],[L('Asset holder','资产方'),''],[L('Requested (USDT)','融资需求（USDT）'),'num'],[L('Result / stage','报价结果／业务阶段'),''],[L('Time locked / waited','已锁定／已等待'),''],[L('Approval','链上授权'),'']],
+   repayments:[[L('Counterparty / project','对方／项目'),'id'],[L('Disbursement','放款信息'),''],[L('Current instalment','本期应还'),'num'],[L('Due date (UTC)','应还日（UTC）'),''],[L('Status','业务状态'),''],[L('Pending on-chain','还款上链确认中'),'']],
+   approvals:S.role==='fund'?[[L('Approval address','授权地址'),'id'],[L('Approved contract','被授权合约'),''],[L('Scope','授权范围'),'num'],[L('Related business','关联业务'),''],[L('Status / approved at','状态／授权时间'),'']]:[[L('Approval address','授权地址'),'id'],[L('Pledge contract','被授权合约'),''],[L('Scope','授权范围'),''],[L('Projects using it','使用该合约的项目'),''],[L('Status / approved at','状态／授权时间'),'']]
  }[k];}
+ /* 项目当前轮的链上处理中：只给事实与已等待时长，不是新的需求状态，期间不标待处理。 */
+ function roundChain(p,d){
+   const busy=(p.attempts||[]).find(x=>x.state==='processing'),offer=d&&(Q.data().pending||[]).find(x=>x.project===p.id&&x.demand===d.id&&holding(x)),q=d&&Q.data().quotes.find(x=>x.project===p.id&&x.demand===d.id&&chainOf(x));
+   const x=busy?[L('Publishing on chain','发布处理中'),busy.at]:d?.edit?.state==='processing'?[L('Amount change freezing on chain','改额冻结处理中'),d.edit.at]:d?.withdraw?.state==='processing'?[L('Withdrawal processing on chain','撤下处理中'),d.withdraw.at]:offer?[L('Institution offer pending on-chain','机构报价上链确认中'),offer.at,offer.state==='unknown']:q?[L('On-chain disbursement processing','链上放款处理中'),q.chain.at,q.chain.state==='unknown']:null;
+   if(!x)return '';
+   return '<span class="mc-chain">'+E(x[0])+(x[1]?' · '+L('waited ','已等待 ')+elapsed(now()-Date.parse(new Date(x[1]).toISOString())):'')+'</span>'+(x[2]?small(E(SUPPORT())):'');
+ }
  function rowValues(k,r){const object=t=>'<a class="mc-object" href="'+E(detailHref(k,r.id))+'" data-act="mc-detail" data-v="'+k+'|'+E(r.id)+'">'+E(t)+'</a>';
    if(k==='tokens')return [object(r.id),CF.fmtAmt(r.units),CF.fmtAmt(r.value),badge(r.status)+(!r.valid?small(L('Not counted toward eligible pledged value','不计入有效质押')):''),badge(r.pledged?'pledged':'unpledged'),date(r.due),destinations(k,r).projects.length?destinations(k,r).projects.map(p=>E(text(p.name))).join('<br>'):L('No accessible project','暂无可访问项目')];
-   if(k==='projects')return [object(text(r.name))+small(E(r.id)),badge(r.status),(D.current(r)?CF.fmtAmt(r.amount)+small(E(D.current(r).id))+small(status(D.current(r).state))+(Q.currentQuote(r,D.current(r).id)?.state==='waiting'?small(L('Locked for ','已锁定 ')+elapsed(now()-Q.currentQuote(r,D.current(r).id).at)):''):'—'+small(L('No current application','暂无当前申请'))),CF.fmtAmt(r.balance),badge(r.n.grade)+(r.n.gap?'<span class="mc-indicator">'+L('Gap ','缺口 ')+money(r.n.gap)+small(L('Additional asset value ','需追加资产价值 ')+money(r.n.rate?r.n.gap/r.n.rate:null))+'</span>':r.demands.some(d=>d.state==='quoted')?'<span class="mc-indicator">'+L('Quote awaiting review','有待确认报价')+'</span>':''),date(r.expires)];
+   if(k==='projects'){
+     const d=D.current(r),busy=(r.attempts||[]).find(x=>x.state==='processing'),quote=d&&Q.currentQuote?.(r,d.id),voids=D.tokens.filter(t=>t.pool===r.id&&t.pledge==='pledged'&&!t.valid);
+     const request=d?CF.fmtAmt(r.amount)+small(E(d.id))+small(status(d.state))+(['quoted','funding'].includes(d.state)&&quote?small(E(text(d.institution)||fund(quote.fund))+(quote.state==='waiting'?L(' · locked for ',' · 已锁定 ')+elapsed(now()-quote.at):'')):''):busy?CF.fmtAmt(busy.amount)+small(L('No application number yet','尚无融资申请编号')):'—'+small(L('No current request','暂无当前需求'));
+     return [object(text(r.name))+small(E(r.id)),badge(r.status)+(r.status==='closed'&&r.closeReason?small(E(r.closeReason==='expiry'?L('Term expired','有效期到期'):reasonText(r.closeReason))):''),request+roundChain(r,d),CF.fmtAmt(r.balance),badge(r.n.grade)+(r.n.gap?'<span class="mc-indicator">'+L('Pledge gap ','质押缺口 ')+money(r.n.gap,'USDT')+small(L('Additional asset value ','需追加资产价值 ')+money(r.n.rate?r.n.gap/r.n.rate:null))+'</span>':'')+(voids.length?small(L('Void ','已失效 ')+voids.length+L(' tokens · ',' 张 · ')+money(voids.reduce((n,t)=>n+t.value,0))):''),date(r.expires)];
+   }
    if(k==='credits')return [object(r.id)+small(E(counter(r))),CF.fmtAmt(r.total),CF.fmtAmt(r.used),CF.fmtAmt(r.available),badge(r.status),date(r.expires)];
-   if(k==='repayments')return [object(r.request)+small(E(r.id)+' · '+E(r.deal.record.id))+small(E(counter(r.q))+' · '+E(text(D.project(r.project)?.name))),r.current?'<strong>'+money(r.current.settlement,r.q.ccy)+'</strong>'+small(L('Instalment ','第 ')+r.current.seq+L('',' 期')):r.plan?L('No instalments awaiting repayment','暂无待还期次'):'—',r.current?date(r.current.due)+(r.current.overdue?small(L('Overdue ','逾期 ')+r.current.overdue+L(' days',' 天')):now()<r.current.open?small(L('Opens ','开启于 ')+date(r.current.open)):''):'—',badge(r.status)+small(status(r.planState))+(r.overdue?small(L('Overdue · unsettled','逾期 · 未结清')):''),r.pending.length?badge('repayConfirming')+small(r.pending.map(p=>L('Instalment ','第 ')+p.seq+L('',' 期')+L(' · submitted ',' · 已提交 ')+elapsed(p.waiting)+(p.overdue?L(' · overdue frozen ',' · 逾期冻结 ')+p.overdue+L(' days',' 天'):'')).join(' / ')):L('No pending confirmations','暂无待确认'),time(r.at)];
-   const state=badge(k==='loans'?r.fdState:r.status);
-   if(k==='quotes')return [object(r.id)+small(E(r.request)),E(text(D.project(r.project)?.name)),E(owner(r.owner)),money(r.amount)+small(E(r.ccy)+' · '+E(r.rate)+'%'),state+small(r.status==='waiting'||r.status==='confirming'?L('Asset holder','资产方'):r.status==='pending'?L('Funder','资金方'):r.status==='repaying'?L('See repayment progress','见还款进展'):L('No current quote action','无当前报价办理')),elapsed(r.locked)+small(r.status==='waiting'?L('Still awaiting the asset holder','仍在等待资产方处理'):L('Stopped when the quote was handled','处理后停止累计'))];
-   return [object(r.request)+small(E(r.id))+(r.deal?.record?small(E(r.deal.record.id)):small(L('No disbursement record yet','尚无放款记录'))),E(counter(r)),E(text(D.project(r.project)?.name)),money(r.settlement,r.ccy)+small(r.deal?.record?L('Submitted','已登记'):L('Agreed amount','约定金额')),state+small(r.fdState==='pending'?L('Funder','资金方'):r.fdState==='confirming'?L('Asset holder','资产方'):L('No current action','无当前办理'))+(r.fdState==='confirming'?small(L('Submitted ','已提交 ')+elapsed(r.waiting)):''),time(r.acceptedAt)];
+   if(k==='repayments'){
+     const c=r.current,usdc=r.q.ccy!=='USDT';
+     return [object(counter(r.q))+small(E(text(D.project(r.project)?.name)))+small('<span class="mono">'+E(r.request)+'</span>'),
+       money(r.loan.amount,r.loan.ccy)+(S.role==='asset'?small(E(fund(r.loan.fund))):'')+small(time(r.loan.at))+small('<span class="mono">'+E(r.loan.id)+'</span>'),
+       c?'<strong>'+money(c.settlement,r.q.ccy)+'</strong>'+small(L('Instalment ','第 ')+c.seq+L('',' 期')+(usdc?' · '+L('total due ','应还合计 ')+CF.fmtAmt(c.total)+' USDT':'')):r.plan?L('No instalments awaiting repayment','暂无待还期次'):'—'+small(status('generating')),
+       c?date(c.due)+(c.overdue?small(L('Overdue ','已逾期 ')+c.overdue+L(' days',' 天')):now()<c.open?small(L('Opens ','开放于 ')+date(c.open)):''):'—',
+       badge(r.status)+(r.overdue?small(L('Currently overdue','当前逾期')):''),
+       r.pending.length?r.pending.map(p=>badge('repayPending')+small(seq(p)+(p.unknown?L(' · result to be verified',' · 链上结果待核实'):L(' · waited ',' · 已等待 ')+elapsed(p.waiting))+(p.overdue?L(' · overdue frozen at ',' · 逾期冻结 ')+p.overdue+L(' days',' 天'):''))).join(''):'—'];
+   }
+   if(k==='quotes'){
+     const clock=r.status==='offerPending'||r.status==='disbursing'?(r.unknown||r.chainState==='unknown'?L('Result to be verified','链上结果待核实'):L('Waited ','已等待 ')+elapsed(r.status==='offerPending'?r.waited:r.waited)):r.status==='waiting'?L('Locked for ','已锁定 ')+elapsed(r.locked):L('Locked ','共锁定 ')+elapsed(r.locked)+small(L('Stopped when the offer was handled','处理后停止累计'));
+     const stage=r.status==='waiting'?small(r.lastFail?L('Last on-chain disbursement did not complete','上次链上放款未完成'):L('Awaiting the asset holder','等待资产方处理')):r.status==='disbursing'?small(L('Accepted by the asset holder','资产方已接受')):r.status==='offerPending'?small(L('No business number yet','尚无融资业务编号')):'';
+     return [object(text(D.project(r.project)?.name))+small('<span class="mono">'+E(r.request)+'</span>'),E(owner(r.owner)),money(r.amount,'USDT')+small(E(r.ccy)+' · '+E(r.rate)+'%'),badge(r.status)+stage,clock,r.approval?badge(r.approval):'—'];
+   }
+   if(k==='approvals'){
+     const chk=revocable(r),st=approvalError?'unreadable':r.status;
+     const addr='<span class="mono">'+E(maskAddr(r.address))+'</span>';
+     const head=(addrName(r)?object(addrName(r))+small(addr):object(maskAddr(r.address)));
+     const when=r.status==='granting'?small(L('Signed ','签名发出 ')+time(r.signedAt)+(r.unknown?'':L(' · waited ',' · 已等待 ')+elapsed(now()-Date.parse(new Date(r.signedAt).toISOString())))):small(time(r.at));
+     const cue=st==='unreadable'?small(L('Not revocable now','暂不能撤销')):!chk.ok&&!['revoking','revoked'].includes(r.status)?small(E(chk.short||chk.reason)):'';
+     if(r.type==='loan')return [head,'<span class="mono">'+E(maskAddr(r.contract))+'</span>'+small(L('Lending contract','放款合约')),money(r.amount,r.ccy),E(text(D.project(r.project)?.name))+small('<span class="mono">'+E(r.request)+'</span> · '+(r.business?'<span class="mono">'+E(r.business)+'</span>':L('Business number not yet generated','业务编号尚未生成')))+small(status(r.quote)),badge(st)+when+cue];
+     return [head,'<span class="mono">'+E(maskAddr(r.contract))+'</span>'+small('Ethereum · '+E(text(r.kind))),'<span class="mono">'+E(maskAddr(r.issuer))+'</span>'+small(L('All tokens of this address under this issuing contract','该地址在这个发行合约下的全部代币')),r.projects.length?r.projects.slice(0,2).map(p=>E(text(p.name))).join('<br>')+(r.projects.length>2?small(L(r.projects.length+' projects in total',' 共 '+r.projects.length+' 个项目')):''):'—',badge(st)+when+cue];
+   }
+   return [];
  }
+ const emptyText=k=>({tokens:['No displayable tokens for this company','本企业暂无可展示的代币'],projects:['No financing projects yet','尚未创建融资项目'],credits:S.role==='fund'?['No credit granted yet','尚未授信']:['No credit from institutions yet','暂无机构授信'],repayments:['No business has been disbursed on chain yet','尚无链上放款成功的业务'],quotes:['No loan offers yet','尚未提交报价'],approvals:['No on-chain approvals','暂无链上授权']}[k]||['No records yet','暂无记录']);
  function table(){const v=view(),all=filtered(),count=Math.max(1,Math.ceil(all.length/v.size));if(v.page>count&&S.st!=='error'&&S.st!=='loading'&&!tokenError){v.page=count;const q=params();q.set('page',count);history.replaceState(null,'','#'+path()+'?'+q);}const rs=all.slice((v.page-1)*v.size,v.page*v.size),cols=columns(v.tab);
    if(S.st==='error'||v.tab==='tokens'&&(tokenError||!Array.isArray(D.tokens)))return CF.empty(L('List could not be loaded','列表加载失败'),L('Your filters have been preserved. ','已保留当前筛选条件。')+reloadHint(),'');
-   if(!all.length&&S.st!=='loading'&&S.st!=='noresult'&&!FILTERS.some(k=>v[k]))return CF.empty(v.tab==='tokens'?L('No displayable tokens for this company','本企业暂无可展示的代币'):v.tab==='projects'?L('No financing projects yet','尚未创建融资项目'):L('No records yet','暂无记录'),'','');
-   let body=S.st==='loading'?'<div role="status" aria-label="'+L('Loading','加载中')+'">'+CF.skelTable(5)+'</div>':(S.st==='error'||v.tab==='tokens'&&(tokenError||!Array.isArray(D.tokens)))?CF.empty(L('List could not be loaded','列表加载失败'),L('Your filters have been preserved. ','已保留当前筛选条件。')+reloadHint(),''):!rs.length&&v.pending&&!pendingError&&!FILTERS.some(k=>k!=='pending'&&v[k])&&S.st!=='empty'?CF.empty(L('No records awaiting your action','当前没有待处理记录'),returnNotice?L('The latest record no longer needs your action.','记录已更新，已无需我方处理。'):'',b('clear',L('Show all records','查看全部记录'))):!rs.length?CF.empty(L(S.st==='empty'?'No records yet':'No matching records',S.st==='empty'?'暂无记录':'暂无符合条件的记录'),returnNotice?L('The latest record no longer matches these filters.','最新记录已不符合当前筛选条件。'):L('Try another filter or return later.','可调整筛选条件或稍后再查看。'),b('clear',L('Clear filters','清空筛选'))):'<div class="listbox" id="mc-list" tabindex="0" aria-label="'+E(nm(v.tab))+'"><table class="tbl mc-table" data-kind="'+v.tab+'"><thead><tr>'+[...cols,[L('Actions','操作'),'']].map(([t,kind])=>'<th scope="col" class="'+(kind||'')+'">'+E(t)+'</th>').join('')+'</tr></thead><tbody>'+rs.map(r=>{const items=pendingError?[]:pendingItems(v.tab,r);return '<tr data-id="'+E(r.id)+'" data-kind="'+v.tab+'"'+(items.length?' data-pending="true"':'')+' tabindex="0" aria-label="'+E(text(titles[v.tab])+' '+r.id+(items.length?' · '+L('Awaiting your action','待我方处理'):''))+'">'+rowValues(v.tab,r).map((c,i)=>'<td data-label="'+E(cols[i][0])+'" class="'+cols[i][1]+'"><div>'+c+(i===0?pendingCue(items):'')+'</div></td>').join('')+'<td data-label="'+L('Actions','操作')+'" class="mc-actions"><div>'+(items.length?'<button type="button" class="btn mc-pending-action" data-act="mc-pending" data-v="'+E(items[0].id)+'" aria-label="'+E(items[0].action+' · '+r.id)+'">'+E(items[0].action)+'</button>':'')+link('detail',L('View details','查看详情'),v.tab+'|'+r.id)+'</div></td></tr>';}).join('')+'</tbody></table></div>';
+   if(!all.length&&S.st!=='loading'&&S.st!=='noresult'&&!FILTERS.some(k=>v[k]))return CF.empty(L(...emptyText(v.tab)),'','');
+   const actions=r=>{const items=pendingError?[]:pendingItems(v.tab,r),chk=v.tab==='approvals'?revocable(r):null;return (items.length?'<button type="button" class="btn mc-pending-action" data-act="mc-pending" data-v="'+E(items[0].id)+'" aria-label="'+E(items[0].action+' · '+r.id)+'">'+E(items[0].action)+'</button>':'')+(chk?.ok?'<button type="button" class="btn mc-pending-action" data-act="mc-revoke-open" data-v="'+E(r.id)+'" aria-label="'+E(L('Revoke approval · ','撤销授权 · ')+maskAddr(r.address))+'">'+L('Revoke approval','撤销授权')+'</button>':'')+link('detail',L('View details','查看详情'),v.tab+'|'+r.id);};
+   let body=S.st==='loading'?'<div role="status" aria-label="'+L('Loading','加载中')+'">'+CF.skelTable(5)+'</div>':!rs.length&&v.pending&&!pendingError&&!FILTERS.some(k=>k!=='pending'&&v[k])&&S.st!=='empty'?CF.empty(L('No records awaiting your action','当前没有待处理记录'),returnNotice?L('The latest record no longer needs your action.','记录已更新，已无需我方处理。'):'',b('clear',L('Show all records','查看全部记录'))):!rs.length?CF.empty(L(S.st==='empty'?'No records yet':'No matching records',S.st==='empty'?'暂无记录':'暂无符合条件的记录'),returnNotice?L('The latest record no longer matches these filters.','最新记录已不符合当前筛选条件。'):L('Try another filter or return later.','可调整筛选条件或稍后再查看。'),b('clear',L('Clear filters','清空筛选'))):'<div class="listbox" id="mc-list" tabindex="0" aria-label="'+E(nm(v.tab))+'"><table class="tbl mc-table" data-kind="'+v.tab+'" data-role="'+E(S.role)+'"><thead><tr>'+[...cols,[L('Actions','操作'),'']].map(([t,kind])=>'<th scope="col" class="'+(kind||'')+'">'+E(t)+'</th>').join('')+'</tr></thead><tbody>'+rs.map(r=>{const items=pendingError?[]:pendingItems(v.tab,r);return '<tr data-id="'+E(r.id)+'" data-kind="'+v.tab+'"'+(items.length?' data-pending="true"':'')+' tabindex="0" aria-label="'+E(text(titles[v.tab])+' '+(v.tab==='approvals'?maskAddr(r.address):r.id)+(items.length?' · '+L('Awaiting your action','待我方处理'):''))+'">'+rowValues(v.tab,r).map((c,i)=>'<td data-label="'+E(cols[i][0])+'" class="'+cols[i][1]+'"><div>'+c+(i===0?pendingCue(items):'')+'</div></td>').join('')+'<td data-label="'+L('Actions','操作')+'" class="mc-actions"><div>'+actions(r)+'</div></td></tr>';}).join('')+'</tbody></table></div>';
    const focus=params().get('focus')||'',moved=focus&&all.length&&!all.some(r=>r.id===focus);
-   return (moved?CF.note('',L('The updated record no longer matches these filters.','记录已更新，不再符合当前筛选条件。')+' '+b('clear',L('Clear filters','清空筛选'))):'')+'<div class="mc-caption"><span>'+E(nm(v.tab))+' · '+all.length+L(' records',' 条')+'</span><span>'+L('All amounts are in USD unless marked otherwise.','金额单位为 USD，其他币种另行标注。')+'</span></div>'+body+'<div class="pager"><span class="total">'+all.length+L(' records',' 条记录')+'</span><label for="mc-size">'+L('Rows per page','每页')+'</label><select class="inp" id="mc-size">'+[20,50,100].map(n=>'<option'+(n===v.size?' selected':'')+'>'+n+'</option>').join('')+'</select>'+b('page',L('Previous','上一页'),v.page-1,false,v.page<=1)+'<span>'+v.page+' / '+count+'</span>'+b('page',L('Next','下一页'),v.page+1,false,v.page>=count)+'</div>';
+   const unit=v.tab==='tokens'?L('Values in USD.','价值单位为 USD。'):v.tab==='approvals'?'':L('Amounts in USDT unless another currency is marked.','金额单位为 USDT，其他币种另行标注。');
+   return (moved?CF.note('',L('The updated record no longer matches these filters.','记录已更新，不再符合当前筛选条件。')+' '+b('clear',L('Clear filters','清空筛选'))):'')+(v.tab==='approvals'&&approvalError?CF.note('warn',L('Approval status is temporarily unavailable. Revocation is paused. ','授权状态暂不可用，暂不能撤销。')+reloadHint()):'')+'<div class="mc-caption"><span>'+E(nm(v.tab))+' · '+all.length+L(' records',' 条')+'</span>'+(unit?'<span>'+unit+'</span>':'')+'</div>'+body+'<div class="pager"><span class="total">'+all.length+L(' records',' 条记录')+'</span><label for="mc-size">'+L('Rows per page','每页')+'</label><select class="inp" id="mc-size">'+[20,50,100].map(n=>'<option'+(n===v.size?' selected':'')+'>'+n+'</option>').join('')+'</select>'+b('page',L('Previous','上一页'),v.page-1,false,v.page<=1)+'<span>'+v.page+' / '+count+'</span>'+b('page',L('Next','下一页'),v.page+1,false,v.page>=count)+'</div>';
  }
  function gate(){if(S.role==='signed')return '<div class="mc-error">'+CF.empty(L('This page is not available for your current role','该页面不适用于当前身份'),L('You can continue exploring public information.','你可以继续浏览公开信息。'),'<button class="btn primary" data-act="go" data-v="/assets">'+L('Back to assets','返回资产广场')+'</button>')+'</div>';
   return '<div class="mc-error">'+CF.empty(L(S.role==='limited'?'Complete account setup':'Sign in to view your console',S.role==='limited'?'请先完成账户必办事项':'登录后查看我的控制台'),L('Your company information is available after sign-in.','登录后可查看本企业数据。'),'<button class="btn primary" data-act="signin">'+L('Connect wallet','连接钱包')+'</button>')+'</div>';}
- /* 待处理：本企业现在就能在借贷广场办理的事项，各归入唯一一条清单记录；由业务事实即时得出，没有独立待办、手动完成、忽略或催办。 */
- const FILTERS=['pending','filter','secondary','project','query','periodState','tokenType'];
+ /* 待处理：资产方现在就能在借贷广场办理的事项，各归入唯一一条清单记录；由业务事实即时得出，没有独立待办、手动完成、忽略或催办。
+    资金方当前没有待处理事项；等待对方、等待链上结果与撤销授权都不是待处理。 */
+ const FILTERS=['pending','filter','secondary','project','address','query','periodState','tokenType'];
  const at=v=>typeof v==='number'?v:Date.parse(v)||0;
  const seq=p=>L('Instalment ','第 ')+p.seq+L('',' 期');
- function pendingTabs(){return S.role==='asset'?['projects','loans','repayments']:S.role==='fund'?['loans','repayments']:[];}
+ function pendingTabs(){return S.role==='asset'?['projects','repayments']:[];}
  function pendingItems(k,r){
    if(!allowed()||S.st==='empty'||!pendingTabs().includes(k))return [];
    const out=[],t=now(),add=(id,name,fact,when,go,extra={})=>out.push({id,name,action:extra.action||name,fact,at:at(when),go,overdue:extra.overdue||0});
    if(k==='projects'){
      const n=r.n,released=D.tokens.filter(x=>x.releasedFrom===r.id&&x.pledge==='released');
-     Q.data().quotes.filter(q=>q.state==='waiting'&&q.project===r.id).forEach(q=>add('quote-'+q.id,L('Confirm quote','确认报价'),L('Locked for ','已锁定 ')+elapsed(t-q.at),q.at,['quotes',q.id]));
-     if(n.grade==='short')add('pledge-'+r.id,L('Add collateral','追加质押'),L('Pledge gap ','质押缺口 ')+money(n.gap),r.created,['projects',r.id]);
+     Q.data().quotes.filter(q=>q.state==='waiting'&&q.project===r.id&&!chainOf(q)).forEach(q=>add('quote-'+q.id,L('Respond to offer','处理报价'),L('Locked for ','已锁定 ')+elapsed(t-q.at),q.at,['quotes',q.id]));
+     if(n.grade==='short')add('pledge-'+r.id,L('Add collateral','追加质押'),L('Pledge gap ','质押缺口 ')+money(n.gap,'USDT'),r.created,['projects',r.id]);
      if(released.length)add('extract-'+r.id,L('Withdraw tokens','提取代币'),released.length+L(' tokens · ',' 张 · ')+money(released.reduce((a,x)=>a+x.value,0)),r.created,['projects',r.id]);
      if(r.status==='returned')add('resubmit-'+r.id,L('Revise and resubmit project','修改并重新提交项目'),'',r.created,['projects',r.id]);
-   }else if(k==='loans'){
-     if(S.role==='asset'&&r.fdState==='confirming')add('receipt-'+r.id,L('Confirm receipt','确认到账'),L('Waiting for ','已等待 ')+since(r.waiting),r.deal.record?.at,['loans',r.id]);
-     if(S.role==='fund'&&r.fdState==='pending')add('disburse-'+r.id,L('Register disbursement','登记放款'),L('Waiting for ','已等待 ')+since(r.acceptedAt?t-r.acceptedAt:null),r.acceptedAt,['loans',r.id]);
-   }else if(S.role==='asset'){
-     /* 指向本笔第一条已开放、尚未提交的待还款期次。 */
+   }else if(!r.pending.length){
+     /* 指向本笔第一条已开放、尚未提交的待还款期次；本笔有期次还款上链确认中时不标待处理。 */
      const p=r.periods.filter(p=>p.state==='due'&&t>=at(p.open)).sort((a,b)=>a.due.localeCompare(b.due)||a.seq-b.seq)[0];
      if(p)add('repay-'+r.id,L('Repay','还款'),seq(p)+L(' · due ',' · 应还日 ')+date(p.due)+(p.overdue>0?L(' · overdue ',' · 已逾期 ')+p.overdue+L(' days',' 天'):''),p.open,['repayments',r.id,p.id],{overdue:p.overdue,action:L('Repay · ','还款·')+seq(p)});
-   }else r.pending.forEach(p=>add('confirm-'+p.id,L('Confirm repayment received','确认收到还款'),seq(p)+L(' · submitted ',' · 提交于 ')+time(p.record.at)+(p.overdue>0?L(' · overdue frozen at ',' · 逾期冻结 ')+p.overdue+L(' days',' 天'):''),p.record.at,['repayments',r.id,p.id],{overdue:p.overdue,action:L('Confirm repayment received · ','确认收到还款·')+seq(p)}));
-   /* 已逾期（含提交后冻结的逾期）在前、按天数从多到少；其余按事项发生时间从早到晚。 */
+   }
+   /* 已逾期在前、按天数从多到少；其余按事项发生时间从早到晚。 */
    return out.sort((a,b)=>(b.overdue>0)-(a.overdue>0)||b.overdue-a.overdue||a.at-b.at||a.id.localeCompare(b.id));
  }
  /* 分类标签上的数量是有待处理事项的记录数，按该分类全部记录计算，不随筛选、检索或分页变化。 */
@@ -240,65 +344,71 @@
    return '<section class="mc-pending-detail" aria-labelledby="mc-pending-title"><h2 id="mc-pending-title">'+L('Awaiting your action','待我方处理')+(items.length>1?L(' · '+items.length+' items',' · 共 '+items.length+' 项'):'')+'</h2><ul>'+items.map(y=>'<li'+(y.overdue>0?' data-overdue="true"':'')+'><b>'+E(y.name)+'</b>'+(y.fact?'<span>'+y.fact+'</span>':'')+'</li>').join('')+'</ul><p class="mc-small">'+L('Handle it from the project’s actions in the lending marketplace.','请在借贷广场该项目的办理入口处理。')+'</p></section>';
  }
  function overview(){return '<section class="card mc-overview" aria-labelledby="mc-capital-title"><h2 id="mc-capital-title">'+L('Company overview','企业概览')+'</h2>'+summary()+'</section>';}
- function listing(){if(!allowed())return gate();if(S.st==='denied')return unavailable();const v=view();return '<div class="mc-root"><div class="page-head"><div><h1 class="page-title">'+L('My console','我的控制台')+'</h1><p class="page-desc">'+L('Records awaiting your action are marked in the lists. Records are shared by company; unread messages are personal.','清单中标出待我方处理的记录。业务记录按企业共享，消息未读数按个人统计。')+'</p></div><div class="page-actions">'+'</div></div>'+overview()+'<section class="card mc-ledger"><div class="mc-tabs" role="tablist" aria-label="'+L('Console records','控制台信息')+'">'+tabs().map(k=>'<button role="tab" aria-selected="'+(k===v.tab)+'" tabindex="'+(k===v.tab?0:-1)+'" data-act="mc-tab" data-v="'+k+'">'+E(nm(k))+pendingBadge(k)+'</button>').join('')+'</div><div role="tabpanel" aria-label="'+E(nm(v.tab))+'">'+filters()+table()+'</div></section></div>';}
+ function listing(){if(!allowed())return gate();if(S.st==='denied')return unavailable();const v=view();return '<div class="mc-root"><div class="page-head"><div><h1 class="page-title">'+L('My console','我的控制台')+'</h1><p class="page-desc">'+L(S.role==='asset'?'Records awaiting your action are marked in the lists. Records are shared by company; unread messages are personal.':'Records are shared by company; unread messages are personal.',S.role==='asset'?'清单中标出待我方处理的记录。业务记录按企业共享，消息未读数按个人统计。':'业务记录按企业共享，消息未读数按个人统计。')+'</p></div><div class="page-actions">'+'</div></div>'+overview()+'<section class="card mc-ledger"><div class="mc-tabs" role="tablist" aria-label="'+L('Console records','控制台信息')+'">'+tabs().map(k=>'<button role="tab" aria-selected="'+(k===v.tab)+'" tabindex="'+(k===v.tab?0:-1)+'" data-act="mc-tab" data-v="'+k+'">'+E(nm(k))+pendingBadge(k)+'</button>').join('')+'</div><div role="tabpanel" aria-label="'+E(nm(v.tab))+'">'+filters()+table()+'</div></section></div>';}
  function unavailable(){const kind=path().split('/')[2],back=tabs().includes(kind)?'#/console?tab='+kind:'#/console';return '<div class="mc-root mc-error">'+CF.empty(L('Content unavailable','内容不存在或无权访问'),L('Return to your console to view available records.','请返回控制台查看可访问的记录。'),b('list',L('Back to console','返回我的控制台'),back))+'</div>';}
  function section(id,title,body){return {id,title,html:'<section class="card detail-section" id="'+id+'" tabindex="-1"><div class="card-head"><h2>'+E(title)+'</h2></div><div class="card-body">'+body+'</div></section>'};}
- /* 期次只给当前阅读需要的事实；完整计划、本息拆分、凭证与收款账户在借贷广场原笔阅读。 */
+
+ /* ---------- 还款详情：本期应还、还款上链确认中、当前未结清逾期与指定期次都可发现；完整计划在借贷广场原笔阅读 ---------- */
  function periodFacts(r,p,compact=false){
-   const open=p.state==='due'&&now()<at(p.open),usd=r.q.ccy==='USD';
+   const open=p.state==='due'&&now()<at(p.open),usdc=r.q.ccy!=='USDT';
    return dl([
-     !compact&&[L('Due date','应还日'),date(p.due)],
-     !(compact&&usd)&&[L(usd?'Amount due':'Total due',usd?'应还金额':'应还合计'),money(p.total)],
-     !usd&&[L('Settlement amount','结算金额'),money(p.settlement,r.q.ccy)],
+     !compact&&[L('Due date (UTC)','应还日（UTC）'),date(p.due)],
+     [L('Total due','应还合计'),money(p.total,'USDT')],
+     usdc&&[L('Settlement amount','应还结算金额'),money(p.settlement,r.q.ccy)],
      compact&&[L('Instalment status','期次状态'),badge(p.status)],
-     open&&[L('Repayment entry opens','还款录入开放'),time(p.open)],
-     p.overdue>0&&[L(p.state==='settled'?'Historical overdue days':p.record?'Overdue days (frozen)':'Overdue days',p.state==='settled'?'历史逾期天数':p.record?'逾期天数（已冻结）':'逾期天数'),p.overdue+L(' days',' 天')],
-     p.record&&[L('Repayment record','还款记录编号'),copy(p.record.id)],
-     p.record&&[L('Submitted at','提交时间'),time(p.record.at)],
-     p.record?.confirmedAt&&[L('Settled at','结清时间'),time(p.record.confirmedAt)]
+     open&&[L('Repayment opens','还款开放时点'),time(p.open)],
+     p.overdue>0&&[L(p.state==='settled'?'Historical overdue days':p.chain?'Overdue days (frozen)':'Overdue days',p.state==='settled'?'历史逾期天数':p.chain?'逾期天数（已冻结）':'逾期天数'),p.overdue+L(' days',' 天')],
+     p.chain&&[L('Submitted at','提交时间'),time(p.chain.at)],
+     p.chain&&!p.unknown&&[L('Waited','已等待'),elapsed(p.waiting)],
+     p.state==='settled'&&p.record&&[L('Repayment record','还款记录编号'),copy(p.record.id)],
+     p.state==='settled'&&p.record?.confirmedAt&&[L('Settled at','结清时间'),time(p.record.confirmedAt)]
    ])+(p.principal?'<p class="mc-small">'+L('Final instalment includes principal.','末期含本金。')+'</p>':'');
  }
  function periodRecord(r,p,selected,match,compact=false){
-   return '<article class="mc-record" data-selected="'+(selected?.id===p.id)+'" id="mc-period-'+E(p.id)+'">'+(compact?'':'<div class="mc-record-head"><b>'+L('Instalment ','第 ')+p.seq+L(' of ',' / ')+r.periods.length+L('',' 期')+'</b>'+badge(p.status)+'</div>'+(p.state==='pending'?'<p class="mc-small mc-record-note">'+L('Submitted, awaiting the funder, not yet settled','已提交、待资金方确认、仍未结清')+'</p>':''))+periodFacts(r,p,compact)+(match&&within(match,p.status)?'<p class="mc-small">'+L('Matches the list filter','匹配列表期次筛选')+'</p>':'')+b('period',selected?.id===p.id?L('Selected for reading','已选定阅读'):L('Select this instalment','选择此期阅读'),p.id,false,selected?.id===p.id)+'</article>';
+   return '<article class="mc-record" data-selected="'+(selected?.id===p.id)+'" id="mc-period-'+E(p.id)+'">'+(compact?'':'<div class="mc-record-head"><b>'+L('Instalment ','第 ')+p.seq+L(' of ',' / ')+r.periods.length+L('',' 期')+'</b>'+badge(p.status)+'</div>'+(p.state==='pending'?'<p class="mc-small mc-record-note">'+(p.unknown?E(SUPPORT()):L('Signed and submitted, confirming on chain, not yet settled','已签名提交、链上确认中、仍未结清'))+'</p>':''))+periodFacts(r,p,compact)+(match&&within(match,p.status)?'<p class="mc-small">'+L('Matches the list filter','匹配列表期次筛选')+'</p>':'')+b('period',selected?.id===p.id?L('Selected for reading','已选定阅读'):L('Select this instalment','选择此期阅读'),p.id,false,selected?.id===p.id)+'</article>';
  }
  function repaymentSections(r){
    const out=[],add=(id,title,body)=>out.push(section(id,title,body)),selected=selectedPeriod(r),match=new URLSearchParams((params().get('list')||'').split('?')[1]||'').get('periodState');
    const settled=r.periods.filter(p=>p.state==='settled');
-   if(planError)add('mc-current',L('Current instalment','本期应还'),CF.empty(L('Repayment information unavailable','还款信息暂不可用'),L('Receipt confirmation is preserved. ','到账确认结果已保留。')+reloadHint(),''));
-   else if(!r.plan)add('mc-current',L('Current instalment','本期应还'),CF.note('',L('Receipt is confirmed. The repayment schedule is being generated.','已确认到账，还款计划生成中。')));
+   if(planError)add('mc-current',L('Current instalment','本期应还'),CF.empty(L('Repayment information unavailable','还款信息暂不可用'),L('The disbursement result is kept. ','放款结果已保留。')+reloadHint(),''));
+   else if(!r.plan)add('mc-current',L('Current instalment','本期应还'),CF.note('',L('Disbursed on chain. The repayment schedule is being generated.','链上放款已成功，还款计划生成中。')));
    else{
-     add('mc-current',L('Current instalment','本期应还'),r.plan.settledAt?CF.note('ok',L('All instalments are settled.','本笔全部期次已结清。')):r.current?'<div class="mc-current-amount"><div><span>'+L('Instalment ','第 ')+r.current.seq+L(' of ',' / ')+r.periods.length+L('',' 期')+'</span><strong>'+statMoney(r.current.settlement,r.q.ccy)+'</strong></div><div class="mc-current-date"><span>'+L('Due date','应还日')+'</span><div>'+date(r.current.due)+'</div></div></div>'+periodRecord(r,r.current,selected,match,true):CF.note('',L('No instalments awaiting repayment.','暂无待还期次。')));
-     /* 待确认、本期以外的未结清逾期及指定期次逐条可见，不被下一期取代。 */
-     const others=r.periods.filter(p=>p.id!==r.current?.id&&(p.state==='pending'||p.state!=='settled'&&p.overdue>0||p.id===selected?.id));
-     if(others.length)add('mc-periods',L('Pending confirmation and overdue','待确认与逾期期次'),(r.overdue?CF.note('warn',L('Overdue instalments remain unsettled. Submitted instalments await the funder; their overdue days stay frozen.','存在尚未结清的逾期期次；已提交期次待资金方确认，逾期天数保持冻结。')):'')+(selected&&selected.id!==r.current?.id?CF.note('',L('Reading selected instalment: ','当前选定原期次：')+E(selected.id)):'')+others.map(p=>periodRecord(r,p,selected,match)).join(''));
+     add('mc-current',L('Current instalment','本期应还'),r.plan.settledAt?CF.note('ok',L('All instalments are settled.','本笔全部期次已结清。')):r.current?'<div class="mc-current-amount"><div><span>'+L('Instalment ','第 ')+r.current.seq+L(' of ',' / ')+r.periods.length+L('',' 期')+'</span><strong>'+statMoney(r.current.settlement,r.q.ccy)+'</strong></div><div class="mc-current-date"><span>'+L('Due date (UTC)','应还日（UTC）')+'</span><div>'+date(r.current.due)+'</div></div></div>'+periodRecord(r,r.current,selected,match,true):CF.note('',L('No instalments awaiting repayment.','暂无待还期次。')));
+     /* 还款上链确认中、本期以外的未结清逾期及指定期次逐条可见，不被下一期取代。 */
+     if(r.pending.length)add('mc-chain',L('Repayment pending on-chain','还款上链确认中'),(r.pending.some(p=>p.overdue>0)?CF.note('',L('Overdue days stay frozen while the result is confirmed on chain. You do not need to submit again.','链上确认期间逾期天数保持冻结，无需重复提交。')):'')+r.pending.map(p=>periodRecord(r,p,selected,match)).join(''));
+     const overdue=r.periods.filter(p=>p.id!==r.current?.id&&p.state==='due'&&p.overdue>0);
+     if(overdue.length)add('mc-overdue',L('Unsettled overdue instalments','当前未结清逾期期次'),overdue.map(p=>periodRecord(r,p,selected,match)).join(''));
+     if(selected&&selected.id!==r.current?.id&&!r.pending.some(p=>p.id===selected.id)&&!overdue.some(p=>p.id===selected.id))add('mc-selected',L('Selected instalment','指定期次'),periodRecord(r,selected,selected,match));
    }
    add('mc-progress',L('Repayment progress','还款进度'),dl([
      [L('Settled instalments','已结清期数'),r.plan?settled.length+' / '+r.periods.length:'—'],
-     [L('Outstanding principal','未偿本金'),money(r.deal.principalBalance)],
-     [L('Principal repaid','累计已还本金'),r.plan?money(settled.reduce((n,p)=>n+p.principal,0)):'—'],
-     [L('Interest repaid','累计已还利息'),r.plan?money(settled.reduce((n,p)=>n+p.interest,0)):'—'],
+     [L('Outstanding principal','未偿本金'),money(r.deal.principalBalance,'USDT')],
+     [L('Principal repaid','累计已还本金'),r.plan?money(settled.reduce((n,p)=>n+p.principal,0),'USDT'):'—'],
+     [L('Interest repaid','累计已还利息'),r.plan?money(settled.reduce((n,p)=>n+p.interest,0),'USDT'):'—'],
      [L('Final repayment date','最终还款日'),r.plan?date(r.plan.end):'—'],
      r.plan?.settledAt&&[L('Settled at','结清时间'),time(r.plan.settledAt)]
    ]));
-   add('mc-refs',L('References','编号'),dl([[L('Application ID','融资申请编号'),copy(r.request)],[L('Business ID','融资业务编号'),copy(r.id)],[L('Disbursement ID','放款编号'),copy(r.deal.record.id)]]));
+   add('mc-loan',L('Disbursement','放款信息'),dl([[L('Lending institution','放款机构'),E(fund(r.loan.fund))],[L('Disbursement amount','放款金额'),money(r.loan.amount,r.loan.ccy)],[L('Disbursed at','放款时间'),time(r.loan.at)],[L('Disbursement ID','放款编号'),copy(r.loan.id)]]));
+   add('mc-refs',L('References','编号'),dl([[L('Application ID','融资申请编号'),copy(r.request)],[L('Business ID','融资业务编号'),copy(r.id)],[L('Disbursement ID','放款编号'),copy(r.loan.id)]]));
    return out;
  }
- /* 授信使用记录：一笔融资业务一条，只列仍在使用这份授信的在途报价与授信占用。 */
+ /* ---------- 授信使用记录：一笔一条，只列仍在使用这份授信的在途报价（含报价上链确认中）与授信占用 ---------- */
  function usage(c){
-   const rows=Q.data().quotes.filter(q=>q.owner===c.owner&&q.fund===c.fund&&party(q)).flatMap(q=>{const x=q.l7;
-     if(q.state==='waiting')return [{q,kind:'transit',amount:q.amount,stage:'waiting'}];
-     if(q.state==='funding')return [{q,kind:'transit',amount:q.amount,stage:x?.state==='waiting'?'confirming':'pending'}];
-     if(x?.state==='confirmed'&&x.principalBalance>0)return [{q,kind:'occupied',amount:x.principalBalance,stage:'repaying'}];
-     return [];}).sort((a,b)=>at(b.q.at)-at(a.q.at)||a.q.id.localeCompare(b.q.id));
+   const own=x=>x.owner===c.owner&&x.fund===c.fund&&party(x);
+   const rows=[...(Q.data().pending||[]).filter(x=>holding(x)&&own(x)).map(x=>({q:x,id:x.id,ref:x.demand,offer:true,kind:'transit',amount:x.amount,stage:'offerPending',at:x.at})),
+     ...Q.data().quotes.filter(own).flatMap(q=>{const x=q.l7;
+       if(q.state==='waiting'||q.state==='funding')return [{q,id:q.id,ref:q.id,kind:'transit',amount:q.amount,stage:chainOf(q)||q.state==='funding'?'disbursing':'waiting',at:q.at}];
+       if(x?.state==='confirmed'&&x.principalBalance>0)return [{q,id:q.id,ref:q.id,kind:'occupied',amount:x.principalBalance,stage:'repaying',at:q.at}];
+       return [];})].sort((a,b)=>at(b.at)-at(a.at)||a.id.localeCompare(b.id));
    const sum=k=>rows.filter(x=>x.kind===k).reduce((n,x)=>n+x.amount,0);
    return {rows,consistent:Math.abs(sum('transit')-c.transit)<0.005&&Math.abs(sum('occupied')-c.principal)<0.005};
  }
  function usageMeter(r){
-   const parts=[['occupied',r.principal,L('Principal occupied','授信占用额')],['transit',r.transit,L('Quotes in transit','在途报价金额')],['available',r.available,L('Available credit','可用授信')]];
+   const parts=[['occupied',r.principal,L('Principal occupied','授信占用额')],['transit',r.transit,L('Offers in transit','在途报价金额')],['available',r.available,L('Available credit','可用授信')]];
    const whole=Math.max(r.total,parts.reduce((n,x)=>n+x[1],0)),pct=v=>whole?(Math.round(v/whole*1000)/10)+'%':'—';
-   return '<div class="mc-usage"><div class="mc-usage-total"><div><span>'+L('Credit limit','授信额度')+'</span><strong>'+statMoney(r.total)+'</strong></div><div><span>'+L('Used = occupied + in transit','已用额 = 占用额 + 在途报价金额')+'</span><strong>'+statMoney(r.used)+' <small>'+pct(r.used)+'</small></strong></div></div>'+
-     '<div class="mc-meter" role="img" aria-label="'+E(parts.map(x=>x[2]+' '+CF.fmtAmt(x[1])+' USD').join(' · '))+'">'+parts.filter(x=>x[1]>0).map(x=>'<span class="mc-meter-seg" data-part="'+x[0]+'" style="flex-grow:'+x[1]+'" title="'+E(x[2]+' · '+CF.fmtAmt(x[1])+' USD · '+pct(x[1]))+'"></span>').join('')+'</div>'+
-     '<ul class="mc-usage-legend">'+parts.map(x=>'<li><span class="mc-key" data-part="'+x[0]+'" aria-hidden="true"></span><span>'+E(x[2])+'</span><strong>'+statMoney(x[1])+'</strong><small>'+pct(x[1])+'</small></li>').join('')+'</ul></div>'+
+   return '<div class="mc-usage"><div class="mc-usage-total"><div><span>'+L('Credit limit','授信额度')+'</span><strong>'+statMoney(r.total,'USDT')+'</strong></div><div><span>'+L('Used = occupied + in transit','已用额 = 占用额 + 在途报价金额')+'</span><strong>'+statMoney(r.used,'USDT')+' <small>'+pct(r.used)+'</small></strong></div></div>'+
+     '<div class="mc-meter" role="img" aria-label="'+E(parts.map(x=>x[2]+' '+CF.fmtAmt(x[1])+' USDT').join(' · '))+'">'+parts.filter(x=>x[1]>0).map(x=>'<span class="mc-meter-seg" data-part="'+x[0]+'" style="flex-grow:'+x[1]+'" title="'+E(x[2]+' · '+CF.fmtAmt(x[1])+' USDT · '+pct(x[1]))+'"></span>').join('')+'</div>'+
+     '<ul class="mc-usage-legend">'+parts.map(x=>'<li><span class="mc-key" data-part="'+x[0]+'" aria-hidden="true"></span><span>'+E(x[2])+'</span><strong>'+statMoney(x[1],'USDT')+'</strong><small>'+pct(x[1])+'</small></li>').join('')+'</ul></div>'+
      (r.status==='expired'?CF.note('',L('Expired · existing business continues. Renew the credit before quoting again.','已到期·存量业务照常履约，如需再次报价请先重新授信')):'');
  }
  function usageList(r){
@@ -307,12 +417,90 @@
    if(!u.consistent)return CF.empty(L('Usage records unavailable','使用记录暂不可用'),L('The usage figures above are current. ','上方使用情况为当前结果。')+reloadHint(),'');
    if(!u.rows.length)return '<p class="mc-small">'+L('No business is currently in transit or occupying this credit.','当前没有在途或占用中的业务')+'</p>';
    const size=10,pages=Math.ceil(u.rows.length/size),page=Math.min(usagePage,pages),rows=u.rows.slice((page-1)*size,page*size);
-   const target=x=>x.stage==='waiting'?(S.role==='fund'?'quotes':'quotes-source'):x.stage==='repaying'?'repayments':'loans';
-   return '<div class="listbox"><table class="tbl mc-table mc-usage-table" data-kind="usage"><thead><tr>'+[[L('Project','项目名称'),''],[L('Business ID','融资业务编号'),''],[L('Usage type','使用类型'),''],[L('Amount (USD)','使用金额（USD）'),'num'],[L('Business stage','当前业务阶段'),''],[L('Actions','操作'),'']].map(([t,c])=>'<th scope="col" class="'+c+'">'+E(t)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(x=>{const k=target(x),label=k==='quotes-source'?L('View in marketplace','到借贷广场查看'):L('View details','查看详情');
-     return '<tr data-id="'+E(x.q.id)+'" data-kind="'+k+'" tabindex="0" aria-label="'+E(x.q.id)+'"><td data-label="'+L('Project','项目名称')+'"><div>'+E(text(D.project(x.q.project)?.name))+'</div></td><td data-label="'+L('Business ID','融资业务编号')+'"><div class="mono">'+E(x.q.id)+'</div></td><td data-label="'+L('Usage type','使用类型')+'"><div>'+(x.kind==='occupied'?L('Credit occupied','授信占用'):L('Quote in transit','在途报价'))+'</div></td><td data-label="'+L('Amount (USD)','使用金额（USD）')+'" class="num"><div>'+CF.fmtAmt(x.amount)+'</div></td><td data-label="'+L('Business stage','当前业务阶段')+'"><div>'+badge(x.stage)+'</div></td><td data-label="'+L('Actions','操作')+'" class="mc-actions"><div><button type="button" class="actlink" data-act="mc-usage-open" data-v="'+k+'|'+E(x.q.id)+'">'+label+'</button></div></td></tr>';}).join('')+'</tbody></table></div>'+
+   const target=x=>x.stage==='repaying'?'repayments':S.role==='fund'?'quotes':'quotes-source';
+   return '<div class="listbox"><table class="tbl mc-table mc-usage-table" data-kind="usage"><thead><tr>'+[[L('Project','项目名称'),''],[L('Business ID','融资业务编号'),''],[L('Usage type','使用类型'),''],[L('Amount (USDT)','使用金额（USDT）'),'num'],[L('Business stage','当前业务阶段'),''],[L('Actions','操作'),'']].map(([t,c])=>'<th scope="col" class="'+c+'">'+E(t)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(x=>{const k=target(x),label=k==='quotes-source'?L('View in marketplace','到借贷广场查看'):L('View details','查看详情');
+     return '<tr data-id="'+E(x.id)+'" data-kind="'+k+'" tabindex="0" aria-label="'+E(x.ref)+'"><td data-label="'+L('Project','项目名称')+'"><div>'+E(text(D.project(x.q.project)?.name))+'</div></td><td data-label="'+L('Business ID','融资业务编号')+'"><div class="mono">'+E(x.ref)+(x.offer?small(L('Application ID · no business number yet','融资申请编号 · 尚无融资业务编号')):'')+'</div></td><td data-label="'+L('Usage type','使用类型')+'"><div>'+(x.kind==='occupied'?L('Credit occupied','授信占用'):L('Offer in transit','在途报价'))+'</div></td><td data-label="'+L('Amount (USDT)','使用金额（USDT）')+'" class="num"><div>'+CF.fmtAmt(x.amount)+'</div></td><td data-label="'+L('Business stage','当前业务阶段')+'"><div>'+badge(x.stage)+'</div></td><td data-label="'+L('Actions','操作')+'" class="mc-actions"><div><button type="button" class="actlink" data-act="mc-usage-open" data-v="'+k+'|'+E(x.id)+'">'+label+'</button></div></td></tr>';}).join('')+'</tbody></table></div>'+
      (pages>1?'<div class="pager"><span class="total">'+u.rows.length+L(' records',' 条记录')+'</span>'+b('usage-page',L('Previous','上一页'),page-1,false,page<=1)+'<span>'+page+' / '+pages+'</span>'+b('usage-page',L('Next','下一页'),page+1,false,page>=pages)+'</div>':'');
  }
  const certifiedFunder=()=>S.role==='fund'&&(CF.portalEligible?CF.portalEligible().verified!==false:true);
+
+ /* ---------- 撤销授权：控制台第二类写入。授权地址签名，钱包内签名即最终确认，不另设确认弹窗或勾选 ---------- */
+ const approvalTarget=r=>r.type==='loan'?Q.data().quotes.find(q=>q.id===r.id)?.auth:D.approvals.find(a=>a.id===r.id);
+ const saveApprovals=r=>{if(r.type==='loan')Q.save();else D.save();};
+ function revokePanel(r,inModal=false){
+   const chk=revocable(r),note=revokeNotes[r.id],rv=r.rec?.revoke,busy=revokeBusy===r.id;
+   let h='';
+   if(r.status==='revoking'&&!approvalError){const waited=now()-Date.parse(rv.at),long=waited>=DAY;h+=CF.note('accent',L('Revocation processing · waited ','撤销处理中 · 已等待 ')+elapsed(waited)+L(' · gas: to be verified',' · gas：待核实')+(long?'<br>'+E(SUPPORT()):''));}
+   if(r.status==='revoked')h+=CF.note('ok',rv?.external?L('Revoked outside the platform; shown as recorded on chain.','已在平台外撤销，按链上事实显示。'):L('Revoked','已撤销')+(rv?.done?L(' · completed ',' · 完成时间 ')+time(rv.done):'')+(rv?.tx?L(' · transaction ',' · 链上凭证 ')+'<span class="mono">'+E(maskTx(rv.tx))+'</span>':'')+(rv?.gas?L(' · actual gas ',' · 实际 gas ')+E(rv.gas)+' ETH':''));
+   if(r.status==='granted'&&rv?.state==='failed')h+=CF.note('warn',L('The last revocation failed: ','上次撤销未成功：')+E(text(rv.reason))+L(' Gas incurred: ',' 已产生 gas：')+E(rv.gas||'0')+' ETH'+L('. You can revoke again.','，可以重新撤销。'));
+   if(chk.ok){
+     const gas=[L('Estimated gas','本次预估 gas'),'<span class="mono">'+REVOKE_GAS+' ETH</span>'+small(L('Paid by your company from the approval address','由本企业从授权地址支付'))];
+     h+=(inModal?dl([[L('Approval address','授权地址'),copyMasked(r.address,maskAddr,L('Copy full address','复制完整地址'))+(addrName(r)?small(E(addrName(r))):'')],[L(r.type==='loan'?'Lending contract':'Pledge contract',r.type==='loan'?'被授权合约（放款合约）':'被授权合约（质押合约）'),copyMasked(r.contract,maskAddr,L('Copy full address','复制完整地址'))],[L('Scope','授权范围'),r.type==='loan'?money(r.amount,r.ccy):copyMasked(r.issuer,maskAddr,L('Copy full address','复制完整地址'))+small(L('All tokens of this address under this issuing contract','该地址在这个发行合约下的全部代币'))],gas]):'')+
+       CF.note('',r.type==='loan'?L('After revoking, the lending contract can no longer take funds from this address under this offer\'s approval.','撤销后放款合约不能再按本笔授权调取该地址的款项。')+(sameLender(r)?' '+L('Approvals still needed by your other offers awaiting acceptance from this address are kept.','同一放款地址其他待接受报价所需的授权额度保留。'):''):L('After revoking, this pledge contract can no longer take tokens of this address under this issuing contract. Tokens already in the contract are not affected, and release and withdrawal continue as usual. Pledging tokens of this issuing contract from this address later requires a new approval, including for other projects using this pledge contract.','撤销后这份质押合约不能再调取该地址在该发行合约下的代币；已在合约内的代币不受影响，解押与提取照常；以后从该地址质押该发行合约的代币时须重新授权，使用这份质押合约的其他项目同样如此。'))+
+       (inModal?'<p class="mc-small">'+L('Sign in your wallet with the approval address. The signature is the final confirmation and does not change your sign-in.','在钱包中用授权地址签名，签名即最终确认，不影响登录状态。')+'</p>':'<div class="mc-revoke-act">'+b('revoke',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Revoke approval','撤销授权'),r.id,true,busy||!!revokeBusy)+'<span class="mc-small">'+L('Sign in your wallet with the approval address. The signature is the final confirmation and does not change your sign-in.','在钱包中用授权地址签名，签名即最终确认，不影响登录状态。')+'</span></div>');
+   }else if(!['revoking','revoked'].includes(r.status)||approvalError)h+='<p class="mc-small" role="status">'+E(chk.reason)+'</p>';
+   if(note)h+=CF.note(note.tone,E(note.text));
+   return h;
+ }
+ const sameLender=r=>r.type==='loan'&&Q.data().quotes.some(q=>q.id!==r.id&&q.state==='waiting'&&q.lender?.address===r.address&&q.ccy===r.ccy);
+ function revoke(id){
+   if(revokeBusy)return;
+   const r=normalized('approvals').find(x=>x.id===id);if(!r){CF.render();return;}
+   const chk=revocable(r);
+   /* 提交前按最新事实复核；不满足时不唤起钱包，就地说明当前结果。 */
+   if(!chk.ok){revokeNotes[id]={tone:'',text:chk.reason};CF.render();return;}
+   const rec=approvalTarget(r);if(!rec){CF.render();return;}
+   if(revokeScene==='stale'){rec.revoke={state:'success',external:true,done:D.iso()};if(r.type==='loan')rec.revoked=true;saveApprovals(r);revokeNotes[id]={tone:'',text:L('This approval was already revoked on chain. Your wallet was not opened.','该授权已在链上撤销，未唤起钱包。')};CF.render();return;}
+   if(revokeScene==='wrongWallet'){revokeNotes[id]={tone:'warn',text:L('Your wallet is not on the approval address '+maskAddr(r.address)+'. Switch to it in your wallet and revoke again. Nothing was sent on chain.','钱包当前不是授权地址 '+maskAddr(r.address)+'，请在钱包中切换到该地址后再撤销。本次未发生链上操作。')};CF.render();return;}
+   revokeBusy=id;delete revokeNotes[id];CF.render();
+   setTimeout(()=>{
+     revokeBusy='';
+     if(['cancelled','unavailable'].includes(revokeScene)){revokeNotes[id]={tone:'',text:revokeScene==='cancelled'?L('Not signed. Nothing was revoked, nothing was sent on chain and no gas was incurred.','未签名，本次未撤销，未发生链上操作、未产生 gas。'):L('Wallet unavailable. Nothing was revoked, nothing was sent on chain and no gas was incurred.','钱包不可用，本次未撤销，未发生链上操作、未产生 gas。')};CF.render();return;}
+     /* 同一次撤销只发出一笔交易；处理中不能重复发起。 */
+     rec.revoke={state:'processing',at:new Date(revokeScene==='unknown'?now()-26*H:now()).toISOString(),gas:null};saveApprovals(r);CF.render();
+     if(revokeScene==='unknown')return;
+     setTimeout(()=>{
+       if(rec.revoke?.state!=='processing')return;
+       if(revokeScene==='failed'){rec.revoke={state:'failed',at:rec.revoke.at,done:D.iso(),gas:'0.000031',reason:['The revoke transaction failed on chain; the approval is unchanged.','撤销交易上链失败，授权保持不变。']};}
+       else{rec.revoke={...rec.revoke,state:'success',done:D.iso(),tx:'0x'+Array.from({length:64},(_,i)=>'0123456789abcdef'[(i*11+id.length)%16]).join(''),gas:REVOKE_GAS};
+         if(r.type==='loan'){rec.revoked=true;const k=r.address+'|'+r.ccy,a=Q.data().allowances;if(a&&a[k]!=null)a[k]=Math.max(0,a[k]-r.amount);}}
+       saveApprovals(r);CF.render();
+     },1600);
+   },700);
+ }
+ function approvalSections(r){
+   const out=[],add=(id,t,body)=>out.push(section(id,t,body)),rec=r.rec,rv=rec?.revoke,st=approvalError?'unreadable':r.status;
+   /* 授权地址、被授权合约、授权范围、预估 gas 与后果说明和“撤销授权”在同一分区内同时可见。 */
+   add('mc-basic',L('Approval','授权信息'),dl([
+     [L('Approval address','授权地址'),copyMasked(r.address,maskAddr,L('Copy full address','复制完整地址'))+(addrName(r)?small(E(addrName(r))):'')],
+     [L('Approval type','授权类型'),r.type==='loan'?L('Funding approval','放款授权'):L('Pledge approval','质押授权')],
+     [L('Approved contract','被授权合约'),copyMasked(r.contract,maskAddr,L('Copy full address','复制完整地址'))+small(r.type==='loan'?L('Lending contract','放款合约'):L('Pledge contract · Ethereum · ','质押合约 · Ethereum · ')+E(r.type==='loan'?'':text(r.kind)))],
+     [L('Scope','授权范围'),r.type==='loan'?money(r.amount,r.ccy):copyMasked(r.issuer,maskAddr,L('Copy full address','复制完整地址'))+small(L('Issuing contract · all tokens of this address under it','代币发行合约 · 该地址在这个发行合约下的全部代币'))],
+     [L('Approved at','授权时间'),r.status==='granting'?L('Signed ','签名发出 ')+time(r.signedAt):time(r.at)],
+     [L('Status','链上授权状态'),badge(st)],
+     revocable(r).ok&&[L('Estimated gas to revoke','撤销预估 gas'),'<span class="mono">'+REVOKE_GAS+' ETH</span>'+small(L('Paid by your company from the approval address','由本企业从授权地址支付'))]
+   ])+'<div class="mc-revoke-block" id="mc-revoke">'+revokePanel(r)+'</div>');
+   if(r.type==='loan')add('mc-related',L('Related business','关联业务'),dl([[L('Project','项目名称'),E(text(D.project(r.project)?.name))],[L('Application ID','融资申请编号'),copy(r.request)],[L('Business ID','融资业务编号'),r.business?copy(r.business):L('Not yet generated','尚未生成')],[L('Offer stage','本笔报价当前阶段'),badge(r.quote)]])+'<p class="mc-links">'+link('detail',L('View loan offer','查看本笔报价详情'),'quotes|'+r.id)+'</p>');
+   else add('mc-related',L('Projects using this pledge contract','使用这份质押合约的项目'),r.projects.length?'<ul class="mc-project-list">'+r.projects.map(p=>'<li><span>'+E(text(p.name))+'</span>'+copy(p.id)+'</li>').join('')+'</ul>':CF.empty(L('No projects of your company use this pledge contract','本企业暂无使用这份质押合约的项目'),''));
+   add('mc-chain',L('On-chain records','链上记录'),dl([
+     [L('Approval transaction','授权交易标识'),rec?.tx?copyMasked(rec.tx,maskTx,L('Copy transaction ID','复制交易标识')):r.status==='granting'?L('Processing','处理中'):'—'],
+     [L('Approval gas','授权实际 gas'),rec?.gas?E(rec.gas)+' ETH':rec?.fee!=null?E(String(rec.fee))+' ETH':'—'],
+     [L('Approval completed at','授权完成时间'),rec&&r.status!=='granting'?time(rec.done||rec.at):'—'],
+     rv&&!rv.external&&[L('Revocation transaction','撤销交易标识'),rv.tx?copyMasked(rv.tx,maskTx,L('Copy transaction ID','复制交易标识')):rv.state==='processing'?L('Processing','处理中'):'—'],
+     rv&&!rv.external&&[L('Revocation gas','撤销实际 gas'),rv.gas?E(rv.gas)+' ETH':rv.state==='processing'?L('To be verified','待核实'):'—'],
+     rv&&[L('Revocation completed at','撤销完成时间'),rv.done?time(rv.done):'—']
+   ]));
+   return out;
+ }
+ function quoteResultRows(r){
+   if(r.status==='offerPending')return [[L('Result','结果'),badge('offerPending')],[L('Signed at','签名发出时间'),time(r.signedAt)],[L('Waited','已等待'),elapsed(r.waited)]];
+   if(r.status==='waiting')return [[L('Result','结果'),badge('waiting')],[L('Lock started','锁定起点'),time(r.at)],[L('Time locked','已锁定时长'),elapsed(r.locked)]];
+   if(r.status==='disbursing')return [[L('Result','结果'),badge('disbursing')],[L('Waited','已等待'),r.chainState==='unknown'?'—':elapsed(r.waited)],[L('Lock started','锁定起点'),time(r.at)]];
+   if(r.status==='rejected')return [[L('Result','结果'),badge('rejected')],[L('Rejected at','拒绝时间'),time(r.done)],r.reason&&[L('Reason','原因'),E(reasonText(r.reason))]];
+   if(r.status==='quoteEnded')return [[L('Result','结果'),badge('quoteEnded')],[L('Invalidated at','失效时间'),time(r.done)],r.reason&&[L('Reason','原因'),E(reasonText(r.reason))]];
+   const loan=r.deal?.record;
+   return [[L('Result','结果'),badge('accepted')],[L('Disbursed at','放款成功时间'),time(r.deal?.confirmedAt)],[L('Disbursement ID','放款编号'),loan?copy(loan.id):'—'],[L('Currency / amount','放款币种与金额'),money(r.deal?.settlement,r.deal?.ccy)],[L('Current business stage','当前业务阶段'),badge(r.status)]];
+ }
  function details(k,r){
    const out=[],add=(id,t,body)=>out.push(section(id,t,body));
    if(k==='tokens'){
@@ -324,31 +512,25 @@
      add('mc-usage',L('Current usage','当前使用记录'),usageList(r));
      add('mc-basic',L('Credit term','授信期限'),dl([[L('First granted','首次授信时间'),time(r.first)],[L('Valid until','授信有效期至'),date(r.expires)],S.role==='fund'&&[L('Internal remark','备注'),E(r.history?.at(-1)?.remark||'—')]]));
    }else if(k==='quotes'){
-     /* 报价详情只回答三件事：客户要多少、本机构怎么报、结果如何。 */
-     add('mc-demand',L('Client financing request','客户融资需求'),dl([[L('Requested amount','融资需求金额'),money(r.amount)],[L('Application ID','融资申请编号'),copy(r.request)]]));
-     add('mc-quote',L('Your quote','本机构报价'),dl([[L('Settlement currency','结算币种'),E(r.ccy)],[L('Annual rate','年化融资利率'),E(r.rate)+'%'],[L('Quoted at','报价时间'),time(r.at)],[L('Business ID','融资业务编号'),copy(r.id)]]));
-     const result=quoteResult(r);
-     add('mc-result',L('Quote result','报价结果'),dl(result==='waiting'?[[L('Result','结果'),badge('waiting')],[L('Lock started','锁定起点'),time(r.at)],[L('Time locked','已锁定时长'),elapsed(r.locked)]]:result==='accepted'?[[L('Result','结果'),badge('accepted')],[L('Accepted at','接受时间'),time(r.done)],[L('Current business stage','当前业务阶段'),badge(r.status)]]:result==='rejected'?[[L('Result','结果'),badge('rejected')],[L('Rejected at','拒绝时间'),time(r.done)],r.reason&&[L('Reason','原因'),E(reasonText(r.reason))]]:[[L('Result','结果'),badge('quoteEnded')],[L('Invalidated at','失效时间'),time(r.endedAt||r.done)],r.reason&&[L('Reason','原因'),E(reasonText(r.reason))]])+
-       (result==='accepted'?'<p class="mc-links">'+link('detail',L('View disbursement','查看同笔放款'),'loans|'+r.id)+(['repaying','settled'].includes(r.status)&&r.deal?.record&&['confirmed','settled'].includes(r.deal.state)?link('detail',L('View repayment','查看同笔还款'),'repayments|'+r.id):'')+'</p>':''));
-   }else if(k==='loans'){
-     const x=r.deal;
-     add('mc-progress',L('Disbursement progress','放款进展'),dl([[x.record?L('Disbursement amount','放款金额'):L('Agreed disbursement amount','约定放款金额'),money(r.settlement,r.ccy)]])+
-       '<ol class="mc-steps"><li data-done="'+!!x.record+'"><b>'+L('Funder registers disbursement','资金方登记放款')+'</b><span>'+(x.record?time(x.record.at):L('Not submitted','未提交'))+'</span></li><li data-done="'+!!x.confirmedAt+'"><b>'+L('Asset holder confirms receipt','资产方确认到账')+'</b><span>'+(x.confirmedAt?time(x.confirmedAt):L('Not confirmed','未确认'))+'</span></li></ol>'+
-       (['confirmed','settled'].includes(x.state)?'<p class="mc-links"><span class="mc-small">'+L('Repayment progress is in Repayments.','还款进展在还款信息查看。')+'</span>'+link('detail',L('View repayment','查看同笔还款'),'repayments|'+r.id)+'</p>':''));
-     add('mc-refs',L('Project and references','关联与编号'),dl([[L('Project','所属融资项目'),E(text(D.project(r.project)?.name))],[L('Application ID','融资申请编号'),copy(r.request)],[L('Business ID','融资业务编号'),copy(r.id)],[L('Disbursement ID','放款编号'),x.record?copy(x.record.id):L('No disbursement record yet','尚无放款记录')]]));
-   }else return repaymentSections(r);
+     /* 报价详情回答四件事：客户要多少、本机构怎么报、结果如何、本笔链上授权现在怎样。 */
+     add('mc-demand',L('Client financing request','客户融资需求'),dl([[L('Requested amount','融资需求金额'),money(r.amount,'USDT')],[L('Application ID','融资申请编号'),copy(r.request)]]));
+     add('mc-quote',L('Your offer','本机构报价'),dl([[L('Settlement currency','结算币种'),E(r.ccy)],[L('Annual rate','年化融资利率'),E(r.rate)+'%'],[L('Offered at','报价时间'),r.offer?L('Not yet generated','尚未生成'):time(r.at)],[L('Business ID','融资业务编号'),r.offer?L('Not yet generated','尚未生成'):copy(r.id)]]));
+     add('mc-result',L('Offer result','报价结果'),dl(quoteResultRows(r))+
+       ((r.unknown||r.chainState==='unknown')?CF.note('warn',E(SUPPORT())):r.status==='disbursing'?'<p class="mc-small">'+L('Accepted by the asset holder; on-chain disbursement processing.','资产方已接受，链上放款处理中。')+'</p>':r.lastFail?'<p class="mc-small">'+L('The last on-chain disbursement did not complete. The offer is still awaiting acceptance.','上次链上放款未完成，本笔仍待接受。')+'</p>':'')+
+       (['repaying','settled'].includes(r.status)&&find('repayments',r.id)?'<p class="mc-links">'+link('detail',L('View repayment','查看同笔还款'),'repayments|'+r.id)+'</p>':''));
+     if(S.role==='fund'&&r.approval)add('mc-approval',L('On-chain approval for this offer','本笔链上授权'),dl([[L('Status','链上授权状态'),badge(approvalError?'unreadable':r.approval)]])+'<p class="mc-links">'+link('detail',L('View approval record','查看链上授权记录'),'approvals|'+r.id)+'</p>');
+   }else if(k==='approvals')return approvalSections(r);
+   else return repaymentSections(r);
    return out;
  }
- const quoteResult=r=>r.state==='waiting'?'waiting':r.state==='rejected'?'rejected':r.state==='expired'?'quoteEnded':'accepted';
- const handler=r=>r.fdState==='pending'?L('Funder','资金方'):r.fdState==='confirming'?L('Asset holder','资产方'):L('No current action','无当前办理');
- /* 详情标题直接写对象识别：代币看编号，报价看项目，授信、放款、还款看对方名称；类型由上方小标题区分。 */
+ /* 详情标题直接写对象识别：代币看编号，报价看项目，授信、还款看对方名称，链上授权看授权地址；类型由上方小标题区分。 */
  function head(k,r){
    const cls='<span class="mc-meta-text">',end='</span>';
    if(k==='tokens')return {title:r.id,meta:badge(r.status)+badge(r.pledged?'pledged':'unpledged')+CF.copyBtn('mc-copy',r.id,L('Copy token ID','复制代币编号')),actions:controls(k,r)};
    if(k==='credits')return {title:counter(r),meta:badge(r.status)+cls+L('Valid until ','有效期至 ')+date(r.expires)+end+copy(r.id),actions:modifyEntry(r)};
-   if(k==='loans')return {title:counter(r),meta:badge(r.fdState)+cls+L('Current handler: ','当前处理方：')+handler(r)+end,actions:controls(k,r)};
    if(k==='repayments')return {title:counter(r.q),meta:badge(r.status)+(r.overdue?CF.tag('warn',L('Currently overdue','当前逾期')):'')+cls+E(text(D.project(r.project)?.name))+end,actions:controls(k,r)};
-   return {title:text(D.project(r.project)?.name),meta:cls+E(owner(r.owner))+end+badge(quoteResult(r)),actions:controls(k,r)};
+   if(k==='approvals')return {title:addrName(r)||maskAddr(r.address),meta:cls+(r.type==='loan'?L('Funding approval','放款授权'):L('Pledge approval','质押授权'))+' · '+L('contract ','被授权合约 ')+'<span class="mono">'+E(maskAddr(r.contract))+'</span>'+end+badge(approvalError?'unreadable':r.status),actions:r.type==='pledge'?controls(k,r):''};
+   return {title:text(D.project(r.project)?.name),meta:cls+E(owner(r.owner))+end+badge(r.status),actions:controls(k,r)};
  }
  function modifyEntry(r){
    if(S.role!=='fund')return '';
@@ -357,8 +539,10 @@
  }
  function detail(k){
    if(!allowed())return gate();
+   /* 已取消的融资放款详情：同一笔业务改由还款详情承接，不存在时统一不可访问。 */
+   if(k==='loans'){const r=find('repayments',params().get('id'));if(r){const q=params();setTimeout(()=>{if(path()==='/console/loans')location.replace(location.href.split('#')[0]+'#/console/repayments?'+q);},0);return '<div class="mc-root mc-error" role="status">'+CF.skelTable(3)+'</div>';}return unavailable();}
    if(k==='tokens'&&(tokenError||!Array.isArray(D.tokens)))return '<div class="mc-root mc-error">'+CF.empty(L('Token details unavailable','代币详情暂不可用'),reloadHint(),'')+'</div>';
-   const r=find(k,params().get('id'));if(!r||!tabs().includes(k)&&!(k==='quotes'&&S.role==='asset')||S.st==='denied')return unavailable();
+   const r=find(k,params().get('id'));if(!r||!tabs().includes(k)||S.st==='denied')return unavailable();
    if(k==='repayments'&&params().get('period')&&!r.periods.some(p=>p.id===params().get('period')))return unavailable();
    if(k==='projects'&&params().get('application')&&!r.demands.some(d=>d.id===params().get('application')))return unavailable();
    if(['loading','error'].includes(detailState))return '<div class="mc-root mc-error">'+(detailState==='loading'?'<div role="status">'+CF.skelTable(6)+'</div>':CF.empty(L('Details could not be loaded','详情加载失败'),reloadHint(),''))+'</div>';
@@ -367,7 +551,7 @@
    const sections=details(k,r),h=head(k,r),chapters=sections.length>3;
    return '<div class="mc-root mc-detail"><div class="page-head"><div><p class="mc-eyebrow">'+E(k==='credits'?nm('credits'):text(kindNames[k]))+'</p><h1 class="page-title" tabindex="-1">'+E(h.title)+'</h1><div class="mc-detail-meta">'+h.meta+'</div></div>'+(h.actions?'<div class="mc-quick-actions" aria-label="'+(k==='credits'?L('Credit actions','授信操作'):L('Project navigation','项目导航'))+'">'+h.actions+'</div>':'')+'</div>'+(detailState==='stale'?CF.note('warn',L('The business state changed. The previous action is no longer available.','业务状态已变化，原操作已不可用。')):'')+pendingSection(k,r)+(k==='tokens'?'<div class="stat-strip mc-detail-metrics">'+stat(L('Token value','代币价值'),statMoney(r.value),'','accent')+stat(L('Receivable due','应收账款到期日'),date(r.due))+'</div>':'')+(chapters?'<nav class="mc-chapters" aria-label="'+L('On this page','本页章节')+'">'+sections.map((x,i)=>'<button type="button" data-act="mc-section" data-v="'+x.id+'"'+(!i?' aria-current="location"':'')+'>'+E(x.title)+'</button>').join('')+'</nav>':'')+'<div class="detail-stack">'+sections.map(x=>x.html).join('')+'</div></div>';
  }
- /* 修改授信：控制台唯一写入。生效中可追加额度或后延有效期至；已到期为重新授信。规则沿授信报价模块，不调低、冻结或删除。 */
+ /* 修改授信：资金方在授信详情办理。生效中可追加额度或后延有效期至；已到期为重新授信。规则沿授信报价模块，不调低、冻结或删除。 */
  const today=()=>new Date(now()).toISOString().slice(0,10);
  const addYears=(d,y)=>{const [Y,M,Dd]=d.split('-').map(Number),last=new Date(Date.UTC(Y+y,M,0)).getUTCDate();return (Y+y)+'-'+String(M).padStart(2,'0')+'-'+String(Math.min(Dd,last)).padStart(2,'0');};
  const rawCredit=id=>Q.data().credits.find(c=>c.id===id);
@@ -397,7 +581,7 @@
      return {total:Math.round((c.total+(+add||0))*100)/100,expires:modify.expires};
    }
    const total=modify.total.trim();
-   if(!amount.test(total)||+total<=0||+total<r.used)return modifyFail('total','Enter a limit above 0, with up to 2 decimals, and not below the used amount of '+CF.fmtAmt(r.used)+' USD.','授信额度须大于 0、最多两位小数，且不低于当前已用额 '+CF.fmtAmt(r.used)+' USD。');
+   if(!amount.test(total)||+total<=0||+total<r.used)return modifyFail('total','Enter a limit above 0, with up to 2 decimals, and not below the used amount of '+CF.fmtAmt(r.used)+' USDT.','授信额度须大于 0、最多两位小数，且不低于当前已用额 '+CF.fmtAmt(r.used)+' USDT。');
    const t=today();if(!(modify.expires>=addYears(t,1)&&modify.expires<=addYears(t,5)))return modifyFail('expires','Choose an expiry date within one to five years.','请选择一年至五年内的授信有效期至。');
    return {total:+total,expires:modify.expires};
  }
@@ -438,17 +622,23 @@
    const field=(id,label,control,hint='')=>'<div class="field"><label for="mc-cm-'+id+'">'+CF.fieldLabel(label)+'</label>'+control+err(id)+(hint?'<p class="hint">'+hint+'</p>':'')+'</div>';
    const years=[1,2,3,4,5].map(y=>[addYears(today(),y),y]);
    const terms=renew?
-     field('total',L('Credit limit (USD) *','授信额度（USD）*'),'<input class="inp" id="mc-cm-total" inputmode="decimal" value="'+E(modify.total)+'"'+bad('total')+off+'>',L('Previous limit ','上一版额度 ')+CF.fmtAmt(c.total)+' USD · '+L('not below the used amount ','不低于当前已用额 ')+CF.fmtAmt(r.used)+' USD')+
+     field('total',L('Credit limit (USDT) *','授信额度（USDT）*'),'<input class="inp" id="mc-cm-total" inputmode="decimal" value="'+E(modify.total)+'"'+bad('total')+off+'>',L('Previous limit ','上一版额度 ')+CF.fmtAmt(c.total)+' USDT · '+L('not below the used amount ','不低于当前已用额 ')+CF.fmtAmt(r.used)+' USDT')+
      field('expires',L('Credit valid until *','授信有效期至 *'),'<select class="inp" id="mc-cm-expires"'+bad('expires')+off+'>'+years.map(([d,y])=>'<option value="'+d+'"'+(d===modify.expires?' selected':'')+'>'+date(d)+L(' · '+y+(y>1?' years':' year'),' · '+y+' 年')+'</option>').join('')+'</select>')
-     :field('add',L('Increase limit by (USD)','增加额度（USD）'),'<input class="inp" id="mc-cm-add" inputmode="decimal" placeholder="'+L('Leave empty to keep the limit','不增加可留空')+'" value="'+E(modify.add)+'"'+bad('add')+off+'>',L('Adjusted limit: ','调整后额度：')+'<span id="mc-cm-after" class="mono">'+CF.fmtAmt(c.total+(/^\d+(\.\d{1,2})?$/.test(modify.add.trim())?+modify.add:0))+'</span> USD')+
+     :field('add',L('Increase limit by (USDT)','增加额度（USDT）'),'<input class="inp" id="mc-cm-add" inputmode="decimal" placeholder="'+L('Leave empty to keep the limit','不增加可留空')+'" value="'+E(modify.add)+'"'+bad('add')+off+'>',L('Adjusted limit: ','调整后额度：')+'<span id="mc-cm-after" class="mono">'+CF.fmtAmt(c.total+(/^\d+(\.\d{1,2})?$/.test(modify.add.trim())?+modify.add:0))+'</span> USDT')+
      field('expires',L('Credit valid until *','授信有效期至 *'),'<input class="inp" id="mc-cm-expires" type="date" value="'+E(modify.expires)+'" min="'+E(c.expires)+'"'+(cap?' max="'+E(cap)+'"':'')+bad('expires')+off+'>',cap?L('Keep or extend, up to ','可保持或后延，最晚 ')+date(cap):L('The extension limit cannot be verified now; only the limit can be increased.','暂时无法确认延期上限，本次仅可增加额度。'));
    const files='<div class="field"><label for="mc-cm-files">'+L('Credit agreements (optional)','本次授信协议（选填）')+'</label><input class="inp" id="mc-cm-files" type="file" multiple accept=".pdf,.jpg,.jpeg,.png"'+bad('files')+(busy||modify.files.length>=10?' disabled':'')+'>'+err('files')+'<p class="hint">'+L('PDF, JPG or PNG, up to 10 MB each, 10 files at most. Earlier agreements are kept.','PDF / JPG / PNG，单份不超过 10 MB，最多 10 份；历史协议保留。')+'</p>'+(modify.files.length?'<ul class="mc-cm-files">'+modify.files.map(f=>'<li><span>'+E(f.name)+'</span><span class="mc-small">'+(f.size/1048576).toFixed(2)+' MB</span>'+b('cm-remove',L('Remove','移除'),f.id,false,busy)+'</li>').join('')+'</ul>':'')+'</div>';
    return {title:renew?L('Renew credit','重新授信'):L('Modify credit','修改授信'),dismiss:true,
      html:'<div class="mc-cm">'+(!modify.invalid?err(''):'')+(renew?CF.note('',L('This credit expired on ','本授信已于 ')+date(c.expires)+L('. Renewal takes effect immediately; existing business continues.',' 到期。重新授信保存后立即生效，存量业务照常履约。')):'')+
-       dl([[L('Credited company','被授信企业'),E(counter(r))],[L('Credit ID','授信编号'),'<span class="mono">'+E(r.id)+'</span>'],[L('Current limit','当前授信额度'),money(r.total)],[L('Used','授信已用额'),money(r.used)],[L('Valid until','当前有效期至'),date(c.expires)]])+
+       dl([[L('Credited company','被授信企业'),E(counter(r))],[L('Credit ID','授信编号'),'<span class="mono">'+E(r.id)+'</span>'],[L('Current limit','当前授信额度'),money(r.total,'USDT')],[L('Used','授信已用额'),money(r.used,'USDT')],[L('Valid until','当前有效期至'),date(c.expires)]])+
        '<div class="mc-cm-form">'+terms+field('remark',L('Remark (optional)','备注（选填）'),'<input class="inp" id="mc-cm-remark" maxlength="200" value="'+E(modify.remark)+'"'+off+'>')+files+'</div>'+
-       '<p class="mc-small">'+L('Saving takes effect immediately without approval. It does not create a quote or change existing business.','保存后立即生效，无需审批；不生成报价，也不改变已有业务。')+'</p></div>',
+       '<p class="mc-small">'+L('Saving takes effect immediately without approval. It does not create an offer or change existing business.','保存后立即生效，无需审批；不生成报价，也不改变已有业务。')+'</p></div>',
      foot:b('cm-cancel',L('Cancel','取消'),'',false,busy)+b('cm-save',busy?L('Saving…','保存中…'):renew?L('Renew credit','确认重新授信'):L('Save changes','保存修改'),'',true,busy)};
+ }
+ function revokeLayer(){
+   const r=normalized('approvals').find(x=>x.id===revokeTarget);if(!r)return {title:L('Revoke approval','撤销授权'),html:CF.empty(L('Content unavailable','内容不存在或无权访问'),''),foot:'<button class="btn" data-act="closelayer">'+L('Close','关闭')+'</button>'};
+   const chk=revocable(r),busy=revokeBusy===r.id;
+   return {title:L('Revoke approval','撤销授权'),dismiss:!busy,html:'<div class="mc-revoke">'+revokePanel(r,true)+'</div>',
+     foot:'<button class="btn" data-act="closelayer"'+(busy?' disabled':'')+'>'+(chk.ok?L('Cancel','取消'):L('Close','关闭'))+'</button>'+(chk.ok?b('revoke',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Revoke approval','撤销授权'),r.id,true,busy||!!revokeBusy):'')};
  }
  // Reading bridge: only original source readers, no action deep links.
  function sourceTarget(){
@@ -459,8 +649,7 @@
    const app=q.get('mcApplication'),period=q.get('mcPeriod'),record=q.get('mcRecord');
    if(k==='projects'&&app&&!r.demands.some(d=>d.id===app))return {invalid:true};
    if(k==='repayments'&&(period&&!r.periods.some(p=>p.id===period)||record&&!r.periods.some(p=>p.id===period&&p.record?.id===record)))return {invalid:true};
-   if(k==='loans'&&record&&r.deal?.record?.id!==record)return {invalid:true};
-   if(['loans','repayments','quotes'].includes(k)&&app&&r.request!==app)return {invalid:true};
+   if(['repayments','quotes'].includes(k)&&app&&r.request!==app)return {invalid:true};
    return {k,r,app,period};
  }
  function queueSourceReading(){
@@ -475,10 +664,8 @@
      if(params().get('mcFallback')==='1'){sourceFault='fallback';CF.render();return;}
      const {k,r,app,period}=t;
      if(k==='projects'&&app||k==='quotes'){
-       if(Q.openRequest)Q.openRequest(app||r.request,{selected:k==='quotes'?r.id:undefined});
+       if(Q.openRequest)Q.openRequest(app||r.request,{selected:k==='quotes'&&!r.offer?r.id:undefined});
        else sourceFault='fallback';
-     }else if(k==='loans'){
-       if(CF.L7?.openDetail)CF.L7.openDetail(r.id);else sourceFault='fallback';
      }else if(k==='repayments'){
        if(CF.L8?.openDetail)CF.L8.openDetail(r.id,{period});else sourceFault='fallback';
      }
@@ -490,26 +677,30 @@
    const ids=[q.get('mcApplication'),q.get('mcObject'),q.get('mcPeriod'),q.get('mcRecord')].filter(Boolean);
    return '<div class="mc-return"><div><span>'+L('Opened from My console','来自我的控制台')+'</span>'+(sourceFault==='invalid'?'<p>'+L('Content does not exist or is not accessible.','内容不存在或无权访问。')+'</p>':sourceFault==='fallback'?'<p>'+L('Only this project could be opened. The original record has not been located.','当前仅到达同一项目，尚未定位原记录。')+'</p><div class="mc-small">'+E(ids.join(' · '))+'</div>':'<p class="mc-small">'+L('Read the original record here. To handle business, close the record and use the project’s existing actions.','在此阅读原记录；如需办理，请关闭记录并从项目既有入口选择。')+'</p>')+'</div>'+b('return',/^#\/console(\?|$)/.test(back)?L('Return to My console','返回我的控制台'):L('Return to console details','返回控制台详情'),back)+'</div>';
  }
- function reviewTools(){return '<div class="grp"><h5>'+L('Console partial faults','控制台局部故障')+'</h5>'+[['stats','Summary error','单项统计失败'],['tokens-error','Token snapshot error','代币读取失败'],['association-error','Association error','关联读取失败'],['association-none','No project association','无关联项目'],['association-denied','No accessible project','无可访问关联项目'],['association-unsupported','Project-only fallback','仅同项目定位降级'],['plan-error','Plan unavailable','还款计划加载失败'],['pending-error','Pending marks unavailable','待处理读取失败'],['usage-error','Credit usage records unavailable','授信使用记录读取失败'],['credit-save-fail','Next credit save fails','下次修改授信保存失败'],['session','Session expired','登录失效']].map(([v,en,zh])=>b('scenario',L(en,zh),v)).join('')+'<p class="hint">'+L('Fixtures are shared with the marketplace; no real payment is made.','演示数据与广场共用；不发起真实付款。')+'</p></div>';}
+ function reviewTools(){return '<div class="grp"><h5>'+L('Console partial faults','控制台局部故障')+'</h5>'+[['stats','Summary error','单项统计失败'],['tokens-error','Token snapshot error','代币读取失败'],['association-error','Association error','关联读取失败'],['association-none','No project association','无关联项目'],['association-denied','No accessible project','无可访问关联项目'],['association-unsupported','Project-only fallback','仅同项目定位降级'],['plan-error','Plan unavailable','还款计划加载失败'],['pending-error','Pending marks unavailable','待处理读取失败'],['usage-error','Credit usage records unavailable','授信使用记录读取失败'],['approval-error','Approval status unavailable','授权状态读取失败'],['credit-save-fail','Next credit save fails','下次修改授信保存失败'],['session','Session expired','登录失效']].map(([v,en,zh])=>b('scenario',L(en,zh),v)).join('')+
+   '<label for="mc-revoke-scene">'+L('Revoke result','撤销授权结果')+'</label><select class="inp" id="mc-revoke-scene">'+[['success','On chain','上链成功'],['failed','Failed · gas charged','明确失败 · 已产生 gas'],['cancelled','Not signed','未签名'],['unavailable','Wallet unavailable','钱包不可用'],['unknown','Result unknown','结果长期未知'],['wrongWallet','Wallet on another address','钱包不是授权地址'],['stale','Already revoked before submitting','提交前已在链上撤销']].map(([v,en,zh])=>'<option value="'+v+'"'+(v===revokeScene?' selected':'')+'>'+L(en,zh)+'</option>').join('')+'</select>'+
+   '<p class="hint">'+L('Fixtures are shared with the marketplace; no real payment, signature or transaction is made.','演示数据与广场共用；不发起真实付款、签名或交易。')+'</p></div>';}
 
  CF.review.register('P-MC-01',{group:['My console','我的控制台'],route:'/console',parties:true,
    scenarios:()=>allowed()?tabs().map(k=>({id:k,label:names[k],route:'/console?tab='+k,description:['Open this record category','定位此类业务清单']})):[],
    states:()=>allowed()?['default','loading','empty','noresult','error','denied']:['default'],
-   reset(){S.st='default';statsError=tokenError=associationError=planError=pendingError=usageError=false;associationScene='normal';}});
- kinds.forEach((k,i)=>CF.review.register('P-MC-0'+(i+2),{
+   reset(){S.st='default';statsError=tokenError=associationError=planError=pendingError=usageError=approvalError=false;associationScene='normal';}});
+ kinds.forEach(k=>CF.review.register(pageIds[k],{
    group:['My console · details','我的控制台 · 详情'],parties:true,visible:()=>k!=='projects'&&tabs().includes(k),
    scenarios:()=>allowed()?[...new Set(normalized(k).map(r=>r.status))].map(st=>{const r=normalized(k).find(r=>r.status===st);return {id:st,label:labels[st]||[st,st],route:r?detailHref(k,r.id):null,available:!!r,description:[text(titles[k])+' · '+r.id,text(titles[k])+' · '+r.id]};}):[],
    states:()=>allowed()?['default','loading','error',{id:'stale',label:['Action expired','动作失效'],group:'business'},'denied']:['default'],
    route:()=>{const r=normalized(k)[0];return r?detailHref(k,r.id):null;},
    get:()=>S.st==='denied'?'denied':detailState==='normal'?'default':detailState,
    set(value){S.st=value==='denied'?'denied':'default';detailState=['loading','error','stale'].includes(value)?value:'normal';},
-   reset(){S.st='default';detailState='normal';statsError=tokenError=associationError=planError=pendingError=usageError=false;associationScene='normal';}
+   reset(){S.st='default';detailState='normal';statsError=tokenError=associationError=planError=pendingError=usageError=approvalError=false;associationScene='normal';}
  }));
+ CF.review.register(pageIds.loans,{group:['My console · details','我的控制台 · 详情'],parties:true,visible:()=>false,scenarios:()=>[],states:()=>['default'],route:()=>null,reset(){}});
 
- const mod={...old,id:'my-console-v14',pages:['P-MC-01',...kinds.map((_,i)=>'P-MC-0'+(i+2))],dict,
-   content(id){if(id==='P-MC-01')return listing();const i=kinds.findIndex((_,i)=>id==='P-MC-0'+(i+2));return detail(kinds[i]);},
+ const detailPages=[...kinds,'loans'].map(k=>pageIds[k]);
+ const mod={...old,id:'my-console-v15',pages:['P-MC-01',...detailPages],dict,
+   content(id){if(id==='P-MC-01')return listing();const k=Object.keys(pageIds).find(k=>pageIds[k]===id);return detail(k);},
    breadcrumbRoute(id){return id==='P-MC-01'?listRoute(path().split('/')[2]||tabs()[0]).slice(1):old.breadcrumbRoute?.(id);},
-   beforeRender(){old.beforeRender?.();if(lastRole!==S.role+'|'+JSON.stringify(S.party)){S.layer=null;lastRole=S.role+'|'+JSON.stringify(S.party);detailState='normal';copyValue='';sourceOpened='';}},
+   beforeRender(){old.beforeRender?.();if(lastRole!==S.role+'|'+JSON.stringify(S.party)){S.layer=null;lastRole=S.role+'|'+JSON.stringify(S.party);detailState='normal';copyValue='';sourceOpened='';revokeNotes={};}},
    // Measure before the first target scroll: a wrapped portal header is taller on narrow screens.
    afterRender(){old.afterRender?.();queueSourceReading();requestAnimationFrame(()=>{syncConsoleNav();syncChapters();});const current=location.hash;if(current!==lastHash){lastHash=current;if(path().startsWith('/console')){const q=params();restoring=true;setTimeout(()=>{syncChapters();window.scrollTo(0,Math.max(0,+q.get('y')||0));const box=document.getElementById('mc-list');if(box)box.scrollTop=Math.max(0,+q.get('scroll')||0);const id=q.get('focus');if(id)document.querySelector('[data-id="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});else document.querySelector('.mc-root .page-title')?.focus({preventScroll:true});if(!q.has('y')){const k=path().split('/')[2],r=k==='repayments'&&find(k,q.get('id')),p=r&&selectedPeriod(r);const el=p?document.getElementById('mc-period-'+p.id):q.get('application')?document.getElementById('mc-application-'+q.get('application')):null;el?.scrollIntoView({block:'start'});}restoring=false;syncChapters();},0);}}
      if(focusAfter){const key=focusAfter;focusAfter='';setTimeout(()=>document.getElementById('mc-'+key)?.focus({preventScroll:true}),0);}
@@ -528,24 +719,24 @@
      if(key==='cm-save')saveModify();
      if(key==='cm-cancel'){modify={};CF.closeLayer();}
      if(key==='cm-remove'){captureModify();modify.files=modify.files.filter(f=>f.id!==v);CF.render();document.getElementById('mc-cm-files')?.focus();}
-     if(key==='tab'){returnNotice=false;setView({tab:v,pending:'',filter:'',secondary:'',project:'',tokenType:'',query:'',periodState:'',sort:v==='credits'?'available-asc':'newest',page:1});}
-     if(key==='clear'){S.st='default';returnNotice=false;S.menu=null;setView({pending:'',filter:'',secondary:'',project:'',tokenType:'',query:'',periodState:'',page:1});}
+     if(key==='revoke-open'){revokeTarget=v;delete revokeNotes[v];CF.openLayer('modal','mc-revoke');}
+     if(key==='revoke')revoke(v);
+     if(key==='tab'){returnNotice=false;setView({tab:v,pending:'',filter:'',secondary:'',project:'',address:'',tokenType:'',query:'',periodState:'',sort:v==='credits'?'available-asc':'newest',page:1});}
+     if(key==='clear'){S.st='default';returnNotice=false;S.menu=null;setView({pending:'',filter:'',secondary:'',project:'',address:'',tokenType:'',query:'',periodState:'',page:1});}
      if(key==='search')setView({query:document.getElementById('mc-query').value.trim(),page:1});
-
      if(key==='page')setView({page:Math.max(1,+v)});
-
-
      if(key==='list'||key==='return'){returnNotice=key==='return';navigate(safeRoute(v)||'#/console');}
      if(key==='section'){chapterTarget=v;const el=document.getElementById(v);el?.focus({preventScroll:true});el?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
      if(key==='copy'){copyValue=v;const fallback=()=>CF.openLayer('modal','mc-copy');try{navigator.clipboard?.writeText(v).then(()=>CF.toast(L('Copied','已复制')),fallback)||fallback();}catch(_){fallback();}}
-     if(key==='scenario'){pendingError=v==='pending-error';usageError=v==='usage-error';saveFailOnce=v==='credit-save-fail'||saveFailOnce&&v!=='session';planError=v==='plan-error';statsError=v==='stats';tokenError=v==='tokens-error';associationError=v==='association-error';detailState=['loading','error','stale'].includes(v)?v:'normal';if(v.startsWith('association-'))associationScene=v.slice(12);else associationScene='normal';if(v==='session'){S.role='guest';S.layer=null;S.demo=false;}CF.render();}
+     if(key==='scenario'){pendingError=v==='pending-error';usageError=v==='usage-error';approvalError=v==='approval-error';saveFailOnce=v==='credit-save-fail'||saveFailOnce&&v!=='session';planError=v==='plan-error';statsError=v==='stats';tokenError=v==='tokens-error';associationError=v==='association-error';detailState=['loading','error','stale'].includes(v)?v:'normal';if(v.startsWith('association-'))associationScene=v.slice(12);else associationScene='normal';if(v==='session'){S.role='guest';S.layer=null;S.demo=false;}CF.render();}
      return true;
    },
-   layers:{...old.layers,'mc-credit-modify':()=>modifyLayer(),'mc-source-unavailable':()=>({title:L('Content unavailable','内容不存在或无权访问'),html:'<p>'+L('Return to your console to view accessible records.','请返回控制台查看可访问记录。')+'</p>',foot:b('return',L('Return to console details','返回控制台详情'),safeRoute(params().get('mcReturn'))||'#/console')}),'mc-copy':()=>({title:L('Copy reference','复制编号'),html:'<input class="inp mc-copy-value" readonly value="'+E(copyValue)+'" aria-label="'+L('Reference number','完整编号')+'"><p>'+L('Select the text and copy it.','请选择文本后复制。')+'</p>',foot:'<button class="btn" data-act="closelayer">'+L('Close','关闭')+'</button>'})}
+   layers:{...old.layers,'mc-credit-modify':()=>modifyLayer(),'mc-revoke':()=>revokeLayer(),'mc-source-unavailable':()=>({title:L('Content unavailable','内容不存在或无权访问'),html:'<p>'+L('Return to your console to view accessible records.','请返回控制台查看可访问记录。')+'</p>',foot:b('return',L('Return to console details','返回控制台详情'),safeRoute(params().get('mcReturn'))||'#/console')}),'mc-copy':()=>({title:L('Copy reference','复制编号'),html:'<input class="inp mc-copy-value" readonly value="'+E(copyValue)+'" aria-label="'+L('Reference number','完整编号')+'"><p>'+L('Select the text and copy it.','请选择文本后复制。')+'</p>',foot:'<button class="btn" data-act="closelayer">'+L('Close','关闭')+'</button>'})}
  };
  CF.define(CF.LSView=mod);
  const composed=mod.content;mod.content=id=>(id==='P-LS-01'||id==='P-LS-02'?backBanner():'')+composed(id);
  document.addEventListener('change',e=>{
+   if(e.target.id==='mc-revoke-scene'){revokeScene=e.target.value;return;}
    if(e.target.id==='mc-pending'&&path()==='/console'){returnNotice=false;setView({pending:e.target.checked?'1':'',page:1});return;}
    const group=e.target.dataset.filter;
    if(group&&group.startsWith('mc-')&&path()==='/console'){
