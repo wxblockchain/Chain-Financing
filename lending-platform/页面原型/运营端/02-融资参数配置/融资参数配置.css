@@ -29,6 +29,11 @@ table.tbl.fc-table thead th{white-space:normal}
 table.tbl.fc-table thead th.sortable button{white-space:normal;text-align:left}
 .fc-table tbody td{overflow-wrap:anywhere;font-size:var(--ui-row-value)}
 .fc-table .fc-name{font-weight:500}
+.fc-network{display:inline-flex;align-items:center;gap:var(--sp-2);max-width:100%;vertical-align:middle}
+.fc-network>span:last-child{min-width:0;overflow-wrap:anywhere}
+.fc-network-icon{display:inline-flex;width:var(--sp-5);height:var(--sp-5);flex:none;color:var(--muted)}
+.fc-network-icon svg{display:block;width:100%;height:100%}
+.fc-network .fc-meta{display:block;margin:var(--sp-1) 0 0;font-weight:400}
 .fc-table .fc-num{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
 .fc-table .fc-stamp{white-space:nowrap;font-variant-numeric:tabular-nums}
 .fc-table th .fc-meta{font-weight:400;letter-spacing:0}

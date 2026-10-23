@@ -35,7 +35,7 @@
   const chainText=r=>L('Chain ID ','链 ID ')+r.network.chainId;
   const comboName=r=>netName(r)+' · '+r.tokenType;
   const statusTag=r=>configured(r)?CF.tag('ok',L('Configured','已配置')):CF.tag('warn',L('Not configured','未配置'));
-  const networkCell=r=>`${E(netName(r))}<span class="fc-meta mono">${E(chainText(r))}</span>`;
+  const networkValue=(r,withChain=false)=>`<span class="fc-network"><span class="fc-network-icon" aria-hidden="true">${CF.assetIconSvg(r.network.icon)||CF.ICON.globe}</span><span>${E(netName(r))}${withChain?`<span class="fc-meta mono">${E(chainText(r))}</span>`:''}</span></span>`;
 
   const boundsText=()=>L('over 0%, up to 100%, at most 2 decimal places','大于 0，最高 100%，最多两位小数');
   const termBoundsText=()=>L(TERM.min+' – '+TERM.max+' whole months',TERM.min+' ～ '+TERM.max+' 整月');
@@ -138,7 +138,7 @@
   }
   function networks(){
     const seen=new Map();
-    A.rows.slice().sort(byNetwork).forEach(r=>{if(!seen.has(r.network.chainId))seen.set(r.network.chainId,netName(r)+' · '+chainText(r));});
+    A.rows.slice().sort(byNetwork).forEach(r=>{if(!seen.has(r.network.chainId))seen.set(r.network.chainId,netName(r));});
     return [...seen];
   }
   function filters(){
@@ -184,7 +184,7 @@
         +sortHead('type','Token type','代币类型')
         +`<th scope="col" class="fc-num">${L('Maximum pledge ratio','最高质押率')}</th><th scope="col" class="fc-num">${L('Maximum project term','最长项目期限')}</th>`
         +`<th scope="col">${L('Configuration status','配置状态')}</th><th scope="col" class="col-act">${L('Action','操作')}</th></tr></thead><tbody>`
-        +rows.map(r=>`<tr class="${[configured(r)?'':'fc-row-unset',A.justSaved&&r.records[0]?.id===A.justSaved?'fc-row-new':''].join(' ').trim()}"><td><span class="fc-name">${networkCell(r)}</span></td><td><span class="fc-name">${E(r.tokenType)}</span></td><td class="fc-num">${E(ratioText(r.maxRatio))}</td><td class="fc-num">${E(termText(r.maxTermMonths))}</td><td>${statusTag(r)}</td><td class="col-act">${actions(r)}</td></tr>`).join('')
+        +rows.map(r=>`<tr class="${[configured(r)?'':'fc-row-unset',A.justSaved&&r.records[0]?.id===A.justSaved?'fc-row-new':''].join(' ').trim()}"><td><span class="fc-name">${networkValue(r)}</span></td><td><span class="fc-name">${E(r.tokenType)}</span></td><td class="fc-num">${E(ratioText(r.maxRatio))}</td><td class="fc-num">${E(termText(r.maxTermMonths))}</td><td>${statusTag(r)}</td><td class="col-act">${actions(r)}</td></tr>`).join('')
         +`</tbody></table></div>${pager(found.length)}`);
     return head+`<section class="card">${filters()}${cue}${table}</section>`;
   }
@@ -226,7 +226,7 @@
     const maintain=canMaintain()
       ?`<button type="button" class="btn primary" data-act="fc-edit" data-v="${E(r.id)}">${configured(r)?L('Maintain parameters','维护参数'):L('Configure parameters','配置参数')}</button>`:'';
     const current=section('Current parameters','当前参数',kv([
-      [L('Blockchain network','区块链网络'),`${E(netName(r))}<span class="fc-meta mono">${E(chainText(r))}</span>`],
+      [L('Blockchain network','区块链网络'),networkValue(r,true)],
       [L('Token type','代币类型'),`<span class="fc-name">${E(r.tokenType)}</span>`],
       [L('Maximum pledge ratio','最高质押率'),E(ratioText(r.maxRatio))],
       [L('Maximum project term','最长项目期限'),E(termText(r.maxTermMonths))],
@@ -322,7 +322,7 @@
     const save=$('fc-save');
     if(save){save.disabled=A.busy||!dirty();save.title=dirty()?'':noChange();}
   }
-  const subject=r=>`<dl class="fc-subject"><div><dt>${L('Blockchain network','区块链网络')}</dt><dd>${E(netName(r))} <span class="fc-meta mono">${E(chainText(r))}</span></dd></div><div><dt>${L('Token type','代币类型')}</dt><dd class="mono">${E(r.tokenType)}</dd></div></dl>`;
+  const subject=r=>`<dl class="fc-subject"><div><dt>${L('Blockchain network','区块链网络')}</dt><dd>${networkValue(r,true)}</dd></div><div><dt>${L('Token type','代币类型')}</dt><dd class="mono">${E(r.tokenType)}</dd></div></dl>`;
   function formStep(r){
     const d=A.draft;
     const mark=key=>`<span class="tag accent fc-changed" id="fc-${key}-changed" ${changed(key)?'':'hidden'}><span class="dot"></span>${L('Changed','已修改')}</span>`;
