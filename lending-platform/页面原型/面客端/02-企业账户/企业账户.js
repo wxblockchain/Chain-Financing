@@ -485,7 +485,7 @@
     const back=V.returnTo,kind=V.returnKind,biz=V.returnBiz;
     V.returnTo='';V.returnKind='';V.returnBiz='';
     location.hash='#'+back;
-    setTimeout(()=>{if(kind==='quote')CF.CQ?.resumeSelection?.(biz);else if(kind==='loan')CF.L7?.resumeAccounts?.(biz);},40);
+    setTimeout(()=>{if(kind==='quote')CF.CQ?.resumeSelection?.(biz);else if(kind==='loan')CF.L7?.resumeAccounts?.(biz);else if(kind==='repay')CF.L8?.resumeAccounts?.(biz);},40);
   }
   async function copy(value){
     try{await navigator.clipboard.writeText(value);CF.toast(L('Copied.','已复制。'));}

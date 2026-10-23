@@ -224,8 +224,8 @@
   const flowNames={global:['Collateral','质押流程'],financing:['Financing','融资流程'],repay:['Repayment','还款流程']};
   function repaySteps(p){
     const avail=CF.L8?.available(p)||[];
-    const stage=!avail.length?0:CF.L8?.hasUnsettled?.(p)?1:3;
-    return {ended:false,stage,labels:[['Repayment plan','生成还款计划'],['Submit repayment','提交本期还款'],['Funder confirms','资金方确认到账'],['Settled','结清']]};
+    const stage=!avail.length?0:CF.L8?.hasUnsettled?.(p)?1:2;
+    return {ended:false,stage,labels:[['Repayment plan','生成还款计划'],['Approve & repay','授权并还款'],['Settled','结清']]};
   }
   function flowSteps(p,key){return key==='financing'?(Q?Q.financeSteps(p):null):key==='repay'?repaySteps(p):null;}
   function flowTodo(p,key){
@@ -238,7 +238,7 @@
     const n=D.numbers(p),d=D.current(p);
     if(key==='global')return L(n.pool.length+' shares in the contract','合约内 '+n.pool.length+' 份');
     if(key==='financing')return d?label(d.state):p.demands.length?L('Previous round ended','上一轮已结束'):L('No active request','暂无进行中需求');
-    return p.balance?L('Outstanding ','已融资余额 ')+usdt(p.balance):L('Starts after a disbursement succeeds','放款成功后生成还款计划');
+    return p.balance?L('Outstanding ','已融资余额 ')+usdt(p.balance):CF.L8?.available(p).length?(CF.L8.hasUnsettled(p)?L('Repaying','还款中'):L('All repayments settled','还款已全部结清')):L('Starts after a disbursement succeeds','放款成功后生成还款计划');
   }
   function openFlow(p){
     const chosen=actionTabs[p.id];
