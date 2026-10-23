@@ -190,9 +190,8 @@ function changeRows(before,after){
  const rows=[['File','文件',before.file||'—',after.file||'—',true],['Change note','变更说明',txt(before.note)||'—',txt(after.note)||'—']].filter(r=>r[4]||r[2]!==r[3]);
  return `<div class="tablewrap"><table class="tbl ag-changes"><thead><tr><th>${L('Change','变更项')}</th><th>${L('Before','覆盖前')}</th><th>${L('After','覆盖后')}</th></tr></thead><tbody>${rows.map(r=>`<tr><th>${L(r[0],r[1])}</th><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}</tbody></table></div>`;
 }
-/* 操作进度与项目合约管理的操作记录同一形态：一条从新到旧的时间线，必有信息直接可见，详情展开。 */
+/* 操作进度与代币准入审核统一：名称、主体与时间、结果、直接可读的明细。 */
 let activityState='default',activityPage=1;
-const openLogs=new Set();
 /* 异常记录样本仅供评审：缺操作人、缺发生时间与重复到达各一条。 */
 function anomalies(a){
  const n=(scheduled(a)||active(a)||{n:1}).n,base={id:'demo-anomaly-1',at:'2026-09-17T06:00:00Z',kind:'overwrite',n,summary:['demo-agreement-1.pdf → demo-agreement-2.pdf','demo-agreement-1.pdf → demo-agreement-2.pdf'],actor:'operator',identity:null,result:'success',region:null,note:''};
@@ -214,11 +213,11 @@ function activity(a){
    const actor=r.actor==='system'?L('System','系统'):r.identity?esc(txt(r.identity)):L('Operator: to be verified','操作人：待核实');
    const at=r.at?`<time datetime="${esc(r.at)}">${time(r.at)}</time>`:`<span>${L('Time: to be verified','操作时间：待核实')}</span>`;
    const detail=`<dl class="ag-kv">${kv(L('Summary','变更摘要'),esc(txt(r.summary))+(r.when?' '+time(r.when):''))}${kv(L('Status change','状态变化'),esc(txt(k.change)))}${['upload','overwrite'].includes(r.kind)?kv(L('Change note','变更说明'),esc(txt(r.note))||'—'):''}${r.result==='failed'?kv(L('Failure reason','失败原因'),esc(txt(r.reason))||L('None yet','暂无')):''}${r.reason&&r.result!=='failed'?kv(L('Reason','原因'),esc(txt(r.reason))):''}${r.region?kv(L('Region','来源地区'),esc(txt(r.region))):''}</dl>${r.before?changeRows(r.before,r.after):''}`;
-   return `<li class="ag-event" data-tone="${k.tone}"><div class="ag-event-head"><h3>${esc(txt(k.label))}</h3><p class="ag-event-result">${CF.tag(r.result==='failed'?'danger':'ok',r.result==='failed'?L('Failed','失败'):L('Success','成功'))}</p></div><div class="ag-event-meta"><span>${L('Version','关联版本')} <span class="mono">${r.n?'v'+r.n:'—'}</span></span><span>${actor}</span>${at}</div><details data-log="${esc(key)}"${openLogs.has(key)?' open':''}><summary aria-label="${esc(L('View details: ','查看详情：')+txt(k.label))}">${L('View details','查看详情')}</summary><div class="ag-event-detail">${detail}</div></details></li>`;
+   return `<li class="ag-event" data-log="${esc(key)}" data-tone="${k.tone}"><h3>${esc(txt(k.label))}</h3><div class="ag-event-meta"><span>${actor}</span>${at}<span>${L('Version','关联版本')} <span class="mono">${r.n?'v'+r.n:'—'}</span></span></div><p class="ag-event-result">${r.result==='failed'?L('Failed','失败'):L('Success','成功')}</p><div class="ag-event-detail">${detail}</div></li>`;
   };
   body=records.length?`<div class="card-b"><ol class="ag-timeline" aria-label="${L('Agreement activity, newest first','本协议操作进度，最新在前')}">${records.slice((activityPage-1)*PAGE_SIZE,activityPage*PAGE_SIZE).map(item).join('')}</ol></div>${records.length>PAGE_SIZE?`<div class="pager"><span class="total">${L(records.length+' records','共 '+records.length+' 条记录')}</span>${B('activityPage','Previous','上一页',activityPage-1,false,activityPage===1)}<span>${activityPage} / ${pages}</span>${B('activityPage','Next','下一页',activityPage+1,false,activityPage===pages)}</div>`:''}`:CF.empty(L('No activity yet','暂无操作记录'),'','');
  }
- return `<section class="card" id="ag-activity"><div class="card-head"><h2>${L('Activity','操作进度')}</h2></div>${body}</section>`;
+ return `<section class="card" id="ag-activity"><div class="ag-activity-head"><h2>${L('Activity','操作进度')}</h2></div>${body}</section>`;
 }
 /* 基本信息只有四项定义字段，全部只读；版本信息在版本历史中辨认。 */
 function basicInfo(a){
@@ -394,7 +393,6 @@ document.addEventListener('focusout',e=>{if(e.target.id!=='ag-note'||!work)retur
 document.addEventListener('dragover',e=>{if(e.target.closest?.('#ag-upload'))e.preventDefault();});
 document.addEventListener('drop',e=>{if(!e.target.closest?.('#ag-upload'))return;e.preventDefault();upload(e.dataTransfer.files);});
 document.addEventListener('keydown',e=>{if(e.target.id==='ag-upload'&&(e.key==='Enter'||e.key===' ')){e.preventDefault();$('ag-file')?.click();}});
-document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches?.('details[data-log]'))return;if(d.open)openLogs.add(d.dataset.log);else openLogs.delete(d.dataset.log);},true);
 function beforeAct(action,value,e){
  if(busy||uploading){if(action==='closelayer'||action.startsWith('ag-')||action==='lang'||action==='menu')return true;}
  if(action==='closelayer'){

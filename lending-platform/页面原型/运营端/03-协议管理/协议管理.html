@@ -76,33 +76,32 @@
 .ag-versions .ag-filename{font-weight:500;overflow-wrap:anywhere}
 .ag-history-note{padding:var(--sp-4) var(--card-pad) 0}
 .ag-history-hint{padding:var(--sp-3) var(--card-pad) var(--sp-4);margin:0;border-top:1px solid var(--row-line)}
-/* Activity: same timeline composition as Project contracts' activity records. */
-.ag-timeline{list-style:none;margin:0;padding:0}
-.ag-event{position:relative;margin:0 0 0 5px;padding:0 0 var(--sp-6) var(--sp-6);border-left:1px solid var(--border);overflow-wrap:anywhere}
+/* Activity: match Token admission's section, event flow and directly visible details. */
+#ag-activity{padding:var(--sp-5) var(--card-pad)}
+.ag-activity-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-4);padding-bottom:var(--sp-4);margin-bottom:var(--sp-2);border-bottom:1px solid var(--border)}
+.ag-activity-head h2{font-size:var(--ui-section-title);font-weight:600;margin:0;line-height:1.5}
+#ag-activity>.card-b{padding:0}
+.ag-timeline{list-style:none;margin:var(--sp-4) 0 0;padding:0}
+.ag-event{position:relative;margin:0 0 0 5px;padding:0 0 var(--sp-6) var(--sp-5);border-left:1px solid var(--border);overflow-wrap:anywhere}
 .ag-event:last-child{padding-bottom:0;border-left-color:transparent}
-.ag-event:before{content:"";position:absolute;left:-5px;top:8px;width:9px;height:9px;border-radius:var(--radius-pill);background:var(--accent);box-shadow:0 0 0 var(--sp-1) var(--card)}
+.ag-event:before{content:"";position:absolute;left:-5px;top:5px;width:9px;height:9px;border-radius:var(--radius-pill);background:var(--accent)}
 .ag-event[data-tone=ok]:before{background:var(--ok)}
 .ag-event[data-tone=danger]:before{background:var(--danger)}
 .ag-event[data-tone=warn]:before{background:var(--warn)}
 .ag-event[data-tone=gray]:before{background:var(--border-strong)}
-.ag-event-head{display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap}
-.ag-event h3{font-size:var(--ui-field-value);margin:0;font-weight:600;line-height:1.6}
-.ag-event-meta{display:grid;grid-template-columns:minmax(80px,.45fr) minmax(0,1fr) minmax(0,1fr);gap:var(--sp-2) var(--sp-5);margin-top:var(--sp-2);font-size:var(--ui-field-label);color:var(--muted)}
+.ag-event h3{font-size:var(--fs-14);margin:0;font-weight:600}
+.ag-event-meta{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-5);margin-top:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
 .ag-event-meta>*{min-width:0}
-.ag-event-meta time{justify-self:end;text-align:right}
-.ag-event-result{margin:0;font-size:var(--ui-row-value);display:flex}
-.ag-event details{margin-top:var(--sp-1)}
-.ag-event summary{color:var(--accent);cursor:pointer;font-size:var(--ui-field-label);width:fit-content;padding-block:var(--sp-2);min-height:var(--ctrl-h-sm)}
-.ag-event summary:hover{color:var(--accent-strong)}
+.ag-event-result{margin:var(--sp-2) 0 0;font-size:var(--fs-13)}
 .ag-stack :is(summary,.actlink,.tablewrap):focus-visible,.ag-upload:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-xs)}
-.ag-event-detail{margin-top:var(--sp-3);padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm)}
+.ag-event-detail{margin-top:var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);display:grid;gap:var(--sp-2)}
 .ag-kv{display:grid;grid-template-columns:136px minmax(0,1fr);gap:var(--sp-3) var(--sp-5);margin:0;font-size:var(--ui-row-value)}
 .ag-kv dt{color:var(--muted);font-size:var(--ui-field-label)}
 .ag-kv dd{margin:0;overflow-wrap:anywhere;white-space:pre-wrap}
 .ag-kv .ag-zone{margin-left:var(--sp-1)}
-.ag-event-detail .ag-changes{margin-top:var(--sp-4)}
-.ag-changes{table-layout:fixed;width:100%;font-size:var(--fs-12)}
+.ag-changes{table-layout:fixed;width:100%;font-size:var(--fs-12);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-xs)}
 .ag-changes th,.ag-changes td{white-space:normal;overflow-wrap:anywhere;vertical-align:top}
+[data-end="admin"] .ag-changes :is(th,td){padding:var(--sp-2) var(--sp-3);vertical-align:top}
 .ag-changes th:first-child{width:25%}
 .ag-changes tbody th{text-align:left;color:var(--muted);font-weight:500}
 /* Update agreement dialog: file and optional note only. */
@@ -126,16 +125,11 @@
 #ag-submit-error:focus{outline:none}
 .ag-confirm>.dl{margin-top:0}
 .ag-confirm>.note{margin-bottom:0}
-@media(max-width:1100px){
-  .ag-event-meta{grid-template-columns:minmax(80px,.45fr) minmax(0,1fr)}
-  .ag-event-meta time{grid-column:1/-1;justify-self:start;text-align:left}
-}
 @media(max-width:600px){
-  .ag-event-meta{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
+  #ag-activity{padding-inline:var(--sp-4)}
   .ag-kv{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
   .ag-kv dd+dt{margin-top:var(--sp-2)}
   .ag-heading .page-actions{justify-content:flex-start}
-  .ag-stack summary{min-height:var(--ctrl-h)}
 }
 </style>
 </head>
