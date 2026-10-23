@@ -238,14 +238,18 @@
     const page=rows.slice((A.list.page-1)*CF.PAGE_SIZE,A.list.page*CF.PAGE_SIZE);
     const table=state||(!rows.length
       ?CF.empty(L('No tokens found','暂无符合条件的代币'),L('Change the filters or reset to the pending list.','调整筛选条件，或重置回待审核清单。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap ta-table-region" tabindex="0" role="region" aria-label="${L('Token admission table','代币准入审核清单')}"><table class="tbl ta-table"><thead><tr>
-        <th>${L('Platform token ID / token number','平台代币标识 / 代币编号')}</th><th>${L('Issuance platform / issuer','来源发行平台 / 发行方')}</th><th>${L('Token standard','代币标准')}</th>
+      :`<div class="tablewrap ta-table-region" tabindex="0" role="region" aria-label="${L('Token admission table; scroll horizontally to view all columns','代币准入审核清单，可横向滚动查看全部列')}"><table class="tbl ta-table"><colgroup>
+        <col class="ta-col-platform-id"><col class="ta-col-token-no"><col class="ta-col-name"><col class="ta-col-issuer"><col class="ta-col-standard"><col class="ta-col-value"><col class="ta-col-due"><col class="ta-col-submitted"><col class="ta-col-waiting"><col class="ta-col-status"><col class="ta-col-action">
+        </colgroup><thead><tr>
+        <th scope="col">${L('Platform token ID','平台代币标识')}</th><th scope="col">${L('Token number','代币编号')}</th><th scope="col">${L('Token name','代币名称')}</th><th>${L('Issuance platform / issuer','来源发行平台 / 发行方')}</th><th>${L('Token standard','代币标准')}</th>
         <th aria-sort="${ariaSort('value')}">${L('Quantity','代币数量（枚）')} / ${sortButton('value','Value (USD)','代币价值（USD）')}</th>
         <th aria-sort="${ariaSort('due')}">${sortButton('due','Receivable due date','底层应收账款到期日')}</th>
         <th aria-sort="${ariaSort('submittedAt')}">${sortButton('submittedAt','This submission','本次提交时间')}<span class="ta-meta">${E(S.tz||'UTC')}</span></th>
         <th aria-sort="${ariaSort('waiting')}">${sortButton('waiting','Waiting','已等待时长')}</th>
         <th>${L('Admission / token status','准入状态 / 代币状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${page.map(r=>`<tr>
-        <td><strong class="mono">${E(r.ptid)}</strong><span class="ta-meta mono">${E(r.tokenNo)}</span><span class="ta-meta">${E(txt(r.name))}</span>${r.dupes.length||r.changed?`<span class="ta-flags">${dupTags(r)}${changedTag(r)}</span>`:''}</td>
+        <td><strong class="mono ta-record-id">${E(r.ptid)}</strong>${r.dupes.length||r.changed?`<span class="ta-flags">${dupTags(r)}${changedTag(r)}</span>`:''}</td>
+        <td><span class="mono ta-record-id">${E(r.tokenNo)}</span></td>
+        <td><span class="ta-list-token"><span class="ta-icon${r.icon?'':' ta-icon-empty'}" ${r.icon?'aria-hidden="true"':`role="img" aria-label="${L('No token logo supplied','未提供代币图标')}"`}>${r.icon?E(r.symbol?r.symbol.slice(0,2):txt(r.name).slice(0,1)):'—'}</span><span class="ta-list-token-name">${val(txt(r.name))}</span></span></td>
         <td>${E(platformName(r))}<span class="ta-meta">${E(txt(r.issuer.name))}</span></td>
         <td>${E(r.standard)}</td>
         <td class="ta-num">${qty(r.qty)}<span class="ta-meta">${usd(r.value)}</span></td>
