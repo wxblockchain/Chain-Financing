@@ -37,7 +37,6 @@ table.cm-table thead th{white-space:normal;color:var(--muted);vertical-align:mid
 [data-module="contract-management"] table.cm-table :is(th,td){padding-inline:var(--sp-3)}
 .cm-table td>strong{font-weight:600}
 .cm-table .cm-meta{line-height:1.65}
-.cm-table td:nth-child(5){font-variant-numeric:tabular-nums}
 .cm-table .actlink{display:inline-flex;align-items:center;min-height:var(--ctrl-h-sm);padding-inline:var(--sp-2);border-radius:var(--radius-xs)}
 .cm-table .actlink:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cm-table .actlink:hover{background:var(--accent-soft)}
@@ -50,21 +49,25 @@ table.cm-table thead th{white-space:normal;color:var(--muted);vertical-align:mid
 .cm-table thead th button{border:0;background:none;margin:0;padding:0;font:inherit;color:inherit;letter-spacing:inherit;text-align:left;white-space:normal;cursor:pointer}
 .cm-table thead th button:hover{color:var(--accent)}
 .cm-table thead th button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--radius-xs)}
-.cm-queue-table{min-width:1080px}
-.cm-queue-table th:nth-child(1){width:15%}.cm-queue-table th:nth-child(2){width:14%}.cm-queue-table th:nth-child(3){width:13%}
-.cm-queue-table th:nth-child(4){width:15%}.cm-queue-table th:nth-child(5){width:7%}.cm-queue-table th:nth-child(6){width:12%}
-.cm-queue-table th:nth-child(7){width:17%}
-.cm-ledger-table{min-width:1080px}
-.cm-ledger-table th:nth-child(1){width:19%}.cm-ledger-table th:nth-child(2),.cm-ledger-table th:nth-child(3),.cm-ledger-table th:nth-child(4){width:21%}
-.cm-ledger-table th:nth-child(5){width:9%}.cm-ledger-table .col-act{width:96px}
-.cm-ledger-table td:is(:nth-child(2),:nth-child(3),:nth-child(4)){white-space:nowrap}
+.cm-queue-table{min-width:1120px}
+.cm-queue-table th:nth-child(1){width:14%}.cm-queue-table th:nth-child(2){width:11%}.cm-queue-table th:nth-child(3){width:11%}
+.cm-queue-table th:nth-child(4){width:10%}.cm-queue-table th:nth-child(5){width:12%}.cm-queue-table th:nth-child(6){width:14%}
+.cm-queue-table th:nth-child(7){width:10%}.cm-queue-table th:nth-child(8){width:11%}
+.cm-ledger-table{min-width:1120px}
+.cm-ledger-table th:nth-child(1){width:13%}.cm-ledger-table th:nth-child(2){width:10%}
+.cm-ledger-table th:nth-child(3),.cm-ledger-table th:nth-child(4),.cm-ledger-table th:nth-child(5){width:20%}
+.cm-ledger-table th:nth-child(6){width:7%}.cm-ledger-table .col-act{width:96px}
+.cm-ledger-table td:is(:nth-child(3),:nth-child(4),:nth-child(5)){white-space:nowrap}
+.cm-network{display:inline-flex;align-items:center;gap:var(--sp-2);vertical-align:middle;white-space:nowrap}
+.cm-network .cf-asset-icon{display:inline-flex;flex:none;width:var(--sp-5);height:var(--sp-5)}
+.cm-network .cf-asset-icon svg{width:100%;height:100%;display:block}
 .cm-ledger-table .cm-row-on td,.cm-ledger-table .cm-row-on td.col-act{background:var(--accent-soft)}
 .cm-set-table{min-width:880px}
 .cm-set-table th:nth-child(1){width:22%}.cm-set-table th:nth-child(2){width:18%}.cm-set-table th:nth-child(3){width:20%}
 .cm-set-table th:nth-child(4){width:16%}
 .cm-num{font-variant-numeric:tabular-nums}
-.cm-ledger-table :is(th,td):nth-child(5){text-align:right}
-.cm-ledger-table td:nth-child(5){font-weight:600}
+.cm-ledger-table :is(th,td):nth-child(6){text-align:right}
+.cm-ledger-table td:nth-child(6){font-weight:600}
 .cm-warn-text{color:var(--warn)}
 .cm-set-panel{margin-top:var(--sp-5);scroll-margin-top:90px}
 .cm-set-panel:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -118,8 +121,6 @@ table.cm-ctable td{font-size:var(--ui-row-value)}
 .cm-picks .field>label{font-weight:500}
 .cm-picks select.inp{width:100%;max-width:100%}
 .cm-picks select.inp{font-family:var(--mono);font-size:var(--fs-13)}
-.cm-rail-time{padding:0 0 var(--sp-4);margin-bottom:var(--sp-4);border-bottom:1px solid var(--border)}
-.cm-rail-time strong{display:block;font-size:var(--ui-field-value);font-weight:500;font-variant-numeric:tabular-nums;margin:var(--sp-1) 0}
 .cm-rail .cm-stack{gap:var(--sp-3)}
 .cm-rail .btn{white-space:normal;height:auto;min-height:var(--ctrl-h);line-height:1.5;padding-block:var(--sp-2)}
 .cm-activity{scroll-margin-top:90px}

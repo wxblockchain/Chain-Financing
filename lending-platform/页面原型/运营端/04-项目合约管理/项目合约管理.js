@@ -58,7 +58,8 @@
   const ownerName=r=>{const o=OWNERS.find(x=>x[0]===r.owner);return o?txt(o[1]):r.owner;};
   const projectName=r=>L('Demo financing project '+r.key,'示例融资项目 '+r.key);
   const network=k=>NETWORKS[k]?txt(NETWORKS[k]):k;
-  const combo=x=>x.tokenType+' · '+network(x.network);
+  const networkValue=k=>`<span class="cm-network">${k==='eth'?CF.assetIcon('ETH'):''}<span>${E(network(k))}</span></span>`;
+  const comboValue=x=>E(x.tokenType)+' · '+networkValue(x.network);
   const row=()=>A.rows.find(r=>r.id===A.selected);
   const list=()=>S.page===LG?A.ledger:A.queue;
   /* 项目的适用组合取自创建信息的代币类型与区块链网络；每个组合同时只有一套在用。 */
@@ -99,14 +100,6 @@
   const canAct=r=>allowed()&&canDecide()&&openForAction(r);
   const canApprove=r=>canAct(r)&&!!r.entity&&!missingKinds(setOf(r)).length;
 
-  /* 已等待时长：结论生效或项目关闭即停止计时。 */
-  const endedAt=r=>r.closed?r.events.find(e=>['close','expire-close'].includes(e.kind))?.at:(['approved','returned'].includes(r.review)?r.decisionAt:null);
-  const waited=r=>(endedAt(r)||now())-r.submittedAt;
-  function duration(ms){
-    const m=Math.max(0,Math.floor(ms/60000));
-    return m<60?`${m} ${L('min','分钟')}`:m<1440?`${Math.floor(m/60)} ${L('h','小时')}`
-      :`${Math.floor(m/1440)} ${L('d','天')} ${Math.floor(m%1440/60)} ${L('h','小时')}`;
-  }
   function event(r,kind,title,result,extra){
     r.events.unshift(Object.assign({id:crypto.randomUUID(),at:now(),kind,title,result,actor:['System','系统']},extra||{}));
   }
@@ -158,7 +151,7 @@
       });
       A.queue.edit={...A.queue.filter};
       A.queue.page=Math.max(1,parseInt(p.get('page'),10)||1);
-      A.queue.sort=['submittedAt','waiting'].includes(p.get('sort'))?p.get('sort'):'submittedAt';
+      A.queue.sort='submittedAt';
       A.queue.dir=p.get('dir')==='-1'?-1:1;
     }
     A.selected=onDetail?p.get('id'):null;
@@ -219,9 +212,7 @@
   function sortControl(){
     const options=[
       ['submittedAt:1',L('Submitted · oldest first','本次提交时间 · 最早优先')],
-      ['submittedAt:-1',L('Submitted · newest first','本次提交时间 · 最新优先')],
-      ['waiting:-1',L('Waiting · longest first','已等待时长 · 最长优先')],
-      ['waiting:1',L('Waiting · shortest first','已等待时长 · 最短优先')]
+      ['submittedAt:-1',L('Submitted · newest first','本次提交时间 · 最新优先')]
     ];
     return `<span class="fb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4.6 2.8v10.4M2.4 10.8l2.2 2.4 2.2-2.4M11.4 13.2V2.8M9.2 5.2l2.2-2.4 2.2 2.4"/></svg><select class="inp" id="cm-order" aria-label="${L('Sort by','排序')}">${options.map(([v,label])=>`<option value="${v}" ${v===A.queue.sort+':'+A.queue.dir?'selected':''}>${E(label)}</option>`).join('')}</select></span>`;
   }
@@ -303,7 +294,7 @@
       emptyDesc:L('Projects appear here once an asset holder submits one for review.','资产方提交审核后，项目将出现在此。')});
     let found=queueScope(false);
     found.sort((a,c)=>{
-      const value=r=>A.queue.sort==='waiting'?waited(r):r.submittedAt;
+      const value=r=>r.submittedAt;
       return (value(a)-value(c))*A.queue.dir||a.id.localeCompare(c.id);
     });
     const pages=Math.max(1,Math.ceil(found.length/CF.PAGE_SIZE));
@@ -312,7 +303,7 @@
     const st=A.queue;
     const table=state||(!found.length
       ?CF.empty(L('No projects found','暂无符合条件的项目'),L('Change the filters or return to the pending reviews.','调整筛选条件，或返回待审核队列。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Project reviews table','项目审核队列表格')}"><table class="tbl cm-table cm-queue-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher / token type · network','项目发布方 / 代币类型 · 区块链网络')}</th><th>${L('Pledge ratio / term','项目质押率 / 项目期限')}</th><th aria-sort="${ariaSort(st.sort==='submittedAt',st.dir)}">${sortButton('submittedAt','Submitted','本次提交时间',st)}${columnZone()}</th><th aria-sort="${ariaSort(st.sort==='waiting',st.dir)}">${sortButton('waiting','Waiting','已等待时长',st)}</th><th>${L('Review status','审核轴')}</th><th>${L('Configuration / pledge contract','配置执行状态 / 质押合约地址')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}<span class="cm-meta">${E(combo(r))}</span></td><td>${pct(r.ratio)}<span class="cm-meta">${E(utcDay(r.createdAt))} ～<br>${E(utcDay(expiry(r)))} (UTC)</span></td><td>${listTime(r.submittedAt)}<span class="cm-meta">${E(submission(r.seq))}</span></td><td>${duration(waited(r))}</td><td>${reviewBadge(r)}</td><td>${execBadge(r)}${r.exec==='success'?`<span class="cm-meta mono">${E(shortAddr(r.attempt.picks.pledge))}</span>`:''}</td><td class="col-act">${viewLink(r.id,'queue')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.queue,['projects','个项目'])}`);
+      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Project reviews table','项目审核队列表格')}"><table class="tbl cm-table cm-queue-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher','项目发布方')}</th><th>${L('Token type','代币类型')}</th><th>${L('Blockchain network','区块链网络')}</th><th>${L('Pledge ratio / term','项目质押率 / 项目期限')}</th><th aria-sort="${ariaSort(st.sort==='submittedAt',st.dir)}">${sortButton('submittedAt','Submitted','本次提交时间',st)}${columnZone()}</th><th>${L('Review status','审核轴')}</th><th>${L('Configuration / pledge contract','配置执行状态 / 质押合约地址')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}</td><td>${E(r.tokenType)}</td><td>${networkValue(r.network)}</td><td>${pct(r.ratio)}<span class="cm-meta">${E(utcDay(r.createdAt))} ～<br>${E(utcDay(expiry(r)))} (UTC)</span></td><td>${listTime(r.submittedAt)}<span class="cm-meta">${E(submission(r.seq))}</span></td><td>${reviewBadge(r)}</td><td>${execBadge(r)}${r.exec==='success'?`<span class="cm-meta mono">${E(shortAddr(r.attempt.picks.pledge))}</span>`:''}</td><td class="col-act">${viewLink(r.id,'queue')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.queue,['projects','个项目'])}`);
     return listHeading('queue')+metrics
       +`<section class="card">${queueFilters()}<div class="cm-section" ${A.error?'':'hidden'}>${error()}</div>${table}</section>`;
   }
@@ -343,7 +334,7 @@
     const found=configured(set).sort((a,c)=>(configAt(a)-configAt(c))*st.dir||a.id.localeCompare(c.id));
     const body=!found.length?`<p class="cm-meta">${L('No project is configured on this set yet.','这套合约上暂无已配置项目。')}</p>`
       :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Configured projects','已配置项目')}"><table class="tbl cm-table cm-set-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher','项目发布方')}</th><th aria-sort="${ariaSort(true,st.dir)}">${sortButton('configuredAt','Configuration completed at','合约配置完成时间',st)}${columnZone()}</th><th>${L('Reviewer','审核人')}</th><th>${L('Project status','项目当前状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${found.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}</td><td>${listTime(configAt(r))}</td><td>${r.reviewer?E(txt(r.reviewer)):unknown()}</td><td>${projectState(r)}</td><td class="col-act">${viewLink(r.id,'ledger')}</td></tr>`).join('')}</tbody></table></div>`;
-    return `<section class="card cm-section cm-set-panel" id="cm-set-panel" tabindex="-1" aria-labelledby="cm-set-title"><div class="cm-set-head"><h2 class="cm-h2" id="cm-set-title">${E(combo(set))} · ${L('Configured projects','已配置项目')} ${found.length}</h2>${b('Collapse','收起','set','','sm')}</div>${body}</section>`;
+    return `<section class="card cm-section cm-set-panel" id="cm-set-panel" tabindex="-1" aria-labelledby="cm-set-title"><div class="cm-set-head"><h2 class="cm-h2" id="cm-set-title">${comboValue(set)} · ${L('Configured projects','已配置项目')} ${found.length}</h2>${b('Collapse','收起','set','','sm')}</div>${body}</section>`;
   }
   function ledger(){
     const blocked=gate();
@@ -358,9 +349,9 @@
     const cell=(v)=>v?addressValue(v,L('address','地址')):notAvailable();
     const table=state||(!found.length
       ?CF.empty(L('No contracts found','暂无符合条件的合约'),L('Change the filters or clear them to see every shared contract set.','调整或清空筛选条件，查看全部共用合约。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Shared contract ledger table','共用合约台账表格')}"><table class="tbl cm-table cm-ledger-table"><thead><tr><th>${L('Token type / network','代币类型 / 区块链网络')}</th><th>${L('Pledge contract','质押合约')}</th><th>${L('Loan contract','放款合约')}</th><th>${L('Repayment contract','还款合约')}</th><th>${L('Configured projects','已配置项目数')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(s=>{
+      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Shared contract ledger table','共用合约台账表格')}"><table class="tbl cm-table cm-ledger-table"><thead><tr><th>${L('Token type','代币类型')}</th><th>${L('Blockchain network','区块链网络')}</th><th>${L('Pledge contract','质押合约')}</th><th>${L('Loan contract','放款合约')}</th><th>${L('Repayment contract','还款合约')}</th><th>${L('Configured projects','已配置项目数')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(s=>{
         const gap=missingKinds(s),on=A.ledger.set===s.id;
-        return `<tr${on?' class="cm-row-on"':''}><td><strong>${E(s.tokenType)}</strong><span class="cm-meta">${E(network(s.network))}</span>${gap.length?`<span class="cm-meta cm-warn-text">${L('Projects of this combination cannot be approved yet.','该组合的项目暂不能通过')}</span>`:''}</td><td>${cell(s.pledge)}</td><td>${cell(s.loan)}</td><td>${cell(s.repay)}</td><td class="cm-num">${configured(s).length}</td><td class="col-act"><button type="button" class="actlink" data-act="cm-set" data-v="${E(s.id)}" aria-expanded="${on}" aria-controls="cm-set-panel">${L('Projects','查看项目')}</button></td></tr>`;}).join('')}</tbody></table></div>${pager(found.length,A.ledger,['sets','套'])}`);
+        return `<tr${on?' class="cm-row-on"':''}><td><strong>${E(s.tokenType)}</strong>${gap.length?`<span class="cm-meta cm-warn-text">${L('Projects of this combination cannot be approved yet.','该组合的项目暂不能通过')}</span>`:''}</td><td>${networkValue(s.network)}</td><td>${cell(s.pledge)}</td><td>${cell(s.loan)}</td><td>${cell(s.repay)}</td><td class="cm-num">${configured(s).length}</td><td class="col-act"><button type="button" class="actlink" data-act="cm-set" data-v="${E(s.id)}" aria-expanded="${on}" aria-controls="cm-set-panel">${L('Projects','查看项目')}</button></td></tr>`;}).join('')}</tbody></table></div>${pager(found.length,A.ledger,['sets','套'])}`);
     const selected=!state&&A.ledger.set&&found.some(s=>s.id===A.ledger.set)?setProjects(setById(A.ledger.set)):'';
     return listHeading('ledger')
       +`<section class="card">${ledgerFilters()}<div class="cm-section" ${A.error?'':'hidden'}>${error()}</div>${table}</section>${selected}`;
@@ -393,7 +384,7 @@
   /* ---------------------------------------------------------------- 审核详情 */
   function createdInfo(r){
     return section('Project details under review','创建信息核对',facts([
-      [L('Blockchain network','区块链网络'),E(network(r.network))],
+      [L('Blockchain network','区块链网络'),networkValue(r.network)],
       [L('Project name','项目名称'),E(projectName(r))],
       [L('Token type','代币类型'),E(r.tokenType)],
       [L('Project pledge ratio','项目质押率'),pct(r.ratio)],
@@ -437,14 +428,14 @@
     if(r.exec==='success'){
       return section('Configured contracts','所配置的合约',
         facts([
-          [L('Applicable combination','适用组合'),E(combo(r))+ledgerLink(at.set)],
+          [L('Applicable combination','适用组合'),comboValue(r)+ledgerLink(at.set)],
           [L('Configuration completed at','合约配置完成时间'),time(at.at)]
         ])+contractTable(at.picks,{proofs:at.proofs}));
     }
     if(pendingOpen){
       const gap=missingKinds(set);
       html+=sub('Applicable shared contracts','适用的共用合约')
-        +facts([[L('Applicable combination','适用组合'),E(combo(r))+(set?ledgerLink(set.id):'')],
+        +facts([[L('Applicable combination','适用组合'),comboValue(r)+(set?ledgerLink(set.id):'')],
           [L('Configured projects','已配置项目数'),set?String(configured(set).length):'0']])
         +(at?'':contractTable(set||{}))
         +(gap.length?note(L('Missing: ','缺少')+gap.join(L(', ','、'))+L('. This project cannot be approved yet.','，本项目暂不能通过。'),'warn'):'');
@@ -474,13 +465,12 @@
       :!r.entity?L('The stable entity identifier is to be verified. Approval is unavailable; you can return it.','稳定主体标识待核实，暂不能通过，可退回。')
       :r.exec==='failed'?L('The last configuration failed. Start it again or return the application.','最近一次配置失败，可再次发起或退回。')
       :'';
-    const waiting=`<div class="cm-rail-time"><span class="cm-meta">${L(endedAt(r)?'Waited until the decision':'Waiting so far',endedAt(r)?'审结前等待时长':'已等待时长')}</span><strong>${duration(waited(r))}</strong></div>`;
     let actions='';
     if(canDecide()){
       const again=r.exec==='failed';
       actions=`<div class="cm-stack">${b(again?'Start the configuration again':'Approve and configure contracts',again?'再次发起配置':'通过并配置合约',again?'reconfig':'approve','','primary',!canApprove(r))}${b('Return','退回','return','','',!canAct(r))}</div>`;
     }
-    return section('Review actions','审核处理',`${waiting}${status?`<p class="cm-rail-status">${status}</p>`:''}${actions}`);
+    return section('Review actions','审核处理',`${status?`<p class="cm-rail-status">${status}</p>`:''}${actions}`);
   }
   /* 每次结论的审核人与结论时间；通过的结论时间即合约配置完成时间。 */
   function conclusion(r){
@@ -624,7 +614,7 @@
     const picks=KINDS.map(([k,label])=>field(txt(label)+' *',select('cm-pick-'+k,d.picks[k],[['',L('Select','请选择')],...(set[k]?[[set[k],set[k]]]:[])],'aria-required="true"'))).join('');
     const ack=L('I understand: a successful configuration is the approval itself and cannot be withdrawn.','我已知悉：配置成功即审核通过，不可撤销。');
     return {title:again?L('Start the configuration again','再次发起配置'):L('Approve and configure contracts','通过并配置合约'),
-      html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${failure}${kv([[L('Applicable combination','适用组合'),E(combo(r)),true]])}<div class="cm-picks">${picks}</div><label class="cm-ack"><input id="cm-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel(ack,true)}</label></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
+      html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${failure}${kv([[L('Applicable combination','适用组合'),comboValue(r),true]])}<div class="cm-picks">${picks}</div><label class="cm-ack"><input id="cm-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel(ack,true)}</label></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
       foot:b('Cancel','取消','cancel','','',A.busy)+b('Confirm and submit','确认提交','submit','','primary',A.busy||r.closed)};
   }
   function returnLayer(){
