@@ -24,7 +24,7 @@
 .mc-root table.mc-table tbody td{font-size:var(--ui-row-value);vertical-align:middle;padding-block:var(--sp-2)}.mc-table td:first-child{min-width:155px}.mc-table td.num{white-space:nowrap}
 .mc-table tr[data-id]{cursor:pointer}.mc-table tr[data-id]:hover td{background:var(--accent-soft)}
 .mc-table .mc-object{font-weight:500;color:var(--text);text-align:left}.mc-table .mc-object:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
-.mc-table .mc-actions{min-width:160px;max-width:220px}.mc-table .mc-actions>div{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-1)}.mc-table .mc-actions .actlink{min-height:44px;display:flex;align-items:center;white-space:normal;text-align:left}
+.mc-table .mc-actions{min-width:160px;max-width:220px}.mc-table .mc-actions>div{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3)}.mc-table .mc-actions .actlink{min-height:44px;display:flex;align-items:center;white-space:normal;text-align:left}
 .mc-table .mc-indicator{display:block;font-size:var(--fs-12);margin-top:var(--sp-1);color:var(--warn)}
 .mc-table td .tag{max-width:100%}
 .mc-root .mc-table[data-kind=repayments]{table-layout:fixed}
@@ -209,7 +209,10 @@
 .mc-pending-more ul{margin:var(--sp-1) 0 0;padding:0;list-style:none}
 .mc-pending-more li{padding-block:var(--sp-2);border-top:1px solid var(--border)}
 .mc-pending-more li>b,.mc-pending-more li>span{display:block}
-.mc-table .mc-actions .mc-pending-action{min-height:44px;height:auto;max-width:100%;padding:var(--sp-2) var(--sp-3);color:var(--accent);border-color:var(--accent-border);font-size:var(--fs-12);line-height:1.5;white-space:normal;text-align:left;justify-content:flex-start;overflow-wrap:anywhere}
+.mc-table .mc-pending-action{display:inline-flex;align-items:center;min-height:44px;height:auto;max-width:100%;padding:0;color:var(--warn);font:inherit;line-height:1.6;white-space:normal;text-align:left;overflow-wrap:anywhere}
+.mc-table .mc-pending-action:hover{text-decoration:underline;text-underline-offset:3px}
+.mc-table td.mc-task>div{display:flex;align-items:center;min-height:44px}
+
 .mc-table tr[data-pending=true] td:first-child{box-shadow:inset 2px 0 var(--accent)}
 .mc-pending-detail{margin-bottom:var(--sp-4);padding:var(--sp-4) var(--card-pad);border:1px solid var(--border);border-inline-start:2px solid var(--accent);border-radius:var(--radius-sm);background:var(--card);font-size:var(--fs-13)}
 .mc-pending-detail h2{margin:0;font-size:var(--ui-section-title);line-height:1.5;font-weight:600;color:var(--text)}
@@ -277,6 +280,15 @@
 .mc-root .mc-table[data-kind=repayments] th:nth-child(6){width:9%}
 .mc-root .mc-table[data-kind=repayments] th:nth-child(7){width:14%}
 .mc-root .mc-table[data-kind=repayments] th:nth-child(8){width:13%}
+.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(1){width:16%}
+.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(2){width:10%}
+.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(3){width:12%}
+.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(4){width:12%}
+.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(5){width:11%}
+.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(6){width:11%}
+.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(7){width:13%}
+.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(8){width:7%}
+.mc-root .mc-table[data-kind=repayments][data-role=asset] th:nth-child(9){width:8%}
 .mc-project-list li>div{min-width:0}
 .mc-project-list li .btn{flex:none;min-height:36px;height:auto;white-space:nowrap}
 @media(max-width:600px),(pointer:coarse){.mc-project-list li .btn{min-height:44px}}
