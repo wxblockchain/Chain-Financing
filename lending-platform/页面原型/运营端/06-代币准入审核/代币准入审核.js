@@ -15,7 +15,7 @@
 
   const fDefault=()=>({status:'pending',token:'',platform:'',issuer:'',standard:'',dup:'',changed:'',from:'',to:'',q:''});
   let seed=CF.tokenAdmissionSeed();
-  const A={rows:seed.rows,now:seed.now,clock:Date.now(),
+  const A={rows:CF.opsOverviewData.restore('tokens',seed.rows),now:seed.now,clock:Date.now(),
     list:{filter:fDefault(),edit:fDefault(),page:1,sort:'submittedAt',dir:1,open:false},
     view:'default',response:'success',callback:'ok',fileState:'ready',activityState:'default',
     drafts:{},draft:null,busy:false,error:'',listNote:'',selected:null,dlError:false,epoch:0};
@@ -715,7 +715,7 @@
       wasSigned=signed;onModule=[LIST,DT].includes(S.page);
       if(!allowed()&&S.layer?.key.startsWith('ta-')){S.layer=null;A.draft=null;A.busy=false;}
     },
-    afterRender(){OPS.afterRender();restoreView();},
+    afterRender(){CF.opsOverviewData.publish('tokens',A.rows);OPS.afterRender();restoreView();},
     onRoute(prev,id){
       A.epoch++;A.busy=false;A.draft=null;A.error='';A.view='default';restoreContext=true;
       if(OPS_PAGES.includes(id)||OPS_PAGES.includes(prev))OPS.onRoute(prev,id);

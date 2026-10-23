@@ -17,11 +17,11 @@
 
   const fDefault=()=>({q:'',net:'',status:''});
   const seed=CF.parameterSeed();
-  const A={rows:seed.rows,justSaved:null,
+  const A={rows:CF.opsOverviewData.restore('parameters',seed.rows),justSaved:null,
     filter:fDefault(),edit:fDefault(),sort:'',dir:1,page:1,size:SIZES[0],
     selected:null,draft:null,step:'form',busy:false,error:'',errorAction:'',fieldErrors:{},validated:{},
     view:'default',logState:'default',logShown:CF.PAGE_SIZE,response:'success',epoch:0};
-  let lastHash='',returnHash='',onModule=false,wasSigned=false,restoreContext=false;
+  let lastHash='',returnHash='',onModule=false,wasSigned=false,restoreContext=true;
   const positions=new Map();
 
   const txt=x=>Array.isArray(x)?L(x[0],x[1]):x;
@@ -610,7 +610,7 @@
       wasSigned=signed;onModule=PAGES.includes(S.page);
       if((!allowed()||!canMaintain())&&S.layer?.key==='fc-maintain'){S.layer=null;A.draft=null;A.busy=false;}
     },
-    afterRender(){OPS.afterRender();restoreView();},
+    afterRender(){CF.opsOverviewData.publish('parameters',A.rows);OPS.afterRender();restoreView();},
     onRoute(prev,id){
       A.epoch++;A.busy=false;A.error='';A.errorAction='';A.fieldErrors={};A.view='default';
       A.logShown=CF.PAGE_SIZE;restoreContext=true;

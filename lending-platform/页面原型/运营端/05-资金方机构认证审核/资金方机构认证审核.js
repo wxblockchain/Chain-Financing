@@ -199,7 +199,7 @@
   }
   function seed(){
     R.state.activeTemplate='DEMO-1';R.seed('submitted');const a=R.account;a.version=2;a.submitted='2026-09-18T02:30:00Z';a.form.name='Demo Institution A';a.form.identifier='DEMO-REG-100';a.submittedFields=R.fields();a.submittedForm=copy(a.form);a.accountId='DEMO-FUNDER';a.records=[{sequence:1,submitter:a.accountId,status:'rejected',submitted:'2026-09-16T01:00:00Z',reviewed:'2026-09-17T03:00:00Z',reviewer:'DEMO-OP-02',additional:'登记号与材料不一致，请核对并填写完整编号。',issues:[]},R.recordOf(a)];delete a.history;delete a.boundIdentity;a.issues=[];a.additional='';a.successTimes=[];a.template='DEMO-1';R.persist();
-    A.extras=Array.from({length:7},(_,i)=>{const x=copy(a);x.id='DEMO-REG-'+String(i+2).padStart(3,'0');x.form.name='Demo Institution '+String.fromCharCode(66+i);x.form.identifier='DEMO-REG-'+(101+i);Object.assign(x.form,CONTACTS[i]);x.submittedForm=copy(x.form);x.submittedFields=R.fieldsFrom(x.submittedForm,'DEMO-1');x.version=1;x.accountId='DEMO-FUNDER-'+x.id.slice(-3);x.records=[];x.submitted=`2026-09-${String(18+i%2).padStart(2,'0')}T${String(3+i).padStart(2,'0')}:00:00Z`;x.status=i<5?'submitted':i===5?'verified':'rejected';x.reviewed=i>=5?'2026-09-20T01:00:00Z':null;x.reviewer=x.reviewed?'DEMO-OP-01':'';if(x.status==='rejected')x.additional=a.records[0].additional;R.recordDecision(x);return x;});
+    A.extras=Array.from({length:7},(_,i)=>{const x=copy(a);x.id='DEMO-REG-'+String(i+2).padStart(3,'0');x.form.name='Demo Institution '+String.fromCharCode(66+i);x.form.identifier='DEMO-REG-'+(101+i);Object.assign(x.form,CONTACTS[i]);x.submittedForm=copy(x.form);x.submittedFields=R.fieldsFrom(x.submittedForm,'DEMO-1');x.version=1;x.accountId='DEMO-FUNDER-'+x.id.slice(-3);x.records=[];x.submitted=`2026-09-${String(18+i%2).padStart(2,'0')}T${String(3+i).padStart(2,'0')}:00:00Z`;x.status=CF.institutionReviewSeed()[i+1].status;x.reviewed=i>=5?'2026-09-20T01:00:00Z':null;x.reviewer=x.reviewed?'DEMO-OP-01':'';if(x.status==='rejected')x.additional=a.records[0].additional;R.recordDecision(x);return x;});
     A.selected='DEMO-REG-001';A.legacyLink=false;A.pending=null;A.busy=false;A.response='success';A.sessionEpoch++;A.openFile='';R.state.activeTemplate='DEMO-1';A.error='';A.material='ready';A.filter={state:'submitted',q:'',from:'',to:''};A.page=1;S.role='ops';S.end='admin';S.layer=null;S.demo=false;location.hash='#/ops/institution-reviews';
   }
   function action(act,v,e){
@@ -247,6 +247,7 @@
     return null;
   };
   function afterRender(){
+    CF.opsOverviewData.publish('institutions',rows());
     queueMicrotask(()=>{
       if(S.demo&&!document.querySelector('.rv-demo'))$('demoPanel').insertAdjacentHTML('afterbegin',demo());
       if(S.end==='admin')OPS.afterRender();
@@ -321,5 +322,5 @@
   });
   CF.reviewDemo=A;
   // Keep the established registry, while the composed review entry offers only implemented navigation.
-  const requested=location.hash;CF.opsAuth.seedDemo('admin');seed();if(requested&&requested!=='#/')location.hash=requested;CF.boot();
+  const requested=location.hash;CF.opsAuth.seedDemo('admin');seed();const restored=CF.opsOverviewData.saved('institutions');if(restored){const main=restored.find(x=>x.id==='DEMO-REG-001');if(main?.form)Object.assign(R.account,main);A.extras=restored.filter(x=>x.id!=='DEMO-REG-001');R.persist();}if(requested&&requested!=='#/')location.hash=requested;CF.boot();
 })(window.CF);

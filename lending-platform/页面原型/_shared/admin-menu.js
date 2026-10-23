@@ -3,7 +3,7 @@
 (function(CF){
   'use strict';
   const entries = [
-    {"key":"account","page":"P-O-AL-07","route":"/ops/account-overview","file":"01-账户与登录/账户与登录.html","label":["Overview","总览"],"icon":"▤","permission":14,"sidebar":true},
+    {"key":"account","page":"P-O-AL-07","route":"/ops/account-overview","file":"08-运营端总览/总览.html","label":["Overview","总览"],"icon":"▤","permission":14,"sidebar":true},
     {"key":"institution","page":"P-L40","route":"/ops/institution-reviews","file":"05-资金方机构认证审核/资金方机构认证审核.html","label":["Institution review","机构认证审核"],"icon":"▣","permission":[5,6],"sidebar":true},
     {"key":"tokens","page":"P-O-TA-01","pages":["P-O-TA-01","P-O-TA-02"],"route":"/ops/token-admissions","file":"06-代币准入审核/代币准入审核.html","label":["Token admission","代币准入审核"],"icon":"◈","permission":[21,22],"reachable":[21,22],"sidebar":true},
     {"key":"contracts","page":"P-O-CM-01","pages":["P-O-CM-01","P-O-CM-02","P-O-CM-03"],"routes":["/ops/contract-reviews","/ops/contract-ledger"],"route":"/ops/contract-reviews","file":"04-项目合约管理/项目合约管理.html","label":["Project contracts","项目合约管理"],"icon":"▦","permission":[17,18],"reachable":[17,18],"sidebar":true},
@@ -13,7 +13,7 @@
     {"key":"settings","page":"P-O-AL-06","route":"/ops/account","file":"01-账户与登录/账户与登录.html","label":["Account settings","账户设置"],"permission":14,"sidebar":false}
   ];
   const current=()=>document.documentElement.dataset.adminModule;
-  const local=e=>e.key===current()||(['account','messages'].includes(current())&&['account','settings'].includes(e.key));
+  const local=e=>e.key===current()||(['account','messages','overview'].includes(current())&&['account','settings'].includes(e.key));
   let module=null,hoverTimer=null;
   const PROFILE='hc.ops.header-profile.v1';
   const fallback={email:'operator@example.com',role:'admin'};
@@ -39,11 +39,12 @@
   function active(e){let id=CF.S.page;while(id){if(id===e.page||(e.pages||[]).includes(id))return true;id=CF.PAGES[id]?.parent}return false}
   function href(e,route=e.route){return local(e)||window.AdminPrototypeBundle?'#'+route:'../'+e.file+'#'+route}
   function link(e,cls='',role='',route=e.route){return `<a class="${cls}" href="${CF.esc(href(e,route))}" data-admin-destination="${e.key}" data-admin-route="${CF.esc(route)}" ${role?`role="${role}"`:''}${active(e)?' aria-current="page"':''}>${cls==='nav-item'?`<span class="nav-ico" aria-hidden="true">${e.icon}</span>`:''}${CF.esc(CF.L(...e.label))}</a>`}
-  function go(key,route){const e=entries.find(e=>e.key===key);if(!e||!allowed(e))return;route=route||e.route;try{localStorage.setItem('hc.ops.language',CF.S.lang)}catch(_){}if(local(e)){location.hash=route;return}if(window.AdminPrototypeBundle){window.AdminPrototypeBundle.open(e.file,route);return}location.href=href(e,route)}
+  function go(key,route){const e=entries.find(e=>e.key===key);if(!e||!allowed(e))return;route=route||e.route;try{localStorage.setItem('hc.ops.language',CF.S.lang)}catch(_){}if(local(e)){location.hash=route;return}CF.opsOverviewData?.carryGrants(CF.opsAuth?.demoGrants());if(window.AdminPrototypeBundle){window.AdminPrototypeBundle.open(e.file,route);return}location.href=href(e,route)}
   function refresh(){CF.refreshAdminTools?.()}
   function close(focus=false){clearTimeout(hoverTimer);if(CF.S.menu==='shared-account'){CF.S.menu=null;refresh()}if(focus)document.getElementById('admin-account-trigger')?.focus({preventScroll:true})}
   function open(focus=false){clearTimeout(hoverTimer);if(CF.S.layer)return;CF.opsNotifications?.closePanel(false);CF.S.menu='shared-account';refresh();if(focus)document.querySelector('#admin-account-menu a, #admin-account-menu button')?.focus()}
   CF.AdminMenu={entries,go,can,identity,readIdentity,context:()=>module?.adminContext?.()||{},closeAccount:close,
+    href(key,route){const e=entries.find(e=>e.key===key);return e?href(e,route||e.route):'#'},
     beforeLeave(proceed){if(module?.beforeAdminNavigate)module.beforeAdminNavigate(proceed);else proceed()},
     messageLink(id,from=''){const e=entries.find(e=>e.key==='messages');const q=new URLSearchParams({id});if(from)q.set('from',from);const route='/ops/notification?'+q;return {href:href(e,route),route}},
     /* route 可选：跨模块目标带定位参数时传入，仍走同一份导航与权限守卫。 */

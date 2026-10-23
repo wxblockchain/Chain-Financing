@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" data-end="admin" data-admin-module="overview">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Overview · Harbour Credit</title>
+<link rel="stylesheet" href="../../_shared/tokens.css">
+<link rel="stylesheet" href="../../_shared/base.css">
+<link rel="stylesheet" href="../01-账户与登录/账户与登录.css">
+<link rel="stylesheet" href="总览.css">
+</head>
+<body class="ops-account">
+<div id="portal" hidden></div>
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">HC</span><div><div class="brand-name">Harbour Credit</div><div class="brand-sub">Operations</div></div></div>
+    <nav class="nav" id="anav" aria-label="Main navigation"></nav><div class="side-foot" id="asidefoot"></div>
+  </aside>
+  <div class="main"><div class="topbar"><div class="topbar-right" id="atools"></div></div><main class="content" id="acontent"></main></div>
+</div>
+<div class="focus" id="focus" hidden>
+  <header class="focus-head"><div class="brand"><span class="brand-mark" aria-hidden="true">HC</span><span class="brand-name">Harbour Credit</span></div><div class="focus-tools" id="focusTools"></div></header>
+  <main class="focus-main"><div class="focus-card" id="focusContent"></div></main>
+  <footer class="focus-foot">Harbour Credit</footer>
+</div>
+<div id="layers"></div><div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<button class="demo-btn" id="demoBtn" type="button"></button><aside class="demo-panel" id="demoPanel" hidden aria-label="Demo tools"></aside>
+<script src="../../_shared/registry.admin.js"></script>
+<script src="../../_shared/shell.js"></script>
+<script src="../../_shared/admin-menu.js"></script>
+<script src="../../_shared/admin-message-data.js"></script>
+<script src="../../_shared/admin-notifications.js"></script>
+<script src="../../_shared/puzzle.js"></script>
+<script src="../02-融资参数配置/演示数据.js"></script>
+<script src="../04-项目合约管理/演示数据.js"></script>
+<script src="../05-资金方机构认证审核/演示数据.js"></script>
+<script src="../06-代币准入审核/演示数据.js"></script>
+<script src="演示数据.js"></script>
+<script>CF.deferOpsBoot=true;</script>
+<script src="../01-账户与登录/账户与登录.js"></script>
+<script src="总览.js"></script>
+<script>
+CF.define({...CF.opsAccountModule,id:'ops-overview',demoOnly:true});
+CF.opsAuth.seedDemo('admin');
+if(!location.hash)history.replaceState(null,'','#/ops/account-overview');
+CF.boot();
+</script>
+</body>
+</html>

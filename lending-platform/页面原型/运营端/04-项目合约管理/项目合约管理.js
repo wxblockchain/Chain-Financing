@@ -29,7 +29,7 @@
   const lDefault=()=>({token:'',network:'',q:''});
 
   let seed=CF.contractSeed();
-  const A={rows:seed.rows,sets:seed.sets,tokenTypes:seed.tokenTypes,config:{...seed.config},
+  const A={rows:CF.opsOverviewData.restore('contracts',seed.rows),sets:seed.sets,tokenTypes:seed.tokenTypes,config:{...seed.config},
     now:seed.now,clock:Date.now(),
     queue:{filter:qDefault(),edit:qDefault(),page:1,sort:'submittedAt',dir:1,open:false},
     ledger:{filter:lDefault(),edit:lDefault(),page:1,dir:-1,set:''},
@@ -861,7 +861,7 @@
       wasSigned=signed;onModule=[Q,DT,LG].includes(S.page);
       if(!allowed()&&S.layer?.key.startsWith('cm-')){S.layer=null;A.draft=null;A.busy=false;}
     },
-    afterRender(){OPS.afterRender();restoreView();},
+    afterRender(){CF.opsOverviewData.publish('contracts',A.rows);OPS.afterRender();restoreView();},
     onRoute(prev,id){
       A.epoch++;A.busy=false;A.draft=null;A.error='';A.view='default';restoreContext=true;
       if(OPS_PAGES.includes(id)||OPS_PAGES.includes(prev))OPS.onRoute(prev,id);
