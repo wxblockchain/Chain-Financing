@@ -130,8 +130,9 @@
   }
   function repaymentChoices(p){return available(p).filter(x=>quote(x.id)?.l8?.periods.some(r=>['due','pending'].includes(r.state))).sort((a,b)=>(nearest(a)?.due||'9999').localeCompare(nearest(b)?.due||'9999')||Date.parse(a.confirmedAt)-Date.parse(b.confirmedAt)||a.id.localeCompare(b.id));}
 
-  const stateOf=x=>{const p8=quote(x.id)?.l8;return !p8?'generating':p8.settledAt?'settled':'repaying';};
-  function repaymentState(x){const p8=quote(x.id)?.l8;return !p8?CF.tag('accent',L('Repaying','还款中'))+CF.tag('',L('Plan generating','还款计划生成中')):p8.settledAt?CF.tag('ok',L('Settled','已结清')):CF.tag('accent',L('Repaying','还款中'));}
+  /* 清单仅展示业务状态；计划生成进度留在详情，未生成计划的业务仍为还款中。 */
+  const stateOf=x=>quote(x.id)?.l8?.settledAt?'settled':'repaying';
+  function repaymentState(x){return stateOf(x)==='settled'?CF.tag('ok',L('Settled','已结清')):CF.tag('accent',L('Repaying','还款中'));}
   function recordTable(project){
     ensure();if(!projectVisible(project))return '';
     const privateColumns=available(project).some(party);
@@ -155,7 +156,7 @@
     }).join('');
     /* 筛选与项目内代币清单同构：条件下拉即时生效，编号搜索回车或离开输入框后生效，重置为轻操作。 */
     const filtered=!!(view.query||view.state||view.overdue);
-    return '<div class="filterbar ls-token-filters rp-list-filters" role="search" data-rp-project="'+E(project.id)+'" aria-label="'+L('Filter repayments','筛选还款业务')+'">'+CF.filterSelect('rp-tf-state',L('Business status','业务状态'),[['',L('All','全部')],['generating',L('Plan generating','还款计划生成中')],['repaying',L('Repaying','还款中')],['settled',L('Settled','已结清')]],view.state)+CF.filterSelect('rp-tf-overdue',L('Overdue','逾期'),[['',L('All','全部')],['yes',L('Overdue · unsettled','逾期 · 未结清')],['no',L('Not overdue','无逾期')]],view.overdue)+CF.filterSearch('rp-tf-keyword',L('Application / business / disbursement no.','申请 / 业务 / 放款编号'),view.query,L('Search application, business or disbursement number','搜索融资申请、业务或放款编号'))+'<div class="fb-acts">'+b('table-reset',L('Reset','重置'),project.id)+'</div></div>'
+    return '<div class="filterbar ls-token-filters rp-list-filters" role="search" data-rp-project="'+E(project.id)+'" aria-label="'+L('Filter repayments','筛选还款业务')+'">'+CF.filterSelect('rp-tf-state',L('Business status','业务状态'),[['',L('All','全部')],['repaying',L('Repaying','还款中')],['settled',L('Settled','已结清')]],view.state)+CF.filterSelect('rp-tf-overdue',L('Overdue','逾期'),[['',L('All','全部')],['yes',L('Overdue · unsettled','逾期 · 未结清')],['no',L('Not overdue','无逾期')]],view.overdue)+CF.filterSearch('rp-tf-keyword',L('Application / business / disbursement no.','申请 / 业务 / 放款编号'),view.query,L('Search application, business or disbursement number','搜索融资申请、业务或放款编号'))+'<div class="fb-acts">'+b('table-reset',L('Reset','重置'),project.id)+'</div></div>'
       +'<div class="rp-record-scroll"><table class="tbl rp-record-table" data-private="'+privateColumns+'"><thead><tr>'+heads.map(([label,cls])=>'<th scope="col" class="'+cls+'">'+label+'</th>').join('')+'</tr></thead><tbody>'+content+'</tbody></table></div>'
       +(!rows.length?CF.empty(L('No repayment information','暂无还款信息'),filtered?L('No repayments match these filters. Adjust or reset them.','没有符合条件的还款业务，请调整或重置筛选。'):L('Repayment schedules and actions become available after a disbursement succeeds.','放款成功后可查看还款计划和办理还款。')):'')
       +'<div class="rp-pagination"><span class="hint">'+all.length+L(' businesses',' 笔业务')+' · '+L('5 per page','每页 5 条')+'</span><div>'+b('table-page',L('Previous','上一页'),project.id+'|'+(view.page-1),false,view.page===1)+' <span>'+view.page+' / '+pages+'</span> '+b('table-page',L('Next','下一页'),project.id+'|'+(view.page+1),false,view.page===pages)+'</div></div>';

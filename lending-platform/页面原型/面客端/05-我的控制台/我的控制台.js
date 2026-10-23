@@ -5,7 +5,7 @@
  const S=CF.S,D=CF.LS,Q=CF.CQ,L=CF.L,E=CF.esc,old=CF.LSView,H=3600000,DAY=24*H;
  const kinds=['tokens','projects','credits','repayments','quotes','approvals'];
  const chainOnly=new Set(['offerPending','disbursing','repayPending','granting','revoking']);
- const listFilter=(raw,tab)=>tab==='approvals'?'':String(raw||'').split(',').filter(k=>k&&!chainOnly.has(k)).join(',');
+ const listFilter=(raw,tab)=>tab==='approvals'?'':String(raw||'').split(',').filter(k=>k&&!chainOnly.has(k)&&!(tab==='repayments'&&k==='generating')).join(',');
  const pageIds={tokens:'P-MC-02',projects:'P-MC-03',credits:'P-MC-04',loans:'P-MC-05',repayments:'P-MC-06',quotes:'P-MC-07',approvals:'P-MC-08'};
  const names={tokens:['Tokens','代币列表'],projects:['Financing projects','融资项目'],credits:['Credit facilities','授信明细'],repayments:['Repayments','还款信息'],quotes:['My loan offers','我的报价'],approvals:['Approvals','链上授权']};
  const titles={tokens:['Token details','代币详情'],projects:['Project details','融资项目详情'],credits:['Credit details','授信详情'],loans:['Repayment details','还款业务详情'],repayments:['Repayment details','还款业务详情'],quotes:['Loan offer details','报价详情'],approvals:['Approval details','链上授权详情']};
@@ -234,7 +234,7 @@
    }
    return assets+'<div class="stat-strip mc-summary'+(holdings?' mc-summary--asset':'')+'">'+holdings+(statsError?stat(L('Total credit','总授信额度'),'—',E(reloadHint())):stat(L('Total credit','总授信额度'),compactMoney(sum(credits,'total'),'USDT'),credits.length+L(' facilities',' 笔授信'),'accent'))+stat(L('Financed balance','已融额度'),compactMoney(empty?0:S.role==='asset'?sum(normalized('projects'),'balance'):sum(credits,'principal'),'USDT'),(empty?0:normalized('repayments').filter(r=>r.status!=='settled').length)+L(' unsettled businesses',' 笔未结清业务'),'info')+stat(L('Available credit','剩余可用授信'),compactMoney(sum(credits,'available'),'USDT'),'','pos')+'</div>'+(S.role==='asset'?'<p class="mc-small mc-scope">'+L('Whole-token totals do not represent available holdings or financing capacity.','整笔代币统计不代表可用份额或可融额度。')+'</p>':'');
  }
- const filterOptions={tokens:['valid','void'],projects:['review','returned','available','raising','locked','financing','closed','settled'],credits:['effective','expired'],repayments:['repaying','settled','generating'],quotes:['waiting','rejected','quoteEnded','repaying','settled']};
+ const filterOptions={tokens:['valid','void'],projects:['review','returned','available','raising','locked','financing','closed','settled'],credits:['effective','expired'],repayments:['repaying','settled'],quotes:['waiting','rejected','quoteEnded','repaying','settled']};
 
  function select(key,title,options,value){return CF.filterSelect('mc-'+key,title,options,value,'');}
  function pick(key,title,options,value){return CF.filterMenu('mc-'+key,title,options.filter(o=>o[0]!==''),picks(value));}
@@ -300,8 +300,10 @@
  /* Period status and business status stay distinct; neither is a to-do state. */
  function repaymentState(r){
    if(r.status==='settled')return badge('settled');
+   // 计划生成进度只在详情展示；清单仍保留这笔还款中的业务。
+   if(!r.plan)return badge('repaying');
    const c=r.current;
-   const state=!r.plan?badge('generating'):c?(c.overdue?CF.tag('warn',L('Overdue','逾期'))+small(c.overdue+L(' days',' 天')):badge('due')):L('No instalments awaiting repayment','暂无待还期次');
+   const state=c?(c.overdue?CF.tag('warn',L('Overdue','逾期'))+small(c.overdue+L(' days',' 天')):badge('due')):L('No instalments awaiting repayment','暂无待还期次');
    return state+small(L('Business: ','业务：')+status(r.status))+(r.overdue&&!c?.overdue?small(L('Includes overdue instalments','含逾期期次')):'');
  }
  function pendingAction(item,r){return '<button type="button" class="actlink mc-pending-action" data-act="mc-pending" data-v="'+E(item.id)+'" aria-label="'+E(item.action+' · '+r.id)+'">'+E(item.name)+'</button>';}
