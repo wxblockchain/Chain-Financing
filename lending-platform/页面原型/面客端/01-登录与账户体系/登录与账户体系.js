@@ -183,18 +183,19 @@
       'pull-failed':['We could not confirm your identity right now. Please try again. You can keep browsing in the meantime.','暂时无法确认身份，请重试。期间仍可继续浏览。']
     };
     const retry=D.loginError==='pull-failed';
-    return `<div class="login-flow">
+    return `<div class="login-flow login-flow--entry">
       <h1 class="page-title">${L('Connect wallet','连接钱包')}</h1>
-      <p>${L("We'll ask you to connect a wallet and sign one login message. No transfer or spending approval is involved.",'我们会请求连接钱包并进行一次登录签名，不涉及转账或资金授权。')}</p>
+      <p class="login-intro">${L('Connect your wallet, then sign a message to sign in.','连接钱包后，通过一次消息签名完成登录。')}</p>
       ${held}
-      <ol class="login-steps">
-        <li${D.stage===''?' aria-current="step"':''}><span class="login-step-num">1</span>${L('Connect your wallet','连接钱包')}</li>
-        <li${D.stage==='connect'?' aria-current="step"':''}><span class="login-step-num">2</span>${L('Choose the address to sign in with','选择登录地址')}</li>
-        <li${D.stage==='sign'?' aria-current="step"':''}><span class="login-step-num">3</span>${L('Sign the login message','完成消息签名')}</li>
+      <ol class="login-steps" aria-label="${L('Sign-in steps','登录步骤')}">
+        <li${D.stage===''?' aria-current="step"':''}><span class="login-step-num">1</span><span>${L('Connect MetaMask','连接 MetaMask')}</span></li>
+        <li${D.stage==='connect'?' aria-current="step"':''}><span class="login-step-num">2</span><span>${L('Choose address','选择登录地址')}</span></li>
+        <li${D.stage==='sign'?' aria-current="step"':''}><span class="login-step-num">3</span><span>${L('Sign message','完成消息签名')}</span></li>
       </ol>
-      <p class="login-caption">${L('Use the MetaMask desktop browser extension on Ethereum (ETH).','请使用桌面浏览器的 MetaMask 插件，登录链为以太坊（ETH）。')}</p>
+      <div class="login-requirements"><span>${L('Before you start','开始前')}</span><p>${L('Use the MetaMask desktop browser extension on Ethereum (ETH).','请使用桌面浏览器的 MetaMask 插件，登录链为以太坊（ETH）。')}</p></div>
       ${D.loginError?CF.note('red',L(...errors[D.loginError])):''}
       <div class="login-actions">${retry?btn('Try again','重试','login-retry-pull','','primary'):btn('Connect wallet','连接钱包','login-connect','','primary')}${link('Keep browsing','继续浏览','login-exit')}</div>
+      <p class="login-assurance">${L('The login signature does not transfer funds or approve spending.','登录签名不涉及转账或资金授权。')}</p>
       ${demoStamp()}</div>`;
   }
   function connectWallet(){
@@ -405,9 +406,9 @@
     notices();queueMicrotask(postRender);
     switch(id){
       case 'P-L01':return loginPage();
-      case 'P-L04':return `<div class="login-flow"><div class="login-status-icon" aria-hidden="true">!</div><h1 class="page-title">${L('Unable to continue right now','暂时无法继续')}</h1><p>${L('Please try again or keep browsing. Reference: HC-100.','请重试或继续浏览。参考码：HC-100。')}</p><div class="login-actions">${btn('Try again','重试','login-start','','primary')}${btn('Keep browsing','继续浏览','login-exit')}</div></div>`;
-      case 'P-L10':return `<div class="login-flow login-center"><div class="login-status-icon" aria-hidden="true">↻</div><h1 class="page-title">${L('Matching your account','正在匹配账户')}</h1><p role="status" aria-live="polite">${L('Signature verified. We are checking this address against the asset trust platform.','签名已验证，正在用该地址与资产可信平台的同步数据匹配。')}</p>${CF.skelTable(2)}<div class="login-bottom">${link('Keep browsing','继续浏览','login-exit')}</div></div>`;
-      case 'P-L13':return `<div class="login-flow"><div class="login-status-icon" aria-hidden="true">!</div><h1 class="page-title">${L('Account setup was interrupted','账户建立未完成')}</h1><p>${L('Your address was matched, but we could not finish setting up your account. Please retry.','地址已匹配，但账户暂未建立完成，请重试。')}</p><p class="mono">HC-241</p><div class="login-actions">${btn('Retry','重试','login-retry-account','','primary')}${btn('Keep browsing','继续浏览','login-exit')}</div></div>`;
+      case 'P-L04':return `<div class="login-flow login-flow--status"><div class="login-status-icon login-status-icon--warning" aria-hidden="true">!</div><h1 class="page-title">${L('Unable to continue right now','暂时无法继续')}</h1><p>${L('Please try again or keep browsing.','请重试或继续浏览。')}</p><p class="login-reference">${L('Reference','参考码')} <span>HC-100</span></p><div class="login-actions">${btn('Try again','重试','login-start','','primary')}${link('Keep browsing','继续浏览','login-exit')}</div></div>`;
+      case 'P-L10':return `<div class="login-flow login-flow--status"><div class="login-status-icon" aria-hidden="true"><span class="login-progress-ring"></span></div><h1 class="page-title">${L('Matching your account','正在匹配账户')}</h1><p role="status" aria-live="polite">${L('Signature verified. We are checking this address against the asset trust platform.','签名已验证，正在用该地址与资产可信平台的同步数据匹配。')}</p><div class="login-match-progress" aria-hidden="true"><span></span></div><div class="login-bottom">${link('Keep browsing','继续浏览','login-exit')}</div></div>`;
+      case 'P-L13':return `<div class="login-flow login-flow--status"><div class="login-status-icon login-status-icon--warning" aria-hidden="true">!</div><h1 class="page-title">${L('Account setup was interrupted','账户建立未完成')}</h1><p>${L('Your address was matched, but we could not finish setting up your account. Please retry.','地址已匹配，但账户暂未建立完成，请重试。')}</p><p class="login-reference">${L('Reference','参考码')} <span>HC-241</span></p><div class="login-actions">${btn('Retry','重试','login-retry-account','','primary')}${link('Keep browsing','继续浏览','login-exit')}</div></div>`;
       case 'P-L12':return accountPage();
       case 'P-L14':return companyPage();
       case 'DEMO-L-GATE':return gatePage();
@@ -431,16 +432,16 @@
   }
   const layers={
     connect:()=>({title:L('Wallet connection · simulation','钱包连接 · 演示'),
-      html:`<p>${L('Choose the address to sign in with. Connecting alone does not sign you in.','请选择本次登录使用的地址；仅连接不等于登录成功。')}</p>
+      html:`<div class="login-wallet-panel"><p>${L('Choose the address to sign in with. Connecting alone does not sign you in.','请选择本次登录使用的地址；仅连接不等于登录成功。')}</p>
         <div class="login-address-list">
-        <button type="button" class="login-address" data-act="login-address" data-v="${registered}"><span class="mono">${esc(registered)}</span><span class="login-caption">${L('Demo address A','演示地址 A')}</span></button>
-        <button type="button" class="login-address" data-act="login-address" data-v="${unregistered}"><span class="mono">${esc(unregistered)}</span><span class="login-caption">${L('Demo address B','演示地址 B')}</span></button>
-        <button type="button" class="login-address" data-act="login-address" data-v="${renewed}"><span class="mono">${esc(renewed)}</span><span class="login-caption">${L('Demo address C','演示地址 C')}</span></button>
-        </div><p class="login-caption">${L('Demonstration addresses. No wallet is contacted.','演示地址，不连接真实钱包。')}</p>`,
+        <button type="button" class="login-address" data-act="login-address" data-v="${registered}"><span class="login-address-label">${L('Demo address A','演示地址 A')}<span aria-hidden="true">→</span></span><span class="mono">${esc(registered)}</span></button>
+        <button type="button" class="login-address" data-act="login-address" data-v="${unregistered}"><span class="login-address-label">${L('Demo address B','演示地址 B')}<span aria-hidden="true">→</span></span><span class="mono">${esc(unregistered)}</span></button>
+        <button type="button" class="login-address" data-act="login-address" data-v="${renewed}"><span class="login-address-label">${L('Demo address C','演示地址 C')}<span aria-hidden="true">→</span></span><span class="mono">${esc(renewed)}</span></button>
+        </div><p class="login-caption">${L('Demonstration addresses. No wallet is contacted.','演示地址，不连接真实钱包。')}</p></div>`,
       foot:btn('Cancel','取消','login-connect-cancel','','ghost')}),
     signature:()=>({title:L('Wallet signature · simulation','钱包签名 · 演示'),
-      html:`<p>${L('Confirm the login signature in your wallet.','请在钱包中确认本次登录签名。')}</p><p class="mono">${esc(shortAddress(D.address))}</p>
-        <p class="login-caption">${L('This message does not send a transaction or authorize assets.','本次签名不会发起交易或授权资产。')}</p>`,
+      html:`<div class="login-signature"><p>${L('Confirm the login signature in your wallet.','请在钱包中确认本次登录签名。')}</p><dl class="login-signature-account"><dt>${L('Sign-in address','登录地址')}</dt><dd>${esc(D.address)}</dd></dl>
+        <p class="login-assurance">${L('This message does not send a transaction or authorize assets.','本次签名不会发起交易或授权资产。')}</p></div>`,
       foot:btn('Decline signature','拒绝签名','login-sign','rejected','ghost')+btn('Signature verification fails','签名验证失败','login-sign','failed','ghost')+btn('Confirm signature','确认签名','login-sign','ok','primary')}),
     leave:(purpose)=>({title:L('You are leaving the lending platform','即将离开借贷平台'),
       html:`<p>${L('You will be redirected to the asset trust platform to continue.','我们将带你前往「资产可信平台」继续操作。')}</p><p><b>${L('Asset trust platform','资产可信平台')}</b></p>`,
