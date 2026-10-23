@@ -788,7 +788,12 @@
       return {id:key,label,available:!!p,route:p?'/project/'+p.id:null,current:!!p&&p===here&&key===stageHere,sample:p&&p!==here?p.id:'',
         description:p?['Demonstration project · '+p.id,'演示项目 · '+p.id]:['No demonstration project is in this stage','暂无处于该阶段的演示项目'],
         enter(){if(p){actionTabs[p.id]=tab;railExpanded=true;delete actionNodes[p.id+':'+tab];}}};
-    })),
+    }).concat([{
+      id:'repay-action',current:false,label:['Try repayment · reset example','演示还款操作 · 重置示例'],
+      available:!!CF.L8,route:'/project/'+(project()?.id||D.projects[0].id),
+      description:['Resets the example, switches to the asset holder and opens approve & repay','重置示例，切为资产方并打开授权还款页'],
+      enter(){setTimeout(()=>CF.L8.startDemo(),0);}
+    }])),
     states:id===LIST?['default','loading','empty','noresult','error','denied']:['default','loading','empty','error','denied'],
     route:()=>id===LIST?'/marketplace':id===NEW?'/project/new':'/project/'+D.projects.find(p=>!['review','returned','available'].includes(p.state)).id,
     beforeChange(proceed){if(busy||S.layer){CF.toast(L('Finish or cancel the current operation first.','请先完成或取消当前操作。'));return;}proceed();},
