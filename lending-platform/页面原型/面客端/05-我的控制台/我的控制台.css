@@ -192,16 +192,6 @@
 .mc-pending-toggle:has(:checked) .mc-toggle-count{background:var(--accent-soft);color:var(--accent)}
 .mc-pending-toggle[aria-disabled=true]{cursor:not-allowed;color:var(--muted);background:var(--card-2)}
 .mc-pending-toggle:has(:focus-visible){outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-xs)}
-.mc-pending-cue{display:grid;gap:var(--sp-1);margin-top:var(--sp-3);font-size:var(--fs-12);line-height:1.6;color:var(--muted);text-align:left;overflow-wrap:anywhere}
-.mc-pending-cue>b{display:flex;align-items:baseline;gap:var(--sp-1);color:var(--accent);font-weight:500}
-.mc-pending-cue>b>span[aria-hidden]{width:5px;height:5px;background:currentColor;border-radius:50%;flex:none}
-.mc-pending-cue[data-overdue=true]>b{color:var(--warn)}
-.mc-pending-cue .mc-money .mc-unit{font-size:var(--fs-11)}
-.mc-pending-more summary{width:fit-content;max-width:100%;min-height:32px;padding-block:var(--sp-1);color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.mc-pending-more summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--radius-xs)}
-.mc-pending-more ul{margin:var(--sp-1) 0 0;padding:0;list-style:none}
-.mc-pending-more li{padding-block:var(--sp-2);border-top:1px solid var(--border)}
-.mc-pending-more li>b,.mc-pending-more li>span{display:block}
 .mc-table .mc-pending-action{display:inline-flex;align-items:center;min-height:44px;height:auto;max-width:100%;padding:0;color:var(--warn);font:inherit;line-height:1.6;white-space:normal;text-align:left;overflow-wrap:anywhere}
 .mc-table .mc-pending-action:hover{text-decoration:underline;text-underline-offset:3px}
 
@@ -218,7 +208,7 @@
 @media(max-width:1100px){.mc-table tr[data-pending=true] td:first-child{box-shadow:none}.mc-table tr[data-pending=true]{box-shadow:inset 2px 0 var(--accent)}}
 @media(max-width:900px){.mc-root .mc-overview .mc-summary--asset{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.mc-pending-detail{padding:var(--sp-4)}.mc-pending-detail li{grid-template-columns:1fr;gap:var(--sp-1)}}
-@media(max-width:600px),(pointer:coarse){.mc-pending-toggle{min-height:44px}.mc-pending-more summary{min-height:44px;padding-block:var(--sp-3)}}
+@media(max-width:600px),(pointer:coarse){.mc-pending-toggle{min-height:44px}}
 @media(max-width:360px){.mc-root .mc-overview .mc-summary--asset{grid-template-columns:1fr}}
 
 /* WS-450 · current-round on-chain facts, approvals list and the revoke surface. Values come from shared tokens. */
@@ -226,9 +216,9 @@
 .mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]){table-layout:fixed}
 .mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]) td{overflow-wrap:anywhere;white-space:normal;min-width:0}
 .mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]) .mc-actions{min-width:0;max-width:none}
-.mc-table[data-kind=approvals] th:nth-child(1){width:18%}.mc-table[data-kind=approvals] th:nth-child(2){width:15%}
-.mc-table[data-kind=approvals] th:nth-child(3){width:16%}.mc-table[data-kind=approvals] th:nth-child(4){width:19%}
-.mc-table[data-kind=approvals] th:nth-child(5){width:17%}.mc-table[data-kind=approvals] th:nth-child(6){width:15%}
+.mc-table[data-kind=approvals] th:nth-child(1){width:24%}.mc-table[data-kind=approvals] th:nth-child(2){width:20%}
+.mc-table[data-kind=approvals] th:nth-child(3){width:20%}.mc-table[data-kind=approvals] th:nth-child(4){width:22%}
+.mc-table[data-kind=approvals] th:nth-child(5){width:14%}
 .mc-table[data-kind=quotes] th:nth-child(1){width:25%}.mc-table[data-kind=quotes] th:nth-child(2){width:16%}
 .mc-table[data-kind=quotes] th:nth-child(3){width:18%}.mc-table[data-kind=quotes] th:nth-child(4){width:17%}
 .mc-table[data-kind=quotes] th:nth-child(5){width:12%}.mc-table[data-kind=quotes] th:nth-child(6){width:12%}
