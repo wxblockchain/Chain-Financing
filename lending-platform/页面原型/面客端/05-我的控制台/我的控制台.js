@@ -222,13 +222,13 @@
  function stat(title,value,note='',tone=''){return '<div class="s"'+(tone?' data-tone="'+tone+'"':'')+'><div class="k">'+E(title)+'</div><div class="v">'+value+'</div>'+(note?'<div class="n">'+note+'</div>':'')+'</div>';}
  function summary(){
    if(S.st==='loading')return CF.skelTable(2);
-   const empty=S.st==='empty',tokens=empty?[]:normalized('tokens'),credits=empty?[]:normalized('credits'),sum=(rs,k)=>rs.reduce((n,r)=>n+(+r[k]||0),0),pledged=tokens.filter(r=>r.pledged),voids=pledged.filter(r=>!r.valid);
+   const empty=S.st==='empty',tokens=empty?[]:normalized('tokens'),credits=empty?[]:normalized('credits'),sum=(rs,k)=>rs.reduce((n,r)=>n+(+r[k]||0),0),pledged=tokens.filter(r=>r.pledged);
    let assets='';
    if(S.role==='asset'&&(tokenError||!Array.isArray(D.tokens)))assets='<section class="card mc-assets">'+CF.empty(L('Token summary unavailable','代币统计暂不可用'),reloadHint(),'')+'</section>';
    let holdings='';
    if(S.role==='asset'&&!assets){
      holdings=stat(L('All tokens','全部代币'),tokens.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',compactMoney(sum(tokens,'value'),'USD'),'accent')+
-       stat(L('Of which pledged','其中已质押'),pledged.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',compactMoney(sum(pledged,'value'),'USD')+'<span class="mc-stat-sub">'+L('Void ','其中已失效 ')+voids.length+L(' tokens · ',' 张 · ')+compactMoney(sum(voids,'value'),'USD')+'</span><span class="mc-stat-sub">'+L('Not counted toward eligible pledged value','不计入有效质押')+'</span>','info');
+       stat(L('Of which pledged','其中已质押'),pledged.length+'<span class="mc-count-unit">'+L(' tokens',' 张')+'</span>',compactMoney(sum(pledged,'value'),'USD'),'info');
    }
    return assets+'<div class="stat-strip mc-summary'+(holdings?' mc-summary--asset':'')+'">'+holdings+(statsError?stat(L('Total credit','总授信额度'),'—',E(reloadHint())):stat(L('Total credit','总授信额度'),compactMoney(sum(credits,'total'),'USDT'),credits.length+L(' facilities',' 笔授信'),'accent'))+stat(L('Financed balance','已融额度'),compactMoney(empty?0:S.role==='asset'?sum(normalized('projects'),'balance'):sum(credits,'principal'),'USDT'),(empty?0:normalized('repayments').filter(r=>r.status!=='settled').length)+L(' unsettled businesses',' 笔未结清业务'),'info')+stat(L('Available credit','剩余可用授信'),compactMoney(sum(credits,'available'),'USDT'),'','pos')+'</div>'+(S.role==='asset'?'<p class="mc-small mc-scope">'+L('Whole-token totals do not represent available holdings or financing capacity.','整笔代币统计不代表可用份额或可融额度。')+'</p>':'');
  }

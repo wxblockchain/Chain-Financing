@@ -269,7 +269,6 @@
 .mc-summary .s:last-child .mc-money-exact{left:auto;right:0}
 .mc-summary .n .mc-money-peek>summary{gap:var(--sp-1)}
 .mc-summary .n .mc-money-exact{font-size:var(--fs-14)}
-.mc-stat-sub{display:block;margin-top:var(--sp-1)}
 .mc-root .mc-table[data-kind=repayments] th:nth-child(1){width:17%}
 .mc-root .mc-table[data-kind=repayments] th:nth-child(2){width:11%}
 .mc-root .mc-table[data-kind=repayments] th:nth-child(3){width:12%}
