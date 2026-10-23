@@ -25,7 +25,28 @@
 .mc-table tr[data-id]{cursor:pointer}.mc-table tr[data-id]:hover td{background:var(--accent-soft)}
 .mc-table .mc-object{font-weight:500;color:var(--text);text-align:left}.mc-table .mc-object:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 .mc-table .mc-actions{min-width:160px;max-width:220px}.mc-table .mc-actions>div{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3)}.mc-table .mc-actions .actlink{min-height:44px;display:flex;align-items:center;white-space:normal;text-align:left}
-.mc-table .mc-indicator{display:block;font-size:var(--fs-12);margin-top:var(--sp-1);color:var(--warn)}
+.mc-token-identity{display:inline-flex;align-items:center;gap:var(--sp-2);max-width:100%;text-align:left}
+.mc-token-identity>span:last-child{min-width:0;overflow-wrap:anywhere}
+.mc-token-logo{width:24px;height:24px;flex:none;display:inline-grid;place-items:center}
+.mc-token-logo svg{width:14px;height:14px}
+.mc-logo-empty{color:var(--muted)}
+.mc-project-id{display:block}
+.mc-related-projects>summary{display:flex;align-items:center;gap:var(--sp-2);min-height:44px;list-style:none;cursor:pointer;border-radius:var(--radius-xs)}
+.mc-related-projects>summary::-webkit-details-marker{display:none}
+.mc-related-projects>summary>span{min-width:0;flex:1}
+.mc-related-projects>summary::after{content:"";width:5px;height:5px;flex:none;border-right:1px solid var(--muted);border-bottom:1px solid var(--muted);transform:rotate(45deg)}
+.mc-related-projects[open]>summary::after{transform:rotate(225deg)}
+.mc-related-projects>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.mc-related-projects ul{list-style:none;margin:0;padding:0}
+.mc-related-projects li{padding-block:var(--sp-3);border-top:1px solid var(--border)}
+.mc-root .mc-table[data-kind=tokens]{table-layout:fixed}
+.mc-table[data-kind=tokens] td{overflow-wrap:anywhere;white-space:normal;min-width:0}
+.mc-table[data-kind=tokens] .mc-actions{min-width:0;max-width:none}
+.mc-table[data-kind=tokens] th:nth-child(1){width:14%}.mc-table[data-kind=tokens] th:nth-child(2){width:10%}
+.mc-table[data-kind=tokens] th:nth-child(3){width:13%}.mc-table[data-kind=tokens] th:nth-child(4){width:5%}
+.mc-table[data-kind=tokens] th:nth-child(5){width:11%}.mc-table[data-kind=tokens] th:nth-child(6){width:6%}
+.mc-table[data-kind=tokens] th:nth-child(7){width:8%}.mc-table[data-kind=tokens] th:nth-child(8){width:10%}
+.mc-table[data-kind=tokens] th:nth-child(9){width:14%}.mc-table[data-kind=tokens] th:nth-child(10){width:9%}
 .mc-table td .tag{max-width:100%}
 .mc-root .mc-table[data-kind=repayments]{table-layout:fixed}
 .mc-table[data-kind=repayments] td{overflow-wrap:anywhere;white-space:normal;min-width:0}
@@ -216,12 +237,12 @@
 .mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]){table-layout:fixed}
 .mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]) td{overflow-wrap:anywhere;white-space:normal;min-width:0}
 .mc-root .mc-table:is([data-kind=approvals],[data-kind=quotes]) .mc-actions{min-width:0;max-width:none}
-.mc-table[data-kind=approvals] th:nth-child(1){width:24%}.mc-table[data-kind=approvals] th:nth-child(2){width:20%}
-.mc-table[data-kind=approvals] th:nth-child(3){width:20%}.mc-table[data-kind=approvals] th:nth-child(4){width:22%}
-.mc-table[data-kind=approvals] th:nth-child(5){width:14%}
-.mc-table[data-kind=quotes] th:nth-child(1){width:25%}.mc-table[data-kind=quotes] th:nth-child(2){width:16%}
-.mc-table[data-kind=quotes] th:nth-child(3){width:18%}.mc-table[data-kind=quotes] th:nth-child(4){width:17%}
-.mc-table[data-kind=quotes] th:nth-child(5){width:12%}.mc-table[data-kind=quotes] th:nth-child(6){width:12%}
+.mc-table[data-kind=approvals] th:nth-child(1){width:19%}.mc-table[data-kind=approvals] th:nth-child(2){width:11%}
+.mc-table[data-kind=approvals] th:nth-child(3){width:17%}.mc-table[data-kind=approvals] th:nth-child(4){width:18%}
+.mc-table[data-kind=approvals] th:nth-child(5){width:22%}.mc-table[data-kind=approvals] th:nth-child(6){width:13%}
+.mc-table[data-kind=quotes] th:nth-child(1){width:23%}.mc-table[data-kind=quotes] th:nth-child(2){width:15%}
+.mc-table[data-kind=quotes] th:nth-child(3){width:18%}.mc-table[data-kind=quotes] th:nth-child(4){width:15%}
+.mc-table[data-kind=quotes] th:nth-child(5){width:17%}.mc-table[data-kind=quotes] th:nth-child(6){width:12%}
 
 .mc-revoke-act{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-4);margin-top:var(--sp-5)}
 .mc-revoke-act .btn{min-height:44px;height:auto;white-space:normal}
@@ -254,14 +275,15 @@
 .mc-summary .s:last-child .mc-money-exact{left:auto;right:0}
 .mc-summary .n .mc-money-peek>summary{gap:var(--sp-1)}
 .mc-summary .n .mc-money-exact{font-size:var(--fs-14)}
-/* Seven repayment columns for both roles; eligible repayment actions share the actions cell. */
-.mc-root .mc-table[data-kind=repayments] th:nth-child(1){width:20%}
+/* Eight columns for both roles; the counterparty is separate from the project. */
+.mc-root .mc-table[data-kind=repayments] th:nth-child(1){width:17%}
 .mc-root .mc-table[data-kind=repayments] th:nth-child(2){width:12%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(3){width:15%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(4){width:15%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(5){width:12%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(6){width:10%}
-.mc-root .mc-table[data-kind=repayments] th:nth-child(7){width:16%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(3){width:12%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(4){width:14%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(5){width:13%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(6){width:11%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(7){width:8%}
+.mc-root .mc-table[data-kind=repayments] th:nth-child(8){width:13%}
 .mc-project-list li>div{min-width:0}
 .mc-project-list li .btn{flex:none;min-height:36px;height:auto;white-space:nowrap}
 @media(max-width:600px),(pointer:coarse){.mc-project-list li .btn{min-height:44px}}

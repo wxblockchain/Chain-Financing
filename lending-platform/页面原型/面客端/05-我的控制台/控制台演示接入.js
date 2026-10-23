@@ -139,6 +139,10 @@
   }
   D.tokens.filter(t=>t.owner==='entity-demo-a'&&/^TK-(DEMO-|FREE-|MC-|MH-)/.test(t.id)).forEach((t,i)=>{
     if(!t.issued)t.issued=iso(D.now()-(i+3)*DAY);
+    // Known console fixtures only: illustrative identity, never a production-data fallback.
+    if(!t.name)t.name=['Demo receivables token','演示应收账款代币'];
+    if(!t.logo)t.logo={shape:0,hue:1};
+    if(!t.network)t.network=D.PLEDGE_CHAIN;
     if(!t.tx)t.tx='0x'+Array.from(t.no||t.id).map(c=>c.charCodeAt(0).toString(16)).join('').padStart(64,'0').slice(-64);
   });
   D.save();
