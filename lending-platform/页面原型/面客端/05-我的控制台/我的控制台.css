@@ -270,3 +270,24 @@
 .mc-project-list li>div{min-width:0}
 .mc-project-list li .btn{flex:none;min-height:36px;height:auto;white-space:nowrap}
 @media(max-width:600px),(pointer:coarse){.mc-project-list li .btn{min-height:44px}}
+
+/* WS-450 · deeper pass: split request status from amount, quieter secondary facts, merged detail groups. */
+.mc-muted{color:var(--muted)}
+.mc-badge-link{display:inline-flex;border-radius:var(--radius-pill);text-decoration:none}
+.mc-badge-link:hover .tag{box-shadow:inset 0 0 0 1px var(--accent-border)}
+.mc-badge-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mc-root .mc-table[data-kind=projects]{table-layout:fixed}
+.mc-table[data-kind=projects] th:nth-child(1){width:17%}.mc-table[data-kind=projects] th:nth-child(2){width:9%}
+.mc-table[data-kind=projects] th:nth-child(3){width:13%}.mc-table[data-kind=projects] th:nth-child(4){width:16%}
+.mc-table[data-kind=projects] th:nth-child(5){width:10%}.mc-table[data-kind=projects] th:nth-child(6){width:13%}
+.mc-table[data-kind=projects] th:nth-child(7){width:11%}.mc-table[data-kind=projects] th:nth-child(8){width:11%}
+.mc-root .mc-table[data-kind=projects] td{overflow-wrap:anywhere;white-space:normal;min-width:0}
+.mc-root .mc-table[data-kind=projects] .mc-actions{min-width:0;max-width:none}
+.mc-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5) var(--sp-8)}
+.mc-pair>div+div{border-inline-start:1px solid var(--border);padding-inline-start:var(--sp-8)}
+.mc-root .mc-pair .mc-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4) var(--sp-5)}
+.mc-inline-fact{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-4);font-size:var(--fs-14)}
+.mc-inline-fact>span:first-child{font-size:var(--fs-12);color:var(--muted)}
+.mc-inline-fact .actlink{margin-inline-start:auto}
+@media(max-width:900px){.mc-pair{grid-template-columns:1fr}.mc-pair>div+div{border-inline-start:0;padding-inline-start:0;border-top:1px solid var(--border);padding-top:var(--sp-5)}}
+@media(max-width:600px){.mc-root .mc-pair .mc-facts{grid-template-columns:1fr}}
