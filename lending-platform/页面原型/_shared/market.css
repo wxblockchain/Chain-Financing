@@ -547,8 +547,8 @@ body.list-full .mk-list-frame{position:relative;inset:auto;z-index:auto;margin:0
 [data-market-redesign] .ls-detail .ls-token-filters .fb-q{flex:1 1 150px;min-width:120px}
 [data-market-redesign] .ls-detail .ls-token-filters .fb select.inp{min-width:0;max-width:100%}
 [data-market-redesign] .ls-detail .ls-token-filters .fb>svg{display:none}
-[data-market-redesign] .ls-detail .ls-token-filters .fb select.inp{padding-left:var(--sp-3);background:var(--card-2);border-color:transparent;font-size:var(--ui-row-value)}
-[data-market-redesign] .ls-detail .ls-token-filters .fb-q .inp{border-color:var(--control-border);font-size:var(--ui-field-value)}
+[data-market-redesign] .ls-detail .ls-token-filters .fb select.inp{padding-left:var(--sp-3);background:var(--card-2);border-color:transparent;font-size:var(--ui-field-label)}
+[data-market-redesign] .ls-detail .ls-token-filters .fb-q .inp{border-color:var(--control-border);font-size:var(--ui-field-label)}
 [data-market-redesign] .ls-detail .ls-token-filters .fb-acts .btn{background:transparent;border-color:transparent;color:var(--muted)}
 [data-market-redesign] .ls-detail .ls-token-filters .fb-acts .btn:hover{background:var(--card-hover);color:var(--text)}
 .mk-project-global-actions{margin-left:auto;align-self:flex-start;flex:none}

@@ -16,7 +16,7 @@
 .mc-assets b{font-size:var(--ui-stat-size);font-weight:500;font-variant-numeric:tabular-nums;display:block;margin:var(--sp-2) 0}
 .mc-small{font-size:var(--fs-12);color:var(--muted);line-height:1.6;margin-top:var(--sp-1);overflow-wrap:anywhere}
 .mc-tabs{display:flex;gap:var(--sp-4);padding:0 var(--card-pad);border-bottom:1px solid var(--border);flex-wrap:wrap}
-.mc-tabs button{padding:var(--sp-4) var(--sp-1);min-height:48px;border-bottom:2px solid transparent;color:var(--muted)}
+.mc-tabs button{padding:0 var(--sp-1);min-height:var(--ui-tab-h,48px);border-bottom:2px solid transparent;color:var(--muted)}
 .mc-tabs button[aria-selected=true]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
 .mc-root .filters .field{flex:1 1 170px;max-width:300px}
 .mc-table th{font-size:var(--fs-12);text-transform:none;letter-spacing:0;white-space:normal!important}

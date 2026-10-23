@@ -3,7 +3,11 @@
   'use strict';
   const N = CF.NCView, A = CF.AccountView, S = CF.S;
   const before = N.beforeRender, after = N.afterRender, guard = N.onBeforeAct, action = N.onAct, demo = N.demo;
-  N.beforeRender = () => { CF.Home?.beforeRender(); A.beforeRender?.(); before?.(); };
+  N.beforeRender = () => {
+    CF.Home?.beforeRender(); A.beforeRender?.(); before?.();
+    // Business component variables must never restyle the separately approved homepage.
+    document.body.classList.toggle('portal-business', S.page !== 'P-HOME-01');
+  };
   N.afterRender = () => {
     A.afterRender?.(); after?.();
     const q = new URLSearchParams(location.hash.split('?')[1] || ''), back = q.get('messageReturn');

@@ -113,6 +113,16 @@
 @media(min-width:901px) and (max-width:1300px){:root{--ui-stat-size:20px}}
 @media(max-width:768px){:root{--ui-page-title:var(--fs-24)}}
 
+/* WS-438: customer business components only; the public homepage retains its own contract. */
+.portal-business{
+  --ui-tab-h:48px;
+  --ui-filter-font:var(--ui-field-label);
+  --dialog-head-pad:var(--sp-4) var(--sp-6);
+  --dialog-foot-pad:var(--sp-4) var(--sp-6);
+  --dialog-foot-bg:var(--card-2);
+  --dialog-foot-radius:var(--radius-lg);
+}
+
 /* WS-432: user-requested first-version homepage. Names are scoped to this public surface. */
 .hc-home{
   --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;--font-mono:var(--font-sans);

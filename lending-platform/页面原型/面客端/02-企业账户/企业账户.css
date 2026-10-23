@@ -59,9 +59,9 @@
 
 /* —— 对话框：新增 / 修改账户 —— */
 .modal:has(.ea-form){max-width:600px}
-.modal:has(.ea-form) .modal-h{padding:var(--sp-5) var(--sp-6);border-bottom:1px solid var(--border)}
+.modal:has(.ea-form) .modal-h{padding:var(--dialog-head-pad,var(--sp-5) var(--sp-6));border-bottom:1px solid var(--border)}
 .modal:has(.ea-form) .modal-b{padding:var(--sp-6);color:var(--text);font-size:var(--ui-field-value)}
-.modal:has(.ea-form) .modal-f{padding:var(--sp-4) var(--sp-6);border-top:1px solid var(--border);background:var(--card-2);border-radius:0 0 var(--radius-lg) var(--radius-lg)}
+.modal:has(.ea-form) .modal-f{padding:var(--dialog-foot-pad,var(--sp-4) var(--sp-6));border-top:1px solid var(--border);background:var(--dialog-foot-bg,var(--card-2));border-radius:0 0 var(--radius-lg) var(--radius-lg)}
 .ea-form{display:grid;gap:var(--sp-6);min-width:0}
 .ea-form .hint{font-size:var(--ui-field-label);line-height:1.6}
 .ea-form .field-static{height:auto;padding-block:var(--sp-2);overflow-wrap:anywhere}
