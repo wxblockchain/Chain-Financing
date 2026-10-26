@@ -15,6 +15,8 @@
     "P-O-CM-01": { navKey: "navContractQueue", ico: "▦", route: "/ops/contract-reviews" },
     "P-O-CM-02": { navKey: "navContractDetail", parent: "P-O-CM-01", route: "/ops/contract-reviews/detail" },
     "P-O-CM-03": { navKey: "navContractLedger", ico: "▦", route: "/ops/contract-ledger" },
+    "P-O-LG-01": { navKey: "navLedger", ico: "▥", route: "/ops/financing-ledger" },
+    "P-O-LG-02": { navKey: "navLedgerDetail", parent: "P-O-LG-01", route: "/ops/financing-ledger/detail" },
     "P-O-FC-01": { navKey: "navFinancingParameters", ico: "▩", route: "/ops/financing-parameters" },
     "P-O-FC-02": { navKey: "navParameterDetail", parent: "P-O-FC-01", route: "/ops/financing-parameters/detail" },
     "P-L40": { navKey: "navInstitutionReview", ico: "▣", route: "/ops/institution-reviews" },
