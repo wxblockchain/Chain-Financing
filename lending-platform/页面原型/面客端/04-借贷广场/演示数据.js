@@ -6,7 +6,7 @@
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
-  const SCHEMA = 'ws446-2';
+  const SCHEMA = 'ws446-3';
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], approvals: [], offset: 0, serial: 100 };
   /* 代币类型：代币标准与底层资产类型合并成一个字段。id 沿用旧值，控制台等模块按它引用。 */
   D.TYPES = [{id:'erc20-ar',label:['ERC-3525-Receivables','ERC-3525-应收账款']}];
@@ -23,6 +23,8 @@
   D.EXEC_WALLET = '0x9F3a6C21e04B7d58A1c3E92b0D6f47C8a51E3B60';
   /* 演示登录钱包：发布与改额用它签名确认。 */
   D.LOGIN_WALLET = '0x1111111111111111111111111111111111111111';
+  /* 演示交易哈希：交易发出、平台取得即有值；处理中、未成功与待核实的一笔同样带已取得的哈希。 */
+  D.txHash = seed => { let h=2166136261>>>0; for(const c of String(seed)+(++D.serial)) h=Math.imul(h^c.charCodeAt(0),16777619)>>>0; return '0x'+Array.from({length:64},()=>(h=Math.imul(h^(h>>>13),1597334677)>>>0,(h>>>27).toString(16))).join(''); };
   /* 代币发行合约（演示）：授权记录在发行合约上，按“持有地址 + 质押合约”给出。 */
   D.ISSUERS = ['0x51a0E3c7B94d28F6e1c05A7b3D9f82e4C6a1B07d','0x6c2F9b18D47e05A3c9B1f62E8d0a7C45b3E9d218','0x8e47C1a9F03b6D25e8A4c7B19f0D3e62A5c8b941'];
   D.issuerOf = t => t ? (t.issuer || D.ISSUERS[0]) : '';
@@ -163,13 +165,12 @@
   D.approve = (p, holder, issuer) => {
     if(!D.mine(p))throw Error('permission');
     const prior=D.approvalOf(holder,p.contract,issuer);if(prior&&['processing','success'].includes(prior.state))throw Error('approvalChanged');
-    const rec={id:'AP-DEMO-'+(++D.serial),holder,contract:p.contract,issuer,state:'processing',at:D.iso(),fee:null,feeCurrency:'ETH'};
+    const rec={id:'AP-DEMO-'+(++D.serial),holder,contract:p.contract,issuer,state:'processing',at:D.iso(),fee:null,feeCurrency:'ETH',tx:D.txHash('approve'+issuer)};
     D.approvals.push(rec);D.save();return rec;
   };
   D.approvalResult = (rec, result) => {
     if(!rec||rec.state!=='processing')return;
     rec.state=result==='success'?'success':'failure';rec.done=D.iso();rec.fee=result==='noFee'?0:D.APPROVE_FEE;
-    if(rec.state==='success')rec.tx='0x'+String(++D.serial).padStart(64,'a');
     D.save();
   };
   D.releaseApplication = a => a.tokens.forEach(id => { const t=D.token(id);if(t.application===a.id)t.application=null; });
@@ -274,8 +275,8 @@
       const amount=ids.map(D.token).filter(t=>t.pledge==='pledged'&&t.valid).reduce((v,t)=>v+t.value,0);if(amount>n.withdraw)throw Error('withdrawLimit');
     }
     /* 一次签名一个提交批次编号；同批逐张各自回写。 */
-    const batch='PB-'+String(++D.serial).padStart(6,'0');
-    ids.forEach(id=>{const t=D.token(id);const actualKind=kind==='deposit'?'deposit':t.pledge==='released'?'redeem':'withdraw';const e={id:'EX-DEMO-'+(++D.serial),project:p.id,token:id,application:kind==='deposit'?null:D.appOf(p,t)?.id||null,kind:actualKind,batch,state:'processing',at:D.iso(),fee:null,feeCurrency:D.quoteFee(id).currency};D.executions.push(e);t.pending=e.id;D.log(p,'executionStarted',e.id);});D.save();
+    const batch='PB-'+String(++D.serial).padStart(6,'0'),batchTx=D.txHash(batch);
+    ids.forEach(id=>{const t=D.token(id);const actualKind=kind==='deposit'?'deposit':t.pledge==='released'?'redeem':'withdraw';const e={id:'EX-DEMO-'+(++D.serial),project:p.id,token:id,application:kind==='deposit'?null:D.appOf(p,t)?.id||null,kind:actualKind,batch,state:'processing',at:D.iso(),fee:null,feeCurrency:D.quoteFee(id).currency,holder:D.holderOf(t),tx:batchTx};D.executions.push(e);t.pending=e.id;D.log(p,'executionStarted',e.id);});D.save();
   };
   D.result = (e, result) => {
     const t=D.token(e.token),p=D.project(e.project);
@@ -289,11 +290,11 @@
     t.pending=null;
     if(e.kind==='deposit'){
       if(result==='success'){
-        t.pledge='pledged';t.pool=p.id;t.tx='0x'+String(D.serial+1).padStart(64,'0');
+        t.pledge='pledged';t.pool=p.id;t.tx=e.tx;
         /* 上链成功即质押成功：代币有效且无对账差异时立即计入有效质押额；不发站内信。 */
         /* 申请类型按上链成功时本项目是否已有有效质押派生，只用于展示与检索。 */
         const type=D.numbers(p).value>0?'additional':'first';
-        const a2={id:'PA-DEMO-'+(++D.serial),batch:e.batch||e.id,type,project:p.id,tokens:[t.id],state:'pledged',submitted:D.iso()};
+        const a2={id:'PA-DEMO-'+(++D.serial),batch:e.batch||e.id,type,project:p.id,tokens:[t.id],state:'pledged',submitted:D.iso(),tx:e.tx};
         D.applications.push(a2);t.application=a2.id;D.log(p,'onChain',a2.id);
       }
       else {t.pledge='free';t.pool=null;}
@@ -308,9 +309,9 @@
     if(!D.mine(p))throw Error('permission');if(edit?!a.edit:!a.publish)throw Error('publishChanged');
     const max=n.free+(edit?current.amount:0);if(!Number.isFinite(amount)||amount<=0||Math.abs(Math.round(amount*100)-amount*100)>1e-6||amount>max)throw Error('amount');
     const value=amount/p.rate,at=D.iso();
-    if(edit){current.edit={amount,value,from:current.amount,fromValue:D.freezeOf(p,current).value,at,state:'processing',signer};}
+    if(edit){current.edit={amount,value,from:current.amount,fromValue:D.freezeOf(p,current).value,at,state:'processing',signer,tx:D.txHash('edit'+current.id)};}
     else{if(!payee||payee.chain!=='ETH'||!payee.address)throw Error('payee');
-      p.attempts.push({id:'AT-DEMO-'+(++D.serial),amount,value,payee,signer,at,state:'processing'});}
+      p.attempts.push({id:'AT-DEMO-'+(++D.serial),amount,value,payee,signer,at,state:'processing',tx:D.txHash('publish'+p.id)});}
     D.log(p,edit?'editSigned':'publishSigned');D.save();
   };
   /* 冻结结果回写：成功即发布（生成融资申请编号、待报价、借贷广场可见）或改额生效；失败不生成需求、预占释放，改额保持原值。 */
@@ -319,12 +320,12 @@
     let changed=false;const ok=result==='success',tx=()=>'0x'+String(++D.serial).padStart(64,'c');
     (p.attempts||[]).filter(x=>x.state==='processing').forEach(x=>{changed=true;
       if(!ok){x.state='failed';x.done=D.iso();D.log(p,'freezeFailed',x.id);return;}
-      const at=D.iso(),hash=tx();
+      const at=D.iso(),hash=x.tx||tx();
       p.demands.push({id:p.id+'-'+String(p.demands.length+1).padStart(2,'0'),amount:x.amount,state:'open',at,payee:x.payee,signer:x.signer,signedAt:x.at,
         freeze:{value:x.value,state:'frozen',at:x.at,done:at,tx:hash,log:[]}});
       p.attempts=p.attempts.filter(y=>y!==x);p.state='raising';if(!p.published)p.published=at;D.log(p,'published');});
     p.demands.filter(d=>d.edit&&d.edit.state==='processing').forEach(d=>{changed=true;const f=D.freezeOf(p,d),e=d.edit;
-      f.log.push({from:e.from,to:e.amount,fromValue:e.fromValue,toValue:e.value,at:e.at,done:D.iso(),state:ok?'success':'failed',tx:ok?tx():null,signer:e.signer});
+      f.log.push({kind:'edit',from:e.from,to:e.amount,fromValue:e.fromValue,toValue:e.value,at:e.at,done:D.iso(),state:ok?'success':'failed',tx:e.tx||tx(),signer:e.signer});
       if(ok){d.amount=e.amount;f.value=e.value;D.log(p,'amountEdited',d.id);}else D.log(p,'freezeFailed',d.id);
       delete d.edit;});
     if(changed){D.recompute(p);D.save();}
@@ -335,15 +336,15 @@
   D.withdrawStart = (p, signer) => {
     const a=D.actions(p);if(!D.mine(p))throw Error('permission');if(!a.edit)throw Error('demandChanged');
     if(!D.pledgeSigners(p).includes(signer))throw Error('withdrawSigner');
-    const d=D.current(p);d.withdraw={state:'processing',at:D.iso(),signer};D.log(p,'withdrawSigned',d.id);D.save();
+    const d=D.current(p);d.withdraw={state:'processing',at:D.iso(),signer,tx:D.txHash('withdraw'+d.id)};D.log(p,'withdrawSigned',d.id);D.save();
   };
   D.withdrawResult = (p, result) => {
     const d=p.demands.find(x=>x.withdraw&&x.withdraw.state==='processing');if(!d||result==='wait')return false;
     const w=d.withdraw;delete d.withdraw;
     if(result==='success'){const f=D.freezeOf(p,d);d.state='ended';d.reason='withdrawn';d.endedAt=D.iso();
-      Object.assign(f,{state:'released',releasedAt:d.endedAt,releasedBy:w.signer,releaseTx:'0x'+String(++D.serial).padStart(64,'d')});
+      Object.assign(f,{state:'released',releasedAt:d.endedAt,releasedBy:w.signer,releaseKind:'withdraw',releaseTx:w.tx});
       D.recompute(p);D.log(p,'demandWithdrawn',d.id);}
-    else D.log(p,'freezeFailed',d.id);
+    else {D.freezeOf(p,d).log.push({kind:'withdraw',at:w.at,done:D.iso(),state:'failed',tx:w.tx,signer:w.signer});D.log(p,'freezeFailed',d.id);}
     D.save();return true;
   };
   D.endDemand = p => {const a=D.actions(p);if(!a.edit)throw Error('demandChanged');const d=D.current(p);d.state='ended';d.reason='withdrawn';d.endedAt=D.iso();D.freezeOf(p,d);D.recompute(p);D.log(p,'demandWithdrawn',d.id);D.save();};

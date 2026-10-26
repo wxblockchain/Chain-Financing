@@ -10,7 +10,7 @@
   let reviewFilter={},reviewLoad='default',historyToken=null,feeQuote=[],confirmationChanges=[];
   let outcome='success',executionGate='normal',submitFail=false,closeRace=false,refocus=null,fromConsole=false;
   /* 演示开关：创建页代币类型候选（正常 / 组合未配置 / 参数读取失败）、授权结果、冻结结果、收款账户读取。 */
-  let typeScene='configured',approvalOutcome='success',freezeOutcome='success',payeeScene='ready',withdrawWallet='pledge',step=1,skipApprove=false;
+  let typeScene='configured',approvalOutcome='success',freezeOutcome='success',payeeScene='ready',withdrawWallet='pledge',contractScene='ready',step=1,skipApprove=false;
   try{fromConsole=sessionStorage.getItem('hc-ls-origin')==='console';}catch(_){}
   const stateNames={projectReview:['Under review','待审核'],returned:['Returned','已退回'],available:['Available','可用'],raising:['Fundraising','募集中'],locked:['Locked','已锁定'],financing:['Financing','融资中'],closed:['Closed','已关闭'],settled:['Settled','已结清'],review:['Under review','审核中'],approved:['Approved','审核通过'],rejected:['Rejected','已驳回'],withdrawn:['Withdrawn','已撤回'],void:['Ended with the project','随项目终结'],executing:['Execution in progress','执行处理中'],recorded:['Results recorded','结果已回写'],processing:['Processing','处理中'],success:['Succeeded','成功'],failure:['Failed','失败'],noFee:['Failed','失败'],open:['Awaiting quotes','待报价'],quoted:['Quoted · awaiting confirmation','已报价待确认'],funding:['Funding in progress','放款中'],funded:['Funded','已放款'],ended:['Expired / closed','已失效／已关闭'],surplus:['Pledge surplus','质押充足'],balanced:['Pledge balanced','质押持平'],short:['Pledge shortfall','质押不足']};
   const unfinishedNames={quoted:['A quote is awaiting your confirmation','有报价待资产方确认'],funding:['A quote has been accepted and its on-chain disbursement is processing','有已签名接受、链上放款处理中的报价'],unsettled:['Financing is not yet settled (including overdue)','有尚未结清的融资业务（含逾期）'],processing:['On-chain operations are still processing','有处理中的链上操作']};
@@ -26,13 +26,24 @@
   /* 网络一律展示英文全名 Ethereum（中文界面同样不译），不用 ETH 缩写，避免与同名的币混淆。 */
   const netName=c=>c==='ETH'?'Ethereum':E(c);
   const netChip=c=>CF.market.network(c).replace(/<span>[^<]*<\/span><\/span>$/,'<span>'+netName(c)+'</span></span>');
-  /* 本项目质押合约：公开事实、完整地址可复制，平台不做链上核验；配置前只说明，不给占位地址。 */
+  /* 本项目质押合约：本平台为项目配置，完整地址可复制、可在区块链浏览器打开；配置前只说明，不给占位地址。 */
   function contractBlock(p,compact){
     if(!p.contract)return '<div class="ls-contract is-pending"><span class="ls-contract-k">'+L('Pledge contract','质押合约')+'</span><p class="ls-contract-wait">'+L('The platform configures this project\'s pledge contract once the review is approved.','审核通过后由平台为本项目配置质押合约。')+'</p></div>';
     return '<div class="ls-contract"><div class="ls-contract-top"><span class="ls-contract-k">'+L('Pledge contract','质押合约')+'</span>'+netChip(D.PLEDGE_CHAIN)+'<span class="ls-contract-tools">'+copyIcon(p.contract,L('Copy pledge contract address','复制质押合约地址'))+CF.linkOut('https://etherscan.io/address/'+encodeURIComponent(p.contract),L('Open the contract in a blockchain explorer (new window)','在区块链浏览器打开该合约（新窗口）'))+'</span></div>'
       +'<p class="ls-contract-full mono">'+E(p.contract)+'</p>'
-      +'<p class="ls-contract-meta"><span>'+L('Configured ','配置完成 ')+time(p.deployedAt)+'</span><span class="ls-unverified">'+L('Not verified by the platform','平台未核验')+'</span></p></div>';
+      +'<p class="ls-contract-meta"><span>'+L('Configured ','配置完成 ')+time(p.deployedAt)+'</span></p></div>';
   }
+  /* 交易哈希：缩写展示，点击即复制完整值；另可在新窗口打开区块链浏览器。复制与跳转都用完整值。 */
+  const explorerTx=h=>'https://etherscan.io/tx/'+encodeURIComponent(h);
+  function hashChip(h){if(!h)return '<span class="muted">—</span>';return '<span class="ls-hash"><button type="button" class="ls-hash-copy mono" data-act="ls-copy" data-v="'+E(h)+'" title="'+E(h)+'" aria-label="'+L('Copy transaction hash ','复制交易哈希 ')+E(h)+'">'+E(h.slice(0,6)+'…'+h.slice(-4))+'</button>'+CF.linkOut(explorerTx(h),L('Open the transaction in a blockchain explorer (new window)','在区块链浏览器打开该交易（新窗口）'))+'</span>';}
+  CF.LSHash=hashChip;
+  /* 签名前核对：本次交互的质押合约（名称、网络、完整地址）。合约读取失败时不能签名，可重试。 */
+  const contractOk=()=>contractScene!=='fail';
+  function signContract(p){
+    if(!contractOk())return '<div class="ls-inline-fail" role="alert"><span>'+L('The pledge contract is temporarily unavailable, so you cannot sign right now.','质押合约信息暂时不可用，暂不能签名。')+'</span>'+btn('ls-contract-retry',L('Retry','重试'))+'</div>';
+    return '<div class="ls-signing-contract"><dt>'+L('Pledge contract','质押合约')+netChip(D.PLEDGE_CHAIN)+'</dt><dd><span class="mono ls-signing-address">'+E(p.contract)+'</span>'+copyIcon(p.contract,L('Copy pledge contract address','复制质押合约地址'))+CF.linkOut('https://etherscan.io/address/'+encodeURIComponent(p.contract),L('Open the contract in a blockchain explorer (new window)','在区块链浏览器打开该合约（新窗口）'))+'</dd></div>';
+  }
+  const signCheck=(p,purpose)=>'<div class="ls-sign-check"><dl class="ls-signing-facts">'+signContract(p)+'</dl><p class="ls-sign-purpose">'+purpose+'</p></div>';
   const tag=k=>CF.tag(['short','failure','timeout','rejected'].includes(k)?'danger':['approved','success','surplus'].includes(k)?'ok':['review','processing','executing'].includes(k)?'warn':'',label(k));
   /* 已关闭项目按关闭原因补充说明；有效期到期与资产方主动关闭区分。 */
   const projectTag=p=>tag(p.state)+(p.state==='closed'&&p.closeReason==='expiry'?' <span class="muted ls-close-reason">'+L('Valid-until date reached','有效期到期')+'</span>':'');
@@ -211,7 +222,7 @@
     const tail=pager('demands',rows.length),list=rows.slice((pages.demands-1)*5,pages.demands*5);
     const editing=d=>!D.mine(p)?'':d.edit?.state==='processing'?small(L('Amount change processing → ','改额处理中 → ')+usdt(d.edit.amount)):d.withdraw?.state==='processing'?small(L('Withdrawal processing','撤下处理中')):'';
     return dataTable([L('Application ID','融资申请编号'),L('Amount / currency','申请金额 / 币种'),L('Application status','申请状态'),L('Institution / annual rate','机构 / 年化利率'),L('Published at','发布时间')+' ('+E(S.tz||'UTC')+')',L('Disbursement information','放款信息')+' ('+E(S.tz||'UTC')+')'],list.map(({x,d})=>{
-      if(x)return ['<span class="muted">—</span>','<span class="mono">'+usdt(x.amount)+'</span>',x.state==='processing'?CF.tag('warn',L('Publishing · freeze processing','发布处理中 · 冻结处理中'))+small(waitText(x.at)):CF.tag('danger',L('Not published · freeze failed','发布未成功 · 冻结失败')),'<span class="muted">—</span>',stampCell(x.at),'<span class="muted">—</span>'];
+      if(x)return ['<span class="muted">—</span>','<span class="mono">'+usdt(x.amount)+'</span>',x.state==='processing'?CF.tag('warn',L('Publishing · freeze processing','发布处理中 · 冻结处理中'))+small(waitText(x.at)):CF.tag('danger',L('Not published · freeze failed','发布未成功 · 冻结失败'))+(x.tx?small(hashChip(x.tx)):''),'<span class="muted">—</span>',stampCell(x.at),'<span class="muted">—</span>'];
       /* 放款编号和成功时间独立成列；沿用本企业 / 本笔资金方的可见范围。 */
       const q=Q?.currentQuote(p,d.id),loan=d.state==='funded'&&q&&Q.loanRecord?.(q),loanInfo=loan&&(D.mine(p)||Q.related(q))?'<span class="mono">'+E(loan.id)+'</span>'+small(stampCell(loan.at)):'<span class="muted">—</span>';
       return ['<span class="ls-demand-link">'+E(d.id)+' ↗</span>','<span class="mono">'+usdt(d.amount)+'</span>'+editing(d),tag(d.state)+(d.reason?small(txt(reasons[d.reason])):''),q?E(Q.institution(q.fund))+(Q.related(q)||D.mine(p)?small(q.rate+' %'):''):L('No active quote','暂无有效报价'),stampCell(d.at),loanInfo];}),
@@ -358,16 +369,15 @@
     const options=names=>[['',L('All','全部')],...Object.entries(names).map(([k,v])=>[k,txt(v)])];
     const filters=mine?'<div class="filterbar ls-token-filters">'+CF.filterSelect('ls-tf-going',L('Current status','当前去向'),options(goingNames),tokenFilter.going||'')+CF.filterSearch('ls-tf-keyword',L('Token ID','代币编号'),tokenFilter.keyword||'',L('Token ID','代币编号'))+'<div class="fb-acts">'+btn('ls-tf-reset',L('Reset','重置'))+'</div></div>':'';
     if(!list.length)return filters+CF.empty(Object.values(tokenFilter).some(Boolean)&&mine?L('No matching tokens','筛选无结果'):L('No tokens in the contract','合约内暂无代币'),'');
-    const head=[L('Network','网络'),L('Token','代币'),L('Holding address','持有地址'),L('Pledged quantity','质押数量'),L('Share value','份额价值'),'Hash',L('Validity','有效性'),L('Counts toward eligible pledged value','计入有效质押')].concat(mine?[L('Current status','当前去向')]:[]);
-    const columns=['network','id','holder','quantity','value','hash','validity','counted',...(mine?['going']:[])];
+    const head=[L('Network','网络'),L('Token','代币'),L('Holding address','持有地址'),L('Pledged quantity','质押数量'),L('Share value','份额价值'),L('Validity','有效性'),L('Counts toward eligible pledged value','计入有效质押')].concat(mine?[L('Current status','当前去向')]:[]);
+    const columns=['network','id','holder','quantity','value','validity','counted',...(mine?['going']:[])];
     const tail=pager('tokens',list.length),start=(pages.tokens-1)*5;
     const rows=list.slice(start,start+5).map(t=>{
       const going=mine?tokenGoing(p,t):null,inPool=t.pool===p.id,held=inPool||t.releasedFrom===p.id&&t.pledge==='released',counted=inPool&&tokenState(p,t)==='valid';
       const e=mine?latestExecution(p,t):null,verify=mine?verifyNote(p,t,e):'';
       /* 本企业资产方逐张看到上链结果：处理中给已等待时长，失败给 gas 事实，异常只提示联系客服。 */
       const sub=!e?'':e.state==='processing'?waitText(e.at):['failure','noFee'].includes(e.state)?txt(opNames[e.kind])+L(' failed · ',' 失败 · ')+gasText(e):'';
-      const hash=t.tx?'<span class="ls-hash-cell"><span class="mono" title="'+E(t.tx)+'">'+E(t.tx.slice(0,6)+'…'+t.tx.slice(-4))+'</span>'+copyIcon(t.tx,L('Copy transaction hash','复制交易 Hash'))+'</span>':'<span class="muted">—</span>';
-      const cells=[netChip(D.PLEDGE_CHAIN),tokenCell(t),'<span class="mono" title="'+E(D.holderOf(t))+'">'+E(shortAddr(D.holderOf(t)))+'</span>','<span class="mono">'+qty(t)+'</span>','<span class="mono">'+usd(t.value)+'</span>',hash,CF.tag(t.valid?'':'warn',t.valid?L('Valid','有效'):L('Expired','已失效')),held?CF.tag(counted?'ok':'',counted?L('Counted','计入'):L('Not counted','不计入')):'<span class="muted">—</span>'];
+      const cells=[netChip(D.PLEDGE_CHAIN),tokenCell(t),'<span class="mono" title="'+E(D.holderOf(t))+'">'+E(shortAddr(D.holderOf(t)))+'</span>','<span class="mono">'+qty(t)+'</span>','<span class="mono">'+usd(t.value)+'</span>',CF.tag(t.valid?'':'warn',t.valid?L('Valid','有效'):L('Expired','已失效')),held?CF.tag(counted?'ok':'',counted?L('Counted','计入'):L('Not counted','不计入')):'<span class="muted">—</span>'];
       if(mine)cells.push(E(txt(goingNames[going]))+(sub?small(sub):'')+(verify?'<span class="cell-sub ls-verify">'+E(verify)+'</span>':''));
       return '<tr class="ls-token-row" tabindex="0" data-act="ls-token-detail" data-v="'+E(t.id)+'" aria-label="'+L('Open token details ','查看代币详情 ')+E(D.tokenNo(t))+'">'+cells.map((c,i)=>'<td class="ls-token-col-'+columns[i]+(i===0?' mk-network-cell':i===4?' ls-token-value':'')+'" data-label="'+E(head[i])+'"><div class="cell-wrap">'+c+'</div></td>').join('')+'</tr>';
     }).join('');
@@ -375,6 +385,20 @@
   }
   function waitText(start){const m=Math.max(0,Math.floor((D.now()-Date.parse(start))/60000));return L('Waiting ','已等待 ')+(m>=1440?Math.floor(m/1440)+L(' d ',' 天 '):'')+Math.floor(m%1440/60)+L(' h ',' 小时 ')+(m%60)+L(' min',' 分钟');}
   /* 代币详情：只读，无办理动作。代币信息对所有可见方；上链事实、去向与历史只对本企业资产方。 */
+  /* 代币详情：只读。代币信息对所有可见方；当前去向只对本企业资产方；本份的链上交易只在操作记录中出现一次。 */
+  const opLabel={deposit:['Pledge','质押'],withdraw:['Release','解押'],redeem:['Collect','提取']};
+  function tokenOps(p,t,mine){
+    const ex=D.executions.filter(e=>e.project===p.id&&e.token===t.id);
+    const seeded=projectApps(p,t).filter(a=>!ex.some(e=>e.kind==='deposit'&&e.state==='success'&&e.batch===a.batch)).map(a=>({kind:'deposit',state:'success',at:a.submitted,done:a.submitted,tx:a.tx||t.tx,holder:D.holderOf(t),fee:null,feeCurrency:'ETH'}));
+    let rows=[...ex.filter(e=>e.tx),...seeded].sort((a,b)=>Date.parse(b.done||b.at)-Date.parse(a.done||a.at));
+    /* 资金方只看到本份当前这次质押的“质押”一条。 */
+    if(!mine){const cur=rows.find(r=>r.kind==='deposit'&&r.state==='success');rows=t.pool===p.id&&cur?[cur]:[];}
+    if(!rows.length)return '<p class="muted">'+L('No on-chain transactions yet.','暂无链上交易。')+'</p>';
+    const st=r=>r.state==='processing'?(verifyNote(p,t,r)?CF.tag('warn',L('To be verified','待核实')):CF.tag('warn',L('Processing','处理中'))):['failure','noFee'].includes(r.state)?CF.tag('danger',L('Not completed','未成功')):'';
+    const gas=r=>r.fee===null||r.fee===undefined?L('To be verified','待核实'):Number(r.fee).toFixed(6)+' '+E(r.feeCurrency||'ETH');
+    const heads=[L('Time','时间')+' ('+E(S.tz||'UTC')+')',L('Operation','操作'),L('Address','地址'),L('Transaction hash','交易哈希')].concat(mine?[L('Actual gas','实际 gas')]:[]);
+    return dataTable(heads,rows.map(r=>[stampCell(r.done||r.at),txt(opLabel[r.kind]||[r.kind,r.kind])+(st(r)?' '+st(r):''),'<span class="mono ls-break">'+E(r.holder||D.holderOf(t))+'</span>',hashChip(r.tx)].concat(mine?[gas(r)]:[])));
+  }
   function tokenDetail(id){
     const p=project(),t=D.token(id),mine=D.mine(p);if(!p||detailScope(p)!=='full')return publicMissing();
     const candidate=!!(t&&mine&&D.selectable(t,p)&&t.pool!==p.id&&t.releasedFrom!==p.id&&!tokenGoing(p,t));
@@ -383,16 +407,13 @@
     const dl=rows=>'<dl class="ls-dl">'+rows.map(([k,v])=>'<div><dt>'+k+'</dt><dd>'+v+'</dd></div>').join('')+'</dl>';
     const section=(title,body)=>'<section class="ls-detail-sec"><h3>'+title+'</h3>'+body+'</section>';
     if(candidate)return section(L('Token information','代币信息'),dl([[L('Token ID','代币编号'),'<span class="mono">'+E(D.tokenNo(t))+'</span>'],[L('Holding quantity','持有数量'),qty(t)],[L('Share value','份额价值'),usd(t.value)],[L('Holding address','持有地址'),'<span class="mono ls-break">'+E(D.holderOf(t))+'</span>'],[L('Receivable term','底层应收账款账期'),date(t.from)+' → '+date(t.due)],[L('Buyer','买方企业'),E(txt(t.buyer))]]));
-    const hash=t.tx?'<span class="ls-contract-addr"><span class="mono">'+E(t.tx)+'</span>'+copyIcon(t.tx,L('Copy transaction hash','复制交易哈希'))+CF.linkOut('https://etherscan.io/tx/'+encodeURIComponent(t.tx),L('Open transaction in blockchain explorer (new window)','在区块链浏览器打开交易（新窗口）'))+'</span>':'—';
-    let html=section(L('Token information','代币信息'),dl([[L('Token ID','代币编号'),'<span class="mono">'+E(D.tokenNo(t))+'</span>'],[L('Pledged quantity','质押数量'),qty(t)],[L('Share value','份额价值'),usd(t.value)]].concat(t.tokenUnits&&t.tokenUnits!==t.units?[[L('Token total','该笔代币数量 / 价值'),CF.fmtAmt(t.tokenUnits)+' '+E(t.symbol)+' · '+usd(t.tokenValue)]]:[]).concat([[L('Holding address','持有地址'),'<span class="mono ls-break">'+E(D.holderOf(t))+'</span>'+small(L('Returns here when released or collected','解押或提取后转回此地址'))]]).concat([[L('Validity','有效性'),t.valid?L('Valid','有效'):L('Expired','已失效')],[L('Counts toward eligible pledged value','计入有效质押'),inPool||t.pledge==='released'&&t.releasedFrom===p.id?(counted?L('Counted','计入'):L('Not counted','不计入')):'—'],[L('Receivable term','底层应收账款账期'),date(t.from)+' → '+date(t.due)],[L('Buyer','买方企业'),E(txt(t.buyer))],[L('Pledge contract','所在质押合约'),'<span class="mono ls-break">'+E(p.contract||'—')+'</span>'],[L('Transaction hash','交易 Hash'),hash]])));
-    if(!mine)return html;
-    const apps=projectApps(p,t).sort((a,b)=>Date.parse(b.submitted)-Date.parse(a.submitted)),a=D.appOf(p,t)||apps[0],e=depositOf(p,t),going=tokenGoing(p,t);
-    html+=section(L('On-chain facts','本笔上链事实'),dl([...(a?[[L('Submission batch','提交批次'),'<span class="mono">'+E(a.batch||'—')+'</span>'],[L('Application ID','单笔申请标识'),'<span class="mono">'+E(a.id)+'</span>']]:[]),[L('Started','发起时间'),e?time(e.at):a?time(a.submitted):'—'],[L('Completed','完成时间'),e?.done?time(e.done):e?.state==='processing'?L('Processing','处理中'):a?time(a.submitted):'—'],[L('Actual gas','实际 gas'),e?(e.fee===null?L('To be verified','待核实'):Number(e.fee).toFixed(6)+' '+E(e.feeCurrency||'ETH')):L('To be verified','待核实')],[L('Proof','链上凭证'),hash]]));
-    const last=latestExecution(p,t);if(last&&(last.kind!=='deposit'||last.state!=='success'))html+=section(L('Latest on-chain operation','最近一次链上操作'),dl(lastOperation(p,t,last)));
-    else if(verifyNote(p,t,last))html+=note(verifyNote(p,t,last),'warn');
-    const next={onchain:['Waiting for the on-chain result.','等待上链结果回写。'],counted:['Counted as eligible collateral. Withdrawal is limited by the withdrawable limit, from Release collateral.','已计入有效质押额；撤回受可撤回上限约束，从「解除质押」办理。'],releasing:['Release in progress. This updates when the result arrives.','解押处理中，结果回写后更新。'],failed:['The pledge did not reach the chain; see the latest on-chain operation above.','质押未上链成功，见上方最近一次链上操作。'],excluded:['Pledged, but the token has expired or has a reconciliation discrepancy, so it does not count toward the eligible pledge amount. Expired tokens can be cleared from Release collateral.','已质押，但代币已失效或存在对账差异，不计入有效质押额；已失效代币可从「解除质押」清出。'],returned:['Returned to the original holding address.','已退回质押前的原持有地址。'],collect:['Released. Collect it from Collect released tokens.','已释放，可从「提取已释放代币」提取。']}[going];
-    html+=section(L('Current status','当前去向'),'<p class="ls-going">'+CF.tag('',txt(goingNames[going]||['—','—']))+'<span>'+(next?txt(next):'')+'</span></p>');
-    html+=section(L('History','逐币历史'),apps.length?dataTable([L('Batch','提交批次'),L('Type','申请类型'),L('Application','单笔标识'),L('Result','结论'),L('Time','时间')],apps.map(x=>['<span class="mono">'+E(x.batch||'—')+'</span>',x.type==='additional'?L('Additional pledge','追加质押'):L('First pledge','首笔质押'),'<span class="mono">'+E(x.id)+'</span>',txt(recordNames[x.state]||[x.state,x.state]),time(x.finished||x.submitted)])):'<p class="muted">'+L('No submissions yet.','暂无提交记录。')+'</p>');
+    let html=section(L('Token information','代币信息'),dl([[L('Token ID','代币编号'),'<span class="mono">'+E(D.tokenNo(t))+'</span>'],[L('Pledged quantity','质押数量'),qty(t)],[L('Share value','份额价值'),usd(t.value)]].concat(t.tokenUnits&&t.tokenUnits!==t.units?[[L('Token total','该笔代币数量 / 价值'),CF.fmtAmt(t.tokenUnits)+' '+E(t.symbol)+' · '+usd(t.tokenValue)]]:[]).concat([[L('Holding address','持有地址'),'<span class="mono ls-break">'+E(D.holderOf(t))+'</span>'],[L('Validity','有效性'),t.valid?L('Valid','有效'):L('Expired','已失效')],[L('Counts toward eligible pledged value','计入有效质押'),inPool||t.pledge==='released'&&t.releasedFrom===p.id?(counted?L('Counted','计入'):L('Not counted','不计入')):'—'],[L('Receivable term','底层应收账款账期'),date(t.from)+' → '+date(t.due)],[L('Buyer','买方企业'),E(txt(t.buyer))]])));
+    if(mine){
+      const going=tokenGoing(p,t),last=latestExecution(p,t),why=last&&['failure','noFee'].includes(last.state)?lastOperation(p,t,last).find(r=>r[0]===L('Reason','原因'))?.[1]:'';
+      const next={onchain:['Waiting for the on-chain result.','等待上链结果回写。'],counted:['Counted as eligible collateral. Withdrawal is limited by the withdrawable limit, from Release collateral.','已计入有效质押额；撤回受可撤回上限约束，从「解除质押」办理。'],releasing:['Release in progress. This updates when the result arrives.','解押处理中，结果回写后更新。'],failed:['The pledge did not complete on chain. Select it again from Add collateral.','质押未上链成功，可从「追加质押」重新勾选。'],excluded:['Pledged, but the token has expired or has a reconciliation discrepancy, so it does not count toward the eligible pledge amount. Expired tokens can be cleared from Release collateral.','已质押，但代币已失效或存在对账差异，不计入有效质押额；已失效代币可从「解除质押」清出。'],returned:['Returned to the original holding address.','已退回质押前的原持有地址。'],collect:['Released. Collect it from Collect released tokens.','已释放，可从「提取已释放代币」提取。']}[going];
+      html+=section(L('Current status','当前去向'),'<p class="ls-going">'+CF.tag('',txt(goingNames[going]||['—','—']))+'<span>'+(next?txt(next):'')+'</span></p>'+(why?'<p class="ls-going-why">'+why+'</p>':'')+(verifyNote(p,t,last)?note(verifyNote(p,t,last),'warn'):''));
+    }
+    html+=section(L('Operation records','操作记录'),tokenOps(p,t,mine));
     return html;
   }
   function feeSnapshot(){return selection.map(id=>({id,...D.quoteFee(id)}));}
@@ -532,6 +553,7 @@
   }
   /* 签名：登录钱包确认（不上链、无 gas）→ 平台核验 → 平台执行钱包冻结上链；点击即唤起钱包，不另设确认弹窗。 */
   async function signPublish(){
+    if(!contractOk()){CF.render();return;}
     const p=project();if(busy||!guarded(p))return;error='';
     const d=D.current(p),edit=!!d,max=D.numbers(p).free+(d?d.amount:0),n=Number(amount);
     if(!/^\d+(\.\d{1,2})?$/.test(String(amount).trim())||n<=0||n>max){error=txt(errors.amount)+' '+L('Available: ','可融金额：')+usdt(max)+(n>max?L(' · Excess: ',' · 超出差额：')+usdt(n-max):'');refocus='ls-amount';CF.render();return;}
@@ -555,6 +577,7 @@
   }
   /* 撤下：钱包签名（质押时使用的地址）→ 平台核验 → 平台执行钱包解冻；处理中暂停报价，失败恢复待报价。 */
   async function signWithdraw(){
+    if(!contractOk()){CF.render();return;}
     const p=project();if(busy||!guarded(p))return;error='';
     busy=true;CF.render();await new Promise(r=>setTimeout(r,600));
     try{
@@ -598,17 +621,16 @@
   /* 签名核对：金额是本次所选份额的价值展示，不改合约授权范围；目标地址始终取项目已配置的质押合约。 */
   function pledgeSignFacts(p,approval=false){
     const total=selection.map(D.token).filter(Boolean).reduce((v,t)=>v+t.value,0);
-    return '<dl class="ls-signing-facts">'+(approval?'<div class="ls-signing-amount"><dt>'+L('Approval amount','本次授权金额')+'<span class="ls-signing-caption">'+L('Total value of selected shares','所选份额价值合计')+'</span></dt><dd class="mono">'+usd(total)+'</dd></div>':'')
-      +'<div class="ls-signing-contract"><dt>'+L('Pledge contract','质押合约')+netChip(D.PLEDGE_CHAIN)+'</dt><dd><span class="mono ls-signing-address">'+E(p.contract)+'</span>'+copyIcon(p.contract,L('Copy pledge contract address','复制质押合约地址'))+'</dd></div></dl>';
+    return '<dl class="ls-signing-facts">'+(approval?'<div class="ls-signing-amount"><dt>'+L('Approval amount','本次授权金额')+'<span class="ls-signing-caption">'+L('Total value of selected shares','所选份额价值合计')+'</span></dt><dd class="mono">'+usd(total)+'</dd></div>':'')+signContract(p)+'</dl>';
   }
   function stepBar(sum,gas,note,extra){return '<div class="ls-sign-bar" role="status" aria-live="polite"><p class="ls-sign-sum">'+(sum||'')+(gas?'<span>'+L('Estimated gas','预估 gas')+' <b class="mono">'+gas+'</b></span>':'')+'</p>'+(note?'<p class="ls-sign-note">'+note+'</p>':'')+(extra||'')+'</div>';}
   function txGas(){const gas={};selection.map(D.token).filter(Boolean).forEach(t=>{const f=D.quoteFee(t.id);gas[f.currency]=(gas[f.currency]||0)+f.amount;});return Object.entries(gas).map(([c,n])=>Number(n).toFixed(6)+' '+E(c)).join(' / ')||'—';}
   const approveGas=p=>(approvalTodo(p).length*D.APPROVE_FEE).toFixed(6)+' ETH';
   /* 授权按“持有地址 + 质押合约”给出，链上逐个代币发行合约记录：已授权的跳过，未授权的逐个在钱包确认。 */
   function approvalBlock(p){
-    const needs=D.approvalNeeds(p,selection);
+    const needs=D.approvalNeeds(p,selection),next=approvalTodo(p)[0];
     const state=r=>!r?CF.tag('',L('Not approved','待授权')):r.state==='success'?CF.tag('ok',L('Approved','已授权')):r.state==='processing'?CF.tag('warn',L('Processing','授权处理中'))+small(waitText(r.at)):CF.tag('danger',L('Failed','授权失败'))+small(gasText(r));
-    return '<p class="ls-step-lead">'+L('Approval covers all tokens at this address under each issuing contract below, until revoked.','授权范围为本地址在下列发行合约下的全部代币，撤销前持续有效。')+'</p><ul class="ls-approval-list">'+needs.map(x=>'<li><span class="ls-approval-who"><span class="muted">'+L('Issuing contract','代币发行合约')+'</span> <span class="mono" title="'+E(x.issuer)+'">'+E(shortAddr(x.issuer))+'</span><span class="muted"> · '+L(x.count+(x.count===1?' share':' shares'),x.count+' 份')+'</span></span><span class="ls-approval-state">'+state(x.record)+'</span></li>').join('')+'</ul>';
+    return '<p class="ls-sign-purpose">'+L('Signing approves this pledge contract to take every token this address holds under the issuing contract below, until you revoke it. Approval does not move any token. It is an on-chain transaction: gas is paid by your company and is not refunded on failure. It is unrelated to your sign-in.','签名后，本持有地址授权上述质押合约调取本地址在下列发行合约下的全部代币，撤销前持续有效；授权本身不转移代币。这是链上交易，gas 由本企业承担、失败已产生的不退，与登录无关。')+'</p><ul class="ls-approval-list">'+needs.map(x=>'<li'+(x===next?' class="is-next"':'')+'><span class="ls-approval-who"><span class="muted">'+(x===next?L('Approving now · issuing contract','本次授权 · 代币发行合约'):L('Issuing contract','代币发行合约'))+'</span> <span class="mono" title="'+E(x.issuer)+'">'+E(shortAddr(x.issuer))+'</span><span class="muted"> · '+L(x.count+(x.count===1?' share':' shares'),x.count+' 份')+'</span></span><span class="ls-approval-state">'+state(x.record)+(x.record?.tx?hashChip(x.record.tx):'')+'</span></li>').join('')+'</ul>';
   }
   function pledgePicker(p){
     const list=pledgeCandidates(p);
@@ -625,6 +647,7 @@
   }
   /* 授权：每次点击唤起一次钱包，对一个尚未授权的代币发行合约签名；钱包内的确认即最终确认。授权结果不发站内信。 */
   async function signApproval(){
+    if(!contractOk()){CF.render();return;}
     const p=project();if(busy||!selection.length||!guarded(p))return;error='';
     if(walletBlocked())return;
     if(executionGate==='recheck'){D.token(selection.at(-1)).valid=false;executionGate='normal';}
@@ -640,6 +663,7 @@
     finally{busy=false;CF.render();}
   }
   async function signPledge(){
+    if(!contractOk()){CF.render();return;}
     const p=project();if(busy||!selection.length||!guarded(p))return;error='';
     if(walletBlocked())return;
     if(executionGate==='recheck'){D.token(selection.at(-1)).valid=false;executionGate='normal';}
@@ -686,6 +710,7 @@
     return selection.length>0&&new Set(selection).size===selection.length;
   }
   async function signRelease(){
+    if(!contractOk()){CF.render();return;}
     const p=project();if(busy||!selection.length||!guarded(p))return;error='';
     if(executionGate==='unavailable'||executionGate==='nogas'){error=executionGate==='unavailable'?L('The wallet is unavailable. Nothing was sent and no gas was incurred.','钱包当前不可用，本次未发起、未产生 gas。'):L('Insufficient balance for gas. Nothing was sent and no gas was incurred.','gas 余额不足，本次未发起、未产生 gas。');CF.render();return;}
     if(executionGate==='recheck'){D.token(selection.at(-1)).frozen=true;executionGate='normal';}
@@ -709,21 +734,21 @@
       const head=stepper('pledge');
       if(step===1)return {title:pledgeLabel(p),html:'<div class="ls-wide ls-stack ls-pledge">'+head+changes+pledgePicker(p)+err()+'</div>',foot:stepBar(chosenSum())+cancel+btn('ls-step-next',L('Next','下一步'),'',true,!selection.length)};
       if(step===2){const todo=approvalTodo(p),waiting=D.approvalNeeds(p,selection).some(x=>x.record?.state==='processing');
-        const main=todo.length?btn('ls-approve',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Sign approval','签名授权')+(todo.length>1?L(' · '+todo.length+' left',' · 还需 '+todo.length+' 次'):''),'',true,busy||waiting):btn('ls-step-next',L('Next','下一步'),'',true,waiting);
+        const main=todo.length?btn('ls-approve',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Sign approval','签名授权')+(todo.length>1?L(' · '+todo.length+' left',' · 还需 '+todo.length+' 次'):''),'',true,busy||waiting||!contractOk()):btn('ls-step-next',L('Next','下一步'),'',true,waiting);
         return {title:pledgeLabel(p),html:'<div class="ls-medium ls-stack ls-pledge">'+head+pledgeSignFacts(p,true)+approvalBlock(p)+err()+'</div>',foot:stepBar('',todo.length?approveGas(p):'')+back+main};}
-      return {title:pledgeLabel(p),html:'<div class="ls-medium ls-stack ls-pledge">'+head+'<div class="ls-signing-review"><p class="ls-step-summary">'+chosenSum()+'</p>'+pledgeSignFacts(p)+'</div><p class="ls-step-lead">'+L('Signing transfers the selected tokens into this pledge contract. The pledge counts once confirmed on chain.','签名后，所选代币将转入此质押合约；上链成功即完成质押并计入有效质押额。')+'</p>'+changes+err()+'</div>',
-        foot:stepBar('',txGas(),L('Gas is paid by your company and is not refunded on failure.','gas 由本企业承担，失败已产生的不退。'))+back+btn('ls-sign-pledge',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Sign and pledge','签名并发起质押'),'',true,busy||!selection.length)};},
+      return {title:pledgeLabel(p),html:'<div class="ls-medium ls-stack ls-pledge">'+head+'<div class="ls-signing-review"><p class="ls-step-summary">'+chosenSum()+'</p>'+pledgeSignFacts(p)+'</div><p class="ls-sign-purpose">'+L('Signing sends a transaction that moves the selected tokens from this holding address into the pledge contract above. The pledge completes and counts toward the eligible pledge amount once it succeeds on chain. It is unrelated to your sign-in.','签名后发起交易，将所选代币从本持有地址转入上述质押合约；上链成功才完成质押并计入有效质押额。与登录无关。')+'</p>'+changes+err()+'</div>',
+        foot:stepBar('',txGas(),L('Gas is paid by your company and is not refunded on failure.','gas 由本企业承担，失败已产生的不退。'))+back+btn('ls-sign-pledge',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Sign and pledge','签名并发起质押'),'',true,busy||!selection.length||!contractOk())};},
     /* 发布 / 改额只放需求金额与融资收款地址；金额超出可融金额时才提示可融金额与差额。 */
     publish:()=>{const p=project(),d=D.current(p);
-      return {title:d?L('Edit financing amount','修改融资需求金额'):L('Publish financing request','发布融资需求'),html:'<div class="ls-medium ls-stack ls-publish">'+field('ls-amount','Financing request (USDT) *','融资需求金额（USDT）*',amount,'text','inputmode="decimal" aria-describedby="ls-amount-over ls-amount-error" aria-invalid="'+!!(error||overBy(p))+'"')+'<p class="ls-amount-over" id="ls-amount-over" role="status">'+overText(p)+'</p>'+payeeField(p,d)+'<div id="ls-amount-error">'+err()+'</div></div>',
-        foot:btn('closelayer',L('Cancel','取消'),'',false,busy)+btn('ls-publish-confirm',busy?L('Waiting for wallet signature…','等待钱包签名…'):d?L('Sign and update','签名并修改'):L('Sign and publish','签名并发布'),'',true,busy||overBy(p)>0)};},
+      return {title:d?L('Edit financing amount','修改融资需求金额'):L('Publish financing request','发布融资需求'),html:'<div class="ls-medium ls-stack ls-publish">'+field('ls-amount','Financing request (USDT) *','融资需求金额（USDT）*',amount,'text','inputmode="decimal" aria-describedby="ls-amount-over ls-amount-error" aria-invalid="'+!!(error||overBy(p))+'"')+'<p class="ls-amount-over" id="ls-amount-over" role="status">'+overText(p)+'</p>'+payeeField(p,d)+'<div id="ls-amount-error">'+err()+'</div>'+signCheck(p,d?L('Sign with your signed-in address to confirm the new amount. The platform wallet then adjusts this round\'s freeze in the pledge contract above; the change takes effect once the freeze is on chain. The signature itself is not on chain and costs nothing.','用登录地址签名确认新金额；平台执行钱包随即在上述质押合约中调整本轮冻结，冻结上链成功即改额生效。签名本身不上链、不产生费用。'):L('Sign with your signed-in address to confirm the amount and receiving address. The platform wallet then freezes this round\'s pledge value in the pledge contract above; the request is published once the freeze is on chain. The signature itself is not on chain and costs nothing.','用登录地址签名确认本轮金额与融资收款地址；平台执行钱包随即在上述质押合约中冻结本轮质押价值，冻结上链成功即发布成功。签名本身不上链、不产生费用。'))+'</div>',
+        foot:btn('closelayer',L('Cancel','取消'),'',false,busy)+btn('ls-publish-confirm',busy?L('Waiting for wallet signature…','等待钱包签名…'):d?L('Sign and update','签名并修改'):L('Sign and publish','签名并发布'),'',true,busy||overBy(p)>0||!contractOk())};},
     release:()=>{const p=project(),title=D.terminal(p)?L('Collect released tokens','提取已释放代币'):L('Release collateral','解除质押'),changes=confirmationChanges.length?note(L('Nothing was sent. Review the changes, then sign again:','本次未发起。请核对以下变化，再次签名：')+'<ul>'+confirmationChanges.map(c=>'<li>'+E(c)+'</li>').join('')+'</ul>','warn'):'',over=releaseValue(p)>D.numbers(p).withdraw;
       if(step===1)return {title,html:'<div class="ls-wide ls-stack ls-release">'+stepper('release')+releaseNotes(p)+changes+releasePicker(p)+(!D.terminal(p)&&releaseValue(p)>0?releaseLimit(p):'')+err()+'</div>',foot:stepBar(chosenSum())+btn('closelayer',L('Cancel','取消'),'',false,busy)+btn('ls-step-next',L('Next','下一步'),'',true,!selection.length||over)};
-      return {title,html:'<div class="ls-medium ls-stack ls-release">'+stepper('release')+'<p class="ls-step-summary">'+chosenSum()+'</p>'+changes+err()+'</div>',
-        foot:stepBar('',txGas(),L('Tokens return to their original holding address. Gas is paid by your company and is not refunded on failure.','代币转回质押前的原持有地址；gas 由本企业承担，失败已产生的不退。'))+btn('ls-step-back',L('Back','上一步'),'',false,busy)+btn('ls-sign-release',busy?L('Waiting for wallet signature…','等待钱包签名…'):D.terminal(p)?L('Sign and collect','签名并提取'):L('Sign and release','签名并解除质押'),'',true,busy||!selection.length||over)};},
+      return {title,html:'<div class="ls-medium ls-stack ls-release">'+stepper('release')+'<p class="ls-step-summary">'+chosenSum()+'</p>'+signCheck(p,L('Sign with the original holding address to send a transaction that moves the selected tokens from the pledge contract above back to that address. Gas is paid by your company and is not refunded on failure. It is unrelated to your sign-in.','用原持有地址签名发起交易，从上述质押合约把所选代币转回质押前的原持有地址；gas 由本企业承担、失败不退，与登录无关。'))+changes+err()+'</div>',
+        foot:stepBar('',txGas())+btn('ls-step-back',L('Back','上一步'),'',false,busy)+btn('ls-sign-release',busy?L('Waiting for wallet signature…','等待钱包签名…'):D.terminal(p)?L('Sign and collect','签名并提取'):L('Sign and release','签名并解除质押'),'',true,busy||!selection.length||over||!contractOk())};},
     close:()=>{const p=project(),a=D.actions(p);return {title:L('Close project','关闭项目'),html:'<div class="ls-medium">'+(p.deploying?note(txt(errors.deploying),'warn'):a.canClose?note(CF.L8?.available(p).length?L('Closing the project triggers collateral release. Check the confirmed result before collecting tokens.','关闭项目后触发质押释放，请以确认结果为准办理提取。'):L('The project will close and its collateral will be released without fees. Tokens remain in the contract until you collect them; collection incurs blockchain fees.','关闭后即时解除质押占用，不产生费用。代币仍在合约内，需自行提取；提取将产生链上费用。'),'warn'):note(txt(errors.cannotClose)+'<ul class="ls-unfinished">'+D.unfinished(p).map(k=>'<li>'+txt(unfinishedNames[k])+'</li>').join('')+'</ul>','danger'))+err()+'</div>',foot:btn('closelayer',L('Cancel','取消'))+btn('ls-close-confirm',L('Confirm close','确认关闭'),'',true,!a.canClose)};},
     /* 撤下要执行链上解冻：用质押时签名的地址签名，平台执行钱包解冻；不收取费用。 */
-    endDemand:()=>({title:L('Withdraw financing request','撤下融资需求'),html:'<div class="ls-medium ls-stack ls-withdraw"><p>'+L('This round stops accepting quotes and its frozen pledge value is released on chain. Sign with an address you used for pledging; no fee is charged.','撤下后本轮不再接受报价，并在链上解除本轮冻结。请用质押时签名的地址签名，不产生费用。')+'</p>'+err()+'</div>',foot:btn('closelayer',L('Cancel','取消'),'',false,busy)+btn('ls-end-confirm',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Sign and withdraw','签名并撤下'),'',true,busy)}),
+    endDemand:()=>{const p=project();return {title:L('Withdraw financing request','撤下融资需求'),html:'<div class="ls-medium ls-stack ls-withdraw">'+signCheck(p,L('Sign with an address you used for pledging to confirm withdrawing this round. The platform wallet then releases this round\'s freeze in the pledge contract above; the request is withdrawn once that is on chain and it stops accepting quotes. The signature is not on chain, costs nothing and is unrelated to your sign-in.','用质押时签名的地址确认撤下本轮；平台执行钱包随即在上述质押合约中解除本轮冻结，解冻上链成功即撤下成功、不再接受报价。签名本身不上链、不产生费用，与登录无关。'))+err()+'</div>',foot:btn('closelayer',L('Cancel','取消'),'',false,busy)+btn('ls-end-confirm',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Sign and withdraw','签名并撤下'),'',true,busy||!contractOk())};},
     handoff:data=>({title:L('Continue to the next step','继续办理'),html:'<p>'+L('This action continues in the '+({quote:'quotation',funding:'funding',repay:'repayment',console:'my console'}[data]||'related')+' module.','此操作由'+({quote:'融资报价',funding:'融资放款',repay:'还款',console:'我的控制台'}[data]||'相关')+'模块承接。')+'</p>',foot:btn('closelayer',L('Return','返回'))})
   };
   const l5LayerKeys=Object.keys(layers);
@@ -731,7 +756,7 @@
   function footer(){document.getElementById('foot').innerHTML='<div class="ft-in"><p class="ft-mark">Harbour Credit</p><p class="ft-tag">'+L('Cross-border receivables financing on tokenised assets.','基于代币化资产的跨境应收账款融资。')+'</p><nav class="ft-links">'+['Terms','Privacy','Risk disclosure','Contact'].map((t,i)=>'<a href="#" data-act="ls-handoff">'+L(t,['服务协议','隐私声明','风险揭示','联系我们'][i])+'</a>').join('')+'</nav><div class="ft-meta"><span>'+L('Demonstration data — no real companies, amounts or transactions','演示数据 —— 非真实企业、金额或链上交易')+'</span><span>'+E(S.tz||'UTC')+'</span></div></div>';}
   function tools(){if(!S.demo)return;const el=document.getElementById('demoPanel');if(el.querySelector('.ls-review,.cq-guide'))return;const end=el.querySelector('.grp');if(end)end.remove();let box=document.createElement('div');box.className='ls-review';box.innerHTML=select('ls-demo-record','Project record list','项目清单',[['tokens','Pledged tokens','质押代币'],['applications','Applications','融资申请'],['repayments','Repayments','还款信息']],'tokens')+select('ls-demo-record-state','List loading state','清单读取状态',[['default','Default','正常'],['loading','Loading','加载中'],['error','Failed','读取失败']],'default')+'<h5>'+L('External events · review only','外部事件 · 仅供评审')+'</h5>'+select('ls-demo-project','Open project','打开项目',D.projects.filter(p=>p.state!=='draft'||D.mine(p)).map(p=>[p.id,p.name[0],p.name[1]]),project()?.id||D.projects[0].id)+btn('ls-demo-project',L('Open','打开'))+'<div class="ls-block ls-row">'+btn('ls-demo-event',L('+2 days','推进 2 天'),'twoDays')+btn('ls-demo-event',L('+8 days','推进 8 天'),'eightDays')+'</div>'+select('ls-outcome','Execution result','执行结果',[['success','Success','成功'],['failure','Failed · charged','失败 · 已产生费用'],['noFee','Failed · no fee','失败 · 零费用'],['contract','Contract did not allow the release','合约判断不允许转出'],['wait','Await results','等待回写']],outcome)+btn('ls-demo-event',L('Return results','回写结果'),'results')+select('ls-gate','Next execution attempt','下次发起执行',[['normal','Available','正常'],['feeChange','One fee changes at confirmation','确认时一份费用变化'],['unavailable','Wallet unavailable','钱包不可用'],['nogas','Insufficient fee balance','费用余额不足'],['recheck','Recheck failed','复核不通过']],executionGate)
       +select('ls-approval-outcome','Approval result','授权结果',[['success','Success','成功'],['failure','Failed · charged','失败 · 已产生费用'],['wait','Await result','等待回写']],approvalOutcome)+select('ls-freeze-outcome','Freeze result','冻结结果',[['success','Success','成功'],['failure','Failed','失败'],['wait','Await result','等待回写']],freezeOutcome)+'<div class="ls-row">'+btn('ls-demo-event',L('Return approval results','回写授权结果'),'approvals')+btn('ls-demo-event',L('Return freeze results','回写冻结结果'),'freezes')+'</div>'
-      +select('ls-withdraw-wallet','Wallet when withdrawing','撤下时的钱包地址',[['pledge','An address used for pledging','质押时使用的地址'],['other','Another address','其他地址']],withdrawWallet)+select('ls-payee-scene','Receiving accounts','收款账户读取',[['ready','Normal','正常'],['empty','None registered','未登记'],['error','Read failed','读取失败'],['changed','Changed before signing','签名前被修改']],payeeScene)+select('ls-type-scene','Token type options on create','创建页代币类型',[['configured','Open for financing','已开放融资'],['unconfigured','Combination not configured','组合未配置'],['paramFail','Parameters failed to load','参数读取失败']],typeScene)
+      +select('ls-contract-scene','Pledge contract when signing','签名时的质押合约',[['ready','Available','正常'],['fail','Read failed','读取失败']],contractScene)+select('ls-withdraw-wallet','Wallet when withdrawing','撤下时的钱包地址',[['pledge','An address used for pledging','质押时使用的地址'],['other','Another address','其他地址']],withdrawWallet)+select('ls-payee-scene','Receiving accounts','收款账户读取',[['ready','Normal','正常'],['empty','None registered','未登记'],['error','Read failed','读取失败'],['changed','Changed before signing','签名前被修改']],payeeScene)+select('ls-type-scene','Token type options on create','创建页代币类型',[['configured','Open for financing','已开放融资'],['unconfigured','Combination not configured','组合未配置'],['paramFail','Parameters failed to load','参数读取失败']],typeScene)
       +'<div class="ls-row">'+btn('ls-demo-event',L('Late success','迟到成功回写'),'late')+btn('ls-demo-event',L('Token expires','代币失效'),'expire')+btn('ls-demo-event',L('Amount changes','额度变化'),'amountChange')+btn('ls-demo-event',L('Permission rejection','越权写入反馈'),'deniedWrite')+btn('ls-demo-event',L('From my console','从控制台进入'),'fromConsole')+'</div>'+'<h5>'+L('Project review · operations side','项目审核 · 运营侧')+'</h5><div class="ls-row">'+btn('ls-demo-project',L('Submit approval · configuring','提交通过 · 配置中'),'submit')+btn('ls-demo-project',L('Approve & configure','通过并配置合约'),'approve')+btn('ls-demo-project',L('Configuration failed','配置失败'),'deployFailed')+btn('ls-demo-project',L('Return','退回'),'return')+btn('ls-demo-project',L('Reach valid-until date','到达有效期至'),'expire')+'</div>'+btn('ls-pledge-notifications',L('Pledge notification preview','质押通知预览'))+'<label class="ls-check"><input id="ls-submit-fail" type="checkbox" '+(submitFail?'checked':'')+'>'+L('Submission failure','提交失败')+'</label><label class="ls-check"><input id="ls-close-race" type="checkbox" '+(closeRace?'checked':'')+'>'+L('Operations approval takes effect before the close','关闭提交时运营的提交通过已先生效')+'</label><p class="why">'+L('Simulated events and fees. No real wallet, signature or chain connection. +2 days advances the demo clock.','演示事件与费用，未连接真实钱包、签名或链。推进 2 天只改变演示时钟。')+'</p>'+btn('ls-demo-event',L('Reset demonstration','重置演示数据'),'reset');el.appendChild(box);}
   async function copyHash(value){try{if(navigator.clipboard)await navigator.clipboard.writeText(value);else{const input=document.createElement('textarea');input.value=value;input.style.position='fixed';input.style.opacity='0';document.body.appendChild(input);input.select();const ok=document.execCommand('copy');input.remove();if(!ok)throw Error('copy');}CF.toast(!/^0x/.test(value)?L('Copied.','已复制。'):value.length===42?L('Address copied.','地址已复制。'):L('Hash copied.','哈希已复制。'));}catch(_){CF.openLayer('drawer','copy',value);}}
   function saveDetail(){document.querySelectorAll('[data-record-scroll]').forEach(el=>{recordScroll[el.dataset.recordScroll]=el.scrollTop;});if(S.layer&&['pledge','release','review','fees','execute','pledgeNotifications'].includes(S.layer.key)&&!D.mine(project())){S.layer=null;selection=[];}const panel=document.querySelector('.ls-flow-open');if(panel)detailCache[panel.dataset.project+':'+panel.dataset.tab]=panel.scrollTop;if(S.layer?.key==='review'){document.querySelectorAll('[data-record]').forEach(el=>{if(el.open)expandedRecords.add(el.dataset.record);else expandedRecords.delete(el.dataset.record);});reviewScroll=document.querySelector('#layers .drawer-b, #layers .modal-b')?.scrollTop||0;}}
@@ -847,6 +872,7 @@
       if(act==='ls-publish-confirm'){signPublish();return true;}
       if(act==='ls-payee-retry'){payeeScene='ready';refocus='ls-payee';return true;}
       if(act==='ls-payee-register'){if(!guarded(p))return true;publishDraft=true;const back='/project/'+p.id+'?action=publish';S.layer=null;location.hash='#'+(CF.ENTRY['P-F-EA-01']||'/company-accounts')+'?'+new URLSearchParams({return:back,from:'publish'});return true;}
+      if(act==='ls-contract-retry'){contractScene='ready';return true;}
       if(act==='ls-param-retry'){typeScene='configured';refocus='ls-kind';return true;}
       if(act==='ls-release'){openRelease();return true;}
       if(act==='ls-sign-release'||act==='ls-release-fees'){signRelease();return true;}
@@ -903,7 +929,7 @@
     if(el.dataset.releaseAll){const open=releaseCandidates(project()).filter(t=>!waterHeld(project(),t)),addr=signAddress()||(open[0]?D.holderOf(open[0]):'');selection=el.checked?open.filter(t=>D.holderOf(t)===addr).slice(0,D.BATCH_MAX).map(t=>t.id):[];feeQuote=feeSnapshot();confirmationChanges=[];error='';CF.render();setTimeout(()=>document.querySelector('[data-release-all]')?.focus(),0);}
     if(el.dataset.token){const id=el.dataset.token;selection=el.checked?[...new Set([...selection,id])].slice(0,D.BATCH_MAX):selection.filter(x=>x!==id);if(['pledge','release'].includes(S.layer?.key)){feeQuote=feeSnapshot();confirmationChanges=[];error='';}CF.render();setTimeout(()=>document.querySelector('[data-token="'+id+'"]')?.focus(),0);}
     if(['ls-tf-state','ls-tf-going','ls-tf-keyword'].includes(el.id)){tokenFilter[el.id.slice(6)]=el.value;pages.tokens=1;refocus=el.id;CF.render();}
-    if(el.id==='ls-approval-outcome')approvalOutcome=el.value;if(el.id==='ls-withdraw-wallet')withdrawWallet=el.value;if(el.id==='ls-freeze-outcome')freezeOutcome=el.value;if(el.id==='ls-payee-scene'){payeeScene=el.value;CF.render();}if(el.id==='ls-type-scene'){typeScene=el.value;CF.render();}
+    if(el.id==='ls-approval-outcome')approvalOutcome=el.value;if(el.id==='ls-withdraw-wallet')withdrawWallet=el.value;if(el.id==='ls-contract-scene'){contractScene=el.value;CF.render();}if(el.id==='ls-freeze-outcome')freezeOutcome=el.value;if(el.id==='ls-payee-scene'){payeeScene=el.value;CF.render();}if(el.id==='ls-type-scene'){typeScene=el.value;CF.render();}
     if(el.id==='ls-outcome')outcome=el.value;if(el.id==='ls-gate')executionGate=el.value;if(el.id==='ls-submit-fail')submitFail=el.checked;if(el.id==='ls-close-race')closeRace=el.checked;
     if(el.id==='ls-sort'){filter.sort=el.value;writeFilters();refocus=el.id;CF.render();}
   });
