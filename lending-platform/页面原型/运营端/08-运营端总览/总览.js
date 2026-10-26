@@ -6,10 +6,10 @@
   const sources={
     tokens:{permission:21,write:22,nav:'tokens',route:'/ops/token-admissions?status=pending&page=1&sort=submittedAt&dir=1',
       stat:['Admitted tokens','已准入代币'],task:['Tokens awaiting review','待审核代币'],unit:['records','笔'],
-      group:['Token admissions','代币准入'],recent:[['approved',['Approved','通过']],['returned',['Returned','退回']]]},
+      group:['Token admissions','代币准入']},
     contracts:{permission:17,write:18,nav:'contracts',route:'/ops/contract-reviews?review=pending&page=1&dir=1',
       stat:['Approved projects','已通过项目'],task:['Projects awaiting review','待审核项目'],unit:['projects','个'],
-      group:['Financing projects','融资项目'],recent:[['decided',['Manually decided','人工审结']]]},
+      group:['Financing projects','融资项目']},
     institutions:{permission:5,write:6,nav:'institution',route:'/ops/institution-reviews?state=submitted&page=1',
       stat:['Certified funders','已认证资金方机构'],task:['Funders awaiting review','待审核资金方机构'],unit:['institutions','家']},
     parameters:{permission:19,write:20,nav:'parameters',route:'/ops/financing-parameters?status=unset&page=1&size=20',
@@ -32,7 +32,7 @@
       {key:'finance',id:'newDemand',tone:'2',label:['Demand published','新发布融资需求']},
       {key:'finance',id:'newLoans',tone:'3',label:['Disbursed','新增放款']}]}
   ];
-  let scene='default',entered=false,scheduled=false,signature='',cache={},versions={},view='chart';
+  let scene='default',entered=false,scheduled=false,signature='',cache={},versions={},view='chart',countsOpen=false;
   const tr=x=>L(...x),can=key=>CF.opsAuth.can(sources[key].permission),keys=()=>Object.keys(sources).filter(can);
   const menu=key=>CF.AdminMenu.entries.find(e=>e.key===sources[key].nav);
   const sourceLabel=key=>tr(menu(key).label);
@@ -94,11 +94,6 @@
     return '<div class="ov-chart-block">'+head+status+'<div class="ov-chart" data-series="'+shown.length+'"><div class="ov-axis" aria-hidden="true">'+axis+'</div><ol class="ov-cols" aria-label="'+E(tr(def.title)+' · '+L('last 14 UTC days','最近 14 个 UTC 日'))+'">'+cols+'</ol></div>'+
       '<div class="ov-chart-foot">'+(missing?'<span class="ov-chart-gap"><span class="ov-gap-swatch" aria-hidden="true"></span>'+L('Hatched: data unavailable, not zero','斜纹：数据暂不可用，不是 0')+'</span>':'')+times+'</div></div>';
   }
-  function recentCard(key){
-    const s=sources[key],c=cache[key];
-    return '<article class="card ov-recent" data-source="'+key+'" data-read-state="'+(c?.state||'loading')+'"><div class="ov-recent-head">'+mark(key)+'<h3>'+tr(s.group)+'</h3></div>'+feedback(key)+
-      (c?.data?'<dl class="ov-recent-figures">'+s.recent.map(([k,label])=>'<div><dt>'+tr(label)+'</dt><dd>'+figure(key,'recent.'+k)+'</dd></div>').join('')+'</dl>':'')+(c?.at?time(c.at):'')+'</article>';
-  }
   function taskCard(k){
     const c=cache[k],s=sources[k],href=CF.AdminMenu.href(s.nav,s.route);
     const subset=k==='contracts'&&c?.data?(c.data.failed==null?'<p class="ov-task-note">'+L('Failed configuration count unavailable','配置失败数量暂不可用')+'</p>':c.data.failed>0?'<p class="ov-task-note">'+L('Includes '+count(c.data.failed)+' failed configuration'+(c.data.failed===1?'':'s')+' to retry','其中 '+count(c.data.failed)+' 个配置失败，可再次发起')+'</p>':''):'';
@@ -138,21 +133,26 @@
     if(data&&typeof data==='object')return Object.fromEntries(Object.entries(data).map(([k,v])=>[k,scale(v,countFn,centsFn,amount||['value','demand','funded','daily'].includes(k))]));
     return typeof data==='number'?(amount?centsFn(data):countFn(data)):data;
   }
+  // Core counts fold by default; read problems stay visible on the folded bar.
+  function countsFold(stats){
+    const issues=countsOpen?'':stats.filter(k=>cache[k]?.state==='error').map(k=>'<span class="ov-fold-issue" role="status">'+tr(sources[k].stat)+' · '+(cache[k].data?L('Update failed · previous data','更新失败 · 上次数据'):L('Unable to load','读取失败'))+retry(k)+'</span>').join('');
+    const toggle='<button type="button" class="ov-fold-toggle" data-act="ov-counts" aria-expanded="'+countsOpen+'" aria-controls="ov-counts"><span class="ov-fold-title">'+L('Core statistics','核心统计')+'</span><span class="ov-fold-hint">'+stats.map(k=>tr(sources[k].stat)).join(' · ')+'</span><span class="ov-fold-action">'+(countsOpen?L('Collapse','收起'):L('Expand','展开'))+'<span class="ov-fold-mark" aria-hidden="true"></span></span></button>';
+    return '<div class="ov-counts-fold">'+toggle+(issues?'<div class="ov-fold-issues">'+issues+'</div>':'')+'</div>'+
+      '<dl class="ov-counts" id="ov-counts" style="--ov-columns:'+stats.length+'"'+(countsOpen?'':' hidden')+'>'+stats.map(k=>'<div class="ov-count" data-source="'+k+'" data-read-state="'+(cache[k]?.state||'loading')+'"><dt>'+mark(k)+tr(sources[k].stat)+'</dt><dd>'+figure(k,'approved')+feedback(k)+(cache[k]?.at?time(cache[k].at):'')+'</dd></div>').join('')+'</dl>';
+  }
   function content(){
-    const allowed=keys(),stats=allowed.filter(k=>sources[k].stat),tasks=allowed.filter(k=>sources[k].task),recents=allowed.filter(k=>sources[k].recent);
+    const allowed=keys(),stats=allowed.filter(k=>sources[k].stat),tasks=allowed.filter(k=>sources[k].task);
     const shownAmounts=amounts.filter(m=>can(m.key)),shownCharts=charts.filter(d=>d.series.some(s=>can(s.key)));
     const now=Date.now(),days=D.days(now).map(utcDay);
     const zone='<span class="ov-section-meta">'+L('Time zone: ','时区：')+E(S.tz)+'</span>';
     const hero=shownAmounts.length||stats.length?'<section class="ov-hero" aria-labelledby="ov-stats-title"><div class="ov-section-head"><h2 id="ov-stats-title">'+L('Platform statistics','平台统计')+'</h2>'+zone+'</div>'+
       (shownAmounts.length?'<dl class="ov-amounts" style="--ov-columns:'+shownAmounts.length+'">'+shownAmounts.map(amountCard).join('')+'</dl>':'')+
-      (stats.length?'<dl class="ov-counts" style="--ov-columns:'+stats.length+'">'+stats.map(k=>'<div class="ov-count" data-source="'+k+'" data-read-state="'+(cache[k]?.state||'loading')+'"><dt>'+mark(k)+tr(sources[k].stat)+'</dt><dd>'+figure(k,'approved')+feedback(k)+(cache[k]?.at?time(cache[k].at):'')+'</dd></div>').join('')+'</dl>':'')+'</section>':'';
+      (stats.length?countsFold(stats):'')+'</section>':'';
     const toggle='<div class="ov-view-toggle" role="group" aria-label="'+L('Display as','展示方式')+'">'+[['chart','Chart','图表'],['table','Table','表格']].map(([id,en,zh])=>'<button type="button" class="btn sm" data-act="ov-view" data-v="'+id+'" aria-pressed="'+(view===id)+'">'+L(en,zh)+'</button>').join('')+'</div>';
     const daily=shownCharts.length?'<section class="ov-section ov-panel" aria-labelledby="ov-daily-title"><div class="ov-section-head"><div><h2 id="ov-daily-title">'+L('Daily new','每日新增')+'</h2><p class="ov-section-meta">'+L('Last 14 UTC days · ','最近 14 个 UTC 日 · ')+days[0]+L(' to ',' 至 ')+days[days.length-1]+L(' · today in progress',' · 今天尚未结束')+'</p></div>'+toggle+'</div>'+shownCharts.map(d=>chartBlock(d,days)).join('')+'</section>':'';
-    const range=days[days.length-7]+L(' to ',' 至 ')+days[days.length-1];
-    const recent=recents.length?'<section class="ov-section" aria-labelledby="ov-recent-title"><div class="ov-section-head"><h2 id="ov-recent-title">'+L('Recent decisions','近期审结')+'</h2><span class="ov-section-meta">'+L('Last 7 days (UTC) · ','近 7 个自然日（UTC）· ')+range+'</span></div><div class="ov-recent-list" style="--ov-columns:'+recents.length+'">'+recents.map(recentCard).join('')+'</div></section>':'';
     const allClear=tasks.length===4&&tasks.every(k=>cache[k]?.state==='ready'&&cache[k].data.pending===0);
     const rail=tasks.length?'<aside class="ov-rail" aria-labelledby="ov-tasks-title"><section class="ov-section ov-panel"><div class="ov-section-head"><h2 id="ov-tasks-title">'+L('Action required','待办事项')+'</h2></div><ul class="ov-tasks">'+tasks.map(taskCard).join('')+'</ul>'+(allClear?'<p class="ov-empty" role="status">'+L('No items in these four queues need action.','当前暂无这四类待办事项。')+'</p>':'')+'</section></aside>':'';
-    const main=daily||recent?'<div class="ov-main">'+daily+recent+'</div>':'';
+    const main=daily?'<div class="ov-main">'+daily+'</div>':'';
     return '<div class="ov-page"><div class="ov-heading"><div><h1>'+L('Overview','总览')+'</h1><p class="page-desc">'+L('Platform statistics, daily activity and the work that needs attention.','平台统计、每日新增与当前待办。')+'</p></div><div><div class="ov-heading-tools">'+CF.tag('gray',L('Demonstration data','演示数据'))+'<button class="btn" type="button" id="ov-refresh" data-act="ov-refresh" '+(!allowed.length?'disabled':busy()?'aria-disabled="true"':'')+'>'+L('Refresh data','刷新数据')+'</button></div><p class="ov-refresh-status" aria-live="polite">'+(busy()?L('Updating available sources…','正在读取有权查看的数据…'):'')+'</p></div></div>'+hero+
       (main||rail?'<div class="ov-body'+(rail&&main?'':' ov-body-single')+'">'+main+rail+'</div>':'')+(!allowed.length?CF.empty(L('No business sources available','暂无可查看的业务摘要'),L('This account has no query permission for these sources.','当前账号未开通这些来源的查询权限。'),''):'')+'</div>';
   }
@@ -171,6 +171,7 @@
     if(act==='ov-refresh'&&!busy())refresh();
     if(act==='ov-retry')refresh(v);
     if(act==='ov-scene')setScene(v);
+    if(act==='ov-counts'){countsOpen=!countsOpen;CF.render();}
     if(act==='ov-view'){view=v==='table'?'table':'chart';CF.render();}
     if(act==='ov-permission'){priorAction('ops-grant',String(sources[v].permission));CF.render();}
     if(act==='ov-reset')setTimeout(()=>{D.reset();const entry=CF.AdminMenu.entries.find(e=>e.key==='account');if(window.AdminPrototypeBundle)window.AdminPrototypeBundle.open(entry.file,entry.route,true);else if(document.documentElement.dataset.adminModule==='overview')location.reload();else location.href=new URL('../'+entry.file+'#'+entry.route,location.href).href;},0);
@@ -178,8 +179,6 @@
   };
   OPS.afterRender=function(){
     priorAfter.call(this);
-    // The overview alone uses the approved Web3 palette; other pages keep the console palette.
-    if(S.page===P)document.documentElement.dataset.surface='web3';else delete document.documentElement.dataset.surface;
     if(S.page!==P){entered=false;Object.keys(versions).forEach(k=>versions[k]++);if(!CF.opsAuth.can(14)){cache={};const host=document.querySelector('#acontent .ov-page');if(host)host.remove();}return;}
     Object.keys(cache).filter(k=>!can(k)).forEach(k=>{delete cache[k];versions[k]=(versions[k]||0)+1});
     const current=keys().join('|');

@@ -18,31 +18,28 @@
   const factories={tokens:()=>CF.tokenAdmissionSeed().rows,contracts:()=>CF.contractSeed().rows,
     institutions:()=>CF.institutionReviewSeed(),parameters:()=>CF.parameterSeed().rows,finance:financeSeed};
   const unique=rows=>[...new Map(rows.filter(r=>r&&r.id).map(r=>[r.id,r])).values()];
-  // Same day boundary and decision readers as the source modules' 7-day summaries.
+  // Same UTC day boundary and decision reader as the token admission module.
   const utcDayStart=(t,back=0)=>{const d=new Date(t);return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-back);};
   const tokenDecision=r=>(r.decisions||[])[(r.decisions||[]).length-1]||null;
-  const projectDecision=r=>{const e=(r.events||[]).find(x=>['return','config-ok'].includes(x.kind));return e?e.at:null;};
   const count=(rows,test)=>rows.filter(test).length;
   const cents=v=>v==null||v===''||isNaN(Number(v))?null:Math.round(Number(v)*100);
   // Oldest first; index DAYS-1 is today's UTC day, which is still in progress.
   const days=at=>Array.from({length:DAYS},(_,i)=>utcDayStart(at,DAYS-1-i));
   function summarize(key,records,at=Date.now()){
-    const rows=unique(records),since=utcDayStart(at,6);
+    const rows=unique(records);
     if(key==='tokens'){
-      const decided=kind=>count(rows,r=>r.status===kind&&tokenDecision(r)&&tokenDecision(r).at>=since);
       const counted=rows.filter(r=>r.status==='approved'&&r.tokenState==='valid');
       const daily=days(at).map(()=>0),first=utcDayStart(at,DAYS-1);
       rows.forEach(r=>{const d=tokenDecision(r),v=cents(r.value);
         if(r.status==='approved'&&d&&d.result==='approved'&&d.at>=first&&v!=null)daily[Math.floor((utcDayStart(d.at)-first)/DAY)]+=v;});
       return {pending:count(rows,r=>r.status==='pending'),approved:count(rows,r=>r.status==='approved'),
         value:counted.reduce((sum,r)=>sum+(cents(r.value)||0),0),missingValue:count(counted,r=>cents(r.value)==null),
-        daily:{tokenValue:daily},recent:{approved:decided('approved'),returned:decided('returned')}};
+        daily:{tokenValue:daily}};
     }
     if(key==='contracts'){
       const pending=rows.filter(r=>r.review==='pending'&&!r.closed);
       return {pending:pending.length,failed:count(pending,r=>r.exec==='failed'),
-        approved:count(rows,r=>r.review==='approved'&&r.exec==='success'),
-        recent:{decided:count(rows,r=>{const t=projectDecision(r);return t!=null&&t>=since;})}};
+        approved:count(rows,r=>r.review==='approved'&&r.exec==='success')};
     }
     if(key==='institutions'){
       const current=rows.filter(r=>r.version>0&&r.status!=='draft');
