@@ -1222,3 +1222,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-approval-unit{white-space:nowrap}
 .ls-approval-reason{flex:1 0 100%;font-size:var(--fs-12);color:var(--muted);line-height:1.6}
 .ls-going-why{margin:var(--sp-2) 0 0;font-size:var(--fs-13);color:var(--muted);line-height:1.6}
+/* WS-447 · 报价与接受签名前的放款合约核对、办理中给出的交易哈希 */
+.cq-sign-check{margin-top:var(--sp-4)}
+.cq-net{margin-left:var(--sp-2);font-size:var(--fs-12);font-weight:400;color:var(--muted)}
+.cq-turn-hash{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1);margin-top:var(--sp-1)}
