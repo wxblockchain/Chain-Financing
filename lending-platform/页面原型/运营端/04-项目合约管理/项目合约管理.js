@@ -1,8 +1,8 @@
-/* WS-387 / WS-455 · 项目合约管理（运营端）：项目审核队列、项目审核详情、共用合约台账。
+/* WS-387 / WS-455 · 项目合约管理（运营端）：项目审核队列、项目审核详情、质押合约台账。
    会话与功能权限读运营端账户与登录一处登记（CF.opsAuth）：
    PM-AL-17 融资项目审核查询、PM-AL-18 融资项目审核与合约配置处置。
-   合约按「代币类型＋区块链网络」共用一套（质押、放款、还款各一份）；通过时选定三份合约并确认，
-   由平台在链上执行配置，运营人员不签名。业务数据、配置结果与站内信均为本地演示。 */
+   质押合约由开发预先部署，同一「区块链网络＋代币类型」下可有多份，运营在通过时选定一份；
+   放款合约与还款合约每个项目一份，由平台签名地址部署，运营人员不签名。业务数据、部署结果与站内信均为本地演示。 */
 (function(CF){
   'use strict';
   const S=CF.S,L=CF.L,E=CF.esc,OPS=CF.opsAccountModule,$=id=>document.getElementById(id);
@@ -17,22 +17,27 @@
   const EXEC={none:['Not initiated','未发起','gray'],processing:['Configuration in progress','配置处理中','accent'],
     success:['Configured','配置成功','ok'],failed:['Configuration failed','配置失败','danger'],
     unknown:['Result to be verified','结果待核实','warn']};
-  const RESULT={success:['Succeeded','成功','ok'],failed:['Failed','失败','danger'],
-    unknown:['To be verified','待核实','warn'],processing:['In progress','处理中','accent']};
-  const KINDS=[['pledge',['Pledge contract','质押合约']],['loan',['Loan contract','放款合约']],['repay',['Repayment contract','还款合约']]];
-  const NETWORKS={eth:['Ethereum','以太坊']};
+  const RESULT={success:['Deployed','部署成功','ok'],failed:['Failed','部署失败','danger'],
+    unknown:['To be verified','待核实','warn'],processing:['Deploying','部署中','accent']};
+  const OWN=[['loan',['Loan contract','放款合约']],['repay',['Repayment contract','还款合约']]];
+  const PLEDGE_LABEL=['Pledge contract','质押合约'];
+  /* 网络名称中英文环境都显示英文。 */
+  const NETWORKS={eth:{name:'Ethereum',icon:'ETH'},sepolia:{name:'Ethereum Sepolia',icon:'ETH'}};
   const OWNERS=[['A',['Demo Asset A','示例资产企业 A']],['B',['Demo Asset B','示例资产企业 B']],['C',['Demo Asset C','示例资产企业 C']]];
   const REPAYMENT=['Quarterly interest, principal and interest at maturity','按季付息、到期还本付息'];
   const OPERATOR=['Demo Operator','演示操作员'];
+  const CLOSE_REASON={owner:['Closed by the asset holder','资产方主动关闭'],expired:['Valid-until date reached','有效期到期']};
 
-  const qDefault=()=>({review:'pending',exec:'',owner:'',token:'',network:'',from:'',to:'',q:''});
-  const lDefault=()=>({token:'',network:'',q:''});
+  const qDefault=()=>({review:'pending',exec:'',network:'',token:'',owner:'',from:'',to:'',q:''});
+  const lDefault=()=>({network:'',token:'',q:''});
 
   let seed=CF.contractSeed();
-  const A={rows:CF.opsOverviewData.restore('contracts',seed.rows),sets:seed.sets,tokenTypes:seed.tokenTypes,config:{...seed.config},
+  /* 共享总览只读本模块已发布的记录；旧结构的缓存不再适用，回到演示种子。 */
+  const restored=CF.opsOverviewData.restore('contracts',seed.rows);
+  const A={rows:restored.every(r=>r.v===3)?restored:seed.rows,pledges:seed.pledges,tokenTypes:seed.tokenTypes,networks:seed.networks,config:{...seed.config},
     now:seed.now,clock:Date.now(),
     queue:{filter:qDefault(),edit:qDefault(),page:1,sort:'submittedAt',dir:1,open:false},
-    ledger:{filter:lDefault(),edit:lDefault(),page:1,dir:-1,set:''},
+    ledger:{filter:lDefault(),edit:lDefault(),page:1,dir:-1,contract:''},
     view:'default',response:'success',activityState:'default',
     draft:null,busy:false,error:'',selected:null,src:'queue',notices:[],epoch:0};
   let routeKey=null,restoreContext=false,returnHash='',lastHash='',onModule=false,wasSigned=false;
@@ -57,18 +62,18 @@
   const submission=n=>L('Submission '+n,'第 '+n+' 次提交');
   const ownerName=r=>{const o=OWNERS.find(x=>x[0]===r.owner);return o?txt(o[1]):r.owner;};
   const projectName=r=>L('Demo financing project '+r.key,'示例融资项目 '+r.key);
-  const network=k=>NETWORKS[k]?txt(NETWORKS[k]):k;
-  const networkValue=k=>`<span class="cm-network">${k==='eth'?CF.assetIcon('ETH'):''}<span>${E(network(k))}</span></span>`;
-  const comboValue=x=>E(x.tokenType)+' · '+networkValue(x.network);
+  const network=k=>NETWORKS[k]?NETWORKS[k].name:k;
+  const networkValue=k=>`<span class="cm-network">${NETWORKS[k]?.icon?CF.assetIcon(NETWORKS[k].icon):''}<span>${E(network(k))}</span></span>`;
+  /* 区块链网络在前、代币类型在后。 */
+  const comboValue=x=>networkValue(x.network)+' · '+E(x.tokenType);
   const row=()=>A.rows.find(r=>r.id===A.selected);
   const list=()=>S.page===LG?A.ledger:A.queue;
-  /* 项目的适用组合取自创建信息的代币类型与区块链网络；每个组合同时只有一套在用。 */
-  const setOf=r=>A.sets.find(s=>s.tokenType===r.tokenType&&s.network===r.network)||null;
-  const setById=id=>A.sets.find(s=>s.id===id)||null;
-  const missingKinds=set=>KINDS.filter(([k])=>!set||!set[k]).map(([,label])=>txt(label));
-  const configured=set=>A.rows.filter(r=>r.exec==='success'&&r.attempt?.set===set.id);
+  /* 候选质押合约：与项目区块链网络、代币类型都一致的预先部署合约。 */
+  const candidates=r=>A.pledges.filter(p=>p.network===r.network&&p.tokenType===r.tokenType);
+  const pledgeById=id=>A.pledges.find(p=>p.id===id)||null;
+  const configuredOn=p=>A.rows.filter(r=>r.exec==='success'&&r.attempt?.pledge===p.id);
   const configAt=r=>r.exec==='success'?r.attempt?.at||null:null;
-  const tokenConfig=r=>A.config.byToken[r.tokenType]||null;
+  const tokenConfig=r=>A.config.byCombo[r.network+'|'+r.tokenType]||null;
 
   const b=(en,zh,act,value='',cls='',disabled=false,title='')=>`<button type="button" class="btn ${cls}" data-act="cm-${act}" data-v="${E(value)}" ${title?`title="${E(title)}"`:''} ${disabled?'disabled':''}>${L(en,zh)}</button>`;
   const viewLink=(id,src)=>`<a class="actlink" href="#${E(detailRoute(id,src))}" data-act="cm-view" data-v="${E(id)}">${L('View','查看')}</a>`;
@@ -80,13 +85,8 @@
   const kv=(items,detail=false)=>`${detail?'<div class="ops-facts-region">':''}<dl class="cm-kv ${detail?'ops-facts':''}">${items.map(([label,value,wide])=>`<div${wide?` class="cm-wide${detail?' ops-fact-wide':''}"`:''}><dt>${label}</dt><dd>${value==null?'—':value}</dd></div>`).join('')}</dl>${detail?'</div>':''}`;
   const facts=items=>kv(items,true);
   const section=(en,zh,html,extra='')=>`<section class="card cm-section"${extra}><h2 class="cm-h2">${L(en,zh)}</h2>${html}</section>`;
-  /* 项目已关闭是叠加标记，同时展示关闭原因：资产方主动关闭或有效期到期。 */
-  const CLOSE_REASON={owner:['closed by the asset holder','资产方主动关闭'],expired:['valid-until date reached','有效期到期']};
-  const closeReason=r=>txt(CLOSE_REASON[r.closeReason||'owner']);
-  const closedTag=r=>CF.tag('gray',L('Project closed · ','项目已关闭 · ')+closeReason(r));
-  const reviewBadge=r=>CF.tag(REVIEW[r.review][2],txt(REVIEW[r.review]))+(r.closed?closedTag(r):'');
+  const reviewBadge=r=>CF.tag(REVIEW[r.review][2],txt(REVIEW[r.review]));
   const execBadge=r=>CF.tag(EXEC[r.exec][2],txt(EXEC[r.exec]));
-  const notAvailable=()=>CF.tag('warn',L('Not available','暂无'));
 
   /* 功能权限只在运营端账户与登录一处登记。 */
   const signedIn=()=>!!CF.opsAuth&&CF.opsAuth.can(14);
@@ -98,7 +98,7 @@
   /* 项目仍待审核、不在配置处理中、也不是结果待核实时才可处置；审核无截止条件。 */
   const openForAction=r=>!!r&&!r.closed&&r.review==='pending'&&!['processing','unknown'].includes(r.exec);
   const canAct=r=>allowed()&&canDecide()&&openForAction(r);
-  const canApprove=r=>canAct(r)&&!!r.entity&&!missingKinds(setOf(r)).length;
+  const canApprove=r=>canAct(r)&&!!r.entity&&candidates(r).length>0;
 
   function event(r,kind,title,result,extra){
     r.events.unshift(Object.assign({id:crypto.randomUUID(),at:now(),kind,title,result,actor:['System','系统']},extra||{}));
@@ -109,7 +109,7 @@
   function listParams(which){
     const st=which==='ledger'?A.ledger:A.queue;
     const p=new URLSearchParams({...st.filter,page:String(st.page),dir:String(st.dir)});
-    if(which==='ledger'){if(st.set)p.set('set',st.set);}else p.set('sort',st.sort);
+    if(which==='ledger'){if(st.contract)p.set('contract',st.contract);}else p.set('sort',st.sort);
     return p;
   }
   function queueRoute(){return ROOT+'?'+listParams('queue');}
@@ -143,7 +143,7 @@
       A.ledger.filter=readFilter(p,lDefault);A.ledger.edit={...A.ledger.filter};
       A.ledger.page=Math.max(1,parseInt(p.get('page'),10)||1);
       A.ledger.dir=p.get('dir')==='1'?1:-1;
-      A.ledger.set=setById(p.get('set'))?p.get('set'):'';
+      A.ledger.contract=pledgeById(p.get('contract'))?p.get('contract'):'';
     }else{
       A.queue.filter=readFilter(p,qDefault,f=>{
         if(f.review&&!REVIEW[f.review])f.review='pending';
@@ -204,7 +204,7 @@
   }
   function views(current){
     const item=(key,route,en,zh)=>`<a class="cm-view" href="#${E(route)}" data-act="cm-go" data-v="${key}" ${current===key?'aria-current="page"':''}>${L(en,zh)}</a>`;
-    return `<nav class="cm-views" aria-label="${L('Project contracts views','项目合约管理视图')}">${item('queue',queueRoute(),'Project reviews','项目审核队列')}${item('ledger',ledgerRoute(),'Shared contract ledger','共用合约台账')}</nav>`;
+    return `<nav class="cm-views" aria-label="${L('Project contracts views','项目合约管理视图')}">${item('queue',queueRoute(),'Project reviews','项目审核队列')}${item('ledger',ledgerRoute(),'Pledge contract ledger','质押合约台账')}</nav>`;
   }
   function listHeading(current){
     return `<div class="cm-list-heading"><h1>${L('Project contracts','项目合约管理')}</h1>${views(current)}${CF.tag('gray',L('Demonstration data','演示数据'))}</div>`;
@@ -224,7 +224,7 @@
   const all=()=>['',L('All','全部')];
   function ownerOptions(){return [all(),...OWNERS.map(([k,label])=>[k,txt(label)])];}
   function tokenOptions(){return [all(),...A.tokenTypes.map(t=>[t,t])];}
-  function networkOptions(){return [all(),...Object.keys(NETWORKS).map(k=>[k,network(k)])];}
+  function networkOptions(){return [all(),...A.networks.map(k=>[k,network(k)])];}
   function pager(total,st,unit){
     const pages=Math.max(1,Math.ceil(total/CF.PAGE_SIZE));
     return `<div class="pager"><span class="total">${L('Total','共')} ${total} ${txt(unit)} · ${CF.PAGE_SIZE} ${L('per page','条／页')}</span>${b('Previous','上一页','page',String(st.page-1),'sm',st.page===1)}<span>${st.page} / ${pages}</span>${b('Next','下一页','page',String(st.page+1),'sm',st.page===pages)}</div>`;
@@ -238,34 +238,36 @@
     if(!value)return empty||unknown();
     return `<span class="cm-address"><span class="mono" title="${E(value)}">${E(shortAddr(value))}</span>${CF.copyBtn('cm-copy',value,L('Copy the full '+label,'复制完整'+label))}</span>`;
   }
-  /* 三份合约一张小表：类别 / 合约地址，按需带执行结果与交易凭证。 */
-  function contractTable(source,opts={}){
+  /* 合约小表：类别 / 合约地址，按需带部署结果与交易凭证。rows：[label, address, result, proof, extra] */
+  function contractTable(rows,opts={}){
     const head=[L('Contract','合约类别'),L('Contract address','合约地址')];
-    if(opts.results)head.push(L('Result','执行结果'));
-    if(opts.proofs)head.push(L('Configuration transaction','配置交易凭证'));
-    const body=KINDS.map(([k,label])=>{
-      const cells=[`<th scope="row">${txt(label)}</th>`,`<td>${source[k]?addressValue(source[k],L('address','地址')):notAvailable()}</td>`];
-      if(opts.results){const v=RESULT[opts.results[k]||'unknown'];cells.push(`<td>${CF.tag(v[2],txt(v))}</td>`);}
-      if(opts.proofs)cells.push(`<td>${addressValue(opts.proofs[k],L('evidence','凭证'),opts.proofEmpty?txt(opts.proofEmpty):'')}</td>`);
+    if(opts.results)head.push(L('Deployment result','部署结果'));
+    if(opts.proofs)head.push(L('Transaction evidence','交易凭证'));
+    const body=rows.map(([label,address,result,proof,extra])=>{
+      const cells=[`<th scope="row">${txt(label)}</th>`,`<td>${address?addressValue(address,L('address','地址')):`<span class="cm-meta">${txt(opts.addressEmpty||['Not produced yet','尚未产生'])}</span>`}${extra||''}</td>`];
+      if(opts.results){const v=result&&RESULT[result];cells.push(`<td>${v?CF.tag(v[2],txt(v)):'—'}</td>`);}
+      if(opts.proofs)cells.push(`<td>${addressValue(proof,L('evidence','凭证'),txt(opts.proofEmpty||['To be verified','待核实']))}</td>`);
       return `<tr>${cells.join('')}</tr>`;
     }).join('');
-    return `<div class="cm-ctable-wrap" tabindex="0" role="region" aria-label="${L('Contract addresses and configuration results','合约地址与配置结果')}"><table class="tbl cm-ctable${opts.proofs?' cm-ctable-proofs':''}"><thead><tr>${head.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
+    return `<div class="cm-ctable-wrap" tabindex="0" role="region" aria-label="${L('Contract addresses','合约地址')}"><table class="tbl cm-ctable${opts.proofs?' cm-ctable-proofs':''}"><thead><tr>${head.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
   }
+  const pledgeAddress=at=>pledgeById(at?.pledge)?.address||null;
 
   /* ---------------------------------------------------------------- 项目审核队列 */
+  function boundAddresses(r){return r.exec==='success'?[pledgeAddress(r.attempt),r.attempt.loan,r.attempt.repay].filter(Boolean):[];}
   function queueScope(ignoreState){
     const f=A.queue.filter;
     return A.rows.filter(r=>(!f.owner||r.owner===f.owner)&&(!f.token||r.tokenType===f.token)&&(!f.network||r.network===f.network)
       &&(!f.from||inDay(r.submittedAt,f.from))&&(!f.to||inDay(r.submittedAt,f.to,true))
-      &&(!f.q||[r.id,projectName(r),ownerName(r),...(r.exec==='success'?Object.values(r.attempt.picks):[])].join(' ').toLowerCase().includes(f.q.trim().toLowerCase()))
+      &&(!f.q||[r.id,projectName(r),ownerName(r),...boundAddresses(r)].join(' ').toLowerCase().includes(f.q.trim().toLowerCase()))
       &&(ignoreState||((!f.review||r.review===f.review)&&(!f.exec||r.exec===f.exec)
         &&!(r.closed&&f.review==='pending'))));
   }
   function queueFilters(){
     const f=A.queue.edit,applied=A.queue.filter;
-    const extra=['exec','owner','token','network','from','to'],count=extra.filter(k=>applied[k]).length;
-    const labels={exec:L('Configuration status','配置执行状态'),owner:L('Project publisher','项目发布方'),token:L('Token type','代币类型'),
-      network:L('Blockchain network','区块链网络'),from:L('Submitted from','提交开始日期'),to:L('Submitted through','提交结束日期')};
+    const extra=['exec','network','token','owner','from','to'],count=extra.filter(k=>applied[k]).length;
+    const labels={exec:L('Configuration status','配置执行状态'),network:L('Blockchain network','区块链网络'),token:L('Token type','代币类型'),
+      owner:L('Project publisher','项目发布方'),from:L('Submitted from','提交开始日期'),to:L('Submitted through','提交结束日期')};
     const values={exec:applied.exec?txt(EXEC[applied.exec]):'',owner:applied.owner?ownerName({owner:applied.owner}):'',token:applied.token,network:applied.network?network(applied.network):''};
     return `<form id="cm-filter-form" class="cm-filter-wrap"><div class="filterbar ops-filterbar cm-toolbar">
       ${CF.opsFilterSelect('cm-f-review',L('Review status','审核轴'),[all(),...Object.entries(REVIEW).map(([k,v])=>[k,txt(v)])],f.review)}
@@ -273,14 +275,13 @@
       <button type="button" class="btn" data-act="cm-filters" aria-expanded="${A.queue.open}" aria-controls="cm-advanced">${L('More filters','更多筛选')}${count?' ('+count+')':''} <span aria-hidden="true">${A.queue.open?'⌃':'⌄'}</span></button>
       ${CF.filterSearch('cm-f-q',L('Search projects','搜索项目'),f.q,L('Project number, project name, company or contract address','项目编号、项目名称、企业名称或合约地址'), 'ops-filter-query')}
       <div class="fb-acts">${b('Reset','重置','reset')}<button type="submit" class="btn primary">${L('Search','查询')}</button></div></div>
-      <div id="cm-advanced" class="cm-filters ops-filter-fields" ${A.queue.open?'':'hidden'}>${field(labels.exec,select('cm-f-exec',f.exec,[all(),...Object.entries(EXEC).map(([k,v])=>[k,txt(v)])]))}${field(labels.owner,select('cm-f-owner',f.owner,ownerOptions()))}${field(labels.token,select('cm-f-token',f.token,tokenOptions()))}${field(labels.network,select('cm-f-network',f.network,networkOptions()))}${field(labels.from+' (UTC)',input('cm-f-from',f.from,'date'))}${field(labels.to+' (UTC)',input('cm-f-to',f.to,'date'))}</div>
+      <div id="cm-advanced" class="cm-filters ops-filter-fields" ${A.queue.open?'':'hidden'}>${field(labels.exec,select('cm-f-exec',f.exec,[all(),...Object.entries(EXEC).map(([k,v])=>[k,txt(v)])]))}${field(labels.network,select('cm-f-network',f.network,networkOptions()))}${field(labels.token,select('cm-f-token',f.token,tokenOptions()))}${field(labels.owner,select('cm-f-owner',f.owner,ownerOptions()))}${field(labels.from+' (UTC)',input('cm-f-from',f.from,'date'))}${field(labels.to+' (UTC)',input('cm-f-to',f.to,'date'))}</div>
       ${appliedTags(labels,values,applied,extra)}</form>`;
   }
   function sortButton(k,en,zh,st){
-    const on=st.sort?st.sort===k:true;
-    return `<button data-act="cm-sort" data-v="${k}">${L(en,zh)} ${on?(st.dir===1?'↑':'↓'):'↕'}</button>`;
+    return `<button data-act="cm-sort" data-v="${k}">${L(en,zh)} ${st.dir===1?'↑':'↓'}</button>`;
   }
-  const ariaSort=(on,dir)=>on?(dir===1?'ascending':'descending'):'none';
+  const ariaSort=dir=>dir===1?'ascending':'descending';
   function queue(){
     const blocked=gate();
     if(blocked)return title(L('Project reviews','项目审核队列'))+blocked;
@@ -289,76 +290,83 @@
     const counts=[pending.length,pending.filter(r=>r.exec==='failed').length,
       scope.filter(r=>{const at=lastDecision(r);return at!=null&&at>=start;}).length];
     const shown=i=>['loading','error'].includes(A.view)?'—':A.view==='empty'?0:counts[i];
-    const metrics=`<div class="cm-summary-row"><div class="stat-strip cm-metrics"><div class="s"><div class="k">${L('Pending review','待审核')}</div><div class="v">${shown(0)} <span class="u">${L('projects','个项目')}</span><span class="cm-metric-sub">${L('Of which: configuration failed, awaiting a new attempt','其中：配置失败待再次发起')} <b>${shown(1)}</b></span></div></div><div class="s"><div class="k">${L('Decided · last 7 UTC days','近 7 个自然日人工审结（UTC）')}</div><div class="v">${shown(2)} <span class="u">${L('projects','个项目')}</span></div></div></div><details class="cm-summary-help"><summary>${L('Summary scope','统计口径')}</summary><p>${L('Summary uses the project publisher, token type, blockchain network, submission dates and keyword filters. The review status and configuration status filters do not change it; a failed configuration is not a manual decision.','统计应用项目发布方、代币类型、区块链网络、提交时间及关键词条件，不受审核轴与配置执行状态筛选影响；配置失败不计入人工审结。')}</p></details></div>`;
+    const metrics=`<div class="cm-summary-row"><div class="stat-strip cm-metrics"><div class="s"><div class="k">${L('Pending review','待审核')}</div><div class="v">${shown(0)} <span class="u">${L('projects','个项目')}</span><span class="cm-metric-sub">${L('Of which: configuration failed, awaiting a new attempt','其中：配置失败待再次发起')} <b>${shown(1)}</b></span></div></div><div class="s"><div class="k">${L('Decided · last 7 UTC days','近 7 个自然日人工审结（UTC）')}</div><div class="v">${shown(2)} <span class="u">${L('projects','个项目')}</span></div></div></div><details class="cm-summary-help"><summary>${L('Summary scope','统计口径')}</summary><p>${L('Summary uses the blockchain network, token type, project publisher, submission dates and keyword filters. The review status and configuration status filters do not change it; a failed configuration is not a manual decision.','统计应用区块链网络、代币类型、项目发布方、提交时间及关键词条件，不受审核轴与配置执行状态筛选影响；配置失败不计入人工审结。')}</p></details></div>`;
     const state=A.view==='default'?null:surface({emptyTitle:L('No projects awaiting review','暂无待审核项目'),
       emptyDesc:L('Projects appear here once an asset holder submits one for review.','资产方提交审核后，项目将出现在此。')});
-    let found=queueScope(false);
-    found.sort((a,c)=>{
-      const value=r=>r.submittedAt;
-      return (value(a)-value(c))*A.queue.dir||a.id.localeCompare(c.id);
-    });
+    const found=queueScope(false).sort((a,c)=>(a.submittedAt-c.submittedAt)*A.queue.dir||a.id.localeCompare(c.id));
     const pages=Math.max(1,Math.ceil(found.length/CF.PAGE_SIZE));
     if(A.queue.page>pages){A.queue.page=pages;A.error=['The previous page is empty; showing the last available page.','原页已无记录，已返回最后有效页。'];}
     const rows=found.slice((A.queue.page-1)*CF.PAGE_SIZE,A.queue.page*CF.PAGE_SIZE);
     const st=A.queue;
     const table=state||(!found.length
       ?CF.empty(L('No projects found','暂无符合条件的项目'),L('Change the filters or return to the pending reviews.','调整筛选条件，或返回待审核队列。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Project reviews table','项目审核队列表格')}"><table class="tbl cm-table cm-queue-table"><thead><tr><th>${L('Blockchain network','区块链网络')}</th><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher','项目发布方')}</th><th>${L('Token type','代币类型')}</th><th>${L('Pledge ratio / term','项目质押率 / 项目期限')}</th><th aria-sort="${ariaSort(st.sort==='submittedAt',st.dir)}">${sortButton('submittedAt','Submitted','本次提交时间',st)}${columnZone()}</th><th>${L('Review status','审核轴')}</th><th>${L('Configuration / pledge contract','配置执行状态 / 质押合约地址')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${networkValue(r.network)}</td><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}</td><td>${E(r.tokenType)}</td><td>${pct(r.ratio)}<span class="cm-meta">${E(utcDay(r.createdAt))} ～<br>${E(utcDay(expiry(r)))} (UTC)</span></td><td>${listTime(r.submittedAt)}<span class="cm-meta">${E(submission(r.seq))}</span></td><td>${reviewBadge(r)}</td><td>${execBadge(r)}${r.exec==='success'?`<span class="cm-meta mono">${E(shortAddr(r.attempt.picks.pledge))}</span>`:''}</td><td class="col-act">${viewLink(r.id,'queue')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.queue,['projects','个项目'])}`);
+      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Project reviews table','项目审核队列表格')}"><table class="tbl cm-table cm-queue-table"><thead><tr><th>${L('Blockchain network','区块链网络')}</th><th>${L('Token type','代币类型')}</th><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher','项目发布方')}</th><th>${L('Pledge ratio / term','项目质押率 / 项目期限')}</th><th aria-sort="${ariaSort(st.dir)}">${sortButton('submittedAt','Submitted','本次提交时间',st)}${columnZone()}</th><th>${L('Review status','审核轴')}</th><th>${L('Configuration status','配置执行状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${networkValue(r.network)}</td><td>${E(r.tokenType)}</td><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}</td><td>${pct(r.ratio)}<span class="cm-meta">${E(utcDay(r.createdAt))} ～<br>${E(utcDay(expiry(r)))} (UTC)</span></td><td>${listTime(r.submittedAt)}<span class="cm-meta">${E(submission(r.seq))}</span></td><td>${reviewBadge(r)}</td><td>${execBadge(r)}</td><td class="col-act">${viewLink(r.id,'queue')}</td></tr>`).join('')}</tbody></table></div>${pager(found.length,A.queue,['projects','个项目'])}`);
     return listHeading('queue')+metrics
       +`<section class="card">${queueFilters()}<div class="cm-section" ${A.error?'':'hidden'}>${error()}</div>${table}</section>`;
   }
 
-  /* ---------------------------------------------------------------- 共用合约台账 */
+  /* ---------------------------------------------------------------- 质押合约台账 */
   function ledgerScope(){
     const f=A.ledger.filter,q=f.q.trim().toLowerCase();
-    return A.sets.filter(s=>(!f.token||s.tokenType===f.token)&&(!f.network||s.network===f.network)
-        &&(!q||[s.pledge,s.loan,s.repay].filter(Boolean).join(' ').toLowerCase().includes(q)))
-      .sort((a,c)=>a.tokenType.localeCompare(c.tokenType)||a.network.localeCompare(c.network));
+    return A.pledges.filter(p=>(!f.token||p.tokenType===f.token)&&(!f.network||p.network===f.network)
+        &&(!q||p.address.toLowerCase().includes(q)))
+      .sort((a,c)=>a.network.localeCompare(c.network)||a.tokenType.localeCompare(c.tokenType)||a.id.localeCompare(c.id));
   }
   function ledgerFilters(){
     const f=A.ledger.edit;
     return `<form id="cm-filter-form" class="cm-filter-wrap"><div class="filterbar ops-filterbar cm-toolbar">
-      ${CF.opsFilterSelect('cm-f-token',L('Token type','代币类型'),tokenOptions(),f.token)}
       ${CF.opsFilterSelect('cm-f-network',L('Blockchain network','区块链网络'),networkOptions(),f.network)}
-      ${CF.filterSearch('cm-f-q',L('Search contracts','搜索合约'),f.q,L('Any contract address','任一合约地址'), 'ops-filter-query')}
+      ${CF.opsFilterSelect('cm-f-token',L('Token type','代币类型'),tokenOptions(),f.token)}
+      ${CF.filterSearch('cm-f-q',L('Search contracts','搜索合约'),f.q,L('Pledge contract address','质押合约地址'), 'ops-filter-query')}
       <div class="fb-acts">${b('Reset','重置','reset')}<button type="submit" class="btn primary">${L('Search','查询')}</button></div></div></form>`;
   }
   function projectState(r){
-    return r.closed?CF.tag('gray',L('Closed · ','已关闭 · ')+closeReason(r))
+    return r.closed?CF.tag('gray',L('Closed','已关闭'))
       :r.review==='approved'?CF.tag('ok',L('Open · empty pool','可用 · 空池'))
       :r.review==='returned'?CF.tag('danger',L('Returned','已退回')):CF.tag('warn',L('Pending review','待审核'));
   }
-  /* 一套合约上配置成功的项目；配置处理中、失败、待核实的不在其中。 */
-  function setProjects(set){
+  /* 一份质押合约上配置成功的项目；配置处理中、失败、待核实的不在其中。 */
+  function contractProjects(p){
     const st=A.ledger;
-    const found=configured(set).sort((a,c)=>(configAt(a)-configAt(c))*st.dir||a.id.localeCompare(c.id));
-    const body=!found.length?`<p class="cm-meta">${L('No project is configured on this set yet.','这套合约上暂无已配置项目。')}</p>`
-      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Configured projects','已配置项目')}"><table class="tbl cm-table cm-set-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher','项目发布方')}</th><th aria-sort="${ariaSort(true,st.dir)}">${sortButton('configuredAt','Configuration completed at','合约配置完成时间',st)}${columnZone()}</th><th>${L('Reviewer','审核人')}</th><th>${L('Project status','项目当前状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${found.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}</td><td>${listTime(configAt(r))}</td><td>${r.reviewer?E(txt(r.reviewer)):unknown()}</td><td>${projectState(r)}</td><td class="col-act">${viewLink(r.id,'ledger')}</td></tr>`).join('')}</tbody></table></div>`;
-    return `<section class="card cm-section cm-set-panel" id="cm-set-panel" tabindex="-1" aria-labelledby="cm-set-title"><div class="cm-set-head"><h2 class="cm-h2" id="cm-set-title">${comboValue(set)} · ${L('Configured projects','已配置项目')} ${found.length}</h2>${b('Collapse','收起','set','','sm')}</div>${body}</section>`;
+    const found=configuredOn(p).sort((a,c)=>(configAt(a)-configAt(c))*st.dir||a.id.localeCompare(c.id));
+    const body=!found.length?`<p class="cm-meta">${L('No project is configured on this pledge contract yet.','这份质押合约上暂无已配置项目。')}</p>`
+      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Configured projects','已配置项目')}"><table class="tbl cm-table cm-set-table"><thead><tr><th>${L('Project number / name','项目编号 / 项目名称')}</th><th>${L('Project publisher','项目发布方')}</th><th aria-sort="${ariaSort(st.dir)}">${sortButton('configuredAt','Configuration completed at','合约配置完成时间',st)}${columnZone()}</th><th>${L('Reviewer','审核人')}</th><th>${L('Project status','项目当前状态')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${found.map(r=>`<tr><td><strong class="mono">${E(r.id)}</strong><span class="cm-meta">${E(projectName(r))}</span></td><td>${E(ownerName(r))}</td><td>${listTime(configAt(r))}</td><td>${r.reviewer?E(txt(r.reviewer)):unknown()}</td><td>${projectState(r)}</td><td class="col-act">${viewLink(r.id,'ledger')}</td></tr>`).join('')}</tbody></table></div>`;
+    return `<section class="card cm-section cm-set-panel" id="cm-set-panel" tabindex="-1" aria-labelledby="cm-set-title"><div class="cm-set-head"><h2 class="cm-h2" id="cm-set-title"><span class="mono">${E(shortAddr(p.address))}</span> · ${L('Configured projects','已配置项目')} ${found.length}</h2>${b('Collapse','收起','contract','','sm')}</div>${body}</section>`;
   }
   function ledger(){
     const blocked=gate();
-    if(blocked)return title(L('Shared contract ledger','共用合约台账'))+blocked;
-    const state=A.view==='default'?null:surface({emptyTitle:L('No shared contracts yet','暂无共用合约'),
-      emptyDesc:L('Shared contracts appear here once they are released with a platform version.','共用合约随平台版本发布后将出现在此。'),
+    if(blocked)return title(L('Pledge contract ledger','质押合约台账'))+blocked;
+    const state=A.view==='default'?null:surface({emptyTitle:L('No pledge contracts yet','暂无质押合约'),
+      emptyDesc:L('Pledge contracts appear here once the developers deploy them.','开发人员部署质押合约后将出现在此。'),
       backTo:LEDGER,backLabel:L('Back to the ledger','返回台账')});
     const found=ledgerScope();
     const pages=Math.max(1,Math.ceil(found.length/CF.PAGE_SIZE));
     if(A.ledger.page>pages)A.ledger.page=pages;
     const rows=found.slice((A.ledger.page-1)*CF.PAGE_SIZE,A.ledger.page*CF.PAGE_SIZE);
-    const cell=(v)=>v?addressValue(v,L('address','地址')):notAvailable();
     const table=state||(!found.length
-      ?CF.empty(L('No contracts found','暂无符合条件的合约'),L('Change the filters or clear them to see every shared contract set.','调整或清空筛选条件，查看全部共用合约。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Shared contract ledger table','共用合约台账表格')}"><table class="tbl cm-table cm-ledger-table"><thead><tr><th>${L('Blockchain network','区块链网络')}</th><th>${L('Token type','代币类型')}</th><th>${L('Pledge contract','质押合约')}</th><th>${L('Loan contract','放款合约')}</th><th>${L('Repayment contract','还款合约')}</th><th>${L('Configured projects','已配置项目数')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(s=>{
-        const gap=missingKinds(s),on=A.ledger.set===s.id;
-        return `<tr${on?' class="cm-row-on"':''}><td>${networkValue(s.network)}</td><td><strong>${E(s.tokenType)}</strong>${gap.length?`<span class="cm-meta cm-warn-text">${L('Projects of this combination cannot be approved yet.','该组合的项目暂不能通过')}</span>`:''}</td><td>${cell(s.pledge)}</td><td>${cell(s.loan)}</td><td>${cell(s.repay)}</td><td class="cm-num">${configured(s).length}</td><td class="col-act"><button type="button" class="actlink" data-act="cm-set" data-v="${E(s.id)}" aria-expanded="${on}" aria-controls="cm-set-panel">${L('Projects','查看项目')}</button></td></tr>`;}).join('')}</tbody></table></div>${pager(found.length,A.ledger,['sets','套'])}`);
-    const selected=!state&&A.ledger.set&&found.some(s=>s.id===A.ledger.set)?setProjects(setById(A.ledger.set)):'';
+      ?CF.empty(L('No contracts found','暂无符合条件的质押合约'),L('Change the filters or clear them to see every pledge contract.','调整或清空筛选条件，查看全部质押合约。'),b('Reset filters','重置筛选','reset'))
+      :`<div class="tablewrap cm-table-region" tabindex="0" role="region" aria-label="${L('Pledge contract ledger table','质押合约台账表格')}"><table class="tbl cm-table cm-ledger-table"><thead><tr><th>${L('Blockchain network','区块链网络')}</th><th>${L('Token type','代币类型')}</th><th>${L('Pledge contract address','质押合约地址')}</th><th>${L('Configured projects','已配置项目数')}</th><th class="col-act">${L('Action','操作')}</th></tr></thead><tbody>${rows.map(p=>{
+        const on=A.ledger.contract===p.id;
+        return `<tr${on?' class="cm-row-on"':''}><td>${networkValue(p.network)}</td><td>${E(p.tokenType)}</td><td>${addressValue(p.address,L('address','地址'))}</td><td class="cm-num">${configuredOn(p).length}</td><td class="col-act"><button type="button" class="actlink" data-act="cm-contract" data-v="${E(p.id)}" aria-expanded="${on}" aria-controls="cm-set-panel">${L('Projects','查看项目')}</button></td></tr>`;}).join('')}</tbody></table></div>${pager(found.length,A.ledger,['contracts','份'])}`);
+    const selected=!state&&A.ledger.contract&&found.some(p=>p.id===A.ledger.contract)?contractProjects(pledgeById(A.ledger.contract)):'';
     return listHeading('ledger')
       +`<section class="card">${ledgerFilters()}<div class="cm-section" ${A.error?'':'hidden'}>${error()}</div>${table}</section>${selected}`;
   }
 
   /* ---------------------------------------------------------------- 操作记录 */
   const TONE={'config-ok':'ok','return':'danger','config-fail':'danger','config-unknown':'warn','close':'gray','expire-close':'gray'};
+  function eventDetail(e){
+    const at=e.attempt;
+    let html=e.text?`<p>${E(txt(e.text))}</p>`:'';
+    if(at){
+      const pledge=pledgeAddress(at);
+      if(e.kind==='approve-init'||e.kind==='redeploy')html+=kv([[txt(PLEDGE_LABEL)+L(' (selected)','（所选）'),pledge?addressValue(pledge,L('address','地址')):unknown(),true]]);
+      else html+=contractTable([[PLEDGE_LABEL,pledge,null,at.proofs?.pledge],...OWN.map(([k,label])=>[label,at[k],at.results?.[k],at.proofs?.[k]])],
+        {results:e.kind!=='config-ok',proofs:true,proofEmpty:['None yet','暂无']});
+    }
+    if(e.notice)html+=kv([[L('Message sent to the asset holder','已向资产方发送站内信'),E(txt(e.notice))]]);
+    return html;
+  }
   function activity(r){
     const heading=`<h2 class="cm-h2" id="cm-activity-title">${L('Activity','操作记录')}</h2>`;
     let body;
@@ -372,9 +380,7 @@
       body=!events.length?`<p class="cm-meta">${L('No activity yet.','暂无操作记录。')}</p>`
         :`<ol class="cm-timeline" aria-label="${L('Project activity, newest first','本项目操作记录，最新在前')}">${events.map(e=>{
           const occurred=e.at?`<time datetime="${E(new Date(e.at).toISOString())}">${time(e.at)}</time>`:`<span>${L('Time: to be verified','发生时间：待核实')}</span>`;
-          const detail=(e.text?`<p>${E(txt(e.text))}</p>`:'')
-            +(e.picks?contractTable(e.picks,{results:e.results,proofs:e.proofs||{},proofEmpty:['None yet','暂无']}):'')
-            +(e.notice?kv([[L('Message sent to the asset holder','已向资产方发送站内信'),E(txt(e.notice))]]):'');
+          const detail=eventDetail(e);
           return `<li class="cm-event" data-tone="${TONE[e.kind]||'neutral'}"><h3>${E(txt(e.title))}</h3><div class="cm-event-meta"><span>${e.actor?E(txt(e.actor)):L('Actor: to be verified','操作主体：待核实')}</span>${occurred}</div><p class="cm-event-result">${E(txt(e.result||['Recorded','已记录']))}</p>${detail?`<details><summary aria-label="${E(L('View details: ','查看详情：')+txt(e.title))}">${L('View details','查看详情')}</summary><div class="cm-event-detail">${detail}</div></details>`:''}</li>`;
         }).join('')}</ol>`;
     }
@@ -385,8 +391,8 @@
   function createdInfo(r){
     return section('Project details under review','创建信息核对',facts([
       [L('Blockchain network','区块链网络'),networkValue(r.network)],
-      [L('Project name','项目名称'),E(projectName(r))],
       [L('Token type','代币类型'),E(r.tokenType)],
+      [L('Project name','项目名称'),E(projectName(r))],
       [L('Project pledge ratio','项目质押率'),pct(r.ratio)],
       [L('Project term','项目期限'),E(termRange(r))],
       [L('Preferred settlement currency','参考结算币种'),E(r.settleCcy)+`<span class="cm-meta">${L('For reference only; it does not limit the currency a funder quotes in.','只供参考，不限制资金方报价币种')}</span>`],
@@ -414,61 +420,52 @@
   function closeOnExpiry(r){
     if(r.closed)return;
     const before=REVIEW[r.review];
-    r.closed=true;r.closeReason='expired';r.expiryPassed=false;
+    r.closed=true;r.closeReason='expired';r.closedAt=now();r.expiryPassed=false;
     event(r,'expire-close',['Project closed on expiry','项目到期自动关闭'],[before[0]+' · project closed',before[1]+' · 项目已关闭']);
   }
-  /* 合约区块：待审核时列出适用的共用合约（配置失败后由最近一次所选合约代替，不重复列出）；成功后为所配置的合约。 */
+  function closeByOwner(r){
+    r.closed=true;r.closeReason='owner';r.closedAt=now();
+    event(r,'close',['Project closed by the asset holder','资产方关闭项目'],[REVIEW[r.review][0]+' · project closed',REVIEW[r.review][1]+' · 项目已关闭'],{actor:['Asset holder','资产方']});
+  }
+  const ledgerLink=id=>` <a class="cm-inline-link" href="#${E(LEDGER+'?contract='+id)}" data-act="cm-ledger-contract" data-v="${E(id)}">${L('View in the ledger','在台账中查看')}</a>`;
+  /* 合约区块：待审核且未发起部署、已退回时不展示；发起部署后展示部署进度与结果；配置成功后展示所配置的合约。 */
   function contractCard(r){
-    const set=setOf(r),at=r.attempt;
-    const pendingOpen=r.review==='pending'&&!r.closed;
-    if(!pendingOpen&&!at)return '';
-    const sub=(en,zh)=>`<h3 class="cm-h3">${L(en,zh)}</h3>`;
-    const ledgerLink=id=>` <a class="cm-inline-link" href="#${E(LEDGER+'?set='+id)}" data-act="cm-ledger-set" data-v="${E(id)}">${L('View in the ledger','在台账中查看')}</a>`;
-    let html='';
+    const at=r.attempt;
+    if(!at||r.exec==='none')return '';
+    const pledge=pledgeAddress(at);
     if(r.exec==='success'){
       return section('Configured contracts','所配置的合约',
-        facts([
-          [L('Applicable combination','适用组合'),comboValue(r)+ledgerLink(at.set)],
-          [L('Configuration completed at','合约配置完成时间'),time(at.at)]
-        ])+contractTable(at.picks,{proofs:at.proofs}));
+        facts([[L('Applicable combination','适用组合'),comboValue(r)],[L('Configuration completed at','合约配置完成时间'),time(at.at)]])
+        +contractTable([[PLEDGE_LABEL,pledge,null,at.proofs?.pledge,ledgerLink(at.pledge)],...OWN.map(([k,label])=>[label,at[k],null,at.proofs?.[k]])],{proofs:true}));
     }
-    if(pendingOpen){
-      const gap=missingKinds(set);
-      html+=sub('Applicable shared contracts','适用的共用合约')
-        +facts([[L('Applicable combination','适用组合'),comboValue(r)+(set?ledgerLink(set.id):'')],
-          [L('Configured projects','已配置项目数'),set?String(configured(set).length):'0']])
-        +(at?'':contractTable(set||{}))
-        +(gap.length?note(L('Missing: ','缺少')+gap.join(L(', ','、'))+L('. This project cannot be approved yet.','，本项目暂不能通过。'),'warn'):'');
-    }
-    if(at){
-      const results=r.exec==='failed'?r.fail?.results||{}
-        :{pledge:r.exec,loan:r.exec,repay:r.exec};
-      html+=sub('Latest configuration attempt','最近一次配置')
-        +contractTable(at.picks,{results:Object.fromEntries(KINDS.map(([k])=>[k,results[k]==='none'?'unknown':results[k]])),proofs:at.proofs,proofEmpty:['None yet','暂无']})
-        +(r.exec==='failed'&&r.fail?facts([
-          [L('Failure reason','配置失败原因'),`<div class="cm-quote">${E(txt(r.fail.reason))}</div>`,true],
-          [L('Failed at','失败时点'),time(r.fail.at)]
-        ]):'');
-    }
-    return section('Contracts','合约配置',html);
+    return section('Deployment progress','部署进度与结果',
+      facts([[txt(PLEDGE_LABEL)+L(' (selected)','（所选）'),pledge?addressValue(pledge,L('address','地址')):unknown(),true]])
+      +contractTable(OWN.map(([k,label])=>[label,at[k],at.results?.[k],at.proofs?.[k]]),{results:true,proofs:true,proofEmpty:['None yet','暂无']})
+      +(r.exec==='failed'&&r.fail?facts([
+        [L('Failure reason','失败原因'),`<div class="cm-quote">${E(txt(r.fail.reason))}</div>`,true],
+        [L('Failed at','失败时点'),time(r.fail.at)]
+      ]):''));
+  }
+  function closeInfo(r){
+    if(!r.closed)return '';
+    return `<div><dt>${L('Project closed','项目关闭')}</dt><dd>${CF.tag('gray',L('Project closed','项目已关闭'))}<span class="cm-meta">${txt(CLOSE_REASON[r.closeReason||'owner'])} · ${r.closedAt?time(r.closedAt):unknown()}</span></dd></div>`;
   }
   function actionCard(r){
-    const gap=missingKinds(setOf(r));
     const status=!canDecide()
       ?L('View access only.','当前仅有查询权限，不能处置。')
-      :r.closed?(r.closeReason==='expired'?L('Closed on expiry. It can no longer be decided or configured.','项目已到期自动关闭，不能裁定或发起配置。'):L('Closed by the asset holder. It can no longer be decided.','资产方已关闭该项目，不能裁定。'))
+      :r.closed?(r.closeReason==='expired'?L('Closed on expiry. It can no longer be decided or deployed.','项目已到期自动关闭，不能裁定或发起部署。'):L('Closed by the asset holder. It can no longer be decided.','资产方已关闭该项目，不能裁定。'))
       :r.review==='approved'?L('Approved. The conclusion and the contracts cannot be changed.','已通过，结论与所配置的合约不可更改。')
       :r.review==='returned'?L('Returned. Waiting for the applicant to revise and resubmit.','已退回，等待申请方修改后重新提交。')
-      :r.exec==='processing'?(r.expiryPassed?L('Configuration in progress. The valid-until date has passed; the project is handled by the result.','配置处理中，已跨过有效期至，结果回写后按结果处理。'):L('Configuration in progress. Actions are unavailable until the result arrives.','配置处理中，结果回写前不可处置。'))
-      :r.exec==='unknown'?L('The configuration result is being verified. Actions are unavailable until it is written back; contact the platform provider to check.','配置结果待核实，回写前不可处置。如需核实，请联系平台建设方。')
-      :gap.length?L('Missing ','缺少')+gap.join(L(', ','、'))+L('. Approval is unavailable; you can return it or handle it later.','，暂不能通过，可退回或稍后办理。')
+      :r.exec==='processing'?(r.expiryPassed?L('Deployment in progress. The valid-until date has passed; the project is handled by the result.','部署进行中，已跨过有效期至，结果回写后按结果处理。'):L('Deployment in progress. Actions are unavailable until the result arrives.','部署进行中，结果回写前不可处置。'))
+      :r.exec==='unknown'?L('The deployment result is being verified. Actions are unavailable until it is written back; contact the platform provider to check.','部署结果待核实，回写前不可处置。如需核实，请联系平台建设方。')
+      :!candidates(r).length?L('No pledge contract is available for this combination. Approval is unavailable; you can return it or handle it later.','该组合暂无可选质押合约，暂不能通过，可退回或稍后办理。')
       :!r.entity?L('The stable entity identifier is to be verified. Approval is unavailable; you can return it.','稳定主体标识待核实，暂不能通过，可退回。')
-      :r.exec==='failed'?L('The last configuration failed. Start it again or return the application.','最近一次配置失败，可再次发起或退回。')
+      :r.exec==='failed'?L('The last deployment failed. Start it again or return the application.','最近一次部署失败，可再次发起部署或退回。')
       :'';
     let actions='';
     if(canDecide()){
       const again=r.exec==='failed';
-      actions=`<div class="cm-stack">${b(again?'Start the configuration again':'Approve and configure contracts',again?'再次发起配置':'通过并配置合约',again?'reconfig':'approve','','primary',!canApprove(r))}${b('Return','退回','return','','',!canAct(r))}</div>`;
+      actions=`<div class="cm-stack">${b(again?'Start the deployment again':'Approve and deploy contracts',again?'再次发起部署':'通过并部署合约',again?'redeploy':'approve','','primary',!canApprove(r))}${b('Return','退回','return','','',!canAct(r))}</div>`;
     }
     return section('Review actions','审核处理',`${status?`<p class="cm-rail-status">${status}</p>`:''}${actions}`);
   }
@@ -484,7 +481,7 @@
     if(!r)return CF.empty(L('Project unavailable','项目不可用'),L('Return to the review queue.','请返回项目审核队列。'),b('Back','返回','back'));
     if(A.view!=='default')return title(E(r.id))+surface({});
     const heading=`<header class="cm-detail-heading"><h1>${E(r.id)}</h1><p class="cm-detail-name">${E(projectName(r))}</p>${CF.tag('gray',L('Demonstration data','演示数据'))}</header>`;
-    const summary=`<dl class="cm-detail-summary"><div><dt>${L('Review status','审核轴')}</dt><dd>${reviewBadge(r)}${conclusion(r)}</dd></div><div><dt>${L('Configuration status','配置执行状态')}</dt><dd>${execBadge(r)}</dd></div><div><dt>${L('This submission','本次提交')}</dt><dd><strong class="cm-value">${E(submission(r.seq))}</strong><span class="cm-meta">${time(r.submittedAt)}</span></dd></div><div><dt>${L('Project status for the asset holder','面客项目状态')}</dt><dd>${projectState(r)}</dd></div></dl>`;
+    const summary=`<dl class="cm-detail-summary${r.closed?' cm-has-close':''}"><div><dt>${L('Review status','审核轴')}</dt><dd>${reviewBadge(r)}${conclusion(r)}</dd></div><div><dt>${L('Configuration status','配置执行状态')}</dt><dd>${execBadge(r)}</dd></div><div><dt>${L('This submission','本次提交')}</dt><dd><strong class="cm-value">${E(submission(r.seq))}</strong><span class="cm-meta">${time(r.submittedAt)}</span></dd></div><div><dt>${L('Project status for the asset holder','面客项目状态')}</dt><dd>${projectState(r)}</dd></div>${closeInfo(r)}</dl>`;
     return heading+(A.draft?'':error())+summary
       +`<div class="cm-grid"><div class="cm-detail-main"><div class="detail-stack cm-stack">${createdInfo(r)}${contextCard(r)}${contractCard(r)}${activity(r)}</div></div><aside class="cm-stack cm-rail">${actionCard(r)}</aside></div>`;
   }
@@ -496,7 +493,7 @@
   function start(mode){
     const r=row();
     if(mode==='return'?!canAct(r):!canApprove(r))return deny();
-    A.draft={id:r.id,mode,reason:'',ack:false,picks:{pledge:'',loan:'',repay:''}};A.error='';
+    A.draft={id:r.id,mode,reason:'',ack:false,pledge:''};A.error='';
     open(mode==='return'?'return':'approve');
   }
   function validate(){
@@ -504,21 +501,16 @@
     if(d.mode==='return'){
       const s=d.reason.trim(),n=Array.from(s).length;
       if(n<10||n>500||!/[\p{L}\p{N}]/u.test(s))A.error=['Enter a reason of 10–500 characters; punctuation alone is not valid.','原因需为 10～500 字，不能仅填标点。'];
-    }else{
-      const gap=KINDS.filter(([k])=>!d.picks[k]).map(([,label])=>txt(label));
-      if(gap.length)A.error=['Select: '+gap.join(', ')+'.','请选定'+gap.join('、')+'。'];
-      else if(!d.ack)A.error=['Confirm that you understand the effect of this approval.','请确认知悉本次通过的后果。'];
-    }
+    }else if(!d.pledge)A.error=['Select a pledge contract.','请选定质押合约。'];
+    else if(!d.ack)A.error=['Confirm that you understand the effect of this approval.','请确认知悉本次通过的后果。'];
     return !A.error;
   }
-  function beginConfig(r,again,picks){
-    const set=setOf(r);
+  function beginDeploy(r,again,pledge){
     r.review='configuring';r.exec='processing';r.submitter=OPERATOR;r.fail=null;
-    r.attempt={set:set.id,picks:{...picks},startedAt:now(),at:null,proofs:{pledge:null,loan:null,repay:null}};
-    event(r,again?'reconfig':'approve-init',
-      again?['Configuration started again','再次发起配置']:['Approval submitted · configuration initiated','提交通过并发起配置'],
-      ['Pending review → Configuration in progress','待审核 → 配置处理中'],
-      {actor:OPERATOR,picks:{...picks}});
+    r.attempt={pledge,loan:null,repay:null,startedAt:now(),at:null,proofs:{pledge:null,loan:null,repay:null},results:{loan:'processing',repay:'processing'}};
+    event(r,again?'redeploy':'approve-init',
+      again?['Deployment started again','再次发起部署']:['Approval submitted · deployment initiated','提交通过并发起部署'],
+      ['Pending review → Configuration in progress','待审核 → 配置处理中'],{actor:OPERATOR,attempt:{pledge}});
   }
   function applyReturn(r,reason,other){
     r.review='returned';r.exec='none';r.decisionAt=now();
@@ -534,8 +526,8 @@
     if(!d||d.id!==r?.id)return deny();
     if(d.mode==='return'?!canAct(r):!canApprove(r))return deny();
     if(!validate()){open(d.mode==='return'?'return':'approve');return;}
-    /* 候选只来自本项目适用组合的那套合约；其他组合的合约不能被选入。 */
-    if(d.mode!=='return'){const set=setOf(r);if(KINDS.some(([k])=>d.picks[k]!==set[k]))return deny();}
+    /* 候选只来自本项目适用组合下预先部署的质押合约；其他组合的合约不能被选入。 */
+    if(d.mode!=='return'&&!candidates(r).some(p=>p.id===d.pledge))return deny();
     A.busy=true;A.error='';CF.render();
     const epoch=A.epoch,response=A.response;
     setTimeout(()=>{
@@ -558,9 +550,8 @@
         open(d.mode==='return'?'return':'approve');return;
       }
       if(response==='closed'){
-        /* 与资产方关闭同时发生、关闭先生效：本次办理就地拒绝，不形成结论、不发起配置。 */
-        r.closed=true;r.closeReason='owner';
-        event(r,'close',['Project closed by the asset holder','资产方关闭项目'],[REVIEW[r.review][0]+' · project closed',REVIEW[r.review][1]+' · 项目已关闭'],{actor:['Asset holder','资产方']});
+        /* 与资产方关闭同时发生、关闭先生效：本次办理就地拒绝，不形成结论、不发起部署。 */
+        closeByOwner(r);
         A.error=['The asset holder closed the project first. This submission did not stand.','资产方已先关闭项目，本次提交未成立。'];
         open(d.mode==='return'?'return':'approve');return;
       }
@@ -569,38 +560,39 @@
         A.draft=null;S.layer=null;saveContext();CF.render();
         CF.toast(L('The application has been returned.','已退回该申请。'));return;
       }
-      beginConfig(r,d.mode==='reconfig',d.picks);
+      beginDeploy(r,d.mode==='redeploy',d.pledge);
       A.draft=null;S.layer=null;saveContext();CF.render();
-      CF.toast(L('Submitted. The contracts are being configured on chain.','已提交，合约配置处理中。'));
+      CF.toast(L('Submitted. The platform is deploying the loan and repayment contracts.','已提交，平台正在部署放款合约与还款合约。'));
     },650);
   }
-  /* 链上回写：三份都成功即审核通过；任一份失败即配置失败，回到待审核；长期无结果标待核实。 */
+  /* 链上回写：放款、还款合约都部署成功即审核通过；任一份失败即配置失败，回到待审核；长期无结果标待核实。 */
   function writeBack(kind){
     const r=row();
     if(!r||r.exec!=='processing')return;
-    const tail=r.key+String(r.events.length);
-    const pf=k=>'0xDEMO'+'0'.repeat(56)+tail.padStart(4,'0').slice(-4)+{pledge:'P',loan:'L',repay:'R'}[k]+'1';
+    const at=r.attempt,n=String(r.events.length).padStart(2,'0');
+    const ev=(k,p)=>'0xDEMO'+'0'.repeat(53)+r.key+n+k+p;
+    const ad=k=>'0xDEMO'+'0'.repeat(27)+(k==='loan'?'10A':'2E9')+r.key+n+'0';
     if(kind==='success'){
       r.exec='success';r.review='approved';r.decisionAt=now();
       r.reviewer=r.submitter||OPERATOR;
-      r.attempt.at=now();r.attempt.proofs={pledge:pf('pledge'),loan:pf('loan'),repay:pf('repay')};
+      Object.assign(at,{loan:ad('loan'),repay:ad('repay'),at:now(),proofs:{pledge:ev('P','1'),loan:ev('L','1'),repay:ev('R','1')},results:{loan:'success',repay:'success'}});
       event(r,'config-ok',['Configuration succeeded (review approved)','配置成功（即审核通过）'],['Configuration in progress → Approved','配置处理中 → 已通过'],
-        {picks:{...r.attempt.picks},proofs:{...r.attempt.proofs},notice:['Project review approved','项目审核通过']});
+        {attempt:JSON.parse(JSON.stringify(at)),notice:['Project review approved','项目审核通过']});
       A.notices.push({id:r.id,kind:['Project review approved','项目审核通过']});
       if(r.expiryPassed)closeOnExpiry(r);
     }else if(kind==='failed'){
-      const reason=['The configuration transaction for the loan contract was reverted on chain.','放款合约的配置交易在链上执行失败（交易回滚）。'];
-      const results={pledge:'success',loan:'failed',repay:'unknown'};
+      const reason=['The deployment transaction for the repayment contract was reverted on chain.','还款合约的部署交易在链上执行失败（交易回滚）。'];
       r.exec='failed';r.review='pending';
-      r.attempt.proofs={pledge:pf('pledge'),loan:pf('loan'),repay:null};
-      r.fail={reason,at:now(),results};
+      Object.assign(at,{loan:ad('loan'),repay:null,proofs:{pledge:null,loan:ev('L','1'),repay:ev('R','1')},results:{loan:'success',repay:'failed'}});
+      r.fail={reason,at:now()};
       event(r,'config-fail',['Configuration failed','配置失败'],['Configuration in progress → Pending review','配置处理中 → 待审核'],
-        {picks:{...r.attempt.picks},proofs:{...r.attempt.proofs},results,text:reason});
+        {attempt:JSON.parse(JSON.stringify(at)),text:reason});
       if(r.expiryPassed)closeOnExpiry(r);
     }else{
       r.exec='unknown';
+      Object.assign(at,{proofs:{...at.proofs,loan:at.proofs.loan||ev('L','1')},results:{loan:'unknown',repay:'unknown'}});
       event(r,'config-unknown',['Configuration result to be verified','结果待核实'],['No confirmed on-chain result','尚无确定的链上结果'],
-        {picks:{...r.attempt.picks},proofs:{...r.attempt.proofs}});
+        {attempt:JSON.parse(JSON.stringify(at))});
     }
     CF.render();
   }
@@ -609,12 +601,13 @@
   function approveLayer(){
     const d=A.draft,r=row();
     if(!d||!r)return {title:L('Unavailable','不可用'),html:'',foot:b('Close','关闭','cancel')};
-    const again=d.mode==='reconfig',set=setOf(r)||{};
-    const failure=again&&r.fail?note(L('The last configuration failed: ','最近一次配置失败：')+txt(r.fail.reason),'warn'):'';
-    const picks=KINDS.map(([k,label])=>field(txt(label)+' *',select('cm-pick-'+k,d.picks[k],[['',L('Select','请选择')],...(set[k]?[[set[k],set[k]]]:[])],'aria-required="true"'))).join('');
+    const again=d.mode==='redeploy',list=candidates(r);
+    const failure=again&&r.fail?note(L('The last deployment failed: ','最近一次部署失败：')+txt(r.fail.reason),'warn'):'';
+    const options=list.length?list.map(p=>`<label class="cm-pick${d.pledge===p.id?' is-on':''}"><input type="radio" name="cm-pledge" id="cm-pledge-${E(p.id)}" value="${E(p.id)}" ${d.pledge===p.id?'checked':''}><span class="mono cm-pick-addr">${E(p.address)}</span><span class="cm-meta">${L('Configured projects','已配置项目')} ${configuredOn(p).length}</span></label>`).join('')
+      :`<p class="cm-meta">${L('No pledge contract is available for this combination.','该组合暂无可选质押合约。')}</p>`;
     const ack=L('I understand: a successful configuration is the approval itself and cannot be withdrawn.','我已知悉：配置成功即审核通过，不可撤销。');
-    return {title:again?L('Start the configuration again','再次发起配置'):L('Approve and configure contracts','通过并配置合约'),
-      html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${failure}${kv([[L('Applicable combination','适用组合'),comboValue(r),true]])}<div class="cm-picks">${picks}</div><label class="cm-ack"><input id="cm-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel(ack,true)}</label></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
+    return {title:again?L('Start the deployment again','再次发起部署'):L('Approve and deploy contracts','通过并部署合约'),
+      html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${failure}${kv([[L('Applicable combination','适用组合'),comboValue(r),true]])}<fieldset class="cm-picks"><legend>${CF.fieldLabel(txt(PLEDGE_LABEL)+' *')}</legend>${options}</fieldset><p class="cm-meta cm-deploy-note">${L('After you submit, the platform deploys this project’s loan contract and repayment contract.','提交后，平台为本项目部署放款合约与还款合约。')}</p><label class="cm-ack"><input id="cm-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel(ack,true)}</label></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
       foot:b('Cancel','取消','cancel','','',A.busy)+b('Confirm and submit','确认提交','submit','','primary',A.busy||r.closed)};
   }
   function returnLayer(){
@@ -647,10 +640,10 @@
   function demo(){
     if(OPS_PAGES.includes(S.page))return OPS.demo();
     const r=row(),processing=r?.exec==='processing';
-    return `<h3>${L('Project contracts · demo tools','项目合约管理 · 演示工具')}</h3><p class="cm-meta">${L('Local demonstration only. On-chain configuration, result write-back and messages are simulated.','仅本地演示：链上配置、结果回写与站内信均为模拟。')}</p>
+    return `<h3>${L('Project contracts · demo tools','项目合约管理 · 演示工具')}</h3><p class="cm-meta">${L('Local demonstration only. Deployment, result write-back and messages are simulated.','仅本地演示：合约部署、结果回写与站内信均为模拟。')}</p>
       <h4>${L('Account configuration · later-role preview','账号配置 · 后期角色预演')}</h4><div class="cm-demo-actions">${b('Administrator','运营管理员','grant','admin')}${b('Later role · no access','后期角色 · 未开通本模块','grant','none')}${b('Later role · query only','后期角色 · 仅开通审核查询','grant','query')}${b('Later role · decision only','后期角色 · 仅开通审核处置','grant','decide')}${b('Later role · query + decision','后期角色 · 查询＋处置','grant','full')}</div>
       <div class="cm-demo">${field(L('Page state','页面状态'),select('cm-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','空数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}${field(L('Submit response','提交反馈'),select('cm-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['concurrent',L('Another reviewer wins','已被他人裁定')],['closed',L('Asset holder’s close takes effect first','资产方关闭先于本次提交生效')],['expired',L('Project has expired at submission','提交时项目已到期')]]))}${field(L('Activity state','操作记录状态'),select('cm-activity-state',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','加载失败')]]))}${field(L('Parameter configuration','融资参数配置'),select('cm-config',A.config.available?'on':'off',[['on',L('Readable','可读')],['off',L('Unavailable','不可读')]]))}</div>
-      <h4>${L('On-chain write-back for this project','本项目的配置结果回写')}</h4><div class="cm-demo-actions">${b('All three succeed','三份都成功','chain-success','','',!processing)}${b('One contract fails','其中一份失败','chain-failed','','',!processing)}${b('Result to be verified','结果待核实','chain-unknown','','',!processing)}${b('Replay the latest event','重放最新事件','replay','','',!r)}</div>
+      <h4>${L('Deployment write-back for this project','本项目的部署结果回写')}</h4><div class="cm-demo-actions">${b('Both deployed','两份都部署成功','chain-success','','',!processing)}${b('Repayment contract fails','还款合约部署失败','chain-failed','','',!processing)}${b('Result to be verified','结果待核实','chain-unknown','','',!processing)}${b('Replay the latest event','重放最新事件','replay','','',!r)}</div>
       <h4>${L('Valid-until date','项目有效期')}</h4><div class="cm-demo-actions">${b('Reach the valid-until date','到达有效期至','expire','','',!r||r.closed||r.expiryPassed||!['pending','configuring','returned'].includes(r.review))}</div>
       <h4>${L('Asset holder actions','资产方动作')}</h4><div class="cm-demo-actions">${b('Revise and resubmit','修改后重新提交','resubmit','','',!r||r.review!=='returned'||r.closed)}${b('Close the project','关闭项目','close','','',!r||r.closed||!['pending','configuring','returned'].includes(r.review))}${b('Expire operations session','运营登录失效','expire-session')}${b('Reset demonstration','重置演示','restart')}</div>
       <h4>${L('Messages sent to asset holders','已发送的面客站内信')}</h4><p class="cm-meta">${A.notices.map(n=>E(n.id+' · '+txt(n.kind))).join('<br>')||L('None','暂无')}</p>`;
@@ -677,16 +670,16 @@
     if(act==='go')leave(v==='ledger'?ledgerRoute():queueRoute());
     else if(act==='view'){A.src=S.page===LG?'ledger':'queue';leave(detailRoute(v,A.src));}
     else if(act==='back')leave(backRoute());
-    else if(act==='ledger-set'){
-      /* 从详情进入台账中的对应一套：台账回到默认条件并展开该套的已配置项目。 */
+    else if(act==='ledger-contract'){
+      /* 从详情进入台账中的这份质押合约：台账回到默认条件并展开它的已配置项目。 */
       e?.preventDefault?.();
-      A.ledger.filter=lDefault();A.ledger.edit=lDefault();A.ledger.page=1;A.ledger.dir=-1;A.ledger.set=v;
+      A.ledger.filter=lDefault();A.ledger.edit=lDefault();A.ledger.page=1;A.ledger.dir=-1;A.ledger.contract=v;
       leave(ledgerRoute());
     }
-    else if(act==='set'){
-      A.ledger.set=!v||A.ledger.set===v?'':v;A.ledger.dir=-1;saveContext();CF.render();
-      if(A.ledger.set)requestAnimationFrame(()=>{const p=$('cm-set-panel');p?.scrollIntoView({block:'nearest'});p?.focus({preventScroll:true});});
-      else document.querySelector(`[data-act="cm-set"][data-v="${CSS.escape(v||'')}"]`)?.focus();
+    else if(act==='contract'){
+      A.ledger.contract=!v||A.ledger.contract===v?'':v;A.ledger.dir=-1;saveContext();CF.render();
+      if(A.ledger.contract)requestAnimationFrame(()=>{const p=$('cm-set-panel');p?.scrollIntoView({block:'nearest'});p?.focus({preventScroll:true});});
+      else document.querySelector(`[data-act="cm-contract"][data-v="${CSS.escape(v||'')}"]`)?.focus();
     }
     else if(act==='sign-in'){S.layer=null;location.hash='#/ops/login';}
     else if(act==='page'){list().page=+v;saveContext();CF.render();window.scrollTo(0,0);}
@@ -697,12 +690,8 @@
     }
     else if(act==='filters'){const st=list();st.open=!st.open;CF.render();document.querySelector('[data-act=cm-filters]')?.focus();}
     else if(act==='reset')resetFilter();
-    else if(act==='sort'){
-      const st=list();
-      if(S.page===LG)st.dir=-st.dir;else{st.dir=st.sort===v?-st.dir:1;st.sort=v;}
-      saveContext();CF.render();
-    }
-    else if(act==='approve'||act==='return'||act==='reconfig')start(act);
+    else if(act==='sort'){list().dir=-list().dir;saveContext();CF.render();}
+    else if(act==='approve'||act==='return'||act==='redeploy')start(act);
     else if(act==='confirm'){
       if(!canAct(row()))deny();
       else if(validate())open('return-confirm');
@@ -740,7 +729,7 @@
     else if(act==='expire'){
       const r=row();
       if(r&&!r.closed){
-        if(r.review==='configuring'){r.expiryPassed=true;CF.toast(L('The valid-until date passed during configuration. The project is handled by the result.','配置处理中跨过有效期至：暂不关闭，结果回写后按结果处理。'));}
+        if(r.review==='configuring'){r.expiryPassed=true;CF.toast(L('The valid-until date passed during deployment. The project is handled by the result.','部署进行中跨过有效期至：暂不关闭，结果回写后按结果处理。'));}
         else if(['pending','returned'].includes(r.review))closeOnExpiry(r);
         CF.render();
       }
@@ -749,20 +738,16 @@
       const r=row();
       /* 配置处理中（含结果待核实）资产方不能关闭：关闭被拒，审核轴与项目都不变。 */
       if(r&&!r.closed&&r.review==='configuring'){
-        CF.toast(L('The asset holder’s close request was refused: configuration in progress. Nothing changed.','资产方关闭被拒：合约配置处理中，暂不可关闭，项目未变化。'));
+        CF.toast(L('The asset holder’s close request was refused: deployment in progress. Nothing changed.','资产方关闭被拒：合约部署进行中，暂不可关闭，项目未变化。'));
         return true;
       }
-      if(r&&!r.closed&&['pending','returned'].includes(r.review)){
-        r.closed=true;r.closeReason='owner';
-        event(r,'close',['Project closed by the asset holder','资产方关闭项目'],[REVIEW[r.review][0]+' · project closed',REVIEW[r.review][1]+' · 项目已关闭'],{actor:['Asset holder','资产方']});
-        CF.render();
-      }
+      if(r&&!r.closed&&['pending','returned'].includes(r.review)){closeByOwner(r);CF.render();}
     }
     else if(act==='restart'){
       A.epoch++;seed=CF.contractSeed();
-      A.rows=seed.rows;A.sets=seed.sets;A.tokenTypes=seed.tokenTypes;A.config={...seed.config};
+      A.rows=seed.rows;A.pledges=seed.pledges;A.tokenTypes=seed.tokenTypes;A.networks=seed.networks;A.config={...seed.config};
       A.now=seed.now;A.clock=Date.now();A.draft=null;A.busy=false;A.response='success';
-      A.activityState='default';A.notices=[];A.ledger.set='';grant('admin');resetFilter();navigateRoute(queueRoute());
+      A.activityState='default';A.notices=[];A.ledger.contract='';grant('admin');resetFilter();navigateRoute(queueRoute());
     }
     else return false;
     return true;
@@ -778,7 +763,10 @@
         if(count)count.textContent=Array.from(el.value.trim()).length+' / 500 · '+L('Minimum 10 characters','至少 10 字');
         el.setAttribute('aria-invalid','false');
       }
-      if(id.startsWith('cm-pick-'))A.draft.picks[id.slice(8)]=el.value;
+      if(el.name==='cm-pledge'){
+        A.draft.pledge=el.value;
+        document.querySelectorAll('.cm-pick').forEach(x=>x.classList.toggle('is-on',x.contains(el)));
+      }
       if(id==='cm-ack')A.draft.ack=el.checked;
     }
   }
@@ -803,7 +791,7 @@
 
   const DENIED={id:'denied',label:['No access','无权限'],group:'business'};
   [[Q,['Project reviews','项目审核队列'],['default','loading','empty','noresult','error',DENIED]],
-   [LG,['Shared contract ledger','共用合约台账'],['default','loading','empty','noresult','error',DENIED]],
+   [LG,['Pledge contract ledger','质押合约台账'],['default','loading','empty','noresult','error',DENIED]],
    [DT,['Project review detail','项目审核详情'],['default','loading','error',DENIED]]].forEach(([id,label,states])=>{
     CF.review.register(id,{
       group:['Project contracts','项目合约管理'],label,states,
@@ -825,9 +813,9 @@
 
   const dict={
     en:{...OPS.dict.en,navContracts:'Project contracts',navContractQueue:'Project reviews',
-      navContractDetail:'Project review detail',navContractLedger:'Shared contract ledger'},
+      navContractDetail:'Project review detail',navContractLedger:'Pledge contract ledger'},
     zh:{...OPS.dict.zh,navContracts:'项目合约管理',navContractQueue:'项目审核队列',
-      navContractDetail:'项目审核详情',navContractLedger:'共用合约台账'}
+      navContractDetail:'项目审核详情',navContractLedger:'质押合约台账'}
   };
   CF.define({...OPS,id:'contract-management',demoOnly:true,reviewToolsInLayer:false,dict,demo,
     content:page=>{
