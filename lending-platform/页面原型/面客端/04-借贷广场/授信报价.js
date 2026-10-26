@@ -236,7 +236,7 @@
   ])+snapshot(t);}
   function confirmationView(x){if(!x||!related(x))return '';const c=x.confirmation,t=c?.terms;
     if(!t)return note('The confirmation evidence for this historical example is unavailable. Do not accept until the terms are verified.','此历史示例的条款确认凭证暂不可用，核验一致前不可接受。','warn');
-    const result=integrity(x)?L('Terms match · demo verification','条款一致 · 演示核验'):c.state==='conflict'?L('Conflicting terms · result to be verified','条款冲突 · 结果待核实'):L('Terms verification pending','条款待核验');
+    const result=integrity(x)?L('Approval matches signed details · demo verification','授权与已签名信息一致 · 演示核验'):c.state==='conflict'?L('Does not match signed details · result to be verified','与已签名信息不一致 · 结果待核实'):L('Verification not complete','核验未完成');
     return '<details class="ls-history cq-confirmation"><summary>'+L('Confirmed terms and evidence','确认条款与凭证')+'</summary>'+dl([
       [L('Verification result','核验结果'),result],[L('Confirmed version','确认版本'),E(c.version)],
       [L('Submission reference','本次提交凭证'),E(c.submission)],
@@ -247,7 +247,7 @@
     ])+fixedTermsView(t)+'</details>';
   }
   Q.confirmationView=confirmationView;
-  function pendingEvidence(x){return note(x.auth?'Approval is on chain, but the offer terms have not been verified. No successful offer was created. Contact platform support; do not submit again.':'The offer result is not confirmed. Contact platform support; do not submit again.',x.auth?'授权已上链，报价条款尚未核验一致，未形成成功报价。请联系平台客服人员，不要重复提交。':'报价结果尚未确定，请联系平台客服人员，不要重复提交。','warn')+confirmationView(x);}
+  function pendingEvidence(x){return note(x.auth?'The on-chain approval does not match the signed details, or verification is not complete. No successful offer was created. Contact platform support; do not submit again.':'The offer result is not confirmed. Contact platform support; do not submit again.',x.auth?'链上授权与已签名信息不一致或核验未完成，未形成成功报价。请联系平台客服人员，不要重复提交。':'报价结果尚未确定，请联系平台客服人员，不要重复提交。','warn')+confirmationView(x);}
   function terms(q){const p=D.project(q.project),n=D.numbers(p);const facts=[[L('Financing business ID','融资业务编号'),E(q.id)],[L('Financing request ID','融资申请编号'),E(q.demand)],[L('Project ID','融资项目编号'),E(q.project)],[L('Asset holder','资产方'),company(p)],[L('Funder','资金方'),institution(q.fund)],[L('Financing amount','融资金额'),usd(q.amount)],[L('Settlement amount','结算金额'),CF.fmtAmt(q.settlement)+' '+q.ccy],[L('Annual interest rate','年化利率'),q.rate+'%'],[L('Repayment type','还款类型'),L('Quarterly interest; principal and remaining interest at maturity','按季付息；到期还本付息')],[L('Final repayment date','最终还款日'),date(q.repay)],[L('Receiving address','融资收款地址'),addrInline(payeeOf(q))],[L('Funder\'s repayment address','资金方还款收款地址'),addrInline(q.repayTo)],[L('Quoted at / lock started','报价时间 / 锁定起始'),time(q.at)],[L('Eligible borrowing limit','有效质押额'),pv(n.limit)],[L('Eligible pledged value','有效质押价值'),pv(n.value)+' · '+n.valid.length+L(' tokens',' 张')]];
     const plan=CF.L8?CF.L8.initial({...q,state:'waiting'}):'';
     return dl(facts)+snapshot(q)+plan+confirmationView(q);
@@ -343,7 +343,7 @@
   /* 第二步：核对条款与后果后发起授权；这一次签名就是提交报价。 */
   function reviewView(p,d){const a=lenderPick('lender'),r=lenderPick('repay');
     return '<p class="cq-signed">'+CF.tag('ok',L('Offer details signed','报价信息已签名确认'))+(flow.signedAt?'<span class="hint">'+time(flow.signedAt)+'</span>':'')+'</p><div class="cq-review"><div class="cq-review-pricing">'+dl([[L('Settlement amount · approval amount','结算金额 · 授权金额'),money(need(),flow.ccy)],[L('Annual interest rate','年化利率'),E(flow.rate)+'%']])+'</div>'+dl([[L('Financing amount','融资金额'),usd(d.amount)],[L('Exchange rate','汇率'),rateText({ccy:flow.ccy,fx:flow.fx})],[L('Repayment type','还款类型'),L('Quarterly interest; principal and remaining interest at maturity','按季付息；到期还本付息')],[L('Final repayment date','最终还款日'),date(p.expires)]])
-      +'<div class="cq-review-addr"><div><span class="hint">'+L('Funding address','放款地址')+'</span>'+addrSummary(a)+'</div><div><span class="hint">'+L('Repayment address','还款收款地址')+'</span>'+addrSummary(r)+'</div><div><span class="hint">'+L('Receiving address · read only','融资收款地址 · 只读')+'</span>'+addrSummary(d.payee)+'</div></div></div>'+signCheck(Q.loanContract,L('This signature uses the funding address to approve the lending contract above to take '+CF.fmtAmt(need())+' '+flow.ccy+', and confirms and submits this offer. It is an on-chain transaction; your institution pays the gas. It does not move funds and is unrelated to sign-in. The offer details you signed go on chain with it.','本次签名：用放款地址授权上述放款合约调取 '+CF.fmtAmt(need())+' '+flow.ccy+'，同时提交本笔报价，第一步已签名的报价信息一并上链。这是一笔链上交易，gas 由本机构承担；签名本身不转出资金，与登录无关。'));}
+      +'<div class="cq-review-addr"><div><span class="hint">'+L('Funding address','放款地址')+'</span>'+addrSummary(a)+'</div><div><span class="hint">'+L('Repayment address','还款收款地址')+'</span>'+addrSummary(r)+'</div><div><span class="hint">'+L('Receiving address · read only','融资收款地址 · 只读')+'</span>'+addrSummary(d.payee)+'</div></div></div>'+signCheck(Q.loanContract,L('This signature uses the funding address to approve the lending contract above to take '+CF.fmtAmt(need())+' '+flow.ccy+', and confirms and submits this offer. It is an on-chain transaction; your institution pays the gas. It does not move funds and is unrelated to sign-in. The platform verifies that the approval matches the details you signed.','本次签名：用放款地址授权上述放款合约调取 '+CF.fmtAmt(need())+' '+flow.ccy+'，同时提交本笔报价，平台核验授权与已签名信息一致。这是一笔链上交易，gas 由本机构承担；签名本身不转出资金，与登录无关。'));}
   /* 选账户只给能辨认账户的信息：下拉单选；完整信息按需展开，不默认铺开。 */
   const plain=html=>String(html).replace(/<[^>]+>/g,'');
   const accountTail=a=>plain(a.kind==='crypto'?maskAddress(a.address):maskTail(EA.compact?EA.compact(a.iban):a.iban));
@@ -483,7 +483,7 @@
       else t=turn('wait',L('No active financing request','暂无进行中的融资需求'),again?L('Earlier rounds are in the project records. You can quote after the asset holder publishes a new one.','往轮记录见项目记录；资产方发布新一轮后才可报价。'):L('You can quote after the asset holder publishes a request.','资产方发布融资需求后才可报价。'));
     }
     else if(d.state==='open'&&pendingOf(p)){const x=pendingOf(p);
-      if(S.role==='fund'&&x.fund===F()){extra=B('pending-details','View confirmation evidence','查看确认凭证',x.id);t=x.state==='unknown'?turn('blocked',L('On-chain result to be verified','链上结果待核实'),L('Please contact platform support. Do not start the offer again.','请联系平台客服人员，不要重复发起。')+txChip(L('Approval tx hash','授权交易哈希'),x.tx)):turn('wait',L('Offer pending on-chain','报价上链确认中'),L('Waited ','已等待 ')+waited(x.at)+L('. Success requires on-chain approval and matching offer terms.','。授权上链且条款核验一致后报价成功。')+txChip(L('Approval tx hash','授权交易哈希'),x.tx));}
+      if(S.role==='fund'&&x.fund===F()){extra=B('pending-details','View confirmation evidence','查看确认凭证',x.id);t=x.state==='unknown'?turn('blocked',L('On-chain result to be verified','链上结果待核实'),L('Please contact platform support. Do not start the offer again.','请联系平台客服人员，不要重复发起。')+txChip(L('Approval tx hash','授权交易哈希'),x.tx)):turn('wait',L('Offer pending on-chain','报价上链确认中'),L('Waited ','已等待 ')+waited(x.at)+L('. The offer is made once the approval is on chain and matches the signed details.','。授权上链且与已签名信息核验一致后报价成功。')+txChip(L('Approval tx hash','授权交易哈希'),x.tx));}
       else if(a.mine)t=turn('wait',L('An offer is pending on-chain','机构报价上链确认中'),L('Once '+institution(x.fund)+'\'s offer is on chain, you can review it.',institution(x.fund)+' 的报价上链成功后，可以确认或拒绝。'));
       else t=turn('blocked',L('Another institution\'s offer is being confirmed','本轮正在处理其他机构的报价'),L('You can make an offer only if that offer is not made.','该报价未成立时，你才可以报价。'));
     }
@@ -546,7 +546,7 @@
       if(!open)foot=B('cancel-request','Cancel','取消');
       else if(flow.qstep!==2){const lender=lenderPick('lender'),signed=detailsSigned();
         if(flow.reviewedTerms&&!signed)html+=note('The offer details changed after you signed, so that signature is void. Sign again.','报价信息已在签名后修改，原签名已失效，请重新签名。','warn');
-        foot=signBar(lender?'<span>'+L('Sign with','签名地址')+' <b class="mono">'+E(accountTail({kind:'crypto',address:lender.address}))+'</b></span>':'',L('This signature confirms the offer details above with the funding address. It is not on chain, costs nothing and does not submit the offer; the signed details go on chain with the approval in the next step.','本次签名：用放款地址确认以上报价信息；不上链、不产生费用、不提交报价，发起授权时一并上链。'))
+        foot=signBar(lender?'<span>'+L('Sign with','签名地址')+' <b class="mono">'+E(accountTail({kind:'crypto',address:lender.address}))+'</b></span>':'',L('This signature confirms the offer details above with the funding address. It is not on chain, costs nothing and does not submit the offer; the platform verifies it when you submit.','本次签名：用放款地址确认以上报价信息；不上链、不产生费用、不提交报价，平台在提交时核验。'))
           +B('cancel-request','Cancel','取消')+(signed?B('quote-next','Continue to approval','继续发起授权','',true):B('sign-details',busy?'Waiting for wallet signature…':'Sign offer details',busy?'等待钱包签名…':'签名确认报价信息','',true,busy));}
       else {html+=disclosure(L('Signing submits an irrevocable offer and locks this round. In-flight offers increase until rejection or demand termination. Keep the funding address balance sufficient: acceptance automatically transfers the settlement amount without further confirmation. Your institution pays approval gas; gas incurred on failure is not refunded.','签名即提交报价，不可修改、不可撤回，并锁定本轮需求、增加在途报价金额，只有资产方拒绝或需求终结才会退出。此前须保持放款地址余额充足；资产方接受后自动转出本笔结算金额，无需再次确认。授权 gas 由本机构承担，失败已产生的不退。'));
         const lender=lenderPick('lender');
@@ -593,7 +593,7 @@
       else{flow.reviewedTerms=termSnapshot(draftQuote());flow.signedAt=D.now();flow.qstep=2;lastView='';}
       CF.render();},700);}
   function reviewChanged(){const next=termSnapshot(draftQuote());if(JSON.stringify(next)===JSON.stringify(flow.reviewedTerms))return false;flow.reviewedTerms=null;flow.qstep=1;failure('The offer details changed, so the earlier signature is void. Sign the offer details again. Your wallet was not opened.','报价信息已变化，原签名已失效，请重新签名确认报价信息；本次未唤起钱包。');return true;flow.reviewedTerms=next;failure('The offer terms changed. Review the updated information, then approve and offer again. Your wallet was not opened.','报价条款已变化，请核对更新后的信息再授权并报价，本次未唤起钱包。');return true;}
-  /* 授权并报价：先终检，通过才唤起钱包；放款地址的一次签名即提交报价，授权上链且条款核验一致后报价成功。 */
+  /* 授权并报价：先终检，通过才唤起钱包；放款地址的一次签名即提交报价，授权上链且与已签名信息核验一致后报价成功。 */
   function offer(){
     const p=pFlow();if(!quoteValid()){flow.qstep=1;return;}
     if(!D.current(p)?.payee?.address)return failure('The financing receiving address cannot be read right now. Your entries are kept; retry later.','融资收款地址暂时无法读取，已保留填写内容，请稍后重试。');
@@ -612,7 +612,7 @@
       if(S.role!=='fund'||F()!==draft.fund||!canQuote(p)||JSON.stringify(termSnapshot(draftQuote()))!==JSON.stringify(signedTerms)){failure('The identity or offer details changed. No offer was sent. Sign the offer details again.','身份或报价信息已变化，本次未发送报价，请重新签名确认报价信息。');flow.reviewedTerms=null;flow.qstep=1;CF.render();return;}
       const x={id:'PO-DEMO-'+(++db.serial),project:p.id,owner:p.owner,demand:d.id,amount:d.amount,ccy:flow.ccy,settlement:need(),fx:{...flow.fx},fund:F(),lender:accountSnapshot(lender),repayTo:accountSnapshot(repayTo),rate:flow.rate,repay:p.expires,at:D.now(),state:'processing',tx:demoHash('approval'+db.serial+D.now()),payee:clone(signedTerms.receiving)},outcome=authScene;
       x.confirmation=confirmDemo(x);x.confirmation.state='pending';x.confirmation.terms=signedTerms;x.context=clone(signedTerms.context);x.contract=signedTerms.contract;
-      db.pending.push(x);save();closeFlow();CF.toast(L('Signed. Your offer is being confirmed on chain and its terms verified.','已签名，报价上链确认与条款核验中。'));
+      db.pending.push(x);save();closeFlow();CF.toast(L('Signed. The approval is being confirmed on chain and checked against the signed details.','已签名，授权上链确认及与已签名信息的核验进行中。'));
       setTimeout(()=>settleOffer(x,outcome),2500);CF.render();},700);}
   function settleOffer(x,outcome){if(x.state!=='processing')return;const mine=S.role==='fund'&&F()===x.fund;
     if(['unknown','termsUnknown','termsConflict'].includes(outcome)){x.state='unknown';
