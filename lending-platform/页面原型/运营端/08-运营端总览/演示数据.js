@@ -12,20 +12,40 @@
   const factories={tokens:()=>CF.tokenAdmissionSeed().rows,contracts:()=>CF.contractSeed().rows,
     institutions:()=>CF.institutionReviewSeed(),parameters:()=>CF.parameterSeed().rows};
   const unique=rows=>[...new Map(rows.filter(r=>r&&r.id).map(r=>[r.id,r])).values()];
-  function summarize(key,records){
-    const rows=unique(records);
-    if(key==='tokens')return {approved:rows.filter(r=>r.status==='approved').length,pending:rows.filter(r=>r.status==='pending').length};
-    if(key==='contracts'){
-      const pending=rows.filter(r=>r.review==='pending'&&!r.closed&&!r.expiryPassed);
-      return {approved:rows.filter(r=>r.review==='approved'&&r.exec==='success').length,
-        pending:pending.length,failed:pending.filter(r=>r.exec==='failed').length};
+  // Same day boundary and decision readers as the source modules' 7-day summaries.
+  const utcDayStart=(t,back=0)=>{const d=new Date(t);return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-back);};
+  const tokenDecision=r=>(r.decisions||[])[(r.decisions||[]).length-1]||null;
+  const projectDecision=r=>{const e=(r.events||[]).find(x=>['return','config-ok'].includes(x.kind));return e?e.at:null;};
+  const count=(rows,test)=>rows.filter(test).length;
+  function summarize(key,records,at=Date.now()){
+    const rows=unique(records),since=utcDayStart(at,6);
+    if(key==='tokens'){
+      const decided=kind=>count(rows,r=>r.status===kind&&tokenDecision(r)&&tokenDecision(r).at>=since);
+      return {pending:count(rows,r=>r.status==='pending'),approved:count(rows,r=>r.status==='approved'),returned:count(rows,r=>r.status==='returned'),
+        flags:{duplicate:count(rows,r=>r.status==='pending'&&(r.dupes||[]).length>0),
+          expired:count(rows,r=>r.status==='approved'&&r.tokenState!=='valid'),
+          changed:count(rows,r=>r.status==='approved'&&r.changed)},
+        recent:{approved:decided('approved'),returned:decided('returned')}};
     }
-    if(key==='institutions')return {approved:rows.filter(r=>r.status==='verified').length,
-      pending:rows.filter(r=>r.status==='submitted'&&r.version>0).length};
-    return {pending:rows.filter(r=>r.maxRatio==null||r.maxTermMonths==null).length};
+    if(key==='contracts'){
+      const pending=rows.filter(r=>r.review==='pending'&&!r.closed),configuring=rows.filter(r=>r.review==='configuring');
+      return {pending:pending.length,failed:count(pending,r=>r.exec==='failed'),
+        configuring:configuring.length,unknown:count(configuring,r=>r.exec==='unknown'),
+        approved:count(rows,r=>r.review==='approved'&&r.exec==='success'),
+        returned:count(rows,r=>r.review==='returned'&&!r.closed),
+        closed:count(rows,r=>['pending','returned'].includes(r.review)&&r.closed),
+        recent:{decided:count(rows,r=>{const t=projectDecision(r);return t!=null&&t>=since;})}};
+    }
+    if(key==='institutions'){
+      const current=rows.filter(r=>r.version>0&&r.status!=='draft');
+      return {pending:count(current,r=>r.status==='submitted'),approved:count(current,r=>r.status==='verified'),rejected:count(current,r=>r.status==='rejected')};
+    }
+    const unset=r=>r.maxRatio==null||r.maxTermMonths==null;
+    return {pending:count(rows,unset),configured:count(rows,r=>!unset(r))};
   }
   CF.opsOverviewData={saved,publish,restore,summarize,
-    read(key){return {data:summarize(key,restore(key,factories[key]())),at:Date.now()};},
+    read(key){const at=Date.now();return {data:summarize(key,restore(key,factories[key]()),at),at};},
+    utcDayStart,
     carryGrants(grants){try{if(grants)localStorage.setItem(GRANTS,JSON.stringify(grants));}catch(_){}},
     takeGrants(){try{const value=JSON.parse(localStorage.getItem(GRANTS)||'null');localStorage.removeItem(GRANTS);return value}catch(_){return null}},
     reset(){try{localStorage.removeItem(KEY);localStorage.removeItem(GRANTS)}catch(_){}},
