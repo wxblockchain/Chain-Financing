@@ -32,7 +32,7 @@
       {key:'finance',id:'newDemand',tone:'2',label:['Demand published','新发布融资需求']},
       {key:'finance',id:'newLoans',tone:'3',label:['Disbursed','新增放款']}]}
   ];
-  let scene='default',entered=false,scheduled=false,signature='',cache={},versions={},view='chart';
+  let scene='default',entered=false,scheduled=false,signature='',cache={},versions={},view='chart',expanded=false;
   const tr=x=>L(...x),can=key=>CF.opsAuth.can(sources[key].permission),keys=()=>Object.keys(sources).filter(can);
   const menu=key=>CF.AdminMenu.entries.find(e=>e.key===sources[key].nav);
   const sourceLabel=key=>tr(menu(key).label);
@@ -66,28 +66,24 @@
   // Currency icon (when the shared set has one) → compact value → small code; full amount in the peek panel.
   function amountPeek(m,v){
     const full=money(v)+' '+m.ccy,icon=CF.assetIconSvg&&CF.assetIconSvg(m.ccy)?CF.assetIcon(m.ccy,'ov-coin'):'';
-    const face='<span class="ov-money" data-ov-value="'+m.key+'-'+m.field+'"><span class="ov-money-number">'+compact(v)+'</span><span class="ov-money-code">'+icon+'<span class="u">'+m.ccy+'</span></span></span>';
+    const face='<span class="ov-money" data-ov-value="'+m.key+'-'+m.field+'">'+icon+'<span class="ov-money-number">'+compact(v)+'</span><span class="u">'+m.ccy+'</span></span>';
     if(compact(v)===money(v))return face;
     return '<details class="ov-money-peek"><summary title="'+E(full)+'" aria-label="'+E(full+' · '+L('Full amount','完整金额'))+'">'+face+'</summary><div class="ov-money-exact"><span>'+L('Full amount','完整金额')+'</span><b>'+full+'</b></div></details>';
   }
-  // Circular tile: the ring frames one statistic in its identity colour; it encodes no share or ratio.
-  function ring(tone,state,inner,size){
-    return '<div class="ov-ring" data-tone="'+tone+'" data-ring-state="'+state+'"><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><circle class="ov-ring-track" cx="60" cy="60" r="54"/><circle class="ov-ring-arc" cx="60" cy="60" r="54"/></svg><div class="ov-ring-center"'+(size?' data-size="'+size+'"':'')+'>'+inner+'</div></div>';
-  }
-  const ringState=key=>{const c=cache[key];return !c||c.state==='loading'&&!c.data?'loading':c.state==='error'&&!c.data?'error':'ready';};
+  // Compact statistic cell: label and value stay visible; definitions, today's new amount and
+  // data time sit in a detail block that the section toggle folds. Read problems are never folded.
+  const shownTime=key=>{const c=cache[key];return c?.at&&c.state==='error'?time(c.at):'';};
+  const foldTime=key=>{const c=cache[key];return c?.at&&c.state!=='error'?time(c.at):'';};
   function amountCell(m){
     const c=cache[m.key],v=c?.data?c.data[m.field]:null,list=series(m.key,m.series),today=list?list[list.length-1]:null;
     const missing=m.field==='value'&&c?.data?.missingValue>0?'<p class="ov-flag">'+L(count(c.data.missingValue)+' record'+(c.data.missingValue===1?'':'s')+' without a token value are not included','另有 '+count(c.data.missingValue)+' 笔缺少代币价值，未计入')+'</p>':'';
     const todayLine=c?.data?'<p class="ov-today" data-tone="'+m.tone+'"><span>'+tr(m.today)+' (UTC)</span><b>'+(today==null?L('Unavailable','暂不可用'):money(today)+' '+m.ccy)+'</b></p>':'';
-    const inner=v==null?unavailable(m.key):amountPeek(m,v);
-    return '<div class="ov-tile ov-amount" data-source="'+m.key+'" data-read-state="'+(c?.state||'loading')+'"><div class="ov-tile-head"><h3>'+tr(m.label)+'</h3>'+(m.note?'<p class="ov-note">'+tr(m.note)+'</p>':'')+'</div>'+
-      ring(m.tone,ringState(m.key),inner)+feedback(m.key)+missing+todayLine+(c?.at?time(c.at):'')+'</div>';
+    return '<div class="s ov-amount" data-source="'+m.key+'" data-read-state="'+(c?.state||'loading')+'"><div class="k">'+tr(m.label)+'</div><div class="v">'+(v==null?unavailable(m.key):amountPeek(m,v))+'</div><div class="ov-cell-more">'+feedback(m.key)+shownTime(m.key)+missing+
+      '<div class="ov-detail"'+(expanded?'':' hidden')+'>'+(m.note?'<p class="ov-note">'+tr(m.note)+'</p>':'')+todayLine+foldTime(m.key)+'</div></div></div>';
   }
   function countCell(k){
-    const c=cache[k],n=c?.data?c.data.approved:null;
-    const inner=n==null?unavailable(k):'<span class="ov-ring-value" data-ov-value="'+k+'-approved">'+count(n)+'</span><span class="u">'+unit(k,n)+'</span>';
-    return '<div class="ov-tile ov-count" data-source="'+k+'" data-read-state="'+(c?.state||'loading')+'"><div class="ov-tile-head"><h3>'+mark(k)+tr(sources[k].stat)+'</h3></div>'+
-      ring('src-'+k,ringState(k),inner,n!=null&&count(n).length>7?'long':'')+feedback(k)+(c?.at?time(c.at):'')+'</div>';
+    return '<div class="s ov-count" data-source="'+k+'" data-read-state="'+(cache[k]?.state||'loading')+'"><div class="k">'+mark(k)+tr(sources[k].stat)+'</div><div class="v">'+figure(k,'approved','ov-count-value')+'</div><div class="ov-cell-more">'+feedback(k)+shownTime(k)+
+      '<div class="ov-detail"'+(expanded?'':' hidden')+'>'+foldTime(k)+'</div></div></div>';
   }
   function niceMax(v){if(v<=0)return 100;const p=Math.pow(10,Math.floor(Math.log10(v))),n=v/p;return [1,2,2.5,5,10].find(x=>x>=n)*p;}
   function chartBlock(def,days){
@@ -163,8 +159,9 @@
     const shownAmounts=amounts.filter(m=>can(m.key)),shownCharts=charts.filter(d=>d.series.some(s=>can(s.key)));
     const now=Date.now(),days=D.days(now).map(utcDay);
     const zone='<span class="ov-section-meta">'+L('Time zone: ','时区：')+E(S.tz)+'</span>';
-    const tiles=shownAmounts.map(amountCell).concat(stats.map(countCell));
-    const statsBlock=tiles.length?'<section class="card ov-stats" aria-labelledby="ov-stats-title"><div class="ov-section-head"><h2 id="ov-stats-title">'+L('Platform statistics','平台统计')+'</h2>'+zone+'</div><div class="ov-tiles" style="--ov-columns:'+tiles.length+'" data-split="'+(shownAmounts.length&&stats.length?shownAmounts.length:0)+'">'+tiles.join('')+'</div></section>':'';
+    const cells=shownAmounts.map(amountCell).concat(stats.map(countCell));
+    const fold='<button type="button" class="btn sm ov-fold" data-act="ov-details" aria-expanded="'+expanded+'" aria-controls="ov-stats-cells">'+(expanded?L('Hide details','收起明细'):L('Show details','展开明细'))+'<span aria-hidden="true" class="ov-fold-mark"></span></button>';
+    const statsBlock=cells.length?'<section class="card ov-stats" aria-labelledby="ov-stats-title"><div class="ov-section-head"><div class="ov-stats-title"><h2 id="ov-stats-title">'+L('Platform statistics','平台统计')+'</h2>'+zone+'</div>'+fold+'</div><div class="stat-strip ov-cells" id="ov-stats-cells" style="grid-template-columns:'+[...shownAmounts.map(()=>'minmax(0,1.35fr)'),...stats.map(()=>'minmax(0,1fr)')].join(' ')+'" data-split="'+(shownAmounts.length&&stats.length?shownAmounts.length:0)+'">'+cells.join('')+'</div></section>':'';
     const allClear=tasks.length===4&&tasks.every(k=>cache[k]?.state==='ready'&&cache[k].data.pending===0);
     const rail=tasks.length?'<section class="ov-section ov-rail" aria-labelledby="ov-tasks-title"><div class="ov-section-head"><h2 id="ov-tasks-title">'+L('Action required','待办事项')+'</h2></div><ul class="ov-tasks">'+tasks.map(taskRow).join('')+'</ul>'+(allClear?'<p class="ov-empty" role="status">'+L('No items in these four queues need action.','当前暂无这四类待办事项。')+'</p>':'')+'</section>':'';
     const toggle='<div class="seg ov-view" role="group" aria-label="'+L('Display as','展示方式')+'">'+[['chart','Chart','图表'],['table','Table','表格']].map(([id,en,zh])=>'<button type="button" data-act="ov-view" data-v="'+id+'" aria-pressed="'+(view===id)+'">'+L(en,zh)+'</button>').join('')+'</div>';
@@ -189,6 +186,7 @@
     if(act==='ov-refresh'&&!busy())refresh();
     if(act==='ov-retry')refresh(v);
     if(act==='ov-scene')setScene(v);
+    if(act==='ov-details'){expanded=!expanded;CF.render();}
     if(act==='ov-view'){view=v==='table'?'table':'chart';CF.render();}
     if(act==='ov-permission'){priorAction('ops-grant',String(sources[v].permission));CF.render();}
     if(act==='ov-reset')setTimeout(()=>{D.reset();const entry=CF.AdminMenu.entries.find(e=>e.key==='account');if(window.AdminPrototypeBundle)window.AdminPrototypeBundle.open(entry.file,entry.route,true);else if(document.documentElement.dataset.adminModule==='overview')location.reload();else location.href=new URL('../'+entry.file+'#'+entry.route,location.href).href;},0);
