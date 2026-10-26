@@ -72,17 +72,15 @@
     const id='ov-amount-'+m.field,open=amountOpen===m.field;
     const full=v==null?L('Unavailable','暂不可用'):money(v)+' '+m.ccy;
     const big='<span class="ov-amount" data-ov-value="'+m.key+'-'+m.field+'">'+(v==null?'—':compact(v))+'</span><span class="ov-ccy">'+m.ccy+'</span>';
-    const button='<button type="button" class="ov-amount-toggle" id="'+id+'" data-act="ov-amount" data-v="'+m.field+'" aria-expanded="'+open+'" aria-controls="'+id+'-detail" title="'+E(full)+'" aria-label="'+E(tr(m.label)+' · '+full+' · '+L('Details','明细'))+'">'+
-      '<span class="ov-currency-icon" aria-hidden="true">'+CF.assetIconSvg(m.ccy)+'</span>'+big+'<span class="ov-amount-action">'+L('Details','明细')+'<span class="ov-fold-mark" aria-hidden="true"></span></span></button>';
+    const button='<button type="button" class="ov-amount-toggle" id="'+id+'" data-act="ov-amount" data-v="'+m.field+'" aria-expanded="'+open+'" aria-controls="'+id+'-detail" title="'+E(full)+'" aria-label="'+E(tr(m.label)+' · '+full+' · '+L('Full amount','完整金额'))+'">'+
+      '<span class="ov-currency-icon" aria-hidden="true">'+CF.assetIconSvg(m.ccy)+'</span>'+big+'<span class="ov-amount-action">'+L('Details','完整金额')+'<span class="ov-fold-mark" aria-hidden="true"></span></span></button>';
     const missing=m.field==='value'&&c?.data?.missingValue>0?'<p class="ov-amount-flag">'+L(count(c.data.missingValue)+' record'+(c.data.missingValue===1?'':'s')+' without a token value are not included','另有 '+count(c.data.missingValue)+' 笔缺少代币价值，未计入')+'</p>':'';
-    const detail='<div class="ov-amount-detail" id="'+id+'-detail" role="region" aria-labelledby="'+id+'-label"'+(open?'':' hidden')+'><h3 id="'+id+'-label">'+tr(m.label)+'</h3><dl class="ov-amount-facts">'+
-      '<div><dt>'+L('Full amount','完整金额')+'</dt><dd class="ov-amount-exact">'+full+'</dd></div>'+
-      '<div><dt>'+L('Basis','统计口径')+'</dt><dd>'+tr(m.note)+'</dd></div>'+
-      '<div><dt>'+tr(m.today)+' (UTC)</dt><dd class="ov-amount-exact">'+(today==null?L('Unavailable','暂不可用'):money(today)+' '+m.ccy)+'</dd></div></dl>'+
-      (c?.at?time(c.at):'')+'</div>';
-    // A stale timestamp and read warnings never depend on opening the disclosure.
-    const status=feedback(m.key)+missing+(c?.at&&c.state!=='ready'?time(c.at):'');
-    return '<div class="ov-amount-card" data-tone="'+m.tone+'" data-source="'+m.key+'" data-ov-amount="'+m.field+'" data-read-state="'+(c?.state||'loading')+'"><dt><span class="ov-swatch" aria-hidden="true"></span>'+tr(m.label)+'</dt><dd><div class="ov-amount-peek">'+button+detail+'</div>'+status+'</dd></div>';
+    const detail='<div class="ov-amount-detail" id="'+id+'-detail" role="region" aria-labelledby="'+id+'-label"'+(open?'':' hidden')+'><h3 id="'+id+'-label">'+L('Full amount','完整金额')+'</h3><p class="ov-amount-exact">'+full+'</p></div>';
+    const todayLine=c?.data?'<p class="ov-amount-today"><span>'+tr(m.today)+' (UTC)</span><b>'+(today==null?L('Unavailable','暂不可用'):money(today)+' '+m.ccy)+'</b></p>':'';
+    // Only the exact total is disclosed; basis, daily addition, read warnings
+    // and data time remain on the card, including when previous data is retained.
+    const status=feedback(m.key)+missing;
+    return '<div class="ov-amount-card" data-tone="'+m.tone+'" data-source="'+m.key+'" data-ov-amount="'+m.field+'" data-read-state="'+(c?.state||'loading')+'"><dt>'+tr(m.label)+'<span class="ov-amount-note">'+tr(m.note)+'</span></dt><dd><div class="ov-amount-peek">'+button+detail+'</div>'+status+todayLine+(c?.at?time(c.at):'')+'</dd></div>';
   }
   function niceMax(v){if(v<=0)return 100;const p=Math.pow(10,Math.floor(Math.log10(v))),n=v/p;return [1,2,2.5,5,10].find(x=>x>=n)*p;}
   function chartBlock(def,days){
