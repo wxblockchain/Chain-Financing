@@ -82,7 +82,14 @@
   const addrCard=(a,copy=true)=>a?'<div class="cq-address rp-address">'+(addrName(a)?'<b>'+E(addrName(a))+'</b>':'')+'<span class="hint">Ethereum</span><span class="rp-address-line"><span class="mono cq-break">'+E(a.address||'')+'</span>'+(copy&&a.address?CF.copyBtn('rp-copy',a.address,L('Copy address','复制地址')):'')+'</span></div>':'—';
   const addrInline=a=>a?.address?'<span class="rp-address-line"><span class="mono cq-break">'+E(a.address)+'</span>'+CF.copyBtn('rp-copy',a.address,L('Copy address','复制地址'))+'</span>'+(addrName(a)?'<div class="hint">'+E(addrName(a))+' · Ethereum</div>':''):'—';
   const tail=a=>a?.address?a.address.slice(0,6)+'…'+a.address.slice(-4):'';
-  const txCell=h=>h?'<span class="rp-address-line"><span class="hash mono cq-break">'+E(h)+'</span>'+CF.copyBtn('rp-copy',h,L('Copy transaction ID','复制交易标识'))+'</span>'+(explorerReady?CF.linkOut(explorer(h),L('View in block explorer','在区块浏览器查看')):''):'<span class="hint">'+L('To be verified','待核实')+'</span>';
+  /* 交易哈希：与 WS-446 同一组件——缩写展示，点击复制完整值，另可新窗口打开区块链浏览器；入口不可用时不给死链接。未取得不显示占位。 */
+  const hashChip=h=>h?'<span class="ls-hash rp-hash"><button type="button" class="ls-hash-copy mono" data-act="rp-copy" data-v="'+E(h)+'" title="'+E(h)+'" aria-label="'+L('Copy transaction hash ','复制交易哈希 ')+E(h)+'">'+E(h.slice(0,6)+'…'+h.slice(-4))+'</button>'+(explorerReady?CF.linkOut(explorer(h),L('Open the transaction in a blockchain explorer (new window)','在区块链浏览器打开该交易（新窗口）')):'')+'</span>':'';
+  const netChip=()=>CF.market?.network?CF.market.network('ETH').replace(/<span>[^<]*<\/span><\/span>$/,'<span>Ethereum</span></span>'):'Ethereum';
+  /* 签名旁核对的还款合约：名称、网络、完整地址，可复制、可在区块链浏览器打开；读取失败不能签名，可重试。 */
+  function contractCheck(contract){
+    if(contractRead!=='ready')return '<div class="ls-inline-fail rp-contract-fail" role="alert"><span>'+L('The repayment contract is temporarily unavailable, so you cannot sign right now.','还款合约信息暂时不可用，暂不能签名。')+'</span>'+b('contract-retry',L('Retry','重试'))+'</div>';
+    return '<dl class="ls-signing-facts"><div class="ls-signing-contract"><dt><span class="ls-signing-label">'+L('Repayment contract','还款合约')+netChip()+'</span><span class="ls-signing-tools">'+CF.copyBtn('rp-copy',contract,L('Copy repayment contract address','复制还款合约地址'))+(explorerReady?CF.linkOut('https://etherscan.io/address/'+encodeURIComponent(contract),L('Open the contract in a blockchain explorer (new window)','在区块链浏览器打开该合约（新窗口）')):'')+'</span></dt><dd><span class="mono ls-signing-address">'+E(contract)+'</span></dd></div></dl>';
+  }
   /* 逐期台账：一期一行；展开看本期拆分、处理中事实与链上还款记录。非当事方只得非隐私列。mode：detail 只读详情 / plan 计划抽屉 / inline 办理内计划。 */
   function ledger(mode){const x=deal(),p8=plan(),own=party(x),n=p8.periods.length,current=period(),requested=new URLSearchParams(location.hash.split('?')[1]||'').get('mcPeriod'),original=mode==='detail'&&requested&&current?.id===requested?current:null;
     const focus=mode==='detail'?[...p8.periods.filter(p=>p.state==='pending'),original].filter(Boolean):[];
@@ -92,7 +99,7 @@
       const summary=cell(0,'<b>'+p.seq+' / '+n+'</b>'+(p===current?'<span class="sr-only">'+L(' · current',' · 本期')+'</span>':''))+cell(1,date(p.due))+(own?cell(2,CF.fmtAmt(p.total),true)+cell(3,amount(p.settlement,x.ccy),true):'')+cell(own?4:2,badge(p))+cell(own?5:3,late+(p.state!=='due'&&late?L(' · frozen',' · 已冻结'):''));
       const facts=own?[[L('Instalment reference','还款期次编号'),E(p.id)],[L('Principal / interest (USDT)','本金 / 利息（USDT）'),CF.fmtAmt(p.principal)+' / '+CF.fmtAmt(p.interest)],[L('Accrual period','计息区间'),date(p.from)+' → '+date(p.due)+' · '+p.days+L(' days',' 天')]]
         :[[L('Instalment reference','还款期次编号'),E(p.id)],...(p.state==='settled'?[[L('Repaid at','还款成功时间'),time(p.record?.confirmedAt)]]:[])];
-      const extra=own&&mode==='detail'?(p.state==='settled'&&p.record?recordView(p):p.state==='pending'?chainFacts(p):attemptFacts(p)):'';
+      const extra=own&&mode==='detail'?(p.state==='settled'&&p.record?recordView(p):p.state==='pending'?chainFacts(p):''):'';
       const body=dl(facts)+extra+(own&&p.principal?'<p class="hint">'+L('Final instalment includes principal','末期含本金')+(p.days>93?L(' and the merged final period.','及合并尾段。'):'')+'</p>':'');
       return '<details class="rp-inst" data-key="'+E(key)+'"'+(original===p?' id="rp-original"':'')+(open?' open':'')+(p===current?' aria-current="true"':'')+'><summary>'+summary+'</summary><div class="rp-inst-body">'+body+'</div></details>';};
     const sum=k=>p8.periods.reduce((n,p)=>n+p[k],0),totals=own&&mode!=='inline'?'<p class="rp-ledger-total"><span>'+L('Total (USDT)','合计（USDT）')+'</span><span>'+L('Principal ','本金 ')+'<b class="mono">'+CF.fmtAmt(x.amount)+'</b></span><span>'+L('Interest ','利息 ')+'<b class="mono">'+CF.fmtAmt(sum('interest'))+'</b></span><span>'+L('Total due ','应还合计 ')+'<b class="mono">'+CF.fmtAmt(sum('total'))+'</b></span></p>':'';
@@ -100,16 +107,34 @@
   const basis=()=>L('Simple interest · actual days ÷ 360 · start included, due date excluded','年化单利 · 实际天数 ÷ 360 · 算头不算尾');
   function planFacts(withTitle){const x=deal(),p8=plan();
     return (withTitle?'<div class="rp-plan-title"><b>'+E(x.request)+' · '+E(funder(x))+'</b><p class="mono hint">'+E(x.id)+' · '+E(x.record.id)+'</p></div>':'')+'<div class="rp-plan-facts">'+dl([[L('Settlement currency · rate','结算币种 · 汇率'),E(x.ccy)+' · '+rateText(x)],[L('Annual financing rate','年化融资利率'),x.rate+'% · ACT/360'],[L('Interest starts (UTC)','起息日（UTC）'),date(p8.start)],[L('Finalized at','定稿时间'),time(p8.at)],[L('Interest basis','计息规则'),basis()]])+'</div>';}
-  /* 处理中事实：提交时间、出账地址、已等待与已知交易标识，未知标“待核实”。 */
-  function chainFacts(p){const c=sub(p);if(!c)return '';return dl([[L('Submitted at','提交时间'),time(c.at)],[L('Waiting','已等待'),waited(c.at)],...(c.from?[[L('Paying address','出账地址'),addrInline(c.from)]]:[]),[L('Approval transaction','授权交易标识'),txCell(c.authHash||'')],[L('Repayment transaction','链上还款交易标识'),txCell(c.hash||'')],[L('Approval gas · paid by asset holder','授权 gas · 资产方承担'),c.authGas?E(c.authGas)+' ETH':L('To be verified','待核实')],[L('Repayment gas · paid by asset holder','还款 gas · 资产方承担'),L('To be verified','待核实')]]);}
-  function attemptFacts(p){const a=p.approval||p.lastAttempt;if(!a)return '';
-    return section(L('Approval / last attempt','授权 / 最近办理'),dl([[L('Approval transaction','授权交易标识'),txCell(a.hash&&p.approval?a.hash:a.authHash||a.hash)],
-      [L('Paying address','出账地址'),addrInline(a.from)],[L('Approval gas · paid by asset holder','授权 gas · 资产方承担'),a.authGas||a.gas?E(a.authGas||a.gas)+' ETH':L('To be verified','待核实')],
-      [L('Repayment gas · paid by asset holder','还款 gas · 资产方承担'),a.repayGas?E(a.repayGas)+' ETH':L('Repayment not sent','还款交易未发出')],
-      ...(a.authHash&&a.hash?[[L('Repayment transaction','链上还款交易标识'),txCell(a.hash)]]:[])]));
+  /* 处理中进度：只给提交时间与已等待；出账地址、交易哈希与 gas 只在操作记录出现一次。 */
+  function chainFacts(p){const c=sub(p);if(!c)return '';return dl([[L('Submitted at','提交时间'),time(c.at)],[L('Waiting','已等待'),waited(c.at)]]);}
+  /* 链上还款记录：只给业务结果；交易哈希与 gas 见同一期在操作记录中的两条。 */
+  function recordView(p){const r=p.record;return '<section class="rp-section"><h3>'+L('On-chain repayment record','链上还款记录')+'</h3>'+dl([[L('Record ID','还款记录编号'),E(r.id||'—')],[L('Repaid at','还款成功时间'),time(r.confirmedAt)],[L('Currency / amount','还款币种与金额'),'<span class="mono">'+amount(r.amount??p.settlement,r.ccy||deal().ccy)+'</span>'],[L('Repayment nature','还款性质'),r.overdue?L('Overdue repayment','逾期还款'):L('Normal repayment','正常还款')],[L('Submitted at','提交时间'),time(r.at)],[L('Network','网络'),'Ethereum · ERC-20'],[L('Paying address','出账地址'),addrInline(r.from)],[L('Repayment address','收款地址'),addrInline(r.account)]])+'<p class="hint rp-record-ref">'+L('Transaction hashes and gas: see instalment '+p.seq+' in Operation records below.','交易哈希与 gas 见下方操作记录中第 '+p.seq+' 期的两条。')+'</p></section>';}
+  /* 操作记录：一笔融资业务一份，本笔全部已发出的授权交易与还款交易，详情中交易哈希唯一的展示位置。
+     每笔一条：时间、操作（第 N 期还款授权 / 第 N 期链上还款）、出账地址、交易哈希、实际 gas；尚未成功的标明状态。本笔双方可见。 */
+  /* 本期已结束的办理（失败或主动结束）逐次保留；旧本地数据只有最近一次时按一次读取。 */
+  const attempts=p=>p.attempts||(p.lastAttempt?[p.lastAttempt]:[]);
+  const archive=(p,t)=>{p.lastAttempt=t;p.attempts=[...attempts(p).filter(o=>o!==t),t];};
+  function operations(x){
+    const rows=[],gas=v=>v?E(v)+' ETH':L('To be verified','待核实');
+    const add=(p,kind,at,from,hash,state,fee)=>{if(hash)rows.push({seq:p.seq,kind,at,from,hash,state,fee});};
+    (quote(x.id)?.l8?.periods||[]).forEach(p=>{
+      /* 已结束的办理：仅授权（授权失败或授权后结束）只有授权一条；还款交易已发出的另有还款一条。 */
+      attempts(p).forEach(t=>{if(!t.authHash){add(p,'auth',t.at,t.from,t.hash,t.state==='failed'?'failed':'',t.gas);return;}add(p,'auth',t.authAt||t.at,t.from,t.authHash,'',t.authGas);add(p,'repay',t.at,t.from,t.hash,'failed',t.repayGas);});
+      const a=p.approval;if(a)add(p,'auth',a.at,a.from,a.hash,a.state==='approved'?'':a.state,a.gas);
+      const c=p.chain;if(c){add(p,'auth',c.authAt||c.at,c.from,c.authHash,'',c.authGas);add(p,'repay',c.at,c.from,c.hash,c.state,null);}
+      const r=p.record;if(r){add(p,'auth',r.authAt||r.at,r.from,r.authHash,'',r.authGas||r.gas);add(p,'repay',r.at,r.from,r.hash,'',r.repayGas);}
+    });
+    rows.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)||b.seq-a.seq||(a.kind==='repay'?-1:1));
+    if(!rows.length)return '<p class="hint">'+L('No on-chain transactions yet.','暂无链上交易。')+'</p>';
+    const op=r=>r.kind==='auth'?L('Instalment '+r.seq+' · repayment approval','第 '+r.seq+' 期还款授权'):L('Instalment '+r.seq+' · on-chain repayment','第 '+r.seq+' 期链上还款');
+    const st=s=>s==='processing'?CF.tag('warn',L('Processing','处理中')):s==='unknown'?CF.tag('warn',L('To be verified','待核实')):s==='failed'?CF.tag('danger',L('Not completed','未成功')):'';
+    const tz=E(S.tz||'UTC'),heads=[L('Time','时间')+' ('+tz+')',L('Operation','操作'),L('Address','地址'),L('Transaction hash','交易哈希'),L('Actual gas','实际 gas')];
+    const td=(i,html)=>'<td data-label="'+E(heads[i])+'">'+html+'</td>';
+    return '<div class="tablewrap"><table class="tbl resp ls-token-ops ls-token-ops-owner rp-ops"><thead><tr>'+heads.map(h=>'<th scope="col">'+h+'</th>').join('')+'</tr></thead><tbody>'
+      +rows.map(r=>'<tr>'+td(0,'<time class="mono" datetime="'+E(r.at)+'" title="'+E(time(r.at))+'">'+E(CF.fmtStamp(r.at))+'</time>')+td(1,'<span class="ls-op-name">'+op(r)+'</span>'+(st(r.state)?'<span class="ls-op-state">'+st(r.state)+'</span>':''))+td(2,r.from?.address?'<span class="mono cq-break">'+E(r.from.address)+'</span>':'—')+td(3,hashChip(r.hash))+td(4,'<span class="mono">'+gas(r.fee)+'</span>')+'</tr>').join('')+'</tbody></table></div>';
   }
-  /* 链上还款记录：系统按链上事实生成，本笔双方可见。 */
-  function recordView(p){const r=p.record;return '<section class="rp-section"><h3>'+L('On-chain repayment record','链上还款记录')+'</h3>'+dl([[L('Record ID','还款记录编号'),E(r.id||'—')],[L('Repaid at','还款成功时间'),time(r.confirmedAt)],[L('Currency / amount','还款币种与金额'),'<span class="mono">'+amount(r.amount??p.settlement,r.ccy||deal().ccy)+'</span>'],[L('Repayment nature','还款性质'),r.overdue?L('Overdue repayment','逾期还款'):L('Normal repayment','正常还款')],[L('Submitted at','提交时间'),time(r.at)],[L('Network','网络'),'Ethereum · ERC-20'],[L('Paying address','出账地址'),addrInline(r.from)],[L('Repayment address','收款地址'),addrInline(r.account)],[L('Repayment transaction','链上还款交易标识'),txCell(r.hash)],[L('Approval transaction','授权交易标识'),txCell(r.authHash)],[L('Approval gas · paid by asset holder','授权 gas · 资产方承担'),r.authGas||r.gas?E(r.authGas||r.gas)+' ETH':L('To be verified','待核实')],[L('Repayment gas · paid by asset holder','还款 gas · 资产方承担'),r.repayGas?E(r.repayGas)+' ETH':L('To be verified','待核实')]])+'</section>';}
   /* 处理中 / 待核实 / 上次未完成：当事方都能看到本期的链上进展，资金方没有办理动作。 */
   function chainNote(p){if(!p||p.state!=='pending')return '';const c=sub(p);
     if(unknown(p))return CF.note('warn',L('On-chain result to be verified. Please contact platform support; do not start this repayment again.','链上结果待核实，请联系平台客服人员，不要重复发起。'));
@@ -161,7 +186,7 @@
       +(!rows.length?CF.empty(L('No repayment information','暂无还款信息'),filtered?L('No repayments match these filters. Adjust or reset them.','没有符合条件的还款业务，请调整或重置筛选。'):L('Repayment schedules and actions become available after a disbursement succeeds.','放款成功后可查看还款计划和办理还款。')):'')
       +'<div class="rp-pagination"><span class="hint">'+all.length+L(' businesses',' 笔业务')+' · '+L('5 per page','每页 5 条')+'</span><div>'+b('table-page',L('Previous','上一页'),project.id+'|'+(view.page-1),false,view.page===1)+' <span>'+view.page+' / '+pages+'</span> '+b('table-page',L('Next','下一页'),project.id+'|'+(view.page+1),false,view.page===pages)+'</div></div>';
   }
-  /* 详情：本期应还（含期次、开放时刻与处理中进展）→ 业务信息 → 还款计划（逐期台账与链上记录）→ 资金方还款收款地址 → 客服。 */
+  /* 详情：本期应还（含期次、开放时刻与处理中进展）→ 业务信息 → 还款计划（逐期台账与还款记录）→ 资金方还款收款地址 → 客服 → 操作记录（交易哈希唯一位置）。 */
   function summary(x,p8){const n=p8.periods.length,sum=k=>p8.periods.reduce((t,p)=>t+p[k],0);
     if(p8.settledAt)return '<section class="rp-summary"><div class="rp-summary-head"><div><span class="hint">'+L('Repayment','还款')+'</span><div class="rp-summary-amount">'+L('All instalments settled','全部期次已结清')+'</div></div>'+CF.tag('ok',L('Settled','已结清'))+'</div>'+dl([[L('Settled at','结清时间'),time(p8.settledAt)],[L('Principal repaid (USDT)','累计已还本金（USDT）'),'<span class="mono">'+CF.fmtAmt(x.amount)+'</span>'],[L('Interest repaid (USDT)','累计已还利息（USDT）'),'<span class="mono">'+CF.fmtAmt(sum('interest'))+'</span>']])+settlementResult(x)+'</section>';
     const pending=processingOf(x),p=pending||(period()?.state==='due'?period():firstDue(p8)||nearest(x)),late=overdue(p),next=pending?firstDue(p8):null;
@@ -174,7 +199,7 @@
     if(load==='loading')body+='<p role="status">'+L('Loading repayment information…','正在加载还款信息…')+'</p>';else if(load==='error')body+=CF.empty(L('Unable to load repayment information','还款信息加载失败'),'',b('retry',L('Retry','重试')));
     else if(!party(x))body+=businessFacts(x,p8)+performance();
     else if(!p8)body+=CF.note('',L('The disbursement succeeded. The repayment schedule is being generated.','放款已成功，还款计划生成中。'))+businessFacts(x,p8)+payeeSection()+support();
-    else body+=approvalNote(activeOf(x))+summary(x,p8)+businessFacts(x,p8)+section(L('Repayment schedule','还款计划'),ledger('detail'))+payeeSection()+support();
+    else body+=approvalNote(activeOf(x))+summary(x,p8)+businessFacts(x,p8)+section(L('Repayment schedule','还款计划'),ledger('detail'))+payeeSection()+support()+section(L('Operation records','操作记录'),'<p class="hint rp-section-lead">'+L('Every approval and repayment transaction sent for this business, newest first.','本笔各期已发出的授权交易与还款交易，按时间倒序。')+'</p>'+operations(x),'rp-operations');
     return {title,html:'<div class="rp-drawer" data-kind="detail">'+body+'</div>',foot};
   }
   function schedule(readOnly=false){const x=deal();if(!visible(x))return deniedView().html;if(!party(x))return performance();return planFacts(true)+ledger(readOnly?'inline':'plan');}
@@ -214,11 +239,13 @@
       return n+(p!==period()&&a?.from?.address===from.address&&a.ccy===deal().ccy&&a.contract===repaymentContract()?(a.amount||0):0);
     },0),0));
   }
-  function signBar(){const approved=period()?.approval?.state==='approved';
-    return '<div class="rp-sign-note" role="status">'+(approved
-      ?L('Sign the repayment with this paying address. Sending the transaction freezes overdue days; it cannot be withdrawn and settles on-chain without funder confirmation. Repayment gas is paid by your company; gas incurred is not refunded.','用本次出账地址进行交易签名。交易发出即冻结逾期、不可撤回，上链成功即结清，无需资金方确认。还款 gas 由本企业承担，已产生的费用不退。')
-      :L('First sign the approval with this paying address, then sign the repayment. Approval alone does not repay or freeze overdue days. Both transactions’ gas is paid by your company; gas incurred is not refunded.','先用本次出账地址授权签名，再交易签名。仅授权不还款、不冻结逾期。两笔 gas 均由本企业承担，已产生的费用不退。'))+'</div>';
+  /* 本次签名用途：一两句说明这次签名做什么，并合入原有后果说明；有并发占用时写实际授权金额与其中本期所需。 */
+  function signPurpose(p,allowance){const x=deal(),money=n=>'<b class="mono">'+amount(n,x.ccy)+'</b>';
+    if(p.approval?.state==='approved')return L('Sends this instalment’s repayment from the paying address: under this approval, the repayment contract above transfers '+money(p.settlement)+' to the funder’s repayment address. Sending it submits the repayment and freezes overdue days; it cannot be withdrawn. It settles once on chain, with no funder confirmation. This is an on-chain transaction: gas is paid by your company and is not refunded if it fails. It is unrelated to sign-in.','用本次出账地址发送本期还款交易：上述还款合约按本次授权，把 '+money(p.settlement)+' 转入资金方收款地址。交易发出即提交本期还款并冻结逾期天数，不能撤回；上链成功即本期结清，无需资金方确认。这是一笔链上交易，gas 由本企业承担，失败已产生的不退；与登录无关。');
+    return L('Allows the repayment contract above to draw '+(allowance>p.settlement?money(allowance)+', including '+money(p.settlement)+' for this instalment,':money(p.settlement)+' for this instalment')+' from the paying address. Approval alone moves no funds and does not submit the repayment; a repayment signature follows once it succeeds. This is an on-chain transaction: gas is paid by your company and is not refunded if it fails. It is unrelated to sign-in.','用本次出账地址授权上述还款合约调取'+(allowance>p.settlement?' '+money(allowance)+'，其中本期所需 '+money(p.settlement):'本期结算金额 '+money(p.settlement))+'。授权本身不转出资金、不提交本期还款，成功后还需交易签名。这是一笔链上交易，gas 由本企业承担，失败已产生的不退；与登录无关。');
   }
+  /* 签名前核对放在当前这一步内、紧邻签名主动作：所交互的还款合约 + 本次签名用途。 */
+  const signCheck=(p,contract,allowance)=>'<div class="ls-sign-check rp-sign-check">'+contractCheck(contract)+(contractRead==='ready'?'<p class="ls-sign-purpose">'+signPurpose(p,allowance)+'</p>':'')+'</div>';
   function approvalNote(p,inPay=false){const a=p?.approval;if(!a)return '';
     if(S.role==='fund')return CF.note('',a.state==='approved'?L('The asset holder has completed approval and has not yet sent the repayment.','资产方已完成授权，尚未发送还款交易。'):a.state==='unknown'?L('The asset holder’s approval result is being verified; repayment has not been submitted.','资产方授权结果待核实，尚未提交还款。'):L('The asset holder’s approval is pending on-chain; repayment has not been submitted.','资产方授权上链确认中，尚未提交还款。'));
     const text=a.state==='processing'?L('Approval pending on-chain. No repayment has been submitted.','授权上链确认中，尚未提交还款。')
@@ -226,8 +253,17 @@
       :L('Approval complete. Sign the repayment to continue; closing will not send it.','授权已完成，请继续交易签名；关闭不会自动还款。');
     return CF.note(a.state==='unknown'?'warn':'',text+(inPay&&a.state==='approved'?'<div class="rp-attempt-actions">'+b('end-attempt',L('End this attempt','结束本次办理'))+'</div>':''));
   }
-  function payProgress(p){const a=p.approval,c=sub(p),approved=!!a&&a.state==='approved'||p.state!=='due',sent=p.state!=='due';
-    return '<ol class="rp-sign-steps" aria-live="polite" aria-label="'+L('Signing progress','签名进度')+'"><li'+(!approved?' aria-current="step"':'')+'>'+L('1 · Approval signature','1 · 授权签名')+(approved?' ✓':'')+'</li><li'+(approved&&!sent?' aria-current="step"':'')+'>'+L('2 · Repayment signature','2 · 交易签名')+(sent?' ✓':'')+'</li></ol>';
+  /* 两步签名：每步给出本步要签的金额、进度与当次已取得的交易哈希（当次反馈；离开办理后在详情的操作记录查看）。 */
+  function paySteps(p,allowance,contract){const x=deal(),check=can()?signCheck(p,contract,allowance):'',a=p.approval,c=sub(p),r=p.record,sent=p.state!=='due';
+    const s1=sent||a?.state==='approved'?'done':a?.state||'current',s2=p.state==='settled'?'done':p.state==='pending'?(unknown(p)?'unknown':'processing'):a?.state==='approved'?'current':'next';
+    const label={current:L('To sign','待签名'),next:L('After approval','授权完成后进行'),processing:L('Pending on-chain','上链确认中'),unknown:L('To be verified','待核实'),done:L('Done','已完成')};
+    const state=s=>s==='done'?CF.tag('ok',label[s]):s==='processing'?CF.tag('accent',label[s]):s==='unknown'?CF.tag('warn',label[s]):'<span class="rp-step-state">'+label[s]+'</span>';
+    const tx=(name,h,gas)=>h?'<div class="rp-step-tx"><span class="rp-step-k">'+name+'</span>'+hashChip(h)+'<span class="rp-step-gas">gas '+(gas?'<span class="mono">'+E(gas)+' ETH</span>':L('to be verified','待核实'))+L(' · paid by your company',' · 本企业承担')+'</span></div>':'';
+    const step=(n,s,title,body)=>'<li class="rp-step" data-state="'+s+'"'+(['current','processing','unknown'].includes(s)?' aria-current="step"':'')+'><span class="rp-step-n" aria-hidden="true">'+(s==='done'?'✓':n)+'</span><div class="rp-step-b"><div class="rp-step-h"><b>'+title+'</b>'+state(s)+'</div>'+body+'</div></li>';
+    return '<ol class="rp-steps" aria-label="'+L('Signing steps','签名步骤')+'" aria-live="polite">'
+      +step(1,s1,L('Approval signature','授权签名'),'<p class="rp-step-line">'+L('Approval amount','本次授权金额')+' <b class="mono">'+amount(allowance,x.ccy)+'</b></p>'+(allowance>p.settlement?'<p class="hint">'+L('Includes approvals for other unfinished repayments; this instalment needs ','含其他未完成还款的授权，本期所需 ')+amount(p.settlement,x.ccy)+'</p>':'')+tx(L('Approval tx hash','授权交易哈希'),a?.hash||c?.authHash||r?.authHash,a?.gas||c?.authGas||r?.authGas)+(s1==='current'?check:''))
+      +step(2,s2,L('Repayment signature','交易签名'),'<p class="rp-step-line">'+L('Transfer to the funder’s repayment address','向资金方收款地址转出')+' <b class="mono">'+amount(p.settlement,x.ccy)+'</b></p>'+(s2==='next'?'<p class="hint">'+L('Executed by the same repayment contract after approval.','授权成功后，由同一份还款合约执行。')+'</p>':'')+tx(L('Repayment tx hash','还款交易哈希'),c?.hash||r?.hash,r?.repayGas)+(s2==='current'?check:''))
+      +'</ol>';
   }
   function payView(){const x=deal(),p=period();if(!visible(x))return deniedView();if(!x||!plan())return {title:L('Repay','立即还款'),html:CF.note('',L('The plan is not available yet.','还款计划暂不可用。')),foot:b('back',L('Close','关闭'))};
     if(!party(x)||S.role!=='asset')return deniedView();
@@ -235,22 +271,16 @@
     if(load==='loading')body='<div role="status">'+L('Loading repayment information…','正在加载还款信息…')+'</div>';else if(load==='error')body=CF.empty(L('Unable to load repayment information','还款信息加载失败'),'',b('retry',L('Retry','重试')));
     else{const a=p.approval,c=sub(p),sent=p.state!=='due',from=a?.from||c?.from||p.record?.from||fromPick(),to=a?.to||c?.to||p.record?.account||payee(),contract=a?.contract||c?.contract||p.record?.contract||repaymentContract();
       const opened=now()>=openAt(p),late=overdue(p),allowance=a?.allowance||approvalAmount(from);
-      body=payProgress(p)+(p.state==='settled'?CF.note('ok',L('This instalment is settled on-chain.','本期链上还款成功，已结清。')):p.state==='pending'?chainNote(p):approvalNote(p,true)||failNote(p));
+      body=(p.state==='settled'?CF.note('ok',L('This instalment is settled on-chain.','本期链上还款成功，已结清。')):p.state==='pending'?chainNote(p):approvalNote(p,true)||failNote(p));
       body+=(!a&&!sent?choosePeriod():'')+'<div class="rp-pay-amount"><div class="rp-row"><span>'+L('Current amount due','本期应还')+' · '+L('Instalment ','第 ')+p.seq+' / '+plan().periods.length+L('',' 期')+'</span>'+badge(p)+'</div><div class="rp-amount">'+amount(p.settlement,x.ccy)+'</div><p class="hint">'+L('Due (UTC) ','应还日（UTC） ')+date(p.due)+(x.ccy!=='USDT'?' · '+L('Total due ','应还合计 ')+amount(p.total):'')+(late?' · '+L('Overdue ','逾期 ')+late+L(' days',' 天'):'')+'</p></div>';
       body+='<div class="rp-pay-facts">'+dl([[L('Funder','资金方'),E(funder(x))],[L('Funder’s repayment address','资金方收款地址'),'<div id="rp-payee" tabindex="-1">'+(accountRead==='ready'?compactAddress(to):CF.note('warn',L('Repayment address unavailable. Retry before signing.','暂时无法读取收款地址，请重试后签名。'))+b('account-retry',L('Retry','重试')))+'</div>']])
         +'<section id="rp-from-section" class="rp-pay-from" tabindex="-1">'+(sent?'<span class="rp-field-label">'+L('Paying address','本次出账地址')+'</span>'+compactAddress(from):(a?'<span class="rp-field-label">'+L('Paying address','本次出账地址')+'</span>':'')+fromBody())+'</section>'
-        +dl([[L('Approval amount','本次授权金额'),'<span class="mono">'+amount(allowance,x.ccy)+'</span>'+(allowance>p.settlement?'<p class="hint">'+L('Includes other active repayments. This repayment transfers only ','包含其他未完成还款的授权，本期仅转出 ')+amount(p.settlement,x.ccy)+'</p>':'')]])+'</div>';
-      body+='<section class="rp-pay-transaction"><h3>'+L('Repayment transaction','本次还款交易')+'</h3><p class="hint">Ethereum · '+L('Repayment contract','还款合约')+'</p>'+compactAddress({address:contract})+'<p class="hint">'+L('From the paying address to the repayment address above: ','从本次出账地址向上述资金方收款地址转出 ')+'<b class="mono">'+amount(p.settlement,x.ccy)+'</b></p>'
-        +(a?.hash||c?.authHash||p.record?.authHash?'<p class="rp-tx-link">'+L('Approval transaction','授权交易标识')+' '+txCell(a?.hash||c?.authHash||p.record.authHash)+'</p>':'')
-        +(c?.hash||p.record?.hash?'<p class="rp-tx-link">'+L('Repayment transaction','还款交易标识')+' '+txCell(c?.hash||p.record.hash)+'</p>':'')
-        +(a||c||p.record?'<p class="hint">'+L('Approval gas: ','授权 gas：')+((a?.gas||c?.authGas||p.record?.authGas)?E(a?.gas||c?.authGas||p.record.authGas)+' ETH':L('To be verified','待核实'))+' · '+L('paid by your company','本企业承担')+'</p>':'')
-        +(c||p.record?'<p class="hint">'+L('Repayment gas: ','还款 gas：')+(p.record?.repayGas?E(p.record.repayGas)+' ETH':L('To be verified','待核实'))+' · '+L('paid by your company','本企业承担')+'</p>':'')+'</section>';
+        +'</div>'+paySteps(p,allowance,contract);
       if(!opened)body+=CF.note('',L('Repayment opens at ','还款开放于 ')+time(iso(openAt(p))));
       if(errors.submit)body+='<div class="rp-sign-error" id="rp-submit-error" role="alert" tabindex="-1">'+CF.note('warn',E(errors.submit))+'</div>';
       if(a?.state==='unknown'||unknown(p))body+=support();
-      if(can())foot=signBar()+foot;
       if(!busy)foot+=b('inspect',L('View details','查看还款详情'));
-      if(can())foot+=b('sign',busy?L('Waiting for wallet signature…','等待钱包签名…'):a?L('Sign repayment','交易签名并还款'):L('Sign approval','授权签名'),'',true,busy||checking);
+      if(can())foot+=b('sign',busy?L('Waiting for wallet signature…','等待钱包签名…'):a?L('Sign repayment','交易签名并还款'):L('Sign approval','授权签名'),'',true,busy||checking||contractRead!=='ready');
     }
     return {title:L('Approve & repay','授权并还款'),html:'<div class="rp-drawer rp-pay" data-kind="pay">'+body+'</div>',foot};
   }
@@ -282,12 +312,13 @@
     if(a&&(approvalRead!=='ready'||a.allowance<approvalAmount(from)))return fail(['The approval is revoked or insufficient. End this attempt and sign a new approval; the existing approval gas is retained.','授权已撤销或额度不足，请结束本次办理并重新授权；已产生的授权 gas 保留。']);
     return true;
   }
-  const demoHash=s=>'0x'+Array.from({length:64},(_,i)=>'0123456789abcdef'[(s.charCodeAt(i%s.length)*(i+7)+i)%16]).join('');
+  /* 演示哈希：按种子散列，授权与还款两笔的缩写可区分。 */
+  const demoHash=s=>{let h=2166136261>>>0;for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return '0x'+Array.from({length:64},()=>(h=Math.imul(h^(h>>>13),1597334677)>>>0,(h>>>28).toString(16))).join('');};
   function stillCurrent(x,p){return quote(x.id)?.l8?.periods.includes(p);}
   function authResult(x,p){const a=p.approval;if(!stillCurrent(x,p)||!a||a.state!=='processing')return;
     if(a.outcome==='authUnknown'){a.state='unknown';Q.save();CF.render();return;}
     a.gas=a.outcome==='authFailed'?'0.000420':'0.000910';
-    if(a.outcome==='authFailed'){p.lastFail={at:iso(now()),auth:false,gas:a.gas,authGas:a.gas,reason:['Approval failed on-chain. Repayment was not submitted.','链上授权失败，尚未提交还款。']};p.lastAttempt={...a,state:'failed'};p.approval=null;event('failed',x,p,['asset']);}
+    if(a.outcome==='authFailed'){p.lastFail={at:iso(now()),auth:false,gas:a.gas,authGas:a.gas,reason:['Approval failed on-chain. Repayment was not submitted.','链上授权失败，尚未提交还款。']};archive(p,{...a,state:'failed'});p.approval=null;event('failed',x,p,['asset']);}
     else{a.state='approved';a.confirmedAt=iso(now());}
     Q.save();CF.render();
   }
@@ -298,14 +329,14 @@
       if(!precheck())return;
       justSettled=null;const at=iso(now());
       if(!a){p.lastFail=null;p.approval={at,from,to,contract:repaymentContract(),amount:p.settlement,allowance:approvalAmount(from),ccy:x.ccy,hash:demoHash(p.id+at+'a'),state:'processing',gas:null,outcome,readyAt:Date.now()+1200};Q.save();CF.render();setTimeout(()=>authResult(x,p),1200);return;}
-      p.state='pending';p.chain={at,from,to,contract:a.contract,amount:p.settlement,ccy:x.ccy,authHash:a.hash,authGas:a.gas,hash:demoHash(p.id+at+'r'),overdue:lateNow(p),state:'processing',by:x.owner==='entity-demo-b'?'Demo employee B · Demo Asset Company B':'Demo employee A · Demo Asset Company A',outcome,readyAt:Date.now()+1800};p.approval=null;Q.save();CF.render();setTimeout(()=>settle(x,p,outcome),1800);
+      p.state='pending';p.chain={at,authAt:a.at,from,to,contract:a.contract,amount:p.settlement,ccy:x.ccy,authHash:a.hash,authGas:a.gas,hash:demoHash(p.id+at+'r'),overdue:lateNow(p),state:'processing',by:x.owner==='entity-demo-b'?'Demo employee B · Demo Asset Company B':'Demo employee A · Demo Asset Company A',outcome,readyAt:Date.now()+1800};p.approval=null;Q.save();CF.render();setTimeout(()=>settle(x,p,outcome),1800);
     },600);
   }
   /* 两笔已发出的交易分别记录结果与 gas；授权成功不能自动还款。 */
   function settle(x,p,outcome){if(!stillCurrent(x,p)||p.state!=='pending'||!p.chain||p.chain.state!=='processing')return;const mine=S.role==='asset'&&party(x);
     if(outcome==='unknown'){p.chain.state='unknown';Q.save();CF.render();return;}
-    if(outcome==='repayFailed'){const c=p.chain;p.lastFail={at:iso(now()),auth:true,gas:'0.000860',authGas:c.authGas,repayGas:'0.000860',reason:['Repayment failed on-chain. The approval remains; restart with a new approval or revoke it in your wallet.','链上还款失败。授权仍保留，可重新授权办理，或在钱包自行撤销。']};p.lastAttempt={...c,state:'failed',repayGas:'0.000860'};p.chain=null;p.state='due';event('failed',x,p,['asset']);sweep();Q.save();CF.render();return;}
-    const c=p.chain,at=iso(now());p.record={id:'RM'+day(now()).replaceAll('-','')+String(++serial).padStart(6,'0'),at:c.at,confirmedAt:at,amount:c.amount,ccy:c.ccy,from:c.from,account:c.to,contract:c.contract,hash:c.hash,authHash:c.authHash,gas:c.authGas,authGas:c.authGas,repayGas:'0.001420',overdue:c.overdue,by:c.by};p.chain=null;p.state='settled';p.draftFrom='';
+    if(outcome==='repayFailed'){const c=p.chain;p.lastFail={at:iso(now()),auth:true,gas:'0.000860',authGas:c.authGas,repayGas:'0.000860',reason:['Repayment failed on-chain. The approval remains; restart with a new approval or revoke it in your wallet.','链上还款失败。授权仍保留，可重新授权办理，或在钱包自行撤销。']};archive(p,{...c,state:'failed',repayGas:'0.000860'});p.chain=null;p.state='due';event('failed',x,p,['asset']);sweep();Q.save();CF.render();return;}
+    const c=p.chain,at=iso(now());p.record={id:'RM'+day(now()).replaceAll('-','')+String(++serial).padStart(6,'0'),at:c.at,confirmedAt:at,amount:c.amount,ccy:c.ccy,from:c.from,account:c.to,contract:c.contract,hash:c.hash,authHash:c.authHash,authAt:c.authAt,gas:c.authGas,authGas:c.authGas,repayGas:'0.001420',overdue:c.overdue,by:c.by};p.chain=null;p.state='settled';p.draftFrom='';
     const project=D.project(x.project),credit=Q.data().credits.find(r=>r.owner===x.owner&&r.fund===x.fund);project.balance=round(Math.max(0,project.balance-p.principal));if(credit)credit.principal=round(Math.max(0,credit.principal-p.principal));x.principalBalance=round(Math.max(0,(x.principalBalance??x.amount)-p.principal));x.creditUsed=round(Math.max(0,(x.creditUsed??x.amount)-p.principal));
     if(quote(x.id).l8.periods.every(r=>r.state==='settled')){quote(x.id).l8.settledAt=at;x.state='settled';event('settled',x,p,['asset','fund']);}else{event('done',x,p,['asset']);event('arrived',x,p,['fund']);}
     justSettled={deal:x.id,seq:p.seq};
@@ -327,15 +358,15 @@
     +sel('rp-account-read',L('Repayment address','还款收款地址'),accountRead,[['ready','Ready','正常'],['loading','Loading','读取中'],['error','Read failed','读取失败'],['missing','Incomplete','资料缺失']])
     +sel('rp-load',L('Drawer state','抽屉状态'),load,[['ready','Ready','正常'],['loading','Loading','加载中'],['error','Load failed','加载失败']])
     +'<label><input type="checkbox" id="rp-explorer"'+(!explorerReady?' checked':'')+'> '+L('Explorer unavailable','查验入口不可用')+'</label>'+b('events',L('Notification event preview','通知事件预览'))+b('denied-write',L('Attempt unauthorized action','尝试越权办理'))+'</div>';}
-  function demoRecord(p,x,at=now()){const to=payee(x),from=CF.EA?.accounts(x.owner,'crypto').find(a=>a.chain==='ETH'&&!Q.accountMissing(a).length);return {id:'RM-DEMO-'+p.seq,at:iso(at-H),confirmedAt:iso(at),amount:p.settlement,ccy:x.ccy,from:from?Q.accountSnapshot(from):null,account:to?{...to}:null,hash:demoHash('r'+p.id),authHash:demoHash('a'+p.id),gas:'0.000910',authGas:'0.000910',repayGas:'0.001420',overdue:0,by:'Demo employee A · Demo Asset Company A'};}
+  function demoRecord(p,x,at=now()){const to=payee(x),from=CF.EA?.accounts(x.owner,'crypto').find(a=>a.chain==='ETH'&&!Q.accountMissing(a).length);return {id:'RM-DEMO-'+p.seq,authAt:iso(at-H-20*60000),at:iso(at-H),confirmedAt:iso(at),amount:p.settlement,ccy:x.ccy,from:from?Q.accountSnapshot(from):null,account:to?{...to}:null,hash:demoHash('r'+p.id),authHash:demoHash('a'+p.id),gas:'0.000910',authGas:'0.000910',repayGas:'0.001420',overdue:0,by:'Demo employee A · Demo Asset Company A'};}
   function scenario(kind,{pay=false,result='success'}={}){epoch++;openRows.clear();busy=false;clockOverride=0;load='ready';explorerReady=true;accountRead='ready';fromScene='ready';balanceScene='enough';contractRead='ready';signScene='success';walletScene='ready';approvalRead='ready';form={from:''};events.length=0;justSettled=null;const x=Q.demoDisbursement(),q=quote(x.id);selected=x.id;location.hash='#/project/'+x.project;delete q.l8;events=Q.data().repaymentEvents=[];x.plan=kind==='waiting'?'waiting':'handoff';
     /* 还款收款地址取报价时选定的 Ethereum 地址；结算币种只有 USDT、USDC，汇率快照默认 1。 */
     const ccy=kind==='USDC'?'USDC':'USDT',to=q.repayTo||Q.accounts(x.fund,'crypto').find(a=>a.chain==='ETH'&&!Q.accountMissing(a).length);
     x.ccy=q.ccy=ccy;x.fx=q.fx={...(q.fx||{}),value:1};x.settlement=q.settlement=x.amount;if(to)x.record.account=to.kind?Q.accountSnapshot(to):{...to};
     ensure();const p8=q.l8;if(p8){seq=1;clockOverride=Date.parse(p8.periods[0].due)+(kind==='overdue'?5*DAY:kind==='notopen'?-DAY:kind==='processing'||kind==='unknown'?2*H:0);if(kind==='multi'){const second=JSON.parse(JSON.stringify(q));second.id=q.id+'-B';second.demand=q.demand+'-B';second.fund='fund-b';second.l7.id=second.id;second.l7.fund='fund-b';second.l7.request=second.demand;second.l7.record.id+='B';const b2=Q.accounts('fund-b','crypto').find(a=>a.chain==='ETH');if(b2)second.l7.record.account=Q.accountSnapshot(b2);delete second.l8;Q.data().quotes.push(second);D.project(x.project).demands.push({...D.project(x.project).demands.find(d=>d.id===q.demand),id:second.demand});D.project(x.project).balance+=x.amount;ensure();}
       if(['final','finalLive'].includes(kind)){p8.periods.slice(0,-1).forEach(p=>{p.state='settled';p.record=demoRecord(p,x,Date.parse(p.due)+H);});seq=p8.periods.length;clockOverride=Date.parse(p8.periods.at(-1).due);}
-      if(kind==='processing'||kind==='unknown'){const p=p8.periods[0],from=CF.EA?.accounts(x.owner,'crypto').find(a=>a.chain==='ETH');p.state='pending';p.chain={at:iso(clockOverride-(kind==='unknown'?26*H:40*60000)),from:from?Q.accountSnapshot(from):null,to:{...payee(x)},amount:p.settlement,ccy:x.ccy,authHash:demoHash('a'+p.id),overdue:0,state:kind==='unknown'?'unknown':'processing',by:'Demo employee A · Demo Asset Company A'};if(kind==='unknown')clockOverride+=DAY;}
-      if(kind==='failed'){const p=p8.periods[0];p.lastFail={at:iso(clockOverride),auth:true,gas:'0.000860',reason:['The approval is on chain, but the on-chain repayment failed because the paying address balance was no longer sufficient.','授权已上链，但链上还款失败：出账地址余额已不足。']};}
+      if(kind==='processing'||kind==='unknown'){const p=p8.periods[0],from=CF.EA?.accounts(x.owner,'crypto').find(a=>a.chain==='ETH');p.state='pending';p.chain={at:iso(clockOverride-(kind==='unknown'?26*H:40*60000)),authAt:iso(clockOverride-(kind==='unknown'?26*H:40*60000)-12*60000),authGas:'0.000910',hash:demoHash('r'+p.id),from:from?Q.accountSnapshot(from):null,to:{...payee(x)},amount:p.settlement,ccy:x.ccy,authHash:demoHash('a'+p.id),overdue:0,state:kind==='unknown'?'unknown':'processing',by:'Demo employee A · Demo Asset Company A'};if(kind==='unknown')clockOverride+=DAY;}
+      if(kind==='failed'){const p=p8.periods[0],from=CF.EA?.accounts(x.owner,'crypto').find(a=>a.chain==='ETH');archive(p,{at:iso(clockOverride-H),authAt:iso(clockOverride-H-15*60000),from:from?Q.accountSnapshot(from):null,authHash:demoHash('fa'+p.id),hash:demoHash('fr'+p.id),authGas:'0.000910',repayGas:'0.000860',state:'failed'});p.lastFail={at:iso(clockOverride),auth:true,gas:'0.000860',authGas:'0.000910',repayGas:'0.000860',reason:['The approval is on chain, but the on-chain repayment failed because the paying address balance was no longer sufficient.','授权已上链，但链上还款失败：出账地址余额已不足。']};}
       if(kind==='outoforder'){const last=p8.periods.at(-1);last.state='settled';last.record=demoRecord(last,x,Date.parse(last.due)+H);x.principalBalance=x.creditUsed=0;D.project(x.project).balance=0;const credit=Q.data().credits.find(c=>c.owner===x.owner&&c.fund===x.fund);if(credit)credit.principal=Math.max(0,credit.principal-x.amount);clockOverride=Date.parse(last.due)+DAY;}
       }if(kind==='finalLive'){const project=D.project(x.project);project.expired=false;project.expiry=day(clockOverride+30*DAY);project.expires=iso(clockOverride+31*DAY-1);}if(['final','outoforder'].includes(kind))D.project(x.project).expired=true;S.role='asset';S.party.asset=x.owner;CF.review.prepareIdentity?.('asset');S.st='default';S.layer=null;S.demo=false;origin=back=returnUI=savedUI=null;listViews.clear();signScene=result;Q.data().repaymentClock=clockOverride;Q.save();
     setTimeout(()=>{if(document.getElementById('ls-tab-repay')?.getAttribute('aria-expanded')!=='true')V.onAct('ls-tab','repay');CF.render();if(pay)open('pay',x.id,seq);},60);}
@@ -354,9 +385,10 @@
     else if(k==='back')close();
     else if(k==='sign'){sign();return true;}
     else if(k==='inspect'){const id=selected,n=seq;S.layer=null;openDetail(id,{period:plan()?.periods.find(p=>p.seq===n)?.id});}
-    else if(k==='end-attempt'){const p=period();if(S.role==='asset'&&party(deal())&&p?.state==='due'&&p.approval?.state==='approved'){p.lastAttempt={...p.approval,state:'ended'};p.approval=null;freshForm();Q.save();CF.toast(L('Attempt ended. The on-chain approval and its gas remain; a new attempt requires a new approval.','本次办理已结束，链上授权及已产生的 gas 保留；重新办理需再次授权。'));}}
+    else if(k==='end-attempt'){const p=period();if(S.role==='asset'&&party(deal())&&p?.state==='due'&&p.approval?.state==='approved'){archive(p,{...p.approval,state:'ended'});p.approval=null;freshForm();Q.save();CF.toast(L('Attempt ended. The on-chain approval and its gas remain; a new attempt requires a new approval.','本次办理已结束，链上授权及已产生的 gas 保留；重新办理需再次授权。'));}}
     else if(k==='retry')load='ready';
     else if(k==='account-retry')accountRead='ready';
+    else if(k==='contract-retry'){contractRead='ready';errors={};}
     else if(k==='from-retry')fromScene='ready';
     else if(k==='balance-retry'){if(balanceScene==='error')balanceScene='enough';errors={};checking=true;const stamp=epoch;setTimeout(()=>{if(stamp!==epoch)return;checking=false;CF.render();document.getElementById('rp-balance')?.focus({preventScroll:true});},400);}
     else if(k==='accounts-module'){const backTo=location.hash.replace(/^#/,'')||'/marketplace';accountsTrip={deal:selected,seq};S.layer=null;origin=back=null;location.hash='#'+CF.ENTRY['P-F-EA-01']+'?'+new URLSearchParams({return:backTo,from:'repay',business:selected});return true;}
@@ -366,7 +398,7 @@
     else if(k==='ready'){if(deal()){deal().plan='handoff';ensure();Q.save();}}
     else if(k==='advance'){clockOverride=now()+30*DAY;Q.data().repaymentClock=clockOverride;sweep();Q.save();}
     else if(k==='events')CF.openLayer('modal','rp-events');
-    else if(k==='copy'){const fallback=()=>{const text=document.createElement('textarea');text.value=v;text.setAttribute('aria-label',L('Copy value','复制内容'));document.body.append(text);text.select();const copied=document.execCommand('copy');text.remove();CF.toast(copied?L('Copied','已复制'):L('Select the value and copy it.','请选中内容复制。'));};if(navigator.clipboard?.writeText)navigator.clipboard.writeText(v).then(()=>CF.toast(L('Copied','已复制')),fallback);else fallback();return true;}
+    else if(k==='copy'){const fallback=()=>{const text=document.createElement('textarea');text.value=v;text.setAttribute('aria-label',L('Copy value','复制内容'));document.body.append(text);text.select();const copied=document.execCommand('copy');text.remove();CF.toast(copied?L('Copied','已复制'):L('Copy failed. Copy it manually: ','复制失败，请手动复制：')+v);};if(navigator.clipboard?.writeText)navigator.clipboard.writeText(v).then(()=>CF.toast(L('Copied','已复制')),fallback);else fallback();return true;}
     else if(k==='event'){const e=events.find(e=>e.id===v&&e.owner===S.role&&party(deal(e.deal)));if(e){S.layer=null;choose(e.deal,e.seq);V.onAct('ls-tab','repay');const p=period();open(['due','overdue','failed'].includes(e.kind)&&S.role==='asset'&&p?.state==='due'&&!processingOf(deal())?'pay':'detail',e.deal,e.seq);}}
     CF.render();return true;
   }

@@ -67,7 +67,6 @@
 .rp-fact{min-width:0;display:grid;align-content:start;gap:var(--sp-1)}
 .rp-fact dt{font-size:var(--ui-field-label);color:var(--muted);font-weight:400;line-height:1.6}
 .rp-fact dd{font-size:var(--ui-field-value);margin:0;line-height:1.6;overflow-wrap:anywhere;min-width:0}
-.rp-fact:has(.hash),.rp-fact:has(.ea-asset-group){grid-column:1/-1}
 .rp-drawer .ls-history>summary{position:relative;display:block;list-style:none;min-height:var(--ctrl-h);padding:var(--sp-3) var(--sp-6) var(--sp-3) 0;line-height:1.6;overflow-wrap:anywhere;color:var(--text);font-weight:500;cursor:pointer}
 .rp-drawer .ls-history>summary::-webkit-details-marker{display:none}
 .rp-drawer .ls-history>summary::after{content:"";position:absolute;right:var(--sp-2);top:50%;width:var(--sp-2);height:var(--sp-2);border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-70%) rotate(45deg)}
@@ -155,8 +154,6 @@
 
 /* Compact payment review; account and schedule details remain in the read-only drawer. */
 .rp-pay{gap:var(--sp-4)}
-.rp-sign-steps{display:flex;gap:var(--sp-5);margin:0;padding:0 0 var(--sp-3);list-style:none;border-bottom:1px solid var(--border);font-size:var(--ui-field-label);color:var(--muted)}
-.rp-sign-steps [aria-current=step]{color:var(--accent);font-weight:600}
 .rp-pay-amount{padding-bottom:var(--sp-4);border-bottom:1px solid var(--border)}
 .rp-pay-amount .rp-row{justify-content:space-between;font-size:var(--ui-field-label)}
 .rp-pay-amount .rp-amount{font-size:var(--fs-24);margin:var(--sp-2) 0}
@@ -170,17 +167,46 @@
 .rp-pay-from .field>label{color:var(--muted);font-size:var(--ui-field-label);font-weight:400}
 .rp-pay-from .rp-address-line{font-size:var(--ui-field-label)}
 .rp-check-ok{font-size:var(--ui-field-label);color:var(--ok);margin:0}
-.rp-pay-transaction{padding-top:var(--sp-4);border-top:1px solid var(--border)}
-.rp-pay-transaction h3{font-size:var(--ui-field-label);font-weight:600;margin-bottom:var(--sp-2)}
-.rp-pay-transaction>.rp-address-line{font-size:var(--ui-field-label)}
-.rp-pay .rp-tx-link{font-size:var(--ui-field-label)}
-.rp-pay .rp-tx-link .hash{font-size:inherit}
 .rp-pay .cq-balance{display:flex;flex-wrap:wrap;gap:var(--sp-3);margin:var(--sp-2) 0;font-size:var(--ui-field-label)}
 .rp-pay .cq-balance dd{margin:0}
 .rp-pay .cq-balance dt{color:var(--muted)}
 .rp-pay .cq-balance-fail{font-size:var(--ui-field-label);color:var(--warn)}
-.modal:has(.rp-pay) .rp-sign-note{flex-basis:100%;font-size:var(--ui-field-label);color:var(--muted);line-height:1.65;padding-bottom:var(--sp-3);border-bottom:1px solid var(--border)}
 .modal:has(.rp-pay) .modal-f>[data-act=rp-inspect],.rp-attempt-actions>.btn{border:0;background:transparent;color:var(--muted);padding-inline:var(--sp-2);font-size:var(--ui-field-label)}
+/* WS-449 · two signing steps. Each step carries only its amount, progress and this attempt's tx hash;
+   the current step also holds .rp-sign-check (repayment contract + signing purpose), reusing WS-446 components. */
+.rp-steps{display:grid;gap:0;margin:0;padding:0;list-style:none;border:1px solid var(--border);border-radius:var(--radius-sm)}
+.rp-step{display:grid;grid-template-columns:var(--ctrl-h-sm) minmax(0,1fr);gap:var(--sp-3);padding:var(--sp-4);min-width:0}
+.rp-step+.rp-step{border-top:1px solid var(--border)}
+.rp-step[aria-current=step]{background:var(--accent-soft)}
+.rp-step-n{display:grid;place-items:center;width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);border:1px solid var(--border);border-radius:50%;background:var(--card);font-size:var(--ui-field-label);font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.rp-step[aria-current=step] .rp-step-n{border-color:var(--accent);background:var(--accent);color:var(--on-accent)}
+.rp-step[data-state=done] .rp-step-n{border-color:var(--ok);color:var(--ok)}
+.rp-step-b{display:grid;gap:var(--sp-1);min-width:0}
+.rp-step-h{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);flex-wrap:wrap;min-height:var(--ctrl-h-sm)}
+.rp-step-h>b{font-weight:600;font-size:var(--ui-field-value)}
+.rp-step-state{font-size:var(--ui-field-label);color:var(--muted)}
+.rp-step[data-state=next] .rp-step-h>b{color:var(--muted);font-weight:500}
+.rp-drawer .rp-step p{margin:0}
+.rp-step-line{font-size:var(--ui-field-label);color:var(--muted);overflow-wrap:anywhere}
+.rp-step-line b{color:var(--text);font-weight:600;font-size:var(--ui-field-value);font-variant-numeric:tabular-nums}
+.rp-step-tx{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2);margin-top:var(--sp-1);font-size:var(--ui-field-label)}
+.rp-step-k{color:var(--muted)}
+.rp-step-gas{color:var(--muted)}
+.rp-step .rp-sign-check{margin-top:var(--sp-3);padding-top:var(--sp-3);border-top-color:var(--accent-border)}
+.rp-sign-check .ls-sign-purpose b{color:var(--text);font-weight:600}
+.rp-contract-fail{margin:0}
+/* Operation record: the only place transaction hashes and gas appear in details. */
+.rp-drawer .rp-ops{table-layout:fixed;width:100%;min-width:640px}
+.rp-ops th:first-child{width:17%}
+.rp-ops th:nth-child(2){width:19%}
+.rp-ops th:nth-child(3){width:28%}
+.rp-ops th:nth-child(4){width:20%}
+.rp-ops th:last-child{width:16%}
+.rp-ops td:last-child .mono{white-space:nowrap}
+.rp-ops .ls-hash{white-space:nowrap}
+.rp-record-ref{margin:var(--sp-3) 0 0;font-size:var(--ui-field-label)}
+@media(max-width:768px){.rp-drawer .rp-ops{min-width:0}}
+
 /* Native controls, addresses with copy, on-chain status and pre-sign errors. */
 .rp-drawer .field{margin:0}
 .rp-drawer .field+.hint{margin-top:var(--sp-2)}
@@ -188,6 +214,7 @@
 .rp-address-line>.mono{min-width:0;flex:1 1 auto}
 .rp-address-line>.btn{flex-shrink:0}
 .rp-fact .rp-address-line+.hint{margin-top:var(--sp-1)}
+.rp-fact:has(.ea-asset-group){grid-column:1/-1}
 .rp-fact:has(.rp-address-line){grid-column:1/-1}
 .rp-sign-error .note{margin:0}
 .rp-list-chain{color:var(--accent);font-size:var(--ui-field-label);margin-top:var(--sp-1)}
@@ -236,9 +263,7 @@
   .rp-summary-head>.tag{justify-self:start}
   .rp-drawer .dl,.rp-drawer .rp-facts-3 .dl{grid-template-columns:minmax(0,1fr)}
   .rp-pay .rp-fact{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
-  .rp-sign-steps{gap:var(--sp-3);flex-wrap:wrap}
   .modal:has(.rp-pay) .modal-f{display:grid;grid-template-columns:auto minmax(0,1fr)}
-  .modal:has(.rp-pay) .modal-f .rp-sign-note{grid-column:1/-1}
   .modal:has(.rp-pay) .modal-f>[data-act=rp-inspect]{justify-self:end}
   .modal:has(.rp-pay) .modal-f>[data-act=rp-sign]{grid-column:1/-1;width:100%}
   .rp-drawer .dl{gap:var(--sp-3)}
