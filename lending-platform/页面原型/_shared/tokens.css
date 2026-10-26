@@ -64,8 +64,8 @@
   --shadow-lg:0 12px 28px rgba(13,21,38,.12);
   --overlay:rgba(13,21,38,.44);
   --track:#EDF0F5;
-  /* 图表系列色（WS-462）：按业务对象固定分配，白底 ≥3:1 且通过色觉辨识校验。 */
-  --chart-1:#C98500; --chart-2:#199E70; --chart-3:#2A78D6;
+  /* 图表系列色：按业务对象固定分配，经色觉辨识校验；深色值见 Web3 块。 */
+  --chart-1:#EDA100; --chart-2:#1BAF7A; --chart-3:#2A78D6;
   --radius-lg:12px;
   --radius:10px;
   --radius-sm:8px;
@@ -157,8 +157,10 @@
 @media(max-width:768px){.hc-home{--page-gutter:var(--space-4)}}
 
 /* WS-403: user-authorized replacement of the marketplace visual baseline.
-   Only active on marketplace pages; palette has one canonical source. */
-:root[data-market-redesign]:not([data-market-tone="blue"]){
+   Active on marketplace pages and the operations overview (WS-462, user-requested
+   Web3 presentation); palette has one canonical source. */
+:root[data-market-redesign]:not([data-market-tone="blue"]),
+:root[data-surface="web3"]{
   --bg:#0C100F; --bg-elev:#171E1B; --card:#141B18; --card-2:#1A231E;
   --card-hover:#1A241F; --border:#2B3630; --border-strong:#43534A;
   --border-dash:#2B3630; --row-line:#2B3630; --row-hover:#1C2821;
@@ -175,6 +177,7 @@
   --hash-text:#B6EF8A; --hash-bg:#22351E; --hash-border:#536E3D;
   --shadow:none; --shadow-soft:none; --shadow-lg:0 12px 40px #00000066;
   --overlay:#000000B3; --track:#2B3630;
+  --chart-1:#C98500; --chart-2:#199E70; --chart-3:#3987E5;
   --radius-lg:12px; --radius:10px; --radius-sm:8px; --radius-xs:6px;
   --fs-36:36px; --fs-48:48px;
   --list-h:clamp(440px,60vh,760px);
