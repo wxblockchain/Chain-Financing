@@ -79,8 +79,8 @@
   function performance(){const p8=plan();return section(L('Repayment performance','还款履约'),!p8?CF.note('',L('Repayment schedule is being generated.','还款计划生成中。')):(p8.settledAt?dl([[L('Business settled at','业务结清时间'),time(p8.settledAt)]]):'')+ledger('detail'));}
   /* 地址只读卡片：备注名、网络与完整地址；办理与记录内可复制完整值。 */
   const addrName=a=>a?.label?(Array.isArray(a.label)?L(...a.label):a.label):'';
-  const addrCard=a=>a?'<div class="cq-address rp-address">'+(addrName(a)?'<b>'+E(addrName(a))+'</b>':'')+'<span class="hint">Ethereum</span><span class="rp-address-line">'+(a.address?CF.addrFull(a.address):'—')+'</span></div>':'—';
-  const addrInline=a=>a?.address?'<span class="rp-address-line">'+CF.addrFull(a.address)+'</span>'+(addrName(a)?'<div class="hint">'+E(addrName(a))+' · Ethereum</div>':''):'—';
+  const addrCard=a=>a?'<div class="cq-address rp-address">'+CF.addrHead(addrName(a))+'<span class="rp-address-line">'+(a.address?CF.addrFull(a.address):'—')+'</span></div>':'—';
+  const addrInline=a=>a?.address?CF.addrHead(addrName(a))+'<span class="rp-address-line">'+CF.addrFull(a.address)+'</span>':'—';
   const tail=a=>a?.address?a.address.slice(0,6)+'…'+a.address.slice(-4):'';
   /* 交易哈希：与 WS-446 同一组件——缩写展示，点击复制完整值，另可新窗口打开区块链浏览器；入口不可用时不给死链接。未取得不显示占位。 */
   const hashChip=h=>h?'<span class="ls-hash rp-hash"><button type="button" class="ls-hash-copy mono" data-act="rp-copy" data-v="'+E(h)+'" title="'+E(h)+'" aria-label="'+L('Copy transaction hash ','复制交易哈希 ')+E(h)+'">'+E(h.slice(0,6)+'…'+h.slice(-4))+'</button>'+(explorerReady?CF.linkOut(explorer(h),L('Open the transaction in a blockchain explorer (new window)','在区块链浏览器打开该交易（新窗口）')):'')+'</span>':'';

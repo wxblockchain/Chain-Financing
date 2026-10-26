@@ -206,7 +206,7 @@
   const chainState=q=>['processing','unknown'].includes(q?.chain?.state)?q.chain.state:'';
   const status=q=>q.state==='waiting'&&chainState(q)?L(...{processing:['Disbursement processing','放款处理中'],unknown:['On-chain result to be verified','链上结果待核实']}[chainState(q)]):L({waiting:'Awaiting acceptance',funding:'Disbursement processing',funded:'Accepted · disbursed',terminated:'Accepted · business terminated',rejected:'Rejected',expired:'Quote invalidated'}[q.state],{waiting:'待接受',funding:'放款处理中',funded:'已接受 · 已放款',terminated:'已接受 · 业务已终止',rejected:'已拒绝',expired:'报价已失效'}[q.state]);
   const addrLabel=x=>x?E(Array.isArray(x.label)?L(...x.label):x.label||''):'';
-  const addrInline=x=>x?CF.addrFull(x.address)+'<div class="hint">'+addrLabel(x)+' · Ethereum</div>':'—';
+  const addrInline=x=>x?CF.addrHead(Array.isArray(x.label)?L(...x.label):x.label||'')+CF.addrFull(x.address):'—';
   const addrSummary=x=>x?'<b>'+addrLabel(x)+'</b><span class="hint">'+E('Ethereum')+' · '+maskAddress(x.address)+'</span>':'—';
   const payeeOf=q=>{const d=D.project(q.project)?.demands.find(x=>x.id===q.demand);return q.payee||q.confirmation?.terms?.receiving||d?.payee||null;};
   const authLabel=q=>!q.lender?'—':q.state==='funded'?L('Used for this disbursement','已按本笔使用'):['rejected','expired'].includes(q.state)?(q.auth?.revoked?L('Revoked','已撤销'):L('Not revoked','未撤销')):L('Active','有效');
@@ -385,7 +385,7 @@
     flow.quote=q?.id;
     const overview='<div class="cq-request-head"><div><span class="hint">'+L('Financing request','融资申请')+'</span><h2 class="mono">'+CF.fmtAmt(d.amount)+' USDT</h2><span class="mono hint">'+E(d.id)+'</span></div>'+CF.tag('',requestState(d))+'</div>';
     /* 融资收款地址：本企业资产方可见完整值；资金方按该笔业务当事方读取，非当事方不可见。 */
-    const owner=S.role==='asset'&&D.mine(p),payee=d.payee&&(owner||q&&related(q))?CF.addrFull(d.payee.address)+'<div class="hint">'+E(L(...(d.payee.label||['',''])))+' · Ethereum</div>':null;
+    const owner=S.role==='asset'&&D.mine(p),payee=d.payee&&(owner||q&&related(q))?CF.addrHead(L(...(d.payee.label||['',''])))+CF.addrFull(d.payee.address):null;
     const request=dl([[L('Project','所属项目'),E(L(...p.name))],[L('Asset holder','资产企业'),company(p)],[L('Reference settlement currency','参考结算币种'),(p.settle?.length?E(p.settle.join(' / ')):L('Not provided','未提供'))],...(payee?[[L('Receiving address','融资收款地址'),payee]]:[]),[L('Published at','申请发布时间'),time(d.at)],[L('Final repayment date','最终还款日'),date(p.expires)]]);
     /* 操作记录：本轮全部链上交易的唯一记载位置，在详情最下方。每笔一条：时间、操作、地址、交易哈希；尚未成功的标明状态。
        冻结类只给本企业资产方；报价授权与链上放款给本企业资产方和该笔报价机构，非当事资金方看不到。 */

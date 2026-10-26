@@ -291,6 +291,12 @@
     label = label || L("Copy wallet address", "复制钱包地址");
     return '<span class="addr-full"><span class="addr-pill">' + esc(v) + '</span>' + CF.copyBtn("cf-addr-copy", v, label) + '</span>';
   };
+  /* 地址抬头：网络（带图标）在最前，其后是账户备注名。网络图标由面客端行情组件提供，缺省时只给网络名。 */
+  CF.addrHead = function (name, net) {
+    net = net || "ETH";
+    var chip = CF.market && CF.market.network ? CF.market.network(net) : '<span class="mk-network">' + esc(net === "ETH" ? "Ethereum" : net) + '</span>';
+    return '<span class="addr-head">' + chip + (name ? '<b>' + esc(name) + '</b>' : '') + '</span>';
+  };
   CF.addrCopy = function (v, label) {
     if (!v) return "—";
     label = label || L("Copy wallet address", "复制钱包地址");
