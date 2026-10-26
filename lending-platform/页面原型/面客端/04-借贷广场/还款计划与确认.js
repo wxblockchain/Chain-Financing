@@ -254,43 +254,70 @@
       :L('Approval complete. Sign the repayment to continue; closing will not send it.','授权已完成，请继续交易签名；关闭不会自动还款。');
     return CF.note(a.state==='unknown'?'warn':'',text+(inPay&&a.state==='approved'?'<div class="rp-attempt-actions">'+b('end-attempt',L('End this attempt','结束本次办理'))+'</div>':''));
   }
-  /* 两步签名：每步给出本步要签的金额、进度与当次已取得的交易哈希（当次反馈；离开办理后在详情的操作记录查看）。 */
-  function paySteps(p,allowance,contract){const x=deal(),check=can()?signCheck(p,contract,allowance):'',a=p.approval,c=sub(p),r=p.record,sent=p.state!=='due';
-    const s1=sent||a?.state==='approved'?'done':a?.state||'current',s2=p.state==='settled'?'done':p.state==='pending'?(unknown(p)?'unknown':'processing'):a?.state==='approved'?'current':'next';
-    const label={current:L('To sign','待签名'),next:L('After approval','授权完成后进行'),processing:L('Pending on-chain','上链确认中'),unknown:L('To be verified','待核实'),done:L('Done','已完成')};
-    const state=s=>s==='done'?CF.tag('ok',label[s]):s==='processing'?CF.tag('accent',label[s]):s==='unknown'?CF.tag('warn',label[s]):'<span class="rp-step-state">'+label[s]+'</span>';
-    const tx=(name,h,gas)=>h?'<div class="rp-step-tx"><span class="rp-step-k">'+name+'</span>'+hashChip(h)+'<span class="rp-step-gas">gas '+(gas?'<span class="mono">'+E(gas)+' ETH</span>':L('to be verified','待核实'))+L(' · paid by your company',' · 本企业承担')+'</span></div>':'';
-    const step=(n,s,title,body)=>'<li class="rp-step" data-state="'+s+'"'+(['current','processing','unknown'].includes(s)?' aria-current="step"':'')+'><span class="rp-step-n" aria-hidden="true">'+(s==='done'?'✓':n)+'</span><div class="rp-step-b"><div class="rp-step-h"><b>'+title+'</b>'+state(s)+'</div>'+body+'</div></li>';
-    return '<ol class="rp-steps" aria-label="'+L('Signing steps','签名步骤')+'" aria-live="polite">'
-      +step(1,s1,L('Approval signature','授权签名'),'<p class="rp-step-line">'+L('Approval amount','本次授权金额')+' <b class="mono">'+amount(allowance,x.ccy)+'</b></p>'+(allowance>p.settlement?'<p class="hint">'+L('Includes approvals for other unfinished repayments; this instalment needs ','含其他未完成还款的授权，本期所需 ')+amount(p.settlement,x.ccy)+'</p>':'')+tx(L('Approval tx hash','授权交易哈希'),a?.hash||c?.authHash||r?.authHash,a?.gas||c?.authGas||r?.authGas)+(s1==='current'?check:''))
-      +step(2,s2,L('Repayment signature','交易签名'),'<p class="rp-step-line">'+L('Transfer to the funder’s repayment address','向资金方收款地址转出')+' <b class="mono">'+amount(p.settlement,x.ccy)+'</b></p>'+(s2==='next'?'<p class="hint">'+L('Executed by the same repayment contract after approval.','授权成功后，由同一份还款合约执行。')+'</p>':'')+tx(L('Repayment tx hash','还款交易哈希'),c?.hash||r?.hash,r?.repayGas)+(s2==='current'?check:''))
-      +'</ol>';
-  }
+  /* 分步办理（与授信报价、代币质押同一步骤条）：① 确认还款信息 → ② 授权签名 → ③ 交易签名。
+     当前步骤由链上事实决定：还款交易已发出或授权已完成在第 3 步，授权已发出在第 2 步；未授权时由用户在 1、2 步之间前进 / 返回。
+     已完成的步骤可用“上一步”只读回看，不能重签。 */
+  const PAY_STEPS=[['Confirm repayment','确认还款信息'],['Approval signature','授权签名'],['Repayment signature','交易签名']];
+  function payBase(p){const a=p.approval;return p.state!=='due'||a?.state==='approved'?3:a?2:(form.step===2?2:1);}
+  function payStepView(p){const base=payBase(p);return form.view&&form.view<base?form.view:base;}
+  function payStepper(view,base,all=false){const done=i=>(i+1<base||all)&&i+1!==view;return '<ol class="ls-steps rp-pay-steps" aria-label="'+L('Steps','办理步骤')+'">'+PAY_STEPS.map((x,i)=>'<li'+(i+1===view?' aria-current="step"':'')+(done(i)?' class="done"':'')+'><span class="ls-step-n">'+(done(i)||all&&i+1===view?'✓':i+1)+'</span>'+L(...x)+'</li>').join('')+'</ol>';}
+  const stepState=s=>({processing:CF.tag('accent',L('Pending on-chain','上链确认中')),unknown:CF.tag('warn',L('To be verified','待核实')),done:CF.tag('ok',L('Done','已完成'))})[s]||'';
+  const stepTx=(name,h,gas)=>h?'<div class="rp-step-tx"><span class="rp-step-k">'+name+'</span>'+hashChip(h)+'<span class="rp-step-gas">gas '+(gas?'<span class="mono">'+E(gas)+' ETH</span>':L('to be verified','待核实'))+L(' · paid by your company',' · 本企业承担')+'</span></div>':'';
+  /* 第 2、3 步顶部的本期摘要：哪一期、本期结算金额、本次出账地址。 */
+  function stepSummary(p,from){const x=deal();return '<p class="ls-step-summary rp-step-summary"><span>'+L('Instalment ','第 ')+p.seq+' / '+plan().periods.length+L('',' 期')+' · '+L('Settlement','结算金额')+' <b class="mono">'+amount(p.settlement,x.ccy)+'</b></span><span>'+L('Paying address','出账地址')+' <b class="mono">'+E(tail(from)||'—')+'</b></span></p>';}
+  function payStep1(p,a,sent,from,to,opened,late){const x=deal(),locked=!!a||sent;
+    return (!locked?choosePeriod():'')+'<div class="rp-pay-amount"><div class="rp-row"><span>'+L('Current amount due','本期应还')+' · '+L('Instalment ','第 ')+p.seq+' / '+plan().periods.length+L('',' 期')+'</span>'+badge(p)+'</div><div class="rp-amount">'+amount(p.settlement,x.ccy)+'</div><p class="hint">'+L('Due (UTC) ','应还日（UTC） ')+date(p.due)+(x.ccy!=='USDT'?' · '+L('Total due ','应还合计 ')+amount(p.total):'')+(late?' · '+L('Overdue ','逾期 ')+late+L(' days',' 天'):'')+'</p></div>'
+      +'<div class="rp-pay-facts">'+dl([[L('Funder','资金方'),E(funder(x))],[L('Funder’s repayment address','资金方收款地址'),'<div id="rp-payee" tabindex="-1">'+(accountRead==='ready'?compactAddress(to):CF.note('warn',L('Repayment address unavailable. Retry before signing.','暂时无法读取收款地址，请重试后签名。'))+b('account-retry',L('Retry','重试')))+'</div>']])
+      +'<section id="rp-from-section" class="rp-pay-from" tabindex="-1">'+(locked?'<span class="rp-field-label">'+L('Paying address','本次出账地址')+'</span>'+compactAddress(from):fromBody())+'</section></div>'
+      +(!opened?CF.note('',L('Repayment opens at ','还款开放于 ')+time(iso(openAt(p)))):'');}
+  function payStep2(p,a,c,r,from,contract,allowance,base){const x=deal(),state=base>2?'done':a?.state==='processing'?'processing':a?.state==='unknown'?'unknown':'';
+    return stepSummary(p,from)+'<section class="rp-pay-step"><div class="rp-step-h"><b>'+L('Approve the repayment contract','授权还款合约')+'</b>'+stepState(state)+'</div>'
+      +'<p class="rp-step-line">'+L('Approval amount','本次授权金额')+' <b class="mono">'+amount(allowance,x.ccy)+'</b></p>'+(allowance>p.settlement?'<p class="hint">'+L('Includes approvals for other unfinished repayments; this instalment needs ','含其他未完成还款的授权，本期所需 ')+amount(p.settlement,x.ccy)+'</p>':'')
+      +stepTx(L('Approval tx hash','授权交易哈希'),a?.hash||c?.authHash||r?.authHash,a?.gas||c?.authGas||r?.authGas)
+      +(base===2&&!a&&can()?signCheck(p,contract,allowance):'<div class="ls-sign-check rp-sign-check">'+contractCheck(contract)+'</div>')+'</section>';}
+  function payStep3(p,c,r,from,to,contract){const x=deal(),state=p.state==='settled'?'done':p.state==='pending'?(unknown(p)?'unknown':'processing'):'';
+    return stepSummary(p,from)+'<section class="rp-pay-step"><div class="rp-step-h"><b>'+L('Send the repayment','发送还款交易')+'</b>'+stepState(state)+'</div>'
+      +'<p class="rp-step-line">'+L('Transfer to the funder’s repayment address','向资金方收款地址转出')+' <b class="mono">'+amount(p.settlement,x.ccy)+'</b></p>'+compactAddress(to)
+      +stepTx(L('Repayment tx hash','还款交易哈希'),c?.hash||r?.hash,r?.repayGas)
+      +(p.state==='due'&&can()?signCheck(p,contract,0):'<div class="ls-sign-check rp-sign-check">'+contractCheck(contract)+'</div>')+'</section>';}
   function payView(){const x=deal(),p=period();if(!visible(x))return deniedView();if(!x||!plan())return {title:L('Repay','立即还款'),html:CF.note('',L('The plan is not available yet.','还款计划暂不可用。')),foot:b('back',L('Close','关闭'))};
     if(!party(x)||S.role!=='asset')return deniedView();
     let body='',foot=b('back',L('Close','关闭'));
     if(load==='loading')body='<div role="status">'+L('Loading repayment information…','正在加载还款信息…')+'</div>';else if(load==='error')body=CF.empty(L('Unable to load repayment information','还款信息加载失败'),'',b('retry',L('Retry','重试')));
-    else{const a=p.approval,c=sub(p),sent=p.state!=='due',from=a?.from||c?.from||p.record?.from||fromPick(),to=a?.to||c?.to||p.record?.account||payee(),contract=a?.contract||c?.contract||p.record?.contract||repaymentContract();
-      const opened=now()>=openAt(p),late=overdue(p),allowance=a?.allowance||approvalAmount(from);
-      body=(p.state==='settled'?CF.note('ok',L('This instalment is settled on-chain.','本期链上还款成功，已结清。')):p.state==='pending'?chainNote(p):approvalNote(p,true)||failNote(p));
-      body+=(!a&&!sent?choosePeriod():'')+'<div class="rp-pay-amount"><div class="rp-row"><span>'+L('Current amount due','本期应还')+' · '+L('Instalment ','第 ')+p.seq+' / '+plan().periods.length+L('',' 期')+'</span>'+badge(p)+'</div><div class="rp-amount">'+amount(p.settlement,x.ccy)+'</div><p class="hint">'+L('Due (UTC) ','应还日（UTC） ')+date(p.due)+(x.ccy!=='USDT'?' · '+L('Total due ','应还合计 ')+amount(p.total):'')+(late?' · '+L('Overdue ','逾期 ')+late+L(' days',' 天'):'')+'</p></div>';
-      body+='<div class="rp-pay-facts">'+dl([[L('Funder','资金方'),E(funder(x))],[L('Funder’s repayment address','资金方收款地址'),'<div id="rp-payee" tabindex="-1">'+(accountRead==='ready'?compactAddress(to):CF.note('warn',L('Repayment address unavailable. Retry before signing.','暂时无法读取收款地址，请重试后签名。'))+b('account-retry',L('Retry','重试')))+'</div>']])
-        +'<section id="rp-from-section" class="rp-pay-from" tabindex="-1">'+(sent?'<span class="rp-field-label">'+L('Paying address','本次出账地址')+'</span>'+compactAddress(from):(a?'<span class="rp-field-label">'+L('Paying address','本次出账地址')+'</span>':'')+fromBody())+'</section>'
-        +'</div>'+paySteps(p,allowance,contract);
-      if(!opened)body+=CF.note('',L('Repayment opens at ','还款开放于 ')+time(iso(openAt(p))));
+    else{const a=p.approval,c=sub(p),r=p.record,sent=p.state!=='due',from=a?.from||c?.from||r?.from||fromPick(),to=a?.to||c?.to||r?.account||payee(),contract=a?.contract||c?.contract||r?.contract||repaymentContract();
+      const opened=now()>=openAt(p),late=overdue(p),allowance=a?.allowance||approvalAmount(from),base=payBase(p),view=payStepView(p),revisit=view<base&&(!!a||sent);
+      body=(p.state==='settled'?CF.note('ok',L('This instalment is settled on-chain.','本期链上还款成功，已结清。')):p.state==='pending'?chainNote(p):approvalNote(p,true)||failNote(p))+payStepper(view,base,p.state==='settled')
+        +'<div class="rp-pay-body" data-step="'+view+'">'+(view===1?payStep1(p,a,sent,from,to,opened,late):view===2?payStep2(p,a,c,r,from,contract,allowance,base):payStep3(p,c,r,from,to,contract))+'</div>';
       if(errors.submit)body+='<div class="rp-sign-error" id="rp-submit-error" role="alert" tabindex="-1">'+CF.note('warn',E(errors.submit))+'</div>';
       if(a?.state==='unknown'||unknown(p))body+=support();
       if(!busy)foot+=b('inspect',L('View details','查看还款详情'));
-      if(can())foot+=b('sign',busy?L('Waiting for wallet signature…','等待钱包签名…'):a?L('Sign repayment','交易签名并还款'):L('Sign approval','授权签名'),'',true,busy||checking||contractRead!=='ready');
+      /* 只读回看：上一步 / 下一步在已完成的步骤间移动，不改链上事实。 */
+      if(revisit)foot+=(view>1?b('step-prev',L('Previous','上一步')):'')+b('step-next',L('Next','下一步'),'',true);
+      else if(view===1){if(can())foot+=b('step-next',L('Next','下一步'),'',true);}
+      else{const prev=view===2&&!a&&!sent||view>1&&(!!a||sent);if(prev&&!busy)foot+=b('step-prev',L('Previous','上一步'));
+        if(can()&&(view===2&&!a||view===3&&a?.state==='approved'))foot+=b('sign',busy?L('Waiting for wallet signature…','等待钱包签名…'):view===3?L('Sign repayment','交易签名并还款'):L('Sign approval','授权签名'),'',true,busy||checking||contractRead!=='ready');}
     }
     return {title:L('Approve & repay','授权并还款'),html:'<div class="rp-drawer rp-pay" data-kind="pay">'+body+'</div>',foot};
   }
+  /* 第 1 步“下一步”：只核对本步的收款地址、出账地址与余额；合约、钱包等签名前校验留在签名动作上。 */
+  function checkStep1(){errors={};const x=deal();
+    if(!can())return fail(['This instalment or your permissions have changed. Review the current details.','期次状态或权限已变化，请查看当前详情。']);
+    if(accountRead!=='ready'||!payee()?.address)return fail(['The repayment address is unavailable. Retry first.','还款收款地址暂时无法读取，请先重试。'],'payee');
+    if(fromScene!=='ready'||!fromPick()){errors.from=L('Choose the paying address.','请选择出账地址。');errorFocus='from';CF.render();return false;}
+    if(checking)return false;
+    if(balanceScene==='error')return fail(['The balance cannot be checked. Retry first.','暂时无法查询余额，请先重试。'],'balance');
+    const have=balanceOf(),want=need();if(have<want)return fail(['Insufficient balance: '+amount(have,x.ccy)+' available, '+amount(want,x.ccy)+' required, '+amount(round(want-have),x.ccy)+' short. Top up, then retry.','余额不足：当前 '+amount(have,x.ccy)+'，所需 '+amount(want,x.ccy)+'，差额 '+amount(round(want-have),x.ccy)+'。请补足后重试。'],'balance');
+    return true;}
+  function stepMove(dir){const p=period();if(!p)return;const base=payBase(p),view=payStepView(p),a=p.approval,sent=p.state!=='due';errors={};
+    if(view<base&&(a||sent)){const to=view+dir;form.view=to>=base?0:Math.max(1,to);return;}
+    if(dir>0&&view===1){if(checkStep1()){form.step=2;form.view=0;}return;}
+    if(dir<0){if(view===2&&!a&&!sent)form.step=1;else form.view=view-1;}}
   function drawer(kind){if(kind==='detail')return detail();if(kind==='pay')return payView();const x=deal();if(!visible(x))return deniedView();if(!x||!plan())return {title:L('Repayment schedule','还款计划'),html:CF.note('',L('The plan is not available yet.','还款计划暂不可用。')),foot:b('back',L('Close','关闭'))};
     const body=load==='loading'?'<div role="status">'+L('Loading repayment information…','正在加载还款信息…')+'</div>':load==='error'?CF.empty(L('Unable to load repayment information','还款信息加载失败'),'',b('retry',L('Retry','重试'))):schedule();
     return {title:L('Repayment schedule','还款计划'),html:'<div class="rp-drawer" data-kind="plan">'+body+'</div>',foot:b('back',back?L('Back','返回'):L('Close','关闭'))};}
   function remember(){const a=document.activeElement;return {back,seq,selected,pageTop:window.scrollY,layer:S.layer?{...S.layer}:null,top:document.querySelector('#layers [role=dialog]:not([inert]) .drawer-b')?.scrollTop||document.querySelector('#layers .modal-b')?.scrollTop||0,focus:{id:a?.id,act:a?.dataset.act,v:a?.dataset.v}};}
   function restore(ctx){if(ctx?.selected)selected=ctx.selected;if(ctx?.seq)seq=ctx.seq;returnUI=ctx;S.layer=ctx?.layer||null;CF.render();if(!ctx?.layer){setTimeout(()=>{window.scrollTo(0,ctx?.pageTop||0);const f=ctx?.focus;const el=f?.id?document.getElementById(f.id):[...document.querySelectorAll('[data-act]')].find(e=>e.dataset.act===f?.act&&e.dataset.v===f?.v);el?.focus({preventScroll:true});returnUI=null;},0);}}
-  function freshForm(){form={from:period()?.approval?.from?.id||period()?.draftFrom||''};errors={};checking=false;}
+  function freshForm(){form={from:period()?.approval?.from?.id||period()?.draftFrom||'',step:1,view:0};errors={};checking=false;}
   function openDetail(id,options={}){ensure();const target=options.period&&quote(id)?.l8?.periods.find(p=>p.id===options.period);if(options.period&&!target||!choose(id,target?.seq||(selected===id?seq:undefined))||!visible(deal())){CF.toast(L('This repayment business is unavailable.','本笔还款业务不可用。'));return;}openRows.clear();origin=remember();origin.layer=null;externalReturn=typeof options==='function'?options:options.onReturn||null;back=null;freshForm();CF.openLayer('drawer','rp-detail');}
   function open(kind,id,n){ensure();if(id&&!choose(id,n))return;const x=deal();if(!visible(x)){denied();return;}if(kind==='pay'&&(!party(x)||S.role!=='asset'))kind='detail';if(!S.layer?.key.startsWith('rp-')){openRows.clear();origin=remember();origin.layer=null;externalReturn=null;back=null;}else back=remember();if(n)seq=n;else if(plan())seq=(activeOf(x)||plan().periods.find(p=>p.seq===seq&&p.draftFrom&&p.state==='due')||plan().periods.filter(p=>p.state==='due'&&now()>=openAt(p)).sort((a,b)=>a.due.localeCompare(b.due)||a.seq-b.seq)[0]||nearest(x))?.seq||1;freshForm();if(!plan())kind='detail';CF.openLayer(kind==='pay'?'modal':'drawer','rp-'+kind);}
   function exitDetail(){epoch++;busy=false;back=null;const prev=origin;origin=null;const callback=externalReturn;externalReturn=null;freshForm();if(callback)callback();else restore(prev);}
@@ -385,6 +412,7 @@
     else if(k==='open')open(v);
     else if(k==='back')close();
     else if(k==='sign'){sign();return true;}
+    else if(k==='step-next'||k==='step-prev'){stepMove(k==='step-next'?1:-1);CF.render();document.querySelector('#layers .rp-pay-steps')?.scrollIntoView({block:'nearest'});const h=document.querySelector('#layers .modal-h');if(h&&!errorFocus){h.tabIndex=-1;h.focus({preventScroll:true});}return true;}
     else if(k==='inspect'){const id=selected,n=seq;S.layer=null;openDetail(id,{period:plan()?.periods.find(p=>p.seq===n)?.id});}
     else if(k==='end-attempt'){const p=period();if(S.role==='asset'&&party(deal())&&p?.state==='due'&&p.approval?.state==='approved'){archive(p,{...p.approval,state:'ended'});p.approval=null;freshForm();Q.save();CF.toast(L('Attempt ended. The on-chain approval and its gas remain; a new attempt requires a new approval.','本次办理已结束，链上授权及已产生的 gas 保留；重新办理需再次授权。'));}}
     else if(k==='retry')load='ready';
