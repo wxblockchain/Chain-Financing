@@ -297,7 +297,7 @@
     return section('overview','Review overview','审核概况',facts(items)+(alerts?`<div class="ta-alerts"><h3 class="ta-h3">${L('Alerts','提醒')}</h3>${alerts}</div>`:''));
   }
   function tokenInfo(r){
-    const holders=r.holders&&r.holders.length?`<ul class="ta-holders">${r.holders.map(h=>`<li>${hashValue(h.addr,L('address','地址'))}<span class="ta-num">${qty(h.qty)}</span></li>`).join('')}</ul>`:blank;
+    const holders=r.holders&&r.holders.length?`<ul class="ta-holders">${r.holders.map(h=>`<li>${h.addr?CF.addrCopy(h.addr):blank}<span class="ta-num">${qty(h.qty)}</span></li>`).join('')}</ul>`:blank;
     return section('token','Token information','代币基本信息',
       group('Issuance and issuer','发行与发行方',facts([
         [L('Issuer','发行方'),E(txt(r.issuer.name))],
@@ -327,7 +327,7 @@
         [L('Token contract','代币发行合约'),`${val(r.contract.name)}${fullAddress(r.contract.address,L('contract address','合约地址'),scan('address',r.contract.address))}`,true],
         [L('Minting transaction hash','铸造交易哈希'),hashValue(r.mintTx,L('minting transaction hash','铸造交易哈希'),scan('tx',r.mintTx)),true],
         [L('Minted at','铸造时间'),time(r.mintAt)],
-        [L('Initial receiving address','初始收币地址'),hashValue(r.initial,L('address','地址'))],
+        [L('Initial receiving address','初始收币地址'),r.initial?CF.addrFull(r.initial):blank,true],
         [L('Holding addresses','持有地址'),holders,true],
         [L('Token status','代币状态'),tokenTag(r)],
         [L('Smart contract audit','智能合约审计'),r.audit&&r.audit.done?`${val(r.audit.done)}<span class="ta-meta">${val(r.audit.firm)} · ${val(r.audit.date)}</span>`:blank]

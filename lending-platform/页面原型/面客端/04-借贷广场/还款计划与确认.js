@@ -79,8 +79,8 @@
   function performance(){const p8=plan();return section(L('Repayment performance','还款履约'),!p8?CF.note('',L('Repayment schedule is being generated.','还款计划生成中。')):(p8.settledAt?dl([[L('Business settled at','业务结清时间'),time(p8.settledAt)]]):'')+ledger('detail'));}
   /* 地址只读卡片：备注名、网络与完整地址；办理与记录内可复制完整值。 */
   const addrName=a=>a?.label?(Array.isArray(a.label)?L(...a.label):a.label):'';
-  const addrCard=(a,copy=true)=>a?'<div class="cq-address rp-address">'+(addrName(a)?'<b>'+E(addrName(a))+'</b>':'')+'<span class="hint">Ethereum</span><span class="rp-address-line"><span class="mono cq-break">'+E(a.address||'')+'</span>'+(copy&&a.address?CF.copyBtn('rp-copy',a.address,L('Copy address','复制地址')):'')+'</span></div>':'—';
-  const addrInline=a=>a?.address?'<span class="rp-address-line"><span class="mono cq-break">'+E(a.address)+'</span>'+CF.copyBtn('rp-copy',a.address,L('Copy address','复制地址'))+'</span>'+(addrName(a)?'<div class="hint">'+E(addrName(a))+' · Ethereum</div>':''):'—';
+  const addrCard=a=>a?'<div class="cq-address rp-address">'+(addrName(a)?'<b>'+E(addrName(a))+'</b>':'')+'<span class="hint">Ethereum</span><span class="rp-address-line">'+(a.address?CF.addrFull(a.address):'—')+'</span></div>':'—';
+  const addrInline=a=>a?.address?'<span class="rp-address-line">'+CF.addrFull(a.address)+'</span>'+(addrName(a)?'<div class="hint">'+E(addrName(a))+' · Ethereum</div>':''):'—';
   const tail=a=>a?.address?a.address.slice(0,6)+'…'+a.address.slice(-4):'';
   /* 交易哈希：与 WS-446 同一组件——缩写展示，点击复制完整值，另可新窗口打开区块链浏览器；入口不可用时不给死链接。未取得不显示占位。 */
   const hashChip=h=>h?'<span class="ls-hash rp-hash"><button type="button" class="ls-hash-copy mono" data-act="rp-copy" data-v="'+E(h)+'" title="'+E(h)+'" aria-label="'+L('Copy transaction hash ','复制交易哈希 ')+E(h)+'">'+E(h.slice(0,6)+'…'+h.slice(-4))+'</button>'+(explorerReady?CF.linkOut(explorer(h),L('Open the transaction in a blockchain explorer (new window)','在区块链浏览器打开该交易（新窗口）')):'')+'</span>':'';
@@ -133,7 +133,7 @@
     const tz=E(S.tz||'UTC'),heads=[L('Time','时间')+' ('+tz+')',L('Operation','操作'),L('Address','地址'),L('Transaction hash','交易哈希'),L('Actual gas','实际 gas')];
     const td=(i,html)=>'<td data-label="'+E(heads[i])+'">'+html+'</td>';
     return '<div class="tablewrap"><table class="tbl resp ls-token-ops ls-token-ops-owner rp-ops"><thead><tr>'+heads.map(h=>'<th scope="col">'+h+'</th>').join('')+'</tr></thead><tbody>'
-      +rows.map(r=>'<tr>'+td(0,'<time class="mono" datetime="'+E(r.at)+'" title="'+E(time(r.at))+'">'+E(CF.fmtStamp(r.at))+'</time>')+td(1,'<span class="ls-op-name">'+op(r)+'</span>'+(st(r.state)?'<span class="ls-op-state">'+st(r.state)+'</span>':''))+td(2,r.from?.address?'<span class="mono cq-break">'+E(r.from.address)+'</span>':'—')+td(3,hashChip(r.hash))+td(4,'<span class="mono">'+gas(r.fee)+'</span>')+'</tr>').join('')+'</tbody></table></div>';
+      +rows.map(r=>'<tr>'+td(0,'<time class="mono" datetime="'+E(r.at)+'" title="'+E(time(r.at))+'">'+E(CF.fmtStamp(r.at))+'</time>')+td(1,'<span class="ls-op-name">'+op(r)+'</span>'+(st(r.state)?'<span class="ls-op-state">'+st(r.state)+'</span>':''))+td(2,r.from?.address?CF.addrCopy(r.from.address):'—')+td(3,hashChip(r.hash))+td(4,'<span class="mono">'+gas(r.fee)+'</span>')+'</tr>').join('')+'</tbody></table></div>';
   }
   /* 处理中 / 待核实 / 上次未完成：当事方都能看到本期的链上进展，资金方没有办理动作。 */
   function chainNote(p){if(!p||p.state!=='pending')return '';const c=sub(p);

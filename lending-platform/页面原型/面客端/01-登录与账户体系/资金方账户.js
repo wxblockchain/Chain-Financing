@@ -84,11 +84,8 @@
   function tag(s=F.account.status){return CF.tag(s==='verified'?'ok':s==='rejected'?'danger':'warn',status(s));}
   const walletCare=()=>L("This wallet is your only way to sign in, and it can't be changed after linking. Make sure you'll keep long-term access to it.",'该钱包是你唯一的登录方式，绑定后不可更换，请确保长期可访问。');
   const emailCare=()=>L('Use a long-lived company mailbox and verify it with an email code. Review results and account notices are available in the platform message center.','请使用长期有效的企业邮箱并完成验证码验证。审核结果与账号通知请在平台消息中心查看。');
-  function wallet(a=F.account.address,explorer=false){return `<div class="funder-line"><div class="funder-wallet"><details class="funder-address"><summary class="hash" title="${esc(a)}" aria-label="${esc(L('View full wallet address: ','查看完整钱包地址：')+a)}">${esc(a.length>10?a.slice(0,6)+'…'+a.slice(-4):a)}</summary><div class="funder-address-full"><span class="mono">${esc(a)}</span><span class="funder-copy-fallback" role="status" hidden>${L('Automatic copy is unavailable. Select the full address above to copy it.','自动复制不可用，请选中上方完整地址手动复制。')}</span></div></details>${CF.copyBtn('f-copy',a,L('Copy wallet address','复制钱包地址'))}</div>${explorer?link('Block explorer ↗','区块浏览器 ↗','explorer',a):''}</div>`;}
-  async function copyWallet(value,element){
-    try{await navigator.clipboard.writeText(value);CF.toast(L('Address copied','地址已复制'));}
-    catch(e){if(!element?.isConnected)return;const disclosure=element.querySelector('details');disclosure.open=true;element.querySelector('.funder-copy-fallback').hidden=false;}
-  }
+  /* 钱包地址按详情口径：完整地址标签 + 复制（公共 cf-addr-copy）。 */
+  function wallet(a=F.account.address,explorer=false){return `<div class="funder-line">${CF.addrFull(a)}${explorer?link('Block explorer ↗','区块浏览器 ↗','explorer',a):''}</div>`;}
   function head(en,zh,desc='',meta=''){return `<div class="page-head"><div><h1 class="page-title">${L(en,zh)}</h1>${desc?`<p class="page-desc">${desc}</p>`:''}${meta}</div></div>`;}
   /* 与资产方用户中心同一骨架：单张资料卡、左列分区标题、右侧内容；事实行为标签 / 值对齐。 */
   function profile(sections){return `<div class="card login-profile funder-profile">${sections.filter(Boolean).join('')}</div>`;}
@@ -682,7 +679,6 @@
       case 'close':if(F.busy==='submit')break;CF.closeLayer();break;
       case 'logout':logout();break;
       case 'support':open('support');break;
-      case 'copy':copyWallet(v,document.activeElement?.closest('.funder-wallet'));break;
       case 'explorer':open('explorer',v);break;
       case 'change':case 'change-start':F.change=true;F.error=null;F.submitError=null;go('/funder/register');break;
       case 'history':CF.toast(L('Historical materials are no longer available. View the current submission and review records.','不再提供历史资料，请查看当前提交和审核记录。'));break;
@@ -814,7 +810,6 @@
     const a=e.target.closest('[data-act]');if(!a)return;
     // 文件选择器返回前保留原 input，避免公共点击重绘丢失 change 事件。
     if(a.dataset.act==='f-pick-file'){e.preventDefault();e.stopImmediatePropagation();if(signedIn()&&!F.account.disabled&&F.account.status!=='submitted'&&!F.pendingSubmission&&!F.busy){F.replaceTarget=a.dataset.v||'';$('f-file')?.click();}return;}
-    if(a.dataset.act==='f-copy'){e.preventDefault();e.stopImmediatePropagation();copyWallet(a.dataset.v,a.closest('.funder-wallet'));return;}
     if(a.dataset.act==='f-copy-support'){e.preventDefault();e.stopImmediatePropagation();copySupport(a.closest('.funder-support'));return;}
     const key=S.layer?.key;
     if(a.dataset.act==='closelayer'&&key?.startsWith('f-')&&!(a.classList.contains('modal-mask')&&e.target.closest('.modal'))){e.preventDefault();e.stopImmediatePropagation();cancelLayer(key);return;}

@@ -188,7 +188,7 @@
       '<th scope="col">'+L('Added','登记时间')+'<span class="ea-th-zone">'+zone()+'</span></th><th scope="col" class="col-act"><span class="sr-only">'+L('Actions','操作')+'</span></th></tr></thead><tbody>'+
       rows.map(a=>'<tr><td data-label="'+h[0]+'"><span class="cell-main">'+EA.name(a)+'</span></td>'+
         '<td data-label="'+h[1]+'">'+networkTag(a.chain)+'</td>'+
-        '<td data-label="'+h[2]+'" class="nw"><span class="mono">'+EA.maskAddress(a.address)+'</span></td>'+
+        '<td data-label="'+h[2]+'" class="nw">'+CF.addrCopy(a.address)+'</td>'+
         '<td data-label="'+h[3]+'">'+tokenTags(true)+'</td>'+
         '<td data-label="'+L('Added','登记时间')+'" class="nw muted"><span class="num">'+E(CF.fmtStamp(a.at))+'</span></td>'+actions(a)+'</tr>').join('')+'</tbody></table>';
   }
@@ -406,7 +406,7 @@
     const times=[[L('Added','登记时间'),stamp(a.at)]].concat(a.updated?[[L('Last updated','最近修改'),stamp(a.updated)]]:[]);
     if(a.kind==='crypto')return section(L('Account','账户信息'),[[L(...EA.labels.label),EA.name(a)],[L(...EA.labels.chain),networkTag(a.chain)],
         [L(...EA.labels.tokens),tokenTags()]])+
-      section(L('Wallet address','数币地址'),[[L(...EA.labels.address),copyable(a.address,a.address,L('Copy address','复制地址'),'hash ea-break')],
+      section(L('Wallet address','数币地址'),[[L(...EA.labels.address),CF.addrFull(a.address)],
         [L(...EA.labels.ownership),CF.tag('ok',L('Confirmed by signature','已签名确认'))]])+section(L('Record','记录'),times);
     return section(L('Account','账户信息'),[[L(...EA.labels.label),EA.name(a)],[L(...EA.labels.holder),EA.holderName(a)||'—'],
         [L(...EA.labels.accountType),a.accountType?E(EA.typeName(a)):'<span class="faint">—</span>'],[L(...EA.labels.ccy),currencyTags(a)]])+

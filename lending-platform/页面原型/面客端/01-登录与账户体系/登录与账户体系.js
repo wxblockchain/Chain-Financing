@@ -320,7 +320,7 @@
   }
 
   /* ---------------------------------------------------------------- 账户与企业信息 */
-  function identityFields(fields,variant=''){return `<dl class="login-fields login-identity-fields ${variant}">${fields.filter(f=>f[2]!==''&&f[2]!=null).map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd>${esc(f[2])}</dd></div>`).join('')}</dl>`;}
+  function identityFields(fields,variant=''){return `<dl class="login-fields login-identity-fields ${variant}">${fields.filter(f=>f[2]!==''&&f[2]!=null).map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd>${f[3]?f[2]:esc(f[2])}</dd></div>`).join('')}</dl>`;}
   function unavailable(){
     return (D.sessionMessage?CF.note('warn',esc(D.sessionMessage)):'')+
       CF.empty(L('This page is not available for your current role','该页面不适用于当前身份'),L('You can continue exploring public information.','你可以继续浏览公开信息。'),btn('Back to assets','返回资产广场','login-home'));
@@ -333,7 +333,7 @@
     if(S.role!=='asset')return unavailable();
     const account=boundAccount(),address=D.address||registered;
     const identity=profileBody('accountState',identityFields([
-      ['Wallet address in use','本次登录钱包地址',address],
+      ['Wallet address in use','本次登录钱包地址',address?CF.addrFull(address):'',true],
       ["This session's role",'本次判定结果',L('Asset provider','资产方')],
       ['Retrieved at','本次调取时间',D.decidedAt?CF.fmtTime(D.decidedAt):'—'],
       ['User ID','用户 ID',account.userId],['Company ID','企业 ID',account.companyId],['Email','邮箱',account.email]

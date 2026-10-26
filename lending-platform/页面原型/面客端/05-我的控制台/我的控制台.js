@@ -306,8 +306,9 @@
      return [object(text(D.project(r.project)?.name))+small('<span class="mono">'+E(r.request)+'</span>'),E(owner(r.owner)),money(r.amount,'USDT')+small(E(r.ccy)+' · '+E(r.rate)+'%'),chainOnly.has(r.status)?'—':badge(r.status),r.offer?'—':stamp(r.at)];
    }
    if(k==='approvals'){
-     const addr='<span class="mono">'+E(maskAddr(r.address))+'</span>';
-     const head=(addrName(r)?object(addrName(r))+small(addr):object(maskAddr(r.address)));
+     /* 授权地址按列表口径：缩写，点击即复制完整地址；进入详情走备注名链接或整行。 */
+     const addr=CF.addrCopy(r.address,L('Copy approval address','复制授权地址'));
+     const head=addrName(r)?object(addrName(r))+small(addr):addr;
      if(r.type==='loan')return [head,approvalNetwork(r),'<span class="mono">'+E(maskAddr(r.contract))+'</span>'+small(L('Lending contract','放款合约')),money(r.amount,r.ccy),projectIdentity(D.project(r.project))];
      return [head,approvalNetwork(r),'<span class="mono">'+E(maskAddr(r.contract))+'</span>'+small(E(text(r.kind))),'<span class="mono">'+pledgeQuantity(r)+'</span>'+small(E(maskAddr(r.issuer))),relatedProjects(r.projects)];
    }
@@ -497,7 +498,7 @@
    const out=[],add=(id,t,body)=>out.push(section(id,t,body)),rec=r.rec,rv=rec?.revoke,st=approvalError?'unreadable':r.status;
    /* 授权地址、被授权合约、授权范围、预估 gas 与后果说明和“撤销授权”在同一分区内同时可见。 */
    add('mc-basic',L('Approval','授权信息'),dl([
-     [L('Approval address','授权地址'),copyMasked(r.address,maskAddr,L('Copy full address','复制完整地址'))+(addrName(r)?small(E(addrName(r))):'')],
+     [L('Approval address','授权地址'),CF.addrFull(r.address,L('Copy approval address','复制授权地址'))+(addrName(r)?small(E(addrName(r))):'')],
      [L('Blockchain network','区块链网络'),approvalNetwork(r)],
      [L('Approved contract','被授权合约'),copyMasked(r.contract,maskAddr,L('Copy full address','复制完整地址'))+small(r.type==='loan'?L('Lending contract','放款合约'):L('Pledge contract · Ethereum · ','质押合约 · Ethereum · ')+E(r.type==='loan'?'':text(r.kind)))],
      [L('Scope','授权范围'),r.type==='loan'?money(r.amount,r.ccy):'<span class="mono">'+pledgeQuantity(r)+'</span>'+small(copyMasked(r.issuer,maskAddr,L('Copy full address','复制完整地址')))],

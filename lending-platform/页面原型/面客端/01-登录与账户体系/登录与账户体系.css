@@ -267,15 +267,6 @@
 .funder-status .funder-history{margin-top:var(--sp-4);padding-top:0;border-top:0}
 .funder-registration .funder-actions{justify-content:flex-end}
 .funder-registration .funder-actions>.btn.primary{min-width:160px}
-.funder-wallet{display:inline-flex;align-items:center;gap:var(--sp-1);max-width:100%}
-.funder-wallet .btn.icon{width:44px;height:44px;flex:none}
-.funder-address{position:relative;min-width:0}
-.funder-address summary{display:flex;align-items:center;min-height:44px;cursor:pointer;list-style:none;width:fit-content}
-.funder-address summary::-webkit-details-marker{display:none}
-.funder-address summary:hover{background:var(--card-hover)}
-.funder-address[open] summary{border-color:var(--accent)}
-.funder-wallet .funder-address-full{position:absolute;z-index:var(--z-sticky);top:calc(100% + var(--sp-1));left:0;width:min(400px,70vw);padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);box-shadow:var(--shadow-lg);overflow-wrap:anywhere;user-select:text;font-size:var(--ui-field-value)}
-.funder-copy-fallback:not([hidden]){display:block;margin-top:var(--sp-3);font-size:var(--fs-12);color:var(--muted)}
 @media(max-width:760px){.funder-field-grid{grid-template-columns:minmax(0,1fr)}}
 
 /* Email verification is a short dialog; the institution form stays in place. */
@@ -312,11 +303,8 @@
 
 /* WS-443 · registration keeps every fillable item on the page; read-only wallet and progress take one line each. */
 .funder-head-meta{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--sp-3);margin-top:var(--sp-2)}
-.funder-head-meta .funder-address{position:static}
-.funder-head-meta .funder-wallet .funder-address-full{width:min(400px,100%)}
 .funder-head-meta .login-caption{margin:0}
 .funder-head-label{font-size:var(--ui-field-label);color:var(--muted)}
-.funder-head-meta .funder-wallet .hash{font-size:var(--fs-13)}
 .funder-section-hint{margin:0 0 var(--sp-3)}
 .funder-registration #registration-email .funder-email-entry>.field>label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .funder-registration #registration-email .funder-email-entry{align-items:flex-start}

@@ -283,6 +283,34 @@
     return '<button class="btn icon bare" type="button" data-act="' + esc(act) + '" data-v="' + esc(value) + '"' +
       (extra || '') + ' title="' + esc(label) + '" aria-label="' + esc(label) + '">' + ICON.copy + '</button>';
   };
+  /* 钱包地址两种展示：详情给完整地址标签 + 复制图标；列表给前 6 后 4 缩写，点缩写即复制完整地址。
+     合约地址与交易哈希不走这里。 */
+  CF.addrShort = function (v) { v = String(v || ""); return v.length > 10 ? v.slice(0, 6) + "…" + v.slice(-4) : v; };
+  CF.addrFull = function (v, label) {
+    if (!v) return "—";
+    label = label || L("Copy wallet address", "复制钱包地址");
+    return '<span class="addr-full"><span class="addr-pill">' + esc(v) + '</span>' + CF.copyBtn("cf-addr-copy", v, label) + '</span>';
+  };
+  CF.addrCopy = function (v, label) {
+    if (!v) return "—";
+    label = label || L("Copy wallet address", "复制钱包地址");
+    return '<button class="addr-copy" type="button" data-act="cf-addr-copy" data-v="' + esc(v) + '" title="' + esc(v) +
+      '" aria-label="' + esc(label + " " + v) + '">' + esc(CF.addrShort(v)) + '</button>';
+  };
+  /* 复制完整值；剪贴板不可用时退回选区复制，仍失败就把完整值给到提示里供手动复制。 */
+  CF.copyText = function (v) {
+    function fallback() {
+      var ta = document.createElement("textarea"), ok = false;
+      ta.value = v; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      ta.remove();
+      CF.toast(ok ? L("Address copied", "地址已复制") : L("Copy failed. Copy it manually: ", "复制失败，请手动复制：") + v);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(v).then(function () { CF.toast(L("Address copied", "地址已复制")); }, fallback);
+    } else fallback();
+  };
   CF.linkOut = function (href, label) {
     return '<a class="btn icon bare" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" title="' +
       esc(label) + '" aria-label="' + esc(label) + '">' + ICON.external + '</a>';
@@ -1229,6 +1257,7 @@
     var act = el.getAttribute("data-act"), v = el.getAttribute("data-v");
 
     if (el.disabled || el.getAttribute("aria-disabled") === "true") { e.preventDefault(); return; }
+    if (act === "cf-addr-copy") { e.preventDefault(); CF.copyText(v); return; }
     if (M && M.onBeforeAct && M.onBeforeAct(act, v, e)) { e.preventDefault(); render(); return; }
     if (act === "notify-retry") { N.panelState = "default"; render(); return; }
     if (act === "prerequisite") { CF.toast(L("Account setup handoff — demonstration only.", "账户必办事项交接 —— 仅演示。")); return; }

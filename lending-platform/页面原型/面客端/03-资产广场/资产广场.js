@@ -399,8 +399,7 @@
           rows.map(function (r) {
             var project = !r.pledged ? dash() : !r.project.published ? '<span class="muted">' + L("Not public yet", "所属融资项目尚未公开") + "</span>" :
               '<a class="btn-link" href="#/project/' + esc(r.project.id) + '" data-act="am-project" data-v="' + esc(r.project.id) + '">' + esc(nm(r.project.name)) + '</a>';
-            var values = ['<span class="copy-pair"><span class="mono am-address" title="' + esc(r.address) + '">' + esc(shortAddr(r.address)) + '</span>' +
-              CF.copyBtn("am-address-copy", r.address, L("Copy holder address", "复制持有方地址")) + '</span>',
+            var values = [CF.addrCopy(r.address, L("Copy holder address", "复制持有方地址")),
               qty(r.qty), money(r.value, "USD"),
               CF.tag(r.pledged ? "accent" : "", r.pledged ? L("Pledged", "已质押") : L("Not pledged", "未质押")), project];
             return '<tr>' + values.map(function (v, i) { return '<td data-label="' + esc(heads[i]) + '"><div class="cell-wrap">' + v + '</div></td>'; }).join("") + '</tr>';
@@ -878,9 +877,8 @@
     var el = e.target.closest("[data-act]");
     if (!el || !curTokenId()) return;
     var act = el.dataset.act, value = el.dataset.v;
-    if (["am-holding-state", "am-holding-token", "am-holding-retry", "am-address-copy", "am-project"].indexOf(act) < 0) return;
+    if (["am-holding-state", "am-holding-token", "am-holding-retry", "am-project"].indexOf(act) < 0) return;
     e.preventDefault(); e.stopImmediatePropagation();
-    if (act === "am-address-copy") { copyValue(value); return; }
     if (act === "am-project") {
       CF.AM.returnDetail = location.hash; location.hash = "#/project/" + value;
       var project = CF.LS.project(value);

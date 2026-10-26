@@ -114,10 +114,11 @@
   const pending=()=>`<span class="lg-pending">${L('Not generated yet','尚未生成')}</span>`;
   const meta=s=>`<span class="lg-meta">${s}</span>`;
   const network=()=>`<span class="lg-network">${CF.assetIcon('ETH')}<span>Ethereum</span></span>`;
-  const shortAddr=v=>v?v.slice(0,6)+'…'+v.slice(-4):'—';
-  const addrShort=v=>v?`<span class="mono lg-short" title="${E(v)}">${E(shortAddr(v))}</span>`:'—';
+  /* 钱包地址：列表缩写点击即复制，详情完整地址标签 + 复制；合约地址仍走 addrFull。 */
+  const addrShort=v=>CF.addrCopy(v);
   const addrFull=(v,label,tools='')=>v?`<span class="lg-addr"><span class="mono">${E(v)}</span><span class="lg-addr-tools">${CF.copyBtn('lg-copy',v,L('Copy the full '+label,'复制完整'+label))}${tools}</span></span>`:'—';
-  const netAddr=(v,label)=>v?`<span class="lg-netaddr">${network()}${addrFull(v,label)}</span>`:'—';
+  const netAddr=v=>v?`<span class="lg-netaddr">${network()}${CF.addrFull(v)}</span>`:'—';
+  const netContractAddr=(v,label)=>v?`<span class="lg-netaddr">${network()}${addrFull(v,label)}</span>`:'—';
   const ADDR=()=>L('address','地址');
   /* 区块链浏览器：新窗口打开，原页面不动；入口不可用时不给链接，仍可复制。复制与跳转都用完整值。 */
   const explorer=(kind,v,label)=>A.explorer?CF.linkOut('https://etherscan.io/'+kind+'/'+encodeURIComponent(v),label):'';
@@ -145,7 +146,7 @@
       const label=typeof name[0]==='function'?L(name[0](o.seq),name[1](o.seq)):txt(name);
       /* 质押记录里的撤回是转出交易；需求里的撤下是解冻交易。 */
       const kind=pl&&o.kind==='withdraw'?['transfer-out','转出']:TXKIND[o.kind];
-      return `<tr>${cell(L('Time','时间'),listTime(o.at))}${cell(L('Operation','操作'),`<span class="lg-op-name">${E(label)}</span>${o.state?`<span class="lg-op-state">${tag(OPSTATE,o.state)}</span>`:''}${o.ref?meta(`<span class="mono">${E(o.ref)}</span>`):''}`)}${cell(L('Address','地址'),addrFull(o.addr,ADDR()))}${cell(L('Transaction hash','交易哈希'),hashChip(o.tx,kind))}</tr>`;}).join('')}</tbody></table></div>`;
+      return `<tr>${cell(L('Time','时间'),listTime(o.at))}${cell(L('Operation','操作'),`<span class="lg-op-name">${E(label)}</span>${o.state?`<span class="lg-op-state">${tag(OPSTATE,o.state)}</span>`:''}${o.ref?meta(`<span class="mono">${E(o.ref)}</span>`):''}`)}${cell(L('Address','地址'),addrShort(o.addr))}${cell(L('Transaction hash','交易哈希'),hashChip(o.tx,kind))}</tr>`;}).join('')}</tbody></table></div>`;
   }
   /* 报价放款、还款只写业务结果；需要核对交易时指向本轮唯一的操作记录。 */
   const opsPointer=what=>`<p class="lg-expand-note lg-ops-pointer">${what}${L(' are in this round’s ','在本轮')}<a class="lg-link" href="#${E(detailRoute(A.type,A.ref,{tab:'ops',kw:A.kw}))}" data-act="lg-dtab" data-v="ops">${L('operation records','操作记录')}</a>${L('.','中')}</p>`;
@@ -473,7 +474,7 @@
       [L('Removal reason','移出原因'),r.removal?E(txt(REMOVAL[r.removal])):'—'],
       [L('Business release time','业务释放时间'),time(r.releasedAt)],[L('Transfer-out time','转出时间'),time(r.outAt)],
       [L('On-chain token ID','链上代币 ID'),`<span class="mono">${E(r.chainTokenId)}</span>`],
-      [L('Original holder','原持有地址'),netAddr(r.holder,ADDR()),true],[L('Token issuing contract','代币发行合约地址'),netAddr(r.tokenContract,ADDR()),true]])
+      [L('Original holder','原持有地址'),netAddr(r.holder,ADDR()),true],[L('Token issuing contract','代币发行合约地址'),netContractAddr(r.tokenContract,ADDR()),true]])
       +`<h3 class="lg-expand-h">${L('Operation records','操作记录')}</h3>${opsTable(r.ops,'lg-ops-pledge')}`;
   }
   function projectPledges(p){

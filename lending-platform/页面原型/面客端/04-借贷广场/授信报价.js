@@ -206,7 +206,7 @@
   const chainState=q=>['processing','unknown'].includes(q?.chain?.state)?q.chain.state:'';
   const status=q=>q.state==='waiting'&&chainState(q)?L(...{processing:['Disbursement processing','放款处理中'],unknown:['On-chain result to be verified','链上结果待核实']}[chainState(q)]):L({waiting:'Awaiting acceptance',funding:'Disbursement processing',funded:'Accepted · disbursed',terminated:'Accepted · business terminated',rejected:'Rejected',expired:'Quote invalidated'}[q.state],{waiting:'待接受',funding:'放款处理中',funded:'已接受 · 已放款',terminated:'已接受 · 业务已终止',rejected:'已拒绝',expired:'报价已失效'}[q.state]);
   const addrLabel=x=>x?E(Array.isArray(x.label)?L(...x.label):x.label||''):'';
-  const addrInline=x=>x?'<span class="mono cq-break">'+E(x.address)+'</span><div class="hint">'+addrLabel(x)+' · Ethereum</div>':'—';
+  const addrInline=x=>x?CF.addrFull(x.address)+'<div class="hint">'+addrLabel(x)+' · Ethereum</div>':'—';
   const addrSummary=x=>x?'<b>'+addrLabel(x)+'</b><span class="hint">'+E('Ethereum')+' · '+maskAddress(x.address)+'</span>':'—';
   const payeeOf=q=>{const d=D.project(q.project)?.demands.find(x=>x.id===q.demand);return q.payee||q.confirmation?.terms?.receiving||d?.payee||null;};
   const authLabel=q=>!q.lender?'—':q.state==='funded'?L('Used for this disbursement','已按本笔使用'):['rejected','expired'].includes(q.state)?(q.auth?.revoked?L('Revoked','已撤销'):L('Not revoked','未撤销')):L('Active','有效');
@@ -232,7 +232,7 @@
     return '<details class="ls-history cq-confirmation"><summary>'+L('Confirmed terms and evidence','确认条款与凭证')+'</summary>'+dl([
       [L('Verification result','核验结果'),result],[L('Confirmed version','确认版本'),E(c.version)],
       [L('Submission reference','本次提交凭证'),E(c.submission)],
-      [L('Signing address','签名地址'),'<span class="mono cq-break">'+E(c.signer||'—')+'</span>'],
+      [L('Signing address','签名地址'),c.signer?CF.addrFull(c.signer):'—'],
       [L('Confirmed at','签名确认时间'),time(c.at)],
       [L('Confirmation evidence (demo)','确认凭证（演示）'),'<span class="mono cq-break">'+E(c.proof||'—')+'</span>'],
       [L('Approval gas incurred','已产生授权 gas'),x.auth?.gas?E(x.auth.gas)+' ETH':L('To be verified','待核实')]
@@ -367,7 +367,7 @@
     const lender=q.lender?.address||(Q.accounts(x.fund,'crypto')||[]).find(a=>a.chain==='ETH')?.address||'';
     return {id:x.record.id,ccy:x.ccy,amount:x.settlement,lender,payee:x.account?.address||'',repay:q.repayTo||x.record.account,tx:x.record.form?.hash||'',at:x.confirmedAt||x.record.at};};Q.institution=institution;Q.currentQuote=(p,did)=>requestQuotes(p,did).find(x=>['waiting','funding','funded','terminated'].includes(x.state));
   /* 链上放款记录只对本笔资产方与报价机构展示；还款信息只引用编号，不重复这些明细。 */
-  function loanView(q,d){const loan=Q.loanRecord(q),addr=v=>v?'<span class="mono cq-break">'+E(v)+'</span>':'—';if(!loan)return '';
+  function loanView(q,d){const loan=Q.loanRecord(q),addr=v=>v?CF.addrFull(v):'—';if(!loan)return '';
     return section(L('On-chain disbursement','链上放款记录'),dl([[L('Disbursement ID','放款编号'),'<span class="mono">'+E(loan.id)+'</span>'],[L('Currency / amount','放款币种与金额'),'<span class="mono">'+CF.fmtAmt(loan.amount)+' '+E(loan.ccy)+'</span>'],[L('Funding address','放款地址'),addr(loan.lender)],[L('Receiving address','融资收款地址'),addr(loan.payee||d?.payee?.address)],[L('Funder\'s repayment address','资金方还款收款地址'),loan.repay?(loan.repay.kind==='crypto'?addr(loan.repay.address):E(Q.accountBrief(loan.repay))):'—'],[L('Disbursed at','放款成功时间'),time(loan.at)]]));}
   function currentQuoteView(q){
     if(!q)return note('No current quote.','暂无当前报价。');
@@ -385,7 +385,7 @@
     flow.quote=q?.id;
     const overview='<div class="cq-request-head"><div><span class="hint">'+L('Financing request','融资申请')+'</span><h2 class="mono">'+CF.fmtAmt(d.amount)+' USDT</h2><span class="mono hint">'+E(d.id)+'</span></div>'+CF.tag('',requestState(d))+'</div>';
     /* 融资收款地址：本企业资产方可见完整值；资金方按该笔业务当事方读取，非当事方不可见。 */
-    const owner=S.role==='asset'&&D.mine(p),payee=d.payee&&(owner||q&&related(q))?'<span class="mono cq-break">'+E(d.payee.address)+'</span><div class="hint">'+E(L(...(d.payee.label||['',''])))+' · Ethereum</div>':null;
+    const owner=S.role==='asset'&&D.mine(p),payee=d.payee&&(owner||q&&related(q))?CF.addrFull(d.payee.address)+'<div class="hint">'+E(L(...(d.payee.label||['',''])))+' · Ethereum</div>':null;
     const request=dl([[L('Project','所属项目'),E(L(...p.name))],[L('Asset holder','资产企业'),company(p)],[L('Reference settlement currency','参考结算币种'),(p.settle?.length?E(p.settle.join(' / ')):L('Not provided','未提供'))],...(payee?[[L('Receiving address','融资收款地址'),payee]]:[]),[L('Published at','申请发布时间'),time(d.at)],[L('Final repayment date','最终还款日'),date(p.expires)]]);
     /* 操作记录：本轮全部链上交易的唯一记载位置，在详情最下方。每笔一条：时间、操作、地址、交易哈希；尚未成功的标明状态。
        冻结类只给本企业资产方；报价授权与链上放款给本企业资产方和该笔报价机构，非当事资金方看不到。 */
@@ -400,7 +400,7 @@
       const loan=Q.loanRecord(x);if(loan)add(loan.at,OP.loan,loan.payee||d.payee?.address||'',loan.tx,'',party);});
     ops.sort((a,b)=>new Date(b.at)-new Date(a.at));
     const full=v=>v?'<span class="mono cq-break">'+E(v)+'</span>':'—',stateTag=st=>st==='processing'?' '+CF.tag('warn',L('Processing','处理中')):st==='failed'?' '+CF.tag('danger',L('Not completed','未成功')):'';
-    const opsView=ops.length?section(L('Operation records','操作记录'),'<div class="tablewrap"><table class="tbl resp cq-ops"><thead><tr><th scope="col">'+L('Time','时间')+' ('+E(S.tz||'UTC')+')</th><th scope="col">'+L('Operation','操作')+'</th><th scope="col">'+L('Address','地址')+'</th><th scope="col">'+L('Transaction hash','交易哈希')+'</th></tr></thead><tbody>'+ops.map(o=>'<tr><td data-label="'+L('Time','时间')+' ('+E(S.tz||'UTC')+')"><time class="mono" datetime="'+E(o.at)+'" title="'+E(time(o.at))+'">'+E(CF.fmtStamp(o.at))+'</time></td><td data-label="'+L('Operation','操作')+'"><span class="ls-op-name">'+L(...o.op)+'</span>'+(stateTag(o.state)?'<span class="ls-op-state">'+stateTag(o.state)+'</span>':'')+'</td><td data-label="'+L('Address','地址')+'">'+full(o.addr)+'</td><td data-label="'+L('Transaction hash','交易哈希')+'">'+(CF.LSHash?CF.LSHash(o.tx):full(o.tx))+'</td></tr>').join('')+'</tbody></table></div>'):'';
+    const opsView=ops.length?section(L('Operation records','操作记录'),'<div class="tablewrap"><table class="tbl resp cq-ops"><thead><tr><th scope="col">'+L('Time','时间')+' ('+E(S.tz||'UTC')+')</th><th scope="col">'+L('Operation','操作')+'</th><th scope="col">'+L('Address','地址')+'</th><th scope="col">'+L('Transaction hash','交易哈希')+'</th></tr></thead><tbody>'+ops.map(o=>'<tr><td data-label="'+L('Time','时间')+' ('+E(S.tz||'UTC')+')"><time class="mono" datetime="'+E(o.at)+'" title="'+E(time(o.at))+'">'+E(CF.fmtStamp(o.at))+'</time></td><td data-label="'+L('Operation','操作')+'"><span class="ls-op-name">'+L(...o.op)+'</span>'+(stateTag(o.state)?'<span class="ls-op-state">'+stateTag(o.state)+'</span>':'')+'</td><td data-label="'+L('Address','地址')+'">'+(o.addr?CF.addrCopy(o.addr):'—')+'</td><td data-label="'+L('Transaction hash','交易哈希')+'">'+(CF.LSHash?CF.LSHash(o.tx):full(o.tx))+'</td></tr>').join('')+'</tbody></table></div>'):'';
     const creditSummary=credits.map(c=>'<div class="cq-credit-summary"><b>'+institution(c.fund)+'</b>'+dl([[L('Credit limit','授信额度'),usd(c.total)],[L('Credit used','授信已用额'),usd(c.principal+used(c))]])+'<details class="ls-history" data-cq-credit-id="'+E(c.id)+'"'+(flow.openCreditDetails?.includes(c.id)?' open':'')+'><summary>'+L('Credit details and agreements','授信详情与协议')+'</summary>'+companyView()+creditInfo(p,c)+creditHistory(c,true)+'</details></div>').join('')+(credits.length?'<p class="hint">'+L('Shared across all projects of this company.','该企业所有项目共用。')+'</p>':'');
     /* 报价历史只给每笔关键信息与终结原因；资金方只看本机构自己的。 */
     const why=x=>x.state==='rejected'?(related(x)?E(x.reason||'—'):'—'):x.state==='expired'?reason(x):'—';
