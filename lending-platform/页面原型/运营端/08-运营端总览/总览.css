@@ -30,42 +30,63 @@
 [data-tone="2"]{--tone:var(--chart-2)}
 [data-tone="3"]{--tone:var(--chart-3)}
 
-/* Overview face: statistics and the compact queue share one surface, side by side on desktop. */
-.ov-face{display:grid;grid-template-columns:minmax(0,1fr) clamp(300px,30%,380px);min-width:0}
-.ov-face-single{grid-template-columns:minmax(0,1fr)}
-.ov-stats,.ov-rail{padding:var(--sp-5) var(--card-pad);min-width:0}
-.ov-face>.ov-stats+.ov-rail{border-left:1px solid var(--border)}
-.ov-face .stat-strip{display:grid;grid-template-columns:repeat(var(--ov-columns,3),minmax(0,1fr));gap:0;padding:0}
-.ov-face .stat-strip .s{min-width:0;padding:var(--sp-1) var(--sp-5)}
-.ov-face .stat-strip .s:first-child{padding-left:0}
-.ov-face .stat-strip .s+.s{border-left:1px solid var(--row-line)}
-.ov-face .stat-strip.ov-counts{margin-top:var(--sp-5);padding-top:var(--sp-5);border-top:1px solid var(--row-line)}
-.ov-counts .k .ov-source-mark{width:var(--sp-5);height:var(--sp-5);font-size:var(--fs-12)}
-.ov-note{margin-top:var(--sp-1);font-size:var(--ui-field-label);color:var(--muted)}
-.ov-amount .v{margin-top:var(--sp-2)}
-.ov-money{display:inline-flex;align-items:center;gap:var(--sp-2);min-width:0}
-.ov-money .ov-coin{width:20px;height:20px}
-.ov-money-number{font-variant-numeric:tabular-nums}
-.ov-money-peek{position:relative;display:inline-block;max-width:100%}
-.ov-money-peek>summary{display:flex;align-items:center;gap:var(--sp-2);list-style:none;cursor:pointer;border-radius:var(--radius-xs)}
+/* Platform statistics: one circular tile per statistic. The ring frames the value in its
+   identity colour (amounts share the daily-chart series colour); it does not encode a share. */
+.ov-stats{padding:var(--sp-5) var(--card-pad);min-width:0}
+.ov-tiles{display:grid;grid-template-columns:repeat(var(--ov-columns,6),minmax(0,1fr));gap:var(--sp-5) 0}
+.ov-tile{display:flex;flex-direction:column;align-items:center;min-width:0;padding:0 var(--sp-3);text-align:center}
+.ov-tile+.ov-tile{border-left:1px solid var(--row-line)}
+.ov-tiles[data-split="1"] .ov-tile:nth-child(2),.ov-tiles[data-split="2"] .ov-tile:nth-child(3),.ov-tiles[data-split="3"] .ov-tile:nth-child(4){border-left-color:var(--border-strong)}
+.ov-tile h3{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);margin:0;font-size:var(--ui-field-value);font-weight:500;color:var(--text)}
+.ov-tile h3 .ov-source-mark{width:var(--sp-5);height:var(--sp-5);font-size:var(--fs-12)}
+.ov-note{margin:var(--sp-1) 0 0;font-size:var(--ui-field-label);color:var(--muted)}
+.ov-tile-head{min-height:calc(var(--ui-field-value) * 1.5 + var(--ui-field-label) * 3.2 + var(--sp-1));align-self:stretch}
+.ov-tile>.ov-state{justify-content:center}
+[data-tone="src-tokens"]{--tone:var(--accent)}
+[data-tone="src-contracts"]{--tone:var(--violet)}
+[data-tone="src-institutions"]{--tone:var(--pos)}
+.ov-ring{position:relative;width:min(136px,100%);aspect-ratio:1;margin-top:var(--sp-2);flex:none}
+.ov-ring>svg{display:block;width:100%;height:100%;transform:rotate(-90deg)}
+.ov-ring>svg circle{fill:none;stroke-width:8}
+.ov-ring-track{stroke:var(--track)}
+.ov-ring-arc{stroke:var(--tone);stroke-linecap:round}
+.ov-ring[data-ring-state=loading] .ov-ring-arc,.ov-ring[data-ring-state=error] .ov-ring-arc{stroke:none}
+.ov-ring[data-ring-state=error] .ov-ring-track{stroke:var(--warn-border);stroke-dasharray:4 5}
+.ov-ring-center{position:absolute;inset:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;text-align:center}
+.ov-ring-value{font-family:var(--numeric);font-size:var(--ui-stat-size);font-weight:500;line-height:1.3;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--text)}
+.ov-ring-center[data-size=long] .ov-ring-value{font-size:var(--fs-14)}
+.ov-ring-center .u{font-size:var(--fs-11);color:var(--muted)}
+.ov-ring-center .ov-unavailable{font-size:var(--ui-field-label)}
+.ov-money{display:flex;flex-direction:column;align-items:center;gap:var(--sp-1);min-width:0}
+.ov-money-number{font-family:var(--numeric);font-size:var(--ui-stat-size);font-weight:500;line-height:1.3;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--text)}
+.ov-money-code{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-11);color:var(--muted)}
+.ov-money .ov-coin{width:16px;height:16px}
+.ov-money-peek{position:static;display:block}
+.ov-money-peek>summary{display:flex;flex-direction:column;align-items:center;gap:var(--sp-1);list-style:none;cursor:pointer;padding:var(--sp-1) var(--sp-2);border-radius:var(--radius-xs)}
 .ov-money-peek>summary::-webkit-details-marker{display:none}
 .ov-money-peek>summary::after{content:"";width:5px;height:5px;flex:none;border-right:1px solid var(--muted);border-bottom:1px solid var(--muted);transform:rotate(45deg);margin-top:calc(-1 * var(--sp-1))}
 .ov-money-peek[open]>summary::after{transform:rotate(225deg);margin-top:var(--sp-1)}
 .ov-money-peek>summary:hover .ov-money-number{color:var(--accent)}
 .ov-money-peek>summary:focus-visible{outline:2px solid var(--accent);outline-offset:var(--sp-1)}
-.ov-money-exact{position:absolute;z-index:var(--z-sticky);left:0;top:calc(100% + var(--sp-2));width:max-content;max-width:calc(100vw - var(--sp-8));padding:var(--sp-3) var(--sp-4);background:var(--card);border:1px solid var(--border-strong);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg)}
+.ov-money-exact{position:absolute;z-index:var(--z-sticky);left:50%;top:calc(100% + var(--sp-1));transform:translateX(-50%);width:max-content;max-width:calc(100vw - var(--sp-8));padding:var(--sp-3) var(--sp-4);background:var(--card);border:1px solid var(--border-strong);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);text-align:left}
 .ov-money-exact>span{display:block;margin-bottom:var(--sp-1);font-size:var(--fs-11);font-family:var(--sans);font-weight:400;color:var(--muted)}
 .ov-money-exact>b{font-size:var(--ui-field-value);font-weight:500;font-variant-numeric:tabular-nums;color:var(--text);letter-spacing:0}
-.ov-today{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-1) var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-3);padding-top:var(--sp-2);border-top:1px dashed var(--border-dash);font-size:var(--ui-field-label);color:var(--muted)}
+.ov-today{display:flex;flex-direction:column;align-items:center;gap:2px;margin:var(--sp-3) 0 0;padding-top:var(--sp-2);border-top:1px dashed var(--border-dash);font-size:var(--ui-field-label);color:var(--muted);align-self:stretch}
 .ov-today span::before{content:"";display:inline-block;width:8px;height:8px;margin-right:var(--sp-2);border-radius:2px;background:var(--tone)}
 .ov-today b{font-weight:500;color:var(--text);font-variant-numeric:tabular-nums}
-.ov-flag{margin-top:var(--sp-2);font-size:var(--ui-field-label);color:var(--warn)}
-.ov-face [data-read-state=error] .ov-unavailable{color:var(--warn)}
+.ov-flag{margin:var(--sp-2) 0 0;font-size:var(--ui-field-label);color:var(--warn)}
+.ov-tile[data-read-state=error] .ov-unavailable{color:var(--warn)}
+
+/* Bottom row: recent decisions on the left, action queue on the right. */
+.ov-lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:var(--sp-5);align-items:start}
+.ov-lower-single{grid-template-columns:minmax(0,1fr)}
+.ov-lower .ov-recent-list{grid-template-columns:minmax(0,1fr)}
+.ov-lower-single .ov-recent-list{grid-template-columns:repeat(var(--ov-columns,2),minmax(0,1fr))}
 
 /* Compact queue: one row per category, text action at the end of the row. */
-.ov-tasks{list-style:none;margin:0;padding:0}
-.ov-task{padding:var(--sp-3) 0;border-top:1px solid var(--row-line)}
-.ov-task:first-child{border-top:0;padding-top:0}
+.ov-tasks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);list-style:none;margin:0;padding:0}
+.ov-task{padding:var(--sp-4) var(--sp-5);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);min-width:0}
+.ov-task[data-read-state=error]{border-color:var(--warn-border)}
 .ov-task-head{display:flex;align-items:center;gap:var(--sp-2);min-width:0}
 .ov-task h3{min-width:0;margin:0;font-size:var(--ui-row-value);font-weight:500;line-height:1.5;overflow-wrap:anywhere}
 .ov-task-head .tag{flex:none}
@@ -136,17 +157,17 @@
 .ov-recent[data-read-state=error]{border-color:var(--warn-border)}
 .ov-page :is(button,a):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 @media(max-width:1100px){
-  .ov-face{grid-template-columns:minmax(0,1fr)}
-  .ov-face>.ov-stats+.ov-rail{border-left:0;border-top:1px solid var(--border)}
+  .ov-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ov-tile:nth-child(3n+1){border-left:0}
+  .ov-lower{grid-template-columns:minmax(0,1fr)}
   .ov-charts{grid-template-columns:minmax(0,1fr)}
 }
 @media(max-width:700px){
   .ov-heading{flex-wrap:wrap;gap:var(--sp-4)}
   .ov-heading-tools{justify-content:flex-start}
   .ov-refresh-status{text-align:left}
-  .ov-face .stat-strip,.ov-recent-list{grid-template-columns:minmax(0,1fr)}
-  .ov-face .stat-strip .s{padding-inline:0}
-  .ov-face .stat-strip .s+.s{border-left:0;border-top:1px solid var(--row-line);padding-top:var(--sp-3)}
+  .ov-tiles,.ov-recent-list,.ov-tasks{grid-template-columns:minmax(0,1fr)}
+  .ov-tile+.ov-tile{border-left:0;border-top:1px solid var(--row-line);padding-top:var(--sp-4)}
   .ov-section-head{flex-wrap:wrap;gap:var(--sp-2)}
 }
 @media(prefers-reduced-motion:reduce){.ov-state .spinner{animation:none}}

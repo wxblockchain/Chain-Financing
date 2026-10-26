@@ -66,16 +66,28 @@
   // Currency icon (when the shared set has one) → compact value → small code; full amount in the peek panel.
   function amountPeek(m,v){
     const full=money(v)+' '+m.ccy,icon=CF.assetIconSvg&&CF.assetIconSvg(m.ccy)?CF.assetIcon(m.ccy,'ov-coin'):'';
-    const face='<span class="ov-money" data-ov-value="'+m.key+'-'+m.field+'">'+icon+'<span class="ov-money-number">'+compact(v)+'</span><span class="u">'+m.ccy+'</span></span>';
+    const face='<span class="ov-money" data-ov-value="'+m.key+'-'+m.field+'"><span class="ov-money-number">'+compact(v)+'</span><span class="ov-money-code">'+icon+'<span class="u">'+m.ccy+'</span></span></span>';
     if(compact(v)===money(v))return face;
     return '<details class="ov-money-peek"><summary title="'+E(full)+'" aria-label="'+E(full+' · '+L('Full amount','完整金额'))+'">'+face+'</summary><div class="ov-money-exact"><span>'+L('Full amount','完整金额')+'</span><b>'+full+'</b></div></details>';
   }
+  // Circular tile: the ring frames one statistic in its identity colour; it encodes no share or ratio.
+  function ring(tone,state,inner,size){
+    return '<div class="ov-ring" data-tone="'+tone+'" data-ring-state="'+state+'"><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><circle class="ov-ring-track" cx="60" cy="60" r="54"/><circle class="ov-ring-arc" cx="60" cy="60" r="54"/></svg><div class="ov-ring-center"'+(size?' data-size="'+size+'"':'')+'>'+inner+'</div></div>';
+  }
+  const ringState=key=>{const c=cache[key];return !c||c.state==='loading'&&!c.data?'loading':c.state==='error'&&!c.data?'error':'ready';};
   function amountCell(m){
     const c=cache[m.key],v=c?.data?c.data[m.field]:null,list=series(m.key,m.series),today=list?list[list.length-1]:null;
-    const missing=m.field==='value'&&c?.data?.missingValue>0?'<div class="n ov-flag">'+L(count(c.data.missingValue)+' record'+(c.data.missingValue===1?'':'s')+' without a token value are not included','另有 '+count(c.data.missingValue)+' 笔缺少代币价值，未计入')+'</div>':'';
-    const todayLine=c?.data?'<div class="n ov-today" data-tone="'+m.tone+'"><span>'+tr(m.today)+' (UTC)</span><b>'+(today==null?L('Unavailable','暂不可用'):money(today)+' '+m.ccy)+'</b></div>':'';
-    return '<div class="s ov-amount" data-source="'+m.key+'" data-read-state="'+(c?.state||'loading')+'"><div class="k">'+tr(m.label)+'</div>'+(m.note?'<div class="ov-note">'+tr(m.note)+'</div>':'')+
-      '<div class="v">'+(v==null?unavailable(m.key):amountPeek(m,v))+'</div>'+feedback(m.key)+missing+todayLine+(c?.at?time(c.at):'')+'</div>';
+    const missing=m.field==='value'&&c?.data?.missingValue>0?'<p class="ov-flag">'+L(count(c.data.missingValue)+' record'+(c.data.missingValue===1?'':'s')+' without a token value are not included','另有 '+count(c.data.missingValue)+' 笔缺少代币价值，未计入')+'</p>':'';
+    const todayLine=c?.data?'<p class="ov-today" data-tone="'+m.tone+'"><span>'+tr(m.today)+' (UTC)</span><b>'+(today==null?L('Unavailable','暂不可用'):money(today)+' '+m.ccy)+'</b></p>':'';
+    const inner=v==null?unavailable(m.key):amountPeek(m,v);
+    return '<div class="ov-tile ov-amount" data-source="'+m.key+'" data-read-state="'+(c?.state||'loading')+'"><div class="ov-tile-head"><h3>'+tr(m.label)+'</h3>'+(m.note?'<p class="ov-note">'+tr(m.note)+'</p>':'')+'</div>'+
+      ring(m.tone,ringState(m.key),inner)+feedback(m.key)+missing+todayLine+(c?.at?time(c.at):'')+'</div>';
+  }
+  function countCell(k){
+    const c=cache[k],n=c?.data?c.data.approved:null;
+    const inner=n==null?unavailable(k):'<span class="ov-ring-value" data-ov-value="'+k+'-approved">'+count(n)+'</span><span class="u">'+unit(k,n)+'</span>';
+    return '<div class="ov-tile ov-count" data-source="'+k+'" data-read-state="'+(c?.state||'loading')+'"><div class="ov-tile-head"><h3>'+mark(k)+tr(sources[k].stat)+'</h3></div>'+
+      ring('src-'+k,ringState(k),inner,n!=null&&count(n).length>7?'long':'')+feedback(k)+(c?.at?time(c.at):'')+'</div>';
   }
   function niceMax(v){if(v<=0)return 100;const p=Math.pow(10,Math.floor(Math.log10(v))),n=v/p;return [1,2,2.5,5,10].find(x=>x>=n)*p;}
   function chartBlock(def,days){
@@ -151,18 +163,16 @@
     const shownAmounts=amounts.filter(m=>can(m.key)),shownCharts=charts.filter(d=>d.series.some(s=>can(s.key)));
     const now=Date.now(),days=D.days(now).map(utcDay);
     const zone='<span class="ov-section-meta">'+L('Time zone: ','时区：')+E(S.tz)+'</span>';
-    const statsBlock=shownAmounts.length||stats.length?'<section class="ov-stats" aria-labelledby="ov-stats-title"><div class="ov-section-head"><h2 id="ov-stats-title">'+L('Platform statistics','平台统计')+'</h2>'+zone+'</div>'+
-      (shownAmounts.length?'<div class="stat-strip ov-amounts" style="--ov-columns:'+shownAmounts.length+'">'+shownAmounts.map(amountCell).join('')+'</div>':'')+
-      (stats.length?'<div class="stat-strip ov-counts" style="--ov-columns:'+stats.length+'">'+stats.map(k=>'<div class="s" data-source="'+k+'" data-read-state="'+(cache[k]?.state||'loading')+'"><div class="k">'+mark(k)+tr(sources[k].stat)+'</div><div class="v">'+figure(k,'approved','ov-count')+'</div>'+feedback(k)+(cache[k]?.at?time(cache[k].at):'')+'</div>').join('')+'</div>':'')+'</section>':'';
+    const tiles=shownAmounts.map(amountCell).concat(stats.map(countCell));
+    const statsBlock=tiles.length?'<section class="card ov-stats" aria-labelledby="ov-stats-title"><div class="ov-section-head"><h2 id="ov-stats-title">'+L('Platform statistics','平台统计')+'</h2>'+zone+'</div><div class="ov-tiles" style="--ov-columns:'+tiles.length+'" data-split="'+(shownAmounts.length&&stats.length?shownAmounts.length:0)+'">'+tiles.join('')+'</div></section>':'';
     const allClear=tasks.length===4&&tasks.every(k=>cache[k]?.state==='ready'&&cache[k].data.pending===0);
-    const rail=tasks.length?'<section class="ov-rail" aria-labelledby="ov-tasks-title"><div class="ov-section-head"><h2 id="ov-tasks-title">'+L('Action required','待办事项')+'</h2></div><ul class="ov-tasks">'+tasks.map(taskRow).join('')+'</ul>'+(allClear?'<p class="ov-empty" role="status">'+L('No items in these four queues need action.','当前暂无这四类待办事项。')+'</p>':'')+'</section>':'';
-    const face=statsBlock||rail?'<div class="card ov-face'+(statsBlock&&rail?'':' ov-face-single')+'">'+statsBlock+rail+'</div>':'';
+    const rail=tasks.length?'<section class="ov-section ov-rail" aria-labelledby="ov-tasks-title"><div class="ov-section-head"><h2 id="ov-tasks-title">'+L('Action required','待办事项')+'</h2></div><ul class="ov-tasks">'+tasks.map(taskRow).join('')+'</ul>'+(allClear?'<p class="ov-empty" role="status">'+L('No items in these four queues need action.','当前暂无这四类待办事项。')+'</p>':'')+'</section>':'';
     const toggle='<div class="seg ov-view" role="group" aria-label="'+L('Display as','展示方式')+'">'+[['chart','Chart','图表'],['table','Table','表格']].map(([id,en,zh])=>'<button type="button" data-act="ov-view" data-v="'+id+'" aria-pressed="'+(view===id)+'">'+L(en,zh)+'</button>').join('')+'</div>';
     const daily=shownCharts.length?'<section class="card ov-panel" aria-labelledby="ov-daily-title"><div class="ov-section-head"><div><h2 id="ov-daily-title">'+L('Daily new','每日新增')+'</h2><p class="ov-section-meta">'+L('Last 14 UTC days · ','最近 14 个 UTC 日 · ')+days[0]+L(' to ',' 至 ')+days[days.length-1]+L(' · today in progress',' · 今天尚未结束')+'</p></div>'+toggle+'</div><div class="ov-charts">'+shownCharts.map(d=>chartBlock(d,days)).join('')+'</div></section>':'';
     const range=days[days.length-7]+L(' to ',' 至 ')+days[days.length-1];
     const recent=recents.length?'<section class="ov-section" aria-labelledby="ov-recent-title"><div class="ov-section-head"><h2 id="ov-recent-title">'+L('Recent decisions','近期审结')+'</h2><span class="ov-section-meta">'+L('Last 7 days (UTC) · ','近 7 个自然日（UTC）· ')+range+'</span></div><div class="ov-recent-list" style="--ov-columns:'+recents.length+'">'+recents.map(recentCard).join('')+'</div></section>':'';
     return '<div class="ov-page"><div class="ov-heading"><div><h1>'+L('Overview','总览')+'</h1><p class="page-desc">'+L('Platform statistics, daily activity and the work that needs attention.','平台统计、每日新增与当前待办。')+'</p></div><div><div class="ov-heading-tools">'+CF.tag('gray',L('Demonstration data','演示数据'))+'<button class="btn" type="button" id="ov-refresh" data-act="ov-refresh" '+(!allowed.length?'disabled':busy()?'aria-disabled="true"':'')+'>'+L('Refresh data','刷新数据')+'</button></div><p class="ov-refresh-status" aria-live="polite">'+(busy()?L('Updating available sources…','正在读取有权查看的数据…'):'')+'</p></div></div>'+
-      face+daily+recent+(!allowed.length?CF.empty(L('No business sources available','暂无可查看的业务摘要'),L('This account has no query permission for these sources.','当前账号未开通这些来源的查询权限。'),''):'')+'</div>';
+      statsBlock+daily+(recent||rail?'<div class="ov-lower'+(recent&&rail?'':' ov-lower-single')+'">'+recent+rail+'</div>':'')+(!allowed.length?CF.empty(L('No business sources available','暂无可查看的业务摘要'),L('This account has no query permission for these sources.','当前账号未开通这些来源的查询权限。'),''):'')+'</div>';
   }
   function setScene(value){
     scene=value;Object.keys(sources).forEach(k=>{versions[k]=(versions[k]||0)+1});cache={};
