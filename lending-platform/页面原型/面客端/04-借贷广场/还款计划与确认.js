@@ -164,20 +164,21 @@
     if(!listViews.has(project.id))listViews.set(project.id,{query:'',state:'',overdue:'',page:1});
     const view=listViews.get(project.id),all=available(project).filter(x=>(!view.state||stateOf(x)===view.state)&&(!view.overdue||(businessOverdue(x).length?'yes':'no')===view.overdue)&&[x.request,x.id,x.record?.id,funder(x)].some(v=>String(v||'').toLowerCase().includes(view.query.toLowerCase()))).sort((a,b)=>Date.parse(b.confirmedAt)-Date.parse(a.confirmedAt)||b.id.localeCompare(a.id)),pages=Math.max(1,Math.ceil(all.length/5));
     view.page=Math.min(view.page,pages);
-    const rows=all.slice((view.page-1)*5,view.page*5),heads=[[L('Application / business','融资申请 / 业务'),'rp-col-request'],[L('Disbursement no.','放款编号'),'rp-col-loan'],[L('Funder','出资机构'),'rp-col-funder'],...(privateColumns?[[L('Repayment date (UTC)','还款时间（UTC）'),'rp-col-time'],[L('Current instalment','本期应还'),'rp-col-amount rp-num']]:[]),[L('Status','状态'),'rp-col-status']];
+    const rows=all.slice((view.page-1)*5,view.page*5),heads=[[L('Application / business','融资申请 / 业务'),'rp-col-request'],[L('Disbursement no.','放款编号'),'rp-col-loan'],[L('Funder','出资机构'),'rp-col-funder'],...(privateColumns?[[L('Repayment date (UTC)','还款时间（UTC）'),'rp-col-time'],[L('Current instalment','本期应还'),'rp-col-amount rp-num']]:[]),[L('Status','状态'),'rp-col-status'],[L('Overdue','逾期'),'rp-col-overdue']];
     const cell=(i,html)=>'<td data-label="'+E(heads[i][0])+'" class="'+heads[i][1]+'"><div class="rp-cell-value">'+html+'</div></td>';
-    /* 一笔一行：还款时间只展示本期应还日；期次与开放时刻在详情。本期应还只展示金额；逾期与处理中归状态。 */
+    /* 一笔一行、一列一项：还款时间只展示本期应还日，本期应还只展示金额，状态只给业务状态，逾期单独一列；期次、开放时刻与上链确认中等进度都在详情。 */
+    const overdueCell=(x,late)=>businessOverdue(x).length?CF.tag('warn',party(x)&&late?L('Overdue '+late+(late>1?' days':' day'),'逾期 '+late+' 天'):L('Overdue','逾期')):'<span class="hint">'+L('Not overdue','未逾期')+'</span>';
     const privateEmpty=(x,p8,p)=>!party(x)?L('Parties only','仅本笔双方可见'):!p8?'—':!p?L('No instalments awaiting repayment','暂无待还期次'):'';
     const current=(x,p8,p)=>{const empty=privateEmpty(x,p8,p);return empty?'<span class="hint">'+empty+'</span>':'<b class="mono">'+amount(p.settlement,x.ccy)+'</b>'+(x.ccy==='USDT'?'':'<div class="hint">'+L('Total ','应还合计 ')+amount(p.total)+'</div>');};
     const repaymentTime=(x,p8,p)=>{const empty=privateEmpty(x,p8,p);return empty?'<span class="hint">'+empty+'</span>':'<span>'+date(p.due)+'</span>';};
     const content=rows.map(x=>{
-      const p8=quote(x.id)?.l8,p=firstDue(p8),pending=processingOf(x),late=p&&overdue(p)||pending&&overdue(pending);
+      const p8=quote(x.id)?.l8,p=firstDue(p8),pending=processingOf(x),late=p&&overdue(p)||pending&&overdue(pending)||0;
       return '<tr data-act="rp-detail" data-v="'+E(x.id)+'" tabindex="0" role="button" aria-label="'+L('View repayment ','查看还款 ')+E(x.request)+'">'
         +cell(0,'<strong>'+E(x.request)+'</strong><div class="hint mono">'+E(x.id)+'</div>')
         +cell(1,'<span class="mono">'+E(x.record.id)+'</span>')
         +cell(2,E(funder(x)))
         +(privateColumns?cell(3,repaymentTime(x,p8,p))+cell(4,current(x,p8,p)):'')
-        +cell(heads.length-1,repaymentState(x)+overdueBadge(x)+(party(x)&&late?'<div class="rp-list-late">'+L('Overdue ','逾期 ')+late+L(' days',' 天')+'</div>':'')+(party(x)&&pending?'<div class="rp-list-chain">'+(unknown(pending)?L('On-chain result to be verified','链上结果待核实'):L('Repayment pending on-chain','有还款上链确认中'))+'</div>':''))+'</tr>';
+        +cell(heads.length-2,repaymentState(x))+cell(heads.length-1,overdueCell(x,late))+'</tr>';
     }).join('');
     /* 筛选与项目内代币清单同构：条件下拉即时生效，编号搜索回车或离开输入框后生效，重置为轻操作。 */
     const filtered=!!(view.query||view.state||view.overdue);
