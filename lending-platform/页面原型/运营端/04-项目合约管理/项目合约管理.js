@@ -603,11 +603,13 @@
     if(!d||!r)return {title:L('Unavailable','不可用'),html:'',foot:b('Close','关闭','cancel')};
     const again=d.mode==='redeploy',list=candidates(r);
     const failure=again&&r.fail?note(L('The last deployment failed: ','最近一次部署失败：')+txt(r.fail.reason),'warn'):'';
-    const options=list.length?list.map(p=>`<label class="cm-pick${d.pledge===p.id?' is-on':''}"><input type="radio" name="cm-pledge" id="cm-pledge-${E(p.id)}" value="${E(p.id)}" ${d.pledge===p.id?'checked':''}><span class="mono cm-pick-addr">${E(p.address)}</span><span class="cm-meta">${L('Configured projects','已配置项目')} ${configuredOn(p).length}</span></label>`).join('')
-      :`<p class="cm-meta">${L('No pledge contract is available for this combination.','该组合暂无可选质押合约。')}</p>`;
+    /* 下拉选项：完整合约地址与已配置项目数；不预选、不排序推荐。 */
+    const options=[['',list.length?L('Select a pledge contract','请选择质押合约'):L('No pledge contract available for this combination','该组合暂无可选质押合约')],
+      ...list.map(p=>[p.id,p.address+' · '+L('configured projects ','已配置项目 ')+configuredOn(p).length])];
+    const pick=field(txt(PLEDGE_LABEL)+' *',select('cm-pledge',d.pledge,options,`aria-required="true" aria-describedby="cm-form-error"${list.length?'':' disabled'}`));
     const ack=L('I understand: a successful configuration is the approval itself and cannot be withdrawn.','我已知悉：配置成功即审核通过，不可撤销。');
     return {title:again?L('Start the deployment again','再次发起部署'):L('Approve and deploy contracts','通过并部署合约'),
-      html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${failure}${kv([[L('Applicable combination','适用组合'),comboValue(r),true]])}<fieldset class="cm-picks"><legend>${CF.fieldLabel(txt(PLEDGE_LABEL)+' *')}</legend>${options}</fieldset><p class="cm-meta cm-deploy-note">${L('After you submit, the platform deploys this project’s loan contract and repayment contract.','提交后，平台为本项目部署放款合约与还款合约。')}</p><label class="cm-ack"><input id="cm-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel(ack,true)}</label></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
+      html:`<div class="cm-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${failure}${kv([[L('Applicable combination','适用组合'),comboValue(r),true]])}${pick}<p class="cm-meta cm-deploy-note">${L('After you submit, the platform deploys this project’s loan contract and repayment contract.','提交后，平台为本项目部署放款合约与还款合约。')}</p><label class="cm-ack"><input id="cm-ack" aria-required="true" type="checkbox" ${d.ack?'checked':''}> ${CF.fieldLabel(ack,true)}</label></fieldset><div id="cm-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
       foot:b('Cancel','取消','cancel','','',A.busy)+b('Confirm and submit','确认提交','submit','','primary',A.busy||r.closed)};
   }
   function returnLayer(){
@@ -763,10 +765,7 @@
         if(count)count.textContent=Array.from(el.value.trim()).length+' / 500 · '+L('Minimum 10 characters','至少 10 字');
         el.setAttribute('aria-invalid','false');
       }
-      if(el.name==='cm-pledge'){
-        A.draft.pledge=el.value;
-        document.querySelectorAll('.cm-pick').forEach(x=>x.classList.toggle('is-on',x.contains(el)));
-      }
+      if(id==='cm-pledge')A.draft.pledge=el.value;
       if(id==='cm-ack')A.draft.ack=el.checked;
     }
   }
