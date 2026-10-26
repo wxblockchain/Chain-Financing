@@ -187,7 +187,7 @@
       +(!rows.length?CF.empty(L('No repayment information','暂无还款信息'),filtered?L('No repayments match these filters. Adjust or reset them.','没有符合条件的还款业务，请调整或重置筛选。'):L('Repayment schedules and actions become available after a disbursement succeeds.','放款成功后可查看还款计划和办理还款。')):'')
       +'<div class="rp-pagination"><span class="hint">'+all.length+L(' businesses',' 笔业务')+' · '+L('5 per page','每页 5 条')+'</span><div>'+b('table-page',L('Previous','上一页'),project.id+'|'+(view.page-1),false,view.page===1)+' <span>'+view.page+' / '+pages+'</span> '+b('table-page',L('Next','下一页'),project.id+'|'+(view.page+1),false,view.page===pages)+'</div></div>';
   }
-  /* 详情：本期应还（含期次、开放时刻与处理中进展）→ 业务信息 → 还款计划（逐期台账与还款记录）→ 资金方还款收款地址 → 客服 → 操作记录（交易哈希唯一位置）。 */
+  /* 详情：本期应还（含期次、开放时刻与处理中进展）→ 业务信息 → 还款计划（逐期台账与还款记录）→ 资金方还款收款地址 → 操作记录（交易哈希唯一位置）→ 需要帮助（页面最下方）。 */
   function summary(x,p8){const n=p8.periods.length,sum=k=>p8.periods.reduce((t,p)=>t+p[k],0);
     if(p8.settledAt)return '<section class="rp-summary"><div class="rp-summary-head"><div><span class="hint">'+L('Repayment','还款')+'</span><div class="rp-summary-amount">'+L('All instalments settled','全部期次已结清')+'</div></div>'+CF.tag('ok',L('Settled','已结清'))+'</div>'+dl([[L('Settled at','结清时间'),time(p8.settledAt)],[L('Principal repaid (USDT)','累计已还本金（USDT）'),'<span class="mono">'+CF.fmtAmt(x.amount)+'</span>'],[L('Interest repaid (USDT)','累计已还利息（USDT）'),'<span class="mono">'+CF.fmtAmt(sum('interest'))+'</span>']])+settlementResult(x)+'</section>';
     const pending=processingOf(x),p=pending||(period()?.state==='due'?period():firstDue(p8)||nearest(x)),late=overdue(p),next=pending?firstDue(p8):null;
@@ -200,7 +200,7 @@
     if(load==='loading')body+='<p role="status">'+L('Loading repayment information…','正在加载还款信息…')+'</p>';else if(load==='error')body+=CF.empty(L('Unable to load repayment information','还款信息加载失败'),'',b('retry',L('Retry','重试')));
     else if(!party(x))body+=businessFacts(x,p8)+performance();
     else if(!p8)body+=CF.note('',L('The disbursement succeeded. The repayment schedule is being generated.','放款已成功，还款计划生成中。'))+businessFacts(x,p8)+payeeSection()+support();
-    else body+=approvalNote(activeOf(x))+summary(x,p8)+businessFacts(x,p8)+section(L('Repayment schedule','还款计划'),ledger('detail'))+payeeSection()+support()+section(L('Operation records','操作记录'),'<p class="hint rp-section-lead">'+L('Every approval and repayment transaction sent for this business, newest first.','本笔各期已发出的授权交易与还款交易，按时间倒序。')+'</p>'+operations(x),'rp-operations');
+    else body+=approvalNote(activeOf(x))+summary(x,p8)+businessFacts(x,p8)+section(L('Repayment schedule','还款计划'),ledger('detail'))+payeeSection()+section(L('Operation records','操作记录'),'<p class="hint rp-section-lead">'+L('Every approval and repayment transaction sent for this business, newest first.','本笔各期已发出的授权交易与还款交易，按时间倒序。')+'</p>'+operations(x),'rp-operations')+support();
     return {title,html:'<div class="rp-drawer" data-kind="detail">'+body+'</div>',foot};
   }
   function schedule(readOnly=false){const x=deal();if(!visible(x))return deniedView().html;if(!party(x))return performance();return planFacts(true)+ledger(readOnly?'inline':'plan');}
