@@ -323,6 +323,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-request-head h2{font-size:var(--ui-stat-size);font-weight:600;margin:var(--sp-1) 0;line-height:1.5;overflow-wrap:anywhere}
 .cq-request-head .tag{white-space:normal;flex-shrink:0}
 .modal:has(.cq-request-detail) .modal-h[tabindex="-1"]{outline:none}
+.drawer:has(.cq-request-detail) .drawer-h[tabindex="-1"]{outline:none}
 /* Demo panel sizing is maintained by the shared review-tool layer. */
 .cq-guide h3{font-size:var(--fs-16);margin:0 0 var(--sp-4)}
 .cq-demo-current{background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-4);margin-bottom:var(--sp-4)}
@@ -837,24 +838,24 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-detail-main .rp-list td:nth-child(2){font-family:var(--mono);font-variant-numeric:tabular-nums}
 .ls-detail-main .pager{font-size:var(--fs-12);color:var(--muted)}
 
-/* WS-446：质押数量与代币标识分列，使用语义列类名，避免新增列后继承旧序号列宽 / 对齐。 */
-#ls-pledged-tokens .ls-token-table.ls-token-columns{min-width:1280px}
-#ls-pledged-tokens .ls-token-columns[data-owner="true"]{min-width:1440px}
+/* WS-446：清单已移除 Hash，按资产方八列 / 资金方七列分配；数量和价值独立右对齐。 */
+#ls-pledged-tokens .ls-token-table.ls-token-columns{min-width:1040px}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"]{min-width:1200px}
 #ls-pledged-tokens .ls-token-columns :is(th,td){width:auto;text-align:left}
 #ls-pledged-tokens .ls-token-columns .ls-token-col-network{width:8%}
-#ls-pledged-tokens .ls-token-columns .ls-token-col-id{width:18%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-id{width:22%}
 #ls-pledged-tokens .ls-token-columns .ls-token-col-holder{width:14%}
-#ls-pledged-tokens .ls-token-columns .ls-token-col-quantity{width:15%}
-#ls-pledged-tokens .ls-token-columns .ls-token-col-value,#ls-pledged-tokens .ls-token-columns .ls-token-col-hash{width:13%}
-#ls-pledged-tokens .ls-token-columns .ls-token-col-validity{width:8%}
-#ls-pledged-tokens .ls-token-columns .ls-token-col-counted{width:11%}
-#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-id{width:15%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-quantity{width:17%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-value{width:15%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-validity{width:10%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-counted{width:14%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-id{width:17%}
 #ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-holder{width:13%}
-#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-quantity{width:14%}
-#ls-pledged-tokens .ls-token-columns[data-owner="true"] :is(.ls-token-col-value,.ls-token-col-hash){width:12%}
-#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-validity{width:7%}
-#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-counted{width:9%}
-#ls-pledged-tokens .ls-token-columns .ls-token-col-going{width:10%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-quantity{width:15%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-value{width:14%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-validity{width:8%}
+#ls-pledged-tokens .ls-token-columns[data-owner="true"] .ls-token-col-counted{width:11%}
+#ls-pledged-tokens .ls-token-columns .ls-token-col-going{width:14%}
 #ls-pledged-tokens .ls-token-columns :is(.ls-token-col-quantity,.ls-token-col-value){text-align:right;font-variant-numeric:tabular-nums}
 #ls-pledged-tokens .ls-token-columns td .cell-wrap{align-items:flex-start}
 #ls-pledged-tokens .ls-token-columns td:is(.ls-token-col-quantity,.ls-token-col-value) .cell-wrap{align-items:flex-end}
@@ -1098,18 +1099,18 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-pledge .ls-pick-row.on td:first-child{box-shadow:inset 3px 0 var(--accent)}
 .ls-pledge .ls-pick input{accent-color:var(--accent)}
 .ls-approval-list{list-style:none;margin:0;padding:var(--sp-4);display:grid;gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2)}
-.ls-approval-list li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:var(--sp-2) var(--sp-4);padding:var(--sp-3) 0;border-bottom:1px solid var(--border);font-size:var(--fs-13)}
+.ls-approval-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--sp-2) var(--sp-4);padding:var(--sp-3) 0;border-bottom:1px solid var(--border);font-size:var(--fs-13)}
 .ls-approval-list li:first-child{padding-top:0}
 .ls-approval-list li:last-child{border-bottom:0;padding-bottom:0}
 .ls-approval-who{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-2);min-width:0}
-.ls-approval-state{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:var(--sp-1) var(--sp-2);text-align:right;min-width:0}
+.ls-approval-state{display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-1);text-align:right;min-width:0}
 .ls-approval-state .cell-sub{margin:0}
 .ls-inline-fail{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2) var(--sp-3);padding:var(--sp-2) var(--sp-3);border:1px solid var(--warn-border);border-radius:var(--radius-sm);background:var(--warn-bg);color:var(--warn);font-size:var(--fs-12);line-height:1.6}
 .ls-inline-fail .btn{flex:none}
 .cq-break{overflow-wrap:anywhere}
 @media(max-width:560px){
   .ls-approval-list li{grid-template-columns:minmax(0,1fr)}
-  .ls-approval-state{text-align:left;justify-content:flex-start}
+  .ls-approval-state{text-align:left;align-items:flex-start}
 }
 
 /* WS-446 · 分步办理、币种选中态、收款地址与操作记录 */
@@ -1140,9 +1141,11 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-signing-caption{font-size:var(--fs-12);color:var(--muted)}
 .ls-signing-amount dd{font-size:var(--fs-19);font-weight:500;font-variant-numeric:tabular-nums}
 .ls-signing-amount+.ls-signing-contract{padding-top:var(--sp-3);border-top:1px solid var(--border)}
-.ls-signing-contract dd{display:flex;align-items:flex-start;gap:var(--sp-2)}
-.ls-signing-address{flex:1;min-width:0;overflow-wrap:anywhere;word-break:normal}
-.ls-signing-contract .btn.icon{flex:none;width:var(--ctrl-h);min-width:var(--ctrl-h);height:var(--ctrl-h);min-height:var(--ctrl-h)}
+.ls-signing-facts .ls-signing-contract dt{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2)}
+.ls-signing-label{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);min-width:0}
+.ls-signing-tools{display:flex;flex:none;align-items:center;gap:var(--sp-1)}
+.ls-signing-address{display:block;min-width:0;overflow-wrap:anywhere;word-break:normal;font-variant-ligatures:none}
+.ls-signing-tools .btn.icon{flex:none;width:var(--ctrl-h-sm);min-width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);min-height:var(--ctrl-h-sm)}
 .ls-signing-review .ls-step-summary{padding:0;border:0;background:none}
 .ls-signing-review .ls-signing-facts{margin-top:var(--sp-4);padding:var(--sp-3) 0 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none}
 .ls-amount-over{margin:calc(var(--sp-2) * -1) 0 0;font-size:var(--fs-12);color:var(--danger);line-height:1.6}
@@ -1159,29 +1162,57 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-withdraw>p{margin:0;line-height:1.7}
 .cq-op-hash{display:inline-flex;align-items:flex-start;gap:var(--sp-2);min-width:0;max-width:100%}
 .cq-op-hash>.cq-break{flex:1;min-width:0;font-variant-ligatures:none;text-align:left}
-.cq-request-detail .cq-ops{table-layout:fixed;width:100%}
-.cq-ops th:first-child{width:25%}
-.cq-ops th:nth-child(2){width:32%}
-.cq-ops th:last-child{width:43%}
-.cq-ops td{vertical-align:top;font-size:var(--fs-13);overflow-wrap:anywhere;line-height:1.7}
-.cq-request-detail .cq-ops td:first-child{color:var(--muted);font-size:var(--fs-12)}
-.cq-ops .btn.icon{flex:none;width:var(--ctrl-h-sm);min-width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);min-height:var(--ctrl-h-sm)}
+/* 同一链上对象只有一份操作记录；四列 / 五列按内容分配，避免旧三列规则挤压地址。 */
+:is(.cq-request-detail,.ls-token-detail) :is(.cq-ops,.ls-token-ops){table-layout:fixed;width:100%;min-width:720px}
+.cq-ops th:first-child,.ls-token-ops th:first-child{width:22%}
+.cq-ops th:nth-child(2),.ls-token-ops th:nth-child(2){width:23%}
+.cq-ops th:nth-child(3),.ls-token-ops th:nth-child(3){width:32%}
+.cq-ops th:last-child,.ls-token-ops th:last-child{width:23%}
+.ls-token-ops-owner th:first-child{width:20%}
+.ls-token-ops-owner th:nth-child(2){width:16%}
+.ls-token-ops-owner th:nth-child(3){width:29%}
+.ls-token-ops-owner th:nth-child(4){width:21%}
+.ls-token-ops-owner th:last-child{width:14%}
+:is(.cq-ops,.ls-token-ops) :is(th,td){text-align:left;vertical-align:top;font-size:var(--fs-13);overflow-wrap:anywhere;line-height:1.7}
+:is(.cq-ops,.ls-token-ops) td:first-child{color:var(--muted);font-size:var(--fs-12);font-variant-numeric:tabular-nums}
+:is(.cq-ops,.ls-token-ops) .cell-wrap{align-items:flex-start;gap:var(--sp-1);min-width:0}
+.ls-token-ops-owner :is(th,td):last-child{text-align:right;font-variant-numeric:tabular-nums}
+.ls-token-ops-owner td:last-child .cell-wrap{align-items:flex-end}
+.ls-op-name{display:block;font-weight:500;color:var(--text)}
+.ls-op-state{display:block;margin-top:var(--sp-1)}
+.ls-op-state .tag{white-space:normal;max-width:100%}
+:is(.cq-ops,.ls-token-ops) .btn.icon{flex:none;width:var(--ctrl-h-sm);min-width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);min-height:var(--ctrl-h-sm)}
+@media(max-width:768px){
+  .ls-token-detail .ls-dl>div{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
+  :is(.cq-request-detail,.ls-token-detail) table.tbl:is(.cq-ops,.ls-token-ops){min-width:0}
+  :is(.cq-ops,.ls-token-ops).tbl.resp tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);padding:var(--sp-4)}
+  :is(.cq-ops,.ls-token-ops).tbl.resp tbody td{display:block;width:auto;min-width:0;padding:0;text-align:left}
+  :is(.cq-ops,.ls-token-ops).tbl.resp tbody td::before{display:block;max-width:none;margin-bottom:var(--sp-1);font-size:var(--fs-12);font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted)}
+  :is(.cq-ops,.ls-token-ops).tbl.resp tbody td>*{max-width:100%;text-align:left}
+  :is(.cq-ops,.ls-token-ops).tbl.resp tbody td:nth-child(3),.cq-ops.tbl.resp tbody td:last-child{grid-column:1/-1}
+  .ls-token-ops-owner td:last-child .cell-wrap{align-items:flex-start}
+}
+@media(max-width:374px){
+  .ls-token-ops.tbl.resp tbody td:nth-child(n+4){grid-column:1/-1}
+}
 @media(max-width:560px){
   .ls-steps{gap:var(--sp-2);font-size:var(--fs-12)}
   .ls-steps li{flex-direction:column;align-items:flex-start;gap:var(--sp-2);overflow-wrap:anywhere}
   .ls-step-n{width:20px;height:20px}
   .ls-step-summary{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
-  .cq-ops .btn.icon{width:var(--ctrl-h);min-width:var(--ctrl-h);height:var(--ctrl-h);min-height:var(--ctrl-h)}
+  .ls-signing-tools .btn.icon,:is(.cq-ops,.ls-token-ops) .btn.icon{width:var(--ctrl-h);min-width:var(--ctrl-h);height:var(--ctrl-h);min-height:var(--ctrl-h)}
 }
-@media(pointer:coarse){.cq-ops .btn.icon{width:var(--ctrl-h);min-width:var(--ctrl-h);height:var(--ctrl-h);min-height:var(--ctrl-h)}}
+@media(pointer:coarse){.ls-signing-tools .btn.icon,:is(.cq-ops,.ls-token-ops) .btn.icon{width:var(--ctrl-h);min-width:var(--ctrl-h);height:var(--ctrl-h);min-height:var(--ctrl-h)}}
 
 /* WS-446 · 签名前核对的合约与签名用途；交易哈希缩写、点击复制、可跳转 */
-.ls-sign-check{display:grid;gap:var(--sp-3)}
+.ls-sign-check{display:grid;gap:var(--sp-3);padding-top:var(--sp-4);border-top:1px solid var(--border)}
+.ls-sign-check .ls-signing-facts{padding:0;border:0;border-radius:0;background:none}
 .ls-sign-purpose{margin:0;font-size:var(--fs-13);color:var(--muted);line-height:1.7}
 .ls-signing-contract dd .ext,.ls-signing-contract dd a{flex:none}
 .ls-hash{display:inline-flex;align-items:center;gap:var(--sp-1);white-space:nowrap}
-.ls-hash-copy{padding:2px var(--sp-1);border:0;border-radius:var(--radius-sm);background:var(--hash-bg);color:var(--hash-text);font-size:var(--fs-12);cursor:copy}
+.ls-hash-copy{display:inline-flex;align-items:center;min-height:var(--ctrl-h-sm);padding:var(--sp-1) var(--sp-2);border:1px solid var(--hash-border);border-radius:var(--radius-xs);background:var(--hash-bg);color:var(--hash-text);font-family:var(--mono);font-size:var(--fs-12);font-variant-ligatures:none;cursor:copy}
 .ls-hash-copy:hover{text-decoration:underline}
 .ls-hash-copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:560px),(pointer:coarse){.ls-hash-copy{min-height:var(--ctrl-h)}}
 .ls-approval-list li.is-next .ls-approval-who .muted:first-child{color:var(--text);font-weight:500}
 .ls-going-why{margin:var(--sp-2) 0 0;font-size:var(--fs-13);color:var(--muted);line-height:1.6}

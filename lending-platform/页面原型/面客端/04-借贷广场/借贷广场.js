@@ -41,7 +41,7 @@
   const contractOk=()=>contractScene!=='fail';
   function signContract(p){
     if(!contractOk())return '<div class="ls-inline-fail" role="alert"><span>'+L('The pledge contract is temporarily unavailable, so you cannot sign right now.','质押合约信息暂时不可用，暂不能签名。')+'</span>'+btn('ls-contract-retry',L('Retry','重试'))+'</div>';
-    return '<div class="ls-signing-contract"><dt>'+L('Pledge contract','质押合约')+netChip(D.PLEDGE_CHAIN)+'</dt><dd><span class="mono ls-signing-address">'+E(p.contract)+'</span>'+copyIcon(p.contract,L('Copy pledge contract address','复制质押合约地址'))+CF.linkOut('https://etherscan.io/address/'+encodeURIComponent(p.contract),L('Open the contract in a blockchain explorer (new window)','在区块链浏览器打开该合约（新窗口）'))+'</dd></div>';
+    return '<div class="ls-signing-contract"><dt><span class="ls-signing-label">'+L('Pledge contract','质押合约')+netChip(D.PLEDGE_CHAIN)+'</span><span class="ls-signing-tools">'+copyIcon(p.contract,L('Copy pledge contract address','复制质押合约地址'))+CF.linkOut('https://etherscan.io/address/'+encodeURIComponent(p.contract),L('Open the contract in a blockchain explorer (new window)','在区块链浏览器打开该合约（新窗口）'))+'</span></dt><dd><span class="mono ls-signing-address">'+E(p.contract)+'</span></dd></div>';
   }
   const signCheck=(p,purpose)=>'<div class="ls-sign-check"><dl class="ls-signing-facts">'+signContract(p)+'</dl><p class="ls-sign-purpose">'+purpose+'</p></div>';
   const tag=k=>CF.tag(['short','failure','timeout','rejected'].includes(k)?'danger':['approved','success','surplus'].includes(k)?'ok':['review','processing','executing'].includes(k)?'warn':'',label(k));
@@ -397,7 +397,7 @@
     const st=r=>r.state==='processing'?(verifyNote(p,t,r)?CF.tag('warn',L('To be verified','待核实')):CF.tag('warn',L('Processing','处理中'))):['failure','noFee'].includes(r.state)?CF.tag('danger',L('Not completed','未成功')):'';
     const gas=r=>r.fee===null||r.fee===undefined?L('To be verified','待核实'):Number(r.fee).toFixed(6)+' '+E(r.feeCurrency||'ETH');
     const heads=[L('Time','时间')+' ('+E(S.tz||'UTC')+')',L('Operation','操作'),L('Address','地址'),L('Transaction hash','交易哈希')].concat(mine?[L('Actual gas','实际 gas')]:[]);
-    return dataTable(heads,rows.map(r=>[stampCell(r.done||r.at),txt(opLabel[r.kind]||[r.kind,r.kind])+(st(r)?' '+st(r):''),'<span class="mono ls-break">'+E(r.holder||D.holderOf(t))+'</span>',hashChip(r.tx)].concat(mine?[gas(r)]:[])));
+    return dataTable(heads,rows.map(r=>[stampCell(r.done||r.at),'<span class="ls-op-name">'+txt(opLabel[r.kind]||[r.kind,r.kind])+'</span>'+(st(r)?'<span class="ls-op-state">'+st(r)+'</span>':''),'<span class="mono ls-break">'+E(r.holder||D.holderOf(t))+'</span>',hashChip(r.tx)].concat(mine?['<span class="mono">'+gas(r)+'</span>']:[])),[],'ls-token-ops'+(mine?' ls-token-ops-owner':''));
   }
   function tokenDetail(id){
     const p=project(),t=D.token(id),mine=D.mine(p);if(!p||detailScope(p)!=='full')return publicMissing();
