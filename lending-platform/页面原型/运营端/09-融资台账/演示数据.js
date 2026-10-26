@@ -1,14 +1,15 @@
 /* Demonstration fixtures only · 融资台账（运营端，只读）。
    本模块自有的一套虚构数据：从融资项目一路串到还款期次，编号互相对应，用于演示两个清单、
    六个详情页签与关联跳转。不读取、不改写其他模块的演示数据，不连接任何链上或业务服务。
-   金额、利率、汇率、地址与交易标识均为虚构值。 */
+   金额、利率、汇率、地址与交易哈希均为虚构值。
+   操作记录：每条质押记录一份（pledge.ops），每轮融资需求一份（demand.ops），每笔已发出的链上交易一条。 */
 (function(CF){
   'use strict';
   const D=86400000,H=3600000,M=60000;
   const day=t=>{const d=new Date(t);return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate());};
   const r2=v=>Math.round(v*100)/100;
   const addr=tail=>'0xDEMO'+'0'.repeat(36-String(tail).length)+tail;      // 42 字符，演示地址
-  const hash=tail=>'0xDEMO'+'0'.repeat(62-String(tail).length)+tail;      // 66 字符，演示交易标识
+  const hash=tail=>'0xDEMO'+'0'.repeat(60-String(tail).length)+tail;      // 66 字符，演示交易哈希
   const ymd=t=>new Date(t).toISOString().slice(0,10).replace(/-/g,'');
   const seq=(prefix,t,n)=>prefix+ymd(t)+String(n).padStart(6,'0');
 
@@ -47,13 +48,21 @@
     /* ---------------------------------------------------------------- 质押记录 */
     let pn=0;
     const pledges=[];
+    /* 质押记录的操作记录：质押、解押、撤回、提取；地址为签名并发送该笔交易的原持有地址。
+       处理中尚未取得哈希时 tx 为 null，界面不显示占位值。 */
+    const pledgeOps=(r,extra)=>{
+      const out=[{kind:'pledge',at:r.pledgedAt||r.startedAt,addr:r.holder,tx:r.proof,
+        state:r.exec==='processing'?'processing':r.exec==='unknown'?'unknown':null}];
+      if(r.dest==='withdrawing')out.push({kind:'unpledge',at:now-26*M,addr:r.holder,tx:hash('UP'+pn),state:'processing'});
+      if(r.outAt)out.push({kind:r.removal==='withdraw'?'withdraw':'redeem',at:r.outAt,addr:r.holder,tx:r.outProof,state:null});
+      return out.concat(extra);};
     const PL=(project,o)=>{pn++;const at=o.pledgedAt===undefined?now-(o.age||30)*D:o.pledgedAt;
       const rec=Object.assign({id:at?seq('PR',at,pn):null,project,token:'T-'+String(8800+pn),chainTokenId:String(3000+pn),
         tokenContract:addr('T'+String(pn).padStart(3,'0')),holder:addr('H'+project.slice(-2)),qty:1,symbol:'RCV',value:100000,tokenState:'valid',
         dest:'counted',unknown:false,reasons:[],applyType:'first',exec:'success',batch:'PB'+ymd(at||now)+String(400+pn).padStart(6,'0'),
         apply:'PA'+ymd(at||now)+String(700+pn).padStart(6,'0'),pledgedAt:at,startedAt:(at||now)-6*M,releasedAt:null,outAt:null,removal:null,
         proof:at?hash('PL'+pn):null,outProof:null},o);
-      delete rec.age;pledges.push(rec);return rec;};
+      delete rec.age;rec.ops=pledgeOps(rec,o.opsExtra||[]);delete rec.opsExtra;pledges.push(rec);return rec;};
     ['P1-a','P1-b','P1-c','P1-d','P1-e'].forEach((_,i)=>PL('FP-26082804',{age:125-i*4,value:[300000,250000,200000,150000,100000][i],applyType:i?'add':'first',qty:[3,2.5,2,1.5,1][i]}));
     PL('FP-26090107',{age:44,value:320000,qty:3.2});
     PL('FP-26090107',{age:40,value:300000,qty:3,applyType:'add'});
@@ -71,7 +80,8 @@
     PL('FP-26081907',{age:318,value:100000,qty:1,tokenState:'invalid',dest:'excluded',reasons:['invalid','recon'],applyType:'add'});
     PL('FP-26081907',{pledgedAt:null,startedAt:now-3*D-2*H,value:50000,qty:.5,dest:'processing',unknown:true,exec:'unknown',applyType:'add',proof:hash('PLU1')});
     const reused=PL('FP-26071503',{age:94,value:120000,qty:1.2,dest:'returned',outAt:now-36*D,removal:'withdraw',outProof:hash('OUT2')});
-    PL('FP-26071503',{age:92,value:80000,qty:.8,dest:'returned',releasedAt:now-30*D,outAt:now-29*D,removal:'close',applyType:'add',outProof:hash('OUT3')});
+    PL('FP-26071503',{age:92,value:80000,qty:.8,dest:'returned',releasedAt:now-30*D,outAt:now-29*D,removal:'close',applyType:'add',outProof:hash('OUT3'),
+      opsExtra:[{kind:'redeem',at:now-29*D-3*H,addr:addr('H03'),tx:hash('OUT3F'),state:'failed'}]});
     /* 同一份额解押后再次质押：另成一条新记录，旧记录保留。 */
     PL('FP-26092203',{age:21,value:120000,qty:1.2,token:reused.token,chainTokenId:reused.chainTokenId,tokenContract:reused.tokenContract,applyType:'add'});
     PL('FP-26100106',{age:11,value:500000,qty:5});
@@ -80,27 +90,30 @@
 
     /* ---------------------------------------------------------------- 融资需求 */
     const recv=p=>addr('RX'+p.slice(-2));
-    const op=(kind,at,p,t)=>({kind,at,addr:recv(p),tx:hash(t)});
+    /* 发布、改额、撤下由资产方登录地址签名；冻结解除由平台执行钱包发起。 */
+    const PLATFORM=addr('PF0EXEC');
+    const op=(kind,at,p,t)=>({kind,at,addr:['release','unfreeze'].includes(kind)?PLATFORM:addr('SG'+p.slice(-2)),tx:hash(t),state:null});
     const demands=[
       {id:'FP-26082804-01',project:'FP-26082804',round:1,amount:400000,status:'ended',endReason:['Withdrawn by the asset holder','资产方撤下'],
         publishedAt:now-120*D,endedAt:now-101*D,ops:[op('publish',now-120*D,'FP-26082804','D11'),op('withdraw',now-101*D,'FP-26082804','D12')]},
       {id:'FP-26082804-02',project:'FP-26082804',round:2,amount:500000,status:'funded',publishedAt:now-100*D,
-        ops:[op('publish',now-100*D,'FP-26082804','D21'),op('release',now-95*D,'FP-26082804','D22')]},
+        ops:[op('publish',now-100*D,'FP-26082804','D21'),op('release',now-95*D+M,'FP-26082804','D22')]},
       {id:'FP-26090107-01',project:'FP-26090107',round:1,amount:300000,status:'quoted',publishedAt:now-38*D,
         ops:[op('publish',now-38*D,'FP-26090107','D31'),op('resize',now-36*D,'FP-26090107','D32')]},
       {id:'FP-26091502-01',project:'FP-26091502',round:1,amount:250000,status:'lending',publishedAt:now-27*D,
         ops:[op('publish',now-27*D,'FP-26091502','D41')]},
-      {id:null,project:'FP-26092203',round:1,amount:120000,status:null,chain:'publishing',publishedAt:null,startedAt:now-22*M,ops:[]},
+      {id:null,project:'FP-26092203',round:1,amount:120000,status:null,chain:'publishing',publishedAt:null,startedAt:now-22*M,
+        ops:[{kind:'publish',at:now-22*M,addr:addr('SG03'),tx:null,state:'processing'}]},
       {id:'FP-26080512-01',project:'FP-26080512',round:1,amount:160000,status:'funded',publishedAt:now-376*D,
-        ops:[op('publish',now-376*D,'FP-26080512','D51'),op('release',now-371*D,'FP-26080512','D52')]},
+        ops:[op('publish',now-376*D,'FP-26080512','D51'),op('release',now-371*D+M,'FP-26080512','D52')]},
       {id:'FP-26081907-01',project:'FP-26081907',round:1,amount:380000,status:'ended',endReason:['Auto-expired · pledge level insufficient','自动失效·质押水位不足'],
         publishedAt:now-310*D,endedAt:now-300*D,ops:[op('publish',now-310*D,'FP-26081907','D61'),op('unfreeze',now-300*D,'FP-26081907','D62')]},
       {id:'FP-26081907-02',project:'FP-26081907',round:2,amount:340000,status:'funded',publishedAt:now-292*D,
-        ops:[op('publish',now-292*D,'FP-26081907','D71'),op('release',now-288*D,'FP-26081907','D72')]},
+        ops:[op('publish',now-292*D,'FP-26081907','D71'),op('release',now-288*D+M,'FP-26081907','D72')]},
       {id:'FP-26071503-01',project:'FP-26071503',round:1,amount:200000,status:'ended',endReason:['Project closed','项目关闭'],
         publishedAt:now-88*D,endedAt:now-30*D,ops:[op('publish',now-88*D,'FP-26071503','D81'),op('unfreeze',now-30*D,'FP-26071503','D82')]},
       {id:'FP-26100106-01',project:'FP-26100106',round:1,amount:600000,status:'funded',publishedAt:now-9*D,
-        ops:[op('publish',now-9*D,'FP-26100106','D91'),op('release',now-2*H,'FP-26100106','D92')]}
+        ops:[op('publish',now-9*D,'FP-26100106','D91'),op('release',now-2*H+M,'FP-26100106','D92')]}
     ].map(d=>Object.assign({chain:null,chainUnknown:false,endReason:null,endedAt:null,startedAt:d.publishedAt?d.publishedAt-4*M:null,receive:recv(d.project)},d));
 
     /* ---------------------------------------------------------------- 报价 */
@@ -169,6 +182,20 @@
       l.overdue=own.some(p=>p.status!=='settled'&&p.overdueDays>0);
       if(own.length&&done.length===own.length){l.status='settled';l.settledAt=own[own.length-1].settledAt;}
     });
+    /* 需求详情的操作记录：报价授权（每笔报价一条，含已拒绝、已失效）、链上放款、各期还款授权与链上还款。 */
+    quotes.forEach((q,i)=>{const d=demands.find(x=>x.id===q.demand);
+      d.ops.push({kind:'quoteAuth',at:q.signedAt,addr:q.loanAddr,tx:hash('QA'+(i+1)),state:q.status==='confirming'?'processing':null,ref:q.id});
+      if(q.lending)d.ops.push({kind:'disburse',at:now-41*M,addr:d.receive,tx:hash('LP'+(i+1)),state:'processing'});});
+    loans.forEach(l=>{const d=demands.find(x=>x.id===l.demand);
+      d.ops.push({kind:'disburse',at:l.at,addr:d.receive,tx:l.tx,state:null,ref:l.id});});
+    /* 链上放款失败后重新接受：失败的一条保留，成功的另起一条。 */
+    {const d=demands.find(x=>x.id==='FP-26100106-01'),l=loanOf('FP-26100106');
+      d.ops.push({kind:'disburse',at:l.at-52*M,addr:d.receive,tx:hash('LNF1'),state:'failed'});}
+    periods.forEach(p=>{const l=loans.find(x=>x.id===p.loan),d=demands.find(x=>x.id===l.demand),payer=addr('PAY'+l.project.slice(-2));
+      if(p.record){d.ops.push({kind:'repayAuth',seq:p.seq,at:p.record.at-3*M,addr:p.record.from,tx:p.record.authTx,state:null,ref:p.id},
+        {kind:'repay',seq:p.seq,at:p.record.at,addr:p.record.from,tx:p.record.tx,state:null,ref:p.id});}
+      else if(p.status==='confirming'){d.ops.push({kind:'repayAuth',seq:p.seq,at:p.submitAt-3*M,addr:payer,tx:hash('RSA'+p.seq),state:null,ref:p.id},
+        {kind:'repay',seq:p.seq,at:p.submitAt,addr:payer,tx:p.submitTx,state:'processing',ref:p.id});}});
     return {now,projects,pledges,demands,quotes,loans,periods,
       owners:{A:['Demo Asset A','示例资产企业 A'],B:['Demo Asset B','示例资产企业 B'],C:['Demo Asset C','示例资产企业 C']},
       funders:{F1:['Demo Funder 1','示例资金机构 甲'],F2:['Demo Funder 2','示例资金机构 乙'],F3:['Demo Funder 3','示例资金机构 丙']},

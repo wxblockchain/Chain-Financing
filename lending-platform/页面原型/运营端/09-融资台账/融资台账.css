@@ -5,6 +5,9 @@
    Two lists + six detail panels. Amounts retain full precision and currency.
    Summary is one surface; filters, totals and table remain distinct reading bands.
    Dense tables scroll within their own region; the action column stays reachable.
+   Contract addresses: project basic information only, full value + copy + explorer.
+   Transaction hashes: operation records only, 6…4 chip on the shared --hash-* tokens
+   (same chip as the customer side), click copies the full value, explorer opens a new window.
    Module-only review export: _shared/export.py --admin-scope module. */
 .lg-head{align-items:center;justify-content:space-between}
 .lg-head .page-title{margin:0}
@@ -106,6 +109,7 @@ table.lg-table :is(th,td){padding-inline:var(--sp-3)}
 .lg-addr{display:inline-flex;align-items:center;gap:var(--sp-1);min-width:0;max-width:100%}
 .lg-addr .mono{overflow-wrap:anywhere;font-size:var(--ui-row-value)}
 .lg-addr .btn.icon{flex:none}
+.lg-addr-tools{display:inline-flex;align-items:center;flex:none}
 .lg-netaddr{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0}
 .lg-empty-line{margin:0;padding:var(--sp-3) var(--card-pad) var(--sp-5);color:var(--muted);font-size:var(--ui-row-value)}
 .lg-part-error{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--card-pad) var(--sp-5)}
@@ -117,6 +121,53 @@ table.lg-table :is(th,td){padding-inline:var(--sp-3)}
 .lg-link:hover{text-decoration:underline}
 @media(max-width:1100px){.lg-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+/* 所配置的合约：网络与归属范围同一行，完整地址独占一行，复制与区块链浏览器紧随地址。 */
+.lg-contract-top{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-3)}
+.lg-contract-scope{font-size:var(--fs-12);color:var(--muted)}
+.lg-contract-scope:before{content:"·";margin-right:var(--sp-3);color:var(--faint)}
+
+/* 交易哈希：缩写芯片，点击复制完整值；与面客端同一视觉。 */
+.lg-hash{display:inline-flex;align-items:center;gap:var(--sp-1);white-space:nowrap}
+.lg-hash-copy{display:inline-flex;align-items:center;min-height:var(--ctrl-h-sm);padding:var(--sp-1) var(--sp-2);border:1px solid var(--hash-border);border-radius:var(--radius-xs);background:var(--hash-bg);color:var(--hash-text);font-family:var(--mono);font-size:var(--fs-12);font-variant-ligatures:none;line-height:1.4;cursor:copy}
+.lg-hash-copy:hover{text-decoration:underline}
+.lg-hash-copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lg-hash .btn.icon{flex:none}
+
+/* 操作记录：时间 / 操作 / 地址 / 交易哈希。地址给完整值，最宽；宽度不足时按容器改为卡片式。 */
+.lg-ops{container-type:inline-size;min-width:0}
+.lg-ops-card .lg-ops{padding:0 var(--sp-3) var(--sp-3)}
+.lg-ops-pledge{margin:0 var(--sp-3) var(--sp-2);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card)}
+table.lg-ops-table{table-layout:fixed;width:100%}
+table.lg-ops-table :is(th,td){padding-inline:var(--sp-3);text-align:left}
+table.lg-ops-table thead th{white-space:normal;color:var(--muted);vertical-align:bottom}
+/* 显式给四列宽度：嵌在质押清单展开行里时，不继承外层清单的列宽。 */
+table.lg-ops-table th:nth-child(1){width:16%}table.lg-ops-table th:nth-child(2){width:22%}table.lg-ops-table th:nth-child(3){width:42%}table.lg-ops-table th:nth-child(4){width:20%}
+table.lg-ops-table tbody td{vertical-align:top;font-size:var(--ui-row-value);line-height:1.6;overflow-wrap:anywhere}
+table.lg-ops-table tbody td:first-child{color:var(--muted)}
+.lg-ops-table .lg-stamp{display:block;font-size:var(--fs-12);color:var(--text)}
+.lg-ops-table tbody tr:hover td{background:transparent}
+.lg-op-name{display:block;font-weight:550;color:var(--text)}
+.lg-op-state{display:block;margin-top:var(--sp-1)}
+.lg-op-state .tag{white-space:normal;max-width:100%;font-size:var(--ui-field-label)}
+.lg-ops-table .lg-addr{align-items:flex-start}
+.lg-ops-table .lg-addr .mono{white-space:normal;overflow-wrap:anywhere;font-size:var(--fs-12);line-height:1.6;padding-top:var(--sp-1)}
+.lg-ops-pointer{display:block;margin-top:var(--sp-3)}
+.lg-ops-pointer .lg-link{margin-inline:2px}
+@container (max-width:640px){
+  table.lg-ops-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  table.lg-ops-table,table.lg-ops-table tbody{display:block}
+  table.lg-ops-table tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2) var(--sp-3);padding:var(--sp-3);border-bottom:1px solid var(--row-line)}
+  table.lg-ops-table tbody tr:last-child{border-bottom:0}
+  table.lg-ops-table tbody td{display:block;padding:0;border:0;min-width:0}
+  table.lg-ops-table tbody td:before{content:attr(data-label);display:block;margin-bottom:2px;font-size:var(--fs-12);color:var(--muted)}
+  table.lg-ops-table tbody td:nth-child(3){grid-column:1/-1}
+}
+@container (max-width:340px){table.lg-ops-table tbody td:nth-child(n){grid-column:1/-1}}
+@media(max-width:560px),(pointer:coarse){.lg-hash-copy{min-height:var(--ctrl-h)}}
+
+/* 剪贴板不可用时的手动复制 */
+.lg-raw{width:100%;margin-top:var(--sp-3);resize:none;font-size:var(--fs-13);line-height:1.6;word-break:break-all}
+
 /* 详情 tab、行内展开与检索命中 */
 .lg-title-sub{margin:0 0 var(--sp-2);font-size:var(--ui-row-value);color:var(--muted)}
 .lg-review{text-decoration:none}
@@ -127,10 +178,10 @@ table.lg-table :is(th,td){padding-inline:var(--sp-3)}
 .lg-dpanel .lg-card+.lg-card{margin-top:var(--sp-5)}
 .lg-table tbody tr.lg-hl td{background:var(--accent-soft)}
 .lg-table tbody tr.lg-open td{border-bottom-color:transparent}
-.lg-table tbody tr.lg-expand-row td{padding:var(--sp-3) var(--sp-4) var(--sp-4);background:var(--card-2);vertical-align:top;overflow-wrap:normal;border-left:2px solid var(--accent-border)}
-.lg-table tbody tr.lg-expand-row:hover td{background:var(--card-2)}
+.lg-table tbody tr.lg-expand-row>td{padding:var(--sp-3) var(--sp-4) var(--sp-4);background:var(--card-2);vertical-align:top;overflow-wrap:normal;border-left:2px solid var(--accent-border)}
+.lg-table tbody tr.lg-expand-row:hover>td{background:var(--card-2)}
 /* Keep expanded facts within the visible table region, even when columns scroll. */
-.lg-expand-row>td>:is(.ops-facts-region,.lg-expand-grid,.lg-expand-note){max-width:calc(100cqw - var(--sp-8))}
+.lg-expand-row>td>:is(.ops-facts-region,.lg-expand-grid,.lg-expand-note,.lg-expand-h,.lg-ops){max-width:calc(100cqw - var(--sp-8))}
 .lg-table .lg-expand-row .mono{white-space:normal;overflow-wrap:anywhere}
 .lg-expand-row .ops-facts-body{padding:var(--sp-2) var(--sp-3)}
 .lg-expand-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}

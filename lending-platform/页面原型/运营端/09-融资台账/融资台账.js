@@ -1,6 +1,7 @@
 /* WS-464 · 融资台账（运营端，只读）：一个菜单、两个清单（融资项目、融资需求），详情以 tab 承载。
    项目详情：项目基本信息 / 代币质押 / 融资需求；需求详情：需求信息 / 报价放款 / 还款。
    清单只显示业务状态；链上处理中、待核实与原因说明只在详情中展示。
+   合约地址只在项目基本信息展示；交易哈希只在操作记录展示（质押记录一份、融资需求一份），缩写、点击复制、可跳转区块链浏览器。
    会话与功能权限读运营端账户与登录一处登记（CF.opsAuth）：
    PM-LG-01 融资台账查询（原型内部键 24）；PM-AL-17 融资项目审核查询（17）只决定项目审核详情入口。
    台账不办理、不改写任何业务状态；数据为本模块自有的演示数据，读取状态由演示工具模拟。 */
@@ -19,7 +20,7 @@
   const TAB_OF={project:'projects',demand:'demands'};
   const KIND={project:['Financing project','融资项目'],demand:['Financing demand','融资需求']};
   const DTABS={project:[['info',['Project','项目基本信息']],['pledges',['Token pledges','代币质押']],['demands',['Financing demands','融资需求']]],
-    demand:[['info',['Demand','需求信息']],['quotes',['Quotes and loans','报价放款']],['repay',['Repayment','还款']]]};
+    demand:[['info',['Demand','需求信息']],['quotes',['Quotes and loans','报价放款']],['repay',['Repayment','还款']],['ops',['Operation records','操作记录']]]};
   const EMPTY={projects:['No financing projects yet','暂无融资项目'],demands:['No financing demands yet','暂无融资需求']};
   const PROJECT={available:['Available','可用','gray'],raising:['Raising','募集中','accent'],locked:['Locked','已锁定','violet'],
     financing:['Financing','融资中','ok'],closed:['Closed','已关闭','gray'],settled:['Settled','已结清','gray']};
@@ -37,8 +38,17 @@
     lending:['Disbursing','放款中','accent'],funded:['Disbursed','已放款','ok'],ended:['Expired / closed','已失效／已关闭','gray']};
   const CHAIN={publishing:['Publish freeze in progress','发布冻结处理中'],resizing:['Amount-change freeze in progress','改额冻结处理中'],
     withdrawing:['Withdrawal in progress','撤下处理中'],lending:['On-chain disbursement in progress','链上放款处理中']};
-  const OPKIND={publish:['Publish · freeze','发布 · 冻结'],resize:['Amount change · freeze adjustment','改额 · 冻结调整'],
-    withdraw:['Withdraw · unfreeze','撤下 · 解冻'],release:['Platform freeze release','平台执行的冻结解除'],unfreeze:['Platform freeze release','平台执行的冻结解除']};
+  /* 操作记录的操作名：需求一份（发布至还款），质押记录一份（质押至提取）。 */
+  const OPKIND={publish:['Publish · freeze','发布冻结'],resize:['Amount change · freeze adjustment','修改金额 · 冻结调整'],
+    withdraw:['Withdraw · unfreeze','撤下 · 解冻'],release:['Platform freeze release','平台解除冻结'],unfreeze:['Platform freeze release','平台解除冻结'],
+    quoteAuth:['Quote authorisation','报价授权'],disburse:['On-chain disbursement','链上放款'],
+    repayAuth:[n=>`Period ${n} repayment authorisation`,n=>`第 ${n} 期还款授权`],repay:[n=>`Period ${n} on-chain repayment`,n=>`第 ${n} 期链上还款`]};
+  const PLOP={pledge:['Pledge','质押'],unpledge:['Unpledge','解押'],withdraw:['Withdraw','撤回'],redeem:['Collect','提取']};
+  const OPSTATE={processing:['In progress','处理中','accent'],failed:['Not completed','未成功','danger'],unknown:['To be verified','待核实','warn']};
+  /* 交易类别对应的交易哈希称谓，用于复制与跳转的可访问名。 */
+  const TXKIND={publish:['freeze','冻结'],resize:['freeze','冻结'],withdraw:['freeze','冻结'],release:['freeze','冻结'],unfreeze:['freeze','冻结'],
+    quoteAuth:['authorisation','授权'],disburse:['disbursement','放款'],repayAuth:['authorisation','授权'],repay:['repayment','还款'],
+    pledge:['pledge','质押'],unpledge:['transfer-out','转出'],redeem:['transfer-out','转出']};
   const QUOTE={confirming:['Quote confirming on-chain','报价上链确认中','accent'],pending:['Awaiting acceptance','待接受','accent'],
     accepted:['Accepted','已接受','ok'],rejected:['Rejected','已拒绝','gray'],expired:['Quote expired','报价已失效','gray']};
   const AUTH={processing:['Authorisation in progress','授权处理中','accent'],authorized:['Authorised','已授权','ok'],
@@ -49,7 +59,7 @@
   const NATURE={normal:['Normal repayment','正常还款'],overdue:['Overdue repayment','逾期还款']};
 
   /* ---------------------------------------------------------------- 数据 */
-  const A={data:null,tab:'projects',views:{},listView:'default',totalsView:'default',detailView:'default',
+  const A={data:null,tab:'projects',views:{},listView:'default',totalsView:'default',detailView:'default',explorer:true,
     ref:null,type:null,dtab:null,hl:'',kw:'',inner:null,notice:null,stale:false,pageNote:false};
   let routeKey=null,restoreContext=false,returnHash='',lastHash='',onModule=false,wasSigned=false;
   const positions=new Map();
@@ -106,9 +116,16 @@
   const network=()=>`<span class="lg-network">${CF.assetIcon('ETH')}<span>Ethereum</span></span>`;
   const shortAddr=v=>v?v.slice(0,6)+'…'+v.slice(-4):'—';
   const addrShort=v=>v?`<span class="mono lg-short" title="${E(v)}">${E(shortAddr(v))}</span>`:'—';
-  const addrFull=(v,label)=>v?`<span class="lg-addr"><span class="mono">${E(v)}</span>${CF.copyBtn('lg-copy',v,L('Copy the full '+label,'复制完整'+label))}</span>`:'—';
+  const addrFull=(v,label,tools='')=>v?`<span class="lg-addr"><span class="mono">${E(v)}</span><span class="lg-addr-tools">${CF.copyBtn('lg-copy',v,L('Copy the full '+label,'复制完整'+label))}${tools}</span></span>`:'—';
   const netAddr=(v,label)=>v?`<span class="lg-netaddr">${network()}${addrFull(v,label)}</span>`:'—';
-  const ADDR=()=>L('address','地址'),TXID=()=>L('transaction ID','交易标识');
+  const ADDR=()=>L('address','地址');
+  /* 区块链浏览器：新窗口打开，原页面不动；入口不可用时不给链接，仍可复制。复制与跳转都用完整值。 */
+  const explorer=(kind,v,label)=>A.explorer?CF.linkOut('https://etherscan.io/'+kind+'/'+encodeURIComponent(v),label):'';
+  /* 合约地址只在项目基本信息出现：网络、完整地址、复制、区块链浏览器，并注明归属范围。 */
+  const contract=(v,scope)=>v?`<span class="lg-netaddr lg-contract"><span class="lg-contract-top">${network()}<span class="lg-contract-scope">${scope}</span></span>${addrFull(v,L('contract address','合约地址'),explorer('address',v,L('Open the contract in a blockchain explorer (new window)','在区块链浏览器打开该合约（新窗口）')))}</span>`:'—';
+  /* 交易哈希：保留开头 6 位与结尾 4 位；点击复制完整值。平台未取得时显示“—”，不给占位值。 */
+  const hashChip=(h,kind)=>{if(!h)return '<span class="lg-pending">—</span>';const name=L(kind[0]+' transaction hash',kind[1]+'交易哈希');
+    return `<span class="lg-hash"><button type="button" class="lg-hash-copy" data-act="lg-copy" data-v="${E(h)}" title="${E(h)}" aria-label="${E(L('Copy ','复制')+name+' '+h)}">${E(h.slice(0,6)+'…'+h.slice(-4))}</button>${explorer('tx',h,L('Open the '+name+' in a blockchain explorer (new window)','在区块链浏览器打开该笔交易（新窗口）'))}</span>`;};
   const b=(en,zh,act,value='',cls='',disabled=false)=>`<button type="button" class="btn ${cls}" data-act="lg-${act}" data-v="${E(value)}" ${disabled?'disabled':''}>${L(en,zh)}</button>`;
   const openLink=(type,ref,label,cls='',opts={})=>`<a class="lg-link ${cls}" href="#${E(detailRoute(type,ref,opts))}" data-act="lg-open" data-v="${E(JSON.stringify({type,ref,...opts}))}">${label}</a>`;
   function facts(items){
@@ -117,7 +134,21 @@
   function section(title,body,note=''){
     return `<section class="card lg-section"><header class="lg-section-head"><h2>${title}</h2>${note?`<span class="lg-section-note">${note}</span>`:''}</header>${body}</section>`;
   }
-  const verifyNote=()=>L('Shown as recorded; the platform has not verified these on-chain.','按记录展示，平台未做链上核验');
+  /* 操作记录：按时间倒序，每笔已发出的链上交易一条；未成功、处理中、待核实在操作旁就地标明。 */
+  function opsTable(rows,cls=''){
+    if(!rows.length)return `<p class="lg-empty-line">${L('No on-chain transactions yet','暂无链上交易')}</p>`;
+    const list=rows.slice().sort((a,z)=>z.at-a.at);
+    const cell=(k,v)=>`<td data-label="${E(k)}">${v}</td>`;
+    const heads=[L('Time','时间')+zone(),L('Operation','操作'),L('Address','地址'),L('Transaction hash','交易哈希')];
+    return `<div class="lg-ops ${cls}"><table class="tbl lg-ops-table"><thead><tr>${heads.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${list.map(o=>{
+      const pl=cls==='lg-ops-pledge',name=(pl?PLOP:OPKIND)[o.kind];
+      const label=typeof name[0]==='function'?L(name[0](o.seq),name[1](o.seq)):txt(name);
+      /* 质押记录里的撤回是转出交易；需求里的撤下是解冻交易。 */
+      const kind=pl&&o.kind==='withdraw'?['transfer-out','转出']:TXKIND[o.kind];
+      return `<tr>${cell(L('Time','时间'),listTime(o.at))}${cell(L('Operation','操作'),`<span class="lg-op-name">${E(label)}</span>${o.state?`<span class="lg-op-state">${tag(OPSTATE,o.state)}</span>`:''}${o.ref?meta(`<span class="mono">${E(o.ref)}</span>`):''}`)}${cell(L('Address','地址'),addrFull(o.addr,ADDR()))}${cell(L('Transaction hash','交易哈希'),hashChip(o.tx,kind))}</tr>`;}).join('')}</tbody></table></div>`;
+  }
+  /* 报价放款、还款只写业务结果；需要核对交易时指向本轮唯一的操作记录。 */
+  const opsPointer=what=>`<p class="lg-expand-note lg-ops-pointer">${what}${L(' are in this round’s ','在本轮')}<a class="lg-link" href="#${E(detailRoute(A.type,A.ref,{tab:'ops',kw:A.kw}))}" data-act="lg-dtab" data-v="ops">${L('operation records','操作记录')}</a>${L('.','中')}</p>`;
   const partError=key=>`<div class="lg-part-error" role="status">${unavailable()}${b('Retry','重试','part-retry',key,'sm')}</div>`;
 
   /* ---------------------------------------------------------------- 权限 */
@@ -428,13 +459,12 @@
         [L('In-transit amount','项目在途金额'),amt(p.inTransit,'USDT')],[L('Financing balance','项目融资余额'),amt(p.balance,'USDT')],
         [L('Available to finance','可融金额'),amt(p.available,'USDT')],[L('Quotes received','已收到报价数'),`<span class="num">${quotesReceived}</span>`]]))
       +section(L('Configured contracts','所配置的合约'),A.detailView==='partial'?partError('contracts'):facts([
-        [L('Pledge contract','质押合约'),netAddr(p.contracts.pledge,L('contract address','合约地址')),true],
-        [L('Loan contract','放款合约'),netAddr(p.contracts.loan,L('contract address','合约地址')),true],
-        [L('Repayment contract','还款合约'),netAddr(p.contracts.repay,L('contract address','合约地址')),true]]),A.detailView==='partial'?'':verifyNote())
+        [L('Pledge contract','质押合约'),contract(p.contracts.pledge,L('May be shared with other projects','可能与其他项目共用')),true],
+        [L('Loan contract','放款合约'),contract(p.contracts.loan,L('This project only','仅属于本项目')),true],
+        [L('Repayment contract','还款合约'),contract(p.contracts.repay,L('This project only','仅属于本项目')),true]]))
       +`</div>`;
   }
   function pledgeExpand(r){
-    const p=project(r.project);
     return facts([
       [L('Single application ID','单笔申请标识'),`<span class="mono">${E(r.apply)}</span>`],[L('Submission batch','提交批次编号'),`<span class="mono">${E(r.batch)}</span>`],
       [L('Application type','申请类型'),E(txt(APPLY[r.applyType]))],[L('On-chain execution','链上执行状态'),`<span class="lg-tags">${tag(EXEC,r.exec)}${r.unknown?unknownTag():''}</span>`],
@@ -443,10 +473,8 @@
       [L('Removal reason','移出原因'),r.removal?E(txt(REMOVAL[r.removal])):'—'],
       [L('Business release time','业务释放时间'),time(r.releasedAt)],[L('Transfer-out time','转出时间'),time(r.outAt)],
       [L('On-chain token ID','链上代币 ID'),`<span class="mono">${E(r.chainTokenId)}</span>`],
-      [L('Original holder','原持有地址'),netAddr(r.holder,ADDR()),true],[L('Token issuing contract','代币发行合约地址'),netAddr(r.tokenContract,ADDR()),true],
-      [L('Pledge contract','质押合约地址'),netAddr(p.contracts.pledge,ADDR()),true],
-      [L('Pledge transaction','质押链上凭证'),addrFull(r.proof,TXID()),true],[L('Transfer-out transaction','转出链上凭证'),addrFull(r.outProof,TXID()),true]])
-      +`<p class="lg-expand-note">${verifyNote()}</p>`;
+      [L('Original holder','原持有地址'),netAddr(r.holder,ADDR()),true],[L('Token issuing contract','代币发行合约地址'),netAddr(r.tokenContract,ADDR()),true]])
+      +`<h3 class="lg-expand-h">${L('Operation records','操作记录')}</h3>${opsTable(r.ops,'lg-ops-pledge')}`;
   }
   function projectPledges(p){
     const st=inner().pl,f=st.filter,q=f.q.trim().toLowerCase();
@@ -512,10 +540,12 @@
         d.publishedAt?[L('Published at','本轮发布时间'),time(d.publishedAt)]:[L('Initiated at','发起时间'),`${time(d.startedAt)}${meta(E(waited(d.startedAt)))}`],
         d.endReason?[L('End reason','终结原因'),E(txt(d.endReason))]:null,d.endReason?[L('Ended at','终结时间'),time(d.endedAt)]:null,
         [L('Quotes this round','本轮报价笔数'),`<span class="num">${d.quotes.length}</span>`]]))
-      +section(L('Receiving address','融资收款地址'),facts([[L('Financing receiving address','融资收款地址'),netAddr(d.receive,ADDR()),true]]),verifyNote())
-      +section(L('On-chain operations this round','本轮链上操作记录'),A.detailView==='partial'?partError('ops'):d.ops.length?`<div class="tablewrap lg-subwrap"><table class="tbl lg-subtable"><thead><tr><th scope="col">${L('Operation','操作')}</th><th scope="col">${L('Time','时间')}</th><th scope="col">${L('Address','地址')}</th><th scope="col">${L('Transaction hash','交易哈希')}</th></tr></thead><tbody>${d.ops.map(o=>`<tr><td>${E(txt(OPKIND[o.kind]))}</td><td>${time(o.at)}</td><td>${addrFull(o.addr,ADDR())}</td><td>${addrFull(o.tx,L('transaction hash','交易哈希'))}</td></tr>`).join('')}</tbody></table></div>`
-        :`<p class="lg-empty-line">${L('No on-chain operation yet','暂无链上操作记录')}</p>`,A.detailView==='partial'?'':verifyNote())
+      +section(L('Receiving address','融资收款地址'),facts([[L('Financing receiving address','融资收款地址'),netAddr(d.receive,ADDR()),true]]))
       +`</div>`;
+  }
+  /* 一轮需求一份：本轮及成交后融资业务的全部链上交易，交易哈希在台账中唯一的展示位置。 */
+  function demandOps(d){
+    return `<section class="card lg-section lg-ops-card"><header class="lg-section-head"><h2>${L('Operation records','操作记录')}</h2><span class="lg-section-note">${L('All on-chain transactions of this round and its financing business · latest first','本轮及成交后融资业务的全部链上交易 · 按时间从晚到早')}</span></header>${opsTable(d.ops,'lg-ops-demand')}</section>`;
   }
   const loanOfQuote=q=>q.status==='accepted'?A.data.loans.find(l=>l.quote===q.id)||null:null;
   function quoteExpand(q){
@@ -532,8 +562,8 @@
         [L('Disbursement address','放款地址'),netAddr(q.loanAddr,ADDR()),true],[L('Repayment receiving address','还款收款地址'),netAddr(q.repayAddr,ADDR()),true]])}</div>`
       +(loan?`<div><h3 class="lg-expand-h">${L('Loan','放款')}</h3>${facts([
         [L('Loan number','放款编号'),`<span class="mono">${E(loan.id)}</span>`],[L('Disbursed amount','放款金额'),amt(loan.disbursed,loan.ccy)],
-        [L('Disbursed at','放款成功时间'),time(loan.at)],[L('Asset holder receiving address','资产方收款地址'),netAddr(loan.addrs.receive,ADDR()),true],
-        [L('Transaction ID','交易标识'),addrFull(loan.tx,TXID()),true]])}</div>`:'')+`</div><p class="lg-expand-note">${verifyNote()}</p>`;
+        [L('Disbursed at','放款成功时间'),time(loan.at)],[L('Asset holder receiving address','资产方收款地址'),netAddr(loan.addrs.receive,ADDR()),true]])}</div>`:'')+`</div>`
+      +opsPointer(loan?L('Authorisation and disbursement transaction hashes','授权交易哈希与放款交易哈希'):L('The authorisation transaction hash','授权交易哈希'));
   }
   function demandQuotes(d){
     const rows=d.quotes.slice().sort((a,z)=>(z.quotedAt||z.signedAt)-(a.quotedAt||a.signedAt));
@@ -557,15 +587,13 @@
       [L('Principal due','应还本金'),amt(p.principal,'USDT')],[L('Interest due','应还利息'),amt(p.interest,'USDT')],
       [L('Repayment nature','还款性质'),p.nature?E(txt(NATURE[p.nature])):'—'],
       p.status==='confirming'?[L('Submitted at','提交时间'),`${time(p.submitAt)}${meta(E(waited(p.submitAt)))}`]:null,
-      p.status==='confirming'?[L('Transaction ID','交易标识'),addrFull(p.submitTx,TXID()),true]:null,
       p.record?[L('Repayment record','还款记录编号'),`<span class="mono">${E(p.record.id)}</span>`]:null,
       p.record?[L('Currency and amount','还款币种与金额'),amt(p.record.amount,p.record.ccy)]:null,
       p.record?[L('Submitted at','提交时间'),time(p.record.at)]:null,
       p.record?[L('Paying address','出账地址'),netAddr(p.record.from,ADDR()),true]:null,
       p.record?[L('Receiving address','收款地址'),netAddr(p.record.to,ADDR()),true]:null,
-      p.record?[L('Repayment transaction','还款交易标识'),addrFull(p.record.tx,TXID()),true]:null,
-      p.record?[L('Authorisation transaction','授权交易标识'),addrFull(p.record.authTx,TXID()),true]:null])
-      +(p.record||p.status==='confirming'?`<p class="lg-expand-note">${verifyNote()}</p>`:'');
+      ])
+      +(p.record||p.status==='confirming'?opsPointer(L('This period’s authorisation and repayment transaction hashes','本期的授权交易哈希与还款交易哈希')):'');
   }
   function demandRepay(d){
     const l=d.loan;
@@ -597,11 +625,11 @@
     const sub=`${L('Project','所属项目')} ${openLink('project',p.id,`<span class="mono">${E(p.id)}</span> · ${E(projectName(p))}`)} · ${E(owner(p.owner))}`;
     const tags=`${d.status?tag(DEMAND,d.status):''}${d.chain?chainTag(d.chain):''}${quoteLending(d)?chainTag('lending'):''}${d.chainUnknown?unknownTag():''}${d.loan?tag(REPAY,repayStatus(d)):''}`;
     const content=A.detailView==='partial'&&A.dtab!=='info'?`<section class="card lg-card">${partError('tab')}</section>`
-      :A.dtab==='quotes'?demandQuotes(d):A.dtab==='repay'?demandRepay(d):demandInfo(d);
+      :A.dtab==='quotes'?demandQuotes(d):A.dtab==='repay'?demandRepay(d):A.dtab==='ops'?demandOps(d):demandInfo(d);
     return heading('demand',title,sub,tags)
       +summary([[L('Demand amount','需求金额'),amt(d.amount,'USDT')],[L('Disbursed amount','放款金额'),d.loan?amt(d.loan.disbursed,d.loan.ccy):'—'],
         [L('Outstanding principal','未偿本金'),d.loan?amt(d.loan.outstanding,'USDT'):'—'],[L('Next due date','本期应还日'),bizDate(nextDue(d))]])
-      +dtabs('demand',{quotes:d.quotes.length,repay:d.loan&&d.loan.planReady?periodsOf(d.loan.id).length:null})+panel(content);
+      +dtabs('demand',{quotes:d.quotes.length,repay:d.loan&&d.loan.planReady?periodsOf(d.loan.id).length:null,ops:d.ops.length})+panel(content);
   }
   function detail(){
     const blocked=gate();
@@ -631,7 +659,8 @@
       <h4>${L('Read states','读取状态')}</h4><div class="lg-demo">
         ${S.page===LIST?field(L('List','清单'),sel('lg-demo-list',A.listView,[['default',L('Default','默认')],['loading',L('Loading','读取中')],['empty',L('No records','清单无记录')],['error',L('Load failed','读取失败')]])):''}
         ${S.page===LIST?field(L('Totals','合计'),sel('lg-demo-totals',A.totalsView,[['default',L('Default','正常')],['error',L('Load failed','读取失败')]])):''}
-        ${S.page===DT?field(L('Detail','详情'),sel('lg-demo-detail',A.detailView,[['default',L('Default','默认')],['loading',L('Loading','读取中')],['partial',L('Partly unavailable','部分读取失败')],['missing',L('Not found or no access','不存在或无权')]])):''}</div>
+        ${S.page===DT?field(L('Detail','详情'),sel('lg-demo-detail',A.detailView,[['default',L('Default','默认')],['loading',L('Loading','读取中')],['partial',L('Partly unavailable','部分读取失败')],['missing',L('Not found or no access','不存在或无权')]])):''}
+        ${S.page===DT?field(L('Blockchain explorer','区块链浏览器入口'),sel('lg-demo-explorer',A.explorer?'on':'off',[['on',L('Available','可用')],['off',L('Unavailable · copy only','暂不可用 · 仅可复制')]])):''}</div>
       <h4>${L('Edge cases','边界情况')}</h4><div class="lg-demo-actions">
         ${S.page===LIST?b('Fewer records · page out of range','记录减少 · 页码超出','overflow'):''}
         ${S.page===DT?b('Source record updated','来源记录已更新','stale','','',!!A.stale):''}
@@ -640,6 +669,15 @@
   }
 
   /* ---------------------------------------------------------------- 动作 */
+  /* 复制完整值；剪贴板不可用时弹出完整值供手动复制。 */
+  async function copyValue(v){
+    const what=v.length===66?L('Transaction hash copied','交易哈希已复制'):v.length===42?L('Address copied','地址已复制'):L('Copied','已复制');
+    try{if(!navigator.clipboard)throw Error('clipboard');await navigator.clipboard.writeText(v);CF.toast(what);}
+    catch(_){CF.openLayer('modal','lg-copy',v);}
+  }
+  const layers={...(OPS.layers||{}),'lg-copy':v=>({title:L('Copy manually','手动复制'),
+    html:`<p class="lg-meta">${L('Automatic copy is unavailable. Select and copy the full value below.','自动复制不可用，请选中下方完整值手动复制。')}</p><textarea class="inp mono lg-raw" readonly rows="3" aria-label="${L('Full value','完整值')}">${E(v)}</textarea>`,
+    foot:`<button type="button" class="btn" data-act="closelayer">${L('Close','关闭')}</button>`})};
   function applyFilter(){
     const v=view(A.tab),f={...v.edit};
     f.q=(f.q||'').trim();
@@ -683,7 +721,7 @@
     else if(act==='list-retry'){A.listView='default';CF.render();}
     else if(act==='totals-retry'){A.totalsView='default';CF.render();}
     else if(act==='part-retry'){A.detailView='default';CF.render();}
-    else if(act==='copy')navigator.clipboard?.writeText(value).then(()=>CF.toast(L('Copied','已复制'))).catch(()=>CF.toast(L('Copy the visible value manually.','请手动复制显示值。')));
+    else if(act==='copy')copyValue(value);
     else if(act==='sign-in'){location.hash='#/ops/login';}
     else if(act==='grant'){grant(value);CF.render();}
     else if(act==='overflow'){view(A.tab).page=99;CF.render();}
@@ -691,7 +729,7 @@
     else if(act==='expire-session'){S.demo=false;OPS.onAct('ops-session-expire');CF.render();}
     else if(act==='restart'){
       try{sessionStorage.removeItem(TRAIL);sessionStorage.removeItem(VIEWS);}catch(_){}
-      load();A.views={};A.tab='projects';A.inner=null;A.listView='default';A.totalsView='default';A.detailView='default';A.notice=null;A.stale=false;
+      load();A.views={};A.tab='projects';A.inner=null;A.listView='default';A.totalsView='default';A.detailView='default';A.explorer=true;A.notice=null;A.stale=false;
       grant('admin');location.hash='#'+listRoute('projects');CF.render();
     }
     else return false;
@@ -713,6 +751,7 @@
     if(id==='lg-demo-list'){A.listView=e.target.value;CF.render();}
     if(id==='lg-demo-totals'){A.totalsView=e.target.value;CF.render();}
     if(id==='lg-demo-detail'){A.detailView=e.target.value;CF.render();}
+    if(id==='lg-demo-explorer'){A.explorer=e.target.value==='on';CF.render();}
   });
   /* 标签页键盘：左右键在同一组 tab 间移动焦点，回车或空格切换。 */
   document.addEventListener('keydown',e=>{
@@ -750,7 +789,8 @@
       ['demand-pending',['Demand · number not generated','需求 · 编号尚未生成'],sample('demand',r=>!r.id)],
       ['demand-lending',['Demand · disbursement in progress','需求 · 链上放款处理中'],sample('demand',r=>quoteLending(r),r=>({tab:'quotes',hl:r.quotes.find(q=>q.lending).ref}))],
       ['demand-confirming',['Demand · repayment confirming','需求 · 还款上链确认中'],sample('demand',r=>!!r.loan&&periodsOf(r.loan.id).some(p=>p.status==='confirming'),r=>({tab:'repay',hl:periodsOf(r.loan.id).find(p=>p.status==='confirming').ref}))],
-      ['demand-plan',['Demand · plan being generated','需求 · 还款计划生成中'],sample('demand',r=>!!r.loan&&!r.loan.planReady,{tab:'repay'})]
+      ['demand-plan',['Demand · plan being generated','需求 · 还款计划生成中'],sample('demand',r=>!!r.loan&&!r.loan.planReady,{tab:'repay'})],
+      ['demand-ops',['Demand · operation records','需求 · 操作记录'],sample('demand',r=>r.ops.some(o=>o.state==='failed'),{tab:'ops'})]
     ].map(([id,label,s])=>({id,label,available:canLedger()&&!!s,route:s?s.route:null,description:s?['Demo record · '+s.id,'演示记录 · '+s.id]:['No matching record','暂无对应记录']})),
     route:()=>detailRoute('project',A.data.projects[0].ref),
     get:()=>!canLedger()?'denied':A.detailView,
@@ -763,7 +803,7 @@
     en:{...OPS.dict.en,navLedger:'Financing ledger',navLedgerDetail:'Record detail',navLedger_project:'Financing project detail',navLedger_demand:'Financing demand detail'},
     zh:{...OPS.dict.zh,navLedger:'融资台账',navLedgerDetail:'记录详情',navLedger_project:'融资项目详情',navLedger_demand:'融资需求详情'}
   };
-  CF.define({...OPS,id:'financing-ledger',demoOnly:true,reviewToolsInLayer:false,dict,demo,
+  CF.define({...OPS,id:'financing-ledger',demoOnly:true,reviewToolsInLayer:false,dict,demo,layers,
     content:page=>{
       if(OPS_PAGES.includes(page))return OPS.content(page);
       return page===DT?detail():list();
