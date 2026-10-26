@@ -1,13 +1,9 @@
 /* Overview compositions. Shared tokens, shell, controls and category marks remain canonical;
    colours and fonts follow the component spec (blue-white surface, --sans / --numeric). */
-.ov-page{max-width:1440px;margin:0 auto;display:grid;gap:var(--sp-6);min-width:0}
-.ov-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-5)}
+.ov-page{display:grid;gap:var(--sp-4);min-width:0}
+.ov-heading{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-4) var(--sp-6)}
 .ov-heading h1{margin:0;font-size:var(--ui-page-title);font-weight:600;line-height:1.3;letter-spacing:-.02em}
-.ov-heading .page-desc{margin-bottom:0}
-.ov-heading-tools{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;justify-content:flex-end}
-.ov-heading-tools .tag{white-space:nowrap}
-.ov-refresh-status{font-size:var(--ui-field-label);color:var(--muted);text-align:right;margin:var(--sp-2) 0 0}
-.ov-refresh-status:empty{display:none}
+.ov-heading>.tag{margin-left:auto;white-space:nowrap}
 .ov-section{min-width:0}
 .ov-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);margin-bottom:var(--sp-4)}
 .ov-section-head h2{margin:0;font-size:var(--ui-section-title);font-weight:600}
@@ -30,7 +26,7 @@
 [data-tone="3"]{--tone:var(--chart-3)}
 
 /* Platform statistics: amounts lead, counts follow in a quieter strip. */
-.ov-hero{position:relative;z-index:1;container-type:inline-size;padding:var(--sp-6);border:1px solid var(--border);border-radius:var(--radius-lg);min-width:0;background:var(--card)}
+.ov-hero{position:relative;z-index:1;container-type:inline-size;padding:var(--sp-5);border:1px solid var(--border);border-radius:var(--radius-sm);min-width:0;background:var(--card)}
 .ov-amounts,.ov-counts{display:grid;grid-template-columns:repeat(var(--ov-columns,3),minmax(0,1fr));gap:var(--sp-4);margin:0}
 .ov-amount-card{position:relative;padding:var(--sp-4) var(--sp-5);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);min-width:0}
 .ov-amount-card::before{content:"";position:absolute;inset:0 var(--sp-2) auto;height:2px;background:var(--tone)}
@@ -77,10 +73,10 @@
 .ov-amount-card[data-read-state=error],.ov-count[data-read-state=error]{border-color:var(--warn-border)}
 
 /* Body: activity on the left, the action rail on the right. */
-.ov-body{display:grid;grid-template-columns:minmax(0,1fr) clamp(300px,30%,380px);gap:var(--sp-5);align-items:start}
+.ov-body{display:grid;grid-template-columns:minmax(0,1fr) clamp(300px,30%,380px);gap:var(--sp-4);align-items:start}
 .ov-body-single{grid-template-columns:minmax(0,1fr)}
-.ov-main{display:grid;gap:var(--sp-6);min-width:0}
-.ov-panel{padding:var(--sp-5);border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--card)}
+.ov-main{display:grid;gap:var(--sp-4);min-width:0}
+.ov-panel{padding:var(--sp-5);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card)}
 .ov-view-toggle{display:inline-flex;gap:var(--sp-1);padding:2px;border:1px solid var(--border);border-radius:var(--radius-sm);flex:none}
 .ov-view-toggle .btn{border-color:transparent;background:transparent;color:var(--muted)}
 .ov-view-toggle .btn[aria-pressed=true]{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 -2px var(--accent)}
@@ -156,15 +152,13 @@
 .ov-module-name{font-size:var(--ui-field-label);color:var(--muted)}
 .ov-empty{padding:var(--sp-3) var(--sp-4);border:1px solid var(--ok-border);border-radius:var(--radius-sm);background:var(--ok-bg);font-size:var(--ui-row-value);color:var(--ok);margin:var(--sp-4) 0 0}
 .ov-page :is(button,a):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-@media(max-width:1100px){.ov-body{grid-template-columns:minmax(0,1fr)}.ov-hero{padding:var(--sp-5)}}
+@media(max-width:1100px){.ov-body{grid-template-columns:minmax(0,1fr)}.ov-hero{padding:var(--sp-4)}}
 @container(max-width:800px){
   .ov-amounts,.ov-counts{grid-template-columns:minmax(0,1fr)}
   .ov-fold-hint{display:none}
 }
 @media(max-width:700px){
   .ov-heading{flex-wrap:wrap;gap:var(--sp-4)}
-  .ov-heading-tools{justify-content:flex-start}
-  .ov-refresh-status{text-align:left}
   .ov-amounts,.ov-counts{grid-template-columns:minmax(0,1fr)}
   .ov-fold-hint{display:none}
   .ov-section-head{flex-wrap:wrap;gap:var(--sp-2)}

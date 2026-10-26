@@ -38,7 +38,6 @@
   const sourceLabel=key=>tr(menu(key).label);
   // Category marks reuse the menu's vocabulary; they do not encode business status.
   const mark=key=>'<span class="ov-source-mark" data-source="'+key+'" aria-hidden="true">'+menu(key).icon+'</span>';
-  const busy=()=>keys().some(k=>cache[k]?.state==='loading');
   const locale=()=>S.lang==='zh'?'zh-CN':'en-US';
   const count=n=>new Intl.NumberFormat(locale(),{maximumFractionDigits:0}).format(n);
   const unit=(key,n)=>S.lang==='en'&&n===1?sources[key].unit[0].replace(/s$/,''):tr(sources[key].unit);
@@ -166,7 +165,7 @@
     const allClear=tasks.length===4&&tasks.every(k=>cache[k]?.state==='ready'&&cache[k].data.pending===0);
     const rail=tasks.length?'<aside class="ov-rail" aria-labelledby="ov-tasks-title"><section class="ov-section ov-panel"><div class="ov-section-head"><h2 id="ov-tasks-title">'+L('Action required','待办事项')+'</h2></div><ul class="ov-tasks">'+tasks.map(taskCard).join('')+'</ul>'+(allClear?'<p class="ov-empty" role="status">'+L('No items in these four queues need action.','当前暂无这四类待办事项。')+'</p>':'')+'</section></aside>':'';
     const main=daily?'<div class="ov-main">'+daily+'</div>':'';
-    return '<div class="ov-page"><div class="ov-heading"><div><h1>'+L('Overview','总览')+'</h1><p class="page-desc">'+L('Platform statistics, daily activity and the work that needs attention.','平台统计、每日新增与当前待办。')+'</p></div><div><div class="ov-heading-tools">'+CF.tag('gray',L('Demonstration data','演示数据'))+'<button class="btn" type="button" id="ov-refresh" data-act="ov-refresh" '+(!allowed.length?'disabled':busy()?'aria-disabled="true"':'')+'>'+L('Refresh data','刷新数据')+'</button></div><p class="ov-refresh-status" aria-live="polite">'+(busy()?L('Updating available sources…','正在读取有权查看的数据…'):'')+'</p></div></div>'+hero+
+    return '<div class="ov-page"><div class="ov-heading"><h1>'+L('Overview','总览')+'</h1>'+CF.tag('gray',L('Demonstration data','演示数据'))+'</div>'+hero+
       (main||rail?'<div class="ov-body'+(rail&&main?'':' ov-body-single')+'">'+main+rail+'</div>':'')+(!allowed.length?CF.empty(L('No business sources available','暂无可查看的业务摘要'),L('This account has no query permission for these sources.','当前账号未开通这些来源的查询权限。'),''):'')+'</div>';
   }
   function setScene(value){
@@ -181,7 +180,6 @@
   const priorAction=OPS.onAct,priorAfter=OPS.afterRender,priorDemo=OPS.demo;
   OPS.onAct=function(act,v,event){
     if(!act.startsWith('ov-'))return priorAction.call(this,act,v,event);
-    if(act==='ov-refresh'&&!busy())refresh();
     if(act==='ov-retry')refresh(v);
     if(act==='ov-scene')setScene(v);
     if(act==='ov-counts'){countsOpen=!countsOpen;CF.render();}
