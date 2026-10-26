@@ -613,24 +613,25 @@
   function pledgeCandidates(p){return D.tokens.filter(t=>D.selectable(t,p)).sort((a,b)=>D.holderOf(a).localeCompare(D.holderOf(b))||b.value-a.value||a.id.localeCompare(b.id));}
   const signAddress=()=>selection.length?D.holderOf(D.token(selection[0])):'';
   /* 签名条与主动作同处底部、随勾选即时更新：已选份数与份额价值合计、一个预估 gas 合计（含尚需完成的授权）、一句后果说明。 */
-  function approvalTodo(p){return D.approvalNeeds(p,selection).filter(x=>!x.record||x.record.state==='failure');}
+  function approvalTodo(p){return D.approvalNeeds(p,selection).filter(x=>!x.reusable&&!x.blocked&&x.record?.state!=='processing');}
   /* 分步办理：每一步只放本步需要的信息。选择步给已选份数与份额价值合计；签名步给本步预估 gas 与一句后果说明。 */
   const STEPS={pledge:[['Select tokens','选择代币'],['Approve','授权签名'],['Sign transaction','交易签名']],release:[['Select tokens','选择代币'],['Sign','钱包签名']]};
   function stepper(key){return '<ol class="ls-steps" aria-label="'+L('Steps','办理步骤')+'">'+STEPS[key].map((x,i)=>'<li'+(i+1===step?' aria-current="step"':'')+(i+1<step?' class="done"':'')+'><span class="ls-step-n">'+(i+1)+'</span>'+txt(x)+'</li>').join('')+'</ol>';}
   function chosenSum(){const chosen=selection.map(D.token).filter(Boolean),total=chosen.reduce((v,t)=>v+t.value,0);return '<span>'+L('Selected','已选')+' <b class="mono">'+chosen.length+'</b>'+L(chosen.length===1?' share':' shares',' 份')+'</span><span>'+L('Share value','份额价值合计')+' <b class="mono">'+usd(total)+'</b></span>';}
-  /* 签名核对：金额是本次所选份额的价值展示，不改合约授权范围；目标地址始终取项目已配置的质押合约。 */
+  /* USD 价值仅供核对；每笔授权的代币数量在对应发行合约下单独展示。 */
   function pledgeSignFacts(p,approval=false){
     const total=selection.map(D.token).filter(Boolean).reduce((v,t)=>v+t.value,0);
-    return '<dl class="ls-signing-facts">'+(approval?'<div class="ls-signing-amount"><dt>'+L('Approval amount','本次授权金额')+'<span class="ls-signing-caption">'+L('Total value of selected shares','所选份额价值合计')+'</span></dt><dd class="mono">'+usd(total)+'</dd></div>':'')+signContract(p)+'</dl>';
+    return '<dl class="ls-signing-facts">'+(approval?'<div class="ls-signing-value"><dt>'+L('Total value of selected shares','所选份额价值合计')+'<span class="ls-signing-caption">'+L('For review only','仅供核对')+'</span></dt><dd class="mono">'+usd(total)+'</dd></div>':'')+signContract(p)+'</dl>';
   }
   function stepBar(sum,gas,note,extra){return '<div class="ls-sign-bar" role="status" aria-live="polite"><p class="ls-sign-sum">'+(sum||'')+(gas?'<span>'+L('Estimated gas','预估 gas')+' <b class="mono">'+gas+'</b></span>':'')+'</p>'+(note?'<p class="ls-sign-note">'+note+'</p>':'')+(extra||'')+'</div>';}
   function txGas(){const gas={};selection.map(D.token).filter(Boolean).forEach(t=>{const f=D.quoteFee(t.id);gas[f.currency]=(gas[f.currency]||0)+f.amount;});return Object.entries(gas).map(([c,n])=>Number(n).toFixed(6)+' '+E(c)).join(' / ')||'—';}
   const approveGas=p=>(approvalTodo(p).length*D.APPROVE_FEE).toFixed(6)+' ETH';
-  /* 授权按“持有地址 + 质押合约”给出，链上逐个代币发行合约记录：已授权的跳过，未授权的逐个在钱包确认。 */
+  /* 每个发行合约按本次数量授权；只有同数量且尚未使用的授权可以沿用。 */
   function approvalBlock(p){
-    const needs=D.approvalNeeds(p,selection),next=approvalTodo(p)[0];
-    const state=r=>!r?CF.tag('',L('Not approved','待授权')):r.state==='success'?CF.tag('ok',L('Approved','已授权')):r.state==='processing'?CF.tag('warn',L('Processing','授权处理中'))+small(waitText(r.at)):CF.tag('danger',L('Failed','授权失败'))+small(gasText(r));
-    return '<p class="ls-sign-purpose">'+L('Signing approves this pledge contract to take every token this address holds under the issuing contract below, until you revoke it. Approval does not move any token. It is an on-chain transaction: gas is paid by your company and is not refunded on failure. It is unrelated to your sign-in.','签名后，本持有地址授权上述质押合约调取本地址在下列发行合约下的全部代币，撤销前持续有效；授权本身不转移代币。这是链上交易，gas 由本企业承担、失败已产生的不退，与登录无关。')+'</p><ul class="ls-approval-list">'+needs.map(x=>'<li'+(x===next?' class="is-next"':'')+'><span class="ls-approval-who"><span class="muted">'+(x===next?L('Approving now · issuing contract','本次授权 · 代币发行合约'):L('Issuing contract','代币发行合约'))+'</span> <span class="mono" title="'+E(x.issuer)+'">'+E(shortAddr(x.issuer))+'</span><span class="muted"> · '+L(x.count+(x.count===1?' share':' shares'),x.count+' 份')+'</span></span><span class="ls-approval-state">'+state(x.record)+(x.record?.tx?hashChip(x.record.tx):'')+'</span></li>').join('')+'</ul>';
+    const needs=D.approvalNeeds(p,selection),next=needs.find(x=>!x.reusable&&!x.blocked&&x.record?.state!=='processing');
+    const state=x=>x.blocked?CF.tag('warn',x.blocked==='revoking'?L('Revoking','撤销处理中'):L('Pledge processing','质押处理中')):x.reusable?CF.tag('ok',L('Same quantity · unused','同数量 · 未使用')):!x.record?CF.tag('',L('Approval required','待授权')):x.record.state==='processing'?CF.tag('warn',L('Processing','授权处理中'))+small(waitText(x.record.at)):CF.tag('danger',L('Failed','授权失败'))+small(gasText(x.record));
+    const reason=x=>x.blocked?L('Wait for the current on-chain result before continuing.','请等待当前链上结果后继续。'):x.record?.state==='processing'&&x.record.quantity!==x.quantity?L('Approval sent: ','已发出的授权：')+D.formatQuantity(x.record.quantity)+' '+E(x.record.symbol)+L('. Wait for its result.','，请等待结果。'):x.reusable||!x.prior||x.record?'':x.prior.used?L('The previous approval was used. Approve this selection again.','此前授权已使用，须按本次数量重新授权。'):D.approvalAvailable(x.prior)?L('Quantity changed. A successful new approval replaces the previous one.','数量已变化，新授权上链成功后取代旧授权。'):'';
+    return '<p class="ls-sign-purpose">'+L('Approve only the quantities below for this pledge; approval does not transfer tokens and expires when used or replaced. This on-chain signature is separate from sign-in; gas is paid by your company and any gas incurred is not refunded on failure.','仅授权下列数量用于本次质押，授权本身不转移代币，用完或被新授权取代即失效。此签名与登录无关；授权上链的 gas 由本企业承担，失败已产生的不退。')+'</p><ul class="ls-approval-list">'+needs.map(x=>'<li'+(x===next?' class="is-next"':'')+'><div class="ls-approval-who"><span class="muted">'+(x===next?L('Approving now · issuing contract','本次授权 · 代币发行合约'):L('Issuing contract','代币发行合约'))+'</span><span class="mono" title="'+E(x.issuer)+'">'+E(shortAddr(x.issuer))+'</span><span class="ls-approval-quantity"><span>'+L('Approval quantity','本笔授权数量')+'</span><b class="mono">'+D.formatQuantity(x.quantity)+' <span class="ls-approval-unit">'+E(x.symbol)+'</span></b></span>'+(reason(x)?'<span class="ls-approval-reason">'+reason(x)+'</span>':'')+'</div><span class="ls-approval-state">'+state(x)+(x.record?.tx?hashChip(x.record.tx):'')+'</span></li>').join('')+'</ul>';
   }
   function pledgePicker(p){
     const list=pledgeCandidates(p);
@@ -657,7 +658,7 @@
     busy=true;CF.render();await new Promise(r=>setTimeout(r,600));
     try{
       if(submitFail)throw Error('approvalSkipped');
-      const rec=D.approve(p,next.holder,next.issuer);
+      const rec=D.approve(p,next.holder,next.issuer,next.quantity,next.symbol);
       setTimeout(()=>{if(approvalOutcome!=='wait'){D.approvalResult(rec,approvalOutcome);CF.render();}},1500);
     }catch(ex){error=ex.message==='approvalSkipped'?L('Approval was not signed. Nothing was sent on chain and no gas was incurred.','未完成授权签名，本次未授权，未发生链上操作、未产生 gas。'):txt(errors[ex.message]||['The action could not be completed. Please retry.','操作未完成，请重试。']);}
     finally{busy=false;CF.render();}
@@ -733,7 +734,7 @@
     pledge:()=>{const p=project(),changes=confirmationChanges.length?note(L('Nothing was sent. These tokens changed and were removed from your selection:','本次未发起。以下代币资格已变化，已移出选择：')+'<ul>'+confirmationChanges.map(c=>'<li>'+E(c)+'</li>').join('')+'</ul>','warn'):'',back=btn('ls-step-back',L('Back','上一步'),'',false,busy),cancel=btn('closelayer',L('Cancel','取消'),'',false,busy);
       const head=stepper('pledge');
       if(step===1)return {title:pledgeLabel(p),html:'<div class="ls-wide ls-stack ls-pledge">'+head+changes+pledgePicker(p)+err()+'</div>',foot:stepBar(chosenSum())+cancel+btn('ls-step-next',L('Next','下一步'),'',true,!selection.length)};
-      if(step===2){const todo=approvalTodo(p),waiting=D.approvalNeeds(p,selection).some(x=>x.record?.state==='processing');
+      if(step===2){const todo=approvalTodo(p),waiting=D.approvalNeeds(p,selection).some(x=>x.blocked||x.record?.state==='processing');
         const main=todo.length?btn('ls-approve',busy?L('Waiting for wallet signature…','等待钱包签名…'):L('Sign approval','签名授权')+(todo.length>1?L(' · '+todo.length+' left',' · 还需 '+todo.length+' 次'):''),'',true,busy||waiting||!contractOk()):btn('ls-step-next',L('Next','下一步'),'',true,waiting);
         return {title:pledgeLabel(p),html:'<div class="ls-medium ls-stack ls-pledge">'+head+pledgeSignFacts(p,true)+approvalBlock(p)+err()+'</div>',foot:stepBar('',todo.length?approveGas(p):'')+back+main};}
       return {title:pledgeLabel(p),html:'<div class="ls-medium ls-stack ls-pledge">'+head+'<div class="ls-signing-review"><p class="ls-step-summary">'+chosenSum()+'</p>'+pledgeSignFacts(p)+'</div><p class="ls-sign-purpose">'+L('Signing sends a transaction that moves the selected tokens from this holding address into the pledge contract above. The pledge completes and counts toward the eligible pledge amount once it succeeds on chain. It is unrelated to your sign-in.','签名后发起交易，将所选代币从本持有地址转入上述质押合约；上链成功才完成质押并计入有效质押额。与登录无关。')+'</p>'+changes+err()+'</div>',

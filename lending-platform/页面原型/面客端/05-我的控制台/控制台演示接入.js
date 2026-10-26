@@ -92,11 +92,11 @@
     db=Q.data();now=D.now();
     if(db.consoleExamples===VERSION&&D.project('FP-MC-001')){if(reconcile())Q.save();return;}
     purge();samples.forEach(build);
-    /* 质押授权：持有地址 × 发行合约 × 质押合约一条；另有一条授权处理中、一条已撤销的历史记录。 */
+    /* 质押授权每笔带明确数量；另有一条授权处理中、一条已撤销的历史记录。 */
     const at=iso(now-40*DAY);
-    if(!D.approvalOf(HOLDER[0],POOL,D.ISSUERS[1]))D.approvals.push({id:'AP-MC-ISSUER2',holder:HOLDER[0],contract:POOL,issuer:D.ISSUERS[1],state:'success',at,done:iso(now-40*DAY+6*60000),fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:hash('AP-MC-ISSUER2')});
-    D.approvals.push({id:'AP-MC-PENDING',holder:HOLDER[1],contract:POOL,issuer:D.ISSUERS[2],state:'processing',at:iso(now-20*60000),fee:null,feeCurrency:'ETH'});
-    D.approvals.push({id:'AP-MC-REVOKED',holder:HOLDER[1],contract:POOL,issuer:D.ISSUERS[1],state:'success',at:iso(now-90*DAY),done:iso(now-90*DAY+5*60000),fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:hash('AP-MC-REVOKED'),revoke:{state:'success',at:iso(now-60*DAY),done:iso(now-60*DAY+3*60000),tx:hash('AP-MC-REVOKED-r'),gas:'0.000044'}});
+    if(!D.approvalOf(HOLDER[0],POOL,D.ISSUERS[1]))D.approvals.push({id:'AP-MC-ISSUER2',holder:HOLDER[0],contract:POOL,issuer:D.ISSUERS[1],quantity:'1',symbol:'AR-DEMO',usedQuantity:'0',state:'success',at,done:iso(now-40*DAY+6*60000),fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:hash('AP-MC-ISSUER2')});
+    D.approvals.push({id:'AP-MC-PENDING',holder:HOLDER[1],contract:POOL,issuer:D.ISSUERS[2],quantity:'100',symbol:'AR-DEMO',usedQuantity:'0',state:'processing',at:iso(now-20*60000),fee:null,feeCurrency:'ETH'});
+    D.approvals.push({id:'AP-MC-REVOKED',holder:HOLDER[1],contract:POOL,issuer:D.ISSUERS[1],quantity:'50',symbol:'AR-DEMO',usedQuantity:'0',state:'success',at:iso(now-90*DAY),done:iso(now-90*DAY+5*60000),fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:hash('AP-MC-REVOKED'),revoke:{state:'success',at:iso(now-60*DAY),done:iso(now-60*DAY+3*60000),tx:hash('AP-MC-REVOKED-r'),gas:'0.000044'}});
     const own=db.credits.find(c=>c.owner==='entity-demo-a'&&c.fund==='fund-a');
     reconcile();
     /* 在途报价金额含报价上链确认中的预占；总额始终留出余量，不出现可用授信为负的假数据。 */
