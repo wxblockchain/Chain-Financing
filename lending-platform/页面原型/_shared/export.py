@@ -2,6 +2,8 @@
 
 用法（在 lending-platform/页面原型/ 下执行）：
   python3 _shared/export.py --source <模块>/<原型>.html --output <仓库外路径>.html
+  仅导出当前运营端模块：在上面的命令后加 --admin-scope module。
+  模块评审件保留共享壳层；跨模块入口提示回到仓库原型访问。
 
 源文件（模块 HTML 与 _shared/ 下的 CSS/JS）始终是唯一维护源；生成件不放回仓库，
 避免出现第二份可编辑的公共代码。公共层更新后重新执行导出即可。
@@ -20,6 +22,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--admin-scope", choices=("all", "module"), default="all",
+                        help="Operations review scope: all destinations (default), or only the source module")
     parser.add_argument("--entry-route", help="Offline customer review entry, e.g. /marketplace; explicit hash links still win")
     parser.add_argument("--market-tone", choices=("dark", "blue"),
                         help="Optional marketplace review palette; all variants share the same source")
@@ -88,7 +92,17 @@ def main():
         route = json.dumps('#' + args.entry_route)
         bootstrap = '<script>if(!location.hash)history.replaceState(null,"",' + route + ');</script>'
         html = html.replace('<head>', '<head>' + bootstrap, 1)
-    if 'data-admin-module=' in html:
+    if 'data-admin-module=' in html and args.admin_scope == 'module':
+        # Review boundary only. Source navigation remains the full system contract.
+        # Out-of-module destinations give an explicit message instead of a broken
+        # file link; no unrelated documents, business scripts or fixtures are bundled.
+        adapter = '''<script>window.AdminPrototypeBundle={open:function(){
+          window.CF.toast(window.CF.L(
+            "This review contains only this module. Open the repository prototype for other modules.",
+            "本评审件仅包含当前模块；跨模块页面请从仓库原型打开。"));
+        }};</script>'''
+        html = re.sub(r'(<head\b[^>]*>)', lambda m: m[1] + adapter, html, count=1, flags=re.I)
+    elif 'data-admin-module=' in html:
         # Source files keep normal relative links. Offline delivery includes every
         # destination from the same menu contract, with no copied business runtime.
         menu = (root / '_shared/admin-menu.js').read_text(encoding='utf-8')

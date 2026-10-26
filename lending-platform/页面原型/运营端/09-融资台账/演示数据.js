@@ -1,6 +1,6 @@
 /* Demonstration fixtures only · 融资台账（运营端，只读）。
-   本模块自有的一套虚构数据：从融资项目一路串到还款期次，编号互相对应，用于演示六个清单、
-   记录详情与关联跳转。不读取、不改写其他模块的演示数据，不连接任何链上或业务服务。
+   本模块自有的一套虚构数据：从融资项目一路串到还款期次，编号互相对应，用于演示两个清单、
+   六个详情页签与关联跳转。不读取、不改写其他模块的演示数据，不连接任何链上或业务服务。
    金额、利率、汇率、地址与交易标识均为虚构值。 */
 (function(CF){
   'use strict';
@@ -87,8 +87,8 @@
       {id:'FP-26082804-02',project:'FP-26082804',round:2,amount:500000,status:'funded',publishedAt:now-100*D,
         ops:[op('publish',now-100*D,'FP-26082804','D21'),op('release',now-95*D,'FP-26082804','D22')]},
       {id:'FP-26090107-01',project:'FP-26090107',round:1,amount:300000,status:'quoted',publishedAt:now-38*D,
-        ops:[op('publish',now-38*D,'FP-26090107','D31'),op('resize',now-36*D,'FP-26090107','D32')],chain:'quoting'},
-      {id:'FP-26091502-01',project:'FP-26091502',round:1,amount:250000,status:'lending',chain:'lending',publishedAt:now-27*D,
+        ops:[op('publish',now-38*D,'FP-26090107','D31'),op('resize',now-36*D,'FP-26090107','D32')]},
+      {id:'FP-26091502-01',project:'FP-26091502',round:1,amount:250000,status:'lending',publishedAt:now-27*D,
         ops:[op('publish',now-27*D,'FP-26091502','D41')]},
       {id:null,project:'FP-26092203',round:1,amount:120000,status:null,chain:'publishing',publishedAt:null,startedAt:now-22*M,ops:[]},
       {id:'FP-26080512-01',project:'FP-26080512',round:1,amount:160000,status:'funded',publishedAt:now-376*D,
