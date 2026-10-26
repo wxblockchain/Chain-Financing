@@ -32,7 +32,7 @@
       {key:'finance',id:'newDemand',tone:'2',label:['Demand published','新发布融资需求']},
       {key:'finance',id:'newLoans',tone:'3',label:['Disbursed','新增放款']}]}
   ];
-  let scene='default',entered=false,scheduled=false,signature='',cache={},versions={},view='chart',countsOpen=false;
+  let scene='default',entered=false,scheduled=false,signature='',cache={},versions={},view='chart',countsOpen=false,amountOpen='';
   const tr=x=>L(...x),can=key=>CF.opsAuth.can(sources[key].permission),keys=()=>Object.keys(sources).filter(can);
   const menu=key=>CF.AdminMenu.entries.find(e=>e.key===sources[key].nav);
   const sourceLabel=key=>tr(menu(key).label);
@@ -45,7 +45,13 @@
   const pick=(data,path)=>path.split('.').reduce((o,k)=>o==null?null:o[k],data);
   // Exact two-decimal amount from integer cents, without floating-point drift.
   function money(c){const s=String(Math.round(c)).padStart(3,'0');return s.slice(0,-2).replace(/\B(?=(\d{3})+(?!\d))/g,',')+'.'+s.slice(-2);}
-  const compact=(c,digits=2)=>new Intl.NumberFormat(locale(),{notation:'compact',minimumFractionDigits:digits,maximumFractionDigits:digits}).format(c/100);
+  // The approved aggregate notation is K / M / B in both languages. Promote a
+  // rounded 1000 K to 1 M, without changing the cents used by exact values.
+  function compact(c,digits=2){
+    const n=c/100,units=[[1e9,'B'],[1e6,'M'],[1e3,'K']];
+    const u=units.find(([scale])=>Math.abs(n)>=scale||Number((Math.abs(n)/(scale/1000)).toFixed(digits))>=1000);
+    return new Intl.NumberFormat('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits}).format(u?n/u[0]:n)+(u?' '+u[1]:'');
+  }
   const stamp=at=>'<time datetime="'+new Date(at).toISOString()+'">'+E(CF.fmtStamp(at))+'</time>';
   const time=at=>'<span class="ov-time">'+L('Data as of ','数据时间 ')+stamp(at)+'</span>';
   const retry=key=>'<button type="button" class="ov-inline" data-act="ov-retry" data-v="'+key+'">'+L('Retry','重试')+'</button>';
@@ -63,11 +69,20 @@
   const series=(key,id)=>cache[key]?.data?.daily?.[id]||null;
   function amountCard(m){
     const c=cache[m.key],v=c?.data?c.data[m.field]:null,list=series(m.key,m.series),today=list?list[list.length-1]:null;
-    const big=v==null?unavailable(m.key):'<span class="ov-amount" data-ov-value="'+m.key+'-'+m.field+'" title="'+money(v)+' '+m.ccy+'">'+compact(v)+'<span class="ov-ccy">'+m.ccy+'</span></span>'+
-      (compact(v)!==money(v)?'<span class="ov-amount-exact">'+money(v)+' '+m.ccy+'</span>':'');
+    const id='ov-amount-'+m.field,open=amountOpen===m.field;
+    const full=v==null?L('Unavailable','暂不可用'):money(v)+' '+m.ccy;
+    const big='<span class="ov-amount" data-ov-value="'+m.key+'-'+m.field+'">'+(v==null?'—':compact(v))+'</span><span class="ov-ccy">'+m.ccy+'</span>';
+    const button='<button type="button" class="ov-amount-toggle" id="'+id+'" data-act="ov-amount" data-v="'+m.field+'" aria-expanded="'+open+'" aria-controls="'+id+'-detail" title="'+E(full)+'" aria-label="'+E(tr(m.label)+' · '+full+' · '+L('Details','明细'))+'">'+
+      '<span class="ov-currency-icon" aria-hidden="true">'+CF.assetIconSvg(m.ccy)+'</span>'+big+'<span class="ov-amount-action">'+L('Details','明细')+'<span class="ov-fold-mark" aria-hidden="true"></span></span></button>';
     const missing=m.field==='value'&&c?.data?.missingValue>0?'<p class="ov-amount-flag">'+L(count(c.data.missingValue)+' record'+(c.data.missingValue===1?'':'s')+' without a token value are not included','另有 '+count(c.data.missingValue)+' 笔缺少代币价值，未计入')+'</p>':'';
-    const todayLine=c?.data?'<p class="ov-amount-today"><span>'+tr(m.today)+' (UTC)</span><b>'+(today==null?L('Unavailable','暂不可用'):money(today)+' '+m.ccy)+'</b></p>':'';
-    return '<div class="ov-amount-card" data-tone="'+m.tone+'" data-source="'+m.key+'" data-read-state="'+(c?.state||'loading')+'"><dt>'+tr(m.label)+(m.note?'<span class="ov-amount-note">'+tr(m.note)+'</span>':'')+'</dt><dd>'+big+feedback(m.key)+missing+todayLine+(c?.at?time(c.at):'')+'</dd></div>';
+    const detail='<div class="ov-amount-detail" id="'+id+'-detail" role="region" aria-labelledby="'+id+'-label"'+(open?'':' hidden')+'><h3 id="'+id+'-label">'+tr(m.label)+'</h3><dl class="ov-amount-facts">'+
+      '<div><dt>'+L('Full amount','完整金额')+'</dt><dd class="ov-amount-exact">'+full+'</dd></div>'+
+      '<div><dt>'+L('Basis','统计口径')+'</dt><dd>'+tr(m.note)+'</dd></div>'+
+      '<div><dt>'+tr(m.today)+' (UTC)</dt><dd class="ov-amount-exact">'+(today==null?L('Unavailable','暂不可用'):money(today)+' '+m.ccy)+'</dd></div></dl>'+
+      (c?.at?time(c.at):'')+'</div>';
+    // A stale timestamp and read warnings never depend on opening the disclosure.
+    const status=feedback(m.key)+missing+(c?.at&&c.state!=='ready'?time(c.at):'');
+    return '<div class="ov-amount-card" data-tone="'+m.tone+'" data-source="'+m.key+'" data-ov-amount="'+m.field+'" data-read-state="'+(c?.state||'loading')+'"><dt><span class="ov-swatch" aria-hidden="true"></span>'+tr(m.label)+'</dt><dd><div class="ov-amount-peek">'+button+detail+'</div>'+status+'</dd></div>';
   }
   function niceMax(v){if(v<=0)return 100;const p=Math.pow(10,Math.floor(Math.log10(v))),n=v/p;return [1,2,2.5,5,10].find(x=>x>=n)*p;}
   function chartBlock(def,days){
@@ -91,7 +106,7 @@
         return v==null?'<span class="ov-bar" data-unavailable="true" style="height:100%"></span>':'<span class="ov-bar" data-tone="'+s.tone+'" style="height:'+(v/peak*100).toFixed(2)+'%"></span>';}).join('')+'</div>'+
         '<span class="ov-tick">'+(today?L('Today','今天'):d.slice(5))+'</span>'+
         '<span class="ov-tip" role="tooltip"><b>'+E(label(i))+' (UTC)</b>'+shown.map(s=>{const v=value(s,i);return '<span><i class="ov-swatch" data-tone="'+s.tone+'"></i>'+tr(s.label)+'<em>'+(v==null?L('Unavailable','暂不可用'):money(v)+' '+def.ccy)+'</em></span>';}).join('')+'</span></li>';}).join('');
-    return '<div class="ov-chart-block">'+head+status+'<div class="ov-chart" data-series="'+shown.length+'"><div class="ov-axis" aria-hidden="true">'+axis+'</div><ol class="ov-cols" aria-label="'+E(tr(def.title)+' · '+L('last 14 UTC days','最近 14 个 UTC 日'))+'">'+cols+'</ol></div>'+
+    return '<div class="ov-chart-block">'+head+status+'<div class="ov-plot-scroll" role="region" aria-label="'+E(tr(def.title))+'" tabindex="0"><div class="ov-chart" data-series="'+shown.length+'"><div class="ov-axis" aria-hidden="true">'+axis+'</div><ol class="ov-cols" aria-label="'+E(tr(def.title)+' · '+L('last 14 UTC days','最近 14 个 UTC 日'))+'">'+cols+'</ol></div></div>'+
       '<div class="ov-chart-foot">'+(missing?'<span class="ov-chart-gap"><span class="ov-gap-swatch" aria-hidden="true"></span>'+L('Hatched: data unavailable, not zero','斜纹：数据暂不可用，不是 0')+'</span>':'')+times+'</div></div>';
   }
   function taskCard(k){
@@ -135,7 +150,7 @@
   }
   // Core counts fold by default; read problems stay visible on the folded bar.
   function countsFold(stats){
-    const issues=countsOpen?'':stats.filter(k=>cache[k]?.state==='error').map(k=>'<span class="ov-fold-issue" role="status">'+tr(sources[k].stat)+' · '+(cache[k].data?L('Update failed · previous data','更新失败 · 上次数据'):L('Unable to load','读取失败'))+retry(k)+'</span>').join('');
+    const issues=countsOpen?'':stats.filter(k=>cache[k]?.state==='error').map(k=>'<span class="ov-fold-issue" role="status">'+tr(sources[k].stat)+' · '+(cache[k].data?L('Update failed · previous data','更新失败 · 上次数据'):L('Unable to load','读取失败'))+(cache[k].at?time(cache[k].at):'')+retry(k)+'</span>').join('');
     const toggle='<button type="button" class="ov-fold-toggle" data-act="ov-counts" aria-expanded="'+countsOpen+'" aria-controls="ov-counts"><span class="ov-fold-title">'+L('Core statistics','核心统计')+'</span><span class="ov-fold-hint">'+stats.map(k=>tr(sources[k].stat)).join(' · ')+'</span><span class="ov-fold-action">'+(countsOpen?L('Collapse','收起'):L('Expand','展开'))+'<span class="ov-fold-mark" aria-hidden="true"></span></span></button>';
     return '<div class="ov-counts-fold">'+toggle+(issues?'<div class="ov-fold-issues">'+issues+'</div>':'')+'</div>'+
       '<dl class="ov-counts" id="ov-counts" style="--ov-columns:'+stats.length+'"'+(countsOpen?'':' hidden')+'>'+stats.map(k=>'<div class="ov-count" data-source="'+k+'" data-read-state="'+(cache[k]?.state||'loading')+'"><dt>'+mark(k)+tr(sources[k].stat)+'</dt><dd>'+figure(k,'approved')+feedback(k)+(cache[k]?.at?time(cache[k].at):'')+'</dd></div>').join('')+'</dl>';
@@ -172,6 +187,7 @@
     if(act==='ov-retry')refresh(v);
     if(act==='ov-scene')setScene(v);
     if(act==='ov-counts'){countsOpen=!countsOpen;CF.render();}
+    if(act==='ov-amount'){amountOpen=amountOpen===v?'':v;CF.render();}
     if(act==='ov-view'){view=v==='table'?'table':'chart';CF.render();}
     if(act==='ov-permission'){priorAction('ops-grant',String(sources[v].permission));CF.render();}
     if(act==='ov-reset')setTimeout(()=>{D.reset();const entry=CF.AdminMenu.entries.find(e=>e.key==='account');if(window.AdminPrototypeBundle)window.AdminPrototypeBundle.open(entry.file,entry.route,true);else if(document.documentElement.dataset.adminModule==='overview')location.reload();else location.href=new URL('../'+entry.file+'#'+entry.route,location.href).href;},0);
@@ -179,11 +195,44 @@
   };
   OPS.afterRender=function(){
     priorAfter.call(this);
-    if(S.page!==P){entered=false;Object.keys(versions).forEach(k=>versions[k]++);if(!CF.opsAuth.can(14)){cache={};const host=document.querySelector('#acontent .ov-page');if(host)host.remove();}return;}
+    if(S.page!==P){entered=false;amountOpen='';Object.keys(versions).forEach(k=>versions[k]++);if(!CF.opsAuth.can(14)){cache={};const host=document.querySelector('#acontent .ov-page');if(host)host.remove();}return;}
+    if(amountOpen&&!can(amounts.find(m=>m.field===amountOpen).key))amountOpen='';
     Object.keys(cache).filter(k=>!can(k)).forEach(k=>{delete cache[k];versions[k]=(versions[k]||0)+1});
     const current=keys().join('|');
     if((!entered||signature!==current)&&!scheduled){entered=true;signature=current;scheduled=true;queueMicrotask(()=>{scheduled=false;if(S.page===P)refresh()});}
   };
+  // Close without replacing the DOM, so an outside click can still activate its
+  // original target. Shell rendering preserves the disclosure button's focus.
+  function closeAmount(restoreFocus=false){
+    const button=document.getElementById('ov-amount-'+amountOpen),panel=button&&document.getElementById(button.getAttribute('aria-controls'));
+    amountOpen='';
+    if(button)button.setAttribute('aria-expanded','false');
+    if(panel)panel.hidden=true;
+    if(restoreFocus&&button)button.focus({preventScroll:true});
+  }
+  document.addEventListener('pointerdown',e=>{if(amountOpen&&!e.target.closest('[data-ov-amount="'+amountOpen+'"]'))closeAmount();});
+  document.addEventListener('focusin',e=>{if(amountOpen&&!e.target.closest('[data-ov-amount="'+amountOpen+'"]'))closeAmount();});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&amountOpen){const inside=!!document.activeElement.closest('[data-ov-amount="'+amountOpen+'"]');closeAmount(inside);e.preventDefault();}
+  });
+  // Fixed tooltips escape the chart's horizontal scroller. Keep the entire
+  // exact value inside the viewport when a narrow window reveals a later day.
+  function positionTips(){
+    document.querySelectorAll('.ov-col:hover .ov-tip,.ov-col:focus-visible .ov-tip').forEach(tip=>{
+      const col=tip.closest('.ov-col').getBoundingClientRect(),box=tip.getBoundingClientRect();
+      const gap=8,edge=16,topbar=document.querySelector('.topbar')?.getBoundingClientRect();
+      const safeTop=Math.max(edge,(topbar&&topbar.top<=0?topbar.bottom:0)+gap);
+      const left=Math.max(edge,Math.min(col.left+col.width/2-box.width/2,innerWidth-box.width-edge));
+      const above=col.top-box.height-gap;
+      const top=Math.max(safeTop,Math.min(above>=safeTop?above:col.top+gap,innerHeight-box.height-edge));
+      tip.style.setProperty('--ov-tip-left',left+'px');
+      tip.style.setProperty('--ov-tip-top',top+'px');
+    });
+  }
+  document.addEventListener('pointerover',positionTips);
+  document.addEventListener('focusin',positionTips);
+  document.addEventListener('scroll',positionTips,true);
+  window.addEventListener('resize',positionTips);
   OPS.demo=function(){return S.page!==P?priorDemo.call(this):'<div class="grp"><h5>'+L('Overview · local demo','总览 · 本地演示')+'</h5><p class="hint">'+L('Counts read the source fixtures; financing totals are a demo aggregate. Changes here simulate read states and never decide a business.','数量读取来源演示数据，融资金额为演示汇总；此处只模拟读取状态，不作出业务处置。')+'</p><div class="ops-demo-actions">'+[['default','Normal','正常'],['loading','Initial loading','首次加载'],['empty','All zero','全部零值'],['partial','Partial failure','部分失败'],['series','Series or day unavailable','序列或单日不可用'],['error','Initial failure','首次失败'],['stale','Refresh fails with old data','旧数刷新失败'],['subset','Subset unavailable','失败子集不可用'],['missing','Token value missing','缺少代币价值'],['times','Different data times','不同数据时点'],['readonly','Query only','只有查询权限'],['nofinance','No financing statistics permission','无平台融资统计权限'],['noaccess','No query permissions','无来源查询权限'],['large','Large numbers','大数值']].map(([id,en,zh])=>'<button class="btn sm" data-act="ov-scene" data-v="'+id+'">'+L(en,zh)+'</button>').join('')+'</div><h5>'+L('Source query permissions','来源查询权限')+'</h5><div class="ops-demo-actions">'+Object.entries(sources).map(([k,s])=>'<button class="btn sm" data-act="ov-permission" data-v="'+k+'" aria-pressed="'+can(k)+'">'+(s.task?tr(s.task):L('Platform financing statistics','平台融资统计'))+'</button>').join('')+'</div><button class="btn sm" data-act="ov-reset">'+L('Reset source demo records','重置来源演示数据')+'</button></div>'};
   CF.opsOverview={content,refresh,setScene,get snapshot(){return cache},sources};
   CF.review.register(P,{group:['Overview','总览'],label:['Overview','总览'],route:'/ops/account-overview',visible:()=>CF.opsAuth.can(14),
