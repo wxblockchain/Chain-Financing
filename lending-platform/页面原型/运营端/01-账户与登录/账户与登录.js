@@ -44,7 +44,9 @@ const PERMISSIONS=[
  {n:20,en:'Maintain financing parameters',zh:'融资参数维护',needs:19},
  /* 代币准入审核自行定义的两项（WS-439 PRD 第 3 节）；n 只作原型内部键，code 为业务编号。 */
  {n:21,code:'PM-TA-01',en:'View token admission reviews',zh:'代币准入审核查询'},
- {n:22,code:'PM-TA-02',en:'Decide token admission',zh:'代币准入审核处置',needs:21}
+ {n:22,code:'PM-TA-02',en:'Decide token admission',zh:'代币准入审核处置',needs:21},
+ /* 运营端总览新增（WS-462 PRD 第 3 节）：只读全平台融资合计，不开放逐笔或按主体明细。 */
+ {n:23,code:'PM-OV-01',en:'View platform financing statistics',zh:'平台融资统计查询'}
 ];
 const item=n=>PERMISSIONS.find(p=>p.n===n);
 /* 本期交付全部开通；preview 只在评审工具里使用，预演后期新增角色时未开通业务权限的入口收敛与拒绝反馈。 */
