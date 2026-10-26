@@ -42,7 +42,7 @@ table.cm-table thead th{white-space:normal;color:var(--muted);vertical-align:mid
 .cm-table .actlink:hover{background:var(--accent-soft)}
 .cm-table tbody td{overflow-wrap:anywhere;font-size:var(--ui-row-value)}
 .cm-table .col-act{position:sticky;right:0;background:var(--card);width:72px;text-align:right;border-left:1px solid var(--row-line)}
-.cm-table .tag{white-space:normal;text-align:left;line-height:1.5;font-size:var(--ui-field-label);max-width:100%}
+.cm-table .tag{overflow-wrap:normal;white-space:normal;text-align:left;line-height:1.5;font-size:var(--ui-field-label);max-width:100%}
 .cm-table tbody tr:hover .col-act{background:var(--row-hover)}
 .cm-table th .cm-meta{font-weight:400;letter-spacing:0}
 .cm-stamp{white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -50,9 +50,13 @@ table.cm-table thead th{white-space:normal;color:var(--muted);vertical-align:mid
 .cm-table thead th button:hover{color:var(--accent)}
 .cm-table thead th button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--radius-xs)}
 .cm-queue-table{min-width:980px}
-.cm-queue-table th:nth-child(1){width:11%}.cm-queue-table th:nth-child(2){width:13%}.cm-queue-table th:nth-child(3){width:13%}
-.cm-queue-table th:nth-child(4){width:11%}.cm-queue-table th:nth-child(5){width:12%}.cm-queue-table th:nth-child(6){width:13%}
-.cm-queue-table th:nth-child(7){width:9%}.cm-queue-table th:nth-child(8){width:10%}
+/* Content-sized queue columns; project publisher and pledge ratio / term share the remaining width. */
+.cm-queue-table th:nth-child(1){width:112px}.cm-queue-table th:nth-child(2){width:96px}.cm-queue-table th:nth-child(3){width:124px}
+.cm-queue-table th:nth-child(6){width:148px}.cm-queue-table th:nth-child(7){width:124px}.cm-queue-table th:nth-child(8){width:124px}
+/* Queue rows stay two lines: compact term dates, single-line Chinese status tags, long network names wrap beside the icon. */
+:lang(zh) .cm-queue-table td .tag{white-space:nowrap}
+.cm-table td .cm-network{white-space:normal;align-items:flex-start}
+.cm-table td .cm-network .cf-asset-icon{margin-top:1px}
 .cm-ledger-table{min-width:760px}
 .cm-ledger-table th:nth-child(1){width:20%}.cm-ledger-table th:nth-child(2){width:22%}
 .cm-ledger-table th:nth-child(3){width:32%}.cm-ledger-table th:nth-child(4){width:14%}.cm-ledger-table .col-act{width:96px}
@@ -65,6 +69,7 @@ table.cm-table thead th{white-space:normal;color:var(--muted);vertical-align:mid
 .cm-set-table th:nth-child(1){width:22%}.cm-set-table th:nth-child(2){width:18%}.cm-set-table th:nth-child(3){width:20%}
 .cm-set-table th:nth-child(4){width:16%}
 .cm-num{font-variant-numeric:tabular-nums}
+.cm-keep{white-space:nowrap}
 .cm-ledger-table :is(th,td):nth-child(4){text-align:right}
 .cm-ledger-table td:nth-child(4){font-weight:600}
 .cm-warn-text{color:var(--warn)}
@@ -97,18 +102,23 @@ table.cm-table thead th{white-space:normal;color:var(--muted);vertical-align:mid
 .cm-wide{grid-column:1/-1}
 .cm-section .note{margin-top:var(--sp-4)}
 .cm-quote{white-space:pre-wrap;padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);overflow-wrap:anywhere}
+.cm-quote.cm-fail{padding:var(--sp-3) var(--sp-4);background:var(--danger-bg);border-left:2px solid var(--danger);border-radius:var(--radius-xs);color:var(--text)}
 .cm-h3{font-size:var(--fs-14);font-weight:600;margin:var(--sp-5) 0 var(--sp-3)}
 .cm-h2+.cm-h3,.cm-h2+.ops-facts-region{margin-top:var(--sp-4)}
 .cm-ctable-wrap{overflow-x:auto;margin-top:var(--sp-4)}
 .cm-ctable-wrap:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 table.cm-ctable{width:100%;min-width:520px}
-table.cm-ctable-proofs{min-width:720px}
+table.cm-ctable-proofs{min-width:600px}
+/* The ledger shortcut sits under the pledge address so the evidence column keeps its width in the detail column. */
+table.cm-ctable .cm-inline-link{display:block;width:fit-content;margin:var(--sp-1) 0 0}
 table.cm-ctable :is(th,td){padding-block:var(--sp-3);vertical-align:middle}
 table.cm-ctable thead th{white-space:normal}
 .cm-address{display:inline-flex;align-items:center;gap:var(--sp-1);white-space:nowrap;max-width:100%;color:var(--hash-text)}
 .cm-address>.mono{font-size:var(--ui-row-value);font-variant-numeric:tabular-nums}
 .cm-address .btn.icon{flex:none}
-table.cm-ctable th[scope=row]{font-weight:500;color:var(--muted);white-space:nowrap;width:1%;padding-right:var(--sp-5)}
+@media(pointer:fine){table.cm-ctable .cm-address .btn.icon{width:var(--sp-7);height:var(--sp-7)}}
+table.cm-ctable th[scope=row]{text-align:left;font-weight:500;color:var(--muted);width:104px;padding-right:var(--sp-3)}
+:lang(zh) table.cm-ctable .tag{white-space:nowrap}
 table.cm-ctable td{font-size:var(--ui-row-value)}
 .cm-ctable-wrap+.ops-facts-region{margin-top:var(--sp-4)}
 .cm-event-detail .cm-ctable-wrap{margin-top:0}
