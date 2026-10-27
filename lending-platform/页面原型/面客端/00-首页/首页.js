@@ -60,9 +60,7 @@
   const legal = () => L('Harbour Credit is a tokenization registry and pledge infrastructure. It does not hold client funds, set prices or provide credit. Institutions lend directly to asset owners and bear their own credit risk. Rates shown are quotes or targets, not guarantees. Not available to retail investors or in restricted jurisdictions. All data in this prototype is mock data.', 'Harbour Credit 是代币化登记与质押基础设施，不归集资金、不参与定价、不提供信用。机构直接向资产方放款并自担信用风险。页面所示利率为报价或目标值，非保证收益。不向零售投资者及受限地区提供服务。本原型所有数据均为演示数据。');
 
   function footer(){
-    const address=(net,value)=>`<span class="home-contract"><a href="https://${net==='eth'?'etherscan.io':'basescan.org'}/address/${value}" target="_blank" rel="noopener noreferrer" title="${value}" aria-label="${L('Token contract','代币合约')} ${net==='eth'?'Ethereum':'Base'} ${value}">${value.slice(0,6)}…${value.slice(-4)} ↗</a>${CF.copyBtn('home-copy',value,L('Copy contract address','复制合约地址'))}</span>`;
-    const info=[['audit','Audit reports','审计报告'],['docs','Docs','文档'],['legal','Legal & terms','法律声明'],['regions','Restricted regions','地域限制']];
-    return `<footer class="ftr"><div class="wrap"><div class="ftr-grid"><div class="stack-2"><a class="brand" href="#/home"><span class="home-brand-icon">${CF.ICON.homeBrand}</span><span>Harbour Credit</span><small>港湾</small></a><div class="small t3">${L('Token contract','代币合约')} · Ethereum ${address('eth',D.contracts.eth)}</div><div class="small t3">${L('Token contract','代币合约')} · Base ${address('base',D.contracts.base)}</div></div><div class="ftr-links"><a href="#/home" data-act="home-verifier">${L('Attestation verifier','存证校验器')}</a>${info.map(([id,en,zh])=>`<a href="#/home" data-act="home-info" data-v="${id}">${L(en,zh)}</a>`).join('')}</div></div><p class="ftr-legal">${legal()}</p></div></footer>`;
+    return `<footer class="site-foot home-footer">${CF.marketplaceFooterContent()}</footer>`;
   }
   function content(){
 
@@ -112,7 +110,7 @@
         ['lock', 'Compliance built in', '合规内建', 'Whitelisted transfers, admitted institutions only, and no secondary trading in phase 1.', '白名单限转，仅已准入机构可操作，一期不开放二级流通。', 'ERC-3643-style token', 'ERC-3643 类代币标准'],
         ['bank', 'Direct, bilateral lending', '双边直贷', 'The platform never holds funds or sets rates. Lenders price and disburse on their own terms.', '平台不归集资金、不参与定价，机构自主报价与放款。', '0 client funds held', '平台托管资金：0'],
         ['search', 'Verify it yourself', '链上自助校验', 'Paste any token ID or hash into the verifier and compare it with the on-chain registry.', '在校验器输入任意代币 ID 或哈希，即可与链上登记合约比对。', '1,284 attestations', '1,284 笔存证']
-      ].map((w, k) => `<div class="why-c rv" style="--d:${120 + k * 100}ms"><span class="ic-type">${ic(w[0], 20)}</span><div><h3>${L(w[1], w[2])}</h3><p>${L(w[3], w[4])}</p><div class="proof">${ic('check', 14, 'pos')}${L(w[5], w[6])}</div></div></div>`).join('')}</div></div></section>
+      ].map((w, k) => `<div class="why-c rv" style="--d:${120 + k * 100}ms"><span class="ic-type">${ic(w[0], 20)}</span><div><h3>${L(w[1], w[2])}</h3><p>${L(w[3], w[4])}</p><div class="proof">${ic('check', 14, 'pos')}${L(w[5], w[6])}</div>${w[0] === 'search' ? `<a class="btn-link why-act" href="#/home" data-act="home-verifier">${L('Open the verifier', '打开存证校验器')}${ic('right', 14)}</a>` : ''}</div></div>`).join('')}</div></div></section>
 
     <section class="scr" data-i="4" aria-labelledby="home-title-4"><div class="wrap"><span class="eyebrow rv">${ic('globe', 14)}${L('Partners', '合作伙伴')}</span>
       <h2 id="home-title-4" tabindex="-1" class="big rv" style="--d:80ms">${L('One network across data, assets and capital.', '数据、资产与资金，一张网络。')}</h2>
@@ -224,7 +222,11 @@
     document.getElementById('foot').hidden=home;
     if(!home){scrollTop=0;seen.clear();previousPage=S.page;return;}
     // Header/menu/message refreshes must not restart the first version's animation timeline.
-    if(heldHome){document.querySelector('.hc-home').replaceWith(heldHome);heldHome=null;fitHome();return;}
+    if(heldHome){
+      const foot=heldHome.querySelector('.home-footer'),html=CF.marketplaceFooterContent();
+      if(foot.innerHTML!==html)foot.innerHTML=html;
+      document.querySelector('.hc-home').replaceWith(heldHome);heldHome=null;fitHome();return;
+    }
     const root=document.getElementById('home');
     fitHome();
     if(previousPage!==PAGE){scrollTop=0;seen.clear();liveIndex=0;}

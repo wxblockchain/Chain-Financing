@@ -787,10 +787,8 @@
   }
 
   /* ------------------------------------------------------------ 页脚 */
-  function renderFoot() {
-    var el = document.getElementById("foot");
-    if (!el) return;
-    el.innerHTML = '<div class="ft-in">' +
+  function footerContent() {
+    return '<div class="ft-in">' +
       '<p class="ft-mark">Harbour Credit</p>' +
       '<p class="ft-tag">' + L("Cross-border receivables financing on tokenised assets.",
         "基于代币化资产的跨境应收账款融资。") + "</p>" +
@@ -808,10 +806,17 @@
       "<span>" + L("Time zone: ", "时区：") + esc(S.tz || "UTC") + "</span></div></div>";
   }
 
+  function renderFoot() {
+    var el = document.getElementById("foot");
+    if (el) el.innerHTML = footerContent();
+  }
+
   /* ------------------------------------------------------------ 模块接入 */
   var refocus = null;
 
   CF.renderFooter = renderFoot;
+  // The homepage uses the same footer content, including translated links and time zone.
+  CF.marketplaceFooterContent = footerContent;
 
   CF.review.register(LIST, {group:['Assets','资产广场'], states:['default','loading','empty','noresult','error'],
     route:'/assets', set(value){cancelLoad();S.st=value;}, reset(){cancelLoad();failNext=false;S.st='default';}});

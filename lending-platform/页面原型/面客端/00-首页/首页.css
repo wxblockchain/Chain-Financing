@@ -3,8 +3,6 @@
 html[data-home-view] body{overflow-y:hidden}
 .hc-home .home{position:relative;overscroll-behavior-y:contain;outline-offset:-4px}
 .hc-home .scr{flex-shrink:0}
-.hc-home .home-contract{display:inline-flex;gap:var(--space-1);align-items:center}
-.hc-home .home-brand-icon{display:flex;color:var(--accent)}
 .hc-home .home-motion-toggle{display:block;margin-left:auto;min-height:44px;font-size:var(--text-caption);color:var(--text-secondary)}
 .hc-home .home-motion-toggle[hidden]{display:none}
 .hc-home .home-ticker-wrap{margin-top:var(--space-8)}
@@ -32,14 +30,9 @@ html[data-home-view] body{overflow-y:hidden}
 .hc-home .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
 .hc-home .btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:var(--accent-fg)}
 .hc-home .btn-lg{height:var(--control-height-lg);padding:0 var(--space-5);font-size:var(--text-h3)}
-.hc-home .ftr{border-top:1px solid var(--border);background:var(--bg-surface);padding:var(--space-8) 0;color:var(--text-secondary);font-size:var(--text-small)}
-.hc-home .ftr-grid{display:flex;flex-wrap:wrap;gap:var(--space-6);justify-content:space-between;align-items:flex-start}
-.hc-home .ftr a{color:var(--text-secondary)}
-.hc-home .ftr a:hover{color:var(--text-primary)}
-.hc-home .ftr-links{display:flex;flex-wrap:wrap;gap:var(--space-5)}
-.hc-home .ftr-legal{margin-top:var(--space-5);color:var(--text-tertiary);font-size:var(--text-caption);line-height:var(--leading-caption);max-width:72ch}
-.hc-home .brand{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-h3);font-weight:var(--weight-semibold);color:var(--text-primary)}
-.hc-home .brand small{font-size:var(--text-caption);color:var(--text-tertiary);font-weight:var(--weight-medium)}
+/* Ft1 inherits _shared/base.css, as in the asset marketplace. */
+.hc-home .home-footer{font-family:var(--sans);color:var(--muted)}
+.hc-home .home-footer .ft-mark{margin:var(--sp-6) 0}
 .hc-home .flash{animation:homeFlash 300ms var(--ease)}
 @keyframes homeFlash{from{opacity:.2}to{opacity:1}}
 .hc-home .home{ height: var(--home-screen-h); overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth; background: var(--bg-surface); }
@@ -117,6 +110,7 @@ html[data-home-view] body{overflow-y:hidden}
 .hc-home .why-c .ic-type{ width: 44px; height: 44px; }
 .hc-home .why-c p{ color: var(--text-secondary); font-size: var(--text-small); margin-top: var(--space-1); }
 .hc-home .why-c .proof{ margin-top: var(--space-3); font-size: var(--text-small); display: flex; gap: var(--space-2); align-items: center; color: var(--text-primary); font-weight: var(--weight-medium); }
+.hc-home .why-c .why-act{ margin-top: var(--space-1); margin-left: -4px; min-height: 44px; }
 .hc-home .pt-groups{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); margin-top: var(--space-10); }
 .hc-home .pt-g h3{ font-size: var(--text-small); color: var(--text-tertiary); font-weight: var(--weight-medium); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-3); }
 .hc-home .pt-logos{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
@@ -124,7 +118,7 @@ html[data-home-view] body{overflow-y:hidden}
 .hc-home .pt-logo:hover{ color: var(--text-primary); border-color: var(--border-strong); }
 @media (max-width: 768px) {.hc-home .why, .hc-home .pt-groups{ grid-template-columns: minmax(0, 1fr); }}
 .hc-home .scr-last{ flex-direction: column; justify-content: space-between; padding-bottom: 0; }
-.hc-home .scr-last .ftr{ width: 100%; }
+.hc-home .scr-last .site-foot{ width: 100%; }
 @keyframes homeMarquee {to{transform:translateX(-50%)}}
 
 .hc-home .scr-dots button{position:relative;min-height:24px;min-width:24px;width:24px;height:24px;border:0;border-radius:var(--radius-full);background:transparent}
@@ -143,6 +137,8 @@ html[data-home-view] body{overflow-y:hidden}
   .hc-home .home-visual-frame{overflow:hidden}
   .hc-home .hero .scroll-cue{display:none}
   .hc-home .scr{padding-block:var(--space-8)}
+  .hc-home .scr-last{padding-bottom:0}
+  .hc-home .scr-last .home-footer{padding-bottom:var(--sp-10)}
   .hc-home .mcell .v{font-size:clamp(28px,7vw,40px)}
   .hc-home .mcell{padding-right:var(--space-3)}
 }
