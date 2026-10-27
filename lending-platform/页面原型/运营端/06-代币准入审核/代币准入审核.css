@@ -75,7 +75,6 @@ table.ta-table :is(th,td){padding-inline:var(--sp-3)}
 .ta-icon{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:var(--radius-pill);background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent);font-size:var(--fs-10);font-weight:700;flex:none}
 .ta-hash{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 var(--sp-1);max-width:100%}
 .ta-full{overflow-wrap:anywhere;word-break:break-all}
-.ta-hash .ta-inline{margin-left:var(--sp-1)}
 .ta-chip{display:inline-block;margin:0 var(--sp-2) var(--sp-1) 0;padding:0 var(--sp-2);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-xs);font-size:var(--fs-12)}
 .ta-holders{list-style:none;margin:0;padding:0;display:grid;gap:var(--sp-1)}
 .ta-holders li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-1) var(--sp-4)}

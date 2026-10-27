@@ -264,11 +264,11 @@
   function hashValue(value,label,explorer){
     if(!value)return blank;
     const short=value.slice(0,10)+'…'+value.slice(-8);
-    return `<span class="ta-hash"><span class="mono" title="${E(value)}">${E(short)}</span>${CF.copyBtn('ta-copy',value,L('Copy the full '+label,'复制完整'+label))}${explorer?CF.linkOut(explorer,L('Open in a block explorer (new window)','在区块浏览器中查看（新窗口）'))+`<span class="ta-meta ta-inline">${L('Not verified by the platform; for your own checking','平台未核验，链接仅供自行查验')}</span>`:''}</span>`;
+    return `<span class="ta-hash"><span class="mono" title="${E(value)}">${E(short)}</span>${CF.copyBtn('ta-copy',value,L('Copy the full '+label,'复制完整'+label))}${explorer?CF.linkOut(explorer,L('Open in a block explorer (new window)','在区块浏览器中查看（新窗口）')):''}</span>`;
   }
   function fullAddress(value,label,explorer){
     if(!value)return blank;
-    return `<span class="ta-hash"><span class="mono ta-full">${E(value)}</span>${CF.copyBtn('ta-copy',value,L('Copy the full '+label,'复制完整'+label))}${explorer?CF.linkOut(explorer,L('Open in a block explorer (new window)','在区块浏览器中查看（新窗口）'))+`<span class="ta-meta ta-inline">${L('Not verified by the platform; for your own checking','平台未核验，链接仅供自行查验')}</span>`:''}</span>`;
+    return `<span class="ta-hash"><span class="mono ta-full">${E(value)}</span>${CF.copyBtn('ta-copy',value,L('Copy the full '+label,'复制完整'+label))}${explorer?CF.linkOut(explorer,L('Open in a block explorer (new window)','在区块浏览器中查看（新窗口）')):''}</span>`;
   }
   const scan=(kind,v)=>v?'https://etherscan.io/'+kind+'/'+encodeURIComponent(v):'';
   const entity=c=>c?`${E(txt(c.name))}<span class="ta-meta mono">${E(c.entity||blank)}</span>`:blank;

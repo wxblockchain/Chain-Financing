@@ -409,19 +409,14 @@
     return '<section class="card am-sec" id="am-holdings" tabindex="-1"><div class="card-head"><h2>' + title + '</h2></div>' + body + '</section>';
   }
 
-  /* 区块浏览器外链：唯一的新窗口；链接旁常驻未核验标注。 */
+  /* 区块浏览器外链：唯一的新窗口。 */
   function explorer(hash, chain) {
     return CF.linkOut((AM.EXPLORERS[chain || AM.CHAIN] || AM.EXPLORER_TX) + hash, L("Open block explorer", "在区块浏览器打开"));
-  }
-  function notVerified() {
-    return '<p class="tiny am-caveat">' +
-      L("Not verified by the platform; link provided for your own checking.",
-        "平台未核验该交易，链接仅供自行查验。") + "</p>";
   }
   function hashRow(hash, chain) {
     if (!hash) return dash();
     return '<div class="am-hash"><span class="hash">' + esc(shortHash(hash)) + "</span>" +
-      copyBtn(hash, L("Transaction hash", "交易哈希")) + explorer(hash, chain) + "</div>" + notVerified();
+      copyBtn(hash, L("Transaction hash", "交易哈希")) + explorer(hash, chain) + "</div>";
   }
 
   /* ------------------------------------------------------------ 筛选与排序 */

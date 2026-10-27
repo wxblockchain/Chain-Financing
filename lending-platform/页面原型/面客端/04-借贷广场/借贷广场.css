@@ -474,7 +474,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-hex[data-tone="gray"] path{fill:var(--gray-bg);stroke:var(--border-strong)}.ls-hex[data-tone="gray"] .core{fill:var(--faint)}
 .ls-hex[data-tone="danger"] path{fill:var(--danger-bg);stroke:var(--danger)}.ls-hex[data-tone="danger"] .core{fill:var(--danger)}
 .ls-token-id{display:inline-flex;align-items:center;gap:var(--sp-2)}
-/* 本项目质押合约：右栏常驻，完整地址可复制，平台未核验单独标出。 */
+/* 本项目质押合约：右栏常驻，完整地址可复制。 */
 .ls-contract-card{margin-bottom:12px;padding:var(--sp-4) var(--sp-5)}
 .ls-contract-top{display:flex;align-items:center;gap:var(--sp-2);min-height:32px}
 .ls-contract-k{font-size:var(--fs-12);font-weight:660;color:var(--text)}
