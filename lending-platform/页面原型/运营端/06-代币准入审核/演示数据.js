@@ -19,11 +19,40 @@
   const hash=seed=>'0xDE00'+hex(seed+7,60);            // 66 字符，演示交易 / 文件哈希
   const platformActor=p=>[['Issuance platform · ',PLATFORMS[p][0]].join(''),'来源发行平台 · '+PLATFORMS[p][1]];
 
+  /* 每份材料均由发行平台上传入库（用户 2026-10-27）；文件类别按 RWA 代币化发行的通行做法暂定，均不设必备。 */
+  const DOC_CATS=[
+    ['assign',['Receivables assignment agreement','应收账款转让协议']],
+    ['notice',['Notice of assignment and debtor acknowledgement','债权转让通知及债务人确认']],
+    ['prospectus',['Token offering memorandum','代币发行说明书']],
+    ['rights',['Token holder rights terms','代币持有人权益条款']],
+    ['opinion',['Legal opinion','法律意见书']],
+    ['incorp',['Issuer constitutional documents','发行主体设立文件']],
+    ['servicing',['Servicing and collection agreement','资产服务与回款归集协议']],
+    ['custody',['Custody agreement','托管协议']],
+    ['credit',['Guarantee or credit enhancement','担保或增信文件']],
+    ['dd',['Due diligence report','尽职调查报告']],
+    ['audit',['Smart contract audit report','智能合约审计报告']],
+    ['risk',['Risk disclosure statement','风险揭示书']],
+    ['declare',['No double financing declaration','重复融资声明']],
+    ['other',['Other documents','其他文件']]
+  ];
+  const PROOF_CATS=[
+    ['contract',['Underlying trade contract','基础贸易合同']],
+    ['invoice',['Invoice','发票']],
+    ['delivery',['Logistics or performance evidence','物流或履约凭证']],
+    ['confirm',['Confirmation evidence','确权凭证']]
+  ];
+
   CF.tokenAdmissionSeed=function(){
     const now=Date.now();
-    let eventSeq=0;
+    let fileSeq=0,eventSeq=0;
     const ev=(at,kind,title,result,actor,extra)=>Object.assign({id:'demo-ta-ev-'+(++eventSeq),at,kind,title,result,actor},extra||{});
     const day=t=>new Date(t).toISOString().slice(0,10);
+    function doc(cat,name,o){
+      return Object.assign({id:'f'+(++fileSeq),cat,name,signer:['Demo Company Jia; Demo SPV 01','示例企业甲；示例 SPV 01'],
+        signDate:'2026-09-28',from:'2026-09-28',to:null,hash:hash(900+fileSeq),seq:1},o||{});
+    }
+    function proof(cat,name,o){return Object.assign({id:'p'+(++fileSeq),cat,name,hash:hash(700+fileSeq),seq:1},o||{});}
 
     /* 一笔代币的完整推送资料；各样例只覆盖与主样例不同的部分。 */
     function base(n,o){
@@ -50,13 +79,27 @@
           evidence:{hash:hash(s+4),tx:hash(s+5),block:String(21030000+n*37),chain:['Ethereum','以太坊'],at:now-8*D},
           transfer:{done:['Registered','已登记'],org:['Demo registry','示例登记机构'],no:'DEMO-REG-'+k},
           declare:['Provided','已提供']},
-        /* 全部附件（法律协议文件与底层资产佐证材料）合并为一个下载链接，按需下载。 */
-        bundle:{name:'',seq:1},
+        proofs:[
+          proof('contract','DEMO-CT-2026-'+k+'.pdf'),proof('invoice','DEMO-INV-'+k+'01.pdf'),proof('invoice','DEMO-INV-'+k+'02.pdf'),
+          proof('delivery','Bill-of-lading-'+k+'.pdf'),proof('confirm','Debtor-confirmation-'+k+'.pdf')],
+        docs:[
+          doc('assign','Receivables-assignment-agreement-'+k+'.pdf'),
+          doc('notice','Notice-and-acknowledgement-'+k+'.pdf',{signer:['Demo SPV 01; Demo Company Yi','示例 SPV 01；示例企业乙']}),
+          doc('prospectus','Token-offering-memorandum-'+k+'.pdf',{signer:['Demo SPV 01','示例 SPV 01']}),
+          doc('rights','Token-holder-rights-'+k+'.pdf',{signer:['Demo SPV 01','示例 SPV 01']}),
+          doc('opinion','Legal-opinion-'+k+'.pdf',{signer:['Demo law firm','示例律师事务所'],signDate:'2026-09-30',from:'2026-09-30'}),
+          doc('incorp','SPV-certificate-of-incorporation.pdf',{signer:['Demo SPV 01','示例 SPV 01'],signDate:'2025-12-01',from:'2025-12-01'}),
+          doc('incorp','SPV-articles.pdf',{signer:['Demo SPV 01','示例 SPV 01'],signDate:'2025-12-01',from:'2025-12-01'}),
+          doc('servicing','Servicing-and-collection-'+k+'.pdf',{to:'2027-06-30'}),
+          doc('audit','Contract-audit-report.pdf',{signer:['Demo audit firm','示例审计机构'],signDate:'2026-09-20',from:'2026-09-20'}),
+          doc('risk','Risk-disclosure-'+k+'.pdf',{signer:['Demo SPV 01','示例 SPV 01']}),
+          doc('declare','No-double-financing-declaration-'+k+'.pdf',{signer:['Demo Company Jia','示例企业甲']})],
         status:'pending',seq:1,submittedAt:now-6*H,updatedAt:null,
         decisions:[],dupes:[],changed:false,events:[]
       };
       Object.assign(r,o||{});
-      if(r.bundle&&!(o&&'bundle' in o))r.bundle={name:'Attachments-'+r.id+'-submission-'+r.seq+'.zip',seq:r.seq,at:r.updatedAt||r.submittedAt};
+      /* 每份材料随哪次提交入库：沿用本条记录的提交序次。 */
+      [...r.docs,...r.proofs].forEach(f=>{f.seq=r.seq;});
       if(!r.events.length)r.events=[submitEvent(r,r.submittedAt,1)];
       return r;
     }
@@ -90,7 +133,8 @@
       issuer:COMPANIES.c4,
       asset:{...b.asset,seller:COMPANIES.c4,invoices:null,terms:null,transfer:{done:null,org:null,no:null},
         evidence:{...b.asset.evidence,block:null}},
-      bundle:null}));}
+      proofs:b.proofs.filter(p=>p.cat!=='delivery'),
+      docs:b.docs.filter(d=>['assign','prospectus','opinion'].includes(d.cat))}));}
 
     /* 05 / 06 链上代币重复：链 ID、合约地址、slot 相同，代币编号与来源平台不同；05 已通过，06 只能退回。 */
     {const a=base(5,{platform:'A',status:'approved',slot:'2051',contract:{name:'DemoReceivableToken3525',address:addr(5)},submittedAt:now-12*D});
@@ -105,12 +149,12 @@
     /* 09 已通过后发行平台推送资料变更：保持已通过，只标记提醒，可确认已知悉。 */
     {const r=base(9,{status:'approved',submittedAt:now-20*D,changed:true,
       asset:{...base(9).asset,terms:['Payment 150 days after invoice date','发票日后 150 天付款']}});
-     r.bundle={name:'Attachments-TA-009-submission-1-v2.zip',seq:1,at:now-2*D};
+     r.docs=r.docs.map(d=>d.cat==='servicing'?{...d,name:'Servicing-and-collection-09-v2.pdf',hash:hash(1999),seq:1,changedAt:now-2*D}:d);
      r.decisions=[{result:'approved',at:now-19*D,reviewer:CHEN}];
      r.events=[submitEvent(r,now-20*D,1),approveEvent(now-19*D,CHEN),
        ev(now-2*D,'change',['Materials changed after approval','通过后资料变更'],['Approved · unchanged','已通过 · 准入状态不变'],platformActor('A'),
          {diff:[[['Payment terms','付款条件'],['Payment 180 days after invoice date','发票日后 180 天付款'],['Payment 150 days after invoice date','发票日后 150 天付款']],
-           [['Attachments','附件'],['Attachments-TA-009-submission-1.zip'],['Attachments-TA-009-submission-1-v2.zip']]]})];
+           [['Servicing and collection agreement','资产服务与回款归集协议'],['Servicing-and-collection-09.pdf'],['Servicing-and-collection-09-v2.pdf']]]})];
      rows.push(r);}
     /* 10 近 7 日内通过，之后代币失效：准入结论不变，按上游事实标失效。 */
     {const r=base(10,{status:'approved',submittedAt:now-4*D,tokenState:'expired',platform:'B',
@@ -131,9 +175,9 @@
      r.decisions=[{result:'approved',at:now-29*D,reviewer:LIN}];r.events=[submitEvent(r,now-30*D,1),approveEvent(now-29*D,LIN)];rows.push(r);}
     /* 13 待审核期间发行平台推送资料更新：不增加提交序次，详情展示最新资料。 */
     {const r=base(13,{submittedAt:now-3*D,updatedAt:now-7*H});
-     r.bundle={name:'Attachments-TA-013-submission-1-v2.zip',seq:1,at:now-7*H};
+     r.proofs=[...r.proofs,proof('invoice','DEMO-INV-1302.pdf')];
      r.events=[submitEvent(r,now-3*D,1),ev(now-7*H,'update',['Materials updated','资料更新'],['Pending review · submission 1','待审核 · 第 1 次提交'],platformActor('A'),
-       {diff:[[['Invoice numbers','发票号'],['DEMO-INV-1301'],['DEMO-INV-1301, DEMO-INV-1302']],[['Attachments','附件'],['Attachments-TA-013-submission-1.zip'],['Attachments-TA-013-submission-1-v2.zip']]]})];
+       {diff:[[['Invoice numbers','发票号'],['DEMO-INV-1301'],['DEMO-INV-1301, DEMO-INV-1302']],[['Invoice','发票'],['—'],['DEMO-INV-1302.pdf']]]})];
      rows.push(r);}
     /* 14 / 15 链上代币重复且都待审核：先生效的通过成立，另一条随即只能退回。 */
     {const a=base(14,{platform:'A',slot:'4140',contract:{name:'DemoReceivableToken3525',address:addr(14)},submittedAt:now-20*H,issuer:COMPANIES.c3});
@@ -153,6 +197,6 @@
       const d=new Date(formed(r)).toISOString().slice(0,10).replace(/-/g,'');
       perDay[d]=(perDay[d]||0)+1;r.ptid='PT'+d+String(perDay[d]).padStart(6,'0');
     });
-    return {rows,now,platforms:PLATFORMS,reviewers:{LIN,CHEN},hash,addr};
+    return {rows,now,platforms:PLATFORMS,docCats:DOC_CATS,proofCats:PROOF_CATS,reviewers:{LIN,CHEN},hash,addr};
   };
 })(window.CF=window.CF||{});

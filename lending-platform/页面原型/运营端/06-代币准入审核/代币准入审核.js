@@ -18,7 +18,7 @@
   const A={rows:CF.opsOverviewData.restore('tokens',seed.rows),now:seed.now,clock:Date.now(),
     list:{filter:fDefault(),edit:fDefault(),page:1,sort:'submittedAt',dir:1,open:false},
     view:'default',response:'success',callback:'ok',fileState:'ready',activityState:'default',
-    drafts:{},draft:null,busy:false,error:'',listNote:'',selected:null,dlError:false,epoch:0};
+    drafts:{},draft:null,busy:false,error:'',listNote:'',selected:null,file:null,epoch:0};
   let routeKey=null,restoreContext=false,returnHash='',lastHash='',onModule=false,wasSigned=false;
   const positions=new Map();
 
@@ -274,6 +274,20 @@
   const entity=c=>c?`${E(txt(c.name))}<span class="ta-meta mono">${E(c.entity||blank)}</span>`:blank;
   const listValue=a=>a&&a.length?a.map(x=>`<span class="mono ta-chip">${E(x)}</span>`).join(''):blank;
   const fileName=f=>E(f.name);
+/* 每份材料均上传入库（用户 2026-10-27）：逐份列出，各自预览、下载。 */
+  function fileRow(f,docMeta){
+    const meta=docMeta?[L('Signed by ','签署方 ')+txt(f.signer),L('Signed ','签署日期 ')+(f.signDate||blank),L('Valid ','有效期 ')+(f.from||blank)+' ～ '+(f.to||L('Open-ended','长期'))].join(' · ')
+      :'';
+    const status=[L('File hash ','文件哈希 ')+(f.hash?f.hash.slice(0,10)+'…'+f.hash.slice(-6):blank),L('Uploaded with ','随')+submission(f.seq)+L('',' 上传')].join(' · ');
+    return CF.fileRow({key:'ta-'+f.id,name:f.name,state:'ready',meta,status,previewable:true,preview:{act:'ta-file',value:f.id},download:{act:'ta-download',value:f.id}});
+  }
+  function fileGroups(cats,files,docMeta){
+    return facts(cats.map(([k,label])=>{
+      const list=files.filter(f=>f.cat===k);
+      return [E(txt(label))+(list.length>1?`<span class="ta-meta">${list.length} ${L('files','份')}</span>`:''),list.length?list.map(f=>fileRow(f,docMeta)).join(''):blank,true];
+    }),true);
+  }
+
   /* ---------------------------------------------------------------- 审核详情 */
   function overview(r){
     const d=decision(r);
@@ -361,15 +375,10 @@
         [L('Evidence time','存证时间'),time(ev.at)],
         [L('No double financing declaration','重复融资声明'),val(a.declare)]
       ]))
-      );
+      +group('Supporting materials','底层资产佐证材料',fileGroups(seed.proofCats,r.proofs,false)));
   }
-  /* 用户 2026-10-21：附件不再逐份分列，法律协议文件与佐证材料合并为一个下载链接，按需下载。 */
-  function attachments(r){
-    const bd=r.bundle;
-    const link=!bd?blank:A.dlError
-      ?`<div class="ta-bundle-error">${CF.note('red',L('Download failed.','下载失败。'))}${b('Retry','重试','download-retry')}</div>`
-      :`<div class="ta-bundle">${b('Download all attachments','下载全部附件','download','','',false)}<span class="ta-meta">${E(bd.name)} · ${L('Provided with ','随')}${E(submission(bd.seq))}${L(' · ',' 提供 · ')}${time(bd.at)}</span></div>`;
-    return section('docs','Attachment download','附件下载',facts([[L('Legal documents and supporting materials','法律协议文件与佐证材料'),link,true]],true));
+  function legalDocs(r){
+    return section('docs','Legal documents','法律协议文件',fileGroups(seed.docCats,r.docs,true),`<span class="ta-meta">${r.docs.length} ${L('files','份')}</span>`);
   }
   const TONE={approve:'ok',return:'danger','callback-fail':'warn',expire:'gray',change:'accent',ack:'gray',update:'accent'};
   function activity(r){
@@ -413,7 +422,7 @@
     if(A.view!=='default')return `<header class="ta-detail-heading"><h1 class="mono">${E(r.ptid)}</h1></header>`+(CF.surface({errorTitle:L('Could not load this record','详情读取失败'),skelRows:6,backTo:ROOT,backLabel:L('Back to the list','返回清单')})||'');
     const heading=`<header class="ta-detail-heading"><h1 class="mono">${E(r.ptid)}</h1><p class="ta-detail-name"><span class="ta-name">${r.icon?`<span class="ta-icon" aria-hidden="true">${E(r.symbol?r.symbol.slice(0,2):txt(r.name).slice(0,1))}</span>`:''}${E(txt(r.name))}</span></p>${demoTag()}</header>`;
     return heading+(A.error&&!S.layer?`<div class="ta-page-error">${error()}</div>`:'')
-      +`<div class="ta-grid"><div class="ta-detail-main"><div class="detail-stack ta-stack">${overview(r)}${tokenInfo(r)}${assetInfo(r)}${attachments(r)}${activity(r)}</div></div><aside class="ta-rail">${rail(r)}</aside></div>`;
+      +`<div class="ta-grid"><div class="ta-detail-main"><div class="detail-stack ta-stack">${overview(r)}${tokenInfo(r)}${assetInfo(r)}${legalDocs(r)}${activity(r)}</div></div><aside class="ta-rail">${rail(r)}</aside></div>`;
   }
 
   /* ---------------------------------------------------------------- 办理 */
@@ -439,9 +448,9 @@
     const inv=r.asset.invoices||[],next='DEMO-INV-'+r.key+String(inv.length+1).padStart(2,'0');
     const before=inv.length?inv.join(', '):'—';
     r.asset={...r.asset,invoices:[...inv,next]};r.updatedAt=now();
-    const oldBundle=r.bundle?.name||'—';r.bundle={name:'Attachments-'+r.id+'-submission-'+r.seq+'-v'+(r.events.filter(e=>e.kind==='update').length+2)+'.zip',seq:r.seq,at:now()};
+    r.proofs=[...r.proofs,{id:'p-u'+Date.now(),cat:'invoice',name:next+'.pdf',hash:seed.hash(Date.now()%9999),seq:r.seq}];
     event(r,'update',['Materials updated','资料更新'],[`Pending review · submission ${r.seq}`,`待审核 · 第 ${r.seq} 次提交`],
-      {actor:platformActor(r),text:note,diff:[[['Invoice numbers','发票号'],before,[...inv,next].join(', ')],[['Attachments','附件'],oldBundle,r.bundle.name]]});
+      {actor:platformActor(r),text:note,diff:[[['Invoice numbers','发票号'],before,[...inv,next].join(', ')],[['Invoice','发票'],'—',next+'.pdf']]});
   }
   function finish(r,kind,reason){
     const reviewer=['Demo Operator','演示操作员'];
@@ -510,6 +519,15 @@
       html:`<div class="ta-form">${identity(r)}<fieldset ${A.busy?'disabled':''}>${field(L('Return reason *','退回原因 *'),`<textarea class="inp" id="ta-reason" maxlength="600" aria-required="true" aria-invalid="${!!A.error}" aria-describedby="ta-form-error ta-count">${E(reason)}</textarea><span class="ta-meta" id="ta-count">${reasonLength(reason)} / 500</span>`)}</fieldset><div id="ta-form-error">${error()}</div>${A.busy?'<p role="status">'+L('Submitting…','正在提交…')+'</p>':''}</div>`,
       foot:b('Cancel','取消','cancel','','',A.busy)+b(A.busy?'Submitting…':'Return',A.busy?'正在提交…':'确认退回','submit','','primary',A.busy)};
   }
+  function fileLayer(){
+    const r=row(),f=r&&[...r.docs,...r.proofs].find(x=>x.id===A.file);
+    if(!allowed())return {title:L('Sign in to continue','请先完成运营登录'),html:gate(),foot:b('Close','关闭','file-close')};
+    if(!f)return {title:L('File unavailable','文件不可用'),html:'',foot:b('Close','关闭','file-close')};
+    if(A.fileState==='error')return {title:f.name,html:CF.note('red',L('This file could not be opened. Retry, or download it.','该文件打开失败，可重试或下载。')),foot:b('Close','关闭','file-close')+b('Retry','重试','file-retry')+b('Download','下载','download','','',false)};
+    const cat=[...seed.docCats,...seed.proofCats].find(c=>c[0]===f.cat);
+    return {title:f.name,html:`${kv([[L('Category','类别'),E(txt(cat?.[1]))],[L('Uploaded with','随哪次提交上传'),E(submission(f.seq))],...(f.signer?[[L('Signed by','签署方'),E(txt(f.signer))],[L('Signed','签署日期'),val(f.signDate)],[L('Valid','有效期'),E((f.from||blank)+' ～ '+(f.to||L('Open-ended','长期')))]]:[]),[L('File hash','文件哈希'),hashValue(f.hash,L('file hash','文件哈希')),true]])}<div class="ta-preview" role="img" aria-label="${L('Demonstration preview','演示预览')}"><b>${E(f.name)}</b><span>${L('Demonstration file · no real content','演示文件 · 无真实内容')}</span></div>`,
+      foot:b('Close','关闭','file-close')+b('Download','下载','download',f.id,'primary')};
+  }
   const layers={
     'ta-return':returnLayer,
     'ta-ack':()=>({title:L('Acknowledge the change?','确认已知悉变更？'),
@@ -517,7 +535,8 @@
       foot:b('Cancel','取消','cancel')+b('Acknowledge','确认已知悉','ack-confirm','','primary')}),
     'ta-discard':()=>({title:L('Discard the reason?','放弃已填原因？'),
       html:CF.note('accent',L('The reason you typed is not carried to another token.','已填写的原因不会带入其他代币。')),
-      foot:b('Keep editing','继续编辑','keep')+b('Discard','放弃','discard','','primary')})
+      foot:b('Keep editing','继续编辑','keep')+b('Discard','放弃','discard','','primary')}),
+    'ta-file':fileLayer
   };
 
   /* ---------------------------------------------------------------- 演示工具 */
@@ -537,7 +556,7 @@
       <div class="ta-demo">${field(L('Page state','页面状态'),select('ta-d-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','无数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}
         ${field(L('Submit response','提交反馈'),select('ta-d-response',A.response,[['success',L('Success','成功')],['fail',L('Save failed','保存失败')],['concurrent',L('Another reviewer decided first','已被他人作出结论')],['updated',L('Materials updated meanwhile','资料已更新')],['expired',L('Token became invalid (approve)','代币已失效（通过时）')],['peer',L('Same on-chain token approved first (approve)','同一链上代币另一条已先通过（通过时）')],['permission',L('Permission or account changed','权限或账号状态变化')]]))}
         ${field(L('Result call-back','审核结果回传'),select('ta-d-callback',A.callback,[['ok',L('Delivered','回传成功')],['fail',L('Fails','回传失败')]]))}
-        ${field(L('Attachment download','附件下载'),select('ta-d-file',A.fileState,[['ready',L('Works','正常')],['error',L('Link unavailable','链接不可用')]]))}
+        ${field(L('File opening','文件打开'),select('ta-d-file',A.fileState,[['ready',L('Opens','正常')],['error',L('Fails','打开失败')]]))}
         ${field(L('Activity state','操作记录状态'),select('ta-d-activity',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','读取失败')]]))}</div>
       <h4>${L('Pushes from the issuance platform','发行平台推送')}${r?' · '+E(r.ptid):''}</h4>
       <div class="ta-demo-actions">${b('Push a materials update','推送资料更新','push-update','','',!r||r.status!=='pending')}${b('Revise and push again','修改后重新推送','push-resubmit','','',!r||r.status!=='returned')}${b('Push a change after approval','推送通过后资料变更','push-change','','',!r||r.status!=='approved')}${b('Token becomes invalid','代币变为失效','push-expire','','',!r||r.tokenState!=='valid')}</div>
@@ -590,8 +609,10 @@
       event(r,'ack',['Change acknowledged','确认已知悉变更'],['Approved · alert cleared','已通过 · 提醒已清除'],{actor:['Demo Operator','演示操作员']});
       S.layer=null;CF.render();CF.toast(L('Acknowledged. The alert was cleared.','已确认知悉，提醒已清除。'));
     }
-    else if(act==='download'){if(A.fileState==='error'){A.dlError=true;CF.render();}else CF.toast(L('Download started (demonstration).','已开始下载（演示）。'));}
-    else if(act==='download-retry'){A.dlError=false;A.fileState='ready';CF.render();CF.toast(L('Download started (demonstration).','已开始下载（演示）。'));}
+    else if(act==='file'){A.file=v;CF.openLayer('modal','ta-file');}
+    else if(act==='file-retry'){A.fileState='ready';CF.render();}
+    else if(act==='file-close'){A.file=null;CF.closeLayer();}
+    else if(act==='download')CF.toast(L('Download started (demonstration).','已开始下载（演示）。'));
     /* 公共层在动作后重绘正文，定位放到重绘之后。 */
     else if(act==='locate-change')setTimeout(()=>{
       const el=document.querySelector('.ta-event[data-kind="change"]');
@@ -604,7 +625,7 @@
     else if(act==='push-update'&&r?.status==='pending'){pushUpdate(r,['The issuance platform pushed updated materials for this submission.','发行平台推送了本次提交的资料更新。']);CF.render();CF.toast(L('Materials updated; the submission number is unchanged.','资料已更新，提交序次不变。'));}
     else if(act==='push-resubmit'&&r?.status==='returned'){
       r.status='pending';r.seq+=1;r.submittedAt=now();r.updatedAt=null;
-      if(r.bundle)r.bundle={name:'Attachments-'+r.id+'-submission-'+r.seq+'.zip',seq:r.seq,at:now()};
+      [...r.docs,...r.proofs].forEach(f=>{f.seq=r.seq;});
       event(r,'resubmit',['Resubmitted after revision','重新提交'],[`Returned → Pending review · submission ${r.seq}`,`已退回 → 待审核 · 第 ${r.seq} 次提交`],
         {actor:platformActor(r)});
       CF.render();
@@ -650,7 +671,7 @@
     const el=e.target,id=el.id;
     if(id==='ta-order'){const [sort,dir]=el.value.split(':');A.list.sort=sort;A.list.dir=+dir;A.list.page=1;saveContext();CF.render();}
     const demoKeys={'ta-d-view':'view','ta-d-response':'response','ta-d-callback':'callback','ta-d-file':'fileState','ta-d-activity':'activityState'};
-    if(demoKeys[id]){A[demoKeys[id]]=el.value;A.error='';A.dlError=false;CF.render();}
+    if(demoKeys[id]){A[demoKeys[id]]=el.value;A.error='';CF.render();}
   });
   document.addEventListener('click',e=>{
     const a=e.target.closest('a[href^="#"]');
@@ -702,6 +723,7 @@
       if(act==='retry'||act==='clearfilter'){onAct(act,v);return true;}
       if(act==='closelayer'&&e?.type==='click'&&e.target.closest('[data-stop]'))return false;
       if(act==='closelayer'&&A.busy)return true;
+      if(act==='closelayer'&&S.layer?.key==='ta-file'){onAct('ta-file-close','');return true;}
       if(act==='closelayer'&&A.draft){onAct('ta-cancel','');return true;}
       return OPS.onBeforeAct(act,v,e);
     },

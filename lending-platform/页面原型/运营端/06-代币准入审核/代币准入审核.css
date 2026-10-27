@@ -85,10 +85,8 @@ table.ta-table :is(th,td){padding-inline:var(--sp-3)}
 .ta-alert .ta-kv{gap:var(--sp-3) var(--sp-5)}
 .ta-alert .ta-kv dd{font-size:var(--fs-13)}
 
-.ta-bundle{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-4)}
-.ta-bundle .ta-meta{margin:0}
-.ta-bundle-error{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3)}
-.ta-bundle-error .note{margin:0}
+.ta-section .ops-facts .file-row{margin:0 0 var(--sp-2)}
+.ta-section .ops-facts .file-row:last-child{margin-bottom:0}
 
 /* Rail */
 .ta-rail-card{display:grid;gap:var(--sp-4)}
@@ -142,3 +140,5 @@ table.ta-diff :is(th,td){padding:var(--sp-2) var(--sp-3);text-align:left;vertica
 @media(max-width:1400px){.ta-grid{grid-template-columns:minmax(0,1fr) 280px}}
 @media(max-width:1100px){.ta-grid{grid-template-columns:minmax(0,1fr)}.ta-rail{position:static;order:-1}}
 @media(max-width:700px){.ta-kv{grid-template-columns:minmax(0,1fr)}}
+.ta-preview{display:grid;place-items:center;gap:var(--sp-2);min-height:220px;margin-top:var(--sp-4);border:1px dashed var(--border-strong);border-radius:var(--radius-sm);background:var(--card-2);color:var(--muted);text-align:center;padding:var(--sp-5)}
+.ta-preview b{color:var(--text);overflow-wrap:anywhere}
