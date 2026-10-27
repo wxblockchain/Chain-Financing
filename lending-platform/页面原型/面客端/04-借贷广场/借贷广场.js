@@ -504,7 +504,7 @@
     const networkField='<p class="ls-form-context">'+L('Blockchain network','区块链网络')+' '+netChip(D.PLEDGE_CHAIN)+'</p>';
     const nameField=field('ls-name','Project name *','项目名称 *',name,'text','maxlength="60" required aria-describedby="ls-name-help"')+'<p class="hint" id="ls-name-help">'+L('1–60 characters','1～60 字符')+'</p>';
     const typeHint=paramFail?'<div class="ls-inline-fail" role="alert"><span>'+L('Financing parameters could not be loaded, so the project cannot be submitted right now.','融资参数暂时读取失败，暂不可办理。')+'</span>'+btn('ls-param-retry',L('Retry','重试'))+'</div>'
-      :none?'<p class="hint ls-hint-warn">'+L('Your company has no tokens on Ethereum that have passed token admission review.','本企业在 Ethereum 上暂无已通过准入审核的代币。')+'</p>'
+      :none?'<p class="hint ls-hint-warn">'+L('Your company has no tokens on Ethereum that have passed asset admission review.','本企业在 Ethereum 上暂无已通过准入审核的代币。')+'</p>'
       :closed?'<p class="hint ls-hint-warn">'+L('This token type is not open for financing yet.','该代币类型暂未开放融资。')+'</p>':'';
     const typeField=select('ls-kind','Token type *','代币类型 *',options,kind,'required'+(none||closed||paramFail?' disabled':''))+typeHint;
     const ratioField=field('ls-rate','Pledge ratio (%) *','项目质押率（%）*',rate,'text','inputmode="decimal" required aria-describedby="ls-rate-help"')+'<p class="hint" id="ls-rate-help">'+(cfg?L('Up to '+(cfg.maxRate*100)+'%, at most 2 decimal places','最高 '+(cfg.maxRate*100)+'%，最多两位小数'):L('The limit appears after you choose a token type','选择代币类型后显示上限'))+'</p>';

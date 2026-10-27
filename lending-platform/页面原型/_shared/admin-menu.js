@@ -5,7 +5,7 @@
   const entries = [
     {"key":"account","page":"P-O-AL-07","route":"/ops/account-overview","file":"08-运营端总览/总览.html","label":["Overview","总览"],"icon":"▤","permission":14,"sidebar":true},
     {"key":"institution","page":"P-L40","route":"/ops/institution-reviews","file":"05-资金方机构认证审核/资金方机构认证审核.html","label":["Institution review","机构认证审核"],"icon":"▣","permission":[5,6],"sidebar":true},
-    {"key":"tokens","page":"P-O-TA-01","pages":["P-O-TA-01","P-O-TA-02"],"route":"/ops/token-admissions","file":"06-代币准入审核/代币准入审核.html","label":["Token admission","代币准入审核"],"icon":"◈","permission":[21,22],"reachable":[21,22],"sidebar":true},
+    {"key":"tokens","page":"P-O-TA-01","pages":["P-O-TA-01","P-O-TA-02"],"route":"/ops/token-admissions","file":"06-代币准入审核/代币准入审核.html","label":["Asset admission","资产准入审核"],"icon":"◈","permission":[21,22],"reachable":[21,22],"sidebar":true},
     {"key":"parameters","page":"P-O-FC-01","pages":["P-O-FC-01","P-O-FC-02"],"route":"/ops/financing-parameters","file":"02-融资参数配置/融资参数配置.html","label":["Financing parameters","融资参数配置"],"icon":"▩","permission":[19,20],"reachable":[19,20],"sidebar":true},
     {"key":"contracts","page":"P-O-CM-01","pages":["P-O-CM-01","P-O-CM-02","P-O-CM-03"],"routes":["/ops/contract-reviews","/ops/contract-ledger"],"route":"/ops/contract-reviews","file":"04-项目合约管理/项目合约管理.html","label":["Project contracts","项目合约管理"],"icon":"▦","permission":[17,18],"reachable":[17,18],"sidebar":true},
     {"key":"ledger","page":"P-O-LG-01","pages":["P-O-LG-01","P-O-LG-02"],"route":"/ops/financing-ledger","file":"09-融资台账/融资台账.html","label":["Financing ledger","融资台账"],"icon":"▥","permission":24,"sidebar":true},

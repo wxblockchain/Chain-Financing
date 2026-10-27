@@ -18,7 +18,7 @@
   const factories={tokens:()=>CF.tokenAdmissionSeed().rows,contracts:()=>CF.contractSeed().rows,
     institutions:()=>CF.institutionReviewSeed(),parameters:()=>CF.parameterSeed().rows,finance:financeSeed};
   const unique=rows=>[...new Map(rows.filter(r=>r&&r.id).map(r=>[r.id,r])).values()];
-  // Same UTC day boundary and decision reader as the token admission module.
+  // Same UTC day boundary and decision reader as the asset admission module.
   const utcDayStart=(t,back=0)=>{const d=new Date(t);return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-back);};
   const tokenDecision=r=>(r.decisions||[])[(r.decisions||[]).length-1]||null;
   const count=(rows,test)=>rows.filter(test).length;

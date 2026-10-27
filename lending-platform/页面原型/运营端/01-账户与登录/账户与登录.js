@@ -42,9 +42,9 @@ const PERMISSIONS=[
  {n:18,en:'Decide project reviews and contract deployment',zh:'融资项目审核与合约部署处置',needs:17},
  {n:19,en:'View financing parameters',zh:'融资参数查询'},
  {n:20,en:'Maintain financing parameters',zh:'融资参数维护',needs:19},
- /* 代币准入审核自行定义的两项（WS-439 PRD 第 3 节）；n 只作原型内部键，code 为业务编号。 */
- {n:21,code:'PM-TA-01',en:'View token admission reviews',zh:'代币准入审核查询'},
- {n:22,code:'PM-TA-02',en:'Decide token admission',zh:'代币准入审核处置',needs:21},
+ /* 资产准入审核自行定义的两项（WS-439 PRD 第 3 节）；n 只作原型内部键，code 为业务编号。 */
+ {n:21,code:'PM-TA-01',en:'View asset admission reviews',zh:'资产准入审核查询'},
+ {n:22,code:'PM-TA-02',en:'Decide asset admission',zh:'资产准入审核处置',needs:21},
  /* 运营端总览新增（WS-462 PRD 第 3 节）：只读全平台融资合计，不开放逐笔或按主体明细。 */
  {n:23,code:'PM-OV-01',en:'View platform financing statistics',zh:'平台融资统计查询'},
  /* 融资台账新增（WS-464 PRD 第 3 节）：只读逐笔查看全平台融资业务，不含任何办理或处置动作。 */
