@@ -1,4 +1,4 @@
-/* Asset admission · presentation only. Shared tokens, ops facts, filters, file rows and tables remain authoritative.
+/* Token admission · presentation only. Shared tokens, ops facts, filters, file rows and tables remain authoritative.
    Composition follows the approved review modules: list = stat strip + compact filters + dense table;
    detail = sectioned main column + sticky review rail + single activity timeline. */
 .ta-stack{display:grid;gap:var(--sp-5);align-content:start}

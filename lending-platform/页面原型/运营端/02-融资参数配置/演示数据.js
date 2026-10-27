@@ -1,7 +1,7 @@
 /* Demonstration fixtures only. 虚构演示数据，不连接任何真实配置服务。
    配置对象是组合：区块链网络（按链 ID 区分）+ 代币类型，一个组合一条融资参数配置，只含最高质押率与最长项目期限两项。
-   组合只随资产准入审核通过产生，运营不能新增、改名、合并或删除；
-   演示工具里的第三个组合用于演示「资产准入通过产生新组合（未配置）」。 */
+   组合只随代币准入审核通过产生，运营不能新增、改名、合并或删除；
+   演示工具里的第三个组合用于演示「代币准入通过产生新组合（未配置）」。 */
 (function(CF){
   const TYPE='ERC-3525-应收账款';
   const ETH={name:['Ethereum','以太坊'],chainId:'1',icon:'ETH'};
@@ -30,14 +30,14 @@
     return {
       rows:[
         combo('eth-1',ETH,{maxRatio:before.ratio,maxTermMonths:before.term,records:records.slice().reverse()}),
-        /* 同一代币类型、不同链 ID：独立的一个组合，刚随资产准入通过产生，尚未配置。 */
+        /* 同一代币类型、不同链 ID：独立的一个组合，刚随代币准入通过产生，尚未配置。 */
         combo('sepolia-11155111',SEPOLIA)
       ],
       now
     };
   };
 
-  /* 资产准入通过产生新组合：以未配置状态出现，配置完成前不可用于创建融资项目。 */
+  /* 代币准入通过产生新组合：以未配置状态出现，配置完成前不可用于创建融资项目。 */
   CF.parameterNewCombo=()=>combo('bsc-56',BSC);
   CF.parameterNewComboId='bsc-56';
 

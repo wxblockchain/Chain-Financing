@@ -1,4 +1,4 @@
-/* WS-439 · 资产准入审核（运营端）：准入审核清单（P-O-TA-01）与审核详情（P-O-TA-02）。
+/* WS-439 · 代币准入审核（运营端）：准入审核清单（P-O-TA-01）与审核详情（P-O-TA-02）。
    权限项由本模块定义（PM-TA-01 查询 / PM-TA-02 处置，处置须配套查询），登记在运营端账户宿主 CF.opsAuth
    的同一份清单里，编号 21 / 22 只作原型内部键。推送、回传、文件读取与区块浏览器均为本地演示。 */
 (function(CF){
@@ -140,13 +140,13 @@
 
   /* ---------------------------------------------------------------- 权限空态 */
   function signedOut(){return CF.empty(L('Sign in to continue','请先完成运营登录'),
-    L('Your session has ended. Sign in again to open asset admission.','登录已失效，请重新登录后查看资产准入审核。'),
+    L('Your session has ended. Sign in again to open token admission.','登录已失效，请重新登录后查看代币准入审核。'),
     b('Sign in again','重新登录','sign-in','','primary'));}
   function noAccess(){return decideOnly()
     ?CF.empty(L('Review access is incomplete','审核权限配置不完整'),
-      L('This account can decide asset admission but cannot query it, so access is refused. Ask your platform provider to correct the delivered configuration.','该账号开通了资产准入审核处置，但未开通资产准入审核查询，本次访问已拒绝。请联系平台建设方修正交付配置。'),'')
-    :CF.empty(L('No access to asset admission','无权访问资产准入审核'),
-      L('The delivered configuration does not give this account the asset admission permissions.','当前交付配置未为该账号开通资产准入审核相关权限。'),'');}
+      L('This account can decide token admission but cannot query it, so access is refused. Ask your platform provider to correct the delivered configuration.','该账号开通了代币准入审核处置，但未开通代币准入审核查询，本次访问已拒绝。请联系平台建设方修正交付配置。'),'')
+    :CF.empty(L('No access to token admission','无权访问代币准入审核'),
+      L('The delivered configuration does not give this account the token admission permissions.','当前交付配置未为该账号开通代币准入审核相关权限。'),'');}
   function gate(){return !signedIn()?signedOut():!canQuery()?noAccess():'';}
   const demoTag=()=>CF.tag('gray',L('Demonstration data','演示数据'));
 
@@ -221,7 +221,7 @@
   }
   function list(){
     const blocked=gate();
-    const heading=`<div class="ta-list-heading"><h1>${L('Asset admission','资产准入审核')}</h1>${demoTag()}</div>`;
+    const heading=`<div class="ta-list-heading"><h1>${L('Token admission','代币准入审核')}</h1>${demoTag()}</div>`;
     if(blocked)return heading+blocked;
     const base=scope(),start=utcDayStart(now(),6);
     const decided=kind=>base.filter(r=>r.status===kind&&decision(r)&&decision(r).at>=start).length;
@@ -231,7 +231,7 @@
     S.st=A.view;
     const state=A.view==='default'?null:CF.surface({emptyTitle:L('No tokens awaiting review','暂无待审核代币'),
       emptyDesc:L('A token appears here once an issuance platform pushes it for admission.','代币发行平台推送准入申请后，代币将出现在此。'),
-      deniedDesc:L('Contact the platform provider to check the delivered configuration.','请联系平台建设方核对交付配置。'),backTo:ROOT,backLabel:L('Back to asset admission','返回资产准入审核'),skelRows:6});
+      deniedDesc:L('Contact the platform provider to check the delivered configuration.','请联系平台建设方核对交付配置。'),backTo:ROOT,backLabel:L('Back to token admission','返回代币准入审核'),skelRows:6});
     const rows=sortRows(found());
     const pages=Math.max(1,Math.ceil(rows.length/CF.PAGE_SIZE));
     let note=A.listNote;A.listNote='';
@@ -239,7 +239,7 @@
     const page=rows.slice((A.list.page-1)*CF.PAGE_SIZE,A.list.page*CF.PAGE_SIZE);
     const table=state||(!rows.length
       ?CF.empty(L('No tokens found','暂无符合条件的代币'),L('Change the filters or reset to the pending list.','调整筛选条件，或重置回待审核清单。'),b('Reset filters','重置筛选','reset'))
-      :`<div class="tablewrap ta-table-region" tabindex="0" role="region" aria-label="${L('Asset admission table; scroll horizontally to view all columns','资产准入审核清单，可横向滚动查看全部列')}"><table class="tbl ta-table"><colgroup>
+      :`<div class="tablewrap ta-table-region" tabindex="0" role="region" aria-label="${L('Token admission table; scroll horizontally to view all columns','代币准入审核清单，可横向滚动查看全部列')}"><table class="tbl ta-table"><colgroup>
         <col class="ta-col-network"><col class="ta-col-identifiers"><col class="ta-col-name"><col class="ta-col-issuer"><col class="ta-col-standard"><col class="ta-col-value"><col class="ta-col-due"><col class="ta-col-submitted"><col class="ta-col-status"><col class="ta-col-action">
         </colgroup><thead><tr>
         <th scope="col">${L('Blockchain network','区块链网络')}</th><th scope="col">${L('Platform token ID / token number','平台代币标识 / 代币编号')}</th><th scope="col">${L('Token name','代币名称')}</th><th>${L('Issuance platform / issuer','来源发行平台 / 发行方')}</th><th>${L('Token standard','代币标准')}</th>
@@ -408,7 +408,7 @@
     const blocked=gate();
     if(blocked)return `<div class="ta-list-heading"><h1>${L('Review detail','审核详情')}</h1></div>`+blocked;
     const r=row();
-    if(!r)return CF.empty(L('Record unavailable','记录不可用'),L('Return to the asset admission list.','请返回资产准入审核清单。'),b('Back to the list','返回清单','back'));
+    if(!r)return CF.empty(L('Record unavailable','记录不可用'),L('Return to the token admission list.','请返回代币准入审核清单。'),b('Back to the list','返回清单','back'));
     S.st=A.view;
     if(A.view!=='default')return `<header class="ta-detail-heading"><h1 class="mono">${E(r.ptid)}</h1></header>`+(CF.surface({errorTitle:L('Could not load this record','详情读取失败'),skelRows:6,backTo:ROOT,backLabel:L('Back to the list','返回清单')})||'');
     const heading=`<header class="ta-detail-heading"><h1 class="mono">${E(r.ptid)}</h1><p class="ta-detail-name"><span class="ta-name">${r.icon?`<span class="ta-icon" aria-hidden="true">${E(r.symbol?r.symbol.slice(0,2):txt(r.name).slice(0,1))}</span>`:''}${E(txt(r.name))}</span></p>${demoTag()}</header>`;
@@ -531,7 +531,7 @@
   function demo(){
     if(OPS_PAGES.includes(S.page))return OPS.demo();
     const r=S.page===DT?row():null;
-    return `<h3>${L('Asset admission · demo tools','资产准入审核 · 演示工具')}</h3><p class="ta-meta">${L('Local demonstration only. Pushes from issuance platforms, result call-backs, file reading and block explorers are simulated.','仅本地演示：发行平台推送、结果回传、文件读取与区块浏览器均为模拟。')}</p>
+    return `<h3>${L('Token admission · demo tools','代币准入审核 · 演示工具')}</h3><p class="ta-meta">${L('Local demonstration only. Pushes from issuance platforms, result call-backs, file reading and block explorers are simulated.','仅本地演示：发行平台推送、结果回传、文件读取与区块浏览器均为模拟。')}</p>
       <h4>${L('Account configuration · later-role preview','账号配置 · 后期角色预演')}</h4><p class="ta-meta">${L('This release has one role: the operations administrator holds both permissions.','本期只有运营管理员一个角色，固定具备两项权限。')}</p>
       <div class="ta-demo-actions">${b('Administrator','运营管理员','grant','admin')}${b('Later role · no access','后期角色 · 未开通本模块','grant','none')}${b('Later role · query only','后期角色 · 仅开通审核查询','grant','query')}${b('Later role · decision only','后期角色 · 仅开通审核处置','grant','decide')}</div>
       <div class="ta-demo">${field(L('Page state','页面状态'),select('ta-d-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','无数据')],['noresult',L('No results','筛选无结果')],['error',L('Load failed','读取失败')]]))}
@@ -661,10 +661,10 @@
   },true);
 
   const DENIED={id:'denied',label:['No access','无权限'],group:'business'};
-  [[LIST,['Asset admission list','准入审核清单'],['default','loading','empty','noresult','error',DENIED]],
+  [[LIST,['Token admission list','准入审核清单'],['default','loading','empty','noresult','error',DENIED]],
    [DT,['Review detail','审核详情'],['default','loading','error',DENIED]]].forEach(([id,label,states])=>{
     CF.review.register(id,{
-      group:['Asset admission','资产准入审核'],label,states,
+      group:['Token admission','代币准入审核'],label,states,
       scenarios:()=>id!==DT?[]:[
         ['pending',['Pending review · valid','待审核 · 有效'],r=>r.status==='pending'&&r.tokenState==='valid'&&!r.dupes.length&&!r.updatedAt],
         ['expired',['Pending review · token invalid','待审核 · 代币失效'],r=>r.status==='pending'&&r.tokenState==='expired'],
@@ -685,8 +685,8 @@
   });
 
   const dict={
-    en:{...OPS.dict.en,navTokenAdmission:'Asset admission',navTokenAdmissionDetail:'Review detail'},
-    zh:{...OPS.dict.zh,navTokenAdmission:'资产准入审核',navTokenAdmissionDetail:'审核详情'}
+    en:{...OPS.dict.en,navTokenAdmission:'Token admission',navTokenAdmissionDetail:'Review detail'},
+    zh:{...OPS.dict.zh,navTokenAdmission:'代币准入审核',navTokenAdmissionDetail:'审核详情'}
   };
   CF.define({...OPS,id:'token-admission',demoOnly:true,reviewToolsInLayer:false,dict,demo,
     content:page=>OPS_PAGES.includes(page)?OPS.content(page):page===DT?detail():list(),

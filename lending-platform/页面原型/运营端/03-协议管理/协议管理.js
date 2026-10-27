@@ -193,7 +193,7 @@ function changeRows(before,after){
  const rows=[['File','文件',before.file||'—',after.file||'—',true],['Change note','变更说明',txt(before.note)||'—',txt(after.note)||'—']].filter(r=>r[4]||r[2]!==r[3]);
  return `<div class="tablewrap"><table class="tbl ag-changes"><thead><tr><th>${L('Change','变更项')}</th><th>${L('Before','覆盖前')}</th><th>${L('After','覆盖后')}</th></tr></thead><tbody>${rows.map(r=>`<tr><th>${L(r[0],r[1])}</th><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}</tbody></table></div>`;
 }
-/* 操作进度与资产准入审核统一：名称、主体与时间、结果、直接可读的明细。 */
+/* 操作进度与代币准入审核统一：名称、主体与时间、结果、直接可读的明细。 */
 let activityState='default',activityPage=1;
 /* 异常记录样本仅供评审：缺操作人、缺发生时间与重复到达各一条。 */
 function anomalies(a){

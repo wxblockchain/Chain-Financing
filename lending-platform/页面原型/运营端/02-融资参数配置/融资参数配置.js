@@ -1,5 +1,5 @@
 /* 融资参数配置（运营端）：融资参数列表、参数详情与变更记录，参数维护以弹窗办理。
-   配置对象是组合：区块链网络 + 代币类型；组合只随资产准入审核通过产生。
+   配置对象是组合：区块链网络 + 代币类型；组合只随代币准入审核通过产生。
    会话与功能权限只读运营端账户与登录一处登记（CF.opsAuth）：
    PM-AL-19 融资参数查询、PM-AL-20 融资参数维护（须配套 PM-AL-19）。
    业务数据与异步反馈均为本地演示，不连接真实配置服务，也不投递任何站内信。 */
@@ -157,7 +157,7 @@
       b('Next','下一页','page',String(A.page+1),'sm',A.page===pages)}</div>`;
   }
   const noCombos=()=>CF.empty(L('No combinations yet','还没有组合'),
-    L('A combination appears once a token passes asset admission review.','组合随资产准入审核通过产生。'),'');
+    L('A combination appears once a token passes token admission review.','组合随代币准入审核通过产生。'),'');
   function listPage(){
     const blocked=gate();
     const head=title(L('Financing parameters','融资参数配置'),'');
@@ -436,7 +436,7 @@
       <div class="fc-demo">${field(L('Page state','页面状态'),select('fc-view',A.view,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty · no combinations','空数据 · 还没有组合')],['error',L('Load failed','读取失败')]]))}${
         field(L('Change history state','参数变更记录状态'),select('fc-log-state',A.logState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('No records','尚无记录')],['error',L('Load failed','读取失败')],['expired',L('Session expired','登录失效')]]))}${
         field(L('Save response','保存反馈'),select('fc-response',A.response,[['success',L('Success','成功')],['fail',L('Failure','失败')],['unknown',L('Result unknown','结果未知')],['concurrent',L('Another operator saved first','已被他人先行修改')],['expired',L('Session expired at submit','提交时登录已失效')]]))}</div>
-      <h4>${L('Asset admission review','资产准入审核')}</h4><div class="fc-demo-actions">${b('A token passes admission · new combination','资产准入通过 · 产生新组合','add-combo','','',added)}${
+      <h4>${L('Token admission review','代币准入审核')}</h4><div class="fc-demo-actions">${b('A token passes admission · new combination','代币准入通过 · 产生新组合','add-combo','','',added)}${
         b('Restore the default combinations','恢复默认组合','restore-combos')}</div>
       <h4>${L('Session','会话')}</h4><div class="fc-demo-actions">${b('Expire the operations session','运营登录失效','expire-session')}${b('Reset demonstration','重置演示','restart')}</div>`;
   }

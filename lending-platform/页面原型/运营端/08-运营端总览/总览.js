@@ -6,7 +6,7 @@
   const sources={
     tokens:{permission:21,write:22,nav:'tokens',route:'/ops/token-admissions?status=pending&page=1&sort=submittedAt&dir=1',
       stat:['Admitted tokens','已准入代币'],task:['Tokens awaiting review','待审核代币'],unit:['records','笔'],
-      group:['Asset admissions','资产准入']},
+      group:['Token admissions','代币准入']},
     contracts:{permission:17,write:18,nav:'contracts',route:'/ops/contract-reviews?review=pending&page=1&dir=1',
       stat:['Approved projects','已通过项目'],task:['Projects awaiting review','待审核项目'],unit:['projects','个'],
       group:['Financing projects','融资项目']},

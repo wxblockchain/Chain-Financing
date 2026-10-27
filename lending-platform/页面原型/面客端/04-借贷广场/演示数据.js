@@ -148,7 +148,7 @@
       close:mine&&!terminal&&!p.expired,canClose:mine&&!terminal&&!p.expired&&!p.deploying&&!D.unfinished(p).length,
       quote:CF.S.role==='fund'&&current&&current.state==='open'&&!terminal&&!p.expired&&n.grade==='surplus'};
   };
-  /* 只有通过资产准入审核的代币进入本模块；待审核、已退回的在任何地方都不出现。 */
+  /* 只有通过代币准入审核的代币进入本模块；待审核、已退回的在任何地方都不出现。 */
   D.admitted = t => !!t && !['pending','returned'].includes(t.admission);
   /* 创建时的代币类型候选：本企业在所选网络上持有该类型的已准入代币；组合是否已配置参数另行判断。 */
   D.kinds = (network) => D.TYPES.filter(x=>D.tokens.some(t=>t.owner===D.me()&&D.admitted(t)&&t.kind===x.id)).map(x=>x.id);
@@ -407,7 +407,7 @@
       shares.forEach(([holder,owner,units,pool],j)=>D.tokens.push({id:no+'#'+(j+1),no,holder,owner,kind:'erc20-ar',issuer:D.ISSUERS[k?2:0],slot:String(2610+k),units,tokenUnits:total,tokenValue:worth,symbol:'AR-DEMO',value:D.shareValue(units,total,worth),valid:true,
         pool,pledge:pool?'pledged':'free',buyer:['Demo Buyer '+(k+3),'演示买方 '+(k+3)],due:'2027-04-20',from:'2026-10-02',tx:pool?'0x'+(900+k*10+j).toString(16).padStart(64,'0'):undefined}));
     });
-    /* 可质押演示：1～6 号来自已对本质押合约授权的发行合约，7～10 号来自尚未授权的另一发行合约；11、12 号仍在资产准入审核中，不出现。 */
+    /* 可质押演示：1～6 号来自已对本质押合约授权的发行合约，7～10 号来自尚未授权的另一发行合约；11、12 号仍在代币准入审核中，不出现。 */
     for(let i=1;i<=12;i++)D.tokens.push({id:'TK-FREE-'+String(i).padStart(2,'0'),owner:'entity-demo-a',kind:'erc20-ar',issuer:D.ISSUERS[i<=6?0:1],slot:String(3000+i),admission:i>10?'pending':'approved',units:1,symbol:'AR-DEMO',value:[300000,300000,400000][(i-1)%3],valid:true,pool:null,pledge:'free',buyer:['Demo Buyer '+i,'演示买方 '+i],due:'2027-03-18',from:'2026-09-18'});
     D.normalize();
     /* 多持有方份额按一次追加签名入池：同一提交批次，申请类型为追加。 */
