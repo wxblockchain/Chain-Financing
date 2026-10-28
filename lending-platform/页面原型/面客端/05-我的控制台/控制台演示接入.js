@@ -88,8 +88,10 @@
       past.auth={at:past.at,tx:hash('FB-MC-HISTORY-01-auth'),gas:'0.002100',revoked:true,revoke:{state:'success',external:true,done:iso(start-DAY/4)}};db.quotes.push(past);
     }
   }
+  /* 示例授权补上发起项目，供详情“关联业务”演示；新办理的授权按使用它的质押记录关联项目。 */
+  function tagApprovalProjects(){const first=D.projects.find(p=>p.contract===POOL)?.id,map={'AP-MC-ISSUER2':'FP-MC-001','AP-MC-PENDING':'FP-MC-002','AP-MC-REVOKED':'FP-MC-003'};D.approvals.forEach(a=>{if(!a.project&&(map[a.id]||/^AP-SEED-/.test(a.id)))a.project=map[a.id]&&D.project(map[a.id])?map[a.id]:first;});}
   function restore(){
-    db=Q.data();now=D.now();
+    db=Q.data();now=D.now();tagApprovalProjects();
     if(db.consoleExamples===VERSION&&D.project('FP-MC-001')){if(reconcile())Q.save();return;}
     purge();samples.forEach(build);
     /* 质押授权每笔带明确数量；另有一条授权处理中、一条已撤销的历史记录。 */
@@ -98,7 +100,7 @@
     D.approvals.push({id:'AP-MC-PENDING',holder:HOLDER[1],contract:POOL,issuer:D.ISSUERS[2],quantity:'100',symbol:'AR-DEMO',usedQuantity:'0',state:'processing',at:iso(now-20*60000),fee:null,feeCurrency:'ETH'});
     D.approvals.push({id:'AP-MC-REVOKED',holder:HOLDER[1],contract:POOL,issuer:D.ISSUERS[1],quantity:'50',symbol:'AR-DEMO',usedQuantity:'0',state:'success',at:iso(now-90*DAY),done:iso(now-90*DAY+5*60000),fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:hash('AP-MC-REVOKED'),revoke:{state:'success',at:iso(now-60*DAY),done:iso(now-60*DAY+3*60000),tx:hash('AP-MC-REVOKED-r'),gas:'0.000044'}});
     const own=db.credits.find(c=>c.owner==='entity-demo-a'&&c.fund==='fund-a');
-    reconcile();
+    tagApprovalProjects();reconcile();
     /* 在途报价金额含报价上链确认中的预占；总额始终留出余量，不出现可用授信为负的假数据。 */
     if(own){const fly=db.quotes.filter(q=>q.owner===own.owner&&q.fund===own.fund&&q.state==='waiting').reduce((n,q)=>n+q.amount,0)+db.pending.filter(x=>x.owner===own.owner&&x.fund===own.fund&&['processing','unknown'].includes(x.state)).reduce((n,x)=>n+x.amount,0);own.total=Math.max(own.total,own.principal+fly+1000000);}
     D.normalize();D.save();
