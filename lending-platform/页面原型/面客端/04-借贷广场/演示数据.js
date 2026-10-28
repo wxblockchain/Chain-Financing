@@ -6,7 +6,7 @@
   'use strict';
   const KEY = CF.LSStorageKey || 'hc-ws351-demo-v3', DAY = 86400000;
   /* 演示数据结构变化时提升版本号：旧存档改为重新播种，避免恢复出互相对不上的记录。 */
-  const SCHEMA = 'ws446-4-quantity';
+  const SCHEMA = 'ws446-5-full-approval';
   const D = CF.LS = { projects: [], tokens: [], applications: [], executions: [], events: [], approvals: [], offset: 0, serial: 100 };
   /* 代币类型：代币标准与底层资产类型合并成一个字段。id 沿用旧值，控制台等模块按它引用。 */
   D.TYPES = [{id:'erc20-ar',label:['ERC-3525-Receivables','ERC-3525-应收账款']}];
@@ -155,49 +155,34 @@
   /* 创建时的代币类型候选：本企业在所选网络上持有该类型的已准入代币；组合是否已配置参数另行判断。 */
   D.kinds = (network) => D.TYPES.filter(x=>D.tokens.some(t=>t.owner===D.me()&&D.admitted(t)&&t.kind===x.id)).map(x=>x.id);
   D.selectable = (t,p) => t && t.owner===D.me()&&D.admitted(t)&&t.valid&&t.kind===(p?.kind||'erc20-ar')&&t.pledge==='free'&&!t.pending&&!t.application&&!t.frozen;
-  /* 本地授权数量按十进制字符串求和、比较，避免 0.1 + 0.2 或大数量的浮点误差。 */
-  D.quantitySum = values => {
-    const parts=values.map(value=>{
-      const m=String(value).match(/^(\d+)(?:\.(\d*))?(?:e([+-]?\d+))?$/i);
-      if(!m)throw Error('approvalQuantity');
-      let n=BigInt(m[1]+(m[2]||'')),scale=(m[2]||'').length-Number(m[3]||0);
-      if(scale<0){n*=10n**BigInt(-scale);scale=0;}return {n,scale};
-    }),scale=Math.max(0,...parts.map(x=>x.scale));
-    const n=parts.reduce((sum,x)=>sum+x.n*10n**BigInt(scale-x.scale),0n),raw=n.toString().padStart(scale+1,'0');
-    return scale?(raw.slice(0,-scale)+'.'+raw.slice(-scale)).replace(/\.?0+$/,''):raw;
-  };
-  D.formatQuantity = value => {const [whole,fraction='']=D.quantitySum([value]).split('.');return BigInt(whole).toLocaleString('en-US')+'.'+fraction.padEnd(2,'0');};
-  /* 每个地址、质押合约、发行合约按本次数量授权；只有相同数量、未使用且未撤销的授权可沿用。 */
+  /* 既有演示适配：全量范围是固定的展示事实，不以所选数量或持有余额计算授权。 */
   D.approvalOf = (holder, contract, issuer) => [...D.approvals].reverse().find(a=>a.holder===holder&&a.contract===contract&&a.issuer===issuer);
-  D.approvalAvailable = a => !!(a&&a.state==='success'&&a.quantity!==undefined&&!a.used&&!a.supersededBy&&!a.revoked&&!['processing','success'].includes(a.revoke?.state)&&D.quantitySum([a.usedQuantity||0])==='0');
+  D.approvalAvailable = a => !!(a&&a.scope==='all'&&a.state==='success'&&!a.revoked&&!['processing','success','unknown'].includes(a.revoke?.state));
   D.approvalInUse = a => !!(a&&D.executions.some(e=>e.kind==='deposit'&&e.state==='processing'&&e.approval===a.id));
   D.approvalNeeds = (p, ids) => {
     const tokens=ids.map(D.token).filter(Boolean),out=[];
-    tokens.forEach(t=>{const holder=D.holderOf(t),issuer=D.issuerOf(t);let row=out.find(x=>x.holder===holder&&x.issuer===issuer);if(!row){row={holder,issuer,count:0,units:[],symbol:t.symbol};out.push(row);}row.count++;row.units.push(t.units);});
+    tokens.forEach(t=>{const holder=D.holderOf(t),issuer=D.issuerOf(t);let row=out.find(x=>x.holder===holder&&x.issuer===issuer);if(!row){row={holder,issuer,count:0};out.push(row);}row.count++;});
     out.forEach(row=>{
-      row.quantity=D.quantitySum(row.units);delete row.units;
       const history=[...D.approvals].reverse().filter(a=>a.holder===row.holder&&a.contract===p.contract&&a.issuer===row.issuer),pending=history.find(a=>a.state==='processing'),active=history.find(D.approvalAvailable);
       row.prior=active||history[0]||null;
       row.blocked=history.some(a=>a.revoke?.state==='processing')?'revoking':history.some(D.approvalInUse)?'pledging':'';
-      row.reusable=!!(!pending&&!row.blocked&&active&&D.quantitySum([active.quantity])===row.quantity);
-      row.record=pending||(row.reusable?active:history.find(a=>a.state==='failure'&&a.quantity!==undefined&&D.quantitySum([a.quantity])===row.quantity))||null;
+      row.reusable=!!(!pending&&!row.blocked&&active);
+      row.record=pending||(row.reusable?active:history.find(a=>a.state==='failure'))||null;
     });
     return out;
   };
   D.approvalsReady = (p, ids) => ids.length>0&&D.approvalNeeds(p, ids).every(x=>x.reusable);
   D.APPROVE_FEE = 0.00021;
-  D.approve = (p, holder, issuer, quantity, symbol) => {
+  D.approve = (p, holder, issuer) => {
     if(!D.mine(p))throw Error('permission');
-    quantity=D.quantitySum([quantity]);if(quantity==='0')throw Error('approvalQuantity');
     const history=D.approvals.filter(a=>a.holder===holder&&a.contract===p.contract&&a.issuer===issuer);
-    if(history.some(a=>a.state==='processing'||a.revoke?.state==='processing'||D.approvalInUse(a)||D.approvalAvailable(a)&&D.quantitySum([a.quantity])===quantity))throw Error('approvalChanged');
-    const rec={id:'AP-DEMO-'+(++D.serial),holder,contract:p.contract,issuer,quantity,symbol,usedQuantity:'0',state:'processing',at:D.iso(),fee:null,feeCurrency:'ETH',tx:D.txHash('approve'+issuer)};
+    if(history.some(a=>a.state==='processing'||a.revoke?.state==='processing'||D.approvalInUse(a)||D.approvalAvailable(a)))throw Error('approvalChanged');
+    const rec={id:'AP-DEMO-'+(++D.serial),holder,contract:p.contract,issuer,scope:'all',project:p.id,state:'processing',at:D.iso(),fee:null,feeCurrency:'ETH',tx:D.txHash('approve'+issuer)};
     D.approvals.push(rec);D.save();return rec;
   };
   D.approvalResult = (rec, result) => {
     if(!rec||rec.state!=='processing')return;
     rec.state=result==='success'?'success':'failure';rec.done=D.iso();rec.fee=result==='noFee'?0:D.APPROVE_FEE;
-    if(rec.state==='success')D.approvals.filter(a=>a!==rec&&a.holder===rec.holder&&a.contract===rec.contract&&a.issuer===rec.issuer&&D.approvalAvailable(a)).forEach(a=>{a.supersededBy=rec.id;a.supersededAt=rec.done;});
     D.save();
   };
   D.releaseApplication = a => a.tokens.forEach(id => { const t=D.token(id);if(t.application===a.id)t.application=null; });
@@ -318,8 +303,7 @@
     t.pending=null;
     if(e.kind==='deposit'){
       if(result==='success'){
-        /* 消耗实际发起时绑定的授权；失败不消耗，同数量重试仍可沿用。 */
-        const approval=D.approvals.find(x=>x.id===e.approval);if(approval){approval.usedQuantity=D.quantitySum([approval.usedQuantity||0,t.units]);approval.used=true;approval.usedAt=e.done;}
+        /* 质押结果不消耗全量授权；授权状态继续沿用其独立的链上事实。 */
         t.pledge='pledged';t.pool=p.id;t.tx=e.tx;
         /* 上链成功即质押成功：代币有效且无对账差异时立即计入有效质押额；不发站内信。 */
         /* 申请类型按上链成功时本项目是否已有有效质押派生，只用于展示与检索。 */
@@ -419,7 +403,7 @@
     /* 水位演示：FP-DEMO-004 质押不足；FP-DEMO-007 质押持平但水位不安全（有效质押额覆盖融资余额，却低于融资余额 + 一笔已接受待放款的在途）。 */
     {const p7=D.project('FP-DEMO-007');if(p7){p7.balance=400000;p7.state='financing';const d=p7.demands[0];if(d)Object.assign(d,{amount:200000,state:'funding',tenorDays:90,rate:'6.20',institution:['Demo Capital','演示资金机构'],quoteAt:d.at});p7.grade=D.numbers(p7).grade;}}
     /* 本企业两个持有地址此前已对共用质押合约授权首个发行合约。 */
-    A.forEach(holder=>D.approvals.push({id:'AP-SEED-'+holder.slice(-4),holder,contract:POOL,issuer:D.ISSUERS[0],quantity:'1',symbol:'AR-DEMO',usedQuantity:'0',state:'success',at:D.projects[0].deployedAt,done:D.projects[0].deployedAt,fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:'0x'+'ab'.repeat(32)}));
+    A.forEach(holder=>D.approvals.push({id:'AP-SEED-'+holder.slice(-4),holder,contract:POOL,issuer:D.ISSUERS[0],scope:'all',state:'success',at:D.projects[0].deployedAt,done:D.projects[0].deployedAt,fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:'0x'+'ab'.repeat(32)}));
     D.projects.forEach(p=>p.demands.forEach(d=>D.freezeOf(p,d)));
     D.applications.forEach(a=>D.log(D.project(a.project),'onChain',a.id));D.save();
   };

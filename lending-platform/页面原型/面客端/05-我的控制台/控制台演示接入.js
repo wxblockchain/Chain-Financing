@@ -3,7 +3,7 @@
  * Demonstration data only: no API, wallet, chain, permission or live exchange-rate assertion. */
 (function(CF){
   'use strict';
-  const D=CF.LS,Q=CF.CQ,DAY=86400000,H=3600000,iso=n=>new Date(n).toISOString(),VERSION=18;
+  const D=CF.LS,Q=CF.CQ,DAY=86400000,H=3600000,iso=n=>new Date(n).toISOString(),VERSION=19;
   let db=Q.data(),now=D.now();
   const POOL=D.COMBOS[0].pledge,HOLDER=D.HOLDERS['entity-demo-a'];
   /* 放款地址、还款收款地址与融资收款地址都取企业账户目录里的 Ethereum 演示账户快照，本文件不另建账户字段。 */
@@ -39,6 +39,7 @@
     D.projects.splice(0,D.projects.length,...D.projects.filter(p=>!/^FP-MC-/.test(p.id)));
     D.tokens.splice(0,D.tokens.length,...D.tokens.filter(t=>!/^TK-MC-\d/.test(t.id)));
     D.approvals.splice(0,D.approvals.length,...D.approvals.filter(a=>!/^AP-MC-/.test(a.id)));
+    D.executions.splice(0,D.executions.length,...D.executions.filter(e=>!/^EX-MC-APPROVAL-/.test(e.id)));
     db.quotes=db.quotes.filter(q=>!/^FB-MC-/.test(q.id));db.pending=(db.pending||[]).filter(x=>!/^PO-MC-/.test(x.id));
   }
   function build(s,i){
@@ -94,11 +95,17 @@
     db=Q.data();now=D.now();tagApprovalProjects();
     if(db.consoleExamples===VERSION&&D.project('FP-MC-001')){if(reconcile())Q.save();return;}
     purge();samples.forEach(build);
-    /* 质押授权每笔带明确数量；另有一条授权处理中、一条已撤销的历史记录。 */
+    /* 全量授权固定画面：已授权、授权处理中与已撤销；质押成功不消耗授权。 */
     const at=iso(now-40*DAY);
-    if(!D.approvalOf(HOLDER[0],POOL,D.ISSUERS[1]))D.approvals.push({id:'AP-MC-ISSUER2',holder:HOLDER[0],contract:POOL,issuer:D.ISSUERS[1],quantity:'1',symbol:'AR-DEMO',usedQuantity:'0',state:'success',at,done:iso(now-40*DAY+6*60000),fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:hash('AP-MC-ISSUER2')});
-    D.approvals.push({id:'AP-MC-PENDING',holder:HOLDER[1],contract:POOL,issuer:D.ISSUERS[2],quantity:'100',symbol:'AR-DEMO',usedQuantity:'0',state:'processing',at:iso(now-20*60000),fee:null,feeCurrency:'ETH'});
-    D.approvals.push({id:'AP-MC-REVOKED',holder:HOLDER[1],contract:POOL,issuer:D.ISSUERS[1],quantity:'50',symbol:'AR-DEMO',usedQuantity:'0',state:'success',at:iso(now-90*DAY),done:iso(now-90*DAY+5*60000),fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:hash('AP-MC-REVOKED'),revoke:{state:'success',at:iso(now-60*DAY),done:iso(now-60*DAY+3*60000),tx:hash('AP-MC-REVOKED-r'),gas:'0.000044'}});
+    if(!D.approvalOf(HOLDER[0],POOL,D.ISSUERS[1]))D.approvals.push({id:'AP-MC-ISSUER2',holder:HOLDER[0],contract:POOL,issuer:D.ISSUERS[1],scope:'all',state:'success',at,done:iso(now-40*DAY+6*60000),fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:hash('AP-MC-ISSUER2')});
+    D.approvals.push({id:'AP-MC-PENDING',holder:HOLDER[1],contract:POOL,issuer:D.ISSUERS[2],scope:'all',state:'processing',at:iso(now-20*60000),fee:null,feeCurrency:'ETH'});
+    D.approvals.push({id:'AP-MC-REVOKED',holder:HOLDER[1],contract:POOL,issuer:D.ISSUERS[1],scope:'all',state:'success',at:iso(now-90*DAY),done:iso(now-90*DAY+5*60000),fee:D.APPROVE_FEE,feeCurrency:'ETH',tx:hash('AP-MC-REVOKED'),revoke:{state:'success',at:iso(now-60*DAY),done:iso(now-60*DAY+3*60000),tx:hash('AP-MC-REVOKED-r'),gas:'0.000044'}});
+    /* 固定授权画面所需的质押事实：同一授权被两个项目沿用，以及另一授权正在质押。 */
+    [['TK-MC-1-1','FP-MC-001',D.approvalOf(HOLDER[0],POOL,D.ISSUERS[0]).id,'success'],['TK-MC-2-1','FP-MC-002',D.approvalOf(HOLDER[0],POOL,D.ISSUERS[0]).id,'success'],['TK-MC-4-4','FP-MC-004','AP-MC-ISSUER2','processing']].forEach(([token,project,approval,state],i)=>{
+      const id='EX-MC-APPROVAL-'+i,e={id,token,project,approval,kind:'deposit',holder:HOLDER[0],state,at:iso(now-(state==='processing'?20*60000:DAY)),fee:state==='processing'?null:0.00018,feeCurrency:'ETH',tx:hash(id)};
+      if(state==='success')e.done=e.at;else D.token(token).pending=id;
+      D.executions.push(e);
+    });
     const own=db.credits.find(c=>c.owner==='entity-demo-a'&&c.fund==='fund-a');
     tagApprovalProjects();reconcile();
     /* 在途报价金额含报价上链确认中的预占；总额始终留出余量，不出现可用授信为负的假数据。 */
