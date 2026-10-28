@@ -322,6 +322,7 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .cq-request-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);padding:0}
 .cq-request-head h2{font-size:var(--ui-stat-size);font-weight:600;margin:var(--sp-1) 0;line-height:1.5;overflow-wrap:anywhere}
 .cq-request-head .tag{white-space:normal;flex-shrink:0}
+.cq-request-state{display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-1);flex-shrink:0;max-width:50%;text-align:right}
 .modal:has(.cq-request-detail) .modal-h[tabindex="-1"]{outline:none}
 .drawer:has(.cq-request-detail) .drawer-h[tabindex="-1"]{outline:none}
 /* Demo panel sizing is maintained by the shared review-tool layer. */

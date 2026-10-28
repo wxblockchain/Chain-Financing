@@ -127,6 +127,8 @@
   D.holderOf = t => t ? (t.holder || (D.HOLDERS[t.owner] || [''])[0]) : '';
   D.shareValue = (units, tokenUnits, tokenValue) => Math.round(units * tokenValue / tokenUnits * 100) / 100;
   D.current = p => p.demands.find(d => ['open','quoted','funding'].includes(d.state));
+  /* 本轮需求终结原因：除成交外都对应申请状态「已失效／已关闭」，并与该状态同时展示。 */
+  D.END_REASONS = {withdrawn:['Withdrawn by asset holder','资产方撤下'],closed:['Project closed','项目关闭'],expiry:['Project expired','项目到期'],coverage:['Automatically invalidated · pledge water level insufficient','自动失效·质押水位不足']};
   /* 发布或改额的冻结处理中：发布尚未成立，不能再次发布、改额或撤下。 */
   D.freezing = p => (p.attempts||[]).some(x=>x.state==='processing') || p.demands.some(d=>d.edit&&d.edit.state==='processing'||d.withdraw&&d.withdraw.state==='processing');
   /* 本轮冻结：冻结质押价值 = 需求金额 ÷ 项目质押率；未成交终结即解除，成交后保留到该笔结清。 */

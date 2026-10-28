@@ -66,7 +66,7 @@
   function reviewTimeline(records,operations=false){
     const events=reviewEvents(records);
     if(!events.length)return `<p class="login-caption">${L('No submission or review activity yet.','暂无提交与审核记录。')}</p>`;
-    return `<ol class="certification-timeline" aria-label="${L('Submission and review activity, earliest first','提交与审核过程，按时间正序')}">${events.map(event=>`<li class="certification-event" data-event="${event.kind}"><div class="certification-event-head"><strong>${L(...event.label)}</strong>${event.kind==='submission'&&event.record.status==='submitted'?CF.tag('warn',L('Awaiting review','待审核')):''}</div><div class="certification-event-meta"><span>${event.kind==='submission'?`${L('Funder','资金方')} · ${esc(event.actor||'—')}`:operations?`${L('Operations','运营人员')} · ${esc(event.actor||'—')}`:L('Operations review','运营审核')}</span><time datetime="${esc(event.at||'')}">${time(event.at)}</time></div>${event.kind==='rejected'?`<div class="certification-event-reason"><b>${L('Rejection reason','驳回原因')}</b>${issuesHTML(event.record)}</div>`:''}</li>`).join('')}</ol>`;
+    return `<ol class="certification-timeline" aria-label="${L('Submission and review activity, earliest first','提交与审核过程，按时间正序')}">${events.map(event=>`<li class="certification-event" data-event="${event.kind}"><div class="certification-event-head"><strong>${L(...event.label)}</strong>${event.kind==='submission'&&event.record.status==='submitted'?CF.tag('warn',L('Awaiting review','待审核')):''}</div><div class="certification-event-meta"><span>${event.kind==='submission'?`${L('Funder','资金方')} · ${/^0x[0-9a-f]{40}$/i.test(event.actor||'')?CF.addrCopy(event.actor):esc(event.actor||'—')}`:operations?`${L('Operations','运营人员')} · ${esc(event.actor||'—')}`:L('Operations review','运营审核')}</span><time datetime="${esc(event.at||'')}">${time(event.at)}</time></div>${event.kind==='rejected'?`<div class="certification-event-reason"><b>${L('Rejection reason','驳回原因')}</b>${issuesHTML(event.record)}</div>`:''}</li>`).join('')}</ol>`;
   }
   function read(){try{F.accounts=JSON.parse(localStorage.getItem('hc_funder_demo')||'{}');Object.values(F.accounts).forEach(normalizeRecords);S.lang=localStorage.getItem('hc_funder_language')||S.lang;}catch(e){F.accounts={};}}
   /* 未提交的填写内容不入库：只保存账户级事实与已成功提交的版本，本次填写仅存在于当前会话。 */
@@ -437,7 +437,7 @@
       ${F.downgrade?CF.note('warn',L('Your details are being reviewed again. Funding actions are unavailable until approval.','机构资料正在重新审核，审核通过前暂不可发起出资等操作。')):''}
       ${profile([
         section('f-review-result','Application status','申请状态',reviewBody(a)),
-        section('f-submission-summary','Submission information','提交信息',`${facts([['Application','申请编号',esc('DEMO-REG-001')],['Submitted','提交时间',time(a.submitted)],['Review decision','审核结论时间',time(a.reviewed)],['Account contact email at submission','提交时账户联系邮箱',esc(a.snapshotEmail||a.email)]])}<details class="funder-history"><summary>${L('Submission and review activity','提交与审核记录')} · ${reviewEvents(a.records).length}</summary>${reviewTimeline(a.records)}</details>`),
+        section('f-submission-summary','Submission information','提交信息',`${facts([['Application','申请编号',esc('DEMO-REG-001')],['Submitted','提交时间',time(a.submitted)],['Review decision','审核结论时间',time(a.reviewed)]])}<details class="funder-history"><summary>${L('Submission and review activity','提交与审核记录')} · ${reviewEvents(a.records).length}</summary>${reviewTimeline(a.records)}</details>`),
         section('f-institution-summary','Institution details','机构资料',profileFields(institutionFields.filter(row=>!contactKeys.includes(row[3])))),
         contacts.length?section('f-contact-summary','Business contact','业务联系人',profileFields(contacts)):'',
         section('f-materials-summary','Supporting documents','机构证明材料',materialList(a.submittedForm,'current'))
@@ -459,12 +459,14 @@
       </div><div class="login-preferences-feedback" id="f-preferences-feedback">${preferenceFeedback()||`<p>${L('Changes are saved automatically.','更改后自动保存。')}</p>`}</div><div class="login-notification-policy" role="note"><span class="login-policy-icon" aria-hidden="true">${CF.ICON.bell}</span><p class="login-caption">${L('Security and verification notices are always delivered.','安全、认证等关键通知始终接收。')}</p></div>`)
     ])}${stamp()}</div>`;
   }
-  function gate(){response();F.replayed++;if(F.contract.session_state!=='authenticated'){F.returnTo='valid';go('/login');return;}if(F.contract.completeness_level!=='L3'){F.gate='blocked';open('gate');return;}F.gate='pending';CF.render();later(()=>{response();if(F.contract.session_state!=='authenticated'||F.contract.completeness_level!=='L3'){F.gate='blocked';open('gate');return;}F.gate=F.saveResult==='failed'?'failed':'ready';});}
+  function gate(){if(S.role==='signed'){onboard(CF.portalAccount?.().walletAddress);return;}response();F.replayed++;if(F.contract.session_state!=='authenticated'){F.returnTo='valid';go('/login');return;}if(F.contract.completeness_level!=='L3'){F.gate='blocked';open('gate');return;}F.gate='pending';CF.render();later(()=>{response();if(F.contract.session_state!=='authenticated'||F.contract.completeness_level!=='L3'){F.gate='blocked';open('gate');return;}F.gate=F.saveResult==='failed'?'failed':'ready';});}
   function gatePage(){return `<div class="funder-wrap">${head('Funding access','出资权限',L('Demonstration data','演示数据'))}<section class="card"><div class="card-b"><h2>${L('Continue to funding','继续出资')}</h2><p>${L('Your registration must be approved before you can take funding actions.','机构注册审核通过后，即可发起出资等操作。')}</p>${btn(F.gate==='pending'?'Checking…':'Continue to funding',F.gate==='pending'?'正在确认…':'继续出资','gate','','primary',F.gate==='pending')}${F.gate==='ready'?CF.note('accent',L('Registration eligibility confirmed. Continue in the funding workflow.','机构认证资格已确认，可继续进入出资流程。')):''}${F.gate==='failed'?CF.note('red',L('Eligibility could not be confirmed. Please retry.','资格确认失败，请重试。')):''}</div></section></div>`;}
   function content(id){
     // 公共 boot 会推断时区；在首次内容渲染时恢复已保存的用户选择。
     if(F.savedPreferences&&!F.preferencesRestored){S.lang=F.savedPreferences.lang;S.tz=F.savedPreferences.tz;F.preferencesRestored=true;}
     if(!pages[id])return undefined;
+    // 登录未绑定角色直接打开仅资金方可用的页面：就地说明并提供进入入驻流程。
+    if(['P-L22','P-L23'].includes(id)&&S.role==='signed')return `<div class="funder-wrap">${CF.empty(L('Apply to become a funder to use this feature.','申请成为资金方后即可使用该功能。'),'',btn('Become a funder','成为资金方','become','','primary')+btn('Back to assets','返回资产广场','browse'))}</div>`;
     if(['P-L21','P-L22','P-L23'].includes(id)&&S.role!=='fund'&&!(id==='P-L21'&&S.role==='signed'))return `<div class="funder-wrap">${CF.empty(L('Sign in to view your account','登录后查看账户'),L('You can still browse public information.','你仍可浏览公开信息。'),btn('Connect wallet','连接钱包','login','','primary')+btn('Back to assets','返回资产广场','browse'))}</div>`;
     notices();
     if(F.load==='loading')return `<div class="funder-wrap" role="status">${CF.skelTable(5)}</div>`;
@@ -652,6 +654,7 @@
     switch(key){
       case 'browse':discardDraft();if(!CF.resumePortalTarget?.())go('/');break;
       case 'login':go('/login');break;
+      case 'become':onboard(CF.portalAccount?.().walletAddress);break;
       case 'connect-auth':connect('auth');break;
       case 'connect-done':connectionDone();break;
       case 'connect-other':F.connected=other;connectionDone();break;

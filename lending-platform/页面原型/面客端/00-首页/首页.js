@@ -4,14 +4,9 @@
   const L=CF.L,E=CF.esc,S=CF.S,D=CF.HomeData,PAGE='P-HOME-01';
   const nf=(n,dp=2)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp});
   const num=(n,dp=0)=>nf(n,dp);
-  const usd=n=>'$'+nf(n);
+  const usd=n=>nf(n)+' USD';
   function compact(n){const a=Math.abs(n);return a>=1e9?(n/1e9).toFixed(2)+'B':a>=1e6?(n/1e6).toFixed(2)+'M':a>=1e3?(n/1e3).toFixed(1)+'K':nf(n);}
-  const usdC=n=>`<span class="amount" title="${usd(n)}">$${compact(n)}</span>`;
   const pct=n=>nf(n*100)+'%';
-  const tr=value=>Array.isArray(value)?L(value[0],value[1]):value;
-  const pledgeValue=()=>D.pledge,capOf=()=>D.cap,ltv=()=>200000/D.pledge,PARAM={maxLtv:.8};
-  const tag=(cls,label,plain)=>`<span class="tag ${cls}${plain?' plain':''}">${label}</span>`;
-  const lvlTag=l=>`<span class="lvl" style="color:var(--positive)" title="${L('Verification level','验真等级')}">${l}</span>`;
   const ICONS = {
   search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   filter: '<path d="M3 6h18M6 12h12M10 18h4"/>',
@@ -53,64 +48,60 @@
   sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>'
 };
   const ic = (n, s = 16, cls = '') => `<svg class="${cls}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
-  function netIcon(net, s = 20) {
-  if (net === 'base') return `<span class="ic-net base" title="Base"><svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" style="fill:var(--brand-base)"/></svg></span>`;
-  return `<span class="ic-net" title="Ethereum"><svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" style="fill:var(--brand-eth)"/><g style="fill:var(--logo-fg)"><path fill-opacity=".6" d="M16.5 4v8.87l7.5 3.35z"/><path d="M16.5 4 9 16.22l7.5-3.35z"/><path fill-opacity=".6" d="M16.5 21.97V28L24 17.62z"/><path d="M16.5 28v-6.03L9 17.62z"/><path fill-opacity=".2" d="m16.5 20.57 7.5-4.35-7.5-3.35z"/><path fill-opacity=".6" d="m9 16.22 7.5 4.35v-7.7z"/></g></svg></span>`;
-}
-  const legal = () => L('Harbour Credit is a tokenization registry and pledge infrastructure. It does not hold client funds, set prices or provide credit. Institutions lend directly to asset owners and bear their own credit risk. Rates shown are quotes or targets, not guarantees. Not available to retail investors or in restricted jurisdictions. All data in this prototype is mock data.', 'Harbour Credit 是代币化登记与质押基础设施，不归集资金、不参与定价、不提供信用。机构直接向资产方放款并自担信用风险。页面所示利率为报价或目标值，非保证收益。不向零售投资者及受限地区提供服务。本原型所有数据均为演示数据。');
+  // 本期区块链网络只有 Ethereum。
+  const netIcon = (s = 20) => `<span class="ic-net" title="Ethereum"><svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" style="fill:var(--brand-eth)"/><g style="fill:var(--logo-fg)"><path fill-opacity=".6" d="M16.5 4v8.87l7.5 3.35z"/><path d="M16.5 4 9 16.22l7.5-3.35z"/><path fill-opacity=".6" d="M16.5 21.97V28L24 17.62z"/><path d="M16.5 28v-6.03L9 17.62z"/><path fill-opacity=".2" d="m16.5 20.57 7.5-4.35-7.5-3.35z"/><path fill-opacity=".6" d="m9 16.22 7.5 4.35v-7.7z"/></g></svg></span>`;
 
   function footer(){
     return `<footer class="site-foot home-footer">${CF.marketplaceFooterContent()}</footer>`;
   }
   function content(){
-
-    const T = D.totals, demoTok = {assetNo:'TA-2026-000100',id:'HCT-VEH-0412',shares:3260.5,u:[null,[null,'Toyota Land Cruiser 300']]}, demoProj = null;
+    const T = D.totals, H = D.hero, eligible = H.pledgeValue * H.ratio;
     const cells = Array.from({ length: 60 }, () => '<i></i>').join('');
-    const tick = D.activity.concat(D.activity).map((a) => `<span class="tk">${netIcon(a[4], 16)}<b>${L(a[0], a[1])}</b><span>${a[2]}</span><span class="t3">${a[3]}</span></span>`).join('');
+    const tick = D.activity.concat(D.activity).map((a) => `<span class="tk"><b>${L(a[0], a[1])}</b><span class="t3">${a[2]}</span></span>`).join('');
     const metric = (v, fmt, en, zh, sub) => `<div class="mcell rv"><div class="v" data-count="${v}" data-fmt="${fmt}">0</div><span class="caption">${L(en, zh)}</span>${sub ? `<div class="sub">${sub}</div>` : ''}</div>`;
-    const lv = [['L4', 'var(--positive)', 46], ['L3', 'var(--positive)', 28], ['L2', 'var(--warning)', 18], ['L1', 'var(--negative)', 8]];
+    const steps = (rows) => rows.map((s, k) => `<div class="row" style="margin-top:${k ? 6 : 0}px">${ic('check', 14, 'pos')}<span>${s}</span></div>`).join('');
     return `<div class="hc-home"><div class="home" id="home" tabindex="0" role="region" aria-label="${L('Homepage sections','首页分屏内容')}">
     <section class="scr hero" data-i="0" aria-labelledby="home-title-0"><div class="wrap"><div class="hero-g">
-      <div><span class="eyebrow rv">${ic('shield', 14)}${L('Verified real-world credit', '可信资产 · 链上融资')}</span>
+      <div><span class="eyebrow rv">${ic('shield', 14)}${L('Trusted assets · On-chain financing', '可信资产 · 链上融资')}</span>
         <h1 id="home-title-0" tabindex="-1" class="rv" style="--d:80ms;margin-top:var(--space-4)">${L('Verified trade assets,<br><em>financed on-chain.</em>', '可信贸易资产，<br><em>在链上完成融资。</em>')}</h1>
-        <p class="lead rv" style="--d:160ms">${L('Assets verified at the source become fractional, whitelisted tokens. Institutions lend against them directly — every step recorded on Ethereum and Base.', '源头验真的资产被铸造为可拆分、白名单限转的份额代币；机构基于质押直接放款，每一步都记录在 Ethereum 与 Base 上。')}</p>
-        <div class="hero-proof rv" style="--d:240ms"><span>${ic('check')}${L('Anchored attestations', '链上存证锚定')}</span><span>${ic('check')}${L('Direct, bilateral lending', '机构直贷，平台不碰资金')}</span><span>${ic('check')}${L('Self-serve verification', '任何人可自助校验')}</span></div></div>
-      <div class="home-visual-frame"><div class="hv" aria-hidden="true">
+        <p class="lead rv" style="--d:160ms">${L('Trade assets whose facts and on-chain attestations come from the Asset Trust Platform are registered as tokens. Institutions lend directly against pledged tokens, and every record is kept on Ethereum.', '经资产可信平台提供资产事实与链上存证的贸易资产以代币形式登记，机构基于质押直接放款，业务记录在 Ethereum 上。')}</p>
+        <div class="hero-proof rv" style="--d:240ms"><span>${ic('check')}${L('On-chain attestations you can check', '链上存证可查')}</span><span>${ic('check')}${L('Institutions lend directly; the platform never handles funds', '机构直接放款，平台不经手资金')}</span><span>${ic('check')}${L('Anyone can verify independently', '任何人可以自行查验')}</span></div></div>
+      <div class="home-visual-frame"><span class="hv-note">${L('Illustration · fixed example', '示意 · 固定示例')}</span><div class="hv" aria-hidden="true">
         <svg class="paths" viewBox="0 0 560 520" preserveAspectRatio="none"><path class="flowp" d="M200 110 C 290 110, 300 70, 330 70"/><path class="flowp" d="M430 200 C 430 260, 240 250, 170 300"/><path class="flowp" d="M260 390 C 320 400, 320 430, 330 430"/></svg>
-        <div class="hv-card" style="left:0;top:20px;--d:200ms"><div class="between"><span class="caption">${L('Verified asset', '可信资产')}</span>${lvlTag('L4')}</div><div class="v" style="font-size:var(--text-h3)">${demoTok.assetNo}</div><div class="small t2">${tr(demoTok.u[1][1])}</div><div class="small pos row" style="margin-top:var(--space-2)">${ic('check', 14)}${L('4/4 evidence flows matched', '四流交叉核验通过')}</div></div>
-        <div class="hv-card" style="right:0;top:0;width:270px;--d:500ms"><div class="between"><span class="caption">${L('Fractional shares', '份额化代币')}</span>${netIcon('eth', 16)}</div><div class="v">${nf(demoTok.shares, 4)}</div><div class="small t2">${demoTok.id} · $100 ${L('face / share', '面值/份')}</div><div class="shares-grid" id="hv-grid">${cells}</div></div>
-        <div class="hv-card" style="left:10px;top:290px;--d:800ms"><div class="between"><span class="caption">${L('Pledge vault', '项目质押合约')}</span>${tag('tag-info', 'HCF-2026-018', 1)}</div><div class="v">${usdC(pledgeValue(demoProj))}</div><div class="small t2">${L('Borrowing cap (80%)', '融资上限（80%）')} <b class="amount">${usdC(capOf(demoProj))}</b></div><div class="bar" style="margin-top:var(--space-2)"><i style="width:${(ltv(demoProj) / PARAM.maxLtv) * 100}%"></i></div></div>
-        <div class="hv-card" style="right:10px;top:370px;--d:1100ms"><span class="caption">${L('Latest disbursement', '最新放款')}</span><div class="v" id="hv-live">200,000.00 <span class="small t2">USDC</span></div><div class="small t2">Northbridge Family Office · ${pct(0.092)} APR</div></div>
+        <div class="hv-card" style="left:0;top:20px;--d:200ms"><span class="caption">${L('Trusted asset', '可信资产')}</span><div class="v" style="font-size:var(--text-h3)">${H.tokenNo}</div><div class="small t2">${L('Token ID', '代币编号')}</div><div class="small pos row" style="margin-top:var(--space-2)">${ic('check', 14)}${L('Token admission approved', '代币准入审核通过')}</div></div>
+        <div class="hv-card" style="right:0;top:0;width:270px;--d:500ms"><div class="between"><span class="caption">${L('Token', '代币')}</span>${netIcon(16)}</div><div class="v">${nf(H.qty)} <span class="small t2">${L('tokens', '枚')}</span></div><div class="small t2">${L('Token amount', '代币数量')} · Ethereum</div><div class="tok-grid" id="hv-grid">${cells}</div></div>
+        <div class="hv-card" style="left:10px;top:290px;--d:800ms"><span class="caption">${L('Project pledge', '项目质押')}</span><div class="v">${nf(eligible)} <span class="small t2">USD</span></div><div class="small t2">${L('Eligible borrowing limit', '有效质押额')}</div><div class="small t3">${L(`Eligible pledged value ${nf(H.pledgeValue)} USD × project pledge ratio ${pct(H.ratio)} (set by the asset owner)`, `有效质押价值 ${nf(H.pledgeValue)} USD × 项目质押率 ${pct(H.ratio)}（资产方自填）`)}</div><div class="bar" style="margin-top:var(--space-2)"><i style="width:${H.ratio * 100}%"></i></div></div>
+        <div class="hv-card" style="right:10px;top:370px;--d:1100ms"><span class="caption">${L('Disbursement', '放款')}</span><div class="v" id="hv-live">200,000.00 <span class="small t2">USDC</span></div><div class="small t2">${L('Disbursed amount · currency USDT or USDC', '放款金额 · 放款币种 USDT 或 USDC')}</div></div>
       </div></div></div></div>
       <div class="scroll-cue"><i></i>${L('Scroll', '向下滑动')}</div></section>
 
-    <section class="scr" data-i="1" aria-labelledby="home-title-1"><div class="wrap"><span class="eyebrow rv">${ic('activity', 14)}${L('On-chain activity · demonstration', '链上数据 · 演示')}</span>
+    <section class="scr" data-i="1" aria-labelledby="home-title-1"><div class="wrap"><span class="eyebrow rv">${ic('activity', 14)}${L('Business overview · demonstration', '业务概览 · 演示')}</span>
       <h2 id="home-title-1" tabindex="-1" class="big rv" style="--d:80ms">${L('Platform activity anyone can verify.', '平台业务数据，任何人都可以核验。')}</h2>
-      <div class="mgrid">${metric(T.value, 'usd', 'Tokenized asset value', '代币化资产总值', L('incl. matured & invalidated', '含已到期/失效'))}${metric(T.shares, 'sh', 'Shares issued', '份额总量')}${metric(T.fin, 'usd', 'Cumulative financing', '累计融资额')}${metric(T.active, 'int', 'Active projects', '活跃融资项目')}${metric(T.inst, 'int', 'Lending institutions', '合作机构')}${metric(T.att, 'int', 'On-chain attestations', '链上存证笔数')}</div>
+      <div class="mgrid">${metric(T.value, 'usd', 'Tokenized asset value', '代币化资产总值', L('Incl. matured & invalidated tokens · converted at each token’s issuance rate', '含已到期与失效代币 · 按各笔签发时汇率折算'))}${metric(T.qty, 'qty', 'Total token amount (tokens)', '代币总量（枚）')}${metric(T.fin, 'usd', 'Cumulative financing', '累计融资额', L('USDT and USDC at 1:1 to USD', 'USDT、USDC 按 1:1 折算为 USD'))}${metric(T.active, 'int', 'Active projects', '活跃项目数')}${metric(T.inst, 'int', 'Partner institutions', '合作机构数')}${metric(T.att, 'int', 'On-chain attestations', '链上存证笔数')}</div>
       <div class="home-ticker-wrap"><button type="button" class="home-motion-toggle" data-home-motion aria-pressed="false">${L('Pause animation','暂停动画')}</button><div class="ticker rv" style="--d:300ms"><div class="ticker-track">${tick}</div></div></div>
-      <div class="src-note">${L('Illustrative snapshot · ','演示快照 · ')}${ic('clock', 12)}${L('Source: token, pledge and registry contracts on Ethereum & Base · updated', '来源：Ethereum 与 Base 上的代币、质押与登记合约 · 更新于')} 2026-10-14 08:30 UTC</div></div></section>
+      <div class="src-note">${L('Illustrative snapshot · ','演示快照 · ')}${ic('clock', 12)}${L('Source: admitted tokens, financing projects, on-chain disbursements and verified institutions on the platform · network: Ethereum · updated', '来源：平台已准入代币、融资项目、链上放款与已认证资金方记录 · 网络：Ethereum · 更新于')} 2026-10-14 08:30 UTC</div></div></section>
 
     <section class="scr" data-i="2" aria-labelledby="home-title-2"><div class="wrap"><span class="eyebrow rv">${ic('layers', 14)}${L('How it works', '运作机制')}</span>
       <h2 id="home-title-2" tabindex="-1" class="big rv" style="--d:80ms">${L('From a verified asset to a disbursed loan in four steps.', '从可信资产到融资到账，四步完成。')}</h2>
       <div class="hw"><div class="hw-line"><i></i></div>
-        <div class="hw-step"><div class="hw-node" style="--d:200ms">${ic('shield', 20)}</div><div class="hw-card rv" style="--d:200ms"><h3>1 · ${L('Verify', '验真')}</h3><p>${L('Platform A cross-checks purchase, logistics, customs and sales evidence and grades each asset L1–L4.', 'A 平台交叉核验采购、物流、清关与销售证据，并给出 L1–L4 验真等级。')}</p>
-          <div class="hw-viz">${lv.map(([l, c, w], k) => `<div class="lv-row"><span class="lvl" style="color:${c}">${l}</span><div class="bar"><i style="--w:${w}%;--d:${400 + k * 150}ms;background:${c}"></i></div><span class="t3">${w}%</span></div>`).join('')}<div class="t3" style="margin-top:var(--space-2)">${L('Share of assets by level (mock)', '各等级资产占比（演示）')}</div></div></div></div>
-        <div class="hw-step"><div class="hw-node" style="--d:800ms">${ic('layers', 20)}</div><div class="hw-card rv" style="--d:400ms"><h3>2 · ${L('Tokenize', '份额化')}</h3><p>${L('Each asset is minted into fractional shares with a $100 face value, transferable only between whitelisted addresses.', '每项资产按 $100 面值铸造为可拆分份额，仅能在白名单地址间转让。')}</p>
-          <div class="hw-viz"><div class="t3">${L('Valuation ÷ face value = shares', '估值 ÷ 面值 = 份额数')}</div><div class="amount" style="font-size:var(--text-h3);margin-top:var(--space-1)">$326,050 ÷ $100</div><div class="amount pos" style="font-size:var(--text-h3)">= 3,260.5000 ${L('shares', '份')}</div></div></div></div>
-        <div class="hw-step"><div class="hw-node" style="--d:1400ms">${ic('vault', 20)}</div><div class="hw-card rv" style="--d:600ms"><h3>3 · ${L('Pledge', '质押')}</h3><p>${L('Owners pledge any number of shares into a project-specific contract. The borrowing cap updates instantly.', '资产方按需质押任意份额到项目独立的质押合约，融资上限实时更新。')}</p>
-          <div class="hw-viz"><div class="between"><span class="t3">${L('Pledged value', '质押价值')}</span><b class="amount">$485,975</b></div><div class="between" style="margin-top:4px"><span class="t3">× 80%</span><b class="amount">$388,780</b></div><div class="bar" style="margin-top:var(--space-2)"><i class="pos" style="width:80%"></i></div></div></div></div>
-        <div class="hw-step"><div class="hw-node" style="--d:2000ms">${ic('bank', 20)}</div><div class="hw-card rv" style="--d:800ms"><h3>4 · ${L('Finance', '融资')}</h3><p>${L('Credit-approved institutions quote a rate. The first quote locks the request; funds move lender → owner directly.', '已授信机构给出利率报价，首个报价即锁定需求；资金由机构直接划转给资产方。')}</p>
-          <div class="hw-viz">${[L('Quote 9.20%', '报价 9.20%'), L('Quote accepted', '接受报价'), L('Disbursed · USDC', '已放款 · USDC')].map((s, k) => `<div class="row" style="margin-top:${k ? 6 : 0}px">${ic('check', 14, 'pos')}<span>${s}</span></div>`).join('')}</div></div></div>
+        <div class="hw-step"><div class="hw-node" style="--d:200ms">${ic('shield', 20)}</div><div class="hw-card rv" style="--d:200ms"><h3>1 · ${L('Verify', '验真')}</h3><p>${L('Asset facts and on-chain attestations come from the Asset Trust Platform. A token appears in the Asset marketplace only after it passes token admission. Admission does not mean the platform confirms the token’s value, authenticity or the validity of the trade.', '资产的业务事实与链上存证由资产可信平台提供；代币经运营端代币准入审核通过后才出现在资产广场；准入通过不代表平台确认代币价值、真伪或交易有效性。')}</p>
+          <div class="hw-viz">${steps([L('Asset facts · Asset Trust Platform', '资产事实 · 资产可信平台'), L('On-chain attestation · Asset Trust Platform', '链上存证 · 资产可信平台'), L('Token admission · approved', '代币准入审核 · 通过')])}</div></div></div>
+        <div class="hw-step"><div class="hw-node" style="--d:800ms">${ic('layers', 20)}</div><div class="hw-card rv" style="--d:400ms"><h3>2 · ${L('Tokenize', '代币化')}</h3><p>${L('The asset is registered as a token on Ethereum with token type ERC-3525-Receivables. Token amount is counted in tokens: 1 USD equals 1 token at issuance. Token value is the issuance value and does not change afterwards.', '资产以代币形式登记在 Ethereum 上，代币类型为 ERC-3525-应收账款；代币数量以“枚”计，签发时 1 USD 对应 1 枚；代币价值为签发价值，之后不变。')}</p>
+          <div class="hw-viz"><div class="t3">${L('Issuance value → token amount (1 USD = 1 token)', '签发价值 → 代币数量（1 USD = 1 枚）')}</div><div class="amount" style="font-size:var(--text-h3);margin-top:var(--space-1)">326,050.00 USD</div><div class="amount pos" style="font-size:var(--text-h3)">= 326,050.00 ${L('tokens', '枚')}</div></div></div></div>
+        <div class="hw-step"><div class="hw-node" style="--d:1400ms">${ic('vault', 20)}</div><div class="hw-card rv" style="--d:600ms"><h3>3 · ${L('Pledge', '质押')}</h3><p>${L('The asset owner pledges whole pledge shares into the pledge contract configured for the project; projects under the same combination share one pledge contract. A pledge counts toward the eligible borrowing limit once it succeeds on-chain. Eligible borrowing limit = eligible pledged value × project pledge ratio; the ratio is set by the asset owner and cannot exceed the maximum pledge ratio.', '资产方把质押份额整份质押到项目所配置的质押合约，同一组合下的项目共用一份质押合约；质押上链成功即计入有效质押额；有效质押额 = 有效质押价值 × 项目质押率，项目质押率由资产方自填、不超过最高质押率。')}</p>
+          <div class="hw-viz"><div class="between"><span class="t3">${L('Eligible pledged value', '有效质押价值')}</span><b class="amount">500,000.00 USD</b></div><div class="between" style="margin-top:4px"><span class="t3">× ${L('Project pledge ratio', '项目质押率')} ${pct(H.ratio)}</span><b class="amount">${nf(eligible)} USD</b></div><div class="bar" style="margin-top:var(--space-2)"><i class="pos" style="width:${H.ratio * 100}%"></i></div></div></div></div>
+        <div class="hw-step"><div class="hw-node" style="--d:2000ms">${ic('bank', 20)}</div><div class="hw-card rv" style="--d:800ms"><h3>4 · ${L('Finance', '融资')}</h3><p>${L('Verified lenders quote on financing requests. Only one institution can quote a round at a time, and a successful quote locks that round. Once the asset owner accepts, the loan is disbursed on-chain from the lender’s disbursement address straight to the asset owner’s receiving address — the platform never handles funds. Disbursement currency is USDT or USDC.', '已认证资金方对融资需求报价，同一轮需求同一时刻只由一家机构报价，报价成功即锁定该轮需求；资产方接受后链上放款，款项从资金方放款地址直接转入资产方收款地址，平台不经手资金；放款币种为 USDT 或 USDC。')}</p>
+          <div class="hw-viz">${steps([L('Quote submitted · round locked', '报价成功 · 该轮需求锁定'), L('Quote accepted by the asset owner', '资产方接受报价'), L('Disbursed on-chain · USDT or USDC', '链上放款 · USDT 或 USDC')])}</div></div></div>
       </div></div></section>
 
-    <section class="scr" data-i="3" aria-labelledby="home-title-3"><div class="wrap"><span class="eyebrow rv">${ic('shield', 14)}${L('Why Harbour Credit', '为什么选择 Harbour Credit')}</span>
+    <section class="scr" data-i="3" aria-labelledby="home-title-3"><div class="wrap"><span class="eyebrow rv">${ic('shield', 14)}${L('Platform features', '平台特点')}</span>
       <h2 id="home-title-3" tabindex="-1" class="big rv" style="--d:80ms">${L('Built for institutions that verify before they lend.', '为“先核验、再放款”的机构而设计。')}</h2>
       <div class="why">${[
-        ['fingerprint', 'Source-level verification', '源头验真', 'Evidence is pulled from ERP, logistics and customs systems — not typed in after the fact.', '证据直接取自 ERP、物流与报关系统，而非事后录入。', 'L3+ assets: 74%', 'L3 及以上资产占比 74%'],
-        ['lock', 'Compliance built in', '合规内建', 'Whitelisted transfers, admitted institutions only, and no secondary trading in phase 1.', '白名单限转，仅已准入机构可操作，一期不开放二级流通。', 'ERC-3643-style token', 'ERC-3643 类代币标准'],
-        ['bank', 'Direct, bilateral lending', '双边直贷', 'The platform never holds funds or sets rates. Lenders price and disburse on their own terms.', '平台不归集资金、不参与定价，机构自主报价与放款。', '0 client funds held', '平台托管资金：0'],
-        ['search', 'Verify it yourself', '链上自助校验', 'Paste any token ID or hash into the verifier and compare it with the on-chain registry.', '在校验器输入任意代币 ID 或哈希，即可与链上登记合约比对。', '1,284 attestations', '1,284 笔存证']
-      ].map((w, k) => `<div class="why-c rv" style="--d:${120 + k * 100}ms"><span class="ic-type">${ic(w[0], 20)}</span><div><h3>${L(w[1], w[2])}</h3><p>${L(w[3], w[4])}</p><div class="proof">${ic('check', 14, 'pos')}${L(w[5], w[6])}</div>${w[0] === 'search' ? `<a class="btn-link why-act" href="#/home" data-act="home-verifier">${L('Open the verifier', '打开存证校验器')}${ic('right', 14)}</a>` : ''}</div></div>`).join('')}</div></div></section>
+        ['fingerprint', 'Source-level verification', '源头验真', 'Asset facts and on-chain attestations come from the Asset Trust Platform.', '资产事实与链上存证来自资产可信平台。', `${num(T.att)} on-chain attestations`, `链上存证 ${num(T.att)} 笔`],
+        ['lock', 'Compliance built in', '合规内建', 'Tokens are shown publicly only after token admission. Only verified lenders can grant credit and quote. Asset owners register and verify on the Asset Trust Platform.', '代币经运营准入审核后才公开展示；只有已认证资金方可以授信与报价；资产方须在资产可信平台完成注册与认证。', `${num(T.inst)} verified partner institutions`, `合作机构 ${num(T.inst)} 家，均已认证`],
+        ['bank', 'Direct, bilateral lending', '双边直贷', 'The platform neither pools nor advances funds. Lenders set the annual interest rate and decide on credit themselves.', '平台不归集资金、不垫付；年化利率由资金方填写；授信由资金方自行决定。', 'Funds go from lender to asset owner directly', '款项由资金方直接转入资产方收款地址'],
+        ['search', 'Verify it yourself', '自行查验', 'Anyone can compare a token ID or attestation hash with the attestation record, or check it in a block explorer.', '任何人可以凭代币编号或存证哈希比对存证记录，也可以到区块浏览器自行查验。', 'Attestation transactions open in a block explorer', '链上存证交易可在区块浏览器打开']
+      ].map((w, k) => `<div class="why-c rv" style="--d:${120 + k * 100}ms"><span class="ic-type">${ic(w[0], 20)}</span><div><h3>${L(w[1], w[2])}</h3><p>${L(w[3], w[4])}</p><div class="proof">${ic('check', 14, 'pos')}${L(w[5], w[6])}</div>${w[0] === 'search' ? `<a class="btn-link why-act" href="#/home" data-act="home-verifier">${L('Open attestation verification', '打开存证校验')}${ic('right', 14)}</a>` : ''}</div></div>`).join('')}</div></div></section>
 
     <section class="scr" data-i="4" aria-labelledby="home-title-4"><div class="wrap"><span class="eyebrow rv">${ic('globe', 14)}${L('Partners', '合作伙伴')}</span>
       <h2 id="home-title-4" tabindex="-1" class="big rv" style="--d:80ms">${L('One network across data, assets and capital.', '数据、资产与资金，一张网络。')}</h2>
@@ -122,20 +113,26 @@
       <p class="hint" style="margin-top:var(--space-4)">${L('Partner names are placeholders for the prototype.', '合作伙伴名称为原型占位。')}</p></div></section>
 
     <section class="scr scr-last" data-i="5" aria-labelledby="home-title-5"><div class="wrap" style="flex:1;display:flex;flex-direction:column;justify-content:center"><span class="eyebrow rv">${ic('file', 14)}${L('Before you start', '使用须知')}</span>
-      <h2 id="home-title-5" tabindex="-1" class="big rv" style="--d:80ms">${L('Browse everything. Lend once admitted.', '公开可看，准入可投。')}</h2>
-      <p class="lead rv" style="--d:160ms">${L('Asset and project data are public. Quoting, credit and disbursement open to institutions after admission review. Asset owners sign in through Platform A.', '资产与项目数据全部公开；报价、授信与放款在机构准入审核通过后开放；资产方通过 A 平台登录。')}</p>
-      <div class="rv" style="--d:240ms;margin-top:var(--space-6)"><a class="btn btn-primary btn-lg" href="#/assets">${L('Explore the Asset Hall', '浏览资产大厅')}${ic('right')}</a></div></div>${footer()}</section>
+      <h2 id="home-title-5" tabindex="-1" class="big rv" style="--d:80ms">${L('Browse in public. Transact once verified.', '公开浏览，认证后办理。')}</h2>
+      <ul class="home-notes rv" style="--d:160ms">${[
+        L('Token information in the Asset marketplace is public to everyone.', '资产广场的代币信息对所有访客公开。'),
+        L('The Lending marketplace project list is public; project details depend on who you are — visitors see basic information only.', '借贷广场的项目列表公开；项目详情按身份决定可见范围，游客只看到基本信息。'),
+        L('Credit, quoting and disbursement are open to verified lenders only.', '授信、报价与放款只对已认证资金方开放。'),
+        L('Asset owners register and verify on the Asset Trust Platform; the only way to sign in is Connect wallet.', '资产方在资产可信平台完成注册与认证；登录方式只有连接钱包。')
+      ].map((t) => `<li>${ic('check', 14, 'pos')}<span>${t}</span></li>`).join('')}</ul>
+      <div class="rv" style="--d:240ms;margin-top:var(--space-6)"><a class="btn btn-primary btn-lg" href="#/assets">${L('Asset marketplace', '资产广场')}${ic('right')}</a></div></div>${footer()}</section>
     </div>
     <nav class="scr-dots" aria-label="${L('Sections', '分屏')}">${[0, 1, 2, 3, 4, 5].map((i) => `<button type="button" aria-label="${L('Section', '第')} ${i + 1}" data-home-section="${i}"></button>`).join('')}</nav></div>`;
   }
-  // Same local matching semantics and source records as the supplied verifier.
-  // No RPC request, wallet action, marketplace write or real verification claim.
+  // Local demonstration: matches the illustrative records only. No RPC request, wallet action or real verification claim.
   let query = '', result = null, busy = false, timer = null;
+  const dash = v => v === null || v === undefined || v === '' ? '—' : E(String(v));
   function verifyLayer() {
-    const row = result && typeof result === 'object' ? result : null;
-    const status = result==='empty' ? `<p id="hc-verify-error" class="hc-verify-error" role="alert">${L('Enter a token ID, asset number or hash.','请输入代币 ID、资产编号或哈希。')}</p>` : result==='missing' ? `<p class="hc-verify-error" role="status">${L('No match in the illustrative registry. Check the value and try again.','演示登记记录中无匹配项，请核对后重试。')}</p>` : row ? `<p class="hc-verify-ok" role="status">✓ ${L('Consistent with the illustrative record','与演示记录一致')}</p><dl><dt>${L('Token','代币')}</dt><dd>${E(row.id)}</dd><dt>${L('Data package','数据包版本')}</dt><dd>${E(row.anchor.pkg)}</dd><dt>${L('Verification level','验真等级')}</dt><dd>${E(row.level)}</dd><dt>${L('Anchored','上链时间')}</dt><dd>${E(row.anchor.at)}</dd><dt>${L('Block','区块')}</dt><dd>#${num(row.anchor.block)}</dd><dt>${L('Hash','哈希')}</dt><dd>${E(row.anchor.hash)}</dd></dl>` : '';
-    return {title:L('Attestation verifier','存证校验器'),dismiss:true,
-      html:`<form class="hc-verify" id="hc-verify-form"><p class="hc-verify-demo">${L('Local demonstration only. Records are illustrative; no live on-chain verification is performed.','仅本地演示。使用示例记录，未进行真实链上校验。')}</p><p>${L('Compare a token ID, trusted-asset number or attestation hash with the illustrative registry.','输入代币 ID、可信资产编号或存证哈希，与演示登记记录比对。')}</p><div class="hc-verify-field"><label for="hc-verify-input">${L('Value to verify','待校验内容')}</label><input class="inp" id="hc-verify-input" value="${E(query)}" aria-describedby="hc-verify-help${result==='empty'?' hc-verify-error':''}" ${result==='empty'?'aria-invalid="true"':''} ${busy?'readonly':''}><p id="hc-verify-help">${L('Example: HCT-VEH-0412 or TA-2026-000100','示例：HCT-VEH-0412 或 TA-2026-000100')}</p></div><button class="btn primary" type="submit" ${busy?'disabled':''}>${busy?L('Reading illustrative registry…','正在读取演示记录…'):L('Verify record','校验记录')}</button><div aria-live="polite">${status}</div></form>`,
+    const rows = Array.isArray(result) ? result : null;
+    const record = r => `<dl><dt>${L('Token ID','代币编号')}</dt><dd>${dash(r.no)}</dd><dt>${L('Attestation hash','存证哈希')}</dt><dd>${dash(r.hash)}</dd><dt>${L('Attestation transaction hash','链上存证交易哈希')}</dt><dd>${dash(r.tx)}</dd><dt>${L('Block height','区块高度')}</dt><dd>${r.block ? num(r.block) : '—'}</dd><dt>${L('Attestation chain','存证链')}</dt><dd>${dash(r.chain)}</dd><dt>${L('Attested at','存证时间')}</dt><dd>${dash(r.at)}</dd></dl>`;
+    const status = result==='empty' ? `<p id="hc-verify-error" class="hc-verify-error" role="alert">${L('Enter a token ID or attestation hash.','请输入代币编号或存证哈希。')}</p>` : result==='missing' ? `<p class="hc-verify-error" role="status">${L('No matching record found. Check the value and try again.','未找到匹配的登记记录，请核对后重试。')}</p>` : rows ? `<p class="hc-verify-ok" role="status">✓ ${L('Consistent with the registered attestation record','与登记的存证记录一致')}${rows.length>1?L(` · ${rows.length} tokens`,` · 共 ${rows.length} 笔代币`):''}</p>${rows.map(record).join('')}` : '';
+    return {title:L('Attestation verification','存证校验'),dismiss:true,
+      html:`<form class="hc-verify" id="hc-verify-form"><p class="hc-verify-demo">${L('Local demonstration only. Records are illustrative; no live on-chain verification is performed.','仅本地演示。使用示例记录，未进行真实链上校验。')}</p><p>${L('Compare a token ID or attestation hash with the registered on-chain attestation record.','输入代币编号或存证哈希，与登记的链上存证记录比对。')}</p><div class="hc-verify-field"><label for="hc-verify-input">${L('Value to verify','待校验内容')}</label><input class="inp" id="hc-verify-input" value="${E(query)}" aria-describedby="hc-verify-help${result==='empty'?' hc-verify-error':''}" ${result==='empty'?'aria-invalid="true"':''} ${busy?'readonly':''}><p id="hc-verify-help">${L('Token ID, e.g. TK20260612000147 · Attestation hash, e.g. 0x followed by 64 hex characters','代币编号示例：TK20260612000147 · 存证哈希示例：0x 开头的 64 位十六进制字符')}</p></div><button class="btn primary" type="submit" ${busy?'disabled':''}>${busy?L('Reading records…','正在读取记录…'):L('Verify','校验')}</button><div aria-live="polite">${status}</div></form>`,
       foot:`<button type="button" class="btn" data-act="closelayer">${L('Close','关闭')}</button>`};
   }
   function verify() {
@@ -146,8 +143,8 @@
     timer=setTimeout(()=>{
       timer=null; busy=false;
       if (S.layer?.key!=='home-verify') return;
-      const v=query.toLowerCase();
-      result=D.tokens.find(t=>t.id.toLowerCase()===v || t.assetNo.toLowerCase()===v || t.anchor.hash.toLowerCase()===v) || 'missing';
+      const v=query.toLowerCase(),rows=D.tokens.filter(t=>t.no.toLowerCase()===v || t.hash.toLowerCase()===v);
+      result=rows.length?rows:'missing';
       CF.render(); document.getElementById('hc-verify-input')?.focus();
     },1200);
   }
@@ -156,7 +153,7 @@
 
   const media=matchMedia('(prefers-reduced-motion: reduce)');
   let io=null,resizeObserver=null,liveTimer=null,scrollFrame=null,scrollTop=0,previousPage=null,lastLang=null,heldHome=null,frames=new Set(),delays=new Set(),seen=new Set(),motionPaused=false,liveIndex=0;
-  const amounts=[[200000,'USDC'],[150000,'USDC'],[310000,'USD'],[240000,'USDT']];
+  const amounts=[[200000,'USDC'],[150000,'USDC'],[310000,'USDT'],[240000,'USDT']];
   function frame(fn){const id=requestAnimationFrame(now=>{frames.delete(id);fn(now);});frames.add(id);return id;}
   function delay(fn,ms){const id=setTimeout(()=>{delays.delete(id);fn();},ms);delays.add(id);}
   function dispose(){
@@ -179,8 +176,8 @@
   function countUp(el,instant=false){
     if(el.dataset.done)return;
     el.dataset.done='true';const target=+el.dataset.count;
-    const format=value=>el.dataset.fmt==='usd'?'$'+compact(value):el.dataset.fmt==='sh'?compact(value):nf(value,0);
-    const full=el.dataset.fmt==='usd'?usd(target):nf(target,el.dataset.fmt==='sh'?4:0);
+    const format=value=>el.dataset.fmt==='usd'?'$'+compact(value):el.dataset.fmt==='qty'?compact(value):nf(value,0);
+    const full=el.dataset.fmt==='usd'?usd(target):el.dataset.fmt==='qty'?nf(target)+' '+L('tokens','枚'):nf(target,0);
     el.title=full;el.setAttribute('aria-label',full);
     if(instant||media.matches||motionPaused){el.textContent=format(target);return;}
     const start=performance.now();
@@ -261,19 +258,10 @@
   },true);
   media.addEventListener('change',()=>{if(S.page===PAGE)applyMotion();});
   window.addEventListener('pagehide',dispose);
-  async function copyHome(value){
-    try{
-      if(navigator.clipboard)await navigator.clipboard.writeText(value);
-      else{const input=document.createElement('textarea');input.value=value;document.body.append(input);input.select();const copied=document.execCommand('copy');input.remove();if(!copied)throw Error('copy');}
-      CF.toast(L('Address copied.','地址已复制。'));
-    }catch(error){CF.toast(L('Copy the full address from the contract link.','请从合约链接复制完整地址。'));}
-  }
   CF.define({id:'public-homepage',pages:[PAGE],dict:{en:{navHome:'Home'},zh:{navHome:'首页'}},content,
-    layers:{'home-verify':verifyLayer,'home-info':value=>({title:L('Information','相关信息'),dismiss:true,html:`<p>${value==='legal'||value==='regions'?legal():L('This reference document is not connected in the prototype.','此参考文档尚未接入原型。')}</p>`,foot:`<button class="btn" type="button" data-act="closelayer">${L('Close','关闭')}</button>`})},
+    layers:{'home-verify':verifyLayer},
     onAct(act,value,event){
       if(act==='home-verifier'){event.preventDefault();result=null;CF.openLayer('modal','home-verify');queueMicrotask(()=>document.getElementById('hc-verify-input')?.focus());return true;}
-      if(act==='home-info'){event.preventDefault();CF.openLayer('modal','home-info',value);return true;}
-      if(act==='home-copy'){event.preventDefault();copyHome(value);return true;}
       return false;
     }
   });

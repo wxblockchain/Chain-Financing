@@ -22,7 +22,7 @@ const publicationTag=s=>CF.tag(({active:'ok',scheduled:'warn',offline:'danger'})
 const tag=s=>CF.tag(({active:'ok',scheduled:'warn',cancelled:'gray',offline:'danger'})[s]||'',txt(labels[s]));
 /* 协议列表与操作进度均固定每页 20 条，无条数切换（Q-O-AG-11 裁定）。 */
 const PAGE_SIZE=20;
-let filters={q:'',states:[],page:1},inputFilters=clone(filters);
+let filters={q:'',state:'',page:1},inputFilters=clone(filters);
 try{filters=Object.assign(filters,JSON.parse(sessionStorage.getItem(VIEW)||'{}'));inputFilters=clone(filters);}catch(e){}
 let db,work=null,dirty=false,busy=false,uploading=false,errors={},failure='',downloadFails=false,pending=null,oldHash='',viewHash='';
 let bulk=false,returnHash='',lastHash='',onModule=false,wasSigned=false;
@@ -107,11 +107,11 @@ const useNames={registration:['Registration','注册'],financing:['Financing req
 function log(a,kind,n,summary,actor='operator',extra={}){a.logs.unshift(record(now(),kind,n,summary,actor,extra));a.updated=now();}
 function heading(title,desc,actions=''){return `<div class="page-head ag-heading"><div><h1 class="page-title">${esc(title)}</h1>${desc?`<p class="page-desc">${desc}</p>`:''}</div><div class="page-actions">${CF.tag('gray',L('Demo data','演示数据'))}${actions}</div></div>`;}
 // Route state is browse-only: identifiers never grant query or write permission.
-const defaults=()=>({q:'',states:[],page:1});
+const defaults=()=>({q:'',state:'',page:1});
 function cleanView(value){
  const v=value&&typeof value==='object'?value:{},d=defaults();
  d.q=typeof v.q==='string'?v.q:'';
- d.states=Array.isArray(v.states)?v.states.filter(x=>['active','scheduled','unpublished','offline'].includes(x)):[];
+ d.state=['active','scheduled','unpublished','offline'].includes(v.state)?v.state:'';
  d.page=Number.isSafeInteger(Number(v.page))?Math.max(1,Number(v.page)):1;return d;
 }
 filters=cleanView(filters);inputFilters=clone(filters);
@@ -144,18 +144,17 @@ function fitFilterOptions(){
 }
 window.addEventListener('resize',fitFilterOptions);
 document.fonts?.ready.then(fitFilterOptions);
-function multiselect(key,label,options){let values=inputFilters[key]||[];return `<div class="ops-filter-select ag-status" data-on="${values.length?1:0}"><span class="ag-status-label" id="ag-label-${key}">${label}</span><details><summary class="inp" aria-labelledby="ag-label-${key} ag-value-${key}"><span id="ag-value-${key}">${values.length?L(values.length+' selected','已选 '+values.length+' 项'):L('All','全部')}</span></summary><div class="ag-options">${Object.keys(options).map(k=>`<label><input type="checkbox" data-filter="${key}" value="${k}"${values.includes(k)?' checked':''}>${esc(txt(options[k]))}</label>`).join('')}</div></details></div>`;}
 function appliedFilters(){
  const values=[];
  if(filters.q)values.push(L('Search','搜索')+' · '+filters.q);
- if(filters.states.length)values.push(L('Publication','发布情况')+' · '+filters.states.map(k=>txt(publicationLabels[k])).join(' / '));
+ if(filters.state)values.push(L('Publication','发布情况')+' · '+txt(publicationLabels[filters.state]));
  return values.length?`<div class="ag-applied"><span>${L('Applied filters','已应用筛选')}</span>${values.map(v=>CF.tag('gray',esc(v))).join('')}</div>`:'';
 }
-function matches(a){let q=filters.q.trim().toLowerCase();return (!q||[...a.name,a.id].some(t=>t.toLowerCase().includes(q)))&&(!filters.states.length||filters.states.includes(state(a)));}
+function matches(a){let q=filters.q.trim().toLowerCase();return (!q||[...a.name,a.id].some(t=>t.toLowerCase().includes(q)))&&(!filters.state||filters.state===state(a));}
 function listPage(){
  const head=heading(L('Agreements','协议管理'),L('Manage content and versions of system-preset agreements.','维护系统预置协议的内容与版本。'));
  if(!canQuery()||S.st==='denied')return head+stateSurface();
- const fs=`<div class="ag-filter"><div class="filterbar ops-filterbar ag-toolbar">${multiselect('states',L('Publication','发布情况'),publicationLabels)}${CF.filterSearch('ag-q',L('Search name or code','搜索协议名称或标识'),inputFilters.q,L('Agreement name or code','协议名称或标识'),'ops-filter-query')}<div class="fb-acts">${B('reset','Reset','重置')}${B('query','Search','查询','',true)}</div></div></div>${appliedFilters()}`;
+ const fs=`<div class="ag-filter"><div class="filterbar ops-filterbar ag-toolbar">${CF.opsFilterSelect('ag-state',L('Publication','发布情况'),[['',L('All','全部')],...Object.keys(publicationLabels).map(k=>[k,txt(publicationLabels[k])])],inputFilters.state)}${CF.filterSearch('ag-q',L('Search name or code','搜索协议名称或标识'),inputFilters.q,L('Agreement name or code','协议名称或标识'),'ops-filter-query')}<div class="fb-acts">${B('reset','Reset','重置')}${B('query','Search','查询','',true)}</div></div></div>${appliedFilters()}`;
  /* 固定顺序：默认排序值，再按最近更新从新到旧；不提供排序切换。 */
  let rows=(bulk?Array.from({length:47},(_,i)=>{let a=clone(db.agreements[i%db.agreements.length]);a.id+='-'+(i+1);a.baseId=db.agreements[i%db.agreements.length].id;return a;}):db.agreements).filter(matches);
  rows.sort((a,b)=>(a.order||0)-(b.order||0)||new Date(b.updated)-new Date(a.updated));
@@ -386,6 +385,7 @@ function afterRender(){
  if(S.page===P.detail&&params().get('open')==='upload'&&signedIn()){const q=params();q.delete('open');history.replaceState(null,'','#'+CF.ENTRY[P.detail]+'?'+q);oldHash=location.hash;setTimeout(()=>{if(!S.layer&&current()?.online&&canUpload())startEdit();});}
  document.querySelectorAll('.ag-filter details').forEach(el=>{el.addEventListener('toggle',()=>{if(el.open){document.querySelectorAll('.ag-filter details').forEach(other=>{if(other!==el)other.open=false;});fitFilterOptions();}});el.addEventListener('keydown',e=>{if(e.key==='Escape'){el.open=false;el.querySelector('summary').focus();e.stopPropagation();}});});
  document.querySelectorAll('[data-filter]').forEach(el=>el.addEventListener('change',()=>{let key=el.dataset.filter;if(el.type==='checkbox'){inputFilters[key]=Array.from(document.querySelectorAll(`[data-filter="${key}"]:checked`)).map(x=>x.value);const count=inputFilters[key].length;$('ag-value-'+key).textContent=count?L(count+' selected','已选 '+count+' 项'):L('All','全部');$('ag-value-'+key).closest('.ag-status').dataset.on=count?'1':'0';}else inputFilters[key]=el.value;}));
+ $('ag-state')?.addEventListener('change',e=>inputFilters.state=e.target.value);
  $('ag-q')?.addEventListener('input',e=>inputFilters.q=e.target.value);
  $('ag-q')?.addEventListener('keydown',e=>{if(e.key==='Enter'){act('ag-query');CF.render();}});
 }

@@ -181,7 +181,8 @@
       cancel:['You cancelled the wallet connection. You can connect again or keep browsing.','你取消了钱包连接，可重新连接或继续浏览。'],
       'sign-rejected':['You declined the signature, so you are not signed in. You can try again or keep browsing.','你拒绝了签名，未建立登录。可重试或继续浏览。'],
       'sign-failed':['The signature could not be verified. You are not signed in. Please try again.','签名验证失败，未建立登录，请重试。'],
-      'pull-failed':['We could not confirm your identity right now. Please try again. You can keep browsing in the meantime.','暂时无法确认身份，请重试。期间仍可继续浏览。']
+      'pull-failed':['We could not confirm your identity right now. Please try again. You can keep browsing in the meantime.','暂时无法确认身份，请重试。期间仍可继续浏览。'],
+      'match-anomaly':['We couldn\'t complete sign-in for this address. You can try again later or keep browsing. Reference: HC-100.','暂时无法为该地址完成登录，可稍后重试或继续浏览。参考码：HC-100。']
     };
     const retry=D.loginError==='pull-failed';
     return `<div class="login-flow login-flow--entry">
@@ -226,16 +227,10 @@
     if(override==='create-failed'){S.role='guest';D.stage='';go('/auth/retry');return;}
     // 调取失败不等于调取不到：本次不判定角色，就地说明可重试，仍可继续以游客浏览。
     if(override==='pull-failed'){S.role='guest';D.stage='';D.loginError='pull-failed';go('/login');return;}
-    if(override==='multi'){
-      S.role='signed';D.level='L0';
-      landing(L('We could not complete sign-in for this address right now. Please try again later.','当前无法为该地址完成登录，请稍后重试。'));return;
-    }
-    // 上游把登记地址改到新地址后，旧地址不再命中，用新地址登录接续原账户与历史。
+    // 一个地址调取到多个上游账户属数据异常：不判定角色、不取任一条，本次登录不成立，就地给中性说明。
+    if(override==='multi'){S.role='guest';D.stage='';D.address='';D.loginError='match-anomaly';go('/login');return;}
+    // 上游把登记地址改到新地址后，旧地址按调取不到处理：登录未绑定角色，不提示新地址。
     const moved=D.addressMoved&&D.address===registered;
-    if(override==='moved'||override==='auto'&&moved){
-      S.role='signed';D.level='L0';
-      landing(L('The registration for this address changed on the asset trust platform. Please sign in with the new address.','该地址在资产可信平台的登记已变更，请使用新地址登录。'));return;
-    }
     const hit=override==='hit'||override==='auto'&&!moved&&[registered,renewed].includes(D.address);
     if(hit){
       S.role='asset';D.level=D.verificationResult==='verified'?'L3':'L0';D.downgraded=false;
@@ -442,8 +437,8 @@
         </div><p class="login-caption">${L('Demonstration addresses. No wallet is contacted.','演示地址，不连接真实钱包。')}</p></div>`,
       foot:btn('Cancel','取消','login-connect-cancel','','ghost')}),
     signature:()=>({title:L('Wallet signature · simulation','钱包签名 · 演示'),
-      html:`<div class="login-signature"><p>${L('Confirm the login signature in your wallet.','请在钱包中确认本次登录签名。')}</p><dl class="login-signature-account"><dt>${L('Sign-in address','登录地址')}</dt><dd>${esc(D.address)}</dd></dl>
-        <p class="login-assurance">${L('This message does not send a transaction or authorize assets.','本次签名不会发起交易或授权资产。')}</p></div>`,
+      html:`<div class="login-signature"><p>${L('Confirm the login signature in your wallet.','请在钱包中确认本次登录签名。')}</p><dl class="login-signature-account"><div><dt>${L('Sign-in address','登录地址')}</dt><dd>${esc(D.address)}</dd></div>
+        <div class="login-signature-message"><dt>${L('Message','签名消息')}</dt><dd>${L('Signing this message proves you own this wallet. It does not send a transaction, does not cost gas, and does not move or approve any assets.','签署这条消息只用于证明你拥有该钱包。它不会发起交易、不消耗 gas，也不会转移或授权任何资产。')}</dd></div></dl></div>`,
       foot:btn('Decline signature','拒绝签名','login-sign','rejected','ghost')+btn('Signature verification fails','签名验证失败','login-sign','failed','ghost')+btn('Confirm signature','确认签名','login-sign','ok','primary')}),
     leave:(purpose)=>({title:L('You are leaving the lending platform','即将离开借贷平台'),
       html:`<p>${L('You will be redirected to the asset trust platform to continue.','我们将带你前往「资产可信平台」继续操作。')}</p><p><b>${L('Asset trust platform','资产可信平台')}</b></p>`,
@@ -553,7 +548,7 @@
       <p class="login-caption">${L('Current','当前')}：${S.role}${S.role==='asset'?' / '+D.level:''}</p>
       ${btn('Open the sign-in flow','打开登录流程','login-demo','sign-in')}${btn('Open business action demo','打开业务动作演示页','login-demo','gate')}</div>
       ${options('demo-wallet',L('Wallet availability','钱包可用性'),[['ok','Wallet available','钱包可用'],['missing','No wallet available','无可用钱包']],D.walletResult)}
-      ${options('demo-match',L('Match result','匹配结果'),[['auto','Follow the chosen address','按所选地址判定'],['hit','Retrieved · decided as asset holder','调取到 · 判定为资产方'],['moved','Registered address changed','上游登记地址已变更'],['locked','Upstream account locked or disabled','上游账户锁定 / 禁用'],['create-failed','Account creation failed','建号失败'],['pull-failed','Retrieval failed · no role decided','调取失败 · 本次不判定角色'],['multi','Data anomaly · multiple accounts','数据异常 · 命中多个账户']],D.matchOverride)}
+      ${options('demo-match',L('Match result','匹配结果'),[['auto','Follow the chosen address','按所选地址判定'],['hit','Retrieved · decided as asset holder','调取到 · 判定为资产方'],['moved','Old address · upstream registration moved','旧地址登录 · 上游已改登记'],['locked','Upstream account locked or disabled','上游账户锁定 / 禁用'],['create-failed','Account creation failed','建号失败'],['pull-failed','Retrieval failed · no role decided','调取失败 · 本次不判定角色'],['multi','Data anomaly · multiple accounts','数据异常 · 命中多个账户']],D.matchOverride)}
       ${options('demo-verify',L('Verification conclusion','认证结论'),[['verified','Verified','已认证'],['unverified','Not verified','未认证'],['failed','Temporarily unavailable','暂时无法复核']],D.verificationResult)}
       ${options('demo-return',L('Return result','回跳结果'),[['fallback','Cross-platform fallback','跨平台兜底'],['none','No original action','无原操作'],['invalid','Expired or rejected target','目标失效或被拒']],D.returnResult)}
       ${options('demo-submit',L('Preference save result','偏好保存结果'),[['success','Success','成功'],['failed','Failure · allow retry','失败 · 可重试']],D.submitResult)}
@@ -628,6 +623,7 @@
       {id:'sign-rejected',label:['Signature declined','拒绝签名'],group:'feedback'},
       {id:'sign-failed',label:['Signature verification failed','签名验证失败'],group:'feedback'},
       {id:'pull-failed',label:['Retrieval failed · no role decided','调取失败 · 本次不判定角色'],group:'feedback'},
+      {id:'match-anomaly',label:['Data anomaly · multiple upstream accounts','数据异常 · 命中多个上游账户'],group:'feedback'},
       {id:'funder-disabled',label:['Funder account disabled · after signature','资金方账户已停用 · 签名后'],group:'business'}],
     get:()=>S.page==='P-L01'?(D.loginError||'default'):'flow',
     set(value){if(value==='funder-disabled'){cancelPending();S.role='guest';CF.resetCompletion();CF.funder.review.state.sessionUntil=0;CF.funder.review.response();}D.loginError=value==='default'?'':value;if(S.page!=='P-L01')go('/login');},

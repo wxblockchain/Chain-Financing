@@ -329,7 +329,7 @@
   }
   function projectState(r){
     return r.closed?CF.tag('gray',L('Closed','已关闭'))
-      :r.review==='approved'?CF.tag('ok',L('Open · empty pool','可用 · 空池'))
+      :r.review==='approved'?CF.tag('ok',L('Open','可用'))
       :r.review==='returned'?CF.tag('danger',L('Returned','已退回')):CF.tag('warn',L('Pending review','待审核'));
   }
   /* 一份质押合约上配置成功的项目；配置处理中、失败、待核实的不在其中。 */
@@ -371,7 +371,6 @@
       else html+=contractTable([[PLEDGE_LABEL,pledge,null,at.proofs?.pledge],...OWN.map(([k,label])=>[label,at[k],at.results?.[k],at.proofs?.[k]])],
         {results:e.kind!=='config-ok',proofs:true,proofEmpty:['None yet','暂无']});
     }
-    if(e.notice)html+=kv([[L('Message sent to the asset holder','已向资产方发送站内信'),E(txt(e.notice))]]);
     return html;
   }
   function activity(r){
@@ -447,8 +446,10 @@
     }
     /* 行标题在窄列中只在「质押合约」与「（所选）」之间换行。 */
     const picked=[PLEDGE_LABEL[0]+' (selected)',PLEDGE_LABEL[1]+'<wbr><span class="cm-keep">（所选）</span>'];
+    /* 配置成功前，所选质押合约与本次尝试已部署出的合约地址都标明尚未配置。 */
+    const notSet=v=>v?`<span class="cm-meta">${L('Not configured yet','尚未配置')}</span>`:'';
     return section('Deployment progress','部署进度与结果',
-      contractTable([[picked,pledge,null,null,'',['To be verified','待核实']],...OWN.map(([k,label])=>[label,at[k],at.results?.[k],at.proofs?.[k]])],{results:true,proofs:true,proofEmpty:['None yet','暂无']})
+      contractTable([[picked,pledge,null,null,notSet(pledge),['To be verified','待核实']],...OWN.map(([k,label])=>[label,at[k],at.results?.[k],at.proofs?.[k],notSet(at[k])])],{results:true,proofs:true,proofEmpty:['None yet','暂无']})
       +(r.exec==='failed'&&r.fail?facts([
         [L('Failure reason','失败原因'),`<div class="cm-quote cm-fail">${E(txt(r.fail.reason))}</div>`,true],
         [L('Failed at','失败时点'),time(r.fail.at),true]
@@ -508,7 +509,7 @@
     const d=A.draft;if(!d)return false;A.error='';
     if(d.mode==='return'){
       const s=d.reason.trim(),n=Array.from(s).length;
-      if(n<10||n>500||!/[\p{L}\p{N}]/u.test(s))A.error=['Enter a reason of 10–500 characters; punctuation alone is not valid.','原因需为 10～500 字，不能仅填标点。'];
+      if(n<10||n>500)A.error=['Enter a reason of 10–500 characters.','原因需为 10～500 字。'];
     }else if(!d.pledge)A.error=['Select a pledge contract.','请选定质押合约。'];
     else if(!d.ack)A.error=['Confirm that you understand the effect of this approval.','请确认知悉本次通过的后果。'];
     return !A.error;

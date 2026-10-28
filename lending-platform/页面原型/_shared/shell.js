@@ -80,10 +80,9 @@
         L("You can continue exploring public information.", "你可以继续浏览公开信息。"),
         '<button class="btn primary" data-act="go" data-v="/assets">' + L("Back to assets", "返回资产广场") + '</button>');
     }
-    return CF.empty(S.role === "limited" ? L("Complete your account setup", "请先完成账户必办事项") : L("Sign in to view your messages", "登录后查看消息"),
-      S.role === "limited" ? L("Complete the required steps for your account to continue.", "完成账户必办事项后即可继续。") : L("After signing in, you will return to this page.", "登录后将返回当前页面。"),
-      '<button class="btn primary" data-act="' + (S.role === "limited" ? "prerequisite" : "signin") + '">' +
-      (S.role === "limited" ? L("Continue setup", "继续完善") : L("Connect wallet", "连接钱包")) + '</button>');
+    return CF.empty(L("Sign in to view your messages", "登录后查看消息"),
+      L("After signing in, you will return to this page.", "登录后将返回当前页面。"),
+      '<button class="btn primary" data-act="signin">' + L("Connect wallet", "连接钱包") + '</button>');
   };
 
   var M = null;              // 当前模块
@@ -1266,7 +1265,6 @@
     if (act === "cf-addr-copy") { e.preventDefault(); CF.copyText(v); return; }
     if (M && M.onBeforeAct && M.onBeforeAct(act, v, e)) { e.preventDefault(); render(); return; }
     if (act === "notify-retry") { N.panelState = "default"; render(); return; }
-    if (act === "prerequisite") { CF.toast(L("Account setup handoff — demonstration only.", "账户必办事项交接 —— 仅演示。")); return; }
     if (act === "completion-fold") { completionFolded = !completionFolded; e.preventDefault(); renderCompletion(); return; }
     if (act === "completion-list") { completionListOpen = !completionListOpen; e.preventDefault(); renderCompletion(); return; }
     if (act === "menu") { clearTimeout(accountHoverTimer);S.menu = v === "acct" && accountHoverOpened ? "acct" : S.menu === v ? null : v; accountHoverOpened=false;if(v==='acct')accountHoverSuppressed=true; e.preventDefault(); render(); if(v==='acct')document.querySelector('#portal-account-menu [role="menuitem"]')?.focus(); return; }

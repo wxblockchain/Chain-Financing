@@ -46,10 +46,9 @@
   const activeOf=x=>processingOf(x)||approvalOf(x);
   /* 原型未接合约服务，使用明确的本地演示还款合约，不能沿用质押合约地址。 */
   const repaymentContract=()=>D.project(deal().project).repaymentContract||'0x8b47C1a9F03b6D25e8A4c7B19f0D3e62A5c8b941';
-  const rateText=x=>x.ccy==='USDT'?'1 USDT = 1 USDT':'1 USDT = '+(x.fx?.value??'—')+' '+E(x.ccy);
   const waited=t=>{const ms=Math.max(0,now()-Date.parse(t)),d=Math.floor(ms/DAY),h=Math.floor(ms/H),m=Math.max(1,Math.round(ms/60000));return d>=1?d+L(d>1?' days':' day',' 天'):h>=1?h+L(h>1?' hours':' hour',' 小时'):m+L(' min',' 分钟');};
   function addMonths(s,n){const [y,m,d]=s.split('-').map(Number),first=new Date(Date.UTC(y,m-1+n,1)),last=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,0)).getUTCDate();return day(Date.UTC(first.getUTCFullYear(),first.getUTCMonth(),Math.min(d,last)));}
-  /* 结算金额 = 应还合计 × 本笔汇率（1 USDT 折合的结算币种数量）。 */
+  /* 结算金额按 1:1 由应还合计得出，与应还合计数值相同。 */
   function build(start,end,principal,rate,fx){
     if(!start||!end||end<=start||!Number.isFinite(+fx)||+fx<=0)return [];
     const marks=[];for(let k=1;k<500;k++){const t=addMonths(start,3*k);if(t>=end)break;marks.push(t);}
@@ -106,7 +105,7 @@
     return '<div class="rp-ledger" data-private="'+own+'"><div class="rp-ledger-head" aria-hidden="true">'+heads.map((h,i)=>'<span'+(own&&(i===2||i===3)?' class="rp-num"':'')+'>'+h+'</span>').join('')+'</div>'+p8.periods.map(row).join('')+'</div>'+totals;}
   const basis=()=>L('Simple interest · actual days ÷ 360 · start included, due date excluded','年化单利 · 实际天数 ÷ 360 · 算头不算尾');
   function planFacts(withTitle){const x=deal(),p8=plan();
-    return (withTitle?'<div class="rp-plan-title"><b>'+E(x.request)+' · '+E(funder(x))+'</b><p class="mono hint">'+E(x.id)+' · '+E(x.record.id)+'</p></div>':'')+'<div class="rp-plan-facts">'+dl([[L('Settlement currency · rate','结算币种 · 汇率'),E(x.ccy)+' · '+rateText(x)],[L('Annual financing rate','年化融资利率'),x.rate+'% · ACT/360'],[L('Interest starts (UTC)','起息日（UTC）'),date(p8.start)],[L('Finalized at','定稿时间'),time(p8.at)],[L('Interest basis','计息规则'),basis()]])+'</div>';}
+    return (withTitle?'<div class="rp-plan-title"><b>'+E(x.request)+' · '+E(funder(x))+'</b><p class="mono hint">'+E(x.id)+' · '+E(x.record.id)+'</p></div>':'')+'<div class="rp-plan-facts">'+dl([[L('Settlement currency','结算币种'),E(x.ccy)],[L('Annual financing rate','年化融资利率'),x.rate+'% · ACT/360'],[L('Interest starts (UTC)','起息日（UTC）'),date(p8.start)],[L('Finalized at','定稿时间'),time(p8.at)],[L('Interest basis','计息规则'),basis()]])+'</div>';}
   /* 处理中进度：只给提交时间与已等待；出账地址、交易哈希与 gas 只在操作记录出现一次。 */
   function chainFacts(p){const c=sub(p);if(!c)return '';return dl([[L('Submitted at','提交时间'),time(c.at)],[L('Waiting','已等待'),waited(c.at)]]);}
   /* 链上还款记录：只给业务结果；交易哈希与 gas 见同一期在操作记录中的两条。 */
@@ -150,7 +149,7 @@
     const choice=item=>funder(item)+' · '+date(nearest(item).due)+' · '+item.record.id;
     const selection=list.length===1?'':'<div class="field"><label for="rp-business">'+L('Repayment business','还款业务')+'</label><select id="rp-business" class="inp" aria-describedby="rp-business-current">'+list.map(item=>'<option value="'+E(item.id)+'"'+(item.id===selected?' selected':'')+'>'+E(choice(item))+'</option>').join('')+'</select><p class="hint rp-business-current" id="rp-business-current">'+L('Due ','应还日 ')+date(nearest(x).due)+'</p></div>';
     const body='<section id="repayment" class="rp-panel"><h3>'+L('Repayment','还款流程')+'</h3>'+selection+(justSettled?.deal===x.id&&!p8?.settledAt?CF.note('ok',L('Instalment '+justSettled.seq+' repaid on chain and settled.','第 '+justSettled.seq+' 期链上还款成功，已结清。')):'')+(!p8?CF.note('',L('Repayment plan is being generated.','还款计划生成中。')):p8.settledAt?CF.note('ok',L('This financing business is settled.','本笔融资业务已结清。'))+(dl([[L('Settled at','结清时间'),time(p8.settledAt)],[L('Principal repaid','累计已还本金'),amount(x.amount)],[L('Interest repaid','累计已还利息'),amount(p8.periods.reduce((n,p)=>n+p.interest,0))]])):r?periodInfo(r)+approvalNote(r)+chainNote(r)+failNote(r):'')+(p8?.settledAt?settlementResult(x):'')+'</section>';
-    let primary='';if(S.role==='guest')primary='<button class="btn primary" data-act="signin">'+L('Connect wallet','连接钱包')+'</button>';else if(p8&&party(x)&&S.role==='asset'&&!processingOf(x)&&p8.periods.some(p=>p.state==='due'&&now()>=openAt(p)))primary=b('open',approvalOf(x)?L('Continue repayment','继续还款'):L('Repay','立即还款'),'pay',true);
+    let primary='';if(S.role==='guest')primary='<button class="btn primary" data-act="signin">'+L('Connect wallet','连接钱包')+'</button>';else if(p8&&party(x)&&S.role==='asset'&&!processingOf(x)&&p8.periods.some(p=>p.state==='due'&&now()>=openAt(p)))primary=b('open',L('Approve & repay','授权并还款'),'pay',true);
     const reason=!primary&&r&&r.state==='due'?(now()<openAt(r)?L('Repayment opens at ','还款开放于 ')+time(iso(openAt(r))):S.role==='fund'?L('Awaiting asset holder repayment. No action is needed from you.','等待资产方还款，你无需操作。'):''):'';return {body:body+(reason?CF.note('',reason):''),primary,secondary:b('detail',L('View repayment details','查看还款详情'),x.id)};
   }
   function repaymentChoices(p){return available(p).filter(x=>quote(x.id)?.l8?.periods.some(r=>['due','pending'].includes(r.state))).sort((a,b)=>(nearest(a)?.due||'9999').localeCompare(nearest(b)?.due||'9999')||Date.parse(a.confirmedAt)-Date.parse(b.confirmedAt)||a.id.localeCompare(b.id));}
@@ -162,27 +161,27 @@
     ensure();if(!projectVisible(project))return '';
     const privateColumns=available(project).some(party);
     if(!listViews.has(project.id))listViews.set(project.id,{query:'',state:'',overdue:'',page:1});
-    const view=listViews.get(project.id),all=available(project).filter(x=>(!view.state||stateOf(x)===view.state)&&(!view.overdue||(businessOverdue(x).length?'yes':'no')===view.overdue)&&[x.request,x.id,x.record?.id,funder(x)].some(v=>String(v||'').toLowerCase().includes(view.query.toLowerCase()))).sort((a,b)=>Date.parse(b.confirmedAt)-Date.parse(a.confirmedAt)||b.id.localeCompare(a.id)),pages=Math.max(1,Math.ceil(all.length/5));
+    const view=listViews.get(project.id),all=available(project).filter(x=>(!view.state||stateOf(x)===view.state)&&(!view.overdue||(businessOverdue(x).length?'yes':'no')===view.overdue)&&[x.request,x.id,x.record?.id].some(v=>String(v||'').toLowerCase().includes(view.query.toLowerCase()))).sort((a,b)=>Date.parse(b.confirmedAt)-Date.parse(a.confirmedAt)||b.id.localeCompare(a.id)),pages=Math.max(1,Math.ceil(all.length/5));
     view.page=Math.min(view.page,pages);
-    const rows=all.slice((view.page-1)*5,view.page*5),heads=[[L('Application / business','融资申请 / 业务'),'rp-col-request'],[L('Disbursement no.','放款编号'),'rp-col-loan'],[L('Funder','出资机构'),'rp-col-funder'],...(privateColumns?[[L('Repayment date (UTC)','还款时间（UTC）'),'rp-col-time'],[L('Current instalment','本期应还'),'rp-col-amount rp-num']]:[]),[L('Status','状态'),'rp-col-status'],[L('Overdue','逾期'),'rp-col-overdue']];
+    const rows=all.slice((view.page-1)*5,view.page*5),heads=[[L('Application / business','融资申请 / 业务'),'rp-col-request'],[L('Disbursement no.','放款编号'),'rp-col-loan'],[L('Funder','出资机构'),'rp-col-funder'],...(privateColumns?[[L('Repayment date (UTC)','还款时间（UTC）'),'rp-col-time'],[L('Current instalment','本期应还'),'rp-col-amount rp-num']]:[]),[L('Business status','业务状态'),'rp-col-status'],[L('Overdue?','是否逾期'),'rp-col-overdue']];
     const cell=(i,html)=>'<td data-label="'+E(heads[i][0])+'" class="'+heads[i][1]+'"><div class="rp-cell-value">'+html+'</div></td>';
     /* 一笔一行、一列一项：还款时间只展示本期应还日，本期应还只展示金额，状态只给业务状态，逾期单独一列；期次、开放时刻与上链确认中等进度都在详情。 */
-    const overdueCell=(x,late)=>businessOverdue(x).length?CF.tag('warn',party(x)&&late?L('Overdue '+late+(late>1?' days':' day'),'逾期 '+late+' 天'):L('Overdue','逾期')):'<span class="hint">'+L('Not overdue','未逾期')+'</span>';
+    const overdueCell=x=>businessOverdue(x).length?CF.tag('warn',L('Overdue','逾期')):'<span class="hint">'+L('Not overdue','未逾期')+'</span>';
     const privateEmpty=(x,p8,p)=>!party(x)?L('Parties only','仅本笔双方可见'):!p8?'—':!p?L('No instalments awaiting repayment','暂无待还期次'):'';
     const current=(x,p8,p)=>{const empty=privateEmpty(x,p8,p);return empty?'<span class="hint">'+empty+'</span>':'<b class="mono">'+amount(p.settlement,x.ccy)+'</b>'+(x.ccy==='USDT'?'':'<div class="hint">'+L('Total ','应还合计 ')+amount(p.total)+'</div>');};
     const repaymentTime=(x,p8,p)=>{const empty=privateEmpty(x,p8,p);return empty?'<span class="hint">'+empty+'</span>':'<span>'+date(p.due)+'</span>';};
     const content=rows.map(x=>{
-      const p8=quote(x.id)?.l8,p=firstDue(p8),pending=processingOf(x),late=p&&overdue(p)||pending&&overdue(pending)||0;
+      const p8=quote(x.id)?.l8,p=firstDue(p8);
       return '<tr data-act="rp-detail" data-v="'+E(x.id)+'" tabindex="0" role="button" aria-label="'+L('View repayment ','查看还款 ')+E(x.request)+'">'
         +cell(0,'<strong>'+E(x.request)+'</strong><div class="hint mono">'+E(x.id)+'</div>')
         +cell(1,'<span class="mono">'+E(x.record.id)+'</span>')
         +cell(2,E(funder(x)))
         +(privateColumns?cell(3,repaymentTime(x,p8,p))+cell(4,current(x,p8,p)):'')
-        +cell(heads.length-2,repaymentState(x))+cell(heads.length-1,overdueCell(x,late))+'</tr>';
+        +cell(heads.length-2,repaymentState(x))+cell(heads.length-1,overdueCell(x))+'</tr>';
     }).join('');
     /* 筛选与项目内代币清单同构：条件下拉即时生效，编号搜索回车或离开输入框后生效，重置为轻操作。 */
     const filtered=!!(view.query||view.state||view.overdue);
-    return '<div class="filterbar ls-token-filters rp-list-filters" role="search" data-rp-project="'+E(project.id)+'" aria-label="'+L('Filter repayments','筛选还款业务')+'">'+CF.filterSelect('rp-tf-state',L('Business status','业务状态'),[['',L('All','全部')],['repaying',L('Repaying','还款中')],['settled',L('Settled','已结清')]],view.state)+CF.filterSelect('rp-tf-overdue',L('Overdue','逾期'),[['',L('All','全部')],['yes',L('Overdue · unsettled','逾期 · 未结清')],['no',L('Not overdue','无逾期')]],view.overdue)+CF.filterSearch('rp-tf-keyword',L('Application / business / disbursement no.','申请 / 业务 / 放款编号'),view.query,L('Search application, business or disbursement number','搜索融资申请、业务或放款编号'))+'<div class="fb-acts">'+b('table-reset',L('Reset','重置'),project.id)+'</div></div>'
+    return '<div class="filterbar ls-token-filters rp-list-filters" role="search" data-rp-project="'+E(project.id)+'" aria-label="'+L('Filter repayments','筛选还款业务')+'">'+CF.filterSelect('rp-tf-state',L('Business status','业务状态'),[['',L('All','全部')],['repaying',L('Repaying','还款中')],['settled',L('Settled','已结清')]],view.state)+CF.filterSelect('rp-tf-overdue',L('Overdue?','是否逾期'),[['',L('All','全部')],['yes',L('Overdue','逾期')],['no',L('Not overdue','未逾期')]],view.overdue)+CF.filterSearch('rp-tf-keyword',L('Application / business / disbursement no.','融资申请 / 业务 / 放款编号'),view.query,L('Search application, business or disbursement number','搜索融资申请、业务或放款编号'))+'<div class="fb-acts">'+b('table-reset',L('Reset','重置'),project.id)+'</div></div>'
       +'<div class="rp-record-scroll"><table class="tbl rp-record-table" data-private="'+privateColumns+'"><thead><tr>'+heads.map(([label,cls])=>'<th scope="col" class="'+cls+'">'+label+'</th>').join('')+'</tr></thead><tbody>'+content+'</tbody></table></div>'
       +(!rows.length?CF.empty(L('No repayment information','暂无还款信息'),filtered?L('No repayments match these filters. Adjust or reset them.','没有符合条件的还款业务，请调整或重置筛选。'):L('Repayment schedules and actions become available after a disbursement succeeds.','放款成功后可查看还款计划和办理还款。')):'')
       +'<div class="rp-pagination"><span class="hint">'+all.length+L(' businesses',' 笔业务')+' · '+L('5 per page','每页 5 条')+'</span><div>'+b('table-page',L('Previous','上一页'),project.id+'|'+(view.page-1),false,view.page===1)+' <span>'+view.page+' / '+pages+'</span> '+b('table-page',L('Next','下一页'),project.id+'|'+(view.page+1),false,view.page===pages)+'</div></div>';
@@ -280,7 +279,7 @@
       +'<p class="rp-step-line">'+L('Transfer to the funder’s repayment address','向资金方收款地址转出')+' <b class="mono">'+amount(p.settlement,x.ccy)+'</b></p>'+compactAddress(to)
       +stepTx(L('Repayment tx hash','还款交易哈希'),c?.hash||r?.hash,r?.repayGas)
       +(p.state==='due'&&can()?signCheck(p,contract,0):'<div class="ls-sign-check rp-sign-check">'+contractCheck(contract)+'</div>')+'</section>';}
-  function payView(){const x=deal(),p=period();if(!visible(x))return deniedView();if(!x||!plan())return {title:L('Repay','立即还款'),html:CF.note('',L('The plan is not available yet.','还款计划暂不可用。')),foot:b('back',L('Close','关闭'))};
+  function payView(){const x=deal(),p=period();if(!visible(x))return deniedView();if(!x||!plan())return {title:L('Approve & repay','授权并还款'),html:CF.note('',L('The plan is not available yet.','还款计划暂不可用。')),foot:b('back',L('Close','关闭'))};
     if(!party(x)||S.role!=='asset')return deniedView();
     let body='',foot=b('back',L('Close','关闭'));
     if(load==='loading')body='<div role="status">'+L('Loading repayment information…','正在加载还款信息…')+'</div>';else if(load==='error')body=CF.empty(L('Unable to load repayment information','还款信息加载失败'),'',b('retry',L('Retry','重试')));
@@ -388,7 +387,7 @@
     +'<label><input type="checkbox" id="rp-explorer"'+(!explorerReady?' checked':'')+'> '+L('Explorer unavailable','查验入口不可用')+'</label>'+b('events',L('Notification event preview','通知事件预览'))+b('denied-write',L('Attempt unauthorized action','尝试越权办理'))+'</div>';}
   function demoRecord(p,x,at=now()){const to=payee(x),from=CF.EA?.accounts(x.owner,'crypto').find(a=>a.chain==='ETH'&&!Q.accountMissing(a).length);return {id:'RM-DEMO-'+p.seq,authAt:iso(at-H-20*60000),at:iso(at-H),confirmedAt:iso(at),amount:p.settlement,ccy:x.ccy,from:from?Q.accountSnapshot(from):null,account:to?{...to}:null,hash:demoHash('r'+p.id),authHash:demoHash('a'+p.id),gas:'0.000910',authGas:'0.000910',repayGas:'0.001420',overdue:0,by:'Demo employee A · Demo Asset Company A'};}
   function scenario(kind,{pay=false,result='success'}={}){epoch++;openRows.clear();busy=false;clockOverride=0;load='ready';explorerReady=true;accountRead='ready';fromScene='ready';balanceScene='enough';contractRead='ready';signScene='success';walletScene='ready';approvalRead='ready';form={from:''};events.length=0;justSettled=null;const x=Q.demoDisbursement(),q=quote(x.id);selected=x.id;location.hash='#/project/'+x.project;delete q.l8;events=Q.data().repaymentEvents=[];x.plan=kind==='waiting'?'waiting':'handoff';
-    /* 还款收款地址取报价时选定的 Ethereum 地址；结算币种只有 USDT、USDC，汇率快照默认 1。 */
+    /* 还款收款地址取报价时选定的 Ethereum 地址；结算币种只有 USDT、USDC，按 1:1 折算。 */
     const ccy=kind==='USDC'?'USDC':'USDT',to=q.repayTo||Q.accounts(x.fund,'crypto').find(a=>a.chain==='ETH'&&!Q.accountMissing(a).length);
     x.ccy=q.ccy=ccy;x.fx=q.fx={...(q.fx||{}),value:1};x.settlement=q.settlement=x.amount;if(to)x.record.account=to.kind?Q.accountSnapshot(to):{...to};
     ensure();const p8=q.l8;if(p8){seq=1;clockOverride=Date.parse(p8.periods[0].due)+(kind==='overdue'?5*DAY:kind==='notopen'?-DAY:kind==='processing'||kind==='unknown'?2*H:0);if(kind==='multi'){const second=JSON.parse(JSON.stringify(q));second.id=q.id+'-B';second.demand=q.demand+'-B';second.fund='fund-b';second.l7.id=second.id;second.l7.fund='fund-b';second.l7.request=second.demand;second.l7.record.id+='B';const b2=Q.accounts('fund-b','crypto').find(a=>a.chain==='ETH');if(b2)second.l7.record.account=Q.accountSnapshot(b2);delete second.l8;Q.data().quotes.push(second);D.project(x.project).demands.push({...D.project(x.project).demands.find(d=>d.id===q.demand),id:second.demand});D.project(x.project).balance+=x.amount;ensure();}

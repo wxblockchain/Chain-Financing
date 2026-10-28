@@ -6,8 +6,8 @@
   let frame=null,positioning=false,detailTop=true,returnFocus=false;
   const defaultScrollRestoration=history.scrollRestoration;
   let busy=false,moreError=false,failMore=false,failRead=false,readError=false,refreshFail=false,readTimer=null;
-  let timer=null,refreshes=0,detailFailure=false,landingDenied=false;
-  const storageKey='hc-ws379-read-v1';
+  let timer=null,refreshes=0,detailFailure=false;
+  const storageKey='hc-ws493-read-v1';
   let snapshotData=null,pool=null,poolReady=false;
   /* 演示池由 CF.LS / CF.CQ / CF.L8 的现行事实派生，首次读取时才播种。 */
   Object.defineProperty(N,'rows',{configurable:true,
@@ -70,8 +70,8 @@
     const rows=new Map();
     (set.planned||[]).forEach(p=>rows.set(p.seq,{seq:p.seq,planned:p}));
     set.actual.forEach(p=>rows.set(p.seq,Object.assign(rows.get(p.seq)||{seq:p.seq},{actual:p})));
-    const cell=p=>p?'<span class="nc-cell-date">'+utcDate(p.due)+'</span><span class="nc-cell-amt mono">'+CF.fmtAmt(p.total,'USD')+
-      (set.ccy&&set.ccy!=='USD'?'<span class="nc-cell-sub">'+CF.fmtAmt(p.settlement,set.ccy)+'</span>':'')+'</span>':'<span class="nc-cell-none">—</span>';
+    const cell=p=>p?'<span class="nc-cell-date">'+utcDate(p.due)+'</span><span class="nc-cell-amt mono">'+CF.fmtAmt(p.total,'USDT')+
+      (set.ccy&&set.ccy!=='USDT'?'<span class="nc-cell-sub">'+CF.fmtAmt(p.settlement,set.ccy)+'</span>':'')+'</span>':'<span class="nc-cell-none">—</span>';
     return '<section class="nc-compare"><h2>'+L('Installment comparison','逐期对照')+'</h2>'+
       '<div class="nc-compare-grid" role="table" aria-label="'+L('Estimated and finalized installments','预计与定稿逐期对照')+'">'+
       '<div class="nc-compare-row nc-compare-head" role="row"><span role="columnheader">'+L('Installment','期次')+'</span>'+
@@ -181,6 +181,8 @@
     const has={project:!!CF.LS?.project?.(r.objectProject||quote.project),quote:true,loan:!!quote.l7,
       repayment:!!(quote.l8&&(!r.period||quote.l8.periods.some(p=>p.id===r.period)))};
     const base={mode:'object',id:quote.id,project:r.objectProject||quote.project,period:r.period};
+    /* 消息提示的办理动作（接受或拒绝本笔）已不适用时，仍定位原笔，只看当前结果。 */
+    if(r.act&&r.objectKind==='quote'&&quote.state!=='waiting')return {...base,kind:'quote',status:'changed'};
     if(has[r.objectKind])return {...base,kind:r.objectKind,status:'ok'};
     const fallback=chain.slice(0,chain.indexOf(r.objectKind)).reverse().find(k=>has[k]);
     return fallback?{...base,kind:fallback,period:null,status:'changed'}:{...base,kind:r.objectKind,status:'gone'};
@@ -245,18 +247,17 @@
       action('refresh','Refresh now','立即刷新')+action('arrive','A new message arrives','新消息到达')+action('late','Late time-triggered message','到点消息晚到')+action('duplicate','Same fact delivered again','同一事实重复送达')+action('expire','Expire session','会话失效')+action('detail-fail','Detail request fails','详情请求失败')+
       action('normal','Valid deep link','正常深链')+action('plan','Schedule comparison','逐期对照消息')+action('degraded','Degraded content','内容降级消息')+
       action('unavailable','Unavailable target','目标不可访问')+action('superseded','Action no longer applies','原动作已不适用')+
-      action('guest','Signed-out deep link','未登录深链')+action('denied','Restricted deep link','无权限深链')+action('unknown','Unknown deep link','未知深链')+
-      action('landing','Deny next landing','下次落地重判权失败')+'</div><p class="tiny">'+L('Local demonstration data. Refresh attempts: ','本地演示数据。刷新次数：')+refreshes+'</p></div>';
+      action('guest','Signed-out deep link','未登录深链')+action('unbound','Deep link without a role','未绑定角色深链')+action('unknown','Unknown deep link','未知深链')+'</div><p class="tiny">'+L('Local demonstration data. Refresh attempts: ','本地演示数据。刷新次数：')+refreshes+'</p></div>';
   }
   function firstRow(match,owner='asset'){const rows=D.rows.filter(r=>r.owner===owner&&r.platform==='lending');return (rows.find(match)||rows[0]||{}).id;}
 
   [LIST,DETAIL].forEach(id=>CF.review.register(id,{
     group:['Notifications','消息中心'],
     scenarios:()=>id===LIST&&N.allowed()?['unread','read'].map(st=>({id:st,label:st==='unread'?['Unread notifications','未读消息']:['Read notifications','已读消息'],route:'/notifications?status='+st,description:['Filter existing notifications; read markers are not reset','筛选已有消息，不重置已读标记']})):[],
-    states:()=>!N.allowed()?['default']:id===LIST?['default','loading','empty','noresult','error','denied']:['default','loading','error','denied'],
+    states:()=>!N.allowed()?['default']:id===LIST?['default','loading','empty','noresult','error']:['default','loading','error'],
     route:()=>id===LIST?'/notifications':N.visible()[0]?'/notification?id='+encodeURIComponent(N.visible()[0].id):null,
     set(value){resetView();detailFailure=readError=false;S.st=value;},
-    reset(){detailFailure=readError=failRead=failMore=refreshFail=landingDenied=false;S.st='default';}
+    reset(){detailFailure=readError=failRead=failMore=refreshFail=false;S.st='default';}
   }));
 
   CF.define(CF.NCView={id:'portal-notifications',pages:[LIST,DETAIL],
@@ -279,7 +280,7 @@
       if(CF.renderFooter&&(S.page===LIST||S.page===DETAIL))CF.renderFooter();
     },
     onRoute(from,to){if(from===DETAIL&&to===LIST){restore=true;returnFocus=true;}if(to===DETAIL)detailTop=true;if(to!==DETAIL){clearTimeout(preflightTimer);preflight=null;}},
-    content(page){const guard=CF.authSurface();if(guard)return '<div class="card nc-layout">'+guard+'</div>';if(S.st==='denied')return CF.empty(L('Complete your account setup','请先完成账户必办事项'),L('Complete the required steps to continue.','完成必办事项后即可继续。'),btn('prerequisite',L('Continue setup','继续完善')));return page===LIST?renderList():renderDetail();},
+    content(page){const guard=CF.authSurface();if(guard)return '<div class="card nc-layout">'+guard+'</div>';return page===LIST?renderList():renderDetail();},
     layers:{'nc-confirm':()=>{const data=S.layer.data;return {title:L('Mark all as read?','确认全部已读？'),html:'<p>'+L('Mark '+data.ids.length+' unread message(s) under the current filter as read.','将把当前筛选下的 '+data.ids.length+' 条未读消息标为已读。')+'</p><p>'+L('Category: ','分类：')+E(data.cat)+'；'+L('Status: ','状态：')+E(data.status)+'</p>'+(readError?CF.note('red',L('Could not mark as read. Try again.','标为已读失败，请重试。')):''),foot:btn('closelayer',L('Cancel','取消'),'',busy?'disabled':'')+btn('nc-confirm',busy?L('Saving…','正在处理…'):L('Confirm','确认'),'',busy?'disabled':'')};}},
     onBeforeAct(act){if(act==='closelayer'&&busy)return true;if(act==='clearfilter'&&(S.page===LIST||S.page===DETAIL)){resetView();S.st='default';location.hash='#/notifications';return true;}if(act==='st'){detailFailure=false;readError=false;resetView();}return false;},
     onAct(act,v){
@@ -294,13 +295,12 @@
       if(act==='nc-jump'){
         const r=lookup(),t=r&&preflight&&preflight.id===r.id?preflight.target:r&&resolve(r);
         if(!t||preflight.status==='pending'||preflight.status==='gone')return true;
-        if(landingDenied){landingDenied=false;S.role='limited';return true;}
         if(CF.openNotificationTarget)CF.openNotificationTarget(t,r);
         else CF.enterPage(t.mode==='page'?t.target:'lending:P-LS-01',null);
         return true;
       }
       if(act==='nc-demo'){
-        if(v==='reset'){Object.assign(D,JSON.parse(snapshotData));N.rows=D.rows;try{localStorage.removeItem(storageKey);}catch(e){}resetView();S.role='asset';S.st='default';N.panelState='default';refreshFail=failRead=failMore=detailFailure=readError=landingDenied=false;location.hash='#/notifications';}
+        if(v==='reset'){Object.assign(D,JSON.parse(snapshotData));N.rows=D.rows;try{localStorage.removeItem(storageKey);}catch(e){}resetView();S.role='asset';S.st='default';N.panelState='default';refreshFail=failRead=failMore=detailFailure=readError=false;location.hash='#/notifications';}
         if(v==='new'){D.addType();N.rows=D.rows;newMessages();}
         if(v==='arrive'||v==='late'||v==='duplicate'){
           const pool=N.visible().filter(r=>r.business&&!String(r.id).startsWith('nc-fixture'));
@@ -323,17 +323,16 @@
         if(v==='refresh'){refreshFail=false;refresh();}
         if(v==='expire'){S.role='guest';S.menu=null;S.layer=null;S.st='default';}
         if(v==='detail-fail'){detailFailure=true;CF.enterPage('lending:'+DETAIL,{id:firstRow(r=>!!r.business)});}
-        if(['normal','guest','denied'].includes(v)){S.role=v==='guest'?'guest':v==='denied'?'limited':'asset';S.st='default';detailFailure=false;preflight=null;CF.enterPage('lending:'+DETAIL,{id:firstRow(r=>!!r.business)});}
+        if(['normal','guest','unbound'].includes(v)){S.role=v==='guest'?'guest':v==='unbound'?'signed':'asset';S.st='default';detailFailure=false;preflight=null;CF.enterPage('lending:'+DETAIL,{id:firstRow(r=>!!r.business)});}
         if(['plan','degraded','unavailable','superseded'].includes(v)){
           const pick={plan:r=>!!r.installments,degraded:r=>r.id==='nc-fixture-missing-template',
             unavailable:r=>r.id==='nc-fixture-denied-target',
-            superseded:r=>r.objectKind==='repayment'&&!CF.CQ.data().quotes.find(x=>x.id===r.objectId)?.l8}[v];
-          const owner=v==='superseded'?'fund':'asset';
+            superseded:r=>r.act&&CF.CQ.data().quotes.find(x=>x.id===r.objectId)?.state!=='waiting'}[v];
+          const owner='asset';
           S.role=owner;S.st='default';detailFailure=false;preflight=null;
           CF.enterPage('lending:'+DETAIL,{id:firstRow(pick,owner)});
         }
         if(v==='unknown')CF.enterPage('unknown:missing');
-        if(v==='landing'){landingDenied=true;CF.toast(L('Next landing will require account setup — demo.','下次落地将进入必办事项引导 —— 演示。'));}
         return true;
       }
       return false;

@@ -32,6 +32,8 @@ const matching=()=>visible().filter(r=>(!view.category||r.category===view.catego
 const batchRows=()=>matching().filter(r=>!isRead(r));
 function mark(ids){N.mark(ids)}
 const absolute=N.absolute,relative=N.relative;
+/* 正文时点按本人时区展示并标注时区；来源未给出的时点不补位。 */
+const fill=(r,s)=>s.replace(/\{time:(\w+)\}/g,(_,k)=>r.times&&r.times[k]?absolute(r.times[k]):'—');
 function B(act,en,zh,v='',primary=false,disabled=false){return `<button class="btn${primary?' primary':''}" type="button" data-act="om-${act}" data-v="${E(v)}" ${disabled?'disabled':''}>${L(en,zh)}</button>`}
 const label=N.label;
 const back=()=>`<a class="nc-back" href="${E(backHash)}">← ${L('Back to messages','返回消息列表')}</a>`;
@@ -93,7 +95,7 @@ if(detailState==='loading')return back()+`<div class="nc-feed">${skeleton()}</di
 if(detailState==='error')return back()+CF.empty(L('Could not load this notification','消息加载失败'),L('It has not been marked as read yet.','这条消息尚未标为已读。'),B('detail-retry','Retry','重试')+`<a class="btn" href="${E(backHash)}">${L('Back to list','返回列表')}</a>`);
 /* 已读保存失败：消息仍显示未读，正文照常可读；重试只处理已读。 */
 const readFail=readRetry.has(r.id)&&!isRead(r)?`<div class="nc-read-feedback" role="alert"><span>${L('Could not mark this message as read.','未能标为已读。')}</span>${B('read-retry','Retry','重试','',false,readBusy)}</div>`:'';
-return `<section class="om-reading nc-reading"><article class="card"><div class="card-b"><h1 tabindex="-1" id="om-detail-title">${E(text(r.title)||L('Notification','通知'))}</h1><div class="nc-reading-meta"><div class="nc-meta"><span>${E(cat(r.category))}</span><span>·</span><time datetime="${E(r.at)}">${E(absolute(r.at))}</time>${expired(r)?'<span>·</span><span class="om-expired-label">'+L('Expired','已过期')+'</span>':''}</div>${label(r)}</div>${readFail}<div class="nc-body">${E(text(r.body))}</div>${related(r)}</div></article><p class="ops-sample">${L('Demonstration data','演示数据')}</p></section>`}
+return `<section class="om-reading nc-reading"><article class="card"><div class="card-b"><h1 tabindex="-1" id="om-detail-title">${E(text(r.title)||L('Notification','通知'))}</h1><div class="nc-reading-meta"><div class="nc-meta"><span>${E(cat(r.category))}</span><span>·</span><time datetime="${E(r.at)}">${E(absolute(r.at))}</time>${expired(r)?'<span>·</span><span class="om-expired-label">'+L('Expired','已过期')+'</span>':''}</div>${label(r)}</div>${readFail}<div class="nc-body">${E(fill(r,text(r.body)))}</div>${related(r)}</div></article><p class="ops-sample">${L('Demonstration data','演示数据')}</p></section>`}
 /* N-O05：进入详情时对原业务对象做辅助可达性判断，最长 3 秒；超时后仍可尝试进入，目标自身的权限与状态限制照常生效。 */
 function startReach(id){clearTimeout(reachTimer);const r=visible().find(r=>r.id===id),plan=r?targetPlan(r):null;
  if(!plan||plan.page||!['open','readonly'].includes(plan.state)){reach='idle';return}
@@ -131,7 +133,7 @@ if(k==='expire'){returnHash=location.hash;A.onAct('ops-session-expire');return t
 if(k==='scene'){scene=v;S.demo=false;if(S.page!==P)location.hash=backHash;return true}
 if(k==='fault'){fault=v;CF.toast(L('Next request configured.','已设置下次请求结果。'));return true}
 if(k==='grant'){A.onAct('ops-grant',v);detailKey='';return true}
-if(k==='detail-demo'){detailMode=['deleted','handled','denied','missing'].includes(v)?v:'';detailKey='';if(v==='foreign'){location.hash='#'+DETAIL+'?id=other-person'}else {const r=structuredClone(D.seed()[v==='history'?6:v==='agreement'?4:0]);r.id='scenario-'+v;r.demoMode=detailMode;r.expires=v==='expired'?new Date(Date.now()-1000).toISOString():null;if(v==='none'){delete r.target;delete r.business}if(v==='malformed'){r.title={};r.summary={};r.body={}}if(v==='unsafe')r.body={en:'<img src=x onerror=alert(1)>\nThis is plain text.',zh:'<img src=x onerror=alert(1)>\n以上内容按纯文本展示。'};rows=rows.filter(x=>x.id!==r.id);rows.push(r);location.hash=detailURL(r.id,backHash)}S.demo=false;return true}
+if(k==='detail-demo'){detailMode=['deleted','handled','denied','missing'].includes(v)?v:'';detailKey='';if(v==='foreign'){location.hash='#'+DETAIL+'?id=other-person'}else {const r=structuredClone(D.seed()[v==='history'?5:v==='agreement'?4:0]);r.id='scenario-'+v;r.demoMode=detailMode;r.expires=v==='expired'?new Date(Date.now()-1000).toISOString():null;if(v==='none'){delete r.target;delete r.business}if(v==='malformed'){r.title={};r.summary={};r.body={}}if(v==='unsafe')r.body={en:'<img src=x onerror=alert(1)>\nThis is plain text.',zh:'<img src=x onerror=alert(1)>\n以上内容按纯文本展示。'};rows=rows.filter(x=>x.id!==r.id);rows.push(r);location.hash=detailURL(r.id,backHash)}S.demo=false;return true}
 if(k==='overflow'){for(let i=0;i<110;i++){const r=structuredClone(D.seed()[0]);r.id='overflow-'+i;r.at=new Date().toISOString();rows.unshift(r)}return true}
 if(k==='incoming'||k==='new'||k==='late'){const seed=D.seed(),r=structuredClone(k==='late'?seed.find(x=>x.category==='alert')||seed[0]:seed[k==='new'?4:0]);r.id='new-'+Date.now();r.created=new Date().toISOString();
  /* 列表按创建时间排序；到点消息晚到时业务发生时间早于创建时间，仍排在最前并展示发生时间。 */

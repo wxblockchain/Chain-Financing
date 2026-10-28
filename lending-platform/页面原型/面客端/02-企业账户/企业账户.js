@@ -114,8 +114,8 @@
   /* ------------------------------------------------------------------ 总览 */
   function head(){
     return '<div class="page-head ea-head"><div><h1 class="page-title">'+E(title())+'</h1>'+
-      '<p class="page-desc">'+L('Your company\'s crypto and bank accounts. When you accept a quote or record a disbursement, you choose one of the accounts saved here.',
-        '本企业自己的数币账户与法币账户。接受报价、登记放款时，从这里已登记的账户中选用。')+'</p></div>'+
+      '<p class="page-desc">'+L('Your company\'s crypto and bank accounts. In financing, you choose from the crypto accounts saved here.',
+        '本企业自己的数币账户与法币账户。办理融资业务时，从这里已登记的数币账户中选用。')+'</p></div>'+
       '<div class="page-actions">'+CF.tag('',L('Demonstration data','演示数据'))+'</div></div>';
   }
   /* 未登录与登录未绑定角色都取不到本企业账户；这里给本页的引导。 */
@@ -131,8 +131,8 @@
     const act=e.act?'<button type="button" class="btn primary" data-act="'+E(e.act)+'" data-v="'+E(e.value||'')+'">'+
       L(...(e.label||['Complete verification','前往完成认证']))+'</button>':'';
     return '<section class="card"><div class="card-b ea-gate"><h2>'+L('Verification required','需要先完成认证')+'</h2>'+
-      '<p>'+L('Once your company is verified, you can add the bank and crypto accounts used in financing.',
-        '本企业完成认证后，即可登记用于融资业务的法币账户与数币账户。')+'</p>'+(act?'<div class="detail-actions">'+act+'</div>':'')+'</div></section>';
+      '<p>'+L('Once your company is verified, you can add your company\'s crypto and bank accounts.',
+        '本企业完成认证后，即可登记本企业的数币账户与法币账户。')+'</p>'+(act?'<div class="detail-actions">'+act+'</div>':'')+'</div></section>';
   }
   function loadError(){
     return '<section class="card">'+CF.empty(L('We couldn\'t load your accounts','暂时无法读取本企业账户'),
@@ -155,7 +155,7 @@
   }
   function empty(kind){
     return kind==='fiat'
-      ? CF.empty(L('No fiat accounts yet','尚未登记法币账户'),L('Add a USD bank account to use it in USD transactions.','登记 USD 银行账户后，即可在 USD 结算的业务中选用。'),
+      ? CF.empty(L('No fiat accounts yet','尚未登记法币账户'),L('Add a bank account for your company.','登记本企业的银行账户。'),
           b('add','Add fiat account','新增法币账户','fiat',true))
       : CF.empty(L('No crypto accounts yet','尚未登记数币账户'),L('Add an Ethereum address to use it in USDT and USDC transactions.','登记以太坊网络上的地址后，即可在 USDT、USDC 结算的业务中选用。'),
           b('add','Add crypto account','新增数币账户','crypto',true));
@@ -428,7 +428,7 @@
       const peers=EA.accounts(owner(),a.kind).filter(x=>x.id!==a.id&&!EA.missing(x).length);
       const items=[L('It will no longer be available to select in transactions.','该账户不再出现在任何选用列表中。'),
         L('Transactions already submitted keep the account details they were submitted with.','已提交的业务记录保留当时的账户信息，不受影响。')];
-      if(!peers.length)items.push(a.kind==='fiat'?L('This is your only usable fiat account. Until you add another, USD transactions can\'t be submitted.','删除后暂无可选法币账户，USD 结算的业务办理将无法提交，需要时可重新登记。')
+      if(!peers.length)items.push(a.kind==='fiat'?L('This is your only usable fiat account. After you delete it, there will be no fiat account to select, and related transactions can\'t be submitted. You can add one again when needed.','删除后暂无可选的法币账户，相关业务办理将无法提交，需要时可重新登记。')
         :L('This is your only usable crypto account. Until you add another, USDT and USDC transactions can\'t be submitted.','删除后暂无可选的数币账户，USDT、USDC 结算的业务办理将无法提交，需要时可重新登记。'));
       items.push(a.kind==='crypto'?L('This can\'t be undone. To use this address again, you\'ll need to add it and sign again.','删除不可撤销；再次使用该地址需重新登记并签名。'):L('This can\'t be undone.','删除不可撤销。'));
       return {title:L('Delete account?','删除账户？'),dismiss:V.busy!=='remove',

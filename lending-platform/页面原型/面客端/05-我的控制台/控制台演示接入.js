@@ -3,26 +3,25 @@
  * Demonstration data only: no API, wallet, chain, permission or live exchange-rate assertion. */
 (function(CF){
   'use strict';
-  const D=CF.LS,Q=CF.CQ,DAY=86400000,H=3600000,iso=n=>new Date(n).toISOString(),VERSION=17;
+  const D=CF.LS,Q=CF.CQ,DAY=86400000,H=3600000,iso=n=>new Date(n).toISOString(),VERSION=18;
   let db=Q.data(),now=D.now();
   const POOL=D.COMBOS[0].pledge,HOLDER=D.HOLDERS['entity-demo-a'];
   /* 放款地址、还款收款地址与融资收款地址都取企业账户目录里的 Ethereum 演示账户快照，本文件不另建账户字段。 */
   const wallet=(owner,n=0)=>{const list=Q.accounts(owner,'crypto').filter(a=>a.chain==='ETH'&&!Q.accountMissing(a).length);const a=list[n]||list[0];return a?Q.accountSnapshot(a):null;};
   const hash=seed=>{let h=2166136261;for(const c of String(seed))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return '0x'+Array.from({length:64},()=>(h=Math.imul(h^(h>>>13),1597334677)>>>0,(h>>>28).toString(16))).join('');};
-  const FXSRC=['Operations · Exchange rate management','运营端汇率管理'];
   const today=()=>iso(D.now()).slice(0,10);
   /* 期次由还款模块按放款成功日按季生成。按“第 N 期应还日距今天数”倒推放款成功时间。 */
   const disbursedFor=(dueOffset,period=1)=>Date.parse(D.addMonths(D.addDays(today(),dueOffset),-3*period)+'T08:00:00.000Z');
-  /* 样例：键为结局，start 为报价时间（成交样例即放款成功时间），fx 为 USDC 快照。 */
+  /* 样例：键为结局，start 为报价时间（成交样例即放款成功时间）。本期 USD、USDT、USDC 固定 1:1，USDC 样例的结算金额与融资金额数值相同。 */
   const samples=[
     {key:'waiting',name:['Trade receivables','贸易应收账款'],start:()=>now-2*DAY},
     {key:'disbursing',name:['Export settlement','出口结算融资'],start:()=>now-3*DAY},
     {key:'repayPending',name:['Quarterly working capital','季度营运资金'],start:()=>disbursedFor(-2,2)},
-    {key:'repayDue',name:['Cross-border inventory','跨境备货融资'],ccy:'USDC',fx:0.9998,start:()=>disbursedFor(0)},
+    {key:'repayDue',name:['Cross-border inventory','跨境备货融资'],ccy:'USDC',start:()=>disbursedFor(0)},
     {key:'rejected',name:['Completed negotiation','历史协商项目'],start:()=>now-12*DAY},
     {key:'generating',name:['Plan in preparation','计划生成中项目'],start:()=>now-2*H},
     {key:'settled',name:['Completed financing','历史结清融资'],start:()=>now-500*DAY},
-    {key:'repayUnknown',name:['Digital settlement financing','数币结算融资'],ccy:'USDC',fx:1.0002,start:()=>disbursedFor(-3)},
+    {key:'repayUnknown',name:['Digital settlement financing','数币结算融资'],ccy:'USDC',start:()=>disbursedFor(-3)},
     {key:'expiredRevoking',name:['Stablecoin supplier payments','稳定币供应商付款'],start:()=>now-20*DAY},
     {key:'offerPending',name:['Stablecoin export financing','稳定币出口融资'],start:()=>now-35*60000},
     {key:'rejectedRevoked',name:['Coastal freight receivables','沿海运费应收'],start:()=>now-30*DAY},
@@ -43,12 +42,12 @@
     db.quotes=db.quotes.filter(q=>!/^FB-MC-/.test(q.id));db.pending=(db.pending||[]).filter(x=>!/^PO-MC-/.test(x.id));
   }
   function build(s,i){
-    const n=i+1,id='FP-MC-'+String(n).padStart(3,'0'),business='FB-MC-'+String(n).padStart(4,'0'),request=id+'-01',start=s.start(),amount=240000,ccy=s.ccy||'USDT',fx=s.fx||1;
+    const n=i+1,id='FP-MC-'+String(n).padStart(3,'0'),business='FB-MC-'+String(n).padStart(4,'0'),request=id+'-01',start=s.start(),amount=240000,ccy=s.ccy||'USDT';
     const funded=['repayPending','repayDue','generating','settled','repayUnknown','repayOverdue'].includes(s.key);
     /* 项目期限取创建日 + 12 个月（上限，含端点）；到期即最终还款日。项目质押率由资产方创建时自填，演示数据刻意不统一。 */
     const created=start-DAY,end=Date.parse(D.addMonths(iso(created).slice(0,10),12)+'T12:00:00.000Z');
     const rate=[0.8,0.75,0.8,0.7,0.8,0.8,0.8,0.8,0.8,0.75,0.8,0.7,0.8][i];
-    const payee=wallet('entity-demo-a'),lender=wallet('fund-a',i%2),settlement=Math.round(amount*fx*100)/100;
+    const payee=wallet('entity-demo-a'),lender=wallet('fund-a',i%2),settlement=amount;
     const demand={id:request,amount,state:'open',at:iso(start-2*H),tenorDays:370,payee};
     const p={id,name:s.name,owner:'entity-demo-a',kind:'erc20-ar',network:'ETH',rate,termCap:12,term:12,settle:['USDT','USDC'],repay:D.REPAY,contract:POOL,deployedAt:iso(created+3*H),attempts:[],state:'raising',balance:0,published:demand.at,created:iso(created),expires:iso(end),demands:[demand]};
     const quoted=()=>{demand.state='quoted';demand.rate='6.40';demand.currency=ccy;demand.institution=['Demo Capital A','演示资金机构 A'];demand.quoteAt=iso(start);p.state='locked';};
@@ -56,7 +55,8 @@
     /* 每个项目三份已质押代币，持有地址与发行合约用于归集质押授权；第 4 号另有一份正在质押上链，该地址在该发行合约下的质押授权暂不能撤销。 */
     if(n===4)D.tokens.push({id:'TK-MC-4-4',owner:p.owner,holder:HOLDER[0],kind:'erc20-ar',issuer:D.ISSUERS[1],units:1,symbol:'AR-DEMO',value:120000,valid:true,pool:id,pledge:'free',pending:true,buyer:['Demo Buyer 4','演示买方 4'],due:iso(end+30*DAY).slice(0,10),from:iso(created).slice(0,10),issued:iso(created)});
     for(let j=1;j<=3;j++)D.tokens.push({id:'TK-MC-'+n+'-'+j,owner:p.owner,holder:HOLDER[j===3&&n%2?1:0],kind:'erc20-ar',issuer:D.ISSUERS[n===4&&j===3?1:0],units:1,symbol:'AR-DEMO',value:150000,valid:true,pool:id,pledge:'pledged',buyer:['Demo Buyer '+j,'演示买方 '+j],due:iso(end+30*DAY).slice(0,10),from:iso(created).slice(0,10),issued:iso(created)});
-    const fxSnap={value:fx,version:'FX-MC-001',at:start-3*DAY,source:FXSRC};
+    /* 还款模块按本笔折算值 1 计算结算金额，这里只保留固定值 1，不另设汇率来源。 */
+    const fxSnap={value:1,version:'FX-MC-001',at:start-3*DAY};
     if(s.key==='offerPending'){
       /* 报价上链确认中：只有融资申请编号与签名发出时间，没有融资业务编号；本轮需求与在途报价金额已预占。 */
       db.pending.push({id:'PO-MC-'+String(n).padStart(3,'0'),project:id,owner:p.owner,demand:request,amount,ccy,settlement,fx:fxSnap,fund:'fund-a',lender,repayTo:lender,rate:'6.80',repay:iso(end),at:start,state:'processing'});

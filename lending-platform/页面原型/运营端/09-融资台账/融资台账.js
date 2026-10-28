@@ -244,7 +244,8 @@
       open:(r,q)=>q?demandHit(r,q)||{}:{},
       get cols(){return [
         [L('Application number','融资申请编号'),r=>r.id?`<strong class="mono">${E(r.id)}</strong>`:pending()],
-        [L('Project / publisher','所属项目 / 项目发布方'),r=>`<span class="mono">${E(r.project)}</span>${meta(E(ownerOf(r)))}`],
+        [L('Project number / name','项目编号 / 项目名称'),r=>`<span class="mono">${E(r.project)}</span>${meta(E(projectName(project(r.project))))}`],
+        [L('Project publisher','项目发布方'),r=>E(ownerOf(r))],
         [L('Demand amount','需求金额')+unit('USDT'),r=>`<span class="num">${num(r.amount)}</span>`,'lg-num'],
         [L('Application status','申请状态'),r=>r.status?tag(DEMAND,r.status):'—'],
         [L('Lending funder / disbursed','放款机构 / 放款金额'),r=>r.loan?`${E(funder(r.loan.funder))}${meta(amt(r.loan.disbursed,r.loan.ccy))}`:'—'],
