@@ -259,7 +259,7 @@
   function nm(pair) { return L(pair[0], pair[1]); }
   function issuerName(t) { return nm(AM.ISSUERS[t.issuer]); }
   function tokenById(pid) { return AM.TOKENS.filter(function (x) { return x.pid === pid; })[0] || null; }
-  /* 链展示全称：中文“以太坊”、英文 Ethereum，图标沿用共享网络图标。 */
+  /* 链展示全称：中英文界面一律写 Ethereum，图标沿用共享网络图标。 */
   function network(code) {
     var name = AM.CHAIN_NAME[code];
     var html = CF.market.network(code);

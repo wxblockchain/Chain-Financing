@@ -194,7 +194,7 @@
         <li${D.stage==='connect'?' aria-current="step"':''}><span class="login-step-num">2</span><span>${L('Choose address','选择登录地址')}</span></li>
         <li${D.stage==='sign'?' aria-current="step"':''}><span class="login-step-num">3</span><span>${L('Sign message','完成消息签名')}</span></li>
       </ol>
-      <div class="login-requirements"><span>${L('Before you start','开始前')}</span><p>${L('Use the MetaMask desktop browser extension on Ethereum (ETH).','请使用桌面浏览器的 MetaMask 插件，登录链为以太坊（ETH）。')}</p></div>
+      <div class="login-requirements"><span>${L('Before you start','开始前')}</span><p>${L('Use the MetaMask desktop browser extension on Ethereum.','请使用桌面浏览器的 MetaMask 插件，登录链为 Ethereum。')}</p></div>
       ${D.loginError?CF.note('red',L(...errors[D.loginError])):''}
       <div class="login-actions">${retry?btn('Try again','重试','login-retry-pull','','primary'):btn('Connect wallet','连接钱包','login-connect','','primary')}${link('Keep browsing','继续浏览','login-exit')}</div>
       <p class="login-assurance">${L('The login signature does not transfer funds or approve spending.','登录签名不涉及转账或资金授权。')}</p>

@@ -64,7 +64,7 @@
         standard:'ERC-3525',type:'ERC-3525-应收账款',slot:String(1000+n),tokenId:String(n),decimals:'18',
         qty:'1000000.00',value:'1000000.00',
         rate:{pair:'USD/USD',value:'1.000000',at:now-6*D,source:['Issuance-time snapshot · demo rate source','签发时快照 · 示例汇率来源']},
-        chain:['Ethereum','以太坊'],chainId:'1',contract:{name:'DemoReceivableToken3525',address:addr(1)},
+        chain:['Ethereum','Ethereum'],chainId:'1',contract:{name:'DemoReceivableToken3525',address:addr(1)},
         mintTx:hash(s+1),mintAt:now-6*D,initial:addr(s+2),
         holders:[{addr:addr(s+2),qty:'600000.00'},{addr:addr(s+3),qty:'400000.00'}],
         tokenState:'valid',
@@ -76,7 +76,7 @@
           trade:['Trade in goods','货物贸易'],settle:['Telegraphic transfer (T/T)','电汇（T/T）'],
           terms:['Payment 180 days after invoice date','发票日后 180 天付款'],recourse:['With recourse','有追索'],
           confirm:{party:COMPANIES.c2.name,result:['Confirmed','已确认'],at:now-9*D},
-          evidence:{hash:hash(s+4),tx:hash(s+5),block:String(21030000+n*37),chain:['Ethereum','以太坊'],at:now-8*D},
+          evidence:{hash:hash(s+4),tx:hash(s+5),block:String(21030000+n*37),chain:['Ethereum','Ethereum'],at:now-8*D},
           transfer:{done:['Registered','已登记'],org:['Demo registry','示例登记机构'],no:'DEMO-REG-'+k},
           declare:['Provided','已提供']},
         proofs:[

@@ -4,8 +4,8 @@
    演示工具里的第三个组合用于演示「平台版本新增组合（未配置）」。 */
 (function(CF){
   const TYPE='ERC-3525-应收账款';
-  const ETH={name:['Ethereum','以太坊'],chainId:'1',icon:'ETH'};
-  const SEPOLIA={name:['Ethereum Sepolia','以太坊 Sepolia'],chainId:'11155111',icon:'ETH'};
+  const ETH={name:['Ethereum','Ethereum'],chainId:'1',icon:'ETH'};
+  const SEPOLIA={name:['Ethereum Sepolia','Ethereum Sepolia'],chainId:'11155111',icon:'ETH'};
   const BSC={name:['BNB Smart Chain','BNB Smart Chain'],chainId:'56'};
   const OP='op***@example.com';               // 运营人员按脱敏后的可读归属呈现
   const LI='li***@example.com';

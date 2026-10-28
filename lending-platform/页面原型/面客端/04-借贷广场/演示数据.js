@@ -384,7 +384,7 @@
     p.state='closed';p.closeReason='owner';D.releasePool(p);D.log(p,'closed');D.save();};
   D.seed = () => {
     D.projects=[];D.tokens=[];D.applications=[];D.executions=[];D.events=[];D.approvals=[];D.offset=0;D.serial=100;
-    /* 融资收款地址快照（演示）：取本企业在企业账户登记的以太坊数币账户，发布成功后随本轮固定。 */
+    /* 融资收款地址快照（演示）：取本企业在企业账户登记的 Ethereum 数币账户，发布成功后随本轮固定。 */
     const PAYEE={'entity-demo-a':{id:'EA-DEMO-C02',kind:'crypto',chain:'ETH',label:['Collection wallet','收款钱包'],address:'0x00000000000000000000000000000000000000a2'},
       'entity-demo-b':{id:'EA-DEMO-C31',kind:'crypto',chain:'ETH',label:['Main wallet','主钱包'],address:'0x00000000000000000000000000000000000000c1'}};
     const POOL=D.COMBOS[0].pledge;

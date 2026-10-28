@@ -45,7 +45,7 @@
   }
   const currencyTags=(a,compact=false)=>assetTags(EA.currencies(a),compact);
   const tokenTags=(compact=false)=>assetTags(EA.TOKENS,compact);
-  /* 网络只展示全名（以太坊 / Ethereum），不展示 ETH 缩写，避免与 ETH 币混淆。 */
+  /* 网络中英文界面一律写 Ethereum，不展示 ETH 缩写，避免与 ETH 币混淆。 */
   const networkTag=code=>'<span class="ea-network"><span class="ea-asset-label">'+CF.eaAssetIcon(code)+'<span>'+E(EA.chainName(code))+'</span></span></span>';
   const kindIcon=kind=>'<svg class="ea-kind-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
     (kind==='fiat'?'<path d="m3 9 9-5 9 5H3ZM5 11v7m5-7v7m4-7v7m5-7v7M3 21h18"/>':'<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18m-4 4h4v4h-4a2 2 0 0 1 0-4Z"/>')+'</svg>';
@@ -157,7 +157,7 @@
     return kind==='fiat'
       ? CF.empty(L('No fiat accounts yet','尚未登记法币账户'),L('Add a bank account for your company.','登记本企业的银行账户。'),
           b('add','Add fiat account','新增法币账户','fiat',true))
-      : CF.empty(L('No crypto accounts yet','尚未登记数币账户'),L('Add an Ethereum address to use it in USDT and USDC transactions.','登记以太坊网络上的地址后，即可在 USDT、USDC 结算的业务中选用。'),
+      : CF.empty(L('No crypto accounts yet','尚未登记数币账户'),L('Add an Ethereum address to use it in USDT and USDC transactions.','登记 Ethereum 网络上的地址后，即可在 USDT、USDC 结算的业务中选用。'),
           b('add','Add crypto account','新增数币账户','crypto',true));
   }
   function incomplete(a){
@@ -227,7 +227,7 @@
     address:'autocomplete="off" spellcheck="false" autocapitalize="off"'};
   const HINT={bankCity:['The city where the bank branch is located.','开户行所在城市。'],iban:['Enter it as your bank shows it. Spaces are ignored.','按开户行提供的写法填写，空格会被忽略。'],
     swift:['8 or 11 letters and digits.','8 位或 11 位字母数字。'],
-    address:['An Ethereum address: 0x followed by 40 hexadecimal characters. It can\'t be changed after the account is saved.','以太坊地址：0x 开头，后接 40 位十六进制字符；登记后不可修改。']};
+    address:['An Ethereum address: 0x followed by 40 hexadecimal characters. It can\'t be changed after the account is saved.','Ethereum 地址：0x 开头，后接 40 位十六进制字符；登记后不可修改。']};
   const NAME_HINT=['Another account already uses this nickname. You can keep it, but a distinct name is easier to tell apart.','已有账户使用相同的备注名。可以保留，但用不同的名称更容易区分。'];
 
   function field(k,full=false,placeholder=''){
@@ -265,7 +265,7 @@
         (picked.includes(c)?' checked':'')+' aria-label="'+E(c+' · '+EA.currencyName(c))+'"><span class="ea-chip-body">'+assetLabel(c)+'</span></label>').join('')+'</div>'+
       '<span class="err-msg" id="ea-f-ccys-err" role="alert">'+E(err('ccys'))+'</span></fieldset>';
   }
-  /* 结算收款链：当前仅以太坊，平台固定带出，只读，用户不选择。 */
+  /* 结算收款链：当前仅 Ethereum，平台固定带出，只读，用户不选择。 */
   function networkField(){
     return '<div class="field ea-full"><span class="field-label" id="ea-network-label">'+L(...EA.labels.chain)+'<span class="ea-readonly-label">'+L('Read only','只读')+'</span></span>'+
       '<span class="field-static ea-network-static" role="textbox" aria-readonly="true" aria-labelledby="ea-network-label">'+networkTag(EA.CHAIN)+'</span></div>';
@@ -293,7 +293,7 @@
       '<p class="hint">'+L('The address can\'t be changed. To use a different address, add a new crypto account and verify it, then delete this one if you no longer need it.',
         '数币地址登记后不可修改。要换地址，请新增一个数币账户并完成签名，再按需删除本账户。')+'</p></div>';
     if(f.step===1)return '<div class="ea-form">'+steps(1)+
-      notice('warn','<div><b>'+L('Only Ethereum addresses are supported, and only ones you can sign with.','当前仅支持以太坊网络地址，且只能登记你能签名的地址。')+'</b> '+
+      notice('warn','<div><b>'+L('Only Ethereum addresses are supported, and only ones you can sign with.','当前仅支持 Ethereum 网络地址，且只能登记你能签名的地址。')+'</b> '+
         L('Exchange deposit addresses, third-party custodial addresses and contract addresses that can\'t sign are not supported.',
           '交易所充值地址、第三方托管地址以及无法签名的合约地址都无法登记。')+'</div>')+
       '<div class="ea-grid">'+networkField()+field('address',true,'0x…')+field('label',true)+'</div>'+
@@ -327,7 +327,7 @@
     :L('Use '+EA.TEXT_MAX+' characters or fewer.','不超过 '+EA.TEXT_MAX+' 个字符。');
   const LIMITED=['label','iban','bank'];
   const addressError=()=>L('That isn\'t a valid Ethereum address. It should start with 0x followed by 40 hexadecimal characters.',
-    '这不是一个有效的以太坊地址，应以 0x 开头并包含 40 位十六进制字符。');
+    '这不是一个有效的 Ethereum 地址，应以 0x 开头并包含 40 位十六进制字符。');
   function validateFiat(){
     const f=F(),e={};
     EA.fiatRequired.forEach(k=>{
@@ -342,7 +342,7 @@
     f.duplicate=dup?dup.id:'';
     return !dup;
   }
-  /* 结算收款链固定为以太坊：地址不符合以太坊格式（含其他网络格式）都不能进入签名。 */
+  /* 结算收款链固定为 Ethereum：地址不符合 Ethereum 格式（含其他网络格式）都不能进入签名。 */
   function validateAddress(){
     const f=F(),e={};
     const address=val('address').trim();
@@ -392,7 +392,7 @@
       if(r==='mismatch')f.problem=L('The signing address doesn\'t match the address you\'re adding. Please sign with that address.','签名的地址和你要登记的地址不是同一个，请用该地址签名。');
       else if(r==='rejected')f.problem=L('The signature wasn\'t completed, so the account wasn\'t saved. You can try again.','本次没有完成签名，账户尚未登记，你可以重试。');
       else if(r==='unavailable')f.problem=L('Your wallet is unavailable. Reconnect it and try again.','钱包环境不可用，请重新连接钱包后重试。');
-      else if(r==='network')f.problem=L('Your wallet isn\'t on the Ethereum network. Switch to Ethereum in your wallet, then try again.','钱包当前不在以太坊网络，请在钱包中切换到以太坊网络后重试。');
+      else if(r==='network')f.problem=L('Your wallet isn\'t on the Ethereum network. Switch to Ethereum in your wallet, then try again.','钱包当前不在 Ethereum 网络，请在钱包中切换到 Ethereum 网络后重试。');
       else {commitAddress();return;}
       CF.render();
     },550);
@@ -440,7 +440,7 @@
         '<div class="ea-wallet-box"><span class="hint">'+L('Signing address','签名地址')+'</span><span class="mono ea-break">'+E(f?.form.address||'')+'</span></div>'+
         '<p class="hint">'+L('Signing proves you control this address. It doesn\'t send a transaction or cost a network fee.','签名只证明你控制这个地址，不会发起交易，也不产生链上费用。')+'</p>'+
         '<div class="ea-sim"><span class="ea-sim-label">'+L('Simulate · review only','模拟 · 仅评审')+'</span>'+
-          b('wallet','Signed by another address','用其他地址签名','mismatch')+b('wallet','Wallet not on Ethereum','钱包不在以太坊网络','network')+b('wallet','Wallet unavailable','钱包不可用','unavailable')+'</div></div>',
+          b('wallet','Signed by another address','用其他地址签名','mismatch')+b('wallet','Wallet not on Ethereum','钱包不在 Ethereum 网络','network')+b('wallet','Wallet unavailable','钱包不可用','unavailable')+'</div></div>',
       foot:b('wallet','Decline','拒绝','rejected')+b('wallet','Sign','签名','ok',true)};},
     'ea-noname':()=>({title:L('Can\'t add a fiat account right now','暂时无法新增法币账户'),dismiss:true,
       html:'<div class="ea-confirm"><p>'+L('We can\'t get your company name at the moment, so a fiat account can\'t be added yet. Please try again later. You can still add a crypto account.',

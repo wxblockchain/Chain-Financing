@@ -12,7 +12,7 @@
   /* 演示用的企业 / 机构当前名称：资产方取资产可信平台同步的企业名称，资金方取审核通过的机构名称。 */
   const NAMES={'entity-demo-a':['Demo Asset Company A','演示资产企业 A'],'entity-demo-b':['Demo Asset Company B','演示资产企业 B'],
     'fund-a':['Demo Capital A','演示资金机构 A'],'fund-b':['Demo Capital B','演示资金机构 B']};
-  /* 演示目录：双方各有法币与数币账户，便于演示按币种的选用范围；数币账户当前都在以太坊网络。登记时间错开，列表顺序可见。 */
+  /* 演示目录：双方各有法币与数币账户，便于演示按币种的选用范围；数币账户当前都在 Ethereum 网络。登记时间错开，列表顺序可见。 */
   function seed(){const t=n=>new Date(now()-n*DAY).toISOString();return [
     {id:'EA-DEMO-F01',owner:'entity-demo-a',kind:'fiat',accountType:'general',ccys:['USD','EUR'],label:['Singapore operating account','新加坡运营账户'],iban:'SG64DEMO0000000001',bank:'Demo Bank Limited',bankCity:'Singapore',swift:'DEMOSGSG',at:t(40)},
     {id:'EA-DEMO-F02',owner:'entity-demo-a',kind:'fiat',ccys:['USD'],label:['Hong Kong account','香港账户'],iban:'HK00DEMO0000000002',bank:'Demo Bank (HK)',bankCity:'Hong Kong',swift:'DEMOHKHH',at:t(12)},
@@ -38,10 +38,10 @@
   EA.owner=()=>S.role==='fund'?'fund-a':'entity-demo-a';
   /* 模块与数据口径统一叫“企业账户”；面客展示名按侧区分：资产方“企业账户”、资金方“机构账户”。 */
   EA.title=()=>S.role==='fund'?['Institution accounts','机构账户']:['Company accounts','企业账户'];
-  /* 结算收款链当前仅以太坊，用户不选择；数据里保留链代码供业务按链匹配，界面一律展示网络全名，不展示 ETH 缩写，避免与 ETH 币混淆。 */
+  /* 结算收款链当前仅 Ethereum，用户不选择；数据里保留链代码供业务按链匹配，界面一律展示网络全名，不展示 ETH 缩写，避免与 ETH 币混淆。 */
   EA.CHAINS=['ETH'];
   EA.CHAIN='ETH';
-  const CHAIN_NAMES={ETH:['Ethereum','以太坊']};
+  const CHAIN_NAMES={ETH:['Ethereum','Ethereum']};
   EA.chainName=c=>CHAIN_NAMES[c]?L(...CHAIN_NAMES[c]):String(c||'');
   EA.TOKENS=['USDT','USDC'];
   /* 账户币种只作标注：本期可选 USD、EUR、GBP（由平台维护、可调整），平台不核验，业务选用也不据此筛选。
@@ -110,11 +110,11 @@
 
   /* —— 校验 —— */
   EA.swiftValid=v=>/^[A-Z0-9]{8}([A-Z0-9]{3})?$/.test(EA.compact(v));
-  /* 以太坊地址：0x 加 40 位十六进制字符；其他网络格式的地址一律不通过。 */
+  /* Ethereum 地址：0x 加 40 位十六进制字符；其他网络格式的地址一律不通过。 */
   EA.addressValid=v=>/^0x[0-9a-fA-F]{40}$/.test(String(v||'').trim());
   EA.duplicateFiat=(owner,iban,swift,exceptId)=>EA.accounts(owner,'fiat').find(a=>a.id!==exceptId&&
     EA.compact(a.iban)===EA.compact(iban)&&EA.compact(a.swift)===EA.compact(swift))||null;
-  /* 以太坊地址查重不区分大小写。 */
+  /* Ethereum 地址查重不区分大小写。 */
   const sameAddress=(x,y)=>String(x||'').trim().toLowerCase()===String(y||'').trim().toLowerCase();
   EA.duplicateCrypto=(owner,address)=>EA.accounts(owner,'crypto').find(a=>sameAddress(a.address,address))||null;
   /* 由用户自由填写的文本字段暂定最多 100 个字符（按字符计）；账号 / IBAN 去除空格后计数。地址类字段不限长度与字符种类。 */

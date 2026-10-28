@@ -17,7 +17,7 @@
   AM.CHAIN = "ETH";
   AM.CHAIN_ID = 1;
   /* 链的全称：中文、英文分别给出，不用缩写。 */
-  AM.CHAIN_NAME = { ETH: ["Ethereum", "以太坊"], TRON: ["TRON", "波场"] };
+  AM.CHAIN_NAME = { ETH: ["Ethereum", "Ethereum"], TRON: ["TRON", "波场"] };
   /* 代币发行合约定义的小数位数。 */
   AM.DECIMALS = 2;
   /* 合约审计情况：只给是否审计、审计机构与报告日期，不提供报告文件。 */
