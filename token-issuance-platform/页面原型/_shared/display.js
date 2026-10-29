@@ -82,6 +82,8 @@
     '新增 · 填写信息':'Add: enter details','新增 · 填写有误':'Add: form error','新增 · 签名说明':'Add: signature explanation','新增 · 等待签名':'Add: waiting for signature','新增 · 签名地址不一致':'Add: signing address mismatch','新增 · 登记成功':'Add: registered',
     '编辑备注名':'Edit label','删除确认':'Delete confirmation','删除：登录地址不可删除':'Delete: sign-in address protected','删除：已被引用不可删除':'Delete: referenced account protected'
   };
+  /* 模块追加本模块文案的英文；页面标题取 TP.pageTitle（中文原文），英文同样查本表。 */
+  TP.addCopy=function(map){Object.keys(map).forEach(function(k){EN[k]=map[k];});};
   var originalText=new WeakMap(), originalAttrs=new WeakMap();
   TP.language='en'; TP.zone='UTC';
   function translated(value){
@@ -112,7 +114,8 @@
       });originalAttrs.set(el,attrs);
     });
     document.documentElement.lang=TP.language==='en'?'en':'zh-CN';
-    document.title=TP.language==='en'?EN['企业登录与用户中心 · 代币发行平台']:'企业登录与用户中心 · 代币发行平台';
+    var title=TP.pageTitle||'企业登录与用户中心 · 代币发行平台';
+    document.title=TP.language==='en'?(EN[title]||title):title;
   };
   TP.renderDisplay=function(){
     document.querySelectorAll('[data-language]').forEach(function(el){el.value=TP.language;});
@@ -125,7 +128,8 @@
     document.querySelectorAll('[data-instant]').forEach(function(el){
       var parts={};fmt.formatToParts(new Date(el.dataset.instant)).forEach(function(p){parts[p.type]=p.value;});
       var day=parts.year+'-'+parts.month+'-'+parts.day, clock=parts.hour+':'+parts.minute;
-      el.replaceChildren(document.createTextNode(day+(el.hasAttribute('data-compact')?'':' '+clock+':'+parts.second)));
+      // data-day 只展示换算后的日期；data-compact 日期 + 副文本时间；默认完整日期时间。
+      el.replaceChildren(document.createTextNode(day+(el.hasAttribute('data-compact')||el.hasAttribute('data-day')?'':' '+clock+':'+parts.second)));
       if(el.hasAttribute('data-compact')){var sub=document.createElement('span');sub.className='cell-sub';sub.textContent=clock;el.appendChild(sub);}
     });
     TP.localize();

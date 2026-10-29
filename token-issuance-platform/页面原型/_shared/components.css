@@ -390,6 +390,80 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
   .demo-panel{max-width:calc(100vw - 40px)}
 }
 
+/* ---------- M2：资产摘要、状态组、检索条、子表、材料、管理端账号入口 ---------- */
+/* 资产摘要：左侧金额与对方，右侧四个状态各占一格；每格只回答一个问题。 */
+.asset-sum{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:var(--sp-6);padding:var(--sp-5) var(--card-pad);align-items:center}
+.asset-sum .eyebrow{font-size:var(--ui-field-label);color:var(--muted)}
+.amount-lg{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:var(--fs-28);font-weight:600;letter-spacing:-.02em;line-height:1.3}
+.amount-lg .ccy{font-size:var(--fs-14);color:var(--muted);font-weight:500;margin-left:var(--sp-2);letter-spacing:0}
+.asset-sum .meta{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-5);margin-top:var(--sp-2);font-size:var(--fs-13);color:var(--muted)}
+.asset-sum .meta b{color:var(--text);font-weight:500}
+.status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.status-grid>div{padding:var(--sp-3) var(--sp-4);min-width:0}
+.status-grid>div+div{border-left:1px solid var(--row-line)}
+.status-grid dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
+.status-grid dd{margin:0}
+.status-grid .tag{white-space:normal}
+/* 发起条件：满足时一行确认，不满足时列出全部原因。 */
+.cond{display:flex;align-items:flex-start;gap:var(--sp-3);padding:var(--sp-4) var(--card-pad);border-top:1px solid var(--border);font-size:var(--fs-13);background:var(--card-2);color:var(--muted)}
+.cond ul{margin:var(--sp-1) 0 0;padding-left:var(--sp-5)}
+.cond.ok{background:var(--ok-bg);color:var(--ok)}
+.cond.no{background:var(--warn-bg);color:var(--warn)}
+.cond b{font-weight:600}
+.cond .btn{margin-left:auto;align-self:center}
+/* 表格内状态：多个标签换行排列；不可发起原因写在发行状态下方。 */
+.tags{display:flex;flex-wrap:wrap;gap:var(--sp-1)}
+.tbl.auto th:first-child{width:auto}
+.tbl.auto .cell-sub{max-width:24ch}
+.tbl .col-name{min-width:120px}
+.tbl td>.tag{white-space:normal;margin-top:var(--sp-1)}
+.tbl .num{text-align:right;white-space:nowrap}
+.tbl .num .cell-sub{display:block}
+.cell-sub.warn{color:var(--warn)}
+.cell-sub.ok{color:var(--ok)}
+/* 缺失值：L1 缺失用警示色说明上游未提供；L2 缺失弱化为未提供。 */
+.missing{color:var(--warn);font-size:var(--fs-13)}
+.missing.soft{color:var(--faint)}
+/* 检索条：卡片头下方一行，搜索框固定宽度靠左，结果计数靠右。 */
+.searchbar{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;padding:var(--sp-3) var(--card-pad);border-bottom:1px solid var(--border)}
+.searchbar .q{position:relative;flex:0 1 320px;min-width:200px;display:flex;align-items:center}
+.searchbar .q svg.i{position:absolute;left:12px;color:var(--faint);pointer-events:none}
+.searchbar .q .inp{height:var(--ctrl-h-sm);padding-left:36px;font-size:var(--fs-13);border-color:var(--border-strong)}
+.searchbar .btn{height:var(--ctrl-h-sm)}
+.searchbar .hint{margin-left:auto}
+/* 卡片内的小节：分组标题 + 子表或只读信息，小节之间用分隔线。 */
+.sub-h{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-4) var(--card-pad) var(--sp-2);font-size:var(--fs-13);font-weight:600;color:var(--text)}
+.sub-h .sub{font-weight:400;color:var(--muted)}
+.sub-h+.tablewrap .tbl thead th{border-top:1px solid var(--border)}
+.card-sec+.card-sec{border-top:1px solid var(--border)}
+.card-sec .facts{padding-top:0}
+.card-sec>.note{margin:0 var(--card-pad) var(--sp-4)}
+.asset-detail{margin-top:var(--sp-4)}
+.sub-empty{padding:0 var(--card-pad) var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
+.page-desc [data-zone]{display:inline;font-family:var(--mono);font-size:var(--fs-13)}
+/* 材料：每个文件一行，名称、所属与操作同行。 */
+.files{list-style:none;margin:0;padding:var(--sp-2) var(--card-pad) var(--sp-4);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--sp-7)}
+.files li:nth-child(2){border-top:0}
+.files li{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 0;border-top:1px solid var(--row-line);min-width:0}
+.files li:first-child{border-top:0}
+.files .file-ico{width:32px;height:32px;border-radius:var(--radius-xs);background:var(--gray-bg);color:var(--gray-fg);display:grid;place-items:center;flex:none}
+.files .file-main{flex:1;min-width:0;overflow-wrap:anywhere}
+.files .file-acts{display:flex;gap:var(--sp-1);flex:none}
+/* 管理端账号入口：名称、邮箱、角色与所属机构 */
+.dd-role{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);margin-top:var(--sp-2)}
+.dd-role .cell-sub{margin-top:0}
+.dd-list.admin{width:240px}
+@media(max-width:1100px){.asset-sum{grid-template-columns:minmax(0,1fr)}.files{grid-template-columns:minmax(0,1fr)}.files li:nth-child(2){border-top:1px solid var(--row-line)}}
+@media(max-width:600px){
+  .status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .status-grid>div:nth-child(3){border-left:0}
+  .status-grid>div:nth-child(n+3){border-top:1px solid var(--row-line)}
+  .cond{flex-wrap:wrap}
+  .cond .btn{margin-left:0}
+  .searchbar .q{flex-basis:100%}
+  .files li{flex-wrap:wrap}
+}
+
 @media(prefers-reduced-motion:reduce){
   *{animation:none !important;transition:none !important}
 }

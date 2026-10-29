@@ -1,5 +1,5 @@
 /* ==========================================================================
-   frame.js — 代币发行平台原型壳层运行时（面客端）
+   frame.js — 代币发行平台原型壳层运行时（面客端、管理端）
    只做三件事：渲染壳层（侧栏、顶栏、账户入口）、按画面切换、画面目录。
    不实现业务规则、校验、状态机或演示时钟；规则以 PRD 为准。
 
@@ -11,6 +11,8 @@
             [data-dd 展开账户入口] [data-show-toast="进入画面时的结果提示"]>
    任意元素 data-go="画面 id" 跳转；弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制完整值。
    模块在 TP.routes 中登记菜单与账户入口对应的画面。
+   管理端模块另设 TP.NAV_BY[身份] 按角色给出菜单，TP.demo.accounts[身份] 给出账号入口
+   （账号名称、登录邮箱、角色、所属机构）；未设置时沿用面客端菜单与钱包地址入口。
    ========================================================================== */
 (function(){
   var TP = window.TP = window.TP || {};
@@ -32,7 +34,13 @@
     info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5v.01"/>',
     x:'<path d="M6 6l12 12M18 6L6 18"/>',
     globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/>',
-    check:'<path d="M5 12l5 5 9-10"/>'
+    check:'<path d="M5 12l5 5 9-10"/>',
+    doc:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+    search:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+    shield:'<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>',
+    ledger:'<path d="M5 4h14v16H5z"/><path d="M9 4v16M12 9h4M12 13h4"/>',
+    back:'<path d="M15 6l-6 6 6 6"/>',
+    download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'
   };
   TP.icon = function(n){ return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+(ICON[n]||'')+'</svg>'; };
 
@@ -68,10 +76,11 @@
   }
   TP.toast = toast;
 
+  function navList(who){ return (TP.NAV_BY && TP.NAV_BY[who]) || TP.NAV; }
   function renderNav(sec){
     var who = sec.dataset.who, active = gateKey || sec.dataset.nav;
     if(who==='none'){ $('#nav').innerHTML=''; return; }
-    $('#nav').innerHTML = TP.NAV.map(function(g){
+    $('#nav').innerHTML = navList(who).map(function(g){
       return '<div class="nav-group">'+g.group+'</div>' + g.items.map(function(it){
         var lk = it.biz && locked(who);
         return '<button type="button" class="nav-item" data-nav-key="'+it.key+'"'+(active===it.key?' aria-current="page"':'')+'>'+
@@ -89,8 +98,19 @@
     }).join('');
   }
 
+  function adminEntry(acc, open){
+    var menu = '<div class="dd-list admin" role="menu"'+(open?'':' hidden')+'>'+
+      '<div class="dd-who"><div class="cell-main">'+esc(acc.name)+'</div><div class="cell-sub">'+esc(acc.email)+'</div>'+
+      '<div class="dd-role"><span class="tag accent">'+esc(acc.role)+'</span>'+(acc.org?'<span class="cell-sub">'+esc(acc.org)+'</span>':'')+'</div></div>'+
+      '<button type="button" class="dd-item" role="menuitem" data-acct="settings">'+TP.icon('user')+'账户设置</button>'+
+      '<button type="button" class="dd-item" role="menuitem" data-acct="logout">'+TP.icon('out')+'退出登录</button></div>';
+    return '<div class="dd" id="acct"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="'+(open?'true':'false')+'" aria-label="账号：'+esc(acc.name)+'">'+
+      TP.icon('user')+'<span>'+esc(acc.name)+'</span>'+TP.icon('chev')+'</button>'+menu+'</div>';
+  }
+
   function accountEntry(who, open){
     if(who==='none') return '';
+    if(TP.demo.accounts && TP.demo.accounts[who]) return adminEntry(TP.demo.accounts[who], open);
     var a = TP.demo.address;
     var menu = '<div class="dd-list" role="menu"'+(open?'':' hidden')+'>'+
       '<div class="dd-who"><div class="addr"><span class="addr-pill" title="'+esc(a)+'">'+esc(short(a))+'</span>'+
@@ -131,8 +151,10 @@
     });
   }
 
-  function findNav(k){ var r=null; TP.NAV.forEach(function(g){ g.items.forEach(function(i){ if(i.key===k) r=i; }); }); return r; }
-  function groupOf(k){ var r=''; TP.NAV.forEach(function(g){ g.items.forEach(function(i){ if(i.key===k) r=g.group; }); }); return r; }
+  var renderWho = null;
+  function curNav(){ return navList(renderWho || (current && current.who)); }
+  function findNav(k){ var r=null; curNav().forEach(function(g){ g.items.forEach(function(i){ if(i.key===k) r=i; }); }); return r; }
+  function groupOf(k){ var r=''; curNav().forEach(function(g){ g.items.forEach(function(i){ if(i.key===k) r=g.group; }); }); return r; }
 
   function show(id, opts){
     var sec = document.getElementById(id); if(!sec || !sec.hasAttribute('data-screen')) return;
@@ -147,6 +169,7 @@
     var host = focus ? $('#focusMain') : $('#content');
     if(shown.parentNode !== host) host.appendChild(shown);
     if(base && sec.parentNode !== document.body) document.body.appendChild(sec);
+    renderWho = shown.dataset.who;
     var gi = findNav(gateKey || shown.dataset.nav);
     $$('[data-slot]', shown).forEach(function(el){ if(gi) el.innerHTML = esc(el.dataset.slot==='gate-title' ? gi.label : gi.desc).replace(/Ethereum/g, '<span class="asset-label">'+TP.assetIcon('ETH')+'Ethereum</span>'); });
     renderNav(shown); renderCrumb(shown); renderTools(shown, sec.hasAttribute('data-dd'));
@@ -175,7 +198,8 @@
 
   function go(key){
     if(key==='msg'){ toast('消息通知属于 M7 消息通知模块，本原型不展开'); return; }
-    if(key==='logout'){ show(TP.routes.logout); toast('已退出登录'); return; }
+    if(key==='settings'){ toast('账户设置属于管理端登录与权限模块，本原型不展开'); return; }
+    if(key==='logout'){ if(TP.routes.logout) show(TP.routes.logout); toast('已退出登录'); return; }
     var r = routeFor(key);
     if(!r){ toast('「'+findNav(key).label+'」属于其他模块，本原型不展开'); return; }
     show(r.id, {gate:r.gate});
