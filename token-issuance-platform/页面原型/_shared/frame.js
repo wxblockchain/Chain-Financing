@@ -30,7 +30,9 @@
     msg:'<path d="M4 5h16v11H8l-4 4z"/>',
     alert:'<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/>',
     info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5v.01"/>',
-    x:'<path d="M6 6l12 12M18 6L6 18"/>'
+    x:'<path d="M6 6l12 12M18 6L6 18"/>',
+    globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/>',
+    check:'<path d="M5 12l5 5 9-10"/>'
   };
   TP.icon = function(n){ return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+(ICON[n]||'')+'</svg>'; };
 
@@ -42,7 +44,7 @@
       {key:'tokens', label:'我的代币', icon:'token', biz:true, desc:'查看已铸造的代币，满足条件时发起销毁。'},
       {key:'burn',   label:'销毁申请', icon:'burn',  biz:true, desc:'查看销毁申请的审核进度与解除质押进度。'}
     ]},
-    {group:'企业账户', items:[
+    {group:'用户中心', items:[
       {key:'accounts', label:'数币账户', icon:'wallet', biz:true, desc:'用于接收代币的以太坊地址。发起代币发行申请时，从这里选择接收账户。'},
       {key:'org',      label:'企业信息', icon:'org'},
       {key:'me',       label:'用户信息', icon:'user'}
@@ -78,6 +80,7 @@
   }
 
   function renderCrumb(sec){
+    $('#crumb').hidden = sec.dataset.layout === 'focus';
     var parts = (sec.dataset.crumb||'').split('/').filter(Boolean);
     if(gateKey){ var it = findNav(gateKey); parts = [groupOf(gateKey), it.label]; }
     $('#crumb').innerHTML = parts.map(function(p,i){
@@ -90,17 +93,19 @@
     var a = TP.demo.address, guest = who==='guest';
     var menu = '<div class="dd-list" role="menu"'+(open?'':' hidden')+'>'+
       '<div class="dd-who">'+(guest?'':'<div class="v">'+esc(who==='noent'?'未关联企业':TP.demo.enterprise)+'</div>')+
-      '<div class="k">登录地址</div><div class="addr"><span class="addr-pill">'+esc(a)+'</span>'+
+      '<div class="k">登录地址</div><div class="addr"><span class="addr-pill" title="'+esc(a)+'">'+esc(short(a))+'</span>'+
       '<button type="button" class="btn icon" data-copy aria-label="复制登录地址">'+TP.icon('copy')+'</button></div></div>'+
-      (guest?'':
-        '<button type="button" class="dd-item" role="menuitem" data-acct="me">'+TP.icon('user')+'用户信息</button>'+
-        '<button type="button" class="dd-item" role="menuitem" data-acct="org">'+TP.icon('org')+'企业信息</button>'+
-        '<button type="button" class="dd-item" role="menuitem" data-acct="accounts">'+TP.icon('wallet')+'数币账户</button>'+
-        '<button type="button" class="dd-item" role="menuitem" data-acct="msg">'+TP.icon('msg')+'消息通知</button>'+
-        '<div class="dd-sep"></div>')+
       '<button type="button" class="dd-item" role="menuitem" data-acct="logout">'+TP.icon('out')+'退出登录</button></div>';
     return '<div class="dd" id="acct"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="'+(open?'true':'false')+'" aria-label="账户：'+esc(a)+'">'+
       '<span class="mono">'+esc(short(a))+'</span>'+TP.icon('chev')+'</button>'+menu+'</div>';
+  }
+
+  /* 界面语言：所有访问者、所有页面可切换 */
+  function langEntry(){
+    return '<div class="dd"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="false" aria-label="界面语言：简体中文">'+TP.icon('globe')+'<span>简体中文</span>'+TP.icon('chev')+'</button>'+
+      '<div class="dd-list narrow" role="menu" hidden>'+
+      '<button type="button" class="dd-item" role="menuitemradio" aria-checked="true">'+TP.icon('check')+'简体中文</button>'+
+      '<button type="button" class="dd-item" role="menuitemradio" aria-checked="false" data-toast="演示：界面切换为 English">English</button></div></div>';
   }
 
   function renderTools(sec, open){
@@ -108,8 +113,8 @@
     var bell = (who==='guest'||who==='none') ? '' :
       '<button type="button" class="bell" data-acct="msg" aria-label="消息通知，3 条未读">'+TP.icon('bell')+'<span class="badge" aria-hidden="true">3</span></button>';
     var focus = sec.dataset.layout === 'focus';
-    $('#tools').innerHTML = focus ? '' : bell + accountEntry(who, open);
-    $('#focusTools').innerHTML = focus ? accountEntry(who, open) : '';
+    $('#tools').innerHTML = focus ? '' : langEntry() + bell + accountEntry(who, open);
+    $('#focusTools').innerHTML = focus ? langEntry() + accountEntry(who, open) : '';
   }
 
   function findNav(k){ var r=null; TP.NAV.forEach(function(g){ g.items.forEach(function(i){ if(i.key===k) r=i; }); }); return r; }
@@ -176,16 +181,26 @@
       }).join('');
   }
 
+  function closeMenus(except){
+    var n = 0;
+    $$('.dd').forEach(function(d){
+      var l = $('.dd-list', d); if(d===except || l.hidden) return;
+      l.hidden = true; $('.dd-btn', d).setAttribute('aria-expanded','false'); n++;
+    });
+    return n;
+  }
+
   document.addEventListener('click', function(e){
-    var t = e.target.closest('[data-go],[data-close],[data-nav-key],[data-acct],[data-copy],[data-toast],[data-demo-go],#demoBtn,.dd-btn');
-    var dd = $('#acct .dd-list');
-    if(dd && !dd.hidden && !(t && t.closest('#acct'))) { dd.hidden = true; $('#acct .dd-btn').setAttribute('aria-expanded','false'); }
+    var t = e.target.closest('.dd-item,[data-go],[data-close],[data-nav-key],[data-acct],[data-copy],[data-toast],[data-demo-go],#demoBtn,.dd-btn');
+    var own = t && t.matches('.dd-btn') ? t.parentNode : null;
+    closeMenus(own);
     if(!t) return;
     if(t.matches('.dd-btn')){ var l = t.nextElementSibling; l.hidden = !l.hidden; t.setAttribute('aria-expanded', l.hidden?'false':'true'); return; }
     if(t.id==='demoBtn'){ demoOpen = !demoOpen; renderDemo(); return; }
     if(t.dataset.demoGo){ show(t.dataset.demoGo); return; }
     if(t.hasAttribute('data-copy')){ toast('已复制'); return; }
     if(t.dataset.toast){ toast(t.dataset.toast); }
+    if(t.matches('.dd-item') && !t.dataset.acct){ closeMenus(null); return; }
     if(t.hasAttribute('data-close') && current && current.base){ show(current.base, {gate:gateKey}); return; }
     if(t.dataset.navKey){ go(t.dataset.navKey); return; }
     if(t.dataset.acct){ go(t.dataset.acct); return; }
@@ -197,7 +212,7 @@
   });
   document.addEventListener('keydown', function(e){
     if(e.key!=='Escape') return;
-    var dd = $('#acct .dd-list'); if(dd && !dd.hidden){ dd.hidden = true; return; }
+    if(closeMenus(null)) return;
     if(current && current.base){ var x = $('#'+current.id+' [data-close]'); if(x) x.click(); }
   });
 

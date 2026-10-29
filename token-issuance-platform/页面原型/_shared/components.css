@@ -51,8 +51,9 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .content{padding:var(--sp-7) var(--sp-6) var(--sp-9);min-width:0}
 .content-in{max-width:1200px}
 
-/* 面包屑：端 · 分组 · 页面 */
+/* 面包屑：放在内容区顶部（页标题上方），不进顶栏 */
 .crumb{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-13);color:var(--muted);min-width:0}
+.content>.crumb{margin:calc(var(--sp-2) * -1) 0 var(--sp-4)}
 .crumb b{color:var(--text);font-weight:600}
 .crumb .sep{color:var(--faint)}
 
@@ -253,12 +254,22 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .dd-who .addr-pill{white-space:nowrap}
 .dd-list .dd-item{display:flex;align-items:center;gap:var(--sp-2);width:100%;text-align:left;padding:8px 10px;border-radius:var(--radius-xs);font-size:var(--fs-13);color:var(--text)}
 .dd-list .dd-item:hover{background:var(--card-hover)}
+.dd-list.narrow{width:168px}
+.dd-list .dd-item[aria-checked]{padding-left:34px;position:relative}
+.dd-list .dd-item[aria-checked] svg.i{position:absolute;left:10px;color:var(--accent)}
+.dd-list .dd-item[aria-checked="true"]{color:var(--accent);font-weight:600}
 .dd-sep{height:1px;background:var(--border);margin:5px 0}
 .bell{position:relative;width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);border-radius:var(--radius-pill);border:1px solid var(--border);
   display:grid;place-items:center;color:var(--muted);background:var(--card)}
 .bell:hover{background:var(--card-hover);color:var(--text)}
 .bell .badge{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:var(--radius-pill);
   background:var(--danger);color:var(--on-accent);font-size:var(--fs-11);font-weight:700;display:grid;place-items:center;border:2px solid var(--card)}
+
+/* ---------- 分段选择：少量互斥选项，改选即生效 ---------- */
+.seg{display:inline-flex;padding:3px;gap:2px;border:1px solid var(--border-strong);border-radius:var(--radius-xs);background:var(--card-2)}
+.seg button{height:calc(var(--ctrl-h-sm) - 8px);padding:0 14px;border-radius:var(--radius-xs);font-size:var(--fs-13);color:var(--muted)}
+.seg button:hover{color:var(--text)}
+.seg button[aria-checked="true"]{background:var(--card);color:var(--accent);font-weight:600;box-shadow:0 0 0 1px var(--accent-border)}
 
 /* ---------- Toast ---------- */
 .toasts{position:fixed;left:50%;bottom:var(--sp-7);transform:translateX(-50%);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--sp-2);align-items:center;pointer-events:none}
