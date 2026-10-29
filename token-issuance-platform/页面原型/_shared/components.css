@@ -73,6 +73,16 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .focus-card .lead{color:var(--muted);margin-top:var(--sp-2)}
 .focus-card .stack{display:flex;flex-direction:column;gap:var(--sp-4);margin-top:var(--sp-6)}
 
+/* 登录三屏同轨排版：由 L3 的真实内容撑开高度，L1 / L4 等高。
+   非当前屏仍保留 hidden 与 visibility:hidden，不可见、不可聚焦，不硬编码卡片高度。 */
+.focus-main:has(>.login-screen:not([hidden])){align-content:start}
+.focus-main>.login-screen{grid-area:1/1;width:100%;max-width:var(--focus-card-w);display:flex;align-self:stretch;justify-self:center}
+.focus-main:has(>.login-screen:not([hidden]))>.login-screen[hidden]{display:flex !important;visibility:hidden;pointer-events:none}
+.login-screen>.focus-card{display:flex;flex-direction:column}
+.login-screen .stack{flex:1}
+.login-screen .network-support{margin-top:auto}
+#login .stack>.btn.primary{margin-block:auto}
+
 /* ---------- 页头 ---------- */
 .page-head{display:flex;align-items:flex-start;gap:var(--sp-4);margin-bottom:var(--sp-4);flex-wrap:wrap}
 .page-head>div:first-child{min-width:0}

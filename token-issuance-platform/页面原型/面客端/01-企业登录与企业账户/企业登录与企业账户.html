@@ -22,68 +22,55 @@
 </div>
 
 <!-- ============================== 登录 ============================== -->
-<section data-group="登录" data-layout="focus" data-name="连接钱包" data-next="login-connected" data-no="L1" data-screen="" data-who="none" id="login">
+<section class="login-screen" data-group="登录" data-layout="focus" data-name="连接钱包" data-next="login-confirm" data-no="L1" data-screen="" data-who="none" id="login">
 <div class="focus-card">
 <div aria-hidden="true" class="focus-symbol"><i data-ico="wallet"></i></div>
 <h1>连接钱包登录</h1><p class="lead">使用在资产可信平台登记的钱包地址登录</p>
-<div class="stack"><div class="login-progress"><span>1 / 6</span><span>连接钱包</span></div><button class="btn primary block" data-go="login-connected" type="button">连接钱包</button><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
+<div class="stack"><div class="login-progress">连接钱包</div><button class="btn primary block" data-go="login-confirm" type="button">连接钱包</button><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
 </div>
 </section>
 
-<section data-group="登录" data-layout="focus" data-name="连接成功" data-next="login-confirm" data-no="L2" data-screen="" data-who="none" id="login-connected">
+
+
+<section class="login-screen" data-group="登录" data-layout="focus" data-name="确认签名" data-next="login-sign" data-no="L3" data-screen="" data-who="none" id="login-confirm">
 <div class="focus-card">
 <div aria-hidden="true" class="focus-symbol"><i data-ico="wallet"></i></div>
 <h1>连接钱包登录</h1><p class="lead">使用在资产可信平台登记的钱包地址登录</p>
-<div class="stack"><div class="login-progress"><span>2 / 6</span><span>连接成功</span></div><dl class="connection-info"><div><dt>钱包地址</dt><dd><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span></dd></div><div><dt>区块链网络</dt><dd><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></dd></div></dl><p class="hint">钱包已连接，请继续确认登录签名。</p><button class="btn primary block" data-go="login-confirm" type="button">继续：确认签名</button><button class="btn ghost block" data-go="login" type="button">取消</button><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
+<div class="stack"><div class="login-progress">确认签名</div><dl class="connection-info"><div><dt>钱包地址</dt><dd><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span></dd></div><div><dt>区块链网络</dt><dd><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></dd></div></dl><div class="note accent"><i data-ico="lock"></i><span class="grow">本次将请求一次登录签名。签名只用于证明你拥有该钱包，不发起交易、不消耗 gas，也不转移或授权任何资产。</span></div><button class="btn primary block" data-go="login-sign" type="button">确认签名</button><button class="btn ghost block" data-go="login" type="button">取消</button><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
 </div>
 </section>
 
-<section data-group="登录" data-layout="focus" data-name="确认签名" data-next="login-sign" data-no="L3" data-screen="" data-who="none" id="login-confirm">
+<section class="login-screen" data-group="登录" data-layout="focus" data-name="等待钱包签名返回" data-next="platform-loading" data-no="L4" data-screen="" data-who="none" id="login-sign">
 <div class="focus-card">
 <div aria-hidden="true" class="focus-symbol"><i data-ico="wallet"></i></div>
 <h1>连接钱包登录</h1><p class="lead">使用在资产可信平台登记的钱包地址登录</p>
-<div class="stack"><div class="login-progress"><span>3 / 6</span><span>确认签名</span></div><dl class="connection-info"><div><dt>钱包地址</dt><dd><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span></dd></div><div><dt>区块链网络</dt><dd><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></dd></div></dl><div class="note accent"><i data-ico="lock"></i><span class="grow">本次将请求一次登录签名。签名只用于证明你拥有该钱包，不发起交易、不消耗 gas，也不转移或授权任何资产。</span></div><button class="btn primary block" data-go="login-sign" type="button">确认并发起签名</button><button class="btn ghost block" data-go="login" type="button">取消</button><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
+<div class="stack"><div class="login-progress">等待钱包签名返回</div><dl class="connection-info"><div><dt>钱包地址</dt><dd><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span></dd></div><div><dt>区块链网络</dt><dd><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></dd></div></dl><div class="wait" role="status"><span aria-hidden="true" class="spinner"></span><span>请在钱包中确认签名<span class="sub">请在钱包插件中完成签名，签名返回并验签通过后将直接进入平台。</span></span></div><button class="btn ghost block" data-go="login" type="button">取消</button><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
 </div>
 </section>
 
-<section data-group="登录" data-layout="focus" data-name="等待钱包签名返回" data-next="login-verified" data-no="L4" data-screen="" data-who="none" id="login-sign">
-<div class="focus-card">
-<div aria-hidden="true" class="focus-symbol"><i data-ico="wallet"></i></div>
-<h1>连接钱包登录</h1><p class="lead">使用在资产可信平台登记的钱包地址登录</p>
-<div class="stack"><div class="login-progress"><span>4 / 6</span><span>钱包签名返回</span></div><dl class="connection-info"><div><dt>钱包地址</dt><dd><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span></dd></div><div><dt>区块链网络</dt><dd><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></dd></div></dl><div class="wait" role="status"><span aria-hidden="true" class="spinner"></span><span>请在钱包中确认签名<span class="sub">请核对钱包中显示的地址与上方一致。</span></span></div><button class="btn ghost block" data-go="login" type="button">取消</button><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
-</div>
-</section>
 
-<section data-group="登录" data-layout="focus" data-name="验签通过" data-next="login-check" data-no="L5" data-screen="" data-who="none" id="login-verified">
-<div class="focus-card">
-<div aria-hidden="true" class="focus-symbol"><i data-ico="wallet"></i></div>
-<h1>连接钱包登录</h1><p class="lead">使用在资产可信平台登记的钱包地址登录</p>
-<div class="stack"><div class="login-progress"><span>5 / 6</span><span>验签通过</span></div><div class="wait" role="status"><i data-ico="check"></i><span>验签通过<span class="sub">签名已通过校验，正在建立登录。</span></span></div><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
-</div>
-</section>
 
-<section data-group="登录" data-layout="focus" data-name="登录成功：调取身份" data-next="org" data-no="L6" data-screen="" data-who="none" id="login-check">
-<div class="focus-card">
-<div aria-hidden="true" class="focus-symbol"><i data-ico="wallet"></i></div>
-<h1>连接钱包登录</h1><p class="lead">使用在资产可信平台登记的钱包地址登录</p>
-<div class="stack"><div class="login-progress"><span>6 / 6</span><span>登录成功</span></div><div class="wait" role="status"><span aria-hidden="true" class="spinner"></span><span>登录成功<span class="sub">正在向资产可信平台获取账户信息。</span></span></div><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
-</div>
-</section>
 
-<section data-group="登录" data-layout="focus" data-name="登录失败：无法确认身份" data-no="L7" data-screen="" data-who="none" id="login-fail">
-<div class="focus-card">
-<div aria-hidden="true" class="focus-symbol"><i data-ico="wallet"></i></div>
-<h1>连接钱包登录</h1><p class="lead">使用在资产可信平台登记的钱包地址登录</p>
-<div class="stack"><div class="login-progress"><span>1 / 6</span><span>连接钱包</span></div><div class="note red" role="alert"><i data-ico="alert"></i><span class="grow">暂时无法确认身份，请重试。</span></div><button class="btn primary block" data-go="login-connected" type="button">重新登录</button><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
-</div>
-</section>
 
-<section data-group="登录" data-layout="focus" data-name="登录已结束：地址变更" data-no="L8" data-screen="" data-who="none" id="login-ended">
-<div class="focus-card">
-<div aria-hidden="true" class="focus-symbol"><i data-ico="wallet"></i></div>
-<h1>连接钱包登录</h1><p class="lead">使用在资产可信平台登记的钱包地址登录</p>
-<div class="stack"><div class="login-progress"><span>1 / 6</span><span>连接钱包</span></div><div class="note warn" role="alert"><i data-ico="alert"></i><span class="grow">资产可信平台登记的钱包地址已变更，请重新登录。</span></div><button class="btn primary block" data-go="login-connected" type="button">连接钱包</button><div class="network-support"><span>支持网络：</span><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
-</div>
+
+
+
+
+<!-- 平台内容区的状态反馈，不再作为独立登录画面 -->
+<section data-screen id="platform-loading" data-no="S1" data-group="平台反馈" data-name="账户信息加载中" data-layout="app" data-who="none" data-crumb="账户信息" data-next="org">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
+    <div class="card"><div class="state" role="status"><span class="spinner" aria-hidden="true"></span><h3>正在加载账户信息</h3><p>正在向资产可信平台获取账户信息。</p></div></div>
+  </div>
+</section>
+<section data-screen id="platform-load-fail" data-no="S2" data-group="平台反馈" data-name="账户信息加载失败" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
+    <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>暂时无法确认身份，请重试。</h3><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
+  </div>
+</section>
+<section data-screen id="platform-session-ended" data-no="S3" data-group="平台反馈" data-name="登录已结束：地址变更" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
+    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>资产可信平台登记的钱包地址已变更，请重新登录。</h3><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
+  </div>
 </section>
 
 <!-- ============================== 游客 ============================== -->
@@ -170,7 +157,7 @@
 <div class="content-in">
 <div class="note warn banner" role="alert"><i data-ico="alert"></i>
 <span class="grow">钱包当前地址 <span class="mono">0x5E8a…9A88</span> 与登录地址不一致，本次登录仍对应原登录地址。</span>
-<button class="btn sm" data-go="login-sign" type="button">用该地址重新登录</button></div>
+<button class="btn sm" data-go="login" type="button">用该地址重新登录</button></div>
 <div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
 <div class="card">
 <div class="ident"><span aria-hidden="true" class="ident-mark">A</span><div><div class="ident-name">示例企业 A 有限公司</div><div class="ident-sub">Example Enterprise A Ltd.</div></div><span class="tag ok"><span class="dot"></span>已认证</span></div>

@@ -72,6 +72,8 @@
     '演示：此处离开本平台，前往资产可信平台':'Preview: open the Asset Trust Platform',
     '画面目录 · 演示数据':'Screen catalog · Sample data','画面目录':'Screen catalog','评审工具 · 演示数据':'Review tool · Sample data',
     '画面目录（评审工具）':'Screen catalog (review tool)','主流程下一屏：':'Next screen: ',
+    '平台反馈':'Platform status','账户信息':'Account information','账户信息加载中':'Loading account information','正在加载账户信息':'Loading account information','账户信息加载失败':'Could not load account information','登录已结束':'Session ended',
+    '请在钱包插件中完成签名，签名返回并验签通过后将直接进入平台。':'Complete the signature in your wallet extension. You will enter the platform once the returned signature is verified.',
     '登录':'Sign in','游客':'Visitor','游客引导':'Visitor guidance','前往资产可信平台：确认':'Leave platform: confirmation',
     '登录成功：调取身份':'Signed in: retrieving identity','登录失败：无法确认身份':'Sign-in failed: identity unavailable','登录已结束：地址变更':'Session ended: address changed',
     '未认证（审核中）':'Not verified (under review)','无企业归属（空）':'No company association','读取失败':'Load failed','钱包地址与登录地址不一致':'Wallet address mismatch','账户入口展开':'Account menu open',

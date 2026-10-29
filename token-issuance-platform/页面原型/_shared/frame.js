@@ -70,6 +70,7 @@
 
   function renderNav(sec){
     var who = sec.dataset.who, active = gateKey || sec.dataset.nav;
+    if(who==='none'){ $('#nav').innerHTML=''; return; }
     $('#nav').innerHTML = TP.NAV.map(function(g){
       return '<div class="nav-group">'+g.group+'</div>' + g.items.map(function(it){
         var lk = it.biz && locked(who);
@@ -155,6 +156,9 @@
     if(!sec.hasAttribute('data-overlay')) window.scrollTo(0,0);
     var f = sec.hasAttribute('data-overlay') ? ($('.modal [autofocus]', sec) || $('.modal .btn.primary:not([aria-disabled]), .modal .btn.danger', sec) || $('.modal .modal-f [data-close]',sec)) : null;
     if(f) f.focus();
+    else if(previous && sec.classList.contains('login-screen')){
+      var entry=$('.btn.primary,button[data-go]',sec);if(entry)entry.focus({preventScroll:true});
+    }
     if(previous && previous.base && !base && returnFocus && returnFocus.getClientRects().length) returnFocus.focus();
     renderDemo();
     TP.renderDisplay();
@@ -265,6 +269,7 @@
     $$('i[data-asset]').forEach(function(i){ i.outerHTML = TP.assetIcon(i.dataset.asset); });
     $$('i[data-ico]').forEach(function(i){ i.outerHTML = TP.icon(i.dataset.ico); });
     order = $$('[data-screen]');
+    $$('.login-screen').forEach(function(sec){ $('#focusMain').appendChild(sec); });
     $('#demoBtn').textContent = '画面目录 · 演示数据';
     document.body.classList.add('ready');
     var h = location.hash.slice(1);
