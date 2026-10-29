@@ -1,6 +1,6 @@
 /* ==========================================================================
    components.css — 代币发行平台原型公共组件与整页骨架
-   两种骨架：app（侧栏 + 顶栏，业务页）/ focus（居中卡片，登录与游客）。
+   两种骨架：app（侧栏 + 顶栏，业务页）/ focus（居中卡片，仅登录）。
    组件说明与用法见 design-system/组件规范.md；模块页面只写内容，不重定义组件。
    ========================================================================== */
 
@@ -162,6 +162,8 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .card-head .sub{color:var(--muted);font-size:var(--ui-field-label);font-variant-numeric:tabular-nums}
 .card-head .acts{margin-left:auto;display:flex;gap:var(--sp-2)}
 .card-b{padding:var(--card-pad)}
+.card-f{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:var(--sp-3);padding:var(--sp-4) var(--card-pad);
+  border-top:1px solid var(--border);background:var(--card-2);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
 
 /* ---------- 只读信息组：标签在上、值在下；弹窗 single 用横向标签 ---------- */
 .facts-region{container:facts / inline-size;min-width:0}

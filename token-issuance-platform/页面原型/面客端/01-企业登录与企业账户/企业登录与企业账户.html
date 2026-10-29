@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="../../_shared/components.css">
 </head>
 <body>
-<!-- 骨架：app（业务页）与 focus（登录、游客），由 frame.js 按画面切换 -->
+<!-- 骨架：app（业务页）与 focus（登录），由 frame.js 按画面切换 -->
 <div class="app" id="app" hidden>
   <aside class="sidebar">
     <div class="brand"><span class="brand-mark" aria-hidden="true">TI</span><div><span class="brand-name">代币发行平台</span><span class="brand-sub">企业端</span></div></div>
@@ -74,29 +74,25 @@
 </section>
 
 <!-- ============================== 游客 ============================== -->
-<section data-group="游客" data-layout="focus" data-name="游客引导" data-no="G1" data-screen="" data-who="guest" id="guest">
-<div class="focus-card wide">
-<h1>当前地址暂未关联企业账户</h1>
-<p class="lead">完成注册并登记该地址后，才能使用本平台的业务功能。</p>
-<div class="stack">
-<div class="field"><span class="field-label">当前登录地址</span>
-<span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制登录地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></div>
-<div class="card">
-<div class="ident"><div><div class="cell-main">前往资产可信平台进行注册</div><div class="cell-sub">注册并登记该地址后，请退出并重新登录。</div></div>
-<button class="btn primary" data-go="leave" type="button">前往注册</button></div>
-<div class="ident bt"><div><div class="cell-main">联系平台管理人员</div><div class="cell-sub">platform-support@example.com</div></div>
-<button class="btn" data-copy="" type="button">复制邮箱</button></div>
-</div>
-</div>
-</div>
+<section data-screen id="guest" data-no="G1" data-group="游客" data-name="游客引导" data-layout="app" data-who="guest" data-crumb="游客引导">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">当前地址暂未关联企业账户</h1><p class="page-desc">完成注册并登记该地址后，才能使用本平台的业务功能。</p></div></div>
+    <div class="card">
+      <div class="facts-region"><dl class="facts single"><div><dt>当前登录地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制登录地址"><i data-ico="copy"></i></button></span></dd></div></dl></div>
+      <div class="ident bt"><div><div class="cell-main">前往资产可信平台进行注册</div><div class="cell-sub">注册并登记该地址后，请退出并重新登录。</div></div><button type="button" class="btn primary" data-go="leave">前往注册</button></div>
+      <div class="ident bt"><div><div class="cell-main">联系平台管理人员</div><div class="cell-sub">platform-support@example.com</div></div><button type="button" class="btn" data-copy>复制邮箱</button></div>
+    </div>
+  </div>
 </section>
 
-<section data-base="guest" data-group="游客" data-name="前往资产可信平台：确认" data-no="G2" data-overlay="" data-screen="" id="leave">
-<div class="modal-mask"><div aria-labelledby="leave-h" aria-modal="true" class="modal" role="dialog">
-<div class="modal-h" id="leave-h">即将前往资产可信平台<button aria-label="关闭" class="btn icon" data-close="" type="button"><i data-ico="x"></i></button></div>
-<div class="modal-b"><p>你将离开本平台，前往「资产可信平台」。</p></div>
-<div class="modal-f"><button class="btn" data-close="" type="button">取消</button><button class="btn primary" data-close="" data-toast="演示：此处离开本平台，前往资产可信平台" type="button">前往</button></div>
-</div></div>
+<section data-screen id="leave" data-no="G2" data-group="游客" data-name="前往资产可信平台：确认" data-overlay data-inline data-base="guest">
+  <div class="content-in">
+    <div class="page-head"><h1 class="page-title" id="leave-h">即将前往资产可信平台</h1></div>
+    <section class="card" aria-labelledby="leave-h">
+      <div class="card-b"><p>你将离开本平台，前往「资产可信平台」。</p></div>
+      <div class="card-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-close data-toast="演示：此处离开本平台，前往资产可信平台">前往</button></div>
+    </section>
+  </div>
 </section>
 
 <!-- ============================== 企业信息 ============================== -->

@@ -7,7 +7,7 @@
    <section data-screen id="…" data-no="A1" data-group="数币账户" data-name="列表"
             data-layout="app|focus" data-who="certified|uncertified|noent|guest|none"
             data-nav="accounts" data-crumb="用户中心/企业账户"
-            [data-overlay data-base="底层画面 id"] [data-next="主流程下一屏 id"]
+            [data-overlay data-base="返回画面 id" [data-inline 在内容区内呈现确认]] [data-next="主流程下一屏 id"]
             [data-dd 展开账户入口] [data-show-toast="进入画面时的结果提示"]>
    任意元素 data-go="画面 id" 跳转；弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制完整值。
    模块在 TP.routes 中登记菜单与账户入口对应的画面。
@@ -79,7 +79,7 @@
   function navList(who){ return (TP.NAV_BY && TP.NAV_BY[who]) || TP.NAV; }
   function renderNav(sec){
     var who = sec.dataset.who, active = gateKey || sec.dataset.nav;
-    if(who==='none'){ $('#nav').innerHTML=''; return; }
+    if(who==='none' || who==='guest'){ $('#nav').innerHTML=''; return; }
     $('#nav').innerHTML = navList(who).map(function(g){
       return '<div class="nav-group">'+g.group+'</div>' + g.items.map(function(it){
         var lk = it.biz && locked(who);
@@ -160,15 +160,16 @@
     var sec = document.getElementById(id); if(!sec || !sec.hasAttribute('data-screen')) return;
     gateKey = (opts && opts.gate) || null;
     var base = sec.hasAttribute('data-overlay') ? document.getElementById((opts&&opts.base) || sec.dataset.base) : null;
+    var inline = sec.hasAttribute('data-inline');
     var previous = current;
     if(base && (!previous || !previous.base)) returnFocus = document.activeElement;
     var shown = base || sec;
-    $$('[data-screen]').forEach(function(s){ s.hidden = !(s===sec || s===base); });
+    $$('[data-screen]').forEach(function(s){ s.hidden = !(s===sec || (s===base && !inline)); });
     var focus = shown.dataset.layout === 'focus';
     $('#app').hidden = focus; $('#focus').hidden = !focus;
     var host = focus ? $('#focusMain') : $('#content');
     if(shown.parentNode !== host) host.appendChild(shown);
-    if(base && sec.parentNode !== document.body) document.body.appendChild(sec);
+    if(base){ var destination=inline?host:document.body; if(sec.parentNode!==destination)destination.appendChild(sec); }
     renderWho = shown.dataset.who;
     var gi = findNav(gateKey || shown.dataset.nav);
     $$('[data-slot]', shown).forEach(function(el){ if(gi) el.innerHTML = esc(el.dataset.slot==='gate-title' ? gi.label : gi.desc).replace(/Ethereum/g, '<span class="asset-label">'+TP.assetIcon('ETH')+'Ethereum</span>'); });
@@ -176,15 +177,16 @@
     if(sec.dataset.showToast) toast(sec.dataset.showToast);
     current = {id:id, base: base ? base.id : null, who: shown.dataset.who};
     if(location.hash.slice(1) !== id) history.replaceState(null,'','#'+id);
-    if(!sec.hasAttribute('data-overlay')) window.scrollTo(0,0);
-    var f = sec.hasAttribute('data-overlay') ? ($('.modal [autofocus]', sec) || $('.modal .btn.primary:not([aria-disabled]), .modal .btn.danger', sec) || $('.modal .modal-f [data-close]',sec)) : null;
-    if(f) f.focus();
+    if(!sec.hasAttribute('data-overlay') || inline) window.scrollTo(0,0);
+    var f = inline ? $('.btn.primary',sec) : sec.hasAttribute('data-overlay') ? ($('.modal [autofocus]', sec) || $('.modal .btn.primary:not([aria-disabled]), .modal .btn.danger', sec) || $('.modal .modal-f [data-close]',sec)) : null;
+    if(f){ if(inline)f.focus({preventScroll:true}); else f.focus(); }
     else if(previous && sec.classList.contains('login-screen')){
       var entry=$('.btn.primary,button[data-go]',sec);if(entry)entry.focus({preventScroll:true});
     }
     if(previous && previous.base && !base && returnFocus && returnFocus.getClientRects().length) returnFocus.focus();
     renderDemo();
     TP.renderDisplay();
+    if(inline) window.scrollTo(0,0);
   }
   TP.show = show;
 
