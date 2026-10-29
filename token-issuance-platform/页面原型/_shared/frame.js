@@ -6,10 +6,10 @@
    模块页面约定：
    <section data-screen id="…" data-no="A1" data-group="数币账户" data-name="列表"
             data-layout="app|focus" data-who="certified|uncertified|noent|guest|none"
-            data-nav="accounts" data-crumb="用户中心/数币账户"
+            data-nav="accounts" data-crumb="用户中心/企业账户"
             [data-overlay data-base="底层画面 id"] [data-next="主流程下一屏 id"]
             [data-dd 展开账户入口] [data-show-toast="进入画面时的结果提示"]>
-   任意元素 data-go="画面 id" 跳转；弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制提示。
+   任意元素 data-go="画面 id" 跳转；弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制完整值。
    模块在 TP.routes 中登记菜单与账户入口对应的画面。
    ========================================================================== */
 (function(){
@@ -45,7 +45,7 @@
       {key:'burn',   label:'销毁申请', icon:'burn',  biz:true, desc:'查看销毁申请的审核进度与解除质押进度。'}
     ]},
     {group:'用户中心', items:[
-      {key:'accounts', label:'数币账户', icon:'wallet', biz:true, desc:'用于接收代币的 Ethereum 地址。发起代币发行申请时，从这里选择接收账户。'},
+      {key:'accounts', label:'企业账户', icon:'wallet', biz:true, desc:'管理本企业用于接收代币的数币账户。'},
       {key:'org',      label:'企业信息', icon:'org'},
       {key:'me',       label:'用户信息', icon:'user'}
     ]}
@@ -56,14 +56,14 @@
   var $ = function(s,r){ return (r||document).querySelector(s); };
   var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
   var esc = function(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
-  var current = null, gateKey = null, order = [];
+  var current = null, gateKey = null, order = [], returnFocus = null;
 
   function short(a){ return a ? a.slice(0,6)+'…'+a.slice(-4) : '我的账户'; }
   function locked(who){ return who==='uncertified' || who==='noent'; }
 
   function toast(t){
     var box = $('#toasts'); if(!box) return;
-    var el = document.createElement('div'); el.className='toast'; el.textContent=t; box.appendChild(el);
+    var el = document.createElement('div'); el.className='toast'; el.textContent=t; box.appendChild(el); TP.localize(el);
     setTimeout(function(){ el.remove(); }, 2400);
   }
   TP.toast = toast;
@@ -90,10 +90,9 @@
 
   function accountEntry(who, open){
     if(who==='none') return '';
-    var a = TP.demo.address, guest = who==='guest';
+    var a = TP.demo.address;
     var menu = '<div class="dd-list" role="menu"'+(open?'':' hidden')+'>'+
-      '<div class="dd-who">'+(guest?'':'<div class="v">'+esc(who==='noent'?'未关联企业':TP.demo.enterprise)+'</div>')+
-      '<div class="k">登录地址</div><div class="addr"><span class="addr-pill" title="'+esc(a)+'">'+esc(short(a))+'</span>'+
+      '<div class="dd-who"><div class="addr"><span class="addr-pill" title="'+esc(a)+'">'+esc(short(a))+'</span>'+
       '<button type="button" class="btn icon" data-copy aria-label="复制登录地址">'+TP.icon('copy')+'</button></div></div>'+
       '<button type="button" class="dd-item" role="menuitem" data-acct="logout">'+TP.icon('out')+'退出登录</button></div>';
     return '<div class="dd" id="acct"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="'+(open?'true':'false')+'" aria-label="账户：'+esc(a)+'">'+
@@ -102,10 +101,11 @@
 
   /* 界面语言：所有访问者、所有页面可切换 */
   function langEntry(){
-    return '<div class="dd"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="false" aria-label="界面语言：简体中文">'+TP.icon('globe')+'<span>简体中文</span>'+TP.icon('chev')+'</button>'+
-      '<div class="dd-list narrow" role="menu" hidden>'+
-      '<button type="button" class="dd-item" role="menuitemradio" aria-checked="true">'+TP.icon('check')+'简体中文</button>'+
-      '<button type="button" class="dd-item" role="menuitemradio" aria-checked="false" data-toast="演示：界面切换为 English">English</button></div></div>';
+    var en = TP.language==='en';
+    return '<div class="dd lang-switch"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="false" aria-label="界面语言">'+TP.icon('globe')+'<span>'+(en?'English':'简体中文')+'</span>'+TP.icon('chev')+'</button>'+
+      '<div class="dd-list narrow" role="menu" hidden><div class="dd-caption">语言</div>'+
+      '<button type="button" class="dd-item" role="menuitemradio" aria-checked="'+en+'" data-lang="en">'+(en?TP.icon('check'):'')+'English</button>'+
+      '<button type="button" class="dd-item" role="menuitemradio" aria-checked="'+!en+'" data-lang="zh">'+(!en?TP.icon('check'):'')+'简体中文</button></div></div>';
   }
 
   function renderTools(sec, open){
@@ -115,6 +115,19 @@
     var focus = sec.dataset.layout === 'focus';
     $('#tools').innerHTML = focus ? '' : langEntry() + bell + accountEntry(who, open);
     $('#focusTools').innerHTML = focus ? langEntry() + accountEntry(who, open) : '';
+    // Keep the language switch reachable while a form is open, without rebuilding inputs.
+    $$('.modal-h').forEach(function(header){
+      var title=$('.modal-title',header);
+      if(!title){
+        title=document.createElement('span');title.className='modal-title';
+        Array.from(header.childNodes).filter(function(n){return n.nodeType===3;}).forEach(function(n){title.appendChild(n);});
+        if(header.id){title.id=header.id;header.removeAttribute('id');}
+        header.prepend(title);
+      }
+      var language=$('.modal-language',header);
+      if(!language){language=document.createElement('div');language.className='modal-language';header.insertBefore(language,$('[data-close]',header));}
+      language.innerHTML=langEntry();
+    });
   }
 
   function findNav(k){ var r=null; TP.NAV.forEach(function(g){ g.items.forEach(function(i){ if(i.key===k) r=i; }); }); return r; }
@@ -124,6 +137,8 @@
     var sec = document.getElementById(id); if(!sec || !sec.hasAttribute('data-screen')) return;
     gateKey = (opts && opts.gate) || null;
     var base = sec.hasAttribute('data-overlay') ? document.getElementById((opts&&opts.base) || sec.dataset.base) : null;
+    var previous = current;
+    if(base && (!previous || !previous.base)) returnFocus = document.activeElement;
     var shown = base || sec;
     $$('[data-screen]').forEach(function(s){ s.hidden = !(s===sec || s===base); });
     var focus = shown.dataset.layout === 'focus';
@@ -134,13 +149,15 @@
     var gi = findNav(gateKey || shown.dataset.nav);
     $$('[data-slot]', shown).forEach(function(el){ if(gi) el.innerHTML = esc(el.dataset.slot==='gate-title' ? gi.label : gi.desc).replace(/Ethereum/g, '<span class="asset-label">'+TP.assetIcon('ETH')+'Ethereum</span>'); });
     renderNav(shown); renderCrumb(shown); renderTools(shown, sec.hasAttribute('data-dd'));
-    if(sec.dataset.showToast) setTimeout(function(){ toast(sec.dataset.showToast); }, 60);
+    if(sec.dataset.showToast) toast(sec.dataset.showToast);
     current = {id:id, base: base ? base.id : null, who: shown.dataset.who};
     if(location.hash.slice(1) !== id) history.replaceState(null,'','#'+id);
     if(!sec.hasAttribute('data-overlay')) window.scrollTo(0,0);
-    var f = sec.hasAttribute('data-overlay') ? ($('.modal [autofocus]', sec) || $('.modal .btn.primary:not([aria-disabled]), .modal .btn.danger', sec)) : null;
+    var f = sec.hasAttribute('data-overlay') ? ($('.modal [autofocus]', sec) || $('.modal .btn.primary:not([aria-disabled]), .modal .btn.danger', sec) || $('.modal .modal-f [data-close]',sec)) : null;
     if(f) f.focus();
+    if(previous && previous.base && !base && returnFocus && returnFocus.getClientRects().length) returnFocus.focus();
     renderDemo();
+    TP.renderDisplay();
   }
   TP.show = show;
 
@@ -190,15 +207,30 @@
     return n;
   }
 
+  function copyFullValue(button){
+    var address=button.closest('.addr'), email=button.closest('.ident');
+    var value=address ? $('[title]',address).getAttribute('title') : email ? $('.cell-sub',email).textContent.trim() : '';
+    if(!value){ toast('复制失败，请重试。'); return; }
+    function fallback(){
+      var field=document.createElement('textarea'), previous=document.activeElement;
+      field.className='sr-only';field.value=value;document.body.appendChild(field);field.select();
+      var copied=false;try{copied=document.execCommand('copy');}catch(e){}
+      field.remove();if(previous)previous.focus();toast(copied?'已复制':'复制失败，请重试。');
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){navigator.clipboard.writeText(value).then(function(){toast('已复制');},fallback);}
+    else fallback();
+  }
+
   document.addEventListener('click', function(e){
     var t = e.target.closest('.dd-item,[data-go],[data-close],[data-nav-key],[data-acct],[data-copy],[data-toast],[data-demo-go],#demoBtn,.dd-btn');
     var own = t && t.matches('.dd-btn') ? t.parentNode : null;
     closeMenus(own);
     if(!t) return;
     if(t.matches('.dd-btn')){ var l = t.nextElementSibling; l.hidden = !l.hidden; t.setAttribute('aria-expanded', l.hidden?'false':'true'); return; }
-    if(t.id==='demoBtn'){ demoOpen = !demoOpen; renderDemo(); return; }
+    if(t.id==='demoBtn'){ demoOpen = !demoOpen; renderDemo(); TP.localize($('#demoPanel')); return; }
+    if(t.dataset.lang){ TP.setLanguage(t.dataset.lang); renderTools(document.getElementById(current.base || current.id), false); TP.renderDisplay(); return; }
     if(t.dataset.demoGo){ show(t.dataset.demoGo); return; }
-    if(t.hasAttribute('data-copy')){ toast('已复制'); return; }
+    if(t.hasAttribute('data-copy')){ copyFullValue(t); return; }
     if(t.dataset.toast){ toast(t.dataset.toast); }
     if(t.matches('.dd-item') && !t.dataset.acct){ closeMenus(null); return; }
     if(t.hasAttribute('data-close') && current && current.base){ show(current.base, {gate:gateKey}); return; }
@@ -211,12 +243,25 @@
     }
   });
   document.addEventListener('keydown', function(e){
+    if(e.key==='Tab' && current && current.base){
+      var modal=$('#'+current.id+' .modal');
+      if(modal){
+        var focusable=$$('button,input,select,textarea,a[href],[tabindex]',modal).filter(function(el){return !el.disabled && el.tabIndex>=0 && el.getClientRects().length;});
+        var first=focusable[0], last=focusable[focusable.length-1];
+        if(first && (!modal.contains(document.activeElement) || (e.shiftKey && document.activeElement===first))){e.preventDefault();(e.shiftKey?last:first).focus();}
+        else if(last && !e.shiftKey && document.activeElement===last){e.preventDefault();first.focus();}
+      }
+    }
     if(e.key!=='Escape') return;
-    if(closeMenus(null)) return;
+    var menuTrigger=$('.dd-btn[aria-expanded="true"]');
+    if(closeMenus(null)){ if(menuTrigger)menuTrigger.focus(); return; }
     if(current && current.base){ var x = $('#'+current.id+' [data-close]'); if(x) x.click(); }
   });
 
+  TP.refreshLanguageTools = function(){ if(current) renderTools(document.getElementById(current.base || current.id),false); };
+
   TP.boot = function(first){
+    TP.initDisplay();
     $$('i[data-asset]').forEach(function(i){ i.outerHTML = TP.assetIcon(i.dataset.asset); });
     $$('i[data-ico]').forEach(function(i){ i.outerHTML = TP.icon(i.dataset.ico); });
     order = $$('[data-screen]');
