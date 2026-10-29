@@ -6,7 +6,7 @@
    ========================================================================== */
 :root{
   /* —— 字体：系统字体栈，原型不内嵌字体文件；地址与哈希用等宽便于逐位核对 —— */
-  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans SC","WenQuanYi Micro Hei",system-ui,sans-serif;
   --mono:ui-monospace,"SFMono-Regular","SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
 
   /* —— 面与描边 —— */
@@ -70,12 +70,17 @@
   --focus-card-w:480px;
 
   /* —— 文字角色 —— */
-  --ui-page-title:var(--fs-28);
+  --ui-page-title:var(--fs-24);
   --ui-section-title:var(--fs-16);
   --ui-field-value:var(--fs-14);
-  --ui-field-label:var(--fs-12);
+  --ui-field-label:var(--fs-13);
   --ui-row-value:var(--fs-13);
   --lh-body:1.6;
+
+  /* —— 识别图标与内容排版 —— */
+  --asset-icon-size:18px;
+  --content-max:1200px;
+  --focus-symbol-size:48px;
 
   /* —— 层级 —— */
   --z-sticky:60; --z-mask:300; --z-demo:350; --z-toast:400;

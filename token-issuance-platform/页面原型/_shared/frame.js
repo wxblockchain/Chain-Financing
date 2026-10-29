@@ -6,7 +6,7 @@
    模块页面约定：
    <section data-screen id="…" data-no="A1" data-group="数币账户" data-name="列表"
             data-layout="app|focus" data-who="certified|uncertified|noent|guest|none"
-            data-nav="accounts" data-crumb="企业账户/数币账户"
+            data-nav="accounts" data-crumb="用户中心/数币账户"
             [data-overlay data-base="底层画面 id"] [data-next="主流程下一屏 id"]
             [data-dd 展开账户入口] [data-show-toast="进入画面时的结果提示"]>
    任意元素 data-go="画面 id" 跳转；弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制提示。
@@ -45,7 +45,7 @@
       {key:'burn',   label:'销毁申请', icon:'burn',  biz:true, desc:'查看销毁申请的审核进度与解除质押进度。'}
     ]},
     {group:'用户中心', items:[
-      {key:'accounts', label:'数币账户', icon:'wallet', biz:true, desc:'用于接收代币的以太坊地址。发起代币发行申请时，从这里选择接收账户。'},
+      {key:'accounts', label:'数币账户', icon:'wallet', biz:true, desc:'用于接收代币的 Ethereum 地址。发起代币发行申请时，从这里选择接收账户。'},
       {key:'org',      label:'企业信息', icon:'org'},
       {key:'me',       label:'用户信息', icon:'user'}
     ]}
@@ -132,7 +132,7 @@
     if(shown.parentNode !== host) host.appendChild(shown);
     if(base && sec.parentNode !== document.body) document.body.appendChild(sec);
     var gi = findNav(gateKey || shown.dataset.nav);
-    $$('[data-slot]', shown).forEach(function(el){ if(gi) el.textContent = el.dataset.slot==='gate-title' ? gi.label : gi.desc; });
+    $$('[data-slot]', shown).forEach(function(el){ if(gi) el.innerHTML = esc(el.dataset.slot==='gate-title' ? gi.label : gi.desc).replace(/Ethereum/g, '<span class="asset-label">'+TP.assetIcon('ETH')+'Ethereum</span>'); });
     renderNav(shown); renderCrumb(shown); renderTools(shown, sec.hasAttribute('data-dd'));
     if(sec.dataset.showToast) setTimeout(function(){ toast(sec.dataset.showToast); }, 60);
     current = {id:id, base: base ? base.id : null, who: shown.dataset.who};
@@ -217,11 +217,16 @@
   });
 
   TP.boot = function(first){
+    $$('i[data-asset]').forEach(function(i){ i.outerHTML = TP.assetIcon(i.dataset.asset); });
     $$('i[data-ico]').forEach(function(i){ i.outerHTML = TP.icon(i.dataset.ico); });
     order = $$('[data-screen]');
     $('#demoBtn').textContent = '画面目录 · 演示数据';
     document.body.classList.add('ready');
     var h = location.hash.slice(1);
     show(document.getElementById(h) && document.getElementById(h).hasAttribute('data-screen') ? h : first);
+    // 初次按 hash 打开长页面时，等浏览器完成片段定位后恢复页头可见。
+    window.addEventListener('load', function(){
+      requestAnimationFrame(function(){ if(current && !current.base) window.scrollTo(0,0); });
+    }, {once:true});
   };
 })();

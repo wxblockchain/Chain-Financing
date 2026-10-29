@@ -6,7 +6,7 @@
 
 | 路径 | 内容 |
 | --- | --- |
-| [`_shared/`](_shared/) | 公共层：`tokens.css`、`components.css`、`frame.js`、`export.py` |
+| [`_shared/`](_shared/) | 公共层：`tokens.css`、`components.css`、`asset-icons.js`、`frame.js`、`export.py` |
 | [`_shared/design-system/组件规范.md`](_shared/design-system/组件规范.md) | 本平台组件规范与原型轻量化约定 |
 | [`面客端/01-企业登录与企业账户/`](面客端/01-企业登录与企业账户/企业登录与企业账户.html) | M1 企业登录与企业账户 |
 
@@ -19,4 +19,4 @@
   python3 _shared/export.py --source 面客端/01-企业登录与企业账户/企业登录与企业账户.html --output <仓库外路径>.html
   ```
 
-视觉取值沿用借贷平台运营端（`lending-platform/页面原型/_shared/`），差异见组件规范第 1 节。
+配色与控件尺寸以借贷平台运营端为基线；M1 已完成现有界面的视觉深化，网络统一为前置图标 + Ethereum，资料排版、文字层级和窄屏布局见组件规范。实际覆盖与核验见 [M1 UI 设计说明](面客端/01-企业登录与企业账户/UI设计说明.md)。
