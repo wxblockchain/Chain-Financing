@@ -1,0 +1,86 @@
+/* ==========================================================================
+   tokens.css — 代币发行平台原型设计 token（本平台唯一来源）
+   取值基线：借贷平台运营端实际生效值（lending-platform/页面原型/_shared/tokens.css
+   + base.css 中 [data-end] 覆盖层），见 design-system/组件规范.md §1。
+   组件层与模块页面不得出现字面色值、字号或时长，一律引用这里的具名 token。
+   ========================================================================== */
+:root{
+  /* —— 字体：系统字体栈，原型不内嵌字体文件；地址与哈希用等宽便于逐位核对 —— */
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  --mono:ui-monospace,"SFMono-Regular","SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+
+  /* —— 面与描边 —— */
+  --bg:#F7F8FB;
+  --card:#FFFFFF;
+  --card-2:#F8FAFC;
+  --card-hover:#F2F5FA;
+  --border:#E3E8EF;
+  --border-strong:#CFD6E0;
+  --row-line:#EFF2F7;
+  --row-hover:#FAFBFD;
+
+  /* —— 文字 —— */
+  --text:#0D1526;
+  --muted:#4A5568;
+  --faint:#667085;
+  --on-accent:#FFFFFF;
+  --control-border:#7A8699;
+
+  /* —— 主色与语义色 —— */
+  --accent:#1D4ED8;
+  --accent-strong:#1A3FAE;
+  --accent-soft:rgba(29,78,216,.07);
+  --accent-border:rgba(29,78,216,.26);
+  --ok:#067647;   --ok-bg:#ECFDF3;   --ok-border:#A9EFC5;
+  --warn:#B54708; --warn-bg:#FFFAEB; --warn-border:#FEDF89;
+  --danger:#D42620; --danger-bg:#FEF3F2; --danger-border:#FECDCA;
+  --gray-bg:#F1F4F8; --gray-fg:#41506B; --gray-border:#E2E7EF;
+
+  /* —— 链上数据（地址 / 哈希）—— */
+  --hash-text:#2F53C4;
+  --hash-bg:rgba(29,78,216,.055);
+  --hash-border:rgba(29,78,216,.18);
+
+  /* —— 阴影 · 遮罩 · 圆角 —— */
+  --shadow-lg:0 12px 28px rgba(13,21,38,.12);
+  --overlay:rgba(13,21,38,.44);
+  --radius-lg:12px;
+  --radius-sm:8px;
+  --radius-xs:6px;
+  --radius-pill:999px;
+
+  /* —— 字号阶梯 —— */
+  --fs-11:11px; --fs-12:12px; --fs-13:13px; --fs-14:14px;
+  --fs-16:16px; --fs-20:20px; --fs-24:24px; --fs-28:28px;
+
+  /* —— 间距 —— */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+  --sp-6:24px; --sp-7:32px; --sp-8:40px; --sp-9:56px;
+
+  /* —— 组件尺寸（与借贷平台运营端一致）—— */
+  --ctrl-h:44px;          /* 表单控件、主操作按钮 */
+  --ctrl-h-sm:36px;       /* 筛选、图标按钮、顶栏工具 */
+  --sidebar-w:238px;
+  --topbar-h:68px;
+  --card-pad:24px;
+  --cell-pad-y:16px;
+  --facts-label-w:136px;
+  --modal-w:480px;
+  --modal-w-lg:600px;
+  --focus-card-w:480px;
+
+  /* —— 文字角色 —— */
+  --ui-page-title:var(--fs-28);
+  --ui-section-title:var(--fs-16);
+  --ui-field-value:var(--fs-14);
+  --ui-field-label:var(--fs-12);
+  --ui-row-value:var(--fs-13);
+  --lh-body:1.6;
+
+  /* —— 层级 —— */
+  --z-sticky:60; --z-mask:300; --z-demo:350; --z-toast:400;
+
+  /* —— 缓动 —— */
+  --ease-out:cubic-bezier(.22,.61,.36,1);
+  --dur-fast:120ms; --dur-base:200ms;
+}

@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="zh-CN" data-end="customer"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>企业登录与企业账户 · 代币发行平台</title>
+<link rel="stylesheet" href="../../_shared/tokens.css">
+<link rel="stylesheet" href="../../_shared/components.css">
+</head>
+<body>
+<!-- 骨架：app（业务页）与 focus（登录、游客），由 frame.js 按画面切换 -->
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">TI</span><div><span class="brand-name">代币发行平台</span><span class="brand-sub">企业端</span></div></div>
+    <nav class="nav" id="nav" aria-label="主导航"></nav>
+  </aside>
+  <div class="main">
+    <header class="topbar"><nav class="crumb" id="crumb" aria-label="当前位置"></nav><div class="topbar-tools" id="tools"></div></header>
+    <main class="content" id="content"></main>
+  </div>
+</div>
+<div class="focus" id="focus" hidden>
+  <header class="focus-head"><div class="brand"><span class="brand-mark" aria-hidden="true">TI</span><span class="brand-name">代币发行平台</span></div><div class="topbar-tools" id="focusTools"></div></header>
+  <main class="focus-main" id="focusMain"></main>
+</div>
+
+<!-- ============================== 登录 ============================== -->
+<section data-screen id="login" data-no="L1" data-group="登录" data-name="登录页" data-layout="focus" data-who="none" data-next="login-sign">
+  <div class="focus-card">
+    <h1>连接钱包登录</h1>
+    <p class="lead">使用在资产可信平台登记的以太坊钱包地址登录。</p>
+    <div class="stack">
+      <div class="note accent"><i data-ico="lock"></i><span class="grow">登录时将请求一次签名。签名只用于证明你拥有该钱包，不发起交易、不消耗 gas，也不转移或授权任何资产。</span></div>
+      <button type="button" class="btn primary block" data-go="login-sign">连接钱包</button>
+      <p class="hint">仅支持以太坊网络。</p>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="login-sign" data-no="L2" data-group="登录" data-name="等待签名" data-layout="focus" data-who="none" data-next="login-check">
+  <div class="focus-card">
+    <h1>连接钱包登录</h1>
+    <div class="stack">
+      <ol class="steps"><li class="done">连接钱包</li><li aria-current="step">签名</li><li>确认身份</li></ol>
+      <div class="field"><span class="field-label">登录地址</span><div class="field-static mono">0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC</div></div>
+      <div class="wait" role="status"><span class="spinner" aria-hidden="true"></span><span>请在钱包中确认签名<span class="sub">请核对钱包中显示的地址与上方一致。</span></span></div>
+      <button type="button" class="btn ghost block" data-go="login">取消</button>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="login-check" data-no="L3" data-group="登录" data-name="确认身份中" data-layout="focus" data-who="none" data-next="org">
+  <div class="focus-card">
+    <h1>连接钱包登录</h1>
+    <div class="stack">
+      <ol class="steps"><li class="done">连接钱包</li><li class="done">签名</li><li aria-current="step">确认身份</li></ol>
+      <div class="wait" role="status"><span class="spinner" aria-hidden="true"></span><span>正在确认身份<span class="sub">正在向资产可信平台获取账户信息。</span></span></div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="login-fail" data-no="L4" data-group="登录" data-name="登录失败：无法确认身份" data-layout="focus" data-who="none">
+  <div class="focus-card">
+    <h1>连接钱包登录</h1>
+    <p class="lead">使用在资产可信平台登记的以太坊钱包地址登录。</p>
+    <div class="stack">
+      <div class="note red" role="alert"><i data-ico="alert"></i><span class="grow">暂时无法确认身份，请重试。</span></div>
+      <button type="button" class="btn primary block" data-go="login-sign">重新登录</button>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="login-ended" data-no="L5" data-group="登录" data-name="登录已结束：地址变更" data-layout="focus" data-who="none">
+  <div class="focus-card">
+    <h1>连接钱包登录</h1>
+    <p class="lead">使用在资产可信平台登记的以太坊钱包地址登录。</p>
+    <div class="stack">
+      <div class="note warn" role="alert"><i data-ico="alert"></i><span class="grow">资产可信平台登记的钱包地址已变更，请重新登录。</span></div>
+      <div class="note accent"><i data-ico="lock"></i><span class="grow">登录时将请求一次签名。签名只用于证明你拥有该钱包，不发起交易、不消耗 gas，也不转移或授权任何资产。</span></div>
+      <button type="button" class="btn primary block" data-go="login-sign">连接钱包</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 游客 ============================== -->
+<section data-screen id="guest" data-no="G1" data-group="游客" data-name="游客引导" data-layout="focus" data-who="guest">
+  <div class="focus-card wide">
+    <h1>当前地址暂未关联企业账户</h1>
+    <p class="lead">完成注册并登记该地址后，才能使用本平台的业务功能。</p>
+    <div class="stack">
+      <div class="field"><span class="field-label">当前登录地址</span>
+        <span class="addr"><span class="addr-pill">0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制登录地址"><i data-ico="copy"></i></button></span></div>
+      <div class="card">
+        <div class="ident"><div><div class="cell-main">前往资产可信平台进行注册</div><div class="cell-sub">注册并登记该地址后，请退出并重新登录。</div></div>
+          <button type="button" class="btn primary" data-go="leave">前往注册</button></div>
+        <div class="ident bt"><div><div class="cell-main">联系平台管理人员</div><div class="cell-sub">platform-support@example.com</div></div>
+          <button type="button" class="btn" data-copy>复制邮箱</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="leave" data-no="G2" data-group="游客" data-name="前往资产可信平台：确认" data-overlay data-base="guest">
+  <div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="leave-h">
+    <div class="modal-h" id="leave-h">即将前往资产可信平台<button type="button" class="btn icon" data-close aria-label="关闭"><i data-ico="x"></i></button></div>
+    <div class="modal-b"><p>你将离开本平台，前往「资产可信平台」。</p></div>
+    <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-close data-toast="演示：此处离开本平台，前往资产可信平台">前往</button></div>
+  </div></div>
+</section>
+
+<!-- ============================== 企业信息 ============================== -->
+<section data-screen id="org" data-no="P1" data-group="企业信息" data-name="已认证" data-layout="app" data-who="certified" data-nav="org" data-crumb="企业账户/企业信息" data-next="acc">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
+    <div class="card">
+      <div class="ident"><span class="ident-mark" aria-hidden="true">A</span><div><div class="ident-name">示例企业 A 有限公司</div><div class="ident-sub">Example Enterprise A Ltd.</div></div><span class="tag ok"><span class="dot"></span>已认证</span></div>
+      <div class="facts-region bt"><dl class="facts">
+        <div><dt>企业 id</dt><dd class="mono">ENT-DEMO-0001</dd></div>
+        <div><dt>当前有效认证结论</dt><dd><span class="tag ok">已认证</span></dd></div>
+        <div><dt>企业名称</dt><dd>示例企业 A 有限公司</dd></div>
+        <div><dt>英文名称</dt><dd>Example Enterprise A Ltd.</dd></div>
+        <div><dt>注册国家 / 地区</dt><dd>中国香港</dd></div>
+        <div><dt>香港 CR 编号</dt><dd class="mono">DEMO-1234567</dd></div>
+        <div><dt>香港 BR 编号</dt><dd class="mono">DEMO-76543210</dd></div>
+        <div><dt>注册地址</dt><dd>香港中环示例大道 1 号示例大厦 10 楼</dd></div>
+      </dl></div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="org-uncert" data-no="P2" data-group="企业信息" data-name="未认证（审核中）" data-layout="app" data-who="uncertified" data-nav="org" data-crumb="企业账户/企业信息">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
+    <div class="note warn banner" role="status"><i data-ico="alert"></i><span class="grow">企业认证尚未通过，暂不能办理代币发行等业务。认证状态请在资产可信平台查看。</span></div>
+    <div class="card">
+      <div class="ident"><span class="ident-mark" aria-hidden="true">A</span><div><div class="ident-name">示例企业 A 有限公司</div><div class="ident-sub">Example Enterprise A Ltd.</div></div><span class="tag warn"><span class="dot"></span>审核中</span></div>
+      <div class="facts-region bt"><dl class="facts">
+        <div><dt>企业 id</dt><dd class="mono">ENT-DEMO-0001</dd></div>
+        <div><dt>当前有效认证结论</dt><dd><span class="tag warn">审核中</span></dd></div>
+        <div><dt>企业名称</dt><dd>示例企业 A 有限公司</dd></div>
+        <div><dt>英文名称</dt><dd>Example Enterprise A Ltd.</dd></div>
+        <div><dt>注册国家 / 地区</dt><dd>中国香港</dd></div>
+        <div><dt>香港 CR 编号</dt><dd class="mono">DEMO-1234567</dd></div>
+        <div><dt>香港 BR 编号</dt><dd class="mono">DEMO-76543210</dd></div>
+        <div><dt>注册地址</dt><dd>香港中环示例大道 1 号示例大厦 10 楼</dd></div>
+      </dl></div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="org-noent" data-no="P3" data-group="企业信息" data-name="无企业归属（空）" data-layout="app" data-who="noent" data-nav="org" data-crumb="企业账户/企业信息">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
+    <div class="card"><div class="state"><span class="state-ico"><i data-ico="org"></i></span><h3>暂无企业信息</h3><p>企业信息需在资产可信平台完善。</p></div></div>
+  </div>
+</section>
+
+<section data-screen id="org-fail" data-no="P4" data-group="企业信息" data-name="读取失败" data-layout="app" data-who="certified" data-nav="org" data-crumb="企业账户/企业信息">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
+    <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>企业信息读取失败</h3><p>暂时无法读取，请稍后重试。</p><button type="button" class="btn" data-go="org">重试</button></div></div>
+  </div>
+</section>
+
+<section data-screen id="org-mismatch" data-no="P5" data-group="企业信息" data-name="钱包地址与登录地址不一致" data-layout="app" data-who="certified" data-nav="org" data-crumb="企业账户/企业信息">
+  <div class="content-in">
+    <div class="note warn banner" role="alert"><i data-ico="alert"></i>
+      <span class="grow">钱包当前地址 <span class="mono">0x5E8a…9A88</span> 与登录地址不一致，本次登录仍对应原登录地址。</span>
+      <button type="button" class="btn sm" data-go="login-sign">用该地址重新登录</button></div>
+    <div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
+    <div class="card">
+      <div class="ident"><span class="ident-mark" aria-hidden="true">A</span><div><div class="ident-name">示例企业 A 有限公司</div><div class="ident-sub">Example Enterprise A Ltd.</div></div><span class="tag ok"><span class="dot"></span>已认证</span></div>
+      <div class="facts-region bt"><dl class="facts">
+        <div><dt>企业 id</dt><dd class="mono">ENT-DEMO-0001</dd></div>
+        <div><dt>当前有效认证结论</dt><dd><span class="tag ok">已认证</span></dd></div>
+        <div><dt>企业名称</dt><dd>示例企业 A 有限公司</dd></div>
+        <div><dt>英文名称</dt><dd>Example Enterprise A Ltd.</dd></div>
+        <div><dt>注册国家 / 地区</dt><dd>中国香港</dd></div>
+        <div><dt>香港 CR 编号</dt><dd class="mono">DEMO-1234567</dd></div>
+        <div><dt>香港 BR 编号</dt><dd class="mono">DEMO-76543210</dd></div>
+        <div><dt>注册地址</dt><dd>香港中环示例大道 1 号示例大厦 10 楼</dd></div>
+      </dl></div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="acct-menu" data-no="P6" data-group="企业信息" data-name="账户入口展开" data-overlay data-base="org" data-dd></section>
+
+<!-- ============================== 用户信息 ============================== -->
+<section data-screen id="me" data-no="U1" data-group="用户信息" data-name="默认" data-layout="app" data-who="certified" data-nav="me" data-crumb="企业账户/用户信息">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">用户信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
+    <div class="card">
+      <div class="card-head"><h2>本次登录</h2></div>
+      <div class="facts-region"><dl class="facts">
+        <div class="wide"><dt>本次登录地址</dt><dd><span class="addr"><span class="addr-pill">0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制登录地址"><i data-ico="copy"></i></button></span></dd></div>
+        <div class="wide"><dt>同步时间</dt><dd class="mono">2026-10-29 09:30:12</dd></div>
+      </dl></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>个人资料</h2></div>
+      <div class="facts-region"><dl class="facts">
+        <div><dt>姓名</dt><dd>张示例</dd></div>
+        <div><dt>英文姓名</dt><dd>Zhang Shili</dd></div>
+        <div><dt>邮箱</dt><dd>demo-user@example.com</dd></div>
+        <div><dt>国籍</dt><dd>中国</dd></div>
+        <div><dt>证件类型</dt><dd>身份证</dd></div>
+        <div><dt>证件号码</dt><dd class="faint">暂不展示</dd></div>
+        <div><dt>与企业的关系</dt><dd>授权代表</dd></div>
+      </dl></div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="me-empty" data-no="U2" data-group="用户信息" data-name="无个人信息（空）" data-layout="app" data-who="certified" data-nav="me" data-crumb="企业账户/用户信息">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">用户信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
+    <div class="card">
+      <div class="card-head"><h2>本次登录</h2></div>
+      <div class="facts-region"><dl class="facts">
+        <div class="wide"><dt>本次登录地址</dt><dd><span class="addr"><span class="addr-pill">0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制登录地址"><i data-ico="copy"></i></button></span></dd></div>
+        <div class="wide"><dt>同步时间</dt><dd class="mono">2026-10-29 09:30:12</dd></div>
+      </dl></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>个人资料</h2></div>
+      <div class="state"><span class="state-ico"><i data-ico="user"></i></span><h3>暂无个人信息</h3><p>个人信息由资产可信平台维护。</p></div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="me-fail" data-no="U3" data-group="用户信息" data-name="读取失败" data-layout="app" data-who="certified" data-nav="me" data-crumb="企业账户/用户信息">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">用户信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
+    <div class="card">
+      <div class="card-head"><h2>本次登录</h2></div>
+      <div class="facts-region"><dl class="facts">
+        <div class="wide"><dt>本次登录地址</dt><dd><span class="addr"><span class="addr-pill">0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制登录地址"><i data-ico="copy"></i></button></span></dd></div>
+      </dl></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>个人资料</h2></div>
+      <div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>个人信息读取失败</h3><p>暂时无法读取，请稍后重试。</p><button type="button" class="btn" data-go="me">重试</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 数币账户 ============================== -->
+<section data-screen id="acc" data-no="A1" data-group="数币账户" data-name="列表" data-layout="app" data-who="certified" data-nav="accounts" data-crumb="企业账户/数币账户" data-next="acc-add">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">数币账户</h1><p class="page-desc">用于接收代币的以太坊地址。发起代币发行申请时，从这里选择接收账户。</p></div>
+      <div class="page-actions"><button type="button" class="btn primary" data-go="acc-add">新增账户</button></div></div>
+    <div class="card">
+      <div class="card-head"><h2>全部账户</h2><span class="sub">3 个</span></div>
+      <div class="tablewrap"><table class="tbl">
+        <thead><tr><th>账户备注名</th><th>以太坊地址</th><th>来源</th><th>验证状态</th><th>创建时间</th><th class="col-act">操作</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag accent">登录地址</span><div class="cell-sub">系统自动列入，不可编辑或删除</div></td>
+            <td><span class="addr"><span class="addr-pill">0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+            <td class="nw">登录地址</td><td><span class="tag ok">已验证</span></td><td class="nw">2026-08-14<div class="cell-sub">10:22</div></td><td class="col-act faint">—</td></tr>
+          <tr><td><div class="cell-main">示例收币地址</div><div class="cell-sub">已被代币引用，不能删除</div></td>
+            <td><span class="addr"><span class="addr-pill">0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+            <td class="nw">企业新增</td><td><span class="tag ok">已验证</span></td><td class="nw">2026-09-02<div class="cell-sub">15:08</div></td>
+            <td class="col-act"><button type="button" class="actlink" data-go="acc-edit">编辑</button><button type="button" class="actlink" aria-disabled="true" title="已被代币引用，不能删除">删除</button></td></tr>
+          <tr><td><div class="cell-main">备用地址</div></td>
+            <td><span class="addr"><span class="addr-pill">0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+            <td class="nw">企业新增</td><td><span class="tag ok">已验证</span></td><td class="nw">2026-10-11<div class="cell-sub">09:41</div></td>
+            <td class="col-act"><button type="button" class="actlink" data-go="acc-edit">编辑</button><button type="button" class="actlink" data-go="acc-del">删除</button></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="acc-empty" data-no="A2" data-group="数币账户" data-name="仅登录地址（空）" data-layout="app" data-who="certified" data-nav="accounts" data-crumb="企业账户/数币账户">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">数币账户</h1><p class="page-desc">用于接收代币的以太坊地址。发起代币发行申请时，从这里选择接收账户。</p></div>
+      <div class="page-actions"><button type="button" class="btn primary" data-go="acc-add">新增账户</button></div></div>
+    <div class="card">
+      <div class="card-head"><h2>全部账户</h2><span class="sub">1 个</span></div>
+      <div class="tablewrap"><table class="tbl">
+        <thead><tr><th>账户备注名</th><th>以太坊地址</th><th>来源</th><th>验证状态</th><th>创建时间</th><th class="col-act">操作</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag accent">登录地址</span><div class="cell-sub">系统自动列入，不可编辑或删除</div></td>
+            <td><span class="addr"><span class="addr-pill">0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+            <td class="nw">登录地址</td><td><span class="tag ok">已验证</span></td><td class="nw">2026-10-29<div class="cell-sub">09:30</div></td><td class="col-act faint">—</td></tr>
+        </tbody>
+      </table></div>
+      <div class="inline-empty"><span>还没有新增账户。需要用其他地址接收代币时，可新增账户并签名验证。</span><button type="button" class="btn sm" data-go="acc-add">新增账户</button></div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="acc-fail" data-no="A3" data-group="数币账户" data-name="读取失败" data-layout="app" data-who="certified" data-nav="accounts" data-crumb="企业账户/数币账户">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">数币账户</h1><p class="page-desc">用于接收代币的以太坊地址。发起代币发行申请时，从这里选择接收账户。</p></div>
+      <div class="page-actions"><button type="button" class="btn primary" data-go="acc-add">新增账户</button></div></div>
+    <div class="card">
+      <div class="card-head"><h2>全部账户</h2></div>
+      <div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>数币账户暂时无法读取</h3><p>请稍后重试。</p><button type="button" class="btn" data-go="acc">重试</button></div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="acc-gate" data-no="A4" data-group="数币账户" data-name="未认证：受限引导" data-layout="app" data-who="uncertified" data-nav="accounts" data-crumb="企业账户/数币账户">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title" data-slot="gate-title">数币账户</h1><p class="page-desc" data-slot="gate-desc">用于接收代币的以太坊地址。发起代币发行申请时，从这里选择接收账户。</p></div></div>
+    <div class="card"><div class="state gate" role="status"><span class="state-ico"><i data-ico="lock"></i></span><h3>需先在资产可信平台完成认证</h3><p>企业认证通过后才能办理业务。当前认证状态请在资产可信平台查看。</p>
+      <button type="button" class="btn primary" data-go="leave">前往资产可信平台完成认证</button></div></div>
+  </div>
+</section>
+
+<section data-screen id="acc-add" data-no="A5" data-group="数币账户" data-name="新增 · 填写信息" data-overlay data-base="acc" data-next="acc-sign">
+  <div class="modal-mask"><div class="modal lg" role="dialog" aria-modal="true" aria-labelledby="add-h">
+    <div class="modal-h" id="add-h">新增数币账户<button type="button" class="btn icon" data-close aria-label="关闭"><i data-ico="x"></i></button></div>
+    <div class="modal-b">
+      <ol class="steps"><li aria-current="step">填写信息</li><li>签名验证</li></ol>
+      <div class="note"><i data-ico="info"></i><span class="grow">只支持以太坊地址。只能登记本企业能用钱包签名的地址，交易所充值地址等由第三方托管的地址无法登记。</span></div>
+      <div class="form">
+        <div class="field"><label for="add-name"><span class="req">*</span>账户备注名<span class="count">0 / 100</span></label><input class="inp" id="add-name" placeholder="例如：收币地址" autofocus></div>
+        <div class="field"><label for="add-addr"><span class="req">*</span>以太坊地址</label><input class="inp mono" id="add-addr" placeholder="0x 开头，共 42 位"><span class="hint">登记后不能修改。</span></div>
+      </div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="acc-sign">下一步：签名验证</button></div>
+  </div></div>
+</section>
+
+<section data-screen id="acc-add-err" data-no="A6" data-group="数币账户" data-name="新增 · 填写有误" data-overlay data-base="acc">
+  <div class="modal-mask"><div class="modal lg" role="dialog" aria-modal="true" aria-labelledby="adde-h">
+    <div class="modal-h" id="adde-h">新增数币账户<button type="button" class="btn icon" data-close aria-label="关闭"><i data-ico="x"></i></button></div>
+    <div class="modal-b">
+      <ol class="steps"><li aria-current="step">填写信息</li><li>签名验证</li></ol>
+      <div class="note"><i data-ico="info"></i><span class="grow">只支持以太坊地址。只能登记本企业能用钱包签名的地址，交易所充值地址等由第三方托管的地址无法登记。</span></div>
+      <div class="form">
+        <div class="field"><label for="adde-name"><span class="req">*</span>账户备注名<span class="count">6 / 100</span></label><input class="inp" id="adde-name" value="示例新增地址"></div>
+        <div class="field"><label for="adde-addr"><span class="req">*</span>以太坊地址</label><input class="inp mono" id="adde-addr" value="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC" aria-invalid="true" aria-describedby="adde-err">
+          <span class="err-msg" id="adde-err">本企业已有该地址（登录地址）。<button type="button" class="btn-link" data-go="acc">查看已有账户</button></span></div>
+      </div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" aria-disabled="true">下一步：签名验证</button></div>
+  </div></div>
+</section>
+
+<section data-screen id="acc-sign" data-no="A7" data-group="数币账户" data-name="新增 · 签名说明" data-overlay data-base="acc" data-next="acc-sign-wait">
+  <div class="modal-mask"><div class="modal lg" role="dialog" aria-modal="true" aria-labelledby="sign-h">
+    <div class="modal-h" id="sign-h">新增数币账户<button type="button" class="btn icon" data-close aria-label="关闭"><i data-ico="x"></i></button></div>
+    <div class="modal-b">
+      <ol class="steps"><li class="done">填写信息</li><li aria-current="step">签名验证</li></ol>
+      <div class="facts-region card"><dl class="facts single">
+        <div><dt>账户备注名</dt><dd>示例新增地址</dd></div>
+        <div><dt>以太坊地址</dt><dd><span class="addr-pill">0x9B2d6F1a3E8c0D7b4A5f2C9e1B6d3F8a0E7c4D12</span></dd></div>
+      </dl></div>
+      <div class="note accent"><i data-ico="lock"></i><span class="grow">请用上述地址在钱包中签名一次。签名只用于证明该地址归本企业控制，不发起交易，不转移或授权任何资产，也不改变当前登录。</span></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn ghost left" data-go="acc-add">上一步</button><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="acc-sign-wait">发起签名</button></div>
+  </div></div>
+</section>
+
+<section data-screen id="acc-sign-wait" data-no="A8" data-group="数币账户" data-name="新增 · 等待签名" data-overlay data-base="acc" data-next="acc-done">
+  <div class="modal-mask"><div class="modal lg" role="dialog" aria-modal="true" aria-labelledby="signw-h">
+    <div class="modal-h" id="signw-h">新增数币账户<button type="button" class="btn icon" data-close aria-label="关闭"><i data-ico="x"></i></button></div>
+    <div class="modal-b">
+      <ol class="steps"><li class="done">填写信息</li><li aria-current="step">签名验证</li></ol>
+      <div class="facts-region card"><dl class="facts single">
+        <div><dt>账户备注名</dt><dd>示例新增地址</dd></div>
+        <div><dt>以太坊地址</dt><dd><span class="addr-pill">0x9B2d6F1a3E8c0D7b4A5f2C9e1B6d3F8a0E7c4D12</span></dd></div>
+      </dl></div>
+      <div class="wait" role="status"><span class="spinner" aria-hidden="true"></span><span>请在钱包中切换到上述地址并确认签名<span class="sub">签名完成后，本次登录仍对应原登录地址。</span></span></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn" data-close>取消</button></div>
+  </div></div>
+</section>
+
+<section data-screen id="acc-sign-err" data-no="A9" data-group="数币账户" data-name="新增 · 签名地址不一致" data-overlay data-base="acc">
+  <div class="modal-mask"><div class="modal lg" role="dialog" aria-modal="true" aria-labelledby="signe-h">
+    <div class="modal-h" id="signe-h">新增数币账户<button type="button" class="btn icon" data-close aria-label="关闭"><i data-ico="x"></i></button></div>
+    <div class="modal-b">
+      <ol class="steps"><li class="done">填写信息</li><li aria-current="step">签名验证</li></ol>
+      <div class="facts-region card"><dl class="facts single">
+        <div><dt>账户备注名</dt><dd>示例新增地址</dd></div>
+        <div><dt>以太坊地址</dt><dd><span class="addr-pill">0x9B2d6F1a3E8c0D7b4A5f2C9e1B6d3F8a0E7c4D12</span></dd></div>
+      </dl></div>
+      <div class="note red" role="alert"><i data-ico="alert"></i><span class="grow">签名的地址和要登记的地址不是同一个。请在钱包中切换到要登记的地址后重试，账户尚未登记。</span></div>
+    </div>
+    <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="acc-sign-wait">重新签名</button></div>
+  </div></div>
+</section>
+
+<section data-screen id="acc-done" data-no="A10" data-group="数币账户" data-name="新增 · 登记成功" data-layout="app" data-who="certified" data-nav="accounts" data-crumb="企业账户/数币账户" data-show-toast="账户已登记">
+  <div class="content-in">
+    <div class="page-head"><div><h1 class="page-title">数币账户</h1><p class="page-desc">用于接收代币的以太坊地址。发起代币发行申请时，从这里选择接收账户。</p></div>
+      <div class="page-actions"><button type="button" class="btn primary" data-go="acc-add">新增账户</button></div></div>
+    <div class="card">
+      <div class="card-head"><h2>全部账户</h2><span class="sub">4 个</span></div>
+      <div class="tablewrap"><table class="tbl">
+        <thead><tr><th>账户备注名</th><th>以太坊地址</th><th>来源</th><th>验证状态</th><th>创建时间</th><th class="col-act">操作</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag accent">登录地址</span><div class="cell-sub">系统自动列入，不可编辑或删除</div></td>
+            <td><span class="addr"><span class="addr-pill">0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+            <td class="nw">登录地址</td><td><span class="tag ok">已验证</span></td><td class="nw">2026-08-14<div class="cell-sub">10:22</div></td><td class="col-act faint">—</td></tr>
+          <tr class="is-new"><td><div class="cell-main">示例新增地址</div></td>
+            <td><span class="addr"><span class="addr-pill">0x9B2d6F1a3E8c0D7b4A5f2C9e1B6d3F8a0E7c4D12</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+            <td class="nw">企业新增</td><td><span class="tag ok">已验证</span></td><td class="nw">2026-10-29<div class="cell-sub">10:05</div></td>
+            <td class="col-act"><button type="button" class="actlink" data-go="acc-edit">编辑</button><button type="button" class="actlink" data-go="acc-del">删除</button></td></tr>
+          <tr><td><div class="cell-main">示例收币地址</div><div class="cell-sub">已被代币引用，不能删除</div></td>
+            <td><span class="addr"><span class="addr-pill">0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+            <td class="nw">企业新增</td><td><span class="tag ok">已验证</span></td><td class="nw">2026-09-02<div class="cell-sub">15:08</div></td>
+            <td class="col-act"><button type="button" class="actlink" data-go="acc-edit">编辑</button><button type="button" class="actlink" aria-disabled="true" title="已被代币引用，不能删除">删除</button></td></tr>
+          <tr><td><div class="cell-main">备用地址</div></td>
+            <td><span class="addr"><span class="addr-pill">0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+            <td class="nw">企业新增</td><td><span class="tag ok">已验证</span></td><td class="nw">2026-10-11<div class="cell-sub">09:41</div></td>
+            <td class="col-act"><button type="button" class="actlink" data-go="acc-edit">编辑</button><button type="button" class="actlink" data-go="acc-del">删除</button></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section data-screen id="acc-edit" data-no="A11" data-group="数币账户" data-name="编辑备注名" data-overlay data-base="acc">
+  <div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-h">
+    <div class="modal-h" id="edit-h">编辑账户备注名<button type="button" class="btn icon" data-close aria-label="关闭"><i data-ico="x"></i></button></div>
+    <div class="modal-b"><div class="form">
+      <div class="field"><label for="edit-name"><span class="req">*</span>账户备注名<span class="count">4 / 100</span></label><input class="inp" id="edit-name" value="备用地址" autofocus></div>
+      <div class="field"><span class="field-label">以太坊地址</span><div class="field-static mono">0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05</div>
+        <span class="hint">地址登记后不能修改。需要更换地址时，请新增账户并签名验证，再删除旧账户。</span></div>
+    </div></div>
+    <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-close data-toast="已保存">保存</button></div>
+  </div></div>
+</section>
+
+<section data-screen id="acc-del" data-no="A12" data-group="数币账户" data-name="删除确认" data-overlay data-base="acc">
+  <div class="modal-mask"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="del-h" aria-describedby="del-d">
+    <div class="modal-h" id="del-h">删除数币账户<button type="button" class="btn icon" data-close aria-label="关闭"><i data-ico="x"></i></button></div>
+    <div class="modal-b">
+      <div class="field"><span class="field-label">备用地址</span><div class="field-static mono">0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05</div></div>
+      <p id="del-d">删除后，该账户不再出现在列表和发行申请的可选范围中，且不可恢复；需要时可重新新增并签名验证。</p>
+    </div>
+    <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn danger" data-close data-toast="已删除">删除</button></div>
+  </div></div>
+</section>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<button class="demo-btn" id="demoBtn" type="button" aria-expanded="false" aria-controls="demoPanel"></button>
+<aside class="demo-panel" id="demoPanel" hidden aria-label="画面目录（评审工具）"></aside>
+
+<script src="../../_shared/frame.js"></script>
+<script>
+  TP.demo = {address:'0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC', enterprise:'示例企业 A 有限公司'};
+  TP.routes = {
+    org:{certified:'org', uncertified:'org-uncert', noent:'org-noent'},
+    me:'me',
+    accounts:'acc',
+    gate:'acc-gate',
+    logout:'login'
+  };
+  TP.boot('login');
+</script>
+</body></html>
