@@ -92,9 +92,12 @@
   function renderCrumb(sec){
     $('#crumb').hidden = sec.dataset.layout === 'focus';
     var parts = (sec.dataset.crumb||'').split('/').filter(Boolean);
+    var targets = (sec.dataset.crumbTargets||'').split('/');
     if(gateKey){ var it = findNav(gateKey); parts = [groupOf(gateKey), it.label]; }
     $('#crumb').innerHTML = parts.map(function(p,i){
-      return (i?'<span class="sep">/</span>':'') + (i===parts.length-1?'<b>'+esc(p)+'</b>':'<span>'+esc(p)+'</span>');
+      var target = targets[i];
+      return (i?'<span class="sep" aria-hidden="true">/</span>':'') + (i===parts.length-1?'<b aria-current="page">'+esc(p)+'</b>':
+        target && document.getElementById(target)?'<a href="#'+esc(target)+'" data-go="'+esc(target)+'">'+esc(p)+'</a>':'<span>'+esc(p)+'</span>');
     }).join('');
   }
 
@@ -268,6 +271,7 @@
     if(t.dataset.navKey){ go(t.dataset.navKey); return; }
     if(t.dataset.acct){ go(t.dataset.acct); return; }
     if(t.dataset.go){
+      if(t.tagName==='A') e.preventDefault();
       var target = document.getElementById(t.dataset.go);
       var base = target && target.hasAttribute('data-overlay') && current ? (current.base || current.id) : null;
       show(t.dataset.go, {base: base, gate: base ? gateKey : null});
@@ -293,6 +297,13 @@
 
   TP.boot = function(first){
     TP.initDisplay();
+    // Sticky detail sections follow the actual header height at narrow widths.
+    if(window.ResizeObserver){
+      new ResizeObserver(function(entries){
+        var height=entries[0].target.getBoundingClientRect().height;
+        if(height)document.documentElement.style.setProperty('--app-header-h',height+'px');
+      }).observe($('#tools').closest('.topbar'));
+    }
     $$('i[data-asset]').forEach(function(i){ i.outerHTML = TP.assetIcon(i.dataset.asset); });
     $$('i[data-ico]').forEach(function(i){ i.outerHTML = TP.icon(i.dataset.ico); });
     order = $$('[data-screen]');

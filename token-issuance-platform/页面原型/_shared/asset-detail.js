@@ -1,7 +1,7 @@
 /* ==========================================================================
    asset-detail.js — 可信资产详情的六组信息（演示数据），供面客端与管理端复用
    只输出静态画面：基本信息、贸易订单、采购订单、账款信息、回款进度、材料。
-   四个资产状态由各画面的摘要卡展示，这里不重复；字段与分级以 M2 PRD 为准。
+   三个资产状态由各画面的摘要卡展示，这里不重复；字段与分级以 M2 PRD 为准。
    用法：<div class="asset-detail" data-asset-detail="上游资产编号"></div>，在 TP.boot 之前调用 TP.fillAssetDetail()。
    ========================================================================== */
 (function(TP){
@@ -131,7 +131,8 @@
       if(!screen.querySelector('.asset-sum') && screen.id!=='e-detail')return;
       var content=screen.querySelector('.content-in');
       if(content.querySelector('[data-detail-nav]'))return;
-      var sections=Array.from(content.querySelectorAll(':scope > .card, :scope > .asset-detail > .card'));
+      var overview=content.querySelector(':scope > .card:has(.asset-sum)');
+      var sections=Array.from(content.querySelectorAll(':scope > .card, :scope > .asset-detail > .card')).filter(function(section){return section!==overview;});
       var nav=document.createElement('nav');
       nav.className='detail-nav';nav.dataset.detailNav='';nav.setAttribute('aria-label','详情信息导航');
       sections.forEach(function(section,index){
@@ -146,7 +147,8 @@
         if(index===0)link.setAttribute('aria-current','location');
         nav.appendChild(link);
       });
-      content.querySelector('.page-head').after(nav);
+      if(overview)overview.after(nav);
+      else content.querySelector('.page-head').after(nav);
     });
   }
 
@@ -207,6 +209,7 @@
     '贸易合同 / 订单文件':'Trade contract / order file','交付凭证':'Proof of delivery','运输单据':'Transport document',
     '采购合同 / 订单文件':'Purchase contract / order file','采购发票文件':'Purchase invoice file',
     /* 资产状态与通用列名：面客端、管理端共用 */
+    '回款状态':'Repayment status','未到期':'Not due','暂时无法确认':'Unable to confirm',
     '确权状态':'Confirmation','结清状态':'Settlement','逾期状态':'Overdue status','发行状态':'Issuance status',
     '已确权':'Confirmed','已撤销确权':'Confirmation revoked','未结清':'Unsettled','已结清':'Settled','未逾期':'Not overdue','已逾期':'Overdue',
     '暂时无法获取':'Temporarily unavailable','可发行':'Available','发行申请中':'Application in progress','已驳回':'Rejected','已发行':'Issued',
