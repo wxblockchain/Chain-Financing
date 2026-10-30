@@ -547,6 +547,40 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .dd-role{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);margin-top:var(--sp-2)}
 .dd-role .cell-sub{margin-top:0}
 .dd-list.admin{width:240px}
+
+/* ---------- 审核列表、进度与单项选择（静态画面） ---------- */
+.tbl.review-list{table-layout:fixed}
+.review-list :is(th,td){padding-inline:var(--sp-2);white-space:normal;overflow-wrap:anywhere}
+.review-list :is(th,td):first-child{width:14%;padding-left:var(--sp-4)}
+.review-list th:nth-child(2){width:15%}
+.review-list th:nth-child(3){width:13%}
+.review-list th:nth-child(4){width:13%}
+.review-list th:nth-child(5){width:12%}
+.review-list th:nth-child(6){width:13%}
+.review-list th:nth-child(7){width:13%}
+.review-list .col-act{width:7%;padding-right:var(--sp-4)}
+.review-list .actlink{padding-inline:0;text-align:left}
+.review-list .tag{white-space:normal}
+.review-list [data-zone]{font-size:var(--fs-11);overflow-wrap:anywhere}
+.review-list .money{flex-wrap:wrap;justify-content:flex-end}
+.review-progress{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-5);list-style:none;margin:var(--sp-3) 0 0;padding:0;counter-reset:review-step}
+.review-progress li{display:flex;flex-direction:column;gap:var(--sp-1);border-top:2px solid var(--border-strong);padding-top:var(--sp-3);min-width:0;font-size:var(--fs-13)}
+.review-progress li.done{border-top-color:var(--ok)}
+.review-progress li b{font-weight:600}
+.review-progress li span,.review-progress time{color:var(--muted);font-size:var(--fs-12);overflow-wrap:anywhere}
+.review-textarea.inp{height:auto;min-height:calc(var(--ctrl-h)*2);padding:var(--sp-3);resize:vertical}
+.choice-card{display:flex;align-items:flex-start;gap:var(--sp-3);border:1px solid var(--control-border);border-radius:var(--radius-xs);padding:var(--sp-4);cursor:pointer}
+.choice-card:has(:checked){background:var(--accent-soft);border-color:var(--accent)}
+.choice-card input{accent-color:var(--accent);margin-top:var(--sp-1)}
+.choice-card span{min-width:0}
+.document-preview{background:var(--card-2);border:1px solid var(--border);padding:var(--sp-4);border-radius:var(--radius-xs)}
+.document-sheet{background:var(--card);border:1px solid var(--border);padding:var(--sp-6);display:flex;flex-direction:column;gap:var(--sp-5)}
+.document-sheet h2{font-size:var(--ui-section-title);text-align:center}
+.document-sheet .facts{padding:0}
+.document-kicker{font-size:var(--fs-12);color:var(--faint)}
+:root[lang="en"][data-module="issuance-review"]{--facts-label-w:var(--asset-label-w-en)}
+@media(max-width:900px){.review-progress{grid-template-columns:repeat(2,minmax(0,1fr))}.review-list{min-width:800px}}
+@media(max-width:600px){.review-progress{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:1100px){.asset-sum{grid-template-columns:minmax(0,1fr)}.files{grid-template-columns:minmax(0,1fr)}.files li:nth-child(2){border-top:1px solid var(--row-line)}}
 @media(max-width:600px){
   .status-grid{grid-template-columns:minmax(0,1fr)}

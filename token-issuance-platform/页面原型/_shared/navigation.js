@@ -8,7 +8,8 @@
     clientAssets:{end:'client', path:'面客端/02-可信资产/可信资产.html'},
     adminAccount:{end:'admin', path:'管理端/01-管理端登录与权限/管理端账号与监管机构管理.html'},
     adminAssets:{end:'admin', path:'管理端/02-可信资产/可信资产.html'},
-    adminContracts:{end:'admin', path:'管理端/06-合约管理/合约管理.html'}
+    adminContracts:{end:'admin', path:'管理端/06-合约管理/合约管理.html'},
+    adminReview:{end:'admin', path:'管理端/03-发行审核/发行审核.html'}
   };
   // Every destination names the exact role-specific screen, never another role's fallback.
   var routes = {
@@ -21,6 +22,10 @@
       certify:{file:'account', screens:{uncertified:'leave',noent:'leave'}, bases:{uncertified:'org-uncert',noent:'org-noent'}}
     },
     admin:{
+      review:{file:'adminReview', screens:{ops:'o-list',opsnew:'o-list',reg:'r-list',regoff:'r-list',regnew:'r-list'}},
+      reviewApplication:{file:'adminReview', screens:{ops:'o-wait-ops',opsnew:'o-wait-ops',reg:'r-wait-ops',regoff:'r-wait-ops',regnew:'r-wait-ops'}},
+      reviewAsset:{file:'adminAssets', screens:{ops:'o-applying',opsnew:'o-applying',reg:'r-detail',regoff:'r-detail',regnew:'r-detail'}},
+      reviewCompany:{file:'adminAssets', screens:{ops:'e-detail',opsnew:'e-detail'}},
       contracts:{file:'adminContracts', screens:{ops:'ct-list',opsnew:'ct-list'}},
       assets:{file:'adminAssets', screens:{ops:'o-list',opsnew:'o-list',reg:'r-list',regoff:'r-list',regnew:'r-list'}},
       ents:{file:'adminAssets', screens:{ops:'e-list',opsnew:'e-list'}},
@@ -55,7 +60,8 @@
     // disabled-institution notice / changed email when returning from M5.
     var who=params.get('previewWho');
     if((module===files.adminAssets && (who==='regoff'||who==='regnew'||who==='opsnew')) ||
-       (module===files.adminContracts && who==='opsnew')){
+       (module===files.adminContracts && who==='opsnew') ||
+       (module===files.adminReview && (who==='opsnew'||who==='regoff'||who==='regnew'))){
       var sourceWho=who==='opsnew'?'ops':'reg';
       document.querySelectorAll('[data-screen][data-who="'+sourceWho+'"]').forEach(function(el){el.dataset.who=who;});
       TP.NAV_BY[who]=TP.NAV_BY[sourceWho];
