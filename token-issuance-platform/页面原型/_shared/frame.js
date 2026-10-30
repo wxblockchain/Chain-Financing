@@ -11,6 +11,8 @@
             [data-dd 展开账户入口] [data-show-toast="进入画面时的结果提示"]>
    任意元素 data-go="画面 id" 跳转；弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制完整值。
    模块在 TP.routes 中登记菜单与账户入口对应的画面。
+   TP.routes.settings 可按身份配置账户设置；focus 画面 data-restricted 仅保留语言与退出。
+   data-password-toggle="输入框 id" 只切换密码显隐，不校验密码。
    管理端模块另设 TP.NAV_BY[身份] 按角色给出菜单，TP.demo.accounts[身份] 给出账号入口
    （账号名称、登录邮箱、角色、所属机构）；未设置时沿用面客端菜单与钱包地址入口。
    ========================================================================== */
@@ -105,6 +107,7 @@
     var menu = '<div class="dd-list admin" role="menu"'+(open?'':' hidden')+'>'+
       '<div class="dd-who"><div class="cell-main">'+esc(acc.name)+'</div><div class="cell-sub">'+esc(acc.email)+'</div>'+
       '<div class="dd-role"><span class="tag accent">'+esc(acc.role)+'</span>'+(acc.org?'<span class="cell-sub">'+esc(acc.org)+'</span>':'')+'</div></div>'+
+      (acc.notice?'<div class="dd-notice">'+esc(acc.notice)+'</div>':'')+
       '<button type="button" class="dd-item" role="menuitem" data-acct="settings">'+TP.icon('user')+'账户设置</button>'+
       '<button type="button" class="dd-item" role="menuitem" data-acct="logout">'+TP.icon('out')+'退出登录</button></div>';
     return '<div class="dd" id="acct"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="'+(open?'true':'false')+'" aria-label="账号：'+esc(acc.name)+'">'+
@@ -139,6 +142,7 @@
     var focus = sec.dataset.layout === 'focus';
     $('#tools').innerHTML = focus ? '' : langEntry() + bell + accountEntry(who, open);
     $('#focusTools').innerHTML = focus ? langEntry() + accountEntry(who, open) : '';
+    if(focus && sec.hasAttribute('data-restricted')) $('#focusTools').insertAdjacentHTML('beforeend','<button type="button" class="btn ghost sm" data-acct="logout">退出登录</button>');
     // Keep the language switch reachable while a form is open, without rebuilding inputs.
     $$('.modal-h').forEach(function(header){
       var title=$('.modal-title',header);
@@ -204,7 +208,7 @@
 
   function go(key){
     if(key==='msg'){ toast('消息通知属于 M7 消息通知模块，本原型不展开'); return; }
-    if(key==='settings'){ toast('账户设置属于管理端登录与权限模块，本原型不展开'); return; }
+    if(key==='settings' && !TP.routes.settings){ toast('账户设置属于管理端登录与权限模块，本原型不展开'); return; }
     if(key==='logout'){ if(TP.routes.logout) show(TP.routes.logout); toast('已退出登录'); return; }
     var r = routeFor(key);
     if(!r){ toast('「'+findNav(key).label+'」属于其他模块，本原型不展开'); return; }
@@ -256,10 +260,16 @@
   }
 
   document.addEventListener('click', function(e){
-    var t = e.target.closest('.dd-item,[data-go],[data-close],[data-nav-key],[data-acct],[data-copy],[data-toast],[data-demo-go],#demoBtn,.dd-btn');
+    var t = e.target.closest('.dd-item,[data-go],[data-close],[data-nav-key],[data-acct],[data-copy],[data-toast],[data-demo-go],[data-password-toggle],#demoBtn,.dd-btn');
     var own = t && t.matches('.dd-btn') ? t.parentNode : null;
     closeMenus(own);
     if(!t) return;
+    if(t.disabled || t.getAttribute('aria-disabled')==='true') return;
+    if(t.hasAttribute('data-password-toggle')){
+      var input=document.getElementById(t.dataset.passwordToggle);
+      if(input){var reveal=input.type==='password';input.type=reveal?'text':'password';t.setAttribute('aria-pressed',String(reveal));t.textContent=reveal?'隐藏':'显示';TP.localize(t);}
+      return;
+    }
     if(t.matches('.dd-btn')){ var l = t.nextElementSibling; l.hidden = !l.hidden; t.setAttribute('aria-expanded', l.hidden?'false':'true'); return; }
     if(t.id==='demoBtn'){ demoOpen = !demoOpen; renderDemo(); TP.localize($('#demoPanel')); return; }
     if(t.dataset.lang){ TP.setLanguage(t.dataset.lang); renderTools(document.getElementById(current.base || current.id), false); TP.renderDisplay(); return; }
@@ -291,6 +301,11 @@
     var menuTrigger=$('.dd-btn[aria-expanded="true"]');
     if(closeMenus(null)){ if(menuTrigger)menuTrigger.focus(); return; }
     if(current && current.base){ var x = $('#'+current.id+' [data-close]'); if(x) x.click(); }
+  });
+
+  // Static screen forms never submit to a server or reload a file preview.
+  document.addEventListener('submit',function(e){
+    if(e.target.matches('form[data-static-form]'))e.preventDefault();
   });
 
   TP.refreshLanguageTools = function(){ if(current) renderTools(document.getElementById(current.base || current.id),false); };

@@ -342,6 +342,36 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .profile-section .facts>div{grid-template-columns:104px minmax(0,1fr)}
 .profile-section .state{padding:var(--sp-5)}
 .preferences{display:flex;flex-direction:column;gap:var(--sp-4);min-width:0}
+/* 邮箱账号与机构资料组件：复用表单、卡片、提示与 token，不独立定义主题。 */
+.dd-notice{padding:var(--sp-2);font-size:var(--fs-12);color:var(--warn);background:var(--warn-bg);border-radius:var(--radius-xs)}
+.focus-main>.auth-screen{width:100%;max-width:var(--focus-card-w)}
+.facts.inset{padding:0}
+.profile-section>h2{font-size:var(--ui-section-title);font-weight:600;line-height:var(--lh-body)}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5) var(--sp-6)}
+.form-grid>.full{grid-column:1/-1}
+.field-caption{display:flex;justify-content:space-between;gap:var(--sp-3);align-items:baseline}
+.field-caption .count{font-size:var(--fs-12);color:var(--faint)}
+.password-control{display:flex;align-items:center;gap:var(--sp-2)}
+.password-control>.inp{flex:1;min-width:0}
+.password-control>.btn{flex:none}
+.form-actions{display:flex;justify-content:flex-end;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
+.file-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--sp-2)}
+.file-row{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card)}
+.file-row>.file-info{flex:1;min-width:0;overflow-wrap:anywhere}
+.file-row>.file-actions{display:flex;gap:var(--sp-3);flex-wrap:wrap;justify-content:flex-end}
+.upload-box{padding:var(--sp-4);border:1px dashed var(--control-border);border-radius:var(--radius-xs);background:var(--card-2);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);flex-wrap:wrap}
+.file-progress{width:100%;height:var(--sp-1);accent-color:var(--accent)}
+.form-sheet{max-width:100%;display:flex;flex-direction:column;gap:var(--sp-5)}
+.form-sheet>.card{margin:0}
+.form-sheet .card-b{display:flex;flex-direction:column;gap:var(--sp-5)}
+.form-sheet .card-f{display:flex;justify-content:flex-end;gap:var(--sp-3);flex-wrap:wrap}
+.tbl.reg-list{table-layout:fixed}
+.tbl.reg-list th,.tbl.reg-list td{white-space:normal;overflow-wrap:anywhere;padding-inline:var(--sp-2)}
+.tbl.reg-list th:first-child,.tbl.reg-list td:first-child{padding-left:var(--sp-4);width:18%}
+.tbl.reg-list th:nth-child(2){width:22%}
+.tbl.reg-list th:nth-child(3),.tbl.reg-list th:nth-child(4){width:12%}
+.tbl.reg-list .col-act{width:8%;white-space:nowrap;padding-right:var(--sp-4)}
+@media(max-width:600px){.form-grid{grid-template-columns:minmax(0,1fr)}.file-row{flex-wrap:wrap}.file-row>.file-actions{width:100%;justify-content:flex-start}}
 .preference-row{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-5)}
 .preference-row>div{flex:1;min-width:0}
 .preference-row+.preference-row{padding-top:var(--sp-4);border-top:1px solid var(--row-line)}
