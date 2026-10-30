@@ -460,32 +460,39 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .searchbar .q .inp{height:var(--ctrl-h-sm);padding-left:36px;font-size:var(--fs-13);border-color:var(--border-strong)}
 .searchbar .btn{height:var(--ctrl-h-sm)}
 .searchbar .hint{margin-left:auto}
-/* M2 uses the lending console's compact, wrapping pill filters.
-   Labels remain accessible; date bounds have visible labels and a shared zone. */
-.asset-filters{padding:var(--sp-4) var(--card-pad);border-bottom:1px solid var(--border)}
-.filter-fields,.filter-secondary{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2)}
-.filter-secondary{margin-top:var(--sp-2)}
-.filter-text{flex:1 1 var(--filter-text-min);min-width:0}
-.filter-select{position:relative;flex:0 1 var(--filter-select-min);min-width:0}
-.asset-filters .inp{height:var(--ctrl-h-sm);font-size:var(--fs-13);border-radius:var(--radius-pill)}
-.asset-filters .inp::placeholder{color:var(--muted);opacity:1}
-.filter-select select{appearance:none;padding-right:var(--sp-7);background:var(--card);width:100%}
+/* List filters: compact rectangular controls, as confirmed in WS-508.
+   Frequent conditions left, optional fields inline below, search/actions right. */
+.asset-filters{padding:var(--sp-3) var(--card-pad);border-bottom:1px solid var(--border)}
+.filter-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2)}
+.filter-select{position:relative;display:inline-flex;flex:none;min-width:0;max-width:100%}
+.asset-filters .inp{height:var(--ctrl-h-sm);font-size:var(--fs-13);border-radius:var(--radius-xs);border-color:var(--border-strong)}
+.asset-filters .inp:hover{border-color:var(--muted)}
+.asset-filters .inp:focus{border-color:var(--accent)}
+.asset-filters .inp::placeholder{color:var(--faint);opacity:1}
+.filter-select select{appearance:none;padding-right:var(--sp-7);background:var(--card);width:auto;min-width:var(--filter-select-min);max-width:100%;field-sizing:content}
 .filter-select::after{content:"";position:absolute;right:var(--sp-4);top:calc(50% - 4px);width:6px;height:6px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(45deg);pointer-events:none}
-.filter-select:has(option:checked:not([value=""])) select{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
-.filter-dates{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2)}
-.filter-dates label{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-13);color:var(--muted)}
-.filter-dates .inp{width:var(--filter-date-w);min-width:0;font-variant-numeric:tabular-nums}
-.filter-zone{font-size:var(--fs-11);color:var(--muted)}
-.filter-actions{display:flex;gap:var(--sp-2);margin-left:auto}
-.asset-filters .btn{border-radius:var(--radius-pill)}
-@media(max-width:1100px){.filter-text{flex-basis:40%}.filter-select{flex:1 1 var(--filter-select-min)}}
+.filter-select:has(option:checked:not([value=""])) select{color:var(--accent);border-color:var(--accent-border);background:var(--accent-soft)}
+.filter-more.btn{border-color:transparent;background:var(--card-2);color:var(--muted);font-weight:400}
+.filter-more.btn:hover{background:var(--card-hover);color:var(--text)}
+.filter-more.btn.has-values{color:var(--accent);border-color:var(--accent-border);background:var(--accent-soft)}
+.filter-more[aria-expanded="true"] svg{transform:rotate(180deg)}
+.filter-query{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-2);flex:1 1 var(--filter-field-min);min-width:min(100%,calc(var(--filter-field-min) + var(--ctrl-h-sm)*4));margin-left:auto}
+.filter-search{position:relative;display:flex;align-items:center;flex:0 1 var(--filter-search-w);min-width:var(--filter-field-min)}
+.filter-search svg.i{position:absolute;left:var(--sp-3);color:var(--faint);pointer-events:none}
+.filter-search .inp{padding-left:var(--ctrl-h-sm)}
+.filter-actions{display:flex;gap:var(--sp-2);flex:none}
+.filter-advanced{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--filter-field-min)),1fr));gap:var(--sp-4);padding-top:var(--sp-4);margin-top:var(--sp-3);border-top:1px solid var(--row-line)}
+.filter-date-field{grid-column:1/-1}
+.filter-dates{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);font-size:var(--fs-13);color:var(--muted)}
+.filter-dates .inp{width:var(--filter-date-w);min-width:0}
+.filter-zone{font-size:var(--fs-11);color:var(--muted);margin-left:var(--sp-2)}
 @media(max-width:600px){
   .asset-filters{padding:var(--sp-3) var(--sp-4)}
-  .filter-text,.filter-select{flex:1 1 100%}
-  .filter-dates{width:100%}
-  .filter-dates label{width:100%;justify-content:space-between}
-  .filter-dates .inp{flex:0 1 var(--filter-date-w)}
-  .filter-actions{margin-left:0}
+  .filter-select{flex:1 1 100%}
+  .filter-select select{width:100%;min-width:0}
+  .filter-query{flex:1 1 100%;flex-wrap:wrap;justify-content:flex-start}
+  .filter-search{flex:1 1 100%;min-width:0}
+  .filter-dates .inp{width:100%}
 }
 /* 卡片内的小节：分组标题 + 子表或只读信息，小节之间用分隔线。 */
 .sub-h{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-4) var(--card-pad) var(--sp-2);font-size:var(--fs-13);font-weight:600;color:var(--text)}
