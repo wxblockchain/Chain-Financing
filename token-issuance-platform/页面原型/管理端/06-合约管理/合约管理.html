@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en" data-end="admin" data-module="contracts"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>合约管理 · 管理端 · 代币发行平台</title>
+<link rel="stylesheet" href="../../_shared/tokens.css">
+<link rel="stylesheet" href="../../_shared/components.css">
+</head>
+<body>
+<!-- 骨架：app（业务页），菜单按角色由 TP.NAV_BY 给出 -->
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">TI</span><div><span class="brand-name">代币发行平台</span><span class="brand-sub">管理端</span></div></div>
+    <nav class="nav" id="nav" aria-label="主导航"></nav>
+  </aside>
+  <div class="main">
+    <header class="topbar"><div class="topbar-tools" id="tools"></div></header>
+    <main class="content" id="content"><nav class="crumb" id="crumb" aria-label="当前位置"></nav></main>
+  </div>
+</div>
+<div class="focus" id="focus" hidden>
+  <header class="focus-head"><div class="brand"><span class="brand-mark" aria-hidden="true">TI</span><span class="brand-name">代币发行平台</span></div><div class="topbar-tools" id="focusTools"></div></header>
+  <main class="focus-main" id="focusMain"></main>
+</div>
+
+<section data-screen id="ct-list" data-no="C01" data-group="合约列表" data-name="默认列表" data-layout="app" data-who="ops" data-nav="contracts" data-crumb="系统管理/合约管理" data-next="ct-edit">
+<div class="content-in"><div class="page-head"><div><h1 class="page-title">合约管理</h1></div></div><div class="card"><div class="card-head"><h2>合约</h2><span class="sub">2 份</span></div><div class="tablewrap"><table class="tbl auto"><thead><tr><th>合约名称</th><th>合约标准</th><th>对应资产类型</th><th>所在网络</th><th>合约地址</th><th>合约状态</th><th class="col-act">操作</th></tr></thead><tbody><tr><td>Demo Contract K</td><td>ERC-3525</td><td>应收账款</td><td><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></td><td><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></td><td><span class="tag ok">可用</span></td><td class="col-act"><button type="button" class="actlink" data-go="ct-edit" >编辑名称</button> <button type="button" class="actlink" data-go="ct-disable">停用合约</button></td></tr><tr><td>Demo Contract L</td><td>ERC-3525</td><td>应收账款</td><td><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></td><td><span class="addr"><span class="addr-pill" title="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD">0x8B4e…B5cD</span><button type="button" class="btn icon" data-copy="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></td><td><span class="tag">停用</span></td><td class="col-act"><button type="button" class="actlink" data-go="ct-edit-off" >编辑名称</button> <button type="button" class="actlink" data-go="ct-enable">启用</button></td></tr></tbody></table></div></div></div>
+</section>
+<section data-screen id="ct-empty" data-no="C02" data-group="合约列表" data-name="尚未配置（空）" data-layout="app" data-who="ops" data-nav="contracts" data-crumb="系统管理/合约管理">
+<div class="content-in"><div class="page-head"><div><h1 class="page-title">合约管理</h1></div></div><div class="card"><div class="card-head"><h2>合约</h2><span class="sub">0 份</span></div><div class="state" role="status"><span class="state-ico"><i data-ico="doc"></i></span><h3>尚未配置合约</h3><p>合约由开发人员部署并配置到平台。</p></div></div></div>
+</section>
+<section data-screen id="ct-load-fail" data-no="C03" data-group="合约列表" data-name="读取失败" data-layout="app" data-who="ops" data-nav="contracts" data-crumb="系统管理/合约管理">
+<div class="content-in"><div class="page-head"><div><h1 class="page-title">合约管理</h1></div></div><div class="card"><div class="card-head"><h2>合约</h2></div><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>合约读取失败</h3><p>暂时无法读取，请稍后重试。</p><button type="button" class="btn" data-go="ct-list" >重试</button></div></div></div>
+</section>
+<section data-screen id="ct-renamed" data-no="C04" data-group="合约列表" data-name="名称保存成功" data-layout="app" data-who="ops" data-nav="contracts" data-crumb="系统管理/合约管理" data-show-toast="合约名称已保存">
+<div class="content-in"><div class="page-head"><div><h1 class="page-title">合约管理</h1></div></div><div class="card"><div class="card-head"><h2>合约</h2><span class="sub">2 份</span></div><div class="tablewrap"><table class="tbl auto"><thead><tr><th>合约名称</th><th>合约标准</th><th>对应资产类型</th><th>所在网络</th><th>合约地址</th><th>合约状态</th><th class="col-act">操作</th></tr></thead><tbody><tr><td>Demo Receivables K</td><td>ERC-3525</td><td>应收账款</td><td><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></td><td><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></td><td><span class="tag ok">可用</span></td><td class="col-act"><button type="button" class="actlink" data-go="ct-edit" >编辑名称</button> <button type="button" class="actlink" data-go="ct-disable">停用合约</button></td></tr><tr><td>Demo Contract L</td><td>ERC-3525</td><td>应收账款</td><td><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></td><td><span class="addr"><span class="addr-pill" title="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD">0x8B4e…B5cD</span><button type="button" class="btn icon" data-copy="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></td><td><span class="tag">停用</span></td><td class="col-act"><button type="button" class="actlink" data-go="ct-edit-off" >编辑名称</button> <button type="button" class="actlink" data-go="ct-enable">启用</button></td></tr></tbody></table></div></div></div>
+</section>
+<section data-screen id="ct-enabled" data-no="C05" data-group="合约列表" data-name="启用成功" data-layout="app" data-who="ops" data-nav="contracts" data-crumb="系统管理/合约管理" data-show-toast="合约已启用">
+<div class="content-in"><div class="page-head"><div><h1 class="page-title">合约管理</h1></div></div><div class="card"><div class="card-head"><h2>合约</h2><span class="sub">2 份</span></div><div class="tablewrap"><table class="tbl auto"><thead><tr><th>合约名称</th><th>合约标准</th><th>对应资产类型</th><th>所在网络</th><th>合约地址</th><th>合约状态</th><th class="col-act">操作</th></tr></thead><tbody><tr><td>Demo Contract K</td><td>ERC-3525</td><td>应收账款</td><td><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></td><td><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></td><td><span class="tag ok">可用</span></td><td class="col-act"><button type="button" class="actlink" data-go="ct-edit" >编辑名称</button> <button type="button" class="actlink" data-go="ct-disable">停用合约</button></td></tr><tr><td>Demo Contract L</td><td>ERC-3525</td><td>应收账款</td><td><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></td><td><span class="addr"><span class="addr-pill" title="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD">0x8B4e…B5cD</span><button type="button" class="btn icon" data-copy="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></td><td><span class="tag ok">可用</span></td><td class="col-act"><button type="button" class="actlink" data-go="ct-edit-off" >编辑名称</button> <button type="button" class="actlink" data-toast="该操作在画面目录提供固定示例。">停用合约</button></td></tr></tbody></table></div></div></div>
+</section>
+<section data-screen id="ct-disabled" data-no="C06" data-group="合约列表" data-name="停用成功" data-layout="app" data-who="ops" data-nav="contracts" data-crumb="系统管理/合约管理" data-show-toast="合约已停用">
+<div class="content-in"><div class="page-head"><div><h1 class="page-title">合约管理</h1></div></div><div class="card"><div class="card-head"><h2>合约</h2><span class="sub">2 份</span></div><div class="tablewrap"><table class="tbl auto"><thead><tr><th>合约名称</th><th>合约标准</th><th>对应资产类型</th><th>所在网络</th><th>合约地址</th><th>合约状态</th><th class="col-act">操作</th></tr></thead><tbody><tr><td>Demo Contract K</td><td>ERC-3525</td><td>应收账款</td><td><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></td><td><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></td><td><span class="tag">停用</span></td><td class="col-act"><button type="button" class="actlink" data-go="ct-edit" >编辑名称</button> <button type="button" class="actlink" data-toast="该操作在画面目录提供固定示例。">启用</button></td></tr><tr><td>Demo Contract L</td><td>ERC-3525</td><td>应收账款</td><td><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></td><td><span class="addr"><span class="addr-pill" title="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD">0x8B4e…B5cD</span><button type="button" class="btn icon" data-copy="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></td><td><span class="tag">停用</span></td><td class="col-act"><button type="button" class="actlink" data-go="ct-edit-off" >编辑名称</button> <button type="button" class="actlink" data-go="ct-enable">启用</button></td></tr></tbody></table></div></div></div>
+</section>
+<section data-screen id="ct-edit" data-no="C07" data-group="编辑名称" data-name="当前名称" data-overlay data-base="ct-list" data-next="ct-edit-saving">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-edit-title"><div class="modal-h"><span class="modal-title" id="ct-edit-title">编辑合约名称</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><dl class="facts single inset"><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>合约状态</dt><dd><span class="tag ok">可用</span></dd></div></dl><div class="field"><label for="ct-edit-name"><span class="req" aria-hidden="true">*</span>合约名称</label><input class="inp" id="ct-edit-name" value="Demo Contract K" placeholder="请输入合约名称" aria-required="true" autofocus></div></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="ct-renamed" >保存</button></div></div></div>
+</section>
+<section data-screen id="ct-edit-empty" data-no="C08" data-group="编辑名称" data-name="空表单" data-overlay data-base="ct-list">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-edit-empty-title"><div class="modal-h"><span class="modal-title" id="ct-edit-empty-title">编辑合约名称</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><dl class="facts single inset"><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>合约状态</dt><dd><span class="tag ok">可用</span></dd></div></dl><div class="field"><label for="ct-edit-empty-name"><span class="req" aria-hidden="true">*</span>合约名称</label><input class="inp" id="ct-edit-empty-name" value="" placeholder="请输入合约名称" aria-required="true" autofocus></div><p class="hint">填写合约名称后可保存。</p></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" disabled aria-disabled="true">保存</button></div></div></div>
+</section>
+<section data-screen id="ct-edit-invalid" data-no="C09" data-group="编辑名称" data-name="名称必填错误" data-overlay data-base="ct-list">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-edit-invalid-title"><div class="modal-h"><span class="modal-title" id="ct-edit-invalid-title">编辑合约名称</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><dl class="facts single inset"><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>合约状态</dt><dd><span class="tag ok">可用</span></dd></div></dl><div class="field"><label for="ct-edit-invalid-name"><span class="req" aria-hidden="true">*</span>合约名称</label><input class="inp" id="ct-edit-invalid-name" value="" placeholder="请输入合约名称" aria-required="true" autofocus aria-invalid="true" aria-describedby="ct-edit-invalid-error"><p class="err-msg" id="ct-edit-invalid-error">请填写合约名称。</p></div><p class="hint">填写合约名称后可保存。</p></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" disabled aria-disabled="true">保存</button></div></div></div>
+</section>
+<section data-screen id="ct-edit-saving" data-no="C10" data-group="编辑名称" data-name="保存中" data-overlay data-base="ct-list" data-next="ct-renamed">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-edit-saving-title"><div class="modal-h"><span class="modal-title" id="ct-edit-saving-title">编辑合约名称</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><dl class="facts single inset"><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>合约状态</dt><dd><span class="tag ok">可用</span></dd></div></dl><div class="field"><label for="ct-edit-saving-name"><span class="req" aria-hidden="true">*</span>合约名称</label><input class="inp" id="ct-edit-saving-name" value="Demo Receivables K" placeholder="请输入合约名称" aria-required="true" autofocus readonly></div><p class="hint" role="status">正在保存，请勿重复提交。</p></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" disabled aria-disabled="true">保存中…</button></div></div></div>
+</section>
+<section data-screen id="ct-edit-fail" data-no="C11" data-group="编辑名称" data-name="保存失败" data-overlay data-base="ct-list" data-next="ct-edit-saving">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-edit-fail-title"><div class="modal-h"><span class="modal-title" id="ct-edit-fail-title">编辑合约名称</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><div class="note red" role="alert"><i data-ico="alert"></i><div>名称未保存，原名称未改变。请重试。</div></div><dl class="facts single inset"><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>合约状态</dt><dd><span class="tag ok">可用</span></dd></div></dl><div class="field"><label for="ct-edit-fail-name"><span class="req" aria-hidden="true">*</span>合约名称</label><input class="inp" id="ct-edit-fail-name" value="Demo Receivables K" placeholder="请输入合约名称" aria-required="true" autofocus></div></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="ct-renamed" >重试</button></div></div></div>
+</section>
+<section data-screen id="ct-edit-conflict" data-no="C12" data-group="编辑名称" data-name="名称冲突：最新值" data-overlay data-base="ct-list" data-next="ct-edit-saving">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-edit-conflict-title"><div class="modal-h"><span class="modal-title" id="ct-edit-conflict-title">编辑合约名称</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><div class="note warn" role="status"><i data-ico="info"></i><div>名称已被其他运营修改。以下为最新名称，请重新核对。</div></div><dl class="facts single inset"><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>合约状态</dt><dd><span class="tag ok">可用</span></dd></div></dl><div class="field"><label for="ct-edit-conflict-name"><span class="req" aria-hidden="true">*</span>合约名称</label><input class="inp" id="ct-edit-conflict-name" value="Demo Updated K" placeholder="请输入合约名称" aria-required="true" autofocus></div></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="ct-renamed" >保存</button></div></div></div>
+</section>
+<section data-screen id="ct-edit-off" data-no="C13" data-group="编辑名称" data-name="停用合约编辑" data-overlay data-base="ct-list" data-next="ct-edit-off-saving">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-edit-off-title"><div class="modal-h"><span class="modal-title" id="ct-edit-off-title">编辑合约名称</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><dl class="facts single inset"><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD">0x8B4e…B5cD</span><button type="button" class="btn icon" data-copy="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>合约状态</dt><dd><span class="tag">停用</span></dd></div></dl><div class="field"><label for="ct-edit-off-name"><span class="req" aria-hidden="true">*</span>合约名称</label><input class="inp" id="ct-edit-off-name" value="Demo Contract L" placeholder="请输入合约名称" aria-required="true" autofocus></div></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="ct-renamed-off" >保存</button></div></div></div>
+</section>
+<section data-screen id="ct-edit-off-saving" data-no="C14" data-group="编辑名称" data-name="停用合约名称保存中" data-overlay data-base="ct-list" data-next="ct-renamed-off">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-edit-off-saving-title"><div class="modal-h"><span class="modal-title" id="ct-edit-off-saving-title">编辑合约名称</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><dl class="facts single inset"><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD">0x8B4e…B5cD</span><button type="button" class="btn icon" data-copy="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>合约状态</dt><dd><span class="tag">停用</span></dd></div></dl><div class="field"><label for="ct-edit-off-saving-name"><span class="req" aria-hidden="true">*</span>合约名称</label><input class="inp" id="ct-edit-off-saving-name" value="Demo Receivables L" placeholder="请输入合约名称" aria-required="true" autofocus readonly></div><p class="hint" role="status">正在保存，请勿重复提交。</p></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" disabled aria-disabled="true">保存中…</button></div></div></div>
+</section>
+<section data-screen id="ct-renamed-off" data-no="C15" data-group="合约列表" data-name="停用合约名称保存成功" data-layout="app" data-who="ops" data-nav="contracts" data-crumb="系统管理/合约管理" data-show-toast="合约名称已保存">
+<div class="content-in"><div class="page-head"><div><h1 class="page-title">合约管理</h1></div></div><div class="card"><div class="card-head"><h2>合约</h2><span class="sub">2 份</span></div><div class="tablewrap"><table class="tbl auto"><thead><tr><th>合约名称</th><th>合约标准</th><th>对应资产类型</th><th>所在网络</th><th>合约地址</th><th>合约状态</th><th class="col-act">操作</th></tr></thead><tbody><tr><td>Demo Contract K</td><td>ERC-3525</td><td>应收账款</td><td><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></td><td><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></td><td><span class="tag ok">可用</span></td><td class="col-act"><button type="button" class="actlink" data-go="ct-edit" >编辑名称</button> <button type="button" class="actlink" data-go="ct-disable">停用合约</button></td></tr><tr><td>Demo Receivables L</td><td>ERC-3525</td><td>应收账款</td><td><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></td><td><span class="addr"><span class="addr-pill" title="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD">0x8B4e…B5cD</span><button type="button" class="btn icon" data-copy="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></td><td><span class="tag">停用</span></td><td class="col-act"><button type="button" class="actlink" data-go="ct-edit-off" >编辑名称</button> <button type="button" class="actlink" data-go="ct-enable">启用</button></td></tr></tbody></table></div></div></div>
+</section>
+<section data-screen id="ct-enable" data-no="C16" data-group="启用与停用" data-name="启用确认" data-overlay data-base="ct-list" data-next="ct-enable-saving">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-enable-title"><div class="modal-h"><span class="modal-title" id="ct-enable-title">启用合约</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><dl class="facts single inset"><div><dt>合约名称</dt><dd>Demo Contract L</dd></div><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD">0x8B4e…B5cD</span><button type="button" class="btn icon" data-copy="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>当前状态</dt><dd><span class="tag">停用</span></dd></div><div><dt>目标状态</dt><dd><span class="tag ok">可用</span></dd></div></dl><div class="note accent" role="status"><i data-ico="info"></i><div>启用后，资产类型匹配的发行二审可重新选择此合约。启用不会自动办理二审或重试铸造。</div></div></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="ct-enabled" >确认启用</button></div></div></div>
+</section>
+<section data-screen id="ct-disable" data-no="C17" data-group="启用与停用" data-name="停用确认" data-overlay data-base="ct-list" data-next="ct-disable-saving">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-disable-title"><div class="modal-h"><span class="modal-title" id="ct-disable-title">停用合约</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><dl class="facts single inset"><div><dt>合约名称</dt><dd>Demo Contract K</dd></div><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>当前状态</dt><dd><span class="tag ok">可用</span></dd></div><div><dt>目标状态</dt><dd><span class="tag">停用</span></dd></div></dl><div class="note accent" role="status"><i data-ico="info"></i><div>停用后，新的发行二审不能选择此合约。已确定合约的业务继续沿原合约办理，铸造或销毁失败仍可手动重试，无需先启用。</div></div></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="ct-disabled" >确认停用</button></div></div></div>
+</section>
+<section data-screen id="ct-enable-saving" data-no="C18" data-group="启用与停用" data-name="启用提交中" data-overlay data-base="ct-list" data-next="ct-enabled">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-enable-saving-title"><div class="modal-h"><span class="modal-title" id="ct-enable-saving-title">启用合约</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><dl class="facts single inset"><div><dt>合约名称</dt><dd>Demo Contract L</dd></div><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD">0x8B4e…B5cD</span><button type="button" class="btn icon" data-copy="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>当前状态</dt><dd><span class="tag">停用</span></dd></div><div><dt>目标状态</dt><dd><span class="tag ok">可用</span></dd></div></dl><div class="note accent" role="status"><i data-ico="info"></i><div>启用后，资产类型匹配的发行二审可重新选择此合约。启用不会自动办理二审或重试铸造。</div></div><p class="hint" role="status">正在提交，请勿重复操作。</p></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" disabled aria-disabled="true">提交中…</button></div></div></div>
+</section>
+<section data-screen id="ct-disable-saving" data-no="C19" data-group="启用与停用" data-name="停用提交中" data-overlay data-base="ct-list" data-next="ct-disabled">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-disable-saving-title"><div class="modal-h"><span class="modal-title" id="ct-disable-saving-title">停用合约</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><dl class="facts single inset"><div><dt>合约名称</dt><dd>Demo Contract K</dd></div><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>当前状态</dt><dd><span class="tag ok">可用</span></dd></div><div><dt>目标状态</dt><dd><span class="tag">停用</span></dd></div></dl><div class="note accent" role="status"><i data-ico="info"></i><div>停用后，新的发行二审不能选择此合约。已确定合约的业务继续沿原合约办理，铸造或销毁失败仍可手动重试，无需先启用。</div></div><p class="hint" role="status">正在提交，请勿重复操作。</p></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" disabled aria-disabled="true">提交中…</button></div></div></div>
+</section>
+<section data-screen id="ct-enable-fail" data-no="C20" data-group="启用与停用" data-name="启用失败" data-overlay data-base="ct-list" data-next="ct-enable-saving">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-enable-fail-title"><div class="modal-h"><span class="modal-title" id="ct-enable-fail-title">启用合约</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><div class="note red" role="alert"><i data-ico="alert"></i><div>本次未完成，合约状态未改变。请重试。</div></div><dl class="facts single inset"><div><dt>合约名称</dt><dd>Demo Contract L</dd></div><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD">0x8B4e…B5cD</span><button type="button" class="btn icon" data-copy="0x8B4eD1327E6f0122d81C2E050Ec2b9135270B5cD" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>当前状态</dt><dd><span class="tag">停用</span></dd></div><div><dt>目标状态</dt><dd><span class="tag ok">可用</span></dd></div></dl><div class="note accent" role="status"><i data-ico="info"></i><div>启用后，资产类型匹配的发行二审可重新选择此合约。启用不会自动办理二审或重试铸造。</div></div></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="ct-enabled" >重试</button></div></div></div>
+</section>
+<section data-screen id="ct-disable-fail" data-no="C21" data-group="启用与停用" data-name="停用失败" data-overlay data-base="ct-list" data-next="ct-disable-saving">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-disable-fail-title"><div class="modal-h"><span class="modal-title" id="ct-disable-fail-title">停用合约</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><div class="note red" role="alert"><i data-ico="alert"></i><div>本次未完成，合约状态未改变。请重试。</div></div><dl class="facts single inset"><div><dt>合约名称</dt><dd>Demo Contract K</dd></div><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>当前状态</dt><dd><span class="tag ok">可用</span></dd></div><div><dt>目标状态</dt><dd><span class="tag">停用</span></dd></div></dl><div class="note accent" role="status"><i data-ico="info"></i><div>停用后，新的发行二审不能选择此合约。已确定合约的业务继续沿原合约办理，铸造或销毁失败仍可手动重试，无需先启用。</div></div></div><div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="ct-disabled" >重试</button></div></div></div>
+</section>
+<section data-screen id="ct-already" data-no="C22" data-group="启用与停用" data-name="停用：已为目标状态" data-overlay data-base="ct-list" data-next="ct-disabled">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-already-title"><div class="modal-h"><span class="modal-title" id="ct-already-title">合约状态已更新</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><div class="note accent" role="status"><i data-ico="info"></i><div>合约当前已停用，无需重复操作。</div></div><dl class="facts single inset"><div><dt>合约名称</dt><dd>Demo Contract K</dd></div><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>当前状态</dt><dd><span class="tag">停用</span></dd></div></dl></div><div class="modal-f"><button type="button" class="btn primary" data-go="ct-disabled" >返回列表</button></div></div></div>
+</section>
+<section data-screen id="ct-state-conflict" data-no="C23" data-group="启用与停用" data-name="停用：状态冲突" data-overlay data-base="ct-list" data-next="ct-disabled">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ct-state-conflict-title"><div class="modal-h"><span class="modal-title" id="ct-state-conflict-title">合约状态已更新</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div><div class="modal-b"><div class="note warn" role="status"><i data-ico="info"></i><div>合约状态已被其他运营修改。本次未提交，请核对最新状态。</div></div><dl class="facts single inset"><div><dt>合约名称</dt><dd>Demo Contract K</dd></div><div><dt>合约地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy="0x7A3fB0216D5e9011c70B1D949Db1a8024169A4bC" aria-label="复制合约地址" title="复制合约地址"><i data-ico="copy"></i></button></span></dd></div><div><dt>当前状态</dt><dd><span class="tag">停用</span></dd></div></dl></div><div class="modal-f"><button type="button" class="btn primary" data-go="ct-disabled" >返回列表</button></div></div></div>
+</section>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<button class="demo-btn" id="demoBtn" type="button" aria-expanded="false" aria-controls="demoPanel"></button>
+<aside class="demo-panel" id="demoPanel" hidden aria-label="画面目录（评审工具）"></aside>
+<script src="../../_shared/asset-icons.js"></script>
+<script src="../../_shared/display.js"></script>
+<script src="../../_shared/frame.js"></script>
+<script src="../../_shared/navigation.js" data-local-only></script>
+<script>
+TP.pageTitle='合约管理 · 管理端 · 代币发行平台';
+  TP.NAV_BY = {
+    ops:[
+      {group:'业务', items:[
+        {key:'review', label:'发行审核', icon:'issue'},
+        {key:'burn',   label:'销毁审核', icon:'burn'},
+        {key:'ledger', label:'代币台账', icon:'ledger'},
+        {key:'assets', label:'可信资产', icon:'asset'},
+        {key:'ents',   label:'企业',     icon:'org'}
+      ]},
+      {group:'系统管理', items:[
+        {key:'regs',      label:'监管机构管理', icon:'shield'},
+        {key:'contracts', label:'合约管理',     icon:'doc'}
+      ]}
+    ],
+    reg:[
+      {group:'业务', items:[
+        {key:'review',  label:'发行审核', icon:'issue'},
+        {key:'release', label:'解除质押', icon:'shield'},
+        {key:'ledger',  label:'代币台账', icon:'ledger'},
+        {key:'assets',  label:'可信资产', icon:'asset'}
+      ]}
+    ]
+  };
+  TP.demo = {accounts:{
+    ops:{name:'运营示例账号', email:'ops-demo@example.com', role:'运营管理员'},
+    reg:{name:'监管示例账号', email:'reviewer-demo@reg.example', role:'监管机构', org:'示例监管机构 C'}
+  }};
+  TP.routes = {contracts:{ops:'ct-list'}};
+
+TP.addCopy({
+  "可用": "Available",
+  "停用": "Disabled",
+  "合约管理 · 管理端 · 代币发行平台": "Contracts · Admin · Token Issuance Platform",
+  "管理端": "Admin console",
+  "系统管理": "Administration",
+  "发行审核": "Issuance review",
+  "销毁审核": "Burn review",
+  "代币台账": "Token ledger",
+  "企业": "Companies",
+  "监管机构管理": "Regulators",
+  "合约管理": "Contracts",
+  "解除质押": "Release pledge",
+  "运营示例账号": "Demo operator",
+  "运营管理员": "Operator admin",
+  "账户设置": "Account settings",
+  "账户设置属于管理端登录与权限模块，本原型不展开": "Account settings are covered by the admin sign-in module.",
+  "合约": "Contracts",
+  "2 份": "2 contracts",
+  "0 份": "0 contracts",
+  "合约名称": "Contract name",
+  "合约标准": "Token standard",
+  "对应资产类型": "Asset type",
+  "所在网络": "Network",
+  "合约地址": "Contract address",
+  "合约状态": "Status",
+  "应收账款": "Accounts receivable",
+  "编辑名称": "Edit name",
+  "启用": "Enable",
+  "复制合约地址": "Copy contract address",
+  "编辑合约名称": "Edit contract name",
+  "请输入合约名称": "Enter contract name",
+  "请填写合约名称。": "Enter a contract name.",
+  "填写合约名称后可保存。": "Enter a contract name to save.",
+  "名称未保存，原名称未改变。请重试。": "The name was not saved. The previous name is unchanged. Please try again.",
+  "名称已被其他运营修改。以下为最新名称，请重新核对。": "Another operator changed this name. Review the latest name below.",
+  "正在保存，请勿重复提交。": "Saving. Do not submit again.",
+  "保存中…": "Saving…",
+  "合约名称已保存": "Contract name saved",
+  "合约已启用": "Contract enabled",
+  "合约已停用": "Contract disabled",
+  "尚未配置合约": "No contracts configured",
+  "合约由开发人员部署并配置到平台。": "Contracts are deployed and configured by developers.",
+  "合约读取失败": "Could not load contracts",
+  "当前状态": "Current status",
+  "目标状态": "New status",
+  "启用合约": "Enable contract",
+  "停用合约": "Disable contract",
+  "确认启用": "Confirm enable",
+  "确认停用": "Confirm disable",
+  "本次未完成，合约状态未改变。请重试。": "The change was not saved. The contract status is unchanged. Please try again.",
+  "合约当前已停用，无需重复操作。": "This contract is already disabled. No further change is needed.",
+  "合约状态已被其他运营修改。本次未提交，请核对最新状态。": "Another operator changed the status. Your change was not submitted. Review the latest status.",
+  "合约状态已更新": "Contract status updated",
+  "启用后，资产类型匹配的发行二审可重新选择此合约。启用不会自动办理二审或重试铸造。": "After enabling, this contract can be selected again at final issuance review for matching asset types. Enabling does not approve applications or retry minting automatically.",
+  "停用后，新的发行二审不能选择此合约。已确定合约的业务继续沿原合约办理，铸造或销毁失败仍可手动重试，无需先启用。": "After disabling, this contract cannot be selected at new final issuance reviews. Existing cases continue with their original contract. Failed minting or burning can still be retried manually without enabling it first.",
+  "正在提交，请勿重复操作。": "Submitting. Do not repeat this action.",
+  "提交中…": "Submitting…",
+  "返回列表": "Back to list",
+  "该操作在画面目录提供固定示例。": "A fixed example of this action is available in the screen catalog.",
+  "合约列表": "Contract list",
+  "默认列表": "Default list",
+  "尚未配置（空）": "No configured contracts (empty)",
+  "名称保存成功": "Name saved",
+  "启用成功": "Contract enabled",
+  "停用成功": "Contract disabled",
+  "当前名称": "Current name",
+  "空表单": "Empty form",
+  "名称必填错误": "Required name error",
+  "保存中": "Saving",
+  "保存失败": "Save failed",
+  "名称冲突：最新值": "Name conflict: latest value",
+  "停用合约编辑": "Edit disabled contract",
+  "启用与停用": "Enable and disable",
+  "启用确认": "Enable confirmation",
+  "停用确认": "Disable confirmation",
+  "启用提交中": "Enabling",
+  "停用提交中": "Disabling",
+  "启用失败": "Enable failed",
+  "停用失败": "Disable failed",
+  "停用：已为目标状态": "Already disabled",
+  "停用：状态冲突": "Status conflict",
+  "停用合约名称保存中": "Saving disabled contract name",
+  "停用合约名称保存成功": "Disabled contract name saved"
+});
+TP.boot("ct-list");
+</script>
+</body></html>

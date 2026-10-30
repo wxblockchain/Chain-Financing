@@ -153,7 +153,7 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .addr{display:inline-flex;align-items:center;gap:var(--sp-1);min-width:0;max-width:100%;vertical-align:middle}
 .addr-pill{font-family:var(--mono);font-size:var(--fs-13);line-height:1.5;color:var(--hash-text);background:var(--hash-bg);
   border:1px solid var(--hash-border);border-radius:var(--radius-xs);padding:4px 8px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
-.addr .btn.icon{width:28px;height:28px}
+.addr .btn.icon{width:var(--ctrl-h-sm);height:var(--ctrl-h-sm)}
 .addr .btn.icon svg.i{width:14px;height:14px}
 
 /* ---------- 卡片 ---------- */
