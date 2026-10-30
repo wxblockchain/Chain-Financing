@@ -5,6 +5,7 @@
 
 源文件（模块 HTML 与 _shared/ 下的 CSS/JS）是唯一维护源；生成件不放回仓库。
 只处理本目录采用的 <link rel="stylesheet" href> 与 <script src> 相对路径写法，不收录远程资源。
+带 data-local-only 的脚本仅用于仓库联看，导出时排除，并明确设置单模块模式。
 """
 from pathlib import Path
 import argparse
@@ -19,6 +20,8 @@ def main():
 
     src = args.source.resolve()
     html = src.read_text(encoding="utf-8")
+    html = re.sub(r'<script\b(?=[^>]*\bdata-local-only\b)[^>]*>\s*</script>',
+                  '<script>window.TP=window.TP||{};TP.previewMode="module";</script>', html)
 
     def read(rel):
         if re.match(r"^[a-z]+:|^//", rel):

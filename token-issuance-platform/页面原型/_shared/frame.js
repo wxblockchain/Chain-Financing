@@ -182,7 +182,8 @@
     $$('[data-slot]', shown).forEach(function(el){ if(gi) el.innerHTML = esc(el.dataset.slot==='gate-title' ? gi.label : gi.desc).replace(/Ethereum/g, '<span class="asset-label">'+TP.assetIcon('ETH')+'Ethereum</span>'); });
     renderNav(shown); renderCrumb(shown); renderTools(shown, sec.hasAttribute('data-dd'));
     if(sec.dataset.showToast) toast(sec.dataset.showToast);
-    current = {id:id, base: base ? base.id : null, who: shown.dataset.who};
+    current = {id:id, base: base ? base.id : null, who: shown.dataset.who, gate:gateKey};
+    TP.currentScreen = current;
     if(location.hash.slice(1) !== id) history.replaceState(null,'','#'+id);
     if(!sec.hasAttribute('data-overlay') || inline) window.scrollTo(0,0);
     var f = inline ? $('.btn.primary',sec) : sec.hasAttribute('data-overlay') ? ($('.modal [autofocus]', sec) || $('.modal .btn.primary:not([aria-disabled]), .modal .btn.danger', sec) || $('.modal .modal-f [data-close]',sec)) : null;
@@ -207,11 +208,11 @@
   }
 
   function go(key){
-    if(key==='msg'){ toast('消息通知属于 M7 消息通知模块，本原型不展开'); return; }
-    if(key==='settings' && !TP.routes.settings){ toast('账户设置属于管理端登录与权限模块，本原型不展开'); return; }
-    if(key==='logout'){ if(TP.routes.logout) show(TP.routes.logout); toast('已退出登录'); return; }
+    if(key==='msg'){ if(TP.navigate && TP.navigate(key,current)) return; toast('消息通知属于 M7 消息通知模块，本原型不展开'); return; }
+    if(key==='settings' && !TP.routes.settings){ if(TP.navigate && TP.navigate(key,current)) return; toast('账户设置属于管理端登录与权限模块，本原型不展开'); return; }
+    if(key==='logout'){ if(TP.routes.logout) show(TP.routes.logout); else if(TP.navigate && TP.navigate(key,current)) return; toast('已退出登录'); return; }
     var r = routeFor(key);
-    if(!r){ toast('「'+findNav(key).label+'」属于其他模块，本原型不展开'); return; }
+    if(!r || !r.id){ if(TP.navigate && TP.navigate(key,current)) return; var item=findNav(key); toast('「'+(item?item.label:key)+'」属于其他模块，本原型不展开'); return; }
     show(r.id, {gate:r.gate});
   }
 
@@ -275,6 +276,7 @@
     if(t.dataset.lang){ TP.setLanguage(t.dataset.lang); renderTools(document.getElementById(current.base || current.id), false); TP.renderDisplay(); return; }
     if(t.dataset.demoGo){ show(t.dataset.demoGo); return; }
     if(t.hasAttribute('data-copy')){ copyFullValue(t); return; }
+    if(t.dataset.moduleKey && TP.navigate && TP.navigate(t.dataset.moduleKey,current)) return;
     if(t.dataset.toast){ toast(t.dataset.toast); }
     if(t.matches('.dd-item') && !t.dataset.acct){ closeMenus(null); return; }
     if(t.hasAttribute('data-close') && current && current.base){ show(current.base, {gate:gateKey}); return; }
@@ -312,6 +314,7 @@
 
   TP.boot = function(first){
     TP.initDisplay();
+    if(TP.initNavigation) TP.initNavigation();
     // Sticky detail sections follow the actual header height at narrow widths.
     if(window.ResizeObserver){
       new ResizeObserver(function(entries){
@@ -326,7 +329,7 @@
     $('#demoBtn').textContent = '画面目录 · 演示数据';
     document.body.classList.add('ready');
     var h = location.hash.slice(1);
-    show(document.getElementById(h) && document.getElementById(h).hasAttribute('data-screen') ? h : first);
+    show(document.getElementById(h) && document.getElementById(h).hasAttribute('data-screen') ? h : first, TP.initialNavigationOptions);
     // 初次按 hash 打开长页面时，等浏览器完成片段定位后恢复页头可见。
     window.addEventListener('load', function(){
       requestAnimationFrame(function(){ if(current && !current.base) window.scrollTo(0,0); });
