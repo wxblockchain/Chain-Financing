@@ -193,6 +193,33 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 /* ---------- 数据表 ---------- */
 .tablewrap{overflow-x:auto;border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+/* Information-dense records keep identity, metadata and separate states visible. */
+.record-row{padding:var(--sp-4) var(--card-pad);border-bottom:1px solid var(--row-line)}
+.record-row:last-child{border-bottom:0}
+.record-head{display:flex;align-items:center;gap:var(--sp-4)}
+.record-head h3{font-size:var(--fs-14);font-weight:600}
+.record-amount{margin-left:auto;font-size:var(--fs-14)}
+.record-fields,.record-status{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-3) var(--sp-4);margin:var(--sp-3) 0 0}
+.record-fields>div,.record-status>div{min-width:0}
+.record-fields dt,.record-status dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
+.record-fields dd,.record-status dd{margin:0;font-size:var(--fs-13);overflow-wrap:anywhere}
+.record-fields .cell-sub{display:inline;font-size:var(--fs-11)}
+.record-status>div{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2)}
+.record-status dt{margin-bottom:0}
+.record-status .tag{white-space:normal}
+@media(max-width:1280px){.record-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tbl.request-list th{white-space:normal}
+.tbl.request-list th:first-child{width:auto}
+.tbl.request-list :is(td,th){overflow-wrap:normal}
+/* Read-only business progress; nodes never execute or simulate external work. */
+.progress-list{list-style:none;margin:0;padding:var(--sp-5) var(--card-pad);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4)}
+.progress-list li{display:flex;align-items:flex-start;gap:var(--sp-3);min-width:0;color:var(--muted)}
+.progress-list h3{font-size:var(--fs-14);font-weight:600;color:var(--text)}
+.progress-list p{font-size:var(--fs-13);margin-top:var(--sp-2)}
+.progress-mark{width:var(--sp-3);height:var(--sp-3);margin-top:var(--sp-1);border:1px solid var(--border-strong);border-radius:var(--radius-pill);flex:none}
+.progress-list .complete .progress-mark{background:var(--ok);border-color:var(--ok)}
+.progress-list .current .progress-mark{background:var(--accent);border-color:var(--accent)}
+@media(max-width:1280px){.progress-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .tbl thead th{text-align:left;font-size:var(--ui-field-label);font-weight:500;color:var(--muted);background:var(--card-2);
   padding:var(--sp-3);border-bottom:1px solid var(--border);white-space:nowrap}

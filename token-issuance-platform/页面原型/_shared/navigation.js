@@ -6,6 +6,7 @@
   var files = {
     account:{end:'client', path:'面客端/01-企业登录与企业账户/企业登录与企业账户.html'},
     clientAssets:{end:'client', path:'面客端/02-可信资产/可信资产.html'},
+    clientTokens:{end:'client', path:'我的代币与销毁申请/我的代币与销毁申请.html'},
     adminAccount:{end:'admin', path:'管理端/01-管理端登录与权限/管理端账号与监管机构管理.html'},
     adminAssets:{end:'admin', path:'管理端/02-可信资产/可信资产.html'},
     adminContracts:{end:'admin', path:'管理端/06-合约管理/合约管理.html'},
@@ -15,6 +16,12 @@
   var routes = {
     client:{
       assets:{file:'clientAssets', screens:{certified:'list'}},
+      tokens:{file:'clientTokens', screens:{certified:'t-list'}},
+      burn:{file:'clientTokens', screens:{certified:'b-list'}},
+      tokenDemo001:{file:'clientTokens', screens:{certified:'t-future'}},
+      assetToken001:{file:'clientAssets', screens:{certified:'d-issued'}},
+      signIn:{file:'account', screens:{none:'login',guest:'login'}},
+      guestRegister:{file:'account', screens:{guest:'guest'}},
       accounts:{file:'account', screens:{certified:'acc'}},
       org:{file:'account', screens:{certified:'org',uncertified:'org-uncert',noent:'org-noent'}},
       me:{file:'account', screens:{certified:'me'}},
@@ -104,7 +111,8 @@
   };
 
   TP.navigate=function(key,current){
-    if(!current || current.who==='none' || current.who==='guest') return false;
+    if(!current) return false;
+    if((current.who==='none'||current.who==='guest') && key!=='signIn' && key!=='guestRegister') return false;
     var route=routes[module.end][key], who=current.who;
     if(!route || !Object.prototype.hasOwnProperty.call(route.screens,who)) return false;
     var target=new URL(files[route.file].path,root);
