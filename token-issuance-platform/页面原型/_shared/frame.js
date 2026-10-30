@@ -187,6 +187,7 @@
     renderDemo();
     TP.renderDisplay();
     if(inline) window.scrollTo(0,0);
+    if(TP.refreshDetailNav) TP.refreshDetailNav();
   }
   TP.show = show;
 

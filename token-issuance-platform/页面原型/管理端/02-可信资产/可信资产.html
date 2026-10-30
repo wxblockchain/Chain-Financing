@@ -28,32 +28,32 @@
 <div class="card">
 <div class="card-head"><h2>资产</h2><span class="sub">6 笔</span></div>
 <div class="searchbar"><label class="q"><span class="sr-only">查找资产</span><i data-ico="search"></i><input class="inp" type="search" placeholder="上游资产编号或债权人名称"></label><button type="button" class="btn sm">查找</button></div>
-<div class="tablewrap"><table class="tbl auto">
-<thead><tr><th>上游资产编号</th><th class="col-name">债权人</th><th class="col-name">债务人</th><th class="num">金额</th><th>到期日<span class="cell-sub" data-zone></span></th><th>确权 · 结清 · 逾期</th><th>发行状态</th><th class="col-act">操作</th></tr></thead>
+<div class="tablewrap"><table class="tbl auto asset-list">
+<thead><tr><th>上游资产编号</th><th class="col-name">债权人</th><th class="col-name">债务人</th><th class="num">金额</th><th class="col-due">到期日<span class="cell-sub" data-zone></span></th><th>确权状态</th><th>结清状态</th><th>逾期状态</th><th>发行状态</th><th class="col-act">操作</th></tr></thead>
 <tbody>
-<tr><td><div class="cell-main mono">RA-DEMO-0131</div></td><td>示例企业 A 有限公司</td><td>Demo Motors Trading FZE</td><td class="num"><span class="mono">82,400.00</span> USD</td>
-<td><time data-compact data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag warn">发行申请中</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0131</div></td><td>示例企业 A 有限公司</td><td>Demo Motors Trading FZE</td><td class="num"><span class="money"><span class="mono">82,400.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00">2027-05-15<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag warn">发行申请中</span></td>
 <td class="col-act"><button type="button" class="actlink" data-go="o-applying">查看</button></td></tr>
-<tr><td><div class="cell-main mono">RA-DEMO-0150</div><span class="tag danger">上游已撤销确权</span></td><td>Demo Trading C Pte. Ltd.</td><td>Demo Retail E LLC</td><td class="num"><span class="mono">61,200.00</span> USD</td>
-<td><time data-compact data-instant="2027-06-20T23:59:59+04:00" datetime="2027-06-20T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag danger">已撤销确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag accent">可发行</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0150</div></td><td>Demo Trading C Pte. Ltd.</td><td>Demo Retail E LLC</td><td class="num"><span class="money"><span class="mono">61,200.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-06-20T23:59:59+04:00" datetime="2027-06-20T23:59:59+04:00">2027-06-20<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag danger">已撤销确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag accent">可发行</span></td>
 <td class="col-act"><button type="button" class="actlink" data-go="o-revoked">查看</button></td></tr>
-<tr><td><div class="cell-main mono">RA-DEMO-0102</div><span class="tag danger">上游已删除</span></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="mono">36,000.00</span> USD</td>
-<td><time data-compact data-instant="2027-01-31T23:59:59+04:00" datetime="2027-01-31T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag ok">已发行</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0102</div></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">36,000.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-01-31T23:59:59+04:00" datetime="2027-01-31T23:59:59+04:00">2027-01-31<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag ok">已发行</span></td>
 <td class="col-act"><button type="button" class="actlink" data-go="o-deleted">查看</button></td></tr>
-<tr><td><div class="cell-main mono">RA-DEMO-0128</div></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="mono">50,000.00</span> USD</td>
-<td><time data-compact data-instant="2027-03-31T23:59:59+04:00" datetime="2027-03-31T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag accent">可发行</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0128</div></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">50,000.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-03-31T23:59:59+04:00" datetime="2027-03-31T23:59:59+04:00">2027-03-31<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag accent">可发行</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
-<tr><td><div class="cell-main mono">RA-DEMO-0097</div></td><td>示例企业 A 有限公司</td><td>Demo Motors Trading FZE</td><td class="num"><span class="mono">24,800.00</span> USD</td>
-<td><time data-compact data-instant="2027-02-28T23:59:59+04:00" datetime="2027-02-28T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag danger">已驳回</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0097</div></td><td>示例企业 A 有限公司</td><td>Demo Motors Trading FZE</td><td class="num"><span class="money"><span class="mono">24,800.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-02-28T23:59:59+04:00" datetime="2027-02-28T23:59:59+04:00">2027-02-28<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag danger">已驳回</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
-<tr><td><div class="cell-main mono">RA-DEMO-0144</div></td><td>Demo Trading C Pte. Ltd.</td><td>Demo Retail E LLC</td><td class="num"><span class="mono">15,000.00</span> USD</td>
-<td><time data-compact data-instant="2026-12-31T23:59:59+04:00" datetime="2026-12-31T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag ok">已结清</span><span class="tag">未逾期</span></div></td><td><span class="tag ok">已发行</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0144</div></td><td>Demo Trading C Pte. Ltd.</td><td>Demo Retail E LLC</td><td class="num"><span class="money"><span class="mono">15,000.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2026-12-31T23:59:59+04:00" datetime="2026-12-31T23:59:59+04:00">2026-12-31<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag ok">已结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag ok">已发行</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
 </tbody>
 </table></div>
@@ -87,7 +87,7 @@
 <div class="page-actions"><button type="button" class="btn ghost" data-go="o-list"><i data-ico="back"></i>返回列表</button><button type="button" class="btn" data-go="e-detail"><i data-ico="org"></i>债权人企业详情</button></div></div>
 <div class="card">
 <div class="asset-sum"><div><div class="eyebrow">应收账款金额</div><div class="amount-lg">82,400.00<span class="ccy">USD</span></div>
-<div class="meta"><span>债权人 <b>示例企业 A 有限公司</b></span><span>债务人 <b>Demo Motors Trading FZE</b></span><span>到期日 <b><time data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00"></time></b></span></div></div>
+<div class="meta"><span>债权人 <b>示例企业 A 有限公司</b></span><span>债务人 <b>Demo Motors Trading FZE</b></span><span>到期日 <b><time data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00">2027-05-15 23:59:59</time></b></span></div></div>
 <dl class="status-grid"><div><dt>确权状态</dt><dd><span class="tag ok">已确权</span></dd></div><div><dt>结清状态</dt><dd><span class="tag">未结清</span></dd></div><div><dt>逾期状态</dt><dd><span class="tag">未逾期</span></dd></div><div><dt>发行状态</dt><dd><span class="tag warn">发行申请中</span></dd></div></dl></div>
 </div>
 <div class="card"><div class="card-head"><h2>关联记录</h2></div>
@@ -107,7 +107,7 @@
 <div class="page-actions"><button type="button" class="btn ghost" data-go="o-list"><i data-ico="back"></i>返回列表</button><button type="button" class="btn" data-toast="演示仅提供示例企业 A 的企业详情"><i data-ico="org"></i>债权人企业详情</button></div></div>
 <div class="card">
 <div class="asset-sum"><div><div class="eyebrow">应收账款金额</div><div class="amount-lg">61,200.00<span class="ccy">USD</span></div>
-<div class="meta"><span>债权人 <b>Demo Trading C Pte. Ltd.</b></span><span>债务人 <b>Demo Retail E LLC</b></span><span>到期日 <b><time data-instant="2027-06-20T23:59:59+04:00" datetime="2027-06-20T23:59:59+04:00"></time></b></span></div></div>
+<div class="meta"><span>债权人 <b>Demo Trading C Pte. Ltd.</b></span><span>债务人 <b>Demo Retail E LLC</b></span><span>到期日 <b><time data-instant="2027-06-20T23:59:59+04:00" datetime="2027-06-20T23:59:59+04:00">2027-06-20 23:59:59</time></b></span></div></div>
 <dl class="status-grid"><div><dt>确权状态</dt><dd><span class="tag danger">已撤销确权</span></dd></div><div><dt>结清状态</dt><dd><span class="tag">未结清</span></dd></div><div><dt>逾期状态</dt><dd><span class="tag">未逾期</span></dd></div><div><dt>发行状态</dt><dd><span class="tag accent">可发行</span></dd></div></dl></div>
 </div>
 <div class="asset-detail" data-asset-detail="RA-DEMO-0150"></div>
@@ -121,7 +121,7 @@
 <div class="page-actions"><button type="button" class="btn ghost" data-go="o-list"><i data-ico="back"></i>返回列表</button><button type="button" class="btn" data-go="e-detail"><i data-ico="org"></i>债权人企业详情</button></div></div>
 <div class="card">
 <div class="asset-sum"><div><div class="eyebrow">应收账款金额</div><div class="amount-lg">36,000.00<span class="ccy">USD</span></div>
-<div class="meta"><span>债权人 <b>示例企业 A 有限公司</b></span><span>债务人 <b>Demo Buyer B LLC</b></span><span>到期日 <b><time data-instant="2027-01-31T23:59:59+04:00" datetime="2027-01-31T23:59:59+04:00"></time></b></span></div></div>
+<div class="meta"><span>债权人 <b>示例企业 A 有限公司</b></span><span>债务人 <b>Demo Buyer B LLC</b></span><span>到期日 <b><time data-instant="2027-01-31T23:59:59+04:00" datetime="2027-01-31T23:59:59+04:00">2027-01-31 23:59:59</time></b></span></div></div>
 <dl class="status-grid"><div><dt>确权状态</dt><dd><span class="tag ok">已确权</span></dd></div><div><dt>结清状态</dt><dd><span class="tag">未结清</span></dd></div><div><dt>逾期状态</dt><dd><span class="tag">未逾期</span></dd></div><div><dt>发行状态</dt><dd><span class="tag ok">已发行</span></dd></div></dl></div>
 </div>
 <div class="card"><div class="card-head"><h2>关联记录</h2></div>
@@ -145,13 +145,13 @@
 <div class="tablewrap"><table class="tbl auto">
 <thead><tr><th>企业名称</th><th>注册国家 / 地区</th><th>企业登记标识</th><th>登录地址</th><th>当前有效认证结论</th><th class="num">资产</th><th class="col-act">操作</th></tr></thead>
 <tbody>
-<tr><td><div class="cell-main">示例企业 A 有限公司</div><div class="cell-sub">Example Enterprise A Ltd.</div></td><td>中国香港</td><td><span class="mono">DEMO-1234567</span><div class="cell-sub">CR</div></td>
+<tr><td><div class="cell-main">示例企业 A 有限公司</div></td><td>中国香港</td><td><span class="mono">DEMO-1234567</span></td>
 <td><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
 <td><span class="tag ok">已认证</span></td><td class="num">4</td><td class="col-act"><button type="button" class="actlink" data-go="e-detail">查看</button></td></tr>
-<tr><td><div class="cell-main">Demo Trading C Pte. Ltd.</div></td><td>新加坡</td><td><span class="mono">DEMO-UEN-202600123</span><div class="cell-sub">UEN</div></td>
+<tr><td><div class="cell-main">Demo Trading C Pte. Ltd.</div></td><td>新加坡</td><td><span class="mono">DEMO-UEN-202600123</span></td>
 <td><span class="addr"><span class="addr-pill" title="0x91B2c4D6e8F0a1B3c5D7e9F1a3B5c7D9e1F37c3D">0x91B2…7c3D</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
 <td><span class="tag ok">已认证</span></td><td class="num">2</td><td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供示例企业 A 的企业详情">查看</button></td></tr>
-<tr><td><div class="cell-main">示例贸易 D 有限公司</div><div class="cell-sub">Example Trading D Co., Ltd.</div></td><td>中国</td><td><span class="mono">DEMO-91310000MA1DEMO</span><div class="cell-sub">统一社会信用代码</div></td>
+<tr><td><div class="cell-main">示例贸易 D 有限公司</div></td><td>中国</td><td><span class="mono">DEMO-91310000MA1DEMO</span></td>
 <td><span class="addr"><span class="addr-pill" title="0x5E0a7B9c1D3e5F7a9B1c3D5e7F9a1B3c5D7e19F2">0x5E0a…19F2</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
 <td><span class="tag warn">审核中</span></td><td class="num">0</td><td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供示例企业 A 的企业详情">查看</button></td></tr>
 </tbody>
@@ -214,33 +214,33 @@
 <tbody>
 <tr><td><span class="tag accent">登录地址</span></td><td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td>
 <td><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
-<td class="nw">登录地址</td><td class="nw"><time data-compact data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00"></time></td><td class="nw"><time data-compact data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00"></time></td></tr>
+<td class="nw">登录地址</td><td class="nw"><time data-compact data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00">2026-08-14<span class="cell-sub">02:22</span></time></td><td class="nw"><time data-compact data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00">2026-08-14<span class="cell-sub">02:22</span></time></td></tr>
 <tr><td><div class="cell-main">示例收币地址</div></td><td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td>
 <td><span class="addr"><span class="addr-pill" title="0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21">0x4C1e…5B21</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
-<td class="nw">企业新增</td><td class="nw"><time data-compact data-instant="2026-09-02T07:08:00+00:00" datetime="2026-09-02T07:08:00+00:00"></time></td><td class="nw"><time data-compact data-instant="2026-10-11T01:41:00+00:00" datetime="2026-10-11T01:41:00+00:00"></time></td></tr>
+<td class="nw">企业新增</td><td class="nw"><time data-compact data-instant="2026-09-02T07:08:00+00:00" datetime="2026-09-02T07:08:00+00:00">2026-09-02<span class="cell-sub">07:08</span></time></td><td class="nw"><time data-compact data-instant="2026-10-11T01:41:00+00:00" datetime="2026-10-11T01:41:00+00:00">2026-10-11<span class="cell-sub">01:41</span></time></td></tr>
 </tbody>
 </table></div>
 </div>
 <div class="card">
 <div class="card-head"><h2>资产</h2><span class="sub">4 笔</span></div>
-<div class="tablewrap"><table class="tbl auto">
-<thead><tr><th>上游资产编号</th><th class="col-name">债务人</th><th class="num">金额</th><th>到期日<span class="cell-sub" data-zone></span></th><th>确权 · 结清 · 逾期</th><th>发行状态</th><th class="col-act">操作</th></tr></thead>
+<div class="tablewrap"><table class="tbl auto asset-list">
+<thead><tr><th>上游资产编号</th><th class="col-name">债务人</th><th class="num">金额</th><th class="col-due">到期日<span class="cell-sub" data-zone></span></th><th>确权状态</th><th>结清状态</th><th>逾期状态</th><th>发行状态</th><th class="col-act">操作</th></tr></thead>
 <tbody>
-<tr><td><div class="cell-main mono">RA-DEMO-0131</div></td><td>Demo Motors Trading FZE</td><td class="num"><span class="mono">82,400.00</span> USD</td>
-<td><time data-compact data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag warn">发行申请中</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0131</div></td><td>Demo Motors Trading FZE</td><td class="num"><span class="money"><span class="mono">82,400.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00">2027-05-15<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag warn">发行申请中</span></td>
 <td class="col-act"><button type="button" class="actlink" data-go="o-applying">查看</button></td></tr>
-<tr><td><div class="cell-main mono">RA-DEMO-0102</div><span class="tag danger">上游已删除</span></td><td>Demo Buyer B LLC</td><td class="num"><span class="mono">36,000.00</span> USD</td>
-<td><time data-compact data-instant="2027-01-31T23:59:59+04:00" datetime="2027-01-31T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag ok">已发行</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0102</div></td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">36,000.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-01-31T23:59:59+04:00" datetime="2027-01-31T23:59:59+04:00">2027-01-31<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag ok">已发行</span></td>
 <td class="col-act"><button type="button" class="actlink" data-go="o-deleted">查看</button></td></tr>
-<tr><td><div class="cell-main mono">RA-DEMO-0128</div></td><td>Demo Buyer B LLC</td><td class="num"><span class="mono">50,000.00</span> USD</td>
-<td><time data-compact data-instant="2027-03-31T23:59:59+04:00" datetime="2027-03-31T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag accent">可发行</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0128</div></td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">50,000.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-03-31T23:59:59+04:00" datetime="2027-03-31T23:59:59+04:00">2027-03-31<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag accent">可发行</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
-<tr><td><div class="cell-main mono">RA-DEMO-0097</div></td><td>Demo Motors Trading FZE</td><td class="num"><span class="mono">24,800.00</span> USD</td>
-<td><time data-compact data-instant="2027-02-28T23:59:59+04:00" datetime="2027-02-28T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag danger">已驳回</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0097</div></td><td>Demo Motors Trading FZE</td><td class="num"><span class="money"><span class="mono">24,800.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-02-28T23:59:59+04:00" datetime="2027-02-28T23:59:59+04:00">2027-02-28<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag danger">已驳回</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
 </tbody>
 </table></div>
@@ -254,20 +254,20 @@
 <div class="page-head"><div><h1 class="page-title">可信资产</h1><p class="page-desc">选择了本机构的发行申请所使用的资产，只读。</p></div></div>
 <div class="card">
 <div class="card-head"><h2>关联资产</h2><span class="sub">3 笔</span></div>
-<div class="tablewrap"><table class="tbl auto">
-<thead><tr><th>上游资产编号</th><th class="col-name">债权人</th><th class="col-name">债务人</th><th class="num">金额</th><th>到期日<span class="cell-sub" data-zone></span></th><th>确权 · 结清 · 逾期</th><th>发行状态</th><th class="col-act">操作</th></tr></thead>
+<div class="tablewrap"><table class="tbl auto asset-list">
+<thead><tr><th>上游资产编号</th><th class="col-name">债权人</th><th class="col-name">债务人</th><th class="num">金额</th><th class="col-due">到期日<span class="cell-sub" data-zone></span></th><th>确权状态</th><th>结清状态</th><th>逾期状态</th><th>发行状态</th><th class="col-act">操作</th></tr></thead>
 <tbody>
-<tr><td><div class="cell-main mono">RA-DEMO-0131</div></td><td>示例企业 A 有限公司</td><td>Demo Motors Trading FZE</td><td class="num"><span class="mono">82,400.00</span> USD</td>
-<td><time data-compact data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag warn">发行申请中</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0131</div></td><td>示例企业 A 有限公司</td><td>Demo Motors Trading FZE</td><td class="num"><span class="money"><span class="mono">82,400.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00">2027-05-15<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag warn">发行申请中</span></td>
 <td class="col-act"><button type="button" class="actlink" data-go="r-detail">查看</button></td></tr>
-<tr><td><div class="cell-main mono">RA-DEMO-0102</div></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="mono">36,000.00</span> USD</td>
-<td><time data-compact data-instant="2027-01-31T23:59:59+04:00" datetime="2027-01-31T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag ok">已发行</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0102</div></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">36,000.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-01-31T23:59:59+04:00" datetime="2027-01-31T23:59:59+04:00">2027-01-31<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag ok">已发行</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
-<tr><td><div class="cell-main mono">RA-DEMO-0097</div></td><td>示例企业 A 有限公司</td><td>Demo Motors Trading FZE</td><td class="num"><span class="mono">24,800.00</span> USD</td>
-<td><time data-compact data-instant="2027-02-28T23:59:59+04:00" datetime="2027-02-28T23:59:59+04:00"></time></td>
-<td><div class="tags"><span class="tag ok">已确权</span><span class="tag">未结清</span><span class="tag">未逾期</span></div></td><td><span class="tag danger">已驳回</span></td>
+<tr><td><div class="cell-main mono">RA-DEMO-0097</div></td><td>示例企业 A 有限公司</td><td>Demo Motors Trading FZE</td><td class="num"><span class="money"><span class="mono">24,800.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-02-28T23:59:59+04:00" datetime="2027-02-28T23:59:59+04:00">2027-02-28<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag ok">已确权</span></td><td><span class="tag">未结清</span></td><td><span class="tag">未逾期</span></td><td><span class="tag danger">已驳回</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
 </tbody>
 </table></div>
@@ -291,7 +291,7 @@
 <div class="page-actions"><button type="button" class="btn ghost" data-go="r-list"><i data-ico="back"></i>返回列表</button></div></div>
 <div class="card">
 <div class="asset-sum"><div><div class="eyebrow">应收账款金额</div><div class="amount-lg">82,400.00<span class="ccy">USD</span></div>
-<div class="meta"><span>债权人 <b>示例企业 A 有限公司</b></span><span>债务人 <b>Demo Motors Trading FZE</b></span><span>到期日 <b><time data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00"></time></b></span></div></div>
+<div class="meta"><span>债权人 <b>示例企业 A 有限公司</b></span><span>债务人 <b>Demo Motors Trading FZE</b></span><span>到期日 <b><time data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00">2027-05-15 23:59:59</time></b></span></div></div>
 <dl class="status-grid"><div><dt>确权状态</dt><dd><span class="tag ok">已确权</span></dd></div><div><dt>结清状态</dt><dd><span class="tag">未结清</span></dd></div><div><dt>逾期状态</dt><dd><span class="tag">未逾期</span></dd></div><div><dt>发行状态</dt><dd><span class="tag warn">发行申请中</span></dd></div></dl></div>
 </div>
 <div class="card"><div class="card-head"><h2>本机构关联申请</h2></div>
