@@ -79,7 +79,7 @@
 
   /* —— 识别图标与内容排版 —— */
   --asset-icon-size:18px;
-  --content-max:1200px;
+  --content-max:none; /* 平台内容随可用宽度展开，外侧留白由 .content 控制 */
   --focus-symbol-size:48px;
 
   /* —— 层级 —— */
