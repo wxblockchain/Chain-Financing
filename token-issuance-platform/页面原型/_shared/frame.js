@@ -30,6 +30,8 @@
     bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
     chev:'<path d="M6 9l6 6 6-6"/>',
     copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+    eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    'eye-off':'<path d="M3 3l18 18M10.6 5.1A13 13 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.1 4M6.1 6.1A19 19 0 0 0 2 12s3.5 7 10 7a13 13 0 0 0 5.9-1.4M10 10a3 3 0 0 0 4 4"/>',
     out:'<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/>',
     msg:'<path d="M4 5h16v11H8l-4 4z"/>',
     alert:'<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/>',
@@ -45,6 +47,16 @@
     download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'
   };
   TP.icon = function(n){ return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+(ICON[n]||'')+'</svg>'; };
+  TP.refreshPasswordToggles = function(){
+    document.querySelectorAll('[data-password-toggle]').forEach(function(button){
+      var input=document.getElementById(button.dataset.passwordToggle);if(!input)return;
+      var visible=input.type==='text', en=TP.language==='en';
+      var label=visible?(en?'Hide password':'隐藏密码'):(en?'Show password':'显示密码');
+      button.innerHTML=TP.icon(visible?'eye-off':'eye');
+      button.setAttribute('aria-pressed',String(visible));
+      button.setAttribute('aria-label',label);button.setAttribute('title',label);
+    });
+  };
 
   /* 面客端菜单：与简报 4.1 的功能分组一致；未登记 route 的菜单属于其他模块 */
   TP.NAV = [
@@ -268,7 +280,7 @@
     if(t.disabled || t.getAttribute('aria-disabled')==='true') return;
     if(t.hasAttribute('data-password-toggle')){
       var input=document.getElementById(t.dataset.passwordToggle);
-      if(input){var reveal=input.type==='password';input.type=reveal?'text':'password';t.setAttribute('aria-pressed',String(reveal));t.textContent=reveal?'隐藏':'显示';TP.localize(t);}
+      if(input){input.type=input.type==='password'?'text':'password';TP.refreshPasswordToggles();}
       return;
     }
     if(t.matches('.dd-btn')){ var l = t.nextElementSibling; l.hidden = !l.hidden; t.setAttribute('aria-expanded', l.hidden?'false':'true'); return; }

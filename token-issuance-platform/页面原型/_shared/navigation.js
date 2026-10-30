@@ -20,11 +20,11 @@
       certify:{file:'account', screens:{uncertified:'leave',noent:'leave'}, bases:{uncertified:'org-uncert',noent:'org-noent'}}
     },
     admin:{
-      assets:{file:'adminAssets', screens:{ops:'o-list',reg:'r-list',regoff:'r-list',regnew:'r-list'}},
-      ents:{file:'adminAssets', screens:{ops:'e-list'}},
-      regs:{file:'adminAccount', screens:{ops:'rg-list'}},
-      settings:{file:'adminAccount', screens:{ops:'o-settings',reg:'r-settings',regoff:'r-off',regnew:'r-settings-new'}},
-      logout:{file:'adminAccount', screens:{ops:'login-out',reg:'login-out',regoff:'login-out',regnew:'login-out'}}
+      assets:{file:'adminAssets', screens:{ops:'o-list',opsnew:'o-list',reg:'r-list',regoff:'r-list',regnew:'r-list'}},
+      ents:{file:'adminAssets', screens:{ops:'e-list',opsnew:'e-list'}},
+      regs:{file:'adminAccount', screens:{ops:'rg-list',opsnew:'rg-list'}},
+      settings:{file:'adminAccount', screens:{ops:'o-settings',opsnew:'o-settings-new',reg:'r-settings',regoff:'r-off',regnew:'r-settings-new'}},
+      logout:{file:'adminAccount', screens:{ops:'login-out',opsnew:'login-out',reg:'login-out',regoff:'login-out',regnew:'login-out'}}
     }
   };
   var page = new URL(location.href), module = null;
@@ -52,14 +52,16 @@
     // M2 uses the same regulator screens for these display variants. Preserve the
     // disabled-institution notice / changed email when returning from M5.
     var who=params.get('previewWho');
-    if(module===files.adminAssets && (who==='regoff'||who==='regnew')){
-      document.querySelectorAll('[data-screen][data-who="reg"]').forEach(function(el){el.dataset.who=who;});
-      TP.NAV_BY[who]=TP.NAV_BY.reg;
-      TP.demo.accounts[who]=Object.assign({},TP.demo.accounts.reg);
+    if(module===files.adminAssets && (who==='regoff'||who==='regnew'||who==='opsnew')){
+      var sourceWho=who==='opsnew'?'ops':'reg';
+      document.querySelectorAll('[data-screen][data-who="'+sourceWho+'"]').forEach(function(el){el.dataset.who=who;});
+      TP.NAV_BY[who]=TP.NAV_BY[sourceWho];
+      TP.demo.accounts[who]=Object.assign({},TP.demo.accounts[sourceWho]);
       if(who==='regoff') TP.demo.accounts[who].notice='本机构已停用，不再接收新的发行申请；在途业务可以继续办理。';
       if(who==='regnew') TP.demo.accounts[who].email='new-reviewer@reg.example';
+      if(who==='opsnew') TP.demo.accounts[who].email='new-ops@example.com';
       Object.keys(TP.routes).forEach(function(key){
-        var r=TP.routes[key];if(r && typeof r==='object' && r.reg) r[who]=r.reg;
+        var r=TP.routes[key];if(r && typeof r==='object' && r[sourceWho]) r[who]=r[sourceWho];
       });
     }
     var target=screen(location.hash.slice(1)), base=screen(params.get('previewBase'));

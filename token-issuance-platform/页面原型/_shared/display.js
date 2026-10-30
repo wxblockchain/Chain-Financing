@@ -133,6 +133,7 @@
       if(el.hasAttribute('data-compact')){var sub=document.createElement('span');sub.className='cell-sub';sub.textContent=clock;el.appendChild(sub);}
     });
     TP.localize();
+    if(TP.refreshPasswordToggles)TP.refreshPasswordToggles();
   };
   TP.setLanguage=function(value){
     if(value!=='en'&&value!=='zh')return;

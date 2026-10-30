@@ -10,9 +10,8 @@
 
   function file(name, kind){
     return '<li><span class="file-ico" aria-hidden="true"><i data-ico="doc"></i></span>'+
-      '<div class="file-main"><div class="cell-main">'+name+'</div><div class="cell-sub">'+kind+'</div></div>'+
-      '<div class="file-acts"><button type="button" class="actlink" data-toast="'+FILE_TOAST+'">查看</button>'+
-      '<button type="button" class="actlink" data-toast="'+FILE_TOAST+'">下载</button></div></li>';
+      '<div class="file-main"><button type="button" class="btn-link file-name" data-toast="'+FILE_TOAST+'">'+name+'</button><div class="cell-sub">'+kind+'</div></div>'+
+      '<div class="file-acts"><button type="button" class="btn icon" data-toast="'+FILE_TOAST+'" aria-label="下载" title="下载"><i data-ico="download"></i></button></div></li>';
   }
   function day(iso){ return '<time data-day data-instant="'+iso+'" datetime="'+iso+'"></time>'; }
   function money(v, ccy){ return '<span class="money"><span class="mono">'+v+'</span><span class="ccy">'+ccy+'</span></span>'; }
