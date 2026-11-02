@@ -363,6 +363,15 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .demo-panel .demo-s:hover{background:var(--card-hover);color:var(--text)}
 .demo-panel .demo-s[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
 .demo-panel .demo-s .no{color:var(--faint);font-family:var(--mono);font-size:var(--fs-11);width:28px;flex:none;padding-top:2px}
+.demo-switch{padding-bottom:var(--sp-1)}
+.demo-switch .demo-g:first-child{padding-top:var(--sp-1)}
+.demo-chips{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2);padding:0 var(--sp-2)}
+.demo-chip{display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius-pill);
+  color:var(--muted);font-size:var(--fs-12);text-decoration:none}
+.demo-chip:hover{background:var(--card-hover);color:var(--text)}
+.demo-chip[aria-current="true"]{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.demo-sep{margin-top:var(--sp-2);border-top:1px solid var(--border)}
+.demo-note{padding:0 var(--sp-2) var(--sp-2);color:var(--faint);font-size:var(--fs-12)}
 
 /* M1：连接阶段、只读网络、资料分区、偏好设置 */
 .login-progress{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-13);color:var(--muted)}

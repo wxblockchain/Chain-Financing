@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="../../_shared/components.css">
 </head>
 <body>
-<!-- 骨架：app（业务页），菜单按角色由 TP.NAV_BY 给出 -->
+<!-- 骨架：app（业务页），菜单按角色由 _shared/menu.admin.js 给出 -->
 <div class="app" id="app" hidden>
   <aside class="sidebar">
     <div class="brand"><span class="brand-mark" aria-hidden="true">TI</span><div><span class="brand-name">代币发行平台</span><span class="brand-sub">管理端</span></div></div>
@@ -96,32 +96,10 @@
 <script src="../../_shared/asset-icons.js"></script>
 <script src="../../_shared/display.js"></script>
 <script src="../../_shared/frame.js"></script>
+<script src="../../_shared/menu.admin.js"></script>
 <script src="../../_shared/navigation.js" data-local-only></script>
 <script>
 TP.pageTitle='合约管理 · 管理端 · 代币发行平台';
-  TP.NAV_BY = {
-    ops:[
-      {group:'业务', items:[
-        {key:'review', label:'发行审核', icon:'issue'},
-        {key:'burn',   label:'销毁审核', icon:'burn'},
-        {key:'ledger', label:'代币台账', icon:'ledger'},
-        {key:'assets', label:'可信资产', icon:'asset'},
-        {key:'ents',   label:'企业',     icon:'org'}
-      ]},
-      {group:'系统管理', items:[
-        {key:'regs',      label:'监管机构管理', icon:'shield'},
-        {key:'contracts', label:'合约管理',     icon:'doc'}
-      ]}
-    ],
-    reg:[
-      {group:'业务', items:[
-        {key:'review',  label:'发行审核', icon:'issue'},
-        {key:'release', label:'解除监管', icon:'shield'},
-        {key:'ledger',  label:'代币台账', icon:'ledger'},
-        {key:'assets',  label:'可信资产', icon:'asset'}
-      ]}
-    ]
-  };
   TP.demo = {accounts:{
     ops:{name:'运营示例账号', email:'ops-demo@example.com', role:'运营管理员'},
     reg:{name:'监管示例账号', email:'reviewer-demo@reg.example', role:'监管机构', org:'示例监管机构 C'}

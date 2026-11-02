@@ -1,7 +1,7 @@
 """把模块原型源文件内联成一份可双击打开的单文件评审件。
 
 用法（在 token-issuance-platform/页面原型/ 下执行）：
-  python3 _shared/export.py --source 面客端/01-企业登录与企业账户/企业登录与企业账户.html --output <仓库外路径>.html
+  python3 _shared/export.py --source 面客端/M1-企业登录与企业账户/企业登录与企业账户.html --output <仓库外路径>.html
 
 源文件（模块 HTML 与 _shared/ 下的 CSS/JS）是唯一维护源；生成件不放回仓库。
 只处理本目录采用的 <link rel="stylesheet" href> 与 <script src> 相对路径写法，不收录远程资源。

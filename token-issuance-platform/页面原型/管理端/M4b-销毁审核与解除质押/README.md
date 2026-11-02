@@ -12,7 +12,7 @@
 - 源文件只引用 `_shared/` 的 token、组件、图标、展示、壳层和导航，不包含模块 CSS 或第二套运行时。导出离线单文件附件（生成件不入库）：
 
   ```sh
-  python3 _shared/export.py --source 管理端/04-销毁审核与解除质押/销毁审核与解除质押.html --output <仓库外路径>.html
+  python3 _shared/export.py --source 管理端/M4b-销毁审核与解除质押/销毁审核与解除质押.html --output <仓库外路径>.html
   ```
 
 ## 主流程

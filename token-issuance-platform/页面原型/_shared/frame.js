@@ -1,6 +1,6 @@
 /* ==========================================================================
    frame.js — 代币发行平台原型壳层运行时（面客端、管理端）
-   只做三件事：渲染壳层（侧栏、顶栏、账户入口）、按画面切换、画面目录。
+   只做三件事：渲染壳层（侧栏、顶栏、账户入口）、按画面切换、画面目录（含仓库联看的端与身份切换）。
    不实现业务规则、校验、状态机或演示时钟；规则以 PRD 为准。
 
    模块页面约定：
@@ -13,8 +13,9 @@
    模块在 TP.routes 中登记菜单与账户入口对应的画面。
    TP.routes.settings 可按身份配置账户设置；focus 画面 data-restricted 仅保留语言与退出。
    data-password-toggle="输入框 id" 只切换密码显隐，不校验密码。
-   管理端模块另设 TP.NAV_BY[身份] 按角色给出菜单，TP.demo.accounts[身份] 给出账号入口
-   （账号名称、登录邮箱、角色、所属机构）；未设置时沿用面客端菜单与钱包地址入口。
+   菜单只在 _shared/menu.client.js（企业端 TP.NAV）与 menu.admin.js（管理端 TP.NAV_BY[身份]）维护，
+   模块不再各自复制；管理端 TP.demo.accounts[身份] 给出账号入口（账号名称、登录邮箱、角色、所属机构），
+   未设置时为企业端钱包地址入口。
    ========================================================================== */
 (function(){
   var TP = window.TP = window.TP || {};
@@ -58,20 +59,8 @@
     });
   };
 
-  /* 面客端菜单：与简报 4.1 的功能分组一致；未登记 route 的菜单属于其他模块 */
-  TP.NAV = [
-    {group:'业务', items:[
-      {key:'assets', label:'可信资产', icon:'asset', biz:true, desc:'查看本企业已确权的应收账款，从可发行的资产发起代币发行。'},
-      {key:'issue',  label:'代币发行', icon:'issue', biz:true, desc:'提交代币发行申请，查看审核进度与铸造结果。'},
-      {key:'tokens', label:'我的代币', icon:'token', biz:true, desc:'查看已铸造的代币，满足条件时发起销毁。'},
-      {key:'burn',   label:'销毁申请', icon:'burn',  biz:true, desc:'查看销毁申请的审核进度与解除质押进度。'}
-    ]},
-    {group:'用户中心', items:[
-      {key:'accounts', label:'企业账户', icon:'wallet', biz:true, desc:'管理本企业用于接收代币的数币账户。'},
-      {key:'org',      label:'企业信息', icon:'org'},
-      {key:'me',       label:'用户信息', icon:'user'}
-    ]}
-  ];
+  /* 菜单由 menu.client.js（企业端 TP.NAV）或 menu.admin.js（管理端 TP.NAV_BY）提供 */
+  TP.NAV = TP.NAV || [];
   TP.routes = TP.routes || {};
   TP.demo = TP.demo || {};
 
@@ -240,7 +229,11 @@
     });
     var cur = current ? document.getElementById(current.id) : null;
     var next = cur && cur.dataset.next;
-    p.innerHTML = '<div class="demo-top"><b>画面目录</b><span>评审工具 · 演示数据</span></div>'+
+    // 端与身份切换只在仓库联看提供；单模块附件不含其他模块，只说明打开方式。
+    var ends = TP.renderPreviewSwitch ? TP.renderPreviewSwitch() :
+      TP.previewMode==='module' ? '<p class="demo-note">单模块附件。切换企业端、管理端请在仓库中打开 index.html。</p>' : '';
+    p.innerHTML = '<div class="demo-top"><b>画面目录</b><span>评审工具 · 演示数据</span></div>'+ends+
+      (ends?'<div class="demo-g demo-sep">本模块画面</div>':'')+
       (next?'<div class="demo-flow"><button type="button" class="btn sm primary" data-demo-go="'+next+'">主流程下一屏：'+esc(document.getElementById(next).dataset.name)+'</button></div>':'')+
       groups.map(function(g){
         return '<div class="demo-g">'+esc(g)+'</div>'+by[g].map(function(s){

@@ -8,12 +8,12 @@
 
 完整同步仓库后双击 [我的代币与销毁申请.html](我的代币与销毁申请.html)，默认进入我的代币列表。真实侧栏的“我的代币”“销毁申请”进入模块两类列表；可前往已交付的 M1、M2。M2 的 `RA-DEMO-0102` 与本模块 `DEMO-TOKEN-001` 保持数量 36,000.00 USD、到期时点和原发行申请 `IA-DEMO-0019` 一致，点击关联入口能双向查看；其他没有匹配画面的资产、发行申请、消息入口提示范围。
 
-源码按 issue 指定位置维护，引用 `../_shared/tokens.css`、`components.css`、`asset-icons.js`、`display.js`、`frame.js`、`navigation.js`。不建立第二份 token、CSS 或业务运行时。公共样式取值来源为 `_shared/tokens.css`，主色 #1D4ED8、背景 #F7F8FB、侧栏 238 px、顶栏 68 px、控件 44/36 px、内容边距 24 px。
+源码位于 `面客端/M4a-我的代币与销毁申请/`（WS-506 由顶层目录迁入），引用 `../../_shared/tokens.css`、`components.css`、`asset-icons.js`、`display.js`、`frame.js`、`menu.client.js`、`navigation.js`。不建立第二份 token、CSS 或业务运行时。公共样式取值来源为 `_shared/tokens.css`，主色 #1D4ED8、背景 #F7F8FB、侧栏 238 px、顶栏 68 px、控件 44/36 px、内容边距 24 px。
 
 在 `页面原型/` 目录导出单文件附件：
 
 ```sh
-python3 _shared/export.py --source 我的代币与销毁申请/我的代币与销毁申请.html --output <仓库外路径>.html
+python3 _shared/export.py --source 面客端/M4a-我的代币与销毁申请/我的代币与销毁申请.html --output <仓库外路径>.html
 ```
 
 生成件仅作为离线附件，不入库；不包含 `navigation.js`、其他模块画面或远程资源。附件双击打开，各关联模块入口显示范围提示。仓库模式传递既有身份、语言与时区展示上下文，不把展示参数当作生产权限依据。

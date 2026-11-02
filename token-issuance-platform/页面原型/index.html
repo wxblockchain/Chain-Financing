@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>页面原型入口 · 代币发行平台</title>
+<link rel="stylesheet" href="_shared/tokens.css">
+<link rel="stylesheet" href="_shared/components.css">
+<style>
+/* 仅入口页使用，不进入模块附件 */
+.preview-entry{max-width:880px;margin:0 auto;padding:var(--sp-9) var(--sp-6)}
+.preview-ends{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--sp-4)}
+.preview-ends .card+.card{margin-top:0}
+.preview-ends .demo-chips{padding:var(--card-pad);gap:var(--sp-3)}
+.preview-ends .btn{text-decoration:none}
+.preview-foot{margin-top:var(--sp-5);color:var(--faint);font-size:var(--fs-12)}
+</style>
+</head><body class="ready">
+<!-- 仓库联看入口（评审工具）：只选择端与身份，进入后即为真实壳层与菜单；页面与状态在各模块的画面目录中切换。 -->
+<main class="preview-entry">
+  <div class="page-head"><div>
+    <h1 class="page-title">代币发行平台 · 页面原型</h1>
+    <p class="page-desc">选择端与身份进入。进入后用侧栏菜单在模块间切换；右下角「画面目录」可再次切换端与身份。画面中的数据均为演示数据。</p>
+  </div></div>
+  <div class="preview-ends" id="ends"></div>
+  <p class="preview-foot">规则、校验与异常分支以 PRD 为准。需要完整同步 <span class="mono">页面原型/</span> 目录；双击打开即可，无需启动服务。</p>
+</main>
+<script src="_shared/navigation.js" data-local-only></script>
+<script>
+(function(){
+  var ends = TP.previewEntries ? TP.previewEntries() : [];
+  document.getElementById('ends').innerHTML = ends.map(function(g){
+    return '<section class="card"><div class="card-head"><h2>'+g.label+'</h2></div><div class="card-b demo-chips">'+
+      g.items.map(function(it){
+        return '<a class="btn sm" href="'+TP.previewHref(g.end,it.key,it.who)+'" data-preview-entry="'+g.end+' '+it.key+' '+it.who+'">'+it.label+'</a>';
+      }).join('')+'</div></section>';
+  }).join('');
+})();
+</script>
+</body></html>

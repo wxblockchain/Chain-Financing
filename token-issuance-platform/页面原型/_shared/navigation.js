@@ -1,59 +1,38 @@
 /* Repository-only navigation. export.py excludes this file from module attachments.
+   Modules are listed one per line in modules.js; each module registers its own routes in
+   <module dir>/route.js, so adding a module never edits another module or this file.
    Register only delivered files and existing screens; no business data or permission engine.
    Paths are relative to 页面原型/, resolved from this script, so file:// needs no server. */
 (function(TP){
   var root = new URL('../', document.currentScript.src);
-  var files = {
-    account:{end:'client', path:'面客端/01-企业登录与企业账户/企业登录与企业账户.html'},
-    clientAssets:{end:'client', path:'面客端/02-可信资产/可信资产.html'},
-    clientTokens:{end:'client', path:'我的代币与销毁申请/我的代币与销毁申请.html'},
-    adminAccount:{end:'admin', path:'管理端/01-管理端登录与权限/管理端账号与监管机构管理.html'},
-    adminAssets:{end:'admin', path:'管理端/02-可信资产/可信资产.html'},
-    adminContracts:{end:'admin', path:'管理端/06-合约管理/合约管理.html'},
-    adminReview:{end:'admin', path:'管理端/03-发行审核/发行审核.html'},
-    adminBurn:{end:'admin', path:'管理端/04-销毁审核与解除质押/销毁审核与解除质押.html'}
-  };
-  // Every destination names the exact role-specific screen, never another role's fallback.
-  var routes = {
-    client:{
-      assets:{file:'clientAssets', screens:{certified:'list'}},
-      tokens:{file:'clientTokens', screens:{certified:'t-list'}},
-      burn:{file:'clientTokens', screens:{certified:'b-list'}},
-      tokenDemo001:{file:'clientTokens', screens:{certified:'t-future'}},
-      assetToken001:{file:'clientAssets', screens:{certified:'d-issued'}},
-      signIn:{file:'account', screens:{none:'login',guest:'login'}},
-      guestRegister:{file:'account', screens:{guest:'guest'}},
-      accounts:{file:'account', screens:{certified:'acc'}},
-      org:{file:'account', screens:{certified:'org',uncertified:'org-uncert',noent:'org-noent'}},
-      me:{file:'account', screens:{certified:'me'}},
-      logout:{file:'account', screens:{certified:'login',uncertified:'login',noent:'login'}},
-      certify:{file:'account', screens:{uncertified:'leave',noent:'leave'}, bases:{uncertified:'org-uncert',noent:'org-noent'}}
-    },
-    admin:{
-      review:{file:'adminReview', screens:{ops:'o-list',opsnew:'o-list',reg:'r-list',regoff:'r-list',regnew:'r-list'}},
-      reviewApplication:{file:'adminReview', screens:{ops:'o-wait-ops',opsnew:'o-wait-ops',reg:'r-wait-ops',regoff:'r-wait-ops',regnew:'r-wait-ops'}},
-      reviewAsset:{file:'adminAssets', screens:{ops:'o-applying',opsnew:'o-applying',reg:'r-detail',regoff:'r-detail',regnew:'r-detail'}},
-      reviewCompany:{file:'adminAssets', screens:{ops:'e-detail',opsnew:'e-detail'}},
-      contracts:{file:'adminContracts', screens:{ops:'ct-list',opsnew:'ct-list'}},
-      burn:{file:'adminBurn', screens:{ops:'b-list',opsnew:'b-list'}},
-      release:{file:'adminBurn', screens:{reg:'r-list',regoff:'r-list',regnew:'r-list'}},
-      ledger:{file:'adminBurn', screens:{ops:'l-list',opsnew:'l-list',reg:'rl-list',regoff:'rl-list',regnew:'rl-list'}},
-      ledgerToken001:{file:'adminBurn', screens:{ops:'l-001',opsnew:'l-001'}},
-      burnAsset001:{file:'adminAssets', screens:{ops:'o-deleted',opsnew:'o-deleted'}},
-      assets:{file:'adminAssets', screens:{ops:'o-list',opsnew:'o-list',reg:'r-list',regoff:'r-list',regnew:'r-list'}},
-      ents:{file:'adminAssets', screens:{ops:'e-list',opsnew:'e-list'}},
-      regs:{file:'adminAccount', screens:{ops:'rg-list',opsnew:'rg-list'}},
-      settings:{file:'adminAccount', screens:{ops:'o-settings',opsnew:'o-settings-new',reg:'r-settings',regoff:'r-off',regnew:'r-settings-new'}},
-      logout:{file:'adminAccount', screens:{ops:'login-out',opsnew:'login-out',reg:'login-out',regoff:'login-out',regnew:'login-out'}}
-    }
-  };
-  var page = new URL(location.href), module = null;
-  Object.keys(files).some(function(key){
-    if(new URL(files[key].path,root).pathname===page.pathname){module=files[key];return true;}
-    return false;
-  });
-  if(!module) return;
+  var modules = [], routes = {client:{}, admin:{}};
   TP.previewMode = 'repository';
+
+  TP.registerModule = function(m){
+    m.url = new URL(m.file, document.currentScript.src);
+    modules.push(m);
+    Object.keys(m.routes).forEach(function(key){
+      var r = m.routes[key];
+      if(routes[m.end][key]) console.warn('Duplicate '+m.end+' route "'+key+'" in '+m.id);
+      routes[m.end][key] = {module:m, screens:r.screens || r, bases:r.bases || {}};
+    });
+  };
+  // Parser-inserted scripts run in order before the page's own inline script, without a server.
+  TP.loadModules = function(dirs){
+    document.write(dirs.map(function(dir){
+      return '<script src="'+new URL(dir+'/route.js', root).href+'"><\/script>';
+    }).join(''));
+  };
+  document.write('<script src="'+new URL('_shared/modules.js', root).href+'"><\/script>');
+
+  var page = new URL(location.href), cached;
+  function currentModule(){
+    if(cached === undefined){
+      cached = null;
+      modules.some(function(m){ if(m.url.pathname===page.pathname){ cached = m; return true; } return false; });
+    }
+    return cached;
+  }
 
   function screen(id){
     var el=document.getElementById(id);
@@ -65,16 +44,16 @@
   }
 
   TP.initNavigation = function(){
+    var module = currentModule();
+    if(!module) return;
     var params=new URL(location.href).searchParams;
     var lang=params.get('previewLang'), zone=params.get('previewZone');
     if(lang==='en'||lang==='zh') TP.language=lang;
     if(validZone(zone)) TP.zone=zone;
-    // M2 uses the same regulator screens for these display variants. Preserve the
-    // disabled-institution notice / changed email when returning from M5.
+    // Disabled-institution and changed-email examples reuse the same operator / regulator
+    // screens. Preserve the notice / changed email when arriving from another module.
     var who=params.get('previewWho');
-    if((module===files.adminAssets && (who==='regoff'||who==='regnew'||who==='opsnew')) ||
-       (module===files.adminContracts && who==='opsnew') ||
-       ((module===files.adminReview || module===files.adminBurn) && (who==='opsnew'||who==='regoff'||who==='regnew'))){
+    if(module.variants && module.variants.indexOf(who)!==-1){
       var sourceWho=who==='opsnew'?'ops':'reg';
       document.querySelectorAll('[data-screen][data-who="'+sourceWho+'"]').forEach(function(el){el.dataset.who=who;});
       TP.NAV_BY[who]=TP.NAV_BY[sourceWho];
@@ -99,38 +78,83 @@
   // Pass only display preferences / a screen's existing identity. Nothing is
   // persisted as a login, account, business record or permission decision.
   function putContext(url,who,base,gate){
-    url.searchParams.set('previewLang',TP.language);
-    url.searchParams.set('previewZone',TP.zone);
+    if(TP.language) url.searchParams.set('previewLang',TP.language);
+    if(TP.zone) url.searchParams.set('previewZone',TP.zone);
     url.searchParams.set('previewWho',who||'none');
     ['previewBase','previewGate'].forEach(function(key){url.searchParams.delete(key);});
     if(base) url.searchParams.set('previewBase',base);
     if(gate) url.searchParams.set('previewGate',gate);
   }
+  function routeHref(end,key,who){
+    var route=routes[end][key];
+    if(!route || !Object.prototype.hasOwnProperty.call(route.screens,who)) return null;
+    var target=new URL(route.module.url.href);
+    target.hash=route.screens[who];
+    putContext(target,who,route.bases[who]);
+    return target.href;
+  }
+
   var renderDisplay=TP.renderDisplay;
-  TP.renderDisplay=function(){
+  if(renderDisplay) TP.renderDisplay=function(){
     renderDisplay();
     var cur=TP.currentScreen;
-    if(!cur) return;
+    if(!cur || !currentModule()) return;
     var url=new URL(location.href);
     putContext(url,cur.who,cur.base,cur.gate);
     if(url.href!==location.href) history.replaceState(history.state,'',url.href);
   };
 
   TP.navigate=function(key,current){
-    if(!current) return false;
+    var module=currentModule();
+    if(!module || !current) return false;
     if((current.who==='none'||current.who==='guest') && key!=='signIn' && key!=='guestRegister') return false;
-    var route=routes[module.end][key], who=current.who;
-    if(!route || !Object.prototype.hasOwnProperty.call(route.screens,who)) return false;
-    var target=new URL(files[route.file].path,root);
-    target.hash=route.screens[who];
-    putContext(target,who,route.bases && route.bases[who]);
-    location.assign(target.href);
+    var href=routeHref(module.end,key,current.who);
+    if(!href) return false;
+    location.assign(href);
     return true;
   };
+
+  /* —— 端与身份切换：评审工具，只出现在默认关闭的画面目录和 index.html，不进入产品界面 —— */
+  var ENTRIES = [
+    {end:'client', label:'企业端', items:[
+      {who:'none', label:'未登录', key:'signIn'},
+      {who:'certified', label:'已认证企业', key:'assets'},
+      {who:'uncertified', label:'未认证企业', key:'org'}
+    ]},
+    {end:'admin', label:'管理端', items:[
+      {who:'none', label:'未登录', key:'signIn'},
+      {who:'ops', label:'运营', key:'review'},
+      {who:'reg', label:'监管机构', key:'review'}
+    ]}
+  ];
+  var BASE_WHO = {opsnew:'ops', regoff:'reg', regnew:'reg', guest:'none'};
+  TP.previewHref = routeHref;
+  TP.previewEntries = function(){
+    return ENTRIES.map(function(g){
+      return {end:g.end, label:g.label, items:g.items.filter(function(it){ return routeHref(g.end,it.key,it.who); })};
+    }).filter(function(g){ return g.items.length; });
+  };
+  TP.renderPreviewSwitch = function(){
+    var module=currentModule(), cur=TP.currentScreen;
+    var who=cur && (BASE_WHO[cur.who] || cur.who);
+    return '<div class="demo-switch" role="group" aria-label="端与身份">'+TP.previewEntries().map(function(g){
+      return '<div class="demo-g">'+g.label+'</div><div class="demo-chips">'+g.items.map(function(it){
+        var on = module && module.end===g.end && who===it.who;
+        return '<a class="demo-chip" href="'+routeHref(g.end,it.key,it.who)+'" data-preview-entry="'+g.end+' '+it.key+' '+it.who+'"'+(on?' aria-current="true"':'')+'>'+it.label+'</a>';
+      }).join('')+'</div>';
+    }).join('')+'</div>';
+  };
+  // Resolve at click time so the current language and time zone travel with the switch.
+  document.addEventListener('click',function(e){
+    var link=e.target.closest && e.target.closest('a[data-preview-entry]');
+    if(!link) return;
+    var p=link.dataset.previewEntry.split(' ');
+    link.href=routeHref(p[0],p[1],p[2]);
+  },true);
 
   // Also keep same-document hash links usable after the initial page load.
   window.addEventListener('hashchange',function(){
     var target=screen(location.hash.slice(1));
-    if(target) TP.show(target.id);
+    if(target && TP.show) TP.show(target.id);
   });
 })(window.TP=window.TP||{});

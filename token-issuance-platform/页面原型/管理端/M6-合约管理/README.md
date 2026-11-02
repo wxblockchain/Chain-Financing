@@ -12,7 +12,7 @@
 - 源文件仅引用 `_shared/` 公共资源，无独立主题、模块 CSS 或第二套运行时。维护源文件，使用已有导出器生成离线单文件附件，生成件不入库：
 
   ```sh
-  python3 _shared/export.py --source 管理端/06-合约管理/合约管理.html --output <仓库外路径>/合约管理.html
+  python3 _shared/export.py --source 管理端/M6-合约管理/合约管理.html --output <仓库外路径>/合约管理.html
   ```
 
 - 仓库联看通过共享导航连接已交付模块；附件仅包含 M6，跨模块入口显示范围提示。导航新增 `adminContracts` 文件与运营路由，保留运营更正邮箱后的展示身份。未生成其他模块页面。
