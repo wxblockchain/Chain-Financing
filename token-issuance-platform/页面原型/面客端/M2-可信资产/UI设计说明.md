@@ -1,6 +1,6 @@
 # M2 · 可信资产 UI 设计说明
 
-2026-10-30｜existing-system adaptation｜console：企业、运营与监管机构。PRD 基线：[可信资产 PRD](../../../PRD/v1.0-可信资产-PRD.md)，本轮对应 `54d56bb`；实现基于已有原型 `7d7e918`，共享层沿用分支最新版本。组件规范：[v1.10](../../_shared/design-system/组件规范.md)。
+2026-10-30｜existing-system adaptation｜console：企业、运营与监管机构。PRD 基线：[可信资产 PRD](../../../PRD/两端共用/M2-可信资产/01-可信资产-PRD.md)，本轮对应 `54d56bb`；实现基于已有原型 `7d7e918`，共享层沿用分支最新版本。组件规范：[v1.10](../../_shared/design-system/组件规范.md)。
 
 ## 交付与运行
 

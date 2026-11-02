@@ -2,7 +2,7 @@
 
 2026-10-30｜existing-system adaptation / console。按 cuiluyao“直接输出页面原型”合并后续阶段，只制作本 issue 的合约管理。
 
-业务基线为 `PRD/v1.0-合约管理-PRD.md` 及同名流程与验收册（2026-10-30 版，含 `3d581de` 最新停用规则）。视觉沿用组件规范 v1.13（`5f07698`）、`_shared/tokens.css`、`components.css`、`frame.js` 及管理端 M2 的真实壳层。规则、校验与异常分支以 PRD 为准。
+业务基线为 [合约管理 PRD](../../../PRD/管理端/M6-合约管理/01-合约管理-PRD.md) 及同目录流程与验收册（2026-10-30 版，含 `3d581de` 最新停用规则）。视觉沿用组件规范 v1.13（`5f07698`）、`_shared/tokens.css`、`components.css`、`frame.js` 及管理端 M2 的真实壳层。规则、校验与异常分支以 PRD 为准。
 
 ## 使用与维护
 
