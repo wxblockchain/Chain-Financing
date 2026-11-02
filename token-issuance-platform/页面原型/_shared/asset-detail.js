@@ -1,6 +1,7 @@
 /* ==========================================================================
-   asset-detail.js — 可信资产详情的六组信息（演示数据），供面客端与管理端复用
-   只输出静态画面：基本信息、贸易订单、采购订单、账款信息、回款进度、材料。
+   asset-detail.js — 可信资产详情（演示数据），供面客端与管理端复用
+   按交易双方分两组：核心信息（应收账款与交易双方、销售合同 / 订单、货物交付、
+   销售发票、回款进度）与补充信息（与上游供应商、与其他下游客户）；材料随所属环节展示。
    三个资产状态由各画面的摘要卡展示，这里不重复；字段与分级以 M2 PRD 为准。
    用法：<div class="asset-detail" data-asset-detail="上游资产编号"></div>，在 TP.boot 之前调用 TP.fillAssetDetail()。
    ========================================================================== */
@@ -8,15 +9,33 @@
   'use strict';
   var FILE_TOAST = '原型未附真实文件';
 
-  function file(name, kind){
-    return '<li><span class="file-ico" aria-hidden="true"><i data-ico="doc"></i></span>'+
-      '<div class="file-main"><button type="button" class="btn-link file-name" data-toast="'+FILE_TOAST+'">'+name+'</button><div class="cell-sub">'+kind+'</div></div>'+
-      '<div class="file-acts"><button type="button" class="btn icon" data-toast="'+FILE_TOAST+'" aria-label="下载" title="下载"><i data-ico="download"></i></button></div></li>';
+  function fileRef(name){
+    return '<span class="file-ref"><i data-ico="doc"></i><button type="button" class="btn-link file-name" data-toast="'+FILE_TOAST+'">'+name+'</button>'+
+      '<button type="button" class="btn icon" data-toast="'+FILE_TOAST+'" aria-label="下载" title="下载"><i data-ico="download"></i></button></span>';
   }
   function day(iso){ return '<time data-day data-instant="'+iso+'" datetime="'+iso+'"></time>'; }
   function money(v, ccy){ return '<span class="money"><span class="mono">'+v+'</span><span class="ccy">'+ccy+'</span></span>'; }
+  function mono(v){ return '<span class="mono">'+v+'</span>'; }
+  /* L1 缺失说明上游未提供；L2 缺失弱化为未提供。 */
+  function missing(l1){ return l1 ? '<span class="missing">上游未提供</span>' : '<span class="missing soft">未提供</span>'; }
+  function facts(rows){
+    return '<div class="facts-region"><dl class="facts">'+rows.map(function(r){ return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>'; }).join('')+'</dl></div>';
+  }
+  function table(cols, rows){
+    return '<div class="tablewrap"><table class="tbl auto"><thead><tr>'+cols.map(function(c){ return c.charAt(0)==='#' ? '<th class="num">'+c.slice(1)+'</th>' : '<th>'+c+'</th>'; }).join('')+'</tr></thead><tbody>'+
+      rows.map(function(r){ return '<tr>'+r.map(function(v,i){ return '<td'+(cols[i].charAt(0)==='#'?' class="num"':'')+'>'+v+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div>';
+  }
+  function subHead(title, sub){ return '<div class="sub-h">'+title+(sub?'<span class="sub">'+sub+'</span>':'')+'</div>'; }
+  function sec(inner){ return '<div class="card-sec">'+inner+'</div>'; }
+  function empty(text){ return '<p class="sub-empty">'+text+'</p>'; }
+  function card(title, nav, sub, inner){
+    return '<div class="card" data-nav-label="'+nav+'"><div class="card-head"><h3>'+title+'</h3>'+(sub?'<span class="sub">'+sub+'</span>':'')+'</div>'+inner+'</div>';
+  }
+  function group(title, sub, cards){
+    return '<div class="detail-group"><div class="detail-group-h"><h2>'+title+'</h2><span class="sub">'+sub+'</span></div>'+cards+'</div>';
+  }
 
-  /* 演示资产：rich 为完整示例（两张销售发票、一条回款），其余为一张发票、暂无回款。 */
+  /* 演示资产：rich 为补充信息完整的示例；sparse 为 L1 缺项、L2 与补充信息均缺失的示例；其余为一张发票、暂无回款、无其他下游客户交易。 */
   var PARTY = {
     A:{name:'示例企业 A 有限公司', en:'Example Enterprise A Ltd.', region:'中国香港', id:'DEMO-1234567', kind:'CR'},
     C:{name:'Demo Trading C Pte. Ltd.', region:'新加坡', id:'DEMO-UEN-202600123', kind:'UEN'},
@@ -29,95 +48,146 @@
     'RA-DEMO-0131':{cr:'A', db:'M', amt:'82,400.00', due:'2027-05-15T23:59:59+04:00', no:'0436'},
     'RA-DEMO-0102':{cr:'A', db:'B', amt:'36,000.00', due:'2027-01-31T23:59:59+04:00', no:'0371'},
     'RA-DEMO-0097':{cr:'A', db:'M', amt:'24,800.00', due:'2027-02-28T23:59:59+04:00', no:'0359'},
+    'RA-DEMO-0115':{cr:'A', db:'B', amt:'18,600.00', due:'2026-10-15T23:59:59+04:00', no:'0233', sparse:true,
+      formed:'2026-07-01T10:00:00+04:00', invoiced:'2026-06-28T11:00:00+04:00'},
     'RA-DEMO-0140':{cr:'A', db:'M', amt:'40,000.00', ccy:'EUR', due:'2027-06-30T23:59:59+04:00', no:'0460'},
     'RA-DEMO-0143':{cr:'A', db:'B', amt:'27,500.00', due:'2027-04-30T23:59:59+04:00', no:'0463'},
     'RA-DEMO-0150':{cr:'C', db:'E', amt:'61,200.00', due:'2027-06-20T23:59:59+04:00', no:'0502'}
   };
+  /* 其他下游客户交易（演示）：一笔部分回款，一笔暂无回款。 */
+  var OTHER_BUYERS = [
+    {name:'Demo Retail E LLC', region:'阿联酋', so:'SO-DEMO-2026-0388', ordered:'2026-04-08T10:00:00+04:00', amt:'64,000.00',
+      delivered:'2026-07-02T15:00:00+04:00', pod:'POD-DEMO-0388.pdf',
+      repay:[['2026-08-01T11:00:00+04:00','20,000.00','TXN-DEMO-50388-1'],['2026-09-01T11:00:00+04:00','20,000.00','TXN-DEMO-50388-2']]},
+    {name:'Demo Auto Hub F Co.', region:'沙特阿拉伯', so:'SO-DEMO-2026-0420', ordered:'2026-06-20T10:00:00+03:00', amt:'28,800.00',
+      delivered:'2026-09-28T14:00:00+03:00', pod:'POD-DEMO-0420.pdf', repay:[]}
+  ];
 
   function party(title, x){
-    return '<div class="card-sec"><div class="sub-h">'+title+'</div><div class="facts-region"><dl class="facts">'+
-      '<div><dt>名称</dt><dd>'+x.name+(x.en?'<div class="cell-sub">'+x.en+'</div>':'')+'</dd></div>'+
-      '<div><dt>注册国家 / 地区</dt><dd>'+x.region+'</dd></div>'+
-      '<div><dt>企业登记标识</dt><dd><span class="mono">'+x.id+'</span> <span class="faint">'+x.kind+'</span></dd></div>'+
-      '</dl></div></div>';
+    return sec(subHead(title)+facts([
+      ['名称', x.name+(x.en?'<div class="cell-sub">'+x.en+'</div>':'')],
+      ['注册国家 / 地区', x.region],
+      ['企业登记标识', mono(x.id)+' <span class="faint">'+x.kind+'</span>']
+    ]));
+  }
+
+  function core(id, a, ccy){
+    var so='SO-DEMO-2026-'+a.no, si='SI-DEMO-'+a.no, sp=a.sparse;
+    var receivable = card('应收账款与交易双方','交易双方','',
+      facts([
+        ['上游资产编号', '<span class="mono">'+id+'</span>'],
+        ['资产类型', '应收账款'],
+        ['行业大类', '汽车贸易'],
+        ['应收账款金额', money(a.amt,ccy)],
+        ['币种', ccy],
+        ['形成日期', day(a.formed||'2026-09-18T10:00:00+04:00')],
+        ['到期日', '<time data-instant="'+a.due+'" datetime="'+a.due+'"></time>'],
+        ['确权日期', sp ? missing(true) : day('2026-09-25T14:20:00+04:00')],
+        ['确权凭证', sp ? missing(true) : fileRef('CC-'+id+'.pdf')]
+      ]) + party('债权人', PARTY[a.cr]) + party('债务人', PARTY[a.db]));
+
+    var goods = sp ? sec(subHead('标的物明细')+empty('未提供')) :
+      sec(subHead('标的物明细','2 项')+table(['名称','型号规格','#数量','唯一识别码'],[
+        ['Demo Auto SUV','DM-X5 2026','1',mono('LDEMO0X5'+a.no+'00001')],
+        ['Demo Auto SUV','DM-X5 2026','1',mono('LDEMO0X5'+a.no+'00002')]
+      ]));
+    var order = card('销售合同 / 订单','销售订单','',
+      facts([
+        ['销售合同 / 订单编号', mono(so)],
+        ['订单日期', sp ? missing() : day('2026-06-02T09:00:00+04:00')],
+        ['订单金额', sp ? missing() : money(a.amt,ccy)],
+        ['销售合同 / 订单文件', sp ? missing() : fileRef(so+'.pdf')]
+      ]) + goods);
+
+    var delivery = card('货物交付','货物交付','',
+      facts(sp ? [['交付地点',missing()],['交付日期',missing()],['运输单据编号',missing()],['运输单据',missing()],['交付凭证',missing()]] : [
+        ['交付地点', 'Jebel Ali Free Zone, Demo Warehouse W-12'],
+        ['交付日期', day('2026-09-12T16:00:00+04:00')],
+        ['运输单据编号', mono('BL-DEMO-'+a.no)],
+        ['运输单据', fileRef('BL-DEMO-'+a.no+'.pdf')],
+        ['交付凭证', fileRef('POD-DEMO-'+a.no+'.pdf')]
+      ]));
+
+    var invRows = a.rich ?
+      [[mono(si+'-01'), day('2026-09-15T11:00:00+04:00'), money('30,000.00','USD'), fileRef(si+'-01.pdf')],
+       [mono(si+'-02'), day('2026-09-15T11:05:00+04:00'), money('20,000.00','USD'), fileRef(si+'-02.pdf')]] :
+      [[mono(si+'-01'), day(a.invoiced||'2026-09-15T11:00:00+04:00'), money(a.amt,ccy), fileRef(si+'-01.pdf')]];
+    var invoice = card('销售发票','销售发票', a.rich?'2 张':'1 张',
+      table(['销售发票编号','开具日期','#金额','发票文件'], invRows));
+
+    var repayFacts = facts([
+      ['累计已回款', money(a.rich?'20,000.00':'0.00', ccy)],
+      ['未回款余额', money(a.rich?'30,000.00':a.amt, ccy)],
+      ['结清日期', '<span class="faint">—</span>']
+    ]);
+    var repayRecords = a.rich ?
+      subHead('回款记录','1 条')+table(['回款日期','#回款金额','回款流水号','支付凭证编号','支付凭证'],[
+        [day('2026-10-20T15:30:00+04:00'), money('20,000.00','USD'), mono('TXN-DEMO-50021'), mono('PV-DEMO-50021'), fileRef('PV-DEMO-50021.pdf')]
+      ]) :
+      subHead('回款记录')+empty('暂无回款记录');
+    var repay = card('回款进度','回款进度','债务人对本笔应收账款的回款', repayFacts+repayRecords);
+
+    return group('核心信息','债权人与债务人', receivable+order+delivery+invoice+repay);
+  }
+
+  function supplement(a){
+    var supplier, buyers;
+    if(a.sparse){
+      supplier = card('与上游供应商','上游供应商','',
+        sec(subHead('采购合同 / 订单')+empty('暂无采购合同 / 订单信息'))+
+        sec(subHead('供应商发货')+empty('暂无发货记录'))+
+        sec(subHead('采购发票')+empty('暂无采购发票'))+
+        sec(subHead('向供应商付款')+empty('暂无付款记录')));
+    }else{
+      var po='PO-DEMO-2026-'+a.no, pi='PI-DEMO-'+a.no;
+      var piRows = a.rich ?
+        [[mono(pi+'-01'), day('2026-07-22T10:00:00+08:00'), money('30,000.00','USD'), fileRef(pi+'-01.pdf')],
+         [mono(pi+'-02'), day('2026-07-22T10:10:00+08:00'), money('16,500.00','USD'), fileRef(pi+'-02.pdf')]] :
+        [[mono(pi+'-01'), day('2026-08-28T10:00:00+08:00'), money('46,500.00','USD'), fileRef(pi+'-01.pdf')]];
+      var payRows = a.rich ?
+        [[day('2026-06-15T10:00:00+08:00'), money('13,950.00','USD'), mono('TXN-DEMO-P'+a.no+'-1'), fileRef('PV-DEMO-P'+a.no+'-1.pdf')],
+         [day('2026-07-25T10:00:00+08:00'), money('32,550.00','USD'), mono('TXN-DEMO-P'+a.no+'-2'), fileRef('PV-DEMO-P'+a.no+'-2.pdf')]] :
+        [[day('2026-09-01T10:00:00+08:00'), money('46,500.00','USD'), mono('TXN-DEMO-P'+a.no+'-1'), fileRef('PV-DEMO-P'+a.no+'-1.pdf')]];
+      supplier = card('与上游供应商','上游供应商','Demo Auto Manufacturing Co.',
+        sec(subHead('采购合同 / 订单')+facts([
+          ['采购合同 / 订单编号', mono(po)],
+          ['供应商名称', 'Demo Auto Manufacturing Co.'],
+          ['采购日期', day('2026-06-10T09:00:00+08:00')],
+          ['采购金额', money('46,500.00','USD')],
+          ['采购合同 / 订单文件', fileRef(po+'.pdf')]
+        ]))+
+        sec(subHead('供应商发货')+facts([
+          ['发货日期', day('2026-07-20T10:00:00+08:00')],
+          ['发货记录', fileRef('SR-DEMO-'+a.no+'.pdf')]
+        ]))+
+        sec(subHead('采购发票', a.rich?'2 张':'1 张')+table(['采购发票编号','开具日期','#金额','发票文件'], piRows))+
+        sec(subHead('向供应商付款', a.rich?'2 条':'1 条')+table(['付款日期','#付款金额','付款流水号','付款凭证'], payRows)));
+    }
+    if(a.rich){
+      buyers = card('与其他下游客户','其他下游客户','2 笔交易 · 回款不计入本笔应收账款',
+        OTHER_BUYERS.map(function(t){
+          return sec(subHead(t.name, t.region)+facts([
+            ['销售合同 / 订单编号', mono(t.so)],
+            ['订单日期', day(t.ordered)],
+            ['订单金额', money(t.amt,'USD')],
+            ['销售合同 / 订单文件', fileRef(t.so+'.pdf')],
+            ['交付日期', day(t.delivered)],
+            ['交付凭证', fileRef(t.pod)]
+          ])+(t.repay.length ?
+            subHead('回款记录', t.repay.length+' 条')+table(['回款日期','#回款金额','回款流水号','支付凭证'], t.repay.map(function(r){
+              return [day(r[0]), money(r[1],'USD'), mono(r[2]), fileRef('PV-'+r[2].slice(4)+'.pdf')];
+            })) :
+            subHead('回款记录')+empty('暂无回款记录')));
+        }).join(''));
+    }else{
+      buyers = card('与其他下游客户','其他下游客户','', sec(empty('暂无其他下游客户交易信息')));
+    }
+    return group('补充信息','债权人与上游供应商、其他下游客户', supplier+buyers);
   }
 
   function body(id){
-    var a = ASSETS[id], so='SO-DEMO-2026-'+a.no, si='SI-DEMO-'+a.no, invoices, repay, files;
-    if(a.rich){
-      invoices = '<tr><td class="mono">'+si+'-01</td><td>'+day('2026-09-15T11:00:00+04:00')+'</td><td class="num">'+money('30,000.00','USD')+'</td></tr>'+
-                 '<tr><td class="mono">'+si+'-02</td><td>'+day('2026-09-15T11:05:00+04:00')+'</td><td class="num">'+money('20,000.00','USD')+'</td></tr>';
-      repay = '<div class="facts-region"><dl class="facts">'+
-        '<div><dt>累计已回款</dt><dd>'+money('20,000.00','USD')+'</dd></div>'+
-        '<div><dt>未回款余额</dt><dd>'+money('30,000.00','USD')+'</dd></div>'+
-        '<div><dt>结清日期</dt><dd class="faint">—</dd></div></dl></div>'+
-        '<div class="sub-h">回款记录<span class="sub">1 条</span></div>'+
-        '<div class="tablewrap"><table class="tbl"><thead><tr><th>回款日期</th><th class="num">回款金额</th><th>回款流水号</th><th>支付凭证编号</th></tr></thead><tbody>'+
-        '<tr><td>'+day('2026-10-20T15:30:00+04:00')+'</td><td class="num">'+money('20,000.00','USD')+'</td><td class="mono">TXN-DEMO-50021</td><td class="mono">PV-DEMO-50021</td></tr>'+
-        '</tbody></table></div>';
-    }else{
-      invoices = '<tr><td class="mono">'+si+'-01</td><td>'+day('2026-09-15T11:00:00+04:00')+'</td><td class="num">'+money(a.amt,a.ccy||'USD')+'</td></tr>';
-      repay = '<div class="facts-region"><dl class="facts">'+
-        '<div><dt>累计已回款</dt><dd>'+money('0.00',a.ccy||'USD')+'</dd></div>'+
-        '<div><dt>未回款余额</dt><dd>'+money(a.amt,a.ccy||'USD')+'</dd></div>'+
-        '<div><dt>结清日期</dt><dd class="faint">—</dd></div></dl></div>'+
-        '<div class="sub-h">回款记录</div><p class="sub-empty">暂无回款记录</p>';
-    }
-    files = file('CC-'+id+'.pdf','确权凭证') + file(si+'-01.pdf','销售发票文件') +
-      (a.rich ? file(si+'-02.pdf','销售发票文件') + file('PV-DEMO-50021.pdf','回款支付凭证文件') : '') +
-      file(so+'.pdf','贸易合同 / 订单文件') + file('POD-DEMO-'+a.no+'.pdf','交付凭证') + file('BL-DEMO-'+a.no+'.pdf','运输单据') +
-      file('PO-DEMO-2026-'+a.no+'.pdf','采购合同 / 订单文件') + file('PI-DEMO-'+a.no+'-01.pdf','采购发票文件');
-    var count = a.rich ? 9 : 7, nInv = a.rich ? 2 : 1;
-
-    return [
-      '<div class="card"><div class="card-head"><h2>基本信息</h2></div>',
-      '<div class="facts-region"><dl class="facts">',
-      '<div><dt>上游资产编号</dt><dd class="mono">'+id+'</dd></div>',
-      '<div><dt>资产类型</dt><dd>应收账款</dd></div>',
-      '<div><dt>行业大类</dt><dd>汽车贸易</dd></div>',
-      '<div><dt>应收账款金额</dt><dd>'+money(a.amt,a.ccy||'USD')+'</dd></div>',
-      '<div><dt>形成日期</dt><dd>'+day('2026-09-18T10:00:00+04:00')+'</dd></div>',
-      '<div><dt>到期日</dt><dd><time data-instant="'+a.due+'" datetime="'+a.due+'"></time></dd></div>',
-      '<div><dt>确权日期</dt><dd>'+day('2026-09-25T14:20:00+04:00')+'</dd></div>',
-      '<div><dt>币种</dt><dd>'+(a.ccy||'USD')+'</dd></div>',
-      '</dl></div>', party('债权人', PARTY[a.cr]), party('债务人', PARTY[a.db]), '</div>',
-
-      '<div class="card"><div class="card-head"><h2>贸易订单</h2><span class="sub">债权人与债务人</span></div>',
-      '<div class="facts-region"><dl class="facts">',
-      '<div><dt>贸易合同 / 订单编号</dt><dd class="mono">'+so+'</dd></div>',
-      '<div><dt>订单日期</dt><dd>'+day('2026-06-02T09:00:00+04:00')+'</dd></div>',
-      '<div><dt>订单金额</dt><dd>'+money(a.amt,a.ccy||'USD')+'</dd></div>',
-      '<div><dt>运输单据编号</dt><dd class="mono">BL-DEMO-'+a.no+'</dd></div>',
-      '<div><dt>交付地点</dt><dd>Jebel Ali Free Zone, Demo Warehouse W-12</dd></div>',
-      '<div><dt>交付日期</dt><dd>'+day('2026-09-12T16:00:00+04:00')+'</dd></div>',
-      '</dl></div>',
-      '<div class="sub-h">标的物明细<span class="sub">2 项</span></div>',
-      '<div class="tablewrap"><table class="tbl auto"><thead><tr><th>名称</th><th>型号规格</th><th class="num">数量</th><th>唯一识别码</th></tr></thead><tbody>',
-      '<tr><td>Demo Auto SUV</td><td>DM-X5 2026</td><td class="num">1</td><td class="mono">LDEMO0X5'+a.no+'00001</td></tr>',
-      '<tr><td>Demo Auto SUV</td><td>DM-X5 2026</td><td class="num">1</td><td class="mono">LDEMO0X5'+a.no+'00002</td></tr>',
-      '</tbody></table></div></div>',
-
-      '<div class="card"><div class="card-head"><h2>采购订单</h2><span class="sub">债权人向供应商</span></div>',
-      '<div class="facts-region"><dl class="facts">',
-      '<div><dt>采购合同 / 订单编号</dt><dd class="mono">PO-DEMO-2026-'+a.no+'</dd></div>',
-      '<div><dt>供应商名称</dt><dd>Demo Auto Manufacturing Co.</dd></div>',
-      '<div><dt>采购日期</dt><dd>'+day('2026-06-10T09:00:00+08:00')+'</dd></div>',
-      '<div><dt>采购金额</dt><dd>'+money('46,500.00','USD')+'</dd></div>',
-      '</dl></div></div>',
-
-      '<div class="card"><div class="card-head"><h2>账款信息</h2></div>',
-      '<div class="sub-h">销售账款<span class="sub">债权人与债务人 · '+nInv+' 张发票</span></div>',
-      '<div class="tablewrap"><table class="tbl auto"><thead><tr><th>销售发票编号</th><th>开具日期</th><th class="num">金额</th></tr></thead><tbody>',
-      invoices, '</tbody></table></div>',
-      '<div class="card-sec"><div class="sub-h">采购账款<span class="sub">债权人与供应商 · 1 张发票</span></div>',
-      '<div class="tablewrap"><table class="tbl auto"><thead><tr><th>采购发票编号</th><th>开具日期</th><th class="num">金额</th></tr></thead><tbody>',
-      '<tr><td class="mono">PI-DEMO-'+a.no+'-01</td><td>'+day('2026-08-28T10:00:00+08:00')+'</td><td class="num">'+money('46,500.00','USD')+'</td></tr>',
-      '</tbody></table></div></div></div>',
-
-      '<div class="card"><div class="card-head"><h2>回款进度</h2><span class="sub">债务人对本笔应收账款的回款</span></div>', repay, '</div>',
-
-      '<div class="card"><div class="card-head"><h2>材料</h2><span class="sub">'+count+' 个文件</span></div><ul class="files">', files, '</ul></div>'
-    ].join('');
+    var a = ASSETS[id], ccy = a.ccy||'USD';
+    return core(id, a, ccy) + supplement(a);
   }
 
   TP.fillAssetDetail = function(){
@@ -131,12 +201,16 @@
       var content=screen.querySelector('.content-in');
       if(content.querySelector('[data-detail-nav]'))return;
       var overview=content.querySelector(':scope > .card:has(.asset-sum)');
-      var sections=Array.from(content.querySelectorAll(':scope > .card, :scope > .asset-detail > .card')).filter(function(section){return section!==overview;});
-      var nav=document.createElement('nav');
+      var sections=Array.from(content.querySelectorAll(':scope > .card, :scope > .asset-detail > .card, :scope > .asset-detail > .detail-group > .card')).filter(function(section){return section!==overview;});
+      var nav=document.createElement('nav'), lastGroup=null;
       nav.className='detail-nav';nav.dataset.detailNav='';nav.setAttribute('aria-label','详情信息导航');
       sections.forEach(function(section,index){
-        var heading=section.querySelector('.card-head h2');
-        var label=heading ? heading.textContent : (screen.id==='e-detail'?'企业信息':'资产概览');
+        var heading=section.querySelector('.card-head :is(h2,h3)');
+        var label=section.dataset.navLabel || (heading ? heading.textContent : (screen.id==='e-detail'?'企业信息':'资产概览'));
+        // A thin divider separates related records, core and supplementary groups.
+        var group=section.closest('.detail-group');
+        if(index>0 && group!==lastGroup){var sep=document.createElement('span');sep.className='detail-nav-sep';sep.setAttribute('aria-hidden','true');nav.appendChild(sep);}
+        lastGroup=group;
         section.id=screen.id+'-section-'+index;
         section.dataset.detailSection='';section.tabIndex=-1;
         if(heading){heading.id=section.id+'-heading';section.setAttribute('aria-labelledby',heading.id);}
@@ -187,26 +261,32 @@
   window.addEventListener('resize',TP.refreshDetailNav);
 
   TP.addCopy({
-    '基本信息':'Basic information','上游资产编号':'Upstream asset ID','资产类型':'Asset type','应收账款':'Accounts receivable',
+    '核心信息':'Core information','补充信息':'Supplementary information',
+    '债权人与债务人':'Creditor and debtor','债权人与上游供应商、其他下游客户':'Creditor with upstream supplier and other downstream customers',
+    '应收账款与交易双方':'Receivable and parties','交易双方':'Parties','上游资产编号':'Upstream asset ID','资产类型':'Asset type','应收账款':'Accounts receivable',
     '行业大类':'Industry','汽车贸易':'Automotive trade','应收账款金额':'Receivable amount','形成日期':'Origination date',
-    '到期日':'Due date','确权日期':'Confirmation date','币种':'Currency','债权人':'Creditor','债务人':'Debtor','名称':'Name',
+    '到期日':'Due date','确权日期':'Confirmation date','确权凭证':'Confirmation certificate','币种':'Currency','债权人':'Creditor','债务人':'Debtor','名称':'Name',
     '注册国家 / 地区':'Country / region of registration','企业登记标识':'Company registration ID',
-    '中国香港':'Hong Kong, China','阿联酋':'United Arab Emirates',
-    '贸易订单':'Trade order','债权人与债务人':'Creditor and debtor','贸易合同 / 订单编号':'Trade contract / order no.',
-    '订单日期':'Order date','订单金额':'Order amount','运输单据编号':'Transport document no.','交付地点':'Delivery location','交付日期':'Delivery date',
+    '中国香港':'Hong Kong, China','阿联酋':'United Arab Emirates','新加坡':'Singapore','沙特阿拉伯':'Saudi Arabia',
+    '销售合同 / 订单':'Sales contract / order','销售订单':'Sales order','销售合同 / 订单编号':'Sales contract / order no.','销售合同 / 订单文件':'Sales contract / order file',
+    '订单日期':'Order date','订单金额':'Order amount',
     '标的物明细':'Goods','2 项':'2 items','型号规格':'Model / specification','数量':'Quantity','唯一识别码':'Unique identifier',
-    '采购订单':'Purchase order','债权人向供应商':'Creditor to supplier','采购合同 / 订单编号':'Purchase contract / order no.',
-    '供应商名称':'Supplier','采购日期':'Purchase date','采购金额':'Purchase amount',
-    '账款信息':'Invoices','销售账款':'Sales invoices','债权人与债务人 · 2 张发票':'Creditor and debtor · 2 invoices','债权人与债务人 · 1 张发票':'Creditor and debtor · 1 invoice','7 个文件':'7 files','暂无回款记录':'No repayment records yet','新加坡':'Singapore',
-    '销售发票编号':'Sales invoice no.','开具日期':'Issue date','金额':'Amount',
-    '采购账款':'Purchase invoices','债权人与供应商 · 1 张发票':'Creditor and supplier · 1 invoice','债权人与供应商':'Creditor and supplier','采购发票编号':'Purchase invoice no.',
+    '货物交付':'Delivery','交付地点':'Delivery location','交付日期':'Delivery date','运输单据编号':'Transport document no.','运输单据':'Transport document','交付凭证':'Proof of delivery',
+    '销售发票':'Sales invoices','销售发票编号':'Sales invoice no.','开具日期':'Issue date','金额':'Amount','发票文件':'Invoice file','1 张':'1 invoice','2 张':'2 invoices',
     '回款进度':'Repayment progress','债务人对本笔应收账款的回款':'Payments from the debtor against this receivable',
     '累计已回款':'Total repaid','未回款余额':'Outstanding balance','结清日期':'Settlement date',
-    '回款记录':'Repayment records','1 条':'1 record','回款日期':'Payment date','回款金额':'Payment amount','回款流水号':'Payment reference','支付凭证编号':'Payment voucher no.',
-    '材料':'Documents','9 个文件':'9 files','查看':'View','下载':'Download','原型未附真实文件':'No real file is attached to this prototype',
-    '确权凭证':'Confirmation certificate','销售发票文件':'Sales invoice file','回款支付凭证文件':'Payment voucher file',
-    '贸易合同 / 订单文件':'Trade contract / order file','交付凭证':'Proof of delivery','运输单据':'Transport document',
-    '采购合同 / 订单文件':'Purchase contract / order file','采购发票文件':'Purchase invoice file',
+    '回款记录':'Repayment records','1 条':'1 record','2 条':'2 records','回款日期':'Payment date','回款金额':'Payment amount','回款流水号':'Payment reference',
+    '支付凭证编号':'Payment voucher no.','支付凭证':'Payment voucher','暂无回款记录':'No repayment records yet',
+    '与上游供应商':'Upstream supplier','上游供应商':'Supplier','采购合同 / 订单':'Purchase contract / order','采购合同 / 订单编号':'Purchase contract / order no.',
+    '采购合同 / 订单文件':'Purchase contract / order file','供应商名称':'Supplier','采购日期':'Purchase date','采购金额':'Purchase amount',
+    '供应商发货':'Supplier shipment','发货日期':'Shipment date','发货记录':'Shipment record',
+    '采购发票':'Purchase invoices','采购发票编号':'Purchase invoice no.',
+    '向供应商付款':'Payments to supplier','付款日期':'Payment date','付款金额':'Payment amount','付款流水号':'Payment reference','付款凭证':'Payment voucher',
+    '暂无采购合同 / 订单信息':'No purchase contract or order information','暂无发货记录':'No shipment record','暂无采购发票':'No purchase invoices','暂无付款记录':'No payment records',
+    '与其他下游客户':'Other downstream customers','其他下游客户':'Other customers','2 笔交易 · 回款不计入本笔应收账款':'2 transactions · repayments do not count toward this receivable',
+    '暂无其他下游客户交易信息':'No transactions with other downstream customers',
+    '上游未提供':'Not provided by upstream','未提供':'Not provided',
+    '查看':'View','下载':'Download','原型未附真实文件':'No real file is attached to this prototype',
     /* 资产状态与通用列名：面客端、管理端共用 */
     '回款状态':'Repayment status','未到期':'Not due','暂时无法确认':'Unable to confirm',
     '确权状态':'Confirmation','结清状态':'Settlement','逾期状态':'Overdue status','发行状态':'Issuance status',
