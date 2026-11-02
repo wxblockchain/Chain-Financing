@@ -52,7 +52,8 @@
       formed:'2026-07-01T10:00:00+04:00', invoiced:'2026-06-28T11:00:00+04:00'},
     'RA-DEMO-0140':{cr:'A', db:'M', amt:'40,000.00', ccy:'EUR', due:'2027-06-30T23:59:59+04:00', no:'0460'},
     'RA-DEMO-0143':{cr:'A', db:'B', amt:'27,500.00', due:'2027-04-30T23:59:59+04:00', no:'0463'},
-    'RA-DEMO-0150':{cr:'C', db:'E', amt:'61,200.00', due:'2027-06-20T23:59:59+04:00', no:'0502'}
+    'RA-DEMO-0150':{cr:'C', db:'E', amt:'61,200.00', due:'2027-06-20T23:59:59+04:00', no:'0502'},
+    'RA-DEMO-0160':{cr:'A', db:'B', amt:'12,345.67', due:'2027-04-30T23:59:59+04:00', no:'0510'}
   };
   /* 其他下游客户交易（演示）：一笔部分回款，一笔暂无回款。 */
   var OTHER_BUYERS = [
@@ -197,7 +198,7 @@
 
   function initDetailNavigation(){
     document.querySelectorAll('[data-screen]').forEach(function(screen){
-      if(!screen.querySelector('.asset-sum') && screen.id!=='e-detail')return;
+      if(!screen.hasAttribute('data-detail-layout') && !screen.querySelector('.asset-sum') && screen.id!=='e-detail')return;
       var content=screen.querySelector('.content-in');
       if(content.querySelector('[data-detail-nav]'))return;
       var overview=content.querySelector(':scope > .card:has(.asset-sum)');

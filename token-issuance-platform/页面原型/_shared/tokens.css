@@ -98,3 +98,4 @@
 
 /* M2 English field labels need room for complete words. */
 :root[lang="en"][data-module="assets"]{--facts-label-w:var(--asset-label-w-en)}
+:root[lang="en"][data-module="issuance"]{--facts-label-w:var(--asset-label-w-en)}

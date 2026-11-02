@@ -646,3 +646,45 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 @media(prefers-reduced-motion:reduce){
   *{animation:none !important;transition:none !important}
 }
+
+/* M3a 代币发行申请：共用选择列表、步骤容器及只读进度，不承载业务规则。 */
+.workflow-steps{padding:var(--sp-5) var(--card-pad);border-bottom:1px solid var(--border)}
+.workflow-context{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2) var(--sp-5);padding:var(--sp-4) var(--card-pad);border-bottom:1px solid var(--border);background:var(--card-2);font-size:var(--fs-13);color:var(--muted)}
+.workflow-context b{color:var(--text);font-weight:500}
+.workflow-footer{align-items:center;margin-top:var(--sp-4)}
+.workflow-footer .back{margin-right:auto}
+.choice-table{table-layout:fixed}
+.choice-table th:first-child{width:24%}
+.choice-table .col-act{width:100px}
+.choice-table .selected td{background:var(--accent-soft)}
+.choice-table .selected .col-act{background:var(--accent-soft)}
+.choice-table .btn-link{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.choice-description{padding:var(--sp-4) var(--card-pad);color:var(--muted);font-size:var(--fs-13)}
+.choice-description p+p{margin-top:var(--sp-2)}
+.card-b>.note+.note{margin-top:var(--sp-3)}
+.application-list{table-layout:fixed}
+.application-list th:first-child{width:20%}
+.application-list th:nth-child(2){width:16%}
+.application-list th:nth-child(3){width:15%}
+.application-list th:nth-child(4){width:16%}
+.application-list th:nth-child(5){width:16%}
+.application-list th:nth-child(6){width:17%}
+.application-list .tag{white-space:normal;word-break:normal;overflow-wrap:normal}
+.application-list td,.application-list th{overflow-wrap:anywhere}
+.application-list .money{white-space:nowrap}
+.application-list .btn-link{max-width:100%;text-align:left}
+.decision-list{margin:0;padding-left:var(--sp-5);display:grid;gap:var(--sp-2)}
+.review-timeline{list-style:none;margin:0;padding:var(--sp-5) var(--card-pad);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-6)}
+.review-timeline li{position:relative;min-width:0;padding-top:var(--sp-4);border-top:2px solid var(--border)}
+.review-timeline li.done{border-color:var(--ok)}
+.review-timeline li.current{border-color:var(--accent)}
+.review-timeline li.rejected{border-color:var(--danger)}
+.review-timeline h3{font-size:var(--fs-14);font-weight:600;margin-bottom:var(--sp-2)}
+.review-timeline .tag{margin-bottom:var(--sp-2);white-space:normal}
+.review-timeline p,.review-timeline time{display:block;font-size:var(--fs-13);color:var(--muted)}
+.review-timeline time{font-variant-numeric:tabular-nums;margin-top:var(--sp-1)}
+.rejection-text{white-space:pre-wrap;overflow-wrap:anywhere;margin:var(--sp-3) 0 0;font:inherit;color:var(--text)}
+.result-code{margin-top:var(--sp-3);font-family:var(--mono);font-size:var(--fs-20)}
+:root[lang="en"] .application-list .mono{font-size:var(--fs-12)}
+@media(max-width:1100px){.review-timeline{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.review-timeline{grid-template-columns:minmax(0,1fr)}.workflow-footer .back{margin-right:0}.workflow-footer{justify-content:flex-start}}
