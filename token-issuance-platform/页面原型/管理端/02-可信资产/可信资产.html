@@ -128,7 +128,7 @@
 <div><dt>发行申请</dt><dd><button type="button" class="btn-link mono" data-toast="申请详情属于代币发行 · 审核与铸造模块，本原型不展开">IA-DEMO-0019</button></dd></div>
 <div><dt>申请状态</dt><dd><span class="tag ok">铸造成功</span></dd></div>
 <div><dt>所选监管机构</dt><dd>示例监管机构 C</dd></div>
-<div><dt>代币</dt><dd><span class="mono">DEMO-TOKEN-001</span> <button type="button" class="btn-link" data-toast="代币台账属于销毁审核、解除质押与代币台账模块，本原型不展开">查看代币台账</button></dd></div>
+<div><dt>代币</dt><dd><span class="mono">DEMO-TOKEN-001</span> <button type="button" class="btn-link" data-module-key="ledgerToken001" data-toast="代币台账属于销毁审核、解除质押与代币台账模块，本原型不展开">查看代币台账</button></dd></div>
 </dl></div></div>
 <div class="asset-detail" data-asset-detail="RA-DEMO-0102"></div>
 </div>
@@ -343,7 +343,7 @@
     reg:[
       {group:'业务', items:[
         {key:'review',  label:'发行审核', icon:'issue'},
-        {key:'release', label:'解除质押', icon:'shield'},
+        {key:'release', label:'解除监管', icon:'shield'},
         {key:'ledger',  label:'代币台账', icon:'ledger'},
         {key:'assets',  label:'可信资产', icon:'asset'}
       ]}
@@ -358,7 +358,7 @@
     '本机构已停用，不再接收新的发行申请；在途业务可以继续办理。':'This institution is disabled and cannot receive new applications. Existing cases can still be processed.',
     '可信资产 · 管理端 · 代币发行平台':'Trusted assets · Admin · Token Issuance Platform','管理端':'Admin console',
     '发行审核':'Issuance review','销毁审核':'Burn review','代币台账':'Token ledger','可信资产':'Trusted assets','企业':'Companies',
-    '系统管理':'Administration','监管机构管理':'Regulators','合约管理':'Contracts','解除质押':'Release pledge',
+    '系统管理':'Administration','监管机构管理':'Regulators','合约管理':'Contracts','解除质押':'Release pledge','解除监管':'Release supervision',
     '运营示例账号':'Demo operator','监管示例账号':'Demo regulator','运营管理员':'Operator admin','监管机构':'Regulator','示例监管机构 C':'Demo Regulator C',
     '账户设置':'Account settings','退出登录':'Sign out','已退出登录':'Signed out',
     '账户设置属于管理端登录与权限模块，本原型不展开':'Account settings are covered by the admin sign-in module.',

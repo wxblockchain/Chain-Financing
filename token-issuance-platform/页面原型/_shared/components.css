@@ -220,6 +220,17 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .progress-list .complete .progress-mark{background:var(--ok);border-color:var(--ok)}
 .progress-list .current .progress-mark{background:var(--accent);border-color:var(--accent)}
 @media(max-width:1280px){.progress-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Four independent token states (financing, settlement, supervision, burn progress); M4b ledger. */
+.status-grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:1440px){
+  .status-grid.cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .status-grid.cols-4>div:nth-child(3){border-left:0}
+  .status-grid.cols-4>div:nth-child(n+3){border-top:1px solid var(--border)}
+}
+@media(max-width:600px){
+  .status-grid.cols-4{grid-template-columns:minmax(0,1fr)}
+  .status-grid.cols-4>div+div{border-left:0;border-top:1px solid var(--row-line)}
+}
 table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .tbl thead th{text-align:left;font-size:var(--ui-field-label);font-weight:500;color:var(--muted);background:var(--card-2);
   padding:var(--sp-3);border-bottom:1px solid var(--border);white-space:nowrap}

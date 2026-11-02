@@ -10,7 +10,8 @@
     adminAccount:{end:'admin', path:'管理端/01-管理端登录与权限/管理端账号与监管机构管理.html'},
     adminAssets:{end:'admin', path:'管理端/02-可信资产/可信资产.html'},
     adminContracts:{end:'admin', path:'管理端/06-合约管理/合约管理.html'},
-    adminReview:{end:'admin', path:'管理端/03-发行审核/发行审核.html'}
+    adminReview:{end:'admin', path:'管理端/03-发行审核/发行审核.html'},
+    adminBurn:{end:'admin', path:'管理端/04-销毁审核与解除质押/销毁审核与解除质押.html'}
   };
   // Every destination names the exact role-specific screen, never another role's fallback.
   var routes = {
@@ -34,6 +35,11 @@
       reviewAsset:{file:'adminAssets', screens:{ops:'o-applying',opsnew:'o-applying',reg:'r-detail',regoff:'r-detail',regnew:'r-detail'}},
       reviewCompany:{file:'adminAssets', screens:{ops:'e-detail',opsnew:'e-detail'}},
       contracts:{file:'adminContracts', screens:{ops:'ct-list',opsnew:'ct-list'}},
+      burn:{file:'adminBurn', screens:{ops:'b-list',opsnew:'b-list'}},
+      release:{file:'adminBurn', screens:{reg:'r-list',regoff:'r-list',regnew:'r-list'}},
+      ledger:{file:'adminBurn', screens:{ops:'l-list',opsnew:'l-list',reg:'rl-list',regoff:'rl-list',regnew:'rl-list'}},
+      ledgerToken001:{file:'adminBurn', screens:{ops:'l-001',opsnew:'l-001'}},
+      burnAsset001:{file:'adminAssets', screens:{ops:'o-deleted',opsnew:'o-deleted'}},
       assets:{file:'adminAssets', screens:{ops:'o-list',opsnew:'o-list',reg:'r-list',regoff:'r-list',regnew:'r-list'}},
       ents:{file:'adminAssets', screens:{ops:'e-list',opsnew:'e-list'}},
       regs:{file:'adminAccount', screens:{ops:'rg-list',opsnew:'rg-list'}},
@@ -68,7 +74,7 @@
     var who=params.get('previewWho');
     if((module===files.adminAssets && (who==='regoff'||who==='regnew'||who==='opsnew')) ||
        (module===files.adminContracts && who==='opsnew') ||
-       (module===files.adminReview && (who==='opsnew'||who==='regoff'||who==='regnew'))){
+       ((module===files.adminReview || module===files.adminBurn) && (who==='opsnew'||who==='regoff'||who==='regnew'))){
       var sourceWho=who==='opsnew'?'ops':'reg';
       document.querySelectorAll('[data-screen][data-who="'+sourceWho+'"]').forEach(function(el){el.dataset.who=who;});
       TP.NAV_BY[who]=TP.NAV_BY[sourceWho];
