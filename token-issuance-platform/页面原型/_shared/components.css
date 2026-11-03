@@ -57,8 +57,9 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .content>.crumb{max-width:var(--content-max);margin:0 auto var(--sp-3)}
 .crumb b{color:var(--text);font-weight:600}
 .crumb .sep{color:var(--faint)}
-.crumb a{color:var(--muted);border-radius:var(--radius-xs)}
-.crumb a:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+/* 有页面的祖先是返回列表的入口：用主色区分于不可点的业务分组 */
+.crumb a{color:var(--accent);border-radius:var(--radius-xs)}
+.crumb a:hover{color:var(--accent-strong);text-decoration:underline;text-underline-offset:3px}
 
 /* ---------- focus 骨架：登录、游客 ---------- */
 .focus{min-height:100vh;display:flex;flex-direction:column}
