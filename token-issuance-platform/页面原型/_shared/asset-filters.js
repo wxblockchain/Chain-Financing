@@ -20,11 +20,11 @@
       var panelId=screen.id+'-advanced-filters';
       form.innerHTML='<div class="filter-toolbar">'+
         select('发行状态',['可发行','发行申请中','已驳回','已发行'])+
-        select('资产类型',['应收账款'])+
+        select('回款状态',['未到期','已逾期','已结清','暂时无法确认'])+
         '<button class="btn sm filter-more" type="button" aria-expanded="false" aria-controls="'+panelId+'"><span>更多筛选</span><i data-ico="chev"></i></button>'+
         '<div class="filter-query"><label class="filter-search"><span class="sr-only">上游资产编号</span><i data-ico="search"></i><input class="inp" type="search" placeholder="搜索资产编号"></label>'+
         '<div class="filter-actions"><button class="btn sm ghost" type="reset">重置</button><button class="btn sm primary" type="submit">查询</button></div></div></div>'+
-        '<div class="filter-advanced" id="'+panelId+'" hidden>'+text('债务人名称')+(globalScope?text('债权人名称'):'')+select('币种',currencies,true)+select('回款状态',['未到期','已逾期','已结清','暂时无法确认'],true)+
+        '<div class="filter-advanced" id="'+panelId+'" hidden>'+text('债务人名称')+(globalScope?text('债权人名称'):'')+select('币种',currencies,true)+
         '<div class="field filter-date-field"><div class="field-label"><span>到期时间范围</span><span class="filter-zone" data-zone></span></div>'+
         '<div class="filter-dates" role="group" aria-label="到期时间范围">'+
         '<input class="inp" type="datetime-local" aria-label="到期时间自"><span>至</span><input class="inp" type="datetime-local" aria-label="到期时间至"></div></div></div>';
@@ -59,7 +59,7 @@
     });
   };
   TP.addCopy({
-    '筛选资产':'Filter assets','资产类型 · 全部':'Asset type · All','资产类型 · 应收账款':'Asset type · Accounts receivable','债务人名称':'Debtor name','债权人名称':'Creditor name',
+    '筛选资产':'Filter assets','债务人名称':'Debtor name','债权人名称':'Creditor name',
     '发行状态 · 全部':'Issuance · All','回款状态 · 全部':'Repayment · All','币种 · 全部':'Currency · All',
     '发行状态 · 可发行':'Issuance · Available','发行状态 · 发行申请中':'Issuance · Application in progress',
     '发行状态 · 已驳回':'Issuance · Rejected','发行状态 · 已发行':'Issuance · Issued',

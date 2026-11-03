@@ -168,7 +168,7 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .card-f{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:var(--sp-3);padding:var(--sp-4) var(--card-pad);
   border-top:1px solid var(--border);background:var(--card-2);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
 
-/* ---------- 只读信息组：标签在上、值在下；弹窗 single 用横向标签 ---------- */
+/* ---------- 只读信息组：标签和值横向配对，窄屏上下排列 ---------- */
 .facts-region{container:facts / inline-size;min-width:0}
 .facts{display:grid;grid-template-columns:minmax(0,1fr);gap:0 var(--sp-7);margin:0;padding:var(--sp-2) var(--card-pad)}
 .facts>div{display:grid;grid-template-columns:var(--facts-label-w) minmax(0,1fr);gap:var(--sp-3);align-items:start;
@@ -512,11 +512,11 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .cell-sub.warn{color:var(--warn)}
 .cell-sub.ok{color:var(--ok)}
 .asset-list:has(colgroup){table-layout:fixed}
-.asset-list .asset-col-id{width:20%}.asset-list .asset-col-type{width:18%}.asset-list .asset-col-amount{width:17%}
-.asset-list .asset-col-due{width:19%}.asset-list .asset-col-status{width:14%}.asset-list .asset-col-actions{width:12%}
-.asset-list.with-creditor .asset-col-id{width:16%}.asset-list.with-creditor .asset-col-name{width:20%}
-.asset-list.with-creditor .asset-col-type{width:14%}.asset-list.with-creditor .asset-col-amount{width:14%}
-.asset-list.with-creditor .asset-col-due{width:16%}.asset-list.with-creditor .asset-col-status{width:12%}
+.asset-list .asset-col-id{width:17%}.asset-list .asset-col-debtor{width:22%}.asset-list .asset-col-amount{width:14%}
+.asset-list .asset-col-due{width:15%}.asset-list .asset-col-repayment{width:11%}.asset-list .asset-col-status{width:11%}.asset-list .asset-col-actions{width:10%}
+.asset-list.with-creditor .asset-col-id{width:15%}.asset-list.with-creditor .asset-col-name{width:15%}
+.asset-list.with-creditor .asset-col-debtor{width:16%}.asset-list.with-creditor .asset-col-amount{width:12%}
+.asset-list.with-creditor .asset-col-due{width:13%}.asset-list.with-creditor .asset-col-repayment{width:10%}.asset-list.with-creditor .asset-col-status{width:11%}
 .asset-list.with-creditor .asset-col-actions{width:8%}
 .asset-list :is(th,td){padding-inline:var(--sp-2);overflow-wrap:normal}
 .asset-list thead th{white-space:normal}
@@ -530,15 +530,15 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .asset-list:has(colgroup) .col-act{width:auto}
 .asset-list .tag{max-width:100%;white-space:normal;margin-top:0}
 /* 分区标签是锚点导航；所有信息始终在同一页面，正常上下滚动。 */
-.detail-nav{position:sticky;top:var(--app-header-h);z-index:calc(var(--z-sticky) - 21);display:flex;gap:var(--sp-5);max-width:100%;overflow-x:auto;
-  padding:0 var(--card-pad);margin-block:var(--sp-4);background:var(--bg);border:0;border-radius:0}
+.detail-nav{position:sticky;top:var(--app-header-h);z-index:calc(var(--z-sticky) - 21);display:flex;gap:var(--sp-6);max-width:100%;overflow-x:auto;
+  padding:0;margin-block:var(--sp-4) var(--sp-6);background:var(--bg);border:0;border-radius:0}
 .detail-nav a{display:inline-flex;align-items:center;flex:none;min-height:var(--ctrl-h);padding:var(--sp-2) 0;
   font-size:var(--fs-14);font-weight:500;color:var(--muted)}
 .detail-nav a:hover{color:var(--text)}
 .detail-nav a[aria-current="location"]{color:var(--accent);font-weight:650}
 .detail-nav a:focus-visible{outline-offset:-2px}
 .detail-nav-sep{flex:none;width:var(--sp-2)}
-[data-detail-section]{scroll-margin-top:calc(var(--app-header-h) + var(--ctrl-h) + var(--sp-6))}
+[data-detail-section],.detail-group{scroll-margin-top:calc(var(--app-header-h) + var(--ctrl-h) + var(--sp-6))}
 /* 缺失值：L1 缺失用警示色说明上游未提供；L2 缺失弱化为未提供。 */
 .missing{color:var(--warn);font-size:var(--fs-13)}
 .missing.soft{color:var(--faint)}
@@ -595,22 +595,28 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .asset-detail{margin-top:var(--sp-4)}
 .sub-empty{padding:0 var(--card-pad) var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
 .page-desc [data-zone]{display:inline;font-family:var(--mono);font-size:var(--fs-13)}
-/* Asset facts use the same stacked labels and rhythm in related/core/supplement sections. */
-.asset-detail .facts,.asset-related .facts{column-gap:var(--sp-6)}
-.asset-detail .facts>div,.asset-related .facts>div{display:flex;flex-direction:column;gap:var(--sp-1);border-top:0}
-.asset-detail .facts dt,.asset-related .facts dt{padding-top:0;color:var(--muted)}
+/* Asset facts remain label/value pairs; record tables are inset, denser surfaces. */
+.asset-detail .facts,.asset-related .facts{column-gap:var(--sp-7)}
+.asset-detail .facts>div,.asset-related .facts>div{padding-block:var(--sp-4)}
 .asset-detail .facts dd,.asset-related .facts dd{line-height:var(--lh-body)}
-.asset-detail .card-head,.asset-related .card-head{padding-block:var(--sp-4)}
-@container facts (min-width:1200px){.asset-detail .facts:not(.single),.asset-related .facts:not(.single){grid-template-columns:repeat(3,minmax(0,1fr))}}
+.asset-detail .card-head,.asset-related .card-head{padding-block:var(--sp-5)}
+.asset-detail .sub-h{font-size:var(--fs-14);padding-bottom:var(--sp-3);flex-wrap:wrap}
+.detail-table{margin:0 var(--card-pad) var(--sp-5);border:1px solid var(--border);border-radius:var(--radius-xs)}
+.card-head+.detail-table{margin-top:var(--sp-5)}
+.detail-table .tbl thead th{font-weight:600}
+.detail-table .tbl :is(th,td):first-child{padding-left:var(--sp-4)}
+.detail-table .tbl :is(th,td):last-child{padding-right:var(--sp-4)}
+.detail-table .tbl .num{width:1%}
+.sub-h+.detail-table .tbl thead th{border-top:0}
 .asset-pagination{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-3) var(--card-pad);border-top:1px solid var(--border);font-size:var(--fs-13);color:var(--muted);flex-wrap:wrap}
 .pagination-controls{display:flex;gap:var(--sp-1)}
 .pagination-controls .btn{width:var(--ctrl-h-sm);padding:0}
 .pagination-controls .page-current{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-border)}
 .pagination-controls .btn:last-child svg{transform:rotate(-90deg)}
-/* 资产详情按交易双方分组：组标题为弱化的分组标记，卡片标题统一 16 px。 */
-.detail-group+.detail-group{margin-top:var(--sp-7)}
-.detail-group-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--sp-1) var(--sp-3);margin-bottom:var(--sp-3);padding-inline:var(--card-pad)}
-.detail-group-h h2{font-size:var(--fs-14);font-weight:600;color:var(--muted);line-height:1.5}
+/* 资产详情：20 px 模块标题 > 16 px 卡片标题 > 14 px 小节；导航单独呈现。 */
+.detail-group+.detail-group{margin-top:var(--sp-8)}
+.detail-group-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4);margin-bottom:var(--sp-4)}
+.detail-group-h h2{font-size:var(--fs-20);font-weight:650;color:var(--text);line-height:1.5;letter-spacing:-.015em}
 .detail-group-h .sub{font-size:var(--ui-field-label);color:var(--muted)}
 /* 材料随所属环节：文件名查看，图标按钮下载；出现在字段值或表格单元格中。 */
 .file-ref{display:inline-flex;align-items:center;gap:var(--sp-1);max-width:100%;min-width:0;vertical-align:middle}

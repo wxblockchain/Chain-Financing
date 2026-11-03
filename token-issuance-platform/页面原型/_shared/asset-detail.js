@@ -22,7 +22,7 @@
     return '<div class="facts-region"><dl class="facts">'+rows.map(function(r){ return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>'; }).join('')+'</dl></div>';
   }
   function table(cols, rows){
-    return '<div class="tablewrap"><table class="tbl auto"><thead><tr>'+cols.map(function(c){ return c.charAt(0)==='#' ? '<th class="num">'+c.slice(1)+'</th>' : '<th>'+c+'</th>'; }).join('')+'</tr></thead><tbody>'+
+    return '<div class="tablewrap detail-table"><table class="tbl auto"><thead><tr>'+cols.map(function(c){ return c.charAt(0)==='#' ? '<th class="num">'+c.slice(1)+'</th>' : '<th>'+c+'</th>'; }).join('')+'</tr></thead><tbody>'+
       rows.map(function(r){ return '<tr>'+r.map(function(v,i){ return '<td'+(cols[i].charAt(0)==='#'?' class="num"':'')+'>'+v+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div>';
   }
   function subHead(title, sub){ return '<div class="sub-h">'+title+(sub?'<span class="sub">'+sub+'</span>':'')+'</div>'; }
@@ -213,7 +213,7 @@
       sections.forEach(function(section,index){
         var heading=section.querySelector('.card-head :is(h2,h3)');
         var label=section.dataset.navLabel || (heading ? heading.textContent : (screen.id==='e-detail'?'企业信息':'资产概览'));
-        // A thin divider separates related records, core and supplementary groups.
+        // Extra space separates related records, core and supplementary groups.
         var group=section.closest('.detail-group');
         if(index>0 && group!==lastGroup){var sep=document.createElement('span');sep.className='detail-nav-sep';sep.setAttribute('aria-hidden','true');nav.appendChild(sep);}
         lastGroup=group;
@@ -255,7 +255,10 @@
     var link=event.target.closest('[data-detail-target]');if(!link)return;
     event.preventDefault();
     var target=document.getElementById(link.dataset.detailTarget);
-    target.scrollIntoView({block:'start',behavior:'instant'});target.focus({preventScroll:true});
+    // Keep the parent heading visible when entering the first card in a group.
+    var group=target.closest('.detail-group');
+    var position=group && group.querySelector('.card')===target ? group : target;
+    position.scrollIntoView({block:'start',behavior:'instant'});target.focus({preventScroll:true});
     selectedTarget=link;selectedY=window.scrollY;
     TP.refreshDetailNav();
   });
