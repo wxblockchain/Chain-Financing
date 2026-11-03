@@ -595,9 +595,10 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .asset-detail{margin-top:var(--sp-4)}
 .sub-empty{padding:0 var(--card-pad) var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
 .page-desc [data-zone]{display:inline;font-family:var(--mono);font-size:var(--fs-13)}
-/* Asset facts remain label/value pairs; record tables are inset, denser surfaces. */
+/* Asset facts stack labels above values; record tables are inset, denser surfaces. */
 .asset-detail .facts,.asset-related .facts{column-gap:var(--sp-7)}
-.asset-detail .facts>div,.asset-related .facts>div{padding-block:var(--sp-4)}
+.asset-detail .facts>div,.asset-related .facts>div{display:flex;flex-direction:column;gap:var(--sp-1);padding-block:var(--sp-4)}
+.asset-detail .facts dt,.asset-related .facts dt{padding-top:0}
 .asset-detail .facts dd,.asset-related .facts dd{line-height:var(--lh-body)}
 .asset-detail .card-head,.asset-related .card-head{padding-block:var(--sp-5)}
 .asset-detail .sub-h{font-size:var(--fs-14);padding-bottom:var(--sp-3);flex-wrap:wrap}
