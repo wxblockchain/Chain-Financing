@@ -80,7 +80,7 @@
         ['资产类型', '应收账款'],
         ['行业大类', '汽车贸易'],
         ['应收账款金额', money(a.amt,ccy)],
-        ['币种', ccy],
+        ['币种', TP.currencyLabel(ccy)],
         ['形成日期', day(a.formed||'2026-09-18T10:00:00+04:00')],
         ['到期日', '<time data-instant="'+a.due+'" datetime="'+a.due+'"></time>'],
         ['确权日期', sp ? missing(true) : day('2026-09-25T14:20:00+04:00')],
@@ -193,6 +193,11 @@
 
   TP.fillAssetDetail = function(){
     document.querySelectorAll('[data-asset-detail]').forEach(function(el){ el.innerHTML = body(el.dataset.assetDetail); });
+    // Summary and embedded asset-reference screens share the same fiat identity.
+    document.querySelectorAll('.asset-sum .amount-lg').forEach(function(el){
+      var ccy=el.querySelector('.ccy');
+      if(ccy && !el.querySelector('.asset-icon,[data-asset]'))el.insertAdjacentHTML('afterbegin',TP.assetIcon(ccy.textContent.trim()));
+    });
     initDetailNavigation();
   };
 
