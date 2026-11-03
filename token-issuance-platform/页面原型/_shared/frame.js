@@ -131,7 +131,7 @@
   /* 界面语言：所有访问者、所有页面可切换 */
   function langEntry(){
     var en = TP.language==='en';
-    return '<div class="dd lang-switch"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="false" aria-label="界面语言">'+TP.icon('globe')+'<span>'+(en?'English':'简体中文')+'</span>'+TP.icon('chev')+'</button>'+
+    return '<div class="dd lang-switch"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="false" aria-label="界面语言">'+TP.icon('globe')+'<span>'+(en?'EN':'中文')+'</span>'+TP.icon('chev')+'</button>'+
       '<div class="dd-list narrow" role="menu" hidden><div class="dd-caption">语言</div>'+
       '<button type="button" class="dd-item" role="menuitemradio" aria-checked="'+en+'" data-lang="en">'+(en?TP.icon('check'):'')+'English</button>'+
       '<button type="button" class="dd-item" role="menuitemradio" aria-checked="'+!en+'" data-lang="zh">'+(!en?TP.icon('check'):'')+'简体中文</button></div></div>';
@@ -146,7 +146,7 @@
     $('#tools').innerHTML = focus ? '' : langEntry() + bell + accountEntry(who, open);
     $('#focusTools').innerHTML = focus ? langEntry() + accountEntry(who, open) : '';
     if(focus && sec.hasAttribute('data-restricted')) $('#focusTools').insertAdjacentHTML('beforeend','<button type="button" class="btn ghost sm" data-acct="logout">退出登录</button>');
-    // Keep the language switch reachable while a form is open, without rebuilding inputs.
+    // 语言切换只放在平台顶栏；弹窗内不设语言入口。
     $$('.modal-h').forEach(function(header){
       var title=$('.modal-title',header);
       if(!title){
@@ -155,9 +155,6 @@
         if(header.id){title.id=header.id;header.removeAttribute('id');}
         header.prepend(title);
       }
-      var language=$('.modal-language',header);
-      if(!language){language=document.createElement('div');language.className='modal-language';header.insertBefore(language,$('[data-close]',header));}
-      language.innerHTML=langEntry();
     });
   }
 

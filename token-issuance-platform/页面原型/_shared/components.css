@@ -302,9 +302,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
   font-size:var(--ui-section-title);font-weight:600;flex-shrink:0}
 .modal-h .btn.icon{margin-left:auto}
 .modal-title{flex:1;min-width:0}
-.modal-language .dd-btn{width:var(--ctrl-h-sm);padding:0;border-color:transparent}
-.modal-language .dd-btn>span,.modal-language .dd-btn>svg:last-child{display:none}
-.modal-language+.btn.icon{margin-left:0}
 .modal-b{padding:var(--sp-5) var(--sp-6);overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:var(--sp-4)}
 .modal-f{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--sp-3);padding:var(--sp-4) var(--sp-6);background:var(--card-2);
   border-top:1px solid var(--border);border-radius:0 0 var(--radius-lg) var(--radius-lg);flex-shrink:0}

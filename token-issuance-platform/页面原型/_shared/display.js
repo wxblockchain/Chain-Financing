@@ -35,7 +35,7 @@
     '暂无企业信息':'No company information','企业信息需在资产可信平台完善。':'Complete your company information on the Asset Trust Platform.',
     '企业信息读取失败':'Could not load company information','暂时无法读取，请稍后重试。':'Information could not be loaded. Please try again later.','重试':'Try again',
     
-    '用该地址重新登录':'Sign in with this address','本次登录':'Current session','同步时间':'Last synced',
+    '用该地址重新登录':'Sign in with this address','查看代币':'View token','代币详情在“我的代币”模块，请在完整原型目录中打开查看。':'Token details are in the My tokens module. Open the full prototype folder to view them.','本次登录':'Current session','同步时间':'Last synced',
     '个人资料':'Personal information','姓名':'Name','英文姓名':'English name','邮箱':'Email','国籍':'Nationality','证件类型':'ID type','证件号码':'ID number',
     '与企业的关系':'Relationship to company','授权代表':'Authorized representative','身份证':'National ID','暂不展示':'Not displayed',
     '暂无个人信息':'No personal information','个人信息由资产可信平台维护。':'Personal information is maintained by the Asset Trust Platform.',
