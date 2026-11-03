@@ -115,10 +115,11 @@
       TP.icon('user')+'<span>'+esc(acc.name)+'</span>'+TP.icon('chev')+'</button>'+menu+'</div>';
   }
 
+  var screenAddr = ''; /* 画面可用 data-address 指定本屏的登录地址（如登录地址变更后） */
   function accountEntry(who, open){
     if(who==='none') return '';
     if(TP.demo.accounts && TP.demo.accounts[who]) return adminEntry(TP.demo.accounts[who], open);
-    var a = TP.demo.address;
+    var a = screenAddr || TP.demo.address;
     var menu = '<div class="dd-list" role="menu"'+(open?'':' hidden')+'>'+
       '<div class="dd-who"><div class="addr"><span class="addr-pill" title="'+esc(a)+'">'+esc(short(a))+'</span>'+
       '<button type="button" class="btn icon" data-copy aria-label="复制登录地址">'+TP.icon('copy')+'</button></div></div>'+
@@ -137,6 +138,7 @@
   }
 
   function renderTools(sec, open){
+    screenAddr = sec.dataset.address || '';
     var who = sec.dataset.who;
     var bell = (who==='guest'||who==='none') ? '' :
       '<button type="button" class="bell" data-acct="msg" aria-label="消息通知，3 条未读">'+TP.icon('bell')+'<span class="badge" aria-hidden="true">3</span></button>';

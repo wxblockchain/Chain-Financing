@@ -149,28 +149,6 @@
 </div>
 </section>
 
-<section data-crumb="用户中心/企业信息" data-group="企业信息" data-layout="app" data-name="钱包地址与登录地址不一致" data-nav="org" data-no="P5" data-screen="" data-who="certified" id="org-mismatch">
-<div class="content-in">
-<div class="note warn banner" role="alert"><i data-ico="alert"></i>
-<span class="grow">钱包当前地址 <span class="mono">0x5E8a…9A88</span> 与登录地址不一致，本次登录仍对应原登录地址。</span>
-<button class="btn sm" data-go="login" type="button">用该地址重新登录</button></div>
-<div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
-<div class="card">
-<div class="ident"><span aria-hidden="true" class="ident-mark">A</span><div><div class="ident-name">示例企业 A 有限公司</div><div class="ident-sub">Example Enterprise A Ltd.</div></div><span class="tag ok"><span class="dot"></span>已认证</span></div>
-<div class="facts-region bt"><dl class="facts">
-<div><dt>企业 id</dt><dd class="mono">ENT-DEMO-0001</dd></div>
-<div><dt>当前有效认证结论</dt><dd><span class="tag ok">已认证</span></dd></div>
-<div><dt>企业名称</dt><dd>示例企业 A 有限公司</dd></div>
-<div><dt>英文名称</dt><dd>Example Enterprise A Ltd.</dd></div>
-<div><dt>注册国家 / 地区</dt><dd>中国香港</dd></div>
-<div><dt>香港 CR 编号</dt><dd class="mono">DEMO-1234567</dd></div>
-<div><dt>香港 BR 编号</dt><dd class="mono">DEMO-76543210</dd></div>
-<div><dt>注册地址</dt><dd>香港中环示例大道 1 号示例大厦 10 楼</dd></div>
-</dl></div>
-</div>
-</div>
-</section>
-
 <section data-base="org" data-dd="" data-group="企业账户" data-name="账户入口展开" data-no="P6" data-overlay="" data-screen="" id="acct-menu"></section>
 
 <!-- ============================== 用户信息 ============================== -->
@@ -269,6 +247,36 @@
 <tr><td><span class="tag accent">登录地址</span></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
 <td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00"></time></td><td class="col-act faint"><button class="actlink" data-go="acc-del-login" type="button">删除</button></td></tr>
+<tr><td><div class="cell-main">示例收币地址</div></td>
+<td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21">0x4C1e…5B21</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
+<td class="nw">企业新增</td><td class="nw"><time data-compact="" data-instant="2026-09-02T07:08:00+00:00" datetime="2026-09-02T07:08:00+00:00"></time></td>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del-ref" type="button">删除</button></td></tr>
+<tr><td><div class="cell-main">备用地址</div></td>
+<td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05">0xD93a…8E05</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
+<td class="nw">企业新增</td><td class="nw"><time data-compact="" data-instant="2026-10-11T01:41:00+00:00" datetime="2026-10-11T01:41:00+00:00"></time></td>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del" type="button">删除</button></td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</section>
+
+<section data-crumb="用户中心/企业账户" data-group="企业账户" data-layout="app" data-name="登录地址变更后" data-nav="accounts" data-no="A15" data-screen="" data-address="0x3B7c9E1d5A2f8C4b6D0e7F3a9B1c5E8d2A4f6C30" data-who="certified" id="acc-moved">
+<div class="content-in">
+<div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">管理本企业用于接收代币的数币账户。</p></div>
+<div class="page-actions"><button class="btn primary" data-go="acc-add" type="button"><i data-ico="issue"></i>新增账户</button></div></div>
+<div class="card">
+<div class="card-head"><h2>数币账户</h2><span class="sub">4 个</span></div>
+<div class="tablewrap"><table class="tbl">
+<thead><tr><th>账户备注名</th><th>区块链网络</th><th>数币地址</th><th>来源</th><th>创建时间<span class="cell-sub" data-zone=""></span></th><th class="col-act">操作</th></tr></thead>
+<tbody>
+<tr><td><span class="tag accent">登录地址</span></td>
+<td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x3B7c9E1d5A2f8C4b6D0e7F3a9B1c5E8d2A4f6C30">0x3B7c…6C30</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
+<td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-10-30T02:10:00+00:00" datetime="2026-10-30T02:10:00+00:00"></time></td><td class="col-act faint"><button class="actlink" data-go="acc-del-login" type="button">删除</button></td></tr>
+<tr><td><span class="faint">未设置备注名</span></td>
+<td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
+<td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00"></time></td>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del-ref" type="button">删除</button></td></tr>
 <tr><td><div class="cell-main">示例收币地址</div></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21">0x4C1e…5B21</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
 <td class="nw">企业新增</td><td class="nw"><time data-compact="" data-instant="2026-09-02T07:08:00+00:00" datetime="2026-09-02T07:08:00+00:00"></time></td>

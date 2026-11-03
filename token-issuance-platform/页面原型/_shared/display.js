@@ -34,7 +34,7 @@
     '企业认证尚未通过，暂不能办理代币发行等业务。认证状态请在资产可信平台查看。':'Company verification is pending. Token issuance and other business actions are unavailable. Check your status on the Asset Trust Platform.',
     '暂无企业信息':'No company information','企业信息需在资产可信平台完善。':'Complete your company information on the Asset Trust Platform.',
     '企业信息读取失败':'Could not load company information','暂时无法读取，请稍后重试。':'Information could not be loaded. Please try again later.','重试':'Try again',
-    '钱包当前地址':'Current wallet address','与登录地址不一致，本次登录仍对应原登录地址。':'does not match your sign-in address. This session still uses the original sign-in address.',
+    
     '用该地址重新登录':'Sign in with this address','本次登录':'Current session','同步时间':'Last synced',
     '个人资料':'Personal information','姓名':'Name','英文姓名':'English name','邮箱':'Email','国籍':'Nationality','证件类型':'ID type','证件号码':'ID number',
     '与企业的关系':'Relationship to company','授权代表':'Authorized representative','身份证':'National ID','暂不展示':'Not displayed',
@@ -76,9 +76,9 @@
     '请在钱包插件中完成签名，签名返回并验签通过后将直接进入平台。':'Complete the signature in your wallet extension. You will enter the platform once the returned signature is verified.',
     '登录':'Sign in','游客':'Visitor','游客引导':'Visitor guidance','前往资产可信平台：确认':'Leave platform: confirmation',
     '登录成功：调取身份':'Signed in: retrieving identity','登录失败：无法确认身份':'Sign-in failed: identity unavailable','登录已结束：地址变更':'Session ended: address changed',
-    '未认证（审核中）':'Not verified (under review)','无企业归属（空）':'No company association','读取失败':'Load failed','钱包地址与登录地址不一致':'Wallet address mismatch','账户入口展开':'Account menu open',
+    '未认证（审核中）':'Not verified (under review)','无企业归属（空）':'No company association','读取失败':'Load failed','账户入口展开':'Account menu open',
     '默认':'Default','无个人信息（空）':'No personal information','偏好保存失败：恢复原值':'Preference save failed: previous value',
-    '列表':'List','仅登录地址（空）':'Sign-in address only','未认证：受限引导':'Verification required',
+    '列表':'List','登录地址变更后':'After sign-in address change','未设置备注名':'No account name','仅登录地址（空）':'Sign-in address only','未认证：受限引导':'Verification required',
     '新增 · 填写信息':'Add: enter details','新增 · 填写有误':'Add: form error','新增 · 签名说明':'Add: signature explanation','新增 · 等待签名':'Add: waiting for signature','新增 · 签名地址不一致':'Add: signing address mismatch','新增 · 登记成功':'Add: registered',
     '编辑备注名':'Edit label','删除确认':'Delete confirmation','删除：登录地址不可删除':'Delete: sign-in address protected','删除：已被引用不可删除':'Delete: referenced account protected'
   };
