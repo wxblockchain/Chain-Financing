@@ -1,7 +1,7 @@
 /* ==========================================================================
    asset-detail.js — 可信资产详情（演示数据），供面客端与管理端复用
    按交易双方分两组：核心信息（应收账款与交易双方、销售合同 / 订单、货物交付、
-   销售发票、回款进度）与补充信息（与上游供应商、与其他下游客户）；材料随所属环节展示。
+   销售发票、回款进度）与补充信息（与上游供应商、债务人与其下游客户）；材料随所属环节展示。
    三个资产状态由各画面的摘要卡展示，这里不重复；字段与分级以 M2 PRD 为准。
    用法：<div class="asset-detail" data-asset-detail="上游资产编号"></div>，在 TP.boot 之前调用 TP.fillAssetDetail()。
    ========================================================================== */
@@ -35,7 +35,7 @@
     return '<div class="detail-group"><div class="detail-group-h"><h2>'+title+'</h2><span class="sub">'+sub+'</span></div>'+cards+'</div>';
   }
 
-  /* 演示资产：rich 为补充信息完整的示例；sparse 为 L1 缺项、L2 与补充信息均缺失的示例；其余为一张发票、暂无回款、无其他下游客户交易。 */
+  /* 演示资产：rich 为补充信息完整的示例；sparse 为 L1 缺项、L2 与补充信息均缺失的示例；其余为一张发票、暂无回款、无债务人下游客户交易。 */
   var PARTY = {
     A:{name:'示例企业 A 有限公司', en:'Example Enterprise A Ltd.', region:'中国香港', id:'DEMO-1234567', kind:'CR'},
     C:{name:'Demo Trading C Pte. Ltd.', region:'新加坡', id:'DEMO-UEN-202600123', kind:'UEN'},
@@ -55,13 +55,13 @@
     'RA-DEMO-0150':{cr:'C', db:'E', amt:'61,200.00', due:'2027-06-20T23:59:59+04:00', no:'0502'},
     'RA-DEMO-0160':{cr:'A', db:'B', amt:'12,345.67', due:'2027-04-30T23:59:59+04:00', no:'0510'}
   };
-  /* 其他下游客户交易（演示）：一笔部分回款，一笔暂无回款。 */
-  var OTHER_BUYERS = [
-    {name:'Demo Retail E LLC', region:'阿联酋', so:'SO-DEMO-2026-0388', ordered:'2026-04-08T10:00:00+04:00', amt:'64,000.00',
-      delivered:'2026-07-02T15:00:00+04:00', pod:'POD-DEMO-0388.pdf',
-      repay:[['2026-08-01T11:00:00+04:00','20,000.00','TXN-DEMO-50388-1'],['2026-09-01T11:00:00+04:00','20,000.00','TXN-DEMO-50388-2']]},
-    {name:'Demo Auto Hub F Co.', region:'沙特阿拉伯', so:'SO-DEMO-2026-0420', ordered:'2026-06-20T10:00:00+03:00', amt:'28,800.00',
-      delivered:'2026-09-28T14:00:00+03:00', pod:'POD-DEMO-0420.pdf', repay:[]}
+  /* 债务人与其下游客户的交易（演示）：本企业不是交易一方；一笔部分回款，一笔暂无回款。 */
+  var DEBTOR_BUYERS = [
+    {name:'Demo Auto Retail G LLC', region:'阿联酋', so:'SO-DEMO-B-2026-0815', ordered:'2026-08-20T10:00:00+04:00', amt:'32,000.00',
+      delivered:'2026-09-20T15:00:00+04:00', pod:'POD-DEMO-B-0815.pdf',
+      repay:[['2026-10-05T11:00:00+04:00','10,000.00','TXN-DEMO-B0815-1'],['2026-10-25T11:00:00+04:00','10,000.00','TXN-DEMO-B0815-2']]},
+    {name:'Demo Auto Hub F Co.', region:'沙特阿拉伯', so:'SO-DEMO-B-2026-0905', ordered:'2026-09-05T10:00:00+03:00', amt:'28,800.00',
+      delivered:'2026-10-10T14:00:00+03:00', pod:'POD-DEMO-B-0905.pdf', repay:[]}
   ];
 
   function party(title, x){
@@ -165,8 +165,8 @@
         sec(subHead('向供应商付款', a.rich?'2 条':'1 条')+table(['付款日期','#付款金额','付款流水号','付款凭证'], payRows)));
     }
     if(a.rich){
-      buyers = card('与其他下游客户','其他下游客户','2 笔交易 · 回款不计入本笔应收账款',
-        OTHER_BUYERS.map(function(t){
+      buyers = card('债务人与其下游客户','债务人下游客户','2 笔交易 · 回款不计入本笔应收账款',
+        DEBTOR_BUYERS.map(function(t){
           return sec(subHead(t.name, t.region)+facts([
             ['销售合同 / 订单编号', mono(t.so)],
             ['订单日期', day(t.ordered)],
@@ -181,9 +181,9 @@
             subHead('回款记录')+empty('暂无回款记录')));
         }).join(''));
     }else{
-      buyers = card('与其他下游客户','其他下游客户','', sec(empty('暂无其他下游客户交易信息')));
+      buyers = card('债务人与其下游客户','债务人下游客户','', sec(empty('暂无债务人下游客户交易信息')));
     }
-    return group('补充信息','债权人与上游供应商、其他下游客户', supplier+buyers);
+    return group('补充信息','债权人与上游供应商，债务人与其下游客户', supplier+buyers);
   }
 
   function body(id){
@@ -263,7 +263,7 @@
 
   TP.addCopy({
     '核心信息':'Core information','补充信息':'Supplementary information',
-    '债权人与债务人':'Creditor and debtor','债权人与上游供应商、其他下游客户':'Creditor with upstream supplier and other downstream customers',
+    '债权人与债务人':'Creditor and debtor','债权人与上游供应商，债务人与其下游客户':'Creditor with upstream supplier; debtor with its customers',
     '应收账款与交易双方':'Receivable and parties','交易双方':'Parties','上游资产编号':'Upstream asset ID','资产类型':'Asset type','应收账款':'Accounts receivable',
     '行业大类':'Industry','汽车贸易':'Automotive trade','应收账款金额':'Receivable amount','形成日期':'Origination date',
     '到期日':'Due date','确权日期':'Confirmation date','确权凭证':'Confirmation certificate','币种':'Currency','债权人':'Creditor','债务人':'Debtor','名称':'Name',
@@ -284,8 +284,8 @@
     '采购发票':'Purchase invoices','采购发票编号':'Purchase invoice no.',
     '向供应商付款':'Payments to supplier','付款日期':'Payment date','付款金额':'Payment amount','付款流水号':'Payment reference','付款凭证':'Payment voucher',
     '暂无采购合同 / 订单信息':'No purchase contract or order information','暂无发货记录':'No shipment record','暂无采购发票':'No purchase invoices','暂无付款记录':'No payment records',
-    '与其他下游客户':'Other downstream customers','其他下游客户':'Other customers','2 笔交易 · 回款不计入本笔应收账款':'2 transactions · repayments do not count toward this receivable',
-    '暂无其他下游客户交易信息':'No transactions with other downstream customers',
+    '债务人与其下游客户':'Debtor and its customers','债务人下游客户':'Debtor’s customers','2 笔交易 · 回款不计入本笔应收账款':'2 transactions · repayments do not count toward this receivable',
+    '暂无债务人下游客户交易信息':'No transactions between the debtor and its customers',
     '上游未提供':'Not provided by upstream','未提供':'Not provided',
     '查看':'View','下载':'Download','原型未附真实文件':'No real file is attached to this prototype',
     /* 资产状态与通用列名：面客端、管理端共用 */
