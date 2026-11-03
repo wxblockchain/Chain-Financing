@@ -239,22 +239,24 @@
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">管理本企业用于接收代币的数币账户。</p></div>
 <div class="page-actions"><button class="btn primary" data-go="acc-add" type="button"><i data-ico="issue"></i>新增账户</button></div></div>
-<div class="card">
+<div class="card account-table-card">
 <div class="card-head"><h2>数币账户</h2><span class="sub">3 个</span></div>
-<div class="tablewrap"><table class="tbl">
-<thead><tr><th>账户备注名</th><th>区块链网络</th><th>数币地址</th><th>来源</th><th>创建时间<span class="cell-sub" data-zone=""></span></th><th class="col-act">操作</th></tr></thead>
+<p class="account-table-hint" id="acc-table-hint">左右滑动查看完整账户信息，操作固定在右侧。</p>
+<div class="tablewrap" tabindex="0" role="region" aria-label="数币账户" aria-describedby="acc-table-hint"><table class="tbl account-list">
+<colgroup><col class="account-col-label"><col class="account-col-network"><col class="account-col-address"><col class="account-col-source"><col class="account-col-created"><col class="account-col-actions"></colgroup>
+<thead><tr><th scope="col">账户备注名</th><th scope="col">区块链网络</th><th scope="col">数币地址</th><th scope="col">来源</th><th scope="col">创建时间<span class="cell-sub" data-zone=""></span></th><th scope="col" class="col-act">操作</th></tr></thead>
 <tbody>
-<tr><td><span class="tag accent">登录地址</span></td>
+<tr class="account-current"><td><span class="tag accent">登录地址</span></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
-<td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00"></time></td><td class="col-act faint"><button class="actlink" data-go="acc-del-login" type="button">删除</button></td></tr>
+<td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00"></time></td><td class="col-act faint"><button class="actlink danger" data-go="acc-del-login" type="button">删除</button></td></tr>
 <tr><td><div class="cell-main">示例收币地址</div></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21">0x4C1e…5B21</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
 <td class="nw">企业新增</td><td class="nw"><time data-compact="" data-instant="2026-09-02T07:08:00+00:00" datetime="2026-09-02T07:08:00+00:00"></time></td>
-<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del-ref" type="button">删除</button></td></tr>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink danger" data-go="acc-del-ref" type="button">删除</button></td></tr>
 <tr><td><div class="cell-main">备用地址</div></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05">0xD93a…8E05</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
 <td class="nw">企业新增</td><td class="nw"><time data-compact="" data-instant="2026-10-11T01:41:00+00:00" datetime="2026-10-11T01:41:00+00:00"></time></td>
-<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del" type="button">删除</button></td></tr>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink danger" data-go="acc-del" type="button">删除</button></td></tr>
 </tbody>
 </table></div>
 </div>
@@ -265,26 +267,28 @@
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">管理本企业用于接收代币的数币账户。</p></div>
 <div class="page-actions"><button class="btn primary" data-go="acc-add" type="button"><i data-ico="issue"></i>新增账户</button></div></div>
-<div class="card">
+<div class="card account-table-card">
 <div class="card-head"><h2>数币账户</h2><span class="sub">4 个</span></div>
-<div class="tablewrap"><table class="tbl">
-<thead><tr><th>账户备注名</th><th>区块链网络</th><th>数币地址</th><th>来源</th><th>创建时间<span class="cell-sub" data-zone=""></span></th><th class="col-act">操作</th></tr></thead>
+<p class="account-table-hint" id="acc-moved-table-hint">左右滑动查看完整账户信息，操作固定在右侧。</p>
+<div class="tablewrap" tabindex="0" role="region" aria-label="数币账户" aria-describedby="acc-moved-table-hint"><table class="tbl account-list">
+<colgroup><col class="account-col-label"><col class="account-col-network"><col class="account-col-address"><col class="account-col-source"><col class="account-col-created"><col class="account-col-actions"></colgroup>
+<thead><tr><th scope="col">账户备注名</th><th scope="col">区块链网络</th><th scope="col">数币地址</th><th scope="col">来源</th><th scope="col">创建时间<span class="cell-sub" data-zone=""></span></th><th scope="col" class="col-act">操作</th></tr></thead>
 <tbody>
-<tr><td><span class="tag accent">登录地址</span></td>
+<tr class="account-current"><td><span class="tag accent">登录地址</span></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x3B7c9E1d5A2f8C4b6D0e7F3a9B1c5E8d2A4f6C30">0x3B7c…6C30</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
-<td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-10-30T02:10:00+00:00" datetime="2026-10-30T02:10:00+00:00"></time></td><td class="col-act faint"><button class="actlink" data-go="acc-del-login" type="button">删除</button></td></tr>
+<td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-10-30T02:10:00+00:00" datetime="2026-10-30T02:10:00+00:00"></time></td><td class="col-act faint"><button class="actlink danger" data-go="acc-del-login" type="button">删除</button></td></tr>
 <tr><td><span class="faint">未设置备注名</span></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
 <td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00"></time></td>
-<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del-ref" type="button">删除</button></td></tr>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink danger" data-go="acc-del-ref" type="button">删除</button></td></tr>
 <tr><td><div class="cell-main">示例收币地址</div></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21">0x4C1e…5B21</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
 <td class="nw">企业新增</td><td class="nw"><time data-compact="" data-instant="2026-09-02T07:08:00+00:00" datetime="2026-09-02T07:08:00+00:00"></time></td>
-<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del-ref" type="button">删除</button></td></tr>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink danger" data-go="acc-del-ref" type="button">删除</button></td></tr>
 <tr><td><div class="cell-main">备用地址</div></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05">0xD93a…8E05</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
 <td class="nw">企业新增</td><td class="nw"><time data-compact="" data-instant="2026-10-11T01:41:00+00:00" datetime="2026-10-11T01:41:00+00:00"></time></td>
-<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del" type="button">删除</button></td></tr>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink danger" data-go="acc-del" type="button">删除</button></td></tr>
 </tbody>
 </table></div>
 </div>
@@ -295,14 +299,16 @@
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">管理本企业用于接收代币的数币账户。</p></div>
 <div class="page-actions"><button class="btn primary" data-go="acc-add" type="button"><i data-ico="issue"></i>新增账户</button></div></div>
-<div class="card">
+<div class="card account-table-card">
 <div class="card-head"><h2>数币账户</h2><span class="sub">1 个</span></div>
-<div class="tablewrap"><table class="tbl">
-<thead><tr><th>账户备注名</th><th>区块链网络</th><th>数币地址</th><th>来源</th><th>创建时间<span class="cell-sub" data-zone=""></span></th><th class="col-act">操作</th></tr></thead>
+<p class="account-table-hint" id="acc-empty-table-hint">左右滑动查看完整账户信息，操作固定在右侧。</p>
+<div class="tablewrap" tabindex="0" role="region" aria-label="数币账户" aria-describedby="acc-empty-table-hint"><table class="tbl account-list">
+<colgroup><col class="account-col-label"><col class="account-col-network"><col class="account-col-address"><col class="account-col-source"><col class="account-col-created"><col class="account-col-actions"></colgroup>
+<thead><tr><th scope="col">账户备注名</th><th scope="col">区块链网络</th><th scope="col">数币地址</th><th scope="col">来源</th><th scope="col">创建时间<span class="cell-sub" data-zone=""></span></th><th scope="col" class="col-act">操作</th></tr></thead>
 <tbody>
-<tr><td><span class="tag accent">登录地址</span></td>
+<tr class="account-current"><td><span class="tag accent">登录地址</span></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
-<td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-10-29T01:30:00+00:00" datetime="2026-10-29T01:30:00+00:00"></time></td><td class="col-act faint"><button class="actlink" data-go="acc-del-login" type="button">删除</button></td></tr>
+<td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-10-29T01:30:00+00:00" datetime="2026-10-29T01:30:00+00:00"></time></td><td class="col-act faint"><button class="actlink danger" data-go="acc-del-login" type="button">删除</button></td></tr>
 </tbody>
 </table></div>
 <div class="inline-empty"><span>还没有新增账户。需要用其他地址接收代币时，可新增账户并签名验证。</span><button class="btn sm" data-go="acc-add" type="button"><i data-ico="issue"></i>新增账户</button></div>
@@ -403,26 +409,28 @@
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">管理本企业用于接收代币的数币账户。</p></div>
 <div class="page-actions"><button class="btn primary" data-go="acc-add" type="button"><i data-ico="issue"></i>新增账户</button></div></div>
-<div class="card">
+<div class="card account-table-card">
 <div class="card-head"><h2>数币账户</h2><span class="sub">4 个</span></div>
-<div class="tablewrap"><table class="tbl">
-<thead><tr><th>账户备注名</th><th>区块链网络</th><th>数币地址</th><th>来源</th><th>创建时间<span class="cell-sub" data-zone=""></span></th><th class="col-act">操作</th></tr></thead>
+<p class="account-table-hint" id="acc-done-table-hint">左右滑动查看完整账户信息，操作固定在右侧。</p>
+<div class="tablewrap" tabindex="0" role="region" aria-label="数币账户" aria-describedby="acc-done-table-hint"><table class="tbl account-list">
+<colgroup><col class="account-col-label"><col class="account-col-network"><col class="account-col-address"><col class="account-col-source"><col class="account-col-created"><col class="account-col-actions"></colgroup>
+<thead><tr><th scope="col">账户备注名</th><th scope="col">区块链网络</th><th scope="col">数币地址</th><th scope="col">来源</th><th scope="col">创建时间<span class="cell-sub" data-zone=""></span></th><th scope="col" class="col-act">操作</th></tr></thead>
 <tbody>
-<tr><td><span class="tag accent">登录地址</span></td>
+<tr class="account-current"><td><span class="tag accent">登录地址</span></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
-<td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00"></time></td><td class="col-act faint"><button class="actlink" data-go="acc-del-login" type="button">删除</button></td></tr>
+<td class="nw">登录地址</td><td class="nw"><time data-compact="" data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00"></time></td><td class="col-act faint"><button class="actlink danger" data-go="acc-del-login" type="button">删除</button></td></tr>
 <tr class="is-new"><td><div class="cell-main">示例新增地址</div></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x9B2d6F1a3E8c0D7b4A5f2C9e1B6d3F8a0E7c4D12">0x9B2d…4D12</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
 <td class="nw">企业新增</td><td class="nw"><time data-compact="" data-instant="2026-10-29T02:05:00+00:00" datetime="2026-10-29T02:05:00+00:00"></time></td>
-<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del" type="button">删除</button></td></tr>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink danger" data-go="acc-del" type="button">删除</button></td></tr>
 <tr><td><div class="cell-main">示例收币地址</div></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21">0x4C1e…5B21</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
 <td class="nw">企业新增</td><td class="nw"><time data-compact="" data-instant="2026-09-02T07:08:00+00:00" datetime="2026-09-02T07:08:00+00:00"></time></td>
-<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del-ref" type="button">删除</button></td></tr>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink danger" data-go="acc-del-ref" type="button">删除</button></td></tr>
 <tr><td><div class="cell-main">备用地址</div></td>
 <td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05">0xD93a…8E05</span><button aria-label="复制地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td>
 <td class="nw">企业新增</td><td class="nw"><time data-compact="" data-instant="2026-10-11T01:41:00+00:00" datetime="2026-10-11T01:41:00+00:00"></time></td>
-<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink" data-go="acc-del" type="button">删除</button></td></tr>
+<td class="col-act"><button class="actlink" data-go="acc-edit" type="button">编辑</button><button class="actlink danger" data-go="acc-del" type="button">删除</button></td></tr>
 </tbody>
 </table></div>
 </div>
@@ -433,9 +441,9 @@
 <div class="modal-mask"><div aria-labelledby="edit-h" aria-modal="true" class="modal" role="dialog">
 <div class="modal-h" id="edit-h">编辑账户备注名<button aria-label="关闭" class="btn icon" data-close="" type="button"><i data-ico="x"></i></button></div>
 <div class="modal-b"><div class="form"><div class="field"><span class="field-label">区块链网络</span><div class="field-static"><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></div></div>
+<div class="field account-target"><span class="field-label">数币地址</span><div class="field-static"><span class="addr"><span class="addr-pill" data-account-address title="0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05">0xD93a…8E05</span><button aria-label="复制地址" class="btn icon" data-copy type="button"><i data-ico="copy"></i></button></span></div></div>
+<p class="hint">地址登记后不能修改。需要更换地址时，请新增账户并签名验证，再删除旧账户。</p>
 <div class="field"><label for="edit-name"><span class="req">*</span>账户备注名<span class="count">4 / 100</span></label><input autofocus="" class="inp" id="edit-name" value="备用地址"/></div>
-<div class="field"><span class="field-label">数币地址</span><div class="field-static mono" title="0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05">0xD93a…8E05</div>
-<span class="hint">地址登记后不能修改。需要更换地址时，请新增账户并签名验证，再删除旧账户。</span></div>
 </div></div>
 <div class="modal-f"><button class="btn" data-close="" type="button">取消</button><button class="btn primary" data-close="" data-toast="已保存" type="button">保存</button></div>
 </div></div>
@@ -445,7 +453,8 @@
 <div class="modal-mask"><div aria-describedby="del-d" aria-labelledby="del-h" aria-modal="true" class="modal" role="alertdialog">
 <div class="modal-h" id="del-h">删除数币账户<button aria-label="关闭" class="btn icon" data-close="" type="button"><i data-ico="x"></i></button></div>
 <div class="modal-b">
-<div class="field"><span class="field-label">备用地址</span><div class="field-static mono" title="0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05">0xD93a…8E05</div></div>
+<p class="cell-main" data-account-name>备用地址</p>
+<div class="field account-target"><span class="field-label">数币地址</span><div class="field-static"><span class="addr"><span class="addr-pill" data-account-address title="0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05">0xD93a…8E05</span><button aria-label="复制地址" class="btn icon" data-copy type="button"><i data-ico="copy"></i></button></span></div></div>
 <p id="del-d">删除后，该账户不再出现在列表和发行申请的可选范围中，且不可恢复；需要时可重新新增并签名验证。</p>
 </div>
 <div class="modal-f"><button class="btn" data-close="" type="button">取消</button><button class="btn danger" data-close="" data-toast="已删除" type="button">删除</button></div>
@@ -455,13 +464,13 @@
 <section data-screen id="acc-del-login" data-no="A13" data-group="企业账户" data-name="删除：登录地址不可删除" data-overlay data-base="acc">
  <div class="modal-mask"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="acc-del-login-h" aria-describedby="acc-del-login-d">
  <div class="modal-h" id="acc-del-login-h">无法删除数币账户<button type="button" class="btn icon" data-close aria-label="关闭"><i data-ico="x"></i></button></div>
- <div class="modal-b"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><div class="note warn"><i data-ico="lock"></i><p id="acc-del-login-d">该地址为登录地址，由系统维护，不能删除。</p></div></div>
+ <div class="modal-b"><div class="field account-target"><span class="field-label">数币地址</span><div class="field-static"><span class="addr"><span class="addr-pill" data-account-address title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制地址" class="btn icon" data-copy type="button"><i data-ico="copy"></i></button></span></div></div><div class="note warn"><i data-ico="lock"></i><p id="acc-del-login-d">该地址为登录地址，由系统维护，不能删除。</p></div></div>
  <div class="modal-f"><button type="button" class="btn" data-close>关闭</button></div></div></div></section>
 <section data-screen id="acc-del-ref" data-no="A14" data-group="企业账户" data-name="删除：已被引用不可删除" data-overlay data-base="acc">
  <div class="modal-mask"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="acc-del-ref-h" aria-describedby="acc-del-ref-d">
  <div class="modal-h" id="acc-del-ref-h">无法删除数币账户<button type="button" class="btn icon" data-close aria-label="关闭"><i data-ico="x"></i></button></div>
- <div class="modal-b"><span class="addr-pill" title="0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21">0x4C1e…5B21</span><div class="note warn"><i data-ico="lock"></i><p id="acc-del-ref-d">该账户已被代币 DEMO-TOKEN-001 引用，不能删除；已销毁的代币仍构成引用。</p></div></div>
- <div class="modal-f"><button type="button" class="btn ghost left" data-module-key="tokenDemo001" data-toast="代币详情在“我的代币”模块，请在完整原型目录中打开查看。">查看代币</button><button type="button" class="btn" data-close>关闭</button></div></div></div></section>
+ <div class="modal-b"><div class="field account-target"><span class="field-label">数币地址</span><div class="field-static"><span class="addr"><span class="addr-pill" data-account-address title="0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21">0x4C1e…5B21</span><button aria-label="复制地址" class="btn icon" data-copy type="button"><i data-ico="copy"></i></button></span></div></div><div class="note warn"><i data-ico="lock"></i><p id="acc-del-ref-d">该账户已被代币 DEMO-TOKEN-001 引用，不能删除；已销毁的代币仍构成引用。</p></div></div>
+ <div class="modal-f"><button type="button" class="btn left" data-module-key="tokenDemo001" data-toast="代币详情在“我的代币”模块，请在完整原型目录中打开查看。">查看代币</button><button type="button" class="btn" data-close>关闭</button></div></div></div></section>
 <section data-crumb="用户中心/用户信息" data-group="用户信息" data-layout="app" data-name="偏好保存失败：恢复原值" data-nav="me" data-no="U4" data-screen="" data-who="certified" id="me-prefs-fail">
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">用户信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
@@ -531,6 +540,7 @@
 <script src="../../_shared/display.js"></script>
 <script src="../../_shared/frame.js"></script>
 <script src="../../_shared/menu.client.js"></script>
+<script src="account-display.js"></script>
 <script src="../../_shared/navigation.js" data-local-only></script>
 <script>
   TP.demo = {address:'0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC', enterprise:'示例企业 A 有限公司'};

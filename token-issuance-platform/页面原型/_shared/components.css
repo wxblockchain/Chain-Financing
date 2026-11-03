@@ -251,6 +251,28 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .tbl thead .col-act{background:var(--card-2)}
 .tbl tr:hover .col-act{background:var(--row-hover)}
 
+/* 企业账户：沿用六列顺序，固定比较尺度和可达的行操作。 */
+.account-table-card{container:account-table / inline-size}
+.tbl.account-list{table-layout:fixed;min-width:var(--account-table-min)}
+.account-list .account-col-label{width:20%}
+.account-list .account-col-network{width:16%}
+.account-list .account-col-address{width:22%}
+.account-list .account-col-source{width:16%}
+.account-list .account-col-created{width:14%}
+.account-list .account-col-actions{width:var(--account-actions-w)}
+.tbl.account-list th{white-space:normal;overflow-wrap:normal}
+.account-list td:first-child{overflow-wrap:anywhere}
+.account-list .account-current td{background:var(--card-2)}
+.account-list .account-current td:first-child{box-shadow:inset 3px 0 var(--accent)}
+.account-list tr:hover td{background:var(--row-hover)}
+.account-list .actlink{min-height:var(--ctrl-h-sm)}
+.account-list .actlink.danger{color:var(--danger)}
+.account-list .actlink.danger:hover{background:var(--danger-bg)}
+.account-table-hint{display:none;padding:var(--sp-2) var(--card-pad);font-size:var(--fs-12);color:var(--muted);background:var(--card-2);border-bottom:1px solid var(--border)}
+@container account-table (max-width:959px){.account-table-hint{display:block}}
+.account-target .addr{flex-wrap:wrap}
+.account-target .addr-pill{flex:none}
+
 /* ---------- 提示条：说明 / 警示 / 错误；左侧 3px 色条 ---------- */
 .note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid var(--border);border-left:3px solid var(--border-strong);
   border-radius:var(--radius-sm);background:var(--card-2);color:var(--muted);font-size:var(--fs-13)}
