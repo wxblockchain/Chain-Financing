@@ -531,8 +531,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .cell-sub.warn{color:var(--warn)}
 .cell-sub.ok{color:var(--ok)}
 .asset-list:has(colgroup){table-layout:fixed}
-.asset-list .asset-col-id{width:17%}.asset-list .asset-col-debtor{width:22%}.asset-list .asset-col-amount{width:14%}
-.asset-list .asset-col-due{width:15%}.asset-list .asset-col-repayment{width:11%}.asset-list .asset-col-status{width:11%}.asset-list .asset-col-actions{width:10%}
+.asset-list .asset-col-id{width:17%}.asset-list .asset-col-debtor{width:19%}.asset-list .asset-col-amount{width:14%}
+.asset-list .asset-col-due{width:15%}.asset-list .asset-col-repayment{width:11%}.asset-list .asset-col-status{width:11%}.asset-list .asset-col-actions{width:13%}
 .asset-list.with-creditor .asset-col-id{width:15%}.asset-list.with-creditor .asset-col-name{width:15%}
 .asset-list.with-creditor .asset-col-debtor{width:16%}.asset-list.with-creditor .asset-col-amount{width:12%}
 .asset-list.with-creditor .asset-col-due{width:13%}.asset-list.with-creditor .asset-col-repayment{width:10%}.asset-list.with-creditor .asset-col-status{width:11%}
@@ -543,6 +543,12 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .asset-list td:first-child{white-space:nowrap}
 .asset-list :is(th,td):last-child{padding-right:var(--sp-4)}
 .asset-list .col-name{min-width:0;overflow-wrap:anywhere}
+.name-clip{display:inline-flex;max-width:100%;min-width:0;padding:0;color:var(--text);font:inherit;line-height:inherit;text-align:left;white-space:nowrap;vertical-align:middle;cursor:help}
+.name-prefix{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.name-suffix{flex:none}
+.name-prefix,.name-suffix{white-space:pre}
+.name-clip:hover{color:var(--accent)}
+.asset-list .col-act .actlink{display:block;margin-left:auto;max-width:100%;white-space:normal}
 .asset-list .col-due{min-width:112px}
 .asset-list [data-zone]{font-size:var(--fs-11);overflow-wrap:anywhere}
 .asset-list .col-act{width:84px}
@@ -550,7 +556,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .asset-list .tag{max-width:100%;white-space:normal;margin-top:0}
 /* 分区标签是锚点导航；所有信息始终在同一页面，正常上下滚动。 */
 .detail-nav{position:sticky;top:var(--app-header-h);z-index:calc(var(--z-sticky) - 21);display:flex;gap:var(--sp-6);max-width:100%;overflow-x:auto;
-  padding:0;margin-block:var(--sp-4) var(--sp-6);background:var(--bg);border:0;border-radius:0}
+  padding:0;margin-block:var(--sp-4) var(--sp-6);background:var(--bg);border:0;border-bottom:1px solid var(--border);border-radius:0}
 .detail-nav a{display:inline-flex;align-items:center;flex:none;min-height:var(--ctrl-h);padding:var(--sp-2) 0;
   font-size:var(--fs-14);font-weight:500;color:var(--muted)}
 .detail-nav a:hover{color:var(--text)}

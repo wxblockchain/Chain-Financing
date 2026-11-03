@@ -10,8 +10,29 @@
     return '<label class="'+(advanced?'field filter-select-field':'filter-select')+'"><span class="'+(advanced?'field-label':'sr-only')+'">'+name+'</span><select class="inp" aria-label="'+name+'">'+
       '<option value="">'+(advanced?'全部':name+' · 全部')+'</option>'+values.map(function(v){return '<option value="'+v+'">'+(advanced?v:name+' · '+v)+'</option>';}).join('')+'</select></label>';
   }
+  // Presentation only: preserve the original name and reveal it on hover or activation.
+  function fitNames(table){
+    Array.from(table.tHead.rows[0].cells).forEach(function(heading,index){
+      if(!heading.classList.contains('col-name'))return;
+      Array.from(table.tBodies[0].rows).forEach(function(row){
+        var cell=row.cells[index], full=cell.textContent.trim();
+        if(!full)return;
+        var chars=typeof Intl.Segmenter==='function' ? Array.from(new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(full),function(item){return item.segment;}) : Array.from(full);
+        var tail=Math.min(8,Math.ceil(chars.length/3));
+        var button=document.createElement('button');
+        button.type='button';button.className='name-clip';button.title=full;
+        button.setAttribute('aria-label',full);button.dataset.toast=full;
+        ['name-prefix','name-suffix'].forEach(function(cls,i){
+          var part=document.createElement('span');part.className=cls;part.setAttribute('aria-hidden','true');
+          part.textContent=(i?chars.slice(-tail):chars.slice(0,-tail)).join('');button.appendChild(part);
+        });
+        cell.replaceChildren(button);
+      });
+    });
+  }
   TP.fillAssetFilters=function(){
     document.querySelectorAll('.asset-list').forEach(function(table){
+      fitNames(table);
       var screen=table.closest('[data-screen]'), card=table.closest('.card');
       var globalScope=screen.id==='o-list'||screen.id==='r-list';
       var currencies=Array.from(new Set(Array.from(table.querySelectorAll('.ccy')).map(function(el){return el.textContent;})));
@@ -22,7 +43,7 @@
         select('发行状态',['可发行','发行申请中','已驳回','已发行'])+
         select('回款状态',['未到期','已逾期','已结清','暂时无法确认'])+
         '<button class="btn sm filter-more" type="button" aria-expanded="false" aria-controls="'+panelId+'"><span>更多筛选</span><i data-ico="chev"></i></button>'+
-        '<div class="filter-query"><label class="filter-search"><span class="sr-only">上游资产编号</span><i data-ico="search"></i><input class="inp" type="search" placeholder="搜索资产编号"></label>'+
+        '<div class="filter-query"><label class="filter-search"><span class="sr-only">资产编号</span><i data-ico="search"></i><input class="inp" type="search" placeholder="搜索资产编号"></label>'+
         '<div class="filter-actions"><button class="btn sm ghost" type="reset">重置</button><button class="btn sm primary" type="submit">查询</button></div></div></div>'+
         '<div class="filter-advanced" id="'+panelId+'" hidden>'+text('债务人名称')+(globalScope?text('债权人名称'):'')+select('币种',currencies,true)+
         '<div class="field filter-date-field"><div class="field-label"><span>到期时间范围</span><span class="filter-zone" data-zone></span></div>'+

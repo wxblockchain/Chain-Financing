@@ -3,7 +3,7 @@
    按交易双方分两组：核心信息（应收账款与交易双方、销售合同 / 订单、货物交付、
    销售发票、回款进度）与补充信息（与上游供应商、债务人与其下游客户）；材料随所属环节展示。
    三个资产状态由各画面的摘要卡展示，这里不重复；字段与分级以 M2 PRD 为准。
-   用法：<div class="asset-detail" data-asset-detail="上游资产编号"></div>，在 TP.boot 之前调用 TP.fillAssetDetail()。
+   用法：<div class="asset-detail" data-asset-detail="资产编号"></div>，在 TP.boot 之前调用 TP.fillAssetDetail()。
    ========================================================================== */
 (function(TP){
   'use strict';
@@ -76,7 +76,7 @@
     var so='SO-DEMO-2026-'+a.no, si='SI-DEMO-'+a.no, sp=a.sparse;
     var receivable = card('应收账款与交易双方','交易双方','',
       facts([
-        ['上游资产编号', '<span class="mono">'+id+'</span>'],
+        ['资产编号', '<span class="mono">'+id+'</span>'],
         ['资产类型', '应收账款'],
         ['行业大类', '汽车贸易'],
         ['应收账款金额', money(a.amt,ccy)],
@@ -272,7 +272,7 @@
   TP.addCopy({
     '核心信息':'Core information','补充信息':'Supplementary information',
     '债权人与债务人':'Creditor and debtor','债权人与上游供应商，债务人与其下游客户':'Creditor with upstream supplier; debtor with its customers',
-    '应收账款与交易双方':'Receivable and parties','交易双方':'Parties','上游资产编号':'Upstream asset ID','资产类型':'Asset type','应收账款':'Accounts receivable',
+    '应收账款与交易双方':'Receivable and parties','交易双方':'Parties','资产编号':'Asset ID','资产类型':'Asset type','应收账款':'Accounts receivable',
     '行业大类':'Industry','汽车贸易':'Automotive trade','应收账款金额':'Receivable amount','形成日期':'Origination date',
     '到期日':'Due date','确权日期':'Confirmation date','确权凭证':'Confirmation certificate','币种':'Currency','债权人':'Creditor','债务人':'Debtor','名称':'Name',
     '注册国家 / 地区':'Country / region of registration','企业登记标识':'Company registration ID',
