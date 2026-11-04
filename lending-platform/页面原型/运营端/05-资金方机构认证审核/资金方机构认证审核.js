@@ -106,16 +106,24 @@
     const fields=v.fields||a.submittedFields||[],reviewable=canReview();
     return `<div class="review-wrap">${title('Application details','机构认证申请详情',E(A.selected)+' · '+E(v.form.name))}
       ${note()}
-      <div class="rv-grid ${reviewable?'has-actions':''}"><div class="detail-stack rv-stack"><section class="card">${sectionHead('Submission','提交信息',tag(v.status))}<div class="card-b">${kv([['Funder account','资金方账号',A.selected==='DEMO-REG-001'?'DEMO-FUNDER':'DEMO-FUNDER-'+A.selected.slice(-3)],['Submitted','提交时间',time(v.submitted)],['Current account contact email','当前账户联系邮箱',a.email],['Account contact email at submission','提交时账户联系邮箱',v.snapshotEmail],['Decision time','结论时间',time(v.reviewed)],['Wallet address','钱包地址',a.address,'addr']])}</div></section>
+      <div class="rv-grid"><div class="detail-stack rv-stack"><section class="card">${sectionHead('Submission','提交信息',tag(v.status))}<div class="card-b">${kv([['Funder account','资金方账号',A.selected==='DEMO-REG-001'?'DEMO-FUNDER':'DEMO-FUNDER-'+A.selected.slice(-3)],['Submitted','提交时间',time(v.submitted)],['Current account contact email','当前账户联系邮箱',a.email],['Account contact email at submission','提交时账户联系邮箱',v.snapshotEmail],['Decision time','结论时间',time(v.reviewed)],['Wallet address','钱包地址',a.address,'addr']])}</div></section>
       <section class="card">${sectionHead('Institution information','机构资料')}<div class="card-b">${kv(fields.filter(row=>R.notDocuments(row)&&!isContact(row)))}</div></section>
       <section class="card rv-contact">${sectionHead('Business contact','业务联系人')}<div class="card-b">${kv(contactRows(fields))}</div></section>
       <section class="card">${sectionHead('Institution supporting documents','机构证明材料',`<span class="rv-meta">${L(submittedDocs(v.form).length+' files',submittedDocs(v.form).length+' 份')}</span>`)}<div class="card-b">${materials(v.form)}</div></section>
       ${v.status==='rejected'?`<section class="card">${sectionHead('Rejection reasons','驳回原因')}<div class="card-b">${problemList(v)}</div></section>`:''}
       <section class="card rv-decision">${sectionHead('Review decision','审核结论')}<div class="card-b">${v.reviewed?kv([['Decision','结论',name(v.status)],['Decided by','操作人',v.reviewer||'DEMO-OP-01'],['Decision time','结论时间',time(v.reviewed)]]):`<p class="rv-meta">${L('No decision yet','尚未出具结论')}</p>`}
-      ${reviewable?'':CF.note('accent',L('This submission has a final decision and is read only.','本次提交已出具结论，仅可查看。'))}</div></section></div>
-      ${reviewable?`<aside class="card rv-operation" aria-labelledby="rv-operation-title"><div class="card-b"><h2 id="rv-operation-title">${L('Review actions','审核操作')}</h2><p class="rv-meta"><span class="rv-operation-name">${E(v.form.name||'—')}</span>${time(v.submitted)}</p><div class="rv-actions">${btn('Approve','通过','approve','','primary')}${btn('Reject','驳回','reject','','rv-reject-btn')}</div></div></aside>`:''}</div>
+      </div></section></div>
+      ${operation(a,v,reviewable)}</div>
       <section class="card rv-review-records" aria-labelledby="rv-history-title"><div class="rv-section-head"><h2 id="rv-history-title">${L('Submission and review activity','提交与审核记录')}</h2></div><div class="card-b">${R.reviewTimeline(a.records,true)}</div></section></div>`;
 
+  }
+  /* 审核操作栏在各状态下都保留：可审核时给通过 / 驳回，其余状态作为申请摘要，页面宽度不随状态变化。 */
+  function operation(a,v,reviewable){
+    const facts=[['Application','申请编号',E(A.selected)],['Institution','机构名称',E(v.form.name||'—')],['Status','当前状态',tag(v.status)]]
+      .concat(v.reviewed?[['Decision time','结论时间',time(v.reviewed)]]:[]);
+    const foot=reviewable?`<div class="rv-actions">${btn('Approve','通过','approve','','primary')}${btn('Reject','驳回','reject','','rv-reject-btn')}</div>`
+      :`<p class="rv-meta rv-operation-note">${a.status==='submitted'?L('View only with this account.','当前账号仅可查看。'):L('This submission has a final decision and is read only.','本次提交已出具结论，仅可查看。')}</p>`;
+    return `<aside class="card rv-operation" aria-labelledby="rv-operation-title"><div class="card-b"><h2 id="rv-operation-title">${L('Review actions','审核操作')}</h2><dl class="rv-operation-facts">${facts.map(f=>`<div><dt>${L(f[0],f[1])}</dt><dd>${f[2]}</dd></div>`).join('')}</dl>${foot}</div></aside>`;
   }
   function contactRows(fields){
     const names={contactName:['Business contact name','业务联系人姓名',''],contact:['Business contact email','业务联系人邮箱',''],contactPhone:['Business contact phone','业务联系人电话',{region:'',phone:''}]};
