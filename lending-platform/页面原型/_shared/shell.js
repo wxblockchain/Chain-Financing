@@ -282,13 +282,15 @@
     return '<button class="btn icon bare" type="button" data-act="' + esc(act) + '" data-v="' + esc(value) + '"' +
       (extra || '') + ' title="' + esc(label) + '" aria-label="' + esc(label) + '">' + ICON.copy + '</button>';
   };
-  /* 钱包地址两种展示：详情给完整地址标签 + 复制图标；列表给前 6 后 4 缩写，点缩写即复制完整地址。
+  /* 钱包地址两种展示：详情给完整地址 + 尾随复制图标；列表给前 6 后 4 缩写，点缩写即复制完整地址。
      合约地址与交易哈希不走这里。 */
   CF.addrShort = function (v) { v = String(v || ""); return v.length > 10 ? v.slice(0, 6) + "…" + v.slice(-4) : v; };
   CF.addrFull = function (v, label) {
     if (!v) return "—";
     label = label || L("Copy wallet address", "复制钱包地址");
-    return '<span class="addr-full"><span class="addr-pill">' + esc(v) + '</span>' + CF.copyBtn("cf-addr-copy", v, label) + '</span>';
+    v = String(v);
+    return '<span class="addr-full">' + esc(v.slice(0, -4)) + '<span class="addr-end">' + esc(v.slice(-4)) +
+      CF.copyBtn("cf-addr-copy", v, label) + '</span></span>';
   };
   /* 地址抬头：网络（带图标）在最前，其后是账户备注名。网络图标由面客端行情组件提供，缺省时只给网络名。 */
   CF.addrHead = function (name, net) {
@@ -304,23 +306,35 @@
   };
   /* 详情字段里的长文字（退回原因、失败原因、备注等）：默认最多 3 行，超出时在末尾给展开图标，原位展开全文。
      是否超出由页面渲染后实测决定，内容不足 3 行时不出现图标。 */
+  var clampId = 0;
   CF.clampText = function (html) {
     if (html == null || html === "") return "—";
-    return '<div class="clamp" data-clamp><div class="clamp-text">' + html + '</div>' +
-      '<button class="btn icon bare clamp-toggle" type="button" data-clamp-toggle aria-expanded="false" hidden title="' +
+    var id = 'cf-clamp-' + (++clampId);
+    return '<div class="clamp" data-clamp><div class="clamp-text" id="' + id + '">' + html + '</div>' +
+      '<button class="btn icon bare clamp-toggle" type="button" data-clamp-toggle aria-controls="' + id + '" aria-expanded="false" hidden title="' +
       esc(L("Show full text", "展开全文")) + '" aria-label="' + esc(L("Show full text", "展开全文")) + '">' + ICON.caret + '</button></div>';
   };
   function syncClamps() {
     document.querySelectorAll("[data-clamp]").forEach(function (box) {
       var text = box.firstElementChild, btn = box.querySelector("[data-clamp-toggle]");
       if (!text || !btn) return;
-      var open = box.classList.contains("is-open");
-      btn.hidden = !open && text.scrollHeight - text.clientHeight < 4;
+      if (clampObserver && !clampBoxes.has(box)) { clampBoxes.add(box); clampObserver.observe(box); }
+      if (box.classList.contains("is-open")) { btn.hidden = false; return; }
+      // 先按无按钮的完整格宽测量，避免按钮自身挤出第四行而产生不必要的展开入口。
+      btn.hidden = true;
+      btn.hidden = text.scrollHeight - text.clientHeight < 4;
     });
   }
   var clampFrame = 0;
   function queueClamps() { if (!clampFrame) clampFrame = requestAnimationFrame(function () { clampFrame = 0; syncClamps(); }); }
-  if (typeof MutationObserver === "function") new MutationObserver(queueClamps).observe(document.documentElement, {childList: true, subtree: true});
+  var clampBoxes = new Set();
+  var clampObserver = typeof ResizeObserver === "function" ? new ResizeObserver(queueClamps) : null;
+  function releaseClamps() {
+    clampBoxes.forEach(function (box) { if (!box.isConnected) { clampObserver.unobserve(box); clampBoxes.delete(box); } });
+    queueClamps();
+  }
+  if (typeof MutationObserver === "function") new MutationObserver(releaseClamps).observe(document.documentElement, {childList: true, subtree: true});
+  if (document.fonts) document.fonts.ready.then(queueClamps);
   window.addEventListener("resize", queueClamps);
   document.addEventListener("click", function (event) {
     var btn = event.target.closest("[data-clamp-toggle]");
