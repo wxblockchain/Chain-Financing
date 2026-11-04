@@ -542,16 +542,18 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .cell-sub.warn{color:var(--warn)}
 .cell-sub.ok{color:var(--ok)}
 .asset-list:has(colgroup){table-layout:fixed}
-.asset-list .asset-col-id{width:17%}.asset-list .asset-col-debtor{width:19%}.asset-list .asset-col-amount{width:14%}
-.asset-list .asset-col-due{width:15%}.asset-list .asset-col-repayment{width:11%}.asset-list .asset-col-status{width:11%}.asset-list .asset-col-actions{width:13%}
-.asset-list.with-creditor .asset-col-id{width:15%}.asset-list.with-creditor .asset-col-name{width:15%}
-.asset-list.with-creditor .asset-col-debtor{width:16%}.asset-list.with-creditor .asset-col-amount{width:12%}
-.asset-list.with-creditor .asset-col-due{width:13%}.asset-list.with-creditor .asset-col-repayment{width:10%}.asset-list.with-creditor .asset-col-status{width:11%}
-.asset-list.with-creditor .asset-col-actions{width:8%}
+.asset-list .asset-col-id{width:14%}.asset-list .asset-col-debtor{width:20%}.asset-list .asset-col-amount{width:13%}
+.asset-list .asset-col-due{width:12%}.asset-list .asset-col-repayment{width:13%}.asset-list .asset-col-status{width:15%}.asset-list .asset-col-actions{width:13%}
+.asset-list.with-creditor .asset-col-id{width:13%}.asset-list.with-creditor .asset-col-name{width:16%}
+.asset-list.with-creditor .asset-col-debtor{width:17%}.asset-list.with-creditor .asset-col-amount{width:12%}
+.asset-list.with-creditor .asset-col-due{width:11%}.asset-list.with-creditor .asset-col-repayment{width:11%}.asset-list.with-creditor .asset-col-status{width:13%}
+.asset-list.with-creditor .asset-col-actions{width:7%}
 .asset-list :is(th,td){padding-inline:var(--sp-2);overflow-wrap:normal}
 .asset-list thead th{white-space:normal}
 .asset-list :is(th,td):first-child{padding-left:var(--sp-4)}
 .asset-list td:first-child{white-space:nowrap}
+/* 资产编号与“查看”打开同一详情：等宽编号作为主链接，不加内边距以保持列对齐。 */
+.asset-list .asset-id{padding:0;font-weight:500;white-space:nowrap}
 .asset-list :is(th,td):last-child{padding-right:var(--sp-4)}
 .asset-list .col-name{min-width:0;overflow-wrap:anywhere}
 .name-clip{display:inline-flex;max-width:100%;min-width:0;padding:0;color:var(--text);font:inherit;line-height:inherit;text-align:left;white-space:nowrap;vertical-align:middle;cursor:help}
@@ -574,6 +576,12 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .detail-nav a[aria-current="location"]{color:var(--accent);font-weight:650}
 .detail-nav a:focus-visible{outline-offset:-2px}
 .detail-nav-sep{flex:none;width:var(--sp-2)}
+/* 中英文名称成对展示：中文界面本地名称在上；英文界面英文名称在上，本地名称弱化。 */
+.name-pair{display:flex;flex-direction:column;gap:2px}
+.name-pair .name-en{font-size:var(--ui-field-label);color:var(--muted)}
+:root[lang="en"] .name-pair{flex-direction:column-reverse}
+:root[lang="en"] .name-pair .name-en{font-size:inherit;color:var(--text)}
+:root[lang="en"] .name-pair .name-local{font-size:var(--ui-field-label);color:var(--muted)}
 [data-detail-section],.detail-group{scroll-margin-top:calc(var(--app-header-h) + var(--sticky-head-h, 0px) + var(--ctrl-h) + var(--sp-6))}
 /* 缺失值：L1 缺失用警示色说明上游未提供；L2 缺失弱化为未提供。 */
 .missing{color:var(--warn);font-size:var(--fs-13)}
@@ -693,6 +701,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .document-kicker{font-size:var(--fs-12);color:var(--faint)}
 @media(max-width:900px){.review-progress{grid-template-columns:repeat(2,minmax(0,1fr))}.review-list{min-width:800px}}
 @media(max-width:600px){.review-progress{grid-template-columns:minmax(0,1fr)}}
+/* M2 英文优先：摘要右侧按状态标签内容取宽，三项状态在 1280 px 起单行展示，左侧金额区让出剩余宽度。 */
+@media(min-width:1101px){:root[data-module="assets"] .asset-sum{grid-template-columns:minmax(0,1fr) auto}:root[data-module="assets"] .status-grid{grid-template-columns:repeat(3,minmax(120px,auto))}:root[data-module="assets"] .status-grid .tag{white-space:nowrap}}
 @media(max-width:1100px){.asset-sum{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){
   .status-grid{grid-template-columns:minmax(0,1fr)}

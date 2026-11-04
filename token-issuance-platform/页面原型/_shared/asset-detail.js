@@ -66,7 +66,7 @@
 
   function party(title, x){
     return sec(subHead(title)+facts([
-      ['名称', x.name+(x.en?'<div class="cell-sub">'+x.en+'</div>':''), true],
+      ['名称', x.en ? '<span class="name-pair"><span class="name-local">'+x.name+'</span><span class="name-en">'+x.en+'</span></span>' : x.name, true],
       ['注册国家 / 地区', x.region],
       ['企业登记标识', mono(x.id)+' <span class="faint">'+x.kind+'</span>']
     ]));
@@ -301,7 +301,7 @@
     '确权状态':'Confirmation','结清状态':'Settlement','逾期状态':'Overdue status','发行状态':'Issuance status',
     '已确权':'Confirmed','已撤销确权':'Confirmation revoked','未结清':'Unsettled','已结清':'Settled','未逾期':'Not overdue','已逾期':'Overdue',
     '暂时无法获取':'Temporarily unavailable','可发行':'Available','发行申请中':'Application in progress','已驳回':'Rejected','已发行':'Issued',
-    '确权 · 结清 · 逾期':'Confirm · Settle · Overdue','应收账款金额':'Receivable amount','操作':'Actions',
+    '确权 · 结清 · 逾期':'Confirm · Settle · Overdue','资产价值':'Asset value','应收账款金额':'Receivable amount','操作':'Actions',
     '资产详情':'Asset details','关联记录':'Related records','发行申请':'Issuance application','申请状态':'Application status',
     '资产概览':'Overview','详情信息导航':'Detail sections',
     '返回列表':'Back to list','重试':'Retry','请稍后重试。':'Please try again later.','关闭':'Close','默认':'Default','读取失败':'Load failed',
