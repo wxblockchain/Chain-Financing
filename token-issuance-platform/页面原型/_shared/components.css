@@ -700,6 +700,21 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .choice-card span{min-width:0}
 .choice-card .cell-sub{display:block}
 .choice-card .addr{display:flex;width:max-content;margin-top:var(--sp-2)}
+/* 分步弹窗（M3b 通过并铸造、重试铸造）：各步与进度同一尺寸，顶部标签表示步骤；内容超出时只在内容区滚动。 */
+.modal.flow{height:min(var(--modal-flow-h),100%)}
+.modal.flow .modal-b{flex:1}
+.flow-tabs{display:flex;gap:var(--sp-6);padding:0 var(--sp-6);border-bottom:1px solid var(--border);flex:none;overflow-x:auto}
+.flow-tab{display:inline-flex;align-items:center;gap:var(--sp-2);min-height:var(--ctrl-h);padding:var(--sp-2) 0;margin-bottom:-1px;border:0;border-bottom:2px solid transparent;background:none;
+  font:inherit;font-size:var(--fs-14);font-weight:500;color:var(--muted);white-space:nowrap;cursor:pointer}
+.flow-tab[aria-selected="true"]{color:var(--accent);font-weight:650;border-bottom-color:var(--accent);cursor:default}
+.flow-tab[aria-disabled="true"]{cursor:not-allowed}
+.flow-tab[aria-disabled="true"]:not(.done){color:var(--faint)}
+.flow-tab:focus-visible{outline-offset:-2px}
+.flow-tab-no{width:20px;height:20px;border-radius:var(--radius-pill);border:1px solid var(--border-strong);display:grid;place-items:center;font-size:var(--fs-12);font-weight:600;flex:none}
+.flow-tab-no svg.i{width:12px;height:12px;stroke-width:2.6}
+.flow-tab[aria-selected="true"] .flow-tab-no{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.flow-tab.done .flow-tab-no{background:var(--ok-bg);border-color:var(--ok-border);color:var(--ok)}
+.flow-tab[data-go]:hover{color:var(--text)}
 /* 铸造进度（M3b）：纵向阶段，只呈现各阶段的静态结果；当前阶段的转圈不推进、不计时。 */
 .stage-list{list-style:none;margin:0;padding:0}
 .stage-list>li{position:relative;display:flex;gap:var(--sp-3);padding-bottom:var(--sp-5);min-width:0}
