@@ -225,6 +225,23 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .tbl.request-list th{white-space:normal}
 .tbl.request-list th:first-child{width:auto}
 .tbl.request-list :is(td,th){overflow-wrap:normal}
+/* M4a token list: one kind of information per column; the token ID is the detail link. */
+.token-list{table-layout:fixed}
+.token-list .c-network{width:12%}.token-list .c-type{width:8%}.token-list .c-id{width:15%}.token-list .c-qty{width:13%}
+.token-list .c-value{width:13%}.token-list .c-address{width:14%}.token-list .c-due{width:11%}.token-list .c-progress{width:14%}
+.token-list :is(th,td){padding-inline:var(--sp-2);overflow-wrap:normal}
+.token-list thead th{white-space:normal}
+.token-list :is(th,td):first-child{padding-left:var(--sp-4)}
+.token-list :is(th,td):last-child{padding-right:var(--sp-4)}
+.token-list .btn-link.mono,.burn-list .btn-link.mono{padding:0;font-weight:500;white-space:nowrap}
+.token-list .tag{max-width:100%;white-space:normal;margin-top:0}
+/* Token identity header: network and token type lead, the record ID follows on the description line. */
+.token-title .asset-label{gap:var(--sp-2)}
+.token-title .asset-icon{width:var(--sp-6);height:var(--sp-6)}
+.page-title-row .network-label{font-size:var(--fs-14);color:var(--muted)}
+.facts dd>.addr+.cell-sub{display:block;margin-top:var(--sp-1)}
+.state .state-ref{font-size:var(--fs-13)}
+.state .state-ref .btn-link{font-size:inherit}
 /* Read-only business progress; nodes never execute or simulate external work. */
 .progress-list{list-style:none;margin:0;padding:var(--sp-5) var(--card-pad);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4)}
 .progress-list li{display:flex;align-items:flex-start;gap:var(--sp-3);min-width:0;color:var(--muted)}
