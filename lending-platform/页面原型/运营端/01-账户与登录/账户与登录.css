@@ -32,11 +32,8 @@
 .ops-settings{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-6);align-items:start}
 .ops-section{scroll-margin-top:90px}
 .ops-section h2{font-size:var(--fs-16);margin:0;padding:var(--sp-5);border-bottom:1px solid var(--border)}
-.ops-details{margin:0;padding:0 var(--sp-5)}
-.ops-details>div{display:grid;grid-template-columns:140px minmax(0,1fr) auto;gap:var(--sp-4);padding:var(--sp-4) 0;border-bottom:1px solid var(--row-line);align-items:start}
-.ops-details>div:last-child{border:0}
-.ops-details dt{color:var(--muted)}
-.ops-details dd{margin:0;overflow-wrap:anywhere}
+/* 账号信息与其他详情同一读法（共享 ops-facts：标签在上、值在下）；“修改”紧跟在值后面。 */
+.ops-details .ops-inline-act{margin-inline-start:var(--sp-3);vertical-align:baseline}
 .ops-preferences{padding:var(--sp-5);display:grid;gap:var(--sp-5)}
 .ops-preferences .field{max-width:480px}
 .ops-sample{font-size:var(--fs-12);color:var(--muted);margin:var(--sp-4) 0 0}
@@ -60,8 +57,6 @@
  .ops-account .btn,.ops-account .inp,.ops-account .dd-btn{min-height:44px;height:auto}
  .ops-account .inp{height:44px}
  .ops-account .btn-link{min-height:44px}
- .ops-details>div{grid-template-columns:100px minmax(0,1fr);gap:var(--sp-2)}
- .ops-details>div>.btn-link{grid-column:2;justify-self:start}
  .ops-account .focus-head{flex-wrap:wrap}
  .ops-account .focus-main{padding:var(--sp-5) var(--sp-3)}
  .ops-account .modal-f{flex-wrap:wrap}

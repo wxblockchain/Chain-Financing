@@ -1128,25 +1128,19 @@ table.tbl th.num,table.tbl td.num{text-align:right}
 /* Operations detail facts: explicit opt-in; forms, timelines and dialogs keep their own layout.
    详情字段统一“标签在上、值在下”：按容器宽度排 3 / 2 / 1 列；长值（地址、哈希、原因）在本格内换行，不跨列。
    只有文件、列表、表格这类成块内容（.ops-fact-wide 且含 .file-row / ul / table）占满整行；
-   .ops-facts-single 为单列（如材料清单）；.ops-facts-actions（账户设置这类带操作的行）保持左右结构。 */
+   .ops-facts-single 为单列（如材料清单）。 */
 [data-end="admin"] .ops-facts-region{container:ops-facts / inline-size;min-width:0}
 [data-end="admin"] .ops-facts-region>.ops-facts{display:grid;grid-template-columns:minmax(0,1fr);gap:0 var(--sp-6);margin:0;padding:0}
 [data-end="admin"] .ops-facts-region>.ops-facts>div{display:flex;flex-direction:column;align-items:stretch;gap:var(--sp-1);min-width:0;padding:var(--sp-3) 0;border:0}
 [data-end="admin"] .ops-facts-region>.ops-facts>.ops-fact-wide:has(.file-row,ul,ol,table){grid-column:1/-1}
 [data-end="admin"] .ops-facts-region>.ops-facts dt{margin:0;color:var(--muted);font-size:var(--ui-field-label);font-weight:400;line-height:1.6;overflow-wrap:anywhere}
 [data-end="admin"] .ops-facts-region>.ops-facts dd{margin:0;min-width:0;font-size:var(--ui-field-value);line-height:1.6;overflow-wrap:anywhere}
-[data-end="admin"] .ops-facts-region>.ops-facts-actions>div{display:grid;grid-template-columns:136px minmax(0,1fr) auto;align-items:start;gap:var(--sp-4);border-top:1px solid var(--row-line)}
-[data-end="admin"] .ops-facts-region>.ops-facts-actions>div:first-child{border-top:0}
 [data-end="admin"] .ops-facts-body{padding:var(--sp-2) var(--card-pad)}
 @container ops-facts (min-width:400px){
-  [data-end="admin"] .ops-facts-region>.ops-facts:not(.ops-facts-single,.ops-facts-actions){grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-end="admin"] .ops-facts-region>.ops-facts:not(.ops-facts-single){grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @container ops-facts (min-width:600px){
-  [data-end="admin"] .ops-facts-region>.ops-facts:not(.ops-facts-single,.ops-facts-actions){grid-template-columns:repeat(3,minmax(0,1fr))}
-}
-@container ops-facts (max-width:432px){
-  [data-end="admin"] .ops-facts-region>.ops-facts-actions>div{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
-  [data-end="admin"] .ops-facts-region>.ops-facts-actions>div>.btn-link{grid-column:1;justify-self:start}
+  [data-end="admin"] .ops-facts-region>.ops-facts:not(.ops-facts-single){grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(max-width:600px){[data-end="admin"] .ops-facts-body{padding-inline:var(--sp-4)}}
 @media(max-width:1100px){
