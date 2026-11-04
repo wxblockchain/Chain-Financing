@@ -770,6 +770,9 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .application-list td,.application-list th{overflow-wrap:anywhere}
 .application-list .money{white-space:nowrap}
 .application-list .btn-link{max-width:100%;text-align:left}
+/* 申请详情摘要：状态、当前说明与审核进度位于分区导航之前，不作为导航分区 */
+.application-summary .card-b{padding-bottom:0}
+.application-summary .review-timeline{padding-top:var(--sp-5)}
 .decision-list{margin:0;padding-left:var(--sp-5);display:grid;gap:var(--sp-2)}
 .review-timeline{list-style:none;margin:0;padding:var(--sp-5) var(--card-pad);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-6)}
 .review-timeline li{position:relative;min-width:0;padding-top:var(--sp-4);border-top:2px solid var(--border)}

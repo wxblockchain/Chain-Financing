@@ -208,7 +208,7 @@
       if(!screen.hasAttribute('data-detail-layout') && !screen.querySelector('.asset-sum') && screen.id!=='e-detail')return;
       var content=screen.querySelector('.content-in');
       if(content.querySelector('[data-detail-nav]'))return;
-      var overview=content.querySelector(':scope > .card:has(.asset-sum)');
+      var overview=content.querySelector(':scope > .card:has(.asset-sum), :scope > .card[data-detail-summary]');
       var sections=Array.from(content.querySelectorAll(':scope > .card, :scope > .asset-detail > .card, :scope > .asset-detail > .detail-group > .card')).filter(function(section){return section!==overview;});
       var nav=document.createElement('nav'), lastGroup=null;
       nav.className='detail-nav';nav.dataset.detailNav='';nav.setAttribute('aria-label','详情信息导航');
