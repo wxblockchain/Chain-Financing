@@ -187,6 +187,11 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
   .facts>div:nth-child(2):not(.wide){border-top:0}
   .facts>.wide+div{border-top:1px solid var(--row-line)}
 }
+/* 短值字段较多的详情可选三列：容器足够宽时每行三项，其余宽度回到默认规则。 */
+@container facts (min-width:900px){
+  .facts.cols-3:not(.single){grid-template-columns:repeat(3,minmax(0,1fr))}
+  .facts.cols-3>div:nth-child(3):not(.wide){border-top:0}
+}
 
 /* ---------- 身份摘要条：名称 + 状态 + 一句说明 ---------- */
 .ident{display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-5) var(--card-pad);flex-wrap:wrap}
@@ -424,6 +429,10 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .password-control{position:relative;display:flex;align-items:center}
 .password-control>.inp{flex:1;min-width:0;padding-right:calc(var(--ctrl-h-sm) + var(--sp-3))}
 .password-control>.btn.icon{position:absolute;right:var(--sp-1);top:calc((var(--ctrl-h) - var(--ctrl-h-sm))/2)}
+/* 验证码输入：输入框与重新获取并排，等待中的按钮显示剩余秒数。 */
+.code-control{display:flex;align-items:stretch;gap:var(--sp-3)}
+.code-control>.inp{flex:1;min-width:0;letter-spacing:.08em}
+.code-control>.btn{flex:none;white-space:nowrap}
 .file-name{max-width:100%;min-width:0;text-align:left;white-space:normal;overflow-wrap:anywhere}
 .form-actions{display:flex;justify-content:flex-end;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
 .file-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--sp-2)}

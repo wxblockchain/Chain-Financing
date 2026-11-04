@@ -804,7 +804,7 @@
 <div class="note red" role="alert">
 <i data-ico="info">
 </i>
-<div>暂时无法发送验证码，请重试。</div>
+<div>验证码发送失败，可立即重试一次。</div>
 </div>
 <div class="field">
 <div class="field-caption">
@@ -813,6 +813,68 @@
 <span class="count">25 / 254</span>
 </div>
 <input id="m5-field-47" class="inp" aria-required="true" type="email" value="reviewer-demo@reg.example" maxlength="254" autocomplete="off">
+</div>
+<button type="button" class="btn primary block" data-go="recover-code">立即重试</button>
+<button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
+</div>
+</div>
+</section>
+<section id="recover-limit-email" data-screen data-no="M150" data-name="找回 · 邮箱发送已达上限" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-email" class="auth-screen" hidden>
+<div class="focus-card">
+<h1>找回密码</h1>
+<div class="stack">
+<ol class="steps">
+<li aria-current="step">验证邮箱</li>
+<li>设置新密码</li>
+</ol>
+<div class="note " role="status">
+<i data-ico="info">
+</i>
+<div>使用当前登录邮箱验证身份，设置新密码。</div>
+</div>
+<div class="note warn" role="alert">
+<i data-ico="info">
+</i>
+<div>该邮箱获取验证码的次数已达上限，请约 3 小时后再试。</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="recover-limit-email-m5-field-46">
+<span class="req" aria-hidden="true">*</span>当前登录邮箱</label>
+<span class="count">25 / 254</span>
+</div>
+<input id="recover-limit-email-m5-field-46" class="inp" aria-required="true" type="email" value="reviewer-demo@reg.example" maxlength="254" autocomplete="off">
+</div>
+<button type="button" class="btn primary block" data-go="recover-code" disabled>获取验证码</button>
+<button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
+</div>
+</div>
+</section>
+<section id="recover-limit-ip" data-screen data-no="M151" data-name="找回 · 请求过于频繁" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-code" class="auth-screen" hidden>
+<div class="focus-card">
+<h1>找回密码</h1>
+<div class="stack">
+<ol class="steps">
+<li aria-current="step">验证邮箱</li>
+<li>设置新密码</li>
+</ol>
+<div class="note " role="status">
+<i data-ico="info">
+</i>
+<div>使用当前登录邮箱验证身份，设置新密码。</div>
+</div>
+<div class="note warn" role="alert">
+<i data-ico="info">
+</i>
+<div>获取验证码过于频繁，请稍后再试。</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="recover-limit-ip-m5-field-46">
+<span class="req" aria-hidden="true">*</span>当前登录邮箱</label>
+<span class="count">25 / 254</span>
+</div>
+<input id="recover-limit-ip-m5-field-46" class="inp" aria-required="true" type="email" value="reviewer-demo@reg.example" maxlength="254" autocomplete="off">
 </div>
 <button type="button" class="btn primary block" data-go="recover-code">获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
@@ -843,12 +905,14 @@
 <label for="m5-field-49">
 <span class="req" aria-hidden="true">*</span>邮箱验证码</label>
 </div>
-<input id="m5-field-49" class="inp" aria-required="true" aria-describedby="m5-field-49-help" type="text" value="" autocomplete="off">
-<p class="hint" id="m5-field-49-help">请输入邮件中的验证码。</p>
+<div class="code-control">
+<input id="m5-field-49" class="inp" aria-required="true" aria-describedby="m5-field-49-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn" disabled>重新获取（58 秒）</button>
+</div>
+<p class="hint" id="m5-field-49-help">验证码 10 分钟内有效。</p>
 </div>
 <button type="button" class="btn primary block" data-go="recover-ready">验证并继续</button>
 <div class="form-actions">
-<button type="button" class="btn ghost sm" data-go="recover-code">重新获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
 </div>
 </div>
@@ -878,12 +942,51 @@
 <label for="m5-field-51">
 <span class="req" aria-hidden="true">*</span>邮箱验证码</label>
 </div>
-<input id="m5-field-51" class="inp" aria-required="true" aria-invalid="true" aria-describedby="m5-field-51-help" type="text" value="" autocomplete="off">
+<div class="code-control">
+<input id="m5-field-51" class="inp" aria-required="true" aria-invalid="true" aria-describedby="m5-field-51-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn" data-go="recover-code">重新获取</button>
+</div>
 <p class="err-msg" id="m5-field-51-help">验证码无效，请重新输入或重新获取。</p>
 </div>
 <button type="button" class="btn primary block" data-go="recover-ready" disabled>验证并继续</button>
 <div class="form-actions">
-<button type="button" class="btn ghost sm" data-go="recover-code">重新获取验证码</button>
+<button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
+</div>
+</div>
+</div>
+</section>
+<section id="recover-code-expired" data-screen data-no="M149" data-name="找回 · 验证码已失效" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-password" class="auth-screen" hidden>
+<div class="focus-card">
+<h1>找回密码</h1>
+<div class="stack">
+<ol class="steps">
+<li aria-current="step">验证邮箱</li>
+<li>设置新密码</li>
+</ol>
+<div class="field">
+<div class="field-caption">
+<label>当前登录邮箱</label>
+</div>
+<div class="field-static" id="recover-code-expired-m5-field-50">reviewer-demo@reg.example</div>
+</div>
+<div class="note " role="status">
+<i data-ico="info">
+</i>
+<div>如该邮箱可用于找回，请查收验证码邮件。</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="recover-code-expired-m5-field-51">
+<span class="req" aria-hidden="true">*</span>邮箱验证码</label>
+</div>
+<div class="code-control">
+<input id="recover-code-expired-m5-field-51" class="inp" aria-required="true" aria-invalid="true" aria-describedby="recover-code-expired-m5-field-51-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn primary" data-go="recover-code">重新获取</button>
+</div>
+<p class="err-msg" id="recover-code-expired-m5-field-51-help">验证码已失效，请重新获取。</p>
+</div>
+<button type="button" class="btn primary block" data-go="recover-ready" disabled>验证并继续</button>
+<div class="form-actions">
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
 </div>
 </div>
@@ -1223,7 +1326,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>运营示例账号</dd>
@@ -1334,7 +1437,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>示例监管机构 C</dd>
@@ -1461,7 +1564,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>示例监管机构 C</dd>
@@ -1583,7 +1686,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>运营示例账号</dd>
@@ -1718,7 +1821,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>运营示例账号</dd>
@@ -1830,7 +1933,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>运营示例账号</dd>
@@ -1946,7 +2049,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>运营示例账号</dd>
@@ -2057,7 +2160,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>示例监管机构 C</dd>
@@ -2184,7 +2287,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>示例监管机构 C</dd>
@@ -2306,7 +2409,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>示例监管机构 C</dd>
@@ -2973,10 +3076,13 @@
 <label for="m5-field-106">
 <span class="req" aria-hidden="true">*</span>新邮箱验证码</label>
 </div>
-<input id="m5-field-106" class="inp" aria-required="true" type="text" value="" autocomplete="off">
+<div class="code-control">
+<input id="m5-field-106" class="inp" aria-required="true" aria-describedby="m5-field-106-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn" disabled>重新获取（58 秒）</button>
+</div>
+<p class="hint" id="m5-field-106-help">验证码 10 分钟内有效。</p>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-code">重新获取验证码</button>
 <button type="button" class="btn primary" data-go="self-email-confirm">下一步：确认变更</button>
 </div>
 </div>
@@ -3079,39 +3185,116 @@
 <label for="m5-field-113">
 <span class="req" aria-hidden="true">*</span>新邮箱验证码</label>
 </div>
-<input id="m5-field-113" class="inp" aria-required="true" aria-invalid="true" aria-describedby="m5-field-113-help" type="text" value="" autocomplete="off">
+<div class="code-control">
+<input id="m5-field-113" class="inp" aria-required="true" aria-invalid="true" aria-describedby="m5-field-113-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn" data-go="self-email-code">重新获取</button>
+</div>
 <p class="err-msg" id="m5-field-113-help">验证码无效，请重新输入或重新获取。</p>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-code">重新获取验证码</button>
 <button type="button" class="btn primary" data-go="self-email-confirm" disabled>下一步：确认变更</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-send-fail" data-screen data-no="M58" data-name="修改邮箱 · 发送失败" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email" hidden>
+<section id="self-email-send-fail" data-screen data-no="M58" data-name="修改邮箱 · 发送失败" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email-code" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
 <h1 class="page-title">修改登录邮箱</h1>
 </div>
 <div class="page-actions">
+<button type="button" class="btn ghost sm" data-go="r-settings">返回账户设置</button>
 </div>
 </div>
 <div class="card">
 <div class="card-head">
-<h2>修改未完成</h2>
+<h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<div class="field">
+<div class="field-caption">
+<label>当前登录邮箱</label>
+</div>
+<div class="field-static" id="self-email-send-fail-m5-field-100">reviewer-demo@reg.example</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="self-email-send-fail-m5-field-101">
+<span class="req" aria-hidden="true">*</span>当前密码</label>
+</div>
+<div class="password-control">
+<input id="self-email-send-fail-m5-field-101" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="self-email-send-fail-m5-field-101" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="self-email-send-fail-m5-field-102">
+<span class="req" aria-hidden="true">*</span>新登录邮箱</label>
+<span class="count">24 / 254</span>
+</div>
+<input id="self-email-send-fail-m5-field-102" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
+</div>
 <div class="note red" role="alert">
 <i data-ico="info">
 </i>
-<div>暂时无法发送验证码，原邮箱保持不变，请重试。</div>
+<div>验证码发送失败，原邮箱保持不变。可立即重试一次。</div>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="r-settings">返回账户设置</button>
-<button type="button" class="btn primary" data-go="self-email">重新开始</button>
+<button type="button" class="btn primary" data-go="self-email-code">立即重试</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="self-email-limit" data-screen data-no="M152" data-name="修改邮箱 · 发送已达上限" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email" hidden>
+<div class="content-in">
+<div class="page-head">
+<div>
+<h1 class="page-title">修改登录邮箱</h1>
+</div>
+<div class="page-actions">
+<button type="button" class="btn ghost sm" data-go="r-settings">返回账户设置</button>
+</div>
+</div>
+<div class="card">
+<div class="card-head">
+<h2>验证新邮箱</h2>
+</div>
+<div class="card-b form">
+<div class="field">
+<div class="field-caption">
+<label>当前登录邮箱</label>
+</div>
+<div class="field-static" id="self-email-limit-m5-field-100">reviewer-demo@reg.example</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="self-email-limit-m5-field-101">
+<span class="req" aria-hidden="true">*</span>当前密码</label>
+</div>
+<div class="password-control">
+<input id="self-email-limit-m5-field-101" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="self-email-limit-m5-field-101" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="self-email-limit-m5-field-102">
+<span class="req" aria-hidden="true">*</span>新登录邮箱</label>
+<span class="count">24 / 254</span>
+</div>
+<input id="self-email-limit-m5-field-102" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
+</div>
+<div class="note warn" role="alert">
+<i data-ico="info">
+</i>
+<div>该邮箱获取验证码的次数已达上限，请约 3 小时后再试。</div>
+</div>
+<div class="form-actions">
+<button type="button" class="btn " data-go="self-email-code" disabled>获取验证码</button>
 </div>
 </div>
 </div>
@@ -3355,7 +3538,7 @@
 <h1 class="page-title">监管机构管理</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn primary" data-go="invite-ready">邀请添加监管机构</button>
+<button type="button" class="btn primary" data-go="invite-ready">添加机构</button>
 </div>
 </div>
 <div class="card">
@@ -3506,7 +3689,7 @@
 <h1 class="page-title">监管机构管理</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn primary" data-go="invite-ready">邀请添加监管机构</button>
+<button type="button" class="btn primary" data-go="invite-empty">添加机构</button>
 </div>
 </div>
 <div class="card">
@@ -3549,8 +3732,8 @@
 </i>
 </span>
 <h3>尚未添加监管机构</h3>
-<p>邀请机构后，可在这里维护其资料与账号。</p>
-<button type="button" class="btn primary" data-go="invite-ready">邀请添加监管机构</button>
+<p>添加机构后，可在这里维护其资料与账号。</p>
+<button type="button" class="btn primary" data-go="invite-empty">添加机构</button>
 </div>
 </div>
 </div>
@@ -3562,7 +3745,7 @@
 <h1 class="page-title">监管机构管理</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn primary" data-go="invite-ready">邀请添加监管机构</button>
+<button type="button" class="btn primary" data-go="invite-ready">添加机构</button>
 </div>
 </div>
 <div class="card">
@@ -3618,7 +3801,7 @@
 <h1 class="page-title">监管机构管理</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn primary" data-go="invite-ready">邀请添加监管机构</button>
+<button type="button" class="btn primary" data-go="invite-ready">添加机构</button>
 </div>
 </div>
 <div class="card">
@@ -3667,11 +3850,11 @@
 </div>
 </div>
 </section>
-<section id="invite-empty" data-screen data-no="M71" data-name="邀请 · 空表单" data-group="邀请监管机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/邀请监管机构" data-crumb-targets="/rg-list" data-next="invite-ready" hidden>
+<section id="invite-empty" data-screen data-no="M71" data-name="添加 · 空表单" data-group="添加机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/添加机构" data-crumb-targets="/rg-list" data-next="invite-ready" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">邀请添加监管机构</h1>
+<h1 class="page-title">添加机构</h1>
 </div>
 </div>
 <div class="form-sheet">
@@ -3738,7 +3921,7 @@
 </i>
 </span>
 <h3>未提供牌照附件</h3>
-<p>可在编辑核心资料时上传。</p>
+<p>可稍后通过「编辑」上传。</p>
 </div>
 </div>
 </div>
@@ -3754,7 +3937,8 @@
 <span class="req" aria-hidden="true">*</span>登录邮箱</label>
 <span class="count">0 / 254</span>
 </div>
-<input id="m5-field-121" class="inp" aria-required="true" type="email" value="" maxlength="254" autocomplete="off">
+<input id="m5-field-121" class="inp" aria-required="true" aria-describedby="m5-field-121-help" type="email" value="" maxlength="254" autocomplete="off">
+<p class="hint" id="m5-field-121-help">添加后不能修改，请仔细核对。</p>
 </div>
 <div class="field">
 <div class="field-caption">
@@ -3787,11 +3971,11 @@
 </div>
 </div>
 </section>
-<section id="invite-ready" data-screen data-no="M72" data-name="邀请 · 资料已填写" data-group="邀请监管机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/邀请监管机构" data-crumb-targets="/rg-list" data-next="invite-sent" hidden>
+<section id="invite-ready" data-screen data-no="M72" data-name="添加 · 资料已填写" data-group="添加机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/添加机构" data-crumb-targets="/rg-list" data-next="invite-sent" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">邀请添加监管机构</h1>
+<h1 class="page-title">添加机构</h1>
 </div>
 </div>
 <div class="form-sheet">
@@ -3879,7 +4063,8 @@
 <span class="req" aria-hidden="true">*</span>登录邮箱</label>
 <span class="count">23 / 254</span>
 </div>
-<input id="m5-field-127" class="inp" aria-required="true" type="email" value="invite-demo@reg.example" maxlength="254" autocomplete="off">
+<input id="m5-field-127" class="inp" aria-required="true" aria-describedby="m5-field-127-help" type="email" value="invite-demo@reg.example" maxlength="254" autocomplete="off">
+<p class="hint" id="m5-field-127-help">添加后不能修改，请仔细核对。</p>
 </div>
 <div class="field">
 <div class="field-caption">
@@ -3907,11 +4092,11 @@
 </div>
 </div>
 </section>
-<section id="invite-error" data-screen data-no="M73" data-name="邀请 · 名称重复" data-group="邀请监管机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/邀请监管机构" data-crumb-targets="/rg-list" data-next="invite-sent" hidden>
+<section id="invite-error" data-screen data-no="M73" data-name="添加 · 名称重复" data-group="添加机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/添加机构" data-crumb-targets="/rg-list" data-next="invite-sent" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">邀请添加监管机构</h1>
+<h1 class="page-title">添加机构</h1>
 </div>
 </div>
 <div class="form-sheet">
@@ -4000,7 +4185,8 @@
 <span class="req" aria-hidden="true">*</span>登录邮箱</label>
 <span class="count">23 / 254</span>
 </div>
-<input id="m5-field-133" class="inp" aria-required="true" type="email" value="invite-demo@reg.example" maxlength="254" autocomplete="off">
+<input id="m5-field-133" class="inp" aria-required="true" aria-describedby="m5-field-133-help" type="email" value="invite-demo@reg.example" maxlength="254" autocomplete="off">
+<p class="hint" id="m5-field-133-help">添加后不能修改，请仔细核对。</p>
 </div>
 <div class="field">
 <div class="field-caption">
@@ -4033,11 +4219,11 @@
 </div>
 </div>
 </section>
-<section id="invite-uploading" data-screen data-no="M74" data-name="邀请 · 附件上传中" data-group="邀请监管机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/邀请监管机构" data-crumb-targets="/rg-list" data-next="invite-ready" hidden>
+<section id="invite-uploading" data-screen data-no="M74" data-name="添加 · 附件上传中" data-group="添加机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/添加机构" data-crumb-targets="/rg-list" data-next="invite-ready" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">邀请添加监管机构</h1>
+<h1 class="page-title">添加机构</h1>
 </div>
 </div>
 <div class="form-sheet">
@@ -4133,7 +4319,8 @@
 <span class="req" aria-hidden="true">*</span>登录邮箱</label>
 <span class="count">23 / 254</span>
 </div>
-<input id="m5-field-139" class="inp" aria-required="true" type="email" value="invite-demo@reg.example" maxlength="254" autocomplete="off">
+<input id="m5-field-139" class="inp" aria-required="true" aria-describedby="m5-field-139-help" type="email" value="invite-demo@reg.example" maxlength="254" autocomplete="off">
+<p class="hint" id="m5-field-139-help">添加后不能修改，请仔细核对。</p>
 </div>
 <div class="field">
 <div class="field-caption">
@@ -4166,11 +4353,11 @@
 </div>
 </div>
 </section>
-<section id="invite-busy" data-screen data-no="M75" data-name="邀请 · 提交中" data-group="邀请监管机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/邀请监管机构" data-crumb-targets="/rg-list" data-next="invite-sent" hidden>
+<section id="invite-busy" data-screen data-no="M75" data-name="添加 · 提交中" data-group="添加机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/添加机构" data-crumb-targets="/rg-list" data-next="invite-sent" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">邀请添加监管机构</h1>
+<h1 class="page-title">添加机构</h1>
 </div>
 </div>
 <div class="form-sheet">
@@ -4258,7 +4445,8 @@
 <span class="req" aria-hidden="true">*</span>登录邮箱</label>
 <span class="count">23 / 254</span>
 </div>
-<input id="m5-field-145" class="inp" aria-required="true" type="email" value="invite-demo@reg.example" maxlength="254" autocomplete="off">
+<input id="m5-field-145" class="inp" aria-required="true" aria-describedby="m5-field-145-help" type="email" value="invite-demo@reg.example" maxlength="254" autocomplete="off">
+<p class="hint" id="m5-field-145-help">添加后不能修改，请仔细核对。</p>
 </div>
 <div class="field">
 <div class="field-caption">
@@ -4291,11 +4479,11 @@
 </div>
 </div>
 </section>
-<section id="invite-fail" data-screen data-no="M76" data-name="邀请 · 保存失败" data-group="邀请监管机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/邀请监管机构" data-crumb-targets="/rg-list" data-next="invite-sent" hidden>
+<section id="invite-fail" data-screen data-no="M76" data-name="添加 · 保存失败" data-group="添加机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/添加机构" data-crumb-targets="/rg-list" data-next="invite-sent" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">邀请添加监管机构</h1>
+<h1 class="page-title">添加机构</h1>
 </div>
 </div>
 <div class="note red" role="alert">
@@ -4388,7 +4576,8 @@
 <span class="req" aria-hidden="true">*</span>登录邮箱</label>
 <span class="count">23 / 254</span>
 </div>
-<input id="m5-field-151" class="inp" aria-required="true" type="email" value="invite-demo@reg.example" maxlength="254" autocomplete="off">
+<input id="m5-field-151" class="inp" aria-required="true" aria-describedby="m5-field-151-help" type="email" value="invite-demo@reg.example" maxlength="254" autocomplete="off">
+<p class="hint" id="m5-field-151-help">添加后不能修改，请仔细核对。</p>
 </div>
 <div class="field">
 <div class="field-caption">
@@ -4416,7 +4605,7 @@
 </div>
 </div>
 </section>
-<section id="invite-sent" data-screen data-no="M77" data-name="邀请 · 已建立并发出邮件" data-group="邀请监管机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/邀请监管机构" data-crumb-targets="/rg-list" data-next="rg-initial" hidden>
+<section id="invite-sent" data-screen data-no="M77" data-name="添加 · 已建立并发出邮件" data-group="添加机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/添加机构" data-crumb-targets="/rg-list" data-next="rg-initial" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -4427,7 +4616,7 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>邀请结果</h2>
+<h2>添加结果</h2>
 </div>
 <div class="card-b form">
 <div class="note " role="status">
@@ -4469,7 +4658,7 @@
 </div>
 </div>
 </section>
-<section id="invite-mail-fail" data-screen data-no="M78" data-name="邀请 · 已建立但邮件失败" data-group="邀请监管机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/邀请监管机构" data-crumb-targets="/rg-list" data-next="rg-initial-fail" hidden>
+<section id="invite-mail-fail" data-screen data-no="M78" data-name="添加 · 已建立但邮件失败" data-group="添加机构" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/添加机构" data-crumb-targets="/rg-list" data-next="rg-initial-fail" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -4480,7 +4669,7 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>邀请结果</h2>
+<h2>添加结果</h2>
 </div>
 <div class="card-b form">
 <div class="note warn" role="alert">
@@ -4529,8 +4718,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑核心资料</button>
-<button type="button" class="btn " data-go="correct-ready">更正登录邮箱</button>
+<button type="button" class="btn " data-go="edit-changed">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -4541,7 +4729,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 C</dd>
@@ -4568,7 +4756,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
@@ -4627,18 +4815,14 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -4687,8 +4871,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑核心资料</button>
-<button type="button" class="btn " data-go="correct-ready">更正登录邮箱</button>
+<button type="button" class="btn " data-go="edit-changed">编辑</button>
 <button type="button" class="btn primary" data-go="enable-confirm">启用机构</button>
 </div>
 </div>
@@ -4704,7 +4887,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 C</dd>
@@ -4731,7 +4914,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
@@ -4790,18 +4973,14 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -4850,8 +5029,7 @@
 <h1 class="page-title">示例监管机构 G</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑核心资料</button>
-<button type="button" class="btn " data-go="correct-ready">更正登录邮箱</button>
+<button type="button" class="btn " data-go="edit-changed">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -4862,7 +5040,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 G</dd>
@@ -4889,7 +5067,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>invite-demo@reg.example</dd>
@@ -4945,18 +5123,14 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>invite-demo@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -5005,8 +5179,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑核心资料</button>
-<button type="button" class="btn " data-go="correct-ready">更正登录邮箱</button>
+<button type="button" class="btn " data-go="edit-changed">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -5017,7 +5190,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 C</dd>
@@ -5044,7 +5217,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
@@ -5107,18 +5280,14 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -5167,8 +5336,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑核心资料</button>
-<button type="button" class="btn " data-go="correct-ready">更正登录邮箱</button>
+<button type="button" class="btn " data-go="edit-changed">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -5179,7 +5347,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 C</dd>
@@ -5206,7 +5374,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
@@ -5265,18 +5433,14 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -5306,7 +5470,7 @@
 </i>
 </span>
 <h3>未提供牌照附件</h3>
-<p>可在编辑核心资料时上传。</p>
+<p>可稍后通过「编辑」上传。</p>
 </div>
 </div>
 </div>
@@ -5320,8 +5484,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑核心资料</button>
-<button type="button" class="btn " data-go="correct-ready">更正登录邮箱</button>
+<button type="button" class="btn " data-go="edit-changed">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -5332,7 +5495,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 C</dd>
@@ -5359,7 +5522,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
@@ -5418,18 +5581,14 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -5483,8 +5642,7 @@
 <h1 class="page-title">示例监管机构 G</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑核心资料</button>
-<button type="button" class="btn " data-go="correct-ready">更正登录邮箱</button>
+<button type="button" class="btn " data-go="edit-changed">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -5495,7 +5653,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 G</dd>
@@ -5522,7 +5680,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>invite-demo@reg.example</dd>
@@ -5578,18 +5736,14 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>invite-demo@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -5643,7 +5797,7 @@
 <h1 class="page-title">监管机构管理</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn primary" data-go="invite-ready">邀请添加监管机构</button>
+<button type="button" class="btn primary" data-go="invite-ready">添加机构</button>
 </div>
 </div>
 <div class="note " role="status">
@@ -5824,7 +5978,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 D</dd>
@@ -5851,7 +6005,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>invited@reg.example</dd>
@@ -5907,18 +6061,14 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>invited@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -5974,7 +6124,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 E</dd>
@@ -6001,7 +6151,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>locked@reg.example</dd>
@@ -6064,18 +6214,14 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>locked@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -6136,7 +6282,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 F</dd>
@@ -6163,7 +6309,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>disabled@reg.example</dd>
@@ -6222,18 +6368,167 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>disabled@reg.example</dd>
 </div>
 <div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
+<dt>发送时间</dt>
+<dd>
+<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+</time>
+</dd>
+</div>
+<div>
+<dt>发送结果</dt>
+<dd>
+<span class="tag ok">已发出</span>
+</dd>
+</div>
+</dl>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-head">
+<h2>自身牌照附件</h2>
+</div>
+<div class="card-b form">
+<ul class="file-list">
+<li class="file-row">
+<i data-ico="doc">
+</i>
+<div class="file-info">
+<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<div class="hint">PDF · 2.4 MB</div>
+</div>
+<div class="file-actions">
+<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="rg-self-email" data-screen data-no="M148" data-name="机构详情 · 机构本人改邮箱后" data-group="监管机构详情" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-list" hidden>
+<div class="content-in">
+<div class="page-head">
+<div>
+<h1 class="page-title">示例监管机构 C</h1>
+</div>
+<div class="page-actions">
+<button type="button" class="btn " data-go="edit-changed">编辑</button>
+<button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
+</div>
+</div>
+<div class="form-sheet">
+<div class="card">
+<div class="card-head">
+<h2>核心资料</h2>
+</div>
+<div class="card-b form">
+<div class="facts-region">
+<dl class="facts inset cols-3">
+<div>
+<dt>机构名称</dt>
+<dd>示例监管机构 C</dd>
+</div>
+<div>
+<dt>联系人</dt>
+<dd>示例联系人</dd>
+</div>
+<div>
+<dt>联系邮箱</dt>
+<dd>contact@reg.example</dd>
+</div>
+<div>
+<dt>所在国家或地区</dt>
+<dd>Singapore</dd>
+</div>
+</dl>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-head">
+<h2>账号与维护信息</h2>
+</div>
+<div class="card-b form">
+<div class="facts-region">
+<dl class="facts inset cols-3">
+<div>
+<dt>登录邮箱</dt>
+<dd>new-reviewer@reg.example</dd>
+</div>
+<div>
+<dt>机构状态</dt>
+<dd>
+<span class="tag ok">启用</span>
+</dd>
+</div>
+<div>
+<dt>账号状态</dt>
+<dd>
+<span class="tag ok">正常</span>
+</dd>
+</div>
+<div>
+<dt>最近登录时间</dt>
+<dd>
+<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z">
+</time>
+</dd>
+</div>
+<div>
+<dt>邀请时间</dt>
+<dd>
+<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+</time>
+</dd>
+</div>
+<div>
+<dt>邀请人</dt>
+<dd>运营示例账号</dd>
+</div>
+<div>
+<dt>最近更新时间</dt>
+<dd>
+<time data-instant="2026-11-03T06:00:00Z" datetime="2026-11-03T06:00:00Z">
+</time>
+</dd>
+</div>
+<div>
+<dt>最近更新人</dt>
+<dd>示例监管机构 C</dd>
+</div>
+<div>
+<dt>时间显示时区</dt>
+<dd>
+<span data-zone>
+</span>
+</dd>
+</div>
+</dl>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-head">
+<h2>邀请邮件发送结果</h2>
+</div>
+<div class="card-b form">
+<div class="facts-region">
+<dl class="facts inset cols-3">
+<div>
+<dt>收件邮箱</dt>
+<dd>reviewer-demo@reg.example</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -6329,11 +6624,11 @@
 </div>
 </div>
 </section>
-<section id="edit-ready" data-screen data-no="M92" data-name="编辑 · 资料已反显" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑核心资料" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
+<section id="edit-ready" data-screen data-no="M92" data-name="编辑 · 资料已反显" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑机构" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">编辑核心资料</h1>
+<h1 class="page-title">编辑机构</h1>
 </div>
 <div class="page-actions">
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
@@ -6424,11 +6719,11 @@
 </div>
 </div>
 </section>
-<section id="edit-changed" data-screen data-no="M93" data-name="编辑 · 已修改待保存" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑核心资料" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
+<section id="edit-changed" data-screen data-no="M93" data-name="编辑 · 已修改待保存" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑机构" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">编辑核心资料</h1>
+<h1 class="page-title">编辑机构</h1>
 </div>
 <div class="page-actions">
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
@@ -6519,11 +6814,11 @@
 </div>
 </div>
 </section>
-<section id="edit-missing" data-screen data-no="M94" data-name="编辑 · 核心资料待补齐" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑核心资料" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
+<section id="edit-missing" data-screen data-no="M94" data-name="编辑 · 核心资料待补齐" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑机构" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">编辑核心资料</h1>
+<h1 class="page-title">编辑机构</h1>
 </div>
 <div class="page-actions">
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
@@ -6593,7 +6888,7 @@
 </i>
 </span>
 <h3>未提供牌照附件</h3>
-<p>可在编辑核心资料时上传。</p>
+<p>可稍后通过「编辑」上传。</p>
 </div>
 </div>
 </div>
@@ -6604,11 +6899,11 @@
 </div>
 </div>
 </section>
-<section id="edit-error" data-screen data-no="M95" data-name="编辑 · 字段错误" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑核心资料" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
+<section id="edit-error" data-screen data-no="M95" data-name="编辑 · 字段错误" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑机构" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">编辑核心资料</h1>
+<h1 class="page-title">编辑机构</h1>
 </div>
 <div class="page-actions">
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
@@ -6695,11 +6990,11 @@
 </div>
 </div>
 </section>
-<section id="edit-busy" data-screen data-no="M96" data-name="编辑 · 保存中" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑核心资料" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
+<section id="edit-busy" data-screen data-no="M96" data-name="编辑 · 保存中" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑机构" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">编辑核心资料</h1>
+<h1 class="page-title">编辑机构</h1>
 </div>
 <div class="page-actions">
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
@@ -6785,11 +7080,11 @@
 </div>
 </div>
 </section>
-<section id="edit-fail" data-screen data-no="M97" data-name="编辑 · 保存失败" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑核心资料" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
+<section id="edit-fail" data-screen data-no="M97" data-name="编辑 · 保存失败" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑机构" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">编辑核心资料</h1>
+<h1 class="page-title">编辑机构</h1>
 </div>
 <div class="page-actions">
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
@@ -6880,11 +7175,11 @@
 </div>
 </div>
 </section>
-<section id="files-uploading" data-screen data-no="M98" data-name="附件 · 上传中" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑核心资料" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
+<section id="files-uploading" data-screen data-no="M98" data-name="附件 · 上传中" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑机构" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">编辑核心资料</h1>
+<h1 class="page-title">编辑机构</h1>
 </div>
 <div class="page-actions">
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
@@ -6983,11 +7278,11 @@
 </div>
 </div>
 </section>
-<section id="files-failed" data-screen data-no="M99" data-name="附件 · 上传失败" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑核心资料" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
+<section id="files-failed" data-screen data-no="M99" data-name="附件 · 上传失败" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑机构" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">编辑核心资料</h1>
+<h1 class="page-title">编辑机构</h1>
 </div>
 <div class="page-actions">
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
@@ -7088,11 +7383,11 @@
 </div>
 </div>
 </section>
-<section id="files-limit" data-screen data-no="M100" data-name="附件 · 超出限制" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑核心资料" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
+<section id="files-limit" data-screen data-no="M100" data-name="附件 · 超出限制" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑机构" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">编辑核心资料</h1>
+<h1 class="page-title">编辑机构</h1>
 </div>
 <div class="page-actions">
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
@@ -7183,11 +7478,11 @@
 </div>
 </div>
 </section>
-<section id="files-removed" data-screen data-no="M101" data-name="附件 · 移除待保存" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑核心资料" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
+<section id="files-removed" data-screen data-no="M101" data-name="附件 · 移除待保存" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/编辑机构" data-crumb-targets="/rg-list/rg-detail" data-next="edit-saved" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
-<h1 class="page-title">编辑核心资料</h1>
+<h1 class="page-title">编辑机构</h1>
 </div>
 <div class="page-actions">
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
@@ -7257,7 +7552,7 @@
 </i>
 </span>
 <h3>未提供牌照附件</h3>
-<p>可在编辑核心资料时上传。</p>
+<p>可稍后通过「编辑」上传。</p>
 </div>
 </div>
 </div>
@@ -7268,7 +7563,7 @@
 </div>
 </div>
 </section>
-<section id="edit-saved" data-screen data-no="M102" data-name="编辑 · 已保存" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-detail" hidden>
+<section id="edit-saved" data-screen data-no="M102" data-name="编辑 · 已保存" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-detail" hidden>
 <div class="content-in">
 <div class="note " role="status">
 <i data-ico="info">
@@ -7280,8 +7575,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑核心资料</button>
-<button type="button" class="btn " data-go="correct-ready">更正登录邮箱</button>
+<button type="button" class="btn " data-go="edit-changed">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -7292,7 +7586,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>机构名称</dt>
 <dd>示例监管机构 C</dd>
@@ -7319,7 +7613,7 @@
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>登录邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
@@ -7378,18 +7672,14 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>最近账号开通邮件</h2>
+<h2>邀请邮件发送结果</h2>
 </div>
 <div class="card-b form">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
-<dt>生效登录邮箱</dt>
+<dt>收件邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>邀请添加</dd>
 </div>
 <div>
 <dt>发送时间</dt>
@@ -7431,7 +7721,7 @@
 </div>
 </div>
 </section>
-<section id="files-read-fail" data-screen data-no="M103" data-name="牌照附件 · 读取失败" data-group="编辑核心资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/牌照附件" data-crumb-targets="/rg-list/rg-detail" data-next="rg-detail" hidden>
+<section id="files-read-fail" data-screen data-no="M103" data-name="牌照附件 · 读取失败" data-group="编辑机构资料与附件" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/牌照附件" data-crumb-targets="/rg-list/rg-detail" data-next="rg-detail" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -7452,700 +7742,6 @@
 <div>牌照附件暂时无法读取，请重试。</div>
 </div>
 <button type="button" class="btn sm" data-go="rg-detail">重试</button>
-</div>
-</div>
-</div>
-</section>
-<section id="correct-empty" data-screen data-no="M104" data-name="更正邮箱 · 空表单" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/更正登录邮箱" data-crumb-targets="/rg-list/rg-detail" data-next="correct-confirm" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">更正登录邮箱</h1>
-</div>
-<div class="page-actions">
-<button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>账号更正</h2>
-</div>
-<div class="card-b form">
-<div class="field">
-<div class="field-caption">
-<label>当前登录邮箱</label>
-</div>
-<div class="field-static" id="m5-field-193">reviewer-demo@reg.example</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-194">
-<span class="req" aria-hidden="true">*</span>新登录邮箱</label>
-<span class="count">0 / 254</span>
-</div>
-<input id="m5-field-194" class="inp" aria-required="true" type="email" value="" maxlength="254" autocomplete="off">
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-195">
-<span class="req" aria-hidden="true">*</span>新的初始密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-195" class="inp" aria-required="true" aria-describedby="m5-field-195-help" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-195" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-<p class="hint" id="m5-field-195-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
-</div>
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>新密码不能与当前密码或最近一次初始密码相同。</div>
-</div>
-<p class="hint">请填写新的登录邮箱与初始密码。</p>
-</div>
-<div class="card-f">
-<div class="form-actions">
-<button type="button" class="btn ghost" data-go="rg-detail">取消</button>
-<button type="button" class="btn primary" data-go="correct-confirm" disabled>下一步：确认更正</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="correct-ready" data-screen data-no="M105" data-name="更正邮箱 · 已填写" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/更正登录邮箱" data-crumb-targets="/rg-list/rg-detail" data-next="correct-confirm" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">更正登录邮箱</h1>
-</div>
-<div class="page-actions">
-<button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>账号更正</h2>
-</div>
-<div class="card-b form">
-<div class="field">
-<div class="field-caption">
-<label>当前登录邮箱</label>
-</div>
-<div class="field-static" id="m5-field-196">reviewer-demo@reg.example</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-197">
-<span class="req" aria-hidden="true">*</span>新登录邮箱</label>
-<span class="count">21 / 254</span>
-</div>
-<input id="m5-field-197" class="inp" aria-required="true" type="email" value="corrected@reg.example" maxlength="254" autocomplete="off">
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-198">
-<span class="req" aria-hidden="true">*</span>新的初始密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-198" class="inp" aria-required="true" aria-describedby="m5-field-198-help" type="password" value="CorrectedDemo123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-198" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-<p class="hint" id="m5-field-198-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
-</div>
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>新密码不能与当前密码或最近一次初始密码相同。</div>
-</div>
-</div>
-<div class="card-f">
-<div class="form-actions">
-<button type="button" class="btn ghost" data-go="rg-detail">取消</button>
-<button type="button" class="btn primary" data-go="correct-confirm">下一步：确认更正</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="correct-error" data-screen data-no="M106" data-name="更正邮箱 · 邮箱占用" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/更正登录邮箱" data-crumb-targets="/rg-list/rg-detail" data-next="correct-confirm" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">更正登录邮箱</h1>
-</div>
-<div class="page-actions">
-<button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>账号更正</h2>
-</div>
-<div class="card-b form">
-<div class="field">
-<div class="field-caption">
-<label>当前登录邮箱</label>
-</div>
-<div class="field-static" id="m5-field-199">reviewer-demo@reg.example</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-200">
-<span class="req" aria-hidden="true">*</span>新登录邮箱</label>
-<span class="count">21 / 254</span>
-</div>
-<input id="m5-field-200" class="inp" aria-required="true" aria-invalid="true" aria-describedby="m5-field-200-help" type="email" value="corrected@reg.example" maxlength="254" autocomplete="off">
-<p class="err-msg" id="m5-field-200-help">该邮箱已被管理端账号使用，请更换邮箱。</p>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-201">
-<span class="req" aria-hidden="true">*</span>新的初始密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-201" class="inp" aria-required="true" aria-describedby="m5-field-201-help" type="password" value="CorrectedDemo123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-201" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-<p class="hint" id="m5-field-201-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
-</div>
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>新密码不能与当前密码或最近一次初始密码相同。</div>
-</div>
-</div>
-<div class="card-f">
-<div class="form-actions">
-<button type="button" class="btn ghost" data-go="rg-detail">取消</button>
-<button type="button" class="btn primary" data-go="correct-confirm" disabled>下一步：确认更正</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="correct-confirm" data-screen data-no="M107" data-name="更正邮箱 · 确认后果" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理" data-next="correct-sent" data-overlay data-base="rg-detail" hidden>
-<div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-202">
-<div class="modal-h">
-<span class="modal-title" id="modal-title-202">确认更正登录邮箱</span>
-<button type="button" class="btn icon" data-close aria-label="关闭">
-<i data-ico="x">
-</i>
-</button>
-</div>
-<div class="modal-b">
-<div class="facts-region">
-<dl class="facts inset">
-<div>
-<dt>更正前邮箱</dt>
-<dd>reviewer-demo@reg.example</dd>
-</div>
-<div>
-<dt>更正后邮箱</dt>
-<dd>corrected@reg.example</dd>
-</div>
-</dl>
-</div>
-<div class="note warn" role="alert">
-<i data-ico="info">
-</i>
-<div>原账号凭据将作废，全部旧登录结束。新邮箱须使用新的初始密码登录并完成首登改密；未到期的锁定不会提前解除。</div>
-</div>
-</div>
-<div class="modal-f">
-<button type="button" class="btn ghost" data-go="correct-ready">取消</button>
-<button type="button" class="btn primary" data-go="correct-sent">确认更正并发邮件</button>
-</div>
-</div>
-</div>
-</section>
-<section id="correct-busy" data-screen data-no="M108" data-name="更正邮箱 · 提交中" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理" data-next="correct-sent" data-overlay data-base="rg-detail" hidden>
-<div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-203">
-<div class="modal-h">
-<span class="modal-title" id="modal-title-203">确认更正登录邮箱</span>
-<button type="button" class="btn icon" data-close aria-label="关闭">
-<i data-ico="x">
-</i>
-</button>
-</div>
-<div class="modal-b">
-<div class="facts-region">
-<dl class="facts inset">
-<div>
-<dt>更正前邮箱</dt>
-<dd>reviewer-demo@reg.example</dd>
-</div>
-<div>
-<dt>更正后邮箱</dt>
-<dd>corrected@reg.example</dd>
-</div>
-</dl>
-</div>
-<div class="note warn" role="alert">
-<i data-ico="info">
-</i>
-<div>原账号凭据将作废，全部旧登录结束。新邮箱须使用新的初始密码登录并完成首登改密；未到期的锁定不会提前解除。</div>
-</div>
-</div>
-<div class="modal-f">
-<button type="button" class="btn ghost" data-go="correct-ready">取消</button>
-<button type="button" class="btn primary" data-go="correct-sent" disabled>正在提交</button>
-</div>
-</div>
-</div>
-</section>
-<section id="correct-sent" data-screen data-no="M109" data-name="更正邮箱 · 已生效并发邮件" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/更正登录邮箱" data-crumb-targets="/rg-list/rg-detail" data-next="rg-corrected" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">更正登录邮箱</h1>
-</div>
-<div class="page-actions">
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>更正结果</h2>
-</div>
-<div class="card-b form">
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>新邮箱已生效，原账号已作废，开通邮件已发出。</div>
-</div>
-<div class="facts-region">
-<dl class="facts inset">
-<div>
-<dt>登录邮箱</dt>
-<dd>corrected@reg.example</dd>
-</div>
-<div>
-<dt>账号状态</dt>
-<dd>
-<span class="tag warn">待首登改密</span>
-</dd>
-</div>
-</dl>
-</div>
-</div>
-<div class="card-f">
-<div class="form-actions">
-<button type="button" class="btn primary" data-go="rg-corrected">查看更新后的详情</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="correct-mail-fail" data-screen data-no="M110" data-name="更正邮箱 · 已生效但邮件失败" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/更正登录邮箱" data-crumb-targets="/rg-list/rg-detail" data-next="rg-corrected-fail" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">更正登录邮箱</h1>
-</div>
-<div class="page-actions">
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>更正结果</h2>
-</div>
-<div class="card-b form">
-<div class="note warn" role="alert">
-<i data-ico="info">
-</i>
-<div>新邮箱已生效，原账号已作废。开通邮件未能发出，请线下告知新邮箱与初始密码。</div>
-</div>
-<div class="facts-region">
-<dl class="facts inset">
-<div>
-<dt>登录邮箱</dt>
-<dd>corrected@reg.example</dd>
-</div>
-<div>
-<dt>账号状态</dt>
-<dd>
-<span class="tag warn">待首登改密</span>
-</dd>
-</div>
-</dl>
-</div>
-</div>
-<div class="card-f">
-<div class="form-actions">
-<button type="button" class="btn primary" data-go="rg-corrected-fail">查看更新后的详情</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="correct-save-fail" data-screen data-no="M111" data-name="更正邮箱 · 保存失败" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/更正登录邮箱" data-crumb-targets="/rg-list/rg-detail" data-next="rg-detail" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">更正登录邮箱</h1>
-</div>
-<div class="page-actions">
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>更正结果</h2>
-</div>
-<div class="card-b form">
-<div class="note red" role="alert">
-<i data-ico="info">
-</i>
-<div>更正失败，原邮箱、密码与登录保持不变。请重试。</div>
-</div>
-</div>
-<div class="card-f">
-<div class="form-actions">
-<button type="button" class="btn primary" data-go="rg-detail">返回机构详情</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="correct-stale" data-screen data-no="M112" data-name="更正邮箱 · 信息已变化" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情/更正登录邮箱" data-crumb-targets="/rg-list/rg-detail" data-next="rg-detail" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">更正登录邮箱</h1>
-</div>
-<div class="page-actions">
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>更正结果</h2>
-</div>
-<div class="card-b form">
-<div class="note red" role="alert">
-<i data-ico="info">
-</i>
-<div>账号信息已变化，请重新确认当前邮箱后再更正。</div>
-</div>
-</div>
-<div class="card-f">
-<div class="form-actions">
-<button type="button" class="btn primary" data-go="rg-detail">返回机构详情</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="rg-corrected" data-screen data-no="M113" data-name="机构详情 · 邮箱更正后" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-list" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">示例监管机构 C</h1>
-</div>
-<div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑核心资料</button>
-<button type="button" class="btn " data-go="correct-ready">更正登录邮箱</button>
-<button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
-</div>
-</div>
-<div class="form-sheet">
-<div class="card">
-<div class="card-head">
-<h2>核心资料</h2>
-</div>
-<div class="card-b form">
-<div class="facts-region">
-<dl class="facts inset">
-<div>
-<dt>机构名称</dt>
-<dd>示例监管机构 C</dd>
-</div>
-<div>
-<dt>联系人</dt>
-<dd>示例联系人</dd>
-</div>
-<div>
-<dt>联系邮箱</dt>
-<dd>contact@reg.example</dd>
-</div>
-<div>
-<dt>所在国家或地区</dt>
-<dd>Singapore</dd>
-</div>
-</dl>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>账号与维护信息</h2>
-</div>
-<div class="card-b form">
-<div class="facts-region">
-<dl class="facts inset">
-<div>
-<dt>登录邮箱</dt>
-<dd>corrected@reg.example</dd>
-</div>
-<div>
-<dt>机构状态</dt>
-<dd>
-<span class="tag ok">启用</span>
-</dd>
-</div>
-<div>
-<dt>账号状态</dt>
-<dd>
-<span class="tag warn">待首登改密</span>
-</dd>
-</div>
-<div>
-<dt>最近登录时间</dt>
-<dd>—</dd>
-</div>
-<div>
-<dt>邀请时间</dt>
-<dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
-</time>
-</dd>
-</div>
-<div>
-<dt>邀请人</dt>
-<dd>运营示例账号</dd>
-</div>
-<div>
-<dt>最近更新时间</dt>
-<dd>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z">
-</time>
-</dd>
-</div>
-<div>
-<dt>最近更新人</dt>
-<dd>运营示例账号</dd>
-</div>
-<div>
-<dt>时间显示时区</dt>
-<dd>
-<span data-zone>
-</span>
-</dd>
-</div>
-</dl>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>最近账号开通邮件</h2>
-</div>
-<div class="card-b form">
-<div class="facts-region">
-<dl class="facts inset">
-<div>
-<dt>生效登录邮箱</dt>
-<dd>corrected@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>运营更正邮箱</dd>
-</div>
-<div>
-<dt>发送时间</dt>
-<dd>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z">
-</time>
-</dd>
-</div>
-<div>
-<dt>发送结果</dt>
-<dd>
-<span class="tag ok">已发出</span>
-</dd>
-</div>
-</dl>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>自身牌照附件</h2>
-</div>
-<div class="card-b form">
-<ul class="file-list">
-<li class="file-row">
-<i data-ico="doc">
-</i>
-<div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
-<div class="hint">PDF · 2.4 MB</div>
-</div>
-<div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
-</div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="rg-corrected-fail" data-screen data-no="M114" data-name="机构详情 · 邮箱已更正但邮件失败" data-group="运营更正登录邮箱" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-list" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">示例监管机构 C</h1>
-</div>
-<div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑核心资料</button>
-<button type="button" class="btn " data-go="correct-ready">更正登录邮箱</button>
-<button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
-</div>
-</div>
-<div class="form-sheet">
-<div class="card">
-<div class="card-head">
-<h2>核心资料</h2>
-</div>
-<div class="card-b form">
-<div class="facts-region">
-<dl class="facts inset">
-<div>
-<dt>机构名称</dt>
-<dd>示例监管机构 C</dd>
-</div>
-<div>
-<dt>联系人</dt>
-<dd>示例联系人</dd>
-</div>
-<div>
-<dt>联系邮箱</dt>
-<dd>contact@reg.example</dd>
-</div>
-<div>
-<dt>所在国家或地区</dt>
-<dd>Singapore</dd>
-</div>
-</dl>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>账号与维护信息</h2>
-</div>
-<div class="card-b form">
-<div class="facts-region">
-<dl class="facts inset">
-<div>
-<dt>登录邮箱</dt>
-<dd>corrected@reg.example</dd>
-</div>
-<div>
-<dt>机构状态</dt>
-<dd>
-<span class="tag ok">启用</span>
-</dd>
-</div>
-<div>
-<dt>账号状态</dt>
-<dd>
-<span class="tag warn">待首登改密</span>
-</dd>
-</div>
-<div>
-<dt>最近登录时间</dt>
-<dd>—</dd>
-</div>
-<div>
-<dt>邀请时间</dt>
-<dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
-</time>
-</dd>
-</div>
-<div>
-<dt>邀请人</dt>
-<dd>运营示例账号</dd>
-</div>
-<div>
-<dt>最近更新时间</dt>
-<dd>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z">
-</time>
-</dd>
-</div>
-<div>
-<dt>最近更新人</dt>
-<dd>运营示例账号</dd>
-</div>
-<div>
-<dt>时间显示时区</dt>
-<dd>
-<span data-zone>
-</span>
-</dd>
-</div>
-</dl>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>最近账号开通邮件</h2>
-</div>
-<div class="card-b form">
-<div class="facts-region">
-<dl class="facts inset">
-<div>
-<dt>生效登录邮箱</dt>
-<dd>corrected@reg.example</dd>
-</div>
-<div>
-<dt>开通原因</dt>
-<dd>运营更正邮箱</dd>
-</div>
-<div>
-<dt>发送时间</dt>
-<dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
-</time>
-</dd>
-</div>
-<div>
-<dt>发送结果</dt>
-<dd>
-<span class="tag danger">发送失败</span>
-</dd>
-</div>
-</dl>
-</div>
-<div class="note warn" role="alert">
-<i data-ico="info">
-</i>
-<div>请线下告知该机构登录邮箱与初始密码。</div>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>自身牌照附件</h2>
-</div>
-<div class="card-b form">
-<ul class="file-list">
-<li class="file-row">
-<i data-ico="doc">
-</i>
-<div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
-<div class="hint">PDF · 2.4 MB</div>
-</div>
-<div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
-</div>
-</li>
-</ul>
-</div>
 </div>
 </div>
 </div>
@@ -8430,7 +8026,7 @@
 <div class="note red" role="alert">
 <i data-ico="info">
 </i>
-<div>暂时无法发送验证码，请重试。</div>
+<div>验证码发送失败，可立即重试一次。</div>
 </div>
 <div class="field">
 <div class="field-caption">
@@ -8440,7 +8036,7 @@
 </div>
 <input aria-required="true" autocomplete="off" class="inp" id="recover-ops-send-fail-m5-field-47" maxlength="254" type="email" value="ops-demo@example.com"/>
 </div>
-<button class="btn primary block" data-go="recover-ops-code" type="button">获取验证码</button>
+<button class="btn primary block" data-go="recover-ops-code" type="button">立即重试</button>
 <button class="btn ghost sm" data-go="login-ops" type="button">返回登录</button>
 </div>
 </div>
@@ -8469,12 +8065,14 @@
 <label for="recover-ops-code-m5-field-49">
 <span class="req" aria-hidden="true">*</span>邮箱验证码</label>
 </div>
-<input id="recover-ops-code-m5-field-49" class="inp" aria-required="true" aria-describedby="recover-ops-code-m5-field-49-help" type="text" value="" autocomplete="off">
-<p class="hint" id="recover-ops-code-m5-field-49-help">请输入邮件中的验证码。</p>
+<div class="code-control">
+<input id="recover-ops-code-m5-field-49" class="inp" aria-required="true" aria-describedby="recover-ops-code-m5-field-49-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn" disabled>重新获取（58 秒）</button>
+</div>
+<p class="hint" id="recover-ops-code-m5-field-49-help">验证码 10 分钟内有效。</p>
 </div>
 <button type="button" class="btn primary block" data-go="recover-ops-ready">验证并继续</button>
 <div class="form-actions">
-<button type="button" class="btn ghost sm" data-go="recover-ops-code">重新获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-ops">返回登录</button>
 </div>
 </div>
@@ -8504,12 +8102,14 @@
 <label for="recover-ops-code-invalid-m5-field-51">
 <span class="req" aria-hidden="true">*</span>邮箱验证码</label>
 </div>
-<input id="recover-ops-code-invalid-m5-field-51" class="inp" aria-required="true" aria-invalid="true" aria-describedby="recover-ops-code-invalid-m5-field-51-help" type="text" value="" autocomplete="off">
+<div class="code-control">
+<input id="recover-ops-code-invalid-m5-field-51" class="inp" aria-required="true" aria-invalid="true" aria-describedby="recover-ops-code-invalid-m5-field-51-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn" data-go="recover-ops-code">重新获取</button>
+</div>
 <p class="err-msg" id="recover-ops-code-invalid-m5-field-51-help">验证码无效，请重新输入或重新获取。</p>
 </div>
 <button type="button" class="btn primary block" data-go="recover-ops-ready" disabled>验证并继续</button>
 <div class="form-actions">
-<button type="button" class="btn ghost sm" data-go="recover-ops-code">重新获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-ops">返回登录</button>
 </div>
 </div>
@@ -9036,10 +8636,13 @@
 <label for="self-email-ops-code-m5-field-106">
 <span class="req" aria-hidden="true">*</span>新邮箱验证码</label>
 </div>
-<input id="self-email-ops-code-m5-field-106" class="inp" aria-required="true" type="text" value="" autocomplete="off">
+<div class="code-control">
+<input id="self-email-ops-code-m5-field-106" class="inp" aria-required="true" aria-describedby="self-email-ops-code-m5-field-106-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn" disabled>重新获取（58 秒）</button>
+</div>
+<p class="hint" id="self-email-ops-code-m5-field-106-help">验证码 10 分钟内有效。</p>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-ops-code">重新获取验证码</button>
 <button type="button" class="btn primary" data-go="self-email-ops-confirm">下一步：确认变更</button>
 </div>
 </div>
@@ -9142,39 +8745,65 @@
 <label for="self-email-ops-code-error-m5-field-113">
 <span class="req" aria-hidden="true">*</span>新邮箱验证码</label>
 </div>
-<input id="self-email-ops-code-error-m5-field-113" class="inp" aria-required="true" aria-invalid="true" aria-describedby="self-email-ops-code-error-m5-field-113-help" type="text" value="" autocomplete="off">
+<div class="code-control">
+<input id="self-email-ops-code-error-m5-field-113" class="inp" aria-required="true" aria-invalid="true" aria-describedby="self-email-ops-code-error-m5-field-113-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn" data-go="self-email-ops-code">重新获取</button>
+</div>
 <p class="err-msg" id="self-email-ops-code-error-m5-field-113-help">验证码无效，请重新输入或重新获取。</p>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-ops-code">重新获取验证码</button>
 <button type="button" class="btn primary" data-go="self-email-ops-confirm" disabled>下一步：确认变更</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-ops-send-fail" data-screen data-no="M141" data-name="运营示例 · 修改邮箱 · 发送失败" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops" hidden>
+<section id="self-email-ops-send-fail" data-screen data-no="M141" data-name="运营示例 · 修改邮箱 · 发送失败" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops-code" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
 <h1 class="page-title">修改登录邮箱</h1>
 </div>
 <div class="page-actions">
+<button type="button" class="btn ghost sm" data-go="o-settings">返回账户设置</button>
 </div>
 </div>
 <div class="card">
 <div class="card-head">
-<h2>修改未完成</h2>
+<h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<div class="field">
+<div class="field-caption">
+<label>当前登录邮箱</label>
+</div>
+<div class="field-static" id="self-email-ops-filled-m5-field-100">ops-demo@example.com</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="self-email-ops-filled-m5-field-101">
+<span class="req" aria-hidden="true">*</span>当前密码</label>
+</div>
+<div class="password-control">
+<input id="self-email-ops-filled-m5-field-101" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="self-email-ops-filled-m5-field-101" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="self-email-ops-filled-m5-field-102">
+<span class="req" aria-hidden="true">*</span>新登录邮箱</label>
+<span class="count">19 / 254</span>
+</div>
+<input id="self-email-ops-filled-m5-field-102" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
+</div>
 <div class="note red" role="alert">
 <i data-ico="info">
 </i>
-<div>暂时无法发送验证码，原邮箱保持不变，请重试。</div>
+<div>验证码发送失败，原邮箱保持不变。可立即重试一次。</div>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="o-settings">返回账户设置</button>
-<button type="button" class="btn primary" data-go="self-email-ops">重新开始</button>
+<button type="button" class="btn primary" data-go="self-email-ops-code">立即重试</button>
 </div>
 </div>
 </div>
@@ -9350,7 +8979,7 @@
 <h2>账号信息</h2>
 <div class="facts-region">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts inset cols-3">
 <div>
 <dt>账号名称</dt>
 <dd>运营示例账号</dd>
@@ -9459,6 +9088,39 @@ TP.pageTitle="管理端账号与监管机构管理 · 代币发行平台";
 TP.demo={accounts:{"ops": {"name": "运营示例账号", "email": "ops-demo@example.com", "role": "运营管理员"}, "reg": {"name": "示例监管机构 C", "email": "reviewer-demo@reg.example", "role": "监管机构", "org": "示例监管机构 C"}, "regoff": {"name": "示例监管机构 C", "email": "reviewer-demo@reg.example", "role": "监管机构", "org": "示例监管机构 C", "notice": "本机构已停用，不再接收新的发行申请；在途业务可以继续办理。"}, "regnew": {"name": "示例监管机构 C", "email": "new-reviewer@reg.example", "role": "监管机构", "org": "示例监管机构 C"}, "opsnew": {"name": "运营示例账号", "email": "new-ops@example.com", "role": "运营管理员"}}};
 TP.routes={regs:"rg-list",settings:{ops:"o-settings",reg:"r-settings",regoff:"r-off",regnew:"r-settings-new",opsnew:"o-settings-new"},logout:"login-out"};
 TP.addCopy({
+  "添加机构": "Add institution",
+  "编辑": "Edit",
+  "编辑机构": "Edit institution",
+  "编辑机构资料与附件": "Edit institution details and files",
+  "可稍后通过「编辑」上传。": "You can upload files later with Edit.",
+  "添加机构后，可在这里维护其资料与账号。": "Add an institution to manage its details and account here.",
+  "添加结果": "Result",
+  "添加后不能修改，请仔细核对。": "This cannot be changed after the institution is added. Check it carefully.",
+  "邀请邮件发送结果": "Invitation email delivery",
+  "收件邮箱": "Recipient email",
+  "机构详情 · 机构本人改邮箱后": "Institution details · changed by the institution",
+  "6 位数字": "6 digits",
+  "重新获取（58 秒）": "Resend in 58 s",
+  "重新获取": "Resend code",
+  "验证码 10 分钟内有效。": "The code is valid for 10 minutes.",
+  "验证码已失效，请重新获取。": "This code is no longer valid. Request a new code.",
+  "找回 · 验证码已失效": "Recovery · code no longer valid",
+  "验证码发送失败，可立即重试一次。": "The code could not be sent. You can retry once now.",
+  "立即重试": "Retry now",
+  "该邮箱获取验证码的次数已达上限，请约 3 小时后再试。": "This email has reached its code request limit. Try again in about 3 hours.",
+  "获取验证码过于频繁，请稍后再试。": "Too many code requests. Please try again later.",
+  "找回 · 邮箱发送已达上限": "Recovery · email limit reached",
+  "找回 · 请求过于频繁": "Recovery · too many requests",
+  "验证码发送失败，原邮箱保持不变。可立即重试一次。": "The code could not be sent. Your current email is unchanged. You can retry once now.",
+  "修改邮箱 · 发送已达上限": "Change email · limit reached",
+  "添加 · 空表单": "Add · empty form",
+  "添加 · 资料已填写": "Add · details entered",
+  "添加 · 名称重复": "Add · duplicate name",
+  "添加 · 附件上传中": "Add · uploading file",
+  "添加 · 提交中": "Add · submitting",
+  "添加 · 保存失败": "Add · save failed",
+  "添加 · 已建立并发出邮件": "Add · created and emailed",
+  "添加 · 已建立但邮件失败": "Add · created, delivery failed",
   "机构详情": "Regulator details",
   "牌照附件": "Licence files",
   "登录与首次改密": "Sign in and first password change",
@@ -9519,10 +9181,8 @@ TP.addCopy({
   "返回登录": "Back to sign in",
   "找回密码": "Recover password",
   "找回 · 已填写邮箱": "Recovery · email entered",
-  "暂时无法发送验证码，请重试。": "Unable to send a verification code. Please try again.",
   "找回 · 发送失败": "Recovery · delivery failed",
   "邮箱验证码": "Email verification code",
-  "请输入邮件中的验证码。": "Enter the code from your email.",
   "验证并继续": "Verify and continue",
   "重新获取验证码": "Request another code",
   "找回 · 验证邮箱": "Recovery · verify email",
@@ -9610,7 +9270,6 @@ TP.addCopy({
   "该邮箱不可用，请使用其他邮箱。": "This email is unavailable. Use a different email.",
   "修改邮箱 · 邮箱不可用": "Change email · email unavailable",
   "修改邮箱 · 验证码无效": "Change email · invalid code",
-  "暂时无法发送验证码，原邮箱保持不变，请重试。": "Unable to send the code. Your current email is unchanged. Please try again.",
   "修改未完成": "Change not completed",
   "修改邮箱 · 发送失败": "Change email · delivery failed",
   "账号信息已变化，请重新确认当前邮箱后再修改。": "Account information changed. Check your current email before trying again.",
@@ -9636,7 +9295,6 @@ TP.addCopy({
   "无权操作": "Action not permitted",
   "无权执行此操作，数据未改变。": "You cannot perform this action. No data was changed.",
   "监管机构列表": "Regulator list",
-  "邀请添加监管机构": "Invite regulator",
   "监管机构管理": "Regulator management",
   "查看": "View",
   "待首登改密": "Initial password change required",
@@ -9658,7 +9316,6 @@ TP.addCopy({
   "重置": "Reset",
   "查询": "Search",
   "尚未添加监管机构": "No regulators yet",
-  "邀请机构后，可在这里维护其资料与账号。": "Invite a regulator to manage its details and account here.",
   "监管机构 · 尚未添加": "Regulators · no institutions",
   "清除条件": "Clear filters",
   "当前条件下没有监管机构": "No matching regulators",
@@ -9666,7 +9323,6 @@ TP.addCopy({
   "监管机构 · 筛选无结果": "Regulators · no matching results",
   "监管机构读取失败": "Could not load regulators",
   "监管机构 · 读取失败": "Regulators · load failed",
-  "邀请监管机构": "Invite a regulator",
   "返回列表": "Back to list",
   "创建并发送邀请": "Create and send invitation",
   "请填写必填资料。": "Complete the required fields.",
@@ -9679,36 +9335,24 @@ TP.addCopy({
   "上传自身牌照": "Upload institution licences",
   "选择 PDF 文件": "Choose PDF files",
   "未提供牌照附件": "No licence files provided",
-  "可在编辑核心资料时上传。": "Upload files when editing institution details.",
   "自身牌照附件": "Institution licences",
   "初始密码": "Initial password",
   "账号开通后将向登录邮箱发送初始凭据。机构首次登录须修改密码。": "Initial credentials will be emailed to the login address. The institution must change its password at first sign in.",
   "登录账号": "Login account",
-  "邀请 · 空表单": "Invite · empty form",
   "移除": "Remove",
-  "邀请 · 资料已填写": "Invite · details entered",
   "请先更正标记的字段。": "Correct the highlighted field.",
   "已有同名监管机构，请修改名称。": "An institution with this name already exists. Use a different name.",
-  "邀请 · 名称重复": "Invite · duplicate name",
   "请先完成附件上传。": "Wait for the upload to finish.",
   "正在上传 · 60%": "Uploading · 60%",
   "上传进度": "Upload progress",
-  "邀请 · 附件上传中": "Invite · uploading file",
   "正在提交": "Submitting",
   "请等待提交完成。": "Wait for submission to finish.",
-  "邀请 · 提交中": "Invite · submitting",
   "机构与账号未建立，已填资料保留，请重试。": "No institution or account was created. Your entries are retained. Please try again.",
-  "邀请 · 保存失败": "Invite · save failed",
   "监管机构已添加": "Regulator added",
   "机构与账号已建立，邀请邮件已发往 invite-demo@reg.example。": "Institution and account created. Invitation emailed to invite-demo@reg.example.",
   "查看机构": "View institution",
-  "邀请结果": "Invitation result",
-  "邀请 · 已建立并发出邮件": "Invite · created and emailed",
   "机构与账号已建立，邀请邮件未能发出。请线下告知登录邮箱与初始密码。": "Institution and account created, but the invitation email was not sent. Share the login email and initial password offline.",
-  "邀请 · 已建立但邮件失败": "Invite · created, delivery failed",
   "监管机构详情": "Regulator details",
-  "编辑核心资料": "Edit institution details",
-  "更正登录邮箱": "Correct login email",
   "停用机构": "Disable institution",
   "示例监管机构 C": "示例监管机构 C",
   "邀请人": "Invited by",
@@ -9717,11 +9361,8 @@ TP.addCopy({
   "账号与维护信息": "Account and maintenance",
   "邀请添加": "Invitation",
   "已发出": "Sent",
-  "生效登录邮箱": "Effective login email",
-  "开通原因": "Activation reason",
   "发送时间": "Sent",
   "发送结果": "Delivery result",
-  "最近账号开通邮件": "Latest account activation email",
   "下载": "Download",
   "机构详情 · 启用正常": "Institution details · enabled, active",
   "启用机构": "Enable institution",
@@ -9747,7 +9388,6 @@ TP.addCopy({
   "该监管机构不存在，请返回列表。": "This institution does not exist. Return to the list.",
   "机构信息": "Institution information",
   "机构详情读取失败": "Could not load institution details",
-  "编辑核心资料与附件": "Edit details and files",
   "返回详情": "Back to details",
   "尚未修改资料。": "No changes have been made.",
   "保存资料": "Save details",
@@ -9770,36 +9410,14 @@ TP.addCopy({
   "编辑 · 已保存": "Edit · saved",
   "牌照附件暂时无法读取，请重试。": "Licence files are temporarily unavailable. Please try again.",
   "牌照附件 · 读取失败": "Licence files · load failed",
-  "运营更正登录邮箱": "Operator login email correction",
   "新的初始密码": "New initial password",
   "请填写新的登录邮箱与初始密码。": "Enter the new login email and initial password.",
-  "下一步：确认更正": "Next: confirm correction",
-  "账号更正": "Account correction",
-  "更正邮箱 · 空表单": "Correct email · empty form",
-  "更正邮箱 · 已填写": "Correct email · ready",
   "该邮箱已被管理端账号使用，请更换邮箱。": "This email is already used by an admin account. Use a different email.",
-  "更正邮箱 · 邮箱占用": "Correct email · email in use",
-  "更正前邮箱": "Previous email",
-  "更正后邮箱": "New email",
   "原账号凭据将作废，全部旧登录结束。新邮箱须使用新的初始密码登录并完成首登改密；未到期的锁定不会提前解除。": "Previous credentials will become invalid and all old sessions will end. The new email must use the new initial password and complete the initial password change. An active lockout will not end early.",
-  "确认更正并发邮件": "Confirm correction and email",
-  "确认更正登录邮箱": "Confirm login email correction",
-  "更正邮箱 · 确认后果": "Correct email · confirm consequences",
-  "更正邮箱 · 提交中": "Correct email · submitting",
   "新邮箱已生效，原账号已作废，开通邮件已发出。": "The new email is active, old credentials are invalid and the activation email was sent.",
   "查看更新后的详情": "View updated details",
-  "更正结果": "Correction result",
-  "更正邮箱 · 已生效并发邮件": "Correct email · saved and emailed",
   "新邮箱已生效，原账号已作废。开通邮件未能发出，请线下告知新邮箱与初始密码。": "The new email is active and old credentials are invalid. The activation email was not sent. Share the new email and initial password offline.",
-  "更正邮箱 · 已生效但邮件失败": "Correct email · saved, delivery failed",
-  "更正失败，原邮箱、密码与登录保持不变。请重试。": "Correction failed. The previous email, password and sessions are unchanged. Please try again.",
   "返回机构详情": "Back to institution",
-  "更正邮箱 · 保存失败": "Correct email · save failed",
-  "账号信息已变化，请重新确认当前邮箱后再更正。": "Account information changed. Check the current email and restart correction.",
-  "更正邮箱 · 信息已变化": "Correct email · information changed",
-  "运营更正邮箱": "Operator email correction",
-  "机构详情 · 邮箱更正后": "Institution details · email corrected",
-  "机构详情 · 邮箱已更正但邮件失败": "Institution details · email corrected, delivery failed",
   "停用与启用": "Disable and enable",
   "停用后企业不能再选择本机构发起新的发行申请。机构仍可登录，已有在途业务照常办理，相关消息继续发送。": "Companies will no longer be able to select this institution for new issuance applications. It can still sign in and handle existing business, with related messages continuing.",
   "确认停用": "Confirm disable",
