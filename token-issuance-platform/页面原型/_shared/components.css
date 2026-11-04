@@ -92,6 +92,11 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .page-title{font-size:var(--ui-page-title);font-weight:600;line-height:1.3;letter-spacing:-.025em}
 .page-desc{color:var(--muted);margin-top:var(--sp-2);max-width:72ch}
 .page-actions{margin-left:auto;display:flex;align-self:center;gap:var(--sp-2)}
+/* 详情页标题行（frame.js 按三级及以上面包屑标记）：吸附在顶栏下方，编号与操作按钮滚动时始终可见；
+   负上边距抵消内边距，静止时位置不变。 */
+.page-head[data-sticky]{position:sticky;top:var(--app-header-h);z-index:calc(var(--z-sticky) - 21);background:var(--bg);
+  padding-block:var(--sp-3);margin-top:calc(-1 * var(--sp-3));margin-bottom:var(--sp-1)}
+.page-head[data-sticky].is-stuck{box-shadow:0 1px 0 var(--border)}
 
 /* ---------- 按钮 ---------- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:var(--ctrl-h);padding:0 16px;
@@ -555,7 +560,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .asset-list:has(colgroup) .col-act{width:auto}
 .asset-list .tag{max-width:100%;white-space:normal;margin-top:0}
 /* 分区标签是锚点导航；所有信息始终在同一页面，正常上下滚动。 */
-.detail-nav{position:sticky;top:var(--app-header-h);z-index:calc(var(--z-sticky) - 21);display:flex;gap:var(--sp-6);max-width:100%;overflow-x:auto;
+.detail-nav{position:sticky;top:calc(var(--app-header-h) + var(--sticky-head-h, 0px));z-index:calc(var(--z-sticky) - 21);display:flex;gap:var(--sp-6);max-width:100%;overflow-x:auto;
   padding:0;margin-block:var(--sp-4) var(--sp-6);background:var(--bg);border:0;border-bottom:1px solid var(--border);border-radius:0}
 .detail-nav a{display:inline-flex;align-items:center;flex:none;min-height:var(--ctrl-h);padding:var(--sp-2) 0;
   font-size:var(--fs-14);font-weight:500;color:var(--muted)}
@@ -563,7 +568,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .detail-nav a[aria-current="location"]{color:var(--accent);font-weight:650}
 .detail-nav a:focus-visible{outline-offset:-2px}
 .detail-nav-sep{flex:none;width:var(--sp-2)}
-[data-detail-section],.detail-group{scroll-margin-top:calc(var(--app-header-h) + var(--ctrl-h) + var(--sp-6))}
+[data-detail-section],.detail-group{scroll-margin-top:calc(var(--app-header-h) + var(--sticky-head-h, 0px) + var(--ctrl-h) + var(--sp-6))}
 /* 缺失值：L1 缺失用警示色说明上游未提供；L2 缺失弱化为未提供。 */
 .missing{color:var(--warn);font-size:var(--fs-13)}
 .missing.soft{color:var(--faint)}

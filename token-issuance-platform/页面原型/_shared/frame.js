@@ -195,6 +195,7 @@
     renderDemo();
     TP.renderDisplay();
     if(inline) window.scrollTo(0,0);
+    syncStickyHead();
     if(TP.refreshDetailNav) TP.refreshDetailNav();
   }
   TP.show = show;
@@ -277,7 +278,7 @@
     }
     if(t.matches('.dd-btn')){ var l = t.nextElementSibling; l.hidden = !l.hidden; t.setAttribute('aria-expanded', l.hidden?'false':'true'); return; }
     if(t.id==='demoBtn'){ demoOpen = !demoOpen; renderDemo(); TP.localize($('#demoPanel')); return; }
-    if(t.dataset.lang){ TP.setLanguage(t.dataset.lang); renderTools(document.getElementById(current.base || current.id), false); TP.renderDisplay(); return; }
+    if(t.dataset.lang){ TP.setLanguage(t.dataset.lang); renderTools(document.getElementById(current.base || current.id), false); TP.renderDisplay(); syncStickyHead(); return; }
     if(t.dataset.demoGo){ show(t.dataset.demoGo); return; }
     if(t.hasAttribute('data-copy')){ copyFullValue(t); return; }
     if(t.dataset.moduleKey && TP.navigate && TP.navigate(t.dataset.moduleKey,current)) return;
@@ -316,6 +317,32 @@
 
   TP.refreshLanguageTools = function(){ if(current) renderTools(document.getElementById(current.base || current.id),false); };
 
+  /* 列表进入的详情页（三级及以上面包屑）：标题行滚动时吸附在顶栏下方，编号与操作按钮始终可见。
+     --sticky-head-h 供详情分区导航与锚点偏移使用；吸附后加底线区分滚动内容。 */
+  var stickyHead = null;
+  function markStickyHeads(){
+    order.forEach(function(sec){
+      if(sec.dataset.layout!=='app' || (sec.hasAttribute('data-overlay') && !sec.hasAttribute('data-inline'))) return;
+      if((sec.dataset.crumb||'').split('/').filter(Boolean).length<3) return;
+      var head = $('.content-in > .page-head', sec) || $('.page-head', sec);
+      if(head) head.setAttribute('data-sticky','');
+    });
+  }
+  function syncStickyHead(){
+    var head = $('#content [data-screen]:not([hidden]) .page-head[data-sticky]');
+    if(stickyHead && stickyHead!==head) stickyHead.classList.remove('is-stuck');
+    stickyHead = head;
+    document.documentElement.style.setProperty('--sticky-head-h', head ? head.offsetHeight+'px' : '0px');
+    if(head) head.classList.toggle('is-stuck', window.scrollY>0 && head.getBoundingClientRect().top <= (parseFloat(getComputedStyle(head).top)||0)+1);
+  }
+  TP.syncStickyHead = syncStickyHead;
+  var stickyPending = false;
+  window.addEventListener('scroll', function(){
+    if(stickyPending) return; stickyPending = true;
+    requestAnimationFrame(function(){ stickyPending = false; syncStickyHead(); });
+  }, {passive:true});
+  window.addEventListener('resize', syncStickyHead);
+
   TP.boot = function(first){
     TP.initDisplay();
     if(TP.initNavigation) TP.initNavigation();
@@ -329,6 +356,7 @@
     $$('i[data-asset]').forEach(function(i){ i.outerHTML = TP.assetIcon(i.dataset.asset); });
     $$('i[data-ico]').forEach(function(i){ i.outerHTML = TP.icon(i.dataset.ico); });
     order = $$('[data-screen]');
+    markStickyHeads();
     $$('.login-screen').forEach(function(sec){ $('#focusMain').appendChild(sec); });
     $('#demoBtn').textContent = '画面目录 · 演示数据';
     document.body.classList.add('ready');
