@@ -91,6 +91,10 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .page-head>div:first-child{min-width:0}
 .page-title{font-size:var(--ui-page-title);font-weight:600;line-height:1.3;letter-spacing:-.025em}
 .page-desc{color:var(--muted);margin-top:var(--sp-2);max-width:72ch}
+/* 标题行带状态：审核对象名称为标题，真实状态紧随其后，随标题行吸顶。 */
+.page-title-row{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2) var(--sp-3);min-width:0}
+.page-title-row .page-title{min-width:0;overflow-wrap:anywhere}
+.page-title-row .tag{flex:none}
 .page-actions{margin-left:auto;display:flex;align-self:center;gap:var(--sp-2)}
 /* 详情页标题行（frame.js 按三级及以上面包屑标记）：吸附在顶栏下方，编号与操作按钮滚动时始终可见；
    负上边距抵消内边距，静止时位置不变。 */
@@ -694,6 +698,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .choice-card:has(:checked){background:var(--accent-soft);border-color:var(--accent)}
 .choice-card input{accent-color:var(--accent);margin-top:var(--sp-1)}
 .choice-card span{min-width:0}
+.choice-card .cell-sub{display:block}
 .document-preview{background:var(--card-2);border:1px solid var(--border);padding:var(--sp-4);border-radius:var(--radius-xs)}
 .document-sheet{background:var(--card);border:1px solid var(--border);padding:var(--sp-6);display:flex;flex-direction:column;gap:var(--sp-5)}
 .document-sheet h2{font-size:var(--ui-section-title);text-align:center}
