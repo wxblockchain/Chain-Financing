@@ -64,8 +64,6 @@
   --topbar-h:68px;
   --card-pad:24px;
   --cell-pad-y:12px;
-  --facts-label-w:120px;
-  --asset-label-w-en:160px;
   --filter-field-min:200px;
   --filter-search-w:320px;
   --filter-select-min:184px;
@@ -97,7 +95,3 @@
   --ease-out:cubic-bezier(.22,.61,.36,1);
   --dur-fast:120ms; --dur-base:200ms;
 }
-
-/* M2 English field labels need room for complete words. */
-:root[lang="en"][data-module="assets"]{--facts-label-w:var(--asset-label-w-en)}
-:root[lang="en"][data-module="issuance"]{--facts-label-w:var(--asset-label-w-en)}

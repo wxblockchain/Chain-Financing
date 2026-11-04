@@ -173,16 +173,15 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .card-f{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:var(--sp-3);padding:var(--sp-4) var(--card-pad);
   border-top:1px solid var(--border);background:var(--card-2);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
 
-/* ---------- 只读信息组：标签和值横向配对，窄屏上下排列 ---------- */
+/* ---------- 通用只读信息组：字段名在上、值在下；容器足够宽时两列 ---------- */
 .facts-region{container:facts / inline-size;min-width:0}
 .facts{display:grid;grid-template-columns:minmax(0,1fr);gap:0 var(--sp-7);margin:0;padding:var(--sp-2) var(--card-pad)}
-.facts>div{display:grid;grid-template-columns:var(--facts-label-w) minmax(0,1fr);gap:var(--sp-3);align-items:start;
-  padding:var(--sp-3) 0;border-top:1px solid var(--row-line);min-width:0}
+.facts>div{display:flex;flex-direction:column;gap:var(--sp-1);
+  padding:var(--sp-4) 0;border-top:1px solid var(--row-line);min-width:0}
 .facts>div:first-child{border-top:0}
 .facts>.wide{grid-column:1/-1}
-.facts dt{color:var(--muted);font-size:var(--ui-field-label);line-height:1.6;padding-top:2px}
-.facts dd{margin:0;min-width:0;max-width:100%;overflow-wrap:anywhere}
-.facts.single>div{display:grid;grid-template-columns:var(--facts-label-w) minmax(0,1fr);gap:var(--sp-4);align-items:start}
+.facts dt{color:var(--muted);font-size:var(--ui-field-label);line-height:1.6}
+.facts dd{margin:0;min-width:0;max-width:100%;overflow-wrap:anywhere;line-height:var(--lh-body)}
 @container facts (min-width:762px){
   .facts:not(.single){grid-template-columns:repeat(2,minmax(0,1fr))}
   .facts>div:nth-child(2):not(.wide){border-top:0}
@@ -410,8 +409,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .profile-section{display:grid;grid-template-columns:120px minmax(0,1fr);gap:var(--sp-6);padding:var(--sp-5) var(--sp-6)}
 .profile-section+.profile-section{border-top:1px solid var(--border)}
 .profile-section .card-head{padding:0;border:0;align-items:flex-start}
-.profile-section .facts{padding:0;column-gap:var(--sp-6)}
-.profile-section .facts>div{grid-template-columns:104px minmax(0,1fr)}
+.profile-section .facts{padding:0}
 .profile-section .state{padding:var(--sp-5)}
 .preferences{display:flex;flex-direction:column;gap:var(--sp-4);min-width:0}
 /* 邮箱账号与机构资料组件：复用表单、卡片、提示与 token，不独立定义主题。 */
@@ -483,7 +481,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
   .ident>.tag{margin-left:0}
   .ident>div{min-width:0;max-width:100%;overflow-wrap:anywhere}
   .note.banner,.inline-empty{flex-wrap:wrap}
-  .facts>div,.facts.single>div,.profile-section .facts>div{display:flex;flex-direction:column;gap:var(--sp-1)}
   .profile-section{padding:var(--sp-4)}
   .preference-row{flex-direction:column;gap:var(--sp-2)}
   .preference-row .inp{max-width:100%;flex:auto}
@@ -625,11 +622,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .asset-detail{margin-top:var(--sp-4)}
 .sub-empty{padding:0 var(--card-pad) var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
 .page-desc [data-zone]{display:inline;font-family:var(--mono);font-size:var(--fs-13)}
-/* Asset facts stack labels above values; record tables are inset, denser surfaces. */
-.asset-detail .facts,.asset-related .facts{column-gap:var(--sp-7)}
-.asset-detail .facts>div,.asset-related .facts>div{display:flex;flex-direction:column;gap:var(--sp-1);padding-block:var(--sp-4)}
-.asset-detail .facts dt,.asset-related .facts dt{padding-top:0}
-.asset-detail .facts dd,.asset-related .facts dd{line-height:var(--lh-body)}
+/* Asset details reuse the shared facts layout; record tables remain inset surfaces. */
 .asset-detail .card-head,.asset-related .card-head{padding-block:var(--sp-5)}
 .asset-detail .sub-h{font-size:var(--fs-14);padding-bottom:var(--sp-3);flex-wrap:wrap}
 .detail-table{margin:0 var(--card-pad) var(--sp-5);border:1px solid var(--border);border-radius:var(--radius-xs)}
@@ -689,7 +682,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .document-sheet h2{font-size:var(--ui-section-title);text-align:center}
 .document-sheet .facts{padding:0}
 .document-kicker{font-size:var(--fs-12);color:var(--faint)}
-:root[lang="en"][data-module="issuance-review"]{--facts-label-w:var(--asset-label-w-en)}
 @media(max-width:900px){.review-progress{grid-template-columns:repeat(2,minmax(0,1fr))}.review-list{min-width:800px}}
 @media(max-width:600px){.review-progress{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:1100px){.asset-sum{grid-template-columns:minmax(0,1fr)}}
