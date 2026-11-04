@@ -699,6 +699,27 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .choice-card input{accent-color:var(--accent);margin-top:var(--sp-1)}
 .choice-card span{min-width:0}
 .choice-card .cell-sub{display:block}
+.choice-card .addr{display:flex;width:max-content;margin-top:var(--sp-2)}
+/* 铸造进度（M3b）：纵向阶段，只呈现各阶段的静态结果；当前阶段的转圈不推进、不计时。 */
+.stage-list{list-style:none;margin:0;padding:0}
+.stage-list>li{position:relative;display:flex;gap:var(--sp-3);padding-bottom:var(--sp-5);min-width:0}
+.stage-list>li:last-child{padding-bottom:0}
+.stage-list>li:not(:last-child)::after{content:"";position:absolute;left:11px;top:28px;bottom:var(--sp-1);width:2px;background:var(--border)}
+.stage-list>li.done:not(:last-child)::after{background:var(--ok)}
+.stage-mark{width:24px;height:24px;border-radius:var(--radius-pill);border:2px solid var(--border-strong);background:var(--card);display:grid;place-items:center;flex:none;color:var(--faint)}
+.stage-mark svg.i{width:14px;height:14px;stroke-width:2.4}
+.stage-mark .spinner{width:12px;height:12px}
+.stage-list .done .stage-mark{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.stage-list .current .stage-mark{border-color:var(--accent);color:var(--accent)}
+.stage-list .failed .stage-mark{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}
+.stage-list .overdue .stage-mark{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+.stage-body{min-width:0;padding-top:2px}
+.stage-body b{display:block;font-weight:600;color:var(--muted)}
+.stage-list :is(.done,.current,.failed,.overdue) .stage-body b{color:var(--text)}
+.stage-list .failed .stage-body>p:first-of-type{color:var(--danger)}
+.stage-list .overdue .stage-body>p:first-of-type{color:var(--warn)}
+.stage-body p{margin-top:var(--sp-1);font-size:var(--fs-13);color:var(--muted);overflow-wrap:anywhere}
+.stage-hash{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2)}
 .document-preview{background:var(--card-2);border:1px solid var(--border);padding:var(--sp-4);border-radius:var(--radius-xs)}
 .document-sheet{background:var(--card);border:1px solid var(--border);padding:var(--sp-6);display:flex;flex-direction:column;gap:var(--sp-5)}
 .document-sheet h2{font-size:var(--ui-section-title);text-align:center}
