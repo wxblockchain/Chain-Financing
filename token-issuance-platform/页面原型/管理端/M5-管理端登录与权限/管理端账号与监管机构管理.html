@@ -44,7 +44,7 @@
 <button type="button" class="btn icon" data-password-toggle="m5-field-2" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
 </div>
-<button type="button" class="btn primary block" data-go="o-settings">登录</button>
+<button type="button" class="btn primary block" data-module-key="review" data-module-who="ops" data-go="o-settings">登录</button>
 <button type="button" class="btn ghost sm" data-go="recover-ops-filled">忘记密码</button>
 </div>
 </div>
@@ -72,7 +72,7 @@
 <button type="button" class="btn icon" data-password-toggle="m5-field-4" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
 </div>
-<button type="button" class="btn primary block" data-go="r-settings">登录</button>
+<button type="button" class="btn primary block" data-module-key="review" data-module-who="reg" data-go="r-settings">登录</button>
 <button type="button" class="btn ghost sm" data-go="recover-filled">忘记密码</button>
 </div>
 </div>
@@ -134,7 +134,7 @@
 <button type="button" class="btn icon" data-password-toggle="m5-field-8" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
 </div>
-<button type="button" class="btn primary block" data-go="o-settings">登录</button>
+<button type="button" class="btn primary block" data-module-key="review" data-module-who="ops" data-go="o-settings">登录</button>
 <button type="button" class="btn ghost sm" data-go="recover-ops-filled">忘记密码</button>
 </div>
 </div>
@@ -167,7 +167,7 @@
 <button type="button" class="btn icon" data-password-toggle="m5-field-10" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
 </div>
-<button type="button" class="btn primary block" data-go="o-settings">登录</button>
+<button type="button" class="btn primary block" data-module-key="review" data-module-who="ops" data-go="o-settings">登录</button>
 <button type="button" class="btn ghost sm" data-go="recover-ops-filled">忘记密码</button>
 </div>
 </div>
@@ -441,7 +441,7 @@
 <button type="button" class="btn icon" data-password-toggle="m5-field-28" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
 </div>
-<button type="button" class="btn primary block" data-go="r-settings-new">重新登录</button>
+<button type="button" class="btn primary block" data-module-key="review" data-module-who="regnew" data-go="r-settings-new">重新登录</button>
 </div>
 </div>
 </section>
@@ -876,7 +876,7 @@
 </div>
 <input id="recover-limit-ip-m5-field-46" class="inp" aria-required="true" type="email" value="reviewer-demo@reg.example" maxlength="254" autocomplete="off">
 </div>
-<button type="button" class="btn primary block" data-go="recover-code">获取验证码</button>
+<button type="button" class="btn primary block" data-go="recover-code" disabled>获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
 </div>
 </div>
@@ -1478,7 +1478,7 @@
 <div>
 <dt>创建时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:30:00Z" datetime="2026-10-20T03:30:00Z">
+<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
 </time>
 </dd>
 </div>
@@ -1605,7 +1605,7 @@
 <div>
 <dt>创建时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:30:00Z" datetime="2026-10-20T03:30:00Z">
+<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
 </time>
 </dd>
 </div>
@@ -2201,7 +2201,7 @@
 <div>
 <dt>创建时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:30:00Z" datetime="2026-10-20T03:30:00Z">
+<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
 </time>
 </dd>
 </div>
@@ -2328,7 +2328,7 @@
 <div>
 <dt>创建时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:30:00Z" datetime="2026-10-20T03:30:00Z">
+<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
 </time>
 </dd>
 </div>
@@ -2450,7 +2450,7 @@
 <div>
 <dt>创建时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:30:00Z" datetime="2026-10-20T03:30:00Z">
+<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
 </time>
 </dd>
 </div>
@@ -3450,7 +3450,7 @@
 </div>
 </div>
 </section>
-<section id="access-menu" data-screen data-no="M64" data-name="无权访问菜单" data-group="会话与访问反馈" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="r-settings" hidden>
+<section id="access-menu" data-screen data-no="M64" data-name="无权访问菜单" data-group="会话与访问反馈" data-layout="app" data-who="reg" data-nav="" data-crumb="访问受限" data-next="r-settings" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -3471,13 +3471,13 @@
 </span>
 <h3>无权访问菜单</h3>
 <p>无权访问此页面。</p>
-<button type="button" class="btn primary" data-go="r-settings">返回账户设置</button>
+<button type="button" class="btn primary" data-module-key="review" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">返回发行审核</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="access-data" data-screen data-no="M65" data-name="无权查看或内容不存在" data-group="会话与访问反馈" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="r-settings" hidden>
+<section id="access-data" data-screen data-no="M65" data-name="无权查看或内容不存在" data-group="会话与访问反馈" data-layout="app" data-who="reg" data-nav="" data-crumb="访问受限" data-next="r-settings" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -3498,13 +3498,13 @@
 </span>
 <h3>无权查看或内容不存在</h3>
 <p>无权查看或内容不存在。</p>
-<button type="button" class="btn primary" data-go="r-settings">返回账户设置</button>
+<button type="button" class="btn primary" data-module-key="review" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">返回发行审核</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="access-action" data-screen data-no="M66" data-name="无权操作" data-group="会话与访问反馈" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="r-settings" hidden>
+<section id="access-action" data-screen data-no="M66" data-name="无权操作" data-group="会话与访问反馈" data-layout="app" data-who="reg" data-nav="" data-crumb="访问受限" data-next="r-settings" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -3525,7 +3525,7 @@
 </span>
 <h3>无权操作</h3>
 <p>无权执行此操作，数据未改变。</p>
-<button type="button" class="btn primary" data-go="r-settings">返回账户设置</button>
+<button type="button" class="btn primary" data-module-key="review" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">返回发行审核</button>
 </div>
 </div>
 </div>
@@ -3542,6 +3542,10 @@
 </div>
 </div>
 <div class="card">
+<div class="card-head">
+<h2>监管机构</h2>
+<span class="sub">4 家</span>
+</div>
 <form class="asset-filters" data-static-form aria-label="筛选监管机构">
 <div class="filter-toolbar">
 <label class="filter-select">
@@ -3595,27 +3599,6 @@
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>示例监管机构 C</td>
-<td>reviewer-demo@reg.example</td>
-<td>
-<span class="tag ok">启用</span>
-</td>
-<td>
-<span class="tag ok">正常</span>
-</td>
-<td>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z" data-compact>
-</time>
-</td>
-<td>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z" data-compact>
-</time>
-</td>
-<td class="col-act">
-<button type="button" class="btn sm ghost" data-go="rg-detail">查看</button>
-</td>
-</tr>
 <tr>
 <td>示例监管机构 D</td>
 <td>invited@reg.example</td>
@@ -3676,6 +3659,27 @@
 <button type="button" class="btn sm ghost" data-go="rg-list-off">查看</button>
 </td>
 </tr>
+<tr>
+<td>示例监管机构 C</td>
+<td>reviewer-demo@reg.example</td>
+<td>
+<span class="tag ok">启用</span>
+</td>
+<td>
+<span class="tag ok">正常</span>
+</td>
+<td>
+<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z" data-compact>
+</time>
+</td>
+<td>
+<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z" data-compact>
+</time>
+</td>
+<td class="col-act">
+<button type="button" class="btn sm ghost" data-go="rg-detail">查看</button>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -3693,6 +3697,10 @@
 </div>
 </div>
 <div class="card">
+<div class="card-head">
+<h2>监管机构</h2>
+<span class="sub">0 家</span>
+</div>
 <form class="asset-filters" data-static-form aria-label="筛选监管机构">
 <div class="filter-toolbar">
 <label class="filter-select">
@@ -3749,6 +3757,10 @@
 </div>
 </div>
 <div class="card">
+<div class="card-head">
+<h2>监管机构</h2>
+<span class="sub">0 家</span>
+</div>
 <form class="asset-filters" data-static-form aria-label="筛选监管机构">
 <div class="filter-toolbar">
 <label class="filter-select">
@@ -3805,6 +3817,9 @@
 </div>
 </div>
 <div class="card">
+<div class="card-head">
+<h2>监管机构</h2>
+</div>
 <form class="asset-filters" data-static-form aria-label="筛选监管机构">
 <div class="filter-toolbar">
 <label class="filter-select">
@@ -4718,7 +4733,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑</button>
+<button type="button" class="btn " data-go="edit-ready">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -4851,11 +4866,11 @@
 <i data-ico="doc">
 </i>
 <div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<button type="button" class="btn-link file-name" data-toast="演示文件，不提供真实文件。">DEMO-Licence.pdf</button>
 <div class="hint">PDF · 2.4 MB</div>
 </div>
 <div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+<button type="button" class="btn icon" aria-label="下载" title="下载" data-toast="演示文件，不提供真实文件。"><i data-ico="download"></i></button>
 </div>
 </li>
 </ul>
@@ -4871,7 +4886,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑</button>
+<button type="button" class="btn " data-go="edit-ready">编辑</button>
 <button type="button" class="btn primary" data-go="enable-confirm">启用机构</button>
 </div>
 </div>
@@ -5009,11 +5024,11 @@
 <i data-ico="doc">
 </i>
 <div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<button type="button" class="btn-link file-name" data-toast="演示文件，不提供真实文件。">DEMO-Licence.pdf</button>
 <div class="hint">PDF · 2.4 MB</div>
 </div>
 <div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+<button type="button" class="btn icon" aria-label="下载" title="下载" data-toast="演示文件，不提供真实文件。"><i data-ico="download"></i></button>
 </div>
 </li>
 </ul>
@@ -5029,7 +5044,7 @@
 <h1 class="page-title">示例监管机构 G</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑</button>
+<button type="button" class="btn " data-go="edit-ready">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -5091,7 +5106,7 @@
 <div>
 <dt>邀请时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+<time data-instant="2026-10-30T02:30:00Z" datetime="2026-10-30T02:30:00Z">
 </time>
 </dd>
 </div>
@@ -5102,7 +5117,7 @@
 <div>
 <dt>最近更新时间</dt>
 <dd>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z">
+<time data-instant="2026-10-30T02:30:00Z" datetime="2026-10-30T02:30:00Z">
 </time>
 </dd>
 </div>
@@ -5135,7 +5150,7 @@
 <div>
 <dt>发送时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+<time data-instant="2026-10-30T02:30:00Z" datetime="2026-10-30T02:30:00Z">
 </time>
 </dd>
 </div>
@@ -5159,168 +5174,11 @@
 <i data-ico="doc">
 </i>
 <div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<button type="button" class="btn-link file-name" data-toast="演示文件，不提供真实文件。">DEMO-Licence.pdf</button>
 <div class="hint">PDF · 2.4 MB</div>
 </div>
 <div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
-</div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="rg-locked" data-screen data-no="M82" data-name="机构详情 · 账号锁定" data-group="监管机构详情" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="edit-ready" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">示例监管机构 C</h1>
-</div>
-<div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑</button>
-<button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
-</div>
-</div>
-<div class="form-sheet">
-<div class="card">
-<div class="card-head">
-<h2>核心资料</h2>
-</div>
-<div class="card-b form">
-<div class="facts-region">
-<dl class="facts inset cols-3">
-<div>
-<dt>机构名称</dt>
-<dd>示例监管机构 C</dd>
-</div>
-<div>
-<dt>联系人</dt>
-<dd>示例联系人</dd>
-</div>
-<div>
-<dt>联系邮箱</dt>
-<dd>contact@reg.example</dd>
-</div>
-<div>
-<dt>所在国家或地区</dt>
-<dd>Singapore</dd>
-</div>
-</dl>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>账号与维护信息</h2>
-</div>
-<div class="card-b form">
-<div class="facts-region">
-<dl class="facts inset cols-3">
-<div>
-<dt>登录邮箱</dt>
-<dd>reviewer-demo@reg.example</dd>
-</div>
-<div>
-<dt>机构状态</dt>
-<dd>
-<span class="tag ok">启用</span>
-</dd>
-</div>
-<div>
-<dt>账号状态</dt>
-<dd>
-<span class="tag warn">锁定</span>
-</dd>
-</div>
-<div>
-<dt>最近登录时间</dt>
-<dd>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z">
-</time>
-</dd>
-</div>
-<div>
-<dt>锁定剩余时间</dt>
-<dd>14 分钟 30 秒</dd>
-</div>
-<div>
-<dt>邀请时间</dt>
-<dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
-</time>
-</dd>
-</div>
-<div>
-<dt>邀请人</dt>
-<dd>运营示例账号</dd>
-</div>
-<div>
-<dt>最近更新时间</dt>
-<dd>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z">
-</time>
-</dd>
-</div>
-<div>
-<dt>最近更新人</dt>
-<dd>运营示例账号</dd>
-</div>
-<div>
-<dt>时间显示时区</dt>
-<dd>
-<span data-zone>
-</span>
-</dd>
-</div>
-</dl>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>邀请邮件发送结果</h2>
-</div>
-<div class="card-b form">
-<div class="facts-region">
-<dl class="facts inset cols-3">
-<div>
-<dt>收件邮箱</dt>
-<dd>reviewer-demo@reg.example</dd>
-</div>
-<div>
-<dt>发送时间</dt>
-<dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
-</time>
-</dd>
-</div>
-<div>
-<dt>发送结果</dt>
-<dd>
-<span class="tag ok">已发出</span>
-</dd>
-</div>
-</dl>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>自身牌照附件</h2>
-</div>
-<div class="card-b form">
-<ul class="file-list">
-<li class="file-row">
-<i data-ico="doc">
-</i>
-<div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
-<div class="hint">PDF · 2.4 MB</div>
-</div>
-<div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+<button type="button" class="btn icon" aria-label="下载" title="下载" data-toast="演示文件，不提供真实文件。"><i data-ico="download"></i></button>
 </div>
 </li>
 </ul>
@@ -5336,7 +5194,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑</button>
+<button type="button" class="btn " data-go="edit-missing">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -5484,7 +5342,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑</button>
+<button type="button" class="btn " data-go="edit-ready">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -5622,11 +5480,11 @@
 <i data-ico="doc">
 </i>
 <div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<button type="button" class="btn-link file-name" data-toast="演示文件，不提供真实文件。">DEMO-Licence.pdf</button>
 <div class="hint">PDF · 2.4 MB</div>
 </div>
 <div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+<button type="button" class="btn icon" aria-label="下载" title="下载" data-toast="演示文件，不提供真实文件。"><i data-ico="download"></i></button>
 </div>
 </li>
 </ul>
@@ -5642,7 +5500,7 @@
 <h1 class="page-title">示例监管机构 G</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑</button>
+<button type="button" class="btn " data-go="edit-ready">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -5704,7 +5562,7 @@
 <div>
 <dt>邀请时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+<time data-instant="2026-10-30T02:30:00Z" datetime="2026-10-30T02:30:00Z">
 </time>
 </dd>
 </div>
@@ -5715,7 +5573,7 @@
 <div>
 <dt>最近更新时间</dt>
 <dd>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z">
+<time data-instant="2026-10-30T02:30:00Z" datetime="2026-10-30T02:30:00Z">
 </time>
 </dd>
 </div>
@@ -5748,7 +5606,7 @@
 <div>
 <dt>发送时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+<time data-instant="2026-10-30T02:30:00Z" datetime="2026-10-30T02:30:00Z">
 </time>
 </dd>
 </div>
@@ -5777,11 +5635,11 @@
 <i data-ico="doc">
 </i>
 <div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<button type="button" class="btn-link file-name" data-toast="演示文件，不提供真实文件。">DEMO-Licence.pdf</button>
 <div class="hint">PDF · 2.4 MB</div>
 </div>
 <div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+<button type="button" class="btn icon" aria-label="下载" title="下载" data-toast="演示文件，不提供真实文件。"><i data-ico="download"></i></button>
 </div>
 </li>
 </ul>
@@ -5806,6 +5664,10 @@
 <div>机构已添加。</div>
 </div>
 <div class="card">
+<div class="card-head">
+<h2>监管机构</h2>
+<span class="sub">5 家</span>
+</div>
 <form class="asset-filters" data-static-form aria-label="筛选监管机构">
 <div class="filter-toolbar">
 <label class="filter-select">
@@ -5878,27 +5740,6 @@
 </td>
 </tr>
 <tr>
-<td>示例监管机构 C</td>
-<td>reviewer-demo@reg.example</td>
-<td>
-<span class="tag ok">启用</span>
-</td>
-<td>
-<span class="tag ok">正常</span>
-</td>
-<td>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z" data-compact>
-</time>
-</td>
-<td>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z" data-compact>
-</time>
-</td>
-<td class="col-act">
-<button type="button" class="btn sm ghost" data-go="rg-detail">查看</button>
-</td>
-</tr>
-<tr>
 <td>示例监管机构 D</td>
 <td>invited@reg.example</td>
 <td>
@@ -5958,6 +5799,27 @@
 <button type="button" class="btn sm ghost" data-go="rg-list-off">查看</button>
 </td>
 </tr>
+<tr>
+<td>示例监管机构 C</td>
+<td>reviewer-demo@reg.example</td>
+<td>
+<span class="tag ok">启用</span>
+</td>
+<td>
+<span class="tag ok">正常</span>
+</td>
+<td>
+<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z" data-compact>
+</time>
+</td>
+<td>
+<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z" data-compact>
+</time>
+</td>
+<td class="col-act">
+<button type="button" class="btn sm ghost" data-go="rg-detail">查看</button>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -5969,6 +5831,10 @@
 <div class="page-head">
 <div>
 <h1 class="page-title">示例监管机构 D</h1>
+</div>
+<div class="page-actions">
+<button type="button" class="btn " data-go="edit-ready">编辑</button>
+<button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
 <div class="form-sheet">
@@ -6029,7 +5895,7 @@
 <div>
 <dt>邀请时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+<time data-instant="2026-10-29T04:00:00Z" datetime="2026-10-29T04:00:00Z">
 </time>
 </dd>
 </div>
@@ -6040,7 +5906,7 @@
 <div>
 <dt>最近更新时间</dt>
 <dd>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z">
+<time data-instant="2026-10-29T04:00:00Z" datetime="2026-10-29T04:00:00Z">
 </time>
 </dd>
 </div>
@@ -6073,7 +5939,7 @@
 <div>
 <dt>发送时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+<time data-instant="2026-10-29T04:00:00Z" datetime="2026-10-29T04:00:00Z">
 </time>
 </dd>
 </div>
@@ -6097,11 +5963,11 @@
 <i data-ico="doc">
 </i>
 <div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<button type="button" class="btn-link file-name" data-toast="演示文件，不提供真实文件。">DEMO-Licence.pdf</button>
 <div class="hint">PDF · 2.4 MB</div>
 </div>
 <div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+<button type="button" class="btn icon" aria-label="下载" title="下载" data-toast="演示文件，不提供真实文件。"><i data-ico="download"></i></button>
 </div>
 </li>
 </ul>
@@ -6110,11 +5976,15 @@
 </div>
 </div>
 </section>
-<section id="rg-list-locked" data-screen data-no="M88" data-name="示例监管机构 E" data-group="监管机构详情" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-list" hidden>
+<section id="rg-list-locked" data-screen data-no="M88" data-name="机构详情 · 账号锁定" data-group="监管机构详情" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-list" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
 <h1 class="page-title">示例监管机构 E</h1>
+</div>
+<div class="page-actions">
+<button type="button" class="btn " data-go="edit-ready">编辑</button>
+<button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
 <div class="form-sheet">
@@ -6182,7 +6052,7 @@
 <div>
 <dt>邀请时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+<time data-instant="2026-10-28T06:00:00Z" datetime="2026-10-28T06:00:00Z">
 </time>
 </dd>
 </div>
@@ -6193,7 +6063,7 @@
 <div>
 <dt>最近更新时间</dt>
 <dd>
-<time data-instant="2026-10-30T02:00:00Z" datetime="2026-10-30T02:00:00Z">
+<time data-instant="2026-10-28T06:00:00Z" datetime="2026-10-28T06:00:00Z">
 </time>
 </dd>
 </div>
@@ -6226,7 +6096,7 @@
 <div>
 <dt>发送时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+<time data-instant="2026-10-28T06:00:00Z" datetime="2026-10-28T06:00:00Z">
 </time>
 </dd>
 </div>
@@ -6250,11 +6120,11 @@
 <i data-ico="doc">
 </i>
 <div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<button type="button" class="btn-link file-name" data-toast="演示文件，不提供真实文件。">DEMO-Licence.pdf</button>
 <div class="hint">PDF · 2.4 MB</div>
 </div>
 <div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+<button type="button" class="btn icon" aria-label="下载" title="下载" data-toast="演示文件，不提供真实文件。"><i data-ico="download"></i></button>
 </div>
 </li>
 </ul>
@@ -6268,6 +6138,10 @@
 <div class="page-head">
 <div>
 <h1 class="page-title">示例监管机构 F</h1>
+</div>
+<div class="page-actions">
+<button type="button" class="btn " data-go="edit-ready">编辑</button>
+<button type="button" class="btn primary" data-go="enable-confirm">启用机构</button>
 </div>
 </div>
 <div class="note warn" role="alert">
@@ -6336,7 +6210,7 @@
 <div>
 <dt>邀请时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+<time data-instant="2026-10-27T07:00:00Z" datetime="2026-10-27T07:00:00Z">
 </time>
 </dd>
 </div>
@@ -6380,7 +6254,7 @@
 <div>
 <dt>发送时间</dt>
 <dd>
-<time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+<time data-instant="2026-10-27T07:00:00Z" datetime="2026-10-27T07:00:00Z">
 </time>
 </dd>
 </div>
@@ -6404,11 +6278,11 @@
 <i data-ico="doc">
 </i>
 <div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<button type="button" class="btn-link file-name" data-toast="演示文件，不提供真实文件。">DEMO-Licence.pdf</button>
 <div class="hint">PDF · 2.4 MB</div>
 </div>
 <div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+<button type="button" class="btn icon" aria-label="下载" title="下载" data-toast="演示文件，不提供真实文件。"><i data-ico="download"></i></button>
 </div>
 </li>
 </ul>
@@ -6424,7 +6298,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑</button>
+<button type="button" class="btn " data-go="edit-ready">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -6557,11 +6431,11 @@
 <i data-ico="doc">
 </i>
 <div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<button type="button" class="btn-link file-name" data-toast="演示文件，不提供真实文件。">DEMO-Licence.pdf</button>
 <div class="hint">PDF · 2.4 MB</div>
 </div>
 <div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+<button type="button" class="btn icon" aria-label="下载" title="下载" data-toast="演示文件，不提供真实文件。"><i data-ico="download"></i></button>
 </div>
 </li>
 </ul>
@@ -6824,6 +6698,11 @@
 <button type="button" class="btn ghost sm" data-go="rg-detail">返回详情</button>
 </div>
 </div>
+<div class="note warn" role="status">
+<i data-ico="info">
+</i>
+<div>请补齐联系人、联系邮箱与所在国家或地区后保存。</div>
+</div>
 <div class="form-sheet">
 <div class="card">
 <div class="card-head">
@@ -6835,7 +6714,7 @@
 <div class="field-caption">
 <label for="m5-field-161">
 <span class="req" aria-hidden="true">*</span>机构名称</label>
-<span class="count">0 / 100</span>
+<span class="count">8 / 100</span>
 </div>
 <input id="m5-field-161" class="inp" aria-required="true" type="text" value="示例监管机构 C" maxlength="100" autocomplete="off">
 </div>
@@ -7575,7 +7454,7 @@
 <h1 class="page-title">示例监管机构 C</h1>
 </div>
 <div class="page-actions">
-<button type="button" class="btn " data-go="edit-changed">编辑</button>
+<button type="button" class="btn " data-go="edit-ready">编辑</button>
 <button type="button" class="btn primary" data-go="disable-confirm">停用机构</button>
 </div>
 </div>
@@ -7708,11 +7587,11 @@
 <i data-ico="doc">
 </i>
 <div class="file-info">
-<button type="button" class="btn-link file-name">DEMO-Licence.pdf</button>
+<button type="button" class="btn-link file-name" data-toast="演示文件，不提供真实文件。">DEMO-Licence.pdf</button>
 <div class="hint">PDF · 2.4 MB</div>
 </div>
 <div class="file-actions">
-<button type="button" class="btn icon" aria-label="下载" title="下载"><i data-ico="download"></i></button>
+<button type="button" class="btn icon" aria-label="下载" title="下载" data-toast="演示文件，不提供真实文件。"><i data-ico="download"></i></button>
 </div>
 </li>
 </ul>
@@ -7810,31 +7689,34 @@
 </div>
 </div>
 </section>
-<section id="disable-fail" data-screen data-no="M117" data-name="停用机构 · 失败" data-group="停用与启用" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理" data-next="disable-confirm" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">停用机构</h1>
+<section id="disable-fail" data-screen data-no="M117" data-name="停用机构 · 失败" data-group="停用与启用" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理" data-next="disable-busy" data-overlay data-base="rg-detail" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-disable-fail">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-disable-fail">停用机构</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
 </div>
-<div class="page-actions">
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>操作未完成</h2>
-</div>
-<div class="card-b form">
+<div class="modal-b">
 <div class="note red" role="alert">
 <i data-ico="info">
 </i>
 <div>操作失败，机构状态未改变，请重试。</div>
 </div>
+<div class="facts-region">
+<dl class="facts inset">
+<div>
+<dt>机构名称</dt>
+<dd>示例监管机构 C</dd>
 </div>
-<div class="card-f">
-<div class="form-actions">
-<button type="button" class="btn " data-go="rg-detail">返回详情</button>
-<button type="button" class="btn primary" data-go="disable-confirm">重试</button>
+</dl>
 </div>
+</div>
+<div class="modal-f">
+<button type="button" class="btn ghost" data-go="rg-detail">取消</button>
+<button type="button" class="btn primary" data-go="disable-busy">重试</button>
 </div>
 </div>
 </div>
@@ -7903,56 +7785,68 @@
 </div>
 </div>
 </section>
-<section id="enable-fail" data-screen data-no="M120" data-name="启用机构 · 失败" data-group="停用与启用" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理" data-next="enable-confirm" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">启用机构</h1>
+<section id="enable-fail" data-screen data-no="M120" data-name="启用机构 · 失败" data-group="停用与启用" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理" data-next="enable-busy" data-overlay data-base="rg-off" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-enable-fail">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-enable-fail">启用机构</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
 </div>
-<div class="page-actions">
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>操作未完成</h2>
-</div>
-<div class="card-b form">
+<div class="modal-b">
 <div class="note red" role="alert">
 <i data-ico="info">
 </i>
 <div>操作失败，机构状态未改变，请重试。</div>
 </div>
+<div class="facts-region">
+<dl class="facts inset">
+<div>
+<dt>机构名称</dt>
+<dd>示例监管机构 C</dd>
 </div>
-<div class="card-f">
-<div class="form-actions">
-<button type="button" class="btn " data-go="rg-off">返回详情</button>
-<button type="button" class="btn primary" data-go="enable-confirm">重试</button>
+</dl>
 </div>
+</div>
+<div class="modal-f">
+<button type="button" class="btn ghost" data-go="rg-off">取消</button>
+<button type="button" class="btn primary" data-go="enable-busy">重试</button>
 </div>
 </div>
 </div>
 </section>
-<section id="status-stale" data-screen data-no="M121" data-name="机构状态已变化" data-group="停用与启用" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理" data-next="rg-off" hidden>
-<div class="content-in">
-<div class="page-head">
-<div>
-<h1 class="page-title">机构状态已变化</h1>
+<section id="status-stale" data-screen data-no="M121" data-name="机构状态已变化" data-group="停用与启用" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理" data-next="rg-off" data-overlay data-base="rg-detail" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-status-stale">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-status-stale">机构状态已变化</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
 </div>
-<div class="page-actions">
-</div>
-</div>
-<div class="card">
-<div class="card-head">
-<h2>请重新确认</h2>
-</div>
-<div class="card-b form">
+<div class="modal-b">
 <div class="note warn" role="alert">
 <i data-ico="info">
 </i>
 <div>该机构已被其他运营停用，本次未重复执行，请查看最新详情。</div>
 </div>
+<div class="facts-region">
+<dl class="facts inset">
+<div>
+<dt>机构名称</dt>
+<dd>示例监管机构 C</dd>
 </div>
-<div class="card-f">
+<div>
+<dt>机构状态</dt>
+<dd><span class="tag">停用</span></dd>
+</div>
+</dl>
+</div>
+</div>
+<div class="modal-f">
 <button type="button" class="btn primary" data-go="rg-off">查看最新详情</button>
 </div>
 </div>
@@ -8777,25 +8671,25 @@
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="self-email-ops-filled-m5-field-100">ops-demo@example.com</div>
+<div class="field-static" id="self-email-ops-send-fail-m5-field-100">ops-demo@example.com</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-ops-filled-m5-field-101">
+<label for="self-email-ops-send-fail-m5-field-101">
 <span class="req" aria-hidden="true">*</span>当前密码</label>
 </div>
 <div class="password-control">
-<input id="self-email-ops-filled-m5-field-101" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="self-email-ops-filled-m5-field-101" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="self-email-ops-send-fail-m5-field-101" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="self-email-ops-send-fail-m5-field-101" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-ops-filled-m5-field-102">
+<label for="self-email-ops-send-fail-m5-field-102">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">19 / 254</span>
 </div>
-<input id="self-email-ops-filled-m5-field-102" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
+<input id="self-email-ops-send-fail-m5-field-102" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
 </div>
 <div class="note red" role="alert">
 <i data-ico="info">
@@ -8961,7 +8855,7 @@
 <button type="button" class="btn icon" data-password-toggle="login-email-ops-m5-field-28" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
 </div>
-<button type="button" class="btn primary block" data-go="o-settings-new">重新登录</button>
+<button type="button" class="btn primary block" data-module-key="review" data-module-who="opsnew" data-go="o-settings-new">重新登录</button>
 </div>
 </div>
 </section>
@@ -9088,6 +8982,11 @@ TP.pageTitle="管理端账号与监管机构管理 · 代币发行平台";
 TP.demo={accounts:{"ops": {"name": "运营示例账号", "email": "ops-demo@example.com", "role": "运营管理员"}, "reg": {"name": "示例监管机构 C", "email": "reviewer-demo@reg.example", "role": "监管机构", "org": "示例监管机构 C"}, "regoff": {"name": "示例监管机构 C", "email": "reviewer-demo@reg.example", "role": "监管机构", "org": "示例监管机构 C", "notice": "本机构已停用，不再接收新的发行申请；在途业务可以继续办理。"}, "regnew": {"name": "示例监管机构 C", "email": "new-reviewer@reg.example", "role": "监管机构", "org": "示例监管机构 C"}, "opsnew": {"name": "运营示例账号", "email": "new-ops@example.com", "role": "运营管理员"}}};
 TP.routes={regs:"rg-list",settings:{ops:"o-settings",reg:"r-settings",regoff:"r-off",regnew:"r-settings-new",opsnew:"o-settings-new"},logout:"login-out"};
 TP.addCopy({
+  "返回发行审核": "Back to issuance review",
+  "请补齐联系人、联系邮箱与所在国家或地区后保存。": "Complete the contact person, contact email and country or region before saving.",
+  "0 家": "0 regulators",
+  "4 家": "4 regulators",
+  "5 家": "5 regulators",
   "添加机构": "Add institution",
   "编辑": "Edit",
   "编辑机构": "Edit institution",
@@ -9354,7 +9253,6 @@ TP.addCopy({
   "机构与账号已建立，邀请邮件未能发出。请线下告知登录邮箱与初始密码。": "Institution and account created, but the invitation email was not sent. Share the login email and initial password offline.",
   "监管机构详情": "Regulator details",
   "停用机构": "Disable institution",
-  "示例监管机构 C": "示例监管机构 C",
   "邀请人": "Invited by",
   "最近更新时间": "Last updated",
   "最近更新人": "Last updated by",

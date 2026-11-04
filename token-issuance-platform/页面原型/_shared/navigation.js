@@ -62,7 +62,7 @@
       if(who==='regnew') TP.demo.accounts[who].email='new-reviewer@reg.example';
       if(who==='opsnew') TP.demo.accounts[who].email='new-ops@example.com';
       Object.keys(TP.routes).forEach(function(key){
-        var r=TP.routes[key];if(r && typeof r==='object' && r[sourceWho]) r[who]=r[sourceWho];
+        var r=TP.routes[key];if(r && typeof r==='object' && r[sourceWho] && !r[who]) r[who]=r[sourceWho];
       });
     }
     var target=screen(location.hash.slice(1)), base=screen(params.get('previewBase'));
@@ -104,11 +104,14 @@
     if(url.href!==location.href) history.replaceState(history.state,'',url.href);
   };
 
-  TP.navigate=function(key,current){
+  // asWho: only a signed-out sign-in screen may name the identity it lands as (data-module-who).
+  TP.navigate=function(key,current,asWho){
     var module=currentModule();
     if(!module || !current) return false;
-    if((current.who==='none'||current.who==='guest') && key!=='signIn' && key!=='guestRegister') return false;
-    var href=routeHref(module.end,key,current.who);
+    var who=current.who;
+    if(asWho && who==='none') who=asWho;
+    else if((who==='none'||who==='guest') && key!=='signIn' && key!=='guestRegister') return false;
+    var href=routeHref(module.end,key,who);
     if(!href) return false;
     location.assign(href);
     return true;

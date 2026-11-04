@@ -66,7 +66,7 @@
     '无法删除数币账户':'Cannot delete account','该地址为登录地址，由系统维护，不能删除。':'This is the sign-in address. It is maintained by the system and cannot be deleted.',
     '该账户已被代币 DEMO-TOKEN-001 引用，不能删除；已销毁的代币仍构成引用。':'This account is referenced by token DEMO-TOKEN-001 and cannot be deleted. Burned tokens still count as references.',
     '复制地址':'Copy address','复制登录地址':'Copy sign-in address','退出登录':'Sign out','已退出登录':'Signed out','我的账户':'My account',
-    '消息通知，3 条未读':'Messages, 3 unread','消息通知属于 M7 消息通知模块，本原型不展开':'Message center is covered by module M7.',
+    '消息通知，3 条未读':'Messages, 3 unread','消息通知尚未交付。':'Messages are not available yet.','此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。':'This entry is not included in the single-module file. Open it from index.html in the full prototype.','演示文件，不提供真实文件。':'Demo file. No real file is available.',
     '需先完成认证':'Verification required','预览：复制完整值':'Preview: copy full value','已复制':'Copied','复制失败，请重试。':'Could not copy. Please try again.',
     '正在保存偏好，请稍候。':'Saving your preference. Please wait.','偏好保存中':'Saving preference',
     '演示：此处离开本平台，前往资产可信平台':'Preview: open the Asset Trust Platform',
@@ -89,10 +89,7 @@
   function translated(value){
     var key=value.trim(), result=EN[key];
     if(result===undefined && key.indexOf('主流程下一屏：')===0){var next=key.slice('主流程下一屏：'.length);result='Next screen: '+(EN[next]||next);}
-    if(result===undefined && key.indexOf('账户：')===0) result='Account: '+key.slice(3);
-    if(result===undefined && key.indexOf('「')===0 && key.indexOf('」属于其他模块，本原型不展开')>0){
-      var name=key.slice(1,key.indexOf('」'));result=(EN[name]||name)+' is covered by another module.';
-    }
+    if(result===undefined && (key.indexOf('账户：')===0 || key.indexOf('账号：')===0)) result='Account: '+key.slice(3);
     return result===undefined ? value : value.replace(key,result);
   }
   TP.localize=function(root){

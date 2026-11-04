@@ -6,6 +6,7 @@ TP.registerModule({
     issueFromAsset:{certified:'asset-selected'},
     assetApplication0131:{certified:'detail-ops'},
     assetApplication0097:{certified:'detail-reg-rejected'},
-    assetApplication0102:{certified:'detail-minted'}
+    assetApplication0102:{certified:'detail-minted'},
+    assetApplication0027:{certified:'detail-progress'}
   }
 });

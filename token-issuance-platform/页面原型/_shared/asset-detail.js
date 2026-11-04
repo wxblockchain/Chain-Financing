@@ -7,7 +7,7 @@
    ========================================================================== */
 (function(TP){
   'use strict';
-  var FILE_TOAST = '原型未附真实文件';
+  var FILE_TOAST = '演示文件，不提供真实文件。';
 
   function fileRef(name){
     return '<span class="file-ref"><i data-ico="doc"></i><button type="button" class="btn-link file-name" data-toast="'+FILE_TOAST+'">'+name+'</button>'+
@@ -300,8 +300,7 @@
     '债务人与其下游客户':'Debtor and its customers','债务人下游客户':'Debtor’s customers','2 笔交易 · 回款不计入本笔应收账款':'2 transactions · repayments do not count toward this receivable',
     '暂无债务人下游客户交易信息':'No transactions between the debtor and its customers',
     '上游未提供':'Not provided by upstream','未提供':'Not provided',
-    '查看':'View','下载':'Download','原型未附真实文件':'No real file is attached to this prototype',
-    /* 资产状态与通用列名：面客端、管理端共用 */
+    '查看':'View','下载':'Download',/* 资产状态与通用列名：面客端、管理端共用 */
     '回款状态':'Repayment status','未到期':'Not due','暂时无法确认':'Unable to confirm',
     '确权状态':'Confirmation','结清状态':'Settlement','逾期状态':'Overdue status','发行状态':'Issuance status',
     '已确权':'Confirmed','已撤销确权':'Confirmation revoked','未结清':'Unsettled','已结清':'Settled','未逾期':'Not overdue','已逾期':'Overdue',

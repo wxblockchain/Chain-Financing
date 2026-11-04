@@ -213,21 +213,6 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 /* ---------- 数据表 ---------- */
 .tablewrap{overflow-x:auto;border-radius:0 0 var(--radius-sm) var(--radius-sm)}
-/* Information-dense records keep identity, metadata and separate states visible. */
-.record-row{padding:var(--sp-4) var(--card-pad);border-bottom:1px solid var(--row-line)}
-.record-row:last-child{border-bottom:0}
-.record-head{display:flex;align-items:center;gap:var(--sp-4)}
-.record-head h3{font-size:var(--fs-14);font-weight:600}
-.record-amount{margin-left:auto;font-size:var(--fs-14)}
-.record-fields,.record-status{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-3) var(--sp-4);margin:var(--sp-3) 0 0}
-.record-fields>div,.record-status>div{min-width:0}
-.record-fields dt,.record-status dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
-.record-fields dd,.record-status dd{margin:0;font-size:var(--fs-13);overflow-wrap:anywhere}
-.record-fields .cell-sub{display:inline;font-size:var(--fs-11)}
-.record-status>div{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2)}
-.record-status dt{margin-bottom:0}
-.record-status .tag{white-space:normal}
-@media(max-width:1280px){.record-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .tbl.request-list th{white-space:normal}
 .tbl.request-list th:first-child{width:auto}
 .tbl.request-list :is(td,th){overflow-wrap:normal}
@@ -260,15 +245,6 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .facts dd>.addr+.cell-sub{display:block;margin-top:var(--sp-1)}
 .state .state-ref{font-size:var(--fs-13)}
 .state .state-ref .btn-link{font-size:inherit}
-/* Read-only business progress; nodes never execute or simulate external work. */
-.progress-list{list-style:none;margin:0;padding:var(--sp-5) var(--card-pad);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4)}
-.progress-list li{display:flex;align-items:flex-start;gap:var(--sp-3);min-width:0;color:var(--muted)}
-.progress-list h3{font-size:var(--fs-14);font-weight:600;color:var(--text)}
-.progress-list p{font-size:var(--fs-13);margin-top:var(--sp-2)}
-.progress-mark{width:var(--sp-3);height:var(--sp-3);margin-top:var(--sp-1);border:1px solid var(--border-strong);border-radius:var(--radius-pill);flex:none}
-.progress-list .complete .progress-mark{background:var(--ok);border-color:var(--ok)}
-.progress-list .current .progress-mark{background:var(--accent);border-color:var(--accent)}
-@media(max-width:1280px){.progress-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* Four independent token states (financing, settlement, supervision, burn progress); M4b ledger. */
 .status-grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:1440px){
@@ -396,7 +372,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .dd-list .dd-item[aria-checked]{padding-left:34px;position:relative}
 .dd-list .dd-item[aria-checked] svg.i{position:absolute;left:10px;color:var(--accent)}
 .dd-list .dd-item[aria-checked="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
-.dd-sep{height:1px;background:var(--border);margin:5px 0}
 .bell{position:relative;width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);border-radius:var(--radius-pill);border:1px solid var(--border);
   display:grid;place-items:center;color:var(--muted);background:var(--card)}
 .bell:hover{background:var(--card-hover);color:var(--text)}
@@ -570,8 +545,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .cond.no{background:var(--warn-bg);color:var(--warn)}
 .cond b{font-weight:600}
 .cond .btn{margin-left:auto;align-self:center}
-/* 列表一列一个状态，只展示值；发起限制和上游变更提示在详情呈现。 */
-.tags{display:flex;flex-wrap:wrap;gap:var(--sp-1)}
 .tbl.auto th:first-child{width:auto}
 .tbl.auto .cell-sub{max-width:24ch}
 .tbl .col-name{min-width:120px}
@@ -596,9 +569,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .asset-list :is(th,td):last-child{padding-right:var(--sp-4)}
 .asset-list .col-name{min-width:0;overflow-wrap:anywhere}
 .name-clip{display:inline-flex;max-width:100%;min-width:0;padding:0;color:var(--text);font:inherit;line-height:inherit;text-align:left;white-space:nowrap;vertical-align:middle;cursor:help}
-.name-prefix{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.name-suffix{flex:none}
-.name-prefix,.name-suffix{white-space:pre}
+.name-prefix{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:pre}
+.name-suffix{flex:none;white-space:pre}
 .name-clip:hover{color:var(--accent)}
 .asset-list .col-act .actlink{display:block;margin-left:auto;max-width:100%;white-space:normal}
 .asset-list .col-due{min-width:112px}
@@ -723,11 +695,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .review-list .tag{white-space:normal}
 .review-list [data-zone]{font-size:var(--fs-11);overflow-wrap:anywhere}
 .review-list .money{flex-wrap:wrap;justify-content:flex-end}
-.review-progress{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-5);list-style:none;margin:var(--sp-3) 0 0;padding:0;counter-reset:review-step}
-.review-progress li{display:flex;flex-direction:column;gap:var(--sp-1);border-top:2px solid var(--border-strong);padding-top:var(--sp-3);min-width:0;font-size:var(--fs-13)}
-.review-progress li.done{border-top-color:var(--ok)}
-.review-progress li b{font-weight:600}
-.review-progress li span,.review-progress time{color:var(--muted);font-size:var(--fs-12);overflow-wrap:anywhere}
 .review-textarea.inp{height:auto;min-height:calc(var(--ctrl-h)*2);padding:var(--sp-3);resize:vertical}
 .choice-card{display:flex;align-items:flex-start;gap:var(--sp-3);border:1px solid var(--control-border);border-radius:var(--radius-xs);padding:var(--sp-4);cursor:pointer}
 .choice-card:has(:checked){background:var(--accent-soft);border-color:var(--accent)}
@@ -775,8 +742,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .document-sheet h2{font-size:var(--ui-section-title);text-align:center}
 .document-sheet .facts{padding:0}
 .document-kicker{font-size:var(--fs-12);color:var(--faint)}
-@media(max-width:900px){.review-progress{grid-template-columns:repeat(2,minmax(0,1fr))}.review-list{min-width:800px}}
-@media(max-width:600px){.review-progress{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:900px){.review-list{min-width:800px}}
 /* M2 英文优先：摘要右侧按状态标签内容取宽，三项状态在 1280 px 起单行展示，左侧金额区让出剩余宽度。 */
 @media(min-width:1101px){:root[data-module="assets"] .asset-sum{grid-template-columns:minmax(0,1fr) auto}:root[data-module="assets"] .status-grid{grid-template-columns:repeat(3,minmax(120px,auto))}:root[data-module="assets"] .status-grid .tag{white-space:nowrap}}
 @media(max-width:1100px){.asset-sum{grid-template-columns:minmax(0,1fr)}}
@@ -800,10 +766,9 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .workflow-context{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2) var(--sp-6);padding:var(--sp-3) var(--card-pad);border-bottom:1px solid var(--border);background:var(--card-2);font-size:var(--fs-13);color:var(--muted)}
 .workflow-context b{color:var(--text);font-weight:500}
 .workflow-context .btn-link{font-size:var(--fs-13)}
-.workflow-footer{align-items:center;margin-top:var(--sp-4)}
-.workflow-footer .back{margin-right:auto}
 /* 申请步骤底栏吸底：长步骤滚动时“上一步 / 取消 / 下一步（签名并提交）”始终可见，内容到底时回到卡片底部 */
-.workflow-footer{position:sticky;bottom:0;z-index:calc(var(--z-sticky) - 22);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+.workflow-footer{align-items:center;margin-top:var(--sp-4);position:sticky;bottom:0;z-index:calc(var(--z-sticky) - 22);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+.workflow-footer .back{margin-right:auto}
 .workflow-footer.is-stuck{box-shadow:0 -6px 16px -12px rgba(15,23,42,.35)}
 /* 底栏吸附时，评审用的画面目录入口上移，不遮挡主按钮 */
 body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-btn{bottom:calc(var(--sp-5) + var(--ctrl-h) + var(--sp-7) + var(--sp-3))}

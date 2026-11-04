@@ -1,8 +1,9 @@
-/* M2 filter presentation. Field scope follows PRD §5.6.
+/* M2 filter and pagination presentation. Field scope follows PRD §5.6 / §5.7.
    Static prototype: controls preview layout; no querying, validation, data
-   filtering, date interpretation or account persistence is simulated. */
+   filtering, paging, date interpretation or account persistence is simulated. */
 (function(TP){
   'use strict';
+  var PAGE_TOAST='演示数据只提供第 1 页。';
   function text(name){
     return '<label class="field"><span class="field-label">'+name+'</span><input class="inp" type="search" placeholder="'+name+'"></label>';
   }
@@ -67,15 +68,19 @@
       form.addEventListener('reset',function(){requestAnimationFrame(reflectFilledFields);});
       form.addEventListener('submit',function(event){
         event.preventDefault();
-        TP.toast('本原型仅展示筛选布局，查询规则与结果以业务系统为准。');
+        TP.toast('演示数据，查询不改变列表结果。');
       });
       card.querySelector('.card-head').after(form);
       var pager=document.createElement('nav');pager.className='asset-pagination';pager.setAttribute('aria-label','资产分页');
-      var count=table.tBodies[0].rows.length;
+      // data-total: total matching assets when the demo table shows only page 1 (10 per page).
+      var count=Number(table.dataset.total)||table.tBodies[0].rows.length, pages=Math.ceil(count/10);
+      var later=pages>1?' data-toast="'+PAGE_TOAST+'"':' disabled';
+      var pageButtons='';
+      for(var n=2;n<=pages;n++)pageButtons+='<button class="btn sm ghost" type="button" aria-label="第 '+n+' 页" data-toast="'+PAGE_TOAST+'">'+n+'</button>';
       pager.innerHTML='<span class="pagination-total"><span>共</span> '+count+' <span>条</span></span><div class="pagination-controls">'+
         '<button class="btn sm ghost" type="button" disabled aria-label="上一页"><i data-ico="back"></i></button>'+
-        '<button class="btn sm page-current" type="button" aria-current="page" aria-label="第 1 页">1</button>'+
-        '<button class="btn sm ghost" type="button" disabled aria-label="下一页"><i data-ico="chev"></i></button></div>';
+        '<button class="btn sm page-current" type="button" aria-current="page" aria-label="第 1 页">1</button>'+pageButtons+
+        '<button class="btn sm ghost" type="button"'+later+' aria-label="下一页"><i data-ico="chev"></i></button></div>';
       card.appendChild(pager);
     });
   };
@@ -89,6 +94,7 @@
     '全部':'All','更多筛选':'More filters','搜索资产编号':'Search asset ID',
     '到期时间范围':'Due date range','到期时间自':'Due from','到期时间至':'Due to','至':'to',
     '查询':'Search','重置':'Reset','资产分页':'Asset pages','共':'Total','条':'records','上一页':'Previous page','下一页':'Next page','第 1 页':'Page 1',
-    '本原型仅展示筛选布局，查询规则与结果以业务系统为准。':'This prototype previews the filters. Query rules and results require the business system.'
+    '演示数据，查询不改变列表结果。':'Demo data: searching does not change the list.',
+    '演示数据只提供第 1 页。':'This demo includes page 1 only.','第 2 页':'Page 2'
   });
 })(window.TP=window.TP||{});

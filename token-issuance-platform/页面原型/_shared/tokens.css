@@ -34,7 +34,7 @@
   --ok:#067647;   --ok-bg:#ECFDF3;   --ok-border:#A9EFC5;
   --warn:#B54708; --warn-bg:#FFFAEB; --warn-border:#FEDF89;
   --danger:#D42620; --danger-bg:#FEF3F2; --danger-border:#FECDCA;
-  --gray-bg:#F1F4F8; --gray-fg:#41506B; --gray-border:#E2E7EF;
+  --gray-bg:#F1F4F8; --gray-fg:#41506B;
 
   /* —— 链上数据（地址 / 哈希）—— */
   --hash-text:#2F53C4;

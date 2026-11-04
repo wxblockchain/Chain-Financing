@@ -6,7 +6,7 @@ TP.registerModule({
     guestRegister:{guest:'guest'},
     accounts:{certified:'acc'},
     org:{certified:'org', uncertified:'org-uncert', noent:'org-noent'},
-    me:{certified:'me'},
+    me:{certified:'me', uncertified:'me-uncert', noent:'me-noent'},
     logout:{certified:'login', uncertified:'login', noent:'login'},
     certify:{screens:{uncertified:'leave', noent:'leave'}, bases:{uncertified:'org-uncert', noent:'org-noent'}}
   }

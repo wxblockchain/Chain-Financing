@@ -78,6 +78,8 @@
     setTimeout(function(){ el.remove(); }, 2400);
   }
   TP.toast = toast;
+  /* 跨模块入口在单模块附件中没有目标画面时的统一范围提示 */
+  var SCOPE = '此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。';
 
   function navList(who){ return (TP.NAV_BY && TP.NAV_BY[who]) || TP.NAV; }
   function renderNav(sec){
@@ -209,11 +211,11 @@
   }
 
   function go(key){
-    if(key==='msg'){ if(TP.navigate && TP.navigate(key,current)) return; toast('消息通知属于 M7 消息通知模块，本原型不展开'); return; }
-    if(key==='settings' && !TP.routes.settings){ if(TP.navigate && TP.navigate(key,current)) return; toast('账户设置属于管理端登录与权限模块，本原型不展开'); return; }
+    if(key==='msg'){ if(TP.navigate && TP.navigate(key,current)) return; toast('消息通知尚未交付。'); return; }
+    if(key==='settings' && !TP.routes.settings){ if(TP.navigate && TP.navigate(key,current)) return; toast(SCOPE); return; }
     if(key==='logout'){ if(TP.routes.logout) show(TP.routes.logout); else if(TP.navigate && TP.navigate(key,current)) return; toast('已退出登录'); return; }
     var r = routeFor(key);
-    if(!r || !r.id){ if(TP.navigate && TP.navigate(key,current)) return; var item=findNav(key); toast('「'+(item?item.label:key)+'」属于其他模块，本原型不展开'); return; }
+    if(!r || !r.id){ if(TP.navigate && TP.navigate(key,current)) return; toast(SCOPE); return; }
     show(r.id, {gate:r.gate});
   }
 
@@ -281,7 +283,7 @@
     if(t.dataset.lang){ TP.setLanguage(t.dataset.lang); renderTools(document.getElementById(current.base || current.id), false); TP.renderDisplay(); syncStickyHead(); return; }
     if(t.dataset.demoGo){ show(t.dataset.demoGo); return; }
     if(t.hasAttribute('data-copy')){ copyFullValue(t); return; }
-    if(t.dataset.moduleKey && TP.navigate && TP.navigate(t.dataset.moduleKey,current)) return;
+    if(t.dataset.moduleKey && TP.navigate && TP.navigate(t.dataset.moduleKey,current,t.dataset.moduleWho)) return;
     if(t.dataset.toast){ toast(t.dataset.toast); }
     if(t.matches('.dd-item') && !t.dataset.acct){ closeMenus(null); return; }
     if(t.hasAttribute('data-close') && current && current.base){ show(current.base, {gate:gateKey}); return; }
