@@ -348,6 +348,16 @@ document.addEventListener('click',function(e){
     var hint=btn.parentNode.querySelector('.footer-hint');if(hint)hint.hidden=ok;
   });
 });
+// 吸底底栏仅在卡片下方仍有内容时加阴影，提示可继续滚动。
+function markStuckFooters(){
+  document.querySelectorAll('[data-screen]:not([hidden]) .workflow-footer').forEach(function(f){
+    f.classList.toggle('is-stuck',f.parentElement.getBoundingClientRect().bottom>window.innerHeight+1);
+  });
+}
+['scroll','resize'].forEach(function(t){window.addEventListener(t,markStuckFooters,{passive:true});});
+document.addEventListener('click',function(){setTimeout(markStuckFooters,0);});
+window.addEventListener('hashchange',function(){setTimeout(markStuckFooters,0);});
 TP.fillAssetDetail();
 TP.boot('list');
+markStuckFooters();
 </script></body></html>

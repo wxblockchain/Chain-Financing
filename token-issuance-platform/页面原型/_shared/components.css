@@ -731,6 +731,12 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .workflow-context .btn-link{font-size:var(--fs-13)}
 .workflow-footer{align-items:center;margin-top:var(--sp-4)}
 .workflow-footer .back{margin-right:auto}
+/* 申请步骤底栏吸底：长步骤滚动时“上一步 / 取消 / 下一步（签名并提交）”始终可见，内容到底时回到卡片底部 */
+.workflow-footer{position:sticky;bottom:0;z-index:calc(var(--z-sticky) - 22);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+.workflow-footer.is-stuck{box-shadow:0 -6px 16px -12px rgba(15,23,42,.35)}
+/* 底栏吸附时，评审用的画面目录入口上移，不遮挡主按钮 */
+body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-btn{bottom:calc(var(--sp-5) + var(--ctrl-h) + var(--sp-7) + var(--sp-3))}
+body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bottom:calc(var(--sp-5) + var(--ctrl-h) + var(--sp-7) + var(--sp-3) + var(--ctrl-h-sm) + 10px)}
 .footer-hint{color:var(--muted);font-size:var(--fs-13)}
 .choice-description{padding:var(--sp-4) var(--card-pad);color:var(--muted);font-size:var(--fs-13)}
 .choice-description p+p{margin-top:var(--sp-2)}
