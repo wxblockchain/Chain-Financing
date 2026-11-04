@@ -73,7 +73,10 @@ table.ta-table :is(th,td){padding-inline:var(--sp-3)}
 .ta-wide{grid-column:1/-1}
 .ta-name{display:inline-flex;align-items:center;gap:var(--sp-2)}
 .ta-icon{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:var(--radius-pill);background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent);font-size:var(--fs-10);font-weight:700;flex:none}
-.ta-hash{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 var(--sp-1);max-width:100%}
+/* 长地址在格内换行，复制与浏览器图标紧跟最后一个字符。 */
+.ta-hash{display:block;max-width:100%}
+.ta-hash-end{white-space:nowrap}
+.ta-hash .btn{display:inline-flex;vertical-align:middle;margin-block:-4px;margin-inline-start:var(--sp-1)}
 .ta-full{overflow-wrap:anywhere;word-break:break-all}
 .ta-chip{display:inline-block;margin:0 var(--sp-2) var(--sp-1) 0;padding:0 var(--sp-2);background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-xs);font-size:var(--fs-12)}
 .ta-holders{list-style:none;margin:0;padding:0;display:grid;gap:var(--sp-1)}

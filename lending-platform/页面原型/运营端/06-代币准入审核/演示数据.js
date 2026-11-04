@@ -112,7 +112,7 @@
 
     const R_OPINION=['The legal opinion is missing its signature page. Provide the complete signed version and submit again.','法律意见书缺少签署页，请补充完整签署版本后重新提交。'];
     const R_INVOICE=['The invoice numbers do not match the invoice files provided. Check the invoices and submit again.','发票号与所附发票文件不一致，请核对发票后重新提交。'];
-    const R_DUP=['The token number is also used by another token on a different contract. Confirm the correct token number and submit again.','该代币编号同时被另一合约上的代币使用，请确认正确的代币编号后重新提交。'];
+    const R_DUP=['The token number is also used by another token on a different contract, and the token contract address on this submission does not match the address recorded by the issuance platform. Confirm the correct token number and contract address with the issuance platform, then submit again.','该代币编号同时被另一合约上的代币使用，且本次提交的代币发行合约地址与发行平台登记的地址不一致。请与发行平台核对正确的代币编号和合约地址后重新提交。'];
 
     const rows=[];
     /* 01 待审核 · 有效 · 资料齐全：通过与退回两条办理路径的主样例。 */

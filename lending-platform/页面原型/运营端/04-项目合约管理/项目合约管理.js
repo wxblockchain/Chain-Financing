@@ -451,7 +451,7 @@
     return section('Deployment progress','部署进度与结果',
       contractTable([[picked,pledge,null,null,notSet(pledge),['To be verified','待核实']],...OWN.map(([k,label])=>[label,at[k],at.results?.[k],at.proofs?.[k],notSet(at[k])])],{results:true,proofs:true,proofEmpty:['None yet','暂无']})
       +(r.exec==='failed'&&r.fail?facts([
-        [L('Failure reason','失败原因'),`<div class="cm-quote cm-fail">${E(txt(r.fail.reason))}</div>`,true],
+        [L('Failure reason','失败原因'),`<div class="cm-quote cm-fail">${CF.clampText(E(txt(r.fail.reason)))}</div>`],
         [L('Failed at','失败时点'),time(r.fail.at),true]
       ]):''));
   }

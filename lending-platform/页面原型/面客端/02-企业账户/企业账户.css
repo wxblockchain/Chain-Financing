@@ -126,7 +126,9 @@
 .ea-types .ea-chain input{width:14px;height:14px;margin:0}
 .ea-types .ea-chain b{font-size:var(--ui-field-value);font-weight:500;line-height:1.5}
 .ea-chosen{background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-4)}
-.ea-dl{margin:0;gap:var(--sp-4) var(--sp-6);align-items:baseline}
+/* 账户字段：标签在上、值在下，两列排；长地址、账号在本格内换行。 */
+.ea-dl{margin:0;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4) var(--sp-6)}
+.ea-fact{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0}
 .ea-break{overflow-wrap:anywhere;word-break:break-all}
 .ea-lead{margin:0;font-size:var(--ui-field-value);line-height:1.7;color:var(--muted)}
 
@@ -139,7 +141,6 @@
 .ea-drawer .ea-incomplete{max-width:none}
 .ea-view-section .ea-ccy-list{font-size:var(--ui-field-value)}
 .ea-view-section+.ea-view-section{border-top:1px solid var(--border);padding-top:var(--sp-5)}
-.ea-view-section .dl{grid-template-columns:144px minmax(0,1fr)}   /* 各分节标签列等宽，值列对齐 */
 .drawer:has(.ea-drawer) .drawer-h b{overflow-wrap:anywhere;min-width:0}
 .drawer:has(.ea-drawer) .drawer-f>[data-act="ea-remove"]{color:var(--danger);border-color:transparent;background:transparent}
 
@@ -201,8 +202,7 @@
   .ea-tabs .ea-tab-actions{padding-bottom:var(--sp-3)}
 }
 @media(max-width:600px){
-  .ea-view-section .dl{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
-  .ea-view-section dd{margin-bottom:var(--sp-3)}
+  .ea-dl{grid-template-columns:minmax(0,1fr)}
   .ea-chain-row{grid-template-columns:minmax(0,1fr)}
   .ea-types .ea-chain-row{grid-template-columns:repeat(2,minmax(0,1fr))}
   .modal:has(.ea-form) :is(.modal-h,.modal-b,.modal-f){padding-inline:var(--sp-4)}

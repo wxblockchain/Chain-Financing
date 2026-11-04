@@ -542,8 +542,9 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-token-id .cell-sub{display:block}
 /* 代币详情：只读分节。 */
 .ls-detail-sec h3{font-size:var(--fs-13);margin:0 0 var(--sp-2);color:var(--text)}
-.ls-dl{display:grid;gap:0;margin:0}
-.ls-dl>div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:var(--sp-3);padding:7px 0;border-bottom:1px dashed var(--border-dash);font-size:var(--fs-13)}
+.ls-dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 var(--sp-5);margin:0}
+.ls-dl>div{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0;padding:var(--sp-2) 0;font-size:var(--fs-13)}
+@media (max-width:600px){.ls-dl{grid-template-columns:minmax(0,1fr)}}
 .ls-dl dt{color:var(--faint);font-size:var(--fs-12)}
 .ls-dl dd{margin:0;color:var(--text);min-width:0}
 .ls-break{overflow-wrap:anywhere}
@@ -934,8 +935,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-pick-row.on td{background:var(--accent-soft)}
 .ls-detail-sec h3{font-size:var(--fs-16);font-weight:600;margin-bottom:var(--sp-3)}
 .ls-dl dt{color:var(--muted)}
-.ls-dl>div{padding-block:var(--sp-3);border-bottom-style:solid;border-bottom-color:var(--row-line)}
-.ls-dl>div:last-child{border-bottom:0}
 
 @media(max-width:1399px) and (min-width:901px){
   .ls-detail .ls-stats{gap:var(--sp-4);justify-content:space-between}
@@ -1023,14 +1022,13 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-funder-only h2{margin:0;font-size:var(--fs-16);color:var(--text)}
 .ls-funder-only-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent)}
 .ls-funder-only-ico svg{width:22px;height:22px}
-/* 项目信息与基本信息：与资产广场详情同一阅读方式——每组「标签 | 值」成对，桌面两栏等宽、标签 136px，窄屏上下排。 */
+/* 项目信息与基本信息：与资产广场详情同一阅读方式——标签在上、值在下，桌面 3 列、中屏 2 列、窄屏单列。 */
 [data-market-redesign] .ls-detail .mk-project-info-body.ls-facts,.ls-facts{display:grid;grid-template-columns:minmax(0,1fr);gap:0 var(--sp-6);margin:0;padding:var(--sp-1) var(--sp-4)}
-@media (min-width:1100px){[data-market-redesign] .ls-detail .mk-project-info-body.ls-facts,.ls-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.ls-fact:nth-child(2){border-top:0}}
-.ls-fact{display:grid;grid-template-columns:136px minmax(0,1fr);gap:var(--sp-4);align-items:start;min-width:0;padding-block:var(--sp-3);border-top:1px solid var(--row-line)}
-.ls-fact:first-child{border-top:0}
+@media (min-width:600px){[data-market-redesign] .ls-detail .mk-project-info-body.ls-facts,.ls-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1100px){[data-market-redesign] .ls-detail .mk-project-info-body.ls-facts,.ls-facts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ls-fact{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0;padding-block:var(--sp-3)}
 .ls-fact dt{font-size:var(--fs-12);font-weight:400;color:var(--muted);line-height:1.6}
 .ls-fact dd{margin:0;font-size:var(--fs-14);color:var(--text);line-height:1.6;min-width:0;overflow-wrap:anywhere}
-@media (max-width:600px){.ls-fact{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}}
 .ls-basic-card .card-head h2{font-size:var(--ui-section-title);font-weight:600;margin:0}
 .ls-project-id{display:inline-flex;align-items:center;gap:var(--sp-1)}
 .ls-project-id .btn.icon{width:24px;height:24px;min-height:0}
@@ -1184,7 +1182,6 @@ body:has(#layers [role="dialog"]) #demoBtn{display:none}
 .ls-op-state .tag{white-space:normal;max-width:100%}
 :is(.cq-ops,.ls-token-ops) .btn.icon{flex:none;width:var(--ctrl-h-sm);min-width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);min-height:var(--ctrl-h-sm)}
 @media(max-width:768px){
-  .ls-token-detail .ls-dl>div{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
   :is(.cq-request-detail,.ls-token-detail) table.tbl:is(.cq-ops,.ls-token-ops){min-width:0}
   :is(.cq-ops,.ls-token-ops).tbl.resp tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);padding:var(--sp-4)}
   :is(.cq-ops,.ls-token-ops).tbl.resp tbody td{display:block;width:auto;min-width:0;padding:0;text-align:left}

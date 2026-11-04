@@ -69,10 +69,8 @@
 .login-profile-body{min-width:0}
 .login-profile .login-identity-fields>div{padding:var(--sp-3) 0}
 .login-profile .login-identity-fields dt{margin-bottom:var(--sp-1)}
-.login-profile .login-account-fields{grid-template-columns:minmax(0,1fr)}
-.login-profile .login-account-fields>div{display:grid;grid-template-columns:160px minmax(0,1fr);gap:var(--sp-4);align-items:baseline}
-.login-profile .login-account-fields dt{margin:0}
-.login-profile .login-row{display:grid;grid-template-columns:160px minmax(0,1fr);gap:var(--sp-4);padding:var(--sp-3) 0 0;border:0}
+/* 账户信息与机构资料同一读法：标签在上、值在下，两列排；长地址在本格内换行。 */
+.login-profile .login-row{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-1);padding:var(--sp-3) 0 0;border:0}
 .login-profile .login-row>span{font-size:var(--ui-field-label);color:var(--muted)}
 .login-profile .login-row .login-verification{margin-right:auto}
 .login-preferences{display:flex;flex-direction:column}
@@ -137,8 +135,6 @@
 @media(max-width:600px){
   .login-profile-section{padding:var(--sp-5) var(--sp-4)}
   .login-profile-source{padding:var(--sp-4)}
-  .login-profile .login-account-fields>div{grid-template-columns:minmax(0,1fr);gap:var(--sp-1)}
-  .login-profile .login-row{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
   .login-preference-field{grid-template-columns:minmax(0,1fr);gap:var(--sp-3);min-height:0}
   .login-preference-control{width:100%;max-width:280px}
 }
@@ -237,7 +233,8 @@
 .funder-profile .login-profile-body>:last-child{margin-bottom:0}
 .funder-profile .login-account-fields dd>.login-caption{max-width:640px;margin:var(--sp-2) 0 0}
 .funder-profile .login-account-fields .funder-line>b{overflow-wrap:anywhere;min-width:0;font-weight:550}
-.funder-profile .login-identity-fields>.funder-field-wide{grid-column:1/-1}
+/* 查看态的注册地址与其他字段同宽，在本格内换行，不跨列；填写表单仍整行。 */
+.login-fields>.funder-field-wide{grid-column:auto}
 .funder-profile .login-account-fields>div:last-child{border-bottom:0}
 .funder-subhead{margin:var(--sp-5) 0 var(--sp-2);font-size:var(--ui-field-label);color:var(--muted)}
 .funder-review{margin-top:var(--sp-4)}

@@ -28,7 +28,7 @@
     '" data-act="ea-'+act+'" data-v="'+E(v)+'"'+(off?' disabled':'')+'>'+(act==='add'?'<span class="ea-plus" aria-hidden="true">+</span>':'')+L(en,zh)+'</button>';
   const link=(act,en,zh,v,label)=>'<button type="button" class="actlink" data-act="ea-'+act+'" data-v="'+E(v)+'" aria-label="'+
     E(L(en,zh)+' · '+label)+'">'+L(en,zh)+'</button>';
-  const dl=rows=>'<dl class="dl ea-dl">'+rows.map(r=>'<dt>'+r[0]+'</dt><dd>'+r[1]+'</dd>').join('')+'</dl>';
+  const dl=rows=>'<dl class="dl ea-dl">'+rows.map(r=>'<div class="ea-fact"><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>').join('')+'</dl>';
   const zone=()=>E(S.tz||'UTC');
   const stamp=iso=>iso?'<span class="num">'+E(CF.fmtStamp(iso))+'</span> <span class="muted">('+zone()+')</span>':'—';
   const copyable=(shown,value,label,cls='mono')=>'<span class="copy-pair"><span class="'+cls+'">'+E(shown)+'</span>'+

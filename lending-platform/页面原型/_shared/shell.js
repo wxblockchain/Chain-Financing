@@ -302,6 +302,35 @@
     return '<button class="addr-copy" type="button" data-act="cf-addr-copy" data-v="' + esc(v) + '" title="' + esc(v) +
       '" aria-label="' + esc(label + " " + v) + '">' + esc(CF.addrShort(v)) + '</button>';
   };
+  /* 详情字段里的长文字（退回原因、失败原因、备注等）：默认最多 3 行，超出时在末尾给展开图标，原位展开全文。
+     是否超出由页面渲染后实测决定，内容不足 3 行时不出现图标。 */
+  CF.clampText = function (html) {
+    if (html == null || html === "") return "—";
+    return '<div class="clamp" data-clamp><div class="clamp-text">' + html + '</div>' +
+      '<button class="btn icon bare clamp-toggle" type="button" data-clamp-toggle aria-expanded="false" hidden title="' +
+      esc(L("Show full text", "展开全文")) + '" aria-label="' + esc(L("Show full text", "展开全文")) + '">' + ICON.caret + '</button></div>';
+  };
+  function syncClamps() {
+    document.querySelectorAll("[data-clamp]").forEach(function (box) {
+      var text = box.firstElementChild, btn = box.querySelector("[data-clamp-toggle]");
+      if (!text || !btn) return;
+      var open = box.classList.contains("is-open");
+      btn.hidden = !open && text.scrollHeight - text.clientHeight < 4;
+    });
+  }
+  var clampFrame = 0;
+  function queueClamps() { if (!clampFrame) clampFrame = requestAnimationFrame(function () { clampFrame = 0; syncClamps(); }); }
+  if (typeof MutationObserver === "function") new MutationObserver(queueClamps).observe(document.documentElement, {childList: true, subtree: true});
+  window.addEventListener("resize", queueClamps);
+  document.addEventListener("click", function (event) {
+    var btn = event.target.closest("[data-clamp-toggle]");
+    if (!btn) return;
+    var box = btn.closest("[data-clamp]"), open = !box.classList.contains("is-open");
+    box.classList.toggle("is-open", open);
+    var label = open ? L("Collapse", "收起") : L("Show full text", "展开全文");
+    btn.setAttribute("aria-expanded", String(open)); btn.setAttribute("aria-label", label); btn.title = label;
+    queueClamps();
+  });
   /* 复制完整值；剪贴板不可用时退回选区复制，仍失败就把完整值给到提示里供手动复制。 */
   CF.copyText = function (v) {
     function fallback() {

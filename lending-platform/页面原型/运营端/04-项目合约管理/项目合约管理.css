@@ -99,7 +99,7 @@ table.cm-table thead th{white-space:normal;color:var(--muted);vertical-align:mid
 .cm-kv dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
 .cm-kv dd{margin:0;overflow-wrap:anywhere}
 .cm-kv dd .tag{margin-left:var(--sp-2)}
-.cm-wide{grid-column:1/-1}
+.cm-kv:not(.ops-facts)>.cm-wide{grid-column:1/-1}
 .cm-section .note{margin-top:var(--sp-4)}
 .cm-quote{white-space:pre-wrap;padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-sm);overflow-wrap:anywhere}
 .cm-quote.cm-fail{padding:var(--sp-3) var(--sp-4);background:var(--danger-bg);border-left:2px solid var(--danger);border-radius:var(--radius-xs);color:var(--text)}

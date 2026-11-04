@@ -105,10 +105,11 @@ table.lg-table :is(th,td){padding-inline:var(--sp-3)}
 .lg-section-head h2{margin:0;font-size:var(--ui-section-title);font-weight:600}
 .lg-section-note{font-size:var(--ui-field-label);color:var(--muted)}
 .lg-section .ops-facts-body{padding-top:var(--sp-2)}
-.lg-addr{display:inline-flex;align-items:center;gap:var(--sp-1);min-width:0;max-width:100%}
-.lg-addr .mono{overflow-wrap:anywhere;font-size:var(--ui-row-value)}
-.lg-addr .btn.icon{flex:none}
-.lg-addr-tools{display:inline-flex;align-items:center;flex:none}
+/* 长地址在格内换行，复制与浏览器图标紧跟最后一个字符。 */
+.lg-addr{display:block;min-width:0;max-width:100%}
+.lg-addr .mono{overflow-wrap:anywhere;word-break:break-all;font-size:var(--ui-row-value)}
+.lg-addr-end{white-space:nowrap}
+.lg-addr-tools{display:inline-flex;align-items:center;vertical-align:middle;margin-block:-4px;margin-inline-start:var(--sp-1);white-space:nowrap}
 .lg-netaddr{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0}
 .lg-empty-line{margin:0;padding:var(--sp-3) var(--card-pad) var(--sp-5);color:var(--muted);font-size:var(--ui-row-value)}
 .lg-part-error{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--card-pad) var(--sp-5)}

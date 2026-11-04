@@ -268,7 +268,7 @@
   }
   function fullAddress(value,label,explorer){
     if(!value)return blank;
-    return `<span class="ta-hash"><span class="mono ta-full">${E(value)}</span>${CF.copyBtn('ta-copy',value,L('Copy the full '+label,'复制完整'+label))}${explorer?CF.linkOut(explorer,L('Open in a block explorer (new window)','在区块浏览器中查看（新窗口）')):''}</span>`;
+    return `<span class="ta-hash"><span class="mono ta-full">${E(value.slice(0,-4))}</span><span class="ta-hash-end"><span class="mono">${E(value.slice(-4))}</span>${CF.copyBtn('ta-copy',value,L('Copy the full '+label,'复制完整'+label))}${explorer?CF.linkOut(explorer,L('Open in a block explorer (new window)','在区块浏览器中查看（新窗口）')):''}</span></span>`;
   }
   const scan=(kind,v)=>v?'https://etherscan.io/'+kind+'/'+encodeURIComponent(v):'';
   const entity=c=>c?`${E(txt(c.name))}<span class="ta-meta mono">${E(c.entity||blank)}</span>`:blank;
@@ -301,7 +301,7 @@
       [L('Token status','代币状态'),tokenTag(r)+(r.tokenState==='expired'?`<span class="ta-meta">${L('Receivable due date ','对应应收账款到期日 ')}${val(r.asset.due)}</span>`:'')],
       [L('Decision','审核结论'),d?`${CF.tag(STATUS[d.result][2],txt(STATUS[d.result]))}<span class="ta-meta">${E(txt(d.reviewer))} · ${time(d.at)}</span>`:blank]
     ];
-    if(d&&d.result==='returned'&&r.status==='returned')items.push([L('Return reason','退回原因'),`<div class="ta-quote">${E(txt(d.reason))}</div>`,true]);
+    if(d&&d.result==='returned'&&r.status==='returned')items.push([L('Return reason','退回原因'),`<div class="ta-quote">${CF.clampText(E(txt(d.reason)))}</div>`]);
     const alerts=r.dupes.map(x=>{
       const o=row(x.other);if(!o)return '';
       return `<div class="ta-alert"><div class="ta-alert-head">${CF.tag('warn',txt(DUP[x.kind]))}<a class="btn-link" href="#${E(detailRoute(o.id))}" data-act="ta-view" data-v="${E(o.id)}">${L('Open the other record','查看对方详情')}</a></div>

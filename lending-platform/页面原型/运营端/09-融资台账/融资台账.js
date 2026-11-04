@@ -116,7 +116,7 @@
   const network=()=>`<span class="lg-network">${CF.assetIcon('ETH')}<span>Ethereum</span></span>`;
   /* 钱包地址：列表缩写点击即复制，详情完整地址标签 + 复制；合约地址仍走 addrFull。 */
   const addrShort=v=>CF.addrCopy(v);
-  const addrFull=(v,label,tools='')=>v?`<span class="lg-addr"><span class="mono">${E(v)}</span><span class="lg-addr-tools">${CF.copyBtn('lg-copy',v,L('Copy the full '+label,'复制完整'+label))}${tools}</span></span>`:'—';
+  const addrFull=(v,label,tools='')=>v?`<span class="lg-addr"><span class="mono">${E(v.slice(0,-4))}<span class="lg-addr-end">${E(v.slice(-4))}<span class="lg-addr-tools">${CF.copyBtn('lg-copy',v,L('Copy the full '+label,'复制完整'+label))}${tools}</span></span></span></span>`:'—';
   const netAddr=v=>v?`<span class="lg-netaddr">${network()}${CF.addrFull(v)}</span>`:'—';
   const netContractAddr=(v,label)=>v?`<span class="lg-netaddr">${network()}${addrFull(v,label)}</span>`:'—';
   const ADDR=()=>L('address','地址');
@@ -451,7 +451,7 @@
         [L('Valid until','有效期至'),bizDate(p.validUntil)],[L('Project term','项目期限'),`${bizDate(p.termStart)} ～ ${bizDate(p.termEnd)}`],
         [L('Pledge ratio','项目质押率'),pct(p.ratio)],[L('Reference settlement currency','参考结算币种'),E(p.refCcy)],[L('Repayment method','还款方式'),E(txt(p.repayment))],
         [L('Configuration completed','合约配置完成时间'),time(p.configuredAt)],
-        p.closeReason?[L('Close reason','关闭原因'),E(txt(p.closeReason))]:null]))
+        p.closeReason?[L('Close reason','关闭原因'),CF.clampText(E(txt(p.closeReason)))]:null]))
       +section(L('Pledge and financing capacity','质押与融资额度'),facts([
         [L('Effective pledge','有效质押额'),p.effective==null?unavailable():amt(p.effective,'USD')],[L('Total pledge','总质押额'),p.total==null?unavailable():amt(p.total,'USD')],
         [L('Invalid tokens','失效代币价值与张数'),`${amt(p.invalid.value,'USD')} · ${L(p.invalid.count+' tokens',p.invalid.count+' 张')}`],
@@ -558,7 +558,7 @@
         [L('Repayment type','还款类型'),E(txt(q.repayType))],[L('Final repayment date','最终还款日'),bizDate(q.finalDate)],
         [L('Locked for','已锁定时长'),q.quotedAt?E(span(q.quotedAt,lockEnd)):'—'],
         q.lending?[L('On-chain disbursement','链上放款'),`<span class="lg-tags">${chainTag('lending')}</span>${meta(E(waited(now()-41*60000)))}`]:null,
-        q.status==='rejected'?[L('Rejected at','拒绝时间'),time(q.rejectAt)]:null,q.status==='rejected'?[L('Rejection reason','拒绝原因'),q.rejectReason?E(txt(q.rejectReason)):'—',true]:null,
+        q.status==='rejected'?[L('Rejected at','拒绝时间'),time(q.rejectAt)]:null,q.status==='rejected'?[L('Rejection reason','拒绝原因'),q.rejectReason?CF.clampText(E(txt(q.rejectReason))):'—']:null,
         q.status==='expired'?[L('Expired at','失效时间'),time(q.expireAt)]:null,q.status==='expired'?[L('Demand end reason','所属需求终结原因'),E(txt(q.expireReason))]:null,
         [L('On-chain authorisation','本笔链上授权状态'),q.auth?tag(AUTH,q.auth):unavailable()],
         [L('Disbursement address','放款地址'),netAddr(q.loanAddr,ADDR()),true],[L('Repayment receiving address','还款收款地址'),netAddr(q.repayAddr,ADDR()),true]])}</div>`
