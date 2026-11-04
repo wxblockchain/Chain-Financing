@@ -196,6 +196,12 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
   .facts.cols-3:not(.single){grid-template-columns:repeat(3,minmax(0,1fr))}
   .facts.cols-3:not(.single)>div:first-child:not(.wide)+div:not(.wide)+div:not(.wide){border-top:0}
 }
+/* 弹窗内短值成对的关键信息：容器 ≥ 420 px 即两列，避免 600 px 弹窗退回单列。 */
+@container facts (min-width:420px){
+  .facts.cols-2:not(.single){grid-template-columns:repeat(2,minmax(0,1fr))}
+  .facts.cols-2:not(.single)>div:first-child:not(.wide)+div:not(.wide){border-top:0}
+  .facts.cols-2>.wide+div{border-top:1px solid var(--row-line)}
+}
 
 /* ---------- 身份摘要条：名称 + 状态 + 一句说明 ---------- */
 .ident{display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-5) var(--card-pad);flex-wrap:wrap}
@@ -225,20 +231,26 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .tbl.request-list th{white-space:normal}
 .tbl.request-list th:first-child{width:auto}
 .tbl.request-list :is(td,th){overflow-wrap:normal}
-/* M4a token list: one kind of information per column; the token ID is the detail link. */
+/* M4a token list: one kind of information per column; the token ID and 查看 open the same detail. */
 .token-list{table-layout:fixed}
-.token-list .c-network{width:12%}.token-list .c-type{width:8%}.token-list .c-id{width:15%}.token-list .c-qty{width:13%}
-.token-list .c-value{width:13%}.token-list .c-address{width:14%}.token-list .c-due{width:11%}.token-list .c-progress{width:14%}
+.token-list .c-network{width:10%}.token-list .c-type{width:7%}.token-list .c-id{width:14%}.token-list .c-qty{width:12%}
+.token-list .c-value{width:12%}.token-list .c-address{width:13%}.token-list .c-due{width:10%}.token-list .c-progress{width:11%}.token-list .c-act{width:11%}
 .token-list :is(th,td){padding-inline:var(--sp-2);overflow-wrap:normal}
 .token-list thead th{white-space:normal}
 .token-list :is(th,td):first-child{padding-left:var(--sp-4)}
 .token-list :is(th,td):last-child{padding-right:var(--sp-4)}
 .token-list .btn-link.mono,.burn-list .btn-link.mono{padding:0;font-weight:500;white-space:nowrap}
 .token-list .tag{max-width:100%;white-space:normal;margin-top:0}
-/* Token identity header: network and token type lead, the record ID follows on the description line. */
-.token-title .asset-label{gap:var(--sp-2)}
-.token-title .asset-icon{width:var(--sp-6);height:var(--sp-6)}
-.page-title-row .network-label{font-size:var(--fs-14);color:var(--muted)}
+.token-list .col-act .actlink,.burn-list .col-act .actlink{display:block;margin-left:auto;width:max-content;max-width:100%;white-space:normal;text-align:right}
+/* Token and burn-request detail header: network first, then token icon + quantity + symbol, the record ID below. */
+.token-network{font-size:var(--fs-14);color:var(--muted);margin-bottom:var(--sp-1)}
+.page-title.token-amount{display:inline-flex;align-items:center;gap:var(--sp-2);font-variant-numeric:tabular-nums}
+.page-title.token-amount .asset-icon{width:var(--sp-7);height:var(--sp-7)}
+.page-title.token-amount .ccy{font-size:var(--fs-16);font-weight:500;color:var(--muted)}
+.token-cond .cond{border-top:0;border-radius:inherit}
+.holding-list .num{width:1%}
+.agreement-files{padding-top:0}
+.modal .signer.modal-signer{margin:0}
 .facts dd>.addr+.cell-sub{display:block;margin-top:var(--sp-1)}
 .state .state-ref{font-size:var(--fs-13)}
 .state .state-ref .btn-link{font-size:inherit}

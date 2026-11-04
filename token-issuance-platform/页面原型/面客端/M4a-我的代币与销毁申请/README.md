@@ -1,8 +1,19 @@
 # 我的代币与销毁申请 · 面客端原型
 
-2026-11-04 修订｜existing-system adaptation / console｜7 项功能 · 59 个画面
+2026-11-04 第二轮修订｜existing-system adaptation / console｜7 项功能 · 70 个画面
 
-依据 M4a 四册 PRD `56bfb8d`（同步 M3a / M3b 代币单位与编号跳转）及 M4b 唯一衔接字段清单，组件口径为组件规范 v1.35（§4.16、§9）。目标分支为 `cly-v6.0.0`。
+依据 M4a 四册 PRD `20c525d`（操作列、持有信息列表、代币发行信息、申请销毁签名与改名）及 M4b 唯一衔接字段清单，组件口径为组件规范 v1.36（§4.5、§4.16、§9）。目标分支为 `cly-v6.0.0`。
+
+## 2026-11-04 第二轮修订
+
+- **操作列**：我的代币列表、销毁申请列表恢复“操作”列，与平台其他列表一致。“查看”与点编号进入同一详情；“申请销毁”只在未销毁、无处理中申请、已到期且已结清的行出现（示例为 DEMO-TOKEN-021），点后打开申请销毁弹窗；列表点击后实时核对未通过另有画面 `c-check-blocked`。列表按发行时间由新到旧，“所属地址”改为“持有地址”。
+- **代币详情最上方**：首行只放所属网络；标题为代币图标 + 数量 + 符号（如 50,000.00 cou）与销毁进度；代币编号在下一行。资格结论紧跟页头。
+- **代币详情分区**：代币发行信息（12 项：编号、网络、类型、发行人、发行数量、代币价值、发行时间、到期日、铸造到账地址、所属合约、合约地址、监管机构）→ 持有信息（列表：持有地址 / 质押地址 / 持有数量 / 融资状态，带链上查询时间；已销毁无记录；查询失败可重试）→ 发行关联业务（资产编号、债务人、发行申请编号）→ 监管信息（监管情况、开始时间、解除完成时间，监管协议可查看下载）→ 销毁条件与记录（到期、结清、销毁进度与历次申请）。融资状态只在持有信息中按行展示。不展示账户备注名。
+- **申请销毁弹窗**：只列 7 项关键信息（网络、类型、代币编号、到期日、申请销毁数量、代币价值、持有地址），说明审核、执行、解除监管、不可撤回与签名要求，签名地址为登录地址；“签名并提交”后依次为等待钱包签名、提交中，另有取消/拒绝、地址不符、网络不符、签名未通过四个结果弹窗。驳回后再次申请销毁沿用同一弹窗并带原驳回申请编号。
+- **申请详情**：页头与代币详情一致；“办理进度”标题旁写当前说明；申请信息改为铸造到账地址；新增“业务签名”（签名地址、签名时间、签名值，与申请发行一致），另有签名记录读取失败画面。
+- **改名**：发起销毁 → 申请销毁，再次发起 → 再次申请销毁，未发起 → 未申请。
+- **新增画面**：`t-not-held`（代币不在本企业持有）、`t-holding-fail`（持有信息查询失败）、`t-agreement-fail`、`c-confirm-list`、`c-check-blocked`、`c-sign-*` 五个签名弹窗、`r-sign-wait`、`a-signature-fail`。移除 `t-account-changed`（不再展示账户备注名后与默认画面无差别）。
+- **本期不画**：持有信息待确认项 Q-M4A-03（解除质押后是否回原地址、违约处置去向）与二期转让，只按 PRD 现行保守规则呈现。
 
 ## 2026-11-04 修订
 
@@ -28,13 +39,13 @@ python3 _shared/export.py --source 面客端/M4a-我的代币与销毁申请/我
 
 ## 主流程与画面到达
 
-- 选择代币：`t-list` → `t-ready` → `c-confirm` → `c-sending` → `c-success` → `a-pending`。确认区全部只读，取消返回代币；提交中没有重复提交按钮。异步等待不会自动完成，在独立画面目录中查看下一屏。
+- 申请销毁：`t-list` → `t-ready` → `c-confirm`（弹窗）→ `c-sign-wait` → `c-sending` → `c-success` → `a-pending`；也可在列表点“申请销毁”直接打开 `c-confirm-list`。弹窗全部只读，取消返回原页面；提交中没有重复提交按钮。签名与提交等待不会自动完成，在画面目录中查看下一屏。
 - 申请进度：目录中的 `a-pending`、`a-burning`、`a-failed`、`a-success`、`a-release`、`a-done` 呈现不同业务时点，主流程的申请编号保持 `BA-DEMO-0031`。失败示例另用 `BA-DEMO-0021`；企业没有审核、执行或重试入口。
-- 再次发起：`a-rejected`（`BA-DEMO-0024`）→ `r-confirm` → `r-success` → `r-existing`（`BA-DEMO-0032`）。旧记录保留，当前限制、已有新申请、已销毁分别另有画面。
+- 再次申请销毁：`a-rejected`（`BA-DEMO-0024`）→ `r-confirm`（弹窗）→ `r-sign-wait` → `r-success` → `r-existing`（`BA-DEMO-0032`）。旧记录保留，当前限制、已有新申请、已销毁分别另有画面。
 - 列表历史使用各自记录：`a-active-record`（0030）、`a-release-record`（0019）、`a-completed-record`（0018）。详情返回代币会到对应的只读阶段画面，保持代币编号、数量和申请关系。
 - 右下角“画面目录 · 演示数据”默认关闭，按页面/流程分组列出全部画面；所有清单 ID 均可从目录到达。它是评审工具，不冒充业务菜单。
 
-所有企业、地址、数量、意见与编号为演示数据。画面是独立静态快照；目录切换不修改数据，不模拟时间、上游事件、规则运算或真实申请流转。业务意见、机构名称与账户备注名保留原文；界面标签支持中英文，时间按有效 IANA 展示时区换算。
+所有企业、地址、数量、意见与编号为演示数据。画面是独立静态快照；目录切换不修改数据，不模拟时间、上游事件、规则运算或真实申请流转。业务意见、机构名称与发行人名称保留原文；界面标签支持中英文，时间按有效 IANA 展示时区换算。
 
 ## 业务不变量与本期不做
 
@@ -46,7 +57,7 @@ python3 _shared/export.py --source 面客端/M4a-我的代币与销毁申请/我
 
 ## 画面清单
 
-以下为本轮新增，状态 `covered` 表示静态画面已实现且浏览器检查通过，不代表生产业务已实现。M1/M2 与共享层既有功能为 `preserved from existing`；以上本期不做项为 `out of scope`。没有在范围内静默留空的画面。
+以下为当前全部画面，状态 `covered` 表示静态画面已实现且浏览器检查通过，不代表生产业务已实现。M1/M2 与共享层既有功能为 `preserved from existing`；以上本期不做项为 `out of scope`。没有在范围内静默留空的画面。
 
 | ID | 页面/流程 | 主状态 | 身份 |
 | --- | --- | --- | --- |
@@ -62,19 +73,28 @@ python3 _shared/export.py --source 面客端/M4a-我的代币与销毁申请/我
 | `t-burned` | 代币详情 | 已销毁 · 待解除监管 | certified |
 | `t-released` | 代币详情 | 已解除监管 | certified |
 | `t-contract-off` | 代币详情 | 原合约平台停用 · 可申请 | certified |
-| `t-account-changed` | 代币详情 | 原登录地址顺延普通账户 | certified |
 | `t-denied` | 代币详情 | 无权或不存在 | certified |
 | `t-detail-error` | 代币详情 | 详情读取失败 | certified |
 | `t-partial` | 代币详情 | 结清信息暂不可用 | certified |
 | `t-future` | 代币详情 | 未到期 · 关联资产入口 | certified |
 | `t-financed` | 代币详情 | 仍有融资质押 | certified |
-| `c-confirm` | 提交销毁申请 | 只读确认 | certified |
-| `c-sending` | 提交销毁申请 | 提交中 | certified |
-| `c-success` | 提交销毁申请 | 提交成功 | certified |
-| `c-changed` | 提交销毁申请 | 提交前条件改变 | certified |
-| `c-failed` | 提交销毁申请 | 明确提交失败 | certified |
-| `c-unknown` | 提交销毁申请 | 提交结果未确认 | certified |
-| `c-existing` | 提交销毁申请 | 已有处理中申请 | certified |
+| `t-not-held` | 代币详情 | 代币不在本企业持有 | certified |
+| `t-holding-fail` | 代币详情 | 持有信息查询失败 | certified |
+| `t-agreement-fail` | 代币详情 | 监管协议未能打开 | certified（弹窗） |
+| `c-confirm` | 申请销毁 | 确认关键信息 | certified（弹窗） |
+| `c-confirm-list` | 申请销毁 | 确认关键信息 | certified（弹窗） |
+| `c-check-blocked` | 申请销毁 | 列表申请时核对未通过 | certified（弹窗） |
+| `c-sign-wait` | 申请销毁 | 等待钱包签名 | certified（弹窗） |
+| `c-sign-cancelled` | 申请销毁 | 取消或拒绝签名 | certified（弹窗） |
+| `c-sign-wrong-address` | 申请销毁 | 钱包地址不是登录地址 | certified（弹窗） |
+| `c-sign-wrong-network` | 申请销毁 | 钱包网络不是 Ethereum | certified（弹窗） |
+| `c-sign-invalid` | 申请销毁 | 签名未通过核对 | certified（弹窗） |
+| `c-sending` | 申请销毁 | 签名通过，提交中 | certified（弹窗） |
+| `c-success` | 申请销毁 | 提交成功 | certified |
+| `c-changed` | 申请销毁 | 提交前条件改变 | certified |
+| `c-failed` | 申请销毁 | 明确提交失败 | certified |
+| `c-unknown` | 申请销毁 | 提交结果未确认 | certified |
+| `c-existing` | 申请销毁 | 已有处理中申请 | certified |
 | `b-list` | 销毁申请列表 | 默认 · 历次申请 | certified |
 | `b-empty` | 销毁申请列表 | 暂无申请 | certified |
 | `b-loading` | 销毁申请列表 | 读取中 | certified |
@@ -88,14 +108,16 @@ python3 _shared/export.py --source 面客端/M4a-我的代币与销毁申请/我
 | `a-done` | 申请详情 | 已解除监管 | certified |
 | `a-denied` | 申请详情 | 无权或不存在 | certified |
 | `a-error` | 申请详情 | 详情读取失败 | certified |
+| `a-signature-fail` | 申请详情 | 签名记录读取失败 | certified |
 | `a-partial` | 申请详情 | 结果部分无法取得 | certified |
 | `a-message` | 申请详情 | 旧消息 · 已完成 | certified |
 | `a-old-active` | 申请详情 | 旧驳回 · 已有新申请 | certified |
-| `r-confirm` | 再次发起 | 再次核对确认 | certified |
-| `r-success` | 再次发起 | 新申请提交成功 | certified |
-| `r-blocked` | 再次发起 | 当前不满足条件 | certified |
-| `r-existing` | 再次发起 | 新申请 · 待运营审核 | certified |
-| `r-burned` | 再次发起 | 代币已销毁 | certified |
+| `r-confirm` | 再次申请销毁 | 确认关键信息 | certified（弹窗） |
+| `r-sign-wait` | 再次申请销毁 | 等待钱包签名 | certified（弹窗） |
+| `r-success` | 再次申请销毁 | 新申请提交成功 | certified |
+| `r-blocked` | 再次申请销毁 | 当前不满足条件 | certified |
+| `r-existing` | 再次申请销毁 | 新申请 · 待运营审核 | certified |
+| `r-burned` | 再次申请销毁 | 代币已销毁 | certified |
 | `gate-tokens` | 身份与访问 | 未认证 · 我的代币 | uncertified |
 | `gate-burn` | 身份与访问 | 未认证 · 销毁申请 | uncertified |
 | `guest` | 身份与访问 | 游客 · 不展示业务数据 | guest |
@@ -112,6 +134,6 @@ python3 _shared/export.py --source 面客端/M4a-我的代币与销毁申请/我
 
 ## 实际验证与限制
 
-2026-11-04 修订：Chromium headless 对全部 59 屏 × 中文 / 英文 × 1280 / 1440 / 1920 px 做了源码画面检查，共 354 次。未发现脚本错误、整页横向溢出、越界按钮或指向不存在画面的跳转；英文界面除业务原文（账户备注名、驳回意见）外无未翻译文字。还实测了列表编号进入详情、销毁记录编号进入申请、申请详情代币编号返回代币、分区导航定位，以及仓库联看中 IA-DEMO-0019 → M3a 铸造成功详情、RA-DEMO-0102 → M2 已发行资产。离线附件由 `export.py` 重新生成，按同样的 354 次检查遍历，无外部依赖。
+2026-11-04 第二轮修订：Chromium headless 对全部 70 屏 × 中文 / 英文 × 1280 / 1440 / 1920 px 做源码画面检查，共 420 次；离线附件按同样方式遍历。未发现脚本错误、整页横向溢出、越界按钮或指向不存在画面的跳转；英文界面除业务原文（发行人名称、驳回意见）外无未翻译文字。实测列表“查看”与编号同目标、列表“申请销毁”打开弹窗、签名弹窗主流程、驳回后再次申请销毁、持有信息与监管协议展示、分区导航定位，以及仓库联看 IA-DEMO-0019 → M3a、RA-DEMO-0102 → M2。
 
-未进行真实登录、权限、接口、链上或通知的端到端联调，未测试 Safari / Firefox，未覆盖 1280 px 以下。PRD 验收中的真实业务校验、幂等、通知时效和服务端资料隔离仍由研发与测试按 PRD 验证，原型不能证明这些能力已实现。
+未进行真实钱包签名、登录、权限、接口、链上查询或通知的端到端联调，未测试 Safari / Firefox，未覆盖 1280 px 以下。PRD 验收中的真实业务校验、签名核对、幂等、通知时效和服务端资料隔离仍由研发与测试按 PRD 验证，原型不能证明这些能力已实现。
