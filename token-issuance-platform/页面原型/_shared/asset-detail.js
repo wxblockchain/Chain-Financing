@@ -18,8 +18,8 @@
   function mono(v){ return '<span class="mono">'+v+'</span>'; }
   /* L1 缺失说明上游未提供；L2 缺失弱化为未提供。 */
   function missing(l1){ return l1 ? '<span class="missing">上游未提供</span>' : '<span class="missing soft">未提供</span>'; }
-  function facts(rows){
-    return '<div class="facts-region"><dl class="facts">'+rows.map(function(r){ return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>'; }).join('')+'</dl></div>';
+  function facts(rows, columns){
+    return '<div class="facts-region"><dl class="facts'+(columns===3?' cols-3':'')+'">'+rows.map(function(r){ return '<div'+(r[2]?' class="wide"':'')+'><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>'; }).join('')+'</dl></div>';
   }
   function table(cols, rows){
     return '<div class="tablewrap detail-table"><table class="tbl auto"><thead><tr>'+cols.map(function(c){ return c.charAt(0)==='#' ? '<th class="num">'+c.slice(1)+'</th>' : '<th>'+c+'</th>'; }).join('')+'</tr></thead><tbody>'+
@@ -66,7 +66,7 @@
 
   function party(title, x){
     return sec(subHead(title)+facts([
-      ['名称', x.name+(x.en?'<div class="cell-sub">'+x.en+'</div>':'')],
+      ['名称', x.name+(x.en?'<div class="cell-sub">'+x.en+'</div>':''), true],
       ['注册国家 / 地区', x.region],
       ['企业登记标识', mono(x.id)+' <span class="faint">'+x.kind+'</span>']
     ]));
@@ -84,8 +84,8 @@
         ['形成日期', day(a.formed||'2026-09-18T10:00:00+04:00')],
         ['到期日', '<time data-instant="'+a.due+'" datetime="'+a.due+'"></time>'],
         ['确权日期', sp ? missing(true) : day('2026-09-25T14:20:00+04:00')],
-        ['确权凭证', sp ? missing(true) : fileRef('CC-'+id+'.pdf')]
-      ]) + party('债权人', PARTY[a.cr]) + party('债务人', PARTY[a.db]));
+        ['确权凭证', sp ? missing(true) : fileRef('CC-'+id+'.pdf'), true]
+      ],3) + party('债权人', PARTY[a.cr]) + party('债务人', PARTY[a.db]));
 
     var goods = sp ? sec(subHead('标的物明细')+empty('未提供')) :
       sec(subHead('标的物明细','2 项')+table(['名称','型号规格','#数量','唯一识别码'],[
@@ -101,8 +101,8 @@
       ]) + goods);
 
     var delivery = card('货物交付','货物交付','',
-      facts(sp ? [['交付地点',missing()],['交付日期',missing()],['运输单据编号',missing()],['运输单据',missing()],['交付凭证',missing()]] : [
-        ['交付地点', 'Jebel Ali Free Zone, Demo Warehouse W-12'],
+      facts(sp ? [['交付地点',missing(),true],['交付日期',missing()],['运输单据编号',missing()],['运输单据',missing()],['交付凭证',missing()]] : [
+        ['交付地点', 'Jebel Ali Free Zone, Demo Warehouse W-12', true],
         ['交付日期', day('2026-09-12T16:00:00+04:00')],
         ['运输单据编号', mono('BL-DEMO-'+a.no)],
         ['运输单据', fileRef('BL-DEMO-'+a.no+'.pdf')],
@@ -120,7 +120,7 @@
       ['累计已回款', money(a.rich?'20,000.00':'0.00', ccy)],
       ['未回款余额', money(a.rich?'30,000.00':a.amt, ccy)],
       ['结清日期', '<span class="faint">—</span>']
-    ]);
+    ],3);
     var repayRecords = a.rich ?
       subHead('回款记录','1 条')+table(['回款日期','#回款金额','回款流水号','支付凭证编号','支付凭证'],[
         [day('2026-10-20T15:30:00+04:00'), money('20,000.00','USD'), mono('TXN-DEMO-50021'), mono('PV-DEMO-50021'), fileRef('PV-DEMO-50021.pdf')]

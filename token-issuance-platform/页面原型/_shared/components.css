@@ -184,13 +184,13 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .facts dd{margin:0;min-width:0;max-width:100%;overflow-wrap:anywhere;line-height:var(--lh-body)}
 @container facts (min-width:762px){
   .facts:not(.single){grid-template-columns:repeat(2,minmax(0,1fr))}
-  .facts>div:nth-child(2):not(.wide){border-top:0}
+  .facts:not(.single)>div:first-child:not(.wide)+div:not(.wide){border-top:0}
   .facts>.wide+div{border-top:1px solid var(--row-line)}
 }
 /* 短值字段较多的详情可选三列：容器足够宽时每行三项，其余宽度回到默认规则。 */
 @container facts (min-width:900px){
   .facts.cols-3:not(.single){grid-template-columns:repeat(3,minmax(0,1fr))}
-  .facts.cols-3>div:nth-child(3):not(.wide){border-top:0}
+  .facts.cols-3:not(.single)>div:first-child:not(.wide)+div:not(.wide)+div:not(.wide){border-top:0}
 }
 
 /* ---------- 身份摘要条：名称 + 状态 + 一句说明 ---------- */
