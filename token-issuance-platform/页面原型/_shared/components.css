@@ -218,21 +218,22 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .tbl.request-list :is(td,th){overflow-wrap:normal}
 /* M4a token list: one kind of information per column; the token ID and 查看 open the same detail. */
 .token-list{table-layout:fixed}
-.token-list .c-network{width:10%}.token-list .c-type{width:7%}.token-list .c-id{width:14%}.token-list .c-qty{width:12%}
-.token-list .c-value{width:12%}.token-list .c-address{width:13%}.token-list .c-due{width:10%}.token-list .c-progress{width:11%}.token-list .c-act{width:11%}
+.token-list .c-network{width:11%}.token-list .c-type{width:6%}.token-list .c-id{width:13%}.token-list .c-qty{width:11%}
+.token-list .c-value{width:11%}.token-list .c-address{width:14%}.token-list .c-due{width:9%}.token-list .c-progress{width:13%}.token-list .c-act{width:12%}
 .token-list :is(th,td){padding-inline:var(--sp-2);overflow-wrap:normal}
-.token-list thead th{white-space:normal}
+.tbl.token-list thead th{white-space:normal}
+/* 密集列表变体：首末列 16 px（M4a 我的代币、M4b 台账、M2 资产列表），为九至十列让出宽度。 */
 .token-list :is(th,td):first-child{padding-left:var(--sp-4)}
 .token-list :is(th,td):last-child{padding-right:var(--sp-4)}
-.token-list .btn-link.mono,.burn-list .btn-link.mono{padding:0;font-weight:500;white-space:nowrap}
+.token-list .btn-link.mono,.burn-list .btn-link.mono{font-weight:500;white-space:nowrap}
 .token-list .tag{max-width:100%;white-space:normal;margin-top:0}
 /* M4b ledgers: the M4a token columns plus issuer; network stays first. Ten columns size by content and
    scroll inside the table below 1120 px, keeping the action column pinned on the right. */
 .token-list.ledger-list{table-layout:auto;min-width:1120px}
 .ledger-list .c-issuer{width:13%}
-.ledger-list :is(th,td):nth-child(4){min-width:128px}.ledger-list :is(th,td):nth-child(9){min-width:112px}
+.ledger-list :is(th,td):nth-child(4){min-width:128px}.ledger-list :is(th,td):nth-child(9){min-width:144px}
 .ledger-list td .asset-label,.ledger-list td .addr,.ledger-list td .money{white-space:nowrap}
-.token-list .col-act .actlink,.burn-list .col-act .actlink{display:block;margin-left:auto;width:max-content;max-width:100%;white-space:normal;text-align:right}
+.token-list .col-act .actlink,.burn-list .col-act .actlink{display:block;margin-left:auto;width:max-content;white-space:nowrap;text-align:right}
 /* Token and burn-request detail header: network first, then token icon + quantity + symbol, the record ID below. */
 .token-network{font-size:var(--fs-14);color:var(--muted);margin-bottom:var(--sp-1)}
 .page-title.token-amount{display:inline-flex;align-items:center;gap:var(--sp-2);font-variant-numeric:tabular-nums}
@@ -245,7 +246,7 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .facts dd>.addr+.cell-sub{display:block;margin-top:var(--sp-1)}
 .state .state-ref{font-size:var(--fs-13)}
 .state .state-ref .btn-link{font-size:inherit}
-/* Four independent token states (financing, settlement, supervision, burn progress); M4b ledger. */
+/* M3b 关联资产：确权、结清、逾期、发行四项状态。 */
 .status-grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:1440px){
   .status-grid.cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -263,6 +264,15 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .tbl tbody tr:last-child td{border-bottom:0}
 .tbl th:first-child{width:20%}
 .tbl td{font-variant-numeric:tabular-nums}
+/* 中文名称按词换行（如“示例企业 A / 有限公司”），避免末行只剩一两个字；放不下时仍可在词内断开。 */
+.tbl :is(th,td){word-break:keep-all;text-wrap:pretty}
+.tbl .tag{overflow-wrap:anywhere}
+/* 表头时区：与表头同一单元格的第二行，弱于表头文字。 */
+.tbl thead [data-zone]{font-size:var(--fs-11);font-weight:400;color:var(--faint);line-height:1.4;margin-top:2px;white-space:nowrap}
+/* 编号等文字链接：文字与列首、表头左缘对齐，内边距只承载悬停底色。 */
+:is(.tbl td,.facts dd)>.btn-link:first-child{margin-left:calc(-1 * var(--sp-1))}
+/* 操作列文字链接：最右侧文字与表头“操作”右缘对齐。 */
+.tbl .col-act .actlink:last-child,:is(.token-list,.burn-list,.asset-list) .col-act .actlink{margin-right:-6px}
 .tbl thead th.col-act{text-align:right}
 .tbl tbody tr:hover td{background:var(--row-hover)}
 .tbl tbody tr.is-new td{background:var(--accent-soft)}
@@ -308,6 +318,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .note.red{background:var(--danger-bg);border-color:var(--danger-border);border-left-color:var(--danger);color:var(--danger)}
 .note .btn{margin-left:auto;align-self:center}
 .banner{margin-bottom:var(--sp-5)}
+.card+.banner{margin-top:var(--sp-4);margin-bottom:var(--sp-4)}
 
 /* ---------- 区块状态：空、失败、受限 ---------- */
 .state{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--sp-2);padding:var(--sp-9) var(--sp-6)}
@@ -321,6 +332,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .inline-empty{display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-4) var(--card-pad);border-top:1px dashed var(--border-strong);
   background:var(--card-2);color:var(--muted);font-size:var(--fs-13)}
 .inline-empty .btn{margin-left:auto}
+/* 卡片内容整体为空（尚无结果、尚无记录）：作为卡片正文的一句说明，不再叠加虚线与浅底。 */
+.card-head+.inline-empty{border-top:0;background:none;padding-block:var(--sp-5)}
 
 /* ---------- 步骤条：多步流程 ---------- */
 .steps{display:flex;gap:var(--sp-2);list-style:none;margin:0;padding:0;counter-reset:st}
@@ -347,7 +360,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .modal-h{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border);
   font-size:var(--ui-section-title);font-weight:600;flex-shrink:0}
 .modal-h .btn.icon{margin-left:auto}
-.modal-title{flex:1;min-width:0}
+.modal-title{flex:1;min-width:0;font-size:inherit;font-weight:inherit;line-height:1.5}
 .modal-b{padding:var(--sp-5) var(--sp-6);overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:var(--sp-4)}
 .modal-f{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--sp-3);padding:var(--sp-4) var(--sp-6);background:var(--card-2);
   border-top:1px solid var(--border);border-radius:0 0 var(--radius-lg) var(--radius-lg);flex-shrink:0}
@@ -461,10 +474,10 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .form-sheet .card-f{display:flex;justify-content:flex-end;gap:var(--sp-3);flex-wrap:wrap}
 .tbl.reg-list{table-layout:fixed}
 .tbl.reg-list th,.tbl.reg-list td{white-space:normal;overflow-wrap:anywhere;padding-inline:var(--sp-2)}
-.tbl.reg-list th:first-child,.tbl.reg-list td:first-child{padding-left:var(--sp-4);width:18%}
+.tbl.reg-list th:first-child,.tbl.reg-list td:first-child{padding-left:var(--card-pad);width:18%}
 .tbl.reg-list th:nth-child(2){width:22%}
 .tbl.reg-list th:nth-child(3),.tbl.reg-list th:nth-child(4){width:12%}
-.tbl.reg-list .col-act{width:8%;white-space:nowrap;padding-right:var(--sp-4)}
+.tbl.reg-list .col-act{width:8%;white-space:nowrap;padding-right:var(--card-pad)}
 @media(max-width:600px){.form-grid{grid-template-columns:minmax(0,1fr)}.file-row{flex-wrap:wrap}.file-row>.file-actions{width:100%;justify-content:flex-start}}
 .preference-row{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-5)}
 .preference-row>div{flex:1;min-width:0}
@@ -474,6 +487,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .preference-feedback:empty{display:none}
 .tbl time{white-space:nowrap}
 .tbl time .cell-sub,[data-zone]{display:block}
+/* 弹窗等没有页头时区说明的只读字段：时区作为时间下方的副文本。 */
+.facts dd [data-zone]{font-size:var(--fs-12);color:var(--muted)}
 .profile-section [data-zone]{font-family:var(--sans);font-size:var(--fs-12)}
 @media(max-width:1100px){.profile-section{grid-template-columns:minmax(0,1fr);gap:var(--sp-3)}}
 
@@ -548,7 +563,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .tbl.auto th:first-child{width:auto}
 .tbl.auto .cell-sub{max-width:24ch}
 .tbl .col-name{min-width:120px}
-.tbl td>.tag{white-space:normal;margin-top:var(--sp-1)}
+.tbl td>.tag{white-space:normal}
+.tbl td>*+.tag{margin-top:var(--sp-1)}
 .tbl .num{text-align:right;white-space:nowrap}
 .tbl .num .cell-sub{display:block}
 .cell-sub.warn{color:var(--warn)}
@@ -557,16 +573,16 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .asset-list .asset-col-id{width:14%}.asset-list .asset-col-debtor{width:20%}.asset-list .asset-col-amount{width:13%}
 .asset-list .asset-col-due{width:12%}.asset-list .asset-col-repayment{width:13%}.asset-list .asset-col-status{width:15%}.asset-list .asset-col-actions{width:13%}
 .asset-list.with-creditor .asset-col-id{width:13%}.asset-list.with-creditor .asset-col-name{width:16%}
-.asset-list.with-creditor .asset-col-debtor{width:17%}.asset-list.with-creditor .asset-col-amount{width:12%}
-.asset-list.with-creditor .asset-col-due{width:11%}.asset-list.with-creditor .asset-col-repayment{width:11%}.asset-list.with-creditor .asset-col-status{width:13%}
+.asset-list.with-creditor .asset-col-debtor{width:16%}.asset-list.with-creditor .asset-col-amount{width:12%}
+.asset-list.with-creditor .asset-col-due{width:11%}.asset-list.with-creditor .asset-col-repayment{width:12%}.asset-list.with-creditor .asset-col-status{width:13%}
 .asset-list.with-creditor .asset-col-actions{width:7%}
 .asset-list :is(th,td){padding-inline:var(--sp-2);overflow-wrap:normal}
 .asset-list thead th{white-space:normal}
 .asset-list :is(th,td):first-child{padding-left:var(--sp-4)}
+.asset-list :is(th,td):last-child{padding-right:var(--sp-4)}
 .asset-list td:first-child{white-space:nowrap}
 /* 资产编号与“查看”打开同一详情：等宽编号作为主链接，不加内边距以保持列对齐。 */
-.asset-list .asset-id{padding:0;font-weight:500;white-space:nowrap}
-.asset-list :is(th,td):last-child{padding-right:var(--sp-4)}
+.asset-list .asset-id{font-weight:500;white-space:nowrap}
 .asset-list .col-name{min-width:0;overflow-wrap:anywhere}
 .name-clip{display:inline-flex;max-width:100%;min-width:0;padding:0;color:var(--text);font:inherit;line-height:inherit;text-align:left;white-space:nowrap;vertical-align:middle;cursor:help}
 .name-prefix{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:pre}
@@ -574,7 +590,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .name-clip:hover{color:var(--accent)}
 .asset-list .col-act .actlink{display:block;margin-left:auto;max-width:100%;white-space:normal}
 .asset-list .col-due{min-width:112px}
-.asset-list [data-zone]{font-size:var(--fs-11);overflow-wrap:anywhere}
 .asset-list .col-act{width:84px}
 .asset-list:has(colgroup) .col-act{width:auto}
 .asset-list .tag{max-width:100%;white-space:normal;margin-top:0}
@@ -683,17 +698,15 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 /* ---------- 审核列表、进度与单项选择（静态画面） ---------- */
 .tbl.review-list{table-layout:fixed}
 .review-list :is(th,td){padding-inline:var(--sp-2);white-space:normal;overflow-wrap:anywhere}
-.review-list :is(th,td):first-child{width:14%;padding-left:var(--sp-4)}
-.review-list th:nth-child(2){width:15%}
+.review-list :is(th,td):first-child{width:14%;padding-left:var(--card-pad)}
+.review-list th:nth-child(2){width:14%}
 .review-list th:nth-child(3){width:13%}
 .review-list th:nth-child(4){width:13%}
 .review-list th:nth-child(5){width:12%}
 .review-list th:nth-child(6){width:13%}
 .review-list th:nth-child(7){width:13%}
-.review-list .col-act{width:7%;padding-right:var(--sp-4)}
-.review-list .actlink{padding-inline:0;text-align:left}
+.review-list .col-act{width:8%;padding-right:var(--card-pad)}
 .review-list .tag{white-space:normal}
-.review-list [data-zone]{font-size:var(--fs-11);overflow-wrap:anywhere}
 .review-list .money{flex-wrap:wrap;justify-content:flex-end}
 .review-textarea.inp{height:auto;min-height:calc(var(--ctrl-h)*2);padding:var(--sp-3);resize:vertical}
 .choice-card{display:flex;align-items:flex-start;gap:var(--sp-3);border:1px solid var(--control-border);border-radius:var(--radius-xs);padding:var(--sp-4);cursor:pointer}
@@ -743,8 +756,11 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .document-sheet .facts{padding:0}
 .document-kicker{font-size:var(--fs-12);color:var(--faint)}
 @media(max-width:900px){.review-list{min-width:800px}}
-/* M2 英文优先：摘要右侧按状态标签内容取宽，三项状态在 1280 px 起单行展示，左侧金额区让出剩余宽度。 */
-@media(min-width:1101px){:root[data-module="assets"] .asset-sum{grid-template-columns:minmax(0,1fr) auto}:root[data-module="assets"] .status-grid{grid-template-columns:repeat(3,minmax(120px,auto))}:root[data-module="assets"] .status-grid .tag{white-space:nowrap}}
+/* 资产摘要（M2，及 M3a / M3b 复用）：右侧状态按标签内容取宽，三项状态在 1280 px 起单行展示，左侧金额区让出剩余宽度；
+   M3b 四项状态在 1441 px 起单行，1101–1440 px 两行两列。 */
+@media(min-width:1101px){.asset-sum{grid-template-columns:minmax(0,1fr) auto}.status-grid{grid-template-columns:repeat(3,minmax(120px,auto))}.status-grid .tag{white-space:nowrap}
+  .status-grid.cols-4{grid-template-columns:repeat(2,minmax(140px,auto))}}
+@media(min-width:1441px){.status-grid.cols-4{grid-template-columns:repeat(4,minmax(120px,auto))}}
 @media(max-width:1100px){.asset-sum{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){
   .status-grid{grid-template-columns:minmax(0,1fr)}
@@ -830,6 +846,9 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .review-timeline .tag{margin-bottom:var(--sp-2);white-space:normal}
 .review-timeline p,.review-timeline time{display:block;font-size:var(--fs-13);color:var(--muted)}
 .review-timeline time{font-variant-numeric:tabular-nums;margin-top:var(--sp-1)}
+/* 时间线下方的审核意见、审核人：以轻分隔线承接时间线，与时间线同一左缘。 */
+.review-timeline+.facts-region{margin-inline:var(--card-pad);border-top:1px solid var(--row-line)}
+.review-timeline+.facts-region>.facts{padding:0 0 var(--sp-2)}
 .rejection-text{white-space:pre-wrap;overflow-wrap:anywhere;margin:var(--sp-3) 0 0;font:inherit;color:var(--text)}
 .result-code{margin-top:var(--sp-3);font-family:var(--mono);font-size:var(--fs-20)}
 @media(max-width:1100px){.review-timeline{grid-template-columns:repeat(2,minmax(0,1fr))}}
