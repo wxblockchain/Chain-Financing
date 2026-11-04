@@ -1,8 +1,8 @@
 # M6 · 合约管理页面原型
 
-2026-10-30｜existing-system adaptation / console。按 cuiluyao“直接输出页面原型”合并后续阶段，只制作本 issue 的合约管理。
+2026-11-04｜existing-system adaptation / console。按 cuiluyao“直接输出页面原型”合并后续阶段，只制作本 issue 的合约管理；本次按 2026-11-04 版 PRD 修订。
 
-业务基线为 [合约管理 PRD](../../../PRD/管理端/M6-合约管理/01-合约管理-PRD.md) 及同目录流程与验收册（2026-10-30 版，含 `3d581de` 最新停用规则）。视觉沿用组件规范 v1.13（`5f07698`）、`_shared/tokens.css`、`components.css`、`frame.js` 及管理端 M2 的真实壳层。规则、校验与异常分支以 PRD 为准。
+业务基线为 [合约管理 PRD](../../../PRD/管理端/M6-合约管理/01-合约管理-PRD.md) 及同目录流程与验收册（2026-11-04 版，`76fe295`：状态取值“启用 / 停用”、名称 60 字符与不重名）。视觉沿用组件规范 v1.13（`5f07698`）、`_shared/tokens.css`、`components.css`、`frame.js` 及管理端 M2 的真实壳层。规则、校验与异常分支以 PRD 为准。
 
 ## 使用与维护
 
@@ -19,28 +19,30 @@
 
 ## 画面清单
 
-共 23 屏。`covered` 表示已出屏且纳入本轮浏览器检查，不表示生产业务验收通过。在此前 20 屏基线上补齐停用合约的编辑、提交中及保存结果三屏。
+共 24 屏。`covered` 表示已出屏且纳入本轮浏览器检查，不表示生产业务验收通过。2026-11-04 在 23 屏基线上新增名称重名错误一屏。
 
 | 功能 / 页面 | 画面 ID 与主状态 | 状态 |
 | --- | --- | --- |
-| F-CT-01 合约列表 | `ct-list` 默认（可用 K、停用 L）、`ct-empty` 未配置、`ct-load-fail` 读取失败 | covered |
+| F-CT-01 合约列表 | `ct-list` 默认（启用 K、停用 L）、`ct-empty` 未配置、`ct-load-fail` 读取失败 | covered |
 | 维护后的列表结果 | `ct-renamed` K 改名、`ct-renamed-off` L 改名、`ct-enabled` L 启用、`ct-disabled` K 停用 | covered |
-| F-CT-03 名称编辑 | `ct-edit` 当前值、`ct-edit-empty` 空、`ct-edit-invalid` 必填错误、`ct-edit-saving` 保存中、`ct-edit-fail` 保存失败、`ct-edit-conflict` 最新值；`ct-edit-off` 停用合约、`ct-edit-off-saving` 对应保存中 | covered |
+| F-CT-03 名称编辑 | `ct-edit` 当前值、`ct-edit-empty` 空、`ct-edit-invalid` 必填错误、`ct-edit-dup` 重名错误、`ct-edit-saving` 保存中、`ct-edit-fail` 保存失败、`ct-edit-conflict` 最新值；`ct-edit-off` 停用合约、`ct-edit-off-saving` 对应保存中 | covered |
 | F-CT-04 启停 | `ct-enable` / `ct-disable` 确认，`ct-enable-saving` / `ct-disable-saving` 提交中，`ct-enable-fail` / `ct-disable-fail` 失败，`ct-already` 已为目标状态，`ct-state-conflict` 最新状态 | covered |
 | 监管 / 企业身份限制 | 沿用 M5 权限及角色菜单，不在 M6 复制无权页面或生产权限实现 | preserved from existing；本轮未验证实际权限 |
 | F-CT-02 二审选择及铸造重试 | M3b 承载；本轮仅在启停前说明已确认的业务影响 | out of scope |
+| 合约详情（Q-CT-03）、合约地址跳转区块链浏览器（Q-CT-04） | PRD 本期按不提供执行，待用户裁定；未出屏，列表仅提供完整地址核对与复制 | out of scope |
 | 其他模块页面、合约新增 / 删除 / 部署 / 升级 / 链上参数、修改其余只读项、搜索 / 筛选 / 分页、业务统计与消息 | 不生成 | out of scope |
 | 真实接口、校验、权限、链上操作、邮件 / 消息和业务数据持久化 | 不实现 | out of scope |
 
 主流程：`ct-list` → `ct-edit` → `ct-renamed`；停用合约改名为 `ct-edit-off` → `ct-renamed-off`。列表的停用 / 启用分别进入 `ct-disable` → `ct-disabled`、`ct-enable` → `ct-enabled`。所有目录画面都有真实目标，维护弹窗取消回发起列表。
 
-列表一次展示六项信息与操作，不加筛选。可用在前，同状态按演示配置先后排序；启停结果重排。标准、类型、网络、地址只读。名称为必填，不自定长度上限或唯一性。确认说明二审可选范围与既有业务影响：停用仅限制新选择，已确定合约的业务继续沿原合约办理，失败仍可手动重试，无需先启用。
+列表一次展示六项信息与操作，不加筛选。合约状态只显示“启用”或“停用”，操作与当前状态相反：启用的合约显示“停用”，停用的合约显示“启用”。启用在前，同状态按演示配置先后排序；启停结果重排。标准、类型、网络、地址只读。名称必填，字段旁显示“已输入 / 60”，输入框限 60 个字符；重名错误示例取停用合约 L 的名称，说明停用合约同样参与比较。确认说明二审可选范围与既有业务影响：停用仅限制新选择，已确定合约的业务继续沿原合约办理，失败仍可手动重试，无需先启用。
 
 ## 共享层变更与限制
 
 新增路由与总目录入口；地址复制图标的共享热区由原 28 px 调整为 `--ctrl-h-sm`（36 px），对齐组件规范 v1.13。没有重画 M1、M2、M5 页面，也没有修改它们的业务规则。共享地址图标尺寸影响相关页面，回归范围见下方。
 
-- Q-CT-02：名称长度与重名边界待确认；没有添加 maxlength、长度计数上限或重名错误。
+- Q-CT-02 已由 PRD 确认（60 个字符、不重名），已补字符计数、60 字符限制及重名错误画面；去空格、大小写比较和并发改同名按 PRD 实现，原型不演示。
+- 共享层 `display.js` 新增元素级 `data-en`：同字异义的文本（操作“启用 / 停用”与状态“启用 / 停用”）分别给出英文 Enable / Disable 与 Enabled / Disabled；未使用该属性的页面行为不变。
 - 原 Q-CT-01 已由最新 PRD 解除，停用不阻断既有业务及沿原合约手动重试。启用不自动办理二审或重试；真实链上异常仍需按业务规则处理。
 
 上述待定规则对应的文案与验收属于 delta 范围；不能据此判业务通过。表格其他行的次操作只呈现入口与范围反馈，K 的停用与 L 的启用为固定主流程示例。原型不流转真实数据。
