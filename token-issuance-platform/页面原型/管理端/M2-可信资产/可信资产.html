@@ -62,10 +62,10 @@
 <td><time data-compact data-instant="2027-06-30T23:59:59+04:00" datetime="2027-06-30T23:59:59+04:00">2027-06-30<span class="cell-sub">23:59</span></time></td>
 <td><span class="tag">未到期</span></td><td><span class="tag accent">可发行</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
-<tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0143</button></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">27,500.00</span><span class="ccy">USD</span></span></td>
+<tr><td><button type="button" class="btn-link mono asset-id" data-go="o-failed">RA-DEMO-0143</button></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">27,500.00</span><span class="ccy">USD</span></span></td>
 <td><time data-compact data-instant="2027-04-30T23:59:59+04:00" datetime="2027-04-30T23:59:59+04:00">2027-04-30<span class="cell-sub">23:59</span></time></td>
 <td><span class="tag warn">暂时无法确认</span></td><td><span class="tag warn">发行申请中</span></td>
-<td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
+<td class="col-act"><button type="button" class="actlink" data-go="o-failed">查看</button></td></tr>
 <tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0160</button></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">12,345.67</span><span class="ccy">USD</span></span></td>
 <td><time data-compact data-instant="2027-04-30T23:59:59+04:00" datetime="2027-04-30T23:59:59+04:00">2027-04-30<span class="cell-sub">23:59</span></time></td>
 <td><span class="tag">未到期</span></td><td><span class="tag danger">已驳回</span></td>
@@ -107,7 +107,8 @@
 </div>
 <div class="card asset-related"><div class="card-head"><h2>关联记录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>发行申请</dt><dd><button type="button" class="btn-link mono" data-module-key="reviewApplication" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0031</button> <span class="tag warn">待运营审核</span></dd></div>
+<div><dt>申请编号</dt><dd><button type="button" class="btn-link mono" data-module-key="reviewApplication" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0031</button></dd></div>
+<div><dt>申请状态</dt><dd><span class="tag warn">待运营审核</span></dd></div>
 <div><dt>所选监管机构</dt><dd>示例监管机构 C</dd></div>
 </dl></div></div>
 <div class="asset-detail" data-asset-detail="RA-DEMO-0131"></div>
@@ -140,11 +141,31 @@
 </div>
 <div class="card asset-related"><div class="card-head"><h2>关联记录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>发行申请</dt><dd><span class="mono">IA-DEMO-0019</span> <span class="tag ok">铸造成功</span></dd></div>
+<div><dt>申请编号</dt><dd><span class="mono">IA-DEMO-0019</span></dd></div>
+<div><dt>申请状态</dt><dd><span class="tag ok">铸造成功</span></dd></div>
 <div><dt>所选监管机构</dt><dd>示例监管机构 C</dd></div>
-<div><dt>代币</dt><dd><button type="button" class="btn-link mono" data-module-key="ledgerToken001" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">DEMO-TOKEN-001</button></dd></div>
+<div><dt>代币编号</dt><dd><button type="button" class="btn-link mono" data-module-key="ledgerToken001" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">DEMO-TOKEN-001</button></dd></div>
 </dl></div></div>
 <div class="asset-detail" data-asset-detail="RA-DEMO-0102"></div>
+</div>
+</section>
+
+<section data-screen id="o-failed" data-no="O7" data-group="运营 · 可信资产" data-name="资产详情 · 关联申请铸造失败" data-layout="app" data-who="ops" data-nav="assets" data-crumb="业务/可信资产/资产详情" data-crumb-targets="/o-list">
+<div class="content-in">
+<div class="page-head"><div><h1 class="page-title mono">RA-DEMO-0143</h1><p class="page-desc">应收账款 · 汽车贸易 · 时区 <span data-zone></span></p></div>
+<div class="page-actions"><button type="button" class="btn" data-go="e-detail"><i data-ico="org"></i>债权人企业详情</button></div></div>
+<div class="card">
+<div class="asset-sum"><div><div class="eyebrow">应收账款金额</div><div class="amount-lg"><i data-asset="USD"></i>27,500.00<span class="ccy">USD</span></div>
+<div class="meta"><span>债权人 <b>示例企业 A 有限公司</b></span><span>债务人 <b>Demo Buyer B LLC</b></span><span>到期日 <b><time data-instant="2027-04-30T23:59:59+04:00" datetime="2027-04-30T23:59:59+04:00">2027-04-30 23:59:59</time></b></span></div></div>
+<dl class="status-grid"><div><dt>确权状态</dt><dd><span class="tag ok">已确权</span></dd></div><div><dt>回款状态</dt><dd><span class="tag warn">暂时无法确认</span></dd></div><div><dt>发行状态</dt><dd><span class="tag warn">发行申请中</span></dd></div></dl></div>
+</div>
+<div class="card asset-related"><div class="card-head"><h2>关联记录</h2></div>
+<div class="facts-region"><dl class="facts">
+<div><dt>申请编号</dt><dd><span class="mono">IA-DEMO-0027</span></dd></div>
+<div><dt>申请状态</dt><dd><span class="tag danger">铸造失败</span></dd></div>
+<div><dt>所选监管机构</dt><dd>示例监管机构 C</dd></div>
+</dl></div></div>
+<div class="asset-detail" data-asset-detail="RA-DEMO-0143"></div>
 </div>
 </section>
 
@@ -265,10 +286,106 @@
 <td><time data-compact data-instant="2027-06-30T23:59:59+04:00" datetime="2027-06-30T23:59:59+04:00">2027-06-30<span class="cell-sub">23:59</span></time></td>
 <td><span class="tag">未到期</span></td><td><span class="tag accent">可发行</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
-<tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0143</button></td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">27,500.00</span><span class="ccy">USD</span></span></td>
+<tr><td><button type="button" class="btn-link mono asset-id" data-go="o-failed">RA-DEMO-0143</button></td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">27,500.00</span><span class="ccy">USD</span></span></td>
 <td><time data-compact data-instant="2027-04-30T23:59:59+04:00" datetime="2027-04-30T23:59:59+04:00">2027-04-30<span class="cell-sub">23:59</span></time></td>
 <td><span class="tag warn">暂时无法确认</span></td><td><span class="tag warn">发行申请中</span></td>
+<td class="col-act"><button type="button" class="actlink" data-go="o-failed">查看</button></td></tr>
+<tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0160</button></td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">12,345.67</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-04-30T23:59:59+04:00" datetime="2027-04-30T23:59:59+04:00">2027-04-30<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag">未到期</span></td><td><span class="tag danger">已驳回</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
+<tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0166</button></td><td>Demo Retail E LLC</td><td class="num"><span class="money"><span class="mono">45,200.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-05-31T23:59:59+04:00" datetime="2027-05-31T23:59:59+04:00">2027-05-31<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag">未到期</span></td><td><span class="tag accent">可发行</span></td>
+<td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
+<tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0171</button></td><td>Demo Motors Trading FZE</td><td class="num"><span class="money"><span class="mono">63,750.50</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-07-15T23:59:59+04:00" datetime="2027-07-15T23:59:59+04:00">2027-07-15<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag">未到期</span></td><td><span class="tag accent">可发行</span></td>
+<td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</section>
+
+<section data-screen id="e-detail-moved" data-no="E5" data-group="运营 · 企业" data-name="企业详情 · 登录地址变更后" data-layout="app" data-detail-layout data-who="ops" data-nav="ents" data-crumb="业务/企业/企业详情" data-crumb-targets="/e-list">
+<div class="content-in">
+<div class="page-head"><div><h1 class="page-title">企业详情</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
+<div class="card" data-nav-label="企业信息">
+<div class="ident"><span aria-hidden="true" class="ident-mark">A</span><div><div class="ident-name">示例企业 A 有限公司</div><div class="ident-sub">Example Enterprise A Ltd.</div></div><span class="tag ok"><span class="dot"></span>已认证</span></div>
+<div class="facts-region bt"><dl class="facts">
+<div><dt>企业名称</dt><dd>示例企业 A 有限公司</dd></div>
+<div><dt>英文名称</dt><dd>Example Enterprise A Ltd.</dd></div>
+<div><dt>注册国家 / 地区</dt><dd>中国香港</dd></div>
+<div><dt>州</dt><dd class="faint">—</dd></div>
+<div><dt>企业登记标识</dt><dd><span class="mono">DEMO-1234567</span> <span class="faint">CR</span></dd></div>
+<div><dt>当前有效认证结论</dt><dd><span class="tag ok">已认证</span></dd></div>
+<div><dt>登录地址</dt><dd><span class="addr"><span class="addr-pill" title="0x3B7c9E1d5A2f8C4b6D0e7F3a9B1c5E8d2A4f6C30">0x3B7c…6C30</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></dd></div>
+<div><dt>注册地址</dt><dd>香港中环示例大道 1 号示例大厦 10 楼</dd></div>
+</dl></div>
+<div class="card-sec"><div class="sub-h">企业用户</div><div class="facts-region"><dl class="facts">
+<div><dt>姓名</dt><dd>张示例</dd></div>
+<div><dt>英文姓名</dt><dd>Zhang Shili</dd></div>
+<div><dt>邮箱</dt><dd>demo-user@example.com</dd></div>
+<div><dt>国籍</dt><dd>中国</dd></div>
+<div><dt>证件类型</dt><dd>身份证</dd></div>
+<div><dt>证件号码</dt><dd class="faint">暂不展示</dd></div>
+<div><dt>与企业的关系</dt><dd>授权代表</dd></div>
+</dl></div></div>
+</div>
+<div class="card">
+<div class="card-head"><h2>数币账户</h2><span class="sub">4 个</span></div>
+<div class="tablewrap"><table class="tbl">
+<thead><tr><th>账户备注名</th><th>区块链网络</th><th>数币地址</th><th>来源</th><th>创建时间<span class="cell-sub" data-zone></span></th><th>更新时间<span class="cell-sub" data-zone></span></th></tr></thead>
+<tbody>
+<tr><td><span class="tag accent">登录地址</span></td><td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td>
+<td><span class="addr"><span class="addr-pill" title="0x3B7c9E1d5A2f8C4b6D0e7F3a9B1c5E8d2A4f6C30">0x3B7c…6C30</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+<td class="nw">登录地址</td><td class="nw"><time data-compact data-instant="2026-10-30T02:10:00+00:00" datetime="2026-10-30T02:10:00+00:00">2026-10-30<span class="cell-sub">02:10</span></time></td><td class="nw"><time data-compact data-instant="2026-10-30T02:10:00+00:00" datetime="2026-10-30T02:10:00+00:00">2026-10-30<span class="cell-sub">02:10</span></time></td></tr>
+<tr><td><span class="faint">未设置备注名</span></td><td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td>
+<td><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+<td class="nw">登录地址</td><td class="nw"><time data-compact data-instant="2026-08-14T02:22:00+00:00" datetime="2026-08-14T02:22:00+00:00">2026-08-14<span class="cell-sub">02:22</span></time></td><td class="nw"><time data-compact data-instant="2026-10-30T02:10:00+00:00" datetime="2026-10-30T02:10:00+00:00">2026-10-30<span class="cell-sub">02:10</span></time></td></tr>
+<tr><td><div class="cell-main">示例收币地址</div></td><td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td>
+<td><span class="addr"><span class="addr-pill" title="0x4C1e8D2f9A0b7E3c5D6a1F2e8B9c0D4a7E3f5B21">0x4C1e…5B21</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+<td class="nw">企业新增</td><td class="nw"><time data-compact data-instant="2026-09-02T07:08:00+00:00" datetime="2026-09-02T07:08:00+00:00">2026-09-02<span class="cell-sub">07:08</span></time></td><td class="nw"><time data-compact data-instant="2026-09-02T07:08:00+00:00" datetime="2026-09-02T07:08:00+00:00">2026-09-02<span class="cell-sub">07:08</span></time></td></tr>
+<tr><td><div class="cell-main">备用地址</div></td><td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td>
+<td><span class="addr"><span class="addr-pill" title="0xD93a0E7b2C6f4A1d8E5b3F0c9A2e7D1b6C4f8E05">0xD93a…8E05</span><button type="button" class="btn icon" data-copy aria-label="复制地址"><i data-ico="copy"></i></button></span></td>
+<td class="nw">企业新增</td><td class="nw"><time data-compact data-instant="2026-10-11T01:41:00+00:00" datetime="2026-10-11T01:41:00+00:00">2026-10-11<span class="cell-sub">01:41</span></time></td><td class="nw"><time data-compact data-instant="2026-10-11T01:41:00+00:00" datetime="2026-10-11T01:41:00+00:00">2026-10-11<span class="cell-sub">01:41</span></time></td></tr>
+</tbody>
+</table></div>
+</div>
+<div class="card">
+<div class="card-head"><h2>资产</h2><span class="sub">17 笔</span></div>
+<div class="tablewrap"><table class="tbl auto asset-list" data-total="17"><colgroup><col class="asset-col-id"><col class="asset-col-debtor"><col class="asset-col-amount"><col class="asset-col-due"><col class="asset-col-repayment"><col class="asset-col-status"><col class="asset-col-actions"></colgroup>
+<thead><tr><th>资产编号</th><th class="col-name">债务人</th><th class="num">资产价值</th><th class="col-due">到期日<span class="cell-sub" data-zone></span></th><th>回款状态</th><th>发行状态</th><th class="col-act">操作</th></tr></thead>
+<tbody>
+<tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0128</button></td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">50,000.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-03-31T23:59:59+04:00" datetime="2027-03-31T23:59:59+04:00">2027-03-31<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag">未到期</span></td><td><span class="tag accent">可发行</span></td>
+<td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
+<tr><td><button type="button" class="btn-link mono asset-id" data-go="o-applying">RA-DEMO-0131</button></td><td>Demo Motors Trading FZE</td><td class="num"><span class="money"><span class="mono">82,400.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00">2027-05-15<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag">未到期</span></td><td><span class="tag warn">发行申请中</span></td>
+<td class="col-act"><button type="button" class="actlink" data-go="o-applying">查看</button></td></tr>
+<tr><td><button type="button" class="btn-link mono asset-id" data-go="o-deleted">RA-DEMO-0102</button></td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">36,000.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-01-31T23:59:59+04:00" datetime="2027-01-31T23:59:59+04:00">2027-01-31<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag">未到期</span></td><td><span class="tag ok">已发行</span></td>
+<td class="col-act"><button type="button" class="actlink" data-go="o-deleted">查看</button></td></tr>
+<tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0097</button></td><td>Demo Motors Trading FZE</td><td class="num"><span class="money"><span class="mono">24,800.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-02-28T23:59:59+04:00" datetime="2027-02-28T23:59:59+04:00">2027-02-28<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag">未到期</span></td><td><span class="tag danger">已驳回</span></td>
+<td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
+<tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0115</button></td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">18,600.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2026-10-15T23:59:59+04:00" datetime="2026-10-15T23:59:59+04:00">2026-10-15<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag danger">已逾期</span></td><td><span class="tag accent">可发行</span></td>
+<td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
+<tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0140</button></td><td>Demo Motors Trading FZE</td><td class="num"><span class="money"><span class="mono">40,000.00</span><span class="ccy">EUR</span></span></td>
+<td><time data-compact data-instant="2027-06-30T23:59:59+04:00" datetime="2027-06-30T23:59:59+04:00">2027-06-30<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag">未到期</span></td><td><span class="tag accent">可发行</span></td>
+<td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
+<tr><td><button type="button" class="btn-link mono asset-id" data-go="o-failed">RA-DEMO-0143</button></td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">27,500.00</span><span class="ccy">USD</span></span></td>
+<td><time data-compact data-instant="2027-04-30T23:59:59+04:00" datetime="2027-04-30T23:59:59+04:00">2027-04-30<span class="cell-sub">23:59</span></time></td>
+<td><span class="tag warn">暂时无法确认</span></td><td><span class="tag warn">发行申请中</span></td>
+<td class="col-act"><button type="button" class="actlink" data-go="o-failed">查看</button></td></tr>
 <tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0160</button></td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">12,345.67</span><span class="ccy">USD</span></span></td>
 <td><time data-compact data-instant="2027-04-30T23:59:59+04:00" datetime="2027-04-30T23:59:59+04:00">2027-04-30<span class="cell-sub">23:59</span></time></td>
 <td><span class="tag">未到期</span></td><td><span class="tag danger">已驳回</span></td>
@@ -312,10 +429,10 @@
 <td><time data-compact data-instant="2027-04-30T23:59:59+04:00" datetime="2027-04-30T23:59:59+04:00">2027-04-30<span class="cell-sub">23:59</span></time></td>
 <td><span class="tag">未到期</span></td><td><span class="tag danger">已驳回</span></td>
 <td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
-<tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0143</button></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">27,500.00</span><span class="ccy">USD</span></span></td>
+<tr><td><button type="button" class="btn-link mono asset-id" data-go="r-failed">RA-DEMO-0143</button></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">27,500.00</span><span class="ccy">USD</span></span></td>
 <td><time data-compact data-instant="2027-04-30T23:59:59+04:00" datetime="2027-04-30T23:59:59+04:00">2027-04-30<span class="cell-sub">23:59</span></time></td>
 <td><span class="tag warn">暂时无法确认</span></td><td><span class="tag warn">发行申请中</span></td>
-<td class="col-act"><button type="button" class="actlink" data-toast="演示仅提供部分资产的详情画面">查看</button></td></tr>
+<td class="col-act"><button type="button" class="actlink" data-go="r-failed">查看</button></td></tr>
 <tr><td><button type="button" class="btn-link mono asset-id" data-toast="演示仅提供部分资产的详情画面">RA-DEMO-0201</button></td><td>示例企业 A 有限公司</td><td>Demo Buyer B LLC</td><td class="num"><span class="money"><span class="mono">50,000.00</span><span class="ccy">USD</span></span></td>
 <td><time data-compact data-instant="2026-09-30T23:59:59+04:00" datetime="2026-09-30T23:59:59+04:00">2026-09-30<span class="cell-sub">23:59</span></time></td>
 <td><span class="tag ok">已结清</span></td><td><span class="tag ok">已发行</span></td>
@@ -362,7 +479,8 @@
 </div>
 <div class="card asset-related"><div class="card-head"><h2>关联记录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>发行申请</dt><dd><button type="button" class="btn-link mono" data-module-key="reviewApplication" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0031</button> <span class="tag warn">待运营审核</span></dd></div>
+<div><dt>申请编号</dt><dd><button type="button" class="btn-link mono" data-module-key="reviewApplication" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0031</button></dd></div>
+<div><dt>申请状态</dt><dd><span class="tag warn">待运营审核</span></dd></div>
 </dl></div></div>
 <div class="asset-detail" data-asset-detail="RA-DEMO-0131"></div>
 </div>
@@ -372,6 +490,42 @@
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">资产详情</h1></div></div>
 <div class="card"><div class="state" role="status"><span class="state-ico"><i data-ico="lock"></i></span><h3>无权查看或资产不存在</h3><p>请从关联资产列表进入。</p><button type="button" class="btn" data-go="r-list">返回可信资产</button></div></div>
+</div>
+</section>
+
+<section data-screen id="r-failed" data-no="R5" data-group="监管机构 · 可信资产" data-name="资产详情 · 关联申请铸造失败" data-layout="app" data-who="reg" data-nav="assets" data-crumb="业务/可信资产/资产详情" data-crumb-targets="/r-list">
+<div class="content-in">
+<div class="page-head"><div><h1 class="page-title mono">RA-DEMO-0143</h1><p class="page-desc">应收账款 · 汽车贸易 · 时区 <span data-zone></span></p></div>
+</div>
+<div class="card">
+<div class="asset-sum"><div><div class="eyebrow">应收账款金额</div><div class="amount-lg"><i data-asset="USD"></i>27,500.00<span class="ccy">USD</span></div>
+<div class="meta"><span>债权人 <b>示例企业 A 有限公司</b></span><span>债务人 <b>Demo Buyer B LLC</b></span><span>到期日 <b><time data-instant="2027-04-30T23:59:59+04:00" datetime="2027-04-30T23:59:59+04:00">2027-04-30 23:59:59</time></b></span></div></div>
+<dl class="status-grid"><div><dt>确权状态</dt><dd><span class="tag ok">已确权</span></dd></div><div><dt>回款状态</dt><dd><span class="tag warn">暂时无法确认</span></dd></div><div><dt>发行状态</dt><dd><span class="tag warn">发行申请中</span></dd></div></dl></div>
+</div>
+<div class="card asset-related"><div class="card-head"><h2>关联记录</h2></div>
+<div class="facts-region"><dl class="facts">
+<div><dt>申请编号</dt><dd><span class="mono">IA-DEMO-0027</span></dd></div>
+<div><dt>申请状态</dt><dd><span class="tag danger">铸造失败</span></dd></div>
+</dl></div></div>
+<div class="asset-detail" data-asset-detail="RA-DEMO-0143"></div>
+</div>
+</section>
+
+<section data-screen id="r-off" data-no="R6" data-group="监管机构 · 可信资产" data-name="资产详情 · 本机构已停用" data-layout="app" data-who="regoff" data-nav="assets" data-crumb="业务/可信资产/资产详情" data-crumb-targets="/r-list">
+<div class="content-in">
+<div class="note warn banner" role="status"><i data-ico="info"></i><div class="grow">本机构已停用，已关联的资产仍可查看。</div></div>
+<div class="page-head"><div><h1 class="page-title mono">RA-DEMO-0131</h1><p class="page-desc">应收账款 · 汽车贸易 · 时区 <span data-zone></span></p></div></div>
+<div class="card">
+<div class="asset-sum"><div><div class="eyebrow">应收账款金额</div><div class="amount-lg"><i data-asset="USD"></i>82,400.00<span class="ccy">USD</span></div>
+<div class="meta"><span>债权人 <b>示例企业 A 有限公司</b></span><span>债务人 <b>Demo Motors Trading FZE</b></span><span>到期日 <b><time data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00">2027-05-15 23:59:59</time></b></span></div></div>
+<dl class="status-grid"><div><dt>确权状态</dt><dd><span class="tag ok">已确权</span></dd></div><div><dt>回款状态</dt><dd><span class="tag">未到期</span></dd></div><div><dt>发行状态</dt><dd><span class="tag warn">发行申请中</span></dd></div></dl></div>
+</div>
+<div class="card asset-related"><div class="card-head"><h2>关联记录</h2></div>
+<div class="facts-region"><dl class="facts">
+<div><dt>申请编号</dt><dd><button type="button" class="btn-link mono" data-module-key="reviewApplication" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0031</button></dd></div>
+<div><dt>申请状态</dt><dd><span class="tag warn">待运营审核</span></dd></div>
+</dl></div></div>
+<div class="asset-detail" data-asset-detail="RA-DEMO-0131"></div>
 </div>
 </section>
 
@@ -393,11 +547,7 @@
 <script>
   TP.pageTitle = '可信资产 · 管理端 · 代币发行平台';
   /* 管理端菜单按角色区分（M5 菜单权限矩阵）；本模块只实现可信资产与企业 */
-  TP.demo = {accounts:{
-    ops:{name:'运营示例账号', email:'ops-demo@example.com', role:'运营管理员'},
-    reg:{name:'示例监管机构 C', email:'reviewer-demo@reg.example', role:'监管机构', org:'示例监管机构 C'}
-  }};
-  TP.routes = {assets:{ops:'o-list', reg:'r-list'}, ents:'e-list'};
+  TP.routes = {assets:{ops:'o-list', reg:'r-list', regoff:'r-list'}, ents:'e-list'};
   TP.addCopy({
     '19 笔':'19 assets','17 笔':'17 assets','11 笔':'11 assets','3 个':'3 accounts',
     '本机构已停用，不再接收新的发行申请；在途业务可以继续办理。':'This institution is disabled and cannot receive new applications. Existing cases can still be processed.',
@@ -432,6 +582,9 @@
     '运营 · 可信资产':'Operator · Trusted assets','资产列表':'Asset list','暂无资产（空）':'No assets (empty)','资产详情 · 发行申请中':'Asset details · application in progress',
     '资产详情 · 上游已撤销确权':'Asset details · revoked upstream','资产详情 · 已发行 · 上游已删除':'Asset details · issued · deleted upstream',
     '运营 · 企业':'Operator · Companies','企业列表':'Company list','查找无结果（空）':'No search results (empty)','监管机构 · 可信资产':'Regulator · Trusted assets',
+    '申请编号':'Application ID','代币编号':'Token ID','铸造失败':'Minting failed','4 个':'4 accounts','未设置备注名':'No account name',
+    '资产详情 · 关联申请铸造失败':'Asset details · minting failed','资产详情 · 本机构已停用':'Asset details · institution disabled',
+    '企业详情 · 登录地址变更后':'Company details · after sign-in address change','本机构已停用，已关联的资产仍可查看。':'Your institution is disabled. Related assets remain available to view.',
     '关联资产列表':'Related asset list','暂无关联资产（空）':'No related assets (empty)','壳层 · 账号入口':'Shell · Account menu'
   });
   TP.fillAssetDetail();

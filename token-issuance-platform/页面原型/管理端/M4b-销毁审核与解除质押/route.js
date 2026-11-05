@@ -7,6 +7,6 @@ TP.registerModule({
     release:{reg:'r-list', regoff:'r-list', regnew:'r-list'},
     ledger:{ops:'l-list', opsnew:'l-list', reg:'rl-list', regoff:'rl-list', regnew:'rl-list'},
     ledgerToken001:{ops:'l-001', opsnew:'l-001'},
-    reviewToken:{ops:'l-list', opsnew:'l-list', reg:'rl-list', regoff:'rl-list', regnew:'rl-list'}
+    reviewToken:{ops:'l-027', opsnew:'l-027', reg:'rl-027', regoff:'rl-027', regnew:'rl-027'}
   }
 });

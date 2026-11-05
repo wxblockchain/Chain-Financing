@@ -5,7 +5,12 @@
     '左右滑动查看完整账户信息，操作固定在右侧。':'Scroll horizontally for all account details. Actions stay on the right.',
     '该账户已被处理中的发行申请 IA-DEMO-0031 引用，不能删除。':'This account is used by in-progress issuance application IA-DEMO-0031 and cannot be deleted.',
     '该账户已被代币 DEMO-TOKEN-001 引用，不能删除。':'This account is referenced by token DEMO-TOKEN-001 and cannot be deleted.',
-    '查看申请':'View application','查看代币':'View token'
+    '查看申请':'View application','查看代币':'View token',
+    '登录已结束：上游账户已锁定':'Session ended: upstream account locked','你在资产可信平台的账户已锁定，本次登录已结束。':'Your Asset Trust Platform account is locked. This session has ended.',
+    '解除说明：请联系资产可信平台解除锁定后重新登录。':'To unlock: contact the Asset Trust Platform, then sign in again.',
+    '登录未完成：建立企业用户失败':'Sign-in incomplete: enterprise user not created','登录未完成，请重试或退出。':'Sign-in could not be completed. Try again or exit.',
+    '错误码':'Error code','退出':'Exit',
+    '登录已到期':'Session expired','登录已到期，请重新签名登录。':'Your session has expired. Sign in again with your wallet.','未保存的内容不会保留。':'Unsaved changes are not kept.'
   });
   var dialogs={};
   ['acc-edit','acc-del','acc-del-login','acc-del-ref'].forEach(function(id){

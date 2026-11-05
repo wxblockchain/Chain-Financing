@@ -415,36 +415,6 @@
 </div>
 </div>
 </section>
-<section id="login-email" data-screen data-no="M14" data-name="登录邮箱已变更" data-group="登录与首次改密" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="r-settings-new" class="auth-screen" hidden>
-<div class="focus-card">
-<h1>管理端登录</h1>
-<div class="stack">
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>登录邮箱已变更，请用新邮箱和当前密码重新登录。</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-27">
-<span class="req" aria-hidden="true">*</span>登录邮箱</label>
-</div>
-<input id="m5-field-27" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" autocomplete="off">
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-28">
-<span class="req" aria-hidden="true">*</span>密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-28" class="inp" aria-required="true" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-28" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<button type="button" class="btn primary block" data-module-key="review" data-module-who="regnew" data-go="r-settings-new">重新登录</button>
-</div>
-</div>
-</section>
 <section id="login-expired" data-screen data-no="M15" data-name="登录已到期" data-group="登录与首次改密" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="login-ops" class="auth-screen" hidden>
 <div class="focus-card">
 <h1>管理端登录</h1>
@@ -505,7 +475,7 @@
 </div>
 </div>
 </section>
-<section id="login-out" data-screen data-no="M17" data-name="已退出登录。" data-group="登录与首次改密" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="login-ops" class="auth-screen" hidden>
+<section id="login-out" data-screen data-no="M17" data-name="已退出登录" data-group="登录与首次改密" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="login-ops" class="auth-screen" hidden>
 <div class="focus-card">
 <h1>管理端登录</h1>
 <div class="stack">
@@ -736,7 +706,7 @@
 </div>
 </div>
 </section>
-<section id="recover-email" data-screen data-no="M23" data-name="找回密码" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-code" class="auth-screen" hidden>
+<section id="recover-email" data-screen data-no="M23" data-name="找回密码" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-filled" class="auth-screen" hidden>
 <div class="focus-card">
 <h1>找回密码</h1>
 <div class="stack">
@@ -757,12 +727,12 @@
 </div>
 <input id="m5-field-45" class="inp" aria-required="true" type="email" value="" maxlength="254" autocomplete="off">
 </div>
-<button type="button" class="btn primary block" data-go="recover-code">获取验证码</button>
+<button type="button" class="btn primary block" data-go="recover-captcha" disabled>获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
 </div>
 </div>
 </section>
-<section id="recover-filled" data-screen data-no="M24" data-name="找回 · 已填写邮箱" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-code" class="auth-screen" hidden>
+<section id="recover-filled" data-screen data-no="M24" data-name="找回 · 已填写邮箱" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-captcha" class="auth-screen" hidden>
 <div class="focus-card">
 <h1>找回密码</h1>
 <div class="stack">
@@ -783,12 +753,132 @@
 </div>
 <input id="m5-field-46" class="inp" aria-required="true" type="email" value="reviewer-demo@reg.example" maxlength="254" autocomplete="off">
 </div>
-<button type="button" class="btn primary block" data-go="recover-code">获取验证码</button>
+<button type="button" class="btn primary block" data-go="recover-captcha">获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
 </div>
 </div>
 </section>
-<section id="recover-send-fail" data-screen data-no="M25" data-name="找回 · 发送失败" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-code" class="auth-screen" hidden>
+<section id="recover-captcha" data-screen data-no="M154" data-name="找回 · 人机校验" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-code" data-overlay data-base="recover-filled" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-recover-captcha">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-recover-captcha">安全验证</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<div class="captcha"><div class="captcha-stage" aria-hidden="true"><span class="captcha-gap"></span><span class="captcha-piece"></span></div><div class="captcha-track"><button type="button" class="captcha-handle" data-go="recover-code" data-toast="验证通过" aria-label="向右拖动滑块完成拼图"><i data-ico="chev"></i></button><span class="captcha-hint">向右拖动滑块完成拼图</span></div></div>
+</div>
+<div class="modal-f">
+<button type="button" data-close class="btn ghost">取消</button>
+</div>
+</div>
+</div>
+</section>
+<section id="recover-captcha-fail" data-screen data-no="M155" data-name="找回 · 人机校验未通过" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-code" data-overlay data-base="recover-filled" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-recover-captcha-fail">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-recover-captcha-fail">安全验证</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<div class="note red" role="alert">
+<i data-ico="info">
+</i>
+<div>验证未通过，已自动更换题目，请重试。</div>
+</div>
+<div class="captcha"><div class="captcha-stage" aria-hidden="true"><span class="captcha-gap"></span><span class="captcha-piece"></span></div><div class="captcha-track"><button type="button" class="captcha-handle" data-go="recover-code" data-toast="验证通过" aria-label="向右拖动滑块完成拼图"><i data-ico="chev"></i></button><span class="captcha-hint">向右拖动滑块完成拼图</span></div></div>
+</div>
+<div class="modal-f">
+<button type="button" data-close class="btn ghost">取消</button>
+</div>
+</div>
+</div>
+</section>
+<section id="recover-captcha-refresh" data-screen data-no="M156" data-name="找回 · 连续 3 次未通过" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-code" data-overlay data-base="recover-filled" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-recover-captcha-refresh">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-recover-captcha-refresh">安全验证</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<div class="note red" role="alert">
+<i data-ico="info">
+</i>
+<div>验证未通过，请重试，也可以更换题目。</div>
+</div>
+<div class="captcha"><div class="captcha-stage" aria-hidden="true"><span class="captcha-gap"></span><span class="captcha-piece"></span></div><div class="captcha-track"><button type="button" class="captcha-handle" data-go="recover-code" data-toast="验证通过" aria-label="向右拖动滑块完成拼图"><i data-ico="chev"></i></button><span class="captcha-hint">向右拖动滑块完成拼图</span></div></div>
+</div>
+<div class="modal-f">
+<button type="button" class="btn left" data-go="recover-captcha">更换题目</button>
+<button type="button" data-close class="btn ghost">取消</button>
+</div>
+</div>
+</div>
+</section>
+<section id="recover-captcha-cooldown" data-screen data-no="M157" data-name="找回 · 人机校验冷却中" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-captcha" data-overlay data-base="recover-filled" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-recover-captcha-cooldown">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-recover-captcha-cooldown">安全验证</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<div class="note warn" role="alert">
+<i data-ico="info">
+</i>
+<div>验证未通过次数过多，请 52 秒后再试。</div>
+</div>
+<div class="captcha is-locked"><div class="captcha-stage" aria-hidden="true"><span class="captcha-gap"></span><span class="captcha-piece"></span></div><div class="captcha-track"><button type="button" class="captcha-handle" disabled aria-label="向右拖动滑块完成拼图"><i data-ico="chev"></i></button><span class="captcha-hint">向右拖动滑块完成拼图</span></div></div>
+</div>
+<div class="modal-f">
+<button type="button" data-close class="btn ghost">取消</button>
+</div>
+</div>
+</div>
+</section>
+<section id="recover-captcha-load-fail" data-screen data-no="M158" data-name="找回 · 题目加载失败" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-captcha" data-overlay data-base="recover-filled" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-recover-captcha-load-fail">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-recover-captcha-load-fail">安全验证</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<div class="captcha"><div class="captcha-stage">
+<div class="state err" role="alert">
+<span class="state-ico">
+<i data-ico="alert">
+</i>
+</span>
+<h3>题目加载失败</h3>
+<p>暂时无法加载验证题目，请重试。</p>
+<button type="button" class="btn" data-go="recover-captcha">重试</button>
+</div></div></div>
+</div>
+<div class="modal-f">
+<button type="button" data-close class="btn ghost">取消</button>
+</div>
+</div>
+</div>
+</section>
+<section id="recover-send-fail" data-screen data-no="M25" data-name="找回 · 发送失败" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-captcha" class="auth-screen" hidden>
 <div class="focus-card">
 <h1>找回密码</h1>
 <div class="stack">
@@ -814,7 +904,7 @@
 </div>
 <input id="m5-field-47" class="inp" aria-required="true" type="email" value="reviewer-demo@reg.example" maxlength="254" autocomplete="off">
 </div>
-<button type="button" class="btn primary block" data-go="recover-code">立即重试</button>
+<button type="button" class="btn primary block" data-go="recover-captcha">立即重试</button>
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
 </div>
 </div>
@@ -845,12 +935,12 @@
 </div>
 <input id="recover-limit-email-m5-field-46" class="inp" aria-required="true" type="email" value="reviewer-demo@reg.example" maxlength="254" autocomplete="off">
 </div>
-<button type="button" class="btn primary block" data-go="recover-code" disabled>获取验证码</button>
+<button type="button" class="btn primary block" data-go="recover-captcha" disabled>获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
 </div>
 </div>
 </section>
-<section id="recover-limit-ip" data-screen data-no="M151" data-name="找回 · 请求过于频繁" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-code" class="auth-screen" hidden>
+<section id="recover-limit-ip" data-screen data-no="M151" data-name="找回 · 请求过于频繁" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-email" class="auth-screen" hidden>
 <div class="focus-card">
 <h1>找回密码</h1>
 <div class="stack">
@@ -876,7 +966,7 @@
 </div>
 <input id="recover-limit-ip-m5-field-46" class="inp" aria-required="true" type="email" value="reviewer-demo@reg.example" maxlength="254" autocomplete="off">
 </div>
-<button type="button" class="btn primary block" data-go="recover-code" disabled>获取验证码</button>
+<button type="button" class="btn primary block" data-go="recover-captcha" disabled>获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
 </div>
 </div>
@@ -944,7 +1034,7 @@
 </div>
 <div class="code-control">
 <input id="m5-field-51" class="inp" aria-required="true" aria-invalid="true" aria-describedby="m5-field-51-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
-<button type="button" class="btn" data-go="recover-code">重新获取</button>
+<button type="button" class="btn" data-go="recover-captcha">重新获取</button>
 </div>
 <p class="err-msg" id="m5-field-51-help">验证码无效，请重新输入或重新获取。</p>
 </div>
@@ -981,7 +1071,7 @@
 </div>
 <div class="code-control">
 <input id="recover-code-expired-m5-field-51" class="inp" aria-required="true" aria-invalid="true" aria-describedby="recover-code-expired-m5-field-51-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
-<button type="button" class="btn primary" data-go="recover-code">重新获取</button>
+<button type="button" class="btn primary" data-go="recover-captcha">重新获取</button>
 </div>
 <p class="err-msg" id="recover-code-expired-m5-field-51-help">验证码已失效，请重新获取。</p>
 </div>
@@ -992,7 +1082,7 @@
 </div>
 </div>
 </section>
-<section id="recover-locked" data-screen data-no="M28" data-name="找回 · 验证后账号锁定" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-password" class="auth-screen" hidden>
+<section id="recover-locked" data-screen data-no="M28" data-name="找回 · 验证后账号锁定" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-email" class="auth-screen" hidden>
 <div class="focus-card">
 <h1>找回密码</h1>
 <div class="stack">
@@ -1018,7 +1108,7 @@
 </div>
 <button type="button" class="btn primary block" data-go="recover-ready" disabled>验证并继续</button>
 <div class="form-actions">
-<button type="button" class="btn ghost sm" data-go="recover-code">重新获取验证码</button>
+<button type="button" class="btn ghost sm" data-go="recover-captcha">重新获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
 </div>
 </div>
@@ -1050,7 +1140,7 @@
 </div>
 <button type="button" class="btn primary block" data-go="recover-email">重新开始</button>
 <div class="form-actions">
-<button type="button" class="btn ghost sm" data-go="recover-code">重新获取验证码</button>
+<button type="button" class="btn ghost sm" data-go="recover-captcha">重新获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-reg">返回登录</button>
 </div>
 </div>
@@ -1379,14 +1469,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button class="btn sm" data-go="password-ready" type="button">修改密码</button>
+<button class="btn sm" data-go="password-ops" type="button">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">ops-demo@example.com</p>
 </div>
-<button class="btn sm" data-go="self-email-ops-filled" type="button">修改登录邮箱</button>
+<button class="btn sm" data-go="self-email-ops" type="button">修改登录邮箱</button>
 </div></div>
 </div>
 <div class="profile-section">
@@ -1500,14 +1590,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button type="button" class="btn sm" data-go="password-reg-ready">修改密码</button>
+<button type="button" class="btn sm" data-go="password-reg">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">reviewer-demo@reg.example</p>
 </div>
-<button type="button" class="btn sm" data-go="self-email-filled">修改登录邮箱</button>
+<button type="button" class="btn sm" data-go="self-email">修改登录邮箱</button>
 </div>
 </div>
 </div>
@@ -1627,14 +1717,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button type="button" class="btn sm" data-go="password-reg-ready">修改密码</button>
+<button type="button" class="btn sm" data-go="password-reg">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">reviewer-demo@reg.example</p>
 </div>
-<button type="button" class="btn sm" data-go="self-email-filled">修改登录邮箱</button>
+<button type="button" class="btn sm" data-go="self-email">修改登录邮箱</button>
 </div>
 </div>
 </div>
@@ -1736,14 +1826,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button class="btn sm" data-go="password-ready" type="button">修改密码</button>
+<button class="btn sm" data-go="password-ops" type="button">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">ops-demo@example.com</p>
 </div>
-<button class="btn sm" data-go="self-email-ops-filled" type="button">修改登录邮箱</button>
+<button class="btn sm" data-go="self-email-ops" type="button">修改登录邮箱</button>
 </div></div>
 </div>
 <div class="profile-section">
@@ -1874,14 +1964,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button class="btn sm" data-go="password-ready" type="button">修改密码</button>
+<button class="btn sm" data-go="password-ops" type="button">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">ops-demo@example.com</p>
 </div>
-<button class="btn sm" data-go="self-email-ops-filled" type="button">修改登录邮箱</button>
+<button class="btn sm" data-go="self-email-ops" type="button">修改登录邮箱</button>
 </div></div>
 </div>
 <div class="profile-section">
@@ -1986,14 +2076,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button class="btn sm" data-go="password-ready" type="button">修改密码</button>
+<button class="btn sm" data-go="password-ops" type="button">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">ops-demo@example.com</p>
 </div>
-<button class="btn sm" data-go="self-email-ops-filled" type="button">修改登录邮箱</button>
+<button class="btn sm" data-go="self-email-ops" type="button">修改登录邮箱</button>
 </div></div>
 </div>
 <div class="profile-section">
@@ -2102,14 +2192,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button class="btn sm" data-go="password-ready" type="button">修改密码</button>
+<button class="btn sm" data-go="password-ops" type="button">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">ops-demo@example.com</p>
 </div>
-<button class="btn sm" data-go="self-email-ops-filled" type="button">修改登录邮箱</button>
+<button class="btn sm" data-go="self-email-ops" type="button">修改登录邮箱</button>
 </div></div>
 </div>
 <div class="profile-section">
@@ -2223,14 +2313,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button type="button" class="btn sm" data-go="password-reg-ready">修改密码</button>
+<button type="button" class="btn sm" data-go="password-reg">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">reviewer-demo@reg.example</p>
 </div>
-<button type="button" class="btn sm" data-go="self-email-filled">修改登录邮箱</button>
+<button type="button" class="btn sm" data-go="self-email">修改登录邮箱</button>
 </div>
 </div>
 </div>
@@ -2350,14 +2440,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button type="button" class="btn sm" data-go="password-reg-ready">修改密码</button>
+<button type="button" class="btn sm" data-go="password-reg">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">reviewer-demo@reg.example</p>
 </div>
-<button type="button" class="btn sm" data-go="self-email-filled">修改登录邮箱</button>
+<button type="button" class="btn sm" data-go="self-email">修改登录邮箱</button>
 </div>
 </div>
 </div>
@@ -2395,7 +2485,7 @@
 </div>
 </div>
 </section>
-<section id="r-settings-new" data-screen data-no="M45" data-name="监管账户 · 邮箱修改后" data-group="账户设置与身份" data-layout="app" data-who="regnew" data-nav="" data-crumb="账户/账户设置" data-next="password-reg-ready" hidden>
+<section id="r-settings-new" data-screen data-no="M45" data-name="监管账户 · 邮箱修改后" data-group="账户设置与身份" data-layout="app" data-who="regnew" data-nav="" data-crumb="账户/账户设置" data-next="password-reg" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -2472,14 +2562,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button type="button" class="btn sm" data-go="password-reg-ready">修改密码</button>
+<button type="button" class="btn sm" data-go="password-reg">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">new-reviewer@reg.example</p>
 </div>
-<button type="button" class="btn sm" data-go="self-email-filled">修改登录邮箱</button>
+<button type="button" class="btn sm" data-go="self-email">修改登录邮箱</button>
 </div>
 </div>
 </div>
@@ -2517,168 +2607,108 @@
 </div>
 </div>
 </section>
-<section id="password-ops" data-screen data-no="M46" data-name="运营修改密码" data-group="本人修改密码" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="login-changed" data-overlay data-base="o-settings" hidden>
+<section id="password-ops" data-screen data-no="M46" data-name="运营修改密码 · 验证当前密码" data-group="本人修改密码" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="password-ready" data-overlay data-base="o-settings" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-72">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-password-ops">
 <div class="modal-h">
-<span class="modal-title" id="modal-title-72">修改密码</span>
+<span class="modal-title" id="modal-title-password-ops">修改密码</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
 </button>
 </div>
 <div class="modal-b">
+<ol class="steps">
+<li aria-current="step">验证当前密码</li>
+<li>设置新密码</li>
+</ol>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-69">
+<label for="password-ops-current">
 <span class="req" aria-hidden="true">*</span>当前密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-69" class="inp" aria-required="true" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-69" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-ops-current" class="inp" aria-required="true" aria-describedby="password-ops-current-help" type="password" value="DemoPass123" autocomplete="current-password">
+<button type="button" class="btn icon" data-password-toggle="password-ops-current" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
+<p class="hint" id="password-ops-current-help">验证通过后，请在 10 分钟内完成修改。</p>
 </div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-70">
-<span class="req" aria-hidden="true">*</span>新密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-70" class="inp" aria-required="true" aria-describedby="m5-field-70-help" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-70" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-<p class="hint" id="m5-field-70-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-71">
-<span class="req" aria-hidden="true">*</span>再次输入新密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-71" class="inp" aria-required="true" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-71" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>新密码不能与当前密码或最近一次初始密码相同。</div>
-</div>
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>修改成功后，全部登录将结束，请用新密码重新登录。</div>
-</div>
-<p class="hint">请填写当前密码与两次新密码。</p>
 </div>
 <div class="modal-f">
 <button type="button" data-close class="btn ghost">取消</button>
-<button type="button" class="btn primary" data-go="login-changed" disabled>修改密码</button>
+<button type="button" class="btn primary" data-go="password-ready">下一步</button>
 </div>
 </div>
 </div>
 </section>
-<section id="password-reg" data-screen data-no="M47" data-name="监管修改密码" data-group="本人修改密码" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="login-changed" data-overlay data-base="r-settings" hidden>
+<section id="password-reg" data-screen data-no="M47" data-name="监管修改密码 · 验证当前密码" data-group="本人修改密码" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="password-reg-ready" data-overlay data-base="r-settings" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-76">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-password-reg">
 <div class="modal-h">
-<span class="modal-title" id="modal-title-76">修改密码</span>
+<span class="modal-title" id="modal-title-password-reg">修改密码</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
 </button>
 </div>
 <div class="modal-b">
+<ol class="steps">
+<li aria-current="step">验证当前密码</li>
+<li>设置新密码</li>
+</ol>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-73">
+<label for="password-reg-current">
 <span class="req" aria-hidden="true">*</span>当前密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-73" class="inp" aria-required="true" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-73" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-reg-current" class="inp" aria-required="true" aria-describedby="password-reg-current-help" type="password" value="DemoPass123" autocomplete="current-password">
+<button type="button" class="btn icon" data-password-toggle="password-reg-current" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
+<p class="hint" id="password-reg-current-help">验证通过后，请在 10 分钟内完成修改。</p>
 </div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-74">
-<span class="req" aria-hidden="true">*</span>新密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-74" class="inp" aria-required="true" aria-describedby="m5-field-74-help" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-74" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-<p class="hint" id="m5-field-74-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-75">
-<span class="req" aria-hidden="true">*</span>再次输入新密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-75" class="inp" aria-required="true" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-75" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>新密码不能与当前密码或最近一次初始密码相同。</div>
-</div>
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>修改成功后，全部登录将结束，请用新密码重新登录。</div>
-</div>
-<p class="hint">请填写当前密码与两次新密码。</p>
 </div>
 <div class="modal-f">
 <button type="button" data-close class="btn ghost">取消</button>
-<button type="button" class="btn primary" data-go="login-changed" disabled>修改密码</button>
+<button type="button" class="btn primary" data-go="password-reg-ready">下一步</button>
 </div>
 </div>
 </div>
 </section>
-<section id="password-ready" data-screen data-no="M48" data-name="修改密码 · 已填写" data-group="本人修改密码" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="login-changed" data-overlay data-base="o-settings" hidden>
+<section id="password-ready" data-screen data-no="M48" data-name="修改密码 · 设置新密码" data-group="本人修改密码" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="login-changed" data-overlay data-base="o-settings" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-80">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-password-ready">
 <div class="modal-h">
-<span class="modal-title" id="modal-title-80">修改密码</span>
+<span class="modal-title" id="modal-title-password-ready">修改密码</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
 </button>
 </div>
 <div class="modal-b">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">设置新密码</li>
+</ol>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-77">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-77" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-77" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-78">
+<label for="password-ready-new">
 <span class="req" aria-hidden="true">*</span>新密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-78" class="inp" aria-required="true" aria-describedby="m5-field-78-help" type="password" value="NewDemo123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-78" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-ready-new" class="inp" aria-required="true" aria-describedby="password-ready-new-help" type="password" value="NewDemo123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="password-ready-new" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
-<p class="hint" id="m5-field-78-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
+<p class="hint" id="password-ready-new-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-79">
+<label for="password-ready-confirm">
 <span class="req" aria-hidden="true">*</span>再次输入新密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-79" class="inp" aria-required="true" type="password" value="NewDemo123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-79" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-ready-confirm" class="inp" aria-required="true" type="password" value="NewDemo123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="password-ready-confirm" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
 </div>
 <div class="note " role="status">
@@ -2699,46 +2729,40 @@
 </div>
 </div>
 </section>
-<section id="password-reg-ready" data-screen data-no="M49" data-name="监管修改密码 · 已填写" data-group="本人修改密码" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="login-changed" data-overlay data-base="r-settings" hidden>
+<section id="password-reg-ready" data-screen data-no="M49" data-name="监管修改密码 · 设置新密码" data-group="本人修改密码" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="login-changed" data-overlay data-base="r-settings" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-84">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-password-reg-ready">
 <div class="modal-h">
-<span class="modal-title" id="modal-title-84">修改密码</span>
+<span class="modal-title" id="modal-title-password-reg-ready">修改密码</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
 </button>
 </div>
 <div class="modal-b">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">设置新密码</li>
+</ol>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-81">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-81" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-81" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-82">
+<label for="password-reg-ready-new">
 <span class="req" aria-hidden="true">*</span>新密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-82" class="inp" aria-required="true" aria-describedby="m5-field-82-help" type="password" value="NewDemo123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-82" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-reg-ready-new" class="inp" aria-required="true" aria-describedby="password-reg-ready-new-help" type="password" value="NewDemo123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="password-reg-ready-new" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
-<p class="hint" id="m5-field-82-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
+<p class="hint" id="password-reg-ready-new-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-83">
+<label for="password-reg-ready-confirm">
 <span class="req" aria-hidden="true">*</span>再次输入新密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-83" class="inp" aria-required="true" type="password" value="NewDemo123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-83" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-reg-ready-confirm" class="inp" aria-required="true" type="password" value="NewDemo123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="password-reg-ready-confirm" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
 </div>
 <div class="note " role="status">
@@ -2759,107 +2783,74 @@
 </div>
 </div>
 </section>
-<section id="password-error" data-screen data-no="M50" data-name="修改密码 · 当前密码有误" data-group="本人修改密码" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="login-changed" data-overlay data-base="o-settings" hidden>
+<section id="password-error" data-screen data-no="M50" data-name="修改密码 · 当前密码有误" data-group="本人修改密码" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="password-ready" data-overlay data-base="o-settings" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-88">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-password-error">
 <div class="modal-h">
-<span class="modal-title" id="modal-title-88">修改密码</span>
+<span class="modal-title" id="modal-title-password-error">修改密码</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
 </button>
 </div>
 <div class="modal-b">
+<ol class="steps">
+<li aria-current="step">验证当前密码</li>
+<li>设置新密码</li>
+</ol>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-85">
+<label for="password-error-current">
 <span class="req" aria-hidden="true">*</span>当前密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-85" class="inp" aria-required="true" aria-invalid="true" aria-describedby="m5-field-85-help" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-85" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-error-current" class="inp" aria-required="true" aria-invalid="true" aria-describedby="password-error-current-help" type="password" value="DemoPass12" autocomplete="current-password">
+<button type="button" class="btn icon" data-password-toggle="password-error-current" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
-<p class="err-msg" id="m5-field-85-help">当前密码不正确，还剩 2 次机会。</p>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-86">
-<span class="req" aria-hidden="true">*</span>新密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-86" class="inp" aria-required="true" aria-describedby="m5-field-86-help" type="password" value="NewDemo123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-86" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-<p class="hint" id="m5-field-86-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-87">
-<span class="req" aria-hidden="true">*</span>再次输入新密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-87" class="inp" aria-required="true" type="password" value="NewDemo123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-87" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>新密码不能与当前密码或最近一次初始密码相同。</div>
-</div>
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>修改成功后，全部登录将结束，请用新密码重新登录。</div>
+<p class="err-msg" id="password-error-current-help">当前密码不正确，还剩 2 次机会。</p>
 </div>
 </div>
 <div class="modal-f">
 <button type="button" data-close class="btn ghost">取消</button>
-<button type="button" class="btn primary" data-go="login-changed" disabled>修改密码</button>
+<button type="button" class="btn primary" data-go="password-ready" disabled>下一步</button>
 </div>
 </div>
 </div>
 </section>
 <section id="password-busy" data-screen data-no="M51" data-name="修改密码 · 提交中" data-group="本人修改密码" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="login-changed" data-overlay data-base="o-settings" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-92">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-password-busy">
 <div class="modal-h">
-<span class="modal-title" id="modal-title-92">修改密码</span>
+<span class="modal-title" id="modal-title-password-busy">修改密码</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
 </button>
 </div>
 <div class="modal-b">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">设置新密码</li>
+</ol>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-89">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-89" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-89" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-90">
+<label for="password-busy-new">
 <span class="req" aria-hidden="true">*</span>新密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-90" class="inp" aria-required="true" aria-describedby="m5-field-90-help" type="password" value="NewDemo123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-90" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-busy-new" class="inp" aria-required="true" aria-describedby="password-busy-new-help" type="password" value="NewDemo123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="password-busy-new" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
-<p class="hint" id="m5-field-90-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
+<p class="hint" id="password-busy-new-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-91">
+<label for="password-busy-confirm">
 <span class="req" aria-hidden="true">*</span>再次输入新密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-91" class="inp" aria-required="true" type="password" value="NewDemo123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-91" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-busy-confirm" class="inp" aria-required="true" type="password" value="NewDemo123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="password-busy-confirm" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
 </div>
 <div class="note " role="status">
@@ -2882,15 +2873,19 @@
 </section>
 <section id="password-fail" data-screen data-no="M52" data-name="修改密码 · 保存失败" data-group="本人修改密码" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="login-changed" data-overlay data-base="o-settings" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-96">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-password-fail">
 <div class="modal-h">
-<span class="modal-title" id="modal-title-96">修改密码</span>
+<span class="modal-title" id="modal-title-password-fail">修改密码</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
 </button>
 </div>
 <div class="modal-b">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">设置新密码</li>
+</ol>
 <div class="note red" role="alert">
 <i data-ico="info">
 </i>
@@ -2898,34 +2893,34 @@
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-93">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-93" class="inp" aria-required="true" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-93" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-94">
+<label for="password-fail-new">
 <span class="req" aria-hidden="true">*</span>新密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-94" class="inp" aria-required="true" aria-describedby="m5-field-94-help" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-94" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-fail-new" class="inp" aria-required="true" aria-describedby="password-fail-new-help" type="password" value="NewDemo123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="password-fail-new" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
-<p class="hint" id="m5-field-94-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
+<p class="hint" id="password-fail-new-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-95">
+<label for="password-fail-confirm">
 <span class="req" aria-hidden="true">*</span>再次输入新密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-95" class="inp" aria-required="true" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-95" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="password-fail-confirm" class="inp" aria-required="true" type="password" value="NewDemo123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="password-fail-confirm" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
+</div>
+<div class="note " role="status">
+<i data-ico="info">
+</i>
+<div>新密码不能与当前密码或最近一次初始密码相同。</div>
+</div>
+<div class="note " role="status">
+<i data-ico="info">
+</i>
+<div>修改成功后，全部登录将结束，请用新密码重新登录。</div>
 </div>
 </div>
 <div class="modal-f">
@@ -2935,7 +2930,56 @@
 </div>
 </div>
 </section>
-<section id="self-email" data-screen data-no="M53" data-name="修改邮箱 · 填写" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email-code" hidden>
+<section id="password-reauth-expired" data-screen data-no="M153" data-name="修改密码 · 当前密码验证已过期" data-group="本人修改密码" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="password-ops" data-overlay data-base="o-settings" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-password-reauth-expired">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-password-reauth-expired">修改密码</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">设置新密码</li>
+</ol>
+<div class="note warn" role="alert">
+<i data-ico="info">
+</i>
+<div>当前密码验证已超过 10 分钟，请重新验证。</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="password-reauth-expired-new">
+<span class="req" aria-hidden="true">*</span>新密码</label>
+</div>
+<div class="password-control">
+<input id="password-reauth-expired-new" class="inp" aria-required="true" aria-describedby="password-reauth-expired-new-help" type="password" value="NewDemo123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="password-reauth-expired-new" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+</div>
+<p class="hint" id="password-reauth-expired-new-help">8～20 位，至少含一个英文字母和一个数字，中间不能有空格。</p>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="password-reauth-expired-confirm">
+<span class="req" aria-hidden="true">*</span>再次输入新密码</label>
+</div>
+<div class="password-control">
+<input id="password-reauth-expired-confirm" class="inp" aria-required="true" type="password" value="NewDemo123" autocomplete="new-password">
+<button type="button" class="btn icon" data-password-toggle="password-reauth-expired-confirm" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+</div>
+</div>
+</div>
+<div class="modal-f">
+<button type="button" data-close class="btn ghost">取消</button>
+<button type="button" class="btn primary" data-go="password-ops">重新验证</button>
+</div>
+</div>
+</div>
+</section>
+<section id="self-email" data-screen data-no="M53" data-name="修改邮箱 · 验证当前密码" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="self-email-filled" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -2947,41 +2991,38 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>验证新邮箱</h2>
+<h2>验证当前密码</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li aria-current="step">验证当前密码</li>
+<li>验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="m5-field-97">reviewer-demo@reg.example</div>
+<div class="field-static" id="self-email-cur">reviewer-demo@reg.example</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-98">
+<label for="self-email-pw">
 <span class="req" aria-hidden="true">*</span>当前密码</label>
 </div>
 <div class="password-control">
-<input id="m5-field-98" class="inp" aria-required="true" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-98" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="self-email-pw" class="inp" aria-required="true" aria-describedby="self-email-pw-help" type="password" value="DemoPass123" autocomplete="current-password">
+<button type="button" class="btn icon" data-password-toggle="self-email-pw" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-99">
-<span class="req" aria-hidden="true">*</span>新登录邮箱</label>
-<span class="count">0 / 254</span>
-</div>
-<input id="m5-field-99" class="inp" aria-required="true" type="email" value="" maxlength="254" autocomplete="off">
+<p class="hint" id="self-email-pw-help">验证通过后，请在 10 分钟内完成修改。</p>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-code" disabled>获取验证码</button>
+<button type="button" class="btn primary" data-go="self-email-filled">下一步</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-filled" data-screen data-no="M54" data-name="修改邮箱 · 已填写" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email-code" hidden>
+<section id="self-email-filled" data-screen data-no="M54" data-name="修改邮箱 · 填写新邮箱" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="self-email-captcha" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -2996,38 +3037,99 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="m5-field-100">reviewer-demo@reg.example</div>
+<div class="field-static" id="self-email-filled-cur">reviewer-demo@reg.example</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-101">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-101" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-101" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-102">
+<label for="self-email-filled-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">24 / 254</span>
 </div>
-<input id="m5-field-102" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
+<input id="self-email-filled-new" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-code">获取验证码</button>
+<button type="button" class="btn" data-go="self-email-captcha">获取验证码</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-code" data-screen data-no="M55" data-name="修改邮箱 · 新邮箱收码" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email-confirm" hidden>
+<section id="self-email-captcha" data-screen data-no="M161" data-name="修改邮箱 · 人机校验" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email-code" data-overlay data-base="self-email-filled" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-self-email-captcha">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-self-email-captcha">安全验证</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<div class="captcha"><div class="captcha-stage" aria-hidden="true"><span class="captcha-gap"></span><span class="captcha-piece"></span></div><div class="captcha-track"><button type="button" class="captcha-handle" data-go="self-email-code" data-toast="验证通过" aria-label="向右拖动滑块完成拼图"><i data-ico="chev"></i></button><span class="captcha-hint">向右拖动滑块完成拼图</span></div></div>
+</div>
+<div class="modal-f">
+<button type="button" data-close class="btn ghost">取消</button>
+</div>
+</div>
+</div>
+</section>
+<section id="self-email-captcha-fail" data-screen data-no="M162" data-name="修改邮箱 · 人机校验未通过" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email-code" data-overlay data-base="self-email-filled" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-self-email-captcha-fail">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-self-email-captcha-fail">安全验证</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<div class="note red" role="alert">
+<i data-ico="info">
+</i>
+<div>验证未通过，已自动更换题目，请重试。</div>
+</div>
+<div class="captcha"><div class="captcha-stage" aria-hidden="true"><span class="captcha-gap"></span><span class="captcha-piece"></span></div><div class="captcha-track"><button type="button" class="captcha-handle" data-go="self-email-code" data-toast="验证通过" aria-label="向右拖动滑块完成拼图"><i data-ico="chev"></i></button><span class="captcha-hint">向右拖动滑块完成拼图</span></div></div>
+</div>
+<div class="modal-f">
+<button type="button" data-close class="btn ghost">取消</button>
+</div>
+</div>
+</div>
+</section>
+<section id="self-email-captcha-cooldown" data-screen data-no="M163" data-name="修改邮箱 · 人机校验冷却中" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email-captcha" data-overlay data-base="self-email-filled" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-self-email-captcha-cooldown">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-self-email-captcha-cooldown">安全验证</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<div class="note warn" role="alert">
+<i data-ico="info">
+</i>
+<div>验证未通过次数过多，请 52 秒后再试。</div>
+</div>
+<div class="captcha is-locked"><div class="captcha-stage" aria-hidden="true"><span class="captcha-gap"></span><span class="captcha-piece"></span></div><div class="captcha-track"><button type="button" class="captcha-handle" disabled aria-label="向右拖动滑块完成拼图"><i data-ico="chev"></i></button><span class="captcha-hint">向右拖动滑块完成拼图</span></div></div>
+</div>
+<div class="modal-f">
+<button type="button" data-close class="btn ghost">取消</button>
+</div>
+</div>
+</div>
+</section>
+<section id="self-email-code" data-screen data-no="M55" data-name="修改邮箱 · 新邮箱收码" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="self-email-confirm" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -3042,29 +3144,23 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="m5-field-103">reviewer-demo@reg.example</div>
+<div class="field-static" id="self-email-code-cur">reviewer-demo@reg.example</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-104">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-104" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-104" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-105">
+<label for="self-email-code-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">24 / 254</span>
 </div>
-<input id="m5-field-105" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
+<input id="self-email-code-new" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
 </div>
 <div class="note " role="status">
 <i data-ico="info">
@@ -3073,14 +3169,14 @@
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-106">
+<label for="self-email-code-otp">
 <span class="req" aria-hidden="true">*</span>新邮箱验证码</label>
 </div>
 <div class="code-control">
-<input id="m5-field-106" class="inp" aria-required="true" aria-describedby="m5-field-106-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<input id="self-email-code-otp" class="inp" aria-required="true" aria-describedby="self-email-code-otp-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
 <button type="button" class="btn" disabled>重新获取（58 秒）</button>
 </div>
-<p class="hint" id="m5-field-106-help">验证码 10 分钟内有效。</p>
+<p class="hint" id="self-email-code-otp-help">验证码 10 分钟内有效。</p>
 </div>
 <div class="form-actions">
 <button type="button" class="btn primary" data-go="self-email-confirm">下一步：确认变更</button>
@@ -3089,7 +3185,7 @@
 </div>
 </div>
 </section>
-<section id="self-email-occupied" data-screen data-no="M56" data-name="修改邮箱 · 邮箱不可用" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email-code" hidden>
+<section id="self-email-occupied" data-screen data-no="M56" data-name="修改邮箱 · 邮箱不可用" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="self-email-code" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -3104,39 +3200,33 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="m5-field-107">reviewer-demo@reg.example</div>
+<div class="field-static" id="self-email-occupied-cur">reviewer-demo@reg.example</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-108">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-108" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-108" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-109">
+<label for="self-email-occupied-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">24 / 254</span>
 </div>
-<input id="m5-field-109" class="inp" aria-required="true" aria-invalid="true" aria-describedby="m5-field-109-help" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
-<p class="err-msg" id="m5-field-109-help">该邮箱不可用，请使用其他邮箱。</p>
+<input id="self-email-occupied-new" class="inp" aria-required="true" aria-invalid="true" aria-describedby="self-email-occupied-new-help" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
+<p class="err-msg" id="self-email-occupied-new-help">该邮箱不可用，请使用其他邮箱。</p>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-code" disabled>获取验证码</button>
+<button type="button" class="btn" data-go="self-email-captcha" disabled>获取验证码</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-code-error" data-screen data-no="M57" data-name="修改邮箱 · 验证码无效" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email-confirm" hidden>
+<section id="self-email-code-error" data-screen data-no="M57" data-name="修改邮箱 · 验证码无效" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="self-email-confirm" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -3151,29 +3241,23 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="m5-field-110">reviewer-demo@reg.example</div>
+<div class="field-static" id="self-email-code-error-cur">reviewer-demo@reg.example</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-111">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="m5-field-111" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="m5-field-111" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="m5-field-112">
+<label for="self-email-code-error-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">24 / 254</span>
 </div>
-<input id="m5-field-112" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
+<input id="self-email-code-error-new" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
 </div>
 <div class="note " role="status">
 <i data-ico="info">
@@ -3182,14 +3266,14 @@
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="m5-field-113">
+<label for="self-email-code-error-otp">
 <span class="req" aria-hidden="true">*</span>新邮箱验证码</label>
 </div>
 <div class="code-control">
-<input id="m5-field-113" class="inp" aria-required="true" aria-invalid="true" aria-describedby="m5-field-113-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
-<button type="button" class="btn" data-go="self-email-code">重新获取</button>
+<input id="self-email-code-error-otp" class="inp" aria-required="true" aria-invalid="true" aria-describedby="self-email-code-error-otp-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn" data-go="self-email-captcha">重新获取</button>
 </div>
-<p class="err-msg" id="m5-field-113-help">验证码无效，请重新输入或重新获取。</p>
+<p class="err-msg" id="self-email-code-error-otp-help">验证码无效，请重新输入或重新获取。</p>
 </div>
 <div class="form-actions">
 <button type="button" class="btn primary" data-go="self-email-confirm" disabled>下一步：确认变更</button>
@@ -3198,7 +3282,7 @@
 </div>
 </div>
 </section>
-<section id="self-email-send-fail" data-screen data-no="M58" data-name="修改邮箱 · 发送失败" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email-code" hidden>
+<section id="self-email-send-fail" data-screen data-no="M58" data-name="修改邮箱 · 发送失败" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="self-email-captcha" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -3213,29 +3297,23 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="self-email-send-fail-m5-field-100">reviewer-demo@reg.example</div>
+<div class="field-static" id="self-email-send-fail-cur">reviewer-demo@reg.example</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-send-fail-m5-field-101">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="self-email-send-fail-m5-field-101" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="self-email-send-fail-m5-field-101" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="self-email-send-fail-m5-field-102">
+<label for="self-email-send-fail-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">24 / 254</span>
 </div>
-<input id="self-email-send-fail-m5-field-102" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
+<input id="self-email-send-fail-new" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
 </div>
 <div class="note red" role="alert">
 <i data-ico="info">
@@ -3243,13 +3321,13 @@
 <div>验证码发送失败，原邮箱保持不变。可立即重试一次。</div>
 </div>
 <div class="form-actions">
-<button type="button" class="btn primary" data-go="self-email-code">立即重试</button>
+<button type="button" class="btn primary" data-go="self-email-captcha">立即重试</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-limit" data-screen data-no="M152" data-name="修改邮箱 · 发送已达上限" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email" hidden>
+<section id="self-email-limit" data-screen data-no="M152" data-name="修改邮箱 · 发送已达上限" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="self-email" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -3264,29 +3342,23 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="self-email-limit-m5-field-100">reviewer-demo@reg.example</div>
+<div class="field-static" id="self-email-limit-cur">reviewer-demo@reg.example</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-limit-m5-field-101">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="self-email-limit-m5-field-101" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="self-email-limit-m5-field-101" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="self-email-limit-m5-field-102">
+<label for="self-email-limit-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">24 / 254</span>
 </div>
-<input id="self-email-limit-m5-field-102" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
+<input id="self-email-limit-new" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
 </div>
 <div class="note warn" role="alert">
 <i data-ico="info">
@@ -3294,13 +3366,59 @@
 <div>该邮箱获取验证码的次数已达上限，请约 3 小时后再试。</div>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-code" disabled>获取验证码</button>
+<button type="button" class="btn" data-go="self-email-captcha" disabled>获取验证码</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-stale" data-screen data-no="M59" data-name="修改邮箱 · 信息已变更" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email" hidden>
+<section id="self-email-reauth-expired" data-screen data-no="M160" data-name="修改邮箱 · 当前密码验证已过期" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="self-email" hidden>
+<div class="content-in">
+<div class="page-head">
+<div>
+<h1 class="page-title">修改登录邮箱</h1>
+</div>
+<div class="page-actions">
+<button type="button" class="btn ghost sm" data-go="r-settings">返回账户设置</button>
+</div>
+</div>
+<div class="card">
+<div class="card-head">
+<h2>验证新邮箱</h2>
+</div>
+<div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
+<div class="field">
+<div class="field-caption">
+<label>当前登录邮箱</label>
+</div>
+<div class="field-static" id="self-email-reauth-expired-cur">reviewer-demo@reg.example</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="self-email-reauth-expired-new">
+<span class="req" aria-hidden="true">*</span>新登录邮箱</label>
+<span class="count">24 / 254</span>
+</div>
+<input id="self-email-reauth-expired-new" class="inp" aria-required="true" type="email" value="new-reviewer@reg.example" maxlength="254" autocomplete="off">
+</div>
+<div class="note warn" role="alert">
+<i data-ico="info">
+</i>
+<div>当前密码验证已超过 10 分钟，请重新验证。</div>
+</div>
+<div class="form-actions">
+<button type="button" class="btn" data-go="self-email-confirm" disabled>下一步：确认变更</button>
+<button type="button" class="btn primary" data-go="self-email">重新验证</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="self-email-stale" data-screen data-no="M59" data-name="修改邮箱 · 信息已变更" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="self-email" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -3327,7 +3445,7 @@
 </div>
 </div>
 </section>
-<section id="self-email-save-fail" data-screen data-no="M60" data-name="修改邮箱 · 保存失败" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="self-email" hidden>
+<section id="self-email-save-fail" data-screen data-no="M60" data-name="修改邮箱 · 保存失败" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="self-email" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -3354,11 +3472,11 @@
 </div>
 </div>
 </section>
-<section id="self-email-confirm" data-screen data-no="M61" data-name="修改邮箱 · 确认" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="login-email" data-overlay data-base="r-settings" hidden>
+<section id="self-email-confirm" data-screen data-no="M61" data-name="修改邮箱 · 确认" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="r-settings-new" data-overlay data-base="self-email-code" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-114">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-self-email-confirm">
 <div class="modal-h">
-<span class="modal-title" id="modal-title-114">确认修改登录邮箱</span>
+<span class="modal-title" id="modal-title-self-email-confirm">确认修改登录邮箱</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
@@ -3366,7 +3484,7 @@
 </div>
 <div class="modal-b">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts cols-2 inset">
 <div>
 <dt>当前登录邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
@@ -3380,21 +3498,21 @@
 <div class="note warn" role="alert">
 <i data-ico="info">
 </i>
-<div>确认后旧邮箱立即作废，全部登录结束。此后请使用新邮箱与当前密码登录，无需再次首登改密。</div>
+<div>确认后旧邮箱立即作废，此后请使用新邮箱与当前密码登录。当前登录保持有效，无需重新登录。</div>
 </div>
 </div>
 <div class="modal-f">
 <button type="button" class="btn ghost" data-go="self-email-code">取消</button>
-<button type="button" class="btn primary" data-go="login-email">确认修改</button>
+<button type="button" class="btn primary" data-go="r-settings-new" data-toast="登录邮箱已修改。">确认修改</button>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-busy" data-screen data-no="M62" data-name="修改邮箱 · 提交中" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置" data-next="login-email" data-overlay data-base="r-settings" hidden>
+<section id="self-email-busy" data-screen data-no="M62" data-name="修改邮箱 · 提交中" data-group="本人修改登录邮箱" data-layout="app" data-who="reg" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/r-settings" data-next="r-settings-new" data-overlay data-base="self-email-code" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-115">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-self-email-busy">
 <div class="modal-h">
-<span class="modal-title" id="modal-title-115">确认修改登录邮箱</span>
+<span class="modal-title" id="modal-title-self-email-busy">确认修改登录邮箱</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
@@ -3402,7 +3520,7 @@
 </div>
 <div class="modal-b">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts cols-2 inset">
 <div>
 <dt>当前登录邮箱</dt>
 <dd>reviewer-demo@reg.example</dd>
@@ -3416,12 +3534,12 @@
 <div class="note warn" role="alert">
 <i data-ico="info">
 </i>
-<div>确认后旧邮箱立即作废，全部登录结束。此后请使用新邮箱与当前密码登录，无需再次首登改密。</div>
+<div>确认后旧邮箱立即作废，此后请使用新邮箱与当前密码登录。当前登录保持有效，无需重新登录。</div>
 </div>
 </div>
 <div class="modal-f">
 <button type="button" class="btn ghost" data-go="self-email-code">取消</button>
-<button type="button" class="btn primary" data-go="login-email" disabled>正在保存</button>
+<button type="button" class="btn primary" data-go="r-settings-new" disabled>正在保存</button>
 </div>
 </div>
 </div>
@@ -5648,7 +5766,7 @@
 </div>
 </div>
 </section>
-<section id="rg-added" data-screen data-no="M86" data-name="监管机构列表 · 新邀请已添加" data-group="监管机构详情" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理" data-next="rg-initial" hidden>
+<section id="rg-added" data-screen data-no="M86" data-name="监管机构列表 · 新邀请已添加" data-group="监管机构列表" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理" data-next="rg-initial" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -5826,7 +5944,7 @@
 </div>
 </div>
 </section>
-<section id="rg-list-initial" data-screen data-no="M87" data-name="示例监管机构 D" data-group="监管机构详情" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-list" hidden>
+<section id="rg-list-initial" data-screen data-no="M87" data-name="机构详情 · 机构 D 待首登改密" data-group="监管机构详情" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-list" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -6133,7 +6251,7 @@
 </div>
 </div>
 </section>
-<section id="rg-list-off" data-screen data-no="M89" data-name="示例监管机构 F" data-group="监管机构详情" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-list" hidden>
+<section id="rg-list-off" data-screen data-no="M89" data-name="机构详情 · 机构 F 已停用" data-group="监管机构详情" data-layout="app" data-who="ops" data-nav="regs" data-crumb="系统管理/监管机构管理/机构详情" data-crumb-targets="/rg-list" data-next="rg-list" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -7852,7 +7970,7 @@
 </div>
 </div>
 </section>
-<section id="recover-ops-email" data-screen data-no="M122" data-name="运营示例 · 找回密码" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-ops-code" class="auth-screen" hidden>
+<section id="recover-ops-email" data-screen data-no="M122" data-name="运营示例 · 找回密码" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-ops-filled" class="auth-screen" hidden>
 <div class="focus-card">
 <h1>找回密码</h1>
 <div class="stack">
@@ -7873,12 +7991,12 @@
 </div>
 <input id="recover-ops-email-m5-field-45" class="inp" aria-required="true" type="email" value="" maxlength="254" autocomplete="off">
 </div>
-<button type="button" class="btn primary block" data-go="recover-ops-code">获取验证码</button>
+<button type="button" class="btn primary block" data-go="recover-ops-captcha" disabled>获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-ops">返回登录</button>
 </div>
 </div>
 </section>
-<section class="auth-screen" data-crumb="账户/账户设置" data-group="找回密码" data-layout="focus" data-name="运营示例 · 找回 · 已填写邮箱" data-nav="" data-next="recover-ops-code" data-no="M123" data-screen="" data-who="none" hidden="" id="recover-ops-filled">
+<section class="auth-screen" data-crumb="账户/账户设置" data-group="找回密码" data-layout="focus" data-name="运营示例 · 找回 · 已填写邮箱" data-nav="" data-next="recover-ops-captcha" data-no="M123" data-screen="" data-who="none" hidden="" id="recover-ops-filled">
 <div class="focus-card">
 <h1>找回密码</h1>
 <div class="stack">
@@ -7899,12 +8017,31 @@
 </div>
 <input aria-required="true" autocomplete="off" class="inp" id="recover-ops-filled-m5-field-46" maxlength="254" type="email" value="ops-demo@example.com"/>
 </div>
-<button class="btn primary block" data-go="recover-ops-code" type="button">获取验证码</button>
+<button class="btn primary block" data-go="recover-ops-captcha" type="button">获取验证码</button>
 <button class="btn ghost sm" data-go="login-ops" type="button">返回登录</button>
 </div>
 </div>
 </section>
-<section class="auth-screen" data-crumb="账户/账户设置" data-group="找回密码" data-layout="focus" data-name="运营示例 · 找回 · 发送失败" data-nav="" data-next="recover-ops-code" data-no="M124" data-screen="" data-who="none" hidden="" id="recover-ops-send-fail">
+<section id="recover-ops-captcha" data-screen data-no="M159" data-name="运营示例 · 找回 · 人机校验" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-ops-code" data-overlay data-base="recover-ops-filled" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-recover-ops-captcha">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-recover-ops-captcha">安全验证</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<div class="captcha"><div class="captcha-stage" aria-hidden="true"><span class="captcha-gap"></span><span class="captcha-piece"></span></div><div class="captcha-track"><button type="button" class="captcha-handle" data-go="recover-ops-code" data-toast="验证通过" aria-label="向右拖动滑块完成拼图"><i data-ico="chev"></i></button><span class="captcha-hint">向右拖动滑块完成拼图</span></div></div>
+</div>
+<div class="modal-f">
+<button type="button" data-close class="btn ghost">取消</button>
+</div>
+</div>
+</div>
+</section>
+<section class="auth-screen" data-crumb="账户/账户设置" data-group="找回密码" data-layout="focus" data-name="运营示例 · 找回 · 发送失败" data-nav="" data-next="recover-ops-captcha" data-no="M124" data-screen="" data-who="none" hidden="" id="recover-ops-send-fail">
 <div class="focus-card">
 <h1>找回密码</h1>
 <div class="stack">
@@ -7930,7 +8067,7 @@
 </div>
 <input aria-required="true" autocomplete="off" class="inp" id="recover-ops-send-fail-m5-field-47" maxlength="254" type="email" value="ops-demo@example.com"/>
 </div>
-<button class="btn primary block" data-go="recover-ops-code" type="button">立即重试</button>
+<button class="btn primary block" data-go="recover-ops-captcha" type="button">立即重试</button>
 <button class="btn ghost sm" data-go="login-ops" type="button">返回登录</button>
 </div>
 </div>
@@ -7998,7 +8135,7 @@
 </div>
 <div class="code-control">
 <input id="recover-ops-code-invalid-m5-field-51" class="inp" aria-required="true" aria-invalid="true" aria-describedby="recover-ops-code-invalid-m5-field-51-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
-<button type="button" class="btn" data-go="recover-ops-code">重新获取</button>
+<button type="button" class="btn" data-go="recover-ops-captcha">重新获取</button>
 </div>
 <p class="err-msg" id="recover-ops-code-invalid-m5-field-51-help">验证码无效，请重新输入或重新获取。</p>
 </div>
@@ -8009,7 +8146,7 @@
 </div>
 </div>
 </section>
-<section id="recover-ops-locked" data-screen data-no="M127" data-name="运营示例 · 找回 · 验证后账号锁定" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-ops-password" class="auth-screen" hidden>
+<section id="recover-ops-locked" data-screen data-no="M127" data-name="运营示例 · 找回 · 验证后账号锁定" data-group="找回密码" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="recover-ops-email" class="auth-screen" hidden>
 <div class="focus-card">
 <h1>找回密码</h1>
 <div class="stack">
@@ -8035,7 +8172,7 @@
 </div>
 <button type="button" class="btn primary block" data-go="recover-ops-ready" disabled>验证并继续</button>
 <div class="form-actions">
-<button type="button" class="btn ghost sm" data-go="recover-ops-code">重新获取验证码</button>
+<button type="button" class="btn ghost sm" data-go="recover-ops-captcha">重新获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-ops">返回登录</button>
 </div>
 </div>
@@ -8067,7 +8204,7 @@
 </div>
 <button type="button" class="btn primary block" data-go="recover-ops-email">重新开始</button>
 <div class="form-actions">
-<button type="button" class="btn ghost sm" data-go="recover-ops-code">重新获取验证码</button>
+<button type="button" class="btn ghost sm" data-go="recover-ops-captcha">重新获取验证码</button>
 <button type="button" class="btn ghost sm" data-go="login-ops">返回登录</button>
 </div>
 </div>
@@ -8389,7 +8526,7 @@
 </div>
 </div>
 </section>
-<section id="self-email-ops" data-screen data-no="M136" data-name="运营示例 · 修改邮箱 · 填写" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops-code" hidden>
+<section id="self-email-ops" data-screen data-no="M136" data-name="运营示例 · 修改邮箱 · 验证当前密码" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/o-settings" data-next="self-email-ops-filled" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -8401,41 +8538,38 @@
 </div>
 <div class="card">
 <div class="card-head">
-<h2>验证新邮箱</h2>
+<h2>验证当前密码</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li aria-current="step">验证当前密码</li>
+<li>验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="self-email-ops-m5-field-97">ops-demo@example.com</div>
+<div class="field-static" id="self-email-ops-cur">ops-demo@example.com</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-ops-m5-field-98">
+<label for="self-email-ops-pw">
 <span class="req" aria-hidden="true">*</span>当前密码</label>
 </div>
 <div class="password-control">
-<input id="self-email-ops-m5-field-98" class="inp" aria-required="true" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="self-email-ops-m5-field-98" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
+<input id="self-email-ops-pw" class="inp" aria-required="true" aria-describedby="self-email-ops-pw-help" type="password" value="DemoPass123" autocomplete="current-password">
+<button type="button" class="btn icon" data-password-toggle="self-email-ops-pw" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
 </div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="self-email-ops-m5-field-99">
-<span class="req" aria-hidden="true">*</span>新登录邮箱</label>
-<span class="count">0 / 254</span>
-</div>
-<input id="self-email-ops-m5-field-99" class="inp" aria-required="true" type="email" value="" maxlength="254" autocomplete="off">
+<p class="hint" id="self-email-ops-pw-help">验证通过后，请在 10 分钟内完成修改。</p>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-ops-code" disabled>获取验证码</button>
+<button type="button" class="btn primary" data-go="self-email-ops-filled">下一步</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-ops-filled" data-screen data-no="M137" data-name="运营示例 · 修改邮箱 · 已填写" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops-code" hidden>
+<section id="self-email-ops-filled" data-screen data-no="M137" data-name="运营示例 · 修改邮箱 · 填写新邮箱" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/o-settings" data-next="self-email-ops-captcha" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -8450,38 +8584,51 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="self-email-ops-filled-m5-field-100">ops-demo@example.com</div>
+<div class="field-static" id="self-email-ops-filled-cur">ops-demo@example.com</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-ops-filled-m5-field-101">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="self-email-ops-filled-m5-field-101" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="self-email-ops-filled-m5-field-101" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="self-email-ops-filled-m5-field-102">
+<label for="self-email-ops-filled-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">19 / 254</span>
 </div>
-<input id="self-email-ops-filled-m5-field-102" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
+<input id="self-email-ops-filled-new" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-ops-code">获取验证码</button>
+<button type="button" class="btn" data-go="self-email-ops-captcha">获取验证码</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-ops-code" data-screen data-no="M138" data-name="运营示例 · 修改邮箱 · 新邮箱收码" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops-confirm" hidden>
+<section id="self-email-ops-captcha" data-screen data-no="M164" data-name="运营示例 · 修改邮箱 · 人机校验" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops-code" data-overlay data-base="self-email-ops-filled" hidden>
+<div class="modal-mask">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-self-email-ops-captcha">
+<div class="modal-h">
+<span class="modal-title" id="modal-title-self-email-ops-captcha">安全验证</span>
+<button type="button" class="btn icon" data-close aria-label="关闭">
+<i data-ico="x">
+</i>
+</button>
+</div>
+<div class="modal-b">
+<div class="captcha"><div class="captcha-stage" aria-hidden="true"><span class="captcha-gap"></span><span class="captcha-piece"></span></div><div class="captcha-track"><button type="button" class="captcha-handle" data-go="self-email-ops-code" data-toast="验证通过" aria-label="向右拖动滑块完成拼图"><i data-ico="chev"></i></button><span class="captcha-hint">向右拖动滑块完成拼图</span></div></div>
+</div>
+<div class="modal-f">
+<button type="button" data-close class="btn ghost">取消</button>
+</div>
+</div>
+</div>
+</section>
+<section id="self-email-ops-code" data-screen data-no="M138" data-name="运营示例 · 修改邮箱 · 新邮箱收码" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/o-settings" data-next="self-email-ops-confirm" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -8496,29 +8643,23 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="self-email-ops-code-m5-field-103">ops-demo@example.com</div>
+<div class="field-static" id="self-email-ops-code-cur">ops-demo@example.com</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-ops-code-m5-field-104">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="self-email-ops-code-m5-field-104" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="self-email-ops-code-m5-field-104" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="self-email-ops-code-m5-field-105">
+<label for="self-email-ops-code-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">19 / 254</span>
 </div>
-<input id="self-email-ops-code-m5-field-105" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
+<input id="self-email-ops-code-new" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
 </div>
 <div class="note " role="status">
 <i data-ico="info">
@@ -8527,14 +8668,14 @@
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-ops-code-m5-field-106">
+<label for="self-email-ops-code-otp">
 <span class="req" aria-hidden="true">*</span>新邮箱验证码</label>
 </div>
 <div class="code-control">
-<input id="self-email-ops-code-m5-field-106" class="inp" aria-required="true" aria-describedby="self-email-ops-code-m5-field-106-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<input id="self-email-ops-code-otp" class="inp" aria-required="true" aria-describedby="self-email-ops-code-otp-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
 <button type="button" class="btn" disabled>重新获取（58 秒）</button>
 </div>
-<p class="hint" id="self-email-ops-code-m5-field-106-help">验证码 10 分钟内有效。</p>
+<p class="hint" id="self-email-ops-code-otp-help">验证码 10 分钟内有效。</p>
 </div>
 <div class="form-actions">
 <button type="button" class="btn primary" data-go="self-email-ops-confirm">下一步：确认变更</button>
@@ -8543,7 +8684,7 @@
 </div>
 </div>
 </section>
-<section id="self-email-ops-occupied" data-screen data-no="M139" data-name="运营示例 · 修改邮箱 · 邮箱不可用" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops-code" hidden>
+<section id="self-email-ops-occupied" data-screen data-no="M139" data-name="运营示例 · 修改邮箱 · 邮箱不可用" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/o-settings" data-next="self-email-ops-code" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -8558,39 +8699,33 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="self-email-ops-occupied-m5-field-107">ops-demo@example.com</div>
+<div class="field-static" id="self-email-ops-occupied-cur">ops-demo@example.com</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-ops-occupied-m5-field-108">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="self-email-ops-occupied-m5-field-108" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="self-email-ops-occupied-m5-field-108" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="self-email-ops-occupied-m5-field-109">
+<label for="self-email-ops-occupied-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">19 / 254</span>
 </div>
-<input id="self-email-ops-occupied-m5-field-109" class="inp" aria-required="true" aria-invalid="true" aria-describedby="self-email-ops-occupied-m5-field-109-help" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
-<p class="err-msg" id="self-email-ops-occupied-m5-field-109-help">该邮箱不可用，请使用其他邮箱。</p>
+<input id="self-email-ops-occupied-new" class="inp" aria-required="true" aria-invalid="true" aria-describedby="self-email-ops-occupied-new-help" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
+<p class="err-msg" id="self-email-ops-occupied-new-help">该邮箱不可用，请使用其他邮箱。</p>
 </div>
 <div class="form-actions">
-<button type="button" class="btn " data-go="self-email-ops-code" disabled>获取验证码</button>
+<button type="button" class="btn" data-go="self-email-ops-captcha" disabled>获取验证码</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-ops-code-error" data-screen data-no="M140" data-name="运营示例 · 修改邮箱 · 验证码无效" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops-confirm" hidden>
+<section id="self-email-ops-code-error" data-screen data-no="M140" data-name="运营示例 · 修改邮箱 · 验证码无效" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/o-settings" data-next="self-email-ops-confirm" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -8605,29 +8740,23 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="self-email-ops-code-error-m5-field-110">ops-demo@example.com</div>
+<div class="field-static" id="self-email-ops-code-error-cur">ops-demo@example.com</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-ops-code-error-m5-field-111">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="self-email-ops-code-error-m5-field-111" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="self-email-ops-code-error-m5-field-111" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="self-email-ops-code-error-m5-field-112">
+<label for="self-email-ops-code-error-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">19 / 254</span>
 </div>
-<input id="self-email-ops-code-error-m5-field-112" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
+<input id="self-email-ops-code-error-new" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
 </div>
 <div class="note " role="status">
 <i data-ico="info">
@@ -8636,14 +8765,14 @@
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-ops-code-error-m5-field-113">
+<label for="self-email-ops-code-error-otp">
 <span class="req" aria-hidden="true">*</span>新邮箱验证码</label>
 </div>
 <div class="code-control">
-<input id="self-email-ops-code-error-m5-field-113" class="inp" aria-required="true" aria-invalid="true" aria-describedby="self-email-ops-code-error-m5-field-113-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
-<button type="button" class="btn" data-go="self-email-ops-code">重新获取</button>
+<input id="self-email-ops-code-error-otp" class="inp" aria-required="true" aria-invalid="true" aria-describedby="self-email-ops-code-error-otp-help" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" value="">
+<button type="button" class="btn" data-go="self-email-ops-captcha">重新获取</button>
 </div>
-<p class="err-msg" id="self-email-ops-code-error-m5-field-113-help">验证码无效，请重新输入或重新获取。</p>
+<p class="err-msg" id="self-email-ops-code-error-otp-help">验证码无效，请重新输入或重新获取。</p>
 </div>
 <div class="form-actions">
 <button type="button" class="btn primary" data-go="self-email-ops-confirm" disabled>下一步：确认变更</button>
@@ -8652,7 +8781,7 @@
 </div>
 </div>
 </section>
-<section id="self-email-ops-send-fail" data-screen data-no="M141" data-name="运营示例 · 修改邮箱 · 发送失败" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops-code" hidden>
+<section id="self-email-ops-send-fail" data-screen data-no="M141" data-name="运营示例 · 修改邮箱 · 发送失败" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/o-settings" data-next="self-email-ops-captcha" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -8667,29 +8796,23 @@
 <h2>验证新邮箱</h2>
 </div>
 <div class="card-b form">
+<ol class="steps">
+<li class="done">验证当前密码</li>
+<li aria-current="step">验证新邮箱</li>
+</ol>
 <div class="field">
 <div class="field-caption">
 <label>当前登录邮箱</label>
 </div>
-<div class="field-static" id="self-email-ops-send-fail-m5-field-100">ops-demo@example.com</div>
+<div class="field-static" id="self-email-ops-send-fail-cur">ops-demo@example.com</div>
 </div>
 <div class="field">
 <div class="field-caption">
-<label for="self-email-ops-send-fail-m5-field-101">
-<span class="req" aria-hidden="true">*</span>当前密码</label>
-</div>
-<div class="password-control">
-<input id="self-email-ops-send-fail-m5-field-101" class="inp" aria-required="true" type="password" value="DemoPass123" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="self-email-ops-send-fail-m5-field-101" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="self-email-ops-send-fail-m5-field-102">
+<label for="self-email-ops-send-fail-new">
 <span class="req" aria-hidden="true">*</span>新登录邮箱</label>
 <span class="count">19 / 254</span>
 </div>
-<input id="self-email-ops-send-fail-m5-field-102" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
+<input id="self-email-ops-send-fail-new" class="inp" aria-required="true" type="email" value="new-ops@example.com" maxlength="254" autocomplete="off">
 </div>
 <div class="note red" role="alert">
 <i data-ico="info">
@@ -8697,13 +8820,13 @@
 <div>验证码发送失败，原邮箱保持不变。可立即重试一次。</div>
 </div>
 <div class="form-actions">
-<button type="button" class="btn primary" data-go="self-email-ops-code">立即重试</button>
+<button type="button" class="btn primary" data-go="self-email-ops-captcha">立即重试</button>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-ops-stale" data-screen data-no="M142" data-name="运营示例 · 修改邮箱 · 信息已变更" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops" hidden>
+<section id="self-email-ops-stale" data-screen data-no="M142" data-name="运营示例 · 修改邮箱 · 信息已变更" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/o-settings" data-next="self-email-ops" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -8730,7 +8853,7 @@
 </div>
 </div>
 </section>
-<section id="self-email-ops-save-fail" data-screen data-no="M143" data-name="运营示例 · 修改邮箱 · 保存失败" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="self-email-ops" hidden>
+<section id="self-email-ops-save-fail" data-screen data-no="M143" data-name="运营示例 · 修改邮箱 · 保存失败" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/o-settings" data-next="self-email-ops" hidden>
 <div class="content-in">
 <div class="page-head">
 <div>
@@ -8757,11 +8880,11 @@
 </div>
 </div>
 </section>
-<section id="self-email-ops-confirm" data-screen data-no="M144" data-name="运营示例 · 修改邮箱 · 确认" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="login-email-ops" data-overlay data-base="o-settings" hidden>
+<section id="self-email-ops-confirm" data-screen data-no="M144" data-name="运营示例 · 修改邮箱 · 确认" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/o-settings" data-next="o-settings-new" data-overlay data-base="self-email-ops-code" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="self-email-ops-confirm-modal-title-114">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-self-email-ops-confirm">
 <div class="modal-h">
-<span class="modal-title" id="self-email-ops-confirm-modal-title-114">确认修改登录邮箱</span>
+<span class="modal-title" id="modal-title-self-email-ops-confirm">确认修改登录邮箱</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
@@ -8769,7 +8892,7 @@
 </div>
 <div class="modal-b">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts cols-2 inset">
 <div>
 <dt>当前登录邮箱</dt>
 <dd>ops-demo@example.com</dd>
@@ -8783,21 +8906,21 @@
 <div class="note warn" role="alert">
 <i data-ico="info">
 </i>
-<div>确认后旧邮箱立即作废，全部登录结束。此后请使用新邮箱与当前密码登录，无需再次首登改密。</div>
+<div>确认后旧邮箱立即作废，此后请使用新邮箱与当前密码登录。当前登录保持有效，无需重新登录。</div>
 </div>
 </div>
 <div class="modal-f">
 <button type="button" class="btn ghost" data-go="self-email-ops-code">取消</button>
-<button type="button" class="btn primary" data-go="login-email-ops">确认修改</button>
+<button type="button" class="btn primary" data-go="o-settings-new" data-toast="登录邮箱已修改。">确认修改</button>
 </div>
 </div>
 </div>
 </section>
-<section id="self-email-ops-busy" data-screen data-no="M145" data-name="运营示例 · 修改邮箱 · 提交中" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置" data-next="login-email-ops" data-overlay data-base="o-settings" hidden>
+<section id="self-email-ops-busy" data-screen data-no="M145" data-name="运营示例 · 修改邮箱 · 提交中" data-group="本人修改登录邮箱" data-layout="app" data-who="ops" data-nav="" data-crumb="账户/账户设置/修改登录邮箱" data-crumb-targets="/o-settings" data-next="o-settings-new" data-overlay data-base="self-email-ops-code" hidden>
 <div class="modal-mask">
-<div class="modal" role="dialog" aria-modal="true" aria-labelledby="self-email-ops-busy-modal-title-115">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-self-email-ops-busy">
 <div class="modal-h">
-<span class="modal-title" id="self-email-ops-busy-modal-title-115">确认修改登录邮箱</span>
+<span class="modal-title" id="modal-title-self-email-ops-busy">确认修改登录邮箱</span>
 <button type="button" class="btn icon" data-close aria-label="关闭">
 <i data-ico="x">
 </i>
@@ -8805,7 +8928,7 @@
 </div>
 <div class="modal-b">
 <div class="facts-region">
-<dl class="facts inset">
+<dl class="facts cols-2 inset">
 <div>
 <dt>当前登录邮箱</dt>
 <dd>ops-demo@example.com</dd>
@@ -8819,43 +8942,13 @@
 <div class="note warn" role="alert">
 <i data-ico="info">
 </i>
-<div>确认后旧邮箱立即作废，全部登录结束。此后请使用新邮箱与当前密码登录，无需再次首登改密。</div>
+<div>确认后旧邮箱立即作废，此后请使用新邮箱与当前密码登录。当前登录保持有效，无需重新登录。</div>
 </div>
 </div>
 <div class="modal-f">
 <button type="button" class="btn ghost" data-go="self-email-ops-code">取消</button>
-<button type="button" class="btn primary" data-go="login-email-ops" disabled>正在保存</button>
+<button type="button" class="btn primary" data-go="o-settings-new" disabled>正在保存</button>
 </div>
-</div>
-</div>
-</section>
-<section id="login-email-ops" data-screen data-no="M146" data-name="运营示例 · 登录邮箱已变更" data-group="登录与首次改密" data-layout="focus" data-who="none" data-nav="" data-crumb="账户/账户设置" data-next="o-settings-new" class="auth-screen" hidden>
-<div class="focus-card">
-<h1>管理端登录</h1>
-<div class="stack">
-<div class="note " role="status">
-<i data-ico="info">
-</i>
-<div>登录邮箱已变更，请用新邮箱和当前密码重新登录。</div>
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="login-email-ops-m5-field-27">
-<span class="req" aria-hidden="true">*</span>登录邮箱</label>
-</div>
-<input id="login-email-ops-m5-field-27" class="inp" aria-required="true" type="email" value="new-ops@example.com" autocomplete="off">
-</div>
-<div class="field">
-<div class="field-caption">
-<label for="login-email-ops-m5-field-28">
-<span class="req" aria-hidden="true">*</span>密码</label>
-</div>
-<div class="password-control">
-<input id="login-email-ops-m5-field-28" class="inp" aria-required="true" type="password" value="" autocomplete="new-password">
-<button type="button" class="btn icon" data-password-toggle="login-email-ops-m5-field-28" aria-pressed="false" aria-label="显示密码" title="显示密码"><i data-ico="eye"></i></button>
-</div>
-</div>
-<button type="button" class="btn primary block" data-module-key="review" data-module-who="opsnew" data-go="o-settings-new">重新登录</button>
 </div>
 </div>
 </section>
@@ -8926,14 +9019,14 @@
 <div>
 <p>登录密码</p>
 </div>
-<button class="btn sm" data-go="password-ready" type="button">修改密码</button>
+<button class="btn sm" data-go="password-ops" type="button">修改密码</button>
 </div>
 <div class="preference-row">
 <div>
 <p>登录邮箱</p>
 <p class="hint">new-ops@example.com</p>
 </div>
-<button class="btn sm" data-go="self-email-ops-filled" type="button">修改登录邮箱</button>
+<button class="btn sm" data-go="self-email-ops" type="button">修改登录邮箱</button>
 </div></div>
 </div>
 <div class="profile-section">
@@ -8979,9 +9072,54 @@
 <script src="../../_shared/navigation.js" data-local-only></script>
 <script>
 TP.pageTitle="管理端账号与监管机构管理 · 代币发行平台";
-TP.demo={accounts:{"ops": {"name": "运营示例账号", "email": "ops-demo@example.com", "role": "运营管理员"}, "reg": {"name": "示例监管机构 C", "email": "reviewer-demo@reg.example", "role": "监管机构", "org": "示例监管机构 C"}, "regoff": {"name": "示例监管机构 C", "email": "reviewer-demo@reg.example", "role": "监管机构", "org": "示例监管机构 C", "notice": "本机构已停用，不再接收新的发行申请；在途业务可以继续办理。"}, "regnew": {"name": "示例监管机构 C", "email": "new-reviewer@reg.example", "role": "监管机构", "org": "示例监管机构 C"}, "opsnew": {"name": "运营示例账号", "email": "new-ops@example.com", "role": "运营管理员"}}};
 TP.routes={regs:"rg-list",settings:{ops:"o-settings",reg:"r-settings",regoff:"r-off",regnew:"r-settings-new",opsnew:"o-settings-new"},logout:"login-out"};
 TP.addCopy({
+  "已退出登录": "Signed out",
+  "机构详情 · 机构 D 待首登改密": "Institution details · D, initial change required",
+  "机构详情 · 机构 F 已停用": "Institution details · F, disabled",
+  "解除监管": "Release supervision",
+  "机构详情": "Regulator details",
+  "牌照附件": "Licence files",
+  "验证当前密码": "Verify current password",
+  "下一步": "Next",
+  "验证通过后，请在 10 分钟内完成修改。": "After verification, complete the change within 10 minutes.",
+  "当前密码验证已超过 10 分钟，请重新验证。": "Your current password was verified more than 10 minutes ago. Verify it again.",
+  "重新验证": "Verify again",
+  "安全验证": "Security check",
+  "拼图验证": "Puzzle check",
+  "拖动下方滑块，使拼图块与缺口对齐。": "Drag the slider below until the piece fits the gap.",
+  "向右拖动滑块完成拼图": "Drag the slider right to complete the puzzle",
+  "验证未通过，已自动更换题目，请重试。": "Check failed. A new puzzle has been loaded. Try again.",
+  "验证未通过，请重试，也可以更换题目。": "Check failed. Try again or switch to another puzzle.",
+  "更换题目": "New puzzle",
+  "验证未通过次数过多，请 52 秒后再试。": "Too many failed checks. Try again in 52 s.",
+  "暂时不能验证": "Check temporarily unavailable",
+  "等待结束后可以重新验证。": "You can try again when the wait ends.",
+  "题目加载失败": "Puzzle failed to load",
+  "暂时无法加载验证题目，请重试。": "The puzzle could not be loaded. Try again.",
+  "验证通过": "Check passed",
+  "确认后旧邮箱立即作废，此后请使用新邮箱与当前密码登录。当前登录保持有效，无需重新登录。": "Your old email becomes invalid immediately. From now on, sign in with the new email and your current password. You stay signed in; no need to sign in again.",
+  "登录邮箱已修改。": "Login email changed.",
+  "运营修改密码 · 验证当前密码": "Operator password change · verify current password",
+  "监管修改密码 · 验证当前密码": "Regulator password change · verify current password",
+  "修改密码 · 设置新密码": "Password change · new password",
+  "监管修改密码 · 设置新密码": "Regulator password change · new password",
+  "修改密码 · 当前密码验证已过期": "Password change · verification expired",
+  "找回 · 人机校验": "Recovery · security check",
+  "找回 · 人机校验未通过": "Recovery · check failed",
+  "找回 · 连续 3 次未通过": "Recovery · 3 failed checks",
+  "找回 · 人机校验冷却中": "Recovery · check cooldown",
+  "找回 · 题目加载失败": "Recovery · puzzle load failed",
+  "运营示例 · 找回 · 人机校验": "Operator example · Recovery · security check",
+  "修改邮箱 · 验证当前密码": "Change email · verify current password",
+  "修改邮箱 · 填写新邮箱": "Change email · new email",
+  "修改邮箱 · 人机校验": "Change email · security check",
+  "修改邮箱 · 人机校验未通过": "Change email · check failed",
+  "修改邮箱 · 人机校验冷却中": "Change email · check cooldown",
+  "修改邮箱 · 当前密码验证已过期": "Change email · verification expired",
+  "运营示例 · 修改邮箱 · 验证当前密码": "Operator example · Change email · verify current password",
+  "运营示例 · 修改邮箱 · 填写新邮箱": "Operator example · Change email · new email",
+  "运营示例 · 修改邮箱 · 人机校验": "Operator example · Change email · security check",
   "返回发行审核": "Back to issuance review",
   "请补齐联系人、联系邮箱与所在国家或地区后保存。": "Complete the contact person, contact email and country or region before saving.",
   "0 家": "0 regulators",
@@ -9020,13 +9158,10 @@ TP.addCopy({
   "添加 · 保存失败": "Add · save failed",
   "添加 · 已建立并发出邮件": "Add · created and emailed",
   "添加 · 已建立但邮件失败": "Add · created, delivery failed",
-  "机构详情": "Regulator details",
-  "牌照附件": "Licence files",
   "登录与首次改密": "Sign in and first password change",
   "使用分配的邮箱和密码登录管理端。": "Sign in with your assigned email and password.",
   "登录邮箱": "Login email",
   "密码": "Password",
-  "显示或隐藏密码": "Show or hide password",
   "显示": "Show",
   "登录": "Sign in",
   "邮箱密码登录": "Email and password sign in",
@@ -9052,8 +9187,6 @@ TP.addCopy({
   "密码已修改": "Password changed. Sign in with your new password.",
   "密码已重置，请用新密码重新登录。": "Password reset. Sign in with your new password.",
   "密码已重置": "Password reset. Sign in with your new password.",
-  "登录邮箱已变更，请用新邮箱和当前密码重新登录。": "Login email changed. Sign in with your new email and current password.",
-  "登录邮箱已变更": "Login email changed. Sign in with your new email and current password.",
   "登录已到期，请重新登录。": "Your session has expired. Please sign in again.",
   "登录已到期": "Your session has expired. Please sign in again.",
   "因长时间无操作，登录已结束。": "You have been signed out due to inactivity.",
@@ -9146,12 +9279,7 @@ TP.addCopy({
   "本人修改密码": "Change your password",
   "当前密码": "Current password",
   "修改成功后，全部登录将结束，请用新密码重新登录。": "Changing your password ends all sessions. Sign in again with the new password.",
-  "请填写当前密码与两次新密码。": "Enter your current password and confirm your new password.",
   "关闭": "Close",
-  "运营修改密码": "Operator password change",
-  "监管修改密码": "Regulator password change",
-  "修改密码 · 已填写": "Password change · ready",
-  "监管修改密码 · 已填写": "Regulator password change · ready",
   "当前密码不正确，还剩 2 次机会。": "Incorrect current password. 2 attempts remaining.",
   "修改密码 · 当前密码有误": "Password change · incorrect current password",
   "修改密码 · 提交中": "Password change · submitting",
@@ -9160,8 +9288,6 @@ TP.addCopy({
   "返回账户设置": "Back to account settings",
   "新登录邮箱": "New login email",
   "验证新邮箱": "Verify your new email",
-  "修改邮箱 · 填写": "Change email · enter details",
-  "修改邮箱 · 已填写": "Change email · details entered",
   "验证码已发往新登录邮箱，请查收。": "A verification code was sent to your new login email. Check your inbox.",
   "新邮箱验证码": "New email verification code",
   "下一步：确认变更": "Next: confirm change",
@@ -9175,7 +9301,6 @@ TP.addCopy({
   "修改邮箱 · 信息已变更": "Change email · account information changed",
   "邮箱未修改，原邮箱与密码仍然有效。请重试。": "Email was not changed. Your current email and password are still valid. Please try again.",
   "修改邮箱 · 保存失败": "Change email · save failed",
-  "确认后旧邮箱立即作废，全部登录结束。此后请使用新邮箱与当前密码登录，无需再次首登改密。": "Your old email will become invalid and all sessions will end. Sign in with the new email and current password. No initial password change is required.",
   "确认修改": "Confirm change",
   "确认修改登录邮箱": "Confirm login email change",
   "修改邮箱 · 确认": "Change email · confirm",
@@ -9238,7 +9363,6 @@ TP.addCopy({
   "初始密码": "Initial password",
   "账号开通后将向登录邮箱发送初始凭据。机构首次登录须修改密码。": "Initial credentials will be emailed to the login address. The institution must change its password at first sign in.",
   "登录账号": "Login account",
-  "移除": "Remove",
   "请先更正标记的字段。": "Correct the highlighted field.",
   "已有同名监管机构，请修改名称。": "An institution with this name already exists. Use a different name.",
   "请先完成附件上传。": "Wait for the upload to finish.",
@@ -9257,7 +9381,6 @@ TP.addCopy({
   "最近更新时间": "Last updated",
   "最近更新人": "Last updated by",
   "账号与维护信息": "Account and maintenance",
-  "邀请添加": "Invitation",
   "已发出": "Sent",
   "发送时间": "Sent",
   "发送结果": "Delivery result",
@@ -9308,21 +9431,12 @@ TP.addCopy({
   "编辑 · 已保存": "Edit · saved",
   "牌照附件暂时无法读取，请重试。": "Licence files are temporarily unavailable. Please try again.",
   "牌照附件 · 读取失败": "Licence files · load failed",
-  "新的初始密码": "New initial password",
-  "请填写新的登录邮箱与初始密码。": "Enter the new login email and initial password.",
-  "该邮箱已被管理端账号使用，请更换邮箱。": "This email is already used by an admin account. Use a different email.",
-  "原账号凭据将作废，全部旧登录结束。新邮箱须使用新的初始密码登录并完成首登改密；未到期的锁定不会提前解除。": "Previous credentials will become invalid and all old sessions will end. The new email must use the new initial password and complete the initial password change. An active lockout will not end early.",
-  "新邮箱已生效，原账号已作废，开通邮件已发出。": "The new email is active, old credentials are invalid and the activation email was sent.",
-  "查看更新后的详情": "View updated details",
-  "新邮箱已生效，原账号已作废。开通邮件未能发出，请线下告知新邮箱与初始密码。": "The new email is active and old credentials are invalid. The activation email was not sent. Share the new email and initial password offline.",
-  "返回机构详情": "Back to institution",
   "停用与启用": "Disable and enable",
   "停用后企业不能再选择本机构发起新的发行申请。机构仍可登录，已有在途业务照常办理，相关消息继续发送。": "Companies will no longer be able to select this institution for new issuance applications. It can still sign in and handle existing business, with related messages continuing.",
   "确认停用": "Confirm disable",
   "停用机构 · 确认": "Disable institution · confirm",
   "停用机构 · 提交中": "Disable institution · submitting",
   "操作失败，机构状态未改变，请重试。": "Action failed. Institution status is unchanged. Please try again.",
-  "操作未完成": "Action not completed",
   "停用机构 · 失败": "Disable institution · failed",
   "启用后企业可以重新选择本机构申请发行，账号状态与在途业务保持不变。": "Companies will be able to select this institution for new issuance applications. Account status and existing business are unchanged.",
   "确认启用": "Confirm enable",
@@ -9332,7 +9446,6 @@ TP.addCopy({
   "机构状态已变化": "Institution status changed",
   "该机构已被其他运营停用，本次未重复执行，请查看最新详情。": "Another operator disabled this institution. The action was not repeated. Check the latest details.",
   "查看最新详情": "View latest details",
-  "请重新确认": "Check the latest information",
   "管理端账号与监管机构管理 · 代币发行平台": "Admin accounts and regulators · Token Issuance Platform",
   "业务": "Business",
   "系统管理": "Administration",
@@ -9343,7 +9456,6 @@ TP.addCopy({
   "可信资产": "Trusted assets",
   "企业": "Companies",
   "合约管理": "Contracts",
-  "解除质押": "Release pledge", "解除监管": "Release supervision",
   "管理端": "Admin console",
   "退出登录": "Sign out",
   "隐藏": "Hide",
@@ -9366,8 +9478,6 @@ TP.addCopy({
   "运营示例 · 找回 · 保存失败": "Operator example · Recovery · save failed",
   "运营示例 · 密码已重置": "Operator example · Password reset. Sign in with your new password.",
   "找回成功 · 尚未完成首登": "Recovery complete · initial password change required",
-  "运营示例 · 修改邮箱 · 填写": "Operator example · Change email · enter details",
-  "运营示例 · 修改邮箱 · 已填写": "Operator example · Change email · details entered",
   "运营示例 · 修改邮箱 · 新邮箱收码": "Operator example · Change email · verify new email",
   "运营示例 · 修改邮箱 · 邮箱不可用": "Operator example · Change email · email unavailable",
   "运营示例 · 修改邮箱 · 验证码无效": "Operator example · Change email · invalid code",
@@ -9376,7 +9486,6 @@ TP.addCopy({
   "运营示例 · 修改邮箱 · 保存失败": "Operator example · Change email · save failed",
   "运营示例 · 修改邮箱 · 确认": "Operator example · Change email · confirm",
   "运营示例 · 修改邮箱 · 提交中": "Operator example · Change email · submitting",
-  "运营示例 · 登录邮箱已变更": "Operator example · Login email changed. Sign in with your new email and current password.",
   "运营账户 · 邮箱修改后": "Operator account · email changed",
   "移除附件": "Remove file"
 });

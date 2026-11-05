@@ -1,4 +1,4 @@
-/* 管理端菜单：运营、监管机构各一份，所有管理端模块共用，新增或调整菜单只改这里。
+/* 管理端菜单与演示账号：运营、监管机构各一份，所有管理端模块共用，新增或调整只改这里。
    菜单 key 先找模块内 TP.routes，再找仓库联看路由（各模块 route.js）；都没有时显示范围提示。
    停用机构（regoff）、已改邮箱（regnew / opsnew）只是同一角色的展示变体，菜单不变。 */
 (function(TP){
@@ -24,4 +24,15 @@
     ]}
   ];
   TP.NAV_BY = {ops:ops, opsnew:ops, reg:reg, regoff:reg, regnew:reg};
+  // 账号入口的演示数据：监管机构账号名称即机构名称；停用机构、改邮箱是同一账号的展示变体。
+  var opsAcc = {name:'运营示例账号', email:'ops-demo@example.com', role:'运营管理员'};
+  var regAcc = {name:'示例监管机构 C', email:'reviewer-demo@reg.example', role:'监管机构', org:'示例监管机构 C'};
+  TP.demo = TP.demo || {};
+  TP.demo.accounts = {
+    ops: opsAcc,
+    opsnew: Object.assign({}, opsAcc, {email:'new-ops@example.com'}),
+    reg: regAcc,
+    regoff: Object.assign({}, regAcc, {notice:'本机构已停用，不再接收新的发行申请；在途业务可以继续办理。'}),
+    regnew: Object.assign({}, regAcc, {email:'new-reviewer@reg.example'})
+  };
 })(window.TP = window.TP || {});

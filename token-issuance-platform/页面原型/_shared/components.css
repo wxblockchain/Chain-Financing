@@ -68,7 +68,6 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .focus-main{flex:1;display:grid;place-items:start center;padding:var(--sp-9) var(--sp-4)}
 .focus-card{width:100%;max-width:var(--focus-card-w);background:var(--card);border:1px solid var(--border);
   border-radius:var(--radius-lg);padding:var(--sp-7)}
-.focus-card.wide{max-width:var(--modal-w-lg)}
 .focus-symbol{width:var(--focus-symbol-size);height:var(--focus-symbol-size);display:grid;place-items:center;
   border-radius:var(--radius-lg);background:var(--accent-soft);color:var(--accent);margin-bottom:var(--sp-5)}
 .focus-symbol svg.i{width:24px;height:24px}
@@ -121,7 +120,6 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .btn-link:hover{background:var(--accent-soft)}
 .actlink{font-size:var(--fs-13);color:var(--accent);font-weight:500;padding:3px 6px;border-radius:var(--radius-xs)}
 .actlink:hover{background:var(--accent-soft)}
-.actlink[aria-disabled="true"]{color:var(--faint);cursor:not-allowed;background:none}
 .spinner{width:16px;height:16px;border-radius:var(--radius-pill);border:2px solid currentColor;border-top-color:transparent;
   animation:spin 700ms linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -157,7 +155,6 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .asset-icon{display:inline-flex;align-self:center;width:var(--asset-icon-size);height:var(--asset-icon-size);flex:none;
   vertical-align:middle;line-height:1;color:var(--faint)}
 .asset-icon svg{display:block;width:100%;height:100%}
-.field>label .asset-label{margin-right:var(--sp-1)}
 
 /* ---------- 钱包地址：缩写地址标签 + 复制 ---------- */
 .addr{display:inline-flex;align-items:center;gap:var(--sp-1);min-width:0;max-width:100%;vertical-align:middle}
@@ -243,20 +240,8 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .holding-list .num{width:1%}
 .agreement-files{padding-top:0}
 .modal .signer.modal-signer{margin:0}
-.facts dd>.addr+.cell-sub{display:block;margin-top:var(--sp-1)}
 .state .state-ref{font-size:var(--fs-13)}
 .state .state-ref .btn-link{font-size:inherit}
-/* M3b 关联资产：确权、结清、逾期、发行四项状态。 */
-.status-grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
-@media(max-width:1440px){
-  .status-grid.cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .status-grid.cols-4>div:nth-child(3){border-left:0}
-  .status-grid.cols-4>div:nth-child(n+3){border-top:1px solid var(--border)}
-}
-@media(max-width:600px){
-  .status-grid.cols-4{grid-template-columns:minmax(0,1fr)}
-  .status-grid.cols-4>div+div{border-left:0;border-top:1px solid var(--row-line)}
-}
 table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .tbl thead th{text-align:left;font-size:var(--ui-field-label);font-weight:500;color:var(--muted);background:var(--card-2);
   padding:var(--sp-3);border-bottom:1px solid var(--border);white-space:nowrap}
@@ -431,7 +416,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 
 /* M1：连接阶段、只读网络、资料分区、偏好设置 */
 .login-progress{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-13);color:var(--muted)}
-.login-progress span:first-child{color:var(--accent);font-variant-numeric:tabular-nums;font-weight:600}
 .network-support{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-13);color:var(--muted);padding-top:var(--sp-2);border-top:1px solid var(--border)}
 .connection-info{margin:0;padding:var(--sp-3) var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2)}
 .connection-info>div{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-2) 0}
@@ -450,7 +434,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .facts.inset{padding:0}
 .profile-section>h2{font-size:var(--ui-section-title);font-weight:600;line-height:var(--lh-body)}
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5) var(--sp-6)}
-.form-grid>.full{grid-column:1/-1}
 .field-caption{display:flex;justify-content:space-between;gap:var(--sp-3);align-items:baseline}
 .field-caption .count{font-size:var(--fs-12);color:var(--faint)}
 .password-control{position:relative;display:flex;align-items:center}
@@ -471,7 +454,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .form-sheet{max-width:100%;display:flex;flex-direction:column;gap:var(--sp-5)}
 .form-sheet>.card{margin:0}
 .form-sheet .card-b{display:flex;flex-direction:column;gap:var(--sp-5)}
-.form-sheet .card-f{display:flex;justify-content:flex-end;gap:var(--sp-3);flex-wrap:wrap}
 .tbl.reg-list{table-layout:fixed}
 .tbl.reg-list th,.tbl.reg-list td{white-space:normal;overflow-wrap:anywhere;padding-inline:var(--sp-2)}
 .tbl.reg-list th:first-child,.tbl.reg-list td:first-child{padding-left:var(--card-pad);width:18%}
@@ -559,16 +541,11 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .cond.ok b{color:var(--text)}
 .cond.no{background:var(--warn-bg);color:var(--warn)}
 .cond b{font-weight:600}
-.cond .btn{margin-left:auto;align-self:center}
 .tbl.auto th:first-child{width:auto}
 .tbl.auto .cell-sub{max-width:24ch}
 .tbl .col-name{min-width:120px}
 .tbl td>.tag{white-space:normal}
-.tbl td>*+.tag{margin-top:var(--sp-1)}
 .tbl .num{text-align:right;white-space:nowrap}
-.tbl .num .cell-sub{display:block}
-.cell-sub.warn{color:var(--warn)}
-.cell-sub.ok{color:var(--ok)}
 .asset-list:has(colgroup){table-layout:fixed}
 .asset-list .asset-col-id{width:14%}.asset-list .asset-col-debtor{width:20%}.asset-list .asset-col-amount{width:13%}
 .asset-list .asset-col-due{width:12%}.asset-list .asset-col-repayment{width:13%}.asset-list .asset-col-status{width:15%}.asset-list .asset-col-actions{width:13%}
@@ -618,7 +595,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .searchbar .q svg.i{position:absolute;left:12px;color:var(--faint);pointer-events:none}
 .searchbar .q .inp{height:var(--ctrl-h-sm);padding-left:36px;font-size:var(--fs-13);border-color:var(--border-strong)}
 .searchbar .btn{height:var(--ctrl-h-sm)}
-.searchbar .hint{margin-left:auto}
 /* List filters: compact rectangular controls, as confirmed in WS-508.
    Frequent conditions left, optional fields inline below, search/actions right. */
 .asset-filters{padding:var(--sp-3) var(--card-pad);border-bottom:1px solid var(--border)}
@@ -661,7 +637,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .sub-h+.tablewrap .tbl thead th{border-top:1px solid var(--border)}
 .card-sec+.card-sec{border-top:1px solid var(--border)}
 .card-sec .facts{padding-top:0}
-.card-sec>.note{margin:0 var(--card-pad) var(--sp-4)}
 .asset-detail{margin-top:var(--sp-4)}
 .sub-empty{padding:0 var(--card-pad) var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
 .page-desc [data-zone]{display:inline;font-family:var(--mono);font-size:var(--fs-13)}
@@ -751,16 +726,29 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .stage-body p{margin-top:var(--sp-1);font-size:var(--fs-13);color:var(--muted);overflow-wrap:anywhere}
 .stage-hash{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2)}
 .document-preview{background:var(--card-2);border:1px solid var(--border);padding:var(--sp-4);border-radius:var(--radius-xs)}
+/* 人机校验（M5）：拼图区 + 滑块轨道。静态示意，点击或按 Enter 滑块即进入预设的通过画面，不模拟拖动判定。 */
+.captcha{display:grid;gap:var(--sp-3)}
+.captcha-stage{position:relative;min-height:160px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;
+  background:repeating-linear-gradient(135deg,var(--card-2) 0 12px,var(--card-hover) 12px 24px)}
+.captcha-stage>.state{min-height:158px;justify-content:center;padding:var(--sp-5) var(--sp-4);background:var(--card-2)}
+.captcha-gap,.captcha-piece{position:absolute;top:50%;width:44px;height:44px;margin-top:-22px;border-radius:var(--radius-xs)}
+.captcha-gap{right:72px;border:2px dashed var(--control-border);background:var(--gray-bg)}
+.captcha-piece{left:var(--sp-3);border:2px solid var(--accent-border);background:var(--accent-soft);box-shadow:var(--shadow-lg)}
+.captcha-track{display:flex;align-items:center;height:var(--ctrl-h);border:1px solid var(--border-strong);border-radius:var(--radius-xs);background:var(--card-2);overflow:hidden}
+.captcha-handle{display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--ctrl-h);height:100%;background:var(--accent);color:var(--on-accent)}
+.captcha-handle svg.i{transform:rotate(-90deg)}
+.captcha-handle:hover{background:var(--accent-strong)}
+.captcha-handle:disabled{background:var(--border-strong);cursor:not-allowed}
+.captcha-hint{flex:1;padding-inline:var(--sp-3);text-align:center;color:var(--muted);font-size:var(--fs-13)}
+.captcha.is-locked .captcha-stage{opacity:.5}
 .document-sheet{background:var(--card);border:1px solid var(--border);padding:var(--sp-6);display:flex;flex-direction:column;gap:var(--sp-5)}
 .document-sheet h2{font-size:var(--ui-section-title);text-align:center}
 .document-sheet .facts{padding:0}
 .document-kicker{font-size:var(--fs-12);color:var(--faint)}
 @media(max-width:900px){.review-list{min-width:800px}}
-/* 资产摘要（M2，及 M3a / M3b 复用）：右侧状态按标签内容取宽，三项状态在 1280 px 起单行展示，左侧金额区让出剩余宽度；
-   M3b 四项状态在 1441 px 起单行，1101–1440 px 两行两列。 */
+/* 资产摘要（M2，及 M3a / M3b 复用）：右侧状态按标签内容取宽，三项状态在 1280 px 起单行展示，左侧金额区让出剩余宽度。 */
 @media(min-width:1101px){.asset-sum{grid-template-columns:minmax(0,1fr) auto}.status-grid{grid-template-columns:repeat(3,minmax(120px,auto))}.status-grid .tag{white-space:nowrap}
-  .status-grid.cols-4{grid-template-columns:repeat(2,minmax(140px,auto))}}
-@media(min-width:1441px){.status-grid.cols-4{grid-template-columns:repeat(4,minmax(120px,auto))}}
+}
 @media(max-width:1100px){.asset-sum{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){
   .status-grid{grid-template-columns:minmax(0,1fr)}
@@ -769,7 +757,6 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
   .status-grid dt{margin:0}
   .status-grid>div{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
   .cond{flex-wrap:wrap}
-  .cond .btn{margin-left:0}
   .searchbar .q{flex-basis:100%}
 }
 
@@ -791,9 +778,7 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-btn{bottom
 body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bottom:calc(var(--sp-5) + var(--ctrl-h) + var(--sp-7) + var(--sp-3) + var(--ctrl-h-sm) + 10px)}
 .footer-hint{color:var(--muted);font-size:var(--fs-13)}
 .choice-description{padding:var(--sp-4) var(--card-pad);color:var(--muted);font-size:var(--fs-13)}
-.choice-description p+p{margin-top:var(--sp-2)}
 .choice-description .btn-link{font-size:inherit;vertical-align:baseline;margin:0 var(--sp-1)}
-.card-b>.note+.note{margin-top:var(--sp-3)}
 .choice-table{table-layout:fixed}
 .choice-table .selected td{background:var(--accent-soft)}
 /* 单选表：首列单选标识，点击整行即选中；已选行浅主色底，状态不只靠颜色（单选标识与 aria-checked）。 */
@@ -807,7 +792,6 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .asset-choice .c-id{width:20%}.asset-choice .c-name{width:auto}.asset-choice .c-amount{width:20%}.asset-choice .c-due{width:18%}
 .account-choice .c-label{width:26%}.account-choice .c-network{width:22%}.account-choice .c-address{width:auto}
 .form-section{border-top:1px solid var(--border)}
-.form-section:first-of-type{border-top:0}
 .form-section-h{padding:var(--sp-5) var(--card-pad) var(--sp-3)}
 .form-section-h h2{font-size:var(--ui-section-title);font-weight:600}
 .form-section-h .req{margin-right:var(--sp-1)}

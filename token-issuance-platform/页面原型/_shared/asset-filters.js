@@ -35,7 +35,7 @@
     document.querySelectorAll('.asset-list').forEach(function(table){
       fitNames(table);
       var screen=table.closest('[data-screen]'), card=table.closest('.card');
-      var globalScope=screen.id==='o-list'||screen.id==='r-list';
+      var globalScope=table.classList.contains('with-creditor');
       var currencies=Array.from(new Set(Array.from(table.querySelectorAll('.ccy')).map(function(el){return el.textContent;})));
       var form=document.createElement('form');
       form.className='asset-filters';form.setAttribute('aria-label','筛选资产');

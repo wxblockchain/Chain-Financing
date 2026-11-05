@@ -72,6 +72,21 @@
     <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>资产可信平台登记的钱包地址已变更，请重新登录。</h3><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
   </div>
 </section>
+<section data-screen id="platform-account-locked" data-no="S4" data-group="平台反馈" data-name="登录已结束：上游账户已锁定" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
+    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你在资产可信平台的账户已锁定，本次登录已结束。</h3><p>解除说明：请联系资产可信平台解除锁定后重新登录。</p><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
+  </div>
+</section>
+<section data-screen id="platform-create-fail" data-no="S5" data-group="平台反馈" data-name="登录未完成：建立企业用户失败" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
+    <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>登录未完成，请重试或退出。</h3><p class="state-ref">错误码 <span class="mono">E-DEMO-1042</span></p><div class="state-actions"><button type="button" class="btn" data-go="login">退出</button><button type="button" class="btn primary" data-go="platform-loading">重试</button></div></div></div>
+  </div>
+</section>
+<section data-screen id="platform-session-expired" data-no="S6" data-group="平台反馈" data-name="登录已到期" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
+    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>登录已到期，请重新签名登录。</h3><p>未保存的内容不会保留。</p><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
+  </div>
+</section>
 
 <!-- ============================== 游客 ============================== -->
 <section data-screen id="guest" data-no="G1" data-group="游客" data-name="游客引导" data-layout="app" data-who="guest" data-crumb="游客引导">
@@ -175,7 +190,7 @@
 </section><section class="profile-section">
 <div class="card-head"><h2>偏好设置</h2></div>
 <div class="preferences">
-<div class="preference-row"><div><label for="me-language">语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-feedback" class="inp" data-language="" id="me-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
+<div class="preference-row"><div><label for="me-language">界面语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-feedback" class="inp" data-language="" id="me-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
 <div class="preference-row"><div><label for="me-timezone">时区</label><p class="hint">时间按该时区展示，业务时间本身不变。</p></div><select aria-describedby="me-feedback" class="inp" data-timezone="" id="me-timezone"><option>UTC</option><option>Asia/Shanghai</option><option>Asia/Hong_Kong</option><option>Asia/Singapore</option><option>Europe/London</option><option>America/New_York</option></select></div>
 <p aria-live="polite" class="hint preference-feedback" id="me-feedback" role="status"></p>
 </div>
@@ -209,7 +224,7 @@
 </section><section class="profile-section">
 <div class="card-head"><h2>偏好设置</h2></div>
 <div class="preferences">
-<div class="preference-row"><div><label for="me-uncert-language">语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-uncert-feedback" class="inp" data-language="" id="me-uncert-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
+<div class="preference-row"><div><label for="me-uncert-language">界面语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-uncert-feedback" class="inp" data-language="" id="me-uncert-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
 <div class="preference-row"><div><label for="me-uncert-timezone">时区</label><p class="hint">时间按该时区展示，业务时间本身不变。</p></div><select aria-describedby="me-uncert-feedback" class="inp" data-timezone="" id="me-uncert-timezone"><option>UTC</option><option>Asia/Shanghai</option><option>Asia/Hong_Kong</option><option>Asia/Singapore</option><option>Europe/London</option><option>America/New_York</option></select></div>
 <p aria-live="polite" class="hint preference-feedback" id="me-uncert-feedback" role="status"></p>
 </div>
@@ -242,7 +257,7 @@
 </section><section class="profile-section">
 <div class="card-head"><h2>偏好设置</h2></div>
 <div class="preferences">
-<div class="preference-row"><div><label for="me-noent-language">语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-noent-feedback" class="inp" data-language="" id="me-noent-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
+<div class="preference-row"><div><label for="me-noent-language">界面语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-noent-feedback" class="inp" data-language="" id="me-noent-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
 <div class="preference-row"><div><label for="me-noent-timezone">时区</label><p class="hint">时间按该时区展示，业务时间本身不变。</p></div><select aria-describedby="me-noent-feedback" class="inp" data-timezone="" id="me-noent-timezone"><option>UTC</option><option>Asia/Shanghai</option><option>Asia/Hong_Kong</option><option>Asia/Singapore</option><option>Europe/London</option><option>America/New_York</option></select></div>
 <p aria-live="polite" class="hint preference-feedback" id="me-noent-feedback" role="status"></p>
 </div>
@@ -267,7 +282,7 @@
 </section><section class="profile-section">
 <div class="card-head"><h2>偏好设置</h2></div>
 <div class="preferences">
-<div class="preference-row"><div><label for="me-empty-language">语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-empty-feedback" class="inp" data-language="" id="me-empty-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
+<div class="preference-row"><div><label for="me-empty-language">界面语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-empty-feedback" class="inp" data-language="" id="me-empty-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
 <div class="preference-row"><div><label for="me-empty-timezone">时区</label><p class="hint">时间按该时区展示，业务时间本身不变。</p></div><select aria-describedby="me-empty-feedback" class="inp" data-timezone="" id="me-empty-timezone"><option>UTC</option><option>Asia/Shanghai</option><option>Asia/Hong_Kong</option><option>Asia/Singapore</option><option>Europe/London</option><option>America/New_York</option></select></div>
 <p aria-live="polite" class="hint preference-feedback" id="me-empty-feedback" role="status"></p>
 </div>
@@ -291,7 +306,7 @@
 </section><section class="profile-section">
 <div class="card-head"><h2>偏好设置</h2></div>
 <div class="preferences">
-<div class="preference-row"><div><label for="me-fail-language">语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-fail-feedback" class="inp" data-language="" id="me-fail-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
+<div class="preference-row"><div><label for="me-fail-language">界面语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-fail-feedback" class="inp" data-language="" id="me-fail-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
 <div class="preference-row"><div><label for="me-fail-timezone">时区</label><p class="hint">时间按该时区展示，业务时间本身不变。</p></div><select aria-describedby="me-fail-feedback" class="inp" data-timezone="" id="me-fail-timezone"><option>UTC</option><option>Asia/Shanghai</option><option>Asia/Hong_Kong</option><option>Asia/Singapore</option><option>Europe/London</option><option>America/New_York</option></select></div>
 <p aria-live="polite" class="hint preference-feedback" id="me-fail-feedback" role="status"></p>
 </div>
@@ -563,7 +578,7 @@
 </section><section class="profile-section">
 <div class="card-head"><h2>偏好设置</h2></div>
 <div class="preferences"><div class="note red" role="alert"><i data-ico="alert"></i><span>偏好保存失败，已恢复原值，请重新选择。</span></div>
-<div class="preference-row"><div><label for="me-prefs-fail-language">语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-prefs-fail-feedback" class="inp" data-language="" id="me-prefs-fail-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
+<div class="preference-row"><div><label for="me-prefs-fail-language">界面语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-prefs-fail-feedback" class="inp" data-language="" id="me-prefs-fail-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
 <div class="preference-row"><div><label for="me-prefs-fail-timezone">时区</label><p class="hint">时间按该时区展示，业务时间本身不变。</p></div><select aria-describedby="me-prefs-fail-feedback" class="inp" data-timezone="" id="me-prefs-fail-timezone"><option>UTC</option><option>Asia/Shanghai</option><option>Asia/Hong_Kong</option><option>Asia/Singapore</option><option>Europe/London</option><option>America/New_York</option></select></div>
 <p aria-live="polite" class="hint preference-feedback" id="me-prefs-fail-feedback" role="status"></p>
 </div>
@@ -594,7 +609,7 @@
 </section><section class="profile-section">
 <div class="card-head"><h2>偏好设置</h2></div>
 <div class="preferences"><div class="note" role="status"><span aria-hidden="true" class="spinner"></span><span>正在保存偏好，请稍候。</span></div>
-<div class="preference-row"><div><label for="me-prefs-saving-language">语言</label><p class="hint">选择界面显示语言。</p></div><select aria-busy="true" aria-describedby="me-prefs-saving-feedback" class="inp" data-language="" disabled="" id="me-prefs-saving-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
+<div class="preference-row"><div><label for="me-prefs-saving-language">界面语言</label><p class="hint">选择界面显示语言。</p></div><select aria-busy="true" aria-describedby="me-prefs-saving-feedback" class="inp" data-language="" disabled="" id="me-prefs-saving-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
 <div class="preference-row"><div><label for="me-prefs-saving-timezone">时区</label><p class="hint">时间按该时区展示，业务时间本身不变。</p></div><select aria-describedby="me-prefs-saving-feedback" class="inp" data-timezone="" id="me-prefs-saving-timezone"><option>UTC</option><option>Asia/Shanghai</option><option>Asia/Hong_Kong</option><option>Asia/Singapore</option><option>Europe/London</option><option>America/New_York</option></select></div>
 <p aria-live="polite" class="hint preference-feedback" id="me-prefs-saving-feedback" role="status"></p>
 </div>
@@ -612,7 +627,6 @@
 <script src="account-display.js"></script>
 <script src="../../_shared/navigation.js" data-local-only></script>
 <script>
-  TP.demo = {address:'0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC', enterprise:'示例企业 A 有限公司'};
   TP.routes = {
     org:{certified:'org', uncertified:'org-uncert', noent:'org-noent'},
     me:{certified:'me', uncertified:'me-uncert', noent:'me-noent'},

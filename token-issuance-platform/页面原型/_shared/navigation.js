@@ -51,16 +51,11 @@
     if(lang==='en'||lang==='zh') TP.language=lang;
     if(validZone(zone)) TP.zone=zone;
     // Disabled-institution and changed-email examples reuse the same operator / regulator
-    // screens. Preserve the notice / changed email when arriving from another module.
+    // screens; their menus and account entries come from menu.admin.js.
     var who=params.get('previewWho');
     if(module.variants && module.variants.indexOf(who)!==-1){
       var sourceWho=who==='opsnew'?'ops':'reg';
       document.querySelectorAll('[data-screen][data-who="'+sourceWho+'"]').forEach(function(el){el.dataset.who=who;});
-      TP.NAV_BY[who]=TP.NAV_BY[sourceWho];
-      TP.demo.accounts[who]=Object.assign({},TP.demo.accounts[sourceWho]);
-      if(who==='regoff') TP.demo.accounts[who].notice='本机构已停用，不再接收新的发行申请；在途业务可以继续办理。';
-      if(who==='regnew') TP.demo.accounts[who].email='new-reviewer@reg.example';
-      if(who==='opsnew') TP.demo.accounts[who].email='new-ops@example.com';
       Object.keys(TP.routes).forEach(function(key){
         var r=TP.routes[key];if(r && typeof r==='object' && r[sourceWho] && !r[who]) r[who]=r[sourceWho];
       });

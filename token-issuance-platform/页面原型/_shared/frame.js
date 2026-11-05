@@ -13,9 +13,9 @@
    模块在 TP.routes 中登记菜单与账户入口对应的画面。
    TP.routes.settings 可按身份配置账户设置；focus 画面 data-restricted 仅保留语言与退出。
    data-password-toggle="输入框 id" 只切换密码显隐，不校验密码。
-   菜单只在 _shared/menu.client.js（企业端 TP.NAV）与 menu.admin.js（管理端 TP.NAV_BY[身份]）维护，
-   模块不再各自复制；管理端 TP.demo.accounts[身份] 给出账号入口（账号名称、登录邮箱、角色、所属机构），
-   未设置时为企业端钱包地址入口。
+   菜单与演示身份只在 _shared/menu.client.js（企业端 TP.NAV、登录地址 TP.demo.address）与
+   menu.admin.js（管理端 TP.NAV_BY[身份]、账号入口 TP.demo.accounts[身份]）维护，模块不再各自复制；
+   没有管理端账号时为企业端钱包地址入口。
    ========================================================================== */
 (function(){
   var TP = window.TP = window.TP || {};
@@ -78,8 +78,9 @@
     setTimeout(function(){ el.remove(); }, 2400);
   }
   TP.toast = toast;
-  /* 跨模块入口在单模块附件中没有目标画面时的统一范围提示 */
-  var SCOPE = '此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。';
+  /* 跨模块入口没有目标画面时的统一范围提示：附件说明到完整原型打开，仓库联看说明尚未纳入 */
+  var SCOPE_FILE = '此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。', SCOPE_REPO = '该入口尚未纳入原型。';
+  function scope(){ return TP.previewMode==='repository' ? SCOPE_REPO : SCOPE_FILE; }
 
   function navList(who){ return (TP.NAV_BY && TP.NAV_BY[who]) || TP.NAV; }
   function renderNav(sec){
@@ -212,10 +213,10 @@
 
   function go(key){
     if(key==='msg'){ if(TP.navigate && TP.navigate(key,current)) return; toast('消息通知尚未交付。'); return; }
-    if(key==='settings' && !TP.routes.settings){ if(TP.navigate && TP.navigate(key,current)) return; toast(SCOPE); return; }
+    if(key==='settings' && !TP.routes.settings){ if(TP.navigate && TP.navigate(key,current)) return; toast(scope()); return; }
     if(key==='logout'){ if(TP.routes.logout) show(TP.routes.logout); else if(TP.navigate && TP.navigate(key,current)) return; toast('已退出登录'); return; }
     var r = routeFor(key);
-    if(!r || !r.id){ if(TP.navigate && TP.navigate(key,current)) return; toast(SCOPE); return; }
+    if(!r || !r.id){ if(TP.navigate && TP.navigate(key,current)) return; toast(scope()); return; }
     show(r.id, {gate:r.gate});
   }
 
@@ -284,7 +285,7 @@
     if(t.dataset.demoGo){ show(t.dataset.demoGo); return; }
     if(t.hasAttribute('data-copy')){ copyFullValue(t); return; }
     if(t.dataset.moduleKey && TP.navigate && TP.navigate(t.dataset.moduleKey,current,t.dataset.moduleWho)) return;
-    if(t.dataset.toast){ toast(t.dataset.toast); }
+    if(t.dataset.toast){ toast(t.dataset.toast===SCOPE_FILE ? scope() : t.dataset.toast); }
     if(t.matches('.dd-item') && !t.dataset.acct){ closeMenus(null); return; }
     if(t.hasAttribute('data-close') && current && current.base){ show(current.base, {gate:gateKey}); return; }
     if(t.dataset.navKey){ go(t.dataset.navKey); return; }

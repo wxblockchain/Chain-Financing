@@ -103,6 +103,31 @@
 </div>
 </section>
 
+<section data-screen id="list-nomatch" data-no="C6" data-group="资产列表" data-name="筛选无结果" data-layout="app" data-who="certified" data-nav="assets" data-crumb="业务/可信资产">
+<div class="content-in">
+<div class="page-head"><div><h1 class="page-title">可信资产</h1><p class="page-desc">本企业已确权的应收账款。满足条件的资产可以申请代币发行。</p></div></div>
+<div class="card">
+<div class="card-head"><h2>资产</h2><span class="sub">0 笔</span></div>
+<div class="tablewrap"><table class="tbl auto asset-list" data-total="0"><colgroup><col class="asset-col-id"><col class="asset-col-debtor"><col class="asset-col-amount"><col class="asset-col-due"><col class="asset-col-repayment"><col class="asset-col-status"><col class="asset-col-actions"></colgroup>
+<thead><tr><th>资产编号</th><th class="col-name">债务人</th><th class="num">资产价值</th><th class="col-due">到期日<span class="cell-sub" data-zone></span></th><th>回款状态</th><th>发行状态</th><th class="col-act">操作</th></tr></thead>
+<tbody></tbody>
+</table></div>
+<div class="state" role="status"><span class="state-ico"><i data-ico="search"></i></span><h3>没有符合条件的资产</h3><p>可以调整或清除筛选条件后再查询。</p><button type="button" class="btn" data-go="list">清除筛选</button></div>
+</div>
+</div>
+</section>
+
+<section data-screen id="list-filter-fail" data-no="C7" data-group="资产列表" data-name="筛选读取失败" data-layout="app" data-who="certified" data-nav="assets" data-crumb="业务/可信资产">
+<div class="content-in">
+<div class="page-head"><div><h1 class="page-title">可信资产</h1><p class="page-desc">本企业已确权的应收账款。满足条件的资产可以申请代币发行。</p></div></div>
+<div class="card">
+<div class="card-head"><h2>资产</h2></div>
+<div class="tablewrap" hidden><table class="tbl auto asset-list" data-total="0"><thead><tr><th>资产编号</th><th class="col-name">债务人</th><th class="num">资产价值</th></tr></thead><tbody></tbody></table></div>
+<div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>本次未能取得筛选结果</h3><p>已填写的筛选条件已保留，可以重试。</p><button type="button" class="btn" data-go="list">重试</button></div>
+</div>
+</div>
+</section>
+
 <section data-screen id="gate" data-no="C4" data-group="资产列表" data-name="未认证：受限引导" data-layout="app" data-who="uncertified" data-nav="assets" data-crumb="业务/可信资产">
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title" data-slot="gate-title">可信资产</h1><p class="page-desc" data-slot="gate-desc">查看本企业已确权的应收账款，从可发行的资产申请代币发行。</p></div></div>
@@ -156,11 +181,12 @@
 <div class="asset-sum"><div><div class="eyebrow">应收账款金额</div><div class="amount-lg"><i data-asset="USD"></i>82,400.00<span class="ccy">USD</span></div>
 <div class="meta"><span>债务人 <b>Demo Motors Trading FZE</b></span><span>到期日 <b><time data-instant="2027-05-15T23:59:59+04:00" datetime="2027-05-15T23:59:59+04:00">2027-05-15 23:59:59</time></b></span></div></div>
 <dl class="status-grid"><div><dt>确权状态</dt><dd><span class="tag ok">已确权</span></dd></div><div><dt>回款状态</dt><dd><span class="tag">未到期</span></dd></div><div><dt>发行状态</dt><dd><span class="tag warn">发行申请中</span></dd></div></dl></div>
-<div class="cond"><i data-ico="info"></i><div>已有发行申请正在处理，可以查看这笔申请的进度。</div><button type="button" class="btn sm" data-module-key="assetApplication0131" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">查看申请</button></div>
+<div class="cond"><i data-ico="info"></i><div>已有发行申请正在处理，点击申请编号查看这笔申请的进度。</div></div>
 </div>
 <div class="card asset-related"><div class="card-head"><h2>关联记录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>发行申请</dt><dd><button type="button" class="btn-link mono" data-module-key="assetApplication0131" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0031</button> <span class="tag warn">待运营审核</span></dd></div>
+<div><dt>申请编号</dt><dd><button type="button" class="btn-link mono" data-module-key="assetApplication0131" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0031</button></dd></div>
+<div><dt>申请状态</dt><dd><span class="tag warn">待运营审核</span></dd></div>
 </dl></div></div>
 <div class="asset-detail" data-asset-detail="RA-DEMO-0131"></div>
 </div>
@@ -173,11 +199,12 @@
 <div class="asset-sum"><div><div class="eyebrow">应收账款金额</div><div class="amount-lg"><i data-asset="USD"></i>24,800.00<span class="ccy">USD</span></div>
 <div class="meta"><span>债务人 <b>Demo Motors Trading FZE</b></span><span>到期日 <b><time data-instant="2027-02-28T23:59:59+04:00" datetime="2027-02-28T23:59:59+04:00">2027-02-28 23:59:59</time></b></span></div></div>
 <dl class="status-grid"><div><dt>确权状态</dt><dd><span class="tag ok">已确权</span></dd></div><div><dt>回款状态</dt><dd><span class="tag">未到期</span></dd></div><div><dt>发行状态</dt><dd><span class="tag danger">已驳回</span></dd></div></dl></div>
-<div class="cond no"><i data-ico="alert"></i><div>发行申请已被驳回，这笔资产不能再次发起。可以查看这笔申请及驳回意见。</div><button type="button" class="btn sm" data-module-key="assetApplication0097" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">查看申请</button></div>
+<div class="cond no"><i data-ico="alert"></i><div>发行申请已被驳回，这笔资产不能再次发起。点击申请编号查看这笔申请及驳回意见。</div></div>
 </div>
 <div class="card asset-related"><div class="card-head"><h2>关联记录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>发行申请</dt><dd><button type="button" class="btn-link mono" data-module-key="assetApplication0097" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0015</button> <span class="tag danger">监管驳回</span></dd></div>
+<div><dt>申请编号</dt><dd><button type="button" class="btn-link mono" data-module-key="assetApplication0097" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0015</button></dd></div>
+<div><dt>申请状态</dt><dd><span class="tag danger">监管驳回</span></dd></div>
 </dl></div></div>
 <div class="asset-detail" data-asset-detail="RA-DEMO-0097"></div>
 </div>
@@ -190,12 +217,13 @@
 <div class="asset-sum"><div><div class="eyebrow">应收账款金额</div><div class="amount-lg"><i data-asset="USD"></i>36,000.00<span class="ccy">USD</span></div>
 <div class="meta"><span>债务人 <b>Demo Buyer B LLC</b></span><span>到期日 <b><time data-instant="2027-01-31T23:59:59+04:00" datetime="2027-01-31T23:59:59+04:00">2027-01-31 23:59:59</time></b></span></div></div>
 <dl class="status-grid"><div><dt>确权状态</dt><dd><span class="tag ok">已确权</span></dd></div><div><dt>回款状态</dt><dd><span class="tag">未到期</span></dd></div><div><dt>发行状态</dt><dd><span class="tag ok">已发行</span></dd></div></dl></div>
-<div class="cond"><i data-ico="info"></i><div>已发行代币，可以进入这枚代币查看它的后续状态。</div><button type="button" class="btn sm" data-module-key="tokenDemo001" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">查看代币</button></div>
+<div class="cond"><i data-ico="info"></i><div>已发行代币，点击代币编号进入这枚代币，查看它的后续状态。</div></div>
 </div>
 <div class="card asset-related"><div class="card-head"><h2>关联记录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>发行申请</dt><dd><button type="button" class="btn-link mono" data-module-key="assetApplication0102" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0019</button> <span class="tag ok">铸造成功</span></dd></div>
-<div><dt>代币</dt><dd><button type="button" class="btn-link mono" data-module-key="tokenDemo001" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">DEMO-TOKEN-001</button></dd></div>
+<div><dt>申请编号</dt><dd><button type="button" class="btn-link mono" data-module-key="assetApplication0102" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0019</button></dd></div>
+<div><dt>申请状态</dt><dd><span class="tag ok">铸造成功</span></dd></div>
+<div><dt>代币编号</dt><dd><button type="button" class="btn-link mono" data-module-key="tokenDemo001" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">DEMO-TOKEN-001</button></dd></div>
 </dl></div></div>
 <div class="asset-detail" data-asset-detail="RA-DEMO-0102"></div>
 </div>
@@ -225,7 +253,8 @@
 </div>
 <div class="card asset-related"><div class="card-head"><h2>关联记录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>发行申请</dt><dd><button type="button" class="btn-link mono" data-module-key="assetApplication0027" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0027</button> <span class="tag warn">发行处理中</span></dd></div>
+<div><dt>申请编号</dt><dd><button type="button" class="btn-link mono" data-module-key="assetApplication0027" data-toast="此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。">IA-DEMO-0027</button></dd></div>
+<div><dt>申请状态</dt><dd><span class="tag warn">发行处理中</span></dd></div>
 </dl></div></div>
 <div class="asset-detail" data-asset-detail="RA-DEMO-0143"></div>
 </div>
@@ -259,7 +288,6 @@
 <script src="../../_shared/asset-filters.js"></script>
 <script>
   TP.pageTitle = '可信资产 · 代币发行平台';
-  TP.demo = {address:'0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC', enterprise:'示例企业 A 有限公司'};
   TP.routes = {assets:'list', gate:'gate'};
   TP.addCopy({
     '监管驳回':'Rejected by regulator','前往资产可信平台：确认':'Open the Asset Trust Platform: confirm',
@@ -280,12 +308,15 @@
     '不能申请发行':'Not eligible to apply','资产已逾期':'The asset is overdue','资产信息不完整':'Asset information is incomplete',
     '仅支持美元计价的资产':'Only USD-denominated assets are supported','暂时无法确认资产状态':'The asset status cannot currently be confirmed',
     '不可发起：非美元计价':'Not eligible: non-USD currency',
-    '已有发行申请正在处理，可以查看这笔申请的进度。':'An issuance application is being processed. You can view its progress.',
-    '查看申请':'View application',
+    '已有发行申请正在处理，点击申请编号查看这笔申请的进度。':'An issuance application is being processed. Select the application ID to view its progress.',
+    '申请编号':'Application ID','代币编号':'Token ID',
     '关联记录':'Related records','发行申请':'Issuance application','待运营审核':'Pending operator review',
-    '发行申请已被驳回，这笔资产不能再次发起。可以查看这笔申请及驳回意见。':'The application was rejected. This asset cannot be used again. You can view the application and the rejection comments.',
-    '已发行代币，可以进入这枚代币查看它的后续状态。':'A token has been issued. Open the token to follow its status.',
-    '查看代币':'View token','铸造成功':'Minted','代币':'Token',
+    '发行申请已被驳回，这笔资产不能再次发起。点击申请编号查看这笔申请及驳回意见。':'The application was rejected. This asset cannot be used again. Select the application ID to view the application and the rejection comments.',
+    '已发行代币，点击代币编号进入这枚代币，查看它的后续状态。':'A token has been issued. Select the token ID to follow its status.',
+    '铸造成功':'Minted',
+    '筛选无结果':'No matching assets','筛选读取失败':'Filter failed','没有符合条件的资产':'No assets match the filters',
+    '可以调整或清除筛选条件后再查询。':'Adjust or clear the filters and search again.','清除筛选':'Clear filters',
+    '本次未能取得筛选结果':'Filter results could not be loaded','已填写的筛选条件已保留，可以重试。':'Your filters are kept. Please try again.',
     '资产详情':'Asset details','无权查看或资产不存在':'No access or the asset does not exist','请从可信资产列表进入本企业的资产。':'Open your company’s assets from the trusted asset list.',
     '返回可信资产':'Back to trusted assets','演示仅提供部分资产的详情画面':'This demo includes detail screens for selected assets only.','材料未能打开':'Document could not be opened','本次未能打开该材料，请重试。资产的其他信息不受影响。':'The document could not be opened. Please try again. Other asset information is not affected.',
     '关闭':'Close','资产列表':'Asset list','默认':'Default','暂无资产（空）':'No assets (empty)','读取失败':'Load failed','未认证：受限引导':'Not certified: restricted',
@@ -293,6 +324,11 @@
   });
   TP.fillAssetDetail();
   TP.fillAssetFilters();
+  /* 筛选结果画面：只展示已填写的条件，不执行查询；读取失败时总数未知，不显示分页。 */
+  ['list-nomatch','list-filter-fail'].forEach(function(id){
+    document.querySelector('#'+id+' .filter-search input').value='RA-DEMO-9999';
+  });
+  document.querySelector('#list-filter-fail .asset-pagination').remove();
   TP.boot('list');
 </script>
 </body></html>
