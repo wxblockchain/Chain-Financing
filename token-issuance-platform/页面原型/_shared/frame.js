@@ -16,6 +16,8 @@
    菜单与演示身份只在 _shared/menu.client.js（企业端 TP.NAV、登录地址 TP.demo.address）与
    menu.admin.js（管理端 TP.NAV_BY[身份]、账号入口 TP.demo.accounts[身份]）维护，模块不再各自复制；
    没有管理端账号时为企业端钱包地址入口。
+   消息入口（M7）：未读数与最近消息预览由 _shared/inbox.js（TP.inbox）提供；画面可用 data-unread="数字" 指定本屏未读数，
+   data-inbox="open|empty|error" 展开预览并呈现对应状态（通常为 data-overlay，底层为所在页面）。
    ========================================================================== */
 (function(){
   var TP = window.TP = window.TP || {};
@@ -140,11 +142,22 @@
       '<button type="button" class="dd-item" role="menuitemradio" aria-checked="'+!en+'" data-lang="zh">'+(!en?TP.icon('check'):'')+'简体中文</button></div></div>';
   }
 
-  function renderTools(sec, open){
+  /* 消息入口：铃铛 + 未读数（0 不显示，超过 99 为 99+）+ 最近消息预览（下拉，点击外部或 Esc 关闭）。 */
+  function inboxEntry(who, sec, screen){
+    var box = TP.inbox, role = box ? box.roleOf(who) : null;
+    var own = screen && screen.dataset.unread!==undefined ? screen.dataset.unread : sec.dataset.unread;
+    var n = own!==undefined ? +own : (role ? box.unread(role) : 0);
+    var shown = n>99 ? '99+' : String(n), state = screen && screen.dataset.inbox, en = TP.language==='en';
+    var label = n ? (en ? 'Notifications, '+shown+' unread' : '消息通知，'+shown+' 条未读') : (en ? 'Notifications' : '消息通知');
+    return '<div class="dd inbox"><button type="button" class="bell dd-btn" aria-expanded="'+(state?'true':'false')+'" aria-label="'+label+'" title="'+label+'">'+
+      TP.icon('bell')+(n?'<span class="badge" aria-hidden="true">'+shown+'</span>':'')+'</button>'+
+      (box ? box.panel(who, state==='open'?'':state, !state) : '')+'</div>';
+  }
+
+  function renderTools(sec, open, screen){
     screenAddr = sec.dataset.address || '';
     var who = sec.dataset.who;
-    var bell = (who==='guest'||who==='none') ? '' :
-      '<button type="button" class="bell" data-acct="msg" aria-label="消息通知，3 条未读">'+TP.icon('bell')+'<span class="badge" aria-hidden="true">3</span></button>';
+    var bell = (who==='guest'||who==='none') ? '' : inboxEntry(who, sec, screen || sec);
     var focus = sec.dataset.layout === 'focus';
     $('#tools').innerHTML = focus ? '' : langEntry() + bell + accountEntry(who, open);
     $('#focusTools').innerHTML = focus ? langEntry() + accountEntry(who, open) : '';
@@ -183,7 +196,7 @@
     renderWho = shown.dataset.who;
     var gi = findNav(gateKey || shown.dataset.nav);
     $$('[data-slot]', shown).forEach(function(el){ if(gi) el.innerHTML = esc(el.dataset.slot==='gate-title' ? gi.label : gi.desc).replace(/Ethereum/g, '<span class="asset-label">'+TP.assetIcon('ETH')+'Ethereum</span>'); });
-    renderNav(shown); renderCrumb(shown); renderTools(shown, sec.hasAttribute('data-dd'));
+    renderNav(shown); renderCrumb(shown); renderTools(shown, sec.hasAttribute('data-dd'), sec);
     if(sec.dataset.showToast) toast(sec.dataset.showToast);
     current = {id:id, base: base ? base.id : null, who: shown.dataset.who, gate:gateKey};
     TP.currentScreen = current;
@@ -195,6 +208,7 @@
       var entry=$('.btn.primary,button[data-go]',sec);if(entry)entry.focus({preventScroll:true});
     }
     if(previous && previous.base && !base && returnFocus && returnFocus.getClientRects().length) returnFocus.focus();
+    if(sec.dataset.inbox){ var first=$('#tools .inbox-panel .msg-item, #tools .inbox-panel .btn'); if(first) first.focus({preventScroll:true}); }
     renderDemo();
     TP.renderDisplay();
     if(inline) window.scrollTo(0,0);
@@ -212,7 +226,6 @@
   }
 
   function go(key){
-    if(key==='msg'){ if(TP.navigate && TP.navigate(key,current)) return; toast('消息通知尚未交付。'); return; }
     if(key==='settings' && !TP.routes.settings){ if(TP.navigate && TP.navigate(key,current)) return; toast(scope()); return; }
     if(key==='logout'){ if(TP.routes.logout) show(TP.routes.logout); else if(TP.navigate && TP.navigate(key,current)) return; toast('已退出登录'); return; }
     var r = routeFor(key);
@@ -245,12 +258,20 @@
       }).join('');
   }
 
+  /* 预览画面（data-inbox）收起预览即回到底层页面。 */
+  function leaveInboxScreen(){
+    var sec = current && document.getElementById(current.id);
+    if(!sec || !sec.dataset.inbox || !current.base) return false;
+    show(current.base); var bell = $('#tools .bell'); if(bell) bell.focus(); return true;
+  }
   function closeMenus(except){
-    var n = 0;
+    var n = 0, inbox = false;
     $$('.dd').forEach(function(d){
       var l = $('.dd-list', d); if(d===except || l.hidden) return;
       l.hidden = true; $('.dd-btn', d).setAttribute('aria-expanded','false'); n++;
+      if(d.classList.contains('inbox')) inbox = true;
     });
+    if(inbox) leaveInboxScreen();
     return n;
   }
 
@@ -270,6 +291,7 @@
 
   document.addEventListener('click', function(e){
     var t = e.target.closest('.dd-item,[data-go],[data-close],[data-nav-key],[data-acct],[data-copy],[data-toast],[data-demo-go],[data-password-toggle],#demoBtn,.dd-btn');
+    if(!t && e.target.closest('.inbox-panel')) return; // 预览内的空白处不收起预览
     var own = t && t.matches('.dd-btn') ? t.parentNode : null;
     closeMenus(own);
     if(!t) return;
@@ -279,9 +301,9 @@
       if(input){input.type=input.type==='password'?'text':'password';TP.refreshPasswordToggles();}
       return;
     }
-    if(t.matches('.dd-btn')){ var l = t.nextElementSibling; l.hidden = !l.hidden; t.setAttribute('aria-expanded', l.hidden?'false':'true'); return; }
+    if(t.matches('.dd-btn')){ var l = t.nextElementSibling; l.hidden = !l.hidden; t.setAttribute('aria-expanded', l.hidden?'false':'true'); if(l.hidden && t.classList.contains('bell')) leaveInboxScreen(); return; }
     if(t.id==='demoBtn'){ demoOpen = !demoOpen; renderDemo(); TP.localize($('#demoPanel')); return; }
-    if(t.dataset.lang){ TP.setLanguage(t.dataset.lang); renderTools(document.getElementById(current.base || current.id), false); TP.renderDisplay(); syncStickyHead(); return; }
+    if(t.dataset.lang){ TP.setLanguage(t.dataset.lang); renderTools(document.getElementById(current.base || current.id), false, document.getElementById(current.id)); TP.renderDisplay(); syncStickyHead(); return; }
     if(t.dataset.demoGo){ show(t.dataset.demoGo); return; }
     if(t.hasAttribute('data-copy')){ copyFullValue(t); return; }
     if(t.dataset.moduleKey && TP.navigate && TP.navigate(t.dataset.moduleKey,current,t.dataset.moduleWho)) return;
@@ -318,7 +340,7 @@
     if(e.target.matches('form[data-static-form]'))e.preventDefault();
   });
 
-  TP.refreshLanguageTools = function(){ if(current) renderTools(document.getElementById(current.base || current.id),false); };
+  TP.refreshLanguageTools = function(){ if(current) renderTools(document.getElementById(current.base || current.id),false,document.getElementById(current.id)); };
 
   /* 列表进入的详情页（三级及以上面包屑）：标题行滚动时吸附在顶栏下方，编号与操作按钮始终可见。
      --sticky-head-h 供详情分区导航与锚点偏移使用；吸附后加底线区分滚动内容。 */

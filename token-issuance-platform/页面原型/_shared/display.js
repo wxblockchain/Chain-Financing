@@ -66,7 +66,7 @@
     '无法删除数币账户':'Cannot delete account','该地址为登录地址，由系统维护，不能删除。':'This is the sign-in address. It is maintained by the system and cannot be deleted.',
     '该账户已被代币 DEMO-TOKEN-001 引用，不能删除；已销毁的代币仍构成引用。':'This account is referenced by token DEMO-TOKEN-001 and cannot be deleted. Burned tokens still count as references.',
     '复制地址':'Copy address','复制登录地址':'Copy sign-in address','退出登录':'Sign out','已退出登录':'Signed out','我的账户':'My account',
-    '消息通知，3 条未读':'Messages, 3 unread','消息通知尚未交付。':'Messages are not available yet.','此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。':'This entry is not included in the single-module file. Open it from index.html in the full prototype.','该入口尚未纳入原型。':'This destination is not included in the prototype.','演示文件，不提供真实文件。':'Demo file. No real file is available.',
+    '此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。':'This entry is not included in the single-module file. Open it from index.html in the full prototype.','该入口尚未纳入原型。':'This destination is not included in the prototype.','演示文件，不提供真实文件。':'Demo file. No real file is available.',
     '需先完成认证':'Verification required','预览：复制完整值':'Preview: copy full value','已复制':'Copied','复制失败，请重试。':'Could not copy. Please try again.',
     '正在保存偏好，请稍候。':'Saving your preference. Please wait.','偏好保存中':'Saving preference',
     '演示：此处离开本平台，前往资产可信平台':'Preview: open the Asset Trust Platform',
@@ -127,8 +127,8 @@
     document.querySelectorAll('[data-instant]').forEach(function(el){
       var parts={};fmt.formatToParts(new Date(el.dataset.instant)).forEach(function(p){parts[p.type]=p.value;});
       var day=parts.year+'-'+parts.month+'-'+parts.day, clock=parts.hour+':'+parts.minute;
-      // data-day 只展示换算后的日期；data-compact 日期 + 副文本时间；默认完整日期时间。
-      el.replaceChildren(document.createTextNode(day+(el.hasAttribute('data-compact')||el.hasAttribute('data-day')?'':' '+clock+':'+parts.second)));
+      // data-day 只展示换算后的日期；data-compact 日期 + 副文本时间；data-minute 日期 + 时分；默认完整日期时间。
+      el.replaceChildren(document.createTextNode(day+(el.hasAttribute('data-compact')||el.hasAttribute('data-day')?'':el.hasAttribute('data-minute')?' '+clock:' '+clock+':'+parts.second)));
       if(el.hasAttribute('data-compact')){var sub=document.createElement('span');sub.className='cell-sub';sub.textContent=clock;el.appendChild(sub);}
     });
     TP.localize();
