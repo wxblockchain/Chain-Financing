@@ -10,7 +10,7 @@
 | 代币发行平台 | [`token-issuance-platform/`](token-issuance-platform/README.md) | 基于已确权的资产信息铸造代币，并将代币发布到借贷平台 |
 | 借贷平台 | [`lending-platform/`](lending-platform/README.md) | 展示已对接的代币资产并完成融资 |
 
-每个平台目录下固定两个子目录：`PRD/` 放本平台的产品需求文档，`页面原型/` 放本平台的页面原型。
+每个平台目录下固定两个子目录：`PRD/` 放本平台的产品需求文档，`页面原型/` 放本平台的页面原型。代币发行平台另有 `Eval/`，放各模块的产品 Eval 设计。
 
 ## 借贷平台入口
 
