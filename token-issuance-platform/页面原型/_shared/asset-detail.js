@@ -15,6 +15,7 @@
   }
   function day(iso){ return '<time data-day data-instant="'+iso+'" datetime="'+iso+'"></time>'; }
   function money(v, ccy){ return '<span class="money"><span class="mono">'+v+'</span><span class="ccy">'+ccy+'</span></span>'; }
+  function upstream(v){ return '<span data-upstream>'+v+'</span>'; }
   function mono(v){ return '<span class="mono">'+v+'</span>'; }
   /* L1 缺失说明上游未提供；L2 缺失弱化为未提供。 */
   function missing(l1){ return l1 ? '<span class="missing">上游未提供</span>' : '<span class="missing soft">未提供</span>'; }
@@ -39,13 +40,13 @@
   var PARTY = {
     A:{name:'示例企业 A 有限公司', en:'Example Enterprise A Ltd.', region:'中国香港', id:'DEMO-1234567', kind:'CR'},
     C:{name:'Demo Trading C Pte. Ltd.', region:'新加坡', id:'DEMO-UEN-202600123', kind:'UEN'},
-    B:{name:'Demo Buyer B LLC', region:'阿联酋', id:'DEMO-TL-889012', kind:'Trade License'},
+    B:{name:'Demo Buyer B LLC', en:'Demo Buyer B Limited Liability Company', region:'阿联酋', id:'DEMO-TL-889012', kind:'Trade License'},
     M:{name:'Demo Motors Trading FZE', region:'阿联酋', id:'DEMO-FZE-55120', kind:'Trade License'},
     E:{name:'Demo Retail E LLC', region:'阿联酋', id:'DEMO-TL-730045', kind:'Trade License'}
   };
   var ASSETS = {
-    'RA-DEMO-0128':{cr:'A', db:'B', amt:'50,000.00', due:'2027-03-31T23:59:59+04:00', no:'0412', rich:true},
-    'RA-DEMO-0131':{cr:'A', db:'M', amt:'82,400.00', due:'2027-05-15T23:59:59+04:00', no:'0436'},
+    'RA-DEMO-0128':{cr:'A', db:'B', amt:'50,000.00', due:'2027-03-31T23:59:59+04:00', no:'0412', rich:true, repaid:'50,000.00', balance:'0.00'},
+    'RA-DEMO-0131':{cr:'A', db:'M', amt:'82,400.00', due:'2027-05-15T23:59:59+04:00', no:'0436', repaid:'82,400.00', balance:'0.00'},
     'RA-DEMO-0102':{cr:'A', db:'B', amt:'36,000.00', due:'2027-01-31T23:59:59+04:00', no:'0371'},
     'RA-DEMO-0097':{cr:'A', db:'M', amt:'24,800.00', due:'2027-02-28T23:59:59+04:00', no:'0359'},
     'RA-DEMO-0115':{cr:'A', db:'B', amt:'18,600.00', due:'2026-10-15T23:59:59+04:00', no:'0233', sparse:true,
@@ -57,6 +58,8 @@
     'RA-DEMO-0166':{cr:'A', db:'E', amt:'45,200.00', due:'2027-05-31T23:59:59+04:00', no:'0518'},
     'RA-DEMO-0171':{cr:'A', db:'M', amt:'63,750.50', due:'2027-07-15T23:59:59+04:00', no:'0526'}
   };
+  // 0128 / 0131 为静态演示：已回款等于应收金额、余额为零，上游仍未结清。
+  // 不据此计算或改变任何状态；M2 仅运营画面另行呈现非阻断预警。
   /* 债务人与其下游客户的交易（演示）：本企业不是交易一方；一笔部分回款，一笔暂无回款。 */
   var DEBTOR_BUYERS = [
     {name:'Demo Auto Retail G LLC', region:'阿联酋', so:'SO-DEMO-B-2026-0815', ordered:'2026-08-20T10:00:00+04:00', amt:'32,000.00',
@@ -68,8 +71,9 @@
 
   function party(title, x){
     return sec(subHead(title)+facts([
-      ['名称', x.en ? '<span class="name-pair"><span class="name-local">'+x.name+'</span><span class="name-en">'+x.en+'</span></span>' : x.name, true],
-      ['注册国家 / 地区', x.region],
+      ['企业名称', upstream(x.name)],
+      ['企业英文名称', x.en ? upstream(x.en) : missing()],
+      ['注册国家 / 地区', upstream(x.region)],
       ['企业登记标识', mono(x.id)+' <span class="faint">'+x.kind+'</span>']
     ]));
   }
@@ -79,8 +83,8 @@
     var receivable = card('应收账款与交易双方','交易双方','',
       facts([
         ['资产编号', '<span class="mono">'+id+'</span>'],
-        ['资产类型', '应收账款'],
-        ['行业大类', '汽车贸易'],
+        ['资产类型', upstream('应收账款')],
+        ['行业大类', upstream('汽车贸易')],
         ['应收账款金额', money(a.amt,ccy)],
         ['币种', TP.currencyLabel(ccy)],
         ['形成日期', day(a.formed||'2026-09-18T10:00:00+04:00')],
@@ -104,7 +108,7 @@
 
     var delivery = card('货物交付','货物交付','',
       facts(sp ? [['交付地点',missing(),true],['交付日期',missing()],['运输单据编号',missing()],['运输单据',missing()],['交付凭证',missing()]] : [
-        ['交付地点', 'Jebel Ali Free Zone, Demo Warehouse W-12', true],
+        ['交付地点', upstream('Jebel Ali Free Zone, Demo Warehouse W-12'), true],
         ['交付日期', day('2026-09-12T16:00:00+04:00')],
         ['运输单据编号', mono('BL-DEMO-'+a.no)],
         ['运输单据', fileRef('BL-DEMO-'+a.no+'.pdf')],
@@ -119,13 +123,13 @@
       table(['销售发票编号','开具日期','#金额','发票文件'], invRows));
 
     var repayFacts = facts([
-      ['累计已回款', money(a.rich?'20,000.00':'0.00', ccy)],
-      ['未回款余额', money(a.rich?'30,000.00':a.amt, ccy)],
+      ['累计已回款', money(a.repaid||(a.rich?'20,000.00':'0.00'), ccy)],
+      ['未回款余额', money(a.balance||(a.rich?'30,000.00':a.amt), ccy)],
       ['结清日期', '<span class="faint">—</span>']
     ],3);
-    var repayRecords = a.rich ?
+    var repayRecords = (a.rich || a.repaid) ?
       subHead('回款记录','1 条')+table(['回款日期','#回款金额','回款流水号','支付凭证编号','支付凭证'],[
-        [day('2026-10-20T15:30:00+04:00'), money('20,000.00','USD'), mono('TXN-DEMO-50021'), mono('PV-DEMO-50021'), fileRef('PV-DEMO-50021.pdf')]
+        [day('2026-10-20T15:30:00+04:00'), money(a.repaid||'20,000.00',ccy), mono('TXN-DEMO-50021'), mono('PV-DEMO-50021'), fileRef('PV-DEMO-50021.pdf')]
       ]) :
       subHead('回款记录')+empty('暂无回款记录');
     var repay = card('回款进度','回款进度','债务人对本笔应收账款的回款', repayFacts+repayRecords);
@@ -169,7 +173,7 @@
     if(a.rich){
       buyers = card('债务人与其下游客户','债务人下游客户','2 笔交易 · 回款不计入本笔应收账款',
         DEBTOR_BUYERS.map(function(t){
-          return sec(subHead(t.name, t.region)+facts([
+          return sec(subHead(upstream(t.name), upstream(t.region))+facts([
             ['销售合同 / 订单编号', mono(t.so)],
             ['订单日期', day(t.ordered)],
             ['订单金额', money(t.amt,'USD')],
@@ -275,6 +279,7 @@
   window.addEventListener('resize',TP.refreshDetailNav);
 
   TP.addCopy({
+    '企业名称':'Company name','企业英文名称':'Company English name',
     '核心信息':'Core information','补充信息':'Supplementary information',
     '债权人与债务人':'Creditor and debtor','债权人与上游供应商，债务人与其下游客户':'Creditor with upstream supplier; debtor with its customers',
     '应收账款与交易双方':'Receivable and parties','交易双方':'Parties','资产编号':'Asset ID','资产类型':'Asset type','应收账款':'Accounts receivable',

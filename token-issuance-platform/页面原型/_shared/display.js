@@ -97,14 +97,14 @@
     root=root||document.body;
     var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT), node;
     while((node=walker.nextNode())){
-      if(node.parentElement.closest('script,style,textarea,[data-instant],[data-zone]'))continue;
+      if(node.parentElement.closest('script,style,textarea,[data-instant],[data-zone],[data-upstream]'))continue;
       if(!originalText.has(node))originalText.set(node,node.nodeValue);
       // data-en 给同字异义的元素（如“启用”操作与“启用”状态）指定本元素英文。
       var text=originalText.get(node), own=node.parentElement.getAttribute('data-en');
       node.nodeValue=TP.language!=='en'?text:(own!==null&&text.trim()?text.replace(text.trim(),own):translated(text));
     }
     [root].concat(Array.from(root.querySelectorAll('*'))).forEach(function(el){
-      if(!el.getAttribute)return;
+      if(!el.getAttribute || el.closest("[data-upstream]"))return;
       var attrs=originalAttrs.get(el)||{};
       ['aria-label','placeholder','title'].forEach(function(attr){
         if(el.hasAttribute(attr)){

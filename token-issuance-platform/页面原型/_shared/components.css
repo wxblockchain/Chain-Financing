@@ -568,12 +568,11 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .detail-nav a[aria-current="location"]{color:var(--accent);font-weight:650}
 .detail-nav a:focus-visible{outline-offset:-2px}
 .detail-nav-sep{flex:none;width:var(--sp-2)}
-/* 中英文名称成对展示：中文界面本地名称在上；英文界面英文名称在上，本地名称弱化。 */
-.name-pair{display:flex;flex-direction:column;gap:2px}
-.name-pair .name-en{font-size:var(--ui-field-label);color:var(--muted)}
-:root[lang="en"] .name-pair{flex-direction:column-reverse}
-:root[lang="en"] .name-pair .name-en{font-size:inherit;color:var(--text)}
-:root[lang="en"] .name-pair .name-local{font-size:var(--ui-field-label);color:var(--muted)}
+/* 上游名称与英文名称是独立字段，按固定顺序展示，不随语言翻转。 */
+.name-pair{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0;max-width:100%}
+.name-pair>[data-name-field]{display:block;min-width:0;max-width:100%}
+.name-pair>[data-name-field]+[data-name-field]{font-size:var(--ui-field-label);color:var(--muted)}
+.name-pair>[data-name-field]+[data-name-field] .name-clip{color:inherit}
 [data-detail-section],.detail-group{scroll-margin-top:calc(var(--app-header-h) + var(--sticky-head-h, 0px) + var(--ctrl-h) + var(--sp-6))}
 /* 缺失值：L1 缺失用警示色说明上游未提供；L2 缺失弱化为未提供。 */
 .missing{color:var(--warn);font-size:var(--fs-13)}

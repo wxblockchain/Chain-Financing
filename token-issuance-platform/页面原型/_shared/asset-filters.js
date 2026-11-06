@@ -1,4 +1,4 @@
-/* M2 filter and pagination presentation. Field scope follows PRD §5.6 / §5.7.
+/* M2 names, filter and pagination presentation. Field scope follows PRD §5.6 / §5.7.
    Static prototype: controls preview layout; no querying, validation, data
    filtering, paging, date interpretation or account persistence is simulated. */
 (function(TP){
@@ -16,24 +16,29 @@
     Array.from(table.tHead.rows[0].cells).forEach(function(heading,index){
       if(!heading.classList.contains('col-name'))return;
       Array.from(table.tBodies[0].rows).forEach(function(row){
-        var cell=row.cells[index], full=cell.textContent.trim();
-        if(!full)return;
-        var chars=typeof Intl.Segmenter==='function' ? Array.from(new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(full),function(item){return item.segment;}) : Array.from(full);
-        var tail=Math.min(8,Math.ceil(chars.length/3));
-        var button=document.createElement('button');
-        button.type='button';button.className='name-clip';button.title=full;
-        button.setAttribute('aria-label',full);button.dataset.toast=full;
-        ['name-prefix','name-suffix'].forEach(function(cls,i){
-          var part=document.createElement('span');part.className=cls;part.setAttribute('aria-hidden','true');
-          part.textContent=(i?chars.slice(-tail):chars.slice(0,-tail)).join('');button.appendChild(part);
+        var cell=row.cells[index];
+        var fields=Array.from(cell.querySelectorAll('[data-name-field]'));
+        if(!fields.length)fields=[cell];
+        fields.forEach(function(field){
+          var full=field.textContent.trim();if(!full)return;
+          var chars=typeof Intl.Segmenter==='function' ? Array.from(new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(full),function(item){return item.segment;}) : Array.from(full);
+          var tail=Math.min(8,Math.ceil(chars.length/3));
+          var button=document.createElement('button');
+          button.type='button';button.className='name-clip';button.title=full;
+          button.setAttribute('data-upstream','');
+          button.setAttribute('aria-label',full);button.dataset.toast=full;
+          ['name-prefix','name-suffix'].forEach(function(cls,i){
+            var part=document.createElement('span');part.className=cls;part.setAttribute('aria-hidden','true');
+            part.textContent=(i?chars.slice(-tail):chars.slice(0,-tail)).join('');button.appendChild(part);
+          });
+          field.replaceChildren(button);
         });
-        cell.replaceChildren(button);
       });
     });
   }
   TP.fillAssetFilters=function(){
+    document.querySelectorAll('table:has([data-name-field])').forEach(fitNames);
     document.querySelectorAll('.asset-list').forEach(function(table){
-      fitNames(table);
       var screen=table.closest('[data-screen]'), card=table.closest('.card');
       var globalScope=table.classList.contains('with-creditor');
       var currencies=Array.from(new Set(Array.from(table.querySelectorAll('.ccy')).map(function(el){return el.textContent;})));
