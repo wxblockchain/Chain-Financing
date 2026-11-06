@@ -1,0 +1,33 @@
+/* 多账户组件样式储备（本期停用）。
+   来源：43ac7a6 的共享组件与 token；不由任何本期页面加载或导出。
+   依赖当前公共 tokens.css / components.css。后续启用前按新的 PRD 复核，并将
+   下面两个账户尺寸 token 合回唯一 token 来源，避免在活动样式中保留两份定义。
+*/
+:root{
+  --account-table-min:960px;
+  --account-actions-w:112px;
+}
+
+/* 企业账户：沿用六列顺序，固定比较尺度和可达的行操作。 */
+.account-table-card{container:account-table / inline-size}
+.tbl.account-list{table-layout:fixed;min-width:var(--account-table-min)}
+.account-list .account-col-label{width:20%}
+.account-list .account-col-network{width:16%}
+.account-list .account-col-address{width:22%}
+.account-list .account-col-source{width:16%}
+.account-list .account-col-created{width:14%}
+.account-list .account-col-actions{width:var(--account-actions-w)}
+.tbl.account-list th{white-space:normal;overflow-wrap:normal}
+.account-list td:first-child{overflow-wrap:anywhere}
+.account-list .account-current td{background:var(--card-2)}
+.account-list .account-current td:first-child{box-shadow:inset 3px 0 var(--accent)}
+.account-list tr:hover td{background:var(--row-hover)}
+.account-list .actlink{min-height:var(--ctrl-h-sm)}
+.account-list .actlink.danger{color:var(--danger)}
+.account-list .actlink.danger:hover{background:var(--danger-bg)}
+.account-table-hint{display:none;padding:var(--sp-2) var(--card-pad);font-size:var(--fs-12);color:var(--muted);background:var(--card-2);border-bottom:1px solid var(--border)}
+@container account-table (max-width:959px){.account-table-hint{display:block}}
+.account-target .addr{flex-wrap:wrap}
+.account-target .addr-pill{flex:none}
+
+.account-choice .c-label{width:26%}.account-choice .c-network{width:22%}.account-choice .c-address{width:auto}
