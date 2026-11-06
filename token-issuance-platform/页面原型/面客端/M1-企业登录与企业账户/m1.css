@@ -1,0 +1,46 @@
+/* M1 presentation only. Shared tokens and readonly fields remain authoritative. */
+
+/* L5 may grow with its error disclosure; it must not set L1/L3/L4's height.
+   The shared grid still measures L3 and preserves focus and hidden semantics. */
+.m1-page .focus-main>#login-sign-fail[hidden]{display:none !important}
+
+/* Inline feedback follows the content's reading edge instead of a wide,
+   centered empty canvas. Every existing message and action stays visible. */
+.m1-page .card>.state,
+.m1-page .profile-section>.state{
+  display:grid;grid-template-columns:var(--ctrl-h) minmax(0,1fr);
+  align-items:start;column-gap:var(--sp-4);row-gap:var(--sp-2);
+  padding:var(--sp-7) var(--card-pad);text-align:left;
+}
+.m1-page .state>.state-ico,
+.m1-page .state>.spinner{grid-column:1;grid-row:1 / span 4;margin:0;justify-self:center}
+.m1-page .state>h3,
+.m1-page .state>p,
+.m1-page .state>.btn,
+.m1-page .state>.state-actions{grid-column:2;justify-self:start;min-width:0;max-width:100%}
+.m1-page .state>h3{max-width:60ch;overflow-wrap:anywhere}
+.m1-page .state>p{max-width:72ch}
+.m1-page .state>.btn{margin-top:var(--sp-2);white-space:normal;height:auto;min-height:var(--ctrl-h)}
+.m1-page .state>.state-actions{justify-content:flex-start;margin-top:var(--sp-2)}
+.m1-page .state-actions>.btn{margin-top:0}
+.m1-page .profile-section>.state{padding:0}
+
+/* Three short fields describe one account. Keep them in one reading cluster
+   at wide container sizes, rather than distributing them across the canvas. */
+@container facts (min-width:900px){
+  .m1-page .account-summary .facts.cols-3{grid-template-columns:repeat(3,max-content);column-gap:var(--sp-9)}
+}
+
+/* Long translated feedback and its action reflow at the narrow breakpoint. */
+@media(max-width:600px){
+  .m1-page .card>.state,
+  .m1-page .profile-section>.state{grid-template-columns:minmax(0,1fr);gap:var(--sp-3)}
+  .m1-page .state>.state-ico,
+  .m1-page .state>.spinner{grid-row:auto;justify-self:start}
+  .m1-page .state>h3,
+  .m1-page .state>p,
+  .m1-page .state>.btn,
+  .m1-page .state>.state-actions{grid-column:1}
+  .m1-page .card>.state{padding:var(--sp-6) var(--sp-4)}
+  .m1-page .profile-section>.state{padding:0}
+}
