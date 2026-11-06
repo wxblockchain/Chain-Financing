@@ -898,9 +898,54 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .review-timeline p,.review-timeline time{display:block;font-size:var(--fs-13);color:var(--muted)}
 .review-timeline time{font-variant-numeric:tabular-nums;margin-top:var(--sp-1)}
 /* 紧凑的只读三阶段进度；不显示处理人员或节点时间，其他流程保持原样。 */
+/* M3a 是当前唯一的 compact 消费者：编号/结果标记 + 标题 + 状态文字，状态不只靠颜色。 */
 .review-timeline.compact{grid-template-columns:repeat(3,minmax(0,1fr));padding:var(--sp-3) var(--card-pad) var(--sp-4);gap:var(--sp-5)}
-.review-timeline.compact li{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);padding-top:var(--sp-2)}
-.review-timeline.compact h3,.review-timeline.compact .tag{margin:0}
+.review-timeline.compact li{display:grid;grid-template-columns:var(--sp-6) minmax(0,1fr);column-gap:var(--sp-3);align-content:start;align-items:center;padding:0;border:0}
+.review-timeline.compact .progress-mark{grid-row:1/3;align-self:start;display:grid;place-items:center;width:var(--sp-6);height:var(--sp-6);margin-top:var(--sp-1);border:1px solid var(--border-strong);border-radius:var(--radius-pill);background:var(--card-2);color:var(--muted);font-size:var(--fs-12);font-variant-numeric:tabular-nums}
+.review-timeline.compact .done .progress-mark{background:var(--ok-bg);border-color:var(--ok-border);color:var(--ok)}
+.review-timeline.compact .current .progress-mark{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.review-timeline.compact .rejected .progress-mark{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
+.review-timeline.compact h3{grid-column:2;margin:0;font-size:var(--fs-13)}
+.review-timeline.compact .tag{grid-column:2;justify-self:start;margin:0;padding:0;border:0;background:transparent;color:var(--muted);font-size:var(--fs-12)}
+.review-timeline.compact .done .tag{color:var(--ok)}
+.review-timeline.compact .current .tag{color:var(--accent)}
+.review-timeline.compact .rejected .tag{color:var(--danger)}
+.issuance-summary .card-head{padding-block:var(--sp-3);flex-wrap:wrap;gap:var(--sp-1) var(--sp-3)}
+.issuance-summary .card-head h2{font-size:var(--fs-14)}
+.issuance-summary .card-head .sub{flex:1;min-width:min(100%,32ch)}
+/* 企业申请的文件分区：同一清单用行分隔，不为每一份文件再套卡片。 */
+.issuance-files .file-list{gap:0}
+.issuance-files .file-row{border:0;border-radius:0;border-top:1px solid var(--row-line);padding:var(--sp-3) 0;align-items:flex-start}
+.issuance-files .file-row:first-child{border-top:0}
+.issuance-files .file-row>svg.i{margin-top:var(--sp-1);color:var(--faint)}
+.issuance-files .file-actions{align-self:center}
+.issuance-files .card-b{padding-top:var(--sp-3);padding-bottom:var(--sp-4)}
+.issuance-files .form-sheet{gap:var(--sp-3)}
+.issuance-files .card-head{padding-block:var(--sp-4);flex-wrap:wrap}
+.issuance-files .form-section-h .sub{margin-left:var(--sp-2);font-size:var(--fs-13);font-weight:400;color:var(--muted)}
+.issuance-files .upload-box>div{flex:1;min-width:min(100%,26ch)}
+.issuance-form .form-section-h{padding-top:var(--sp-4);padding-bottom:var(--sp-2)}
+.issuance-form .form-section .facts{padding-top:0;padding-bottom:var(--sp-3)}
+.issuance-form .form-section .facts>div{padding-block:var(--sp-3)}
+.issuance-form .workflow-context [data-zone]{display:inline}
+/* 完整数值/签名内容使用原生 details：可用键盘展开，保留全部业务值。 */
+.issuance-disclosure>summary{display:flex;align-items:center;gap:var(--sp-2);min-height:var(--ctrl-h-sm);max-width:100%;cursor:pointer;font-size:var(--fs-13);list-style:none;text-align:left}
+.issuance-disclosure>summary::-webkit-details-marker{display:none}
+.issuance-disclosure>summary::after{content:"⌄";flex:none;color:var(--muted)}
+.issuance-disclosure[open]>summary::after{content:"⌃"}
+.issuance-disclosure>summary:hover{color:var(--accent-strong)}
+.signature-disclosure{padding:0 var(--card-pad) var(--sp-4)}
+.signature-disclosure>summary{min-height:var(--ctrl-h)}
+.signature-disclosure>.facts{padding:0;border-top:1px solid var(--row-line)}
+.issuance-screen .money .mono{font-family:var(--sans);font-variant-numeric:tabular-nums}
+.issuance-screen [data-zone]{font-family:var(--sans)}
+.issuance-list .c-app{width:19%}.issuance-list .c-asset{width:18%}.issuance-list .c-amount{width:19%}.issuance-list .c-time{width:18%}.issuance-list .c-status{width:auto}
+.issuance-list .issuance-disclosure>summary{justify-content:flex-end;font-size:var(--fs-12)}
+/* 桌面评审入口移入侧栏空白区域，避免遮挡文件移除、下载和吸底主操作。 */
+@media(min-width:1101px){
+  .issuance-catalog.demo-btn{left:var(--sp-4);right:auto;max-width:calc(var(--sidebar-w) - var(--sp-7));font-size:var(--fs-11);box-shadow:none}
+  .issuance-catalog.demo-panel{left:var(--sp-4);right:auto}
+}
 /* 时间线下方的审核意见、审核人：以轻分隔线承接时间线，与时间线同一左缘。 */
 .review-timeline+.facts-region{margin-inline:var(--card-pad);border-top:1px solid var(--row-line)}
 .review-timeline+.facts-region>.facts{padding:0 0 var(--sp-2)}
