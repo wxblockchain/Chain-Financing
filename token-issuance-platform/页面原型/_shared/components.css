@@ -437,16 +437,17 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .form-sheet{max-width:100%;display:flex;flex-direction:column;gap:var(--sp-5)}
 .form-sheet>.card{margin:0}
 .form-sheet .card-b{display:flex;flex-direction:column;gap:var(--sp-5)}
+/* 机构列表：编号、名称、类型、邮箱、机构状态、账号状态、添加时间、最近登录、操作。 */
 .tbl.reg-list{table-layout:fixed}
 .tbl.reg-list th,.tbl.reg-list td{white-space:normal;overflow-wrap:anywhere;padding-inline:var(--sp-2)}
-.tbl.reg-list th:first-child,.tbl.reg-list td:first-child{padding-left:var(--card-pad);width:16%}
-.tbl.reg-list th:nth-child(2){width:12%}
-.tbl.reg-list th:nth-child(3){width:22%}
-.tbl.reg-list th:nth-child(4){width:8%}
-.tbl.reg-list th:nth-child(5){width:14%}
-.tbl.reg-list th:nth-child(6),.tbl.reg-list th:nth-child(7){width:10%}
+.tbl.reg-list th:first-child,.tbl.reg-list td:first-child{padding-left:var(--card-pad);width:13%}
+.tbl.reg-list th:nth-child(2){width:14%}
+.tbl.reg-list th:nth-child(3){width:11%}
+.tbl.reg-list th:nth-child(4){width:17%}
+.tbl.reg-list th:nth-child(5){width:8%}
+.tbl.reg-list th:nth-child(6),.tbl.reg-list th:nth-child(7),.tbl.reg-list th:nth-child(8){width:10%}
 .tbl.reg-list .tag{white-space:normal}
-.tbl.reg-list .col-act{width:8%;white-space:nowrap;padding-right:var(--card-pad)}
+.tbl.reg-list .col-act{width:7%;white-space:nowrap;padding-right:var(--card-pad)}
 @media(max-width:600px){.form-grid{grid-template-columns:minmax(0,1fr)}.file-row{flex-wrap:wrap}.file-row>.file-actions{width:100%;justify-content:flex-start}}
 .preference-row{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-5)}
 .preference-row>div{flex:1;min-width:0}

@@ -4,6 +4,9 @@ TP.registerModule({
   id:'adminReview', end:'admin', file:'发行审核.html',
   variants:['opsnew', 'regoff', 'regnew'],
   routes:{
+    tasks:{ops:"task-list-ops",opsnew:"task-list-ops",reg:"task-list",regoff:"task-list",regnew:"task-list"},
+    institutionApplication:{reg:"task-application",regoff:"task-disabled",regnew:"task-application"},
+    institutionApplicationMinted:{reg:"task-token",regoff:"task-token",regnew:"task-token"},
     review:{ops:'o-list-unassigned', opsnew:'o-list-unassigned'},
     reviewApplication:{ops:'o-wait-ops', opsnew:'o-wait-ops'},
     reviewApplicationMinted:{ops:'o-success', opsnew:'o-success'}
