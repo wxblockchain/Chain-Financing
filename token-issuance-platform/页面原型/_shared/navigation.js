@@ -66,7 +66,8 @@
       TP.initialNavigationOptions.base=base.id;
     }
     var gate=params.get('previewGate');
-    if(target && (target.id===TP.routes.gate || (base && base.id===TP.routes.gate)) &&
+    var gates=[TP.routes.gate].concat(Object.values(TP.routes.gateByWho || {}));
+    if(target && (gates.indexOf(target.id)!==-1 || (base && gates.indexOf(base.id)!==-1)) &&
        TP.NAV.some(function(g){return g.items.some(function(it){return it.key===gate;});})) TP.initialNavigationOptions.gate=gate;
   };
 

@@ -12,7 +12,7 @@
       {key:'burn',   label:'销毁申请', icon:'burn',  biz:true, desc:'查看销毁申请的审核进度与解除监管进度。'}
     ]},
     {group:'用户中心', items:[
-      {key:'accounts', label:'企业账户', icon:'wallet', biz:true, desc:'查看本企业当前登录地址；发行申请自动使用该地址接收代币。'},
+      {key:'accounts', label:'企业账户', icon:'wallet', biz:true, desc:'查看本企业当前登录地址。'},
       {key:'org',      label:'企业信息', icon:'org'},
       {key:'me',       label:'用户信息', icon:'user'}
     ]}

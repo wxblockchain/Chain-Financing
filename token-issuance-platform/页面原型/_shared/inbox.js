@@ -160,8 +160,8 @@
         ref:[['销毁申请编号','BA-DEMO-0024'],['资产编号','RA-DEMO-0201']], go:{key:'burnApplication0024'}},
       {id:'c13', cat:'compliance', at:'2026-10-20T02:00:00Z', read:true,
         t:['认证状态已变更','Verification status changed'],
-        b:['你的认证状态已变更，代币发行等业务暂不可用。你仍可查看用户信息、企业信息和消息。请前往资产可信平台查看当前认证状态。',
-           'Your verification status has changed. Token issuance and other business actions are temporarily unavailable. You can still view your user information, company information and messages. Visit the Asset Trust Platform to check your current verification status.'],
+        b:['你的认证状态已变更，需要企业认证的业务暂不可用。你仍可查看用户信息、企业信息和消息。请前往资产可信平台查看当前认证状态。',
+           'Your verification status has changed. Business actions that require company verification are temporarily unavailable. You can still view your user information, company information and messages. Visit the Asset Trust Platform to check your current verification status.'],
         go:{key:'me', page:'前往用户信息'}},
       Object.assign(issueC01('c14','IA-DEMO-0008','RA-DEMO-0064','2026-05-12T03:00:20Z',null,true), {denied:true})
     ]
@@ -212,8 +212,8 @@
   function screens(who){ return who==='uncertified' ? {list:'u-list', prefix:'u-'} : {list:LIST[BY_WHO[who]], prefix:'m-'}; }
 
   /* 最近消息预览：最近 10 条（已读、未读都包括）；没有消息、读取失败各一种状态；不提供全部已读。 */
-  function panel(who, state, hidden){
-    var role = BY_WHO[who], rows = (DATA[role]||[]).slice(0,10), sc = screens(who), list = sc.list;
+  function panel(who, state, hidden, opts){
+    var role = BY_WHO[who], rows = (DATA[role]||[]).slice(0,10), sc = screens(who), list = opts && opts.omitList ? null : sc.list;
     var inner;
     if(state==='error'){
       inner = '<div class="state err inbox-state" role="alert"><span class="state-ico">'+TP.icon('alert')+'</span><h3>最近消息读取失败</h3><p>暂时无法读取，请稍后重试。</p>'+

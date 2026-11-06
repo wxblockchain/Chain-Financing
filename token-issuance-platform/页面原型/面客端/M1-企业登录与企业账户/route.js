@@ -8,6 +8,6 @@ TP.registerModule({
     org:{certified:'org', uncertified:'org-uncert', noent:'org-noent'},
     me:{certified:'me', uncertified:'me-uncert', noent:'me-noent'},
     logout:{certified:'login', uncertified:'login', noent:'login'},
-    certify:{screens:{uncertified:'leave', noent:'leave'}, bases:{uncertified:'org-uncert', noent:'org-noent'}}
+    certify:{screens:{uncertified:'leave', noent:'leave'}, bases:{uncertified:'org-uncert', noent:'acc-noent'}}
   }
 });

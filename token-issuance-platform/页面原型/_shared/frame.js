@@ -146,18 +146,20 @@
   function inboxEntry(who, sec, screen){
     var box = TP.inbox, role = box ? box.roleOf(who) : null;
     var own = screen && screen.dataset.unread!==undefined ? screen.dataset.unread : sec.dataset.unread;
-    var n = own!==undefined ? +own : (role ? box.unread(role) : 0);
+    var preset = TP.previewSets && TP.previewSets[sec.dataset.previewSet];
+    var empty = preset && preset.inbox==='empty';
+    var n = empty ? 0 : own!==undefined ? +own : (role ? box.unread(role) : 0);
     var shown = n>99 ? '99+' : String(n), state = screen && screen.dataset.inbox, en = TP.language==='en';
     var label = n ? (en ? 'Notifications, '+shown+' unread' : '消息通知，'+shown+' 条未读') : (en ? 'Notifications' : '消息通知');
     return '<div class="dd inbox"><button type="button" class="bell dd-btn" aria-expanded="'+(state?'true':'false')+'" aria-label="'+label+'" title="'+label+'">'+
       TP.icon('bell')+(n?'<span class="badge" aria-hidden="true">'+shown+'</span>':'')+'</button>'+
-      (box ? box.panel(who, state==='open'?'':state, !state) : '')+'</div>';
+      (box ? box.panel(who, empty?'empty':state==='open'?'':state, !state, {omitList:empty}) : '')+'</div>';
   }
 
   function renderTools(sec, open, screen){
     screenAddr = sec.dataset.address || '';
     var who = sec.dataset.who;
-    var bell = (who==='guest'||who==='none') ? '' : inboxEntry(who, sec, screen || sec);
+    var bell = (who==='guest'||who==='none'||who==='noent') ? '' : inboxEntry(who, sec, screen || sec);
     var focus = sec.dataset.layout === 'focus';
     $('#tools').innerHTML = focus ? '' : langEntry() + bell + accountEntry(who, open);
     $('#focusTools').innerHTML = focus ? langEntry() + accountEntry(who, open) : '';
@@ -219,7 +221,14 @@
 
   function routeFor(key){
     var who = current && current.who, r = TP.routes[key], it = findNav(key);
-    if(it && it.biz && locked(who)) return {id:TP.routes.gate, gate:key};
+    if(it && it.biz && locked(who)) return {id:(TP.routes.gateByWho && TP.routes.gateByWho[who]) || TP.routes.gate, gate:key};
+    // Optional static view-set routes keep a demonstration variant on its own screens.
+    var sec = current && document.getElementById(current.base || current.id);
+    var preset = sec && TP.previewSets && TP.previewSets[sec.dataset.previewSet];
+    if(preset){
+      if(preset.routes[key]) return {id:preset.routes[key]};
+      if(preset.localOnly) return {scope:true};
+    }
     if(!r) return null;
     if(typeof r === 'string') return {id:r};
     return {id: r[who] || r.certified};
@@ -229,6 +238,7 @@
     if(key==='settings' && !TP.routes.settings){ if(TP.navigate && TP.navigate(key,current)) return; toast(scope()); return; }
     if(key==='logout'){ if(TP.routes.logout) show(TP.routes.logout); else if(TP.navigate && TP.navigate(key,current)) return; toast('已退出登录'); return; }
     var r = routeFor(key);
+    if(r && r.scope){toast(scope()); return;}
     if(!r || !r.id){ if(TP.navigate && TP.navigate(key,current)) return; toast(scope()); return; }
     show(r.id, {gate:r.gate});
   }
