@@ -897,9 +897,10 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .review-timeline .tag{margin-bottom:var(--sp-2);white-space:normal}
 .review-timeline p,.review-timeline time{display:block;font-size:var(--fs-13);color:var(--muted)}
 .review-timeline time{font-variant-numeric:tabular-nums;margin-top:var(--sp-1)}
-/* 紧凑的只读三阶段进度；不显示处理人员或节点时间，其他流程保持原样。 */
-/* M3a 是当前唯一的 compact 消费者：编号/结果标记 + 标题 + 状态文字，状态不只靠颜色。 */
+/* 紧凑的只读进度；默认三阶段，four-stage 为运营四阶段。 */
+/* 编号/结果标记 + 标题 + 状态文字，不显示操作人或时间；状态不只靠颜色。 */
 .review-timeline.compact{grid-template-columns:repeat(3,minmax(0,1fr));padding:var(--sp-3) var(--card-pad) var(--sp-4);gap:var(--sp-5)}
+.review-timeline.compact.four-stage{grid-template-columns:repeat(4,minmax(0,1fr))}
 .review-timeline.compact li{display:grid;grid-template-columns:var(--sp-6) minmax(0,1fr);column-gap:var(--sp-3);align-content:start;align-items:center;padding:0;border:0}
 .review-timeline.compact .progress-mark{grid-row:1/3;align-self:start;display:grid;place-items:center;width:var(--sp-6);height:var(--sp-6);margin-top:var(--sp-1);border:1px solid var(--border-strong);border-radius:var(--radius-pill);background:var(--card-2);color:var(--muted);font-size:var(--fs-12);font-variant-numeric:tabular-nums}
 .review-timeline.compact .done .progress-mark{background:var(--ok-bg);border-color:var(--ok-border);color:var(--ok)}
@@ -910,9 +911,26 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .review-timeline.compact .done .tag{color:var(--ok)}
 .review-timeline.compact .current .tag{color:var(--accent)}
 .review-timeline.compact .rejected .tag{color:var(--danger)}
-.issuance-summary .card-head{padding-block:var(--sp-3);flex-wrap:wrap;gap:var(--sp-1) var(--sp-3)}
-.issuance-summary .card-head h2{font-size:var(--fs-14)}
+.issuance-summary .card-head,.progress-summary .card-head{padding-block:var(--sp-3);flex-wrap:wrap;gap:var(--sp-1) var(--sp-3)}
+.issuance-summary .card-head h2,.progress-summary .card-head h2{font-size:var(--fs-14)}
 .issuance-summary .card-head .sub{flex:1;min-width:min(100%,32ch)}
+/* 详情底部操作历史：只承载已发生事实，角色/账号与带时区时间位于次行。 */
+.operation-log{list-style:none;margin:0;padding:var(--sp-5) var(--card-pad)}
+.operation-log>li{position:relative;min-width:0;padding:0 0 var(--sp-6) var(--sp-7);isolation:isolate}
+.operation-log>li:last-child{padding-bottom:0}
+.operation-log>li::before{content:"";position:absolute;left:var(--sp-2);top:var(--sp-3);bottom:0;width:1px;background:var(--border);z-index:-1}
+.operation-log>li:last-child::before{content:none}
+.operation-log>li::after{content:"";position:absolute;left:var(--sp-1);top:var(--sp-2);width:var(--sp-2);height:var(--sp-2);border-radius:var(--radius-pill);background:var(--accent);box-shadow:0 0 0 var(--sp-1) var(--card)}
+.operation-log>li.failed::after{background:var(--danger)}
+.operation-heading{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2) var(--sp-3)}
+.operation-heading h3{margin:0;font-size:var(--fs-14);font-weight:600}
+.operation-heading .tag{white-space:normal}
+.operation-meta{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-6);margin-top:var(--sp-2);font-size:var(--fs-13);color:var(--muted);overflow-wrap:anywhere}
+.operation-time{font-variant-numeric:tabular-nums}
+.operation-time [data-zone]{display:inline}
+.operation-detail{margin-top:var(--sp-3);padding:var(--sp-3) var(--sp-4);border-radius:var(--radius-xs);background:var(--card-2);overflow-wrap:anywhere}
+.operation-detail h4{margin:0 0 var(--sp-1);font-size:var(--fs-13);color:var(--muted);font-weight:500}
+.operation-detail p{margin:0;font-size:var(--fs-14)}
 /* 企业申请的文件分区：同一清单用行分隔，不为每一份文件再套卡片。 */
 .issuance-files .file-list{gap:0}
 .issuance-files .file-row{border:0;border-radius:0;border-top:1px solid var(--row-line);padding:var(--sp-3) 0;align-items:flex-start}
