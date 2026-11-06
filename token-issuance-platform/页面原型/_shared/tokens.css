@@ -77,6 +77,14 @@
   --form-sheet-max:1120px; /* M5 长表单的阅读宽度 */
   --detail-sheet-max:1360px; /* M5 机构详情与账户资料的阅读宽度 */
   --institution-table-min:1120px; /* 九列机构列表保留邮箱与状态的阅读空间 */
+  --asset-table-min:960px; /* M2：更窄时在表内滚动，保留编号和操作 */
+  --asset-col-id:136px;
+  --asset-col-value:120px;
+  --asset-col-due:104px;
+  --asset-col-repayment:112px;
+  --asset-col-status:144px;
+  --asset-col-actions:152px;
+  --asset-col-readonly:80px;
 
   /* —— 文字角色 —— */
   --ui-page-title:var(--fs-24);

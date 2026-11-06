@@ -577,17 +577,30 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .tbl .col-name{min-width:120px}
 .tbl td>.tag{white-space:normal}
 .tbl .num{text-align:right;white-space:nowrap}
+/* 固定编号、数值与状态的阅读空间，名称列平分余量；按表格实际宽度加宽。 */
+.tablewrap:has(>.asset-list){container:asset-table / inline-size}
+.asset-list{min-width:var(--asset-table-min)}
 .asset-list:has(colgroup){table-layout:fixed}
-.asset-list .asset-col-id{width:14%}.asset-list .asset-col-debtor{width:20%}.asset-list .asset-col-amount{width:13%}
-.asset-list .asset-col-due{width:12%}.asset-list .asset-col-repayment{width:13%}.asset-list .asset-col-status{width:15%}.asset-list .asset-col-actions{width:13%}
-.asset-list.with-creditor .asset-col-id{width:13%}.asset-list.with-creditor .asset-col-name{width:16%}
-.asset-list.with-creditor .asset-col-debtor{width:16%}.asset-list.with-creditor .asset-col-amount{width:12%}
-.asset-list.with-creditor .asset-col-due{width:11%}.asset-list.with-creditor .asset-col-repayment{width:12%}.asset-list.with-creditor .asset-col-status{width:13%}
-.asset-list.with-creditor .asset-col-actions{width:7%}
+.asset-list .asset-col-id{width:var(--asset-col-id)}
+.asset-list .asset-col-amount{width:var(--asset-col-value)}
+.asset-list .asset-col-due{width:var(--asset-col-due)}
+.asset-list .asset-col-repayment{width:var(--asset-col-repayment)}
+.asset-list .asset-col-status{width:var(--asset-col-status)}
+.asset-list .asset-col-actions{width:var(--asset-col-actions)}
+.asset-list:is(.with-creditor,.readonly) .asset-col-actions{width:var(--asset-col-readonly)}
+@container asset-table (min-width:1100px){
+  .asset-list .asset-col-id{width:calc(var(--asset-col-id) + var(--sp-2))}
+  .asset-list .asset-col-amount{width:calc(var(--asset-col-value) + var(--sp-2))}
+  .asset-list .asset-col-due{width:calc(var(--asset-col-due) + var(--sp-2))}
+  .asset-list .asset-col-repayment{width:calc(var(--asset-col-repayment) + var(--sp-7))}
+  .asset-list .asset-col-status{width:calc(var(--asset-col-status) + var(--sp-6))}
+  .asset-list .asset-col-actions{width:calc(var(--asset-col-actions) + var(--sp-4))}
+  .asset-list:is(.with-creditor,.readonly) .asset-col-actions{width:var(--asset-col-readonly)}
+}
 .asset-list :is(th,td){padding-inline:var(--sp-2);overflow-wrap:normal}
 .asset-list thead th{white-space:normal}
-.asset-list :is(th,td):first-child{padding-left:var(--sp-4)}
-.asset-list :is(th,td):last-child{padding-right:var(--sp-4)}
+.asset-list :is(th,td):first-child{padding-left:var(--card-pad)}
+.asset-list :is(th,td):last-child{padding-right:var(--card-pad)}
 .asset-list td:first-child{white-space:nowrap}
 /* 资产编号与“查看”打开同一详情：等宽编号作为主链接，不加内边距以保持列对齐。 */
 .asset-list .asset-id{font-weight:500;white-space:nowrap}
@@ -601,6 +614,20 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .asset-list .col-act{width:84px}
 .asset-list:has(colgroup) .col-act{width:auto}
 .asset-list .tag{max-width:100%;white-space:normal;margin-top:0}
+@container asset-table (min-width:1100px){.asset-list td>.tag{white-space:nowrap}}
+/* 数据质量预警为文字提示，与表示业务状态的底色标签区分。 */
+.asset-list .tag[data-amount-warning]{display:inline-flex;align-items:center;gap:var(--sp-1);padding:0;border:0;background:transparent;line-height:1.6}
+.asset-list [data-amount-warning] .i{width:var(--sp-3);height:var(--sp-3);flex:none}
+.company-list{table-layout:fixed;min-width:var(--asset-table-min)}
+.company-list col:nth-child(2){width:12%}
+.company-list col:nth-child(3){width:19%}.company-list col:nth-child(4){width:19%}
+.company-list col:nth-child(5){width:15%}
+.company-list col:nth-child(6){width:calc(var(--sp-7)*2)}.company-list col:nth-child(7){width:var(--asset-col-readonly)}
+.company-list thead th{white-space:normal}
+.company-list :is(th,td){padding-inline:var(--sp-2)}
+.company-list :is(th,td):first-child{padding-left:var(--card-pad)}
+.company-list :is(th,td):last-child{padding-right:var(--card-pad)}
+.company-list .col-act{width:auto}
 /* 分区标签是锚点导航；所有信息始终在同一页面，正常上下滚动。 */
 .detail-nav{position:sticky;top:calc(var(--app-header-h) + var(--sticky-head-h, 0px));z-index:calc(var(--z-sticky) - 21);display:flex;gap:var(--sp-6);max-width:100%;overflow-x:auto;
   padding:0;margin-block:var(--sp-4) var(--sp-6);background:var(--bg);border:0;border-bottom:1px solid var(--border);border-radius:0}
@@ -613,7 +640,7 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 /* 上游名称与英文名称是独立字段，按固定顺序展示，不随语言翻转。 */
 .name-pair{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0;max-width:100%}
 .name-pair>[data-name-field]{display:block;min-width:0;max-width:100%}
-.name-pair>[data-name-field]+[data-name-field]{font-size:var(--ui-field-label);color:var(--muted)}
+.name-pair>[data-name-field]+[data-name-field]{font-size:var(--fs-12);color:var(--muted)}
 .name-pair>[data-name-field]+[data-name-field] .name-clip{color:inherit}
 [data-detail-section],.detail-group{scroll-margin-top:calc(var(--app-header-h) + var(--sticky-head-h, 0px) + var(--ctrl-h) + var(--sp-6))}
 /* 缺失值：L1 缺失用警示色说明上游未提供；L2 缺失弱化为未提供。 */
@@ -668,6 +695,17 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .card-sec+.card-sec{border-top:1px solid var(--border)}
 .card-sec .facts{padding-top:0}
 .asset-detail{margin-top:var(--sp-4)}
+/* 交易双方保留各自名称字段；宽屏并排对照，短字段成对、长名称跨行。 */
+.asset-detail{container:asset-content / inline-size}
+.party-grid{border-top:1px solid var(--border)}
+.party-panel{min-width:0}
+.party-panel+.party-panel{border-top:1px solid var(--border)}
+.party-panel .sub-h{margin:0;padding-top:var(--sp-5)}
+.party-panel .facts{padding-bottom:var(--sp-3)}
+@container asset-content (min-width:900px){
+  .party-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .party-panel+.party-panel{border-top:0;border-left:1px solid var(--border)}
+}
 .sub-empty{padding:0 var(--card-pad) var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
 .page-desc [data-zone]{display:inline;font-family:var(--mono);font-size:var(--fs-13)}
 /* Asset details reuse the shared facts layout; record tables remain inset surfaces. */

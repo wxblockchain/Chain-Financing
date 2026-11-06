@@ -20,7 +20,7 @@
   /* L1 缺失说明上游未提供；L2 缺失弱化为未提供。 */
   function missing(l1){ return l1 ? '<span class="missing">上游未提供</span>' : '<span class="missing soft">未提供</span>'; }
   function facts(rows, columns){
-    return '<div class="facts-region"><dl class="facts'+(columns===3?' cols-3':'')+'">'+rows.map(function(r){ return '<div'+(r[2]?' class="wide"':'')+'><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>'; }).join('')+'</dl></div>';
+    return '<div class="facts-region"><dl class="facts'+(columns===3?' cols-3':columns===2?' cols-2':'')+'">'+rows.map(function(r){ return '<div'+(r[2]?' class="wide"':'')+'><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>'; }).join('')+'</dl></div>';
   }
   function table(cols, rows){
     return '<div class="tablewrap detail-table"><table class="tbl auto"><thead><tr>'+cols.map(function(c){ return c.charAt(0)==='#' ? '<th class="num">'+c.slice(1)+'</th>' : '<th>'+c+'</th>'; }).join('')+'</tr></thead><tbody>'+
@@ -70,12 +70,12 @@
   ];
 
   function party(title, x){
-    return sec(subHead(title)+facts([
-      ['企业名称', upstream(x.name)],
-      ['企业英文名称', x.en ? upstream(x.en) : missing()],
+    return '<section class="party-panel"><h4 class="sub-h">'+title+'</h4>'+facts([
+      ['企业名称', upstream(x.name), true],
+      ['企业英文名称', x.en ? upstream(x.en) : missing(), true],
       ['注册国家 / 地区', upstream(x.region)],
       ['企业登记标识', mono(x.id)+' <span class="faint">'+x.kind+'</span>']
-    ]));
+    ],2)+'</section>';
   }
 
   function core(id, a, ccy){
@@ -91,7 +91,7 @@
         ['到期日', '<time data-instant="'+a.due+'" datetime="'+a.due+'"></time>'],
         ['确权日期', sp ? missing(true) : day('2026-09-25T14:20:00+04:00')],
         ['确权凭证', sp ? missing(true) : fileRef('CC-'+id+'.pdf'), true]
-      ],3) + party('债权人', PARTY[a.cr]) + party('债务人', PARTY[a.db]));
+      ],3) + '<div class="party-grid">'+party('债权人', PARTY[a.cr]) + party('债务人', PARTY[a.db])+'</div>');
 
     var goods = sp ? sec(subHead('标的物明细')+empty('未提供')) :
       sec(subHead('标的物明细','2 项')+table(['名称','型号规格','#数量','唯一识别码'],[
