@@ -84,6 +84,7 @@
   };
   /* 模块追加本模块文案的英文；页面标题取 TP.pageTitle（中文原文），英文同样查本表。 */
   TP.addCopy=function(map){Object.keys(map).forEach(function(k){EN[k]=map[k];});};
+  TP.addCopy({"查看本企业当前登录地址；发行申请自动使用该地址接收代币。": "View your company’s current sign-in address. New issuance applications automatically use it to receive tokens."});
   var originalText=new WeakMap(), originalAttrs=new WeakMap();
   TP.language='en'; TP.zone='UTC';
   function translated(value){
