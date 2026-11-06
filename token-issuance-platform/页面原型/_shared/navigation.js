@@ -122,7 +122,7 @@
     {end:'admin', label:'管理端', items:[
       {who:'none', label:'未登录', key:'signIn'},
       {who:'ops', label:'运营', key:'review'},
-      {who:'reg', label:'监管机构', key:'review'}
+      {who:'reg', label:'机构', key:'tasks'}
     ]}
   ];
   var BASE_WHO = {opsnew:'ops', regoff:'reg', regnew:'reg', guest:'none'};

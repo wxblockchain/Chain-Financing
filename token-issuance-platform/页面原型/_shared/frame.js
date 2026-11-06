@@ -112,7 +112,7 @@
   function adminEntry(acc, open){
     var menu = '<div class="dd-list admin" role="menu"'+(open?'':' hidden')+'>'+
       '<div class="dd-who"><div class="cell-main">'+esc(acc.name)+'</div><div class="cell-sub">'+esc(acc.email)+'</div>'+
-      '<div class="dd-role"><span class="tag accent">'+esc(acc.role)+'</span>'+(acc.org?'<span class="cell-sub">'+esc(acc.org)+'</span>':'')+'</div></div>'+
+      '<div class="dd-role"><span class="tag accent">'+esc(acc.role)+'</span>'+(acc.org?'<span class="cell-sub">'+esc(acc.org)+'</span>':'')+(acc.type?'<span class="cell-sub">'+esc(acc.type)+'</span>':'')+'</div></div>'+
       (acc.notice?'<div class="dd-notice">'+esc(acc.notice)+'</div>':'')+
       '<button type="button" class="dd-item" role="menuitem" data-acct="settings">'+TP.icon('user')+'账户设置</button>'+
       '<button type="button" class="dd-item" role="menuitem" data-acct="logout">'+TP.icon('out')+'退出登录</button></div>';

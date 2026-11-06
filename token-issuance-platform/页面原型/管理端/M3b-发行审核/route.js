@@ -4,8 +4,8 @@ TP.registerModule({
   id:'adminReview', end:'admin', file:'发行审核.html',
   variants:['opsnew', 'regoff', 'regnew'],
   routes:{
-    review:{ops:'o-list', opsnew:'o-list', reg:'r-list', regoff:'r-list', regnew:'r-list'},
-    reviewApplication:{ops:'o-wait-ops', opsnew:'o-wait-ops', reg:'r-wait-ops', regoff:'r-wait-ops', regnew:'r-wait-ops'},
-    reviewApplicationMinted:{ops:'o-success', opsnew:'o-success', reg:'r-success', regoff:'r-success', regnew:'r-success'}
+    review:{ops:'o-list-unassigned', opsnew:'o-list-unassigned'},
+    reviewApplication:{ops:'o-wait-ops', opsnew:'o-wait-ops'},
+    reviewApplicationMinted:{ops:'o-success', opsnew:'o-success'}
   }
 });
