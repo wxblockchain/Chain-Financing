@@ -859,6 +859,10 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .review-timeline .tag{margin-bottom:var(--sp-2);white-space:normal}
 .review-timeline p,.review-timeline time{display:block;font-size:var(--fs-13);color:var(--muted)}
 .review-timeline time{font-variant-numeric:tabular-nums;margin-top:var(--sp-1)}
+/* 紧凑的只读三阶段进度；不显示处理人员或节点时间，其他流程保持原样。 */
+.review-timeline.compact{grid-template-columns:repeat(3,minmax(0,1fr));padding:var(--sp-3) var(--card-pad) var(--sp-4);gap:var(--sp-5)}
+.review-timeline.compact li{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);padding-top:var(--sp-2)}
+.review-timeline.compact h3,.review-timeline.compact .tag{margin:0}
 /* 时间线下方的审核意见、审核人：以轻分隔线承接时间线，与时间线同一左缘。 */
 .review-timeline+.facts-region{margin-inline:var(--card-pad);border-top:1px solid var(--row-line)}
 .review-timeline+.facts-region>.facts{padding:0 0 var(--sp-2)}
