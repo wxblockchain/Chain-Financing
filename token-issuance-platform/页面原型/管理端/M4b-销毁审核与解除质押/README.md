@@ -1,46 +1,55 @@
-# M4b · 销毁审核与代币台账
+# M4b · 销毁记录、解除监管与代币台账
 
-2026-11-06 · existing-system adaptation / console · 中文与 English。画面中的机构、企业、邮箱、编号、文件和时间均为演示数据。
+2026-11-06 · existing-system adaptation / console · 中文 / English。依据仓库 PRD `4590917` 的 M4b 四册，包含 `fb3fb54` 对原监管机构归属的修订。机构、企业、编号、地址、金额、文件和时间均为演示数据。
 
 ## 本轮范围
 
-本轮只更新机构权限与代币材料入口，保留既有销毁业务计算、签名、持有地址检查、重试和运营历史记录。
+只修改 M4b 目录的 HTML、路由、局部布局样式和本说明，不修改 PRD、其他模块或共享组件。
 
-- 本轮修改：机构菜单去掉解除操作；删除机构解除操作画面和路由；关联代币按铸造时最终分配名单查看；代币详情追加机构材料区。
-- 本轮新增：未销毁的已关联代币上传说明与文件入口、各代币独立上传画面、已选文件、保存失败、追加成功与文件预览。新材料保留旧记录，代币数量、合约、地址、融资与销毁状态不变。
-- 继承未重设计：运营销毁审核和历史解除记录。销毁后专属解除职责归属仍待业务确认，通用机构账号无此操作；已销毁代币只展示历史，不新增未确认的上传场景。
+- 运营销毁业务改为只读记录：移除审核、通过、驳回、手动重试和独立业务签名画面。企业钱包广播后进入销毁中；失败结束原申请，新交易使用新申请编号。展示交易发送地址、提交时间、来源、提交条件快照及执行结果。
+- 列表增加交易来源及筛选。`BA-DEMO-0040 / DEMO-TOKEN-028` 为独立的非平台入口成功样本，完整数量为 `12,345.675 cou`；没有平台快照时明确展示“未经过平台入口校验”，不伪造通过结论。
+- 台账和详情区分应收账款原值、铸造初始单位价值、当前单位价值及当前资产估值。运营可对未销毁代币调价，包含输入错误、核对、未确认、失败、成功和历史画面。已销毁代币和机构身份无调价入口。
+- 原监管机构可办理已销毁代币的解除事项，备注必填、凭证选填。包含空白错误、凭证成功 / 失败、提交中、结果未确认、提交失败、依据缺失、完成记录和停用机构变体。运营和其他机构不能代办；不把所有关联机构解释为都有解除权。
+- 机构材料上传、追加记录和预览沿用，所属代币的阶段与价值同步。M7 消息内容和其他模块菜单保持原版本；M4b 本地菜单名为“销毁记录”。
 
-主流程：机构 `rl-list → rl-027 → rl-027-material-upload → rl-027-material-upload-ready → rl-027-material-saved`；已存在材料的 `rl-001` 展示追加前后的独立记录。运营只能查看机构材料，不提供代机构上传入口。
+原型只切换预设画面，不实现校验、权限引擎、计算、钱包、上传、通知或链上交易。填入表单内容不决定展示结果；错误、成功等分支通过画面目录查看。业务规则以 PRD 为准。
 
-实际权限过滤、永久文件、铸造结果与最终名单锁定需要后端实现，当前仅画预设结果。
+## 打开与主流程
 
-## 打开方式
+- 完整联看：双击 [index.html](../../index.html)，选择运营或机构；本模块源页为 [销毁审核与解除质押.html](销毁审核与解除质押.html)，技术文件名保持稳定。
+- 单文件附件：在 `页面原型/` 执行 `python3 _shared/export.py --source 管理端/M4b-销毁审核与解除质押/销毁审核与解除质押.html --output <仓库外路径>.html`。生成件可双击离线打开，不要求服务或联网；其他模块入口只给范围提示。
+- 运营只读：`b-list → b-pending / b-failed / b-external`；`b-prior-failed ↔ b-pending` 展示同一代币的旧失败申请与后续新申请。刷新只取原结果，未确认不自动判失败。
+- 单位价值：`l-001 → v-edit`。已填写示例为 `v-ready → v-confirm → v-pending → v-success`，失败看 `v-failed`，多次调整历史看 `v-history`。其他未销毁代币用 `v-l-<编号>-*` 保持各自对象与数量。`1 COU = 0.95 USD` 为固定示例，不执行交互计算。
+- 原监管机构：`rl-list → r-list → r-detail → r-edit`；已填写示例为 `r-ready → r-submitting → r-result`。凭证失败看 `r-upload-fail`，可重试或移除后不带凭证办理；未确认看 `r-unconfirmed`。
+- 非平台入口解除：`rl-028 → r-external → rx-edit`，`rx-*` 始终对应 `BA-DEMO-0040`。M7 原有 `BA-DEMO-0031` 成功消息进入 `r-0031 / r3-*`，不会串到 `BA-DEMO-0019`；这些成功画面是对象的状态变体。
+- 右下角画面目录默认关闭，可逐屏选择或查看“主流程下一屏”。提交中画面不自动产生成功结果。
 
-- 完整联看：双击 [index.html](../../index.html)，选择运营或机构；面客端选择已认证企业。侧栏与原有分区导航可跨模块往返。
-- 当前源页：[原型 HTML](销毁审核与解除质押.html)。技术文件名保持稳定，避免既有路由断开。
-- 单文件附件：在 `页面原型/` 执行 `python3 _shared/export.py --source 管理端/M4b-销毁审核与解除质押/销毁审核与解除质押.html --output <仓库外路径>.html`；生成件可双击离线打开。单文件不包含其他模块的画面，跨模块入口提示在完整原型中查看。
-- 右下角“画面目录 · 演示数据”默认关闭，可以选择所有画面与主流程下一屏。只切换预设画面，不接真实接口、邮件、文件、权限或链上交易。
+## 画面覆盖
 
-## 画面清单
+共 **166 屏**：保留原 87 屏中的 65 个 ID，删除 22 个旧流程画面，新增 101 个现行状态画面。含继承和按对象展开的画面，不等于 166 个独立页面；完整编号与名称见源页画面目录。
 
-共 87 屏。数量包含继承的画面，不等于本轮优化数量。
-
-| 分组 | 画面 ID 与名称 |
+| 页面 / 组件 | 覆盖与本轮处理 |
 | --- | --- |
-| 运营 · 销毁审核列表 | `b-list` 销毁申请列表；`b-list-empty` 暂无销毁申请；`b-list-error` 列表读取失败 |
-| 运营 · 销毁详情 | `b-pending` 待运营审核 · 条件满足；`b-pending-2` 待运营审核 · 其他申请；`b-contract-off` 待运营审核 · 原合约平台停用；`b-not-held` 待运营审核 · 持有地址不是铸造到账地址；`b-pending-pledged` 待运营审核 · 代币在质押地址；`b-unknown` 待运营审核 · 条件无法确认；`b-signature-fail` 待运营审核 · 签名记录读取失败；`b-burning` 销毁中；`b-failed` 销毁失败；`b-failed-pledged` 销毁失败 · 代币在质押地址；`b-failed-sign` 销毁失败 · 平台未能签名或提交；`b-failed-holding` 销毁失败 · 持有信息查询失败；`b-release` 销毁成功 · 待解除监管；`b-release-2` 待解除机构 · 其他申请；`b-released` 已解除监管；`b-rejected` 驳回；`b-detail-error` 详情读取失败；`b-notfound` 无权查看或内容不存在 |
-| 运营 · 通过并销毁 | `b-approve` 确认通过并销毁；`b-approve-submitting` 正在提交审核；`b-approve-blocked` 提交时条件不满足；`b-changed` 申请已被处理 |
-| 运营 · 驳回 | `b-reject` 驳回 · 未填写意见；`b-reject-error` 驳回 · 必填提示；`b-reject-ready` 驳回 · 已填写意见；`b-reject-submitting` 正在提交驳回 |
-| 运营 · 驳回销毁失败的申请 | `b-reject-failed` 驳回失败申请 · 已填写意见；`b-reject-failed-submitting` 正在提交驳回；`b-rejected-failed` 驳回 · 由销毁失败驳回 |
-| 运营 · 失败重试 | `b-retry` 确认重试销毁；`b-retry-blocked` 持有地址不是铸造到账地址；`b-retry-submitting` 正在发起重试；`b-retry-burning` 重试后 · 销毁中 |
-| 运营 · 代币台账 | `l-list` 代币台账；`l-empty` 暂无代币；`l-error` 台账读取失败 |
-| 机构 · 代币台账 | `rl-list` 代币台账；`rl-empty` 暂无代币；`rl-error` 台账读取失败 |
-| 运营 · 代币详情 | `l-001` 未到期 · 未申请；`l-027` 新铸造 · 未申请；`l-031` 其他机构；`l-021` 待运营审核；`l-022` 融资中 · 未申请；`l-023` 待运营审核 · 其他代币；`l-024` 已销毁 · 待解除监管；`l-025` 已解除监管；`l-026` 销毁失败；`l-holding-fail` 持有信息查询失败；`l-detail-error` 详情读取失败 |
-| 机构 · 代币详情 | `rl-001` 未到期 · 未申请；`rl-027` 新铸造 · 未申请；`rl-021` 待运营审核；`rl-022` 融资中 · 未申请；`rl-023` 待运营审核 · 其他代币；`rl-024` 已销毁 · 待解除监管；`rl-025` 已解除监管；`rl-026` 销毁失败；`rl-denied` 无权查看或内容不存在；`rl-001-material-saved` 材料已追加 · DEMO-TOKEN-001；`rl-027-material-saved` 材料已追加 · DEMO-TOKEN-027；`rl-021-material-saved` 材料已追加 · DEMO-TOKEN-021；`rl-022-material-saved` 材料已追加 · DEMO-TOKEN-022；`rl-023-material-saved` 材料已追加 · DEMO-TOKEN-023；`rl-026-material-saved` 材料已追加 · DEMO-TOKEN-026 |
-| 机构材料上传 | `rl-001-material-upload` 材料上传 · 尚未选择文件；`rl-001-material-upload-ready` 材料上传 · 已选择文件；`rl-001-material-upload-fail` 材料上传 · 保存失败；`rl-027-material-upload` 材料上传 · 尚未选择文件；`rl-027-material-upload-ready` 材料上传 · 已选择文件；`rl-027-material-upload-fail` 材料上传 · 保存失败；`rl-021-material-upload` 材料上传 · 尚未选择文件；`rl-021-material-upload-ready` 材料上传 · 已选择文件；`rl-021-material-upload-fail` 材料上传 · 保存失败；`rl-022-material-upload` 材料上传 · 尚未选择文件；`rl-022-material-upload-ready` 材料上传 · 已选择文件；`rl-022-material-upload-fail` 材料上传 · 保存失败；`rl-023-material-upload` 材料上传 · 尚未选择文件；`rl-023-material-upload-ready` 材料上传 · 已选择文件；`rl-023-material-upload-fail` 材料上传 · 保存失败；`rl-026-material-upload` 材料上传 · 尚未选择文件；`rl-026-material-upload-ready` 材料上传 · 已选择文件；`rl-026-material-upload-fail` 材料上传 · 保存失败；`ledger-material-preview` 文件预览 |
+| 运营销毁列表 | `b-list / b-list-empty / b-list-error`：现行阶段、来源、查找范围；空态与读取失败分开 |
+| 运营只读详情 | `b-pending / b-pending-2 / b-burning / b-failed / b-failed-pledged / b-failed-holding / b-release / b-release-2 / b-released / b-prior-failed / b-external`：提交快照、交易、结果、失败终态、新申请；`b-detail-error / b-notfound` 保留异常 |
+| 两种身份台账 | `l-list / l-empty / l-error`、`rl-list / rl-empty / rl-error`：价值、关联资产、铸造、合约、持有、融资及监管信息；仅表内横向滚动，操作列固定 |
+| 代币详情 | `l-* / rl-*` 原对象及新增 `l-028 / rl-028`：同步价值、监管字段与现行操作；机构材料区沿用 |
+| 单位价值 | `v-*`：八组未销毁代币各自的填写 / 错误 / 已填写 / 核对 / 处理中 / 失败 / 成功；`v-history` 展示成功、失败及后续成功的历史字段 |
+| 原机构解除 | `r-list / r-history / r-empty / r-error`，详情与完成记录，`r-edit / r-required / r-ready / r-files / r-upload-fail / r-submitting / r-unconfirmed / r-submit-fail / r-blocked`；`rx-* / r3-*` 为不同对象；`r-disabled / r-denied` 为权限变体 |
+| 机构材料 | 原 `rl-*-material-upload / -ready / -fail / -saved` 和 `ledger-material-preview`：上传流程沿用，不计为重新设计 |
 
-## 核验与边界
+## 本模块布局约定
 
-Chromium 桌面核验覆盖中文 / English、1280 / 1440 / 1920 px，检查页面切换、脚本错误、整体横向溢出；新主流程、菜单权限呈现、弹窗键盘与关闭返回、离线附件另做定向核验。实际结果见本轮交付说明。
+颜色、字体、间距、按钮、字段、文件行、弹窗、分区导航和固定操作列复用 `_shared/`，无新增 token、字体或图标。
 
-未验证 Safari / Firefox、1280 px 以下宽度和真实后端权限。未确认机构材料的格式、大小、份数，不沿用资质附件的 PDF 限制；不提供铸造成功后的机构名单变更；不向通用机构赋予未确认的解除职责。M7 旧业务通知内容本轮未重设计。
+仅 [m4b.css](m4b.css) 增加两项布局变体：`.review-timeline.burn-progress` 为钱包广播 / 代币销毁 / 解除监管三段；`.m4b-ledger` 的宽表在容器内滚动，以布局与绘制 containment 防止撑宽整页。调价核对与解除表单沿用双列字段和 `.modal.lg`。共享组件规范旧 M4b 章节的审核、业务签名、选填解除备注描述已落后于现行 PRD，本轮以本说明和当前源码为准，不跨模块改动共享文件。
+
+数量保留完整值，以合约符号 cou 为单位；金额为 USD。地址保留完整值供核对和复制。调价历史展示调价交易标识；销毁交易哈希不展示。机构名、企业名、原文备注及调整原因不随界面语言翻译。
+
+## 核验与限制
+
+Chromium 实测源页与离线附件：166 屏 × 中文 / English × 1280 / 1440 / 1920 px，各 996 次布局检查。未发现脚本错误、失效画面目标、重复 DOM ID、整页横向溢出或弹窗边界问题；台账表内滚动和固定操作列实际检查可达。英文保留演示主体名称及用户原文。
+
+定向点过运营只读、调价核对与提交、原监管机构解除及非平台入口解除，核对代币 / 申请不串对象，并检查 Esc 关闭和焦点返回。离线件 CSS / JS 内联，无 HTTP(S) 请求。真实上传、权限、链上调用和通知未实现，预设成功画面不代表真实业务成功。
+
+未验证 Safari / Firefox、1280 px 以下设备和真实联调。机构材料格式、大小、份数不擅自新增限制。原型没有权威的上游监管协议文件，明确显示暂未取得；原监管机构唯一标识及其与发行多机构分配名单的真实映射需要联调核对，不能按当前机构类型或启停状态临时推断、重新分配。
