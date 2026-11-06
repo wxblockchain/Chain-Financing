@@ -120,6 +120,7 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .btn-link:hover{background:var(--accent-soft)}
 .actlink{font-size:var(--fs-13);color:var(--accent);font-weight:500;padding:3px 6px;border-radius:var(--radius-xs)}
 .actlink:hover{background:var(--accent-soft)}
+.actlink:disabled,.actlink[aria-disabled="true"]{color:var(--faint);cursor:not-allowed;background:transparent}
 .spinner{width:16px;height:16px;border-radius:var(--radius-pill);border:2px solid currentColor;border-top-color:transparent;
   animation:spin 700ms linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
