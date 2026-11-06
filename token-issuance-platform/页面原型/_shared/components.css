@@ -271,6 +271,25 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 .tbl thead .col-act{background:var(--card-2)}
 .tbl tr:hover .col-act{background:var(--row-hover)}
 
+/* M6 合约列表：七项信息各自成列，名称优先，维护动作并排；窄容器在表内滚动。 */
+table.contract-list{table-layout:fixed;min-width:960px}
+.contract-list .c-name{width:18%}.contract-list .c-standard{width:10%}
+.contract-list .c-symbol{width:8%}.contract-list .c-type{width:11%}
+.contract-list .c-network{width:12%}.contract-list .c-address{width:18%}
+.contract-list .c-status{width:8%}.contract-list .c-actions{width:15%}
+.tbl.contract-list th:first-child,.contract-list .col-act{width:auto}
+.tbl.contract-list :is(th,td){padding-inline:var(--sp-2)}
+.tbl.contract-list :is(th,td):first-child{padding-left:var(--card-pad)}
+.tbl.contract-list :is(th,td):last-child{padding-right:var(--card-pad)}
+.tbl.contract-list thead th{white-space:normal}
+.contract-list td:first-child{overflow-wrap:anywhere;word-break:normal}
+.contract-actions{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-3)}
+.contract-actions .actlink{min-height:var(--ctrl-h-sm);padding-inline:0;white-space:nowrap}
+.tbl .contract-actions .actlink:last-child{margin-right:0}
+.contract-card .card-head .sub{margin-left:auto}
+/* 放大或矮视口时，为已有画面目录按钮留出底部空间，避免遮挡确认。 */
+.modal-mask.contract-mask{padding-bottom:calc(var(--ctrl-h-sm) + var(--sp-7))}
+
 /* ---------- 提示条：说明 / 警示 / 错误；左侧 3px 色条 ---------- */
 .note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid var(--border);border-left:3px solid var(--border-strong);
   border-radius:var(--radius-sm);background:var(--card-2);color:var(--muted);font-size:var(--fs-13)}
