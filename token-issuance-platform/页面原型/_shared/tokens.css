@@ -74,6 +74,9 @@
   --modal-w-xl:960px;
   --modal-flow-h:700px;
   --focus-card-w:480px;
+  --form-sheet-max:1120px; /* M5 长表单的阅读宽度 */
+  --detail-sheet-max:1360px; /* M5 机构详情与账户资料的阅读宽度 */
+  --institution-table-min:1120px; /* 九列机构列表保留邮箱与状态的阅读空间 */
 
   /* —— 文字角色 —— */
   --ui-page-title:var(--fs-24);
