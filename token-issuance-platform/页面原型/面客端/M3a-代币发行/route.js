@@ -3,9 +3,9 @@ TP.registerModule({
   id:'clientIssuance', end:'client', file:'代币发行.html',
   routes:{
     issue:{certified:'list'},
-    issueFromAsset:{certified:'asset-selected'},
+    issueFromAsset:{certified:'info-from-asset'},
     assetApplication0131:{certified:'detail-ops'},
-    assetApplication0097:{certified:'detail-reg-rejected'},
+    assetApplication0097:{certified:'detail-denied'},
     assetApplication0102:{certified:'detail-minted'},
     assetApplication0027:{certified:'detail-progress'}
   }
