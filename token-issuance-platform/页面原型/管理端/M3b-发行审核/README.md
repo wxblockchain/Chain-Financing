@@ -24,7 +24,7 @@
 
 ## 画面清单
 
-共 148 屏。数量包含继承的画面，不等于本轮优化数量。
+共 140 屏。数量包含继承的画面，不等于本轮优化数量。
 
 | 分组 | 画面 ID 与名称 |
 | --- | --- |
@@ -38,6 +38,16 @@
 | 运营 · 铸造重试 | `o-retry` 确认重试铸造；`o-retry-platform-disabled` 原合约平台停用 · 仍可重试；`o-retry-unavailable` 原合约链上执行异常；`o-retry-failed` 重试未能发起；`o-retry-submitting` 重试 · 平台签名并提交 |
 | 操作反馈 | `o-changed` 运营 · 申请状态已变化 |
 | 机构分配（本轮重做） | 首次分配：`assign-empty` 未选择；`assign-one`、`assign-D`、`assign-E`、`assign-ready`（C + D）、`assign-CE`、`assign-DE`、`assign-CDE` 选择组合，各自 `-confirm` 为确认步；`assign-saving` 提交中；`assign-fail` 保存失败；`assign-none` 暂无启用机构；`assign-error` 读取失败。新增机构：`assign-add-{已有}` 未选择、`assign-add-{已有}-{新增}` 选择组合及其 `-confirm`，已有名单覆盖 C、D、E、CD、CE、DE；`assign-add-CD-E-conflict` 类型已被占用。共 50 屏。 |
+
+## 2026-11-09 · 按 PRD `c20da5e` 同步
+
+PRD 本轮只调整企业可见范围：原发行企业在申请铸造成功后，经 M4a 代币详情只读查看机构材料；铸造成功前和驳回后仍不可见。M3b 管理端的运营画面无需变化，入口画面属 M4a，本模块不画。借此对齐了机构端与现行 PRD 不一致的继承画面：
+
+- 铸造成功即关闭材料待办、停止上传：`task-token` 改为“铸造成功 · 材料只读”（待办已关闭、无上传入口、展示铸造前三批材料），删除 `task-token-uploaded` 和 7 屏 `material-upload-token-*`。`institutionApplicationMinted` 路由仍指向 `task-token`。
+- 材料批次去掉恒为“铸造前”的“上传阶段”；本模块所有材料都形成于铸造成功前。
+- 机构上传弹窗说明补充：铸造成功后发行企业可查看、下载本批材料，但看不到上传账号。
+
+核验：Chromium 逐屏打开源码与单文件附件全部 140 屏 × 中文 / English × 1280 / 1440 / 1920 px，无脚本错误、整体或弹窗横向溢出、空白时间；`task-token` 文件预览打开并 Escape 返回。未重新核验受限 `srcdoc` 嵌入预览、Safari / Firefox。
 
 ## 核验与边界
 
@@ -71,7 +81,7 @@
 
 | 分组 | 迁入画面 |
 | --- | --- |
-| 机构待办与材料 | `task-list` 机构待办 · 本机构；`task-list-ops` 机构待办 · 全平台；`task-list-handled` 机构待办 · 已处理；`task-list-closed` 机构待办 · 已关闭；`task-empty` 暂无机构待办；`task-error` 机构待办 · 读取失败；`task-application` 机构待办 · 首次上传；`task-application-shared` 机构待办 · 其他机构已上传；`task-application-uploaded` 机构待办 · 首次上传已处理；`task-token` 铸造成功 · 首次待办保留；`task-token-uploaded` 铸造成功 · 继续追加材料；`task-rejected` 申请驳回 · 历史材料；`task-disabled` 停用机构 · 继续上传；`task-ops-detail` 机构待办 · 运营查看；`task-denied` 机构范围外或已移除；`task-material-error` 机构材料 · 读取失败 |
-| 机构材料上传 | `material-upload-application` 材料上传 · 尚未选择文件；`material-upload-application-ready` 材料上传 · 已选择文件；`material-upload-application-error` 材料上传 · 上传失败；`material-upload-application-saving` 材料上传 · 提交中；`material-upload-application-required` 材料上传 · 必填提示；`material-upload-application-save-error` 材料上传 · 保存失败；`material-upload-application-uploading` 材料上传 · 文件上传中；`material-upload-token` 材料上传 · 尚未选择文件；`material-upload-token-ready` 材料上传 · 已选择文件；`material-upload-token-error` 材料上传 · 上传失败；`material-upload-token-saving` 材料上传 · 提交中；`material-upload-token-required` 材料上传 · 必填提示；`material-upload-token-save-error` 材料上传 · 保存失败；`material-upload-token-uploading` 材料上传 · 文件上传中；`material-preview` 文件预览；`material-file-error` 机构材料 · 文件读取失败 |
+| 机构待办与材料 | `task-list` 机构待办 · 本机构；`task-list-ops` 机构待办 · 全平台；`task-list-handled` 机构待办 · 已处理；`task-list-closed` 机构待办 · 已关闭；`task-empty` 暂无机构待办；`task-error` 机构待办 · 读取失败；`task-application` 机构待办 · 首次上传；`task-application-shared` 机构待办 · 其他机构已上传；`task-application-uploaded` 机构待办 · 首次上传已处理；`task-token` 铸造成功 · 材料只读；`task-rejected` 申请驳回 · 历史材料；`task-disabled` 停用机构 · 继续上传；`task-ops-detail` 机构待办 · 运营查看；`task-denied` 机构范围外或已移除；`task-material-error` 机构材料 · 读取失败 |
+| 机构材料上传 | `material-upload-application` 材料上传 · 尚未选择文件；`material-upload-application-ready` 材料上传 · 已选择文件；`material-upload-application-error` 材料上传 · 上传失败；`material-upload-application-saving` 材料上传 · 提交中；`material-upload-application-required` 材料上传 · 必填提示；`material-upload-application-save-error` 材料上传 · 保存失败；`material-upload-application-uploading` 材料上传 · 文件上传中；`material-preview` 文件预览；`material-file-error` 机构材料 · 文件读取失败 |
 
 迁移验证：Chromium 中英文 × 1280/1440/1920 px 检查全部 32 屏与两屏既有申请页面；机构/运营及停用、改邮箱身份的入口可达，材料弹窗可打开并用 Esc 返回，无脚本错误或整体横向溢出。业务规则仍按 M3b PRD 验收。
