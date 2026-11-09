@@ -2,6 +2,12 @@
 
 2026-11-09 · existing-system adaptation / console · 中文与 English。业务依据 M4b PRD `68c2e54`，列表分页、空状态与读取失败按 M2 §5.8 业务列表通用规则；展示结构对齐 M3b 发行审核（顶部紧凑进度、底部操作进度、分步弹窗）和 M4a 我的代币（页头、台账列、代币详情分区）。**规则、校验与异常分支以 PRD 为准**。企业、机构、地址、编号、金额、文件和时间均为演示数据。
 
+## 解除托管列表调整（2026-11-09，用户裁定）
+
+- `r-list` 删去“交易来源”列，`r-list`、`r-nomatch`、`r-error` 同步删去交易来源筛选；交易来源与非平台入口风险项仍在解除托管详情（如 `r-external`）中查看。
+- 新增“代币状态”列，位于资产托管状态之前。列表只收录销毁成功的代币，因此该列均为“已销毁”，与资产托管状态（托管中 / 已解除托管）分列。
+- 与 PRD 不一致、待 PRD 同步：01 册解除托管列表的展示项与筛选项（R-RELEASE-01）、04 册 AC-M4B-22 与 AC-M4B-61 仍含交易来源。
+
 ## 对齐 M3b 优化（2026-11-09）
 
 - 操作进度与 M3b 呈现一致：每条记录的“角色与账号”在左、带时区的时间在右侧单独一列；失败说明、解除说明改为左侧轻竖线承接，不再用浅底块。共享样式由 `.review-screen` 扩展到 `.operation-history`，只影响 M3b 与 M4b。
@@ -40,7 +46,7 @@
 | --- | --- |
 | 运营 · 销毁记录列表（4） | `b-list` 默认 · `b-list-empty` 尚无记录 · `b-list-error` 读取失败 · `b-list-nomatch` 筛选无匹配 |
 | 运营 · 销毁记录详情（10） | `b-pending` 销毁中 · `b-pending-2` 超过 10 分钟；`b-failed` · `b-prior-failed` 销毁失败；`b-release` · `b-release-2` 销毁成功 · 托管中；`b-released` 已解除托管；`b-external` 非平台入口 · 有风险项；`b-detail-error` · `b-notfound` |
-| 机构 · 解除托管列表（5） | `r-list` 默认 · `r-nomatch` 筛选无匹配 · `r-empty` · `r-error` · `r-list-audit` 审计机构 |
+| 机构 · 解除托管列表（5） | `r-list` 默认（无交易来源列与筛选，含代币状态列） · `r-nomatch` 筛选无匹配 · `r-empty` · `r-error` · `r-list-audit` 审计机构 |
 | 机构 · 解除托管详情（7） | `r-detail` · `r-0031` 托管中；`r-external` 非平台入口 · 有风险项；`r-released` 已解除；`r-disabled` 停用机构；`r-blocked` 依据缺失；`r-denied` 无权 |
 | 机构 · 解除资产托管办理（11） | `r-edit` · `r-required` · `r-uploading` · `r-upload-fail` · `r-ready-one` · `r-ready` · `r-confirm` · `r-submitting` · `r-submit-fail` · `r-unconfirmed` · `r-result` |
 | 运营 · 代币台账（5） | `l-list` · `l-empty` · `l-error` · `l-nomatch` · `l-list-lock` 筛选确认中 |
