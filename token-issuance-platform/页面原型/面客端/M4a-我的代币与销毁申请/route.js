@@ -6,7 +6,7 @@ TP.registerModule({
     burn:{certified:'b-list'},
     tokenDemo001:{certified:'t-future'},
     // M7 消息前往原业务：销毁申请的当前画面
-    burnApplication0031:{certified:'a-release'},
+    burnApplication0031:{certified:'a-success'},
     burnApplication0019:{certified:'a-release-record'},
     burnApplication0018:{certified:'a-message'},
     burnApplication0024:{certified:'a-old-active'},

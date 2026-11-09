@@ -36,6 +36,12 @@
     return '<div class="detail-group"><div class="detail-group-h"><h2>'+title+'</h2><span class="sub">'+sub+'</span></div>'+cards+'</div>';
   }
 
+  /* 到期日由上游连同来源时区提供；到期时点为来源时区下到期日当天 24:00（即次日 00:00），
+     按查看者时区换算后展示日期、时间和时区。演示资产的来源时区均为 Asia/Dubai。 */
+  var SOURCE_ZONE={name:'Asia/Dubai', offset:'+04:00'};
+  function dueInstant(dayIso){ return new Date(new Date(dayIso+'T00:00:00'+SOURCE_ZONE.offset).getTime()+86400000).toISOString(); }
+  function dueTime(dayIso){ var t=dueInstant(dayIso); return '<time data-minute data-instant="'+t+'" datetime="'+t+'"></time> <span class="faint" data-zone></span>'; }
+
   /* 演示资产：rich 为补充信息完整的示例；sparse 为 L1 缺项、L2 与补充信息均缺失的示例；其余为一张发票、暂无回款、无债务人下游客户交易。 */
   var PARTY = {
     A:{name:'示例企业 A 有限公司', en:'Example Enterprise A Ltd.', region:'中国香港', id:'DEMO-1234567', kind:'CR'},
@@ -45,18 +51,18 @@
     E:{name:'Demo Retail E LLC', region:'阿联酋', id:'DEMO-TL-730045', kind:'Trade License'}
   };
   var ASSETS = {
-    'RA-DEMO-0128':{cr:'A', db:'B', amt:'50,000.00', due:'2027-03-31T23:59:59+04:00', no:'0412', rich:true, repaid:'50,000.00', balance:'0.00'},
-    'RA-DEMO-0131':{cr:'A', db:'M', amt:'82,400.00', due:'2027-05-15T23:59:59+04:00', no:'0436', repaid:'82,400.00', balance:'0.00'},
-    'RA-DEMO-0102':{cr:'A', db:'B', amt:'36,000.00', due:'2027-01-31T23:59:59+04:00', no:'0371'},
-    'RA-DEMO-0097':{cr:'A', db:'M', amt:'24,800.00', due:'2027-02-28T23:59:59+04:00', no:'0359'},
-    'RA-DEMO-0115':{cr:'A', db:'B', amt:'18,600.00', due:'2026-10-15T23:59:59+04:00', no:'0233', sparse:true,
+    'RA-DEMO-0128':{cr:'A', db:'B', amt:'50,000.00', due:'2027-03-31', no:'0412', rich:true, repaid:'50,000.00', balance:'0.00'},
+    'RA-DEMO-0131':{cr:'A', db:'M', amt:'82,400.00', due:'2027-05-15', no:'0436', repaid:'82,400.00', balance:'0.00'},
+    'RA-DEMO-0102':{cr:'A', db:'B', amt:'36,000.00', due:'2027-01-31', no:'0371'},
+    'RA-DEMO-0097':{cr:'A', db:'M', amt:'24,800.00', due:'2027-02-28', no:'0359'},
+    'RA-DEMO-0115':{cr:'A', db:'B', amt:'18,600.00', due:'2026-10-15', no:'0233', sparse:true,
       formed:'2026-07-01T10:00:00+04:00', invoiced:'2026-06-28T11:00:00+04:00'},
-    'RA-DEMO-0140':{cr:'A', db:'M', amt:'40,000.00', ccy:'EUR', due:'2027-06-30T23:59:59+04:00', no:'0460'},
-    'RA-DEMO-0143':{cr:'A', db:'B', amt:'27,500.00', due:'2027-04-30T23:59:59+04:00', no:'0463'},
-    'RA-DEMO-0150':{cr:'C', db:'E', amt:'61,200.00', due:'2027-06-20T23:59:59+04:00', no:'0502'},
-    'RA-DEMO-0160':{cr:'A', db:'B', amt:'12,345.67', due:'2027-04-30T23:59:59+04:00', no:'0510'},
-    'RA-DEMO-0166':{cr:'A', db:'E', amt:'45,200.00', due:'2027-05-31T23:59:59+04:00', no:'0518'},
-    'RA-DEMO-0171':{cr:'A', db:'M', amt:'63,750.50', due:'2027-07-15T23:59:59+04:00', no:'0526'}
+    'RA-DEMO-0140':{cr:'A', db:'M', amt:'40,000.00', ccy:'EUR', due:'2027-06-30', no:'0460'},
+    'RA-DEMO-0143':{cr:'A', db:'B', amt:'27,500.00', due:'2027-04-30', no:'0463'},
+    'RA-DEMO-0150':{cr:'C', db:'E', amt:'61,200.00', due:'2027-06-20', no:'0502'},
+    'RA-DEMO-0160':{cr:'A', db:'B', amt:'12,345.67', due:'2027-04-30', no:'0510'},
+    'RA-DEMO-0166':{cr:'A', db:'E', amt:'45,200.00', due:'2027-05-31', no:'0518'},
+    'RA-DEMO-0171':{cr:'A', db:'M', amt:'63,750.50', due:'2027-07-15', no:'0526'}
   };
   // 0128 / 0131 为静态演示：已回款等于应收金额、余额为零，上游仍未结清。
   // 不据此计算或改变任何状态；M2 仅运营画面另行呈现非阻断预警。
@@ -88,7 +94,8 @@
         ['应收账款金额', money(a.amt,ccy)],
         ['币种', TP.currencyLabel(ccy)],
         ['形成日期', day(a.formed||'2026-09-18T10:00:00+04:00')],
-        ['到期日', '<time data-instant="'+a.due+'" datetime="'+a.due+'"></time>'],
+        ['到期日', dueTime(a.due)],
+        ['原始到期日', mono(a.due)+' <span class="faint">'+SOURCE_ZONE.name+'</span>'],
         ['确权日期', sp ? missing(true) : day('2026-09-25T14:20:00+04:00')],
         ['确权凭证', sp ? missing(true) : fileRef('CC-'+id+'.pdf'), true]
       ],3) + '<div class="party-grid">'+party('债权人', PARTY[a.cr]) + party('债务人', PARTY[a.db])+'</div>');
@@ -308,7 +315,7 @@
     '查看':'View','下载':'Download',/* 资产状态与通用列名：面客端、管理端共用 */
     '回款状态':'Repayment status','未到期':'Not due','暂时无法确认':'Unable to confirm',
     '确权状态':'Confirmation','结清状态':'Settlement','逾期状态':'Overdue status','发行状态':'Issuance status',
-    '已确权':'Confirmed','已撤销确权':'Confirmation revoked','未结清':'Unsettled','已结清':'Settled','未逾期':'Not overdue','已逾期':'Overdue',
+    '已确权':'Confirmed','已撤销确权':'Confirmation revoked','原始到期日':'Original due date','未结清':'Unsettled','已结清':'Settled','未逾期':'Not overdue','已逾期':'Overdue',
     '暂时无法获取':'Temporarily unavailable','可发行':'Available','发行申请中':'Application in progress','已驳回':'Rejected','已发行':'Issued',
     '确权 · 结清 · 逾期':'Confirm · Settle · Overdue','资产价值':'Asset value','应收账款金额':'Receivable amount','操作':'Actions',
     '资产详情':'Asset details','关联记录':'Related records','发行申请':'Issuance application','申请状态':'Application status',

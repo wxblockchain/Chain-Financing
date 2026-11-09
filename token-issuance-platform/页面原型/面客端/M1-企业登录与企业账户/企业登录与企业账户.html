@@ -31,8 +31,6 @@
 </div>
 </section>
 
-
-
 <section class="login-screen" data-group="登录" data-layout="focus" data-name="确认签名" data-next="login-sign" data-no="L3" data-screen="" data-who="none" id="login-confirm">
 <div class="focus-card">
 <div aria-hidden="true" class="focus-symbol"><i data-ico="wallet"></i></div>
@@ -49,28 +47,35 @@
 </div>
 </section>
 
-
-
-
-
-
-
-
-
 <!-- 平台内容区的状态反馈，不再作为独立登录画面 -->
 <section data-screen id="platform-loading" data-no="S1" data-group="平台反馈" data-name="钱包已验证：身份判定中" data-layout="app" data-who="none" data-crumb="账户信息" data-next="org">
   <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
     <div class="card"><div class="state" role="status"><span class="spinner" aria-hidden="true"></span><h3>正在确认身份</h3><p>钱包控制权已验证，正在确认身份。完成后才能登录。</p></div></div>
   </div>
 </section>
-<section data-screen id="platform-load-fail" data-no="S2" data-group="平台反馈" data-name="账户信息加载失败" data-layout="app" data-who="none" data-crumb="账户信息">
+<section data-screen id="platform-load-fail" data-no="S2" data-group="平台反馈" data-name="身份无法确认：调取失败或认证结论缺失" data-layout="app" data-who="none" data-crumb="账户信息">
   <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
     <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>暂时无法确认身份，请重试。</h3><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
   </div>
 </section>
-<section data-screen id="platform-session-ended" data-no="S3" data-group="平台反馈" data-name="登录已结束：地址变更" data-layout="app" data-who="none" data-crumb="账户信息">
-  <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
-    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>资产可信平台登记的钱包地址已变更，请重新登录。</h3><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
+<section data-screen id="platform-source-unconfirmed" data-no="S8" data-group="平台反馈" data-name="登录未完成：调取结果来源无法确认" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
+    <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>本次登录未完成，请重新登录。</h3><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
+  </div>
+</section>
+<section data-screen id="platform-no-stable-id" data-no="S9" data-group="平台反馈" data-name="登录未完成：缺少稳定账户标识" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
+    <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>本次无法完成登录。</h3><p class="state-ref">错误码 <span class="mono">E-DEMO-1043</span></p><button type="button" class="btn" data-go="login">返回</button></div></div>
+  </div>
+</section>
+<section data-screen id="platform-multi-account" data-no="S10" data-group="平台反馈" data-name="登录未完成：一个地址对应多个账户" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
+    <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>本次无法完成登录。</h3><p>请联系资产可信平台。</p><button type="button" class="btn" data-go="login">返回</button></div></div>
+  </div>
+</section>
+<section data-screen id="platform-create-fail" data-no="S5" data-group="平台反馈" data-name="登录未完成：建立企业用户失败" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
+    <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>登录未完成，请重试或放弃并返回。</h3><p class="state-ref">错误码 <span class="mono">E-DEMO-1042</span></p><div class="state-actions"><button type="button" class="btn" data-go="login">放弃并返回</button><button type="button" class="btn primary" data-go="platform-loading">重试</button></div></div></div>
   </div>
 </section>
 <section data-screen id="platform-account-locked" data-no="S4" data-group="平台反馈" data-name="登录已结束：上游账户已锁定" data-layout="app" data-who="none" data-crumb="账户信息">
@@ -78,9 +83,14 @@
     <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你在资产可信平台的账户已锁定，本次登录已结束。</h3><p>解除说明：请联系资产可信平台解除锁定后重新登录。</p><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
   </div>
 </section>
-<section data-screen id="platform-create-fail" data-no="S5" data-group="平台反馈" data-name="登录未完成：建立企业用户失败" data-layout="app" data-who="none" data-crumb="账户信息">
-  <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
-    <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>登录未完成，请重试或退出。</h3><p class="state-ref">错误码 <span class="mono">E-DEMO-1042</span></p><div class="state-actions"><button type="button" class="btn" data-go="login">退出</button><button type="button" class="btn primary" data-go="platform-loading">重试</button></div></div></div>
+<section data-screen id="platform-account-disabled" data-no="S7" data-group="平台反馈" data-name="登录已结束：上游账户已禁用" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
+    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你在资产可信平台的账户已禁用，本次登录已结束。</h3><p>请联系资产可信平台了解账户恢复方式。</p><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
+  </div>
+</section>
+<section data-screen id="platform-session-ended" data-no="S3" data-group="平台反馈" data-name="登录已结束：登录期间调取不到账户" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
+    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>登录已结束，请重新登录。</h3><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
   </div>
 </section>
 <section data-screen id="platform-session-expired" data-no="S6" data-group="平台反馈" data-name="登录已到期" data-layout="app" data-who="none" data-crumb="账户信息">
@@ -134,7 +144,7 @@
 <section data-crumb="用户中心/企业信息" data-group="企业信息" data-layout="app" data-name="未认证（审核中）" data-nav="org" data-no="P2" data-screen="" data-who="uncertified" id="org-uncert">
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
-<div class="note warn banner" role="status"><i data-ico="alert"></i><span class="grow">企业认证尚未通过，需要企业认证的业务暂不可用。认证状态请在资产可信平台查看。</span></div>
+<div class="note warn banner" role="status"><i data-ico="alert"></i><span class="grow">企业认证尚未通过，需要企业认证的业务暂不可用。认证状态请在资产可信平台查看。</span><button type="button" class="btn sm" data-go="leave">前往完成认证</button></div>
 <div class="card">
 <div class="ident"><span aria-hidden="true" class="ident-mark">A</span><div><div class="ident-name">示例企业 A 有限公司</div><div class="ident-sub">Example Enterprise A Ltd.</div></div><span class="tag warn"><span class="dot"></span>审核中</span></div>
 <div class="facts-region bt"><dl class="facts">
@@ -204,7 +214,7 @@
 <section data-crumb="用户中心/用户信息" data-group="用户信息" data-layout="app" data-name="未认证" data-nav="me" data-no="U6" data-screen="" data-who="uncertified" id="me-uncert">
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">用户信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
-<div class="note warn banner" role="status"><i data-ico="alert"></i><span class="grow">企业认证尚未通过，需要企业认证的业务暂不可用。认证状态请在资产可信平台查看。</span></div>
+<div class="note warn banner" role="status"><i data-ico="alert"></i><span class="grow">企业认证尚未通过，需要企业认证的业务暂不可用。认证状态请在资产可信平台查看。</span><button type="button" class="btn sm" data-go="leave">前往完成认证</button></div>
 <div class="card profile-sheet"><section class="profile-section">
 <div class="card-head"><h2>本次登录</h2></div>
 <div class="facts-region"><dl class="facts">
@@ -322,12 +332,6 @@
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">查看本企业当前登录地址。</p></div></div><div class="card account-summary"><div class="card-head"><h2>数币账户</h2></div><div class="facts-region"><dl class="facts cols-3"><div><dt>账户标识</dt><dd><span class="tag accent">登录地址</span></dd></div><div><dt>区块链网络</dt><dd><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></dd></div><div><dt>数币地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制完整地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div></dl></div></div></div>
 </section>
 
-<section data-address="0x3B7c9E1d5A2f8C4b6D0e7F3a9B1c5E8d2A4f6C30" data-crumb="用户中心/企业账户" data-group="企业账户" data-layout="app" data-name="新地址重新登录后" data-nav="accounts" data-no="A15" data-screen="" data-who="certified" id="acc-moved" data-preview-set="new-address">
-<div class="content-in"><div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">查看本企业当前登录地址。</p></div></div><div class="note banner"><i data-ico="info"></i><div class="grow">已使用新的登录地址登录。企业账户仅展示当前地址。</div></div><div class="card account-summary"><div class="card-head"><h2>数币账户</h2></div><div class="facts-region"><dl class="facts cols-3"><div><dt>账户标识</dt><dd><span class="tag accent">登录地址</span></dd></div><div><dt>区块链网络</dt><dd><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></dd></div><div><dt>数币地址</dt><dd><span class="addr"><span class="addr-pill" title="0x3B7c9E1d5A2f8C4b6D0e7F3a9B1c5E8d2A4f6C30">0x3B7c…6C30</span><button aria-label="复制完整地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div></dl></div></div></div>
-</section>
-
-
-
 <section data-crumb="用户中心/企业账户" data-group="企业账户" data-layout="app" data-name="读取失败" data-nav="accounts" data-no="A3" data-screen="" data-who="certified" id="acc-fail">
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">查看本企业当前登录地址。</p></div>
@@ -346,24 +350,6 @@
 <button class="btn primary" data-go="leave" type="button">前往资产可信平台完成认证</button></div></div>
 </div>
 </section>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <section data-crumb="用户中心/用户信息" data-group="用户信息" data-layout="app" data-name="偏好保存失败：恢复原值" data-nav="me" data-no="U4" data-screen="" data-who="certified" id="me-prefs-fail">
 <div class="content-in">
@@ -427,7 +413,6 @@
 </div>
 </section>
 
-<!-- 本轮新增的静态画面，均由共享画面目录列出。 -->
 <section class="login-screen" data-group="登录" data-layout="focus" data-name="签名未完成" data-next="login-sign" data-no="L5" data-screen="" data-who="none" id="login-sign-fail">
 <div class="focus-card">
 <div aria-hidden="true" class="focus-symbol"><i data-ico="wallet"></i></div>
@@ -436,11 +421,6 @@
 </div>
 </section>
 
-<section data-screen id="platform-account-disabled" data-no="S7" data-group="平台反馈" data-name="登录已结束：上游账户已禁用" data-layout="app" data-who="none" data-crumb="账户信息">
-  <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
-    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你在资产可信平台的账户已禁用，本次登录已结束。</h3><p>请联系资产可信平台了解账户恢复方式。</p><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
-  </div>
-</section>
 
 <section data-screen id="org-loading" data-no="P5" data-group="企业信息" data-name="读取中" data-layout="app" data-who="certified" data-nav="org" data-crumb="用户中心/企业信息" data-next="org">
   <div class="content-in"><div class="page-head"><h1 class="page-title">企业信息</h1></div>
@@ -455,12 +435,6 @@
 </div>
 </section>
 
-<section data-crumb="用户中心/企业信息" data-group="企业信息" data-layout="app" data-name="企业归属已移除" data-nav="org" data-no="P8" data-screen="" data-who="noent" id="org-removed">
-<div class="content-in">
-<div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
-<div class="note warn banner" role="status"><i data-ico="alert"></i><span class="grow">企业归属已变更，原企业信息及消息已不可查看。</span></div><div class="card"><div class="state"><span class="state-ico"><i data-ico="org"></i></span><h3>暂无企业信息</h3><p>企业信息需在资产可信平台完善。</p></div></div>
-</div>
-</section>
 
 <section data-screen id="me-loading" data-no="U8" data-group="用户信息" data-name="读取中" data-layout="app" data-who="certified" data-nav="me" data-crumb="用户中心/用户信息" data-next="me">
   <div class="content-in"><div class="page-head"><h1 class="page-title">用户信息</h1></div>
@@ -482,62 +456,6 @@
 </div>
 </section>
 
-<section data-preview-set="company-b" data-crumb="用户中心/企业信息" data-group="企业信息" data-layout="app" data-name="企业归属 A → B" data-nav="org" data-next="acc-reassigned" data-no="P9" data-screen="" data-who="certified" id="org-reassigned">
-<div class="content-in">
-<div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
-<div class="note banner" role="status"><i data-ico="info"></i><span class="grow">企业归属已变更，当前显示新的企业信息。</span></div><div class="card">
-<div class="ident"><span aria-hidden="true" class="ident-mark">B</span><div><div class="ident-name">示例企业 B 有限公司</div><div class="ident-sub">Example Enterprise B Ltd.</div></div><span class="tag ok"><span class="dot"></span>已认证</span></div>
-<div class="facts-region bt"><dl class="facts">
-<div><dt>企业 id</dt><dd class="mono">ENT-DEMO-0002</dd></div>
-<div><dt>当前有效认证结论</dt><dd><span class="tag ok">已认证</span></dd></div>
-<div><dt>企业名称</dt><dd>示例企业 B 有限公司</dd></div>
-<div><dt>英文名称</dt><dd>Example Enterprise B Ltd.</dd></div>
-<div><dt>注册国家 / 地区</dt><dd>中国香港</dd></div>
-<div><dt>香港 CR 编号</dt><dd class="mono">DEMO-2345678</dd></div>
-<div><dt>香港 BR 编号</dt><dd class="mono">DEMO-87654321</dd></div>
-<div><dt>注册地址</dt><dd>香港中环示例大道 2 号示例大厦 8 楼</dd></div>
-</dl></div>
-</div>
-</div>
-</section>
-
-<section data-preview-set="company-b" data-crumb="用户中心/用户信息" data-group="用户信息" data-layout="app" data-name="企业归属变更后" data-nav="me" data-no="U9" data-screen="" data-who="certified" id="me-reassigned">
-<div class="content-in">
-<div class="page-head"><div><h1 class="page-title">用户信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
-<div class="card profile-sheet"><section class="profile-section">
-<div class="card-head"><h2>本次登录</h2></div>
-<div class="facts-region"><dl class="facts">
-<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制登录地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
-<div><dt>同步时间</dt><dd class="mono"><time data-instant="2026-10-29T01:30:12Z" datetime="2026-10-29T01:30:12Z"></time><span class="cell-sub" data-zone=""></span></dd></div>
-</dl></div>
-</section><section class="profile-section">
-<div class="card-head"><h2>个人资料</h2></div>
-<div class="facts-region"><dl class="facts">
-<div><dt>姓名</dt><dd>张示例</dd></div>
-<div><dt>英文姓名</dt><dd>Zhang Shili</dd></div>
-<div><dt>邮箱</dt><dd>demo-user@example.com</dd></div>
-<div><dt>国籍</dt><dd>中国</dd></div>
-<div><dt>证件类型</dt><dd>身份证</dd></div>
-<div><dt>证件号码</dt><dd class="faint">暂不展示</dd></div>
-<div><dt>与企业的关系</dt><dd>授权代表</dd></div>
-</dl></div>
-</section><section class="profile-section">
-<div class="card-head"><h2>偏好设置</h2></div>
-<div class="preferences">
-<div class="preference-row"><div><label for="me-reassigned-language">界面语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-reassigned-feedback" class="inp" data-language="" id="me-reassigned-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
-<div class="preference-row"><div><label for="me-reassigned-timezone">时区</label><p class="hint">时间按该时区展示，业务时间本身不变。</p></div><select aria-describedby="me-reassigned-feedback" class="inp" data-timezone="" id="me-reassigned-timezone"><option>UTC</option><option>Asia/Shanghai</option><option>Asia/Hong_Kong</option><option>Asia/Singapore</option><option>Europe/London</option><option>America/New_York</option></select></div>
-<p aria-live="polite" class="hint preference-feedback" id="me-reassigned-feedback" role="status"></p>
-</div>
-</section></div>
-
-
-</div>
-</section>
-
-<section data-preview-set="company-b" data-crumb="用户中心/企业账户" data-group="企业账户" data-layout="app" data-name="企业归属变更后" data-nav="accounts" data-no="A16" data-screen="" data-who="certified" id="acc-reassigned">
-<div class="content-in"><div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">查看本企业当前登录地址。</p></div></div><div class="card account-summary"><div class="card-head"><h2>数币账户</h2></div><div class="facts-region"><dl class="facts cols-3"><div><dt>账户标识</dt><dd><span class="tag accent">登录地址</span></dd></div><div><dt>区块链网络</dt><dd><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></dd></div><div><dt>数币地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制完整地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div></dl></div></div></div>
-</section>
-
 <section data-crumb="用户中心/企业信息" data-group="企业信息" data-layout="app" data-name="登录期间调取失败" data-nav="org" data-next="acc" data-no="P10" data-screen="" data-who="certified" id="org-sync-fail">
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
@@ -557,57 +475,7 @@
 </div>
 </section>
 
-<section data-preview-set="new-address" data-address="0x3B7c9E1d5A2f8C4b6D0e7F3a9B1c5E8d2A4f6C30" data-crumb="用户中心/企业信息" data-group="企业信息" data-layout="app" data-name="新地址重新登录后" data-nav="org" data-next="acc-moved" data-no="P11" data-screen="" data-who="certified" id="org-moved">
-<div class="content-in">
-<div class="page-head"><div><h1 class="page-title">企业信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
-<div class="card">
-<div class="ident"><span aria-hidden="true" class="ident-mark">A</span><div><div class="ident-name">示例企业 A 有限公司</div><div class="ident-sub">Example Enterprise A Ltd.</div></div><span class="tag ok"><span class="dot"></span>已认证</span></div>
-<div class="facts-region bt"><dl class="facts">
-<div><dt>企业 id</dt><dd class="mono">ENT-DEMO-0001</dd></div>
-<div><dt>当前有效认证结论</dt><dd><span class="tag ok">已认证</span></dd></div>
-<div><dt>企业名称</dt><dd>示例企业 A 有限公司</dd></div>
-<div><dt>英文名称</dt><dd>Example Enterprise A Ltd.</dd></div>
-<div><dt>注册国家 / 地区</dt><dd>中国香港</dd></div>
-<div><dt>香港 CR 编号</dt><dd class="mono">DEMO-1234567</dd></div>
-<div><dt>香港 BR 编号</dt><dd class="mono">DEMO-76543210</dd></div>
-<div><dt>注册地址</dt><dd>香港中环示例大道 1 号示例大厦 10 楼</dd></div>
-</dl></div>
-</div>
-</div>
-</section>
 
-<section data-preview-set="new-address" data-address="0x3B7c9E1d5A2f8C4b6D0e7F3a9B1c5E8d2A4f6C30" data-crumb="用户中心/用户信息" data-group="用户信息" data-layout="app" data-name="新地址重新登录后" data-nav="me" data-no="U10" data-screen="" data-who="certified" id="me-moved">
-<div class="content-in">
-<div class="page-head"><div><h1 class="page-title">用户信息</h1><p class="page-desc">这些信息由资产可信平台维护，本平台只读。</p></div></div>
-<div class="card profile-sheet"><section class="profile-section">
-<div class="card-head"><h2>本次登录</h2></div>
-<div class="facts-region"><dl class="facts">
-<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x3B7c9E1d5A2f8C4b6D0e7F3a9B1c5E8d2A4f6C30">0x3B7c…6C30</span><button aria-label="复制登录地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
-<div><dt>同步时间</dt><dd class="mono"><time data-instant="2026-10-29T01:30:12Z" datetime="2026-10-29T01:30:12Z"></time><span class="cell-sub" data-zone=""></span></dd></div>
-</dl></div>
-</section><section class="profile-section">
-<div class="card-head"><h2>个人资料</h2></div>
-<div class="facts-region"><dl class="facts">
-<div><dt>姓名</dt><dd>张示例</dd></div>
-<div><dt>英文姓名</dt><dd>Zhang Shili</dd></div>
-<div><dt>邮箱</dt><dd>demo-user@example.com</dd></div>
-<div><dt>国籍</dt><dd>中国</dd></div>
-<div><dt>证件类型</dt><dd>身份证</dd></div>
-<div><dt>证件号码</dt><dd class="faint">暂不展示</dd></div>
-<div><dt>与企业的关系</dt><dd>授权代表</dd></div>
-</dl></div>
-</section><section class="profile-section">
-<div class="card-head"><h2>偏好设置</h2></div>
-<div class="preferences">
-<div class="preference-row"><div><label for="me-moved-language">界面语言</label><p class="hint">选择界面显示语言。</p></div><select aria-describedby="me-moved-feedback" class="inp" data-language="" id="me-moved-language"><option value="en">English</option><option value="zh">简体中文</option></select></div>
-<div class="preference-row"><div><label for="me-moved-timezone">时区</label><p class="hint">时间按该时区展示，业务时间本身不变。</p></div><select aria-describedby="me-moved-feedback" class="inp" data-timezone="" id="me-moved-timezone"><option>UTC</option><option>Asia/Shanghai</option><option>Asia/Hong_Kong</option><option>Asia/Singapore</option><option>Europe/London</option><option>America/New_York</option></select></div>
-<p aria-live="polite" class="hint preference-feedback" id="me-moved-feedback" role="status"></p>
-</div>
-</section></div>
-
-
-</div>
-</section>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <button class="demo-btn" id="demoBtn" type="button" aria-expanded="false" aria-controls="demoPanel"></button>
 <aside class="demo-panel" id="demoPanel" hidden aria-label="画面目录（评审工具）"></aside>
@@ -627,10 +495,6 @@
     gate:'acc-gate',
     gateByWho:{noent:'acc-noent'},
     logout:'login'
-  };
-  TP.previewSets = {
-    'new-address':{routes:{org:'org-moved',me:'me-moved',accounts:'acc-moved'},localOnly:true},
-    'company-b':{routes:{org:'org-reassigned',me:'me-reassigned',accounts:'acc-reassigned'},inbox:'empty',localOnly:true}
   };
   TP.boot('login');
 </script>

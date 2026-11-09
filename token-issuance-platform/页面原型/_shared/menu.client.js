@@ -7,9 +7,9 @@
   TP.NAV = [
     {group:'业务', items:[
       {key:'assets', label:'可信资产', icon:'asset', biz:true, desc:'查看本企业已确权的应收账款，从可发行的资产申请代币发行。'},
-      {key:'issue',  label:'代币发行', icon:'issue', biz:true, desc:'提交代币发行申请，查看审核进度与铸造结果。'},
+      {key:'issue',  label:'代币发行', icon:'issue', biz:true, desc:'提交代币发行申请，查看发行进度与铸造结果。'},
       {key:'tokens', label:'我的代币', icon:'token', biz:true, desc:'查看已铸造的代币，满足条件时发起销毁。'},
-      {key:'burn',   label:'销毁申请', icon:'burn',  biz:true, desc:'查看销毁申请的审核进度与解除监管进度。'}
+      {key:'burn',   label:'销毁申请', icon:'burn',  biz:true, desc:'查看销毁申请的销毁进度与资产托管状态。'}
     ]},
     {group:'用户中心', items:[
       {key:'accounts', label:'企业账户', icon:'wallet', biz:true, desc:'查看本企业当前登录地址。'},
@@ -17,4 +17,5 @@
       {key:'me',       label:'用户信息', icon:'user'}
     ]}
   ];
+  if(TP.addCopy) TP.addCopy({'提交代币发行申请，查看发行进度与铸造结果。':'Submit token issuance applications and track issuance progress and minting results.','查看销毁申请的销毁进度与资产托管状态。':'Track burn progress and asset custody status of burn requests.'});
 })(window.TP = window.TP || {});

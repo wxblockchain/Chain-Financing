@@ -505,6 +505,66 @@
 </div>
 </div>
 </section>
+<section class="auth-screen" data-crumb="账户/账户设置" data-group="登录与首次改密" data-layout="focus" data-name="登录已结束 · 账号锁定" data-nav="" data-next="login-ops" data-no="M185" data-screen="" data-who="none" hidden="" id="login-lock-ended">
+<div class="focus-card">
+<h1>管理端登录</h1>
+<div class="stack">
+<div class="note warn" role="status">
+<i data-ico="alert">
+</i>
+<div>账号已临时锁定，该账号的全部登录已结束。请在解锁后重新登录。</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="m5-field-lock-email">
+<span aria-hidden="true" class="req">*</span>登录邮箱</label>
+</div>
+<input aria-required="true" autocomplete="off" class="inp" id="m5-field-lock-email" type="email" value=""/>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="m5-field-lock-pass">
+<span aria-hidden="true" class="req">*</span>密码</label>
+</div>
+<div class="password-control">
+<input aria-required="true" autocomplete="new-password" class="inp" id="m5-field-lock-pass" type="password" value=""/>
+<button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m5-field-lock-pass" title="显示密码" type="button"><i data-ico="eye"></i></button>
+</div>
+</div>
+<button class="btn primary block" data-go="login-ops" type="button">重新登录</button>
+</div>
+</div>
+</section>
+<section class="auth-screen" data-crumb="账户/账户设置" data-group="登录与首次改密" data-layout="focus" data-name="登录已结束 · 凭据已重置" data-nav="" data-next="login-initial" data-no="M186" data-screen="" data-who="none" hidden="" id="login-reset-ended">
+<div class="focus-card">
+<h1>管理端登录</h1>
+<div class="stack">
+<div class="note warn" role="status">
+<i data-ico="alert">
+</i>
+<div>账号登录凭据已由平台重置，该账号的全部登录已结束。请使用平台另行告知的登录信息重新登录。</div>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="m5-field-reset-email">
+<span aria-hidden="true" class="req">*</span>登录邮箱</label>
+</div>
+<input aria-required="true" autocomplete="off" class="inp" id="m5-field-reset-email" type="email" value=""/>
+</div>
+<div class="field">
+<div class="field-caption">
+<label for="m5-field-reset-pass">
+<span aria-hidden="true" class="req">*</span>密码</label>
+</div>
+<div class="password-control">
+<input aria-required="true" autocomplete="new-password" class="inp" id="m5-field-reset-pass" type="password" value=""/>
+<button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m5-field-reset-pass" title="显示密码" type="button"><i data-ico="eye"></i></button>
+</div>
+</div>
+<button class="btn primary block" data-go="login-initial" type="button">重新登录</button>
+</div>
+</div>
+</section>
 <section class="auth-screen" data-crumb="账户/账户设置" data-group="登录与首次改密" data-layout="focus" data-name="首次登录 · 设置密码" data-nav="" data-next="login-changed" data-no="M18" data-restricted="" data-screen="" data-who="none" hidden="" id="first-empty">
 <div class="focus-card">
 <h1>设置新密码</h1>
@@ -1136,7 +1196,7 @@
 <div class="note red" role="alert">
 <i data-ico="info">
 </i>
-<div>账号信息已变化，本次验证已失效，请重新开始。</div>
+<div>验证已超过 10 分钟或账号信息已变化，本次验证已失效，原密码未改变。请重新获取并验证验证码。</div>
 </div>
 <button class="btn primary block" data-go="recover-email" type="button">重新开始</button>
 <div class="form-actions">
@@ -1189,7 +1249,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered" disabled="" type="button">重置密码</button>
 <button class="btn ghost sm" data-go="login-reg" type="button">取消</button>
@@ -1239,7 +1299,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered" type="button">重置密码</button>
 <button class="btn ghost sm" data-go="login-reg" type="button">取消</button>
@@ -1290,7 +1350,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered" disabled="" type="button">重置密码</button>
 <button class="btn ghost sm" data-go="login-reg" type="button">取消</button>
@@ -1340,7 +1400,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered" disabled="" type="button">正在保存</button>
 <button class="btn ghost sm" data-go="login-reg" type="button">取消</button>
@@ -1395,7 +1455,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered" type="button">重置密码</button>
 <button class="btn ghost sm" data-go="login-reg" type="button">取消</button>
@@ -3636,7 +3696,7 @@
 <button class="btn primary" data-go="invite-ready" type="button">添加机构</button>
 </div>
 </div>
-<div class="card institution-table-card">
+<div class="card institution-table-card" data-pager="4">
 <div class="card-head">
 <h2>机构</h2>
 <span class="sub">4 家</span>
@@ -3796,39 +3856,6 @@
 <h2>机构</h2>
 <span class="sub">0 家</span>
 </div>
-<form aria-label="筛选机构" class="asset-filters" data-static-form="">
-<div class="filter-toolbar"><label class="filter-select"><span class="sr-only">机构类型</span><select aria-label="机构类型" class="inp"><option value="">机构类型 · 全部</option><option>资产托管机构</option><option>审计机构</option><option>法律服务机构</option></select></label>
-<label class="filter-select">
-<span class="sr-only">机构状态</span>
-<select aria-label="机构状态" class="inp">
-<option value="">机构状态 · 全部</option>
-<option value="启用">机构状态 · 启用</option>
-<option value="停用">机构状态 · 停用</option>
-</select>
-</label>
-<label class="filter-select">
-<span class="sr-only">账号状态</span>
-<select aria-label="账号状态" class="inp">
-<option value="">账号状态 · 全部</option>
-<option value="待首登改密">账号状态 · 待首登改密</option>
-<option value="正常">账号状态 · 正常</option>
-<option value="锁定">账号状态 · 锁定</option>
-</select>
-</label>
-<div class="filter-query">
-<label class="filter-search">
-<span class="sr-only">机构编号、名称或登录邮箱</span>
-<i data-ico="search">
-</i>
-<input class="inp" placeholder="搜索机构编号、名称或登录邮箱" type="search"/>
-</label>
-<div class="filter-actions">
-<button class="btn sm ghost" type="reset">重置</button>
-<button class="btn sm primary" data-go="rg-no-results" type="button">查询</button>
-</div>
-</div>
-</div>
-</form>
 <div class="state" role="status">
 <span class="state-ico">
 <i data-ico="doc">
@@ -3880,7 +3907,7 @@
 <span class="sr-only">机构编号、名称或登录邮箱</span>
 <i data-ico="search">
 </i>
-<input class="inp" placeholder="搜索机构编号、名称或登录邮箱" type="search"/>
+<input class="inp" placeholder="搜索机构编号、名称或登录邮箱" type="search" value="ORG-DEMO-099"/>
 </label>
 <div class="filter-actions">
 <button class="btn sm ghost" type="reset">重置</button>
@@ -5728,7 +5755,7 @@
 </i>
 <div>机构已添加。</div>
 </div>
-<div class="card institution-table-card">
+<div class="card institution-table-card" data-pager="5">
 <div class="card-head">
 <h2>机构</h2>
 <span class="sub">5 家</span>
@@ -6471,6 +6498,154 @@
 <dt>发送时间</dt>
 <dd>
 <time data-instant="2026-10-20T03:00:00Z" datetime="2026-10-20T03:00:00Z">
+</time>
+</dd>
+</div>
+<div>
+<dt>发送结果</dt>
+<dd>
+<span class="tag ok">已发出</span>
+</dd>
+</div>
+</dl>
+</div>
+</div>
+</div>
+
+
+</div>
+</div>
+</section>
+<section class="institution-detail" data-crumb="系统管理/机构管理/机构详情" data-crumb-targets="/rg-list" data-group="机构详情" data-layout="app" data-name="机构详情 · 登录邮箱已更正" data-nav="regs" data-next="edit-ready" data-no="M187" data-screen="" data-who="ops" hidden="" id="rg-email-fixed">
+<div class="content-in">
+<div class="page-head">
+<div>
+<h1 class="page-title">示例机构 G</h1><p class="page-desc institution-identity"><span>机构编号</span> <span class="mono">ORG-DEMO-007</span></p>
+</div>
+<div class="page-actions">
+<button class="btn primary" data-go="edit-ready" type="button">编辑</button>
+<button class="btn" data-go="disable-confirm" type="button">停用机构</button>
+</div>
+</div>
+<div class="form-sheet">
+<div class="card">
+<div class="card-head">
+<h2>核心资料</h2>
+</div>
+<div class="card-b form">
+<div class="facts-region">
+<dl class="facts inset cols-3">
+
+
+
+
+<div><dt>机构编号</dt><dd><span class="mono">ORG-DEMO-007</span></dd></div><div>
+<dt>机构名称</dt>
+<dd>示例机构 G</dd>
+</div><div><dt>机构类型</dt><dd>法律服务机构</dd></div><div>
+<dt>联系人姓名</dt>
+<dd>示例联系人</dd>
+</div><div><dt>联系电话</dt><dd>+65 6000 0000</dd></div><div>
+<dt>联系邮箱</dt>
+<dd>contact@reg.example</dd>
+</div><div>
+<dt>所在国家或地区</dt>
+<dd>Singapore</dd>
+</div><div class="address-fact"><dt>注册地址</dt><dd>DEMO Office 08, Example Road, Singapore</dd></div></dl>
+</div>
+</div>
+</div><div class="card">
+<div class="card-head">
+<h2>机构级基础资质</h2>
+</div>
+<div class="card-b form"><div class="facts-region"><dl class="facts inset single"><div><dt>机构级基础资质说明</dt><dd>演示机构基础资质说明。</dd></div></dl></div>
+<ul class="file-list">
+<li class="file-row">
+<i data-ico="doc">
+</i>
+<div class="file-info">
+<button class="btn-link file-name" data-toast="演示文件，不提供真实文件。" type="button">DEMO-Licence.pdf</button>
+<div class="hint">PDF · 2.4 MB</div>
+</div>
+<div class="file-actions">
+<button aria-label="下载" class="btn icon" data-toast="演示文件，不提供真实文件。" title="下载" type="button"><i data-ico="download"></i></button>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="card">
+<div class="card-head">
+<h2>账号与维护信息</h2>
+</div>
+<div class="card-b form">
+<div class="facts-region">
+<dl class="facts inset cols-3">
+
+
+
+
+
+
+
+
+
+<div>
+<dt>登录邮箱</dt>
+<dd>invite-demo@reg.example</dd>
+</div><div>
+<dt>机构状态</dt>
+<dd>
+<span class="tag ok">启用</span>
+</dd>
+</div><div>
+<dt>账号状态</dt>
+<dd>
+<span class="tag warn">待首登改密</span>
+</dd>
+</div><div>
+<dt>添加时间</dt>
+<dd>
+<time data-instant="2026-10-30T02:30:00Z" datetime="2026-10-30T02:30:00Z">
+</time>
+</dd>
+</div><div>
+<dt>添加人</dt>
+<dd>运营示例账号</dd>
+</div><div>
+<dt>最近登录时间</dt>
+<dd>
+<time data-instant="2026-10-30T05:00:00Z" datetime="2026-10-30T05:00:00Z">
+</time>
+</dd>
+</div><div>
+<dt>最近更新时间</dt>
+<dd>
+<time data-instant="2026-10-30T02:30:00Z" datetime="2026-10-30T02:30:00Z">
+</time>
+</dd>
+</div><div>
+<dt>最近更新人</dt>
+<dd>运营示例账号</dd>
+</div><div>
+<dt>时间显示时区</dt>
+<dd>
+<span data-zone="">
+</span>
+</dd>
+</div></dl>
+</div>
+<h3 class="institution-subheading">邀请邮件发送结果</h3>
+<div class="facts-region">
+<dl class="facts inset cols-3">
+<div>
+<dt>收件邮箱</dt>
+<dd>invite-demo@reg.exampel</dd>
+</div>
+<div>
+<dt>发送时间</dt>
+<dd>
+<time data-instant="2026-10-30T02:30:00Z" datetime="2026-10-30T02:30:00Z">
 </time>
 </dd>
 </div>
@@ -7593,7 +7768,7 @@
 <div class="note warn" role="alert">
 <i data-ico="info">
 </i>
-<div>停用后不再进入新业务的机构选择范围。账号状态和历史资料不变。</div>
+<div>停用后该机构不再进入新的机构分配；已有的分配、材料待办和解除托管继续有效。账号状态和历史资料不变。</div>
 </div>
 </div>
 <div class="modal-f">
@@ -7625,7 +7800,7 @@
 <div class="note warn" role="alert">
 <i data-ico="info">
 </i>
-<div>停用后不再进入新业务的机构选择范围。账号状态和历史资料不变。</div>
+<div>停用后该机构不再进入新的机构分配；已有的分配、材料待办和解除托管继续有效。账号状态和历史资料不变。</div>
 </div>
 </div>
 <div class="modal-f">
@@ -8028,7 +8203,7 @@
 <div class="note red" role="alert">
 <i data-ico="info">
 </i>
-<div>账号信息已变化，本次验证已失效，请重新开始。</div>
+<div>验证已超过 10 分钟或账号信息已变化，本次验证已失效，原密码未改变。请重新获取并验证验证码。</div>
 </div>
 <button class="btn primary block" data-go="recover-ops-email" type="button">重新开始</button>
 <div class="form-actions">
@@ -8081,7 +8256,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered-ops" disabled="" type="button">重置密码</button>
 <button class="btn ghost sm" data-go="login-ops" type="button">取消</button>
@@ -8131,7 +8306,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered-ops" type="button">重置密码</button>
 <button class="btn ghost sm" data-go="login-ops" type="button">取消</button>
@@ -8182,7 +8357,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered-ops" disabled="" type="button">重置密码</button>
 <button class="btn ghost sm" data-go="login-ops" type="button">取消</button>
@@ -8232,7 +8407,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered-ops" disabled="" type="button">正在保存</button>
 <button class="btn ghost sm" data-go="login-ops" type="button">取消</button>
@@ -8287,7 +8462,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered-ops" type="button">重置密码</button>
 <button class="btn ghost sm" data-go="login-ops" type="button">取消</button>
@@ -8969,7 +9144,7 @@
 <div class="note" role="status">
 <i data-ico="info">
 </i>
-<div>重置后全部登录将结束，请用新密码重新登录。</div>
+<div>请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。</div>
 </div>
 <button class="btn primary block" data-go="login-recovered-initial" type="button">重置密码</button>
 <button class="btn ghost sm" data-go="login-reg" type="button">取消</button>
@@ -9254,10 +9429,10 @@ TP.addCopy({
   "找回 · 验证码无效": "Recovery · invalid code",
   "账号暂时锁定，剩余 14 分钟 30 秒。请在解锁后重新找回。": "Account temporarily locked. 14 minutes 30 seconds remaining. Restart recovery after the lockout.",
   "找回 · 验证后账号锁定": "Recovery · locked after verification",
-  "账号信息已变化，本次验证已失效，请重新开始。": "Account information changed. This verification is no longer valid. Please start again.",
+  "验证已超过 10 分钟或账号信息已变化，本次验证已失效，原密码未改变。请重新获取并验证验证码。": "This verification is no longer valid because more than 10 minutes have passed or the account information changed. Your password is unchanged. Request and verify a new code.",
   "重新开始": "Start again",
   "找回 · 验证资格已失效": "Recovery · verification expired",
-  "重置后全部登录将结束，请用新密码重新登录。": "Resetting your password ends all sessions. Sign in again with the new password.",
+  "请在验证通过后 10 分钟内完成重置。重置后全部登录将结束，请用新密码重新登录。": "Complete the reset within 10 minutes of verification. Resetting your password ends all sessions. Sign in again with the new password.",
   "重置密码": "Reset password",
   "取消": "Cancel",
   "找回 · 设置新密码": "Recovery · set a new password",
@@ -9458,7 +9633,7 @@ TP.addCopy({
   "资质附件暂时无法读取，请重试。": "Licence files are temporarily unavailable. Please try again.",
   "资质附件 · 读取失败": "Licence files · load failed",
   "停用与启用": "Disable and enable",
-  "停用后不再进入新业务的机构选择范围。账号状态和历史资料不变。": "Companies will no longer be able to select this institution for new issuance applications. It can still sign in and handle existing business, with related messages continuing.",
+  "停用后该机构不再进入新的机构分配；已有的分配、材料待办和解除托管继续有效。账号状态和历史资料不变。": "After disabling, the institution is excluded from new institution assignments. Existing assignments, material tasks and custody releases remain valid. Account status and historical records are unchanged.",
   "确认停用": "Confirm disable",
   "停用机构 · 确认": "Disable institution · confirm",
   "停用机构 · 提交中": "Disable institution · submitting",
@@ -9524,7 +9699,7 @@ TP.addCopy({
   "选择文件": "Choose files",
   "添加后运营不能修改；该邮箱不能曾归属于其他管理端账号。": "Operators cannot change this email after creation. It must not have belonged to another admin account.",
   "本机构已停用。": "This institution is disabled.",
-  "停用后不再进入新业务的机构选择范围。账号状态和历史资料不变。": "The institution will be excluded from new business selections. Account status and historical records are unchanged.",
+  "停用后该机构不再进入新的机构分配；已有的分配、材料待办和解除托管继续有效。账号状态和历史资料不变。": "After disabling, the institution is excluded from new institution assignments. Existing assignments, material tasks and custody releases remain valid. Account status and historical records are unchanged.",
   "启用后恢复进入新业务的机构选择范围，账号状态不变。": "The institution will be available for new business selections. Account status is unchanged.",
   "请补齐标记的机构联系资料后保存。": "Complete the required institution contact details before saving.",
   "机构 ORG-DEMO-007 与账号已建立，开通邮件已发往 invite-demo@reg.example。": "Institution ORG-DEMO-007 and its account were created. The account email was sent to invite-demo@reg.example.",
@@ -9550,5 +9725,12 @@ TP.addCopy({
   "无权查看或机构不存在": "No access or institution does not exist"
 });
 TP.addCopy({"左右滚动查看完整列表，操作始终可用。":"Scroll horizontally for all columns. Actions stay available."});
+TP.addCopy({
+  "登录已结束 · 账号锁定": "Session ended · account locked",
+  "登录已结束 · 凭据已重置": "Session ended · credentials reset",
+  "机构详情 · 登录邮箱已更正": "Institution details · login email corrected",
+  "账号已临时锁定，该账号的全部登录已结束。请在解锁后重新登录。": "This account is temporarily locked and all of its sessions have ended. Sign in again after the lock expires.",
+  "账号登录凭据已由平台重置，该账号的全部登录已结束。请使用平台另行告知的登录信息重新登录。": "The platform has reset this account’s sign-in credentials and all of its sessions have ended. Sign in with the details provided to you separately."
+});
 TP.boot("login-ops");
 </script></body></html>

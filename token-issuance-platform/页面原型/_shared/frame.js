@@ -361,6 +361,29 @@
   /* 列表进入的详情页（三级及以上面包屑）：标题行滚动时吸附在顶栏下方，编号与操作按钮始终可见。
      --sticky-head-h 供详情分区导航与锚点偏移使用；吸附后加底线区分滚动内容。 */
   var stickyHead = null;
+  /* 列表分页（PRD M2 §5.8 业务列表通用规则）：卡片加 data-pager 即在表格下方生成分页条；
+     data-pager 的值为符合条件的总数（缺省为本页行数），每页 10 条。只展示第 1 页，不实现翻页。 */
+  var PAGE_TOAST = '演示数据只提供第 1 页。';
+  TP.buildPager = function(count, label){
+    var pager = document.createElement('nav'); pager.className = 'asset-pagination'; pager.setAttribute('aria-label', label || '分页');
+    var pages = Math.max(1, Math.ceil(count/10)), later = pages>1 ? ' data-toast="'+PAGE_TOAST+'"' : ' disabled', buttons = '';
+    for(var n=2; n<=pages; n++) buttons += '<button class="btn sm ghost" type="button" aria-label="第 '+n+' 页" data-toast="'+PAGE_TOAST+'">'+n+'</button>';
+    pager.innerHTML = '<span class="pagination-total"><span>共</span> '+count+' <span>条</span></span><div class="pagination-controls">'+
+      '<button class="btn sm ghost" type="button" disabled aria-label="上一页">'+TP.icon('back')+'</button>'+
+      '<button class="btn sm page-current" type="button" aria-current="page" aria-label="第 1 页">1</button>'+buttons+
+      '<button class="btn sm ghost" type="button"'+later+' aria-label="下一页">'+TP.icon('chev')+'</button></div>';
+    return pager;
+  };
+  function fillPagers(){
+    $$('[data-pager]').forEach(function(card){
+      if(card.querySelector(':scope > .asset-pagination')) return;
+      var rows = card.querySelectorAll('table tbody tr').length;
+      card.appendChild(TP.buildPager(Number(card.dataset.pager) || rows));
+    });
+  }
+  if(TP.addCopy) TP.addCopy({'分页':'Pages','共':'Total','条':'records','上一页':'Previous page','下一页':'Next page','第 1 页':'Page 1','第 2 页':'Page 2','第 3 页':'Page 3',
+    '演示数据只提供第 1 页。':'This demo includes page 1 only.'});
+
   function markStickyHeads(){
     order.forEach(function(sec){
       if(sec.dataset.layout!=='app' || (sec.hasAttribute('data-overlay') && !sec.hasAttribute('data-inline'))) return;
@@ -399,6 +422,7 @@
     $$('i[data-asset]').forEach(function(i){ i.outerHTML = TP.assetIcon(i.dataset.asset); });
     $$('i[data-ico]').forEach(function(i){ i.outerHTML = TP.icon(i.dataset.ico); });
     order = $$('[data-screen]');
+    fillPagers();
     markStickyHeads();
     $$('.login-screen').forEach(function(sec){ $('#focusMain').appendChild(sec); });
     $('#demoBtn').textContent = '画面目录 · 演示数据';

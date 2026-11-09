@@ -74,22 +74,25 @@
     el.innerHTML = html;
   }
 
-  var STATE = {act:'可前往原业务', done:'原动作已办完', page:'前往固定页面', denied:'相关内容不可访问', none:'不跳转', undrawn:'原业务未纳入原型'};
-  var STATE_EN = {act:'record available', done:'action already completed', page:'opens a fixed page', denied:'content unavailable', none:'no destination', undrawn:'record not in prototype'};
-  function stateOf(m){
+  var STATE = {act:'可前往原业务', done:'原动作已办完', gated:'前往原业务 · 认证引导', page:'前往固定页面', denied:'相关内容不可访问', none:'不跳转', undrawn:'原业务未纳入原型'};
+  var STATE_EN = {act:'record available', done:'action already completed', gated:'opens record · verification required', page:'opens a fixed page', denied:'content unavailable', none:'no destination', undrawn:'record not in prototype'};
+  /* gated：本企业未认证。仍可前往原业务，由原业务页面给出认证引导（原型以该菜单的受限引导画面代表）。 */
+  function stateOf(m, gated){
     if(m.denied) return 'denied';
     if(!m.go) return m.ref ? 'undrawn' : 'none';
     if(m.go.page) return 'page';
+    if(gated && m.go.nav) return 'gated';
     return m.done ? 'done' : 'act';
   }
 
   /* 相关业务：原业务识别信息；可前往时点编号进入（与平台“编号即入口”一致），固定页面用文字按钮。 */
-  function related(m){
-    var st = stateOf(m), out = '';
+  function related(m, gated){
+    var st = stateOf(m, gated), out = '';
     if(m.ref){
       out += '<div class="card-sec msg-related"><h2 class="sub-h">相关业务</h2><div class="facts-region"><dl class="facts">'+m.ref.map(function(r,i){
-        var linked = i===0 && (st==='act' || st==='done');
-        return '<div><dt>'+r[0]+'</dt><dd>'+(linked?'<button type="button" class="btn-link mono" data-module-key="'+m.go.key+'" data-toast="'+SCOPE+'">'+esc(r[1])+'</button>':'<span class="mono">'+esc(r[1])+'</span>')+'</dd></div>';
+        var linked = i===0 && (st==='act' || st==='done' || st==='gated');
+        var to = !linked ? '' : st==='gated' ? ' data-nav-key="'+m.go.nav+'"' : ' data-module-key="'+m.go.key+'" data-toast="'+SCOPE+'"';
+        return '<div><dt>'+r[0]+'</dt><dd>'+(linked?'<button type="button" class="btn-link mono"'+to+'>'+esc(r[1])+'</button>':'<span class="mono">'+esc(r[1])+'</span>')+'</dd></div>';
       }).join('')+(m.extra||[]).map(function(x){ return '<div><dt>'+x[0]+'</dt><dd><span class="tag warn">'+esc(x[1])+'</span></dd></div>'; }).join('')+'</dl></div>'+
       (st==='denied'?'<div class="msg-go"><p class="note">'+TP.icon('info')+'<span>相关内容暂不可访问。</span></p></div>':'')+'</div>';
     }
@@ -97,27 +100,27 @@
     return out;
   }
 
-  /* 消息详情的页面内容；opts.unsaved 为已读保存失败（正文照常可读，仍为未读）。 */
+  /* 消息详情的页面内容；opts.unsaved 为已读保存失败（正文照常可读，仍为未读）；opts.gated 为本企业未认证。 */
   function detail(m, opts){
     opts = opts || {};
     return '<div class="content-in msg-reading"><div class="page-head"><div>'+
       '<div class="page-title-row"><h1 class="page-title">'+IB.title(m)+'</h1><span class="tag">'+IB.CATS[m.cat]+'</span></div>'+
       '<p class="page-desc"><time data-instant="'+m.at+'"></time><span class="faint"> · </span><span>时区</span> <span data-zone></span></p></div></div>'+
       (opts.unsaved?'<div class="note warn banner" role="alert">'+TP.icon('alert')+'<span class="grow">未能标为已读，这条消息仍为未读。</span><button type="button" class="btn sm"'+go(opts.retryGo)+'>重试</button></div>':'')+
-      '<div class="card msg-detail"><div class="card-b"><p class="msg-body">'+IB.body(m)+'</p></div>'+related(m)+'</div></div>';
+      '<div class="card msg-detail"><div class="card-b"><p class="msg-body">'+IB.body(m)+'</p></div>'+related(m, opts.gated)+'</div></div>';
   }
 
   /* 逐条详情画面：每条消息一屏，打开即对本人已读（data-unread 为打开后的未读数）。 */
   function sections(o){
     var base = IB.unread(o.role), copy = {}, html = '';
     IB.DATA[o.role].forEach(function(m, i){
-      var st = stateOf(m), no = o.no + String(i+1).padStart(2,'0'), ref = m.ref ? ' · '+m.ref[0][1] : '';
+      var st = stateOf(m, o.gated), no = o.no + String(i+1).padStart(2,'0'), ref = m.ref ? ' · '+m.ref[0][1] : '';
       var name = m.t[0]+ref+' · '+STATE[st];
       copy[name] = m.t[1]+ref+' · '+STATE_EN[st];
       var id = o.prefix + m.id;
       html += '<section data-screen id="'+id+'" data-no="'+no+'" data-group="'+o.group+'" data-name="'+esc(name)+'" data-layout="app" data-who="'+o.who+'" data-nav=""'+
         ' data-crumb="消息通知/消息详情" data-crumb-targets="'+o.list+'/"'+(o.next && o.next[m.id]?' data-next="'+o.next[m.id]+'"':'')+
-        ' data-unread="'+(base-(m.read?0:1))+'">'+detail(m)+'</section>';
+        ' data-unread="'+(base-(m.read?0:1))+'">'+detail(m, {gated:o.gated})+'</section>';
     });
     TP.addCopy(copy);
     return html;
@@ -125,7 +128,7 @@
 
   TP.inboxPages = {
     detail: detail, find: IB.find,
-    /* details: [{role, who, prefix, no, group, list, next}]；先生成逐条详情，再填充各屏列表 */
+    /* details: [{role, who, prefix, no, group, list, next, gated}]；先生成逐条详情，再填充各屏列表 */
     build: function(details){
       var host = document.getElementById('inboxScreens');
       (details||[]).forEach(function(o){ host.insertAdjacentHTML('beforeend', sections(o)); });

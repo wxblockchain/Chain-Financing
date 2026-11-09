@@ -4,8 +4,10 @@ TP.registerModule({
   variants:['opsnew', 'regoff', 'regnew'],
   routes:{
     burn:{ops:'b-list', opsnew:'b-list'},
-    release:{reg:'r-list', regoff:'r-list', regnew:'r-list'},
-    ledger:{ops:'l-list', opsnew:'l-list', reg:'rl-list', regoff:'rl-list', regnew:'rl-list'},
+    release:{reg:'r-list', regoff:'r-list', regnew:'r-list', regd:'r-list-audit'},
+    ledger:{ops:'l-list', opsnew:'l-list', reg:'rl-list', regoff:'rl-list', regnew:'rl-list', regd:'rld-list'},
+    // M7 审计机构消息（NT-R04）前往代币详情
+    auditToken025:{regd:'rld-025'},
     ledgerToken001:{ops:'l-001', opsnew:'l-001'},
     reviewToken:{ops:'l-027', opsnew:'l-027', reg:'rl-027', regoff:'rl-027', regnew:'rl-027'},
     // M7 消息前往原业务：运营进入销毁记录详情，资产托管机构进入解除托管详情
