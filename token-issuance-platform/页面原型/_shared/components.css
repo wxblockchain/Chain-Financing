@@ -289,7 +289,6 @@ table.contract-list{table-layout:fixed;min-width:960px}
 .contract-actions{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-3)}
 .contract-actions .actlink{min-height:var(--ctrl-h-sm);padding-inline:0;white-space:nowrap}
 .tbl .contract-actions .actlink:last-child{margin-right:0}
-.contract-card .card-head .sub{margin-left:auto}
 /* 放大或矮视口时，为已有画面目录按钮留出底部空间，避免遮挡确认。 */
 .modal-mask.contract-mask{padding-bottom:calc(var(--ctrl-h-sm) + var(--sp-7))}
 
@@ -303,8 +302,9 @@ table.contract-list{table-layout:fixed;min-width:960px}
 .note.warn{background:var(--warn-bg);border-color:var(--warn-border);border-left-color:var(--warn);color:var(--warn)}
 .note.red{background:var(--danger-bg);border-color:var(--danger-border);border-left-color:var(--danger);color:var(--danger)}
 .note .btn{margin-left:auto;align-self:center}
-.banner{margin-bottom:var(--sp-5)}
-.card+.banner{margin-top:var(--sp-4);margin-bottom:var(--sp-4)}
+/* 页面级提示条与卡片同一纵向节奏：与上下区块统一相距 16 px（各模块共用）。 */
+.banner,.content-in>.note{margin-bottom:var(--sp-4)}
+.card+.banner,.content-in>.card+.note{margin-top:var(--sp-4)}
 
 /* ---------- 区块状态：空、失败、受限 ---------- */
 .state{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--sp-2);padding:var(--sp-9) var(--sp-6)}
@@ -482,6 +482,9 @@ table.contract-list{table-layout:fixed;min-width:960px}
 .institution-identity{display:flex;align-items:baseline;gap:var(--sp-2);font-size:var(--ui-field-label)}
 .institution-identity .mono{color:var(--text)}
 .institution-detail .address-fact{grid-column:1/-1}
+/* 机构详情卡片内的只读字段与其他模块详情同一上下留白（卡片头到首个字段名 24 px）。 */
+.institution-detail .card-b>.facts-region:first-child{margin-top:calc(var(--sp-2) - var(--card-pad))}
+.institution-detail .card-b>.facts-region:last-child{margin-bottom:calc(var(--sp-2) - var(--card-pad))}
 @container facts (min-width:900px){.institution-detail .facts.cols-3>.address-fact{grid-column:span 2}}
 .institution-subheading{border-top:1px solid var(--row-line);padding-top:var(--sp-5);font-size:var(--ui-section-title);font-weight:600;line-height:var(--lh-body)}
 .institution-reference .facts{padding-block:var(--sp-1)}
@@ -711,7 +714,8 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
   .party-panel+.party-panel{border-top:0;border-left:1px solid var(--border)}
 }
 .sub-empty{padding:0 var(--card-pad) var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
-.page-desc [data-zone]{display:inline;font-family:var(--mono);font-size:var(--fs-13)}
+/* 时区是说明文字而非编号或地址：各模块统一使用正文字体与所在行字号。 */
+.page-desc [data-zone]{display:inline}
 /* Asset details reuse the shared facts layout; record tables remain inset surfaces. */
 .asset-detail .card-head,.asset-related .card-head{padding-block:var(--sp-5)}
 .asset-detail .sub-h{font-size:var(--fs-14);padding-bottom:var(--sp-3);flex-wrap:wrap}
@@ -958,7 +962,6 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 /* M4a 四项只读销毁进度：保留原有时间与来源/机构，标记只补充状态辨识。 */
 .token-progress .card-head .sub{flex:1;min-width:min(100%,32ch)}
 .token-progress .review-timeline.compact :is(p,time){grid-column:2;margin-top:var(--sp-1);font-size:var(--fs-12)}
-.token-screen [data-zone]{font-family:var(--sans)}
 @media(max-width:1100px){.token-progress .review-timeline.compact.four-stage{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.token-progress .review-timeline.compact.four-stage{grid-template-columns:minmax(0,1fr)}}
 .issuance-summary .card-head,.progress-summary .card-head{padding-block:var(--sp-3);flex-wrap:wrap;gap:var(--sp-1) var(--sp-3)}
@@ -992,11 +995,11 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
   .review-screen .operation-meta{grid-template-columns:minmax(0,1fr)}
 }
 /* 企业申请的文件分区：同一清单用行分隔，不为每一份文件再套卡片。 */
-:is(.issuance-files,.review-screen) .file-list{gap:0}
-:is(.issuance-files,.review-screen) .file-row{border:0;border-radius:0;border-top:1px solid var(--row-line);padding:var(--sp-3) 0;align-items:flex-start}
-:is(.issuance-files,.review-screen) .file-row:first-child{border-top:0}
-:is(.issuance-files,.review-screen) .file-row>svg.i{margin-top:var(--sp-1);color:var(--faint)}
-:is(.issuance-files,.review-screen) .file-actions{align-self:center}
+:is(.issuance-files,.review-screen,.institution-detail) .file-list{gap:0}
+:is(.issuance-files,.review-screen,.institution-detail) .file-row{border:0;border-radius:0;border-top:1px solid var(--row-line);padding:var(--sp-3) 0;align-items:flex-start}
+:is(.issuance-files,.review-screen,.institution-detail) .file-row:first-child{border-top:0}
+:is(.issuance-files,.review-screen,.institution-detail) .file-row>svg.i{margin-top:var(--sp-1);color:var(--faint)}
+:is(.issuance-files,.review-screen,.institution-detail) .file-actions{align-self:center}
 .issuance-files .card-b{padding-top:var(--sp-3);padding-bottom:var(--sp-4)}
 .issuance-files .form-sheet{gap:var(--sp-3)}
 .issuance-files .card-head{padding-block:var(--sp-4);flex-wrap:wrap}
@@ -1036,13 +1039,12 @@ html:has(.issuance-form:not([hidden])){scroll-padding-top:calc(var(--app-header-
 .signature-disclosure>summary{min-height:var(--ctrl-h)}
 .signature-disclosure>.facts{padding:0;border-top:1px solid var(--row-line)}
 .issuance-screen .money .mono{font-family:var(--sans);font-variant-numeric:tabular-nums}
-.issuance-screen [data-zone]{font-family:var(--sans)}
 .issuance-list .c-app{width:19%}.issuance-list .c-asset{width:18%}.issuance-list .c-amount{width:19%}.issuance-list .c-time{width:18%}.issuance-list .c-status{width:auto}
 .issuance-list .issuance-disclosure>summary{justify-content:flex-end;font-size:var(--fs-12)}
-/* 桌面评审入口移入侧栏空白区域，避免遮挡文件移除、下载和吸底主操作。 */
+/* 桌面评审入口统一放在侧栏底部空白区域（全部模块），避免遮挡表格操作列、文件操作和吸底主操作。 */
 @media(min-width:1101px){
-  :is(.issuance-catalog,.sidebar-catalog).demo-btn{left:var(--sp-4);right:auto;max-width:calc(var(--sidebar-w) - var(--sp-7));font-size:var(--fs-11);box-shadow:none}
-  :is(.issuance-catalog,.sidebar-catalog).demo-panel{left:var(--sp-4);right:auto}
+  .demo-btn{left:var(--sp-4);right:auto;max-width:calc(var(--sidebar-w) - var(--sp-7));font-size:var(--fs-11);box-shadow:none}
+  .demo-panel{left:var(--sp-4);right:auto}
 }
 /* 时间线下方的审核意见、审核人：以轻分隔线承接时间线，与时间线同一左缘。 */
 .review-timeline+.facts-region{margin-inline:var(--card-pad);border-top:1px solid var(--row-line)}
@@ -1062,7 +1064,7 @@ html:has(.issuance-form:not([hidden])){scroll-padding-top:calc(var(--app-header-
 /* 预览中的时间按本人所选时区展示，标题行右侧标明时区。 */
 .dd.inbox .inbox-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--sp-1) var(--sp-3)}
 .inbox-zone{font-size:var(--fs-12);color:var(--faint);white-space:nowrap}
-.inbox-zone [data-zone]{display:inline;font-family:var(--mono)}
+.inbox-zone [data-zone]{display:inline}
 .inbox-panel .msg-list{overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;flex:1;min-height:0}
 .inbox-state{padding:var(--sp-7) var(--sp-5)}
 .inbox-all{display:block;width:100%;flex:none;padding:var(--sp-3);text-align:center;border-top:1px solid var(--border);color:var(--accent);font-size:var(--fs-13);font-weight:500}

@@ -4,7 +4,7 @@
 
 本轮为既有企业端控制台的视觉适配（existing-system adaptation），基线为 `65ef3cb` 的 86 屏原型。修改本模块 HTML、README，并在共享组件 CSS 中为本模块增加显式变体、同步组件规范 §9；不改其他模块页面、共享 token、壳层、菜单或消息数据，继续使用 `institution-copy.js` 机构词汇。
 
-视觉基线沿用 [`_shared/tokens.css`](../../_shared/tokens.css)、[`components.css`](../../_shared/components.css) 和[组件规范 §9](../../_shared/design-system/组件规范.md#9-信息密集记录与只读办理进度m4a)：主色、字体、控件、侧栏、卡片与表格字号均继承现有 token。文件继续复用 `.material-batch` / `.file-list` / `.document-preview`，进度复用 `.review-timeline.compact.four-stage`。新增 `.institution-files`、`.token-progress`、`.token-screen` 只在显式标记的 M4a 上生效；目录位置用 `.sidebar-catalog` 复用现有桌面侧栏布局，不新增业务运行时。
+视觉基线沿用 [`_shared/tokens.css`](../../_shared/tokens.css)、[`components.css`](../../_shared/components.css) 和[组件规范 §9](../../_shared/design-system/组件规范.md#9-信息密集记录与只读办理进度m4a)：主色、字体、控件、侧栏、卡片与表格字号均继承现有 token。文件继续复用 `.material-batch` / `.file-list` / `.document-preview`，进度复用 `.review-timeline.compact.four-stage`。新增 `.institution-files`、`.token-progress` 只在显式标记的 M4a 上生效；画面目录位置与时区字体沿用全模块统一规则，不新增业务运行时。
 
 ## 本轮 UI 优化
 
@@ -19,7 +19,7 @@
 
 - 仓库联看：完整同步 `页面原型/` 后双击 [index.html](../../index.html) 选择“已认证企业”，或直接双击本目录 [我的代币与销毁申请.html](我的代币与销毁申请.html)。
 - 单模块附件：在 `页面原型/` 下执行 `python3 _shared/export.py --source 面客端/M4a-我的代币与销毁申请/我的代币与销毁申请.html --output <仓库外路径>.html`；生成件可双击离线打开，跨模块入口显示范围提示。
-- 右下角「画面目录 · 演示数据」默认关闭，提供全部画面及「主流程下一屏」。等待钱包或链上结果的画面用该目录预览后续，不连接真实钱包、不广播交易、不模拟自动成功。
+- 侧栏底部（窄屏为右下角）的「画面目录 · 演示数据」默认关闭，提供全部画面及「主流程下一屏」。等待钱包或链上结果的画面用该目录预览后续，不连接真实钱包、不广播交易、不模拟自动成功。
 
 ## 主流程
 
