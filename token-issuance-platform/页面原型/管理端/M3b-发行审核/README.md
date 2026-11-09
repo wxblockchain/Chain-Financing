@@ -48,6 +48,8 @@
 2026-11-09 修复：附件嵌入 `srcdoc` 沙箱时，历史地址写入被拒绝曾中断展示渲染，导致操作进度和其他日期、时区为空。共享 `frame.js` 现允许继续渲染；页面布局与业务数据未改。Chromium 实测本地单文件与受限嵌入预览各 19 详情 × 中英文 × 1280/1440/1920 px，初次渲染、按钮切屏、弹窗焦点/关闭、底部定位与 UTC/Asia/Shanghai 转换均正常，无脚本错误；另核验 M3a、M4b、M5 导出件的嵌入启动。
 
 
+2026-11-09 补数：运营主流程详情此前除 `o-with-material` 外均显示“暂无机构材料”，从申请列表或 index.html 进入时看不到有数据的材料区。现将同一申请（C + D 分配）的三批五份材料补入 `o-wait-ops`、`o-ops-rejected`、`o-minting`、`o-minting-disabled`、`o-minting-timeout`、`o-failed`、`o-success`、`o-upstream`、`o-cache`、`o-sign-error` 共 10 屏，上传时间均早于驳回/发起铸造，阶段为“铸造前”。`o-wait-reg`（未分配）与 `o-assigned-*`（刚完成分配）保留零材料空态。文件预览弹窗关闭后回到打开时的详情。Chromium 实测源码与单文件附件各 11 详情 × 中文 / English × 1280 / 1440 / 1920 px，材料区、时间时区、展开与预览返回正常，无脚本错误或整体横向溢出；组件与业务规则未改。
+
 ## 2026-11-06 · M5 边界对齐
 
 按最新 M5 PRD，将原由 M5 承载的 32 屏机构待办与材料画面连同路由原样迁入本模块。`tasks`、`institutionApplication`、`institutionApplicationMinted` 现由本模块提供；侧栏与登录后机构默认入口保持可达。此次只迁移归属，不新增或改变 M3b 业务规则。迁入画面如下，均可通过本模块画面目录进入。
