@@ -993,11 +993,11 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .review-screen .material-batch>summary:hover{background:var(--card-2)}
 .review-screen .batch-toggle{align-self:start;padding-block:var(--sp-1)}
 .review-screen .batch-meta .operation-time{margin-inline-start:auto;font-variant-numeric:tabular-nums}
-.review-screen .operation-meta{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-1) var(--sp-6)}
-.review-screen .operation-detail{border-inline-start:1px solid var(--border);border-radius:0;background:transparent;padding-block:var(--sp-1)}
+:is(.review-screen,.operation-history) .operation-meta{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-1) var(--sp-6)}
+:is(.review-screen,.operation-history) .operation-detail{border-inline-start:1px solid var(--border);border-radius:0;background:transparent;padding-block:var(--sp-1)}
 @media(max-width:1100px){
   .review-screen .batch-meta .operation-time{margin-inline-start:0}
-  .review-screen .operation-meta{grid-template-columns:minmax(0,1fr)}
+  :is(.review-screen,.operation-history) .operation-meta{grid-template-columns:minmax(0,1fr)}
 }
 /* 企业申请的文件分区：同一清单用行分隔，不为每一份文件再套卡片。 */
 :is(.issuance-files,.review-screen,.institution-detail) .file-list{gap:0}
