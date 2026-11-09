@@ -739,18 +739,29 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .dd-list.admin{width:240px}
 
 /* ---------- 审核列表、进度与单项选择（静态画面） ---------- */
-.tbl.review-list{table-layout:fixed}
+/* M3b 八列申请列表：编号保持整段、名称换行，操作列沿用公共吸右。 */
+.tbl.review-list{table-layout:fixed;min-width:var(--asset-table-min)}
 .review-list :is(th,td){padding-inline:var(--sp-2);white-space:normal;overflow-wrap:anywhere}
 .review-list :is(th,td):first-child{width:14%;padding-left:var(--card-pad)}
-.review-list th:nth-child(2){width:14%}
+.review-list th:nth-child(2){width:16%}
 .review-list th:nth-child(3){width:13%}
 .review-list th:nth-child(4){width:13%}
 .review-list th:nth-child(5){width:12%}
-.review-list th:nth-child(6){width:13%}
-.review-list th:nth-child(7){width:13%}
-.review-list .col-act{width:8%;padding-right:var(--card-pad)}
+.review-list th:nth-child(6){width:12%}
+.review-list th:nth-child(7){width:auto}
+.review-list .col-act{width:calc(var(--ctrl-h) * 2);padding-right:var(--card-pad)}
 .review-list .tag{white-space:normal}
 .review-list .money{flex-wrap:wrap;justify-content:flex-end}
+.review-list td:first-child .btn-link{white-space:nowrap}
+/* 显式选择列变体；不影响机构档案、只读分配名单及确认表格。 */
+.institution-choice{table-layout:fixed}
+.tbl.institution-choice :is(th,td):first-child{width:var(--ctrl-h);padding-inline:var(--sp-2);text-align:center}
+.institution-choice th:nth-child(2){width:34%}
+.institution-choice th:nth-child(3){width:auto}
+.institution-choice th:last-child{width:calc(var(--ctrl-h) * 2 + var(--sp-4))}
+.institution-choice :is(th,td){white-space:normal;overflow-wrap:anywhere}
+.institution-choice input{width:var(--asset-icon-size);height:var(--asset-icon-size);accent-color:var(--accent);vertical-align:middle}
+.review-screen .choice-card b{color:var(--text);font-weight:600}
 /* M3b 多机构名单与按上传批次分组的材料；不增加审批或材料齐全判断。 */
 .assignment-list :is(th,td){white-space:normal;overflow-wrap:anywhere}
 .assignment-list th:first-child{width:30%}
@@ -948,12 +959,22 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .operation-detail{margin-top:var(--sp-3);padding:var(--sp-3) var(--sp-4);border-radius:var(--radius-xs);background:var(--card-2);overflow-wrap:anywhere}
 .operation-detail h4{margin:0 0 var(--sp-1);font-size:var(--fs-13);color:var(--muted);font-weight:500}
 .operation-detail p{margin:0;font-size:var(--fs-14)}
+/* M3b 的批次与操作日志仅调整层级，时间、账号和业务原文完整保留。 */
+.review-screen .material-batch>summary:hover{background:var(--card-2)}
+.review-screen .batch-toggle{align-self:start;padding-block:var(--sp-1)}
+.review-screen .batch-meta .operation-time{margin-inline-start:auto;font-variant-numeric:tabular-nums}
+.review-screen .operation-meta{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-1) var(--sp-6)}
+.review-screen .operation-detail{border-inline-start:1px solid var(--border);border-radius:0;background:transparent;padding-block:var(--sp-1)}
+@media(max-width:1100px){
+  .review-screen .batch-meta .operation-time{margin-inline-start:0}
+  .review-screen .operation-meta{grid-template-columns:minmax(0,1fr)}
+}
 /* 企业申请的文件分区：同一清单用行分隔，不为每一份文件再套卡片。 */
-.issuance-files .file-list{gap:0}
-.issuance-files .file-row{border:0;border-radius:0;border-top:1px solid var(--row-line);padding:var(--sp-3) 0;align-items:flex-start}
-.issuance-files .file-row:first-child{border-top:0}
-.issuance-files .file-row>svg.i{margin-top:var(--sp-1);color:var(--faint)}
-.issuance-files .file-actions{align-self:center}
+:is(.issuance-files,.review-screen) .file-list{gap:0}
+:is(.issuance-files,.review-screen) .file-row{border:0;border-radius:0;border-top:1px solid var(--row-line);padding:var(--sp-3) 0;align-items:flex-start}
+:is(.issuance-files,.review-screen) .file-row:first-child{border-top:0}
+:is(.issuance-files,.review-screen) .file-row>svg.i{margin-top:var(--sp-1);color:var(--faint)}
+:is(.issuance-files,.review-screen) .file-actions{align-self:center}
 .issuance-files .card-b{padding-top:var(--sp-3);padding-bottom:var(--sp-4)}
 .issuance-files .form-sheet{gap:var(--sp-3)}
 .issuance-files .card-head{padding-block:var(--sp-4);flex-wrap:wrap}
