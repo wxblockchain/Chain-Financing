@@ -202,7 +202,13 @@
     if(sec.dataset.showToast) toast(sec.dataset.showToast);
     current = {id:id, base: base ? base.id : null, who: shown.dataset.who, gate:gateKey};
     TP.currentScreen = current;
-    if(location.hash.slice(1) !== id) history.replaceState(null,'','#'+id);
+    if(location.hash.slice(1) !== id){
+      try{ history.replaceState(null,'','#'+id); }
+      catch(error){
+        // 附件的 srcdoc 预览可能禁止改写地址；仍须继续渲染时间、语言与焦点。
+        if(error.name!=='SecurityError') throw error;
+      }
+    }
     if(!sec.hasAttribute('data-overlay') || inline) window.scrollTo(0,0);
     var f = inline ? $('.btn.primary',sec) : sec.hasAttribute('data-overlay') ? ($('.modal [autofocus]', sec) || $('.modal .btn.primary:not([aria-disabled]), .modal .btn.danger', sec) || $('.modal .modal-f [data-close]',sec)) : null;
     if(f){ if(inline)f.focus({preventScroll:true}); else f.focus(); }
