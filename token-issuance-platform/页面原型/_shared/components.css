@@ -751,6 +751,25 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .review-list .col-act{width:8%;padding-right:var(--card-pad)}
 .review-list .tag{white-space:normal}
 .review-list .money{flex-wrap:wrap;justify-content:flex-end}
+/* M3b 多机构名单与按上传批次分组的材料；不增加审批或材料齐全判断。 */
+.assignment-list :is(th,td){white-space:normal;overflow-wrap:anywhere}
+.assignment-list th:first-child{width:30%}
+.assignment-list td:last-child{white-space:nowrap}
+.assignment-history{padding:var(--sp-3) var(--card-pad);border-top:1px solid var(--row-line)}
+.assignment-history .inline-empty{padding:var(--sp-3) 0 0;text-align:left}
+.material-batch{border-top:1px solid var(--row-line)}
+.material-batch:first-child{border-top:0}
+.material-batch>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-2) var(--sp-5);padding:var(--sp-4) var(--card-pad);cursor:pointer;list-style:none}
+.material-batch>summary::-webkit-details-marker{display:none}
+.batch-heading{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-3)}
+.batch-heading strong{font-size:var(--fs-14);font-weight:600}
+.batch-meta{grid-column:1;display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-4);font-size:var(--fs-13);color:var(--muted);overflow-wrap:anywhere}
+.batch-description{grid-column:1;font-size:var(--fs-14);overflow-wrap:anywhere}
+.batch-toggle{grid-column:2;grid-row:1/4;align-self:center;display:flex;align-items:center;gap:var(--sp-2);color:var(--accent);font-size:var(--fs-13)}
+.material-batch .batch-less,.material-batch[open] .batch-more{display:none}
+.material-batch[open] .batch-less{display:inline}
+.material-batch[open] .batch-toggle>[aria-hidden]{transform:rotate(180deg)}
+.material-batch>.file-list{padding:0 var(--card-pad) var(--sp-4)}
 .review-textarea.inp{height:auto;min-height:calc(var(--ctrl-h)*2);padding:var(--sp-3);resize:vertical}
 .choice-card{display:flex;align-items:flex-start;gap:var(--sp-3);border:1px solid var(--control-border);border-radius:var(--radius-xs);padding:var(--sp-4);cursor:pointer}
 .choice-card:has(:checked){background:var(--accent-soft);border-color:var(--accent)}

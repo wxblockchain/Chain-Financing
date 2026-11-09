@@ -1,13 +1,14 @@
 # M3b · 发行审核与机构分配
 
-2026-11-06 · existing-system adaptation / console · 中文与 English。画面中的机构、企业、邮箱、编号、文件和时间均为演示数据。
+2026-11-09 · existing-system adaptation / console · 中文与 English。画面中的机构、企业、邮箱、编号、文件和时间均为演示数据。
 
 ## 本轮范围
 
-按 `cly-v6.0.0` 的 PRD `07841ac` §5.2 修订运营详情的信息分层：上方是紧凑四阶段概览，页面最下方是按时间排序的“操作进度”。沿用 `_shared/tokens.css`、`components.css`、`asset-detail.js` 和现有壳层；组件约定见[组件规范 §8](../../_shared/design-system/组件规范.md#8-审核与文件预览m3b)。规则、校验与异常分支以 PRD 为准。
+按 `cly-v6.0.0` 的 PRD `07841ac` 和本 issue 已确认建议，补齐多机构、多批材料的画面表达。沿用 `_shared/tokens.css`、`components.css`、`asset-detail.js` 和现有壳层；组件约定见[组件规范 §7.1](../../_shared/design-system/组件规范.md#71-机构分配与材料2026-11-06)。规则、校验与异常分支以 PRD 为准。
 
-- 本轮修改 19 屏：待分配、单家/多家分配、运营处理中（含材料、上游与签名读取差异）、运营驳回、铸造中（含停用/超时）、铸造失败、铸造成功的详情。概览仅显示阶段和状态，时间线显示已发生的动作、角色与账号、带时区时间和结果；多机构示例包含首次保存与名单调整。原失败/重试历史合并到时间线，合约仍保留在“铸造信息”区域。
-- 继承其余 92 屏及已有主流程：列表、分配表单、机构材料、文件查看、合约选择、上链字段、签名、交易结果、重试与并发反馈。机构/企业端不增加运营日志；本轮不改其业务规则，不对继承范围重新宣称 PRD 全量验收。
+- 本轮修改 23 屏：19 个运营详情的当前/最终分配名单改为一家一行，字段为机构名称、类型、启停状态、分配时间；未分配与无移除记录分别展示空态。`o-with-material`、`task-application-shared`、`task-application-uploaded`、`task-rejected`、`task-ops-detail` 的材料改为按上传批次组织的记录，保留上传主体、阶段、说明、时间及时区。
+- 多机构示例：`o-with-material`（目录名“运营处理中 · 多机构多批材料”）和 `task-application-uploaded` 展示 C、D 两机构的三批上传，共五份文件；D 的两批独立保留，第一批默认展开。机构只看到有权共享的材料，不显示完整名单。每份文件可打开对应机构、格式与大小的预览信息弹窗，下载仍提示演示文件。
+- 新增 10 屏文件预览，运营/机构各五屏。继承其余 88 屏及已有主流程：列表、分配表单、上传反馈、其他文件查看、合约选择、上链字段、签名、交易结果、重试与并发反馈。机构/企业端不增加运营日志；本轮不改其业务规则，不对继承范围重新宣称 PRD 全量验收。
 - 所有详情从下方画面目录进入；主流程从 `o-list-unassigned` 开始。详情的“操作进度”分区导航可直接定位页面底部，画面目录默认关闭。
 
 主流程：`o-list-unassigned → o-wait-reg → assign-empty → assign-one / assign-ready → o-assigned-one / o-wait-ops → o-pass → o-pass-ready → o-pass-confirm → o-mint-signing → o-mint-waiting → o-mint-success`。分配机构不限定每种类型都出现；停用机构不进入新增分配选项。
@@ -23,10 +24,11 @@
 
 ## 画面清单
 
-共 111 屏。数量包含继承的画面，不等于本轮优化数量。
+共 121 屏。数量包含继承的画面，不等于本轮优化数量。
 
 | 分组 | 画面 ID 与名称 |
 | --- | --- |
+| 多文件预览（本轮新增） | `ops-material-file-audit`、`ops-material-file-audit-photo`、`ops-material-file-custody`、`ops-material-file-check`、`ops-material-file-check-photo`；机构端对应 `reg-material-file-*` 五屏。均从上述材料批次的文件名进入，关闭后回到原申请，保留展开状态。 |
 | 运营 · 申请列表 | `o-list` 申请列表；`o-list-empty` 暂无申请；`o-list-noresults` 筛选无结果；`o-list-error` 列表读取失败；`o-list-mint` 铸造失败申请列表；`o-list-unassigned` 待分配机构 · 申请列表 |
 | 运营 · 申请详情 | `o-wait-reg` 待分配机构；`o-wait-ops` 运营处理中；`o-ops-rejected` 运营驳回；`o-minting` 铸造中；`o-failed` 铸造失败；`o-success` 铸造成功；`o-detail-error` 申请详情读取失败；`o-detail-denied` 无权查看或申请不存在；`o-upstream` 上游撤销确权；`o-cache` 上游暂时不可用；`o-minting-disabled` 铸造中 · 原合约平台停用；`o-minting-timeout` 铸造中 · 已超时；`o-sign-error` 业务签名读取失败；`o-assigned-one` 分配一家机构 · 零材料；`o-with-material` 运营处理中 · 已有机构材料；`o-material-error` 运营处理中 · 材料读取失败；`o-assigned-D` 机构分配 · D；`o-assigned-E` 机构分配 · E；`o-assigned-CE` 机构分配 · CE；`o-assigned-DE` 机构分配 · DE；`o-assigned-CDE` 机构分配 · CDE |
 | 机构材料 · 查看与下载 | `o-file-view` 运营 · 查看机构材料；`o-file` 运营 · 协议查看失败；`o-file-download` 运营 · 协议下载失败 |
@@ -39,7 +41,7 @@
 
 ## 核验与边界
 
-本轮 Chromium 实测 19 个修订详情 × 中文 / English × 1280 / 1440 / 1920 px：概览高度均低于 145 px，无整体横向溢出或脚本错误，底部记录可从分区导航到达。画面目录的 111 屏入口、分配至铸造主流程（异步结果通过目录下一屏）、驳回弹窗 Escape 返回、单模块离线附件已核验；离线文件无外部请求。M3a 与 M4b 既有进度列数做了回归检查，另 92 屏源码与修订前逐屏比对一致。
+本轮 Chromium 实测 23 个修订画面 + 10 个文件预览 × 中文 / English × 1280 / 1440 / 1920 px，覆盖源码、本地离线文件与受限 `srcdoc` 嵌入预览三种打开方式，无整体横向溢出、表格/材料区溢出或脚本错误。五个材料示例均核验原生概要的 Enter / Space 展开、各文件名预览及 Escape 关闭返回与焦点恢复；UTC / Asia/Shanghai 转换正常。画面目录可见全部 121 屏入口，附件无外部请求，另 88 屏源码与修订前逐屏比对一致。分配/铸造主流程继承前轮结果，本轮未重新进行全流程业务验收。
 
 未验证 Safari / Firefox、1280 px 以下宽度和真实后端权限。本轮不重新核验机构材料上传限制、成功后的材料待办、后续模块职责或 M7 旧业务通知；这些继承画面的规则以最新 PRD 为准。操作历史为明确标注的演示数据，不接真实审计日志或链上服务。
 
