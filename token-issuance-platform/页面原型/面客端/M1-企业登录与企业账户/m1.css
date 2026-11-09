@@ -25,11 +25,11 @@
 .m1-page .state-actions>.btn{margin-top:0}
 .m1-page .profile-section>.state{padding:0}
 
-/* Three short fields describe one account. Keep them in one reading cluster
-   at wide container sizes, rather than distributing them across the canvas. */
-@container facts (min-width:900px){
-  .m1-page .account-summary .facts.cols-3{grid-template-columns:repeat(3,max-content);column-gap:var(--sp-9)}
-}
+/* The enterprise account stays a list: one sign-in address row this release,
+   so later accounts or columns append without a layout change. Address takes the rest. */
+.m1-page .account-list .account-col-label{width:20%}
+.m1-page .account-list .account-col-network{width:24%}
+.m1-page .account-list .account-col-address{width:auto}
 
 /* Long translated feedback and its action reflow at the narrow breakpoint. */
 @media(max-width:600px){

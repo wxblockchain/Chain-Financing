@@ -329,7 +329,13 @@
 
 <!-- ============================== 数币账户 ============================== -->
 <section data-crumb="用户中心/企业账户" data-group="企业账户" data-layout="app" data-name="当前登录地址" data-nav="accounts" data-no="A1" data-screen="" data-who="certified" id="acc">
-<div class="content-in"><div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">查看本企业当前登录地址。</p></div></div><div class="card account-summary"><div class="card-head"><h2>数币账户</h2></div><div class="facts-region"><dl class="facts cols-3"><div><dt>账户标识</dt><dd><span class="tag accent">登录地址</span></dd></div><div><dt>区块链网络</dt><dd><span class="asset-label"><i data-asset="ETH"></i>Ethereum</span></dd></div><div><dt>数币地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制完整地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div></dl></div></div></div>
+<div class="content-in"><div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">查看本企业当前登录地址。</p></div></div><div class="card account-table-card"><div class="card-head"><h2>数币账户</h2></div>
+<div class="tablewrap" tabindex="0" role="region" aria-label="数币账户"><table class="tbl account-list">
+<colgroup><col class="account-col-label"><col class="account-col-network"><col class="account-col-address"></colgroup>
+<thead><tr><th scope="col">账户标识</th><th scope="col">区块链网络</th><th scope="col">数币地址</th></tr></thead>
+<tbody><tr><td><span class="tag accent">登录地址</span></td><td><span class="asset-label"><i data-asset="ETH"></i><span>Ethereum</span></span></td><td><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制完整地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></td></tr></tbody>
+</table></div>
+</div></div>
 </section>
 
 <section data-crumb="用户中心/企业账户" data-group="企业账户" data-layout="app" data-name="读取失败" data-nav="accounts" data-no="A3" data-screen="" data-who="certified" id="acc-fail">
@@ -443,8 +449,8 @@
 </section>
 
 <section data-screen id="acc-unavailable" data-no="A5" data-group="企业账户" data-name="地址格式或来源无法确认" data-layout="app" data-who="certified" data-nav="accounts" data-crumb="用户中心/企业账户" >
-  <div class="content-in"><div class="page-head"><h1 class="page-title">企业账户</h1></div>
-    <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>暂时无法获取数币账户</h3><p>当前无法取得有效的数币地址，请稍后重试。</p><button type="button" class="btn primary" data-go="acc">重试</button></div></div>
+  <div class="content-in"><div class="page-head"><div><h1 class="page-title">企业账户</h1><p class="page-desc">查看本企业当前登录地址。</p></div></div>
+    <div class="card"><div class="card-head"><h2>数币账户</h2></div><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>暂时无法获取数币账户</h3><p>当前无法取得有效的数币地址，请稍后重试。</p><button type="button" class="btn primary" data-go="acc">重试</button></div></div>
   </div>
 </section>
 
