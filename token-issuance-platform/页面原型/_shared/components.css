@@ -779,6 +779,18 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .material-batch[open] .batch-less{display:inline}
 .material-batch[open] .batch-toggle>[aria-hidden]{transform:rotate(180deg)}
 .material-batch>.file-list{padding:0 var(--card-pad) var(--sp-4)}
+/* M4a 企业只读机构文件：保留批次与文件层级，宽屏并排呈现机构和时间。 */
+.institution-files .material-batch>summary{grid-template-columns:minmax(0,1fr) auto auto;align-items:start}
+.institution-files .batch-meta{grid-column:2;grid-row:1}
+.institution-files .batch-description{grid-column:1/3}
+.institution-files .batch-toggle{grid-column:3;grid-row:1/3}
+.institution-files .sub-h>.sub{margin-left:var(--sp-2);font-weight:400}
+@media(max-width:1100px){
+  .institution-files .material-batch>summary{grid-template-columns:minmax(0,1fr) auto}
+  .institution-files .batch-meta{grid-column:1;grid-row:2}
+  .institution-files .batch-description{grid-column:1;grid-row:3}
+  .institution-files .batch-toggle{grid-column:2;grid-row:1/4}
+}
 .review-textarea.inp{height:auto;min-height:calc(var(--ctrl-h)*2);padding:var(--sp-3);resize:vertical}
 .choice-card{display:flex;align-items:flex-start;gap:var(--sp-3);border:1px solid var(--control-border);border-radius:var(--radius-xs);padding:var(--sp-4);cursor:pointer}
 .choice-card:has(:checked){background:var(--accent-soft);border-color:var(--accent)}
@@ -939,6 +951,12 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .review-timeline.compact .done .tag{color:var(--ok)}
 .review-timeline.compact .current .tag{color:var(--accent)}
 .review-timeline.compact .rejected .tag{color:var(--danger)}
+/* M4a 四项只读销毁进度：保留原有时间与来源/机构，标记只补充状态辨识。 */
+.token-progress .card-head .sub{flex:1;min-width:min(100%,32ch)}
+.token-progress .review-timeline.compact :is(p,time){grid-column:2;margin-top:var(--sp-1);font-size:var(--fs-12)}
+.token-screen [data-zone]{font-family:var(--sans)}
+@media(max-width:1100px){.token-progress .review-timeline.compact.four-stage{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.token-progress .review-timeline.compact.four-stage{grid-template-columns:minmax(0,1fr)}}
 .issuance-summary .card-head,.progress-summary .card-head{padding-block:var(--sp-3);flex-wrap:wrap;gap:var(--sp-1) var(--sp-3)}
 .issuance-summary .card-head h2,.progress-summary .card-head h2{font-size:var(--fs-14)}
 .issuance-summary .card-head .sub{flex:1;min-width:min(100%,32ch)}
@@ -1019,8 +1037,8 @@ html:has(.issuance-form:not([hidden])){scroll-padding-top:calc(var(--app-header-
 .issuance-list .issuance-disclosure>summary{justify-content:flex-end;font-size:var(--fs-12)}
 /* 桌面评审入口移入侧栏空白区域，避免遮挡文件移除、下载和吸底主操作。 */
 @media(min-width:1101px){
-  .issuance-catalog.demo-btn{left:var(--sp-4);right:auto;max-width:calc(var(--sidebar-w) - var(--sp-7));font-size:var(--fs-11);box-shadow:none}
-  .issuance-catalog.demo-panel{left:var(--sp-4);right:auto}
+  :is(.issuance-catalog,.sidebar-catalog).demo-btn{left:var(--sp-4);right:auto;max-width:calc(var(--sidebar-w) - var(--sp-7));font-size:var(--fs-11);box-shadow:none}
+  :is(.issuance-catalog,.sidebar-catalog).demo-panel{left:var(--sp-4);right:auto}
 }
 /* 时间线下方的审核意见、审核人：以轻分隔线承接时间线，与时间线同一左缘。 */
 .review-timeline+.facts-region{margin-inline:var(--card-pad);border-top:1px solid var(--row-line)}
