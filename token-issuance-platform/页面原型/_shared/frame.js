@@ -291,6 +291,22 @@
     return n;
   }
 
+  // 完整金额浮层：固定定位于图标下方右对齐，靠近视口边缘时翻到上方或内收；页面或表格滚动时跟随图标，图标移出视口即收起。
+  function placeValuePop(button, list){
+    var r=button.getBoundingClientRect(), w=list.offsetWidth, h=list.offsetHeight, gap=6, edge=8;
+    var top=r.bottom+gap; if(top+h>window.innerHeight-edge) top=Math.max(edge, r.top-h-gap);
+    list.style.top=top+'px'; list.style.left=Math.max(edge, Math.min(r.right-w, window.innerWidth-w-edge))+'px';
+  }
+  function followValuePops(){
+    $$('.value-pop>.dd-btn[aria-expanded="true"]').forEach(function(b){
+      var r=b.getBoundingClientRect(), l=b.nextElementSibling;
+      if(r.bottom<0 || r.top>window.innerHeight || !r.width){ l.hidden=true; b.setAttribute('aria-expanded','false'); }
+      else placeValuePop(b, l);
+    });
+  }
+  window.addEventListener('scroll', followValuePops, true);
+  window.addEventListener('resize', followValuePops);
+
   function copyFullValue(button){
     var address=button.closest('.addr'), email=button.closest('.ident');
     var value=address ? $('[title]',address).getAttribute('title') : email ? $('.cell-sub',email).textContent.trim() : '';
@@ -308,6 +324,7 @@
   document.addEventListener('click', function(e){
     var t = e.target.closest('.dd-item,[data-go],[data-close],[data-nav-key],[data-acct],[data-copy],[data-toast],[data-demo-go],[data-password-toggle],#demoBtn,.dd-btn');
     if(!t && e.target.closest('.inbox-panel')) return; // 预览内的空白处不收起预览
+    if(!t && e.target.closest('.value-pop>.dd-list')) return; // 完整金额浮层内可选中复制
     var own = t && t.matches('.dd-btn') ? t.parentNode : null;
     closeMenus(own);
     if(!t) return;
@@ -317,7 +334,7 @@
       if(input){input.type=input.type==='password'?'text':'password';TP.refreshPasswordToggles();}
       return;
     }
-    if(t.matches('.dd-btn')){ var l = t.nextElementSibling; l.hidden = !l.hidden; t.setAttribute('aria-expanded', l.hidden?'false':'true'); if(l.hidden && t.classList.contains('bell')) leaveInboxScreen(); return; }
+    if(t.matches('.dd-btn')){ var l = t.nextElementSibling; l.hidden = !l.hidden; t.setAttribute('aria-expanded', l.hidden?'false':'true'); if(l.hidden && t.classList.contains('bell')) leaveInboxScreen(); if(!l.hidden && own.classList.contains('value-pop')) placeValuePop(t, l); return; }
     if(t.id==='demoBtn'){ demoOpen = !demoOpen; renderDemo(); TP.localize($('#demoPanel')); return; }
     if(t.dataset.lang){ TP.setLanguage(t.dataset.lang); renderTools(document.getElementById(current.base || current.id), false, document.getElementById(current.id)); TP.renderDisplay(); syncStickyHead(); return; }
     if(t.dataset.demoGo){ show(t.dataset.demoGo); return; }

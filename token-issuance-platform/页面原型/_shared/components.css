@@ -1040,6 +1040,12 @@ html:has(.issuance-form:not([hidden])){scroll-padding-top:calc(var(--app-header-
 .issuance-screen .money .mono{font-family:var(--sans);font-variant-numeric:tabular-nums}
 .issuance-list .c-app{width:19%}.issuance-list .c-asset{width:18%}.issuance-list .c-amount{width:19%}.issuance-list .c-time{width:18%}.issuance-list .c-status{width:auto}
 .issuance-list .issuance-disclosure>summary{justify-content:flex-end;font-size:var(--fs-12)}
+/* 截断金额的完整值：金额旁的小下拉图标，点击以浮层展示（固定定位，不被表格滚动区裁切，不改变行高与列宽）。开关沿用 .dd。 */
+.value-pop{display:inline-flex;vertical-align:middle;margin:calc((var(--ctrl-h-sm) - 1lh) / -2) 0 calc((var(--ctrl-h-sm) - 1lh) / -2) 0}
+.value-pop>.dd-btn{width:var(--ctrl-h-sm);height:var(--ctrl-h-sm);padding:0;gap:0;border-radius:var(--radius-xs);font-weight:400}
+.value-pop>.dd-btn[aria-expanded="true"]{background:var(--card-hover);color:var(--accent)}
+.value-pop>.dd-btn[aria-expanded="true"] svg.i{transform:rotate(180deg)}
+.value-pop>.dd-list{position:fixed;top:0;left:0;right:auto;width:auto;padding:var(--sp-2) var(--sp-3);white-space:nowrap;font-size:var(--fs-13);color:var(--text);text-align:left;z-index:calc(var(--z-sticky) + 1)}
 /* 桌面评审入口统一放在侧栏底部空白区域（全部模块），避免遮挡表格操作列、文件操作和吸底主操作。 */
 @media(min-width:1101px){
   .demo-btn{left:var(--sp-4);right:auto;max-width:calc(var(--sidebar-w) - var(--sp-7));font-size:var(--fs-11);box-shadow:none}
