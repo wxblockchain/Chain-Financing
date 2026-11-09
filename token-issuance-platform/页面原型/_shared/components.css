@@ -774,6 +774,16 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .institution-choice th:last-child{width:calc(var(--ctrl-h) * 2 + var(--sp-4))}
 .institution-choice :is(th,td){white-space:normal;overflow-wrap:anywhere}
 .institution-choice input{width:var(--asset-icon-size);height:var(--asset-icon-size);accent-color:var(--accent);vertical-align:middle}
+/* 分配候选按机构类型分组：每组一行组标题，组内单选并提供“暂不分配”；已分配类型只读显示。 */
+.tbl.institution-choice .group-row th{width:auto;text-align:left;padding:var(--sp-3) var(--card-pad);background:var(--card-2);color:var(--text);font-weight:600;border-top:1px solid var(--border);border-bottom:1px solid var(--row-line)}
+.institution-choice tbody:first-of-type .group-row th{border-top:0}
+.institution-choice tbody:not(:last-child) tr:last-child td{border-bottom:1px solid var(--row-line)}
+.institution-choice .group-hint{margin-left:var(--sp-3);font-size:var(--ui-field-label);font-weight:400;color:var(--faint)}
+.institution-choice label{display:block;cursor:pointer}
+.institution-choice .choice-none label{color:var(--muted)}
+.institution-choice .is-assigned td:first-child{color:var(--ok)}
+.institution-choice.grouped tbody td{padding-block:var(--sp-2)}
+.tbl.institution-choice.grouped .group-row th{padding-block:var(--sp-2)}
 .review-screen .choice-card b{color:var(--text);font-weight:600}
 /* M3b 多机构名单与按上传批次分组的材料；不增加审批或材料齐全判断。 */
 .assignment-list :is(th,td){white-space:normal;overflow-wrap:anywhere}
