@@ -22,29 +22,29 @@
 </div>
 
 <!-- ============================== 运营 · 消息列表 ============================== -->
-<section data-screen id="o-list" data-no="L01" data-group="运营 · 消息列表" data-name="全部消息 · 第一批 20 条" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知" data-next="m-o03">
+<section data-screen id="o-list" data-no="L01" data-group="运营 · 消息列表" data-name="全部消息 · 第一批 20 条" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知" data-next="m-o02">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="ops" data-items="o01..o20" data-seg="all" data-cat="" data-seg-go="unread:o-list-unread read:o-list-read" data-cat-go="review:o-list-cat-review alert:o-list-cat-alert security:o-list-cat-security" data-more="more" data-more-go="o-list-all" data-markall="o-markall-all"></div></div>
+<div class="card" data-inbox-view data-role="ops" data-items="o01..o20" data-seg="all" data-cat="" data-seg-go="unread:o-list-unread read:o-list-read" data-cat-go="progress:o-list-cat-progress alert:o-list-cat-alert security:o-list-cat-security" data-more="more" data-more-go="o-list-all" data-markall="o-markall-all"></div></div>
 </section>
 <section data-screen id="o-list-unread" data-no="L02" data-group="运营 · 消息列表" data-name="筛选：未读" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="ops" data-items="o02 o03 o06 o08" data-seg="unread" data-cat="" data-seg-go="all:o-list read:o-list-read" data-cat-go="security:o-list-filtered" data-more="end" data-markall="o-markall-all"></div></div>
+<div class="card" data-inbox-view data-role="ops" data-items="o02 o03 o06 o09" data-seg="unread" data-cat="" data-seg-go="all:o-list read:o-list-read" data-cat-go="security:o-list-filtered" data-more="end" data-markall="o-markall-all"></div></div>
 </section>
 <section data-screen id="o-list-read" data-no="L03" data-group="运营 · 消息列表" data-name="筛选：已读" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="ops" data-items="o01 o04 o05 o07 o09..o23" data-seg="read" data-cat="" data-seg-go="all:o-list unread:o-list-unread" data-cat-go="" data-more="end" data-markall="none"></div></div>
+<div class="card" data-inbox-view data-role="ops" data-items="o01 o04 o05 o07 o08 o10..o23" data-seg="read" data-cat="" data-seg-go="all:o-list unread:o-list-unread" data-cat-go="" data-more="end" data-markall="none"></div></div>
 </section>
-<section data-screen id="o-list-cat-review" data-no="L04" data-group="运营 · 消息列表" data-name="筛选：审核任务" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知">
+<section data-screen id="o-list-cat-progress" data-no="L04" data-group="运营 · 消息列表" data-name="筛选：业务办理进度" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="ops" data-items="o03 o04 o05 o07 o08 o09 o10 o11 o12 o14..o19 o21 o22 o23" data-seg="all" data-cat="review" data-seg-go="" data-cat-go=":o-list alert:o-list-cat-alert security:o-list-cat-security" data-more="end" data-markall="o-markall-review"></div></div>
+<div class="card" data-inbox-view data-role="ops" data-items="o02..o05" data-seg="all" data-cat="progress" data-seg-go="" data-cat-go=":o-list alert:o-list-cat-alert security:o-list-cat-security" data-more="end" data-markall="o-markall-progress"></div></div>
 </section>
 <section data-screen id="o-list-cat-alert" data-no="L05" data-group="运营 · 消息列表" data-name="筛选：运营告警" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="ops" data-items="o02 o06 o13" data-seg="all" data-cat="alert" data-seg-go="" data-cat-go=":o-list review:o-list-cat-review security:o-list-cat-security" data-more="end" data-markall="o-markall-alert"></div></div>
+<div class="card" data-inbox-view data-role="ops" data-items="o06..o19 o21 o22 o23" data-seg="all" data-cat="alert" data-seg-go="" data-cat-go=":o-list progress:o-list-cat-progress security:o-list-cat-security" data-more="end" data-markall="o-markall-alert"></div></div>
 </section>
 <section data-screen id="o-list-cat-security" data-no="L06" data-group="运营 · 消息列表" data-name="筛选：账户安全" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="ops" data-items="o01 o20" data-seg="all" data-cat="security" data-seg-go="unread:o-list-filtered" data-cat-go=":o-list review:o-list-cat-review alert:o-list-cat-alert" data-more="end" data-markall="none"></div></div>
+<div class="card" data-inbox-view data-role="ops" data-items="o01 o20" data-seg="all" data-cat="security" data-seg-go="unread:o-list-filtered" data-cat-go=":o-list progress:o-list-cat-progress alert:o-list-cat-alert" data-more="end" data-markall="none"></div></div>
 </section>
 <section data-screen id="o-list-filtered" data-no="L07" data-group="运营 · 消息列表" data-name="筛选无结果（未读 · 账户安全）" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
@@ -52,11 +52,11 @@
 </section>
 <section data-screen id="o-list-all" data-no="L08" data-group="运营 · 消息列表" data-name="加载更多 · 已加载全部" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="ops" data-items="o01..o23" data-seg="all" data-cat="" data-seg-go="unread:o-list-unread read:o-list-read" data-cat-go="review:o-list-cat-review alert:o-list-cat-alert security:o-list-cat-security" data-more="end" data-markall="o-markall-all"></div></div>
+<div class="card" data-inbox-view data-role="ops" data-items="o01..o23" data-seg="all" data-cat="" data-seg-go="unread:o-list-unread read:o-list-read" data-cat-go="progress:o-list-cat-progress alert:o-list-cat-alert security:o-list-cat-security" data-more="end" data-markall="o-markall-all"></div></div>
 </section>
 <section data-screen id="o-list-more-error" data-no="L09" data-group="运营 · 消息列表" data-name="加载更多失败 · 保留已加载" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知" data-next="o-list-all">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="ops" data-items="o01..o20" data-seg="all" data-cat="" data-seg-go="unread:o-list-unread read:o-list-read" data-cat-go="review:o-list-cat-review alert:o-list-cat-alert security:o-list-cat-security" data-more="error" data-more-go="o-list-all" data-markall="o-markall-all"></div></div>
+<div class="card" data-inbox-view data-role="ops" data-items="o01..o20" data-seg="all" data-cat="" data-seg-go="unread:o-list-unread read:o-list-read" data-cat-go="progress:o-list-cat-progress alert:o-list-cat-alert security:o-list-cat-security" data-more="error" data-more-go="o-list-all" data-markall="o-markall-all"></div></div>
 </section>
 <section data-screen id="o-list-error" data-no="L10" data-group="运营 · 消息列表" data-name="读取失败" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
@@ -68,7 +68,7 @@
 </section>
 <section data-screen id="o-list-returned" data-no="L12" data-group="运营 · 消息列表" data-name="从详情返回 · 刚读的消息原地变为已读" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知" data-unread="3" data-next="o-markall">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="ops" data-items="o01..o20" data-read="o03" data-seg="all" data-cat="" data-seg-go="unread:o-list-unread read:o-list-read" data-cat-go="review:o-list-cat-review alert:o-list-cat-alert security:o-list-cat-security" data-more="more" data-more-go="o-list-all" data-markall="o-markall"></div></div>
+<div class="card" data-inbox-view data-role="ops" data-items="o01..o20" data-read="o02" data-seg="all" data-cat="" data-seg-go="unread:o-list-unread read:o-list-read" data-cat-go="progress:o-list-cat-progress alert:o-list-cat-alert security:o-list-cat-security" data-more="more" data-more-go="o-list-all" data-markall="o-markall"></div></div>
 </section>
 
 <!-- ============================== 运营 · 全部已读 ============================== -->
@@ -93,10 +93,10 @@
 <div class="note accent"><i data-ico="info"></i><div>只改变你本人的阅读状态，不影响其他运营管理人员，也不代表相关业务已经处理。确认之后新到的消息仍为未读。</div></div></div>
 <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-toast="该入口尚未纳入原型。">标为已读</button></div></div></div>
 </section>
-<section data-screen id="o-markall-review" data-no="A04" data-group="运营 · 全部已读" data-name="确认（分类：审核任务 · 2 条未读）" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知" data-overlay data-base="o-list-cat-review">
-<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="o-markall-review-title"><div class="modal-h"><span class="modal-title" id="o-markall-review-title">全部标为已读</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div>
+<section data-screen id="o-markall-progress" data-no="A04" data-group="运营 · 全部已读" data-name="确认（分类：业务办理进度 · 2 条未读）" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知" data-overlay data-base="o-list-cat-progress">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="o-markall-progress-title"><div class="modal-h"><span class="modal-title" id="o-markall-progress-title">全部标为已读</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div>
 <div class="modal-b"><p>将当前筛选下的 2 条未读消息标为已读，包括尚未加载的消息。其他分类的未读消息不受影响。</p>
-<div class="facts-region msg-markall-scope"><dl class="facts cols-2 inset"><div><dt>已读状态</dt><dd>全部</dd></div><div><dt>分类</dt><dd>审核任务</dd></div></dl></div>
+<div class="facts-region msg-markall-scope"><dl class="facts cols-2 inset"><div><dt>已读状态</dt><dd>全部</dd></div><div><dt>分类</dt><dd>业务办理进度</dd></div></dl></div>
 <div class="note accent"><i data-ico="info"></i><div>只改变你本人的阅读状态，不影响其他运营管理人员，也不代表相关业务已经处理。确认之后新到的消息仍为未读。</div></div></div>
 <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-toast="该入口尚未纳入原型。">标为已读</button></div></div></div>
 </section>
@@ -115,7 +115,7 @@
 </section>
 <section data-screen id="o-list-done" data-no="A07" data-group="运营 · 全部已读" data-name="成功 · 当前筛选已无未读" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知" data-unread="0" data-show-toast="已将 3 条消息标为已读">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="ops" data-items="o01..o20" data-read="all" data-seg="all" data-cat="" data-seg-go="unread:o-list-filtered read:o-list-read" data-cat-go="review:o-list-cat-review alert:o-list-cat-alert security:o-list-cat-security" data-more="more" data-more-go="o-list-all" data-markall="none"></div></div>
+<div class="card" data-inbox-view data-role="ops" data-items="o01..o20" data-read="all" data-seg="all" data-cat="" data-seg-go="unread:o-list-filtered read:o-list-read" data-cat-go="progress:o-list-cat-progress alert:o-list-cat-alert security:o-list-cat-security" data-more="more" data-more-go="o-list-all" data-markall="none"></div></div>
 </section>
 
 <!-- ============================== 运营 · 最近消息预览（顶栏消息入口） ============================== -->
@@ -125,27 +125,27 @@
 <section data-screen id="o-preview-99" data-no="P04" data-group="运营 · 最近消息预览" data-name="未读超过 99" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知" data-overlay data-base="o-list" data-inbox="open" data-unread="128"></section>
 
 <!-- ============================== 运营 · 消息详情的异常 ============================== -->
-<section data-screen id="o-detail-error" data-no="S01" data-group="运营 · 消息详情异常" data-name="详情读取失败 · 仍为未读" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="o-list/" data-next="m-o03">
+<section data-screen id="o-detail-error" data-no="S01" data-group="运营 · 消息详情异常" data-name="详情读取失败 · 仍为未读" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="o-list/" data-next="m-o02">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息详情</h1></div></div>
-<div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>消息读取失败</h3><p>暂时无法读取，这条消息仍为未读。请稍后重试。</p><div class="state-actions"><button type="button" class="btn" data-go="o-list">返回列表</button><button type="button" class="btn primary" data-go="m-o03">重试</button></div></div></div></div>
+<div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>消息读取失败</h3><p>暂时无法读取，这条消息仍为未读。请稍后重试。</p><div class="state-actions"><button type="button" class="btn" data-go="o-list">返回列表</button><button type="button" class="btn primary" data-go="m-o02">重试</button></div></div></div></div>
 </section>
-<section data-screen id="o-detail-unsaved" data-no="S02" data-group="运营 · 消息详情异常" data-name="已读保存失败 · 正文照常可读" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="o-list/" data-next="m-o03">
-<div data-inbox-detail="o03" data-role="ops" data-unsaved data-retry-go="m-o03"></div>
+<section data-screen id="o-detail-unsaved" data-no="S02" data-group="运营 · 消息详情异常" data-name="已读保存失败 · 正文照常可读" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="o-list/" data-next="m-o02">
+<div data-inbox-detail="o02" data-role="ops" data-unsaved data-retry-go="m-o02"></div>
 </section>
 <section data-screen id="o-detail-missing" data-no="S03" data-group="运营 · 消息详情异常" data-name="消息不存在或不属于当前身份" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="o-list/">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息详情</h1></div></div>
 <div class="card"><div class="state" role="status"><span class="state-ico"><i data-ico="msg"></i></span><h3>未找到这条消息</h3><p>消息不存在或无法查看。</p><button type="button" class="btn" data-go="o-list">返回列表</button></div></div></div>
 </section>
 
-<!-- ============================== 监管机构 ============================== -->
-<section data-screen id="r-list" data-no="L21" data-group="监管机构 · 消息" data-name="全部消息 · 已加载全部" data-layout="app" data-who="reg" data-nav="" data-crumb="消息通知" data-next="m-r01">
+<!-- ============================== 机构（资产托管机构） ============================== -->
+<section data-screen id="r-list" data-no="L21" data-group="机构 · 消息" data-name="全部消息 · 已加载全部" data-layout="app" data-who="reg" data-nav="" data-crumb="消息通知" data-next="m-r01">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="reg" data-items="r01..r08" data-seg="all" data-cat="" data-seg-go="" data-cat-go="" data-more="end" data-markall="r-markall"></div></div>
+<div class="card" data-inbox-view data-role="reg" data-items="r01..r05" data-seg="all" data-cat="" data-seg-go="" data-cat-go="" data-more="end" data-markall="r-markall"></div></div>
 </section>
-<section data-screen id="r-preview" data-no="P21" data-group="监管机构 · 消息" data-name="最近消息预览" data-layout="app" data-who="reg" data-nav="" data-crumb="消息通知" data-overlay data-base="r-list" data-inbox="open" data-next="r-list"></section>
-<section data-screen id="r-markall" data-no="A21" data-group="监管机构 · 消息" data-name="全部已读 · 确认" data-layout="app" data-who="reg" data-nav="" data-crumb="消息通知" data-overlay data-base="r-list">
+<section data-screen id="r-preview" data-no="P21" data-group="机构 · 消息" data-name="最近消息预览" data-layout="app" data-who="reg" data-nav="" data-crumb="消息通知" data-overlay data-base="r-list" data-inbox="open" data-next="r-list"></section>
+<section data-screen id="r-markall" data-no="A21" data-group="机构 · 消息" data-name="全部已读 · 确认" data-layout="app" data-who="reg" data-nav="" data-crumb="消息通知" data-overlay data-base="r-list">
 <div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="r-markall-title"><div class="modal-h"><span class="modal-title" id="r-markall-title">全部标为已读</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div>
-<div class="modal-b"><p>将当前筛选下的 2 条未读消息标为已读，包括尚未加载的消息。</p>
+<div class="modal-b"><p>将当前筛选下的 3 条未读消息标为已读，包括尚未加载的消息。</p>
 <div class="facts-region msg-markall-scope"><dl class="facts cols-2 inset"><div><dt>已读状态</dt><dd>全部</dd></div><div><dt>分类</dt><dd>全部</dd></div></dl></div>
 <div class="note accent"><i data-ico="info"></i><div>只改变本账号的阅读状态，不代表相关业务已经处理。确认之后新到的消息仍为未读。</div></div></div>
 <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-toast="该入口尚未纳入原型。">标为已读</button></div></div></div>
@@ -168,20 +168,19 @@
 TP.pageTitle='消息通知 · 管理端 · 代币发行平台';
 TP.routes={};
 TP.inboxPages.build([
-  {role:'ops', who:'ops', prefix:'m-', no:'D', group:'运营 · 逐条消息详情', list:'o-list', next:{o03:'o-list-returned'}},
-  {role:'reg', who:'reg', prefix:'m-', no:'R', group:'监管机构 · 逐条消息详情', list:'r-list'}
+  {role:'ops', who:'ops', prefix:'m-', no:'D', group:'运营 · 逐条消息详情', list:'o-list', next:{o02:'o-list-returned'}},
+  {role:'reg', who:'reg', prefix:'m-', no:'R', group:'机构 · 逐条消息详情', list:'r-list'}
 ]);
 TP.addCopy({
   "消息通知 · 管理端 · 代币发行平台": "Notifications · Admin console · Token Issuance Platform",
-  "管理端": "Admin console", "系统管理": "Administration", "发行审核": "Issuance review", "销毁审核": "Burn review",
-  "代币台账": "Token ledger", "企业": "Companies", "监管机构管理": "Regulators", "合约管理": "Contracts", "解除监管": "Release supervision",
+  "管理端": "Admin console", "系统管理": "Administration", "发行审核": "Issuance review",
+  "代币台账": "Token ledger", "企业": "Companies", "合约管理": "Contracts",
   "运营管理员": "Operator admin", "账户设置": "Account settings",
   "全部标为已读": "Mark all as read", "标为已读": "Mark as read", "处理中…": "Processing…", "正在标为已读": "Marking as read",
   "请勿重复提交。": "Do not submit again.", "取消": "Cancel", "关闭": "Close", "返回列表": "Back to list",
   "将当前筛选下的 3 条未读消息标为已读，包括尚未加载的消息。": "Mark the 3 unread messages in the current filter as read, including messages not loaded yet.",
   "将当前筛选下的 4 条未读消息标为已读，包括尚未加载的消息。": "Mark the 4 unread messages in the current filter as read, including messages not loaded yet.",
-  "将当前筛选下的 2 条未读消息标为已读，包括尚未加载的消息。": "Mark the 2 unread messages in the current filter as read, including messages not loaded yet.",
-  "将当前筛选下的 2 条未读消息标为已读，包括尚未加载的消息。其他分类的未读消息不受影响。": "Mark the 2 unread messages in the current filter as read, including messages not loaded yet. Unread messages in other categories are not affected.",
+    "将当前筛选下的 2 条未读消息标为已读，包括尚未加载的消息。其他分类的未读消息不受影响。": "Mark the 2 unread messages in the current filter as read, including messages not loaded yet. Unread messages in other categories are not affected.",
   "只改变你本人的阅读状态，不影响其他运营管理人员，也不代表相关业务已经处理。确认之后新到的消息仍为未读。": "This only changes your own read status. It does not affect other operators and does not mean the related business has been handled. Messages that arrive after you confirm stay unread.",
   "只改变本账号的阅读状态，不代表相关业务已经处理。确认之后新到的消息仍为未读。": "This only changes this account's read status and does not mean the related business has been handled. Messages that arrive after you confirm stay unread.",
   "未能标为已读，所有消息保持原状。请重试。": "Could not mark as read. All messages are unchanged. Please try again.",
@@ -190,14 +189,14 @@ TP.addCopy({
   "未找到这条消息": "Message not found", "消息不存在或无法查看。": "This message does not exist or cannot be viewed.",
   "运营 · 消息列表": "Operator · Message list", "运营 · 全部已读": "Operator · Mark all as read", "运营 · 最近消息预览": "Operator · Recent messages",
   "运营 · 消息详情异常": "Operator · Message detail exceptions", "运营 · 逐条消息详情": "Operator · Message details",
-  "监管机构 · 消息": "Regulator · Messages", "监管机构 · 逐条消息详情": "Regulator · Message details",
+  "机构 · 消息": "Institution · Messages", "机构 · 逐条消息详情": "Institution · Message details",
   "全部消息 · 第一批 20 条": "All messages · first batch of 20", "筛选：未读": "Filter: unread", "筛选：已读": "Filter: read",
-  "筛选：审核任务": "Filter: review tasks", "筛选：运营告警": "Filter: operations alerts", "筛选：账户安全": "Filter: account security",
+  "筛选：业务办理进度": "Filter: business progress", "筛选：运营告警": "Filter: operations alerts", "筛选：账户安全": "Filter: account security",
   "筛选无结果（未读 · 账户安全）": "No results (unread · account security)", "加载更多 · 已加载全部": "Load more · all loaded",
   "加载更多失败 · 保留已加载": "Load more failed · loaded items kept", "读取失败": "Load failed", "还没有消息（空）": "No messages yet (empty)",
   "从详情返回 · 刚读的消息原地变为已读": "Back from details · the message just read is now read in place",
   "确认（全部 · 3 条未读）": "Confirm (all · 3 unread)", "确认（全部 · 4 条未读）": "Confirm (all · 4 unread)",
-  "确认（分类：运营告警 · 2 条未读）": "Confirm (operations alerts · 2 unread)", "确认（分类：审核任务 · 2 条未读）": "Confirm (review tasks · 2 unread)",
+  "确认（分类：运营告警 · 2 条未读）": "Confirm (operations alerts · 2 unread)", "确认（分类：业务办理进度 · 2 条未读）": "Confirm (business progress · 2 unread)",
   "处理中": "Processing", "失败 · 全部保持原状": "Failed · nothing changed", "成功 · 当前筛选已无未读": "Success · no unread in the current filter",
   "最近 10 条": "Latest 10", "还没有消息": "No messages yet", "读取失败 · 保留未读数": "Load failed · unread count kept", "未读超过 99": "More than 99 unread",
   "详情读取失败 · 仍为未读": "Detail load failed · still unread", "已读保存失败 · 正文照常可读": "Read status not saved · content still readable",

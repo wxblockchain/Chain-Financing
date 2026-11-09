@@ -22,25 +22,25 @@
 </div>
 
 <!-- ============================== 消息列表 ============================== -->
-<section data-screen id="list" data-no="L01" data-group="消息列表" data-name="全部消息 · 已加载全部" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-next="m-c07">
+<section data-screen id="list" data-no="L01" data-group="消息列表" data-name="全部消息 · 已加载全部" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-next="m-c05">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c01..c14" data-seg="all" data-cat="" data-seg-go="unread:list-unread read:list-read" data-cat-go="progress:list-cat-progress compliance:list-cat-compliance" data-more="end" data-markall="markall-all"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c01..c12" data-seg="all" data-cat="" data-seg-go="unread:list-unread read:list-read" data-cat-go="progress:list-cat-progress compliance:list-cat-compliance" data-more="end" data-markall="markall-all"></div></div>
 </section>
 <section data-screen id="list-unread" data-no="L02" data-group="消息列表" data-name="筛选：未读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c01 c03 c04 c07" data-seg="unread" data-cat="" data-seg-go="all:list read:list-read" data-cat-go="compliance:list-filtered" data-more="end" data-markall="markall-all"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c01 c02 c05 c07" data-seg="unread" data-cat="" data-seg-go="all:list read:list-read" data-cat-go="compliance:list-filtered" data-more="end" data-markall="markall-all"></div></div>
 </section>
 <section data-screen id="list-read" data-no="L03" data-group="消息列表" data-name="筛选：已读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c02 c05 c06 c08..c14" data-seg="read" data-cat="" data-seg-go="all:list unread:list-unread" data-cat-go="" data-more="end" data-markall="none"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c03 c04 c06 c08..c12" data-seg="read" data-cat="" data-seg-go="all:list unread:list-unread" data-cat-go="" data-more="end" data-markall="none"></div></div>
 </section>
 <section data-screen id="list-cat-progress" data-no="L04" data-group="消息列表" data-name="筛选：业务办理进度" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c01..c12 c14" data-seg="all" data-cat="progress" data-seg-go="" data-cat-go=":list compliance:list-cat-compliance" data-more="end" data-markall="markall-all"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c01..c10 c12" data-seg="all" data-cat="progress" data-seg-go="" data-cat-go=":list compliance:list-cat-compliance" data-more="end" data-markall="markall-all"></div></div>
 </section>
 <section data-screen id="list-cat-compliance" data-no="L05" data-group="消息列表" data-name="筛选：认证与合规" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c13" data-seg="all" data-cat="compliance" data-seg-go="unread:list-filtered" data-cat-go=":list progress:list-cat-progress" data-more="end" data-markall="none"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c11" data-seg="all" data-cat="compliance" data-seg-go="unread:list-filtered" data-cat-go=":list progress:list-cat-progress" data-more="end" data-markall="none"></div></div>
 </section>
 <section data-screen id="list-filtered" data-no="L06" data-group="消息列表" data-name="筛选无结果（未读 · 认证与合规）" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
@@ -56,7 +56,7 @@
 </section>
 <section data-screen id="list-returned" data-no="L09" data-group="消息列表" data-name="从详情返回 · 刚读的消息原地变为已读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-unread="3" data-next="markall">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c01..c14" data-read="c07" data-seg="all" data-cat="" data-seg-go="unread:list-unread read:list-read" data-cat-go="progress:list-cat-progress compliance:list-cat-compliance" data-more="end" data-markall="markall"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c01..c12" data-read="c05" data-seg="all" data-cat="" data-seg-go="unread:list-unread read:list-read" data-cat-go="progress:list-cat-progress compliance:list-cat-compliance" data-more="end" data-markall="markall"></div></div>
 </section>
 
 <!-- ============================== 全部已读 ============================== -->
@@ -89,7 +89,7 @@
 </section>
 <section data-screen id="list-done" data-no="A05" data-group="全部已读" data-name="成功 · 当前筛选已无未读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-unread="0" data-show-toast="已将 3 条消息标为已读">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c01..c14" data-read="all" data-seg="all" data-cat="" data-seg-go="read:list-read" data-cat-go="progress:list-cat-progress compliance:list-cat-compliance" data-more="end" data-markall="none"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c01..c12" data-read="all" data-seg="all" data-cat="" data-seg-go="read:list-read" data-cat-go="progress:list-cat-progress compliance:list-cat-compliance" data-more="end" data-markall="none"></div></div>
 </section>
 
 <!-- ============================== 最近消息预览（顶栏消息入口） ============================== -->
@@ -98,12 +98,12 @@
 <section data-screen id="preview-error" data-no="P03" data-group="最近消息预览" data-name="读取失败 · 保留未读数" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-overlay data-base="list" data-inbox="error"></section>
 
 <!-- ============================== 消息详情的异常 ============================== -->
-<section data-screen id="detail-error" data-no="S01" data-group="消息详情异常" data-name="详情读取失败 · 仍为未读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="list/" data-next="m-c07">
+<section data-screen id="detail-error" data-no="S01" data-group="消息详情异常" data-name="详情读取失败 · 仍为未读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="list/" data-next="m-c05">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息详情</h1></div></div>
-<div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>消息读取失败</h3><p>暂时无法读取，这条消息仍为未读。请稍后重试。</p><div class="state-actions"><button type="button" class="btn" data-go="list">返回列表</button><button type="button" class="btn primary" data-go="m-c07">重试</button></div></div></div></div>
+<div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>消息读取失败</h3><p>暂时无法读取，这条消息仍为未读。请稍后重试。</p><div class="state-actions"><button type="button" class="btn" data-go="list">返回列表</button><button type="button" class="btn primary" data-go="m-c05">重试</button></div></div></div></div>
 </section>
-<section data-screen id="detail-unsaved" data-no="S02" data-group="消息详情异常" data-name="已读保存失败 · 正文照常可读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="list/" data-next="m-c07">
-<div data-inbox-detail="c07" data-role="client" data-unsaved data-retry-go="m-c07"></div>
+<section data-screen id="detail-unsaved" data-no="S02" data-group="消息详情异常" data-name="已读保存失败 · 正文照常可读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="list/" data-next="m-c05">
+<div data-inbox-detail="c05" data-role="client" data-unsaved data-retry-go="m-c05"></div>
 </section>
 <section data-screen id="detail-missing" data-no="S03" data-group="消息详情异常" data-name="消息不存在或不属于当前企业" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="list/">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息详情</h1></div></div>
@@ -111,9 +111,9 @@
 </section>
 
 <!-- ============================== 未认证企业：可看消息，业务菜单受限 ============================== -->
-<section data-screen id="u-list" data-no="U01" data-group="未认证企业" data-name="消息列表 · 照常查看" data-layout="app" data-who="uncertified" data-nav="" data-crumb="消息通知" data-next="u-c13">
+<section data-screen id="u-list" data-no="U01" data-group="未认证企业" data-name="消息列表 · 照常查看" data-layout="app" data-who="uncertified" data-nav="" data-crumb="消息通知" data-next="u-c11">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-prefix="u-" data-items="c01..c14" data-seg="all" data-cat="" data-seg-go="" data-cat-go="" data-more="end" data-markall="u-markall"></div></div>
+<div class="card" data-inbox-view data-role="client" data-prefix="u-" data-items="c01..c12" data-seg="all" data-cat="" data-seg-go="" data-cat-go="" data-more="end" data-markall="u-markall"></div></div>
 </section>
 <section data-screen id="gate" data-no="U02" data-group="未认证企业" data-name="业务菜单：受限引导" data-layout="app" data-who="uncertified" data-nav="assets" data-crumb="业务/可信资产">
 <div class="content-in">
@@ -140,7 +140,7 @@
 TP.pageTitle='消息通知 · 代币发行平台';
 TP.routes={gate:'gate'};
 TP.inboxPages.build([
-  {role:'client', who:'certified', prefix:'m-', no:'D', group:'逐条消息详情', list:'list', next:{c07:'list-returned'}},
+  {role:'client', who:'certified', prefix:'m-', no:'D', group:'逐条消息详情', list:'list', next:{c05:'list-returned'}},
   {role:'client', who:'uncertified', prefix:'u-', no:'V', group:'未认证企业 · 逐条消息详情', list:'u-list'}
 ]);
 TP.addCopy({

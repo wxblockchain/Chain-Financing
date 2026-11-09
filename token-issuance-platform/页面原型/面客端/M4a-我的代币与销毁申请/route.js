@@ -9,6 +9,7 @@ TP.registerModule({
     burnApplication0031:{certified:'a-release'},
     burnApplication0019:{certified:'a-release-record'},
     burnApplication0018:{certified:'a-message'},
-    burnApplication0024:{certified:'a-old-active'}
+    burnApplication0024:{certified:'a-old-active'},
+    burnApplication0021:{certified:'a-failed'}
   }
 });

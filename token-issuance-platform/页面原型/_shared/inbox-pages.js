@@ -90,7 +90,7 @@
       out += '<div class="card-sec msg-related"><h2 class="sub-h">相关业务</h2><div class="facts-region"><dl class="facts">'+m.ref.map(function(r,i){
         var linked = i===0 && (st==='act' || st==='done');
         return '<div><dt>'+r[0]+'</dt><dd>'+(linked?'<button type="button" class="btn-link mono" data-module-key="'+m.go.key+'" data-toast="'+SCOPE+'">'+esc(r[1])+'</button>':'<span class="mono">'+esc(r[1])+'</span>')+'</dd></div>';
-      }).join('')+'</dl></div>'+
+      }).join('')+(m.extra||[]).map(function(x){ return '<div><dt>'+x[0]+'</dt><dd><span class="tag warn">'+esc(x[1])+'</span></dd></div>'; }).join('')+'</dl></div>'+
       (st==='denied'?'<div class="msg-go"><p class="note">'+TP.icon('info')+'<span>相关内容暂不可访问。</span></p></div>':'')+'</div>';
     }
     if(st==='page') out += '<div class="msg-go"><button type="button" class="btn" data-module-key="'+m.go.key+'" data-toast="'+SCOPE+'">'+m.go.page+'</button></div>';
