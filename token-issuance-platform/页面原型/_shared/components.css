@@ -1048,6 +1048,14 @@ html:has(.issuance-form:not([hidden])){scroll-padding-top:calc(var(--app-header-
 .value-pop>.dd-btn[aria-expanded="true"]{background:var(--card-hover);color:var(--accent)}
 .value-pop>.dd-btn[aria-expanded="true"] svg.i{transform:rotate(180deg)}
 .value-pop>.dd-list{position:fixed;top:0;left:0;right:auto;width:auto;padding:var(--sp-2) var(--sp-3);white-space:nowrap;font-size:var(--fs-13);color:var(--text);text-align:left;z-index:calc(var(--z-sticky) + 1)}
+/* 表格金额列：含完整值图标的列（th/td 标 .pop-col，表头文字包 .pop-col-label）每行都预留同宽图标位，无图标的行留空，金额与表头右缘对齐，不因图标参差。 */
+.pop-col{--pop-slot:calc(var(--sp-5) + var(--sp-2))}
+td.pop-col{white-space:nowrap}
+td.pop-col::after{content:"";display:inline-block;width:var(--pop-slot)}
+td.pop-col:has(>.value-pop)::after{content:none}
+.pop-col-label{display:inline-block;margin-right:var(--pop-slot);white-space:normal}
+.pop-col>.value-pop{width:var(--pop-slot);justify-content:flex-end}
+.pop-col>.value-pop>.dd-btn{width:var(--pop-slot)}
 /* 桌面评审入口统一放在侧栏底部空白区域（全部模块），避免遮挡表格操作列、文件操作和吸底主操作。 */
 @media(min-width:1101px){
   .demo-btn{left:var(--sp-4);right:auto;max-width:calc(var(--sidebar-w) - var(--sp-7));font-size:var(--fs-11);box-shadow:none}
