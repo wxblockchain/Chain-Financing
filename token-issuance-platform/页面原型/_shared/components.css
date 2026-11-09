@@ -580,7 +580,7 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .tbl .col-name{min-width:120px}
 .tbl td>.tag{white-space:normal}
 .tbl .num{text-align:right;white-space:nowrap}
-/* 固定编号、数值与状态的阅读空间，名称列平分余量；按表格实际宽度加宽。 */
+/* 保留各列阅读下限；宽屏增量按内容分配，避免全部积在名称列。 */
 .tablewrap:has(>.asset-list){container:asset-table / inline-size}
 .asset-list{min-width:var(--asset-table-min)}
 .asset-list:has(colgroup){table-layout:fixed}
@@ -592,12 +592,13 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .asset-list .asset-col-actions{width:var(--asset-col-actions)}
 .asset-list:is(.with-creditor,.readonly) .asset-col-actions{width:var(--asset-col-readonly)}
 @container asset-table (min-width:1100px){
-  .asset-list .asset-col-id{width:calc(var(--asset-col-id) + var(--sp-2))}
-  .asset-list .asset-col-amount{width:calc(var(--asset-col-value) + var(--sp-2))}
-  .asset-list .asset-col-due{width:calc(var(--asset-col-due) + var(--sp-2))}
-  .asset-list .asset-col-repayment{width:calc(var(--asset-col-repayment) + var(--sp-7))}
-  .asset-list .asset-col-status{width:calc(var(--asset-col-status) + var(--sp-6))}
-  .asset-list .asset-col-actions{width:calc(var(--asset-col-actions) + var(--sp-4))}
+  .asset-list{--asset-col-growth:calc(100cqi - var(--asset-table-fluid-start))}
+  .asset-list .asset-col-id{width:calc(var(--asset-col-id) + var(--sp-2) + var(--asset-col-growth)*.12)}
+  .asset-list .asset-col-amount{width:calc(var(--asset-col-value) + var(--sp-2) + var(--asset-col-growth)*.13)}
+  .asset-list .asset-col-due{width:calc(var(--asset-col-due) + var(--sp-2) + var(--asset-col-growth)*.12)}
+  .asset-list .asset-col-repayment{width:calc(var(--asset-col-repayment) + var(--sp-7) + var(--asset-col-growth)*.12)}
+  .asset-list .asset-col-status{width:calc(var(--asset-col-status) + var(--sp-6) + var(--asset-col-growth)*.15)}
+  .asset-list .asset-col-actions{width:calc(var(--asset-col-actions) + var(--sp-4) + var(--asset-col-growth)*.12)}
   .asset-list:is(.with-creditor,.readonly) .asset-col-actions{width:var(--asset-col-readonly)}
 }
 .asset-list :is(th,td){padding-inline:var(--sp-2);overflow-wrap:normal}
