@@ -854,7 +854,7 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .workflow-context{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2) var(--sp-6);padding:var(--sp-3) var(--card-pad);border-bottom:1px solid var(--border);background:var(--card-2);font-size:var(--fs-13);color:var(--muted)}
 .workflow-context b{color:var(--text);font-weight:500}
 .workflow-context .btn-link{font-size:var(--fs-13)}
-/* 申请步骤底栏吸底：长步骤滚动时“上一步 / 取消 / 下一步（签名并提交）”始终可见，内容到底时回到卡片底部 */
+/* 申请步骤底栏吸底：长步骤滚动时“上一步 / 取消 / 下一步（确认申请）”始终可见，内容到底时回到卡片底部 */
 .workflow-footer{align-items:center;margin-top:var(--sp-4);position:sticky;bottom:0;z-index:calc(var(--z-sticky) - 22);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
 .workflow-footer .back{margin-right:auto}
 .workflow-footer.is-stuck{box-shadow:0 -6px 16px -12px rgba(15,23,42,.35)}
