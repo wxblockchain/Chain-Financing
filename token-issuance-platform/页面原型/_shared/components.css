@@ -228,6 +228,8 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 /* M4b ledgers: the M4a token columns plus issuer (eleven columns); network stays first. Columns size by content and
    scroll inside the table below 1120 px, keeping the action column pinned on the right. */
 .token-list.ledger-list{table-layout:auto;min-width:1120px}
+/* 企业端我的代币列表不含地址列，1280 起整表放下，不再表内横向滚动 */
+.token-list.ledger-list.fit-width{min-width:0}
 .ledger-list .c-issuer{width:13%}
 .ledger-list :is(th,td):nth-child(4){min-width:96px}.ledger-list :is(th,td):nth-child(10){min-width:100px}
 /* 单位价值“1 COU =”与数值可分两行，为十一列让出宽度。 */
