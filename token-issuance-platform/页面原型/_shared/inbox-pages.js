@@ -100,7 +100,7 @@
   /* 消息详情的页面内容；opts.unsaved 为已读保存失败（正文照常可读，仍为未读）。 */
   function detail(m, opts){
     opts = opts || {};
-    return '<div class="content-in"><div class="page-head"><div>'+
+    return '<div class="content-in msg-reading"><div class="page-head"><div>'+
       '<div class="page-title-row"><h1 class="page-title">'+IB.title(m)+'</h1><span class="tag">'+IB.CATS[m.cat]+'</span></div>'+
       '<p class="page-desc"><time data-instant="'+m.at+'"></time><span class="faint"> · </span><span>时区</span> <span data-zone></span></p></div></div>'+
       (opts.unsaved?'<div class="note warn banner" role="alert">'+TP.icon('alert')+'<span class="grow">未能标为已读，这条消息仍为未读。</span><button type="button" class="btn sm"'+go(opts.retryGo)+'>重试</button></div>':'')+

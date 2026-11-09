@@ -370,6 +370,8 @@
     });
   }
   function syncStickyHead(){
+    var topbar = $('#tools').closest('.topbar');
+    if(!$('#app').hidden) document.documentElement.style.setProperty('--inbox-top', Math.max(0,topbar.getBoundingClientRect().bottom)+'px');
     var head = $('#content [data-screen]:not([hidden]) .page-head[data-sticky]');
     if(stickyHead && stickyHead!==head) stickyHead.classList.remove('is-stuck');
     stickyHead = head;

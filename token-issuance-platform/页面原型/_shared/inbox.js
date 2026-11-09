@@ -195,10 +195,10 @@
     return '<li><button type="button" class="msg-item'+(opts.compact?' compact':'')+(read?'':' is-unread')+'"'+link(screen,'msg-'+m.id)+'>'+
       '<span class="msg-dot" aria-hidden="true"></span>'+
       '<span class="msg-main"><span class="msg-title">'+title(m)+'</span>'+
-      '<span class="msg-meta">'+meta(m)+'</span>'+
-      '<span class="msg-summary">'+body(m)+'</span>'+(opts.compact?when:'')+'</span>'+
-      '<span class="msg-side">'+(read?'<span class="tag">已读</span>':'<span class="tag accent">未读</span>')+
-      (opts.compact?'':when)+'</span></button></li>';
+      '<span class="msg-summary">'+body(m)+'</span>'+
+      '<span class="msg-meta">'+meta(m)+'</span>'+(opts.compact?when:'')+'</span>'+
+      '<span class="msg-side">'+(opts.compact?'':when)+
+      (read?'<span class="tag">已读</span>':'<span class="tag accent">未读</span>')+'</span></button></li>';
   }
 
   function unread(role){ return (DATA[role]||[]).filter(function(m){ return !m.read; }).length; }

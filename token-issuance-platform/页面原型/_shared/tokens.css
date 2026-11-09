@@ -86,6 +86,9 @@
   --asset-col-status:144px;
   --asset-col-actions:152px;
   --asset-col-readonly:80px;
+  --inbox-panel-w:440px; /* 最近消息：长标题与时区并存 */
+  --message-reading-max:1040px; /* M7 详情：正文和相关编号共用阅读区域 */
+  --message-body-max:80ch;
 
   /* —— 文字角色 —— */
   --ui-page-title:var(--fs-24);
