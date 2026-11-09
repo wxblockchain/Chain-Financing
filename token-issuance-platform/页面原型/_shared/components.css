@@ -755,8 +755,6 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .assignment-list :is(th,td){white-space:normal;overflow-wrap:anywhere}
 .assignment-list th:first-child{width:30%}
 .assignment-list td:last-child{white-space:nowrap}
-.assignment-history{padding:var(--sp-3) var(--card-pad);border-top:1px solid var(--row-line)}
-.assignment-history .inline-empty{padding:var(--sp-3) 0 0;text-align:left}
 .material-batch{border-top:1px solid var(--row-line)}
 .material-batch:first-child{border-top:0}
 .material-batch>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-2) var(--sp-5);padding:var(--sp-4) var(--card-pad);cursor:pointer;list-style:none}
