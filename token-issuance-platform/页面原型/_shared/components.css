@@ -225,11 +225,14 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .token-list :is(th,td):last-child{padding-right:var(--sp-4)}
 .token-list .btn-link.mono,.burn-list .btn-link.mono{font-weight:500;white-space:nowrap}
 .token-list .tag{max-width:100%;white-space:normal;margin-top:0}
-/* M4b ledgers: the M4a token columns plus issuer; network stays first. Ten columns size by content and
+/* M4b ledgers: the M4a token columns plus issuer (eleven columns); network stays first. Columns size by content and
    scroll inside the table below 1120 px, keeping the action column pinned on the right. */
 .token-list.ledger-list{table-layout:auto;min-width:1120px}
 .ledger-list .c-issuer{width:13%}
-.ledger-list :is(th,td):nth-child(4){min-width:128px}.ledger-list :is(th,td):nth-child(9){min-width:144px}
+.ledger-list :is(th,td):nth-child(4){min-width:96px}.ledger-list :is(th,td):nth-child(10){min-width:100px}
+/* 单位价值“1 COU =”与数值可分两行，为十一列让出宽度。 */
+.ledger-list td.num.unit-value{white-space:normal}
+.ledger-list :is(th,td):not(:first-child):not(:last-child){padding-inline:var(--sp-1)}
 .ledger-list td .asset-label,.ledger-list td .addr,.ledger-list td .money{white-space:nowrap}
 .token-list .col-act .actlink,.burn-list .col-act .actlink{display:block;margin-left:auto;width:max-content;white-space:nowrap;text-align:right}
 /* Token and burn-request detail header: network first, then token icon + quantity + symbol, the record ID below. */
