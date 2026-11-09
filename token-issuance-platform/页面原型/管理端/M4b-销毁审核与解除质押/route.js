@@ -9,6 +9,9 @@ TP.registerModule({
     // M7 审计机构消息（NT-R04）前往代币详情
     auditToken025:{regd:'rld-025'},
     ledgerToken001:{ops:'l-001', opsnew:'l-001'},
+    // M7 运营告警：NT-A08 提交锁超时（DEMO-TOKEN-021 确认中）、NT-A09 单位价值调整超时（DEMO-TOKEN-001）前往代币详情
+    ledgerTokenLocked:{ops:'l-021-lock', opsnew:'l-021-lock'},
+    ledgerTokenAdjusting:{ops:'l-001-updating', opsnew:'l-001-updating'},
     reviewToken:{ops:'l-027', opsnew:'l-027', reg:'rl-027', regoff:'rl-027', regnew:'rl-027'},
     // M7 消息前往原业务：运营进入销毁记录详情，资产托管机构进入解除托管详情
     burnApplication0031:{ops:'b-release', opsnew:'b-release', reg:'r-0031', regoff:'r-0031', regnew:'r-0031'},

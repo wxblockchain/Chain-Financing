@@ -1,25 +1,34 @@
 # M5 · 管理端登录与权限、机构管理
 
-2026-11-09 · PRD 同步修订（基线 `a957f38`）/ existing-system adaptation / console · 简体中文与 English。
+2026-11-09 · PRD 跟进修订（基线 `68c2e54`）/ existing-system adaptation / console · 简体中文与 English。
 
 ## 基线与范围
 
-依据本 issue 2026-11-06 08:25 的机构管理四册、08:28 收口后的管理端登录与权限功能/验收册及同日流程/通知册；安全记录按用户 08:26 确认，仅由平台内部留存 180 天，产品内无查询或导出入口。对应仓库 PRD 基线现为 `a957f38`，见[机构管理功能册](../../../PRD/管理端/M5-机构管理/01-机构管理-PRD.md)与[管理端登录与权限功能册](../../../PRD/管理端/M5-管理端登录与权限/01-管理端登录与权限-PRD.md)。
+依据本 issue 2026-11-06 08:25 的机构管理四册、08:28 收口后的管理端登录与权限功能/验收册及同日流程/通知册；安全记录按用户 08:26 确认，仅由平台内部留存 180 天，产品内无查询或导出入口。对应仓库 PRD 基线现为 `68c2e54`，见[机构管理功能册](../../../PRD/管理端/M5-机构管理/01-机构管理-PRD.md)与[管理端登录与权限功能册](../../../PRD/管理端/M5-管理端登录与权限/01-管理端登录与权限-PRD.md)。
 
 - 本轮更新：机构编号的列表、查找、详情与编辑只读展示；固定三类机构；联系人姓名 2–50 字、联系电话、注册地址和机构级基础资质说明/附件；找回成功即完成首次密码设置；2 小时无操作后下一次操作转至重新登录且该次操作未执行；历史登录邮箱不可转分配；停用提示只说明机构状态和新业务选择范围。
 - 继承：未受上述变化影响的登录、首次改密、验证码、人机校验、本人改密/改邮箱、语言/时区、临时锁定与邮件失败画面。只展示规则结果和预设画面，不实现校验、计时、发码或账号状态机。
 - 归属调整：原有 32 屏机构待办/材料画面原样移至 [M3b](../M3b-发行审核/README.md)，相应路由随迁；M5 不再承载具体申请、材料、铸造或代币权限规则。迁移是保留既有画面和联看能力，不代表重新验收 M3b 业务规则。
 
-机构、邮箱、编号、地址、联系人、文件与时间均为演示数据。机构编号示例固定为 C → ORG-DEMO-003，D/E/F/G → 004/005/006/007。
+机构、邮箱、编号、地址、联系人、文件与时间均为演示数据。机构编号示例固定为 C → ORG-DEMO-003，D/E/F/G → 004/005/006/007。D 为审计机构、正常账号，登录邮箱 audit-demo@reg.example（与 M4b / M7 的 `regd` 一致）；待首登改密示例为新添加的 G：法律服务机构，登录邮箱 invite-demo@reg.example，联系邮箱 contact@reg.example，添加时间 2026-10-30 10:30（UTC+8）。
 
-## 本轮同步（PRD `a957f38`）
+## 本轮跟进（PRD `68c2e54`）
+
+对照 `a957f38 → 68c2e54` 的两份 PRD 变化及用户裁定，只改受影响画面：
+
+- 机构详情不再展示开通邮件记录：`rg-detail`、`rg-off`、`rg-initial`、`rg-missing`、`rg-list-audit`、`rg-list-locked`、`rg-list-off`、`rg-self-email`、`rg-email-fixed`、`edit-saved` 去掉“邀请邮件发送结果”区块；只差该区块的 `rg-mail-fail`、`rg-initial-fail` 删除，`invite-mail-fail` 的“查看机构”改到 `rg-initial`。邮件失败的结果反馈仍在 `invite-mail-fail`。
+- 资质附件文件规则：添加与编辑共 16 屏的上传入口写明“支持 PDF、JPG、JPEG、PNG，单份不超过 10 MB，最多 10 份”；添加表单新增 `invite-file-error`（格式不支持，未添加，已有文件和已填内容保留）；编辑表单 `files-failed` 改为“文件超过 10 MB，未添加”，不再阻止保存。
+- 演示数据：机构 D 改为正常账号的审计机构（`audit-demo@reg.example`，有最近登录时间），原 `rg-list-initial` 改为 `rg-list-audit`；待首登改密示例统一为 G（`rg-initial`、`rg-added`、添加结果）。
+- 核对未改：`login-reset-ended` 的说明与 PRD 新增的登录结束说明一致；本模块画面未写客服邮箱。
+
+## 上轮同步（PRD `a957f38`）
 
 对照 `7fb395b → a957f38` 的两份 PRD 变化，只改受影响画面，其余继承：
 
 - 机构列表按业务列表通用规则：`rg-list`、`rg-added` 加分页条（只画第 1 页，行序按添加时间从新到旧）；`rg-empty` 尚未添加时不显示筛选条；`rg-no-results` 保留并示例已填条件，`rg-list-fail` 保留筛选条。
 - 停用确认（`disable-confirm` / `disable-busy` / `disable-fail`）影响说明改为：不再进入新的机构分配，已有分配、材料待办和解除托管继续有效。
 - 找回密码：设置新密码各屏提示验证通过后 10 分钟内完成重置；`recover-stale`、`recover-ops-stale` 说明超过 10 分钟或账号信息变化后验证失效、原密码不变。
-- 新增 `login-lock-ended`（账号锁定，全部登录结束）、`login-reset-ended`（开发人员重置凭据，全部登录结束 → 用新初始密码登录 → 首次改密）、`rg-email-fixed`（登录邮箱填错经开发人员更正后的机构详情：显示正确邮箱、待首登改密，开通邮件记录保留原收件邮箱，无重发或改邮箱入口）。
+- 新增 `login-lock-ended`（账号锁定，全部登录结束）、`login-reset-ended`（开发人员重置凭据，全部登录结束 → 用新初始密码登录 → 首次改密）、`rg-email-fixed`（登录邮箱填错经开发人员更正后的机构详情：显示正确邮箱、待首登改密，无重发或改邮箱入口）。
 - 受限画面 `access-*` 均为机构身份，返回本角色默认页机构待办，与新菜单矩阵一致，未改。运营菜单由共享 `menu.admin.js` 提供。
 
 ## 打开与主流程
@@ -62,7 +71,7 @@ python3 _shared/export.py --source 管理端/M5-管理端登录与权限/管理�
 
 ## 画面清单
 
-共 153 屏，含继承画面；每屏均登记于默认关闭的目录。默认、空、代表性异常、角色和流程步骤按下表保留，不穷举所有组合。
+共 152 屏，含继承画面；每屏均登记于默认关闭的目录。默认、空、代表性异常、角色和流程步骤按下表保留，不穷举所有组合。
 
 | 分组 | 画面 ID 与名称 |
 | --- | --- |
@@ -73,24 +82,26 @@ python3 _shared/export.py --source 管理端/M5-管理端登录与权限/管理�
 | 本人修改登录邮箱 | `self-email` 修改邮箱 · 验证当前密码；`self-email-filled` 修改邮箱 · 填写新邮箱；`self-email-captcha` 修改邮箱 · 人机校验；`self-email-captcha-fail` 修改邮箱 · 人机校验未通过；`self-email-captcha-cooldown` 修改邮箱 · 人机校验冷却中；`self-email-code` 修改邮箱 · 新邮箱收码；`self-email-occupied` 修改邮箱 · 邮箱不可用；`self-email-code-error` 修改邮箱 · 验证码无效；`self-email-send-fail` 修改邮箱 · 发送失败；`self-email-limit` 修改邮箱 · 发送已达上限；`self-email-reauth-expired` 修改邮箱 · 当前密码验证已过期；`self-email-stale` 修改邮箱 · 信息已变更；`self-email-save-fail` 修改邮箱 · 保存失败；`self-email-confirm` 修改邮箱 · 确认；`self-email-busy` 修改邮箱 · 提交中；`self-email-ops` 运营示例 · 修改邮箱 · 验证当前密码；`self-email-ops-filled` 运营示例 · 修改邮箱 · 填写新邮箱；`self-email-ops-captcha` 运营示例 · 修改邮箱 · 人机校验；`self-email-ops-code` 运营示例 · 修改邮箱 · 新邮箱收码；`self-email-ops-occupied` 运营示例 · 修改邮箱 · 邮箱不可用；`self-email-ops-code-error` 运营示例 · 修改邮箱 · 验证码无效；`self-email-ops-send-fail` 运营示例 · 修改邮箱 · 发送失败；`self-email-ops-stale` 运营示例 · 修改邮箱 · 信息已变更；`self-email-ops-save-fail` 运营示例 · 修改邮箱 · 保存失败；`self-email-ops-confirm` 运营示例 · 修改邮箱 · 确认；`self-email-ops-busy` 运营示例 · 修改邮箱 · 提交中 |
 | 会话与访问反馈 | `access-menu` 无权访问菜单；`access-data` 无权查看或内容不存在；`access-action` 无权操作 |
 | 机构列表 | `rg-list` 机构列表；`rg-empty` 机构 · 尚未添加；`rg-no-results` 机构 · 筛选无结果；`rg-list-fail` 机构 · 读取失败；`rg-added` 机构列表 · 新邀请已添加 |
-| 添加机构 | `invite-empty` 添加 · 空表单；`invite-ready` 添加 · 资料已填写；`invite-error` 添加 · 名称重复；`invite-uploading` 添加 · 附件上传中；`invite-busy` 添加 · 提交中；`invite-fail` 添加 · 保存失败；`invite-sent` 添加 · 已建立并发出邮件；`invite-mail-fail` 添加 · 已建立但邮件失败；`invite-email-unavailable` 添加 · 登录邮箱不可用 |
-| 机构详情 | `rg-detail` 机构详情 · 启用正常；`rg-off` 机构详情 · 停用；`rg-initial` 机构详情 · 待首登改密；`rg-missing` 机构详情 · 资料未补齐；`rg-mail-fail` 机构详情 · 邮件发送失败；`rg-initial-fail` 新机构 · 邀请邮件失败；`rg-list-initial` 机构详情 · 机构 D 待首登改密；`rg-list-locked` 机构详情 · 账号锁定；`rg-list-off` 机构详情 · 机构 F 已停用；`rg-self-email` 机构详情 · 机构本人改邮箱后；`rg-email-fixed` 机构详情 · 登录邮箱已更正；`rg-not-found` 无权查看或机构不存在；`rg-detail-fail` 机构详情读取失败 |
-| 编辑机构资料与附件 | `edit-ready` 编辑 · 资料已反显；`edit-changed` 编辑 · 已修改待保存；`edit-missing` 编辑 · 核心资料待补齐；`edit-error` 编辑 · 字段错误；`edit-busy` 编辑 · 保存中；`edit-fail` 编辑 · 保存失败；`files-uploading` 附件 · 上传中；`files-failed` 附件 · 上传失败；`files-removed` 附件 · 移除待保存；`edit-saved` 编辑 · 已保存；`files-read-fail` 资质附件 · 读取失败 |
+| 添加机构 | `invite-empty` 添加 · 空表单；`invite-ready` 添加 · 资料已填写；`invite-error` 添加 · 名称重复；`invite-uploading` 添加 · 附件上传中；`invite-file-error` 添加 · 附件格式不支持；`invite-busy` 添加 · 提交中；`invite-fail` 添加 · 保存失败；`invite-sent` 添加 · 已建立并发出邮件；`invite-mail-fail` 添加 · 已建立但邮件失败；`invite-email-unavailable` 添加 · 登录邮箱不可用 |
+| 机构详情 | `rg-detail` 机构详情 · 启用正常；`rg-off` 机构详情 · 停用；`rg-initial` 机构详情 · 待首登改密；`rg-missing` 机构详情 · 资料未补齐；`rg-list-audit` 机构详情 · 机构 D 审计机构；`rg-list-locked` 机构详情 · 账号锁定；`rg-list-off` 机构详情 · 机构 F 已停用；`rg-self-email` 机构详情 · 机构本人改邮箱后；`rg-email-fixed` 机构详情 · 登录邮箱已更正；`rg-not-found` 无权查看或机构不存在；`rg-detail-fail` 机构详情读取失败 |
+| 编辑机构资料与附件 | `edit-ready` 编辑 · 资料已反显；`edit-changed` 编辑 · 已修改待保存；`edit-missing` 编辑 · 核心资料待补齐；`edit-error` 编辑 · 字段错误；`edit-busy` 编辑 · 保存中；`edit-fail` 编辑 · 保存失败；`files-uploading` 附件 · 上传中；`files-failed` 附件 · 文件超过大小上限；`files-removed` 附件 · 移除待保存；`edit-saved` 编辑 · 已保存；`files-read-fail` 资质附件 · 读取失败 |
 | 停用与启用 | `disable-confirm` 停用机构 · 确认；`disable-busy` 停用机构 · 提交中；`disable-fail` 停用机构 · 失败；`enable-confirm` 启用机构 · 确认；`enable-busy` 启用机构 · 提交中；`enable-fail` 启用机构 · 失败；`status-stale` 机构状态已变化 |
 
 ## 本期不做与依赖
 
 不提供机构自助注册、删除机构、多个机构账号、其他/自定义类型或类型配置、账号启停或人工冻结、运营代改登录邮箱/重置密码、开通邮件重发、安全记录查询或导出。机构级基础资质不关联具体申请或代币。M2/M3b/M4b/M7 的业务规则由各自模块维护。
 
-机构级基础资质附件的格式、数量和单份大小在 PRD 中为待确认事项；原型不写任何文件限制，演示中的 PDF 文件只是样例。
+资质附件只画规则生效后的提示与两个代表性错误（添加：格式不支持；编辑：超过 10 MB）；“已有 10 份不能再添加”、空文件、扩展名与内容不一致、上传失败重试等其余情形以 PRD 为准，未逐一出图。
 
-待确认：
-- 开发人员重置凭据后，被结束的登录回到登录入口时的原因文案（PRD 只要求说明原因），原型暂用“账号登录凭据已由平台重置……请使用平台另行告知的登录信息重新登录”。
-- 登录邮箱更正后，机构详情的开通邮件记录是否仍显示原（填错的）收件邮箱，原型按历史记录保留。
+待确认：客服邮箱提供前，密码变更与登录邮箱变更通知中的求助方式如何呈现（PRD 待确认事项）；本模块画面不涉及。
 
 规则、校验与异常分支以 PRD 为准；原型能切换画面不代表真实账号、邮件、权限或后端能力已实现。
 
-## 本轮核验（a957f38）
+## 本轮核验（68c2e54）
+
+Chromium 1280 px，中文与 English 各遍历全部 152 屏：无脚本错误、无整页横向溢出、无重复 id、无指向不存在画面的跳转。机构列表、D 详情、G 详情、添加/编辑附件错误等改动画面另作截图自查。未验证真实服务、Safari/Firefox。
+
+## 上轮核验（a957f38）
 
 Chromium 1280 px，中文与 English 各遍历全部 153 屏：无脚本错误、无整页横向溢出、无重复 id、无指向不存在画面的跳转。分页条、尚未添加、停用确认、找回失效与三屏新增画面另作截图自查。未验证真实服务、Safari/Firefox。
 

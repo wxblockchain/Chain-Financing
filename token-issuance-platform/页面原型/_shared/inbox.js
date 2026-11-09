@@ -63,13 +63,29 @@
          'Burn application '+app+' for '+A+' failed. Asset: '+asset+'; submitted at: {t:'+submitted+'}; failed at: {t:'+failed+'}. This message is for information only.'],
       ref:[['销毁申请编号',app],['资产编号',asset]], go:{key:go}};
   }
-  /* M4b · 销毁超时待处理（NT-A08）：发生时间为进入销毁中满 10 分钟的时点；不含交易哈希与内部失败说明 */
+  /* M4b · 销毁超时待处理（NT-A08）· 销毁中超时：发生时间为进入销毁中满 10 分钟的时点；不含交易哈希与内部失败说明 */
   function burnA08(id, app, asset, at, go){
     return {id:id, cat:'alert', at:at, read:true,
       t:['销毁超时待处理','Token burn pending over 10 minutes'],
       b:['企业 '+A+' 的销毁申请 '+app+' 已处于销毁中超过 10 分钟，仍无明确结果。资产：'+asset+'。请联系平台开发查明并处理。',
          'Burn application '+app+' for '+A+' has been in progress for over 10 minutes without a definite result. Asset: '+asset+'. Contact the platform developers to investigate and resolve it.'],
       ref:[['销毁申请编号',app],['资产编号',asset]], go:{key:go}};
+  }
+  /* M4b · 销毁超时待处理（NT-A08）· 提交锁超时：尚未形成销毁申请，以代币编号识别；发生时间为自加锁起满 10 分钟的时点 */
+  function burnA08Lock(id, token, asset, at, go){
+    return {id:id, cat:'alert', at:at, read:true,
+      t:['销毁超时待处理','Token burn pending over 10 minutes'],
+      b:['企业 '+A+' 的代币 '+token+' 已提交销毁超过 10 分钟，仍未取得交易标识，当前为确认中。资产：'+asset+'。请联系平台开发查明并处理。',
+         'The burn submission for token '+token+' of '+A+' has been pending for over 10 minutes without a transaction identifier and is awaiting confirmation. Asset: '+asset+'. Contact the platform developers to investigate and resolve it.'],
+      ref:[['代币编号',token],['资产编号',asset]], go:{key:go}};
+  }
+  /* M4b · 单位价值调整超时待处理（NT-A09）：单位价值按填写的完整值展示；不含调整原因、操作人与交易哈希 */
+  function adjustA09(id, token, next, prev, submitted, at, go){
+    return {id:id, cat:'alert', at:at, read:true,
+      t:['单位价值调整超时待处理','Unit value adjustment pending over 10 minutes'],
+      b:['代币 '+token+'（发行人：'+A+'）的单位价值调整已提交超过 10 分钟，仍无明确结果。新单位价值：1 '+Q+' = '+next+' USD；当前仍生效：1 '+Q+' = '+prev+' USD；提交时间：{t:'+submitted+'}。请联系平台开发查明并处理。',
+         'The unit value adjustment for token '+token+' (issuer: '+A+') was submitted over 10 minutes ago and has no definite result yet. New unit value: 1 '+Q+' = '+next+' USD; currently effective: 1 '+Q+' = '+prev+' USD; submitted at: {t:'+submitted+'}. Contact the platform developers to investigate and resolve it.'],
+      ref:[['代币编号',token]], go:{key:go}};
   }
   /* M4b · 代币已销毁、待解除托管（NT-R02），收件人为本代币的资产托管机构；不标交易来源 */
   function custodyR02(id, app, asset, qty, confirmed, go){
@@ -111,8 +127,7 @@
       ref:[['申请编号',app]], go:go?{key:go, nav:'issue'}:null};
   }
   /* M5 · 密码变更通知（NT-LG-03）：设置 / 重置 / 修改三种情形各一套标题与正文；不跳转。
-     官方求助渠道待需求方提供，原型以演示渠道示意。 */
-  var HELP = ['官方支持邮箱 support@example.com（演示渠道）', 'the official support mailbox support@example.com (demo channel)'];
+     官方客服邮箱由需求方上线后提供；提供前按 PRD 推荐不写“如非本人操作”的求助一句，其余照常。 */
   var PASSWORD = {
     set:['管理端账号密码已设置','Admin account password set',
       '您的管理端账号已于 {t:@} 完成首次密码设置，初始密码已失效，该账号的全部登录已结束，请使用新密码登录。',
@@ -127,39 +142,42 @@
   function password(id, kind, at, read){
     var p = PASSWORD[kind];
     return {id:id, cat:'security', at:at, read:read, t:[p[0], p[1]],
-      b:[p[2].replace('@',at)+'如非本人操作，请立即通过 '+HELP[0]+' 联系平台。',
-         p[3].replace('@',at)+' If you did not make this change, contact the platform immediately via '+HELP[1]+'.']};
+      b:[p[2].replace('@',at), p[3].replace('@',at)]};
   }
 
   var DATA = {
-    /* 管理端 · 运营：全体运营（各自记录已读）+ 本人。共 25 条，4 条未读，第一批 20 条。 */
+    /* 管理端 · 运营：全体运营（各自记录已读）+ 本人。共 27 条，6 条未读，第一批 20 条。 */
     ops: [
       password('o01','changed','2026-11-07T02:10:00Z',true),
       Object.assign(burnA06('o02','BA-DEMO-0040','RA-DEMO-0208','12,345.675','2026-11-06T05:31:00Z','非平台入口','burnApplication0040'), {read:false}),
-      Object.assign(burnA06('o03','BA-DEMO-0031','RA-DEMO-0201','50,000.00','2026-10-30T07:15:00Z','平台入口','burnApplication0031'), {read:false}),
-      burnA06('o04','BA-DEMO-0019','RA-DEMO-0204','65,000.00','2026-10-30T07:15:00Z','平台入口','burnApplication0019'),
-      burnA06('o05','BA-DEMO-0018','RA-DEMO-0205','18,000.00','2026-10-30T07:15:00Z','平台入口','burnApplication0018'),
-      Object.assign(mintA05('o06','IA-DEMO-0027','2026-10-30T06:30:00Z'), {read:false}),
-      mintA03('o07','IA-DEMO-0027','2026-10-30T06:12:00Z'),
+      /* DEMO-TOKEN-001 的单位价值调整于 11-04 11:00（UTC+8）提交，满 10 分钟仍在处理中 */
+      Object.assign(adjustA09('o03','DEMO-TOKEN-001','0.95','1','2026-11-04T03:00:00Z','2026-11-04T03:10:00Z','ledgerTokenAdjusting'), {read:false}),
+      Object.assign(burnA06('o04','BA-DEMO-0031','RA-DEMO-0201','50,000.00','2026-10-30T07:15:00Z','平台入口','burnApplication0031'), {read:false}),
+      burnA06('o05','BA-DEMO-0019','RA-DEMO-0204','65,000.00','2026-10-30T07:15:00Z','平台入口','burnApplication0019'),
+      burnA06('o06','BA-DEMO-0018','RA-DEMO-0205','18,000.00','2026-10-30T07:15:00Z','平台入口','burnApplication0018'),
+      Object.assign(mintA05('o07','IA-DEMO-0027','2026-10-30T06:30:00Z'), {read:false}),
+      mintA03('o08','IA-DEMO-0027','2026-10-30T06:12:00Z'),
       /* IA-DEMO-0031 已由运营分配机构，前往只查看当前结果 */
-      Object.assign(reviewA07('o08','IA-DEMO-0031','2026-10-29T01:15:00Z','reviewApplication'), {done:true}),
-      burnA04('o09','BA-DEMO-0024','RA-DEMO-0201','2026-10-28T06:30:00Z','2026-10-28T06:42:00Z','burnApplication0024'),
-      Object.assign(burnA08('o10','BA-DEMO-0030','RA-DEMO-0203','2026-10-28T06:40:00Z','burnApplication0030'), {read:false}),
-      burnA04('o11','BA-DEMO-0021','RA-DEMO-0206','2026-10-28T06:30:00Z','2026-10-28T06:40:00Z','burnApplication0021'),
-      mintA03('o12','IA-DEMO-0211','2026-06-01T04:10:00Z'),
-      mintA05('o13','IA-DEMO-0208','2026-06-01T03:50:00Z'),
-      mintA03('o14','IA-DEMO-0208','2026-06-01T03:35:00Z'),
-      mintA03('o15','IA-DEMO-0206','2026-06-01T03:20:00Z'),
-      mintA03('o16','IA-DEMO-0205','2026-06-01T03:15:00Z'),
-      mintA05('o17','IA-DEMO-0204','2026-06-01T03:12:00Z'),
-      mintA03('o18','IA-DEMO-0204','2026-06-01T03:10:00Z'),
-      mintA03('o19','IA-DEMO-0203','2026-06-01T03:05:00Z'),
-      mintA03('o20','IA-DEMO-0202','2026-06-01T03:02:00Z'),
-      mintA03('o21','IA-DEMO-0201','2026-06-01T03:00:00Z'),
-      mintA03('o22','IA-DEMO-0203','2026-05-31T09:20:00Z'),
-      mintA03('o23','IA-DEMO-0202','2026-05-31T09:10:00Z'),
-      mintA03('o24','IA-DEMO-0201','2026-05-31T09:00:00Z'),
-      password('o25','set','2026-05-20T02:00:00Z',true)
+      Object.assign(reviewA07('o09','IA-DEMO-0031','2026-10-29T01:15:00Z','reviewApplication'), {done:true}),
+      /* DEMO-TOKEN-021（企业端 M4a 提交锁画面）签名后未取得交易标识，自加锁起满 10 分钟 */
+      Object.assign(burnA08Lock('o10','DEMO-TOKEN-021','RA-DEMO-0201','2026-10-28T08:10:00Z','ledgerTokenLocked'), {read:false}),
+      burnA04('o11','BA-DEMO-0024','RA-DEMO-0201','2026-10-28T06:30:00Z','2026-10-28T06:42:00Z','burnApplication0024'),
+      Object.assign(burnA08('o12','BA-DEMO-0030','RA-DEMO-0203','2026-10-28T06:40:00Z','burnApplication0030'), {read:false}),
+      burnA04('o13','BA-DEMO-0021','RA-DEMO-0206','2026-10-28T06:30:00Z','2026-10-28T06:40:00Z','burnApplication0021'),
+      mintA03('o14','IA-DEMO-0211','2026-06-01T04:10:00Z'),
+      mintA05('o15','IA-DEMO-0208','2026-06-01T03:50:00Z'),
+      mintA03('o16','IA-DEMO-0208','2026-06-01T03:35:00Z'),
+      mintA03('o17','IA-DEMO-0206','2026-06-01T03:20:00Z'),
+      mintA03('o18','IA-DEMO-0205','2026-06-01T03:15:00Z'),
+      mintA05('o19','IA-DEMO-0204','2026-06-01T03:12:00Z'),
+      mintA03('o20','IA-DEMO-0204','2026-06-01T03:10:00Z'),
+      mintA03('o21','IA-DEMO-0203','2026-06-01T03:05:00Z'),
+      mintA03('o22','IA-DEMO-0202','2026-06-01T03:02:00Z'),
+      mintA03('o23','IA-DEMO-0201','2026-06-01T03:00:00Z'),
+      mintA03('o24','IA-DEMO-0203','2026-05-31T09:20:00Z'),
+      mintA03('o25','IA-DEMO-0202','2026-05-31T09:10:00Z'),
+      mintA03('o26','IA-DEMO-0201','2026-05-31T09:00:00Z'),
+      password('o27','set','2026-05-20T02:00:00Z',true)
     ],
     /* 管理端 · 机构（示例机构 C，资产托管机构）：本机构 + 本人 */
     reg: [

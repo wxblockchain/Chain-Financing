@@ -486,7 +486,6 @@ table.contract-list{table-layout:fixed;min-width:960px}
 .institution-detail .card-b>.facts-region:first-child{margin-top:calc(var(--sp-2) - var(--card-pad))}
 .institution-detail .card-b>.facts-region:last-child{margin-bottom:calc(var(--sp-2) - var(--card-pad))}
 @container facts (min-width:900px){.institution-detail .facts.cols-3>.address-fact{grid-column:span 2}}
-.institution-subheading{border-top:1px solid var(--row-line);padding-top:var(--sp-5);font-size:var(--ui-section-title);font-weight:600;line-height:var(--lh-body)}
 .institution-reference .facts{padding-block:var(--sp-1)}
 .institution-reference .facts>div{padding-block:var(--sp-3)}
 .form-actions.anchored-actions{position:sticky;bottom:0;z-index:calc(var(--z-sticky) - 22);padding:var(--sp-4) var(--card-pad);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card)}
