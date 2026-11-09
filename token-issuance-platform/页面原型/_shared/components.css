@@ -984,6 +984,26 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .issuance-form .form-section .facts{padding-top:0;padding-bottom:var(--sp-3)}
 .issuance-form .form-section .facts>div{padding-block:var(--sp-3)}
 .issuance-form .workflow-context [data-zone]{display:inline}
+/* M3a 核对画面：原字段按资产/接收地址、文件/提交说明成组对照，不改变确认条件。 */
+/* 预留顶栏/吸底栏的滚动安全区，Tab 聚焦不落在覆盖区域。 */
+html:has(.issuance-form:not([hidden])){scroll-padding-top:calc(var(--app-header-h) + var(--sp-4));scroll-padding-bottom:calc(var(--ctrl-h) + var(--sp-7) + var(--sp-4))}
+.issuance-form :is(button,summary){scroll-margin-block:var(--sp-2)}
+.issuance-review-overview,.issuance-review-support{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
+.issuance-review-overview>.review-group,.issuance-review-support>.review-group{min-width:0}
+.issuance-review-overview .signer{margin-top:var(--sp-1)}
+.issuance-review-overview .cell-sub .mono{display:block}
+.issuance-review-support{border-top:1px solid var(--border)}
+.issuance-review-support>.issuance-files{padding-top:0}
+.issuance-review-support>.card-b{min-width:0}
+.issuance-files .file-failed{border-left:2px solid var(--danger);padding-inline:var(--sp-3);background:var(--danger-bg)}
+.issuance-files .file-status-failed{color:var(--danger);font-weight:500}
+@media(min-width:1280px){
+  .issuance-review-overview,.issuance-review-support{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .issuance-review-overview>.review-group+.review-group{border-top:0;border-left:1px solid var(--border)}
+  .issuance-review-support>.card-b{border-left:1px solid var(--border)}
+  .issuance-review-support .card-head{border-bottom:0}
+  .issuance-review-support .note{height:100%}
+}
 /* 完整数值/签名内容使用原生 details：可用键盘展开，保留全部业务值。 */
 .issuance-disclosure>summary{display:flex;align-items:center;gap:var(--sp-2);min-height:var(--ctrl-h-sm);max-width:100%;cursor:pointer;font-size:var(--fs-13);list-style:none;text-align:left}
 .issuance-disclosure>summary::-webkit-details-marker{display:none}
