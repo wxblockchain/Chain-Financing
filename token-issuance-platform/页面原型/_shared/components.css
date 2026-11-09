@@ -479,8 +479,12 @@ table.contract-list{table-layout:fixed;min-width:960px}
 .institution-table-hint{display:none;padding:var(--sp-2) var(--card-pad);border-bottom:1px solid var(--border);font-size:var(--ui-field-label);color:var(--muted)}
 @container institution-table (max-width:1119px){.institution-table-hint{display:block}}
 /* M5 机构资料：同一系统的长表单、只读档案和账户资料变体。 */
-.institution-form .content-in{max-width:var(--form-sheet-max);margin-inline:0}
-.institution-detail .content-in,.account-profile .content-in{max-width:var(--detail-sheet-max);margin-inline:0}
+/* 机构添加、编辑与详情随平台内容区展开（--content-max），宽屏表单改三列，避免右侧大块留白。 */
+.account-profile .content-in{max-width:var(--detail-sheet-max);margin-inline:0}
+.institution-form .card-b.form{container:institution-form / inline-size}
+@container institution-form (min-width:1040px){.institution-form .form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* 联系电话：区号下拉（“+86 中国”）+ 号码，同一行。 */
+.phone-control{display:grid;grid-template-columns:minmax(0,var(--phone-code-w)) minmax(0,1fr);gap:var(--sp-2)}
 .institution-identity{display:flex;align-items:baseline;gap:var(--sp-2);font-size:var(--ui-field-label)}
 .institution-identity .mono{color:var(--text)}
 .institution-detail .address-fact{grid-column:1/-1}
