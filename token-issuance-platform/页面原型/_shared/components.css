@@ -287,16 +287,20 @@ table.tbl{width:100%;border-collapse:collapse;font-size:var(--ui-row-value)}
 
 /* M6 合约列表：七项信息各自成列，名称优先，维护动作并排；窄容器在表内滚动。 */
 table.contract-list{table-layout:fixed;min-width:960px}
-.contract-list .c-name{width:18%}.contract-list .c-standard{width:10%}
-.contract-list .c-symbol{width:8%}.contract-list .c-type{width:11%}
-.contract-list .c-network{width:12%}.contract-list .c-address{width:18%}
-.contract-list .c-status{width:8%}.contract-list .c-actions{width:15%}
+.contract-list .c-name{width:17%}.contract-list .c-standard{width:9%}
+.contract-list .c-symbol{width:7.5%}.contract-list .c-type{width:10.5%}
+.contract-list .c-network{width:11%}.contract-list .c-address{width:17%}
+.contract-list .c-status{width:12.5%}.contract-list .c-actions{width:15.5%}
 .tbl.contract-list th:first-child,.contract-list .col-act{width:auto}
 .tbl.contract-list :is(th,td){padding-inline:var(--sp-2)}
 .tbl.contract-list :is(th,td):first-child{padding-left:var(--card-pad)}
 .tbl.contract-list :is(th,td):last-child{padding-right:var(--card-pad)}
 .tbl.contract-list thead th{white-space:normal}
 .contract-list td:first-child{overflow-wrap:anywhere;word-break:normal}
+.contract-list .tag{max-width:100%;white-space:normal;overflow-wrap:normal;word-break:normal}
+.contract-card>.note{margin:var(--sp-4) var(--card-pad);flex-wrap:wrap}
+.contract-card>.note>div{flex:1 1 28ch;min-width:0}
+.contract-impact>div{display:grid;gap:var(--sp-2)}
 .contract-actions{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-3)}
 .contract-actions .actlink{min-height:var(--ctrl-h-sm);padding-inline:0;white-space:nowrap}
 .tbl .contract-actions .actlink:last-child{margin-right:0}
