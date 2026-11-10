@@ -1,7 +1,11 @@
 /* M1 display copy only. Static screens; no wallet, identity or synchronization simulation. */
 (function(TP){
   TP.addCopy({
-    "登录已结束：上游账户已锁定": "Session ended: upstream account locked",
+    "登录未完成：上游账户已锁定": "Sign-in incomplete: upstream account locked",
+    "登录未完成：上游账户已禁用": "Sign-in incomplete: upstream account disabled",
+    "登录已结束：登录期间上游账户锁定": "Session ended: upstream account locked during session",
+    "你在资产可信平台的账户已锁定，本次登录未完成。": "Your Asset Trust Platform account is locked. Sign-in could not be completed.",
+    "你在资产可信平台的账户已禁用，本次登录未完成。": "Your Asset Trust Platform account is disabled. Sign-in could not be completed.",
     "你在资产可信平台的账户已锁定，本次登录已结束。": "Your Asset Trust Platform account is locked. This session has ended.",
     "解除说明：请联系资产可信平台解除锁定后重新登录。": "To unlock: contact the Asset Trust Platform, then sign in again.",
     "登录未完成，请重试或放弃并返回。": "Sign-in could not be completed. Try again, or cancel and go back.",
@@ -32,13 +36,11 @@
     "钱包已验证：身份判定中": "Wallet verified: checking identity",
     "查看本企业当前登录地址。": "View your company’s current sign-in address.",
     "本次钱包地址": "Wallet address for this session",
-    "复制本次钱包地址": "Copy wallet address for this session",
+    "复制完整地址": "Copy full address",
     "企业认证尚未通过，需要企业认证的业务暂不可用。认证状态请在资产可信平台查看。": "Company verification is pending. Business actions that require company verification are unavailable. Check your status on the Asset Trust Platform.",
     "签名未完成": "Signature incomplete",
     "登录签名未完成，请重新签名。": "The sign-in signature was not completed. Please sign again.",
     "重新签名": "Sign again",
-    "登录已结束：上游账户已禁用": "Session ended: upstream account disabled",
-    "你在资产可信平台的账户已禁用，本次登录已结束。": "Your Asset Trust Platform account is disabled. This session has ended.",
     "请联系资产可信平台了解账户恢复方式。": "Contact the Asset Trust Platform about restoring your account.",
     "读取中": "Loading",
     "正在读取企业信息": "Loading company information",

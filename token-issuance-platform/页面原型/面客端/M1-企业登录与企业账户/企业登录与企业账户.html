@@ -78,19 +78,24 @@
     <div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="alert"></i></span><h3>登录未完成，请重试或放弃并返回。</h3><p class="state-ref">错误码 <span class="mono">E-DEMO-1042</span></p><div class="state-actions"><button type="button" class="btn" data-go="login">放弃并返回</button><button type="button" class="btn primary" data-go="platform-loading">重试</button></div></div></div>
   </div>
 </section>
-<section data-screen id="platform-account-locked" data-no="S4" data-group="平台反馈" data-name="登录已结束：上游账户已锁定" data-layout="app" data-who="none" data-crumb="账户信息">
-  <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
-    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你在资产可信平台的账户已锁定，本次登录已结束。</h3><p>解除说明：请联系资产可信平台解除锁定后重新登录。</p><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
+<section data-screen id="platform-account-locked" data-no="S4" data-group="平台反馈" data-name="登录未完成：上游账户已锁定" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
+    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你在资产可信平台的账户已锁定，本次登录未完成。</h3><p>解除说明：请联系资产可信平台解除锁定后重新登录。</p><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
   </div>
 </section>
-<section data-screen id="platform-account-disabled" data-no="S7" data-group="平台反馈" data-name="登录已结束：上游账户已禁用" data-layout="app" data-who="none" data-crumb="账户信息">
-  <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
-    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你在资产可信平台的账户已禁用，本次登录已结束。</h3><p>请联系资产可信平台了解账户恢复方式。</p><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
+<section data-screen id="platform-account-disabled" data-no="S7" data-group="平台反馈" data-name="登录未完成：上游账户已禁用" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">账户信息</h1></div>
+    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你在资产可信平台的账户已禁用，本次登录未完成。</h3><p>请联系资产可信平台了解账户恢复方式。</p><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
   </div>
 </section>
 <section data-screen id="platform-session-ended" data-no="S3" data-group="平台反馈" data-name="登录已结束：登录期间调取不到账户" data-layout="app" data-who="none" data-crumb="账户信息">
   <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
     <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>登录已结束，请重新登录。</h3><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
+  </div>
+</section>
+<section data-screen id="platform-session-locked" data-no="S11" data-group="平台反馈" data-name="登录已结束：登录期间上游账户锁定" data-layout="app" data-who="none" data-crumb="账户信息">
+  <div class="content-in"><div class="page-head"><h1 class="page-title">登录已结束</h1></div>
+    <div class="card"><div class="state" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你在资产可信平台的账户已锁定，本次登录已结束。</h3><p>解除说明：请联系资产可信平台解除锁定后重新登录。</p><button type="button" class="btn primary" data-go="login">重新登录</button></div></div>
   </div>
 </section>
 <section data-screen id="platform-session-expired" data-no="S6" data-group="平台反馈" data-name="登录已到期" data-layout="app" data-who="none" data-crumb="账户信息">
@@ -184,7 +189,7 @@
 <div class="card profile-sheet"><section class="profile-section">
 <div class="card-head"><h2>本次登录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制登录地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
+<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制本次钱包地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
 <div><dt>同步时间</dt><dd class="mono"><time data-instant="2026-10-29T01:30:12Z" datetime="2026-10-29T01:30:12Z"></time><span class="cell-sub" data-zone=""></span></dd></div>
 </dl></div>
 </section><section class="profile-section">
@@ -218,7 +223,7 @@
 <div class="card profile-sheet"><section class="profile-section">
 <div class="card-head"><h2>本次登录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制登录地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
+<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制本次钱包地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
 <div><dt>同步时间</dt><dd class="mono"><time data-instant="2026-10-29T01:30:12Z" datetime="2026-10-29T01:30:12Z"></time><span class="cell-sub" data-zone=""></span></dd></div>
 </dl></div>
 </section><section class="profile-section">
@@ -252,7 +257,7 @@
 <div class="card profile-sheet"><section class="profile-section">
 <div class="card-head"><h2>本次登录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制登录地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
+<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制本次钱包地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
 <div><dt>同步时间</dt><dd class="mono"><time data-instant="2026-10-29T01:30:12Z" datetime="2026-10-29T01:30:12Z"></time><span class="cell-sub" data-zone=""></span></dd></div>
 </dl></div>
 </section><section class="profile-section">
@@ -284,7 +289,7 @@
 <div class="card profile-sheet"><section class="profile-section">
 <div class="card-head"><h2>本次登录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制登录地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
+<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制本次钱包地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
 <div><dt>同步时间</dt><dd class="mono"><time data-instant="2026-10-29T01:30:12Z" datetime="2026-10-29T01:30:12Z"></time><span class="cell-sub" data-zone=""></span></dd></div>
 </dl></div>
 </section><section class="profile-section">
@@ -309,7 +314,7 @@
 <div class="card profile-sheet"><section class="profile-section">
 <div class="card-head"><h2>本次登录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制登录地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
+<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制本次钱包地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
 </dl></div>
 </section><section class="profile-section">
 <div class="card-head"><h2>个人资料</h2></div>
@@ -363,7 +368,7 @@
 <div class="card profile-sheet"><section class="profile-section">
 <div class="card-head"><h2>本次登录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制登录地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
+<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制本次钱包地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
 <div><dt>同步时间</dt><dd class="mono"><time data-instant="2026-10-29T01:30:12Z" datetime="2026-10-29T01:30:12Z"></time><span class="cell-sub" data-zone=""></span></dd></div>
 </dl></div>
 </section><section class="profile-section">
@@ -394,7 +399,7 @@
 <div class="card profile-sheet"><section class="profile-section">
 <div class="card-head"><h2>本次登录</h2></div>
 <div class="facts-region"><dl class="facts">
-<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制登录地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
+<div><dt>本次钱包地址</dt><dd><span class="addr"><span class="addr-pill" title="0x7A3f2B9c41D05e8F6a1b2C3d4E5f60718293A4bC">0x7A3f…A4bC</span><button aria-label="复制本次钱包地址" class="btn icon" data-copy="" type="button"><i data-ico="copy"></i></button></span></dd></div>
 <div><dt>同步时间</dt><dd class="mono"><time data-instant="2026-10-29T01:30:12Z" datetime="2026-10-29T01:30:12Z"></time><span class="cell-sub" data-zone=""></span></dd></div>
 </dl></div>
 </section><section class="profile-section">

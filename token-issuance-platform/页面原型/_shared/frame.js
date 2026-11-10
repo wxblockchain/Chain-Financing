@@ -127,7 +127,7 @@
     var a = screenAddr || TP.demo.address;
     var menu = '<div class="dd-list" role="menu"'+(open?'':' hidden')+'>'+
       '<div class="dd-who"><div class="addr"><span class="addr-pill" title="'+esc(a)+'">'+esc(short(a))+'</span>'+
-      '<button type="button" class="btn icon" data-copy aria-label="复制登录地址">'+TP.icon('copy')+'</button></div></div>'+
+      '<button type="button" class="btn icon" data-copy aria-label="复制本次钱包地址">'+TP.icon('copy')+'</button></div></div>'+
       '<button type="button" class="dd-item" role="menuitem" data-acct="logout">'+TP.icon('out')+'退出登录</button></div>';
     return '<div class="dd" id="acct"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="'+(open?'true':'false')+'" aria-label="账户：'+esc(a)+'">'+
       '<span class="mono">'+esc(short(a))+'</span>'+TP.icon('chev')+'</button>'+menu+'</div>';
