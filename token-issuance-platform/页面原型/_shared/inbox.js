@@ -140,17 +140,17 @@
       ref:[['代币编号',token],['资产编号',asset]], go:ops?{key:go}:{key:go, nav:'tokens'}};
   }
   /* M5 · 密码变更通知（NT-LG-03）：设置 / 重置 / 修改三种情形各一套标题与正文；不跳转。
-     官方客服邮箱由需求方上线后提供；提供前按 PRD 推荐不写“如非本人操作”的求助一句，其余照常。 */
+     站内正文不含“该账号的全部登录已结束……”一句（仅邮件含）；客服邮箱提供前省略求助句，其余照常。 */
   var PASSWORD = {
     set:['管理端账号密码已设置','Admin account password set',
-      '您的管理端账号已于 {t:@} 完成首次密码设置，初始密码已失效，该账号的全部登录已结束，请使用新密码登录。',
-      'Your admin account password was set for the first time at {t:@}. The initial password is no longer valid and all sessions of this account have been signed out. Please sign in with your new password.'],
+      '您的管理端账号已于 {t:@} 完成首次密码设置，初始密码已失效。',
+      'Your admin account password was set for the first time at {t:@}. The initial password is no longer valid.'],
     reset:['管理端账号密码已重置','Admin account password reset',
-      '您的管理端账号已于 {t:@} 通过邮箱验证码重置密码，原密码已失效，该账号的全部登录已结束，请使用新密码登录。',
-      'Your admin account password was reset via email verification code at {t:@}. The previous password is no longer valid and all sessions of this account have been signed out. Please sign in with your new password.'],
+      '您的管理端账号已于 {t:@} 通过邮箱验证码重置密码，原密码已失效。',
+      'Your admin account password was reset via email verification code at {t:@}. The previous password is no longer valid.'],
     changed:['管理端账号密码已修改','Admin account password changed',
-      '您的管理端账号已于 {t:@} 修改密码，原密码已失效，该账号的全部登录已结束，请使用新密码登录。',
-      'Your admin account password was changed at {t:@}. The previous password is no longer valid and all sessions of this account have been signed out. Please sign in with your new password.']
+      '您的管理端账号已于 {t:@} 修改密码，原密码已失效。',
+      'Your admin account password was changed at {t:@}. The previous password is no longer valid.']
   };
   function password(id, kind, at, read){
     var p = PASSWORD[kind];
