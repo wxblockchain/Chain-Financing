@@ -25,11 +25,31 @@
 .m1-page .state-actions>.btn{margin-top:0}
 .m1-page .profile-section>.state{padding:0}
 
+/* Locked/disabled results: the reason, recovery information and action form
+   one text group. Unlike a spanning icon, this creates no empty grid rows. */
+.m1-page .session-feedback>.state-ico{
+  grid-row:auto;background:var(--warn-bg);color:var(--warn);
+}
+.m1-page .session-feedback-body{min-width:0;display:flex;flex-direction:column;gap:var(--sp-2)}
+.m1-page .session-feedback-body>h3{max-width:68ch;overflow-wrap:anywhere}
+.m1-page .session-feedback-body>p{max-width:72ch}
+.m1-page .session-feedback-body>.btn{align-self:flex-start;margin-top:var(--sp-2)}
+
 /* The enterprise account stays a list: one sign-in address row this release,
-   so later accounts or columns append without a layout change. Address takes the rest. */
-.m1-page .account-list .account-col-label{width:20%}
-.m1-page .account-list .account-col-network{width:24%}
+   with readable short columns and space reserved for the address/copy control.
+   The three-column minimum is local; denser tables keep their shared limits. */
+.m1-page .account-table-card{container:account-table / inline-size}
+.m1-page table.account-list{table-layout:fixed;min-width:560px}
+.m1-page .account-list .account-col-label,
+.m1-page .account-list th:first-child{width:160px}
+.m1-page .account-list .account-col-network{width:184px}
 .m1-page .account-list .account-col-address{width:auto}
+.m1-page .account-list th{white-space:normal;overflow-wrap:normal}
+.m1-page .account-list .addr{flex-wrap:nowrap}
+.m1-page .account-scroll-hint{display:none;margin:0;padding:var(--sp-3) var(--card-pad);border-top:1px solid var(--row-line)}
+@container account-table (max-width:559px){
+  .m1-page .account-scroll-hint{display:block}
+}
 
 /* Long translated feedback and its action reflow at the narrow breakpoint. */
 @media(max-width:600px){
@@ -43,4 +63,5 @@
   .m1-page .state>.state-actions{grid-column:1}
   .m1-page .card>.state{padding:var(--sp-6) var(--sp-4)}
   .m1-page .profile-section>.state{padding:0}
+  .m1-page .session-feedback-body{grid-column:1}
 }

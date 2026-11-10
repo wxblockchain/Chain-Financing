@@ -1,6 +1,7 @@
 /* M1 display copy only. Static screens; no wallet, identity or synchronization simulation. */
 (function(TP){
   TP.addCopy({
+    "可左右滚动查看完整账户信息。": "Scroll horizontally to view all account information.",
     "登录未完成：上游账户已锁定": "Sign-in incomplete: upstream account locked",
     "登录未完成：上游账户已禁用": "Sign-in incomplete: upstream account disabled",
     "登录已结束：登录期间上游账户锁定": "Session ended: upstream account locked during session",
