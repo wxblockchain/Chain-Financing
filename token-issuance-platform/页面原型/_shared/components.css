@@ -254,6 +254,19 @@ table.tbl.burn-request-list{min-width:var(--asset-table-min)}
 .tbl.burn-request-list .col-act{width:var(--asset-col-readonly)}
 .burn-request-list td:nth-child(-n+3) .mono,.burn-request-list .tag{white-space:nowrap}
 .token-screen .tablewrap[role="region"]:focus-visible{outline-offset:calc(-1 * var(--sp-1))}
+/* M4b 只读记录：按字段分配九/十列；保留全部字段，低于阅读下限时仅表内滚动。 */
+table.tbl:is(.burn-records-list,.release-records-list){table-layout:fixed;min-width:var(--asset-table-min)}
+.tbl:is(.burn-records-list,.release-records-list) :is(th,td){min-width:0}
+.tbl:is(.burn-records-list,.release-records-list) .col-act{width:auto}
+.tbl:is(.burn-records-list,.release-records-list) .tag{overflow-wrap:normal;word-break:normal}
+/* 调价历史：原/新值分行对照；为结果和交易哈希的核对/复制保留足够列宽。 */
+table.tbl.unit-adjustment-list{table-layout:fixed;min-width:880px}
+.tbl.unit-adjustment-list th{width:auto;white-space:normal}
+.tbl.unit-adjustment-list th .cell-sub{display:block}
+.tbl.unit-adjustment-list :is(th,td){overflow-wrap:anywhere;word-break:normal}
+.tbl.unit-adjustment-list .tag{white-space:normal;overflow-wrap:normal;word-break:normal}
+.tbl.unit-adjustment-list td:last-child .addr{gap:var(--sp-1)}
+.tbl.unit-adjustment-list td:last-child .btn.icon{width:var(--ctrl-h-sm);height:var(--ctrl-h-sm)}
 /* Token and burn-request detail header: network first, then token icon + quantity + symbol, the record ID below. */
 .token-network{font-size:var(--fs-14);color:var(--muted);margin-bottom:var(--sp-1)}
 .page-title.token-amount{display:inline-flex;align-items:center;gap:var(--sp-2);font-variant-numeric:tabular-nums}
