@@ -336,6 +336,7 @@ table.contract-list{table-layout:fixed;min-width:960px}
 .note b{color:inherit;font-weight:600}
 .note .grow{flex:1;min-width:0}
 .note-copy{display:grid;gap:var(--sp-2);min-width:0;font-size:var(--ui-field-value)}
+.note-copy .next-step{color:var(--text)}
 .note.accent{background:var(--accent-soft);border-color:var(--accent-border);border-left-color:var(--accent);color:var(--text)}
 .note.warn{background:var(--warn-bg);border-color:var(--warn-border);border-left-color:var(--warn);color:var(--warn)}
 .note.red{background:var(--danger-bg);border-color:var(--danger-border);border-left-color:var(--danger);color:var(--danger)}
@@ -518,7 +519,10 @@ table.contract-list{table-layout:fixed;min-width:960px}
 /* 机构添加、编辑与详情随平台内容区展开（--content-max），宽屏表单改三列，避免右侧大块留白。 */
 .account-profile .content-in{max-width:var(--detail-sheet-max);margin-inline:0}
 .institution-form .card-b.form{container:institution-form / inline-size}
+.account-delivery{align-items:start}
+@container institution-form (max-width:719px){.institution-form .form-grid.account-delivery{grid-template-columns:minmax(0,1fr)}}
 @container institution-form (min-width:1040px){.institution-form .form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container institution-form (min-width:1040px){.account-delivery>.note{grid-column:span 2}}
 /* 联系电话：英文区号为长名称留位；窄字段内换行，不挤压号码框。 */
 .field:has(>.phone-control){container:phone-field / inline-size}
 .phone-control{display:grid;grid-template-columns:minmax(0,var(--phone-code-w)) minmax(0,1fr);gap:var(--sp-2)}
