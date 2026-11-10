@@ -246,6 +246,14 @@ table.tbl.fit-width .col-act{width:auto}
 .ledger-list :is(th,td):not(:first-child):not(:last-child){padding-inline:var(--sp-1)}
 .ledger-list td .asset-label,.ledger-list td .addr,.ledger-list td .money{white-space:nowrap}
 .token-list .col-act .actlink,.burn-list .col-act .actlink{display:block;margin-left:auto;width:max-content;white-space:nowrap;text-align:right}
+/* M4a 八列销毁申请：编号和状态保留整段；压缩列间距，为阅读留宽。 */
+table.tbl.burn-request-list{min-width:var(--asset-table-min)}
+.tbl.burn-request-list :is(th,td){padding-inline:var(--sp-2)}
+.tbl.burn-request-list :is(th,td):first-child{padding-left:var(--card-pad)}
+.tbl.burn-request-list :is(th,td):last-child{padding-right:var(--card-pad)}
+.tbl.burn-request-list .col-act{width:var(--asset-col-readonly)}
+.burn-request-list td:nth-child(-n+3) .mono,.burn-request-list .tag{white-space:nowrap}
+.token-screen .tablewrap[role="region"]:focus-visible{outline-offset:calc(-1 * var(--sp-1))}
 /* Token and burn-request detail header: network first, then token icon + quantity + symbol, the record ID below. */
 .token-network{font-size:var(--fs-14);color:var(--muted);margin-bottom:var(--sp-1)}
 .page-title.token-amount{display:inline-flex;align-items:center;gap:var(--sp-2);font-variant-numeric:tabular-nums}
@@ -1020,11 +1028,11 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .review-timeline.compact .done .tag{color:var(--ok)}
 .review-timeline.compact .current .tag{color:var(--accent)}
 .review-timeline.compact .rejected .tag{color:var(--danger)}
-/* M4a 四项只读销毁进度：保留原有时间与来源/机构，标记只补充状态辨识。 */
+/* M4a 只读销毁进度：托管在独立卡中展示，保留原有钱包时间和交易来源。 */
 .token-progress .card-head .sub{flex:1;min-width:min(100%,32ch)}
 .token-progress .review-timeline.compact :is(p,time){grid-column:2;margin-top:var(--sp-1);font-size:var(--fs-12)}
-@media(max-width:1100px){.token-progress .review-timeline.compact.four-stage{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.token-progress .review-timeline.compact.four-stage{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:1100px){.token-progress .review-timeline.compact{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.token-progress .review-timeline.compact{grid-template-columns:minmax(0,1fr)}}
 .issuance-summary .card-head,.progress-summary .card-head{padding-block:var(--sp-3);flex-wrap:wrap;gap:var(--sp-1) var(--sp-3)}
 .issuance-summary .card-head h2,.progress-summary .card-head h2{font-size:var(--fs-14)}
 .issuance-summary .card-head .sub{flex:1;min-width:min(100%,32ch)}
