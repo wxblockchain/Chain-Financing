@@ -747,6 +747,20 @@ table.tbl.application-records.with-institutions{min-width:640px}
 .application-records.with-institutions th:nth-child(2){width:30%}
 .tbl.application-records :is(th,td){white-space:normal;overflow-wrap:anywhere}
 .application-records td:first-child{white-space:nowrap}
+/* M4a / M4b 补充记录：六项独立信息，说明保留最多阅读空间；窄屏只在表内滚动。 */
+table.tbl.supplement-table{table-layout:fixed;min-width:880px}
+.tbl.supplement-table th:first-child{width:14%}
+.supplement-table th:nth-child(2){width:16%}.supplement-table th:nth-child(3){width:14%}
+.supplement-table th:nth-child(4){width:28%}
+.detail-table .tbl.supplement-table .num{width:8%}
+.supplement-table th:last-child{width:20%}
+.tbl.supplement-table :is(th,td){white-space:normal;overflow-wrap:anywhere;vertical-align:top}
+.supplement-table td:last-child .btn-link{max-width:100%;text-align:left}
+.supplement-records .supplement-feedback{min-height:calc(var(--ctrl-h)*2);gap:var(--sp-3)}
+.supplement-feedback>svg.i{color:var(--faint)}
+.supplement-feedback.is-error>svg.i{color:var(--warn)}
+.supplement-feedback.is-error{color:var(--text)}
+.material-batch[data-detail-section]>summary:focus-visible{outline-offset:-2px}
 .sub-h+.detail-table .tbl thead th{border-top:0}
 .asset-pagination{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-3) var(--card-pad);border-top:1px solid var(--border);font-size:var(--fs-13);color:var(--muted);flex-wrap:wrap}
 .pagination-controls{display:flex;gap:var(--sp-1)}

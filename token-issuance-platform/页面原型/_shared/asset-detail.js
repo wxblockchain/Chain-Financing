@@ -276,10 +276,14 @@
     var link=event.target.closest('[data-detail-target]');if(!link)return;
     event.preventDefault();
     var target=document.getElementById(link.dataset.detailTarget);
+    // A file-batch destination exposes the existing files and receives keyboard focus.
+    var batch=target.matches('.material-batch') ? target : null;
+    if(batch)batch.open=true;
     // Keep the parent heading visible when entering the first card in a group.
     var group=target.closest('.detail-group');
     var position=group && group.querySelector('.card')===target ? group : target;
-    position.scrollIntoView({block:'start',behavior:'instant'});target.focus({preventScroll:true});
+    position.scrollIntoView({block:'start',behavior:'instant'});
+    (batch ? batch.querySelector('summary') : target).focus({preventScroll:true});
     selectedTarget=link;selectedY=window.scrollY;
     TP.refreshDetailNav();
   });

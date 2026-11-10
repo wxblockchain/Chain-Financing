@@ -1,4 +1,17 @@
 /* Institution vocabulary, shared by the affected prototypes. No business logic. */
+/* M4a / M4b supplementary-record presentation; the module loads this map after its local copy. */
+TP.materialCopy={
+  "补充记录": "Supplementary records",
+  "补充记录明细": "Supplementary records table",
+  "暂无补充记录": "No supplementary records yet",
+  "补充记录读取失败": "Supplementary records failed to load",
+  "暂时无法获取补充记录。": "Supplementary records are temporarily unavailable.",
+  "补充记录暂时无法获取，其他信息不受影响。": "Supplementary records are temporarily unavailable. Other information is not affected.",
+  "上传机构": "Uploading institution",
+  "文件份数": "File count",
+  "对应文件": "Files",
+  "在托管文件中查看": "View in custody files"
+};
 TP.institutionCopy={
   "接收地址": "Receiving address",
   "机构": "Institution",

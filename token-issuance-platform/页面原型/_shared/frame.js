@@ -453,7 +453,7 @@
         // 跨模块路由指定了分区时（navigation.js 的 previewSection），定位到当前画面内的该分区。
         var key=TP.initialSection, sec=key && document.getElementById(current && current.id);
         var part=sec && sec.querySelector('[data-section="'+key+'"]');
-        if(part){ part.scrollIntoView({block:'start',behavior:'instant'}); if(TP.refreshDetailNav) TP.refreshDetailNav(); }
+        if(part){ part.scrollIntoView({block:'start',behavior:'instant'}); part.focus({preventScroll:true}); if(TP.refreshDetailNav) TP.refreshDetailNav(); }
       });
     }, {once:true});
   };
