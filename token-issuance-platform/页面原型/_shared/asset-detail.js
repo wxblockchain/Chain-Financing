@@ -170,7 +170,8 @@
       supplier = card('与上游供应商','上游供应商','Demo Auto Manufacturing Co.',
         sec(subHead('采购合同 / 订单')+facts([
           ['采购合同 / 订单编号', mono(po)],
-          ['供应商名称', 'Demo Auto Manufacturing Co.'],
+          ['供应商名称', upstream('Demo Auto Manufacturing Co.')],
+          ['供应商英文名称', missing()],
           ['采购日期', day('2026-06-10T09:00:00+08:00')],
           ['采购金额', money('46,500.00','USD')],
           ['采购合同 / 订单文件', fileRef(po+'.pdf')]
@@ -186,6 +187,7 @@
       buyers = card('债务人与其下游客户','债务人下游客户','2 笔交易 · 回款不计入本笔应收账款',
         DEBTOR_BUYERS.map(function(t){
           return sec(subHead(upstream(t.name), upstream(t.region))+facts([
+            ['下游客户英文名称', t.en ? upstream(t.en) : missing()],
             ['销售合同 / 订单编号', mono(t.so)],
             ['订单日期', day(t.ordered)],
             ['订单金额', money(t.amt,'USD')],
@@ -295,6 +297,7 @@
   window.addEventListener('resize',TP.refreshDetailNav);
 
   TP.addCopy({
+    '供应商英文名称':'Supplier English name','下游客户英文名称':'Customer English name',
     '企业名称':'Company name','企业英文名称':'Company English name',
     '核心信息':'Core information','补充信息':'Supplementary information',
     '债权人与债务人':'Creditor and debtor','债权人与上游供应商，债务人与其下游客户':'Creditor with upstream supplier; debtor with its customers',

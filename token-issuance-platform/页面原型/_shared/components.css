@@ -588,6 +588,8 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .tbl .money .ccy{font-size:var(--fs-11)}
 .asset-sum .meta{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-5);margin-top:var(--sp-2);font-size:var(--fs-13);color:var(--muted)}
 .asset-sum .meta b{color:var(--text);font-weight:500}
+[data-module="assets"] .asset-sum .meta{flex-direction:column;gap:var(--sp-1)}
+[data-module="assets"] .asset-sum .meta [data-zone]{display:inline;white-space:nowrap}
 .status-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0}
 .status-grid>div{padding:var(--sp-3) var(--sp-4);min-width:0}
 .status-grid>div+div{border-left:1px solid var(--border)}
@@ -751,9 +753,9 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .detail-table .tbl .num{width:1%}
 /* M2 关联申请：编号、状态与机构各占稳定区域，同一资产的申请逐行对照。 */
 table.tbl.application-records{table-layout:fixed;min-width:440px}
-.tbl.application-records th:first-child{width:45%}
+.tbl.application-records th:first-child{width:var(--asset-application-id-w)}
 table.tbl.application-records.with-institutions{min-width:640px}
-.tbl.application-records.with-institutions th:first-child{width:28%}
+.tbl.application-records.with-institutions th:first-child{width:var(--asset-application-id-w)}
 .application-records.with-institutions th:nth-child(2){width:30%}
 .tbl.application-records :is(th,td){white-space:normal;overflow-wrap:anywhere}
 .application-records td:first-child{white-space:nowrap}

@@ -81,12 +81,13 @@
   --asset-table-min:960px; /* M2：更窄时在表内滚动，保留编号和操作 */
   --asset-table-fluid-start:1100px; /* 从此宽度起，增量分配给各数据列 */
   --asset-col-id:136px;
-  --asset-col-value:120px;
+  --asset-col-value:136px; /* 完整值图标预留位 + 金额与币种 */
   --asset-col-due:104px;
   --asset-col-repayment:112px;
   --asset-col-status:144px;
   --asset-col-actions:152px;
   --asset-col-readonly:80px;
+  --asset-application-id-w:240px;
   --inbox-panel-w:440px; /* 最近消息：长标题与时区并存 */
   --message-reading-max:1040px; /* M7 详情：正文和相关编号共用阅读区域 */
   --message-body-max:80ch;
