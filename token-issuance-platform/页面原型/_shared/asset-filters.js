@@ -53,7 +53,7 @@
       var panelId=screen.id+'-advanced-filters';
       form.innerHTML='<div class="filter-toolbar">'+
         select('发行状态',['可发行','发行申请中','已发行'],false,'issue')+
-        select('回款状态',['未到期','已逾期','已结清','暂时无法确认'],false,'repayment')+
+        select('回款状态',['未到期','已逾期','已结清'],false,'repayment')+
         '<button class="btn sm filter-more" type="button" aria-expanded="false" aria-controls="'+panelId+'"><span>更多筛选</span><i data-ico="chev"></i></button>'+
         '<div class="filter-query"><label class="filter-search"><span class="sr-only">资产编号</span><i data-ico="search"></i><input class="inp" type="search" data-filter="id" placeholder="搜索资产编号"></label>'+
         '<div class="filter-actions"><button class="btn sm ghost" type="reset">重置</button><button class="btn sm primary" type="submit">查询</button></div></div></div>'+
@@ -102,7 +102,7 @@
     '发行状态 · 可发行':'Issuance · Available','发行状态 · 发行申请中':'Issuance · Application in progress',
     '发行状态 · 已发行':'Issuance · Issued',
     '回款状态 · 未到期':'Repayment · Not due','回款状态 · 已逾期':'Repayment · Overdue',
-    '回款状态 · 已结清':'Repayment · Settled','回款状态 · 暂时无法确认':'Repayment · Unable to confirm',
+    '回款状态 · 已结清':'Repayment · Settled',
     '全部':'All','更多筛选':'More filters','搜索资产编号':'Search asset ID',
     '到期时间范围':'Due date range','到期时间自':'Due from','到期时间至':'Due to','至':'to',
     '查询':'Search','重置':'Reset','资产分页':'Asset pages','共':'Total','条':'records','上一页':'Previous page','下一页':'Next page','第 1 页':'Page 1',
