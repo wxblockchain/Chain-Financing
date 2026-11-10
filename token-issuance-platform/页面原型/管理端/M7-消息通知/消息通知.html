@@ -147,6 +147,9 @@
 <section data-screen id="o-detail-unsaved" data-no="S02" data-group="运营 · 消息详情异常" data-name="已读保存失败 · 正文照常可读" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="o-list/" data-next="m-o02">
 <div data-inbox-detail="o02" data-role="ops" data-unsaved data-retry-go="m-o02"></div>
 </section>
+<section data-screen id="o-detail-corrupt" data-no="S04" data-group="运营 · 消息详情异常" data-name="内容无法展示 · 通用标题" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="o-list/" data-unread="6">
+<div data-inbox-detail="o04" data-role="ops" data-corrupt></div>
+</section>
 <section data-screen id="o-detail-missing" data-no="S03" data-group="运营 · 消息详情异常" data-name="消息不存在或不属于当前身份" data-layout="app" data-who="ops" data-nav="" data-crumb="消息通知/消息详情" data-crumb-targets="o-list/">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息详情</h1></div></div>
 <div class="card"><div class="state" role="status"><span class="state-ico"><i data-ico="msg"></i></span><h3>未找到这条消息</h3><p>消息不存在或无法查看。</p><button type="button" class="btn" data-go="o-list">返回列表</button></div></div></div>
@@ -226,7 +229,7 @@ TP.addCopy({
   "确认（分类：运营告警 · 4 条未读）": "Confirm (operations alerts · 4 unread)", "确认（分类：业务办理进度 · 2 条未读）": "Confirm (business progress · 2 unread)",
   "处理中": "Processing", "失败 · 全部保持原状": "Failed · nothing changed", "成功 · 当前筛选已无未读": "Success · no unread in the current filter",
   "最近 10 条": "Latest 10", "还没有消息": "No messages yet", "读取失败 · 保留未读数": "Load failed · unread count kept", "未读超过 99": "More than 99 unread",
-  "详情读取失败 · 仍为未读": "Detail load failed · still unread", "已读保存失败 · 正文照常可读": "Read status not saved · content still readable",
+  "详情读取失败 · 仍为未读": "Detail load failed · still unread", "已读保存失败 · 正文照常可读": "Read status not saved · content still readable", "内容无法展示 · 通用标题": "Content unavailable · generic title", "通知": "Notification",
   "消息不存在或不属于当前身份": "Message missing or not for the current identity",
   "全部消息 · 已加载全部": "All messages · all loaded", "筛选：审核任务 · 无未读": "Filter: review tasks · no unread",
   "审计机构 · 消息": "Audit institution · Messages", "审计机构 · 逐条消息详情": "Audit institution · Message details", "最近消息预览": "Recent messages", "全部已读 · 确认": "Mark all as read · confirm"

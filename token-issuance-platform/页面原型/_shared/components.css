@@ -1224,6 +1224,10 @@ td.pop-col:has(>.value-pop)::after{content:none}
 .msg-reading .page-title-row{align-items:baseline;flex-wrap:wrap}
 .msg-detail .card-b{padding:var(--sp-7)}
 .msg-body{white-space:pre-wrap;overflow-wrap:anywhere;max-width:var(--message-body-max);font-size:var(--fs-16);line-height:1.8}
+/* 内容损坏只影响正文展示：使用阅读区说明，原业务区继续承接有效编号。 */
+.msg-content-status{display:flex;align-items:flex-start;gap:var(--sp-3);max-width:var(--message-body-max);font-size:var(--fs-16);line-height:1.8;color:var(--muted);overflow-wrap:anywhere}
+.msg-content-status>svg.i{width:var(--sp-5);height:var(--sp-5);margin-top:var(--sp-1)}
+.msg-content-status>span{min-width:0}
 .msg-related{border-top:1px solid var(--border);padding:var(--sp-6) var(--sp-7);background:var(--card-2)}
 .msg-related:last-child{border-radius:0 0 var(--radius-sm) var(--radius-sm)}
 .msg-related .sub-h{font-size:var(--ui-section-title);margin-bottom:var(--sp-3);padding:0}

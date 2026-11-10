@@ -104,10 +104,10 @@
   function detail(m, opts){
     opts = opts || {};
     return '<div class="content-in msg-reading"><div class="page-head"><div>'+
-      '<div class="page-title-row"><h1 class="page-title">'+IB.title(m)+'</h1><span class="tag">'+IB.CATS[m.cat]+'</span></div>'+
+      '<div class="page-title-row"><h1 class="page-title">'+(opts.corrupt?IB.pair('通知','Notification'):IB.title(m))+'</h1><span class="tag">'+IB.CATS[m.cat]+'</span></div>'+
       '<p class="page-desc"><time data-instant="'+m.at+'"></time><span class="faint"> · </span><span>时区</span> <span data-zone></span></p></div></div>'+
       (opts.unsaved?'<div class="note warn banner" role="alert">'+TP.icon('alert')+'<span class="grow">未能标为已读，这条消息仍为未读。</span><button type="button" class="btn sm"'+go(opts.retryGo)+'>重试</button></div>':'')+
-      '<div class="card msg-detail"><div class="card-b"><p class="msg-body">'+IB.body(m)+'</p></div>'+related(m, opts.gated)+'</div></div>';
+      '<div class="card msg-detail"><div class="card-b">'+(opts.corrupt?'<p class="msg-content-status" role="status">'+TP.icon('info')+'<span>这条消息的内容暂时无法展示。</span></p>':'<p class="msg-body">'+IB.body(m)+'</p>')+'</div>'+related(m, opts.gated)+'</div></div>';
   }
 
   /* 逐条详情画面：每条消息一屏，打开即对本人已读（data-unread 为打开后的未读数）。 */
@@ -134,7 +134,7 @@
       (details||[]).forEach(function(o){ host.insertAdjacentHTML('beforeend', sections(o)); });
       document.querySelectorAll('[data-inbox-detail]').forEach(function(el){
         var m = IB.find(el.dataset.role, el.dataset.inboxDetail);
-        el.innerHTML = detail(m, {unsaved: el.hasAttribute('data-unsaved'), retryGo: el.dataset.retryGo});
+        el.innerHTML = detail(m, {unsaved: el.hasAttribute('data-unsaved'), corrupt: el.hasAttribute('data-corrupt'), retryGo: el.dataset.retryGo});
       });
       document.querySelectorAll('[data-inbox-view]').forEach(view);
     }
@@ -156,7 +156,7 @@
     '消息读取失败':'Could not load messages','当前筛选下没有消息':'No messages match the current filter',
     '更换已读状态或分类后再看看。':'Try a different read status or category.','清除筛选':'Clear filters',
     '加载更多':'Load more','没有更多消息了':'No more messages','更多消息加载失败，已加载的消息保留。':'Could not load more messages. Loaded messages are kept.',
-    '相关业务':'Related record','相关内容暂不可访问。':'This content is currently unavailable.',
+    '相关业务':'Related record','这条消息的内容暂时无法展示。':'The content of this message cannot be displayed right now.','相关内容暂不可访问。':'This content is currently unavailable.',
     '未能标为已读，这条消息仍为未读。':'Could not mark as read. This message is still unread.',
     '时区':'Time zone','消息通知':'Notifications','消息详情':'Message details','该入口尚未纳入原型。':'This entry is not yet included in the prototype.'
   });
