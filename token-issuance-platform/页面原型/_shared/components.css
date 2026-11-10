@@ -1142,6 +1142,9 @@ html:has(.issuance-form:not([hidden])){scroll-padding-top:calc(var(--app-header-
 .issuance-disclosure>summary:hover{color:var(--accent-strong)}
 .signature-disclosure{padding:0 var(--card-pad) var(--sp-4)}
 .signature-disclosure>summary{min-height:var(--ctrl-h)}
+.issuance-screen .signature-disclosure>summary::after{content:none}
+.issuance-screen .signature-disclosure>summary>svg.i{color:var(--muted)}
+.issuance-screen .signature-disclosure[open]>summary>svg.i{transform:rotate(180deg)}
 .signature-disclosure>.facts{padding:0;border-top:1px solid var(--row-line)}
 .issuance-screen .money .mono{font-family:var(--sans);font-variant-numeric:tabular-nums}
 .issuance-list .c-app{width:19%}.issuance-list .c-asset{width:18%}.issuance-list .c-amount{width:19%}.issuance-list .c-time{width:18%}.issuance-list .c-status{width:auto}
