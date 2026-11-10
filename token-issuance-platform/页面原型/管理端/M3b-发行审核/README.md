@@ -1,55 +1,39 @@
-# M3b · 发行审核与机构材料
+# M3b · 发行审核与机构材料 · 终版核验
 
-2026-11-10 · PRD 基线 `48e5924` · existing-system adaptation / console · 中文与 English。企业、机构、账号、文件、时间及数值为演示数据。
+2026-11-10 · PRD 基线 `3841bd6` · existing-system adaptation / console · 中文与 English。企业、机构、账号、文件、时间及数值为演示数据。
 
-## 追加材料入口（2026-11-10）
+## 本轮交付
 
-- 机构端已铸造申请详情 `task-token` 的“机构材料”卡头新增“前往追加材料”，进入本机构代币台账中该代币的详情（DEMO-TOKEN-027，M4b `rl-027`），在“发行机构文件”卡头点“追加材料”上传；追加流程示例见 M4b `rl-001` → `m-edit` → `m-ready` → `rl-001-appended`。
-- 运营端 `o-success` 的说明改为“铸造成功后由名单内机构在代币详情中追加，此处只读展示”，运营无上传入口。
-- 审计机构 D 的材料记录账号改为 audit-demo@reg.example，与 M5 / M4b / M7 一致。
+在 `cly-v6.0.0` 的 `6c3d69b` 上应用 Hallmark 设计师交付的 `M3b-原型-PRD3841bd6.patch`（补丁原基线 `fd5e2ed`），无冲突。本轮业务改动仅为 `material-upload-application*` 7 个弹窗的中英文说明：铸造成功后发行企业可查看、下载本批材料，不再写“看不到上传账号”。
 
-## PRD 48e5924 同步：价值术语、驳回后重新申请、铸造后追加材料（2026-11-10）
+视觉优化仅增强分组候选的本次选择态：已选机构行用现有主色浅底，名称字重 600，与原生单选圆点同时表达；“暂不分配”、已保存的分配以及确认结果不使用该选择底色。其余既有风格、信息布局、固定尺寸弹窗和文件批次组件保留，无新 token。
 
-基线：PRD `48e5924` M3b 四册。本轮共 124 屏（新增 4 屏）。
+组件规范同步至 v1.88，并修正其中机构材料组件仍写“不展示完整分配名单”的过时说明，按当前 PRD 写明机构可见名单、不可见企业业务签名/内部失败说明/同资产其他申请。
 
-- **价值术语**：申请列表三屏的金额列、全部申请详情“关联资产”与材料预览改为“原始资产价值”；发起铸造第 1 步（`o-pass` / `o-pass-ready` / `o-pass-truncated`）字段改为“初始代币单位价值（USD）”，按初始代币单位价值算出的值改称“资产价值”；第 2 步（`o-pass-unavailable` / `o-pass-save-error` / `o-pass-confirm`）上链字段为“原始资产价值（完整值）”“初始代币单位价值”，复核区为“铸造数量与资产价值”；流程标签为“合约与初始代币单位价值”。申请详情与重试弹窗统一为“初始代币单位价值”。
-- **铸造后不再展示资产价值**：`o-minting`、`o-failed`、`o-success`、`o-minting-disabled`、`o-minting-timeout`、`task-failed`、`task-token` 删除“初始资产估值”，只保留初始代币单位价值；代币编号沿用 `reviewToken` 进入 M4b 代币详情。
-- **铸造后追加的机构材料**：`o-success`、`task-token` 的机构材料加入一批示例机构 C 于铸造后追加的材料（标“铸造后追加”，4 批），标题旁注明在代币详情中上传、此处只读；新增预览 `ops-material-file-post`、`reg-material-file-post`。`task-token` 提示改为可在代币详情继续追加。
-- **驳回后重新申请**：确认驳回提示“本申请终止，企业可用这笔资产另行发起新申请”；驳回后资产发行状态为“可发行”（`o-ops-rejected`、`task-rejected`）。新增运营详情 `o-reapplied`（IA-DEMO-0048，RA-DEMO-0160，待分配机构，无机构材料与申请文件）与 `o-reapplied-original`（IA-DEMO-0012，运营驳回，名单仅 C），两屏互有“同一资产的其他申请”卡片（编号、状态、提交时间，驳回的另含驳回时间与意见原文），编号可互相进入；数据与 M3a、M2 一致。申请列表加入 IA-DEMO-0048，IA-DEMO-0012 可进入详情，总数 14。
-- **机构只见本机构关联的申请**：机构详情不展示“同一资产的其他申请”；示例机构 C 只关联 IA-DEMO-0012（IA-DEMO-0048 尚未分配，C 不可见）。已关闭申请历史加入 IA-DEMO-0207（RA-DEMO-0208 先被驳回，名单含 C），与铸造成功的 IA-DEMO-0208 分两行列出，共 7 条。
-- 债务人英文名称“有值”由 RA-DEMO-0160（Demo Buyer B Limited Liability Company）呈现，原待确认项关闭。
-- 路由：新增 `reviewApplication0012`、`reviewApplication0048`（仅运营），供 M2 / M7 跳转。
-- 核验：Chromium（Playwright，file://，1280 px）124 屏 × 中文 / English 逐屏 `TP.show`：无脚本错误、无整页横向溢出，`data-go` / `data-next` / `data-base` 均指向现有画面，English 下新增文案均有译文（机构名、企业名、驳回意见原文按约定不翻译）；脚本确认无“估值、完整资产价值、应收账款金额、初始单位价值、铸造初始单位价值”残留。截图自查新增两屏、`o-success`、`task-token`、`o-pass-truncated`、`o-pass-confirm`、`o-list`、`task-history`。
-- 待确认：IA-DEMO-0048 在 M3a、M2 中尚未分配机构，故无法与 IA-DEMO-0012 一起出现在机构的已关闭历史；“同一资产先驳回、后铸造成功”的历史样本改用 IA-DEMO-0207 / 0208。
+应用补丁后，HTML 源码与上游交付逐字节比对一致；本轮视觉修订只改共享 CSS 的 M3b 显式选择态，不改字段、演示值、计算、业务脚本、禁用条件或路由。124 屏 ID 及内部跳转目标保持。
 
-## 机构分配按类型分组（2026-11-09）
+## 实际核验
 
-- 分配与新增弹窗的候选改为一张按机构类型分组的表：资产托管机构、审计机构、法律服务机构各一行组标题，下列该类型的启用机构（名称、机构编号、状态），组内单选，并有“暂不分配”。资产托管组标题提示“发起铸造前须分配一家”。
-- 新增机构时，已分配的类型在本组显示为只读的“已分配”行（标题注明“已分配，不能更换”），不再另列已分配表；未分配类型照常列出候选。
-- 演示机构与 M5 一致：资产托管 C（ORG-DEMO-003；F 已停用，不进入候选）、审计 D（004）、法律服务 E（005）和 G（007）。
-- 选择为原生单选，不再为每种勾选组合单独出屏：未选择任何机构时“下一步”不可用；确认步按本次所选回填机构、类型与保存后总数，保存后进入对应名单的详情。新增 `o-assigned-G`、`o-assigned-CG`、`o-assigned-DG`、`o-assigned-CDG` 四个结果详情。机构分配画面由 50 屏精简为 26 屏，共 120 屏。
-- 核验：Chromium 源码与单文件附件全部 120 屏 × 中文 / English × 1280 / 1440 / 1920 px，无脚本错误、横向溢出、空白时间，两步弹窗高度一致且候选表无需滚动；实测“首次分配 C + G → 确认 → `o-assigned-CG`”与“已有 C + D 新增 G → 确认 → `o-assigned-CDG`”。
+- Chromium：源码与本次导出件各 124 屏 × 中文 / English × 1280 / 1440 / 1920 px，共 1488 组布局；无脚本错误、整页或弹窗横向溢出、空白业务时间，底部操作可达。
+- 分配：未选时下一步禁用；首次选 C+G、确认后进入对应名单详情；已有 C+D 新增 G、确认后进入 C+D+G；既有类型不能替换；选择态与实际单选一致。
+- 数值与确认：0.80009 单位价值完整保留，资产价值展示 65,927.41 USD，浮层可核对完整值 65,927.416 USD；六项上链字段仍可达，Tab 焦点约束与 Esc 返回正常。
+- 可见范围与历史：机构详情未出现企业业务签名或同资产其他申请；成功申请本页无上传操作；0207 / 0208 两笔历史分别列出；重新申请与原驳回记录可互跳，500 字意见全文保留。
+- 追加材料入口：完整原型中由 `task-token` 进入 M4b `rl-027`，本模块不复制追加动作或消息。
+- 800 px 短屏：中英文的分配、铸造确认、材料上传弹窗底栏可达。
+- 本地受限 `srcdoc` 嵌入：操作进度时间、分组确认、Esc 返回、表内键盘横向滚动正常。这是本地模拟，未核验平台实际嵌入容器。
 
-## PRD d75ac45 · 截断展示（2026-11-09）
+未验证 Safari / Firefox、1280 px 以下宽度及真实后端权限、文件服务、钱包、精度校验和链上最终性。本次为原型呈现与定向交互核验，不替代 PRD 的全部业务验收或 Eval 执行；合约无损承载及单位价值精度仍由研发、测试验证。
 
-- 修改：申请列表、机构待办与历史中 12,345.675 USD 的资产价值，以及 `o-pass-truncated` 的初始资产估值 65,927.416 USD，去掉“已截断 · 完整值”文字，改为截断值旁的 `.value-pop` 图标浮层（“查看完整值”）。单位价值仍按完整值展示。
+机构类型名称沿用项目 v1.80 约定，在 English 界面保持中文原名；企业/机构名称及驳回意见原文也不翻译，未擅自改变此约定。
 
-## 基线与本轮范围（68c2e54 轮）
+## 打开与运行
 
-业务以 PRD 提交 `68c2e54` 的 M3b 四册及 M2 §5.8「业务列表通用规则」为准（上一轮对齐 `a957f38`，见提交 `fe8bffa`）。本轮只同步 PRD 变化涉及的画面，沿用已确认的 UI 统一版组件与布局，不新增 CSS。
-
-- **企业与资产**（运营与机构全部申请详情的“关联资产”，26 屏）：“债务人”改为“债务人名称”“债务人英文名称”两个字段，与 M2 同一资产一致；RA-DEMO-0131 上游未提供英文名称，展示“未提供”，不补写。
-- **初始单位价值**：申请详情（`o-minting` / `o-failed` / `o-success` 及机构 `task-failed` / `task-token` 等）、发起铸造复核（`o-pass-confirm` 及后续铸造进度）、重试弹窗（`o-retry*`）统一为“1 COU = 1 USD”，按填写的完整值展示，不补零；初始资产估值仍按两位小数截断。`o-pass-truncated` 的输入值 0.80009 保持完整值。代币符号统一为大写 COU（原为 cou）。
-- **机构待办 `task-list`**：增加查找（申请编号、企业名称、资产编号）与“首次材料状态”筛选（待上传、已完成）；`task-error` 保留筛选条。
-- **已关闭申请 `task-history`**：增加查找与“申请结果”筛选（运营驳回、铸造成功）；新增“关闭时间”列（驳回生效或铸造成功时间），按关闭时间由新到旧排列。
-- **新增**：`task-list-noresults` 待办 · 筛选无结果、`task-history-noresults` 已关闭申请 · 筛选无结果，保留已填条件并可清除。`task-empty`、`task-history-empty` 不显示筛选条。
-
-## 打开
-
-- 完整原型：[index.html](../../index.html)。运营进入“发行审核”，机构进入“机构待办”。
-- 当前源页：[发行审核.html](发行审核.html)，初始入口 `o-list-unassigned`；“画面目录 · 演示数据”可到达全部画面及下一屏。
-- 运营主流程：`o-list-unassigned → o-wait-reg → assign-empty → assign-ready → assign-ready-confirm → o-wait-ops → o-pass → o-pass-ready → o-pass-confirm → o-pass-submitting → o-mint-signing → o-mint-waiting → o-mint-success`。
-- 机构主流程：`task-list → task-application → material-upload-application → material-upload-application-ready → task-application-uploaded`；历史：`task-history → task-token`。
+- 完整原型：[index.html](../../index.html)，运营进入发行审核，机构进入机构待办。
+- 当前源页：[发行审核.html](发行审核.html)，初始入口 `o-list-unassigned`。画面目录保留全部 124 屏。
+- 离线终版：`WS514-M3b-终版-20261110.html`，可直接双击，无需服务或网络；跨模块完整页面仅在仓库联看中提供。
+- 从源生成：在 `页面原型/` 执行 `python3 _shared/export.py --source 管理端/M3b-发行审核/发行审核.html --output <仓库外路径>.html`。
+- 运营主流程：`o-list-unassigned → o-wait-reg → assign-empty → assign-ready-confirm → o-assigned-* → o-pass → o-pass-ready → o-pass-confirm → o-pass-submitting → o-mint-signing / o-mint-waiting / o-mint-success`。分配步骤按原生单选回填本次机构；铸造及文件操作仍为预设画面，不执行真实业务。
+- 机构主流程：`task-list → task-application → material-upload-application → material-upload-application-ready → task-application-uploaded`；历史从 `task-history` 进入，成功后经“前往追加材料”进入 M4b。
 
 ## 画面目录（124 屏）
 
@@ -68,12 +52,6 @@
 | 机构待办 · 申请详情 | `task-application` 待首次上传；`task-application-shared` 其他机构已上传；`task-application-uploaded` 首次材料已完成；`task-failed` 铸造失败 · 可继续追加；`task-token` 铸造成功 · 只读；`task-rejected` 运营驳回 · 只读；`task-disabled` 停用机构 · 继续办理；`task-material-error` 材料读取失败 |
 | 机构材料上传与预览 | `material-upload-application*` 7 屏；`material-preview`；`material-file-error`；`ops-material-file-*` / `reg-material-file-*` 各 6 屏（含铸造后追加 `*-post`） |
 
-## 待确认
+## 未单独绘制的画面
 
-- 已关闭申请历史的“读取失败”画面未单独绘制，表现同 `task-error`。
-
-## 实际核验
-
-- 上一轮（68c2e54）：Chromium（Playwright，file://，1280 px）140 屏 × 中文 / English 逐屏 `TP.show`，无脚本错误，无整页横向溢出；全部 `data-go` / `data-next` / `data-base` 指向现有画面；English 下新增文案均有译文（演示名称、意见原文按约定不翻译）。
-- 截图自查：`task-list`、`task-history`、`task-error`、两个筛选无结果画面、`o-wait-ops` / `task-token` 关联资产、`o-success`、`o-pass-confirm`、`o-retry`。
-- 未验证：1440 px 以上与 Safari / Firefox、仓库联看跨模块跳转、真实权限、存储与链上服务。
+已关闭申请历史的读取失败未单独出屏，继续沿用上游注明的 `task-error` 表现；本轮未增加画面或业务分支。

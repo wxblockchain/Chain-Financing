@@ -826,6 +826,9 @@ table.tbl.supplement-table{table-layout:fixed;min-width:880px}
 .institution-choice .choice-none label{color:var(--muted)}
 .institution-choice .is-assigned td:first-child{color:var(--ok)}
 .institution-choice.grouped tbody td{padding-block:var(--sp-2)}
+/* 已选候选与未选候选清晰区分；暂不分配、既有分配和确认结果不使用选择底色。 */
+.review-screen .institution-choice.grouped tr:has(input[data-assign-pick]:checked)>td{background:var(--accent-soft)}
+.review-screen .institution-choice.grouped tr:has(input[data-assign-pick]:checked) label{font-weight:600;color:var(--text)}
 .tbl.institution-choice.grouped .group-row th{padding-block:var(--sp-2)}
 .review-screen .choice-card b{color:var(--text);font-weight:600}
 /* M3b 多机构名单与按上传批次分组的材料；不增加审批或材料齐全判断。 */
