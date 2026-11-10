@@ -9,6 +9,8 @@ TP.registerModule({
     assetApplication0102:{certified:'detail-minted'},
     assetApplication0027:{certified:'detail-progress'},
     // M7 消息前往原业务：运营驳回的 IA-DEMO-0012
-    assetApplication0160:{certified:'detail-ops-rejected'}
+    assetApplication0160:{certified:'detail-ops-rejected'},
+    // 驳回后同一资产重新发起的 IA-DEMO-0048
+    assetApplication0048:{certified:'detail-reapplied'}
   }
 });

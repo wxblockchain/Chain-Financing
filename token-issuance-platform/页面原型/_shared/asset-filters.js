@@ -52,7 +52,7 @@
       form.className='asset-filters';form.setAttribute('aria-label','筛选资产');
       var panelId=screen.id+'-advanced-filters';
       form.innerHTML='<div class="filter-toolbar">'+
-        select('发行状态',['可发行','发行申请中','已驳回','已发行'],false,'issue')+
+        select('发行状态',['可发行','发行申请中','已发行'],false,'issue')+
         select('回款状态',['未到期','已逾期','已结清','暂时无法确认'],false,'repayment')+
         '<button class="btn sm filter-more" type="button" aria-expanded="false" aria-controls="'+panelId+'"><span>更多筛选</span><i data-ico="chev"></i></button>'+
         '<div class="filter-query"><label class="filter-search"><span class="sr-only">资产编号</span><i data-ico="search"></i><input class="inp" type="search" data-filter="id" placeholder="搜索资产编号"></label>'+
@@ -100,7 +100,7 @@
     '筛选资产':'Filter assets','债务人名称':'Debtor name','债权人名称':'Creditor name',
     '发行状态 · 全部':'Issuance · All','回款状态 · 全部':'Repayment · All','币种 · 全部':'Currency · All',
     '发行状态 · 可发行':'Issuance · Available','发行状态 · 发行申请中':'Issuance · Application in progress',
-    '发行状态 · 已驳回':'Issuance · Rejected','发行状态 · 已发行':'Issuance · Issued',
+    '发行状态 · 已发行':'Issuance · Issued',
     '回款状态 · 未到期':'Repayment · Not due','回款状态 · 已逾期':'Repayment · Overdue',
     '回款状态 · 已结清':'Repayment · Settled','回款状态 · 暂时无法确认':'Repayment · Unable to confirm',
     '全部':'All','更多筛选':'More filters','搜索资产编号':'Search asset ID',

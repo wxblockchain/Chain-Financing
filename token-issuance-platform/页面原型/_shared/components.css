@@ -232,7 +232,7 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .token-list.ledger-list.fit-width{min-width:0}
 .ledger-list .c-issuer{width:13%}
 .ledger-list :is(th,td):nth-child(4){min-width:96px}.ledger-list :is(th,td):nth-child(10){min-width:100px}
-/* 单位价值“1 COU =”与数值可分两行，为十一列让出宽度。 */
+/* 代币单位价值“1 COU =”与数值可分两行，为密集列表让出宽度。 */
 .ledger-list td.num.unit-value{white-space:normal}
 .ledger-list :is(th,td):not(:first-child):not(:last-child){padding-inline:var(--sp-1)}
 .ledger-list td .asset-label,.ledger-list td .addr,.ledger-list td .money{white-space:nowrap}

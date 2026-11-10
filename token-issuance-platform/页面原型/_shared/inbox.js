@@ -79,12 +79,12 @@
          'The burn submission for token '+token+' of '+A+' has been pending for over 10 minutes without a transaction identifier and is awaiting confirmation. Asset: '+asset+'. Contact the platform developers to investigate and resolve it.'],
       ref:[['代币编号',token],['资产编号',asset]], go:{key:go}};
   }
-  /* M4b · 单位价值调整超时待处理（NT-A09）：单位价值按填写的完整值展示；不含调整原因、操作人与交易哈希 */
+  /* M4b · 代币单位价值调整超时待处理（NT-A09）：代币单位价值按填写的完整值展示；不含调整原因、操作人与交易哈希 */
   function adjustA09(id, token, next, prev, submitted, at, go){
     return {id:id, cat:'alert', at:at, read:true,
-      t:['单位价值调整超时待处理','Unit value adjustment pending over 10 minutes'],
-      b:['代币 '+token+'（发行人：'+A+'）的单位价值调整已提交超过 10 分钟，仍无明确结果。新单位价值：1 '+Q+' = '+next+' USD；当前仍生效：1 '+Q+' = '+prev+' USD；提交时间：{t:'+submitted+'}。请联系平台开发查明并处理。',
-         'The unit value adjustment for token '+token+' (issuer: '+A+') was submitted over 10 minutes ago and has no definite result yet. New unit value: 1 '+Q+' = '+next+' USD; currently effective: 1 '+Q+' = '+prev+' USD; submitted at: {t:'+submitted+'}. Contact the platform developers to investigate and resolve it.'],
+      t:['代币单位价值调整超时待处理','Token unit value adjustment pending over 10 minutes'],
+      b:['代币 '+token+'（发行人：'+A+'）的代币单位价值调整已提交超过 10 分钟，仍无明确结果。新代币单位价值：1 '+Q+' = '+next+' USD；当前仍生效：1 '+Q+' = '+prev+' USD；提交时间：{t:'+submitted+'}。请联系平台开发查明并处理。',
+         'The token unit value adjustment for token '+token+' (issuer: '+A+') was submitted over 10 minutes ago and has no definite result yet. New token unit value: 1 '+Q+' = '+next+' USD; currently effective: 1 '+Q+' = '+prev+' USD; submitted at: {t:'+submitted+'}. Contact the platform developers to investigate and resolve it.'],
       ref:[['代币编号',token]], go:{key:go}};
   }
   /* M4b · 代币已销毁、待解除托管（NT-R02），收件人为本代币的资产托管机构；不标交易来源 */
@@ -150,7 +150,7 @@
     ops: [
       password('o01','changed','2026-11-07T02:10:00Z',true),
       Object.assign(burnA06('o02','BA-DEMO-0040','RA-DEMO-0208','12,345.675','2026-11-06T05:31:00Z','非平台入口','burnApplication0040'), {read:false}),
-      /* DEMO-TOKEN-001 的单位价值调整于 11-04 11:00（UTC+8）提交，满 10 分钟仍在处理中 */
+      /* DEMO-TOKEN-001 的代币单位价值调整于 11-04 11:00（UTC+8）提交，满 10 分钟仍在处理中 */
       Object.assign(adjustA09('o03','DEMO-TOKEN-001','0.95','1','2026-11-04T03:00:00Z','2026-11-04T03:10:00Z','ledgerTokenAdjusting'), {read:false}),
       Object.assign(burnA06('o04','BA-DEMO-0031','RA-DEMO-0201','50,000.00','2026-10-30T07:15:00Z','平台入口','burnApplication0031'), {read:false}),
       burnA06('o05','BA-DEMO-0019','RA-DEMO-0204','65,000.00','2026-10-30T07:15:00Z','平台入口','burnApplication0019'),
@@ -213,8 +213,8 @@
       mintC03('c06','IA-DEMO-0019','2026-10-30T06:20:20Z','assetApplication0102'),
       {id:'c07', cat:'progress', at:'2026-10-30T06:20:20Z', read:false,
         t:['发行申请已驳回','Issuance application rejected'],
-        b:['您的发行申请 IA-DEMO-0012 已被驳回。驳回意见：【演示意见】贸易合同记载的订单编号与销售发票对应的编号不一致，交付凭证中的债务人名称也与申请记录存在差异。请核实资产材料中的贸易合同、销售发票及交付凭证，确保相关信息能够相互对应。',
-           'Issuance application IA-DEMO-0012 has been rejected. Reason (original text): 【演示意见】贸易合同记载的订单编号与销售发票对应的编号不一致，交付凭证中的债务人名称也与申请记录存在差异。请核实资产材料中的贸易合同、销售发票及交付凭证，确保相关信息能够相互对应。'],
+        b:['您的发行申请 IA-DEMO-0012 已被驳回。驳回意见：【演示意见】贸易合同记载的订单编号与销售发票对应的编号不一致，交付凭证中的债务人名称也与申请记录存在差异。请核实资产材料中的贸易合同、销售发票及交付凭证，确保相关信息能够相互对应。资产仍符合条件时，可用该资产重新发起申请。',
+           'Issuance application IA-DEMO-0012 has been rejected. Reason (original text): 【演示意见】贸易合同记载的订单编号与销售发票对应的编号不一致，交付凭证中的债务人名称也与申请记录存在差异。请核实资产材料中的贸易合同、销售发票及交付凭证，确保相关信息能够相互对应。 If the asset still qualifies, you may submit a new application for it.'],
         ref:[['申请编号','IA-DEMO-0012']], go:{key:'assetApplication0160', nav:'issue'}},
       mintC03('c08','IA-DEMO-0027','2026-10-30T06:05:20Z','assetApplication0027'),
       burnC10('c09','BA-DEMO-0024','RA-DEMO-0201','2026-10-28T06:30:00Z','2026-10-28T06:42:00Z','burnApplication0024'),

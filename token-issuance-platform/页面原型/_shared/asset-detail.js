@@ -15,6 +15,10 @@
   }
   function day(iso){ return '<time data-day data-instant="'+iso+'" datetime="'+iso+'"></time>'; }
   function money(v, ccy){ return '<span class="money"><span class="mono">'+v+'</span><span class="ccy">'+ccy+'</span></span>'; }
+  /* 超过两位小数的金额：主显示截断到两位，旁边 .value-pop 图标查看完整值（PRD M2 两位小数截断展示）。 */
+  function moneyFull(v, full, ccy){
+    return money(v, ccy)+(full ? '<span class="dd value-pop"><button type="button" class="btn icon dd-btn" aria-expanded="false" aria-label="查看完整值" title="查看完整值"><i data-ico="chev"></i></button><span class="dd-list" hidden><span class="mono">'+full+' '+ccy+'</span></span></span>' : '');
+  }
   function upstream(v){ return '<span data-upstream>'+v+'</span>'; }
   function mono(v){ return '<span class="mono">'+v+'</span>'; }
   /* L1 缺失说明上游未提供；L2 缺失弱化为未提供。 */
@@ -60,11 +64,12 @@
     'RA-DEMO-0140':{cr:'A', db:'M', amt:'40,000.00', ccy:'EUR', due:'2027-06-30', no:'0460'},
     'RA-DEMO-0143':{cr:'A', db:'B', amt:'27,500.00', due:'2027-04-30', no:'0463'},
     'RA-DEMO-0150':{cr:'C', db:'E', amt:'61,200.00', due:'2027-06-20', no:'0502'},
-    'RA-DEMO-0160':{cr:'A', db:'B', amt:'12,345.67', due:'2027-04-30', no:'0510'},
+    'RA-DEMO-0160':{cr:'A', db:'B', amt:'12,345.67', full:'12,345.675', due:'2027-04-30', no:'0510'},
     'RA-DEMO-0166':{cr:'A', db:'E', amt:'45,200.00', due:'2027-05-31', no:'0518'},
-    'RA-DEMO-0171':{cr:'A', db:'M', amt:'63,750.50', due:'2027-07-15', no:'0526'}
+    'RA-DEMO-0171':{cr:'A', db:'M', amt:'63,750.50', due:'2027-07-15', no:'0526'},
+    'RA-DEMO-0174':{cr:'A', db:'E', amt:'30,000.00', due:'2027-06-30', no:'0530'}
   };
-  // 0128 / 0131 为静态演示：已回款等于应收金额、余额为零，上游仍未结清。
+  // 0128 / 0131 为静态演示：已回款等于原始资产价值、余额为零，上游仍未结清。
   // 不据此计算或改变任何状态；M2 仅运营画面另行呈现非阻断预警。
   /* 债务人与其下游客户的交易（演示）：本企业不是交易一方；一笔部分回款，一笔暂无回款。 */
   var DEBTOR_BUYERS = [
@@ -91,7 +96,7 @@
         ['资产编号', '<span class="mono">'+id+'</span>'],
         ['资产类型', upstream('应收账款')],
         ['行业大类', upstream('汽车贸易')],
-        ['应收账款金额', money(a.amt,ccy)],
+        ['原始资产价值', moneyFull(a.amt,a.full,ccy)],
         ['币种', TP.currencyLabel(ccy)],
         ['形成日期', day(a.formed||'2026-09-18T10:00:00+04:00')],
         ['到期日', dueTime(a.due)],
@@ -109,7 +114,7 @@
       facts([
         ['销售合同 / 订单编号', mono(so)],
         ['订单日期', sp ? missing() : day('2026-06-02T09:00:00+04:00')],
-        ['订单金额', sp ? missing() : money(a.amt,ccy)],
+        ['订单金额', sp ? missing() : moneyFull(a.amt,a.full,ccy)],
         ['销售合同 / 订单文件', sp ? missing() : fileRef(so+'.pdf')]
       ]) + goods);
 
@@ -125,13 +130,13 @@
     var invRows = a.rich ?
       [[mono(si+'-01'), day('2026-09-15T11:00:00+04:00'), money('30,000.00','USD'), fileRef(si+'-01.pdf')],
        [mono(si+'-02'), day('2026-09-15T11:05:00+04:00'), money('20,000.00','USD'), fileRef(si+'-02.pdf')]] :
-      [[mono(si+'-01'), day(a.invoiced||'2026-09-15T11:00:00+04:00'), money(a.amt,ccy), fileRef(si+'-01.pdf')]];
+      [[mono(si+'-01'), day(a.invoiced||'2026-09-15T11:00:00+04:00'), moneyFull(a.amt,a.full,ccy), fileRef(si+'-01.pdf')]];
     var invoice = card('销售发票','销售发票', a.rich?'2 张':'1 张',
       table(['销售发票编号','开具日期','#金额','发票文件'], invRows));
 
     var repayFacts = facts([
       ['累计已回款', money(a.repaid||(a.rich?'20,000.00':'0.00'), ccy)],
-      ['未回款余额', money(a.balance||(a.rich?'30,000.00':a.amt), ccy)],
+      ['未回款余额', a.balance||a.rich ? money(a.balance||'30,000.00', ccy) : moneyFull(a.amt, a.full, ccy)],
       ['结清日期', '<span class="faint">—</span>']
     ],3);
     var repayRecords = (a.rich || a.repaid) ?
@@ -290,7 +295,7 @@
     '核心信息':'Core information','补充信息':'Supplementary information',
     '债权人与债务人':'Creditor and debtor','债权人与上游供应商，债务人与其下游客户':'Creditor with upstream supplier; debtor with its customers',
     '应收账款与交易双方':'Receivable and parties','交易双方':'Parties','资产编号':'Asset ID','资产类型':'Asset type','应收账款':'Accounts receivable',
-    '行业大类':'Industry','汽车贸易':'Automotive trade','应收账款金额':'Receivable amount','形成日期':'Origination date',
+    '行业大类':'Industry','汽车贸易':'Automotive trade','原始资产价值':'Original asset value','查看完整值':'View full value','形成日期':'Origination date',
     '到期日':'Due date','确权日期':'Confirmation date','确权凭证':'Confirmation certificate','币种':'Currency','债权人':'Creditor','债务人':'Debtor','名称':'Name',
     '注册国家 / 地区':'Country / region of registration','企业登记标识':'Company registration ID',
     '中国香港':'Hong Kong, China','阿联酋':'United Arab Emirates','新加坡':'Singapore','沙特阿拉伯':'Saudi Arabia',
@@ -317,7 +322,7 @@
     '确权状态':'Confirmation','结清状态':'Settlement','逾期状态':'Overdue status','发行状态':'Issuance status',
     '已确权':'Confirmed','已撤销确权':'Confirmation revoked','原始到期日':'Original due date','未结清':'Unsettled','已结清':'Settled','未逾期':'Not overdue','已逾期':'Overdue',
     '暂时无法获取':'Temporarily unavailable','可发行':'Available','发行申请中':'Application in progress','已驳回':'Rejected','已发行':'Issued',
-    '确权 · 结清 · 逾期':'Confirm · Settle · Overdue','资产价值':'Asset value','应收账款金额':'Receivable amount','操作':'Actions',
+    '确权 · 结清 · 逾期':'Confirm · Settle · Overdue','资产价值':'Asset value','操作':'Actions',
     '资产详情':'Asset details','关联记录':'Related records','发行申请':'Issuance application','申请状态':'Application status',
     '资产概览':'Overview','详情信息导航':'Detail sections',
     '返回列表':'Back to list','重试':'Retry','请稍后重试。':'Please try again later.','关闭':'Close','默认':'Default','读取失败':'Load failed',

@@ -1,6 +1,13 @@
 # M4b · 销毁记录、解除资产托管与代币台账
 
-2026-11-09 · existing-system adaptation / console · 中文与 English。业务依据 M4b PRD `68c2e54`，列表分页、空状态与读取失败按 M2 §5.8 业务列表通用规则；展示结构对齐 M3b 发行审核（顶部紧凑进度、底部操作进度、分步弹窗）和 M4a 我的代币（页头、台账列、代币详情分区）。**规则、校验与异常分支以 PRD 为准**。企业、机构、地址、编号、金额、文件和时间均为演示数据。
+2026-11-10 · existing-system adaptation / console · 中文与 English。业务依据 M4b PRD `48e5924`，列表分页、空状态与读取失败按 M2 §5.8 业务列表通用规则；展示结构对齐 M3b 发行审核（顶部紧凑进度、底部操作进度、分步弹窗）和 M4a 我的代币（页头、台账列、代币详情分区）。**规则、校验与异常分支以 PRD 为准**。企业、机构、地址、编号、金额、文件和时间均为演示数据。
+
+## PRD 48e5924 · 价值术语、台账列与铸造后追加材料（2026-11-10）
+
+- **价值术语**（全部画面与英文）：应收账款原值 → 原始资产价值；当前资产估值 → 资产价值；新 / 旧资产估值 → 新 / 原资产价值；当前单位价值 → 代币单位价值；铸造初始单位价值 → 初始代币单位价值；功能、弹窗、记录、提示统一为“调整代币单位价值”“代币单位价值调整记录”。调整记录表头改为“代币单位价值 / 资产价值”+ 次行“原 → 新”，1280 px 中文不再表内滚动。
+- **两个代币台账列表**（`l-list`、`l-list-lock`、`rl-list`、`rld-list`）与 M4a 我的代币一致：去掉“当前所在地址”列（只在详情持有信息中展示），“代币类型”改为“币种”（详情同步）；改用既有 `.fit-width`，1280 px 整表放下。
+- **铸造后追加机构材料**：机构端未销毁成功的代币详情（`rl-001`、`rl-027`、`rl-021`、`rl-022`、`rl-023`、`rl-026`）在“发行机构文件”卡头提供“追加材料”；已销毁（`rl-024`、`rl-025`、`rl-028`、`rld-025`）不提供；运营详情只读。新增 7 屏 83–89：`m-edit` → `m-ready` → `rl-001-appended`，以及 `m-required`、`m-uploading`、`m-upload-fail`、`m-burned`（页面打开期间代币已销毁成功，保存被拒）。演示数据：DEMO-TOKEN-001 · 示例机构 C · 2026-11-04T06:00:00Z（上海 14:00）· “DEMO · 铸造后补充托管核对材料”· DEMO-Custody-Supplement.pdf（0.9 MB）、DEMO-Custody-Supplement-Annex.png（0.3 MB），归入托管文件，最新在前。追加不发消息。
+- **与 M4a 演示数据对齐**：DEMO-TOKEN-021 的代币详情（`l-021`、`l-021-lock`、`rl-021`）托管文件新增一批铸造后追加材料（示例机构 C，2026-07-15T02:00:00Z，“DEMO · 托管期间应收账款核对材料”，DEMO-Custody-Review-2026Q3.pdf），按上传时间新记录在前，托管文件改为 2 条记录。
 
 ## 解除托管列表调整（2026-11-09，用户裁定）
 
@@ -37,7 +44,8 @@
 
 - 运营：`b-list → b-pending`（销毁中）→ `b-release`（销毁成功 · 托管中）；失败看 `b-failed`、`b-prior-failed`（已有新申请），超过 10 分钟看 `b-pending-2`，非平台入口与风险项看 `b-external`。
 - 解除资产托管（资产托管机构 示例机构 C）：`r-list → r-detail → r-edit → r-ready → r-confirm → r-submitting → r-result`。必填、文件上传中或失败、提交失败、结果未确认，以及停用机构、依据缺失、非平台入口风险提示（`r-external`）见画面目录。
-- 调整单位价值（DEMO-TOKEN-001）：`l-001 → v-edit → v-ready → v-confirm → v-pending → v-success → l-001-updated`；失败为 `v-failed`。超过 10 分钟仍无结果为 `l-001-updating`（NT-A09 落地）。`l-021`（销毁中）的调整按钮不可用，已销毁代币不显示调整入口；`l-022`（质押中）可调整。
+- 调整代币单位价值（DEMO-TOKEN-001）：`l-001 → v-edit → v-ready → v-confirm → v-pending → v-success → l-001-updated`；失败为 `v-failed`。超过 10 分钟仍无结果为 `l-001-updating`（NT-A09 落地）。`l-021`（销毁中）的调整按钮不可用，已销毁代币不显示调整入口；`l-022`（质押中）可调整。
+- 追加机构材料（资产托管机构 示例机构 C，DEMO-TOKEN-001）：`rl-list → rl-001 → m-edit → m-ready → rl-001-appended`；其他未销毁代币的“追加材料”只提示演示范围。
 - 机构查看销毁申请：资产托管机构 `rl-021 → rl-b-0024`（销毁失败）；审计机构（示例机构 D，只读）`r-list-audit`（无解除事项）→ `rld-list` → `rld-025 → rld-b-0018`。
 
 ## 画面清单
@@ -53,10 +61,11 @@
 | 机构 · 代币台账（5） | `rl-list` 资产托管机构 · `rl-empty` · `rl-error` · `rl-nomatch` · `rld-list` 审计机构 |
 | 运营 · 代币详情（13） | `l-001` · `l-027` · `l-031` · `l-021` · `l-021-lock` 确认中（NT-A08 提交锁超时落地） · `l-022` · `l-023` · `l-024` · `l-025` · `l-026` · `l-028` · `l-holding-fail` · `l-detail-error` |
 | 机构 · 代币详情（11） | `rl-001` · `rl-027` · `rl-021` … `rl-026` · `rl-028` · `rld-025` · `rl-denied` |
+| 机构 · 追加机构材料（7） | `m-edit` 未填写 · `m-required` 必填提示 · `m-uploading` 文件上传中 · `m-upload-fail` 单份上传失败 · `m-ready` 已填写 · `m-burned` 保存被拒 · 代币已销毁成功 · `rl-001-appended` 追加成功 |
 | 机构 · 销毁申请查看（2） | `rl-b-0024` 资产托管机构 · 销毁失败 · `rld-b-0018` 审计机构 · 已解除托管 |
-| 运营 · 调整单位价值（9） | `v-edit` · `v-invalid` · `v-ready` · `v-confirm` · `v-pending` · `v-failed` · `v-success` · `l-001-updating` 超过 10 分钟 · `l-001-updated` |
+| 运营 · 调整代币单位价值（9） | `v-edit` · `v-invalid` · `v-ready` · `v-confirm` · `v-pending` · `v-failed` · `v-success` · `l-001-updating` 超过 10 分钟 · `l-001-updated` |
 
-已删除：`r-history`（已解除切换页，由筛选取代）。新增画面编号 76–82，`r-nomatch` 沿用原 15 号。
+已删除：`r-history`（已解除切换页，由筛选取代）。新增画面编号 76–82、83–89，`r-nomatch` 沿用原 15 号。
 
 仓库联看路由（`route.js`）保留 M7 消息与 M3b 使用的全部 key：`burnApplication0018/0019/0021/0024/0030/0031/0040`、`reviewToken`、`ledgerToken001`、菜单 key `release`；本轮新增 `ledgerTokenLocked`（运营 → `l-021-lock`，NT-A08 提交锁超时）与 `ledgerTokenAdjusting`（运营 → `l-001-updating`，NT-A09）。
 
@@ -68,13 +77,15 @@
 
 ## 待确认 / 待共享层处理
 
-1. **确认中能否调价**：PRD A-TOKEN-02 前提只排除销毁中申请与处理中调整，未排除提交锁，`l-021-lock` 按现文提供“调整单位价值”；如需禁止，请 PRD 补规则。
-2. **消息（共享 `_shared/inbox.js`）**：需总控补 NT-A08 提交锁超时（DEMO-TOKEN-021 → `ledgerTokenLocked`）与 NT-A09（DEMO-TOKEN-001 → `ledgerTokenAdjusting`）；原 NT-A08 销毁中超时仍前往 `burnApplication0030` → `b-pending-2`。
-3. **组件规范 §10** 仍写解除托管 `.seg` 切换、PRD `eba411d`，未提提交锁 / 调价超时提示，需同步本轮口径。
+1. **上传操作人展示**：R-TOKEN-02 要求记录上传操作人且“企业不看”，但台账详情的发行机构文件按 M4a 同构展示（机构、时间、说明、文件），原型未给机构 / 运营加显示上传账号；如需显示，请 PRD 明确。
+2. **共享层**：`components.css` 中 `.ledger-list` 注释仍写“十一列”，`nth-child(10)` 最小宽原为销毁进度列、现落到操作列（无视觉问题）；`.fit-width` 注释仅写企业端。建议总控顺手更新。
+3. **组件规范 §10** 仍写解除托管 `.seg` 切换、PRD `eba411d`、台账 11 列与“调整单位价值”，未提提交锁 / 调价超时、追加机构材料，需同步本轮口径。
 4. 非平台入口三项都满足（无风险）的画面未单独出屏。
 
-## 核验（2026-11-09，本轮）
+## 核验（2026-11-10，本轮）
 
-- Chromium 打开源文件，82 屏逐屏 `TP.show`，中文与 English 各一遍，1280 px：无脚本错误、无整页横向溢出、无失效 `data-go`；新画面可从画面目录到达，`l-list-lock` 行可进入 `l-021-lock`。英文界面仅演示主体名称与原文为中文。
-- 截图自查：`l-list-lock`、`l-021-lock`（中英）、`l-001-updating`、`l-list`、`rl-list`、`v-confirm`、`l-001`。
+- Chromium（Playwright）打开源文件，89 屏逐屏 `TP.show`：中文 1280 / 1440 px、English 1280 px，无脚本错误、无整页横向溢出、无失效 `data-go`；新画面均可从画面目录到达。英文界面仅演示主体名称、DEMO 说明与两条演示失败原文为中文。
+- 台账四个列表 1280 px 中英文均不再表内滚动；`b-list`、`r-list` 仍为既有表内滚动（未改）；English 调整记录表 1280 px 仍有约 70 px 表内滚动（原有）。
+- 脚本确认无旧术语残留（资产估值、应收账款原值、当前单位价值、铸造初始单位价值、代币类型、非“代币单位价值”的“单位价值”，以及英文 valuation / receivable value / Token type）。
+- 截图自查：`l-list`、`rl-list`（中英）、`rl-001-appended`、`m-upload-fail`、`m-burned`（英）等。
 - 未验证 Safari / Firefox、离线附件导出、跨模块入口与消息跳转回归、真实权限、上传、链上与消息联调；原型不证明这些能力已实现。

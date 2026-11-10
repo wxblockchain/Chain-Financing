@@ -1,6 +1,20 @@
 # M3b · 发行审核与机构材料
 
-2026-11-09 · existing-system adaptation / console · 中文与 English。企业、机构、账号、文件、时间及数值为演示数据。
+2026-11-10 · PRD 基线 `48e5924` · existing-system adaptation / console · 中文与 English。企业、机构、账号、文件、时间及数值为演示数据。
+
+## PRD 48e5924 同步：价值术语、驳回后重新申请、铸造后追加材料（2026-11-10）
+
+基线：PRD `48e5924` M3b 四册。本轮共 124 屏（新增 4 屏）。
+
+- **价值术语**：申请列表三屏的金额列、全部申请详情“关联资产”与材料预览改为“原始资产价值”；发起铸造第 1 步（`o-pass` / `o-pass-ready` / `o-pass-truncated`）字段改为“初始代币单位价值（USD）”，按初始代币单位价值算出的值改称“资产价值”；第 2 步（`o-pass-unavailable` / `o-pass-save-error` / `o-pass-confirm`）上链字段为“原始资产价值（完整值）”“初始代币单位价值”，复核区为“铸造数量与资产价值”；流程标签为“合约与初始代币单位价值”。申请详情与重试弹窗统一为“初始代币单位价值”。
+- **铸造后不再展示资产价值**：`o-minting`、`o-failed`、`o-success`、`o-minting-disabled`、`o-minting-timeout`、`task-failed`、`task-token` 删除“初始资产估值”，只保留初始代币单位价值；代币编号沿用 `reviewToken` 进入 M4b 代币详情。
+- **铸造后追加的机构材料**：`o-success`、`task-token` 的机构材料加入一批示例机构 C 于铸造后追加的材料（标“铸造后追加”，4 批），标题旁注明在代币详情中上传、此处只读；新增预览 `ops-material-file-post`、`reg-material-file-post`。`task-token` 提示改为可在代币详情继续追加。
+- **驳回后重新申请**：确认驳回提示“本申请终止，企业可用这笔资产另行发起新申请”；驳回后资产发行状态为“可发行”（`o-ops-rejected`、`task-rejected`）。新增运营详情 `o-reapplied`（IA-DEMO-0048，RA-DEMO-0160，待分配机构，无机构材料与申请文件）与 `o-reapplied-original`（IA-DEMO-0012，运营驳回，名单仅 C），两屏互有“同一资产的其他申请”卡片（编号、状态、提交时间，驳回的另含驳回时间与意见原文），编号可互相进入；数据与 M3a、M2 一致。申请列表加入 IA-DEMO-0048，IA-DEMO-0012 可进入详情，总数 14。
+- **机构只见本机构关联的申请**：机构详情不展示“同一资产的其他申请”；示例机构 C 只关联 IA-DEMO-0012（IA-DEMO-0048 尚未分配，C 不可见）。已关闭申请历史加入 IA-DEMO-0207（RA-DEMO-0208 先被驳回，名单含 C），与铸造成功的 IA-DEMO-0208 分两行列出，共 7 条。
+- 债务人英文名称“有值”由 RA-DEMO-0160（Demo Buyer B Limited Liability Company）呈现，原待确认项关闭。
+- 路由：新增 `reviewApplication0012`、`reviewApplication0048`（仅运营），供 M2 / M7 跳转。
+- 核验：Chromium（Playwright，file://，1280 px）124 屏 × 中文 / English 逐屏 `TP.show`：无脚本错误、无整页横向溢出，`data-go` / `data-next` / `data-base` 均指向现有画面，English 下新增文案均有译文（机构名、企业名、驳回意见原文按约定不翻译）；脚本确认无“估值、完整资产价值、应收账款金额、初始单位价值、铸造初始单位价值”残留。截图自查新增两屏、`o-success`、`task-token`、`o-pass-truncated`、`o-pass-confirm`、`o-list`、`task-history`。
+- 待确认：IA-DEMO-0048 在 M3a、M2 中尚未分配机构，故无法与 IA-DEMO-0012 一起出现在机构的已关闭历史；“同一资产先驳回、后铸造成功”的历史样本改用 IA-DEMO-0207 / 0208。
 
 ## 机构分配按类型分组（2026-11-09）
 
@@ -14,7 +28,7 @@
 
 - 修改：申请列表、机构待办与历史中 12,345.675 USD 的资产价值，以及 `o-pass-truncated` 的初始资产估值 65,927.416 USD，去掉“已截断 · 完整值”文字，改为截断值旁的 `.value-pop` 图标浮层（“查看完整值”）。单位价值仍按完整值展示。
 
-## 基线与本轮范围
+## 基线与本轮范围（68c2e54 轮）
 
 业务以 PRD 提交 `68c2e54` 的 M3b 四册及 M2 §5.8「业务列表通用规则」为准（上一轮对齐 `a957f38`，见提交 `fe8bffa`）。本轮只同步 PRD 变化涉及的画面，沿用已确认的 UI 统一版组件与布局，不新增 CSS。
 
@@ -31,30 +45,29 @@
 - 运营主流程：`o-list-unassigned → o-wait-reg → assign-empty → assign-ready → assign-ready-confirm → o-wait-ops → o-pass → o-pass-ready → o-pass-confirm → o-pass-submitting → o-mint-signing → o-mint-waiting → o-mint-success`。
 - 机构主流程：`task-list → task-application → material-upload-application → material-upload-application-ready → task-application-uploaded`；历史：`task-history → task-token`。
 
-## 画面目录（120 屏）
+## 画面目录（124 屏）
 
 | 分组 | 画面 |
 | --- | --- |
 | 运营 · 申请列表 | `o-list` 申请列表；`o-list-empty` 暂无申请；`o-list-noresults` 筛选无结果；`o-list-error` 列表读取失败；`o-list-mint` 铸造失败申请列表；`o-list-unassigned` 待分配机构 · 申请列表 |
-| 运营 · 申请详情 | `o-wait-reg` 待分配机构；`o-wait-ops` 运营处理中；`o-ops-rejected` 运营驳回；`o-minting` 铸造中；`o-failed` 铸造失败；`o-success` 铸造成功；`o-detail-error` 读取失败；`o-detail-denied` 无权查看或申请不存在；`o-cache` 资产信息暂时无法获取；`o-minting-disabled` 铸造中 · 原合约平台停用；`o-minting-timeout` 铸造中 · 已超时；`o-sign-error` 业务签名读取失败；`o-assigned-one` / `o-with-material` / `o-material-error`；`o-assigned-D` / `-E` / `-CE` / `-DE` / `-CDE` 不同名单；`o-assigned-G`、`o-assigned-CG`、`o-assigned-DG`、`o-assigned-CDG` 含法律服务机构 G 的名单 |
+| 运营 · 申请详情 | `o-wait-reg` 待分配机构；`o-wait-ops` 运营处理中；`o-ops-rejected` 运营驳回；`o-minting` 铸造中；`o-failed` 铸造失败；`o-success` 铸造成功；`o-detail-error` 读取失败；`o-detail-denied` 无权查看或申请不存在；`o-cache` 资产信息暂时无法获取；`o-minting-disabled` 铸造中 · 原合约平台停用；`o-minting-timeout` 铸造中 · 已超时；`o-sign-error` 业务签名读取失败；`o-assigned-one` / `o-with-material` / `o-material-error`；`o-assigned-D` / `-E` / `-CE` / `-DE` / `-CDE` 不同名单；`o-assigned-G`、`o-assigned-CG`、`o-assigned-DG`、`o-assigned-CDG` 含法律服务机构 G 的名单；`o-reapplied` 重新申请 · 待分配机构（IA-DEMO-0048）；`o-reapplied-original` 运营驳回 · 同一资产已重新申请（IA-DEMO-0012） |
 | 机构材料 · 查看与下载 | `o-file-view`；`o-file`；`o-file-download` |
 | 运营 · 驳回 | `o-reject`；`o-reject-ready`；`o-reject-error`；`o-reject-save-error`；`o-reject-confirm`；`o-reject-submitting` |
-| 运营 · 通过并铸造 | `o-pass` 未选合约；`o-pass-ready` 已选合约；`o-pass-truncated` 估值超过两位小数；`o-pass-none`；`o-pass-load-error`；`o-pass-unavailable`；`o-pass-save-error`；`o-pass-confirm` |
+| 运营 · 通过并铸造 | `o-pass` 未选合约；`o-pass-ready` 已选合约；`o-pass-truncated` 资产价值超过两位小数；`o-pass-none`；`o-pass-load-error`；`o-pass-unavailable`；`o-pass-save-error`；`o-pass-confirm` |
 | 运营 · 铸造进度 | `o-pass-submitting`；`o-mint-signing`；`o-mint-waiting`；`o-mint-timeout`；`o-mint-success`；`o-mint-failed`；`o-mint-sign-failed` |
 | 运营 · 铸造重试 | `o-retry`；`o-retry-platform-disabled` 原合约平台停用 · 仍可重试；`o-retry-failed` 重试未能发起；`o-retry-submitting` |
 | 操作反馈 | `o-changed` 申请状态已变化 |
 | 机构分配 | 首次分配：`assign-empty` 未选择；`assign-ready` 已选 C + D；`assign-ready-confirm` 确认；`assign-saving` 提交中；`assign-fail` 保存失败；`assign-none` 无启用机构；`assign-error` 读取失败。新增机构：`assign-add-{已有}` 与 `assign-add-{已有}-confirm`，已有名单覆盖 C、D、E、G、CD、CE、DE、CG、DG；`assign-add-CD-E-conflict` 类型已被占用。共 26 屏 |
 | 机构待办与材料 | `task-list` 待办列表；`task-history` 已关闭申请；`task-empty` 暂无待办；`task-history-empty` 暂无历史申请；`task-list-noresults` 待办 · 筛选无结果；`task-history-noresults` 已关闭申请 · 筛选无结果；`task-error` 待办读取失败；`task-denied` 不在名单内 · 无权查看 |
 | 机构待办 · 申请详情 | `task-application` 待首次上传；`task-application-shared` 其他机构已上传；`task-application-uploaded` 首次材料已完成；`task-failed` 铸造失败 · 可继续追加；`task-token` 铸造成功 · 只读；`task-rejected` 运营驳回 · 只读；`task-disabled` 停用机构 · 继续办理；`task-material-error` 材料读取失败 |
-| 机构材料上传与预览 | `material-upload-application*` 7 屏；`material-preview`；`material-file-error`；`ops-material-file-*` / `reg-material-file-*` 各 5 屏 |
+| 机构材料上传与预览 | `material-upload-application*` 7 屏；`material-preview`；`material-file-error`；`ops-material-file-*` / `reg-material-file-*` 各 6 屏（含铸造后追加 `*-post`） |
 
 ## 待确认
 
-- 债务人英文名称“有值”的情况：演示申请 IA-DEMO-0031 对应的 RA-DEMO-0131 在 M2 中没有英文名称，故只画“未提供”；有值时按 M2 原值展示（如 Demo Buyer B Limited Liability Company），本模块无该资产的申请详情画面。
 - 已关闭申请历史的“读取失败”画面未单独绘制，表现同 `task-error`。
 
 ## 实际核验
 
-- Chromium（Playwright，file://，1280 px）：140 屏 × 中文 / English 逐屏 `TP.show`，无脚本错误，无整页横向溢出；全部 `data-go` / `data-next` / `data-base` 指向现有画面；English 下新增文案均有译文（演示名称、意见原文按约定不翻译）。
+- 上一轮（68c2e54）：Chromium（Playwright，file://，1280 px）140 屏 × 中文 / English 逐屏 `TP.show`，无脚本错误，无整页横向溢出；全部 `data-go` / `data-next` / `data-base` 指向现有画面；English 下新增文案均有译文（演示名称、意见原文按约定不翻译）。
 - 截图自查：`task-list`、`task-history`、`task-error`、两个筛选无结果画面、`o-wait-ops` / `task-token` 关联资产、`o-success`、`o-pass-confirm`、`o-retry`。
 - 未验证：1440 px 以上与 Safari / Firefox、仓库联看跨模块跳转、真实权限、存储与链上服务。

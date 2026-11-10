@@ -1,6 +1,15 @@
 # M3a · 代币发行申请
 
-2026-11-09 · existing-system adaptation / console · English 默认，支持中文。基线：PRD `cf4790e` 三册（01 / 02 / 04），在上一版 M3a 原型上同步。企业、资产、金额、地址、签名、文件和时间均为演示数据。规则、校验与异常分支以 PRD 为准。
+2026-11-10 · existing-system adaptation / console · English 默认，支持中文。基线：PRD `48e5924` 三册（01 / 02 / 04），在上一版 M3a 原型（含 `a1375bd` 驳回后重新发起与金额列对齐）上同步。企业、资产、金额、地址、签名、文件和时间均为演示数据。规则、校验与异常分支以 PRD 为准。
+
+## PRD 48e5924 同步：价值术语统一（2026-11-10）
+
+- **术语**：选择资产表、申请列表（含 `list-reapplied`）、核对页、申请详情、资产详情弹窗和可信资产衔接中的“资产价值 / 应收账款金额”统一为“原始资产价值”；签名所含业务值写作“原始资产价值（完整值）”；确认说明改为“代币数量按原始资产价值 1:1 确定”。英文为 Original asset value / Original asset value (full value)。
+- **铸造结果**（`detail-minted`）：删除“铸造初始资产估值”，“铸造初始单位价值”改为“初始代币单位价值”（1 COU = 1 USD）；卡片头增加“查看代币详情”，与代币编号同为跨模块入口（`tokenDemo001` → M4a 代币详情）。
+- **提交不成功**（`submit-duplicate`）：改为“同一资产已有处理中的申请”，提示“这笔资产已有处理中的发行申请，不能重复提交”，按钮“查看处理中的申请”。“已发行”原因在同一位置以相同方式说明并可进入该申请，未单独出图（演示资产 RA-DEMO-0128 无已发行记录）。
+- 驳回后重新发起、金额列对齐等 `a1375bd` 改动保持不变；画面数仍为 83。
+- 核验：Chromium、`file://`、1280 px，中英文逐屏 `TP.show` 83 屏：无脚本错误、无整页横向溢出、无指向不存在画面的 `data-go`；模块源码无旧术语残留；英文无新增漏译。
+- 待确认（共享层）：可信资产衔接与资产详情弹窗的金额字段由 `_shared/asset-detail.js` 渲染，运行时仍显示“应收账款金额 / Receivable amount”，需在共享层改为“原始资产价值 / Original asset value”。
 
 ## PRD cf4790e 同步：驳回后重新发起 + 金额列对齐（2026-11-09）
 
@@ -71,8 +80,8 @@
 | 申请列表 | `list` 默认（分页，按提交时间由新到旧）；`list-empty` 暂无申请；`list-fail` 列表读取失败；`gate` 未认证企业受限 |
 | 1 选择资产 | `asset-none` 尚未选择资产；`asset-selected` 已选择资产（含从可信资产带入）；`asset-empty` 无可发起资产；`asset-fail` 可选资产读取失败；`asset-changed` 带入资产已不满足条件；`asset-view-0128` 资产详情 RA-DEMO-0128；`asset-view-0166` 资产详情 RA-DEMO-0166；`asset-view-0171` 资产详情 RA-DEMO-0171 |
 | 2 填写申请信息 | `info-none` 申请文件与自动接收地址；`info-files` 申请文件已上传；`info-uploading` 申请文件上传中；`info-upload-failed` 申请文件上传失败；`info-file-invalid` 申请文件不符合要求；`info-file-pdf` 申请文件剩余 1 份 · PDF；`info-file-png` 申请文件剩余 1 份 · PNG |
-| 3 核对并签名提交 | `confirm` 核对申请；`sign-wait` 等待钱包签名；`sign-cancelled` 取消或拒绝签名；`sign-wrong-address` 钱包地址不是登录地址；`sign-wrong-network` 钱包网络不是 Ethereum；`sign-invalid` 签名未通过核对；`submitting` 签名通过，提交中；`submit-success` 提交成功；`submit-fail` 申请保存失败；`submit-unverified` 提交时认证失效；`submit-upstream` 暂时无法确认提交条件；`submit-duplicate` 同一资产已有申请；`submit-asset-changed` 提交时资产已不满足发起条件；`submit-ended` 登录结束或钱包已切换地址；`confirm-empty` 核对申请（未上传文件）；`sign-wait-empty` 等待签名（无申请文件）；`submitting-empty` 提交中（无申请文件）；`submit-success-empty` 提交成功（无申请文件）；`confirm-file-pdf` 核对申请 · PDF；`confirm-file-png` 核对申请 · PNG；`sign-wait-pdf` 等待钱包签名 · PDF；`submitting-pdf` 签名通过，提交中 · PDF；`submit-success-pdf` 提交成功 · PDF；`sign-wait-png` 等待钱包签名 · PNG；`submitting-png` 签名通过，提交中 · PNG；`submit-success-png` 提交成功 · PNG |
-| 申请详情 | `detail-reg` 运营处理中（本次提交）；`detail-ops` 运营处理中；`detail-ops-rejected` 运营驳回 · 可重新发起；`detail-ops-rejected-reapplied` 运营驳回 · 已重新发起；`detail-ops-rejected-ineligible` 运营驳回 · 不能重新发起；`detail-progress` 发行处理中；`detail-minted` 铸造成功；`detail-denied` 无权查看或申请不存在；`detail-fail` 详情读取失败；`detail-signature-fail` 签名记录读取失败；`detail-reg-empty` 运营处理中（无申请文件）；`detail-reg-pdf` 运营处理中（本次提交） · PDF；`detail-reg-png` 运营处理中（本次提交） · PNG |
+| 3 核对并签名提交 | `confirm` 核对申请；`sign-wait` 等待钱包签名；`sign-cancelled` 取消或拒绝签名；`sign-wrong-address` 钱包地址不是登录地址；`sign-wrong-network` 钱包网络不是 Ethereum；`sign-invalid` 签名未通过核对；`submitting` 签名通过，提交中；`submit-success` 提交成功；`submit-fail` 申请保存失败；`submit-unverified` 提交时认证失效；`submit-upstream` 暂时无法确认提交条件；`submit-duplicate` 同一资产已有处理中的申请；`submit-asset-changed` 提交时资产已不满足发起条件；`submit-ended` 登录结束或钱包已切换地址；`confirm-empty` 核对申请（未上传文件）；`sign-wait-empty` 等待签名（无申请文件）；`submitting-empty` 提交中（无申请文件）；`submit-success-empty` 提交成功（无申请文件）；`confirm-file-pdf` 核对申请 · PDF；`confirm-file-png` 核对申请 · PNG；`sign-wait-pdf` 等待钱包签名 · PDF；`submitting-pdf` 签名通过，提交中 · PDF；`submit-success-pdf` 提交成功 · PDF；`sign-wait-png` 等待钱包签名 · PNG；`submitting-png` 签名通过，提交中 · PNG；`submit-success-png` 提交成功 · PNG |
+| 申请详情 | `detail-reg` 运营处理中（本次提交）；`detail-ops` 运营处理中；`detail-ops-rejected` 运营驳回 · 可重新发起；`detail-ops-rejected-reapplied` 运营驳回 · 已重新发起；`detail-ops-rejected-ineligible` 运营驳回 · 不能重新发起；`detail-progress` 发行处理中；`detail-minted` 铸造成功（初始代币单位价值，代币详情入口）；`detail-denied` 无权查看或申请不存在；`detail-fail` 详情读取失败；`detail-signature-fail` 签名记录读取失败；`detail-reg-empty` 运营处理中（无申请文件）；`detail-reg-pdf` 运营处理中（本次提交） · PDF；`detail-reg-png` 运营处理中（本次提交） · PNG |
 | 可信资产衔接 | `asset-reference-ready` 可发行（申请发行入口）；`asset-reference-pending` RA-DEMO-0128 · 发行申请中；`asset-reference-ops` RA-DEMO-0131 · 发行申请中；`asset-reference-progress` RA-DEMO-0143 · 发行申请中；`asset-reference-issued` RA-DEMO-0102 · 已发行；`asset-reference-ops-rejected` RA-DEMO-0160 · 驳回后可发行；`asset-reference-list` 可信资产入口 |
 | 相邻页面衔接 | `leave-confirm` 前往资产可信平台：确认 |
 | 可信资产直接发起 | `info-from-asset` 固定资产 · 申请文件与自动接收地址；`info-from-asset-files` 固定资产 · 申请文件已上传；`confirm-from-asset` 固定资产 · 核对申请；`confirm-from-asset-empty` 固定资产 · 核对申请（未上传文件）；`info-from-asset-file-pdf` 固定资产 · 申请文件剩余 1 份 · PDF；`confirm-from-asset-file-pdf` 固定资产 · 核对申请 · PDF；`info-from-asset-file-png` 固定资产 · 申请文件剩余 1 份 · PNG；`confirm-from-asset-file-png` 固定资产 · 核对申请 · PNG |
