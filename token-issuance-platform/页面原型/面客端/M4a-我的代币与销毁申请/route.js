@@ -5,6 +5,8 @@ TP.registerModule({
     tokens:{certified:'t-list'},
     burn:{certified:'b-list'},
     tokenDemo001:{certified:'t-future'},
+    // M7 NT-C11 机构追加了发行材料：DEMO-TOKEN-021 代币详情（含补充记录）
+    tokenSupplement021:{certified:'t-ready~supplement'},
     // M7 消息前往原业务：销毁申请的当前画面
     burnApplication0031:{certified:'a-success'},
     burnApplication0019:{certified:'a-release-record'},

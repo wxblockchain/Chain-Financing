@@ -24,23 +24,27 @@
 <!-- ============================== 消息列表 ============================== -->
 <section data-screen id="list" data-no="L01" data-group="消息列表" data-name="全部消息 · 已加载全部" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-next="m-c05">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c01..c12" data-seg="all" data-cat="" data-seg-go="unread:list-unread read:list-read" data-cat-go="progress:list-cat-progress compliance:list-cat-compliance" data-more="end" data-markall="markall-all"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c01..c13" data-seg="all" data-cat="" data-seg-go="unread:list-unread read:list-read" data-cat-go="progress:list-cat-progress reminder:list-cat-reminder compliance:list-cat-compliance" data-more="end" data-markall="markall-all"></div></div>
 </section>
 <section data-screen id="list-unread" data-no="L02" data-group="消息列表" data-name="筛选：未读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c01 c02 c05 c07" data-seg="unread" data-cat="" data-seg-go="all:list read:list-read" data-cat-go="compliance:list-filtered" data-more="end" data-markall="markall-all"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c01 c02 c05 c07 c12" data-seg="unread" data-cat="" data-seg-go="all:list read:list-read" data-cat-go="compliance:list-filtered" data-more="end" data-markall="markall-all"></div></div>
 </section>
 <section data-screen id="list-read" data-no="L03" data-group="消息列表" data-name="筛选：已读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c03 c04 c06 c08..c12" data-seg="read" data-cat="" data-seg-go="all:list unread:list-unread" data-cat-go="" data-more="end" data-markall="none"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c03 c04 c06 c08..c11 c13" data-seg="read" data-cat="" data-seg-go="all:list unread:list-unread" data-cat-go="" data-more="end" data-markall="none"></div></div>
 </section>
 <section data-screen id="list-cat-progress" data-no="L04" data-group="消息列表" data-name="筛选：业务办理进度" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c01..c10 c12" data-seg="all" data-cat="progress" data-seg-go="" data-cat-go=":list compliance:list-cat-compliance" data-more="end" data-markall="markall-all"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c01..c10 c13" data-seg="all" data-cat="progress" data-seg-go="" data-cat-go=":list reminder:list-cat-reminder compliance:list-cat-compliance" data-more="end" data-markall="markall-all"></div></div>
 </section>
 <section data-screen id="list-cat-compliance" data-no="L05" data-group="消息列表" data-name="筛选：认证与合规" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c11" data-seg="all" data-cat="compliance" data-seg-go="unread:list-filtered" data-cat-go=":list progress:list-cat-progress" data-more="end" data-markall="none"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c11" data-seg="all" data-cat="compliance" data-seg-go="unread:list-filtered" data-cat-go=":list progress:list-cat-progress reminder:list-cat-reminder" data-more="end" data-markall="none"></div></div>
+</section>
+<section data-screen id="list-cat-reminder" data-no="L10" data-group="消息列表" data-name="筛选：业务提醒" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-next="m-c12">
+<div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c12" data-seg="all" data-cat="reminder" data-seg-go="" data-cat-go=":list progress:list-cat-progress compliance:list-cat-compliance" data-more="end" data-markall="markall-reminder"></div></div>
 </section>
 <section data-screen id="list-filtered" data-no="L06" data-group="消息列表" data-name="筛选无结果（未读 · 认证与合规）" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
@@ -54,42 +58,50 @@
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
 <div class="card" data-inbox-view data-role="client" data-state="never"></div></div>
 </section>
-<section data-screen id="list-returned" data-no="L09" data-group="消息列表" data-name="从详情返回 · 刚读的消息原地变为已读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-unread="3" data-next="markall">
+<section data-screen id="list-returned" data-no="L09" data-group="消息列表" data-name="从详情返回 · 刚读的消息原地变为已读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-unread="4" data-next="markall">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c01..c12" data-read="c05" data-seg="all" data-cat="" data-seg-go="unread:list-unread read:list-read" data-cat-go="progress:list-cat-progress compliance:list-cat-compliance" data-more="end" data-markall="markall"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c01..c13" data-read="c05" data-seg="all" data-cat="" data-seg-go="unread:list-unread read:list-read" data-cat-go="progress:list-cat-progress reminder:list-cat-reminder compliance:list-cat-compliance" data-more="end" data-markall="markall"></div></div>
 </section>
 
 <!-- ============================== 全部已读 ============================== -->
-<section data-screen id="markall" data-no="A01" data-group="全部已读" data-name="确认（全部 · 3 条未读）" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-overlay data-base="list-returned" data-unread="3" data-next="markall-busy">
+<section data-screen id="markall" data-no="A01" data-group="全部已读" data-name="确认（全部 · 4 条未读）" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-overlay data-base="list-returned" data-unread="4" data-next="markall-busy">
 <div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="markall-title"><div class="modal-h"><span class="modal-title" id="markall-title">全部标为已读</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div>
-<div class="modal-b"><p>将当前筛选下的 3 条未读消息标为已读，包括尚未加载的消息。</p>
-<div class="facts-region msg-markall-scope"><dl class="facts cols-2 inset"><div><dt>已读状态</dt><dd>全部</dd></div><div><dt>分类</dt><dd>全部</dd></div></dl></div>
-<div class="note accent"><i data-ico="info"></i><div>只改变你的阅读状态，不代表相关业务已经处理。确认之后新到的消息仍为未读。</div></div></div>
-<div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="markall-busy">标为已读</button></div></div></div>
-</section>
-<section data-screen id="markall-all" data-no="A02" data-group="全部已读" data-name="确认（全部 · 4 条未读）" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-overlay data-base="list" data-next="markall-busy">
-<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="markall-all-title"><div class="modal-h"><span class="modal-title" id="markall-all-title">全部标为已读</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div>
 <div class="modal-b"><p>将当前筛选下的 4 条未读消息标为已读，包括尚未加载的消息。</p>
 <div class="facts-region msg-markall-scope"><dl class="facts cols-2 inset"><div><dt>已读状态</dt><dd>全部</dd></div><div><dt>分类</dt><dd>全部</dd></div></dl></div>
 <div class="note accent"><i data-ico="info"></i><div>只改变你的阅读状态，不代表相关业务已经处理。确认之后新到的消息仍为未读。</div></div></div>
 <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="markall-busy">标为已读</button></div></div></div>
 </section>
-<section data-screen id="markall-busy" data-no="A03" data-group="全部已读" data-name="处理中" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-overlay data-base="list-returned" data-unread="3" data-next="list-done">
+<section data-screen id="markall-all" data-no="A02" data-group="全部已读" data-name="确认（全部 · 5 条未读）" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-overlay data-base="list" data-next="markall-busy">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="markall-all-title"><div class="modal-h"><span class="modal-title" id="markall-all-title">全部标为已读</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div>
+<div class="modal-b"><p>将当前筛选下的 5 条未读消息标为已读，包括尚未加载的消息。</p>
+<div class="facts-region msg-markall-scope"><dl class="facts cols-2 inset"><div><dt>已读状态</dt><dd>全部</dd></div><div><dt>分类</dt><dd>全部</dd></div></dl></div>
+<div class="note accent"><i data-ico="info"></i><div>只改变你的阅读状态，不代表相关业务已经处理。确认之后新到的消息仍为未读。</div></div></div>
+<div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="markall-busy">标为已读</button></div></div></div>
+</section>
+<section data-screen id="markall-busy" data-no="A03" data-group="全部已读" data-name="处理中" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-overlay data-base="list-returned" data-unread="4" data-next="list-done">
 <div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="markall-busy-title"><div class="modal-h"><span class="modal-title" id="markall-busy-title">全部标为已读</span><button type="button" class="btn icon" disabled aria-disabled="true" aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div>
-<div class="modal-b"><p>将当前筛选下的 3 条未读消息标为已读，包括尚未加载的消息。</p>
+<div class="modal-b"><p>将当前筛选下的 4 条未读消息标为已读，包括尚未加载的消息。</p>
 <div class="facts-region msg-markall-scope"><dl class="facts cols-2 inset"><div><dt>已读状态</dt><dd>全部</dd></div><div><dt>分类</dt><dd>全部</dd></div></dl></div>
 <div class="wait" role="status"><span class="spinner" aria-hidden="true"></span><div>正在标为已读<span class="sub">请勿重复提交。</span></div></div></div>
 <div class="modal-f"><button type="button" class="btn" disabled aria-disabled="true">取消</button><button type="button" class="btn primary" disabled aria-disabled="true">处理中…</button></div></div></div>
 </section>
-<section data-screen id="markall-fail" data-no="A04" data-group="全部已读" data-name="失败 · 全部保持原状" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-overlay data-base="list-returned" data-unread="3" data-next="markall-busy">
+<section data-screen id="markall-fail" data-no="A04" data-group="全部已读" data-name="失败 · 全部保持原状" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-overlay data-base="list-returned" data-unread="4" data-next="markall-busy">
 <div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="markall-fail-title"><div class="modal-h"><span class="modal-title" id="markall-fail-title">全部标为已读</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div>
 <div class="modal-b"><div class="note red" role="alert"><i data-ico="alert"></i><div>未能标为已读，所有消息保持原状。请重试。</div></div>
 <div class="facts-region msg-markall-scope"><dl class="facts cols-2 inset"><div><dt>已读状态</dt><dd>全部</dd></div><div><dt>分类</dt><dd>全部</dd></div></dl></div></div>
 <div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-go="markall-busy">重试</button></div></div></div>
 </section>
-<section data-screen id="list-done" data-no="A05" data-group="全部已读" data-name="成功 · 当前筛选已无未读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-unread="0" data-show-toast="已将 3 条消息标为已读">
+<section data-screen id="list-done" data-no="A05" data-group="全部已读" data-name="成功 · 当前筛选已无未读" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-unread="0" data-show-toast="已将 4 条消息标为已读">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-items="c01..c12" data-read="all" data-seg="all" data-cat="" data-seg-go="read:list-read" data-cat-go="progress:list-cat-progress compliance:list-cat-compliance" data-more="end" data-markall="none"></div></div>
+<div class="card" data-inbox-view data-role="client" data-items="c01..c13" data-read="all" data-seg="all" data-cat="" data-seg-go="read:list-read" data-cat-go="progress:list-cat-progress reminder:list-cat-reminder compliance:list-cat-compliance" data-more="end" data-markall="none"></div></div>
+</section>
+
+<section data-screen id="markall-reminder" data-no="A06" data-group="全部已读" data-name="确认（分类：业务提醒 · 1 条未读）" data-layout="app" data-who="certified" data-nav="" data-crumb="消息通知" data-overlay data-base="list-cat-reminder">
+<div class="modal-mask"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="markall-reminder-title"><div class="modal-h"><span class="modal-title" id="markall-reminder-title">全部标为已读</span><button type="button" class="btn icon" data-close aria-label="关闭" title="关闭"><i data-ico="x"></i></button></div>
+<div class="modal-b"><p>将当前筛选下的 1 条未读消息标为已读，包括尚未加载的消息。其他分类的未读消息不受影响。</p>
+<div class="facts-region msg-markall-scope"><dl class="facts cols-2 inset"><div><dt>已读状态</dt><dd>全部</dd></div><div><dt>分类</dt><dd>业务提醒</dd></div></dl></div>
+<div class="note accent"><i data-ico="info"></i><div>只改变你的阅读状态，不代表相关业务已经处理。确认之后新到的消息仍为未读。</div></div></div>
+<div class="modal-f"><button type="button" class="btn" data-close>取消</button><button type="button" class="btn primary" data-toast="该入口尚未纳入原型。">标为已读</button></div></div></div>
 </section>
 
 <!-- ============================== 最近消息预览（顶栏消息入口） ============================== -->
@@ -113,7 +125,7 @@
 <!-- ============================== 未认证企业：可看消息，业务菜单受限 ============================== -->
 <section data-screen id="u-list" data-no="U01" data-group="未认证企业" data-name="消息列表 · 照常查看" data-layout="app" data-who="uncertified" data-nav="" data-crumb="消息通知" data-next="u-c05">
 <div class="content-in"><div class="page-head"><div><h1 class="page-title">消息通知</h1><p class="page-desc">时区 <span data-zone></span></p></div></div>
-<div class="card" data-inbox-view data-role="client" data-prefix="u-" data-items="c01..c12" data-seg="all" data-cat="" data-seg-go="" data-cat-go="" data-more="end" data-markall="u-markall"></div></div>
+<div class="card" data-inbox-view data-role="client" data-prefix="u-" data-items="c01..c13" data-seg="all" data-cat="" data-seg-go="" data-cat-go="" data-more="end" data-markall="u-markall"></div></div>
 </section>
 <section data-screen id="gate" data-no="U02" data-group="未认证企业" data-name="原业务页面：认证引导" data-layout="app" data-who="uncertified" data-nav="assets" data-crumb="业务/可信资产">
 <div class="content-in">
@@ -147,11 +159,12 @@ TP.addCopy({
   "消息通知 · 代币发行平台": "Notifications · Token Issuance Platform",
   "全部标为已读": "Mark all as read", "标为已读": "Mark as read", "处理中…": "Processing…", "正在标为已读": "Marking as read",
   "请勿重复提交。": "Do not submit again.", "取消": "Cancel", "关闭": "Close", "返回列表": "Back to list",
-  "将当前筛选下的 3 条未读消息标为已读，包括尚未加载的消息。": "Mark the 3 unread messages in the current filter as read, including messages not loaded yet.",
   "将当前筛选下的 4 条未读消息标为已读，包括尚未加载的消息。": "Mark the 4 unread messages in the current filter as read, including messages not loaded yet.",
+  "将当前筛选下的 5 条未读消息标为已读，包括尚未加载的消息。": "Mark the 5 unread messages in the current filter as read, including messages not loaded yet.",
+  "将当前筛选下的 1 条未读消息标为已读，包括尚未加载的消息。其他分类的未读消息不受影响。": "Mark the 1 unread message in the current filter as read, including messages not loaded yet. Unread messages in other categories are not affected.",
   "只改变你的阅读状态，不代表相关业务已经处理。确认之后新到的消息仍为未读。": "This only changes your read status and does not mean the related business has been handled. Messages that arrive after you confirm stay unread.",
   "未能标为已读，所有消息保持原状。请重试。": "Could not mark as read. All messages are unchanged. Please try again.",
-  "已将 3 条消息标为已读": "3 messages marked as read",
+  "已将 4 条消息标为已读": "4 messages marked as read",
   "消息读取失败": "Could not load the message", "暂时无法读取，这条消息仍为未读。请稍后重试。": "Unable to load right now. This message is still unread. Please try again later.",
   "未找到这条消息": "Message not found", "消息不存在或无法查看。": "This message does not exist or cannot be viewed.",
   "需先在资产可信平台完成认证": "Complete verification on the Asset Trust Platform first",
@@ -163,10 +176,10 @@ TP.addCopy({
   "消息列表": "Message list", "全部已读": "Mark all as read", "最近消息预览": "Recent messages", "消息详情异常": "Message detail exceptions",
   "逐条消息详情": "Message details", "未认证企业": "Unverified company", "未认证企业 · 逐条消息详情": "Unverified company · message details",
   "全部消息 · 已加载全部": "All messages · all loaded", "筛选：未读": "Filter: unread", "筛选：已读": "Filter: read",
-  "筛选：业务办理进度": "Filter: business progress", "筛选：认证与合规": "Filter: verification & compliance",
+  "筛选：业务办理进度": "Filter: business progress", "筛选：业务提醒": "Filter: business reminders", "筛选：认证与合规": "Filter: verification & compliance",
   "筛选无结果（未读 · 认证与合规）": "No results (unread · verification & compliance)", "读取失败": "Load failed", "还没有消息（空）": "No messages yet (empty)",
   "从详情返回 · 刚读的消息原地变为已读": "Back from details · the message just read is now read in place",
-  "确认（全部 · 3 条未读）": "Confirm (all · 3 unread)", "确认（全部 · 4 条未读）": "Confirm (all · 4 unread)",
+  "确认（全部 · 4 条未读）": "Confirm (all · 4 unread)", "确认（全部 · 5 条未读）": "Confirm (all · 5 unread)", "确认（分类：业务提醒 · 1 条未读）": "Confirm (business reminders · 1 unread)",
   "处理中": "Processing", "失败 · 全部保持原状": "Failed · nothing changed", "成功 · 当前筛选已无未读": "Success · no unread in the current filter",
   "最近 10 条": "Latest 10", "还没有消息": "No messages yet", "读取失败 · 保留未读数": "Load failed · unread count kept",
   "详情读取失败 · 仍为未读": "Detail load failed · still unread", "已读保存失败 · 正文照常可读": "Read status not saved · content still readable",

@@ -60,6 +60,8 @@
         var r=TP.routes[key];if(r && typeof r==='object' && r[sourceWho] && !r[who]) r[who]=r[sourceWho];
       });
     }
+    // 路由目标可写成“画面 id~分区名”，打开后定位到画面内 data-section 对应的分区（如消息前往“补充记录”）。
+    TP.initialSection=params.get('previewSection')||null;
     var target=screen(location.hash.slice(1)), base=screen(params.get('previewBase'));
     TP.initialNavigationOptions={};
     if(target && target.hasAttribute('data-overlay') && base && !base.hasAttribute('data-overlay')){
@@ -77,16 +79,17 @@
     if(TP.language) url.searchParams.set('previewLang',TP.language);
     if(TP.zone) url.searchParams.set('previewZone',TP.zone);
     url.searchParams.set('previewWho',who||'none');
-    ['previewBase','previewGate'].forEach(function(key){url.searchParams.delete(key);});
+    ['previewBase','previewGate','previewSection'].forEach(function(key){url.searchParams.delete(key);});
     if(base) url.searchParams.set('previewBase',base);
     if(gate) url.searchParams.set('previewGate',gate);
   }
   function routeHref(end,key,who){
     var route=routes[end][key];
     if(!route || !Object.prototype.hasOwnProperty.call(route.screens,who)) return null;
-    var target=new URL(route.module.url.href);
-    target.hash=route.screens[who];
+    var target=new URL(route.module.url.href), parts=String(route.screens[who]).split('~');
+    target.hash=parts[0];
     putContext(target,who,route.bases[who]);
+    if(parts[1]) target.searchParams.set('previewSection',parts[1]);
     return target.href;
   }
 

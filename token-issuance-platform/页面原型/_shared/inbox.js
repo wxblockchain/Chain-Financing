@@ -126,6 +126,19 @@
          'Issuance application '+app+' has entered minting. Please wait for the on-chain result.'],
       ref:[['申请编号',app]], go:go?{key:go, nav:'issue'}:null};
   }
+  /* M4b · 机构追加了发行材料（NT-C11 发原发行企业 / NT-A10 发全体运营），业务提醒；发生时间为上传时间。
+     上传机构名称取上传时的名称；机构类型按选定名称原样展示，中英文正文都不翻译。不含文件名、上传说明与访问记录。 */
+  function supplement(id, ops, token, asset, inst, type, files, at, go){
+    var zh = '代币 '+token+' 的发行机构 '+inst+'（'+type+'）追加了 '+files+' 份发行材料。',
+        en = inst+' ('+type+'), an issuing institution of token '+token+', added '+files+' file(s) of issuance materials. ';
+    return {id:id, cat:'reminder', at:at, read:true,
+      t:['机构追加了发行材料','Issuance materials added by an institution'],
+      b:ops ? [zh+'发行人：'+A+'；资产：'+asset+'；上传时间：{t:'+at+'}。本消息仅供知悉。',
+               en+'Issuer: '+A+'; asset: '+asset+'; uploaded at: {t:'+at+'}. This message is for information only.']
+            : [zh+'资产：'+asset+'；上传时间：{t:'+at+'}。请在代币详情的补充记录中查看。',
+               en+'Asset: '+asset+'; uploaded at: {t:'+at+'}. View them in the supplementary records of the token details.'],
+      ref:[['代币编号',token],['资产编号',asset]], go:ops?{key:go}:{key:go, nav:'tokens'}};
+  }
   /* M5 · 密码变更通知（NT-LG-03）：设置 / 重置 / 修改三种情形各一套标题与正文；不跳转。
      官方客服邮箱由需求方上线后提供；提供前按 PRD 推荐不写“如非本人操作”的求助一句，其余照常。 */
   var PASSWORD = {
@@ -146,7 +159,7 @@
   }
 
   var DATA = {
-    /* 管理端 · 运营：全体运营（各自记录已读）+ 本人。共 27 条，6 条未读，第一批 20 条。 */
+    /* 管理端 · 运营：全体运营（各自记录已读）+ 本人。共 28 条，7 条未读，第一批 20 条。 */
     ops: [
       password('o01','changed','2026-11-07T02:10:00Z',true),
       Object.assign(burnA06('o02','BA-DEMO-0040','RA-DEMO-0208','12,345.675','2026-11-06T05:31:00Z','非平台入口','burnApplication0040'), {read:false}),
@@ -164,20 +177,22 @@
       burnA04('o11','BA-DEMO-0024','RA-DEMO-0201','2026-10-28T06:30:00Z','2026-10-28T06:42:00Z','burnApplication0024'),
       Object.assign(burnA08('o12','BA-DEMO-0030','RA-DEMO-0203','2026-10-28T06:40:00Z','burnApplication0030'), {read:false}),
       burnA04('o13','BA-DEMO-0021','RA-DEMO-0206','2026-10-28T06:30:00Z','2026-10-28T06:40:00Z','burnApplication0021'),
-      mintA03('o14','IA-DEMO-0211','2026-06-01T04:10:00Z'),
-      mintA05('o15','IA-DEMO-0208','2026-06-01T03:50:00Z'),
-      mintA03('o16','IA-DEMO-0208','2026-06-01T03:35:00Z'),
-      mintA03('o17','IA-DEMO-0206','2026-06-01T03:20:00Z'),
-      mintA03('o18','IA-DEMO-0205','2026-06-01T03:15:00Z'),
-      mintA05('o19','IA-DEMO-0204','2026-06-01T03:12:00Z'),
-      mintA03('o20','IA-DEMO-0204','2026-06-01T03:10:00Z'),
-      mintA03('o21','IA-DEMO-0203','2026-06-01T03:05:00Z'),
-      mintA03('o22','IA-DEMO-0202','2026-06-01T03:02:00Z'),
-      mintA03('o23','IA-DEMO-0201','2026-06-01T03:00:00Z'),
-      mintA03('o24','IA-DEMO-0203','2026-05-31T09:20:00Z'),
-      mintA03('o25','IA-DEMO-0202','2026-05-31T09:10:00Z'),
-      mintA03('o26','IA-DEMO-0201','2026-05-31T09:00:00Z'),
-      password('o27','set','2026-05-20T02:00:00Z',true)
+      /* DEMO-TOKEN-021 铸造后由示例机构 C 追加 1 份材料（与 M4b 补充记录一致） */
+      Object.assign(supplement('o14',true,'DEMO-TOKEN-021','RA-DEMO-0201',C,'资产托管机构',1,'2026-07-15T02:00:00Z','ledgerTokenSupplement021'), {read:false}),
+      mintA03('o15','IA-DEMO-0211','2026-06-01T04:10:00Z'),
+      mintA05('o16','IA-DEMO-0208','2026-06-01T03:50:00Z'),
+      mintA03('o17','IA-DEMO-0208','2026-06-01T03:35:00Z'),
+      mintA03('o18','IA-DEMO-0206','2026-06-01T03:20:00Z'),
+      mintA03('o19','IA-DEMO-0205','2026-06-01T03:15:00Z'),
+      mintA05('o20','IA-DEMO-0204','2026-06-01T03:12:00Z'),
+      mintA03('o21','IA-DEMO-0204','2026-06-01T03:10:00Z'),
+      mintA03('o22','IA-DEMO-0203','2026-06-01T03:05:00Z'),
+      mintA03('o23','IA-DEMO-0202','2026-06-01T03:02:00Z'),
+      mintA03('o24','IA-DEMO-0201','2026-06-01T03:00:00Z'),
+      mintA03('o25','IA-DEMO-0203','2026-05-31T09:20:00Z'),
+      mintA03('o26','IA-DEMO-0202','2026-05-31T09:10:00Z'),
+      mintA03('o27','IA-DEMO-0201','2026-05-31T09:00:00Z'),
+      password('o28','set','2026-05-20T02:00:00Z',true)
     ],
     /* 管理端 · 机构（示例机构 C，资产托管机构）：本机构 + 本人 */
     reg: [
@@ -224,7 +239,9 @@
         b:['你的认证状态已变更，需要企业认证的业务暂不可用。你仍可查看用户信息、企业信息和消息。请前往资产可信平台查看当前认证状态。',
            'Your verification status has changed. Business actions that require company verification are temporarily unavailable. You can still view your user information, company information and messages. Visit the Asset Trust Platform to check your current verification status.'],
         go:{key:'me', page:'前往用户信息'}},
-      Object.assign(mintC03('c12','IA-DEMO-0008','2026-05-12T03:00:20Z',null), {denied:true})
+      /* DEMO-TOKEN-021 铸造后由示例机构 C 追加 1 份材料（与 M4a 补充记录一致） */
+      Object.assign(supplement('c12',false,'DEMO-TOKEN-021','RA-DEMO-0201',C,'资产托管机构',1,'2026-07-15T02:00:00Z','tokenSupplement021'), {read:false}),
+      Object.assign(mintC03('c13','IA-DEMO-0008','2026-05-12T03:00:20Z',null), {denied:true})
     ]
   };
   var LIST = {client:'list', ops:'o-list', reg:'r-list', aud:'d-list'}, PREVIEW = {client:'preview', ops:'o-preview', reg:'r-preview', aud:'d-preview'};

@@ -24,7 +24,7 @@
       {key:'assets',  label:'可信资产', icon:'asset'}
     ]}
   ];
-  TP.addCopy({'销毁记录':'Burn records','解除托管':'Custody release','机构':'Institution','机构管理':'Institutions','机构待办':'Institution tasks','资产托管机构':'Asset custodian','本机构已停用。':'This institution is disabled.'});
+  TP.addCopy({'销毁记录':'Burn records','解除托管':'Custody release','机构':'Institution','机构管理':'Institutions','机构待办':'Institution tasks','本机构已停用。':'This institution is disabled.'});
   TP.NAV_BY = {ops:ops, opsnew:ops, reg:reg, regoff:reg, regnew:reg, regd:reg};
   // 账号入口的演示数据：机构账号名称即机构名称；停用机构、改邮箱是同一账号的展示变体。
   var opsAcc = {name:'运营示例账号', email:'ops-demo@example.com', role:'运营管理员'};
