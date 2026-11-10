@@ -323,7 +323,7 @@
     '已确权':'Confirmed','已撤销确权':'Confirmation revoked','原始到期日':'Original due date','未结清':'Unsettled','已结清':'Settled','未逾期':'Not overdue','已逾期':'Overdue',
     '暂时无法获取':'Temporarily unavailable','可发行':'Available','发行申请中':'Application in progress','已驳回':'Rejected','已发行':'Issued',
     '确权 · 结清 · 逾期':'Confirm · Settle · Overdue','资产价值':'Asset value','操作':'Actions',
-    '资产详情':'Asset details','关联记录':'Related records','发行申请':'Issuance application','申请状态':'Application status',
+    '资产详情':'Asset details','关联记录':'Related records','申请明细':'Application records','发行申请':'Issuance application','申请状态':'Application status',
     '资产概览':'Overview','详情信息导航':'Detail sections',
     '返回列表':'Back to list','重试':'Retry','请稍后重试。':'Please try again later.','关闭':'Close','默认':'Default','读取失败':'Load failed',
     '待运营审核':'Pending operator review','铸造成功':'Minted','代币':'Token','应收账款 · 汽车贸易 · 时区':'Accounts receivable · Automotive trade · Time zone'

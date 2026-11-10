@@ -225,12 +225,21 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .token-list :is(th,td):last-child{padding-right:var(--sp-4)}
 .token-list .btn-link.mono,.burn-list .btn-link.mono{font-weight:500;white-space:nowrap}
 .token-list .tag{max-width:100%;white-space:normal;margin-top:0}
-/* M4b ledgers: the M4a token columns plus issuer (eleven columns); network stays first. Columns size by content and
-   scroll inside the table below 1120 px, keeping the action column pinned on the right. */
+/* 申请/解除记录保留密集列表的阅读下限；代币台账通过 fit-width 使用语义列宽。 */
 .token-list.ledger-list{table-layout:auto;min-width:1120px}
-/* 企业端我的代币列表不含地址列，1280 起整表放下，不再表内横向滚动 */
-.token-list.ledger-list.fit-width{min-width:0}
-.ledger-list .c-issuer{width:13%}
+/* M4a 九列与 M4b 十列台账：为单位价值、数量和金额分别留宽，操作不再占用 100 px。
+   长翻译可换行；窄视口只在表内滚动，沿用固定操作列。 */
+table.tbl.token-list.fit-width{min-width:var(--asset-table-min)}
+.fit-width .c-network{width:10%}.fit-width .c-type{width:6%}.fit-width .c-id{width:13%}
+.fit-width .c-qty,.fit-width .c-value{width:12%}.fit-width .c-unit{width:11%}
+.fit-width .c-due{width:9%}.fit-width .c-progress{width:11%}.fit-width .c-act{width:6%}
+.fit-width .c-issuer{width:10%}
+table.tbl.fit-width :is(th,td){min-width:0;padding-inline:var(--sp-1)}
+table.tbl.fit-width :is(th,td):first-child{padding-left:var(--sp-4)}
+table.tbl.fit-width :is(th,td):last-child{padding-right:var(--sp-4)}
+table.tbl.fit-width .col-act{width:auto}
+.tbl.fit-width td.unit-value{min-width:96px}
+.tbl.fit-width .tag{min-width:min-content;overflow-wrap:normal;word-break:normal}
 .ledger-list :is(th,td):nth-child(4){min-width:96px}.ledger-list :is(th,td):nth-child(10){min-width:100px}
 /* 代币单位价值“1 COU =”与数值可分两行，为密集列表让出宽度。 */
 .ledger-list td.num.unit-value{white-space:normal}
@@ -730,6 +739,14 @@ body:has(.institution-form:not([hidden]) .anchored-actions) .demo-panel{bottom:c
 .detail-table .tbl :is(th,td):first-child{padding-left:var(--sp-4)}
 .detail-table .tbl :is(th,td):last-child{padding-right:var(--sp-4)}
 .detail-table .tbl .num{width:1%}
+/* M2 关联申请：编号、状态与机构各占稳定区域，同一资产的申请逐行对照。 */
+table.tbl.application-records{table-layout:fixed;min-width:440px}
+.tbl.application-records th:first-child{width:45%}
+table.tbl.application-records.with-institutions{min-width:640px}
+.tbl.application-records.with-institutions th:first-child{width:28%}
+.application-records.with-institutions th:nth-child(2){width:30%}
+.tbl.application-records :is(th,td){white-space:normal;overflow-wrap:anywhere}
+.application-records td:first-child{white-space:nowrap}
 .sub-h+.detail-table .tbl thead th{border-top:0}
 .asset-pagination{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-3) var(--card-pad);border-top:1px solid var(--border);font-size:var(--fs-13);color:var(--muted);flex-wrap:wrap}
 .pagination-controls{display:flex;gap:var(--sp-1)}
@@ -1010,11 +1027,18 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
   :is(.review-screen,.operation-history) .operation-meta{grid-template-columns:minmax(0,1fr)}
 }
 /* 企业申请的文件分区：同一清单用行分隔，不为每一份文件再套卡片。 */
-:is(.issuance-files,.review-screen,.institution-detail) .file-list{gap:0}
-:is(.issuance-files,.review-screen,.institution-detail) .file-row{border:0;border-radius:0;border-top:1px solid var(--row-line);padding:var(--sp-3) 0;align-items:flex-start}
-:is(.issuance-files,.review-screen,.institution-detail) .file-row:first-child{border-top:0}
-:is(.issuance-files,.review-screen,.institution-detail) .file-row>svg.i{margin-top:var(--sp-1);color:var(--faint)}
-:is(.issuance-files,.review-screen,.institution-detail) .file-actions{align-self:center}
+:is(.issuance-files,.review-screen,.institution-detail,.material-upload) .file-list{gap:0}
+:is(.issuance-files,.review-screen,.institution-detail,.material-upload) .file-row{border:0;border-radius:0;border-top:1px solid var(--row-line);padding:var(--sp-3) 0;align-items:flex-start}
+:is(.issuance-files,.review-screen,.institution-detail,.material-upload) .file-row:first-child{border-top:0}
+:is(.issuance-files,.review-screen,.institution-detail,.material-upload) .file-row>svg.i{margin-top:var(--sp-1);color:var(--faint)}
+:is(.issuance-files,.review-screen,.institution-detail,.material-upload) .file-actions{align-self:center}
+/* 铸造后材料沿用铸造前上传的字段/文件层级；上下文紧凑，操作留在既有弹窗底栏。 */
+.material-upload .facts>div{padding-block:var(--sp-3)}
+.material-upload .field-caption{font-size:var(--ui-field-label);font-weight:500;color:var(--muted)}
+.material-upload .upload-box{display:grid;grid-template-columns:minmax(0,1fr) auto}
+.material-upload .modal-b{scroll-padding-block:var(--sp-4)}
+.material-upload :is(button,textarea){scroll-margin-block:var(--sp-2)}
+@media(max-width:600px){.material-upload .upload-box{grid-template-columns:minmax(0,1fr)}.material-upload .upload-box>.btn{justify-self:start}}
 .issuance-files .card-b{padding-top:var(--sp-3);padding-bottom:var(--sp-4)}
 .issuance-files .form-sheet{gap:var(--sp-3)}
 .issuance-files .card-head{padding-block:var(--sp-4);flex-wrap:wrap}
@@ -1035,7 +1059,7 @@ html:has(.issuance-form:not([hidden])){scroll-padding-top:calc(var(--app-header-
 .issuance-review-support{border-top:1px solid var(--border)}
 .issuance-review-support>.issuance-files{padding-top:0}
 .issuance-review-support>.card-b{min-width:0}
-.issuance-files .file-failed{border-left:2px solid var(--danger);padding-inline:var(--sp-3);background:var(--danger-bg)}
+:is(.issuance-files,.material-upload) .file-failed{border-left:2px solid var(--danger);padding-inline:var(--sp-3);background:var(--danger-bg)}
 .issuance-files .file-status-failed{color:var(--danger);font-weight:500}
 @media(min-width:1280px){
   .issuance-review-overview,.issuance-review-support{grid-template-columns:repeat(2,minmax(0,1fr))}
