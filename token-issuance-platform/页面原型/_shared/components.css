@@ -306,6 +306,7 @@ table.contract-list{table-layout:fixed;min-width:960px}
 .tbl .contract-actions .actlink:last-child{margin-right:0}
 /* 放大或矮视口时，为已有画面目录按钮留出底部空间，避免遮挡确认。 */
 .modal-mask.contract-mask{padding-bottom:calc(var(--ctrl-h-sm) + var(--sp-7))}
+.modal-mask.confirmation-mask{padding-bottom:calc(var(--ctrl-h-sm) + var(--sp-7))}
 
 /* ---------- 提示条：说明 / 警示 / 错误；左侧 3px 色条 ---------- */
 .note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid var(--border);border-left:3px solid var(--border-strong);
@@ -313,6 +314,7 @@ table.contract-list{table-layout:fixed;min-width:960px}
 .note svg.i{margin-top:2px}
 .note b{color:inherit;font-weight:600}
 .note .grow{flex:1;min-width:0}
+.note-copy{display:grid;gap:var(--sp-2);min-width:0;font-size:var(--ui-field-value)}
 .note.accent{background:var(--accent-soft);border-color:var(--accent-border);border-left-color:var(--accent);color:var(--text)}
 .note.warn{background:var(--warn-bg);border-color:var(--warn-border);border-left-color:var(--warn);color:var(--warn)}
 .note.red{background:var(--danger-bg);border-color:var(--danger-border);border-left-color:var(--danger);color:var(--danger)}
@@ -496,8 +498,12 @@ table.contract-list{table-layout:fixed;min-width:960px}
 .account-profile .content-in{max-width:var(--detail-sheet-max);margin-inline:0}
 .institution-form .card-b.form{container:institution-form / inline-size}
 @container institution-form (min-width:1040px){.institution-form .form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-/* 联系电话：区号下拉（“+86 中国”）+ 号码，同一行。 */
+/* 联系电话：英文区号为长名称留位；窄字段内换行，不挤压号码框。 */
+.field:has(>.phone-control){container:phone-field / inline-size}
 .phone-control{display:grid;grid-template-columns:minmax(0,var(--phone-code-w)) minmax(0,1fr);gap:var(--sp-2)}
+:lang(en) .phone-control{grid-template-columns:minmax(0,var(--phone-code-w-en)) minmax(0,1fr)}
+.phone-control>.inp{min-width:0}
+@container phone-field (max-width:335px){:lang(en) .phone-control{grid-template-columns:minmax(0,1fr)}}
 .institution-identity{display:flex;align-items:baseline;gap:var(--sp-2);font-size:var(--ui-field-label)}
 .institution-identity .mono{color:var(--text)}
 .institution-detail .address-fact{grid-column:1/-1}
