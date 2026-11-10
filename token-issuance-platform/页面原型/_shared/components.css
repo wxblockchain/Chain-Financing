@@ -1074,6 +1074,22 @@ body:has([data-screen]:not([hidden]) .workflow-footer.is-stuck) .demo-panel{bott
 .issuance-form .form-section .facts{padding-top:0;padding-bottom:var(--sp-3)}
 .issuance-form .form-section .facts>div{padding-block:var(--sp-3)}
 .issuance-form .workflow-context [data-zone]{display:inline}
+/* 重新发起：固定资产摘要与文件不沿用的说明分层；时区跟随到期值。 */
+.issuance-reapply-context{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:var(--sp-3) var(--sp-6);padding-block:var(--sp-4)}
+.issuance-reapply-context .context-label{font-size:var(--fs-12)}
+.issuance-reapply-context .context-value{display:block;margin-top:var(--sp-1);color:var(--text);font-weight:500}
+.issuance-reapply-context .context-zone{display:block;margin-top:var(--sp-1);font-size:var(--fs-12)}
+.issuance-reapply-context .context-note{grid-column:1/-1;padding-top:var(--sp-3);border-top:1px solid var(--border)}
+@media(max-width:800px){.issuance-reapply-context{grid-template-columns:minmax(0,1fr)}}
+/* 驳回详情：后续去向独立于进度标题；原始意见与处理时间分栏，全文保持可读。 */
+.issuance-outcome{margin:var(--sp-3) var(--card-pad) var(--sp-1);padding:var(--sp-3) var(--sp-4);border-left:2px solid var(--border-strong);background:var(--card-2);color:var(--muted);font-size:var(--fs-13);overflow-wrap:anywhere}
+.issuance-outcome .btn-link{font-size:inherit}
+.issuance-outcome .tag{margin-left:var(--sp-2);vertical-align:middle}
+.issuance-rejection-body{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-4) var(--sp-6)}
+.issuance-rejection-meta{margin:0;font-size:var(--fs-13)}
+.issuance-rejection-meta time{display:block;margin-top:var(--sp-1);font-variant-numeric:tabular-nums}
+.issuance-rejection .rejection-text{margin:0;padding-left:var(--sp-4);border-left:2px solid var(--danger-border);line-height:1.8}
+@media(min-width:1280px){.issuance-rejection-body{grid-template-columns:minmax(0,1fr) minmax(0,4fr)}}
 /* M3a 核对画面：原字段按资产/接收地址、文件/提交说明成组对照，不改变确认条件。 */
 /* 预留顶栏/吸底栏的滚动安全区，Tab 聚焦不落在覆盖区域。 */
 html:has(.issuance-form:not([hidden])){scroll-padding-top:calc(var(--app-header-h) + var(--sp-4));scroll-padding-bottom:calc(var(--ctrl-h) + var(--sp-7) + var(--sp-4))}
