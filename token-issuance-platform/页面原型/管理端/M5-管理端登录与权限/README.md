@@ -1,6 +1,6 @@
 # M5 · 管理端登录与权限、机构管理
 
-2026-11-10 · PRD 基线 `506be2b`（前序 `48e5924`）/ existing-system adaptation / console · 简体中文与 English。
+2026-11-10 · PRD 基线 `c818619`（前序 `506be2b`）/ existing-system adaptation / console · 简体中文与 English。
 
 ## 基线与范围
 
@@ -17,6 +17,14 @@
 - 机构停用影响说明按 PRD 补“铸造成功后至代币销毁前的材料追加”继续有效：`disable-confirm`、`disable-busy` 改文案；`disable-fail` 原只有失败提示，补同一影响说明（失败后重试前仍可见），中英文同步。
 - 管理端登录与权限 PRD 本轮无变化；其余画面与 c284aef 的布局 / 联系电话修订继承未改。
 - 核验：Chromium 1280 px，中文 / English 各遍历 152 屏，无脚本错误、无整页横向溢出、无失效 data-go；截图自查停用确认与失败。
+
+## PRD 跟进（2026-11-10，`c818619`）
+
+承接 UI 核验版本 `dc3297c`，只改受影响画面，画面总数、路由和主流程不变：
+
+- 添加机构 8 屏（`invite-empty`、`invite-ready`、`invite-file-error`、`invite-error`、`invite-uploading`、`invite-busy`、`invite-fail`、`invite-email-unavailable`）去掉“初始密码”输入项，“登录账号”只保留登录邮箱；说明改为“添加成功后，平台随机生成初始密码，只通过开通邮件发送至登录邮箱。机构首次登录须修改密码”。添加结果、详情等任何画面均不展示初始密码。
+- `invite-mail-fail` 提示改为请运营线下告知机构用登录邮箱通过“忘记密码”完成首次密码设置；无重发入口，沿用既有 `recover-initial-ready → login-recovered-initial` 画面表达找回即完成首次设密。
+- 安全记录改为长期保留，无前台入口，画面不涉及。开发人员重置凭据、运营账号初始密码仍由开发人员设置，相关画面不变。
 
 ## PRD 跟进（2026-11-10，`506be2b`）
 
