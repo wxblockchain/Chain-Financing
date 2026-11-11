@@ -97,8 +97,8 @@
       /* ---- 质押情况与项目提醒 */
       'financing.project.coverage_shortfall':{
         title:pair('Pledge shortfall','项目出现质押不足'),
-        body:pair('Project {project_name} ({project_id}) had a pledge shortfall at {occurred_at}. The pledge gap was {shortfall} USD, requiring additional assets valued at {additional_value} USD. Additional pledges count toward the eligible borrowing limit once they are successfully recorded on chain.',
-          '项目 {project_name}（{project_id}）于 {occurred_at} 出现质押不足，质押缺口 {shortfall} USD，需追加资产价值 {additional_value} USD。追加质押上链成功即计入有效质押额。')},
+        body:pair('Project {project_name} ({project_id}) had a pledge shortfall at {occurred_at}. The pledge gap was {shortfall} USDT, requiring additional assets valued at {additional_value} USD. Additional pledges count toward the eligible borrowing limit once they are successfully recorded on chain.',
+          '项目 {project_name}（{project_id}）于 {occurred_at} 出现质押不足，质押缺口 {shortfall} USDT，需追加资产价值 {additional_value} USD。追加质押上链成功即计入有效质押额。')},
       'financing.project.coverage_restored':{
         title:pair('Pledge shortfall resolved','本轮质押不足已解除'),
         body:pair('The current pledge shortfall for project {project_name} ({project_id}) was resolved at {occurred_at}. Check the project\'s current pledge sufficiency. Resolution of this alert does not mean the financing debt has been settled.',

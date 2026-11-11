@@ -62,8 +62,7 @@
         tokenNo:'TK20261019'+String(n).padStart(6,'0'),
         name:['Demo receivable token '+k,'示例应收账款代币 '+k],symbol:'DRT'+k,icon:true,
         standard:'ERC-3525',type:'ERC-3525-应收账款',slot:String(1000+n),tokenId:String(n),decimals:'18',
-        qty:'1000000.00',value:'1000000.00',
-        rate:{pair:'USD/USD',value:'1.000000',at:now-6*D,source:['Issuance-time snapshot · demo rate source','签发时快照 · 示例汇率来源']},
+        qty:'1000000.00',adj:[],
         chain:['Ethereum','Ethereum'],chainId:'1',contract:{name:'DemoReceivableToken3525',address:addr(1)},
         mintTx:hash(s+1),mintAt:now-6*D,initial:addr(s+2),
         holders:[{addr:addr(s+2),qty:'600000.00'},{addr:addr(s+3),qty:'400000.00'}],
@@ -71,7 +70,7 @@
         audit:{done:['Audited','已审计'],firm:['Demo audit firm','示例审计机构'],date:'2026-09-20'},
         issuer:COMPANIES.c1,sameAsSeller:true,
         asset:{type:['Accounts receivable','应收账款'],no:'AR-DEMO-2026'+String(n).padStart(4,'0'),
-          seller:COMPANIES.c1,buyer:COMPANIES.c2,amount:'1000000.00',ccy:'USD',start:'2026-10-01',due:'2027-03-31',
+          seller:COMPANIES.c1,buyer:COMPANIES.c2,amount:'1000000.00',start:'2026-10-01',due:'2027-03-31',
           contracts:['DEMO-CT-2026-'+k],invoices:['DEMO-INV-'+k+'01','DEMO-INV-'+k+'02'],
           trade:['Trade in goods','货物贸易'],settle:['Telegraphic transfer (T/T)','电汇（T/T）'],
           terms:['Payment 180 days after invoice date','发票日后 180 天付款'],recourse:['With recourse','有追索'],
@@ -98,6 +97,12 @@
         decisions:[],dupes:[],changed:false,events:[]
       };
       Object.assign(r,o||{});
+      /* 代币价值变动记录：第一条为铸造时的初始单位价值，之后每次链上生效的调整各一条（时间正序存放）。
+         代币单位价值按上游完整值保留为字符串；代币价值 = 代币数量 × 当前单位价值，展示两位小数。 */
+      let unit='1';
+      r.hist=[{at:r.mintAt,before:null,after:unit,tx:r.mintTx}];
+      r.adj.forEach(([at,next],i)=>{r.hist.push({at,before:unit,after:next,tx:hash(s+40+i)});unit=next;});
+      r.unit=unit;r.value=(Number(r.qty)*Number(unit)).toFixed(2);
       /* 每份材料随哪次提交入库：沿用本条记录的提交序次。 */
       [...r.docs,...r.proofs].forEach(f=>{f.seq=r.seq;});
       if(!r.events.length)r.events=[submitEvent(r,r.submittedAt,1)];
@@ -116,11 +121,12 @@
 
     const rows=[];
     /* 01 待审核 · 有效 · 资料齐全：通过与退回两条办理路径的主样例。 */
-    rows.push(base(1,{submittedAt:now-26*H,holders:[{addr:addr(30),qty:'600000.00'},{addr:addr(31),qty:'250000.00'},{addr:addr(32),qty:'150000.00'}]}));
+    /* 待审核期间链上调整了单位价值：不算资料更新，详情按最新值展示，不阻止通过。 */
+    rows.push(base(1,{submittedAt:now-26*H,adj:[[now-20*H,'0.95']],holders:[{addr:addr(30),qty:'600000.00'},{addr:addr(31),qty:'250000.00'},{addr:addr(32),qty:'150000.00'}]}));
     /* 02 第 2 次提交：上一次因法律意见书缺签署页被退回，原因保留在操作记录。 */
     {const r=base(2,{platform:'A',seq:2,submittedAt:now-5*H,issuer:COMPANIES.c3,
-      asset:{...base(2).asset,seller:COMPANIES.c3,buyer:COMPANIES.c4,amount:'920000.00',ccy:'EUR',due:'2027-02-28'},
-      qty:'1000040.00',value:'1000040.00',rate:{pair:'EUR/USD',value:'1.087000',at:now-9*D,source:['Issuance-time snapshot · demo rate source','签发时快照 · 示例汇率来源']}});
+      asset:{...base(2).asset,seller:COMPANIES.c3,buyer:COMPANIES.c4,amount:'1000040.00',due:'2027-02-28'},
+      qty:'1000040.00'});
      r.decisions=[{result:'returned',at:now-3*D,reviewer:CHEN,reason:R_OPINION}];
      r.events=[submitEvent(r,now-4*D,1),returnEvent(now-3*D,R_OPINION,CHEN),resubmitEvent(r,now-5*H,2)];rows.push(r);}
     /* 03 待审核期间应收账款到期，代币失效：通过不可用，退回可用。 */
@@ -137,7 +143,7 @@
       docs:b.docs.filter(d=>['assign','prospectus','opinion'].includes(d.cat))}));}
 
     /* 05 / 06 链上代币重复：链 ID、合约地址、slot 相同，代币编号与来源平台不同；05 已通过，06 只能退回。 */
-    {const a=base(5,{platform:'A',status:'approved',slot:'2051',contract:{name:'DemoReceivableToken3525',address:addr(5)},submittedAt:now-12*D});
+    {const a=base(5,{platform:'A',status:'approved',adj:[[now-4*D,'0.9']],slot:'2051',contract:{name:'DemoReceivableToken3525',address:addr(5)},submittedAt:now-12*D});
      a.decisions=[{result:'approved',at:now-11*D,reviewer:LIN}];a.events=[submitEvent(a,now-12*D,1),approveEvent(now-11*D,LIN)];
      const c=base(6,{platform:'B',slot:'2051',contract:{name:'DemoReceivableToken3525',address:addr(5).toUpperCase().replace('0XDE00','0xDE00')},submittedAt:now-3*D,issuer:COMPANIES.c1});
      a.dupes=[{kind:'chain',other:c.id}];c.dupes=[{kind:'chain',other:a.id}];rows.push(a,c);}
@@ -174,7 +180,8 @@
     {const r=base(12,{status:'approved',submittedAt:now-30*D,issuer:COMPANIES.spv,sameAsSeller:false});
      r.decisions=[{result:'approved',at:now-29*D,reviewer:LIN}];r.events=[submitEvent(r,now-30*D,1),approveEvent(now-29*D,LIN)];rows.push(r);}
     /* 13 待审核期间发行平台推送资料更新：不增加提交序次，详情展示最新资料。 */
-    {const r=base(13,{submittedAt:now-3*D,updatedAt:now-7*H});
+    /* 13 另有准入前的一次调整，单位价值为多位小数，按上游完整值展示。 */
+    {const r=base(13,{submittedAt:now-3*D,updatedAt:now-7*H,adj:[[now-4*D,'0.987654321']]});
      r.proofs=[...r.proofs,proof('invoice','DEMO-INV-1302.pdf')];
      r.events=[submitEvent(r,now-3*D,1),ev(now-7*H,'update',['Materials updated','资料更新'],['Pending review · submission 1','待审核 · 第 1 次提交'],platformActor('A'),
        {diff:[[['Invoice numbers','发票号'],['DEMO-INV-1301'],['DEMO-INV-1301, DEMO-INV-1302']],[['Invoice','发票'],['—'],['DEMO-INV-1302.pdf']]]})];
@@ -187,7 +194,7 @@
     for(let n=16;n<=27;n++){
       const amt=String(200000+n*25000)+'.00';
       rows.push(base(n,{platform:n%3?'A':'B',issuer:[COMPANIES.c1,COMPANIES.c3,COMPANIES.c4][n%3],
-        submittedAt:now-(n-14)*7*H,qty:amt,value:amt,holders:[{addr:addr(n*5),qty:amt}],
+        submittedAt:now-(n-14)*7*H,qty:amt,holders:[{addr:addr(n*5),qty:amt}],
         asset:{...base(n).asset,amount:amt,due:'2027-0'+(1+n%9)+'-15'}}));
     }
     /* 平台代币标识：形成准入记录时生成，PT + 当天 UTC 日期 + 当日 6 位序号；之后的推送与状态变化都不改变它。 */

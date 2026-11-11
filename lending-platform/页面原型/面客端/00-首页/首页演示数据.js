@@ -2,10 +2,11 @@
    Never used by marketplace business logic. Verifier records are copied from the asset marketplace demo data
    (03-资产广场/演示数据.js) so every example token number can also be found in the marketplace. */
 window.CF.HomeData = {
-  /* 业务概览：代币化资产总值与代币总量同一范围（全部已准入代币，含失效），签发时 1 USD 对应 1 枚；
+  /* 业务概览：代币化资产总值与代币总量同一范围（全部已准入代币，含失效）；代币化资产总值为各笔当前代币价值
+     （代币数量 × 当前代币单位价值）之和，与资产广场演示数据一致；
      链上存证笔数按代币笔数计；累计融资额为 USDT、USDC 各按 1:1 折算后的 USD 合计。 */
   "totals": {
-    "value": 46435001.50,
+    "value": 46319022.46,
     "qty": 46435001.50,
     "fin": 1350000,
     "active": 8,

@@ -187,6 +187,9 @@
          ["mismatch", L("Total ≠ token amount", "合计≠代币数量")], ["missing", L("Holder missing address", "持有方缺地址")],
          ["conflict", L("Pledge record mismatch", "质押记录核对不上")], ["unavailable", L("Unavailable", "资料不可用")]].map(function (x) {
           return '<button class="btn" data-act="am-holding-state" data-v="' + x[0] + '">' + x[1] + '</button>';
+        }).join("") + '<h5>' + L("Token value history · fictional responses", "代币价值变动记录 · 虚构响应") + '</h5>' +
+        [["sample", L("Normal", "正常")], ["loading", L("Loading", "加载中")], ["error", L("Load failed", "读取失败")]].map(function (x) {
+          return '<button class="btn" data-act="am-history-state" data-v="' + x[0] + '">' + x[1] + '</button>';
         }).join("") + '<h5>' + L("Open a sample", "打开样例") + '</h5>' +
         AM.SHOWCASE.map(function (pid) {
           var t = AM.TOKENS.filter(function (x) { return x.pid === pid; })[0];
@@ -327,6 +330,8 @@
 
   function cents(value) { return Math.round(value * 100); }
   function sum(rows, key) { return rows.reduce(function (n, t) { return n + cents(t[key]); }, 0) / 100; }
+  /* 代币价值按完整值相加，展示时再保留两位小数。 */
+  function fullSum(rows, key) { return rows.reduce(function (n, t) { return n + t[key]; }, 0); }
   function quantity(value) { return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
   /* 详情里的金额统一为「币种图标 + 数字 + 小字号币种代码」；数量同样是「数字 + 小字号单位」，不带图标。 */
   function money(value, ccy) { return CF.market.amount(value, ccy, { icon: true }); }
@@ -369,7 +374,7 @@
       if (CONTRACTS.indexOf(addr) >= 0 && !rec) return null;
       var pledged = !!rec && (rec.state === "in" || rec.state === "exiting");
       out.push({ address: rows[k].address, qty: rows[k].qty,
-        value: Math.round(rows[k].qty * t.val / t.qty * 100) / 100,
+        value: rows[k].qty * t.val / t.qty,
         pledged: pledged, project: pledged ? rec.project : null });
     }
     if (pledges.some(function (p) { return !seen[p.contract.toLowerCase()]; })) return null;
@@ -496,7 +501,7 @@
     var total = rows.length;
     /* 汇总按当前筛选与搜索的匹配全集求和，只统计有效代币，各笔各计一次；失效代币照常列出。 */
     var valid = rows.filter(function (t) { return t.ts === "valid"; });
-    var amount = sum(valid, "qty"), value = sum(valid, "val");
+    var amount = sum(valid, "qty"), value = fullSum(valid, "val");
 
     ensureLoad(v, total);
     afterList(v);
@@ -516,7 +521,7 @@
     var summary = '<div class="mk-overview am-overview"><div class="stat-strip am-summary">' +
       '<div class="s"><div class="k">' + L("Token value", "代币价值") + '</div>' +
       statV(CF.market.amount(value,"USD",{compact:true,icon:true})) +
-      '<div class="n">' + L("Converted at each issuance-time FX rate", "按各笔签发时汇率折算") + '</div></div>' +
+      '<div class="n">' + L("At each token’s current unit value", "按各笔当前代币单位价值计算") + '</div></div>' +
       '<div class="s"><div class="k">' + L("Token amount", "代币数量") + '</div>' + statV(qty(amount)) + '</div></div>' +
       '<p class="am-summary-scope">' + L("Valid tokens only", "仅统计有效代币") + '</p></div>';
 
@@ -617,6 +622,7 @@
   /* Chapters locate existing sections without changing the shareable detail route. */
   var detailSections = [
     ['am-token', 'Token information', '代币信息'],
+    ['am-value-history', 'Token value history', '代币价值变动记录'],
     ['am-origin', 'Basic information', '基础资料信息'],
     ['am-attest', 'On-chain attestation', '链上存证'],
     ['am-holdings', 'Holders', '持有方']
@@ -680,11 +686,27 @@
 
   /* ------------------------------------------------------------ 详情页 */
   function pick(table, i) { return i == null || !table[i] ? dash() : esc(nm(table[i])); }
-  /* 签发汇率按上游快照原值展示：1 原币 = 汇率 USD，并给出汇率生效时间。 */
-  function fxRate(t) {
-    if (!t.fx) return dash();
-    return '<div class="am-long"><span class="num">1 ' + esc(t.recvCcy) + " = " + esc(String(t.fx.rate)) + " USD</span>" +
-      '<span class="muted">' + esc(L("Effective ", "生效时间 ")) + stampTz(t.fx.at) + "</span></div>";
+  /* 代币单位价值按上游完整值展示，不补零、不截断：1 COU = X USD。 */
+  function unitValue(value) {
+    /* 套用金额组件的数字 + 小字号币种结构；不经金额格式化，保留上游完整值。 */
+    return value == null ? dash() : '<span class="mk-money am-unit" data-currency="USD"><span class="mk-money-number">1 COU = ' + esc(value) +
+      '</span><span class="mk-money-unit">USD</span></span>';
+  }
+  /* 代币价值变动记录：从铸造开始，按生效时间倒序；铸造那一条没有调整前的值。 */
+  var historyMode = "sample";
+  function valueHistory(t) {
+    var title = '<h3 id="am-value-history" tabindex="-1">' + L("Token value history", "代币价值变动记录") + '</h3>';
+    if (historyMode === "loading") return title + '<div role="status" aria-live="polite">' + CF.skelTable(2) + '</div>';
+    if (historyMode === "error") return title + '<div role="alert">' + CF.empty(L("Could not load the token value history", "代币价值变动记录加载失败"), "",
+      '<button class="btn" data-act="am-history-retry">' + L("Retry", "重试") + '</button>') + '</div>';
+    var heads = [L("Effective at", "生效时间"), L("Unit value before", "调整前代币单位价值"), L("Unit value after", "调整后代币单位价值"),
+      L("Token value before", "调整前代币价值"), L("Token value after", "调整后代币价值"), L("Transaction hash", "链上交易哈希")];
+    return title + '<div class="tablewrap"><table class="tbl resp am-history"><thead><tr>' + heads.map(function (h) { return '<th scope="col">' + h + '</th>'; }).join("") +
+      '</tr></thead><tbody>' + t.hist.slice().reverse().map(function (r) {
+        var values = [stampTz(r.at), unitValue(r.before), unitValue(r.after),
+          r.before == null ? dash() : money(t.qty * Number(r.before), "USD"), money(t.qty * Number(r.after), "USD"), hashRow(r.tx)];
+        return '<tr>' + values.map(function (v, i) { return '<td data-label="' + esc(heads[i]) + '"><div class="cell-wrap">' + v + '</div></td>'; }).join("") + '</tr>';
+      }).join("") + '</tbody></table></div>';
   }
   function section(title, inner, id) {
     return '<section class="card am-sec"' + (id ? ' id="' + id + '" tabindex="-1"' : '') + '><div class="card-head"><h2>' + esc(title) + "</h2></div>" +
@@ -720,7 +742,7 @@
         copyBtn(t.no, L("Token ID", "代币编号")) + '</span><span class="am-ov-why">' + esc(tsWhy(t)) + "</span></div>" +
       "</div></div></section>";
 
-    /* 两栏成对排布：发行方与注册地、价值与汇率、链与链 ID、合约与资产槽位各自相邻。 */
+    /* 成对排布：发行方与注册地、数量与单位价值及代币价值、链与链 ID、合约与资产槽位各自相邻。 */
     var audit = AM.AUDIT;
     var info = section(L("Token information", "代币信息"),
       '<div class="am-field-group"><h3>' + L("Issuance & valuation", "发行与计价") + '</h3>' + dl([
@@ -729,8 +751,8 @@
       [L("Issuance platform", "来源发行平台"), pick(AM.PLATFORMS, t.platform)],
       [L("Token type", "代币类型"), esc(tokenKind())],
       [L("Token amount", "代币数量"), qty(t.qty)],
+      [L("Unit token value", "代币单位价值"), unitValue(t.unit)],
       [L("Token value", "代币价值"), money(t.val, "USD")],
-      [L("Issuance FX rate", "签发汇率"), fxRate(t)],
       [L("Token symbol", "代币符号"), t.symbol ? '<span class="mono">' + esc(t.symbol) + "</span>" : dash()],
     ]) + '</div><div class="am-field-group"><h3>' + L("On-chain identifiers", "链上标识") + '</h3>' + dl([
       /* 铸造链：代币铸造所在的链，只读。 */
@@ -748,12 +770,12 @@
         '<span class="muted">' + esc(L("Report date ", "报告日期 ")) + '<span class="num">' + esc(audit.date) + "</span></span></div>"],
       [L("Minted at", "铸造时间"), stampTz(t.at)],
       [L("Minting transaction hash", "铸造交易哈希"), hashRow(t.mintTx)]
-    ]) + '</div>', 'am-token');
+    ]) + '</div><div class="am-field-group am-history-group">' + valueHistory(t) + '</div>', 'am-token');
 
     var origin = section(L("Basic information", "基础资料信息"), dl([
       [L("Seller", "卖方企业名"), esc(sellerName(t))],
       [L("Buyer", "买方企业名"), esc(buyerName(t))],
-      [L("Receivable amount", "应收账款金额"), money(t.recvAmt, t.recvCcy)],
+      [L("Original asset value", "原始资产价值"), money(t.orig, "USD")],
       [L("Buyer country or region", "买方注册国家或地区"), pick(AM.COUNTRIES, t.buyerCountry)],
       [L("Underlying receivable term", "底层应收账款账期"), esc(t.from) + " – " + esc(t.to)],
       [L("Recourse", "追索安排"), pick(AM.RECOURSE, t.recourse)],
@@ -877,7 +899,7 @@
     var el = e.target.closest("[data-act]");
     if (!el || !curTokenId()) return;
     var act = el.dataset.act, value = el.dataset.v;
-    if (["am-holding-state", "am-holding-token", "am-holding-retry", "am-project"].indexOf(act) < 0) return;
+    if (["am-holding-state", "am-holding-token", "am-holding-retry", "am-history-state", "am-history-retry", "am-project"].indexOf(act) < 0) return;
     e.preventDefault(); e.stopImmediatePropagation();
     if (act === "am-project") {
       CF.AM.returnDetail = location.hash; location.hash = "#/project/" + value;
@@ -887,8 +909,9 @@
       }, 0);
       return;
     }
+    if (act === "am-history-state" || act === "am-history-retry") { historyMode = act === "am-history-retry" ? "sample" : value; CF.render(); return; }
     resetHoldings();
-    if (act === "am-holding-token") { holdingMode = "sample"; location.hash = "#/assets/" + value + "?return=" + encodeURIComponent(CF.ENTRY[LIST]); }
+    if (act === "am-holding-token") { holdingMode = historyMode = "sample"; location.hash = "#/assets/" + value + "?return=" + encodeURIComponent(CF.ENTRY[LIST]); }
     else { holdingMode = act === "am-holding-retry" ? "sample" : value; CF.render(); }
   }, true);
   document.addEventListener("click", function (e) {

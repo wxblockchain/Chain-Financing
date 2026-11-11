@@ -20,7 +20,7 @@
   // Each amount pairs with its daily series; the series colour identifies it in both places.
   const amounts=[
     {key:'tokens',field:'value',series:'tokenValue',tone:'1',ccy:'USD',label:['Token value','代币价值'],
-      today:['Admitted today','今日新准入'],note:['Issuance value at issuance-time rates','签发价值，按签发时汇率折算']},
+      today:['Admitted today','今日新准入'],note:['Current value at each token’s current unit value','当前值，按各笔当前代币单位价值计算']},
     {key:'finance',field:'demand',series:'newDemand',tone:'2',ccy:'USDT',label:['Financing demand','融资需求金额'],
       today:['Published today','今日新发布'],note:['Published demand not yet ended','已发布、未终结的需求']},
     {key:'finance',field:'funded',series:'newLoans',tone:'3',ccy:'USDT',label:['Funded balance','已融资余额'],

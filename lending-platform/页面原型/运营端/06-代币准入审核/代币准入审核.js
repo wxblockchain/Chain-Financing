@@ -17,7 +17,7 @@
   let seed=CF.tokenAdmissionSeed();
   const A={rows:CF.opsOverviewData.restore('tokens',seed.rows),now:seed.now,clock:Date.now(),
     list:{filter:fDefault(),edit:fDefault(),page:1,sort:'submittedAt',dir:1,open:false},
-    view:'default',response:'success',callback:'ok',fileState:'ready',activityState:'default',
+    view:'default',response:'success',callback:'ok',fileState:'ready',activityState:'default',historyState:'default',
     drafts:{},draft:null,busy:false,error:'',listNote:'',selected:null,file:null,epoch:0};
   let routeKey=null,restoreContext=false,returnHash='',lastHash='',onModule=false,wasSigned=false;
   const positions=new Map();
@@ -310,6 +310,20 @@
     }).join('')+(r.changed?`<div class="ta-alert"><div class="ta-alert-head">${CF.tag('accent',L('Changed after approval','通过后资料有变更'))}<button type="button" class="btn-link" data-act="ta-locate-change">${L('View the change in the activity','在操作记录中查看变更')}</button></div></div>`:'');
     return section('overview','Review overview','审核概况',facts(items)+(alerts?`<div class="ta-alerts"><h3 class="ta-h3">${L('Alerts','提醒')}</h3>${alerts}</div>`:''));
   }
+  /* 代币单位价值按上游完整值展示：1 COU = X USD，不补零、不截断。 */
+  const unitValue=u=>u==null?blank:`<span class="ta-num ta-unit">1 COU = ${E(u)} USD</span>`;
+  const tokenValue=(r,u)=>u==null?blank:`<span class="ta-num">${usd((Number(r.qty)*Number(u)).toFixed(2))}</span>`;
+  /* 代币价值变动记录：从铸造开始，按生效时间倒序；铸造那一条没有调整前的值。不进入操作记录。 */
+  function valueHistory(r){
+    if(A.historyState==='loading')return `<p role="status">${L('Loading token value history…','正在加载代币价值变动记录…')}</p>`;
+    if(A.historyState==='error')return `<p role="alert">${L('Token value history could not be loaded.','代币价值变动记录读取失败。')}</p>${b('Retry','重试','history-retry')}`;
+    /* 运营详情主栏较窄：每格先给调整后的值，调整前的值作第二行，铸造那一条调整前为空值。 */
+    const pair=(after,before)=>`${after}<span class="ta-meta">${L('Before ','调整前 ')}${before}</span>`;
+    const heads=[L('Effective at','生效时间'),L('Unit token value','代币单位价值'),L('Token value','代币价值'),L('Transaction hash','链上交易哈希')];
+    return `<div class="tablewrap"><table class="tbl ta-history"><thead><tr>${heads.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${
+      r.hist.slice().reverse().map(h=>`<tr><td>${time(h.at)}</td><td>${pair(unitValue(h.after),unitValue(h.before))}</td><td>${pair(tokenValue(r,h.after),tokenValue(r,h.before))}</td><td>${hashValue(h.tx,L('transaction hash','链上交易哈希'),scan('tx',h.tx))}</td></tr>`).join('')
+    }</tbody></table></div>`;
+  }
   function tokenInfo(r){
     const holders=r.holders&&r.holders.length?`<ul class="ta-holders">${r.holders.map(h=>`<li>${h.addr?CF.addrCopy(h.addr):blank}<span class="ta-num">${qty(h.qty)}</span></li>`).join('')}</ul>`:blank;
     return section('token','Token information','代币基本信息',
@@ -332,9 +346,11 @@
       ]))
       +group('Quantity and value','数量与价值',facts([
         [L('Token quantity','代币数量'),`<span class="ta-num">${qty(r.qty)}</span>`],
-        [L('Token value at issuance','代币价值'),`<span class="ta-num">${usd(r.value)}</span>`],
-        [L('Issuance exchange rate','签发汇率'),r.rate?`<span class="ta-num">${E(r.rate.pair)} ${raw(r.rate.value)}</span><span class="ta-meta">${L('Effective ','生效时间 ')}${time(r.rate.at)} · ${E(txt(r.rate.source))}</span>`:blank,true]
+        [L('Unit token value','代币单位价值'),unitValue(r.unit)],
+        [L('Token value','代币价值'),`<span class="ta-num">${usd(r.value)}</span>`],
+        [L('Original asset value','原始资产价值'),r.asset.amount?`<span class="ta-num">${usd(r.asset.amount)}</span>`:blank]
       ]))
+      +group('Token value history','代币价值变动记录',valueHistory(r))
       +group('On-chain and issuance facts','链上与发行事实',facts([
         [L('Minting chain','铸造链'),val(r.chain)],
         [L('Chain ID','链 ID'),`<span class="mono">${val(r.chainId)}</span>`],
@@ -356,7 +372,7 @@
         [L('Seller (creditor)','卖方（债权人）'),entity(a.seller)],
         [L('Buyer (debtor)','买方（债务人）'),entity(a.buyer)],
         [L('Buyer country or region','买方注册国家或地区'),val(a.buyer?.region)],
-        [L('Receivable amount','应收账款金额与币种'),a.amount?`<span class="ta-num">${raw(a.amount)} ${E(a.ccy)}</span>`:blank],
+        [L('Original asset value','原始资产价值'),a.amount?`<span class="ta-num">${usd(a.amount)}</span>`:blank],
         [L('Tenor','账期'),a.start||a.due?`${val(a.start)} ～ ${val(a.due)}`:blank],
         [L('Contract numbers','合同号'),listValue(a.contracts)],
         [L('Invoice numbers','发票号'),listValue(a.invoices)],
@@ -557,7 +573,8 @@
         ${field(L('Submit response','提交反馈'),select('ta-d-response',A.response,[['success',L('Success','成功')],['fail',L('Save failed','保存失败')],['concurrent',L('Another reviewer decided first','已被他人作出结论')],['updated',L('Materials updated meanwhile','资料已更新')],['expired',L('Token became invalid (approve)','代币已失效（通过时）')],['peer',L('Same on-chain token approved first (approve)','同一链上代币另一条已先通过（通过时）')],['permission',L('Permission or account changed','权限或账号状态变化')]]))}
         ${field(L('Result call-back','审核结果回传'),select('ta-d-callback',A.callback,[['ok',L('Delivered','回传成功')],['fail',L('Fails','回传失败')]]))}
         ${field(L('File opening','文件打开'),select('ta-d-file',A.fileState,[['ready',L('Opens','正常')],['error',L('Fails','打开失败')]]))}
-        ${field(L('Activity state','操作记录状态'),select('ta-d-activity',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','读取失败')]]))}</div>
+        ${field(L('Activity state','操作记录状态'),select('ta-d-activity',A.activityState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['empty',L('Empty','暂无记录')],['error',L('Load failed','读取失败')]]))}
+        ${field(L('Token value history','代币价值变动记录'),select('ta-d-history',A.historyState,[['default',L('Default','默认')],['loading',L('Loading','加载中')],['error',L('Load failed','读取失败')]]))}</div>
       <h4>${L('Pushes from the issuance platform','发行平台推送')}${r?' · '+E(r.ptid):''}</h4>
       <div class="ta-demo-actions">${b('Push a materials update','推送资料更新','push-update','','',!r||r.status!=='pending')}${b('Revise and push again','修改后重新推送','push-resubmit','','',!r||r.status!=='returned')}${b('Push a change after approval','推送通过后资料变更','push-change','','',!r||r.status!=='approved')}${b('Token becomes invalid','代币变为失效','push-expire','','',!r||r.tokenState!=='valid')}</div>
       <div class="ta-demo-actions">${b('Push a token missing one identity key','推送缺少识别四项之一的代币','push-incomplete')}${b('Expire operations session','运营登录失效','expire-session')}${b('Reset demonstration','重置演示','restart')}</div>`;
@@ -618,6 +635,7 @@
       const el=document.querySelector('.ta-event[data-kind="change"]');
       if(el){el.setAttribute('tabindex','-1');el.scrollIntoView({block:'center'});el.focus({preventScroll:true});}
     });
+    else if(act==='history-retry'){A.historyState='default';CF.render();$('ta-sec-token')?.focus({preventScroll:true});}
     else if(act==='activity-retry'){A.activityState='default';CF.render();$('ta-sec-activity')?.focus({preventScroll:true});}
     else if(act==='copy')navigator.clipboard?.writeText(v).then(()=>CF.toast(L('Copied','已复制'))).catch(()=>CF.toast(L('Copy failed. Select the value and copy it manually.','复制失败，请选中后手动复制。')));
     else if(act==='grant'){grant(v);S.demo=false;window.scrollTo(0,0);navigateRoute(S.page===DT&&A.selected?detailRoute(A.selected):listRoute());}
@@ -644,7 +662,7 @@
     else if(act==='push-incomplete')CF.toast(L('A push missing one of the four identity keys cannot be identified: no admission record and no platform token ID were created.','推送缺少代币识别四项之一，无法识别：未形成准入记录，未生成平台代币标识。'));
     else if(act==='restart'){
       A.epoch++;seed=CF.tokenAdmissionSeed();A.rows=seed.rows;A.now=seed.now;A.clock=Date.now();
-      A.drafts={};A.draft=null;A.busy=false;A.response='success';A.callback='ok';A.fileState='ready';A.activityState='default';
+      A.drafts={};A.draft=null;A.busy=false;A.response='success';A.callback='ok';A.fileState='ready';A.activityState='default';A.historyState='default';
       grant('admin');resetFilter();navigateRoute(listRoute());
     }
     else return false;
@@ -670,7 +688,7 @@
     onInput(e);
     const el=e.target,id=el.id;
     if(id==='ta-order'){const [sort,dir]=el.value.split(':');A.list.sort=sort;A.list.dir=+dir;A.list.page=1;saveContext();CF.render();}
-    const demoKeys={'ta-d-view':'view','ta-d-response':'response','ta-d-callback':'callback','ta-d-file':'fileState','ta-d-activity':'activityState'};
+    const demoKeys={'ta-d-view':'view','ta-d-response':'response','ta-d-callback':'callback','ta-d-file':'fileState','ta-d-activity':'activityState','ta-d-history':'historyState'};
     if(demoKeys[id]){A[demoKeys[id]]=el.value;A.error='';CF.render();}
   });
   document.addEventListener('click',e=>{
@@ -700,7 +718,7 @@
       route:()=>id===LIST?ROOT:detailRoute(A.rows[0].id),
       get:()=>canQuery()?A.view:'denied',
       set(value){if(value==='denied'){grant('none');A.view='default';S.st='default';return;}if(!canQuery())grant('admin');A.view=value;S.st=value;},
-      reset(){if(!canQuery())grant('admin');A.view='default';S.st='default';A.response='success';A.callback='ok';A.fileState='ready';A.activityState='default';},
+      reset(){if(!canQuery())grant('admin');A.view='default';S.st='default';A.response='success';A.callback='ok';A.fileState='ready';A.activityState='default';A.historyState='default';},
       beforeChange(proceed){CF.AdminMenu.beforeLeave(proceed);}
     });
   });

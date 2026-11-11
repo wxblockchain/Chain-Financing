@@ -109,7 +109,10 @@
 
   /* 每笔代币补齐平台代币标识与其余公开字段。
      平台代币标识由借贷平台在准入记录形成时生成，只用于详情地址，不作为字段展示。
-     签发汇率按上游快照给出：代币价值 = 应收账款金额 × 签发汇率。 */
+     代币单位价值以链上最近一次生效的值为准，按上游完整值保留为字符串：
+     t.hist 为代币价值变动记录（时间正序，第一条为铸造），t.unit 为最新一条调整后的值，
+     代币价值 t.val = 代币数量 × 代币单位价值，按完整值计算。原始资产价值 t.orig（USD）不随调整变化。
+     t.adj：[[生效时间, 调整后的单位价值]]，只列已在链上生效的调整。 */
   function add(t) {
     var k = TOKENS.length;
     t.pid = hex(7001 + k * 97, 12);
@@ -118,7 +121,15 @@
     if (t.symbol === undefined) t.symbol = AM.CONTRACT.symbol;
     if (t.issuerCountry === undefined) t.issuerCountry = ISSUER_COUNTRY[t.issuer];
     if (t.buyerCountry === undefined) t.buyerCountry = BUYER_COUNTRY[t.buyer];
-    t.fx = { rate: Math.round(t.val / t.recvAmt * 1e6) / 1e6, at: t.at.slice(0, 10) + "T00:00:00Z" };
+    var unit = t.mintUnit || "1";
+    t.hist = [{ at: t.at, before: null, after: unit, tx: t.mintTx }];
+    (t.adj || []).forEach(function (x, i) {
+      t.hist.push({ at: x[0], before: unit, after: x[1], tx: txHash(5000 + k * 17 + i) });
+      unit = x[1];
+    });
+    t.unit = unit;
+    t.val = t.qty * Number(unit);
+    if (t.orig == null) t.orig = t.qty * Number(t.mintUnit || "1");
     if (t.recourse == null) t.recourse = k % 3 === 0 ? 0 : 1;
     if (t.confirm === undefined) t.confirm = k % 9 === 5 ? { ok: false } : { ok: true, at: t.from + "T09:30:00Z" };
     if (t.registry === undefined) t.registry = k % 4 === 2 ? { done: false } : { done: true, agency: k % 2 };
@@ -126,21 +137,23 @@
   }
 
   /* —— 手写的几条，覆盖详情页与列表上要看清的分支 —— */
+  /* 铸造后两次下调：变动记录共三条，代币价值随之减少，原始资产价值不变。 */
   add({
     no: "TK20260612000147", logo: { shape: 0, hue: 1 }, name: "HC-AR-2606", issuer: 0, buyer: 0, seller: 0,
-    qty: 1250000.25, val: 1250000.25, ts: "valid",
+    qty: 1250000.25, ts: "valid", adj: [["2026-07-20T06:00:00", "0.95"], ["2026-08-18T06:00:00", "0.9"]],
     from: "2026-06-12", to: "2026-09-10", at: "2026-06-12T10:20:00",
-    recvAmt: 1250000, recvCcy: "USD", trade: 0, settle: 0,
+    trade: 0, settle: 0,
     mintTx: txHash(147),
     attest: { hash: "0x" + hex(9147, 64), tx: txHash(2147), block: 21486312, at: "2026-06-11T22:14:00" }
   });
   hold(TOKENS[TOKENS.length - 1], [[1000000, [P0, "in"]], [250000.25, null]], 1029);
-  /* 代币失效，持有方仍在质押合约内：代币状态失效与持有方已质押各自成立。 */
+  /* 代币失效，持有方仍在质押合约内：代币状态失效与持有方已质押各自成立。
+     失效后仍有一次调整，单位价值为多位小数，按上游完整值展示。 */
   add({
     no: "TK20260220000092", logo: { shape: 1, hue: 2 }, name: "HC-AR-2602", issuer: 1, buyer: 1, seller: 1,
-    qty: 460000.75, val: 460000.75, ts: "void",
+    qty: 460000.75, ts: "void", adj: [["2026-06-03T02:30:00", "0.987654321"]],
     from: "2026-02-20", to: "2026-05-21", at: "2026-02-20T11:15:00",
-    recvAmt: 424276.66, recvCcy: "EUR", trade: 1, settle: 1,
+    trade: 1, settle: 1,
     mintTx: txHash(92),
     attest: { hash: "0x" + hex(9092, 64), tx: txHash(2092), block: 20874155, at: "2026-02-19T20:02:00" }
   });
@@ -148,19 +161,19 @@
   /* 所属项目已通过审核但尚未发布：持有方已质押，只提示项目尚未公开。 */
   add({
     no: "TK20260903000415", logo: { shape: 2, hue: 3 }, name: "HC-AR-2609", issuer: 2, buyer: 2, seller: 2,
-    qty: 1120000, val: 1120000, ts: "valid",
+    qty: 1120000, ts: "valid",
     from: "2026-09-03", to: "2027-01-01", at: "2026-09-03T08:30:00",
-    recvAmt: 1120000, recvCcy: "USD", trade: 0, settle: 2,
+    trade: 0, settle: 2,
     mintTx: txHash(415),
     attest: { hash: "0x" + hex(9415, 64), tx: txHash(2415), block: 21702880, at: "2026-09-02T19:41:00" }
   });
   hold(TOKENS[TOKENS.length - 1], [[1120000, [P2, "in"]]], 2905);
-  /* 两个持有方分属两个融资项目，两份均已质押。 */
+  /* 两个持有方分属两个融资项目，两份均已质押。铸造后上调一次。 */
   add({
     no: "TK20260728000534", logo: { shape: 3, hue: 4 }, name: "HC-AR-2607B", issuer: 1, buyer: 3, seller: 5,
-    qty: 735000.5, val: 735000.5, ts: "valid",
+    qty: 735000.5, ts: "valid", adj: [["2026-09-15T08:00:00", "1.02"]],
     from: "2026-07-28", to: "2026-12-24", at: "2026-07-28T14:06:00",
-    recvAmt: 735000.5, recvCcy: "USD", trade: 2, settle: 1,
+    trade: 2, settle: 1,
     mintTx: txHash(534),
     attest: { hash: "0x" + hex(9534, 64), tx: txHash(2534), block: 21598420, at: "2026-07-27T18:33:00" }
   });
@@ -168,9 +181,9 @@
   /* 解押已发起、链上转出尚未成功：仍在质押合约内并属该项目，已质押。 */
   add({
     no: "TK20260509000276", logo: { shape: 1, hue: 1 }, name: "HC-AR-2605", issuer: 3, buyer: 4, seller: 3,
-    qty: 980000, val: 980000, ts: "valid",
+    qty: 980000, ts: "valid",
     from: "2026-05-09", to: "2026-11-05", at: "2026-05-09T09:48:00",
-    recvAmt: 902000, recvCcy: "EUR", trade: 0, settle: 0,
+    trade: 0, settle: 0,
     mintTx: txHash(276),
     attest: { hash: "0x" + hex(9276, 64), tx: txHash(2276), block: 21322509, at: "2026-05-08T21:17:00" }
   });
@@ -178,9 +191,9 @@
   /* 质押上链处理中：代币仍在企业地址，未质押。 */
   add({
     no: "TK20260705000288", logo: { shape: 2, hue: 4 }, name: "HC-AR-2607", issuer: 3, buyer: 3, seller: 4,
-    qty: 860000, val: 860000, ts: "valid",
+    qty: 860000, ts: "valid",
     from: "2026-07-05", to: "2026-11-02", at: "2026-07-05T09:05:00",
-    recvAmt: 128140000, recvCcy: "JPY", trade: 2, settle: 0,
+    trade: 2, settle: 0,
     mintTx: txHash(288),
     attest: { hash: "0x" + hex(9288, 64), tx: txHash(2288), block: 21551904, at: "2026-07-04T23:28:00" }
   });
@@ -188,9 +201,9 @@
   /* 代币名称与标识图都未下发：名称展示合约名称，不自造符号或标识。两个企业地址持有，均未质押。 */
   add({
     no: "TK20260818000361", logo: null, name: "", symbol: "", issuer: 4, buyer: 4, seller: 4,
-    qty: 2040000, val: 2040000, ts: "valid",
+    qty: 2040000, ts: "valid",
     from: "2026-08-18", to: "2026-10-17", at: "2026-08-18T16:40:00",
-    recvAmt: 2040000, recvCcy: "USD", trade: 0, settle: 1,
+    trade: 0, settle: 1,
     mintTx: txHash(361),
     attest: { hash: "0x" + hex(9361, 64), tx: txHash(2361), block: 21648073, at: "2026-08-17T15:09:00" }
   });
@@ -198,9 +211,9 @@
   /* 已同步的链上存证缺项：该区块按字段显示“—”，不隐藏整块。质押上链失败，代币仍在企业地址。 */
   add({
     no: "TK20260416000203", logo: { shape: 0, hue: 3 }, name: "HC-AR-2604", issuer: 5, buyer: 0, seller: 5, buyerCountry: null, registry: null,
-    qty: 640000, val: 640000, ts: "valid",
+    qty: 640000, ts: "valid",
     from: "2026-04-16", to: "2026-10-14", at: "2026-04-16T13:52:00",
-    recvAmt: 590300, recvCcy: "EUR", trade: 1, settle: 2,
+    trade: 1, settle: 2,
     mintTx: txHash(203),
     attest: { hash: "0x" + hex(9203, 64), tx: "", block: null, at: "" }
   });
@@ -209,9 +222,9 @@
      有自己的平台代币标识与详情；搜索该编号两笔都返回。 */
   add({
     no: "TK20260705000288", platform: 1, logo: { shape: 3, hue: 2 }, name: "PB-AR-2607", issuer: 5, buyer: 2, seller: 0,
-    qty: 315000, val: 315000, ts: "valid",
+    qty: 315000, ts: "valid",
     from: "2026-07-05", to: "2026-12-30", at: "2026-07-05T15:42:00",
-    recvAmt: 315000, recvCcy: "USD", trade: 0, settle: 2,
+    trade: 0, settle: 2,
     mintTx: txHash(6288),
     attest: { hash: "0x" + hex(9688, 64), tx: txHash(2688), block: 21553117, at: "2026-07-05T03:10:00" }
   });
@@ -224,17 +237,15 @@
       var ds = "2026-" + pad(mo, 2) + "-" + pad(day, 2);
       var de = "2026-" + pad(Math.min(12, mo + 3), 2) + "-" + pad(day, 2);
       var qty = 180 + (i % 17) * 95;
-      var ccy = ["USD", "EUR", "USD", "JPY"][i % 4];
       add({
         no: "TK2026" + pad(mo, 2) + pad(day, 2) + pad(seq, 6),
         name: "HC-AR-26" + pad(mo, 2) + "-" + pad(i + 1, 2),
         logo: i % 5 === 4 ? null : { shape: i % 4, hue: (i % 4) + 1 },
         issuer: i % AM.ISSUERS.length, buyer: i % BUYERS.length, seller: (i + 2) % SELLERS.length,
-        qty: qty * 1000, val: qty * 1000,
+        qty: qty * 1000,
         ts: i % 11 === 0 ? "void" : "valid",
         from: ds, to: de,
         at: ds + "T" + pad(8 + (i % 9), 2) + ":" + pad((i * 7) % 60, 2) + ":00",
-        recvAmt: ccy === "JPY" ? qty * 149000 : ccy === "EUR" ? Math.round(qty * 1000 / 1.0842 * 100) / 100 : qty * 1000, recvCcy: ccy,
         trade: i % TRADES.length, settle: i % SETTLES.length,
         mintTx: txHash(seq),
         attest: {

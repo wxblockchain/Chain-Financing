@@ -109,6 +109,13 @@ table.tbl.am-tbl th.sortable.am-r button{margin-left:auto;justify-content:flex-e
 .am-holdings th:nth-child(2),.am-holdings th:nth-child(3),.am-holdings td:nth-child(2),.am-holdings td:nth-child(3){text-align:right}
 .am-holdings .mk-money{justify-content:flex-end}
 .am-holdings thead th{white-space:normal}
+/* 代币价值变动记录：代币信息内的整块表格，标题与组内小标题同级；单位价值与价值右对齐便于逐条比对。 */
+.am-history-group h3{scroll-margin-top:calc(var(--am-header-h) + var(--am-nav-h) + var(--sp-4))}
+.am-history-group .tablewrap{margin-bottom:var(--sp-3)}
+.am-history thead th{white-space:normal}
+.am-history :is(th,td):nth-child(n+2):nth-child(-n+5){text-align:right}
+.am-history .mk-money{justify-content:flex-end}
+.am-unit{white-space:nowrap}
 
 @media(min-width:600px){.am-detail .dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1100px){.am-detail .dl{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -134,6 +141,9 @@ table.tbl.am-tbl th.sortable.am-r button{margin-left:auto;justify-content:flex-e
   .am-section-nav{gap:var(--sp-5)}
   .am-holdings td:nth-child(2),.am-holdings td:nth-child(3){text-align:left}
   .am-holdings .mk-money{justify-content:flex-start}
+  .am-history :is(th,td):nth-child(n+2):nth-child(-n+5){text-align:left}
+  .am-history .mk-money{justify-content:flex-start}
+  .am-unit{white-space:normal}
 }
 @media(max-width:600px){
   [data-market-redesign] .am-market-page .am-overview{flex-direction:column;gap:var(--sp-3)}

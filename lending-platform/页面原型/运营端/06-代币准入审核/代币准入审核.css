@@ -145,3 +145,14 @@ table.ta-diff :is(th,td){padding:var(--sp-2) var(--sp-3);text-align:left;vertica
 @media(max-width:700px){.ta-kv{grid-template-columns:minmax(0,1fr)}}
 .ta-preview{display:grid;place-items:center;gap:var(--sp-2);min-height:220px;margin-top:var(--sp-4);border:1px dashed var(--border-strong);border-radius:var(--radius-sm);background:var(--card-2);color:var(--muted);text-align:center;padding:var(--sp-5)}
 .ta-preview b{color:var(--text);overflow-wrap:anywhere}
+/* 代币价值变动记录：组内整块表格；主栏较窄，调整前的值作第二行，数值右对齐便于逐条比对。 */
+.ta-stack{grid-template-columns:minmax(0,1fr)}
+.ta-group>.tablewrap{max-width:100%}
+.ta-history{width:100%}
+.ta-history :is(th,td){padding-inline:var(--sp-3)}
+.ta-history thead th{white-space:normal;color:var(--muted)}
+.ta-history td{vertical-align:top;font-size:var(--ui-row-value)}
+.ta-history :is(th,td):nth-child(2),.ta-history :is(th,td):nth-child(3){text-align:right}
+.ta-history td:nth-child(2),.ta-history td:nth-child(3),.ta-history td :is(.ta-meta,.ta-num){white-space:nowrap;overflow-wrap:normal}
+.ta-history .ta-hash .mono,.ta-unit{white-space:nowrap}
+.ta-history .ta-hash .mono{font-size:var(--fs-12)}
