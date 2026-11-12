@@ -121,7 +121,10 @@
   --enterprise-table-min-en:1600px; /* 英文完整状态与表头的阅读下限 */
   --enterprise-search-w:480px; /* 编号、名称、登记号码、邮箱的查询提示 */
   --enterprise-form-max:1040px; /* 企业维护表单，两列完整阅读 */
-  --receivable-table-min:960px; /* 运营端 M3：应收账款列表的阅读下限，更窄时表内滚动 */
-  --receivable-col-id:140px; --receivable-col-amount:124px; --receivable-col-paid:140px;
-  --receivable-col-due:108px; --receivable-col-status:96px; --receivable-col-progress:116px;
+  --receivable-table-min:1120px; /* M3 列表：完整金额和交易方的阅读下限，编号列固定 */
+  --receivable-table-min-en:1360px; /* 英文状态通常最多两行，窄视口在表内滚动 */
+  --receivable-col-id:152px; --receivable-col-amount:144px; --receivable-col-paid:176px;
+  --receivable-col-due:128px; --receivable-col-status:112px; --receivable-col-progress:136px;
+  --receivable-col-party:220px;
+  --receivable-col-paid-en:208px; --receivable-col-status-en:144px; --receivable-col-progress-en:168px;
 }
