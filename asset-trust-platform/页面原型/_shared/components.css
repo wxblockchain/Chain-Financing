@@ -1415,28 +1415,31 @@ fieldset.field>legend.field-caption{padding:0;margin-bottom:var(--sp-2);width:10
   .enterprise-form .account-delivery>.note{grid-column:auto}
 }
 /* —— M3 应收账款与发票（组件规范 §4 A14–A19）—— */
-/* A14 应收账款列表：编号下方为发票号；债权人 / 债务人同列分行；已收 / 未收逐币种分行；到期日与到期状态同列分行。不设操作列。 */
+/* A14 精简列表：应收与发票编号分别成列；金额明细和确权进度留在详情；两端固定编号和查看操作。 */
 table.tbl.receivable-list{min-width:var(--receivable-table-min)}
-:lang(en) table.tbl.receivable-list{min-width:var(--receivable-table-min-en);--receivable-col-paid:var(--receivable-col-paid-en);--receivable-col-status:var(--receivable-col-status-en);--receivable-col-progress:var(--receivable-col-progress-en)}
+:lang(en) table.tbl.receivable-list{min-width:var(--receivable-table-min-en)}
 .tbl.receivable-list :is(th,td){padding-inline:var(--sp-2)}
 .tbl.receivable-list :is(th,td):first-child{padding-left:var(--card-pad);width:auto;position:sticky;left:0;background:var(--card);z-index:1;box-shadow:inset -1px 0 var(--border)}
 .tbl.receivable-list thead th:first-child{background:var(--card-2)}
 .tbl.receivable-list tbody tr:hover td:first-child{background:var(--row-hover)}
 .tbl.receivable-list .btn-link.mono{white-space:nowrap;font-weight:500}
-.tbl.receivable-list td{vertical-align:top;padding-block:var(--sp-4)}
+.tbl.receivable-list td{vertical-align:middle;padding-block:var(--sp-3)}
 .tbl.receivable-list .money{font-size:var(--fs-14)}
 .tbl.receivable-list :is(th,td):last-child{padding-right:var(--card-pad)}
+.tbl.receivable-list .col-act{width:auto;z-index:1;box-shadow:inset 1px 0 var(--border)}
+.tbl.receivable-list .col-act .actlink{white-space:nowrap}
 .tbl.receivable-list th{white-space:normal;word-break:normal;overflow-wrap:normal}
 .tbl.receivable-list .tag{white-space:normal;overflow-wrap:normal;word-break:normal}
 .tbl.receivable-list .num{white-space:nowrap}
 .receivable-list col.rcv-col-id{width:var(--receivable-col-id)}
+.receivable-list col.rcv-col-invoice{width:var(--receivable-col-invoice)}
 .receivable-list col.rcv-col-party{width:var(--receivable-col-party)}
 .receivable-list col.rcv-col-amount{width:var(--receivable-col-amount)}
-.receivable-list col.rcv-col-paid{width:var(--receivable-col-paid)}
 .receivable-list col.rcv-col-due{width:var(--receivable-col-due)}
 .receivable-list col.rcv-col-status{width:var(--receivable-col-status)}
-.receivable-list col.rcv-col-progress{width:var(--receivable-col-progress)}
-/* A15 单元格内的多行值与交易方行：未对应平台企业时名称后加 .tag.warn。 */
+.receivable-list col.rcv-col-core{width:var(--receivable-col-core)}
+.receivable-list col.rcv-col-actions{width:var(--receivable-col-actions)}
+/* A15 单元格内的多行值与交易方行：未对应企业的标识只在详情保留。 */
 .value-lines{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0}
 .num .value-lines{align-items:flex-end}
 .value-lines .tag{align-self:flex-start}
@@ -1450,7 +1453,7 @@ table.tbl.receivable-list{min-width:var(--receivable-table-min)}
 .trace-links{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-4)}
 .trace-links .actlink{margin:0}
 /* A18 应收账款详情：卡片内小节 14 px；明细表单元格不换行（长说明加 .wrap），表头可换行；文件名不拆字；差异新值加粗。 */
-.receivable-detail .content-in{max-width:var(--detail-sheet-max);margin-inline:0}
+.receivable-detail .content-in{max-width:none;margin-inline:0}
 .receivable-detail .page-title{font-family:var(--sans);font-variant-numeric:tabular-nums}
 .receivable-detail .asset-sum .meta{flex-direction:column;gap:var(--sp-1)}
 .receivable-detail .detail-nav a[aria-current="location"]{box-shadow:inset 0 -2px var(--accent)}

@@ -1,5 +1,7 @@
 /* M3 应收账款与发票 · 运营端 · 模块文案英文（业务值不翻译）。运营端画面 */
 TP.addCopy({
+"操作": "Actions",
+"查看": "View",
 "0 笔": "0 receivables",
 "1 份": "1 contract",
 "1 条": "1 record",
