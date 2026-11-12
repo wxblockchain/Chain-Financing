@@ -170,4 +170,8 @@
   --claim-col-time:132px; /* 申请记录中的平台时间（日期 时:分） */
   --claim-request-min:1180px; --claim-request-min-en:1260px; /* M7a 申请记录九列 */
   --claim-search-w:480px; /* 查找内容：编号、发票号、VIN 的提示完整可读 */
+  --alert-table-min:960px; /* M8 风控预警列表七列，编号与查看分别固定两侧 */
+  --alert-table-min-en:980px; /* 英文预警类型与比较对象的阅读下限 */
+  --alert-col-id:136px; --alert-col-type:128px; --alert-col-obj-min:240px; --alert-col-ar:168px;
+  --alert-col-status:96px; --alert-col-time:120px;
 }

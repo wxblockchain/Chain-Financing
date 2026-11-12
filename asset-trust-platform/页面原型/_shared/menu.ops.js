@@ -14,7 +14,8 @@
       {key:'sales',     label:'下游销售',   icon:'ledger'}
     ]},
     {group:'风控', items:[
-      {key:'alerts',    label:'风控预警',   icon:'alert'},
+      // 角标为当前未处理风控预警条数（M8 F-M8-05），评审演示值；接入时由风控预警模块提供，全体运营相同。
+      {key:'alerts',    label:'风控预警',   icon:'alert', pendingCount:5},
       {key:'sources',   label:'三方数据源', icon:'database'}
     ]},
     {group:'审核与出库', items:[
