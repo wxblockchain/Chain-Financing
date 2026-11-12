@@ -1,0 +1,118 @@
+/* ==========================================================================
+   tokens.css — 资产可信平台原型设计 token（本平台唯一来源）
+   取值基线：代币发行平台组件规范 v1.96（token-issuance-platform/页面原型/_shared/tokens.css，
+   cly-v6.0.0 @ e2f8eb3）原值复制；三平台独立后不跨平台引用，本平台自持一份。
+   本平台新增的 token 集中在文末“资产可信平台新增”一节，见 design-system/组件规范.md。
+   组件层与模块页面不得出现字面色值、字号或时长，一律引用这里的具名 token。
+   ========================================================================== */
+:root{
+  /* —— 字体：系统字体栈，原型不内嵌字体文件；地址与哈希用等宽便于逐位核对 —— */
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,"Liberation Sans",system-ui,"PingFang SC","Microsoft YaHei","Noto Sans SC","WenQuanYi Micro Hei",sans-serif;
+  --mono:ui-monospace,"SFMono-Regular","SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+
+  /* —— 面与描边 —— */
+  --bg:#F7F8FB;
+  --card:#FFFFFF;
+  --card-2:#F8FAFC;
+  --card-hover:#F2F5FA;
+  --border:#E3E8EF;
+  --border-strong:#CFD6E0;
+  --row-line:#EFF2F7;
+  --row-hover:#FAFBFD;
+
+  /* —— 文字 —— */
+  --text:#0D1526;
+  --muted:#4A5568;
+  --faint:#667085;
+  --on-accent:#FFFFFF;
+  --control-border:#7A8699;
+
+  /* —— 主色与语义色 —— */
+  --accent:#1D4ED8;
+  --accent-strong:#1A3FAE;
+  --accent-soft:rgba(29,78,216,.07);
+  --accent-border:rgba(29,78,216,.26);
+  --ok:#067647;   --ok-bg:#ECFDF3;   --ok-border:#A9EFC5;
+  --warn:#B54708; --warn-bg:#FFFAEB; --warn-border:#FEDF89;
+  --danger:#D42620; --danger-bg:#FEF3F2; --danger-border:#FECDCA;
+  --gray-bg:#F1F4F8; --gray-fg:#41506B;
+
+  /* —— 链上数据（地址 / 哈希）—— */
+  --hash-text:#2F53C4;
+  --hash-bg:rgba(29,78,216,.055);
+  --hash-border:rgba(29,78,216,.18);
+
+  /* —— 阴影 · 遮罩 · 圆角 —— */
+  --shadow-lg:0 12px 28px rgba(13,21,38,.12);
+  --overlay:rgba(13,21,38,.44);
+  --radius-lg:12px;
+  --radius-sm:8px;
+  --radius-xs:6px;
+  --radius-pill:999px;
+
+  /* —— 字号阶梯 —— */
+  --fs-11:11px; --fs-12:12px; --fs-13:13px; --fs-14:14px;
+  --fs-16:16px; --fs-20:20px; --fs-24:24px; --fs-28:28px;
+
+  /* —— 间距 —— */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+  --sp-6:24px; --sp-7:32px; --sp-8:40px; --sp-9:56px;
+
+  /* —— 组件尺寸（与借贷平台运营端一致）—— */
+  --ctrl-h:44px;          /* 表单控件、主操作按钮 */
+  --ctrl-h-sm:36px;       /* 筛选、图标按钮、顶栏工具 */
+  --sidebar-w:238px;
+  --topbar-h:68px;
+  --card-pad:24px;
+  --cell-pad-y:12px;
+  --filter-field-min:200px;
+  --filter-search-w:320px;
+  --filter-select-min:184px;
+  --filter-date-w:214px;
+  --app-header-h:var(--topbar-h);
+  --modal-w:480px;
+  --modal-w-lg:600px;
+  --modal-w-xl:960px;
+  --modal-flow-h:700px;
+  --focus-card-w:480px;
+  --phone-code-w:152px; /* 联系电话区号下拉宽度，容纳“+971 阿联酋” */
+  --phone-code-w-en:224px; /* 英文区号名称与原生选择箭头的完整阅读空间 */
+  --detail-sheet-max:1360px; /* M5 机构详情与账户资料的阅读宽度 */
+  --institution-table-min:1120px; /* 九列机构列表保留邮箱与状态的阅读空间 */
+  --asset-table-min:960px; /* M2：更窄时在表内滚动，保留编号和操作 */
+  --asset-table-fluid-start:1100px; /* 从此宽度起，增量分配给各数据列 */
+  --asset-col-id:136px;
+  --asset-col-value:136px; /* 完整值图标预留位 + 金额与币种 */
+  --asset-col-due:104px;
+  --asset-col-repayment:112px;
+  --asset-col-status:144px;
+  --asset-col-actions:152px;
+  --asset-col-readonly:80px;
+  --asset-application-id-w:240px;
+  --inbox-panel-w:440px; /* 最近消息：长标题与时区并存 */
+  --message-reading-max:1040px; /* M7 详情：正文和相关编号共用阅读区域 */
+  --message-body-max:80ch;
+
+  /* —— 文字角色 —— */
+  --ui-page-title:var(--fs-24);
+  --ui-section-title:var(--fs-16);
+  --ui-field-value:var(--fs-14);
+  --ui-field-label:var(--fs-13);
+  --ui-row-value:var(--fs-13);
+  --lh-body:1.6;
+
+  /* —— 识别图标与内容排版 —— */
+  --asset-icon-size:18px;
+  --content-max:none; /* 平台内容随可用宽度展开，外侧留白由 .content 控制 */
+  --focus-symbol-size:48px;
+
+  /* —— 层级 —— */
+  --z-sticky:60; --z-mask:300; --z-demo:350; --z-toast:400;
+
+  /* —— 缓动 —— */
+  --ease-out:cubic-bezier(.22,.61,.36,1);
+  --dur-fast:120ms; --dur-base:200ms;
+
+  /* —— 资产可信平台新增 —— */
+  --onboard-w:720px;      /* 入驻准备：步骤条 + 绑定钱包 / 资料表单的居中卡片 */
+}
