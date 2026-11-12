@@ -138,4 +138,9 @@
   --vehicle-col-ship:112px; --vehicle-col-progress:136px; --vehicle-col-actions:72px;
   --vehicle-search-w:480px; /* 查找内容：VIN、单据号码与编号的提示完整可读 */
   --fulfil-fee-min:1180px; /* M5 费用登记九列，窄视口在表内滚动 */
+  --confirmation-table-min:1120px; /* M7b 确权申请八列，申请编号与操作分别固定两侧 */
+  --confirmation-table-min-en:1200px; /* 英文表头、状态与三项操作的阅读下限 */
+  --confirmation-col-id:140px; --confirmation-col-invoice:112px; --confirmation-col-party:184px; --confirmation-col-amount:140px;
+  --confirmation-col-due:132px; --confirmation-col-time:120px; --confirmation-col-status:124px;
+  --confirmation-col-actions:168px; /* 待处理：查看 / 确认 / 驳回 */
 }

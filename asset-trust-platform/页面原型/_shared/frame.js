@@ -10,7 +10,8 @@
             data-layout="app|focus" data-who="none|onboarding|debtor|creditor|both|norole"
             data-nav="account" data-crumb="账户/账户信息"
             [data-overlay data-base="返回画面 id" [data-inline 在内容区内呈现确认]] [data-next="主流程下一屏 id"]
-            [data-dd 展开账号入口] [data-show-toast="进入画面时的结果提示"] [data-restricted 受限登录，仅语言与退出]>
+            [data-dd 展开账号入口] [data-show-toast="进入画面时的结果提示"] [data-restricted 受限登录，仅语言与退出]
+            [data-pending-count="本屏所在菜单的待办数量；空值不展示"]>
    入驻未完成的身份（TP.demo.accounts[身份].locked）：侧栏全部菜单可见，带锁形标记、不可点击（aria-disabled）。
    任意元素 data-go="画面 id" 跳转；弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制完整值。
    模块在 TP.routes 中登记菜单与账号入口对应的画面。
@@ -99,7 +100,9 @@
       return '<div class="nav-group">'+g.group+'</div>' + g.items.map(function(it){
         var lk = locked(who);
         // 数量由所属模块按当前用户提供；这里只呈现，不计算待办或改变菜单权限。
+        // 画面可用 data-pending-count 给本屏所在菜单指定演示数量（空值表示不展示，如取数失败）。
         var count = it.pendingCount, badge = '';
+        if(it.key===sec.dataset.nav && sec.hasAttribute('data-pending-count')) count = sec.dataset.pendingCount==='' ? null : Number(sec.dataset.pendingCount);
         if(!lk && Number.isSafeInteger(count) && count > 0){
           var label = count + ' 项待办';
           badge = '<span class="nav-pending-count" title="'+label+'"><span aria-hidden="true">'+(count > 99 ? '99+' : count)+'</span><span class="sr-only">'+label+'</span></span>';

@@ -1610,3 +1610,25 @@ table.tbl.fee-records{min-width:var(--fulfil-fee-min)}
 @media (prefers-reduced-motion:reduce){.bl-batch>summary svg.i{transition:none}}
 /* A33 追溯对象概要：从应收账款进入时的应收账款识别信息，三列只读字段；定位行复用 A28 tr.is-target。 */
 .fulfil-trace-summary .facts{padding-block:var(--sp-3)}
+/* —— M7b 确权待办与确认处理（组件规范 §4 A34–A36）—— */
+/* A34 确权申请列表：与 A14 合用固定申请编号与右侧操作列；卡片头为待处理 / 已处理分段选择（基线 .seg），已处理只有“查看”。 */
+table.tbl.confirmation-list{min-width:var(--confirmation-table-min)}
+:lang(en) table.tbl.confirmation-list{min-width:var(--confirmation-table-min-en)}
+.confirmation-list col.cfm-col-id{width:var(--confirmation-col-id)}
+.confirmation-list col.cfm-col-invoice{width:var(--confirmation-col-invoice)}
+.confirmation-list col.cfm-col-party{width:var(--confirmation-col-party)}
+.confirmation-list col.cfm-col-amount{width:var(--confirmation-col-amount)}
+.confirmation-list col.cfm-col-due{width:var(--confirmation-col-due)}
+.confirmation-list col.cfm-col-time{width:var(--confirmation-col-time)}
+.confirmation-list col.cfm-col-status{width:var(--confirmation-col-status)}
+.confirmation-list col.cfm-col-actions{width:var(--confirmation-col-actions)}
+.confirmation-list col.cfm-col-view{width:var(--receivable-col-actions)}
+.confirmation-list .row-acts{display:flex;justify-content:flex-end;gap:var(--sp-1)}
+.confirmation-list-card>.card-head{padding-block:var(--sp-3)}
+/* A35 申请详情：页头为债权人名称 + 申请状态，编号在副行；概要沿用 A24（左侧金额与申请要点，右侧申请状态 / 当前核心资料状态），进度沿用 A20 / A25。 */
+.application-summary .asset-sum .meta .btn-link{padding-block:0;font-weight:500}
+/* A36 当次依据分组：分组标题、来源说明与 M3 当前资料入口同一行；卡片沿用 A18 / A21 / A22。 */
+.snapshot-group{margin-top:var(--sp-7)}
+.snapshot-group .detail-group-h .btn-link{margin-left:auto;font-size:var(--fs-13)}
+.confirmation-detail .snapshot-group+.operation-history{margin-top:var(--sp-7)}
+.confirmation-card>.confirmation-note+.confirmation-note{margin-top:calc(-1 * var(--sp-2))}
