@@ -1414,3 +1414,41 @@ fieldset.field>legend.field-caption{padding:0;margin-bottom:var(--sp-2);width:10
   .enterprise-form .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .enterprise-form .account-delivery>.note{grid-column:auto}
 }
+/* —— M3 应收账款与发票（组件规范 §4 A14–A19）—— */
+/* A14 应收账款列表：编号下方为发票号；债权人 / 债务人同列分行；已收 / 未收逐币种分行；到期日与到期状态同列分行。不设操作列。 */
+table.tbl.receivable-list{min-width:var(--receivable-table-min)}
+.tbl.receivable-list :is(th,td){padding-inline:var(--sp-2)}
+.tbl.receivable-list :is(th,td):first-child{padding-left:var(--card-pad);width:auto}
+.tbl.receivable-list :is(th,td):last-child{padding-right:var(--card-pad)}
+.tbl.receivable-list th{white-space:normal}
+.tbl.receivable-list .tag{white-space:normal;overflow-wrap:normal;word-break:normal}
+.tbl.receivable-list .num{white-space:nowrap}
+.receivable-list col.rcv-col-id{width:var(--receivable-col-id)}
+.receivable-list col.rcv-col-amount{width:var(--receivable-col-amount)}
+.receivable-list col.rcv-col-paid{width:var(--receivable-col-paid)}
+.receivable-list col.rcv-col-due{width:var(--receivable-col-due)}
+.receivable-list col.rcv-col-status{width:var(--receivable-col-status)}
+.receivable-list col.rcv-col-progress{width:var(--receivable-col-progress)}
+/* A15 单元格内的多行值与交易方行：未对应平台企业时名称后加 .tag.warn。 */
+.value-lines{display:flex;flex-direction:column;gap:2px;min-width:0}
+.num .value-lines{align-items:flex-end}
+.value-lines .tag{align-self:flex-start}
+.party-line{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-2)}
+.party-line .role{color:var(--muted);font-size:var(--fs-12)}
+/* A16 已收 / 未收：左侧短标签，右侧金额，多币种逐行，不相加。 */
+.paid-pair{display:grid;grid-template-columns:auto auto;justify-content:end;align-items:baseline;gap:2px var(--sp-2);margin:0}
+.paid-pair dt{color:var(--muted);font-size:var(--fs-12);text-align:left}
+.paid-pair dd{margin:0;text-align:right}
+/* A17 单元格内的跨模块入口组（VIN → 上游采购 / 车辆履约 / 下游销售）。 */
+.trace-links{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-4)}
+.trace-links .actlink{margin:0}
+/* A18 应收账款详情：卡片内小节 14 px；明细表单元格不换行（长说明加 .wrap），表头可换行；文件名不拆字；差异新值加粗。 */
+.receivable-detail .sub-h{font-size:var(--fs-14);padding-bottom:var(--sp-3);flex-wrap:wrap}
+.receivable-detail .card-sec .facts{padding-top:var(--sp-2)}
+.receivable-detail .detail-table .tbl td{white-space:nowrap}
+.receivable-detail .detail-table .tbl th{white-space:normal;min-width:8ch}
+.receivable-detail .detail-table .tbl td.wrap{white-space:normal;min-width:16ch}
+.receivable-detail .detail-table .file-ref .file-name{white-space:nowrap;overflow-wrap:normal}
+.diff-new{font-weight:600;color:var(--text)}
+/* A19 ERP 业务日期：正文字体与等宽数字，不用等宽字体，不换行。 */
+.date{font-variant-numeric:tabular-nums;white-space:nowrap}
