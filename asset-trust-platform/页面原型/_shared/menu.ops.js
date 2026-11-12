@@ -18,9 +18,9 @@
       {key:'sources',   label:'三方数据源', icon:'database'}
     ]},
     {group:'审核与出库', items:[
-      // 角标数量为评审演示值；接入时由运营审核模块按当前用户提供。
+      // 角标数量为评审演示值；接入时由 M9 运营审核与资产出库按全平台待审核、出库待办提供。
       {key:'review',    label:'运营审核',   icon:'shield', pendingCount:4},
-      {key:'outbound',  label:'出库与供数', icon:'send'}
+      {key:'outbound',  label:'出库与供数', icon:'send', pendingCount:2}
     ]},
     {group:'消息', items:[
       {key:'messages',  label:'消息中心',   icon:'msg'}

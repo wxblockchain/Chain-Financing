@@ -153,4 +153,13 @@
   --fx-col-id:132px; --fx-col-rate:176px; --fx-col-time:120px; --fx-col-state:136px;
   --fx-col-change:104px; --fx-col-by:136px;
   --fx-rate-input-w:240px; /* 新汇率输入框：2 位小数的奈拉数值与千位数字完整可读 */
+  --review-table-min:1120px; /* M9 待审核九列，1440 px 视口完整展示；申请编号与操作分别固定两侧 */
+  --review-table-min-en:1280px; /* 英文表头、状态与两项操作的阅读下限，窄视口表内滚动 */
+  --review-col-id:132px; --review-col-invoice:104px; --review-col-party:176px; --review-col-amount:136px; --review-col-due:120px;
+  --review-col-time:108px; --review-col-warning:80px; --review-col-status:112px; --review-col-actions:128px; /* 查看 / 审核通过 */
+  --outbound-table-min:1150px; /* M9 出库列表十列，1440 px 视口完整展示 */
+  --outbound-table-min-en:1360px;
+  --outbound-col-id:128px; --outbound-col-invoice:100px; --outbound-col-party:148px; --outbound-col-amount:132px; --outbound-col-due:116px;
+  --outbound-col-time:100px; --outbound-col-status:100px; --outbound-col-cond:120px; --outbound-col-actions:112px; /* 查看 / 重新出库 */
+  --outbound-record-min:1040px; /* M9 出库记录六列，窄视口在表内滚动 */
 }

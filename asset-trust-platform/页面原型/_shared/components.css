@@ -1685,3 +1685,43 @@ table.tbl.fx-history{table-layout:fixed;min-width:var(--fx-history-min)}
 .fx-input>.inp{width:var(--fx-rate-input-w);max-width:100%;font-variant-numeric:tabular-nums}
 .fx-input>span{font-size:var(--ui-field-value);font-weight:500;white-space:nowrap}
 @media(max-width:600px){.fx-input{flex-wrap:nowrap}.fx-input>.inp{flex:1;min-width:0;width:auto}}
+/* A42 运营审核列表（M9）：与 A14 合用固定申请编号与右侧操作列；卡片头为“待审核 / 全部申请”分段（基线 .seg）+ 笔数。
+   待审核九列：申请编号、发票号、债权人 / 债务人（A15）、金额、到期日、债务人确认时间、预警信息、申请状态、操作（查看 / 审核通过）。 */
+table.tbl.review-list{min-width:var(--review-table-min)}
+:lang(en) table.tbl.review-list{min-width:var(--review-table-min-en)}
+.review-list col.rv-col-id{width:var(--review-col-id)}
+.review-list col.rv-col-invoice{width:var(--review-col-invoice)}
+.review-list col.rv-col-party{width:var(--review-col-party)}
+.review-list col.rv-col-amount{width:var(--review-col-amount)}
+.review-list col.rv-col-due{width:var(--review-col-due)}
+.review-list col.rv-col-time{width:var(--review-col-time)}
+.review-list col.rv-col-warning{width:var(--review-col-warning)}
+.review-list col.rv-col-status{width:var(--review-col-status)}
+.review-list col.rv-col-actions{width:var(--review-col-actions)}
+:is(.review-list,.outbound-list) .row-acts{display:flex;justify-content:flex-end;gap:var(--sp-1)}
+:is(.review-list-card,.outbound-list-card)>.card-head{padding-block:var(--sp-3)}
+/* A43 出库列表（M9）：十列为申请编号、发票号、债权人、金额、到期日、审核时间、出库状态、出库条件（可出库 / 不可出库 + 原因次行）、状态更新时间、操作。 */
+table.tbl.outbound-list{min-width:var(--outbound-table-min)}
+:lang(en) table.tbl.outbound-list{min-width:var(--outbound-table-min-en)}
+.outbound-list col.ob-col-id{width:var(--outbound-col-id)}
+.outbound-list col.ob-col-invoice{width:var(--outbound-col-invoice)}
+.outbound-list col.ob-col-party{width:var(--outbound-col-party)}
+.outbound-list col.ob-col-amount{width:var(--outbound-col-amount)}
+.outbound-list col.ob-col-due{width:var(--outbound-col-due)}
+.outbound-list col.ob-col-time{width:var(--outbound-col-time)}
+.outbound-list col.ob-col-status{width:var(--outbound-col-status)}
+.outbound-list col.ob-col-cond{width:var(--outbound-col-cond)}
+.outbound-list col.ob-col-actions{width:var(--outbound-col-actions)}
+/* A44 确权、审核与出库进度：复用 A20 / A25，四等分（发起申请 / 债务人确认 / 运营审核 / 出库）；出库失败 li.failed 同驳回的红色 × 标记。 */
+.receivable-steps.review-steps{grid-template-columns:repeat(4,minmax(0,1fr))}
+.receivable-steps li.failed{color:var(--danger);border-top-color:var(--danger)}
+.receivable-steps li.failed::before{content:"×";background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
+/* A45 出库信息分组：出库状态卡（卡头状态标签、结果字段、底部 .cond 出库条件）、出库内容、出库记录明细表；未取得项用 .out-missing 列出。 */
+.outbound-group{margin-top:var(--sp-7)}
+.outbound-group+.card,.review-detail .snapshot-group+.operation-history{margin-top:var(--sp-7)}
+.outbound-status>.card-head .tag{margin-left:auto}
+table.tbl.outbound-records{min-width:var(--outbound-record-min)}
+.outbound-records .value-lines .addr{font-size:var(--fs-12)}
+.out-missing{margin:var(--sp-1) 0 0;padding-left:var(--sp-5);font-size:var(--fs-13);color:var(--muted)}
+.note .out-missing{color:inherit}
+.warning-list .wrap{min-width:24ch}
