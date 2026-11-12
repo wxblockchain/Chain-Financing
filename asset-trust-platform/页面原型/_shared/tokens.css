@@ -132,4 +132,10 @@
   --purchase-col-id:140px; --purchase-col-pi:132px; --purchase-col-date:108px; --purchase-col-party:168px;
   --purchase-col-amount:140px; --purchase-col-status:112px; --purchase-col-hint:112px;
   --purchase-payment-min:1360px; /* M4 外采付款九列，窄视口在表内滚动 */
+  --vehicle-table-min:940px; /* M5 车辆履约列表七列，VIN 与查看操作分别固定两侧 */
+  --vehicle-table-min-en:980px; /* 英文表头与履约进展的阅读下限 */
+  --vehicle-col-vin:184px; --vehicle-col-model:128px; --vehicle-col-ar:168px; --vehicle-col-bl:140px;
+  --vehicle-col-ship:112px; --vehicle-col-progress:136px; --vehicle-col-actions:72px;
+  --vehicle-search-w:480px; /* 查找内容：VIN、单据号码与编号的提示完整可读 */
+  --fulfil-fee-min:1180px; /* M5 费用登记九列，窄视口在表内滚动 */
 }

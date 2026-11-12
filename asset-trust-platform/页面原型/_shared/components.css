@@ -1435,22 +1435,22 @@ fieldset.field>legend.field-caption{padding:0;margin-bottom:var(--sp-2);width:10
   .enterprise-form .account-delivery>.note{grid-column:auto}
 }
 /* —— M3 应收账款与发票（组件规范 §4 A14–A22）—— */
-/* A14 精简列表：应收与发票编号分别成列；金额明细和确权进度留在详情；两端固定编号和查看操作。 */
+/* A14 精简列表：应收与发票编号分别成列；金额明细和确权进度留在详情；两端固定编号和查看操作。M5 车辆列表（A30）共用固定首列与操作列规则。 */
 table.tbl.receivable-list{min-width:var(--receivable-table-min)}
 :lang(en) table.tbl.receivable-list{min-width:var(--receivable-table-min-en)}
-.tbl.receivable-list :is(th,td){padding-inline:var(--sp-2)}
-.tbl.receivable-list :is(th,td):first-child{padding-left:var(--card-pad);width:auto;position:sticky;left:0;background:var(--card);z-index:1;box-shadow:inset -1px 0 var(--border)}
-.tbl.receivable-list thead th:first-child{background:var(--card-2)}
-.tbl.receivable-list tbody tr:hover td:first-child{background:var(--row-hover)}
-.tbl.receivable-list .btn-link.mono{white-space:nowrap;font-weight:500}
-.tbl.receivable-list td{vertical-align:middle;padding-block:var(--sp-3)}
-.tbl.receivable-list .money{font-size:var(--fs-14)}
-.tbl.receivable-list :is(th,td):last-child{padding-right:var(--card-pad)}
-.tbl.receivable-list .col-act{width:auto;z-index:1;box-shadow:inset 1px 0 var(--border)}
-.tbl.receivable-list .col-act .actlink{white-space:nowrap}
-.tbl.receivable-list th{white-space:normal;word-break:normal;overflow-wrap:normal}
-.tbl.receivable-list .tag{white-space:normal;overflow-wrap:normal;word-break:normal}
-.tbl.receivable-list .num{white-space:nowrap}
+.tbl:is(.receivable-list,.vehicle-list) :is(th,td){padding-inline:var(--sp-2)}
+.tbl:is(.receivable-list,.vehicle-list) :is(th,td):first-child{padding-left:var(--card-pad);width:auto;position:sticky;left:0;background:var(--card);z-index:1;box-shadow:inset -1px 0 var(--border)}
+.tbl:is(.receivable-list,.vehicle-list) thead th:first-child{background:var(--card-2)}
+.tbl:is(.receivable-list,.vehicle-list) tbody tr:hover td:first-child{background:var(--row-hover)}
+.tbl:is(.receivable-list,.vehicle-list) .btn-link.mono{white-space:nowrap;font-weight:500}
+.tbl:is(.receivable-list,.vehicle-list) td{vertical-align:middle;padding-block:var(--sp-3)}
+.tbl:is(.receivable-list,.vehicle-list) .money{font-size:var(--fs-14)}
+.tbl:is(.receivable-list,.vehicle-list) :is(th,td):last-child{padding-right:var(--card-pad)}
+.tbl:is(.receivable-list,.vehicle-list) .col-act{width:auto;z-index:1;box-shadow:inset 1px 0 var(--border)}
+.tbl:is(.receivable-list,.vehicle-list) .col-act .actlink{white-space:nowrap}
+.tbl:is(.receivable-list,.vehicle-list) th{white-space:normal;word-break:normal;overflow-wrap:normal}
+.tbl:is(.receivable-list,.vehicle-list) .tag{white-space:normal;overflow-wrap:normal;word-break:normal}
+.tbl:is(.receivable-list,.vehicle-list) .num{white-space:nowrap}
 .receivable-list col.rcv-col-id{width:var(--receivable-col-id)}
 .receivable-list col.rcv-col-invoice{width:var(--receivable-col-invoice)}
 .receivable-list col.rcv-col-party{width:var(--receivable-col-party)}
@@ -1472,21 +1472,21 @@ table.tbl.receivable-list{min-width:var(--receivable-table-min)}
 /* A17 单元格内的跨模块入口组（VIN → 上游采购 / 车辆履约 / 下游销售）。 */
 .trace-links{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-4)}
 .trace-links .actlink{margin:0}
-/* A18 应收账款详情：卡片内小节 14 px；明细表单元格不换行（长说明加 .wrap），表头可换行；文件名不拆字；差异新值加粗。 */
-.receivable-detail .content-in{max-width:none;margin-inline:0}
-.receivable-detail .page-title{font-family:var(--sans);font-variant-numeric:tabular-nums}
+/* A18 应收账款详情：卡片内小节 14 px；明细表单元格不换行（长说明加 .wrap），表头可换行；文件名不拆字；差异新值加粗。M5 履约详情（.fulfil-detail）共用。 */
+:is(.receivable-detail,.fulfil-detail) .content-in{max-width:none;margin-inline:0}
+:is(.receivable-detail,.fulfil-detail) .page-title{font-family:var(--sans);font-variant-numeric:tabular-nums}
 .receivable-detail .receivable-status .status-grid{grid-template-columns:repeat(3,minmax(0,1fr));padding:var(--sp-2)}
-.receivable-detail .detail-nav a[aria-current="location"]{box-shadow:inset 0 -2px var(--accent)}
-.receivable-detail .card-head h3{font-size:var(--ui-section-title)}
-.receivable-detail .sub-h{font-size:var(--fs-14);padding-bottom:var(--sp-3);flex-wrap:wrap}
-.receivable-detail .card-sec .facts{padding-top:var(--sp-2)}
-.receivable-detail .detail-table .tbl td{white-space:nowrap}
-.receivable-detail .detail-table .tbl th{white-space:normal;min-width:8ch}
-.receivable-detail .detail-table .tbl :is(th,td){vertical-align:top}
-.receivable-detail .detail-table .tbl .money{font-size:var(--fs-14)}
-.receivable-detail .detail-table .tbl td>div.cell-sub{white-space:normal;overflow-wrap:normal;word-break:normal}
-.receivable-detail .detail-table .tbl td.wrap{white-space:normal;min-width:16ch}
-.receivable-detail .detail-table .file-ref .file-name{white-space:nowrap;overflow-wrap:normal}
+:is(.receivable-detail,.fulfil-detail) .detail-nav a[aria-current="location"]{box-shadow:inset 0 -2px var(--accent)}
+:is(.receivable-detail,.fulfil-detail) .card-head h3{font-size:var(--ui-section-title)}
+:is(.receivable-detail,.fulfil-detail) .sub-h{font-size:var(--fs-14);padding-bottom:var(--sp-3);flex-wrap:wrap}
+:is(.receivable-detail,.fulfil-detail) .card-sec .facts{padding-top:var(--sp-2)}
+:is(.receivable-detail,.fulfil-detail) .detail-table .tbl td{white-space:nowrap}
+:is(.receivable-detail,.fulfil-detail) .detail-table .tbl th{white-space:normal;min-width:8ch}
+:is(.receivable-detail,.fulfil-detail) .detail-table .tbl :is(th,td){vertical-align:top}
+:is(.receivable-detail,.fulfil-detail) .detail-table .tbl .money{font-size:var(--fs-14)}
+:is(.receivable-detail,.fulfil-detail) .detail-table .tbl td>div.cell-sub{white-space:normal;overflow-wrap:normal;word-break:normal}
+:is(.receivable-detail,.fulfil-detail) .detail-table .tbl td.wrap{white-space:normal;min-width:16ch}
+:is(.receivable-detail,.fulfil-detail) .detail-table .file-ref .file-name{white-space:nowrap;overflow-wrap:normal}
 .receivable-detail .receivable-contract .card-sec+.card-sec{border-top:1px solid var(--border-strong)}
 .receivable-detail .receivable-audit{margin-top:var(--sp-7)}
 .diff-new{font-weight:600;color:var(--text)}
@@ -1562,3 +1562,51 @@ table.tbl.purchase-list{min-width:var(--purchase-table-min)}
 .purchase-detail .detail-table td.wrap{min-width:36ch}
 .purchase-detail .file-ref .file-name{flex:none}
 .purchase-list-card .filter-search{flex-basis:var(--enterprise-search-w)}
+/* —— M5 车辆物流与履约追溯（组件规范 §4 A30–A33）—— */
+/* A30 车辆履约列表：每车一行，VIN 固定在左、“查看”固定在右（共用 A14 规则）；中文 / 英文阅读下限不同，空间不足时表内滚动。 */
+table.tbl.vehicle-list{min-width:var(--vehicle-table-min)}
+:lang(en) table.tbl.vehicle-list{min-width:var(--vehicle-table-min-en)}
+.vehicle-list col.veh-col-vin{width:var(--vehicle-col-vin)}
+.vehicle-list col.veh-col-model{width:var(--vehicle-col-model)}
+.vehicle-list col.veh-col-ar{width:var(--vehicle-col-ar)}
+.vehicle-list col.veh-col-bl{width:var(--vehicle-col-bl)}
+.vehicle-list col.veh-col-ship{width:var(--vehicle-col-ship)}
+.vehicle-list col.veh-col-progress{width:var(--vehicle-col-progress)}
+.vehicle-list col.veh-col-actions{width:var(--vehicle-col-actions)}
+/* 车辆筛选：三个常用筛选与更多筛选一行，查找方式 + 查找内容 + 操作独占下一行（同 A7 企业列表）。 */
+.vehicle-filters .filter-toolbar{row-gap:var(--sp-3)}
+.vehicle-filters .filter-query{flex-basis:100%;justify-content:flex-start;margin-left:0}
+.vehicle-filters .filter-search{flex-basis:var(--vehicle-search-w)}
+/* A31 履约详情顶部与进度：标识在页头，概要卡三项（车型 / 异常事件 / 核对提示），有核对提示时底部逐条可定位；
+   进度条复用 A20 / A25 的 .receivable-steps，五等分，没有记录的环节保持未开始样式并写“暂无记录”。 */
+.vehicle-summary .status-grid{padding:var(--sp-2)}
+.vehicle-summary .status-grid dd{font-size:var(--ui-field-value)}
+.vehicle-summary .summary-sub{font-size:var(--fs-13);color:var(--muted)}
+.vehicle-summary>.cond{border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+.vehicle-summary>.cond ul{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-5);padding-left:0;list-style:none}
+.vehicle-summary>.cond .btn-link{color:inherit;text-decoration:underline;text-underline-offset:2px;padding-inline:0}
+.receivable-steps.fulfil-steps{grid-template-columns:repeat(5,minmax(0,1fr))}
+.fulfil-steps li.none small{color:var(--faint)}
+.fulfil-steps .step-note{margin-top:0}
+.fulfil-detail .card-note{padding:var(--sp-4) var(--card-pad) 0}
+.fulfil-detail .card-note+.card-sec .sub-h{padding-top:var(--sp-4)}
+.fulfil-detail .facts-caption{padding:var(--sp-2) var(--card-pad) 0}
+.fulfil-detail .cover{font-size:var(--fs-13);color:var(--muted);white-space:nowrap}
+.container-list{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-4)}
+.container-list>span{display:inline-flex;align-items:center;gap:var(--sp-2)}
+table.tbl.fee-records{min-width:var(--fulfil-fee-min)}
+/* A32 提单批次：原生 details 展开本批车辆、集装箱与关联单据；默认收起，键盘可开合，展开图标随状态旋转。 */
+.bl-batch{margin:0 var(--card-pad) var(--sp-5);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2)}
+.bl-batch>summary{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);padding:var(--sp-3) var(--sp-4);cursor:pointer;list-style:none;font-size:var(--fs-14);font-weight:600;border-radius:var(--radius-xs)}
+.bl-batch>summary::-webkit-details-marker{display:none}
+.bl-batch>summary .sub{font-weight:400;color:var(--muted);font-size:var(--fs-13)}
+.bl-batch>summary svg.i{transform:rotate(-90deg);transition:transform var(--dur-fast) var(--ease-out)}
+.bl-batch[open]>summary svg.i{transform:none}
+.bl-batch[open]>summary{border-bottom:1px solid var(--border);border-radius:var(--radius-xs) var(--radius-xs) 0 0}
+.bl-batch-body{background:var(--card);border-radius:0 0 var(--radius-xs) var(--radius-xs);padding-bottom:var(--sp-2)}
+.bl-batch-body .sub-h{padding-inline:var(--sp-4)}
+.bl-batch-body .detail-table{margin-inline:var(--sp-4)}
+.bl-batch-body .facts{padding-inline:var(--sp-4)}
+@media (prefers-reduced-motion:reduce){.bl-batch>summary svg.i{transition:none}}
+/* A33 追溯对象概要：从应收账款进入时的应收账款识别信息，三列只读字段；定位行复用 A28 tr.is-target。 */
+.fulfil-trace-summary .facts{padding-block:var(--sp-3)}
