@@ -1,7 +1,7 @@
 /* ==========================================================================
    frame.js — 资产可信平台原型壳层运行时（企业端；运营端后续沿用）
    基线：代币发行平台 frame.js（组件规范 v1.96）。本平台改动：账号入口显示姓名与登录邮箱并提供“账户信息”；
-   入驻准备与首登改密的 focus 画面（data-restricted）只给出登录邮箱与退出；本期无消息入口与认证锁定菜单。
+   入驻准备与首登改密的 focus 画面（data-restricted）只给出登录邮箱与退出；入驻未完成时菜单带锁形标记。
    只做三件事：渲染壳层（侧栏、顶栏、账号入口）、按画面切换、画面目录。
    不实现业务规则、校验、状态机或演示时钟；规则以 PRD 为准。
 
@@ -18,6 +18,9 @@
    data-password-toggle="输入框 id" 只切换密码显隐，不校验密码。
    菜单与演示账号只在 _shared/menu.client.js（企业端）与 menu.ops.js（运营端）维护（TP.NAV_BY[身份]、TP.demo.accounts[身份]），模块不复制。
    账号入口菜单项默认“账户信息”，账号可用 settingsLabel 指定（运营端为“账户设置”）。
+   消息入口（M10）：模块加载 _shared/inbox.js（TP.inbox）后顶栏显示铃铛、未读数与最近消息预览；入驻未完成（locked）、
+   受限登录（restricted）与 focus 画面不显示。画面可用 data-unread="数字" 指定本屏未读数，
+   data-inbox="open|empty|error" 展开预览并呈现对应状态（通常为 data-overlay，底层为所在页面）。
    ========================================================================== */
 (function(){
   var TP = window.TP = window.TP || {};
@@ -161,12 +164,26 @@
       '<button type="button" class="dd-item" role="menuitemradio" aria-checked="'+!en+'" data-lang="zh">'+(!en?TP.icon('check'):'')+'简体中文</button></div></div>';
   }
 
+  /* 消息入口：铃铛 + 未读数（0 不显示，超过 99 为 99+）+ 最近消息预览（下拉，点击外部或 Esc 关闭）。
+     只在能看消息的身份显示：入驻未完成（locked）、受限登录（restricted）与未登录均不显示。 */
+  function inboxEntry(who, sec, screen){
+    var box = TP.inbox, role = box ? box.roleOf(who) : null, acc = TP.demo.accounts && TP.demo.accounts[who];
+    if(!role || !acc || acc.locked || acc.restricted) return '';
+    var own = screen && screen.dataset.unread!==undefined ? screen.dataset.unread : sec.dataset.unread;
+    var state = screen && screen.dataset.inbox, empty = state==='empty';
+    var n = empty ? 0 : own!==undefined ? +own : box.unread(role);
+    var shown = n>99 ? '99+' : String(n), en = TP.language==='en';
+    var label = n ? (en ? 'Notifications, '+shown+' unread' : '消息通知，'+shown+' 条未读') : (en ? 'Notifications' : '消息通知');
+    return '<div class="dd inbox"><button type="button" class="bell dd-btn" aria-expanded="'+(state?'true':'false')+'" aria-label="'+label+'" title="'+label+'">'+
+      TP.icon('bell')+(n?'<span class="badge" aria-hidden="true">'+shown+'</span>':'')+'</button>'+
+      box.panel(who, empty?'empty':state==='open'?'':state, !state, {omitList:empty})+'</div>';
+  }
+
   function renderTools(sec, open, screen){
     screenAddr = sec.dataset.address || '';
     var who = sec.dataset.who;
     var focus = sec.dataset.layout === 'focus';
-    // 本期没有消息入口（消息中心另行交付）；顶栏只有界面语言与账号入口。
-    $('#tools').innerHTML = focus ? '' : langEntry() + accountEntry(who, open);
+    $('#tools').innerHTML = focus ? '' : langEntry() + inboxEntry(who, sec, screen || sec) + accountEntry(who, open);
     $('#focusTools').innerHTML = focus ? langEntry() + accountEntry(who, open) : '';
     // 语言切换只放在平台顶栏；弹窗内不设语言入口。
     $$('.modal-h').forEach(function(header){

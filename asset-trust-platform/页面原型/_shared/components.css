@@ -1539,18 +1539,18 @@ table.tbl.purchase-list{min-width:var(--purchase-table-min)}
 .purchase-list col.pur-col-actions{width:var(--receivable-col-actions)}
 .vin-lookup .detail-table{margin-top:var(--sp-5)}
 .sub-empty.first{padding-top:var(--sp-5);padding-bottom:var(--sp-5)}
-/* A27 采购交易详情与车辆追溯：沿用 A18 .receivable-detail 版式；顶部状态两项、追溯汇总五项。M6 销售交易详情（.sales-detail，A37）共用。 */
+/* A27 采购交易详情与车辆追溯：沿用 A18 .receivable-detail 版式；顶部状态两项、追溯汇总五项。 */
 @media(min-width:601px){
-  :is(.purchase-detail,.sales-detail) :is(.purchase-status,.sales-status) .status-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:var(--sp-2)}
-  :is(.purchase-detail,.sales-detail) .trace-summary .status-grid{grid-template-columns:repeat(5,minmax(0,1fr));padding:var(--sp-2)}
+  .purchase-detail .purchase-status .status-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:var(--sp-2)}
+  .purchase-detail .trace-summary .status-grid{grid-template-columns:repeat(5,minmax(0,1fr));padding:var(--sp-2)}
 }
 .purchase-detail .status-count{font-size:var(--fs-13);color:var(--muted);font-variant-numeric:tabular-nums}
-:is(.purchase-detail,.sales-detail) .card>.note{margin:var(--sp-4) var(--card-pad) 0}
-:is(.purchase-detail,.sales-detail) .card>.note+.detail-table{margin-top:var(--sp-4)}
-:is(.purchase-detail,.sales-detail) .note .money{color:var(--text)}
-:is(.purchase-detail .purchase-invoices,.sales-detail .sales-invoices) .card-sec+.card-sec{border-top:1px solid var(--border-strong)}
+.purchase-detail .card>.note{margin:var(--sp-4) var(--card-pad) 0}
+.purchase-detail .card>.note+.detail-table{margin-top:var(--sp-4)}
+.purchase-detail .note .money{color:var(--text)}
+.purchase-detail .purchase-invoices .card-sec+.card-sec{border-top:1px solid var(--border-strong)}
 .purchase-detail table.purchase-payments{min-width:var(--purchase-payment-min)}
-:is(.purchase-detail,.sales-detail) .compare-note{align-items:center}
+.purchase-detail .compare-note{align-items:center}
 /* A28 对照应收账款：本笔应收账款的车辆行使用浅主色底，并在 VIN 下标注。 */
 .tbl tbody tr.is-target td{background:var(--accent-soft)}
 /* A29 车辆追溯：每辆车一张卡（分区导航按 VIN），从应收账款点进的车辆主色边线并标“当前查看”。 */
@@ -1559,8 +1559,8 @@ table.tbl.purchase-list{min-width:var(--purchase-table-min)}
 .vin-trace .sub-h:first-of-type{padding-top:var(--sp-5)}
 .trace-empty{padding:var(--sp-5) var(--card-pad);display:grid;gap:var(--sp-1);color:var(--muted);font-size:var(--fs-13)}
 .trace-empty p:first-child{color:var(--text);font-size:var(--ui-field-value)}
-:is(.purchase-detail,.sales-detail) .detail-table td.wrap{min-width:36ch}
-:is(.purchase-detail,.sales-detail) .file-ref .file-name{flex:none}
+.purchase-detail .detail-table td.wrap{min-width:36ch}
+.purchase-detail .file-ref .file-name{flex:none}
 .purchase-list-card .filter-search{flex-basis:var(--enterprise-search-w)}
 /* —— M5 车辆物流与履约追溯（组件规范 §4 A30–A33）—— */
 /* A30 车辆履约列表：每车一行，VIN 固定在左、“查看”固定在右（共用 A14 规则）；中文 / 英文阅读下限不同，空间不足时表内滚动。 */
@@ -1573,10 +1573,10 @@ table.tbl.vehicle-list{min-width:var(--vehicle-table-min)}
 .vehicle-list col.veh-col-ship{width:var(--vehicle-col-ship)}
 .vehicle-list col.veh-col-progress{width:var(--vehicle-col-progress)}
 .vehicle-list col.veh-col-actions{width:var(--vehicle-col-actions)}
-/* 车辆筛选：三个常用筛选与更多筛选一行，查找方式 + 查找内容 + 操作独占下一行（同 A7 企业列表）。M6 销售交易筛选（.sales-filters）共用。 */
-:is(.vehicle-filters,.sales-filters) .filter-toolbar{row-gap:var(--sp-3)}
-:is(.vehicle-filters,.sales-filters) .filter-query{flex-basis:100%;justify-content:flex-start;margin-left:0}
-:is(.vehicle-filters,.sales-filters) .filter-search{flex-basis:var(--vehicle-search-w)}
+/* 车辆筛选：三个常用筛选与更多筛选一行，查找方式 + 查找内容 + 操作独占下一行（同 A7 企业列表）。 */
+.vehicle-filters .filter-toolbar{row-gap:var(--sp-3)}
+.vehicle-filters .filter-query{flex-basis:100%;justify-content:flex-start;margin-left:0}
+.vehicle-filters .filter-search{flex-basis:var(--vehicle-search-w)}
 /* A31 履约详情顶部与进度：标识在页头，概要卡三项（车型 / 异常事件 / 核对提示），有核对提示时底部逐条可定位；
    进度条复用 A20 / A25 的 .receivable-steps，五等分，没有记录的环节保持未开始样式并写“暂无记录”。 */
 .vehicle-summary .status-grid{padding:var(--sp-2)}
@@ -1632,18 +1632,3 @@ table.tbl.confirmation-list{min-width:var(--confirmation-table-min)}
 .snapshot-group .detail-group-h .btn-link{margin-left:auto;font-size:var(--fs-13)}
 .confirmation-detail .snapshot-group+.operation-history{margin-top:var(--sp-7)}
 .confirmation-card>.confirmation-note+.confirmation-note{margin-top:calc(-1 * var(--sp-2))}
-/* —— M6 下游销售与收款追溯（组件规范 §4 A37–A38）—— */
-/* A37 下游销售列表：沿用 A14 固定编号与查看的列表骨架（.receivable-list），八列按 M6 列宽 token；筛选条与 M5 相同（查找方式 + 查找内容独占一行）。
-   销售交易详情与车辆追溯沿用 A18 / A27 / A29：顶部客户与收款情况两项，追溯汇总五项。 */
-table.tbl.sales-list{min-width:var(--sales-table-min)}
-:lang(en) table.tbl.sales-list{min-width:var(--sales-table-min-en)}
-.sales-list col.sal-col-id{width:var(--sales-col-id)}
-.sales-list col.sal-col-date{width:var(--sales-col-date)}
-.sales-list col.sal-col-seller{width:var(--sales-col-party)}
-.sales-list col.sal-col-customer{width:var(--sales-col-party)}
-.sales-list col.sal-col-count{width:var(--sales-col-count)}
-.sales-list col.sal-col-amount{width:var(--sales-col-amount)}
-.sales-list col.sal-col-status{width:var(--sales-col-status)}
-.sales-list col.sal-col-actions{width:var(--receivable-col-actions)}
-/* A38 收款信息：先收款统计（已开票金额、累计已收，多币种逐行），再收款明细九列；不足阅读宽度时表内滚动。 */
-.sales-detail table.sales-receipts{min-width:var(--sales-receipt-min)}

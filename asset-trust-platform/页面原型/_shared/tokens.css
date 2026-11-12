@@ -143,9 +143,4 @@
   --confirmation-col-id:140px; --confirmation-col-invoice:112px; --confirmation-col-party:184px; --confirmation-col-amount:140px;
   --confirmation-col-due:132px; --confirmation-col-time:120px; --confirmation-col-status:124px;
   --confirmation-col-actions:168px; /* 待处理：查看 / 确认 / 驳回 */
-  --sales-table-min:1120px; /* M6 八列下游销售列表，编号与查看分别固定两侧 */
-  --sales-table-min-en:1200px; /* 英文表头与收款情况的阅读下限 */
-  --sales-col-id:148px; --sales-col-date:112px; --sales-col-party:200px; --sales-col-count:88px;
-  --sales-col-amount:176px; --sales-col-status:116px;
-  --sales-receipt-min:1360px; /* M6 收款明细九列，窄视口在表内滚动 */
 }
