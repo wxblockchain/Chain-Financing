@@ -1317,3 +1317,52 @@ td.pop-col:has(>.value-pop)::after{content:none}
 .addr>.value-pop>.dd-btn{border-color:transparent;background:transparent;color:var(--faint)}
 .addr>.value-pop>.dd-btn:hover{background:var(--card-hover);color:var(--accent)}
 .addr>.value-pop>.dd-list .mono{font-size:var(--fs-13)}
+/* —— 运营端 M2（组件规范 §4 A7–A11）—— */
+/* A7 企业列表：十二列，表内滚动并固定右侧操作列；状态标签可按词换行。 */
+.enterprise-table-card{container:enterprise-table / inline-size}
+.enterprise-table-hint{display:none;padding:var(--sp-2) var(--card-pad);border-bottom:1px solid var(--border);font-size:var(--ui-field-label);color:var(--muted)}
+@container enterprise-table (max-width:1279px){.enterprise-table-hint{display:block}}
+.tbl.enterprise-list{table-layout:fixed;min-width:var(--enterprise-table-min)}
+.tbl.enterprise-list :is(th,td){white-space:normal;overflow-wrap:anywhere;padding-inline:var(--sp-2)}
+.tbl.enterprise-list :is(th,td):first-child{padding-left:var(--card-pad);width:11%}
+.tbl.enterprise-list th:nth-child(2){width:12%}
+.tbl.enterprise-list th:nth-child(3){width:7%}
+.tbl.enterprise-list th:nth-child(4){width:7%}
+.tbl.enterprise-list th:nth-child(5){width:14%}
+.tbl.enterprise-list th:nth-child(6){width:8%}
+.tbl.enterprise-list th:nth-child(7){width:8%}
+.tbl.enterprise-list th:nth-child(8){width:7%}
+.tbl.enterprise-list th:nth-child(9){width:5%}
+.tbl.enterprise-list th:nth-child(10),.tbl.enterprise-list th:nth-child(11){width:8%}
+.tbl.enterprise-list th.col-act{width:5%}
+.tbl.enterprise-list td:first-child{white-space:nowrap}
+.tbl.enterprise-list thead th{overflow-wrap:normal;word-break:normal;hyphens:auto}
+.tbl.enterprise-list .tag{white-space:normal;overflow-wrap:normal;word-break:normal}
+.tbl.enterprise-list .col-act{width:auto;white-space:nowrap;padding-right:var(--card-pad)}
+/* A8 业务角色：多选卡片，两项并排；只读时以标签呈现。 */
+.role-choices{display:grid;grid-template-columns:repeat(2,minmax(0,240px));gap:var(--sp-3)}
+.role-choices .choice-card{align-items:center;padding:var(--sp-3) var(--sp-4)}
+.role-choices .choice-card input{margin-top:0}
+.role-choices .choice-card[aria-invalid="true"],.role-choices.is-error .choice-card{border-color:var(--danger)}
+@media(max-width:600px){.role-choices{grid-template-columns:minmax(0,1fr)}}
+.role-tags{display:inline-flex;flex-wrap:wrap;gap:var(--sp-1)}
+fieldset.field{border:0;margin:0;padding:0;min-width:0}
+fieldset.field>legend.field-caption{padding:0;margin-bottom:var(--sp-2);width:100%;font-size:var(--ui-field-label);font-weight:500}
+.role-field+.form-grid{margin-top:var(--sp-5)}
+/* A9 重复邀请：已有企业的引用块，放在出错卡片内，可进入其详情。 */
+.ref-block{margin-top:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2)}
+.ref-block .facts{padding:var(--sp-1) var(--sp-4)}
+.ref-block .facts>div{padding-block:var(--sp-3)}
+/* A10 企业详情：入驻节点与摘要字段同卡；A11 操作记录明细表。 */
+.onboarding-steps{padding:var(--sp-5) var(--card-pad) var(--sp-1)}
+.onboarding-steps li{flex:0 1 auto}
+.onboarding-steps li+li{padding-left:var(--sp-4)}
+.enterprise-summary .facts-region{padding-bottom:var(--sp-2)}
+.card-sec .sub-h:first-child{padding-top:var(--sp-5)}
+.detail-table .tbl.operation-records{table-layout:fixed;min-width:720px}
+.operation-records th:first-child{width:18%}
+.operation-records th:nth-child(2){width:18%}
+.operation-records th:last-child{width:28%}
+.operation-records :is(th,td){white-space:normal;overflow-wrap:anywhere;vertical-align:top}
+.operation-records td>.cell-sub{display:block}
+.page-desc .sep{color:var(--faint);margin-inline:var(--sp-1)}

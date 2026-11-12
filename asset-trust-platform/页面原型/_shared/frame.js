@@ -14,7 +14,8 @@
    任意元素 data-go="画面 id" 跳转；弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制完整值。
    模块在 TP.routes 中登记菜单与账号入口对应的画面。
    data-password-toggle="输入框 id" 只切换密码显隐，不校验密码。
-   菜单与演示账号只在 _shared/menu.client.js 维护（TP.NAV_BY[身份]、TP.demo.accounts[身份]），模块不复制。
+   菜单与演示账号只在 _shared/menu.client.js（企业端）与 menu.ops.js（运营端）维护（TP.NAV_BY[身份]、TP.demo.accounts[身份]），模块不复制。
+   账号入口菜单项默认“账户信息”，账号可用 settingsLabel 指定（运营端为“账户设置”）。
    ========================================================================== */
 (function(){
   var TP = window.TP = window.TP || {};
@@ -46,7 +47,11 @@
     back:'<path d="M15 6l-6 6 6 6"/>',
     download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
     receivable:'<path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h3"/>',
-    confirm:'<path d="M6 3h9l3 3v15H6z"/><path d="M9 13l2 2 4-4"/>'
+    confirm:'<path d="M6 3h9l3 3v15H6z"/><path d="M9 13l2 2 4-4"/>',
+    cart:'<path d="M3 4h2l2.4 11h10.2L20 8H6.2"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>',
+    truck:'<path d="M3 6h11v10H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>',
+    database:'<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/>',
+    send:'<path d="M4 12l16-8-6 16-3-7z"/><path d="M11 13l9-9"/>'
   };
   TP.icon = function(n){ return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+(ICON[n]||'')+'</svg>'; };
   TP.refreshPasswordToggles = function(){
@@ -117,7 +122,7 @@
     var menu = '<div class="dd-list admin" role="menu"'+(open?'':' hidden')+'>'+
       '<div class="dd-who">'+(acc.restricted?'<div class="cell-sub">'+esc(acc.email)+'</div>':
         '<div class="cell-main">'+esc(acc.name)+'</div><div class="cell-sub">'+esc(acc.email)+'</div>'+(roles?'<div class="dd-role">'+roles+'</div>':''))+'</div>'+
-      (acc.restricted?'':'<button type="button" class="dd-item" role="menuitem" data-acct="settings">'+TP.icon('user')+'账户信息</button>')+
+      (acc.restricted?'':'<button type="button" class="dd-item" role="menuitem" data-acct="settings">'+TP.icon('user')+esc(acc.settingsLabel||'账户信息')+'</button>')+
       '<button type="button" class="dd-item" role="menuitem" data-acct="logout">'+TP.icon('out')+'退出登录</button></div>';
     return '<div class="dd" id="acct"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="'+(open?'true':'false')+'" aria-label="账号：'+esc(label)+'">'+
       TP.icon('user')+'<span>'+esc(label)+'</span>'+TP.icon('chev')+'</button>'+menu+'</div>';
