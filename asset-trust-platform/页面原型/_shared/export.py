@@ -30,10 +30,15 @@ def main():
             raise SystemExit(f"拒绝远程资源：{rel}")
         return (src.parent / rel).resolve().read_text(encoding="utf-8")
 
-    html = re.sub(r'<link rel="stylesheet" href="([^"]+)">',
+    # 兼容属性顺序不同或自闭合写法的样式表引用（如 <link href="…" rel="stylesheet"/>）。
+    html = re.sub(r'<link\b(?=[^>]*\brel="stylesheet")[^>]*\bhref="([^"]+)"[^>]*>',
                   lambda m: "<style>\n" + read(m.group(1)) + "</style>", html)
     html = re.sub(r'<script src="([^"]+)"></script>',
                   lambda m: "<script>\n" + read(m.group(1)).replace("</script", "<\\/script") + "</script>", html)
+    # 生成件必须自包含：仍有外部样式表或脚本引用时直接失败，不输出打不开样式的附件。
+    left = re.findall(r'<link\b[^>]*\brel="stylesheet"[^>]*>|<script\b[^>]*\bsrc="[^"]+"[^>]*>', html)
+    if left:
+        raise SystemExit("导出失败：仍有未内联的外部引用：" + "；".join(left))
     args.output.write_text(html, encoding="utf-8")
     print(f"已导出 {args.output}（{len(html.encode('utf-8')) // 1024} KB）")
 
