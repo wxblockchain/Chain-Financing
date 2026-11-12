@@ -1395,19 +1395,13 @@ fieldset.field>legend.field-caption{padding:0;margin-bottom:var(--sp-2);width:10
 .ref-block{margin-top:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2)}
 .ref-block .facts{padding:var(--sp-1) var(--sp-4)}
 .ref-block .facts>div{padding-block:var(--sp-3)}
-/* A10 企业详情：入驻节点与摘要字段同卡；A11 操作记录明细表。 */
+/* A10 企业详情：入驻节点与摘要字段同卡；A11 操作记录复用基线 .operation-log。 */
 .onboarding-steps{margin-inline:var(--card-pad);padding-block:var(--sp-4);border-bottom:1px solid var(--row-line);gap:var(--sp-4)}
 .onboarding-steps li{flex:1;align-items:flex-start}
 .onboarding-steps li::before{margin-top:0;line-height:1}
 .enterprise-summary .facts-region{padding-bottom:var(--sp-2)}
 .enterprise-summary .facts>div{padding-block:var(--sp-3)}
 .card-sec .sub-h:first-child{padding-top:var(--sp-5)}
-.detail-table .tbl.operation-records{table-layout:fixed;min-width:720px}
-.operation-records th:first-child{width:18%}
-.operation-records th:nth-child(2){width:18%}
-.operation-records th:last-child{width:28%}
-.operation-records :is(th,td){white-space:normal;overflow-wrap:anywhere;vertical-align:top}
-.operation-records td>.cell-sub{display:block}
 .page-desc .sep{color:var(--faint);margin-inline:var(--sp-1)}
 /* A12 企业完整详情：档案与资料采用两列，短状态摘要保留三列。 */
 .enterprise-detail .content-in{max-width:var(--detail-sheet-max);margin-inline:0}

@@ -331,7 +331,7 @@ TP.addCopy({
 "账户设置 · 时区保存失败": "Account settings · time zone not saved",
 "账户设置 · 账号信息读取失败": "Account settings · information failed to load",
 "资料已变化": "Details have changed",
-"资料提交": "Profile submission",
+"资料完善": "Profile completion",
 "资料提交时间": "Profile submitted at",
 "输入运营账号当前的登录邮箱。": "Enter the current login email of your operations account.",
 "运营登录与企业管理 · 资产可信平台": "Operations sign-in & enterprise management · Asset Trust Platform",
