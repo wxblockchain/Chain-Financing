@@ -428,6 +428,13 @@
         var height=entries[0].target.getBoundingClientRect().height;
         if(height)document.documentElement.style.setProperty('--app-header-h',height+'px');
       }).observe($('#tools').closest('.topbar'));
+      var onboardObserver=new ResizeObserver(function(entries){
+        entries.forEach(function(entry){
+          var height=entry.target.getBoundingClientRect().height;
+          if(height)entry.target.closest('.onboard-screen').style.setProperty('--onboard-head-h',height+'px');
+        });
+      });
+      $$('.onboard-head').forEach(function(head){onboardObserver.observe(head);});
     }
     $$('i[data-asset]').forEach(function(i){ i.outerHTML = TP.assetIcon(i.dataset.asset); });
     $$('i[data-ico]').forEach(function(i){ i.outerHTML = TP.icon(i.dataset.ico); });

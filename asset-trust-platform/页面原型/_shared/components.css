@@ -1277,13 +1277,19 @@ td.pop-col:has(>.value-pop)::after{content:none}
 /* ==========================================================================
    资产可信平台新增（组件规范 §A）。只引用 tokens.css，不改写上方基线规则。
    ========================================================================== */
-/* A1 入驻准备：沿用 focus 骨架与 .auth-screen，加宽承载步骤条与资料表单；步骤条与内容之间一条分隔线。 */
+/* A1 入驻准备：长表单滚动时仍可核对三步进度；标题区高度由 frame.js 实测，供键盘滚动避让。 */
 .focus-main>.auth-screen.onboard-screen,.onboard-screen>.focus-card{max-width:var(--onboard-w)}
-.onboard-head{display:flex;flex-direction:column;gap:var(--sp-5);padding-bottom:var(--sp-5);border-bottom:1px solid var(--border)}
+.onboard-head{position:sticky;top:0;z-index:var(--z-sticky);display:flex;flex-direction:column;gap:var(--sp-5);
+  margin-top:calc(-1 * var(--sp-4));padding-block:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border);background:var(--card)}
 .onboard-head .lead{margin-top:var(--sp-1)}
+.onboard-head .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+.onboard-head .steps li{align-items:flex-start;line-height:1.6}
+.onboard-head .steps li::before{margin-top:var(--sp-1)}
+.onboard-head .steps li[aria-current="step"]{border-bottom:2px solid var(--accent);padding-bottom:var(--sp-2)}
+.onboard-screen :is(input,select,button,h2){scroll-margin-block-start:calc(var(--onboard-head-h,0px) + var(--sp-8));scroll-margin-block-end:var(--sp-4)}
 .steps li>.btn-link{padding:2px 4px;margin:-2px -4px;font-weight:500}
 /* A2 设置密码的规则清单：逐项说明是否满足，满足项绿色对勾，未满足项灰色圆点；不展示强弱分档。 */
-.rule-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-1) var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
+.rule-list{list-style:none;margin:0;padding:var(--sp-3) 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2) var(--sp-4);border-block:1px solid var(--row-line);font-size:var(--fs-13);color:var(--muted)}
 .rule-list li{display:flex;align-items:flex-start;gap:var(--sp-2);min-width:0}
 .rule-list li::before{content:"";flex:none;width:16px;height:16px;margin-top:3px;border-radius:var(--radius-pill);border:1.5px solid var(--border-strong);background:var(--card)}
 .rule-list li.met{color:var(--ok)}
@@ -1291,26 +1297,43 @@ td.pop-col:has(>.value-pop)::after{content:none}
 .rule-list li.unmet{color:var(--danger)}
 .rule-list li.unmet::before{border-color:var(--danger-border);background:var(--danger-bg)}
 /* A3 绑定前核对完整地址：等宽、一行完整展示，窄屏任意位置换行；不缩写。 */
-.addr-check{display:grid;gap:var(--sp-3);padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-2)}
+.addr-check{display:grid;gap:var(--sp-3);padding:var(--sp-5);border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--card-2)}
 .addr-check dl{margin:0;display:grid;gap:var(--sp-3)}
 .addr-check dt{font-size:var(--ui-field-label);color:var(--muted)}
 .addr-check dd{margin:var(--sp-1) 0 0}
 .addr-full{font-family:var(--mono);font-size:var(--fs-16);font-weight:500;color:var(--text);letter-spacing:.02em;overflow-wrap:anywhere}
+.addr-check .addr{display:flex;align-items:flex-start}
+.addr-check .addr-full{min-width:0;align-self:center}
+.addr-check .addr>.btn.icon{flex:none;margin-left:auto}
+.addr-check+.note.accent{background:var(--warn-bg);border-color:var(--warn-border);border-inline-start-color:var(--warn)}
+.addr-check+.note.accent>svg.i,.addr-check+.note.accent b{color:var(--warn)}
 /* A4 步骤内容分组：入驻各步的标题与内容，资料表单内“个人信息 / 企业信息”分组；组内只读核对字段与可填写字段分开。
    命名避开基线 M3a 的 .form-section。 */
 .step-section{display:flex;flex-direction:column;gap:var(--sp-4)}
 .step-section+.step-section{padding-top:var(--sp-6);border-top:1px solid var(--border)}
 .step-section>h2{font-size:var(--ui-section-title);font-weight:600;line-height:var(--lh-body)}
 .step-section>.facts-region .facts{padding:0}
+.step-section>.facts-region:has(>.facts.inset){padding:var(--sp-4);border-radius:var(--radius-xs);background:var(--card-2)}
+.step-section>.facts-region .facts.inset>div{padding-block:var(--sp-2);border-top:0}
 .form-grid>.wide{grid-column:1/-1}
 .subhead{font-size:var(--fs-14);font-weight:600;color:var(--text)}
 /* A5 账户信息的可维护分区：标题下方放“编辑”，编辑时本分区原位变为表单，底部取消 / 保存。 */
+.profile-sheet{max-width:var(--profile-reading-max)}
+.profile-sheet .profile-section{grid-template-columns:var(--profile-label-w) minmax(0,1fr);gap:var(--sp-7);padding-block:var(--sp-6)}
+.profile-sheet .facts{row-gap:var(--sp-5)}
+.profile-sheet .facts>div{padding:0;border-top:0}
+@container facts (min-width:600px){.profile-sheet .facts:not(.single){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container facts (min-width:900px){.profile-sheet .facts.cols-3:not(.single){grid-template-columns:repeat(3,minmax(0,1fr))}}
 .profile-section>.section-head{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-3)}
 .profile-section>.section-head>h2{font-size:var(--ui-section-title);font-weight:600;line-height:var(--lh-body)}
 .section-body{display:flex;flex-direction:column;gap:var(--sp-4);min-width:0}
 .section-body>.hint{margin:0}
-.profile-section.is-editing{background:var(--card-2)}
-@media(max-width:1100px){.profile-section>.section-head{flex-direction:row;align-items:center;justify-content:space-between}}
+.profile-section.is-editing{background:var(--card-2);box-shadow:inset 3px 0 var(--accent)}
+.profile-section.is-editing .form-actions{padding-top:var(--sp-4);border-top:1px solid var(--border)}
+@media(max-width:1100px){
+  .profile-sheet .profile-section{grid-template-columns:minmax(0,1fr);gap:var(--sp-4)}
+  .profile-section>.section-head{flex-direction:row;align-items:center;justify-content:space-between}
+}
 @media(max-width:600px){.rule-list{grid-template-columns:minmax(0,1fr)}}
 /* A6 地址旁的“查看完整地址”：复用基线 .value-pop 浮层，按钮与复制图标同为无框图标按钮。 */
 .addr>.value-pop{margin:0}
