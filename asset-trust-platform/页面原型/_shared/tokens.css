@@ -115,7 +115,6 @@
 
   /* —— 资产可信平台新增 —— */
   --onboard-w:720px;      /* 入驻准备：步骤条 + 绑定钱包 / 资料表单的居中卡片 */
-  --onboard-card-max:960px; /* 平台内入驻准备卡片的阅读上限 */
   --profile-label-w:168px; /* 账户信息分区标题：容纳英文 Personal information */
   --profile-reading-max:1360px; /* 账户资料的阅读上限，不限制未来列表宽度 */
   --enterprise-table-min:1440px; /* 十二列企业列表中文阅读下限，更窄时表内滚动 */

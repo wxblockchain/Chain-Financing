@@ -1282,16 +1282,32 @@ td.pop-col:has(>.value-pop)::after{content:none}
 .onboard-head{position:sticky;top:0;z-index:var(--z-sticky);display:flex;flex-direction:column;gap:var(--sp-5);
   margin-top:calc(-1 * var(--sp-4));padding-block:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border);background:var(--card)}
 .onboard-head .lead{margin-top:var(--sp-1)}
-.onboard-head .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+.onboard-head .steps{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:var(--sp-3)}
 .onboard-head .steps li{align-items:flex-start;line-height:1.6}
 .onboard-head .steps li::before{margin-top:var(--sp-1)}
 .onboard-head .steps li[aria-current="step"]{border-bottom:2px solid var(--accent);padding-bottom:var(--sp-2)}
 .onboard-screen :is(input,select,button,h2){scroll-margin-block-start:calc(var(--onboard-head-h,0px) + var(--sp-8));scroll-margin-block-end:var(--sp-4)}
 .steps li>.btn-link{padding:2px 4px;margin:-2px -4px;font-weight:500}
 /* A1（平台内）入驻准备：在 app 骨架内容区呈现，步骤条吸附在顶栏下方；卡片限宽便于表单阅读。 */
-.onboard-card{max-width:var(--onboard-card-max)}
 .onboard-card>.onboard-head{top:var(--app-header-h);z-index:calc(var(--z-sticky) - 21);margin-top:0;padding:var(--sp-4) var(--card-pad);border-radius:var(--radius-sm) var(--radius-sm) 0 0}
 .onboard-card>.onboard-body{display:flex;flex-direction:column;gap:var(--sp-5);padding:var(--card-pad)}
+/* 绑定钱包：左侧当前子步骤表单，右侧绑定流程与支持网络；卡片随内容区铺满，不留右侧空白。 */
+.onboard-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,320px);gap:var(--sp-7);align-items:start}
+.onboard-main{display:flex;flex-direction:column;gap:var(--sp-5);min-width:0}
+.onboard-aside{display:flex;flex-direction:column;gap:var(--sp-4);padding:var(--sp-5);border-radius:var(--radius-sm);background:var(--card-2)}
+.onboard-aside>h3{font-size:var(--fs-14);font-weight:600}
+.onboard-aside .network-support{border-top:1px solid var(--border);padding-top:var(--sp-3)}
+.steps.vertical{flex-direction:column;gap:var(--sp-3)}
+.steps.vertical li{flex:none}
+@media(max-width:900px){.onboard-split{grid-template-columns:minmax(0,1fr)}}
+/* 组织资料：缺失时上传区红框；上传中的行显示进度。 */
+.upload-box.is-error{border-color:var(--danger)}
+.upload-box .count{margin-left:var(--sp-1);font-size:var(--fs-12);color:var(--faint)}
+.file-row.is-uploading{background:var(--card-2)}
+.file-row .file-name{font-weight:500}
+.file-info>.btn-link.file-name{margin-inline:-4px}
+.file-row .hint [data-zone]{display:inline;margin-left:var(--sp-1)}
+.file-actions .btn.icon[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
 .onboard-screen[data-layout="app"] :is(input,select,button,h2){scroll-margin-block-start:calc(var(--app-header-h) + var(--onboard-head-h,0px) + var(--sp-6))}
 /* 入驻未完成时的锁定菜单：可见、锁形标记、不可点击，悬停不高亮。 */
 .nav-item[aria-disabled="true"]{cursor:not-allowed;color:var(--faint)}

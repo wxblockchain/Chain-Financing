@@ -329,6 +329,8 @@
     var own = t && t.matches('.dd-btn') ? t.parentNode : null;
     closeMenus(own);
     if(!t) return;
+    // 入驻期间的锁定菜单：不进入，只说明完成入驻后可用。
+    if(t.matches('.nav-item[aria-disabled="true"]')){ toast('完成入驻后可用'); return; }
     if(t.disabled || t.getAttribute('aria-disabled')==='true') return;
     if(t.hasAttribute('data-password-toggle')){
       var input=document.getElementById(t.dataset.passwordToggle);

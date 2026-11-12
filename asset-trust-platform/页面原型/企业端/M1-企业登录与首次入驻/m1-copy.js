@@ -83,5 +83,31 @@ TP.addCopy({
   '登录信息已由平台运营重置，请先设置新密码。设置成功后直接进入平台。':'Platform operations has reset your sign-in details. Set a new password to enter the platform.',
   '请在验证通过后 10 分钟内完成设置。设置成功后直接登录平台。':'Finish within 10 minutes of verification. You will be signed in once the password is set.',
   '新密码已设置':'New password set','密码已重置':'Password reset','入驻准备':'Onboarding','完成入驻后可用':'Available after onboarding',
-  '修改密码后：请重新登录':'After password change: sign in again'
+  '修改密码后：请重新登录':'After password change: sign in again',
+  /* 第 3 轮：PRD e7ed51d —— 入驻两步、先填钱包地址、组织资料 */
+  '完成以下两步后，即可办理业务。':'Complete these two steps to start using business features.',
+  '填写钱包地址':'Enter wallet address','绑定流程':'Binding steps','签名确认':'Signature confirmation','0x 开头，共 42 位':'Starts with 0x, 42 characters',
+  '填写 Ethereum 网络地址，签名确认前可以修改。':'Enter an Ethereum address. You can change it until you confirm the signature.',
+  '，该地址将作为本企业在平台使用的唯一钱包地址。下一步需要连接该地址的钱包并签名一次，不涉及转账或资金授权。':'. It will be the only wallet address your company uses on this platform. Next, connect the wallet for this address and sign once; no transfer or fund authorization is involved.',
+  '地址格式不正确，请填写 0x 开头、共 42 位的 Ethereum 地址。':'Invalid address. Enter an Ethereum address that starts with 0x and has 42 characters.',
+  '填写的地址':'Entered address','钱包当前地址':'Current wallet address','复制钱包当前地址':'Copy current wallet address','一致':'Matches','不一致':'Does not match',
+  '修改地址':'Change address','修改填写的地址':'Change entered address','重新连接':'Reconnect','确认签名':'Confirm signature',
+  '请连接该地址所在的钱包，钱包须处于 Ethereum 网络。':'Connect the wallet that holds this address. The wallet must be on the Ethereum network.',
+  '钱包当前地址与填写的地址不一致。请在钱包中切换到填写的地址后重新连接，或修改填写的地址。':'The current wallet address does not match the entered address. Switch to the entered address in your wallet and reconnect, or change the entered address.',
+  '签名只用于证明你控制该地址，不发起交易、不消耗 gas，也不转移或授权任何资产。':'The signature only proves that you control this address. It does not start a transaction, use gas, or transfer or authorize any assets.',
+  '签名消息中包含要绑定的完整地址，请在钱包中核对。':'The signature message includes the full address to bind. Check it in your wallet.',
+  '组织资料':'Organization documents','上传文件':'Upload files','选择文件':'Choose files','添加文件':'Add files','下载文件':'Download file','移除文件':'Remove file','已移除':'Removed',
+  '注册证书或营业执照、公司章程、授权书等企业证明文件；支持 PDF、JPG、JPEG、PNG，单份不超过 10 MB，1～10 份。':'Company documents such as a certificate of incorporation or business licence, articles of association, or authorization letter. PDF, JPG, JPEG or PNG, up to 10 MB each, 1–10 files.',
+  '请上传至少 1 份组织资料。':'Upload at least 1 organization document.','上传中 60%':'Uploading 60%','上传进度':'Upload progress','取消上传':'Cancel upload',
+  '组织资料上传完成后才能提交。':'You can submit once the documents finish uploading.',
+  '未添加：格式不支持，仅接受 PDF、JPG、JPEG、PNG。':'was not added: unsupported format. Only PDF, JPG, JPEG and PNG are accepted.',
+  '资料尚未提交，退出后已填写的内容和已上传的组织资料不会保留。':'Your profile has not been submitted. Information you entered and uploaded documents will not be kept if you sign out.',
+  '已上传 1 / 10 份':'1 of 10 files uploaded','已上传 2 / 10 份':'2 of 10 files uploaded',
+  '支持 PDF、JPG、JPEG、PNG，单份不超过 10 MB；至少保留 1 份。':'PDF, JPG, JPEG or PNG, up to 10 MB each. Keep at least 1 file.',
+  '至少保留 1 份组织资料':'Keep at least 1 organization document','至少保留 1 份组织资料，添加新文件后才能移除这一份。':'Keep at least 1 organization document. Add a new file before removing this one.',
+  '演示：此处选择文件上传':'Preview: choose files to upload here',
+  /* 画面目录 */
+  '钱包已连接：签名确认':'Wallet connected: confirm signature','地址格式不正确':'Invalid address format','钱包地址与填写的不一致':'Wallet address does not match',
+  '填写资料并上传组织资料':'Fill in profile and upload documents','提交校验：注册地址与组织资料缺失':'Submit check: address and documents missing',
+  '组织资料上传中（不能提交）':'Documents uploading (cannot submit)','组织资料格式不支持':'Unsupported document format','组织资料只剩 1 份':'Only 1 document left'
 });
