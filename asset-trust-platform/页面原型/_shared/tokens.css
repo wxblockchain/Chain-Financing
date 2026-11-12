@@ -127,4 +127,9 @@
   --receivable-col-party:192px; --receivable-col-actions:80px;
   --receivable-receipt-min:1240px; /* ERP 回款八列，窄视口在表内滚动 */
   --nav-pending-size:18px; /* 菜单待办数字角标，超出两位时自然加宽 */
+  --purchase-table-min:1200px; /* M4 九列上游采购列表，编号与查看分别固定两侧 */
+  --purchase-table-min-en:1280px; /* 英文表头与状态的阅读下限 */
+  --purchase-col-id:140px; --purchase-col-pi:132px; --purchase-col-date:108px; --purchase-col-party:168px;
+  --purchase-col-amount:140px; --purchase-col-status:112px; --purchase-col-hint:112px;
+  --purchase-payment-min:1360px; /* M4 外采付款九列，窄视口在表内滚动 */
 }

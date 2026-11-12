@@ -1524,3 +1524,41 @@ table.tbl.receivable-list{min-width:var(--receivable-table-min)}
 .receivable-steps li.closed::before{content:"–";background:var(--gray-bg);border-color:var(--border-strong);color:var(--gray-fg)}
 .confirmation-card>.confirmation-note{margin:0 var(--card-pad) var(--sp-4)}
 .confirmation-meta .sep{color:var(--faint)}
+/* —— M4 上游采购追溯（组件规范 §4 A26–A29）—— */
+/* A26 上游采购列表：沿用 A14 固定编号与查看的列表骨架，九列按 M4 列宽 token。 */
+table.tbl.purchase-list{min-width:var(--purchase-table-min)}
+:lang(en) table.tbl.purchase-list{min-width:var(--purchase-table-min-en)}
+.purchase-list col.pur-col-id{width:var(--purchase-col-id)}
+.purchase-list col.pur-col-pi{width:var(--purchase-col-pi)}
+.purchase-list col.pur-col-date{width:var(--purchase-col-date)}
+.purchase-list col.pur-col-buyer{width:var(--purchase-col-party)}
+.purchase-list col.pur-col-supplier{width:var(--purchase-col-party)}
+.purchase-list col.pur-col-amount{width:var(--purchase-col-amount)}
+.purchase-list col.pur-col-pay{width:var(--purchase-col-status)}
+.purchase-list col.pur-col-hint{width:var(--purchase-col-hint)}
+.purchase-list col.pur-col-actions{width:var(--receivable-col-actions)}
+.vin-lookup .detail-table{margin-top:var(--sp-5)}
+.sub-empty.first{padding-top:var(--sp-5);padding-bottom:var(--sp-5)}
+/* A27 采购交易详情与车辆追溯：沿用 A18 .receivable-detail 版式；顶部状态两项、追溯汇总五项。 */
+@media(min-width:601px){
+  .purchase-detail .purchase-status .status-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:var(--sp-2)}
+  .purchase-detail .trace-summary .status-grid{grid-template-columns:repeat(5,minmax(0,1fr));padding:var(--sp-2)}
+}
+.purchase-detail .status-count{font-size:var(--fs-13);color:var(--muted);font-variant-numeric:tabular-nums}
+.purchase-detail .card>.note{margin:var(--sp-4) var(--card-pad) 0}
+.purchase-detail .card>.note+.detail-table{margin-top:var(--sp-4)}
+.purchase-detail .note .money{color:var(--text)}
+.purchase-detail .purchase-invoices .card-sec+.card-sec{border-top:1px solid var(--border-strong)}
+.purchase-detail table.purchase-payments{min-width:var(--purchase-payment-min)}
+.purchase-detail .compare-note{align-items:center}
+/* A28 对照应收账款：本笔应收账款的车辆行使用浅主色底，并在 VIN 下标注。 */
+.tbl tbody tr.is-target td{background:var(--accent-soft)}
+/* A29 车辆追溯：每辆车一张卡（分区导航按 VIN），从应收账款点进的车辆主色边线并标“当前查看”。 */
+.vin-trace .card-head{flex-wrap:wrap}
+.vin-trace.is-located{border-color:var(--accent-border);box-shadow:inset 3px 0 var(--accent)}
+.vin-trace .sub-h:first-of-type{padding-top:var(--sp-5)}
+.trace-empty{padding:var(--sp-5) var(--card-pad);display:grid;gap:var(--sp-1);color:var(--muted);font-size:var(--fs-13)}
+.trace-empty p:first-child{color:var(--text);font-size:var(--ui-field-value)}
+.purchase-detail .detail-table td.wrap{min-width:36ch}
+.purchase-detail .file-ref .file-name{flex:none}
+.purchase-list-card .filter-search{flex-basis:var(--enterprise-search-w)}
