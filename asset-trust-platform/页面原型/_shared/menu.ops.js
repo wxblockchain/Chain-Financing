@@ -8,7 +8,7 @@
       {key:'ents',      label:'企业管理',   icon:'org'}
     ]},
     {group:'资产数据', items:[
-      {key:'invoices',  label:'发票与应收', icon:'doc'},
+      {key:'invoices',  label:'应收账款',   icon:'doc'},
       {key:'purchase',  label:'上游采购',   icon:'cart'},
       {key:'vehicles',  label:'车辆履约',   icon:'truck'},
       {key:'sales',     label:'下游销售',   icon:'ledger'}
@@ -28,7 +28,7 @@
   ];
   TP.addCopy({
     '资产可信平台':'Asset Trust Platform','运营端':'Operations',
-    '企业':'Enterprises','企业管理':'Enterprise management','资产数据':'Asset data','发票与应收':'Invoices & receivables',
+    '企业':'Enterprises','企业管理':'Enterprise management','资产数据':'Asset data','应收账款':'Receivables',
     '上游采购':'Upstream purchasing','车辆履约':'Vehicle fulfilment','下游销售':'Downstream sales','风控':'Risk control',
     '风控预警':'Risk alerts','三方数据源':'Third-party data sources','审核与出库':'Review & outbound','运营审核':'Operations review',
     '出库与供数':'Outbound & data supply','消息':'Messages','消息中心':'Message center','运营管理员':'Operations administrator',

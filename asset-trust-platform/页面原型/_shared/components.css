@@ -1511,3 +1511,16 @@ table.tbl.receivable-list{min-width:var(--receivable-table-min)}
 .nav-item .nav-label{flex:1;min-width:0}
 .nav-item:has(.nav-pending-count){gap:var(--sp-2)}
 .nav-pending-count{display:inline-flex;align-items:center;justify-content:center;flex:none;margin-left:auto;min-width:var(--nav-pending-size);height:var(--nav-pending-size);padding-inline:var(--sp-1);border-radius:var(--radius-pill);background:var(--danger);color:var(--on-accent);font-size:var(--fs-11);font-weight:600;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* A24 M3 应收账款概要：左侧金额与交易双方、账期逐行；右侧状态（运营含预警信息共三项，企业两项）；债权人底部为发起条件。 */
+.receivable-summary .asset-sum .meta{flex-direction:column;gap:var(--sp-1)}
+.receivable-summary .asset-sum .meta .erp-zone{display:inline}
+@media(min-width:601px){.receivable-summary .status-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1101px){.receivable-summary .status-grid.two{grid-template-columns:repeat(2,minmax(120px,auto))}}
+.receivable-summary>.cond{border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+/* A25 M3 确权进度的结束态：驳回停在“债务人确认”（红），到期关闭停在所处环节（灰）；状态标签随申请编号，驳回原因与时间在进度条下方。 */
+.receivable-steps li.rejected{color:var(--danger);border-top-color:var(--danger)}
+.receivable-steps li.rejected::before{content:"×";background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
+.receivable-steps li.closed{color:var(--muted);border-top-color:var(--faint)}
+.receivable-steps li.closed::before{content:"–";background:var(--gray-bg);border-color:var(--border-strong);color:var(--gray-fg)}
+.confirmation-card>.confirmation-note{margin:0 var(--card-pad) var(--sp-4)}
+.confirmation-meta .sep{color:var(--faint)}
