@@ -128,4 +128,5 @@
   --receivable-col-due:120px; --receivable-col-status:124px; --receivable-col-core:140px;
   --receivable-col-party:192px; --receivable-col-actions:80px;
   --receivable-receipt-min:1240px; /* ERP 回款八列，窄视口在表内滚动 */
+  --nav-pending-size:18px; /* 菜单待办数字角标，超出两位时自然加宽 */
 }

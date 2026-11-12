@@ -98,8 +98,14 @@
     $('#nav').innerHTML = navList(who).map(function(g){
       return '<div class="nav-group">'+g.group+'</div>' + g.items.map(function(it){
         var lk = locked(who);
+        // 数量由所属模块按当前用户提供；这里只呈现，不计算待办或改变菜单权限。
+        var count = it.pendingCount, badge = '';
+        if(!lk && Number.isSafeInteger(count) && count > 0){
+          var label = count + ' 项待办';
+          badge = '<span class="nav-pending-count" title="'+label+'"><span aria-hidden="true">'+(count > 99 ? '99+' : count)+'</span><span class="sr-only">'+label+'</span></span>';
+        }
         return '<button type="button" class="nav-item" data-nav-key="'+it.key+'"'+(lk?' aria-disabled="true" title="完成入驻后可用"':(active===it.key?' aria-current="page"':''))+'>'+
-          TP.icon(it.icon)+'<span>'+it.label+'</span>'+(lk?'<span class="lock">'+TP.icon('lock')+'<span class="sr-only">完成入驻后可用</span></span>':'')+'</button>';
+          TP.icon(it.icon)+'<span class="nav-label">'+it.label+'</span>'+badge+(lk?'<span class="lock">'+TP.icon('lock')+'<span class="sr-only">完成入驻后可用</span></span>':'')+'</button>';
       }).join('');
     }).join('');
   }

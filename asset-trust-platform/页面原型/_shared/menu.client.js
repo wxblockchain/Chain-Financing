@@ -7,7 +7,8 @@
   TP.demo = TP.demo || {};
   var email = 'user-a@demo.example';
   var receivables = {key:'receivables', label:'应收账款', icon:'receivable'};
-  var confirmations = {key:'confirmations', label:'确权申请', icon:'confirm'};
+  // 角标数量为评审演示值；接入时由确权待办模块按当前用户提供。
+  var confirmations = {key:'confirmations', label:'确权申请', icon:'confirm', pendingCount:4};
   var account = {group:'账户', items:[{key:'account', label:'账户信息', icon:'user'}]};
   TP.NAV_BY = {
     creditor:[{group:'业务', items:[receivables]}, account],

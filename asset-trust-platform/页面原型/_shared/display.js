@@ -20,6 +20,8 @@
   TP.language='en'; TP.zone='UTC';
   function translated(value){
     var key=value.trim(), result=EN[key];
+    var pending=key.match(/^(\d+) 项待办$/);
+    if(result===undefined && pending)result=pending[1]+(pending[1]==='1'?' pending task':' pending tasks');
     if(result===undefined && key.indexOf('主流程下一屏：')===0){var next=key.slice('主流程下一屏：'.length);result='Next screen: '+(EN[next]||next);}
     if(result===undefined && (key.indexOf('账户：')===0 || key.indexOf('账号：')===0)) result='Account: '+key.slice(3);
     return result===undefined ? value : value.replace(key,result);
