@@ -1725,3 +1725,121 @@ table.tbl.outbound-records{min-width:var(--outbound-record-min)}
 .out-missing{margin:var(--sp-1) 0 0;padding-left:var(--sp-5);font-size:var(--fs-13);color:var(--muted)}
 .note .out-missing{color:inherit}
 .warning-list .wrap{min-width:24ch}
+/* —— M7a 应收查看与确权申请（组件规范 §4 A46–A50）—— */
+/* A46 债权人应收账款列表：首列选择框与应收账款编号固定在左，操作（发起申请 / 查看）固定在右；共用 A14 行高、表头换行与金额规则。
+   申请资格列先给标签，不可申请时逐条列出全部原因；不可申请行的选择框禁用。 */
+table.tbl.claim-list{min-width:var(--claim-table-min)}
+:lang(en) table.tbl.claim-list{min-width:var(--claim-table-min-en)}
+.tbl.claim-list :is(th,td){padding-inline:var(--sp-2)}
+.tbl.claim-list td{vertical-align:middle;padding-block:var(--sp-3)}
+.tbl.claim-list th{white-space:normal;word-break:normal;overflow-wrap:normal}
+.tbl.claim-list .tag{white-space:normal;overflow-wrap:normal;word-break:normal}
+.tbl.claim-list .money{font-size:var(--fs-14)}
+.tbl.claim-list .num{white-space:nowrap}
+.tbl.claim-list .btn-link.mono{white-space:nowrap;font-weight:500}
+.tbl.claim-list :is(th,td):is(.col-check,:nth-child(2)){position:sticky;z-index:1;background:var(--card)}
+.tbl.claim-list :is(th,td).col-check{left:0;width:auto;padding-left:var(--card-pad);padding-right:0}
+.tbl.claim-list :is(th,td):nth-child(2){left:var(--claim-col-check);box-shadow:inset -1px 0 var(--border)}
+.tbl.claim-list thead th:is(.col-check,:nth-child(2)){background:var(--card-2)}
+.tbl.claim-list tbody tr:hover td:is(.col-check,:nth-child(2)){background:var(--row-hover)}
+.tbl.claim-list :is(th,td):last-child{padding-right:var(--card-pad)}
+.tbl.claim-list .col-act{width:auto;min-width:var(--claim-col-actions);z-index:1;box-shadow:inset 1px 0 var(--border)}
+/* 选中行：浅主色叠在不透底的卡片色上，固定列滚动时不透出下方内容。 */
+.tbl.claim-list tbody tr.is-selected td{background-color:var(--card);background-image:linear-gradient(var(--accent-soft),var(--accent-soft))}
+.claim-check{width:var(--asset-icon-size);height:var(--asset-icon-size);margin:0;accent-color:var(--accent);vertical-align:middle;cursor:pointer}
+.claim-check:disabled{cursor:not-allowed}
+.claim-acts{display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-1)}
+.claim-acts .actlink{white-space:nowrap}
+.tbl.claim-list .col-act .claim-acts .actlink:last-child{margin-right:-6px}
+.claim-reasons{margin:0;padding-left:var(--sp-4);font-size:var(--fs-12);line-height:1.5;color:var(--muted)}
+.claim-reasons li+li{margin-top:2px}
+.claim-reasons .mono{white-space:nowrap}
+.claim-list col.clm-col-check{width:var(--claim-col-check)}
+.claim-list col.clm-col-id{width:var(--claim-col-id)}
+.claim-list col.clm-col-invoice{width:var(--claim-col-invoice)}
+.claim-list col.clm-col-debtor{width:var(--claim-col-debtor)}
+.claim-list col.clm-col-amount{width:var(--claim-col-amount)}
+.claim-list col.clm-col-due{width:var(--claim-col-due)}
+.claim-list col.clm-col-repay{width:var(--claim-col-repay)}
+.claim-list col.clm-col-apply{width:var(--claim-col-apply)}
+.claim-list col.clm-col-elig{width:var(--claim-col-elig)}
+.claim-list col.clm-col-actions{width:var(--claim-col-actions)}
+/* 筛选：三个常用下拉 + 更多筛选一行，查找方式 + 查找内容 + 重置 / 查询独占下一行（同 A30）。 */
+.claim-filters .filter-toolbar{row-gap:var(--sp-3)}
+.claim-filters .filter-query{flex-basis:100%;justify-content:flex-start;margin-left:0}
+.claim-filters .filter-search{flex-basis:var(--claim-search-w)}
+/* A47 批量选择条：位于筛选与表格之间，已选数量与单次上限在左，清空与“批量发起申请”在右；
+   未选时按钮禁用，有选择时浅主色底；选满 10 笔时上限提示改为 warn 并带图标，不只靠颜色。 */
+.claim-select-bar{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4);padding:var(--sp-3) var(--card-pad);border-top:1px solid var(--border);background:var(--card-2)}
+.claim-select-bar.is-active{background:var(--accent-soft);border-top-color:var(--accent-border)}
+.claim-select-count{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
+.claim-select-n{font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.claim-select-limit{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.claim-select-limit.warn{color:var(--warn);font-weight:500}
+.claim-select-actions{display:flex;align-items:center;gap:var(--sp-2);margin-left:auto}
+.claim-select-bar+.tablewrap{border-top:1px solid var(--border)}
+/* A48 批量确认弹窗与逐笔结果卡：顶部三项汇总（笔数、按币种分别合计、债务人及笔数）为浅底只读区，逐笔清单为明细表；
+   结果按“已提交 / 未提交”标签区分，成功给申请编号与状态，未提交给原因。 */
+.modal.lg.claim-batch-modal{max-width:var(--claim-modal-w)}
+.claim-batch-table .tag{white-space:nowrap}
+.claim-batch-sum,.claim-result-sum .facts{padding:var(--sp-4);border-radius:var(--radius-xs);background:var(--card-2)}
+/* 三项汇总固定一行三列，不随容器查询退回两列。 */
+.modal .facts.claim-batch-sum{grid-template-columns:repeat(3,minmax(0,1fr))}
+.modal .facts.claim-batch-sum>div{border-top:0}
+.claim-batch-sum .value-lines,.claim-result-sum .value-lines{gap:2px}
+.claim-batch-sum .party-line .role{font-variant-numeric:tabular-nums}
+.claim-batch-table{margin:0;border:1px solid var(--border);border-radius:var(--radius-xs)}
+.claim-batch-table .tbl :is(th,td):first-child{padding-left:var(--sp-4)}
+.claim-batch-table .tbl :is(th,td):last-child{padding-right:var(--sp-4)}
+.claim-batch-table .tbl td{white-space:nowrap;vertical-align:top}
+.claim-batch-table .tbl td.wrap{white-space:normal;min-width:18ch}
+.claim-fail-reason{color:var(--danger)}
+.claim-result-sum time{font-variant-numeric:tabular-nums}
+.claim-note-list{margin:var(--sp-1) 0 0;padding-left:var(--sp-5)}
+/* A49 申请记录列表：申请编号固定在左、“查看”固定在右（共用 A14 骨架）；两列平台时间的时区在表头第二行。 */
+table.tbl.claim-request-list{min-width:var(--claim-request-min)}
+:lang(en) table.tbl.claim-request-list{min-width:var(--claim-request-min-en)}
+.tbl.claim-request-list :is(th,td){padding-inline:var(--sp-2)}
+.tbl.claim-request-list td{vertical-align:middle;padding-block:var(--sp-3);white-space:nowrap}
+.tbl.claim-request-list th{white-space:normal;word-break:normal;overflow-wrap:normal}
+.tbl.claim-request-list td:nth-child(4){white-space:normal}
+.tbl.claim-request-list .money{font-size:var(--fs-14)}
+.tbl.claim-request-list .btn-link.mono{white-space:nowrap;font-weight:500}
+.tbl.claim-request-list :is(th,td):first-child{position:sticky;left:0;z-index:1;width:auto;padding-left:var(--card-pad);background:var(--card);box-shadow:inset -1px 0 var(--border)}
+.tbl.claim-request-list thead th:first-child{background:var(--card-2)}
+.tbl.claim-request-list tbody tr:hover td:first-child{background:var(--row-hover)}
+.tbl.claim-request-list :is(th,td):last-child{padding-right:var(--card-pad)}
+.tbl.claim-request-list .col-act{width:auto;z-index:1;box-shadow:inset 1px 0 var(--border)}
+.claim-request-list col.clr-col-id{width:var(--claim-col-id)}
+.claim-request-list col.clr-col-ar{width:var(--claim-col-id)}
+.claim-request-list col.clr-col-invoice{width:var(--claim-col-invoice)}
+.claim-request-list col.clr-col-debtor{width:var(--claim-col-debtor)}
+.claim-request-list col.clr-col-amount{width:var(--claim-col-amount)}
+.claim-request-list col.clr-col-time{width:var(--claim-col-time)}
+.claim-request-list col.clr-col-status{width:var(--claim-col-apply)}
+.claim-request-list col.clr-col-actions{width:var(--receivable-col-actions)}
+/* A50 申请详情（与 A18 共用 .receivable-detail 版式）：概要卡复用 A24，右侧为申请状态与发起方式，驳回时底部 .cond 说明能否重新发起或已重新发起；
+   进度卡复用 A20 / A25 的三环节进度条，下方接 A11 处理记录时间线（按发生先后，只列已发生环节）；当次依据为独立分组，按 M3 详情分类展示提交时资料。 */
+.claim-summary>.cond{border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+.claim-summary .status-grid dd{font-size:var(--ui-field-value)}
+.claim-summary .meta .btn-link{font-size:inherit;padding-block:0}
+.cond.claim-reapplied>svg{color:var(--accent)}
+.cond.claim-reapplied b{color:var(--text);margin-right:var(--sp-2)}
+.cond.claim-reapplied .btn-link{font-size:inherit;padding-block:0}
+.claim-process{border-top:1px solid var(--border)}
+.claim-process>.sub-h{padding-bottom:0}
+.claim-process .operation-log{padding-top:var(--sp-4)}
+.claim-op-label{color:var(--muted);margin-right:var(--sp-3)}
+.claim-op-label+*{color:var(--text)}
+.claim-snapshot{margin-top:var(--sp-8)}
+/* 提交后回到已刷新的列表：单笔结果为页面级 .note.accent（申请编号、状态与“查看申请”）；批量结果为列表上方的结果卡（汇总 + 逐笔明细 + 查看申请记录）。 */
+.claim-submit-note{align-items:center}
+.claim-submit-note .grow{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-4)}
+.claim-submit-ref{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);color:var(--muted)}
+.claim-submit-ref .btn-link{padding-block:0}
+.claim-result-card{margin-bottom:var(--sp-4)}
+.claim-result-card .claim-head-act{margin-left:auto}
+.claim-card-note{padding:var(--sp-4) var(--card-pad) 0}
+.claim-result-body{display:grid;gap:var(--sp-4);padding:var(--sp-4) var(--card-pad) var(--sp-5)}
+.claim-result-sum .facts{grid-template-columns:repeat(3,minmax(0,1fr))}
+.claim-result-sum .facts>div{border-top:0}

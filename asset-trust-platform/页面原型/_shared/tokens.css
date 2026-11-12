@@ -162,4 +162,12 @@
   --outbound-col-id:128px; --outbound-col-invoice:100px; --outbound-col-party:148px; --outbound-col-amount:132px; --outbound-col-due:116px;
   --outbound-col-time:100px; --outbound-col-status:100px; --outbound-col-cond:120px; --outbound-col-actions:112px; /* 查看 / 重新出库 */
   --outbound-record-min:1040px; /* M9 出库记录六列，窄视口在表内滚动 */
+  --claim-table-min:1140px; /* M7a 债权人应收账款十列，1440 px 视口完整展示；更窄时表内滚动，选择框、编号与操作固定 */
+  --claim-table-min-en:1260px; /* 英文表头、状态与原因的阅读下限 */
+  --claim-col-check:48px; --claim-col-id:136px; --claim-col-invoice:92px; --claim-col-debtor:140px; --claim-col-amount:124px;
+  --claim-col-due:116px; --claim-col-repay:92px; --claim-col-apply:132px; --claim-col-elig:164px; --claim-col-actions:96px;
+  --claim-modal-w:840px; /* 批量确认与逐笔结果：五列清单（含到期日时区）不截断 */
+  --claim-col-time:132px; /* 申请记录中的平台时间（日期 时:分） */
+  --claim-request-min:1180px; --claim-request-min-en:1260px; /* M7a 申请记录九列 */
+  --claim-search-w:480px; /* 查找内容：编号、发票号、VIN 的提示完整可读 */
 }
