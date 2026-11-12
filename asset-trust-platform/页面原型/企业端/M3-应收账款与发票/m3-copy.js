@@ -1,5 +1,17 @@
 /* M3 应收账款与发票 · 企业端 · 模块文案英文（业务值不翻译）。债权人、债务人只读详情 */
 TP.addCopy({
+"发票开立日期": "Invoice issue date",
+"发票金额": "Invoice amount",
+"回款信息": "Collections",
+"回款信息读取失败": "Unable to load collections",
+"资料追溯": "Data history",
+"债务人确认": "Debtor confirmation",
+"运营审核": "Operator review",
+"已完成": "Completed",
+"待确认": "Awaiting confirmation",
+"未开始": "Not started",
+"附件": "Attachments",
+
 "1 份": "1 contract",
 "1 条": "1 record",
 "2 份": "2 contracts",

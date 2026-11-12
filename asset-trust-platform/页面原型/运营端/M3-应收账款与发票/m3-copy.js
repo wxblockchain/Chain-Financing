@@ -1,5 +1,17 @@
 /* M3 应收账款与发票 · 运营端 · 模块文案英文（业务值不翻译）。运营端画面 */
 TP.addCopy({
+"发票开立日期": "Invoice issue date",
+"回款信息": "Collections",
+"回款信息读取失败": "Unable to load collections",
+"资料追溯": "Data history",
+"确权申请": "Confirmation request",
+"债务人确认": "Debtor confirmation",
+"运营审核": "Operator review",
+"已完成": "Completed",
+"待确认": "Awaiting confirmation",
+"未开始": "Not started",
+"附件": "Attachments",
+
 "操作": "Actions",
 "查看": "View",
 "0 笔": "0 receivables",
@@ -209,7 +221,7 @@ TP.addCopy({
 "详情": "Details",
 "详情 · 差异待核实": "Details · difference pending",
 "详情 · 核实已记录": "Details · verification recorded",
-"详情 · 款项与回款读取失败": "Details · payments failed to load",
+"详情 · 回款信息读取失败": "Details · collections failed to load",
 "详情 · 资料未齐、未对应平台企业": "Details · incomplete data, unmatched company",
 "详情 · 默认": "Details · default",
 "说明核实过程、依据及与 ERP 来源方的沟通结果": "Describe the checks, evidence and outcome of communication with the ERP source",
