@@ -61,9 +61,9 @@
     document.querySelectorAll('[data-instant]').forEach(function(el){
       var parts={};fmt.formatToParts(new Date(el.dataset.instant)).forEach(function(p){parts[p.type]=p.value;});
       var day=parts.year+'-'+parts.month+'-'+parts.day, clock=parts.hour+':'+parts.minute;
-      // data-day 只展示换算后的日期；data-compact 日期 + 副文本时间；data-minute 日期 + 时分；默认完整日期时间。
+      // data-day 只展示换算后的日期；data-compact 日期 + 副文本时间（加 data-seconds 时副文本到秒）；data-minute 日期 + 时分；默认完整日期时间。
       el.replaceChildren(document.createTextNode(day+(el.hasAttribute('data-compact')||el.hasAttribute('data-day')?'':el.hasAttribute('data-minute')?' '+clock:' '+clock+':'+parts.second)));
-      if(el.hasAttribute('data-compact')){var sub=document.createElement('span');sub.className='cell-sub';sub.textContent=clock;el.appendChild(sub);}
+      if(el.hasAttribute('data-compact')){var sub=document.createElement('span');sub.className='cell-sub';sub.textContent=clock+(el.hasAttribute('data-seconds')?':'+parts.second:'');el.appendChild(sub);}
     });
     TP.localize();
     if(TP.refreshPasswordToggles)TP.refreshPasswordToggles();

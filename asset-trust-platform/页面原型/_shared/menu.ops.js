@@ -24,6 +24,10 @@
     ]},
     {group:'消息', items:[
       {key:'messages',  label:'消息中心',   icon:'msg'}
+    ]},
+    // M11 汇率管理（WS-612）：随 M11 原型追加；M2 PRD F-OP-11 菜单表待同步登记。
+    {group:'平台配置', items:[
+      {key:'fx',        label:'汇率管理',   icon:'fx'}
     ]}
   ];
   TP.addCopy({
@@ -31,7 +35,7 @@
     '企业':'Enterprises','企业管理':'Enterprise management','资产数据':'Asset data','应收账款':'Receivables',
     '上游采购':'Upstream purchasing','车辆履约':'Vehicle fulfilment','下游销售':'Downstream sales','风控':'Risk control',
     '风控预警':'Risk alerts','三方数据源':'Third-party data sources','审核与出库':'Review & outbound','运营审核':'Operations review',
-    '出库与供数':'Outbound & data supply','消息':'Messages','消息中心':'Message center','运营管理员':'Operations administrator',
+    '出库与供数':'Outbound & data supply','消息':'Messages','消息中心':'Message center','平台配置':'Platform settings','汇率管理':'Exchange rates','运营管理员':'Operations administrator',
     '账户设置':'Account settings','退出登录':'Sign out'
   });
   TP.NAV_BY = {ops:ops};

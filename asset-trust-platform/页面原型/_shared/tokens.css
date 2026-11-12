@@ -148,4 +148,9 @@
   --sales-col-id:148px; --sales-col-date:112px; --sales-col-party:200px; --sales-col-count:88px;
   --sales-col-amount:176px; --sales-col-status:116px;
   --sales-receipt-min:1360px; /* M6 收款明细九列，窄视口在表内滚动 */
+  --fx-history-min:960px; /* M11 汇率历史七列，1280 px 中文视口不滚动 */
+  --fx-history-min-en:980px; /* 英文表头按词换行后的阅读下限，1280 px 视口不滚动 */
+  --fx-col-id:132px; --fx-col-rate:176px; --fx-col-time:120px; --fx-col-state:136px;
+  --fx-col-change:104px; --fx-col-by:136px;
+  --fx-rate-input-w:240px; /* 新汇率输入框：2 位小数的奈拉数值与千位数字完整可读 */
 }

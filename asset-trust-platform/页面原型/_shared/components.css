@@ -1647,3 +1647,41 @@ table.tbl.sales-list{min-width:var(--sales-table-min)}
 .sales-list col.sal-col-actions{width:var(--receivable-col-actions)}
 /* A38 收款信息：先收款统计（已开票金额、累计已收，多币种逐行），再收款明细九列；不足阅读宽度时表内滚动。 */
 .sales-detail table.sales-receipts{min-width:var(--sales-receipt-min)}
+
+/* ---------- 资产可信平台新增 · M11 汇率管理（A39–A41） ---------- */
+/* A39 当前汇率概要：复用 .asset-sum + .amount-lg + .status-grid。左侧始终完整写出“1 USD = R NGN”，
+   前缀与数值同色、16 px，方向不弱化；右侧为生效时间（时区为次行）、维护人、汇率编号；来源说明与备注在下方 .facts。 */
+.fx-rate .fx-base{font-size:var(--fs-16);font-weight:500;color:var(--text);letter-spacing:0}
+.fx-summary .status-grid dd{font-size:var(--ui-field-value);font-variant-numeric:tabular-nums}
+.fx-summary .status-grid dd .cell-sub{display:block;font-size:var(--fs-12)}
+.fx-summary .asset-sum+.facts-region{border-top:1px solid var(--border)}
+/* A40 汇率历史：七列，最新在上；汇率编号固定在左（不透底），状态与失效时间同列（当前汇率只显示标签），
+   固定列宽（table-layout:fixed），来源说明承接剩余宽度、备注为其次行。中文 960 px、英文 980 px 阅读下限，不足时表内滚动。 */
+table.tbl.fx-history{table-layout:fixed;min-width:var(--fx-history-min)}
+:lang(en) table.tbl.fx-history{min-width:var(--fx-history-min-en)}
+.tbl.fx-history :is(th,td){padding-inline:var(--sp-2)}
+.tbl.fx-history :is(th,td):first-child{padding-left:var(--card-pad);position:sticky;left:0;background:var(--card);z-index:1;box-shadow:inset -1px 0 var(--border)}
+.tbl.fx-history thead th:first-child{background:var(--card-2)}
+.tbl.fx-history tbody tr:hover td:first-child{background:var(--row-hover)}
+.tbl.fx-history tbody tr.is-new td:first-child{background:var(--accent-soft)}
+.tbl.fx-history :is(th,td):last-child{padding-right:var(--card-pad)}
+.tbl.fx-history td{vertical-align:top;padding-block:var(--sp-3)}
+.tbl.fx-history th{white-space:normal;word-break:normal;overflow-wrap:normal}
+.tbl.fx-history th .cell-sub{display:block;font-weight:400}
+.tbl.fx-history .mono{white-space:nowrap}
+.tbl.fx-history .money{font-size:var(--fs-14)}
+.tbl.fx-history .tag{white-space:nowrap}
+.tbl.fx-history .num{white-space:nowrap;text-align:right}
+.tbl.fx-history td.fx-source{overflow-wrap:anywhere;word-break:normal}
+.tbl.fx-history td.fx-source .cell-sub{display:block}
+.fx-history col.fx-col-id{width:var(--fx-col-id)}
+.fx-history col.fx-col-rate{width:var(--fx-col-rate)}
+.fx-history col.fx-col-time{width:var(--fx-col-time)}
+.fx-history col.fx-col-state{width:var(--fx-col-state)}
+.fx-history col.fx-col-change{width:var(--fx-col-change)}
+.fx-history col.fx-col-by{width:var(--fx-col-by)}
+/* A41 新汇率输入：“1 USD =”前缀 + 数值输入 + “NGN”后缀同一行，方向与单位在输入时可见；窄屏输入框占满剩余宽度。 */
+.fx-input{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
+.fx-input>.inp{width:var(--fx-rate-input-w);max-width:100%;font-variant-numeric:tabular-nums}
+.fx-input>span{font-size:var(--ui-field-value);font-weight:500;white-space:nowrap}
+@media(max-width:600px){.fx-input{flex-wrap:nowrap}.fx-input>.inp{flex:1;min-width:0;width:auto}}
