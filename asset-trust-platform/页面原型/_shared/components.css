@@ -1404,14 +1404,16 @@ fieldset.field>legend.field-caption{padding:0;margin-bottom:var(--sp-2);width:10
 .card-sec .sub-h:first-child{padding-top:var(--sp-5)}
 .page-desc .sep{color:var(--faint);margin-inline:var(--sp-1)}
 /* A12 企业完整详情：档案与资料采用两列，短状态摘要保留三列。 */
-.enterprise-detail .content-in{max-width:var(--detail-sheet-max);margin-inline:0}
+.enterprise-detail .content-in{max-width:none;margin-inline:0}
 .enterprise-detail .card-sec .sub-h{font-size:var(--fs-14);padding-bottom:var(--sp-1)}
+/* M2 账户设置随业务页展开；企业端 M1 的资料阅读宽度保持原定义。 */
+[data-module="ops-enterprises"] .account-profile :is(.content-in,.profile-sheet){max-width:none}
 @container facts (min-width:762px){
   .enterprise-detail .card-sec .facts.cols-3{grid-template-columns:repeat(2,minmax(0,1fr))}
   .institution-detail.enterprise-detail .card-sec .facts.cols-3:not(.single)>div:nth-child(3):not(.wide){border-top:1px solid var(--row-line)}
 }
 /* A13 企业维护表单：姓名、企业全称与复合电话控件按两列阅读。 */
-.enterprise-form .content-in{max-width:var(--enterprise-form-max);margin-inline:0}
+.enterprise-form .content-in{max-width:none;margin-inline:0}
 @container institution-form (min-width:1040px){
   .enterprise-form .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .enterprise-form .account-delivery>.note{grid-column:auto}
