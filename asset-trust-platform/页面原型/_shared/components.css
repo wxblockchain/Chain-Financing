@@ -1179,6 +1179,8 @@ td.pop-col:has(>.value-pop)::after{content:none}
 @media(min-width:1101px){
   .demo-btn{left:var(--sp-4);right:auto;max-width:calc(var(--sidebar-w) - var(--sp-7));font-size:var(--fs-11);box-shadow:none}
   .demo-panel{left:var(--sp-4);right:auto}
+  /* 菜单底部给评审入口留位：运营端菜单较长时，最后一项可滚到按钮上方，不被遮挡。 */
+  .nav{padding-bottom:calc(var(--ctrl-h-sm) + var(--sp-5) + var(--sp-3))}
 }
 /* 时间线下方的审核意见、审核人：以轻分隔线承接时间线，与时间线同一左缘。 */
 .review-timeline+.facts-region{margin-inline:var(--card-pad);border-top:1px solid var(--row-line)}

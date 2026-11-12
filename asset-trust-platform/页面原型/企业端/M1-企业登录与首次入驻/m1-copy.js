@@ -14,7 +14,6 @@ TP.addCopy({
   '完成入驻准备':'Complete onboarding','完成以下三步后，即可办理业务。':'Complete these three steps to start using business features.',
   '入驻进度':'Onboarding progress','修改初始密码':'Change initial password','绑定钱包':'Bind wallet','完善资料':'Complete profile','（已完成）':' (completed)',
   /* 设置密码 */
-  '设置新密码':'Set a new password',
   '新密码':'New password','再次输入新密码':'Re-enter new password','新密码要求':'New password requirements',
   '8～20 个字符':'8–20 characters','至少 1 个英文字母和 1 个数字':'At least 1 letter and 1 number','中间不含空格':'No spaces inside','两次输入一致':'Both entries match',
   '两次输入的密码不一致。':'The passwords do not match.','新密码不能与初始密码相同。':'Your new password must differ from the initial password.',

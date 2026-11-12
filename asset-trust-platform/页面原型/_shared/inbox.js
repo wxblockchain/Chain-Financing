@@ -12,7 +12,7 @@
 
   /* 两端同一套分类；“其他”只是无法识别时的兜底，不是可选分类 */
   var CATS = {progress:'业务办理进度', reminder:'业务提醒', pending:'待处理事项', security:'账户安全', alert:'运营告警', other:'其他'};
-  var SCOPE = '该入口尚未纳入原型。';
+  var SCOPE = '此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。';
 
   /* 消息：id · 分类 · 发生时间 · 演示时的阅读状态 · 中英文标题与正文 · 原业务识别信息 · 去向。
      正文中 {t:ISO} 为按所选时区展示的时间。企业名称、发票号、驳回原因按原值展示，中英文正文都不翻译。
@@ -185,9 +185,10 @@
       return '<span class="msg-ref"><span>'+r[0]+'</span> '+refValue(r)+'</span>';
     }).join('');
   }
-  /* 消息中心模块（html[data-module="messages"]）内用 data-go；其他模块的画面 id 可能同名（如 o-list），一律给范围提示。 */
+  /* 消息中心模块（html[data-module="messages"]）内用 data-go；其他模块的画面 id 可能同名（如 o-list），
+     改用仓库联看路由 key（msg：全部消息，msg-<消息 id>：该条详情，登记在 M10 的 route.js）；附件中给范围提示。 */
   function own(screen){ return document.documentElement.dataset.module==='messages' && !!document.getElementById(screen); }
-  function link(screen){ return own(screen) ? ' data-go="'+screen+'"' : ' data-toast="'+SCOPE+'"'; }
+  function link(screen, key){ return own(screen) ? ' data-go="'+screen+'"' : ' data-module-key="'+key+'" data-toast="'+SCOPE+'"'; }
 
   /* 一条消息（列表与预览共用）。opts.read 覆盖演示状态，opts.compact 为预览，opts.screen 为详情画面 id。 */
   function item(role, m, opts){
@@ -195,7 +196,7 @@
     var read = opts.read!==undefined ? opts.read : m.read;
     var screen = opts.screen || 'm-'+m.id;
     var when = '<time class="msg-time" data-instant="'+m.at+'" data-minute></time>';
-    return '<li><button type="button" class="msg-item'+(opts.compact?' compact':'')+(read?'':' is-unread')+'"'+link(screen)+'>'+
+    return '<li><button type="button" class="msg-item'+(opts.compact?' compact':'')+(read?'':' is-unread')+'"'+link(screen, 'msg-'+m.id)+'>'+
       '<span class="msg-dot" aria-hidden="true"></span>'+
       '<span class="msg-main"><span class="msg-title">'+title(m)+'</span>'+
       '<span class="msg-summary">'+body(m)+'</span>'+
@@ -218,7 +219,7 @@
     }else{
       inner = '<ul class="msg-list">'+rows.map(function(m){ return item(role, m, {compact:true, screen:'m-'+m.id}); }).join('')+'</ul>';
     }
-    var all = list ? '<button type="button" class="inbox-all"'+link(list)+'>查看全部消息</button>' : '';
+    var all = list ? '<button type="button" class="inbox-all"'+link(list, 'msg')+'>查看全部消息</button>' : '';
     return '<div class="dd-list inbox-panel" role="region" aria-label="最近消息"'+(hidden?' hidden':'')+'>'+
       '<div class="inbox-h"><h2>最近消息</h2><span class="inbox-zone"><span>时区</span> <span data-zone></span></span></div>'+inner+all+'</div>';
   }

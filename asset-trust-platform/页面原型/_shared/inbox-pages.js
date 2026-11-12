@@ -13,6 +13,8 @@
   'use strict';
   var IB = TP.inbox, esc = IB.esc;
   var UNDRAWN = '该入口尚未纳入原型。';
+  // 前往原业务交给仓库联看路由（m7a- / m7b- / m8- / m9-<编号>，登记在来源模块 route.js）；附件或来源画面未交付时给范围提示。
+  var SCOPE_FILE = '此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。';
 
   function ids(spec){
     var out = [];
@@ -85,13 +87,13 @@
     return m.done ? 'done' : 'act';
   }
 
-  /* 相关业务：原业务识别信息；可前往时点第一个编号进入原业务（编号即入口）。来源模块原型未交付前给范围提示。 */
+  /* 相关业务：原业务识别信息；可前往时点第一个编号进入原业务（编号即入口）。没有对应画面时给范围提示。 */
   function related(m, denied){
     var st = stateOf(m, denied);
     if(!m.ref) return '';
     return '<div class="card-sec msg-related"><h2 class="sub-h">相关业务</h2><div class="facts-region"><dl class="facts">'+m.ref.map(function(r,i){
       var linked = i===0 && (st==='act' || st==='done');
-      return '<div><dt>'+r[0]+'</dt><dd>'+(linked?'<button type="button" class="btn-link mono" data-module-key="'+esc(m.go.key)+'" data-toast="'+UNDRAWN+'">'+esc(r[1])+'</button>':IB.refValue(r))+'</dd></div>';
+      return '<div><dt>'+r[0]+'</dt><dd>'+(linked?'<button type="button" class="btn-link mono" data-module-key="'+esc(m.go.key)+'" data-toast="'+SCOPE_FILE+'">'+esc(r[1])+'</button>':IB.refValue(r))+'</dd></div>';
     }).join('')+'</dl></div>'+
     (st==='denied'?'<div class="msg-go"><p class="note">'+TP.icon('info')+'<span>相关内容暂不可访问。</span></p></div>':'')+'</div>';
   }

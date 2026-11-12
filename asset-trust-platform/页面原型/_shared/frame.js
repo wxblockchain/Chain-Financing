@@ -2,7 +2,8 @@
    frame.js — 资产可信平台原型壳层运行时（企业端；运营端后续沿用）
    基线：代币发行平台 frame.js（组件规范 v1.96）。本平台改动：账号入口显示姓名与登录邮箱并提供“账户信息”；
    入驻准备与首登改密的 focus 画面（data-restricted）只给出登录邮箱与退出；入驻未完成时菜单带锁形标记。
-   只做三件事：渲染壳层（侧栏、顶栏、账号入口）、按画面切换、画面目录。
+   只做三件事：渲染壳层（侧栏、顶栏、账号入口）、按画面切换、画面目录（含仓库联看的端与身份切换）。
+   跨模块入口：data-module-key 交给 navigation.js（仅仓库联看）；附件或未登记时按 data-toast 提示。
    不实现业务规则、校验、状态机或演示时钟；规则以 PRD 为准。
 
    模块页面约定：
@@ -94,8 +95,8 @@
   TP.toast = toast;
   /* 跨模块入口没有目标画面时的统一范围提示：附件说明到完整原型打开，仓库联看说明尚未纳入 */
   var SCOPE_FILE = '此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。', SCOPE_REPO = '该入口尚未纳入原型。';
-  // 本平台尚无仓库联看入口（index.html）：未交付模块的入口统一提示“尚未纳入原型”。
-  function scope(){ return SCOPE_REPO; }
+  // 仓库联看（navigation.js 已加载）中未登记的入口提示“尚未纳入原型”；单模块附件提示到 index.html 打开。
+  function scope(){ return TP.previewMode==='module' ? SCOPE_FILE : SCOPE_REPO; }
 
   function navList(who){ return (TP.NAV_BY && TP.NAV_BY[who]) || TP.NAV; }
   function renderNav(sec){
@@ -290,7 +291,7 @@
     var next = cur && cur.dataset.next;
     // 端与身份切换只在仓库联看提供；单模块附件不含其他模块，只说明打开方式。
     var ends = TP.renderPreviewSwitch ? TP.renderPreviewSwitch() :
-      TP.previewMode==='module' ? '<p class="demo-note">单模块附件。切换企业端、管理端请在仓库中打开 index.html。</p>' : '';
+      TP.previewMode==='module' ? '<p class="demo-note">单模块附件。切换企业端、运营端请在仓库中打开 index.html。</p>' : '';
     p.innerHTML = '<div class="demo-top"><b>画面目录</b><span>评审工具 · 演示数据</span></div>'+ends+
       (ends?'<div class="demo-g demo-sep">本模块画面</div>':'')+
       (next?'<div class="demo-flow"><button type="button" class="btn sm primary" data-demo-go="'+next+'">主流程下一屏：'+esc(document.getElementById(next).dataset.name)+'</button></div>':'')+

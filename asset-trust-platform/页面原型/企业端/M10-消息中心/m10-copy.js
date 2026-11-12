@@ -7,7 +7,6 @@ TP.addCopy({
   '全部消息 · 已加载全部':'All messages · all loaded','筛选：未读':'Filter: unread','筛选：已读':'Filter: read',
   '筛选：业务办理进度':'Filter: business progress','筛选：待处理事项':'Filter: pending tasks','筛选：运营告警':'Filter: operations alerts',
   '筛选无结果（未读 · 全部已读之后）':'No results (unread · after marking all as read)','读取失败':'Load failed','还没有消息（空）':'No messages yet (empty)',
-  '从详情返回 · 刚读的消息原地变为已读':'Back from details · the message just read is now read in place',
   '处理中':'Processing','失败 · 全部保持原状':'Failed · nothing changed','成功 · 当前筛选已无未读':'Success · no unread in the current filter',
   '读取失败 · 保留未读数':'Load failed · unread count kept','详情读取失败 · 仍为未读':'Detail load failed · still unread',
   '已读保存失败 · 正文照常可读':'Read status not saved · content still readable','内容无法展示 · 通用标题':'Content unavailable · generic title','通知':'Notification',
@@ -15,7 +14,6 @@ TP.addCopy({
   '全部标为已读':'Mark all as read','标为已读':'Mark as read','处理中…':'Processing…','正在标为已读':'Marking as read','请勿重复提交。':'Do not submit again.',
   '返回列表':'Back to list','未能标为已读，所有消息保持原状。请重试。':'Could not mark as read. All messages are unchanged. Please try again.',
   /* 详情异常 */
-  '暂时无法读取，这条消息仍为未读。请稍后重试。':'Unable to load right now. This message is still unread. Please try again later.',
   '未找到这条消息':'Message not found','消息不存在或无法查看。':'This message does not exist or cannot be viewed.',
   '业务角色已移除':'Business role removed',
   '债务人角色已移除 · 收到新的确权申请 · 相关内容不可访问':'Debtor role removed · New confirmation request received · content unavailable',
