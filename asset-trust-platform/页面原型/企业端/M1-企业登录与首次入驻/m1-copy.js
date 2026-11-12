@@ -14,13 +14,13 @@ TP.addCopy({
   '完成入驻准备':'Complete onboarding','完成以下三步后，即可办理业务。':'Complete these three steps to start using business features.',
   '入驻进度':'Onboarding progress','修改初始密码':'Change initial password','绑定钱包':'Bind wallet','完善资料':'Complete profile','（已完成）':' (completed)',
   /* 设置密码 */
-  '设置新密码':'Set a new password','首次登录须先修改初始密码。修改后请用新密码重新登录。':'Change your initial password before continuing. Then sign in again with your new password.',
+  '设置新密码':'Set a new password',
   '新密码':'New password','再次输入新密码':'Re-enter new password','新密码要求':'New password requirements',
   '8～20 个字符':'8–20 characters','至少 1 个英文字母和 1 个数字':'At least 1 letter and 1 number','中间不含空格':'No spaces inside','两次输入一致':'Both entries match',
   '两次输入的密码不一致。':'The passwords do not match.','新密码不能与初始密码相同。':'Your new password must differ from the initial password.',
   '新密码不能与平台运营提供的密码相同。':'Your new password must differ from the password provided by platform operations.',
   '新密码不能与当前密码或最近一次初始密码相同。':'Your new password must differ from your current password and the most recent initial password.',
-  '登录信息已由平台运营重置，请先设置新密码。修改后请用新密码重新登录。':'Platform operations has reset your sign-in details. Set a new password, then sign in again with it.',
+
   /* 找回密码 */
   '找回密码':'Reset password','找回步骤':'Reset steps','验证邮箱':'Verify email','获取验证码':'Get code','返回登录':'Back to sign-in',
   '安全验证':'Security check','向右拖动滑块完成拼图':'Drag the slider right to complete the puzzle','验证通过':'Verified',
@@ -28,7 +28,7 @@ TP.addCopy({
   '邮箱验证码':'Email code','6 位数字':'6 digits','6 位数字，10 分钟内有效。':'6 digits, valid for 10 minutes.',
   '重新获取（58 秒）':'Resend (58 s)','重新获取':'Resend','验证并继续':'Verify and continue',
   '验证码无效，请重新输入或重新获取。':'Invalid code. Enter it again or request a new one.',
-  '请在验证通过后 10 分钟内完成设置。设置成功后全部登录将结束，请用新密码重新登录。':'Finish within 10 minutes of verification. All sessions will end afterwards; sign in again with your new password.',
+
   '重置密码':'Reset password','账号已停用，不能重置密码，请联系平台运营。':'Your account has been disabled and the password cannot be reset. Contact platform operations.',
   /* 绑定钱包 */
   '选择本企业在平台使用的钱包地址，并签名验证由你控制。':'Choose the wallet address your company will use on this platform, then sign to verify that you control it.',
@@ -70,12 +70,18 @@ TP.addCopy({
   /* 画面目录（评审工具） */
   '首次登录改密':'First sign-in password','入驻：绑定钱包':'Onboarding: wallet','入驻：完善资料':'Onboarding: profile','访问反馈':'Access feedback',
   '邮箱或密码错误（剩余机会）':'Incorrect credentials (attempts left)','账号已临时锁定':'Account temporarily locked','账号已停用':'Account disabled',
-  '密码已修改，请重新登录':'Password changed: sign in again','登录已结束（到期或无操作）':'Session ended (expired or idle)','登录已结束（运营重置密码）':'Session ended (password reset by operations)',
+'登录已结束（到期或无操作）':'Session ended (expired or idle)','登录已结束（运营重置密码）':'Session ended (password reset by operations)',
   '设置新密码（新邀请账号）':'Set new password (new invitation)','两次输入不一致':'Entries do not match','运营重置后设置新密码（已完成入驻）':'Set new password after reset (onboarded)',
   '填写登录邮箱':'Enter login email','人机校验':'Security check','输入验证码':'Enter code','验证码无效':'Invalid code','验证后：账号已停用':'After verification: account disabled',
   '确认地址':'Confirm address','等待签名':'Waiting for signature','签名未完成验证':'Signature not verified','地址不能绑定':'Address unavailable','已完成步骤：查看绑定结果':'Completed step: binding result',
   '填写资料':'Fill in profile','选择“其他”且注册地址未填写':'“Other” selected, address missing','离开提示：有未提交内容':'Leave warning: unsaved profile',
   '仅债权人（默认页面）':'Creditor only (default page)','仅债务人':'Debtor only','债权人与债务人':'Creditor and debtor','暂无业务角色':'No business role',
   '账号入口展开':'Account menu open','编辑个人信息':'Edit personal information','编辑企业信息：必填项清空':'Edit company: required field emptied','读取失败':'Load failed',
-  '无权访问（债务人打开应收账款）':'Access denied (debtor opens receivables)'
+  '无权访问（债务人打开应收账款）':'Access denied (debtor opens receivables)',
+  /* 第 2 轮：入驻在平台内进行、设置密码成功即登录 */
+  '首次登录须先修改初始密码，设置成功后直接进入平台。':'Change your initial password first. You will enter the platform once it is set.',
+  '登录信息已由平台运营重置，请先设置新密码。设置成功后直接进入平台。':'Platform operations has reset your sign-in details. Set a new password to enter the platform.',
+  '请在验证通过后 10 分钟内完成设置。设置成功后直接登录平台。':'Finish within 10 minutes of verification. You will be signed in once the password is set.',
+  '新密码已设置':'New password set','密码已重置':'Password reset','入驻准备':'Onboarding','完成入驻后可用':'Available after onboarding',
+  '修改密码后：请重新登录':'After password change: sign in again'
 });

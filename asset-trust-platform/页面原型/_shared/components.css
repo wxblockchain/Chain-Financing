@@ -1288,6 +1288,14 @@ td.pop-col:has(>.value-pop)::after{content:none}
 .onboard-head .steps li[aria-current="step"]{border-bottom:2px solid var(--accent);padding-bottom:var(--sp-2)}
 .onboard-screen :is(input,select,button,h2){scroll-margin-block-start:calc(var(--onboard-head-h,0px) + var(--sp-8));scroll-margin-block-end:var(--sp-4)}
 .steps li>.btn-link{padding:2px 4px;margin:-2px -4px;font-weight:500}
+/* A1（平台内）入驻准备：在 app 骨架内容区呈现，步骤条吸附在顶栏下方；卡片限宽便于表单阅读。 */
+.onboard-card{max-width:var(--onboard-card-max)}
+.onboard-card>.onboard-head{top:var(--app-header-h);z-index:calc(var(--z-sticky) - 21);margin-top:0;padding:var(--sp-4) var(--card-pad);border-radius:var(--radius-sm) var(--radius-sm) 0 0}
+.onboard-card>.onboard-body{display:flex;flex-direction:column;gap:var(--sp-5);padding:var(--card-pad)}
+.onboard-screen[data-layout="app"] :is(input,select,button,h2){scroll-margin-block-start:calc(var(--app-header-h) + var(--onboard-head-h,0px) + var(--sp-6))}
+/* 入驻未完成时的锁定菜单：可见、锁形标记、不可点击，悬停不高亮。 */
+.nav-item[aria-disabled="true"]{cursor:not-allowed;color:var(--faint)}
+.nav-item[aria-disabled="true"]:hover{background:transparent;color:var(--faint)}
 /* A2 设置密码的规则清单：逐项说明是否满足，满足项绿色对勾，未满足项灰色圆点；不展示强弱分档。 */
 .rule-list{list-style:none;margin:0;padding:var(--sp-3) 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2) var(--sp-4);border-block:1px solid var(--row-line);font-size:var(--fs-13);color:var(--muted)}
 .rule-list li{display:flex;align-items:flex-start;gap:var(--sp-2);min-width:0}

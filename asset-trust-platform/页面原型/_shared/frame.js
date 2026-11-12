@@ -11,6 +11,7 @@
             data-nav="account" data-crumb="账户/账户信息"
             [data-overlay data-base="返回画面 id" [data-inline 在内容区内呈现确认]] [data-next="主流程下一屏 id"]
             [data-dd 展开账号入口] [data-show-toast="进入画面时的结果提示"] [data-restricted 受限登录，仅语言与退出]>
+   入驻未完成的身份（TP.demo.accounts[身份].locked）：侧栏全部菜单可见，带锁形标记、不可点击（aria-disabled）。
    任意元素 data-go="画面 id" 跳转；弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制完整值。
    模块在 TP.routes 中登记菜单与账号入口对应的画面。
    data-password-toggle="输入框 id" 只切换密码显隐，不校验密码。
@@ -76,7 +77,8 @@
   var current = null, gateKey = null, order = [], returnFocus = null;
 
   function short(a){ return a ? a.slice(0,6)+'…'+a.slice(-4) : '我的账户'; }
-  function locked(){ return false; } /* 本平台没有“需认证”的锁定菜单 */
+  /* 入驻未完成（账号 locked:true）时全部菜单可见、带锁形标记且不可点击；与代币发行平台同一锁形标记。 */
+  function locked(who){ var a = TP.demo.accounts && TP.demo.accounts[who]; return !!(a && a.locked); }
 
   function toast(t){
     var box = $('#toasts'); if(!box) return;
@@ -95,9 +97,9 @@
     if(who==='none' || who==='guest'){ $('#nav').innerHTML=''; return; }
     $('#nav').innerHTML = navList(who).map(function(g){
       return '<div class="nav-group">'+g.group+'</div>' + g.items.map(function(it){
-        var lk = it.biz && locked(who);
-        return '<button type="button" class="nav-item" data-nav-key="'+it.key+'"'+(active===it.key?' aria-current="page"':'')+'>'+
-          TP.icon(it.icon)+'<span>'+it.label+'</span>'+(lk?'<span class="lock" title="需先完成认证">'+TP.icon('lock')+'<span class="sr-only">需先完成认证</span></span>':'')+'</button>';
+        var lk = locked(who);
+        return '<button type="button" class="nav-item" data-nav-key="'+it.key+'"'+(lk?' aria-disabled="true" title="完成入驻后可用"':(active===it.key?' aria-current="page"':''))+'>'+
+          TP.icon(it.icon)+'<span>'+it.label+'</span>'+(lk?'<span class="lock">'+TP.icon('lock')+'<span class="sr-only">完成入驻后可用</span></span>':'')+'</button>';
       }).join('');
     }).join('');
   }
