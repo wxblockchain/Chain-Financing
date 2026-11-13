@@ -19,7 +19,8 @@
    模块在 TP.routes 中登记菜单与账号入口对应的画面。
    data-password-toggle="输入框 id" 只切换密码显隐，不校验密码。
    菜单与演示账号只在 _shared/menu.client.js（企业端）与 menu.ops.js（运营端）维护（TP.NAV_BY[身份]、TP.demo.accounts[身份]），模块不复制。
-   账号入口菜单项默认“账户信息”，账号可用 settingsLabel 指定（运营端为“账户设置”）。
+   账号入口菜单项默认“账户信息”，账号可用 settingsLabel 指定（运营端为“账户设置”）；
+   账号带 messagesLabel 时在其下增加消息中心入口（data-acct="messages"，按菜单 key messages 路由；运营端）。
    消息入口（M10）：模块加载 _shared/inbox.js（TP.inbox）后顶栏显示铃铛、未读数与最近消息预览；入驻未完成（locked）、
    受限登录（restricted）与 focus 画面不显示。画面可用 data-unread="数字" 指定本屏未读数，
    data-inbox="open|empty|error" 展开预览并呈现对应状态（通常为 data-overlay，底层为所在页面）。
@@ -145,6 +146,7 @@
       '<div class="dd-who">'+(acc.restricted?'<div class="cell-sub">'+esc(acc.email)+'</div>':
         '<div class="cell-main">'+esc(acc.name)+'</div><div class="cell-sub">'+esc(acc.email)+'</div>'+(roles?'<div class="dd-role">'+roles+'</div>':''))+'</div>'+
       (acc.restricted?'':'<button type="button" class="dd-item" role="menuitem" data-acct="settings">'+TP.icon('user')+esc(acc.settingsLabel||'账户信息')+'</button>')+
+      (acc.restricted||!acc.messagesLabel?'':'<button type="button" class="dd-item" role="menuitem" data-acct="messages">'+TP.icon('msg')+esc(acc.messagesLabel)+'</button>')+
       '<button type="button" class="dd-item" role="menuitem" data-acct="logout">'+TP.icon('out')+'退出登录</button></div>';
     return '<div class="dd" id="acct"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="'+(open?'true':'false')+'" aria-label="账号：'+esc(label)+'">'+
       TP.icon('user')+'<span>'+esc(label)+'</span>'+TP.icon('chev')+'</button>'+menu+'</div>';

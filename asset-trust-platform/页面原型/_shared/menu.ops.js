@@ -23,9 +23,6 @@
       {key:'review',    label:'运营审核',   icon:'shield', pendingCount:4},
       {key:'outbound',  label:'出库与供数', icon:'send', pendingCount:2}
     ]},
-    {group:'消息', items:[
-      {key:'messages',  label:'消息中心',   icon:'msg'}
-    ]},
     // M11 汇率管理（WS-612）：已登记于 M2 PRD F-OP-11 菜单表（2026-11-13 修订）。
     {group:'平台配置', items:[
       {key:'fx',        label:'汇率管理',   icon:'fx'}
@@ -43,7 +40,8 @@
   // 账号入口的演示数据：姓名、登录邮箱由开发人员分配，角色固定为运营管理员。
   TP.demo = TP.demo || {};
   TP.demo.accounts = {
-    ops:{name:'运营示例账号', email:'ops-demo@example.com', roles:['运营管理员'], settingsLabel:'账户设置'},
+    // 消息中心（M10）不在侧栏菜单，放在账号入口“账户设置”下面（用户 2026-11-13 确认，WS-611）。
+    ops:{name:'运营示例账号', email:'ops-demo@example.com', roles:['运营管理员'], settingsLabel:'账户设置', messagesLabel:'消息中心'},
     // 首次登录强制改密的受限登录：只有登录邮箱与退出登录，不显示菜单。
     opsinit:{restricted:true, email:'new-ops@example.com'}
   };
