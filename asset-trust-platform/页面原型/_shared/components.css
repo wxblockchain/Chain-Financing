@@ -1906,4 +1906,5 @@ table.tbl.alert-list{min-width:var(--alert-table-min)}
 .page-tab:hover{color:var(--text)}
 .page-tab[aria-selected="true"]{color:var(--accent);font-weight:650;box-shadow:inset 0 -2px var(--accent)}
 .page-tab:focus-visible{outline-offset:-2px}
-
+/* A57 侧栏说明列表（v1.27，WS-601）：M1 修改登录邮箱右侧“修改说明”栏，圆点列表，13 px 辅助色。 */
+.aside-list{margin:0;padding-left:var(--sp-5);display:grid;gap:var(--sp-2);font-size:var(--fs-13);color:var(--muted)}

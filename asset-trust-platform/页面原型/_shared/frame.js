@@ -8,7 +8,7 @@
 
    模块页面约定：
    <section data-screen id="…" data-no="A1" data-group="账户信息" data-name="默认"
-            data-layout="app|focus" data-who="none|onboarding|debtor|creditor|both|norole"
+            data-layout="app|focus" data-who="none|onboarding|debtor|creditor|both"
             data-nav="account" data-crumb="账户/账户信息"
             [data-overlay data-base="返回画面 id" [data-inline 在内容区内呈现确认]] [data-next="主流程下一屏 id"]
             [data-dd 展开账号入口] [data-show-toast="进入画面时的结果提示"] [data-restricted 受限登录，仅语言与退出]

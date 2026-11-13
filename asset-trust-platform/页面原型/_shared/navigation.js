@@ -121,7 +121,6 @@
       {who:'creditor',   label:'债权人',         key:'receivables'},
       {who:'debtor',     label:'债务人',         key:'confirmations'},
       {who:'both',       label:'债权人与债务人', key:'receivables'},
-      {who:'norole',     label:'暂无业务角色',   key:'account'}
     ]},
     {end:'ops', label:'运营端', items:[
       {who:'none', label:'未登录',     key:'signIn'},

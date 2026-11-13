@@ -119,5 +119,25 @@ TP.addCopy({
   '连接后：钱包地址与填写的不一致':'After connecting: wallet address does not match',
   '账号设置 · 仅债权人（默认页面）':'Account settings · Creditor only (default page)','账号设置 · 仅债务人':'Account settings · Debtor only',
   '账号设置 · 债权人与债务人':'Account settings · Creditor and debtor','账号设置 · 暂无业务角色':'Account settings · No business role',
-  '企业信息：基本信息与组织资料':'Company information: basics and documents','编辑基本信息：必填项清空':'Edit basics: required field emptied'
+  '企业信息：基本信息与组织资料':'Company information: basics and documents','编辑基本信息：必填项清空':'Edit basics: required field emptied',
+  /* 第 5 轮：PRD 508d8b9 —— 密码提示两条、修改登录邮箱、去掉停用与运营重置 */
+  '使用登录邮箱和密码登录。':'Sign in with your login email and password.','至少包含 1 个英文字母和 1 个数字':'At least 1 letter and 1 number',
+  '登录信息已更新，请使用邀请邮件中的登录信息登录。':'Your sign-in details have been updated. Sign in with the details in the invitation email.',
+  '登录邮箱已修改，请使用新邮箱登录。':'Your login email has been changed. Sign in with the new email.',
+  '修改登录邮箱':'Change login email','修改步骤':'Change steps','修改说明':'About this change','签名核验':'Signature verification','填写新邮箱':'Enter new email','验证新邮箱':'Verify new email',
+  '用本企业已绑定的钱包签名核验身份，不需要输入当前密码。':'Verify your identity by signing with your company\u2019s bound wallet. Your current password is not needed.',
+  '核验通过后 10 分钟内完成修改。':'Finish within 10 minutes of verification.',
+  '修改成功后全部登录结束，请用新邮箱和原密码重新登录。':'After the change, all sessions end. Sign in again with the new email and your existing password.',
+  '修改成功后，新邮箱会收到变更通知；全部登录将结束，请用新邮箱和原密码重新登录。':'After the change, the new email receives a change notice. All sessions end; sign in again with the new email and your existing password.',
+  '请连接本企业已绑定的钱包并签名一次，核验通过后填写新邮箱。':'Connect your company\u2019s bound wallet and sign once. After verification, enter the new email.',
+  '当前登录邮箱':'Current login email','已绑定的钱包地址':'Bound wallet address','连接钱包并签名':'Connect wallet and sign',
+  '签名只用于核验身份以修改登录邮箱，不发起交易、不消耗 gas，也不转移或授权任何资产。':'The signature only verifies your identity to change the login email. It does not start a transaction, use gas, or transfer or authorize any assets.',
+  '签名消息声明用途为核验身份以修改登录邮箱。':'The signature message states that it verifies your identity to change the login email.',
+  '请使用本企业已绑定的钱包地址核验。请在钱包中切换到已绑定的地址后重试。':'Use your company\u2019s bound wallet address. Switch to the bound address in your wallet and try again.',
+  '签名核验已通过，请在 10 分钟内完成修改。':'Signature verified. Finish the change within 10 minutes.',
+  '新登录邮箱':'New login email','修改后用新邮箱登录和找回密码。':'After the change, use the new email to sign in and reset your password.','该邮箱不可用，请更换。':'This email cannot be used. Please use another one.',
+  '验证码已发送到新邮箱，请查收。':'A code has been sent to the new email.','新邮箱验证码':'New email code','修改邮箱':'Change email','确认修改':'Confirm change',
+  /* 画面目录 */
+  '修改登录邮箱后：请用新邮箱登录':'After email change: sign in with new email','登录已结束（登录信息已更新）':'Session ended (sign-in details updated)',
+  '钱包地址与已绑定的不一致':'Wallet address does not match the bound address','新邮箱不可用':'New email unavailable'
 });
