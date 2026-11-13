@@ -1920,3 +1920,13 @@ table.tbl.alert-list{min-width:var(--alert-table-min)}
 .vehicle-links{display:flex;flex-direction:column;gap:var(--sp-3)}
 .vehicle-links-table th .cell-sub{font-weight:400}
 .vehicle-links-table td .value-lines>.btn-link{align-self:flex-start}
+
+/* v1.30 详情摘要通用：没有主金额的对象（下游销售交易、车辆）同样“关键字段在左、状态在右”，关键字段直接从摘要顶端开始 */
+.asset-sum>div>.meta:first-child{margin-top:0}
+:is(.sales-status,.vehicle-summary) .asset-sum .status-grid,
+:is(.purchase-detail,.sales-detail) .sales-status .asset-sum .status-grid{padding:0}
+:is(.sales-status,.vehicle-summary) .asset-sum .meta b .value-lines{gap:2px}
+:is(.sales-status,.vehicle-summary) .asset-sum .meta b .summary-sub{font-weight:400}
+@media(min-width:601px){:is(.sales-status,.vehicle-summary) .status-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1101px){:is(.sales-status,.vehicle-summary) .status-grid.two{grid-template-columns:repeat(2,minmax(120px,auto))}}
+.asset-sum .meta b>.btn-link:first-child{margin-left:calc(-1 * var(--sp-1));padding-block:0}

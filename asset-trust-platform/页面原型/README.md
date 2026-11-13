@@ -67,6 +67,7 @@
 | `navigation.js`、`modules.js` | 仅仓库联看：读取模块清单与各模块 `route.js`，跨模块跳转及端与身份切换；导出附件时排除 |
 | `export.py` | 生成单模块离线附件 |
 | [`design-system/组件规范.md`](_shared/design-system/组件规范.md) | 取值基线、与代币发行平台的差异、本平台新增组件 |
+| [`design-system/列表与详情规范.md`](_shared/design-system/列表与详情规范.md) | 列表与详情的通用规范与自检清单，新增或修订模块按此组织列表与详情 |
 
 ## 导出单模块附件
 
