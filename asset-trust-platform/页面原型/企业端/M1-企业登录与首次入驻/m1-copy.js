@@ -108,5 +108,16 @@ TP.addCopy({
   /* 画面目录 */
   '钱包已连接：签名确认':'Wallet connected: confirm signature','地址格式不正确':'Invalid address format','钱包地址与填写的不一致':'Wallet address does not match',
   '填写资料并上传组织资料':'Fill in profile and upload documents','提交校验：注册地址与组织资料缺失':'Submit check: address and documents missing',
-  '组织资料上传中（不能提交）':'Documents uploading (cannot submit)','组织资料格式不支持':'Unsupported document format','组织资料只剩 1 份':'Only 1 document left'
+  '组织资料上传中（不能提交）':'Documents uploading (cannot submit)','组织资料格式不支持':'Unsupported document format','组织资料只剩 1 份':'Only 1 document left',
+  /* 第 4 轮：PRD de6affb —— 填写地址后直接连接钱包；账户信息分为账号设置 / 企业信息 */
+  '填写地址并连接钱包':'Enter address and connect wallet','绑定成功':'Bound',
+  '，该地址将作为本企业在平台使用的唯一钱包地址。连接钱包后需要签名一次，不涉及转账或资金授权。':'. It will be the only wallet address your company uses on this platform. After connecting the wallet you sign once; no transfer or fund authorization is involved.',
+  '钱包已连接，请在钱包中确认签名':'Wallet connected. Confirm the signature in your wallet',
+  '签名消息中包含要绑定的完整地址，请在钱包中核对。签名只用于证明你控制该地址，不发起交易、不消耗 gas。':'The signature message includes the full address to bind; check it in your wallet. The signature only proves that you control this address. It does not start a transaction or use gas.',
+  '账号设置':'Account settings','基本信息':'Basic information',
+  '钱包已连接：等待签名':'Wallet connected: waiting for signature','连接前检查：地址格式不正确':'Pre-connect check: invalid address format','连接前检查：地址不能绑定':'Pre-connect check: address unavailable',
+  '连接后：钱包地址与填写的不一致':'After connecting: wallet address does not match',
+  '账号设置 · 仅债权人（默认页面）':'Account settings · Creditor only (default page)','账号设置 · 仅债务人':'Account settings · Debtor only',
+  '账号设置 · 债权人与债务人':'Account settings · Creditor and debtor','账号设置 · 暂无业务角色':'Account settings · No business role',
+  '企业信息：基本信息与组织资料':'Company information: basics and documents','编辑基本信息：必填项清空':'Edit basics: required field emptied'
 });
