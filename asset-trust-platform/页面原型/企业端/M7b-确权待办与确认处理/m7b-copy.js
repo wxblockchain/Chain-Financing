@@ -1,5 +1,8 @@
 /* M7b 确权待办与确认处理 · 企业端（债务人）· 模块文案英文（企业名称、发票号、驳回原因等业务值不翻译） */
 TP.addCopy({
+"申请状态 · 待处理": "Request status · Pending",
+"申请状态 · 已处理": "Request status · Processed",
+"申请状态": "Request status",
 "确权申请 · 资产可信平台": "Confirmation requests · Asset Trust Platform",
 "债权人发给本企业的确权申请": "Confirmation requests sent to your company by creditors",
 "申请分组": "Request group",

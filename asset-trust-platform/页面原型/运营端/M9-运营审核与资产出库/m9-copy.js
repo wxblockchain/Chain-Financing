@@ -1,5 +1,7 @@
 /* M9 运营审核与资产出库 · 运营端 · 模块文案英文（企业名称、编号、审核说明、驳回原因、外部返回的失败原因等业务值不翻译） */
 TP.addCopy({
+"申请状态 · 待审核": "Request status · Pending review",
+"申请状态": "Request status",
 "运营审核与资产出库 · 资产可信平台": "Operations review & asset outbound · Asset Trust Platform",
 "债务人已确认的确权申请在这里审核": "Review confirmation requests after the debtor has confirmed them",
 "审核通过的资产在这里存证并提供给资产数字化平台": "Notarise approved assets and supply them to the asset digitisation platform",
