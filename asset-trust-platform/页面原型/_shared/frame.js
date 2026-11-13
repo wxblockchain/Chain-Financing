@@ -124,10 +124,11 @@
   }
 
   function renderCrumb(sec){
-    $('#crumb').hidden = sec.dataset.layout === 'focus';
     var parts = (sec.dataset.crumb||'').split('/').filter(Boolean);
     var targets = (sec.dataset.crumbTargets||'').split('/');
     if(gateKey){ var it = findNav(gateKey); parts = [groupOf(gateKey), it.label]; }
+    // 菜单直达的页面（列表、账户等，路径只有“分组 / 菜单”）不显示面包屑；详情等下级页面才显示返回路径（v1.23）。
+    $('#crumb').hidden = sec.dataset.layout === 'focus' || parts.length <= 2;
     $('#crumb').innerHTML = parts.map(function(p,i){
       var target = targets[i];
       return (i?'<span class="sep" aria-hidden="true">/</span>':'') + (i===parts.length-1?'<b aria-current="page">'+esc(p)+'</b>':

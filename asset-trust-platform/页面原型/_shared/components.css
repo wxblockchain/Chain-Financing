@@ -1870,3 +1870,29 @@ table.tbl.alert-list{min-width:var(--alert-table-min)}
 /* A53 三方数据源：只有能力说明，复用基线 .state，无任何操作。 */
 .alert-sources .state p{max-width:76ch}
 
+/* ==========================================================================
+   v1.23（WS-600）列表与详情精简：列表无面包屑（frame.js）、筛选一行紧凑、状态前圆点、
+   去掉列表首列分隔线；详情摘要的关键字段以“字段名在上、值在下”成组展示，重要信息先读到。
+   ========================================================================== */
+/* 筛选：下拉按内容取宽，常用条件、更多筛选、搜索与查询尽量排在一行 */
+.filter-select select{min-width:var(--filter-chip-min)}
+.asset-filters{padding-block:var(--sp-3)}
+.filter-query{flex:1 1 auto;min-width:min(100%,var(--filter-field-min))}
+.filter-query>.filter-select select{min-width:0}
+.filter-search{flex:1 1 var(--filter-field-min);min-width:min(100%,var(--filter-field-min))}
+/* 状态前加圆点：列表单元格、详情状态区与标题旁的状态标签 */
+:is(.tbl td,.status-grid dd,.page-title-row,.confirmation-ref) .tag:not(:has(.dot))::before{content:"";flex:none;width:6px;height:6px;border-radius:var(--radius-pill);background:currentColor}
+/* 带圆点的状态标签不折行；各列表原先为窄列设置的折行在此统一取消 */
+.tbl[class] td .tag{white-space:nowrap}
+/* 列表首列只吸附不画竖线，与操作列的分隔区分开；横向滚动时仍固定 */
+.tbl:is(.receivable-list,.vehicle-list,.alert-list,.enterprise-list,.claim-request-list,.fx-history) :is(th,td):first-child,
+.tbl.claim-list :is(th,td):nth-child(2){box-shadow:none}
+/* 详情摘要：关键字段成组，字段名小字在上、值在下，按 3 列排布 */
+.asset-sum .meta,.receivable-summary .asset-sum .meta{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--sp-3) var(--sp-5);margin-top:var(--sp-4);font-size:var(--fs-12);color:var(--muted)}
+.asset-sum .meta>span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.asset-sum .meta b{font-size:var(--fs-14);font-weight:500;color:var(--text);overflow-wrap:anywhere}
+.asset-sum .meta b .erp-zone{font-size:var(--fs-12);font-weight:400;color:var(--muted)}
+.alert-summary .meta{margin-top:var(--sp-4)}
+/* 原先把搜索单独放到第二行的列表（企业、车辆履约、下游销售、风控预警、应收账款债权人）改为与条件同一行，放不下时再换行 */
+:is(.enterprise-table-card,.vehicle-filters,.sales-filters,.alert-filters,.claim-filters,.purchase-list-card) .filter-query{flex:1 1 auto;margin-left:auto;justify-content:flex-end}
+:is(.enterprise-table-card,.vehicle-filters,.sales-filters,.alert-filters,.claim-filters,.purchase-list-card) .filter-search{flex:1 1 var(--filter-field-min)}

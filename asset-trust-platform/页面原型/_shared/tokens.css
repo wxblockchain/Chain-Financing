@@ -68,6 +68,7 @@
   --filter-field-min:200px;
   --filter-search-w:320px;
   --filter-select-min:184px;
+  --filter-chip-min:120px;      /* 列表筛选下拉的最小宽度：按内容取宽，一行排下常用条件（v1.23） */
   --filter-date-w:214px;
   --app-header-h:var(--topbar-h);
   --modal-w:480px;
