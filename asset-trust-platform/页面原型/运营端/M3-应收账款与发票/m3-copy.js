@@ -154,3 +154,26 @@ TP.addCopy({
 "债权人": "Creditor",
 "债务人": "Debtor",
 });
+/* PRD 1707c18 修订：车辆信息明细与上下游跳转、运营详情页头。 */
+TP.addCopy({
+"VIN / 履约进展": "VIN / Fulfilment progress",
+"外采订单号": "Purchase order no.",
+"销售合同号": "Sales contract no."
+});
+/* 车辆明细中引用的 M4、M5、M6 状态名称，英文与各模块一致。 */
+TP.addCopy({
+"履约进展": "Fulfilment progress",
+"付款情况": "Payment status",
+"收款情况": "Collection status",
+"已出库交付": "Delivered",
+"已付清": "Fully paid",
+"部分付款": "Partly paid",
+"未付款": "Unpaid",
+"已入库": "In warehouse",
+"已清关": "Cleared customs",
+"已装船": "Shipped",
+"买方不一致": "Buyer mismatch",
+"卖方不一致": "Seller mismatch",
+"未找到上游采购": "No upstream purchase found",
+"暂无下游销售": "No downstream sale"
+});

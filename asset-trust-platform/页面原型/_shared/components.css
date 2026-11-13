@@ -1908,3 +1908,15 @@ table.tbl.alert-list{min-width:var(--alert-table-min)}
 .page-tab:focus-visible{outline-offset:-2px}
 /* A57 侧栏说明列表（v1.27，WS-601）：M1 修改登录邮箱右侧“修改说明”栏，圆点列表，13 px 辅助色。 */
 .aside-list{margin:0;padding-left:var(--sp-5);display:grid;gap:var(--sp-2);font-size:var(--fs-13);color:var(--muted)}
+
+/* A58 M3 运营详情页头：债权人 → 债务人企业名称作为首要信息，应收账款编号与发票号码降为说明行。 */
+.receivable-detail .page-title.receivable-parties{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1) var(--sp-3);font-family:var(--sans)}
+.receivable-parties .party{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-2)}
+.receivable-parties .role{font-size:var(--fs-13);font-weight:500;letter-spacing:0;color:var(--muted)}
+.receivable-parties .party-arrow{font-weight:400;color:var(--faint)}
+.receivable-parties .tag{align-self:center;font-size:var(--fs-12);letter-spacing:0}
+.receivable-list col.rcv-col-due-status{width:var(--receivable-col-due-status)}
+/* A59 M3 车辆信息明细（运营）：VIN、外采订单号、销售合同号可进入 M5、M4、M6 详情，状态标签在号码下方；多笔逐条列出，表头副行写状态含义。 */
+.vehicle-links{display:flex;flex-direction:column;gap:var(--sp-3)}
+.vehicle-links-table th .cell-sub{font-weight:400}
+.vehicle-links-table td .value-lines>.btn-link{align-self:flex-start}

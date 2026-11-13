@@ -125,7 +125,7 @@
   --receivable-table-min:1120px; /* M3 精简列表，编号与查看操作分别固定两侧 */
   --receivable-table-min-en:1152px; /* 英文 1440 px 视口可完整展示，窄视口表内滚动 */
   --receivable-col-id:140px; --receivable-col-invoice:100px; --receivable-col-amount:132px;
-  --receivable-col-due:120px; --receivable-col-status:124px; --receivable-col-core:140px;
+  --receivable-col-due:112px; --receivable-col-due-status:108px; --receivable-col-status:124px; --receivable-col-core:96px; /* 到期状态单列；预警信息只有“有／无” */
   --receivable-col-party:192px; --receivable-col-actions:80px;
   --receivable-receipt-min:1240px; /* ERP 回款八列，窄视口在表内滚动 */
   --nav-pending-size:18px; /* 菜单待办数字角标，超出两位时自然加宽 */
