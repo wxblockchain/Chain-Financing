@@ -102,7 +102,6 @@ TP.addCopy({
 "车辆归属需留意：本订单买方与以下应收账款的卖方不一致": "Check vehicle attribution: this order's buyer differs from the seller of the receivables below",
 "车辆归属需留意：本订单买方未提供，无法与应收账款卖方比对": "Check vehicle attribution: this order's buyer is not provided and cannot be compared with the receivable's seller",
 "关联应收账款加载失败": "Unable to load related receivables",
-"资料补充记录": "Data update log",
 "取得时间": "Received at",
 "外采发票": "Purchase invoice",
 "VIN 登记": "VIN registration",

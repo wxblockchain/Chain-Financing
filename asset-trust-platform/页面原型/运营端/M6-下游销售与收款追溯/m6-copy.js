@@ -76,7 +76,6 @@ TP.addCopy({
 "暂无收款记录": "No receipts yet",
 "收款信息加载失败": "Unable to load collections",
 "关联应收账款": "Related receivables",
-"资料补充记录": "Data updates",
 "3 条": "3 records",
 "4 条": "4 records",
 "取得时间": "Received at",

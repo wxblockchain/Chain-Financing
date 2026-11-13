@@ -120,7 +120,6 @@ TP.addCopy({
 "账款起算日自": "Start date from",
 "账款起算日至": "Start date to",
 "资产数据": "Asset data",
-"资料补充记录": "Data update log",
 "超过 20 MB，未加入。": "Larger than 20 MB; not added.",
 "车辆 LDEMOVIN000000012 · 单价": "Vehicle LDEMOVIN000000012 · Unit price",
 "车辆履约": "Vehicle fulfilment",

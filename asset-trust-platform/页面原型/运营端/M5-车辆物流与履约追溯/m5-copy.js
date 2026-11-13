@@ -190,12 +190,10 @@ TP.addCopy({
 "关联合同编号": "Linked contract no.",
 "结果说明": "Result",
 "无异常事件": "No vehicle events",
-"资料补充记录": "Data updates",
 "取得时间": "Received at",
 "新增": "Added",
 "附件更换": "Attachment replaced",
 "本车集装箱号未提供": "Container no. not provided",
 "组装质检记录": "Assembly and inspection record",
-"暂无补充记录": "No data updates",
 "已处理预警": "Handled alerts",
 });
