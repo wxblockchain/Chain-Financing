@@ -26,7 +26,7 @@
     {group:'消息', items:[
       {key:'messages',  label:'消息中心',   icon:'msg'}
     ]},
-    // M11 汇率管理（WS-612）：随 M11 原型追加；M2 PRD F-OP-11 菜单表待同步登记。
+    // M11 汇率管理（WS-612）：已登记于 M2 PRD F-OP-11 菜单表（2026-11-13 修订）。
     {group:'平台配置', items:[
       {key:'fx',        label:'汇率管理',   icon:'fx'}
     ]}

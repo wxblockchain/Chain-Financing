@@ -118,8 +118,9 @@
   --onboard-w:720px;      /* 入驻准备：步骤条 + 绑定钱包 / 资料表单的居中卡片 */
   --profile-label-w:168px; /* 账户信息分区标题：容纳英文 Personal information */
   --profile-reading-max:1360px; /* 账户资料的阅读上限，不限制未来列表宽度 */
-  --enterprise-table-min:1440px; /* 十二列企业列表中文阅读下限，更窄时表内滚动 */
-  --enterprise-table-min-en:1600px; /* 英文完整状态与表头的阅读下限 */
+  --enterprise-table-min:1320px; /* 十一列企业列表中文阅读下限，更窄时表内滚动 */
+  --enterprise-table-min-en:1560px; /* 英文完整状态与表头的阅读下限 */
+  --phone-code-only-w:128px; /* 区号选中后只显示“+区号”；空值“请选择区号”仍可读 */
   --enterprise-search-w:480px; /* 编号、名称、登记号码、邮箱的查询提示 */
   --receivable-table-min:1120px; /* M3 精简列表，编号与查看操作分别固定两侧 */
   --receivable-table-min-en:1152px; /* 英文 1440 px 视口可完整展示，窄视口表内滚动 */

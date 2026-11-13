@@ -353,3 +353,27 @@ TP.addCopy({
 "验证通过": "Check passed",
 "验证通过后，请在 10 分钟内完成修改。": "After verification, complete the change within 10 minutes.",
 });
+/* 2026-11-13 PRD 修订：入驻进度名称、密码条件与输入框下提示、重发邀请。 */
+TP.addCopy({
+"不能与当前密码相同。": "Cannot match the current password.",
+"不能与最近一次初始密码相同。": "Cannot match the latest initial password.",
+"业务角色不变。": "Business roles are unchanged.",
+"企业已完成入驻，注册国家／地区和企业登记号码不能修改。": "The enterprise has completed onboarding. Country / region and registration number cannot be changed.",
+"企业用户已完成首次改密，无需重发邀请。": "The enterprise user has already changed the first password, so no invitation is needed.",
+"入驻进度 · 已完成入驻": "Onboarding progress · Onboarding complete",
+"入驻进度 · 待完善资料": "Onboarding progress · Profile completion pending",
+"将生成新的初始密码，并重新发送邀请邮件到该登录邮箱。": "A new initial password will be generated and the invitation email will be sent again to this login email.",
+"已完成入驻": "Onboarding complete",
+"待完善资料": "Profile completion pending",
+"此前的初始密码立即作废，企业用户当前的登录全部结束。": "The previous initial password stops working immediately and all of the user’s sessions end.",
+"确认新密码": "Confirm new password",
+"编辑 · 已完成入驻（企业身份只读）": "Edit · onboarding complete (identity read-only)",
+"详情 · 已完成入驻（两个角色）": "Details · onboarding complete (both roles)",
+"详情 · 已完成入驻（债权人）": "Details · onboarding complete (creditor)",
+"详情 · 已完成入驻（单一角色）": "Details · onboarding complete (one role)",
+"详情 · 已完成入驻（同名企业）": "Details · onboarding complete (same-name enterprise)",
+"详情 · 待完善资料": "Details · profile completion pending",
+"详情 · 待首次改密（较早邀请）": "Details · first password change pending (earlier invite)",
+"重发邀请 · 已完成首次改密": "Resend invitation · first password already changed",
+"首次改密前未收到邀请时，可在企业详情中重发邀请。": "If the invitation was not received before the first password change, resend it from the enterprise details page."
+});
