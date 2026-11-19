@@ -1930,3 +1930,43 @@ table.tbl.alert-list{min-width:var(--alert-table-min)}
 @media(min-width:601px){:is(.sales-status,.vehicle-summary) .status-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1101px){:is(.sales-status,.vehicle-summary) .status-grid.two{grid-template-columns:repeat(2,minmax(120px,auto))}}
 .asset-sum .meta b>.btn-link:first-child{margin-left:calc(-1 * var(--sp-1));padding-block:0}
+
+/* A60 M12 提单列表（v1.32，WS-661）：与 A14 合用 .receivable-list 骨架（提单号固定在左、“查看”固定在右、行内垂直居中、金额 14 px）。
+   十一列：提单号、船公司、船名航次、装运港 → 卸货港、装船日期、到港日期、车辆数、提单货值（美元）、清关进度（状态 + “已清关 k／共 N 辆”次行）、预警、操作；不足时表内滚动。 */
+table.tbl.bl-list{min-width:var(--bl-table-min)}
+:lang(en) table.tbl.bl-list{min-width:var(--bl-table-min-en)}
+.bl-list col.bl-col-no{width:var(--bl-col-no)}
+.bl-list col.bl-col-carrier{width:var(--bl-col-carrier)}
+.bl-list col.bl-col-voyage{width:var(--bl-col-voyage)}
+.bl-list col.bl-col-route{width:var(--bl-col-route)}
+.bl-list col.bl-col-date{width:var(--bl-col-date)}
+.bl-list col.bl-col-count{width:var(--bl-col-count)}
+.bl-list col.bl-col-value{width:var(--bl-col-value)}
+.bl-list col.bl-col-customs{width:var(--bl-col-customs)}
+.bl-list col.bl-col-warn{width:var(--bl-col-warn)}
+.bl-list col.bl-col-actions{width:var(--vehicle-col-actions)}
+.tbl.bl-list td.num .value-lines{align-items:flex-end}
+.route{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1)}
+.route-arrow{color:var(--faint)}
+.tbl.bl-list .route{flex-wrap:nowrap;white-space:nowrap}
+/* 筛选条与 v1.23 其他列表相同：常用下拉、更多筛选、查找方式与查找内容一行，放不下时再换行 */
+.bl-filters .filter-query{flex:1 1 auto;margin-left:auto;justify-content:flex-end}
+.bl-filters .filter-search{flex:1 1 var(--filter-field-min)}
+/* A61 提单详情（.bl-detail，与 A18 共用 .receivable-detail 的全宽、标题层级与明细表规则）：
+   概要沿用 A24，左侧提单货值（无法计算时为弱化文字 + 一句车辆数说明）与提单身份字段，右侧关联预警数量；
+   “进度与核对”“明细”两组；清关进度卡头为状态 + “已清关 k／共 N 辆”，下方逐车分段进度条（文字同时给出，不只靠颜色）。 */
+.bl-summary .bl-value-na{color:var(--muted)}
+.bl-summary .bl-value-note{margin:var(--sp-1) 0 0;font-size:var(--fs-13);color:var(--muted)}
+@media(min-width:1101px){.bl-summary .status-grid.two{grid-template-columns:repeat(2,minmax(120px,auto))}.bl-summary .status-grid.one{grid-template-columns:minmax(140px,auto)}}
+.bl-summary .status-grid dd{font-size:var(--ui-field-value)}
+.bl-progress{padding:0 var(--card-pad) var(--sp-4)}
+.bl-progress-track{display:flex;gap:var(--sp-1);height:8px;max-width:480px}
+.bl-progress-track>span{flex:1 1 0;border-radius:var(--radius-pill);background:var(--border)}
+.bl-progress-track>span.done{background:var(--accent)}
+/* 车辆清单：合同单价一列，原币在上，非美元时下方为美元值与“折算”（可查看所用汇率）；表头副行“原币 / 美元” */
+table.tbl.bl-vehicles{min-width:var(--bl-vehicle-min)}
+.tbl.bl-vehicles th .cell-sub{display:block;font-weight:400}
+.bl-fx{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.bl-fx .dd-list :is(span,time){white-space:nowrap}
+.tbl.bl-files td.bl-cc.cont{border-top-color:transparent}
+.tbl:is(.bl-vehicles,.bl-files,.bl-customs,.bl-track) .value-lines .file-ref{white-space:nowrap}

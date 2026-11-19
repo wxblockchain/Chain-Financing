@@ -176,4 +176,9 @@
   --alert-table-min-en:980px; /* 英文预警类型与比较对象的阅读下限 */
   --alert-col-id:136px; --alert-col-type:128px; --alert-col-obj-min:240px; --alert-col-ar:168px;
   --alert-col-status:96px; --alert-col-time:120px;
+  --bl-table-min:1120px; /* M12 提单列表十一列，1440 px 视口完整展示；提单号与查看分别固定两侧，更窄时表内滚动 */
+  --bl-table-min-en:1280px; /* 英文表头与清关状态的阅读下限 */
+  --bl-col-no:132px; --bl-col-carrier:120px; --bl-col-voyage:128px; --bl-col-route:136px; --bl-col-date:100px;
+  --bl-col-count:64px; --bl-col-value:136px; --bl-col-customs:136px; --bl-col-warn:56px;
+  --bl-vehicle-min:1040px; /* M12 车辆清单九列，1440 px 视口完整展示，更窄时卡内滚动 */
 }
