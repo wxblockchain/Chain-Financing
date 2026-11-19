@@ -2112,3 +2112,49 @@ table.tbl.contract-list.export-contract-list{min-width:var(--contract-export-tab
 .contract-detail [data-section]:focus{outline:0}
 .contract-files .file-ref{white-space:nowrap}
 .contract-list .pct,.contract-detail .pct{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* A70 运营端保单信息列表（M13，v1.35，WS-662）：与 A14 合用 .receivable-list 骨架（保单号固定在左、“查看”固定在右、行内垂直居中、金额 14 px）。
+   十列：保单号、保单日期、保险公司、被保险人、保险金额（美元）、保险货值（美元）、保险覆盖率、关联提单／车辆、预警、操作；列宽由 --policy-col-* 维护。
+   覆盖率只按数值展示，不按高低着色。 */
+table.tbl.policy-list{min-width:var(--policy-table-min)}
+:lang(en) table.tbl.policy-list{min-width:var(--policy-table-min-en)}
+.policy-list col.pol-col-id{width:var(--policy-col-id)}
+.policy-list col.pol-col-date{width:var(--policy-col-date)}
+.policy-list col.pol-col-insurer{width:var(--policy-col-insurer)}
+.policy-list col.pol-col-insured{width:var(--policy-col-insured)}
+.policy-list col.pol-col-amount{width:var(--policy-col-amount)}
+.policy-list col.pol-col-value{width:var(--policy-col-value)}
+.policy-list col.pol-col-rate{width:var(--policy-col-rate)}
+.policy-list col.pol-col-count{width:var(--policy-col-count)}
+.policy-list col.pol-col-alerts{width:var(--policy-col-alerts)}
+.policy-list col.pol-col-actions{width:var(--receivable-col-actions)}
+.tbl.policy-list td.num .value-lines{align-items:flex-end}
+.tbl.policy-list td .cell-sub{max-width:none}
+/* A71 保单详情（.policy-detail，与 A18 .receivable-detail 共用全宽、标题层级与明细表规则）：概要 → 保障核对 → 明细（车辆清单、关联提单、附件）。
+   概要复用 A24：左侧保险金额（原币为大号，非美元时下方一行“保险金额（美元）+ 折算 + 所用汇率浮层”），关键字段为保险公司、投保人、被保险人、保单日期；
+   右侧关联预警（未处理 / 已处理数量可进入风控预警；都没有时“无关联预警”）。
+   保障核对 .coverage-metrics 四项并列（保险金额（美元）、保险货值（美元）、保险覆盖率、覆盖车辆），值 20 px 等宽数字，不能计算时为“无法计算”并在下方注明原因。 */
+.policy-summary .policy-usd{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-2);margin-top:var(--sp-1);font-size:var(--fs-13);color:var(--muted)}
+.policy-summary .policy-usd .cell-sub{margin-top:0}
+.coverage-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;padding:var(--sp-2) var(--sp-2) var(--sp-4)}
+.coverage-metrics>div{padding:var(--sp-2) var(--sp-4);min-width:0}
+.coverage-metrics>div+div{border-left:1px solid var(--border)}
+.coverage-metrics dt{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
+.coverage-metrics dd{margin:0;display:flex;flex-direction:column;gap:2px;min-width:0}
+.coverage-metrics .metric{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1);font-size:var(--fs-20);font-weight:600;line-height:1.4;color:var(--text);font-variant-numeric:tabular-nums}
+.coverage-metrics .metric .mono{font-family:var(--sans)}
+.coverage-metrics .metric .ccy{font-size:var(--fs-12);font-weight:400;color:var(--muted)}
+.coverage-metrics .metric .cell-sub{margin-top:0;font-weight:400}
+.coverage-metrics .metric .value-pop{align-self:center;font-weight:400}
+.coverage-metrics .metric.na{font-size:var(--fs-16);font-weight:500;color:var(--muted)}
+@media(max-width:1100px){
+  .coverage-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .coverage-metrics>div:nth-child(3){border-left:0}
+}
+.policy-files .attach-line{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.policy-files .attach-line .cell-sub{margin-top:0}
+.policy-detail .cell-sub [data-zone]{display:inline}
+.policy-detail .content-in>.card+.detail-group{margin-top:var(--sp-4)}
+.policy-bls .value-lines{flex-direction:row;flex-wrap:wrap;align-items:center;gap:var(--sp-2)}
+.policy-detail .policy-fx{display:inline-flex;align-items:center;gap:var(--sp-1);white-space:nowrap}
+.policy-detail .policy-fx .value-pop{margin-block:0}

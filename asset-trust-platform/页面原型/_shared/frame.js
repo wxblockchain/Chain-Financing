@@ -61,7 +61,8 @@
     database:'<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/>',
     send:'<path d="M4 12l16-8-6 16-3-7z"/><path d="M11 13l9-9"/>',
     fx:'<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
-    ship:'<path d="M3 14h18l-2.5 5h-13z"/><path d="M6 14V9h12v5"/><path d="M10 9V5h4v4"/>'
+    ship:'<path d="M3 14h18l-2.5 5h-13z"/><path d="M6 14V9h12v5"/><path d="M10 9V5h4v4"/>',
+    umbrella:'<path d="M3 12a9 9 0 0 1 18 0z"/><path d="M12 12v6a2 2 0 0 0 4 0"/>'
   };
   TP.icon = function(n){ return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+(ICON[n]||'')+'</svg>'; };
   TP.refreshPasswordToggles = function(){
