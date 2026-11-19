@@ -2158,3 +2158,70 @@ table.tbl.policy-list{min-width:var(--policy-table-min)}
 .policy-bls .value-lines{flex-direction:row;flex-wrap:wrap;align-items:center;gap:var(--sp-2)}
 .policy-detail .policy-fx{display:inline-flex;align-items:center;gap:var(--sp-1);white-space:nowrap}
 .policy-detail .policy-fx .value-pop{margin-block:0}
+
+
+/* ==========================================================================
+   v1.36（WS-658）M3 应收账款 · 资产全景（运营端）：列表十一列、到期剩余天数、资产健康度、
+   车辆清单默认列 + 分组展开、回款记录摘要。只引用 tokens.css；企业端 M3 未改。
+   ========================================================================== */
+/* A72 资产全景列表：沿用 A14 .receivable-list 骨架（编号固定在左、“查看”固定在右、行内垂直居中），四项比率右对齐窄列 */
+table.tbl.receivable-list.asset-list{min-width:var(--asset-table-min)}
+:lang(en) table.tbl.receivable-list.asset-list{min-width:var(--asset-table-min-en)}
+.asset-list col.rcv-col-party{width:var(--asset-col-party)}
+.asset-list col.rcv-col-due{width:var(--asset-col-due)}
+.asset-list col.rcv-col-rate{width:var(--asset-col-rate)}
+.asset-list col.rcv-col-alert{width:var(--asset-col-alert)}
+.asset-list col.rcv-col-audit{width:var(--asset-col-audit)}
+.asset-list .rate{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl.asset-list th.num{white-space:normal}
+.asset-list td .value-lines .tag+.tag{margin-top:2px}
+.asset-list .cell-sub{font-size:var(--fs-12);color:var(--muted);white-space:nowrap}
+/* A73 到期剩余天数：日期后为“剩余 N 天 / 已到期 N 天”；临近到期（0—7 天）用警示色、加粗并带图标，不只靠颜色 */
+.due-left{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-12);font-weight:400;color:var(--muted);white-space:nowrap}
+.due-left.is-near{color:var(--warn);font-weight:600}
+.due-left svg.i{width:14px;height:14px}
+.asset-sum .meta b .due-left{margin-left:var(--sp-2)}
+/* 状态区的补充说明（预警“有”时的未处理条数） */
+.status-grid dd .status-note{display:block;margin-top:2px;font-size:var(--fs-12);color:var(--muted);white-space:nowrap}
+/* 概要底部的关联风控预警：基线 .cond 一行，入口按钮靠右 */
+.receivable-summary>.cond.related-alerts{align-items:center;flex-wrap:wrap}
+.receivable-summary>.cond.related-alerts b{color:var(--text);font-weight:500}
+.receivable-summary>.cond.related-alerts .btn{margin-left:auto}
+/* A74 资产健康度：四项指标等分并列（≤1100 px 两列），标签 13 px、数值 24 px 等宽数字，下接比率条与补充说明；比率条只是读数，超过 100% 时满格，不按阈值变色 */
+.health-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;border-top:1px solid var(--border)}
+.health-metrics>div{display:flex;flex-direction:column;gap:var(--sp-2);min-width:0;padding:var(--sp-5) var(--card-pad)}
+.health-metrics>div+div{border-left:1px solid var(--border)}
+.health-metrics dt{font-size:var(--ui-field-label);color:var(--muted)}
+.health-metrics dd{display:flex;flex-direction:column;gap:var(--sp-2);margin:0}
+.health-metrics .metric-value{font-size:var(--fs-24);font-weight:600;line-height:1.2;color:var(--text);font-variant-numeric:tabular-nums}
+.health-metrics .metric-value.na{font-size:var(--fs-16);font-weight:500;color:var(--muted)}
+.health-metrics .metric-sub{font-size:var(--fs-12);color:var(--muted);overflow-wrap:anywhere}
+.health-metrics .metric-bar{display:block;width:100%;height:var(--metric-bar-h);border:0;border-radius:var(--radius-pill);background:var(--border);overflow:hidden;appearance:none;-webkit-appearance:none}
+.health-metrics .metric-bar::-webkit-progress-bar{background:var(--border);border-radius:var(--radius-pill)}
+.health-metrics .metric-bar::-webkit-progress-value{background:var(--accent);border-radius:var(--radius-pill)}
+.health-metrics .metric-bar::-moz-progress-bar{background:var(--accent);border-radius:var(--radius-pill)}
+@media(max-width:1100px){.health-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.health-metrics>div:nth-child(3){border-left:0}.health-metrics>div:nth-child(n+3){border-top:1px solid var(--border)}}
+/* 基础交易：形式发票与内销合同摘要为同卡两节，节间较深分隔线 */
+.receivable-detail .basic-trade .card-sec+.card-sec{border-top:1px solid var(--border-strong)}
+.file-time{font-size:var(--fs-12);color:var(--muted)}
+/* A75 车辆清单：默认列为 VIN、物流节点、三项单价、外销收款；首列展开按钮显示本车的采购 / 运输与保险 / 外销 / 附件四组（展开行跨全部列） */
+.vehicle-ledger .col-toggle{width:var(--ctrl-h-sm);padding-right:0}
+.vehicle-ledger .row-toggle svg.i{transform:rotate(-90deg);transition:transform var(--dur-fast) var(--ease-out)}
+.vehicle-ledger .row-toggle[aria-expanded="true"] svg.i{transform:none}
+.vehicle-ledger .row-toggle[aria-expanded="true"]{color:var(--accent)}
+.vehicle-ledger tr.has-more>td{border-bottom-color:transparent}
+.receivable-detail .detail-table .vehicle-ledger tr.vehicle-more>td{white-space:normal;padding:0 var(--card-pad) var(--sp-4) calc(var(--ctrl-h-sm) + var(--sp-4));background:var(--card)}
+.vehicle-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4);padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2)}
+.vehicle-group{min-width:0}
+.vehicle-group h4{margin:0 0 var(--sp-3);font-size:var(--fs-13);font-weight:600;color:var(--text)}
+.vehicle-group dl{display:grid;gap:var(--sp-3);margin:0}
+.vehicle-group dt{font-size:var(--fs-12);color:var(--muted)}
+.vehicle-group dd{margin:2px 0 0;font-size:var(--fs-13);color:var(--text)}
+.doc-list{display:grid;gap:var(--sp-2);margin:0;padding:0;list-style:none}
+.doc-list li{display:flex;flex-direction:column;gap:2px;min-width:0}
+.doc-list .btn-link{align-self:flex-start;padding:0;font-size:var(--fs-13)}
+.doc-list .doc-meta{font-size:var(--fs-12);color:var(--muted);overflow-wrap:anywhere}
+.vehicle-group .file-ref{font-size:var(--fs-13)}
+.expand-all .when-open,.expand-all[aria-expanded="true"] .when-closed{display:none}
+.expand-all[aria-expanded="true"] .when-open{display:inline}
+@media(max-width:1100px){.vehicle-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
