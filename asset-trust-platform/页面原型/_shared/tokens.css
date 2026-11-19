@@ -187,4 +187,9 @@
   --fulfil-col-vin:168px; --fulfil-col-node:112px; --fulfil-col-ar:100px; --fulfil-col-doc:124px;
   --fulfil-col-customer:148px; --fulfil-col-collect:104px; --fulfil-col-alert:56px;
   --fulfil-seg-title-w:104px; /* 明细四段的段名列，英文“Transport & insurance”换行后可读 */
+  /* M4 合同信息（v1.34，WS-659）：三个页签的列表共用列宽 token；1440 px 视口下内销列表完整展示，更窄时表内滚动，编号与查看固定两侧。 */
+  --contract-table-min:1120px; --contract-purchase-table-min:1040px; --contract-export-table-min:920px;
+  --contract-col-id:148px; --contract-col-date:100px; --contract-col-parties:168px; --contract-col-party:176px;
+  --contract-col-amount:128px; --contract-col-pair:132px; --contract-col-rate:92px; --contract-col-alert:56px;
+  --contract-meter-w:200px; /* 执行进度中比率的进度条宽度上限 */
 }

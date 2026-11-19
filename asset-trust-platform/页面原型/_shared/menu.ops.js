@@ -9,11 +9,11 @@
     ]},
     {group:'资产数据', items:[
       {key:'invoices',  label:'应收账款',   icon:'doc'},
-      {key:'purchase',  label:'上游采购',   icon:'cart'},
+      // M4 合同信息（WS-659）替代原“上游采购”“下游销售”两项；菜单名由用户确定，M2 菜单表待同步登记。
+      {key:'contracts', label:'合同信息',   icon:'ledger'},
       {key:'vehicles',  label:'车辆履约',   icon:'truck'},
       // M12 提单信息（WS-661）：资产数据重组后的新菜单，待 M2 PRD F-OP-11 菜单表登记。
-      {key:'bills',     label:'提单信息',   icon:'ship'},
-      {key:'sales',     label:'下游销售',   icon:'ledger'}
+      {key:'bills',     label:'提单信息',   icon:'ship'}
     ]},
     {group:'风控', items:[
       // 角标为当前未处理风控预警条数（M8 F-M8-05），评审演示值；接入时由风控预警模块提供，全体运营相同。
@@ -33,7 +33,7 @@
   TP.addCopy({
     '资产可信平台':'Asset Trust Platform','运营端':'Operations',
     '企业':'Enterprises','企业管理':'Enterprise management','资产数据':'Asset data','应收账款':'Receivables',
-    '上游采购':'Upstream purchasing','车辆履约':'Vehicle fulfilment','提单信息':'Bills of lading','下游销售':'Downstream sales','风控':'Risk control',
+    '上游采购':'Upstream purchasing','合同信息':'Contracts','车辆履约':'Vehicle fulfilment','提单信息':'Bills of lading','下游销售':'Downstream sales','风控':'Risk control',
     '风控预警':'Risk alerts','三方数据源':'Third-party data sources','审核与出库':'Review & outbound','运营审核':'Operations review',
     '出库与供数':'Outbound & data supply','消息':'Messages','消息中心':'Message center','平台配置':'Platform settings','汇率管理':'Exchange rates','运营管理员':'Operations administrator',
     '账户设置':'Account settings','退出登录':'Sign out'

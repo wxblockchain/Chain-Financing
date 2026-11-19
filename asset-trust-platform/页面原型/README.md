@@ -20,6 +20,7 @@
 | 运营端 | M3 应收账款与发票（列表、详情与差异核实） | [应收账款与发票.html](运营端/M3-应收账款与发票/应收账款与发票.html) | [README](运营端/M3-应收账款与发票/README.md) |
 | 企业端 | M3 应收账款与发票（债权人、债务人只读详情） | [应收账款与发票.html](企业端/M3-应收账款与发票/应收账款与发票.html) | [README](企业端/M3-应收账款与发票/README.md) |
 | 运营端 | M4 上游采购追溯（列表、车辆追溯与采购交易详情） | [上游采购追溯.html](运营端/M4-上游采购追溯/上游采购追溯.html) | [README](运营端/M4-上游采购追溯/README.md) |
+| 运营端 | M4 合同信息（内销 / 外采 / 外销三个页签的列表与合同详情；替代上游采购、下游销售菜单） | [合同信息.html](运营端/M4-合同信息/合同信息.html) | [README](运营端/M4-合同信息/README.md) |
 | 运营端 | M5 车辆履约（单车维度：列表、车辆履约详情） | [车辆履约.html](运营端/M5-车辆履约/车辆履约.html) | [README](运营端/M5-车辆履约/README.md) |
 | 运营端 | ~~M5 车辆物流与履约追溯~~（已由上一行替换，不再登记；保留供 M12 提单信息、M13 保单信息出屏参考） | [车辆物流与履约追溯.html](运营端/M5-车辆物流与履约追溯/车辆物流与履约追溯.html) | [README](运营端/M5-车辆物流与履约追溯/README.md) |
 | 运营端 | M6 下游销售与收款追溯（列表、按应收账款车辆追溯与销售交易详情） | [下游销售与收款追溯.html](运营端/M6-下游销售与收款追溯/下游销售与收款追溯.html) | [README](运营端/M6-下游销售与收款追溯/README.md) |
@@ -38,7 +39,7 @@
 
 - `_shared/navigation.js` 读取 `_shared/modules.js` 的模块清单，再按顺序加载各模块目录的 `route.js`。`route.js` 登记“路由 key → 各身份落地画面”，只登记本模块已有画面。
 - 菜单 key 先找模块内 `TP.routes`，再找仓库路由。页面内的跨模块入口写 `data-module-key`，同时保留 `data-toast` 作为附件中的提示。
-- 记录类入口按编号登记，如 `receivable:AR-DEMO-0012`、`purchaseTrace:AR-DEMO-0012`、`vehicle:LDEMOVIN000000001`、`bl:BL-DEMO-5501`、`alert:W-DEMO-0007`、`application:AP-DEMO-0031`、`request:` / `confirmation:`（企业端 M7a / M7b）。消息“前往原业务”使用 `m7a-` / `m7b-` / `m8-` / `m9-<编号>`。
+- 记录类入口按编号登记，如 `receivable:AR-DEMO-0012`、`domesticContract:` / `purchaseContract:` / `exportContract:` / `purchaseInvoice:`（M4 合同信息）、`purchaseTrace:AR-DEMO-0012`、`vehicle:LDEMOVIN000000001`、`bl:BL-DEMO-5501`、`alert:W-DEMO-0007`、`application:AP-DEMO-0031`、`request:` / `confirmation:`（企业端 M7a / M7b）。消息“前往原业务”使用 `m7a-` / `m7b-` / `m8-` / `m9-<编号>`。
 - 只有存在对应记录画面的编号才跳转。未画出的记录提示“演示仅提供部分应收账款 / 车辆 / 预警 / 申请的…画面。”；没有任何画面的单据（收款登记、保单、合同等）提示“该入口尚未纳入原型。”。
 - 跨模块时带上当前身份、界面语言与展示时区。同一身份在没有独立画面的模块中沿用另一身份的画面（`variants`），如“债权人与债务人”在 M7a 沿用债权人画面、在 M7b 沿用债务人画面，菜单仍按双角色显示。
 - 运营端 M3–M8 的“返回”按钮回到记录对应画面；其他来源用浏览器返回。
