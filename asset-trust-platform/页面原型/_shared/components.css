@@ -2225,3 +2225,34 @@ table.tbl.receivable-list.asset-list{min-width:var(--asset-table-min)}
 .expand-all .when-open,.expand-all[aria-expanded="true"] .when-closed{display:none}
 .expand-all[aria-expanded="true"] .when-open{display:inline}
 @media(max-width:1100px){.vehicle-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* A76 M14 资金收付（v1.37，WS-663）：列表沿用 A14 固定交易流水号与查看的骨架；详情沿用 A18 版式、A58 页头（付款方 → 收款方）与 A24 概要；折算沿用 M5 的 .fx-mark + .fx-pop。 */
+table.tbl.fund-list{min-width:var(--fund-table-min)}
+:lang(en) table.tbl.fund-list{min-width:var(--fund-table-min-en)}
+.fund-list col.fund-col-id{width:var(--fund-col-id)}
+.fund-list col.fund-col-type{width:var(--fund-col-type)}
+.fund-list col.fund-col-date{width:var(--fund-col-date)}
+.fund-list col.fund-col-parties{width:var(--fund-col-parties)}
+.fund-list col.fund-col-amount{width:var(--fund-col-amount)}
+.fund-list col.fund-col-usd{width:var(--fund-col-usd)}
+.fund-list col.fund-col-docs{width:var(--fund-col-docs)}
+.fund-list col.fund-col-actions{width:var(--receivable-col-actions)}
+.fund-list .num .fx-mark{align-self:flex-end}
+/* 付款方在上、“→ 收款方”在下；关联业务多张时逐行列出编号，未采信的编号按原值展示 */
+.fund-to{display:inline-flex;align-items:baseline;gap:var(--sp-1)}
+.fund-to .party-arrow{color:var(--faint)}
+.fund-docs{gap:2px}
+.fund-docs>.btn-link,.fund-docs .fund-alloc>.btn-link{align-self:flex-start;padding:0;margin:0;white-space:nowrap}
+.fund-docs .doc-raw{color:var(--text);font-weight:500}
+/* 概要：关联业务多张时占两格，编号与分配金额同行；关联预警为单项状态 */
+.fund-summary .asset-sum .meta .wide{grid-column:span 2}
+.fund-alloc{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1) var(--sp-3)}
+.fund-alloc .money .mono{font-weight:400}
+.fund-summary .meta b .value-lines{gap:2px}
+.fund-summary .meta b .fx-mark{font-weight:400}
+.fund-summary .status-grid{grid-template-columns:minmax(0,1fr)}
+@media(min-width:1101px){.fund-summary .status-grid{grid-template-columns:minmax(160px,auto)}}
+.fund-summary .status-grid .btn-link{padding:0;margin:0;align-self:flex-start}
+/* 凭证附件：查看与下载同列 */
+.fund-file-acts{display:flex;justify-content:flex-end;gap:var(--sp-3)}
+.tbl.fund-vouchers td{vertical-align:middle}

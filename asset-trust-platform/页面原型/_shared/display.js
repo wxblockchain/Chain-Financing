@@ -14,6 +14,7 @@
     '演示仅提供部分车辆的详情画面。':'This demo includes details for some vehicles only.',
     '演示仅提供部分预警的详情画面。':'This demo includes details for some alerts only.',
     '演示仅提供部分申请的详情画面。':'This demo includes details for some requests only.',
+    '演示仅提供部分收付记录的详情画面。':'This demo includes details for some payment and receipt records only.',
     '端与身份':'Portal and identity','运营端':'Operations','未登录':'Signed out','入驻准备中':'Onboarding',
     '债权人':'Creditor','债务人':'Debtor','债权人与债务人':'Creditor and debtor','暂无业务角色':'No business role','运营管理员':'Operations administrator',
     '本模块画面':'Screens in this module',

@@ -200,4 +200,8 @@
   --policy-table-min-en:1240px; /* 英文表头与金额的阅读下限 */
   --policy-col-id:132px; --policy-col-date:104px; --policy-col-insurer:148px; --policy-col-insured:128px;
   --policy-col-amount:156px; --policy-col-value:148px; --policy-col-rate:96px; --policy-col-count:136px; --policy-col-alerts:64px;
+  --fund-table-min:1120px; /* M14 资金收付八列，交易流水号与查看分别固定两侧 */
+  --fund-table-min-en:1200px; /* 英文表头与收付类型的阅读下限 */
+  --fund-col-id:136px; --fund-col-type:104px; --fund-col-date:112px; --fund-col-parties:232px;
+  --fund-col-amount:176px; --fund-col-usd:148px; --fund-col-docs:136px;
 }
