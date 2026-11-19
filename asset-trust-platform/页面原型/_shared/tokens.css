@@ -181,4 +181,10 @@
   --bl-col-no:132px; --bl-col-carrier:120px; --bl-col-voyage:128px; --bl-col-route:136px; --bl-col-date:100px;
   --bl-col-count:64px; --bl-col-value:136px; --bl-col-customs:136px; --bl-col-warn:56px;
   --bl-vehicle-min:1040px; /* M12 车辆清单九列，1440 px 视口完整展示，更窄时卡内滚动 */
+  /* M5 车辆履约（WS-660，单车维度）：列表十列，VIN 与查看分别固定两侧；窄视口表内滚动 */
+  --fulfil-table-min:1140px; /* 1440 px 中文视口完整展示十列 */
+  --fulfil-table-min-en:1300px; /* 英文表头按词换行后的阅读下限 */
+  --fulfil-col-vin:168px; --fulfil-col-node:112px; --fulfil-col-ar:100px; --fulfil-col-doc:124px;
+  --fulfil-col-customer:148px; --fulfil-col-collect:104px; --fulfil-col-alert:56px;
+  --fulfil-seg-title-w:104px; /* 明细四段的段名列，英文“Transport & insurance”换行后可读 */
 }

@@ -1970,3 +1970,79 @@ table.tbl.bl-vehicles{min-width:var(--bl-vehicle-min)}
 .bl-fx .dd-list :is(span,time){white-space:nowrap}
 .tbl.bl-files td.bl-cc.cont{border-top-color:transparent}
 .tbl:is(.bl-vehicles,.bl-files,.bl-customs,.bl-track) .value-lines .file-ref{white-space:nowrap}
+/* —— M5 车辆履约（WS-660，单车维度，组件规范 §4 A62–A65）—— */
+/* A62 车辆履约列表：十列为 VIN、当前物流节点、所属应收账款、外采订单号、提单号、外销合同号、外销客户、外销收款情况、预警、操作；
+   沿用 A30 .vehicle-list 的固定首列、右侧“查看”与行高规则。同类单据多张时主值为最近一张，下方 .cell-sub 写“共 N 张”。 */
+table.tbl.vehicle-list.fulfil-list{min-width:var(--fulfil-table-min)}
+:lang(en) table.tbl.vehicle-list.fulfil-list{min-width:var(--fulfil-table-min-en)}
+.fulfil-list col.ful-col-vin{width:var(--fulfil-col-vin)}
+.fulfil-list col.ful-col-node{width:var(--fulfil-col-node)}
+.fulfil-list col.ful-col-ar{width:var(--fulfil-col-ar)}
+.fulfil-list col.ful-col-doc{width:var(--fulfil-col-doc)}
+.fulfil-list col.ful-col-customer{width:var(--fulfil-col-customer)}
+.fulfil-list col.ful-col-collect{width:var(--fulfil-col-collect)}
+.fulfil-list col.ful-col-alert{width:var(--fulfil-col-alert)}
+.fulfil-list col.ful-col-actions{width:var(--vehicle-col-actions)}
+.fulfil-list td .cell-sub{white-space:nowrap}
+.fulfil-list td .btn-link{padding-inline:0}
+/* A63 车辆概要：左侧所属应收账款（多笔逐行），右侧当前物流节点 / 在库情况 / 关联预警三项；在库情况下方次行为最近一次出入库。 */
+.vehicle-summary.fulfil-summary .status-grid dd .summary-sub{display:block;margin-top:var(--sp-1);font-size:var(--fs-12);color:var(--muted);white-space:nowrap}
+.vehicle-summary.fulfil-summary .status-grid dd .btn-link{padding-inline:0;font-weight:500}
+/* 物流节点进度：沿用 A31 .fulfil-steps 五等分；节点下的跳转入口与日期同列。 */
+.fulfil-steps small .btn-link{padding:0;font-size:var(--fs-12)}
+/* A64 价格链：外采单价 → 合同单价 → 外销单价，与外销收款并列；美元值在上，原币与“折算”在下，折算汇率在旁边浮层查看。 */
+.price-chain{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr) minmax(0,1fr);align-items:start;padding:var(--sp-5) var(--card-pad)}
+.pc-item{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0}
+.pc-item.pc-receipt{border-left:1px solid var(--border);padding-left:var(--sp-6);margin-left:var(--sp-4)}
+.pc-arrow{display:flex;align-items:center;height:calc(var(--fs-13) * 1.6 + var(--sp-1) + var(--fs-20) * 1.4);padding:0 var(--sp-4);color:var(--faint)}
+.pc-arrow svg.i{transform:rotate(180deg)}
+.pc-label{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1) var(--sp-2);font-size:var(--ui-field-label);color:var(--muted);line-height:1.6}
+.pc-label .pc-count{font-size:var(--fs-12);color:var(--faint)}
+.pc-usd{line-height:1.4}
+.pc-usd .money{font-size:var(--fs-20);font-weight:600;color:var(--text)}
+.pc-usd .money .ccy{font-size:var(--fs-13);font-weight:500;color:var(--muted)}
+.pc-usd .missing{font-size:var(--fs-14)}
+.pc-orig{display:flex;flex-direction:column;gap:2px;font-size:var(--fs-13);color:var(--muted)}
+.pc-orig>span{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-2)}
+.pc-orig .money{font-size:var(--fs-13)}
+/* 折算标记与汇率浮层：USD 原币不标；NGN 折算值后标“折算”，图标按钮展开所用汇率与生效时间（复用基线 .value-pop）。 */
+.fx-mark{display:inline-flex;align-items:center;gap:2px;font-size:var(--fs-12);color:var(--muted);white-space:nowrap}
+.fx-pop{margin:calc((var(--ctrl-h-sm) - 1lh) / -2) 0}
+.fx-pop>.dd-btn{width:var(--sp-6);height:var(--sp-6);border-color:transparent;background:transparent;color:var(--faint)}
+.fx-pop>.dd-btn:hover{background:var(--card-hover);color:var(--accent)}
+.fx-pop>.dd-btn[aria-expanded="true"] svg.i{transform:none}
+.fx-pop>.dd-list{display:grid;gap:2px}
+.fx-pop>.dd-list .fx-at{color:var(--muted);font-size:var(--fs-12);white-space:nowrap}
+.fx-pop>.dd-list .fx-at [data-zone]{display:inline}
+/* A65 明细四段：每段一张卡，卡头即一行摘要（段名 / 摘要字段 / 共几张 + 展开）；展开后每张单据一节，节间较深分隔线。
+   一张单据都没有时摘要写“暂无记录”，没有展开按钮。展开只切换显示，不改变数据。 */
+.fulfil-seg>.seg-head{display:grid;grid-template-columns:var(--fulfil-seg-title-w) minmax(0,1fr) auto;align-items:center;gap:var(--sp-3) var(--sp-6);border-bottom:0}
+.seg-brief{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:var(--sp-2) var(--sp-5);margin:0;min-width:0}
+.seg-brief>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.seg-brief dt{font-size:var(--fs-12);color:var(--muted)}
+.seg-brief dd{margin:0;font-size:var(--fs-14);overflow-wrap:anywhere}
+.seg-brief .btn-link{padding:0;font-weight:500}
+.seg-brief .fx-mark{margin-left:var(--sp-1)}
+.seg-side{display:flex;align-items:center;gap:var(--sp-3);justify-self:end}
+.seg-count{font-size:var(--fs-13);color:var(--muted);white-space:nowrap}
+.seg-empty{font-size:var(--fs-14);color:var(--faint)}
+.seg-toggle{white-space:nowrap}
+.seg-toggle svg.i{transition:transform var(--dur-fast) var(--ease-out)}
+.seg-toggle[aria-expanded="true"] svg.i{transform:rotate(180deg)}
+.seg-toggle[aria-expanded="true"] .when-closed,.seg-toggle[aria-expanded="false"] .when-open{display:none}
+.seg-body{border-top:1px solid var(--border)}
+.seg-body .card-sec+.card-sec{border-top:1px solid var(--border-strong)}
+.seg-body .sub-h{flex-wrap:wrap;font-size:var(--fs-14)}
+.seg-body .sub-h .btn-link{padding:0;font-weight:600}
+.seg-body .sub-h .sub{font-weight:400;color:var(--muted);font-size:var(--fs-13)}
+.seg-body .detail-table{margin:0 var(--card-pad) var(--sp-4)}
+.seg-body .facts-caption{padding:var(--sp-2) var(--card-pad) var(--sp-2)}
+.seg-body .value-lines .btn-link{padding:0;align-self:flex-start}
+@media (prefers-reduced-motion:reduce){.seg-toggle svg.i{transition:none}}
+@media(max-width:1100px){
+  .price-chain{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);row-gap:var(--sp-5)}
+  .price-chain>.pc-arrow:nth-of-type(2){display:none}
+  .pc-item.pc-receipt{border-left:0;padding-left:0;margin-left:0}
+  .fulfil-seg>.seg-head{grid-template-columns:minmax(0,1fr) auto}
+  .fulfil-seg>.seg-head .seg-brief{grid-column:1/-1;grid-row:2}
+}
