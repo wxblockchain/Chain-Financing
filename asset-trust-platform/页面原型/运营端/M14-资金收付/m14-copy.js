@@ -29,6 +29,7 @@ TP.addCopy({
 "关联业务": "Related documents",
 "折算": "Converted",
 "查看折算汇率": "View conversion rate",
+"当前汇率": "Current rate",
 "生效时间": "Effective",
 "演示仅提供部分单据的详情画面。": "This demo includes details for some documents only.",
 "无法折算": "Cannot convert",
