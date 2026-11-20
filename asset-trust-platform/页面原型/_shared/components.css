@@ -1370,8 +1370,8 @@ td.pop-col:has(>.value-pop)::after{content:none}
 /* A7 企业列表：十二列，固定编号和操作；中英文分别设置阅读下限。 */
 .enterprise-table-card{container:enterprise-table / inline-size}
 .enterprise-table-hint{display:none;padding:var(--sp-2) var(--card-pad);border-bottom:1px solid var(--border);font-size:var(--ui-field-label);color:var(--muted)}
-@container enterprise-table (max-width:1319px){.enterprise-table-hint{display:block}}
-@container enterprise-table (max-width:1559px){:lang(en) .enterprise-table-hint{display:block}}
+@container enterprise-table (max-width:1439px){.enterprise-table-hint{display:block}}
+@container enterprise-table (max-width:1719px){:lang(en) .enterprise-table-hint{display:block}}
 .enterprise-table-card .filter-toolbar{row-gap:var(--sp-3)}
 .enterprise-table-card .filter-query{flex-basis:100%;justify-content:flex-start;margin-left:0}
 .enterprise-table-card .filter-search{flex-basis:var(--enterprise-search-w)}
@@ -1383,14 +1383,15 @@ td.pop-col:has(>.value-pop)::after{content:none}
 .tbl.enterprise-list thead th:first-child{background:var(--card-2)}
 .tbl.enterprise-list tr:hover td:first-child{background:var(--row-hover)}
 .tbl.enterprise-list tr.is-new td:first-child{background:linear-gradient(var(--accent-soft),var(--accent-soft)),var(--card)}
-.tbl.enterprise-list th:nth-child(2){width:12%}
-.tbl.enterprise-list th:nth-child(3){width:8%}
-.tbl.enterprise-list th:nth-child(4){width:7%}
-.tbl.enterprise-list th:nth-child(5){width:13%}
-.tbl.enterprise-list th:nth-child(6){width:14%}
-.tbl.enterprise-list th:nth-child(7){width:8%}
-.tbl.enterprise-list th:nth-child(8){width:6%}
-.tbl.enterprise-list th:nth-child(9),.tbl.enterprise-list th:nth-child(10){width:7.5%}
+.tbl.enterprise-list th:nth-child(2){width:11%}
+.tbl.enterprise-list th:nth-child(3){width:7%}
+.tbl.enterprise-list th:nth-child(4){width:6.5%}
+.tbl.enterprise-list th:nth-child(5){width:12.5%}
+.tbl.enterprise-list th:nth-child(6){width:12.5%}
+.tbl.enterprise-list th:nth-child(7){width:7%}
+.tbl.enterprise-list th:nth-child(8){width:5%}
+.tbl.enterprise-list th:nth-child(9){width:11%}
+.tbl.enterprise-list th:nth-child(10),.tbl.enterprise-list th:nth-child(11){width:6.5%}
 .tbl.enterprise-list th.col-act{width:5%}
 .tbl.enterprise-list td:first-child{white-space:nowrap}
 .tbl.enterprise-list thead th{overflow-wrap:normal;word-break:normal;hyphens:none}
@@ -2275,3 +2276,27 @@ table.tbl.fund-list{min-width:var(--fund-table-min)}
 /* 凭证附件：查看与下载同列 */
 .fund-file-acts{display:flex;justify-content:flex-end;gap:var(--sp-3)}
 .tbl.fund-vouchers td{vertical-align:middle}
+/* A78 关联 ERP 企业多选（M2 F-EN-10）：卡内说明、按 ERP 名称或标识查找、带复选框的候选表；已关联其他平台企业的行不可选并注明归属，冲突 / 不能取消的行以危险色标出。 */
+.erp-picker .card-b{display:flex;flex-direction:column;gap:var(--sp-3)}
+.erp-picker .card-b>*{flex:none}
+.erp-picker .erp-search{width:min(100%,var(--filter-search-w))}
+.erp-choice-wrap{border:1px solid var(--border);border-radius:var(--radius-xs)}
+.tbl.erp-choice{min-width:640px}
+.tbl.erp-choice th.col-select{width:48px;padding-left:var(--sp-4)}
+.tbl.erp-choice th:nth-child(2){width:32%}
+.tbl.erp-choice th:nth-child(3){width:18%}
+.tbl.erp-choice tr.is-disabled td{color:var(--muted);background:var(--card-2);cursor:not-allowed}
+.tbl.erp-choice tr.is-error td{background:var(--danger-bg)}
+.tbl.erp-choice tr.is-error td:first-child{box-shadow:inset 3px 0 var(--danger)}
+.tbl.erp-choice td.col-select{padding-left:var(--sp-4);text-align:left}
+.tbl.erp-choice .col-select input{accent-color:var(--accent)}
+.erp-picker .state{padding-block:var(--sp-6)}
+/* A79 关联变化确认：弹窗内明细表列出新增 / 取消关联的 ERP 企业及作为内销卖方、内销买方的应收账款笔数，下方说明生效后果。 */
+.modal .erp-change-wrap{margin:0 0 var(--sp-4)}
+.tbl.erp-change{min-width:520px;table-layout:fixed}
+.tbl.erp-change th:nth-child(1){width:84px}
+.tbl.erp-change th:nth-child(3){width:104px}
+.tbl.erp-change th.num{width:96px}
+.tbl.erp-change th{white-space:normal;overflow-wrap:normal;word-break:normal}
+/* A80 企业详情“关联 ERP 企业”卡：明细表（ERP 名称 / 标识 / 关联时间 / 关联人），未关联时一句说明。 */
+.erp-links .sub-empty{padding-top:var(--sp-4)}

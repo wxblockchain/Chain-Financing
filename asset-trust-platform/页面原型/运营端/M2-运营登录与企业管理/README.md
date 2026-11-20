@@ -4,7 +4,7 @@
 
 ## 基线
 
-- PRD：WS-602 附件《运营登录与企业管理》四册 2026-11-13 修订稿（第二版：运营端不展示企业账号状态与锁定、删除运营重置密码与解除锁定、密码条件精简、区号只显示数字、入驻进度改名、菜单登记汇率管理）；2026-11-19 修订登录邮箱唯一性为“只校验当前是否被其他账号使用，改走或更正后的旧邮箱立即释放、可再分配”）；PRD 尚未入库。Q-M2-07（企业既忘记密码又收不到登录邮箱验证码时的恢复）待用户裁定，原型不画恢复入口。
+- PRD：仓库 `asset-trust-platform/PRD/运营端/M2-运营登录与企业管理/`（`cly-v6.0.0` @ `fa536c94`，首次入库），含此前 2026-11-13 / 11-19 修订及新增“关联 ERP 企业（F-EN-10）”。Q-M2-07（企业既忘记密码又收不到登录邮箱验证码时的恢复）待用户裁定，原型不画恢复入口。
 - 视觉与组件：代币发行平台《组件规范》v1.96（`token-issuance-platform/页面原型/_shared/`，cly-v6.0.0 @ e2f8eb3），即本平台自持的 [`../../_shared/`](../../_shared/design-system/组件规范.md)（与企业端 M1 共用；本模块新增组件 A7–A11、`menu.ops.js` 与账号入口文字配置已登记在该规范）；列表、详情、金额与时间等按《资产可信平台列表与详情展示参考规范 v1.0》。
 - 入驻资料字段取自 M1《企业登录与首次入驻》PRD 的个人信息、企业补充信息与钱包信息。
 - 2026-11-12 用户确认：详情入驻节点为“首次改密 → 钱包绑定 → 资料完善 → 入驻完成”，操作记录采用纵向时间线。规范已提炼至[进度与操作记录](../../_shared/design-system/进度与操作记录.md)，主规范 v1.9；本轮在 `590f63f` 上适配，合并 `061c280` 的菜单待办角标，保留 M1 / M3 并行更新。
@@ -18,6 +18,7 @@
 - 登录：`login → ent-list`（默认页为企业管理）
 - 邀请：`ent-list → invite-ready → invite-same-name → invite-sent → d-initial → resend-confirm → d-initial-resent`
 - 维护：`d-active → edit-ready → edit-changed → d-active-saved → role-confirm → d-role-added`
+- 关联 ERP 企业：邀请时 `invite-ready → invite-same-name → invite-erp-confirm → invite-sent`；补关联 `d-profile → edit-pre → edit-erp → erp-confirm → d-profile-linked`；取消关联 `d-both → edit-erp-unlink → erp-unlink-confirm → d-both-unlinked`
 - 首次登录：`login-initial → first-empty → first-ready → login-changed`
 - 找回密码：`recover-filled → recover-captcha → recover-code → recover-password → recover-ready → login-recovered`
 - 本人改密：`settings → password-verify → password-new → login-changed`
@@ -42,7 +43,7 @@ python3 _shared/export.py --source 运营端/M2-运营登录与企业管理/运�
 
 ## 画面清单
 
-共 82 屏。默认、空、代表性异常、业务阶段与流程步骤按下表；未出屏的状态以 PRD 为准。
+共 92 屏。默认、空、代表性异常、业务阶段与流程步骤按下表；未出屏的状态以 PRD 为准。
 
 | 分组 | 画面 ID 与名称 |
 | --- | --- |
@@ -50,11 +51,12 @@ python3 _shared/export.py --source 运营端/M2-运营登录与企业管理/运�
 | 首次登录改密（5） | `login-initial` 登录 · 使用初始密码；`first-empty` 首次登录 · 设置新密码；`first-ready` 首次登录 · 已填写；`first-error` 首次登录 · 两次输入不一致；`first-fail` 首次登录 · 与初始密码相同 |
 | 找回密码（16） | `recover-email` 找回 · 输入邮箱；`recover-filled` 找回 · 已填写邮箱；`recover-send-fail` 找回 · 验证码发送失败；`recover-limit` 找回 · 发送次数已达上限；`recover-captcha` 找回 · 安全验证；`recover-captcha-fail` 找回 · 安全验证未通过；`recover-captcha-retry` 找回 · 连续 3 次未通过；`recover-captcha-cooldown` 找回 · 安全验证冷却中；`recover-captcha-load-fail` 找回 · 题目加载失败；`recover-code` 找回 · 输入验证码；`recover-code-invalid` 找回 · 验证码无效；`recover-locked` 找回 · 验证后账号锁定；`recover-password` 找回 · 设置新密码；`recover-ready` 找回 · 新密码已填写；`recover-password-error` 找回 · 与当前密码相同；`recover-stale` 找回 · 验证已失效 |
 | 企业列表（5） | `ent-list` 企业列表；`ent-list-added` 企业列表 · 新邀请已加入；`ent-empty` 企业列表 · 尚无企业；`ent-no-results` 企业列表 · 筛选无结果；`ent-list-fail` 企业列表 · 读取失败 |
-| 邀请企业（10） | `invite-empty` 邀请 · 空表单；`invite-ready` 邀请 · 资料已填写；`invite-error` 邀请 · 字段错误；`invite-no-role` 邀请 · 未选业务角色；`invite-duplicate` 邀请 · 企业已被邀请；`invite-email-unavailable` 邀请 · 登录邮箱不可用；`invite-busy` 邀请 · 发送中；`invite-same-name` 邀请 · 同名提醒；`invite-sent` 邀请 · 已发出；`invite-mail-fail` 邀请 · 已建立但邮件未发出 |
-| 企业详情（15） | `d-initial` 详情 · 待首次改密（新邀请）；`d-wallet` 详情 · 待绑定钱包；`d-profile` 详情 · 待完善资料；`d-active` 详情 · 已完成入驻（单一角色）；`d-both` 详情 · 已完成入驻（两个角色）；`d-creditor` 详情 · 已完成入驻（债权人）；`d-initial-early` 详情 · 待首次改密（较早邀请）；`d-onboarded-hk` 详情 · 已完成入驻（同名企业）；`d-part-fail` 详情 · 入驻资料读取失败；`d-active-saved` 详情 · 资料已保存；`d-role-added` 详情 · 业务角色已增加；`d-initial-resent` 详情 · 已重发邀请；`d-initial-mail-fail` 详情 · 邀请邮件未发出；`d-not-found` 详情 · 内容不存在或无权查看；`d-fail` 详情 · 读取失败 |
+| 邀请企业（13） | `invite-empty` 邀请 · 空表单；`invite-erp-empty` 邀请 · 暂无可关联的 ERP 企业；`invite-ready` 邀请 · 资料已填写；`invite-error` 邀请 · 字段错误；`invite-no-role` 邀请 · 未选业务角色；`invite-duplicate` 邀请 · 企业已被邀请；`invite-email-unavailable` 邀请 · 登录邮箱不可用；`invite-erp-conflict` 邀请 · ERP 企业已被关联；`invite-busy` 邀请 · 发送中；`invite-same-name` 邀请 · 同名提醒；`invite-erp-confirm` 邀请 · 确认关联 ERP 企业；`invite-sent` 邀请 · 已发出；`invite-mail-fail` 邀请 · 已建立但邮件未发出 |
+| 企业详情（17） | `d-initial` 详情 · 待首次改密（新邀请）；`d-wallet` 详情 · 待绑定钱包；`d-profile` 详情 · 待完善资料；`d-profile-linked` 详情 · 已补充关联 ERP 企业；`d-active` 详情 · 已完成入驻（单一角色）；`d-both` 详情 · 已完成入驻（两个角色）；`d-both-unlinked` 详情 · 已取消关联 ERP 企业；`d-creditor` 详情 · 已完成入驻（债权人）；`d-initial-early` 详情 · 待首次改密（较早邀请）；`d-onboarded-hk` 详情 · 已完成入驻（同名企业）；`d-part-fail` 详情 · 入驻资料读取失败；`d-active-saved` 详情 · 资料已保存；`d-role-added` 详情 · 业务角色已增加；`d-initial-resent` 详情 · 已重发邀请；`d-initial-mail-fail` 详情 · 邀请邮件未发出；`d-not-found` 详情 · 内容不存在或无权查看；`d-fail` 详情 · 读取失败 |
 | 账号操作（2） | `resend-confirm` 重发邀请 · 确认；`resend-stale` 重发邀请 · 已完成首次改密 |
 | 增加业务角色（2） | `role-confirm` 增加业务角色 · 确认；`role-exists` 增加业务角色 · 角色已存在 |
-| 编辑企业资料（6） | `edit-ready` 编辑 · 已完成入驻（企业身份只读）；`edit-changed` 编辑 · 已修改待保存；`edit-pre` 编辑 · 入驻前（企业身份可更正）；`edit-error` 编辑 · 字段错误；`edit-fail` 编辑 · 保存失败；`edit-conflict` 编辑 · 资料已被他人修改 |
+| 编辑企业资料（9） | `edit-ready` 编辑 · 已完成入驻（企业身份只读）；`edit-changed` 编辑 · 已修改待保存；`edit-pre` 编辑 · 入驻前（企业身份可更正）；`edit-erp` 编辑 · 补充关联 ERP 企业；`edit-error` 编辑 · 字段错误；`edit-fail` 编辑 · 保存失败；`edit-conflict` 编辑 · 资料已被他人修改；`edit-erp-unlink` 编辑 · 取消关联 ERP 企业；`edit-erp-blocked` 编辑 · 有处理中的确权申请不能取消 |
+| 关联 ERP 企业（2） | `erp-confirm` 关联 · 确认新增关联；`erp-unlink-confirm` 取消关联 · 确认 |
 | 账户设置（4） | `settings` 账户设置；`settings-fail` 账户设置 · 账号信息读取失败；`pref-fail` 账户设置 · 时区保存失败；`acct-menu` 账号入口 · 展开 |
 | 修改密码（4） | `password-verify` 修改密码 · 验证当前密码；`password-wrong` 修改密码 · 当前密码错误；`password-new` 修改密码 · 设置新密码；`password-expired` 修改密码 · 验证已过期 |
 
@@ -140,3 +142,19 @@ PRD 改为只校验登录邮箱当前是否被其他账号使用，不保留、�
 - 企业端改邮箱不进入运营端操作记录、列表和详情只显示当前登录邮箱，沿用上轮画面。
 
 本轮只更新本说明，HTML、文案与共享层未改。
+
+## v1.13 按 PRD fa536c94 关联 ERP 企业（F-EN-10）
+
+在 `6b7de10` 上只改受影响画面，保留既有视觉与共享改进。新增 10 屏，共 92 屏。
+
+- 邀请与编辑表单（邀请 8 屏、编辑 8 屏）新增“关联 ERP 企业”卡（A78）：说明可多选、可暂不关联；按 ERP 名称或 ERP 企业标识查找；候选表列 ERP 名称、ERP 企业标识、关联情况，已关联其他平台企业的行不可选并注明企业名称与编号，已关联本企业的行默认勾选。候选为空 `invite-erp-empty` 显示 PRD 原文说明。
+- 保存前确认（A79）：`invite-erp-confirm`（邀请时新增关联）、`erp-confirm`（补关联）、`erp-unlink-confirm`（取消关联），逐个列出变化、ERP 名称与标识、作为内销卖方 / 内销买方的应收账款笔数，并说明生效后果（取消关联另说明“未对应平台企业”与历史保留）。同名提醒确认后进入关联确认。
+- 异常：`invite-erp-conflict` 所选 ERP 企业已被其他平台企业关联，邀请整体未成功并保留其他输入，冲突行标红；`edit-erp-blocked` 有 2 笔处理中的确权申请时不能取消关联，本次未保存。
+- 企业列表新增“关联 ERP 企业”列（多个逐行列出，未关联显示“未关联”）与“是否关联 ERP 企业”筛选，搜索提示加入 ERP 名称或标识；十二列，阅读下限中文 1440 px、English 1720 px。
+- 企业详情新增“关联 ERP 企业”卡（A80，在企业档案之后）：ERP 名称、ERP 企业标识、关联时间、关联人；未关联时说明“未关联 ERP 企业，本企业不与任何应收账款对应。”。操作记录增加“关联 ERP 企业”“取消关联 ERP 企业”事件（含名称与标识）。邀请结果补“关联 ERP 企业”字段。
+- 菜单与 PRD 菜单表一致，仅更新 `menu.ops.js` 注释为“已登记”。
+- 演示数据：ERP 企业 8 个（含 M3 已用的 Carloha Holding / Carloha Nigeria，标识 `ERPC-xxxx` 为演示格式），A、B（两个）、C、H、F 已关联，D、E、G 未关联；笔数为演示值。
+
+核验（Playwright Chromium）：92 屏 × 中文 / English × 1280 / 1440 / 1920 px，无脚本错误、无整页横向溢出、无失效 data-go / data-next / data-base / 面包屑目标、按钮与操作列未裁切，English 下除演示业务值外无未翻译文案；逐屏检查关联卡、确认弹窗表头不溢出。离线单文件另做遍历，无外部请求。截图仅作内部核验。
+
+待相邻模块：M3 / M7a / M7b 按同一口径引用关联结果与“处理中确权申请不能取消关联”；ERP 企业标识的真实格式待 ERP 对接确认。

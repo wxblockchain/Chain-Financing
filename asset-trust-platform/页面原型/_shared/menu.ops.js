@@ -9,14 +9,14 @@
     ]},
     {group:'资产数据', items:[
       {key:'invoices',  label:'应收账款',   icon:'doc'},
-      // M4 合同信息（WS-659）替代原“上游采购”“下游销售”两项；菜单名由用户确定，M2 菜单表待同步登记。
+      // M4 合同信息（WS-659）：已登记于 M2 PRD F-OP-11 菜单表（fa536c94）。
       {key:'contracts', label:'合同信息',   icon:'ledger'},
       {key:'vehicles',  label:'车辆履约',   icon:'truck'},
-      // M12 提单信息（WS-661）：资产数据重组后的新菜单，待 M2 PRD F-OP-11 菜单表登记。
+      // M12 提单信息（WS-661）：已登记于 M2 PRD F-OP-11 菜单表（fa536c94）。
       {key:'bills',     label:'提单信息',   icon:'ship'},
-      // M13 保单信息（WS-662）：资产数据重组后的新菜单，待 M2 PRD F-OP-11 菜单表登记。
+      // M13 保单信息（WS-662）：已登记于 M2 PRD F-OP-11 菜单表（fa536c94）。
       {key:'policies',  label:'保单信息',   icon:'umbrella'},
-      // M14 资金收付（WS-663）：资产数据重组后的新菜单，待 M2 PRD F-OP-11 菜单表登记。
+      // M14 资金收付（WS-663）：已登记于 M2 PRD F-OP-11 菜单表（fa536c94）。
       {key:'funds',     label:'资金收付',   icon:'wallet'}
     ]},
     {group:'风控', items:[
