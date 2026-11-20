@@ -1963,11 +1963,14 @@ table.tbl.bl-list{min-width:var(--bl-table-min)}
 .bl-progress-track{display:flex;gap:var(--sp-1);height:8px;max-width:480px}
 .bl-progress-track>span{flex:1 1 0;border-radius:var(--radius-pill);background:var(--border)}
 .bl-progress-track>span.done{background:var(--accent)}
-/* 车辆清单：合同单价一列，原币在上，非美元时下方为美元值与“折算”（可查看所用汇率）；表头副行“原币 / 美元” */
+/* 车辆清单（v1.38）：不含集装箱号；内采单价（原币）与内采单价（美元）两列，非美元时美元值下方为“折算”，可查看当前汇率与生效时间 */
 table.tbl.bl-vehicles{min-width:var(--bl-vehicle-min)}
-.tbl.bl-vehicles th .cell-sub{display:block;font-weight:400}
-.bl-fx{display:inline-flex;align-items:center;gap:var(--sp-1)}
-.bl-fx .dd-list :is(span,time){white-space:nowrap}
+.bl-fx{display:inline-flex;align-items:center;gap:var(--sp-1);white-space:nowrap}
+.bl-fx .value-pop{margin-block:0}
+.bl-fx .dd-list{text-align:left}
+.bl-fx .dd-list .value-lines{align-items:flex-start}
+.bl-fx .dd-list .cell-sub{max-width:none}
+.bl-fx .dd-list [data-zone]{display:inline}
 .tbl.bl-files td.bl-cc.cont{border-top-color:transparent}
 .tbl:is(.bl-vehicles,.bl-files,.bl-customs,.bl-track) .value-lines .file-ref{white-space:nowrap}
 /* —— M5 车辆履约（WS-660，单车维度，组件规范 §4 A62–A65）—— */
