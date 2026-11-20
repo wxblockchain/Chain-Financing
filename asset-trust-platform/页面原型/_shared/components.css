@@ -2223,14 +2223,14 @@ table.tbl.receivable-list.asset-list{min-width:var(--asset-table-min)}
 /* 基础交易：形式发票与内销合同摘要为同卡两节，节间较深分隔线 */
 .receivable-detail .basic-trade .card-sec+.card-sec{border-top:1px solid var(--border-strong)}
 .file-time{font-size:var(--fs-12);color:var(--muted)}
-/* A75 车辆清单：默认列为 VIN、物流节点、三项单价、外销收款；首列展开按钮显示本车的采购 / 运输与保险 / 外销 / 附件四组（展开行跨全部列） */
+/* A75 车辆清单：默认列为 VIN、物流节点、外采 / 内采 / 外销单价、外销收款；首列展开按钮显示本车的内销 / 采购 / 运输与保险 / 外销 / 附件五组（展开行跨全部列，按宽度自动排布）；外采单价取合同价时下方加“合同价”标签 */
 .vehicle-ledger .col-toggle{width:var(--ctrl-h-sm);padding-right:0}
 .vehicle-ledger .row-toggle svg.i{transform:rotate(-90deg);transition:transform var(--dur-fast) var(--ease-out)}
 .vehicle-ledger .row-toggle[aria-expanded="true"] svg.i{transform:none}
 .vehicle-ledger .row-toggle[aria-expanded="true"]{color:var(--accent)}
 .vehicle-ledger tr.has-more>td{border-bottom-color:transparent}
 .receivable-detail .detail-table .vehicle-ledger tr.vehicle-more>td{white-space:normal;padding:0 var(--card-pad) var(--sp-4) calc(var(--ctrl-h-sm) + var(--sp-4));background:var(--card)}
-.vehicle-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4);padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2)}
+.vehicle-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(144px,1fr));gap:var(--sp-4);padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2)}
 .vehicle-group{min-width:0}
 .vehicle-group h4{margin:0 0 var(--sp-3);font-size:var(--fs-13);font-weight:600;color:var(--text)}
 .vehicle-group dl{display:grid;gap:var(--sp-3);margin:0}
@@ -2243,7 +2243,7 @@ table.tbl.receivable-list.asset-list{min-width:var(--asset-table-min)}
 .vehicle-group .file-ref{font-size:var(--fs-13)}
 .expand-all .when-open,.expand-all[aria-expanded="true"] .when-closed{display:none}
 .expand-all[aria-expanded="true"] .when-open{display:inline}
-@media(max-width:1100px){.vehicle-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.vehicle-ledger td.num .price-basis{align-items:flex-end}
 
 /* A76 M14 资金收付（v1.37，WS-663）：列表沿用 A14 固定交易流水号与查看的骨架；详情沿用 A18 版式、A58 页头（付款方 → 收款方）与 A24 概要；折算沿用 M5 的 .fx-mark + .fx-pop。 */
 table.tbl.fund-list{min-width:var(--fund-table-min)}
