@@ -11,6 +11,6 @@ TP.registerModule({
     'purchaseContract:PO-DEMO-061':{ops:'p-noinvoice'},
     'purchaseInvoice:PPI-DEMO-0302':{ops:'p-located~PPI-DEMO-0302'},
     'exportContract:SC-DEMO-2045':{ops:'s-detail'},
-    'exportContract:SC-DEMO-2048':{ops:'s-mixed'}
+    'exportContract:SC-DEMO-2048':{ops:'s-wholesale'}
   }
 });

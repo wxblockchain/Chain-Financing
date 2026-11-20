@@ -192,10 +192,11 @@
   --fulfil-col-customer:148px; --fulfil-col-collect:104px; --fulfil-col-alert:56px;
   --fulfil-seg-title-w:104px; /* 明细四段的段名列，英文“Transport & insurance”换行后可读 */
   /* M4 合同信息（v1.34，WS-659）：三个页签的列表共用列宽 token；1440 px 视口下内销列表完整展示，更窄时表内滚动，编号与查看固定两侧。 */
-  --contract-table-min:1120px; --contract-purchase-table-min:1040px; --contract-export-table-min:920px;
+  --contract-table-min:1120px; --contract-purchase-table-min:1040px; --contract-export-table-min:1000px;
   --contract-col-id:148px; --contract-col-date:100px; --contract-col-parties:168px; --contract-col-party:176px;
   --contract-col-amount:128px; --contract-col-pair:132px; --contract-col-rate:92px; --contract-col-alert:56px;
   --contract-meter-w:200px; /* 执行进度中比率的进度条宽度上限 */
+  --contract-col-way:80px; /* v1.39 外销列表“销售方式”（零售 / 批售） */
   --policy-table-min:1120px; /* M13 保单信息十列，1440 px 视口完整展示；保单号与查看分别固定两侧，更窄时表内滚动 */
   --policy-table-min-en:1240px; /* 英文表头与金额的阅读下限 */
   --policy-col-id:132px; --policy-col-date:104px; --policy-col-insurer:148px; --policy-col-insured:128px;
