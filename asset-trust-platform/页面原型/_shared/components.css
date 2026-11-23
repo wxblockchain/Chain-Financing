@@ -2133,6 +2133,10 @@ table.tbl.contract-list.export-contract-list{min-width:var(--contract-export-tab
   .progress-groups.n2 .progress-group+.progress-group{border-left:0;border-top:1px solid var(--border)}
 }
 
+/* v1.41 M4 按用户 2026-11-23 反馈（WS-659）：内销合同列表只保留身份、当事方、金额与预警，表宽下限随之收窄；执行进度中“-”占位与数值同级显示。详情页头复用 A58 .receivable-parties。 */
+table.tbl.contract-list.domestic-list{min-width:var(--contract-domestic-table-min)}
+.progress-group .metric-value .na-dash{font-size:var(--fs-20);font-weight:600}
+
 /* A70 运营端保单信息列表（M13，v1.35，WS-662）：与 A14 合用 .receivable-list 骨架（保单号固定在左、“查看”固定在右、行内垂直居中、金额 14 px）。
    十列：保单号、保单日期、保险公司、被保险人、保险金额（美元）、保险货值（美元）、保险覆盖率、关联提单／车辆、预警、操作；列宽由 --policy-col-* 维护。
    覆盖率只按数值展示，不按高低着色。 */

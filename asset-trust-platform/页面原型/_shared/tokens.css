@@ -196,6 +196,7 @@
   --contract-col-id:148px; --contract-col-date:100px; --contract-col-parties:168px; --contract-col-party:176px;
   --contract-col-amount:128px; --contract-col-pair:132px; --contract-col-rate:92px; --contract-col-alert:56px;
   --contract-meter-w:200px; /* 执行进度中比率的进度条宽度上限 */
+  --contract-domestic-table-min:720px; /* v1.41 内销合同列表六列（开票、收款、终端进度只在详情） */
   --contract-col-way:80px; /* v1.39 外销列表“销售方式”（零售 / 批售） */
   --policy-table-min:1120px; /* M13 保单信息十列，1440 px 视口完整展示；保单号与查看分别固定两侧，更窄时表内滚动 */
   --policy-table-min-en:1240px; /* 英文表头与金额的阅读下限 */
