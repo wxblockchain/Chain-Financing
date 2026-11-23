@@ -169,5 +169,9 @@ TP.addCopy({
 "装船": "Shipped",
 "无外销合同": "No sales contract",
 "外销收款情况 · 无外销合同": "Collection · No sales contract",
-"外销出库 · 2026-11-08": "Dispatched for sale · 2026-11-08"
+"外销出库 · 2026-11-08": "Dispatched for sale · 2026-11-08",
+"最新": "Latest",
+"共 2 条": "2 records",
+"共 5 条": "5 records",
+"共 8 条": "8 records"
 });
