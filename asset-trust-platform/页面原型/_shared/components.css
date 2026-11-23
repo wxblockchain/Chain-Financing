@@ -2193,6 +2193,10 @@ table.tbl.receivable-list.rcv-overview-list{min-width:var(--rcv-overview-min)}
 .rcv-overview-list col.rcv-col-status{width:var(--rcv-overview-col-status)}
 .rcv-overview-list td .value-lines .tag+.tag{margin-top:2px}
 .rcv-overview-list .cell-sub{font-size:var(--fs-12);color:var(--muted);white-space:nowrap}
+/* 预警：直接展示未处理预警条数，与 M4 合同列表的 .alert-count 写法一致（列表中条数可进入关联预警）；没有为 .faint “无”；仅核心资料差异待核实时为“待核实”（2026-11-23 用户要求） */
+:is(.rcv-overview-list,.receivable-summary) .alert-count{color:var(--warn);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+:is(.rcv-overview-list,.receivable-summary) .alert-count.pending{font-weight:500}
+.receivable-summary .status-grid dd>:is(.alert-count,.faint){font-size:var(--ui-field-value)}
 /* A73 到期剩余天数：日期后为“剩余 N 天 / 已到期 N 天”；临近到期（0—7 天）用警示色、加粗并带图标，不只靠颜色 */
 .due-left{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-12);font-weight:400;color:var(--muted);white-space:nowrap}
 .due-left.is-near{color:var(--warn);font-weight:600}

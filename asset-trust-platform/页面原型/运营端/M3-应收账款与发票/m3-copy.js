@@ -205,5 +205,6 @@ TP.addCopy({
 "预警 · 无": "Alerts · None",
 "预警 · 有": "Alerts · Yes",
 "预警信息": "Alert",
-"首次取得时间": "First received at"
+"首次取得时间": "First received at",
+"待核实": "Pending verification"
 });
