@@ -5,7 +5,7 @@ TP.registerModule({
   routes:{
     vehicles:{ops:'f-list'},
     'vehicle:LDEMOVIN000000001':{ops:'f-detail'},
-    'vehicle:LDEMOVIN000000011':{ops:'f-multi'},
+    'vehicle:LDEMOVIN000000002':{ops:'f-multi'},
     'vehicle:LDEMOVIN000000021':{ops:'f-transit'},
     'vehicle:LDEMOVIN000000015':{ops:'f-sparse'}
   }

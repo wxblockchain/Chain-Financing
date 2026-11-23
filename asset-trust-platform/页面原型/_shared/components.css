@@ -1975,7 +1975,7 @@ table.tbl.bl-vehicles{min-width:var(--bl-vehicle-min)}
 .tbl.bl-files td.bl-cc.cont{border-top-color:transparent}
 .tbl:is(.bl-vehicles,.bl-files,.bl-customs,.bl-track) .value-lines .file-ref{white-space:nowrap}
 /* —— M5 车辆履约（WS-660，单车维度，组件规范 §4 A62–A65）—— */
-/* A62 车辆履约列表：十列为 VIN、当前物流节点、所属应收账款、外采订单号、提单号、外销合同号、外销客户、外销收款情况、预警、操作；
+/* A62 车辆履约列表：十列为 VIN、当前物流节点、所属应收账款、外采合同号、提单号、外销合同号、外销客户、外销收款情况、预警、操作；
    沿用 A30 .vehicle-list 的固定首列、右侧“查看”与行高规则。同类单据多张时主值为最近一张，下方 .cell-sub 写“共 N 张”。 */
 table.tbl.vehicle-list.fulfil-list{min-width:var(--fulfil-table-min)}
 :lang(en) table.tbl.vehicle-list.fulfil-list{min-width:var(--fulfil-table-min-en)}
@@ -1992,9 +1992,9 @@ table.tbl.vehicle-list.fulfil-list{min-width:var(--fulfil-table-min)}
 /* A63 车辆概要：左侧所属应收账款（多笔逐行），右侧当前物流节点 / 在库情况 / 关联预警三项；在库情况下方次行为最近一次出入库。 */
 .vehicle-summary.fulfil-summary .status-grid dd .summary-sub{display:block;margin-top:var(--sp-1);font-size:var(--fs-12);color:var(--muted);white-space:nowrap}
 .vehicle-summary.fulfil-summary .status-grid dd .btn-link{padding-inline:0;font-weight:500}
-/* 物流节点进度：沿用 A31 .fulfil-steps 五等分；节点下的跳转入口与日期同列。 */
+/* 物流节点进度：节点下的来源单据入口与日期同列（记录式进度条见 A81）。 */
 .fulfil-steps small .btn-link{padding:0;font-size:var(--fs-12)}
-/* A64 价格链：外采单价 → 合同单价 → 外销单价，与外销收款并列；美元值在上，原币与“折算”在下，折算汇率在旁边浮层查看。 */
+/* A64 价格链：外采单价 → 内采单价 → 外销单价，与外销收款并列；美元值在上，原币与“折算”在下，折算汇率在旁边浮层查看。 */
 .price-chain{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr) minmax(0,1fr);align-items:start;padding:var(--sp-5) var(--card-pad)}
 .pc-item{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0}
 .pc-item.pc-receipt{border-left:1px solid var(--border);padding-left:var(--sp-6);margin-left:var(--sp-4)}
@@ -2306,3 +2306,18 @@ table.tbl.fund-list{min-width:var(--fund-table-min)}
 .tbl.erp-change th{white-space:normal;overflow-wrap:normal;word-break:normal}
 /* A80 企业详情“关联 ERP 企业”卡：明细表（ERP 名称 / 标识 / 关联时间 / 关联人），未关联时一句说明。 */
 .erp-links .sub-empty{padding-top:var(--sp-4)}
+
+/* —— v1.42 M5 车辆履约按 PRD 4891c19 同步（WS-660）—— */
+/* A81 记录式物流进度条：每次节点变动一条（节点 / 日期 / 来源单据），按日期从早到晚，条数不固定；
+   复用 A20 .receivable-steps 的完成与当前样式，最新一条为当前节点（aria-current），装船为最新时节点名后加“在途”标签。
+   每条最小 104 px，1280 px 视口可放下 8 条；更多时换行。没有记录时卡内一句“暂无物流记录”。 */
+.receivable-steps.fulfil-steps.fulfil-records{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:var(--sp-4) var(--sp-3)}
+.fulfil-records .rec-node{display:inline-flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-2)}
+.fulfil-records .rec-node .tag{font-size:var(--fs-11);padding:0 var(--sp-1)}
+.fulfil-records small .btn-link{white-space:nowrap}
+.fulfil-progress .fulfil-records-empty{padding-top:var(--sp-4)}
+/* 价格旁的取值说明（“合同价”“合同合计”）：12 px 辅助色，不是状态，不加底色。 */
+.price-note{font-size:var(--fs-12);font-weight:400;color:var(--muted);white-space:nowrap}
+.pc-usd .price-note{margin-left:var(--sp-1)}
+.seg-body .facts-caption .tag{margin-left:var(--sp-2);font-weight:400}
+
