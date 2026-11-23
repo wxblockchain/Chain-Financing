@@ -128,9 +128,9 @@
   --receivable-col-due:112px; --receivable-col-due-status:108px; --receivable-col-status:124px; --receivable-col-core:96px; /* 到期状态单列；预警信息只有“有／无” */
   --receivable-col-party:192px; --receivable-col-actions:80px;
   --receivable-receipt-min:1240px; /* ERP 回款八列，窄视口在表内滚动 */
-  --asset-table-min:1140px; /* v1.32 M3 资产全景列表：十一列（含四项比率），1440 px 视口完整展示，编号与查看分别固定两侧 */
-  --asset-table-min-en:1320px; /* 英文表头与审核状态的阅读下限，窄视口表内滚动 */
-  --asset-col-party:176px; --asset-col-due:116px; --asset-col-rate:74px; --asset-col-alert:88px; --asset-col-audit:124px;
+  --rcv-overview-min:880px; /* M3 资产全景列表：七列（比率与资产审核状态只在详情），编号与查看分别固定两侧；独立命名，不覆盖基线 --asset-* */
+  --rcv-overview-min-en:960px; /* 英文表头与状态的阅读下限 */
+  --rcv-overview-col-party:176px; --rcv-overview-col-due:116px; --rcv-overview-col-status:120px; --rcv-overview-col-alert:96px;
   --metric-bar-h:4px; /* 资产健康度比率条高度 */
   --nav-pending-size:18px; /* 菜单待办数字角标，超出两位时自然加宽 */
   --purchase-table-min:1200px; /* M4 九列上游采购列表，编号与查看分别固定两侧 */

@@ -2184,18 +2184,15 @@ table.tbl.policy-list{min-width:var(--policy-table-min)}
    v1.36（WS-658）M3 应收账款 · 资产全景（运营端）：列表十一列、到期剩余天数、资产健康度、
    车辆清单默认列 + 分组展开、回款记录摘要。只引用 tokens.css；企业端 M3 未改。
    ========================================================================== */
-/* A72 资产全景列表：沿用 A14 .receivable-list 骨架（编号固定在左、“查看”固定在右、行内垂直居中），四项比率右对齐窄列 */
-table.tbl.receivable-list.asset-list{min-width:var(--asset-table-min)}
-:lang(en) table.tbl.receivable-list.asset-list{min-width:var(--asset-table-min-en)}
-.asset-list col.rcv-col-party{width:var(--asset-col-party)}
-.asset-list col.rcv-col-due{width:var(--asset-col-due)}
-.asset-list col.rcv-col-rate{width:var(--asset-col-rate)}
-.asset-list col.rcv-col-alert{width:var(--asset-col-alert)}
-.asset-list col.rcv-col-audit{width:var(--asset-col-audit)}
-.asset-list .rate{font-variant-numeric:tabular-nums;white-space:nowrap}
-.tbl.asset-list th.num{white-space:normal}
-.asset-list td .value-lines .tag+.tag{margin-top:2px}
-.asset-list .cell-sub{font-size:var(--fs-12);color:var(--muted);white-space:nowrap}
+/* A72 资产全景列表（七列：编号、债权人 → 债务人、金额、到期日、应收账款状态、预警、操作；比率与资产审核状态只在详情）：沿用 A14 .receivable-list 骨架（编号固定在左、“查看”固定在右、行内垂直居中）；token 用 --rcv-overview-* 独立命名，不覆盖基线 --asset-* */
+table.tbl.receivable-list.rcv-overview-list{min-width:var(--rcv-overview-min)}
+:lang(en) table.tbl.receivable-list.rcv-overview-list{min-width:var(--rcv-overview-min-en)}
+.rcv-overview-list col.rcv-col-party{width:var(--rcv-overview-col-party)}
+.rcv-overview-list col.rcv-col-due{width:var(--rcv-overview-col-due)}
+.rcv-overview-list col.rcv-col-alert{width:var(--rcv-overview-col-alert)}
+.rcv-overview-list col.rcv-col-status{width:var(--rcv-overview-col-status)}
+.rcv-overview-list td .value-lines .tag+.tag{margin-top:2px}
+.rcv-overview-list .cell-sub{font-size:var(--fs-12);color:var(--muted);white-space:nowrap}
 /* A73 到期剩余天数：日期后为“剩余 N 天 / 已到期 N 天”；临近到期（0—7 天）用警示色、加粗并带图标，不只靠颜色 */
 .due-left{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-12);font-weight:400;color:var(--muted);white-space:nowrap}
 .due-left.is-near{color:var(--warn);font-weight:600}
@@ -2215,6 +2212,7 @@ table.tbl.receivable-list.asset-list{min-width:var(--asset-table-min)}
 .health-metrics dd{display:flex;flex-direction:column;gap:var(--sp-2);margin:0}
 .health-metrics .metric-value{font-size:var(--fs-24);font-weight:600;line-height:1.2;color:var(--text);font-variant-numeric:tabular-nums}
 .health-metrics .metric-value.na{font-size:var(--fs-16);font-weight:500;color:var(--muted)}
+.health-metrics .metric-value.na .na-dash{font-size:var(--fs-24);font-weight:600}
 .health-metrics .metric-sub{font-size:var(--fs-12);color:var(--muted);overflow-wrap:anywhere}
 .health-metrics .metric-bar{display:block;width:100%;height:var(--metric-bar-h);border:0;border-radius:var(--radius-pill);background:var(--border);overflow:hidden;appearance:none;-webkit-appearance:none}
 .health-metrics .metric-bar::-webkit-progress-bar{background:var(--border);border-radius:var(--radius-pill)}
