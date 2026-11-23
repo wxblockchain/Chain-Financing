@@ -2,6 +2,19 @@
    在各模块文案（m<N>-copy.js）之前加载；模块只保留本模块独有或译法不同的条目。新增通用文案加在这里，不在模块里重复。
    壳层、菜单、消息等公共层已有的文案仍在 display.js、menu.*.js、inbox*.js 维护，不在本文件重复。 */
 TP.addCopy({
+  "当前汇率": "Current rate",
+  "生效时间": "Effective",
+  "查看折算汇率": "View conversion rate",
+  "折算": "Converted",
+  "未处理 0 条": "0 open",
+  "未处理 1 条": "1 open",
+  "已处理 0 条": "0 handled",
+  "已处理 1 条": "1 handled",
+  "已处理 2 条": "2 handled",
+  "原币": "Original",
+  "进度与核对": "Progress and checks",
+  "明细": "Details",
+  "关联预警": "Related alerts",
   "0 条": "0 records",
   "0 辆": "0 vehicles",
   "1 份": "1 contract",

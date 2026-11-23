@@ -1,6 +1,5 @@
 /* M3 应收账款（资产全景）· 运营端 · 模块文案英文（业务值不翻译）。v1.32 按 PRD 2026-11-19 重写，只保留本页在用条目 */
 TP.addCopy({
-"1 条未处理": "1 open",
 "1 辆车在多张保单中": "1 vehicle is in multiple policies",
 "2 条": "2 records",
 "3 辆": "3 vehicles",
@@ -118,7 +117,6 @@ TP.addCopy({
 "无法折算": "Cannot convert",
 "无法计算": "Cannot be calculated",
 "时区": "Time zone",
-"明细": "Details",
 "是否未对应平台企业": "Unmatched company",
 "暂无回款记录": "No collection records yet",
 "暂无外销": "No export sale yet",
@@ -128,8 +126,6 @@ TP.addCopy({
 "暂无核实记录": "No verification records yet",
 "暂时无法读取，请稍后重试。已填写的条件已保留。": "The list could not be loaded. Please try again later. Your filters are kept.",
 "未出库": "Not outbound",
-"未处理 0 条、已处理 1 条": "0 open, 1 closed",
-"未处理 1 条、已处理 0 条": "1 open, 0 closed",
 "未对应平台企业": "Not matched to a platform company",
 "未投保": "Not insured",
 "未收款": "Not collected",
@@ -191,7 +187,6 @@ TP.addCopy({
 "运营审核通过": "Approved by operations",
 "运营示例账号": "Demo operator",
 "运输与保险": "Shipping & insurance",
-"进度与核对": "Progress & checks",
 "选填。PDF、JPG、PNG，最多 5 个，单个不超过 20 MB。": "Optional. PDF, JPG or PNG; up to 5 files, 20 MB each.",
 "部分收款": "Partly collected",
 "采购": "Purchasing",
@@ -204,7 +199,6 @@ TP.addCopy({
 "预警 · 全部": "Alerts · All",
 "预警 · 无": "Alerts · None",
 "预警 · 有": "Alerts · Yes",
-"预警信息": "Alert",
 "首次取得时间": "First received at",
 "待核实": "Pending verification"
 });

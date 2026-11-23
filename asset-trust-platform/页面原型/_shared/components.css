@@ -2321,3 +2321,31 @@ table.tbl.fund-list{min-width:var(--fund-table-min)}
 .pc-usd .price-note{margin-left:var(--sp-1)}
 .seg-body .facts-caption .tag{margin-left:var(--sp-2);font-weight:400}
 
+/* v1.43 WS-655 资产数据六模块统一（2026-11-23）：预警条数、关联预警与“当事方 → 当事方”页头从 M3 / M4 作用域提升为全平台写法，M5、M12、M13、M14 直接复用；模块追加块见下方“WS-655 统一 · M<N>”。 */
+.tbl .alert-count{color:var(--warn);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl .alert-count.pending{font-weight:500}
+.status-grid .alert-open{font-weight:600;color:var(--warn)}
+.status-grid dd>:is(.alert-count,.faint){font-size:var(--ui-field-value)}
+.status-grid .value-lines>.alert-open{align-self:flex-start;margin-left:calc(-1 * var(--sp-1))}
+.page-title.receivable-parties{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1) var(--sp-3);font-family:var(--sans)}
+/* WS-655 统一 · M5：价格链中取不到的单价用“-”占位，字号与同行金额一致。 */
+.fulfil-detail .pc-usd .missing.na-dash{font-size:var(--fs-20);font-weight:600}
+/* WS-655 统一 · M12：提单货值无法计算时概要主金额用“-”占位，字号与主金额一致；概要“关联预警”中未处理链接与下方已处理条数左对齐（同 M4）。 */
+.bl-summary .amount-lg .missing.na-dash{font-size:inherit;font-weight:600}
+.bl-summary .status-grid .value-lines>.btn-link{align-self:flex-start;margin-left:calc(-1 * var(--sp-1))}
+/* WS-655 统一 · M4：外采、外销列表当事方合为一列，开票对与比率列移至详情，表宽下限随之收窄（外采同内销六列，外销另加销售方式）。 */
+table.tbl.contract-list.purchase-contract-list{min-width:var(--contract-domestic-table-min)}
+table.tbl.contract-list.export-contract-list{min-width:calc(var(--contract-domestic-table-min) + var(--contract-col-way))}
+/* WS-655 统一 · M13：保单列表“保险公司 → 被保险人”合为一列，保险货值、覆盖率移至详情，七列表宽下限随之收窄；原币 NGN 写在美元值下方并带折算标记；详情保障核对“-”与数值同级，概要关联预警单项，附件表每份一行、垂直居中。A70 / A71 中 .policy-usd、.policy-fx、.attach-line 与 pol-col-insurer / insured / value / rate 不再使用。 */
+.policy-list col.pol-col-party{width:var(--receivable-col-party)}
+.policy-list-card table.tbl.policy-list{min-width:calc(var(--policy-col-id) + var(--policy-col-date) + var(--receivable-col-party) + var(--policy-col-amount) + var(--policy-col-count) + var(--policy-col-alerts) + var(--receivable-col-actions))}
+:lang(en) .policy-list-card table.tbl.policy-list{min-width:calc(var(--policy-col-id) + var(--policy-col-date) + var(--receivable-col-party) + var(--policy-col-amount) + var(--policy-col-count) + var(--policy-col-alerts) + var(--receivable-col-actions) + 120px)}
+.policy-orig{display:inline-flex;flex-wrap:wrap;align-items:center;gap:0 var(--sp-1)}
+.tbl .policy-orig{flex-wrap:nowrap;white-space:nowrap}
+.policy-orig .money .mono{font-weight:400}
+.policy-summary .meta b .fx-mark{font-weight:400;margin-left:var(--sp-1)}
+.policy-summary .status-grid.one{grid-template-columns:minmax(0,1fr)}
+@media(min-width:1101px){.policy-summary .status-grid.one{grid-template-columns:minmax(160px,auto)}}
+.policy-summary .status-grid .value-lines>.btn-link{align-self:flex-start;margin-left:calc(-1 * var(--sp-1))}
+.coverage-metrics .metric.na .na-dash{font-size:var(--fs-20);font-weight:600}
+.policy-files .detail-table .tbl.policy-file-list td{vertical-align:middle}

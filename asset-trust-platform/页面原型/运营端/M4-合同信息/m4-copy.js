@@ -55,9 +55,7 @@ TP.addCopy({
 "已付款比率": "Paid ratio", "已收款比率": "Received ratio",
 "采购公司": "Purchasing company", "供应商": "Supplier", "外销卖方": "Export seller", "外销客户": "Export customer",
 "账期": "Credit term", "90 天": "90 days",
-"关联预警": "Related alerts",
-"未处理 0 条": "0 open", "未处理 1 条": "1 open", "未处理 2 条": "2 open",
-"已处理 0 条": "0 handled", "已处理 1 条": "1 handled",
+"未处理 2 条": "2 open",
 "无": "None",
 "合同概要": "Contract summary",
 "折合": "≈",
@@ -144,8 +142,6 @@ TP.addCopy({
 "内销合同日期自": "Domestic contract date from", "内销合同日期至": "Domestic contract date to",
 "内销合同币种": "Domestic contract currency", "内销合同币种 · 全部": "Domestic contract currency · All",
 "内销合同币种 · USD": "Domestic contract currency · USD", "内销合同币种 · NGN": "Domestic contract currency · NGN",
-"内销合同号或内销订单编号": "Domestic contract or order no.",
-"输入内销合同号、内销订单编号、内销发票号或 VIN": "Enter a domestic contract no., order no., invoice no. or VIN",
 "内销合同金额": "Domestic contract amount", "内销合同金额（美元）": "Domestic contract amount (USD)",
 "内销已开票（美元）": "Domestic invoiced (USD)", "内销未开票（美元）": "Domestic not invoiced (USD)",
 "内销已收款（美元）": "Domestic received (USD)", "内销未收款（美元）": "Domestic outstanding (USD)",
@@ -159,8 +155,6 @@ TP.addCopy({
 "外采合同日期自": "Purchase contract date from", "外采合同日期至": "Purchase contract date to",
 "外采合同币种": "Purchase contract currency", "外采合同币种 · 全部": "Purchase contract currency · All",
 "外采合同币种 · USD": "Purchase contract currency · USD", "外采合同币种 · NGN": "Purchase contract currency · NGN",
-"外采合同号或外采订单编号": "Purchase contract or order no.",
-"输入外采合同号、外采订单编号、外采发票号或 VIN": "Enter a purchase contract no., order no., invoice no. or VIN",
 "外采合同金额": "Purchase contract amount", "外采合同金额（美元）": "Purchase contract amount (USD)",
 "外采已开票（美元）": "Purchase invoiced (USD)", "外采未开票（美元）": "Purchase not invoiced (USD)",
 "外采已开票金额（美元）": "Purchase invoiced amount (USD)", "外采未开票金额（美元）": "Purchase not-invoiced amount (USD)",
@@ -172,10 +166,17 @@ TP.addCopy({
 "外销合同日期": "Export contract date", "外销合同日期自": "Export contract date from", "外销合同日期至": "Export contract date to",
 "外销卖方名称": "Export seller name", "外销客户名称": "Export customer name",
 "外销合同金额": "Export contract amount", "外销合同金额（美元）": "Export contract amount (USD)", "外销合同文件": "Export contract files",
-"输入外销合同号或 VIN，外销合同号支持部分匹配": "Enter an export contract no. or VIN (contract no. supports partial match)",
 "物流节点": "Logistics node",
 "详情 · 尚未开票、外采单价取合同价、有车辆无外采合同、有未处理预警": "Detail · Not invoiced, contract purchase price, vehicle without purchase contract, open alerts",
 "详情 · 默认（部分开票、部分付款，未开票车辆取合同价）": "Detail · Default (partly invoiced, partly paid, contract price for non-invoiced vehicles)",
 "详情 · 暂无外采发票（外采已付款比率无法计算）": "Detail · No purchase invoices (paid ratio cannot be calculated)",
 "详情 · 批售（逐车列出）、部分收款、部分出库、有未处理预警": "Detail · Wholesale (per vehicle), partly received, partly out, open alert"
+});
+/* WS-655 资产数据六模块统一（2026-11-23）：单一查找框、当事方合列、分层标题、折算标记。 */
+TP.addCopy({
+"内销合同号、内销订单编号、内销发票号或 VIN": "Domestic contract no., order no., invoice no. or VIN",
+"外采合同号、外采订单编号、外采发票号或 VIN": "Purchase contract no., order no., invoice no. or VIN",
+"外销合同号或 VIN": "Export contract no. or VIN",
+"外采供应商 → 采购公司": "Purchase supplier → purchasing company",
+"外销卖方 → 外销客户": "Export seller → customer"
 });
