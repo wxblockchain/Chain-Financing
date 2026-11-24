@@ -173,5 +173,22 @@ TP.addCopy({
 "最新": "Latest",
 "共 2 条": "2 records",
 "共 5 条": "5 records",
-"共 8 条": "8 records"
+"共 8 条": "8 records",
+"共 4 条": "4 records",
+"内销发票单价": "Domestic invoice unit price",
+"内销合同单价": "Domestic contract unit price",
+"内销收货": "Domestic receipt",
+"调拨入库": "Transfer in",
+"其他入库": "Other stock-in",
+"入库调整": "Stock-in adjustment",
+"销售退库": "Sales return",
+"其他出库": "Other stock-out",
+"调拨出库": "Transfer out",
+"调拨退库": "Transfer return (out)",
+"采购退货": "Purchase return",
+"调拨退货": "Transfer return",
+"出库调整": "Stock-out adjustment",
+"详情 · 在途、外采与内采均为合同价": "Details · in transit, purchase and domestic prices from contracts",
+"详情 · 已外销出库、销售退库后在库": "Details · dispatched for sale, back in stock after a sales return",
+"详情 · 已清关、调拨出库后不在库": "Details · cleared customs, not in stock after a transfer out"
 });
