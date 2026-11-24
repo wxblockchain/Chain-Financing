@@ -15,8 +15,7 @@ TP.addCopy({
   '返回列表':'Back to list','未能标为已读，所有消息保持原状。请重试。':'Could not mark as read. All messages are unchanged. Please try again.',
   /* 详情异常 */
   '未找到这条消息':'Message not found','消息不存在或无法查看。':'This message does not exist or cannot be viewed.',
-  '业务角色已移除':'Business role removed',
-  '债务人角色已移除 · 收到新的确权申请 · 相关内容不可访问':'Debtor role removed · New confirmation request received · content unavailable',
+  '原业务不存在或无权查看 · 相关内容暂不可访问':'Record missing or not permitted · content unavailable',
   '确认（全部 · 4 条未读）':'Confirm (all · 4 unread)','确认（全部 · 3 条未读）':'Confirm (all · 3 unread)','确认（分类：业务办理进度 · 3 条未读）':'Confirm (business progress · 3 unread)',
   '最近 10 条':'Latest 10','还没有消息':'No messages yet','消息不存在或不属于本企业':'Message missing or not for this company',
   '将当前筛选下的 4 条未读消息标为已读，包括尚未加载的消息。':'Mark the 4 unread messages in the current filter as read, including messages not loaded yet.',

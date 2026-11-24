@@ -1,6 +1,6 @@
 /* ==========================================================================
    inbox-pages.js — M10 消息中心页面：消息列表卡片与逐条消息详情画面，由 inbox.js 的演示消息生成。
-   基线：代币发行平台 _shared/inbox-pages.js（M7）。本平台去掉“认证引导”“固定页面”去向，增加 data-denied（业务角色已移除）。
+   基线：代币发行平台 _shared/inbox-pages.js（M7）。本平台去掉“认证引导”“固定页面”去向，增加 data-denied（原业务不存在或本人无权查看）。
    只被两份 M10 模块 HTML 引用（企业端、运营端），须在 TP.boot 之前调用 TP.inboxPages.build。
    列表每屏用 data-* 声明展示哪些消息、哪些为已读、当前筛选和各控件去向；不做筛选匹配、计数运算或已读保存。
 
@@ -13,7 +13,7 @@
   'use strict';
   var IB = TP.inbox, esc = IB.esc;
   var UNDRAWN = '该入口尚未纳入原型。';
-  // 前往原业务交给仓库联看路由（m7a- / m7b- / m8- / m9-<编号>，登记在来源模块 route.js）；附件或来源画面未交付时给范围提示。
+  // 前往原业务交给仓库联看路由（m7a- / m7b- / m8- / m9-<编号>、rule:<规则编号>、interface:<接口>，登记在来源模块 route.js）；附件或来源画面未交付时给范围提示。
   var SCOPE_FILE = '此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。';
 
   function ids(spec){
@@ -87,13 +87,13 @@
     return m.done ? 'done' : 'act';
   }
 
-  /* 相关业务：原业务识别信息；可前往时点第一个编号进入原业务（编号即入口）。没有对应画面时给范围提示。 */
+  /* 相关业务：原业务识别信息；可前往时点第一项进入原业务（编号或名称即入口）。没有对应画面时给范围提示。 */
   function related(m, denied){
     var st = stateOf(m, denied);
     if(!m.ref) return '';
     return '<div class="card-sec msg-related"><h2 class="sub-h">相关业务</h2><div class="facts-region"><dl class="facts">'+m.ref.map(function(r,i){
       var linked = i===0 && (st==='act' || st==='done');
-      return '<div><dt>'+r[0]+'</dt><dd>'+(linked?'<button type="button" class="btn-link mono" data-module-key="'+esc(m.go.key)+'" data-toast="'+SCOPE_FILE+'">'+esc(r[1])+'</button>':IB.refValue(r))+'</dd></div>';
+      return '<div><dt>'+r[0]+'</dt><dd>'+(linked?'<button type="button" class="btn-link'+(r[2]==='text'?'':' mono')+'" data-module-key="'+esc(m.go.key)+'" data-toast="'+SCOPE_FILE+'">'+esc(r[1])+'</button>':IB.refValue(r))+'</dd></div>';
     }).join('')+'</dl></div>'+
     (st==='denied'?'<div class="msg-go"><p class="note">'+TP.icon('info')+'<span>相关内容暂不可访问。</span></p></div>':'')+'</div>';
   }
@@ -148,7 +148,7 @@
   TP.addCopy({
     '全部':'All','已读状态':'Read status','分类':'Category','分类 · 全部':'Category · All',
     '分类 · 业务办理进度':'Category · Business progress','分类 · 业务提醒':'Category · Business reminders','分类 · 待处理事项':'Category · Pending tasks',
-    '分类 · 账户安全':'Category · Account security','分类 · 运营告警':'Category · Operations alerts','分类 · 其他':'Category · Other',
+    '分类 · 运营告警':'Category · Operations alerts','分类 · 其他':'Category · Other',
     '全部已读':'Mark all as read','当前筛选下没有未读消息':'No unread messages in the current filter',
     '消息读取失败':'Could not load messages','当前筛选下没有消息':'No messages match the current filter',
     '更换已读状态或分类后再看看。':'Try a different read status or category.','清除筛选':'Clear filters',

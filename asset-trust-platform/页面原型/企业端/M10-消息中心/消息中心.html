@@ -6,7 +6,7 @@
 </head>
 <body>
 <!-- 资产可信平台 · 企业端 · M10 消息中心。
-     由 PRD 两端共用/M10-消息中心（提交 91db2ce）出屏；消息标题与正文取自来源模块现行 03 消息通知册（M7a、M7b、M9）。
+     由 PRD 两端共用/M10-消息中心（提交 e5dbee4b）出屏；消息标题与正文取自来源模块现行 03 消息通知册（M7a、M7b、M9）。
      规则、校验与异常分支以 PRD 为准。每屏一个 <section data-screen>，约定见 ../../_shared/frame.js 文件头；
      列表与逐条详情由 ../../_shared/inbox-pages.js 按 ../../_shared/inbox.js 的演示消息生成。企业、编号、金额、时间均为演示数据。 -->
 <div class="app" id="app" hidden>
@@ -126,8 +126,7 @@
 <div data-inbox-detail="c05" data-role="client" data-corrupt></div>
 </section>
 
-<!-- ============================== 业务角色已移除：消息仍可读、仍计入未读，前往时按无权查看处理 ============================== -->
-<section data-screen id="role-removed" data-no="R01" data-group="业务角色已移除" data-name="债务人角色已移除 · 收到新的确权申请 · 相关内容不可访问" data-layout="app" data-who="creditor" data-nav="" data-crumb="消息中心/消息详情" data-crumb-targets="list/" data-unread="4">
+<section data-screen id="detail-denied" data-no="S05" data-group="消息详情异常" data-name="原业务不存在或无权查看 · 相关内容暂不可访问" data-layout="app" data-who="both" data-nav="" data-crumb="消息中心/消息详情" data-crumb-targets="list/">
 <div data-inbox-detail="c07" data-role="client" data-denied></div>
 </section>
 <!-- 逐条消息详情由 _shared/inbox-pages.js 按演示消息生成在这里 -->

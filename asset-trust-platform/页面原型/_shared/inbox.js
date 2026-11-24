@@ -1,7 +1,7 @@
 /* ==========================================================================
    inbox.js — 消息入口（M10 消息中心）：顶栏铃铛的未读数与最近消息预览，以及两端的演示消息。
-   基线：代币发行平台 _shared/inbox.js（M7 消息通知）。本平台改动：分类按 M10 PRD §4.2；
-   消息取自现行来源模块 03 消息通知册（M7a-NT01～03、M7b-NT01～03、M8-NT01、M9-NT01～03）；无“认证引导”“固定页面”去向。
+   基线：代币发行平台 _shared/inbox.js（M7 消息通知）。本平台改动：分类按 M10 PRD §4.2（四类，另有“其他”兜底）；
+   消息取自现行来源模块 03 消息通知册（M7a-NT01～03、M7b-NT01～03、M8-NT01～02、M9-NT01～03、M15-NT01）；无“认证引导”“固定页面”去向。
    各模块在 menu.*.js 之后加载，由 frame.js 渲染到顶栏；入驻未完成、受限登录（首登改密）不显示消息入口。
    不发送、不计算、不保存已读：未读数取本份演示数据，画面可用 data-unread 指定本屏的值。
    规则（收件范围、送达、已读、全部已读、前往原业务）以 PRD 两端共用/M10-消息中心 为准。
@@ -10,14 +10,14 @@
   'use strict';
   var esc = function(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
 
-  /* 两端同一套分类；“其他”只是无法识别时的兜底，不是可选分类 */
-  var CATS = {progress:'业务办理进度', reminder:'业务提醒', pending:'待处理事项', security:'账户安全', alert:'运营告警', other:'其他'};
+  /* 两端同一套分类（运营告警只用于运营端）；“其他”只是无法识别时的兜底，不是可选分类 */
+  var CATS = {progress:'业务办理进度', reminder:'业务提醒', pending:'待处理事项', alert:'运营告警', other:'其他'};
   var SCOPE = '此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。';
 
   /* 消息：id · 分类 · 发生时间 · 演示时的阅读状态 · 中英文标题与正文 · 原业务识别信息 · 去向。
      正文中 {t:ISO} 为按所选时区展示的时间。企业名称、内销发票号、驳回原因按原值展示，中英文正文都不翻译。
-     ref 第三项为 'text' 时按界面语言展示（如预警类型），否则为等宽编号。
-     go.key 为原业务的路由键（来源模块原型交付后登记）；done 表示原动作已办完或已不适用，前往后只能查看当前结果；
+     ref 第三项为 'text' 时按界面语言展示（如规则名称、接口名称），否则为等宽编号。
+     go.key 为原业务的路由键（登记在来源模块 route.js）；done 表示原动作已办完或已不适用，前往后只能查看当前结果；
      denied 表示原业务不存在或本人无权查看。演示中的企业、编号、金额、时间均为演示数据。 */
   var NG = 'Carloha Nigeria', SB = 'Demo Supplier B Ltd.';
   function appRef(app, inv){ return [['申请编号',app],['内销发票号',inv]]; }
@@ -94,23 +94,55 @@
          'Notarisation attempt '+attempt+' for creditor Carloha Holding\'s invoice '+inv+' (receivable '+ar+', confirmation request '+app+') failed. Reason: '+reason+'. The asset digitisation platform cannot retrieve this asset until notarisation succeeds. Please review it and retry.'],
       ref:appRef(app, inv), go:{key:'m9-'+app}};
   }
-  /* M8-NT01 新的风控预警（运营告警，全体运营）→ M8 预警详情。
-     预警类型随界面语言；主体名称、单据编号、VIN 按原值；差异摘要中的平台用语随语言。 */
-  var ALERT = {party:['主体不一致','Party mismatch','party mismatch'], vin:['VIN 不一致','VIN mismatch','VIN mismatch'],
-               repay:['回款金额偏差','Collection amount deviation','collection amount deviation']};
-  function m8(id, w, type, obj, diff, recv, at, read){
-    var T = ALERT[type], r = recv ? recv : ['无','None'];
+  /* M8-NT01 新的风控预警（运营告警，全体运营）→ M8 预警详情。只有阻断、预警等级发消息；标题与正文随等级。
+     规则名称随界面语言（英文名按 M8 03 册“规则与等级的英文名称”）；预警编号、主体名称、单据编号、VIN 按原值。
+     比较对象、差异摘要、关联应收账款按 M8 预警详情的演示数据，取预警生成时的值。 */
+  var RULE = {'RK-01':['VIN 重复','Duplicate VIN'], 'RK-03':['发票金额与车辆明细不一致','Invoice amount does not match vehicle details'],
+    'RK-10':['回款风险','Repayment risk'], 'RK-14':['内销收款主体不一致','Repayment parties mismatch'],
+    'RK-16':['外销单价低于内采单价','Export price below domestic price'], 'RK-20':['外采付款主体不一致','Purchase payment parties mismatch'],
+    'RK-26':['BL 信息与外部数据不一致','B/L information differs from external data']};
+  function m8(id, w, lv, rk, obj, diff, recv, at, read){
+    var R = RULE[rk], block = lv==='block';
     return {id:id, cat:'alert', at:at, read:read,
-      t:['新的风控预警：'+T[0],'New risk alert: '+T[1]],
-      b:['平台比对发现'+T[0]+'，预警编号 '+w+'。比较对象：'+obj[0]+'。差异：'+diff[0]+'。关联应收账款：'+r[0]+'。请核实后记录处理结果。预警不会自动阻止确权申请、运营审核或推送。',
-         'A '+T[2]+' has been detected, alert number '+w+'. Compared item: '+obj[1]+'. Difference: '+diff[1]+'. Related receivables: '+r[1]+'. Please verify and record the result. The alert does not automatically block confirmation requests, operations review or asset push.'],
-      ref:[['预警编号',w],['预警类型',T[0],'text']], go:{key:'m8-'+w}};
+      t:[block ? '新的风控预警（阻断）：'+R[0] : '新的风控预警：'+R[0], block ? 'New risk alert (blocking): '+R[1] : 'New risk alert: '+R[1]],
+      b:['平台比对发现'+R[0]+'，预警编号 '+w+'，等级：'+(block?'阻断':'预警')+'。比较对象：'+obj[0]+'。差异：'+R[0]+'：'+diff[0]+'。关联应收账款：'+recv[0]+'。'+
+           (block ? '阻断存在期间，关联应收账款不能审核通过，资产数字化平台也不能调取，请核实差异并在来源系统更正后记录处理结果。' : '请核实后记录处理结果；预警不会自动阻止确权申请、运营审核或推送。'),
+         'The platform has found "'+R[1]+'". Alert number '+w+', level: '+(block?'Blocking':'Warning')+'. Compared item: '+obj[1]+'. Difference: '+R[1]+': '+diff[1]+'. Related receivables: '+recv[1]+'. '+
+           (block ? 'While this alert remains, the related receivables cannot be approved or retrieved by the asset digitisation platform. Please verify the difference, have it corrected in the source system, and record the result.' : 'Please verify and record the result; this alert does not automatically block confirmation requests, operations review or asset push.')],
+      ref:[['预警编号',w],['规则名称',R[0],'text']], go:{key:'m8-'+w}};
   }
-  function repay(id, w, ar, dir, pct, at, read){
-    return m8(id, w, 'repay', ['应收账款 '+ar+' · 回款','Receivable '+ar+' · Collections'],
-      ['按汇率折算后，已收与未收之和比应收账款金额'+(dir==='less'?'少':'多')+' '+pct,
-       'After exchange-rate conversion, collected plus outstanding is '+pct+(dir==='less'?' less':' more')+' than the receivable amount'],
-      [ar, ar], at, read);
+  /* M8-NT02 风控规则已调整（业务提醒，全体运营，含调整人本人）→ M8 规则详情（配置记录）。
+     调整人姓名、调整原因按原文；等级、规则名称随界面语言。演示值按 M8 规则详情 R6 / R7 的配置记录。 */
+  var LEVEL = {'预警':'Warning', '阻断':'Blocking'};
+  function m8level(id, rk, by, from, to, reason, affected, at, read){
+    var R = RULE[rk];
+    return {id:id, cat:'reminder', at:at, read:read,
+      t:['风控规则已调整：'+R[0], 'Risk rule changed: '+R[1]],
+      b:[by+' 将风控规则“'+R[0]+'（'+rk+'）”的等级由'+from+'调整为'+to+'，立即生效。原因：'+reason+'。'+(affected?'受影响的待运营审核申请 '+affected[0]+' 笔、已取得推送资格的资产 '+affected[1]+' 笔。':''),
+         by+' changed the level of risk rule "'+R[1]+' ('+rk+')" from '+LEVEL[from]+' to '+LEVEL[to]+', effective immediately. Reason: '+reason+'.'+(affected?' Affected requests awaiting review: '+affected[0]+'; affected eligible assets: '+affected[1]+'.':'')],
+      ref:[['规则编号',rk],['规则名称',R[0],'text']], go:{key:'rule:'+rk}};
+  }
+  function m8off(id, rk, by, reason, at, read){
+    var R = RULE[rk];
+    return {id:id, cat:'reminder', at:at, read:read,
+      t:['风控规则已停用：'+R[0], 'Risk rule disabled: '+R[1]],
+      b:[by+' 停用了风控规则“'+R[0]+'（'+rk+'）”，立即生效。原因：'+reason+'。该规则的预警不再产生作用。',
+         by+' disabled risk rule "'+R[1]+' ('+rk+')", effective immediately. Reason: '+reason+'. Alerts under this rule no longer have any effect.'],
+      ref:[['规则编号',rk],['规则名称',R[0],'text']], go:{key:'rule:'+rk}};
+  }
+  /* M15-NT01 数据接入异常（运营告警，全体运营）→ M15 该接口的调用记录。接口名称、承接模块随界面语言；失败原因按原文。 */
+  var IFACE = {BL:['提单','Bills of lading','提单信息（M12）','Bills of lading (M12)'],
+    PL:['保单','Insurance policies','保单信息（M13）','Policy information (M13)'],
+    PP:['外采付款','Purchase payments','资金收付（M14）','Payments & receipts (M14)'],
+    DR:['内销收款','Domestic receipts','资金收付（M14）','Payments & receipts (M14)'],
+    VL:['车辆物流节点','Vehicle logistics events','车辆履约（M5）','Vehicle fulfilment (M5)']};
+  function m15(id, code, reason, failAt, lastOk, read){
+    var I = IFACE[code];
+    return {id:id, cat:'alert', at:failAt, read:read,
+      t:['数据接入异常：'+I[0], 'Data intake failure: '+I[1]],
+      b:['ERP 接口“'+I[0]+'”（承接模块：'+I[2]+'）于 {t:'+failAt+'} 调用失败，原因：'+reason+'。最近成功时间：{t:'+lastOk+'}。接口恢复前，这类单据的新数据不会进入平台，请查看调用记录。',
+         'The ERP interface "'+I[1]+'" (used by: '+I[3]+') failed at {t:'+failAt+'}. Reason: '+reason+'. Last successful call: {t:'+lastOk+'}. New data of this type will not reach the platform until the interface recovers. Please review the call records.'],
+      ref:[['接口名称',I[0],'text']], go:{key:'interface:'+code}};
   }
   var REASON = '【演示意见】销售清单中第 2 辆车的 VIN 与我方收货记录不一致，请核对后重新发起';
 
@@ -130,45 +162,51 @@
       m9b('c10','AP-DEMO-0021','INV-0005','AR-DEMO-0005','2026-09-20T08:00:00Z',true),
       m9a('c11','AP-DEMO-0021',NG,'INV-0005','AR-DEMO-0005','2026-09-15T06:00:00Z',true)
     ],
-    /* 运营端 · 全体运营（各自记录已读）。24 条，6 条未读，第一批 20 条。本期没有来源登记“本人”范围的消息。 */
+    /* 运营端 · 全体运营（各自记录已读）。24 条，6 条未读，第一批 20 条（o23 未读，属于尚未加载的部分）。
+       预警、规则、接口与 M8、M15 原型的演示数据一致；申请与 M7b、M9 一致。 */
     ops: [
-      m8('o01','W-DEMO-0031','party',['应收账款 AR-DEMO-0012 · 买方','Receivable AR-DEMO-0012 · Buyer'],
-        ['买方：发票 INV-0012 为 Carloha Nigeria，收款登记 RCV-DEMO-1020 为 Lagos Auto Trading Ltd','Buyer: invoice INV-0012 shows Carloha Nigeria, receipt record RCV-DEMO-1020 shows Lagos Auto Trading Ltd'],
-        ['AR-DEMO-0012','AR-DEMO-0012'],'2026-11-11T08:40:00Z',false),
-      m7b03('o02','AP-DEMO-0024','INV-0019','AR-DEMO-0019','48,000.00','USD','2027-01-18','2026-11-10T09:30:00Z',false),
-      repay('o03','W-DEMO-0030','AR-DEMO-0019','less','3.20%','2026-11-10T06:10:00Z',false),
-      m8('o04','W-DEMO-0029','vin',['发票 INV-0019 与合同 SC-DEMO-2026-044','Invoice INV-0019 and contract SC-DEMO-2026-044'],
-        ['发票 INV-0019 中的 LDEMOVIN000000011 不在合同 SC-DEMO-2026-044 的车辆中','LDEMOVIN000000011 in invoice INV-0019 is not among the vehicles in contract SC-DEMO-2026-044'],
-        ['AR-DEMO-0019','AR-DEMO-0019'],'2026-11-09T12:00:00Z',false),
+      m8level('o01','RK-16','运营示例账号','预警','阻断','外销倒挂多为垫资套现信号，按风控会议要求在审核前拦截，待推送资产同时暂停调取',[1,1],'2026-12-14T04:10:00Z',false),
+      m8off('o02','RK-26','运营示例账号','外部航程跟踪数据航次编号规则与船公司不同，误报较多，待研发核对数据源后再启用','2026-12-14T03:00:00Z',true),
+      m8('o03','W-DEMO-0009','block','RK-01',['VIN LDEMOVIN000000001','VIN LDEMOVIN000000001'],
+        ['LDEMOVIN000000001 同时占用 AR-DEMO-0012、AR-DEMO-0020','LDEMOVIN000000001 is used by both AR-DEMO-0012 and AR-DEMO-0020'],
+        ['AR-DEMO-0012，共 2 笔','AR-DEMO-0012, 2 in total'],'2026-12-12T09:30:00Z',false),
+      /* 生成时剩余 7 天；之后数值更新不改写消息 */
+      m8('o04','W-DEMO-0011','warn','RK-10',['应收账款 AR-DEMO-0012 · 回款','Receivable AR-DEMO-0012 · Collections'],
+        ['剩余天数 7，终端回款进度 67.22%','7 days remaining, end-sales collection progress 67.22%'],
+        ['AR-DEMO-0012','AR-DEMO-0012'],'2026-12-12T00:05:00Z',true),
+      m8('o05','W-DEMO-0014','block','RK-03',['应收账款 AR-DEMO-0019','Receivable AR-DEMO-0019'],
+        ['车辆明细单价合计 47,500.00 USD，发票金额 48,000.00 USD','vehicle unit prices total 47,500.00 USD, invoice amount 48,000.00 USD'],
+        ['AR-DEMO-0019','AR-DEMO-0019'],'2026-12-10T07:20:00Z',true),
+      m8('o06','W-DEMO-0007','warn','RK-14',['应收账款 AR-DEMO-0012 · 回款','Receivable AR-DEMO-0012 · Collections'],
+        ['付款方 Demo Auto Trading Ltd','payer Demo Auto Trading Ltd'],
+        ['AR-DEMO-0012','AR-DEMO-0012'],'2026-11-28T08:12:00Z',true),
+      /* 规则 RK-26 之后已停用：预警仍可查看、记录处理 */
+      m8('o07','W-DEMO-0005','warn','RK-26',['提单 BL-DEMO-5501','Bill of lading BL-DEMO-5501'],
+        ['船名航次 OCEAN STAR 026W','vessel/voyage OCEAN STAR 026W'],
+        ['AR-DEMO-0012','AR-DEMO-0012'],'2026-11-26T05:10:00Z',true),
+      m15('o08','BL','connection timeout','2026-11-24T10:05:00Z','2026-11-24T09:05:00Z',false),
       /* 已由其他运营管理员处理：前往后只能查看当前结果 */
-      Object.assign(m8('o05','W-DEMO-0028','party',['采购交易 PO-DEMO-031 · 卖方（供应商）','Purchase transaction PO-DEMO-031 · Seller (supplier)'],
-        ['卖方（供应商）：采购订单 PO-DEMO-031 为 Demo Supplier C Ltd.，付款记录 PAY-DEMO-0720 为 Demo Trading D Ltd.，等 2 处','Seller (supplier): purchase order PO-DEMO-031 shows Demo Supplier C Ltd., payment record PAY-DEMO-0720 shows Demo Trading D Ltd., and 2 more'],
-        null,'2026-11-05T03:20:00Z',true), {done:true}),
+      Object.assign(m8('o09','W-DEMO-0008','warn','RK-20',['外采合同 PO-DEMO-031 · 外采供应商','Purchase contract PO-DEMO-031 · Supplier'],
+        ['收款方 Demo Trading D Ltd','payee Demo Trading D Ltd'],
+        ['AR-DEMO-0019','AR-DEMO-0019'],'2026-11-20T04:30:00Z',true), {done:true}),
+      m7b03('o10','AP-DEMO-0024','INV-0019','AR-DEMO-0019','48,000.00','USD','2027-01-18','2026-11-10T09:30:00Z',false),
       /* AP-DEMO-0022 第 1 次存证失败：仍可在原业务重新存证 */
-      m9c('o06','AP-DEMO-0022','INV-0011','AR-DEMO-0011',1,'chain gateway timeout','2026-10-30T03:04:00Z',true),
-      Object.assign(m7b03('o07','AP-DEMO-0022','INV-0011','AR-DEMO-0011','55,000.00','USD','2026-12-01','2026-10-29T02:00:00Z',true), {done:true}),
+      m9c('o11','AP-DEMO-0022','INV-0011','AR-DEMO-0011',1,'chain gateway timeout','2026-10-30T03:04:00Z',true),
+      Object.assign(m7b03('o12','AP-DEMO-0022','INV-0011','AR-DEMO-0011','55,000.00','USD','2026-12-01','2026-10-29T02:00:00Z',true), {done:true}),
       /* 申请已到期关闭：未读仍计入未读数，前往后只能查看当前结果 */
-      Object.assign(m7b03('o08','AP-DEMO-0026','INV-0008','AR-DEMO-0008','60,000.00','USD','2026-10-31','2026-10-20T09:00:00Z',false), {done:true}),
-      repay('o09','W-DEMO-0027','AR-DEMO-0015','more','2.50%','2026-10-18T08:00:00Z',true),
-      m8('o10','W-DEMO-0026','vin',['保单 PL-DEMO-889 与合同 SC-DEMO-2026-031','Insurance policy PL-DEMO-889 and contract SC-DEMO-2026-031'],
-        ['保单 PL-DEMO-889 中的 LDEMOVIN000000002 不在合同 SC-DEMO-2026-031 的车辆中','LDEMOVIN000000002 in insurance policy PL-DEMO-889 is not among the vehicles in contract SC-DEMO-2026-031'],
-        ['AR-DEMO-0008','AR-DEMO-0008'],'2026-10-15T05:30:00Z',true),
-      m8('o11','W-DEMO-0025','party',['销售交易 SC-DEMO-2026-031 · 客户','Sales transaction SC-DEMO-2026-031 · Customer'],
-        ['客户：销售合同 SC-DEMO-2026-031 为 Carloha Nigeria，收款记录 CUS-DEMO-1020 为 Demo Buyer Y Ltd.','Customer: sales contract SC-DEMO-2026-031 shows Carloha Nigeria, receipt record CUS-DEMO-1020 shows Demo Buyer Y Ltd.'],
-        ['AR-DEMO-0008，共 2 笔','AR-DEMO-0008, 2 in total'],'2026-10-12T04:00:00Z',true),
-      Object.assign(m7b03('o12','AP-DEMO-0021','INV-0005','AR-DEMO-0005','30,000.00','USD','2026-09-30','2026-09-12T03:00:00Z',true), {done:true})
+      Object.assign(m7b03('o13','AP-DEMO-0026','INV-0008','AR-DEMO-0008','60,000.00','USD','2026-10-31','2026-10-20T09:00:00Z',false), {done:true}),
+      Object.assign(m7b03('o14','AP-DEMO-0021','INV-0005','AR-DEMO-0005','30,000.00','USD','2026-09-30','2026-09-12T03:00:00Z',true), {done:true})
     ]
   };
-  /* 更早的回款金额偏差预警（o13–o24）：用于呈现“加载更多”；o23 未读，属于尚未加载的部分 */
-  for(var k=0;k<12;k++){
-    var ar = ['AR-DEMO-0005','AR-DEMO-0011','AR-DEMO-0015','AR-DEMO-0012'][k%4];
-    var day = new Date(Date.UTC(2026,8,8-k*3,6,0)).toISOString().replace('.000','');
-    var n = String(13+k), w = 'W-DEMO-00'+String(24-k).padStart(2,'0');
-    DATA.ops.push(repay('o'+n, w, ar, k%2?'more':'less', (1.5+k*0.25).toFixed(2)+'%', day, k!==10));
-  }
+  /* 更早的数据接入异常（o15–o24）：各接口恢复后再次进入异常，各自一条；用于呈现“加载更多”。o23 未读，属于尚未加载的部分 */
+  ['PL','PP','DR','VL'].concat(['PL','PP','DR','VL','PL','PP']).forEach(function(code, k){
+    var fail = new Date(Date.UTC(2026,8,8-k*3,6,0)), ok = new Date(fail.getTime()-3600000);
+    var iso = function(d){ return d.toISOString().replace('.000',''); };
+    DATA.ops.push(m15('o'+(15+k), code, k%2?'HTTP 503 Service Unavailable':'connection timeout', iso(fail), iso(ok), k!==8));
+  });
 
   var LIST = {client:'list', ops:'o-list'}, PREVIEW = {client:'preview', ops:'o-preview'};
-  var BY_WHO = {creditor:'client', debtor:'client', both:'client', norole:'client', ops:'ops'};
+  var BY_WHO = {creditor:'client', debtor:'client', both:'client', ops:'ops'};
 
   function find(role, id){ var r=null; (DATA[role]||[]).forEach(function(m){ if(m.id===id) r=m; }); return r; }
   function pair(zh, en, cls){
@@ -231,13 +269,18 @@
   };
 
   TP.addCopy && TP.addCopy({
-    '业务办理进度':'Business progress','业务提醒':'Business reminders','待处理事项':'Pending tasks','账户安全':'Account security',
+    '业务办理进度':'Business progress','业务提醒':'Business reminders','待处理事项':'Pending tasks',
     '运营告警':'Operations alerts','其他':'Other',
     '已读':'Read','未读':'Unread','最近消息':'Recent messages','查看全部消息':'View all messages',
     '最近消息读取失败':'Could not load recent messages','暂时无法读取，请稍后重试。':'Unable to load right now. Please try again later.','重试':'Retry',
     '还没有消息':'No messages yet','业务有新的进展时，会在这里通知你。':'You will be notified here when there is an update on your business.',
-    '申请编号':'Request number','发票号':'Invoice number','内销发票号':'Invoice number','预警编号':'Alert number','预警类型':'Alert type',
-    '主体不一致':'Party mismatch','VIN 不一致':'VIN mismatch','回款金额偏差':'Collection amount deviation',
+    '申请编号':'Request number','发票号':'Invoice number','内销发票号':'Invoice number','预警编号':'Alert number',
+    '规则名称':'Rule name','规则编号':'Rule number','接口名称':'Interface name',
     '时区':'Time zone','消息通知':'Notifications'
   });
+  /* 原业务识别信息中随界面语言展示的值：规则名称、接口名称 */
+  var names = {};
+  Object.keys(RULE).forEach(function(k){ names[RULE[k][0]] = RULE[k][1]; });
+  Object.keys(IFACE).forEach(function(k){ names[IFACE[k][0]] = IFACE[k][1]; });
+  TP.addCopy && TP.addCopy(names);
 })(window.TP = window.TP || {});
