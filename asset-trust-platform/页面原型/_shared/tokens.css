@@ -162,7 +162,7 @@
   --review-table-min:1120px; /* M9 待审核九列，1440 px 视口完整展示；申请编号与操作分别固定两侧 */
   --review-table-min-en:1280px; /* 英文表头、状态与两项操作的阅读下限，窄视口表内滚动 */
   --review-col-id:132px; --review-col-invoice:104px; --review-col-party:176px; --review-col-amount:136px; --review-col-due:120px;
-  --review-col-time:108px; --review-col-warning:80px; --review-col-status:112px; --review-col-actions:128px; /* 查看 / 审核通过 */
+  --review-col-time:108px; --review-col-warning:80px; --review-col-warning-en:136px; --review-col-status:112px; --review-col-actions:128px; /* 查看 / 审核通过 */
   --push-table-min:1150px; /* M15 资产推送列表十列，1440 px 视口完整展示；申请编号与操作分别固定两侧 */
   --push-table-min-en:1320px;
   --push-col-id:120px; --push-col-invoice:92px; --push-col-party:120px; --push-col-amount:120px; --push-col-time:96px;

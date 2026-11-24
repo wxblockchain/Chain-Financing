@@ -1703,6 +1703,7 @@ table.tbl.review-list{min-width:var(--review-table-min)}
 .review-list col.rv-col-due{width:var(--review-col-due)}
 .review-list col.rv-col-time{width:var(--review-col-time)}
 .review-list col.rv-col-warning{width:var(--review-col-warning)}
+:lang(en) .review-list col.rv-col-warning{width:var(--review-col-warning-en)} /* 英文“Pending verification”不换行 */
 .review-list col.rv-col-status{width:var(--review-col-status)}
 .review-list col.rv-col-actions{width:var(--review-col-actions)}
 :is(.review-list,.push-list) .row-acts{display:flex;justify-content:flex-end;gap:var(--sp-1)}
