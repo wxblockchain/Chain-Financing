@@ -14,7 +14,7 @@ TP.addCopy({
   '完成入驻准备':'Complete onboarding','完成以下三步后，即可办理业务。':'Complete these three steps to start using business features.',
   '入驻进度':'Onboarding progress','修改初始密码':'Change initial password','绑定钱包':'Bind wallet','完善资料':'Complete profile','（已完成）':' (completed)',
   /* 设置密码 */
-  '新密码':'New password','再次输入新密码':'Re-enter new password','新密码要求':'New password requirements',
+  '新密码':'New password','确认新密码':'Confirm new password','新密码要求':'New password requirements',
   '8～20 个字符':'8–20 characters','至少 1 个英文字母和 1 个数字':'At least 1 letter and 1 number','中间不含空格':'No spaces inside','两次输入一致':'Both entries match',
   '两次输入的密码不一致。':'The passwords do not match.','新密码不能与初始密码相同。':'Your new password must differ from the initial password.',
   '新密码不能与平台运营提供的密码相同。':'Your new password must differ from the password provided by platform operations.',
@@ -65,7 +65,6 @@ TP.addCopy({
   '当前密码不正确':'Incorrect current password','当前密码不正确，还剩 2 次机会。':'Incorrect current password. 2 attempts remaining.',
   /* 访问反馈 */
   '无权访问':'Access denied','你没有访问该页面的权限。':'You do not have permission to access this page.','返回账户信息':'Back to account information',
-  '无权查看或内容不存在':'Not available','无权查看或内容不存在。':'You cannot view this content, or it does not exist.','访问受限':'Access restricted',
   /* 画面目录（评审工具） */
   '首次登录改密':'First sign-in password','入驻：绑定钱包':'Onboarding: wallet','入驻：完善资料':'Onboarding: profile','访问反馈':'Access feedback',
   '邮箱或密码错误（剩余机会）':'Incorrect credentials (attempts left)','账号已临时锁定':'Account temporarily locked','账号已停用':'Account disabled',
@@ -76,12 +75,13 @@ TP.addCopy({
   '填写资料':'Fill in profile','选择“其他”且注册地址未填写':'“Other” selected, address missing','离开提示：有未提交内容':'Leave warning: unsaved profile',
   '仅债权人（默认页面）':'Creditor only (default page)','仅债务人':'Debtor only','债权人与债务人':'Creditor and debtor','暂无业务角色':'No business role',
   '账号入口展开':'Account menu open','编辑个人信息':'Edit personal information','编辑企业信息：必填项清空':'Edit company: required field emptied','读取失败':'Load failed',
-  '无权访问（债务人打开应收账款）':'Access denied (debtor opens receivables)',
-  /* 第 2 轮：入驻在平台内进行、设置密码成功即登录 */
-  '首次登录须先修改初始密码，设置成功后直接进入平台。':'Change your initial password first. You will enter the platform once it is set.',
-  '登录信息已由平台运营重置，请先设置新密码。设置成功后直接进入平台。':'Platform operations has reset your sign-in details. Set a new password to enter the platform.',
-  '请在验证通过后 10 分钟内完成设置。设置成功后直接登录平台。':'Finish within 10 minutes of verification. You will be signed in once the password is set.',
-  '新密码已设置':'New password set','密码已重置':'Password reset','入驻准备':'Onboarding','完成入驻后可用':'Available after onboarding',
+  '角色不可用的入口（债务人打开应收账款）':'Entry not available to role (debtor opens receivables)','他人的账户信息或组织资料':'Another company’s account information or documents',
+  /* 入驻在平台内进行；设置或找回密码成功后用新密码重新登录（PRD 2d95eb48） */
+  '请先修改初始密码，设置成功后用新密码重新登录。':'Change your initial password first, then sign in again with the new password.',
+  '请在验证通过后 10 分钟内完成，成功后用新密码登录。':'Finish within 10 minutes of verification, then sign in with the new password.',
+  '密码已重置，请用新密码登录。':'Your password has been reset. Sign in with your new password.',
+  '首登改密后：请用新密码重新登录':'After first password change: sign in again','找回密码后：请用新密码登录':'After password reset: sign in with new password',
+  '入驻准备':'Onboarding','完成入驻后可用':'Available after onboarding',
   '修改密码后：请重新登录':'After password change: sign in again',
   /* 第 3 轮：PRD e7ed51d —— 入驻两步、先填钱包地址、组织资料 */
   '完成以下两步后，即可办理业务。':'Complete these two steps to start using business features.',

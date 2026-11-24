@@ -62,7 +62,35 @@
 </div>
 </section>
 
-<section class="auth-screen" data-screen id="login-changed" data-no="L4" data-group="登录" data-name="修改密码后：请重新登录" data-layout="focus" data-who="none" data-next="account">
+<section class="auth-screen" data-screen id="login-first-changed" data-no="L4" data-group="登录" data-name="首登改密后：请用新密码重新登录" data-layout="focus" data-who="none" data-next="bind">
+<div class="focus-card">
+<h1>企业登录</h1>
+<div class="stack">
+<p class="hint">使用登录邮箱和密码登录。</p>
+<div class="note" role="status"><i data-ico="info"></i><div>密码已修改，请用新密码重新登录。</div></div>
+<div class="field"><div class="field-caption"><label for="m1-g1"><span aria-hidden="true" class="req">*</span>登录邮箱</label><span class="count">0 / 254</span></div><input class="inp" id="m1-g1" type="email" autocomplete="off" value="" aria-required="true" maxlength="254"></div>
+<div class="field"><div class="field-caption"><label for="m1-g2"><span aria-hidden="true" class="req">*</span>密码</label></div><div class="password-control"><input class="inp" id="m1-g2" type="password" autocomplete="current-password" value="" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-g2" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div>
+<button class="btn primary block" type="button" data-go="bind">登录</button>
+<button class="btn ghost sm" data-go="recover" type="button">忘记密码</button>
+</div>
+</div>
+</section>
+
+<section class="auth-screen" data-screen id="login-recovered" data-no="L5" data-group="登录" data-name="找回密码后：请用新密码登录" data-layout="focus" data-who="none" data-next="account">
+<div class="focus-card">
+<h1>企业登录</h1>
+<div class="stack">
+<p class="hint">使用登录邮箱和密码登录。</p>
+<div class="note" role="status"><i data-ico="info"></i><div>密码已重置，请用新密码登录。</div></div>
+<div class="field"><div class="field-caption"><label for="m1-g3"><span aria-hidden="true" class="req">*</span>登录邮箱</label><span class="count">0 / 254</span></div><input class="inp" id="m1-g3" type="email" autocomplete="off" value="" aria-required="true" maxlength="254"></div>
+<div class="field"><div class="field-caption"><label for="m1-g4"><span aria-hidden="true" class="req">*</span>密码</label></div><div class="password-control"><input class="inp" id="m1-g4" type="password" autocomplete="current-password" value="" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-g4" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div>
+<button class="btn primary block" type="button" data-go="account">登录</button>
+<button class="btn ghost sm" data-go="recover" type="button">忘记密码</button>
+</div>
+</div>
+</section>
+
+<section class="auth-screen" data-screen id="login-changed" data-no="L6" data-group="登录" data-name="修改密码后：请重新登录" data-layout="focus" data-who="none" data-next="account">
 <div class="focus-card">
 <h1>企业登录</h1>
 <div class="stack">
@@ -76,7 +104,7 @@
 </div>
 </section>
 
-<section class="auth-screen" data-screen id="login-email-changed" data-no="L5" data-group="登录" data-name="修改登录邮箱后：请用新邮箱登录" data-layout="focus" data-who="none" data-next="account">
+<section class="auth-screen" data-screen id="login-email-changed" data-no="L7" data-group="登录" data-name="修改登录邮箱后：请用新邮箱登录" data-layout="focus" data-who="none" data-next="account">
 <div class="focus-card">
 <h1>企业登录</h1>
 <div class="stack">
@@ -90,7 +118,7 @@
 </div>
 </section>
 
-<section class="auth-screen" data-screen id="login-expired" data-no="L6" data-group="登录" data-name="登录已结束（到期或无操作）" data-layout="focus" data-who="none" data-next="account">
+<section class="auth-screen" data-screen id="login-expired" data-no="L8" data-group="登录" data-name="登录已结束（到期或无操作）" data-layout="focus" data-who="none" data-next="account">
 <div class="focus-card">
 <h1>企业登录</h1>
 <div class="stack">
@@ -104,7 +132,7 @@
 </div>
 </section>
 
-<section class="auth-screen" data-screen id="login-reset" data-no="L7" data-group="登录" data-name="登录已结束（登录信息已更新）" data-layout="focus" data-who="none" data-next="first-pw">
+<section class="auth-screen" data-screen id="login-reset" data-no="L9" data-group="登录" data-name="登录已结束（登录信息已更新）" data-layout="focus" data-who="none" data-next="first-pw">
 <div class="focus-card">
 <h1>企业登录</h1>
 <div class="stack">
@@ -118,24 +146,24 @@
 </div>
 </section>
 
-<section class="auth-screen" data-screen id="first-pw" data-no="P1" data-group="首次登录改密" data-name="设置新密码（新邀请账号）" data-layout="focus" data-who="onboarding" data-next="bind" data-restricted>
+<section class="auth-screen" data-screen id="first-pw" data-no="P1" data-group="首次登录改密" data-name="设置新密码（新邀请账号）" data-layout="focus" data-who="onboarding" data-next="login-first-changed" data-restricted>
 <div class="focus-card">
 <h1>设置新密码</h1>
 <div class="stack">
-<div class="note" role="status"><i data-ico="info"></i><div>首次登录须先修改初始密码，设置成功后直接进入平台。</div></div>
-<div class="field"><div class="field-caption"><label for="m1-f15"><span aria-hidden="true" class="req">*</span>新密码</label></div><div class="password-control"><input class="inp" id="m1-f15" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f15" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div><div class="field"><div class="field-caption"><label for="m1-f16"><span aria-hidden="true" class="req">*</span>再次输入新密码</label></div><div class="password-control"><input class="inp" id="m1-f16" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f16" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div>
+<div class="note" role="status"><i data-ico="info"></i><div>请先修改初始密码，设置成功后用新密码重新登录。</div></div>
+<div class="field"><div class="field-caption"><label for="m1-f15"><span aria-hidden="true" class="req">*</span>新密码</label></div><div class="password-control"><input class="inp" id="m1-f15" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f15" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div><div class="field"><div class="field-caption"><label for="m1-f16"><span aria-hidden="true" class="req">*</span>确认新密码</label></div><div class="password-control"><input class="inp" id="m1-f16" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f16" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div>
 <ul class="rule-list compact" aria-label="新密码要求"><li class="met">8～20 个字符</li><li class="met">至少包含 1 个英文字母和 1 个数字</li></ul>
-<button class="btn primary block" type="button" data-go="bind" data-toast="新密码已设置">设置新密码</button>
+<button class="btn primary block" type="button" data-go="login-first-changed">设置新密码</button>
 </div>
 </div>
 </section>
 
-<section class="auth-screen" data-screen id="first-pw-error" data-no="P2" data-group="首次登录改密" data-name="两次输入不一致" data-layout="focus" data-who="onboarding" data-next="bind" data-restricted>
+<section class="auth-screen" data-screen id="first-pw-error" data-no="P2" data-group="首次登录改密" data-name="两次输入不一致" data-layout="focus" data-who="onboarding" data-next="login-first-changed" data-restricted>
 <div class="focus-card">
 <h1>设置新密码</h1>
 <div class="stack">
-<div class="note" role="status"><i data-ico="info"></i><div>首次登录须先修改初始密码，设置成功后直接进入平台。</div></div>
-<div class="field"><div class="field-caption"><label for="m1-f17"><span aria-hidden="true" class="req">*</span>新密码</label></div><div class="password-control"><input class="inp" id="m1-f17" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f17" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div><div class="field"><div class="field-caption"><label for="m1-f18"><span aria-hidden="true" class="req">*</span>再次输入新密码</label></div><div class="password-control"><input class="inp" id="m1-f18" type="password" autocomplete="new-password" value="NewDemo124" aria-required="true" aria-invalid="true" aria-describedby="m1-f18-msg"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f18" title="显示密码" type="button"><i data-ico="eye"></i></button></div><p class="err-msg" id="m1-f18-msg">两次输入的密码不一致。</p></div>
+<div class="note" role="status"><i data-ico="info"></i><div>请先修改初始密码，设置成功后用新密码重新登录。</div></div>
+<div class="field"><div class="field-caption"><label for="m1-f17"><span aria-hidden="true" class="req">*</span>新密码</label></div><div class="password-control"><input class="inp" id="m1-f17" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f17" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div><div class="field"><div class="field-caption"><label for="m1-f18"><span aria-hidden="true" class="req">*</span>确认新密码</label></div><div class="password-control"><input class="inp" id="m1-f18" type="password" autocomplete="new-password" value="NewDemo124" aria-required="true" aria-invalid="true" aria-describedby="m1-f18-msg"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f18" title="显示密码" type="button"><i data-ico="eye"></i></button></div><p class="err-msg" id="m1-f18-msg">两次输入的密码不一致。</p></div>
 <ul class="rule-list compact" aria-label="新密码要求"><li class="met">8～20 个字符</li><li class="met">至少包含 1 个英文字母和 1 个数字</li></ul>
 <button class="btn primary block" type="button" disabled>设置新密码</button>
 </div>
@@ -172,17 +200,17 @@
 </div>
 </section>
 
-<section class="auth-screen" data-screen id="recover-pw" data-no="R4" data-group="找回密码" data-name="设置新密码" data-layout="focus" data-who="none" data-next="account">
+<section class="auth-screen" data-screen id="recover-pw" data-no="R4" data-group="找回密码" data-name="设置新密码" data-layout="focus" data-who="none" data-next="login-recovered">
 <div class="focus-card">
 <h1>找回密码</h1>
 <div class="stack">
 <ol class="steps" aria-label="找回步骤"><li class="done">验证邮箱<span class="sr-only">（已完成）</span></li><li aria-current="step">设置新密码</li></ol>
 <div class="field"><div class="field-caption"><span class="field-label">登录邮箱</span></div><div class="field-static" data-upstream>user-a@demo.example</div></div>
 <div class="field"><div class="field-caption"><label for="m1-f23"><span aria-hidden="true" class="req">*</span>新密码</label></div><div class="password-control"><input class="inp" id="m1-f23" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f23" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div>
-<div class="field"><div class="field-caption"><label for="m1-f24"><span aria-hidden="true" class="req">*</span>再次输入新密码</label></div><div class="password-control"><input class="inp" id="m1-f24" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f24" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div>
+<div class="field"><div class="field-caption"><label for="m1-f24"><span aria-hidden="true" class="req">*</span>确认新密码</label></div><div class="password-control"><input class="inp" id="m1-f24" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f24" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div>
 <ul class="rule-list compact" aria-label="新密码要求"><li class="met">8～20 个字符</li><li class="met">至少包含 1 个英文字母和 1 个数字</li></ul>
-<div class="note" role="status"><i data-ico="info"></i><div>请在验证通过后 10 分钟内完成设置。设置成功后直接登录平台。</div></div>
-<button class="btn primary block" data-go="account" data-toast="密码已重置" type="button">重置密码</button>
+<div class="note" role="status"><i data-ico="info"></i><div>请在验证通过后 10 分钟内完成，成功后用新密码登录。</div></div>
+<button class="btn primary block" data-go="login-recovered" type="button">重置密码</button>
 <button class="btn ghost sm" data-go="login" type="button">取消</button>
 </div>
 </div>
@@ -572,7 +600,7 @@
 </section>
 
 <section data-screen id="pw-new" data-no="C2" data-group="修改密码" data-name="设置新密码" data-layout="app" data-who="creditor" data-next="login-changed" data-overlay data-base="account">
-<div class="modal-mask"><div aria-labelledby="mt-pw-new" aria-modal="true" class="modal" role="dialog"><div class="modal-h"><span class="modal-title" id="mt-pw-new">修改密码</span><button aria-label="关闭" class="btn icon" data-close type="button"><i data-ico="x"></i></button></div><div class="modal-b"><ol class="steps"><li class="done">验证当前密码<span class="sr-only">（已完成）</span></li><li aria-current="step">设置新密码</li></ol><div class="field"><div class="field-caption"><label for="m1-f46"><span aria-hidden="true" class="req">*</span>新密码</label></div><div class="password-control"><input class="inp" id="m1-f46" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f46" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div><div class="field"><div class="field-caption"><label for="m1-f47"><span aria-hidden="true" class="req">*</span>再次输入新密码</label></div><div class="password-control"><input class="inp" id="m1-f47" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f47" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div><ul class="rule-list compact" aria-label="新密码要求"><li class="met">8～20 个字符</li><li class="met">至少包含 1 个英文字母和 1 个数字</li></ul><div class="note" role="status"><i data-ico="info"></i><div>修改成功后，全部登录将结束，请用新密码重新登录。</div></div></div><div class="modal-f"><button class="btn ghost" data-close type="button">取消</button><button class="btn primary" data-go="login-changed" type="button">修改密码</button></div></div></div>
+<div class="modal-mask"><div aria-labelledby="mt-pw-new" aria-modal="true" class="modal" role="dialog"><div class="modal-h"><span class="modal-title" id="mt-pw-new">修改密码</span><button aria-label="关闭" class="btn icon" data-close type="button"><i data-ico="x"></i></button></div><div class="modal-b"><ol class="steps"><li class="done">验证当前密码<span class="sr-only">（已完成）</span></li><li aria-current="step">设置新密码</li></ol><div class="field"><div class="field-caption"><label for="m1-f46"><span aria-hidden="true" class="req">*</span>新密码</label></div><div class="password-control"><input class="inp" id="m1-f46" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f46" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div><div class="field"><div class="field-caption"><label for="m1-f47"><span aria-hidden="true" class="req">*</span>确认新密码</label></div><div class="password-control"><input class="inp" id="m1-f47" type="password" autocomplete="new-password" value="NewDemo123" aria-required="true"><button aria-label="显示密码" aria-pressed="false" class="btn icon" data-password-toggle="m1-f47" title="显示密码" type="button"><i data-ico="eye"></i></button></div></div><ul class="rule-list compact" aria-label="新密码要求"><li class="met">8～20 个字符</li><li class="met">至少包含 1 个英文字母和 1 个数字</li></ul><div class="note" role="status"><i data-ico="info"></i><div>修改成功后，全部登录将结束，请用新密码重新登录。</div></div></div><div class="modal-f"><button class="btn ghost" data-close type="button">取消</button><button class="btn primary" data-go="login-changed" type="button">修改密码</button></div></div></div>
 </section>
 
 <section data-screen id="pw-wrong" data-no="C3" data-group="修改密码" data-name="当前密码不正确" data-layout="app" data-who="creditor" data-next="pw-new" data-overlay data-base="account">
@@ -702,17 +730,17 @@
 </div>
 </section>
 
-<section data-screen id="access-denied" data-no="N1" data-group="访问反馈" data-name="无权访问（债务人打开应收账款）" data-layout="app" data-who="debtor" data-next="account-debtor" data-crumb="访问受限">
+<section data-screen id="access-denied" data-no="N1" data-group="访问反馈" data-name="角色不可用的入口（债务人打开应收账款）" data-layout="app" data-who="debtor" data-next="account-debtor" data-crumb="访问受限">
 <div class="content-in">
 <div class="page-head"><div><h1 class="page-title">无权访问</h1></div></div>
-<div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你没有访问该页面的权限。</h3><button class="btn primary" data-go="account-debtor" type="button">返回账户信息</button></div></div>
+<div class="card"><div class="state gate" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>你没有访问该页面的权限。</h3><button class="btn primary" data-go="account-debtor" type="button">返回账户信息</button></div></div>
 </div>
 </section>
 
-<section data-screen id="access-notfound" data-no="N2" data-group="访问反馈" data-name="无权查看或内容不存在" data-layout="app" data-who="creditor" data-next="account" data-crumb="访问受限">
+<section data-screen id="access-notfound" data-no="N2" data-group="访问反馈" data-name="他人的账户信息或组织资料" data-layout="app" data-who="creditor" data-next="account" data-nav="account" data-crumb="账户/账户信息">
 <div class="content-in">
-<div class="page-head"><div><h1 class="page-title">无权查看或内容不存在</h1></div></div>
-<div class="card"><div class="state err" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>无权查看或内容不存在。</h3><button class="btn primary" data-go="account" type="button">返回账户信息</button></div></div>
+<div class="page-head"><div><h1 class="page-title">账户信息</h1></div></div>
+<div class="card"><div class="state gate" role="alert"><span class="state-ico"><i data-ico="lock"></i></span><h3>该内容不存在或无权查看</h3><button class="btn primary" data-go="account" type="button">返回账户信息</button></div></div>
 </div>
 </section>
 
