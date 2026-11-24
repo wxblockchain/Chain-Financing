@@ -27,6 +27,8 @@ TP.addCopy({
 "演示仅提供部分单据的详情画面。": "This demo includes details for some documents only.",
 "无法折算": "Cannot convert",
 "演示仅提供部分收付记录的详情画面。": "This demo includes details for some records only.",
+"暂无凭证（同号记录之一）": "No vouchers (one of two records with the same transaction no.)",
+"同一交易流水号的另一条记录": "Another record with the same transaction no.",
 "列表 · 不限收付类型": "List · All types",
 "只看内销收款": "Domestic sales receipts only",
 "只看外采付款 · 该类暂无记录": "Overseas purchase payments only · None yet",
