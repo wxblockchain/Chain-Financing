@@ -37,11 +37,11 @@ TP.addCopy({
 "申请状态 · 待债务人确认": "Request status · Awaiting debtor confirmation",
 "申请状态 · 待运营审核": "Request status · Awaiting operator review",
 "申请状态 · 运营审核通过": "Request status · Approved by operations",
-"应收账款编号或发票号": "Receivable no. or invoice no.",
+"应收账款编号或内销发票号": "Receivable no. or domestic sales invoice no.",
 "申请编号": "Request no.",
 "输入编号或 VIN，支持部分匹配": "Enter a number or VIN; partial match supported",
-"搜索申请编号、应收账款编号或发票号": "Search request, receivable or invoice no.",
-"申请编号、应收账款编号或发票号": "Request, receivable or invoice no.",
+"搜索申请编号、应收账款编号或内销发票号": "Search request, receivable or domestic sales invoice no.",
+"申请编号、应收账款编号或内销发票号": "Request, receivable or domestic sales invoice no.",
 "债务人": "Debtor",
 "债权人": "Creditor",
 
@@ -56,7 +56,6 @@ TP.addCopy({
 "选择": "Select",
 
 "应收账款编号": "Receivable no.",
-"发票号码": "Invoice number",
 "到期日 / 到期状态": "Due date / status",
 "发起申请": "Submit request",
 "可申请": "Eligible",
@@ -82,7 +81,7 @@ TP.addCopy({
 "暂时无法读取，请稍后重试。已填写的条件已保留。": "Unable to load right now. Try again later. Your conditions are kept.",
 "重试": "Retry",
 
-"未收金额": "Outstanding amount",
+"未确定": "Not determined",
 "提交后将发给债务人确认，提交后不能撤回。": "After submission, the request goes to the debtor for confirmation and cannot be withdrawn.",
 "取消": "Cancel",
 "未提交，本笔应收账款已不满足申请资格": "Not submitted. This receivable is no longer eligible.",
