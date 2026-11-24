@@ -26,10 +26,15 @@
       {key:'rules',     label:'风控规则',   icon:'sliders'},
       {key:'sources',   label:'三方数据源', icon:'database'}
     ]},
-    {group:'审核与出库', items:[
-      // 角标数量为评审演示值；接入时由 M9 运营审核与资产出库按全平台待审核、出库待办提供。
-      {key:'review',    label:'运营审核',   icon:'shield', pendingCount:4},
-      {key:'outbound',  label:'出库与供数', icon:'send', pendingCount:2}
+    {group:'审核', items:[
+      // 角标为全平台待运营审核笔数（M9 F-M9-01），评审演示值；接入时由 M9 运营审核与资产推送提供。
+      {key:'review',    label:'运营审核',   icon:'shield', pendingCount:4}
+    ]},
+    // M15 数据监控（WS-610）：已登记于 M2 PRD F-OP-11 菜单表（b693d078）。角标：数据接入为异常接口个数、数据推送为存证失败笔数（F-M15-05），评审演示值。
+    {group:'数据监控', items:[
+      {key:'monitor',   label:'监控概览',   icon:'chart'},
+      {key:'intake',    label:'数据接入',   icon:'plug', pendingCount:1},
+      {key:'push',      label:'数据推送',   icon:'send', pendingCount:1}
     ]},
     // M11 汇率管理（WS-612）：已登记于 M2 PRD F-OP-11 菜单表（2026-11-13 修订）。
     {group:'平台配置', items:[
@@ -40,8 +45,8 @@
     '资产可信平台':'Asset Trust Platform','运营端':'Operations',
     '企业':'Enterprises','企业管理':'Enterprise management','资产数据':'Asset data','应收账款':'Receivables',
     '上游采购':'Upstream purchasing','合同信息':'Contracts','车辆履约':'Vehicle fulfilment','提单信息':'Bills of lading','资金收付':'Payments & receipts','保单信息':'Policy information','下游销售':'Downstream sales','风控':'Risk control',
-    '风控预警':'Risk alerts','风控规则':'Risk rules','三方数据源':'Third-party data sources','审核与出库':'Review & outbound','运营审核':'Operations review',
-    '出库与供数':'Outbound & data supply','消息':'Messages','消息中心':'Message center','平台配置':'Platform settings','汇率管理':'Exchange rates','运营管理员':'Operations administrator',
+    '风控预警':'Risk alerts','风控规则':'Risk rules','三方数据源':'Third-party data sources','审核':'Review','运营审核':'Operations review',
+    '数据监控':'Data monitoring','监控概览':'Monitoring overview','数据接入':'Data intake','数据推送':'Data push','消息':'Messages','消息中心':'Message center','平台配置':'Platform settings','汇率管理':'Exchange rates','运营管理员':'Operations administrator',
     '账户设置':'Account settings','退出登录':'Sign out'
   });
   TP.NAV_BY = {ops:ops};

@@ -59,6 +59,8 @@
     cart:'<path d="M3 4h2l2.4 11h10.2L20 8H6.2"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>',
     truck:'<path d="M3 6h11v10H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>',
     database:'<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/>',
+    chart:'<path d="M4 20V4M4 20h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/>',
+    plug:'<path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0z"/><path d="M12 17v4"/>',
     send:'<path d="M4 12l16-8-6 16-3-7z"/><path d="M11 13l9-9"/>',
     fx:'<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
     ship:'<path d="M3 14h18l-2.5 5h-13z"/><path d="M6 14V9h12v5"/><path d="M10 9V5h4v4"/>',

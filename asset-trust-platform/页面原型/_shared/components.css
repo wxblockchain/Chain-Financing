@@ -1705,30 +1705,34 @@ table.tbl.review-list{min-width:var(--review-table-min)}
 .review-list col.rv-col-warning{width:var(--review-col-warning)}
 .review-list col.rv-col-status{width:var(--review-col-status)}
 .review-list col.rv-col-actions{width:var(--review-col-actions)}
-:is(.review-list,.outbound-list) .row-acts{display:flex;justify-content:flex-end;gap:var(--sp-1)}
-:is(.review-list-card,.outbound-list-card)>.card-head{padding-block:var(--sp-3)}
-/* A43 出库列表（M9）：十列为申请编号、发票号、债权人、金额、到期日、审核时间、出库状态、出库条件（可出库 / 不可出库 + 原因次行）、状态更新时间、操作。 */
-table.tbl.outbound-list{min-width:var(--outbound-table-min)}
-:lang(en) table.tbl.outbound-list{min-width:var(--outbound-table-min-en)}
-.outbound-list col.ob-col-id{width:var(--outbound-col-id)}
-.outbound-list col.ob-col-invoice{width:var(--outbound-col-invoice)}
-.outbound-list col.ob-col-party{width:var(--outbound-col-party)}
-.outbound-list col.ob-col-amount{width:var(--outbound-col-amount)}
-.outbound-list col.ob-col-due{width:var(--outbound-col-due)}
-.outbound-list col.ob-col-time{width:var(--outbound-col-time)}
-.outbound-list col.ob-col-status{width:var(--outbound-col-status)}
-.outbound-list col.ob-col-cond{width:var(--outbound-col-cond)}
-.outbound-list col.ob-col-actions{width:var(--outbound-col-actions)}
-/* A44 确权、审核与出库进度：复用 A20 / A25，四等分（发起申请 / 债务人确认 / 运营审核 / 出库）；出库失败 li.failed 同驳回的红色 × 标记。 */
+:is(.review-list,.push-list) .row-acts{display:flex;justify-content:flex-end;gap:var(--sp-1)}
+:is(.review-list-card,.push-list-card)>.card-head{padding-block:var(--sp-3)}
+/* A43 资产推送列表（M15 数据推送，v1.45 由原 M9 出库列表改写）：与 A42 同骨架，申请编号固定在左、操作固定在右。
+   十列为申请编号、内销发票号、债权人、金额、审核通过时间、目标平台、推送状态、推送条件（不满足时原因逐行）、调取情况（首次推送、最近调取、调取次数三行，.pull-lines）、操作。 */
+table.tbl.push-list{min-width:var(--push-table-min)}
+:lang(en) table.tbl.push-list{min-width:var(--push-table-min-en)}
+.push-list col.ps-col-id{width:var(--push-col-id)}
+.push-list col.ps-col-invoice{width:var(--push-col-invoice)}
+.push-list col.ps-col-party{width:var(--push-col-party)}
+.push-list col.ps-col-amount{width:var(--push-col-amount)}
+.push-list col.ps-col-time{width:var(--push-col-time)}
+.push-list col.ps-col-platform{width:var(--push-col-platform)}
+.push-list col.ps-col-status{width:var(--push-col-status)}
+.push-list col.ps-col-cond{width:var(--push-col-cond)}
+.push-list col.ps-col-pull{width:var(--push-col-pull)}
+.push-list col.ps-col-actions{width:var(--push-col-actions)}
+.push-list .row-acts{display:flex;justify-content:flex-end;gap:var(--sp-1)}
+/* A44 确权、审核与推送进度：复用 A20 / A25，四等分（发起申请 / 债务人确认 / 运营审核 / 推送）；存证失败用 li.failed（与驳回同一红色 × 标记）。 */
 .receivable-steps.review-steps{grid-template-columns:repeat(4,minmax(0,1fr))}
 .receivable-steps li.failed{color:var(--danger);border-top-color:var(--danger)}
 .receivable-steps li.failed::before{content:"×";background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
-/* A45 出库信息分组：出库状态卡（卡头状态标签、结果字段、底部 .cond 出库条件）、出库内容、出库记录明细表；未取得项用 .out-missing 列出。 */
-.outbound-group{margin-top:var(--sp-7)}
-.outbound-group+.card,.review-detail .snapshot-group+.operation-history{margin-top:var(--sp-7)}
-.outbound-status>.card-head .tag{margin-left:auto}
-table.tbl.outbound-records{min-width:var(--outbound-record-min)}
-.outbound-records .value-lines .addr{font-size:var(--fs-12)}
+/* A45 M9 申请详情的“推送信息”“当前情况”分组：推送状态卡（卡头状态标签与操作、结果字段、底部 .cond 推送条件）、调取情况、推送内容；
+   当前情况依次为资产健康度（复用 M3 .health-metrics）、关联风控预警（含等级、规则）、关联单据。未取得项用 .out-missing 列出。 */
+:is(.push-group,.current-group){margin-top:var(--sp-7)}
+.review-detail .snapshot-group+.operation-history{margin-top:var(--sp-7)}
+.push-status>.card-head .tag{margin-left:auto}
+.push-status>.card-head .tag+.acts{margin-left:var(--sp-3)}
+.current-group .detail-group-h .btn-link{margin-left:auto;font-size:var(--fs-13)}
 .out-missing{margin:var(--sp-1) 0 0;padding-left:var(--sp-5);font-size:var(--fs-13);color:var(--muted)}
 .note .out-missing{color:inherit}
 .warning-list .wrap{min-width:24ch}
@@ -2430,3 +2434,82 @@ table.tbl.contract-list.export-contract-list{min-width:calc(var(--contract-domes
 .policy-summary .status-grid .value-lines>.btn-link{align-self:flex-start;margin-left:calc(-1 * var(--sp-1))}
 .coverage-metrics .metric.na .na-dash{font-size:var(--fs-20);font-weight:600}
 .policy-files .detail-table .tbl.policy-file-list td{vertical-align:middle}
+/* A83 M15 监控概览：指标卡 .stat-tiles（数值 28 px 等宽数字、标签与次行在上下，可点击的进入对应列表并带筛选）、两列 .monitor-row 卡片网格（≤1100 px 一列）、
+   数据更新时间行。当前 / 区间指标在卡头副标题注明。图表只汇总列表已有数据，图表样式见 A84。 */
+.monitor-page .content-in,.big-screen .content-in{max-width:none;margin-inline:0}
+.monitor-page .page-actions{align-items:center}
+.data-time{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-5);font-size:var(--fs-13);color:var(--muted)}
+.monitor-group+.monitor-group{margin-top:var(--sp-8)}
+.monitor-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:var(--sp-5);margin-top:var(--sp-4)}
+.monitor-row.single{grid-template-columns:minmax(0,1fr)}
+.monitor-row>.card+.card{margin-top:0}
+@media(max-width:1100px){.monitor-row{grid-template-columns:minmax(0,1fr)}}
+.stat-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:var(--sp-3);padding:var(--sp-2) var(--card-pad) var(--card-pad)}
+.stat-tile{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-1);min-width:0;padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);color:var(--text);font:inherit;text-align:left}
+button.stat-tile{cursor:pointer}
+button.stat-tile:hover{border-color:var(--accent-border);background:var(--card-hover)}
+.stat-tile.is-danger{border-left:3px solid var(--danger)}
+.stat-tile.is-ok{border-left:3px solid var(--ok)}
+.stat-label{font-size:var(--fs-13);color:var(--muted)}
+.stat-value{font-size:var(--fs-28);font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stat-value time,.stat-value .missing{font-size:var(--fs-16);font-weight:500}
+.stat-sub{font-size:var(--fs-12);color:var(--muted)}
+/* A84 静态图表：SVG 按容器等比缩放；系列色只用于图形，文字一律用文字 token。成功 / 失败（被拒绝）用状态色 --ok / --danger，
+   两个分类系列为 --accent / --chart-2（色觉安全已校验）；堆叠段之间 2 px 表面间隙，柱顶 3 px 圆角、底部贴基线；每根柱或每行带 title 悬停提示，图例在图上方。 */
+.chart-body{padding:var(--sp-2) var(--card-pad) var(--card-pad)}
+.chart{margin:0}
+.chart-svg{display:block;overflow:visible}
+.c-gap{stroke:var(--card);stroke-width:1}
+.chart-legend{display:flex;flex-wrap:wrap;gap:var(--sp-4);margin-bottom:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
+.chart-legend span{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.legend-swatch{display:inline-block;width:10px;height:10px;border-radius:2px}
+.sw-ok{background:var(--ok)}.sw-danger{background:var(--danger)}.sw-s1{background:var(--accent)}.sw-s2{background:var(--chart-2)}
+.c-ok{fill:var(--ok)}.c-danger{fill:var(--danger)}.c-s1{fill:var(--accent)}.c-s2{fill:var(--chart-2)}
+.c-grid{stroke:var(--row-line)}
+.c-axis{stroke:var(--border-strong)}
+.c-tick{fill:var(--faint);font-family:var(--sans);font-size:var(--fs-11)}
+.c-label{fill:var(--muted);font-family:var(--sans);font-size:var(--fs-12)}
+.c-value{fill:var(--text);font-family:var(--sans);font-size:var(--fs-12);font-variant-numeric:tabular-nums}
+.c-track{fill:var(--gray-bg)}
+.c-hit{fill:transparent}
+.bar-g:hover .c-hit{fill:var(--accent-soft)}
+.chart-pair{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-3)}
+.chart-pair h4{margin:0 0 var(--sp-1);font-size:var(--fs-12);font-weight:500;color:var(--muted)}
+/* A85 大屏：focus 骨架内铺满屏幕，标题行（数据更新时间、刷新间隔、时间范围、退出大屏）→ 刷新失败提示 → 异常接口 / 存证失败醒目计数 → 与概览相同的指标，不可点击。 */
+.focus-main:has(>.big-screen:not([hidden])){place-items:stretch;padding:var(--sp-5) var(--sp-6)}
+.focus-main>.big-screen{width:100%}
+.screen-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);margin-bottom:var(--sp-4)}
+.screen-head .page-actions{display:flex;align-items:center;gap:var(--sp-3)}
+.screen-alerts{display:flex;flex-wrap:wrap;gap:var(--sp-3);margin-bottom:var(--sp-4)}
+.screen-alert{display:inline-flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);border:1px solid var(--danger-border);border-radius:var(--radius-sm);background:var(--danger-bg);color:var(--danger);font-weight:600}
+.screen-alert b{font-size:var(--fs-24);font-variant-numeric:tabular-nums}
+/* A86 数据接入接口列表与调用记录：与 A14 同骨架（接口名称固定在左、“查看”固定在右）；最近一次调用为时间 + 结果标签，失败原因原文次行。
+   调用记录六列，未接收原因摘要用原生 details 展开单据号；接口 / 资产概要卡 .interface-summary 为一行只读字段。 */
+table.tbl.intake-list{min-width:var(--intake-table-min)}
+.intake-list col.if-col-name{width:var(--intake-col-name)}
+.intake-list col.if-col-mod{width:var(--intake-col-mod)}
+.intake-list col.if-col-status{width:var(--intake-col-status)}
+.intake-list col.if-col-time{width:var(--intake-col-time)}
+.intake-list col.if-col-last{width:var(--intake-col-last)}
+.intake-list col.if-col-today{width:var(--intake-col-today)}
+.intake-list col.if-col-actions{width:var(--receivable-col-actions)}
+.intake-list .btn-link{font-weight:500;white-space:nowrap}
+table.tbl.call-records{min-width:var(--call-record-min)}
+.reason-detail summary{cursor:pointer;color:var(--accent)}
+.reason-detail ul{margin:var(--sp-1) 0 0;padding-left:var(--sp-5)}
+.interface-summary>.facts-region{padding-block:var(--sp-2)}
+.call-records-card,.interface-summary+.card{margin-top:var(--sp-4)}
+/* A87 数据推送平台情况行：列表上方一行，目标平台与最近一次调取时间；推送记录页的存证记录、调取记录为明细表。 */
+.platform-line{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-6);margin-bottom:var(--sp-4);padding:var(--sp-3) var(--sp-5);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);font-size:var(--fs-13);color:var(--muted)}
+.platform-line b{color:var(--text);font-weight:600}
+.platform-name{display:inline-flex;align-items:center;gap:var(--sp-2)}
+.rank-list{list-style:none;margin:0;padding:var(--sp-2) 0 0;display:flex;flex-direction:column;gap:var(--sp-3)}
+.rank-list li{display:grid;grid-template-columns:minmax(96px,30%) minmax(0,1fr) 40px;align-items:center;gap:var(--sp-3);font-size:var(--fs-13)}
+.rank-name{color:var(--muted);text-align:right;overflow-wrap:anywhere}
+.rank-value{color:var(--text);font-variant-numeric:tabular-nums}
+.rank-bar{display:block}
+:is(.data-time,.platform-line,.screen-head,.monitor-page .note,.big-screen .note) [data-zone]{display:inline}
+.platform-line b{white-space:nowrap}
+.pull-lines{display:flex;flex-direction:column;gap:2px;white-space:nowrap}
+.pull-lines .role{display:inline-block;min-width:2.5em;margin-right:var(--sp-1);color:var(--muted);font-size:var(--fs-12)}
+.pull-lines .cell-sub{margin-top:0}

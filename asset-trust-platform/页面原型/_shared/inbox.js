@@ -1,7 +1,7 @@
 /* ==========================================================================
    inbox.js — 消息入口（M10 消息中心）：顶栏铃铛的未读数与最近消息预览，以及两端的演示消息。
    基线：代币发行平台 _shared/inbox.js（M7 消息通知）。本平台改动：分类按 M10 PRD §4.2；
-   消息取自现行来源模块 03 消息通知册（M7a-NT01～03、M7b-NT01～03、M8-NT01）；无“认证引导”“固定页面”去向。
+   消息取自现行来源模块 03 消息通知册（M7a-NT01～03、M7b-NT01～03、M8-NT01、M9-NT01～03）；无“认证引导”“固定页面”去向。
    各模块在 menu.*.js 之后加载，由 frame.js 渲染到顶栏；入驻未完成、受限登录（首登改密）不显示消息入口。
    不发送、不计算、不保存已读：未读数取本份演示数据，画面可用 data-unread 指定本屏的值。
    规则（收件范围、送达、已读、全部已读、前往原业务）以 PRD 两端共用/M10-消息中心 为准。
@@ -51,8 +51,8 @@
   function m7b01(id, app, debtor, inv, ar, at, read){
     return {id:id, cat:'progress', at:at, read:read,
       t:['确权申请已被债务人确认','Confirmation request confirmed by debtor'],
-      b:[debtor+' 已确认贵企业就发票 '+inv+'（应收账款编号 '+ar+'）发起的确权申请 '+app+'。贵企业在这笔业务中是债权人。申请已进入运营审核，审核通过前不能出库。',
-         debtor+' has confirmed confirmation request '+app+' submitted by your company for invoice '+inv+' (receivable '+ar+'). Your company is the creditor in this transaction. The request is now awaiting operations review; the asset cannot be released before the review is approved.'],
+      b:[debtor+' 已确认贵企业就发票 '+inv+'（应收账款编号 '+ar+'）发起的确权申请 '+app+'。贵企业在这笔业务中是债权人。申请已进入运营审核，审核通过前不能推送给资产数字化平台。',
+         debtor+' has confirmed confirmation request '+app+' submitted by your company for invoice '+inv+' (receivable '+ar+'). Your company is the creditor in this transaction. The request is now awaiting operations review; the asset cannot be provided to the asset digitisation platform before the review is approved.'],
       ref:appRef(app, inv), go:{key:'m7a-'+app}};
   }
   /* M7b-NT02 确权申请被债务人驳回（业务办理进度，发给债权人企业）→ M7a 申请详情；驳回原因按原文展示 */
@@ -71,28 +71,27 @@
          'Debtor '+NG+' has confirmed confirmation request '+app+' submitted by creditor Carloha Holding for invoice '+inv+' (receivable '+ar+', amount '+amt+' '+ccy+', due date '+due+' (Africa/Lagos)). Please review it. Requests not approved by the receivable\'s due date will be closed automatically.'],
       ref:appRef(app, inv), go:{key:'m9-'+app}};
   }
-  /* M9-NT01 运营审核已通过 / M9-NT02 资产已出库（业务办理进度，发给债权人企业）→ M7a 申请详情（只能查看） */
+  /* M9-NT01 运营审核已通过 / M9-NT02 资产已推送（业务办理进度，发给债权人企业）→ M7a 申请详情（只能查看）；文案按 M9 03 册（b693d078） */
   function m9a(id, app, debtor, inv, ar, at, read){
     return {id:id, cat:'progress', at:at, read:read,
       t:['运营审核已通过','Operations review approved'],
-      b:['贵企业就发票 '+inv+'（应收账款编号 '+ar+'）向 '+debtor+' 发起的确权申请 '+app+' 已通过运营审核。贵企业在这笔业务中是债权人。审核通过表示这笔应收账款已取得出库资格，尚未出库；出库进度可在申请详情中查看。',
-         'Confirmation request '+app+' submitted by your company to '+debtor+' for invoice '+inv+' (receivable '+ar+') has been approved by operations. Your company is the creditor in this transaction. Approval means the receivable is now eligible for release; it has not been released yet. You can track the release progress in the request details.'],
+      b:['贵企业就内销发票 '+inv+'（应收账款编号 '+ar+'）向 '+debtor+' 发起的确权申请 '+app+' 已通过运营审核。贵企业在这笔业务中是债权人。审核通过表示这笔应收账款已取得推送资格，尚未推送给资产数字化平台；推送进度可在申请详情中查看。',
+         'Confirmation request '+app+' submitted by your company to '+debtor+' for invoice '+inv+' (receivable '+ar+') has been approved by operations. Your company is the creditor in this transaction. Approval means the receivable is now eligible to be provided to the asset digitisation platform; it has not been provided yet. You can track the progress in the request details.'],
       ref:appRef(app, inv), go:{key:'m7a-'+app}};
   }
   function m9b(id, app, inv, ar, at, read){
     return {id:id, cat:'progress', at:at, read:read,
-      t:['资产已出库','Asset released'],
-      b:['贵企业发票 '+inv+'（应收账款编号 '+ar+'，确权申请 '+app+'）对应的资产已完成出库：平台已将审核通过时的资料存证，并由资产数字化平台确认接收。贵企业在这笔业务中是债权人。',
-         'The asset for your company\'s invoice '+inv+' (receivable '+ar+', confirmation request '+app+') has been released: the approved records have been notarised and accepted by the asset digitisation platform. Your company is the creditor in this transaction.'],
+      t:['资产已推送','Asset provided'],
+      b:['贵企业内销发票 '+inv+'（应收账款编号 '+ar+'，确权申请 '+app+'）对应的资产已推送给资产数字化平台：平台已为审核通过时的资料存证，资产数字化平台已成功调取。贵企业在这笔业务中是债权人。',
+         'The asset for your company\'s invoice '+inv+' (receivable '+ar+', confirmation request '+app+') has been provided to the asset digitisation platform: the approved records have been notarised and successfully retrieved by the platform. Your company is the creditor in this transaction.'],
       ref:appRef(app, inv), go:{key:'m7a-'+app}};
   }
-  /* M9-NT03 资产出库失败（运营告警，全体运营）→ M9 申请详情的出库信息；失败环节随语言，失败原因按原文 */
-  function m9c(id, app, inv, ar, attempt, step, reason, at, read){
-    var en = step==='存证' ? 'Notarisation' : 'Data supply';
+  /* M9-NT03 资产存证失败（运营告警，全体运营）→ M9 申请详情的推送信息；失败原因按原文 */
+  function m9c(id, app, inv, ar, attempt, reason, at, read){
     return {id:id, cat:'alert', at:at, read:read,
-      t:['资产出库失败','Asset release failed'],
-      b:['债权人 Carloha Holding 的发票 '+inv+'（应收账款编号 '+ar+'，确权申请 '+app+'）第 '+attempt+' 次出库失败，失败环节：'+step+'，原因：'+reason+'。资产尚未出库，请查看后在条件满足时重新出库。',
-         'Release attempt '+attempt+' for creditor Carloha Holding\'s invoice '+inv+' (receivable '+ar+', confirmation request '+app+') failed at '+en+'. Reason: '+reason+'. The asset has not been released. Please review it and retry when the release conditions are met.'],
+      t:['资产存证失败','Asset notarisation failed'],
+      b:['债权人 Carloha Holding 的内销发票 '+inv+'（应收账款编号 '+ar+'，确权申请 '+app+'）第 '+attempt+' 次存证失败，原因：'+reason+'。存证成功前资产数字化平台无法调取这笔资产，请查看后重新存证。',
+         'Notarisation attempt '+attempt+' for creditor Carloha Holding\'s invoice '+inv+' (receivable '+ar+', confirmation request '+app+') failed. Reason: '+reason+'. The asset digitisation platform cannot retrieve this asset until notarisation succeeds. Please review it and retry.'],
       ref:appRef(app, inv), go:{key:'m9-'+app}};
   }
   /* M8-NT01 新的风控预警（运营告警，全体运营）→ M8 预警详情。
@@ -103,8 +102,8 @@
     var T = ALERT[type], r = recv ? recv : ['无','None'];
     return {id:id, cat:'alert', at:at, read:read,
       t:['新的风控预警：'+T[0],'New risk alert: '+T[1]],
-      b:['平台比对发现'+T[0]+'，预警编号 '+w+'。比较对象：'+obj[0]+'。差异：'+diff[0]+'。关联应收账款：'+r[0]+'。请核实后记录处理结果。预警不会自动阻止确权申请、运营审核或出库。',
-         'A '+T[2]+' has been detected, alert number '+w+'. Compared item: '+obj[1]+'. Difference: '+diff[1]+'. Related receivables: '+r[1]+'. Please verify and record the result. The alert does not automatically block confirmation requests, operations review or asset release.'],
+      b:['平台比对发现'+T[0]+'，预警编号 '+w+'。比较对象：'+obj[0]+'。差异：'+diff[0]+'。关联应收账款：'+r[0]+'。请核实后记录处理结果。预警不会自动阻止确权申请、运营审核或推送。',
+         'A '+T[2]+' has been detected, alert number '+w+'. Compared item: '+obj[1]+'. Difference: '+diff[1]+'. Related receivables: '+r[1]+'. Please verify and record the result. The alert does not automatically block confirmation requests, operations review or asset push.'],
       ref:[['预警编号',w],['预警类型',T[0],'text']], go:{key:'m8-'+w}};
   }
   function repay(id, w, ar, dir, pct, at, read){
@@ -145,8 +144,8 @@
       Object.assign(m8('o05','W-DEMO-0028','party',['采购交易 PO-DEMO-031 · 卖方（供应商）','Purchase transaction PO-DEMO-031 · Seller (supplier)'],
         ['卖方（供应商）：采购订单 PO-DEMO-031 为 Demo Supplier C Ltd.，付款记录 PAY-DEMO-0720 为 Demo Trading D Ltd.，等 2 处','Seller (supplier): purchase order PO-DEMO-031 shows Demo Supplier C Ltd., payment record PAY-DEMO-0720 shows Demo Trading D Ltd., and 2 more'],
         null,'2026-11-05T03:20:00Z',true), {done:true}),
-      /* AP-DEMO-0022 第 1 次出库供数未接收：仍可在原业务重新出库 */
-      m9c('o06','AP-DEMO-0022','INV-0011','AR-DEMO-0011',1,'供数','【演示原因】Receiver rejected: duplicate asset record','2026-11-02T07:30:00Z',true),
+      /* AP-DEMO-0022 第 1 次存证失败：仍可在原业务重新存证 */
+      m9c('o06','AP-DEMO-0022','INV-0011','AR-DEMO-0011',1,'chain gateway timeout','2026-10-30T03:04:00Z',true),
       Object.assign(m7b03('o07','AP-DEMO-0022','INV-0011','AR-DEMO-0011','55,000.00','USD','2026-12-01','2026-10-29T02:00:00Z',true), {done:true}),
       /* 申请已到期关闭：未读仍计入未读数，前往后只能查看当前结果 */
       Object.assign(m7b03('o08','AP-DEMO-0026','INV-0008','AR-DEMO-0008','60,000.00','USD','2026-10-31','2026-10-20T09:00:00Z',false), {done:true}),
@@ -239,7 +238,6 @@
     '还没有消息':'No messages yet','业务有新的进展时，会在这里通知你。':'You will be notified here when there is an update on your business.',
     '申请编号':'Request number','发票号':'Invoice number','预警编号':'Alert number','预警类型':'Alert type',
     '主体不一致':'Party mismatch','VIN 不一致':'VIN mismatch','回款金额偏差':'Collection amount deviation',
-    '存证':'Notarisation','供数':'Data supply',
     '时区':'Time zone','消息通知':'Notifications'
   });
 })(window.TP = window.TP || {});

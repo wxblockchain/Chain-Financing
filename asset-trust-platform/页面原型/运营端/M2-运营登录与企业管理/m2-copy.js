@@ -405,7 +405,7 @@ TP.addCopy({
 "可多选，也可以暂不关联；单据同步后可在编辑企业资料中补充关联。": "Select one or more, or leave empty for now; you can link after documents are synced by editing the enterprise.",
 "已关联": "Linked to",
 "已关联本企业": "Linked to this enterprise",
-"已结束的确权申请、运营审核结论和出库记录保留，不会撤回。": "Closed confirmation requests, review decisions and outbound records are kept and not withdrawn.",
+"已结束的确权申请、运营审核结论和推送记录保留，不会撤回。": "Closed confirmation requests, review decisions and push records are kept and not withdrawn.",
 "已选": "Selected",
 "按 ERP 名称或 ERP 企业标识查找": "Search by ERP name or ERP entity ID",
 "搜索企业编号、名称、登记号码、登录邮箱、ERP 名称或标识": "Search ID, name, registration number, login email, ERP name or ERP ID",
