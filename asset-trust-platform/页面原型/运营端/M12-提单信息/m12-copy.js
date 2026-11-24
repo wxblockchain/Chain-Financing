@@ -17,7 +17,9 @@ TP.addCopy({
 "筛选无结果": "No matching results",
 "列表加载失败": "List load failed",
 "详情 · 已到港、部分清关": "Details · arrived, partly cleared",
-"从车辆履约清关节点进入 · 定位车辆": "From vehicle fulfilment customs step · vehicle located",
+"从车辆履约清关单号进入 · 定位车辆": "From vehicle fulfilment customs entry number · vehicle located",
+"从风控预警清关单号进入 · 定位清关单": "From risk alert customs entry number · customs entry located",
+"按清关单号查找（从风控预警进入）": "Searched by customs entry number (from risk alerts)",
 "详情 · 航程加载失败": "Details · voyage failed to load",
 "未找到该提单": "Bill of lading not found",
 
@@ -103,6 +105,7 @@ TP.addCopy({
 "清关出口方": "Customs exporter",
 "清关船名航次": "Customs vessel and voyage",
 "当前车辆": "Current vehicle",
+"当前清关单": "Current customs entry",
 "关联保单": "Related insurance policies",
 "保单号": "Policy number",
 "保单日期": "Policy date",
