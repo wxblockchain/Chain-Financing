@@ -164,9 +164,9 @@
   --review-col-id:132px; --review-col-invoice:104px; --review-col-party:176px; --review-col-amount:136px; --review-col-due:120px;
   --review-col-time:108px; --review-col-warning:80px; --review-col-warning-en:136px; --review-col-status:112px; --review-col-actions:128px; /* 查看 / 审核通过 */
   --push-table-min:1150px; /* M15 资产推送列表十列，1440 px 视口完整展示；申请编号与操作分别固定两侧 */
-  --push-table-min-en:1320px;
+  --push-table-min-en:1344px;
   --push-col-id:120px; --push-col-invoice:92px; --push-col-party:120px; --push-col-amount:120px; --push-col-time:96px;
-  --push-col-platform:104px; --push-col-status:92px; --push-col-cond:108px; --push-col-pull:196px; --push-col-actions:112px; /* 查看 / 重新存证 */
+  --push-col-platform:104px; --push-col-status:92px; --push-col-cond:132px; --push-col-pull:172px; --push-col-actions:112px; /* 查看 / 重新存证 */
   --chart-2:#0E9384; /* M15 图表第二分类色（与 --accent 并列；色觉安全已校验） */
   --intake-table-min:1080px; /* M15 接口列表七列 */
   --intake-col-name:136px; --intake-col-mod:152px; --intake-col-status:96px; --intake-col-time:120px; --intake-col-last:240px; --intake-col-today:136px;

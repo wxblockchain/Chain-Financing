@@ -8,6 +8,8 @@ TP.registerModule({
     'pushRecord:AP-DEMO-0022':{ops:'pr-failed'},
     'pushRecord:AP-DEMO-0027':{ops:'pr-ready'},
     'pushRecord:AP-DEMO-0021':{ops:'pr-rejected'},
+    'pushRecord:AP-DEMO-0024':{ops:'pr-blocked'},
+    'pushRecord:AP-DEMO-0030':{ops:'pr-unknown'},
     'interface:BL':{ops:'c-records'}
   }
 });
