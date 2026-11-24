@@ -15,12 +15,12 @@
   var SCOPE = '此入口在单模块附件中不展开，请在完整原型的 index.html 中打开。';
 
   /* 消息：id · 分类 · 发生时间 · 演示时的阅读状态 · 中英文标题与正文 · 原业务识别信息 · 去向。
-     正文中 {t:ISO} 为按所选时区展示的时间。企业名称、发票号、驳回原因按原值展示，中英文正文都不翻译。
+     正文中 {t:ISO} 为按所选时区展示的时间。企业名称、内销发票号、驳回原因按原值展示，中英文正文都不翻译。
      ref 第三项为 'text' 时按界面语言展示（如预警类型），否则为等宽编号。
      go.key 为原业务的路由键（来源模块原型交付后登记）；done 表示原动作已办完或已不适用，前往后只能查看当前结果；
      denied 表示原业务不存在或本人无权查看。演示中的企业、编号、金额、时间均为演示数据。 */
   var NG = 'Carloha Nigeria', SB = 'Demo Supplier B Ltd.';
-  function appRef(app, inv){ return [['申请编号',app],['发票号',inv]]; }
+  function appRef(app, inv){ return [['申请编号',app],['内销发票号',inv]]; }
 
   /* M7a-NT01 收到新的确权申请（待处理事项，发给债务人企业）→ M7b 申请详情 */
   function m7a01(id, app, creditor, inv, ar, amt, at, read){
@@ -51,7 +51,7 @@
   function m7b01(id, app, debtor, inv, ar, at, read){
     return {id:id, cat:'progress', at:at, read:read,
       t:['确权申请已被债务人确认','Confirmation request confirmed by debtor'],
-      b:[debtor+' 已确认贵企业就发票 '+inv+'（应收账款编号 '+ar+'）发起的确权申请 '+app+'。贵企业在这笔业务中是债权人。申请已进入运营审核，审核通过前不能推送给资产数字化平台。',
+      b:[debtor+' 已确认贵企业就内销发票 '+inv+'（应收账款编号 '+ar+'）发起的确权申请 '+app+'。贵企业在这笔业务中是债权人。申请已进入运营审核，审核通过前不能推送给资产数字化平台。',
          debtor+' has confirmed confirmation request '+app+' submitted by your company for invoice '+inv+' (receivable '+ar+'). Your company is the creditor in this transaction. The request is now awaiting operations review; the asset cannot be provided to the asset digitisation platform before the review is approved.'],
       ref:appRef(app, inv), go:{key:'m7a-'+app}};
   }
@@ -59,16 +59,16 @@
   function m7b02(id, app, debtor, inv, ar, reason, at, read){
     return {id:id, cat:'progress', at:at, read:read,
       t:['确权申请被债务人驳回','Confirmation request rejected by debtor'],
-      b:[debtor+' 驳回了贵企业就发票 '+inv+'（应收账款编号 '+ar+'）发起的确权申请 '+app+'。驳回原因：'+reason+'。贵企业在这笔业务中是债权人。该应收账款满足申请条件时可以重新发起确权申请。',
+      b:[debtor+' 驳回了贵企业就内销发票 '+inv+'（应收账款编号 '+ar+'）发起的确权申请 '+app+'。驳回原因：'+reason+'。贵企业在这笔业务中是债权人。该应收账款满足申请条件时可以重新发起确权申请。',
          debtor+' has rejected confirmation request '+app+' submitted by your company for invoice '+inv+' (receivable '+ar+'). Reason: '+reason+'. Your company is the creditor in this transaction. You can submit a new confirmation request when the receivable meets the request conditions.'],
       ref:appRef(app, inv), go:{key:'m7a-'+app}};
   }
-  /* M7b-NT03 有新的确权申请待运营审核（待处理事项，全体运营）→ M9 审核详情；到期日按 ERP 原值并带时区 */
+  /* M7b-NT03 有新的确权申请待运营审核（待处理事项，全体运营）→ M9 审核详情；到期日按 M3 计算的日期，不带时区 */
   function m7b03(id, app, inv, ar, amt, ccy, due, at, read){
     return {id:id, cat:'pending', at:at, read:read,
       t:['有新的确权申请待运营审核','New confirmation request awaiting review'],
-      b:['债务人 '+NG+' 已确认债权人 Carloha Holding 就发票 '+inv+'（应收账款编号 '+ar+'，金额 '+amt+' '+ccy+'，到期日 '+due+'（Africa/Lagos））发起的确权申请 '+app+'，请进行运营审核。应收账款到期时仍未审核通过的申请将自动关闭。',
-         'Debtor '+NG+' has confirmed confirmation request '+app+' submitted by creditor Carloha Holding for invoice '+inv+' (receivable '+ar+', amount '+amt+' '+ccy+', due date '+due+' (Africa/Lagos)). Please review it. Requests not approved by the receivable\'s due date will be closed automatically.'],
+      b:['债务人 '+NG+' 已确认债权人 Carloha Holding 就内销发票 '+inv+'（应收账款编号 '+ar+'，金额 '+amt+' '+ccy+'，到期日 '+due+'）发起的确权申请 '+app+'，请进行运营审核。应收账款到期时仍未审核通过的申请将自动关闭。',
+         'Debtor '+NG+' has confirmed confirmation request '+app+' submitted by creditor Carloha Holding for invoice '+inv+' (receivable '+ar+', amount '+amt+' '+ccy+', due date '+due+'). Please review it. Requests not approved by the receivable\'s due date will be closed automatically.'],
       ref:appRef(app, inv), go:{key:'m9-'+app}};
   }
   /* M9-NT01 运营审核已通过 / M9-NT02 资产已推送（业务办理进度，发给债权人企业）→ M7a 申请详情（只能查看）；文案按 M9 03 册（b693d078） */
@@ -236,7 +236,7 @@
     '已读':'Read','未读':'Unread','最近消息':'Recent messages','查看全部消息':'View all messages',
     '最近消息读取失败':'Could not load recent messages','暂时无法读取，请稍后重试。':'Unable to load right now. Please try again later.','重试':'Retry',
     '还没有消息':'No messages yet','业务有新的进展时，会在这里通知你。':'You will be notified here when there is an update on your business.',
-    '申请编号':'Request number','发票号':'Invoice number','预警编号':'Alert number','预警类型':'Alert type',
+    '申请编号':'Request number','发票号':'Invoice number','内销发票号':'Invoice number','预警编号':'Alert number','预警类型':'Alert type',
     '主体不一致':'Party mismatch','VIN 不一致':'VIN mismatch','回款金额偏差':'Collection amount deviation',
     '时区':'Time zone','消息通知':'Notifications'
   });

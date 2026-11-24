@@ -1,4 +1,4 @@
-/* M7b 确权待办与确认处理 · 企业端（债务人）· 模块文案英文（企业名称、发票号、驳回原因等业务值不翻译） */
+/* M7b 确权待办与确认处理 · 企业端（债务人）· 模块文案英文（企业名称、内销发票号、驳回原因等业务值不翻译） */
 TP.addCopy({
 "申请状态 · 待处理": "Request status · Pending",
 "申请状态 · 已处理": "Request status · Processed",
@@ -14,7 +14,8 @@ TP.addCopy({
 "待处理的确权申请": "Pending confirmation requests",
 "已处理的确权申请": "Processed confirmation requests",
 "申请编号": "Request no.",
-"发票号": "Invoice no.",
+"搜索申请编号、内销发票号或应收账款编号": "Search request no., domestic sales invoice no. or receivable no.",
+"申请编号、内销发票号或应收账款编号": "Request no., domestic sales invoice no. or receivable no.",
 "债权人": "Creditor",
 "债务人": "Debtor",
 "驳回": "Reject",
@@ -109,4 +110,5 @@ TP.addCopy({
 "已驳回 · 债权人已重新发起": "Rejected · Creditor resubmitted",
 "已关闭（到期未处理）": "Closed (due before processing)",
 "处理未生效 · 已到期关闭": "Not applied · Closed at due date",
+"双角色企业 · 本企业发起的申请": "Creditor and debtor · Own request",
 });
