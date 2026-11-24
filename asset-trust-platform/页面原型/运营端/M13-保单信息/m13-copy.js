@@ -81,6 +81,5 @@ TP.addCopy({
 "1 份": "1 file",
 "2 份": "2 files",
 "3 份": "3 files",
-"返回保单信息": "Back to policy information",
-"可以返回保单信息后重新查找。": "Go back to policy information and search again."
+"返回提单信息": "Back to bills of lading"
 });
