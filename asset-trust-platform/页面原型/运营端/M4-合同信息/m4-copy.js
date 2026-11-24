@@ -167,7 +167,7 @@ TP.addCopy({
 "外销卖方名称": "Export seller name", "外销客户名称": "Export customer name",
 "外销合同金额": "Export contract amount", "外销合同金额（美元）": "Export contract amount (USD)", "外销合同文件": "Export contract files",
 "物流节点": "Logistics node",
-"详情 · 尚未开票、外采单价取合同价、有车辆无外采合同、有未处理预警": "Detail · Not invoiced, contract purchase price, vehicle without purchase contract, open alerts",
+"详情 · 尚未开票（内采单价、外采单价取合同价）、有车辆无外采合同、有未处理预警": "Detail · Not invoiced (contract prices for domestic and purchase unit prices), vehicle without purchase contract, open alerts",
 "详情 · 默认（部分开票、部分付款，未开票车辆取合同价）": "Detail · Default (partly invoiced, partly paid, contract price for non-invoiced vehicles)",
 "详情 · 暂无外采发票（外采已付款比率无法计算）": "Detail · No purchase invoices (paid ratio cannot be calculated)",
 "详情 · 批售（逐车列出）、部分收款、部分出库、有未处理预警": "Detail · Wholesale (per vehicle), partly received, partly out, open alert"
