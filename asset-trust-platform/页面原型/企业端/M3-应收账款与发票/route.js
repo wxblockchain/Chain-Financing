@@ -7,6 +7,7 @@ TP.registerModule({
   routes:{
     'receivable:AR-DEMO-0012':{creditor:'c-detail', both:'c-detail'},
     'receivable:AR-DEMO-0019':{creditor:'c-diff', both:'c-diff'},
+    'receivable:AR-DEMO-0005':{creditor:'c-pushed', both:'c-pushed'},
     'debtorReceivable:AR-DEMO-0012':{debtor:'d-detail', both:'d-detail'}
   }
 });
