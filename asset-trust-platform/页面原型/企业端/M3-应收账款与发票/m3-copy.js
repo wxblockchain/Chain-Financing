@@ -22,7 +22,7 @@ TP.addCopy({
 "内销合同日期": "Domestic sales contract date",
 "内销合同金额": "Domestic sales contract amount",
 "内销合同附件": "Domestic sales contract attachment",
-"凭证附件": "Voucher",
+"内销收款凭证": "Domestic sales receipt voucher",
 "发票号": "Invoice no.",
 "发起申请": "Submit request",
 "发起申请 · 确认": "Submit request · confirm",

@@ -59,7 +59,7 @@ TP.addCopy({
 "基础交易": "Underlying transaction",
 "外采单价（美元）": "Purchase unit price (USD)",
 "外采合同号 · 外采供应商": "Purchase contract no. · Supplier",
-"外采收货日期": "Purchase receipt date",
+"外采交货日期": "Delivered by supplier on",
 "外销": "Export sales",
 "外销出库日期": "Export outbound date",
 "外销单价（美元）": "Export unit price (USD)",
@@ -122,7 +122,6 @@ TP.addCopy({
 "是否未对应平台企业": "Unmatched company",
 "暂无回款记录": "No collection records yet",
 "暂无外销": "No export sale yet",
-"暂无履约记录": "No fulfilment records",
 "暂无差异与核实记录": "No differences or verification records",
 "暂无应收账款": "No receivables yet",
 "暂无核实记录": "No verification records yet",
@@ -201,5 +200,9 @@ TP.addCopy({
 "预警 · 全部": "Alerts · All",
 "预警 · 无": "Alerts · None",
 "预警 · 有": "Alerts · Yes",
-"首次取得时间": "First received at"
+"首次取得时间": "First received at",
+"未交货": "Not delivered",
+"暂无外采": "No purchase",
+"暂无物流记录": "No logistics records",
+"按比例分摊": "Pro-rata allocation"
 });

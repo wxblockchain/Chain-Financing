@@ -2277,6 +2277,7 @@ table.tbl.receivable-list.rcv-overview-list{min-width:var(--rcv-overview-min)}
 .vehicle-ledger tr.has-more>td{border-bottom-color:transparent}
 .receivable-detail .detail-table .vehicle-ledger tr.vehicle-more>td{white-space:normal;padding:0 var(--card-pad) var(--sp-4) calc(var(--ctrl-h-sm) + var(--sp-4));background:var(--card)}
 .vehicle-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(144px,1fr));gap:var(--sp-4);padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2)}
+.receivable-detail .detail-table .vehicle-groups .file-ref .file-name{white-space:normal;overflow-wrap:anywhere}
 .vehicle-group{min-width:0}
 .vehicle-group h4{margin:0 0 var(--sp-3);font-size:var(--fs-13);font-weight:600;color:var(--text)}
 .vehicle-group dl{display:grid;gap:var(--sp-3);margin:0}
