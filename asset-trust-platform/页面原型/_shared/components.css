@@ -1850,30 +1850,64 @@ table.tbl.claim-request-list{min-width:var(--claim-request-min)}
 .claim-result-body{display:grid;gap:var(--sp-4);padding:var(--sp-4) var(--card-pad) var(--sp-5)}
 .claim-result-sum .facts{grid-template-columns:repeat(3,minmax(0,1fr))}
 .claim-result-sum .facts>div{border-top:0}
-/* —— M8 风控预警与三方数据源（组件规范 §4 A51–A53）—— */
-/* A51 风控预警列表：每条预警一行，预警编号固定在左、“查看”固定在右（共用 A14 规则）；比较对象可换行，筛选条沿用 A30 两行布局。 */
+/* —— M8 风控预警与三方数据源（组件规范 §4 A51–A53、A82；v2 按 PRD b693d078 增加等级、阻断与风控规则配置）—— */
+/* A51 风控预警列表：每条预警一行，预警编号固定在左、“查看”固定在右（共用 A14 规则）；等级、规则两列，规则名下方为编号；
+   阻断类（规则启用中）整行左侧 3 px 危险色条并加粗等级，不只靠颜色；比较对象可换行。 */
 table.tbl.alert-list{min-width:var(--alert-table-min)}
 :lang(en) table.tbl.alert-list{min-width:var(--alert-table-min-en)}
 .alert-list col.alr-col-id{width:var(--alert-col-id)}
-.alert-list col.alr-col-type{width:var(--alert-col-type)}
+.alert-list col.alr-col-level{width:var(--alert-col-level)}
+.alert-list col.alr-col-rule{width:var(--alert-col-rule)}
 .alert-list col.alr-col-ar{width:var(--alert-col-ar)}
 .alert-list col.alr-col-status{width:var(--alert-col-status)}
 .alert-list col.alr-col-time{width:var(--alert-col-time)}
 .alert-list col.alr-col-actions{width:var(--vehicle-col-actions)}
 .tbl.alert-list td.obj{white-space:normal;min-width:var(--alert-col-obj-min)}
 .tbl.alert-list td.obj .mono{white-space:nowrap}
-.alert-list-card .card-head .sub+.sub::before{content:"·";margin-right:var(--sp-2);color:var(--faint)}
-/* A52 预警详情（.alert-detail，与 A18 共用全宽、标题层级与明细表规则）：页头为比较对象、副标题预警编号；
-   概要复用 A24 .receivable-summary：左侧预警类型、差异摘要与生成时间，右侧状态 / 差异现状（已处理加处理结果）。 */
+.tbl.alert-list td:nth-child(3){white-space:normal}
+.tbl.alert-list tr.is-blocking>td:first-child{box-shadow:inset 3px 0 var(--danger)}
+.tag.level-block{font-weight:600}
+/* A52 预警详情（.alert-detail，与 A18 共用全宽、标题层级与明细表规则）：页头为规则名称 + 等级（停用时另加“规则已停用”），
+   副标题规则编号、风控类别、预警编号；阻断进行中在页头下用 .note.red 写明“正在阻止：应收账款 的审核通过与推送”，
+   已解除或规则停用时用中性 .note 一句说明。概要复用 A24：左侧比较对象与差异摘要，右侧状态 / 差异现状（已处理加处理结果）。 */
+.alert-detail .alert-banner{margin-bottom:var(--sp-4)}
+.alert-detail .alert-banner .btn-link{padding-inline:0}
 .alert-summary .alert-gist{margin-top:var(--sp-1);font-size:var(--ui-section-title);font-weight:500;line-height:1.5;overflow-wrap:anywhere}
 .alert-summary .alert-gist b{font-weight:600}
+.alert-summary .alert-diff{margin:var(--sp-1) 0 0;font-size:var(--fs-13);color:var(--muted);overflow-wrap:anywhere}
+.alert-summary .alert-diff b{color:var(--text);font-weight:600}
 .alert-summary .meta{margin-top:var(--sp-3)}
 .alert-detail .card-note{padding:var(--sp-2) var(--card-pad) 0}
 .alert-detail .card-note+.facts-region .facts,.alert-detail .card-note+.detail-table{margin-top:var(--sp-2)}
 .alert-detail .value-lines .file-ref{width:max-content;max-width:100%}
 .alert-detail .operation-detail .file-ref{display:inline-flex}
+.alert-detail .card>.sub-h{padding:var(--sp-5) var(--card-pad) 0}
+.alert-detail .card>.sub-h+.detail-table{margin-top:var(--sp-3)}
+.level-change{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2)}
+.operation-heading .level-change{font-size:var(--fs-13);font-weight:400}
 /* A53 三方数据源：只有能力说明，复用基线 .state，无任何操作。 */
 .alert-sources .state p{max-width:76ch}
+/* A82 风控规则（F-M8-19）：页内页签“规则 / 风控参数”（A54 .page-tabs）；规则列表规则名固定在左、三项操作固定在右；
+   规则详情为页头（名称 + 当前等级）、四项状态、规则说明、配置记录时间线（A11）；三选一等级复用 A8 选择卡。 */
+table.tbl.rule-cfg-list{min-width:var(--rule-table-min)}
+.rule-cfg-list col.rc-col-rule{width:var(--rule-col-rule)}
+.rule-cfg-list col.rc-col-cat{width:var(--rule-col-cat)}
+.rule-cfg-list col.rc-col-lv,.rule-cfg-list col.rc-col-cur{width:var(--rule-col-level)}
+.rule-cfg-list col.rc-col-on{width:var(--rule-col-on)}
+.rule-cfg-list col.rc-col-n{width:var(--rule-col-n)}
+.rule-cfg-list col.rc-col-last{width:var(--rule-col-last)}
+.rule-cfg-list col.rc-col-actions{width:var(--rule-col-actions)}
+.tbl.rule-cfg-list td:first-child{white-space:normal}
+.tbl.rule-cfg-list td:first-child .btn-link{padding-inline:0;text-align:left;font-weight:500}
+:is(.rule-cfg-list,.param-list) .row-acts{display:flex;justify-content:flex-end;gap:var(--sp-3)}
+table.tbl.param-list{min-width:var(--param-table-min)}
+.rule-summary .status-grid{padding:var(--sp-2)}
+@media(min-width:601px){.rule-summary .status-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.rule-detail .card+.card{margin-top:var(--sp-4)}
+.role-choices.three{grid-template-columns:repeat(3,minmax(0,180px))}
+@media(max-width:600px){.role-choices.three{grid-template-columns:minmax(0,1fr)}}
+.inp-unit{display:flex;align-items:center;gap:var(--sp-2);max-width:var(--param-input-w)}
+.inp-unit .inp{flex:1;min-width:0;font-variant-numeric:tabular-nums}
 
 /* ==========================================================================
    v1.23（WS-600）列表与详情精简：列表无面包屑（frame.js）、筛选一行紧凑、状态前圆点、

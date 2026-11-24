@@ -62,7 +62,8 @@
     send:'<path d="M4 12l16-8-6 16-3-7z"/><path d="M11 13l9-9"/>',
     fx:'<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
     ship:'<path d="M3 14h18l-2.5 5h-13z"/><path d="M6 14V9h12v5"/><path d="M10 9V5h4v4"/>',
-    umbrella:'<path d="M3 12a9 9 0 0 1 18 0z"/><path d="M12 12v6a2 2 0 0 0 4 0"/>'
+    umbrella:'<path d="M3 12a9 9 0 0 1 18 0z"/><path d="M12 12v6a2 2 0 0 0 4 0"/>',
+    sliders:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>'
   };
   TP.icon = function(n){ return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+(ICON[n]||'')+'</svg>'; };
   TP.refreshPasswordToggles = function(){
