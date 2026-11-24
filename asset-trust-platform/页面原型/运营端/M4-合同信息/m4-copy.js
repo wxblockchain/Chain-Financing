@@ -161,7 +161,7 @@ TP.addCopy({
 "外采已付款金额（美元）": "Purchase paid amount (USD)", "外采未付款金额（美元）": "Purchase unpaid amount (USD)",
 "外采已付款比率": "Purchase paid ratio", "付款": "Payment",
 "外采发票金额": "Purchase invoice amount", "外采发票日期": "Purchase invoice date", "外采发票附件": "Purchase invoice file",
-"外采合同文件": "Purchase contract files", "合同价": "Contract price",
+"外采合同文件": "Purchase contract files", "合同价": "Contract price", "按比例分摊": "Pro-rata allocation",
 "平台采信已审核的外采合同后，会在这里列出。": "Approved purchase contracts will be listed here once received.",
 "外销合同日期": "Export contract date", "外销合同日期自": "Export contract date from", "外销合同日期至": "Export contract date to",
 "外销卖方名称": "Export seller name", "外销客户名称": "Export customer name",
