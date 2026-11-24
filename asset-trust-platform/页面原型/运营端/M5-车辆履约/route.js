@@ -9,6 +9,7 @@ TP.registerModule({
     'vehicle:LDEMOVIN000000021':{ops:'f-transit'},
     'vehicle:LDEMOVIN000000015':{ops:'f-sparse'},
     'vehicle:LDEMOVIN000000011':{ops:'f-transfer'},
-    'vehicle:LDEMOVIN000000012':{ops:'f-returned'}
+    'vehicle:LDEMOVIN000000012':{ops:'f-returned'},
+    'vehicle:LDEMOVIN000000031':{ops:'f-nobl'}
   }
 });
