@@ -118,8 +118,10 @@
   --onboard-w:720px;      /* 入驻准备：步骤条 + 绑定钱包 / 资料表单的居中卡片 */
   --profile-label-w:168px; /* 账户信息分区标题：容纳英文 Personal information */
   --profile-reading-max:1360px; /* 账户资料的阅读上限，不限制未来列表宽度 */
-  --enterprise-table-min:1280px; /* 十列企业列表（含关联 ERP 企业）中文阅读下限，更窄时表内滚动 */
-  --enterprise-table-min-en:1520px; /* 英文完整状态与表头的阅读下限 */
+  --enterprise-table-min:1152px; /* 十列企业列表：1440 px 桌面可完整查看，窄屏表内滚动 */
+  --enterprise-table-min-en:1480px; /* 英文状态不折行，保留名称和邮箱阅读空间 */
+  --enterprise-section-w:176px; /* M2 维护表单左侧分区标题 */
+  --enterprise-erp-modal-w:760px; /* 同一 ERP 关联流程统一宽度，容纳完整核对表 */
   --phone-code-only-w:128px; /* 区号选中后只显示“+区号”；空值“请选择区号”仍可读 */
   --enterprise-search-w:480px; /* 编号、名称、登记号码、邮箱的查询提示 */
   --receivable-table-min:1120px; /* M3 精简列表，编号与查看操作分别固定两侧 */
