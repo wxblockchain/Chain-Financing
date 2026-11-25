@@ -5,7 +5,7 @@
 (function(){
   var requests = {
     'AP-DEMO-0031':'d-pending', 'AP-DEMO-0045':'d-pending-fx', 'AP-DEMO-0024':'d-review', 'AP-DEMO-0022':'d-approved',
-    'AP-DEMO-0021':'d-pushed', 'AP-DEMO-0028':'d-reapplied', 'AP-DEMO-0026':'d-closed'
+    'AP-DEMO-0021':'d-approved-single', 'AP-DEMO-0028':'d-reapplied', 'AP-DEMO-0026':'d-closed'
   };
   var routes = {
     receivables:{creditor:'l-list', both:'l-list'}

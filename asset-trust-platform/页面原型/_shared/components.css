@@ -1757,7 +1757,7 @@ table.tbl.push-list{min-width:var(--push-table-min)}
 .push-list col.ps-col-first{width:var(--push-col-first)}
 .push-list col.ps-col-actions{width:var(--push-col-actions)}
 .push-list .row-acts{display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-1)}
-/* A44 确权与审核进度：复用 A20 / A25。M7a 仍为四等分（含推送环节）；M9 申请详情（.review-detail）为三等分（发起申请 / 债务人确认 / 运营审核），
+/* A44 确权与审核进度：复用 A20 / A25。M7a 申请详情改用三等分 .receivable-steps（不使用本规则）；M9 申请详情（.review-detail）为三等分（发起申请 / 债务人确认 / 运营审核），
    运营审核环节标“上链中”或上链失败 li.failed（与驳回同一红色 × 标记）。 */
 .receivable-steps.review-steps{grid-template-columns:repeat(4,minmax(0,1fr))}
 .review-detail .receivable-steps.review-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -1856,7 +1856,7 @@ table.tbl.claim-list.is-selecting{min-width:var(--claim-table-min-select)}
 .claim-note-list{margin:var(--sp-1) 0 0;padding-left:var(--sp-5)}
 /* A50 申请详情（与 A18 共用 .receivable-detail 版式）：概要卡复用 A24，右侧为申请状态与发起方式，已重新发起时底部 .cond 注明新申请编号；
    确权与审核进度卡复用 A20 / A25 的三环节进度条（发起申请 / 债务人确认 / 运营审核），下方接 A11 处理记录时间线（按发生先后，只列已发生环节）；
-   推送进度不属于该进度，运营审核通过后另起一张卡；当次依据为独立分组，按 M3 详情分类展示提交时资料。 */
+   “运营审核通过”只作为终态，不展示推送信息；当次依据为独立分组，按 M3 详情分类展示提交时资料。 */
 .claim-summary>.cond{border-radius:0 0 var(--radius-sm) var(--radius-sm)}
 .claim-summary .status-grid dd{font-size:var(--ui-field-value)}
 .claim-summary .meta .btn-link{font-size:inherit;padding-block:0}

@@ -131,11 +131,6 @@ TP.addCopy({
 "账期": "Payment term",
 "90 天": "90 days",
 "应收账款起算日": "Receivable start date",
-"推送": "Push",
-"未推送": "Not pushed",
-"已推送": "Pushed",
-"首次推送时间": "First pushed at",
-"运营审核通过 · 已推送": "Approved by operations · pushed",
 
 /* PRD 17f55c72：应收账款详情、美元金额与折算汇率 */
 "3 辆": "3 vehicles",
@@ -171,15 +166,12 @@ TP.addCopy({
 "核心资料存在差异 · 不可申请": "Core data difference · not eligible",
 "确权申请读取失败": "Confirmation request failed to load",
 "待债务人确认 · 非美元（批量发起）": "Awaiting debtor confirmation · non-USD (bulk)",
-"运营审核通过 · 未推送（批量发起）": "Approved by operations · not pushed (bulk)",
 "债务人已驳回": "Rejected by debtor",
 
 /* PRD b0b37fe0 / 36f756a6：批量选择、暂无法判断、资料不齐全或无效、推送进度 */
 "批量选择": "Bulk selection",
 "暂无法判断": "Cannot determine yet",
 "尚未发起确权申请": "No confirmation request yet",
-"推送状态": "Push status",
-"推送进度": "Push progress",
 "暂时无法读取本笔应收账款的申请，请稍后重试。": "Unable to load requests for this receivable. Please try again later.",
 "查看申请详情": "View request details",
 "资料不齐全或无效：内销发票币种（无法折算）、内销合同币种（无法折算）": "Incomplete or invalid data: Domestic sales invoice currency (cannot convert), Domestic sales contract currency (cannot convert)",
@@ -194,5 +186,12 @@ TP.addCopy({
 "币种无法折算 · 资料不齐全或无效": "Currency cannot be converted · incomplete or invalid data",
 "债务人未对应平台企业 · 资料缺失": "Debtor not matched · data missing",
 "资料校验暂无法判断": "Data check undetermined",
-"债务人已驳回（最近一笔）": "Rejected by debtor (latest request)"
+"债务人已驳回（最近一笔）": "Rejected by debtor (latest request)",
+
+/* PRD f68d6e31：去掉推送信息，只展示本企业的申请 */
+"运营审核通过（已到期、已收清）": "Approved by operations (due, fully collected)",
+"运营审核通过（批量发起）": "Approved by operations (bulk)",
+"运营审核通过（单笔发起，已到期）": "Approved by operations (single, due)",
+"曾有其他企业的申请通过运营审核": "Another company's request was approved",
+"已通过运营审核": "Already approved by operations"
 });
