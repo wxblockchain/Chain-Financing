@@ -34,11 +34,11 @@
       // 角标为全平台待运营审核笔数（M9 F-M9-01），评审演示值；接入时由 M9 运营审核与资产推送提供。
       {key:'review',    label:'运营审核',   icon:'shield', pendingCount:4}
     ]},
-    // M15 数据监控（WS-610）：已登记于 M2 PRD F-OP-11 菜单表（6cb5a5e1）。角标：数据接入为异常接口个数、数据推送为存证失败笔数（F-M15-05），评审演示值。
+    // M15 数据监控（WS-610）：已登记于 M2 PRD F-OP-11 菜单表（6cb5a5e1）。角标只有数据接入（异常接口个数，F-M15-05，评审演示值）；数据推送没有待办（PRD 46fd0a8e）。
     {group:'数据监控', items:[
       {key:'monitor',   label:'监控概览',   icon:'chart'},
       {key:'intake',    label:'数据接入',   icon:'plug', pendingCount:1},
-      {key:'push',      label:'数据推送',   icon:'send', pendingCount:1}
+      {key:'push',      label:'数据推送',   icon:'send'}
     ]},
     // M11 汇率管理（WS-612）：已登记于 M2 PRD F-OP-11 菜单表（6cb5a5e1）。
     {group:'平台配置', items:[

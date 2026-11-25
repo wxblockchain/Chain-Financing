@@ -1742,21 +1742,19 @@ table.tbl.review-list{min-width:var(--review-table-min)}
 .review-list col.rv-col-actions{width:var(--review-col-actions)}
 :is(.review-list,.push-list) .row-acts{display:flex;justify-content:flex-end;gap:var(--sp-1)}
 :is(.review-list-card,.push-list-card)>.card-head{padding-block:var(--sp-3)}
-/* A43 资产推送列表（M15 数据推送，v1.45 由原 M9 出库列表改写）：与 A42 同骨架，申请编号固定在左、操作固定在右。
-   十列为申请编号、内销发票号、债权人、金额、审核通过时间、目标平台、推送状态、推送条件（不满足时原因逐行）、调取情况（首次推送、最近调取、调取次数三行，.pull-lines）、操作。 */
+/* A43 资产推送列表（M15 数据推送，v1.45 由原 M9 出库列表改写；PRD 46fd0a8e 起只看推送结果）：与 A42 同骨架，申请编号固定在左、操作固定在右。
+   八列为申请编号、内销发票号、债权人、金额、目标平台、推送结果、首次推送时间、操作；操作按用户要求上下排列（多个操作逐行堆叠，右对齐）。 */
 table.tbl.push-list{min-width:var(--push-table-min)}
 :lang(en) table.tbl.push-list{min-width:var(--push-table-min-en)}
 .push-list col.ps-col-id{width:var(--push-col-id)}
 .push-list col.ps-col-invoice{width:var(--push-col-invoice)}
 .push-list col.ps-col-party{width:var(--push-col-party)}
 .push-list col.ps-col-amount{width:var(--push-col-amount)}
-.push-list col.ps-col-time{width:var(--push-col-time)}
 .push-list col.ps-col-platform{width:var(--push-col-platform)}
-.push-list col.ps-col-status{width:var(--push-col-status)}
-.push-list col.ps-col-cond{width:var(--push-col-cond)}
-.push-list col.ps-col-pull{width:var(--push-col-pull)}
+.push-list col.ps-col-result{width:var(--push-col-result)}
+.push-list col.ps-col-first{width:var(--push-col-first)}
 .push-list col.ps-col-actions{width:var(--push-col-actions)}
-.push-list .row-acts{display:flex;justify-content:flex-end;gap:var(--sp-1)}
+.push-list .row-acts{display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-1)}
 /* A44 确权、审核与推送进度：复用 A20 / A25，四等分（发起申请 / 债务人确认 / 运营审核 / 推送）；存证失败用 li.failed（与驳回同一红色 × 标记）。 */
 .receivable-steps.review-steps{grid-template-columns:repeat(4,minmax(0,1fr))}
 .receivable-steps li.failed{color:var(--danger);border-top-color:var(--danger)}
@@ -2551,6 +2549,7 @@ button.stat-tile:hover{border-color:var(--accent-border);background:var(--card-h
    调用记录六列，未接收原因摘要用原生 details 展开单据号；接口 / 资产概要卡 .interface-summary 为一行只读字段。 */
 table.tbl.intake-list{min-width:var(--intake-table-min)}
 .intake-list col.if-col-name{width:var(--intake-col-name)}
+.intake-list col.if-col-src{width:var(--intake-col-src)}
 .intake-list col.if-col-mod{width:var(--intake-col-mod)}
 .intake-list col.if-col-status{width:var(--intake-col-status)}
 .intake-list col.if-col-time{width:var(--intake-col-time)}
@@ -2570,13 +2569,11 @@ table.tbl.call-records{min-width:var(--call-record-min)}
 .rank-list{list-style:none;margin:0;padding:var(--sp-2) 0 0;display:flex;flex-direction:column;gap:var(--sp-3)}
 .rank-list li{display:grid;grid-template-columns:minmax(96px,30%) minmax(0,1fr) 40px;align-items:center;gap:var(--sp-3);font-size:var(--fs-13)}
 .rank-name{color:var(--muted);text-align:right;overflow-wrap:anywhere}
+.rank-src{display:block;font-size:var(--fs-12);color:var(--faint)} /* 排行项下方注明数据来源，新增来源后同名接口可区分 */
 .rank-value{color:var(--text);font-variant-numeric:tabular-nums}
 .rank-bar{display:block}
 :is(.data-time,.platform-line,.screen-head,.monitor-page .note,.big-screen .note) [data-zone]{display:inline}
 .platform-line b{white-space:nowrap}
-.pull-lines{display:flex;flex-direction:column;gap:2px;white-space:nowrap}
-.pull-lines .role{display:inline-block;min-width:2.5em;margin-right:var(--sp-1);color:var(--muted);font-size:var(--fs-12)}
-.pull-lines .cell-sub{margin-top:0}
 /* M17 / WS-685 · 首页展示组件。仅 .home-page 消费；继承现有字体、色彩、间距与图表 token。
    总览按周期横向比较，指标不逐个套卡片；金额不缩写。密集表格与 12 月图表在区域内滚动。 */
 .home-page .content-in{max-width:none;margin-inline:0}
