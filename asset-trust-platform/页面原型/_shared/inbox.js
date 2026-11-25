@@ -51,8 +51,8 @@
   function m7b01(id, app, debtor, inv, ar, at, read){
     return {id:id, cat:'progress', at:at, read:read,
       t:['确权申请已被债务人确认','Confirmation request confirmed by debtor'],
-      b:[debtor+' 已确认贵企业就内销发票 '+inv+'（应收账款编号 '+ar+'）发起的确权申请 '+app+'。贵企业在这笔业务中是债权人。申请已进入运营审核，审核通过前不能推送给资产数字化平台。',
-         debtor+' has confirmed confirmation request '+app+' submitted by your company for invoice '+inv+' (receivable '+ar+'). Your company is the creditor in this transaction. The request is now awaiting operations review; the asset cannot be provided to the asset digitisation platform before the review is approved.'],
+      b:[debtor+' 已确认贵企业就内销发票 '+inv+'（应收账款编号 '+ar+'）发起的确权申请 '+app+'。贵企业在这笔业务中是债权人。申请已进入运营审核。',
+         debtor+' has confirmed confirmation request '+app+' submitted by your company for invoice '+inv+' (receivable '+ar+'). Your company is the creditor in this transaction. The request is now awaiting operations review.'],
       ref:appRef(app, inv), go:{key:'m7a-'+app}};
   }
   /* M7b-NT02 确权申请被债务人驳回（业务办理进度，发给债权人企业）→ M7a 申请详情；驳回原因按原文展示 */
