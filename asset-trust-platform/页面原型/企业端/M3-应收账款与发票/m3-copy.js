@@ -68,5 +68,9 @@ TP.addCopy({
 "首次推送时间": "First pushed at",
 "应收账款金额（美元）": "Receivable amount (USD)",
 "确权申请结果": "Confirmation request result",
-"内销合同": "Domestic sales contract"
+"内销合同": "Domestic sales contract",
+"在 1% 容差内视为已收清": "Treated as fully collected within the 1% tolerance",
+"无法折算": "Cannot convert",
+"原币": "Original",
+"详情 · 金额无法折算": "Details · Cannot convert amount"
 });

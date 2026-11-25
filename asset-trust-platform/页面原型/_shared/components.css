@@ -2329,6 +2329,11 @@ table.tbl.receivable-list.rcv-overview-list{min-width:var(--rcv-overview-min)}
 .receivable-summary .amount-orig{margin-top:var(--sp-1);font-size:var(--fs-13);color:var(--muted)}
 @media(min-width:601px){.receivable-summary .status-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1101px){.receivable-summary .status-grid.four{grid-template-columns:repeat(4,minmax(104px,auto))}}
+/* M3 v1.57（PRD 3c844954）：回款计入金额（暂计标签、所用汇率与生效时间）；待收款下的容差说明。 */
+.booked-receipts .booked{display:inline-flex;align-items:baseline;gap:var(--sp-2)}
+.booked-receipts .num .cell-sub{max-width:30ch}
+.receivable-summary .meta b>.cell-sub{display:block;font-weight:400}
+.receivable-summary .amount-lg>.missing:not(.na-dash){font-size:var(--fs-20);font-weight:600}
 .vehicle-group{min-width:0}
 .vehicle-group h4{margin:0 0 var(--sp-3);font-size:var(--fs-13);font-weight:600;color:var(--text)}
 .vehicle-group dl{display:grid;gap:var(--sp-3);margin:0}

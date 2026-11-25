@@ -137,10 +137,10 @@ TP.addCopy({
 "终端回款进度": "End-customer collection",
 "终端销售进度": "End-customer sales",
 "记录核实": "Record verification",
-"详情 · 已到期、申请已关闭": "Details · overdue, request closed",
+"详情 · 已到期、申请已关闭、容差内已收清": "Details · overdue, request closed, fully collected within tolerance",
 "详情 · 核实已记录": "Details · verification recorded",
 "详情 · 核心资料差异待核实": "Details · core data differences pending",
-"详情 · 起算日未确定、未对应平台企业": "Details · start date not determined, unmatched company",
+"详情 · 起算日未确定、回款无法计入": "Details · start date not determined, receipt cannot be booked",
 "详情 · 车辆清单读取失败": "Details · vehicle list failed to load",
 "详情 · 运营审核通过、存证失败（非美元币种）": "Details · approved, notarization failed (non-USD)",
 "详情 · 默认（临近到期、待运营审核）": "Details · default (due soon, awaiting operations review)",
@@ -180,5 +180,11 @@ TP.addCopy({
 "已收款": "Collected",
 "相对应收账款金额": "Relative to receivable amount",
 "相对应收账款金额 · 含按比例分摊": "Relative to receivable amount · Includes pro-rata allocation",
-"确权申请结果": "Confirmation request result"
+"确权申请结果": "Confirmation request result",
+"计入金额": "Booked amount",
+"暂计": "Provisional",
+"在 1% 容差内视为已收清": "Treated as fully collected within the 1% tolerance",
+"收付日期未提供": "Payment date not provided",
+"生效时间": "Effective",
+"3 条": "3 records"
 });
