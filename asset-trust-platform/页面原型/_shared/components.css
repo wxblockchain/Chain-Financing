@@ -1714,6 +1714,7 @@ table.tbl.fx-history{table-layout:fixed;min-width:var(--fx-history-min)}
 .tbl.fx-history .num{white-space:nowrap;text-align:right}
 .tbl.fx-history td.fx-source{overflow-wrap:anywhere;word-break:normal}
 .tbl.fx-history td.fx-source .cell-sub{display:block}
+.fx-note{white-space:pre-wrap} /* M11 备注保留录入的换行与中间空格 */
 .fx-history col.fx-col-id{width:var(--fx-col-id)}
 .fx-history col.fx-col-rate{width:var(--fx-col-rate)}
 .fx-history col.fx-col-time{width:var(--fx-col-time)}

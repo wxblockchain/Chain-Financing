@@ -10,7 +10,8 @@ TP.addCopy({
 "第 1 步 · 已填写": "Step 1 · Filled in",
 "第 1 步 · 与当前汇率相同": "Step 1 · Same as current rate",
 "第 2 步 · 核对并保存": "Step 2 · Review and save",
-"第 2 步 · 汇率已被他人更新": "Step 2 · Rate updated by someone else",
+"第 2 步 · 汇率已更新": "Step 2 · Rate has been updated",
+"第 1 步 · 当前汇率读取失败": "Step 1 · Current rate unavailable",
 "第 2 步 · 保存失败": "Step 2 · Save failed",
 "首次设置汇率": "Set the first rate",
 
@@ -36,7 +37,7 @@ TP.addCopy({
 "汇率读取失败": "Could not load exchange rates",
 "暂时无法读取，请稍后重试。": "Unable to load right now. Please try again later.",
 "重试": "Retry",
-"汇率已更新。": "Exchange rate updated.",
+"保存成功，新汇率已生效。": "Saved. The new rate is now in effect.",
 
 "更新汇率步骤": "Update rate steps",
 "填写新汇率": "Enter new rate",
@@ -50,7 +51,9 @@ TP.addCopy({
 "重新提交": "Submit again",
 "与当前汇率相同，无需更新。": "Same as the current rate. No update needed.",
 "保存后立即生效；已保存的汇率不能修改或删除。": "Takes effect as soon as it is saved. Saved rates cannot be edited or deleted.",
-"汇率已被他人更新，本次未保存。请按最新汇率重新核对后保存。": "The rate was updated by someone else, so this change was not saved. Review it against the latest rate and save again.",
+"汇率已更新，本次未保存。请按最新汇率重新核对后保存。": "The rate has been updated, so this change was not saved. Review it against the latest rate and save again.",
+"暂时无法读取当前汇率，请稍后重试。": "Unable to load the current rate. Please try again later.",
+"暂时无法读取": "Unavailable",
 "最新当前汇率": "Latest current rate",
 "保存失败，本次未保存，当前汇率不变。请重新提交。": "Save failed. Nothing was saved and the current rate is unchanged. Please submit again."
 });
