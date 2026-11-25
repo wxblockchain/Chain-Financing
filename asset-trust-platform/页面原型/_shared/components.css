@@ -1367,11 +1367,11 @@ td.pop-col:has(>.value-pop)::after{content:none}
 .addr>.value-pop>.dd-btn:hover{background:var(--card-hover);color:var(--accent)}
 .addr>.value-pop>.dd-list .mono{font-size:var(--fs-13)}
 /* —— 运营端 M2（组件规范 §4 A7–A11）—— */
-/* A7 企业列表：十二列，固定编号和操作；中英文分别设置阅读下限。 */
+/* A7 企业列表：十列（PRD 6cb5a5e1 去掉认证状态与钱包）；编号、名称之后先放关联 ERP 企业与入驻进度两个状态，1280 px 起首屏可见，固定编号和操作；中英文分别设置阅读下限。 */
 .enterprise-table-card{container:enterprise-table / inline-size}
 .enterprise-table-hint{display:none;padding:var(--sp-2) var(--card-pad);border-bottom:1px solid var(--border);font-size:var(--ui-field-label);color:var(--muted)}
-@container enterprise-table (max-width:1439px){.enterprise-table-hint{display:block}}
-@container enterprise-table (max-width:1719px){:lang(en) .enterprise-table-hint{display:block}}
+@container enterprise-table (max-width:1279px){.enterprise-table-hint{display:block}}
+@container enterprise-table (max-width:1519px){:lang(en) .enterprise-table-hint{display:block}}
 .enterprise-table-card .filter-toolbar{row-gap:var(--sp-3)}
 .enterprise-table-card .filter-query{flex-basis:100%;justify-content:flex-start;margin-left:0}
 .enterprise-table-card .filter-search{flex-basis:var(--enterprise-search-w)}
@@ -1383,25 +1383,23 @@ td.pop-col:has(>.value-pop)::after{content:none}
 .tbl.enterprise-list thead th:first-child{background:var(--card-2)}
 .tbl.enterprise-list tr:hover td:first-child{background:var(--row-hover)}
 .tbl.enterprise-list tr.is-new td:first-child{background:linear-gradient(var(--accent-soft),var(--accent-soft)),var(--card)}
-.tbl.enterprise-list th:nth-child(2){width:11%}
-.tbl.enterprise-list th:nth-child(3){width:7%}
-.tbl.enterprise-list th:nth-child(4){width:6.5%}
-.tbl.enterprise-list th:nth-child(5){width:12.5%}
-.tbl.enterprise-list th:nth-child(6){width:12.5%}
-.tbl.enterprise-list th:nth-child(7){width:7%}
-.tbl.enterprise-list th:nth-child(8){width:5%}
-.tbl.enterprise-list th:nth-child(9){width:11%}
-.tbl.enterprise-list th:nth-child(10),.tbl.enterprise-list th:nth-child(11){width:6.5%}
-.tbl.enterprise-list th.col-act{width:5%}
+.tbl.enterprise-list th:nth-child(2){width:12%}
+.tbl.enterprise-list th:nth-child(3){width:13%}
+.tbl.enterprise-list th:nth-child(4){width:11%}
+.tbl.enterprise-list th:nth-child(5){width:8%}
+.tbl.enterprise-list th:nth-child(6){width:8%}
+.tbl.enterprise-list th:nth-child(7){width:15%}
+.tbl.enterprise-list th:nth-child(8),.tbl.enterprise-list th:nth-child(9){width:8%}
+.tbl.enterprise-list th.col-act{width:6%}
 .tbl.enterprise-list td:first-child{white-space:nowrap}
 .tbl.enterprise-list thead th{overflow-wrap:normal;word-break:normal;hyphens:none}
-.tbl.enterprise-list :is(th,td):nth-child(5){overflow-wrap:normal;word-break:normal}
+.tbl.enterprise-list :is(th,td):nth-child(7){overflow-wrap:normal;word-break:normal}
 /* A55 设置新密码的条件精简版：只列长度与组成两条，单列两行、12 px；空格、与当前 / 初始密码相同、两次不一致在对应输入框下以 .err-msg 说明。 */
 .rule-list.compact{grid-template-columns:minmax(0,1fr);gap:var(--sp-1);padding:var(--sp-2) 0;font-size:var(--fs-12)}
 .rule-list.compact li::before{width:14px;height:14px;margin-top:2px}
 /* A56 联系电话区号只显示“+区号”：下拉选项仍为“+区号 国家／地区名”，选中后控件收窄。 */
 .phone-control.code-only,:lang(en) .phone-control.code-only{grid-template-columns:minmax(0,var(--phone-code-only-w)) minmax(0,1fr)}
-.tbl.enterprise-list .tag{white-space:normal;overflow-wrap:normal;word-break:normal}
+.enterprise-table-card .tbl.enterprise-list td .tag{white-space:normal;overflow-wrap:normal;word-break:normal;max-width:100%}
 .tbl.enterprise-list .col-act{width:auto;white-space:nowrap;padding-right:var(--card-pad);z-index:1;box-shadow:inset 1px 0 var(--border)}
 .tbl.enterprise-list tr.is-new .col-act{background:linear-gradient(var(--accent-soft),var(--accent-soft)),var(--card)}
 /* A8 业务角色：多选卡片，两项并排；只读时以标签呈现。 */
@@ -2595,3 +2593,30 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-page-state .state{padding:var(--sp-9) var(--sp-6)}
 .home-page .content-in>.home-stale{margin:var(--sp-3) 0 0}
 .home-empty-list{padding:var(--sp-7) var(--sp-6);border-top:1px solid var(--border)}
+
+/* M2 PRD 6cb5a5e1（v1.50）
+   A78 关联 ERP 企业改为单选：候选只列可关联的企业，两列（ERP 名称 / 标识）+ 分页；已关联时以 .erp-current 展示当前关联与“取消关联”。 */
+.tbl.erp-choice.single th:nth-child(2){width:auto}
+.tbl.erp-choice.single th:nth-child(3){width:30%}
+.erp-picker>.asset-pagination{padding:0 var(--card-pad) var(--sp-4)}
+.erp-current{display:flex;align-items:flex-start;gap:var(--sp-4);flex-wrap:wrap;border:1px solid var(--border);border-radius:var(--radius-xs);padding:var(--sp-1) var(--sp-4)}
+.erp-current>.facts{flex:1;min-width:min(100%,420px);padding:0}
+.erp-current>.facts{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.erp-current>.facts>div{padding-block:var(--sp-3);border-top:0}
+.erp-current-acts{align-self:center;flex:none}
+.erp-picker .card-head .tag{margin-left:0}
+/* A80 详情“关联 ERP 企业”：单个关联以四项 facts 展示，置于详情首卡；未关联时卡头 .tag.danger “未关联”。 */
+.erp-links .erp-link-facts{padding-block:var(--sp-2)}
+@container facts (min-width:762px){.enterprise-detail .erp-links .facts.erp-link-facts{grid-template-columns:repeat(4,minmax(0,1fr))}.enterprise-detail .erp-links .facts.erp-link-facts>div{border-top:0}}
+.erp-links.is-unlinked .card-head .tag{margin-left:0}
+.institution-identity .role-tags{vertical-align:middle}
+/* A88 可查找的下拉（注册国家／地区）：可输入中文或英文名称过滤选项，只能从选项中选择；展开时 .is-open + .combo-list（静态画面中随文档流展开，避免被卡片裁切；中文界面选项右侧附英文名）。 */
+.combo-field{position:relative}
+.combo-field>.inp{padding-right:calc(var(--sp-4) + 16px)}
+.combo-field>svg.i{position:absolute;right:var(--sp-3);top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint);pointer-events:none}
+.combo.is-open .combo-field>svg.i{transform:translateY(-50%) rotate(180deg)}
+.combo-list{margin-top:var(--sp-1);list-style:none;padding:var(--sp-1);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-xs);box-shadow:var(--shadow-lg)}
+.combo-list>li{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3);padding:8px 10px;border-radius:var(--radius-xs);font-size:var(--fs-13);color:var(--text);cursor:pointer}
+.combo-list>li:hover,.combo-list>li.is-active{background:var(--card-hover)}
+.combo-sub{color:var(--muted);font-size:var(--fs-12)}
+:lang(en) .combo-sub{display:none}
