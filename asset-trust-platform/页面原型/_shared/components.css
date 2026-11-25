@@ -2582,24 +2582,11 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-meta [data-zone],.home-stale [data-zone]{display:inline}
 .home-page small{font-size:var(--fs-12);font-weight:400;color:var(--muted)}
 .home-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
-.home-sample{color:var(--faint)}
-.home-context{margin-top:var(--sp-2);font-size:var(--fs-12);color:var(--muted);line-height:1.7}
 .home-section{margin-top:var(--sp-7);min-width:0}
 .home-section-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--sp-2);margin-bottom:var(--sp-3)}
 .home-section-head h2{font-size:var(--ui-section-title);font-weight:600}
 .home-section-head p{font-size:var(--fs-12);color:var(--muted)}
-.home-number{font-size:var(--fs-20);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
-.home-mobile-hint{display:none;padding:var(--sp-3) var(--sp-4);font-size:var(--fs-12);color:var(--muted);border-bottom:1px solid var(--border)}
-.home-page .tbl.home-overview{min-width:820px;width:100%;table-layout:fixed}
-.home-page .home-overview th:first-child{width:18%;text-align:left}
-.home-page .home-overview th:nth-child(2),.home-page .home-overview th:nth-child(4){width:16%}
-.home-page .home-overview th:nth-child(3),.home-page .home-overview th:nth-child(5){width:25%}
-.home-page .home-overview :is(td,thead th){text-align:right;vertical-align:top;padding:var(--sp-4)}
-.home-page .home-overview tbody th{padding:var(--sp-4);font-weight:500;vertical-align:top}
-.home-page .home-overview tbody tr:last-child :is(td,th){border-bottom:0}
 .home-cell-sub{display:block;font-size:var(--fs-12);line-height:1.65;color:var(--muted);font-weight:400;margin-top:var(--sp-1);white-space:normal}
-.home-parties{display:flex;flex-wrap:wrap;gap:var(--sp-5) var(--sp-8);padding:var(--sp-4) var(--card-pad);border-top:1px solid var(--border);font-size:var(--fs-13);color:var(--muted)}
-.home-parties strong{display:inline-block;color:var(--text);font-weight:600;margin-left:var(--sp-3);font-size:var(--fs-16)}
 .home-note{font-size:var(--fs-12);line-height:1.75;color:var(--muted);margin-top:var(--sp-3)}
 .home-trends{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);margin-top:var(--sp-4)}
 .home-trends>.card+.card{margin:0}
@@ -2635,7 +2622,6 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-ar-body{padding:0 var(--card-pad) var(--card-pad)}
 .home-ar-svg{display:block;min-width:540px}
 .home-overdue-stats{display:flex;flex-wrap:wrap;gap:var(--sp-5) var(--sp-8);padding:var(--card-pad);margin:0}
-.home-table-hint{padding:0 var(--card-pad) var(--sp-3);font-size:var(--fs-12);color:var(--muted)}
 .home-page .tbl.home-overdue{width:100%;min-width:1400px;table-layout:fixed}
 .home-page .home-overdue th{white-space:normal;overflow-wrap:normal}
 .home-page .home-overdue th:first-child{width:140px}
@@ -2645,8 +2631,8 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-page .home-overdue :is(td,th):last-child{width:160px}
 .home-page .home-overdue :is(td,th):first-child{position:sticky;left:0;background:var(--card);z-index:1;border-right:1px solid var(--border)}
 .home-page .home-overdue thead th:first-child{background:var(--card-soft)}
-@media(max-width:1250px){.home-trends,.home-analysis{grid-template-columns:minmax(0,1fr)}.home-ar-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.home-mobile-hint{display:block}}
-@media(max-width:600px){.home-page .home-number{font-size:var(--fs-16)}.home-ar-stats{grid-template-columns:minmax(0,1fr)}.home-dist-row{grid-template-columns:112px minmax(0,1fr) 24px}.home-section-head{display:block}.home-section-head p{margin-top:var(--sp-1)}}
+@media(max-width:1250px){.home-trends,.home-analysis{grid-template-columns:minmax(0,1fr)}.home-ar-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.home-ar-stats{grid-template-columns:minmax(0,1fr)}.home-dist-row{grid-template-columns:112px minmax(0,1fr) 24px}.home-section-head{display:block}.home-section-head p{margin-top:var(--sp-1)}}
 /* M17 状态画面（WS-685 交互接续）：首次加载、整页 / 单板块失败、刷新中、刷新失败与空资料。复用基线 .state、.note.red、.spinner，不新增 token。 */
 .home-page .spinner{display:inline-block;width:14px;height:14px;vertical-align:-3px;margin-right:var(--sp-2)}
 .home-page .btn .spinner{margin-right:0}
@@ -2772,3 +2758,25 @@ body:has(.home-page) .sidebar .nav{position:relative}
   .m1-ui .file-row{padding:var(--sp-3)}
   .m1-identity{padding:var(--sp-4)}
 }
+/* M17 外采与外销总览图表（用户 2026-11-25 要求总览统一为图表，WS-685）：数量（辆）与金额（USD）分卡，不共用刻度；
+   每个周期一组，外采 --accent / 外销 --chart-2 两条横条同一比例尺，系列名与数值始终以文字可见，横条 aria-hidden。
+   同比在数值右侧；无法折算、合同价等注明紧跟在对应横条下方。供应商与终端客户为数量卡下方的第二组横条。 */
+.home-ov{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);align-items:start}
+.home-ov>.card+.card{margin:0}
+.home-ov-body{display:grid;gap:var(--sp-5);padding:var(--sp-4) var(--card-pad) var(--sp-5)}
+.home-ov-group,.home-ov-parties{display:grid;gap:var(--sp-2);min-width:0}
+.home-ov-parties{padding:var(--sp-4) var(--card-pad) var(--sp-5);border-top:1px solid var(--border)}
+.home-ov-period{margin:0 0 var(--sp-1);font-size:var(--fs-13);font-weight:600;color:var(--text)}
+.home-ov-period small{margin-left:var(--sp-2)}
+.home-ov-row{--ov-val:6.5em;display:grid;grid-template-columns:4.5em minmax(48px,1fr) var(--ov-val) 7.5em;align-items:center;column-gap:var(--sp-3);font-size:var(--fs-12);color:var(--muted)}
+.home-ov-card+.home-ov-card .home-ov-row{--ov-val:11.5em}
+.home-ov-track{height:12px;background:var(--gray-bg);border-radius:2px;overflow:hidden}
+.home-ov-fill{display:block;height:100%;background:var(--accent);border-radius:2px}
+.home-ov-row.is-sale .home-ov-fill{background:var(--chart-2)}
+.home-ov-val{text-align:right;white-space:nowrap;color:var(--text)}
+.home-ov-val b{font-size:var(--fs-16);font-weight:600;font-variant-numeric:tabular-nums}
+.home-ov-yoy{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.home-ov-yoy small{display:block;white-space:normal}
+.home-ov-note{grid-column:2/-1;margin:2px 0 var(--sp-1);line-height:1.6}
+@media(max-width:1250px){.home-ov{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.home-ov-row,.home-ov-card+.home-ov-card .home-ov-row{grid-template-columns:4.5em minmax(40px,1fr) auto}.home-ov-yoy{grid-column:2/-1}}
