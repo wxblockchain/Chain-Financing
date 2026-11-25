@@ -1450,6 +1450,17 @@ fieldset.field>legend.field-caption{padding:0;margin-bottom:var(--sp-2);width:10
 @media(min-width:1280px){.enterprise-detail-grid{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}}
 /* M2 账户设置随业务页展开；企业端 M1 的资料阅读宽度保持原定义。 */
 [data-module="ops-enterprises"] .account-profile :is(.content-in,.profile-sheet){max-width:none}
+/* M2 账户设置：偏好标签、说明和控件垂直成组；密码操作靠近其对象。
+   显式模块类名使 M1 的账户组件保持原布局。 */
+.m2-profile-preferences{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-6)}
+.m2-profile-preferences .preference-row{flex-direction:column;align-items:stretch;gap:var(--sp-3)}
+.m2-profile-preferences .preference-row+.preference-row{padding-top:0;border-top:0}
+.m2-profile-preferences .preference-row .inp{flex:none;max-width:none;width:100%}
+.m2-profile-preferences .preference-feedback{grid-column:1/-1;margin:0}
+.m2-profile-preferences .preference-feedback:empty{display:none}
+.m2-profile-security .preference-row{justify-content:flex-start;align-items:center;gap:var(--sp-6)}
+.m2-profile-security .preference-row>div{flex:0 1 auto}
+@media(max-width:900px){.m2-profile-preferences{grid-template-columns:minmax(0,1fr)}}
 @container facts (min-width:420px){
   .enterprise-detail .card-sec .facts.cols-3{grid-template-columns:repeat(2,minmax(0,1fr))}
   .enterprise-detail .card-sec .facts.cols-3>div:nth-child(2):not(.wide){border-top:0}
@@ -2421,7 +2432,7 @@ table.tbl.fund-list{min-width:var(--fund-table-min)}
 .erp-picker .state{padding-block:var(--sp-6)}
 /* A79 关联变化确认：弹窗内明细表列出新增 / 取消关联的 ERP 企业及作为内销卖方、内销买方的应收账款笔数，下方说明生效后果。 */
 .modal.enterprise-erp-dialog{max-width:var(--enterprise-erp-modal-w)}
-.enterprise-erp-dialog .modal-b>.facts-region{margin-bottom:var(--sp-4)}
+.enterprise-erp-dialog .detail-table{margin-inline:0;margin-top:0}
 .modal .erp-change-wrap{margin:0 0 var(--sp-4)}
 .tbl.erp-change{min-width:520px;table-layout:fixed}
 .tbl.erp-change th:nth-child(1){width:84px}
