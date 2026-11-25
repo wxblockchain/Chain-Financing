@@ -2663,3 +2663,87 @@ body:has(.home-page) .sidebar .nav{position:relative}
 /* 入驻“完善资料”的提交栏（M1）：复用 .anchored-actions 吸底，贴合入驻卡片底边。 */
 .onboard-body>.form-actions.anchored-actions{margin:0 calc(-1 * var(--card-pad)) calc(-1 * var(--card-pad));border:0;border-top:1px solid var(--border);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
 :lang(en) .combo-sub{display:none}
+
+/* A89 M1 资料与流程的呈现变体（WS-669）。仅模块显式启用；不改变 A1 / A5
+   的其他消费者。颜色、字体、间距全部继承平台 token；此块是变体唯一维护源。 */
+.m1-reading{max-width:var(--profile-reading-max);margin-inline:0}
+.m1-ui .focus-card>.stack>.hint:first-child{margin-top:calc(-1 * var(--sp-3))}
+.m1-ui :is(.field-caption>label,.field-label){font-size:var(--ui-field-label);font-weight:500;color:var(--muted)}
+.m1-ui .field-static{border-style:solid;border-color:var(--border);overflow-wrap:anywhere}
+.m1-ui .modal-b>.steps{padding-bottom:var(--sp-4);border-bottom:1px solid var(--row-line)}
+.m1-ui:has([data-overlay]:not([hidden])) :is(.demo-btn,.demo-panel){z-index:calc(var(--z-mask) - 1)}
+.m1-ui .code-control{flex-wrap:wrap}
+.m1-ui .code-control>.inp{min-width:8ch}
+
+/* 标题在字段上方，编辑与标题同排；概览与设置区在宽屏两栏，文档 / 编辑区通栏。 */
+.profile-sheet.profile-sheet-stacked{display:grid;grid-template-columns:minmax(0,1fr);overflow:visible}
+.profile-sheet-stacked>.profile-section{
+  display:flex;flex-direction:column;gap:var(--sp-5);min-width:0;padding:var(--sp-6);border:0;grid-column:1/-1}
+.profile-sheet-stacked>.profile-section+.profile-section{border-top:1px solid var(--border)}
+.profile-sheet-stacked .profile-section>.section-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4)}
+.profile-sheet-stacked .profile-section>.section-head>:is(h2,.btn),
+.profile-sheet-stacked .profile-section:has(>.section-head)>.section-body{grid-column:auto;grid-row:auto}
+.profile-sheet-stacked .profile-section :is(h2,.section-head>h2){font-size:var(--fs-20);font-weight:600;line-height:1.5}
+.profile-sheet-stacked .section-head>.btn{flex:none;align-self:center}
+.profile-sheet-stacked .facts{column-gap:var(--sp-6);row-gap:var(--sp-4)}
+.profile-sheet-stacked .facts>div{padding:0;border:0}
+.profile-sheet-stacked .facts.cols-2>.wide+div,.m1-identity .facts.cols-2>.wide+div{border-top:0}
+.profile-sheet-stacked .facts.inset{padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card)}
+.profile-sheet-stacked .profile-preferences .preference-row{flex-wrap:wrap;gap:var(--sp-3) var(--sp-5)}
+.profile-sheet-stacked .profile-preferences .preference-row>div:first-child{flex:1 1 180px}
+.profile-sheet-stacked .profile-preferences .preference-row>.btn{flex:none}
+.profile-sheet-stacked .profile-preferences .preference-row>:is(.inp,.combo){flex:1 1 200px;max-width:100%;min-width:0}
+.profile-sheet-stacked .profile-preferences .preference-row .inp{max-width:100%;width:100%}
+@container facts (min-width:420px){.profile-sheet-stacked .facts:not(.single){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container facts (min-width:600px){.profile-sheet-stacked .profile-section:not(.profile-overview) .facts:not(.single):not(.cols-2){grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:1280px){
+  .profile-sheet.profile-sheet-stacked{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .profile-sheet-stacked>.profile-overview,.profile-sheet-stacked>.profile-preferences{grid-column:auto}
+  .profile-sheet-stacked>.profile-overview:first-child:not(:has(+.profile-overview)){grid-column:1/-1}
+  .profile-sheet-stacked>.profile-overview:nth-child(2){border-top:0;border-left:1px solid var(--border)}
+  .profile-sheet-stacked>.profile-preferences+.profile-preferences{border-left:1px solid var(--border)}
+}
+
+/* 资料表单分区：左侧组标题，右侧字段；企业身份信息在同一只读表面上核对。 */
+.onboard-card-sectioned>.onboard-head .steps{max-width:var(--onboard-w)}
+.m1-ui .onboard-screen .page-head[data-sticky]{position:static}
+.onboard-card-sectioned .step-section>h2{font-size:var(--fs-20);line-height:1.5}
+.onboard-card-sectioned .onboard-aside{border-radius:0;border-left:1px solid var(--border)}
+.onboard-card-sectioned .onboard-main>.form-actions{justify-content:flex-start;padding-top:var(--sp-3)}
+.m1-profile-form>.step-section{display:grid;grid-template-columns:var(--profile-label-w) minmax(0,1fr);gap:var(--sp-5) var(--sp-7);align-items:start}
+.m1-profile-form>.step-section>h2{grid-column:1;grid-row:1}
+.m1-profile-form>.step-section>:not(h2){grid-column:2;min-width:0}
+.m1-profile-form>.step-section+.step-section{padding-top:var(--sp-7)}
+.m1-identity{display:flex;flex-direction:column;gap:var(--sp-3);padding:var(--sp-5);border-radius:var(--radius-sm);background:var(--card-2)}
+.m1-identity .facts{padding:0;column-gap:var(--sp-5);row-gap:var(--sp-3)}
+.m1-identity .facts>div{padding:0;border:0}
+.m1-profile-form .subhead{font-size:var(--fs-16)}
+.m1-profile-form>.form-actions.anchored-actions{margin-top:var(--sp-2)}
+.m1-profile-form>.anchored-actions>.hint{flex:1;min-width:0;margin:0}
+.m1-profile-form>.anchored-actions>.btn{flex:none}
+.onboard-card-sectioned :is(input,select,button){scroll-margin-block-end:calc(var(--ctrl-h) + var(--sp-9) + var(--sp-6))}
+.m1-ui .upload-box{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.m1-ui .upload-box>.btn{white-space:nowrap}
+.m1-ui .file-list{gap:0;border:1px solid var(--border);border-radius:var(--radius-sm)}
+.m1-ui .file-row{border:0;border-radius:0;padding:var(--sp-4)}
+.m1-ui .file-row+.file-row{border-top:1px solid var(--border)}
+.m1-ui .file-row:first-child{border-radius:var(--radius-sm) var(--radius-sm) 0 0}
+.m1-ui .file-row:last-child{border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+.m1-ui .file-row>svg.i{color:var(--faint)}
+@media(max-width:1100px){
+  .m1-profile-form>.step-section{display:flex;align-items:stretch;gap:var(--sp-4)}
+  .onboard-card-sectioned .onboard-split{grid-template-columns:minmax(0,1fr)}
+  /* 目录避让提交栏的换行高度和卡片后的页面留白，弹出目录不越过视口顶部。 */
+  .m1-ui:has(.onboard-screen:not([hidden]) .anchored-actions) .demo-btn{bottom:calc(var(--ctrl-h) + var(--sp-9) + var(--sp-9) + var(--sp-5))}
+  .m1-ui:has(.onboard-screen:not([hidden]) .anchored-actions) .demo-panel{bottom:calc(var(--ctrl-h) + var(--sp-9) + var(--sp-9) + var(--sp-5) + var(--ctrl-h-sm) + var(--sp-3));max-height:min(72vh,calc(100dvh - var(--ctrl-h) - var(--sp-9) - var(--sp-9) - var(--sp-5) - var(--ctrl-h-sm) - var(--sp-6)))}
+}
+@media(max-width:600px){
+  .profile-sheet-stacked>.profile-section{padding:var(--sp-4)}
+  .profile-sheet-stacked .profile-preferences .preference-row{align-items:stretch}
+  .profile-sheet-stacked .profile-preferences .preference-row>div:first-child,
+  .profile-sheet-stacked .profile-preferences .preference-row>:is(.inp,.combo){flex:auto}
+  .m1-ui .upload-box{grid-template-columns:minmax(0,1fr)}
+  .m1-ui .upload-box>.btn{justify-self:start}
+  .m1-ui .file-row{padding:var(--sp-3)}
+  .m1-identity{padding:var(--sp-4)}
+}
