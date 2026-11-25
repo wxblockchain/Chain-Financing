@@ -1938,7 +1938,7 @@ table.tbl.alert-list{min-width:var(--alert-table-min)}
 .tbl.alert-list tr.is-blocking>td:first-child{box-shadow:inset 3px 0 var(--danger)}
 .tag.level-block{font-weight:600}
 /* A52 预警详情（.alert-detail，与 A18 共用全宽、标题层级与明细表规则）：页头为规则名称 + 等级（停用时另加“规则已停用”），
-   副标题规则编号、风控类别、预警编号；阻断进行中在页头下用 .note.red 写明“正在阻止：应收账款 的审核通过与推送”，
+   副标题规则编号、风控类别、预警编号；阻断进行中在页头下用 .note.red 写明“正在阻止：应收账款 的运营审核通过”，
    已解除或规则停用时用中性 .note 一句说明。概要复用 A24：左侧比较对象与差异摘要，右侧状态 / 差异现状（已处理加处理结果）。 */
 .alert-detail .alert-banner{margin-bottom:var(--sp-4)}
 .alert-detail .alert-banner .btn-link{padding-inline:0}
