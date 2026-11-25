@@ -1,0 +1,153 @@
+/* M15 / WS-681 · Existing console presentation. Shared A43 / A83–A87
+   remain the base; only this module opts in. Colour and type come from tokens. */
+:root[data-module="data-monitoring"]{
+  --m15-summary-status-w:184px;
+  --m15-call-min:1000px;
+  --m15-call-time-w:176px;
+  --m15-call-result-w:120px;
+  --m15-call-count-w:132px;
+  --m15-call-failure-w:208px;
+}
+:root[data-module="data-monitoring"]:lang(en){
+  --intake-table-min:1360px;
+  --intake-col-name:152px; --intake-col-src:112px;
+  --intake-col-mod:192px; --intake-col-status:112px;
+  --intake-col-time:152px; --intake-col-last:232px; --intake-col-today:176px;
+  --push-table-min-en:1216px;
+  --push-col-id:136px; --push-col-invoice:128px; --push-col-party:176px;
+  --push-col-platform:176px; --push-col-result:120px; --push-col-first:152px;
+  --m15-call-min:1120px;
+  --m15-call-count-w:160px;
+}
+
+/* Overview: section → card → comparable values; no nested card per number. */
+.m15-ui .page-head{gap:var(--sp-4);flex-wrap:wrap}
+.m15-ui .page-head>div:first-child{min-width:0}
+.m15-ui .page-title{overflow-wrap:anywhere}
+.m15-ui .page-desc{max-width:88ch}
+.m15-ui .page-actions{flex-wrap:wrap}
+.m15-ui .data-time{margin-bottom:var(--sp-6);font-size:var(--fs-12)}
+.m15-ui .monitor-group>.detail-group-h{margin-bottom:var(--sp-3)}
+.m15-ui .monitor-group>.detail-group-h h2{font-size:var(--fs-20)}
+.m15-ui .monitor-row{gap:var(--sp-4);margin-top:var(--sp-4)}
+.m15-ui .monitor-row>.card{min-width:0;height:100%}
+.m15-ui .card-head{flex-wrap:wrap;gap:var(--sp-2);padding-block:var(--sp-4)}
+.m15-ui .card-head .sub{font-size:var(--fs-12);overflow-wrap:anywhere}
+.m15-ui .stat-tiles{gap:0;padding:var(--sp-4) var(--sp-3) var(--sp-5)}
+.m15-ui .stat-tile{
+  gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);
+  border:0;border-radius:0;background:transparent;
+}
+.m15-ui .stat-tile+.stat-tile{border-left:1px solid var(--border)}
+.m15-ui .stat-tile.is-danger{background:var(--danger-bg);border-radius:var(--radius-xs)}
+.m15-ui .stat-tile.is-danger .stat-label,
+.m15-ui .stat-tile.is-danger .stat-value{color:var(--danger)}
+.m15-ui .stat-tile.is-ok .stat-label{color:var(--ok)}
+.m15-ui button.stat-tile{border-radius:var(--radius-xs)}
+.m15-ui button.stat-tile:hover{background:var(--card-hover)}
+.m15-ui button.stat-tile.is-danger:hover{background:var(--danger-bg);box-shadow:inset 0 0 0 1px var(--danger-border)}
+.m15-ui .stat-sub{font-variant-numeric:tabular-nums}
+.m15-ui .stat-value:has(time){line-height:1.5}
+.m15-ui .chart-body{padding:var(--sp-3) var(--sp-5) var(--sp-5)}
+.m15-ui .chart-legend{font-size:var(--fs-13);margin-bottom:var(--sp-3)}
+.m15-ui .c-tick{font-size:var(--fs-12)}
+.m15-ui .sw-danger{border-radius:0}
+.m15-ui .rank-list{gap:var(--sp-4)}
+.m15-ui .rank-name{text-align:left;color:var(--text)}
+.m15-ui .rank-value{text-align:right;font-weight:600}
+.m15-ui .rank-src{margin-top:var(--sp-1)}
+.m15-ui .freshness-list :is(th,td){padding:var(--sp-2) var(--sp-3)}
+.m15-ui .freshness-list time{white-space:nowrap;font-variant-numeric:tabular-nums}
+.m15-ui .freshness-list td:first-child{overflow-wrap:anywhere}
+.m15-ui .freshness-list .tag:not(.ok):not(.danger){background:transparent;padding-inline:0}
+.m15-ui .monitor-group+.monitor-group{margin-top:var(--sp-7)}
+@media(min-width:1280px){
+  .m15-ui .m15-diagnostics{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
+}
+
+/* Big screen inherits the light console surface and remains display-only. */
+.m15-ui .screen-head{flex-wrap:wrap}
+.m15-ui .screen-head .page-actions{flex-wrap:wrap}
+.m15-ui .screen-alert{padding:var(--sp-3) var(--sp-5);gap:var(--sp-3)}
+.m15-ui.big-screen>.content-in>.note{border-width:2px;padding:var(--sp-4)}
+@media(min-width:901px){
+  :root[data-module="data-monitoring"] body:has(.big-screen:not([hidden])) .demo-btn{
+    top:var(--sp-4);bottom:auto;left:calc(var(--sidebar-w) + var(--sp-6));right:auto;
+  }
+  :root[data-module="data-monitoring"] body:has(.big-screen:not([hidden])) .demo-panel{
+    top:var(--topbar-h);bottom:auto;left:calc(var(--sidebar-w) + var(--sp-6));right:auto;
+  }
+}
+
+/* Lists: full names wrap, numbers keep their precision, actions stay fixed. */
+.m15-ui :is(.intake-list,.push-list) th{white-space:normal;overflow-wrap:normal}
+.m15-ui :is(.intake-list,.push-list) td{vertical-align:middle}
+.m15-ui .intake-list td:first-child .btn-link{white-space:normal;text-align:left;overflow-wrap:anywhere}
+.m15-ui .intake-list td:nth-child(3),
+.m15-ui .push-list td:nth-child(3),
+.m15-ui .push-list td:nth-child(5){white-space:normal;overflow-wrap:anywhere}
+.m15-ui .intake-list td:nth-child(7){font-variant-numeric:tabular-nums}
+.m15-ui .intake-list .value-lines>span:first-child{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2)}
+.m15-ui .intake-list [data-upstream]{white-space:normal;overflow-wrap:anywhere}
+.m15-ui :is(.intake-list,.push-list,.call-records,.pull-records) time{white-space:nowrap;font-variant-numeric:tabular-nums}
+.m15-ui .money .mono{font-family:var(--sans);font-variant-numeric:tabular-nums}
+.m15-ui .platform-line{gap:var(--sp-3) var(--sp-6);padding:var(--sp-4) var(--sp-5);background:var(--card-2)}
+.m15-ui .platform-line>span{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--sp-2)}
+.m15-ui .platform-line b{white-space:normal;font-variant-numeric:tabular-nums}
+
+/* Details: compact object summary with an independent status column. */
+.m15-ui .m15-summary{display:grid;grid-template-columns:minmax(0,1fr) var(--m15-summary-status-w)}
+.m15-ui .m15-summary>.facts-region{padding:var(--sp-2) 0;min-width:0}
+.m15-ui .m15-summary-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4) var(--sp-6);padding:var(--sp-4) var(--card-pad)}
+.m15-ui .m15-summary-facts>div{border:0;padding:0}
+.m15-ui .m15-summary-status{margin:0;padding:var(--sp-6);border-left:1px solid var(--border);background:var(--card-2);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+.m15-ui .m15-summary-status dt{font-size:var(--fs-13);color:var(--muted);margin-bottom:var(--sp-3)}
+.m15-ui .m15-summary-status dd{margin:0}
+.m15-ui .m15-summary-status .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.m15-ui .m15-primary-amount{grid-column:1/-1}
+.m15-ui .m15-primary-amount .money{font-size:var(--fs-28);line-height:1.3;font-weight:600;flex-wrap:wrap}
+.m15-ui .m15-primary-amount .ccy{font-size:var(--fs-14);font-weight:400}
+.m15-ui .m15-push-summary{margin-top:var(--sp-5)}
+.m15-ui .m15-push-summary .facts{grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr));padding-block:var(--sp-4)}
+.m15-ui .m15-push-summary .facts>div{border:0;padding-block:0}
+.m15-ui .m15-push-summary .facts>div+div{border-left:1px solid var(--border);padding-left:var(--sp-5)}
+.m15-ui .m15-count dd{font-size:var(--fs-24);font-weight:600;font-variant-numeric:tabular-nums;line-height:1.4}
+.m15-ui .m15-count-ok dd{color:var(--ok)}
+.m15-ui .m15-count-danger dd{color:var(--danger)}
+.m15-ui .m15-record-card{margin-top:var(--sp-6)}
+.m15-ui .m15-record-card .card-head{border-bottom:0}
+.m15-ui .call-records-card>.card-head{border-bottom:0;padding-bottom:var(--sp-2)}
+.m15-ui :is(.m15-record-card,.call-records-card)>.detail-table{margin-inline:0;border-inline:0;border-radius:0}
+.m15-ui table.tbl.call-records{min-width:var(--m15-call-min);table-layout:fixed}
+.m15-ui .m15-call-time{width:var(--m15-call-time-w)}
+.m15-ui .m15-call-result{width:var(--m15-call-result-w)}
+.m15-ui .m15-call-count{width:var(--m15-call-count-w)}
+.m15-ui .m15-call-failure{width:var(--m15-call-failure-w)}
+.m15-ui .call-records td{vertical-align:top}
+.m15-ui .call-records :is(th,td){white-space:normal;overflow-wrap:anywhere}
+.m15-ui .reason-detail summary{line-height:1.6;padding-block:var(--sp-1)}
+.m15-ui .reason-detail[open] summary{font-weight:600}
+.m15-ui .reason-detail ul{padding:var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-7);background:var(--card-2);border-radius:var(--radius-xs)}
+.m15-ui .reason-detail li+li{margin-top:var(--sp-2)}
+.m15-ui .reason-detail .mono{white-space:normal;overflow-wrap:anywhere}
+.m15-ui :is(button,summary,[tabindex="0"]):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Keep the inherited review catalog in the sidebar at narrow desktop widths. */
+@media(min-width:901px) and (max-width:1100px){
+  :root[data-module="data-monitoring"] .demo-btn{left:var(--sp-4);right:auto;max-width:calc(var(--sidebar-w) - var(--sp-7))}
+}
+@media(min-width:1280px){
+  .m15-ui .m15-summary-facts{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:1100px){
+  .m15-ui .m15-summary{grid-template-columns:minmax(0,1fr)}
+  .m15-ui .m15-summary-status{padding:var(--sp-4) var(--card-pad);border-left:0;border-top:1px solid var(--border);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+  .m15-ui .m15-summary-status>div{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap}
+  .m15-ui .m15-summary-status dt{margin-bottom:0}
+}
+@media(max-width:700px){
+  .m15-ui .m15-summary-facts{grid-template-columns:minmax(0,1fr)}
+  .m15-ui .m15-push-summary .facts{grid-template-columns:minmax(0,1fr)}
+  .m15-ui .m15-push-summary .facts>div+div{border-left:0;padding-left:0;margin-top:var(--sp-4)}
+  .m15-ui .stat-tiles{grid-template-columns:minmax(0,1fr);gap:var(--sp-3)}
+  .m15-ui .stat-tile+.stat-tile{border-left:0}
+}
