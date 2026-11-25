@@ -160,5 +160,10 @@ TP.addCopy({
   "趋势按年（外采与外销）": "Trends by year (purchasing & sales)",
   "发生额与余额趋势按年": "Receivables trend by year",
   "单个板块首次加载失败（业务周期）": "One section failed on first load (business cycle)",
-  "刷新时单个板块更新失败（业务周期）": "One section failed on refresh (business cycle)"
+  "刷新时单个板块更新失败（业务周期）": "One section failed on refresh (business cycle)",
+  "月度值 · 辆（左轴）": "Monthly value \u00b7 vehicles (left axis)",
+  "月度值 · USD（左轴）": "Monthly value \u00b7 USD (left axis)",
+  "年度值 · 辆（左轴）": "Yearly value \u00b7 vehicles (left axis)",
+  "年度值 · USD（左轴）": "Yearly value \u00b7 USD (left axis)",
+  "环比 · %（右轴）": "Change \u00b7 % (right axis)"
 });

@@ -2608,77 +2608,6 @@ table.tbl.call-records{min-width:var(--call-record-min)}
 .rank-bar{display:block}
 :is(.data-time,.platform-line,.screen-head,.monitor-page .note,.big-screen .note) [data-zone]{display:inline}
 .platform-line b{white-space:nowrap}
-/* M17 / WS-685 · 首页展示组件。仅 .home-page 消费；继承现有字体、色彩、间距与图表 token。
-   总览按周期横向比较，指标不逐个套卡片；金额不缩写。密集表格与 12 月图表在区域内滚动。 */
-.home-page .content-in{max-width:none;margin-inline:0}
-body:has(.home-page) .sidebar .nav{position:relative}
-.home-meta [data-zone],.home-stale [data-zone]{display:inline}
-.home-page small{font-size:var(--fs-12);font-weight:400;color:var(--muted)}
-.home-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
-.home-section{margin-top:var(--sp-7);min-width:0}
-.home-section-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--sp-2);margin-bottom:var(--sp-3)}
-.home-section-head h2{font-size:var(--ui-section-title);font-weight:600}
-.home-section-head p{font-size:var(--fs-12);color:var(--muted)}
-.home-cell-sub{display:block;font-size:var(--fs-12);line-height:1.65;color:var(--muted);font-weight:400;margin-top:var(--sp-1);white-space:normal}
-.home-note{font-size:var(--fs-12);line-height:1.75;color:var(--muted);margin-top:var(--sp-3)}
-.home-trends{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);margin-top:var(--sp-4)}
-.home-trends>.card+.card{margin:0}
-.home-chart-body{padding:var(--sp-2) var(--sp-4) var(--sp-4)}
-.home-line-key{display:inline-block;width:20px;height:0;border-top:2px solid var(--chart-2);position:relative}
-.home-line-key:after{content:"";display:block;position:absolute;left:8px;top:-4px;width:6px;height:6px;border-radius:50%;background:var(--chart-2)}
-.home-plot-scroll{overflow-x:auto;overscroll-behavior-x:contain;padding:var(--sp-1) 0}
-.home-trend-svg{display:block;min-width:480px}
-.home-current-month{fill:var(--accent-soft)}
-.home-change-line{stroke:var(--chart-2);stroke-width:2;fill:none;stroke-linecap:round}
-.home-change-dot{fill:var(--chart-2);stroke:var(--card);stroke-width:1}
-.home-data{margin-top:var(--sp-3);border-top:1px solid var(--border);font-size:var(--fs-12)}
-.home-data summary{cursor:pointer;padding:var(--sp-3) var(--sp-1);color:var(--accent);width:fit-content}
-.home-page .home-data-table{width:100%;min-width:340px}
-.home-page .tbl .home-right{text-align:right;font-variant-numeric:tabular-nums}
-.home-analysis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);align-items:start}
-.home-analysis-card{padding:var(--card-pad)}
-.home-primary{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--sp-3)}
-.home-primary>span{font-size:var(--fs-13);color:var(--muted)}
-.home-primary>strong{font-size:var(--fs-28);font-weight:600;font-variant-numeric:tabular-nums}
-.home-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);padding:var(--sp-4) 0;margin:var(--sp-3) 0 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.home-page dt{font-size:var(--fs-12);color:var(--muted)}
-.home-page dd{margin:var(--sp-2) 0 0;font-weight:600;font-size:var(--fs-20);font-variant-numeric:tabular-nums}
-.home-loss{color:var(--danger)}
-.home-distribution-title{font-size:var(--fs-13);font-weight:500;margin:var(--sp-5) 0 var(--sp-4)}
-.home-distribution{display:grid;gap:var(--sp-3)}
-.home-dist-row{display:grid;grid-template-columns:124px minmax(0,1fr) 24px;align-items:center;gap:var(--sp-3);font-size:var(--fs-12);color:var(--muted)}
-.home-dist-row strong{text-align:right;font-weight:500;font-variant-numeric:tabular-nums;color:var(--text)}
-.home-dist-track{height:12px;background:var(--gray-bg);border-radius:2px;overflow:hidden}
-.home-dist-fill{display:block;height:100%;background:var(--accent);border-radius:2px}
-.home-dist-fill.is-loss{background:var(--danger)}
-.home-ar-stats{display:grid;grid-template-columns:1.3fr 1.3fr 1fr 1fr;gap:var(--sp-5);padding:var(--card-pad);margin:0;border-bottom:1px solid var(--border)}
-.home-ar-body{padding:0 var(--card-pad) var(--card-pad)}
-.home-ar-svg{display:block;min-width:540px}
-.home-overdue-stats{display:flex;flex-wrap:wrap;gap:var(--sp-5) var(--sp-8);padding:var(--card-pad);margin:0}
-.home-page .tbl.home-overdue{width:100%;min-width:1400px;table-layout:fixed}
-.home-page .home-overdue th{white-space:normal;overflow-wrap:normal}
-.home-page .home-overdue th:first-child{width:140px}
-.home-page .home-overdue th:nth-child(2),.home-page .home-overdue th:nth-child(3){width:155px}
-.home-page .home-overdue th:nth-child(4),.home-page .home-overdue th:nth-child(8){width:180px;text-align:right}
-.home-page .home-overdue th:nth-child(7){width:100px;text-align:right}
-.home-page .home-overdue :is(td,th):last-child{width:160px}
-.home-page .home-overdue :is(td,th):first-child{position:sticky;left:0;background:var(--card);z-index:1;border-right:1px solid var(--border)}
-.home-page .home-overdue thead th:first-child{background:var(--card-soft)}
-@media(max-width:1250px){.home-trends,.home-analysis{grid-template-columns:minmax(0,1fr)}.home-ar-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.home-ar-stats{grid-template-columns:minmax(0,1fr)}.home-dist-row{grid-template-columns:112px minmax(0,1fr) 24px}.home-section-head{display:block}.home-section-head p{margin-top:var(--sp-1)}}
-/* M17 状态画面（WS-685 交互接续）：首次加载、整页 / 单板块失败、刷新中、刷新失败与空资料。复用基线 .state、.note.red、.spinner，不新增 token。 */
-.home-page .spinner{display:inline-block;width:14px;height:14px;vertical-align:-3px;margin-right:var(--sp-2)}
-.home-page .btn .spinner{margin-right:0}
-.home-state .state{padding:var(--sp-7) var(--sp-6)}
-.home-page-state{margin-top:var(--sp-6)}
-.home-page-state .state{padding:var(--sp-9) var(--sp-6)}
-/* 页头不显示“首页”标题（用户 2026-11-25，标题保留给读屏）：数据更新时间与刷新同一行；刷新失败提示换到下一行整行。 */
-.home-head{align-items:center;margin-bottom:0}
-.home-head .home-meta{font-size:var(--fs-13)}
-.home-head .home-stale{flex-basis:100%;order:3;margin:0}
-.home-head+.home-section{margin-top:var(--sp-5)}
-.home-empty-list{padding:var(--sp-7) var(--sp-6);border-top:1px solid var(--border)}
-
 /* M2 PRD 6cb5a5e1（v1.50）
    A78 关联 ERP 企业改为单选：候选只列可关联的企业，两列（ERP 名称 / 标识）+ 分页；已关联时以 .erp-current 展示当前关联与“取消关联”。 */
 .tbl.erp-choice.single th:nth-child(2){width:auto}
@@ -2803,41 +2732,6 @@ body:has(.home-page) .sidebar .nav{position:relative}
   .m1-ui .file-row{padding:var(--sp-3)}
   .m1-identity{padding:var(--sp-4)}
 }
-/* M17 外采与外销总览图表（用户 2026-11-25 要求总览统一为图表，WS-685）：数量（辆）与金额（USD）分卡，不共用刻度；
-   每个周期一组，外采 --accent / 外销 --chart-2 两条横条同一比例尺，系列名与数值始终以文字可见，横条 aria-hidden。
-   同比在数值右侧；无法折算、合同价等注明紧跟在对应横条下方。供应商与终端客户为数量卡下方的第二组横条。 */
-.home-ov{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);align-items:start}
-.home-ov>.card+.card{margin:0}
-.home-ov-body{display:grid;gap:var(--sp-5);padding:var(--sp-4) var(--card-pad) var(--sp-5)}
-.home-ov-group,.home-ov-parties{display:grid;gap:var(--sp-2);min-width:0}
-.home-ov-parties{padding:var(--sp-4) var(--card-pad) var(--sp-5);border-top:1px solid var(--border)}
-.home-ov-period{margin:0 0 var(--sp-1);font-size:var(--fs-13);font-weight:600;color:var(--text)}
-.home-ov-period small{margin-left:var(--sp-2)}
-.home-ov-row{--ov-val:6.5em;display:grid;grid-template-columns:4.5em minmax(48px,1fr) var(--ov-val) 7.5em;align-items:center;column-gap:var(--sp-3);font-size:var(--fs-12);color:var(--muted)}
-.home-ov-card+.home-ov-card .home-ov-row{--ov-val:11.5em}
-.home-ov-track{height:12px;background:var(--gray-bg);border-radius:2px;overflow:hidden}
-.home-ov-fill{display:block;height:100%;background:var(--accent);border-radius:2px}
-.home-ov-row.is-sale .home-ov-fill{background:var(--chart-2)}
-.home-ov-val{text-align:right;white-space:nowrap;color:var(--text)}
-.home-ov-val b{font-size:var(--fs-16);font-weight:600;font-variant-numeric:tabular-nums}
-.home-ov-yoy{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.home-ov-yoy small{display:block;white-space:normal}
-.home-ov-note{grid-column:2/-1;margin:2px 0 var(--sp-1);line-height:1.6}
-@media(max-width:1250px){.home-ov{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:600px){.home-ov-row,.home-ov-card+.home-ov-card .home-ov-row{grid-template-columns:4.5em minmax(40px,1fr) auto}.home-ov-yoy{grid-column:2/-1}}
-/* M17 趋势按月／按年（PRD 016a075e 7.1，默认按月）：复用基线 .seg 单选组，放在板块标题右侧与范围并列；应收账款趋势在其小标题行。
-   刷新时单个板块失败（PRD 317e877f 3.5）：该板块标题下方 .note.red 提示上次成功取数时间并可重试，板块数字保留。 */
-.home-section-tools{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3)}
-.home-section-tools p{font-size:var(--fs-12);color:var(--muted)}
-.home-section-head:has(.home-section-tools){align-items:center}
-.home-ar-trend-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-3);margin:var(--sp-5) 0 var(--sp-4)}
-.home-ar-trend-head .home-distribution-title{margin:0}
-.home-part-stale{margin-bottom:var(--sp-3);align-items:center}
-@media(max-width:600px){.home-section-tools{margin-top:var(--sp-2)}}
-
-.home-change-label{fill:var(--chart-2);font-weight:600}
-.home-part-stale [data-zone]{display:inline}
-
 /* M10 UI (WS-683): one presentation for both ends. The preview is shared by all
    inbox consumers; the list, reading sheet and confirmation rules are opt-in. */
 .dd.inbox .msg-item.compact{grid-template-columns:var(--sp-2) minmax(0,1fr);padding-block:var(--sp-3)}
