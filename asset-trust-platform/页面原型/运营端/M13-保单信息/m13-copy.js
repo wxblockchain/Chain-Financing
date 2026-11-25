@@ -35,6 +35,7 @@ TP.addCopy({
 "2 张／2 辆": "2 B/Ls / 2 vehicles",
 "2 张／3 辆": "2 B/Ls / 3 vehicles",
 "无法计算": "Cannot calculate",
+"无法折算": "Cannot convert",
 "无覆盖车辆": "No covered vehicles",
 "暂无保单资料": "No policies yet",
 "暂无保单资料（空）": "No policies yet (empty)",
