@@ -99,9 +99,9 @@
     return {id:id, cat:'alert', at:at, read:read,
       t:[block ? '新的风控预警（阻断）：'+R[0] : '新的风控预警：'+R[0], block ? 'New risk alert (blocking): '+R[1] : 'New risk alert: '+R[1]],
       b:['平台比对发现'+R[0]+'，预警编号 '+w+'，等级：'+(block?'阻断':'预警')+'。比较对象：'+obj[0]+'。差异：'+R[0]+'：'+diff[0]+'。关联应收账款：'+recv[0]+'。'+
-           (block ? '阻断存在期间，关联应收账款不能审核通过，资产数字化平台也不能调取，请核实差异并在来源系统更正后记录处理结果。' : '请核实后记录处理结果；预警不会自动阻止确权申请、运营审核或推送。'),
+           (block ? '阻断存在期间，关联应收账款不能运营审核通过。请核实差异，按规则说明的方式更正资料；差异消除后阻断自动解除，无需在平台记录处理。' : '请核实后记录处理结果；预警不会自动阻止确权申请或运营审核。'),
          'The platform has found "'+R[1]+'". Alert number '+w+', level: '+(block?'Blocking':'Warning')+'. Compared item: '+obj[1]+'. Difference: '+R[1]+': '+diff[1]+'. Related receivables: '+recv[1]+'. '+
-           (block ? 'While this alert remains, the related receivables cannot be approved or retrieved by the asset digitisation platform. Please verify the difference, have it corrected in the source system, and record the result.' : 'Please verify and record the result; this alert does not automatically block confirmation requests, operations review or asset push.')],
+           (block ? 'While this alert remains, the related receivables cannot pass operations review. Please verify the difference and have the data corrected as the rule describes; the block is lifted automatically once the difference is resolved, and no handling needs to be recorded.' : 'Please verify and record the result; this alert does not automatically block confirmation requests or operations review.')],
       ref:[['预警编号',w],['规则名称',R[0],'text']], go:{key:'m8-'+w}};
   }
   /* M8-NT02 风控规则已调整（业务提醒，全体运营，含调整人本人）→ M8 规则详情（配置记录）。
@@ -111,16 +111,16 @@
     var R = RULE[rk];
     return {id:id, cat:'reminder', at:at, read:read,
       t:['风控规则已调整：'+R[0], 'Risk rule changed: '+R[1]],
-      b:[by+' 将风控规则“'+R[0]+'（'+rk+'）”的等级由'+from+'调整为'+to+'，立即生效。原因：'+reason+'。'+(affected?'受影响的待运营审核申请 '+affected[0]+' 笔、已取得推送资格的资产 '+affected[1]+' 笔。':''),
-         by+' changed the level of risk rule "'+R[1]+' ('+rk+')" from '+LEVEL[from]+' to '+LEVEL[to]+', effective immediately. Reason: '+reason+'.'+(affected?' Affected requests awaiting review: '+affected[0]+'; affected eligible assets: '+affected[1]+'.':'')],
+      b:[by+' 将风控规则“'+R[0]+'（'+rk+'）”的等级由'+from+'调整为'+to+'，立即生效。原因：'+reason+'。'+(affected?'受影响的待运营审核申请 '+affected[0]+' 笔。':''),
+         by+' changed the level of risk rule "'+R[1]+' ('+rk+')" from '+LEVEL[from]+' to '+LEVEL[to]+', effective immediately. Reason: '+reason+'.'+(affected?' Affected requests awaiting review: '+affected[0]+'.':'')],
       ref:[['规则编号',rk],['规则名称',R[0],'text']], go:{key:'rule:'+rk}};
   }
   function m8off(id, rk, by, reason, at, read){
     var R = RULE[rk];
     return {id:id, cat:'reminder', at:at, read:read,
       t:['风控规则已停用：'+R[0], 'Risk rule disabled: '+R[1]],
-      b:[by+' 停用了风控规则“'+R[0]+'（'+rk+'）”，立即生效。原因：'+reason+'。该规则的预警不再产生作用。',
-         by+' disabled risk rule "'+R[1]+' ('+rk+')", effective immediately. Reason: '+reason+'. Alerts under this rule no longer have any effect.'],
+      b:[by+' 停用了风控规则“'+R[0]+'（'+rk+'）”，立即生效。原因：'+reason+'。该规则 1 条未处理预警已关闭，其预警不再产生作用。',
+         by+' disabled risk rule "'+R[1]+' ('+rk+')", effective immediately. Reason: '+reason+'. 1 open alert under this rule has been closed, and its alerts no longer have any effect.'],
       ref:[['规则编号',rk],['规则名称',R[0],'text']], go:{key:'rule:'+rk}};
   }
   /* M15-NT01 数据接入异常（运营告警，全体运营）→ M15 该接口的调用记录。接口名称、承接模块随界面语言；失败原因按原文。 */
@@ -159,7 +159,7 @@
     /* 运营端 · 全体运营（各自记录已读）。24 条，6 条未读，第一批 20 条（o23 未读，属于尚未加载的部分）。
        预警、规则、接口与 M8、M15 原型的演示数据一致；申请与 M7b、M9 一致。 */
     ops: [
-      m8level('o01','RK-16','运营示例账号','预警','阻断','外销倒挂多为垫资套现信号，按风控会议要求在审核前拦截，待推送资产同时暂停调取',[1,1],'2026-12-14T04:10:00Z',false),
+      m8level('o01','RK-16','运营示例账号','预警','阻断','外销倒挂多为垫资套现信号，按风控会议要求在运营审核前拦截',[1],'2026-12-14T04:10:00Z',false),
       m8off('o02','RK-26','运营示例账号','外部航程跟踪数据航次编号规则与船公司不同，误报较多，待研发核对数据源后再启用','2026-12-14T03:00:00Z',true),
       m8('o03','W-DEMO-0009','block','RK-01',['VIN LDEMOVIN000000001','VIN LDEMOVIN000000001'],
         ['LDEMOVIN000000001 同时占用 AR-DEMO-0012、AR-DEMO-0020','LDEMOVIN000000001 is used by both AR-DEMO-0012 and AR-DEMO-0020'],
