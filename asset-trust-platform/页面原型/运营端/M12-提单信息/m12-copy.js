@@ -78,6 +78,8 @@ TP.addCopy({
 "1 个": "1 container",
 "2 个": "2 containers",
 "集装箱数": "Containers",
+"查看全部集装箱号": "View all container numbers",
+"共 2 个": "2 in total",
 "航程与到港": "Voyage and arrival",
 "已到港": "Arrived",
 "在途": "In transit",

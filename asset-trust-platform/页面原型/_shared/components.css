@@ -2046,6 +2046,14 @@ table.tbl.bl-vehicles{min-width:var(--bl-vehicle-min)}
 .bl-fx .dd-list [data-zone]{display:inline}
 .tbl.bl-files td.bl-cc.cont{border-top-color:transparent}
 .tbl:is(.bl-vehicles,.bl-files,.bl-customs,.bl-track) .value-lines .file-ref{white-space:nowrap}
+/* A61 集装箱号折叠（v1.58，WS-678）：多个集装箱号默认只显示第一个，后接“+N”按钮，复用 .value-pop 浮层按登记顺序列出全部；
+   浮层首行写“共 N 个”，超过 8 个时三列排列，最高 320 px，超出在浮层内滚动。只有一个时直接展示。 */
+.ctr-fold{display:inline-flex;align-items:center;gap:var(--sp-1);white-space:nowrap}
+.ctr-pop>.dd-btn{width:auto;padding:0 var(--sp-2);gap:2px;border-color:transparent;background:transparent;color:var(--accent);font-size:var(--fs-12);font-weight:500}
+.ctr-pop>.dd-btn:hover{background:var(--card-hover)}
+.ctr-pop>.dd-list{display:grid;grid-template-columns:max-content;column-gap:var(--sp-4);row-gap:2px;max-height:min(320px,60vh);overflow-y:auto;font-weight:400}
+.ctr-pop>.dd-list:has(>:nth-child(10)){grid-template-columns:repeat(3,max-content)}
+.ctr-pop>.dd-list .ctr-pop-h{grid-column:1/-1;margin-bottom:var(--sp-1);color:var(--muted);font-size:var(--fs-12)}
 /* —— M5 车辆履约（WS-660，单车维度，组件规范 §4 A62–A65）—— */
 /* A62 车辆履约列表：十列为 VIN、当前物流节点、所属应收账款、外采合同号、提单号、外销合同号、外销客户、外销收款情况、预警、操作；
    沿用 A30 .vehicle-list 的固定首列、右侧“查看”与行高规则。同类单据多张时主值为最近一张，下方 .cell-sub 写“共 N 张”。 */
