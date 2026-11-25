@@ -2311,6 +2311,17 @@ table.tbl.receivable-list.rcv-overview-list{min-width:var(--rcv-overview-min)}
 .receivable-detail .detail-table .vehicle-ledger tr.vehicle-more>td{white-space:normal;padding:0 var(--card-pad) var(--sp-4) calc(var(--ctrl-h-sm) + var(--sp-4));background:var(--card)}
 .vehicle-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(144px,1fr));gap:var(--sp-4);padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-2)}
 .receivable-detail .detail-table .vehicle-groups .file-ref .file-name{white-space:normal;overflow-wrap:anywhere}
+/* M3 v1.55（PRD 887265ed）：资产健康度每项给出数值依据（分子、分母）；概要第四格为确权申请结果；美元无法折算时主金额为“-”并注明原币。 */
+.health-metrics .metric-basis{display:grid;gap:var(--sp-1);margin:0}
+.health-metrics .metric-basis>div{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-2);min-width:0}
+.health-metrics .metric-basis dt{font-size:var(--fs-12);color:var(--muted)}
+.health-metrics .metric-basis dd{display:block;margin:0;font-size:var(--fs-12);color:var(--text);text-align:right;font-variant-numeric:tabular-nums}
+.health-metrics .metric-basis .na-dash{font-size:var(--fs-12);font-weight:400}
+.receivable-summary .apply-result{display:flex;flex-wrap:wrap;gap:var(--sp-1)}
+.receivable-summary .amount-lg .na-dash{font-size:inherit;font-weight:600}
+.receivable-summary .amount-orig{margin-top:var(--sp-1);font-size:var(--fs-13);color:var(--muted)}
+@media(min-width:601px){.receivable-summary .status-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1101px){.receivable-summary .status-grid.four{grid-template-columns:repeat(4,minmax(104px,auto))}}
 .vehicle-group{min-width:0}
 .vehicle-group h4{margin:0 0 var(--sp-3);font-size:var(--fs-13);font-weight:600;color:var(--text)}
 .vehicle-group dl{display:grid;gap:var(--sp-3);margin:0}
