@@ -45,7 +45,7 @@ TP.addCopy({
   '个人信息':'Personal information','姓名':'Name','英文姓名':'English name','与企业的关系':'Relationship to the company','请选择':'Select',
   '法定代表人':'Legal representative','董事':'Director','授权代表':'Authorized representative','其他':'Other','关系说明':'Relationship details','如：财务总监':'e.g. Finance director',
   '企业信息':'Company information','企业身份信息':'Company identity','企业补充信息':'Additional company information',
-  '由平台运营登记，如有错误请联系平台运营更正。':'Registered by platform operations. Contact platform operations to correct any error.',
+  '企业身份信息由平台运营登记；如有错误，请在提交前联系平台运营更正，提交后注册国家／地区和企业登记号码不能再修改。':'Company identity information is registered by platform operations. If anything is wrong, contact platform operations to correct it before you submit. After submission, the country / region and registration number can no longer be changed.',
   '企业名称':'Company name','注册国家／地区':'Country / region of registration','企业登记号码':'Registration number','中国香港':'Hong Kong, China',
   '业务角色':'Business roles','企业英文名称':'Company English name','州／省':'State / province','注册地址':'Registered address',
   '请填写注册地址。':'Enter the registered address.','提交':'Submit','资料已提交，入驻完成':'Profile submitted. Onboarding complete.',
