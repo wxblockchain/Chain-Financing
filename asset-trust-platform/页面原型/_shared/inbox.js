@@ -81,10 +81,12 @@
   }
   /* M9-NT03 运营审核上链失败（运营告警，全体运营）→ M9 申请详情；失败原因按原文，申请仍为待运营审核 */
   function m9c(id, app, inv, ar, attempt, reason, at, read){
+    /* 失败原因：万纳连返回的原文不翻译（字符串）；超时为平台文案，随界面语言（[中文, English]） */
+    if(typeof reason==='string') reason=[reason, reason];
     return {id:id, cat:'alert', at:at, read:read,
       t:['运营审核上链失败','Review on-chain recording failed'],
-      b:['债权人 Carloha Holding 的内销发票 '+inv+'（应收账款编号 '+ar+'，确权申请 '+app+'）第 '+attempt+' 次审核提交上链失败，原因：'+reason+'。这笔申请尚未审核通过，仍为待运营审核，请查看后重新审核通过。',
-         'On-chain recording for review submission '+attempt+' of creditor Carloha Holding\'s invoice '+inv+' (receivable '+ar+', confirmation request '+app+') failed. Reason: '+reason+'. The request has not been approved and is still pending operations review. Please review it and approve again.'],
+      b:['债权人 Carloha Holding 的内销发票 '+inv+'（应收账款编号 '+ar+'，确权申请 '+app+'）第 '+attempt+' 次审核提交上链失败，原因：'+reason[0]+'。这笔申请尚未审核通过，仍为待运营审核，请查看后重新审核通过。',
+         'On-chain recording for review submission '+attempt+' of creditor Carloha Holding\'s invoice '+inv+' (receivable '+ar+', confirmation request '+app+') failed. Reason: '+reason[1]+'. The request has not been approved and is still pending operations review. Please review it and approve again.'],
       ref:appRef(app, inv), go:{key:'m9-'+app}};
   }
   /* M8-NT01 新的风控预警（运营告警，全体运营）→ M8 预警详情。只有阻断、预警等级发消息；标题与正文随等级。
@@ -184,8 +186,8 @@
         ['收款方 Demo Trading D Ltd','payee Demo Trading D Ltd'],
         ['AR-DEMO-0019','AR-DEMO-0019'],'2026-11-20T04:30:00Z',true), {done:true}),
       m7b03('o10','AP-DEMO-0024','INV-0019','AR-DEMO-0019','48,000.00','USD','2027-01-18','2026-11-10T09:30:00Z',false),
-      /* AP-DEMO-0022 第 1 次审核提交上链失败：申请仍为待运营审核，可在原业务再次审核通过 */
-      m9c('o11','AP-DEMO-0022','INV-0011','AR-DEMO-0011',1,'chain gateway timeout','2026-10-30T03:04:00Z',true),
+      /* AP-DEMO-0022 第 1 次审核提交上链超时（按失败处理）：申请仍为待运营审核，可在原业务再次审核通过；M9-NT03 只在申请仍待运营审核时发送 */
+      m9c('o11','AP-DEMO-0022','INV-0011','AR-DEMO-0011',1,['上链超时未返回结果','On-chain recording timed out with no result'],'2026-10-30T03:04:00Z',true),
       Object.assign(m7b03('o12','AP-DEMO-0022','INV-0011','AR-DEMO-0011','55,000.00','USD','2026-12-01','2026-10-29T02:00:00Z',true), {done:true}),
       /* 申请已到期关闭：未读仍计入未读数，前往后只能查看当前结果 */
       Object.assign(m7b03('o13','AP-DEMO-0026','INV-0008','AR-DEMO-0008','60,000.00','USD','2026-10-31','2026-10-20T09:00:00Z',false), {done:true}),
