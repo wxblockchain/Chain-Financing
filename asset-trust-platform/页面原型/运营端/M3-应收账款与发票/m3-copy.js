@@ -179,7 +179,7 @@ TP.addCopy({
 "已售": "Sold",
 "已收款": "Collected",
 "相对应收账款金额": "Relative to receivable amount",
-"含 1 份跨发票的批售合同，按整份合同收款计入": "Includes 1 wholesale contract spanning other invoices, counted at full contract receipts",
+"含 1 份批售合同按外销单价比例分摊": "Includes 1 wholesale contract allocated by export unit price share",
 "确权申请结果": "Confirmation request result",
 "计入金额": "Booked amount",
 "暂计": "Provisional",
