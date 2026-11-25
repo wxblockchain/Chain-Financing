@@ -25,7 +25,7 @@
     ]},
     {group:'风控', items:[
       // 角标为当前未处理风控预警条数（M8 F-M8-05），评审演示值；接入时由风控预警模块提供，全体运营相同。
-      {key:'alerts',    label:'风控预警',   icon:'alert', pendingCount:5},
+      {key:'alerts',    label:'风控预警',   icon:'alert', pendingCount:7},
       // M8 风控规则配置（F-M8-19，WS-609）：已登记于 M2 PRD F-OP-11 菜单表（6cb5a5e1），位于“风控预警”之后。
       {key:'rules',     label:'风控规则',   icon:'sliders'},
       {key:'sources',   label:'三方数据源', icon:'database'}

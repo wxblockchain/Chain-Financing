@@ -1889,7 +1889,7 @@ table.tbl.claim-request-list{min-width:var(--claim-request-min)}
 .claim-result-body{display:grid;gap:var(--sp-4);padding:var(--sp-4) var(--card-pad) var(--sp-5)}
 .claim-result-sum .facts{grid-template-columns:repeat(3,minmax(0,1fr))}
 .claim-result-sum .facts>div{border-top:0}
-/* —— M8 风控预警与三方数据源（组件规范 §4 A51–A53、A82；v2 按 PRD b693d078 增加等级、阻断与风控规则配置）—— */
+/* —— M8 风控预警（组件规范 §4 A51–A53、A82；v3 按 PRD 53371ee0：列表不含关联应收账款，规则列表首列序号）—— */
 /* A51 风控预警列表：每条预警一行，预警编号固定在左、“查看”固定在右（共用 A14 规则）；等级、规则两列，规则名下方为编号；
    阻断类（规则启用中）整行左侧 3 px 危险色条并加粗等级，不只靠颜色；比较对象可换行。 */
 table.tbl.alert-list{min-width:var(--alert-table-min)}
@@ -1897,7 +1897,6 @@ table.tbl.alert-list{min-width:var(--alert-table-min)}
 .alert-list col.alr-col-id{width:var(--alert-col-id)}
 .alert-list col.alr-col-level{width:var(--alert-col-level)}
 .alert-list col.alr-col-rule{width:var(--alert-col-rule)}
-.alert-list col.alr-col-ar{width:var(--alert-col-ar)}
 .alert-list col.alr-col-status{width:var(--alert-col-status)}
 .alert-list col.alr-col-time{width:var(--alert-col-time)}
 .alert-list col.alr-col-actions{width:var(--vehicle-col-actions)}
@@ -1929,6 +1928,7 @@ table.tbl.alert-list{min-width:var(--alert-table-min)}
 /* A82 风控规则（F-M8-19）：页内页签“规则 / 风控参数”（A54 .page-tabs）；规则列表规则名固定在左、三项操作固定在右；
    规则详情为页头（名称 + 当前等级）、四项状态、规则说明、配置记录时间线（A11）；三选一等级复用 A8 选择卡。 */
 table.tbl.rule-cfg-list{min-width:var(--rule-table-min)}
+.rule-cfg-list col.rc-col-seq{width:var(--rule-col-seq)}
 .rule-cfg-list col.rc-col-rule{width:var(--rule-col-rule)}
 .rule-cfg-list col.rc-col-cat{width:var(--rule-col-cat)}
 .rule-cfg-list col.rc-col-lv,.rule-cfg-list col.rc-col-cur{width:var(--rule-col-level)}
@@ -1936,8 +1936,9 @@ table.tbl.rule-cfg-list{min-width:var(--rule-table-min)}
 .rule-cfg-list col.rc-col-n{width:var(--rule-col-n)}
 .rule-cfg-list col.rc-col-last{width:var(--rule-col-last)}
 .rule-cfg-list col.rc-col-actions{width:var(--rule-col-actions)}
-.tbl.rule-cfg-list td:first-child{white-space:normal}
-.tbl.rule-cfg-list td:first-child .btn-link{padding-inline:0;text-align:left;font-weight:500}
+.tbl.rule-cfg-list td.seq{color:var(--muted);font-variant-numeric:tabular-nums}
+.tbl.rule-cfg-list td:nth-child(2){white-space:normal}
+.tbl.rule-cfg-list td:nth-child(2) .btn-link{padding-inline:0;text-align:left;font-weight:500}
 :is(.rule-cfg-list,.param-list) .row-acts{display:flex;justify-content:flex-end;gap:var(--sp-3)}
 table.tbl.param-list{min-width:var(--param-table-min)}
 .rule-summary .status-grid{padding:var(--sp-2)}
