@@ -194,12 +194,11 @@
   --bl-col-no:132px; --bl-col-carrier:120px; --bl-col-voyage:128px; --bl-col-route:136px; --bl-col-date:100px;
   --bl-col-count:64px; --bl-col-value:136px; --bl-col-customs:136px; --bl-col-warn:56px;
   --bl-vehicle-min:1040px; /* M12 车辆清单八列（不含集装箱号），1440 px 视口完整展示，更窄时卡内滚动 */
-  /* M5 车辆履约（WS-660，单车维度）：列表十列，VIN 与查看分别固定两侧；窄视口表内滚动 */
-  --fulfil-table-min:1140px; /* 1440 px 中文视口完整展示十列 */
-  --fulfil-table-min-en:1300px; /* 英文表头按词换行后的阅读下限 */
-  --fulfil-col-vin:168px; --fulfil-col-node:112px; --fulfil-col-ar:100px; --fulfil-col-doc:124px;
-  --fulfil-col-customer:148px; --fulfil-col-collect:104px; --fulfil-col-alert:56px;
-  --fulfil-seg-title-w:104px; /* 明细四段的段名列，英文“Transport & insurance”换行后可读 */
+  /* M5 车辆履约（WS-660，单车维度）：列表七列（WS-674），VIN 与查看分别固定两侧；窄视口表内滚动 */
+  --fulfil-table-min:860px; /* 七列（PRD e0e1b11a），1280 px 中文视口完整展示 */
+  --fulfil-table-min-en:960px; /* 英文表头按词换行后的阅读下限 */
+  --fulfil-col-vin:168px; --fulfil-col-node:120px; --fulfil-col-stock:120px; --fulfil-col-ar:120px;
+  --fulfil-col-collect:120px; --fulfil-col-alert:56px;
   /* M4 合同信息（v1.34，WS-659）：三个页签的列表共用列宽 token；1440 px 视口下内销列表完整展示，更窄时表内滚动，编号与查看固定两侧。 */
   --contract-table-min:1120px; --contract-purchase-table-min:1040px; --contract-export-table-min:1000px;
   --contract-col-id:148px; --contract-col-date:100px; --contract-col-parties:168px; --contract-col-party:176px;

@@ -2055,15 +2055,14 @@ table.tbl.bl-vehicles{min-width:var(--bl-vehicle-min)}
 .ctr-pop>.dd-list:has(>:nth-child(10)){grid-template-columns:repeat(3,max-content)}
 .ctr-pop>.dd-list .ctr-pop-h{grid-column:1/-1;margin-bottom:var(--sp-1);color:var(--muted);font-size:var(--fs-12)}
 /* —— M5 车辆履约（WS-660，单车维度，组件规范 §4 A62–A65）—— */
-/* A62 车辆履约列表：十列为 VIN、当前物流节点、所属应收账款、外采合同号、提单号、外销合同号、外销客户、外销收款情况、预警、操作；
-   沿用 A30 .vehicle-list 的固定首列、右侧“查看”与行高规则。同类单据多张时主值为最近一张，下方 .cell-sub 写“共 N 张”。 */
+/* A62 车辆履约列表（PRD e0e1b11a）：七列为 VIN、当前物流节点、在库情况、所属应收账款、外销收款情况、预警、操作；单据号只在详情明细中查看。
+   沿用 A30 .vehicle-list 的固定首列、右侧“查看”与行高规则。所属应收账款多张时主值为最近一张，下方 .cell-sub 写“共 N 张”。 */
 table.tbl.vehicle-list.fulfil-list{min-width:var(--fulfil-table-min)}
 :lang(en) table.tbl.vehicle-list.fulfil-list{min-width:var(--fulfil-table-min-en)}
 .fulfil-list col.ful-col-vin{width:var(--fulfil-col-vin)}
 .fulfil-list col.ful-col-node{width:var(--fulfil-col-node)}
 .fulfil-list col.ful-col-ar{width:var(--fulfil-col-ar)}
-.fulfil-list col.ful-col-doc{width:var(--fulfil-col-doc)}
-.fulfil-list col.ful-col-customer{width:var(--fulfil-col-customer)}
+.fulfil-list col.ful-col-stock{width:var(--fulfil-col-stock)}
 .fulfil-list col.ful-col-collect{width:var(--fulfil-col-collect)}
 .fulfil-list col.ful-col-alert{width:var(--fulfil-col-alert)}
 .fulfil-list col.ful-col-actions{width:var(--vehicle-col-actions)}
@@ -2098,22 +2097,21 @@ table.tbl.vehicle-list.fulfil-list{min-width:var(--fulfil-table-min)}
 .fx-pop>.dd-list{display:grid;gap:2px}
 .fx-pop>.dd-list .fx-at{color:var(--muted);font-size:var(--fs-12);white-space:nowrap}
 .fx-pop>.dd-list .fx-at [data-zone]{display:inline}
-/* A65 明细四段：每段一张卡，卡头即一行摘要（段名 / 摘要字段 / 共几张 + 展开）；展开后每张单据一节，节间较深分隔线。
-   一张单据都没有时摘要写“暂无记录”，没有展开按钮。展开只切换显示，不改变数据。 */
-.fulfil-seg>.seg-head{display:grid;grid-template-columns:var(--fulfil-seg-title-w) minmax(0,1fr) auto;align-items:center;gap:var(--sp-3) var(--sp-6);border-bottom:0}
+/* A65 明细页签（PRD e0e1b11a，用户确定）：价格链下方一张卡，A54 .page-tabs 文字页签切换采购 / 内销 / 运输与保险 / 外销 / 出入库，
+   各页签直接展示全部字段，不收起、不展开；没有单据或记录时为“暂无记录”。页签只切换显示，不改变数据。 */
+.fulfil-tabs{margin:0;padding:0 var(--card-pad)}
+.fulfil-panel.seg-body{border-top:0}
+.fulfil-panel>.detail-table:first-child{margin-top:var(--sp-4)}
+.fulfil-panel>.sub-empty{padding-top:var(--sp-5);padding-bottom:var(--sp-5)}
+/* 车辆属性（F-M5-19）：概要卡底部一行，标题与字段（字段清单待 M5-Q18，原型为演示字段）；没有外采合同时为“暂无记录”。 */
+.fulfil-attrs{display:flex;flex-direction:column;gap:var(--sp-2);padding:var(--sp-4) var(--card-pad) var(--sp-5);border-top:1px solid var(--row-line)}
+.fulfil-attrs-h{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--ui-field-label);color:var(--muted)}
+.fulfil-attrs-h .tag{font-size:var(--fs-11);padding:0 var(--sp-1)}
+.fulfil-attrs-empty{margin:0;font-size:var(--fs-14);color:var(--muted)}
 .seg-brief{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:var(--sp-2) var(--sp-5);margin:0;min-width:0}
 .seg-brief>div{display:flex;flex-direction:column;gap:2px;min-width:0}
 .seg-brief dt{font-size:var(--fs-12);color:var(--muted)}
 .seg-brief dd{margin:0;font-size:var(--fs-14);overflow-wrap:anywhere}
-.seg-brief .btn-link{padding:0;font-weight:500}
-.seg-brief .fx-mark{margin-left:var(--sp-1)}
-.seg-side{display:flex;align-items:center;gap:var(--sp-3);justify-self:end}
-.seg-count{font-size:var(--fs-13);color:var(--muted);white-space:nowrap}
-.seg-empty{font-size:var(--fs-14);color:var(--faint)}
-.seg-toggle{white-space:nowrap}
-.seg-toggle svg.i{transition:transform var(--dur-fast) var(--ease-out)}
-.seg-toggle[aria-expanded="true"] svg.i{transform:rotate(180deg)}
-.seg-toggle[aria-expanded="true"] .when-closed,.seg-toggle[aria-expanded="false"] .when-open{display:none}
 .seg-body{border-top:1px solid var(--border)}
 .seg-body .card-sec+.card-sec{border-top:1px solid var(--border-strong)}
 .seg-body .sub-h{flex-wrap:wrap;font-size:var(--fs-14)}
@@ -2122,13 +2120,10 @@ table.tbl.vehicle-list.fulfil-list{min-width:var(--fulfil-table-min)}
 .seg-body .detail-table{margin:0 var(--card-pad) var(--sp-4)}
 .seg-body .facts-caption{padding:var(--sp-2) var(--card-pad) var(--sp-2)}
 .seg-body .value-lines .btn-link{padding:0;align-self:flex-start}
-@media (prefers-reduced-motion:reduce){.seg-toggle svg.i{transition:none}}
 @media(max-width:1100px){
   .price-chain{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);row-gap:var(--sp-5)}
   .price-chain>.pc-arrow:nth-of-type(2){display:none}
   .pc-item.pc-receipt{border-left:0;padding-left:0;margin-left:0}
-  .fulfil-seg>.seg-head{grid-template-columns:minmax(0,1fr) auto}
-  .fulfil-seg>.seg-head .seg-brief{grid-column:1/-1;grid-row:2}
 }
 /* ---- M4 合同信息（v1.34，WS-659）：内销 / 外采 / 外销三个页签共用列表与详情结构 ---- */
 /* A66 合同列表：沿用 A14 固定编号与查看的列表骨架（.receivable-list）；金额对（已开票 / 未开票、已收款 / 未收款）主值在上、次值在下，右对齐。 */
@@ -2415,7 +2410,7 @@ table.tbl.fund-list{min-width:var(--fund-table-min)}
 
 /* —— v1.42 M5 车辆履约按 PRD 4891c19 同步（WS-660）；v1.44 详情改为右侧时间线布局 —— */
 /* A81 车辆履约详情布局（v1.44）：概要卡左侧以当前物流节点为标题（24 px，下方日期与来源单据），右侧在库情况 / 关联预警；
-   其下左右两栏——左栏价格链与明细四段，右栏“物流节点进度”竖排时间线（复用 A11 .operation-log），最新一条在最上并高亮，
+   其下左右两栏——左栏价格链与明细页签，右栏“物流节点进度”竖排时间线（复用 A11 .operation-log），最新一条在最上并高亮，
    装船为最新时标“在途”，其余标“最新”；滚动时右栏吸附在顶栏下方，记录多时栏内滚动。≤ 1100 px 右栏移到概要下方。 */
 :root{--fulfil-rail-w:360px}
 @media(max-width:1439px){:root{--fulfil-rail-w:300px}}
@@ -2443,10 +2438,9 @@ table.tbl.fund-list{min-width:var(--fund-table-min)}
 .fulfil-log .operation-heading .tag{font-size:var(--fs-11);padding:0 var(--sp-1)}
 .fulfil-log .operation-meta{gap:var(--sp-1) var(--sp-4);margin-top:var(--sp-1)}
 .fulfil-log .operation-meta .btn-link{padding:0;font-size:var(--fs-13)}
-/* 左栏变窄后价格链收紧箭头与收款分隔；左栏 ≤ 720 px（1280 px 视口）时排成两行：外采 → 内采 / 外销、外销收款。明细摘要字段按 136 px 起排。 */
+/* 左栏变窄后价格链收紧箭头与收款分隔；左栏 ≤ 720 px（1280 px 视口）时排成两行：外采 → 内采 / 外销、外销收款。 */
 .fulfil-main .pc-arrow{padding:0 var(--sp-2)}
 .fulfil-main .pc-item.pc-receipt{padding-left:var(--sp-4);margin-left:var(--sp-2)}
-.fulfil-main .seg-brief{grid-template-columns:repeat(auto-fill,minmax(136px,1fr));column-gap:var(--sp-4)}
 /* 左栏明细的只读字段：容器 ≥ 400 px 两列、≥ 560 px 三列，避免 1280 px 下退成单列。 */
 @container facts (min-width:400px){
   .fulfil-main .facts.cols-3:not(.single){grid-template-columns:repeat(2,minmax(0,1fr))}
