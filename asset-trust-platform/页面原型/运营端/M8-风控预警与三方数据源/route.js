@@ -4,7 +4,7 @@
 (function(){
   var alerts = {
     'W-DEMO-0009':'a-block', 'W-DEMO-0007':'a-party', 'W-DEMO-0011':'a-repay', 'W-DEMO-0012':'a-tip',
-    'W-DEMO-0006':'a-auto', 'W-DEMO-0005':'a-off', 'W-DEMO-0014':'a-fail'
+    'W-DEMO-0006':'a-auto', 'W-DEMO-0005':'a-off', 'W-DEMO-0014':'a-fail', 'W-DEMO-0015':'a-name'
   };
   var rules = {'RK-01':'r-detail', 'RK-16':'r-detail-adjusted', 'RK-26':'r-detail-off'};
   var routes = {
