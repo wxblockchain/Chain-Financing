@@ -14,7 +14,10 @@ TP.addCopy({
 "暂无车辆履约资料（空）": "No vehicle fulfilment data (empty)",
 "筛选无结果": "No matching results",
 "列表加载失败": "List load failed",
-"详情 · 暂无物流记录（仅有内销合同）": "Details · no logistics records (domestic contract only)",
+"详情 · 暂无物流记录、外采发票不在合同中": "Details · no logistics records, purchase invoice not in a contract",
+"分配金额未提供": "Allocated amount not provided",
+"合同未列本车的外采发票": "Purchase invoices not in a contract vehicle list",
+"合同未列本车的内销发票": "Domestic invoices not in a contract vehicle list",
 "详情 · 价格链加载失败": "Details · price chain failed to load",
 "未找到该 VIN": "VIN not found",
 
