@@ -1,0 +1,107 @@
+/* WS-682 · existing-system adaptation. Reuse the platform token and component layer. */
+[data-module="ops-receivables"] table.tbl.receivable-list.rcv-overview-list{table-layout:fixed}
+[data-module="ops-receivables"] .rcv-overview-list col.rcv-col-status{width:calc(var(--rcv-overview-col-status) + var(--sp-6))}
+[data-module="ops-receivables"] .rcv-overview-list th.num{white-space:normal}
+[data-module="ops-receivables"] .rcv-overview-list .tag{white-space:nowrap}
+[data-module="ops-receivables"] .rcv-overview-list .money .mono,
+[data-module="ops-receivables"] .receivable-detail .money .mono{font-family:var(--sans);font-variant-numeric:tabular-nums}
+[data-module="ops-receivables"] .rcv-overview-list .party-line{display:flex;align-items:baseline;gap:var(--sp-2);min-width:0}
+[data-module="ops-receivables"] .rcv-overview-list .party-line .role{flex:none}
+[data-module="ops-receivables"] .party-name{min-width:0;max-width:100%;margin:0}
+[data-module="ops-receivables"] .party-name>.dd-btn.name-clip{width:auto;max-width:100%;height:auto;border:0;background:transparent;border-radius:0;cursor:pointer;gap:0}
+[data-module="ops-receivables"] .party-name>.dd-btn.name-clip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[data-module="ops-receivables"] .party-name>.dd-list{max-width:calc(100vw - var(--sp-8));white-space:normal;overflow-wrap:anywhere}
+[data-module="ops-receivables"] .filter-search{min-width:0}
+[data-module="ops-receivables"] .filter-search .inp{width:100%}
+
+/* Financial facts on the left, current states on the right. All information stays expanded. */
+[data-module="ops-receivables"] .receivable-summary .asset-sum{grid-template-columns:minmax(0,1fr) minmax(300px,28%);align-items:start;gap:var(--sp-6)}
+[data-module="ops-receivables"] .receivable-summary .amount-lg{font-size:var(--fs-28);margin-top:var(--sp-2);font-variant-numeric:tabular-nums}
+[data-module="ops-receivables"] .receivable-summary .amount-lg .ccy{font-size:var(--fs-14);font-weight:400;color:var(--muted)}
+[data-module="ops-receivables"] .receivable-summary .meta{grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--sp-5) var(--sp-4);margin-top:var(--sp-6)}
+[data-module="ops-receivables"] .receivable-summary .meta>span{grid-column:span 2;min-width:0}
+[data-module="ops-receivables"] .receivable-summary .meta>span:nth-child(-n+2){grid-column:span 3;padding-bottom:var(--sp-4);border-bottom:1px solid var(--border)}
+[data-module="ops-receivables"] .receivable-summary .meta b{display:block;margin-top:var(--sp-1);font-size:var(--fs-14);font-weight:500;overflow-wrap:anywhere}
+[data-module="ops-receivables"] .receivable-summary .meta b .due-left{display:flex;margin:var(--sp-1) 0 0}
+[data-module="ops-receivables"] .receivable-summary .status-grid.four{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-left:1px solid var(--border);padding-left:var(--sp-6);column-gap:var(--sp-3)}
+[data-module="ops-receivables"] .receivable-summary .status-grid>div{display:block;padding:var(--sp-3) 0;border-left:0}
+[data-module="ops-receivables"] .receivable-summary .status-grid>div:nth-child(-n+2){padding-top:0}
+[data-module="ops-receivables"] .receivable-summary .status-grid>div+div{border-top:1px solid var(--row-line)}
+[data-module="ops-receivables"] .receivable-summary .status-grid>div:nth-child(2){border-top:0}
+[data-module="ops-receivables"] .receivable-summary .status-grid>div:nth-child(n+3){grid-column:1/-1}
+[data-module="ops-receivables"] .receivable-summary .status-grid dt{margin-bottom:var(--sp-2)}
+[data-module="ops-receivables"] .receivable-summary .status-grid .tag{white-space:nowrap}
+[data-module="ops-receivables"] .receivable-summary .data-check{padding-block:var(--sp-4);gap:var(--sp-3)}
+[data-module="ops-receivables"] .data-check>div{min-width:0}
+[data-module="ops-receivables"] .data-check b{margin-right:var(--sp-3)}
+[data-module="ops-receivables"] .data-check ul{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-6);margin-top:var(--sp-2)}
+
+/* Group titles exceed record headings; numerical bases remain readable beside the ratios. */
+[data-module="ops-receivables"] .detail-group-h h2{font-size:var(--fs-20)}
+[data-module="ops-receivables"] .receivable-detail .card-head h3{font-size:var(--fs-16)}
+[data-module="ops-receivables"] .health-metrics .metric-basis>div{display:block}
+[data-module="ops-receivables"] .health-metrics .metric-basis dd{text-align:left;font-size:var(--fs-14);margin-top:var(--sp-1)}
+[data-module="ops-receivables"] .health-metrics .metric-basis{gap:var(--sp-3)}
+[data-module="ops-receivables"] .health-metrics .metric-sub{line-height:1.6}
+[data-module="ops-receivables"] .receivable-detail .basic-trade .facts{column-gap:var(--sp-6)}
+[data-module="ops-receivables"] .receivable-detail .basic-trade .facts>div{padding-block:var(--sp-3)}
+[data-module="ops-receivables"] .basic-trade .sub-h{color:var(--text)}
+
+/* Expanded vehicles: four business groups, then a full-width documents row. */
+[data-module="ops-receivables"] .vehicle-groups{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-5);padding:var(--sp-5);border:0;border-left:2px solid var(--border-strong);border-radius:0}
+[data-module="ops-receivables"] .vehicle-group:last-child{grid-column:1/-1;border-top:1px solid var(--border);padding-top:var(--sp-4)}
+[data-module="ops-receivables"] .vehicle-group:last-child dl{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4)}
+[data-module="ops-receivables"] .vehicle-group h4{font-size:var(--fs-14)}
+[data-module="ops-receivables"] .vehicle-group dd{line-height:1.6;overflow-wrap:anywhere}
+[data-module="ops-receivables"] .receivable-detail .detail-table .tbl.vehicle-ledger th{min-width:0}
+[data-module="ops-receivables"] .vehicle-ledger th.num{max-width:20ch}
+[data-module="ops-receivables"] .receivable-detail .detail-table .tbl.receivable-receipts td{white-space:normal;overflow-wrap:anywhere}
+[data-module="ops-receivables"] .receivable-detail .detail-table .tbl.receivable-receipts td:first-child{white-space:nowrap}
+[data-module="ops-receivables"] .receivable-receipts .num{min-width:16ch}
+[data-module="ops-receivables"] .receivable-receipts .money{white-space:nowrap}
+[data-module="ops-receivables"] .booked-receipts .booked{flex-wrap:wrap;justify-content:flex-end}
+[data-module="ops-receivables"] .booked-receipts .cell-sub{line-height:1.6}
+
+/* Existing verification dialog: preserve upload error, consequence disclosure and actions. */
+[data-module="ops-receivables"] #o-verify .modal-b>.facts-region{padding:var(--sp-4);background:var(--card-2);border-radius:var(--radius-xs)}
+[data-module="ops-receivables"] #o-verify .modal-b>.facts-region .facts{padding:0;grid-template-columns:repeat(3,minmax(0,1fr))}
+[data-module="ops-receivables"] #o-verify .modal-b>.facts-region .facts>div{border:0;padding:0}
+[data-module="ops-receivables"] #o-verify .modal-b{gap:var(--sp-5)}
+[data-module="ops-receivables"] #o-verify .review-textarea{min-height:8lh}
+
+@container facts (min-width:420px){
+  [data-module="ops-receivables"] .basic-trade .facts.cols-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-module="ops-receivables"] .basic-trade .facts>div:nth-child(2){border-top:0}
+}
+@container facts (min-width:900px){
+  [data-module="ops-receivables"] .basic-trade .facts.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(min-width:1440px){
+  [data-module="ops-receivables"] .basic-trade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-module="ops-receivables"] .basic-trade>.card-head{grid-column:1/-1}
+  [data-module="ops-receivables"] .receivable-detail .basic-trade .card-sec+.card-sec{border-top:0;border-left:1px solid var(--border)}
+  [data-module="ops-receivables"] .receivable-detail .basic-trade .facts.cols-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-module="ops-receivables"] .receivable-detail .basic-trade .facts>div:nth-child(3){border-top:1px solid var(--row-line)}
+}
+@media(max-width:1279px){
+  [data-module="ops-receivables"] .receivable-summary .asset-sum{grid-template-columns:minmax(0,1fr)}
+  [data-module="ops-receivables"] .receivable-summary .status-grid.four{grid-template-columns:repeat(2,minmax(0,1fr));border-left:0;border-top:1px solid var(--border);padding:var(--sp-4) 0 0;gap:var(--sp-4)}
+  [data-module="ops-receivables"] .receivable-summary .status-grid>div{padding:0}
+  [data-module="ops-receivables"] .receivable-summary .status-grid>div+div{border-top:0}
+  [data-module="ops-receivables"] .receivable-summary .status-grid>div:nth-child(n+3){grid-column:auto}
+  [data-module="ops-receivables"] .health-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-module="ops-receivables"] .health-metrics>div:nth-child(3){border-left:0}
+  [data-module="ops-receivables"] .health-metrics>div:nth-child(n+3){border-top:1px solid var(--border)}
+  [data-module="ops-receivables"] .vehicle-groups{grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-module="ops-receivables"] .rcv-overview-list{min-width:var(--rcv-overview-min-en)}
+}
+@media(max-width:1100px) and (min-width:901px){
+  /* Keep the shared screen catalogue in the sidebar, away from lower-right table controls. */
+  [data-module="ops-receivables"] .demo-btn{left:var(--sp-4);right:auto;max-width:calc(var(--sidebar-w) - var(--sp-8))}
+}
+@media(max-width:700px){
+  [data-module="ops-receivables"] .receivable-summary .meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-module="ops-receivables"] .receivable-summary .meta>span,
+  [data-module="ops-receivables"] .receivable-summary .meta>span:nth-child(-n+2){grid-column:auto}
+  [data-module="ops-receivables"] .vehicle-group:last-child dl{grid-template-columns:minmax(0,1fr)}
+}

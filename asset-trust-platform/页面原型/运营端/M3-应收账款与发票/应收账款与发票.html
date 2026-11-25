@@ -4,6 +4,7 @@
 <title>应收账款 · 资产可信平台</title>
 <link rel="stylesheet" href="../../_shared/tokens.css">
 <link rel="stylesheet" href="../../_shared/components.css">
+<link rel="stylesheet" href="m3-ui.css">
 </head>
 <body>
 <!-- 资产可信平台 · 运营端 · M3 应收账款（资产全景）。
@@ -92,10 +93,12 @@
 <script src="../../_shared/list-filters.js"></script>
 <script src="../../_shared/common-copy.js"></script>
 <script src="m3-copy.js"></script>
+<script src="m3-presentation.js"></script>
 <script>
 TP.pageTitle = "应收账款 · 资产可信平台";
 TP.routes = {invoices:"o-list"};
 TP.initDetailNav();
+TP.initReceivablePresentation();
 TP.initListFilters();
 TP.boot("o-list");
 // M3 PRD §3.2：运营端没有时区设置时，平台记录时间统一按 UTC 展示。ERP 日期与平台计算的起算日、到期日不换算。
