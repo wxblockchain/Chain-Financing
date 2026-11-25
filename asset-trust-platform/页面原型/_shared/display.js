@@ -62,6 +62,7 @@
   TP.renderDisplay=function(){
     document.querySelectorAll('[data-language]').forEach(function(el){el.value=TP.language;});
     document.querySelectorAll('[data-timezone]').forEach(function(el){
+      if(el.tagName==='INPUT'){el.value=TP.zone;return;}
       if(!Array.from(el.options).some(function(o){return o.value===TP.zone;}))el.add(new Option(TP.zone,TP.zone));
       el.value=TP.zone;
     });

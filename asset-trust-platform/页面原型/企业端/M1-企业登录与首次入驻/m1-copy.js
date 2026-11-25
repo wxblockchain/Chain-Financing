@@ -46,14 +46,13 @@ TP.addCopy({
   '法定代表人':'Legal representative','董事':'Director','授权代表':'Authorized representative','其他':'Other','关系说明':'Relationship details','如：财务总监':'e.g. Finance director',
   '企业信息':'Company information','企业身份信息':'Company identity','企业补充信息':'Additional company information',
   '由平台运营登记，如有错误请联系平台运营更正。':'Registered by platform operations. Contact platform operations to correct any error.',
-  '企业名称':'Company name','注册国家／地区':'Country / region of registration','企业登记标识':'Company registration identifier','中国香港':'Hong Kong, China','香港 CR':'Hong Kong CR',
+  '企业名称':'Company name','注册国家／地区':'Country / region of registration','企业登记号码':'Registration number','中国香港':'Hong Kong, China',
   '业务角色':'Business roles','企业英文名称':'Company English name','州／省':'State / province','注册地址':'Registered address',
   '请填写注册地址。':'Enter the registered address.','提交':'Submit','资料已提交，入驻完成':'Profile submitted. Onboarding complete.',
   '退出登录？':'Sign out?','资料尚未提交，退出后已填写的内容不会保留。':'Your profile has not been submitted. Information you entered will not be kept if you sign out.','继续填写':'Keep editing',
-  '账号':'Account','登录邮箱与业务角色由平台运营分配，如有错误请联系平台运营更正。':'Your login email and business roles are assigned by platform operations. Contact platform operations to correct any error.',
+  '账号':'Account',
   '账号创建时间':'Account created','最近登录时间':'Last sign-in','资料提交时间':'Profile submitted','钱包':'Wallet','钱包绑定后不可更换或解绑。':'Once bound, the wallet cannot be changed or unbound.',
   '编辑':'Edit','保存':'Save','已保存':'Saved',
-  '企业名称、注册国家／地区、企业登记标识由平台运营登记，如有错误请联系平台运营更正。':'Company name, country / region and registration identifier are registered by platform operations. Contact platform operations to correct any error.',
   '注册地址为必填项，不能清空。':'Registered address is required and cannot be empty.',
   '账户安全':'Security','登录密码':'Password','修改后全部登录将结束，需用新密码重新登录。':'After a change, all sessions end and you sign in again with the new password.','修改密码':'Change password',
   '偏好设置':'Preferences','时区':'Time zone','选择界面显示的语言。':'Choose the interface language.','时间按所选时区展示。':'Times are shown in the selected time zone.',
@@ -138,6 +137,7 @@ TP.addCopy({
   '新登录邮箱':'New login email','修改后用新邮箱登录和找回密码。':'After the change, use the new email to sign in and reset your password.','该邮箱不可用，请更换。':'This email cannot be used. Please use another one.',
   '验证码已发送到新邮箱，请查收。':'A code has been sent to the new email.','新邮箱验证码':'New email code','修改邮箱':'Change email','确认修改':'Confirm change',
   /* 画面目录 */
-  '修改登录邮箱后：请用新邮箱登录':'After email change: sign in with new email','登录已结束（登录信息已更新）':'Session ended (sign-in details updated)',
+  '修改登录邮箱后：请用新邮箱登录':'After email change: sign in with new email','登录已结束（登录信息已更新 · 待首登改密）':'Session ended (sign-in details updated, first change pending)','登录已结束（登录信息已更新 · 已完成首次改密）':'Session ended (sign-in details updated, password already set)',
+  '偏好设置：查找时区':'Preferences: search time zone','输入时区名称查找':'Type a time zone name to search',
   '钱包地址与已绑定的不一致':'Wallet address does not match the bound address','新邮箱不可用':'New email unavailable'
 });

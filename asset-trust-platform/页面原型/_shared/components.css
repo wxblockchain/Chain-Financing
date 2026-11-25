@@ -1343,22 +1343,27 @@ td.pop-col:has(>.value-pop)::after{content:none}
 .step-section>.facts-region .facts.inset>div{padding-block:var(--sp-2);border-top:0}
 .form-grid>.wide{grid-column:1/-1}
 .subhead{font-size:var(--fs-14);font-weight:600;color:var(--text)}
-/* A5 账户信息的可维护分区：标题下方放“编辑”，编辑时本分区原位变为表单，底部取消 / 保存。 */
+/* A5 账户信息的可维护分区：“编辑”放在分区右侧、与标题同一行，编辑时本分区原位变为表单，底部取消 / 保存。 */
 .profile-sheet{max-width:var(--profile-reading-max)}
 .profile-sheet .profile-section{grid-template-columns:var(--profile-label-w) minmax(0,1fr);gap:var(--sp-7);padding-block:var(--sp-6)}
 .profile-sheet .facts{row-gap:var(--sp-5)}
 .profile-sheet .facts>div{padding:0;border-top:0}
 @container facts (min-width:600px){.profile-sheet .facts:not(.single){grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container facts (min-width:900px){.profile-sheet .facts.cols-3:not(.single){grid-template-columns:repeat(3,minmax(0,1fr))}}
-.profile-section>.section-head{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-3)}
+.profile-section>.section-head{display:contents}
+.profile-section>.section-head>h2{grid-column:1;grid-row:1}
+.profile-section>.section-head>.btn{grid-column:3;grid-row:1;align-self:start}
+.profile-section:has(>.section-head)>.section-body{grid-column:2;grid-row:1}
+.profile-sheet .profile-section:has(>.section-head>.btn){grid-template-columns:var(--profile-label-w) minmax(0,1fr) auto}
 .profile-section>.section-head>h2{font-size:var(--ui-section-title);font-weight:600;line-height:var(--lh-body)}
 .section-body{display:flex;flex-direction:column;gap:var(--sp-4);min-width:0}
 .section-body>.hint{margin:0}
 .profile-section.is-editing{background:var(--card-2);box-shadow:inset 3px 0 var(--accent)}
 .profile-section.is-editing .form-actions{padding-top:var(--sp-4);border-top:1px solid var(--border)}
 @media(max-width:1100px){
-  .profile-sheet .profile-section{grid-template-columns:minmax(0,1fr);gap:var(--sp-4)}
-  .profile-section>.section-head{flex-direction:row;align-items:center;justify-content:space-between}
+  .profile-sheet .profile-section,.profile-sheet .profile-section:has(>.section-head>.btn){grid-template-columns:minmax(0,1fr);gap:var(--sp-4)}
+  .profile-section>.section-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
+  .profile-section>.section-head>:is(h2,.btn),.profile-section:has(>.section-head)>.section-body{grid-column:auto;grid-row:auto}
 }
 @media(max-width:600px){.rule-list{grid-template-columns:minmax(0,1fr)}}
 /* A6 地址旁的“查看完整地址”：复用基线 .value-pop 浮层，按钮与复制图标同为无框图标按钮。 */
@@ -2651,4 +2656,10 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .combo-list>li{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3);padding:8px 10px;border-radius:var(--radius-xs);font-size:var(--fs-13);color:var(--text);cursor:pointer}
 .combo-list>li:hover,.combo-list>li.is-active{background:var(--card-hover)}
 .combo-sub{color:var(--muted);font-size:var(--fs-12)}
+/* A88 用于账户信息偏好设置的时区（M1）：与同行下拉同宽。 */
+.preference-row>.combo{flex:0 1 280px;max-width:280px;min-width:0}
+.preference-row>.combo .inp{max-width:none}
+@media(max-width:1100px){.preference-row>.combo{flex:auto;max-width:100%;width:100%}}
+/* 入驻“完善资料”的提交栏（M1）：复用 .anchored-actions 吸底，贴合入驻卡片底边。 */
+.onboard-body>.form-actions.anchored-actions{margin:0 calc(-1 * var(--card-pad)) calc(-1 * var(--card-pad));border:0;border-top:1px solid var(--border);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
 :lang(en) .combo-sub{display:none}
