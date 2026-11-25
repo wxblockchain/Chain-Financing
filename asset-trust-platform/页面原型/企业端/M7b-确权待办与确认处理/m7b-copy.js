@@ -14,6 +14,8 @@ TP.addCopy({
 "待处理的确权申请": "Pending confirmation requests",
 "已处理的确权申请": "Processed confirmation requests",
 "申请编号": "Request no.",
+"查看申请详情": "View request details",
+"进度": "Progress",
 "搜索申请编号、内销发票号或应收账款编号": "Search request no., domestic sales invoice no. or receivable no.",
 "申请编号、内销发票号或应收账款编号": "Request no., domestic sales invoice no. or receivable no.",
 "债权人": "Creditor",
