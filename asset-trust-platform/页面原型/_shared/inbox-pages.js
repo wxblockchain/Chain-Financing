@@ -93,7 +93,7 @@
     if(!m.ref) return '';
     return '<div class="card-sec msg-related"><h2 class="sub-h">相关业务</h2><div class="facts-region"><dl class="facts">'+m.ref.map(function(r,i){
       var linked = i===0 && (st==='act' || st==='done');
-      return '<div><dt>'+r[0]+'</dt><dd>'+(linked?'<button type="button" class="btn-link'+(r[2]==='text'?'':' mono')+'" data-module-key="'+esc(m.go.key)+'" data-toast="'+SCOPE_FILE+'">'+esc(r[1])+'</button>':IB.refValue(r))+'</dd></div>';
+      return '<div><dt>'+r[0]+'</dt><dd>'+(linked?'<button type="button" class="btn-link msg-record-link'+(r[2]==='text'?'':' mono')+'" data-module-key="'+esc(m.go.key)+'" data-toast="'+SCOPE_FILE+'"><span>'+esc(r[1])+'</span>'+TP.icon('back')+'</button>':IB.refValue(r))+'</dd></div>';
     }).join('')+'</dl></div>'+
     (st==='denied'?'<div class="msg-go"><p class="note">'+TP.icon('info')+'<span>相关内容暂不可访问。</span></p></div>':'')+'</div>';
   }
@@ -102,7 +102,7 @@
   function detail(m, opts){
     opts = opts || {};
     return '<div class="content-in msg-reading"><div class="page-head"><div>'+
-      '<div class="page-title-row"><h1 class="page-title">'+(opts.corrupt?IB.pair('通知','Notification'):IB.title(m))+'</h1><span class="tag">'+IB.CATS[m.cat]+'</span></div>'+
+      '<div class="msg-category">'+IB.CATS[m.cat]+'</div><h1 class="page-title">'+(opts.corrupt?IB.pair('通知','Notification'):IB.title(m))+'</h1>'+
       '<p class="page-desc"><time data-instant="'+m.at+'"></time><span class="faint"> · </span><span>时区</span> <span data-zone></span></p></div></div>'+
       (opts.unsaved?'<div class="note warn banner" role="alert">'+TP.icon('alert')+'<span class="grow">未能标为已读，这条消息仍为未读。</span><button type="button" class="btn sm"'+go(opts.retryGo)+'>重试</button></div>':'')+
       '<div class="card msg-detail"><div class="card-b">'+(opts.corrupt?'<p class="msg-content-status" role="status">'+TP.icon('info')+'<span>这条消息的内容暂时无法展示。</span></p>':'<p class="msg-body">'+IB.body(m)+'</p>')+'</div>'+related(m, opts.denied)+'</div></div>';

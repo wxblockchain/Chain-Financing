@@ -251,3 +251,9 @@
   --fx-history-min:1120px; --fx-history-min-en:1152px;
   --fx-col-rate:184px; --fx-col-time:128px; --fx-col-state:144px; --fx-col-by:144px;
 }
+
+/* M10: list scanning column and the related-record rail; no other module values change. */
+:root[data-module="messages"]{
+  --message-time-w:128px;
+  --message-context-w:280px;
+}

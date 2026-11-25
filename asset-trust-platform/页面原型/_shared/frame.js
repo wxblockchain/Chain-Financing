@@ -136,7 +136,9 @@
     var targets = (sec.dataset.crumbTargets||'').split('/');
     if(gateKey){ var it = findNav(gateKey); parts = [groupOf(gateKey), it.label]; }
     // 菜单直达的页面（列表、账户等，路径只有“分组 / 菜单”）不显示面包屑；详情等下级页面才显示返回路径（v1.23）。
-    $('#crumb').hidden = sec.dataset.layout === 'focus' || parts.length <= 2;
+    // M10 企业端从铃铛进入，详情只有“消息中心 / 消息详情”两级；保留已有返回目标。
+    var messageDetail = document.documentElement.dataset.module === 'messages' && parts.length === 2 && !!sec.dataset.crumbTargets;
+    $('#crumb').hidden = sec.dataset.layout === 'focus' || (parts.length <= 2 && !messageDetail);
     $('#crumb').innerHTML = parts.map(function(p,i){
       var target = targets[i];
       return (i?'<span class="sep" aria-hidden="true">/</span>':'') + (i===parts.length-1?'<b aria-current="page">'+esc(p)+'</b>':

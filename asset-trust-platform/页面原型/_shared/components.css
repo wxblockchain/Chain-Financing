@@ -2837,3 +2837,62 @@ body:has(.home-page) .sidebar .nav{position:relative}
 
 .home-change-label{fill:var(--chart-2);font-weight:600}
 .home-part-stale [data-zone]{display:inline}
+
+/* M10 UI (WS-683): one presentation for both ends. The preview is shared by all
+   inbox consumers; the list, reading sheet and confirmation rules are opt-in. */
+.dd.inbox .msg-item.compact{grid-template-columns:var(--sp-2) minmax(0,1fr);padding-block:var(--sp-3)}
+.dd.inbox .msg-item.compact .msg-title{font-weight:500}
+.dd.inbox .msg-item.compact.is-unread .msg-title{font-weight:600}
+.dd.inbox .msg-item.compact .msg-meta{font-size:var(--fs-12);column-gap:var(--sp-2)}
+.dd.inbox .msg-item.compact .msg-summary{line-height:1.6}
+.dd.inbox .msg-footer{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-1);flex-wrap:wrap}
+.dd.inbox .msg-footer .msg-time{line-height:var(--sp-6)}
+.dd.inbox .msg-footer .tag{flex:none;font-size:var(--fs-12);min-height:var(--sp-6)}
+.dd.inbox .inbox-h{background:var(--card-2)}
+.dd.inbox .inbox-zone{white-space:normal;overflow-wrap:anywhere}
+.dd.inbox .msg-cat{font-weight:600}
+:root[data-module="messages"] [data-inbox-view] .msg-item{grid-template-columns:var(--sp-2) minmax(0,1fr) var(--message-time-w);padding-block:var(--sp-3);column-gap:var(--sp-4)}
+:root[data-module="messages"] [data-inbox-view] .msg-title{font-size:var(--fs-14);font-weight:500}
+:root[data-module="messages"] [data-inbox-view] .is-unread .msg-title{font-weight:600}
+:root[data-module="messages"] [data-inbox-view] .msg-summary{-webkit-line-clamp:1;line-height:1.6}
+:root[data-module="messages"] [data-inbox-view] .msg-meta{gap:var(--sp-1) var(--sp-3);line-height:1.6}
+:root[data-module="messages"] [data-inbox-view] .msg-cat{font-weight:600}
+:root[data-module="messages"] [data-inbox-view] .msg-side{padding-top:0;gap:var(--sp-2);line-height:1.5}
+:root[data-module="messages"] [data-inbox-view] .msg-time{text-align:right;color:var(--muted)}
+:root[data-module="messages"] [data-inbox-view] .msg-time .cell-sub{display:block;margin:0;color:var(--muted);font-size:inherit}
+:root[data-module="messages"] .msg-reading{max-width:none}
+:root[data-module="messages"] .msg-reading .page-head>div{min-width:0;max-width:100%}
+:root[data-module="messages"] .msg-reading .page-title{max-width:var(--message-body-max);overflow-wrap:anywhere;line-height:1.4}
+:root[data-module="messages"] .msg-category{font-size:var(--fs-12);font-weight:600;color:var(--muted);margin-bottom:var(--sp-2)}
+:root[data-module="messages"] .msg-reading .page-desc{font-size:var(--fs-13);font-variant-numeric:tabular-nums}
+:root[data-module="messages"] .msg-detail{display:grid;grid-template-columns:minmax(0,1fr) var(--message-context-w);align-items:stretch}
+:root[data-module="messages"] .msg-detail>.card-b{min-width:0;padding:var(--sp-7);grid-column:1}
+:root[data-module="messages"] .msg-detail .msg-body{font-size:var(--fs-16);line-height:1.9}
+:root[data-module="messages"] .msg-related{min-width:0;border-top:0;border-left:1px solid var(--border);padding:var(--sp-6);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+:root[data-module="messages"] .msg-related .facts{grid-template-columns:minmax(0,1fr)}
+:root[data-module="messages"] .msg-related .facts>div{min-width:0;padding-block:var(--sp-3);border:0}
+:root[data-module="messages"] .msg-related .facts dd{overflow-wrap:anywhere}
+:root[data-module="messages"] .msg-record-link{display:inline-flex;align-items:center;gap:var(--sp-2);max-width:100%;text-align:left;white-space:normal;text-decoration:underline;text-underline-offset:var(--sp-1)}
+:root[data-module="messages"] .msg-record-link>span{min-width:0;overflow-wrap:anywhere}
+:root[data-module="messages"] .msg-record-link>svg.i{flex:none;transform:rotate(180deg);width:var(--sp-4);height:var(--sp-4)}
+:root[data-module="messages"] .modal:has(.msg-markall-scope){max-width:var(--modal-w-lg)}
+:root[data-module="messages"] .msg-markall-scope{background:var(--card-2);border-block:1px solid var(--border);padding:var(--sp-4)}
+:root[data-module="messages"] .msg-markall-scope .facts{background:transparent;gap:var(--sp-4)}
+:root[data-module="messages"] .msg-markall-scope .facts>div{border:0;padding:0}
+:root[data-module="messages"] [data-inbox-view] .state{min-height:calc(var(--ctrl-h) * 6);justify-content:center}
+@media(max-width:1279px){
+  :root[data-module="messages"] .msg-detail{grid-template-columns:minmax(0,1fr)}
+  :root[data-module="messages"] .msg-related{border-left:0;border-top:1px solid var(--border);border-radius:0 0 var(--radius-sm) var(--radius-sm);padding:var(--sp-6) var(--sp-7)}
+  :root[data-module="messages"] .msg-related .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  :root[data-module="messages"] .inbox-actions{margin-left:0}
+  :root[data-module="messages"] [data-inbox-view] .msg-item{column-gap:var(--sp-3)}
+  :root[data-module="messages"] .msg-detail>.card-b,:root[data-module="messages"] .msg-related{padding:var(--sp-5)}
+}
+@media(max-width:600px){
+  :root[data-module="messages"] [data-inbox-view] .msg-item{grid-template-columns:var(--sp-2) minmax(0,1fr)}
+  :root[data-module="messages"] [data-inbox-view] .msg-side{flex-direction:row-reverse;justify-content:flex-end;gap:var(--sp-3)}
+  :root[data-module="messages"] [data-inbox-view] .msg-time{display:flex;gap:var(--sp-2)}
+  :root[data-module="messages"] .msg-related .facts{grid-template-columns:minmax(0,1fr)}
+}
