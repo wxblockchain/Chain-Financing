@@ -244,8 +244,8 @@ v1.0 中这些子条件“只记录、不判定”，本版全部恢复判定。
 [m5-price]: ../../../PRD/运营端/M5-车辆履约/01-车辆履约-PRD.md#price-chain
 [m3-placeholder]: ../../../PRD/两端共用/M3-应收账款与发票/01-应收账款与发票-PRD.md#placeholder
 [m3-f11]: ../../../PRD/两端共用/M3-应收账款与发票/01-应收账款与发票-PRD.md#F-M3-11
-[m8-external]: ../../../PRD/运营端/M8-风控预警与三方数据源/01-风控预警与三方数据源-PRD.md#external
-[m8-entries]: ../../../PRD/运营端/M8-风控预警与三方数据源/01-风控预警与三方数据源-PRD.md#entries
+[m8-external]: ../../../PRD/运营端/M8-风控预警/01-风控预警-PRD.md#external
+[m8-entries]: ../../../PRD/运营端/M8-风控预警/01-风控预警-PRD.md#entries
 [m2-op11]: ../../../PRD/运营端/M2-运营登录与企业管理/01-运营登录与企业管理-PRD.md#F-OP-11
 [m2-status]: ../../../PRD/运营端/M2-运营登录与企业管理/01-运营登录与企业管理-PRD.md#op-account-status
 [m11-fx05]: ../../../PRD/运营端/M11-汇率管理/01-汇率管理-PRD.md#FX-05

@@ -293,7 +293,7 @@
 [login-email-fix]: ../../../PRD/运营端/M2-运营登录与企业管理/01-运营登录与企业管理-PRD.md#login-email-fix
 [m3-party]: ../../../PRD/两端共用/M3-应收账款与发票/01-应收账款与发票-PRD.md#party-match
 [m7a-status]: ../../../PRD/企业端/M7a-应收查看与确权申请/01-应收查看与确权申请-PRD.md#apply-status
-[m8-rk34]: ../../../PRD/运营端/M8-风控预警与三方数据源/01-风控预警与三方数据源-PRD.md#RK-34
+[m8-rk34]: ../../../PRD/运营端/M8-风控预警/01-风控预警-PRD.md#RK-34
 [op-account-status]: ../../../PRD/运营端/M2-运营登录与企业管理/01-运营登录与企业管理-PRD.md#op-account-status
 [p01]: ../../../PRD/运营端/M2-运营登录与企业管理/01-运营登录与企业管理-PRD.md
 [p02]: ../../../PRD/运营端/M2-运营登录与企业管理/02-运营登录与企业管理-流程图与状态机.md

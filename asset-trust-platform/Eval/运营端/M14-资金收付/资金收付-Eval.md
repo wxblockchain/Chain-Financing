@@ -255,8 +255,8 @@
 [m3-placeholder]: ../../../PRD/两端共用/M3-应收账款与发票/01-应收账款与发票-PRD.md#placeholder
 [m11-fx05]: ../../../PRD/运营端/M11-汇率管理/01-汇率管理-PRD.md#FX-05
 [m11-scope]: ../../../PRD/运营端/M11-汇率管理/01-汇率管理-PRD.md#12-本期不做
-[m8-external]: ../../../PRD/运营端/M8-风控预警与三方数据源/01-风控预警与三方数据源-PRD.md#external
-[m8-entries]: ../../../PRD/运营端/M8-风控预警与三方数据源/01-风控预警与三方数据源-PRD.md#entries
+[m8-external]: ../../../PRD/运营端/M8-风控预警/01-风控预警-PRD.md#external
+[m8-entries]: ../../../PRD/运营端/M8-风控预警/01-风控预警-PRD.md#entries
 [m2-op11]: ../../../PRD/运营端/M2-运营登录与企业管理/01-运营登录与企业管理-PRD.md#F-OP-11
 [m2-status]: ../../../PRD/运营端/M2-运营登录与企业管理/01-运营登录与企业管理-PRD.md#op-account-status
 [m13-sort]: ../../../PRD/运营端/M13-保单信息/01-保单信息-PRD.md#sort-rule

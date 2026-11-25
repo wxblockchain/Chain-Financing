@@ -251,6 +251,6 @@ v1.0 中这些子条件“只记录、不判定”，本版全部恢复判定。
 [entries]: ../../../PRD/运营端/M12-提单信息/01-提单信息-PRD.md#entries
 [m3-placeholder]: ../../../PRD/两端共用/M3-应收账款与发票/01-应收账款与发票-PRD.md#placeholder
 [m3-usd]: ../../../PRD/两端共用/M3-应收账款与发票/01-应收账款与发票-PRD.md#usd-rule
-[m8-external]: ../../../PRD/运营端/M8-风控预警与三方数据源/01-风控预警与三方数据源-PRD.md#external
+[m8-external]: ../../../PRD/运营端/M8-风控预警/01-风控预警-PRD.md#external
 [m2-op11]: ../../../PRD/运营端/M2-运营登录与企业管理/01-运营登录与企业管理-PRD.md#F-OP-11
 [m3-display]: ../../../PRD/两端共用/M3-应收账款与发票/01-应收账款与发票-PRD.md#display-values
