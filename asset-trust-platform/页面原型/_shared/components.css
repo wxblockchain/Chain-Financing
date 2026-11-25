@@ -2783,3 +2783,15 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-ov-note{grid-column:2/-1;margin:2px 0 var(--sp-1);line-height:1.6}
 @media(max-width:1250px){.home-ov{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){.home-ov-row,.home-ov-card+.home-ov-card .home-ov-row{grid-template-columns:4.5em minmax(40px,1fr) auto}.home-ov-yoy{grid-column:2/-1}}
+/* M17 趋势按月／按年（PRD 016a075e 7.1，默认按月）：复用基线 .seg 单选组，放在板块标题右侧与范围并列；应收账款趋势在其小标题行。
+   刷新时单个板块失败（PRD 317e877f 3.5）：该板块标题下方 .note.red 提示上次成功取数时间并可重试，板块数字保留。 */
+.home-section-tools{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3)}
+.home-section-tools p{font-size:var(--fs-12);color:var(--muted)}
+.home-section-head:has(.home-section-tools){align-items:center}
+.home-ar-trend-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-3);margin:var(--sp-5) 0 var(--sp-4)}
+.home-ar-trend-head .home-distribution-title{margin:0}
+.home-part-stale{margin-bottom:var(--sp-3);align-items:center}
+@media(max-width:600px){.home-section-tools{margin-top:var(--sp-2)}}
+
+.home-change-label{fill:var(--chart-2);font-weight:600}
+.home-part-stale [data-zone]{display:inline}
