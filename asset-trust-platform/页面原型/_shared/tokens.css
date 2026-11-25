@@ -188,11 +188,15 @@
   --rule-col-seq:56px; --rule-col-rule:196px; --rule-col-cat:104px; --rule-col-level:80px; --rule-col-on:72px; --rule-col-n:72px;
   --rule-col-last:120px; --rule-col-actions:168px;
   --param-table-min:860px; --param-input-w:200px; /* M8 风控参数三行与新值输入 */
-  --bl-table-min:1120px; /* M12 提单列表十一列，1440 px 视口完整展示；提单号与查看分别固定两侧，更窄时表内滚动 */
-  --bl-table-min-en:1280px; /* 英文表头与清关状态的阅读下限 */
-  --bl-col-no:132px; --bl-col-carrier:120px; --bl-col-voyage:128px; --bl-col-route:136px; --bl-col-date:100px;
-  --bl-col-count:64px; --bl-col-value:136px; --bl-col-customs:136px; --bl-col-warn:56px;
-  --bl-vehicle-min:1040px; /* M12 车辆清单八列（不含集装箱号），1440 px 视口完整展示，更窄时卡内滚动 */
+  --bl-table-min:1104px; /* M12 十一列，中文 1440 px 完整展示；更窄时表内滚动 */
+  --bl-table-min-en:1408px; /* 英文完整状态与长表头的阅读下限 */
+  --bl-col-no:132px; --bl-col-carrier:112px; --bl-col-voyage:120px; --bl-col-route:128px; --bl-col-date:100px;
+  --bl-col-count:56px; --bl-col-value:124px; --bl-col-customs:104px; --bl-col-warn:56px;
+  --bl-vehicle-min:1100px;
+  --bl-summary-alert-w:176px; --bl-track-time-w:240px; --bl-track-place-w:200px;
+  --bl-customs-min:1000px; --bl-customs-count-w:112px; --bl-container-w:168px;
+  --bl-vin-w:176px; --bl-price-w:140px; --bl-usd-w:140px;
+  --bl-file-time-w:176px; --bl-file-number-w:200px;
   /* M5 车辆履约（WS-660，单车维度）：列表七列（WS-674），VIN 与查看分别固定两侧；窄视口表内滚动 */
   --fulfil-table-min:860px; /* 七列（PRD e0e1b11a），1280 px 中文视口完整展示 */
   --fulfil-table-min-en:960px; /* 英文表头按词换行后的阅读下限 */
@@ -213,6 +217,14 @@
   --fund-table-min-en:1200px; /* 英文表头与收付类型的阅读下限 */
   --fund-col-id:136px; --fund-col-type:104px; --fund-col-date:112px; --fund-col-parties:232px;
   --fund-col-amount:176px; --fund-col-usd:148px; --fund-col-docs:136px;
+}
+
+/* M12 英文阅读宽度；仅本模块使用，其他模块无默认值变化。 */
+:root[data-module="ops-bills"]:lang(en){
+  --bl-col-no:140px; --bl-col-carrier:128px; --bl-col-voyage:140px; --bl-col-route:156px;
+  --bl-col-date:112px; --bl-col-count:76px; --bl-col-value:140px; --bl-col-customs:148px; --bl-col-warn:72px;
+  --bl-vehicle-min:1408px; --bl-customs-min:1200px; --bl-customs-count-w:144px;
+  --bl-price-w:148px; --bl-usd-w:172px;
 }
 
 /* M7a 英文密集列表：独立列宽保留编号、日期、金额及状态全值；共享 token 的其他消费者不变。 */
