@@ -1780,16 +1780,20 @@ table.tbl.push-list{min-width:var(--push-table-min)}
 /* A46 债权人应收账款列表：默认无选择框，应收账款编号固定在左，操作（发起申请 / 查看）固定在右；共用 A14 行高、表头换行与金额规则。
    点“批量发起申请”后表格加 .is-selecting，首列出现选择框，选择框与编号一起固定在左；不可申请行的选择框禁用。
    到期日与到期状态分两列；申请状态、申请资格只给标签，列表不展示申请编号与不可申请原因。 */
-table.tbl.claim-list{min-width:var(--claim-table-min)}
+table.tbl.claim-list{table-layout:fixed;min-width:var(--claim-table-min)}
 :lang(en) table.tbl.claim-list{min-width:var(--claim-table-min-en)}
 table.tbl.claim-list.is-selecting{min-width:var(--claim-table-min-select)}
 :lang(en) table.tbl.claim-list.is-selecting{min-width:var(--claim-table-min-select-en)}
 .tbl.claim-list :is(th,td){padding-inline:var(--sp-2)}
 .tbl.claim-list td{vertical-align:middle;padding-block:var(--sp-3)}
 .tbl.claim-list th{white-space:normal;word-break:normal;overflow-wrap:normal}
-.tbl.claim-list .tag{white-space:normal;overflow-wrap:normal;word-break:normal}
-.tbl.claim-list .money{font-size:var(--fs-14)}
+.tbl.claim-list .tag{white-space:nowrap;overflow-wrap:normal;word-break:normal}
+.tbl.claim-list .money{font-size:var(--fs-14);font-weight:500}
+.tbl.claim-list .money .ccy{font-weight:400;color:var(--muted)}
+.tbl.claim-list td>.mono,.tbl.claim-list .date{white-space:nowrap}
+.tbl.claim-list .tag:not(.ok):not(.warn):not(.danger){background:transparent;padding-inline:0}
 .tbl.claim-list .num{white-space:nowrap}
+.tbl.claim-list th.num{white-space:normal}
 .tbl.claim-list .btn-link.mono{white-space:nowrap;font-weight:500}
 .tbl.claim-list :is(th,td):first-child,.tbl.claim-list.is-selecting :is(th,td):nth-child(2){position:sticky;z-index:1;background:var(--card)}
 .tbl.claim-list :is(th,td):first-child{left:0;padding-left:var(--card-pad)}
@@ -1824,12 +1828,13 @@ table.tbl.claim-list.is-selecting{min-width:var(--claim-table-min-select)}
 /* A47 批量选择条：只在批量选择中出现，位于筛选与表格之间；已选数量与单次上限在左，“退出批量选择”“清空”与“发起申请”在右；
    未选时“发起申请”禁用、无“清空”，有选择时浅主色底；选满 10 笔时上限提示改为 warn 并带图标，不只靠颜色。 */
 .claim-select-bar{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4);padding:var(--sp-3) var(--card-pad);border-top:1px solid var(--border);background:var(--card-2)}
-.claim-select-bar.is-active{background:var(--accent-soft);border-top-color:var(--accent-border)}
+.claim-select-bar.is-active{background:var(--accent-soft);border-top-color:var(--accent-border);box-shadow:inset 3px 0 var(--accent)}
 .claim-select-count{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
-.claim-select-n{font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.claim-select-n{font-size:var(--fs-14);font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
 .claim-select-limit{display:inline-flex;align-items:center;gap:var(--sp-1)}
 .claim-select-limit.warn{color:var(--warn);font-weight:500}
-.claim-select-actions{display:flex;align-items:center;gap:var(--sp-2);margin-left:auto}
+.claim-select-actions{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);margin-left:auto}
+.claim-select-actions>.primary{margin-left:var(--sp-2)}
 .claim-select-bar+.tablewrap{border-top:1px solid var(--border)}
 /* A48 批量确认弹窗与逐笔结果卡：顶部三项汇总（笔数、按币种分别合计、债务人及笔数）为浅底只读区，逐笔清单为明细表；
    结果按“已提交 / 未提交”标签区分，成功给申请编号与状态，未提交给原因。 */
@@ -1866,10 +1871,16 @@ table.tbl.claim-list.is-selecting{min-width:var(--claim-table-min-select)}
 .claim-snapshot{margin-top:var(--sp-8)}
 /* A90 应收账款详情（M7a，与 A18 共用 .receivable-detail 版式）中的“确权申请”卡：当前申请结果一行（申请编号、申请状态、附带信息、发起时间），
    右侧文字按钮“查看申请详情”与结果在同一区域；有两笔及以上申请时下接历次申请明细表（申请编号即入口）；没有申请时为一句空态。 */
-.claim-current{display:flex;align-items:center;gap:var(--sp-4)}
+.claim-current{display:flex;align-items:flex-start;gap:var(--sp-4);padding-block:var(--sp-5)}
 .claim-current>.facts-region{flex:1 1 auto;min-width:0}
+.claim-current-label{padding-inline:var(--card-pad);font-size:var(--fs-13);font-weight:600;color:var(--text)}
+.claim-current .facts{padding-block:var(--sp-2) 0}
 .claim-current-act{flex:none;padding-right:var(--card-pad)}
-.claim-apply-card .claim-history{border-top:1px solid var(--border)}
+.claim-current-link{display:inline-flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-13);font-weight:500;white-space:normal;text-align:left}
+.claim-current-link::after{content:"→";flex:none}
+.claim-apply-card .claim-history{background:var(--card-2);border-top:1px solid var(--border)}
+.claim-history .tbl :is(td,th){background:transparent}
+.claim-history .tbl :is(td,th):first-child{width:28%}
 .claim-apply-card .claim-history>.sub-h{padding:var(--sp-4) var(--card-pad) var(--sp-3)}
 /* 提交后回到已刷新的列表：单笔结果为页面级 .note.accent（申请编号、状态与“查看申请”）；批量结果为列表上方的结果卡（汇总 + 逐笔明细，申请编号可进入申请详情）。 */
 .claim-submit-note{align-items:center}
@@ -1882,6 +1893,23 @@ table.tbl.claim-list.is-selecting{min-width:var(--claim-table-min-select)}
 .claim-result-body{display:grid;gap:var(--sp-4);padding:var(--sp-4) var(--card-pad) var(--sp-5)}
 .claim-result-sum .facts{grid-template-columns:repeat(3,minmax(0,1fr))}
 .claim-result-sum .facts>div{border-top:0}
+/* M7a 详情沿用 M7b 的只读事实字段、分区导航和三环节进度，仅调整本模块阅读密度。 */
+[data-module="enterprise-claims"] .receivable-summary .asset-sum{align-items:start}
+[data-module="enterprise-claims"] .receivable-summary .status-grid{padding-block:var(--sp-2)}
+[data-module="enterprise-claims"] .receivable-summary .meta{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));row-gap:var(--sp-4)}
+[data-module="enterprise-claims"] .receivable-detail .facts{column-gap:var(--sp-6)}
+.claim-progress .receivable-steps{padding-block:var(--sp-5);gap:var(--sp-6)}
+.claim-progress .operation-log{padding-bottom:var(--sp-5)}
+.claim-snapshot>.detail-group-h{align-items:baseline;flex-wrap:wrap;row-gap:var(--sp-1)}
+@container facts (min-width:620px){
+  .claim-current .facts.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .claim-current .facts.cols-3>div:nth-child(-n+3){border-top:0}
+}
+@media(max-width:1100px){
+  .claim-current{flex-wrap:wrap;gap:var(--sp-2)}
+  .claim-current>.facts-region{flex-basis:100%}
+  .claim-current-act{padding-inline:var(--card-pad)}
+}
 /* —— M8 风控预警（组件规范 §4 A51–A53、A82；v3 按 PRD 53371ee0：列表不含关联应收账款，规则列表首列序号）—— */
 /* A51 风控预警列表：每条预警一行，预警编号固定在左、“查看”固定在右（共用 A14 规则）；等级、规则两列，规则名下方为编号；
    阻断类（规则启用中）整行左侧 3 px 危险色条并加粗等级，不只靠颜色；比较对象可换行。 */

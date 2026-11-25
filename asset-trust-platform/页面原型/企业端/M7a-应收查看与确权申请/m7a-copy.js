@@ -1,5 +1,6 @@
 /* M7a 应收查看与确权申请 · 企业端（债权人）· 模块文案英文（业务值、驳回原因原文不翻译） */
 TP.addCopy({
+"当前申请": "Current request",
 "应收查看与确权申请 · 资产可信平台": "Receivables & confirmation requests · Asset Trust Platform",
 "应收账款列表": "Receivables list",
 "批量发起确权申请": "Submit confirmation requests in bulk",

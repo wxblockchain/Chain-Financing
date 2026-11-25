@@ -174,10 +174,10 @@
   --intake-col-name:136px; --intake-col-src:96px; --intake-col-mod:152px; --intake-col-status:96px; --intake-col-time:120px; --intake-col-last:216px; --intake-col-today:136px;
   --call-record-min:960px; /* M15 调用记录六列，窄视口在表内滚动 */
   --claim-table-min:1088px; /* M7a 债权人应收账款默认十列（无选择框）、批量选择十一列，1440 px 视口完整展示；更窄时表内滚动，编号与操作固定 */
-  --claim-table-min-en:1260px; /* 英文表头与状态的阅读下限 */
-  --claim-table-min-select:1136px; --claim-table-min-select-en:1308px; /* 进入批量选择后多一列选择框 */
-  --claim-col-check:48px; --claim-col-id:128px; --claim-col-invoice:92px; --claim-col-debtor:128px; --claim-col-amount:120px;
-  --claim-col-due:104px; --claim-col-due-st:104px; --claim-col-repay:92px; --claim-col-apply:120px; --claim-col-elig:104px; --claim-col-actions:96px;
+  --claim-table-min-en:1520px; /* 英文表头与状态的阅读下限 */
+  --claim-table-min-select:1136px; --claim-table-min-select-en:1568px; /* 进入批量选择后多一列选择框 */
+  --claim-col-check:48px; --claim-col-id:128px; --claim-col-invoice:92px; --claim-col-debtor:120px; --claim-col-amount:136px;
+  --claim-col-due:96px; --claim-col-due-st:104px; --claim-col-repay:92px; --claim-col-apply:120px; --claim-col-elig:104px; --claim-col-actions:96px;
   --claim-modal-w:840px; /* 批量确认与逐笔结果：五列清单不截断 */
   --claim-search-w:480px; /* 查找内容：编号、发票号、VIN 的提示完整可读 */
   --alert-table-min:860px; /* M8 风控预警列表七列（不含关联应收账款），编号与查看分别固定两侧 */
@@ -213,4 +213,11 @@
   --fund-table-min-en:1200px; /* 英文表头与收付类型的阅读下限 */
   --fund-col-id:136px; --fund-col-type:104px; --fund-col-date:112px; --fund-col-parties:232px;
   --fund-col-amount:176px; --fund-col-usd:148px; --fund-col-docs:136px;
+}
+
+/* M7a 英文密集列表：独立列宽保留编号、日期、金额及状态全值；共享 token 的其他消费者不变。 */
+:root[data-module="enterprise-claims"]:lang(en){
+  --claim-col-id:144px; --claim-col-invoice:112px; --claim-col-debtor:136px; --claim-col-amount:152px;
+  --claim-col-due:112px; --claim-col-due-st:136px; --claim-col-repay:128px; --claim-col-apply:192px;
+  --claim-col-elig:160px; --claim-col-actions:148px;
 }
