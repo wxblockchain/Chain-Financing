@@ -487,5 +487,8 @@ TP.addCopy({
 "该 ERP 企业缺少名称，暂不能关联": "This ERP entity has no name and cannot be linked yet",
 "ERPC-2009 缺少名称，不能选择": "ERPC-2009 has no name and cannot be selected",
 "演示数据只为主流程示例企业提供保存后的画面。": "This demo shows the saved result for the main-flow example enterprise only.",
-"演示数据只为名称不一致主流程提供保存画面。": "This demo shows the save screens for the main name-mismatch flow only."
+"演示数据只为名称不一致主流程提供保存画面。": "This demo shows the save screens for the main name-mismatch flow only.",
+"邮箱格式不正确，请检查后重新输入。": "The email format is invalid. Check it and try again.",
+"邀请 · 邮箱格式不正确": "Invite · invalid email format",
+"找回 · 邮箱格式不正确": "Recovery · invalid email format"
 });

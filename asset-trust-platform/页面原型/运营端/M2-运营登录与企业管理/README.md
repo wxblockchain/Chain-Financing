@@ -4,7 +4,7 @@
 
 ## 基线
 
-- PRD：仓库 `asset-trust-platform/PRD/运营端/M2-运营登录与企业管理/`（`cly-v6.0.0` @ `737e6f54`，2026-11-25 补充名称比对细则；此前 `6cb5a5e1` 2026-11-25 按用户确认结论修订）。M2 当前没有待确认事项；开发人员更正登录邮箱在产品外处理，原型不画入口。
+- PRD：仓库 `asset-trust-platform/PRD/运营端/M2-运营登录与企业管理/`（`cly-v6.0.0` @ `47517685`，2026-11-25 补充登录邮箱输入规则与开发人员更正登录邮箱的两种结果；此前 `737e6f54` 名称比对细则、`6cb5a5e1` 用户确认结论）。M2 当前没有待确认事项；开发人员更正登录邮箱在产品外处理，原型不画入口。
 - 视觉与组件：代币发行平台《组件规范》v1.96（`token-issuance-platform/页面原型/_shared/`，cly-v6.0.0 @ e2f8eb3），即本平台自持的 [`../../_shared/`](../../_shared/design-system/组件规范.md)（与企业端 M1 共用；本模块新增组件 A7–A11、`menu.ops.js` 与账号入口文字配置已登记在该规范）；列表、详情、金额与时间等按《资产可信平台列表与详情展示参考规范 v1.0》。
 - 钱包与入驻资料按 M1《企业登录与首次入驻》PRD 的钱包信息、个人信息、企业补充信息与组织资料只读展示。
 - 操作记录采用纵向时间线（[进度与操作记录](../../_shared/design-system/进度与操作记录.md)）。2026-11-25 起企业详情不再展示入驻节点、入驻进度和认证状态（PRD 6cb5a5e1）。
@@ -45,15 +45,15 @@ python3 _shared/export.py --source 运营端/M2-运营登录与企业管理/运�
 
 ## 画面清单
 
-共 98 屏。默认、空、代表性异常、业务阶段与流程步骤按下表；未出屏的状态以 PRD 为准。
+共 100 屏。默认、空、代表性异常、业务阶段与流程步骤按下表；未出屏的状态以 PRD 为准。
 
 | 分组 | 画面 ID 与名称 |
 | --- | --- |
 | 登录与会话（13） | `login` 运营端登录；`login-empty` 登录 · 空表单；`login-error` 登录 · 邮箱或密码错误；`login-attempts` 登录 · 剩余机会；`login-locked` 登录 · 账号临时锁定；`login-service` 登录 · 服务异常；`login-busy` 登录 · 提交中；`login-target` 登录 · 返回原页面；`login-changed` 登录 · 密码已修改；`login-recovered` 登录 · 密码已重置；`login-expired` 登录 · 登录已到期；`login-idle` 登录 · 长时间无操作；`login-out` 登录 · 已退出 |
 | 首次登录改密（5） | `login-initial` 登录 · 使用初始密码；`first-empty` 首次登录 · 设置新密码；`first-ready` 首次登录 · 已填写；`first-error` 首次登录 · 两次输入不一致；`first-fail` 首次登录 · 与初始密码相同 |
-| 找回密码（16） | `recover-email` 找回 · 输入邮箱；`recover-filled` 找回 · 已填写邮箱；`recover-send-fail` 找回 · 验证码发送失败；`recover-limit` 找回 · 发送次数已达上限；`recover-captcha` 找回 · 安全验证；`recover-captcha-fail` 找回 · 安全验证未通过；`recover-captcha-retry` 找回 · 连续 3 次未通过；`recover-captcha-cooldown` 找回 · 安全验证冷却中；`recover-captcha-load-fail` 找回 · 题目加载失败；`recover-code` 找回 · 输入验证码；`recover-code-invalid` 找回 · 验证码无效；`recover-locked` 找回 · 验证后账号锁定；`recover-password` 找回 · 设置新密码；`recover-ready` 找回 · 新密码已填写；`recover-password-error` 找回 · 与当前密码相同；`recover-stale` 找回 · 验证已失效 |
+| 找回密码（17） | `recover-email` 找回 · 输入邮箱；`recover-filled` 找回 · 已填写邮箱；`recover-email-invalid` 找回 · 邮箱格式不正确；`recover-send-fail` 找回 · 验证码发送失败；`recover-limit` 找回 · 发送次数已达上限；`recover-captcha` 找回 · 安全验证；`recover-captcha-fail` 找回 · 安全验证未通过；`recover-captcha-retry` 找回 · 连续 3 次未通过；`recover-captcha-cooldown` 找回 · 安全验证冷却中；`recover-captcha-load-fail` 找回 · 题目加载失败；`recover-code` 找回 · 输入验证码；`recover-code-invalid` 找回 · 验证码无效；`recover-locked` 找回 · 验证后账号锁定；`recover-password` 找回 · 设置新密码；`recover-ready` 找回 · 新密码已填写；`recover-password-error` 找回 · 与当前密码相同；`recover-stale` 找回 · 验证已失效 |
 | 企业列表（5） | `ent-list` 企业列表；`ent-list-added` 企业列表 · 新邀请已加入；`ent-empty` 企业列表 · 尚无企业；`ent-no-results` 企业列表 · 筛选无结果；`ent-list-fail` 企业列表 · 读取失败 |
-| 邀请企业（15） | `invite-empty` 邀请 · 空表单；`invite-country-search` 邀请 · 注册国家／地区查找；`invite-erp-empty` 邀请 · 暂无可关联的 ERP 企业；`invite-erp-no-match` 邀请 · 未找到可关联的 ERP 企业；`invite-ready` 邀请 · 资料已填写；`invite-error` 邀请 · 字段错误；`invite-no-role` 邀请 · 未选业务角色；`invite-duplicate` 邀请 · 企业已被邀请；`invite-email-unavailable` 邀请 · 登录邮箱不可用；`invite-erp-conflict` 邀请 · ERP 企业已被关联；`invite-busy` 邀请 · 发送中；`invite-same-name` 邀请 · 同名提醒；`invite-erp-confirm` 邀请 · 确认关联 ERP 企业；`invite-sent` 邀请 · 已发出；`invite-mail-fail` 邀请 · 已建立但邮件未发出 |
+| 邀请企业（16） | `invite-empty` 邀请 · 空表单；`invite-country-search` 邀请 · 注册国家／地区查找；`invite-erp-empty` 邀请 · 暂无可关联的 ERP 企业；`invite-erp-no-match` 邀请 · 未找到可关联的 ERP 企业；`invite-ready` 邀请 · 资料已填写；`invite-error` 邀请 · 字段错误；`invite-email-format` 邀请 · 邮箱格式不正确；`invite-no-role` 邀请 · 未选业务角色；`invite-duplicate` 邀请 · 企业已被邀请；`invite-email-unavailable` 邀请 · 登录邮箱不可用；`invite-erp-conflict` 邀请 · ERP 企业已被关联；`invite-busy` 邀请 · 发送中；`invite-same-name` 邀请 · 同名提醒；`invite-erp-confirm` 邀请 · 确认关联 ERP 企业；`invite-sent` 邀请 · 已发出；`invite-mail-fail` 邀请 · 已建立但邮件未发出 |
 | 企业详情（18） | `d-initial` 详情 · 待首次改密（新邀请）；`d-wallet` 详情 · 待绑定钱包；`d-profile` 详情 · 待完善资料；`d-profile-linked` 详情 · 已补充关联 ERP 企业；`d-active` 详情 · 已完成入驻（单一角色）；`d-both` 详情 · 已完成入驻（两个角色）；`d-both-unlinked` 详情 · 已取消关联 ERP 企业；`d-creditor` 详情 · 已完成入驻（债权人）；`d-initial-early` 详情 · 待首次改密（较早邀请）；`d-onboarded-hk` 详情 · 已完成入驻（同名企业）；`d-part-fail` 详情 · 入驻资料读取失败；`d-file-fail` 详情 · 组织资料暂时无法打开；`d-active-saved` 详情 · 资料已保存；`d-role-added` 详情 · 业务角色已增加；`d-initial-resent` 详情 · 已重发邀请；`d-initial-mail-fail` 详情 · 邀请邮件未发出；`d-not-found` 详情 · 内容不存在或无权查看；`d-fail` 详情 · 读取失败 |
 | 账号操作（2） | `resend-confirm` 重发邀请 · 确认；`resend-stale` 重发邀请 · 已完成首次改密 |
 | 增加业务角色（2） | `role-confirm` 增加业务角色 · 确认；`role-exists` 增加业务角色 · 角色已存在 |
@@ -225,3 +225,14 @@ PRD 改为只校验登录邮箱当前是否被其他账号使用，不保留、�
 - 保存时再比对一次的结果与选择时相同（弹出同一提示），不另出屏；空白与全半角标点口径属比对规则，原型不演示。
 
 核验（Playwright Chromium）：98 屏 × 中文 / English × 1280 / 1440 / 1920 px，无脚本错误、无整页横向溢出、无失效 data-go / data-next / data-base 目标，按钮、标签和表头未裁切；English 下除演示业务值外无未翻译文案。离线单文件两种语言遍历，无外部请求。截图仅作内部核验。
+
+## v1.18 按 PRD 47517685 补充登录邮箱输入规则
+
+在 `1cd97c79` 上只补 2 屏，共 100 屏；画面编号按顺序重排。
+
+- 邀请：新增 `invite-email-format`，联系邮箱（中间有空格）与登录邮箱（含中文）各自在输入框下说明“邮箱格式不正确，请检查后重新输入。”，不能提交。编辑企业资料的联系邮箱使用同一提示，不另出屏。
+- 找回密码：新增 `recover-email-invalid`，邮箱中间有空格时在输入框下说明格式不正确，不能获取验证码。
+- 运营登录：邮箱格式不正确与邮箱不存在表现相同，沿用 `login-error` 的“邮箱或密码错误。”，不另出屏。首尾空格自动去除、不提示，原型不演示。
+- 开发人员更正登录邮箱：原型的操作记录中没有这类演示，按 PRD 不新增画面。
+
+核验（Playwright Chromium）：100 屏 × 中文 / English × 1280 / 1440 / 1920 px，无脚本错误、无整页横向溢出、无失效 data-go / data-next / data-base 目标，按钮、标签和表头未裁切；English 下除演示业务值外无未翻译文案。离线单文件两种语言遍历，无外部请求。截图仅作内部核验。
