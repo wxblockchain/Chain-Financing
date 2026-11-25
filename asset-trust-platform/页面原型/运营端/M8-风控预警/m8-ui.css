@@ -1,0 +1,74 @@
+/* M8 desktop console refinement. Explicit opt-in excludes the retained source
+   screen; shared tokens, shell, navigation and interaction remain authoritative. */
+
+/* Lists: give rule names the reading space needed for comparison. */
+.risk-view .alert-list col.alr-col-rule{width:var(--risk-alert-rule-w)}
+.risk-view .alert-list col.alr-col-level{width:var(--risk-alert-level-w)}
+.risk-view .alert-list td:nth-child(3) .value-lines>span:first-child{font-weight:500;color:var(--text)}
+.risk-view .alert-list td.obj{line-height:1.7}
+.risk-view .tbl :is(td,th){font-variant-numeric:tabular-nums}
+.risk-view .tbl .cell-sub{margin-top:var(--sp-1)}
+.risk-view .alert-filters .filter-query{flex-basis:var(--risk-search-w)}
+.risk-view .alert-filters .filter-search{flex-basis:var(--risk-search-w)}
+.risk-view .alert-filters input[type="search"]{text-overflow:ellipsis}
+.risk-view table.tbl.rule-cfg-list{min-width:var(--risk-rule-table-min)}
+.risk-view .rule-cfg-list col.rc-col-rule{width:var(--risk-config-rule-w)}
+.risk-view .rule-cfg-list td:nth-child(4) .tag{background:transparent;font-weight:400}
+.risk-view .rule-cfg-list td:nth-child(5){background:var(--card-2)}
+.risk-view .rule-cfg-list td:nth-child(5) .tag{font-weight:600}
+.risk-view .rule-cfg-list th:nth-child(5){color:var(--text)}
+.risk-view :is(.rule-cfg-list,.param-list) .row-acts{gap:var(--sp-4)}
+.risk-view :is(.rule-cfg-list,.param-list) .row-acts .actlink{min-height:var(--ctrl-h-sm)}
+.risk-view .rule-cfg-list .row-acts .actlink:is(:first-child,:last-child){color:var(--muted)}
+.risk-view .rule-cfg-list .row-acts .actlink:first-child:hover{color:var(--accent)}
+.risk-view .rule-cfg-list .row-acts .actlink:last-child:hover{color:var(--danger)}
+.risk-view .param-list td:first-child{font-weight:600}
+.risk-view .param-list td:nth-child(4){font-size:var(--fs-16);font-weight:600}
+
+/* Detail pages: identity and present state precede evidence and past actions. */
+.risk-view.alert-detail .page-head{row-gap:var(--sp-3);margin-bottom:var(--sp-5)}
+.risk-view.alert-detail .page-head>div:first-child{flex:1;min-width:0}
+.risk-view.alert-detail .page-title{letter-spacing:normal;overflow-wrap:anywhere}
+.risk-view.alert-detail .page-desc{line-height:1.8;max-width:none}
+.risk-view.alert-detail .page-actions{flex-wrap:wrap}
+.risk-view.alert-detail .alert-banner{padding:var(--sp-4) var(--sp-5);line-height:1.8;margin-bottom:var(--sp-5)}
+.risk-view.alert-detail .alert-banner .grow{min-width:0;overflow-wrap:anywhere}
+.risk-view .alert-summary{border-top:3px solid var(--border-strong)}
+.risk-view .alert-summary .alert-gist{font-size:var(--fs-20);line-height:1.5}
+.risk-view .alert-summary .alert-diff{font-size:var(--ui-field-value);line-height:1.8;max-width:var(--risk-reading-max);margin-top:var(--sp-2)}
+.risk-view .alert-summary .status-grid{align-self:stretch;align-content:center}
+.risk-view.alert-detail .content-in>.card:not([data-detail-summary]){margin-top:var(--sp-5)}
+.risk-view.alert-detail .content-in>.card:not([data-detail-summary])>.card-head{border-bottom:0;padding-bottom:var(--sp-2)}
+.risk-view.alert-detail .content-in>.card:not([data-detail-summary])>.card-head h3{font-size:var(--fs-20);letter-spacing:normal}
+.risk-view.alert-detail .facts dd{line-height:1.8}
+.risk-view.alert-detail .risk-rule-section .facts dd{max-width:var(--risk-reading-max)}
+.risk-view.alert-detail .risk-processing .sub-empty{color:var(--text);line-height:1.8;padding-block:var(--sp-5)}
+.risk-view.alert-detail .operation-log h3{font-size:var(--fs-14)}
+.risk-view.alert-detail .operation-detail{max-width:var(--risk-reading-max);line-height:1.8}
+.risk-view.alert-detail .diff-new{background:var(--warn-bg);color:var(--warn);padding:var(--sp-1);box-decoration-break:clone}
+.risk-view .rule-summary .status-grid{padding:var(--sp-5) var(--card-pad)}
+.risk-view .rule-summary .status-grid>div{padding-inline:var(--sp-4)}
+.risk-view .rule-summary .status-grid>div:first-child{padding-left:0}
+
+/* Consistent modal context, field rhythm, and confirmation emphasis. */
+.risk-view[data-overlay] .modal-title{font-size:var(--fs-20);line-height:1.4}
+.risk-view[data-overlay] .modal-b{gap:var(--sp-5)}
+.risk-view[data-overlay] .modal-b>.facts-region:first-child{background:var(--card-2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:var(--sp-3) var(--sp-4)}
+.risk-view[data-overlay] .field-caption{align-items:baseline;gap:var(--sp-3);flex-wrap:wrap}
+.risk-view[data-overlay] .role-choices.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.risk-view[data-overlay] .level-change{font-size:var(--fs-16);gap:var(--sp-3)}
+.risk-view[data-overlay] .level-change>b{font-weight:600}
+.risk-view[data-overlay] .note{line-height:1.8}
+.risk-view[data-overlay] .modal-f{gap:var(--sp-3)}
+.risk-view[data-overlay] .file-ref{max-width:100%}
+
+/* Dense desktop console: preserve readable tables with local scrolling. */
+@media(max-width:1100px){
+  .risk-view .alert-summary .asset-sum{grid-template-columns:minmax(0,1fr)}
+  .risk-view .alert-summary .status-grid{border-top:1px solid var(--border);padding-top:var(--sp-4)}
+  .risk-view .alert-summary .status-grid>div:first-child{border-left:0;padding-left:0}
+}
+@media(max-width:600px){
+  .risk-view[data-overlay] .role-choices.three{grid-template-columns:minmax(0,1fr)}
+  .risk-view.alert-detail .page-actions{margin-left:0}
+}

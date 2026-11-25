@@ -221,3 +221,14 @@
   --claim-col-due:112px; --claim-col-due-st:136px; --claim-col-repay:128px; --claim-col-apply:192px;
   --claim-col-elig:160px; --claim-col-actions:148px;
 }
+
+/* M8 UI: opt-in module dimensions; all other consumers retain their tokens. */
+:root[data-module="ops-risk"]{
+  --risk-alert-rule-w:240px; --risk-alert-level-w:96px;
+  --risk-search-w:480px; --risk-rule-table-min:1040px;
+  --risk-config-rule-w:240px; --risk-reading-max:88ch;
+}
+:root[data-module="ops-risk"]:lang(en){
+  --risk-alert-rule-w:264px; --risk-alert-level-w:104px;
+  --risk-rule-table-min:1280px; --risk-config-rule-w:264px;
+}
