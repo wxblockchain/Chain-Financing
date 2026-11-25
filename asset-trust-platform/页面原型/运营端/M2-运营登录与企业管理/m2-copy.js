@@ -478,5 +478,14 @@ TP.addCopy({
 "邀请 · 未找到可关联的 ERP 企业": "Invite · no ERP entity found",
 "邀请 · 注册国家／地区查找": "Invite · search country / region",
 "关联 · 名称不一致提示": "Link · name mismatch",
-"企业名称：示例供应链有限公司 → Demo Supply Chain Limited": "Enterprise name: 示例供应链有限公司 → Demo Supply Chain Limited"
+"企业名称：示例供应链有限公司 → Demo Supply Chain Limited": "Enterprise name: 示例供应链有限公司 → Demo Supply Chain Limited",
+"编辑 · 两项名称都与 ERP 名称一致": "Edit · both names match the ERP name",
+"关联 · 名称不一致（有同名企业）": "Link · name mismatch (same-name enterprise)",
+"保存后企业名称将改为 ERP 名称；本次手动填写的企业名称不生效。": "After saving, the enterprise name changes to the ERP name. A name you typed in this edit is not used.",
+"已有平台企业的名称与该 ERP 名称相同：": "These platform enterprises already have the same name as this ERP entity:",
+"仅作提醒，可以继续关联。": "For your information only. You can still link.",
+"该 ERP 企业缺少名称，暂不能关联": "This ERP entity has no name and cannot be linked yet",
+"ERPC-2009 缺少名称，不能选择": "ERPC-2009 has no name and cannot be selected",
+"演示数据只为主流程示例企业提供保存后的画面。": "This demo shows the saved result for the main-flow example enterprise only.",
+"演示数据只为名称不一致主流程提供保存画面。": "This demo shows the save screens for the main name-mismatch flow only."
 });

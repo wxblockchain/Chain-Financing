@@ -4,7 +4,7 @@
 
 ## 基线
 
-- PRD：仓库 `asset-trust-platform/PRD/运营端/M2-运营登录与企业管理/`（`cly-v6.0.0` @ `6cb5a5e1`，2026-11-25 按用户确认结论修订）。M2 当前没有待确认事项；开发人员更正登录邮箱在产品外处理，原型不画入口。
+- PRD：仓库 `asset-trust-platform/PRD/运营端/M2-运营登录与企业管理/`（`cly-v6.0.0` @ `737e6f54`，2026-11-25 补充名称比对细则；此前 `6cb5a5e1` 2026-11-25 按用户确认结论修订）。M2 当前没有待确认事项；开发人员更正登录邮箱在产品外处理，原型不画入口。
 - 视觉与组件：代币发行平台《组件规范》v1.96（`token-issuance-platform/页面原型/_shared/`，cly-v6.0.0 @ e2f8eb3），即本平台自持的 [`../../_shared/`](../../_shared/design-system/组件规范.md)（与企业端 M1 共用；本模块新增组件 A7–A11、`menu.ops.js` 与账号入口文字配置已登记在该规范）；列表、详情、金额与时间等按《资产可信平台列表与详情展示参考规范 v1.0》。
 - 钱包与入驻资料按 M1《企业登录与首次入驻》PRD 的钱包信息、个人信息、企业补充信息与组织资料只读展示。
 - 操作记录采用纵向时间线（[进度与操作记录](../../_shared/design-system/进度与操作记录.md)）。2026-11-25 起企业详情不再展示入驻节点、入驻进度和认证状态（PRD 6cb5a5e1）。
@@ -45,7 +45,7 @@ python3 _shared/export.py --source 运营端/M2-运营登录与企业管理/运�
 
 ## 画面清单
 
-共 96 屏。默认、空、代表性异常、业务阶段与流程步骤按下表；未出屏的状态以 PRD 为准。
+共 98 屏。默认、空、代表性异常、业务阶段与流程步骤按下表；未出屏的状态以 PRD 为准。
 
 | 分组 | 画面 ID 与名称 |
 | --- | --- |
@@ -57,8 +57,8 @@ python3 _shared/export.py --source 运营端/M2-运营登录与企业管理/运�
 | 企业详情（18） | `d-initial` 详情 · 待首次改密（新邀请）；`d-wallet` 详情 · 待绑定钱包；`d-profile` 详情 · 待完善资料；`d-profile-linked` 详情 · 已补充关联 ERP 企业；`d-active` 详情 · 已完成入驻（单一角色）；`d-both` 详情 · 已完成入驻（两个角色）；`d-both-unlinked` 详情 · 已取消关联 ERP 企业；`d-creditor` 详情 · 已完成入驻（债权人）；`d-initial-early` 详情 · 待首次改密（较早邀请）；`d-onboarded-hk` 详情 · 已完成入驻（同名企业）；`d-part-fail` 详情 · 入驻资料读取失败；`d-file-fail` 详情 · 组织资料暂时无法打开；`d-active-saved` 详情 · 资料已保存；`d-role-added` 详情 · 业务角色已增加；`d-initial-resent` 详情 · 已重发邀请；`d-initial-mail-fail` 详情 · 邀请邮件未发出；`d-not-found` 详情 · 内容不存在或无权查看；`d-fail` 详情 · 读取失败 |
 | 账号操作（2） | `resend-confirm` 重发邀请 · 确认；`resend-stale` 重发邀请 · 已完成首次改密 |
 | 增加业务角色（2） | `role-confirm` 增加业务角色 · 确认；`role-exists` 增加业务角色 · 角色已存在 |
-| 编辑企业资料（9） | `edit-ready` 编辑 · 已完成入驻（企业身份只读）；`edit-changed` 编辑 · 已修改待保存；`edit-pre` 编辑 · 入驻前（企业身份可更正）；`edit-erp` 编辑 · 补充关联 ERP 企业（名称将改为 ERP 名称）；`edit-error` 编辑 · 字段错误；`edit-fail` 编辑 · 保存失败；`edit-conflict` 编辑 · 资料已被他人修改；`edit-erp-unlink` 编辑 · 取消关联 ERP 企业；`edit-erp-blocked` 编辑 · 有处理中的确权申请不能取消 |
-| 关联 ERP 企业（3） | `erp-name-mismatch` 关联 · 名称不一致提示；`erp-confirm` 关联 · 确认关联；`erp-unlink-confirm` 取消关联 · 确认 |
+| 编辑企业资料（10） | `edit-ready` 编辑 · 已完成入驻（企业身份只读）；`edit-both-locked` 编辑 · 两项名称都与 ERP 名称一致；`edit-changed` 编辑 · 已修改待保存；`edit-pre` 编辑 · 入驻前（企业身份可更正）；`edit-erp` 编辑 · 补充关联 ERP 企业（名称将改为 ERP 名称）；`edit-error` 编辑 · 字段错误；`edit-fail` 编辑 · 保存失败；`edit-conflict` 编辑 · 资料已被他人修改；`edit-erp-unlink` 编辑 · 取消关联 ERP 企业；`edit-erp-blocked` 编辑 · 有处理中的确权申请不能取消 |
+| 关联 ERP 企业（4） | `erp-name-mismatch` 关联 · 名称不一致提示；`erp-name-mismatch-same` 关联 · 名称不一致（有同名企业）；`erp-confirm` 关联 · 确认关联；`erp-unlink-confirm` 取消关联 · 确认 |
 | 账户设置（4） | `settings` 账户设置；`settings-fail` 账户设置 · 账号信息读取失败；`pref-fail` 账户设置 · 时区保存失败；`acct-menu` 账号入口 · 展开 |
 | 修改密码（4） | `password-verify` 修改密码 · 验证当前密码；`password-wrong` 修改密码 · 当前密码错误；`password-new` 修改密码 · 设置新密码；`password-expired` 修改密码 · 验证已过期 |
 
@@ -214,3 +214,14 @@ PRD 改为只校验登录邮箱当前是否被其他账号使用，不保留、�
 离线自包含 HTML 从共享源码导出，双击打开；96 屏两种语言遍历无脚本错误、无外部请求。M1、运营端 M3、M17 各抽查前三个非叠层画面的中英文（1440 px），未发现脚本错误或整页横向溢出。截图仅用于内部核验。
 
 本轮只做原型视觉与已有交互保真，不验证真实接口、ERP 数据前提或生产服务；不把继承未改画面计为重新设计。共享选择器仅匹配 M2，其他模块做代表页面冒烟，不宣称全平台视觉验收。
+
+## v1.17 按 PRD 737e6f54 补充名称比对画面
+
+在 UI 优化后的 `5badcb4b` 上只补 3 处，沿用其布局与组件。新增 2 屏，共 98 屏；画面编号按顺序重排。
+
+- 名称不一致有同名企业：新增 `erp-name-mismatch-same`（在 `edit-pre` 中选 ERPC-2008 Demo Industries Pte. Ltd. 进入），弹窗沿用同名提醒的表格列出 ENT-DEMO-005 的企业编号、注册国家／地区和企业登记号码，说明“仅作提醒，可以继续关联”。两个名称不一致弹窗的后果说明改为“保存后企业名称将改为 ERP 名称；本次手动填写的企业名称不生效”。
+- 缺少名称的 ERP 企业：11 个候选表都在末尾增加 ERPC-2009，名称处为“—”并写“该 ERP 企业缺少名称，暂不能关联”，单选不可用；分页总数随之为 5。
+- 两项名称都一致：ENT-DEMO-003 的企业名称改为 Demo Global Logistics Ltd（与英文名称、ERP 名称都一致，列表与详情同步）；新增 `edit-both-locked`（从 `d-creditor` 的“编辑资料”进入），企业名称与企业英文名称都只读并注明原因。
+- 保存时再比对一次的结果与选择时相同（弹出同一提示），不另出屏；空白与全半角标点口径属比对规则，原型不演示。
+
+核验（Playwright Chromium）：98 屏 × 中文 / English × 1280 / 1440 / 1920 px，无脚本错误、无整页横向溢出、无失效 data-go / data-next / data-base 目标，按钮、标签和表头未裁切；English 下除演示业务值外无未翻译文案。离线单文件两种语言遍历，无外部请求。截图仅作内部核验。
