@@ -1,9 +1,13 @@
 /* 资产可信平台运营端菜单与演示账号：所有运营端模块共用，新增或调整只改这里。
-   菜单名称、分组与顺序以 M2《运营登录与企业管理》F-OP-11 运营端菜单表为准（PRD dd658306，共 15 项，不含首页）；本期只有“运营管理员”一个角色，菜单与数据范围相同。
+   菜单名称、分组与顺序以 M2《运营登录与企业管理》F-OP-11 运营端菜单表为准（PRD dd658306，共 15 项）；首页按 M17 Q-M17-01 推荐口径位于全部菜单之前、不属于任何分组（WS-685，M2 菜单表与 AC-OP-21 待同步）；本期只有“运营管理员”一个角色，菜单与数据范围相同。
    菜单 key 先找模块内 TP.routes；没有对应画面时显示范围提示，不伪造其他模块页面。
    业务模块新增、改名、调整分组或顺序时，须先在 M2 PRD 菜单表登记，再在这里修改。 */
 (function(TP){
   var ops = [
+    // M17 运营端首页（WS-685）：Q-M17-01 待确认，原型按推荐口径先行展示；group 为空时不显示分组标题。
+    {group:'', items:[
+      {key:'home',      label:'首页',       icon:'home'}
+    ]},
     {group:'企业', items:[
       {key:'ents',      label:'企业管理',   icon:'org'}
     ]},
@@ -42,7 +46,7 @@
     ]}
   ];
   TP.addCopy({
-    '资产可信平台':'Asset Trust Platform','运营端':'Operations',
+    '资产可信平台':'Asset Trust Platform','运营端':'Operations','首页':'Home',
     '企业':'Enterprises','企业管理':'Enterprise management','资产数据':'Asset data','应收账款':'Receivables',
     '上游采购':'Upstream purchasing','合同信息':'Contracts','车辆履约':'Vehicle fulfilment','提单信息':'Bills of lading','资金收付':'Payments & receipts','保单信息':'Policy information','下游销售':'Downstream sales','风控':'Risk control',
     '风控预警':'Risk alerts','风控规则':'Risk rules','三方数据源':'Third-party data sources','审核':'Review','运营审核':'Operations review',

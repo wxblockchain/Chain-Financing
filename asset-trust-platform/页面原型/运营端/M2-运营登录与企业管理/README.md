@@ -15,7 +15,7 @@
 
 双击 [运营登录与企业管理.html](运营登录与企业管理.html) 打开（需同步 `../../_shared/`；模块英文文案在 `m2-copy.js`）；侧栏底部「画面目录 · 演示数据」默认关闭，展开后按“分组 → 画面”到达全部画面，并提供“主流程下一屏”。
 
-- 登录：`login → ent-list`（默认页为企业管理）
+- 登录：没有原目标时，仓库联看中登录后进入 M17 首页（WS-685，按 M17 Q-M17-01 推荐口径，M2 正文与 AC-OP-21 待同步）；单模块附件不含首页，仍落在 `ent-list`。有原目标时 `login-target → d-active` 不变
 - 邀请：`ent-list → invite-ready → invite-same-name → invite-sent → d-initial → resend-confirm → d-initial-resent`
 - 维护：`d-active → edit-ready → edit-changed → d-active-saved → role-confirm → d-role-added`
 - 关联 ERP 企业：邀请时 `invite-ready → invite-same-name → invite-erp-confirm → invite-sent`；补关联 `d-profile → edit-pre → edit-erp → erp-confirm → d-profile-linked`；取消关联 `d-both → edit-erp-unlink → erp-unlink-confirm → d-both-unlinked`
@@ -31,7 +31,7 @@ python3 _shared/export.py --source 运营端/M2-运营登录与企业管理/运�
 
 ## 页面与呈现要点
 
-- 菜单按 PRD F-OP-11 运营端菜单表：企业 → 资产数据（6 项）→ 风控（风控预警、风控规则、三方数据源）→ 审核 → 数据监控（监控概览、数据接入、数据推送）→ 平台配置（汇率管理），共 15 项（`_shared/menu.ops.js`）；无首页菜单。本模块只落地“企业管理”和账号入口，其他菜单在仓库联看中打开对应模块。
+- 菜单按 PRD F-OP-11 运营端菜单表：企业 → 资产数据（6 项）→ 风控（风控预警、风控规则、三方数据源）→ 审核 → 数据监控（监控概览、数据接入、数据推送）→ 平台配置（汇率管理），共 15 项（`_shared/menu.ops.js`）；另按 M17 Q-M17-01 推荐口径在全部菜单之前展示不分组的“首页”（WS-685，待 M2 菜单表登记确认）。本模块只落地“企业管理”和账号入口，其他菜单在仓库联看中打开对应模块。
 - 企业列表：十一列按 PRD 字段（不含企业账号状态）；编号进入详情；三个筛选（业务角色、入驻进度、认证状态）+ 编号 / 名称 / 登记号码 / 登录邮箱查找；尚无企业时不显示筛选条。表格中文最小 1320 px、English 最小 1560 px，较窄时表内滚动，编号固定在左、操作列固定在右；查询独占第二行，完整显示检索维度提示。
 - 邀请企业：企业身份、联系人、业务角色与登录账号三张卡；不出现初始密码输入或展示；同名提醒为确认弹窗，重复企业身份在表单内指向已有企业。
 - 账号入口：顶栏为界面语言、消息入口（M10 定义）与账号入口（姓名、登录邮箱、运营管理员，账户设置 / 消息中心 / 退出登录）；消息中心不是菜单。首次登录改密只显示登录邮箱与退出。

@@ -65,7 +65,8 @@
     fx:'<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
     ship:'<path d="M3 14h18l-2.5 5h-13z"/><path d="M6 14V9h12v5"/><path d="M10 9V5h4v4"/>',
     umbrella:'<path d="M3 12a9 9 0 0 1 18 0z"/><path d="M12 12v6a2 2 0 0 0 4 0"/>',
-    sliders:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>'
+    sliders:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+    home:'<path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5M10 20v-5h4v5"/>'
   };
   TP.icon = function(n){ return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+(ICON[n]||'')+'</svg>'; };
   TP.refreshPasswordToggles = function(){
@@ -109,7 +110,8 @@
     var who = sec.dataset.who, active = gateKey || sec.dataset.nav;
     if(who==='none' || who==='guest'){ $('#nav').innerHTML=''; return; }
     $('#nav').innerHTML = navList(who).map(function(g){
-      return '<div class="nav-group">'+g.group+'</div>' + g.items.map(function(it){
+      // 不属于任何分组的菜单（如运营端“首页”）不显示分组标题。
+      return (g.group ? '<div class="nav-group">'+g.group+'</div>' : '') + g.items.map(function(it){
         var lk = locked(who);
         // 数量由所属模块按当前用户提供；这里只呈现，不计算待办或改变菜单权限。
         // 画面可用 data-pending-count 给本屏所在菜单指定演示数量（空值表示不展示，如取数失败）。

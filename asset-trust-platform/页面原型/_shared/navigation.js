@@ -124,7 +124,8 @@
     ]},
     {end:'ops', label:'运营端', items:[
       {who:'none', label:'未登录',     key:'signIn'},
-      {who:'ops',  label:'运营管理员', key:'ents'}
+      // 运营管理员进入登录后的默认页面：首页（M17，Q-M17-01 推荐口径）。
+      {who:'ops',  label:'运营管理员', key:'home'}
     ]}
   ];
   TP.previewHref = routeHref;

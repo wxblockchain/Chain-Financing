@@ -2519,7 +2519,7 @@ table.tbl.call-records{min-width:var(--call-record-min)}
    总览按周期横向比较，指标不逐个套卡片；金额不缩写。密集表格与 12 月图表在区域内滚动。 */
 .home-page .content-in{max-width:none;margin-inline:0}
 body:has(.home-page) .sidebar .nav{position:relative}
-.home-meta [data-zone]{display:inline}
+.home-meta [data-zone],.home-stale [data-zone]{display:inline}
 .home-page small{font-size:var(--fs-12);font-weight:400;color:var(--muted)}
 .home-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
 .home-sample{color:var(--faint)}
@@ -2587,3 +2587,11 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-page .home-overdue thead th:first-child{background:var(--card-soft)}
 @media(max-width:1250px){.home-trends,.home-analysis{grid-template-columns:minmax(0,1fr)}.home-ar-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.home-mobile-hint{display:block}}
 @media(max-width:600px){.home-page .home-number{font-size:var(--fs-16)}.home-ar-stats{grid-template-columns:minmax(0,1fr)}.home-dist-row{grid-template-columns:112px minmax(0,1fr) 24px}.home-section-head{display:block}.home-section-head p{margin-top:var(--sp-1)}}
+/* M17 状态画面（WS-685 交互接续）：首次加载、整页 / 单板块失败、刷新中、刷新失败与空资料。复用基线 .state、.note.red、.spinner，不新增 token。 */
+.home-page .spinner{display:inline-block;width:14px;height:14px;vertical-align:-3px;margin-right:var(--sp-2)}
+.home-page .btn .spinner{margin-right:0}
+.home-state .state{padding:var(--sp-7) var(--sp-6)}
+.home-page-state{margin-top:var(--sp-6)}
+.home-page-state .state{padding:var(--sp-9) var(--sp-6)}
+.home-page .content-in>.home-stale{margin:var(--sp-3) 0 0}
+.home-empty-list{padding:var(--sp-7) var(--sp-6);border-top:1px solid var(--border)}
