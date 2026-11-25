@@ -82,5 +82,6 @@ TP.addCopy({
 "1 份": "1 file",
 "2 份": "2 files",
 "3 份": "3 files",
+"演示文件，不提供真实文件。": "Sample file. No actual file is provided.",
 "返回提单信息": "Back to bills of lading"
 });
