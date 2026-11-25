@@ -1,0 +1,80 @@
+/* M5 console refinement · shared tokens and components remain authoritative.
+   Presentation only: screen routes, scroll navigation and business values are inherited. */
+[data-module="ops-fulfilment"] .fulfil-detail .page-title.mono{
+  font-family:var(--mono);font-size:var(--fs-24);letter-spacing:0;overflow-wrap:anywhere;
+}
+.fulfil-detail .page-desc{margin-top:var(--sp-1);font-size:var(--fs-13)}
+.fulfil-detail .fulfil-summary .asset-sum{align-items:start;gap:var(--sp-6) var(--sp-8)}
+.fulfil-detail .fulfil-now{align-items:flex-start;flex-direction:column;gap:var(--sp-2)}
+.fulfil-detail .fulfil-now-node{font-size:var(--fs-24);letter-spacing:0}
+.fulfil-detail .fulfil-summary .fulfil-now+.meta{padding-top:var(--sp-3);margin-top:var(--sp-3)}
+.fulfil-detail .fulfil-summary .status-grid{
+  align-self:stretch;background:var(--card-2);border-radius:var(--radius-sm);padding:var(--sp-3);
+}
+.fulfil-detail .fulfil-summary .status-grid>div{padding:var(--sp-2) var(--sp-3)}
+.fulfil-detail .fulfil-summary .status-grid dd .summary-sub{
+  white-space:normal;overflow-wrap:anywhere;line-height:var(--lh-body);max-width:24ch;
+}
+.fulfil-detail .fulfil-attrs{gap:var(--sp-3);padding-block:var(--sp-4)}
+.fulfil-detail .fulfil-attrs-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-4) var(--sp-6)}
+.fulfil-detail .fulfil-attrs-list dt{font-size:var(--ui-field-label)}
+.fulfil-detail .fulfil-attrs-list dd{font-weight:500}
+
+/* Two text lines reserved for price labels align every primary value. */
+.fulfil-detail .pc-label{min-height:3.2em;align-content:start;align-items:start}
+.fulfil-detail .pc-usd{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1)}
+.fulfil-detail .pc-usd .money .mono,
+.fulfil-detail .fulfil-panel .money .mono{font-family:var(--sans);font-variant-numeric:tabular-nums}
+.fulfil-detail .pc-orig{margin-top:var(--sp-1)}
+.fulfil-detail .price-chain{row-gap:var(--sp-6)}
+.fulfil-detail .pc-arrow{height:calc(var(--fs-20) * 1.4);margin-top:calc(var(--ui-field-label) * 3.2 + var(--sp-1))}
+.fulfil-detail .fulfil-main>.detail-group{margin-top:var(--sp-6)}
+.fulfil-detail .fulfil-nav{gap:var(--sp-5)}
+.fulfil-detail .fulfil-sec+.fulfil-sec{margin-top:var(--sp-6)}
+.fulfil-detail .fulfil-sec>.card-head h3{font-size:var(--fs-20)}
+.fulfil-detail .fulfil-panel .sub-h{
+  margin:0;padding-bottom:var(--sp-3);border-bottom:1px solid var(--row-line);gap:var(--sp-2) var(--sp-3);
+}
+.fulfil-detail .fulfil-panel .sub-h .btn-link{font-size:var(--fs-16);overflow-wrap:anywhere;white-space:normal;text-align:left}
+.fulfil-detail .fulfil-panel .card-sec+.card-sec{border-top:1px solid var(--border-strong)}
+.fulfil-detail .fulfil-panel .facts>div{border-top:0;padding-block:var(--sp-3)}
+.fulfil-detail .fulfil-panel .facts dt{font-size:var(--ui-field-label)}
+.fulfil-detail .fulfil-panel .facts dd{font-size:var(--ui-field-value)}
+.fulfil-detail .fulfil-panel .facts .btn-link{white-space:normal;overflow-wrap:anywhere;text-align:left}
+.fulfil-detail .fulfil-panel .facts-caption{font-weight:600;color:var(--text)}
+.fulfil-detail .fulfil-panel .tbl :is(th,td){vertical-align:top}
+.fulfil-detail .fulfil-panel .tbl th{white-space:normal}
+.fulfil-detail .fulfil-panel .tbl .num{text-align:right}
+.fulfil-detail .fulfil-panel .tbl .num .money{justify-content:flex-end}
+
+/* Dates and documents get their own lines, keeping the rail easy to scan. */
+.fulfil-detail .fulfil-log .operation-meta{flex-direction:column;align-items:flex-start;gap:var(--sp-1)}
+.fulfil-detail .fulfil-log .operation-meta>.date{font-size:var(--fs-12);color:var(--muted)}
+.fulfil-detail .fulfil-log .operation-meta :is(.stock-src,.btn-link){
+  max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left;
+}
+.fulfil-detail .fulfil-log .operation-meta .stock-src{font-size:var(--fs-13)}
+.fulfil-detail .fulfil-log>li{padding-bottom:var(--sp-6)}
+.fulfil-detail .fulfil-log>li:last-child{padding-bottom:0}
+.fulfil-detail .fulfil-log:focus-visible{outline:2px solid var(--accent);outline-offset:calc(-1 * var(--sp-1))}
+
+@container facts (min-width:400px){
+  .fulfil-detail .fulfil-panel .facts.cols-3:not(.single){grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fulfil-detail .fulfil-panel .facts.cols-3:not(.single)>div{border-top:0}
+}
+@container facts (min-width:900px){
+  .fulfil-detail .fulfil-panel .facts.cols-3:not(.single){grid-template-columns:repeat(6,minmax(0,1fr))}
+  .fulfil-detail .fulfil-panel .facts.cols-3:not(.single)>div{grid-column:span 2}
+  .fulfil-detail .fulfil-panel .facts.cols-3:not(.single)>.fulfil-party{grid-column:span 3}
+  .fulfil-detail .fulfil-panel .facts.cols-3:not(.single)>.wide{grid-column:1/-1}
+}
+@media(min-width:1101px){
+  .fulfil-detail .fulfil-summary .asset-sum{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .fulfil-detail .fulfil-summary .status-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:1100px){
+  .fulfil-detail .fulfil-timeline .fulfil-log{max-height:calc(var(--sp-8) * 10);overflow:auto}
+}
+@media(max-width:600px){
+  .fulfil-detail .fulfil-attrs-list{grid-template-columns:minmax(0,1fr)}
+}
