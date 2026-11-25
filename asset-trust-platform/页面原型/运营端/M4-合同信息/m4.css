@@ -1,0 +1,83 @@
+/* M4 既有系统适配。仅呈现层；数值、路由和业务状态沿用原型。
+   共用 token 与组件保持唯一来源。规则说明见 UI设计说明.md。 */
+html[data-module="ops-contracts"] {
+  /* 列表：两行当事方与完整金额各自留有可读宽度。 */
+  table.tbl.contract-list:is(.domestic-list, .purchase-contract-list) { min-width: 920px; }
+  table.tbl.contract-list.export-contract-list { min-width: 1000px; }
+  .contract-list col.ct-col-id { width: calc(var(--sp-9) * 3); }
+  .contract-list col.ct-col-date { width: calc(var(--sp-9) * 2); }
+  .contract-list col.ct-col-parties { width: auto; }
+  .contract-list col.ct-col-amount { width: calc(var(--sp-9) * 3); }
+  .contract-list .party-line { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--sp-2); align-items: baseline; }
+  .contract-list .party-line .role { font-size: var(--fs-12); color: var(--muted); }
+  .contract-list .party-line .value-pop { min-width: 0; max-width: 100%; margin: 0; }
+  .contract-list .party-line .name-clip { display: flex; width: 100%; min-height: 0; height: auto; padding: 0; border: 0; border-radius: 0; background: none; color: var(--text); font-size: var(--ui-row-value); line-height: var(--lh-body); }
+  .contract-list .party-line .name-clip:hover { color: var(--accent); }
+  table.tbl.contract-list th.num { white-space: normal; }
+  .contract-list .name-clip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .contract-list .party-line .dd-list { max-width: min(480px, calc(100vw - var(--sp-4))); white-space: normal; overflow-wrap: anywhere; }
+  .contract-list td.num .money > .mono { font-weight: 600; }
+  .contract-list .money .ccy { color: var(--muted); font-weight: 400; }
+  .contract-list .na-dash { position: relative; }
+  .contract-list .col-act .actlink { font-weight: 600; }
+  .contract-list :is(th, td):first-child .mono { white-space: nowrap; }
+
+  /* 详情：当事双方保持原有方向，角色与名称分层。 */
+  .contract-detail .receivable-parties { align-items: center; gap: var(--sp-3) var(--sp-5); }
+  .contract-detail .receivable-parties .party { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); min-width: 0; max-width: 100%; }
+  .contract-detail .receivable-parties [data-upstream] { overflow-wrap: anywhere; }
+  .contract-detail .page-desc { margin-top: var(--sp-3); overflow-wrap: anywhere; }
+  .contract-summary .asset-sum { align-items: stretch; gap: var(--sp-6); }
+  .contract-summary .asset-sum > div { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr); gap: var(--sp-6); align-items: start; }
+  .contract-summary .contract-amount { min-width: 0; }
+  .contract-summary .amount-lg { flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+  .contract-summary .asset-sum .meta { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4) var(--sp-5); margin-top: 0; padding-left: var(--sp-6); border-left: 1px solid var(--border); }
+  .contract-summary .status-grid.one { align-content: start; padding-left: var(--sp-6); border-left: 1px solid var(--border); }
+  .contract-summary .status-grid dt { margin-bottom: var(--sp-2); }
+  .contract-detail .detail-group-h h2 { font-size: var(--fs-20); }
+  .contract-detail .card-head h3 { font-size: var(--fs-16); }
+  .contract-detail .detail-nav a { font-size: var(--fs-14); }
+
+  /* 进度：同一位置读数，三值与关键说明常显，不改图形比例。 */
+  .contract-progress .prog-item { gap: var(--sp-3); padding-block: var(--sp-5); }
+  .contract-progress .prog-head h4 { font-size: var(--fs-14); }
+  .contract-progress .prog-values > div { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: var(--sp-3); }
+  .contract-progress .legend-swatch { flex-shrink: 0; }
+  .contract-progress .prog-note { padding-left: var(--sp-3); border-left: 2px solid var(--accent-border); line-height: var(--lh-body); }
+  .contract-progress .cost-row { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(160px, max-content); }
+
+  /* 记录：VIN 在表内横向滚动时保持可见；不裁切数字和状态。 */
+  .contract-vehicles { min-width: 880px; }
+  .contract-vehicles.domestic-vehicles { min-width: 1200px; }
+  .contract-vehicles :is(th, td) { padding-inline: var(--sp-3); }
+  .contract-vehicles :is(th, td):first-child { position: sticky; left: 0; z-index: 2; background: var(--card); min-width: 180px; }
+  .contract-vehicles th:first-child { background: var(--card-2); }
+  .contract-vehicles tr:hover td:first-child { background: var(--row-hover); }
+  .contract-vehicles td:first-child .mono { white-space: nowrap; }
+  .contract-detail .purchase-invoice > .sub-h { flex-wrap: wrap; gap: var(--sp-2) var(--sp-5); }
+  .contract-detail .purchase-invoice .invoice-ratio { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+  .contract-detail .purchase-invoice > .sub-h > .mono { font-size: var(--fs-16); font-weight: 600; }
+  .contract-detail .purchase-invoice .pay-h { border-top: 1px solid var(--border); margin-top: var(--sp-4); padding-top: var(--sp-4); }
+  .contract-detail .file-ref { display: inline-flex; max-width: 100%; align-items: flex-start; white-space: normal; }
+  .contract-detail .file-ref > .i, .contract-detail .file-ref > .btn.icon { flex-shrink: 0; }
+  .contract-detail .detail-table .file-ref .file-name { min-width: 0; white-space: normal; overflow-wrap: anywhere; text-align: left; }
+  .contract-files th:last-child { width: 25%; min-width: 160px; }
+  .contract-detail :is(button, a, [tabindex="0"]):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .contract-detail [data-section]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  @container facts (560px <= width < 900px) {
+    .contract-detail .purchase-invoice .facts.cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .contract-detail .purchase-invoice .facts.cols-4 > div:nth-child(2):not(.wide) { border-top: 0; }
+  }
+  @media (max-width: 1439px) {
+    .contract-summary .asset-sum > div { grid-template-columns: minmax(0, 1fr); gap: var(--sp-5); }
+    .contract-summary .asset-sum .meta { padding-left: 0; border-left: 0; }
+  }
+  @media (max-width: 1100px) {
+    .contract-summary .status-grid.one { padding-left: 0; padding-top: var(--sp-4); border-left: 0; border-top: 1px solid var(--border); }
+    .contract-summary .asset-sum .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .contract-progress .cost-row { grid-template-columns: minmax(0, 1fr) minmax(160px, max-content); gap: var(--sp-2) var(--sp-4); }
+    .contract-progress .cost-plot { grid-row: 2; grid-column: 1 / -1; }
+    .contract-progress .cost-val { grid-row: 1; grid-column: 2; }
+  }
+}
