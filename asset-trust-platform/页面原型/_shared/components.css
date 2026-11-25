@@ -2640,7 +2640,11 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-state .state{padding:var(--sp-7) var(--sp-6)}
 .home-page-state{margin-top:var(--sp-6)}
 .home-page-state .state{padding:var(--sp-9) var(--sp-6)}
-.home-page .content-in>.home-stale{margin:var(--sp-3) 0 0}
+/* 页头不显示“首页”标题（用户 2026-11-25，标题保留给读屏）：数据更新时间与刷新同一行；刷新失败提示换到下一行整行。 */
+.home-head{align-items:center;margin-bottom:0}
+.home-head .home-meta{font-size:var(--fs-13)}
+.home-head .home-stale{flex-basis:100%;order:3;margin:0}
+.home-head+.home-section{margin-top:var(--sp-5)}
 .home-empty-list{padding:var(--sp-7) var(--sp-6);border-top:1px solid var(--border)}
 
 /* M2 PRD 6cb5a5e1（v1.50）
