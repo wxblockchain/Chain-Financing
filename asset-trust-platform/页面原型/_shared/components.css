@@ -2097,16 +2097,16 @@ table.tbl.vehicle-list.fulfil-list{min-width:var(--fulfil-table-min)}
 .fx-pop>.dd-list{display:grid;gap:2px}
 .fx-pop>.dd-list .fx-at{color:var(--muted);font-size:var(--fs-12);white-space:nowrap}
 .fx-pop>.dd-list .fx-at [data-zone]{display:inline}
-/* A65 明细页签（PRD e0e1b11a，用户确定）：价格链下方一张卡，A54 .page-tabs 文字页签切换采购 / 内销 / 运输与保险 / 外销 / 出入库，
-   各页签直接展示全部字段，不收起、不展开；没有单据或记录时为“暂无记录”。页签只切换显示，不改变数据。 */
-.fulfil-tabs{margin:0;padding:0 var(--card-pad)}
+/* A65 明细分区（用户 2026-11-25 反馈，与其他模块详情一致）：价格链下方为基线 .detail-nav 锚点导航（采购 / 内销 / 运输与保险 / 外销 / 出入库），
+   五组各一张卡依次排列、全部展示，点击导航滚动定位并随滚动高亮（detail-nav.js），不切换、不隐藏内容；没有记录时为“暂无记录”。 */
+.fulfil-main .fulfil-nav{margin-block:var(--sp-2) var(--sp-4)}
+.fulfil-sec+.fulfil-sec{margin-top:var(--sp-4)}
 .fulfil-panel.seg-body{border-top:0}
 .fulfil-panel>.detail-table:first-child{margin-top:var(--sp-4)}
-.fulfil-panel>.sub-empty{padding-top:var(--sp-5);padding-bottom:var(--sp-5)}
+.fulfil-panel>.sub-empty{padding-top:var(--sp-4);padding-bottom:var(--sp-4)}
 /* 车辆属性（F-M5-19）：概要卡底部一行，标题与字段（字段清单待 M5-Q18，原型为演示字段）；没有外采合同时为“暂无记录”。 */
 .fulfil-attrs{display:flex;flex-direction:column;gap:var(--sp-2);padding:var(--sp-4) var(--card-pad) var(--sp-5);border-top:1px solid var(--row-line)}
 .fulfil-attrs-h{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--ui-field-label);color:var(--muted)}
-.fulfil-attrs-h .tag{font-size:var(--fs-11);padding:0 var(--sp-1)}
 .fulfil-attrs-empty{margin:0;font-size:var(--fs-14);color:var(--muted)}
 .seg-brief{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:var(--sp-2) var(--sp-5);margin:0;min-width:0}
 .seg-brief>div{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -2410,7 +2410,7 @@ table.tbl.fund-list{min-width:var(--fund-table-min)}
 
 /* —— v1.42 M5 车辆履约按 PRD 4891c19 同步（WS-660）；v1.44 详情改为右侧时间线布局 —— */
 /* A81 车辆履约详情布局（v1.44）：概要卡左侧以当前物流节点为标题（24 px，下方日期与来源单据），右侧在库情况 / 关联预警；
-   其下左右两栏——左栏价格链与明细页签，右栏“物流节点进度”竖排时间线（复用 A11 .operation-log），最新一条在最上并高亮，
+   其下左右两栏——左栏价格链与明细分区，右栏“物流节点进度”竖排时间线（复用 A11 .operation-log），最新一条在最上并高亮，
    装船为最新时标“在途”，其余标“最新”；滚动时右栏吸附在顶栏下方，记录多时栏内滚动。≤ 1100 px 右栏移到概要下方。 */
 :root{--fulfil-rail-w:360px}
 @media(max-width:1439px){:root{--fulfil-rail-w:300px}}
@@ -2424,8 +2424,8 @@ table.tbl.fund-list{min-width:var(--fund-table-min)}
 .fulfil-layout{display:grid;grid-template-columns:minmax(0,1fr) var(--fulfil-rail-w);gap:var(--sp-4) var(--sp-6);align-items:start;margin-top:var(--sp-4)}
 .fulfil-main{grid-column:1;grid-row:1;min-width:0;container:fulfil-main / inline-size}
 .fulfil-main>.detail-group{margin-top:var(--sp-8)}
-.fulfil-rail{grid-column:2;grid-row:1;position:sticky;top:calc(var(--app-header-h) + var(--sp-4));min-width:0}
-.fulfil-timeline{display:flex;flex-direction:column;max-height:calc(100vh - var(--app-header-h) - var(--sp-8))}
+.fulfil-rail{grid-column:2;grid-row:1;position:sticky;top:calc(var(--app-header-h) + var(--sticky-head-h, 0px) + var(--sp-4));min-width:0}
+.fulfil-timeline{display:flex;flex-direction:column;max-height:calc(100vh - var(--app-header-h) - var(--sticky-head-h, 0px) - var(--sp-8))}
 .fulfil-timeline .card-head{flex:none}
 .fulfil-timeline .sub-empty{padding-top:var(--sp-4)}
 .operation-log.fulfil-log{overflow:auto;min-height:0}

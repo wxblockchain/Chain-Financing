@@ -192,6 +192,7 @@ TP.addCopy({
 "车型": "Model",
 "外饰颜色": "Exterior colour",
 "出入库单号": "Movement No.",
+"明细导航": "Details navigation",
 "详情 · 已外销出库": "Details · dispatched for sale",
 "详情 · 转运两张提单、销售退库后批售": "Details · transshipped on two B/Ls, resold wholesale after a sales return",
 "详情 · 在途、外采币种无法折算、内销未开票": "Details · in transit, purchase currency not convertible, domestic sale not invoiced",
