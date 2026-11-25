@@ -2676,6 +2676,14 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .m1-ui:has([data-overlay]:not([hidden])) :is(.demo-btn,.demo-panel){z-index:calc(var(--z-mask) - 1)}
 .m1-ui .code-control{flex-wrap:wrap}
 .m1-ui .code-control>.inp{min-width:8ch}
+/* 长账号信息留在各自区域；顶栏简写后，原有账号菜单仍展示完整值。 */
+.m1-ui .topbar-tools{min-width:0;max-width:100%}
+.m1-ui #acct{min-width:0;max-width:min(100%,var(--filter-search-w))}
+.m1-ui #acct>.dd-btn{max-width:100%}
+.m1-ui #acct>.dd-btn>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m1-ui #acct .dd-who,.m1-ui .profile-preferences .preference-row [data-upstream]{overflow-wrap:anywhere}
+/* 完整钱包地址浮层沿用定位逻辑，窄屏按可用宽度换行，保留全部地址文本。 */
+.m1-ui .addr>.value-pop>.dd-list{white-space:normal;overflow-wrap:anywhere}
 
 /* 标题在字段上方，编辑与标题同排；概览与设置区在宽屏两栏，文档 / 编辑区通栏。 */
 .profile-sheet.profile-sheet-stacked{display:grid;grid-template-columns:minmax(0,1fr);overflow:visible}
