@@ -43,6 +43,7 @@ TP.addCopy({
 "填写新汇率": "Enter new rate",
 "核对并保存": "Review and save",
 "新汇率": "New rate",
+"选填": "Optional",
 "例如 1535.84": "e.g. 1535.84",
 "大于 0，最多 2 位小数。": "Greater than 0, up to 2 decimal places.",
 "例如 CBN 2026-11-12 官方汇率": "e.g. CBN official rate 2026-11-12",

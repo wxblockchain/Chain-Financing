@@ -232,3 +232,10 @@
   --risk-alert-rule-w:264px; --risk-alert-level-w:104px;
   --risk-rule-table-min:1280px; --risk-config-rule-w:264px;
 }
+
+/* M11 UI: explicit module dimensions; A39–A41 baseline consumers retain their values. */
+:root[data-module="ops-fx"]{
+  --fx-dialog-w:720px;
+  --fx-history-min:1120px; --fx-history-min-en:1152px;
+  --fx-col-rate:184px; --fx-col-time:128px; --fx-col-state:144px; --fx-col-by:144px;
+}
