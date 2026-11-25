@@ -121,7 +121,7 @@ TP.addCopy({
   '企业信息：基本信息与组织资料':'Company information: basics and documents','编辑基本信息：必填项清空':'Edit basics: required field emptied',
   /* 第 5 轮：PRD 508d8b9 —— 密码提示两条、修改登录邮箱、去掉停用与运营重置 */
   '使用登录邮箱和密码登录。':'Sign in with your login email and password.','至少包含 1 个英文字母和 1 个数字':'At least 1 letter and 1 number',
-  '登录信息已更新，请使用邀请邮件中的登录信息登录。':'Your sign-in details have been updated. Sign in with the details in the invitation email.',
+  '登录信息已更新，请使用邀请邮件中的登录信息登录。':'Your sign-in details have been updated. Sign in with the details in the invitation email.','登录信息已更新，请使用新的登录信息登录。':'Your sign-in details have been updated. Sign in with your new sign-in details.',
   '登录邮箱已修改，请使用新邮箱登录。':'Your login email has been changed. Sign in with the new email.',
   '修改登录邮箱':'Change login email','修改步骤':'Change steps','修改说明':'About this change','签名核验':'Signature verification','填写新邮箱':'Enter new email','验证新邮箱':'Verify new email',
   '用本企业已绑定的钱包签名核验身份，不需要输入当前密码。':'Verify your identity by signing with your company\u2019s bound wallet. Your current password is not needed.',
