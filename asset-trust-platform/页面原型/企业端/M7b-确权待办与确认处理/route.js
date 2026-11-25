@@ -1,10 +1,11 @@
 /* M7b 确权待办与确认处理（企业端·债务人）· 仓库联看路由。只登记本模块已有画面。
    confirmation:<申请编号>：申请详情；m7b-<申请编号>：M10 消息“前往原业务”。
-   “债权人与债务人”的确权申请列表是独立画面 m-both；详情沿用债务人画面。 */
+   “债权人与债务人”的确权申请列表是独立画面 m-both；详情沿用债务人画面。
+   应收账款详情（F-M7b-05）在本模块内，经申请详情中的应收账款编号进入，不登记路由键。 */
 (function(){
   var details = {
-    'AP-DEMO-0031':'d-pending', 'AP-DEMO-0035':'d-pending-diff', 'AP-DEMO-0028':'d-reissued',
-    'AP-DEMO-0030':'d-approved', 'AP-DEMO-0021':'d-closed', 'AP-DEMO-0033':'d-expired'
+    'AP-DEMO-0031':'d-pending', 'AP-DEMO-0043':'d-pending-diff', 'AP-DEMO-0028':'d-reissued',
+    'AP-DEMO-0030':'d-approved', 'AP-DEMO-0036':'d-closed'
   };
   var routes = {confirmations:{debtor:'m-pending', both:'m-both'}};
   Object.keys(details).forEach(function(no){
