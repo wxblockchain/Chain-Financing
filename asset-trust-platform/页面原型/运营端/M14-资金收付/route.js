@@ -9,6 +9,8 @@ TP.registerModule({
     'funds:TRX-DEMO-1102':{ops:'f-d-novoucher'},
     'funds:TRX-DEMO-1102:INV-0012':{ops:'f-d-novoucher'},
     'funds:TRX-DEMO-1102:INV-0019':{ops:'f-d-dup'},
+    'funds:TRX-DEMO-1214':{ops:'f-d-today'},
+    'funds:RC-DEMO-7802':{ops:'f-d-fixed'},
     'funds:RC-DEMO-7781':{ops:'f-d-ngn'},
     'funds:PAY-DEMO-0130':{ops:'f-d-multi'},
     'funds:PAY-DEMO-0140':{ops:'f-d-unadopted'}
