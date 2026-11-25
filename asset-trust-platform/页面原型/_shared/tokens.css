@@ -161,10 +161,10 @@
   --fx-col-id:132px; --fx-col-rate:176px; --fx-col-time:120px; --fx-col-state:136px;
   --fx-col-change:104px; --fx-col-by:136px;
   --fx-rate-input-w:240px; /* 新汇率输入框：2 位小数的奈拉数值与千位数字完整可读 */
-  --review-table-min:1120px; /* M9 待审核九列，1440 px 视口完整展示；申请编号与操作分别固定两侧 */
-  --review-table-min-en:1280px; /* 英文表头、状态与两项操作的阅读下限，窄视口表内滚动 */
-  --review-col-id:132px; --review-col-invoice:104px; --review-col-party:176px; --review-col-amount:136px; --review-col-due:120px;
-  --review-col-time:108px; --review-col-warning:80px; --review-col-warning-en:136px; --review-col-status:112px; --review-col-actions:128px; /* 查看 / 审核通过 */
+  --review-table-min:1140px; /* M9 待审核十列，1440 px 视口完整展示；申请编号与操作分别固定两侧 */
+  --review-table-min-en:1400px; /* 英文表头、状态与两项操作的阅读下限，窄视口表内滚动 */
+  --review-col-id:124px; --review-col-invoice:96px; --review-col-party:176px; --review-col-amount:128px; --review-col-due:108px;
+  --review-col-time:100px; --review-col-warning:80px; --review-col-warning-en:136px; --review-col-chain:88px; --review-col-chain-en:136px; --review-col-status:112px; --review-col-actions:128px; /* 查看 / 审核通过 */
   --push-table-min:960px; /* M15 资产推送列表八列，1280 px 视口完整展示；申请编号与操作分别固定两侧 */
   --push-table-min-en:1080px;
   --push-col-id:128px; --push-col-invoice:112px; --push-col-party:168px; --push-col-amount:144px;

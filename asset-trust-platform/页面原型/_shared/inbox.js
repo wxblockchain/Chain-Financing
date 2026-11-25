@@ -1,7 +1,7 @@
 /* ==========================================================================
    inbox.js — 消息入口（M10 消息中心）：顶栏铃铛的未读数与最近消息预览，以及两端的演示消息。
    基线：代币发行平台 _shared/inbox.js（M7 消息通知）。本平台改动：分类按 M10 PRD §4.2（四类，另有“其他”兜底）；
-   消息取自现行来源模块 03 消息通知册（M7a-NT01～03、M7b-NT01～03、M8-NT01～02、M9-NT01～03、M15-NT01）；无“认证引导”“固定页面”去向。
+   消息取自现行来源模块 03 消息通知册（M7a-NT01～03、M7b-NT01～03、M8-NT01～02、M9-NT01、M9-NT03、M15-NT01）；无“认证引导”“固定页面”去向。
    各模块在 menu.*.js 之后加载，由 frame.js 渲染到顶栏；入驻未完成、受限登录（首登改密）不显示消息入口。
    不发送、不计算、不保存已读：未读数取本份演示数据，画面可用 data-unread 指定本屏的值。
    规则（收件范围、送达、已读、全部已读、前往原业务）以 PRD 两端共用/M10-消息中心 为准。
@@ -71,27 +71,20 @@
          'Debtor '+NG+' has confirmed confirmation request '+app+' submitted by creditor Carloha Holding for invoice '+inv+' (receivable '+ar+', amount '+amt+' '+ccy+', due date '+due+'). Please review it. Requests not approved by the receivable\'s due date will be closed automatically.'],
       ref:appRef(app, inv), go:{key:'m9-'+app}};
   }
-  /* M9-NT01 运营审核已通过 / M9-NT02 资产已推送（业务办理进度，发给债权人企业）→ M7a 申请详情（只能查看）；文案按 M9 03 册（b693d078） */
+  /* M9-NT01 运营审核已通过（业务办理进度，发给债权人企业）→ M7a 申请详情（只能查看）；审核提交上链成功时发送，文案按 M9 03 册（5d2ec4f3） */
   function m9a(id, app, debtor, inv, ar, at, read){
     return {id:id, cat:'progress', at:at, read:read,
       t:['运营审核已通过','Operations review approved'],
-      b:['贵企业就内销发票 '+inv+'（应收账款编号 '+ar+'）向 '+debtor+' 发起的确权申请 '+app+' 已通过运营审核。贵企业在这笔业务中是债权人。审核通过表示这笔应收账款已取得推送资格，尚未推送给资产数字化平台；推送进度可在申请详情中查看。',
-         'Confirmation request '+app+' submitted by your company to '+debtor+' for invoice '+inv+' (receivable '+ar+') has been approved by operations. Your company is the creditor in this transaction. Approval means the receivable is now eligible to be provided to the asset digitisation platform; it has not been provided yet. You can track the progress in the request details.'],
+      b:['贵企业就内销发票 '+inv+'（应收账款编号 '+ar+'）向 '+debtor+' 发起的确权申请 '+app+' 已通过运营审核，审核通过的资料已上链存证。贵企业在这笔业务中是债权人。详情可在申请详情中查看。',
+         'Confirmation request '+app+' submitted by your company to '+debtor+' for invoice '+inv+' (receivable '+ar+') has been approved by operations, and the approved records have been recorded on chain. Your company is the creditor in this transaction. You can view the details in the request details.'],
       ref:appRef(app, inv), go:{key:'m7a-'+app}};
   }
-  function m9b(id, app, inv, ar, at, read){
-    return {id:id, cat:'progress', at:at, read:read,
-      t:['资产已推送','Asset provided'],
-      b:['贵企业内销发票 '+inv+'（应收账款编号 '+ar+'，确权申请 '+app+'）对应的资产已推送给资产数字化平台：平台已为审核通过时的资料存证，资产数字化平台已成功调取。贵企业在这笔业务中是债权人。',
-         'The asset for your company\'s invoice '+inv+' (receivable '+ar+', confirmation request '+app+') has been provided to the asset digitisation platform: the approved records have been notarised and successfully retrieved by the platform. Your company is the creditor in this transaction.'],
-      ref:appRef(app, inv), go:{key:'m7a-'+app}};
-  }
-  /* M9-NT03 资产存证失败（运营告警，全体运营）→ M9 申请详情的推送信息；失败原因按原文 */
+  /* M9-NT03 运营审核上链失败（运营告警，全体运营）→ M9 申请详情；失败原因按原文，申请仍为待运营审核 */
   function m9c(id, app, inv, ar, attempt, reason, at, read){
     return {id:id, cat:'alert', at:at, read:read,
-      t:['资产存证失败','Asset notarisation failed'],
-      b:['债权人 Carloha Holding 的内销发票 '+inv+'（应收账款编号 '+ar+'，确权申请 '+app+'）第 '+attempt+' 次存证失败，原因：'+reason+'。存证成功前资产数字化平台无法调取这笔资产，请查看后重新存证。',
-         'Notarisation attempt '+attempt+' for creditor Carloha Holding\'s invoice '+inv+' (receivable '+ar+', confirmation request '+app+') failed. Reason: '+reason+'. The asset digitisation platform cannot retrieve this asset until notarisation succeeds. Please review it and retry.'],
+      t:['运营审核上链失败','Review on-chain recording failed'],
+      b:['债权人 Carloha Holding 的内销发票 '+inv+'（应收账款编号 '+ar+'，确权申请 '+app+'）第 '+attempt+' 次审核提交上链失败，原因：'+reason+'。这笔申请尚未审核通过，仍为待运营审核，请查看后重新审核通过。',
+         'On-chain recording for review submission '+attempt+' of creditor Carloha Holding\'s invoice '+inv+' (receivable '+ar+', confirmation request '+app+') failed. Reason: '+reason+'. The request has not been approved and is still pending operations review. Please review it and approve again.'],
       ref:appRef(app, inv), go:{key:'m9-'+app}};
   }
   /* M8-NT01 新的风控预警（运营告警，全体运营）→ M8 预警详情。只有阻断、预警等级发消息；标题与正文随等级。
@@ -154,12 +147,13 @@
       m7b02('c03','AP-DEMO-0028',NG,'INV-0012','AR-DEMO-0012',REASON,'2026-11-04T14:20:00Z',false),
       m7a03('c04','AP-DEMO-0036',SB,'INV-0103','AR-DEMO-0103','2026-11-02T23:00:00Z',true),
       Object.assign(m7a02('c05','AP-DEMO-0026','INV-0008','AR-DEMO-0008','待运营审核','2026-10-31T23:00:00Z',false), {done:true}),
-      m9a('c06','AP-DEMO-0022',NG,'INV-0011','AR-DEMO-0011','2026-10-30T03:00:00Z',true),
+      /* AP-DEMO-0022 第 1 次审核提交上链失败（o11），再次提交后上链成功 */
+      m9a('c06','AP-DEMO-0022',NG,'INV-0011','AR-DEMO-0011','2026-10-30T04:52:00Z',true),
       m7a01('c07','AP-DEMO-0039',SB,'INV-0105','AR-DEMO-0105','41,200.00','2026-10-28T07:40:00Z',true),
       m7b01('c08','AP-DEMO-0026',NG,'INV-0008','AR-DEMO-0008','2026-10-20T09:00:00Z',true),
       /* AP-DEMO-0036 后已到期关闭（c04）：已读不代表已办理，前往后只能查看当前结果 */
       Object.assign(m7a01('c09','AP-DEMO-0036',SB,'INV-0103','AR-DEMO-0103','25,800.00','2026-10-12T10:05:00Z',true), {done:true}),
-      m9b('c10','AP-DEMO-0021','INV-0005','AR-DEMO-0005','2026-09-20T08:00:00Z',true),
+      m7b01('c10','AP-DEMO-0021',NG,'INV-0005','AR-DEMO-0005','2026-09-12T03:00:00Z',true),
       m9a('c11','AP-DEMO-0021',NG,'INV-0005','AR-DEMO-0005','2026-09-15T06:00:00Z',true)
     ],
     /* 运营端 · 全体运营（各自记录已读）。24 条，6 条未读，第一批 20 条（o23 未读，属于尚未加载的部分）。
@@ -190,7 +184,7 @@
         ['收款方 Demo Trading D Ltd','payee Demo Trading D Ltd'],
         ['AR-DEMO-0019','AR-DEMO-0019'],'2026-11-20T04:30:00Z',true), {done:true}),
       m7b03('o10','AP-DEMO-0024','INV-0019','AR-DEMO-0019','48,000.00','USD','2027-01-18','2026-11-10T09:30:00Z',false),
-      /* AP-DEMO-0022 第 1 次存证失败：仍可在原业务重新存证 */
+      /* AP-DEMO-0022 第 1 次审核提交上链失败：申请仍为待运营审核，可在原业务再次审核通过 */
       m9c('o11','AP-DEMO-0022','INV-0011','AR-DEMO-0011',1,'chain gateway timeout','2026-10-30T03:04:00Z',true),
       Object.assign(m7b03('o12','AP-DEMO-0022','INV-0011','AR-DEMO-0011','55,000.00','USD','2026-12-01','2026-10-29T02:00:00Z',true), {done:true}),
       /* 申请已到期关闭：未读仍计入未读数，前往后只能查看当前结果 */

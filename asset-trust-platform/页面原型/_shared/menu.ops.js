@@ -11,6 +11,11 @@
     {group:'企业', items:[
       {key:'ents',      label:'企业管理',   icon:'org'}
     ]},
+    // M9 运营审核排在“资产数据”之前（M2 PRD F-OP-11 菜单表，WS-676 / PRD 5d2ec4f3）。
+    {group:'审核', items:[
+      // 角标为全平台待运营审核、且没有“上链中”审核提交的笔数（M9 F-M9-01），评审演示值；接入时由 M9 运营审核提供。
+      {key:'review',    label:'运营审核',   icon:'shield', pendingCount:4}
+    ]},
     {group:'资产数据', items:[
       {key:'invoices',  label:'应收账款',   icon:'doc'},
       // M4 合同信息（WS-659）：已登记于 M2 PRD F-OP-11 菜单表（6cb5a5e1）。
@@ -29,10 +34,6 @@
       // M8 风控规则配置（F-M8-19，WS-609）：已登记于 M2 PRD F-OP-11 菜单表（6cb5a5e1），位于“风控预警”之后。
       {key:'rules',     label:'风控规则',   icon:'sliders'},
       {key:'sources',   label:'三方数据源', icon:'database'}
-    ]},
-    {group:'审核', items:[
-      // 角标为全平台待运营审核笔数（M9 F-M9-01），评审演示值；接入时由 M9 运营审核与资产推送提供。
-      {key:'review',    label:'运营审核',   icon:'shield', pendingCount:4}
     ]},
     // M15 数据监控（WS-610）：已登记于 M2 PRD F-OP-11 菜单表（6cb5a5e1）。角标只有数据接入（异常接口个数，F-M15-05，评审演示值）；数据推送没有待办（PRD 46fd0a8e）。
     {group:'数据监控', items:[
