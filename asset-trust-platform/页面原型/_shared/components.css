@@ -2644,6 +2644,7 @@ table.tbl.call-records{min-width:var(--call-record-min)}
 /* A89 M1 资料与流程的呈现变体（WS-669）。仅模块显式启用；不改变 A1 / A5
    的其他消费者。颜色、字体、间距全部继承平台 token；此块是变体唯一维护源。 */
 .m1-reading{max-width:var(--profile-reading-max);margin-inline:0}
+.m1-reading:has(>.page-tabs){max-width:none}
 .m1-ui .focus-card>.stack>.hint:first-child{margin-top:calc(-1 * var(--sp-3))}
 .m1-ui :is(.field-caption>label,.field-label){font-size:var(--ui-field-label);font-weight:500;color:var(--muted)}
 .m1-ui .field-static{border-style:solid;border-color:var(--border);overflow-wrap:anywhere}
@@ -2660,8 +2661,8 @@ table.tbl.call-records{min-width:var(--call-record-min)}
 /* 完整钱包地址浮层沿用定位逻辑，窄屏按可用宽度换行，保留全部地址文本。 */
 .m1-ui .addr>.value-pop>.dd-list{white-space:normal;overflow-wrap:anywhere}
 
-/* 标题在字段上方，编辑与标题同排；概览与设置区在宽屏两栏，文档 / 编辑区通栏。 */
-.profile-sheet.profile-sheet-stacked{display:grid;grid-template-columns:minmax(0,1fr);overflow:visible}
+/* M1 账户独立分区始终上下通栏；标题在字段上方，编辑与标题同排。 */
+.profile-sheet.profile-sheet-stacked{display:grid;grid-template-columns:minmax(0,1fr);max-width:none;overflow:visible}
 .profile-sheet-stacked>.profile-section{
   display:flex;flex-direction:column;gap:var(--sp-5);min-width:0;padding:var(--sp-6);border:0;grid-column:1/-1}
 .profile-sheet-stacked>.profile-section+.profile-section{border-top:1px solid var(--border)}
@@ -2677,17 +2678,10 @@ table.tbl.call-records{min-width:var(--call-record-min)}
 .profile-sheet-stacked .profile-preferences .preference-row{flex-wrap:wrap;gap:var(--sp-3) var(--sp-5)}
 .profile-sheet-stacked .profile-preferences .preference-row>div:first-child{flex:1 1 180px}
 .profile-sheet-stacked .profile-preferences .preference-row>.btn{flex:none}
-.profile-sheet-stacked .profile-preferences .preference-row>:is(.inp,.combo){flex:1 1 200px;max-width:100%;min-width:0}
-.profile-sheet-stacked .profile-preferences .preference-row .inp{max-width:100%;width:100%}
+.profile-sheet-stacked .profile-preferences .preference-row>:is(.inp,.combo){flex:0 1 var(--filter-search-w);max-width:var(--filter-search-w);min-width:0}
+.profile-sheet-stacked .profile-preferences .preference-row .combo .inp{max-width:100%;width:100%}
 @container facts (min-width:420px){.profile-sheet-stacked .facts:not(.single){grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container facts (min-width:600px){.profile-sheet-stacked .profile-section:not(.profile-overview) .facts:not(.single):not(.cols-2){grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(min-width:1280px){
-  .profile-sheet.profile-sheet-stacked{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .profile-sheet-stacked>.profile-overview,.profile-sheet-stacked>.profile-preferences{grid-column:auto}
-  .profile-sheet-stacked>.profile-overview:first-child:not(:has(+.profile-overview)){grid-column:1/-1}
-  .profile-sheet-stacked>.profile-overview:nth-child(2){border-top:0;border-left:1px solid var(--border)}
-  .profile-sheet-stacked>.profile-preferences+.profile-preferences{border-left:1px solid var(--border)}
-}
 
 /* 资料表单分区：左侧组标题，右侧字段；企业身份信息在同一只读表面上核对。 */
 .onboard-card-sectioned>.onboard-head .steps{max-width:var(--onboard-w)}
