@@ -1,7 +1,7 @@
 /* M4 合同信息 · 运营端 · 模块文案英文（业务值不翻译）。PRD 本期只要求中文，英文仅保证壳层切换语言时不混排。 */
 TP.addCopy({
 "开票进度": "Invoicing progress", "收款进度": "Collection progress", "付款进度": "Payment progress", "出库进度": "Outbound progress",
-"成本对照": "Cost comparison", "按当前汇率": "At current rate", "无可用汇率": "No rate available", "终端回款金额（美元）": "End collections (USD)", "终端未回款金额（美元）": "End collections outstanding (USD)", "含 1 份批售合同按外销单价比例分摊": "Includes 1 wholesale contract allocated by export unit price share", "已售车辆数": "Vehicles sold", "未售车辆数": "Vehicles not sold", "本合同车辆数": "Contract vehicles", "已出库车辆数": "Vehicles out", "未出库车辆数": "Vehicles not out", "已出库": "Out", "未出库": "Not out", "辆": "veh.",
+"成本对照": "Cost comparison", "按当前汇率": "At current rate", "个人客户": "Individual customers", "无可用汇率": "No rate available", "终端回款金额（美元）": "End collections (USD)", "终端未回款金额（美元）": "End collections outstanding (USD)", "含 1 份批售合同按外销单价比例分摊": "Includes 1 wholesale contract allocated by export unit price share", "已售车辆数": "Vehicles sold", "未售车辆数": "Vehicles not sold", "本合同车辆数": "Contract vehicles", "已出库车辆数": "Vehicles out", "未出库车辆数": "Vehicles not out", "已出库": "Out", "未出库": "Not out", "辆": "veh.",
 "外销未收款金额（美元）": "Export outstanding (USD)", "外销合同金额（美元）": "Export contract amount (USD)", "外采合同金额（美元）": "Purchase contract amount (USD)",
 "外销收款情况": "Export receipt status", "已收款": "Paid", "无外销合同": "No export contract", "部分收款": "Partly paid", "未收款": "Unpaid",
 "详情 · 收款超过外销合同金额（零售、未出库）": "Detail · Receipts exceed contract amount (retail, not out)",
@@ -167,7 +167,7 @@ TP.addCopy({
 "外采合同文件": "Purchase contract files", "合同价": "Contract price",
 "平台采信已审核的外采合同后，会在这里列出。": "Approved purchase contracts will be listed here once received.",
 "外销合同日期": "Export contract date", "外销合同日期自": "Export contract date from", "外销合同日期至": "Export contract date to",
-"外销卖方名称": "Export seller name", "外销客户名称": "Export customer name",
+"外销卖方名称": "Export seller name", 
 "外销合同金额": "Export contract amount", "外销合同金额（美元）": "Export contract amount (USD)", "外销合同文件": "Export contract files",
 "物流节点": "Logistics node",
 "详情 · 尚未开票（内采单价、外采单价取合同价）、有车辆无外采合同、有未处理预警": "Detail · Not invoiced (contract prices for domestic and purchase unit prices), vehicle without purchase contract, open alerts",
