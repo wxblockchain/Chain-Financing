@@ -149,7 +149,6 @@ TP.addCopy({
 "无法折算": "Cannot convert",
 "暂不能发起申请": "A request cannot be submitted now",
 "未对应平台企业": "Not matched to a platform company",
-"本笔应收账款的核心资料存在差异，平台正在核实，当前展示原资料。": "Core data for this receivable has a difference. The platform is verifying it; original data is shown.",
 "汇率": "Rate",
 "请从应收账款列表重新进入。": "Open it again from the receivable list.",
 "返回应收账款": "Back to receivables",
@@ -163,7 +162,6 @@ TP.addCopy({
 "可发起申请（上一笔被驳回）": "Can submit (previous request rejected)",
 "发起申请 · 确认": "Submit request · confirm",
 "已提交 · 历次申请": "Submitted · request history",
-"核心资料存在差异 · 不可申请": "Core data difference · not eligible",
 "确权申请读取失败": "Confirmation request failed to load",
 "待债务人确认 · 非美元（批量发起）": "Awaiting debtor confirmation · non-USD (bulk)",
 "债务人已驳回": "Rejected by debtor",
@@ -194,5 +192,7 @@ TP.addCopy({
 "运营审核通过（单笔发起，已到期）": "Approved by operations (single, due)",
 "曾有其他企业的申请通过运营审核": "Another company's request was approved",
 "已通过运营审核": "Already approved by operations",
-"已到期 · 申请仍待运营审核": "Due · request still awaiting operator review"
+"已到期 · 申请仍待运营审核": "Due · request still awaiting operator review",
+"存在阻断类风控预警 · 不可申请": "Blocking risk alert · not eligible",
+"存在阻断类风控预警，请联系平台运营": "A blocking risk alert exists. Please contact platform operations."
 });
