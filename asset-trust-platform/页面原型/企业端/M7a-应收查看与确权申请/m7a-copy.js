@@ -193,5 +193,6 @@ TP.addCopy({
 "运营审核通过（批量发起）": "Approved by operations (bulk)",
 "运营审核通过（单笔发起，已到期）": "Approved by operations (single, due)",
 "曾有其他企业的申请通过运营审核": "Another company's request was approved",
-"已通过运营审核": "Already approved by operations"
+"已通过运营审核": "Already approved by operations",
+"已到期 · 申请仍待运营审核": "Due · request still awaiting operator review"
 });
