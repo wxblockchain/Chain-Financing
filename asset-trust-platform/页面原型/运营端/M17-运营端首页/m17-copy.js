@@ -167,3 +167,32 @@ TP.addCopy({
   "年度值 · USD（左轴）": "Yearly value \u00b7 USD (left axis)",
   "环比 · %（右轴）": "Change \u00b7 % (right axis)"
 });
+/* 2026-11-26：用户批准 A 方案，展示用语。 */
+TP.addCopy({
+  "外采与外销数字总览": "Purchasing and sales summary",
+  "统计周期": "Period",
+  "外采": "Purchased",
+  "外销": "Sold",
+  "数量 · 辆": "Vehicles",
+  "成本 · USD": "Cost · USD",
+  "收入 · USD": "Revenue · USD",
+  "数量趋势": "Vehicle count trends",
+  "数量趋势图": "Vehicle count trends chart",
+  "辆": "vehicles",
+  "环比": "Change",
+  "外采与外销环比": "Purchasing and sales changes",
+  "截至今日": "To date",
+  "查看月度数值": "View monthly values",
+  "外采数量": "Vehicles purchased",
+  "外销数量": "Vehicles sold",
+  "金额趋势": "Amount trends",
+  "金额趋势图": "Amount trends chart",
+  "外采成本": "Purchase cost",
+  "外销收入": "Sales revenue",
+  "查看年度数值": "View yearly values",
+  "历史逾期 2 次：逾期中 1 笔，逾期已收清 1 笔": "2 historical overdue receivables: 1 overdue, 1 collected after the due date",
+  "逾期状态构成": "Overdue status breakdown",
+  "逾期中": "Overdue",
+  "逾期已收清": "Collected after due date",
+  "历史逾期 0 次，暂无逾期记录": "0 historical overdue receivables; no overdue records"
+});

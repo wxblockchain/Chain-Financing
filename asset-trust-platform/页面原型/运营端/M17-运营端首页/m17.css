@@ -1,5 +1,6 @@
-/* M17 / WS-685 · 首页展示组件。仅 .home-page 消费；继承现有字体、色彩、间距与图表 token。
-   总览按周期横向比较，指标不逐个套卡片；金额不缩写。密集表格与 12 月图表在区域内滚动。 */
+/* M17 / WS-685 · 2026-11-26 用户批准 A 方案。
+   数字总览、并列柱与独立环比、逾期状态小环；所有展示取值沿用既有样本。
+   只消费平台 token；仅本模块启用。 */
 .home-page .content-in{max-width:none;margin-inline:0}
 body:has(.home-page) .sidebar .nav{position:relative}
 .home-meta [data-zone],.home-stale [data-zone]{display:inline}
@@ -17,7 +18,6 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-line-key{display:inline-block;width:20px;height:0;border-top:2px solid var(--chart-2);position:relative}
 .home-line-key:after{content:"";display:block;position:absolute;left:8px;top:-4px;width:6px;height:6px;border-radius:50%;background:var(--chart-2)}
 .home-plot-scroll{overflow-x:auto;overscroll-behavior-x:contain;padding:var(--sp-1) 0}
-.home-trend-svg{display:block;min-width:420px}
 .home-current-month{fill:var(--accent-soft)}
 .home-change-line{stroke:var(--chart-2);stroke-width:2;fill:none;stroke-linecap:round}
 .home-change-dot{fill:var(--chart-2);stroke:var(--card);stroke-width:1}
@@ -44,7 +44,7 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-ar-stats{display:grid;grid-template-columns:1.3fr 1.3fr 1fr 1fr;gap:var(--sp-5);padding:var(--card-pad);margin:0;border-bottom:1px solid var(--border)}
 .home-ar-body{padding:0 var(--card-pad) var(--card-pad)}
 .home-ar-svg{display:block;min-width:540px}
-.home-overdue-stats{display:flex;flex-wrap:wrap;gap:var(--sp-5) var(--sp-8);padding:var(--card-pad);margin:0}
+.home-overdue-stats{display:flex;flex-wrap:wrap;gap:var(--sp-5) var(--sp-8);padding:0;margin:0}
 .home-page .tbl.home-overdue{width:100%;min-width:1100px;table-layout:fixed}
 .home-page .home-overdue th{white-space:normal;overflow-wrap:normal}
 .home-page .home-overdue th:first-child{width:128px}
@@ -69,28 +69,6 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-head+.home-section{margin-top:var(--sp-5)}
 .home-empty-list{padding:var(--sp-7) var(--sp-6);border-top:1px solid var(--border)}
 
-/* M17 外采与外销总览图表（用户 2026-11-25 要求总览统一为图表，WS-685）：数量（辆）与金额（USD）分卡，不共用刻度；
-   每个周期一组，外采 --accent / 外销 --chart-2 两条横条同一比例尺，系列名与数值始终以文字可见，横条 aria-hidden。
-   同比在数值右侧；无法折算、合同价等注明紧跟在对应横条下方。供应商与终端客户为数量卡下方的第二组横条。 */
-.home-ov{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--sp-5);row-gap:0;align-items:stretch}
-.home-ov>.card+.card{margin:0}
-.home-ov-body{display:contents}
-.home-ov-group,.home-ov-parties{display:grid;gap:var(--sp-2);min-width:0}
-.home-ov>.home-ov-parties{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3) var(--sp-7);padding:var(--sp-4) var(--card-pad);margin-top:var(--sp-4)}
-.home-ov-period{margin:0 0 var(--sp-1);font-size:var(--fs-13);font-weight:600;color:var(--text)}
-.home-ov-period small{margin-left:var(--sp-2)}
-.home-ov-row{display:grid;grid-template-columns:5em minmax(40px,1fr) 7.5em;align-items:center;column-gap:var(--sp-3);font-size:var(--fs-12);color:var(--muted)}
-.home-ov-card+.home-ov-card .home-ov-row{grid-template-columns:5em minmax(40px,1fr) 12em}
-.home-ov-track{height:12px;background:var(--gray-bg);border-radius:2px;overflow:hidden}
-.home-ov-fill{display:block;height:100%;background:var(--accent);border-radius:2px}
-.home-ov-row.is-sale .home-ov-fill{background:var(--chart-2)}
-.home-ov-val{text-align:right;white-space:nowrap;color:var(--text)}
-.home-ov-val b{font-size:var(--fs-16);font-weight:600;font-variant-numeric:tabular-nums}
-.home-ov-yoy{grid-column:3;justify-self:end;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted);font-size:var(--fs-12)}
-.home-ov-yoy small{display:block;white-space:normal}
-.home-ov-note{grid-column:2/-1;margin:0;line-height:1.6}
-
-
 /* M17 趋势按月／按年（PRD 016a075e 7.1，默认按月）：复用基线 .seg 单选组，放在板块标题右侧与范围并列；应收账款趋势在其小标题行。
    刷新时单个板块失败（PRD 317e877f 3.5）：该板块标题下方 .note.red 提示上次成功取数时间并可重试，板块数字保留。 */
 .home-section-tools{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-4)}
@@ -101,25 +79,10 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-part-stale{margin-bottom:var(--sp-3);align-items:center}
 @media(max-width:600px){.home-section-tools{margin-top:var(--sp-2)}}
 
-.home-change-label{fill:var(--chart-2);font-weight:600}
 .home-part-stale [data-zone]{display:inline}
 
-/* Aligned overview rows use subgrid; groups grow naturally with disclosures. */
-.home-ov-card{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0}
-.home-ov-group{padding:var(--sp-4) var(--card-pad);border-top:1px solid var(--row-line);align-content:start}
-.home-ov-card>.card-head{border-bottom:0}
-.home-ov-parties>.home-ov-period{grid-column:1/-1}
-.home-ov-parties .home-ov-row{grid-template-columns:8em minmax(40px,1fr) 8em}
-/* Shape distinguishes change from bars; sales series matches the overview. */
-.home-trend[data-series="sale"] .c-s1{fill:var(--chart-2)}
-.home-trend .home-change-line{stroke:var(--muted);stroke-dasharray:4 3}
-.home-trend .home-change-dot{fill:var(--muted)}
-.home-trend .home-change-label{fill:var(--muted)}
-.home-trend .home-line-key{border-color:var(--muted);border-top-style:dashed}
-.home-trend .home-line-key:after{background:var(--muted)}
 .home-axis-label{fill:var(--muted);font:500 var(--fs-12) var(--sans)}
 .home-page .c-tick{font-size:var(--fs-12)}
-.home-page .home-trend .card-head{padding-block:var(--sp-4)}
 .home-page .home-data summary{padding-block:var(--sp-3);min-height:var(--ctrl-h-sm)}
 .home-page .home-overdue th:nth-child(5){width:104px}
 .home-page .home-overdue th:nth-child(6){width:112px}
@@ -132,13 +95,67 @@ body:has(.home-page) .sidebar .nav{position:relative}
   .home-page .home-overdue :is(td,th):last-child{position:sticky;right:0;z-index:1;background:var(--card);border-left:1px solid var(--border)}
   .home-page .home-overdue thead th:last-child{background:var(--card-2)}
 }
-@media(max-width:1100px){
-  .home-ov{grid-template-columns:minmax(0,1fr);row-gap:var(--sp-4)}
-  .home-ov-card{display:block;grid-row:auto}
-  .home-ov>.home-ov-parties{margin:0}
-}
+
+/* One numeric surface; columns retain full values and disclosures. */
+.home-matrix{width:100%;min-width:860px;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}
+.home-matrix col.home-col-period{width:16%}
+.home-matrix col.home-col-count{width:14%}
+.home-matrix col.home-col-money{width:28%}
+.home-matrix th,.home-matrix td{padding:var(--sp-2) var(--sp-4);text-align:right;vertical-align:top}
+.home-matrix th:first-child{text-align:left}
+.home-matrix thead th{font-size:var(--fs-12);font-weight:500;color:var(--muted)}
+.home-matrix thead tr:first-child th{padding-bottom:0}
+.home-matrix thead tr:nth-child(2) th{padding-top:0}
+.home-matrix thead th[colspan]{text-align:left;font-size:var(--fs-13);font-weight:600;color:var(--text)}
+.home-matrix tbody tr{border-top:1px solid var(--row-line)}
+.home-matrix tbody th{font-size:var(--fs-13);font-weight:500}
+.home-matrix tbody th small{display:block;margin-top:var(--sp-1);font-size:var(--fs-12)}
+.home-summary-value{font-size:var(--fs-20);font-weight:600;color:var(--text);white-space:nowrap;line-height:1.3}
+.home-summary-sub{font-size:var(--fs-12);line-height:1.5;color:var(--muted);margin-top:var(--sp-1)}
+.home-series-label{display:inline-flex;align-items:center;gap:var(--sp-2)}
+.home-series-label:before{content:"";width:8px;height:8px;border-radius:2px;background:var(--accent)}
+.home-series-label.sale:before{background:var(--chart-2)}
+.home-summary-parties{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);padding:var(--sp-2) var(--sp-5);border-top:1px solid var(--border);background:var(--card-2);border-radius:0 0 var(--radius-lg) var(--radius-lg)}
+.home-summary-parties>div{display:flex;align-items:baseline;gap:var(--sp-3);font-size:var(--fs-13);color:var(--muted)}
+.home-summary-parties strong{color:var(--text);font-size:var(--fs-16);font-weight:600;font-variant-numeric:tabular-nums}
+.home-summary-parties strong b{font-weight:inherit}
+
+/* Each composite uses one value axis, then a shorter percentage plot. */
+.home-comparison .card-head{padding-block:var(--sp-4)}
+.home-comparison-scroll{overflow-x:auto;overscroll-behavior-x:contain}
+.home-comparison-plots{min-width:420px}
+.home-paired-bars,.home-paired-changes{display:block;overflow:visible}
+.home-bar-0{fill:var(--accent)}
+.home-bar-1{fill:var(--chart-2)}
+.home-change-heading{font-size:var(--fs-12);font-weight:500;color:var(--muted);margin:var(--sp-1) 0 var(--sp-2);padding-top:var(--sp-2);border-top:1px solid var(--row-line)}
+.home-paired-line{fill:none;stroke-width:2;stroke-linecap:round}
+.home-paired-line.series-0{stroke:var(--accent)}
+.home-paired-line.series-1{stroke:var(--chart-2);stroke-dasharray:4 3}
+.home-paired-dot.series-0{fill:var(--accent)}
+.home-paired-dot.series-1{fill:var(--chart-2);stroke:var(--card);stroke-width:1}
+.home-rate-label{font-size:var(--fs-11)}
+.home-rate-label.series-0{fill:var(--accent)}
+.home-rate-label.series-1{fill:var(--muted)}
+.home-series-table{margin-bottom:var(--sp-4)}
+.home-series-table h4{font-size:var(--fs-13);font-weight:500;margin:var(--sp-3) 0 var(--sp-2)}
+
+/* A small composition, never a procurement/sales completion indicator. */
+.home-overdue-summary{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-6);padding:var(--card-pad);flex-wrap:wrap}
+.home-overdue-composition{display:flex;align-items:center;gap:var(--sp-4);color:var(--muted);font-size:var(--fs-12)}
+.home-overdue-composition h3{font-size:var(--fs-13);font-weight:500;color:var(--text);margin-bottom:var(--sp-2)}
+.home-overdue-composition p{display:flex;align-items:center;gap:var(--sp-2);margin-top:var(--sp-1)}
+.home-overdue-composition p strong{margin-left:auto;padding-left:var(--sp-3);font-variant-numeric:tabular-nums;font-weight:500;color:var(--text)}
+.home-donut{width:88px;height:88px;flex:none}
+.home-ring-track,.home-ring-ongoing,.home-ring-collected{fill:none;stroke-width:8}
+.home-ring-track{stroke:var(--border)}
+.home-ring-ongoing{stroke:var(--danger)}
+.home-ring-collected{stroke:var(--faint)}
+.home-ring-value{fill:var(--text);font:600 var(--fs-20) var(--sans)}
+.home-status-dot{width:7px;height:7px;border-radius:50%;background:var(--faint);flex:none}
+.home-status-dot.is-overdue{background:var(--danger)}
 @media(max-width:600px){
-  .home-ov>.home-ov-parties{grid-template-columns:minmax(0,1fr)}
+  .home-summary-parties{grid-template-columns:minmax(0,1fr)}
+  .home-overdue-summary{align-items:flex-start}
   .home-section-tools{width:100%;justify-content:space-between}
   .home-ar-trend-head>.seg{margin-left:auto}
   .home-chart-body{padding-inline:var(--sp-3)}
