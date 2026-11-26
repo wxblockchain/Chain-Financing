@@ -2752,12 +2752,15 @@ table.tbl.call-records{min-width:var(--call-record-min)}
 :root[data-module="messages"] .msg-reading .page-title{max-width:var(--message-body-max);overflow-wrap:anywhere;line-height:1.4}
 :root[data-module="messages"] .msg-category{font-size:var(--fs-12);font-weight:600;color:var(--muted);margin-bottom:var(--sp-2)}
 :root[data-module="messages"] .msg-reading .page-desc{font-size:var(--fs-13);font-variant-numeric:tabular-nums}
-:root[data-module="messages"] .msg-detail{display:grid;grid-template-columns:minmax(0,1fr) var(--message-context-w);align-items:stretch}
-:root[data-module="messages"] .msg-detail>.card-b{min-width:0;padding:var(--sp-7);grid-column:1}
+:root[data-module="messages"] .msg-detail{display:block}
+:root[data-module="messages"] .msg-detail>.card-b{min-width:0;padding:var(--sp-6)}
 :root[data-module="messages"] .msg-detail .msg-body{font-size:var(--fs-16);line-height:1.9}
-:root[data-module="messages"] .msg-related{min-width:0;border-top:0;border-left:1px solid var(--border);padding:var(--sp-6);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
-:root[data-module="messages"] .msg-related .facts{grid-template-columns:minmax(0,1fr)}
-:root[data-module="messages"] .msg-related .facts>div{min-width:0;padding-block:var(--sp-3);border:0}
+:root[data-module="messages"] .msg-related{min-width:0;border-top:1px solid var(--border);border-left:0;padding:var(--sp-5) var(--sp-6);border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+:root[data-module="messages"] .msg-related .sub-h{margin-top:0}
+:root[data-module="messages"] .msg-related .facts{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none}
+:root[data-module="messages"] .msg-related .facts>div{min-width:0;padding-block:var(--sp-2);border:0}
+:root[data-module="messages"] .msg-related .facts>div:has(dd>span:not(.mono)),
+:root[data-module="messages"] .msg-related .facts>div:has(dd>.msg-record-link:not(.mono)){grid-column:1/-1}
 :root[data-module="messages"] .msg-related .facts dd{overflow-wrap:anywhere}
 :root[data-module="messages"] .msg-record-link{display:inline-flex;align-items:center;gap:var(--sp-2);max-width:100%;text-align:left;white-space:normal;text-decoration:underline;text-underline-offset:var(--sp-1)}
 :root[data-module="messages"] .msg-record-link>span{min-width:0;overflow-wrap:anywhere}
@@ -2767,19 +2770,14 @@ table.tbl.call-records{min-width:var(--call-record-min)}
 :root[data-module="messages"] .msg-markall-scope .facts{background:transparent;gap:var(--sp-4)}
 :root[data-module="messages"] .msg-markall-scope .facts>div{border:0;padding:0}
 :root[data-module="messages"] [data-inbox-view] .state{min-height:calc(var(--ctrl-h) * 6);justify-content:center}
-@media(max-width:1279px){
-  :root[data-module="messages"] .msg-detail{grid-template-columns:minmax(0,1fr)}
-  :root[data-module="messages"] .msg-related{border-left:0;border-top:1px solid var(--border);border-radius:0 0 var(--radius-sm) var(--radius-sm);padding:var(--sp-6) var(--sp-7)}
-  :root[data-module="messages"] .msg-related .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
 @media(max-width:900px){
   :root[data-module="messages"] .inbox-actions{margin-left:0}
   :root[data-module="messages"] [data-inbox-view] .msg-item{column-gap:var(--sp-3)}
   :root[data-module="messages"] .msg-detail>.card-b,:root[data-module="messages"] .msg-related{padding:var(--sp-5)}
+  :root[data-module="messages"] .msg-related .facts{grid-template-columns:minmax(0,1fr)}
 }
 @media(max-width:600px){
   :root[data-module="messages"] [data-inbox-view] .msg-item{grid-template-columns:var(--sp-2) minmax(0,1fr)}
   :root[data-module="messages"] [data-inbox-view] .msg-side{flex-direction:row-reverse;justify-content:flex-end;gap:var(--sp-3)}
   :root[data-module="messages"] [data-inbox-view] .msg-time{display:flex;gap:var(--sp-2)}
-  :root[data-module="messages"] .msg-related .facts{grid-template-columns:minmax(0,1fr)}
 }
