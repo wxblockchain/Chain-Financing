@@ -1432,10 +1432,10 @@ fieldset.field>legend.field-caption{padding:0;margin-bottom:var(--sp-2);width:10
 .enterprise-summary .facts>div{padding-block:var(--sp-3)}
 .card-sec .sub-h:first-child{padding-top:var(--sp-5)}
 .page-desc .sep{color:var(--faint);margin-inline:var(--sp-1)}
-/* A12 企业完整详情：ERP 置顶；档案/资料为主栏，账号钱包/操作记录为辅栏。
-   DOM 顺序与两栏阅读顺序一致；低于 1280 px 回到单栏，不增加内部滚动。 */
+/* A12 企业完整详情：ERP 置顶，其后档案、账号钱包、入驻资料、操作记录上下排列。
+   独立分区始终占满内容区宽度；卡片内部字段布局保持原定义。 */
 .enterprise-detail .content-in{max-width:none;margin-inline:0}
-.enterprise-detail-grid,.enterprise-detail-column{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-5);min-width:0;align-items:start}
+.enterprise-detail-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-5);min-width:0;align-items:start}
 .enterprise-detail-grid{margin-top:var(--sp-5)}
 .enterprise-detail-grid .card{margin:0;min-width:0}
 .enterprise-detail .card-sec .sub-h{font-size:var(--ui-field-label);color:var(--muted);padding-block:var(--sp-4) var(--sp-1)}
@@ -1447,7 +1447,6 @@ fieldset.field>legend.field-caption{padding:0;margin-bottom:var(--sp-2);width:10
 .enterprise-detail .erp-links.is-unlinked{border-left:3px solid var(--danger)}
 .enterprise-detail .erp-links .sub-empty{padding-block:var(--sp-4);color:var(--muted)}
 .enterprise-detail .institution-identity{flex-wrap:wrap}
-@media(min-width:1280px){.enterprise-detail-grid{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}}
 /* M2 账户设置随业务页展开；企业端 M1 的资料阅读宽度保持原定义。 */
 [data-module="ops-enterprises"] .account-profile :is(.content-in,.profile-sheet){max-width:none}
 /* M2 账户设置：偏好标签、说明和控件垂直成组；密码操作靠近其对象。
