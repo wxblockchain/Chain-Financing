@@ -138,7 +138,7 @@
       t:['数据接入异常：'+I[0], 'Data intake failure: '+I[1]],
       b:['客户 ERP 接口“'+I[0]+'”（承接模块：'+I[2]+'）于 {t:'+failAt+'} 调用失败，原因：'+reason+'。最近成功时间：{t:'+lastOk+'}。接口恢复前，这类单据的新数据不会进入平台，请查看调用记录。',
          'The customer ERP interface "'+I[1]+'" (used by: '+I[3]+') failed at {t:'+failAt+'}. Reason: '+reason+'. Last successful call: {t:'+lastOk+'}. New data of this type will not reach the platform until the interface recovers. Please review the call records.'],
-      ref:[['接口名称',I[0],'text']], go:{key:'interface:'+code}};
+      ref:[['接口名称',I[0],'text'],['数据来源','客户 ERP','text']], go:{key:'interface:'+code}};
   }
   var REASON = '【演示意见】销售清单中第 2 辆车的 VIN 与我方收货记录不一致，请核对后重新发起';
 
@@ -177,10 +177,10 @@
       m8('o06','W-DEMO-0007','warn','RK-14',['应收账款 AR-DEMO-0012 · 回款','Receivable AR-DEMO-0012 · Collections'],
         ['付款方 Demo Auto Trading Ltd','payer Demo Auto Trading Ltd'],
         ['AR-DEMO-0012','AR-DEMO-0012'],'2026-11-28T08:12:00Z',true),
-      /* 规则 RK-26 之后已停用：预警仍可查看、记录处理 */
-      m8('o07','W-DEMO-0005','warn','RK-26',['提单 BL-DEMO-5501','Bill of lading BL-DEMO-5501'],
+      /* 规则 RK-26 之后停用，这条未处理预警随之关闭（o02）：前往后只能查看当前结果 */
+      Object.assign(m8('o07','W-DEMO-0005','warn','RK-26',['提单 BL-DEMO-5501','Bill of lading BL-DEMO-5501'],
         ['船名航次 OCEAN STAR 026W','vessel/voyage OCEAN STAR 026W'],
-        ['AR-DEMO-0012','AR-DEMO-0012'],'2026-11-26T05:10:00Z',true),
+        ['AR-DEMO-0012','AR-DEMO-0012'],'2026-11-26T05:10:00Z',true), {done:true}),
       /* 失败原因原文含接口地址与账号、密钥：消息中去掉接口地址，账号与密钥只显示遮盖后的内容；M15 调用记录中接口地址照常展示 */
       m15('o08','BL','401 Unauthorized user=svc****01 key=sk_****7f3a','2026-11-24T10:05:00Z','2026-11-24T09:05:00Z',false),
       /* 已由其他运营管理员处理：前往后只能查看当前结果 */
@@ -188,8 +188,9 @@
         ['收款方 Demo Trading D Ltd','payee Demo Trading D Ltd'],
         ['AR-DEMO-0019','AR-DEMO-0019'],'2026-11-20T04:30:00Z',true), {done:true}),
       m7b03('o10','AP-DEMO-0024','INV-0019','AR-DEMO-0019','48,000.00','USD','2027-01-18','2026-11-10T09:30:00Z',false),
-      /* AP-DEMO-0022 第 1 次审核提交上链超时（按失败处理）：申请仍为待运营审核，可在原业务再次审核通过；M9-NT03 只在申请仍待运营审核时发送 */
-      m9c('o11','AP-DEMO-0022','INV-0011','AR-DEMO-0011',1,['上链超时未返回结果','On-chain recording timed out with no result'],'2026-10-30T03:04:00Z',true),
+      /* AP-DEMO-0022 第 1 次审核提交上链超时（按失败处理），发送时申请仍为待运营审核；之后再次提交并上链成功（企业端 c06），
+         所以这条与 o12 前往后都只能查看当前结果 */
+      Object.assign(m9c('o11','AP-DEMO-0022','INV-0011','AR-DEMO-0011',1,['上链超时未返回结果','On-chain recording timed out with no result'],'2026-10-30T03:04:00Z',true), {done:true}),
       Object.assign(m7b03('o12','AP-DEMO-0022','INV-0011','AR-DEMO-0011','55,000.00','USD','2026-12-01','2026-10-29T02:00:00Z',true), {done:true}),
       /* 申请已到期关闭：未读仍计入未读数，前往后只能查看当前结果 */
       Object.assign(m7b03('o13','AP-DEMO-0026','INV-0008','AR-DEMO-0008','60,000.00','USD','2026-10-31','2026-10-20T09:00:00Z',false), {done:true}),
@@ -273,7 +274,7 @@
     '最近消息读取失败':'Could not load recent messages','暂时无法读取，请稍后重试。':'Unable to load right now. Please try again later.','重试':'Retry',
     '还没有消息':'No messages yet','业务有新的进展时，会在这里通知你。':'You will be notified here when there is an update on your business.',
     '申请编号':'Request number','发票号':'Invoice number','内销发票号':'Invoice number','预警编号':'Alert number',
-    '规则名称':'Rule name','规则编号':'Rule number','接口名称':'Interface name',
+    '规则名称':'Rule name','规则编号':'Rule number','接口名称':'Interface name','数据来源':'Data source','客户 ERP':'Customer ERP',
     '时区':'Time zone','消息通知':'Notifications'
   });
   /* 原业务识别信息中随界面语言展示的值：规则名称、接口名称 */

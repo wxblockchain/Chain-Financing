@@ -22,6 +22,6 @@ TP.addCopy({
   '将当前筛选下的 6 条未读消息标为已读，包括尚未加载的消息。':'Mark the 6 unread messages in the current filter as read, including messages not loaded yet.',
   '将当前筛选下的 5 条未读消息标为已读，包括尚未加载的消息。':'Mark the 5 unread messages in the current filter as read, including messages not loaded yet.',
   '将当前筛选下的 2 条未读消息标为已读，包括尚未加载的消息。其他分类的未读消息不受影响。':'Mark the 2 unread messages in the current filter as read, including messages not loaded yet. Unread messages in other categories are not affected.',
-  '只改变你本人的阅读状态，不影响其他运营管理员，也不代表相关业务已经处理。确认之后新到的消息仍为未读。':'This only changes your own read status. It does not affect other operations administrators and does not mean the related business has been handled. Messages that arrive after you confirm stay unread.',
+  '只改变你本人的阅读状态，不影响其他运营管理员，也不代表相关业务已经处理。打开本确认后新到的消息仍为未读。':'This only changes your own read status. It does not affect other operations administrators and does not mean the related business has been handled. Messages that arrive after this confirmation was opened stay unread.',
   '已将 5 条消息标为已读':'5 messages marked as read'
 });
