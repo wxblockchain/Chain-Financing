@@ -14,7 +14,6 @@ TP.addCopy({
 "预警 · 有": "Alerts · Yes",
 "预警 · 无": "Alerts · No",
 "预警（有／无）": "Alerts (yes / no)",
-"待核实": "Pending verification",
 "申请状态 · 待债务人确认": "Request status · Pending debtor confirmation",
 "申请状态 · 待运营审核": "Request status · Pending operator review",
 "申请状态 · 运营审核通过": "Request status · Approved by operator",
@@ -281,8 +280,6 @@ TP.addCopy({
 "不通过": "Failed",
 "内销合同附件（缺失）": "Domestic sales contract attachment (missing)",
 "暂不能审核通过：": "Cannot approve yet:",
-"核心资料差异待核实（": "Core data differences pending verification (",
-"查看差异": "View differences",
 "资料不齐全或无效：内销合同附件（缺失）": "Data incomplete or invalid: domestic sales contract attachment (missing)",
 "该申请正在上链，请稍后查看结果。": "This request is being recorded on chain. Check back for the result later.",
 "第 1 次审核提交上链失败，审核未通过。可再次审核通过。": "On-chain recording failed for review submission 1, so the request is not approved. You can approve it again.",
@@ -296,7 +293,6 @@ TP.addCopy({
 "审核结论：通过 · 审核人": "Result: approved · reviewer",
 "· 审核时间": "· approved at",
 "待运营审核（预警类预警未处理，可审核通过）": "Pending review (open warning-level alert, can approve)",
-"待运营审核 · 核心资料待核实、资料不齐全（不能审核通过）": "Pending review · core data pending verification, data incomplete (cannot approve)",
 "待审核 · 提交审核通过后（上链中）": "Pending review · after approval submitted (recording on chain)",
 "审核通过已提交 · 上链中": "Approval submitted · recording on chain",
 "运营审核通过（上链成功）": "Approved (recorded on chain)",
@@ -308,5 +304,10 @@ TP.addCopy({
 "第 1 次审核提交上链超时未返回结果，按上链失败处理，审核未通过。可再次审核通过。": "Review submission 1 timed out with no on-chain result and is treated as failed, so the request is not approved. You can approve it again.",
 "上链失败（超时未返回结果）· 仍为待运营审核（可再次审核通过）": "On-chain recording failed (timed out) · still pending review (can approve again)",
 "已关闭（到期时正在上链，之后上链失败）": "Closed (recording on chain at the due date, then failed)",
-"申请已到期关闭，本次结果只记录。": "The request had already closed at the due date; this result is recorded only."
+"申请已到期关闭，本次结果只记录。": "The request had already closed at the due date; this result is recorded only.",
+"存在阻断类风控预警：核心资料变更（": "Blocking risk alert: Core data changed (",
+"核心资料变更（RK-36）": "Core data changed (RK-36)",
+"ERP 再次提供的内销发票金额 47,500.00 USD，与原资料 48,000.00 USD 不同": "Invoice amount provided again by the ERP is 47,500.00 USD, different from the original 48,000.00 USD",
+"待运营审核 · 阻断类预警（核心资料变更）、资料不齐全（不能审核通过）": "Pending review · blocking alert (core data changed), data incomplete (cannot approve)",
+"未返回失败原因": "No failure reason returned"
 });
