@@ -1,16 +1,16 @@
 /* M14 only. Shared tokens, shell and interaction handlers remain authoritative. */
 [data-module="ops-funds"] table.tbl.fund-list {
   table-layout:fixed;
-  min-width:var(--fund-table-min);
+  /* 列表不含关联业务列（2026-11-26 用户确认），最小宽度扣除该列 */
+  min-width:calc(var(--fund-table-min) - var(--fund-col-docs));
 }
-[data-module="ops-funds"]:lang(en) table.tbl.fund-list {min-width:var(--fund-table-min)}
+[data-module="ops-funds"]:lang(en) table.tbl.fund-list {min-width:calc(var(--fund-table-min) - var(--fund-col-docs))}
 [data-module="ops-funds"] .fund-list .fund-col-id {width:calc(var(--fund-col-id) - var(--sp-2))}
 [data-module="ops-funds"] .fund-list .fund-col-type {width:calc(var(--fund-col-type) + var(--sp-4))}
 [data-module="ops-funds"] .fund-list .fund-col-date {width:calc(var(--fund-col-date) - var(--sp-2))}
 [data-module="ops-funds"] .fund-list .fund-col-parties {width:calc(var(--fund-col-parties) - var(--sp-6)*2)}
 [data-module="ops-funds"] .fund-list .fund-col-amount {width:calc(var(--fund-col-amount) - var(--sp-6))}
 [data-module="ops-funds"] .fund-list .fund-col-usd {width:calc(var(--fund-col-usd) - var(--sp-3))}
-[data-module="ops-funds"] .fund-list .fund-col-docs {width:calc(var(--fund-col-docs) + var(--sp-7))}
 [data-module="ops-funds"] .fund-list .fund-col-actions {width:calc(var(--receivable-col-actions) - var(--sp-2))}
 [data-module="ops-funds"] .fund-list :is(th,td) {padding-inline:var(--sp-3)}
 [data-module="ops-funds"] .fund-list .party-line {display:flex;flex-direction:column;align-items:flex-start;gap:0;min-width:0}
@@ -18,7 +18,6 @@
 [data-module="ops-funds"] .fund-list td>.value-lines:not(.fund-docs) .party-line {flex-direction:row;align-items:baseline;gap:var(--sp-2)}
 [data-module="ops-funds"] .fund-list td>.value-lines:not(.fund-docs) .party-line>[data-upstream] {flex:1;min-width:0}
 [data-module="ops-funds"] .fund-list td>.value-lines:not(.fund-docs) {gap:var(--sp-2)}
-[data-module="ops-funds"] .fund-list .fund-docs {gap:var(--sp-2)}
 [data-module="ops-funds"] .fund-list .money {white-space:nowrap}
 [data-module="ops-funds"] .fund-list .money .mono {font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:500}
 [data-module="ops-funds"] .fund-type {display:inline-block;padding-left:var(--sp-2);border-left:2px solid var(--accent-border);color:var(--text);line-height:var(--lh-body)}
