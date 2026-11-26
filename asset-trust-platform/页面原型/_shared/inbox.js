@@ -125,18 +125,19 @@
          by+' disabled risk rule "'+R[1]+' ('+rk+')", effective immediately. Reason: '+reason+'. 1 open alert under this rule has been closed, and its alerts no longer have any effect.'],
       ref:[['规则编号',rk],['规则名称',R[0],'text']], go:{key:'rule:'+rk}};
   }
-  /* M15-NT01 数据接入异常（运营告警，全体运营）→ M15 该接口的调用记录。接口名称、承接模块随界面语言；失败原因按原文。 */
+  /* M15-NT01 数据接入异常（运营告警，全体运营）→ M15 该接口的调用记录。接口名称、数据来源、承接模块随界面语言；
+     失败原因按原文，但不出现接口地址、账号与密钥只显示遮盖后的内容（M15 PRD dcb9f2cd）。接口与 M15 原型演示清单一致。 */
   var IFACE = {BL:['提单','Bills of lading','提单信息（M12）','Bills of lading (M12)'],
     PL:['保单','Insurance policies','保单信息（M13）','Policy information (M13)'],
-    PP:['外采付款','Purchase payments','资金收付（M14）','Payments & receipts (M14)'],
-    DR:['内销收款','Domestic receipts','资金收付（M14）','Payments & receipts (M14)'],
-    VL:['车辆物流节点','Vehicle logistics events','车辆履约（M5）','Vehicle fulfilment (M5)']};
+    PM:['收付款','Payments & receipts','资金收付（M14）','Payments & receipts (M14)'],
+    PC:['外采合同','Purchase contracts','合同信息（M4）','Contracts (M4)'],
+    DI:['内销发票','Domestic invoices','应收账款（M3）','Receivables (M3)']};
   function m15(id, code, reason, failAt, lastOk, read){
     var I = IFACE[code];
     return {id:id, cat:'alert', at:failAt, read:read,
       t:['数据接入异常：'+I[0], 'Data intake failure: '+I[1]],
-      b:['ERP 接口“'+I[0]+'”（承接模块：'+I[2]+'）于 {t:'+failAt+'} 调用失败，原因：'+reason+'。最近成功时间：{t:'+lastOk+'}。接口恢复前，这类单据的新数据不会进入平台，请查看调用记录。',
-         'The ERP interface "'+I[1]+'" (used by: '+I[3]+') failed at {t:'+failAt+'}. Reason: '+reason+'. Last successful call: {t:'+lastOk+'}. New data of this type will not reach the platform until the interface recovers. Please review the call records.'],
+      b:['客户 ERP 接口“'+I[0]+'”（承接模块：'+I[2]+'）于 {t:'+failAt+'} 调用失败，原因：'+reason+'。最近成功时间：{t:'+lastOk+'}。接口恢复前，这类单据的新数据不会进入平台，请查看调用记录。',
+         'The customer ERP interface "'+I[1]+'" (used by: '+I[3]+') failed at {t:'+failAt+'}. Reason: '+reason+'. Last successful call: {t:'+lastOk+'}. New data of this type will not reach the platform until the interface recovers. Please review the call records.'],
       ref:[['接口名称',I[0],'text']], go:{key:'interface:'+code}};
   }
   var REASON = '【演示意见】销售清单中第 2 辆车的 VIN 与我方收货记录不一致，请核对后重新发起';
@@ -180,7 +181,8 @@
       m8('o07','W-DEMO-0005','warn','RK-26',['提单 BL-DEMO-5501','Bill of lading BL-DEMO-5501'],
         ['船名航次 OCEAN STAR 026W','vessel/voyage OCEAN STAR 026W'],
         ['AR-DEMO-0012','AR-DEMO-0012'],'2026-11-26T05:10:00Z',true),
-      m15('o08','BL','connection timeout','2026-11-24T10:05:00Z','2026-11-24T09:05:00Z',false),
+      /* 失败原因原文含接口地址与账号、密钥：消息中去掉接口地址，账号与密钥只显示遮盖后的内容；M15 调用记录中接口地址照常展示 */
+      m15('o08','BL','401 Unauthorized user=svc****01 key=sk_****7f3a','2026-11-24T10:05:00Z','2026-11-24T09:05:00Z',false),
       /* 已由其他运营管理员处理：前往后只能查看当前结果 */
       Object.assign(m8('o09','W-DEMO-0008','warn','RK-20',['外采合同 PO-DEMO-031 · 外采供应商','Purchase contract PO-DEMO-031 · Supplier'],
         ['收款方 Demo Trading D Ltd','payee Demo Trading D Ltd'],
@@ -195,7 +197,7 @@
     ]
   };
   /* 更早的数据接入异常（o15–o24）：各接口恢复后再次进入异常，各自一条；用于呈现“加载更多”。o23 未读，属于尚未加载的部分 */
-  ['PL','PP','DR','VL'].concat(['PL','PP','DR','VL','PL','PP']).forEach(function(code, k){
+  ['PL','PM','PC','DI'].concat(['PL','PM','PC','DI','PL','PM']).forEach(function(code, k){
     var fail = new Date(Date.UTC(2026,8,8-k*3,6,0)), ok = new Date(fail.getTime()-3600000);
     var iso = function(d){ return d.toISOString().replace('.000',''); };
     DATA.ops.push(m15('o'+(15+k), code, k%2?'HTTP 503 Service Unavailable':'connection timeout', iso(fail), iso(ok), k!==8));

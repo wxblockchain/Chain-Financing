@@ -125,6 +125,7 @@
 .m15-ui .m15-call-failure{width:var(--m15-call-failure-w)}
 .m15-ui .call-records td{vertical-align:top}
 .m15-ui .call-records :is(th,td){white-space:normal;overflow-wrap:anywhere}
+.m15-ui table.tbl.call-records tbody td{white-space:normal;overflow-wrap:anywhere} /* 失败原因原值（含接口地址）在列内换行，不撑出表格 */
 .m15-ui .reason-detail summary{line-height:1.6;padding-block:var(--sp-1)}
 .m15-ui .reason-detail[open] summary{font-weight:600}
 .m15-ui .reason-detail ul{padding:var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-7);background:var(--card-2);border-radius:var(--radius-xs)}

@@ -1,6 +1,6 @@
 /* M15 数据监控 · 仓库联看路由。只登记本模块已有画面。
-   pushRecord:<申请编号>：资产推送详情（M9 申请详情“查看完整推送记录”）；interface:<接口>：接口调用记录。
-   只登记与其他平台发生过交互的资产（PRD 61ca46a9）。PRD 中推送详情只从本模块列表进入；pushRecord 键保留给 M9 原型现有入口，M9 原型同步后可删。 */
+   pushRecord:<申请编号>：资产推送详情（直接链接）；已交互资产进入对应详情，从未交互、未审核通过的资产进入兜底屏（PRD dcb9f2cd）。
+   interface:<接口>：接口调用记录（M10 告警“前往原业务”）。 */
 TP.registerModule({
   id:'opsMonitoring', end:'ops', file:'数据监控.html',
   routes:{
@@ -8,6 +8,9 @@ TP.registerModule({
     'pushRecord:AP-DEMO-0031':{ops:'pr-pushed'},
     'pushRecord:AP-DEMO-0024':{ops:'pr-failed'},
     'pushRecord:AP-DEMO-0021':{ops:'pr-rejected'},
+    // 从未交互（AP-DEMO-0027）、未审核通过（AP-DEMO-0022）的资产按 M2 F-OP-11 不返回内容（PRD dcb9f2cd）
+    'pushRecord:AP-DEMO-0027':{ops:'pr-missing'},
+    'pushRecord:AP-DEMO-0022':{ops:'pr-missing'},
     'interface:BL':{ops:'c-records'}
   }
 });
