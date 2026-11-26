@@ -1,7 +1,5 @@
 /* M14 资金收付 · 运营端 · 模块文案英文（业务值不翻译）。 */
 TP.addCopy({
-"复制付款账号": "Copy payer account",
-"复制收款账号": "Copy payee account",
 "1 份": "1 file",
 "资金收付 · 资产可信平台": "Payments & receipts · Asset Trust Platform",
 "资金收付": "Payments & receipts",
