@@ -307,10 +307,6 @@ TP.addCopy({
 "上链超时未返回结果": "On-chain recording timed out with no result",
 "第 1 次审核提交上链超时未返回结果，按上链失败处理，审核未通过。可再次审核通过。": "Review submission 1 timed out with no on-chain result and is treated as failed, so the request is not approved. You can approve it again.",
 "上链失败（超时未返回结果）· 仍为待运营审核（可再次审核通过）": "On-chain recording failed (timed out) · still pending review (can approve again)",
-"已关闭（待运营审核期间到期，之后返回上链失败）": "Closed (due while pending review, on-chain failure returned afterwards)",
-"申请已到期关闭，本次结果只记录。": "The request had already closed at the due date; this result is recorded only.",
-"已关闭 · 到期后才上链成功（审核未生效）": "Closed · recorded on chain after the due date (approval not applied)",
-"审核未生效：应收账款已到期": "Approval not applied: receivable is due",
-"上链成功，审核未生效（应收账款已到期）": "Recorded on chain, approval not applied (receivable due)",
-"上链时间：": "Recorded on chain at:"
+"已关闭（到期时正在上链，之后上链失败）": "Closed (recording on chain at the due date, then failed)",
+"申请已到期关闭，本次结果只记录。": "The request had already closed at the due date; this result is recorded only."
 });
