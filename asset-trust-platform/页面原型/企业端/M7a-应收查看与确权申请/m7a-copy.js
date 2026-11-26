@@ -194,5 +194,11 @@ TP.addCopy({
 "已通过运营审核": "Already approved by operations",
 "已到期 · 申请仍待运营审核": "Due · request still awaiting operator review",
 "存在阻断类风控预警 · 不可申请": "Blocking risk alert · not eligible",
-"存在阻断类风控预警，请联系平台运营": "A blocking risk alert exists. Please contact platform operations."
+"存在阻断类风控预警，请联系平台运营": "A blocking risk alert exists. Please contact platform operations.",
+"账期无效 · 风控预警暂无法判断": "Invalid payment term · risk alert check undetermined",
+"已到期 · 资料校验暂无法判断": "Due · data check undetermined",
+"资料不齐全或无效：账期（无效）": "Incomplete or invalid data: Payment term (invalid)",
+"阻断类风控预警暂无法判断": "Blocking risk alert check cannot be determined yet",
+"资料齐全且有效暂无法判断": "Data completeness check cannot be determined yet",
+"0 天": "0 days"
 });
