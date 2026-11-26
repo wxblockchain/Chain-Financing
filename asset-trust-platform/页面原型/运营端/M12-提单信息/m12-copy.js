@@ -108,6 +108,8 @@ TP.addCopy({
 "清关船名航次": "Customs vessel and voyage",
 "当前车辆": "Current vehicle",
 "当前清关单": "Current customs entry",
+"已标出": "Marked",
+"取消标出": "Clear marks",
 "关联保单": "Related insurance policies",
 "保单号": "Policy number",
 "保单日期": "Policy date",

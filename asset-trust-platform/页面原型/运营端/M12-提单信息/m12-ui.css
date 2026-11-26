@@ -77,6 +77,9 @@
 .m12-ui .m12-file-group+.m12-file-group tr:first-child>*{border-top:1px solid var(--border-strong)}
 .m12-ui .bl-files time{font-variant-numeric:tabular-nums;white-space:nowrap}
 .m12-ui .tbl .tag:not(.ok,.warn,.danger,.accent){background:transparent;color:var(--muted)}
+/* 详情内清关单号定位（m12-locate.js）：车辆清单卡头写明已标出的清关单与车辆数，可取消。 */
+.m12-ui .m12-cc-note{display:inline-flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-12);white-space:nowrap}
+.m12-ui .m12-cc-note .tag .mono{font-size:inherit}
 @media(max-width:1279px){
  .m12-ui .bl-summary .asset-sum{grid-template-columns:minmax(0,1fr)}
  .m12-ui .bl-summary .status-grid{border-left:0;border-top:1px solid var(--border);padding:var(--sp-4) 0 0;align-self:auto}
