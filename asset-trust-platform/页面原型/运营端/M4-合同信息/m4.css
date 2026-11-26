@@ -80,4 +80,7 @@ html[data-module="ops-contracts"] {
     .contract-progress .cost-plot { grid-row: 2; grid-column: 1 / -1; }
     .contract-progress .cost-val { grid-row: 1; grid-column: 2; }
   }
+
+  /* 收付合计旁的“按当前汇率”标记（PRD 42029246）：与金额留出间隔。 */
+  :is(.prog-values, .purchase-invoice) dd .money + .price-basis { margin-left: var(--sp-2); vertical-align: 1px; }
 }
