@@ -15,7 +15,6 @@ TP.addCopy({
 "筛选无结果": "No matching results",
 "列表加载失败": "List load failed",
 "详情 · 暂无物流记录、外采发票不在合同中": "Details · no logistics records, purchase invoice not in a contract",
-"分配金额未提供": "Allocated amount not provided",
 "所用汇率": "Rate used",
 "暂计": "Provisional",
 "各笔收款美元值之和": "Sum of the USD values of each collection",
