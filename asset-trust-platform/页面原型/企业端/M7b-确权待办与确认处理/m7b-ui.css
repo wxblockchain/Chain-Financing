@@ -50,10 +50,18 @@
 
 /* Data at submission remains a single ordered group. Cards stay in document
    order; labels sit above values and long terms span the available width. */
+.m7b-ui .snapshot-group{display:block}
 .m7b-ui .snapshot-group .detail-group-h{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:var(--sp-2) var(--sp-5)}
 .m7b-ui .snapshot-group .detail-group-h .sub{grid-column:1/-1;grid-row:2;max-width:80ch;line-height:1.6}
 .m7b-ui .snapshot-group .detail-group-h .btn-link{grid-column:2;grid-row:1;font-size:var(--fs-14);text-align:right;white-space:normal}
-.m7b-ui .snapshot-group .facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4) var(--sp-6);padding-block:var(--sp-5)}
+.m7b-ui .snapshot-group .card-head{padding-block:var(--sp-4)}
+.m7b-ui .snapshot-group .facts{grid-template-columns:minmax(0,1fr);gap:var(--sp-3) var(--sp-6);padding-block:var(--sp-4)}
+@container facts (min-width:600px){
+  .m7b-ui .snapshot-group .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@container facts (min-width:900px){
+  .m7b-ui .snapshot-group .facts.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 .m7b-ui :is(.snapshot-group,.basic-trade) .facts>div{border-top:0;padding:0}
 .m7b-ui .snapshot-group .facts>div.cfm-terms{grid-column:1/-1}
 .m7b-ui .snapshot-group .card+.card{margin-top:var(--sp-4)}
@@ -80,19 +88,12 @@
   /* 申请概要只剩申请状态一项时收窄右栏，不留空白 */
   .m7b-ui .application-summary .asset-sum:has(.status-grid.one){grid-template-columns:minmax(0,1fr) auto}
 }
-@media(min-width:1280px){
-  .m7b-ui .snapshot-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);align-items:start}
-  .m7b-ui .snapshot-group>.detail-group-h,.m7b-ui .snapshot-group>.cfm-basis-summary{grid-column:1/-1}
-  .m7b-ui .snapshot-group>.detail-group-h{margin-bottom:0}
-  .m7b-ui .snapshot-group .card+.card{margin-top:0}
-  .m7b-ui .snapshot-group>.cfm-basis-summary .facts{grid-template-columns:repeat(3,minmax(0,1fr))}
-}
 @media(max-width:1100px){
   .m7b-ui .receivable-summary .status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .m7b-ui .receivable-summary .meta{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:600px){
-  .m7b-ui .receivable-summary .meta,.m7b-ui .snapshot-group .facts,.m7b-ui .basic-trade .card-sec .facts{grid-template-columns:minmax(0,1fr)}
+  .m7b-ui .receivable-summary .meta,.m7b-ui .basic-trade .card-sec .facts{grid-template-columns:minmax(0,1fr)}
   .m7b-ui .snapshot-group .detail-group-h{grid-template-columns:minmax(0,1fr)}
   .m7b-ui .snapshot-group .detail-group-h .btn-link{grid-column:1;grid-row:3;justify-self:start;text-align:left;margin:0}
   .m7b-ui .receivable-summary .status-grid>div{display:block;border-top:0}
