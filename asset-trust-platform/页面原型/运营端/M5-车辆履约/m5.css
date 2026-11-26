@@ -20,6 +20,13 @@
 .fulfil-detail .fulfil-attrs-list dt{font-size:var(--ui-field-label)}
 .fulfil-detail .fulfil-attrs-list dd{font-weight:500}
 
+/* One complete information section per row at every desktop width.
+   DOM order: logistics progress, price chain, then the five detail sections. */
+.fulfil-detail .fulfil-layout{display:flex;flex-direction:column;gap:var(--sp-4)}
+.fulfil-detail :is(.fulfil-progress,.fulfil-main){width:100%;min-width:0}
+.fulfil-detail .fulfil-timeline{max-height:none}
+.fulfil-detail .fulfil-timeline .fulfil-log{max-height:none;overflow:visible}
+
 /* Two text lines reserved for price labels align every primary value. */
 .fulfil-detail .pc-label{min-height:3.2em;align-content:start;align-items:start}
 .fulfil-detail .pc-usd{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-1)}
@@ -47,14 +54,21 @@
 .fulfil-detail .fulfil-panel .tbl .num{text-align:right}
 .fulfil-detail .fulfil-panel .tbl .num .money{justify-content:flex-end}
 
-/* Dates and documents get their own lines, keeping the rail easy to scan. */
-.fulfil-detail .fulfil-log .operation-meta{flex-direction:column;align-items:flex-start;gap:var(--sp-1)}
+/* Compact timeline rows retain chronological order and all document links. */
+.fulfil-detail .fulfil-log>li{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,3fr);gap:var(--sp-2) var(--sp-6);
+  padding-bottom:var(--sp-4);
+}
+.fulfil-detail .fulfil-log .operation-heading{align-content:start;align-items:baseline}
+.fulfil-detail .fulfil-log .operation-meta{
+  display:grid;grid-template-columns:12ch minmax(0,1fr);align-items:baseline;
+  gap:var(--sp-1) var(--sp-6);margin-top:0;
+}
 .fulfil-detail .fulfil-log .operation-meta>.date{font-size:var(--fs-12);color:var(--muted)}
 .fulfil-detail .fulfil-log .operation-meta :is(.stock-src,.btn-link){
   max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left;
 }
 .fulfil-detail .fulfil-log .operation-meta .stock-src{font-size:var(--fs-13)}
-.fulfil-detail .fulfil-log>li{padding-bottom:var(--sp-6)}
 .fulfil-detail .fulfil-log>li:last-child{padding-bottom:0}
 .fulfil-detail .fulfil-log:focus-visible{outline:2px solid var(--accent);outline-offset:calc(-1 * var(--sp-1))}
 
@@ -72,8 +86,11 @@
   .fulfil-detail .fulfil-summary .asset-sum{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .fulfil-detail .fulfil-summary .status-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media(max-width:1100px){
-  .fulfil-detail .fulfil-timeline .fulfil-log{max-height:calc(var(--sp-8) * 10);overflow:auto}
+@media(max-width:900px){
+  .fulfil-detail .fulfil-log>li{grid-template-columns:minmax(0,1fr)}
+  .fulfil-detail .fulfil-log .operation-meta{grid-template-columns:minmax(0,1fr)}
+  .fulfil-detail .fulfil-panel .facts.cols-3:not(.single){grid-template-columns:minmax(0,1fr)}
+  .fulfil-detail .fulfil-panel .facts.cols-3:not(.single)>div{grid-column:1/-1}
 }
 @media(max-width:600px){
   .fulfil-detail .fulfil-attrs-list{grid-template-columns:minmax(0,1fr)}
