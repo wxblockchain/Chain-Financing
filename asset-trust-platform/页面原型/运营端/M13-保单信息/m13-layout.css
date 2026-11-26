@@ -91,6 +91,9 @@
   vertical-align:middle;
   padding-block:var(--sp-3);
 }
+[data-module="ops-policies"] .policy-details .detail-table .tbl :is(th,td):first-child {
+  padding-left:var(--card-pad);
+}
 [data-module="ops-policies"] .policy-vehicles .tbl { min-width:720px; }
 [data-module="ops-policies"] .policy-vehicles .tbl th:first-child { width:26%; }
 [data-module="ops-policies"] .policy-vehicles .tbl th:nth-child(2) { width:22%; }
@@ -128,11 +131,6 @@
 }
 [data-module="ops-policies"] .policy-details>.detail-group-h { margin-bottom:0; }
 [data-module="ops-policies"] .policy-details>.card { margin:0; min-width:0; }
-@media(min-width:1440px) {
-  [data-module="ops-policies"] .policy-details { grid-template-columns:minmax(0,2fr) minmax(0,3fr); align-items:start; }
-  [data-module="ops-policies"] .policy-details>.detail-group-h,
-  [data-module="ops-policies"] .policy-details>.policy-vehicles { grid-column:1/-1; }
-}
 @media(max-width:1279px) {
   [data-module="ops-policies"] .coverage-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); row-gap:var(--sp-4); }
   [data-module="ops-policies"] .coverage-metrics>div:nth-child(3) { border-left:0; }
