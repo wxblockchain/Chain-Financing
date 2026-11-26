@@ -92,7 +92,7 @@
   /* M8-NT01 新的风控预警（运营告警，全体运营）→ M8 预警详情。只有阻断、预警等级发消息；标题与正文随等级。
      规则名称随界面语言（英文名按 M8 03 册“规则与等级的英文名称”）；预警编号、主体名称、单据编号、VIN 按原值。
      比较对象、差异摘要、关联应收账款按 M8 预警详情的演示数据，取预警生成时的值。 */
-  var RULE = {'RK-01':['VIN 重复','Duplicate VIN'], 'RK-03':['发票金额与车辆明细不一致','Invoice amount does not match vehicle details'],
+  var RULE = {'RK-01':['VIN 重复','Duplicate VIN'], 'RK-36':['核心资料变更','Core data changed'], 'RK-03':['发票金额与车辆明细不一致','Invoice amount does not match vehicle details'],
     'RK-10':['回款风险','Repayment risk'], 'RK-14':['内销收款主体不一致','Repayment parties mismatch'],
     'RK-16':['外销单价低于内采单价','Export price below domestic price'], 'RK-20':['外采付款主体不一致','Purchase payment parties mismatch'],
     'RK-26':['BL 信息与外部数据不一致','B/L information differs from external data']};
@@ -101,9 +101,9 @@
     return {id:id, cat:'alert', at:at, read:read,
       t:[block ? '新的风控预警（阻断）：'+R[0] : '新的风控预警：'+R[0], block ? 'New risk alert (blocking): '+R[1] : 'New risk alert: '+R[1]],
       b:['平台比对发现'+R[0]+'，预警编号 '+w+'，等级：'+(block?'阻断':'预警')+'。比较对象：'+obj[0]+'。差异：'+R[0]+'：'+diff[0]+'。关联应收账款：'+recv[0]+'。'+
-           (block ? '阻断存在期间，关联应收账款不能运营审核通过。请核实差异，按规则说明的方式更正资料；差异消除后阻断自动解除，无需在平台记录处理。' : '请核实后记录处理结果；预警不会自动阻止确权申请或运营审核。'),
+           (block ? '阻断存在期间，关联应收账款不能发起确权申请，也不能运营审核通过。请核实差异，按规则说明的方式更正资料；差异消除后阻断自动解除，无需在平台记录处理。' : '请核实后记录处理结果；预警不会自动阻止确权申请或运营审核。'),
          'The platform has found "'+R[1]+'". Alert number '+w+', level: '+(block?'Blocking':'Warning')+'. Compared item: '+obj[1]+'. Difference: '+R[1]+': '+diff[1]+'. Related receivables: '+recv[1]+'. '+
-           (block ? 'While this alert remains, the related receivables cannot pass operations review. Please verify the difference and have the data corrected as the rule describes; the block is lifted automatically once the difference is resolved, and no handling needs to be recorded.' : 'Please verify and record the result; this alert does not automatically block confirmation requests or operations review.')],
+           (block ? 'While this alert remains, no new confirmation request can be submitted for the related receivables and they cannot pass operations review. Please verify the difference and have the data corrected as the rule describes; the block is lifted automatically once the difference is resolved, and no handling needs to be recorded.' : 'Please verify and record the result; this alert does not automatically block confirmation requests or operations review.')],
       ref:[['预警编号',w],['规则名称',R[0],'text']], go:{key:'m8-'+w}};
   }
   /* M8-NT02 风控规则已调整（业务提醒，全体运营，含调整人本人）→ M8 规则详情（配置记录）。
@@ -171,9 +171,9 @@
       m8('o04','W-DEMO-0011','warn','RK-10',['应收账款 AR-DEMO-0012 · 回款','Receivable AR-DEMO-0012 · Collections'],
         ['剩余天数 7，终端回款进度 67.22%','7 days remaining, end-sales collection progress 67.22%'],
         ['AR-DEMO-0012','AR-DEMO-0012'],'2026-12-12T00:05:00Z',true),
-      m8('o05','W-DEMO-0014','block','RK-03',['应收账款 AR-DEMO-0019','Receivable AR-DEMO-0019'],
-        ['车辆明细单价合计 47,500.00 USD，发票金额 48,000.00 USD','vehicle unit prices total 47,500.00 USD, invoice amount 48,000.00 USD'],
-        ['AR-DEMO-0019','AR-DEMO-0019'],'2026-12-10T07:20:00Z',true),
+      m8('o05','W-DEMO-0110','block','RK-36',['应收账款 AR-DEMO-0019','Receivable AR-DEMO-0019'],
+        ['金额 47,500.00 USD 等 2 处','amount 47,500.00 USD and 1 more'],
+        ['AR-DEMO-0019','AR-DEMO-0019'],'2026-10-26T06:00:00Z',true),
       m8('o06','W-DEMO-0007','warn','RK-14',['应收账款 AR-DEMO-0012 · 回款','Receivable AR-DEMO-0012 · Collections'],
         ['付款方 Demo Auto Trading Ltd','payer Demo Auto Trading Ltd'],
         ['AR-DEMO-0012','AR-DEMO-0012'],'2026-11-28T08:12:00Z',true),
