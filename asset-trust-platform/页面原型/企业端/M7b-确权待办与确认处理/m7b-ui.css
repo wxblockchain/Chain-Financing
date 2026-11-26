@@ -28,6 +28,8 @@
 .m7b-ui .receivable-summary .status-grid>div+div{border-left:0}
 .m7b-ui .receivable-summary .status-grid dd{overflow-wrap:anywhere}
 .m7b-ui .receivable-summary .status-grid .tag{white-space:normal}
+.m7b-ui .receivable-summary .status-grid.one{grid-template-columns:minmax(0,1fr)}
+@media(min-width:1101px){.m7b-ui .receivable-summary .status-grid.one{grid-template-columns:minmax(160px,auto)}}
 .m7b-ui .receivable-summary .meta{grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-4) var(--sp-5)}
 .m7b-ui .receivable-summary .meta b{line-height:1.6}
 .m7b-ui .page-title-row{flex-wrap:wrap}
@@ -75,6 +77,8 @@
 
 @media(min-width:1101px){
   .m7b-ui .receivable-summary .asset-sum{grid-template-columns:minmax(0,1.8fr) minmax(0,1fr)}
+  /* 申请概要只剩申请状态一项时收窄右栏，不留空白 */
+  .m7b-ui .application-summary .asset-sum:has(.status-grid.one){grid-template-columns:minmax(0,1fr) auto}
 }
 @media(min-width:1280px){
   .m7b-ui .snapshot-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);align-items:start}

@@ -4,7 +4,7 @@
    应收账款详情（F-M7b-05）在本模块内，经申请详情中的应收账款编号进入，不登记路由键。 */
 (function(){
   var details = {
-    'AP-DEMO-0031':'d-pending', 'AP-DEMO-0043':'d-pending-diff', 'AP-DEMO-0028':'d-reissued',
+    'AP-DEMO-0031':'d-pending', 'AP-DEMO-0043':'d-pending-fx', 'AP-DEMO-0028':'d-reissued',
     'AP-DEMO-0030':'d-approved', 'AP-DEMO-0036':'d-closed'
   };
   var routes = {confirmations:{debtor:'m-pending', both:'m-both'}};
