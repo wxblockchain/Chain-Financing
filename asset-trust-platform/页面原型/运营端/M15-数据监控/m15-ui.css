@@ -27,6 +27,7 @@
 .m15-ui .page-desc{max-width:88ch}
 .m15-ui .page-actions{flex-wrap:wrap}
 .m15-ui .data-time{margin-bottom:var(--sp-6);font-size:var(--fs-12)}
+.m15-ui .monitor-nav a[aria-current="location"]{box-shadow:inset 0 -2px var(--accent)}
 .m15-ui .monitor-group>.detail-group-h{margin-bottom:var(--sp-3)}
 .m15-ui .monitor-group>.detail-group-h h2{font-size:var(--fs-20)}
 .m15-ui .monitor-row{gap:var(--sp-4);margin-top:var(--sp-4)}

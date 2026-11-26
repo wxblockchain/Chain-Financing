@@ -1,5 +1,6 @@
 /* M15 数据监控 · 运营端 · 模块文案英文（接口返回的失败原因、单据号、企业名称等业务值不翻译） */
 TP.addCopy({
+"监控概览分区": "Monitoring overview sections",
 "内销发票号": "Domestic invoice no.",
 "未返回失败原因": "No failure reason returned",
 "提单 · 由失败排行进入（近 7 天 · 失败）": "Bills of lading · From failure ranking (last 7 days · failed)",
