@@ -1400,6 +1400,9 @@ td.pop-col:has(>.value-pop)::after{content:none}
 .tbl.enterprise-list td:first-child{white-space:nowrap}
 .tbl.enterprise-list td .name-clip{display:flex;width:100%;cursor:help}
 .tbl.enterprise-list td .name-clip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* 键盘聚焦时在原单元格展开全名；悬停仍保留 title，失焦后恢复紧凑行高。 */
+.tbl.enterprise-list td .name-clip:focus{display:block;white-space:normal;overflow-wrap:anywhere}
+.tbl.enterprise-list td .name-clip:focus :is(.name-prefix,.name-suffix){display:inline;white-space:normal;overflow:visible}
 .tbl.enterprise-list thead th{overflow-wrap:normal;word-break:normal;hyphens:none}
 .tbl.enterprise-list :is(th,td):nth-child(7){overflow-wrap:normal;word-break:normal}
 /* A55 设置新密码的条件精简版：只列长度与组成两条，单列两行、12 px；空格、与当前 / 初始密码相同、两次不一致在对应输入框下以 .err-msg 说明。 */
@@ -1446,7 +1449,12 @@ fieldset.field>legend.field-caption{padding:0;margin-bottom:var(--sp-2);width:10
 .enterprise-detail-grid .operation-time{font-size:var(--fs-12);color:var(--faint)}
 .enterprise-detail .erp-links.is-unlinked{border-left:3px solid var(--danger)}
 .enterprise-detail .erp-links .sub-empty{padding-block:var(--sp-4);color:var(--muted)}
-.enterprise-detail .institution-identity{flex-wrap:wrap}
+.enterprise-detail .page-title{overflow-wrap:anywhere}
+.enterprise-detail .page-head>div:first-child{flex:1 1 50%}
+.enterprise-detail .institution-identity{flex-wrap:wrap;max-width:none;gap:var(--sp-2) var(--sp-4)}
+.enterprise-detail .institution-identity .identity-item{display:inline-flex;align-items:baseline;gap:var(--sp-2);min-width:0;flex-wrap:wrap}
+.enterprise-detail .institution-identity .identity-item [data-zone]{display:inline;overflow-wrap:anywhere}
+.enterprise-detail .institution-identity>.sep{display:none}
 /* M2 账户设置随业务页展开；企业端 M1 的资料阅读宽度保持原定义。 */
 [data-module="ops-enterprises"] .account-profile :is(.content-in,.profile-sheet){max-width:none}
 /* M2 账户设置：偏好标签、说明和控件垂直成组；密码操作靠近其对象。
