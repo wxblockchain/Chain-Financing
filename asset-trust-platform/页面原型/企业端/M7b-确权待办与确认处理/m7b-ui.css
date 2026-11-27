@@ -66,6 +66,17 @@
 .m7b-ui .snapshot-group .facts>div.cfm-terms{grid-column:1/-1}
 .m7b-ui .snapshot-group .card+.card{margin-top:var(--sp-4)}
 .m7b-ui .vehicle-card table.tbl{min-width:calc(var(--confirmation-col-id) + var(--confirmation-col-amount) + var(--sp-9) * 2);table-layout:auto}
+/* The generic detail-table 1% numeric column compresses the English heading
+   into three lines even in a full-width section. Reserve space for its label. */
+.m7b-ui .vehicle-card .tbl .num{width:30%}
+.m7b-ui:lang(en) .vehicle-card .tbl th.num{min-width:26ch}
+.m7b-ui .confirmation-card{container:m7b-progress / inline-size}
+/* The shell changes the available width when its side navigation returns.
+   Adapt to the card, so labels also fit just above that viewport breakpoint. */
+@container m7b-progress (max-width:420px){
+  .m7b-ui .receivable-steps li{flex-direction:column}
+  .m7b-ui .receivable-steps li>span{min-width:0;max-width:100%;overflow-wrap:anywhere}
+}
 .m7b-ui .file-ref{max-width:100%;align-items:flex-start}
 .m7b-ui .file-ref .file-name{white-space:normal;overflow-wrap:anywhere;text-align:left}
 .m7b-ui .file-ref>.btn.icon{flex-shrink:0}
