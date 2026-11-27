@@ -2682,6 +2682,7 @@ table.tbl.call-records{min-width:var(--call-record-min)}
 .profile-sheet-stacked .profile-section:has(>.section-head)>.section-body{grid-column:auto;grid-row:auto}
 .profile-sheet-stacked .profile-section :is(h2,.section-head>h2){font-size:var(--fs-20);font-weight:600;line-height:1.5}
 .profile-sheet-stacked .section-head>.btn{flex:none;align-self:center}
+.m1-ui .profile-sheet-stacked :is(input,select,button){scroll-margin-block-start:calc(var(--app-header-h) + var(--sp-8));scroll-margin-block-end:var(--sp-6)}
 .profile-sheet-stacked .facts{column-gap:var(--sp-6);row-gap:var(--sp-4)}
 .profile-sheet-stacked .facts>div{padding:0;border:0}
 .profile-sheet-stacked .facts.cols-2>.wide+div,.m1-identity .facts.cols-2>.wide+div{border-top:0}

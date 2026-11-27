@@ -15,7 +15,8 @@
             [data-pending-count="本屏所在菜单的待办数量；空值不展示"]
             [data-pending-counts="菜单key:数量,… 本屏多个菜单的待办数量；数量为空不展示"]>
    入驻未完成的身份（TP.demo.accounts[身份].locked）：侧栏全部菜单可见，带锁形标记、不可点击（aria-disabled）。
-   任意元素 data-go="画面 id" 跳转；弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制完整值。
+   任意元素 data-go="画面 id" 跳转；可选 data-go-focus="目标画面内控件 id" 定位并聚焦现有控件；
+   弹窗内 data-close 回到底层画面；data-toast="文字" 弹出提示；data-copy 复制完整值。
    模块在 TP.routes 中登记菜单与账号入口对应的画面。
    data-password-toggle="输入框 id" 只切换密码显隐，不校验密码。
    菜单与演示账号只在 _shared/menu.client.js（企业端）与 menu.ops.js（运营端）维护（TP.NAV_BY[身份]、TP.demo.accounts[身份]），模块不复制。
@@ -392,6 +393,12 @@
       var target = document.getElementById(t.dataset.go);
       var base = target && target.hasAttribute('data-overlay') && current ? (current.base || current.id) : null;
       show(t.dataset.go, {base: base, gate: base ? gateKey : null});
+      // 长资料页的局部编辑入口显式指定焦点；不改变路由，未声明的消费者沿用原行为。
+      var entry = t.dataset.goFocus && document.getElementById(t.dataset.goFocus);
+      if(!base && target && entry && target.contains(entry) && entry.getClientRects().length && !entry.disabled){
+        entry.focus({preventScroll:true});
+        entry.scrollIntoView({block:'center', behavior:'instant'});
+      }
     }
   });
   document.addEventListener('keydown', function(e){
