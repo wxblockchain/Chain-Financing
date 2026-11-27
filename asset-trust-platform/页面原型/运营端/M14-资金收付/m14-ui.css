@@ -67,6 +67,8 @@
   [data-module="ops-funds"] .fund-filters .filter-query {flex-basis:100%;margin-left:0}
 }
 @media (max-width:600px) {
+  /* 横向菜单的读屏计数留在滚动容器内，避免绝对定位元素撑开整页。 */
+  [data-module="ops-funds"] .sidebar .nav {position:relative}
   [data-module="ops-funds"] .fund-amounts {grid-template-columns:minmax(0,1fr);gap:var(--sp-4)}
   [data-module="ops-funds"] .fund-summary .asset-sum .meta {grid-template-columns:minmax(0,1fr)}
   [data-module="ops-funds"] .fund-basic .facts {grid-template-columns:minmax(0,1fr)}
