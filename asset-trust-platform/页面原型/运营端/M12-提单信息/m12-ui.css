@@ -18,6 +18,8 @@
 .m12-ui .money .mono{font-family:var(--sans);font-variant-numeric:tabular-nums}
 .m12-ui .bl-detail .page-title .party{min-width:0;max-width:100%}
 .m12-ui .bl-detail .page-title [data-upstream]{overflow-wrap:anywhere}
+.m12-ui .bl-detail .page-desc .mono{white-space:normal;overflow-wrap:anywhere}
+.m12-ui .bl-detail .detail-table .btn-link.mono{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left}
 .m12-ui .bl-summary .asset-sum{align-items:start;grid-template-columns:minmax(0,1fr) var(--bl-summary-alert-w);gap:var(--sp-6);padding-block:var(--sp-6)}
 .m12-ui .m12-overview-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);align-items:center;gap:var(--sp-6)}
 .m12-ui .m12-value{min-width:0}
@@ -74,12 +76,17 @@
 .m12-ui .bl-files .file-ref>svg{flex:none;margin-top:var(--sp-1)}
 .m12-ui .bl-files .file-ref>.icon{flex:none;margin-top:calc(-1 * var(--sp-1))}
 .m12-ui .bl-files .bl-cc{background:var(--card-2);font-weight:500;vertical-align:top;overflow-wrap:anywhere}
+.m12-ui .bl-files .bl-cc .mono{white-space:normal;overflow-wrap:anywhere}
 .m12-ui .m12-file-group+.m12-file-group tr:first-child>*{border-top:1px solid var(--border-strong)}
 .m12-ui .bl-files time{font-variant-numeric:tabular-nums;white-space:nowrap}
 .m12-ui .tbl .tag:not(.ok,.warn,.danger,.accent){background:transparent;color:var(--muted)}
 /* 详情内清关单号定位（m12-locate.js）：车辆清单卡头写明已标出的清关单与车辆数，可取消。 */
-.m12-ui .m12-cc-note{display:inline-flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-12);white-space:nowrap}
-.m12-ui .m12-cc-note .tag .mono{font-size:inherit}
+.m12-ui .card:has(.bl-vehicles)>.card-head>.sub{white-space:nowrap}
+.m12-ui .card:has(.bl-vehicles)>.card-head .acts{min-width:0;max-width:100%;flex-wrap:wrap;align-items:center}
+.m12-ui .m12-cc-note{display:grid;grid-template-columns:minmax(0,1fr) auto;flex:1 1 var(--filter-field-min);align-items:center;min-width:0;max-width:100%;gap:var(--sp-2);font-size:var(--fs-12);white-space:normal}
+.m12-ui .m12-cc-note .tag{display:block;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.m12-ui .m12-cc-note .tag .mono{min-width:0;font-size:inherit;overflow-wrap:anywhere;white-space:normal}
+.m12-ui .m12-cc-note>[data-cc-clear]{flex:none}
 @media(max-width:1279px){
  .m12-ui .bl-summary .asset-sum{grid-template-columns:minmax(0,1fr)}
  .m12-ui .bl-summary .status-grid{border-left:0;border-top:1px solid var(--border);padding:var(--sp-4) 0 0;align-self:auto}

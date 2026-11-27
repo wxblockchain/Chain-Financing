@@ -25,7 +25,14 @@
   }
   document.addEventListener('click',function(event){
     var off=event.target.closest('[data-cc-clear]');
-    if(off){clear(off.closest('[data-screen]'));return;}
+    if(off){
+      // The clear button is removed with the note. Keep keyboard focus at the
+      // existing, focusable vehicle region instead of dropping it onto body.
+      var region=off.closest('.card').querySelector('.tablewrap');
+      clear(off.closest('[data-screen]'));
+      if(region)region.focus({preventScroll:true});
+      return;
+    }
     var link=event.target.closest('[data-cc-mark],[data-cc-locate]');if(!link)return;
     var screen=link.closest('[data-screen]');clear(screen);
     if(link.dataset.ccMark){
