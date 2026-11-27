@@ -170,8 +170,8 @@
   --push-col-id:128px; --push-col-invoice:112px; --push-col-party:168px; --push-col-amount:144px;
   --push-col-platform:128px; --push-col-result:104px; --push-col-first:128px; --push-col-actions:80px; /* 查看 */
   --chart-2:#0E9384; /* M15 图表第二分类色（与 --accent 并列；色觉安全已校验） */
-  --intake-table-min:1150px; /* M15 接口列表八列（含数据来源） */
-  --intake-col-name:136px; --intake-col-src:96px; --intake-col-mod:152px; --intake-col-status:96px; --intake-col-time:120px; --intake-col-last:216px; --intake-col-today:136px;
+  --intake-table-min:1014px; /* M15 接口列表七列（含数据来源；PRD 29eddd9f 删除今日调用） */
+  --intake-col-name:136px; --intake-col-src:96px; --intake-col-mod:152px; --intake-col-status:96px; --intake-col-time:120px; --intake-col-last:216px;
   --call-record-min:960px; /* M15 调用记录六列，窄视口在表内滚动 */
   --claim-table-min:1088px; /* M7a 债权人应收账款默认十列（无选择框）、批量选择十一列，1440 px 视口完整展示；更窄时表内滚动，编号与操作固定 */
   --claim-table-min-en:1520px; /* 英文表头与状态的阅读下限 */

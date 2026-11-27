@@ -2587,7 +2587,6 @@ table.tbl.intake-list{min-width:var(--intake-table-min)}
 .intake-list col.if-col-status{width:var(--intake-col-status)}
 .intake-list col.if-col-time{width:var(--intake-col-time)}
 .intake-list col.if-col-last{width:var(--intake-col-last)}
-.intake-list col.if-col-today{width:var(--intake-col-today)}
 .intake-list col.if-col-actions{width:var(--receivable-col-actions)}
 .intake-list .btn-link{font-weight:500;white-space:nowrap}
 table.tbl.call-records{min-width:var(--call-record-min)}
