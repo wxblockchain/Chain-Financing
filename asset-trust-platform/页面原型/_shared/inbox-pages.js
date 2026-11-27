@@ -45,7 +45,7 @@
     var hintId = el.closest('[data-screen]').id+'-mark-hint';
     return '<div class="asset-filters inbox-filters"><div class="filter-toolbar">'+
       '<div class="seg" role="radiogroup" aria-label="已读状态">'+SEG.map(function(s){
-        return '<button type="button" role="radio" aria-checked="'+(s[0]===seg)+'"'+(s[0]===seg?'':go(segGo[s[0]]))+'>'+s[1]+'</button>';
+        return '<button type="button" role="radio" aria-checked="'+(s[0]===seg)+'" tabindex="'+(s[0]===seg?'0':'-1')+'"'+(s[0]===seg?'':go(segGo[s[0]]))+'>'+s[1]+'</button>';
       }).join('')+'</div>'+
       '<span class="filter-select"><select class="inp" aria-label="分类" data-inbox-cat>'+
         '<option value=""'+(cat?'':' selected')+(catGo['']?' data-go="'+catGo['']+'"':'')+'>分类 · 全部</option>'+
@@ -138,11 +138,32 @@
     }
   };
 
-  /* 分类下拉改选即切到该筛选的画面；未单独出屏的组合给范围提示。 */
+  /* 筛选画面复用原有 DOM；切换后焦点留在同类控件，不重新实现查询。 */
+  function focusFilter(selector){
+    var current = TP.currentScreen, screen = current && document.getElementById(current.base || current.id);
+    var control = screen && screen.querySelector('[data-inbox-view] '+selector);
+    if(control) control.focus({preventScroll:true});
+  }
+  document.addEventListener('click', function(e){
+    if(e.target.closest('[data-inbox-view] [role="radio"]')) focusFilter('[role="radio"][aria-checked="true"]');
+  });
+  document.addEventListener('keydown', function(e){
+    var radio = e.target.closest('[data-inbox-view] [role="radio"]');
+    if(!radio || ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(e.key)===-1) return;
+    e.preventDefault();
+    var radios = Array.prototype.slice.call(radio.parentNode.querySelectorAll('[role="radio"]'));
+    var step = e.key==='ArrowLeft' || e.key==='ArrowUp' ? -1 : 1;
+    radios[(radios.indexOf(radio)+step+radios.length)%radios.length].click();
+  });
+
+  /* 分类下拉改选即切到该筛选的画面；未单独出屏的组合给范围提示。
+     离开前还原来源画面的声明值，避免返回后分类标签与其消息列表不一致。 */
   document.addEventListener('change', function(e){
     if(!e.target.matches('[data-inbox-cat]')) return;
-    var opt = e.target.selectedOptions[0];
-    if(opt && opt.dataset.go) TP.show(opt.dataset.go); else { TP.toast(UNDRAWN); }
+    var opt = e.target.selectedOptions[0], target = opt && opt.dataset.go;
+    e.target.value = e.target.closest('[data-inbox-view]').dataset.cat || '';
+    if(target) TP.show(target); else { TP.toast(UNDRAWN); }
+    focusFilter('[data-inbox-cat]');
   });
 
   TP.addCopy({
