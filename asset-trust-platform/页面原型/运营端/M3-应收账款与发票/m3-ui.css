@@ -57,9 +57,12 @@
 [data-module="ops-receivables"] .vehicle-ledger th.num{max-width:20ch}
 [data-module="ops-receivables"] .receivable-detail .detail-table .tbl.receivable-receipts td{white-space:normal;overflow-wrap:anywhere}
 [data-module="ops-receivables"] .receivable-detail .detail-table .tbl.receivable-receipts td:first-child{white-space:nowrap}
+[data-module="ops-receivables"] .receivable-receipts :is(th,td):nth-child(3){min-width:22ch}
 [data-module="ops-receivables"] .receivable-receipts .num{min-width:16ch}
 [data-module="ops-receivables"] .receivable-receipts .money{white-space:nowrap}
-[data-module="ops-receivables"] .booked-receipts .booked{flex-wrap:wrap;justify-content:flex-end}
+[data-module="ops-receivables"] .receivable-receipts .na-dash{position:relative}
+[data-module="ops-receivables"] .booked-receipts :is(th,td):nth-last-child(2){min-width:24ch}
+[data-module="ops-receivables"] .booked-receipts .booked{flex-direction:column;align-items:flex-end;gap:var(--sp-1)}
 [data-module="ops-receivables"] .booked-receipts .cell-sub{line-height:1.6}
 
 /* Existing verification dialog: preserve upload error, consequence disclosure and actions. */
