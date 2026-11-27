@@ -13,6 +13,7 @@
 .risk-view .alert-filters input[type="search"]{text-overflow:ellipsis}
 .risk-view table.tbl.rule-cfg-list{min-width:var(--risk-rule-table-min)}
 .risk-view .rule-cfg-list col.rc-col-rule{width:var(--risk-config-rule-w)}
+.risk-view .rule-cfg-list td:nth-child(2) .btn-link{max-width:100%;margin-left:0;overflow-wrap:anywhere}
 .risk-view .rule-cfg-list td:nth-child(4) .tag{background:transparent;font-weight:400}
 .risk-view .rule-cfg-list td:nth-child(5){background:var(--card-2)}
 .risk-view .rule-cfg-list td:nth-child(5) .tag{font-weight:600}
