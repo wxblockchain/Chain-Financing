@@ -9,15 +9,16 @@
   --m15-call-failure-w:208px;
 }
 :root[data-module="data-monitoring"]:lang(en){
-  --intake-table-min:1184px;
+  --intake-table-min:1120px;
   --intake-col-name:152px; --intake-col-src:112px;
   --intake-col-mod:192px; --intake-col-status:112px;
   --intake-col-time:152px; --intake-col-last:232px;
-  --push-table-min-en:1216px;
+  --push-table-min-en:1152px;
   --push-col-id:136px; --push-col-invoice:128px; --push-col-party:176px;
   --push-col-platform:176px; --push-col-result:120px; --push-col-first:152px;
-  --m15-call-min:800px;
-  --m15-call-count-w:160px;
+  --m15-call-min:720px;
+  --m15-call-result-w:112px;
+  --m15-call-count-w:144px;
 }
 
 /* Overview: section → card → comparable values; no nested card per number. */
