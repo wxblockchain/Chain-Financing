@@ -1,5 +1,5 @@
-/* M17 / WS-685 · 2026-11-26 用户批准 A 方案。
-   数字总览、并列柱与独立环比、逾期状态小环；所有展示取值沿用既有样本。
+/* M17 / WS-685 · 2026-11-27 整页合并重构。
+   三个工作区：车辆经营、效率与盈利、应收与逾期；所有展示取值沿用既有样本。
    只消费平台 token；仅本模块启用。 */
 .home-page .content-in{max-width:none;margin-inline:0}
 body:has(.home-page) .sidebar .nav{position:relative}
@@ -8,13 +8,13 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-12);color:var(--muted)}
 .home-section{margin-top:var(--sp-6);min-width:0}
 .home-section-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--sp-2);margin-bottom:var(--sp-3)}
-.home-section-head h2{font-size:var(--ui-section-title);font-weight:600}
+.home-section-head :is(h2,h3){font-size:var(--fs-13);font-weight:600}
 .home-section-head p{font-size:var(--fs-12);color:var(--muted)}
 .home-cell-sub{display:block;font-size:var(--fs-12);line-height:1.65;color:var(--muted);font-weight:400;margin-top:var(--sp-1);white-space:normal}
 .home-note{font-size:var(--fs-12);line-height:1.75;color:var(--muted);margin-top:var(--sp-3)}
-.home-trends{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);margin-top:var(--sp-4)}
+.home-trends{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin:0}
 .home-trends>.card+.card{margin:0}
-.home-chart-body{padding:var(--sp-3) var(--sp-5) var(--sp-4)}
+.home-chart-body{padding:var(--sp-3) var(--sp-6) 0}
 .home-line-key{display:inline-block;width:20px;height:0;border-top:2px solid var(--chart-2);position:relative}
 .home-line-key:after{content:"";display:block;position:absolute;left:8px;top:-4px;width:6px;height:6px;border-radius:50%;background:var(--chart-2)}
 .home-plot-scroll{overflow-x:auto;overscroll-behavior-x:contain;padding:var(--sp-1) 0}
@@ -25,17 +25,17 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-data summary{cursor:pointer;padding:var(--sp-3) var(--sp-1);color:var(--accent);width:fit-content}
 .home-page .home-data-table{width:100%;min-width:340px}
 .home-page .tbl .home-right{text-align:right;font-variant-numeric:tabular-nums}
-.home-analysis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);align-items:start}
-.home-analysis-card{padding:var(--card-pad)}
+.home-analysis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-6);padding:0 var(--sp-6) var(--sp-5);align-items:start}
+.home-analysis-card{padding:0}
 .home-primary{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-2)}
 .home-primary>span{font-size:var(--fs-13);color:var(--muted)}
 .home-primary>strong{font-size:var(--fs-28);font-weight:600;font-variant-numeric:tabular-nums}
-.home-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);padding:var(--sp-4) 0;margin:var(--sp-3) 0 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.home-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);padding:0;margin:0}
 .home-page dt{font-size:var(--fs-12);color:var(--muted)}
 .home-page dd{margin:var(--sp-2) 0 0;font-weight:600;font-size:var(--fs-20);font-variant-numeric:tabular-nums}
 .home-loss{color:var(--danger)}
 .home-distribution-title{font-size:var(--fs-13);font-weight:500;margin:var(--sp-5) 0 var(--sp-4)}
-.home-ar-stats{display:grid;grid-template-columns:1.3fr 1.3fr 1fr 1fr;gap:var(--sp-5);padding:var(--card-pad);margin:0;border-bottom:1px solid var(--border)}
+.home-ar-stats{display:grid;grid-template-columns:1.3fr 1.3fr 1fr 1fr;gap:var(--sp-5);padding:0 var(--sp-6) var(--sp-5);margin:0}
 .home-ar-body{padding:0 var(--card-pad) var(--card-pad)}
 .home-ar-svg{display:block;min-width:540px}
 .home-overdue-stats{display:flex;flex-wrap:wrap;gap:var(--sp-5) var(--sp-8);padding:0;margin:0}
@@ -48,7 +48,7 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-page .home-overdue :is(td,th):last-child{width:152px}
 .home-page .home-overdue :is(td,th):first-child{position:sticky;left:0;background:var(--card);z-index:1;border-right:0}
 .home-page .home-overdue thead th:first-child{background:var(--card-2)}
-@media(max-width:1100px){.home-trends,.home-analysis,.home-overview-grid{grid-template-columns:minmax(0,1fr)}.home-ar-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1100px){.home-trends,.home-analysis{grid-template-columns:minmax(0,1fr)}.home-ar-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.home-ar-stats{grid-template-columns:minmax(0,1fr)}.home-section-head{display:block}.home-section-head p{margin-top:var(--sp-1)}}
 /* M17 状态画面（WS-685 交互接续）：首次加载、整页 / 单板块失败、刷新中、刷新失败与空资料。复用基线 .state、.note.red、.spinner，不新增 token。 */
 .home-page .spinner{display:inline-block;width:14px;height:14px;vertical-align:-3px;margin-right:var(--sp-2)}
@@ -95,7 +95,7 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-summary-sub{font-size:var(--fs-12);line-height:1.5;color:var(--muted);margin-top:var(--sp-1)}
 
 /* Each composite uses one value axis, then a shorter percentage plot. */
-.home-comparison .card-head{padding-block:var(--sp-4)}
+.home-comparison .card-head{padding:0 var(--sp-6);border:0}.home-comparison .card-head h3{font-size:var(--fs-13);font-weight:500}
 .home-comparison-scroll{overflow-x:auto;overscroll-behavior-x:contain}
 .home-comparison-plots{min-width:420px}
 .home-paired-bars,.home-paired-changes{display:block;overflow:visible}
@@ -136,33 +136,10 @@ body:has(.home-page) .sidebar .nav{position:relative}
 }
 
 /* Reference-led business grouping: amount, vehicle count, then period rows. */
-.home-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(6,auto);column-gap:var(--sp-5)}
-.home-overview-grid>.card+.card{margin:0}
-.home-business{min-width:0;display:grid;grid-template-rows:subgrid;grid-row:span 6}
-.home-business-head{padding:var(--sp-3) var(--sp-5) 0}
-.home-business-head h3{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-14);font-weight:600}
-.home-business-head i{width:8px;height:8px;border-radius:2px;background:var(--accent)}
-.home-business.is-sale .home-business-head i{background:var(--chart-2)}
-.home-business-scale{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:var(--sp-5);padding:var(--sp-3) var(--sp-5) var(--sp-4)}
-.home-business-scale p{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-2)}
 .home-scale-amount{display:flex;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;font-size:var(--fs-28);font-weight:600;line-height:1.3;font-variant-numeric:tabular-nums}
 .home-scale-amount b{font-weight:inherit;white-space:nowrap}
 .home-scale-count{max-width:126px;padding-left:var(--sp-4);border-left:1px solid var(--border)}
 .home-scale-count>div{display:flex;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;font-size:var(--fs-24);font-weight:600;line-height:1.4;font-variant-numeric:tabular-nums}
-.home-business-periods{width:100%;display:grid;grid-template-rows:subgrid;grid-row:span 3;border-collapse:collapse;font-variant-numeric:tabular-nums}
-.home-business-periods colgroup{display:none}
-.home-business-periods :is(thead,tbody){display:contents}
-.home-business-periods tr{display:grid;grid-template-columns:36% 20% 44%}
-.home-business-periods th,.home-business-periods td{padding:var(--sp-2) var(--sp-3);text-align:right;vertical-align:top}
-.home-business-periods :is(th,td):nth-child(2){padding-inline:var(--sp-2)}
-.home-business-periods th:first-child{text-align:left}
-.home-business-periods thead th{background:var(--card-2);font-size:var(--fs-12);font-weight:400;color:var(--muted);padding-block:var(--sp-2)}
-.home-business-periods tbody th{font-size:var(--fs-13);font-weight:500}
-.home-business-periods tbody th small{display:block;margin-top:var(--sp-1);font-weight:400}
-.home-business-periods tbody tr{border-top:1px solid var(--row-line)}
-.home-business-party{display:flex;align-items:baseline;gap:var(--sp-3);padding:var(--sp-2) var(--sp-5);border-top:1px solid var(--border);font-size:var(--fs-13);color:var(--muted)}
-.home-business-party strong{display:flex;align-items:baseline;gap:var(--sp-1);font-weight:500;font-size:var(--fs-16);color:var(--text);font-variant-numeric:tabular-nums}
-.home-business-party b{font-weight:inherit}
 
 /* Frequency columns retain all seven ordered labels and their exact counts. */
 .home-histogram{overflow-x:auto;overscroll-behavior-x:contain;padding-bottom:var(--sp-1)}
@@ -176,11 +153,83 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-bin-plot strong{position:absolute;left:0;right:0;font-size:var(--fs-13);font-weight:500;line-height:1.5;color:var(--text)}
 .home-bin>span{display:block;margin-top:var(--sp-3);font-size:var(--fs-12);line-height:1.6;color:var(--muted);white-space:pre-line}
 .home-bin.is-loss>span{color:var(--danger)}
-.home-line-legend{display:flex;flex-wrap:wrap;gap:var(--sp-3);font-size:var(--fs-12);font-weight:400;color:var(--muted)}
-.home-line-legend>span{display:inline-flex;align-items:center;gap:var(--sp-1)}
-.home-line-legend i{display:inline-block;width:16px;height:0;border-top:2px solid var(--accent)}
-.home-line-legend .home-key-sale{border-color:var(--chart-2);border-top-style:dashed}
 .home-ar-area path{fill:var(--chart-2);fill-opacity:.08}
-@media(max-width:1100px){.home-overview-grid{grid-template-columns:minmax(0,1fr)}.home-overview-grid>.card+.card{margin-top:var(--sp-5)}}
-@media(max-width:600px){.home-business-scale{gap:var(--sp-3)}.home-scale-count{max-width:104px;padding-left:var(--sp-3)}.home-business-periods tr{grid-template-columns:32% 28% 40%}}
-@media(max-width:360px){.home-business-scale{grid-template-columns:minmax(0,1fr)}.home-scale-count{max-width:none;padding-left:0;border-left:0;display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3)}.home-scale-count p{margin:0}}
+
+/* Three continuous workspaces; the six data-part targets stay independent. */
+.home-workspace{margin-top:var(--sp-6);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);min-width:0}
+.home-workspace .card{margin:0;border:0;border-radius:0;box-shadow:none;background:transparent}
+.home-workspace>.home-section,.home-analysis>.home-section{margin:0}
+.home-workspace-head{padding:var(--sp-5) var(--sp-6) var(--sp-4)}
+.home-workspace-head h2{font-size:var(--ui-section-title);font-weight:600}
+.home-vehicle [data-part="overview"]>.home-section-head{padding:var(--sp-5) var(--sp-6) 0;margin:0}
+.home-vehicle [data-part="overview"] h2{font-size:var(--ui-section-title)}
+.home-vehicle [data-part="trend"]{padding-top:var(--sp-4);border-top:1px solid var(--border)}
+.home-vehicle [data-part="trend"]>.home-section-head{padding:0 var(--sp-6);margin-bottom:var(--sp-5)}
+.home-section-tools{margin-left:auto}
+.home-business-heroes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-6);padding:var(--sp-4) var(--sp-6)}
+.home-business-hero{min-width:0}
+.home-business-hero+.home-business-hero{padding-left:var(--sp-6);border-left:1px solid var(--border)}
+.home-business-head h3{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-13);font-weight:500}
+.home-business-head i{width:8px;height:8px;background:var(--accent);border-radius:2px}
+.home-business-hero.is-sale .home-business-head i{background:var(--chart-2)}
+.home-business-scale{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:var(--sp-4);padding-top:var(--sp-3)}
+.home-business-scale p{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-1)}
+.home-period-scroll{overflow-x:auto;overscroll-behavior-x:contain}
+.home-period-table{width:100%;min-width:900px;table-layout:fixed;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.home-period-table .home-period-col{width:18%}
+.home-period-table .home-qty-col{width:13%}
+.home-period-table .home-money-col{width:28%}
+.home-period-table th,.home-period-table td{padding:var(--sp-2) var(--sp-3);text-align:right;vertical-align:top}
+.home-period-table thead th{background:var(--card-2);font-size:var(--fs-12);font-weight:400;color:var(--muted)}
+.home-period-table tbody th{font-size:var(--fs-13);font-weight:500}
+.home-period-table tbody th small{display:block;margin-top:var(--sp-1)}
+.home-period-table tbody tr{border-bottom:1px solid var(--row-line)}
+.home-period-table :is(th,td):first-child{position:sticky;left:0;background:var(--card);text-align:left;z-index:1}
+.home-period-table thead th:first-child{background:var(--card-2)}
+.home-parties-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-6);padding:var(--sp-3) var(--sp-6)}
+.home-business-party{display:flex;align-items:baseline;gap:var(--sp-3);font-size:var(--fs-12);color:var(--muted)}
+.home-business-party strong{display:inline-flex;align-items:baseline;gap:var(--sp-1);color:var(--text);font-size:var(--fs-14);font-weight:500;font-variant-numeric:tabular-nums}
+.home-business-party b{font-weight:inherit}
+.home-shared-legend{display:flex;flex-wrap:wrap;gap:var(--sp-5);font-size:var(--fs-12);color:var(--muted)}
+.home-shared-legend>span{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.home-shared-line{width:16px;height:0;border-top:2px solid var(--accent)}
+.home-shared-line.is-sale{border-top-style:dashed;border-color:var(--chart-2)}
+.home-vehicle .home-comparison+.home-comparison{border-left:1px solid var(--row-line)}
+.home-efficiency-numbers{display:grid;grid-template-columns:1fr 1.5fr;gap:var(--sp-5);align-items:baseline;padding-bottom:var(--sp-4);border-bottom:1px solid var(--border)}
+.home-efficiency .home-analysis>.home-section+.home-section{padding-left:var(--sp-6);border-left:1px solid var(--row-line)}
+.home-efficiency .home-pair dt{font-size:var(--fs-12)}
+.home-efficiency .home-pair dd{font-size:var(--fs-20)}
+.home-receivables [data-part="ar"]>.home-section-head{margin:0;height:0}
+.home-receivables .home-ar-trend-head{margin:0 0 var(--sp-4)}
+.home-receivables [data-part="overdue"]{border-top:1px solid var(--border)}
+.home-receivables [data-part="overdue"]>.home-section-head{padding:var(--sp-4) var(--sp-6) 0;margin:0}
+.home-receivables .home-overdue-summary{padding-top:var(--sp-3);padding-bottom:var(--sp-4)}
+.home-workspace:not(:has([data-part])){display:none}
+.home-vehicle:has(.home-page-state){display:block;border:0;background:transparent}
+.home-vehicle:has(.home-page-state) .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg)}
+.home-section:has(>.home-state) .home-shared-legend{display:none}
+@media(max-width:1100px){
+ .home-business-heroes{grid-template-columns:minmax(0,1fr)}
+ .home-business-hero+.home-business-hero{padding-left:0;border-left:0;padding-top:var(--sp-4);border-top:1px solid var(--row-line)}
+ .home-vehicle .home-comparison+.home-comparison{border-left:0;border-top:1px solid var(--row-line);padding-top:var(--sp-5)}
+ .home-efficiency .home-analysis>.home-section+.home-section{padding-left:0;border-left:0;border-top:1px solid var(--border);padding-top:var(--sp-5)}
+}
+@media(max-width:700px){
+ .home-business-scale{grid-template-columns:minmax(0,1fr)}
+ .home-scale-count{max-width:none;padding-left:0;border-left:0;display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3)}
+ .home-scale-count p{margin:0}
+ .home-business-heroes{grid-template-columns:minmax(0,1fr);gap:var(--sp-4)}
+ .home-business-hero+.home-business-hero{padding:var(--sp-4) 0 0;border-left:0;border-top:1px solid var(--row-line)}
+ .home-parties-row{gap:var(--sp-3)}
+}
+@media(max-width:600px){
+ .home-shared-legend{margin-top:var(--sp-2)}
+ .home-workspace-head,.home-vehicle [data-part="overview"]>.home-section-head{padding-inline:var(--sp-4)}
+ .home-business-heroes,.home-parties-row,.home-vehicle [data-part="trend"]>.home-section-head{padding-inline:var(--sp-4)}
+ .home-analysis{padding-inline:var(--sp-4)}
+ .home-ar-stats,.home-ar-body,.home-overdue-summary{padding-inline:var(--sp-4)}
+ .home-receivables [data-part="overdue"]>.home-section-head{padding-inline:var(--sp-4)}
+ .home-efficiency-numbers{grid-template-columns:1fr 1.4fr;gap:var(--sp-3)}
+ .home-business-party{flex-wrap:wrap;gap:var(--sp-1) var(--sp-2)}
+}
+@media(max-width:360px){.home-business-scale{grid-template-columns:minmax(0,1fr)}.home-scale-count{max-width:none;padding:0;border:0;display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3)}}

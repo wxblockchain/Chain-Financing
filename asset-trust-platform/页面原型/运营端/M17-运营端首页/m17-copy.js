@@ -220,3 +220,20 @@ TP.addCopy({
   "盈利水平分布，售车数量": "Return distribution, vehicles sold",
   "环比": "Change"
 });
+/* 2026-11-27：整页合并为三个经营工作区。 */
+TP.addCopy({
+  "外采外销周期对比": "Purchasing and sales by period",
+  "统计周期": "Period",
+  "外采数量 · 辆": "Purchased · vehicles",
+  "外采成本 · USD": "Purchase cost · USD",
+  "外销数量 · 辆": "Sold · vehicles",
+  "外销收入 · USD": "Sales revenue · USD",
+  "车辆经营": "Vehicle business",
+  "外采：柱状与实线": "Purchased: bars and solid line",
+  "外采": "Purchased",
+  "外销：柱状与虚线": "Sold: bars and dashed line",
+  "外销": "Sold",
+  "经营趋势": "Business trends",
+  "效率与盈利": "Efficiency & return",
+  "应收与逾期": "Receivables & overdue"
+});
