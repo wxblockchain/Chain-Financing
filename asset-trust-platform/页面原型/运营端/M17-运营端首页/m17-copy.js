@@ -196,3 +196,27 @@ TP.addCopy({
   "逾期已收清": "Collected after due date",
   "历史逾期 0 次，暂无逾期记录": "0 historical overdue receivables; no overdue records"
 });
+/* 2026-11-27：参考 Huma 的图形分工与业务卡布局。 */
+TP.addCopy({
+  "外采": "Purchased",
+  "累计外采成本": "Purchase cost · All time",
+  "累计外采数量": "Purchased · All time",
+  "辆": "vehicles",
+  "统计周期": "Period",
+  "数量 · 辆": "Vehicles",
+  "成本 · USD": "Cost · USD",
+  "外销": "Sold",
+  "累计外销收入": "Sales revenue · All time",
+  "累计外销数量": "Sold · All time",
+  "收入 · USD": "Revenue · USD",
+  "业务周期分布，车辆数量": "Business cycle distribution, vehicle counts",
+  "0—30\n天": "0–30\ndays",
+  "31—60\n天": "31–60\ndays",
+  "61—90\n天": "61–90\ndays",
+  "91—120\n天": "91–120\ndays",
+  "121—150\n天": "121–150\ndays",
+  "151—180\n天": "151–180\ndays",
+  "181\n天以上": "181+\ndays",
+  "盈利水平分布，售车数量": "Return distribution, vehicles sold",
+  "环比": "Change"
+});

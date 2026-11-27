@@ -27,7 +27,7 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-page .tbl .home-right{text-align:right;font-variant-numeric:tabular-nums}
 .home-analysis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);align-items:start}
 .home-analysis-card{padding:var(--card-pad)}
-.home-primary{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--sp-3)}
+.home-primary{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-2)}
 .home-primary>span{font-size:var(--fs-13);color:var(--muted)}
 .home-primary>strong{font-size:var(--fs-28);font-weight:600;font-variant-numeric:tabular-nums}
 .home-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);padding:var(--sp-4) 0;margin:var(--sp-3) 0 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
@@ -35,12 +35,6 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-page dd{margin:var(--sp-2) 0 0;font-weight:600;font-size:var(--fs-20);font-variant-numeric:tabular-nums}
 .home-loss{color:var(--danger)}
 .home-distribution-title{font-size:var(--fs-13);font-weight:500;margin:var(--sp-5) 0 var(--sp-4)}
-.home-distribution{display:grid;gap:var(--sp-3)}
-.home-dist-row{display:grid;grid-template-columns:124px minmax(0,1fr) 24px;align-items:center;gap:var(--sp-4);font-size:var(--fs-13);color:var(--muted)}
-.home-dist-row strong{text-align:right;font-weight:500;font-variant-numeric:tabular-nums;color:var(--text)}
-.home-dist-track{height:12px;background:var(--gray-bg);border-radius:2px;overflow:hidden}
-.home-dist-fill{display:block;height:100%;background:var(--accent);border-radius:2px}
-.home-dist-fill.is-loss{background:var(--danger)}
 .home-ar-stats{display:grid;grid-template-columns:1.3fr 1.3fr 1fr 1fr;gap:var(--sp-5);padding:var(--card-pad);margin:0;border-bottom:1px solid var(--border)}
 .home-ar-body{padding:0 var(--card-pad) var(--card-pad)}
 .home-ar-svg{display:block;min-width:540px}
@@ -54,8 +48,8 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-page .home-overdue :is(td,th):last-child{width:152px}
 .home-page .home-overdue :is(td,th):first-child{position:sticky;left:0;background:var(--card);z-index:1;border-right:0}
 .home-page .home-overdue thead th:first-child{background:var(--card-2)}
-@media(max-width:1100px){.home-trends,.home-analysis{grid-template-columns:minmax(0,1fr)}.home-ar-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.home-ar-stats{grid-template-columns:minmax(0,1fr)}.home-dist-row{grid-template-columns:112px minmax(0,1fr) 24px}.home-section-head{display:block}.home-section-head p{margin-top:var(--sp-1)}}
+@media(max-width:1100px){.home-trends,.home-analysis,.home-overview-grid{grid-template-columns:minmax(0,1fr)}.home-ar-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.home-ar-stats{grid-template-columns:minmax(0,1fr)}.home-section-head{display:block}.home-section-head p{margin-top:var(--sp-1)}}
 /* M17 状态画面（WS-685 交互接续）：首次加载、整页 / 单板块失败、刷新中、刷新失败与空资料。复用基线 .state、.note.red、.spinner，不新增 token。 */
 .home-page .spinner{display:inline-block;width:14px;height:14px;vertical-align:-3px;margin-right:var(--sp-2)}
 .home-page .btn .spinner{margin-right:0}
@@ -96,29 +90,9 @@ body:has(.home-page) .sidebar .nav{position:relative}
   .home-page .home-overdue thead th:last-child{background:var(--card-2)}
 }
 
-/* One numeric surface; columns retain full values and disclosures. */
-.home-matrix{width:100%;min-width:860px;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}
-.home-matrix col.home-col-period{width:16%}
-.home-matrix col.home-col-count{width:14%}
-.home-matrix col.home-col-money{width:28%}
-.home-matrix th,.home-matrix td{padding:var(--sp-2) var(--sp-4);text-align:right;vertical-align:top}
-.home-matrix th:first-child{text-align:left}
-.home-matrix thead th{font-size:var(--fs-12);font-weight:500;color:var(--muted)}
-.home-matrix thead tr:first-child th{padding-bottom:0}
-.home-matrix thead tr:nth-child(2) th{padding-top:0}
-.home-matrix thead th[colspan]{text-align:left;font-size:var(--fs-13);font-weight:600;color:var(--text)}
-.home-matrix tbody tr{border-top:1px solid var(--row-line)}
-.home-matrix tbody th{font-size:var(--fs-13);font-weight:500}
-.home-matrix tbody th small{display:block;margin-top:var(--sp-1);font-size:var(--fs-12)}
-.home-summary-value{font-size:var(--fs-20);font-weight:600;color:var(--text);white-space:nowrap;line-height:1.3}
+/* Exact values and disclosures remain visible in each business card. */
+.home-summary-value{font-size:var(--fs-16);font-weight:600;color:var(--text);white-space:nowrap;line-height:1.3}
 .home-summary-sub{font-size:var(--fs-12);line-height:1.5;color:var(--muted);margin-top:var(--sp-1)}
-.home-series-label{display:inline-flex;align-items:center;gap:var(--sp-2)}
-.home-series-label:before{content:"";width:8px;height:8px;border-radius:2px;background:var(--accent)}
-.home-series-label.sale:before{background:var(--chart-2)}
-.home-summary-parties{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);padding:var(--sp-2) var(--sp-5);border-top:1px solid var(--border);background:var(--card-2);border-radius:0 0 var(--radius-lg) var(--radius-lg)}
-.home-summary-parties>div{display:flex;align-items:baseline;gap:var(--sp-3);font-size:var(--fs-13);color:var(--muted)}
-.home-summary-parties strong{color:var(--text);font-size:var(--fs-16);font-weight:600;font-variant-numeric:tabular-nums}
-.home-summary-parties strong b{font-weight:inherit}
 
 /* Each composite uses one value axis, then a shorter percentage plot. */
 .home-comparison .card-head{padding-block:var(--sp-4)}
@@ -127,7 +101,7 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-paired-bars,.home-paired-changes{display:block;overflow:visible}
 .home-bar-0{fill:var(--accent)}
 .home-bar-1{fill:var(--chart-2)}
-.home-change-heading{font-size:var(--fs-12);font-weight:500;color:var(--muted);margin:var(--sp-1) 0 var(--sp-2);padding-top:var(--sp-2);border-top:1px solid var(--row-line)}
+.home-change-heading{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-5);font-size:var(--fs-12);font-weight:500;color:var(--muted);margin:var(--sp-1) 0 var(--sp-2);padding-top:var(--sp-2);border-top:1px solid var(--row-line)}
 .home-paired-line{fill:none;stroke-width:2;stroke-linecap:round}
 .home-paired-line.series-0{stroke:var(--accent)}
 .home-paired-line.series-1{stroke:var(--chart-2);stroke-dasharray:4 3}
@@ -154,9 +128,59 @@ body:has(.home-page) .sidebar .nav{position:relative}
 .home-status-dot{width:7px;height:7px;border-radius:50%;background:var(--faint);flex:none}
 .home-status-dot.is-overdue{background:var(--danger)}
 @media(max-width:600px){
-  .home-summary-parties{grid-template-columns:minmax(0,1fr)}
+
   .home-overdue-summary{align-items:flex-start}
   .home-section-tools{width:100%;justify-content:space-between}
   .home-ar-trend-head>.seg{margin-left:auto}
   .home-chart-body{padding-inline:var(--sp-3)}
 }
+
+/* Reference-led business grouping: amount, vehicle count, then period rows. */
+.home-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(6,auto);column-gap:var(--sp-5)}
+.home-overview-grid>.card+.card{margin:0}
+.home-business{min-width:0;display:grid;grid-template-rows:subgrid;grid-row:span 6}
+.home-business-head{padding:var(--sp-3) var(--sp-5) 0}
+.home-business-head h3{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-14);font-weight:600}
+.home-business-head i{width:8px;height:8px;border-radius:2px;background:var(--accent)}
+.home-business.is-sale .home-business-head i{background:var(--chart-2)}
+.home-business-scale{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:var(--sp-5);padding:var(--sp-3) var(--sp-5) var(--sp-4)}
+.home-business-scale p{font-size:var(--fs-12);color:var(--muted);margin-bottom:var(--sp-2)}
+.home-scale-amount{display:flex;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;font-size:var(--fs-28);font-weight:600;line-height:1.3;font-variant-numeric:tabular-nums}
+.home-scale-amount b{font-weight:inherit;white-space:nowrap}
+.home-scale-count{max-width:126px;padding-left:var(--sp-4);border-left:1px solid var(--border)}
+.home-scale-count>div{display:flex;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;font-size:var(--fs-24);font-weight:600;line-height:1.4;font-variant-numeric:tabular-nums}
+.home-business-periods{width:100%;display:grid;grid-template-rows:subgrid;grid-row:span 3;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.home-business-periods colgroup{display:none}
+.home-business-periods :is(thead,tbody){display:contents}
+.home-business-periods tr{display:grid;grid-template-columns:36% 20% 44%}
+.home-business-periods th,.home-business-periods td{padding:var(--sp-2) var(--sp-3);text-align:right;vertical-align:top}
+.home-business-periods :is(th,td):nth-child(2){padding-inline:var(--sp-2)}
+.home-business-periods th:first-child{text-align:left}
+.home-business-periods thead th{background:var(--card-2);font-size:var(--fs-12);font-weight:400;color:var(--muted);padding-block:var(--sp-2)}
+.home-business-periods tbody th{font-size:var(--fs-13);font-weight:500}
+.home-business-periods tbody th small{display:block;margin-top:var(--sp-1);font-weight:400}
+.home-business-periods tbody tr{border-top:1px solid var(--row-line)}
+.home-business-party{display:flex;align-items:baseline;gap:var(--sp-3);padding:var(--sp-2) var(--sp-5);border-top:1px solid var(--border);font-size:var(--fs-13);color:var(--muted)}
+.home-business-party strong{display:flex;align-items:baseline;gap:var(--sp-1);font-weight:500;font-size:var(--fs-16);color:var(--text);font-variant-numeric:tabular-nums}
+.home-business-party b{font-weight:inherit}
+
+/* Frequency columns retain all seven ordered labels and their exact counts. */
+.home-histogram{overflow-x:auto;overscroll-behavior-x:contain;padding-bottom:var(--sp-1)}
+.home-histogram-inner{min-width:420px;position:relative}
+.home-histogram-grid{display:block;position:absolute;top:0;left:0;overflow:visible;pointer-events:none}
+.home-bins{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--sp-2);padding-left:var(--sp-7)}
+.home-bin{min-width:0;text-align:center;font-variant-numeric:tabular-nums}
+.home-bin-plot{height:152px;position:relative}
+.home-bin-plot i{position:absolute;bottom:0;width:56%;max-width:36px;left:50%;transform:translateX(-50%);background:var(--accent);border-radius:2px 2px 0 0}
+.home-bin.is-loss .home-bin-plot i{background:var(--danger)}
+.home-bin-plot strong{position:absolute;left:0;right:0;font-size:var(--fs-13);font-weight:500;line-height:1.5;color:var(--text)}
+.home-bin>span{display:block;margin-top:var(--sp-3);font-size:var(--fs-12);line-height:1.6;color:var(--muted);white-space:pre-line}
+.home-bin.is-loss>span{color:var(--danger)}
+.home-line-legend{display:flex;flex-wrap:wrap;gap:var(--sp-3);font-size:var(--fs-12);font-weight:400;color:var(--muted)}
+.home-line-legend>span{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.home-line-legend i{display:inline-block;width:16px;height:0;border-top:2px solid var(--accent)}
+.home-line-legend .home-key-sale{border-color:var(--chart-2);border-top-style:dashed}
+.home-ar-area path{fill:var(--chart-2);fill-opacity:.08}
+@media(max-width:1100px){.home-overview-grid{grid-template-columns:minmax(0,1fr)}.home-overview-grid>.card+.card{margin-top:var(--sp-5)}}
+@media(max-width:600px){.home-business-scale{gap:var(--sp-3)}.home-scale-count{max-width:104px;padding-left:var(--sp-3)}.home-business-periods tr{grid-template-columns:32% 28% 40%}}
+@media(max-width:360px){.home-business-scale{grid-template-columns:minmax(0,1fr)}.home-scale-count{max-width:none;padding-left:0;border-left:0;display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3)}.home-scale-count p{margin:0}}
