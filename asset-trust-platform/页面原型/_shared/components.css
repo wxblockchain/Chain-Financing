@@ -1916,6 +1916,11 @@ table.tbl.claim-list.is-selecting{min-width:var(--claim-table-min-select)}
 [data-module="enterprise-claims"] .receivable-summary .status-grid{padding-block:var(--sp-2)}
 [data-module="enterprise-claims"] .receivable-summary .meta{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));row-gap:var(--sp-4)}
 [data-module="enterprise-claims"] .receivable-detail .facts{column-gap:var(--sp-6)}
+/* M7a 窄桌面：只在基础交易 / 当次依据卡内将短字段成对排布，独立分区仍上下通栏。 */
+@container facts (min-width:560px) and (max-width:761px){
+  [data-module="enterprise-claims"] :is(.basic-trade,.claim-snapshot) .facts:not(.single){grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-module="enterprise-claims"] :is(.basic-trade,.claim-snapshot) .facts:not(.single)>div:first-child:not(.wide)+div:not(.wide){border-top:0}
+}
 .claim-progress .receivable-steps{padding-block:var(--sp-5);gap:var(--sp-6)}
 .claim-progress .operation-log{padding-bottom:var(--sp-5)}
 .claim-snapshot>.detail-group-h{align-items:baseline;flex-wrap:wrap;row-gap:var(--sp-1)}
